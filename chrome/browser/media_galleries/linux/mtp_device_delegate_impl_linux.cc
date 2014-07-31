@@ -5,7 +5,6 @@
 #include "chrome/browser/media_galleries/linux/mtp_device_delegate_impl_linux.h"
 
 #include <algorithm>
-#include <set>
 #include <vector>
 
 #include "base/bind.h"
@@ -71,7 +70,7 @@ MTPDeviceTaskHelper* GetDeviceTaskHelperForStorage(
 // |reply_callback| runs on the IO thread.
 void OpenStorageOnUIThread(
     const std::string& storage_name,
-    const base::Callback<void(bool)>& reply_callback) {
+    const MTPDeviceTaskHelper::OpenStorageCallback& reply_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   MTPDeviceTaskHelper* task_helper =
       GetDeviceTaskHelperForStorage(storage_name);
@@ -95,9 +94,8 @@ void OpenStorageOnUIThread(
 void ReadDirectoryOnUIThread(
     const std::string& storage_name,
     uint32 dir_id,
-    const base::Callback<
-        void(const fileapi::AsyncFileUtil::EntryList&)>& success_callback,
-    const base::Callback<void(base::File::Error)>& error_callback) {
+    const MTPDeviceTaskHelper::ReadDirectorySuccessCallback& success_callback,
+    const MTPDeviceTaskHelper::ErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   MTPDeviceTaskHelper* task_helper =
       GetDeviceTaskHelperForStorage(storage_name);
@@ -118,8 +116,8 @@ void ReadDirectoryOnUIThread(
 void GetFileInfoOnUIThread(
     const std::string& storage_name,
     uint32 file_id,
-    const MTPDeviceAsyncDelegate::GetFileInfoSuccessCallback& success_callback,
-    const MTPDeviceAsyncDelegate::ErrorCallback& error_callback) {
+    const MTPDeviceTaskHelper::GetFileInfoSuccessCallback& success_callback,
+    const MTPDeviceTaskHelper::ErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   MTPDeviceTaskHelper* task_helper =
       GetDeviceTaskHelperForStorage(storage_name);
@@ -727,13 +725,13 @@ void MTPDeviceDelegateImplLinux::OnDidGetFileInfoToCreateSnapshotFile(
 void MTPDeviceDelegateImplLinux::OnDidReadDirectory(
     uint32 dir_id,
     const ReadDirectorySuccessCallback& success_callback,
-    const fileapi::AsyncFileUtil::EntryList& file_list) {
+    const fileapi::AsyncFileUtil::EntryList& file_list,
+    bool has_more) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   FileIdToMTPFileNodeMap::iterator it = file_id_to_node_map_.find(dir_id);
   DCHECK(it != file_id_to_node_map_.end());
   MTPFileNode* dir_node = it->second;
-  std::set<std::string> children_to_keep;
 
   fileapi::AsyncFileUtil::EntryList normalized_file_list;
   for (size_t i = 0; i < file_list.size(); ++i) {
@@ -752,11 +750,17 @@ void MTPDeviceDelegateImplLinux::OnDidReadDirectory(
 
     // Refresh the in memory tree.
     dir_node->EnsureChildExists(entry.name, file_id);
-    children_to_keep.insert(entry.name);
+    child_nodes_seen_.insert(entry.name);
   }
-  dir_node->ClearNonexistentChildren(children_to_keep);
 
-  success_callback.Run(normalized_file_list, false /*no more entries*/);
+  success_callback.Run(normalized_file_list, has_more);
+  if (has_more)
+    return;  // Wait to be called again.
+
+  // Last call, finish book keeping and continue with the next request.
+  dir_node->ClearNonexistentChildren(child_nodes_seen_);
+  child_nodes_seen_.clear();
+
   PendingRequestDone();
 }
 
@@ -791,9 +795,11 @@ void MTPDeviceDelegateImplLinux::OnDidReadBytes(
 void MTPDeviceDelegateImplLinux::OnDidFillFileCache(
     const base::FilePath& path,
     const fileapi::AsyncFileUtil::EntryList& /* file_list */,
-    bool /* has_more */) {
+    bool has_more) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(path.IsParent(pending_tasks_.front().path));
+  if (has_more)
+    return;  // Wait until all entries have been read.
   pending_tasks_.front().cached_path = path;
 }
 

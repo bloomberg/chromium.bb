@@ -7,6 +7,7 @@
 
 #include <deque>
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/callback.h"
@@ -176,12 +177,14 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   // Called when ReadDirectory() succeeds.
   //
   // |dir_id| is the directory read.
-  // |file_list| contains the directory file entries with their file ids.
   // |success_callback| is invoked to notify the caller about the directory
   // file entries.
+  // |file_list| contains the directory file entries with their file ids.
+  // |has_more| is true if there are more file entries to read.
   void OnDidReadDirectory(uint32 dir_id,
                           const ReadDirectorySuccessCallback& success_callback,
-                          const fileapi::AsyncFileUtil::EntryList& file_list);
+                          const fileapi::AsyncFileUtil::EntryList& file_list,
+                          bool has_more);
 
   // Called when WriteDataIntoSnapshotFile() succeeds.
   //
@@ -270,6 +273,10 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   // The root node of a tree-structure that caches the directory structure of
   // the MTP device.
   scoped_ptr<MTPFileNode> root_node_;
+
+  // A list of child nodes encountered while a ReadDirectory operation, which
+  // can return results over multiple callbacks, is in progress.
+  std::set<std::string> child_nodes_seen_;
 
   // For callbacks that may run after destruction.
   base::WeakPtrFactory<MTPDeviceDelegateImplLinux> weak_ptr_factory_;

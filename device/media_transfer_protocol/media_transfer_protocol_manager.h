@@ -41,8 +41,10 @@ class MediaTransferProtocolManager {
 
   // A callback to handle the result of ReadDirectoryById.
   // The first argument is a vector of file entries.
-  // The second argument is true if there was an error.
+  // The second argument is true if there are more file entries.
+  // The third argument is true if there was an error.
   typedef base::Callback<void(const std::vector<MtpFileEntry>& file_entries,
+                              bool has_more,
                               bool error)> ReadDirectoryCallback;
 
   // A callback to handle the result of ReadFileChunkById.

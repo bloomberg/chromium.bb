@@ -45,7 +45,9 @@ void TestMediaTransferProtocolManagerLinux::ReadDirectoryById(
     const std::string& storage_handle,
     uint32 file_id,
     const ReadDirectoryCallback& callback) {
-  callback.Run(std::vector<MtpFileEntry>(), true);
+  callback.Run(std::vector<MtpFileEntry>(),
+               false /* no more entries*/,
+               true /* error */);
 }
 
 void TestMediaTransferProtocolManagerLinux::ReadFileChunkById(

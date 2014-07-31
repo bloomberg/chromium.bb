@@ -4,6 +4,7 @@
 
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
+#include <algorithm>
 #include <map>
 #include <queue>
 #include <set>
@@ -32,6 +33,16 @@ namespace device {
 namespace {
 
 MediaTransferProtocolManager* g_media_transfer_protocol_manager = NULL;
+
+// When reading directory entries, this is the number of entries for
+// GetFileInfo() to read in one operation. If set too low, efficiency goes down
+// slightly due to the overhead of D-Bus calls. If set too high, then slow
+// devices may trigger a D-Bus timeout.
+// The value below is a good initial estimate.
+const size_t kFileInfoToFetchChunkSize = 25;
+
+// On the first call to GetFileInfo, the offset to use is 0.
+const size_t kInitialOffset = 0;
 
 // The MediaTransferProtocolManager implementation.
 class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
@@ -155,15 +166,18 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
       const ReadDirectoryCallback& callback) OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
-      callback.Run(std::vector<MtpFileEntry>(), true);
+      callback.Run(std::vector<MtpFileEntry>(),
+                   false /* no more entries */,
+                   true /* error */);
       return;
     }
     read_directory_callbacks_.push(callback);
-    mtp_client_->ReadDirectoryById(
+    mtp_client_->ReadDirectoryEntryIds(
         storage_handle,
         file_id,
-        base::Bind(&MediaTransferProtocolManagerImpl::OnReadDirectory,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&MediaTransferProtocolManagerImpl::OnReadDirectoryEntryIds,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   storage_handle),
         base::Bind(&MediaTransferProtocolManagerImpl::OnReadDirectoryError,
                    weak_ptr_factory_.GetWeakPtr()));
   }
@@ -196,10 +210,14 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
       callback.Run(MtpFileEntry(), true);
       return;
     }
+    std::vector<uint32> file_ids;
+    file_ids.push_back(file_id);
     get_file_info_callbacks_.push(callback);
-    mtp_client_->GetFileInfoById(
+    mtp_client_->GetFileInfo(
         storage_handle,
-        file_id,
+        file_ids,
+        kInitialOffset,
+        file_ids.size(),
         base::Bind(&MediaTransferProtocolManagerImpl::OnGetFileInfo,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&MediaTransferProtocolManagerImpl::OnGetFileInfoError,
@@ -320,15 +338,89 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     close_storage_callbacks_.pop();
   }
 
-  void OnReadDirectory(const std::vector<MtpFileEntry>& file_entries) {
+  void OnReadDirectoryEntryIds(const std::string& storage_handle,
+                               const std::vector<uint32>& file_ids) {
     DCHECK(thread_checker_.CalledOnValidThread());
-    read_directory_callbacks_.front().Run(file_entries, false);
+
+    if (file_ids.empty()) {
+      OnGotDirectoryEntries(storage_handle,
+                            file_ids,
+                            kInitialOffset,
+                            file_ids,
+                            std::vector<MtpFileEntry>());
+      return;
+    }
+
+    std::vector<uint32> sorted_file_ids = file_ids;
+    std::sort(sorted_file_ids.begin(), sorted_file_ids.end());
+
+    mtp_client_->GetFileInfo(
+        storage_handle,
+        file_ids,
+        kInitialOffset,
+        kFileInfoToFetchChunkSize,
+        base::Bind(&MediaTransferProtocolManagerImpl::OnGotDirectoryEntries,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   storage_handle,
+                   file_ids,
+                   kInitialOffset,
+                   sorted_file_ids),
+        base::Bind(&MediaTransferProtocolManagerImpl::OnReadDirectoryError,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  void OnGotDirectoryEntries(const std::string& storage_handle,
+                             const std::vector<uint32>& file_ids,
+                             size_t offset,
+                             const std::vector<uint32>& sorted_file_ids,
+                             const std::vector<MtpFileEntry>& file_entries) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_EQ(file_ids.size(), sorted_file_ids.size());
+
+    // Use |sorted_file_ids| to sanity check and make sure the results are a
+    // subset of the requested file ids.
+    for (size_t i = 0; i < file_entries.size(); ++i) {
+      std::vector<uint32>::const_iterator it =
+          std::lower_bound(sorted_file_ids.begin(),
+                           sorted_file_ids.end(),
+                           file_entries[i].item_id());
+      if (it == sorted_file_ids.end()) {
+        OnReadDirectoryError();
+        return;
+      }
+    }
+
+    size_t next_offset = file_ids.size();
+    if (offset < SIZE_MAX - kFileInfoToFetchChunkSize)
+      next_offset = std::min(next_offset, offset + kFileInfoToFetchChunkSize);
+    bool has_more = next_offset < file_ids.size();
+    read_directory_callbacks_.front().Run(file_entries,
+                                          has_more,
+                                          false /* no error */);
+    if (has_more) {
+      mtp_client_->GetFileInfo(
+          storage_handle,
+          file_ids,
+          next_offset,
+          kFileInfoToFetchChunkSize,
+          base::Bind(&MediaTransferProtocolManagerImpl::OnGotDirectoryEntries,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     storage_handle,
+                     file_ids,
+                     next_offset,
+                     sorted_file_ids),
+          base::Bind(&MediaTransferProtocolManagerImpl::OnReadDirectoryError,
+                     weak_ptr_factory_.GetWeakPtr()));
+      return;
+    }
     read_directory_callbacks_.pop();
   }
 
   void OnReadDirectoryError() {
     DCHECK(thread_checker_.CalledOnValidThread());
-    read_directory_callbacks_.front().Run(std::vector<MtpFileEntry>(), true);
+    read_directory_callbacks_.front().Run(std::vector<MtpFileEntry>(),
+                                          false /* no more entries */,
+                                          true /* error */);
     read_directory_callbacks_.pop();
   }
 
@@ -344,10 +436,14 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     read_file_callbacks_.pop();
   }
 
-  void OnGetFileInfo(const MtpFileEntry& entry) {
+  void OnGetFileInfo(const std::vector<MtpFileEntry>& entries) {
     DCHECK(thread_checker_.CalledOnValidThread());
-    get_file_info_callbacks_.front().Run(entry, false);
-    get_file_info_callbacks_.pop();
+    if (entries.size() == 1) {
+      get_file_info_callbacks_.front().Run(entries[0], false /* no error */);
+      get_file_info_callbacks_.pop();
+    } else {
+      OnGetFileInfoError();
+    }
   }
 
   void OnGetFileInfoError() {

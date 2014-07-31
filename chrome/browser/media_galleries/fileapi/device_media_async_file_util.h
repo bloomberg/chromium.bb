@@ -130,7 +130,7 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
   // file details of the requested url. |callback| is invoked to complete the
   // GetFileInfo request.
   void OnDidGetFileInfo(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
+      base::SequencedTaskRunner* task_runner,
       const base::FilePath& path,
       const GetFileInfoCallback& callback,
       const base::File::Info& file_info);
@@ -147,7 +147,7 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
   // in any two calls are disjoint), and |has_more| will be true, except for
   // the last chunk.
   void OnDidReadDirectory(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
+      base::SequencedTaskRunner* task_runner,
       const ReadDirectoryCallback& callback,
       const EntryList& file_list,
       bool has_more);

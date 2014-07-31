@@ -33,8 +33,8 @@ class MTPDeviceTaskHelper {
 
   // NOTE: The file names in the entry list have their file id appended at the
   // end. e.g. foo.jpg with file id 45 becomes foo.jpg,45.
-  typedef base::Callback<void(const fileapi::AsyncFileUtil::EntryList&)>
-      ReadDirectorySuccessCallback;
+  typedef base::Callback<void(const fileapi::AsyncFileUtil::EntryList& entries,
+                              bool has_more)> ReadDirectorySuccessCallback;
 
   typedef MTPDeviceAsyncDelegate::ErrorCallback ErrorCallback;
 
@@ -138,6 +138,7 @@ class MTPDeviceTaskHelper {
       const ReadDirectorySuccessCallback& success_callback,
       const ErrorCallback& error_callback,
       const std::vector<MtpFileEntry>& file_entries,
+      bool has_more,
       bool error) const;
 
   // Intermediate step to finish a ReadBytes request.

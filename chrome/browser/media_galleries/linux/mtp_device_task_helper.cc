@@ -176,6 +176,7 @@ void MTPDeviceTaskHelper::OnDidReadDirectoryById(
     const ReadDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback,
     const std::vector<MtpFileEntry>& file_entries,
+    bool has_more,
     bool error) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (error)
@@ -197,9 +198,10 @@ void MTPDeviceTaskHelper::OnDidReadDirectoryById(
     entry.last_modified_time = file_enum.LastModifiedTime();
     entries.push_back(entry);
   }
-  content::BrowserThread::PostTask(content::BrowserThread::IO,
-                                   FROM_HERE,
-                                   base::Bind(success_callback, entries));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(success_callback, entries, has_more));
 }
 
 void MTPDeviceTaskHelper::OnGetFileInfoToReadBytes(

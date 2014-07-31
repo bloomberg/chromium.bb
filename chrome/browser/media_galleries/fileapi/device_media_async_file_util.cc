@@ -314,7 +314,7 @@ void DeviceMediaAsyncFileUtil::GetFileInfo(
       url.path(),
       base::Bind(&DeviceMediaAsyncFileUtil::OnDidGetFileInfo,
                  weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&context),
+                 make_scoped_refptr(context->task_runner()),
                  url.path(),
                  callback),
       base::Bind(&OnGetFileInfoError, callback));
@@ -334,7 +334,7 @@ void DeviceMediaAsyncFileUtil::ReadDirectory(
       url.path(),
       base::Bind(&DeviceMediaAsyncFileUtil::OnDidReadDirectory,
                  weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&context),
+                 make_scoped_refptr(context->task_runner()),
                  callback),
       base::Bind(&OnReadDirectoryError, callback));
 }
@@ -473,7 +473,7 @@ DeviceMediaAsyncFileUtil::DeviceMediaAsyncFileUtil(
 }
 
 void DeviceMediaAsyncFileUtil::OnDidGetFileInfo(
-    scoped_ptr<FileSystemOperationContext> context,
+    base::SequencedTaskRunner* task_runner,
     const base::FilePath& path,
     const AsyncFileUtil::GetFileInfoCallback& callback,
     const base::File::Info& file_info) {
@@ -484,7 +484,7 @@ void DeviceMediaAsyncFileUtil::OnDidGetFileInfo(
   }
 
   base::PostTaskAndReplyWithResult(
-      context->task_runner(),
+      task_runner,
       FROM_HERE,
       base::Bind(&MediaPathFilterWrapper::CheckFilePath,
                  media_path_filter_wrapper_,
@@ -493,7 +493,7 @@ void DeviceMediaAsyncFileUtil::OnDidGetFileInfo(
 }
 
 void DeviceMediaAsyncFileUtil::OnDidReadDirectory(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
+    base::SequencedTaskRunner* task_runner,
     const AsyncFileUtil::ReadDirectoryCallback& callback,
     const AsyncFileUtil::EntryList& file_list,
     bool has_more) {
@@ -504,7 +504,7 @@ void DeviceMediaAsyncFileUtil::OnDidReadDirectory(
   }
 
   base::PostTaskAndReplyWithResult(
-      context->task_runner(),
+      task_runner,
       FROM_HERE,
       base::Bind(&MediaPathFilterWrapper::FilterMediaEntries,
                  media_path_filter_wrapper_,
