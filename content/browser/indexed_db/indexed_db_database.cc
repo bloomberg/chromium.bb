@@ -123,6 +123,7 @@ IndexedDBDatabase::IndexedDBDatabase(const base::string16& name,
                 kInvalidId),
       identifier_(unique_identifier),
       factory_(factory) {
+  DCHECK(factory != NULL);
 }
 
 void IndexedDBDatabase::AddObjectStore(
@@ -1379,9 +1380,6 @@ void IndexedDBDatabase::TransactionFinished(IndexedDBTransaction* transaction,
 }
 
 void IndexedDBDatabase::TransactionCommitFailed(const leveldb::Status& status) {
-  // Factory may be null in unit tests.
-  if (!factory_)
-    return;
   if (status.IsCorruption()) {
     IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
                                  "Error committing transaction");
@@ -1683,8 +1681,7 @@ void IndexedDBDatabase::DeleteDatabaseFinal(
   metadata_.int_version = IndexedDBDatabaseMetadata::NO_INT_VERSION;
   metadata_.object_stores.clear();
   callbacks->OnSuccess(old_version);
-  if (factory_)
-    factory_->DatabaseDeleted(identifier_);
+  factory_->DatabaseDeleted(identifier_);
 }
 
 void IndexedDBDatabase::ForceClose() {
@@ -1753,12 +1750,7 @@ void IndexedDBDatabase::Close(IndexedDBConnection* connection, bool forced) {
     const GURL origin_url = backing_store_->origin_url();
     backing_store_ = NULL;
 
-    // factory_ should only be null in unit tests.
-    // TODO(jsbell): DCHECK(factory_ || !in_unit_tests) - somehow.
-    if (factory_) {
-      factory_->ReleaseDatabase(identifier_, forced);
-      factory_ = NULL;
-    }
+    factory_->ReleaseDatabase(identifier_, forced);
   }
 }
 

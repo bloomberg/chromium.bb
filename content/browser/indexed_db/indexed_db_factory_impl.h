@@ -5,6 +5,10 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_FACTORY_IMPL_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_FACTORY_IMPL_H_
 
+#include <map>
+#include <set>
+#include <string>
+
 #include "content/browser/indexed_db/indexed_db_factory.h"
 
 namespace content {
@@ -41,8 +45,8 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
       const GURL& origin_url,
       const IndexedDBDatabaseError& error) OVERRIDE;
 
-  virtual std::pair<OriginDBMapIterator, OriginDBMapIterator>
-      GetOpenDatabasesForOrigin(const GURL& origin_url) const OVERRIDE;
+  virtual OriginDBs GetOpenDatabasesForOrigin(
+      const GURL& origin_url) const OVERRIDE;
 
   virtual void ForceClose(const GURL& origin_url) OVERRIDE;
 

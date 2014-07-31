@@ -507,6 +507,8 @@
         'browser/indexed_db/mock_indexed_db_callbacks.h',
         'browser/indexed_db/mock_indexed_db_database_callbacks.cc',
         'browser/indexed_db/mock_indexed_db_database_callbacks.h',
+        'browser/indexed_db/mock_indexed_db_factory.cc',
+        'browser/indexed_db/mock_indexed_db_factory.h',
         'browser/indexed_db/leveldb/leveldb_unittest.cc',
         'browser/indexed_db/list_set_unittest.cc',
         'browser/loader/resource_buffer_unittest.cc',

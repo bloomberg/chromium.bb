@@ -4,6 +4,7 @@
 
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -125,8 +126,7 @@ bool IndexedDBFactoryImpl::HasLastBackingStoreReference(
 }
 
 void IndexedDBFactoryImpl::ForceClose(const GURL& origin_url) {
-  std::pair<OriginDBMapIterator, OriginDBMapIterator> range =
-      GetOpenDatabasesForOrigin(origin_url);
+  OriginDBs range = GetOpenDatabasesForOrigin(origin_url);
 
   while (range.first != range.second) {
     IndexedDBDatabase* db = range.first->second;
@@ -495,8 +495,7 @@ IndexedDBFactoryImpl::GetOpenDatabasesForOrigin(const GURL& origin_url) const {
 size_t IndexedDBFactoryImpl::GetConnectionCount(const GURL& origin_url) const {
   size_t count(0);
 
-  std::pair<OriginDBMapIterator, OriginDBMapIterator> range =
-      GetOpenDatabasesForOrigin(origin_url);
+  OriginDBs range = GetOpenDatabasesForOrigin(origin_url);
   for (OriginDBMapIterator it = range.first; it != range.second; ++it)
     count += it->second->ConnectionCount();
 

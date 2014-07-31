@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
+#include "content/browser/indexed_db/mock_indexed_db_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -31,7 +32,7 @@ class AbortObserver {
 
 class IndexedDBTransactionTest : public testing::Test {
  public:
-  IndexedDBTransactionTest() {
+  IndexedDBTransactionTest() : factory_(new MockIndexedDBFactory()) {
     backing_store_ = new IndexedDBFakeBackingStore();
     CreateDB();
   }
@@ -40,11 +41,10 @@ class IndexedDBTransactionTest : public testing::Test {
     // DB is created here instead of the constructor to workaround a
     // "peculiarity of C++". More info at
     // https://code.google.com/p/googletest/wiki/FAQ#My_compiler_complains_that_a_constructor_(or_destructor)_cannot
-    IndexedDBFactory* factory = NULL;
     leveldb::Status s;
     db_ = IndexedDBDatabase::Create(base::ASCIIToUTF16("db"),
                                     backing_store_,
-                                    factory,
+                                    factory_,
                                     IndexedDBDatabase::Identifier(),
                                     &s);
     ASSERT_TRUE(s.ok());
@@ -64,6 +64,7 @@ class IndexedDBTransactionTest : public testing::Test {
 
  private:
   base::MessageLoop message_loop_;
+  scoped_refptr<MockIndexedDBFactory> factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBTransactionTest);
 };

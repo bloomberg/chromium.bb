@@ -16,12 +16,12 @@
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
-#include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
+#include "content/browser/indexed_db/mock_indexed_db_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -37,7 +37,7 @@ TEST(IndexedDBDatabaseTest, BackingStoreRetention) {
       new IndexedDBFakeBackingStore();
   EXPECT_TRUE(backing_store->HasOneRef());
 
-  IndexedDBFactory* factory = 0;
+  scoped_refptr<MockIndexedDBFactory> factory = new MockIndexedDBFactory();
   leveldb::Status s;
   scoped_refptr<IndexedDBDatabase> db =
       IndexedDBDatabase::Create(ASCIIToUTF16("db"),
@@ -56,7 +56,7 @@ TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
       new IndexedDBFakeBackingStore();
   EXPECT_TRUE(backing_store->HasOneRef());  // local
 
-  IndexedDBFactory* factory = 0;
+  scoped_refptr<MockIndexedDBFactory> factory = new MockIndexedDBFactory();
   leveldb::Status s;
   scoped_refptr<IndexedDBDatabase> db =
       IndexedDBDatabase::Create(ASCIIToUTF16("db"),
@@ -114,7 +114,7 @@ TEST(IndexedDBDatabaseTest, ForcedClose) {
       new IndexedDBFakeBackingStore();
   EXPECT_TRUE(backing_store->HasOneRef());
 
-  IndexedDBFactory* factory = 0;
+  scoped_refptr<MockIndexedDBFactory> factory = new MockIndexedDBFactory();
   leveldb::Status s;
   scoped_refptr<IndexedDBDatabase> database =
       IndexedDBDatabase::Create(ASCIIToUTF16("db"),
@@ -180,7 +180,7 @@ TEST(IndexedDBDatabaseTest, PendingDelete) {
       new IndexedDBFakeBackingStore();
   EXPECT_TRUE(backing_store->HasOneRef());  // local
 
-  IndexedDBFactory* factory = 0;
+  scoped_refptr<MockIndexedDBFactory> factory = new MockIndexedDBFactory();
   leveldb::Status s;
   scoped_refptr<IndexedDBDatabase> db =
       IndexedDBDatabase::Create(ASCIIToUTF16("db"),
@@ -226,14 +226,16 @@ void DummyOperation(IndexedDBTransaction* transaction) {
 
 class IndexedDBDatabaseOperationTest : public testing::Test {
  public:
-  IndexedDBDatabaseOperationTest() : commit_success_(leveldb::Status::OK()) {}
+  IndexedDBDatabaseOperationTest()
+      : commit_success_(leveldb::Status::OK()),
+        factory_(new MockIndexedDBFactory()) {}
 
   virtual void SetUp() {
     backing_store_ = new IndexedDBFakeBackingStore();
     leveldb::Status s;
     db_ = IndexedDBDatabase::Create(ASCIIToUTF16("db"),
                                     backing_store_,
-                                    NULL /*factory*/,
+                                    factory_,
                                     IndexedDBDatabase::Identifier(),
                                     &s);
     ASSERT_TRUE(s.ok());
@@ -278,6 +280,7 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
 
  private:
   base::MessageLoop message_loop_;
+  scoped_refptr<MockIndexedDBFactory> factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDatabaseOperationTest);
 };

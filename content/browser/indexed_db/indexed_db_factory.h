@@ -34,6 +34,7 @@ class CONTENT_EXPORT IndexedDBFactory
  public:
   typedef std::multimap<GURL, IndexedDBDatabase*> OriginDBMap;
   typedef OriginDBMap::const_iterator OriginDBMapIterator;
+  typedef std::pair<OriginDBMapIterator, OriginDBMapIterator> OriginDBs;
 
   virtual void ReleaseDatabase(const IndexedDBDatabase::Identifier& identifier,
                                bool forcedClose) = 0;
@@ -59,8 +60,7 @@ class CONTENT_EXPORT IndexedDBFactory
       const GURL& origin_url,
       const IndexedDBDatabaseError& error) = 0;
 
-  virtual std::pair<OriginDBMapIterator, OriginDBMapIterator>
-      GetOpenDatabasesForOrigin(const GURL& origin_url) const = 0;
+  virtual OriginDBs GetOpenDatabasesForOrigin(const GURL& origin_url) const = 0;
 
   virtual void ForceClose(const GURL& origin_url) = 0;
 
