@@ -127,11 +127,6 @@ class BaseSearchProvider : public AutocompleteProvider,
       int accepted_suggestion,
       bool append_extra_query_params);
 
-  // Parses JSON response received from the provider, stripping XSSI
-  // protection if needed. Returns the parsed data if successful, NULL
-  // otherwise.
-  static scoped_ptr<base::Value> DeserializeJsonData(std::string json_data);
-
   // Returns whether the requirements for requesting zero suggest results
   // are met. The requirements are
   // * The user is enrolled in a zero suggest experiment.
@@ -204,7 +199,6 @@ class BaseSearchProvider : public AutocompleteProvider,
 
   // Called at the end of ParseSuggestResults to rank the |results|.
   virtual void SortResults(bool is_keyword,
-                           bool relevances_from_server,
                            SearchSuggestionParser::Results* results);
 
   // Optionally, cache the received |json_data| and return true if we want

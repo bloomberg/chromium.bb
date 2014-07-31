@@ -163,7 +163,6 @@ class SearchProvider : public BaseSearchProvider {
 
   // BaseSearchProvider:
   virtual void SortResults(bool is_keyword,
-                           bool relevances_from_server,
                            SearchSuggestionParser::Results* results) OVERRIDE;
   virtual const TemplateURL* GetTemplateURL(bool is_keyword) const OVERRIDE;
   virtual const AutocompleteInput GetInput(bool is_keyword) const OVERRIDE;

@@ -4,6 +4,7 @@
 
 #include "components/autocomplete/search_suggestion_parser.h"
 
+#include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -14,6 +15,8 @@
 #include "components/autocomplete/url_prefix.h"
 #include "components/url_fixer/url_fixer.h"
 #include "net/base/net_util.h"
+#include "net/http/http_response_headers.h"
+#include "net/url_request/url_fetcher.h"
 
 namespace {
 
@@ -239,7 +242,8 @@ int SearchSuggestionParser::NavigationResult::CalculateRelevance(
 
 SearchSuggestionParser::Results::Results()
     : verbatim_relevance(-1),
-      field_trial_triggered(false) {}
+      field_trial_triggered(false),
+      relevances_from_server(false) {}
 
 SearchSuggestionParser::Results::~Results() {}
 
@@ -274,15 +278,59 @@ bool SearchSuggestionParser::Results::HasServerProvidedScores() const {
 // SearchSuggestionParser ------------------------------------------------------
 
 // static
+std::string SearchSuggestionParser::ExtractJsonData(
+    const net::URLFetcher* source) {
+  const net::HttpResponseHeaders* const response_headers =
+      source->GetResponseHeaders();
+  std::string json_data;
+  source->GetResponseAsString(&json_data);
+
+  // JSON is supposed to be UTF-8, but some suggest service providers send
+  // JSON files in non-UTF-8 encodings.  The actual encoding is usually
+  // specified in the Content-Type header field.
+  if (response_headers) {
+    std::string charset;
+    if (response_headers->GetCharset(&charset)) {
+      base::string16 data_16;
+      // TODO(jungshik): Switch to CodePageToUTF8 after it's added.
+      if (base::CodepageToUTF16(json_data, charset.c_str(),
+                                base::OnStringConversionError::FAIL,
+                                &data_16))
+        json_data = base::UTF16ToUTF8(data_16);
+    }
+  }
+  return json_data;
+}
+
+// static
+scoped_ptr<base::Value> SearchSuggestionParser::DeserializeJsonData(
+    std::string json_data) {
+  // The JSON response should be an array.
+  for (size_t response_start_index = json_data.find("["), i = 0;
+       response_start_index != std::string::npos && i < 5;
+       response_start_index = json_data.find("[", 1), i++) {
+    // Remove any XSSI guards to allow for JSON parsing.
+    if (response_start_index > 0)
+      json_data.erase(0, response_start_index);
+
+    JSONStringValueSerializer deserializer(json_data);
+    deserializer.set_allow_trailing_comma(true);
+    int error_code = 0;
+    scoped_ptr<base::Value> data(deserializer.Deserialize(&error_code, NULL));
+    if (error_code == 0)
+      return data.Pass();
+  }
+  return scoped_ptr<base::Value>();
+}
+
+// static
 bool SearchSuggestionParser::ParseSuggestResults(
     const base::Value& root_val,
     const AutocompleteInput& input,
     const AutocompleteSchemeClassifier& scheme_classifier,
-    const ImagePrefetchCallback& image_prefetch_callback,
     int default_result_relevance,
     const std::string& languages,
     bool is_keyword_result,
-    bool* relevances_from_server,
     Results* results) {
   base::string16 query;
   const base::ListValue* root_list = NULL;
@@ -340,6 +388,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
   // Clear the previous results now that new results are available.
   results->suggest_results.clear();
   results->navigation_results.clear();
+  results->answers_image_urls.clear();
 
   base::string16 suggestion;
   std::string type;
@@ -406,8 +455,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
           const base::DictionaryValue* answer_json = NULL;
           if (suggestion_detail->GetDictionary("ansa", &answer_json)) {
             match_type = AutocompleteMatchType::SEARCH_SUGGEST_ANSWER;
-            if (!image_prefetch_callback.is_null())
-              PrefetchAnswersImages(answer_json, image_prefetch_callback);
+            GetAnswersImageURLs(answer_json, &results->answers_image_urls);
             std::string contents;
             base::JSONWriter::Write(answer_json, &contents);
             answer_contents = base::UTF8ToUTF16(contents);
@@ -426,16 +474,15 @@ bool SearchSuggestionParser::ParseSuggestResults(
           relevances != NULL, should_prefetch, trimmed_input));
     }
   }
-  *relevances_from_server = relevances != NULL;
+  results->relevances_from_server = relevances != NULL;
   return true;
 }
 
 // static
-void SearchSuggestionParser::PrefetchAnswersImages(
+void SearchSuggestionParser::GetAnswersImageURLs(
     const base::DictionaryValue* answer_json,
-    const ImagePrefetchCallback& image_prefetch_callback) {
+    std::vector<GURL>* urls) {
   DCHECK(answer_json);
-  DCHECK(!image_prefetch_callback.is_null());
   const base::ListValue* lines = NULL;
   answer_json->GetList("l", &lines);
   if (!lines || lines->GetSize() == 0)
@@ -452,6 +499,6 @@ void SearchSuggestionParser::PrefetchAnswersImages(
       continue;
     std::string imageUrl;
     imageData->GetString("d", &imageUrl);
-    image_prefetch_callback.Run(GURL(imageUrl));
+    urls->push_back(GURL(imageUrl));
   }
 }

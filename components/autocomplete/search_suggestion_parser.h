@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback_forward.h"
 #include "base/strings/string16.h"
 #include "components/autocomplete/autocomplete_match.h"
 #include "components/autocomplete/autocomplete_match_type.h"
@@ -21,6 +20,10 @@ class AutocompleteSchemeClassifier;
 namespace base {
 class DictionaryValue;
 class Value;
+}
+
+namespace net {
+class URLFetcher;
 }
 
 class SearchSuggestionParser {
@@ -246,11 +249,23 @@ class SearchSuggestionParser {
     // If the active suggest field trial (if any) has triggered.
     bool field_trial_triggered;
 
+    // If the relevance values of the results are from the server.
+    bool relevances_from_server;
+
+    // URLs of any images in Answers results.
+    std::vector<GURL> answers_image_urls;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(Results);
   };
 
-  typedef base::Callback<void(const GURL& image_url)> ImagePrefetchCallback;
+  // Extracts JSON data fetched by |source| and converts it to UTF-8.
+  static std::string ExtractJsonData(const net::URLFetcher* source);
+
+  // Parses JSON response received from the provider, stripping XSSI
+  // protection if needed. Returns the parsed data if successful, NULL
+  // otherwise.
+  static scoped_ptr<base::Value> DeserializeJsonData(std::string json_data);
 
   // Parses results from the suggest server and updates the appropriate suggest
   // and navigation result lists in |results|. |is_keyword_result| indicates
@@ -260,18 +275,15 @@ class SearchSuggestionParser {
       const base::Value& root_val,
       const AutocompleteInput& input,
       const AutocompleteSchemeClassifier& scheme_classifier,
-      const ImagePrefetchCallback& image_prefetch_callback,
       int default_result_relevance,
       const std::string& languages,
       bool is_keyword_result,
-      bool* relevances_from_server,
       Results* results);
 
  private:
-  // Prefetches any images in Answers results.
-  static void PrefetchAnswersImages(
-      const base::DictionaryValue* answer_json,
-      const ImagePrefetchCallback& image_prefetch_callback);
+  // Gets URLs of any images in Answers results.
+  static void GetAnswersImageURLs(const base::DictionaryValue* answer_json,
+                                  std::vector<GURL>* urls);
 
   DISALLOW_COPY_AND_ASSIGN(SearchSuggestionParser);
 };

@@ -5,8 +5,6 @@
 #include "chrome/browser/autocomplete/base_search_provider.h"
 
 #include "base/i18n/case_conversion.h"
-#include "base/i18n/icu_string_conversions.h"
-#include "base/json/json_string_value_serializer.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
@@ -34,7 +32,6 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
@@ -294,27 +291,6 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
 }
 
 // static
-scoped_ptr<base::Value> BaseSearchProvider::DeserializeJsonData(
-    std::string json_data) {
-  // The JSON response should be an array.
-  for (size_t response_start_index = json_data.find("["), i = 0;
-       response_start_index != std::string::npos && i < 5;
-       response_start_index = json_data.find("[", 1), i++) {
-    // Remove any XSSI guards to allow for JSON parsing.
-    if (response_start_index > 0)
-      json_data.erase(0, response_start_index);
-
-    JSONStringValueSerializer deserializer(json_data);
-    deserializer.set_allow_trailing_comma(true);
-    int error_code = 0;
-    scoped_ptr<base::Value> data(deserializer.Deserialize(&error_code, NULL));
-    if (error_code == 0)
-      return data.Pass();
-  }
-  return scoped_ptr<base::Value>();
-}
-
-// static
 bool BaseSearchProvider::ZeroSuggestEnabled(
     const GURL& suggest_url,
     const TemplateURL* template_url,
@@ -412,27 +388,9 @@ void BaseSearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
 
   bool results_updated = false;
   if (request_succeeded) {
-    const net::HttpResponseHeaders* const response_headers =
-        source->GetResponseHeaders();
-    std::string json_data;
-    source->GetResponseAsString(&json_data);
-
-    // JSON is supposed to be UTF-8, but some suggest service providers send
-    // JSON files in non-UTF-8 encodings.  The actual encoding is usually
-    // specified in the Content-Type header field.
-    if (response_headers) {
-      std::string charset;
-      if (response_headers->GetCharset(&charset)) {
-        base::string16 data_16;
-        // TODO(jungshik): Switch to CodePageToUTF8 after it's added.
-        if (base::CodepageToUTF16(json_data, charset.c_str(),
-                                  base::OnStringConversionError::FAIL,
-                                  &data_16))
-          json_data = base::UTF16ToUTF8(data_16);
-      }
-    }
-
-    scoped_ptr<base::Value> data(DeserializeJsonData(json_data));
+    std::string json_data = SearchSuggestionParser::ExtractJsonData(source);
+    scoped_ptr<base::Value> data(
+        SearchSuggestionParser::DeserializeJsonData(json_data));
     if (data && StoreSuggestionResponse(json_data, *data.get()))
       return;
 
@@ -526,29 +484,29 @@ bool BaseSearchProvider::ParseSuggestResults(
     const base::Value& root_val,
     bool is_keyword_result,
     SearchSuggestionParser::Results* results) {
-  BitmapFetcherService* image_service =
-      BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
-  DCHECK(image_service);
-
-  bool relevances_from_server = false;
   if (!SearchSuggestionParser::ParseSuggestResults(
       root_val, GetInput(is_keyword_result),
       ChromeAutocompleteSchemeClassifier(profile_),
-      base::Bind(&BitmapFetcherService::Prefetch,
-                 base::Unretained(image_service)),
       GetDefaultResultRelevance(),
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
-      is_keyword_result, &relevances_from_server, results))
+      is_keyword_result, results))
     return false;
+
+  BitmapFetcherService* image_service =
+      BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
+  DCHECK(image_service);
+  for (std::vector<GURL>::const_iterator it =
+           results->answers_image_urls.begin();
+       it != results->answers_image_urls.end(); ++it)
+    image_service->Prefetch(*it);
 
   field_trial_triggered_ |= results->field_trial_triggered;
   field_trial_triggered_in_session_ |= results->field_trial_triggered;
-  SortResults(is_keyword_result, relevances_from_server, results);
+  SortResults(is_keyword_result, results);
   return true;
 }
 
 void BaseSearchProvider::SortResults(bool is_keyword,
-                                     bool relevances_from_server,
                                      SearchSuggestionParser::Results* results) {
 }
 

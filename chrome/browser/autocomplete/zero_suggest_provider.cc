@@ -456,7 +456,8 @@ void ZeroSuggestProvider::MaybeUseCachedSuggestions() {
   std::string json_data = profile_->GetPrefs()->GetString(
       prefs::kZeroSuggestCachedResults);
   if (!json_data.empty()) {
-    scoped_ptr<base::Value> data(DeserializeJsonData(json_data));
+    scoped_ptr<base::Value> data(
+        SearchSuggestionParser::DeserializeJsonData(json_data));
     if (data && ParseSuggestResults(*data.get(), false, &results_)) {
       ConvertResultsToAutocompleteMatches();
       results_from_cache_ = !matches_.empty();

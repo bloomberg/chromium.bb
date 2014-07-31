@@ -267,7 +267,6 @@ void SearchProvider::Start(const AutocompleteInput& input,
 }
 
 void SearchProvider::SortResults(bool is_keyword,
-                                 bool relevances_from_server,
                                  SearchSuggestionParser::Results* results) {
   // Ignore suggested scores for non-keyword matches in keyword mode; if the
   // server is allowed to score these, it could interfere with the user's
@@ -276,7 +275,7 @@ void SearchProvider::SortResults(bool is_keyword,
       !is_keyword && !providers_.keyword_provider().empty();
   // Apply calculated relevance scores to suggestions if valid relevances were
   // not provided or we're abandoning suggested scores entirely.
-  if (!relevances_from_server || abandon_suggested_scores) {
+  if (!results->relevances_from_server || abandon_suggested_scores) {
     ApplyCalculatedSuggestRelevance(&results->suggest_results);
     ApplyCalculatedNavigationRelevance(&results->navigation_results);
     // If abandoning scores entirely, also abandon the verbatim score.
