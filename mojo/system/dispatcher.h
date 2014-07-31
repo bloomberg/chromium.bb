@@ -129,6 +129,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   // also be woken up when it becomes impossible for the object to ever satisfy
   // |signals| with a suitable error status.
   //
+  // If |signals_state| is non-null, on *failure* |*signals_state| will be set
+  // to the current handle signals state (on success, it is left untouched).
+  //
   // Returns:
   //  - |MOJO_RESULT_OK| if the waiter was added;
   //  - |MOJO_RESULT_ALREADY_EXISTS| if |signals| is already satisfied;
@@ -137,7 +140,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   //    that |signals| will ever be satisfied.
   MojoResult AddWaiter(Waiter* waiter,
                        MojoHandleSignals signals,
-                       uint32_t context);
+                       uint32_t context,
+                       HandleSignalsState* signals_state);
   // Removes a waiter from this dispatcher. (It is valid to call this multiple
   // times for the same |waiter| on the same object, so long as |AddWaiter()|
   // was called at most once.) If |signals_state| is non-null, |*signals_state|
@@ -260,7 +264,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   virtual HandleSignalsState GetHandleSignalsStateImplNoLock() const;
   virtual MojoResult AddWaiterImplNoLock(Waiter* waiter,
                                          MojoHandleSignals signals,
-                                         uint32_t context);
+                                         uint32_t context,
+                                         HandleSignalsState* signals_state);
   virtual void RemoveWaiterImplNoLock(Waiter* waiter,
                                       HandleSignalsState* signals_state);
 

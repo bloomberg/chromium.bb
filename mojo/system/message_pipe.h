@@ -68,7 +68,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe
   MojoResult AddWaiter(unsigned port,
                        Waiter* waiter,
                        MojoHandleSignals signals,
-                       uint32_t context);
+                       uint32_t context,
+                       HandleSignalsState* signals_state);
   void RemoveWaiter(unsigned port,
                     Waiter* waiter,
                     HandleSignalsState* signals_state);

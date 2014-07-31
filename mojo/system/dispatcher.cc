@@ -220,12 +220,16 @@ HandleSignalsState Dispatcher::GetHandleSignalsState() const {
 
 MojoResult Dispatcher::AddWaiter(Waiter* waiter,
                                  MojoHandleSignals signals,
-                                 uint32_t context) {
+                                 uint32_t context,
+                                 HandleSignalsState* signals_state) {
   base::AutoLock locker(lock_);
-  if (is_closed_)
+  if (is_closed_) {
+    if (signals_state)
+      *signals_state = HandleSignalsState();
     return MOJO_RESULT_INVALID_ARGUMENT;
+  }
 
-  return AddWaiterImplNoLock(waiter, signals, context);
+  return AddWaiterImplNoLock(waiter, signals, context, signals_state);
 }
 
 void Dispatcher::RemoveWaiter(Waiter* waiter,
@@ -366,11 +370,14 @@ HandleSignalsState Dispatcher::GetHandleSignalsStateImplNoLock() const {
 
 MojoResult Dispatcher::AddWaiterImplNoLock(Waiter* /*waiter*/,
                                            MojoHandleSignals /*signals*/,
-                                           uint32_t /*context*/) {
+                                           uint32_t /*context*/,
+                                           HandleSignalsState* signals_state) {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);
   // By default, waiting isn't supported. Only dispatchers that can be waited on
   // will do something nontrivial.
+  if (signals_state)
+    *signals_state = HandleSignalsState();
   return MOJO_RESULT_FAILED_PRECONDITION;
 }
 

@@ -141,16 +141,24 @@ HandleSignalsState LocalMessagePipeEndpoint::GetHandleSignalsState() const {
   return rv;
 }
 
-MojoResult LocalMessagePipeEndpoint::AddWaiter(Waiter* waiter,
-                                               MojoHandleSignals signals,
-                                               uint32_t context) {
+MojoResult LocalMessagePipeEndpoint::AddWaiter(
+    Waiter* waiter,
+    MojoHandleSignals signals,
+    uint32_t context,
+    HandleSignalsState* signals_state) {
   DCHECK(is_open_);
 
   HandleSignalsState state = GetHandleSignalsState();
-  if (state.satisfies(signals))
+  if (state.satisfies(signals)) {
+    if (signals_state)
+      *signals_state = state;
     return MOJO_RESULT_ALREADY_EXISTS;
-  if (!state.can_satisfy(signals))
+  }
+  if (!state.can_satisfy(signals)) {
+    if (signals_state)
+      *signals_state = state;
     return MOJO_RESULT_FAILED_PRECONDITION;
+  }
 
   waiter_list_.AddWaiter(waiter, signals, context);
   return MOJO_RESULT_OK;

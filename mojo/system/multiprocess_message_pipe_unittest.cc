@@ -131,11 +131,8 @@ MojoResult WaitIfNecessary(scoped_refptr<MessagePipe> mp,
   Waiter waiter;
   waiter.Init();
 
-  MojoResult add_result = mp->AddWaiter(0, &waiter, signals, 0);
+  MojoResult add_result = mp->AddWaiter(0, &waiter, signals, 0, signals_state);
   if (add_result != MOJO_RESULT_OK) {
-    // TODO(vtl): Add an "out" parameter to |AddWaiter()| that automatically
-    // gets the |HandleSignalsState|.
-    *signals_state = mp->GetHandleSignalsState(0);
     return (add_result == MOJO_RESULT_ALREADY_EXISTS) ? MOJO_RESULT_OK
                                                       : add_result;
   }

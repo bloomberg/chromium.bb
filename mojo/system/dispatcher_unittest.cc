@@ -72,10 +72,13 @@ TEST(DispatcherTest, Basic) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, d->EndReadData(0));
   Waiter w;
   w.Init();
-  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            d->AddWaiter(&w, ~MOJO_HANDLE_SIGNAL_NONE, 0));
-  // Okay to remove even if it wasn't added (or was already removed).
   HandleSignalsState hss;
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+            d->AddWaiter(&w, ~MOJO_HANDLE_SIGNAL_NONE, 0, &hss));
+  EXPECT_EQ(0u, hss.satisfied_signals);
+  EXPECT_EQ(0u, hss.satisfiable_signals);
+  // Okay to remove even if it wasn't added (or was already removed).
+  hss = HandleSignalsState();
   d->RemoveWaiter(&w, &hss);
   EXPECT_EQ(0u, hss.satisfied_signals);
   EXPECT_EQ(0u, hss.satisfiable_signals);
@@ -113,8 +116,11 @@ TEST(DispatcherTest, Basic) {
       d->BeginReadData(
           NullUserPointer(), NullUserPointer(), MOJO_READ_DATA_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, d->EndReadData(0));
+  hss = HandleSignalsState();
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->AddWaiter(&w, ~MOJO_HANDLE_SIGNAL_NONE, 0));
+            d->AddWaiter(&w, ~MOJO_HANDLE_SIGNAL_NONE, 0, &hss));
+  EXPECT_EQ(0u, hss.satisfied_signals);
+  EXPECT_EQ(0u, hss.satisfiable_signals);
   hss = HandleSignalsState();
   d->RemoveWaiter(&w, &hss);
   EXPECT_EQ(0u, hss.satisfied_signals);
@@ -224,10 +230,13 @@ class ThreadSafetyStressThread : public base::SimpleThread {
         break;
       }
       case ADD_WAITER: {
+        HandleSignalsState hss;
         MojoResult r =
-            dispatcher_->AddWaiter(&waiter_, ~MOJO_HANDLE_SIGNAL_NONE, 0);
+            dispatcher_->AddWaiter(&waiter_, ~MOJO_HANDLE_SIGNAL_NONE, 0, &hss);
         EXPECT_TRUE(r == MOJO_RESULT_FAILED_PRECONDITION ||
                     r == MOJO_RESULT_INVALID_ARGUMENT);
+        EXPECT_EQ(0u, hss.satisfied_signals);
+        EXPECT_EQ(0u, hss.satisfiable_signals);
         break;
       }
       case REMOVE_WAITER: {

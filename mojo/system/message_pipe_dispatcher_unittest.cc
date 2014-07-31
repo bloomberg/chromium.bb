@@ -53,15 +53,19 @@ TEST(MessagePipeDispatcherTest, Basic) {
 
     // Try adding a writable waiter when already writable.
     w.Init();
+    hss = HandleSignalsState();
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 0));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 0, &hss));
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+              hss.satisfiable_signals);
     // Shouldn't need to remove the waiter (it was not added).
 
     // Add a readable waiter to |d0|, then make it readable (by writing to
     // |d1|), then wait.
     w.Init();
     ASSERT_EQ(MOJO_RESULT_OK,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 1));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 1, NULL));
     buffer[0] = 123456789;
     EXPECT_EQ(MOJO_RESULT_OK,
               d1->WriteMessage(UserPointer<const void>(buffer),
@@ -81,8 +85,13 @@ TEST(MessagePipeDispatcherTest, Basic) {
 
     // Try adding a readable waiter when already readable (from above).
     w.Init();
+    hss = HandleSignalsState();
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 2));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 2, &hss));
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+              hss.satisfied_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+              hss.satisfiable_signals);
     // Shouldn't need to remove the waiter (it was not added).
 
     // Make |d0| no longer readable (by reading from it).
@@ -100,7 +109,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
     // Wait for zero time for readability on |d0| (will time out).
     w.Init();
     ASSERT_EQ(MOJO_RESULT_OK,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 3));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 3, NULL));
     stopwatch.Start();
     EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, w.Wait(0, NULL));
     EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
@@ -113,7 +122,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
     // Wait for non-zero, finite time for readability on |d0| (will time out).
     w.Init();
     ASSERT_EQ(MOJO_RESULT_OK,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 3));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 3, NULL));
     stopwatch.Start();
     EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
               w.Wait(2 * test::EpsilonTimeout().InMicroseconds(), NULL));
@@ -219,6 +228,7 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
       d1->Init(mp, i ^ 1);  // 1, 0.
     }
     Waiter w;
+    HandleSignalsState hss;
 
     // Write (twice) to |d1|.
     buffer[0] = 123456789;
@@ -236,8 +246,13 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
 
     // Try waiting for readable on |d0|; should fail (already satisfied).
     w.Init();
+    hss = HandleSignalsState();
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 0));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 0, &hss));
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+              hss.satisfied_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+              hss.satisfiable_signals);
 
     // Try reading from |d1|; should fail (nothing to read).
     buffer[0] = 0;
@@ -254,8 +269,11 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
 
     // Try waiting for readable on |d0|; should fail (already satisfied).
     w.Init();
+    hss = HandleSignalsState();
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 1));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 1, &hss));
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
 
     // Read from |d0|.
     buffer[0] = 0;
@@ -271,8 +289,11 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
 
     // Try waiting for readable on |d0|; should fail (already satisfied).
     w.Init();
+    hss = HandleSignalsState();
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 2));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 2, &hss));
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
 
     // Read again from |d0|.
     buffer[0] = 0;
@@ -288,13 +309,19 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
 
     // Try waiting for readable on |d0|; should fail (unsatisfiable).
     w.Init();
+    hss = HandleSignalsState();
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 3));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 3, &hss));
+    EXPECT_EQ(0u, hss.satisfied_signals);
+    EXPECT_EQ(0u, hss.satisfiable_signals);
 
     // Try waiting for writable on |d0|; should fail (unsatisfiable).
     w.Init();
+    hss = HandleSignalsState();
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 4));
+              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 4, &hss));
+    EXPECT_EQ(0u, hss.satisfied_signals);
+    EXPECT_EQ(0u, hss.satisfiable_signals);
 
     // Try reading from |d0|; should fail (nothing to read and other end
     // closed).
@@ -558,26 +585,27 @@ class ReaderThread : public base::SimpleThread {
  private:
   virtual void Run() OVERRIDE {
     unsigned char buffer[kMaxMessageSize];
-    MojoResult result;
     Waiter w;
+    HandleSignalsState hss;
+    MojoResult result;
 
     // Read messages.
     for (;;) {
       // Wait for it to be readable.
       w.Init();
-      result = read_dispatcher_->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 0);
+      hss = HandleSignalsState();
+      result =
+          read_dispatcher_->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 0, &hss);
       EXPECT_TRUE(result == MOJO_RESULT_OK ||
                   result == MOJO_RESULT_ALREADY_EXISTS)
           << "result: " << result;
       if (result == MOJO_RESULT_OK) {
         // Actually need to wait.
         EXPECT_EQ(MOJO_RESULT_OK, w.Wait(MOJO_DEADLINE_INDEFINITE, NULL));
-        HandleSignalsState hss;
         read_dispatcher_->RemoveWaiter(&w, &hss);
-        // We may not actually be readable, since we're racing with other
-        // threads.
-        EXPECT_TRUE((hss.satisfiable_signals & MOJO_HANDLE_SIGNAL_READABLE));
       }
+      // We may not actually be readable, since we're racing with other threads.
+      EXPECT_TRUE((hss.satisfiable_signals & MOJO_HANDLE_SIGNAL_READABLE));
 
       // Now, try to do the read.
       // Clear the buffer so that we can check the result.

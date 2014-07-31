@@ -202,15 +202,22 @@ HandleSignalsState DataPipe::ProducerGetHandleSignalsState() {
 
 MojoResult DataPipe::ProducerAddWaiter(Waiter* waiter,
                                        MojoHandleSignals signals,
-                                       uint32_t context) {
+                                       uint32_t context,
+                                       HandleSignalsState* signals_state) {
   base::AutoLock locker(lock_);
   DCHECK(has_local_producer_no_lock());
 
   HandleSignalsState producer_state = ProducerGetHandleSignalsStateImplNoLock();
-  if (producer_state.satisfies(signals))
+  if (producer_state.satisfies(signals)) {
+    if (signals_state)
+      *signals_state = producer_state;
     return MOJO_RESULT_ALREADY_EXISTS;
-  if (!producer_state.can_satisfy(signals))
+  }
+  if (!producer_state.can_satisfy(signals)) {
+    if (signals_state)
+      *signals_state = producer_state;
     return MOJO_RESULT_FAILED_PRECONDITION;
+  }
 
   producer_waiter_list_->AddWaiter(waiter, signals, context);
   return MOJO_RESULT_OK;
@@ -385,15 +392,22 @@ HandleSignalsState DataPipe::ConsumerGetHandleSignalsState() {
 
 MojoResult DataPipe::ConsumerAddWaiter(Waiter* waiter,
                                        MojoHandleSignals signals,
-                                       uint32_t context) {
+                                       uint32_t context,
+                                       HandleSignalsState* signals_state) {
   base::AutoLock locker(lock_);
   DCHECK(has_local_consumer_no_lock());
 
   HandleSignalsState consumer_state = ConsumerGetHandleSignalsStateImplNoLock();
-  if (consumer_state.satisfies(signals))
+  if (consumer_state.satisfies(signals)) {
+    if (signals_state)
+      *signals_state = consumer_state;
     return MOJO_RESULT_ALREADY_EXISTS;
-  if (!consumer_state.can_satisfy(signals))
+  }
+  if (!consumer_state.can_satisfy(signals)) {
+    if (signals_state)
+      *signals_state = consumer_state;
     return MOJO_RESULT_FAILED_PRECONDITION;
+  }
 
   consumer_waiter_list_->AddWaiter(waiter, signals, context);
   return MOJO_RESULT_OK;

@@ -67,7 +67,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
   virtual HandleSignalsState GetHandleSignalsState() const;
   virtual MojoResult AddWaiter(Waiter* waiter,
                                MojoHandleSignals signals,
-                               uint32_t context);
+                               uint32_t context,
+                               HandleSignalsState* signals_state);
   virtual void RemoveWaiter(Waiter* waiter, HandleSignalsState* signals_state);
 
   // Implementations must override these if they represent a proxy endpoint. An

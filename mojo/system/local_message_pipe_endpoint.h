@@ -39,7 +39,8 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
   virtual HandleSignalsState GetHandleSignalsState() const OVERRIDE;
   virtual MojoResult AddWaiter(Waiter* waiter,
                                MojoHandleSignals signals,
-                               uint32_t context) OVERRIDE;
+                               uint32_t context,
+                               HandleSignalsState* signals_state) OVERRIDE;
   virtual void RemoveWaiter(Waiter* waiter,
                             HandleSignalsState* signals_state) OVERRIDE;
 

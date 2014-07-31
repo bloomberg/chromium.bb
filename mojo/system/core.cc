@@ -537,7 +537,7 @@ MojoResult Core::WaitManyInternal(const MojoHandle* handles,
   uint32_t i;
   MojoResult rv = MOJO_RESULT_OK;
   for (i = 0; i < num_handles; i++) {
-    rv = dispatchers[i]->AddWaiter(&waiter, signals[i], i);
+    rv = dispatchers[i]->AddWaiter(&waiter, signals[i], i, NULL);
     if (rv != MOJO_RESULT_OK) {
       *result_index = i;
       break;

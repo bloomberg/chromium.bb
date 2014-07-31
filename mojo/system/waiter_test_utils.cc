@@ -55,13 +55,10 @@ WaiterThread::~WaiterThread() {
 void WaiterThread::Run() {
   waiter_.Init();
 
-  *result_out_ = dispatcher_->AddWaiter(&waiter_, handle_signals_, context_);
-  if (*result_out_ != MOJO_RESULT_OK) {
-    // TODO(vtl): Get rid of this once we've added a |HandleSignalsState*|
-    // argument to |AddWaiter()|.
-    *signals_state_out_ = dispatcher_->GetHandleSignalsState();
+  *result_out_ = dispatcher_->AddWaiter(
+      &waiter_, handle_signals_, context_, signals_state_out_);
+  if (*result_out_ != MOJO_RESULT_OK)
     return;
-  }
 
   *did_wait_out_ = true;
   *result_out_ = waiter_.Wait(deadline_, context_out_);

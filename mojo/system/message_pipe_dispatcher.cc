@@ -214,11 +214,14 @@ HandleSignalsState MessagePipeDispatcher::GetHandleSignalsStateImplNoLock()
   return message_pipe_->GetHandleSignalsState(port_);
 }
 
-MojoResult MessagePipeDispatcher::AddWaiterImplNoLock(Waiter* waiter,
-                                                      MojoHandleSignals signals,
-                                                      uint32_t context) {
+MojoResult MessagePipeDispatcher::AddWaiterImplNoLock(
+    Waiter* waiter,
+    MojoHandleSignals signals,
+    uint32_t context,
+    HandleSignalsState* signals_state) {
   lock().AssertAcquired();
-  return message_pipe_->AddWaiter(port_, waiter, signals, context);
+  return message_pipe_->AddWaiter(
+      port_, waiter, signals, context, signals_state);
 }
 
 void MessagePipeDispatcher::RemoveWaiterImplNoLock(

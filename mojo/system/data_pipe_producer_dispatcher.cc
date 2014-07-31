@@ -85,9 +85,10 @@ HandleSignalsState DataPipeProducerDispatcher::GetHandleSignalsStateImplNoLock()
 MojoResult DataPipeProducerDispatcher::AddWaiterImplNoLock(
     Waiter* waiter,
     MojoHandleSignals signals,
-    uint32_t context) {
+    uint32_t context,
+    HandleSignalsState* signals_state) {
   lock().AssertAcquired();
-  return data_pipe_->ProducerAddWaiter(waiter, signals, context);
+  return data_pipe_->ProducerAddWaiter(waiter, signals, context, signals_state);
 }
 
 void DataPipeProducerDispatcher::RemoveWaiterImplNoLock(

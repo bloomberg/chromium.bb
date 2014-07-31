@@ -127,11 +127,15 @@ class MockDispatcher : public Dispatcher {
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
-  virtual MojoResult AddWaiterImplNoLock(Waiter* /*waiter*/,
-                                         MojoHandleSignals /*signals*/,
-                                         uint32_t /*context*/) OVERRIDE {
+  virtual MojoResult AddWaiterImplNoLock(
+      Waiter* /*waiter*/,
+      MojoHandleSignals /*signals*/,
+      uint32_t /*context*/,
+      HandleSignalsState* signals_state) OVERRIDE {
     info_->IncrementAddWaiterCallCount();
     lock().AssertAcquired();
+    if (signals_state)
+      *signals_state = HandleSignalsState();
     return MOJO_RESULT_FAILED_PRECONDITION;
   }
 

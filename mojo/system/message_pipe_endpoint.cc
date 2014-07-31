@@ -34,8 +34,11 @@ HandleSignalsState MessagePipeEndpoint::GetHandleSignalsState() const {
 
 MojoResult MessagePipeEndpoint::AddWaiter(Waiter* /*waiter*/,
                                           MojoHandleSignals /*signals*/,
-                                          uint32_t /*context*/) {
+                                          uint32_t /*context*/,
+                                          HandleSignalsState* signals_state) {
   NOTREACHED();
+  if (signals_state)
+    *signals_state = HandleSignalsState();
   return MOJO_RESULT_INTERNAL;
 }
 

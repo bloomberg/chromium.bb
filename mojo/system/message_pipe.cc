@@ -109,13 +109,14 @@ HandleSignalsState MessagePipe::GetHandleSignalsState(unsigned port) const {
 MojoResult MessagePipe::AddWaiter(unsigned port,
                                   Waiter* waiter,
                                   MojoHandleSignals signals,
-                                  uint32_t context) {
+                                  uint32_t context,
+                                  HandleSignalsState* signals_state) {
   DCHECK(port == 0 || port == 1);
 
   base::AutoLock locker(lock_);
   DCHECK(endpoints_[port]);
 
-  return endpoints_[port]->AddWaiter(waiter, signals, context);
+  return endpoints_[port]->AddWaiter(waiter, signals, context, signals_state);
 }
 
 void MessagePipe::RemoveWaiter(unsigned port,

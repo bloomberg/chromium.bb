@@ -203,7 +203,7 @@ TEST_F(RemoteMessagePipeTest, Basic) {
   // it later, it might already be readable.)
   waiter.Init();
   ASSERT_EQ(MOJO_RESULT_OK,
-            mp1->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123));
+            mp1->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123, NULL));
 
   // Write to MP 0, port 0.
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -238,7 +238,7 @@ TEST_F(RemoteMessagePipeTest, Basic) {
 
   waiter.Init();
   ASSERT_EQ(MOJO_RESULT_OK,
-            mp0->AddWaiter(0, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 456));
+            mp0->AddWaiter(0, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 456, NULL));
 
   EXPECT_EQ(MOJO_RESULT_OK,
             mp1->WriteMessage(1,
@@ -274,19 +274,18 @@ TEST_F(RemoteMessagePipeTest, Basic) {
   // when it realizes that MP 0, port 0 has been closed. (It may also fail
   // immediately.)
   waiter.Init();
+  hss = HandleSignalsState();
   MojoResult result =
-      mp1->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 789);
+      mp1->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 789, &hss);
   if (result == MOJO_RESULT_OK) {
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
               waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
     EXPECT_EQ(789u, context);
     hss = HandleSignalsState();
     mp1->RemoveWaiter(1, &waiter, &hss);
-    EXPECT_EQ(0u, hss.satisfied_signals);
-    EXPECT_EQ(0u, hss.satisfiable_signals);
-  } else {
-    EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
   }
+  EXPECT_EQ(0u, hss.satisfied_signals);
+  EXPECT_EQ(0u, hss.satisfiable_signals);
 
   // And MP 1, port 1.
   mp1->Close(1);
@@ -325,7 +324,7 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
 
   waiter.Init();
   ASSERT_EQ(MOJO_RESULT_OK,
-            mp3->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 789));
+            mp3->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 789, NULL));
 
   EXPECT_EQ(MOJO_RESULT_OK,
             mp2->WriteMessage(0,
@@ -385,7 +384,7 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
 
   waiter.Init();
   ASSERT_EQ(MOJO_RESULT_OK,
-            mp1->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123));
+            mp1->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123, NULL));
 
   EXPECT_EQ(MOJO_RESULT_OK,
             mp0->WriteMessage(0,
@@ -483,7 +482,7 @@ TEST_F(RemoteMessagePipeTest, CloseBeforeConnect) {
   // it later, it might already be readable.)
   waiter.Init();
   ASSERT_EQ(MOJO_RESULT_OK,
-            mp1->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123));
+            mp1->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123, NULL));
 
   BootstrapMessagePipeNoWait(1, mp1);
 
@@ -538,7 +537,7 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   // it later, it might already be readable.)
   waiter.Init();
   ASSERT_EQ(MOJO_RESULT_OK,
-            mp1->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123));
+            mp1->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123, NULL));
 
   // Write to MP 0, port 0.
   {
@@ -596,8 +595,9 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
 
   // Add the waiter now, before it becomes readable to avoid a race.
   waiter.Init();
-  ASSERT_EQ(MOJO_RESULT_OK,
-            dispatcher->AddWaiter(&waiter, MOJO_HANDLE_SIGNAL_READABLE, 456));
+  ASSERT_EQ(
+      MOJO_RESULT_OK,
+      dispatcher->AddWaiter(&waiter, MOJO_HANDLE_SIGNAL_READABLE, 456, NULL));
 
   // Write to "local_mp", port 1.
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -634,8 +634,9 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
 
   // Prepare to wait on "local_mp", port 1.
   waiter.Init();
-  ASSERT_EQ(MOJO_RESULT_OK,
-            local_mp->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 789));
+  ASSERT_EQ(
+      MOJO_RESULT_OK,
+      local_mp->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 789, NULL));
 
   // Write to the dispatcher.
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -722,7 +723,7 @@ TEST_F(RemoteMessagePipeTest, MAYBE_SharedBufferPassing) {
   // it later, it might already be readable.)
   waiter.Init();
   ASSERT_EQ(MOJO_RESULT_OK,
-            mp1->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123));
+            mp1->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123, NULL));
 
   // Write to MP 0, port 0.
   {
@@ -848,7 +849,7 @@ TEST_F(RemoteMessagePipeTest, MAYBE_PlatformHandlePassing) {
   // it later, it might already be readable.)
   waiter.Init();
   ASSERT_EQ(MOJO_RESULT_OK,
-            mp1->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123));
+            mp1->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123, NULL));
 
   // Write to MP 0, port 0.
   {
