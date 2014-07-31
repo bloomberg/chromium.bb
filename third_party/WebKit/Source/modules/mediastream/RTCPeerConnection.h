@@ -149,8 +149,8 @@ public:
 private:
     RTCPeerConnection(ExecutionContext*, PassRefPtr<RTCConfiguration>, blink::WebMediaConstraints, ExceptionState&);
 
-    static PassRefPtr<RTCConfiguration> parseConfiguration(const Dictionary& configuration, ExceptionState&);
-    static PassRefPtr<RTCOfferOptions> parseOfferOptions(const Dictionary& options);
+    static PassRefPtr<RTCConfiguration> parseConfiguration(const Dictionary&, ExceptionState&);
+    static PassRefPtr<RTCOfferOptions> parseOfferOptions(const Dictionary&, ExceptionState&);
 
     void scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event>);
     void dispatchScheduledEvent();

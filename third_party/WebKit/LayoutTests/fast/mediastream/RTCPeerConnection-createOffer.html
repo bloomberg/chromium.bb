@@ -18,6 +18,8 @@ function requestFailed2(reason)
     errorReason = reason;
     shouldBe('errorReason', '"TEST_ERROR"');
 
+    shouldThrow("pc.createOffer(dummy, dummy, {offerToReceiveVideo:-1, offerToReceiveAudio:0});");
+    shouldThrow("pc.createOffer(dummy, dummy, {offerToReceiveVideo:0, offerToReceiveAudio:-1});");
     shouldNotThrow("pc.createOffer(dummy, dummy, {offerToReceiveVideo:1, offerToReceiveAudio:0, voiceActivityDetection:false, iceRestart:true});");
 
     finishJSTest();

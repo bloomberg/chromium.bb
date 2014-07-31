@@ -7,6 +7,8 @@ PASS requestSucceeded was called.
 PASS sessionDescription.type is "offer"
 PASS requestFailed was called.
 PASS errorReason is "TEST_ERROR"
+PASS pc.createOffer(dummy, dummy, {offerToReceiveVideo:-1, offerToReceiveAudio:0}); threw exception TypeError: Failed to execute 'createOffer' on 'RTCPeerConnection': Invalid offerToReceiveVideo.
+PASS pc.createOffer(dummy, dummy, {offerToReceiveVideo:0, offerToReceiveAudio:-1}); threw exception TypeError: Failed to execute 'createOffer' on 'RTCPeerConnection': Invalid offerToReceiveAudio.
 PASS pc.createOffer(dummy, dummy, {offerToReceiveVideo:1, offerToReceiveAudio:0, voiceActivityDetection:false, iceRestart:true}); did not throw exception.
 PASS successfullyParsed is true
 

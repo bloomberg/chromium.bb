@@ -172,7 +172,7 @@ PassRefPtr<RTCConfiguration> RTCPeerConnection::parseConfiguration(const Diction
     return rtcConfiguration.release();
 }
 
-PassRefPtr<RTCOfferOptions> RTCPeerConnection::parseOfferOptions(const Dictionary& options)
+PassRefPtr<RTCOfferOptions> RTCPeerConnection::parseOfferOptions(const Dictionary& options, ExceptionState& exceptionState)
 {
     if (options.isUndefinedOrNull())
         return nullptr;
@@ -185,13 +185,21 @@ PassRefPtr<RTCOfferOptions> RTCPeerConnection::parseOfferOptions(const Dictionar
     if (propertyNames.isEmpty() || propertyNames.contains("optional") || propertyNames.contains("mandatory"))
         return nullptr;
 
-    int32_t offerToReceiveVideo = 0;
-    int32_t offerToReceiveAudio = 0;
+    int32_t offerToReceiveVideo = -1;
+    int32_t offerToReceiveAudio = -1;
     bool voiceActivityDetection = true;
     bool iceRestart = false;
 
-    DictionaryHelper::get(options, "offerToReceiveVideo", offerToReceiveVideo);
-    DictionaryHelper::get(options, "offerToReceiveAudio", offerToReceiveAudio);
+    if (DictionaryHelper::get(options, "offerToReceiveVideo", offerToReceiveVideo) && offerToReceiveVideo < 0) {
+        exceptionState.throwTypeError("Invalid offerToReceiveVideo");
+        return nullptr;
+    }
+
+    if (DictionaryHelper::get(options, "offerToReceiveAudio", offerToReceiveAudio) && offerToReceiveAudio < 0) {
+        exceptionState.throwTypeError("Invalid offerToReceiveAudio");
+        return nullptr;
+    }
+
     DictionaryHelper::get(options, "voiceActivityDetection", voiceActivityDetection);
     DictionaryHelper::get(options, "iceRestart", iceRestart);
 
@@ -270,7 +278,9 @@ void RTCPeerConnection::createOffer(PassOwnPtr<RTCSessionDescriptionCallback> su
 
     ASSERT(successCallback);
 
-    RefPtr<RTCOfferOptions> offerOptions = parseOfferOptions(rtcOfferOptions);
+    RefPtr<RTCOfferOptions> offerOptions = parseOfferOptions(rtcOfferOptions, exceptionState);
+    if (exceptionState.hadException())
+        return;
 
     RefPtr<RTCSessionDescriptionRequest> request = RTCSessionDescriptionRequestImpl::create(executionContext(), this, successCallback, errorCallback);
 
