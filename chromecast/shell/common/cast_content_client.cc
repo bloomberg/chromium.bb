@@ -4,6 +4,7 @@
 
 #include "chromecast/shell/common/cast_content_client.h"
 
+#include "chromecast/common/version.h"
 #include "content/public/common/user_agent.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -11,13 +12,9 @@
 namespace chromecast {
 namespace shell {
 
-// TODO(lcwu): http://crbug.com/391080. Create the actual Chromecast
-// product version string and hook it up here.
-#define PRODUCT_VERSION "0.0.0.0"
-
 std::string GetUserAgent() {
   std::string product = "Chrome/" PRODUCT_VERSION;
-  return content::BuildUserAgentFromProduct(product);
+  return content::BuildUserAgentFromProduct(product) + " CrKey";
 }
 
 CastContentClient::~CastContentClient() {

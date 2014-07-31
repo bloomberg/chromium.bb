@@ -106,6 +106,7 @@
         'cast_common',
         'cast_service',
         'cast_shell_pak',
+        'cast_version_header',
         '../ui/aura/aura.gyp:aura_test_support',
         '../content/content.gyp:content',
         '../content/content.gyp:content_app_browser',
@@ -146,6 +147,38 @@
             '../ui/ozone/ozone.gyp:eglplatform_shim_x11',
           ],
         }],
+      ],
+    },
+    {
+      'target_name': 'cast_version_header',
+      'type': 'none',
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(SHARED_INTERMEDIATE_DIR)',
+        ],
+      },
+      'actions': [
+        {
+          'action_name': 'version_header',
+          'message': 'Generating version header file: <@(_outputs)',
+          'inputs': [
+            '<(version_path)',
+            'common/version.h.in',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/chromecast/common/version.h',
+          ],
+          'action': [
+            'python',
+            '<(version_py_path)',
+            '-e', 'VERSION_FULL="<(version_full)"',
+            'common/version.h.in',
+            '<@(_outputs)',
+          ],
+          'includes': [
+            '../build/util/version.gypi',
+          ],
+        },
       ],
     },
   ],  # end of targets
