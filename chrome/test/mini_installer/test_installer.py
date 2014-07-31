@@ -233,7 +233,7 @@ def ParseConfigFile(filename):
 
 
 def RunTests(mini_installer_path, config, force_clean, verbosity,
-             json_output_path):
+             json_output_path, tests):
   """Tests the installer using the given Config object.
 
   Args:
@@ -243,6 +243,7 @@ def RunTests(mini_installer_path, config, force_clean, verbosity,
         installations.
     verbosity: Verbosity level for the test runner (0..n).
     json_output_path: Path to JSON output file.
+    tests: List of tests to run. All tests are run if omitted.
 
   Returns:
     True if all the tests passed, or False otherwise.
@@ -251,8 +252,12 @@ def RunTests(mini_installer_path, config, force_clean, verbosity,
   variable_expander = VariableExpander(mini_installer_path)
   RunCleanCommand(force_clean, variable_expander)
   for test in config.tests:
-    suite.addTest(InstallerTest(test['name'], test['traversal'], config,
-                                variable_expander))
+    # If tests were specified via |tests|, their names are formatted like this:
+    test_name = '%s.%s.%s' % (InstallerTest.__module__, InstallerTest.__name__,
+                              test['name'])
+    if not tests or test_name in tests:
+      suite.addTest(InstallerTest(test['name'], test['traversal'], config,
+                                  variable_expander))
   result = unittest.TextTestRunner(verbosity=(verbosity + 1)).run(suite)
   if json_output_path:
     with open(json_output_path, 'w') as fp:
@@ -270,9 +275,8 @@ def IsComponentBuild(mini_installer_path):
   Returns:
     True if the mini_installer is a component build, False otherwise.
   """
-  query_command = mini_installer_path + ' --query-component-build'
-  script_dir = os.path.dirname(os.path.abspath(__file__))
-  exit_status = subprocess.call(query_command, shell=True, cwd=script_dir)
+  query_command = [ mini_installer_path, '--query-component-build' ]
+  exit_status = subprocess.call(query_command)
   return exit_status == 0
 
 
@@ -288,10 +292,14 @@ def main():
   parser.add_argument('-v', '--verbose', action='count', default=0,
                       help='Increase test runner verbosity level')
   parser.add_argument('--write-full-results-to', metavar='FILENAME',
-                      action='store',
                       help='Path to write the list of full results to.')
-  parser.add_argument('config_filename', help='Path to test configuration file')
+  parser.add_argument('--config', metavar='FILENAME',
+                      help='Path to test configuration file')
+  parser.add_argument('test', nargs='*',
+                      help='Name(s) of tests to run.')
   args = parser.parse_args()
+  if not args.config:
+    parser.error('missing mandatory --config FILENAME argument')
 
   mini_installer_path = os.path.join(args.build_dir, args.target,
                                      'mini_installer.exe')
@@ -305,9 +313,9 @@ def main():
            'http://crbug.com/377839')
     return 0
 
-  config = ParseConfigFile(args.config_filename)
+  config = ParseConfigFile(args.config)
   if not RunTests(mini_installer_path, config, args.force_clean, args.verbose,
-                  args.write_full_results_to):
+                  args.write_full_results_to, args.test):
     return 1
   return 0
 
