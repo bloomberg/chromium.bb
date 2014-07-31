@@ -38,7 +38,8 @@ bool CpuInfoProvider::QueryCpuTimePerProcessor(
       continue;
 
     uint64 user = 0, nice = 0, sys = 0, idle = 0;
-    int vals = sscanf(line.c_str(), "%*s %"PRIu64" %"PRIu64" %"PRIu64" %"PRIu64,
+    int vals = sscanf(line.c_str(),
+           "%*s %" PRIu64 " %" PRIu64 " %" PRIu64 " %" PRIu64,
            &user, &nice, &sys, &idle);
     DCHECK_EQ(4, vals);
 

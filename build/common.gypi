@@ -4242,7 +4242,7 @@
               '-Wl,--disable-new-dtags',
             ],
           }],
-          ['gcc_version>=48 and clang==0', {
+          ['gcc_version>=47 and clang==0', {
             'target_conditions': [
               ['_toolset=="target"', {
                 'cflags_cc': [
@@ -4255,7 +4255,7 @@
               }],
             ],
           }],
-          ['host_gcc_version>=48 and clang==0', {
+          ['host_gcc_version>=47 and clang==0', {
             'target_conditions': [
               ['_toolset=="host"', {
                 'cflags_cc': [
