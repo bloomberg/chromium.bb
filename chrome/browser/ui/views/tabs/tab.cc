@@ -40,7 +40,6 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/gfx/text_elider.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
@@ -54,9 +53,9 @@ namespace {
 
 // Padding around the "content" of a tab, occupied by the tab border graphics.
 const int kLeftPadding = 22;
-const int kTopPadding = 7;
+const int kTopPadding = 4;
 const int kRightPadding = 17;
-const int kBottomPadding = 5;
+const int kBottomPadding = 2;
 
 // Height of the shadow at the top of the tab image assets.
 const int kDropShadowHeight = 4;
@@ -69,18 +68,8 @@ static const int kTouchWidth = 120;
 
 static const int kToolbarOverlap = 1;
 static const int kFaviconTitleSpacing = 4;
-// Additional vertical offset for title text relative to top of tab.
-// Ash text rendering may be different than Windows.
-static const int kTitleTextOffsetYAsh = 1;
-static const int kTitleTextOffsetY = 0;
-static const int kTitleCloseButtonSpacing = 3;
+static const int kViewSpacing = 3;
 static const int kStandardTitleWidth = 175;
-// Additional vertical offset for close button relative to top of tab.
-// Ash needs this to match the text vertical position.
-static const int kCloseButtonVertFuzzAsh = 1;
-static const int kCloseButtonVertFuzz = 0;
-// Additional horizontal offset for close button relative to title text.
-static const int kCloseButtonHorzFuzz = 3;
 
 // When a non-mini-tab becomes a mini-tab the width of the tab animates. If
 // the width of a mini-tab is >= kMiniTabRendererAsNormalTabWidth then the tab
@@ -745,41 +734,20 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
 
 void Tab::Layout() {
   gfx::Rect lb = GetContentsBounds();
+  lb.Inset(kLeftPadding, kTopPadding, kRightPadding, kBottomPadding);
   if (lb.IsEmpty())
     return;
-  lb.Inset(kLeftPadding, kTopPadding, kRightPadding, kBottomPadding);
 
-  // The height of the content of the Tab is the largest of the favicon,
-  // the title text and the close button graphic.
-  const int kTabIconSize = gfx::kFaviconSize;
-  const int font_height = title_->font_list().GetHeight();
-  int content_height = std::max(kTabIconSize, font_height);
-  close_button_->SetBorder(views::Border::NullBorder());
-  gfx::Size close_button_size(close_button_->GetPreferredSize());
-  content_height = std::max(content_height, close_button_size.height());
-
-  // Size the Favicon.
   showing_icon_ = ShouldShowIcon();
+  favicon_bounds_.SetRect(lb.x(), lb.y(), 0, 0);
   if (showing_icon_) {
-    // Use the size of the favicon as apps use a bigger favicon size.
-    int favicon_top = kTopPadding + content_height / 2 - kTabIconSize / 2;
-    int favicon_left = lb.x();
-    favicon_bounds_.SetRect(favicon_left, favicon_top,
-                            kTabIconSize, kTabIconSize);
+    favicon_bounds_.set_size(gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize));
+    favicon_bounds_.set_y(lb.y() + (lb.height() - gfx::kFaviconSize + 1) / 2);
     MaybeAdjustLeftForMiniTab(&favicon_bounds_);
-  } else {
-    favicon_bounds_.SetRect(lb.x(), lb.y(), 0, 0);
   }
 
-  // Size the Close button.
   showing_close_button_ = ShouldShowCloseBox();
-  const bool is_host_desktop_type_ash =
-      GetHostDesktopType(this) == chrome::HOST_DESKTOP_TYPE_ASH;
   if (showing_close_button_) {
-    const int close_button_vert_fuzz = is_host_desktop_type_ash ?
-        kCloseButtonVertFuzzAsh : kCloseButtonVertFuzz;
-    int close_button_top = kTopPadding + close_button_vert_fuzz +
-        (content_height - close_button_size.height()) / 2;
     // If the ratio of the close button size to tab width exceeds the maximum.
     // The close button should be as large as possible so that there is a larger
     // hit-target for touch events. So the close button bounds extends to the
@@ -788,74 +756,52 @@ void Tab::Layout() {
     // So a border is added to the button with necessary padding. The close
     // button (BaseTab::TabCloseButton) makes sure the padding is a hit-target
     // only for touch events.
-    int top_border = close_button_top;
-    int bottom_border = height() - (close_button_size.height() + top_border);
-    int left_border = kCloseButtonHorzFuzz;
-    int right_border = width() - (lb.width() + close_button_size.width() +
-        left_border);
-    close_button_->SetBorder(views::Border::CreateEmptyBorder(
-        top_border, left_border, bottom_border, right_border));
+    close_button_->SetBorder(views::Border::NullBorder());
+    const gfx::Size close_button_size(close_button_->GetPreferredSize());
+    const int top = lb.y() + (lb.height() - close_button_size.height() + 1) / 2;
+    const int bottom = height() - (close_button_size.height() + top);
+    const int left = kViewSpacing;
+    const int right = width() - (lb.width() + close_button_size.width() + left);
+    close_button_->SetBorder(
+        views::Border::CreateEmptyBorder(top, left, bottom, right));
     close_button_->SetPosition(gfx::Point(lb.width(), 0));
     close_button_->SizeToPreferredSize();
-    close_button_->SetVisible(true);
-  } else {
-    close_button_->SetBounds(0, 0, 0, 0);
-    close_button_->SetVisible(false);
   }
+  close_button_->SetVisible(showing_close_button_);
 
   showing_media_indicator_ = ShouldShowMediaIndicator();
+  media_indicator_bounds_.SetRect(lb.x(), lb.y(), 0, 0);
   if (showing_media_indicator_) {
     const gfx::Image& media_indicator_image =
         chrome::GetTabMediaIndicatorImage(animating_media_state_);
     media_indicator_bounds_.set_width(media_indicator_image.Width());
     media_indicator_bounds_.set_height(media_indicator_image.Height());
     media_indicator_bounds_.set_y(
-        kTopPadding +
-            (content_height - media_indicator_bounds_.height()) / 2);
+        lb.y() + (lb.height() - media_indicator_bounds_.height() + 1) / 2);
     const int right = showing_close_button_ ?
         close_button_->x() + close_button_->GetInsets().left() : lb.right();
     media_indicator_bounds_.set_x(
         std::max(lb.x(), right - media_indicator_bounds_.width()));
     MaybeAdjustLeftForMiniTab(&media_indicator_bounds_);
-  } else {
-    media_indicator_bounds_.SetRect(lb.x(), lb.y(), 0, 0);
   }
 
-  const int title_text_offset = is_host_desktop_type_ash ?
-      kTitleTextOffsetYAsh : kTitleTextOffsetY;
-  int title_left = favicon_bounds_.right() + kFaviconTitleSpacing;
-  int title_top = kTopPadding + title_text_offset +
-      (content_height - font_height) / 2;
-  gfx::Rect title_bounds(title_left, title_top, 0, 0);
-  // Size the Title text to fill the remaining space.
-  if (!data().mini || width() >= kMiniTabRendererAsNormalTabWidth) {
-    // If the user has big fonts, the title will appear rendered too far down
-    // on the y-axis if we use the regular top padding, so we need to adjust it
-    // so that the text appears centered.
-    gfx::Size minimum_size = GetMinimumUnselectedSize();
-    int text_height = title_top + font_height + kBottomPadding;
-    if (text_height > minimum_size.height())
-      title_top -= (text_height - minimum_size.height()) / 2;
-
-    int title_width;
+  // Size the title to fill the remaining width and use all available height.
+  bool show_title = !data().mini || width() >= kMiniTabRendererAsNormalTabWidth;
+  if (show_title) {
+    int title_left = favicon_bounds_.right() + kFaviconTitleSpacing;
+    int title_width = lb.width() - title_left;
     if (showing_media_indicator_) {
-      title_width = media_indicator_bounds_.x() - kTitleCloseButtonSpacing -
-          title_left;
+      title_width = media_indicator_bounds_.x() - kViewSpacing - title_left;
     } else if (close_button_->visible()) {
-      // The close button has an empty border with some padding (see details
-      // above where the close-button's bounds is set). Allow the title to
-      // overlap the empty padding.
+      // Allow the title to overlay the close button's empty border padding.
       title_width = close_button_->x() + close_button_->GetInsets().left() -
-          kTitleCloseButtonSpacing - title_left;
-    } else {
-      title_width = lb.width() - title_left;
+          kViewSpacing - title_left;
     }
-    title_width = std::max(title_width, 0);
-    title_bounds.SetRect(title_left, title_top, title_width, font_height);
+    gfx::Rect rect(title_left, lb.y(), std::max(title_width, 0), lb.height());
+    rect.set_x(GetMirroredXForRect(rect));
+    title_->SetBoundsRect(rect);
   }
-
-  title_bounds.set_x(GetMirroredXForRect(title_bounds));
-  title_->SetBoundsRect(title_bounds);
+  title_->SetVisible(show_title);
 }
 
 void Tab::OnThemeChanged() {
