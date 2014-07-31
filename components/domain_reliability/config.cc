@@ -104,7 +104,7 @@ scoped_ptr<const DomainReliabilityConfig> DomainReliabilityConfig::FromJSON(
 }
 
 bool DomainReliabilityConfig::IsValid() const {
-  if (valid_until == 0.0 || domain.empty() || version.empty() ||
+  if (valid_until == 0.0 || domain.empty() ||
       resources.empty() || collectors.empty()) {
     return false;
   }

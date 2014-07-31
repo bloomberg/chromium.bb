@@ -17,6 +17,10 @@ DomainReliabilityBeacon::~DomainReliabilityBeacon() {}
 
 Value* DomainReliabilityBeacon::ToValue(base::TimeTicks upload_time) const {
   DictionaryValue* beacon_value = new DictionaryValue();
+  if (!url.empty())
+    beacon_value->SetString("url", url);
+  if (!resource.empty())
+    beacon_value->SetString("resource", resource);
   beacon_value->SetString("status", status);
   if (chrome_error != net::OK) {
     DictionaryValue* failure_value = new DictionaryValue();

@@ -96,9 +96,10 @@ TEST_F(DomainReliabilityConfigTest, IsValid) {
   config->valid_until = 0.0;
   EXPECT_FALSE(config->IsValid());
 
+  // Version is optional.
   config = MakeSampleConfig();
   config->version = "";
-  EXPECT_FALSE(config->IsValid());
+  EXPECT_TRUE(config->IsValid());
 
   config = MakeSampleConfig();
   config->resources.clear();

@@ -26,6 +26,10 @@ struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityBeacon {
   // relative to an upload time of |upload_time|.
   base::Value* ToValue(base::TimeTicks upload_time) const;
 
+  // The URL that the beacon is reporting on, if included.
+  std::string url;
+  // The resource name that the beacon is reporting on, if included.
+  std::string resource;
   // Status string (e.g. "ok", "dns.nxdomain", "http.403").
   std::string status;
   // Net error code.  Encoded as a string in the final JSON.

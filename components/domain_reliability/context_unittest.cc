@@ -74,9 +74,9 @@ class DomainReliabilityContextTest : public testing::Test {
     upload_pending_ = false;
   }
 
-  bool CheckNoBeacons(size_t index) {
+  bool CheckNoBeacons() {
     BeaconVector beacons;
-    context_.GetQueuedDataForTesting(index, &beacons, NULL, NULL);
+    context_.GetQueuedBeaconsForTesting(&beacons);
     return beacons.empty();
   }
 
@@ -84,7 +84,7 @@ class DomainReliabilityContextTest : public testing::Test {
                    unsigned expected_successful,
                    unsigned expected_failed) {
     unsigned successful, failed;
-    context_.GetQueuedDataForTesting(index, NULL, &successful, &failed);
+    context_.GetRequestCountsForTesting(index, &successful, &failed);
     return successful == expected_successful && failed == expected_failed;
   }
 
@@ -114,9 +114,8 @@ class DomainReliabilityContextTest : public testing::Test {
 };
 
 TEST_F(DomainReliabilityContextTest, Create) {
-  EXPECT_TRUE(CheckNoBeacons(0));
+  EXPECT_TRUE(CheckNoBeacons());
   EXPECT_TRUE(CheckCounts(0, 0, 0));
-  EXPECT_TRUE(CheckNoBeacons(1));
   EXPECT_TRUE(CheckCounts(1, 0, 0));
 }
 
@@ -125,9 +124,8 @@ TEST_F(DomainReliabilityContextTest, NoResource) {
   DomainReliabilityBeacon beacon = MakeBeacon(&time_);
   context_.OnBeacon(url, beacon);
 
-  EXPECT_TRUE(CheckNoBeacons(0));
+  EXPECT_TRUE(CheckNoBeacons());
   EXPECT_TRUE(CheckCounts(0, 0, 0));
-  EXPECT_TRUE(CheckNoBeacons(1));
   EXPECT_TRUE(CheckCounts(1, 0, 0));
 }
 
@@ -136,9 +134,8 @@ TEST_F(DomainReliabilityContextTest, NeverReport) {
   DomainReliabilityBeacon beacon = MakeBeacon(&time_);
   context_.OnBeacon(url, beacon);
 
-  EXPECT_TRUE(CheckNoBeacons(0));
+  EXPECT_TRUE(CheckNoBeacons());
   EXPECT_TRUE(CheckCounts(0, 0, 0));
-  EXPECT_TRUE(CheckNoBeacons(1));
   EXPECT_TRUE(CheckCounts(1, 1, 0));
 }
 
@@ -148,10 +145,9 @@ TEST_F(DomainReliabilityContextTest, AlwaysReport) {
   context_.OnBeacon(url, beacon);
 
   BeaconVector beacons;
-  context_.GetQueuedDataForTesting(0, &beacons, NULL, NULL);
+  context_.GetQueuedBeaconsForTesting(&beacons);
   EXPECT_EQ(1u, beacons.size());
   EXPECT_TRUE(CheckCounts(0, 1, 0));
-  EXPECT_TRUE(CheckNoBeacons(1));
   EXPECT_TRUE(CheckCounts(1, 0, 0));
 }
 
@@ -160,20 +156,32 @@ TEST_F(DomainReliabilityContextTest, ReportUpload) {
   DomainReliabilityBeacon beacon = MakeBeacon(&time_);
   context_.OnBeacon(url, beacon);
 
+  BeaconVector beacons;
+  context_.GetQueuedBeaconsForTesting(&beacons);
+  EXPECT_EQ(1u, beacons.size());
+  EXPECT_TRUE(CheckCounts(0, 1, 0));
+  EXPECT_TRUE(CheckCounts(1, 0, 0));
+
   // N.B.: Assumes max_delay is 5 minutes.
-  const char* kExpectedReport = "{\"config_version\":\"1\","
+  const char* kExpectedReport = "{"
+      "\"config_version\":\"1\","
+      "\"entries\":[{\"http_response_code\":200,\"protocol\":\"HTTP\","
+          "\"request_age_ms\":300250,\"request_elapsed_ms\":250,"
+          "\"resource\":\"always_report\",\"server_ip\":\"127.0.0.1\","
+          "\"status\":\"ok\"}],"
       "\"reporter\":\"test-reporter\","
-      "\"resource_reports\":[{\"beacons\":[{\"http_response_code\":200,"
-      "\"protocol\":\"HTTP\","
-      "\"request_age_ms\":300250,\"request_elapsed_ms\":250,\"server_ip\":"
-      "\"127.0.0.1\",\"status\":\"ok\"}],\"failed_requests\":0,"
-      "\"resource_name\":\"always_report\",\"successful_requests\":1}]}";
+      "\"resources\":[{\"failed_requests\":0,\"name\":\"always_report\","
+          "\"successful_requests\":1}]}";
 
   time_.Advance(max_delay());
   EXPECT_TRUE(upload_pending());
   EXPECT_EQ(kExpectedReport, upload_report());
   EXPECT_EQ(GURL("https://example/upload"), upload_url());
   CallUploadCallback(true);
+
+  EXPECT_TRUE(CheckNoBeacons());
+  EXPECT_TRUE(CheckCounts(0, 0, 0));
+  EXPECT_TRUE(CheckCounts(1, 0, 0));
 }
 
 }  // namespace

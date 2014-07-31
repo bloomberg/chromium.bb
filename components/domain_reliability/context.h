@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/domain_reliability/beacon.h"
 #include "components/domain_reliability/config.h"
 #include "components/domain_reliability/domain_reliability_export.h"
 #include "components/domain_reliability/scheduler.h"
@@ -23,7 +24,6 @@ class Value;
 
 namespace domain_reliability {
 
-struct DomainReliabilityBeacon;
 class DomainReliabilityDispatcher;
 class DomainReliabilityUploader;
 class MockableTime;
@@ -53,9 +53,11 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
   // debugging purposes.
   scoped_ptr<base::Value> GetWebUIData() const;
 
-  void GetQueuedDataForTesting(
+  void GetQueuedBeaconsForTesting(
+      std::vector<DomainReliabilityBeacon>* beacons_out) const;
+
+  void GetRequestCountsForTesting(
       size_t resource_index,
-      std::vector<DomainReliabilityBeacon>* beacons_out,
       uint32* successful_requests_out,
       uint32* failed_requests_out) const;
 
@@ -68,6 +70,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
  private:
   class ResourceState;
 
+  typedef std::deque<DomainReliabilityBeacon> BeaconDeque;
   typedef ScopedVector<ResourceState> ResourceStateVector;
   typedef ResourceStateVector::const_iterator ResourceStateIterator;
 
@@ -85,9 +88,9 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
 
   // Uses the state remembered by |MarkUpload| to remove successfully uploaded
   // data but keep beacons and request counts added after the upload started.
-  // N.B.: There is no equivalent "RollbackUpload" that needs to be called on a
-  // failed upload.
   void CommitUpload();
+
+  void RollbackUpload();
 
   // Finds and removes the oldest beacon. DCHECKs if there is none. (Called
   // when there are too many beacons queued.)
@@ -100,11 +103,11 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
   DomainReliabilityDispatcher* dispatcher_;
   DomainReliabilityUploader* uploader_;
 
+  BeaconDeque beacons_;
+  size_t uploading_beacons_size_;
   // Each ResourceState in |states_| corresponds to the Resource of the same
   // index in the config.
   ResourceStateVector states_;
-  size_t beacon_count_;
-  size_t uploading_beacon_count_;
   base::TimeTicks upload_time_;
   base::TimeTicks last_upload_time_;
 
