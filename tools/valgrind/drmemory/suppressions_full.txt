@@ -2202,3 +2202,10 @@ blink_web.dll!blink::WebLocalFrameImpl::extendSelectionAndDelete
 content.dll!content::RenderFrameImpl::OnExtendSelectionAndDelete
 *!content::RenderViewImplTest_OnExtendSelectionAndDelete_Test::TestBody
 *!testing::internal::HandleExceptionsInMethodIfSupported<>
+
+UNINITIALIZED READ
+name=bug_398547
+system call NtWriteFile parameter #5
+KERNELBASE.dll!WriteFile
+KERNEL32.dll!WriteFile
+mojo_system_impl.dll!mojo::system::`anonymous namespace'::RawChannelWin::WriteNoLock
