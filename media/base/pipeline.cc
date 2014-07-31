@@ -109,7 +109,7 @@ void Pipeline::Stop(const base::Closure& stop_cb) {
 void Pipeline::Seek(TimeDelta time, const PipelineStatusCB& seek_cb) {
   base::AutoLock auto_lock(lock_);
   if (!running_) {
-    NOTREACHED() << "Media pipeline isn't running";
+    DLOG(ERROR) << "Media pipeline isn't running. Ignoring Seek().";
     return;
   }
 

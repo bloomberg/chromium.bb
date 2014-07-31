@@ -515,12 +515,35 @@ TEST_F(PipelineTest, Seek) {
   // Initialize then seek!
   StartPipeline(PIPELINE_OK);
 
-  message_loop_.RunUntilIdle();
-
   // Every filter should receive a call to Seek().
   base::TimeDelta expected = base::TimeDelta::FromSeconds(2000);
   ExpectSeek(expected, false);
   DoSeek(expected);
+}
+
+TEST_F(PipelineTest, SeekAfterError) {
+  CreateAudioStream();
+  MockDemuxerStreamVector streams;
+  streams.push_back(audio_stream());
+
+  SetDemuxerExpectations(&streams, base::TimeDelta::FromSeconds(3000));
+  SetAudioRendererExpectations(audio_stream());
+
+  // Initialize then seek!
+  StartPipeline(PIPELINE_OK);
+
+  EXPECT_CALL(*demuxer_, Stop(_))
+      .WillOnce(RunClosure<0>());
+  EXPECT_CALL(callbacks_, OnError(_));
+
+  static_cast<DemuxerHost*>(pipeline_.get())
+      ->OnDemuxerError(PIPELINE_ERROR_ABORT);
+  message_loop_.RunUntilIdle();
+
+  pipeline_->Seek(
+      base::TimeDelta::FromMilliseconds(100),
+      base::Bind(&CallbackHelper::OnSeek, base::Unretained(&callbacks_)));
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(PipelineTest, SetVolume) {
