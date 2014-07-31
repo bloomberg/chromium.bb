@@ -194,13 +194,8 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // RenderViewHostDelegate.
   virtual void SyncRendererPrefs() = 0;
 
-  // Returns the current WebKit preferences. Note: WebPreferences is cached, so
-  // this lookup will be fast
+  // Returns the current WebKit preferences.
   virtual WebPreferences GetWebkitPreferences() = 0;
-
-  // If any state that affects the webkit preferences changed, this method must
-  // be called. This triggers recomputing preferences.
-  virtual void OnWebkitPreferencesChanged() = 0;
 
   // Passes a list of Webkit preferences to the renderer.
   virtual void UpdateWebkitPreferences(const WebPreferences& prefs) = 0;

@@ -509,11 +509,11 @@ RendererPreferences InterstitialPageImpl::GetRendererPrefs(
   return renderer_preferences_;
 }
 
-WebPreferences InterstitialPageImpl::ComputeWebkitPrefs() {
+WebPreferences InterstitialPageImpl::GetWebkitPrefs() {
   if (!enabled())
     return WebPreferences();
 
-  return render_view_host_->ComputeWebkitPrefs(url_);
+  return render_view_host_->GetWebkitPrefs(url_);
 }
 
 void InterstitialPageImpl::RenderWidgetDeleted(

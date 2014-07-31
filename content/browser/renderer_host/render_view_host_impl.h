@@ -204,7 +204,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual WebPreferences GetWebkitPreferences() OVERRIDE;
   virtual void UpdateWebkitPreferences(
       const WebPreferences& prefs) OVERRIDE;
-  virtual void OnWebkitPreferencesChanged() OVERRIDE;
   virtual void GetAudioOutputControllers(
       const GetAudioOutputControllersCallback& callback) const OVERRIDE;
   virtual void SelectWordAroundCaret() OVERRIDE;
@@ -242,7 +241,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   }
 
   // Returns the content specific prefs for this RenderViewHost.
-  WebPreferences ComputeWebkitPrefs(const GURL& url);
+  WebPreferences GetWebkitPrefs(const GURL& url);
 
   // Sends the given navigation message. Use this rather than sending it
   // yourself since this does the internal bookkeeping described below. This
@@ -607,11 +606,6 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // True if the current focused element is editable.
   bool is_focused_element_editable_;
-
-  // This is updated every time UpdateWebkitPreferences is called. That method
-  // is in turn called when any of the settings change that the WebPreferences
-  // values depend on.
-  scoped_ptr<WebPreferences> web_preferences_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostImpl);
 };

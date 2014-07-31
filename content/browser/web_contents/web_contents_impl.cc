@@ -3846,7 +3846,7 @@ bool WebContentsImpl::AddMessageToConsole(int32 level,
                                         source_id);
 }
 
-WebPreferences WebContentsImpl::ComputeWebkitPrefs() {
+WebPreferences WebContentsImpl::GetWebkitPrefs() {
   // We want to base the page config off of the actual URL, rather than the
   // virtual URL.
   // TODO(nasko): Investigate how to remove the GetActiveEntry usage here,
@@ -3854,7 +3854,7 @@ WebPreferences WebContentsImpl::ComputeWebkitPrefs() {
   GURL url = controller_.GetActiveEntry()
       ? controller_.GetActiveEntry()->GetURL() : GURL::EmptyGURL();
 
-  return GetRenderManager()->current_host()->ComputeWebkitPrefs(url);
+  return GetRenderManager()->current_host()->GetWebkitPrefs(url);
 }
 
 int WebContentsImpl::CreateSwappedOutRenderView(

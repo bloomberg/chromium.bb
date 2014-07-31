@@ -22,7 +22,7 @@ WebContents* RenderViewHostDelegate::GetAsWebContents() {
   return NULL;
 }
 
-WebPreferences RenderViewHostDelegate::ComputeWebkitPrefs() {
+WebPreferences RenderViewHostDelegate::GetWebkitPrefs() {
   return WebPreferences();
 }
 

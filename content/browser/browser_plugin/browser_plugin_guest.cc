@@ -223,10 +223,7 @@ void BrowserPluginGuest::Initialize(
       new BrowserPluginMsg_GuestContentWindowReady(instance_id_,
                                                    guest_routing_id));
 
-  // TODO(chrishtr): this code is wrong. The navigate_on_drag_drop field will
-  // be reset again the next time preferences are updated.
-  WebPreferences prefs =
-      GetWebContents()->GetRenderViewHost()->GetWebkitPreferences();
+  WebPreferences prefs = GetWebContents()->GetWebkitPrefs();
   prefs.navigate_on_drag_drop = false;
   GetWebContents()->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
 
