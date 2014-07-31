@@ -2346,11 +2346,11 @@ bool RenderFrameImpl::runModalBeforeUnloadDialog(
 void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
   ContextMenuParams params = ContextMenuParamsBuilder::Build(data);
   params.source_type = GetRenderWidget()->context_menu_source_type();
+  GetRenderWidget()->OnShowHostContextMenu(&params);
   if (GetRenderWidget()->has_host_context_menu_location()) {
     params.x = GetRenderWidget()->host_context_menu_location().x();
     params.y = GetRenderWidget()->host_context_menu_location().y();
   }
-  GetRenderWidget()->OnShowHostContextMenu(&params);
 
   // Plugins, e.g. PDF, don't currently update the render view when their
   // selected text changes, but the context menu params do contain the updated
