@@ -440,9 +440,12 @@ void PrintSupportedDevices() {
                                        error:NULL];
       NSArray* lines = [content componentsSeparatedByCharactersInSet:
           [NSCharacterSet newlineCharacterSet]];
+      NSString* simulatedAppPID =
+          [NSString stringWithFormat:@"%d", session.simulatedApplicationPID];
       for (NSString* line in lines) {
         NSString* const kErrorString = @"Service exited with abnormal code:";
-        if ([line rangeOfString:kErrorString].location != NSNotFound) {
+        if ([line rangeOfString:kErrorString].location != NSNotFound &&
+            [line rangeOfString:simulatedAppPID].location != NSNotFound) {
           LogWarning(@"Console message: %@", line);
           badEntryFound = YES;
           break;
