@@ -137,24 +137,27 @@ static_library("cld2_dynamic") {
   }
 }
 
-executable("cld_2_dynamic_data_tool") {
-  sources = [
-    "src/internal/cld2_dynamic_data_extractor.h",
-    "src/internal/cld2_dynamic_data_extractor.cc",
-    "src/internal/cld2_dynamic_data_tool.cc",
-  ]
+# Does not build on Windows.
+if (!is_win) {
+  executable("cld_2_dynamic_data_tool") {
+    sources = [
+      "src/internal/cld2_dynamic_data_extractor.h",
+      "src/internal/cld2_dynamic_data_extractor.cc",
+      "src/internal/cld2_dynamic_data_tool.cc",
+    ]
 
-  include_dirs = [
-    "src/internal",
-    "src/public",
-  ]
+    include_dirs = [
+      "src/internal",
+      "src/public",
+    ]
 
-  deps = [ ":cld2_data", ":cld2_dynamic" ]
+    deps = [ ":cld2_data", ":cld2_dynamic" ]
 
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
 
-  if (is_win) {
-    cflags = [ "/wd4267" ]  # size_t -> int conversion.
+    if (is_win) {
+      cflags = [ "/wd4267" ]  # size_t -> int conversion.
+    }
   }
 }
