@@ -110,6 +110,15 @@ bool WebSecurityOrigin::canRequest(const WebURL& url) const
     return m_private->canRequest(url);
 }
 
+bool WebSecurityOrigin::canAccessFeatureRequiringSecureOrigin(WebString& errorMessage) const
+{
+    ASSERT(m_private);
+    WTF::String message(errorMessage);
+    bool result = m_private->canAccessFeatureRequiringSecureOrigin(message);
+    errorMessage = message;
+    return result;
+}
+
 WebString WebSecurityOrigin::toString() const
 {
     ASSERT(m_private);
