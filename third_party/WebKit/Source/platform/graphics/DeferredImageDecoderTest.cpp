@@ -79,7 +79,7 @@ public:
         m_actualDecoder->setSize(1, 1);
         m_lazyDecoder = DeferredImageDecoder::createForTesting(decoder.release());
         m_canvas.reset(SkCanvas::NewRasterN32(100, 100));
-        ASSERT_TRUE(m_canvas);
+        ASSERT_TRUE(m_canvas.get());
         m_frameBufferRequestCount = 0;
         m_frameCount = 1;
         m_repetitionCount = cAnimationNone;

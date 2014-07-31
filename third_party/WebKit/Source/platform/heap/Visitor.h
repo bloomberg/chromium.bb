@@ -139,11 +139,15 @@ public:
     static const bool value = false;
 };
 
+template <typename T> const bool NeedsAdjustAndMark<T, true>::value;
+
 template<typename T>
 class NeedsAdjustAndMark<T, false> {
 public:
     static const bool value = WTF::IsSubclass<typename WTF::RemoveConst<T>::Type, GarbageCollectedMixin>::value;
 };
+
+template <typename T> const bool NeedsAdjustAndMark<T, false>::value;
 
 template<typename T, bool = NeedsAdjustAndMark<T>::value> class DefaultTraceTrait;
 
