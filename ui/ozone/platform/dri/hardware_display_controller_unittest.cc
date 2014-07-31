@@ -4,6 +4,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/ozone/platform/dri/crtc_state.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
@@ -15,6 +16,11 @@ namespace {
 // Create a basic mode for a 6x4 screen.
 const drmModeModeInfo kDefaultMode =
     {0, 6, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, {'\0'}};
+
+const uint32_t kPrimaryCrtc = 1;
+const uint32_t kPrimaryConnector = 2;
+const uint32_t kSecondaryCrtc = 3;
+const uint32_t kSecondaryConnector = 4;
 
 const gfx::Size kDefaultModeSize(kDefaultMode.hdisplay, kDefaultMode.vdisplay);
 const gfx::SizeF kDefaultModeSizeF(1.0, 1.0);
@@ -55,7 +61,10 @@ class HardwareDisplayControllerTest : public testing::Test {
 
 void HardwareDisplayControllerTest::SetUp() {
   drm_.reset(new ui::MockDriWrapper(3));
-  controller_.reset(new ui::HardwareDisplayController(drm_.get(), 1, 1));
+  controller_.reset(new ui::HardwareDisplayController(
+      drm_.get(),
+      scoped_ptr<ui::CrtcState>(
+          new ui::CrtcState(drm_.get(), kPrimaryCrtc, kPrimaryConnector))));
 }
 
 void HardwareDisplayControllerTest::TearDown() {
@@ -96,7 +105,6 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfModesetFails) {
       kDefaultModeSize)));
 
   EXPECT_FALSE(controller_->Modeset(plane, kDefaultMode));
-  EXPECT_TRUE(plane.buffer->HasOneRef());
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckStateIfPageFlipFails) {
@@ -111,6 +119,10 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfPageFlipFails) {
       new MockScanoutBuffer(kDefaultModeSize)));
   EXPECT_FALSE(controller_->SchedulePageFlip(
       std::vector<ui::OverlayPlane>(1, plane2)));
+  EXPECT_FALSE(plane1.buffer->HasOneRef());
+  EXPECT_FALSE(plane2.buffer->HasOneRef());
+
+  controller_->WaitForPageFlipEvent();
   EXPECT_FALSE(plane1.buffer->HasOneRef());
   EXPECT_TRUE(plane2.buffer->HasOneRef());
 }
@@ -156,4 +168,21 @@ TEST_F(HardwareDisplayControllerTest, CheckOverlayPresent) {
   controller_->WaitForPageFlipEvent();
   EXPECT_EQ(1, drm_->get_page_flip_call_count());
   EXPECT_EQ(1, drm_->get_overlay_flip_call_count());
+}
+
+TEST_F(HardwareDisplayControllerTest, PageflipMirroredControllers) {
+  controller_->AddCrtc(
+      scoped_ptr<ui::CrtcState>(
+          new ui::CrtcState(drm_.get(), kSecondaryCrtc, kSecondaryConnector)));
+
+  ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
+      new MockScanoutBuffer(kDefaultModeSize)));
+  EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
+  EXPECT_EQ(2, drm_->get_set_crtc_call_count());
+
+  ui::OverlayPlane plane2(scoped_refptr<ui::ScanoutBuffer>(
+      new MockScanoutBuffer(kDefaultModeSize)));
+  EXPECT_TRUE(controller_->SchedulePageFlip(
+      std::vector<ui::OverlayPlane>(1, plane2)));
+  EXPECT_EQ(2, drm_->get_page_flip_call_count());
 }

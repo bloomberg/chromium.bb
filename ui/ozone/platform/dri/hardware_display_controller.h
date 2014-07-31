@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 
@@ -21,6 +22,7 @@ class Point;
 
 namespace ui {
 
+class CrtcState;
 class ScanoutBuffer;
 
 struct OverlayPlane {
@@ -103,8 +105,7 @@ class HardwareDisplayController
     : public base::SupportsWeakPtr<HardwareDisplayController> {
  public:
   HardwareDisplayController(DriWrapper* drm,
-                            uint32_t connector_id,
-                            uint32_t crtc_id);
+                            scoped_ptr<CrtcState> state);
 
   ~HardwareDisplayController();
 
@@ -159,40 +160,52 @@ class HardwareDisplayController
   // Moves the hardware cursor to |location|.
   bool MoveCursor(const gfx::Point& location);
 
-  const drmModeModeInfo& get_mode() const { return mode_; };
-  uint32_t connector_id() const { return connector_id_; }
-  uint32_t crtc_id() const { return crtc_id_; }
+  void AddCrtc(scoped_ptr<CrtcState> state);
+  scoped_ptr<CrtcState> RemoveCrtc(uint32_t crtc);
+  bool HasCrtc(uint32_t crtc) const;
+  bool HasCrtcs() const;
+  void RemoveMirroredCrtcs();
 
+  gfx::Point origin() const { return origin_; }
+  void set_origin(const gfx::Point& origin) { origin_ = origin; }
+
+  const drmModeModeInfo& get_mode() const { return mode_; };
   uint64_t get_time_of_last_flip() const {
     return time_of_last_flip_;
   };
 
  private:
+  bool ModesetCrtc(const scoped_refptr<ScanoutBuffer>& buffer,
+                   drmModeModeInfo mode,
+                   CrtcState* state);
+
+  bool SchedulePageFlipOnCrtc(const OverlayPlaneList& overlays,
+                              CrtcState* state);
+
+  // Buffers need to be declared first so that they are destroyed last. Needed
+  // since the controllers may reference the buffers.
   OverlayPlaneList current_planes_;
   OverlayPlaneList pending_planes_;
+  scoped_refptr<ScanoutBuffer> cursor_buffer_;
 
   // Object containing the connection to the graphics device and wraps the API
   // calls to control it.
   DriWrapper* drm_;
 
-  // TODO(dnicoara) Need to allow a CRTC to have multiple connectors.
-  uint32_t connector_id_;
-
-  uint32_t crtc_id_;
-
+  // Stores the CRTC configuration. This is used to identify monitors and
+  // configure them.
+  ScopedVector<CrtcState> crtc_states_;
+  gfx::Point origin_;
   drmModeModeInfo mode_;
-
-  scoped_refptr<ScanoutBuffer> cursor_buffer_;
-
   uint64_t time_of_last_flip_;
 
-  // Keeps track of the CRTC state. If a surface has been bound, then the value
-  // is set to false. Otherwise it is true.
-  bool is_disabled_;
-
-  // Store the state of the CRTC before we took over. Used to restore the CRTC
-  // once we no longer need it.
-  ScopedDrmCrtcPtr saved_crtc_;
+  // Keeps track of the number of page flips scheduled but not yet serviced (in
+  // mirror mode each CRTC schedules its own page flip event). This value is
+  // changed as follows:
+  //  1) incremented when a successful SchedulePageFlipOnController() occurrs,
+  //  2) decremented when the page flip callback is triggered,
+  //  3) reset to 0 when a drmModeSetCrtc is called (via the DriWrapper).
+  uint32_t pending_page_flips_;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayController);
 };

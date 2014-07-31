@@ -123,9 +123,6 @@ bool GbmSurface::ResizeNativeWindow(const gfx::Size& viewport_size) {
 bool GbmSurface::OnSwapBuffers() {
   DCHECK(native_surface_);
 
-  if (!controller_)
-    return false;
-
   gbm_bo* pending_buffer = gbm_surface_lock_front_buffer(native_surface_);
   scoped_refptr<GbmSurfaceBuffer> primary =
       GbmSurfaceBuffer::GetBuffer(pending_buffer);

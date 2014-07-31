@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_DRI_TEST_MOCK_DRI_WRAPPER_H_
 #define UI_OZONE_PLATFORM_DRI_TEST_MOCK_DRI_WRAPPER_H_
 
+#include <queue>
 #include <vector>
 
 #include "skia/ext/refptr.h"
@@ -22,6 +23,7 @@ class MockDriWrapper : public ui::DriWrapper {
   virtual ~MockDriWrapper();
 
   int get_get_crtc_call_count() const { return get_crtc_call_count_; }
+  int get_set_crtc_call_count() const { return set_crtc_call_count_; }
   int get_restore_crtc_call_count() const { return restore_crtc_call_count_; }
   int get_add_framebuffer_call_count() const {
     return add_framebuffer_call_count_;
@@ -51,9 +53,10 @@ class MockDriWrapper : public ui::DriWrapper {
   virtual ScopedDrmCrtcPtr GetCrtc(uint32_t crtc_id) OVERRIDE;
   virtual bool SetCrtc(uint32_t crtc_id,
                        uint32_t framebuffer,
-                       uint32_t* connectors,
+                       std::vector<uint32_t> connectors,
                        drmModeModeInfo* mode) OVERRIDE;
-  virtual bool SetCrtc(drmModeCrtc* crtc, uint32_t* connectors) OVERRIDE;
+  virtual bool SetCrtc(drmModeCrtc* crtc,
+                       std::vector<uint32_t> connectors) OVERRIDE;
   virtual bool AddFramebuffer(uint32_t width,
                               uint32_t height,
                               uint8_t depth,
@@ -93,6 +96,7 @@ class MockDriWrapper : public ui::DriWrapper {
 
  private:
   int get_crtc_call_count_;
+  int set_crtc_call_count_;
   int restore_crtc_call_count_;
   int add_framebuffer_call_count_;
   int remove_framebuffer_call_count_;
@@ -108,7 +112,7 @@ class MockDriWrapper : public ui::DriWrapper {
 
   std::vector<skia::RefPtr<SkSurface> > buffers_;
 
-  HardwareDisplayController* controller_;
+  std::queue<HardwareDisplayController*> controllers_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDriWrapper);
 };

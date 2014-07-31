@@ -25,6 +25,9 @@ namespace {
 const drmModeModeInfo kDefaultMode =
     {0, 6, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, {'\0'}};
 
+const uint32_t kDefaultCrtc = 1;
+const uint32_t kDefaultConnector = 2;
+
 class MockScreenManager : public ui::ScreenManager {
  public:
   MockScreenManager(ui::DriWrapper* dri,
@@ -36,7 +39,8 @@ class MockScreenManager : public ui::ScreenManager {
   // Normally we'd use DRM to figure out the controller configuration. But we
   // can't use DRM in unit tests, so we just create a fake configuration.
   virtual void ForceInitializationOfPrimaryDisplay() OVERRIDE {
-    ConfigureDisplayController(1, 2, kDefaultMode);
+    ConfigureDisplayController(
+        kDefaultCrtc, kDefaultConnector, gfx::Point(), kDefaultMode);
   }
 
  private:

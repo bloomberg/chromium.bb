@@ -14,6 +14,11 @@ namespace {
 const drmModeModeInfo kDefaultMode =
     {0, 6, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, {'\0'}};
 
+const uint32_t kPrimaryCrtc = 1;
+const uint32_t kPrimaryConnector = 2;
+const uint32_t kSecondaryCrtc = 3;
+const uint32_t kSecondaryConnector = 4;
+
 class MockScreenManager : public ui::ScreenManager {
  public:
   MockScreenManager(ui::DriWrapper* dri,
@@ -60,57 +65,112 @@ TEST_F(ScreenManagerTest, CheckWithNoControllers) {
 }
 
 TEST_F(ScreenManagerTest, CheckWithValidController) {
-  screen_manager_->ConfigureDisplayController(1, 2, kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      kPrimaryCrtc, kPrimaryConnector, gfx::Point(), kDefaultMode);
   base::WeakPtr<ui::HardwareDisplayController> controller =
       screen_manager_->GetDisplayController(1);
 
   EXPECT_TRUE(controller);
-  EXPECT_EQ(1u, controller->crtc_id());
-  EXPECT_EQ(2u, controller->connector_id());
+  EXPECT_TRUE(controller->HasCrtc(kPrimaryCrtc));
 }
 
 TEST_F(ScreenManagerTest, CheckWithInvalidId) {
-  screen_manager_->ConfigureDisplayController(1, 2, kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      kPrimaryCrtc, kPrimaryConnector, gfx::Point(), kDefaultMode);
 
   EXPECT_TRUE(screen_manager_->GetDisplayController(1));
   EXPECT_FALSE(screen_manager_->GetDisplayController(2));
 }
 
 TEST_F(ScreenManagerTest, CheckForSecondValidController) {
-  screen_manager_->ConfigureDisplayController(1, 2, kDefaultMode);
-  screen_manager_->ConfigureDisplayController(3, 4, kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      kPrimaryCrtc, kPrimaryConnector, gfx::Point(), kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      3, 4, gfx::Point(6, 0), kDefaultMode);
 
   EXPECT_TRUE(screen_manager_->GetDisplayController(1));
   EXPECT_TRUE(screen_manager_->GetDisplayController(2));
 }
 
 TEST_F(ScreenManagerTest, CheckControllerAfterItIsRemoved) {
-  screen_manager_->ConfigureDisplayController(1, 2, kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      kPrimaryCrtc, kPrimaryConnector, gfx::Point(), kDefaultMode);
   base::WeakPtr<ui::HardwareDisplayController> controller =
       screen_manager_->GetDisplayController(1);
 
   EXPECT_TRUE(controller);
-  screen_manager_->RemoveDisplayController(1, 2);
+  screen_manager_->RemoveDisplayController(1);
   EXPECT_FALSE(controller);
 }
 
 TEST_F(ScreenManagerTest, CheckDuplicateConfiguration) {
-  screen_manager_->ConfigureDisplayController(1, 2, kDefaultMode);
-  screen_manager_->ConfigureDisplayController(1, 2, kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      kPrimaryCrtc, kPrimaryConnector, gfx::Point(), kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      kPrimaryCrtc, kPrimaryConnector, gfx::Point(), kDefaultMode);
 
   EXPECT_TRUE(screen_manager_->GetDisplayController(1));
   EXPECT_FALSE(screen_manager_->GetDisplayController(2));
 }
 
 TEST_F(ScreenManagerTest, CheckChangingMode) {
-  screen_manager_->ConfigureDisplayController(1, 2, kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      kPrimaryCrtc, kPrimaryConnector, gfx::Point(), kDefaultMode);
   drmModeModeInfo new_mode = kDefaultMode;
   new_mode.vdisplay = 10;
-  screen_manager_->ConfigureDisplayController(1, 2, new_mode);
+  screen_manager_->ConfigureDisplayController(
+      kPrimaryCrtc, kPrimaryConnector, gfx::Point(), new_mode);
 
   EXPECT_TRUE(screen_manager_->GetDisplayController(1));
   EXPECT_FALSE(screen_manager_->GetDisplayController(2));
   drmModeModeInfo mode = screen_manager_->GetDisplayController(1)->get_mode();
   EXPECT_EQ(new_mode.vdisplay, mode.vdisplay);
   EXPECT_EQ(new_mode.hdisplay, mode.hdisplay);
+}
+
+TEST_F(ScreenManagerTest, CheckForControllersInMirroredMode) {
+  screen_manager_->ConfigureDisplayController(
+      kPrimaryCrtc, kPrimaryConnector, gfx::Point(), kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      kSecondaryCrtc, kSecondaryConnector, gfx::Point(), kDefaultMode);
+
+  EXPECT_TRUE(screen_manager_->GetDisplayController(1));
+  EXPECT_FALSE(screen_manager_->GetDisplayController(2));
+}
+
+TEST_F(ScreenManagerTest, CheckMirrorModeTransitions) {
+  screen_manager_->ConfigureDisplayController(
+      kPrimaryCrtc, kPrimaryConnector, gfx::Point(), kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      kSecondaryCrtc, kSecondaryConnector, gfx::Point(6, 0), kDefaultMode);
+
+  EXPECT_TRUE(screen_manager_->GetDisplayController(1));
+  EXPECT_TRUE(screen_manager_->GetDisplayController(2));
+
+  screen_manager_->ConfigureDisplayController(
+      kPrimaryCrtc, kPrimaryConnector, gfx::Point(), kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      kSecondaryCrtc, kSecondaryConnector, gfx::Point(), kDefaultMode);
+  EXPECT_TRUE(screen_manager_->GetDisplayController(1));
+  EXPECT_FALSE(screen_manager_->GetDisplayController(2));
+
+  screen_manager_->ConfigureDisplayController(
+      kPrimaryCrtc, kPrimaryConnector, gfx::Point(6, 0), kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      kSecondaryCrtc, kSecondaryConnector, gfx::Point(), kDefaultMode);
+  EXPECT_TRUE(screen_manager_->GetDisplayController(1));
+  EXPECT_TRUE(screen_manager_->GetDisplayController(3));
+}
+
+TEST_F(ScreenManagerTest, MonitorGoneInMirrorMode) {
+  screen_manager_->ConfigureDisplayController(
+      kPrimaryCrtc, kPrimaryConnector, gfx::Point(), kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      kSecondaryCrtc, kSecondaryConnector, gfx::Point(), kDefaultMode);
+
+  screen_manager_->RemoveDisplayController(kSecondaryCrtc);
+  EXPECT_TRUE(screen_manager_->ConfigureDisplayController(
+      kPrimaryCrtc, kPrimaryConnector, gfx::Point(), kDefaultMode));
+  EXPECT_TRUE(screen_manager_->GetDisplayController(1));
+  EXPECT_FALSE(screen_manager_->GetDisplayController(2));
 }

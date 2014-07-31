@@ -76,6 +76,10 @@ DisplaySnapshotDri::DisplaySnapshotDri(
       connector_(connector->connector_id),
       crtc_(crtc->crtc_id),
       dpms_property_(drm->GetProperty(connector, "DPMS")) {
+  if (!dpms_property_)
+    VLOG(1) << "Failed to find the DPMS property for connector "
+            << connector->connector_id;
+
   ScopedDrmPropertyBlobPtr edid_blob(drm->GetPropertyBlob(connector, "EDID"));
 
   if (edid_blob) {

@@ -74,6 +74,15 @@ void DisplayMessageHandler::OnConfigureNativeDisplay(
     }
   }
 
+  // If the display doesn't have the mode natively, then lookup the mode from
+  // other displays and try using it on the current display (some displays
+  // support panel fitting and they can use different modes even if the mode
+  // isn't explicitly declared).
+  if (!mode)
+    mode = ndd_->FindDisplayMode(mode_param.size,
+                                 mode_param.is_interlaced,
+                                 mode_param.refresh_rate);
+
   if (!mode) {
     LOG(ERROR) << "Failed to find mode: size=" << mode_param.size.ToString()
                << " is_interlaced=" << mode_param.is_interlaced

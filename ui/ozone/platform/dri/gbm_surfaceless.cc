@@ -27,12 +27,13 @@ bool GbmSurfaceless::ResizeNativeWindow(const gfx::Size& viewport_size) {
 
 bool GbmSurfaceless::OnSwapBuffers() {
   if (!controller_)
-    return false;
+    return true;
 
   bool success = controller_->SchedulePageFlip(queued_planes_);
   queued_planes_.clear();
-  if (success)
-    controller_->WaitForPageFlipEvent();
+  // Even on failure we may have scheduled some planes. Allow the controller to
+  // wait for the events for the scheduled planes.
+  controller_->WaitForPageFlipEvent();
 
   return success;
 }

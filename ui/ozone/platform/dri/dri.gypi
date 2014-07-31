@@ -41,6 +41,8 @@
         'chromeos/display_snapshot_dri.h',
         'chromeos/native_display_delegate_dri.cc',
         'chromeos/native_display_delegate_dri.h',
+        'crtc_state.cc',
+        'crtc_state.h',
         'cursor_factory_evdev_dri.cc',
         'cursor_factory_evdev_dri.h',
         'dri_console_buffer.cc',

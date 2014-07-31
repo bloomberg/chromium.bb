@@ -7,6 +7,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkDevice.h"
+#include "ui/ozone/platform/dri/crtc_state.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_surface.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
@@ -17,6 +18,9 @@ namespace {
 // Create a basic mode for a 6x4 screen.
 const drmModeModeInfo kDefaultMode =
     {0, 6, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, {'\0'}};
+
+const uint32_t kDefaultCrtc = 1;
+const uint32_t kDefaultConnector = 2;
 
 }  // namespace
 
@@ -41,7 +45,10 @@ void DriSurfaceTest::SetUp() {
   message_loop_.reset(new base::MessageLoopForUI);
   drm_.reset(new ui::MockDriWrapper(3));
 
-  controller_.reset(new ui::HardwareDisplayController(drm_.get(), 1, 1));
+  controller_.reset(new ui::HardwareDisplayController(
+      drm_.get(),
+      scoped_ptr<ui::CrtcState>(
+          new ui::CrtcState(drm_.get(), kDefaultCrtc, kDefaultConnector))));
   scoped_refptr<ui::DriBuffer> buffer(new ui::DriBuffer(drm_.get()));
   SkImageInfo info = SkImageInfo::MakeN32Premul(kDefaultMode.hdisplay,
                                                 kDefaultMode.vdisplay);

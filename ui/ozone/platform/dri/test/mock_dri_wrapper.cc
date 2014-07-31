@@ -23,6 +23,7 @@ template<class Object> Object* DrmAllocator() {
 MockDriWrapper::MockDriWrapper(int fd)
     : DriWrapper(""),
       get_crtc_call_count_(0),
+      set_crtc_call_count_(0),
       restore_crtc_call_count_(0),
       add_framebuffer_call_count_(0),
       remove_framebuffer_call_count_(0),
@@ -32,8 +33,7 @@ MockDriWrapper::MockDriWrapper(int fd)
       add_framebuffer_expectation_(true),
       page_flip_expectation_(true),
       create_dumb_buffer_expectation_(true),
-      current_framebuffer_(0),
-      controller_(NULL) {
+      current_framebuffer_(0) {
   fd_ = fd;
 }
 
@@ -48,13 +48,15 @@ ScopedDrmCrtcPtr MockDriWrapper::GetCrtc(uint32_t crtc_id) {
 
 bool MockDriWrapper::SetCrtc(uint32_t crtc_id,
                              uint32_t framebuffer,
-                             uint32_t* connectors,
+                             std::vector<uint32_t> connectors,
                              drmModeModeInfo* mode) {
   current_framebuffer_ = framebuffer;
+  set_crtc_call_count_++;
   return set_crtc_expectation_;
 }
 
-bool MockDriWrapper::SetCrtc(drmModeCrtc* crtc, uint32_t* connectors) {
+bool MockDriWrapper::SetCrtc(drmModeCrtc* crtc,
+                             std::vector<uint32_t> connectors) {
   restore_crtc_call_count_++;
   return true;
 }
@@ -81,7 +83,7 @@ bool MockDriWrapper::PageFlip(uint32_t crtc_id,
                               void* data) {
   page_flip_call_count_++;
   current_framebuffer_ = framebuffer;
-  controller_ = static_cast<ui::HardwareDisplayController*>(data);
+  controllers_.push(static_cast<ui::HardwareDisplayController*>(data));
   return page_flip_expectation_;
 }
 
@@ -122,8 +124,9 @@ bool MockDriWrapper::MoveCursor(uint32_t crtc_id, const gfx::Point& point) {
 }
 
 void MockDriWrapper::HandleEvent(drmEventContext& event) {
-  if (controller_)
-    controller_->OnPageFlipEvent(0, 0, 0);
+  CHECK(!controllers_.empty());
+  controllers_.front()->OnPageFlipEvent(0, 0, 0);
+  controllers_.pop();
 }
 
 bool MockDriWrapper::CreateDumbBuffer(const SkImageInfo& info,
