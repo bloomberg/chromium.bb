@@ -61,6 +61,7 @@ function test()
 
     function onTracingComplete()
     {
+        tracingModel.removeEventListener(WebInspector.TracingModel.Events.TracingComplete, onTracingComplete);
         InspectorTest.addResult("Tracing complete");
         runEventsSanityCheck();
         InspectorTest.completeTest();
@@ -72,6 +73,7 @@ function test()
     {
         InspectorTest.addResult("Tracing started (error: " + JSON.stringify(error) + ")");
         InspectorTest.evaluateInPage("doWork()", function() {
+            tracingModel.addEventListener(WebInspector.TracingModel.Events.TracingComplete, onTracingComplete);
             tracingModel.stop(onTracingComplete);
         });
     }

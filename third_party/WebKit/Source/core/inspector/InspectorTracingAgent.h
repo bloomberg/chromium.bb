@@ -28,9 +28,14 @@ public:
 
     // Base agent methods.
     virtual void restore() OVERRIDE;
+    virtual void setFrontend(InspectorFrontend*) OVERRIDE;
+
+    void consoleTimeline(const String& title);
+    void consoleTimelineEnd(const String& title);
 
     // Protocol method implementations.
-    virtual void start(ErrorString*, const String& categoryFilter, const String&, const double*, String* sessionId) OVERRIDE;
+    virtual void start(ErrorString*, const String& categoryFilter, const String&, const double*) OVERRIDE;
+    virtual void end(ErrorString*);
 
     // Methods for other agents to use.
     void setLayerTreeId(int);
@@ -39,10 +44,13 @@ private:
     explicit InspectorTracingAgent(InspectorClient*);
 
     void emitMetadataEvents();
+    void innerStart(const String& categoryFilter, bool fromConsole);
     String sessionId();
 
     int m_layerTreeId;
     InspectorClient* m_client;
+    Vector<String> m_consoleTimelines;
+    InspectorFrontend::Tracing* m_frontend;
 };
 
 }

@@ -47,6 +47,7 @@ class LocalFrame;
 class InspectorFrontend;
 class InjectedScriptManager;
 class InspectorTimelineAgent;
+class InspectorTracingAgent;
 class InstrumentingAgents;
 class ResourceError;
 class ResourceLoader;
@@ -62,7 +63,7 @@ typedef String ErrorString;
 class InspectorConsoleAgent : public InspectorBaseAgent<InspectorConsoleAgent>, public InspectorBackendDispatcher::ConsoleCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorConsoleAgent);
 public:
-    InspectorConsoleAgent(InspectorTimelineAgent*, InjectedScriptManager*);
+    InspectorConsoleAgent(InspectorTimelineAgent*, InspectorTracingAgent*, InjectedScriptManager*);
     virtual ~InspectorConsoleAgent();
     virtual void trace(Visitor*) OVERRIDE;
 
@@ -87,6 +88,7 @@ public:
 
     void consoleTime(ExecutionContext*, const String& title);
     void consoleTimeEnd(ExecutionContext*, const String& title, ScriptState*);
+    void setTracingBasedTimeline(ErrorString*, bool enabled);
     void consoleTimeline(ExecutionContext*, const String& title, ScriptState*);
     void consoleTimelineEnd(ExecutionContext*, const String& title, ScriptState*);
 
@@ -110,6 +112,7 @@ protected:
     void addConsoleMessage(PassOwnPtr<InspectorConsoleMessage>);
 
     RawPtrWillBeMember<InspectorTimelineAgent> m_timelineAgent;
+    RawPtrWillBeMember<InspectorTracingAgent> m_tracingAgent;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     InspectorFrontend::Console* m_frontend;
     Vector<OwnPtr<InspectorConsoleMessage> > m_consoleMessages;

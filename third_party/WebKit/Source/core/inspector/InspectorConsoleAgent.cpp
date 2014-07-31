@@ -35,6 +35,7 @@
 #include "core/inspector/InspectorConsoleMessage.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorTimelineAgent.h"
+#include "core/inspector/InspectorTracingAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallFrame.h"
@@ -57,13 +58,15 @@ static const int expireConsoleMessagesStep = 100;
 namespace ConsoleAgentState {
 static const char monitoringXHR[] = "monitoringXHR";
 static const char consoleMessagesEnabled[] = "consoleMessagesEnabled";
+static const char tracingBasedTimeline[] = "tracingBasedTimeline";
 }
 
 int InspectorConsoleAgent::s_enabledAgentCount = 0;
 
-InspectorConsoleAgent::InspectorConsoleAgent(InspectorTimelineAgent* timelineAgent, InjectedScriptManager* injectedScriptManager)
+InspectorConsoleAgent::InspectorConsoleAgent(InspectorTimelineAgent* timelineAgent, InspectorTracingAgent* tracingAgent, InjectedScriptManager* injectedScriptManager)
     : InspectorBaseAgent<InspectorConsoleAgent>("Console")
     , m_timelineAgent(timelineAgent)
+    , m_tracingAgent(tracingAgent)
     , m_injectedScriptManager(injectedScriptManager)
     , m_frontend(0)
     , m_expiredConsoleMessageCount(0)
@@ -228,14 +231,25 @@ void InspectorConsoleAgent::consoleTimeEnd(ExecutionContext*, const String& titl
     addConsoleAPIMessageToConsole(LogMessageType, DebugMessageLevel, message, scriptState, nullptr);
 }
 
+void InspectorConsoleAgent::setTracingBasedTimeline(ErrorString*, bool enabled)
+{
+    m_state->setBoolean(ConsoleAgentState::tracingBasedTimeline, enabled);
+}
+
 void InspectorConsoleAgent::consoleTimeline(ExecutionContext* context, const String& title, ScriptState* scriptState)
 {
-    m_timelineAgent->consoleTimeline(context, title, scriptState);
+    if (m_tracingAgent && m_state->getBoolean(ConsoleAgentState::tracingBasedTimeline))
+        m_tracingAgent->consoleTimeline(title);
+    else
+        m_timelineAgent->consoleTimeline(context, title, scriptState);
 }
 
 void InspectorConsoleAgent::consoleTimelineEnd(ExecutionContext* context, const String& title, ScriptState* scriptState)
 {
-    m_timelineAgent->consoleTimelineEnd(context, title, scriptState);
+    if (m_state->getBoolean(ConsoleAgentState::tracingBasedTimeline))
+        m_tracingAgent->consoleTimelineEnd(title);
+    else
+        m_timelineAgent->consoleTimelineEnd(context, title, scriptState);
 }
 
 void InspectorConsoleAgent::consoleCount(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
