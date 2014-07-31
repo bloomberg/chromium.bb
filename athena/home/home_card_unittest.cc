@@ -47,7 +47,8 @@ TEST_F(HomeCardTest, VirtualKeyboardTransition) {
 }
 
 // Verify if the home card is correctly minimized after app launch.
-TEST_F(HomeCardTest, AppSelection) {
+// TODO(flackr): Fix memory leak and re-enable - http://crbug.com/399241
+TEST_F(HomeCardTest, DISABLED_AppSelection) {
   EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
 
   WindowManager::GetInstance()->ToggleOverview();
