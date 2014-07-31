@@ -255,9 +255,6 @@ std::vector<ComponentExtensionIME> ComponentExtensionIMEManagerImpl::ListIME() {
 bool ComponentExtensionIMEManagerImpl::Load(const std::string& extension_id,
                                             const std::string& manifest,
                                             const base::FilePath& file_path) {
-  if (!base::PathExists(file_path))
-    return false;
-
   Profile* profile = ProfileManager::GetActiveUserProfile();
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile);

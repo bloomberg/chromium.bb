@@ -45,6 +45,9 @@ class InputImeEventRouter {
   chromeos::InputMethodEngineInterface* GetActiveEngine(
       const std::string& extension_id);
 
+  bool DoesExtensionHaveKeyListener(const std::string& extension_id);
+  void SetExtensionHasKeyListener(const std::string& extension_id,
+                                  bool has_listener);
 
   // Called when a key event was handled.
   void OnKeyEventHandled(const std::string& extension_id,
@@ -74,6 +77,8 @@ class InputImeEventRouter {
 
   unsigned int next_request_id_;
   RequestMap request_map_;
+
+  std::set<std::string> extensions_with_key_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(InputImeEventRouter);
 };
@@ -239,6 +244,7 @@ class InputImeAPI : public BrowserContextKeyedAPI,
 
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
 
  private:
   friend class BrowserContextKeyedAPIFactory<InputImeAPI>;
