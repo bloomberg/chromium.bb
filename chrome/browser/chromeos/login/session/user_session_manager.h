@@ -178,7 +178,9 @@ class UserSessionManager
 
   // Callback for Profile::CREATE_STATUS_INITIALIZED profile state.
   // Profile is created, extensions and promo resources are initialized.
-  void UserProfileInitialized(Profile* profile, bool is_incognito_profile);
+  void UserProfileInitialized(Profile* profile,
+                              bool is_incognito_profile,
+                              const std::string& user_id);
 
   // Callback to resume profile creation after transferring auth data from
   // the authentication profile.

@@ -102,10 +102,10 @@ void SetCookies(BasicHttpResponse* http_response,
                 const std::string& lsid_cookie) {
   http_response->AddCustomHeader(
       "Set-Cookie",
-      base::StringPrintf("SID=%s; Path=/; HttpOnly;", sid_cookie.c_str()));
+      base::StringPrintf("SID=%s; Path=/; HttpOnly", sid_cookie.c_str()));
   http_response->AddCustomHeader(
       "Set-Cookie",
-      base::StringPrintf("LSID=%s; Path=/; HttpOnly;", lsid_cookie.c_str()));
+      base::StringPrintf("LSID=%s; Path=/; HttpOnly", lsid_cookie.c_str()));
 }
 
 }  // namespace

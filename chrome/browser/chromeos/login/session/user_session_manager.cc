@@ -20,6 +20,7 @@
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
@@ -33,7 +34,9 @@
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_brand_chromeos.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -54,6 +57,8 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
+#include "chromeos/settings/cros_settings_names.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/user_manager/user.h"
@@ -587,7 +592,7 @@ void UserSessionManager::OnProfileCreated(const std::string& user_id,
       // Profile is created, extensions and promo resources are initialized.
       // At this point all other Chrome OS services will be notified that it is
       // safe to use this profile.
-      UserProfileInitialized(profile, is_incognito_profile);
+      UserProfileInitialized(profile, is_incognito_profile, user_id);
       break;
     case Profile::CREATE_STATUS_LOCAL_FAIL:
     case Profile::CREATE_STATUS_REMOTE_FAIL:
@@ -621,7 +626,8 @@ void UserSessionManager::InitProfilePreferences(Profile* profile,
 }
 
 void UserSessionManager::UserProfileInitialized(Profile* profile,
-                                            bool is_incognito_profile) {
+                                                bool is_incognito_profile,
+                                                const std::string& user_id) {
   if (is_incognito_profile) {
     profile->OnLogin();
     // Send the notification before creating the browser so additional objects
@@ -641,17 +647,35 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
   btl->AddLoginTimeMarker("UserProfileGotten", false);
 
   if (user_context_.IsUsingOAuth()) {
+    // Retrieve the policy that indicates whether to continue copying
+    // authentication cookies set by a SAML IdP on subsequent logins after the
+    // first.
+    bool transfer_saml_auth_cookies_on_subsequent_login = false;
+    if (has_auth_cookies_ &&
+        g_browser_process->platform_part()->
+            browser_policy_connector_chromeos()->GetUserAffiliation(user_id) ==
+                policy::USER_AFFILIATION_MANAGED) {
+      CrosSettings::Get()->GetBoolean(
+          kAccountsPrefTransferSAMLCookies,
+          &transfer_saml_auth_cookies_on_subsequent_login);
+    }
+
     // Transfers authentication-related data from the profile that was used for
     // authentication to the user's profile. The proxy authentication state is
     // transferred unconditionally. If the user authenticated via an auth
-    // extension, authentication cookies and server bound certificates will be
-    // transferred as well, if the user's cookie jar is empty. If the cookie jar
-    // is not empty, the authentication states in the login profile and the
-    // user's profile must be merged using /MergeSession instead.
+    // extension, authentication cookies and channel IDs will be transferred as
+    // well when the user's cookie jar is empty. If the cookie jar is not empty,
+    // the authentication states in the login profile and the user's profile
+    // must be merged using /MergeSession instead. Authentication cookies set by
+    // a SAML IdP will also be transferred when the user's cookie jar is not
+    // empty if |transfer_saml_auth_cookies_on_subsequent_login| is true.
+    const bool transfer_auth_cookies_and_channel_ids_on_first_login =
+        has_auth_cookies_;
     ProfileAuthData::Transfer(
         authenticator_->authentication_profile(),
         profile,
-        has_auth_cookies_,  // transfer_auth_cookies_and_channel_ids
+        transfer_auth_cookies_and_channel_ids_on_first_login,
+        transfer_saml_auth_cookies_on_subsequent_login,
         base::Bind(&UserSessionManager::CompleteProfileCreateAfterAuthTransfer,
                    AsWeakPtr(),
                    profile));

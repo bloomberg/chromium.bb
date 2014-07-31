@@ -407,7 +407,7 @@ void GaiaScreenHandler::OnCookiesCleared(
 void GaiaScreenHandler::ShowSigninScreenForCreds(const std::string& username,
                                                  const std::string& password) {
   VLOG(2) << "ShowSigninScreenForCreds  for user " << username
-          << ", frame_state=" << FrameState();
+          << ", frame_state=" << frame_state();
 
   test_user_ = username;
   test_pass_ = password;
@@ -416,9 +416,9 @@ void GaiaScreenHandler::ShowSigninScreenForCreds(const std::string& username,
   // Submit login form for test if gaia is ready. If gaia is loading, login
   // will be attempted in HandleLoginWebuiReady after gaia is ready. Otherwise,
   // reload gaia then follow the loading case.
-  if (FrameState() == GaiaScreenHandler::FRAME_STATE_LOADED) {
+  if (frame_state() == GaiaScreenHandler::FRAME_STATE_LOADED) {
     SubmitLoginFormForTest();
-  } else if (FrameState() != GaiaScreenHandler::FRAME_STATE_LOADING) {
+  } else if (frame_state() != GaiaScreenHandler::FRAME_STATE_LOADING) {
     DCHECK(signin_screen_handler_);
     signin_screen_handler_->OnShowAddUser();
   }

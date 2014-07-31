@@ -120,7 +120,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 270
+#   For your editing convenience: highest ID currently used: 271
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -6527,6 +6527,28 @@
 
       While the policy itself is supported on the above platforms, the feature it is enabling may be available on fewer platforms. Not all deprecated Web Platform features can be re-enabled. Only the ones explicitly listed below can be for a limited period of time, which is different per feature. The general format of the string tag will be [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. As reference, you can find the intent behind the Web Platform feature changes at http://bit.ly/blinkintents.
       ''',
+    },
+    {
+      'name': 'DeviceTransferSAMLCookies',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:38-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 271,
+      'caption': '''Transfer SAML IdP cookies during login''',
+      'desc': '''Specifies whether authentication cookies set by a SAML IdP during login should be transferred to the user's profile.
+
+      When a user authenticates via a SAML IdP during login, cookies set by the IdP are written to a temporary profile at first. These cookies can be transferred to the user's profile to carry forward the authentication state.
+
+      When this policy is set to true, cookies set by the IdP are transferred to the user's profile every time he/she authenticates against the SAML IdP during login.
+
+      When this policy is set to false or unset, cookies set by the IdP are transferred to the user's profile during his/her first login on a device only.
+
+      This policy affects users whose domain matches the device's enrollment domain only. For all other users, cookies set by the IdP are transferred to the user's profile during his/her first login on the device only.''',
     },
   ],
   'messages': {

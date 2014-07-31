@@ -47,6 +47,7 @@ const char* kKnownSettings[] = {
   kAccountsPrefEphemeralUsersEnabled,
   kAccountsPrefShowUserNamesOnSignIn,
   kAccountsPrefSupervisedUsersEnabled,
+  kAccountsPrefTransferSAMLCookies,
   kAccountsPrefUsers,
   kAllowRedeemChromeOsRegistrationOffers,
   kAllowedConnectionTypesForUpdate,
@@ -397,6 +398,7 @@ void DeviceSettingsProvider::SetInPolicy() {
   } else {
     // The remaining settings don't support Set(), since they are not
     // intended to be customizable by the user:
+    //   kAccountsPrefTransferSAMLCookies
     //   kAppPack
     //   kDeviceAttestationEnabled
     //   kDeviceOwner
@@ -448,6 +450,7 @@ void DeviceSettingsProvider::DecodeLoginPolicies(
   //   kAccountsPrefEphemeralUsersEnabled has a default value of false.
   //   kAccountsPrefSupervisedUsersEnabled has a default value of false
   //     for enterprise devices and true for consumer devices.
+  //   kAccountsPrefTransferSAMLCookies has a default value of false.
   if (policy.has_allow_new_users() &&
       policy.allow_new_users().has_allow_new_users()) {
     if (policy.allow_new_users().allow_new_users()) {
@@ -573,6 +576,12 @@ void DeviceSettingsProvider::DecodeLoginPolicies(
       list->Append(new base::StringValue(*it));
     }
     new_values_cache->SetValue(kStartUpFlags, list);
+  }
+
+  if (policy.has_saml_settings()) {
+    new_values_cache->SetBoolean(
+        kAccountsPrefTransferSAMLCookies,
+        policy.saml_settings().transfer_saml_cookies());
   }
 }
 

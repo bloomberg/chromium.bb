@@ -30,6 +30,7 @@ CHROMEOS_EXPORT extern const char
 CHROMEOS_EXPORT extern const char
     kAccountsPrefDeviceLocalAccountPromptForNetworkWhenOffline[];
 CHROMEOS_EXPORT extern const char kAccountsPrefSupervisedUsersEnabled[];
+CHROMEOS_EXPORT extern const char kAccountsPrefTransferSAMLCookies[];
 
 CHROMEOS_EXPORT extern const char kSignedDataRoamingEnabled[];
 

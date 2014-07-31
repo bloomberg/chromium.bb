@@ -259,6 +259,18 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                     NULL);
     }
   }
+
+  if (policy.has_saml_settings()) {
+    const em::SAMLSettingsProto& container(policy.saml_settings());
+    if (container.has_transfer_saml_cookies()) {
+      policies->Set(key::kDeviceTransferSAMLCookies,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    new base::FundamentalValue(
+                        container.transfer_saml_cookies()),
+                    NULL);
+    }
+  }
 }
 
 void DecodeKioskPolicies(const em::ChromeDeviceSettingsProto& policy,

@@ -20,16 +20,22 @@ class ProfileAuthData {
  public:
   // Transfers authentication-related data from |from_context| to |to_context|
   // and invokes |completion_callback| on the UI thread when the operation has
-  // completed. The proxy authentication state is transferred unconditionally.
-  // If |transfer_auth_cookies_and_channel_ids| is true, authentication
-  // cookies and channel ids are transferred as well, if
-  // |to_context|'s cookie jar is empty. If the cookie jar is not empty, the
-  // authentication states in |from_context| and |to_context| should be merged
-  // using /MergeSession instead.
-  static void Transfer(content::BrowserContext* from_context,
-                       content::BrowserContext* to_context,
-                       bool transfer_auth_cookies_and_channel_ids,
-                       const base::Closure& completion_callback);
+  // completed. The following data is transferred:
+  // * The proxy authentication state.
+  // * All authentication cookies and channel IDs, if
+  //   |transfer_auth_cookies_and_channel_ids_on_first_login| is true and
+  //   |to_context|'s cookie jar is empty. If the cookie jar is not empty, the
+  //   authentication states in |from_context| and |to_context| should be merged
+  //   using /MergeSession instead.
+  // * The authentication cookies set by a SAML IdP, if
+  //   |transfer_saml_auth_cookies_on_subsequent_login| is true and
+  //   |to_context|'s cookie jar is not empty.
+  static void Transfer(
+      content::BrowserContext* from_context,
+      content::BrowserContext* to_context,
+      bool transfer_auth_cookies_and_channel_ids_on_first_login,
+      bool transfer_saml_auth_cookies_on_subsequent_login,
+      const base::Closure& completion_callback);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ProfileAuthData);

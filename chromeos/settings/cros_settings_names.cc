@@ -34,6 +34,8 @@ const char kAccountsPrefDeviceLocalAccountPromptForNetworkWhenOffline[] =
     "cros.accounts.deviceLocalAccountPromptForNetworkWhenOffline";
 const char kAccountsPrefSupervisedUsersEnabled[] =
     "cros.accounts.supervisedUsersEnabled";
+const char kAccountsPrefTransferSAMLCookies[] =
+    "cros.accounts.transferSAMLCookies";
 
 // All cros.signed.* settings are stored in SignedSettings.
 const char kSignedDataRoamingEnabled[] = "cros.signed.data_roaming_enabled";

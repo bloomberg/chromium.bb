@@ -2314,6 +2314,9 @@
   "AutoCleanUpStrategy": {
   },
 
+  "DeviceTransferSAMLCookies": {
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

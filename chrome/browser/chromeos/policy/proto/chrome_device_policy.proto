@@ -573,6 +573,14 @@ message SystemSettingsProto {
   optional bool block_devmode = 1;
 }
 
+// Settings that control login for SAML users.
+message SAMLSettingsProto {
+  // Whether cookies set by a SAML IdP should be transferred to users' profiles
+  // every time a user authenticates via SAML during login. If false, cookies
+  // are transferred during each user's first login only.
+  optional bool transfer_saml_cookies = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -606,4 +614,5 @@ message ChromeDeviceSettingsProto {
   optional SystemUse24HourClockProto use_24hour_clock = 30;
   optional AutoCleanupSettigsProto auto_clean_up_settings = 31;
   optional SystemSettingsProto system_settings = 32;
+  optional SAMLSettingsProto saml_settings = 33;
 }

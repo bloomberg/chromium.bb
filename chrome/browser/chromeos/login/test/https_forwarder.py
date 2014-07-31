@@ -64,7 +64,22 @@ class RequestForwarder(BaseHTTPServer.BaseHTTPRequestHandler):
 
     self.send_response(forward.getcode())
     for key, value in dict(forward.info()).iteritems():
-      self.send_header(key, value)
+      # RFC 6265 states in section 3:
+      #
+      # Origin servers SHOULD NOT fold multiple Set-Cookie header fields into
+      # a single header field.
+      #
+      # Python 2 does not obey this requirement and folds multiple Set-Cookie
+      # header fields into one. The following code undoes this folding by
+      # splitting the Set-Cookie header field at each comma. Note that this is a
+      # hack because the code does not (and cannot reliably) distinguish between
+      # commas inserted by Python while folding multiple headers and commas that
+      # were part of the original Set-Cookie headers.
+      if key == 'set-cookie':
+        for cookie in value.split(','):
+          self.send_header(key, cookie)
+      else:
+        self.send_header(key, value)
     self.end_headers()
     self.wfile.write(forward.read())
 
