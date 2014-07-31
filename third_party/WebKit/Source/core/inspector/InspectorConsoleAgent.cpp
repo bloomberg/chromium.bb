@@ -84,6 +84,7 @@ InspectorConsoleAgent::~InspectorConsoleAgent()
 void InspectorConsoleAgent::trace(Visitor* visitor)
 {
     visitor->trace(m_timelineAgent);
+    visitor->trace(m_tracingAgent);
     visitor->trace(m_injectedScriptManager);
     InspectorBaseAgent::trace(visitor);
 }
