@@ -722,10 +722,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* element, const 
     // Now do rest of the properties.
     applyMatchedProperties<LowPriorityProperties>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
 
-    // If our font got dirtied by one of the non-essential font props,
-    // go ahead and update it a second time.
-    updateFont(state);
-
     loadPendingResources(state);
 
     didAccess();
