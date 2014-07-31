@@ -243,12 +243,12 @@ GURL GetReauthURL(Profile* profile, const std::string& account_id) {
         account_id);
   }
 
-  signin::Source source = switches::IsNewProfileManagement() ?
+  signin::Source source = switches::IsNewAvatarMenu() ?
       signin::SOURCE_REAUTH : signin::SOURCE_SETTINGS;
 
   GURL url = signin::GetPromoURL(
       source, true /* auto_close */,
-      switches::IsNewProfileManagement() /* is_constrained */);
+      switches::IsNewAvatarMenu() /* is_constrained */);
   url = net::AppendQueryParameter(url, "email", account_id);
   url = net::AppendQueryParameter(url, "validateEmail", "1");
   return net::AppendQueryParameter(url, "readOnlyEmail", "1");

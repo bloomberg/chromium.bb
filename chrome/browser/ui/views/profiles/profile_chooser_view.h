@@ -207,6 +207,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
   views::Link* manage_accounts_link_;
   views::LabelButton* signin_current_profile_link_;
   views::ImageButton* question_mark_button_;
+  views::LabelButton* auth_error_email_button_;
 
   // The profile name and photo in the active profile card. Owned by the
   // views hierarchy.
@@ -215,6 +216,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
 
   // Action buttons.
   views::LabelButton* users_button_;
+  views::LabelButton* go_incognito_button_;
   views::LabelButton* lock_button_;
   views::Link* add_account_link_;
 

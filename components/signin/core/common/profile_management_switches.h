@@ -15,7 +15,8 @@ class CommandLine;
 
 namespace switches {
 
-// Checks whether account consistency is enabled.
+// Checks whether account consistency is enabled. If enabled, the account
+// management UI is available in the avatar bubble.
 bool IsEnableAccountConsistency();
 
 // Enables the web-based sign in flow on Chrome desktop.
