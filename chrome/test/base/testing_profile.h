@@ -83,10 +83,12 @@ class TestingProfile : public Profile {
         BrowserContextKeyedServiceFactory* service_factory,
         BrowserContextKeyedServiceFactory::TestingFactoryFunction callback);
 
+#if defined(ENABLE_EXTENSIONS)
     // Sets the ExtensionSpecialStoragePolicy to be returned by
     // GetExtensionSpecialStoragePolicy().
     void SetExtensionSpecialStoragePolicy(
         scoped_refptr<ExtensionSpecialStoragePolicy> policy);
+#endif
 
     // Sets the path to the directory to be used to hold profile data.
     void SetPath(const base::FilePath& path);
@@ -116,7 +118,9 @@ class TestingProfile : public Profile {
 
     // Various staging variables where values are held until Build() is invoked.
     scoped_ptr<PrefServiceSyncable> pref_service_;
+#if defined(ENABLE_EXTENSIONS)
     scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy_;
+#endif
     base::FilePath path_;
     Delegate* delegate_;
     bool incognito_;
@@ -145,7 +149,9 @@ class TestingProfile : public Profile {
   // Callers should use Builder::Build() instead of invoking this constructor.
   TestingProfile(const base::FilePath& path,
                  Delegate* delegate,
+#if defined(ENABLE_EXTENSIONS)
                  scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
+#endif
                  scoped_ptr<PrefServiceSyncable> prefs,
                  bool incognito,
                  bool guest_session,
@@ -242,7 +248,6 @@ class TestingProfile : public Profile {
     force_incognito_ = force_incognito;
   }
 
-  // Assumes ownership.
   virtual void SetOffTheRecordProfile(scoped_ptr<Profile> profile);
   virtual void SetOriginalProfile(Profile* profile);
   virtual Profile* GetOffTheRecordProfile() OVERRIDE;
@@ -250,8 +255,10 @@ class TestingProfile : public Profile {
   virtual bool HasOffTheRecordProfile() OVERRIDE;
   virtual Profile* GetOriginalProfile() OVERRIDE;
   virtual bool IsSupervised() OVERRIDE;
+#if defined(ENABLE_EXTENSIONS)
   void SetExtensionSpecialStoragePolicy(
       ExtensionSpecialStoragePolicy* extension_special_storage_policy);
+#endif
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() OVERRIDE;
   // TODO(ajwong): Remove this API in favor of directly retrieving the
@@ -365,8 +372,10 @@ class TestingProfile : public Profile {
   base::FilePath last_selected_directory_;
   scoped_refptr<history::TopSites> top_sites_;  // For history and thumbnails.
 
+#if defined(ENABLE_EXTENSIONS)
   scoped_refptr<ExtensionSpecialStoragePolicy>
       extension_special_storage_policy_;
+#endif
 
   // The proxy prefs tracker.
   scoped_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;

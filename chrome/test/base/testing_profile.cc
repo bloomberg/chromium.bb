@@ -19,7 +19,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/favicon/chrome_favicon_client_factory.h"
@@ -84,6 +83,7 @@
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
 #if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/extension_system.h"
 #endif
@@ -244,7 +244,9 @@ TestingProfile::TestingProfile(const base::FilePath& path,
 TestingProfile::TestingProfile(
     const base::FilePath& path,
     Delegate* delegate,
+#if defined(ENABLE_EXTENSIONS)
     scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
+#endif
     scoped_ptr<PrefServiceSyncable> prefs,
     bool incognito,
     bool guest_session,
@@ -260,7 +262,9 @@ TestingProfile::TestingProfile(
       guest_session_(guest_session),
       supervised_user_id_(supervised_user_id),
       last_session_exited_cleanly_(true),
+#if defined(ENABLE_EXTENSIONS)
       extension_special_storage_policy_(extension_policy),
+#endif
       profile_path_(path),
       browser_context_dependency_manager_(
           BrowserContextDependencyManager::GetInstance()),
@@ -658,16 +662,22 @@ bool TestingProfile::IsSupervised() {
   return !supervised_user_id_.empty();
 }
 
+#if defined(ENABLE_EXTENSIONS)
 void TestingProfile::SetExtensionSpecialStoragePolicy(
     ExtensionSpecialStoragePolicy* extension_special_storage_policy) {
   extension_special_storage_policy_ = extension_special_storage_policy;
 }
+#endif
 
 ExtensionSpecialStoragePolicy*
 TestingProfile::GetExtensionSpecialStoragePolicy() {
+#if defined(ENABLE_EXTENSIONS)
   if (!extension_special_storage_policy_.get())
     extension_special_storage_policy_ = new ExtensionSpecialStoragePolicy(NULL);
   return extension_special_storage_policy_.get();
+#else
+  return NULL;
+#endif
 }
 
 net::CookieMonster* TestingProfile::GetCookieMonster() {
@@ -883,7 +893,11 @@ PrefService* TestingProfile::GetOffTheRecordPrefs() {
 }
 
 quota::SpecialStoragePolicy* TestingProfile::GetSpecialStoragePolicy() {
+#if defined(ENABLE_EXTENSIONS)
   return GetExtensionSpecialStoragePolicy();
+#else
+  return NULL;
+#endif
 }
 
 bool TestingProfile::WasCreatedByVersionOrLater(const std::string& version) {
@@ -916,10 +930,12 @@ void TestingProfile::Builder::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }
 
+#if defined(ENABLE_EXTENSIONS)
 void TestingProfile::Builder::SetExtensionSpecialStoragePolicy(
     scoped_refptr<ExtensionSpecialStoragePolicy> policy) {
   extension_policy_ = policy;
 }
+#endif
 
 void TestingProfile::Builder::SetPrefService(
     scoped_ptr<PrefServiceSyncable> prefs) {
@@ -957,7 +973,9 @@ scoped_ptr<TestingProfile> TestingProfile::Builder::Build() {
   return scoped_ptr<TestingProfile>(new TestingProfile(
       path_,
       delegate_,
+#if defined(ENABLE_EXTENSIONS)
       extension_policy_,
+#endif
       pref_service_.Pass(),
       incognito_,
       guest_session_,

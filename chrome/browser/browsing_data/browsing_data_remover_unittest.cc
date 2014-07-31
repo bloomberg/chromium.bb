@@ -20,25 +20,13 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
 #include "chrome/browser/chrome_notification_types.h"
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#endif
 #include "chrome/browser/domain_reliability/service_factory.h"
-#include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#if defined(OS_CHROMEOS)
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
-#include "chromeos/dbus/mock_cryptohome_client.h"
-#endif
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -63,6 +51,22 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
+#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
+#include "chromeos/dbus/mock_cryptohome_client.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
+#endif
+
+class MockExtensionSpecialStoragePolicy;
 
 using content::BrowserThread;
 using content::StoragePartition;
@@ -199,6 +203,7 @@ class TestStoragePartition : public StoragePartition {
   StoragePartitionRemovalData GetStoragePartitionRemovalData() {
     return storage_partition_removal_data_;
   }
+
  private:
   void AsyncRunCallback(const base::Closure& callback) {
     callback.Run();
@@ -717,6 +722,10 @@ class BrowsingDataRemoverTest : public testing::Test,
   }
 
   virtual void TearDown() {
+#if defined(ENABLE_EXTENSIONS)
+    mock_policy_ = NULL;
+#endif
+
     // TestingProfile contains a DOMStorageContext.  BrowserContext's destructor
     // posts a message to the WEBKIT thread to delete some of its member
     // variables. We need to ensure that the profile is destroyed, and that
@@ -807,6 +816,34 @@ class BrowsingDataRemoverTest : public testing::Test,
     registrar_.RemoveAll();
   }
 
+  MockExtensionSpecialStoragePolicy* CreateMockPolicy() {
+#if defined(ENABLE_EXTENSIONS)
+    mock_policy_ = new MockExtensionSpecialStoragePolicy;
+    return mock_policy_;
+#else
+    NOTREACHED();
+    return NULL;
+#endif
+  }
+
+  quota::SpecialStoragePolicy* mock_policy() {
+#if defined(ENABLE_EXTENSIONS)
+    return mock_policy_;
+#else
+    return NULL;
+#endif
+  }
+
+  // If |kOrigin1| is protected when extensions are enabled, the expected
+  // result for tests where the OriginMatcherFunction result is variable.
+  bool ShouldRemoveForProtectedOriginOne() const {
+#if defined(ENABLE_EXTENSIONS)
+    return false;
+#else
+    return true;
+#endif
+  }
+
  protected:
   scoped_ptr<BrowsingDataRemover::NotificationDetails> called_with_details_;
 
@@ -817,6 +854,10 @@ class BrowsingDataRemoverTest : public testing::Test,
   scoped_ptr<TestingProfile> profile_;
 
   StoragePartitionRemovalData storage_partition_removal_data_;
+
+#if defined(ENABLE_EXTENSIONS)
+  scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverTest);
 };
@@ -934,11 +975,11 @@ TEST_F(BrowsingDataRemoverTest, RemoveChannelIDLastHour) {
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveUnprotectedLocalStorageForever) {
+#if defined(ENABLE_EXTENSIONS)
+  MockExtensionSpecialStoragePolicy* policy = CreateMockPolicy();
   // Protect kOrigin1.
-  scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy =
-      new MockExtensionSpecialStoragePolicy;
-  mock_policy->AddProtected(kOrigin1.GetOrigin());
-  GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy.get());
+  policy->AddProtected(kOrigin1.GetOrigin());
+#endif
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
                                 BrowsingDataRemover::REMOVE_LOCAL_STORAGE,
@@ -957,18 +998,19 @@ TEST_F(BrowsingDataRemoverTest, RemoveUnprotectedLocalStorageForever) {
   EXPECT_EQ(removal_data.remove_begin, GetBeginTime());
 
   // Check origin matcher.
-  EXPECT_FALSE(removal_data.origin_matcher.Run(kOrigin1, mock_policy));
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin2, mock_policy));
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin3, mock_policy));
-  EXPECT_FALSE(removal_data.origin_matcher.Run(kOriginExt, mock_policy));
+  EXPECT_EQ(ShouldRemoveForProtectedOriginOne(),
+            removal_data.origin_matcher.Run(kOrigin1, mock_policy()));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin2, mock_policy()));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin3, mock_policy()));
+  EXPECT_FALSE(removal_data.origin_matcher.Run(kOriginExt, mock_policy()));
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveProtectedLocalStorageForever) {
+#if defined(ENABLE_EXTENSIONS)
   // Protect kOrigin1.
-  scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy =
-      new MockExtensionSpecialStoragePolicy;
-  mock_policy->AddProtected(kOrigin1.GetOrigin());
-  GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy.get());
+  MockExtensionSpecialStoragePolicy* policy = CreateMockPolicy();
+  policy->AddProtected(kOrigin1.GetOrigin());
+#endif
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
                                 BrowsingDataRemover::REMOVE_LOCAL_STORAGE,
@@ -989,16 +1031,16 @@ TEST_F(BrowsingDataRemoverTest, RemoveProtectedLocalStorageForever) {
 
   // Check origin matcher all http origin will match since we specified
   // both protected and unprotected.
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin1, mock_policy));
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin2, mock_policy));
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin3, mock_policy));
-  EXPECT_FALSE(removal_data.origin_matcher.Run(kOriginExt, mock_policy));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin1, mock_policy()));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin2, mock_policy()));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin3, mock_policy()));
+  EXPECT_FALSE(removal_data.origin_matcher.Run(kOriginExt, mock_policy()));
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveLocalStorageForLastWeek) {
-  scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy =
-      new MockExtensionSpecialStoragePolicy;
-  GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy.get());
+#if defined(ENABLE_EXTENSIONS)
+  CreateMockPolicy();
+#endif
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::LAST_WEEK,
                                 BrowsingDataRemover::REMOVE_LOCAL_STORAGE,
@@ -1018,10 +1060,10 @@ TEST_F(BrowsingDataRemoverTest, RemoveLocalStorageForLastWeek) {
   EXPECT_EQ(removal_data.remove_begin, GetBeginTime());
 
   // Check origin matcher.
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin1, mock_policy));
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin2, mock_policy));
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin3, mock_policy));
-  EXPECT_FALSE(removal_data.origin_matcher.Run(kOriginExt, mock_policy));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin1, mock_policy()));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin2, mock_policy()));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin3, mock_policy()));
+  EXPECT_FALSE(removal_data.origin_matcher.Run(kOriginExt, mock_policy()));
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveHistoryForever) {
@@ -1174,9 +1216,9 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverBoth) {
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyTemporary) {
-  scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy =
-      new MockExtensionSpecialStoragePolicy;
-  GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy.get());
+#if defined(ENABLE_EXTENSIONS)
+  CreateMockPolicy();
+#endif
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
                                 BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
@@ -1205,15 +1247,15 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyTemporary) {
 
   // Check that all related origin data would be removed, that is, origin
   // matcher would match these origin.
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin1, mock_policy));
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin2, mock_policy));
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin3, mock_policy));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin1, mock_policy()));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin2, mock_policy()));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin3, mock_policy()));
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyPersistent) {
-  scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy =
-      new MockExtensionSpecialStoragePolicy;
-  GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy.get());
+#if defined(ENABLE_EXTENSIONS)
+  CreateMockPolicy();
+#endif
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
                                 BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
@@ -1242,15 +1284,15 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyPersistent) {
 
   // Check that all related origin data would be removed, that is, origin
   // matcher would match these origin.
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin1, mock_policy));
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin2, mock_policy));
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin3, mock_policy));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin1, mock_policy()));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin2, mock_policy()));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin3, mock_policy()));
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverNeither) {
-  scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy =
-      new MockExtensionSpecialStoragePolicy;
-  GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy.get());
+#if defined(ENABLE_EXTENSIONS)
+  CreateMockPolicy();
+#endif
 
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
@@ -1280,9 +1322,9 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverNeither) {
 
   // Check that all related origin data would be removed, that is, origin
   // matcher would match these origin.
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin1, mock_policy));
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin2, mock_policy));
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin3, mock_policy));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin1, mock_policy()));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin2, mock_policy()));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin3, mock_policy()));
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverSpecificOrigin) {
@@ -1380,11 +1422,11 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForLastWeek) {
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedUnprotectedOrigins) {
+#if defined(ENABLE_EXTENSIONS)
+  MockExtensionSpecialStoragePolicy* policy = CreateMockPolicy();
   // Protect kOrigin1.
-  scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy =
-      new MockExtensionSpecialStoragePolicy;
-  mock_policy->AddProtected(kOrigin1.GetOrigin());
-  GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy.get());
+  policy->AddProtected(kOrigin1.GetOrigin());
+#endif
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
                                 BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
@@ -1411,19 +1453,19 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedUnprotectedOrigins) {
             StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL);
   EXPECT_TRUE(removal_data.remove_origin.is_empty());
 
-  // Check OriginMatcherFunction, |kOrigin1| would not match mask since it
-  // is protected.
-  EXPECT_FALSE(removal_data.origin_matcher.Run(kOrigin1, mock_policy));
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin2, mock_policy));
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin3, mock_policy));
+  // Check OriginMatcherFunction.
+  EXPECT_EQ(ShouldRemoveForProtectedOriginOne(),
+            removal_data.origin_matcher.Run(kOrigin1, mock_policy()));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin2, mock_policy()));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin3, mock_policy()));
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedProtectedSpecificOrigin) {
+#if defined(ENABLE_EXTENSIONS)
+  MockExtensionSpecialStoragePolicy* policy = CreateMockPolicy();
   // Protect kOrigin1.
-  scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy =
-      new MockExtensionSpecialStoragePolicy;
-  mock_policy->AddProtected(kOrigin1.GetOrigin());
-  GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy.get());
+  policy->AddProtected(kOrigin1.GetOrigin());
+#endif
 
   // Try to remove kOrigin1. Expect failure.
   BlockUntilOriginDataRemoved(BrowsingDataRemover::EVERYTHING,
@@ -1451,19 +1493,19 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedProtectedSpecificOrigin) {
             StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL);
   EXPECT_EQ(removal_data.remove_origin, kOrigin1);
 
-  // Check OriginMatcherFunction, |kOrigin1| would not match mask since it
-  // is protected.
-  EXPECT_FALSE(removal_data.origin_matcher.Run(kOrigin1, mock_policy));
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin2, mock_policy));
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin3, mock_policy));
+  // Check OriginMatcherFunction.
+  EXPECT_EQ(ShouldRemoveForProtectedOriginOne(),
+            removal_data.origin_matcher.Run(kOrigin1, mock_policy()));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin2, mock_policy()));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin3, mock_policy()));
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedProtectedOrigins) {
+#if defined(ENABLE_EXTENSIONS)
+  MockExtensionSpecialStoragePolicy* policy = CreateMockPolicy();
   // Protect kOrigin1.
-  scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy =
-      new MockExtensionSpecialStoragePolicy;
-  mock_policy->AddProtected(kOrigin1.GetOrigin());
-  GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy.get());
+  policy->AddProtected(kOrigin1.GetOrigin());
+#endif
 
   // Try to remove kOrigin1. Expect success.
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
@@ -1494,15 +1536,15 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedProtectedOrigins) {
 
   // Check OriginMatcherFunction, |kOrigin1| would match mask since we
   // would have 'protected' specified in origin_set_mask.
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin1, mock_policy));
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin2, mock_policy));
-  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin3, mock_policy));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin1, mock_policy()));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin2, mock_policy()));
+  EXPECT_TRUE(removal_data.origin_matcher.Run(kOrigin3, mock_policy()));
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedIgnoreExtensionsAndDevTools) {
-  scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy =
-      new MockExtensionSpecialStoragePolicy;
-  GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy.get());
+#if defined(ENABLE_EXTENSIONS)
+  CreateMockPolicy();
+#endif
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
                                 BrowsingDataRemover::REMOVE_APPCACHE |
@@ -1531,8 +1573,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedIgnoreExtensionsAndDevTools) {
 
   // Check that extension and devtools data wouldn't be removed, that is,
   // origin matcher would not match these origin.
-  EXPECT_FALSE(removal_data.origin_matcher.Run(kOriginExt, mock_policy));
-  EXPECT_FALSE(removal_data.origin_matcher.Run(kOriginDevTools, mock_policy));
+  EXPECT_FALSE(removal_data.origin_matcher.Run(kOriginExt, mock_policy()));
+  EXPECT_FALSE(removal_data.origin_matcher.Run(kOriginDevTools, mock_policy()));
 }
 
 TEST_F(BrowsingDataRemoverTest, OriginBasedHistoryRemoval) {
