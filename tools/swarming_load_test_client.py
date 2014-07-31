@@ -78,7 +78,7 @@ def trigger_task(
     extra_args=[],
     env={},
     dimensions=dimensions,
-    deadline=timeout-TIMEOUT_OVERHEAD,
+    deadline=int(timeout-TIMEOUT_OVERHEAD),
     verbose=False,
     profile=False,
     priority=100)
