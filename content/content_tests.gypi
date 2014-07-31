@@ -407,6 +407,7 @@
         'browser/browser_url_handler_impl_unittest.cc',
         'browser/byte_stream_unittest.cc',
         'browser/child_process_security_policy_unittest.cc',
+        'browser/cocoa/system_hotkey_map_unittest.mm',
         'browser/compositor/software_browser_compositor_output_surface_unittest.cc',
         'browser/compositor/software_output_device_ozone_unittest.cc',
         'browser/databases_table_unittest.cc',

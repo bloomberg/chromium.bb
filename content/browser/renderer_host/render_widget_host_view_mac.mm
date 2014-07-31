@@ -28,6 +28,8 @@
 #include "base/sys_info.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
+#import "content/browser/cocoa/system_hotkey_helper_mac.h"
+#import "content/browser/cocoa/system_hotkey_map.h"
 #include "content/browser/compositor/resize_lock.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -95,6 +97,17 @@ using blink::WebInputEventFactory;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 using blink::WebGestureEvent;
+
+namespace {
+
+// Whether a keyboard event has been reserved by OSX.
+BOOL EventIsReservedBySystem(NSEvent* event) {
+  content::SystemHotkeyHelperMac* helper =
+      content::SystemHotkeyHelperMac::GetInstance();
+  return helper->map()->IsEventReserved(event);
+}
+
+}  // namespace
 
 // These are not documented, so use only after checking -respondsToSelector:.
 @interface NSApplication (UndocumentedSpeechMethods)
@@ -2556,6 +2569,10 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   if ([[self window] firstResponder] != self)
     return NO;
 
+  // If the event is reserved by the system, then do not pass it to web content.
+  if (EventIsReservedBySystem(theEvent))
+    return NO;
+
   // If we return |NO| from this function, cocoa will send the key event to
   // the menu and only if the menu does not process the event to |keyDown:|. We
   // want to send the event to a renderer _before_ sending it to the menu, so
@@ -2603,6 +2620,19 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
 - (void)keyEvent:(NSEvent*)theEvent wasKeyEquivalent:(BOOL)equiv {
   TRACE_EVENT0("browser", "RenderWidgetHostViewCocoa::keyEvent");
+
+  // If the user changes the system hotkey mapping after Chrome has been
+  // launched, then it is possible that a formerly reserved system hotkey is no
+  // longer reserved. The hotkey would have skipped the renderer, but would
+  // also have not been handled by the system. If this is the case, immediately
+  // return.
+  // TODO(erikchen): SystemHotkeyHelperMac should use the File System Events
+  // api to monitor changes to system hotkeys. This logic will have to be
+  // updated.
+  // http://crbug.com/383558.
+  if (EventIsReservedBySystem(theEvent))
+    return;
+
   DCHECK([theEvent type] != NSKeyDown ||
          !equiv == !([theEvent modifierFlags] & NSCommandKeyMask));
 
