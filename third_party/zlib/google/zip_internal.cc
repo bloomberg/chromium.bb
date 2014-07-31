@@ -37,12 +37,10 @@ typedef struct {
 // Its only difference is that it treats the char* as UTF8 and
 // uses the Unicode version of CreateFile.
 void* ZipOpenFunc(void *opaque, const char* filename, int mode) {
-  DWORD desired_access, creation_disposition;
-  DWORD share_mode, flags_and_attributes;
+  DWORD desired_access = 0, creation_disposition = 0;
+  DWORD share_mode = 0, flags_and_attributes = 0;
   HANDLE file = 0;
   void* ret = NULL;
-
-  desired_access = share_mode = flags_and_attributes = 0;
 
   if ((mode & ZLIB_FILEFUNC_MODE_READWRITEFILTER) == ZLIB_FILEFUNC_MODE_READ) {
     desired_access = GENERIC_READ;
