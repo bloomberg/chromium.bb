@@ -27,6 +27,10 @@
 #include "content/public/common/content_switches.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "ui/compositor/compositor_switches.h"
+#endif
+
 namespace {
 
 // Include things like browser frame and scrollbar and make sure we're bigger
@@ -184,5 +188,10 @@ void PDFBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   // Calling RenderWidgetHost::CopyFromBackingStore() with the GPU enabled
   // fails on Linux.
   command_line->AppendSwitch(switches::kDisableGpu);
+#endif
+
+#if defined(OS_CHROMEOS)
+  // Also need on CrOS in addition to disabling the GPU above.
+  command_line->AppendSwitch(switches::kUIDisableThreadedCompositing);
 #endif
 }
