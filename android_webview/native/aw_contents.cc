@@ -364,6 +364,9 @@ void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
 
   if (shared_renderer_state_.IsInsideHardwareRelease()) {
     hardware_renderer_.reset();
+    // Flush the idle queue in tear down.
+    DeferredGpuCommandService::GetInstance()->PerformIdleWork(true);
+    DCHECK(!DeferredGpuCommandService::GetInstance()->HasIdleWork());
     return;
   }
 
