@@ -210,8 +210,6 @@ void TouchFactory::SetupXI2ForXWindow(Window window) {
   XISetMask(mask, XI_ButtonPress);
   XISetMask(mask, XI_ButtonRelease);
   XISetMask(mask, XI_Motion);
-  XISetMask(mask, XI_KeyPress);
-  XISetMask(mask, XI_KeyRelease);
 
   XIEventMask evmask;
   evmask.deviceid = XIAllDevices;
