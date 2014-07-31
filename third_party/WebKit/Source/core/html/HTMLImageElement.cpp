@@ -33,6 +33,7 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/fetch/ImageResource.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLFormElement.h"
@@ -196,10 +197,11 @@ void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicStr
     } else if (name == usemapAttr) {
         setIsLink(!value.isNull());
     } else if (name == compositeAttr) {
-        // FIXME: images don't support blend modes in their compositing attribute.
         blink::WebBlendMode blendOp = blink::WebBlendModeNormal;
         if (!parseCompositeAndBlendOperator(value, m_compositeOperator, blendOp))
             m_compositeOperator = CompositeSourceOver;
+        else if (m_compositeOperator != CompositeSourceOver)
+            UseCounter::count(document(), UseCounter::HTMLImageElementComposite);
     } else {
         HTMLElement::parseAttribute(name, value);
     }
