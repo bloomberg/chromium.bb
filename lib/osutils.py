@@ -1001,3 +1001,28 @@ class MountImageContext(object):
 
   def __exit__(self, exc_type, exc_value, traceback):
     self._CleanUp()
+
+
+MountInfo = collections.namedtuple('MountInfo',
+    'source destination filesystem options')
+
+
+def IterateMountPoints(proc_file='/proc/mounts'):
+  """Iterate over all mounts as reported by "/proc/mounts".
+
+  Args:
+    proc_file: A path to a file whose content is similar to /proc/mounts.
+      Default to "/proc/mounts" itself.
+
+  Returns:
+    A generator that yields MountInfo objects.
+  """
+  with open(proc_file, 'rt') as f:
+    for line in f:
+      # Escape any \xxx to a char.
+      source, destination, filesystem, options, _, _ = [
+          re.sub(r'\\([0-7]{3})', lambda m: chr(int(m.group(1), 8)), x)
+          for x in line.split()
+      ]
+      mtab = MountInfo(source, destination, filesystem, options)
+      yield mtab

@@ -513,5 +513,37 @@ class MountImageTests(cros_test_lib.MockTempDirTestCase):
     self.assertEqual('/tmp', os.readlink(symlink))
 
 
+class IterateMountPointsTests(cros_test_lib.TempDirTestCase):
+  """Test for IterateMountPoints function."""
+
+  def setUp(self):
+    self.proc_mount = os.path.join(self.tempdir, 'mounts')
+    osutils.WriteFile(
+        self.proc_mount,
+        r'''/dev/loop0 /mnt/dir_8 ext4 rw,relatime,data=ordered 0 0
+/dev/loop2 /mnt/dir_1 ext4 rw,relatime,data=ordered 0 0
+/dev/loop1 /mnt/dir_12 vfat rw 0 0
+/dev/loop4 /mnt/dir_3 ext4 ro,relatime 0 0
+weird\040system /mnt/weirdo unknown ro 0 0
+tmpfs /mnt/spaced\040dir tmpfs ro 0 0
+tmpfs /mnt/\134 tmpfs ro 0 0
+'''
+    )
+
+  def testOkay(self):
+    r = list(osutils.IterateMountPoints(self.proc_mount))
+    self.assertEqual(len(r), 7)
+    self.assertEqual(r[0].source, '/dev/loop0')
+    self.assertEqual(r[1].destination, '/mnt/dir_1')
+    self.assertEqual(r[2].filesystem, 'vfat')
+    self.assertEqual(r[3].options, 'ro,relatime')
+
+  def testEscape(self):
+    r = list(osutils.IterateMountPoints(self.proc_mount))
+    self.assertEqual(r[4].source, 'weird system')
+    self.assertEqual(r[5].destination, '/mnt/spaced dir')
+    self.assertEqual(r[6].destination, '/mnt/\\')
+
+
 if __name__ == '__main__':
   cros_test_lib.main()

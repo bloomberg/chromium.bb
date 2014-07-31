@@ -216,12 +216,8 @@ def CleanUpMountPoints(buildroot):
   # mount /foon/blah -o loop /a
   # which reverse sorting cannot handle.
   buildroot = os.path.realpath(buildroot).rstrip('/') + '/'
-  mounts = []
-  with open("/proc/mounts", 'rt') as f:
-    for line in f:
-      path = line.split()[1]
-      if path.startswith(buildroot):
-        mounts.append(path)
+  mounts = [mtab.destination for mtab in osutils.IterateMountPoints() if
+            mtab.destination.startswith(buildroot)]
 
   for mount_pt in reversed(mounts):
     osutils.UmountDir(mount_pt, lazy=True, cleanup=False)

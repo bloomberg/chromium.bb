@@ -282,3 +282,71 @@ class LinkageTest(NonForgivingImageTestCase):
         continue
       except IOError as e:
         self.fail('Fail linkage test for %s: %s' % (to_test, e))
+
+
+class FileSystemMetaDataTest(ForgivingImageTestCase):
+  """A test class to gather file system stats such as free inodes, blocks."""
+
+  def TestStats(self):
+    """Collect inodes and blocks usage."""
+    # Find the loopback device that was mounted to ROOT_A.
+    loop_device = None
+    root_path = os.path.abspath(os.readlink(ROOT_A))
+    for mtab in osutils.IterateMountPoints():
+      if mtab.destination == root_path:
+        loop_device = mtab.source
+        break
+    self.assertTrue(loop_device, 'Cannot find loopback device for ROOT_A.')
+
+    # Gather file system stats with tune2fs.
+    cmd = [
+        'tune2fs',
+        '-l',
+        loop_device
+    ]
+    # tune2fs produces output like this:
+    #
+    # tune2fs 1.42 (29-Nov-2011)
+    # Filesystem volume name:   ROOT-A
+    # Last mounted on:          <not available>
+    # Filesystem UUID:          <none>
+    # Filesystem magic number:  0xEF53
+    # Filesystem revision #:    1 (dynamic)
+    # ...
+    #
+    # So we need to ignore the first line.
+    ret = cros_build_lib.SudoRunCommand(cmd, capture_output=True,
+                                        extra_env={'LC_ALL': 'C'})
+    fs_stat = dict(line.split(':', 1) for line in ret.output.splitlines()
+                   if ':' in line)
+    free_inodes = int(fs_stat['Free inodes'])
+    free_blocks = int(fs_stat['Free blocks'])
+    inode_count = int(fs_stat['Inode count'])
+    block_count = int(fs_stat['Block count'])
+    block_size = int(fs_stat['Block size'])
+
+    sum_file_size = 0
+    sum_block_size = 0
+    for root, _, filenames in os.walk(ROOT_A):
+      for file_name in filenames:
+        full_name = os.path.join(root, file_name)
+        file_stat = os.lstat(full_name)
+        sum_file_size += file_stat.st_size
+        if file_stat.st_size < 60:
+          # Small files (< 60 bytes) are inlined in the inode, no data block
+          # is needed.
+          continue
+        else:
+          sum_block_size += ((file_stat.st_size + block_size - 1) /
+                             block_size) * block_size
+
+    self.OutputPerfValue('free_inodes_over_inode_count',
+                         float(free_inodes) / inode_count, 'percent',
+                         graph='free_over_used_ratio')
+    self.OutputPerfValue('free_blocks_over_block_count',
+                         float(free_blocks) / block_count, 'percent',
+                         graph='free_over_used_ratio')
+    self.OutputPerfValue('file_size', sum_file_size, 'bytes',
+                         higher_is_better=False, graph='disk_space')
+    self.OutputPerfValue('disk_size', sum_block_size, 'bytes',
+                         higher_is_better=False, graph='disk_space')
