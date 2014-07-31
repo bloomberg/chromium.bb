@@ -35,7 +35,11 @@ import shutil
 import sys
 
 
-class ElfFormatError(ValueError):
+class Error(Exception):
+  pass
+
+
+class ElfFormatError(Error):
 
   def __init__(self, message, offset=None):
     if offset is not None:
@@ -192,7 +196,7 @@ class Elf(object):
     self._elf_map[phdr_off:(phdr_off + ctypes.sizeof(phdr))] = phdr.GetBytes()
 
 
-def main():
+def RunMain(args):
   parser = argparse.ArgumentParser()
   parser.add_argument('infile', metavar='PATH',
       help='The ELF binary to be read')
@@ -202,7 +206,7 @@ def main():
                       default=2,
                       help='The zero-index program header to modify'
                            '(default=%(default)s)')
-  args = parser.parse_args()
+  args = parser.parse_args(args)
 
   # Copy the input file to a temporary file, so that we can write it in place.
   tmpfile = args.outfile + '.tmp'
@@ -214,8 +218,9 @@ def main():
     elf = Elf.LoadMap(elf_map)
     phdr = elf.GetPhdr(args.phdr_index)
     if phdr.p_type != Elf.PT_LOAD:
-      raise ValueError('Invalid segment number; not PT_LOAD (%d)' %
-                       (phdr.p_type,))
+      raise Error('Invalid segment number; not PT_LOAD (%d)' % phdr.p_type)
+    if phdr.p_filesz != 0:
+      raise Error("Program header %d has nonzero p_filesz" % args.phdr_index)
     phdr.p_filesz = phdr.p_memsz
     elf.SetPhdr(args.phdr_index, phdr)
     elf_map.flush()
@@ -224,5 +229,13 @@ def main():
   return 0
 
 
+def main(args):
+  try:
+    return RunMain(args)
+  except Error as e:
+    sys.stderr.write('nacl_bootstrap_munge_phdr: ' + str(e) + '\n')
+    return 1
+
+
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv[1:]))
