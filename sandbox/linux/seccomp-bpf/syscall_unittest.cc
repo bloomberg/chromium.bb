@@ -33,6 +33,10 @@ const int kMMapNr = __NR_mmap2;
 const int kMMapNr = __NR_mmap;
 #endif
 
+TEST(Syscall, InvalidCallReturnsENOSYS) {
+  EXPECT_EQ(-ENOSYS, Syscall::InvalidCall());
+}
+
 TEST(Syscall, WellKnownEntryPoint) {
 // Test that Syscall::Call(-1) is handled specially. Don't do this on ARM,
 // where syscall(-1) crashes with SIGILL. Not running the test is fine, as we

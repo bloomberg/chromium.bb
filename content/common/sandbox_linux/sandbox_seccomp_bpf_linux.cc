@@ -86,10 +86,6 @@ class BlacklistDebugAndNumaPolicy : public SandboxBPFBasePolicy {
 
 ErrorCode BlacklistDebugAndNumaPolicy::EvaluateSyscall(SandboxBPF* sandbox,
                                                        int sysno) const {
-  if (!SandboxBPF::IsValidSyscallNumber(sysno)) {
-    // TODO(jln) we should not have to do that in a trivial policy.
-    return ErrorCode(ENOSYS);
-  }
   if (SyscallSets::IsDebug(sysno) || SyscallSets::IsNuma(sysno))
     return sandbox->Trap(sandbox::CrashSIGSYS_Handler, NULL);
 
@@ -112,12 +108,7 @@ class AllowAllPolicy : public SandboxBPFBasePolicy {
 // This will still deny x32 or IA32 calls in 64 bits mode or
 // 64 bits system calls in compatibility mode.
 ErrorCode AllowAllPolicy::EvaluateSyscall(SandboxBPF*, int sysno) const {
-  if (!SandboxBPF::IsValidSyscallNumber(sysno)) {
-    // TODO(jln) we should not have to do that in a trivial policy.
-    return ErrorCode(ENOSYS);
-  } else {
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
-  }
+  return ErrorCode(ErrorCode::ERR_ALLOWED);
 }
 
 // If a BPF policy is engaged for |process_type|, run a few sanity checks.

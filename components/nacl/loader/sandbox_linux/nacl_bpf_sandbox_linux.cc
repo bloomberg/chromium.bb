@@ -39,6 +39,10 @@ class NaClBPFSandboxPolicy : public sandbox::SandboxBPFPolicy {
   virtual sandbox::ErrorCode EvaluateSyscall(
       sandbox::SandboxBPF* sandbox_compiler,
       int system_call_number) const OVERRIDE;
+  virtual sandbox::ErrorCode InvalidSyscall(
+      sandbox::SandboxBPF* sandbox_compiler) const OVERRIDE {
+    return baseline_policy_->InvalidSyscall(sandbox_compiler);
+  }
 
  private:
   scoped_ptr<sandbox::SandboxBPFPolicy> baseline_policy_;

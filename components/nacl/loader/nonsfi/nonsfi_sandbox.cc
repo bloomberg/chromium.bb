@@ -336,6 +336,10 @@ ErrorCode NaClNonSfiBPFSandboxPolicy::EvaluateSyscall(SandboxBPF* sb,
   }
 }
 
+ErrorCode NaClNonSfiBPFSandboxPolicy::InvalidSyscall(SandboxBPF* sb) const {
+  return sb->Trap(sandbox::CrashSIGSYS_Handler, NULL);
+}
+
 bool InitializeBPFSandbox() {
   bool sandbox_is_initialized = content::InitializeSandbox(
       scoped_ptr<sandbox::SandboxBPFPolicy>(

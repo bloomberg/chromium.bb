@@ -26,7 +26,7 @@
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
-#include "sandbox/linux/services/android_futex.h"
+#include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/tests/unit_tests.h"
@@ -208,6 +208,16 @@ BPF_TEST_C(BaselinePolicy, EPERM_getcwd, BaselinePolicy) {
   BPF_ASSERT_EQ(NULL, cwd);
   BPF_ASSERT_EQ(EPERM, errno);
 }
+
+// TODO(mdempsky): Enable on IA-32 after fixing crbug.com/399396.
+#if !defined(__i386__)
+BPF_DEATH_TEST_C(BaselinePolicy,
+                 SIGSYS_InvalidSyscall,
+                 DEATH_SEGV_MESSAGE(GetErrorMessageContentForTests()),
+                 BaselinePolicy) {
+  Syscall::InvalidCall();
+}
+#endif
 
 // A failing test using this macro could be problematic since we perform
 // system calls by passing "0" as every argument.

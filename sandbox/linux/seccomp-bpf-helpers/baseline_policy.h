@@ -35,6 +35,7 @@ class SANDBOX_EXPORT BaselinePolicy : public SandboxBPFPolicy {
 
   virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
                                     int system_call_number) const OVERRIDE;
+  virtual ErrorCode InvalidSyscall(SandboxBPF* sandbox_compiler) const OVERRIDE;
 
  private:
   int fs_denied_errno_;

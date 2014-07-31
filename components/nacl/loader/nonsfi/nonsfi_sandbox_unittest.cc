@@ -35,6 +35,7 @@
 #include "base/time/time.h"
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
+#include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 #include "third_party/lss/linux_syscall_support.h"  // for MAKE_PROCESS_CPUCLOCK
 
@@ -481,6 +482,16 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
   struct timespec ts;
   clock_gettime(kInitCPUClockID, &ts);
 }
+
+// TODO(mdempsky): Enable on IA-32 after fixing crbug.com/399396.
+#if !defined(__i386__)
+BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
+                 invalid_syscall_crash,
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
+  sandbox::Syscall::InvalidCall();
+}
+#endif
 
 // The following test cases check if syscalls return EPERM regardless
 // of arguments.

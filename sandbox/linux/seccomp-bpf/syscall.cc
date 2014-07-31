@@ -15,6 +15,14 @@ namespace sandbox {
 
 namespace {
 
+#if defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARM_FAMILY) || \
+    defined(ARCH_CPU_MIPS_FAMILY)
+// Number that's not currently used by any Linux kernel ABIs.
+const int kInvalidSyscallNumber = 0x351d3;
+#else
+#error Unrecognized architecture
+#endif
+
 asm(// We need to be able to tell the kernel exactly where we made a
     // system call. The C++ compiler likes to sometimes clone or
     // inline code, which would inadvertently end up duplicating
@@ -221,6 +229,11 @@ asm(// We need to be able to tell the kernel exactly where we made a
     );  // asm
 
 }  // namespace
+
+intptr_t Syscall::InvalidCall() {
+  // Explicitly pass eight zero arguments just in case.
+  return Call(kInvalidSyscallNumber, 0, 0, 0, 0, 0, 0, 0, 0);
+}
 
 intptr_t Syscall::Call(int nr,
                        intptr_t p0,

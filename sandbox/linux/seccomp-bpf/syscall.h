@@ -22,6 +22,13 @@ namespace sandbox {
 // low-level control.
 class SANDBOX_EXPORT Syscall {
  public:
+  // InvalidCall() invokes Call() with a platform-appropriate syscall
+  // number that is guaranteed to not be implemented (i.e., normally
+  // returns -ENOSYS).
+  // This is primarily meant to be useful for writing sandbox policy
+  // unit tests.
+  static intptr_t InvalidCall();
+
   // System calls can take up to six parameters (up to eight on some
   // architectures). Traditionally, glibc
   // implements this property by using variadic argument lists. This works, but

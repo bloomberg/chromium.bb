@@ -29,6 +29,12 @@ ErrorCode SandboxBPFBasePolicy::EvaluateSyscall(SandboxBPF* sandbox_compiler,
                                            system_call_number);
 }
 
+ErrorCode SandboxBPFBasePolicy::InvalidSyscall(
+    SandboxBPF* sandbox_compiler) const {
+  DCHECK(baseline_policy_);
+  return baseline_policy_->InvalidSyscall(sandbox_compiler);
+}
+
 bool SandboxBPFBasePolicy::PreSandboxHook() {
   return true;
 }

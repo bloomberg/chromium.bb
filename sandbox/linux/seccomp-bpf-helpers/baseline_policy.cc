@@ -223,11 +223,17 @@ BaselinePolicy::~BaselinePolicy() {
 
 ErrorCode BaselinePolicy::EvaluateSyscall(SandboxBPF* sandbox,
                                           int sysno) const {
+  // Sanity check that we're only called with valid syscall numbers.
+  DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
   // Make sure that this policy is used in the creating process.
   if (1 == sysno) {
     DCHECK_EQ(syscall(__NR_getpid), current_pid_);
   }
   return EvaluateSyscallImpl(fs_denied_errno_, current_pid_, sandbox, sysno);
+}
+
+ErrorCode BaselinePolicy::InvalidSyscall(SandboxBPF* sandbox) const {
+  return sandbox->Trap(CrashSIGSYS_Handler, NULL);
 }
 
 }  // namespace sandbox.

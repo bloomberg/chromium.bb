@@ -26,6 +26,7 @@ class SandboxBPFBasePolicy : public sandbox::SandboxBPFPolicy {
 
   virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
                                     int system_call_number) const OVERRIDE;
+  virtual ErrorCode InvalidSyscall(SandboxBPF* sandbox_compiler) const OVERRIDE;
 
   // A policy can implement this hook to run code right before the policy
   // is passed to the SandboxBPF class and the sandbox is engaged.
