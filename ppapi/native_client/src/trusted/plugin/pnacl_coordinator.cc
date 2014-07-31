@@ -52,11 +52,6 @@ void HistogramRatio(pp::UMAPrivate& uma,
                             kRatioBuckets);
 }
 
-void HistogramEnumerateTranslationCache(pp::UMAPrivate& uma, bool hit) {
-  uma.HistogramEnumeration("NaCl.Perf.PNaClCache.IsHit",
-                           hit, 2);
-}
-
 nacl::string GetArchitectureAttributes(Plugin* plugin) {
   pp::Var attrs_var(pp::PASS_REF,
                     plugin->nacl_interface()->GetCpuFeatureAttrs());
@@ -321,7 +316,6 @@ void PnaclCoordinator::OpenBitcodeStream() {
 }
 
 void PnaclCoordinator::BitcodeStreamCacheHit(PP_FileHandle handle) {
-  HistogramEnumerateTranslationCache(plugin_->uma_interface(), true);
   if (handle == PP_kInvalidFileHandle) {
     ReportNonPpapiError(
         PP_NACL_ERROR_PNACL_CREATE_TEMP,
@@ -336,7 +330,6 @@ void PnaclCoordinator::BitcodeStreamCacheHit(PP_FileHandle handle) {
 }
 
 void PnaclCoordinator::BitcodeStreamCacheMiss(int64_t expected_pexe_size) {
-  HistogramEnumerateTranslationCache(plugin_->uma_interface(), false);
   expected_pexe_size_ = expected_pexe_size;
 
   for (int i = 0; i < split_module_count_; i++) {

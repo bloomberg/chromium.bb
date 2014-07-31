@@ -1602,6 +1602,7 @@ class PexeDownloader : public blink::WebURLLoaderClient {
   virtual void didGetNexeFd(int32_t pp_error,
                             bool cache_hit,
                             PP_FileHandle file_handle) {
+    HistogramEnumerate("NaCl.Perf.PNaClCache.IsHit", cache_hit, 2);
     if (cache_hit) {
       stream_handler_->DidCacheHit(stream_handler_user_data_, file_handle);
 
