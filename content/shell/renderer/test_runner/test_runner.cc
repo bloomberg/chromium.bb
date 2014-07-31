@@ -8,10 +8,10 @@
 
 #include "base/logging.h"
 #include "content/shell/common/test_runner/test_preferences.h"
-#include "content/shell/renderer/test_runner/MockWebSpeechRecognizer.h"
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "content/shell/renderer/test_runner/mock_web_push_client.h"
+#include "content/shell/renderer/test_runner/mock_web_speech_recognizer.h"
 #include "content/shell/renderer/test_runner/notification_presenter.h"
 #include "content/shell/renderer/test_runner/web_permissions.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
@@ -2764,18 +2764,18 @@ bool TestRunner::SimulateWebNotificationClick(const std::string& value) {
 
 void TestRunner::AddMockSpeechRecognitionResult(const std::string& transcript,
                                                 double confidence) {
-  proxy_->GetSpeechRecognizerMock()->addMockResult(
+  proxy_->GetSpeechRecognizerMock()->AddMockResult(
       WebString::fromUTF8(transcript), confidence);
 }
 
 void TestRunner::SetMockSpeechRecognitionError(const std::string& error,
                                                const std::string& message) {
-  proxy_->GetSpeechRecognizerMock()->setError(WebString::fromUTF8(error),
-                                           WebString::fromUTF8(message));
+  proxy_->GetSpeechRecognizerMock()->SetError(WebString::fromUTF8(error),
+                                              WebString::fromUTF8(message));
 }
 
 bool TestRunner::WasMockSpeechRecognitionAborted() {
-  return proxy_->GetSpeechRecognizerMock()->wasAborted();
+  return proxy_->GetSpeechRecognizerMock()->WasAborted();
 }
 
 void TestRunner::AddWebPageOverlay() {

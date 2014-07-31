@@ -10,7 +10,6 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "content/shell/renderer/test_runner/MockWebSpeechRecognizer.h"
 #include "content/shell/renderer/test_runner/SpellCheckClient.h"
 #include "content/shell/renderer/test_runner/TestCommon.h"
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
@@ -22,6 +21,7 @@
 #include "content/shell/renderer/test_runner/mock_color_chooser.h"
 #include "content/shell/renderer/test_runner/mock_screen_orientation_client.h"
 #include "content/shell/renderer/test_runner/mock_web_push_client.h"
+#include "content/shell/renderer/test_runner/mock_web_speech_recognizer.h"
 #include "content/shell/renderer/test_runner/mock_web_user_media_client.h"
 #include "content/shell/renderer/test_runner/test_runner.h"
 #include "content/shell/renderer/test_runner/web_test_runner.h"
@@ -332,7 +332,7 @@ void WebTestProxyBase::SetDelegate(WebTestDelegate* delegate) {
   delegate_ = delegate;
   spellcheck_->setDelegate(delegate);
   if (speech_recognizer_.get())
-    speech_recognizer_->setDelegate(delegate);
+    speech_recognizer_->SetDelegate(delegate);
 }
 
 blink::WebView* WebTestProxyBase::GetWebView() const {
@@ -584,7 +584,7 @@ blink::WebMIDIClientMock* WebTestProxyBase::GetMIDIClientMock() {
 MockWebSpeechRecognizer* WebTestProxyBase::GetSpeechRecognizerMock() {
   if (!speech_recognizer_.get()) {
     speech_recognizer_.reset(new MockWebSpeechRecognizer());
-    speech_recognizer_->setDelegate(delegate_);
+    speech_recognizer_->SetDelegate(delegate_);
   }
   return speech_recognizer_.get();
 }
