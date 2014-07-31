@@ -74,6 +74,12 @@ void TestWindow::Minimize() {
 void TestWindow::Restore() {
 }
 
+void TestWindow::SetCursor(PlatformCursor cursor) {
+}
+
+void TestWindow::MoveCursorTo(const gfx::Point& location) {
+}
+
 bool TestWindow::CanDispatchEvent(const ui::PlatformEvent& ne) {
   return true;
 }

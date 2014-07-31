@@ -6,6 +6,7 @@
 #define UI_PLATFORM_WINDOW_PLATFORM_WINDOW_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "ui/base/cursor/cursor.h"
 
 namespace gfx {
 class Rect;
@@ -39,6 +40,9 @@ class PlatformWindow {
   virtual void Maximize() = 0;
   virtual void Minimize() = 0;
   virtual void Restore() = 0;
+
+  virtual void SetCursor(PlatformCursor cursor) = 0;
+  virtual void MoveCursorTo(const gfx::Point& location) = 0;
 };
 
 }  // namespace ui

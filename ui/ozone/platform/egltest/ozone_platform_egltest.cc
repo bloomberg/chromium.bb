@@ -66,6 +66,8 @@ class EgltestWindow : public PlatformWindow, public PlatformEventDispatcher {
   virtual void Maximize() OVERRIDE;
   virtual void Minimize() OVERRIDE;
   virtual void Restore() OVERRIDE;
+  virtual void SetCursor(PlatformCursor cursor) OVERRIDE;
+  virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
 
   // PlatformEventDispatcher:
   virtual bool CanDispatchEvent(const PlatformEvent& event) OVERRIDE;
@@ -132,6 +134,12 @@ void EgltestWindow::Minimize() {
 }
 
 void EgltestWindow::Restore() {
+}
+
+void EgltestWindow::SetCursor(PlatformCursor cursor) {
+}
+
+void EgltestWindow::MoveCursorTo(const gfx::Point& location) {
 }
 
 bool EgltestWindow::CanDispatchEvent(const ui::PlatformEvent& ne) {

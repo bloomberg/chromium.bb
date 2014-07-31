@@ -53,6 +53,10 @@ void DriWindow::Minimize() {}
 
 void DriWindow::Restore() {}
 
+void DriWindow::SetCursor(PlatformCursor cursor) {}
+
+void DriWindow::MoveCursorTo(const gfx::Point& location) {}
+
 bool DriWindow::CanDispatchEvent(const PlatformEvent& ne) {
   DCHECK(ne);
   Event* event = static_cast<Event*>(ne);

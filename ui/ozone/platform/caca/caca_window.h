@@ -58,6 +58,8 @@ class CacaWindow : public PlatformWindow, public PlatformEventDispatcher {
   virtual void Maximize() OVERRIDE;
   virtual void Minimize() OVERRIDE;
   virtual void Restore() OVERRIDE;
+  virtual void SetCursor(PlatformCursor cursor) OVERRIDE;
+  virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
 
   // PlatformEventDispatcher:
   virtual bool CanDispatchEvent(const PlatformEvent& event) OVERRIDE;

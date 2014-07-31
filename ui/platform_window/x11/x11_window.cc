@@ -245,6 +245,10 @@ void X11Window::Minimize() {}
 
 void X11Window::Restore() {}
 
+void X11Window::SetCursor(PlatformCursor cursor) {}
+
+void X11Window::MoveCursorTo(const gfx::Point& location) {}
+
 bool X11Window::CanDispatchEvent(const PlatformEvent& event) {
   return FindXEventTarget(event) == xwindow_;
 }

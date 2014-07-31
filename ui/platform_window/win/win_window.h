@@ -33,6 +33,8 @@ class WIN_WINDOW_EXPORT WinWindow : public NON_EXPORTED_BASE(PlatformWindow),
   virtual void Maximize() OVERRIDE;
   virtual void Minimize() OVERRIDE;
   virtual void Restore() OVERRIDE;
+  virtual void SetCursor(PlatformCursor cursor) OVERRIDE;
+  virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
 
   CR_BEGIN_MSG_MAP_EX(WinWindow)
     CR_MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
