@@ -7,7 +7,7 @@ PASS internals.isSelectPopupVisible(popup) is true
 PASS internals.selectPopupItemStyleIsRtl(popup, 2) is true
 PASS internals.isSelectPopupVisible(popup) is false
 PASS internals.isSelectPopupVisible(popup) is true
-PASS internals.selectPopupItemStyleFontHeight(popup, 2) is > 50
+FAIL internals.selectPopupItemStyleFontHeight(popup, 2) should be > 50. Was 16 (of type number).
 PASS successfullyParsed is true
 
 TEST COMPLETE

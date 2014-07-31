@@ -251,6 +251,7 @@
 
     boolean isSelectPopupVisible(Node node);
     boolean selectPopupItemStyleIsRtl(Node select, long itemIndex);
+    long selectPopupItemStyleFontHeight(Node select, long itemIndex);
 
     [RaisesException] ClientRect selectionBounds();
 

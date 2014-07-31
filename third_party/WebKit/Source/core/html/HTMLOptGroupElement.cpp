@@ -99,6 +99,7 @@ void HTMLOptGroupElement::detach(const AttachContext& context)
 
 void HTMLOptGroupElement::updateNonRenderStyle()
 {
+    m_style = originalStyleForRenderer();
     if (renderer()) {
         if (HTMLSelectElement* select = ownerSelectElement())
             select->updateListOnRenderer();

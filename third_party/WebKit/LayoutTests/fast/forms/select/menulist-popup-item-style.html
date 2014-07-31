@@ -23,6 +23,13 @@ function test() {
     eventSender.keyDown(' ', null);
     shouldBeTrue('internals.isSelectPopupVisible(popup)');
     shouldBeTrue('internals.selectPopupItemStyleIsRtl(popup, 2)');
+    popup.blur();
+    shouldBeFalse('internals.isSelectPopupVisible(popup)');
+    popup.style.fontSize = '50px';
+    popup.focus();
+    eventSender.keyDown(' ', null);
+    shouldBeTrue('internals.isSelectPopupVisible(popup)');
+    shouldBeGreaterThan('internals.selectPopupItemStyleFontHeight(popup, 2)', '50');
 }
 test();
 </script>
