@@ -12,9 +12,6 @@
 #include "cc/output/filter_operation.h"
 
 namespace base {
-namespace debug {
-class TracedValue;
-}
 class Value;
 }
 
@@ -70,7 +67,8 @@ class CC_EXPORT FilterOperations {
   // a copy of this.
   FilterOperations Blend(const FilterOperations& from, double progress) const;
 
-  void AsValueInto(base::debug::TracedValue* value) const;
+
+  scoped_ptr<base::Value> AsValue() const;
 
  private:
   std::vector<FilterOperation> operations_;

@@ -10,12 +10,6 @@
 #include "cc/resources/picture_layer_tiling.h"
 #include "ui/gfx/size.h"
 
-namespace base {
-namespace debug {
-class TracedValue;
-}
-}
-
 namespace cc {
 
 class CC_EXPORT PictureLayerTilingSet {
@@ -121,7 +115,7 @@ class CC_EXPORT PictureLayerTilingSet {
     Region::Iterator region_iter_;
   };
 
-  void AsValueInto(base::debug::TracedValue* array) const;
+  scoped_ptr<base::Value> AsValue() const;
   size_t GPUMemoryUsageInBytes() const;
 
   TilingRange GetTilingRange(TilingRangeType type) const;

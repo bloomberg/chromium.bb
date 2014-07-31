@@ -8,7 +8,6 @@
 #include <set>
 #include <vector>
 
-#include "base/debug/trace_event_argument.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
@@ -199,7 +198,8 @@ gfx::Rect PicturePileBase::PadRect(const gfx::Rect& rect) {
   return padded_rect;
 }
 
-void PicturePileBase::AsValueInto(base::debug::TracedValue* pictures) const {
+scoped_ptr<base::Value> PicturePileBase::AsValue() const {
+  scoped_ptr<base::ListValue> pictures(new base::ListValue());
   gfx::Rect tiling_rect(tiling_.tiling_size());
   std::set<void*> appended_pictures;
   bool include_borders = true;
@@ -213,9 +213,10 @@ void PicturePileBase::AsValueInto(base::debug::TracedValue* pictures) const {
     Picture* picture = map_iter->second.GetPicture();
     if (picture && (appended_pictures.count(picture) == 0)) {
       appended_pictures.insert(picture);
-      TracedValue::AppendIDRef(picture, pictures);
+      pictures->Append(TracedValue::CreateIDRef(picture).release());
     }
   }
+  return pictures.PassAs<base::Value>();
 }
 
 PicturePileBase::PictureInfo::PictureInfo() : last_frame_number_(0) {}

@@ -165,7 +165,7 @@ class CC_EXPORT LayerTreeHostImpl
   struct CC_EXPORT FrameData : public RenderPassSink {
     FrameData();
     virtual ~FrameData();
-    void AsValueInto(base::debug::TracedValue* value) const;
+    scoped_ptr<base::Value> AsValue() const;
 
     std::vector<gfx::Rect> occluding_screen_space_rects;
     std::vector<gfx::Rect> non_occluding_screen_space_rects;
@@ -434,17 +434,9 @@ class CC_EXPORT LayerTreeHostImpl
     return begin_impl_frame_interval_;
   }
 
-  void AsValueInto(base::debug::TracedValue* value) const {
-    return AsValueWithFrameInto(NULL, value);
-  }
-  void AsValueWithFrameInto(FrameData* frame,
-                            base::debug::TracedValue* value) const;
-  scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;
-  scoped_refptr<base::debug::ConvertableToTraceFormat> AsValueWithFrame(
-      FrameData* frame) const;
-  scoped_refptr<base::debug::ConvertableToTraceFormat> ActivationStateAsValue()
-      const;
-  void ActivationStateAsValueInto(base::debug::TracedValue* value) const;
+  scoped_ptr<base::Value> AsValue() const { return AsValueWithFrame(NULL); }
+  scoped_ptr<base::Value> AsValueWithFrame(FrameData* frame) const;
+  scoped_ptr<base::Value> ActivationStateAsValue() const;
 
   bool page_scale_animation_active() const { return !!page_scale_animation_; }
 

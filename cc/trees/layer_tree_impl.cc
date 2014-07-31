@@ -8,7 +8,6 @@
 #include <set>
 
 #include "base/debug/trace_event.h"
-#include "base/debug/trace_event_argument.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/animation/scrollbar_animation_controller_linear_fade.h"
@@ -821,23 +820,26 @@ AnimationRegistrar* LayerTreeImpl::animationRegistrar() const {
   return layer_tree_host_impl_->animation_registrar();
 }
 
-void LayerTreeImpl::AsValueInto(base::debug::TracedValue* state) const {
-  TracedValue::MakeDictIntoImplicitSnapshot(state, "cc::LayerTreeImpl", this);
+scoped_ptr<base::Value> LayerTreeImpl::AsValue() const {
+  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+  TracedValue::MakeDictIntoImplicitSnapshot(
+      state.get(), "cc::LayerTreeImpl", this);
 
-  state->BeginDictionary("root_layer");
-  root_layer_->AsValueInto(state);
-  state->EndDictionary();
+  state->Set("root_layer", root_layer_->AsValue().release());
 
-  state->BeginArray("render_surface_layer_list");
+  scoped_ptr<base::ListValue> render_surface_layer_list(new base::ListValue());
   typedef LayerIterator<LayerImpl> LayerIteratorType;
   LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list_);
   for (LayerIteratorType it = LayerIteratorType::Begin(
            &render_surface_layer_list_); it != end; ++it) {
     if (!it.represents_itself())
       continue;
-    TracedValue::AppendIDRef(*it, state);
+    render_surface_layer_list->Append(TracedValue::CreateIDRef(*it).release());
   }
-  state->EndArray();
+
+  state->Set("render_surface_layer_list",
+             render_surface_layer_list.release());
+  return state.PassAs<base::Value>();
 }
 
 void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(

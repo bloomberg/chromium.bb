@@ -12,9 +12,6 @@
 #include "ui/gfx/transform.h"
 
 namespace base {
-namespace debug {
-class TracedValue;
-}
 class Value;
 }
 
@@ -40,7 +37,7 @@ class CC_EXPORT SharedQuadState {
               float opacity,
               SkXfermode::Mode blend_mode,
               int sorting_context_id);
-  void AsValueInto(base::debug::TracedValue* dict) const;
+  scoped_ptr<base::Value> AsValue() const;
 
   // Transforms from quad's original content space to its target content space.
   gfx::Transform content_to_target_transform;

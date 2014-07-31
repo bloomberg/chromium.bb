@@ -20,9 +20,6 @@
 #include "cc/scheduler/scheduler_state_machine.h"
 
 namespace base {
-namespace debug {
-class ConvertableToTraceFormat;
-}
 class SingleThreadTaskRunner;
 }
 
@@ -132,7 +129,7 @@ class CC_EXPORT Scheduler {
   void PollForAnticipatedDrawTriggers();
   void PollToAdvanceCommitState();
 
-  scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;
+  scoped_ptr<base::Value> AsValue() const;
 
   bool IsInsideAction(SchedulerStateMachine::Action action) {
     return inside_action_ == action;
@@ -164,7 +161,7 @@ class CC_EXPORT Scheduler {
     // TimeSourceClient implementation of OnTimerTick triggers a BeginFrame.
     virtual void OnTimerTick() OVERRIDE;
 
-    void AsValueInto(base::debug::TracedValue* dict) const;
+    scoped_ptr<base::Value> AsValue() const;
 
    private:
     BeginFrameArgs CreateSyntheticBeginFrameArgs(base::TimeTicks frame_time);

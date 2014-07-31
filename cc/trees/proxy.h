@@ -16,12 +16,7 @@
 #include "base/values.h"
 #include "cc/base/cc_export.h"
 
-namespace base {
-namespace debug {
-class TracedValue;
-}
-class SingleThreadTaskRunner;
-}
+namespace base { class SingleThreadTaskRunner; }
 
 namespace gfx {
 class Rect;
@@ -96,12 +91,13 @@ class CC_EXPORT Proxy {
 
   virtual bool SupportsImplScrolling() const = 0;
 
-  virtual void AsValueInto(base::debug::TracedValue* value) const = 0;
+  virtual scoped_ptr<base::Value> AsValue() const = 0;
 
   virtual void SetDebugState(const LayerTreeDebugState& debug_state) = 0;
 
   // Testing hooks
   virtual bool CommitPendingForTesting() = 0;
+  virtual scoped_ptr<base::Value> SchedulerAsValueForTesting();
 
  protected:
   Proxy(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,

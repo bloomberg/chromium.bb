@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/debug/trace_event.h"
-#include "base/debug/trace_event_argument.h"
 #include "cc/debug/traced_value.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/scoped_resource.h"
@@ -142,7 +141,12 @@ void ImageCopyRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
   resource_pool_->ReduceResourceUsage();
 
   TRACE_EVENT_ASYNC_STEP_INTO1(
-      "cc", "ScheduledTasks", this, "rasterizing", "state", StateAsValue());
+      "cc",
+      "ScheduledTasks",
+      this,
+      "rasterizing",
+      "state",
+      TracedValue::FromValue(StateAsValue().release()));
 }
 
 void ImageCopyRasterWorkerPool::CheckForCompletedTasks() {
@@ -219,7 +223,12 @@ void ImageCopyRasterWorkerPool::OnRasterRequiredForActivationFinished() {
   DCHECK(raster_tasks_required_for_activation_pending_);
   raster_tasks_required_for_activation_pending_ = false;
   TRACE_EVENT_ASYNC_STEP_INTO1(
-      "cc", "ScheduledTasks", this, "rasterizing", "state", StateAsValue());
+      "cc",
+      "ScheduledTasks",
+      this,
+      "rasterizing",
+      "state",
+      TracedValue::FromValue(StateAsValue().release()));
   client_->DidFinishRunningTasksRequiredForActivation();
 }
 
@@ -231,22 +240,19 @@ void ImageCopyRasterWorkerPool::FlushCopies() {
   has_performed_copy_since_last_flush_ = false;
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
-ImageCopyRasterWorkerPool::StateAsValue() const {
-  scoped_refptr<base::debug::TracedValue> state =
-      new base::debug::TracedValue();
+scoped_ptr<base::Value> ImageCopyRasterWorkerPool::StateAsValue() const {
+  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue);
 
   state->SetInteger("pending_count", raster_task_states_.size());
   state->SetBoolean("tasks_required_for_activation_pending",
                     raster_tasks_required_for_activation_pending_);
-  state->BeginDictionary("staging_state");
-  StagingStateAsValueInto(state.get());
-  state->EndDictionary();
+  state->Set("staging_state", StagingStateAsValue().release());
 
-  return state;
+  return state.PassAs<base::Value>();
 }
-void ImageCopyRasterWorkerPool::StagingStateAsValueInto(
-    base::debug::TracedValue* staging_state) const {
+scoped_ptr<base::Value> ImageCopyRasterWorkerPool::StagingStateAsValue() const {
+  scoped_ptr<base::DictionaryValue> staging_state(new base::DictionaryValue);
+
   staging_state->SetInteger("staging_resource_count",
                             resource_pool_->total_resource_count());
   staging_state->SetInteger("bytes_used_for_staging_resources",
@@ -257,6 +263,8 @@ void ImageCopyRasterWorkerPool::StagingStateAsValueInto(
   staging_state->SetInteger("bytes_pending_copy",
                             resource_pool_->total_memory_usage_bytes() -
                                 resource_pool_->acquired_memory_usage_bytes());
+
+  return staging_state.PassAs<base::Value>();
 }
 
 }  // namespace cc

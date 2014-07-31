@@ -18,9 +18,6 @@
 #include "ui/gfx/size.h"
 
 namespace base {
-namespace debug {
-class TracedValue;
-}
 class Value;
 }
 
@@ -55,7 +52,7 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   void SetTileGridSize(const gfx::Size& tile_grid_size);
   TilingData& tiling() { return tiling_; }
 
-  void AsValueInto(base::debug::TracedValue* array) const;
+  scoped_ptr<base::Value> AsValue() const;
 
  protected:
   class CC_EXPORT PictureInfo {

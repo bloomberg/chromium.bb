@@ -4,7 +4,6 @@
 
 #include "cc/quads/texture_draw_quad.h"
 
-#include "base/debug/trace_event_argument.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
@@ -84,24 +83,16 @@ const TextureDrawQuad* TextureDrawQuad::MaterialCast(const DrawQuad* quad) {
   return static_cast<const TextureDrawQuad*>(quad);
 }
 
-void TextureDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
+void TextureDrawQuad::ExtendValue(base::DictionaryValue* value) const {
   value->SetInteger("resource_id", resource_id);
   value->SetBoolean("premultiplied_alpha", premultiplied_alpha);
-  value->BeginArray("uv_top_left");
-  MathUtil::AddToTracedValue(uv_top_left, value);
-  value->EndArray();
-
-  value->BeginArray("uv_bottom_right");
-  MathUtil::AddToTracedValue(uv_bottom_right, value);
-  value->EndArray();
-
+  value->Set("uv_top_left", MathUtil::AsValue(uv_top_left).release());
+  value->Set("uv_bottom_right", MathUtil::AsValue(uv_bottom_right).release());
   value->SetInteger("background_color", background_color);
-
-  value->BeginArray("vertex_opacity");
+  scoped_ptr<base::ListValue> vertex_opacity_value(new base::ListValue);
   for (size_t i = 0; i < 4; ++i)
-    value->AppendDouble(vertex_opacity[i]);
-  value->EndArray();
-
+    vertex_opacity_value->AppendDouble(vertex_opacity[i]);
+  value->Set("vertex_opacity", vertex_opacity_value.release());
   value->SetBoolean("flipped", flipped);
 }
 

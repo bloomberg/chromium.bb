@@ -5,35 +5,57 @@
 #ifndef CC_DEBUG_TRACED_VALUE_H_
 #define CC_DEBUG_TRACED_VALUE_H_
 
-namespace base {
-namespace debug {
-class TracedValue;
-}
-}
+#include <string>
 
+#include "base/debug/trace_event.h"
+#include "base/memory/scoped_ptr.h"
+
+namespace base {
+class DictionaryValue;
+class Value;
+}
 namespace cc {
 
-class TracedValue {
+class TracedValue : public base::debug::ConvertableToTraceFormat {
  public:
-  static void AppendIDRef(const void* id, base::debug::TracedValue* array);
-  static void SetIDRef(const void* id,
-                       base::debug::TracedValue* dict,
-                       const char* name);
-  static void MakeDictIntoImplicitSnapshot(base::debug::TracedValue* dict,
-                                           const char* object_name,
-                                           const void* id);
+  static scoped_ptr<base::Value> CreateIDRef(const void* id);
+  static void MakeDictIntoImplicitSnapshot(
+      base::DictionaryValue* dict, const char* object_name, const void* id);
   static void MakeDictIntoImplicitSnapshotWithCategory(
       const char* category,
-      base::debug::TracedValue* dict,
+      base::DictionaryValue* dict,
       const char* object_name,
       const void* id);
   static void MakeDictIntoImplicitSnapshotWithCategory(
       const char* category,
-      base::debug::TracedValue* dict,
+      base::DictionaryValue* dict,
       const char* object_base_type_name,
       const char* object_name,
       const void* id);
+  static scoped_refptr<base::debug::ConvertableToTraceFormat> FromValue(
+      base::Value* value);
+
+  virtual void AppendAsTraceFormat(std::string* out) const OVERRIDE;
+
+ private:
+  explicit TracedValue(base::Value* value);
+  virtual ~TracedValue();
+
+  scoped_ptr<base::Value> value_;
+
+  DISALLOW_COPY_AND_ASSIGN(TracedValue);
 };
+
+template <class T>
+static scoped_refptr<base::debug::ConvertableToTraceFormat> ToTrace(T* t) {
+  return TracedValue::FromValue(t->AsValue().release());
+}
+
+template <class T>
+static scoped_refptr<base::debug::ConvertableToTraceFormat> ToTrace(
+    const T& t) {
+  return ToTrace(&t);
+}
 
 }  // namespace cc
 

@@ -5,7 +5,6 @@
 #include "cc/resources/image_raster_worker_pool.h"
 
 #include "base/debug/trace_event.h"
-#include "base/debug/trace_event_argument.h"
 #include "cc/debug/traced_value.h"
 #include "cc/resources/resource.h"
 
@@ -119,7 +118,12 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
       new_raster_required_for_activation_finished_task;
 
   TRACE_EVENT_ASYNC_STEP_INTO1(
-      "cc", "ScheduledTasks", this, "rasterizing", "state", StateAsValue());
+      "cc",
+      "ScheduledTasks",
+      this,
+      "rasterizing",
+      "state",
+      TracedValue::FromValue(StateAsValue().release()));
 }
 
 void ImageRasterWorkerPool::CheckForCompletedTasks() {
@@ -170,18 +174,21 @@ void ImageRasterWorkerPool::OnRasterRequiredForActivationFinished() {
   DCHECK(raster_tasks_required_for_activation_pending_);
   raster_tasks_required_for_activation_pending_ = false;
   TRACE_EVENT_ASYNC_STEP_INTO1(
-      "cc", "ScheduledTasks", this, "rasterizing", "state", StateAsValue());
+      "cc",
+      "ScheduledTasks",
+      this,
+      "rasterizing",
+      "state",
+      TracedValue::FromValue(StateAsValue().release()));
   client_->DidFinishRunningTasksRequiredForActivation();
 }
 
-scoped_refptr<base::debug::ConvertableToTraceFormat>
-ImageRasterWorkerPool::StateAsValue() const {
-  scoped_refptr<base::debug::TracedValue> state =
-      new base::debug::TracedValue();
+scoped_ptr<base::Value> ImageRasterWorkerPool::StateAsValue() const {
+  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue);
 
   state->SetBoolean("tasks_required_for_activation_pending",
                     raster_tasks_required_for_activation_pending_);
-  return state;
+  return state.PassAs<base::Value>();
 }
 
 }  // namespace cc

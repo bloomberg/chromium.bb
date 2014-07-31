@@ -4,7 +4,6 @@
 
 #include "cc/quads/picture_draw_quad.h"
 
-#include "base/debug/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
 #include "cc/resources/platform_color.h"
@@ -80,11 +79,9 @@ const PictureDrawQuad* PictureDrawQuad::MaterialCast(const DrawQuad* quad) {
   return static_cast<const PictureDrawQuad*>(quad);
 }
 
-void PictureDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
+void PictureDrawQuad::ExtendValue(base::DictionaryValue* value) const {
   ContentDrawQuadBase::ExtendValue(value);
-  value->BeginArray("content_rect");
-  MathUtil::AddToTracedValue(content_rect, value);
-  value->EndArray();
+  value->Set("content_rect", MathUtil::AsValue(content_rect).release());
   value->SetDouble("contents_scale", contents_scale);
   value->SetInteger("texture_format", texture_format);
   // TODO(piman): picture_pile?

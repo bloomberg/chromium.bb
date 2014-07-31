@@ -5,7 +5,6 @@
 #include "cc/layers/layer_impl.h"
 
 #include "base/debug/trace_event.h"
-#include "base/debug/trace_event_argument.h"
 #include "base/json/json_reader.h"
 #include "base/strings/stringprintf.h"
 #include "cc/animation/animation_registrar.h"
@@ -1391,7 +1390,7 @@ void LayerImpl::RemoveDependentNeedsPushProperties() {
       parent_->RemoveDependentNeedsPushProperties();
 }
 
-void LayerImpl::AsValueInto(base::debug::TracedValue* state) const {
+void LayerImpl::AsValueInto(base::DictionaryValue* state) const {
   TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"),
       state,
@@ -1399,75 +1398,50 @@ void LayerImpl::AsValueInto(base::debug::TracedValue* state) const {
       LayerTypeAsString(),
       this);
   state->SetInteger("layer_id", id());
-  state->BeginDictionary("bounds");
-  MathUtil::AddToTracedValue(bounds_, state);
-  state->EndDictionary();
-
-  state->BeginArray("position");
-  MathUtil::AddToTracedValue(position_, state);
-  state->EndArray();
-
+  state->Set("bounds", MathUtil::AsValue(bounds_).release());
+  state->Set("position", MathUtil::AsValue(position_).release());
   state->SetInteger("draws_content", DrawsContent());
   state->SetInteger("gpu_memory_usage", GPUMemoryUsageInBytes());
-
-  state->BeginArray("scroll_offset");
-  MathUtil::AddToTracedValue(scroll_offset_, state);
-  state->EndArray();
-
-  state->BeginArray("transform_origin");
-  MathUtil::AddToTracedValue(transform_origin_, state);
-  state->EndArray();
+  state->Set("scroll_offset", MathUtil::AsValue(scroll_offset_).release());
+  state->Set("transform_origin",
+             MathUtil::AsValue(transform_origin_).release());
 
   bool clipped;
   gfx::QuadF layer_quad = MathUtil::MapQuad(
       screen_space_transform(),
       gfx::QuadF(gfx::Rect(content_bounds())),
       &clipped);
-  state->BeginArray("layer_quad");
-  MathUtil::AddToTracedValue(layer_quad, state);
-  state->EndArray();
+  state->Set("layer_quad", MathUtil::AsValue(layer_quad).release());
+
   if (!touch_event_handler_region_.IsEmpty()) {
-    state->BeginArray("touch_event_handler_region");
-    touch_event_handler_region_.AsValueInto(state);
-    state->EndArray();
+    state->Set("touch_event_handler_region",
+               touch_event_handler_region_.AsValue().release());
   }
   if (have_wheel_event_handlers_) {
     gfx::Rect wheel_rect(content_bounds());
     Region wheel_region(wheel_rect);
-    state->BeginArray("wheel_event_handler_region");
-    wheel_region.AsValueInto(state);
-    state->EndArray();
+    state->Set("wheel_event_handler_region",
+               wheel_region.AsValue().release());
   }
   if (have_scroll_event_handlers_) {
     gfx::Rect scroll_rect(content_bounds());
     Region scroll_region(scroll_rect);
-    state->BeginArray("scroll_event_handler_region");
-    scroll_region.AsValueInto(state);
-    state->EndArray();
+    state->Set("scroll_event_handler_region",
+               scroll_region.AsValue().release());
   }
   if (!non_fast_scrollable_region_.IsEmpty()) {
-    state->BeginArray("non_fast_scrollable_region");
-    non_fast_scrollable_region_.AsValueInto(state);
-    state->EndArray();
+    state->Set("non_fast_scrollable_region",
+               non_fast_scrollable_region_.AsValue().release());
   }
 
-  state->BeginArray("children");
-  for (size_t i = 0; i < children_.size(); ++i) {
-    state->BeginDictionary();
-    children_[i]->AsValueInto(state);
-    state->EndDictionary();
-  }
-  state->EndArray();
-  if (mask_layer_) {
-    state->BeginDictionary("mask_layer");
-    mask_layer_->AsValueInto(state);
-    state->EndDictionary();
-  }
-  if (replica_layer_) {
-    state->BeginDictionary("replica_layer");
-    replica_layer_->AsValueInto(state);
-    state->EndDictionary();
-  }
+  scoped_ptr<base::ListValue> children_list(new base::ListValue());
+  for (size_t i = 0; i < children_.size(); ++i)
+    children_list->Append(children_[i]->AsValue().release());
+  state->Set("children", children_list.release());
+  if (mask_layer_)
+    state->Set("mask_layer", mask_layer_->AsValue().release());
+  if (replica_layer_)
+    state->Set("replica_layer", replica_layer_->AsValue().release());
 
   if (scroll_parent_)
     state->SetInteger("scroll_parent", scroll_parent_->id());
@@ -1483,11 +1457,8 @@ void LayerImpl::AsValueInto(base::debug::TracedValue* state) const {
       layer_animation_controller()->HasAnimationThatInflatesBounds());
 
   gfx::BoxF box;
-  if (LayerUtils::GetAnimationBounds(*this, &box)) {
-    state->BeginArray("animation_bounds");
-    MathUtil::AddToTracedValue(box, state);
-    state->EndArray();
-  }
+  if (LayerUtils::GetAnimationBounds(*this, &box))
+    state->Set("animation_bounds", MathUtil::AsValue(box).release());
 
   if (debug_info_.get()) {
     std::string str;
@@ -1500,10 +1471,7 @@ void LayerImpl::AsValueInto(base::debug::TracedValue* state) const {
       bool converted_to_dictionary =
           debug_info_value->GetAsDictionary(&dictionary_value);
       DCHECK(converted_to_dictionary);
-      for (base::DictionaryValue::Iterator it(*dictionary_value); !it.IsAtEnd();
-           it.Advance()) {
-        state->SetValue(it.key().data(), it.value().DeepCopy());
-      }
+      state->MergeDictionary(dictionary_value);
     } else {
       NOTREACHED();
     }
@@ -1516,6 +1484,12 @@ bool LayerImpl::IsDrawnRenderSurfaceLayerListMember() const {
 }
 
 size_t LayerImpl::GPUMemoryUsageInBytes() const { return 0; }
+
+scoped_ptr<base::Value> LayerImpl::AsValue() const {
+  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+  AsValueInto(state.get());
+  return state.PassAs<base::Value>();
+}
 
 void LayerImpl::RunMicroBenchmark(MicroBenchmarkImpl* benchmark) {
   benchmark->RunOnLayer(this);

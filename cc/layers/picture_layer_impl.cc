@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <limits>
 
-#include "base/debug/trace_event_argument.h"
 #include "base/time/time.h"
 #include "cc/base/math_util.h"
 #include "cc/base/util.h"
@@ -1336,42 +1335,31 @@ void PictureLayerImpl::GetDebugBorderProperties(
   *width = DebugColors::TiledContentLayerBorderWidth(layer_tree_impl());
 }
 
-void PictureLayerImpl::AsValueInto(base::debug::TracedValue* state) const {
+void PictureLayerImpl::AsValueInto(base::DictionaryValue* state) const {
   const_cast<PictureLayerImpl*>(this)->DoPostCommitInitializationIfNeeded();
   LayerImpl::AsValueInto(state);
   state->SetDouble("ideal_contents_scale", ideal_contents_scale_);
   state->SetDouble("geometry_contents_scale", MaximumTilingContentsScale());
-  state->BeginArray("tilings");
-  tilings_->AsValueInto(state);
-  state->EndArray();
+  state->Set("tilings", tilings_->AsValue().release());
+  state->Set("pictures", pile_->AsValue().release());
+  state->Set("invalidation", invalidation_.AsValue().release());
 
-  state->BeginArray("pictures");
-  pile_->AsValueInto(state);
-  state->EndArray();
-
-  state->BeginArray("invalidation");
-  invalidation_.AsValueInto(state);
-  state->EndArray();
-
-  state->BeginArray("coverage_tiles");
+  scoped_ptr<base::ListValue> coverage_tiles(new base::ListValue);
   for (PictureLayerTilingSet::CoverageIterator iter(tilings_.get(),
                                                     contents_scale_x(),
                                                     gfx::Rect(content_bounds()),
                                                     ideal_contents_scale_);
        iter;
        ++iter) {
-    state->BeginDictionary();
-
-    state->BeginArray("geometry_rect");
-    MathUtil::AddToTracedValue(iter.geometry_rect(), state);
-    state->EndArray();
-
+    scoped_ptr<base::DictionaryValue> tile_data(new base::DictionaryValue);
+    tile_data->Set("geometry_rect",
+                   MathUtil::AsValue(iter.geometry_rect()).release());
     if (*iter)
-      TracedValue::SetIDRef(*iter, state, "tile");
+      tile_data->Set("tile", TracedValue::CreateIDRef(*iter).release());
 
-    state->EndDictionary();
+    coverage_tiles->Append(tile_data.release());
   }
-  state->EndArray();
+  state->Set("coverage_tiles", coverage_tiles.release());
 }
 
 size_t PictureLayerImpl::GPUMemoryUsageInBytes() const {

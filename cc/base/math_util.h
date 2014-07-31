@@ -17,12 +17,7 @@
 #include "ui/gfx/size.h"
 #include "ui/gfx/transform.h"
 
-namespace base {
-class Value;
-namespace debug {
-class TracedValue;
-}
-}
+namespace base { class Value; }
 
 namespace gfx {
 class QuadF;
@@ -179,35 +174,21 @@ class CC_EXPORT MathUtil {
 
   // Conversion to value.
   static scoped_ptr<base::Value> AsValue(const gfx::Size& s);
+  static scoped_ptr<base::Value> AsValue(const gfx::SizeF& s);
   static scoped_ptr<base::Value> AsValue(const gfx::Rect& r);
   static bool FromValue(const base::Value*, gfx::Rect* out_rect);
   static scoped_ptr<base::Value> AsValue(const gfx::PointF& q);
-
-  static void AddToTracedValue(const gfx::Size& s,
-                               base::debug::TracedValue* res);
-  static void AddToTracedValue(const gfx::SizeF& s,
-                               base::debug::TracedValue* res);
-  static void AddToTracedValue(const gfx::Rect& r,
-                               base::debug::TracedValue* res);
-  static void AddToTracedValue(const gfx::PointF& q,
-                               base::debug::TracedValue* res);
-  static void AddToTracedValue(const gfx::Point3F&,
-                               base::debug::TracedValue* res);
-  static void AddToTracedValue(const gfx::Vector2d& v,
-                               base::debug::TracedValue* res);
-  static void AddToTracedValue(const gfx::QuadF& q,
-                               base::debug::TracedValue* res);
-  static void AddToTracedValue(const gfx::RectF& rect,
-                               base::debug::TracedValue* res);
-  static void AddToTracedValue(const gfx::Transform& transform,
-                               base::debug::TracedValue* res);
-  static void AddToTracedValue(const gfx::BoxF& box,
-                               base::debug::TracedValue* res);
+  static scoped_ptr<base::Value> AsValue(const gfx::Point3F&);
+  static scoped_ptr<base::Value> AsValue(const gfx::Vector2d& v);
+  static scoped_ptr<base::Value> AsValue(const gfx::QuadF& q);
+  static scoped_ptr<base::Value> AsValue(const gfx::RectF& rect);
+  static scoped_ptr<base::Value> AsValue(const gfx::Transform& transform);
+  static scoped_ptr<base::Value> AsValue(const gfx::BoxF& box);
 
   // Returns a base::Value representation of the floating point value.
   // If the value is inf, returns max double/float representation.
-  static double AsDoubleSafely(double value);
-  static float AsFloatSafely(float value);
+  static scoped_ptr<base::Value> AsValueSafely(double value);
+  static scoped_ptr<base::Value> AsValueSafely(float value);
 };
 
 }  // namespace cc

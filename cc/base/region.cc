@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "cc/base/region.h"
-#include "base/debug/trace_event_argument.h"
 #include "base/values.h"
 
 namespace cc {
@@ -119,16 +118,6 @@ scoped_ptr<base::Value> Region::AsValue() const {
     result->AppendInteger(rect.height());
   }
   return result.PassAs<base::Value>();
-}
-
-void Region::AsValueInto(base::debug::TracedValue* result) const {
-  for (Iterator it(*this); it.has_rect(); it.next()) {
-    gfx::Rect rect(it.rect());
-    result->AppendInteger(rect.x());
-    result->AppendInteger(rect.y());
-    result->AppendInteger(rect.width());
-    result->AppendInteger(rect.height());
-  }
 }
 
 Region::Iterator::Iterator() {

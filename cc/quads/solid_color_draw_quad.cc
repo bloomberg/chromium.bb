@@ -4,7 +4,6 @@
 
 #include "cc/quads/solid_color_draw_quad.h"
 
-#include "base/debug/trace_event_argument.h"
 #include "base/logging.h"
 #include "base/values.h"
 
@@ -48,7 +47,7 @@ const SolidColorDrawQuad* SolidColorDrawQuad::MaterialCast(
   return static_cast<const SolidColorDrawQuad*>(quad);
 }
 
-void SolidColorDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
+void SolidColorDrawQuad::ExtendValue(base::DictionaryValue* value) const {
   value->SetInteger("color", color);
   value->SetBoolean("force_anti_aliasing_off", force_anti_aliasing_off);
 }

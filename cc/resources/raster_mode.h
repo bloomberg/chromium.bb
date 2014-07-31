@@ -5,8 +5,6 @@
 #ifndef CC_RESOURCES_RASTER_MODE_H_
 #define CC_RESOURCES_RASTER_MODE_H_
 
-#include <string>
-
 #include "base/memory/scoped_ptr.h"
 
 namespace base {
@@ -23,7 +21,7 @@ enum RasterMode {
   NUM_RASTER_MODES = 2
 };
 
-std::string RasterModeToString(RasterMode mode);
+scoped_ptr<base::Value> RasterModeAsValue(RasterMode mode);
 
 }  // namespace cc
 

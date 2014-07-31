@@ -11,12 +11,7 @@
 #include "base/values.h"
 #include "cc/base/cc_export.h"
 
-namespace base {
-namespace debug {
-class TracedValue;
-}
-class SingleThreadTaskRunner;
-}
+namespace base { class SingleThreadTaskRunner; }
 
 namespace cc {
 
@@ -54,7 +49,7 @@ class CC_EXPORT DelayBasedTimeSource
   // Virtual for testing.
   virtual base::TimeTicks Now() const;
 
-  virtual void AsValueInto(base::debug::TracedValue* dict) const;
+  virtual scoped_ptr<base::Value> AsValue() const;
 
  protected:
   DelayBasedTimeSource(base::TimeDelta interval,

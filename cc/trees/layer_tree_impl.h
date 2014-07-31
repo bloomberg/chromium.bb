@@ -28,12 +28,6 @@ struct hash<cc::LayerImpl*> {
 }  // namespace BASE_HASH_NAMESPACE
 #endif  // COMPILER
 
-namespace base {
-namespace debug {
-class TracedValue;
-}
-}
-
 namespace cc {
 
 class ContextProvider;
@@ -112,7 +106,7 @@ class CC_EXPORT LayerTreeImpl {
   const LayerTreeDebugState& debug_state() const;
   float device_scale_factor() const;
   DebugRectHistory* debug_rect_history() const;
-  void AsValueInto(base::debug::TracedValue* dict) const;
+  scoped_ptr<base::Value> AsValue() const;
 
   // Other public methods
   // ---------------------------------------------------------------------------

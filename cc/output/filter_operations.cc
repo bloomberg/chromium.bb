@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/filter_operations.h"
-
 #include <cmath>
 
-#include "base/debug/trace_event_argument.h"
+#include "cc/output/filter_operations.h"
+
 #include "base/values.h"
 #include "cc/output/filter_operation.h"
 
@@ -197,12 +196,11 @@ FilterOperations FilterOperations::Blend(const FilterOperations& from,
   return blended_filters;
 }
 
-void FilterOperations::AsValueInto(base::debug::TracedValue* value) const {
-  for (size_t i = 0; i < operations_.size(); ++i) {
-    value->BeginDictionary();
-    operations_[i].AsValueInto(value);
-    value->EndDictionary();
-  }
+scoped_ptr<base::Value> FilterOperations::AsValue() const {
+  scoped_ptr<base::ListValue> value(new base::ListValue);
+  for (size_t i = 0; i < operations_.size(); ++i)
+    value->Append(operations_[i].AsValue().release());
+  return value.PassAs<base::Value>();
 }
 
 }  // namespace cc

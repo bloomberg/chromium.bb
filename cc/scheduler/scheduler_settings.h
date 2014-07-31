@@ -5,15 +5,9 @@
 #ifndef CC_SCHEDULER_SCHEDULER_SETTINGS_H_
 #define CC_SCHEDULER_SCHEDULER_SETTINGS_H_
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "cc/base/cc_export.h"
-
-namespace base {
-namespace debug {
-class ConvertableToTraceFormat;
-}
-}
 
 namespace cc {
 class LayerTreeSettings;
@@ -33,7 +27,7 @@ class CC_EXPORT SchedulerSettings {
   bool using_synchronous_renderer_compositor;
   bool throttle_frame_production;
 
-  scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;
+  scoped_ptr<base::Value> AsValue() const;
 };
 
 }  // namespace cc

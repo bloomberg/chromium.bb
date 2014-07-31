@@ -4,95 +4,110 @@
 
 #include "cc/resources/tile_priority.h"
 
-#include "base/debug/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
 
 namespace cc {
 
-std::string WhichTreeToString(WhichTree tree) {
+scoped_ptr<base::Value> WhichTreeAsValue(WhichTree tree) {
   switch (tree) {
   case ACTIVE_TREE:
-    return "ACTIVE_TREE";
+      return scoped_ptr<base::Value>(new base::StringValue("ACTIVE_TREE"));
   case PENDING_TREE:
-    return "PENDING_TREE";
+      return scoped_ptr<base::Value>(new base::StringValue("PENDING_TREE"));
   default:
       DCHECK(false) << "Unrecognized WhichTree value " << tree;
-      return "<unknown WhichTree value>";
+      return scoped_ptr<base::Value>(new base::StringValue(
+          "<unknown WhichTree value>"));
   }
 }
 
-std::string TileResolutionToString(TileResolution resolution) {
+scoped_ptr<base::Value> TileResolutionAsValue(
+    TileResolution resolution) {
   switch (resolution) {
   case LOW_RESOLUTION:
-    return "LOW_RESOLUTION";
+    return scoped_ptr<base::Value>(new base::StringValue("LOW_RESOLUTION"));
   case HIGH_RESOLUTION:
-    return "HIGH_RESOLUTION";
+    return scoped_ptr<base::Value>(new base::StringValue("HIGH_RESOLUTION"));
   case NON_IDEAL_RESOLUTION:
-    return "NON_IDEAL_RESOLUTION";
+      return scoped_ptr<base::Value>(new base::StringValue(
+        "NON_IDEAL_RESOLUTION"));
   }
   DCHECK(false) << "Unrecognized TileResolution value " << resolution;
-  return "<unknown TileResolution value>";
+  return scoped_ptr<base::Value>(new base::StringValue(
+      "<unknown TileResolution value>"));
 }
 
-std::string TilePriorityBinToString(TilePriority::PriorityBin bin) {
+scoped_ptr<base::Value> TilePriorityBinAsValue(TilePriority::PriorityBin bin) {
   switch (bin) {
     case TilePriority::NOW:
-      return "NOW";
+      return scoped_ptr<base::Value>(new base::StringValue("NOW"));
     case TilePriority::SOON:
-      return "SOON";
+      return scoped_ptr<base::Value>(new base::StringValue("SOON"));
     case TilePriority::EVENTUALLY:
-      return "EVENTUALLY";
+      return scoped_ptr<base::Value>(new base::StringValue("EVENTUALLY"));
   }
   DCHECK(false) << "Unrecognized TilePriority::PriorityBin value " << bin;
-  return "<unknown TilePriority::PriorityBin value>";
+  return scoped_ptr<base::Value>(
+      new base::StringValue("<unknown TilePriority::PriorityBin value>"));
 }
 
-void TilePriority::AsValueInto(base::debug::TracedValue* state) const {
-  state->SetString("resolution", TileResolutionToString(resolution));
-  state->SetString("priority_bin", TilePriorityBinToString(priority_bin));
-  state->SetDouble("distance_to_visible",
-                   MathUtil::AsDoubleSafely(distance_to_visible));
+scoped_ptr<base::Value> TilePriority::AsValue() const {
+  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+  state->Set("resolution", TileResolutionAsValue(resolution).release());
+  state->Set("priority_bin", TilePriorityBinAsValue(priority_bin).release());
+  state->Set("distance_to_visible",
+             MathUtil::AsValueSafely(distance_to_visible).release());
+  return state.PassAs<base::Value>();
 }
 
-std::string TileMemoryLimitPolicyToString(TileMemoryLimitPolicy policy) {
+scoped_ptr<base::Value> TileMemoryLimitPolicyAsValue(
+    TileMemoryLimitPolicy policy) {
   switch (policy) {
   case ALLOW_NOTHING:
-    return "ALLOW_NOTHING";
+      return scoped_ptr<base::Value>(new base::StringValue("ALLOW_NOTHING"));
   case ALLOW_ABSOLUTE_MINIMUM:
-    return "ALLOW_ABSOLUTE_MINIMUM";
+      return scoped_ptr<base::Value>(new base::StringValue(
+          "ALLOW_ABSOLUTE_MINIMUM"));
   case ALLOW_PREPAINT_ONLY:
-    return "ALLOW_PREPAINT_ONLY";
+      return scoped_ptr<base::Value>(new base::StringValue(
+          "ALLOW_PREPAINT_ONLY"));
   case ALLOW_ANYTHING:
-    return "ALLOW_ANYTHING";
+      return scoped_ptr<base::Value>(new base::StringValue(
+          "ALLOW_ANYTHING"));
   default:
       DCHECK(false) << "Unrecognized policy value";
-      return "<unknown>";
+      return scoped_ptr<base::Value>(new base::StringValue(
+          "<unknown>"));
   }
 }
 
-std::string TreePriorityToString(TreePriority prio) {
+scoped_ptr<base::Value> TreePriorityAsValue(TreePriority prio) {
   switch (prio) {
   case SAME_PRIORITY_FOR_BOTH_TREES:
-    return "SAME_PRIORITY_FOR_BOTH_TREES";
+      return scoped_ptr<base::Value>(new base::StringValue(
+          "SAME_PRIORITY_FOR_BOTH_TREES"));
   case SMOOTHNESS_TAKES_PRIORITY:
-    return "SMOOTHNESS_TAKES_PRIORITY";
+      return scoped_ptr<base::Value>(new base::StringValue(
+          "SMOOTHNESS_TAKES_PRIORITY"));
   case NEW_CONTENT_TAKES_PRIORITY:
-    return "NEW_CONTENT_TAKES_PRIORITY";
+      return scoped_ptr<base::Value>(new base::StringValue(
+          "NEW_CONTENT_TAKES_PRIORITY"));
   default:
     DCHECK(false) << "Unrecognized priority value " << prio;
-    return "<unknown>";
+    return scoped_ptr<base::Value>(new base::StringValue("<unknown>"));
   }
 }
 
-void GlobalStateThatImpactsTilePriority::AsValueInto(
-    base::debug::TracedValue* state) const {
-  state->SetString("memory_limit_policy",
-                   TileMemoryLimitPolicyToString(memory_limit_policy));
+scoped_ptr<base::Value> GlobalStateThatImpactsTilePriority::AsValue() const {
+  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+  state->Set("memory_limit_policy",
+             TileMemoryLimitPolicyAsValue(memory_limit_policy).release());
   state->SetInteger("soft_memory_limit_in_bytes", soft_memory_limit_in_bytes);
   state->SetInteger("hard_memory_limit_in_bytes", hard_memory_limit_in_bytes);
   state->SetInteger("num_resources_limit", num_resources_limit);
-  state->SetString("tree_priority", TreePriorityToString(tree_priority));
+  state->Set("tree_priority", TreePriorityAsValue(tree_priority).release());
+  return state.PassAs<base::Value>();
 }
 
 }  // namespace cc

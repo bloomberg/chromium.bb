@@ -16,9 +16,6 @@
 
 namespace base {
 class Value;
-namespace debug {
-class TracedValue;
-}
 }
 
 namespace cc {
@@ -62,7 +59,6 @@ class CC_EXPORT Region {
 
   std::string ToString() const;
   scoped_ptr<base::Value> AsValue() const;
-  void AsValueInto(base::debug::TracedValue* array) const;
 
   class CC_EXPORT Iterator {
    public:

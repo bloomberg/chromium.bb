@@ -36,7 +36,9 @@ bool FakeProxy::SupportsImplScrolling() const { return false; }
 
 bool FakeProxy::CommitPendingForTesting() { return false; }
 
-void FakeProxy::AsValueInto(base::debug::TracedValue*) const {
+scoped_ptr<base::Value> FakeProxy::AsValue() const {
+  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+  return state.PassAs<base::Value>();
 }
 
 }  // namespace cc

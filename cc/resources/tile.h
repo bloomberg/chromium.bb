@@ -103,7 +103,7 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
     return false;
   }
 
-  void AsValueInto(base::debug::TracedValue* dict) const;
+  scoped_ptr<base::Value> AsValue() const;
 
   inline bool IsReadyToDraw() const {
     for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {

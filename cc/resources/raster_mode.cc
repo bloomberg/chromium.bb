@@ -10,15 +10,18 @@
 
 namespace cc {
 
-std::string RasterModeToString(RasterMode raster_mode) {
+scoped_ptr<base::Value> RasterModeAsValue(RasterMode raster_mode) {
   switch (raster_mode) {
     case HIGH_QUALITY_RASTER_MODE:
-      return "HIGH_QUALITY_RASTER_MODE";
+      return scoped_ptr<base::Value>(
+          new base::StringValue("HIGH_QUALITY_RASTER_MODE"));
     case LOW_QUALITY_RASTER_MODE:
-      return "LOW_QUALITY_RASTER_MODE";
+      return scoped_ptr<base::Value>(
+          new base::StringValue("LOW_QUALITY_RASTER_MODE"));
     default:
       NOTREACHED() << "Unrecognized RasterMode value " << raster_mode;
-      return "<unknown RasterMode value>";
+      return scoped_ptr<base::Value>(
+          new base::StringValue("<unknown RasterMode value>"));
   }
 }
 
