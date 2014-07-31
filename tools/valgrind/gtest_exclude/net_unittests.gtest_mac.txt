@@ -4,6 +4,3 @@ KeygenHandlerTest.SmokeTest
 # These tests fail under Valgrind on Mac, see http://crbug.com/62314
 SSLClientSocketTest.*
 HTTPSRequestTest.*
-
-# Fails under Valgrind on Mac, http://crbug.com/397031.
-UnixDomainServerSocketTest.AcceptWithForbiddenUser

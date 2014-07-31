@@ -85,28 +85,25 @@ TEST_F(UnixDomainServerSocketTest, AcceptWithForbiddenUser) {
 
   // Connect() will return OK before the server rejects the connection.
   TestCompletionCallback connect_callback;
-  int rv = client_socket.Connect(connect_callback.callback());
-  if (rv == ERR_IO_PENDING) {
-    rv = connect_callback.WaitForResult();
-  } else {
-    EXPECT_TRUE(client_socket.IsConnected());
-  }
-  EXPECT_EQ(OK, rv);
+  int rv = connect_callback.GetResult(
+      client_socket.Connect(connect_callback.callback()));
+  ASSERT_EQ(OK, rv);
 
-  // Cannot use accept_callback.WaitForResult() because authentication error is
-  // invisible to the caller.
-  base::RunLoop().RunUntilIdle();
-  // Server disconnects the connection.
-  EXPECT_FALSE(client_socket.IsConnected());
-  // But, server didn't create the accepted socket.
-  EXPECT_FALSE(accepted_socket);
-
+  // Try to read from the socket.
   const int read_buffer_size = 10;
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(read_buffer_size));
   TestCompletionCallback read_callback;
-  EXPECT_EQ(0,  /* EOF */
-            client_socket.Read(read_buffer, read_buffer_size,
-                               read_callback.callback()));
+  rv = read_callback.GetResult(client_socket.Read(read_buffer, read_buffer_size,
+                                                  read_callback.callback()));
+
+  // The server should have disconnected gracefully, without sending any data.
+  ASSERT_EQ(0, rv);
+  EXPECT_FALSE(client_socket.IsConnected());
+
+  // The server socket should not have called |accept_callback| or modified
+  // |accepted_socket|.
+  EXPECT_FALSE(accept_callback.have_result());
+  EXPECT_FALSE(accepted_socket);
 }
 
 // Normal cases including read/write are tested by UnixDomainClientSocketTest.
