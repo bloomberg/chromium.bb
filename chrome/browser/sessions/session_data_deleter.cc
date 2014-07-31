@@ -72,10 +72,12 @@ SessionDataDeleter::SessionDataDeleter(
 
 void SessionDataDeleter::Run(content::StoragePartition* storage_partition,
                              ProfileIOData* profile_io_data) {
-  storage_partition->GetDOMStorageContext()->GetLocalStorageUsage(
-      base::Bind(&SessionDataDeleter::ClearSessionOnlyLocalStorage,
-                 this,
-                 storage_partition));
+  if (storage_policy_ && storage_policy_->HasSessionOnlyOrigins()) {
+    storage_partition->GetDOMStorageContext()->GetLocalStorageUsage(
+        base::Bind(&SessionDataDeleter::ClearSessionOnlyLocalStorage,
+                   this,
+                   storage_partition));
+  }
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
@@ -89,12 +91,13 @@ SessionDataDeleter::~SessionDataDeleter() {}
 void SessionDataDeleter::ClearSessionOnlyLocalStorage(
     content::StoragePartition* storage_partition,
     const std::vector<content::LocalStorageUsageInfo>& usages) {
-  for (std::vector<content::LocalStorageUsageInfo>::const_iterator it =
-           usages.begin();
-       it != usages.end();
-       ++it) {
-    if (storage_policy_->IsStorageSessionOnly(it->origin))
-      storage_partition->GetDOMStorageContext()->DeleteLocalStorage(it->origin);
+  DCHECK(storage_policy_);
+  DCHECK(storage_policy_->HasSessionOnlyOrigins());
+  for (size_t i = 0; i < usages.size(); ++i) {
+    const content::LocalStorageUsageInfo& usage = usages[i];
+    if (!storage_policy_->IsStorageSessionOnly(usage.origin))
+      continue;
+    storage_partition->GetDOMStorageContext()->DeleteLocalStorage(usage.origin);
   }
 }
 
@@ -130,17 +133,19 @@ void SessionDataDeleter::DeleteSessionOnlyOriginCookies(
   if (!request_context)
     return;
 
+  if (!storage_policy_ || !storage_policy_->HasSessionOnlyOrigins())
+    return;
+
   net::CookieMonster* cookie_monster =
       request_context->cookie_store()->GetCookieMonster();
   for (net::CookieList::const_iterator it = cookies.begin();
        it != cookies.end();
        ++it) {
-    if (storage_policy_->IsStorageSessionOnly(
-            net::cookie_util::CookieOriginToURL(it->Domain(),
-                                                it->IsSecure()))) {
-      cookie_monster->DeleteCanonicalCookieAsync(*it,
-                                                 base::Bind(CookieDeleted));
-    }
+    GURL url =
+        net::cookie_util::CookieOriginToURL(it->Domain(), it->IsSecure());
+    if (!storage_policy_->IsStorageSessionOnly(url))
+      continue;
+    cookie_monster->DeleteCanonicalCookieAsync(*it, base::Bind(CookieDeleted));
   }
 }
 

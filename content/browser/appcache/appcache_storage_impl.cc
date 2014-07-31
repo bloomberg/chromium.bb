@@ -81,7 +81,7 @@ void ClearSessionOnlyOrigins(
     return;
 
   bool has_session_only_appcaches =
-      special_storage_policy.get() &&
+      special_storage_policy &&
       special_storage_policy->HasSessionOnlyOrigins();
 
   // Clearning only session-only databases, and there are none.
@@ -100,11 +100,11 @@ void ClearSessionOnlyOrigins(
   }
 
   std::set<GURL>::const_iterator origin;
+  DCHECK(special_storage_policy);
   for (origin = origins.begin(); origin != origins.end(); ++origin) {
     if (!special_storage_policy->IsStorageSessionOnly(*origin))
       continue;
-    if (special_storage_policy.get() &&
-        special_storage_policy->IsStorageProtected(*origin))
+    if (special_storage_policy->IsStorageProtected(*origin))
       continue;
 
     std::vector<AppCacheDatabase::GroupRecord> groups;
@@ -384,7 +384,7 @@ void AppCacheStorageImpl::GetAllInfoTask::Run() {
 }
 
 void AppCacheStorageImpl::GetAllInfoTask::RunCompleted() {
-  DCHECK(delegates_.size() == 1);
+  DCHECK_EQ(1U, delegates_.size());
   FOR_EACH_DELEGATE(delegates_, OnAllInfo(info_collection_.get()));
 }
 

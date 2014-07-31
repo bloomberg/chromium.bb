@@ -165,7 +165,8 @@ bool FileSystemBackend::IsAccessAllowed(
   }
 
   // Check first to make sure this extension has fileBrowserHander permissions.
-  if (!special_storage_policy_->IsFileHandler(extension_id))
+  if (!special_storage_policy_ ||
+      !special_storage_policy_->IsFileHandler(extension_id))
     return false;
 
   return file_access_permissions_->HasAccessPermission(extension_id,
@@ -174,18 +175,24 @@ bool FileSystemBackend::IsAccessAllowed(
 
 void FileSystemBackend::GrantFullAccessToExtension(
     const std::string& extension_id) {
-  DCHECK(special_storage_policy_->IsFileHandler(extension_id));
-  if (!special_storage_policy_->IsFileHandler(extension_id))
+  if (!special_storage_policy_)
     return;
+  if (!special_storage_policy_->IsFileHandler(extension_id)) {
+    NOTREACHED();
+    return;
+  }
   file_access_permissions_->GrantFullAccessPermission(extension_id);
 }
 
 void FileSystemBackend::GrantFileAccessToExtension(
     const std::string& extension_id, const base::FilePath& virtual_path) {
-  // All we care about here is access from extensions for now.
-  DCHECK(special_storage_policy_->IsFileHandler(extension_id));
-  if (!special_storage_policy_->IsFileHandler(extension_id))
+  if (!special_storage_policy_)
     return;
+  // All we care about here is access from extensions for now.
+  if (!special_storage_policy_->IsFileHandler(extension_id)) {
+    NOTREACHED();
+    return;
+  }
 
   std::string id;
   fileapi::FileSystemType type;
