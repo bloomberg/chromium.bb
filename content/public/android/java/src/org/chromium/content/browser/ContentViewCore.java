@@ -234,8 +234,13 @@ public class ContentViewCore
     public interface NavigationTransitionDelegate {
         /**
          * Called when the navigation is deferred immediately after the response started.
+         *
+         * @param enteringColor The background color of the entering document, as a String
+         *                      representing a legal CSS color value. This is inserted into
+         *                      the transition layer's markup after the entering stylesheets
+         *                      have been applied.
          */
-        public void didDeferAfterResponseStarted();
+        public void didDeferAfterResponseStarted(String enteringColor);
 
         /**
          * Called when a navigation transition has been detected, and we need to check
@@ -3056,9 +3061,9 @@ public class ContentViewCore
     }
 
     @CalledByNative
-    private void didDeferAfterResponseStarted() {
+    private void didDeferAfterResponseStarted(String enteringColor) {
         if (mNavigationTransitionDelegate != null ) {
-            mNavigationTransitionDelegate.didDeferAfterResponseStarted();
+            mNavigationTransitionDelegate.didDeferAfterResponseStarted(enteringColor);
         }
     }
 

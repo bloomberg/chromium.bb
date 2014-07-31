@@ -1558,11 +1558,20 @@ void ContentViewCoreImpl::DidDeferAfterResponseStarted(
     return;
 
   std::vector<GURL> entering_stylesheets;
-  if (headers)
+  std::string transition_color;
+  if (headers) {
     TransitionRequestManager::ParseTransitionStylesheetsFromHeaders(
         headers, entering_stylesheets, url);
 
-  Java_ContentViewCore_didDeferAfterResponseStarted(env, obj.obj());
+    headers->EnumerateHeader(
+        NULL, "X-Transition-Entering-Color", &transition_color);
+  }
+
+  ScopedJavaLocalRef<jstring> jstring_transition_color(ConvertUTF8ToJavaString(
+      env, transition_color));
+
+  Java_ContentViewCore_didDeferAfterResponseStarted(
+      env, obj.obj(), jstring_transition_color.obj());
 
   std::vector<GURL>::const_iterator iter = entering_stylesheets.begin();
   for (; iter != entering_stylesheets.end(); ++iter) {

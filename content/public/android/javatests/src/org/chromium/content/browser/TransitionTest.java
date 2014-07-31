@@ -5,6 +5,7 @@
 package org.chromium.content.browser;
 
 import android.test.suitebuilder.annotation.SmallTest;
+import android.text.TextUtils;
 import android.util.Pair;
 
 import org.chromium.base.test.util.UrlUtils;
@@ -36,6 +37,7 @@ public class TransitionTest extends ContentShellTestBase {
         private boolean mHandleDefer = false;
         private ArrayList<String> mTransitionStylesheets;
         private ContentViewCore mContentViewCore;
+        private String mTransitionEnteringColor;
 
         TestNavigationTransitionDelegate(ContentViewCore contentViewCore, boolean handleDefer) {
             mContentViewCore = contentViewCore;
@@ -44,9 +46,10 @@ public class TransitionTest extends ContentShellTestBase {
         }
 
         @Override
-        public void didDeferAfterResponseStarted() {
+        public void didDeferAfterResponseStarted(String enteringColor) {
             mDidCallDefer = true;
             mContentViewCore.resumeResponseDeferredAtStart();
+            mTransitionEnteringColor = enteringColor;
         }
 
         @Override
@@ -78,6 +81,10 @@ public class TransitionTest extends ContentShellTestBase {
 
         public ArrayList<String> getTransitionStylesheets() {
             return mTransitionStylesheets;
+        }
+
+        public String getTransitionEnteringColor() {
+            return mTransitionEnteringColor;
         }
     };
 
@@ -250,6 +257,55 @@ public class TransitionTest extends ContentShellTestBase {
         } finally {
           if (webServer != null)
             webServer.shutdown();
+        }
+    }
+
+    /**
+     * Tests that the listener receives the entering color if it's specified in the
+     * response headers.
+     */
+    @SmallTest
+    public void testParseTransitionEnteringColor() throws Throwable {
+        TestWebServer webServer = null;
+        try {
+            webServer = new TestWebServer(false);
+
+            final String url2 = webServer.setResponse(URL_2, URL_2_DATA, null);
+            ContentShellActivity activity = launchContentShellWithUrl(url2);
+            waitForActiveShellToBeDoneLoading();
+            ContentViewCore contentViewCore = activity.getActiveContentViewCore();
+            TestCallbackHelperContainer testCallbackHelperContainer =
+                    new TestCallbackHelperContainer(contentViewCore);
+            contentViewCore.setHasPendingNavigationTransitionForTesting();
+            TestNavigationTransitionDelegate delegate =
+                    new TestNavigationTransitionDelegate(contentViewCore, true);
+            contentViewCore.setNavigationTransitionDelegate(delegate);
+
+            String transitionEnteringColor = "#00FF00";
+
+            int currentCallCount = testCallbackHelperContainer
+                    .getOnPageFinishedHelper().getCallCount();
+            String[] headers = {
+                    "X-Transition-Entering-Color",
+                    transitionEnteringColor,
+            };
+            final String url3 = webServer.setResponse(URL_3,
+                    URL_3_DATA,
+                    createHeadersList(headers));
+            LoadUrlParams url3Params = new LoadUrlParams(url3);
+            loadUrl(contentViewCore, testCallbackHelperContainer, url3Params);
+            testCallbackHelperContainer.getOnPageFinishedHelper().waitForCallback(
+                    currentCallCount,
+                    1,
+                    10000,
+                    TimeUnit.MILLISECONDS);
+
+            assertTrue("X-Transition-Entering-Color parsed correctly.",
+                    TextUtils.equals(
+                            delegate.getTransitionEnteringColor(),
+                            transitionEnteringColor));
+        } finally {
+            if (webServer != null) webServer.shutdown();
         }
     }
 }
