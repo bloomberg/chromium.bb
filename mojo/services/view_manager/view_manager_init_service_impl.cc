@@ -30,10 +30,7 @@ ViewManagerInitServiceImpl::~ViewManagerInitServiceImpl() {
 }
 
 void ViewManagerInitServiceImpl::OnNativeViewportDeleted() {
-  // TODO(beng): Should not have to rely on implementation detail of
-  //             InterfaceImpl to close the connection. Instead should simply
-  //             be able to delete this object.
-  internal_state()->router()->CloseMessagePipe();
+  delete this;
 }
 
 void ViewManagerInitServiceImpl::OnRootViewManagerWindowTreeHostCreated() {
