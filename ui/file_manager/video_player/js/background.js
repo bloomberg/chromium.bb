@@ -81,7 +81,7 @@ function open(videos) {
     // Stores the window for test purpose.
     appWindowsForTest[videos[0].entry.name] = createdWindow;
 
-    createdWindow.setIcon('images/200/icon.png');
+    createdWindow.setIcon('images/icon/video-player-64.png');
     createdWindow.contentWindow.videos = videos;
     chrome.runtime.sendMessage({ready: true}, function() {});
   }.wrap());
