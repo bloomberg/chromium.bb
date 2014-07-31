@@ -256,7 +256,8 @@ void UnitTests::DeathMessage(int status,
   const char* expected_msg = static_cast<const char*>(aux);
 
   bool subprocess_terminated_normally = WIFEXITED(status);
-  ASSERT_TRUE(subprocess_terminated_normally) << status;
+  ASSERT_TRUE(subprocess_terminated_normally) << "Exit status: " << status
+                                              << " " << details;
   int subprocess_exit_status = WEXITSTATUS(status);
   ASSERT_EQ(1, subprocess_exit_status) << details;
 
@@ -279,7 +280,8 @@ void UnitTests::DeathSEGVMessage(int status,
       WIFEXITED(status) && (kExitAfterSIGSEGV == WEXITSTATUS(status));
 #endif
 
-  ASSERT_TRUE(subprocess_got_sigsegv) << status;
+  ASSERT_TRUE(subprocess_got_sigsegv) << "Exit status: " << status
+                                      << " " << details;
 
   bool subprocess_exited_without_matching_message =
       msg.find(expected_msg) == std::string::npos;
