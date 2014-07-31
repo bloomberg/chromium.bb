@@ -24239,6 +24239,30 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Quickoffice.csvFormattedCellCount">
+  <owner>dskelton@google.com</owner>
+  <summary>
+    Records the number of cells that contain formatting data in the default
+    worksheet when a comma separated value spreadsheet is opened.
+  </summary>
+</histogram>
+
+<histogram name="Quickoffice.csvNonEmptyCellCount">
+  <owner>dskelton@google.com</owner>
+  <summary>
+    Records the number of non-empty cells in the default worksheet when a comma
+    separated value spreadsheet is opened.
+  </summary>
+</histogram>
+
+<histogram name="Quickoffice.csvSheetCount">
+  <owner>dskelton@google.com</owner>
+  <summary>
+    Records the number of worksheets when a comma separated value spreadsheet is
+    opened.
+  </summary>
+</histogram>
+
 <histogram name="Quickoffice.docPageCount">
   <owner>joshwoodward@google.com</owner>
   <summary>
@@ -46175,6 +46199,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="9" label="pps"/>
   <int value="10" label="ppsx"/>
   <int value="11" label="ppsm"/>
+  <int value="12" label="csv"/>
 </enum>
 
 <enum name="QuicRejectReasons" type="int">
