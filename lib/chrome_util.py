@@ -316,8 +316,8 @@ C = Conditions
 
 _COPY_PATHS_APP_SHELL = (
   Path('app_shell', exe=True),
-  Path('app_shell.pak'),
   Path('chrome_sandbox', mode=0o4755, dest=_CHROME_SANDBOX_DEST),
+  Path('extensions_shell_and_test.pak'),
   Path('icudtl.dat', cond=C.GypSet('icu_use_data_file_flag')),
   Path('libffmpegsumo.so', exe=True, optional=True),
   Path('libosmesa.so', exe=True, optional=True),
