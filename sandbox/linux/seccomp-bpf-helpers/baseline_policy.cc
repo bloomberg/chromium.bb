@@ -127,6 +127,12 @@ ErrorCode EvaluateSyscallImpl(int fs_denied_errno,
     return RestrictFcntlCommands(sandbox);
 #endif
 
+  // fork() is never used as a system call (clone() is used instead), but we
+  // have seen it in fallback code on Android.
+  if (sysno == __NR_fork) {
+    return ErrorCode(EPERM);
+  }
+
   if (sysno == __NR_futex)
     return RestrictFutex(sandbox);
 

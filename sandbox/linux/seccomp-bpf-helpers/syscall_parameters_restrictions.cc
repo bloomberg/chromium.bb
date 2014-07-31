@@ -119,12 +119,14 @@ ErrorCode RestrictPrctl(SandboxBPF* sandbox) {
   // Will need to add seccomp compositing in the future. PR_SET_PTRACER is
   // used by breakpad but not needed anymore.
   return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                       PR_GET_NAME, ErrorCode(ErrorCode::ERR_ALLOWED),
+         sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
                        PR_SET_NAME, ErrorCode(ErrorCode::ERR_ALLOWED),
          sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
                        PR_SET_DUMPABLE, ErrorCode(ErrorCode::ERR_ALLOWED),
          sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
                        PR_GET_DUMPABLE, ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Trap(SIGSYSPrctlFailure, NULL))));
+         sandbox->Trap(SIGSYSPrctlFailure, NULL)))));
 }
 
 ErrorCode RestrictIoctl(SandboxBPF* sandbox) {
