@@ -256,6 +256,10 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
     return GetDelegatedFrameHost()->FrameProviderForTesting();
   }
 
+  bool released_front_lock_active() const {
+    return GetDelegatedFrameHost()->ReleasedFrontLockActiveForTesting();
+  }
+
   // A lock that doesn't actually do anything to the compositor, and does not
   // time out.
   class FakeResizeLock : public ResizeLock {
@@ -1503,12 +1507,17 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   views[0]->WasShown();
   EXPECT_FALSE(views[0]->frame_provider());
   EXPECT_TRUE(views[1]->frame_provider());
+  // Since [0] doesn't have a frame, it should be waiting for the renderer to
+  // give it one.
+  EXPECT_TRUE(views[0]->released_front_lock_active());
 
   // Swap a frame on it, it should evict the next LRU [1].
   views[0]->OnSwapCompositorFrame(
       1, MakeDelegatedFrame(1.f, frame_size, view_rect));
   EXPECT_TRUE(views[0]->frame_provider());
   EXPECT_FALSE(views[1]->frame_provider());
+  // Now that [0] got a frame, it shouldn't be waiting any more.
+  EXPECT_FALSE(views[0]->released_front_lock_active());
   views[0]->WasHidden();
 
   // LRU renderer is [1], still hidden. Swap a frame on it, it should evict
@@ -1525,8 +1534,15 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   // hidden, it becomes the LRU.
   for (size_t i = 1; i < renderer_count; ++i) {
     views[i]->WasShown();
+    // The renderers who don't have a frame should be waiting. The ones that
+    // have a frame should not.
+    // In practice, [1] has a frame, but anything after has its frame evicted.
+    EXPECT_EQ(!views[i]->frame_provider(),
+              views[i]->released_front_lock_active());
     views[i]->OnSwapCompositorFrame(
         1, MakeDelegatedFrame(1.f, frame_size, view_rect));
+    // Now everyone has a frame.
+    EXPECT_FALSE(views[i]->released_front_lock_active());
     EXPECT_TRUE(views[i]->frame_provider());
   }
   EXPECT_FALSE(views[0]->frame_provider());
@@ -1539,14 +1555,24 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   // Make [0] visible, and swap a frame on it. Nothing should be evicted
   // although we're above the limit.
   views[0]->WasShown();
+  // We don't have a frame, wait.
+  EXPECT_TRUE(views[0]->released_front_lock_active());
   views[0]->OnSwapCompositorFrame(
       1, MakeDelegatedFrame(1.f, frame_size, view_rect));
+  EXPECT_FALSE(views[0]->released_front_lock_active());
   for (size_t i = 0; i < renderer_count; ++i)
     EXPECT_TRUE(views[i]->frame_provider());
 
   // Make [0] hidden, it should evict its frame.
   views[0]->WasHidden();
   EXPECT_FALSE(views[0]->frame_provider());
+
+  // Make [0] visible, don't give it a frame, it should be waiting.
+  views[0]->WasShown();
+  EXPECT_TRUE(views[0]->released_front_lock_active());
+  // Make [0] hidden, it should stop waiting.
+  views[0]->WasHidden();
+  EXPECT_FALSE(views[0]->released_front_lock_active());
 
   for (size_t i = 0; i < renderer_count - 1; ++i)
     views[i]->WasHidden();

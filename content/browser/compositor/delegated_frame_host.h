@@ -121,6 +121,9 @@ class CONTENT_EXPORT DelegatedFrameHost
     OnCompositingDidCommit(compositor);
   }
   bool ShouldCreateResizeLockForTesting() { return ShouldCreateResizeLock(); }
+  bool ReleasedFrontLockActiveForTesting() const {
+    return !!released_front_lock_;
+  }
 
  private:
   friend class DelegatedFrameHostClient;
