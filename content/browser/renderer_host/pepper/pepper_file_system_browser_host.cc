@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "content/browser/renderer_host/pepper/pepper_file_io_host.h"
 #include "content/browser/renderer_host/pepper/quota_reservation.h"
+#include "content/common/pepper_file_util.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
@@ -163,7 +164,7 @@ int32_t PepperFileSystemBrowserHost::OnHostMsgOpen(
   called_open_ = true;
 
   fileapi::FileSystemType file_system_type =
-      ppapi::PepperFileSystemTypeToFileSystemType(type_);
+      PepperFileSystemTypeToFileSystemType(type_);
   if (file_system_type == fileapi::kFileSystemTypeUnknown)
     return PP_ERROR_FAILED;
 
@@ -426,7 +427,7 @@ bool PepperFileSystemBrowserHost::ShouldCreateQuotaReservation() const {
   CHECK(quota_manager_proxy);
   CHECK(quota_manager_proxy->quota_manager());
   fileapi::FileSystemType file_system_type =
-      ppapi::PepperFileSystemTypeToFileSystemType(type_);
+      PepperFileSystemTypeToFileSystemType(type_);
   return !quota_manager_proxy->quota_manager()->IsStorageUnlimited(
       root_url_.GetOrigin(),
       fileapi::FileSystemTypeToQuotaStorageType(file_system_type));
@@ -441,7 +442,7 @@ void PepperFileSystemBrowserHost::CreateQuotaReservation(
       base::Bind(&QuotaReservation::Create,
                  file_system_context_,
                  root_url_.GetOrigin(),
-                 ppapi::PepperFileSystemTypeToFileSystemType(type_)),
+                 PepperFileSystemTypeToFileSystemType(type_)),
       base::Bind(&PepperFileSystemBrowserHost::GotQuotaReservation,
                  weak_factory_.GetWeakPtr(),
                  callback));

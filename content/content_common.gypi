@@ -407,6 +407,8 @@
       'common/page_state_serialization.cc',
       'common/page_state_serialization.h',
       'common/page_zoom.cc',
+      'common/pepper_file_util.cc',
+      'common/pepper_file_util.h',
       'common/pepper_messages.h',
       'common/pepper_plugin_list.cc',
       'common/pepper_plugin_list.h',

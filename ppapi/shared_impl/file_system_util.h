@@ -10,13 +10,8 @@
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/private/ppb_isolated_file_system_private.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
-#include "webkit/common/fileapi/file_system_types.h"
 
 namespace ppapi {
-
-PPAPI_SHARED_EXPORT
-fileapi::FileSystemType PepperFileSystemTypeToFileSystemType(
-    PP_FileSystemType type);
 
 PPAPI_SHARED_EXPORT bool FileSystemTypeIsValid(PP_FileSystemType type);
 

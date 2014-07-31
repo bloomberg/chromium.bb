@@ -18,7 +18,7 @@ namespace ppapi {
 //
 // Old style resources match these file specs:
 //   Proxy: ppapi/proxy/ppb_*_proxy.*
-//   Host: webkit/plugins/ppapi/*
+//   Host: content/ppapi_plugin/*
 // New style resources match these file specs:
 //   Proxy: ppapi/proxy/*_resource.*
 //   Browser: (content|chrome)/browser/renderer_host/pepper/pepper_*_host.*

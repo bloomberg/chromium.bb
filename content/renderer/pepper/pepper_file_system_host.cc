@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "content/child/child_thread.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
+#include "content/common/pepper_file_util.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
@@ -92,7 +93,7 @@ int32_t PepperFileSystemHost::OnHostMsgOpen(
   called_open_ = true;
 
   fileapi::FileSystemType file_system_type =
-      ppapi::PepperFileSystemTypeToFileSystemType(type_);
+      PepperFileSystemTypeToFileSystemType(type_);
   if (file_system_type == fileapi::kFileSystemTypeUnknown)
     return PP_ERROR_FAILED;
 
