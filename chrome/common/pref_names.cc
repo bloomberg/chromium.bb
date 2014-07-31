@@ -1208,13 +1208,16 @@ const char kPushMessagingRegistrationCount[] =
     "gcm.push_messaging_registration_count";
 
 // Whether Easy Unlock is enabled.
-extern const char kEasyUnlockEnabled[] = "easy_unlock.enabled";
+const char kEasyUnlockEnabled[] = "easy_unlock.enabled";
 
 // Whether to show the Easy Unlock first run tutorial.
-extern const char kEasyUnlockShowTutorial[] = "easy_unlock.show_tutorial";
+const char kEasyUnlockShowTutorial[] = "easy_unlock.show_tutorial";
 
 // Preference storing Easy Unlock pairing data.
-extern const char kEasyUnlockPairing[] = "easy_unlock.pairing";
+const char kEasyUnlockPairing[] = "easy_unlock.pairing";
+
+// Whether a user is allowed to use Easy Unlock.
+const char kEasyUnlockAllowed[] = "easy_unlock.allowed";
 
 // A cache of zero suggest results using JSON serialized into a string.
 const char kZeroSuggestCachedResults[] = "zerosuggest.cachedresults";

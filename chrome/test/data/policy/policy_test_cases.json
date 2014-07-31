@@ -2134,6 +2134,14 @@
     ]
   },
 
+  "EasyUnlockAllowed": {
+    "os": ["chromeos"],
+    "test_policy": { "EasyUnlockAllowed": false },
+    "pref_mappings": [
+      { "pref": "easy_unlock.allowed" }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

@@ -389,6 +389,7 @@ extern const char kPushMessagingRegistrationCount[];
 extern const char kEasyUnlockEnabled[];
 extern const char kEasyUnlockShowTutorial[];
 extern const char kEasyUnlockPairing[];
+extern const char kEasyUnlockAllowed[];
 
 extern const char kZeroSuggestCachedResults[];
 

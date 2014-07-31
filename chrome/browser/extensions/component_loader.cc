@@ -12,7 +12,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/signin/easy_unlock.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -605,19 +604,6 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
   AddNetworkSpeechSynthesisExtension();
 #endif
 
-  if (!skip_session_components && easy_unlock::IsEnabled()) {
-    if (command_line->HasSwitch(switches::kEasyUnlockAppPath)) {
-      base::FilePath easy_unlock_path(
-          command_line->GetSwitchValuePath(switches::kEasyUnlockAppPath));
-      Add(IDR_EASY_UNLOCK_MANIFEST, easy_unlock_path);
-    } else {
-#if defined(OS_CHROMEOS)
-      Add(IDR_EASY_UNLOCK_MANIFEST,
-          base::FilePath(
-              FILE_PATH_LITERAL("/usr/share/chromeos-assets/easy_unlock")));
-#endif
-    }
-  }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
 #if defined(ENABLE_PLUGINS)

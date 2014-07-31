@@ -437,7 +437,7 @@ cr.define('options', function() {
       }
 
       // Easy Unlock section.
-      if (loadTimeData.getBoolean('easyUnlockEnabled')) {
+      if (loadTimeData.getBoolean('easyUnlockAllowed')) {
         $('easy-unlock-section').hidden = false;
         $('easy-unlock-setup-button').onclick = function(event) {
           chrome.send('launchEasyUnlockSetup');

@@ -6562,12 +6562,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Use bleeding-edge code to make Chrome draw content faster. The changes
         behind this path are very likely to break lots of content.
       </message>
-      <message name="IDS_FLAGS_ENABLE_EASY_UNLOCK_NAME" desc="Name for Enable Easy Unlock flag.">
-        Enable Easy Unlock.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_EASY_UNLOCK_DESCRIPTION" desc="Description for flag to Enable Easy Unlock.">
-        Easy Unlock allows you to unlock your Chromebook when in proximity to your phone.
-      </message>
       <message name="IDS_FLAGS_ENABLE_APPS_FILE_ASSOCIATIONS_NAME" desc="Name for file associations for Chrome Apps.">
         Apps file associations.
       </message>

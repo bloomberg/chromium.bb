@@ -120,7 +120,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 271
+#   For your editing convenience: highest ID currently used: 272
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -6549,6 +6549,27 @@
       When this policy is set to false or unset, cookies set by the IdP are transferred to the user's profile during his/her first login on a device only.
 
       This policy affects users whose domain matches the device's enrollment domain only. For all other users, cookies set by the IdP are transferred to the user's profile during his/her first login on the device only.''',
+    },
+    {
+      'name': 'EasyUnlockAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:38-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 272,
+      'caption': '''Allows EasyUnlock to be used''',
+      'desc': '''Allows EasyUnlock to be used on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices.
+
+      If you enable this setting, users will be allowed to use EasyUnlock if the requirements for the feature are satified.
+
+      If you disable this setting, users will not be allowed to use EasyUnlock.
+
+      If this policy is left not set, EasyUnlock is allowed if the requirements for the feature are satified.
+      ''',
     },
   ],
   'messages': {

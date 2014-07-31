@@ -49,7 +49,7 @@
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/signin/easy_unlock.h"
+#include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -597,7 +597,9 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   values->SetString("languagesLearnMoreURL",
                     chrome::kLanguageSettingsLearnMoreUrl);
 
-  values->SetBoolean("easyUnlockEnabled", easy_unlock::IsEnabled());
+  values->SetBoolean(
+      "easyUnlockAllowed",
+      EasyUnlockService::Get(Profile::FromWebUI(web_ui()))->IsAllowed());
   values->SetString("easyUnlockLearnMoreURL", chrome::kEasyUnlockLearnMoreUrl);
   values->SetString("easyUnlockManagementURL",
                     chrome::kEasyUnlockManagementUrl);
@@ -1574,7 +1576,7 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
 
 void BrowserOptionsHandler::HandleLaunchEasyUnlockSetup(
     const base::ListValue* args) {
-  easy_unlock::LaunchEasyUnlockSetup(Profile::FromWebUI(web_ui()));
+  EasyUnlockService::Get(Profile::FromWebUI(web_ui()))->LaunchSetup();
 }
 
 void BrowserOptionsHandler::HandleRefreshExtensionControlIndicators(

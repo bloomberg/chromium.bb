@@ -1765,15 +1765,6 @@ const Experiment kExperiments[] = {
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSavePasswordBubble,
                               switches::kDisableSavePasswordBubble)
   },
-#if defined(GOOGLE_CHROME_BUILD)
-  {
-    "enable-easy-unlock",
-    IDS_FLAGS_ENABLE_EASY_UNLOCK_NAME,
-    IDS_FLAGS_ENABLE_EASY_UNLOCK_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableEasyUnlock)
-  },
-#endif
 #if defined(OS_CHROMEOS)
   {
     "enable-filemanager-mtp",

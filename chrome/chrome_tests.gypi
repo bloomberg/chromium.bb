@@ -298,7 +298,7 @@
           ],
           'sources!': [
             '../ui/views/widget/desktop_aura/desktop_window_tree_host_x11_interactive_uitest.cc',
-            '../ui/views/widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc', 
+            '../ui/views/widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc',
 
             # chromeos does not use cross-platform panels
             'browser/notifications/notification_browsertest.cc',
@@ -1352,6 +1352,7 @@
         'browser/sessions/session_restore_browsertest.cc',
         'browser/sessions/session_restore_browsertest_chromeos.cc',
         'browser/sessions/tab_restore_browsertest.cc',
+        'browser/signin/easy_unlock_service_browsertest_chromeos.cc',
         'browser/signin/signin_browsertest.cc',
         'browser/speech/extension_api/tts_extension_apitest.cc',
         'browser/spellchecker/spellcheck_service_browsertest.cc',
