@@ -109,6 +109,7 @@ class DesktopSessionAgent
   virtual void OnLocalMouseMoved(
     const webrtc::DesktopVector& position) OVERRIDE;
   virtual void SetDisableInputs(bool disable_inputs) OVERRIDE;
+  virtual void ResetVideoPipeline() OVERRIDE;
 
   // Handles StartSessionAgent request from the client.
   void OnStartSessionAgent(const std::string& authenticated_jid,

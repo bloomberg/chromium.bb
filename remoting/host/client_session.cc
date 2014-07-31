@@ -46,7 +46,8 @@ ClientSession::ClientSession(
     scoped_ptr<protocol::ConnectionToClient> connection,
     DesktopEnvironmentFactory* desktop_environment_factory,
     const base::TimeDelta& max_duration,
-    scoped_refptr<protocol::PairingRegistry> pairing_registry)
+    scoped_refptr<protocol::PairingRegistry> pairing_registry,
+    const std::vector<HostExtension*>& extensions)
     : event_handler_(event_handler),
       connection_(connection.Pass()),
       client_jid_(connection_->session()->jid()),
@@ -67,7 +68,10 @@ ClientSession::ClientSession(
       video_encode_task_runner_(video_encode_task_runner),
       network_task_runner_(network_task_runner),
       ui_task_runner_(ui_task_runner),
-      pairing_registry_(pairing_registry) {
+      pairing_registry_(pairing_registry),
+      pause_video_(false),
+      lossless_video_encode_(false),
+      lossless_video_color_(false) {
   connection_->SetEventHandler(this);
 
   // TODO(sergeyu): Currently ConnectionToClient expects stubs to be
@@ -80,6 +84,9 @@ ClientSession::ClientSession(
   // |auth_*_filter_|'s states reflect whether the session is authenticated.
   auth_input_filter_.set_enabled(false);
   auth_clipboard_filter_.set_enabled(false);
+
+  // Create a manager for the configured extensions, if any.
+  extension_manager_.reset(new HostExtensionSessionManager(extensions, this));
 
 #if defined(OS_WIN)
   // LocalInputMonitorWin filters out an echo of the injected input before it
@@ -97,25 +104,6 @@ ClientSession::~ClientSession() {
   DCHECK(!video_scheduler_.get());
 
   connection_.reset();
-}
-
-void ClientSession::AddExtensionSession(
-    scoped_ptr<HostExtensionSession> extension_session) {
-  DCHECK(CalledOnValidThread());
-
-  extension_sessions_.push_back(extension_session.release());
-}
-
-void ClientSession::AddHostCapabilities(const std::string& capabilities) {
-  DCHECK(CalledOnValidThread());
-
-  if (capabilities.empty())
-    return;
-
-  if (!host_capabilities_.empty())
-    host_capabilities_.append(" ");
-
-  host_capabilities_.append(capabilities);
 }
 
 void ClientSession::NotifyClientResolution(
@@ -148,20 +136,28 @@ void ClientSession::NotifyClientResolution(
 void ClientSession::ControlVideo(const protocol::VideoControl& video_control) {
   DCHECK(CalledOnValidThread());
 
+  // Note that |video_scheduler_| may be NULL, depending upon whether extensions
+  // choose to wrap or "steal" the video capturer or encoder.
   if (video_control.has_enable()) {
     VLOG(1) << "Received VideoControl (enable="
             << video_control.enable() << ")";
-    video_scheduler_->Pause(!video_control.enable());
+    pause_video_ = !video_control.enable();
+    if (video_scheduler_)
+      video_scheduler_->Pause(pause_video_);
   }
   if (video_control.has_lossless_encode()) {
     VLOG(1) << "Received VideoControl (lossless_encode="
             << video_control.lossless_encode() << ")";
-    video_scheduler_->SetLosslessEncode(video_control.lossless_encode());
+    lossless_video_encode_ = video_control.lossless_encode();
+    if (video_scheduler_)
+      video_scheduler_->SetLosslessEncode(lossless_video_encode_);
   }
   if (video_control.has_lossless_color()) {
     VLOG(1) << "Received VideoControl (lossless_color="
             << video_control.lossless_color() << ")";
-    video_scheduler_->SetLosslessColor(video_control.lossless_color());
+    lossless_video_color_ = video_control.lossless_color();
+    if (video_scheduler_)
+      video_scheduler_->SetLosslessColor(lossless_video_color_);
   }
 }
 
@@ -193,17 +189,20 @@ void ClientSession::SetCapabilities(
     return;
   }
 
+  // Compute the set of capabilities supported by both client and host.
   client_capabilities_ = make_scoped_ptr(new std::string());
   if (capabilities.has_capabilities())
     *client_capabilities_ = capabilities.capabilities();
+  capabilities_ = IntersectCapabilities(*client_capabilities_,
+                                        host_capabilities_);
+  extension_manager_->OnNegotiatedCapabilities(
+      connection_->client_stub(), capabilities_);
 
   VLOG(1) << "Client capabilities: " << *client_capabilities_;
-  event_handler_->OnSessionClientCapabilities(this);
 
   // Calculate the set of capabilities enabled by both client and host and
   // pass it to the desktop environment if it is available.
-  desktop_environment_->SetCapabilities(
-      IntersectCapabilities(*client_capabilities_, host_capabilities_));
+  desktop_environment_->SetCapabilities(capabilities_);
 }
 
 void ClientSession::RequestPairing(
@@ -236,12 +235,8 @@ void ClientSession::DeliverClientMessage(
       }
       return;
     } else {
-      for(HostExtensionSessionList::iterator it = extension_sessions_.begin();
-          it != extension_sessions_.end(); ++it) {
-        // Extension returns |true| to indicate that the message was handled.
-        if ((*it)->OnExtensionMessage(this, message))
-          return;
-      }
+      extension_manager_->OnExtensionMessage(message);
+      return;
     }
   }
   HOST_LOG << "Unexpected message received: "
@@ -291,17 +286,16 @@ void ClientSession::OnConnectionAuthenticated(
     return;
   }
 
-  AddHostCapabilities(desktop_environment_->GetCapabilities());
-
-  // Ignore protocol::Capabilities messages from the client if it does not
-  // support any capabilities.
-  if (!connection_->session()->config().SupportsCapabilities()) {
+  // Collate the set of capabilities to offer the client, if it supports them.
+  if (connection_->session()->config().SupportsCapabilities()) {
+    host_capabilities_ = desktop_environment_->GetCapabilities();
+    if (!host_capabilities_.empty()) {
+      host_capabilities_.append(" ");
+    }
+    host_capabilities_.append(extension_manager_->GetCapabilities());
+  } else {
     VLOG(1) << "The client does not support any capabilities.";
-
-    client_capabilities_ = make_scoped_ptr(new std::string());
-    event_handler_->OnSessionClientCapabilities(this);
-
-    desktop_environment_->SetCapabilities(*client_capabilities_);
+    desktop_environment_->SetCapabilities(std::string());
   }
 
   // Create the object that controls the screen resolution.
@@ -313,20 +307,6 @@ void ClientSession::OnConnectionAuthenticated(
   // Connect the host clipboard and input stubs.
   host_input_filter_.set_input_stub(input_injector_.get());
   clipboard_echo_filter_.set_host_stub(input_injector_.get());
-
-  // Create a VideoEncoder based on the session's video channel configuration.
-  scoped_ptr<VideoEncoder> video_encoder =
-      CreateVideoEncoder(connection_->session()->config());
-
-  // Create a VideoScheduler to pump frames from the capturer to the client.
-  video_scheduler_ = new VideoScheduler(
-      video_capture_task_runner_,
-      video_encode_task_runner_,
-      network_task_runner_,
-      desktop_environment_->CreateVideoCapturer(),
-      video_encoder.Pass(),
-      connection_->client_stub(),
-      &mouse_clamping_filter_);
 
   // Create an AudioScheduler if audio is enabled, to pump audio samples.
   if (connection_->session()->config().is_audio_enabled()) {
@@ -363,8 +343,8 @@ void ClientSession::OnConnectionChannelsConnected(
   input_injector_->Start(CreateClipboardProxy());
   SetDisableInputs(false);
 
-  // Start capturing the screen.
-  video_scheduler_->Start();
+  // Start recording video.
+  ResetVideoPipeline();
 
   // Start recording audio.
   if (connection_->session()->config().is_audio_enabled())
@@ -465,8 +445,49 @@ void ClientSession::SetDisableInputs(bool disable_inputs) {
   disable_clipboard_filter_.set_enabled(!disable_inputs);
 }
 
+void ClientSession::ResetVideoPipeline() {
+  DCHECK(CalledOnValidThread());
+
+  if (video_scheduler_.get()) {
+    video_scheduler_->Stop();
+    video_scheduler_ = NULL;
+  }
+
+  // Create VideoEncoder and ScreenCapturer to match the session's video channel
+  // configuration.
+  scoped_ptr<webrtc::ScreenCapturer> video_capturer =
+      extension_manager_->OnCreateVideoCapturer(
+          desktop_environment_->CreateVideoCapturer());
+  scoped_ptr<VideoEncoder> video_encoder =
+      extension_manager_->OnCreateVideoEncoder(
+          CreateVideoEncoder(connection_->session()->config()));
+
+  // Don't start the VideoScheduler if either capturer or encoder are missing.
+  if (!video_capturer || !video_encoder)
+    return;
+
+  // Create a VideoScheduler to pump frames from the capturer to the client.
+  video_scheduler_ = new VideoScheduler(
+      video_capture_task_runner_,
+      video_encode_task_runner_,
+      network_task_runner_,
+      video_capturer.Pass(),
+      video_encoder.Pass(),
+      connection_->client_stub(),
+      &mouse_clamping_filter_);
+
+  // Apply video-control parameters to the new scheduler.
+  video_scheduler_->Pause(pause_video_);
+  video_scheduler_->SetLosslessEncode(lossless_video_encode_);
+  video_scheduler_->SetLosslessColor(lossless_video_color_);
+
+  // Start capturing the screen.
+  video_scheduler_->Start();
+}
+
 void ClientSession::SetGnubbyAuthHandlerForTesting(
     GnubbyAuthHandler* gnubby_auth_handler) {
+  DCHECK(CalledOnValidThread());
   gnubby_auth_handler_.reset(gnubby_auth_handler);
 }
 

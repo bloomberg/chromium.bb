@@ -195,7 +195,8 @@ class ChromotingHostTest : public testing::Test {
         connection.Pass(),
         desktop_environment_factory_.get(),
         base::TimeDelta(),
-        NULL));
+        NULL,
+        std::vector<HostExtension*>()));
 
     connection_ptr->set_host_stub(client.get());
 

@@ -239,6 +239,13 @@ void DesktopSessionAgent::SetDisableInputs(bool disable_inputs) {
   NOTREACHED();
 }
 
+void DesktopSessionAgent::ResetVideoPipeline() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  // This method is only used by HostExtensionSessions in the network process.
+  NOTREACHED();
+}
+
 void DesktopSessionAgent::OnStartSessionAgent(
     const std::string& authenticated_jid,
     const ScreenResolution& resolution,

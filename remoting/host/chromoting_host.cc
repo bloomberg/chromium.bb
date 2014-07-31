@@ -227,19 +227,6 @@ void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
                     OnClientConnected(client->client_jid()));
 }
 
-void ChromotingHost::OnSessionClientCapabilities(ClientSession* client) {
-  DCHECK(CalledOnValidThread());
-
-  // Create extension sessions from each registered extension for this client.
-  for (HostExtensionList::iterator extension = extensions_.begin();
-       extension != extensions_.end(); ++extension) {
-    scoped_ptr<HostExtensionSession> extension_session =
-        (*extension)->CreateExtensionSession(client);
-    if (extension_session)
-      client->AddExtensionSession(extension_session.Pass());
-  }
-}
-
 void ChromotingHost::OnSessionAuthenticationFailed(ClientSession* client) {
   DCHECK(CalledOnValidThread());
 
@@ -324,13 +311,8 @@ void ChromotingHost::OnIncomingSession(
       connection.Pass(),
       desktop_environment_factory_,
       max_session_duration_,
-      pairing_registry_);
-
-  // Registers capabilities provided by host extensions.
-  for (HostExtensionList::iterator extension = extensions_.begin();
-       extension != extensions_.end(); ++extension) {
-    client->AddHostCapabilities((*extension)->GetCapabilities());
-  }
+      pairing_registry_,
+      extensions_.get());
 
   clients_.push_back(client);
 }

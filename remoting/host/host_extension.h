@@ -11,8 +11,12 @@
 
 namespace remoting {
 
-class ClientSession;
+class ClientSessionControl;
 class HostExtensionSession;
+
+namespace protocol {
+class ClientStub;
+}
 
 // Extends |ChromotingHost| with new functionality, and can use extension
 // messages to communicate with the client.
@@ -20,19 +24,21 @@ class HostExtension {
  public:
   virtual ~HostExtension() {}
 
-  // Returns a space-separated list of capabilities provided by this extension.
-  // Capabilities may be used to inform the client of the availability of an
-  // extension. They are merged into the capabilities the host reports to the
-  // client.
-  virtual std::string GetCapabilities() = 0;
+  // Returns the name of the capability for this extension. This is merged into
+  // the capabilities the host reports to the client, to determine whether a
+  // HostExtensionSession should be created for a particular session.
+  // Returning an empty string indicates that the extension is not associated
+  // with a capability.
+  virtual std::string capability() const = 0;
 
   // Creates an extension session, which can handle extension messages for a
   // client session.
-  // NULL may be returned if |client_session| cannot support this
-  // extension.
-  // |client_session| must outlive the resulting |HostExtensionSession|.
+  // |client_session_control| may be used to e.g. disconnect the session.
+  // |client_stub| may be used to send messages to the session.
+  // Both interfaces are valid for the lifetime of the |HostExtensionSession|.
   virtual scoped_ptr<HostExtensionSession> CreateExtensionSession(
-      ClientSession* client_session) = 0;
+      ClientSessionControl* client_session_control,
+      protocol::ClientStub* client_stub) = 0;
 };
 
 }  // namespace remoting

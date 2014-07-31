@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/threading/non_thread_safe.h"
@@ -16,8 +15,7 @@
 #include "base/timer/timer.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/gnubby_auth_handler.h"
-#include "remoting/host/host_extension.h"
-#include "remoting/host/host_extension_session.h"
+#include "remoting/host/host_extension_session_manager.h"
 #include "remoting/host/mouse_clamping_filter.h"
 #include "remoting/host/remote_input_filter.h"
 #include "remoting/protocol/clipboard_echo_filter.h"
@@ -67,9 +65,6 @@ class ClientSession
     // Called after we've finished connecting all channels.
     virtual void OnSessionChannelsConnected(ClientSession* client) = 0;
 
-    // Called after client has reported capabilities.
-    virtual void OnSessionClientCapabilities(ClientSession* client) = 0;
-
     // Called after authentication has failed. Must not tear down this
     // object. OnSessionClosed() is notified after this handler
     // returns.
@@ -90,6 +85,7 @@ class ClientSession
   };
 
   // |event_handler| and |desktop_environment_factory| must outlive |this|.
+  // All |HostExtension|s in |extensions| must outlive |this|.
   ClientSession(
       EventHandler* event_handler,
       scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
@@ -101,15 +97,12 @@ class ClientSession
       scoped_ptr<protocol::ConnectionToClient> connection,
       DesktopEnvironmentFactory* desktop_environment_factory,
       const base::TimeDelta& max_duration,
-      scoped_refptr<protocol::PairingRegistry> pairing_registry);
+      scoped_refptr<protocol::PairingRegistry> pairing_registry,
+      const std::vector<HostExtension*>& extensions);
   virtual ~ClientSession();
 
-  // Adds an extension to client to handle extension messages.
-  void AddExtensionSession(scoped_ptr<HostExtensionSession> extension_session);
-
-  // Adds extended capabilities to advertise to the client, e.g. those
-  // implemented by |DesktopEnvironment| or |HostExtension|s.
-  void AddHostCapabilities(const std::string& capability);
+  // Returns the set of capabilities negotiated between client and host.
+  const std::string& capabilities() const { return capabilities_; }
 
   // protocol::HostStub interface.
   virtual void NotifyClientResolution(
@@ -147,6 +140,7 @@ class ClientSession
   virtual void OnLocalMouseMoved(
       const webrtc::DesktopVector& position) OVERRIDE;
   virtual void SetDisableInputs(bool disable_inputs) OVERRIDE;
+  virtual void ResetVideoPipeline() OVERRIDE;
 
   void SetGnubbyAuthHandlerForTesting(GnubbyAuthHandler* gnubby_auth_handler);
 
@@ -161,8 +155,6 @@ class ClientSession
   }
 
  private:
-  typedef ScopedVector<HostExtensionSession> HostExtensionSessionList;
-
   // Creates a proxy for sending clipboard events to the client.
   scoped_ptr<protocol::ClipboardStub> CreateClipboardProxy();
 
@@ -237,6 +229,8 @@ class ClientSession
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   // Schedulers for audio and video capture.
+  // |video_scheduler_| may be NULL if the video channel is not required - see
+  // ResetVideoPipeline().
   scoped_refptr<AudioScheduler> audio_scheduler_;
   scoped_refptr<VideoScheduler> video_scheduler_;
 
@@ -245,6 +239,9 @@ class ClientSession
 
   // The set of all capabilities supported by the host.
   std::string host_capabilities_;
+
+  // The set of all capabilities negotiated between client and host.
+  std::string capabilities_;
 
   // Used to inject mouse and keyboard input and handle clipboard events.
   scoped_ptr<InputInjector> input_injector_;
@@ -258,8 +255,13 @@ class ClientSession
   // Used to proxy gnubby auth traffic.
   scoped_ptr<GnubbyAuthHandler> gnubby_auth_handler_;
 
-  // Host extension sessions, used to handle extension messages.
-  HostExtensionSessionList extension_sessions_;
+  // Used to manage extension functionality.
+  scoped_ptr<HostExtensionSessionManager> extension_manager_;
+
+  // Used to store video channel pause & lossless parameters.
+  bool pause_video_;
+  bool lossless_video_encode_;
+  bool lossless_video_color_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSession);
 };

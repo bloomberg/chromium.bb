@@ -32,6 +32,9 @@ class ClientSessionControl {
 
   // Disables or enables the remote input in the client session.
   virtual void SetDisableInputs(bool disable_inputs) = 0;
+
+  // Resets the video pipeline, including re-creating the capturer & encoder.
+  virtual void ResetVideoPipeline() = 0;
 };
 
 }  // namespace remoting

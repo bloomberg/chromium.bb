@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "remoting/base/auto_thread_task_runner.h"
@@ -14,8 +15,10 @@
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/desktop_environment.h"
+#include "remoting/host/fake_host_extension.h"
 #include "remoting/host/fake_screen_capturer.h"
 #include "remoting/host/host_extension.h"
+#include "remoting/host/host_extension_session.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
@@ -78,8 +81,10 @@ ACTION_P2(DeliverClientMessage, client_session, message) {
   client_session->DeliverClientMessage(message);
 }
 
-ACTION_P2(AddHostCapabilities, client_session, capability) {
-  client_session->AddHostCapabilities(capability);
+ACTION_P2(SetCapabilities, client_session, capabilities) {
+  protocol::Capabilities capabilities_message;
+  capabilities_message.set_capabilities(capabilities);
+  client_session->SetCapabilities(capabilities_message);
 }
 
 // Matches a |protocol::Capabilities| argument against a list of capabilities
@@ -97,54 +102,6 @@ MATCHER_P(EqCapabilities, expected_capabilities, "") {
   return words_args == words_expected;
 }
 
-// |HostExtension| implementation that can handle an extension message type and
-// provide capabilities.
-class FakeExtension : public HostExtension {
- public:
-  FakeExtension(const std::string& message_type,
-                const std::string& capabilities);
-  virtual ~FakeExtension();
-
-  virtual std::string GetCapabilities() OVERRIDE;
-  virtual scoped_ptr<HostExtensionSession> CreateExtensionSession(
-      ClientSession* client_session) OVERRIDE;
-
-  bool message_handled() {
-    return message_handled_;
-  }
-
- private:
-  class FakeExtensionSession : public HostExtensionSession {
-   public:
-    FakeExtensionSession(FakeExtension* extension);
-    virtual ~FakeExtensionSession();
-
-    virtual bool OnExtensionMessage(
-        ClientSession* client_session,
-        const protocol::ExtensionMessage& message) OVERRIDE;
-
-   private:
-    FakeExtension* extension_;
-  };
-
-  std::string message_type_;
-  std::string capabilities_;
-  bool message_handled_;
-};
-
-typedef std::vector<HostExtension*> HostExtensionList;
-
-void CreateExtensionSessions(const HostExtensionList& extensions,
-                             ClientSession* client_session) {
-  for (HostExtensionList::const_iterator extension = extensions.begin();
-       extension != extensions.end(); ++extension) {
-    scoped_ptr<HostExtensionSession> extension_session =
-        (*extension)->CreateExtensionSession(client_session);
-    if (extension_session)
-      client_session->AddExtensionSession(extension_session.Pass());
-  }
-}
-
 }  // namespace
 
 class ClientSessionTest : public testing::Test {
@@ -153,6 +110,9 @@ class ClientSessionTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
+
+  // Creates the client session.
+  void CreateClientSession();
 
   // Disconnects the client session.
   void DisconnectClientSession();
@@ -178,16 +138,27 @@ class ClientSessionTest : public testing::Test {
   // the input pipe line and starts video capturing.
   void ConnectClientSession();
 
+  // Creates expectation that simulates client supporting same capabilities as
+  // host.
+  void SetMatchCapabilitiesExpectation();
+
   // Creates expectations to send an extension message and to disconnect
   // afterwards.
   void SetSendMessageAndDisconnectExpectation(const std::string& message_type);
 
-  // Invoked when the last reference to the AutoThreadTaskRunner has been
-  // released and quits the message loop to finish the test.
-  void QuitMainMessageLoop();
-
-  // Message loop passed to |client_session_| to perform all functions on.
+  // Message loop that will process all ClientSession tasks.
   base::MessageLoop message_loop_;
+
+  // AutoThreadTaskRunner on which |client_session_| will be run.
+  scoped_refptr<AutoThreadTaskRunner> task_runner_;
+
+  // Used to run |message_loop_| after each test, until no objects remain that
+  // require it.
+  base::RunLoop run_loop_;
+
+  // HostExtensions to pass when creating the ClientSession. Caller retains
+  // ownership of the HostExtensions themselves.
+  std::vector<HostExtension*> extensions_;
 
   // ClientSession instance under test.
   scoped_ptr<ClientSession> client_session_;
@@ -213,47 +184,10 @@ class ClientSessionTest : public testing::Test {
   scoped_ptr<MockDesktopEnvironmentFactory> desktop_environment_factory_;
 };
 
-FakeExtension::FakeExtension(const std::string& message_type,
-                             const std::string& capabilities)
-    : message_type_(message_type),
-      capabilities_(capabilities),
-      message_handled_(false) {
-}
-
-FakeExtension::~FakeExtension() {}
-
-std::string FakeExtension::GetCapabilities() {
-  return capabilities_;
-}
-
-scoped_ptr<HostExtensionSession> FakeExtension::CreateExtensionSession(
-    ClientSession* client_session) {
-  return scoped_ptr<HostExtensionSession>(new FakeExtensionSession(this));
-}
-
-FakeExtension::FakeExtensionSession::FakeExtensionSession(
-    FakeExtension* extension)
-    : extension_(extension) {
-}
-
-FakeExtension::FakeExtensionSession::~FakeExtensionSession() {}
-
-bool FakeExtension::FakeExtensionSession::OnExtensionMessage(
-    ClientSession* client_session,
-    const protocol::ExtensionMessage& message) {
-  if (message.type() == extension_->message_type_) {
-    extension_->message_handled_ = true;
-    return true;
-  }
-  return false;
-}
-
 void ClientSessionTest::SetUp() {
   // Arrange to run |message_loop_| until no components depend on it.
-  scoped_refptr<AutoThreadTaskRunner> ui_task_runner = new AutoThreadTaskRunner(
-      message_loop_.message_loop_proxy(),
-      base::Bind(&ClientSessionTest::QuitMainMessageLoop,
-                 base::Unretained(this)));
+  task_runner_ = new AutoThreadTaskRunner(
+      message_loop_.message_loop_proxy(), run_loop_.QuitClosure());
 
   desktop_environment_factory_.reset(new MockDesktopEnvironmentFactory());
   EXPECT_CALL(*desktop_environment_factory_, CreatePtr())
@@ -267,7 +201,16 @@ void ClientSessionTest::SetUp() {
   input_injector_.reset(new MockInputInjector());
 
   session_config_ = SessionConfig::ForTest();
+}
 
+void ClientSessionTest::TearDown() {
+  // Clear out |task_runner_| reference so the loop can quit, and run it until
+  // it does.
+  task_runner_ = NULL;
+  run_loop_.Run();
+}
+
+void ClientSessionTest::CreateClientSession() {
   // Mock protocol::Session APIs called directly by ClientSession.
   protocol::MockSession* session = new MockSession();
   EXPECT_CALL(*session, config()).WillRepeatedly(ReturnRef(session_config_));
@@ -287,26 +230,17 @@ void ClientSessionTest::SetUp() {
 
   client_session_.reset(new ClientSession(
       &session_event_handler_,
-      ui_task_runner, // Audio thread.
-      ui_task_runner, // Input thread.
-      ui_task_runner, // Capture thread.
-      ui_task_runner, // Encode thread.
-      ui_task_runner, // Network thread.
-      ui_task_runner, // UI thread.
+      task_runner_, // Audio thread.
+      task_runner_, // Input thread.
+      task_runner_, // Capture thread.
+      task_runner_, // Encode thread.
+      task_runner_, // Network thread.
+      task_runner_, // UI thread.
       connection.PassAs<protocol::ConnectionToClient>(),
       desktop_environment_factory_.get(),
       base::TimeDelta(),
-      NULL));
-
-  // By default, client will report the same capabilities as the host.
-  EXPECT_CALL(client_stub_, SetCapabilities(_))
-      .Times(AtMost(1))
-      .WillOnce(Invoke(client_session_.get(), &ClientSession::SetCapabilities));
-}
-
-void ClientSessionTest::TearDown() {
-  // Verify that the client session has been stopped.
-  EXPECT_TRUE(!client_session_);
+      NULL,
+      extensions_));
 }
 
 void ClientSessionTest::DisconnectClientSession() {
@@ -331,7 +265,7 @@ DesktopEnvironment* ClientSessionTest::CreateDesktopEnvironment() {
   EXPECT_CALL(*desktop_environment, CreateScreenControlsPtr())
       .Times(AtMost(1));
   EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr())
-      .WillOnce(Invoke(this, &ClientSessionTest::CreateVideoCapturer));
+      .WillRepeatedly(Invoke(this, &ClientSessionTest::CreateVideoCapturer));
   EXPECT_CALL(*desktop_environment, GetCapabilities())
       .Times(AtMost(1))
        .WillOnce(Return(kDefaultTestCapability));
@@ -355,6 +289,13 @@ void ClientSessionTest::ConnectClientSession() {
   client_session_->OnConnectionChannelsConnected(client_session_->connection());
 }
 
+void ClientSessionTest::SetMatchCapabilitiesExpectation() {
+  // Set the client to report the same capabilities as the host.
+  EXPECT_CALL(client_stub_, SetCapabilities(_))
+      .Times(AtMost(1))
+      .WillOnce(Invoke(client_session_.get(), &ClientSession::SetCapabilities));
+}
+
 void ClientSessionTest::SetSendMessageAndDisconnectExpectation(
     const std::string& message_type) {
   protocol::ExtensionMessage message;
@@ -372,16 +313,14 @@ void ClientSessionTest::SetSendMessageAndDisconnectExpectation(
           InvokeWithoutArgs(this, &ClientSessionTest::StopClientSession)));
 }
 
-void ClientSessionTest::QuitMainMessageLoop() {
-  message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
-}
-
 MATCHER_P2(EqualsClipboardEvent, m, d, "") {
   return (strcmp(arg.mime_type().c_str(), m) == 0 &&
       memcmp(arg.data().data(), d, arg.data().size()) == 0);
 }
 
 TEST_F(ClientSessionTest, ClipboardStubFilter) {
+  CreateClientSession();
+
   protocol::ClipboardEvent clipboard_event1;
   clipboard_event1.set_mime_type(kMimeTypeTextUtf8);
   clipboard_event1.set_data("a");
@@ -428,7 +367,6 @@ TEST_F(ClientSessionTest, ClipboardStubFilter) {
   connection_->clipboard_stub()->InjectClipboardEvent(clipboard_event1);
 
   ConnectClientSession();
-  message_loop_.Run();
 }
 
 namespace {
@@ -449,6 +387,8 @@ MATCHER_P2(EqualsMouseButtonEvent, button, down, "") {
 }  // namespace
 
 TEST_F(ClientSessionTest, InputStubFilter) {
+  CreateClientSession();
+
   protocol::KeyEvent key_event1;
   key_event1.set_pressed(true);
   key_event1.set_usb_keycode(1);
@@ -518,10 +458,11 @@ TEST_F(ClientSessionTest, InputStubFilter) {
   connection_->input_stub()->InjectMouseEvent(mouse_event1);
 
   ConnectClientSession();
-  message_loop_.Run();
 }
 
 TEST_F(ClientSessionTest, LocalInputTest) {
+  CreateClientSession();
+
   protocol::MouseEvent mouse_event1;
   mouse_event1.set_x(100);
   mouse_event1.set_y(101);
@@ -573,10 +514,11 @@ TEST_F(ClientSessionTest, LocalInputTest) {
       .InSequence(s);
 
   ConnectClientSession();
-  message_loop_.Run();
 }
 
 TEST_F(ClientSessionTest, RestoreEventState) {
+  CreateClientSession();
+
   protocol::KeyEvent key1;
   key1.set_pressed(true);
   key1.set_usb_keycode(1);
@@ -628,10 +570,11 @@ TEST_F(ClientSessionTest, RestoreEventState) {
       .InSequence(s);
 
   ConnectClientSession();
-  message_loop_.Run();
 }
 
 TEST_F(ClientSessionTest, ClampMouseEvents) {
+  CreateClientSession();
+
   Expectation authenticated =
       EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
           .WillOnce(Return(true));
@@ -688,10 +631,11 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
           InvokeWithoutArgs(this, &ClientSessionTest::StopClientSession)));
 
   ConnectClientSession();
-  message_loop_.Run();
 }
 
 TEST_F(ClientSessionTest, NoGnubbyAuth) {
+  CreateClientSession();
+
   protocol::ExtensionMessage message;
   message.set_type("gnubby-auth");
   message.set_data("test");
@@ -709,10 +653,11 @@ TEST_F(ClientSessionTest, NoGnubbyAuth) {
   EXPECT_CALL(session_event_handler_, OnSessionClosed(_));
 
   ConnectClientSession();
-  message_loop_.Run();
 }
 
 TEST_F(ClientSessionTest, EnableGnubbyAuth) {
+  CreateClientSession();
+
   // Lifetime controlled by object under test.
   MockGnubbyAuthHandler* gnubby_auth_handler = new MockGnubbyAuthHandler();
 
@@ -736,66 +681,129 @@ TEST_F(ClientSessionTest, EnableGnubbyAuth) {
   EXPECT_CALL(session_event_handler_, OnSessionClosed(_));
 
   ConnectClientSession();
-  message_loop_.Run();
 }
 
-// Verifies that messages can be handled by extensions.
-TEST_F(ClientSessionTest, ExtensionMessages_MessageHandled) {
-  FakeExtension extension1("ext1", "cap1");
-  FakeExtension extension2("ext2", "cap2");
-  FakeExtension extension3("ext3", "cap3");
-  HostExtensionList extensions;
-  extensions.push_back(&extension1);
-  extensions.push_back(&extension2);
-  extensions.push_back(&extension3);
+// Verifies that the client's video pipeline can be reset mid-session.
+TEST_F(ClientSessionTest, ResetVideoPipeline) {
+  CreateClientSession();
 
-  EXPECT_CALL(session_event_handler_, OnSessionClientCapabilities(_))
-      .WillOnce(Invoke(CreateFunctor(&CreateExtensionSessions, extensions)));
+  EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
+      .WillOnce(Return(true));
 
-  SetSendMessageAndDisconnectExpectation("ext2");
-  ConnectClientSession();
-  message_loop_.Run();
-
-  EXPECT_FALSE(extension1.message_handled());
-  EXPECT_TRUE(extension2.message_handled());
-  EXPECT_FALSE(extension3.message_handled());
-}
-
-// Verifies that extension messages not handled by extensions don't result in a
-// crash.
-TEST_F(ClientSessionTest, ExtensionMessages_MessageNotHandled) {
-  FakeExtension extension1("ext1", "cap1");
-  HostExtensionList extensions;
-  extensions.push_back(&extension1);
-
-  EXPECT_CALL(session_event_handler_, OnSessionClientCapabilities(_))
-      .WillOnce(Invoke(CreateFunctor(&CreateExtensionSessions, extensions)));
-
-  SetSendMessageAndDisconnectExpectation("extX");
-  ConnectClientSession();
-  message_loop_.Run();
-
-  EXPECT_FALSE(extension1.message_handled());
-}
-
-TEST_F(ClientSessionTest, ReportCapabilities) {
-  Expectation authenticated =
-      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
-      .WillOnce(DoAll(
-          AddHostCapabilities(client_session_.get(), "capX capZ"),
-          AddHostCapabilities(client_session_.get(), ""),
-          AddHostCapabilities(client_session_.get(), "capY"),
-          Return(true)));
-  EXPECT_CALL(client_stub_,
-              SetCapabilities(EqCapabilities("capX capY capZ default")));
-  EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_))
-      .After(authenticated)
+  EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
       .WillOnce(DoAll(
           InvokeWithoutArgs(this, &ClientSessionTest::DisconnectClientSession),
           InvokeWithoutArgs(this, &ClientSessionTest::StopClientSession)));
 
   ConnectClientSession();
-  message_loop_.Run();
+
+  client_session_->ResetVideoPipeline();
+}
+
+// Verifies that clients can have extensions registered, resulting in the
+// correct capabilities being reported, and messages delivered correctly.
+// The extension system is tested more extensively in the
+// HostExtensionSessionManager unit-tests.
+TEST_F(ClientSessionTest, Extensions) {
+  // Configure fake extensions for testing.
+  FakeExtension extension1("ext1", "cap1");
+  extensions_.push_back(&extension1);
+  FakeExtension extension2("ext2", "");
+  extensions_.push_back(&extension2);
+  FakeExtension extension3("ext3", "cap3");
+  extensions_.push_back(&extension3);
+
+  // Set the second extension to request to modify the video pipeline.
+  extension2.set_steal_video_capturer(true);
+
+  CreateClientSession();
+
+  Expectation authenticated =
+      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
+          .WillOnce(Return(true));
+
+  // Verify that the ClientSession reports the correct capabilities, and mimic
+  // the client reporting an overlapping set of capabilities.
+  EXPECT_CALL(client_stub_,
+              SetCapabilities(EqCapabilities("cap1 cap3 default")))
+      .After(authenticated)
+      .WillOnce(SetCapabilities(client_session_.get(), "cap1 cap4 default"));
+
+  // Verify that the correct extension messages are delivered, and dropped.
+  protocol::ExtensionMessage message1;
+  message1.set_type("ext1");
+  message1.set_data("data");
+  protocol::ExtensionMessage message3;
+  message3.set_type("ext3");
+  message3.set_data("data");
+  protocol::ExtensionMessage message4;
+  message4.set_type("ext4");
+  message4.set_data("data");
+  EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_))
+      .WillOnce(DoAll(
+          DeliverClientMessage(client_session_.get(), message1),
+          DeliverClientMessage(client_session_.get(), message3),
+          DeliverClientMessage(client_session_.get(), message4),
+          InvokeWithoutArgs(this, &ClientSessionTest::DisconnectClientSession),
+          InvokeWithoutArgs(this, &ClientSessionTest::StopClientSession)));
+
+  // Simulate the ClientSession connect and extension negotiation.
+  ConnectClientSession();
+  base::RunLoop().RunUntilIdle();
+
+  // ext1 was instantiated and sent a message, and did not wrap anything.
+  EXPECT_TRUE(extension1.was_instantiated());
+  EXPECT_TRUE(extension1.has_handled_message());
+  EXPECT_FALSE(extension1.has_wrapped_video_encoder());
+
+  // ext2 was instantiated but not sent a message, and wrapped video encoder.
+  EXPECT_TRUE(extension2.was_instantiated());
+  EXPECT_FALSE(extension2.has_handled_message());
+  EXPECT_TRUE(extension2.has_wrapped_video_encoder());
+
+  // ext3 was sent a message but not instantiated.
+  EXPECT_FALSE(extension3.was_instantiated());
+}
+
+// Verifies that an extension can "steal" the video capture, in which case no
+// VideoScheduler is instantiated.
+TEST_F(ClientSessionTest, StealVideoCapturer) {
+  FakeExtension extension("ext1", "cap1");
+  extensions_.push_back(&extension);
+
+  CreateClientSession();
+
+  SetMatchCapabilitiesExpectation();
+
+  EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
+      .WillOnce(Return(true));
+
+  ConnectClientSession();
+
+  base::RunLoop().RunUntilIdle();
+
+  extension.set_steal_video_capturer(true);
+  client_session_->ResetVideoPipeline();
+
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that video control messages received while there is no video
+  // scheduler active won't crash things.
+  protocol::VideoControl video_control;
+  video_control.set_enable(false);
+  video_control.set_lossless_encode(true);
+  video_control.set_lossless_color(true);
+  client_session_->ControlVideo(video_control);
+
+  // TODO(wez): Find a way to verify that the ClientSession never captures any
+  // frames in this case.
+
+  DisconnectClientSession();
+  StopClientSession();
+
+  // ext1 was instantiated and wrapped the video capturer.
+  EXPECT_TRUE(extension.was_instantiated());
+  EXPECT_TRUE(extension.has_wrapped_video_capturer());
 }
 
 }  // namespace remoting
