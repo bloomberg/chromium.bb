@@ -122,7 +122,7 @@ void RenderLayerModelObject::styleDidChange(StyleDifference diff, const RenderSt
             if (s_wasFloating && isFloating())
                 setChildNeedsLayout();
             createLayer(type);
-            if (parent() && !needsLayout() && containingBlock()) {
+            if (parent() && !needsLayout()) {
                 // FIXME: This invalidation is overly broad. We should update to
                 // do the correct invalidation at RenderStyle::diff time. crbug.com/349061
                 layer()->renderer()->setShouldDoFullPaintInvalidation(true);
