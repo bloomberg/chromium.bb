@@ -296,6 +296,9 @@ GURL DevToolsUIBindings::ApplyThemeToURL(Profile* profile,
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableDevToolsExperiments))
     url_string += "&experiments=true";
+#if defined(DEBUG_DEVTOOLS)
+  url_string += "&debugFrontend=true";
+#endif  // defined(DEBUG_DEVTOOLS)
   return GURL(url_string);
 }
 
