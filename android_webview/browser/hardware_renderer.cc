@@ -191,6 +191,21 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
   if (last_egl_context_ != current_context)
     DLOG(WARNING) << "EGLContextChanged";
 
+  gfx::Transform transform(gfx::Transform::kSkipInitialization);
+  transform.matrix().setColMajorf(draw_info->transform);
+  transform.Translate(scroll_offset_.x(), scroll_offset_.y());
+
+  // Need to post the new transform matrix back to child compositor
+  // because there is no onDraw during a Render Thread animation, and child
+  // compositor might not have the tiles rasterized as the animation goes on.
+  ParentCompositorDrawConstraints draw_constraints(
+      draw_info->is_layer, transform, gfx::Rect(viewport_));
+  if (!draw_constraints_.Equals(draw_constraints)) {
+    draw_constraints_ = draw_constraints;
+    shared_renderer_state_->PostExternalDrawConstraintsToChildCompositor(
+        draw_constraints);
+  }
+
   viewport_.SetSize(draw_info->width, draw_info->height);
   layer_tree_host_->SetViewportSize(viewport_);
   clip_.SetRect(draw_info->clip_left,
@@ -199,9 +214,6 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
                 draw_info->clip_bottom - draw_info->clip_top);
   stencil_enabled_ = stencil_enabled;
 
-  gfx::Transform transform(gfx::Transform::kSkipInitialization);
-  transform.matrix().setColMajorf(draw_info->transform);
-  transform.Translate(scroll_offset_.x(), scroll_offset_.y());
   delegated_layer_->SetTransform(transform);
 
   gl_surface_->SetBackingFrameBufferObject(framebuffer_binding_ext);

@@ -79,8 +79,8 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   gfx::Rect visible_rect_for_tile_priority() {
     return visible_rect_for_tile_priority_;
   }
-  gfx::Size viewport_size_for_tile_priority() {
-    return viewport_size_for_tile_priority_;
+  gfx::Rect viewport_rect_for_tile_priority() {
+    return viewport_rect_for_tile_priority_;
   }
   gfx::Transform screen_space_transform_for_tile_priority() {
     return screen_space_transform_for_tile_priority_;

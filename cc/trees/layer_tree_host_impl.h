@@ -224,6 +224,9 @@ class CC_EXPORT LayerTreeHostImpl
   // for draw properties, tilings, quads and render passes.
   gfx::Size DrawViewportSize() const;
 
+  // Viewport rect in view space used for tiling prioritization.
+  const gfx::Rect ViewportRectForTilePriority() const;
+
   // Viewport size for scrolling and fixed-position compensation. This value
   // excludes the URL bar and non-overlay scrollbars and is in DIP (and
   // invariant relative to page scale).
@@ -256,10 +259,13 @@ class CC_EXPORT LayerTreeHostImpl
                                      base::TimeDelta interval) OVERRIDE;
   virtual void SetNeedsRedrawRect(const gfx::Rect& rect) OVERRIDE;
   virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE;
+
   virtual void SetExternalDrawConstraints(
       const gfx::Transform& transform,
       const gfx::Rect& viewport,
       const gfx::Rect& clip,
+      const gfx::Rect& viewport_rect_for_tile_priority,
+      const gfx::Transform& transform_for_tile_priority,
       bool resourceless_software_draw) OVERRIDE;
   virtual void DidLoseOutputSurface() OVERRIDE;
   virtual void DidSwapBuffers() OVERRIDE;
@@ -668,9 +674,12 @@ class CC_EXPORT LayerTreeHostImpl
   // - external_viewport_ is used DrawProperties, tile management and
   // glViewport/window projection matrix.
   // - external_clip_ specifies a top-level clip rect
+  // - viewport_rect_for_tile_priority_ is the rect in view space used for
+  // tiling priority.
   gfx::Transform external_transform_;
   gfx::Rect external_viewport_;
   gfx::Rect external_clip_;
+  gfx::Rect viewport_rect_for_tile_priority_;
   bool resourceless_software_draw_;
 
   gfx::Rect viewport_damage_rect_;

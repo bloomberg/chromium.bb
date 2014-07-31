@@ -7,6 +7,7 @@
 
 #include "android_webview/browser/global_tile_manager.h"
 #include "android_webview/browser/global_tile_manager_client.h"
+#include "android_webview/browser/parent_compositor_draw_constraints.h"
 #include "android_webview/browser/shared_renderer_state.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
@@ -140,6 +141,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   virtual void SetNumTiles(size_t num_tiles,
                            bool effective_immediately) OVERRIDE;
 
+  void UpdateParentDrawConstraints();
+
  private:
   void SetTotalRootLayerScrollOffset(gfx::Vector2dF new_value_dip);
   // Checks the continuous invalidate and block invalidate state, and schedule
@@ -198,6 +201,10 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   gfx::Vector2d last_on_draw_scroll_offset_;
   gfx::Rect last_on_draw_global_visible_rect_;
+
+  // The draw constraints from the parent compositor. These are only used for
+  // tiling priority.
+  ParentCompositorDrawConstraints parent_draw_constraints_;
 
   // When true, we should continuously invalidate and keep drawing, for example
   // to drive animation. This value is set by the compositor and should always

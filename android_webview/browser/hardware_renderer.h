@@ -5,6 +5,7 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_HARDWARE_RENDERER_H_
 #define ANDROID_WEBVIEW_BROWSER_HARDWARE_RENDERER_H_
 
+#include "android_webview/browser/parent_compositor_draw_constraints.h"
 #include "android_webview/browser/shared_renderer_state.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/delegated_frame_resource_collection.h"
@@ -88,6 +89,8 @@ class HardwareRenderer : public cc::LayerTreeHostClient,
 
   // This is owned indirectly by |layer_tree_host_|.
   ParentOutputSurface* output_surface_;
+
+  ParentCompositorDrawConstraints draw_constraints_;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareRenderer);
 };

@@ -192,6 +192,7 @@ class AwContents : public FindHelper::Listener,
   // BrowserViewRendererClient implementation.
   virtual bool RequestDrawGL(jobject canvas, bool wait_for_completion) OVERRIDE;
   virtual void PostInvalidate() OVERRIDE;
+  virtual void UpdateParentDrawConstraints() OVERRIDE;
   virtual void OnNewPicture() OVERRIDE;
   virtual gfx::Point GetLocationOnScreen() OVERRIDE;
   virtual void ScrollContainerViewTo(gfx::Vector2d new_value) OVERRIDE;

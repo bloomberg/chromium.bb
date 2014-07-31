@@ -28,6 +28,9 @@ class BrowserViewRendererClient {
   // Called to trigger view invalidations.
   virtual void PostInvalidate() = 0;
 
+  // Called to update the parent draw constraints in browser view renderer.
+  virtual void UpdateParentDrawConstraints() = 0;
+
   // Called to get view's absolute location on the screen.
   virtual gfx::Point GetLocationOnScreen() = 0;
 

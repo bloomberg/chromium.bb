@@ -750,8 +750,16 @@ void LayerTreeImpl::SetNeedsCommit() {
   layer_tree_host_impl_->SetNeedsCommit();
 }
 
+gfx::Rect LayerTreeImpl::DeviceViewport() const {
+  return layer_tree_host_impl_->DeviceViewport();
+}
+
 gfx::Size LayerTreeImpl::DrawViewportSize() const {
   return layer_tree_host_impl_->DrawViewportSize();
+}
+
+const gfx::Rect LayerTreeImpl::ViewportRectForTilePriority() const {
+  return layer_tree_host_impl_->ViewportRectForTilePriority();
 }
 
 scoped_ptr<ScrollbarAnimationController>

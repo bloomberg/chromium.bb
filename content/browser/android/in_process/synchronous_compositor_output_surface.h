@@ -74,10 +74,13 @@ class SynchronousCompositorOutputSurface
   bool InitializeHwDraw(
       scoped_refptr<cc::ContextProvider> onscreen_context_provider);
   void ReleaseHwDraw();
-  scoped_ptr<cc::CompositorFrame> DemandDrawHw(gfx::Size surface_size,
-                                               const gfx::Transform& transform,
-                                               gfx::Rect viewport,
-                                               gfx::Rect clip);
+  scoped_ptr<cc::CompositorFrame> DemandDrawHw(
+      gfx::Size surface_size,
+      const gfx::Transform& transform,
+      gfx::Rect viewport,
+      gfx::Rect clip,
+      gfx::Rect viewport_rect_for_tile_priority,
+      const gfx::Transform& transform_for_tile_priority);
   void ReturnResources(const cc::CompositorFrameAck& frame_ack);
   scoped_ptr<cc::CompositorFrame> DemandDrawSw(SkCanvas* canvas);
   void SetMemoryPolicy(const SynchronousCompositorMemoryPolicy& policy);
@@ -90,6 +93,8 @@ class SynchronousCompositorOutputSurface
   void InvokeComposite(const gfx::Transform& transform,
                        gfx::Rect viewport,
                        gfx::Rect clip,
+                       gfx::Rect viewport_rect_for_tile_priority,
+                       gfx::Transform transform_for_tile_priority,
                        bool hardware_draw);
   bool CalledOnValidThread() const;
   SynchronousCompositorOutputSurfaceDelegate* GetDelegate();
@@ -101,6 +106,8 @@ class SynchronousCompositorOutputSurface
   gfx::Transform cached_hw_transform_;
   gfx::Rect cached_hw_viewport_;
   gfx::Rect cached_hw_clip_;
+  gfx::Rect cached_hw_viewport_rect_for_tile_priority_;
+  gfx::Transform cached_hw_transform_for_tile_priority_;
 
   // Only valid (non-NULL) during a DemandDrawSw() call.
   SkCanvas* current_sw_canvas_;

@@ -93,9 +93,15 @@ void OutputSurface::SetExternalDrawConstraints(
     const gfx::Transform& transform,
     const gfx::Rect& viewport,
     const gfx::Rect& clip,
+    const gfx::Rect& viewport_rect_for_tile_priority,
+    const gfx::Transform& transform_for_tile_priority,
     bool resourceless_software_draw) {
-  client_->SetExternalDrawConstraints(
-      transform, viewport, clip, resourceless_software_draw);
+  client_->SetExternalDrawConstraints(transform,
+                                      viewport,
+                                      clip,
+                                      viewport_rect_for_tile_priority,
+                                      transform_for_tile_priority,
+                                      resourceless_software_draw);
 }
 
 OutputSurface::~OutputSurface() {

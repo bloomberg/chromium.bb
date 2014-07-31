@@ -61,6 +61,8 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
       const gfx::Transform& transform,
       const gfx::Rect& viewport,
       const gfx::Rect& clip,
+      const gfx::Rect& viewport_rect_for_tile_priority,
+      const gfx::Transform& transform_for_tile_priority,
       bool resourceless_software_draw) OVERRIDE {}
   virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE {}
   virtual void SetTreeActivationCallback(

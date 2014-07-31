@@ -412,7 +412,8 @@ void PictureLayerImpl::UpdateTiles(
   // resourceless software draw, so don't update them.
   if (!layer_tree_impl()->resourceless_software_draw()) {
     visible_rect_for_tile_priority_ = visible_content_rect();
-    viewport_size_for_tile_priority_ = layer_tree_impl()->DrawViewportSize();
+    viewport_rect_for_tile_priority_ =
+        layer_tree_impl()->ViewportRectForTilePriority();
     screen_space_transform_for_tile_priority_ = screen_space_transform();
   }
 
@@ -470,16 +471,22 @@ void PictureLayerImpl::UpdateTilePriorities(
   if (!tiling_needs_update)
     return;
 
-  // Use visible_content_rect, unless it's empty. If it's empty, then
-  // try to inverse project the viewport into layer space and use that.
+  // If visible_rect_for_tile_priority_ is empty or
+  // viewport_rect_for_tile_priority_ is set to be different from the device
+  // viewport, try to inverse project the viewport into layer space and use
+  // that. Otherwise just use visible_rect_for_tile_priority_
   gfx::Rect visible_rect_in_content_space = visible_rect_for_tile_priority_;
-  if (visible_rect_in_content_space.IsEmpty()) {
-    gfx::Transform screen_to_layer(gfx::Transform::kSkipInitialization);
-    if (screen_space_transform_for_tile_priority_.GetInverse(
-            &screen_to_layer)) {
+
+  if (visible_rect_in_content_space.IsEmpty() ||
+      layer_tree_impl()->DeviceViewport() != viewport_rect_for_tile_priority_) {
+    gfx::Transform view_to_layer(gfx::Transform::kSkipInitialization);
+
+    if (screen_space_transform_for_tile_priority_.GetInverse(&view_to_layer)) {
+      // Transform from view space to content space.
       visible_rect_in_content_space =
           gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
-              screen_to_layer, gfx::Rect(viewport_size_for_tile_priority_)));
+              view_to_layer, viewport_rect_for_tile_priority_));
+
       visible_rect_in_content_space.Intersect(gfx::Rect(content_bounds()));
     }
   }

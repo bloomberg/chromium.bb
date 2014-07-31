@@ -165,13 +165,20 @@ SynchronousCompositorOutputSurface::DemandDrawHw(
     gfx::Size surface_size,
     const gfx::Transform& transform,
     gfx::Rect viewport,
-    gfx::Rect clip) {
+    gfx::Rect clip,
+    gfx::Rect viewport_rect_for_tile_priority,
+    const gfx::Transform& transform_for_tile_priority) {
   DCHECK(CalledOnValidThread());
   DCHECK(HasClient());
   DCHECK(context_provider_);
 
   surface_size_ = surface_size;
-  InvokeComposite(transform, viewport, clip, true);
+  InvokeComposite(transform,
+                  viewport,
+                  clip,
+                  viewport_rect_for_tile_priority,
+                  transform_for_tile_priority,
+                  true);
 
   return frame_holder_.Pass();
 }
@@ -193,7 +200,9 @@ SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
   surface_size_ = gfx::Size(canvas->getDeviceSize().width(),
                             canvas->getDeviceSize().height());
 
-  InvokeComposite(transform, clip, clip, false);
+  // Resourceless software draw does not need viewport_for_tiling.
+  gfx::Rect empty;
+  InvokeComposite(transform, clip, clip, empty, gfx::Transform(), false);
 
   return frame_holder_.Pass();
 }
@@ -202,6 +211,8 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
     const gfx::Transform& transform,
     gfx::Rect viewport,
     gfx::Rect clip,
+    gfx::Rect viewport_rect_for_tile_priority,
+    gfx::Transform transform_for_tile_priority,
     bool hardware_draw) {
   DCHECK(!invoking_composite_);
   DCHECK(!frame_holder_.get());
@@ -209,8 +220,12 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
 
   gfx::Transform adjusted_transform = transform;
   AdjustTransform(&adjusted_transform, viewport);
-  SetExternalDrawConstraints(
-      adjusted_transform, viewport, clip, !hardware_draw);
+  SetExternalDrawConstraints(adjusted_transform,
+                             viewport,
+                             clip,
+                             viewport_rect_for_tile_priority,
+                             transform_for_tile_priority,
+                             !hardware_draw);
   SetNeedsRedrawRect(gfx::Rect(viewport.size()));
   client_->BeginFrame(cc::BeginFrameArgs::CreateForSynchronousCompositor());
 
@@ -221,11 +236,16 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
     cached_hw_transform_ = adjusted_transform;
     cached_hw_viewport_ = viewport;
     cached_hw_clip_ = clip;
+    cached_hw_viewport_rect_for_tile_priority_ =
+        viewport_rect_for_tile_priority;
+    cached_hw_transform_for_tile_priority_ = transform_for_tile_priority;
   } else {
     bool resourceless_software_draw = false;
     SetExternalDrawConstraints(cached_hw_transform_,
                                cached_hw_viewport_,
                                cached_hw_clip_,
+                               cached_hw_viewport_rect_for_tile_priority_,
+                               cached_hw_transform_for_tile_priority_,
                                resourceless_software_draw);
   }
 

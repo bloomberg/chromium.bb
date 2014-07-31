@@ -259,14 +259,29 @@ bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
   draw_gl_input->width = width_;
   draw_gl_input->height = height_;
 
-  gfx::Transform transform;
+  parent_draw_constraints_ = shared_renderer_state_->ParentDrawConstraints();
   gfx::Size surface_size(width_, height_);
   gfx::Rect viewport(surface_size);
-  // TODO(boliu): Should really be |last_on_draw_global_visible_rect_|.
-  // See crbug.com/372073.
   gfx::Rect clip = viewport;
-  scoped_ptr<cc::CompositorFrame> frame = compositor_->DemandDrawHw(
-      surface_size, transform, viewport, clip);
+  gfx::Transform transform_for_tile_priority =
+      parent_draw_constraints_.transform;
+
+  // If the WebView is on a layer, WebView does not know what transform is
+  // applied onto the layer so global visible rect does not make sense here.
+  // In this case, just use the surface rect for tiling.
+  gfx::Rect viewport_rect_for_tile_priority;
+  if (parent_draw_constraints_.is_layer)
+    viewport_rect_for_tile_priority = parent_draw_constraints_.surface_rect;
+  else
+    viewport_rect_for_tile_priority = last_on_draw_global_visible_rect_;
+
+  scoped_ptr<cc::CompositorFrame> frame =
+      compositor_->DemandDrawHw(surface_size,
+                                gfx::Transform(),
+                                viewport,
+                                clip,
+                                viewport_rect_for_tile_priority,
+                                transform_for_tile_priority);
   if (!frame.get())
     return false;
 
@@ -277,6 +292,14 @@ bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
   shared_renderer_state_->SetDrawGLInput(draw_gl_input.Pass());
   DidComposite();
   return client_->RequestDrawGL(java_canvas, false);
+}
+
+void BrowserViewRenderer::UpdateParentDrawConstraints() {
+  // Post an invalidate if the parent draw constraints are stale and there is
+  // no pending invalidate.
+  if (!parent_draw_constraints_.Equals(
+          shared_renderer_state_->ParentDrawConstraints()))
+    EnsureContinuousInvalidation(true);
 }
 
 void BrowserViewRenderer::ReturnUnusedResource(scoped_ptr<DrawGLInput> input) {

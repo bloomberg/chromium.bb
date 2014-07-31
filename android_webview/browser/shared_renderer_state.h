@@ -5,6 +5,7 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_SHARED_RENDERER_STATE_H_
 #define ANDROID_WEBVIEW_BROWSER_SHARED_RENDERER_STATE_H_
 
+#include "android_webview/browser/parent_compositor_draw_constraints.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
@@ -50,6 +51,10 @@ class SharedRendererState {
   scoped_ptr<DrawGLInput> PassDrawGLInput();
 
   bool IsInsideHardwareRelease() const;
+  void PostExternalDrawConstraintsToChildCompositor(
+      const ParentCompositorDrawConstraints& parent_draw_constraints);
+
+  const ParentCompositorDrawConstraints ParentDrawConstraints() const;
 
   void SetSharedContext(gpu::GLInProcessContext* context);
   gpu::GLInProcessContext* GetSharedContext() const;
@@ -62,6 +67,7 @@ class SharedRendererState {
   friend class InsideHardwareReleaseReset;
 
   void ClientRequestDrawGLOnUIThread();
+  void UpdateParentDrawConstraintsOnUIThread();
   void SetInsideHardwareRelease(bool inside);
 
   scoped_refptr<base::MessageLoopProxy> ui_loop_;
@@ -73,6 +79,7 @@ class SharedRendererState {
   mutable base::Lock lock_;
   scoped_ptr<DrawGLInput> draw_gl_input_;
   bool inside_hardware_release_;
+  ParentCompositorDrawConstraints parent_draw_constraints_;
   gpu::GLInProcessContext* share_context_;
   cc::ReturnedResourceArray returned_resources_;
 

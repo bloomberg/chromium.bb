@@ -69,6 +69,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "ui/gfx/frame_time.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/vector2d_conversions.h"
 
@@ -1375,15 +1376,32 @@ void LayerTreeHostImpl::SetExternalDrawConstraints(
     const gfx::Transform& transform,
     const gfx::Rect& viewport,
     const gfx::Rect& clip,
+    const gfx::Rect& viewport_rect_for_tile_priority,
+    const gfx::Transform& transform_for_tile_priority,
     bool resourceless_software_draw) {
+  gfx::Rect viewport_rect_for_tile_priority_in_view_space;
+  if (!resourceless_software_draw) {
+    gfx::Transform screen_to_view(gfx::Transform::kSkipInitialization);
+    if (transform_for_tile_priority.GetInverse(&screen_to_view)) {
+      // Convert from screen space to view space.
+      viewport_rect_for_tile_priority_in_view_space =
+          gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
+              screen_to_view, viewport_rect_for_tile_priority));
+    }
+  }
+
   if (external_transform_ != transform || external_viewport_ != viewport ||
-      resourceless_software_draw_ != resourceless_software_draw) {
+      resourceless_software_draw_ != resourceless_software_draw ||
+      viewport_rect_for_tile_priority_ !=
+          viewport_rect_for_tile_priority_in_view_space) {
     active_tree_->set_needs_update_draw_properties();
   }
 
   external_transform_ = transform;
   external_viewport_ = viewport;
   external_clip_ = clip;
+  viewport_rect_for_tile_priority_ =
+      viewport_rect_for_tile_priority_in_view_space;
   resourceless_software_draw_ = resourceless_software_draw;
 }
 
@@ -2197,6 +2215,13 @@ void LayerTreeHostImpl::SetDeviceScaleFactor(float device_scale_factor) {
 
   UpdateInnerViewportContainerSize();
   SetFullRootLayerDamage();
+}
+
+const gfx::Rect LayerTreeHostImpl::ViewportRectForTilePriority() const {
+  if (viewport_rect_for_tile_priority_.IsEmpty())
+    return DeviceViewport();
+
+  return viewport_rect_for_tile_priority_;
 }
 
 gfx::Size LayerTreeHostImpl::DrawViewportSize() const {

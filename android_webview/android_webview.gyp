@@ -200,6 +200,8 @@
         'browser/net/init_native_callback.h',
         'browser/net/input_stream_reader.cc',
         'browser/net/input_stream_reader.h',
+        'browser/parent_compositor_draw_constraints.cc',
+        'browser/parent_compositor_draw_constraints.h',
         'browser/parent_output_surface.cc',
         'browser/parent_output_surface.h',
         'browser/renderer_host/aw_render_view_host_ext.cc',

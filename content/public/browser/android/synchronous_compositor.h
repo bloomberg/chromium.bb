@@ -91,7 +91,9 @@ class CONTENT_EXPORT SynchronousCompositor {
       gfx::Size surface_size,
       const gfx::Transform& transform,
       gfx::Rect viewport,
-      gfx::Rect clip) = 0;
+      gfx::Rect clip,
+      gfx::Rect viewport_rect_for_tile_priority,
+      const gfx::Transform& transform_for_tile_priority) = 0;
 
   // For delegated rendering, return resources from parent compositor to this.
   // Note that all resources must be returned before ReleaseHwDraw.

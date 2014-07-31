@@ -162,6 +162,10 @@ class CC_EXPORT PictureLayerTiling {
     return all_tiles;
   }
 
+  const gfx::Rect& GetCurrentVisibleRectForTesting() const {
+    return current_visible_rect_;
+  }
+
   // Iterate over all tiles to fill content_rect.  Even if tiles are invalid
   // (i.e. no valid resource) this tiling should still iterate over them.
   // The union of all geometry_rect calls for each element iterated over should

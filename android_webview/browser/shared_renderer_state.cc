@@ -51,6 +51,11 @@ void SharedRendererState::ClientRequestDrawGLOnUIThread() {
   }
 }
 
+void SharedRendererState::UpdateParentDrawConstraintsOnUIThread() {
+  DCHECK(ui_loop_->BelongsToCurrentThread());
+  client_on_ui_->UpdateParentDrawConstraints();
+}
+
 void SharedRendererState::SetDrawGLInput(scoped_ptr<DrawGLInput> input) {
   base::AutoLock lock(lock_);
   DCHECK(!draw_gl_input_.get());
@@ -60,6 +65,26 @@ void SharedRendererState::SetDrawGLInput(scoped_ptr<DrawGLInput> input) {
 scoped_ptr<DrawGLInput> SharedRendererState::PassDrawGLInput() {
   base::AutoLock lock(lock_);
   return draw_gl_input_.Pass();
+}
+
+void SharedRendererState::PostExternalDrawConstraintsToChildCompositor(
+    const ParentCompositorDrawConstraints& parent_draw_constraints) {
+  {
+    base::AutoLock lock(lock_);
+    parent_draw_constraints_ = parent_draw_constraints;
+  }
+
+  // No need to hold the lock_ during the post task.
+  ui_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&SharedRendererState::UpdateParentDrawConstraintsOnUIThread,
+                 ui_thread_weak_ptr_));
+}
+
+const ParentCompositorDrawConstraints
+SharedRendererState::ParentDrawConstraints() const {
+  base::AutoLock lock(lock_);
+  return parent_draw_constraints_;
 }
 
 void SharedRendererState::SetInsideHardwareRelease(bool inside) {
