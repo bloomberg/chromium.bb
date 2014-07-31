@@ -11,6 +11,7 @@
 #include "content/common/content_export.h"
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace content {
@@ -33,7 +34,7 @@ class CONTENT_EXPORT TouchHandleDrawable {
   virtual void SetAlpha(float alpha) = 0;
   virtual void SetFocus(const gfx::PointF& position) = 0;
   virtual void SetVisible(bool visible) = 0;
-  virtual bool ContainsPoint(const gfx::PointF& point) const = 0;
+  virtual bool IntersectsWith(const gfx::RectF& rect) const = 0;
 };
 
 // Interface through which |TouchHandle| communicates handle manipulation and

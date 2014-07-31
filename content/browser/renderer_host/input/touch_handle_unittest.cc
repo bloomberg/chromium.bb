@@ -49,8 +49,8 @@ class MockTouchHandleDrawable : public TouchHandleDrawable {
 
   virtual void SetVisible(bool visible) OVERRIDE { data_->visible = visible; }
 
-  virtual bool ContainsPoint(const gfx::PointF& point) const OVERRIDE {
-    return data_->rect.Contains(point);
+  virtual bool IntersectsWith(const gfx::RectF& rect) const OVERRIDE {
+    return data_->rect.Intersects(rect);
   }
 
  private:
@@ -397,6 +397,33 @@ TEST_F(TouchHandleTest, DragDefersFade) {
   Animate(handle);
   EXPECT_FALSE(drawable().visible);
   EXPECT_EQ(0.f, drawable().alpha);
+}
+
+TEST_F(TouchHandleTest, DragTargettingUsesTouchSize) {
+  TouchHandle handle(this, TOUCH_HANDLE_CENTER);
+  handle.SetVisible(true, TouchHandle::ANIMATION_NONE);
+
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  const float kTouchSize = 24.f;
+  const float kOffset = kDefaultDrawableSize + kTouchSize / 2.001f;
+
+  MockMotionEvent event(
+      MockMotionEvent::ACTION_DOWN, event_time, kOffset, kOffset);
+  event.SetTouchMajor(0.f);
+  EXPECT_FALSE(handle.WillHandleTouchEvent(event));
+  EXPECT_FALSE(IsDragging());
+
+  event.SetTouchMajor(kTouchSize / 2.f);
+  EXPECT_FALSE(handle.WillHandleTouchEvent(event));
+  EXPECT_FALSE(IsDragging());
+
+  event.SetTouchMajor(kTouchSize);
+  EXPECT_TRUE(handle.WillHandleTouchEvent(event));
+  EXPECT_TRUE(IsDragging());
+
+  event.SetTouchMajor(kTouchSize * 2.f);
+  EXPECT_TRUE(handle.WillHandleTouchEvent(event));
+  EXPECT_TRUE(IsDragging());
 }
 
 TEST_F(TouchHandleTest, Tap) {

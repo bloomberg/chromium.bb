@@ -141,9 +141,9 @@ void CompositedTouchHandleDrawable::SetVisible(bool visible) {
   layer_->SetHideLayerAndSubtree(!visible);
 }
 
-bool CompositedTouchHandleDrawable::ContainsPoint(
-    const gfx::PointF& point) const {
-  return BoundingRect().Contains(gfx::ScalePoint(point, dpi_scale_));
+bool CompositedTouchHandleDrawable::IntersectsWith(
+    const gfx::RectF& rect) const {
+  return BoundingRect().Intersects(gfx::ScaleRect(rect, dpi_scale_));
 }
 
 void CompositedTouchHandleDrawable::Detach() {

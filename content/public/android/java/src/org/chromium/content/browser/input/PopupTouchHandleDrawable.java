@@ -285,11 +285,13 @@ public class PopupTouchHandleDrawable extends View {
     }
 
     @CalledByNative
-    private boolean containsPoint(float x, float y) {
+    private boolean intersectsWith(float x, float y, float width, float height) {
         if (mDrawable == null) return false;
-        final int width = mDrawable.getIntrinsicWidth();
-        final int height = mDrawable.getIntrinsicHeight();
-        return x > mPositionX && x < (mPositionX + width)
-                && y > mPositionY && y < (mPositionY + height);
+        final int drawableWidth = mDrawable.getIntrinsicWidth();
+        final int drawableHeight = mDrawable.getIntrinsicHeight();
+        return !(x >= mPositionX + drawableWidth
+                || y >= mPositionY + drawableHeight
+                || x + width <= mPositionX
+                || y + height <= mPositionY);
     }
 }

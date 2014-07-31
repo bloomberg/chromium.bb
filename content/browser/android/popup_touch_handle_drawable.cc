@@ -65,11 +65,15 @@ void PopupTouchHandleDrawable::SetVisible(bool visible) {
   Java_PopupTouchHandleDrawable_setVisible(env, drawable_.obj(), visible);
 }
 
-bool PopupTouchHandleDrawable::ContainsPoint(const gfx::PointF& point) const {
-  const gfx::PointF point_pix = gfx::ScalePoint(point, dpi_scale_);
+bool PopupTouchHandleDrawable::IntersectsWith(const gfx::RectF& rect) const {
+  const gfx::RectF rect_pix = gfx::ScaleRect(rect, dpi_scale_);
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_PopupTouchHandleDrawable_containsPoint(
-      env, drawable_.obj(), point_pix.x(), point_pix.y());
+  return Java_PopupTouchHandleDrawable_intersectsWith(env,
+                                                      drawable_.obj(),
+                                                      rect_pix.x(),
+                                                      rect_pix.y(),
+                                                      rect_pix.width(),
+                                                      rect_pix.height());
 }
 
 // static

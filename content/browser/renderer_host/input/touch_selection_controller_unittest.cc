@@ -15,19 +15,19 @@ namespace {
 class MockTouchHandleDrawable : public TouchHandleDrawable {
  public:
   explicit MockTouchHandleDrawable(bool* contains_point)
-      : contains_point_(contains_point) {}
+      : intersects_rect_(contains_point) {}
   virtual ~MockTouchHandleDrawable() {}
   virtual void SetEnabled(bool enabled) OVERRIDE {}
   virtual void SetOrientation(TouchHandleOrientation orientation) OVERRIDE {}
   virtual void SetAlpha(float alpha) OVERRIDE {}
   virtual void SetFocus(const gfx::PointF& position) OVERRIDE {}
   virtual void SetVisible(bool visible) OVERRIDE {}
-  virtual bool ContainsPoint(const gfx::PointF& point) const OVERRIDE {
-    return *contains_point_;
+  virtual bool IntersectsWith(const gfx::RectF& rect) const OVERRIDE {
+    return *intersects_rect_;
   }
 
  private:
-  bool* contains_point_;
+  bool* intersects_rect_;
 };
 
 }  // namespace
@@ -71,9 +71,9 @@ class TouchSelectionControllerTest : public testing::Test,
   }
 
   virtual void OnSelectionEvent(SelectionEventType event,
-                                const gfx::PointF& anchor_position) OVERRIDE {
+                                const gfx::PointF& end_position) OVERRIDE {
     last_event_ = event;
-    last_event_anchor_ = anchor_position;
+    last_event_start_ = end_position;
   }
 
   virtual scoped_ptr<TouchHandleDrawable> CreateDrawable() OVERRIDE {
@@ -106,30 +106,30 @@ class TouchSelectionControllerTest : public testing::Test,
     ChangeInsertion(rect, TOUCH_HANDLE_CENTER, visible);
   }
 
-  void ChangeSelection(const gfx::RectF& anchor_rect,
-                       TouchHandleOrientation anchor_orientation,
-                       bool anchor_visible,
-                       const gfx::RectF& focus_rect,
-                       TouchHandleOrientation focus_orientation,
-                       bool focus_visible) {
-    controller_->OnSelectionBoundsChanged(anchor_rect,
-                                          anchor_orientation,
-                                          anchor_visible,
-                                          focus_rect,
-                                          focus_orientation,
-                                          focus_visible);
+  void ChangeSelection(const gfx::RectF& start_rect,
+                       TouchHandleOrientation start_orientation,
+                       bool start_visible,
+                       const gfx::RectF& end_rect,
+                       TouchHandleOrientation end_orientation,
+                       bool end_visible) {
+    controller_->OnSelectionBoundsChanged(start_rect,
+                                          start_orientation,
+                                          start_visible,
+                                          end_rect,
+                                          end_orientation,
+                                          end_visible);
   }
 
-  void ChangeSelection(const gfx::RectF& anchor_rect,
-                       bool anchor_visible,
-                       const gfx::RectF& focus_rect,
-                       bool focus_visible) {
-    ChangeSelection(anchor_rect,
+  void ChangeSelection(const gfx::RectF& start_rect,
+                       bool start_visible,
+                       const gfx::RectF& end_rect,
+                       bool end_visible) {
+    ChangeSelection(start_rect,
                     TOUCH_HANDLE_LEFT,
-                    anchor_visible,
-                    focus_rect,
+                    start_visible,
+                    end_rect,
                     TOUCH_HANDLE_RIGHT,
-                    focus_visible);
+                    end_visible);
   }
 
   void Animate() {
@@ -162,12 +162,12 @@ class TouchSelectionControllerTest : public testing::Test,
   const gfx::PointF& GetLastSelectionStart() const { return selection_start_; }
   const gfx::PointF& GetLastSelectionEnd() const { return selection_end_; }
   SelectionEventType GetLastEventType() const { return last_event_; }
-  const gfx::PointF& GetLastEventAnchor() const { return last_event_anchor_; }
+  const gfx::PointF& GetLastEventAnchor() const { return last_event_start_; }
 
   TouchSelectionController& controller() { return *controller_; }
 
  private:
-  gfx::PointF last_event_anchor_;
+  gfx::PointF last_event_start_;
   gfx::PointF caret_position_;
   gfx::PointF selection_start_;
   gfx::PointF selection_end_;
@@ -287,29 +287,29 @@ TEST_F(TouchSelectionControllerTest, InsertionToSelectionTransition) {
   controller().OnLongPressEvent();
   controller().OnSelectionEditable(true);
 
-  gfx::RectF anchor_rect(5, 5, 0, 10);
-  gfx::RectF focus_rect(50, 5, 0, 10);
+  gfx::RectF start_rect(5, 5, 0, 10);
+  gfx::RectF end_rect(50, 5, 0, 10);
   bool visible = true;
 
-  ChangeInsertion(anchor_rect, visible);
+  ChangeInsertion(start_rect, visible);
   EXPECT_EQ(INSERTION_SHOWN, GetLastEventType());
-  EXPECT_EQ(anchor_rect.bottom_left(), GetLastEventAnchor());
+  EXPECT_EQ(start_rect.bottom_left(), GetLastEventAnchor());
 
-  ChangeSelection(anchor_rect, visible, focus_rect, visible);
+  ChangeSelection(start_rect, visible, end_rect, visible);
   EXPECT_EQ(SELECTION_SHOWN, GetLastEventType());
-  EXPECT_EQ(anchor_rect.bottom_left(), GetLastEventAnchor());
+  EXPECT_EQ(start_rect.bottom_left(), GetLastEventAnchor());
 
-  ChangeInsertion(focus_rect, visible);
+  ChangeInsertion(end_rect, visible);
   EXPECT_EQ(INSERTION_SHOWN, GetLastEventType());
-  EXPECT_EQ(focus_rect.bottom_left(), GetLastEventAnchor());
+  EXPECT_EQ(end_rect.bottom_left(), GetLastEventAnchor());
 
   controller().HideAndDisallowShowingAutomatically();
   EXPECT_EQ(INSERTION_CLEARED, GetLastEventType());
 
   controller().OnTapEvent();
-  ChangeInsertion(focus_rect, visible);
+  ChangeInsertion(end_rect, visible);
   EXPECT_EQ(INSERTION_SHOWN, GetLastEventType());
-  EXPECT_EQ(focus_rect.bottom_left(), GetLastEventAnchor());
+  EXPECT_EQ(end_rect.bottom_left(), GetLastEventAnchor());
 }
 
 TEST_F(TouchSelectionControllerTest, InsertionDragged) {
@@ -322,11 +322,11 @@ TEST_F(TouchSelectionControllerTest, InsertionDragged) {
   EXPECT_FALSE(controller().WillHandleTouchEvent(event));
 
   float line_height = 10.f;
-  gfx::RectF anchor_rect(10, 0, 0, line_height);
+  gfx::RectF start_rect(10, 0, 0, line_height);
   bool visible = true;
-  ChangeInsertion(anchor_rect, visible);
+  ChangeInsertion(start_rect, visible);
   EXPECT_EQ(INSERTION_SHOWN, GetLastEventType());
-  EXPECT_EQ(anchor_rect.bottom_left(), GetLastEventAnchor());
+  EXPECT_EQ(start_rect.bottom_left(), GetLastEventAnchor());
 
   // The touch sequence should be handled only if the drawable reports a hit.
   EXPECT_FALSE(controller().WillHandleTouchEvent(event));
@@ -335,22 +335,22 @@ TEST_F(TouchSelectionControllerTest, InsertionDragged) {
   EXPECT_FALSE(GetAndResetCaretMoved());
 
   // The MoveCaret() result should reflect the movement.
-  // The reported position is offset from the center of |anchor_rect|.
-  gfx::PointF anchor_offset = anchor_rect.CenterPoint();
+  // The reported position is offset from the center of |start_rect|.
+  gfx::PointF start_offset = start_rect.CenterPoint();
   event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time, 0, 5);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
   EXPECT_TRUE(GetAndResetCaretMoved());
-  EXPECT_EQ(anchor_offset + gfx::Vector2dF(0, 5), GetLastCaretPosition());
+  EXPECT_EQ(start_offset + gfx::Vector2dF(0, 5), GetLastCaretPosition());
 
   event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time, 5, 5);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
   EXPECT_TRUE(GetAndResetCaretMoved());
-  EXPECT_EQ(anchor_offset + gfx::Vector2dF(5, 5), GetLastCaretPosition());
+  EXPECT_EQ(start_offset + gfx::Vector2dF(5, 5), GetLastCaretPosition());
 
   event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time, 10, 10);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
   EXPECT_TRUE(GetAndResetCaretMoved());
-  EXPECT_EQ(anchor_offset + gfx::Vector2dF(10, 10), GetLastCaretPosition());
+  EXPECT_EQ(start_offset + gfx::Vector2dF(10, 10), GetLastCaretPosition());
 
   event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 10, 5);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
@@ -367,9 +367,9 @@ TEST_F(TouchSelectionControllerTest, InsertionTapped) {
   controller().OnSelectionEditable(true);
   SetDraggingEnabled(true);
 
-  gfx::RectF anchor_rect(10, 0, 0, 10);
+  gfx::RectF start_rect(10, 0, 0, 10);
   bool visible = true;
-  ChangeInsertion(anchor_rect, visible);
+  ChangeInsertion(start_rect, visible);
   EXPECT_EQ(INSERTION_SHOWN, GetLastEventType());
 
   MockMotionEvent event(MockMotionEvent::ACTION_DOWN, event_time, 0, 0);
@@ -383,7 +383,7 @@ TEST_F(TouchSelectionControllerTest, InsertionTapped) {
   // Reset the insertion.
   ClearInsertion();
   controller().OnTapEvent();
-  ChangeInsertion(anchor_rect, visible);
+  ChangeInsertion(start_rect, visible);
   ASSERT_EQ(INSERTION_SHOWN, GetLastEventType());
 
   // No tap should be signalled if the time between DOWN and UP was too long.
@@ -399,7 +399,7 @@ TEST_F(TouchSelectionControllerTest, InsertionTapped) {
   // Reset the insertion.
   ClearInsertion();
   controller().OnTapEvent();
-  ChangeInsertion(anchor_rect, visible);
+  ChangeInsertion(start_rect, visible);
   ASSERT_EQ(INSERTION_SHOWN, GetLastEventType());
 
   // No tap should be signalled if the touch sequence is cancelled.
@@ -411,21 +411,21 @@ TEST_F(TouchSelectionControllerTest, InsertionTapped) {
 }
 
 TEST_F(TouchSelectionControllerTest, SelectionBasic) {
-  gfx::RectF anchor_rect(5, 5, 0, 10);
-  gfx::RectF focus_rect(50, 5, 0, 10);
+  gfx::RectF start_rect(5, 5, 0, 10);
+  gfx::RectF end_rect(50, 5, 0, 10);
   bool visible = true;
 
   // Selection events are ignored until automatic showing is enabled.
-  ChangeSelection(anchor_rect, visible, focus_rect, visible);
+  ChangeSelection(start_rect, visible, end_rect, visible);
   EXPECT_EQ(gfx::PointF(), GetLastEventAnchor());
 
   controller().OnLongPressEvent();
-  ChangeSelection(anchor_rect, visible, focus_rect, visible);
+  ChangeSelection(start_rect, visible, end_rect, visible);
   EXPECT_EQ(SELECTION_SHOWN, GetLastEventType());
-  EXPECT_EQ(anchor_rect.bottom_left(), GetLastEventAnchor());
+  EXPECT_EQ(start_rect.bottom_left(), GetLastEventAnchor());
 
-  anchor_rect.Offset(1, 0);
-  ChangeSelection(anchor_rect, visible, focus_rect, visible);
+  start_rect.Offset(1, 0);
+  ChangeSelection(start_rect, visible, end_rect, visible);
   // Selection movement does not currently trigger a separate event.
   EXPECT_EQ(SELECTION_SHOWN, GetLastEventType());
 
@@ -443,12 +443,12 @@ TEST_F(TouchSelectionControllerTest, SelectionDragged) {
   EXPECT_FALSE(controller().WillHandleTouchEvent(event));
 
   float line_height = 10.f;
-  gfx::RectF anchor_rect(0, 0, 0, line_height);
-  gfx::RectF focus_rect(50, 0, 0, line_height);
+  gfx::RectF start_rect(0, 0, 0, line_height);
+  gfx::RectF end_rect(50, 0, 0, line_height);
   bool visible = true;
-  ChangeSelection(anchor_rect, visible, focus_rect, visible);
+  ChangeSelection(start_rect, visible, end_rect, visible);
   EXPECT_EQ(SELECTION_SHOWN, GetLastEventType());
-  EXPECT_EQ(anchor_rect.bottom_left(), GetLastEventAnchor());
+  EXPECT_EQ(start_rect.bottom_left(), GetLastEventAnchor());
 
   // The touch sequence should be handled only if the drawable reports a hit.
   EXPECT_FALSE(controller().WillHandleTouchEvent(event));
@@ -458,28 +458,28 @@ TEST_F(TouchSelectionControllerTest, SelectionDragged) {
 
   // The SelectBetweenCoordinates() result should reflect the movement. Note
   // that the start coordinate will always reflect the "fixed" handle's
-  // position, in this case the position from |focus_rect|.
+  // position, in this case the position from |end_rect|.
   // Note that the reported position is offset from the center of the
   // input rects (i.e., the middle of the corresponding text line).
-  gfx::PointF fixed_offset = focus_rect.CenterPoint();
-  gfx::PointF anchor_offset = anchor_rect.CenterPoint();
+  gfx::PointF fixed_offset = end_rect.CenterPoint();
+  gfx::PointF start_offset = start_rect.CenterPoint();
   event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time, 0, 5);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
   EXPECT_TRUE(GetAndResetSelectionMoved());
   EXPECT_EQ(fixed_offset, GetLastSelectionStart());
-  EXPECT_EQ(anchor_offset + gfx::Vector2dF(0, 5), GetLastSelectionEnd());
+  EXPECT_EQ(start_offset + gfx::Vector2dF(0, 5), GetLastSelectionEnd());
 
   event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time, 5, 5);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
   EXPECT_TRUE(GetAndResetSelectionMoved());
   EXPECT_EQ(fixed_offset, GetLastSelectionStart());
-  EXPECT_EQ(anchor_offset + gfx::Vector2dF(5, 5), GetLastSelectionEnd());
+  EXPECT_EQ(start_offset + gfx::Vector2dF(5, 5), GetLastSelectionEnd());
 
   event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time, 10, 5);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
   EXPECT_TRUE(GetAndResetSelectionMoved());
   EXPECT_EQ(fixed_offset, GetLastSelectionStart());
-  EXPECT_EQ(anchor_offset + gfx::Vector2dF(10, 5), GetLastSelectionEnd());
+  EXPECT_EQ(start_offset + gfx::Vector2dF(10, 5), GetLastSelectionEnd());
 
   event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 10, 5);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
@@ -488,6 +488,42 @@ TEST_F(TouchSelectionControllerTest, SelectionDragged) {
   // Once the drag is complete, no more touch events should be consumed until
   // the next ACTION_DOWN.
   EXPECT_FALSE(controller().WillHandleTouchEvent(event));
+}
+
+TEST_F(TouchSelectionControllerTest, SelectionDraggedWithOverlap) {
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  controller().OnLongPressEvent();
+
+  float line_height = 10.f;
+  gfx::RectF start_rect(0, 0, 0, line_height);
+  gfx::RectF end_rect(50, 0, 0, line_height);
+  bool visible = true;
+  ChangeSelection(start_rect, visible, end_rect, visible);
+  EXPECT_EQ(SELECTION_SHOWN, GetLastEventType());
+  EXPECT_EQ(start_rect.bottom_left(), GetLastEventAnchor());
+
+  // The ACTION_DOWN should lock to the closest handle.
+  gfx::PointF end_offset = end_rect.CenterPoint();
+  gfx::PointF fixed_offset = start_rect.CenterPoint();
+  float touch_down_x = (end_offset.x() + fixed_offset.x()) / 2 + 1.f;
+  MockMotionEvent event(
+      MockMotionEvent::ACTION_DOWN, event_time, touch_down_x, 0);
+  SetDraggingEnabled(true);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_FALSE(GetAndResetSelectionMoved());
+
+  // Even though the ACTION_MOVE is over the start handle, it should continue
+  // targetting the end handle that consumed the ACTION_DOWN.
+  event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time, 0, 0);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_TRUE(GetAndResetSelectionMoved());
+  EXPECT_EQ(fixed_offset, GetLastSelectionStart());
+  EXPECT_EQ(end_offset - gfx::Vector2dF(touch_down_x, 0),
+            GetLastSelectionEnd());
+
+  event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 0, 0);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_FALSE(GetAndResetSelectionMoved());
 }
 
 TEST_F(TouchSelectionControllerTest, Animation) {

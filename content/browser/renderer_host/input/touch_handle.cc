@@ -17,6 +17,12 @@ const double kFadeDurationMs = 200;
 // when the handle is moving rapidly while the fade is active.
 const double kFadeDistanceSquared = 20.f * 20.f;
 
+// The maximum touch size to use when computing whether a touch point is
+// targetting a touch handle. This is necessary for devices that misreport
+// touch radii, preventing inappropriately largely touch sizes from completely
+// breaking handle dragging behavior.
+const float kMaxTouchMajorForHitTesting = 48.f;
+
 }  // namespace
 
 // Responsible for rendering a selection or insertion handle for text editing.
@@ -112,10 +118,17 @@ bool TouchHandle::WillHandleTouchEvent(const ui::MotionEvent& event) {
 
   switch (event.GetAction()) {
     case ui::MotionEvent::ACTION_DOWN: {
-      gfx::PointF touch_position = gfx::PointF(event.GetX(), event.GetY());
-      if (!is_visible_ || !drawable_->ContainsPoint(touch_position))
+      if (!is_visible_)
         return false;
-      touch_down_position_ = touch_position;
+      const float touch_size =
+          std::min(event.GetTouchMajor(), kMaxTouchMajorForHitTesting);
+      const gfx::RectF touch_rect(event.GetX() - touch_size * .5f,
+                                  event.GetY() - touch_size * .5f,
+                                  touch_size,
+                                  touch_size);
+      if (!drawable_->IntersectsWith(touch_rect))
+        return false;
+      touch_down_position_ = gfx::PointF(event.GetX(), event.GetY());
       touch_to_focus_offset_ = position_ - touch_down_position_;
       touch_down_time_ = event.GetEventTime();
       BeginDrag();
