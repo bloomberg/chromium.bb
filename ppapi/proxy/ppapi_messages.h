@@ -296,6 +296,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ppapi::MediaStreamAudioTrackShared::Attributes)
   IPC_STRUCT_TRAITS_MEMBER(buffers)
+  IPC_STRUCT_TRAITS_MEMBER(duration)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ppapi::MediaStreamVideoTrackShared::Attributes)

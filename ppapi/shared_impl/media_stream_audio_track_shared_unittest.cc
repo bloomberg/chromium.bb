@@ -28,6 +28,28 @@ TEST(MediaStreamAudioTrackShared, Verify) {
     attributes.buffers = -1;
     EXPECT_FALSE(MediaStreamAudioTrackShared::VerifyAttributes(attributes));
   }
+
+  // Verify duration
+  {
+    MediaStreamAudioTrackShared::Attributes attributes;
+    attributes.duration = 0;
+    EXPECT_TRUE(MediaStreamAudioTrackShared::VerifyAttributes(attributes));
+
+    attributes.duration = 10;
+    EXPECT_TRUE(MediaStreamAudioTrackShared::VerifyAttributes(attributes));
+
+    attributes.duration = 10000;
+    EXPECT_TRUE(MediaStreamAudioTrackShared::VerifyAttributes(attributes));
+
+    attributes.duration = 123;
+    EXPECT_TRUE(MediaStreamAudioTrackShared::VerifyAttributes(attributes));
+
+    attributes.duration = 9;
+    EXPECT_FALSE(MediaStreamAudioTrackShared::VerifyAttributes(attributes));
+
+    attributes.duration = -1;
+    EXPECT_FALSE(MediaStreamAudioTrackShared::VerifyAttributes(attributes));
+  }
 }
 
 }  // namespace ppapi

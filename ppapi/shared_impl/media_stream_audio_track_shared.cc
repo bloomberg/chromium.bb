@@ -11,6 +11,9 @@ bool MediaStreamAudioTrackShared::VerifyAttributes(
     const Attributes& attributes) {
   if (attributes.buffers < 0)
     return false;
+  if (!(attributes.duration == 0 ||
+        (attributes.duration >= 10 && attributes.duration <= 10000)))
+    return false;
   return true;
 }
 

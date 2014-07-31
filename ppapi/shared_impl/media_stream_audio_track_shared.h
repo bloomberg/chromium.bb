@@ -13,8 +13,9 @@ namespace ppapi {
 class PPAPI_SHARED_EXPORT MediaStreamAudioTrackShared {
  public:
   struct Attributes {
-    Attributes() : buffers(0) {}
+    Attributes() : buffers(0), duration(0) {}
     int32_t buffers;
+    int32_t duration;
   };
 
   static bool VerifyAttributes(const Attributes& attributes);

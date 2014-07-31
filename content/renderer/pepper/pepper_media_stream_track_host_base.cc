@@ -38,6 +38,8 @@ bool PepperMediaStreamTrackHostBase::InitBuffers(int32_t number_of_buffers,
             static_cast<int32_t>(sizeof(ppapi::MediaStreamBuffer::Header)));
   // Make each buffer 4 byte aligned.
   base::CheckedNumeric<int32_t> buffer_size_aligned = buffer_size;
+  // TODO(amistry): "buffer size" might not == "buffer stride", in the same way
+  // that width != stride in an image buffer.
   buffer_size_aligned += (4 - buffer_size % 4);
 
   // TODO(penghuang): |HostAllocateSharedMemoryBuffer| uses sync IPC. We should

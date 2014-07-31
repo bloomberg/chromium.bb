@@ -62,10 +62,12 @@ int32_t MediaStreamAudioTrackResource::Configure(
       case PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERS:
         attributes.buffers = attrib_list[i + 1];
         break;
+      case PP_MEDIASTREAMAUDIOTRACK_ATTRIB_DURATION:
+        attributes.duration = attrib_list[i + 1];
+        break;
       case PP_MEDIASTREAMAUDIOTRACK_ATTRIB_SAMPLE_RATE:
       case PP_MEDIASTREAMAUDIOTRACK_ATTRIB_SAMPLE_SIZE:
       case PP_MEDIASTREAMAUDIOTRACK_ATTRIB_CHANNELS:
-      case PP_MEDIASTREAMAUDIOTRACK_ATTRIB_DURATION:
         return PP_ERROR_NOTSUPPORTED;
       default:
         return PP_ERROR_BADARGUMENT;
