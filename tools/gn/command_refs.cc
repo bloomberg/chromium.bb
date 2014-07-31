@@ -66,6 +66,7 @@ int RunRefs(const std::vector<std::string>& args) {
     return 1;
   }
 
+  Pattern pattern(args[0]);
   // Check for common errors on input.
   if (args[0].find('*') == std::string::npos) {
     // We need to begin with a "//" and have a colon if there's no "*" or it
@@ -73,15 +74,12 @@ int RunRefs(const std::vector<std::string>& args) {
     if (args[0].size() < 2 ||
         (args[0][0] != '/' && args[0][1] != '/') ||
         args[0].find(':') == std::string::npos) {
-      Err(Location(), "Patterns match the entire label. Since your pattern "
-          "has no wildcard, it\nshould start with a \"//\" and have a colon "
-          "or it can never match anything.\nTo match a substring, use "
-          "\"*foo*\".").PrintToStdout();
-      return 1;
+      OutputString("Assuming \"*" + args[0] +
+                       "*\". See \"gn help refs\" for more information.\n",
+                   DECORATION_YELLOW);
+      pattern = Pattern("*" + args[0] + "*");
     }
   }
-
-  Pattern pattern(args[0]);
 
   Setup* setup = new Setup;
   setup->set_check_for_bad_items(false);
