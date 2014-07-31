@@ -166,6 +166,11 @@ void MailboxSynchronizer::PushTextureUpdates(MailboxManager* manager) {
       UpdateTextureLocked(texture, texture_version);
 
     } else {
+      // Skip compositor resources/tile textures.
+      // TODO: Remove this, see crbug.com/399226.
+      if (texture->pool() == GL_TEXTURE_POOL_MANAGED_CHROMIUM)
+        continue;
+
       linked_ptr<TextureGroup> group = make_linked_ptr(new TextureGroup(
           TextureDefinition(target_name.target, texture, 1, NULL)));
 
