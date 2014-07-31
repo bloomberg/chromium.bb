@@ -34,7 +34,7 @@ typedef struct MIPSFFTSpec_R_FC32_Tag {
   OMX_U16* pBitRev;
   OMX_U16* pBitRevInv;
   const OMX_U16* pOffset;
-  OMX_F32* pTwiddle;
+  const OMX_F32* pTwiddle;
   OMX_F32* pBuf;
 } MIPSFFTSpec_R_FC32;
 

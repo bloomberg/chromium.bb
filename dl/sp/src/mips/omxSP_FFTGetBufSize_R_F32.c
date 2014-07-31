@@ -14,16 +14,19 @@
 #include "dl/sp/api/omxSP.h"
 
 OMXResult omxSP_FFTGetBufSize_R_F32(OMX_INT order, OMX_INT* pSize) {
-  OMX_INT fft_size;
+  OMX_INT fft_size, offset_lut_size;
 
   if (!pSize || (order < 1) || (order > TWIDDLE_TABLE_ORDER))
     return OMX_Sts_BadArgErr;
 
   /* For order larger than 4, compute Real FFT as Complex FFT of (order - 1). */
-  if (order > 4)
+  if (order > 4) {
     fft_size = 1 << (order - 1);
-  else
+    offset_lut_size = (SUBTRANSFORM_CONST >> (16 - order)) | 1;
+  } else {
     fft_size = 1 << order;
+    offset_lut_size = (SUBTRANSFORM_CONST >> (17 - order)) | 1;
+  }
 
   *pSize = sizeof(MIPSFFTSpec_R_FC32) +
            /* BitRev Table. */
@@ -31,15 +34,16 @@ OMXResult omxSP_FFTGetBufSize_R_F32(OMX_INT order, OMX_INT* pSize) {
            /* BitRevInv Table. */
            sizeof(OMX_U16) * fft_size +
            /* Offsets table. */
-           sizeof(OMX_U16) *
-               ((SUBTRANSFORM_CONST >> (16 - TWIDDLE_TABLE_ORDER)) | 1) +
+           sizeof(OMX_U16) * offset_lut_size +
+           /* Twiddle table */
+           sizeof(OMX_F32) * (1 << (order - 2)) +
            /* pBuf. */
            sizeof(OMX_F32) * (fft_size << 1) +
            /*
             * Extra bytes to get 32 byte alignment of
-            * pBitRev, pBitRevInv, pOffset and pBuf.
+            * pBitRev, pBitRevInv, pOffset, pTwiddle and pBuf.
             */
-           124;
+           155;
 
   return OMX_Sts_NoErr;
 }

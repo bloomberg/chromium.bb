@@ -22,8 +22,8 @@ OMXResult mips_FFTInv_CCSToR_F32_real(const OMX_F32* pSrc,
   const OMX_FC32* p_src = (const OMX_FC32*)pSrc;
   OMX_U32 fft_size = 1 << pFFTSpec->order;
   OMX_F32 factor, tmp1, tmp2;
-  OMX_F32* w_re_ptr;
-  OMX_F32* w_im_ptr;
+  const OMX_F32* w_re_ptr;
+  const OMX_F32* w_im_ptr;
 
   /* Copy the input into the auxiliary buffer. */
   for (uint32_t n = 1; n < fft_size / 2; ++n) {
@@ -179,7 +179,6 @@ OMXResult mips_FFTInv_CCSToR_F32_real(const OMX_F32* pSrc,
     p_tmp[3].Im = p_tmp[3].Im + tmp3;
   }
 
-  step = 1 << (TWIDDLE_TABLE_ORDER - 4);
   /*
    * Last FFT stage, doing sub-transform of size 16. Avoid unnecessary
    * calculations and place the output directly into the destination buffer.
@@ -192,9 +191,8 @@ OMXResult mips_FFTInv_CCSToR_F32_real(const OMX_F32* pSrc,
   pDst[12] = factor * (p_buf[4].Re + tmp2);
   pDst[4] = factor * (p_buf[4].Re - tmp2);
 
-  w_re_ptr = pFFTSpec->pTwiddle + step;
-  w_im_ptr =
-      pFFTSpec->pTwiddle + (OMX_U32)(1 << TWIDDLE_TABLE_ORDER - 2) - step;
+  w_re_ptr = pFFTSpec->pTwiddle + 1;
+  w_im_ptr = pFFTSpec->pTwiddle + (OMX_U32)(1 << pFFTSpec->order - 2) - 1;
 
   /* Loop performing split-radix butterfly operations. */
   for (uint32_t n = 1; n < 4; ++n) {
@@ -215,8 +213,8 @@ OMXResult mips_FFTInv_CCSToR_F32_real(const OMX_F32* pSrc,
     pDst[12 + n] = factor * (p_buf[4 + n].Re + tmp2);
     pDst[4 + n] = factor * (p_buf[4 + n].Re - tmp2);
 
-    w_re_ptr += step;
-    w_im_ptr -= step;
+    ++w_re_ptr;
+    --w_im_ptr;
   }
   return OMX_Sts_NoErr;
 }

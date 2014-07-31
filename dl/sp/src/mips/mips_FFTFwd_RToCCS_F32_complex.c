@@ -22,8 +22,8 @@ OMXResult mips_FFTFwd_RToCCS_F32_complex(const OMX_F32* pSrc,
                                          OMX_F32* pDst,
                                          const MIPSFFTSpec_R_FC32* pFFTSpec) {
   OMX_U32 n1_4, num_transforms, step;
-  OMX_F32* w_re_ptr;
-  OMX_F32* w_im_ptr;
+  const OMX_F32* w_re_ptr;
+  const OMX_F32* w_im_ptr;
   OMX_U32 fft_size = 1 << pFFTSpec->order;
   OMX_FC32* p_dst = (OMX_FC32*)pDst;
   OMX_FC32* p_buf = (OMX_FC32*)pFFTSpec->pBuf;
@@ -127,7 +127,7 @@ OMXResult mips_FFTFwd_RToCCS_F32_complex(const OMX_F32* pSrc,
     p_tmp[3].Im = p_tmp[3].Im - tmp5;
   }
 
-  step = 1 << (TWIDDLE_TABLE_ORDER - 4);
+  step = 1 << (pFFTSpec->order - 4);
   n1_4 = 4; /* Quarter of the sub-transform size. */
   /* Outer loop that loops over FFT stages. */
   for (uint32_t fft_stage = 4; fft_stage <= pFFTSpec->order - 1; ++fft_stage) {
@@ -159,7 +159,7 @@ OMXResult mips_FFTFwd_RToCCS_F32_complex(const OMX_F32* pSrc,
       /* Twiddle table is initialized for the maximal FFT size. */
       w_re_ptr = pFFTSpec->pTwiddle + step;
       w_im_ptr =
-          pFFTSpec->pTwiddle + (OMX_U32)(1 << TWIDDLE_TABLE_ORDER - 2) - step;
+          pFFTSpec->pTwiddle + (OMX_U32)(1 << pFFTSpec->order - 2) - step;
 
       /*
        * Loop performing split-radix butterfly operations for
@@ -198,8 +198,7 @@ OMXResult mips_FFTFwd_RToCCS_F32_complex(const OMX_F32* pSrc,
 
   /* Additional computation to get the output for full FFT size. */
   w_re_ptr = pFFTSpec->pTwiddle + step;
-  w_im_ptr =
-      pFFTSpec->pTwiddle + (OMX_U32)(1 << TWIDDLE_TABLE_ORDER - 2) - step;
+  w_im_ptr = pFFTSpec->pTwiddle + (OMX_U32)(1 << pFFTSpec->order - 2) - step;
 
   for (uint32_t i = 1; i < fft_size / 8; ++i) {
     tmp1 = p_buf[i].Re;

@@ -63,8 +63,6 @@ OMXResult omxSP_FFTInit_R_F32(OMXFFTSpec_R_F32* pFFTSpec, OMX_INT order) {
   else
     fft_size = 1 << order;
 
-  p_twiddle = mipsSP_FFT_F32TwiddleTable;
-
   p_bit_rev = (OMX_U16*)((OMX_S8*)pFFTSpec + sizeof(MIPSFFTSpec_R_FC32));
   /* Align to 32 byte boundary. */
   tmp = ((uintptr_t)p_bit_rev) & 31;
@@ -83,9 +81,26 @@ OMXResult omxSP_FFTInit_R_F32(OMXFFTSpec_R_F32* pFFTSpec, OMX_INT order) {
   if (tmp)
     p_offset = (OMX_U16*)((OMX_S8*)p_offset + (32 - tmp));
 
-  p_buf = (OMX_F32*)((OMX_S8*)p_offset +
-                     ((SUBTRANSFORM_CONST >> (16 - TWIDDLE_TABLE_ORDER)) | 1) *
-                         sizeof(OMX_U16));
+  if (order < 5) {
+    p_twiddle = (OMX_F32*)((OMX_S8*)p_offset +
+                           ((SUBTRANSFORM_CONST >> (16 - order)) | 1) *
+                               sizeof(OMX_U16));
+  } else {
+    p_twiddle = (OMX_F32*)((OMX_S8*)p_offset +
+                           ((SUBTRANSFORM_CONST >> (17 - order)) | 1) *
+                               sizeof(OMX_U16));
+  }
+
+  /* Align to 32 byte boundary. */
+  tmp = ((uintptr_t)p_twiddle) & 31;
+  if (tmp)
+    p_twiddle = (OMX_F32*)((OMX_S8*)p_twiddle + (32 - tmp));
+
+  if (order > 3)
+    p_buf =
+        (OMX_F32*)((OMX_S8*)p_twiddle + (1 << (order - 2)) * sizeof(OMX_F32));
+  else
+    p_buf = (OMX_F32*)((OMX_S8*)p_twiddle + sizeof(OMX_F32));
 
   /* Align to 32 byte boundary. */
   tmp = ((uintptr_t)p_buf) & 31;
@@ -102,7 +117,18 @@ OMXResult omxSP_FFTInit_R_F32(OMXFFTSpec_R_F32* pFFTSpec, OMX_INT order) {
 
   /* Calculate Offsets. */
   n = 0;
-  InitFFTOffsetsLUT(p_offset, 0, 1 << TWIDDLE_TABLE_ORDER, &n);
+  if (order < 5)
+    InitFFTOffsetsLUT(p_offset, 0, 1 << order, &n);
+  else
+    InitFFTOffsetsLUT(p_offset, 0, 1 << (order - 1), &n);
+
+  /* Fill the twiddle table */
+  if (order > 3) {
+    tmp = 1 << (TWIDDLE_TABLE_ORDER - order);
+    for (n = 0; n < (1 << (order - 2)); ++n) {
+      p_twiddle[n] = mipsSP_FFT_F32TwiddleTable[n * tmp];
+    }
+  }
 
   /*
    * Double-check if the offset tables are initialized correctly.
@@ -111,49 +137,55 @@ OMXResult omxSP_FFTInit_R_F32(OMXFFTSpec_R_F32* pFFTSpec, OMX_INT order) {
    * probabaly redundant. However, keeping this just to make sure the offsets
    * will not exceed the buffer boundaries.
    */
-  if (order == 2) {
-    /* Only check the offsets for the p_bit_rev_inv table. */
-    for (uint32_t i = 0; i < fft_size; ++i) {
-      if (p_bit_rev_inv[i] >= fft_size)
-        return OMX_Sts_BadArgErr;
-    }
-  } else if (order < 5) {
-    /* Check for p_offset table. */
-    int shift = 2;
-    int over = 4;
-    int num_transforms = (SUBTRANSFORM_CONST >> (16 - order)) | 1;
-    for (uint32_t i = 2; i < order; ++i) {
-      for (uint32_t j = 0; j < num_transforms; ++j) {
-        if (((p_offset[j] << shift) + over - 1) >= fft_size)
+  if (order > 1) {
+    /*
+     * In the case of order = 1 there is no table accesses, so there is no need
+     * for any boundary checks.
+     */
+    if (order == 2) {
+      /* Only check the offsets for the p_bit_rev_inv table. */
+      for (uint32_t i = 0; i < fft_size; ++i) {
+        if (p_bit_rev_inv[i] >= fft_size)
           return OMX_Sts_BadArgErr;
       }
-      shift++;
-      over <<= 1;
-      num_transforms = (num_transforms >> 1) | 1;
-    }
-    /* Check for bit-reverse tables. */
-    for (uint32_t i = 0; i < fft_size; ++i) {
-      if ((p_bit_rev[i] >= fft_size) || (p_bit_rev_inv[i] >= fft_size))
-        return OMX_Sts_BadArgErr;
-    }
-  } else {
-    /* Check for p_offset table. */
-    int shift = 2;
-    int over = 4;
-    int num_transforms = (SUBTRANSFORM_CONST >> (17 - order)) | 1;
-    for (uint32_t i = 2; i < order; ++i) {
-      for (uint32_t j = 0; j < num_transforms; ++j) {
-        if (((p_offset[j] << shift) + over - 1) >= fft_size)
+    } else if (order < 5) {
+      /* Check for p_offset table. */
+      int shift = 2;
+      int over = 4;
+      int num_transforms = (SUBTRANSFORM_CONST >> (16 - order)) | 1;
+      for (uint32_t i = 2; i < order; ++i) {
+        for (uint32_t j = 0; j < num_transforms; ++j) {
+          if (((p_offset[j] << shift) + over - 1) >= fft_size)
+            return OMX_Sts_BadArgErr;
+        }
+        shift++;
+        over <<= 1;
+        num_transforms = (num_transforms >> 1) | 1;
+      }
+      /* Check for bit-reverse tables. */
+      for (uint32_t i = 0; i < fft_size; ++i) {
+        if ((p_bit_rev[i] >= fft_size) || (p_bit_rev_inv[i] >= fft_size))
           return OMX_Sts_BadArgErr;
       }
-      shift++;
-      over <<= 1;
-      num_transforms = (num_transforms >> 1) | 1;
-    }
-    /* Check for bit-reverse tables. */
-    for (uint32_t i = 0; i < fft_size; ++i) {
-      if ((p_bit_rev[i] >= fft_size) || (p_bit_rev_inv[i] >= fft_size))
-        return OMX_Sts_BadArgErr;
+    } else {
+      /* Check for p_offset table. */
+      int shift = 2;
+      int over = 4;
+      int num_transforms = (SUBTRANSFORM_CONST >> (17 - order)) | 1;
+      for (uint32_t i = 2; i < order; ++i) {
+        for (uint32_t j = 0; j < num_transforms; ++j) {
+          if (((p_offset[j] << shift) + over - 1) >= fft_size)
+            return OMX_Sts_BadArgErr;
+        }
+        shift++;
+        over <<= 1;
+        num_transforms = (num_transforms >> 1) | 1;
+      }
+      /* Check for bit-reverse tables. */
+      for (uint32_t i = 0; i < fft_size; ++i) {
+        if ((p_bit_rev[i] >= fft_size) || (p_bit_rev_inv[i] >= fft_size))
+          return OMX_Sts_BadArgErr;
+      }
     }
   }
 
@@ -161,7 +193,7 @@ OMXResult omxSP_FFTInit_R_F32(OMXFFTSpec_R_F32* pFFTSpec, OMX_INT order) {
   pFFTStruct->pBitRev = p_bit_rev;
   pFFTStruct->pBitRevInv = p_bit_rev_inv;
   pFFTStruct->pOffset = (const OMX_U16*)p_offset;
-  pFFTStruct->pTwiddle = p_twiddle;
+  pFFTStruct->pTwiddle = (const OMX_F32*)p_twiddle;
   pFFTStruct->pBuf = p_buf;
 
   return OMX_Sts_NoErr;

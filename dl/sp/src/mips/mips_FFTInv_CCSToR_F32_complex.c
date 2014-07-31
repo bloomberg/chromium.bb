@@ -20,8 +20,8 @@ OMXResult mips_FFTInv_CCSToR_F32_complex(const OMX_F32* pSrc,
   OMX_U32 num_transforms, step;
   /* Quarter, half and three-quarters of transform size. */
   OMX_U32 n1_4, n1_2, n3_4;
-  OMX_F32* w_re_ptr;
-  OMX_F32* w_im_ptr;
+  const OMX_F32* w_re_ptr;
+  const OMX_F32* w_im_ptr;
   OMX_U32 fft_size = 1 << pFFTSpec->order;
   OMX_FC32* p_buf = (OMX_FC32*)pFFTSpec->pBuf;
   const OMX_FC32* p_src = (const OMX_FC32*)pSrc;
@@ -30,10 +30,8 @@ OMXResult mips_FFTInv_CCSToR_F32_complex(const OMX_F32* pSrc,
   OMX_F32 tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, tmp8, factor;
   OMX_F32 w_re, w_im;
 
-  step = 1 << (TWIDDLE_TABLE_ORDER - pFFTSpec->order);
-  w_re_ptr = pFFTSpec->pTwiddle + step;
-  w_im_ptr =
-      pFFTSpec->pTwiddle + (OMX_U32)(1 << (TWIDDLE_TABLE_ORDER - 2)) - step;
+  w_re_ptr = pFFTSpec->pTwiddle + 1;
+  w_im_ptr = pFFTSpec->pTwiddle + (OMX_U32)(1 << pFFTSpec->order - 2) - 1;
 
   /*
    * Preliminary loop performing input adaptation due to computing real FFT
@@ -79,8 +77,8 @@ OMXResult mips_FFTInv_CCSToR_F32_complex(const OMX_F32* pSrc,
     p_buf[p_bitrev[fft_size / 4 - n]].Im =
         0.5f * (-tmp8 - w_im * tmp6 - w_re * tmp7);
 
-    w_re_ptr += step;
-    w_im_ptr -= step;
+    ++w_re_ptr;
+    --w_im_ptr;
   }
   tmp1 = p_src[fft_size / 8].Re;
   tmp2 = p_src[fft_size / 8].Im;
@@ -188,7 +186,7 @@ OMXResult mips_FFTInv_CCSToR_F32_complex(const OMX_F32* pSrc,
     p_tmp[3].Im = p_tmp[3].Im + tmp3;
   }
 
-  step = 1 << (TWIDDLE_TABLE_ORDER - 4);
+  step = 1 << (pFFTSpec->order - 4);
   n1_4 = 4;
   /* Outer loop that loops over FFT stages. */
   for (uint32_t fft_stage = 4; fft_stage <= pFFTSpec->order - 2; ++fft_stage) {
@@ -215,7 +213,7 @@ OMXResult mips_FFTInv_CCSToR_F32_complex(const OMX_F32* pSrc,
 
       w_re_ptr = pFFTSpec->pTwiddle + step;
       w_im_ptr =
-          pFFTSpec->pTwiddle + (OMX_U32)(1 << TWIDDLE_TABLE_ORDER - 2) - step;
+          pFFTSpec->pTwiddle + (OMX_U32)(1 << pFFTSpec->order - 2) - step;
 
       /*
        * Loop performing split-radix butterfly operations for one sub-transform.
@@ -273,8 +271,7 @@ OMXResult mips_FFTInv_CCSToR_F32_complex(const OMX_F32* pSrc,
   p_dst[n1_4].Im = factor * (p_buf[n1_4].Im + tmp2);
 
   w_re_ptr = pFFTSpec->pTwiddle + step;
-  w_im_ptr =
-      pFFTSpec->pTwiddle + (OMX_U32)(1 << TWIDDLE_TABLE_ORDER - 2) - step;
+  w_im_ptr = pFFTSpec->pTwiddle + (OMX_U32)(1 << pFFTSpec->order - 2) - step;
 
   for (uint32_t i = 1; i < n1_4; ++i) {
     w_re = *w_re_ptr;

@@ -17,12 +17,12 @@
 OMXResult mips_FFTFwd_RToCCS_F32_real(const OMX_F32* pSrc,
                                       OMX_F32* pDst,
                                       const MIPSFFTSpec_R_FC32* pFFTSpec) {
-  OMX_U32 num_transforms, step;
+  OMX_U32 num_transforms;
   OMX_FC32* p_dst = (OMX_FC32*)pDst;
   OMX_FC32* p_buf = (OMX_FC32*)pFFTSpec->pBuf;
   OMX_F32 tmp1, tmp2, tmp3, tmp4;
-  OMX_F32* w_re_ptr;
-  OMX_F32* w_im_ptr;
+  const OMX_F32* w_re_ptr;
+  const OMX_F32* w_im_ptr;
 
   /* Transform for order = 2. */
   /* TODO: hard-code the offsets for p_src. */
@@ -142,7 +142,6 @@ OMXResult mips_FFTFwd_RToCCS_F32_real(const OMX_F32* pSrc,
     p_tmp[3].Im = p_tmp[3].Im - tmp1;
   }
 
-  step = 1 << (TWIDDLE_TABLE_ORDER - 4);
   /*
    * Last FFT stage,  performing sub-transforms of size 16. Place the output
    * into the destination buffer and avoid unnecessary computations.
@@ -159,9 +158,8 @@ OMXResult mips_FFTFwd_RToCCS_F32_real(const OMX_F32* pSrc,
   p_dst[4].Re = p_buf[4].Re + tmp4;
   p_dst[4].Im = p_buf[4].Im - tmp2;
 
-  w_re_ptr = pFFTSpec->pTwiddle + step;
-  w_im_ptr =
-      pFFTSpec->pTwiddle + (OMX_U32)(1 << TWIDDLE_TABLE_ORDER - 2) - step;
+  w_re_ptr = pFFTSpec->pTwiddle + 1;
+  w_im_ptr = pFFTSpec->pTwiddle + (OMX_U32)(1 << pFFTSpec->order - 2) - 1;
 
   /* Loop performing split-radix butterfly operations. */
   for (uint32_t n = 1; n < 4; ++n) {
@@ -184,8 +182,8 @@ OMXResult mips_FFTFwd_RToCCS_F32_real(const OMX_F32* pSrc,
     p_dst[4 + n].Re = p_buf[4 + n].Re + tmp2;
     p_dst[4 + n].Im = p_buf[4 + n].Im - tmp1;
 
-    w_re_ptr += step;
-    w_im_ptr -= step;
+    ++w_re_ptr;
+    --w_im_ptr;
   }
   return OMX_Sts_NoErr;
 }
