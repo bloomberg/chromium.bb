@@ -416,6 +416,11 @@ TEST(BrokerProcess, OpenComplexFlagsNoClientCheck) {
 // We need to allow noise because the broker will log when it receives our
 // bogus IPCs.
 SANDBOX_TEST_ALLOW_NOISE(BrokerProcess, RecvMsgDescriptorLeak) {
+  // Android creates a socket on first use of the LOG call.
+  // We need to ensure this socket is open before we
+  // begin the test.
+  LOG(INFO) << "Ensure Android LOG socket is allocated";
+
   // Find the four lowest available file descriptors.
   int available_fds[4];
   SANDBOX_ASSERT(0 == pipe(available_fds));
