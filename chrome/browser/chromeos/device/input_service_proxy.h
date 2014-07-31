@@ -37,6 +37,9 @@ class InputServiceProxy {
   InputServiceProxy();
   ~InputServiceProxy();
 
+  // Used for early init for cashing info about available HID.
+  static void WarmUp();
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 

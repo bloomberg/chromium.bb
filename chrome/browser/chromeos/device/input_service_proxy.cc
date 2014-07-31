@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/device/input_service_proxy.h"
 
+#include "base/bind_helpers.h"
 #include "base/task_runner_util.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -98,6 +99,14 @@ InputServiceProxy::~InputServiceProxy() {
       FROM_HERE,
       base::Bind(&InputServiceProxy::ServiceObserver::Shutdown,
                  base::Unretained(service_observer_.release())));
+}
+
+// static
+void InputServiceProxy::WarmUp() {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(&InputServiceLinux::GetInstance)));
 }
 
 void InputServiceProxy::AddObserver(Observer* observer) {

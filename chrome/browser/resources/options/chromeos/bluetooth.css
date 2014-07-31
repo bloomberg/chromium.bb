@@ -108,18 +108,14 @@
 .bluetooth-keyboard-button {
   -webkit-padding-end: 15px;
   -webkit-padding-start: 15px;
-  background-image: linear-gradient(to bottom,
-                                    #e9e9e9,
-                                    #f5f5f5);
   border: 1px solid #ccc;
   border-radius: 4px;
-  box-shadow: 0 0 0 1px #888,
+  box-shadow: 0 0 0 1px #222,
               inset 0 1px 1px 1px #fff,
               inset 0 -1px 1px 1px #eee;
   color: #222;
   display: inline-block;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 16px;
   height: 38px;
   line-height: 38px;
   margin: 0 10px 0 0;
@@ -154,20 +150,17 @@
 }
 
 .bluetooth-keyboard-button.key-next {
-  background-image: -webkit-linear-gradient(top,
-                                            rgb(77, 144, 254),
-                                            rgb(71, 135, 237));
-  border: 1px solid rgb(77, 144, 254);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07),
-            inset 0 1px 1px 1px #fff,
-            inset 0 -1px 1px 1px rgb(77, 144, 254);
+  background: rgb(77, 144, 254);
+  background-image: none;
+  border: 2px solid rgb(77, 144, 254);
+  box-shadow: none;
   color: #fff;
 }
 
 .bluetooth-keyboard-button.key-untyped {
   border: 1px solid #d4d4d4;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07),
+  box-shadow: 0 0 0 1px #888,
               inset 0 1px 1px 1px #fff,
-              inset 0 -1px 1px 1px #ddd;
+              inset 0 -1px 1px 1px #eee;
   color: #666;
 }
