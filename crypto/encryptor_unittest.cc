@@ -456,22 +456,21 @@ TEST(EncryptorTest, EncryptAES128CBCRegression) {
   EXPECT_EQ(plaintext, decrypted);
 }
 
-// Not all platforms allow import/generation of symmetric keys with an
-// unsupported size.
-#if !defined(USE_NSS) && !defined(OS_WIN) && !defined(OS_MACOSX)
+// Symmetric keys with an unsupported size should be rejected. Whether they are
+// rejected by SymmetricKey::Import or Encryptor::Init depends on the platform.
 TEST(EncryptorTest, UnsupportedKeySize) {
   std::string key = "7 = bad";
   std::string iv = "Sweet Sixteen IV";
   scoped_ptr<crypto::SymmetricKey> sym_key(crypto::SymmetricKey::Import(
       crypto::SymmetricKey::AES, key));
-  ASSERT_TRUE(sym_key.get());
+  if (!sym_key.get())
+    return;
 
   crypto::Encryptor encryptor;
-  // The IV must be exactly as long a the cipher block size.
+  // The IV must be exactly as long as the cipher block size.
   EXPECT_EQ(16U, iv.size());
   EXPECT_FALSE(encryptor.Init(sym_key.get(), crypto::Encryptor::CBC, iv));
 }
-#endif  // unsupported platforms.
 
 TEST(EncryptorTest, UnsupportedIV) {
   std::string key = "128=SixteenBytes";
