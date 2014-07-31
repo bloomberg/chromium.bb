@@ -26,6 +26,9 @@
  * Authors:
  *      Jérôme Glisse <jglisse@redhat.com>
  */
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include <stdbool.h>
 #include <assert.h>
 #include <errno.h>
@@ -35,6 +38,7 @@
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 #include "drm.h"
+#include "libdrm.h"
 #include "xf86drm.h"
 #include "radeon_drm.h"
 #include "radeon_surface.h"
@@ -2395,7 +2399,8 @@ static int cik_surface_best(struct radeon_surface_manager *surf_man,
 /* ===========================================================================
  * public API
  */
-struct radeon_surface_manager *radeon_surface_manager_new(int fd)
+drm_public struct radeon_surface_manager *
+radeon_surface_manager_new(int fd)
 {
     struct radeon_surface_manager *surf_man;
 
@@ -2443,7 +2448,8 @@ out_err:
     return NULL;
 }
 
-void radeon_surface_manager_free(struct radeon_surface_manager *surf_man)
+drm_public void
+radeon_surface_manager_free(struct radeon_surface_manager *surf_man)
 {
     free(surf_man);
 }
@@ -2515,8 +2521,9 @@ static int radeon_surface_sanity(struct radeon_surface_manager *surf_man,
     return 0;
 }
 
-int radeon_surface_init(struct radeon_surface_manager *surf_man,
-                        struct radeon_surface *surf)
+drm_public int
+radeon_surface_init(struct radeon_surface_manager *surf_man,
+                    struct radeon_surface *surf)
 {
     unsigned mode, type;
     int r;
@@ -2531,8 +2538,9 @@ int radeon_surface_init(struct radeon_surface_manager *surf_man,
     return surf_man->surface_init(surf_man, surf);
 }
 
-int radeon_surface_best(struct radeon_surface_manager *surf_man,
-                        struct radeon_surface *surf)
+drm_public int
+radeon_surface_best(struct radeon_surface_manager *surf_man,
+                    struct radeon_surface *surf)
 {
     unsigned mode, type;
     int r;

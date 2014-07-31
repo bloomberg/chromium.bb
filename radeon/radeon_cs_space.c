@@ -25,9 +25,13 @@
  */
 /*
  */
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
+#include "libdrm.h"
 #include "radeon_cs.h"
 #include "radeon_bo_int.h"
 #include "radeon_cs_int.h"
@@ -161,7 +165,9 @@ static int radeon_cs_do_space_check(struct radeon_cs_int *cs, struct radeon_cs_s
     return RADEON_CS_SPACE_OK;
 }
 
-void radeon_cs_space_add_persistent_bo(struct radeon_cs *cs, struct radeon_bo *bo, uint32_t read_domains, uint32_t write_domain)
+drm_public void
+radeon_cs_space_add_persistent_bo(struct radeon_cs *cs, struct radeon_bo *bo,
+                                  uint32_t read_domains, uint32_t write_domain)
 {
     struct radeon_cs_int *csi = (struct radeon_cs_int *)cs;
     struct radeon_bo_int *boi = (struct radeon_bo_int *)bo;
@@ -203,9 +209,9 @@ again:
     return 0;
 }
 
-int radeon_cs_space_check_with_bo(struct radeon_cs *cs,
-                  struct radeon_bo *bo,
-                  uint32_t read_domains, uint32_t write_domain)
+drm_public int
+radeon_cs_space_check_with_bo(struct radeon_cs *cs, struct radeon_bo *bo,
+                              uint32_t read_domains, uint32_t write_domain)
 {
     struct radeon_cs_int *csi = (struct radeon_cs_int *)cs;
     struct radeon_bo_int *boi = (struct radeon_bo_int *)bo;
@@ -224,13 +230,13 @@ int radeon_cs_space_check_with_bo(struct radeon_cs *cs,
     return ret;
 }
 
-int radeon_cs_space_check(struct radeon_cs *cs)
+drm_public int radeon_cs_space_check(struct radeon_cs *cs)
 {
     struct radeon_cs_int *csi = (struct radeon_cs_int *)cs;
     return radeon_cs_check_space_internal(csi, NULL);
 }
 
-void radeon_cs_space_reset_bos(struct radeon_cs *cs)
+drm_public void radeon_cs_space_reset_bos(struct radeon_cs *cs)
 {
     struct radeon_cs_int *csi = (struct radeon_cs_int *)cs;
     int i;
