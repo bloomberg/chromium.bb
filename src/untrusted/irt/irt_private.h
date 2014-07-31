@@ -15,4 +15,6 @@ extern uintptr_t g_dynamic_text_start;
 
 int irt_nameservice_lookup(const char *name, int oflag, int *out_fd);
 
+void irt_reserve_code_allocation(uintptr_t code_begin, size_t code_size);
+
 #endif  /* NATIVE_CLIENT_SRC_UNTRUSTED_IRT_IRT_PRIVATE_H_ */

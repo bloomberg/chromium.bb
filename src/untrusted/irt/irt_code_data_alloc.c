@@ -9,6 +9,7 @@
 #include <string.h>
 #include <sys/mman.h>
 
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/untrusted/irt/irt.h"
@@ -27,6 +28,16 @@ extern const char __executable_start[];
 
 static uintptr_t g_next_available_code = -1;
 static pthread_mutex_t g_code_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+void irt_reserve_code_allocation(uintptr_t code_begin, size_t code_size) {
+  CHECK(0 == pthread_mutex_lock(&g_code_mutex));
+
+  if (g_next_available_code < code_begin + code_size) {
+    g_next_available_code = code_begin + code_size;
+  }
+
+  CHECK(0 == pthread_mutex_unlock(&g_code_mutex));
+}
 
 int nacl_irt_code_data_allocate(uintptr_t hint, size_t code_size,
                                 uintptr_t data_offset, size_t data_size,
@@ -61,12 +72,7 @@ int nacl_irt_code_data_allocate(uintptr_t hint, size_t code_size,
     return EINVAL;
   }
 
-  ret = pthread_mutex_lock(&g_code_mutex);
-  if (0 != ret) {
-    NaClLog(LOG_FATAL, "nacl_irt_code_data_allocate: "
-            "Could not lock mutex, error %d (%s)\n",
-            ret, strerror(ret));
-  }
+  CHECK(0 == pthread_mutex_lock(&g_code_mutex));
   try_code_addr = g_next_available_code;
 
   if (try_code_addr == -1)
@@ -154,12 +160,7 @@ int nacl_irt_code_data_allocate(uintptr_t hint, size_t code_size,
     *begin = try_code_addr;
   }
 
-  ret = pthread_mutex_unlock(&g_code_mutex);
-  if (0 != ret) {
-    NaClLog(LOG_FATAL, "nacl_irt_code_data_allocate: "
-            "Could not unlock mutex, error %d (%s)\n",
-            ret, strerror(ret));
-  }
+  CHECK(0 == pthread_mutex_unlock(&g_code_mutex));
   return ret;
 }
 

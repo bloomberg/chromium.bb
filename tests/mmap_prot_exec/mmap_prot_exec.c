@@ -30,11 +30,15 @@
 /* Get NACL_HALT_WORD, etc. */
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
+#include "native_client/src/untrusted/irt/irt.h"
+
 #define NUM_FILE_BYTES 0x10000  /* one NaCl page */
 
 int g_mach_copy_on_write_behavior = 0;
 
 int g_prot_exec_disabled = 0;
+
+int g_enable_irt_tests = 0;
 
 /*
  * mmap PROT_EXEC test
@@ -458,6 +462,99 @@ int map_rw_ronly_file_test(int d, size_t file_size, void *test_specifics) {
   return 0;
 }
 
+struct ProtExecCodeAllocSpecifics {
+  int map_prot;
+  int map_flags;
+  int map_failure; /* if expected mmap to fail */
+  int seq_alloc; /* if expect code alloc to be sequential across mmap call.*/
+};
+
+/*
+ * Test if mmap with PROT_EXEC properly interlocks with Code/Data Allocations.
+ */
+int prot_exec_code_alloc(int d, size_t map_size, void *test_spec) {
+  const size_t page = getpagesize();
+  struct nacl_irt_code_data_alloc alloc;
+  int rc = 0;
+  uintptr_t code_addr1 = 0;
+  void *target_addr = NULL;
+  void *mmap_addr = NULL;
+  uintptr_t code_addr2 = 0;
+  const struct ProtExecCodeAllocSpecifics *params =
+      (struct ProtExecCodeAllocSpecifics *) test_spec;
+
+  if (!g_enable_irt_tests || g_prot_exec_disabled)
+    return 0;
+
+  rc = nacl_interface_query(NACL_IRT_CODE_DATA_ALLOC_v0_1,
+                            &alloc, sizeof alloc);
+  CHECK(rc == sizeof alloc);
+
+  /*
+   * Reserve a single page for a code segment as a reference point.
+   */
+  rc = alloc.allocate_code_data(0, page, 0, 0, &code_addr1);
+  CHECK(0 == rc);
+
+  /*
+   * Call mmap using the test specifics starting at the end of code_addr1.
+   */
+  target_addr = (void *) (code_addr1 + page);
+  mmap_addr = mmap(target_addr,
+                   map_size,
+                   params->map_prot,
+                   params->map_flags,
+                   d,
+                   /* offset */ 0);
+
+  /*
+   * Reserve a second page for a code segment to check for overlaps.
+   */
+  rc = alloc.allocate_code_data(0, page, 0, 0, &code_addr2);
+  CHECK(0 == rc);
+
+  /*
+   * Check mmap return result.
+   */
+  if (params->map_failure) {
+    if (MAP_FAILED != mmap_addr) {
+      fprintf(stderr, "prot_exec_code_alloc: expected map failure (%p).\n",
+              mmap_addr);
+      return 1;
+    }
+  } else {
+    if (target_addr != mmap_addr) {
+      fprintf(stderr, "prot_exec_code_alloc: mmap did not succeed (%p).\n",
+              mmap_addr);
+      return 1;
+    }
+  }
+
+  /*
+   * Check if allocated code addresses are sequential.
+   */
+  if (params->seq_alloc) {
+    if (code_addr1 + page != code_addr2) {
+      fprintf(stderr, "prot_exec_code_alloc: expected sequential allocs.\n");
+      fprintf(stderr, "  Code Address 1: 0x%08x\n", code_addr1);
+      fprintf(stderr, "  Expected Code Address 2 0x%08x, retrieved 0x%08x.\n",
+              code_addr1 + page, code_addr2);
+      return 1;
+    }
+  } else {
+    if (code_addr1 + page != (uintptr_t) mmap_addr ||
+        ((uintptr_t) mmap_addr) + map_size != code_addr2) {
+      fprintf(stderr, "prot_exec_code_alloc: expected non-sequential allocs\n");
+      fprintf(stderr, "  Code Address 1: 0x%08x\n", code_addr1);
+      fprintf(stderr, "  MMap Address: %p\n", mmap_addr);
+      fprintf(stderr, "  Code Address 2: 0x%08x\n", code_addr2);
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
 /*
  * Write out num_bytes (a multiple of 4) bytes of data.  If
  * !halt_fill, ASCII NUL is used; otherwise NACL_HALT_WORD is used.
@@ -666,6 +763,22 @@ struct MapPrivateRoSpecifics g_map_private_ro_machine_code = {
   .expected_bytes = sizeof test_machine_code,
 };
 
+struct ProtExecCodeAllocSpecifics
+    prot_exec_interlocks_with_code_alloc = {
+  .map_prot = PROT_READ | PROT_EXEC,
+  .map_flags = MAP_PRIVATE | MAP_FIXED,
+  .map_failure = FALSE,
+  .seq_alloc = FALSE,
+};
+
+struct ProtExecCodeAllocSpecifics
+    code_alloc_ignores_failed_prot_exec = {
+  .map_prot = PROT_READ | PROT_EXEC,
+  .map_flags = MAP_PRIVATE,
+  .map_failure = TRUE,
+  .seq_alloc = TRUE,
+};
+
 unsigned char const g_verse[] = "But only when these three together meet,\n"
     "As they always incline,\n"
     "And make one soul the seat,\n"
@@ -847,6 +960,28 @@ struct TestParams tests[] = {
     .test_data_start = test_machine_code,
     .test_data_size = sizeof test_machine_code,
     .test_specifics = &prot_exec_not_fixed_without_addr_hint,
+  }, {
+    .test_name = "Successful PROT_EXEC interlocks with Code/Data Allocation",
+    .test_func = prot_exec_code_alloc,
+    .open_flags = (O_RDWR | O_CREAT),
+    .file_mode = 0777,
+    .file_size = NUM_FILE_BYTES,
+    .map_size = NUM_FILE_BYTES,
+    .halt_fill = TRUE,
+    .test_data_start = test_machine_code,
+    .test_data_size = sizeof test_machine_code,
+    .test_specifics = &prot_exec_interlocks_with_code_alloc,
+  }, {
+    .test_name = "Unsuccessful PROT_EXEC does not affect Code/Data Allocation",
+    .test_func = prot_exec_code_alloc,
+    .open_flags = (O_RDWR | O_CREAT),
+    .file_mode = 0777,
+    .file_size = NUM_FILE_BYTES,
+    .map_size = NUM_FILE_BYTES,
+    .halt_fill = TRUE,
+    .test_data_start = test_machine_code,
+    .test_data_size = sizeof test_machine_code,
+    .test_specifics = &code_alloc_ignores_failed_prot_exec,
   },
 };
 
@@ -873,7 +1008,7 @@ int main(int ac, char **av) {
   int num_runs = 1;
   int test_run;
 
-  while (EOF != (opt = getopt(ac, av, "c:dmt:"))) {
+  while (EOF != (opt = getopt(ac, av, "c:dmit:"))) {
     switch (opt) {
       case 'c':
         num_runs = atoi(optarg);
@@ -884,6 +1019,9 @@ int main(int ac, char **av) {
       case 'm':
         g_mach_copy_on_write_behavior = 1;
         break;
+      case 'i':
+        g_enable_irt_tests = 1;
+        break;
       case 't':
         test_file_dir = optarg;
         break;
@@ -891,7 +1029,7 @@ int main(int ac, char **av) {
         fprintf(stderr,
                 "Usage: nacl_host_desc_mmap_test [-c run_count]\n"
                 "                                [-t test_temporary_dir]\n"
-                "                                [-dm]\n");
+                "                                [-dmi]\n");
         exit(1);
     }
   }

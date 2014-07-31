@@ -13,6 +13,9 @@ nexe_command_line = []
 if env.Bit('host_mac'):
   nexe_command_line += ['-m']
 
+if env.Bit('tests_use_irt'):
+  nexe_command_line += ['-i']
+
 env.Append(CPPDEFINES = [['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}'],
                          ['NACL_TARGET_SUBARCH', '${TARGET_SUBARCH}'],
                          ])
