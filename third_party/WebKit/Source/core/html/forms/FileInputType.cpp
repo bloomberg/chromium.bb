@@ -246,7 +246,7 @@ PassRefPtrWillBeRawPtr<FileList> FileInputType::createFileList(const Vector<File
     }
 
     for (size_t i = 0; i < size; i++)
-        fileList->append(File::createWithName(files[i].path, files[i].displayName, File::AllContentTypes));
+        fileList->append(File::createForUserProvidedFile(files[i].path, files[i].displayName));
     return fileList;
 }
 

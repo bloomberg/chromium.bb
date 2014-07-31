@@ -89,11 +89,11 @@ public:
     KURL fileSystemURL() const { ASSERT(hasValidFileSystemURL()); return m_fileSystemURL; }
 
     // Create a file with a name exposed to the author (via File.name and associated DOM properties) that differs from the one provided in the path.
-    static PassRefPtrWillBeRawPtr<File> createWithName(const String& path, const String& name, ContentTypeLookupPolicy policy = WellKnownContentTypes)
+    static PassRefPtrWillBeRawPtr<File> createForUserProvidedFile(const String& path, const String& displayName)
     {
-        if (name.isEmpty())
-            return adoptRefWillBeNoop(new File(path, policy, File::IsNotUserVisible));
-        return adoptRefWillBeNoop(new File(path, name, policy, File::IsNotUserVisible));
+        if (displayName.isEmpty())
+            return adoptRefWillBeNoop(new File(path, File::AllContentTypes, File::IsUserVisible));
+        return adoptRefWillBeNoop(new File(path, displayName, File::AllContentTypes, File::IsUserVisible));
     }
 
     static PassRefPtrWillBeRawPtr<File> createForFileSystemFile(const String& path, const String& name, ContentTypeLookupPolicy policy = WellKnownContentTypes)

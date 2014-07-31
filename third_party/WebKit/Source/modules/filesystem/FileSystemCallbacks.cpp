@@ -293,7 +293,7 @@ void SnapshotFileCallback::didCreateSnapshotFile(const FileMetadata& metadata, P
     // FIXME: We should use the snapshot metadata for all files.
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=17746
     if (m_fileSystem->type() == FileSystemTypeTemporary || m_fileSystem->type() == FileSystemTypePersistent) {
-        handleEventOrScheduleCallback(m_successCallback.release(), File::createWithName(metadata.platformPath, m_name));
+        handleEventOrScheduleCallback(m_successCallback.release(), File::createForFileSystemFile(metadata.platformPath, m_name));
     } else if (!metadata.platformPath.isEmpty()) {
         // If the platformPath in the returned metadata is given, we create a File object for the path.
         handleEventOrScheduleCallback(m_successCallback.release(), File::createForFileSystemFile(m_name, metadata));

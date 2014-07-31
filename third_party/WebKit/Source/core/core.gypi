@@ -3384,6 +3384,7 @@
             'animation/TimingInputTest.cpp',
             'animation/DeferredLegacyStyleInterpolationTest.cpp',
             'animation/LengthStyleInterpolationTest.cpp',
+            'clipboard/DataObjectTest.cpp',
             'css/AffectedByFocusTest.cpp',
             'css/CSSCalculationValueTest.cpp',
             'css/CSSFontFaceTest.cpp',

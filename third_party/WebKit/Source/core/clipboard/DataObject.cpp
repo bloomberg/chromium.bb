@@ -211,7 +211,7 @@ Vector<String> DataObject::filenames() const
 
 void DataObject::addFilename(const String& filename, const String& displayName)
 {
-    internalAddFileItem(DataObjectItem::createFromFile(File::createWithName(filename, displayName, File::AllContentTypes)));
+    internalAddFileItem(DataObjectItem::createFromFile(File::createForUserProvidedFile(filename, displayName)));
 }
 
 void DataObject::addSharedBuffer(const String& name, PassRefPtr<SharedBuffer> buffer)
