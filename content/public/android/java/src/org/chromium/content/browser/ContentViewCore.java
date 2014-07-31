@@ -248,6 +248,12 @@ public class ContentViewCore
          * started.
          */
         public void addEnteringStylesheetToTransition(String stylesheet);
+
+        /**
+         * Notifies that a navigation transition is started for a given frame.
+         * @param frameId A positive, non-zero integer identifying the navigating frame.
+         */
+        public void didStartNavigationTransitionForFrame(long frameId);
     }
 
     private final Context mContext;
@@ -3053,6 +3059,13 @@ public class ContentViewCore
     private void didDeferAfterResponseStarted() {
         if (mNavigationTransitionDelegate != null ) {
             mNavigationTransitionDelegate.didDeferAfterResponseStarted();
+        }
+    }
+
+    @CalledByNative
+    public void didStartNavigationTransitionForFrame(long frameId) {
+        if (mNavigationTransitionDelegate != null ) {
+            mNavigationTransitionDelegate.didStartNavigationTransitionForFrame(frameId);
         }
     }
 

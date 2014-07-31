@@ -298,12 +298,7 @@ class CONTENT_EXPORT RenderFrameImpl
                                  const blink::WebString& suggested_name);
   // The WebDataSource::ExtraData* is assumed to be a DocumentState* subclass.
   virtual blink::WebNavigationPolicy decidePolicyForNavigation(
-      blink::WebLocalFrame* frame,
-      blink::WebDataSource::ExtraData* extra_data,
-      const blink::WebURLRequest& request,
-      blink::WebNavigationType type,
-      blink::WebNavigationPolicy default_policy,
-      bool is_redirect);
+      const NavigationPolicyInfo& info);
   virtual blink::WebHistoryItem historyItemForNewChildFrame(
       blink::WebFrame* frame);
   virtual void willSendSubmitEvent(blink::WebLocalFrame* frame,
@@ -312,7 +307,8 @@ class CONTENT_EXPORT RenderFrameImpl
                               const blink::WebFormElement& form);
   virtual void didCreateDataSource(blink::WebLocalFrame* frame,
                                    blink::WebDataSource* datasource);
-  virtual void didStartProvisionalLoad(blink::WebLocalFrame* frame);
+  virtual void didStartProvisionalLoad(blink::WebLocalFrame* frame,
+                                       bool is_transition_navigation);
   virtual void didReceiveServerRedirectForProvisionalLoad(
       blink::WebLocalFrame* frame);
   virtual void didFailProvisionalLoad(
@@ -511,12 +507,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // Virtual since overridden by WebTestProxy for layout tests.
   virtual blink::WebNavigationPolicy DecidePolicyForNavigation(
       RenderFrame* render_frame,
-      blink::WebFrame* frame,
-      blink::WebDataSource::ExtraData* extraData,
-      const blink::WebURLRequest& request,
-      blink::WebNavigationType type,
-      blink::WebNavigationPolicy default_policy,
-      bool is_redirect);
+      const NavigationPolicyInfo& info);
   void OpenURL(blink::WebFrame* frame,
                const GURL& url,
                const Referrer& referrer,

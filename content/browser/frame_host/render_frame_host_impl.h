@@ -268,7 +268,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnFrameFocused();
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
   void OnDocumentOnLoadCompleted();
-  void OnDidStartProvisionalLoadForFrame(const GURL& url);
+  void OnDidStartProvisionalLoadForFrame(const GURL& url,
+                                         bool is_transition_navigation);
   void OnDidFailProvisionalLoadWithError(
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params);
   void OnDidFailLoadWithError(

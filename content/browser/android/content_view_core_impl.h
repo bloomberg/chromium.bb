@@ -231,6 +231,9 @@ class ContentViewCoreImpl : public ContentViewCore,
   // determine if the embedder intends to handle it.
   bool WillHandleDeferAfterResponseStarted();
 
+  // This method is invoked when a navigation transition has started.
+  void DidStartNavigationTransitionForFrame(int64 frame_id);
+
   void OnSmartClipDataExtracted(const base::string16& text,
                                 const base::string16& html,
                                 const gfx::Rect& clip_rect);

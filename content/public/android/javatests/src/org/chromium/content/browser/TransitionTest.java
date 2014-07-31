@@ -60,6 +60,10 @@ public class TransitionTest extends ContentShellTestBase {
             mTransitionStylesheets.add(stylesheet);
         }
 
+        @Override
+        public void didStartNavigationTransitionForFrame(long frameId) {
+        }
+
         public boolean getDidCallDefer() {
             return mDidCallDefer;
         }

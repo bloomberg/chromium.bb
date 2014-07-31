@@ -2432,6 +2432,15 @@ void WebContentsImpl::DidStartProvisionalLoad(
   }
 }
 
+void WebContentsImpl::DidStartNavigationTransition(
+    RenderFrameHostImpl* render_frame_host) {
+#if defined(OS_ANDROID)
+  int render_frame_id = render_frame_host->GetRoutingID();
+  ContentViewCoreImpl::FromWebContents(this)->
+      DidStartNavigationTransitionForFrame(render_frame_id);
+#endif
+}
+
 void WebContentsImpl::DidFailProvisionalLoadWithError(
     RenderFrameHostImpl* render_frame_host,
     const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {

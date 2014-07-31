@@ -33,6 +33,10 @@ class CONTENT_EXPORT NavigatorDelegate {
       bool is_error_page,
       bool is_iframe_srcdoc) {}
 
+  // The |render_frame_host| started a transition-flagged navigation.
+  virtual void DidStartNavigationTransition(
+      RenderFrameHostImpl* render_frame_host) {}
+
   // A provisional load in |render_frame_host| failed.
   virtual void DidFailProvisionalLoadWithError(
       RenderFrameHostImpl* render_frame_host,

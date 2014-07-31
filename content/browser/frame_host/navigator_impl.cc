@@ -149,7 +149,8 @@ NavigationController* NavigatorImpl::GetController() {
 
 void NavigatorImpl::DidStartProvisionalLoad(
     RenderFrameHostImpl* render_frame_host,
-    const GURL& url) {
+    const GURL& url,
+    bool is_transition_navigation) {
   bool is_error_page = (url.spec() == kUnreachableWebDataURL);
   bool is_iframe_srcdoc = (url.spec() == kAboutSrcDocURL);
   GURL validated_url(url);
@@ -190,6 +191,9 @@ void NavigatorImpl::DidStartProvisionalLoad(
       if (delegate_)
         delegate_->NotifyChangedNavigationState(content::INVALIDATE_TYPE_URL);
     }
+
+    if (delegate_ && is_transition_navigation)
+      delegate_->DidStartNavigationTransition(render_frame_host);
   }
 
   if (delegate_) {

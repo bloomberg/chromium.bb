@@ -1583,6 +1583,15 @@ bool ContentViewCoreImpl::WillHandleDeferAfterResponseStarted() {
                                                                   obj.obj());
 }
 
+void ContentViewCoreImpl::DidStartNavigationTransitionForFrame(int64 frame_id) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj(java_ref_.get(env));
+  if (obj.is_null())
+    return;
+  Java_ContentViewCore_didStartNavigationTransitionForFrame(
+      env, obj.obj(), frame_id);
+}
+
 void ContentViewCoreImpl::OnSmartClipDataExtracted(
     const base::string16& text,
     const base::string16& html,

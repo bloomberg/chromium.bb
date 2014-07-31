@@ -504,8 +504,10 @@ void RenderFrameHostImpl::OnDocumentOnLoadCompleted() {
 }
 
 void RenderFrameHostImpl::OnDidStartProvisionalLoadForFrame(
-    const GURL& url) {
-  frame_tree_node_->navigator()->DidStartProvisionalLoad(this, url);
+    const GURL& url,
+    bool is_transition_navigation) {
+  frame_tree_node_->navigator()->DidStartProvisionalLoad(
+      this, url, is_transition_navigation);
 }
 
 void RenderFrameHostImpl::OnDidFailProvisionalLoadWithError(

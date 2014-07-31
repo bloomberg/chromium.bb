@@ -438,8 +438,12 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_Detach)
 IPC_MESSAGE_ROUTED0(FrameHostMsg_FrameFocused)
 
 // Sent when the renderer starts a provisional load for a frame.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_DidStartProvisionalLoadForFrame,
-                    GURL /* url */)
+// |is_transition_navigation| signals that the frame has defined transition
+// elements which can be animated by the navigation destination to provide
+// a transition effect during load.
+IPC_MESSAGE_ROUTED2(FrameHostMsg_DidStartProvisionalLoadForFrame,
+                    GURL /* url */,
+                    bool /* is_transition_navigation */)
 
 // Sent when the renderer fails a provisional load with an error.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFailProvisionalLoadWithError,

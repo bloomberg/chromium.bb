@@ -66,9 +66,10 @@ class WebFrameTestProxy : public Base {
     Base::loadURLExternally(frame, request, policy, suggested_name);
   }
 
-  virtual void didStartProvisionalLoad(blink::WebLocalFrame* frame) {
+  virtual void didStartProvisionalLoad(blink::WebLocalFrame* frame,
+                                       bool isTransitionNavigation) {
     base_proxy_->DidStartProvisionalLoad(frame);
-    Base::didStartProvisionalLoad(frame);
+    Base::didStartProvisionalLoad(frame, isTransitionNavigation);
   }
 
   virtual void didReceiveServerRedirectForProvisionalLoad(
@@ -244,19 +245,13 @@ class WebFrameTestProxy : public Base {
   }
 
   virtual blink::WebNavigationPolicy decidePolicyForNavigation(
-      blink::WebLocalFrame* frame,
-      blink::WebDataSource::ExtraData* extra_data,
-      const blink::WebURLRequest& request,
-      blink::WebNavigationType type,
-      blink::WebNavigationPolicy default_policy,
-      bool is_redirect) {
+      const blink::WebFrameClient::NavigationPolicyInfo& info) {
     blink::WebNavigationPolicy policy = base_proxy_->DecidePolicyForNavigation(
-        frame, extra_data, request, type, default_policy, is_redirect);
+        info);
     if (policy == blink::WebNavigationPolicyIgnore)
       return policy;
 
-    return Base::decidePolicyForNavigation(
-        frame, extra_data, request, type, default_policy, is_redirect);
+    return Base::decidePolicyForNavigation(info);
   }
 
   virtual void willStartUsingPeerConnectionHandler(

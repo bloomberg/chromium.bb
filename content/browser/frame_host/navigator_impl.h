@@ -26,7 +26,8 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   // Navigator implementation.
   virtual NavigationController* GetController() OVERRIDE;
   virtual void DidStartProvisionalLoad(RenderFrameHostImpl* render_frame_host,
-                                       const GURL& url) OVERRIDE;
+                                       const GURL& url,
+                                       bool is_transition_navigation) OVERRIDE;
   virtual void DidFailProvisionalLoadWithError(
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params)

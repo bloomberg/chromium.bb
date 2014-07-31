@@ -479,6 +479,8 @@ class CONTENT_EXPORT WebContentsImpl
       const GURL& validated_url,
       bool is_error_page,
       bool is_iframe_srcdoc) OVERRIDE;
+  virtual void DidStartNavigationTransition(
+      RenderFrameHostImpl* render_frame_host) OVERRIDE;
   virtual void DidFailProvisionalLoadWithError(
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params)

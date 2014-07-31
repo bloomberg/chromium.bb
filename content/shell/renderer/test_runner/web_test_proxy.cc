@@ -1198,20 +1198,15 @@ void WebTestProxyBase::LocationChangeDone(blink::WebFrame* frame) {
 }
 
 blink::WebNavigationPolicy WebTestProxyBase::DecidePolicyForNavigation(
-    blink::WebLocalFrame* frame,
-    blink::WebDataSource::ExtraData* data,
-    const blink::WebURLRequest& request,
-    blink::WebNavigationType type,
-    blink::WebNavigationPolicy default_policy,
-    bool is_redirect) {
+    const blink::WebFrameClient::NavigationPolicyInfo& info) {
   blink::WebNavigationPolicy result;
   if (!test_interfaces_->testRunner()->policyDelegateEnabled())
-    return default_policy;
+    return info.defaultPolicy;
 
   delegate_->printMessage(std::string("Policy delegate: attempt to load ") +
-                          URLDescription(request.url()) +
+                          URLDescription(info.urlRequest.url()) +
                           " with navigation type '" +
-                          WebNavigationTypeToString(type) + "'\n");
+                          WebNavigationTypeToString(info.navigationType) + "'\n");
   if (test_interfaces_->testRunner()->policyDelegateIsPermissive())
     result = blink::WebNavigationPolicyCurrentTab;
   else
