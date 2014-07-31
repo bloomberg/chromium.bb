@@ -3516,7 +3516,6 @@ template<> inline CSSPrimitiveValue::operator FontStyle() const
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(FontStretch stretch)
     : CSSValue(PrimitiveClass)
 {
-    fprintf(stderr, "CSSPrimitiveValue::CSSPrimitiveValue(FontStretch stretch)\n");
     m_primitiveUnitType = CSS_VALUE_ID;
     switch (stretch) {
     case FontStretchUltraCondensed:
@@ -3554,7 +3553,6 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(FontStretch stretch)
 
 template<> inline CSSPrimitiveValue::operator FontStretch() const
 {
-    fprintf(stderr, "CSSPrimitiveValue::operator FontStretch\n");
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueUltraCondensed:
