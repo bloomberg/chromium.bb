@@ -400,6 +400,7 @@ public:
     virtual LayoutUnit offsetFromLogicalTopOfFirstPage() const;
 
     void positionLineBox(InlineBox*);
+    void moveWithEdgeOfInlineContainerIfNecessary(bool isHorizontal);
 
     virtual InlineBox* createInlineBox();
     void dirtyLineBoxes(bool fullLayout);

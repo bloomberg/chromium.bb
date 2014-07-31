@@ -1938,6 +1938,9 @@ void RenderBox::positionLineBox(InlineBox* box)
                 setChildNeedsLayout(MarkOnlyThis); // Just go ahead and mark the positioned object as needing layout, so it will update its position properly.
         }
 
+        if (container()->isRenderInline())
+            moveWithEdgeOfInlineContainerIfNecessary(box->isHorizontal());
+
         // Nuke the box.
         box->remove(DontMarkLineBoxes);
         box->destroy();
@@ -1945,6 +1948,17 @@ void RenderBox::positionLineBox(InlineBox* box)
         setLocation(roundedLayoutPoint(box->topLeft()));
         setInlineBoxWrapper(box);
     }
+}
+
+void RenderBox::moveWithEdgeOfInlineContainerIfNecessary(bool isHorizontal)
+{
+    ASSERT(isOutOfFlowPositioned() && container()->isRenderInline() && container()->isRelPositioned());
+    // If this object is inside a relative positioned inline and its inline position is an explicit offset from the edge of its container
+    // then it will need to move if its inline container has changed width. We do not track if the width has changed
+    // but if we are here then we are laying out lines inside it, so it probably has - mark our object for layout so that it can
+    // move to the new offset created by the new width.
+    if (!normalChildNeedsLayout() && !style()->hasStaticInlinePosition(isHorizontal))
+        setChildNeedsLayout(MarkOnlyThis);
 }
 
 void RenderBox::deleteLineBoxWrapper()

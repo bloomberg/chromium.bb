@@ -200,6 +200,7 @@ inline bool requiresLineBox(const InlineIterator& it, const LineInfo& lineInfo =
 
 inline void setStaticPositions(RenderBlockFlow* block, RenderBox* child)
 {
+    ASSERT(child->isOutOfFlowPositioned());
     // FIXME: The math here is actually not really right. It's a best-guess approximation that
     // will work for the common cases
     RenderObject* containerBlock = child->container();
@@ -210,6 +211,10 @@ inline void setStaticPositions(RenderBlockFlow* block, RenderBox* child)
         // inline so that we can obtain the value later.
         toRenderInline(containerBlock)->layer()->setStaticInlinePosition(block->startAlignedOffsetForLine(blockHeight, false));
         toRenderInline(containerBlock)->layer()->setStaticBlockPosition(blockHeight);
+
+        // If |child| is a leading or trailing positioned object this is its only opportunity to ensure it moves with an inline
+        // container changing width.
+        child->moveWithEdgeOfInlineContainerIfNecessary(child->isHorizontalWritingMode());
     }
     block->updateStaticInlinePositionForChild(child, blockHeight);
     child->layer()->setStaticBlockPosition(blockHeight);
