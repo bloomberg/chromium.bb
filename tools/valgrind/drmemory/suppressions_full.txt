@@ -2194,3 +2194,11 @@ UNADDRESSABLE ACCESS
 name=bug_398850
 ...
 wtf.dll!WTF::PlatformCondition::timedWait
+
+UNINITIALIZED READ
+name=bug_399293
+blink_web.dll!blink::InputMethodController::extendSelectionAndDelete
+blink_web.dll!blink::WebLocalFrameImpl::extendSelectionAndDelete
+content.dll!content::RenderFrameImpl::OnExtendSelectionAndDelete
+*!content::RenderViewImplTest_OnExtendSelectionAndDelete_Test::TestBody
+*!testing::internal::HandleExceptionsInMethodIfSupported<>
