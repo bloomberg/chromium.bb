@@ -177,7 +177,7 @@ def MoveAndMergeDirTree(src_dir, dest_dir):
   if not os.path.exists(dest_dir):
     # Simply move the directory over if destination doesn't exist.
     MakeParentDirectoryIfAbsent(dest_dir)
-    os.rename(src_dir, dest_dir)
+    Retry(os.rename, src_dir, dest_dir)
   else:
     # Merge each item if destination directory exists.
     for dir_item in os.listdir(src_dir):
@@ -190,13 +190,13 @@ def MoveAndMergeDirTree(src_dir, dest_dir):
         elif os.path.isfile(destination_item) and os.path.isfile(source_item):
           # Overwrite the file if they are both files.
           os.unlink(destination_item)
-          os.rename(source_item, destination_item)
+          Retry(os.rename, source_item, destination_item)
         else:
           raise OSError('Cannot move directory tree, mismatching types.'
                         ' Source - %s. Destination - %s' %
                         (source_item, destination_item))
       else:
-        os.rename(source_item, destination_item)
+        Retry(os.rename, source_item, destination_item)
 
     # Remove the directory once all the contents have been moved
     os.rmdir(src_dir)
