@@ -35,7 +35,7 @@ class WifiManagerNonChromeos : public WifiManager {
   virtual void ConnectToNetworkByID(const std::string& internal_id,
                                     const SuccessCallback& callback) OVERRIDE;
   virtual void RequestNetworkCredentials(
-      const std::string& internal_id,
+      const std::string& ssid,
       const CredentialsCallback& callback) OVERRIDE;
   virtual void AddNetworkListObserver(NetworkListObserver* observer) OVERRIDE;
   virtual void RemoveNetworkListObserver(

@@ -17,6 +17,10 @@
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 
+#if defined(ENABLE_WIFI_BOOTSTRAPPING)
+#include "chrome/browser/local_discovery/wifi/wifi_manager.h"
+#endif
+
 namespace extensions {
 
 class GcdPrivateSessionHolder;
@@ -37,6 +41,8 @@ class GcdPrivateAPI : public BrowserContextKeyedAPI,
   typedef base::Callback<void(api::gcd_private::Status status,
                               const base::DictionaryValue& response)>
       MessageResponseCallback;
+
+  typedef base::Callback<void(bool success)> SuccessCallback;
 
   class GCDApiFlowFactoryForTests {
    public:
@@ -68,6 +74,9 @@ class GcdPrivateAPI : public BrowserContextKeyedAPI,
 
   void RemoveSession(int session_id);
 
+  void RequestWifiPassword(const std::string& ssid,
+                           const SuccessCallback& callback);
+
  private:
   friend class BrowserContextKeyedAPIFactory<GcdPrivateAPI>;
 
@@ -76,6 +85,9 @@ class GcdPrivateAPI : public BrowserContextKeyedAPI,
 
   typedef std::map<int /* session id*/, linked_ptr<GcdPrivateSessionHolder> >
       GCDSessionMap;
+
+  typedef std::map<std::string /* ssid */, std::string /* password */>
+      PasswordMap;
 
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
@@ -92,6 +104,19 @@ class GcdPrivateAPI : public BrowserContextKeyedAPI,
   virtual void DeviceRemoved(const std::string& name) OVERRIDE;
   virtual void DeviceCacheFlushed() OVERRIDE;
 
+  void SendMessageInternal(int session_id,
+                           const std::string& api,
+                           const base::DictionaryValue& input,
+                           const MessageResponseCallback& callback);
+
+#if defined(ENABLE_WIFI_BOOTSTRAPPING)
+  void OnWifiPassword(const SuccessCallback& callback,
+                      bool success,
+                      const std::string& ssid,
+                      const std::string& password);
+  void StartWifiIfNotStarted();
+#endif
+
   int num_device_listeners_;
   scoped_refptr<local_discovery::ServiceDiscoverySharedClient>
       service_discovery_client_;
@@ -102,6 +127,11 @@ class GcdPrivateAPI : public BrowserContextKeyedAPI,
   int last_session_id_;
 
   content::BrowserContext* const browser_context_;
+
+#if defined(ENABLE_WIFI_BOOTSTRAPPING)
+  scoped_ptr<local_discovery::wifi::WifiManager> wifi_manager_;
+  PasswordMap wifi_passwords_;
+#endif
 };
 
 class GcdPrivateGetCloudDeviceListFunction
@@ -162,6 +192,8 @@ class GcdPrivatePrefetchWifiPasswordFunction
 
   // AsyncExtensionFunction overrides.
   virtual bool RunAsync() OVERRIDE;
+
+  void OnResponse(bool response);
 };
 
 class GcdPrivateEstablishSessionFunction : public ChromeAsyncExtensionFunction {

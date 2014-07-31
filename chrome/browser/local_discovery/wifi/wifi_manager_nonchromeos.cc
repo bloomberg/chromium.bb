@@ -70,7 +70,7 @@ class WifiManagerNonChromeos::WifiServiceWrapper
                             const WifiManager::SuccessCallback& callback);
 
   void RequestNetworkCredentials(
-      const std::string& network_guid,
+      const std::string& ssid,
       const WifiManager::CredentialsCallback& callback);
 
  private:
@@ -278,34 +278,38 @@ void WifiManagerNonChromeos::WifiServiceWrapper::OnConnectToNetworkTimeout() {
 }
 
 void WifiManagerNonChromeos::WifiServiceWrapper::RequestNetworkCredentials(
-    const std::string& network_guid,
+    const std::string& ssid,
     const WifiManager::CredentialsCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   bool success = true;
-  std::string ssid;
+  std::string guid;
   std::string key;
 
 #if defined(OS_WIN)
   NOTIMPLEMENTED();
   success = false;
 #else
-  base::DictionaryValue properties;
-  std::string error_string;
-  wifi_service_->GetProperties(network_guid, &properties, &error_string);
+  NetworkPropertiesList network_list;
 
-  if (!error_string.empty()) {
-    LOG(ERROR) << "Could not get network properties: " << error_string;
-    success = false;
+  GetSSIDListInternal(&network_list);
+
+  for (NetworkPropertiesList::iterator i = network_list.begin();
+       i != network_list.end();
+       i++) {
+    if (i->ssid == ssid) {
+      guid = i->guid;
+      break;
+    }
   }
 
-  if (!properties.GetString(onc::network_config::kName, &ssid)) {
-    LOG(ERROR) << "Could not get network SSID";
+  if (guid.empty()) {
     success = false;
   }
 
   if (success) {
-    wifi_service_->GetKeyFromSystem(network_guid, &key, &error_string);
+    std::string error_string;
+    wifi_service_->GetKeyFromSystem(guid, &key, &error_string);
 
     if (!error_string.empty()) {
       LOG(ERROR) << "Could not get key from system: " << error_string;
@@ -504,14 +508,14 @@ void WifiManagerNonChromeos::ConnectToNetworkByID(
 }
 
 void WifiManagerNonChromeos::RequestNetworkCredentials(
-    const std::string& internal_id,
+    const std::string& ssid,
     const CredentialsCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&WifiServiceWrapper::RequestNetworkCredentials,
                  wifi_wrapper_->AsWeakPtr(),
-                 internal_id,
+                 ssid,
                  callback));
 }
 

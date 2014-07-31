@@ -33,6 +33,14 @@ const char kIDPrefixCloudPrinter[] = "cloudprint:";
 const char kIDPrefixGcd[] = "gcd:";
 const char kIDPrefixMdns[] = "mdns:";
 
+#if defined(ENABLE_WIFI_BOOTSTRAPPING)
+const char kPrivatAPISetup[] = "/privet/v3/setup/start";
+const char kPrivetKeyWifi[] = "wifi";
+const char kPrivetKeyPassphrase[] = "passphrase";
+const char kPrivetKeySSID[] = "ssid";
+const char kPrivetKeyPassphraseDotted[] = "wifi.passphrase";
+#endif  // ENABLE_WIFI_BOOTSTRAPPING
+
 scoped_ptr<Event> MakeDeviceStateChangedEvent(
     const gcd_private::GCDDevice& device) {
   scoped_ptr<base::ListValue> params =
@@ -270,6 +278,39 @@ void GcdPrivateAPI::SendMessage(int session_id,
                                 const std::string& api,
                                 const base::DictionaryValue& input,
                                 MessageResponseCallback callback) {
+  const base::DictionaryValue* input_actual = &input;
+#if defined(ENABLE_WIFI_BOOTSTRAPPING)
+  scoped_ptr<base::DictionaryValue> input_cloned;
+
+  if (api == kPrivatAPISetup) {
+    const base::DictionaryValue* wifi = NULL;
+
+    if (input.GetDictionary(kPrivetKeyWifi, &wifi) &&
+        !wifi->HasKey(kPrivetKeyPassphrase)) {
+      // If the message is a setup message, has a wifi section, try sending the
+      // passphrase.
+      std::string ssid;
+
+      if (!wifi->GetString(kPrivetKeySSID, &ssid)) {
+        callback.Run(gcd_private::STATUS_SETUPPARSEERROR,
+                     base::DictionaryValue());
+        return;
+      }
+
+      PasswordMap::iterator found = wifi_passwords_.find(ssid);
+      if (found == wifi_passwords_.end()) {
+        callback.Run(gcd_private::STATUS_WIFIPASSWORDERROR,
+                     base::DictionaryValue());
+        return;
+      }
+
+      input_cloned.reset(input.DeepCopy());
+      input_cloned->SetString(kPrivetKeyPassphraseDotted, found->second);
+      input_actual = input_cloned.get();
+    }
+  }
+#endif
+
   GCDSessionMap::iterator found = sessions_.find(session_id);
 
   if (found == sessions_.end()) {
@@ -278,8 +319,42 @@ void GcdPrivateAPI::SendMessage(int session_id,
     return;
   }
 
-  found->second->SendMessage(api, input, callback);
+  found->second->SendMessage(api, *input_actual, callback);
 }
+
+void GcdPrivateAPI::RequestWifiPassword(const std::string& ssid,
+                                        const SuccessCallback& callback) {
+#if defined(ENABLE_WIFI_BOOTSTRAPPING)
+  StartWifiIfNotStarted();
+  wifi_manager_->RequestNetworkCredentials(
+      ssid,
+      base::Bind(
+          &GcdPrivateAPI::OnWifiPassword, base::Unretained(this), callback));
+#else
+  callback.Run(false);
+#endif
+}
+
+#if defined(ENABLE_WIFI_BOOTSTRAPPING)
+void GcdPrivateAPI::OnWifiPassword(const SuccessCallback& callback,
+                                   bool success,
+                                   const std::string& ssid,
+                                   const std::string& password) {
+  if (success) {
+    wifi_passwords_[ssid] = password;
+  }
+
+  callback.Run(success);
+}
+
+void GcdPrivateAPI::StartWifiIfNotStarted() {
+  if (!wifi_manager_) {
+    wifi_manager_ = local_discovery::wifi::WifiManager::Create();
+    wifi_manager_->Start();
+  }
+}
+
+#endif
 
 void GcdPrivateAPI::RemoveSession(int session_id) {
   sessions_.erase(session_id);
@@ -514,7 +589,30 @@ GcdPrivatePrefetchWifiPasswordFunction::
 }
 
 bool GcdPrivatePrefetchWifiPasswordFunction::RunAsync() {
-  return false;
+  scoped_ptr<gcd_private::PrefetchWifiPassword::Params> params =
+      gcd_private::PrefetchWifiPassword::Params::Create(*args_);
+
+  if (!params)
+    return false;
+
+  GcdPrivateAPI* gcd_api =
+      BrowserContextKeyedAPIFactory<GcdPrivateAPI>::Get(GetProfile());
+
+  if (!gcd_api)
+    return false;
+
+  gcd_api->RequestWifiPassword(
+      params->ssid,
+      base::Bind(&GcdPrivatePrefetchWifiPasswordFunction::OnResponse, this));
+
+  return true;
+}
+
+void GcdPrivatePrefetchWifiPasswordFunction::OnResponse(bool response) {
+  scoped_ptr<base::FundamentalValue> response_value(
+      new base::FundamentalValue(response));
+  SetResult(response_value.release());
+  SendResponse(true);
 }
 
 GcdPrivateEstablishSessionFunction::GcdPrivateEstablishSessionFunction() {

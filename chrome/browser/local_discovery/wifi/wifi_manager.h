@@ -78,7 +78,7 @@ class WifiManager {
 
   // Connect to a configured network with a given network ID. |callback| will be
   // called once the network is connected or after it has failed to connect.
-  virtual void ConnectToNetworkByID(const std::string& internal_id,
+  virtual void ConnectToNetworkByID(const std::string& ssid,
                                     const SuccessCallback& callback) = 0;
 
   // Reequest the credentials for a network with a given network ID from the
