@@ -133,9 +133,6 @@ extern const char kDisableDomainBlockingFor3DAPIs[] =
 // Disable experimental WebGL support.
 const char kDisableExperimentalWebGL[]      = "disable-webgl";
 
-// Disable the fast text autosizing implementation.
-const char kDisableFastTextAutosizing[]     = "disable-fast-text-autosizing";
-
 // Disable FileSystem API.
 const char kDisableFileSystem[]             = "disable-file-system";
 
@@ -366,9 +363,6 @@ const char kEnableExperimentalWebPlatformFeatures[] =
 // By default, cookies are not allowed on file://. They are needed for testing,
 // for example page cycler and layout tests. See bug 1157243.
 const char kEnableFileCookies[]             = "enable-file-cookies";
-
-// Enable the fast text autosizing implementation.
-const char kEnableFastTextAutosizing[]      = "enable-fast-text-autosizing";
 
 // Enables TRACE for GL calls in the renderer.
 const char kEnableGpuClientTracing[]        = "enable-gpu-client-tracing";

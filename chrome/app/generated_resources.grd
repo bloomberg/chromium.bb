@@ -5648,12 +5648,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_ACCESSIBILITY_SCRIPT_INJECTION_DESCRIPTION" desc="Description of the flag to enable script injection for accessibility.">
           Enable script injection instead of native Android accessibility.
         </message>
-        <message name="IDS_FLAGS_ENABLE_FAST_TEXT_AUTOSIZING_NAME" desc="Name of the flag to enable fast text autosizing.">
-          Enable fast text autosizing
-        </message>
-        <message name="IDS_FLAGS_ENABLE_FAST_TEXT_AUTOSIZING_DESCRIPTION" desc="Description of the flag to enable fast text autosizing.">
-          Faster text autosizing implementation.
-        </message>
         <message name="IDS_FLAGS_DISABLE_CAST_NAME" desc="Name of the flag to disable Chromecast support.">
           Disable experimental Chromecast support
         </message>
