@@ -564,14 +564,12 @@ public class ContentViewCore
         return new ImeAdapter(mInputMethodManagerWrapper,
                 new ImeAdapter.ImeAdapterDelegate() {
                     @Override
-                    public void onImeEvent(boolean isFinish) {
+                    public void onImeEvent() {
                         if (mPopupZoomer.isShowing()) {
                             mPopupZoomer.hide(true);
                         }
                         getContentViewClient().onImeEvent();
-                        if (!isFinish) {
-                            hideTextHandles();
-                        }
+                        hideTextHandles();
                     }
 
                     @Override

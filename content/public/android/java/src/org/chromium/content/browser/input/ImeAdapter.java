@@ -53,9 +53,9 @@ public class ImeAdapter {
      */
     public interface ImeAdapterDelegate {
         /**
-         * @param isFinish whether the event is occurring because input is finished.
+         * Called to notify the delegate about synthetic/real key events before sending to renderer.
          */
-        void onImeEvent(boolean isFinish);
+        void onImeEvent();
 
         /**
          * Called when a request to hide the keyboard is sent to InputMethodManager.
@@ -385,11 +385,9 @@ public class ImeAdapter {
     boolean checkCompositionQueueAndCallNative(CharSequence text, int newCursorPosition,
             boolean isCommit) {
         if (mNativeImeAdapterAndroid == 0) return false;
-        String textStr = text.toString();
+        mViewEmbedder.onImeEvent();
 
-        // Committing an empty string finishes the current composition.
-        boolean isFinish = textStr.isEmpty();
-        mViewEmbedder.onImeEvent(isFinish);
+        String textStr = text.toString();
         int keyCode = shouldSendKeyEventWithKeyCode(textStr);
         long timeStampMs = SystemClock.uptimeMillis();
 
@@ -460,7 +458,7 @@ public class ImeAdapter {
             // event.
             return false;
         }
-        mViewEmbedder.onImeEvent(false);
+        mViewEmbedder.onImeEvent();
         return nativeSendKeyEvent(mNativeImeAdapterAndroid, event, event.getAction(),
                 getModifiers(event.getMetaState()), event.getEventTime(), event.getKeyCode(),
                              /*isSystemKey=*/false, event.getUnicodeChar());
@@ -483,7 +481,7 @@ public class ImeAdapter {
      * @return Whether the native counterpart of ImeAdapter received the call.
      */
     boolean deleteSurroundingText(int beforeLength, int afterLength) {
-        mViewEmbedder.onImeEvent(false);
+        mViewEmbedder.onImeEvent();
         if (mNativeImeAdapterAndroid == 0) return false;
         nativeDeleteSurroundingText(mNativeImeAdapterAndroid, beforeLength, afterLength);
         return true;

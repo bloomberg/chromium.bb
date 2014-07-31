@@ -187,7 +187,7 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
 
     private static class TestImeAdapterDelegate implements ImeAdapterDelegate {
         @Override
-        public void onImeEvent(boolean isFinish) {}
+        public void onImeEvent() {}
 
         @Override
         public void onDismissInput() {}
