@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //media/cast:test_support
       'target_name': 'cast_test_utility',
       'type': 'static_library',
       'include_dirs': [
@@ -51,6 +52,7 @@
       ], # source
     },
     {
+      # GN version: //media/cast:cast_unittests
       'target_name': 'cast_unittests',
       'type': '<(gtest_target_type)',
       'include_dirs': [
@@ -268,6 +270,7 @@
       'includes': ['../../build/protoc.gypi'],
     },
     {
+      # GN version: //media/cast:generate_barcode_video
       'target_name': 'generate_barcode_video',
       'type': 'executable',
       'include_dirs': [
@@ -283,6 +286,7 @@
       ],
     },
     {
+      # GN version: //media/cast:generate_timecode_audio
       'target_name': 'generate_timecode_audio',
       'type': 'executable',
       'include_dirs': [
@@ -300,6 +304,7 @@
       ],
     },
     {
+      # GN version: //media/cast:udp_proxy
       'target_name': 'udp_proxy',
       'type': 'executable',
       'include_dirs': [

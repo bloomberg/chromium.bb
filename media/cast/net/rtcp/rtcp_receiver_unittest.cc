@@ -90,7 +90,7 @@ class RtcpMessageVerification : public MockRtcpReceiverFeedback {
     ++packet_it;
     EXPECT_EQ(kLostPacketId3, *packet_it);
     ++frame_it;
-    EXPECT_EQ(frame_it, cast_message.missing_frames_and_packets.end());
+    EXPECT_TRUE(frame_it == cast_message.missing_frames_and_packets.end());
     called_on_received_cast_message_ = true;
   }
 

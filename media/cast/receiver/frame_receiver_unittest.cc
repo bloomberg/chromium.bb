@@ -113,7 +113,7 @@ class FrameReceiverTest : public ::testing::Test {
   void FeedOneFrameIntoReceiver() {
     // Note: For testing purposes, a frame consists of only a single packet.
     receiver_->ProcessParsedPacket(
-        rtp_header_, payload_.data(), payload_.size());
+        rtp_header_, &payload_[0], payload_.size());
   }
 
   void FeedLipSyncInfoIntoReceiver() {

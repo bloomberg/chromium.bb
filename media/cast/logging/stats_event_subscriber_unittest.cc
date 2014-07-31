@@ -91,7 +91,7 @@ TEST_F(StatsEventSubscriberTest, Capture) {
 
   StatsEventSubscriber::StatsMap::iterator it =
       stats_map.find(StatsEventSubscriber::CAPTURE_FPS);
-  ASSERT_NE(it, stats_map.end());
+  ASSERT_TRUE(it != stats_map.end());
 
   base::TimeDelta duration = end_time - start_time;
   EXPECT_DOUBLE_EQ(
@@ -131,7 +131,7 @@ TEST_F(StatsEventSubscriberTest, Encode) {
 
   StatsEventSubscriber::StatsMap::iterator it =
       stats_map.find(StatsEventSubscriber::ENCODE_FPS);
-  ASSERT_NE(it, stats_map.end());
+  ASSERT_TRUE(it != stats_map.end());
 
   base::TimeDelta duration = end_time - start_time;
   EXPECT_DOUBLE_EQ(
@@ -139,7 +139,7 @@ TEST_F(StatsEventSubscriberTest, Encode) {
       static_cast<double>(num_frames) / duration.InMillisecondsF() * 1000);
 
   it = stats_map.find(StatsEventSubscriber::ENCODE_KBPS);
-  ASSERT_NE(it, stats_map.end());
+  ASSERT_TRUE(it != stats_map.end());
 
   EXPECT_DOUBLE_EQ(it->second,
               static_cast<double>(total_size) / duration.InMillisecondsF() * 8);
@@ -170,7 +170,7 @@ TEST_F(StatsEventSubscriberTest, Decode) {
 
   StatsEventSubscriber::StatsMap::iterator it =
       stats_map.find(StatsEventSubscriber::DECODE_FPS);
-  ASSERT_NE(it, stats_map.end());
+  ASSERT_TRUE(it != stats_map.end());
 
   base::TimeDelta duration = end_time - start_time;
   EXPECT_DOUBLE_EQ(
@@ -207,7 +207,7 @@ TEST_F(StatsEventSubscriberTest, PlayoutDelay) {
 
   StatsEventSubscriber::StatsMap::iterator it =
       stats_map.find(StatsEventSubscriber::AVG_PLAYOUT_DELAY_MS);
-  ASSERT_NE(it, stats_map.end());
+  ASSERT_TRUE(it != stats_map.end());
 
   EXPECT_DOUBLE_EQ(
       it->second, static_cast<double>(total_delay_ms) / num_frames);
@@ -252,7 +252,7 @@ TEST_F(StatsEventSubscriberTest, E2ELatency) {
 
   StatsEventSubscriber::StatsMap::iterator it =
       stats_map.find(StatsEventSubscriber::AVG_E2E_LATENCY_MS);
-  ASSERT_NE(it, stats_map.end());
+  ASSERT_TRUE(it != stats_map.end());
 
   EXPECT_DOUBLE_EQ(
       it->second, total_latency.InMillisecondsF() / num_frames);
@@ -370,27 +370,27 @@ TEST_F(StatsEventSubscriberTest, Packets) {
   // and PACKET_LOSS_FRACTION.
   StatsEventSubscriber::StatsMap::iterator it =
       stats_map.find(StatsEventSubscriber::AVG_NETWORK_LATENCY_MS);
-  ASSERT_NE(it, stats_map.end());
+  ASSERT_TRUE(it != stats_map.end());
 
   EXPECT_DOUBLE_EQ(
       it->second,
       total_latency.InMillisecondsF() / num_latency_recorded_packets);
 
   it = stats_map.find(StatsEventSubscriber::TRANSMISSION_KBPS);
-  ASSERT_NE(it, stats_map.end());
+  ASSERT_TRUE(it != stats_map.end());
 
   EXPECT_DOUBLE_EQ(it->second,
               static_cast<double>(total_size) / duration.InMillisecondsF() * 8);
 
   it = stats_map.find(StatsEventSubscriber::RETRANSMISSION_KBPS);
-  ASSERT_NE(it, stats_map.end());
+  ASSERT_TRUE(it != stats_map.end());
 
   EXPECT_DOUBLE_EQ(it->second,
               static_cast<double>(retransmit_total_size) /
                   duration.InMillisecondsF() * 8);
 
   it = stats_map.find(StatsEventSubscriber::PACKET_LOSS_FRACTION);
-  ASSERT_NE(it, stats_map.end());
+  ASSERT_TRUE(it != stats_map.end());
 
   EXPECT_DOUBLE_EQ(
       it->second,

@@ -5,6 +5,18 @@
 import("//third_party/protobuf/proto_library.gni")
 
 # GYP version: media/cast/cast.gyp:cast_logging_proto
+source_set("proto") {
+  deps = [
+    ":cast_network_simulation_proto",
+  ]
+  direct_dependent_configs = [
+    "//third_party/protobuf:protobuf_config"
+  ]
+  forward_dependent_configs_from = [
+    ":cast_network_simulation_proto",
+  ]
+}
+
 proto_library("cast_network_simulation_proto") {
   visibility = ":proto"
   sources = [

@@ -14,6 +14,7 @@
   ],
   'targets': [
     {
+      # GN version: //media/cast:common
       'target_name': 'cast_base',
       'type': 'static_library',
       'include_dirs': [
@@ -80,6 +81,7 @@
       'includes': ['../../build/protoc.gypi'],
     },
     {
+      # GN version: //media/cast:receiver
       'target_name': 'cast_receiver',
       'type': 'static_library',
       'include_dirs': [
@@ -122,6 +124,7 @@
       ], # source
     },
     {
+      # GN version: //media/cast:sender
       'target_name': 'cast_sender',
       'type': 'static_library',
       'include_dirs': [
@@ -164,6 +167,7 @@
       ], # source
     },
     {
+      # GN version: //media/cast:net
       'target_name': 'cast_net',
       'type': 'static_library',
       'include_dirs': [

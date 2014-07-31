@@ -48,8 +48,10 @@ class TestRtcpTransport : public PacedPacketSender {
   virtual bool SendRtcpPacket(uint32 ssrc,
                               PacketRef packet) OVERRIDE {
     EXPECT_EQ(expected_packet_.size(), packet->data.size());
-    EXPECT_EQ(0, memcmp(expected_packet_.data(),
-                        packet->data.data(),
+    if (expected_packet_.size() != packet->data.size())
+      return false;
+    EXPECT_EQ(0, memcmp(&expected_packet_[0],
+                        &packet->data[0],
                         packet->data.size()));
     packet_count_++;
     return true;

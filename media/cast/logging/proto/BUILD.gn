@@ -12,6 +12,9 @@ source_set("proto") {
   deps = [
     ":cast_logging_proto",
   ]
+  forward_dependent_configs_from = [
+    ":cast_logging_proto",
+  ]
 }
 
 proto_library("cast_logging_proto") {

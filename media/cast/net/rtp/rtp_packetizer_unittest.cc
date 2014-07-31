@@ -63,7 +63,7 @@ class TestRtpPacketTransport : public PacketSender {
 
   virtual bool SendPacket(PacketRef packet, const base::Closure& cb) OVERRIDE {
     ++packets_sent_;
-    RtpHeaderParser parser(packet->data.data(), packet->data.size());
+    RtpHeaderParser parser(&packet->data[0], packet->data.size());
     RtpCastTestHeader rtp_header;
     parser.Parse(&rtp_header);
     VerifyRtpHeader(rtp_header);

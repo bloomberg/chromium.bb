@@ -29,7 +29,7 @@ TEST_F(FrameBufferTest, OnePacketInsertSanity) {
   rtp_header_.is_key_frame = true;
   rtp_header_.frame_id = 5;
   rtp_header_.reference_frame_id = 5;
-  buffer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_);
+  buffer_.InsertPacket(&payload_[0], payload_.size(), rtp_header_);
   EncodedFrame frame;
   EXPECT_TRUE(buffer_.AssembleEncodedFrame(&frame));
   EXPECT_EQ(EncodedFrame::KEY, frame.dependency);
@@ -45,7 +45,7 @@ TEST_F(FrameBufferTest, EmptyBuffer) {
 }
 
 TEST_F(FrameBufferTest, DefaultOnePacketFrame) {
-  buffer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_);
+  buffer_.InsertPacket(&payload_[0], payload_.size(), rtp_header_);
   EXPECT_TRUE(buffer_.Complete());
   EXPECT_FALSE(buffer_.is_key_frame());
   EncodedFrame frame;
@@ -56,11 +56,11 @@ TEST_F(FrameBufferTest, DefaultOnePacketFrame) {
 TEST_F(FrameBufferTest, MultiplePacketFrame) {
   rtp_header_.is_key_frame = true;
   rtp_header_.max_packet_id = 2;
-  buffer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_);
+  buffer_.InsertPacket(&payload_[0], payload_.size(), rtp_header_);
   ++rtp_header_.packet_id;
-  buffer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_);
+  buffer_.InsertPacket(&payload_[0], payload_.size(), rtp_header_);
   ++rtp_header_.packet_id;
-  buffer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_);
+  buffer_.InsertPacket(&payload_[0], payload_.size(), rtp_header_);
   ++rtp_header_.packet_id;
   EXPECT_TRUE(buffer_.Complete());
   EXPECT_TRUE(buffer_.is_key_frame());
@@ -71,19 +71,19 @@ TEST_F(FrameBufferTest, MultiplePacketFrame) {
 
 TEST_F(FrameBufferTest, IncompleteFrame) {
   rtp_header_.max_packet_id = 4;
-  buffer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_);
+  buffer_.InsertPacket(&payload_[0], payload_.size(), rtp_header_);
   ++rtp_header_.packet_id;
-  buffer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_);
+  buffer_.InsertPacket(&payload_[0], payload_.size(), rtp_header_);
   ++rtp_header_.packet_id;
   // Increment again - skip packet #2.
   ++rtp_header_.packet_id;
-  buffer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_);
+  buffer_.InsertPacket(&payload_[0], payload_.size(), rtp_header_);
   ++rtp_header_.packet_id;
-  buffer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_);
+  buffer_.InsertPacket(&payload_[0], payload_.size(), rtp_header_);
   EXPECT_FALSE(buffer_.Complete());
   // Insert missing packet.
   rtp_header_.packet_id = 2;
-  buffer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_);
+  buffer_.InsertPacket(&payload_[0], payload_.size(), rtp_header_);
   EXPECT_TRUE(buffer_.Complete());
 }
 
