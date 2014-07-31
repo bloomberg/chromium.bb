@@ -33,6 +33,10 @@ crbug.com/371264 virtual/deferred/inspector/timeline/timeline-window-filter.html
 crbug.com/371264 virtual/implsidepainting/inspector/timeline/timeline-window-filter.html [ Timeout ]
 # crbug.com/371264 also includes inspector/sources/debugger/callstack-placards-discarded.html as a test which times out, but now this is listed as crbug.com/376188.
 
+# The leak detector doesn't wait for worker threads to completely clean up, so leaks are expected.
+crbug.com/301515 fast/workers/worker-terminate.html [ Leak ]
+crbug.com/301515 inspector-protocol/debugger/debugger-terminate-dedicated-worker-while-paused.html [ Leak ]
+
 # -----------------------------------------------------------------
 # Untriaged but known real leaks.
 # -----------------------------------------------------------------

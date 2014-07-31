@@ -50,7 +50,9 @@ public:
     {
         // Process all queued debugger commands. WorkerThread is certainly
         // alive if this task is being executed.
-        while (MessageQueueMessageReceived == m_thread->runDebuggerTask(WorkerRunLoop::DontWaitForMessage)) { }
+        m_thread->willEnterNestedLoop();
+        while (MessageQueueMessageReceived == m_thread->runDebuggerTask(WorkerThread::DontWaitForMessage)) { }
+        m_thread->didLeaveNestedLoop();
     }
 
 private:
