@@ -38,6 +38,7 @@ class CrosDisksClient;
 class CryptohomeClient;
 class DBusClient;
 class DebugDaemonClient;
+class EasyUnlockClient;
 class GsmSMSClient;
 class ImageBurnerClient;
 class IntrospectableClient;
@@ -138,6 +139,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   virtual CrosDisksClient* GetCrosDisksClient() = 0;
   virtual CryptohomeClient* GetCryptohomeClient() = 0;
   virtual DebugDaemonClient* GetDebugDaemonClient() = 0;
+  virtual EasyUnlockClient* GetEasyUnlockClient() = 0;
   virtual GsmSMSClient* GetGsmSMSClient() = 0;
   virtual ImageBurnerClient* GetImageBurnerClient() = 0;
   virtual IntrospectableClient* GetIntrospectableClient() = 0;

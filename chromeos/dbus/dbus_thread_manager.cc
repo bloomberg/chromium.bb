@@ -24,6 +24,7 @@
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_thread_manager_observer.h"
 #include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/dbus/easy_unlock_client.h"
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/gsm_sms_client.h"
 #include "chromeos/dbus/image_burner_client.h"
@@ -80,6 +81,7 @@ class DBusClientBundle {
     cros_disks_client_.reset(CrosDisksClient::Create(type));
     cryptohome_client_.reset(CryptohomeClient::Create());
     debug_daemon_client_.reset(DebugDaemonClient::Create());
+    easy_unlock_client_.reset(EasyUnlockClient::Create());
     lorgnette_manager_client_.reset(LorgnetteManagerClient::Create());
     shill_manager_client_.reset(ShillManagerClient::Create());
     shill_device_client_.reset(ShillDeviceClient::Create());
@@ -145,6 +147,9 @@ class DBusClientBundle {
   }
   DebugDaemonClient* debug_daemon_client() {
     return debug_daemon_client_.get();
+  }
+  EasyUnlockClient* easy_unlock_client() {
+    return easy_unlock_client_.get();
   }
   LorgnetteManagerClient* lorgnette_manager_client() {
     return lorgnette_manager_client_.get();
@@ -225,6 +230,7 @@ class DBusClientBundle {
   scoped_ptr<CrosDisksClient> cros_disks_client_;
   scoped_ptr<CryptohomeClient> cryptohome_client_;
   scoped_ptr<DebugDaemonClient> debug_daemon_client_;
+  scoped_ptr<EasyUnlockClient> easy_unlock_client_;
   scoped_ptr<LorgnetteManagerClient> lorgnette_manager_client_;
   scoped_ptr<ShillDeviceClient> shill_device_client_;
   scoped_ptr<ShillIPConfigClient> shill_ipconfig_client_;
@@ -361,6 +367,9 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     return client_bundle_->debug_daemon_client();
   }
 
+  virtual EasyUnlockClient* GetEasyUnlockClient() OVERRIDE {
+    return client_bundle_->easy_unlock_client();
+  }
   virtual LorgnetteManagerClient* GetLorgnetteManagerClient() OVERRIDE {
     return client_bundle_->lorgnette_manager_client();
   }
@@ -580,6 +589,7 @@ void DBusThreadManager::InitializeClients() {
   InitClient(g_dbus_thread_manager->GetCrosDisksClient());
   InitClient(g_dbus_thread_manager->GetCryptohomeClient());
   InitClient(g_dbus_thread_manager->GetDebugDaemonClient());
+  InitClient(g_dbus_thread_manager->GetEasyUnlockClient());
   InitClient(g_dbus_thread_manager->GetGsmSMSClient());
   InitClient(g_dbus_thread_manager->GetImageBurnerClient());
   InitClient(g_dbus_thread_manager->GetIntrospectableClient());

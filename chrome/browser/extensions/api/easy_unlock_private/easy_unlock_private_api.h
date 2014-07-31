@@ -8,9 +8,14 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 
 // Implementations for chrome.easyUnlockPrivate API functions.
+
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 namespace api {
@@ -18,6 +23,31 @@ namespace api {
 namespace easy_unlock {
 struct SeekDeviceResult;
 }  // easy_unlock
+
+class EasyUnlockPrivateCryptoDelegate;
+
+class EasyUnlockPrivateAPI : public BrowserContextKeyedAPI {
+ public:
+  static BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI>*
+      GetFactoryInstance();
+
+  explicit EasyUnlockPrivateAPI(content::BrowserContext* context);
+  virtual ~EasyUnlockPrivateAPI();
+
+  EasyUnlockPrivateCryptoDelegate* crypto_delegate() {
+    return crypto_delegate_.get();
+  }
+
+ private:
+  friend class BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI>;
+
+  // BrowserContextKeyedAPI implementation.
+  static const char* service_name() { return "EasyUnlockPrivate"; }
+
+  scoped_ptr<EasyUnlockPrivateCryptoDelegate> crypto_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateAPI);
+};
 
 class EasyUnlockPrivateGetStringsFunction : public SyncExtensionFunction {
  public:

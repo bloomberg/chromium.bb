@@ -5,10 +5,13 @@
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_api.h"
 
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_bluetooth_util.h"
+#include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_crypto_delegate.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -18,6 +21,32 @@
 
 namespace extensions {
 namespace api {
+
+namespace {
+
+static base::LazyInstance<BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// Utility method for getting the API's crypto delegate.
+EasyUnlockPrivateCryptoDelegate* GetCryptoDelegate(
+    content::BrowserContext* context) {
+  return BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI>::Get(context)
+             ->crypto_delegate();
+}
+
+}  // namespace
+
+// static
+BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI>*
+    EasyUnlockPrivateAPI::GetFactoryInstance() {
+  return g_factory.Pointer();
+}
+
+EasyUnlockPrivateAPI::EasyUnlockPrivateAPI(content::BrowserContext* context)
+    : crypto_delegate_(EasyUnlockPrivateCryptoDelegate::Create()) {
+}
+
+EasyUnlockPrivateAPI::~EasyUnlockPrivateAPI() {}
 
 EasyUnlockPrivateGetStringsFunction::EasyUnlockPrivateGetStringsFunction() {
 }
@@ -37,10 +66,10 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
       "notificationTitle",
       l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_NOTIFICATION_TITLE,
                                  device_type));
-
   SetResult(strings.release());
   return true;
 }
+
 
 EasyUnlockPrivatePerformECDHKeyAgreementFunction::
 EasyUnlockPrivatePerformECDHKeyAgreementFunction() {}
@@ -49,11 +78,21 @@ EasyUnlockPrivatePerformECDHKeyAgreementFunction::
 ~EasyUnlockPrivatePerformECDHKeyAgreementFunction() {}
 
 bool EasyUnlockPrivatePerformECDHKeyAgreementFunction::RunAsync() {
-  return false;
+  scoped_ptr<easy_unlock_private::PerformECDHKeyAgreement::Params> params =
+      easy_unlock_private::PerformECDHKeyAgreement::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  GetCryptoDelegate(browser_context())->PerformECDHKeyAgreement(
+      params->private_key,
+      params->public_key,
+      base::Bind(&EasyUnlockPrivatePerformECDHKeyAgreementFunction::OnData,
+                 this));
+  return true;
 }
 
 void EasyUnlockPrivatePerformECDHKeyAgreementFunction::OnData(
     const std::string& secret_key) {
+  // TODO(tbarzic): Improve error handling.
   if (!secret_key.empty()) {
     results_ = easy_unlock_private::PerformECDHKeyAgreement::Results::Create(
         secret_key);
@@ -68,12 +107,16 @@ EasyUnlockPrivateGenerateEcP256KeyPairFunction::
 ~EasyUnlockPrivateGenerateEcP256KeyPairFunction() {}
 
 bool EasyUnlockPrivateGenerateEcP256KeyPairFunction::RunAsync() {
-  return false;
+  GetCryptoDelegate(browser_context())->GenerateEcP256KeyPair(
+      base::Bind(&EasyUnlockPrivateGenerateEcP256KeyPairFunction::OnData,
+                 this));
+  return true;
 }
 
 void EasyUnlockPrivateGenerateEcP256KeyPairFunction::OnData(
-    const std::string& public_key,
-    const std::string& private_key) {
+    const std::string& private_key,
+    const std::string& public_key) {
+  // TODO(tbarzic): Improve error handling.
   if (!public_key.empty() && !private_key.empty()) {
     results_ = easy_unlock_private::GenerateEcP256KeyPair::Results::Create(
         public_key, private_key);
@@ -88,11 +131,29 @@ EasyUnlockPrivateCreateSecureMessageFunction::
 ~EasyUnlockPrivateCreateSecureMessageFunction() {}
 
 bool EasyUnlockPrivateCreateSecureMessageFunction::RunAsync() {
-  return false;
+  scoped_ptr<easy_unlock_private::CreateSecureMessage::Params> params =
+      easy_unlock_private::CreateSecureMessage::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  GetCryptoDelegate(browser_context())->CreateSecureMessage(
+      params->payload,
+      params->key,
+      params->options.associated_data ?
+          *params->options.associated_data : std::string(),
+      params->options.public_metadata ?
+          *params->options.public_metadata : std::string(),
+      params->options.verification_key_id ?
+          *params->options.verification_key_id : std::string(),
+      params->options.encrypt_type,
+      params->options.sign_type,
+      base::Bind(&EasyUnlockPrivateCreateSecureMessageFunction::OnData,
+                 this));
+  return true;
 }
 
 void EasyUnlockPrivateCreateSecureMessageFunction::OnData(
     const std::string& message) {
+  // TODO(tbarzic): Improve error handling.
   if (!message.empty()) {
     results_ = easy_unlock_private::CreateSecureMessage::Results::Create(
         message);
@@ -107,11 +168,25 @@ EasyUnlockPrivateUnwrapSecureMessageFunction::
 ~EasyUnlockPrivateUnwrapSecureMessageFunction() {}
 
 bool EasyUnlockPrivateUnwrapSecureMessageFunction::RunAsync() {
-  return false;
+  scoped_ptr<easy_unlock_private::UnwrapSecureMessage::Params> params =
+      easy_unlock_private::UnwrapSecureMessage::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  GetCryptoDelegate(browser_context())->UnwrapSecureMessage(
+      params->secure_message,
+      params->key,
+      params->options.associated_data ?
+          *params->options.associated_data : std::string(),
+      params->options.encrypt_type,
+      params->options.sign_type,
+      base::Bind(&EasyUnlockPrivateUnwrapSecureMessageFunction::OnData,
+                 this));
+  return true;
 }
 
 void EasyUnlockPrivateUnwrapSecureMessageFunction::OnData(
     const std::string& data) {
+  // TODO(tbarzic): Improve error handling.
   if (!data.empty())
     results_ = easy_unlock_private::UnwrapSecureMessage::Results::Create(data);
   SendResponse(true);

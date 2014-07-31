@@ -22,6 +22,7 @@
 #include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/fake_debug_daemon_client.h"
+#include "chromeos/dbus/fake_easy_unlock_client.h"
 #include "chromeos/dbus/fake_gsm_sms_client.h"
 #include "chromeos/dbus/fake_image_burner_client.h"
 #include "chromeos/dbus/fake_introspectable_client.h"
@@ -83,6 +84,7 @@ void FakeDBusThreadManager::SetFakeClients() {
   SetCryptohomeClient(scoped_ptr<CryptohomeClient>(new FakeCryptohomeClient));
   SetDebugDaemonClient(
       scoped_ptr<DebugDaemonClient>(new FakeDebugDaemonClient));
+  SetEasyUnlockClient(scoped_ptr<EasyUnlockClient>(new FakeEasyUnlockClient));
   SetLorgnetteManagerClient(
       scoped_ptr<LorgnetteManagerClient>(new FakeLorgnetteManagerClient));
 
@@ -203,6 +205,11 @@ void FakeDBusThreadManager::SetCryptohomeClient(
 void FakeDBusThreadManager::SetDebugDaemonClient(
     scoped_ptr<DebugDaemonClient> client) {
   debug_daemon_client_ = client.Pass();
+}
+
+void FakeDBusThreadManager::SetEasyUnlockClient(
+    scoped_ptr<EasyUnlockClient> client) {
+  easy_unlock_client_ = client.Pass();
 }
 
 void FakeDBusThreadManager::SetLorgnetteManagerClient(
@@ -385,6 +392,9 @@ DebugDaemonClient* FakeDBusThreadManager::GetDebugDaemonClient() {
   return debug_daemon_client_.get();
 }
 
+EasyUnlockClient* FakeDBusThreadManager::GetEasyUnlockClient() {
+  return easy_unlock_client_.get();
+}
 LorgnetteManagerClient* FakeDBusThreadManager::GetLorgnetteManagerClient() {
   return lorgnette_manager_client_.get();
 }

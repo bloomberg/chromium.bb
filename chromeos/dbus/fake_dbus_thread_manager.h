@@ -54,6 +54,7 @@ class CHROMEOS_EXPORT FakeDBusThreadManager : public DBusThreadManager {
   void SetCrosDisksClient(scoped_ptr<CrosDisksClient> client);
   void SetCryptohomeClient(scoped_ptr<CryptohomeClient> client);
   void SetDebugDaemonClient(scoped_ptr<DebugDaemonClient> client);
+  void SetEasyUnlockClient(scoped_ptr<EasyUnlockClient> client);
   void SetLorgnetteManagerClient(scoped_ptr<LorgnetteManagerClient> client);
   void SetShillDeviceClient(scoped_ptr<ShillDeviceClient> client);
   void SetShillIPConfigClient(scoped_ptr<ShillIPConfigClient> client);
@@ -98,6 +99,7 @@ class CHROMEOS_EXPORT FakeDBusThreadManager : public DBusThreadManager {
   virtual CrosDisksClient* GetCrosDisksClient() OVERRIDE;
   virtual CryptohomeClient* GetCryptohomeClient() OVERRIDE;
   virtual DebugDaemonClient* GetDebugDaemonClient() OVERRIDE;
+  virtual EasyUnlockClient* GetEasyUnlockClient() OVERRIDE;
   virtual LorgnetteManagerClient* GetLorgnetteManagerClient() OVERRIDE;
   virtual ShillDeviceClient* GetShillDeviceClient() OVERRIDE;
   virtual ShillIPConfigClient* GetShillIPConfigClient() OVERRIDE;
@@ -141,6 +143,7 @@ class CHROMEOS_EXPORT FakeDBusThreadManager : public DBusThreadManager {
   scoped_ptr<CrosDisksClient> cros_disks_client_;
   scoped_ptr<CryptohomeClient> cryptohome_client_;
   scoped_ptr<DebugDaemonClient> debug_daemon_client_;
+  scoped_ptr<EasyUnlockClient> easy_unlock_client_;
   scoped_ptr<LorgnetteManagerClient> lorgnette_manager_client_;
   scoped_ptr<ShillDeviceClient> shill_device_client_;
   scoped_ptr<ShillIPConfigClient> shill_ipconfig_client_;

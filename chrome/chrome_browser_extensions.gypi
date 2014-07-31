@@ -325,6 +325,7 @@
       'browser/extensions/updater/local_extension_cache.h',
     ],
     'chrome_browser_extensions_non_chromeos_sources': [
+      'browser/extensions/api/easy_unlock_private/easy_unlock_private_crypto_delegate_stub.cc',
       'browser/extensions/api/feedback_private/feedback_service_nonchromeos.cc',
       'browser/extensions/api/image_writer_private/operation_nonchromeos.cc',
       'browser/extensions/api/image_writer_private/removable_storage_provider_linux.cc',
@@ -543,6 +544,8 @@
       'browser/extensions/api/easy_unlock_private/easy_unlock_private_bluetooth_util.h',
       'browser/extensions/api/easy_unlock_private/easy_unlock_private_bluetooth_util.cc',
       'browser/extensions/api/easy_unlock_private/easy_unlock_private_bluetooth_util_chromeos.cc',
+      'browser/extensions/api/easy_unlock_private/easy_unlock_private_crypto_delegate.h',
+      'browser/extensions/api/easy_unlock_private/easy_unlock_private_crypto_delegate_chromeos.cc',
       'browser/extensions/api/execute_code_function.cc',
       'browser/extensions/api/execute_code_function.h',
       'browser/extensions/api/experience_sampling_private/experience_sampling.cc',
