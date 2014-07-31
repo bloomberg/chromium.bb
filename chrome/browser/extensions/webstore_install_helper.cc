@@ -89,8 +89,10 @@ void WebstoreInstallHelper::OnURLFetchComplete(
     const net::URLFetcher* source) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(source == url_fetcher_.get());
-  if (source->GetStatus().status() != net::URLRequestStatus::SUCCESS ||
-      source->GetResponseCode() != 200) {
+  int response_code =
+      source->GetStatus().is_success() ? source->GetResponseCode() : 0;
+  if (!source->GetStatus().is_success() ||
+      response_code / 100 == 4 || response_code / 100 == 5) {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
