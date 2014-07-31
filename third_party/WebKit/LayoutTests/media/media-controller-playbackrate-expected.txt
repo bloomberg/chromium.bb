@@ -6,6 +6,7 @@ TEST(video.controller.playbackRate = -Infinity) THROWS("TypeError: Failed to set
 TEST(video.controller.playbackRate = Infinity) THROWS("TypeError: Failed to set the 'playbackRate' property on 'MediaController': The provided double value is non-finite.") OK
 TEST(video.controller.playbackRate = NaN) THROWS("TypeError: Failed to set the 'playbackRate' property on 'MediaController': The provided double value is non-finite.") OK
 EVENT(play)
+EVENT(playing)
 EVENT(timeupdate)
 EXPECTED (video.currentTime != '0') OK
 END OF TEST

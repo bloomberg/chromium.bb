@@ -13,7 +13,7 @@
                 // Set the rate on the media element so playback won't move forward.
                 video.playbackRate = 0;
 
-                waitForEvent("canplay",canplay);
+                waitForEventOnce("canplay",canplay);
             };
 
             var canplay = function()
@@ -28,15 +28,14 @@
 
                 // Initiate playback and verify that time moves forward.
                 run("video.play()");
-                waitForEventOnce("play", play);
+                waitForEventOnce("playing", function()
+                {
+                    waitForEventOnce("timeupdate", timeupdate);
+                });
             };
 
-            var play = function()
+            var timeupdate = function()
             {
-                waitForEventOnce("timeupdate", timeupdate);
-            };
-
-            var timeupdate = function() {
                 testExpected("video.currentTime", 0, "!=");
                 endTest();
             };

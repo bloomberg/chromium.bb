@@ -1,0 +1,21 @@
+Test that seeking attribute is true immediately after a seek to the current position, and goes back to false when the seek completes.
+
+EVENT(loadedmetadata)
+RUN(video.currentTime = seekTime)
+EXPECTED (video.seeking == 'true') OK
+
+EVENT(seeking)
+EVENT(seeked)
+
+EXPECTED (video.seeking == 'false') OK
+EXPECTED (video.currentTime == '1') OK
+RUN(video.currentTime = seekTime)
+EXPECTED (video.seeking == 'true') OK
+
+EVENT(seeking)
+EVENT(seeked)
+
+EXPECTED (video.seeking == 'false') OK
+EXPECTED (video.currentTime == '1') OK
+END OF TEST
+
