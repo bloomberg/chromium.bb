@@ -48,10 +48,14 @@ int runHelper(TestSuite* testSuite, void (*preTestHook)(void), void (*postTestHo
     preTestHook();
     int result = testSuite->Run();
 
+    // FIXME: Oilpan: The following GC causes MemoryCache-related crashes. We
+    // should investigate the root cause.
+#if !ENABLE(OILPAN)
     // Collect garbage in order to release mock objects referred from v8 or
     // Oilpan heap. Otherwise false mock leaks will be reported.
     v8::Isolate::GetCurrent()->RequestGarbageCollectionForTesting(v8::Isolate::kFullGarbageCollection);
     blink::Heap::collectAllGarbage();
+#endif
 
     postTestHook();
 
