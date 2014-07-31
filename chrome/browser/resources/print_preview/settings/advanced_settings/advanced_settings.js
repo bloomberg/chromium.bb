@@ -7,11 +7,19 @@ cr.define('print_preview', function() {
 
   /**
    * Modal dialog for print destination's advanced settings.
+   * @param {!print_preview.PrintTicketStore} printTicketStore Contains the
+   *     print ticket to print.
    * @constructor
    * @extends {print_preview.Overlay}
    */
-  function AdvancedSettings() {
+  function AdvancedSettings(printTicketStore) {
     print_preview.Overlay.call(this);
+
+    /**
+     * Contains the print ticket to print.
+     * @private {!print_preview.PrintTicketStore}
+     */
+    this.printTicketStore_ = printTicketStore;
 
     /**
      * Used to record usage statistics.
@@ -26,6 +34,9 @@ cr.define('print_preview', function() {
 
     /** @private {print_preview.Destination} */
     this.destination_ = null;
+
+    /** @private {!Array.<!print_preview.AdvancedSettingsItem>} */
+    this.items_ = [];
   };
 
   AdvancedSettings.prototype = {
@@ -36,12 +47,13 @@ cr.define('print_preview', function() {
      *     advanced settings for.
      */
     showForDestination: function(destination) {
-      //assert(!this.destination_);
+      assert(!this.destination_);
       this.destination_ = destination;
       this.getChildElement('.advanced-settings-title').textContent =
           localStrings.getStringF('advancedSettingsDialogTitle',
                                   this.destination_.displayName);
       this.setIsVisible(true);
+      this.renderSettings_();
     },
 
     /** @override */
@@ -57,13 +69,11 @@ cr.define('print_preview', function() {
           this.searchBox_,
           print_preview.SearchBox.EventType.SEARCH,
           this.onSearch_.bind(this));
-
-      this.renderSettings_();
     },
 
     /** @override */
     decorateInternal: function() {
-      this.searchBox_.render(this.getChildElement('.search-box-container'));
+      this.searchBox_.render(this.getChildElement('.search-box-area'));
     },
 
     /** @override */
@@ -86,15 +96,16 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @return {number} Height available for settings lists, in pixels.
+     * @return {number} Height available for settings, in pixels.
      * @private
      */
-    getAvailableListsHeight_: function() {
+    getAvailableContentHeight_: function() {
       var elStyle = window.getComputedStyle(this.getElement());
       return this.getElement().offsetHeight -
           parseInt(elStyle.getPropertyValue('padding-top')) -
           parseInt(elStyle.getPropertyValue('padding-bottom')) -
-          this.getChildElement('.lists').offsetTop;
+          this.getChildElement('.settings-area').offsetTop -
+          this.getChildElement('.action-area').offsetHeight;
     },
 
     /**
@@ -119,6 +130,31 @@ cr.define('print_preview', function() {
      * @private
      */
     renderSettings_: function() {
+      // Remove all children settings elements.
+      this.items_.forEach(function(item) {
+        this.removeChild(item);
+      }.bind(this));
+      this.items_ = [];
+
+      var vendorCapabilities =
+          this.destination_ &&
+          this.destination_.capabilities &&
+          this.destination_.capabilities.printer &&
+          this.destination_.capabilities.printer.vendor_capability;
+      if (!vendorCapabilities)
+        return;
+
+      var availableHeight = this.getAvailableContentHeight_();
+      var containerEl = this.getChildElement('.settings-area');
+      containerEl.style.maxHeight = availableHeight + 'px';
+
+      vendorCapabilities.forEach(function(capability) {
+        var item = new print_preview.AdvancedSettingsItem(
+            this.eventTarget_, this.printTicketStore_, capability);
+        this.addChild(item);
+        item.render(this.getChildElement('.settings'));
+        this.items_.push(item);
+      }.bind(this));
     },
 
     /**

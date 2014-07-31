@@ -163,7 +163,8 @@ cr.define('print_preview', function() {
      * @type {!print_preview.AdvancedSettings}
      * @private
      */
-    this.advancedSettings_ = new print_preview.AdvancedSettings();
+    this.advancedSettings_ = new print_preview.AdvancedSettings(
+        this.printTicketStore_);
     this.addChild(this.advancedSettings_);
 
     /**
@@ -1172,6 +1173,7 @@ cr.define('print_preview', function() {
 <include src="settings/destination_settings.js"/>
 <include src="settings/other_options_settings.js"/>
 <include src="settings/advanced_settings/advanced_settings.js"/>
+<include src="settings/advanced_settings/advanced_settings_item.js"/>
 
 <include src="previewarea/margin_control.js"/>
 <include src="previewarea/margin_control_container.js"/>

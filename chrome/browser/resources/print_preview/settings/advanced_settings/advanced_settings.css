@@ -13,24 +13,28 @@
 }
 
 #advanced-settings .page {
-  width: 640px;
+  width: 500px;
 }
 
 #advanced-settings > .page > .close-button {
   top: 9px;
 }
 
+#advanced-settings .search-box-area {
+  padding: 15px 17px;
+}
+
 #advanced-settings .search-box {
   -webkit-user-select: none;
-  margin: 14px;
 }
 
-#advanced-settings .lists {
-  flex: 1;
+#advanced-settings .settings-area {
   overflow-y: auto;
+  padding: 0 17px;
 }
 
-#advanced-settings .lists > * {
-  -webkit-user-select: none;
-  padding: 0 14px 18px;
+#advanced-settings .settings {
+  border-spacing: 0;
+  display: table;
+  width: 100%;
 }
