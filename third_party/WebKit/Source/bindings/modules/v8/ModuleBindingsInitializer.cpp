@@ -25,7 +25,13 @@ static v8::Handle<v8::Object> wrapForModuleEvent(Event* event, v8::Handle<v8::Ob
     ASSERT(event);
 
     String desiredInterface = event->interfaceName();
-    EVENT_MODULES_INTERFACES_FOR_EACH(TRY_TO_WRAP_WITH_INTERFACE)
+    EVENT_MODULES_INTERFACES_FOR_EACH(TRY_TO_WRAP_WITH_INTERFACE);
+
+    // Wrapping for core event types should have been tried before this
+    // function was called, so |event| should have been a module event type.
+    // If this ASSERT is hit, the event type was missing from both
+    // enumerations.
+    ASSERT_NOT_REACHED();
     return v8::Handle<v8::Object>();
 }
 

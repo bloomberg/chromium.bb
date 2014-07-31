@@ -66,12 +66,9 @@ v8::Handle<v8::Object> wrap(Event* event, v8::Handle<v8::Object> creationContext
     if (EventNames::Event == desiredInterface)
         return V8Event::createWrapper(event, creationContext, isolate);
 
-    EVENT_INTERFACES_FOR_EACH(TRY_TO_WRAP_WITH_INTERFACE)
+    EVENT_INTERFACES_FOR_EACH(TRY_TO_WRAP_WITH_INTERFACE);
 
-    v8::Handle<v8::Object> wrapper = ModuleProxy::moduleProxy().wrapForEvent(event, creationContext, isolate);
-    if (!wrapper.IsEmpty())
-        return wrapper;
-    return V8Event::createWrapper(event, creationContext, isolate);
+    return ModuleProxy::moduleProxy().wrapForEvent(event, creationContext, isolate);
 }
 
 } // namespace blink
