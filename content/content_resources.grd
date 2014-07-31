@@ -45,6 +45,7 @@
         <include name="IDR_MOJO_CONNECTOR_JS" file="../mojo/public/js/bindings/connector.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MOJO_ROUTER_JS" file="../mojo/public/js/bindings/router.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MOJO_UNICODE_JS" file="../mojo/public/js/bindings/unicode.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_MOJO_VALIDATOR_JS" file="../mojo/public/js/bindings/validator.js" flattenhtml="true" type="BINDATA" />
       </if>
     </includes>
   </release>

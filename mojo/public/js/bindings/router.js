@@ -5,7 +5,8 @@
 define("mojo/public/js/bindings/router", [
   "mojo/public/js/bindings/codec",
   "mojo/public/js/bindings/connector",
-], function(codec, connector) {
+  "mojo/public/js/bindings/validator",
+], function(codec, connector, validator) {
 
   function Router(handle) {
     this.connector_ = new connector.Connector(handle);
@@ -60,8 +61,11 @@ define("mojo/public/js/bindings/router", [
   };
 
   Router.prototype.handleIncomingMessage_ = function(message) {
-    var flags = message.getFlags();
-    if (flags & codec.kMessageExpectsResponse) {
+    var v = new validator.Validator(message);
+    if (v.validateMessage() !== validator.validationError.NONE)
+      this.close();
+
+    if (message.expectsResponse()) {
       if (this.incomingReceiver_) {
         this.incomingReceiver_.acceptWithResponder(message, this);
       } else {
@@ -69,7 +73,7 @@ define("mojo/public/js/bindings/router", [
         // listening, then we have no choice but to tear down the pipe.
         this.close();
       }
-    } else if (flags & codec.kMessageIsResponse) {
+    } else if (message.isResponse()) {
       var reader = new codec.MessageReader(message);
       var requestID = reader.requestID;
       var responder = this.responders_[requestID];

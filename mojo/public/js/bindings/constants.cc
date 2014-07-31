@@ -12,5 +12,6 @@ const char kConnectionModuleName[] = "mojo/public/js/bindings/connection";
 const char kConnectorModuleName[] = "mojo/public/js/bindings/connector";
 const char kUnicodeModuleName[] = "mojo/public/js/bindings/unicode";
 const char kRouterModuleName[] = "mojo/public/js/bindings/router";
+const char kValidatorModuleName[] = "mojo/public/js/bindings/validator";
 
 }  // namespace mojo

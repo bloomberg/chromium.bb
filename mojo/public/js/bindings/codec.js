@@ -17,12 +17,19 @@ define("mojo/public/js/bindings/codec", [
     return size + (kAlignment - (size % kAlignment)) % kAlignment;
   }
 
+  function isAligned(offset) {
+    return offset >= 0 && (offset % kAlignment) === 0;
+  }
+
   // Constants ----------------------------------------------------------------
 
   var kArrayHeaderSize = 8;
   var kStructHeaderSize = 8;
   var kMessageHeaderSize = 16;
   var kMessageWithRequestIDHeaderSize = 24;
+
+  var kStructHeaderNumBytesOffset = 0;
+  var kStructHeaderNumFieldsOffset = 4;
 
   // Decoder ------------------------------------------------------------------
 
@@ -141,7 +148,7 @@ define("mojo/public/js/bindings/codec", [
     var val = new Array(numberOfElements);
     var byte;
     for (var i = 0; i < numberOfElements; ++i) {
-        if (i % 8 == 0)
+        if (i % 8 === 0)
             byte = this.readUint8();
         val[i] = (byte & (1 << i % 8)) ? true : false;
     }
@@ -352,28 +359,43 @@ define("mojo/public/js/bindings/codec", [
 
   // Message ------------------------------------------------------------------
 
+  var kMessageNameOffset = kStructHeaderSize;
+  var kMessageFlagsOffset = kMessageNameOffset + 4;
+  var kMessageRequestIDOffset = kMessageFlagsOffset + 4;
+
   var kMessageExpectsResponse = 1 << 0;
   var kMessageIsResponse      = 1 << 1;
-
-  // Skip over num_bytes, num_fields, and message_name.
-  var kFlagsOffset = 4 + 4 + 4;
-
-  // Skip over num_bytes, num_fields, message_name, and flags.
-  var kRequestIDOffset = 4 + 4 + 4 + 4;
 
   function Message(buffer, handles) {
     this.buffer = buffer;
     this.handles = handles;
   }
 
-  Message.prototype.setRequestID = function(requestID) {
-    // TODO(darin): Verify that space was reserved for this field!
-    this.buffer.setUint64(kRequestIDOffset, requestID);
+  Message.prototype.getHeaderNumBytes = function() {
+    return this.buffer.getUint32(kStructHeaderNumBytesOffset);
+  };
+
+  Message.prototype.getHeaderNumFields = function() {
+    return this.buffer.getUint32(kStructHeaderNumFieldsOffset);
   };
 
   Message.prototype.getFlags = function() {
-    return this.buffer.getUint32(kFlagsOffset);
+    return this.buffer.getUint32(kMessageFlagsOffset);
   };
+
+  Message.prototype.isResponse = function() {
+    return (this.getFlags() & kMessageIsResponse) != 0;
+  };
+
+  Message.prototype.expectsResponse = function() {
+    return (this.getFlags() & kMessageExpectsResponse) != 0;
+  };
+
+  Message.prototype.setRequestID = function(requestID) {
+    // TODO(darin): Verify that space was reserved for this field!
+    this.buffer.setUint64(kMessageRequestIDOffset, requestID);
+  };
+
 
   // MessageBuilder -----------------------------------------------------------
 
@@ -666,6 +688,7 @@ define("mojo/public/js/bindings/codec", [
 
   var exports = {};
   exports.align = align;
+  exports.isAligned = isAligned;
   exports.Message = Message;
   exports.MessageBuilder = MessageBuilder;
   exports.MessageWithRequestIDBuilder = MessageWithRequestIDBuilder;
@@ -673,6 +696,7 @@ define("mojo/public/js/bindings/codec", [
   exports.kArrayHeaderSize = kArrayHeaderSize;
   exports.kStructHeaderSize = kStructHeaderSize;
   exports.kMessageHeaderSize = kMessageHeaderSize;
+  exports.kMessageWithRequestIDHeaderSize = kMessageWithRequestIDHeaderSize;
   exports.kMessageExpectsResponse = kMessageExpectsResponse;
   exports.kMessageIsResponse = kMessageIsResponse;
   exports.Int8 = Int8;

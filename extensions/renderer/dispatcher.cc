@@ -495,6 +495,8 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
       std::make_pair(mojo::kRouterModuleName, IDR_MOJO_ROUTER_JS));
   resources.push_back(
       std::make_pair(mojo::kUnicodeModuleName, IDR_MOJO_UNICODE_JS));
+  resources.push_back(
+      std::make_pair(mojo::kValidatorModuleName, IDR_MOJO_VALIDATOR_JS));
 
   // Custom bindings.
   resources.push_back(

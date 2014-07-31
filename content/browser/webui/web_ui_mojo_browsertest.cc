@@ -47,7 +47,8 @@ bool GetResource(const std::string& id,
       id == mojo::kConnectionModuleName ||
       id == mojo::kConnectorModuleName ||
       id == mojo::kUnicodeModuleName ||
-      id == mojo::kRouterModuleName)
+      id == mojo::kRouterModuleName ||
+      id == mojo::kValidatorModuleName)
     return false;
 
   std::string contents;
