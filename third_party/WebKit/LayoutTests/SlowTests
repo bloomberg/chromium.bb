@@ -170,7 +170,3 @@ crbug.com/363029 virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Sl
 crbug.com/364225 virtual/gpu/fast/canvas/canvas-composite-text-alpha.html [ Slow ]
 
 crbug.com/372424 fast/dom/DOMImplementation/createDocument-with-used-doctype.html [ Slow ]
-
-crbug.com/301515 fast/workers/worker-exception-during-navigation.html [ Slow ]
-crbug.com/301515 fast/workers/worker-supplement-gc.html [ Slow ]
-crbug.com/301515 http/tests/serviceworker/chromium/service-worker-gc.html [ Slow ]

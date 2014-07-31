@@ -98,12 +98,10 @@ ScriptDebugListener* WorkerScriptDebugServer::getDebugListenerForContext(v8::Han
 void WorkerScriptDebugServer::runMessageLoopOnPause(v8::Handle<v8::Context>)
 {
     MessageQueueWaitResult result;
-    m_workerGlobalScope->thread()->willEnterNestedLoop();
     do {
         result = m_workerGlobalScope->thread()->runDebuggerTask();
     // Keep waiting until execution is resumed.
     } while (result == MessageQueueMessageReceived && isPaused());
-    m_workerGlobalScope->thread()->didLeaveNestedLoop();
 
     // The listener may have been removed in the nested loop.
     if (m_listener)

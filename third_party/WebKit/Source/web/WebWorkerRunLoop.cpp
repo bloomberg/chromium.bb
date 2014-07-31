@@ -25,7 +25,7 @@
 #include "config.h"
 #include "public/platform/WebWorkerRunLoop.h"
 
-#include "core/dom/ExecutionContextTask.h"
+#include "core/workers/WorkerRunLoop.h"
 
 using namespace blink;
 
@@ -63,8 +63,7 @@ WebWorkerRunLoop::WebWorkerRunLoop(WorkerRunLoop* workerRunLoop)
 
 bool WebWorkerRunLoop::postTask(Task* task)
 {
-    ASSERT(false);
-    return false;
+    return m_workerRunLoop->postTask(TaskForwarder::create(adoptPtr(task)));
 }
 
 bool WebWorkerRunLoop::equals(const WebWorkerRunLoop& o) const
