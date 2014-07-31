@@ -42,6 +42,8 @@ const HostedDocumentKind kHostedDocumentKinds[] = {
     {kGoogleFormMimeType,         ".gform"}
 };
 
+const char kUnknownHostedDocumentExtension[] = ".glink";
+
 }  // namespace
 
 std::string EscapeQueryStringValue(const std::string& str) {
@@ -177,7 +179,7 @@ ConvertFileResourceToResourceEntry(
   entry->set_id(file_resource.file_id());
   if (file_resource.IsDirectory())
     entry->set_kind(google_apis::ResourceEntry::ENTRY_KIND_FOLDER);
-  else if (IsHostedDocument(file_resource.mime_type()))
+  else if (file_resource.IsHostedDocument())
     entry->set_kind(google_apis::ResourceEntry::ENTRY_KIND_UNKNOWN);
   else
     entry->set_kind(google_apis::ResourceEntry::ENTRY_KIND_FILE);
@@ -346,10 +348,10 @@ std::string GetHostedDocumentExtension(const std::string& mime_type) {
     if (mime_type == kHostedDocumentKinds[i].mime_type)
       return kHostedDocumentKinds[i].extension;
   }
-  return std::string();
+  return kUnknownHostedDocumentExtension;
 }
 
-bool IsHostedDocument(const std::string& mime_type) {
+bool IsKnownHostedDocumentMimeType(const std::string& mime_type) {
   for (size_t i = 0; i < arraysize(kHostedDocumentKinds); ++i) {
     if (mime_type == kHostedDocumentKinds[i].mime_type)
       return true;
@@ -363,7 +365,7 @@ bool HasHostedDocumentExtension(const base::FilePath& path) {
     if (extension == kHostedDocumentKinds[i].extension)
       return true;
   }
-  return false;
+  return extension == kUnknownHostedDocumentExtension;
 }
 
 }  // namespace util

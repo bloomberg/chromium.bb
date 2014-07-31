@@ -446,6 +446,12 @@ class FileResource {
   // but outside this file we use "directory" to match HTML5 filesystem API.
   bool IsDirectory() const;
 
+  // Returns true if this is a hosted document.
+  // A hosted document is a document in one of Google Docs formats (Documents,
+  // Spreadsheets, Slides, ...) whose content is not exposed via the API. It is
+  // available only as |alternate_link()| to the document hosted on the server.
+  bool IsHostedDocument() const;
+
   // Returns file ID.  This is unique in all files in Google Drive.
   const std::string& file_id() const { return file_id_; }
 

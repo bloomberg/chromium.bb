@@ -110,13 +110,12 @@ ConvertChangeListToResourceList(const google_apis::ChangeList& change_list);
 std::string GetMd5Digest(const base::FilePath& file_path);
 
 // Returns preferred file extension for hosted documents which have given mime
-// type. If the given mime type is not known as one for hosted documents,
-// returns empty string.
+// type.
 std::string GetHostedDocumentExtension(const std::string& mime_type);
 
-// Returns true if the given mime type is corresponding to one of hosted
-// documents.
-bool IsHostedDocument(const std::string& mime_type);
+// Returns true if the given mime type is corresponding to one of known hosted
+// document types.
+bool IsKnownHostedDocumentMimeType(const std::string& mime_type);
 
 // Returns true if the given file path has an extension corresponding to one of
 // hosted document types.

@@ -159,6 +159,7 @@ TEST(DriveAPIParserTest, FileListParser) {
 
   EXPECT_EQ("d41d8cd98f00b204e9800998ecf8427e", file1.md5_checksum());
   EXPECT_EQ(1000U, file1.file_size());
+  EXPECT_FALSE(file1.IsHostedDocument());
 
   EXPECT_EQ(GURL("https://docs.google.com/file/d/"
                  "0B4v7G8yEYAWHUmRrU2lMS2hLABC/edit"),
@@ -185,7 +186,8 @@ TEST(DriveAPIParserTest, FileListParser) {
                                       &shared_with_me_time));
   EXPECT_EQ(shared_with_me_time, file2.shared_with_me_date());
 
-  EXPECT_EQ(0U, file2.file_size());
+  EXPECT_EQ(-1, file2.file_size());
+  EXPECT_TRUE(file2.IsHostedDocument());
 
   ASSERT_EQ(0U, file2.parents().size());
 
@@ -193,7 +195,8 @@ TEST(DriveAPIParserTest, FileListParser) {
 
   // Check file 3 (a folder)
   const FileResource& file3 = *filelist->items()[2];
-  EXPECT_EQ(0U, file3.file_size());
+  EXPECT_EQ(-1, file3.file_size());
+  EXPECT_FALSE(file3.IsHostedDocument());
   EXPECT_EQ("TestFolder", file3.title());
   EXPECT_EQ("application/vnd.google-apps.folder", file3.mime_type());
   ASSERT_TRUE(file3.IsDirectory());

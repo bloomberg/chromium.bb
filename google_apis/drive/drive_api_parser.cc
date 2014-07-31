@@ -24,6 +24,8 @@ namespace google_apis {
 
 namespace {
 
+const int64 kUnsetFileSize = -1;
+
 bool CreateFileResourceFromValue(const base::Value* value,
                                  scoped_ptr<FileResource>* file) {
   *file = FileResource::CreateFrom(*value);
@@ -429,7 +431,7 @@ bool ParentReference::Parse(const base::Value& value) {
 ////////////////////////////////////////////////////////////////////////////////
 // FileResource implementation
 
-FileResource::FileResource() : shared_(false), file_size_(0) {}
+FileResource::FileResource() : shared_(false), file_size_(kUnsetFileSize) {}
 
 FileResource::~FileResource() {}
 
@@ -489,6 +491,12 @@ scoped_ptr<FileResource> FileResource::CreateFrom(const base::Value& value) {
 
 bool FileResource::IsDirectory() const {
   return mime_type_ == kDriveFolderMimeType;
+}
+
+bool FileResource::IsHostedDocument() const {
+  // Hosted documents don't have fileSize field set:
+  // https://developers.google.com/drive/v2/reference/files
+  return !IsDirectory() && file_size_ == kUnsetFileSize;
 }
 
 bool FileResource::Parse(const base::Value& value) {

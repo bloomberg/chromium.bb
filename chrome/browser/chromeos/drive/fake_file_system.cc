@@ -287,6 +287,11 @@ void FakeFileSystem::GetFileContentAfterGetFileResource(
 
   base::FilePath cache_path =
       cache_dir_.path().AppendASCII(entry->resource_id());
+  if (entry->file_specific_info().is_hosted_document()) {
+    // For hosted documents return a dummy cache without server request.
+    int result = base::WriteFile(cache_path, "", 0);
+    DCHECK_EQ(0, result);
+  }
   if (base::PathExists(cache_path)) {
     // Cache file is found.
     initialized_callback.Run(FILE_ERROR_OK, cache_path, entry.Pass());

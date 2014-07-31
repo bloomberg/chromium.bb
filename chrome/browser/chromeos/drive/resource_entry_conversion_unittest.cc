@@ -87,6 +87,7 @@ TEST(ResourceEntryConversionTest,
       GetTestTime() + base::TimeDelta::FromSeconds(20));
   file_resource.set_mime_type(util::kGoogleDocumentMimeType);
   file_resource.set_alternate_link(GURL("https://file_link_alternate"));
+  // Do not set file size to represent a hosted document.
 
   ResourceEntry entry;
   std::string parent_resource_id;
@@ -218,6 +219,8 @@ TEST(ResourceEntryConversionTest, ConvertChangeResourceToResourceEntry) {
   google_apis::FileResource* file_resource = change_resource.mutable_file();
   file_resource->set_title("File 1.mp3");
   file_resource->set_file_id("resource_id");
+  // Set dummy file size to declare that this is a regular file.
+  file_resource->set_file_size(12345);
 
   ResourceEntry entry;
   std::string parent_resource_id;
@@ -245,6 +248,8 @@ TEST(ResourceEntryConversionTest,
   google_apis::FileResource* file_resource = change_resource.mutable_file();
   file_resource->set_title("File 1.mp3");
   file_resource->set_file_id("resource_id");
+  // Set dummy file size to declare that this is a regular file.
+  file_resource->set_file_size(12345);
   file_resource->mutable_labels()->set_trashed(true);
 
   ResourceEntry entry;

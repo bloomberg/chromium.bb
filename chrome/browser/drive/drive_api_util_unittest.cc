@@ -177,6 +177,8 @@ TEST(DriveAPIUtilTest, HasHostedDocumentExtension) {
       HasHostedDocumentExtension(base::FilePath::FromUTF8Unsafe("xx.gtable")));
   EXPECT_TRUE(
       HasHostedDocumentExtension(base::FilePath::FromUTF8Unsafe("xx.gform")));
+  EXPECT_TRUE(
+      HasHostedDocumentExtension(base::FilePath::FromUTF8Unsafe("xx.glink")));
 
   EXPECT_FALSE(
       HasHostedDocumentExtension(base::FilePath::FromUTF8Unsafe("xx.gdocs")));

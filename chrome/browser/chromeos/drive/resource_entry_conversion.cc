@@ -81,7 +81,7 @@ bool ConvertFileResourceToResourceEntry(
   } else {
     FileSpecificInfo* file_specific_info =
         converted.mutable_file_specific_info();
-    if (!drive::util::IsHostedDocument(input.mime_type())) {
+    if (!input.IsHostedDocument()) {
       file_info->set_size(input.file_size());
       file_specific_info->set_md5(input.md5_checksum());
       file_specific_info->set_is_hosted_document(false);

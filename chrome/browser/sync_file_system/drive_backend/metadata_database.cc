@@ -94,7 +94,7 @@ void PopulateFileDetailsByFileResource(
 
   if (file_resource.IsDirectory())
     details->set_file_kind(FILE_KIND_FOLDER);
-  else if (drive::util::IsHostedDocument(file_resource.mime_type()))
+  else if (file_resource.IsHostedDocument())
     details->set_file_kind(FILE_KIND_UNSUPPORTED);
   else
     details->set_file_kind(FILE_KIND_FILE);

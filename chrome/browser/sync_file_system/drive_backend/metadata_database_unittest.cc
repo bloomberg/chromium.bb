@@ -389,12 +389,14 @@ class MetadataDatabaseTest : public testing::Test {
 
     file_resource->set_file_id(file.file_id());
     file_resource->set_title(file.details().title());
-    if (file.details().file_kind() == FILE_KIND_FOLDER)
+    if (file.details().file_kind() == FILE_KIND_FOLDER) {
       file_resource->set_mime_type("application/vnd.google-apps.folder");
-    else if (file.details().file_kind() == FILE_KIND_FILE)
+    } else if (file.details().file_kind() == FILE_KIND_FILE) {
       file_resource->set_mime_type("text/plain");
-    else
+      file_resource->set_file_size(0);
+    } else {
       file_resource->set_mime_type("application/vnd.google-apps.document");
+    }
     file_resource->set_md5_checksum(file.details().md5());
     file_resource->set_etag(file.details().etag());
     file_resource->set_created_date(base::Time::FromInternalValue(
