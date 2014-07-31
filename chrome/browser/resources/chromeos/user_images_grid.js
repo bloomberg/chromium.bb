@@ -9,18 +9,6 @@ cr.define('options', function() {
   /** @const */ var GridSelectionController = cr.ui.GridSelectionController;
   /** @const */ var ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
 
-  /**
-   * Number of frames recorded by takeVideo().
-   * @const
-   */
-  var RECORD_FRAMES = 48;
-
-  /**
-   * FPS at which camera stream is recorded.
-   * @const
-   */
-  var RECORD_FPS = 16;
-
    /**
     * Dimensions for camera capture.
     * @const
@@ -316,7 +304,7 @@ cr.define('options', function() {
             document.activeElement.tagName == 'BODY') {
           $('user-image-grid').focus();
         }
-      }
+      };
       // Timeout guarantees processing AFTER style changes display attribute.
       setTimeout(setFocusIfLost, 0);
     },
@@ -491,29 +479,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Performs video capture from the live camera stream.
-     * @param {function=} opt_callback Callback that receives taken video as
-     *     data URL of a vertically stacked PNG sprite.
-     */
-    takeVideo: function(opt_callback) {
-      var canvas = document.createElement('canvas');
-      canvas.width = CAPTURE_SIZE.width;
-      canvas.height = CAPTURE_SIZE.height * RECORD_FRAMES;
-      var ctx = canvas.getContext('2d');
-      // Force canvas initialization to prevent FPS lag on the first frame.
-      ctx.fillRect(0, 0, 1, 1);
-      var captureData = {
-        callback: opt_callback,
-        canvas: canvas,
-        ctx: ctx,
-        frameNo: 0,
-        lastTimestamp: new Date().getTime()
-      };
-      captureData.timer = window.setInterval(
-          this.captureVideoFrame_.bind(this, captureData), 1000 / RECORD_FPS);
-    },
-
-    /**
      * Discard current photo and return to the live camera stream.
      */
     discardPhoto: function() {
@@ -567,27 +532,6 @@ cr.define('options', function() {
       ctx.scale(-1.0, 1.0);
       ctx.drawImage(source, 0, 0);
       return canvas.toDataURL('image/png');
-    },
-
-    /**
-     * Capture next frame of the video being recorded after a takeVideo() call.
-     * @param {Object} data Property bag with the recorder details.
-     * @private
-     */
-    captureVideoFrame_: function(data) {
-      var lastTimestamp = new Date().getTime();
-      var delayMs = lastTimestamp - data.lastTimestamp;
-      console.error('Delay: ' + delayMs + ' (' + (1000 / delayMs + ' FPS)'));
-      data.lastTimestamp = lastTimestamp;
-
-      this.captureFrame_(this.cameraVideo_, data.ctx, CAPTURE_SIZE);
-      data.ctx.translate(0, CAPTURE_SIZE.height);
-
-      if (++data.frameNo == RECORD_FRAMES) {
-        window.clearTimeout(data.timer);
-        if (data.callback && typeof data.callback == 'function')
-          data.callback(data.canvas.toDataURL('image/png'));
-      }
     },
 
     /**

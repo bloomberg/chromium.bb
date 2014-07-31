@@ -15,8 +15,7 @@
 namespace user_manager {
 
 // Wrapper class storing a still image and it's raw representation.  Could be
-// used for storing profile images (including animated profile images) and user
-// wallpapers.
+// used for storing profile images and user wallpapers.
 class USER_MANAGER_EXPORT UserImage {
  public:
   // TODO(ivankr): replace with RefCountedMemory to prevent copying.
@@ -34,9 +33,6 @@ class USER_MANAGER_EXPORT UserImage {
   explicit UserImage(const gfx::ImageSkia& image);
 
   // Creates a new instance from a given still frame and raw representation.
-  // |raw_image| can be animated, in which case animated_image() will return the
-  // original |raw_image| and raw_image() will return the encoded representation
-  // of |image|.
   UserImage(const gfx::ImageSkia& image, const RawImage& raw_image);
 
   virtual ~UserImage();
@@ -49,10 +45,6 @@ class USER_MANAGER_EXPORT UserImage {
 
   // Discards the stored raw image, freeing used memory.
   void DiscardRawImage();
-
-  // Optional raw representation of the animated image.
-  bool has_animated_image() const { return has_animated_image_; }
-  const RawImage& animated_image() const { return animated_image_; }
 
   // URL from which this image was originally downloaded, if any.
   void set_url(const GURL& url) { url_ = url; }
@@ -70,8 +62,6 @@ class USER_MANAGER_EXPORT UserImage {
   gfx::ImageSkia image_;
   bool has_raw_image_;
   RawImage raw_image_;
-  bool has_animated_image_;
-  RawImage animated_image_;
   GURL url_;
 
   // If image was loaded from the local file, file path is stored here.
