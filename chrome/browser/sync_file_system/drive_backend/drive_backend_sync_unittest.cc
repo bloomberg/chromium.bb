@@ -964,13 +964,7 @@ TEST_F(DriveBackendSyncTest, ReorganizeToUnmanagedArea) {
   EXPECT_EQ(4u, CountTracker());
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/396388
-#define MAYBE_ReorganizeToMultipleParents DISABLED_ReorganizeToMultipleParents
-#else
-#define MAYBE_ReorganizeToMultipleParents ReorganizeToMultipleParents
-#endif
-TEST_F(DriveBackendSyncTest, MAYBE_ReorganizeToMultipleParents) {
+TEST_F(DriveBackendSyncTest, ReorganizeToMultipleParents) {
   std::string app_id = "example";
 
   RegisterApp(app_id);
@@ -1045,13 +1039,8 @@ TEST_F(DriveBackendSyncTest, ReorganizeAndRevert) {
   EXPECT_EQ(5u, CountMetadata());
   EXPECT_EQ(5u, CountTracker());
 }
-#if defined(OS_WIN)
-// http://crbug.com/396388
-#define MAYBE_ConflictTest_ConflictTest_AddFolder_AddFolder DISABLED_ConflictTest_ConflictTest_AddFolder_AddFolder
-#else
-#define MAYBE_ConflictTest_ConflictTest_AddFolder_AddFolder ConflictTest_ConflictTest_AddFolder_AddFolder
-#endif
-TEST_F(DriveBackendSyncTest, MAYBE_ConflictTest_ConflictTest_AddFolder_AddFolder) {
+
+TEST_F(DriveBackendSyncTest, ConflictTest_ConflictTest_AddFolder_AddFolder) {
   std::string app_id = "example";
 
   RegisterApp(app_id);
@@ -1123,13 +1112,7 @@ TEST_F(DriveBackendSyncTest, ConflictTest_AddFolder_DeleteFolder) {
   EXPECT_EQ(3u, CountTracker());
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/396388
-#define MAYBE_ConflictTest_AddFolder_AddFile DISABLED_ConflictTest_AddFolder_AddFile
-#else
-#define MAYBE_ConflictTest_AddFolder_AddFile ConflictTest_AddFolder_AddFile
-#endif
-TEST_F(DriveBackendSyncTest, MAYBE_ConflictTest_AddFolder_AddFile) {
+TEST_F(DriveBackendSyncTest, ConflictTest_AddFolder_AddFile) {
   std::string app_id = "example";
 
   RegisterApp(app_id);
@@ -1353,13 +1336,7 @@ TEST_F(DriveBackendSyncTest, ConflictTest_DeleteFolder_DeleteFile) {
   EXPECT_EQ(2u, CountTracker());
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/396388
-#define MAYBE_ConflictTest_AddFile_AddFolder DISABLED_ConflictTest_AddFile_AddFolder
-#else
-#define MAYBE_ConflictTest_AddFile_AddFolder ConflictTest_AddFile_AddFolder
-#endif
-TEST_F(DriveBackendSyncTest, MAYBE_ConflictTest_AddFile_AddFolder) {
+TEST_F(DriveBackendSyncTest, ConflictTest_AddFile_AddFolder) {
   std::string app_id = "example";
 
   RegisterApp(app_id);
@@ -1441,13 +1418,7 @@ TEST_F(DriveBackendSyncTest, ConflictTest_AddFile_DeleteFolder) {
   EXPECT_EQ(4u, CountTracker());
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/396388
-#define MAYBE_ConflictTest_AddFile_AddFile DISABLED_ConflictTest_AddFile_AddFile
-#else
-#define MAYBE_ConflictTest_AddFile_AddFile ConflictTest_AddFile_AddFile
-#endif
-TEST_F(DriveBackendSyncTest, MAYBE_ConflictTest_AddFile_AddFile) {
+TEST_F(DriveBackendSyncTest, ConflictTest_AddFile_AddFile) {
   std::string app_id = "example";
 
   RegisterApp(app_id);
