@@ -659,6 +659,33 @@ nacl_glibc_skiplist = set([
     ])
 nacl_glibc_skiplist.update(['%s_irt' % test for test in nacl_glibc_skiplist])
 
+# Whitelist of tests to run for Non-SFI Mode.  Note that typos here will
+# not be caught automatically!
+# TODO(mseaborn): Eventually we should run all of small_tests instead of
+# this whitelist.
+nonsfi_test_whitelist = set([
+    'run_clock_get_test',
+    'run_dup_test',
+    'run_fcntl_test',
+    'run_float_test',
+    'run_fork_test',
+    'run_getpid_test',
+    'run_hello_world_test',
+    'run_irt_futex_test',
+    'run_malloc_realloc_calloc_free_test',
+    'run_mmap_test',
+    'run_nanosleep_test',
+    'run_prctl_test',
+    'run_printf_test',
+    'run_pwrite_test',
+    'run_sigaction_test',
+    'run_signal_test',
+    'run_socket_test',
+    'run_stack_alignment_test',
+    'run_syscall_test',
+    'run_thread_test',
+    ])
+
 
 # If a test is not in one of these suites, it will probally not be run on a
 # regular basis.  These are the suites that will be run by the try bot or that
@@ -679,6 +706,8 @@ MAJOR_TEST_SUITES = set([
   'ncval_testing',
   # Environment for validator difference testing
   'validator_diff_tests',
+  # Subset of tests enabled for Non-SFI Mode.
+  'nonsfi_tests',
 ])
 
 # These are the test suites we know exist, but aren't run on a regular basis.
@@ -847,6 +876,12 @@ def ShouldSkipTest(env, node_name):
 pre_base_env.AddMethod(ShouldSkipTest)
 
 
+def AddImplicitTestSuites(suite_list, node_name):
+  if node_name in nonsfi_test_whitelist:
+    suite_list = suite_list + ['nonsfi_tests']
+  return suite_list
+
+
 def AddNodeToTestSuite(env, node, suite_name, node_name, is_broken=False,
                        is_flaky=False):
   global BROKEN_TEST_COUNT
@@ -861,6 +896,7 @@ def AddNodeToTestSuite(env, node, suite_name, node_name, is_broken=False,
       'test %r does not match "run_..._test" naming convention '
       '(precise regex is %s)' % (node_name, test_name_regex))
 
+  suite_name = AddImplicitTestSuites(suite_name, node_name)
   ValidateTestSuiteNames(suite_name, node_name)
 
   AlwaysBuild(node)
@@ -3652,6 +3688,7 @@ def IrtTestAddNodeToTestSuite(env, node, suite_name, node_name=None,
   # (rather than part of chrome_browser_tests_irt).
   # TODO(mseaborn): But really, all of chrome_browser_tests should be
   # placed in nacl_irt_test_env rather than in nacl_env.
+  suite_name = AddImplicitTestSuites(suite_name, node_name)
   if not disable_irt_suffix:
     if node_name is not None:
       node_name += '_irt'

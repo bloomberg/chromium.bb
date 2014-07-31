@@ -84,55 +84,22 @@ def BuildScriptX86(status, context):
   # buildbot_pnacl.sh
   if context.Linux() and context['default_scons_platform'] == 'x86-32':
     with Step('nonsfi_tests', status, halt_on_fail=False):
-      # TODO(mseaborn): Enable more tests here when they pass.
-      tests = ['run_' + test + '_test_irt' for test in
-               ['float',
-                'hello_world',
-                'irt_futex',
-                'malloc_realloc_calloc_free',
-                'mmap',
-                'stack_alignment',
-                'syscall',
-                'thread']]
-      # Extra non-IRT-using test to run for x86-32
-      tests.extend(['run_clock_get_test',
-                    'run_dup_test',
-                    'run_fcntl_test',
-                    'run_fork_test',
-                    'run_hello_world_test',
-                    'run_mmap_test',
-                    'run_nanosleep_test',
-                    'run_prctl_test',
-                    'run_printf_test',
-                    'run_pwrite_test',
-                    'run_sigaction_test',
-                    'run_signal_test',
-                    'run_socket_test',
-                    'run_stack_alignment_test',
-                    'run_syscall_test',
-                    'run_thread_test'])
       SCons(context, parallel=True, mode=irt_mode,
-            args=flags_run + ['nonsfi_nacl=1'] + tests)
+            args=flags_run +
+                ['nonsfi_nacl=1',
+                 'nonsfi_tests',
+                 'nonsfi_tests_irt'])
 
     # Test nonsfi_loader linked against host's libc.
     with Step('nonsfi_tests_host_libc', status, halt_on_fail=False):
-      tests = ['run_' + test + '_test_irt' for test in
-               ['dup',
-                'float',
-                'getpid',
-                'hello_world',
-                'irt_futex',
-                'malloc_realloc_calloc_free',
-                'syscall',
-                'thread']]
       # Using skip_nonstable_bitcode=1 here disables the tests for
       # zero-cost C++ exception handling, which don't pass for Non-SFI
       # mode yet because we don't build libgcc_eh for Non-SFI mode.
-      tests.extend(['toolchain_tests_irt',
-                    'skip_nonstable_bitcode=1'])
       SCons(context, parallel=True, mode=irt_mode,
-            args=(flags_run + ['nonsfi_nacl=1', 'use_newlib_nonsfi_loader=0'] +
-                  tests))
+            args=flags_run +
+                ['nonsfi_nacl=1', 'use_newlib_nonsfi_loader=0',
+                 'nonsfi_tests_irt',
+                 'toolchain_tests_irt', 'skip_nonstable_bitcode=1'])
 
   # Test unsandboxed mode.
   if ((context.Linux() or context.Mac()) and

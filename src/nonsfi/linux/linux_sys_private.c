@@ -353,6 +353,10 @@ int fcntl(int fd, int cmd, ...) {
   return -1;
 }
 
+int getpid(void) {
+  return errno_value_call(linux_syscall0(__NR_getpid));
+}
+
 int fork(void) {
   /* Set SIGCHLD as flag so we can wait. */
   return errno_value_call(

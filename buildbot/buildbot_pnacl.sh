@@ -30,51 +30,21 @@ readonly SCONS_EVERYTHING=""
 readonly SCONS_S_M="small_tests medium_tests"
 readonly SCONS_S_M_IRT="small_tests_irt medium_tests_irt"
 
-# This uses the newlib-based nonsfi_loader, for which only a subset of
-# the tests works so far.
-# TODO(hamaji): Enable more tests.
-readonly SCONS_NONSFI_NEWLIB_TESTS="\
-    run_dup_test_irt \
-    run_float_test_irt \
-    run_hello_world_test_irt \
-    run_malloc_realloc_calloc_free_test_irt \
-    run_mmap_test_irt \
-    run_stack_alignment_test_irt \
-    run_syscall_test_irt"
-# This uses the host-libc-based nonsfi_loader, for which only a subset of
-# the tests works so far.
+# This uses the newlib-based nonsfi_loader.
+readonly SCONS_NONSFI_NEWLIB="\
+    nonsfi_nacl=1 \
+    nonsfi_tests_irt"
+# This uses the host-libc-based nonsfi_loader.
 # Using skip_nonstable_bitcode=1 here disables the tests for zero-cost C++
 # exception handling, which don't pass for Non-SFI mode yet because we
 # don't build libgcc_eh for Non-SFI mode.
-# TODO(mseaborn): Run small_tests_irt with nonsfi_nacl=1 when it passes,
-# instead of the following whitelist of tests.
-readonly SCONS_NONSFI_TESTS="\
-    run_clock_get_test \
-    run_dup_test \
-    run_fcntl_test \
-    run_fork_test \
-    run_hello_world_test \
-    run_mmap_test \
-    run_nanosleep_test \
-    run_prctl_test \
-    run_printf_test \
-    run_pwrite_test \
-    run_sigaction_test \
-    run_socket_test \
-    run_stack_alignment_test \
-    run_syscall_test \
-    run_hello_world_test_irt \
-    run_float_test_irt \
-    run_malloc_realloc_calloc_free_test_irt \
-    run_dup_test_irt \
-    run_mmap_test_irt \
-    run_syscall_test_irt \
-    run_getpid_test_irt \
+readonly SCONS_NONSFI="\
+    nonsfi_nacl=1 \
+    nonsfi_tests \
+    nonsfi_tests_irt \
     toolchain_tests_irt \
     skip_nonstable_bitcode=1 \
     use_newlib_nonsfi_loader=0"
-readonly SCONS_NONSFI_NEWLIB="nonsfi_nacl=1 ${SCONS_NONSFI_NEWLIB_TESTS}"
-readonly SCONS_NONSFI="nonsfi_nacl=1 ${SCONS_NONSFI_TESTS}"
 
 # subset of tests used on toolchain builders
 readonly SCONS_TC_TESTS="small_tests medium_tests"

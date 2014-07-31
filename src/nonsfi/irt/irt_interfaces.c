@@ -474,7 +474,12 @@ static int irt_clock_getres(nacl_irt_clockid_t clk_id,
                             struct timespec *time_nacl) {
   struct timespec time;
   int result = check_error(clock_getres(clk_id, &time));
-  convert_to_nacl_timespec(time_nacl, &time);
+  /*
+   * The timespec pointer is allowed to be NULL for clock_getres() though
+   * not for clock_gettime().
+   */
+  if (time_nacl != NULL)
+    convert_to_nacl_timespec(time_nacl, &time);
   return result;
 }
 
