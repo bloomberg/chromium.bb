@@ -81,6 +81,11 @@ GLImageMemory::GLImageMemory(const gfx::Size& size, unsigned internalformat)
 }
 
 GLImageMemory::~GLImageMemory() {
+#if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || \
+    defined(USE_OZONE)
+  DCHECK_EQ(EGL_NO_IMAGE_KHR, egl_image_);
+  DCHECK_EQ(0u, egl_texture_id_);
+#endif
 }
 
 bool GLImageMemory::Initialize(const unsigned char* memory) {
@@ -95,7 +100,7 @@ bool GLImageMemory::Initialize(const unsigned char* memory) {
   return true;
 }
 
-void GLImageMemory::Destroy() {
+void GLImageMemory::Destroy(bool have_context) {
 #if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || \
     defined(USE_OZONE)
   if (egl_image_ != EGL_NO_IMAGE_KHR) {
@@ -104,7 +109,8 @@ void GLImageMemory::Destroy() {
   }
 
   if (egl_texture_id_) {
-    glDeleteTextures(1, &egl_texture_id_);
+    if (have_context)
+      glDeleteTextures(1, &egl_texture_id_);
     egl_texture_id_ = 0u;
   }
 #endif

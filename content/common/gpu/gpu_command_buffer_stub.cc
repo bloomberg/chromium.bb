@@ -966,6 +966,16 @@ void GpuCommandBufferStub::OnRegisterGpuMemoryBuffer(
   }
 #endif
 
+  if (!decoder_)
+    return;
+
+  gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
+  DCHECK(image_manager);
+  if (image_manager->LookupImage(id)) {
+    LOG(ERROR) << "Image already exists with same ID.";
+    return;
+  }
+
   GpuChannelManager* manager = channel_->gpu_channel_manager();
   scoped_refptr<gfx::GLImage> image =
       manager->gpu_memory_buffer_factory()->CreateImageForGpuMemoryBuffer(
@@ -980,21 +990,23 @@ void GpuCommandBufferStub::OnRegisterGpuMemoryBuffer(
   if (context_group_->feature_info()->workarounds().release_image_after_use)
     image->SetReleaseAfterUse();
 
-  if (decoder_) {
-    gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
-    DCHECK(image_manager);
-    image_manager->AddImage(image.get(), id);
-  }
+  image_manager->AddImage(image.get(), id);
 }
 
 void GpuCommandBufferStub::OnUnregisterGpuMemoryBuffer(int32 id) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnUnregisterGpuMemoryBuffer");
 
-  if (decoder_) {
-    gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
-    DCHECK(image_manager);
-    image_manager->RemoveImage(id);
+  if (!decoder_)
+    return;
+
+  gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
+  DCHECK(image_manager);
+  if (!image_manager->LookupImage(id)) {
+    LOG(ERROR) << "Image with ID doesn't exist.";
+    return;
   }
+
+  image_manager->RemoveImage(id);
 }
 
 void GpuCommandBufferStub::SendConsoleMessage(

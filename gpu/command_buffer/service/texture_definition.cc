@@ -30,7 +30,7 @@ class GLImageSync : public gfx::GLImage {
                        const gfx::Size& size);
 
   // Implement GLImage.
-  virtual void Destroy() OVERRIDE;
+  virtual void Destroy(bool have_context) OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool BindTexImage(unsigned target) OVERRIDE;
   virtual void ReleaseTexImage(unsigned target) OVERRIDE;
@@ -63,7 +63,8 @@ GLImageSync::~GLImageSync() {
     buffer_->RemoveClient(this);
 }
 
-void GLImageSync::Destroy() {}
+void GLImageSync::Destroy(bool have_context) {
+}
 
 gfx::Size GLImageSync::GetSize() {
   return size_;

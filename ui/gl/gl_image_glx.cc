@@ -111,7 +111,9 @@ GLImageGLX::GLImageGLX(const gfx::Size& size, unsigned internalformat)
     : glx_pixmap_(0), size_(size), internalformat_(internalformat) {
 }
 
-GLImageGLX::~GLImageGLX() { Destroy(); }
+GLImageGLX::~GLImageGLX() {
+  DCHECK_EQ(0u, glx_pixmap_);
+}
 
 bool GLImageGLX::Initialize(XID pixmap) {
   if (!GLSurfaceGLX::IsTextureFromPixmapSupported()) {
@@ -160,7 +162,7 @@ bool GLImageGLX::Initialize(XID pixmap) {
   return true;
 }
 
-void GLImageGLX::Destroy() {
+void GLImageGLX::Destroy(bool have_context) {
   if (glx_pixmap_) {
     glXDestroyGLXPixmap(gfx::GetXDisplay(), glx_pixmap_);
     glx_pixmap_ = 0;
@@ -182,7 +184,7 @@ bool GLImageGLX::BindTexImage(unsigned target) {
 }
 
 void GLImageGLX::ReleaseTexImage(unsigned target) {
-  DCHECK(glx_pixmap_);
+  DCHECK_NE(0u, glx_pixmap_);
   DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), target);
 
   glXReleaseTexImageEXT(gfx::GetXDisplay(), glx_pixmap_, GLX_FRONT_LEFT_EXT);

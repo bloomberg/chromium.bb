@@ -15,7 +15,7 @@ GLImageSharedMemory::GLImageSharedMemory(const gfx::Size& size,
 }
 
 GLImageSharedMemory::~GLImageSharedMemory() {
-  Destroy();
+  DCHECK(!shared_memory_);
 }
 
 bool GLImageSharedMemory::Initialize(const gfx::GpuMemoryBufferHandle& handle) {
@@ -50,8 +50,8 @@ bool GLImageSharedMemory::Initialize(const gfx::GpuMemoryBufferHandle& handle) {
   return true;
 }
 
-void GLImageSharedMemory::Destroy() {
-  GLImageMemory::Destroy();
+void GLImageSharedMemory::Destroy(bool have_context) {
+  GLImageMemory::Destroy(have_context);
   shared_memory_.reset();
 }
 

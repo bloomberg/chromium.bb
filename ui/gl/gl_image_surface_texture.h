@@ -21,7 +21,7 @@ class GL_EXPORT GLImageSurfaceTexture : public GLImage {
   bool Initialize(const gfx::GpuMemoryBufferHandle& handle);
 
   // Overridden from GLImage:
-  virtual void Destroy() OVERRIDE;
+  virtual void Destroy(bool have_context) OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool BindTexImage(unsigned target) OVERRIDE;
   virtual void ReleaseTexImage(unsigned target) OVERRIDE {}

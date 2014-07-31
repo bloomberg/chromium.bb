@@ -18,7 +18,10 @@ GLImageAndroidNativeBuffer::GLImageAndroidNativeBuffer(const gfx::Size& size)
       texture_id_for_unbind_(0) {
 }
 
-GLImageAndroidNativeBuffer::~GLImageAndroidNativeBuffer() { Destroy(); }
+GLImageAndroidNativeBuffer::~GLImageAndroidNativeBuffer() {
+  DCHECK_EQ(EGL_NO_IMAGE_KHR, egl_image_);
+  DCHECK_EQ(0u, texture_id_for_unbind_);
+}
 
 bool GLImageAndroidNativeBuffer::Initialize(EGLClientBuffer native_buffer) {
   EGLint attrs[] = {EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
@@ -26,18 +29,20 @@ bool GLImageAndroidNativeBuffer::Initialize(EGLClientBuffer native_buffer) {
       EGL_NATIVE_BUFFER_ANDROID, native_buffer, attrs);
 }
 
-void GLImageAndroidNativeBuffer::Destroy() {
+void GLImageAndroidNativeBuffer::Destroy(bool have_context) {
   if (egl_image_for_unbind_ != EGL_NO_IMAGE_KHR) {
     eglDestroyImageKHR(GLSurfaceEGL::GetHardwareDisplay(),
                        egl_image_for_unbind_);
     egl_image_for_unbind_ = EGL_NO_IMAGE_KHR;
   }
+
   if (texture_id_for_unbind_) {
-    glDeleteTextures(1, &texture_id_for_unbind_);
-    texture_id_for_unbind_ = 0;
+    if (have_context)
+      glDeleteTextures(1, &texture_id_for_unbind_);
+    texture_id_for_unbind_ = 0u;
   }
 
-  GLImageEGL::Destroy();
+  GLImageEGL::Destroy(have_context);
 }
 
 bool GLImageAndroidNativeBuffer::BindTexImage(unsigned target) {
@@ -64,7 +69,7 @@ bool GLImageAndroidNativeBuffer::BindTexImage(unsigned target) {
 }
 
 void GLImageAndroidNativeBuffer::WillUseTexImage() {
-  DCHECK(egl_image_);
+  DCHECK_NE(EGL_NO_IMAGE_KHR, egl_image_);
   DCHECK(!in_use_);
   in_use_ = true;
   glEGLImageTargetTexture2DOES(target_, egl_image_);
@@ -72,6 +77,7 @@ void GLImageAndroidNativeBuffer::WillUseTexImage() {
 }
 
 void GLImageAndroidNativeBuffer::DidUseTexImage() {
+  DCHECK_NE(EGL_NO_IMAGE_KHR, egl_image_);
   DCHECK(in_use_);
   in_use_ = false;
 

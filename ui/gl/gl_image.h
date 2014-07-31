@@ -18,7 +18,7 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   GLImage();
 
   // Destroys the image.
-  virtual void Destroy() = 0;
+  virtual void Destroy(bool have_context) = 0;
 
   // Get the size of the image.
   virtual gfx::Size GetSize() = 0;

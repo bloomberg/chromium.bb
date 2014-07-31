@@ -3496,6 +3496,11 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
     vertex_array_manager_.reset();
   }
 
+  if (image_manager_.get()) {
+    image_manager_->Destroy(have_context);
+    image_manager_.reset();
+  }
+
   offscreen_target_frame_buffer_.reset();
   offscreen_target_color_texture_.reset();
   offscreen_target_color_render_buffer_.reset();

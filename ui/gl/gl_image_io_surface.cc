@@ -15,7 +15,9 @@ namespace gfx {
 GLImageIOSurface::GLImageIOSurface(const gfx::Size& size) : size_(size) {
 }
 
-GLImageIOSurface::~GLImageIOSurface() { Destroy(); }
+GLImageIOSurface::~GLImageIOSurface() {
+  DCHECK(!io_surface_);
+}
 
 bool GLImageIOSurface::Initialize(const gfx::GpuMemoryBufferHandle& handle) {
   io_surface_.reset(IOSurfaceLookup(handle.io_surface_id));
@@ -25,6 +27,10 @@ bool GLImageIOSurface::Initialize(const gfx::GpuMemoryBufferHandle& handle) {
   }
 
   return true;
+}
+
+void GLImageIOSurface::Destroy(bool have_context) {
+  io_surface_.reset();
 }
 
 gfx::Size GLImageIOSurface::GetSize() { return size_; }

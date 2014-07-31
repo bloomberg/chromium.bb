@@ -8,7 +8,7 @@ namespace gfx {
 
 GLImageStub::GLImageStub() {}
 
-GLImageStub::~GLImageStub() { Destroy(); }
+GLImageStub::~GLImageStub() {}
 
 gfx::Size GLImageStub::GetSize() { return gfx::Size(1, 1); }
 

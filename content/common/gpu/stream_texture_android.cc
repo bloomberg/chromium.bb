@@ -95,7 +95,7 @@ void StreamTexture::OnWillDestroyStub() {
   surface_texture_ = NULL;
 }
 
-void StreamTexture::Destroy() {
+void StreamTexture::Destroy(bool have_context) {
   NOTREACHED();
 }
 

@@ -15,7 +15,7 @@ GLImageRefCountedMemory::GLImageRefCountedMemory(const gfx::Size& size,
 }
 
 GLImageRefCountedMemory::~GLImageRefCountedMemory() {
-  Destroy();
+  DCHECK(!ref_counted_memory_);
 }
 
 bool GLImageRefCountedMemory::Initialize(
@@ -29,8 +29,8 @@ bool GLImageRefCountedMemory::Initialize(
   return true;
 }
 
-void GLImageRefCountedMemory::Destroy() {
-  GLImageMemory::Destroy();
+void GLImageRefCountedMemory::Destroy(bool have_context) {
+  GLImageMemory::Destroy(have_context);
   ref_counted_memory_ = NULL;
 }
 

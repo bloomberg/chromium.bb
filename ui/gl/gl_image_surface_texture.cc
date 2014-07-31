@@ -14,7 +14,10 @@ GLImageSurfaceTexture::GLImageSurfaceTexture(const gfx::Size& size)
     : size_(size), texture_id_(0) {
 }
 
-GLImageSurfaceTexture::~GLImageSurfaceTexture() { Destroy(); }
+GLImageSurfaceTexture::~GLImageSurfaceTexture() {
+  DCHECK(!surface_texture_);
+  DCHECK_EQ(0, texture_id_);
+}
 
 bool GLImageSurfaceTexture::Initialize(
     const gfx::GpuMemoryBufferHandle& handle) {
@@ -26,7 +29,7 @@ bool GLImageSurfaceTexture::Initialize(
   return !!surface_texture_;
 }
 
-void GLImageSurfaceTexture::Destroy() {
+void GLImageSurfaceTexture::Destroy(bool have_context) {
   surface_texture_ = NULL;
   texture_id_ = 0;
 }

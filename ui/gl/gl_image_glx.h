@@ -19,7 +19,7 @@ class GL_EXPORT GLImageGLX : public GLImage {
   bool Initialize(XID pixmap);
 
   // Overridden from GLImage:
-  virtual void Destroy() OVERRIDE;
+  virtual void Destroy(bool have_context) OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool BindTexImage(unsigned target) OVERRIDE;
   virtual void ReleaseTexImage(unsigned target) OVERRIDE;

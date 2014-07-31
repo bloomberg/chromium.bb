@@ -23,7 +23,7 @@ class GLImageImpl : public gfx::GLImage {
               const base::Closure& release_callback);
 
   // implement gfx::GLImage
-  virtual void Destroy() OVERRIDE;
+  virtual void Destroy(bool have_context) OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool BindTexImage(unsigned target) OVERRIDE;
   virtual void ReleaseTexImage(unsigned target) OVERRIDE;
@@ -50,7 +50,7 @@ GLImageImpl::~GLImageImpl() {
   release_callback_.Run();
 }
 
-void GLImageImpl::Destroy() {
+void GLImageImpl::Destroy(bool have_context) {
   NOTREACHED();
 }
 

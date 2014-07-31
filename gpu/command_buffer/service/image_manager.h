@@ -23,12 +23,13 @@ class GPU_EXPORT ImageManager {
   ImageManager();
   ~ImageManager();
 
+  void Destroy(bool have_context);
   void AddImage(gfx::GLImage* image, int32 service_id);
   void RemoveImage(int32 service_id);
   gfx::GLImage* LookupImage(int32 service_id);
 
  private:
-  typedef base::hash_map<uint32, scoped_refptr<gfx::GLImage> > GLImageMap;
+  typedef base::hash_map<int32, scoped_refptr<gfx::GLImage> > GLImageMap;
   GLImageMap images_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageManager);
