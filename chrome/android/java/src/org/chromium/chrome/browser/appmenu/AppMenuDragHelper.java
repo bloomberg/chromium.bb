@@ -9,6 +9,8 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.graphics.Rect;
+import android.view.GestureDetector;
+import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
@@ -17,6 +19,7 @@ import android.widget.ListPopupWindow;
 import android.widget.ListView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.UmaBridge;
 
 import java.util.ArrayList;
 
@@ -47,6 +50,8 @@ class AppMenuDragHelper {
     private volatile float mLastTouchX;
     private volatile float mLastTouchY;
     private final int mItemRowHeight;
+    private boolean mIsSingleTapUpHappened;
+    GestureDetector mGestureSingleTapDetector;
 
     // These are used in a function locally, but defined here to avoid heap allocation on every
     // touch event.
@@ -83,6 +88,13 @@ class AppMenuDragHelper {
                 }
             }
         });
+        mGestureSingleTapDetector = new GestureDetector(activity, new SimpleOnGestureListener() {
+            @Override
+            public boolean onSingleTapUp(MotionEvent e) {
+                mIsSingleTapUpHappened = true;
+                return true;
+            }
+        });
     }
 
     /**
@@ -98,11 +110,17 @@ class AppMenuDragHelper {
         mDragScrollOffset = 0.0f;
         mDragScrollOffsetRounded = 0;
         mDragScrollingVelocity = 0.0f;
+        mIsSingleTapUpHappened = false;
 
         if (startDragging) mDragScrolling.start();
     }
 
-    void onDismiss() {
+    /**
+     * Dragging mode will be stopped by calling this function. Note that it will fall back to normal
+     * non-dragging mode.
+     */
+    void finishDragging() {
+        menuItemAction(0, 0, ITEM_ACTION_CLEAR_HIGHLIGHT_ALL);
         mDragScrolling.cancel();
     }
 
@@ -137,6 +155,14 @@ class AppMenuDragHelper {
             return true;
         }
 
+        if (!mIsSingleTapUpHappened) {
+            mGestureSingleTapDetector.onTouchEvent(event);
+            if (mIsSingleTapUpHappened) {
+                UmaBridge.usingMenu(false, false);
+                finishDragging();
+            }
+        }
+
         // After this line, drag scrolling is happening.
         if (!mDragScrolling.isRunning()) return false;
 
@@ -156,6 +182,7 @@ class AppMenuDragHelper {
         didPerformClick = menuItemAction(roundedRawX, roundedRawY, itemAction);
 
         if (eventActionMasked == MotionEvent.ACTION_UP && !didPerformClick) {
+            UmaBridge.usingMenu(false, true);
             mAppMenu.dismiss();
         } else if (eventActionMasked == MotionEvent.ACTION_MOVE) {
             // Auto scrolling on the top or the bottom of the listView.
@@ -218,6 +245,7 @@ class AppMenuDragHelper {
                     break;
                 case ITEM_ACTION_PERFORM:
                     if (shouldPerform) {
+                        UmaBridge.usingMenu(false, true);
                         itemView.performClick();
                         didPerformClick = true;
                     }

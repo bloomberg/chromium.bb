@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.appmenu;
 
-import android.view.GestureDetector;
-import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -19,11 +17,9 @@ import org.chromium.chrome.browser.UmaBridge;
  * Simply construct this class and pass the class instance to a menu button as TouchListener.
  * Then this class will handle everything regarding showing app menu for you.
  */
-public class AppMenuButtonHelper extends SimpleOnGestureListener implements OnTouchListener {
+public class AppMenuButtonHelper implements OnTouchListener {
     private final View mMenuButton;
     private final AppMenuHandler mMenuHandler;
-    private final GestureDetector mAppMenuGestureDetector;
-    private boolean mSeenFirstScrollEvent;
     private Runnable mOnAppMenuShownListener;
 
     /**
@@ -33,8 +29,6 @@ public class AppMenuButtonHelper extends SimpleOnGestureListener implements OnTo
     public AppMenuButtonHelper(View menuButton, AppMenuHandler menuHandler) {
         mMenuButton = menuButton;
         mMenuHandler = menuHandler;
-        mAppMenuGestureDetector = new GestureDetector(menuButton.getContext(), this);
-        mAppMenuGestureDetector.setIsLongpressEnabled(false);
     }
 
     /**
@@ -52,7 +46,11 @@ public class AppMenuButtonHelper extends SimpleOnGestureListener implements OnTo
     private boolean showAppMenu(boolean startDragging) {
         if (!mMenuHandler.isAppMenuShowing() &&
                 mMenuHandler.showAppMenu(mMenuButton, false, startDragging)) {
-            UmaBridge.usingMenu(false, startDragging);
+            // Initial start dragging can be canceled in case if it was just single tap.
+            // So we only record non-dragging here, and will deal with those dragging cases in
+            // AppMenuDragHelper class.
+            if (!startDragging) UmaBridge.usingMenu(false, false);
+
             if (mOnAppMenuShownListener != null) {
                 mOnAppMenuShownListener.run();
             }
@@ -85,48 +83,31 @@ public class AppMenuButtonHelper extends SimpleOnGestureListener implements OnTo
     }
 
     @Override
-    public boolean onDown(MotionEvent e) {
-        mSeenFirstScrollEvent = false;
-        mMenuButton.setPressed(true);
 
-        return true;
-    }
-
-    @Override
-    public boolean onSingleTapUp(MotionEvent e) {
-        // A single tap shows the app menu, but dragging disabled.
-        return showAppMenu(false);
-    }
-
-    @Override
-    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        if (mSeenFirstScrollEvent) return false;
-        mSeenFirstScrollEvent = true;
-
-        return showAppMenu(true);
-    }
-
-    @Override
     public boolean onTouch(View view, MotionEvent event) {
-        // isMenuButtonReleased is a workaround for some versions of Android that do not
-        // reset pressed animations correctly on mMenuButton.setPressed(false).
-        boolean isMenuButtonReleased = false;
-        if (event.getActionMasked() == MotionEvent.ACTION_CANCEL ||
-                event.getActionMasked() == MotionEvent.ACTION_UP) {
-            mMenuButton.setPressed(false);
-            isMenuButtonReleased = true;
-        }
+        boolean isTouchEventConsumed = false;
 
-        // This will take care of showing app menu.
-        boolean isTouchEventConsumed = mAppMenuGestureDetector.onTouchEvent(event);
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                isTouchEventConsumed |= true;
+                mMenuButton.setPressed(true);
+                showAppMenu(true);
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                isTouchEventConsumed |= true;
+                mMenuButton.setPressed(false);
+                break;
+            default:
+        }
 
         // If user starts to drag on this menu button, ACTION_DOWN and all the subsequent touch
         // events are received here. We need to forward this event to the app menu to handle
         // dragging correctly.
         AppMenuDragHelper dragHelper = mMenuHandler.getAppMenuDragHelper();
-        if (dragHelper != null && !isTouchEventConsumed) {
+        if (dragHelper != null) {
             isTouchEventConsumed |= dragHelper.handleDragging(event);
         }
-        return !isMenuButtonReleased && isTouchEventConsumed;
+        return isTouchEventConsumed;
     }
 }

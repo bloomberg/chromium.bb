@@ -102,7 +102,7 @@ public class AppMenuHandler {
     }
 
     void appMenuDismissed() {
-        mAppMenuDragHelper.onDismiss();
+        mAppMenuDragHelper.finishDragging();
     }
 
     /**
