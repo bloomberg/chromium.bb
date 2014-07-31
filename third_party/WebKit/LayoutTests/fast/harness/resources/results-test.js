@@ -1,4 +1,4 @@
-// To run these tests, load json_results.html in a browser.
+// To run these tests, load results.html in a browser.
 // You should see a series of PASS lines.
 if (window.testRunner)
     testRunner.dumpAsText();
