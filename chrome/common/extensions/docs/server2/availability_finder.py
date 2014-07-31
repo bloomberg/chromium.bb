@@ -189,12 +189,21 @@ class AvailabilityFinder(object):
       return self._GetAPISchema(api_name, file_system, version) is not None
     return True
 
-  def _CheckStableAvailability(self, api_name, file_system, version):
+  def _CheckStableAvailability(self,
+                               api_name,
+                               file_system,
+                               version,
+                               earliest_version=None):
     '''Checks for availability of an API, |api_name|, on the stable channel.
     Considers several _features.json files, file system existence, and
     extension_api.json depending on the given |version|.
+    |earliest_version| is the version of Chrome at which |api_name| first became
+    available. It should only be given when checking stable availability for
+    API nodes, so it can be used as an alternative to the check for filesystem
+    existence.
     '''
-    if version < _SVN_MIN_VERSION:
+    earliest_version = earliest_version or _SVN_MIN_VERSION
+    if version < earliest_version:
       # SVN data isn't available below this version.
       return False
     features_bundle = self._CreateFeaturesBundle(file_system)
@@ -214,11 +223,17 @@ class AvailabilityFinder(object):
           _GetChannelFromManifestFeatures(api_name, features_bundle))
       if available_channel is not None:
         return available_channel == 'stable'
-    if version >= _SVN_MIN_VERSION:
-      # Fall back to a check for file system existence if the API is not
-      # stable in any of the _features.json files, or if the _features files
-      # do not exist (version 19 and earlier).
+
+    # |earliest_version| == _SVN_MIN_VERSION implies we're dealing with an API.
+    # Fall back to a check for file system existence if the API is not
+    # stable in any of the _features.json files, or if the _features files
+    # do not exist (version 19 and earlier).
+    if earliest_version == _SVN_MIN_VERSION:
       return self._HasAPISchema(api_name, file_system, version)
+    # For API nodes, assume it's available if |version| is greater than the
+    # version the node became available (which it is, because of the first
+    # check).
+    return True
 
   def _CheckChannelAvailability(self, api_name, file_system, channel_info):
     '''Searches through the _features files in a given |file_system|, falling
@@ -289,15 +304,19 @@ class AvailabilityFinder(object):
                                           file_system,
                                           channel_info)
 
-  def _FindScheduled(self, api_name):
+  def _FindScheduled(self, api_name, earliest_version=None):
     '''Determines the earliest version of Chrome where the API is stable.
     Unlike the code in GetAPIAvailability, this checks if the API is stable
     even when Chrome is in dev or beta, which shows that the API is scheduled
-    to be stable in that verison of Chrome.
+    to be stable in that verison of Chrome. |earliest_version| is the version
+    |api_name| became first available. Only use it when finding scheduled
+    availability for nodes.
     '''
     def check_scheduled(file_system, channel_info):
-      return self._CheckStableAvailability(
-          api_name, file_system, channel_info.version)
+      return self._CheckStableAvailability(api_name,
+                                           file_system,
+                                           channel_info.version,
+                                           earliest_version=earliest_version)
 
     stable_channel = self._file_system_iterator.Descending(
         self._branch_utility.GetChannelInfo('dev'), check_scheduled)
@@ -319,7 +338,9 @@ class AvailabilityFinder(object):
     if channel_info.channel == 'stable':
       scheduled = None
     else:
-      scheduled = self._FindScheduled(node_name)
+      scheduled = self._FindScheduled(
+          node_name,
+          earliest_version=earliest_channel_info.version)
 
     return AvailabilityInfo(channel_info, scheduled=scheduled)
 

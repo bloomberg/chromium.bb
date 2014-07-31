@@ -209,13 +209,15 @@ class AvailabilityFinderTest(unittest.TestCase):
           tabs_graph.Lookup('tabs', 'properties', 'fakeTabsProperty3'))
       assertEquals(True, self._branch_utility.GetChannelInfo('dev'),
           tabs_graph.Lookup('tabs', 'events', 'onActivated', 'parameters',
-              'activeInfo', 'properties', 'windowId'))
+              'activeInfo', 'properties', 'windowId'), scheduled=31)
       assertEquals(True, self._branch_utility.GetChannelInfo('dev'),
-          tabs_graph.Lookup('tabs', 'events', 'onUpdated', 'parameters', 'tab'))
+          tabs_graph.Lookup('tabs', 'events', 'onUpdated', 'parameters', 'tab'),
+          scheduled=31)
       assertEquals(True, self._branch_utility.GetChannelInfo('beta'),
-          tabs_graph.Lookup('tabs', 'events', 'onActivated'))
+          tabs_graph.Lookup('tabs', 'events', 'onActivated'), scheduled=30)
       assertEquals(True, self._branch_utility.GetChannelInfo('beta'),
-          tabs_graph.Lookup('tabs', 'functions', 'get', 'parameters', 'tabId'))
+          tabs_graph.Lookup('tabs', 'functions', 'get', 'parameters', 'tabId'),
+          scheduled=30)
       assertEquals(True, self._branch_utility.GetChannelInfo('stable'),
           tabs_graph.Lookup('tabs', 'types', 'InjectDetails', 'properties',
               'code'))
@@ -236,9 +238,10 @@ class AvailabilityFinderTest(unittest.TestCase):
 
       # Test a node that was restricted to dev channel when it was introduced.
       assertEquals(True, self._branch_utility.GetChannelInfo('beta'),
-          tabs_graph.Lookup('tabs', 'functions', 'restrictedFunc'))
+          tabs_graph.Lookup('tabs', 'functions', 'restrictedFunc'),
+          scheduled=30)
 
-      # Test a scheduled node.
+      # Test an explicitly scheduled node.
       assertEquals(True, self._branch_utility.GetChannelInfo('dev'),
           tabs_graph.Lookup('tabs', 'functions', 'scheduledFunc'),
           scheduled=31)
