@@ -565,8 +565,8 @@ cr.define('print_preview', function() {
 
       $('document-title').innerText = settings.documentTitle;
       setIsVisible($('system-dialog-link'),
-                   !settings.hidePrintWithSystemDialogLink);
-      setIsVisible($('cloud-print-dialog-link'), !settings.isInAppKioskMode);
+                   !settings.hidePrintWithSystemDialogLink &&
+                   !settings.isInAppKioskMode);
     },
 
     /**

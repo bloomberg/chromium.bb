@@ -234,7 +234,9 @@ function checkSectionVisible(section, visible) {
 
 function checkElementDisplayed(el, isDisplayed) {
   assertNotEquals(null, el);
-  expectEquals(isDisplayed, !el.hidden);
+  expectEquals(isDisplayed,
+               !el.hidden,
+               'element="' + el.id + '" of class "' + el.classList + '"');
 }
 
 function getCddTemplate(printerId) {
@@ -279,6 +281,18 @@ function getCddTemplate(printerId) {
     }
   };
 }
+
+// Test that disabled settings hide the disabled sections.
+TEST_F('PrintPreviewWebUITest', 'TestSystemDialogLinkIsHiddenInAppKiosMode',
+    function() {
+  var initialSettingsSetEvent =
+      new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
+  initialSettingsSetEvent.initialSettings = this.initialSettings_;
+  initialSettingsSetEvent.initialSettings.isInAppKioskMode_ = true;
+  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
+
+  checkElementDisplayed($('system-dialog-link'), false);
+});
 
 // Test that disabled settings hide the disabled sections.
 TEST_F('PrintPreviewWebUITest', 'TestSectionsDisabled', function() {
