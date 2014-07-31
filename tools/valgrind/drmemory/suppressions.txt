@@ -630,7 +630,7 @@ system call NtCreateTimer
 KERNELBASE.dll!CreateWaitableTimerExW
 KERNEL32.dll!CreateWaitableTimerW
 *!talk_base::Timing::Timing
-*!content::P2PSocketDispatcherHost::P2PSocketDispatcherHost
+...
 *!content::RenderProcessHostImpl::CreateMessageFilters
 *!content::RenderProcessHostImpl::Init
 *!content::RenderViewHostImpl::CreateRenderView
