@@ -122,7 +122,6 @@ class NotificationsTest : public InProcessBrowserTest {
 
  protected:
   int GetNotificationCount();
-  int GetNotificationPopupCount();
 
   void CloseBrowserWindow(Browser* browser);
   void CrashTab(Browser* browser, int index);
@@ -163,10 +162,6 @@ class NotificationsTest : public InProcessBrowserTest {
 
 int NotificationsTest::GetNotificationCount() {
   return message_center::MessageCenter::Get()->NotificationCount();
-}
-
-int NotificationsTest::GetNotificationPopupCount() {
-  return message_center::MessageCenter::Get()->GetPopupNotifications().size();
 }
 
 void NotificationsTest::CloseBrowserWindow(Browser* browser) {
@@ -748,10 +743,17 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest,
   ASSERT_EQ(1, GetNotificationCount());
 }
 
-IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationReplacement) {
+// See http://crbug.com/366539
+#if defined(OS_LINUX)
+#define MAYBE_TestNotificationReplacement DISABLED_TestNotificationReplacement
+#else
+#define MAYBE_TestNotificationReplacement TestNotificationReplacement
+#endif
+
+IN_PROC_BROWSER_TEST_F(NotificationsTest, MAYBE_TestNotificationReplacement) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
-  // Test that we can replace a notification using the tag.
+  // Test that we can replace a notification using the replaceId.
   AllowAllOrigins();
 
   ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
@@ -806,36 +808,4 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestLastUsage) {
                                        CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
                 .ToDoubleT(),
             13);
-}
-
-IN_PROC_BROWSER_TEST_F(NotificationsTest,
-                       TestNotificationReplacementReappearance) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
-  // Test that we can replace a notification using the tag, and that it will
-  // cause the notification to reappear as a popup again.
-  AllowAllOrigins();
-
-  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
-
-  ASSERT_EQ(0, GetNotificationPopupCount());
-
-  std::string result = CreateNotification(
-      browser(), true, "abc.png", "Title1", "Body1", "chat");
-  EXPECT_NE("-1", result);
-
-  ASSERT_EQ(1, GetNotificationPopupCount());
-
-  message_center::NotificationList::Notifications notifications =
-      message_center::MessageCenter::Get()->GetVisibleNotifications();
-  message_center::MessageCenter::Get()->ClickOnNotification(
-      (*notifications.rbegin())->id());
-
-  ASSERT_EQ(0, GetNotificationPopupCount());
-
-  result = CreateNotification(
-      browser(), true, "abc.png", "Title2", "Body2", "chat");
-  EXPECT_NE("-1", result);
-
-  ASSERT_EQ(1, GetNotificationPopupCount());
 }
