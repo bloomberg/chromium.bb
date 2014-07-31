@@ -237,10 +237,6 @@ deps_os = {
             None,
         'src/third_party/libsrtp':
             None,
-        'src/third_party/libvpx':
-            None,
-        'src/third_party/libyuv':
-            None,
         'src/third_party/mesa/src':
             None,
         'src/third_party/nss':
@@ -272,8 +268,6 @@ deps_os = {
         'src/third_party/webgl':
             None,
         'src/third_party/webpagereplay':
-            None,
-        'src/third_party/webrtc':
             None,
         'src/third_party/yasm/source/patched-yasm':
             None,
