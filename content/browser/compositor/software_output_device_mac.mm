@@ -20,11 +20,8 @@ SoftwareOutputDeviceMac::~SoftwareOutputDeviceMac() {
 
 void SoftwareOutputDeviceMac::EndPaint(cc::SoftwareFrameData* frame_data) {
   SoftwareOutputDevice::EndPaint(frame_data);
-
-  NSView* view = compositor_->widget();
-  [view gotSoftwareFrame:frame_data
-         withScaleFactor:scale_factor_
-              withCanvas:canvas_.get()];
+  BrowserCompositorViewMac::GotSoftwareFrame(
+      compositor_->widget(), frame_data, scale_factor_, canvas_.get());
 }
 
 }  // namespace content

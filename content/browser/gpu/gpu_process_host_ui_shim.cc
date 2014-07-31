@@ -22,6 +22,10 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/browser_thread.h"
 
+#if defined(OS_MACOSX)
+#include "content/browser/compositor/browser_compositor_view_mac.h"
+#endif
+
 #if defined(USE_OZONE)
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -258,10 +262,15 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
     return;
 
 #if defined(OS_MACOSX)
-  // On Mac with delegated rendering, accelerated surfaces are swapped by
-  // calling a method on their NSView.
+  // On Mac with delegated rendering, accelerated surfaces are not necessarily
+  // associated with a RenderWidgetHostViewBase.
   if (IsDelegatedRendererEnabled()) {
-    RenderWidgetHelper::OnNativeSurfaceBuffersSwappedOnUIThread(params);
+    gfx::AcceleratedWidget native_widget =
+        content::GpuSurfaceTracker::Get()->AcquireNativeWidget(
+            params.surface_id);
+    BrowserCompositorViewMac::GotAcceleratedFrame(
+        native_widget, params.surface_handle, params.surface_id,
+        params.latency_info, params.size, params.scale_factor);
     return;
   }
 #endif

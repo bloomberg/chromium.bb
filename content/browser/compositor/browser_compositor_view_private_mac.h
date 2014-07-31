@@ -5,38 +5,24 @@
 #ifndef CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_VIEW_PRIVATE_MAC_H_
 #define CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_VIEW_PRIVATE_MAC_H_
 
-#include "content/browser/compositor/browser_compositor_view_mac.h"
+#include <IOSurface/IOSurfaceAPI.h>
 
-@class BrowserCompositorViewCocoa;
+#include "base/mac/scoped_nsobject.h"
+#include "content/browser/compositor/browser_compositor_view_mac.h"
+#include "content/browser/renderer_host/compositing_iosurface_layer_mac.h"
+#include "content/browser/renderer_host/software_layer_mac.h"
 
 namespace content {
-
-// BrowserCompositorViewCocoaClient is the interface through which
-// gfx::NativeWidget (aka NSView aka BrowserCompositorViewCocoa) calls back to
-// BrowserCompositorViewMacInternal.
-class BrowserCompositorViewCocoaClient {
- public:
-  virtual void GotAcceleratedIOSurfaceFrame(
-      IOSurfaceID io_surface_id,
-      int output_surface_id,
-      const std::vector<ui::LatencyInfo>& latency_info,
-      gfx::Size pixel_size,
-      float scale_factor) = 0;
-
-  virtual void GotSoftwareFrame(
-      cc::SoftwareFrameData* frame_data,
-      float scale_factor,
-      SkCanvas* canvas) = 0;
-};
 
 // BrowserCompositorViewMacInternal owns a NSView and a ui::Compositor that
 // draws that view.
 class BrowserCompositorViewMacInternal
-    : public BrowserCompositorViewCocoaClient,
-      public CompositingIOSurfaceLayerClient {
+    : public CompositingIOSurfaceLayerClient {
  public:
   BrowserCompositorViewMacInternal();
   virtual ~BrowserCompositorViewMacInternal();
+  static BrowserCompositorViewMacInternal* FromAcceleratedWidget(
+      gfx::AcceleratedWidget widget);
 
   void SetClient(BrowserCompositorViewMacClient* client);
   void ResetClient();
@@ -51,19 +37,15 @@ class BrowserCompositorViewMacInternal
   void BeginPumpingFrames();
   void EndPumpingFrames();
 
- private:
-  // BrowserCompositorViewCocoaClient implementation:
-  virtual void GotAcceleratedIOSurfaceFrame(
-      IOSurfaceID io_surface_id,
-      int output_surface_id,
+  void GotAcceleratedIOSurfaceFrame(
+      IOSurfaceID io_surface_id, int output_surface_id,
       const std::vector<ui::LatencyInfo>& latency_info,
-      gfx::Size pixel_size,
-      float scale_factor) OVERRIDE;
-  virtual void GotSoftwareFrame(
-      cc::SoftwareFrameData* frame_data,
-      float scale_factor,
-      SkCanvas* canvas) OVERRIDE;
+      gfx::Size pixel_size, float scale_factor);
 
+  void GotSoftwareFrame(
+      cc::SoftwareFrameData* frame_data, float scale_factor, SkCanvas* canvas);
+
+private:
   // CompositingIOSurfaceLayerClient implementation:
   virtual bool AcceleratedLayerShouldAckImmediately() const OVERRIDE;
   virtual void AcceleratedLayerDidDrawFrame(bool succeeded) OVERRIDE;
@@ -72,12 +54,10 @@ class BrowserCompositorViewMacInternal
   // internals.
   BrowserCompositorViewMacClient* client_;
 
-  // The NSView drawn by the |compositor_|
-  base::scoped_nsobject<BrowserCompositorViewCocoa> cocoa_view_;
+  // A phony NSView handle used to identify this.
+  gfx::AcceleratedWidget native_widget_;
 
-  // The compositor drawing the contents of |cooca_view_|. Note that this must
-  // be declared after |cocoa_view_|, so that it be destroyed first (because it
-  // will reach into |cocoa_view_|).
+  // The compositor drawing the contents of this view.
   scoped_ptr<ui::Compositor> compositor_;
 
   // A flipped layer, which acts as the parent of the compositing and software
@@ -100,18 +80,5 @@ class BrowserCompositorViewMacInternal
 };
 
 }  // namespace content
-
-// BrowserCompositorViewCocoa is the actual NSView to which the layers drawn
-// by the ui::Compositor are attached.
-@interface BrowserCompositorViewCocoa : NSView {
-  content::BrowserCompositorViewCocoaClient* client_;
-}
-
-- (id)initWithClient:(content::BrowserCompositorViewCocoaClient*)client;
-
-// Mark that the client provided at initialization is no longer valid and may
-// not be called back into.
-- (void)resetClient;
-@end
 
 #endif  // CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_VIEW_PRIVATE_MAC_H_

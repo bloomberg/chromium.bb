@@ -4,7 +4,10 @@
 
 #include "content/browser/compositor/browser_compositor_view_private_mac.h"
 
+#include <map>
+
 #include "base/debug/trace_event.h"
+#include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "content/browser/compositor/gpu_process_transport_factory.h"
 #include "content/browser/renderer_host/compositing_iosurface_context_mac.h"
@@ -16,10 +19,17 @@
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/gl/scoped_cgl.h"
 
+namespace content {
+namespace {
+
+typedef std::map<gfx::AcceleratedWidget,BrowserCompositorViewMacInternal*>
+    WidgetToInternalsMap;
+base::LazyInstance<WidgetToInternalsMap> g_widget_to_internals_map;
+
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserCompositorViewMacInternal
-
-namespace content {
 
 BrowserCompositorViewMacInternal::BrowserCompositorViewMacInternal()
     : client_(NULL),
@@ -36,20 +46,25 @@ BrowserCompositorViewMacInternal::BrowserCompositorViewMacInternal()
   [flipped_layer_
       setAutoresizingMask:kCALayerWidthSizable|kCALayerHeightSizable];
 
-  // Set the Cocoa view to be hosting the un-flipped background layer (hosting
-  // a flipped layer results in unpredictable behavior).
-  cocoa_view_.reset([[BrowserCompositorViewCocoa alloc] initWithClient:this]);
+  // Use a sequence number as the accelerated widget handle that we can use
+  // to look up the internals structure.
+  static uintptr_t last_sequence_number = 0;
+  last_sequence_number += 1;
+  native_widget_ = reinterpret_cast<gfx::AcceleratedWidget>(
+      last_sequence_number);
+  g_widget_to_internals_map.Pointer()->insert(
+      std::make_pair(native_widget_, this));
 
-  // Create a compositor to draw the contents of |cocoa_view_|.
+  // Create a compositor to draw the contents of this view.
   compositor_.reset(new ui::Compositor(
-      cocoa_view_,
+      native_widget_,
       content::GetContextFactory(),
       RenderWidgetResizeHelper::Get()->task_runner()));
 }
 
 BrowserCompositorViewMacInternal::~BrowserCompositorViewMacInternal() {
   DCHECK(!client_);
-  [cocoa_view_ resetClient];
+  g_widget_to_internals_map.Pointer()->erase(native_widget_);
 }
 
 void BrowserCompositorViewMacInternal::SetClient(
@@ -243,47 +258,19 @@ void BrowserCompositorViewMacInternal::AcceleratedLayerDidDrawFrame(
   }
 }
 
+// static
+BrowserCompositorViewMacInternal* BrowserCompositorViewMacInternal::
+    FromAcceleratedWidget(gfx::AcceleratedWidget widget) {
+  WidgetToInternalsMap::const_iterator found =
+      g_widget_to_internals_map.Pointer()->find(widget);
+  // This can end up being accessed after the underlying widget has been
+  // destroyed, but while the ui::Compositor is still being destroyed.
+  // Return NULL in these cases.
+  if (found == g_widget_to_internals_map.Pointer()->end())
+    return NULL;
+  return found->second;
+}
+
+
 }  // namespace content
-
-////////////////////////////////////////////////////////////////////////////////
-// BrowserCompositorViewCocoa
-
-@implementation BrowserCompositorViewCocoa
-
-- (id)initWithClient:(content::BrowserCompositorViewCocoaClient*)client {
-  if (self = [super init]) {
-    client_ = client;
-  }
-  return self;
-}
-
-- (void)dealloc {
-  DCHECK(!client_);
-  [super dealloc];
-}
-
-- (void)resetClient {
-  client_ = NULL;
-}
-
-- (void)gotAcceleratedIOSurfaceFrame:(IOSurfaceID)surface_handle
-                 withOutputSurfaceID:(int)surface_id
-                     withLatencyInfo:(std::vector<ui::LatencyInfo>)latency_info
-                       withPixelSize:(gfx::Size)pixel_size
-                     withScaleFactor:(float)scale_factor {
-  if (!client_)
-    return;
-  client_->GotAcceleratedIOSurfaceFrame(
-      surface_handle, surface_id, latency_info, pixel_size, scale_factor);
-}
-
-- (void)gotSoftwareFrame:(cc::SoftwareFrameData*)frame_data
-         withScaleFactor:(float)scale_factor
-              withCanvas:(SkCanvas*)canvas {
-  if (!client_)
-    return;
-  client_->GotSoftwareFrame(frame_data, scale_factor, canvas);
-}
-
-@end  // BrowserCompositorViewCocoa
 

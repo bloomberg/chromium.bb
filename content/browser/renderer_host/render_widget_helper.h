@@ -101,11 +101,6 @@ class RenderWidgetHelper
   // created by CreateNewWindow which initially blocked the requests.
   void ResumeRequestsForView(int route_id);
 
-#if defined(OS_MACOSX)
-  static void OnNativeSurfaceBuffersSwappedOnUIThread(
-      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
-#endif
-
   // IO THREAD ONLY -----------------------------------------------------------
 
   void CreateNewWindow(
