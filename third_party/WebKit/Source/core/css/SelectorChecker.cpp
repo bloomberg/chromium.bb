@@ -81,17 +81,13 @@ static bool matchesCustomPseudoElement(const Element* element, const CSSSelector
 
 static Element* parentElement(const SelectorChecker::SelectorCheckingContext& context)
 {
-    // If context.scope is a shadow root, we should walk up to its shadow host.
-    if (context.scope && context.scope == context.element->containingShadowRoot())
+    // - If context.scope is a shadow root, we should walk up to its shadow host.
+    // - If context.scope is some element in some shadow tree and querySelector initialized the context,
+    //   e.g. shadowRoot.querySelector(':host *'),
+    //   (a) context.element has the same treescope as context.scope, need to walk up to its shadow host.
+    //   (b) Otherwise, should not walk up from a shadow root to a shadow host.
+    if (context.scope && (context.scope == context.element->containingShadowRoot() || context.scope->treeScope() == context.element->treeScope()))
         return context.element->parentOrShadowHostElement();
-
-    // If context.scope is some element in some shadow tree and querySelector initialized the context,
-    // e.g. shadowRoot.querySelector(':host *'),
-    // (a) context.element has the same treescope as context.scope, need to walk up to its shadow host.
-    // (b) Otherwise, should not walk up from a shadow root to a shadow host.
-    if (context.scope && context.scope->treeScope() == context.element->treeScope())
-        return context.element->parentOrShadowHostElement();
-
     return context.element->parentElement();
 }
 
