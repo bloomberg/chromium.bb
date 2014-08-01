@@ -326,7 +326,7 @@ PassRefPtr<RenderStyle> BaseMultipleFieldsDateAndTimeInputType::customStyleForRe
         newDisplay = INLINE_FLEX;
     else if (originalDisplay == BLOCK)
         newDisplay = FLEX;
-    TextDirection contentDirection = element().locale().isRTL() ? RTL : LTR;
+    TextDirection contentDirection = computedTextDirection();
     if (originalStyle->direction() == contentDirection && originalDisplay == newDisplay)
         return originalStyle;
 
@@ -613,6 +613,11 @@ void BaseMultipleFieldsDateAndTimeInputType::updateClearButtonVisibility()
         clearButton->removeInlineStyleProperty(CSSPropertyOpacity);
         clearButton->removeInlineStyleProperty(CSSPropertyPointerEvents);
     }
+}
+
+TextDirection BaseMultipleFieldsDateAndTimeInputType::computedTextDirection()
+{
+    return element().locale().isRTL() ? RTL : LTR;
 }
 
 } // namespace blink

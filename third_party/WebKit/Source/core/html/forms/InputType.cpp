@@ -783,6 +783,11 @@ unsigned InputType::width() const
     return 0;
 }
 
+TextDirection InputType::computedTextDirection()
+{
+    return element().computedStyle()->direction();
+}
+
 void InputType::applyStep(const Decimal& current, int count, AnyStepHandling anyStepHandling, TextFieldEventBehavior eventBehavior, ExceptionState& exceptionState)
 {
     StepRange stepRange(createStepRange(anyStepHandling));

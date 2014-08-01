@@ -213,6 +213,8 @@ public:
     virtual unsigned height() const;
     virtual unsigned width() const;
 
+    virtual TextDirection computedTextDirection();
+
     void dispatchSimulatedClickIfActive(KeyboardEvent*) const;
 
     // InputTypeView override

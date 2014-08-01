@@ -115,6 +115,7 @@ private:
     virtual void valueAttributeChanged() OVERRIDE;
     virtual void listAttributeTargetChanged() OVERRIDE FINAL;
     virtual void updateClearButtonVisibility() OVERRIDE FINAL;
+    virtual TextDirection computedTextDirection() OVERRIDE FINAL;
 
     DateTimeEditElement* dateTimeEditElement() const;
     SpinButtonElement* spinButtonElement() const;
