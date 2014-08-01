@@ -11784,6 +11784,9 @@ The following application will be launched if you accept this request:
       <message name="IDS_OPTIONS_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">
         Automatically send usage statistics and crash reports to Google
       </message>
+      <message name="IDS_OPTIONS_ENABLE_LOGGING_RESTART" desc="The restart string after changing crash and user metrics logging. The text within the | symbols will be made into a link that should indicate to the user that clicking on it will cause Chrome to restart.">
+        (requires Chrome |restart|)
+      </message>
       <message name="IDS_OPTIONS_ENABLE_DO_NOT_TRACK" desc="The label of the checkbox to enable/disable sending the 'Do Not track' header">
         Send a "Do Not Track" request with your browsing traffic
       </message>

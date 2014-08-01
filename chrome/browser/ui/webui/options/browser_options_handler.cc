@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -31,7 +32,6 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/gpu/gpu_mode_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
@@ -244,6 +244,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_DOWNLOADLOCATION_CHANGE_BUTTON },
     { "downloadLocationGroupName", IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME },
     { "enableLogging", IDS_OPTIONS_ENABLE_LOGGING },
+    { "metricsReportingResetRestart", IDS_OPTIONS_ENABLE_LOGGING_RESTART },
 #if !defined(OS_CHROMEOS)
     { "easyUnlockCheckboxLabel", IDS_OPTIONS_EASY_UNLOCK_CHECKBOX_LABEL },
 #endif
@@ -528,6 +529,12 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
 
   values->SetString("privacyLearnMoreURL", chrome::kPrivacyLearnMoreURL);
   values->SetString("doNotTrackLearnMoreURL", chrome::kDoNotTrackLearnMoreURL);
+
+#if !defined(OS_CHROMEOS)
+  PrefService* pref_service = g_browser_process->local_state();
+  values->SetBoolean("metricsReportingEnabledAtStart", pref_service->GetBoolean(
+      prefs::kMetricsReportingEnabled));
+#endif
 
 #if defined(OS_CHROMEOS)
   // TODO(pastarmovj): replace this with a call to the CrosSettings list
@@ -1503,6 +1510,24 @@ void BrowserOptionsHandler::HandleRestartBrowser(const base::ListValue* args) {
     if (!pref_service->GetBoolean(prefs::kHardwareAccelerationModeEnabled)) {
       chrome::AttemptRestartToDesktopMode();
       return;
+    }
+  }
+#endif
+
+#if defined(OS_WIN)
+  // On Windows Breakpad will upload crash reports if the breakpad pipe name
+  // environment variable is defined. So we undefine this environment variable
+  // before restarting, as the restarted processes will inherit their
+  // environment variables from ours, thus suppressing crash uploads.
+  PrefService* pref_service = g_browser_process->local_state();
+  if (!pref_service->GetBoolean(prefs::kMetricsReportingEnabled)) {
+    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
+    if (exe_module) {
+      typedef void (__cdecl *ClearBreakpadPipeEnvVar)();
+      ClearBreakpadPipeEnvVar clear = reinterpret_cast<ClearBreakpadPipeEnvVar>(
+          GetProcAddress(exe_module, "ClearBreakpadPipeEnvironmentVariable"));
+      if (clear)
+        clear();
     }
   }
 #endif

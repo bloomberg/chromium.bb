@@ -350,6 +350,33 @@ cr.define('options', function() {
               [String(event.currentTarget.checked)]);
         };
       }
+      if ($('metricsReportingEnabled') && !cr.isChromeOS) {
+        // The localized string has the | symbol on each side of the text that
+        // needs to be made into a button to restart Chrome. We parse the text
+        // and build the button from that.
+        var restartTextFragments =
+            loadTimeData.getString('metricsReportingResetRestart').split('|');
+        // Assume structure is something like "starting text |link text| ending
+        // text" where both starting text and ending text may or may not be
+        // present, but the split should always be in three pieces.
+        var restartElements =
+            $('metrics-reporting-reset-restart').querySelectorAll('*');
+        for (var i = 0; i < restartTextFragments.length; i++) {
+          restartElements[i].textContent = restartTextFragments[i];
+        }
+        restartElements[1].onclick = function(event) {
+          chrome.send('restartBrowser');
+        };
+        var updateMetricsRestartButton = function() {
+          $('metrics-reporting-reset-restart').hidden =
+              loadTimeData.getBoolean('metricsReportingEnabledAtStart') ==
+                  $('metricsReportingEnabled').checked;
+        };
+        Preferences.getInstance().addEventListener(
+            $('metricsReportingEnabled').getAttribute('pref'),
+            updateMetricsRestartButton);
+        updateMetricsRestartButton();
+      }
 
       // Bluetooth (CrOS only).
       if (cr.isChromeOS) {
