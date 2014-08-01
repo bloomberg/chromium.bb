@@ -1617,6 +1617,9 @@ bool Internals::hasGrammarMarker(Document* document, int from, int length, Excep
 
 unsigned Internals::numberOfScrollableAreas(Document* document, ExceptionState&)
 {
+    if (!document || !document->frame())
+        return 0;
+
     unsigned count = 0;
     LocalFrame* frame = document->frame();
     if (frame->view()->scrollableAreas())
