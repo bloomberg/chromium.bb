@@ -23,12 +23,6 @@ namespace win {
 // Returns 'true' on successful open, 'false' otherwise.
 UI_BASE_EXPORT bool OpenItemViaShell(const base::FilePath& full_path);
 
-// The download manager now writes the alternate data stream with the
-// zone on all downloads. This function is equivalent to OpenItemViaShell
-// without showing the zone warning dialog.
-UI_BASE_EXPORT bool OpenItemViaShellNoZoneCheck(
-    const base::FilePath& full_path);
-
 // Lower level function that allows opening of non-files like urls or GUIDs
 // don't use it if one of the above will do. |mask| is a valid combination
 // of SEE_MASK_FLAG_XXX as stated in msdn. If there is no default application
@@ -37,11 +31,6 @@ UI_BASE_EXPORT bool OpenAnyViaShell(const base::string16& full_path,
                                     const base::string16& directory,
                                     const base::string16& args,
                                     DWORD mask);
-
-// Ask the user, via the Windows "Open With" dialog, for an application to use
-// to open the file specified by 'full_path'.
-// Returns 'true' on successful open, 'false' otherwise.
-bool OpenItemWithExternalApp(const base::string16& full_path);
 
 // Disables the ability of the specified window to be pinned to the taskbar or
 // the Start menu. This will remove "Pin this program to taskbar" from the

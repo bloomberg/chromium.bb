@@ -22,6 +22,8 @@
 namespace ui {
 namespace win {
 
+namespace {
+
 // Show the Windows "Open With" dialog box to ask the user to pick an app to
 // open the file with.
 bool OpenItemWithExternalApp(const base::string16& full_path) {
@@ -32,6 +34,8 @@ bool OpenItemWithExternalApp(const base::string16& full_path) {
   sei.lpFile = full_path.c_str();
   return (TRUE == ::ShellExecuteExW(&sei));
 }
+
+}  // namespace
 
 bool OpenAnyViaShell(const base::string16& full_path,
                      const base::string16& directory,
@@ -55,11 +59,6 @@ bool OpenAnyViaShell(const base::string16& full_path,
 bool OpenItemViaShell(const base::FilePath& full_path) {
   return OpenAnyViaShell(full_path.value(), full_path.DirName().value(),
                          base::string16(), 0);
-}
-
-bool OpenItemViaShellNoZoneCheck(const base::FilePath& full_path) {
-  return OpenAnyViaShell(full_path.value(), base::string16(), base::string16(),
-                         SEE_MASK_NOZONECHECKS | SEE_MASK_FLAG_DDEWAIT);
 }
 
 bool PreventWindowFromPinning(HWND hwnd) {
