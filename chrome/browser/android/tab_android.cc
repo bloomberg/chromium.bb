@@ -79,6 +79,17 @@ WebContents* CreateTargetContents(const chrome::NavigateParams& params,
   return target_contents;
 }
 
+bool MaybeSwapWithPrerender(const GURL& url, chrome::NavigateParams* params) {
+  Profile* profile =
+      Profile::FromBrowserContext(params->target_contents->GetBrowserContext());
+
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForProfile(profile);
+  if (!prerender_manager)
+    return false;
+  return prerender_manager->MaybeUsePrerenderedPage(url, params);
+}
+
 }  // namespace
 
 TabAndroid* TabAndroid::FromWebContents(content::WebContents* web_contents) {
@@ -187,12 +198,18 @@ void TabAndroid::HandlePopupNavigation(chrome::NavigateParams* params) {
     if (!params->url.is_empty()) {
       bool was_blocked = false;
       GURL url(params->url);
-      NavigationController::LoadURLParams load_url_params(url);
-      MakeLoadURLParams(params, &load_url_params);
       if (params->disposition == CURRENT_TAB) {
-        web_contents_.get()->GetController().LoadURLWithParams(load_url_params);
+        params->target_contents = web_contents_.get();
+        if (!MaybeSwapWithPrerender(url, params)) {
+          NavigationController::LoadURLParams load_url_params(url);
+          MakeLoadURLParams(params, &load_url_params);
+          params->target_contents->GetController().LoadURLWithParams(
+              load_url_params);
+        }
       } else {
         params->target_contents = CreateTargetContents(*params, url);
+        NavigationController::LoadURLParams load_url_params(url);
+        MakeLoadURLParams(params, &load_url_params);
         params->target_contents->GetController().LoadURLWithParams(
             load_url_params);
         web_contents_delegate_->AddNewContents(params->source_contents,
