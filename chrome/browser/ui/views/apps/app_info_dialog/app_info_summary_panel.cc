@@ -8,14 +8,17 @@
 
 #include "base/callback_forward.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_runner_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -23,6 +26,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/base/text/bytes_formatting.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -130,13 +134,16 @@ AppInfoSummaryPanel::AppInfoSummaryPanel(Profile* profile,
       description_heading_(NULL),
       description_label_(NULL),
       details_heading_(NULL),
+      size_title_(NULL),
+      size_value_(NULL),
       version_title_(NULL),
       version_value_(NULL),
       installed_time_title_(NULL),
       installed_time_value_(NULL),
       last_run_time_title_(NULL),
       last_run_time_value_(NULL),
-      launch_options_combobox_(NULL) {
+      launch_options_combobox_(NULL),
+      weak_ptr_factory_(this) {
   // Create UI elements.
   CreateDescriptionControl();
   CreateDetailsControl();
@@ -180,6 +187,19 @@ void AppInfoSummaryPanel::CreateDescriptionControl() {
 }
 
 void AppInfoSummaryPanel::CreateDetailsControl() {
+  // The size doesn't make sense for component apps.
+  if (app_->location() != extensions::Manifest::COMPONENT) {
+    size_title_ = new views::Label(
+        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_SIZE_LABEL));
+    size_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+    size_value_ = new views::Label(
+        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_SIZE_LOADING_LABEL));
+    size_value_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+    StartCalculatingAppSize();
+  }
+
   // The version doesn't make sense for bookmark apps.
   if (!app_->from_bookmark()) {
     // Display 'Version: Built-in' for component apps.
@@ -275,6 +295,11 @@ void AppInfoSummaryPanel::LayoutDetailsControl() {
           CreateKeyValueField(last_run_time_title_, last_run_time_value_));
     }
 
+    if (size_title_ && size_value_) {
+      details_stack->AddChildView(
+          CreateKeyValueField(size_title_, size_value_));
+    }
+
     views::View* vertical_stack = CreateVerticalStack();
     vertical_stack->AddChildView(details_heading_);
     vertical_stack->AddChildView(details_stack);
@@ -289,6 +314,18 @@ void AppInfoSummaryPanel::OnPerformAction(views::Combobox* combobox) {
   } else {
     NOTREACHED();
   }
+}
+
+void AppInfoSummaryPanel::StartCalculatingAppSize() {
+  base::PostTaskAndReplyWithResult(
+      content::BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::Bind(&base::ComputeDirectorySize, app_->path()),
+      base::Bind(&AppInfoSummaryPanel::OnAppSizeCalculated, AsWeakPtr()));
+}
+
+void AppInfoSummaryPanel::OnAppSizeCalculated(int64 app_size_in_bytes) {
+  size_value_->SetText(ui::FormatBytes(app_size_in_bytes));
 }
 
 base::Time AppInfoSummaryPanel::GetInstalledTime() const {

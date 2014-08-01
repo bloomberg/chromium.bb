@@ -2203,6 +2203,12 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_APPLICATION_INFO_DETAILS_TITLE" desc="Title of the section in the dialog which displays the app's details (such as the version, size, etc).">
           Details
         </message>
+        <message name="IDS_APPLICATION_INFO_SIZE_LABEL" desc="Text displayed before the app's size on disk in the details section of the dialog.">
+          Size:
+        </message>
+        <message name="IDS_APPLICATION_INFO_SIZE_LOADING_LABEL" desc="Text displayed instead of the app's size on disk in the details section of the dialog while the size is being calculated.">
+          Calculating...
+        </message>
         <message name="IDS_APPLICATION_INFO_VERSION_LABEL" desc="Text displayed before the app's version in the details section of the dialog.">
           Version:
         </message>
@@ -2246,6 +2252,12 @@ Even if you have downloaded files from this website before, the website might ha
         </message>
         <message name="IDS_APPLICATION_INFO_DETAILS_TITLE" desc="In Title Case: Title of the section in the dialog which displays the app's details (such as the version, size, etc).">
           Details
+        </message>
+        <message name="IDS_APPLICATION_INFO_SIZE_LABEL" desc="In Title Case: Text displayed before the app's size on disk in the details section of the dialog.">
+          Size:
+        </message>
+        <message name="IDS_APPLICATION_INFO_SIZE_LOADING_LABEL" desc="Text displayed instead of the app's size on disk in the details section of the dialog while the size is being calculated.">
+          Calculating...
         </message>
         <message name="IDS_APPLICATION_INFO_VERSION_LABEL" desc="In Title Case: Text displayed before the app's version in the details section of the dialog.">
           Version:
