@@ -518,6 +518,10 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
     DCHECK(sync_parent.GetIsFolder());
 
     const BookmarkNode* parent_node = GetChromeNodeFromSyncId(sync_parent_id);
+    if (!parent_node) {
+      return unrecoverable_error_handler_->CreateAndUploadError(
+          FROM_HERE, "Failed to find bookmark node for sync id.", model_type());
+    }
     DCHECK(parent_node->is_folder());
 
     BookmarkNodeFinder node_finder(parent_node);
@@ -554,10 +558,14 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
         local_merge_result->set_num_items_modified(
             local_merge_result->num_items_modified() + 1);
       } else {
+        DCHECK_LE(index, parent_node->child_count());
         child_node = BookmarkChangeProcessor::CreateBookmarkNode(
             &sync_child_node, parent_node, bookmark_model_, profile_, index);
-        if (child_node)
-          Associate(child_node, sync_child_id);
+        if (!child_node) {
+          return unrecoverable_error_handler_->CreateAndUploadError(
+              FROM_HERE, "Failed to create bookmark node.", model_type());
+        }
+        Associate(child_node, sync_child_id);
         local_merge_result->set_num_items_added(
             local_merge_result->num_items_added() + 1);
       }
