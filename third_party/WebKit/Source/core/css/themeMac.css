@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-select, input[type="color"][list] {
+select, input[type="color" i][list] {
     background-color: #f8f8f8;
     border: 1px solid #a6a6a6;
 }

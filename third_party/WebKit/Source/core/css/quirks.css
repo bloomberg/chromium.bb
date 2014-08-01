@@ -22,10 +22,10 @@
  */
 
 /* Give floated images margins of 3px */
-img[align="left"] {
+img[align="left" i] {
     margin-right: 3px;
 }
-img[align="right"] {
+img[align="right" i] {
     margin-left: 3px;
 }
 
@@ -43,7 +43,7 @@ table {
 }
 
 /* This will apply only to text fields, since all other inputs already use border box sizing */
-input:not([type=image]), textarea {
+input:not([type=image i]), textarea {
     box-sizing: border-box;
 }
 

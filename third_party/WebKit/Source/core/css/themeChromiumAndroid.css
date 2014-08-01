@@ -41,25 +41,25 @@ select[size][multiple] {
     white-space: pre;
 }
 
-input[type="date"]:disabled,
-input[type="datetime-local"]:disabled,
-input[type="month"]:disabled,
-input[type="time"]:disabled,
-input[type="week"]:disabled,
-input[type="date"]:read-only,
-input[type="datetime-local"]:read-only,
-input[type="month"]:read-only,
-input[type="time"]:read-only,
-input[type="week"]:read-only {
+input[type="date" i]:disabled,
+input[type="datetime-local" i]:disabled,
+input[type="month" i]:disabled,
+input[type="time" i]:disabled,
+input[type="week" i]:disabled,
+input[type="date" i]:read-only,
+input[type="datetime-local" i]:read-only,
+input[type="month" i]:read-only,
+input[type="time" i]:read-only,
+input[type="week" i]:read-only {
     background-color: ButtonFace;
     color: GrayText;
 }
 
-input[type="date"],
-input[type="datetime-local"],
-input[type="month"],
-input[type="time"],
-input[type="week"] {
+input[type="date" i],
+input[type="datetime-local" i],
+input[type="month" i],
+input[type="time" i],
+input[type="week" i] {
     align-items: center;
     -webkit-appearance: menulist;
     background-color: ButtonFace;

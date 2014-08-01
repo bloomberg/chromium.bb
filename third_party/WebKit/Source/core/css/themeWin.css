@@ -33,66 +33,66 @@
    making our form elements match Firefox's. */
 
 input:not([type]), 
-input[type="email"],
-input[type="number"],
-input[type="password"],
-input[type="tel"],
-input[type="url"],
-input[type="text"] {
+input[type="email" i],
+input[type="number" i],
+input[type="password" i],
+input[type="tel" i],
+input[type="url" i],
+input[type="text" i] {
     padding:1px 0;
 }
 
-input[type="search"] {
+input[type="search" i] {
     padding:1px;
 }
 
-input[type="checkbox"] {
+input[type="checkbox" i] {
     margin:3px 3px 3px 4px;
 }
 
-input[type="radio"] {
+input[type="radio" i] {
     margin:3px 3px 0 5px;
 }
 
-input[type="range"] {
+input[type="range" i] {
     color: #c4c4c4;
 }
 
 /* Not sure this is the right color. #EBEBE4 is what Firefox uses.
    FIXME: Figure out how to support legacy input rendering. 
-   FIXME: Add input[type="file"] once we figure out our file inputs.
-   FIXME: Add input[type="image"] once we figure out our image inputs.
+   FIXME: Add input[type="file" i] once we figure out our file inputs.
+   FIXME: Add input[type="image" i] once we figure out our image inputs.
    FIXME: We probably do the wrong thing if you put an invalid input type.
           do we care?
 */
 textarea:disabled,
 input:not([type]):disabled, 
-input[type="color"]:disabled,
-input[type="date"]:disabled,
-input[type="datetime"]:disabled,
-input[type="datetime-local"]:disabled,
-input[type="email"]:disabled,
-input[type="month"]:disabled,
-input[type="password"]:disabled,
-input[type="number"]:disabled,
-input[type="search"]:disabled,
-input[type="tel"]:disabled,
-input[type="text"]:disabled,
-input[type="time"]:disabled,
-input[type="url"]:disabled,
-input[type="week"]:disabled {
+input[type="color" i]:disabled,
+input[type="date" i]:disabled,
+input[type="datetime" i]:disabled,
+input[type="datetime-local" i]:disabled,
+input[type="email" i]:disabled,
+input[type="month" i]:disabled,
+input[type="password" i]:disabled,
+input[type="number" i]:disabled,
+input[type="search" i]:disabled,
+input[type="tel" i]:disabled,
+input[type="text" i]:disabled,
+input[type="time" i]:disabled,
+input[type="url" i]:disabled,
+input[type="week" i]:disabled {
     background-color: #EBEBE4; 
 }
 
-input[type="search"]::-webkit-search-cancel-button {
+input[type="search" i]::-webkit-search-cancel-button {
     margin-right: 3px;
 }
 
-input[type="search"]::-webkit-search-results-decoration {
+input[type="search" i]::-webkit-search-results-decoration {
     margin: auto 3px auto 2px;
 }
 
-input[type="search"]::-webkit-search-results-button {
+input[type="search" i]::-webkit-search-results-button {
     margin: auto 3px auto 2px;
 }
 
@@ -100,7 +100,7 @@ input::-webkit-outer-spin-button {
     margin: 0;
 }
 
-input[type="button"], input[type="submit"], input[type="reset"], input[type="file"]::-webkit-file-upload-button, button {
+input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i]::-webkit-file-upload-button, button {
     padding: 1px 6px;
 }
 

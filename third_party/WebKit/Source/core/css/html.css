@@ -408,11 +408,11 @@ input, textarea, keygen, select, button {
     text-align: start;
 }
 
-input[type="hidden"] {
+input[type="hidden" i] {
     display: none
 }
 
-input, input[type="password"], input[type="search"] {
+input, input[type="password" i], input[type="search" i] {
     -webkit-appearance: textfield;
     padding: 1px;
     background-color: white;
@@ -422,7 +422,7 @@ input, input[type="password"], input[type="search"] {
     cursor: auto;
 }
 
-input[type="search"] {
+input[type="search" i] {
     -webkit-appearance: searchfield;
     box-sizing: border-box;
 }
@@ -434,7 +434,7 @@ input::-webkit-textfield-decoration-container {
     content: none !important;
 }
 
-input[type="search"]::-webkit-textfield-decoration-container {
+input[type="search" i]::-webkit-textfield-decoration-container {
     direction: ltr;
 }
 
@@ -453,7 +453,7 @@ input:enabled:read-write:-webkit-any(:focus,:hover)::-webkit-clear-button {
     pointer-events: auto;
 }
 
-input[type="search"]::-webkit-search-cancel-button {
+input[type="search" i]::-webkit-search-cancel-button {
     -webkit-appearance: searchfield-cancel-button;
     display: block;
     flex: none;
@@ -463,12 +463,12 @@ input[type="search"]::-webkit-search-cancel-button {
     pointer-events: none;
 }
 
-input[type="search"]:enabled:read-write:-webkit-any(:focus,:hover)::-webkit-search-cancel-button {
+input[type="search" i]:enabled:read-write:-webkit-any(:focus,:hover)::-webkit-search-cancel-button {
     opacity: 1;
     pointer-events: auto;
 }
 
-input[type="search"]::-webkit-search-decoration {
+input[type="search" i]::-webkit-search-decoration {
     -webkit-appearance: searchfield-decoration;
     display: block;
     flex: none;
@@ -477,7 +477,7 @@ input[type="search"]::-webkit-search-decoration {
     margin: auto 0;
 }
 
-input[type="search"]::-webkit-search-results-decoration {
+input[type="search" i]::-webkit-search-results-decoration {
     -webkit-appearance: searchfield-results-decoration;
     display: block;
     flex: none;
@@ -539,18 +539,18 @@ input::-webkit-input-placeholder {
     -webkit-user-modify: read-only !important;
 }
 
-input[type="password"] {
+input[type="password" i] {
     -webkit-text-security: disc !important;
 }
 
-input[type="hidden"], input[type="image"], input[type="file"] {
+input[type="hidden" i], input[type="image" i], input[type="file" i] {
     -webkit-appearance: initial;
     padding: initial;
     background-color: initial;
     border: initial;
 }
 
-input[type="file"] {
+input[type="file" i] {
     align-items: baseline;
     color: inherit;
     text-align: start !important;
@@ -562,20 +562,20 @@ input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
     color: #000000 !important;
 }
 
-input[type="radio"], input[type="checkbox"] {
+input[type="radio" i], input[type="checkbox" i] {
     margin: 3px 0.5ex;
     padding: initial;
     background-color: initial;
     border: initial;
 }
 
-input[type="button"], input[type="submit"], input[type="reset"] {
+input[type="button" i], input[type="submit" i], input[type="reset" i] {
     -webkit-appearance: push-button;
     -webkit-user-select: none;
     white-space: pre
 }
 
-input[type="file"]::-webkit-file-upload-button {
+input[type="file" i]::-webkit-file-upload-button {
     -webkit-appearance: push-button;
     -webkit-user-modify: read-only !important;
     white-space: nowrap;
@@ -583,7 +583,7 @@ input[type="file"]::-webkit-file-upload-button {
     font-size: inherit;
 }
 
-input[type="button"], input[type="submit"], input[type="reset"], input[type="file"]::-webkit-file-upload-button, button {
+input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i]::-webkit-file-upload-button, button {
     align-items: flex-start;
     text-align: center;
     cursor: default;
@@ -594,7 +594,7 @@ input[type="button"], input[type="submit"], input[type="reset"], input[type="fil
     box-sizing: border-box
 }
 
-input[type="range"] {
+input[type="range" i] {
     -webkit-appearance: slider-horizontal;
     padding: initial;
     border: initial;
@@ -602,7 +602,7 @@ input[type="range"] {
     color: #909090;
 }
 
-input[type="range"]::-webkit-slider-container, input[type="range"]::-webkit-media-slider-container {
+input[type="range" i]::-webkit-slider-container, input[type="range" i]::-webkit-media-slider-container {
     flex: 1;
     box-sizing: border-box;
     -webkit-user-modify: read-only !important;
@@ -610,7 +610,7 @@ input[type="range"]::-webkit-slider-container, input[type="range"]::-webkit-medi
     -webkit-align-contents: center;
 }
 
-input[type="range"]::-webkit-slider-runnable-track {
+input[type="range" i]::-webkit-slider-runnable-track {
     flex: 1;
     -webkit-align-self: center;
 
@@ -619,25 +619,25 @@ input[type="range"]::-webkit-slider-runnable-track {
     display: block;
 }
 
-input[type="range"]::-webkit-slider-thumb, input[type="range"]::-webkit-media-slider-thumb {
+input[type="range" i]::-webkit-slider-thumb, input[type="range" i]::-webkit-media-slider-thumb {
     -webkit-appearance: sliderthumb-horizontal;
     box-sizing: border-box;
     -webkit-user-modify: read-only !important;
     display: block;
 }
 
-input[type="button"]:disabled, input[type="submit"]:disabled, input[type="reset"]:disabled,
-input[type="file"]:disabled::-webkit-file-upload-button, button:disabled,
+input[type="button" i]:disabled, input[type="submit" i]:disabled, input[type="reset" i]:disabled,
+input[type="file" i]:disabled::-webkit-file-upload-button, button:disabled,
 select:disabled, keygen:disabled, optgroup:disabled, option:disabled,
 select[disabled]>option {
     color: GrayText
 }
 
-input[type="button"]:active, input[type="submit"]:active, input[type="reset"]:active, input[type="file"]:active::-webkit-file-upload-button, button:active {
+input[type="button" i]:active, input[type="submit" i]:active, input[type="reset" i]:active, input[type="file" i]:active::-webkit-file-upload-button, button:active {
     border-style: inset
 }
 
-input[type="button"]:active:disabled, input[type="submit"]:active:disabled, input[type="reset"]:active:disabled, input[type="file"]:active:disabled::-webkit-file-upload-button, button:active:disabled {
+input[type="button" i]:active:disabled, input[type="submit" i]:active:disabled, input[type="reset" i]:active:disabled, input[type="file" i]:active:disabled::-webkit-file-upload-button, button:active:disabled {
     border-style: outset
 }
 
@@ -654,17 +654,17 @@ area, param {
     display: none
 }
 
-input[type="checkbox"] {
+input[type="checkbox" i] {
     -webkit-appearance: checkbox;
     box-sizing: border-box;
 }
 
-input[type="radio"] {
+input[type="radio" i] {
     -webkit-appearance: radio;
     box-sizing: border-box;
 }
 
-input[type="color"] {
+input[type="color" i] {
     -webkit-appearance: square-button;
     width: 44px;
     height: 23px;
@@ -674,7 +674,7 @@ input[type="color"] {
     padding: 1px 2px;
 }
 
-input[type="color"]::-webkit-color-swatch-wrapper {
+input[type="color" i]::-webkit-color-swatch-wrapper {
     display:flex;
     padding: 4px 2px;
     box-sizing: border-box;
@@ -683,25 +683,25 @@ input[type="color"]::-webkit-color-swatch-wrapper {
     height: 100%
 }
 
-input[type="color"]::-webkit-color-swatch {
+input[type="color" i]::-webkit-color-swatch {
     background-color: #000000;
     border: 1px solid #777777;
     flex: 1;
     -webkit-user-modify: read-only !important;
 }
 
-input[type="color"][list] {
+input[type="color" i][list] {
     -webkit-appearance: menulist;
     width: 88px;
     height: 23px
 }
 
-input[type="color"][list]::-webkit-color-swatch-wrapper {
+input[type="color" i][list]::-webkit-color-swatch-wrapper {
     padding-left: 8px;
     padding-right: 24px;
 }
 
-input[type="color"][list]::-webkit-color-swatch {
+input[type="color" i][list]::-webkit-color-swatch {
     border-color: #000000;
 }
 
@@ -724,23 +724,23 @@ input:enabled:read-write:-webkit-any(:focus,:hover)::-webkit-calendar-picker-ind
     pointer-events: auto;
 }
 
-input[type="date"]:disabled::-webkit-clear-button,
-input[type="date"]:disabled::-webkit-inner-spin-button,
-input[type="datetime-local"]:disabled::-webkit-clear-button,
-input[type="datetime-local"]:disabled::-webkit-inner-spin-button,
-input[type="month"]:disabled::-webkit-clear-button,
-input[type="month"]:disabled::-webkit-inner-spin-button,
-input[type="week"]:disabled::-webkit-clear-button,
-input[type="week"]:disabled::-webkit-inner-spin-button,
+input[type="date" i]:disabled::-webkit-clear-button,
+input[type="date" i]:disabled::-webkit-inner-spin-button,
+input[type="datetime-local" i]:disabled::-webkit-clear-button,
+input[type="datetime-local" i]:disabled::-webkit-inner-spin-button,
+input[type="month" i]:disabled::-webkit-clear-button,
+input[type="month" i]:disabled::-webkit-inner-spin-button,
+input[type="week" i]:disabled::-webkit-clear-button,
+input[type="week" i]:disabled::-webkit-inner-spin-button,
 input:disabled::-webkit-calendar-picker-indicator,
-input[type="date"][readonly]::-webkit-clear-button,
-input[type="date"][readonly]::-webkit-inner-spin-button,
-input[type="datetime-local"][readonly]::-webkit-clear-button,
-input[type="datetime-local"][readonly]::-webkit-inner-spin-button,
-input[type="month"][readonly]::-webkit-clear-button,
-input[type="month"][readonly]::-webkit-inner-spin-button,
-input[type="week"][readonly]::-webkit-clear-button,
-input[type="week"][readonly]::-webkit-inner-spin-button,
+input[type="date" i][readonly]::-webkit-clear-button,
+input[type="date" i][readonly]::-webkit-inner-spin-button,
+input[type="datetime-local" i][readonly]::-webkit-clear-button,
+input[type="datetime-local" i][readonly]::-webkit-inner-spin-button,
+input[type="month" i][readonly]::-webkit-clear-button,
+input[type="month" i][readonly]::-webkit-inner-spin-button,
+input[type="week" i][readonly]::-webkit-clear-button,
+input[type="week" i][readonly]::-webkit-inner-spin-button,
 input[readonly]::-webkit-calendar-picker-indicator {
     visibility: hidden;
 }
@@ -994,16 +994,16 @@ input:focus, textarea:focus, keygen:focus, select:focus {
     outline-offset: -2px
 }
 
-input[type="button"]:focus,
-input[type="checkbox"]:focus,
-input[type="file"]:focus,
-input[type="hidden"]:focus,
-input[type="image"]:focus,
-input[type="radio"]:focus,
-input[type="reset"]:focus,
-input[type="search"]:focus,
-input[type="submit"]:focus,
-input[type="file"]:focus::-webkit-file-upload-button {
+input[type="button" i]:focus,
+input[type="checkbox" i]:focus,
+input[type="file" i]:focus,
+input[type="hidden" i]:focus,
+input[type="image" i]:focus,
+input[type="radio" i]:focus,
+input[type="reset" i]:focus,
+input[type="search" i]:focus,
+input[type="submit" i]:focus,
+input[type="file" i]:focus::-webkit-file-upload-button {
     outline-offset: 0
 }
     
@@ -1083,7 +1083,7 @@ bdo {
     unicode-bidi: bidi-override;
 }
 
-textarea[dir=auto] {
+textarea[dir=auto i] {
     unicode-bidi: -webkit-plaintext;
 }
 

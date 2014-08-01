@@ -3,11 +3,11 @@
  * found in the LICENSE file.
  */
 
-input[type="date"],
-input[type="datetime-local"],
-input[type="month"],
-input[type="time"],
-input[type="week"] {
+input[type="date" i],
+input[type="datetime-local" i],
+input[type="month" i],
+input[type="time" i],
+input[type="week" i] {
     align-items: center;
     display: -webkit-inline-flex;
     font-family: monospace;
@@ -83,12 +83,12 @@ input::-webkit-datetime-edit-text {
     font: inherit !important;
 }
 
-input[type="date"]::-webkit-inner-spin-button,
-input[type="datetime"]::-webkit-inner-spin-button,
-input[type="datetime-local"]::-webkit-inner-spin-button,
-input[type="month"]::-webkit-inner-spin-button,
-input[type="time"]::-webkit-inner-spin-button,
-input[type="week"]::-webkit-inner-spin-button {
+input[type="date" i]::-webkit-inner-spin-button,
+input[type="datetime" i]::-webkit-inner-spin-button,
+input[type="datetime-local" i]::-webkit-inner-spin-button,
+input[type="month" i]::-webkit-inner-spin-button,
+input[type="time" i]::-webkit-inner-spin-button,
+input[type="week" i]::-webkit-inner-spin-button {
     /* FIXME: Remove height. */
     height: 1.5em;
     -webkit-margin-start: 2px;
