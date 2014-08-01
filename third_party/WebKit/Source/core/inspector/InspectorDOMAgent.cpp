@@ -1165,13 +1165,13 @@ void InspectorDOMAgent::inspect(Node* inspectedNode)
         m_frontend->inspectNodeRequested(nodeId);
 }
 
-void InspectorDOMAgent::handleMouseMove(LocalFrame* frame, const PlatformMouseEvent& event)
+bool InspectorDOMAgent::handleMouseMove(LocalFrame* frame, const PlatformMouseEvent& event)
 {
     if (m_searchingForNode == NotSearching)
-        return;
+        return false;
 
     if (!frame->view() || !frame->contentRenderer())
-        return;
+        return true;
     Node* node = hoveredNodeForEvent(frame, event, event.shiftKey());
 
     // Do not highlight within UA shadow root unless requested.
@@ -1186,7 +1186,7 @@ void InspectorDOMAgent::handleMouseMove(LocalFrame* frame, const PlatformMouseEv
         node = node->parentOrShadowHostNode();
 
     if (!node)
-        return;
+        return true;
 
     Node* eventTarget = event.shiftKey() ? hoveredNodeForEvent(frame, event, false) : 0;
     if (eventTarget == node)
@@ -1194,6 +1194,7 @@ void InspectorDOMAgent::handleMouseMove(LocalFrame* frame, const PlatformMouseEv
 
     if (node && m_inspectModeHighlightConfig)
         m_overlay->highlightNode(node, eventTarget, *m_inspectModeHighlightConfig, event.ctrlKey() || event.metaKey());
+    return true;
 }
 
 void InspectorDOMAgent::setSearchingForNode(ErrorString* errorString, SearchMode searchMode, JSONObject* highlightInspectorObject)

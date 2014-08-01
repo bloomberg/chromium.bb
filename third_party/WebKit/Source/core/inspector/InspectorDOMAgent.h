@@ -197,7 +197,7 @@ public:
     bool handleMousePress();
     bool handleGestureEvent(LocalFrame*, const PlatformGestureEvent&);
     bool handleTouchEvent(LocalFrame*, const PlatformTouchEvent&);
-    void handleMouseMove(LocalFrame*, const PlatformMouseEvent&);
+    bool handleMouseMove(LocalFrame*, const PlatformMouseEvent&);
 
     InspectorHistory* history() { return m_history.get(); }
 

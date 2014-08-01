@@ -376,7 +376,7 @@ bool InspectorController::handleMouseEvent(LocalFrame* frame, const PlatformMous
 
     if (event.type() == PlatformEvent::MouseMoved) {
         if (InspectorDOMAgent* domAgent = m_instrumentingAgents->inspectorDOMAgent())
-            domAgent->handleMouseMove(frame, event);
+            return domAgent->handleMouseMove(frame, event);
         return false;
     }
     if (event.type() == PlatformEvent::MousePressed) {
