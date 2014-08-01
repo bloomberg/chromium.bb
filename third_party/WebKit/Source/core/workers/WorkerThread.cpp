@@ -105,7 +105,7 @@ public:
 
         m_running = true;
         m_nextFireTime = currentTime() + interval;
-        m_workerThread->webThread()->postDelayedTask(new Task(WTF::bind(&WorkerSharedTimer::OnTimeout, this)), delay);
+        m_workerThread->m_thread->postDelayedTask(new Task(WTF::bind(&WorkerSharedTimer::OnTimeout, this)), delay);
     }
 
     virtual void stop()
@@ -242,7 +242,7 @@ void WorkerThread::initialize()
 
     // The corresponding call to didStopWorkerThread is in
     // ~WorkerScriptController.
-    blink::Platform::current()->didStartWorkerThread(m_thread.get());
+    blink::Platform::current()->didStartWorkerRunLoop(blink::WebWorkerRunLoop(this));
 
     // Notify proxy that a new WorkerGlobalScope has been created and started.
     m_workerReportingProxy.workerGlobalScopeStarted(m_workerGlobalScope.get());
@@ -306,7 +306,7 @@ public:
         workerGlobalScope->clearInspector();
         // It's not safe to call clearScript until all the cleanup tasks posted by functions initiated by WorkerThreadShutdownStartTask have completed.
         workerGlobalScope->clearScript();
-        workerGlobalScope->thread()->webThread()->postTask(new Task(WTF::bind(&WorkerThread::cleanup, workerGlobalScope->thread())));
+        workerGlobalScope->thread()->m_thread->postTask(new Task(WTF::bind(&WorkerThread::cleanup, workerGlobalScope->thread())));
     }
 
     virtual bool isCleanupTask() const { return true; }

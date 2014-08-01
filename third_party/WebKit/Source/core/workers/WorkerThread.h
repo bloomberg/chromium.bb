@@ -84,7 +84,6 @@ namespace blink {
         void willEnterNestedLoop();
         void didLeaveNestedLoop();
 
-        blink::WebThread* webThread() { return m_thread.get(); }
         WorkerGlobalScope* workerGlobalScope() const { return m_workerGlobalScope.get(); }
         bool terminated() const { return m_terminated; }
 
@@ -103,6 +102,7 @@ namespace blink {
         virtual void postInitialize() { }
 
     private:
+        friend class WorkerSharedTimer;
         friend class WorkerThreadShutdownFinishTask;
 
         void initialize();

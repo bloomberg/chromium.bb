@@ -28,7 +28,7 @@
 #include "WebCommon.h"
 
 namespace blink {
-class WorkerRunLoop;
+class WorkerThread;
 }
 
 namespace blink {
@@ -47,11 +47,11 @@ public:
     BLINK_EXPORT bool lessThan(const WebWorkerRunLoop&) const;
 
 #if BLINK_IMPLEMENTATION
-    WebWorkerRunLoop(blink::WorkerRunLoop*);
+    WebWorkerRunLoop(blink::WorkerThread*);
 #endif
 
 private:
-    blink::WorkerRunLoop* m_workerRunLoop;
+    blink::WorkerThread* m_workerThread;
 };
 
 inline bool operator==(const WebWorkerRunLoop& a, const WebWorkerRunLoop& b)
