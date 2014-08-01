@@ -8,7 +8,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/run_loop.h"
-#include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -59,8 +58,6 @@ class TestingProfileWithHostZoomMap : public TestingProfile {
           change.host, new base::FundamentalValue(level));
     }
   }
-
-  scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
 
   scoped_ptr<HostZoomMap::Subscription> zoom_subscription_;
 
