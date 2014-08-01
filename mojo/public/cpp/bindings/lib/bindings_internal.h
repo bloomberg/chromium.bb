@@ -64,7 +64,7 @@ T FetchAndReset(T* ptr) {
 }
 
 template <typename H> struct IsHandle {
-  static const bool value = IsBaseOf<Handle, H>::value;
+  enum { value = IsBaseOf<Handle, H>::value };
 };
 
 template <typename T, bool move_only = IsMoveOnlyType<T>::value>
