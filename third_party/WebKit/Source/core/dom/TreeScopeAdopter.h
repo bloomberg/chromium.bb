@@ -36,7 +36,7 @@ class TreeScopeAdopter {
 public:
     TreeScopeAdopter(Node& toAdopt, TreeScope& newScope);
 
-    void execute() const { moveTreeToNewScope(m_toAdopt); }
+    void execute() const { moveTreeToNewScope(*m_toAdopt); }
     bool needsScopeChange() const { return m_oldScope != m_newScope; }
 
 #if ENABLE(ASSERT)
@@ -50,10 +50,12 @@ private:
     void moveTreeToNewScope(Node&) const;
     void moveTreeToNewDocument(Node&, Document& oldDocument, Document& newDocument) const;
     void moveNodeToNewDocument(Node&, Document& oldDocument, Document& newDocument) const;
+    TreeScope& oldScope() const { return *m_oldScope; }
+    TreeScope& newScope() const { return *m_newScope; }
 
-    Node& m_toAdopt;
-    TreeScope& m_newScope;
-    TreeScope& m_oldScope;
+    RawPtrWillBeMember<Node> m_toAdopt;
+    RawPtrWillBeMember<TreeScope> m_newScope;
+    RawPtrWillBeMember<TreeScope> m_oldScope;
 };
 
 inline TreeScopeAdopter::TreeScopeAdopter(Node& toAdopt, TreeScope& newScope)

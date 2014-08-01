@@ -24,6 +24,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/FrameOwner.h"
 #include "core/html/HTMLElement.h"
+#include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/HashCountedSet.h"
 
@@ -98,16 +99,17 @@ private:
 DEFINE_ELEMENT_TYPE_CASTS(HTMLFrameOwnerElement, isFrameOwnerElement());
 
 class SubframeLoadingDisabler {
+    STACK_ALLOCATED();
 public:
     explicit SubframeLoadingDisabler(Node& root)
         : m_root(root)
     {
-        disabledSubtreeRoots().add(&m_root);
+        disabledSubtreeRoots().add(m_root);
     }
 
     ~SubframeLoadingDisabler()
     {
-        disabledSubtreeRoots().remove(&m_root);
+        disabledSubtreeRoots().remove(m_root);
     }
 
     static bool canLoadFrame(HTMLFrameOwnerElement& owner)
@@ -124,7 +126,7 @@ public:
 private:
     static WillBeHeapHashCountedSet<RawPtrWillBeMember<Node> >& disabledSubtreeRoots();
 
-    Node& m_root;
+    RawPtrWillBeMember<Node> m_root;
 };
 
 DEFINE_TYPE_CASTS(HTMLFrameOwnerElement, FrameOwner, owner, owner->isLocal(), owner.isLocal());

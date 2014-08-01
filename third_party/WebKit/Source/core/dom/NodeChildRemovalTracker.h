@@ -28,10 +28,12 @@
 #define NodeChildRemovalTracker_h
 
 #include "core/dom/Node.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
 class NodeChildRemovalTracker {
+    STACK_ALLOCATED();
 public:
     explicit NodeChildRemovalTracker(Node&);
     ~NodeChildRemovalTracker();
@@ -39,10 +41,12 @@ public:
     static bool isBeingRemoved(Node*);
 
 private:
-    Node& node() const { return m_node; }
+    Node& node() const { return *m_node; }
     NodeChildRemovalTracker* previous() { return m_previous; }
 
-    Node& m_node;
+    RawPtrWillBeMember<Node> m_node;
+    // Using raw pointers are safe because these NodeChildRemovalTrackers are
+    // guaranteed to be on a stack.
     NodeChildRemovalTracker* m_previous;
     static NodeChildRemovalTracker* s_last;
 };

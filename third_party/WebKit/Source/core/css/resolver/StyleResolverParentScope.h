@@ -14,6 +14,7 @@ namespace blink {
 
 // Maintains the parent element stack (and bloom filter) inside recalcStyle.
 class StyleResolverParentScope FINAL {
+    STACK_ALLOCATED();
 public:
     explicit StyleResolverParentScope(Node& parent);
     ~StyleResolverParentScope();
@@ -22,8 +23,9 @@ public:
 
 private:
     void pushParentIfNeeded();
+    Node& parent() const { return *m_parent; }
 
-    Node& m_parent;
+    RawPtrWillBeMember<Node> m_parent;
     bool m_pushed;
     StyleResolverParentScope* m_previous;
     StyleResolver& m_resolver;
@@ -35,9 +37,9 @@ inline StyleResolverParentScope::StyleResolverParentScope(Node& parent)
     : m_parent(parent)
     , m_pushed(false)
     , m_previous(s_currentScope)
-    , m_resolver(*m_parent.document().styleResolver())
+    , m_resolver(*parent.document().styleResolver())
 {
-    ASSERT(m_parent.document().inStyleRecalc());
+    ASSERT(parent.document().inStyleRecalc());
     ASSERT(parent.isElementNode() || parent.isShadowRoot());
     s_currentScope = this;
     m_resolver.increaseStyleSharingDepth();
@@ -49,8 +51,8 @@ inline StyleResolverParentScope::~StyleResolverParentScope()
     m_resolver.decreaseStyleSharingDepth();
     if (!m_pushed)
         return;
-    if (m_parent.isElementNode())
-        m_resolver.popParentElement(toElement(m_parent));
+    if (parent().isElementNode())
+        m_resolver.popParentElement(toElement(parent()));
 }
 
 inline void StyleResolverParentScope::ensureParentStackIsPushed()
@@ -65,8 +67,8 @@ inline void StyleResolverParentScope::pushParentIfNeeded()
         return;
     if (m_previous)
         m_previous->pushParentIfNeeded();
-    if (m_parent.isElementNode())
-        m_resolver.pushParentElement(toElement(m_parent));
+    if (parent().isElementNode())
+        m_resolver.pushParentElement(toElement(parent()));
     m_pushed = true;
 }
 

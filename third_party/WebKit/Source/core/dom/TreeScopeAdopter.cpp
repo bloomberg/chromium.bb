@@ -38,15 +38,15 @@ void TreeScopeAdopter::moveTreeToNewScope(Node& root) const
     ASSERT(needsScopeChange());
 
 #if !ENABLE(OILPAN)
-    m_oldScope.guardRef();
+    oldScope().guardRef();
 #endif
 
     // If an element is moved from a document and then eventually back again the collection cache for
     // that element may contain stale data as changes made to it will have updated the DOMTreeVersion
     // of the document it was moved to. By increasing the DOMTreeVersion of the donating document here
     // we ensure that the collection cache will be invalidated as needed when the element is moved back.
-    Document& oldDocument = m_oldScope.document();
-    Document& newDocument = m_newScope.document();
+    Document& oldDocument = oldScope().document();
+    Document& newDocument = newScope().document();
     bool willMoveToNewDocument = oldDocument != newDocument;
     if (willMoveToNewDocument)
         oldDocument.incDOMTreeVersion();
@@ -72,14 +72,14 @@ void TreeScopeAdopter::moveTreeToNewScope(Node& root) const
         }
 
         for (ShadowRoot* shadow = node->youngestShadowRoot(); shadow; shadow = shadow->olderShadowRoot()) {
-            shadow->setParentTreeScope(m_newScope);
+            shadow->setParentTreeScope(newScope());
             if (willMoveToNewDocument)
                 moveTreeToNewDocument(*shadow, oldDocument, newDocument);
         }
     }
 
 #if !ENABLE(OILPAN)
-    m_oldScope.guardDeref();
+    oldScope().guardDeref();
 #endif
 }
 
@@ -108,12 +108,12 @@ void TreeScopeAdopter::ensureDidMoveToNewDocumentWasCalled(Document& oldDocument
 inline void TreeScopeAdopter::updateTreeScope(Node& node) const
 {
     ASSERT(!node.isTreeScope());
-    ASSERT(node.treeScope() == m_oldScope);
+    ASSERT(node.treeScope() == oldScope());
 #if !ENABLE(OILPAN)
-    m_newScope.guardRef();
-    m_oldScope.guardDeref();
+    newScope().guardRef();
+    oldScope().guardDeref();
 #endif
-    node.setTreeScope(&m_newScope);
+    node.setTreeScope(m_newScope);
 }
 
 inline void TreeScopeAdopter::moveNodeToNewDocument(Node& node, Document& oldDocument, Document& newDocument) const

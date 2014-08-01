@@ -27,6 +27,7 @@
 #ifndef StyleSheetCandidate_h
 #define StyleSheetCandidate_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 
@@ -37,6 +38,7 @@ class Node;
 class StyleSheet;
 
 class StyleSheetCandidate {
+    STACK_ALLOCATED();
 public:
     enum Type {
         HTMLLink,
@@ -65,10 +67,11 @@ public:
 private:
     bool isElement() const { return m_type != Pi; }
     bool isHTMLLink() const { return m_type == HTMLLink; }
+    Node& node() const { return *m_node; }
 
     static Type typeOf(Node&);
 
-    Node& m_node;
+    RawPtrWillBeMember<Node> m_node;
     Type m_type;
 };
 

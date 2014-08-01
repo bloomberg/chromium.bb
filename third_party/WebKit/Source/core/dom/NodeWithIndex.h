@@ -27,12 +27,14 @@
 #define NodeWithIndex_h
 
 #include "core/dom/Node.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
 // For use when you want to get the index for a node repeatedly and
 // only want to walk the child list to figure out the index once.
 class NodeWithIndex {
+    STACK_ALLOCATED();
 public:
     explicit NodeWithIndex(Node& node)
         : m_node(node)
@@ -40,21 +42,21 @@ public:
     {
     }
 
-    Node& node() const { return m_node; }
+    Node& node() const { return *m_node; }
 
     int index() const
     {
         if (!hasIndex())
-            m_index = m_node.nodeIndex();
+            m_index = node().nodeIndex();
         ASSERT(hasIndex());
-        ASSERT(m_index == static_cast<int>(m_node.nodeIndex()));
+        ASSERT(m_index == static_cast<int>(node().nodeIndex()));
         return m_index;
     }
 
 private:
     bool hasIndex() const { return m_index >= 0; }
 
-    Node& m_node;
+    RawPtrWillBeMember<Node> m_node;
     mutable int m_index;
 };
 

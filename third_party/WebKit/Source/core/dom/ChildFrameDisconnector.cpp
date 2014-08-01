@@ -19,16 +19,16 @@ static unsigned checkConnectedSubframeCountIsConsistent(Node&);
 void ChildFrameDisconnector::disconnect(DisconnectPolicy policy)
 {
 #if ENABLE(ASSERT)
-    checkConnectedSubframeCountIsConsistent(m_root);
+    checkConnectedSubframeCountIsConsistent(root());
 #endif
 
-    if (!m_root.connectedSubframeCount())
+    if (!root().connectedSubframeCount())
         return;
 
     if (policy == RootAndDescendants) {
-        collectFrameOwners(m_root);
+        collectFrameOwners(root());
     } else {
-        for (Node* child = m_root.firstChild(); child; child = child->nextSibling())
+        for (Node* child = root().firstChild(); child; child = child->nextSibling())
             collectFrameOwners(*child);
     }
 
@@ -55,13 +55,13 @@ void ChildFrameDisconnector::disconnectCollectedFrameOwners()
 {
     // Must disable frame loading in the subtree so an unload handler cannot
     // insert more frames and create loaded frames in detached subtrees.
-    SubframeLoadingDisabler disabler(m_root);
+    SubframeLoadingDisabler disabler(root());
 
     for (unsigned i = 0; i < m_frameOwners.size(); ++i) {
         HTMLFrameOwnerElement* owner = m_frameOwners[i].get();
         // Don't need to traverse up the tree for the first owner since no
         // script could have moved it.
-        if (!i || m_root.containsIncludingShadowDOM(owner))
+        if (!i || root().containsIncludingShadowDOM(owner))
             owner->disconnectContentFrame();
     }
 }

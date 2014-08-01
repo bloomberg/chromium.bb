@@ -42,40 +42,40 @@ using namespace HTMLNames;
 
 AtomicString StyleSheetCandidate::title() const
 {
-    return isElement() ? toElement(m_node).fastGetAttribute(titleAttr) : nullAtom;
+    return isElement() ? toElement(node()).fastGetAttribute(titleAttr) : nullAtom;
 }
 
 bool StyleSheetCandidate::isXSL() const
 {
-    return !m_node.document().isHTMLDocument() && m_type == Pi && toProcessingInstruction(m_node).isXSL();
+    return !node().document().isHTMLDocument() && m_type == Pi && toProcessingInstruction(node()).isXSL();
 }
 
 bool StyleSheetCandidate::isImport() const
 {
-    return m_type == HTMLLink && toHTMLLinkElement(m_node).isImport();
+    return m_type == HTMLLink && toHTMLLinkElement(node()).isImport();
 }
 
 Document* StyleSheetCandidate::importedDocument() const
 {
     ASSERT(isImport());
-    return toHTMLLinkElement(m_node).import();
+    return toHTMLLinkElement(node()).import();
 }
 
 bool StyleSheetCandidate::isAlternate() const
 {
     if (!isElement())
         return false;
-    return toElement(m_node).getAttribute(relAttr).contains("alternate");
+    return toElement(node()).getAttribute(relAttr).contains("alternate");
 }
 
 bool StyleSheetCandidate::isEnabledViaScript() const
 {
-    return isHTMLLink() && toHTMLLinkElement(m_node).isEnabledViaScript();
+    return isHTMLLink() && toHTMLLinkElement(node()).isEnabledViaScript();
 }
 
 bool StyleSheetCandidate::isEnabledAndLoading() const
 {
-    return isHTMLLink() && !toHTMLLinkElement(m_node).isDisabled() && toHTMLLinkElement(m_node).styleSheetIsLoading();
+    return isHTMLLink() && !toHTMLLinkElement(node()).isDisabled() && toHTMLLinkElement(node()).styleSheetIsLoading();
 }
 
 bool StyleSheetCandidate::hasPreferrableName(const String& currentPreferrableName) const
@@ -124,13 +124,13 @@ StyleSheet* StyleSheetCandidate::sheet() const
 {
     switch (m_type) {
     case HTMLLink:
-        return toHTMLLinkElement(m_node).sheet();
+        return toHTMLLinkElement(node()).sheet();
     case HTMLStyle:
-        return toHTMLStyleElement(m_node).sheet();
+        return toHTMLStyleElement(node()).sheet();
     case SVGStyle:
-        return toSVGStyleElement(m_node).sheet();
+        return toSVGStyleElement(node()).sheet();
     case Pi:
-        return toProcessingInstruction(m_node).sheet();
+        return toProcessingInstruction(node()).sheet();
     }
 
     ASSERT_NOT_REACHED();
