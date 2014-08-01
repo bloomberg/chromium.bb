@@ -112,6 +112,34 @@ class NestedSystemMessageHandler {
                 } else {
                     target.dispatchMessage(msg);
                 }
+
+                // Unset in-use flag.
+                Field flagsField = null;
+                try {
+                    flagsField = messageClazz.getDeclaredField("flags");
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                    return false;
+                } catch (SecurityException e) {
+                    e.printStackTrace();
+                    return false;
+                } catch (NoSuchFieldException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+                flagsField.setAccessible(true);
+
+                try {
+                    Integer oldFlags = (Integer) flagsField.get(msg);
+                    flagsField.set(msg, oldFlags & ~(1 << 0 /* FLAG_IN_USE */));
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                    return false;
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+
                 msg.recycle();
             } else {
                 quitLoop = true;
