@@ -50,4 +50,12 @@ bool GLImageEGL::BindTexImage(unsigned target) {
   return true;
 }
 
+bool GLImageEGL::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                                      int z_order,
+                                      OverlayTransform transform,
+                                      const Rect& bounds_rect,
+                                      const RectF& crop_rect) {
+  return false;
+}
+
 }  // namespace gfx

@@ -37,8 +37,12 @@ class GLImageSync : public gfx::GLImage {
   virtual void WillUseTexImage() OVERRIDE;
   virtual void WillModifyTexImage() OVERRIDE;
   virtual void DidModifyTexImage() OVERRIDE;
-
   virtual void DidUseTexImage() OVERRIDE;
+  virtual bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                                    int z_order,
+                                    gfx::OverlayTransform transform,
+                                    const gfx::Rect& bounds_rect,
+                                    const gfx::RectF& crop_rect) OVERRIDE;
   virtual void SetReleaseAfterUse() OVERRIDE;
 
  protected:
@@ -97,6 +101,15 @@ void GLImageSync::WillModifyTexImage() {
 void GLImageSync::DidModifyTexImage() {
   if (buffer_)
     buffer_->DidWrite(this);
+}
+
+bool GLImageSync::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                                       int z_order,
+                                       gfx::OverlayTransform transform,
+                                       const gfx::Rect& bounds_rect,
+                                       const gfx::RectF& crop_rect) {
+  NOTREACHED();
+  return false;
 }
 
 void GLImageSync::SetReleaseAfterUse() {

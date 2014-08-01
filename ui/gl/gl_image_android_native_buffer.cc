@@ -116,6 +116,15 @@ void GLImageAndroidNativeBuffer::DidUseTexImage() {
   DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 }
 
+bool GLImageAndroidNativeBuffer::ScheduleOverlayPlane(
+    gfx::AcceleratedWidget widget,
+    int z_order,
+    OverlayTransform transform,
+    const Rect& bounds_rect,
+    const RectF& crop_rect) {
+  return false;
+}
+
 void GLImageAndroidNativeBuffer::SetReleaseAfterUse() {
   release_after_use_ = true;
 }

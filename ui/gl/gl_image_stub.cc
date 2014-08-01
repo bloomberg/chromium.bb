@@ -14,4 +14,12 @@ gfx::Size GLImageStub::GetSize() { return gfx::Size(1, 1); }
 
 bool GLImageStub::BindTexImage(unsigned target) { return true; }
 
+bool GLImageStub::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                                       int z_order,
+                                       OverlayTransform transform,
+                                       const Rect& bounds_rect,
+                                       const RectF& crop_rect) {
+  return false;
+}
+
 }  // namespace gfx

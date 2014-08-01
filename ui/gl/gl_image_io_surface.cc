@@ -64,4 +64,12 @@ bool GLImageIOSurface::BindTexImage(unsigned target) {
   return true;
 }
 
+bool GLImageIOSurface::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                                            int z_order,
+                                            OverlayTransform transform,
+                                            const Rect& bounds_rect,
+                                            const RectF& crop_rect) {
+  return false;
+}
+
 }  // namespace gfx

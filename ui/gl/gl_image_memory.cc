@@ -203,4 +203,12 @@ size_t GLImageMemory::Bytes() const {
   return size_.GetArea() * BytesPerPixel(internalformat_);
 }
 
+bool GLImageMemory::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                                         int z_order,
+                                         OverlayTransform transform,
+                                         const Rect& bounds_rect,
+                                         const RectF& crop_rect) {
+  return false;
+}
+
 }  // namespace gfx

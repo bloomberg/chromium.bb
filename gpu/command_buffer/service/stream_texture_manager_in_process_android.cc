@@ -31,6 +31,11 @@ class GLImageImpl : public gfx::GLImage {
   virtual void DidUseTexImage() OVERRIDE {}
   virtual void WillModifyTexImage() OVERRIDE {}
   virtual void DidModifyTexImage() OVERRIDE {}
+  virtual bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                                    int z_order,
+                                    gfx::OverlayTransform transform,
+                                    const gfx::Rect& bounds_rect,
+                                    const gfx::RectF& crop_rect) OVERRIDE;
 
  private:
   virtual ~GLImageImpl();
@@ -54,8 +59,8 @@ void GLImageImpl::Destroy(bool have_context) {
   NOTREACHED();
 }
 
-void GLImageImpl::WillUseTexImage() {
-  surface_texture_->UpdateTexImage();
+gfx::Size GLImageImpl::GetSize() {
+  return gfx::Size();
 }
 
 bool GLImageImpl::BindTexImage(unsigned target) {
@@ -67,8 +72,17 @@ void GLImageImpl::ReleaseTexImage(unsigned target) {
   NOTREACHED();
 }
 
-gfx::Size GLImageImpl::GetSize() {
-  return gfx::Size();
+void GLImageImpl::WillUseTexImage() {
+  surface_texture_->UpdateTexImage();
+}
+
+bool GLImageImpl::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                                       int z_order,
+                                       gfx::OverlayTransform transform,
+                                       const gfx::Rect& bounds_rect,
+                                       const gfx::RectF& crop_rect) {
+  NOTREACHED();
+  return false;
 }
 
 }  // anonymous namespace
