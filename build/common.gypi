@@ -3898,10 +3898,6 @@
               # http://crbug.com/255186
               '-Wno-deprecated-register',
             ],
-            'cflags!': [
-              # Clang doesn't seem to know know this flag.
-              '-mfpmath=sse',
-            ],
             'cflags_cc': [
               # See the comment in the Mac section for what it takes to move
               # this to -std=c++11.
