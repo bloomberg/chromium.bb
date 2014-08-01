@@ -193,8 +193,6 @@
 
     'SK_IGNORE_BLURRED_RRECT_OPT',
 
-    'SK_IGNORE_QUAD_RR_CORNERS_OPT',
-
     # this flag forces Skia not to use typographic metrics with GDI.
     'SK_GDI_ALWAYS_USE_TEXTMETRICS_FOR_FONT_METRICS',
 
