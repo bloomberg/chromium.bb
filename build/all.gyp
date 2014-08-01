@@ -1075,6 +1075,7 @@
             '../crypto/crypto.gyp:crypto_unittests',
             '../device/device_tests.gyp:device_unittests',
             '../extensions/extensions.gyp:extensions_unittests',
+            '../gin/gin.gyp:gin_shell',
             '../gin/gin.gyp:gin_unittests',
             '../google_apis/gcm/gcm.gyp:gcm_unit_tests',
             '../google_apis/google_apis.gyp:google_apis_unittests',
