@@ -75,7 +75,7 @@ class CmdToStrTest(cros_test_lib.TestCase):
         """'b"c'""": 'b"c',
         "'a@()b'": 'a@()b',
         'j%k': 'j%k',
-        r'''"'a\$va\r"''': r"'a$va\r",
+        r'''"s'a\$va\\rs"''': r"s'a$va\rs",
     }
     self._testData(cros_build_lib.ShellQuote, tests)
 

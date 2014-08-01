@@ -49,7 +49,8 @@ logger = logging.getLogger('chromite')
 #   http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html
 _SHELL_QUOTABLE_CHARS = frozenset('[|&;()<> \t!{}[]=*?~$"\'\\#^')
 # The chars that, when used inside of double quotes, need escaping.
-_SHELL_ESCAPE_CHARS = frozenset('"`$')
+# Order here matters as we need to escape backslashes first.
+_SHELL_ESCAPE_CHARS = r'\"`$'
 
 
 def ShellQuote(s):
