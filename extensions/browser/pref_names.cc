@@ -38,7 +38,6 @@ const char kExtensions[] = "extensions.settings";
 const char kInstallAllowList[] = "extensions.install.allowlist";
 const char kInstallDenyList[] = "extensions.install.denylist";
 const char kInstallForceList[] = "extensions.install.forcelist";
-const char kKnownDisabled[] = "extensions.known_disabled";
 const char kLastChromeVersion[] = "extensions.last_chrome_version";
 const char kLastUpdateCheck[] = "extensions.autoupdate.last_check";
 const char kNativeMessagingBlacklist[] = "native_messaging.blacklist";

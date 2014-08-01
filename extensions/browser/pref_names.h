@@ -64,10 +64,6 @@ extern const char kInstallDenyList[];
 // accessed through extensions::ExternalPolicyProvider.
 extern const char kInstallForceList[];
 
-// Deprecated. A list of known disabled extensions IDs.
-// TODO(gab): Remove this pref in M40+.
-extern const char kKnownDisabled[];
-
 // String pref for what version chrome was last time the extension prefs were
 // loaded.
 extern const char kLastChromeVersion[];

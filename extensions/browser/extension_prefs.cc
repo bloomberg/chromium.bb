@@ -1920,10 +1920,6 @@ ExtensionPrefs::ExtensionPrefs(
       app_sorting_(app_sorting.Pass()),
       time_provider_(time_provider.Pass()),
       extensions_disabled_(extensions_disabled) {
-  // Remove this deprecated pref.
-  // TODO(gab): Remove the pref's name from the code base altogether in M40.
-  prefs_->ClearPref(pref_names::kKnownDisabled);
-
   app_sorting_->SetExtensionScopedPrefs(this);
   MakePathsRelative();
 
@@ -1988,8 +1984,6 @@ void ExtensionPrefs::RegisterProfilePrefs(
       pref_names::kLastChromeVersion,
       std::string(),  // default value
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(pref_names::kKnownDisabled,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #if defined(OS_MACOSX)
   registry->RegisterDoublePref(
       pref_names::kBrowserActionContainerWidth,

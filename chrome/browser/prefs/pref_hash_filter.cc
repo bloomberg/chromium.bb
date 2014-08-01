@@ -21,6 +21,27 @@
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
+namespace {
+
+void CleanupDeprecatedTrackedPreferences(
+    base::DictionaryValue* pref_store_contents,
+    PrefHashStoreTransaction* hash_store_transaction) {
+  // Add deprecated previously tracked preferences below for them to be cleaned
+  // up from both the pref files and the hash store.
+  static const char* kDeprecatedTrackedPreferences[] = {
+    // TODO(gab): Remove in M41+.
+    "extensions.known_disabled",
+  };
+
+  for (size_t i = 0; i < arraysize(kDeprecatedTrackedPreferences); ++i) {
+    const char* key = kDeprecatedTrackedPreferences[i];
+    pref_store_contents->Remove(key, NULL);
+    hash_store_transaction->ClearHash(key);
+  }
+}
+
+}  // namespace
+
 PrefHashFilter::PrefHashFilter(
     scoped_ptr<PrefHashStore> pref_hash_store,
     const std::vector<TrackedPreferenceMetadata>& tracked_preferences,
@@ -165,6 +186,10 @@ void PrefHashFilter::FinalizeFilterOnLoad(
     scoped_ptr<PrefHashStoreTransaction> hash_store_transaction(
         pref_hash_store_->BeginTransaction(scoped_ptr<HashStoreContents>(
             new DictionaryHashStoreContents(pref_store_contents.get()))));
+
+    CleanupDeprecatedTrackedPreferences(
+        pref_store_contents.get(), hash_store_transaction.get());
+
     if (report_super_mac_validity_) {
       UMA_HISTOGRAM_BOOLEAN("Settings.HashesDictionaryTrusted",
                             hash_store_transaction->IsSuperMACValid());

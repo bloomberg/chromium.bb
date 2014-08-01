@@ -335,7 +335,8 @@ void MockPrefHashStore::MockPrefHashStoreTransaction::ImportHash(
 
 void MockPrefHashStore::MockPrefHashStoreTransaction::ClearHash(
     const std::string& path)  {
-  ADD_FAILURE() << "Unexpected call.";
+  // Allow this to be called by PrefHashFilter's deprecated tracked prefs
+  // cleanup tasks.
 }
 
 bool MockPrefHashStore::MockPrefHashStoreTransaction::IsSuperMACValid() const {

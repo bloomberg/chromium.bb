@@ -86,6 +86,8 @@ bool g_disable_delays_and_domain_check_for_testing = false;
 // tools/metrics/histograms/histograms.xml. To add a new preference, append it
 // to the array and add a corresponding value to the histogram enum. Each
 // tracked preference must be given a unique reporting ID.
+// See CleanupDeprecatedTrackedPreferences() in pref_hash_filter.cc to remove a
+// deprecated tracked preference.
 const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
   {
     0, prefs::kShowHomeButton,
@@ -151,15 +153,6 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
 #endif
-#if defined(ENABLE_EXTENSIONS)
-  {
-    // This pref has been deprecated, leave it here for now for it to be
-    // properly mapped back to Preferences and cleaned up from there.
-    12, extensions::pref_names::kKnownDisabled,
-    PrefHashFilter::NO_ENFORCEMENT,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
-  },
-#endif
   {
     13, prefs::kProfileResetPromptMemento,
     PrefHashFilter::ENFORCE_ON_LOAD,
@@ -202,10 +195,9 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
   },
 };
 
-// The count of tracked preferences IDs across all platforms.
-const size_t kTrackedPrefsReportingIDsCount = 19;
-COMPILE_ASSERT(kTrackedPrefsReportingIDsCount >= arraysize(kTrackedPrefs),
-               need_to_increment_ids_count);
+// One more than the last tracked preferences ID above.
+const size_t kTrackedPrefsReportingIDsCount =
+    kTrackedPrefs[arraysize(kTrackedPrefs) - 1].reporting_id + 1;
 
 // Each group enforces a superset of the protection provided by the previous
 // one.
