@@ -72,12 +72,12 @@ void CSSSelectorWatch::callbackSelectorChangeTimerFired(Timer<CSSSelectorWatch>*
         m_callbackSelectorChangeTimer.startOneShot(0, FROM_HERE);
         return;
     }
-    if (m_document.frame()) {
+    if (document().frame()) {
         Vector<String> addedSelectors;
         Vector<String> removedSelectors;
         copyToVector(m_addedSelectors, addedSelectors);
         copyToVector(m_removedSelectors, removedSelectors);
-        m_document.frame()->loader().client()->selectorMatchChanged(addedSelectors, removedSelectors);
+        document().frame()->loader().client()->selectorMatchChanged(addedSelectors, removedSelectors);
     }
     m_addedSelectors.clear();
     m_removedSelectors.clear();
@@ -161,12 +161,13 @@ void CSSSelectorWatch::watchCSSSelectors(const Vector<String>& selectors)
         rule->setProperties(callbackPropertySet);
         m_watchedCallbackSelectors.append(rule.release());
     }
-    m_document.changedSelectorWatch();
+    document().changedSelectorWatch();
 }
 
 void CSSSelectorWatch::trace(Visitor* visitor)
 {
     visitor->trace(m_watchedCallbackSelectors);
+    visitor->trace(m_document);
     DocumentSupplement::trace(visitor);
 }
 

@@ -249,7 +249,7 @@ void StyleResolver::processScopedRules(const RuleSet& authorRules, CSSStyleSheet
     if (scope.isDocumentNode()) {
         const WillBeHeapVector<RawPtrWillBeMember<StyleRuleFontFace> > fontFaceRules = authorRules.fontFaceRules();
         for (unsigned i = 0; i < fontFaceRules.size(); ++i)
-            addFontFaceRule(&m_document, document().styleEngine()->fontSelector(), fontFaceRules[i]);
+            addFontFaceRule(m_document, document().styleEngine()->fontSelector(), fontFaceRules[i]);
         if (fontFaceRules.size())
             invalidateMatchedPropertiesCache();
     }
@@ -410,7 +410,7 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
 
     bool applyAuthorStyles = applyAuthorStylesOf(element);
     if (m_scopedStyleResolvers.size() == 1) {
-        m_document.scopedStyleResolver()->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, ignoreCascadeScope);
+        document().scopedStyleResolver()->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, ignoreCascadeScope);
         m_treeBoundaryCrossingRules.collectTreeBoundaryCrossingRules(element, collector, includeEmptyRules);
         collector.sortAndTransferMatchedRules();
         return;
@@ -569,7 +569,7 @@ static void addContentAttrValuesToFeatures(const Vector<AtomicString>& contentAt
 
 void StyleResolver::adjustRenderStyle(StyleResolverState& state, Element* element)
 {
-    StyleAdjuster adjuster(m_document.inQuirksMode());
+    StyleAdjuster adjuster(document().inQuirksMode());
     adjuster.adjustRenderStyle(state.style(), state.parentStyle(), element, state.cachedUAStyle());
 }
 
@@ -884,7 +884,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
 
     collector.matchPageRules(CSSDefaultStyleSheets::instance().defaultPrintStyle());
 
-    if (ScopedStyleResolver* scopedResolver = m_document.scopedStyleResolver())
+    if (ScopedStyleResolver* scopedResolver = document().scopedStyleResolver())
         scopedResolver->matchPageRules(collector);
 
     state.setLineHeightValue(0);
@@ -923,7 +923,7 @@ void StyleResolver::collectViewportRules()
     if (document().isMobileDocument())
         viewportStyleResolver()->collectViewportRules(defaultStyleSheets.defaultXHTMLMobileProfileStyle(), ViewportStyleResolver::UserAgentOrigin);
 
-    if (ScopedStyleResolver* scopedResolver = m_document.scopedStyleResolver())
+    if (ScopedStyleResolver* scopedResolver = document().scopedStyleResolver())
         scopedResolver->collectViewportRulesTo(this);
 
     viewportStyleResolver()->resolve();
@@ -1546,7 +1546,7 @@ void StyleResolver::printStats()
 {
     if (!m_styleResolverStats)
         return;
-    fprintf(stderr, "=== Style Resolver Stats (resolve #%u) (%s) ===\n", ++m_styleResolverStatsSequence, m_document.url().string().utf8().data());
+    fprintf(stderr, "=== Style Resolver Stats (resolve #%u) (%s) ===\n", ++m_styleResolverStatsSequence, document().url().string().utf8().data());
     fprintf(stderr, "%s\n", m_styleResolverStats->report().utf8().data());
     fprintf(stderr, "== Totals ==\n");
     fprintf(stderr, "%s\n", m_styleResolverStatsTotals->report().utf8().data());
@@ -1608,6 +1608,7 @@ void StyleResolver::trace(Visitor* visitor)
     visitor->trace(m_styleSharingLists);
     visitor->trace(m_pendingStyleSheets);
     visitor->trace(m_scopedStyleResolvers);
+    visitor->trace(m_document);
 #endif
 }
 

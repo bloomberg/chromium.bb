@@ -128,7 +128,7 @@ public:
 
     // FIXME: This only has 5 callers and should be removed. Callers should be explicit about
     // their dependency on Document* instead of grabbing one through StyleResolver.
-    Document& document() { return m_document; }
+    Document& document() { return *m_document; }
 
     // FIXME: It could be better to call appendAuthorStyleSheets() directly after we factor StyleResolver further.
     // https://bugs.webkit.org/show_bug.cgi?id=108890
@@ -289,7 +289,7 @@ private:
     OwnPtr<MediaQueryEvaluator> m_medium;
     MediaQueryResultList m_viewportDependentMediaQueryResults;
 
-    Document& m_document;
+    RawPtrWillBeMember<Document> m_document;
     SelectorFilter m_selectorFilter;
 
     OwnPtrWillBeMember<ViewportStyleResolver> m_viewportStyleResolver;

@@ -82,17 +82,17 @@ DOMPatchSupport::DOMPatchSupport(DOMEditor* domEditor, Document& document)
 void DOMPatchSupport::patchDocument(const String& markup)
 {
     RefPtrWillBeRawPtr<Document> newDocument = nullptr;
-    if (m_document.isHTMLDocument())
+    if (document().isHTMLDocument())
         newDocument = HTMLDocument::create();
-    else if (m_document.isXHTMLDocument())
+    else if (document().isXHTMLDocument())
         newDocument = XMLDocument::createXHTML();
-    else if (m_document.isXMLDocument())
+    else if (document().isXMLDocument())
         newDocument = XMLDocument::create();
 
     ASSERT(newDocument);
-    newDocument->setContextFeatures(m_document.contextFeatures());
+    newDocument->setContextFeatures(document().contextFeatures());
     RefPtrWillBeRawPtr<DocumentParser> parser = nullptr;
-    if (m_document.isHTMLDocument())
+    if (document().isHTMLDocument())
         parser = HTMLDocumentParser::create(toHTMLDocument(*newDocument), false);
     else
         parser = XMLDocumentParser::create(*newDocument, 0);
@@ -100,13 +100,13 @@ void DOMPatchSupport::patchDocument(const String& markup)
     parser->finish();
     parser->detach();
 
-    OwnPtr<Digest> oldInfo = createDigest(m_document.documentElement(), 0);
+    OwnPtr<Digest> oldInfo = createDigest(document().documentElement(), 0);
     OwnPtr<Digest> newInfo = createDigest(newDocument->documentElement(), &m_unusedNodesMap);
 
     if (!innerPatchNode(oldInfo.get(), newInfo.get(), IGNORE_EXCEPTION)) {
         // Fall back to rewrite.
-        m_document.write(markup);
-        m_document.close();
+        document().write(markup);
+        document().close();
     }
 }
 
@@ -119,17 +119,17 @@ Node* DOMPatchSupport::patchNode(Node* node, const String& markup, ExceptionStat
     }
 
     Node* previousSibling = node->previousSibling();
-    RefPtrWillBeRawPtr<DocumentFragment> fragment = DocumentFragment::create(m_document);
-    Node* targetNode = node->parentElementOrShadowRoot() ? node->parentElementOrShadowRoot() : m_document.documentElement();
+    RefPtrWillBeRawPtr<DocumentFragment> fragment = DocumentFragment::create(document());
+    Node* targetNode = node->parentElementOrShadowRoot() ? node->parentElementOrShadowRoot() : document().documentElement();
 
     // Use the document BODY as the context element when editing immediate shadow root children,
     // as it provides an equivalent parsing context.
     if (targetNode->isShadowRoot())
-        targetNode = m_document.body();
+        targetNode = document().body();
     Element* targetElement = toElement(targetNode);
 
     // FIXME: This code should use one of createFragment* in markup.h
-    if (m_document.isHTMLDocument())
+    if (document().isHTMLDocument())
         fragment->parseHTML(markup, targetElement);
     else
         fragment->parseXML(markup, targetElement);

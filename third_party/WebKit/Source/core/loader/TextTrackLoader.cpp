@@ -77,7 +77,7 @@ void TextTrackLoader::dataReceived(Resource* resource, const char* data, int len
         return;
 
     if (!m_cueParser)
-        m_cueParser = VTTParser::create(this, m_document);
+        m_cueParser = VTTParser::create(this, document());
 
     m_cueParser->parseBytes(data, length);
 }
@@ -85,7 +85,7 @@ void TextTrackLoader::dataReceived(Resource* resource, const char* data, int len
 void TextTrackLoader::corsPolicyPreventedLoad(SecurityOrigin* securityOrigin, const KURL& url)
 {
     String consoleMessage("Text track from origin '" + SecurityOrigin::create(url)->toString() + "' has been blocked from loading: Not at same origin as the document, and parent of track element does not have a 'crossorigin' attribute. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.");
-    m_document.addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, consoleMessage);
+    document().addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, consoleMessage);
     m_state = Failed;
 }
 
@@ -108,17 +108,17 @@ bool TextTrackLoader::load(const KURL& url, const AtomicString& crossOriginMode)
 {
     cancelLoad();
 
-    FetchRequest cueRequest(ResourceRequest(m_document.completeURL(url)), FetchInitiatorTypeNames::texttrack);
+    FetchRequest cueRequest(ResourceRequest(document().completeURL(url)), FetchInitiatorTypeNames::texttrack);
 
     if (!crossOriginMode.isNull()) {
-        cueRequest.setCrossOriginAccessControl(m_document.securityOrigin(), crossOriginMode);
-    } else if (!m_document.securityOrigin()->canRequest(url)) {
+        cueRequest.setCrossOriginAccessControl(document().securityOrigin(), crossOriginMode);
+    } else if (!document().securityOrigin()->canRequest(url)) {
         // Text track elements without 'crossorigin' set on the parent are "No CORS"; report error if not same-origin.
-        corsPolicyPreventedLoad(m_document.securityOrigin(), url);
+        corsPolicyPreventedLoad(document().securityOrigin(), url);
         return false;
     }
 
-    ResourceFetcher* fetcher = m_document.fetcher();
+    ResourceFetcher* fetcher = document().fetcher();
     setResource(fetcher->fetchTextTrack(cueRequest));
     return resource();
 }
@@ -166,6 +166,7 @@ void TextTrackLoader::getNewRegions(WillBeHeapVector<RefPtrWillBeMember<VTTRegio
 void TextTrackLoader::trace(Visitor* visitor)
 {
     visitor->trace(m_cueParser);
+    visitor->trace(m_document);
 }
 
 }

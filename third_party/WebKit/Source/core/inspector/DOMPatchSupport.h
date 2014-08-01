@@ -31,6 +31,7 @@
 #ifndef DOMPatchSupport_h
 #define DOMPatchSupport_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -46,6 +47,7 @@ class ExceptionState;
 class Node;
 
 class DOMPatchSupport FINAL {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(DOMPatchSupport);
 public:
     static void patchDocument(Document&, const String& markup);
@@ -70,9 +72,10 @@ private:
 #ifdef DEBUG_DOM_PATCH_SUPPORT
     void dumpMap(const ResultMap&, const String& name);
 #endif
+    Document& document() const { return *m_document; }
 
-    DOMEditor* m_domEditor;
-    Document& m_document;
+    RawPtrWillBeMember<DOMEditor> m_domEditor;
+    RawPtrWillBeMember<Document> m_document;
 
     UnusedNodesMap m_unusedNodesMap;
 };

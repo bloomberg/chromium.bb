@@ -60,8 +60,9 @@ public:
 private:
     explicit CSSSelectorWatch(Document&);
     void callbackSelectorChangeTimerFired(Timer<CSSSelectorWatch>*);
+    Document& document() const { return *m_document; }
 
-    Document& m_document;
+    RawPtrWillBeMember<Document> m_document;
 
     WillBeHeapVector<RefPtrWillBeMember<StyleRule> > m_watchedCallbackSelectors;
 
