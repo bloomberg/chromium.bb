@@ -208,6 +208,7 @@ void TreeScopeStyleSheetCollection::updateUsesRemUnits()
 
 void TreeScopeStyleSheetCollection::trace(Visitor* visitor)
 {
+    visitor->trace(m_treeScope);
     visitor->trace(m_styleSheetCandidateNodes);
     StyleSheetCollection::trace(visitor);
 }
