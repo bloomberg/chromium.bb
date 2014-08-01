@@ -514,6 +514,8 @@ TEST(SharedMemoryTest, MapTwice) {
 }
 
 #if defined(OS_POSIX)
+// This test is not applicable for iOS (crbug.com/399384).
+#if !defined(OS_IOS)
 // Create a shared memory object, mmap it, and mprotect it to PROT_EXEC.
 TEST(SharedMemoryTest, AnonymousExecutable) {
   const uint32 kTestSize = 1 << 16;
@@ -529,6 +531,7 @@ TEST(SharedMemoryTest, AnonymousExecutable) {
   EXPECT_EQ(0, mprotect(shared_memory.memory(), shared_memory.requested_size(),
                         PROT_READ | PROT_EXEC));
 }
+#endif  // !defined(OS_IOS)
 
 // Android supports a different permission model than POSIX for its "ashmem"
 // shared memory implementation. So the tests about file permissions are not
