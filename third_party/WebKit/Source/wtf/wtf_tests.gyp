@@ -35,12 +35,13 @@
       'target_name': 'wtf_unittests',
       'type': 'executable',
       'dependencies': [
-        'run_all_tests',
         'wtf_unittest_helpers',
         'wtf.gyp:wtf',
         '../config.gyp:unittest_config',
+        '<(DEPTH)/base/base.gyp:test_support_base',
       ],
       'sources': [
+        'testing/RunAllTests.cpp',
         '<@(wtf_unittest_files)',
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
@@ -59,20 +60,6 @@
             '<(DEPTH)/tools/android/forwarder2/forwarder.gyp:forwarder2',
           ],
         }],
-      ]
-    },
-    {
-      'target_name': 'run_all_tests',
-      'type': 'static_library',
-      'dependencies': [
-        '../config.gyp:unittest_config',
-        '<(DEPTH)/base/base.gyp:test_support_base',
-      ],
-      'export_dependent_settings': [
-        '<(DEPTH)/base/base.gyp:test_support_base',
-      ],
-      'sources': [
-        'testing/RunAllTests.cpp',
       ]
     },
     {

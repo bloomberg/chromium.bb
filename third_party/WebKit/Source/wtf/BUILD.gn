@@ -97,6 +97,8 @@ component("wtf") {
 test("wtf_unittests") {
   sources = gypi_values.wtf_unittest_files
 
+  sources += [ "testing/RunAllTests.cpp" ]
+
   if (is_win) {
     cflags = [
       "/wd4068",  # Unknown pragma.
@@ -107,28 +109,10 @@ test("wtf_unittests") {
   configs += [ "//third_party/WebKit/Source:config", ]
 
   deps = [
-    ":run_all_tests",
     ":test_support",
     ":wtf",
     "//base",
     "//base/allocator",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
-}
-
-source_set("run_all_tests") {
-  sources = [
-    "testing/RunAllTests.cpp",
-  ]
-
-  configs += [
-    ":wtf_config",
-    "//third_party/WebKit/Source:config",
-    "//third_party/WebKit/Source:non_test_config",
-  ]
-
-  deps = [
     "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
