@@ -87,7 +87,8 @@ class AFDOUpdateEbuildStage(generic_stages.BuilderStage):
     # We need the name of one board that has been setup in this
     # builder to find the Chrome ebuild. The chrome ebuild should be
     # the same for all the boards, so just use the first one.
-    board = self._boards[0]
+    # If we don't have any boards, leave the called function to guess.
+    board = self._boards[0] if self._boards else None
     arch_profiles = {}
     for arch in afdo.AFDO_ARCH_GENERATORS:
       afdo_file = afdo.GetLatestAFDOFile(cpv, arch, buildroot, gs_context)

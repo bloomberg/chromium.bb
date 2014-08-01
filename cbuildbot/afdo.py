@@ -248,7 +248,11 @@ def UpdateChromeEbuildAFDOFile(board, arch_profiles):
     arch_profiles: {arch: afdo_file} pairs to put into the ebuild.
   """
   # Find the Chrome ebuild file.
-  equery_cmd = ['equery-%s' % board, 'w', 'chromeos-chrome']
+  if board:
+    equery_cmd = ['equery-%s' % board, 'w', 'chromeos-chrome']
+  else:
+    equery_cmd = ['equery', 'w', 'chromeos-chrome']
+
   ebuild_file = cros_build_lib.RunCommand(equery_cmd,
                                           enter_chroot=True,
                                           redirect_stdout=True).output.rstrip()
