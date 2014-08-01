@@ -28,7 +28,7 @@ cr.define('options', function() {
       Page.prototype.initializePage.call(this);
 
       $('supervised-user-learn-more-done').onclick = function(event) {
-        Page.closeOverlay();
+        cr.ui.pageManager.PageManager.closeOverlay();
       };
     },
   };
