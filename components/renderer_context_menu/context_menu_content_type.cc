@@ -74,6 +74,17 @@ bool ContextMenuContentType::SupportsGroup(int group) {
     // adding the normal ones after the custom ones.
   }
 
+  if (IsDevToolsURL(params_.page_url)) {
+    // DevTools mostly provides custom context menu and uses
+    // only the following default options.
+    if (group != ITEM_GROUP_CUSTOM &&
+        group != ITEM_GROUP_EDITABLE &&
+        group != ITEM_GROUP_COPY &&
+        group != ITEM_GROUP_DEVELOPER) {
+      return false;
+    }
+  }
+
   return SupportsGroupInternal(group);
 }
 
@@ -94,7 +105,6 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
         DCHECK(params_.frame_url.is_empty());
 
       return is_candidate && !params_.page_url.is_empty() &&
-          !IsDevToolsURL(params_.page_url) &&
           !IsInternalResourcesURL(params_.page_url);
     }
 
@@ -102,7 +112,6 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
 
       bool page_group_supported = SupportsGroupInternal(ITEM_GROUP_PAGE);
       return page_group_supported && !params_.frame_url.is_empty() &&
-          !IsDevToolsURL(params_.frame_url) &&
           !IsInternalResourcesURL(params_.page_url);
     }
 
@@ -145,13 +154,12 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
       return has_selection;
 
     case ITEM_GROUP_PRINT: {
-      bool enable = has_selection && !IsDevToolsURL(params_.page_url);
       // Image menu items also imply print items.
-      return enable || SupportsGroupInternal(ITEM_GROUP_MEDIA_IMAGE);
+      return has_selection || SupportsGroupInternal(ITEM_GROUP_MEDIA_IMAGE);
     }
 
     case ITEM_GROUP_ALL_EXTENSION:
-      return !IsDevToolsURL(params_.page_url);
+      return true;
 
     case ITEM_GROUP_CURRENT_EXTENSION:
       return false;
