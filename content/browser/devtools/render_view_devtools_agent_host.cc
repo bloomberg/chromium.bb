@@ -477,6 +477,13 @@ void RenderViewDevToolsAgentHost::OnDispatchOnInspectorFrontend(
     const std::string& message) {
   if (!render_view_host_)
     return;
+
+  scoped_refptr<DevToolsProtocol::Notification> notification =
+      DevToolsProtocol::ParseNotification(message);
+
+  if (notification) {
+    tracing_handler_->HandleNotification(notification);
+  }
   DevToolsManagerImpl::GetInstance()->DispatchOnInspectorFrontend(
       this, message);
 }
