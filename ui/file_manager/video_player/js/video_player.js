@@ -488,11 +488,18 @@ VideoPlayer.prototype.setCastList = function(casts) {
 
   if (casts.length === 0) {
     button.classList.add('hidden');
-    if (!this.currentCast_) {
-      this.currentCast_ = null;
-      this.reloadCurrentVideo();
-    }
+    if (this.currentCast_)
+      this.onCurrentCastDisappear_();
     return;
+  }
+
+  if (this.currentCast_) {
+    var currentCastAvailable = casts.some(function(cast) {
+      return this.currentCast_.label === cast.label;
+    }.wrap(this));
+
+    if (!currentCastAvailable)
+      this.onCurrentCastDisappear_();
   }
 
   var item = new cr.ui.MenuItem();
@@ -508,6 +515,17 @@ VideoPlayer.prototype.setCastList = function(casts) {
     menu.appendChild(item);
   }
   button.classList.remove('hidden');
+};
+
+/**
+ * Called when the current cast is disappear from the cast list.
+ * @private
+ */
+VideoPlayer.prototype.onCurrentCastDisappear_ = function() {
+  this.currentCast_ = null;
+  this.currentSession_ = null;
+  this.controls.showErrorMessage('GALLERY_VIDEO_DECODING_ERROR');
+  this.unloadVideo();
 };
 
 /**
