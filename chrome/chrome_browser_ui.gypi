@@ -1920,7 +1920,6 @@
       'browser/ui/views/bookmarks/bookmark_sync_promo_view.cc',
       'browser/ui/views/bookmarks/bookmark_sync_promo_view.h',
       'browser/ui/views/certificate_viewer_win.cc',
-      'browser/ui/views/chrome_views_delegate.cc',
       'browser/ui/views/chrome_views_delegate_chromeos.cc',
       'browser/ui/views/chrome_web_dialog_view.cc',
       'browser/ui/views/collected_cookies_views.cc',
