@@ -59,10 +59,10 @@ asm(// We need to be able to tell the kernel exactly where we made a
     // that are used internally (e.g. %ebx for position-independent
     // code, and %ebp for the frame pointer), and as we need to keep at
     // least a few registers available for the register allocator.
-    "1:push %esi; .cfi_adjust_cfa_offset 4\n"
-    "push %edi; .cfi_adjust_cfa_offset 4\n"
-    "push %ebx; .cfi_adjust_cfa_offset 4\n"
-    "push %ebp; .cfi_adjust_cfa_offset 4\n"
+    "1:push %esi; .cfi_adjust_cfa_offset 4; .cfi_rel_offset esi, 0\n"
+    "push %edi; .cfi_adjust_cfa_offset 4; .cfi_rel_offset edi, 0\n"
+    "push %ebx; .cfi_adjust_cfa_offset 4; .cfi_rel_offset ebx, 0\n"
+    "push %ebp; .cfi_adjust_cfa_offset 4; .cfi_rel_offset ebp, 0\n"
     // Copy entries from the array holding the arguments into the
     // correct CPU registers.
     "movl  0(%edi), %ebx\n"
@@ -77,10 +77,10 @@ asm(// We need to be able to tell the kernel exactly where we made a
     "2:"
     // Restore any clobbered registers that we didn't declare to the
     // compiler.
-    "pop  %ebp; .cfi_adjust_cfa_offset -4\n"
-    "pop  %ebx; .cfi_adjust_cfa_offset -4\n"
-    "pop  %edi; .cfi_adjust_cfa_offset -4\n"
-    "pop  %esi; .cfi_adjust_cfa_offset -4\n"
+    "pop  %ebp; .cfi_restore ebp; .cfi_adjust_cfa_offset -4\n"
+    "pop  %ebx; .cfi_restore ebx; .cfi_adjust_cfa_offset -4\n"
+    "pop  %edi; .cfi_restore edi; .cfi_adjust_cfa_offset -4\n"
+    "pop  %esi; .cfi_restore esi; .cfi_adjust_cfa_offset -4\n"
     "ret\n"
     ".cfi_endproc\n"
     "9:.size SyscallAsm, 9b-SyscallAsm\n"

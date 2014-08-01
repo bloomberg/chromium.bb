@@ -209,15 +209,12 @@ BPF_TEST_C(BaselinePolicy, EPERM_getcwd, BaselinePolicy) {
   BPF_ASSERT_EQ(EPERM, errno);
 }
 
-// TODO(mdempsky): Enable on IA-32 after fixing crbug.com/399396.
-#if !defined(__i386__)
 BPF_DEATH_TEST_C(BaselinePolicy,
                  SIGSYS_InvalidSyscall,
                  DEATH_SEGV_MESSAGE(GetErrorMessageContentForTests()),
                  BaselinePolicy) {
   Syscall::InvalidCall();
 }
-#endif
 
 // A failing test using this macro could be problematic since we perform
 // system calls by passing "0" as every argument.
