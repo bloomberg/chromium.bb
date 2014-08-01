@@ -2632,12 +2632,10 @@ def SetUpLinuxEnvArm(env):
                 CXX='arm-linux-%s-g++%s' % (arm_abi, arm_suffix),
                 LD='arm-linux-%s-ld%s' % (arm_abi, arm_suffix),
                 ASFLAGS=[],
-                LIBPATH=['${LIB_DIR}',
-                         '%s/usr/lib' % jail,
-                         '%s/lib' % jail,
-                         '%s/usr/lib/arm-linux-%s' % (jail, arm_abi),
-                         '%s/lib/arm-linux-%s' % (jail, arm_abi),
-                         ],
+                # The -rpath-link argument is needed on Ubuntu/Precise to
+                # avoid linker warnings about missing ld.linux.so.3.
+                # TODO(sbc): remove this once we stop supporting Precise
+                # as a build environment.
                 LINKFLAGS=['-Wl,-rpath-link=' + jail +
                            '/lib/arm-linux-' + arm_abi]
                 )
@@ -2645,13 +2643,6 @@ def SetUpLinuxEnvArm(env):
     # default.  The hope is this will have the best chance of testing
     # the prevailing compilation mode used for Chromium et al.
     env.Prepend(CCFLAGS=['-march=armv7-a'])
-    if not env.Bit('android'):
-      env.Prepend(CCFLAGS=['-isystem', jail + '/usr/include'])
-    # /usr/lib makes sense for most configuration except this one
-    # No ARM compatible libs can be found there.
-    # So this just makes the command lines longer and sometimes results
-    # in linker warnings referring to this directory.
-    env.FilterOut(LIBPATH=['/usr/lib'])
 
   # get_plugin_dirname.cc has a dependency on dladdr
   env.Append(LIBS=['dl'])
