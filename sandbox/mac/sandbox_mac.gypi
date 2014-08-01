@@ -42,11 +42,11 @@
         ],
       },
       'conditions': [
-        # When the build SDK is earlier than 10.8, generate a dynamic stub loader.
-        # When the SDK is higher, then libxpc.dylib will be loaded automatically as
-        # part of libSystem, and only forward declarations of private symbols are
+        # When the build SDK is 10.6, generate a dynamic stub loader. When the
+        # SDK is higher, then libxpc.dylib will be loaded automatically as part
+        # of libSystem, and only forward declarations of private symbols are
         # necessary.
-        ['mac_sdk < "10.8"', {
+        ['mac_sdk == "10.6"', {
           'actions': [
             {
               'variables': {
@@ -82,7 +82,7 @@
                 '<(generate_stubs_sig_private_path)',
               ],
               'process_outputs_as_sources': 1,
-              'message': 'Generating XPC stubs for 10.6-7 compatability.',
+              'message': 'Generating XPC stubs for 10.6 compatability.',
             },
           ],
         }],

@@ -32,11 +32,11 @@ component("sandbox") {
     "//base",
   ]
 
-  # When the build SDK is earlier than 10.8, generate a dynamic stub loader.
-  # When the SDK is higher, then libxpc.dylib will be loaded automatically as
-  # part of libSystem, and only forward declarations of private symbols are
+  # When the build SDK is 10.6, generate a dynamic stub loader. When the
+  # SDK is higher, then libxpc.dylib will be loaded automatically as part
+  # of libSystem, and only forward declarations of private symbols are
   # necessary.
-  if (mac_sdk_version < "10.8") {
+  if (mac_sdk_version == "10.6") {
     deps += [ ":generate_stubs" ]
   }
 }
