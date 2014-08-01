@@ -252,6 +252,7 @@
       'browser/chrome_browser_metrics_service_observer.h',
       'browser/chrome_content_browser_client.cc',
       'browser/chrome_content_browser_client.h',
+      'browser/chrome_content_browser_client_parts.h',
       'browser/chrome_elf_init_win.cc',
       'browser/chrome_elf_init_win.h',
       'browser/chrome_notification_types.h',

@@ -39,6 +39,8 @@
       'browser/extensions/chrome_app_sorting.h',
       'browser/extensions/chrome_component_extension_resource_manager.cc',
       'browser/extensions/chrome_component_extension_resource_manager.h',
+      'browser/extensions/chrome_content_browser_client_extensions_part.cc',
+      'browser/extensions/chrome_content_browser_client_extensions_part.h',
       'browser/extensions/chrome_extension_function.cc',
       'browser/extensions/chrome_extension_function.h',
       'browser/extensions/chrome_extension_host_delegate.cc',

@@ -17,6 +17,8 @@
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/content_browser_client.h"
 
+class ChromeContentBrowserClientParts;
+
 namespace base {
 class CommandLine;
 }
@@ -347,6 +349,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   // It is initialized on the UI thread when the ResoureDispatcherHost is
   // created. It is used only the IO thread.
   prerender::PrerenderTracker* prerender_tracker_;
+
+  // Vector of additional ChromeContentBrowserClientParts.
+  // Parts are deleted in the reverse order they are added.
+  std::vector<ChromeContentBrowserClientParts*> extra_parts_;
 
   base::WeakPtrFactory<ChromeContentBrowserClient> weak_factory_;
 

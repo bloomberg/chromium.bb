@@ -34,10 +34,9 @@
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/browser_permissions_policy_delegate.h"
+#include "chrome/browser/extensions/chrome_content_browser_client_extensions_part.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/extension_web_ui.h"
-#include "chrome/browser/extensions/extension_webkit_preferences.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
@@ -125,8 +124,6 @@
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
 #include "extensions/browser/extension_host.h"
-#include "extensions/browser/extension_message_filter.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/process_manager.h"
@@ -195,8 +192,6 @@
 #if defined(OS_ANDROID)
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/android/device_display_info.h"
-#else
-#include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #endif
 
 #if !defined(OS_CHROMEOS)
@@ -235,15 +230,12 @@
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/guest_view/guest_view_base.h"
 #include "chrome/browser/guest_view/guest_view_constants.h"
 #include "chrome/browser/guest_view/guest_view_manager.h"
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
-#include "chrome/browser/renderer_host/chrome_extension_message_filter.h"
-#include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #endif
 
 #if defined(ENABLE_SPELLCHECK)
@@ -674,9 +666,15 @@ ChromeContentBrowserClient::ChromeContentBrowserClient()
   TtsExtensionEngine* tts_extension_engine = TtsExtensionEngine::GetInstance();
   TtsController::GetInstance()->SetTtsEngineDelegate(tts_extension_engine);
 #endif
+
+  extra_parts_.push_back(
+      new extensions::ChromeContentBrowserClientExtensionsPart);
 }
 
 ChromeContentBrowserClient::~ChromeContentBrowserClient() {
+  for (int i = static_cast<int>(extra_parts_.size()) - 1; i >= 0; --i)
+    delete extra_parts_[i];
+  extra_parts_.clear();
 }
 
 // static
@@ -860,10 +858,6 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
       profile->GetRequestContextForRenderProcess(id);
 
   host->AddFilter(new ChromeRenderMessageFilter(id, profile));
-#if defined(ENABLE_EXTENSIONS)
-  host->AddFilter(new ChromeExtensionMessageFilter(id, profile));
-  host->AddFilter(new extensions::ExtensionMessageFilter(id, profile));
-#endif
 #if defined(ENABLE_PLUGINS)
   host->AddFilter(new PluginInfoMessageFilter(id, profile));
 #endif
@@ -905,9 +899,8 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
   host->Send(new ChromeViewMsg_SetIsIncognitoProcess(
       profile->IsOffTheRecord()));
 
-#if defined(ENABLE_EXTENSIONS)
-  SendExtensionWebRequestStatusToHost(host);
-#endif
+  for (size_t i = 0; i < extra_parts_.size(); ++i)
+    extra_parts_[i]->RenderProcessWillLaunch(host);
 
   RendererContentSettingRules rules;
   if (host->IsIsolatedGuest()) {
@@ -1287,29 +1280,8 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
   }
 #endif
 
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (!service)
-    return;
-
-  const Extension* extension = service->extensions()->GetExtensionOrAppByURL(
-      site_instance->GetSiteURL());
-  if (!extension)
-    return;
-
-  extensions::ProcessMap::Get(profile)
-      ->Insert(extension->id(),
-               site_instance->GetProcess()->GetID(),
-               site_instance->GetId());
-
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&InfoMap::RegisterExtensionProcess,
-                 extensions::ExtensionSystem::Get(profile)->info_map(),
-                 extension->id(),
-                 site_instance->GetProcess()->GetID(),
-                 site_instance->GetId()));
+  for (size_t i = 0; i < extra_parts_.size(); ++i)
+    extra_parts_[i]->SiteInstanceGotProcess(site_instance);
 }
 
 void ChromeContentBrowserClient::SiteInstanceDeleting(
@@ -1317,60 +1289,22 @@ void ChromeContentBrowserClient::SiteInstanceDeleting(
   if (!site_instance->HasProcess())
     return;
 
-  Profile* profile = Profile::FromBrowserContext(
-      site_instance->GetBrowserContext());
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (!service)
-    return;
-
-  const Extension* extension = service->extensions()->GetExtensionOrAppByURL(
-      site_instance->GetSiteURL());
-  if (!extension)
-    return;
-
-  extensions::ProcessMap::Get(profile)
-      ->Remove(extension->id(),
-               site_instance->GetProcess()->GetID(),
-               site_instance->GetId());
-
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&InfoMap::UnregisterExtensionProcess,
-                 extensions::ExtensionSystem::Get(profile)->info_map(),
-                 extension->id(),
-                 site_instance->GetProcess()->GetID(),
-                 site_instance->GetId()));
+  for (size_t i = 0; i < extra_parts_.size(); ++i)
+    extra_parts_[i]->SiteInstanceDeleting(site_instance);
 }
 
 void ChromeContentBrowserClient::WorkerProcessCreated(
     SiteInstance* site_instance,
     int worker_process_id) {
-  extensions::ExtensionRegistry* extension_registry =
-      extensions::ExtensionRegistry::Get(site_instance->GetBrowserContext());
-  if (!extension_registry)
-    return;
-  const Extension* extension =
-      extension_registry->enabled_extensions().GetExtensionOrAppByURL(
-        site_instance->GetSiteURL());
-  if (!extension)
-    return;
-  extensions::ExtensionSystem* extension_system =
-      extensions::ExtensionSystem::Get(site_instance->GetBrowserContext());
-  extension_system->info_map()->RegisterExtensionWorkerProcess(
-      extension->id(),
-      worker_process_id,
-      site_instance->GetId());
+  for (size_t i = 0; i < extra_parts_.size(); ++i)
+    extra_parts_[i]->WorkerProcessCreated(site_instance, worker_process_id);
 }
 
 void ChromeContentBrowserClient::WorkerProcessTerminated(
     SiteInstance* site_instance,
     int worker_process_id) {
-  extensions::ExtensionSystem* extension_system =
-      extensions::ExtensionSystem::Get(site_instance->GetBrowserContext());
-  extension_system->info_map()->UnregisterExtensionWorkerProcess(
-      worker_process_id);
+  for (size_t i = 0; i < extra_parts_.size(); ++i)
+    extra_parts_[i]->WorkerProcessTerminated(site_instance, worker_process_id);
 }
 
 bool ChromeContentBrowserClient::ShouldSwapBrowsingInstancesForNavigation(
@@ -1526,6 +1460,16 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif
 
   if (process_type == switches::kRendererProcess) {
+    content::RenderProcessHost* process =
+        content::RenderProcessHost::FromID(child_process_id);
+    Profile* profile =
+        process ? Profile::FromBrowserContext(process->GetBrowserContext())
+                : NULL;
+    for (size_t i = 0; i < extra_parts_.size(); ++i) {
+      extra_parts_[i]->AppendExtraRendererCommandLineSwitches(
+          command_line, process, profile);
+    }
+
 #if defined(OS_CHROMEOS)
     const std::string& login_profile =
         browser_command_line.GetSwitchValueASCII(
@@ -1541,15 +1485,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                                            VersionInfo::GetChannel());
 #endif
 
-    content::RenderProcessHost* process =
-        content::RenderProcessHost::FromID(child_process_id);
     if (process) {
-      Profile* profile = Profile::FromBrowserContext(
-          process->GetBrowserContext());
-
-      if (extensions::ProcessMap::Get(profile)->Contains(process->GetID()))
-        command_line->AppendSwitch(extensions::switches::kExtensionProcess);
-
       PrefService* prefs = profile->GetPrefs();
       // Currently this pref is only registered if applied via a policy.
       if (prefs->HasPrefPath(prefs::kDisable3DAPIs) &&
@@ -2524,23 +2460,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   }
   DCHECK(!web_prefs->default_encoding.empty());
 
-  WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
-  extensions::ViewType view_type = extensions::GetViewType(web_contents);
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (service) {
-    const GURL& site_url = rvh->GetSiteInstance()->GetSiteURL();
-    const Extension* extension =
-        service->extensions()->GetByID(site_url.host());
-    // Ensure that we are only granting extension preferences to URLs with
-    // the correct scheme. Without this check, chrome-guest:// schemes used by
-    // webview tags as well as hosts that happen to match the id of an
-    // installed extension would get the wrong preferences.
-    if (site_url.SchemeIs(extensions::kExtensionScheme)) {
-      extension_webkit_preferences::SetPreferences(
-          extension, view_type, web_prefs);
-    }
-  }
+  for (size_t i = 0; i < extra_parts_.size(); ++i)
+    extra_parts_[i]->OverrideWebkitPrefs(rvh, url, web_prefs);
 }
 
 void ChromeContentBrowserClient::UpdateInspectorSetting(
@@ -2557,11 +2478,8 @@ void ChromeContentBrowserClient::UpdateInspectorSetting(
 
 void ChromeContentBrowserClient::BrowserURLHandlerCreated(
     BrowserURLHandler* handler) {
-  // Add the default URL handlers.
-  handler->AddHandlerPair(&ExtensionWebUI::HandleChromeURLOverride,
-                          BrowserURLHandler::null_handler());
-  handler->AddHandlerPair(BrowserURLHandler::null_handler(),
-                          &ExtensionWebUI::HandleChromeURLOverrideReverse);
+  for (size_t i = 0; i < extra_parts_.size(); ++i)
+    extra_parts_[i]->BrowserURLHandlerCreated(handler);
 
   // about: handler. Must come before chrome: handler, since it will
   // rewrite about: urls to chrome: URLs and then expect chrome: to
@@ -2703,28 +2621,22 @@ void ChromeContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
       additional_allowed_schemes);
   additional_allowed_schemes->push_back(content::kChromeDevToolsScheme);
   additional_allowed_schemes->push_back(content::kChromeUIScheme);
-  additional_allowed_schemes->push_back(extensions::kExtensionScheme);
+  for (size_t i = 0; i < extra_parts_.size(); ++i) {
+    extra_parts_[i]->GetAdditionalAllowedSchemesForFileSystem(
+        additional_allowed_schemes);
+  }
 }
 
 void ChromeContentBrowserClient::GetURLRequestAutoMountHandlers(
     std::vector<fileapi::URLRequestAutoMountHandler>* handlers) {
-#if defined(ENABLE_EXTENSIONS)
-  handlers->push_back(
-      base::Bind(MediaFileSystemBackend::AttemptAutoMountForURLRequest));
-#endif
+  for (size_t i = 0; i < extra_parts_.size(); ++i)
+    extra_parts_[i]->GetURLRequestAutoMountHandlers(handlers);
 }
 
 void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
     content::BrowserContext* browser_context,
     const base::FilePath& storage_partition_path,
     ScopedVector<fileapi::FileSystemBackend>* additional_backends) {
-#if defined(ENABLE_EXTENSIONS)
-  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
-  additional_backends->push_back(new MediaFileSystemBackend(
-      storage_partition_path,
-      pool->GetSequencedTaskRunner(pool->GetNamedSequenceToken(
-          MediaFileSystemBackend::kMediaTaskRunnerName)).get()));
-#endif
 #if defined(OS_CHROMEOS)
   fileapi::ExternalMountPoints* external_mount_points =
       content::BrowserContext::GetMountPoints(browser_context);
@@ -2741,12 +2653,6 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
   additional_backends->push_back(backend);
 #endif
 
-#if defined(ENABLE_EXTENSIONS)
-  additional_backends->push_back(
-      new sync_file_system::SyncFileSystemBackend(
-          Profile::FromBrowserContext(browser_context)));
-#endif
-
 #if defined(ENABLE_SERVICE_DISCOVERY)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePrivetStorage)) {
@@ -2756,6 +2662,11 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
             browser_context));
   }
 #endif
+
+  for (size_t i = 0; i < extra_parts_.size(); ++i) {
+    extra_parts_[i]->GetAdditionalFileSystemBackends(
+        browser_context, storage_partition_path, additional_backends);
+  }
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
