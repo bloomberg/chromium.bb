@@ -14581,8 +14581,59 @@ Do you accept?
     </message>
 
     <!-- Easy Unlock strings -->
+    <!-- Strings for the Easy Unlock promo notification -->
     <message name="IDS_EASY_UNLOCK_NOTIFICATION_TITLE" desc="Title for the notification inviting the user to use the Easy Unlock feature.">
       Easily unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+    </message>
+    <message name="IDS_EASY_UNLOCK_NOTIFICATION_MESSAGE" desc="The body text for the notification inviting the user to use the Easy Unlock feature.">
+      No need to type your password again. Use your Android phone to unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> easily and securely.
+    </message>
+    <message name="IDS_EASY_UNLOCK_NOTIFICATION_BUTTON_TITLE" desc="The text to show on the button in the notification inviting the user to use the Easy Unlock feature.">
+      1-minute setup
+    </message>
+    <!-- Strings for the Easy Unlock setup dialog -->
+    <!-- Step 1: Intro -->
+    <message name="IDS_EASY_UNLOCK_SETUP_INTRO_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog during the first, introductory step.">
+      Your phone can securely unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+    </message>
+    <message name="IDS_EASY_UNLOCK_SETUP_INTRO_HEADER_TEXT" desc="The text to show as the header body text of the Easy Unlock dialog during the first, introductory step.">
+      Instantly unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> when your phone is unlocked and with you—no password needed.
+    </message>
+    <message name="IDS_EASY_UNLOCK_SETUP_INTRO_HEADER_FOOTNOTE" desc="The text to show as the header footnote of the Easy Unlock dialog during the first, introductory step.  Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
+      Some device information will be sent to Google. &lt;a&gt;Learn more&lt;/a&gt;
+    </message>
+    <message name="IDS_EASY_UNLOCK_SETUP_INTRO_FIND_PHONE_BUTTON_LABEL" desc="The text to show as the 'Find phone' button label in the Easy Unlock dialog. This button is visible during the first, introductory step.">
+      Find your phone
+    </message>
+    <message name="IDS_EASY_UNLOCK_SETUP_INTRO_FINDING_PHONE_BUTTON_LABEL" desc="The text to show as the 'Finding phone...' button label in the Easy Unlock dialog. This button is visible during the first, introductory step.">
+      Finding your phone
+    </message>
+    <message name="IDS_EASY_UNLOCK_SETUP_INTRO_HOW_IS_THIS_SECURE_LINK_TEXT" desc="The text to show as the 'How is this secure?' link text in the Easy Unlock dialog. This link is visible during the first, introductory step.">
+      How is this secure?
+    </message>
+    <!-- Step 2: Phone Found -->
+    <message name="IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog during the second step, after a suitable phone has been found.">
+      Use your phone to unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>?
+    </message>
+    <message name="IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_HEADER_TEXT" desc="The text to show as the header body text of the Easy Unlock dialog during the second step, after a suitable phone has been found..">
+      We sent a notification to your phone.
+      If you click "Use this phone," your phone will be able to securely unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> when it's unlocked and with you.
+    </message>
+    <message name="IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_USE_THIS_PHONE_BUTTON_LABEL" desc="The text to show as the 'Use this phone' button label in the Easy Unlock dialog. This button is visible during the second step, after a suitable phone is found.">
+      Use this phone
+    </message>
+    <!-- Step 3: "You're all set" -->
+    <message name="IDS_EASY_UNLOCK_SETUP_COMPLETE_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog during the final step, confirming success.">
+      You're all set!
+    </message>
+    <message name="IDS_EASY_UNLOCK_SETUP_COMPLETE_HEADER_TEXT" desc="The text to show as the header body text of the Easy Unlock dialog during the final step, confirming success.">
+      If you have other Chrome devices, they'll be synced automatically so your phone can unlock them too.
+    </message>
+    <message name="IDS_EASY_UNLOCK_SETUP_COMPLETE_TRY_IT_OUT_BUTTON_LABEL" desc="The text to show as the 'Try it out' button label in the Easy Unlock dialog. This button is visible during the final step, once the Easy Unlock setup succeeds.">
+      Try it out
+    </message>
+    <message name="IDS_EASY_UNLOCK_SETUP_COMPLETE_SETTINGS_LINK_TEXT" desc="The text to show as the link text to access Easy Unlock settings. This button is visible during the final step, once the Easy Unlock setup succeeds.">
+      Easy unlock settings
     </message>
   </messages>
   </release>

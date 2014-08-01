@@ -66,10 +66,75 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
       "notificationTitle",
       l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_NOTIFICATION_TITLE,
                                  device_type));
+  strings->SetString(
+      "notificationMessage",
+      l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_NOTIFICATION_MESSAGE,
+                                 device_type));
+  strings->SetString(
+      "notificationButtonTitle",
+      l10n_util::GetStringUTF16(IDS_EASY_UNLOCK_NOTIFICATION_BUTTON_TITLE));
+
+  // Set-up dialog strings.
+  // Step 1: Intro.
+  strings->SetString(
+      "setupIntroHeaderTitle",
+      l10n_util::GetStringFUTF16(
+          IDS_EASY_UNLOCK_SETUP_INTRO_HEADER_TITLE, device_type));
+  strings->SetString(
+      "setupIntroHeaderText",
+      l10n_util::GetStringFUTF16(
+          IDS_EASY_UNLOCK_SETUP_INTRO_HEADER_TEXT, device_type));
+  strings->SetString(
+      "setupIntroHeaderFootnote",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_SETUP_INTRO_HEADER_FOOTNOTE));
+  strings->SetString(
+      "setupIntroFindPhoneButtonLabel",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_SETUP_INTRO_FIND_PHONE_BUTTON_LABEL));
+  strings->SetString(
+      "setupIntroFindingPhoneButtonLabel",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_SETUP_INTRO_FINDING_PHONE_BUTTON_LABEL));
+  strings->SetString(
+      "setupIntroHowIsThisSecureLinkText",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_SETUP_INTRO_HOW_IS_THIS_SECURE_LINK_TEXT));
+  // Step 2: Found a viable phone.
+  strings->SetString(
+      "setupFoundPhoneHeaderTitle",
+      l10n_util::GetStringFUTF16(
+          IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_HEADER_TITLE, device_type));
+  strings->SetString(
+      "setupFoundPhoneHeaderText",
+      l10n_util::GetStringFUTF16(
+          IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_HEADER_TEXT, device_type));
+  strings->SetString(
+      "setupFoundPhoneUseThisPhoneButtonLabel",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_USE_THIS_PHONE_BUTTON_LABEL));
+  // Step 3: Setup completed successfully.
+  strings->SetString(
+      "setupCompleteHeaderTitle",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_SETUP_COMPLETE_HEADER_TITLE));
+  strings->SetString(
+      "setupCompleteHeaderText",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_SETUP_COMPLETE_HEADER_TEXT));
+  strings->SetString(
+      "setupCompleteTryItOutButtonLabel",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_SETUP_COMPLETE_TRY_IT_OUT_BUTTON_LABEL));
+  strings->SetString(
+      "setupCompleteSettingsLinkText",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_SETUP_COMPLETE_SETTINGS_LINK_TEXT));
+
+
   SetResult(strings.release());
   return true;
 }
-
 
 EasyUnlockPrivatePerformECDHKeyAgreementFunction::
 EasyUnlockPrivatePerformECDHKeyAgreementFunction() {}
