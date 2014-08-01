@@ -124,47 +124,6 @@ EventRewriter::DeviceType GetDeviceType(const std::string& device_name) {
   return EventRewriter::kDeviceUnknown;
 }
 
-#if defined(USE_X11)
-void UpdateX11EventMask(int ui_flags, unsigned int* x_flags) {
-  static struct {
-    int ui;
-    int x;
-  } flags[] = {
-    {ui::EF_CONTROL_DOWN, ControlMask},
-    {ui::EF_SHIFT_DOWN, ShiftMask},
-    {ui::EF_ALT_DOWN, Mod1Mask},
-    {ui::EF_CAPS_LOCK_DOWN, LockMask},
-    {ui::EF_ALTGR_DOWN, Mod5Mask},
-    {ui::EF_COMMAND_DOWN, Mod4Mask},
-    {ui::EF_MOD3_DOWN, Mod3Mask},
-    {ui::EF_NUMPAD_KEY, Mod2Mask},
-    {ui::EF_LEFT_MOUSE_BUTTON, Button1Mask},
-    {ui::EF_MIDDLE_MOUSE_BUTTON, Button2Mask},
-    {ui::EF_RIGHT_MOUSE_BUTTON, Button3Mask},
-  };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(flags); ++i) {
-    if (ui_flags & flags[i].ui)
-      *x_flags |= flags[i].x;
-    else
-      *x_flags &= ~flags[i].x;
-  }
-}
-
-void UpdateX11Button(int ui_flag, unsigned int* x_button) {
-  switch (ui_flag) {
-    case ui::EF_LEFT_MOUSE_BUTTON:
-      *x_button = Button1;
-      break;
-    case ui::EF_MIDDLE_MOUSE_BUTTON:
-      *x_button = Button2;
-      break;
-    case ui::EF_RIGHT_MOUSE_BUTTON:
-      *x_button = Button3;
-      break;
-  }
-}
-#endif  // defined(USE_X11)
-
 }  // namespace
 
 EventRewriter::EventRewriter(ash::StickyKeysController* sticky_keys_controller)
@@ -261,8 +220,6 @@ void EventRewriter::BuildRewrittenKeyEvent(
       xkeyevent.xkey.keycode =
           XKeyCodeForWindowsKeyCode(key_code, flags, gfx::GetXDisplay());
     }
-
-    UpdateX11EventMask(flags, &xkeyevent.xkey.state);
     ui::KeyEvent x11_key_event(&xkeyevent);
     rewritten_key_event = new ui::KeyEvent(x11_key_event);
   }
@@ -271,9 +228,10 @@ void EventRewriter::BuildRewrittenKeyEvent(
     rewritten_key_event = new ui::KeyEvent(key_event);
   rewritten_key_event->set_flags(flags);
   rewritten_key_event->set_key_code(key_code);
-  rewritten_key_event->set_character(
-      ui::GetCharacterFromKeyCode(key_code, flags));
+#if defined(USE_X11)
+  ui::UpdateX11EventForFlags(rewritten_key_event);
   rewritten_key_event->NormalizeFlags();
+#endif
   rewritten_event->reset(rewritten_key_event);
 }
 
@@ -448,38 +406,15 @@ ui::EventRewriteStatus EventRewriter::RewriteMouseButtonEvent(
   ui::MouseEvent* rewritten_mouse_event = new ui::MouseEvent(mouse_event);
   rewritten_event->reset(rewritten_mouse_event);
   rewritten_mouse_event->set_flags(flags);
-  if (changed_button != ui::EF_NONE)
+#if defined(USE_X11)
+  ui::UpdateX11EventForFlags(rewritten_mouse_event);
+#endif
+  if (changed_button != ui::EF_NONE) {
     rewritten_mouse_event->set_changed_button_flags(changed_button);
 #if defined(USE_X11)
-  XEvent* xev = rewritten_mouse_event->native_event();
-  if (xev) {
-    switch (xev->type) {
-      case ButtonPress:
-      case ButtonRelease: {
-        XButtonEvent* xbutton = &(xev->xbutton);
-        UpdateX11EventMask(rewritten_mouse_event->flags(), &xbutton->state);
-        if (changed_button)
-          UpdateX11Button(changed_button, &xbutton->button);
-        break;
-      }
-      case GenericEvent: {
-        XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
-        CHECK(xievent->evtype == XI_ButtonPress ||
-              xievent->evtype == XI_ButtonRelease);
-        UpdateX11EventMask(
-            rewritten_mouse_event->flags(),
-            reinterpret_cast<unsigned int*>(&xievent->mods.effective));
-        if (changed_button) {
-          UpdateX11Button(changed_button,
-                          reinterpret_cast<unsigned int*>(&xievent->detail));
-        }
-        break;
-      }
-      default:
-        NOTREACHED();
-    }
-  }
+    ui::UpdateX11EventForChangedButtonFlags(rewritten_mouse_event);
 #endif
+  }
   return status;
 }
 
@@ -502,28 +437,7 @@ ui::EventRewriteStatus EventRewriter::RewriteMouseWheelEvent(
   rewritten_event->reset(rewritten_wheel_event);
   rewritten_wheel_event->set_flags(flags);
 #if defined(USE_X11)
-  XEvent* xev = rewritten_wheel_event->native_event();
-  if (xev) {
-    switch (xev->type) {
-      case ButtonPress:
-      case ButtonRelease: {
-        XButtonEvent* xbutton = &(xev->xbutton);
-        UpdateX11EventMask(rewritten_wheel_event->flags(), &xbutton->state);
-        break;
-      }
-      case GenericEvent: {
-        XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
-        CHECK(xievent->evtype == XI_ButtonPress ||
-              xievent->evtype == XI_ButtonRelease);
-        UpdateX11EventMask(
-            rewritten_wheel_event->flags(),
-            reinterpret_cast<unsigned int*>(&xievent->mods.effective));
-        break;
-      }
-      default:
-        NOTREACHED();
-    }
-  }
+  ui::UpdateX11EventForFlags(rewritten_wheel_event);
 #endif
   return status;
 }
@@ -539,15 +453,7 @@ ui::EventRewriteStatus EventRewriter::RewriteTouchEvent(
   rewritten_event->reset(rewritten_touch_event);
   rewritten_touch_event->set_flags(flags);
 #if defined(USE_X11)
-  XEvent* xev = rewritten_touch_event->native_event();
-  if (xev) {
-    XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
-    if (xievent) {
-      UpdateX11EventMask(
-          rewritten_touch_event->flags(),
-          reinterpret_cast<unsigned int*>(&xievent->mods.effective));
-    }
-  }
+  ui::UpdateX11EventForFlags(rewritten_touch_event);
 #endif
   return ui::EVENT_REWRITE_REWRITTEN;
 }
@@ -565,15 +471,7 @@ ui::EventRewriteStatus EventRewriter::RewriteScrollEvent(
   rewritten_event->reset(rewritten_scroll_event);
   rewritten_scroll_event->set_flags(flags);
 #if defined(USE_X11)
-  XEvent* xev = rewritten_scroll_event->native_event();
-  if (xev) {
-    XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
-    if (xievent) {
-      UpdateX11EventMask(
-          rewritten_scroll_event->flags(),
-          reinterpret_cast<unsigned int*>(&xievent->mods.effective));
-    }
-  }
+  ui::UpdateX11EventForFlags(rewritten_scroll_event);
 #endif
   return status;
 }

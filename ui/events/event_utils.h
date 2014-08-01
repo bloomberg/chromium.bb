@@ -29,6 +29,7 @@ class TimeDelta;
 namespace ui {
 
 class Event;
+class MouseEvent;
 
 // Updates the list of devices for cached properties.
 EVENTS_EXPORT void UpdateDeviceList();
@@ -170,6 +171,13 @@ EVENTS_EXPORT bool IsMouseEventFromTouch(UINT message);
 EVENTS_EXPORT uint16 GetScanCodeFromLParam(LPARAM lParam);
 EVENTS_EXPORT LPARAM GetLParamFromScanCode(uint16 scan_code);
 
+#endif
+
+#if defined(USE_X11)
+// Update the native X11 event to correspond to the new flags.
+EVENTS_EXPORT void UpdateX11EventForFlags(Event* event);
+// Update the native X11 event to correspond to the new button flags.
+EVENTS_EXPORT void UpdateX11EventForChangedButtonFlags(MouseEvent* event);
 #endif
 
 // Registers a custom event type.

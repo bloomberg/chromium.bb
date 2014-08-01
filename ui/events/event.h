@@ -58,7 +58,7 @@ class EVENTS_EXPORT Event {
   int flags() const { return flags_; }
 
   // This is only intended to be used externally by classes that are modifying
-  // events in EventFilter::PreHandleKeyEvent().
+  // events in an EventRewriter.
   void set_flags(int flags) { flags_ = flags; }
 
   EventTarget* target() const { return target_; }
@@ -400,6 +400,8 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
   // NOTE: during a press and release flags() contains the complete set of
   // flags. Use this to determine the button that was pressed or released.
   int changed_button_flags() const { return changed_button_flags_; }
+
+  // Updates the button that changed.
   void set_changed_button_flags(int flags) { changed_button_flags_ = flags; }
 
  private:
@@ -589,7 +591,8 @@ class EVENTS_EXPORT KeyEvent : public Event {
            const std::string& code,
            int flags);
 
-  // This allows an I18N virtual keyboard to fabricate a keyboard event that
+  // This bypasses the normal mapping from keystroke events to characters,
+  // which allows an I18N virtual keyboard to fabricate a keyboard event that
   // does not have a corresponding KeyboardCode (example: U+00E1 Latin small
   // letter A with acute, U+0410 Cyrillic capital letter A).
   void set_character(base::char16 character) { character_ = character; }
@@ -606,8 +609,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
   bool is_char() const { return is_char_; }
 
   // This is only intended to be used externally by classes that are modifying
-  // events in EventFilter::PreHandleKeyEvent().  set_character() should also be
-  // called.
+  // events in an EventRewriter.
   void set_key_code(KeyboardCode key_code) { key_code_ = key_code; }
 
   // Returns true for [Alt]+<num-pad digit> Unicode alt key codes used by Win.

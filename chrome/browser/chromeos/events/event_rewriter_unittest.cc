@@ -35,6 +35,7 @@
 #if defined(USE_X11)
 #include <X11/keysym.h>
 
+#include "ui/events/event_utils.h"
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/events/x/touch_factory_x11.h"
 #include "ui/gfx/x/x11_types.h"
@@ -1756,6 +1757,9 @@ TEST_F(EventRewriterTest, TestRewriteNonNativeEvent) {
   ui::TouchEvent press(
       ui::ET_TOUCH_PRESSED, location, kTouchId, base::TimeDelta());
   press.set_flags(ui::EF_CONTROL_DOWN);
+#if defined(USE_X11)
+  ui::UpdateX11EventForFlags(&press);
+#endif
 
   scoped_ptr<ui::Event> new_event;
   rewriter.RewriteEvent(press, &new_event);

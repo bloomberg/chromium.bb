@@ -293,6 +293,47 @@ void ScaleTouchRadius(XEvent* xev, double* radius) {
       xiev->sourceid, radius);
 }
 
+unsigned int UpdateX11EventFlags(int ui_flags, unsigned int old_x_flags) {
+  static struct {
+    int ui;
+    int x;
+  } flags[] = {
+    {ui::EF_CONTROL_DOWN, ControlMask},
+    {ui::EF_SHIFT_DOWN, ShiftMask},
+    {ui::EF_ALT_DOWN, Mod1Mask},
+    {ui::EF_CAPS_LOCK_DOWN, LockMask},
+    {ui::EF_ALTGR_DOWN, Mod5Mask},
+    {ui::EF_COMMAND_DOWN, Mod4Mask},
+    {ui::EF_MOD3_DOWN, Mod3Mask},
+    {ui::EF_NUMPAD_KEY, Mod2Mask},
+    {ui::EF_LEFT_MOUSE_BUTTON, Button1Mask},
+    {ui::EF_MIDDLE_MOUSE_BUTTON, Button2Mask},
+    {ui::EF_RIGHT_MOUSE_BUTTON, Button3Mask},
+  };
+  unsigned int new_x_flags = old_x_flags;
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(flags); ++i) {
+    if (ui_flags & flags[i].ui)
+      new_x_flags |= flags[i].x;
+    else
+      new_x_flags &= ~flags[i].x;
+  }
+  return new_x_flags;
+}
+
+unsigned int UpdateX11EventButton(int ui_flag, unsigned int old_x_button) {
+  switch (ui_flag) {
+    case ui::EF_LEFT_MOUSE_BUTTON:
+      return Button1;
+    case ui::EF_MIDDLE_MOUSE_BUTTON:
+      return Button2;
+    case ui::EF_RIGHT_MOUSE_BUTTON:
+      return Button3;
+    default:
+      return old_x_button;
+  }
+  NOTREACHED();
+}
+
 }  // namespace
 
 namespace ui {
@@ -833,6 +874,55 @@ bool GetGestureTimes(const base::NativeEvent& native_event,
   DeviceDataManagerX11::GetInstance()->GetGestureTimes(
       native_event, start_time, end_time);
   return true;
+}
+
+void UpdateX11EventForFlags(Event* event) {
+  XEvent* xev = event->native_event();
+  if (!xev)
+    return;
+  switch (xev->type) {
+    case KeyPress:
+    case KeyRelease:
+      xev->xkey.state = UpdateX11EventFlags(event->flags(), xev->xkey.state);
+      break;
+    case ButtonPress:
+    case ButtonRelease:
+      xev->xbutton.state =
+          UpdateX11EventFlags(event->flags(), xev->xbutton.state);
+      break;
+    case GenericEvent: {
+      XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
+      DCHECK(xievent);
+      xievent->mods.effective =
+          UpdateX11EventFlags(event->flags(), xievent->mods.effective);
+      break;
+    }
+    default:
+      break;
+  }
+}
+
+void UpdateX11EventForChangedButtonFlags(MouseEvent* event) {
+  XEvent* xev = event->native_event();
+  if (!xev)
+    return;
+  switch (xev->type) {
+    case ButtonPress:
+    case ButtonRelease:
+      xev->xbutton.button = UpdateX11EventButton(event->changed_button_flags(),
+                                                 xev->xbutton.button);
+      break;
+    case GenericEvent: {
+      XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
+      CHECK(xievent && (xievent->evtype == XI_ButtonPress ||
+                        xievent->evtype == XI_ButtonRelease));
+      xievent->detail =
+          UpdateX11EventButton(event->changed_button_flags(), xievent->detail);
+      break;
+    }
+    default:
+      break;
+  }
 }
 
 }  // namespace ui

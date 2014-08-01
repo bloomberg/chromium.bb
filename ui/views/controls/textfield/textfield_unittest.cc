@@ -41,6 +41,10 @@
 #include "ui/events/linux/text_edit_key_bindings_delegate_auralinux.h"
 #endif
 
+#if defined(USE_X11)
+#include "ui/events/event_utils.h"
+#endif
+
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using base::WideToUTF16;
@@ -1838,6 +1842,9 @@ TEST_F(TextfieldTest, SelectionClipboard) {
   ui::MouseEvent press_2(ui::ET_MOUSE_PRESSED, point_2, point_2,
                          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   press_2.set_flags(press_2.flags() | ui::EF_SHIFT_DOWN);
+#if defined(USE_X11)
+  ui::UpdateX11EventForFlags(&press_2);
+#endif
   textfield_->OnMousePressed(press_2);
   ui::MouseEvent release_2(ui::ET_MOUSE_RELEASED, point_2, point_2,
                            ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
