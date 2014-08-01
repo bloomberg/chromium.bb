@@ -84,6 +84,11 @@ void CopyNTPOrdinals(Profile* source, Profile* destination, int index);
 // Fix any NTP icon collisions that are currently in |profile|.
 void FixNTPOrdinalCollisions(Profile* profile);
 
+// Waits until all profiles have the same set of apps as the verifier.
+//
+// Returns false on time out.
+bool AwaitAllProfilesHaveSameAppsAsVerifier();
+
 }  // namespace apps_helper
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_APPS_HELPER_H_
