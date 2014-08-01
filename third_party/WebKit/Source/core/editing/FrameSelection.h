@@ -141,6 +141,7 @@ public:
 
     // Caret rect local to the caret's renderer
     LayoutRect localCaretRect();
+    LayoutRect localCaretRectWithoutUpdateForTesting() const { return CaretBase::localCaretRectWithoutUpdate(); }
 
     // Bounds of (possibly transformed) caret in absolute coords
     IntRect absoluteCaretBounds();
