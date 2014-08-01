@@ -81,7 +81,14 @@ CastVideoElement.prototype = {
    * @type {?number}
    */
   get currentTime() {
-    return this.castMedia_ ? this.castMedia_.getEstimatedTime() : null;
+    if (this.castMedia_) {
+      if (this.castMedia_.idleReason === chrome.cast.media.IdleReason.FINISHED)
+        return this.currentMediaDuration_;  // Returns the duration.
+      else
+        return this.castMedia_.getEstimatedTime();
+    } else {
+      return null;
+    }
   },
   set currentTime(currentTime) {
     // TODO(yoshiki): Support seek.
@@ -258,7 +265,11 @@ CastVideoElement.prototype = {
     if (this.castMedia_) {
       this.castMedia_.stop(null,
           function () {},
-          this.onCastCommandError_.wrap(this));
+          function () {
+            // Ignores session error, since session may already be closed.
+            if (error.code !== chrome.cast.ErrorCode.SESSION_ERROR)
+              this.onCastCommandError_(error);
+          }.wrap(this));
 
       this.castMedia_.removeUpdateListener(this.onCastMediaUpdatedBound_);
       this.castMedia_ = null;
