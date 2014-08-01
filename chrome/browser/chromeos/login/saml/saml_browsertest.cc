@@ -836,7 +836,7 @@ void SAMLPolicyTest::StoreCookieList(
                                    callback);
 }
 
-IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_NoSAML) {
+IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, FLAKY_PRE_NoSAML) {
   // Set the offline login time limit for SAML users to zero.
   SetSAMLOfflineSigninTimeLimitPolicy(0);
 
@@ -852,7 +852,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_NoSAML) {
 
 // Verifies that the offline login time limit does not affect a user who
 // authenticated without SAML.
-IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, NoSAML) {
+IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, FLAKY_NoSAML) {
   login_screen_load_observer_->Wait();
   // Verify that offline login is allowed.
   JsExpect("window.getComputedStyle(document.querySelector("
