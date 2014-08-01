@@ -107,6 +107,11 @@ public:
         m_oldPlatform->cryptographicallyRandomValues(buffer, length);
     }
 
+    virtual const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) OVERRIDE
+    {
+        return m_oldPlatform->getTraceCategoryEnabledFlag(categoryName);
+    }
+
 protected:
     WebBlobRegistry m_mockBlobRegistry;
     MockMimeRegistry m_mockMimeRegistry;
@@ -132,6 +137,7 @@ protected:
         // clear() invokes the File destructor, which uses WebBlobRegistry, so
         // clear() must be called before restoring the original Platform
         m_dataObject.clear();
+        Heap::collectAllGarbage();
         Platform::initialize(m_oldPlatform);
     }
 
