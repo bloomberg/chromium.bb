@@ -288,7 +288,7 @@ input[type='checkbox']:checked {
   min-width: 140px;
   overflow: hidden;
   position: relative;
-  width: 252px;
+  width: 210px;
 }
 
 .gallery .filename-spacer > * {
@@ -427,8 +427,7 @@ input[type='checkbox']:checked {
 .gallery .button-spacer {
   display: flex;
   flex: none;
-  justify-content: flex-end;
-  width: 252px; /* 42px button x 6 */
+  width: 210px; /* 42px button x 5 */
 }
 
 /* Thumbnails */

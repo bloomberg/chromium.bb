@@ -16,6 +16,10 @@
 namespace file_manager {
 namespace util {
 
+// Returns the file manager's base URL, which just looks like
+// chrome-extension://<app-id>/.
+GURL GetFileManagerBaseUrl();
+
 // Returns the file manager's main page URL.
 GURL GetFileManagerMainPageUrl();
 

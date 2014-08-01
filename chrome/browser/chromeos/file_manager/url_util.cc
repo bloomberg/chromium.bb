@@ -56,6 +56,10 @@ std::string GetDialogTypeAsString(
 
 }  // namespace
 
+GURL GetFileManagerBaseUrl() {
+  return GetFileManagerUrl("/");
+}
+
 GURL GetFileManagerMainPageUrl() {
   return GetFileManagerUrl("/main.html");
 }

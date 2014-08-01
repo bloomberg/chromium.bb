@@ -14,6 +14,8 @@ function ShareDialog(parentNode) {
   this.queue_ = new AsyncUtil.Queue();
   this.onQueueTaskFinished_ = null;
   this.shareClient_ = null;
+  this.spinner_ = null;
+  this.spinnerLayer_ = null;
   this.webViewWrapper_ = null;
   this.webView_ = null;
   this.failureTimeout_ = null;
@@ -120,6 +122,10 @@ ShareDialog.prototype.initDom_ = function() {
   FileManagerDialogBase.prototype.initDom_.call(this);
   this.frame_.classList.add('share-dialog-frame');
 
+  this.spinnerLayer_ = this.document_.createElement('div');
+  this.spinnerLayer_.className = 'spinner-layer';
+  this.frame_.appendChild(this.spinnerLayer_);
+
   this.webViewWrapper_ = this.document_.createElement('div');
   this.webViewWrapper_.className = 'share-dialog-webview-wrapper';
   this.cancelButton_.hidden = true;
@@ -161,6 +167,7 @@ ShareDialog.prototype.onLoaded = function() {
   console.debug('Loaded.');
 
   this.okButton_.hidden = false;
+  this.spinnerLayer_.hidden = true;
   this.webViewWrapper_.classList.add('loaded');
   this.webView_.focus();
 };
@@ -225,9 +232,9 @@ ShareDialog.prototype.show = function(entry, callback) {
 
   // Initialize the variables.
   this.callback_ = callback;
+  this.spinnerLayer_.hidden = false;
   this.webViewWrapper_.style.width = '';
   this.webViewWrapper_.style.height = '';
-  this.webViewWrapper_.classList.remove('loaded');
 
   // If the embedded share dialog is not started within some time, then
   // give up and show an error message.
@@ -270,8 +277,6 @@ ShareDialog.prototype.show = function(entry, callback) {
         function(inShareUrl) {
           if (!chrome.runtime.lastError)
             shareUrl = inShareUrl;
-          else
-            console.error(chrome.runtime.lastError.message);
           inCallback();
         });
   });
@@ -283,7 +288,7 @@ ShareDialog.prototype.show = function(entry, callback) {
     // If the url is not obtained, return the network error.
     if (!shareUrl) {
        // Logs added temporarily to track crbug.com/288783.
-       console.debug('The share URL is not available.');
+       console.debug('URL not available.');
 
        this.hideWithResult(ShareDialog.Result.NETWORK_ERROR);
       return;
