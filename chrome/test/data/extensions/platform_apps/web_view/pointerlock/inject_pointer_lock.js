@@ -13,13 +13,13 @@ window.addEventListener('message', function(e) {
   }
 
   if (data == 'start-pointerlock') {
-    document.body.webkitRequestPointerLock();
+    document.body.requestPointerLock();
     return;
   }
 });
 
-document.addEventListener('webkitpointerlockchange', function(e) {
-  if (!!document.webkitPointerLockElement) {
+document.addEventListener('pointerlockchange', function(e) {
+  if (!!document.pointerLockElement) {
     var msg = ['acquired-pointerlock'];
     embedder.postMessage(JSON.stringify(msg), '*');
     return;

@@ -6,12 +6,12 @@
 // (WebViewInteractiveTest, PointerLock) for documentation on this test.
 
 function LockMouse(element) {
-  element.requestPointerLock = element.webkitRequestPointerLock;
+  element.requestPointerLock = element.requestPointerLock;
   element.requestPointerLock();
 }
 var first_lock = true;
-document.onwebkitpointerlockchange = function() {
-  if (document.webkitPointerLockElement) {
+document.onpointerlockchange = function() {
+  if (document.pointerLockElement) {
     if (first_lock) {
       console.log('locked');
       setTimeout(function() { embedder.postMessage('locked', '*'); }, 500);
@@ -26,7 +26,7 @@ document.onwebkitpointerlockchange = function() {
   }
 }
 
-document.onwebkitpointerlockerror = function() {
+document.onpointerlockerror = function() {
   console.log('lock error', '*');
   setTimeout(function() {  embedder.postMessage('lock error', '*'); }, 1000);
 }

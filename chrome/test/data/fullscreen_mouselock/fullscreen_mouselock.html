@@ -38,7 +38,7 @@ function lockMouse1(callback) {
     }
   };
   function possibleSuccess() {
-    if (document.webkitPointerLockElement == target) {
+    if (document.pointerLockElement == target) {
       console.log("lock success");
       if (callback)
         callback("success");
@@ -46,9 +46,9 @@ function lockMouse1(callback) {
       failure();
     }
   };
-  document.onwebkitpointerlockchange = possibleSuccess;
-  document.onwebkitpointerlockerror = failure;
-  target.webkitRequestPointerLock();
+  document.onpointerlockchange = possibleSuccess;
+  document.onpointerlockerror = failure;
+  target.requestPointerLock();
 }
 
 // In the PyAuto test the fullscreen is initiated, accepted and enters into a
@@ -65,16 +65,16 @@ function lockMouseAndSetLockResult(targetId) {
     lock_result = "failure"
   };
   function possibleSuccess() {
-    if (document.webkitPointerLockElement == target) {
+    if (document.pointerLockElement == target) {
       console.log("lock success");
       lock_result = "success"
     } else {
       failure();
     }
   };
-  document.onwebkitpointerlockchange = possibleSuccess;
-  document.onwebkitpointerlockerror = failure;
-  target.webkitRequestPointerLock();
+  document.onpointerlockchange = possibleSuccess;
+  document.onpointerlockerror = failure;
+  target.requestPointerLock();
 }
 
 function lockMouse1AndSetLockResult() {
@@ -104,7 +104,7 @@ function spamLockMouse2() {
 
 function unlockMouse() {
   console.log("unlockMouse()");
-  document.webkitExitPointerLock();
+  document.exitPointerLock();
 }
 
 function enterFullscreenAndLockMouse1() {

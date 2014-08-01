@@ -6,9 +6,9 @@ window.onload = function () {
   chrome.test.sendMessage('Launched', function() {
     chrome.test.runTests([
       function requestPointerLock() {
-        document.onwebkitpointerlockchange = chrome.test.succeed;
-        document.onwebkitpointerlockerror = chrome.test.fail;
-        document.body.webkitRequestPointerLock();
+        document.onpointerlockchange = chrome.test.succeed;
+        document.onpointerlockerror = chrome.test.fail;
+        document.body.requestPointerLock();
       },
     ]);
   });
