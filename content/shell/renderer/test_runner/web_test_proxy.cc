@@ -10,7 +10,6 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "content/shell/renderer/test_runner/SpellCheckClient.h"
 #include "content/shell/renderer/test_runner/TestCommon.h"
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/TestPlugin.h"
@@ -23,6 +22,7 @@
 #include "content/shell/renderer/test_runner/mock_web_push_client.h"
 #include "content/shell/renderer/test_runner/mock_web_speech_recognizer.h"
 #include "content/shell/renderer/test_runner/mock_web_user_media_client.h"
+#include "content/shell/renderer/test_runner/spell_check_client.h"
 #include "content/shell/renderer/test_runner/test_runner.h"
 #include "content/shell/renderer/test_runner/web_test_runner.h"
 // FIXME: Including platform_canvas.h here is a layering violation.
@@ -330,7 +330,7 @@ void WebTestProxyBase::SetInterfaces(WebTestInterfaces* interfaces) {
 
 void WebTestProxyBase::SetDelegate(WebTestDelegate* delegate) {
   delegate_ = delegate;
-  spellcheck_->setDelegate(delegate);
+  spellcheck_->SetDelegate(delegate);
   if (speech_recognizer_.get())
     speech_recognizer_->SetDelegate(delegate);
 }
