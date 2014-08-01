@@ -287,8 +287,11 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
     // Re-enables ui and hides error message if already displayed.
     document.querySelector('#video-player').removeAttribute('disabled');
     document.querySelector('#error').removeAttribute('visible');
-    this.controls.inactivityWatcher.disabled = false;
+    this.controls.inactivityWatcher.disabled = true;
     this.controls.decodeErrorOccured = false;
+
+    var spinnerContainer = document.querySelector('#spinner-container');
+    spinnerContainer.classList.add('loading');
 
     var media = new MediaManager(video.entry);
 
@@ -328,22 +331,26 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
       videoElementInitializePromise = Promise.resolve();
     }
 
-    videoElementInitializePromise.then(
-        function() {
-          this.videoElement_.load();
-
-          if (opt_callback) {
-            var handler = function(currentPos, event) {
-              if (currentPos === this.currentPos_)
+    videoElementInitializePromise.
+        then(function() {
+          var handler = function(currentPos) {
+            if (currentPos === this.currentPos_) {
+              if (opt_callback)
                 opt_callback();
-              this.videoElement_.removeEventListener('loadedmetadata', handler);
-            }.wrap(this, this.currentPos_);
+              spinnerContainer.classList.remove('loading');
+              this.controls.inactivityWatcher.disabled = false;
+            }
 
-            this.videoElement_.addEventListener('loadedmetadata', handler);
-          }
+            this.videoElement_.removeEventListener('loadedmetadata', handler);
+          }.wrap(this, this.currentPos_);
+
+          this.videoElement_.addEventListener('loadedmetadata', handler);
+          this.videoElement_.load();
           callback();
-        }.bind(this),
-        function videoElementInitializePromiseRejected(error) {
+        }.bind(this)).
+        // In case of error.
+        catch(function(error) {
+          spinnerContainer.classList.remove('loading');
           console.error('Failed to initialize the video element.',
                         error.stack || error);
           this.controls_.showErrorMessage('GALLERY_VIDEO_ERROR');

@@ -330,6 +330,9 @@ CastVideoElement.prototype = {
 
     this.castMedia_ = media;
     this.onCastMediaUpdated_(true);
+    // Notify that the metadata of the video is ready.
+    this.dispatchEvent(new Event('loadedmetadata'));
+
     media.addUpdateListener(this.onCastMediaUpdatedBound_);
     this.updateTimerId_ = setInterval(this.onPeriodicalUpdateTimer_.bind(this),
                                       MEDIA_UPDATE_INTERVAL);
