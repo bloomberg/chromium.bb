@@ -106,7 +106,10 @@ class QuicConnectionPeer {
   static QuicAlarm* GetTimeoutAlarm(QuicConnection* connection);
 
   static QuicPacketWriter* GetWriter(QuicConnection* connection);
-  static void SetWriter(QuicConnection* connection, QuicPacketWriter* writer);
+  // If |owns_writer| is true, takes ownership of |writer|.
+  static void SetWriter(QuicConnection* connection,
+                        QuicPacketWriter* writer,
+                        bool owns_writer);
   static void CloseConnection(QuicConnection* connection);
   static QuicEncryptedPacket* GetConnectionClosePacket(
       QuicConnection* connection);

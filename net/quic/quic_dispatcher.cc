@@ -377,13 +377,23 @@ QuicConnection* QuicDispatcher::CreateQuicConnection(
   QuicConnection* connection;
   if (FLAGS_enable_quic_connection_flow_control_2) {
     DVLOG(1) << "Creating QuicDispatcher with all versions.";
-    connection = new QuicConnection(connection_id, client_address, helper_,
-                                    writer, true, supported_versions_);
+    connection = new QuicConnection(connection_id,
+                                    client_address,
+                                    helper_,
+                                    writer,
+                                    false  /* owns_writer */,
+                                    true   /* is_server */,
+                                    supported_versions_);
   } else {
     DVLOG(1) << "Connection flow control disabled, creating QuicDispatcher "
              << "WITHOUT version 19 or higher.";
     connection = new QuicConnection(
-        connection_id, client_address, helper_, writer, true,
+        connection_id,
+        client_address,
+        helper_,
+        writer,
+        false  /* owns_writer */,
+        true   /* is_server */,
         supported_versions_no_connection_flow_control_);
   }
   writer->set_connection(connection);

@@ -833,9 +833,13 @@ int QuicStreamFactory::CreateSession(
         clock_.get(), random_generator_));
   }
 
-  QuicConnection* connection =
-      new QuicConnection(connection_id, addr, helper_.get(), writer.get(),
-                         false, supported_versions_);
+  QuicConnection* connection = new QuicConnection(connection_id,
+                                                  addr,
+                                                  helper_.get(),
+                                                  writer.get(),
+                                                  false  /* owns_writer */,
+                                                  false  /* is_server */,
+                                                  supported_versions_);
   writer->SetConnection(connection);
   connection->set_max_packet_length(max_packet_length_);
 

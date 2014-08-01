@@ -51,6 +51,7 @@ const QuicTag kINAR = TAG('I', 'N', 'A', 'R');   // Inter arrival
 
 // Congestion control options
 const QuicTag kTBBR = TAG('T', 'B', 'B', 'R');   // Reduced Buffer Bloat TCP
+const QuicTag kRENO = TAG('R', 'E', 'N', 'O');   // Reno Congestion Control
 
 // Loss detection algorithm types
 const QuicTag kNACK = TAG('N', 'A', 'C', 'K');   // TCP style nack counting

@@ -109,6 +109,11 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
     send_algorithm_.reset(
         SendAlgorithmInterface::Create(clock_, &rtt_stats_, kBBR, stats_));
   }
+  if (config.HasReceivedConnectionOptions() &&
+      ContainsQuicTag(config.ReceivedConnectionOptions(), kRENO)) {
+    send_algorithm_.reset(
+        SendAlgorithmInterface::Create(clock_, &rtt_stats_, kReno, stats_));
+  }
   if (config.congestion_feedback() == kPACE ||
       (config.HasReceivedConnectionOptions() &&
        ContainsQuicTag(config.ReceivedConnectionOptions(), kPACE))) {

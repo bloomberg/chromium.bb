@@ -34,9 +34,9 @@ const LossDetectionInterface* QuicSentPacketManagerPeer::GetLossAlgorithm(
 
 // static
 const SendAlgorithmInterface*
-QuicSentPacketManagerPeer::GetCongestionControlAlgorithm(
-    QuicSentPacketManager* sent_packet_manager) {
-  return sent_packet_manager->send_algorithm_.get();
+    QuicSentPacketManagerPeer::GetCongestionControlAlgorithm(
+    const QuicSentPacketManager& sent_packet_manager) {
+  return sent_packet_manager.send_algorithm_.get();
 }
 
 // static

@@ -178,6 +178,8 @@ void QuicReceivedPacketManager::RecordPacketReceived(
 
   receive_algorithm_->RecordIncomingPacket(
       bytes, sequence_number, receipt_time);
+
+  received_info_.revived_packets.erase(sequence_number);
 }
 
 void QuicReceivedPacketManager::RecordPacketRevived(

@@ -214,6 +214,10 @@ class QuicClient : public EpollCallbackInterface,
   // Local port to bind to. Initialize to 0.
   int local_port_;
 
+  // Writer used to actually send packets to the wire. Needs to outlive
+  // |session_|.
+  scoped_ptr<QuicPacketWriter> writer_;
+
   // Session which manages streams.
   scoped_ptr<QuicClientSession> session_;
   // Listens for events on the client socket.
@@ -226,9 +230,6 @@ class QuicClient : public EpollCallbackInterface,
 
   // Listens for full responses.
   scoped_ptr<ResponseListener> response_listener_;
-
-  // Writer used to actually send packets to the wire.
-  scoped_ptr<QuicPacketWriter> writer_;
 
   // Tracks if the client is initialized to connect.
   bool initialized_;

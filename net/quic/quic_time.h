@@ -81,6 +81,9 @@ class NET_EXPORT_PRIVATE QuicTime {
   // will return false for these times.
   static QuicTime Zero();
 
+  // Creates a new QuicTime with an infinite time.
+  static QuicTime Infinite();
+
   // Returns the later time of time1 and time2.
   static QuicTime Max(QuicTime time1, QuicTime time2);
 

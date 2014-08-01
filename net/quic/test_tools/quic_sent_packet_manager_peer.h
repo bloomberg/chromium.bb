@@ -26,7 +26,7 @@ class QuicSentPacketManagerPeer {
       QuicSentPacketManager* sent_packet_manager);
 
   static const SendAlgorithmInterface* GetCongestionControlAlgorithm(
-      QuicSentPacketManager* sent_packet_manager);
+      const QuicSentPacketManager& sent_packet_manager);
 
   static void SetLossAlgorithm(QuicSentPacketManager* sent_packet_manager,
                                LossDetectionInterface* loss_detector);

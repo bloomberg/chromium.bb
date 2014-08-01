@@ -23,8 +23,10 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_sent_packet_manager.h"
 #include "net/quic/quic_server_id.h"
+#include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_flow_controller_peer.h"
+#include "net/quic/test_tools/quic_sent_packet_manager_peer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/reliable_quic_stream_peer.h"
@@ -52,6 +54,7 @@ using net::EpollServer;
 using net::test::GenerateBody;
 using net::test::QuicConnectionPeer;
 using net::test::QuicFlowControllerPeer;
+using net::test::QuicSentPacketManagerPeer;
 using net::test::QuicSessionPeer;
 using net::test::ReliableQuicStreamPeer;
 using net::test::ValueRestore;
@@ -76,11 +79,15 @@ struct TestParams {
   TestParams(const QuicVersionVector& client_supported_versions,
              const QuicVersionVector& server_supported_versions,
              QuicVersion negotiated_version,
-             bool use_pacing)
+             bool use_pacing,
+             bool use_fec,
+             QuicTag congestion_control_tag)
       : client_supported_versions(client_supported_versions),
         server_supported_versions(server_supported_versions),
         negotiated_version(negotiated_version),
-        use_pacing(use_pacing) {
+        use_pacing(use_pacing),
+        use_fec(use_fec),
+        congestion_control_tag(congestion_control_tag) {
   }
 
   friend ostream& operator<<(ostream& os, const TestParams& p) {
@@ -89,7 +96,10 @@ struct TestParams {
     os << " client_supported_versions: "
        << QuicVersionVectorToString(p.client_supported_versions);
     os << " negotiated_version: " << QuicVersionToString(p.negotiated_version);
-    os << " use_pacing: " << p.use_pacing << " }";
+    os << " use_pacing: " << p.use_pacing;
+    os << " use_fec: " << p.use_fec;
+    os << " congestion_control_tag: "
+       << QuicUtils::TagToString(p.congestion_control_tag) << " }";
     return os;
   }
 
@@ -97,36 +107,53 @@ struct TestParams {
   QuicVersionVector server_supported_versions;
   QuicVersion negotiated_version;
   bool use_pacing;
+  bool use_fec;
+  QuicTag congestion_control_tag;
 };
 
 // Constructs various test permutations.
 vector<TestParams> GetTestParams() {
   vector<TestParams> params;
   QuicVersionVector all_supported_versions = QuicSupportedVersions();
-  for (int use_pacing = 0; use_pacing < 2; ++use_pacing) {
-    // Add an entry for server and client supporting all versions.
-    params.push_back(TestParams(all_supported_versions,
-                                all_supported_versions,
-                                all_supported_versions[0],
-                                use_pacing != 0));
+  // TODO(rtenneti): Add kTBBR after BBR code is checked in.
+  // QuicTag congestion_control_tags[] = {kRENO, kTBBR, kQBIC};
+  QuicTag congestion_control_tags[] = {kRENO, kQBIC};
+  for (size_t congestion_control_index = 0;
+       congestion_control_index < arraysize(congestion_control_tags);
+       congestion_control_index++) {
+    QuicTag congestion_control_tag =
+        congestion_control_tags[congestion_control_index];
+    for (int use_fec = 0; use_fec < 2; ++use_fec) {
+      for (int use_pacing = 0; use_pacing < 2; ++use_pacing) {
+        // Add an entry for server and client supporting all versions.
+        params.push_back(TestParams(all_supported_versions,
+                                    all_supported_versions,
+                                    all_supported_versions[0],
+                                    use_pacing != 0,
+                                    use_fec != 0,
+                                    congestion_control_tag));
 
-    // Test client supporting all versions and server supporting 1 version.
-    // Simulate an old server and exercise version downgrade in the client.
-    // Protocol negotiation should occur. Skip the i = 0 case because it is
-    // essentially the same as the default case.
-    for (size_t i = 1; i < all_supported_versions.size(); ++i) {
-      QuicVersionVector server_supported_versions;
-      server_supported_versions.push_back(all_supported_versions[i]);
-      if (all_supported_versions[i] >= QUIC_VERSION_18) {
-        // Until flow control is globally rolled out and we remove
-        // QUIC_VERSION_16, the server MUST support at least one QUIC version
-        // that does not use flow control.
-        server_supported_versions.push_back(QUIC_VERSION_16);
+        // Test client supporting all versions and server supporting 1 version.
+        // Simulate an old server and exercise version downgrade in the client.
+        // Protocol negotiation should occur. Skip the i = 0 case because it is
+        // essentially the same as the default case.
+        for (size_t i = 1; i < all_supported_versions.size(); ++i) {
+          QuicVersionVector server_supported_versions;
+          server_supported_versions.push_back(all_supported_versions[i]);
+          if (all_supported_versions[i] >= QUIC_VERSION_18) {
+            // Until flow control is globally rolled out and we remove
+            // QUIC_VERSION_16, the server MUST support at least one QUIC
+            // version that does not use flow control.
+            server_supported_versions.push_back(QUIC_VERSION_16);
+          }
+          params.push_back(TestParams(all_supported_versions,
+                                      server_supported_versions,
+                                      server_supported_versions[0],
+                                      use_pacing != 0,
+                                      use_fec != 0,
+                                      congestion_control_tag));
+        }
       }
-      params.push_back(TestParams(all_supported_versions,
-                                  server_supported_versions,
-                                  server_supported_versions[0],
-                                  use_pacing != 0));
     }
   }
   return params;
@@ -168,6 +195,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     server_supported_versions_ = GetParam().server_supported_versions;
     negotiated_version_ = GetParam().negotiated_version;
     FLAGS_enable_quic_pacing = GetParam().use_pacing;
+    FLAGS_enable_quic_fec = GetParam().use_fec;
 
     if (negotiated_version_ >= QUIC_VERSION_19) {
       FLAGS_enable_quic_connection_flow_control_2 = true;
@@ -256,11 +284,36 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     server_config_.SetInitialSessionFlowControlWindowToSend(window);
   }
 
+  const QuicSentPacketManager *
+  GetSentPacketManagerFromFirstServerSession() const {
+    QuicDispatcher* dispatcher =
+        QuicServerPeer::GetDispatcher(server_thread_->server());
+    QuicSession* session = dispatcher->session_map().begin()->second;
+    return &session->connection()->sent_packet_manager();
+  }
+
   bool Initialize() {
+    QuicTagVector copt;
+
+    // TODO(nimia): Consider setting the congestion control algorithm for the
+    // client as well according to the test parameter.
+    copt.push_back(GetParam().congestion_control_tag);
+
+    if (GetParam().use_fec) {
+      // Set FEC config in client's connection options and in client session.
+      copt.push_back(kFHDR);
+    }
+
+    client_config_.SetConnectionOptionsToSend(copt);
+
     // Start the server first, because CreateQuicClient() attempts
     // to connect to the server.
     StartServer();
     client_.reset(CreateQuicClient(client_writer_));
+    if (GetParam().use_fec) {
+      // Set FecPolicy to always protect data on all streams.
+      client_->SetFecPolicy(FEC_PROTECT_ALWAYS);
+    }
     static EpollEvent event(EPOLLOUT, false);
     client_writer_->Initialize(
         reinterpret_cast<QuicEpollConnectionHelper*>(
@@ -668,69 +721,30 @@ TEST_P(EndToEndTest, DISABLED_LargePostZeroRTTFailure) {
   VerifyCleanConnection(false);
 }
 
-TEST_P(EndToEndTest, LargePostFec) {
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_fec, true);
-
-  // Connect without packet loss to avoid issues with losing handshake packets,
-  // and then up the packet loss rate (b/10126687).
-  ASSERT_TRUE(Initialize());
-
-  // Wait for the server SHLO before upping the packet loss.
-  client_->client()->WaitForCryptoHandshakeConfirmed();
-  SetPacketLossPercentage(30);
-
-  // Verify that FEC is enabled.
-  QuicPacketCreator* creator = QuicConnectionPeer::GetPacketCreator(
-      client_->client()->session()->connection());
-  EXPECT_TRUE(creator->IsFecEnabled());
-
-  // Set FecPolicy to always protect data on all streams.
-  client_->SetFecPolicy(FEC_PROTECT_ALWAYS);
-
-  string body;
-  GenerateBody(&body, 10240);
-
-  HTTPMessage request(HttpConstants::HTTP_1_1,
-                      HttpConstants::POST, "/foo");
-  request.AddBody(body, true);
-  EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
-  VerifyCleanConnection(true);
-}
-
-TEST_P(EndToEndTest, ClientSpecifiedFecProtectionForHeaders) {
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_fec, true);
-
-  // Set FEC config in client's connection options and in client session.
-  QuicTagVector copt;
-  copt.push_back(kFHDR);
-  client_config_.SetConnectionOptionsToSend(copt);
-
-  // Connect without packet loss to avoid issues with losing handshake packets,
-  // and then up the packet loss rate (b/10126687).
+TEST_P(EndToEndTest, CorrectlyConfiguredFec) {
   ASSERT_TRUE(Initialize());
   client_->client()->WaitForCryptoHandshakeConfirmed();
   server_thread_->WaitForCryptoHandshakeConfirmed();
 
-  // Verify that FEC is enabled.
-  QuicPacketCreator* creator = QuicConnectionPeer::GetPacketCreator(
-      client_->client()->session()->connection());
-  EXPECT_TRUE(creator->IsFecEnabled());
+  FecPolicy expected_policy =
+      GetParam().use_fec ? FEC_PROTECT_ALWAYS : FEC_PROTECT_OPTIONAL;
 
-  // Verify that server headers stream is FEC protected.
+  // Verify that server's FEC configuration is correct.
   server_thread_->Pause();
   QuicDispatcher* dispatcher =
       QuicServerPeer::GetDispatcher(server_thread_->server());
   ASSERT_EQ(1u, dispatcher->session_map().size());
   QuicSession* session = dispatcher->session_map().begin()->second;
-  EXPECT_EQ(FEC_PROTECT_ALWAYS,
+  EXPECT_EQ(expected_policy,
             QuicSessionPeer::GetHeadersStream(session)->fec_policy());
   server_thread_->Resume();
 
-  // Verify that at the client, headers stream is protected and other data
-  // streams are optionally protected.
-  EXPECT_EQ(FEC_PROTECT_ALWAYS, QuicSessionPeer::GetHeadersStream(
-      client_->client()->session())->fec_policy());
-  EXPECT_EQ(FEC_PROTECT_OPTIONAL, client_->GetOrCreateStream()->fec_policy());
+  // Verify that client's FEC configuration is correct.
+  EXPECT_EQ(expected_policy,
+            QuicSessionPeer::GetHeadersStream(
+                client_->client()->session())->fec_policy());
+  EXPECT_EQ(expected_policy,
+            client_->GetOrCreateStream()->fec_policy());
 }
 
 // TODO(shess): This is flaky on ChromiumOS bots.
@@ -884,6 +898,31 @@ TEST_P(EndToEndTest, NegotiateMaxOpenStreams) {
   EXPECT_EQ(QUIC_TOO_MANY_OPEN_STREAMS, client_->connection_error());
 }
 
+TEST_P(EndToEndTest, NegotiateCongestionControl) {
+  ASSERT_TRUE(Initialize());
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+
+  CongestionControlType expected_congestion_control_type;
+  switch (GetParam().congestion_control_tag) {
+    case kRENO:
+      expected_congestion_control_type = kReno;
+      break;
+    case kTBBR:
+      expected_congestion_control_type = kBBR;
+      break;
+    case kQBIC:
+      expected_congestion_control_type = kCubic;
+      break;
+    default:
+      DLOG(FATAL) << "Unexpected congestion control tag";
+  }
+
+  EXPECT_EQ(expected_congestion_control_type,
+            QuicSentPacketManagerPeer::GetCongestionControlAlgorithm(
+                *GetSentPacketManagerFromFirstServerSession())
+            ->GetCongestionControlType());
+}
+
 TEST_P(EndToEndTest, LimitMaxOpenStreams) {
   // Server limits the number of max streams to 2.
   server_config_.set_max_streams_per_connection(2, 2);
@@ -913,11 +952,10 @@ TEST_P(EndToEndTest, DISABLED_LimitCongestionWindowAndRTT) {
   QuicDispatcher* dispatcher =
       QuicServerPeer::GetDispatcher(server_thread_->server());
   ASSERT_EQ(1u, dispatcher->session_map().size());
-  QuicSession* session = dispatcher->session_map().begin()->second;
   const QuicSentPacketManager& client_sent_packet_manager =
       client_->client()->session()->connection()->sent_packet_manager();
   const QuicSentPacketManager& server_sent_packet_manager =
-      session->connection()->sent_packet_manager();
+      *GetSentPacketManagerFromFirstServerSession();
 
   // The client shouldn't set it's initial window based on the negotiated value.
   EXPECT_EQ(kDefaultInitialWindow * kDefaultTCPMSS,
@@ -1110,11 +1148,12 @@ TEST_P(EndToEndTest, ConnectionMigrationClientIPChanged) {
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 
-  scoped_ptr<WrongAddressWriter> writer(new WrongAddressWriter());
+  WrongAddressWriter* writer = new WrongAddressWriter();
 
   writer->set_writer(new QuicDefaultPacketWriter(client_->client()->fd()));
   QuicConnectionPeer::SetWriter(client_->client()->session()->connection(),
-                                writer.get());
+                                writer,
+                                true  /* owns_writer */);
 
   client_->SendSynchronousRequest("/bar");
 

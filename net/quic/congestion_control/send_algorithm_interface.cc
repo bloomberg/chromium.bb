@@ -10,8 +10,6 @@
 
 namespace net {
 
-const bool kUseReno = false;
-
 class RttStats;
 
 // Factory for send side congestion control algorithm.
@@ -21,12 +19,14 @@ SendAlgorithmInterface* SendAlgorithmInterface::Create(
     CongestionControlType congestion_control_type,
     QuicConnectionStats* stats) {
   switch (congestion_control_type) {
-    case kTCP:
-      return new TcpCubicSender(clock, rtt_stats, kUseReno,
+    case kCubic:
+      return new TcpCubicSender(clock, rtt_stats,
+                                false /* don't use Reno */,
                                 kMaxTcpCongestionWindow, stats);
-    case kInterArrival:
-      LOG(DFATAL) << "InterArrivalSendAlgorithm no longer supported.";
-      return NULL;
+    case kReno:
+      return new TcpCubicSender(clock, rtt_stats,
+                                true /* use Reno */,
+                                kMaxTcpCongestionWindow, stats);
     case kFixRateCongestionControl:
       return new FixRateSender(rtt_stats);
     case kBBR:

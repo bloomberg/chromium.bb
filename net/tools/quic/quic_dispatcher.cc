@@ -378,14 +378,23 @@ QuicConnection* QuicDispatcher::CreateQuicConnection(
     const IPEndPoint& client_address) {
   if (FLAGS_enable_quic_connection_flow_control_2) {
     DLOG(INFO) << "Creating QuicDispatcher with all versions.";
-    return new QuicConnection(connection_id, client_address, helper_.get(),
-                              writer_.get(), true, supported_versions_);
+    return new QuicConnection(connection_id,
+                              client_address,
+                              helper_.get(),
+                              writer_.get(),
+                              false  /* owns_writer */,
+                              true   /* is_server */,
+                              supported_versions_);
   }
 
   DLOG(INFO) << "Connection flow control disabled, creating QuicDispatcher "
              << "WITHOUT version 19 or higher.";
-  return new QuicConnection(connection_id, client_address, helper_.get(),
-                            writer_.get(), true,
+  return new QuicConnection(connection_id,
+                            client_address,
+                            helper_.get(),
+                            writer_.get(),
+                            false  /* owns_writer */,
+                            true   /* is_server */,
                             supported_versions_no_connection_flow_control_);
 }
 

@@ -73,7 +73,9 @@ void SendAlgorithmSimulator::TransferBytes() {
 
 void SendAlgorithmSimulator::TransferBytes(QuicByteCount max_bytes,
                                            QuicTime::Delta max_time) {
-  const QuicTime end_time = clock_->Now().Add(max_time);
+  const QuicTime end_time = max_time.IsInfinite() ?
+      QuicTime::Zero().Add(QuicTime::Delta::Infinite()) :
+      clock_->Now().Add(max_time);
   QuicByteCount bytes_sent = 0;
   while (!pending_transfers_.empty() &&
          clock_->Now() < end_time &&

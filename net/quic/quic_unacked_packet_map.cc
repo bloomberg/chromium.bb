@@ -74,6 +74,15 @@ void QuicUnackedPacketMap::OnRetransmittedPacket(
   // We keep the old packet in the unacked packet list until it, or one of
   // the retransmissions of it are acked.
   transmission_info->retransmittable_frames = NULL;
+  // Only keep one transmission older than largest observed, because only the
+  // most recent is expected to possibly be a spurious retransmission.
+  if (transmission_info->all_transmissions->size() > 1 &&
+      *(++transmission_info->all_transmissions->begin()) < largest_observed_) {
+    QuicPacketSequenceNumber old_transmission =
+        *transmission_info->all_transmissions->begin();
+    transmission_info->all_transmissions->erase(old_transmission);
+    unacked_packets_.erase(old_transmission);
+  }
   unacked_packets_[new_sequence_number] =
       TransmissionInfo(frames,
                        new_sequence_number,

@@ -191,12 +191,14 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
                                IPEndPoint address,
                                QuicConnectionHelperInterface* helper,
                                QuicPacketWriter* writer,
+                               bool owns_writer,
                                bool is_server,
                                const QuicVersionVector& supported_versions)
     : framer_(supported_versions, helper->GetClock()->ApproximateNow(),
               is_server),
       helper_(helper),
       writer_(writer),
+      owns_writer_(owns_writer),
       encryption_level_(ENCRYPTION_NONE),
       clock_(helper->GetClock()),
       random_generator_(helper->GetRandomGenerator()),
@@ -250,6 +252,9 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
 }
 
 QuicConnection::~QuicConnection() {
+  if (owns_writer_) {
+    delete writer_;
+  }
   STLDeleteElements(&undecryptable_packets_);
   STLDeleteValues(&group_map_);
   for (QueuedPacketList::iterator it = queued_packets_.begin();

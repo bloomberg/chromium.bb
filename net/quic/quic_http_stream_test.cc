@@ -59,7 +59,12 @@ class TestQuicConnection : public QuicConnection {
                      IPEndPoint address,
                      QuicConnectionHelper* helper,
                      QuicPacketWriter* writer)
-      : QuicConnection(connection_id, address, helper, writer, false,
+      : QuicConnection(connection_id,
+                       address,
+                       helper,
+                       writer,
+                       false  /* owns_writer */,
+                       false  /* is_server */,
                        versions) {
   }
 

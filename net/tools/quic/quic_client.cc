@@ -178,14 +178,21 @@ bool QuicClient::StartConnect() {
   DCHECK(!connected());
 
   QuicPacketWriter* writer = CreateQuicPacketWriter();
-  if (writer_.get() != writer) {
-    writer_.reset(writer);
-  }
 
   session_.reset(new QuicClientSession(
       config_,
-      new QuicConnection(GenerateConnectionId(), server_address_, helper_.get(),
-                         writer_.get(), false, supported_versions_)));
+      new QuicConnection(GenerateConnectionId(),
+                         server_address_,
+                         helper_.get(),
+                         writer,
+                         false  /* owns_writer */,
+                         false  /* is_server */,
+                         supported_versions_)));
+  // Reset |writer_| after |session_| so that the old writer outlives the old
+  // session.
+  if (writer_.get() != writer) {
+    writer_.reset(writer);
+  }
   session_->InitializeSession(server_id_, &crypto_config_);
   return session_->CryptoConnect();
 }

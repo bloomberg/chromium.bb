@@ -90,6 +90,11 @@ QuicTime QuicTime::Zero() {
 }
 
 // static
+QuicTime QuicTime::Infinite() {
+  return QuicTime(base::TimeTicks::FromInternalValue(kQuicInfiniteTimeUs));
+}
+
+// static
 QuicTime QuicTime::Max(QuicTime time1, QuicTime time2) {
   return time1 > time2 ? time1 : time2;
 }

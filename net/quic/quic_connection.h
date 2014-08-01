@@ -223,11 +223,13 @@ class NET_EXPORT_PRIVATE QuicConnection
   };
 
   // Constructs a new QuicConnection for |connection_id| and |address|.
-  // |helper| and |writer| must outlive this connection.
+  // |helper| must outlive this connection, and if |owns_writer| is false, so
+  // must |writer|.
   QuicConnection(QuicConnectionId connection_id,
                  IPEndPoint address,
                  QuicConnectionHelperInterface* helper,
                  QuicPacketWriter* writer,
+                 bool owns_writer,
                  bool is_server,
                  const QuicVersionVector& supported_versions);
   virtual ~QuicConnection();
@@ -302,11 +304,6 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // If the socket is not blocked, writes queued packets.
   void WriteIfNotBlocked();
-
-  // Do any work which logically would be done in OnPacket but can not be
-  // safely done until the packet is validated.  Returns true if the packet
-  // can be handled, false otherwise.
-  virtual bool ProcessValidatedPacket();
 
   // The version of the protocol this connection is using.
   QuicVersion version() const { return framer_.version(); }
@@ -490,6 +487,11 @@ class NET_EXPORT_PRIVATE QuicConnection
   };
 
  protected:
+  // Do any work which logically would be done in OnPacket but can not be
+  // safely done until the packet is validated.  Returns true if the packet
+  // can be handled, false otherwise.
+  virtual bool ProcessValidatedPacket();
+
   // Send a packet to the peer using encryption |level|. If |sequence_number|
   // is present in the |retransmission_map_|, then contents of this packet will
   // be retransmitted with a new sequence number if it's not acked by the peer.
@@ -632,7 +634,8 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   QuicFramer framer_;
   QuicConnectionHelperInterface* helper_;  // Not owned.
-  QuicPacketWriter* writer_;  // Not owned.
+  QuicPacketWriter* writer_;  // Owned or not depending on |owns_writer_|.
+  bool owns_writer_;
   EncryptionLevel encryption_level_;
   const QuicClock* clock_;
   QuicRandom* random_generator_;

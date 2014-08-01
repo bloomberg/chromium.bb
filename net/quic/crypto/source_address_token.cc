@@ -14,6 +14,12 @@ using std::vector;
 
 namespace net {
 
+CachedNetworkParameters::CachedNetworkParameters() {
+}
+
+CachedNetworkParameters::~CachedNetworkParameters() {
+}
+
 SourceAddressToken::SourceAddressToken() {
 }
 
@@ -27,6 +33,8 @@ string SourceAddressToken::SerializeAsString() const {
   string time_str = base::Int64ToString(timestamp_);
   out.push_back(time_str.size());
   out.append(time_str);
+  // TODO(rtenneti): Implement serialization of optional CachedNetworkParameters
+  // when they are used.
   return out;
 }
 
@@ -52,6 +60,9 @@ bool SourceAddressToken::ParseFromArray(const char* plaintext,
 
   ip_.assign(&plaintext[1], ip_len);
   timestamp_ = timestamp;
+
+  // TODO(rtenneti): Implement parsing of optional CachedNetworkParameters when
+  // they are used.
   return true;
 }
 

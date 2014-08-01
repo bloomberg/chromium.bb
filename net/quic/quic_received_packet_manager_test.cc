@@ -202,6 +202,10 @@ class QuicReceivedPacketManagerTest : public ::testing::Test {
     received_manager_.RecordPacketReceived(0u, header, receipt_time);
   }
 
+  void RecordPacketRevived(QuicPacketSequenceNumber sequence_number) {
+    received_manager_.RecordPacketRevived(sequence_number);
+  }
+
   QuicConnectionStats stats_;
   QuicReceivedPacketManager received_manager_;
 };
@@ -327,6 +331,32 @@ TEST_F(QuicReceivedPacketManagerTest, UpdateReceivedConnectionStats) {
   EXPECT_EQ(1000u, stats_.max_time_reordering_us);
   EXPECT_EQ(1u, stats_.packets_reordered);
 }
+
+TEST_F(QuicReceivedPacketManagerTest, RevivedPacket) {
+  RecordPacketReceipt(1, 0);
+  RecordPacketReceipt(3, 0);
+  RecordPacketRevived(2);
+
+  ReceivedPacketInfo info;
+  received_manager_.UpdateReceivedPacketInfo(&info, QuicTime::Zero());
+  EXPECT_EQ(1u, info.missing_packets.size());
+  EXPECT_EQ(2u, *info.missing_packets.begin());
+  EXPECT_EQ(1u, info.revived_packets.size());
+  EXPECT_EQ(2u, *info.missing_packets.begin());
+}
+
+TEST_F(QuicReceivedPacketManagerTest, PacketRevivedThenReceived) {
+  RecordPacketReceipt(1, 0);
+  RecordPacketReceipt(3, 0);
+  RecordPacketRevived(2);
+  RecordPacketReceipt(2, 0);
+
+  ReceivedPacketInfo info;
+  received_manager_.UpdateReceivedPacketInfo(&info, QuicTime::Zero());
+  EXPECT_TRUE(info.missing_packets.empty());
+  EXPECT_TRUE(info.revived_packets.empty());
+}
+
 
 }  // namespace
 }  // namespace test

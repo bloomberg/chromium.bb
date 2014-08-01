@@ -415,7 +415,12 @@ class TestConnection : public QuicConnection {
                  TestPacketWriter* writer,
                  bool is_server,
                  QuicVersion version)
-      : QuicConnection(connection_id, address, helper, writer, is_server,
+      : QuicConnection(connection_id,
+                       address,
+                       helper,
+                       writer,
+                       false  /* owns_writer */,
+                       is_server,
                        SupportedVersions(version)),
         writer_(writer) {
     // Disable tail loss probes for most tests.

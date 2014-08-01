@@ -466,7 +466,7 @@ bool QuicCryptoServerConfig::SetConfigs(
 
     configs_.swap(new_configs);
     SelectNewPrimaryConfig(now);
-    DCHECK(primary_config_);
+    DCHECK(primary_config_.get());
     DCHECK_EQ(configs_.find(primary_config_->id)->second, primary_config_);
   }
 
@@ -507,8 +507,8 @@ void QuicCryptoServerConfig::ValidateClientHello(
       if (!next_config_promotion_time_.IsZero() &&
           next_config_promotion_time_.IsAfter(now)) {
         SelectNewPrimaryConfig(now);
-        DCHECK(primary_config_);
-        DCHECK(configs_.find(primary_config_->id)->second == primary_config_);
+        DCHECK(primary_config_.get());
+        DCHECK_EQ(configs_.find(primary_config_->id)->second, primary_config_);
       }
 
       memcpy(primary_orbit, primary_config_->orbit, sizeof(primary_orbit));
@@ -580,8 +580,8 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     if (!next_config_promotion_time_.IsZero() &&
         next_config_promotion_time_.IsAfter(now)) {
       SelectNewPrimaryConfig(now);
-      DCHECK(primary_config_);
-      DCHECK(configs_.find(primary_config_->id)->second == primary_config_);
+      DCHECK(primary_config_.get());
+      DCHECK_EQ(configs_.find(primary_config_->id)->second, primary_config_);
     }
 
     // We'll use the config that the client requested in order to do

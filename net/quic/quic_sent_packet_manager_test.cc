@@ -1392,6 +1392,29 @@ TEST_F(QuicSentPacketManagerTest, NegotiateTimeLossDetectionFromOptions) {
                 &manager_)->GetLossDetectionType());
 }
 
+TEST_F(QuicSentPacketManagerTest, NegotiateCongestionControlFromOptions) {
+  QuicConfig config;
+  QuicTagVector options;
+
+  options.push_back(kRENO);
+  QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+  manager_.SetFromConfig(config);
+  EXPECT_EQ(kReno, QuicSentPacketManagerPeer::GetCongestionControlAlgorithm(
+      manager_)->GetCongestionControlType());
+
+  // TODO(rtenneti): Enable the following code after BBR code is checked in.
+#if 0
+  options.clear();
+  options.push_back(kTBBR);
+  QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+  manager_.SetFromConfig(config);
+  EXPECT_EQ(kBBR, QuicSentPacketManagerPeer::GetCongestionControlAlgorithm(
+      manager_)->GetCongestionControlType());
+#endif
+}
+
 TEST_F(QuicSentPacketManagerTest, NegotiatePacingFromOptions) {
   ValueRestore<bool> old_flag(&FLAGS_enable_quic_pacing, true);
   EXPECT_FALSE(manager_.using_pacing());

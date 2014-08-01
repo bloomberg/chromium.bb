@@ -13,6 +13,69 @@
 namespace net {
 
 // TODO(rtenneti): sync with server more rationally.
+// CachedNetworkParameters contains data that can be used to choose appropriate
+// connection parameters (initial RTT, initial CWND, etc.) in new connections.
+class CachedNetworkParameters {
+ public:
+  // Describes the state of the connection during which the supplied network
+  // parameters were calculated.
+  enum PreviousConnectionState {
+    SLOW_START = 0,
+    CONGESTION_AVOIDANCE = 1,
+  };
+
+  CachedNetworkParameters();
+  ~CachedNetworkParameters();
+
+  std::string serving_region() const {
+    return serving_region_;
+  }
+  void set_serving_region(base::StringPiece serving_region) {
+    serving_region_ = serving_region.as_string();
+  }
+
+  int32 bandwidth_estimate_bytes_per_second() const {
+    return bandwidth_estimate_bytes_per_second_;
+  }
+  void set_bandwidth_estimate_bytes_per_second(
+      int32 bandwidth_estimate_bytes_per_second) {
+    bandwidth_estimate_bytes_per_second_ = bandwidth_estimate_bytes_per_second;
+  }
+
+  int32 min_rtt_ms() const {
+    return min_rtt_ms_;
+  }
+  void set_min_rtt_ms(int32 min_rtt_ms) {
+    min_rtt_ms_ = min_rtt_ms;
+  }
+
+  int32 previous_connection_state() const {
+    return previous_connection_state_;
+  }
+  void set_previous_connection_state(int32 previous_connection_state) {
+    previous_connection_state_ = previous_connection_state;
+  }
+
+ private:
+  // serving_region_ is used to decide whether or not the bandwidth estimate and
+  // min RTT are reasonable and if they should be used.
+  // For example a group of geographically close servers may share the same
+  // serving_region_ string if they are expected to have similar network
+  // performance.
+  std::string serving_region_;
+  // The server can supply a bandwidth estimate (in bytes/s) which it may re-use
+  // on receipt of a source-address token with this field set.
+  int32 bandwidth_estimate_bytes_per_second_;
+  // The min RTT seen on a previous connection can be used by the server to
+  // inform initial connection parameters for new connections.
+  int32 min_rtt_ms_;
+  // Encodes the PreviousConnectionState enum.
+  int32 previous_connection_state_;
+};
+
+// TODO(rtenneti): sync with server more rationally.
+// A SourceAddressToken is serialised, encrypted and sent to clients so that
+// they can prove ownership of an IP address.
 class SourceAddressToken {
  public:
   SourceAddressToken();
@@ -25,22 +88,36 @@ class SourceAddressToken {
   std::string ip() const {
     return ip_;
   }
-
-  int64 timestamp() const {
-    return timestamp_;
-  }
-
   void set_ip(base::StringPiece ip) {
     ip_ = ip.as_string();
   }
 
+  int64 timestamp() const {
+    return timestamp_;
+  }
   void set_timestamp(int64 timestamp) {
     timestamp_ = timestamp;
   }
 
+  const CachedNetworkParameters& cached_network_parameters() const {
+    return cached_network_parameters_;
+  }
+  void set_cached_network_parameters(
+      const CachedNetworkParameters& cached_network_parameters) {
+    cached_network_parameters_ = cached_network_parameters;
+  }
+
  private:
+  // ip_ contains either 4 (IPv4) or 16 (IPv6) bytes of IP address in network
+  // byte order.
   std::string ip_;
+  // timestamp_ contains a UNIX timestamp value of the time when the token was
+  // created.
   int64 timestamp_;
+
+  // The server can provide estimated network parameters to be used for
+  // initial parameter selection in future connections.
+  CachedNetworkParameters cached_network_parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(SourceAddressToken);
 };

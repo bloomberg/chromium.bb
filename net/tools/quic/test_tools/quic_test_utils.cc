@@ -23,8 +23,8 @@ MockConnection::MockConnection(bool is_server)
                      IPEndPoint(net::test::Loopback4(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
+                     true  /* owns_writer */,
                      is_server, QuicSupportedVersions()),
-      writer_(QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
 }
 
@@ -33,8 +33,8 @@ MockConnection::MockConnection(IPEndPoint address,
     : QuicConnection(kTestConnectionId, address,
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
+                     true  /* owns_writer */,
                      is_server, QuicSupportedVersions()),
-      writer_(QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
 }
 
@@ -44,8 +44,8 @@ MockConnection::MockConnection(QuicConnectionId connection_id,
                      IPEndPoint(net::test::Loopback4(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
+                     true  /* owns_writer */,
                      is_server, QuicSupportedVersions()),
-      writer_(QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
 }
 
@@ -55,8 +55,8 @@ MockConnection::MockConnection(bool is_server,
                      IPEndPoint(net::test::Loopback4(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
+                     true  /* owns_writer */,
                      is_server, QuicSupportedVersions()),
-      writer_(QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
 }
 
