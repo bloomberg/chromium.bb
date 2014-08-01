@@ -266,7 +266,8 @@
     ],
     'web_unittest_files': [
       'WebNodeTest.cpp',
-      # FIXME: Move the tests to Source/web/.
+      # FIXME: Move the tests from web/tests/ to appropriate places.
+      # crbug.com/353585
       'tests/ActivityLoggerTest.cpp',
       'tests/AssociatedURLLoaderTest.cpp',
       'tests/ChromeClientImplTest.cpp',
