@@ -1,4 +1,4 @@
-importScripts('../../resources/worker-test-helpers.js');
+importScripts('../../resources/worker-test-harness.js');
 
 test(function() {
     assert_false(

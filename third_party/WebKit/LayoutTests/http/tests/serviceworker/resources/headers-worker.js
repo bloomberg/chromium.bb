@@ -1,4 +1,4 @@
-importScripts('worker-test-helpers.js');
+importScripts('worker-test-harness.js');
 
 test(function() {
     var expectedMap = {

@@ -1,24 +1,5 @@
 // Adapter for testharness.js-style tests with Service Workers
 
-function service_worker_test(url, description) {
-    var t = async_test(description);
-    t.step(function() {
-        var scope = 'nonexistent';
-        service_worker_unregister_and_register(t, url, scope).then(t.step_func(onRegistered));
-
-        function onRegistered(worker) {
-            var messageChannel = new MessageChannel();
-            messageChannel.port1.onmessage = t.step_func(onMessage);
-            worker.postMessage({port:messageChannel.port2}, [messageChannel.port2]);
-        }
-
-        function onMessage(e) {
-            assert_equals(e.data, 'pass');
-            service_worker_unregister_and_done(t, scope);
-        }
-    });
-}
-
 function service_worker_unregister_and_register(test, url, scope) {
     var options = scope ? { scope: scope } : {};
     return navigator.serviceWorker.unregister(scope).then(
@@ -75,3 +56,56 @@ function wait_for_state(test, worker, state) {
         }));
     }));
 }
+
+(function() {
+  function fetch_tests_from_worker(worker) {
+    return new Promise(function(resolve, reject) {
+        var messageChannel = new MessageChannel();
+        messageChannel.port1.addEventListener('message', function(message) {
+            if (message.data.type == 'complete') {
+              synthesize_tests(message.data.tests, message.data.status);
+              resolve();
+            }
+          });
+        worker.postMessage({type: 'fetch_results', port: messageChannel.port2},
+                           [messageChannel.port2]);
+        messageChannel.port1.start();
+      });
+  };
+
+  function synthesize_tests(tests, status) {
+    for (var i = 0; i < tests.length; ++i) {
+      var t = async_test(tests[i].name);
+      switch (tests[i].status) {
+        case tests[i].PASS:
+          t.step(function() { assert_true(true); });
+          t.done();
+          break;
+        case tests[i].TIMEOUT:
+          t.force_timeout();
+          break;
+        case tests[i].FAIL:
+          t.step(function() { throw {message: tests[i].message}; });
+          break;
+        case tests[i].NOTRUN:
+          // Leave NOTRUN alone. It'll get marked as a NOTRUN when the test
+          // terminates.
+          break;
+      }
+    }
+  };
+
+  function service_worker_test(url, description) {
+    var scope = window.location.origin + '/service-worker-scope/' +
+      window.location.pathname;
+
+    var test = async_test(description);
+    service_worker_unregister_and_register(test, url, scope)
+      .then(function(worker) { return fetch_tests_from_worker(worker); })
+      .then(function() { return navigator.serviceWorker.unregister(scope); })
+      .then(function() { test.done(); })
+      .catch(test.step_func(function(e) { throw e; }));
+  };
+
+  self.service_worker_test = service_worker_test;
+})();

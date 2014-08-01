@@ -1,5 +1,5 @@
 importScripts('interfaces.js');
-importScripts('worker-test-helpers.js');
+importScripts('worker-test-harness.js');
 
 test(function() {
     var EVENT_HANDLER = 'object';
