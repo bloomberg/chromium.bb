@@ -789,6 +789,8 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
         case CSSSelector::PseudoEnabled:
             if (element.isFormControlElement() || isHTMLOptionElement(element) || isHTMLOptGroupElement(element))
                 return !element.isDisabledFormControl();
+            else if (isHTMLAnchorElement(element) || isHTMLAreaElement(element))
+                return element.isLink();
             break;
         case CSSSelector::PseudoFullPageMedia:
             return element.document().isMediaDocument();
