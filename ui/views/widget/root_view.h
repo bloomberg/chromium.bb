@@ -188,12 +188,8 @@ class VIEWS_EXPORT RootView : public View,
   int last_mouse_event_y_;
 
   // The view currently handling gesture events. When set, this handler receives
-  // all gesture events, except when there is an event handler for the specific
-  // gesture (e.g. scroll).
+  // all gesture events.
   View* gesture_handler_;
-
-  // The view currently handling scroll gesture events.
-  View* scroll_gesture_handler_;
 
   scoped_ptr<internal::PreEventDispatchHandler> pre_dispatch_handler_;
   scoped_ptr<internal::PostEventDispatchHandler> post_dispatch_handler_;
