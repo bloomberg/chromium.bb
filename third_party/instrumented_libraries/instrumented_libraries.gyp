@@ -188,16 +188,12 @@
     },
     {
       'package_name': 'libdbus-1-3',
-      'dependencies=': [
-        '<(_sanitizer_type)-libglib2.0-0',
-      ],
+      'dependencies=': [],
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
       'package_name': 'libdbus-glib-1-2',
-      'dependencies=': [
-        '<(_sanitizer_type)-libglib2.0-0',
-      ],
+      'dependencies=': [],
       # Use system dbus-binding-tool. The just-built one is instrumented but
       # doesn't have the correct RPATH, and will crash.
       'extra_configure_flags': ['--with-dbus-binding-tool=dbus-binding-tool'],
@@ -215,9 +211,7 @@
     },
     {
       'package_name': 'libfontconfig1',
-      'dependencies=': [
-        '<(_sanitizer_type)-freetype',
-      ],
+      'dependencies=': [],
       'extra_configure_flags': [
         '--disable-docs',
         '--sysconfdir=/etc/',
@@ -284,9 +278,7 @@
     },
     {
       'package_name': 'libpixman-1-0',
-      'dependencies=': [
-        '<(_sanitizer_type)-libglib2.0-0',
-      ],
+      'dependencies=': [],
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -387,18 +379,14 @@
     },
     {
       'package_name': 'nss',
-      'dependencies=': [
-        '<(_sanitizer_type)-libnspr4',
-      ],
+      'dependencies=': [],
       'patch': 'patches/nss.diff',
       'build_method': 'custom_nss',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
       'package_name': 'pulseaudio',
-      'dependencies=': [
-        '<(_sanitizer_type)-libdbus-1-3',
-      ],
+      'dependencies=': [],
       'patch': 'patches/pulseaudio.diff',
       'run_before_build': 'scripts/pulseaudio.sh',
       'jobs': 1,
@@ -444,9 +432,7 @@
     },
     {
       'package_name': 'pango1.0',
-      'dependencies=': [
-        '<(_sanitizer_type)-libglib2.0-0',
-      ],
+      'dependencies=': [],
       'extra_configure_flags': [
         # Avoid https://bugs.gentoo.org/show_bug.cgi?id=425620
         '--enable-introspection=no',
