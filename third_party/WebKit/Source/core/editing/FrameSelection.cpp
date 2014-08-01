@@ -472,7 +472,10 @@ void FrameSelection::updateSelectionIfNeeded(const Position& base, const Positio
     if (base == m_selection.base() && extent == m_selection.extent() && start == m_selection.start() && end == m_selection.end())
         return;
     VisibleSelection newSelection;
-    newSelection.setWithoutValidation(base, extent);
+    if (m_selection.isBaseFirst())
+        newSelection.setWithoutValidation(start, end);
+    else
+        newSelection.setWithoutValidation(end, start);
     setSelection(newSelection, DoNotSetFocus);
 }
 
