@@ -24,7 +24,7 @@
       ],
     },
     {
-      # GN version: //ppapi:ppapi_cpp_objects
+      # GN version: //ppapi:ppapi_cpp_pbjects
       'target_name': 'ppapi_cpp_objects',
       'type': 'static_library',
       'dependencies': [
@@ -82,18 +82,6 @@
            },
         }]
       ],
-    },
-    {
-      # GN version: //ppapi:ppapi_internal_module
-      'target_name': 'ppapi_internal_module',
-      'type': 'static_library',
-      'include_dirs+': [
-        '..',
-      ],
-      'sources': [
-        'cpp/private/internal_module.cc',
-        'cpp/private/internal_module.h',
-      ]
     },
   ],
 }

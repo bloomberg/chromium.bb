@@ -83,6 +83,7 @@ SRC_NAMES=(
     "crash_report_sender.app"
     "exif.so"
     "ffmpegsumo.so"
+    "ppGoogleNaClPluginChrome.plugin"
 )
 
 # PDF.plugin is optional. Only include it if present.

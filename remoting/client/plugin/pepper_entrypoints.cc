@@ -11,8 +11,17 @@
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
-#include "ppapi/cpp/private/internal_module.h"
 #include "remoting/client/plugin/chromoting_instance.h"
+
+static pp::Module* g_module_singleton = NULL;
+
+namespace pp {
+
+Module* Module::Get() {
+  return g_module_singleton;
+}
+
+}  // namespace pp
 
 namespace remoting {
 
@@ -37,13 +46,13 @@ int32_t PPP_InitializeModule(PP_Module module_id,
   ChromotingInstance::RegisterLogMessageHandler();
 #endif
 
-  pp::InternalSetModuleSingleton(module);
+  g_module_singleton = module;
   return PP_OK;
 }
 
 void PPP_ShutdownModule() {
   delete pp::Module::Get();
-  pp::InternalSetModuleSingleton(NULL);
+  g_module_singleton = NULL;
 }
 
 const void* PPP_GetInterface(const char* interface_name) {

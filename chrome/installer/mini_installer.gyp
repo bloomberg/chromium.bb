@@ -198,6 +198,7 @@
                 ['disable_nacl==1', {
                   'inputs!': [
                     '<(PRODUCT_DIR)/nacl64.exe',
+                    '<(PRODUCT_DIR)/ppGoogleNaClPluginChrome.dll',
                     '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
                     '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
                   ],
@@ -230,6 +231,7 @@
                 '<(PRODUCT_DIR)/chrome.exe',
                 '<(PRODUCT_DIR)/chrome.dll',
                 '<(PRODUCT_DIR)/nacl64.exe',
+                '<(PRODUCT_DIR)/ppGoogleNaClPluginChrome.dll',
                 '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
                 '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
                 '<(PRODUCT_DIR)/locales/en-US.pak',

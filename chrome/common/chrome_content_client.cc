@@ -49,10 +49,6 @@
 #include "components/nacl/common/nacl_sandbox_type_mac.h"
 #endif
 
-#if !defined(DISABLE_NACL)
-#include "ppapi/native_client/src/trusted/plugin/ppapi_entrypoints.h"
-#endif
-
 #if defined(ENABLE_REMOTING)
 #include "remoting/client/plugin/pepper_entrypoints.h"
 #endif
@@ -74,7 +70,6 @@ const char kPDFPluginOutOfProcessMimeType[] =
 const uint32 kPDFPluginPermissions = ppapi::PERMISSION_PRIVATE |
                                      ppapi::PERMISSION_DEV;
 
-#if !defined(DISABLE_NACL)
 const char kNaClPluginMimeType[] = "application/x-nacl";
 const char kNaClPluginExtension[] = "";
 const char kNaClPluginDescription[] = "Native Client Executable";
@@ -84,7 +79,6 @@ const uint32 kNaClPluginPermissions = ppapi::PERMISSION_PRIVATE |
 const char kPnaclPluginMimeType[] = "application/x-pnacl";
 const char kPnaclPluginExtension[] = "";
 const char kPnaclPluginDescription[] = "Portable Native Client Executable";
-#endif  // !defined(DISABLE_NACL)
 
 const char kO1DPluginName[] = "Google Talk Plugin Video Renderer";
 const char kO1DPluginMimeType[] ="application/o1d";
@@ -172,34 +166,30 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
     }
   }
 
-#if !defined(DISABLE_NACL)
   // Handle Native Client just like the PDF plugin. This means that it is
   // enabled by default for the non-portable case.  This allows apps installed
   // from the Chrome Web Store to use NaCl even if the command line switch
   // isn't set.  For other uses of NaCl we check for the command line switch.
+  static bool skip_nacl_file_check = false;
   if (PathService::Get(chrome::FILE_NACL_PLUGIN, &path)) {
-    content::PepperPluginInfo nacl;
-    // The nacl plugin is now built into the Chromium binary.
-    nacl.is_internal = true;
-    nacl.path = path;
-    nacl.name = ChromeContentClient::kNaClPluginName;
-    content::WebPluginMimeType nacl_mime_type(kNaClPluginMimeType,
-                                              kNaClPluginExtension,
-                                              kNaClPluginDescription);
-    nacl.mime_types.push_back(nacl_mime_type);
-    content::WebPluginMimeType pnacl_mime_type(kPnaclPluginMimeType,
-                                               kPnaclPluginExtension,
-                                               kPnaclPluginDescription);
-    nacl.mime_types.push_back(pnacl_mime_type);
-    nacl.internal_entry_points.get_interface = nacl_plugin::PPP_GetInterface;
-    nacl.internal_entry_points.initialize_module =
-        nacl_plugin::PPP_InitializeModule;
-    nacl.internal_entry_points.shutdown_module =
-        nacl_plugin::PPP_ShutdownModule;
-    nacl.permissions = kNaClPluginPermissions;
-    plugins->push_back(nacl);
+    if (skip_nacl_file_check || base::PathExists(path)) {
+      content::PepperPluginInfo nacl;
+      nacl.path = path;
+      nacl.name = ChromeContentClient::kNaClPluginName;
+      content::WebPluginMimeType nacl_mime_type(kNaClPluginMimeType,
+                                                kNaClPluginExtension,
+                                                kNaClPluginDescription);
+      nacl.mime_types.push_back(nacl_mime_type);
+      content::WebPluginMimeType pnacl_mime_type(kPnaclPluginMimeType,
+                                                 kPnaclPluginExtension,
+                                                 kPnaclPluginDescription);
+      nacl.mime_types.push_back(pnacl_mime_type);
+      nacl.permissions = kNaClPluginPermissions;
+      plugins->push_back(nacl);
+
+      skip_nacl_file_check = true;
+    }
   }
-#endif  // !defined(DISABLE_NACL)
 
   static bool skip_o1d_file_check = false;
   if (PathService::Get(chrome::FILE_O1D_PLUGIN, &path)) {

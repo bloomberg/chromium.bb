@@ -60,8 +60,16 @@ const base::FilePath::CharType kInternalPDFPluginFileName[] =
     FILE_PATH_LITERAL("libpdf.so");
 #endif
 
+// File name of the internal NaCl plugin on different platforms.
 const base::FilePath::CharType kInternalNaClPluginFileName[] =
-    FILE_PATH_LITERAL("internal-nacl-plugin");
+#if defined(OS_WIN)
+    FILE_PATH_LITERAL("ppGoogleNaClPluginChrome.dll");
+#elif defined(OS_MACOSX)
+    // TODO(noelallen) Please verify this extention name is correct.
+    FILE_PATH_LITERAL("ppGoogleNaClPluginChrome.plugin");
+#else  // Linux and Chrome OS
+    FILE_PATH_LITERAL("libppGoogleNaClPluginChrome.so");
+#endif
 
 const base::FilePath::CharType kEffectsPluginFileName[] =
 #if defined(OS_WIN)
@@ -304,9 +312,6 @@ bool PathProvider(int key, base::FilePath* result) {
         return false;
       cur = cur.Append(kEffectsPluginFileName);
       break;
-    // TODO(teravest): Remove this case once the internal NaCl plugin is gone.
-    // We currently need a path here to look up whether the plugin is disabled
-    // and what its permissions are.
     case chrome::FILE_NACL_PLUGIN:
       if (!GetInternalPluginsDirectory(&cur))
         return false;

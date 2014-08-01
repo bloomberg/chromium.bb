@@ -457,6 +457,7 @@
           '<(PRODUCT_DIR)/chrome_sandbox',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libpdf.so',
+          '<(PRODUCT_DIR)/libppGoogleNaClPluginChrome.so',
           '<(PRODUCT_DIR)/xdg-mime',
           '<(PRODUCT_DIR)/xdg-settings',
           '<(PRODUCT_DIR)/locales/en-US.pak',
