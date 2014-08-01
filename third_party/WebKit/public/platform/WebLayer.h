@@ -30,6 +30,7 @@
 #include "WebBlendMode.h"
 #include "WebColor.h"
 #include "WebCommon.h"
+#include "WebCompositorAnimationDelegate.h"
 #include "WebFloatPoint3D.h"
 #include "WebPoint.h"
 #include "WebRect.h"
@@ -41,7 +42,6 @@ class SkMatrix44;
 class SkImageFilter;
 
 namespace blink {
-class WebAnimationDelegate;
 class WebFilterOperations;
 class WebLayerClient;
 class WebLayerScrollClient;
@@ -136,7 +136,7 @@ public:
 
     // Returns false if the animation cannot be added.
     // Takes ownership of the WebAnimation object.
-    virtual bool addAnimation(WebAnimation*) = 0;
+    virtual bool addAnimation(WebCompositorAnimation*) = 0;
 
     // Removes all animations with the given id.
     virtual void removeAnimation(int animationId) = 0;

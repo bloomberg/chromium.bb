@@ -33,6 +33,8 @@
 #include "wtf/Forward.h"
 #endif
 
+#define WebCompositorAnimation WebAnimation
+
 namespace blink {
 class CCActiveAnimation;
 }

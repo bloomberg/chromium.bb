@@ -87,7 +87,7 @@ public:
 
     // Animation ----------------------------------------------------
 
-    virtual WebAnimation* createAnimation(const WebAnimationCurve&, WebAnimation::TargetProperty, int animationId = 0) { return 0; }
+    virtual WebCompositorAnimation* createAnimation(const WebCompositorAnimationCurve&, WebCompositorAnimation::TargetProperty, int animationId = 0) { return 0; }
 
     virtual WebFilterAnimationCurve* createFilterAnimationCurve() { return 0; }
 

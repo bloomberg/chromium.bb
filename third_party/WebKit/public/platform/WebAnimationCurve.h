@@ -27,6 +27,7 @@
 
 #include "WebCommon.h"
 
+#define WebCompositorAnimationCurve WebAnimationCurve
 #define WEB_SCROLL_OFFSET_ANIMATION_CURVE_IS_DEFINED 1
 
 namespace blink {

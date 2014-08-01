@@ -27,6 +27,7 @@
 
 #include "WebAnimation.h"
 
+#define WebCompositorAnimationDelegate WebAnimationDelegate
 #define WEB_ANIMATION_DELEGATE_TAKES_MONOTONIC_TIME 1
 
 namespace blink {
