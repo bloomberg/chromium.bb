@@ -258,7 +258,7 @@ perspective-origin custom_all
 -webkit-text-security
 -webkit-text-stroke-color custom_all
 -webkit-text-stroke-width converter=convertTextStrokeWidth
-text-underline-position custom_value
+text-underline-position type_name=TextUnderlinePosition
 transform custom_value
 -webkit-transform use_handlers_for=CSSPropertyTransform
 transform-origin custom_all

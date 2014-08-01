@@ -345,8 +345,8 @@ enum TextJustify {
 
 enum TextUnderlinePosition {
     // FIXME: Implement support for 'under left' and 'under right' values.
-    TextUnderlinePositionAuto = 0x1,
-    TextUnderlinePositionUnder = 0x2
+    TextUnderlinePositionAuto,
+    TextUnderlinePositionUnder
 };
 
 enum EPageBreak {

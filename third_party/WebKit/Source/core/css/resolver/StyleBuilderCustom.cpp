@@ -1066,24 +1066,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextEmphasisStyle(StyleRe
     }
 }
 
-void StyleBuilderFunctions::applyValueCSSPropertyTextUnderlinePosition(StyleResolverState& state, CSSValue* value)
-{
-    // This is true if value is 'auto' or 'alphabetic'.
-    if (value->isPrimitiveValue()) {
-        TextUnderlinePosition t = *toCSSPrimitiveValue(value);
-        state.style()->setTextUnderlinePosition(t);
-        return;
-    }
-
-    unsigned t = 0;
-    for (CSSValueListIterator i(value); i.hasMore(); i.advance()) {
-        CSSValue* item = i.value();
-        TextUnderlinePosition t2 = *toCSSPrimitiveValue(item);
-        t |= t2;
-    }
-    state.style()->setTextUnderlinePosition(static_cast<TextUnderlinePosition>(t));
-}
-
 void StyleBuilderFunctions::applyInitialCSSPropertyWillChange(StyleResolverState& state)
 {
     state.style()->setWillChangeContents(false);
