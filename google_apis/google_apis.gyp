@@ -37,20 +37,6 @@
             'GOOGLE_DEFAULT_CLIENT_SECRET="<(google_default_client_secret)"',
           ]
         }],
-        ['OS=="mac" or OS=="ios" or OS=="win"', {
-          'dependencies': [
-            '../third_party/nss/nss.gyp:nspr',
-            '../third_party/nss/nss.gyp:nss',
-          ],
-        }],
-        ['OS=="android"', {
-          'dependencies': [
-            '../third_party/boringssl/boringssl.gyp:boringssl',
-          ],
-          'sources/': [
-            ['exclude', 'cup/client_update_protocol_nss\.cc$'],
-          ],
-        }],
         ['enable_extensions==1', {
           'sources': [
             'drive/auth_service.cc',
@@ -84,21 +70,8 @@
             'drive/time_util.h',
           ],
         }],
-        ['use_openssl==1', {
-          'sources!': [
-            'cup/client_update_protocol_nss.cc',
-          ],
-        }, {
-          'sources!': [
-            'cup/client_update_protocol_openssl.cc',
-          ],
-        }],
       ],
       'sources': [
-        'cup/client_update_protocol.cc',
-        'cup/client_update_protocol.h',
-        'cup/client_update_protocol_nss.cc',
-        'cup/client_update_protocol_openssl.cc',
         'gaia/account_tracker.cc',
         'gaia/account_tracker.h',
         'gaia/gaia_auth_consumer.cc',
@@ -162,7 +135,6 @@
       ],
       'sources': [
         'google_api_keys_unittest.cc',
-        'cup/client_update_protocol_unittest.cc',
         'gaia/account_tracker_unittest.cc',
         'gaia/gaia_auth_fetcher_unittest.cc',
         'gaia/gaia_auth_util_unittest.cc',

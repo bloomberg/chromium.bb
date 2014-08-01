@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 
 declare_args() {
@@ -78,8 +77,6 @@ config("key_defines") {
 
 source_set("google_apis") {
   sources = [
-    "cup/client_update_protocol.cc",
-    "cup/client_update_protocol.h",
     "gaia/gaia_auth_consumer.cc",
     "gaia/gaia_auth_consumer.h",
     "gaia/gaia_auth_fetcher.cc",
@@ -128,16 +125,9 @@ source_set("google_apis") {
   deps = [
     "//base",
     "//crypto",
-    "//crypto:platform",
     "//net",
     "//third_party/libxml",
   ]
-
-  if (use_openssl) {
-    sources += [ "cup/client_update_protocol_openssl.cc" ]
-  } else {
-    sources += [ "cup/client_update_protocol_nss.cc" ]
-  }
 
   if (enable_extensions) {
     sources += [
@@ -208,7 +198,6 @@ source_set("test_support") {
 test("google_apis_unittest") {
   sources = [
     "google_api_keys_unittest.cc",
-    "cup/client_update_protocol_unittest.cc",
     "gaia/gaia_auth_fetcher_unittest.cc",
     "gaia/gaia_auth_util_unittest.cc",
     "gaia/gaia_oauth_client_unittest.cc",
