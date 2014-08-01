@@ -10,6 +10,7 @@
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_fetch_stores_manager.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
@@ -21,6 +22,10 @@
 #include "url/gurl.h"
 
 namespace content {
+
+const base::FilePath::CharType
+    ServiceWorkerContextCore::kServiceWorkerDirectory[] =
+        FILE_PATH_LITERAL("Service Worker");
 
 ServiceWorkerContextCore::ProviderHostIterator::~ProviderHostIterator() {}
 
@@ -78,6 +83,7 @@ void ServiceWorkerContextCore::ProviderHostIterator::Initialize() {
 
 ServiceWorkerContextCore::ServiceWorkerContextCore(
     const base::FilePath& path,
+    base::SequencedTaskRunner* stores_task_runner,
     base::SequencedTaskRunner* database_task_runner,
     base::MessageLoopProxy* disk_cache_thread,
     quota::QuotaManagerProxy* quota_manager_proxy,
@@ -92,6 +98,8 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
           database_task_runner,
           disk_cache_thread,
           quota_manager_proxy)),
+      fetch_stores_manager_(
+          ServiceWorkerFetchStoresManager::Create(path, stores_task_runner)),
       embedded_worker_registry_(EmbeddedWorkerRegistry::Create(AsWeakPtr())),
       job_coordinator_(new ServiceWorkerJobCoordinator(AsWeakPtr())),
       next_handle_id_(0),
@@ -104,9 +112,10 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     : weak_factory_(this),
       wrapper_(wrapper),
       providers_(old_context->providers_.release()),
-      storage_(ServiceWorkerStorage::Create(
-          AsWeakPtr(),
-          old_context->storage())),
+      storage_(
+          ServiceWorkerStorage::Create(AsWeakPtr(), old_context->storage())),
+      fetch_stores_manager_(ServiceWorkerFetchStoresManager::Create(
+          old_context->fetch_stores_manager())),
       embedded_worker_registry_(EmbeddedWorkerRegistry::Create(
           AsWeakPtr(),
           old_context->embedded_worker_registry())),

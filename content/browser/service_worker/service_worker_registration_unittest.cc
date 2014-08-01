@@ -25,6 +25,7 @@ class ServiceWorkerRegistrationTest : public testing::Test {
         new ServiceWorkerContextCore(base::FilePath(),
                                      base::MessageLoopProxy::current(),
                                      base::MessageLoopProxy::current(),
+                                     base::MessageLoopProxy::current(),
                                      NULL,
                                      NULL,
                                      NULL));

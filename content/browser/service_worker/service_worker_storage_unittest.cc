@@ -196,6 +196,7 @@ class ServiceWorkerStorageTest : public testing::Test {
         new ServiceWorkerContextCore(GetUserDataDirectory(),
                                      base::MessageLoopProxy::current(),
                                      base::MessageLoopProxy::current(),
+                                     base::MessageLoopProxy::current(),
                                      NULL,
                                      NULL,
                                      NULL));
@@ -795,6 +796,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, MAYBE_CleanupOnRestart) {
   // stale.
   context_.reset();
   context_.reset(new ServiceWorkerContextCore(GetUserDataDirectory(),
+                                              base::MessageLoopProxy::current(),
                                               base::MessageLoopProxy::current(),
                                               base::MessageLoopProxy::current(),
                                               NULL,

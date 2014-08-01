@@ -27,6 +27,7 @@ class ServiceWorkerProviderHostTest : public testing::Test {
         new ServiceWorkerContextCore(base::FilePath(),
                                      base::MessageLoopProxy::current(),
                                      base::MessageLoopProxy::current(),
+                                     base::MessageLoopProxy::current(),
                                      NULL,
                                      NULL,
                                      NULL));
@@ -161,6 +162,7 @@ class ServiceWorkerProviderHostWaitingVersionTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     context_.reset(
         new ServiceWorkerContextCore(base::FilePath(),
+                                     base::MessageLoopProxy::current(),
                                      base::MessageLoopProxy::current(),
                                      base::MessageLoopProxy::current(),
                                      NULL,

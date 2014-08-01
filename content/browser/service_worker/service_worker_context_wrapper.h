@@ -81,6 +81,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   virtual ~ServiceWorkerContextWrapper();
 
   void InitInternal(const base::FilePath& user_data_directory,
+                    base::SequencedTaskRunner* stores_task_runner,
                     base::SequencedTaskRunner* database_task_runner,
                     base::MessageLoopProxy* disk_cache_thread,
                     quota::QuotaManagerProxy* quota_manager_proxy);

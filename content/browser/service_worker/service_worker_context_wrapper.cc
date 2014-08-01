@@ -37,8 +37,16 @@ void ServiceWorkerContextWrapper::Init(
               base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   scoped_refptr<base::MessageLoopProxy> disk_cache_thread =
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE);
-  InitInternal(user_data_directory, database_task_runner,
-               disk_cache_thread, quota_manager_proxy);
+  scoped_refptr<base::SequencedTaskRunner> stores_task_runner =
+      BrowserThread::GetBlockingPool()
+          ->GetSequencedTaskRunnerWithShutdownBehavior(
+              BrowserThread::GetBlockingPool()->GetSequenceToken(),
+              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+  InitInternal(user_data_directory,
+               stores_task_runner,
+               database_task_runner,
+               disk_cache_thread,
+               quota_manager_proxy);
 }
 
 void ServiceWorkerContextWrapper::Shutdown() {
@@ -143,6 +151,7 @@ void ServiceWorkerContextWrapper::RemoveObserver(
 
 void ServiceWorkerContextWrapper::InitInternal(
     const base::FilePath& user_data_directory,
+    base::SequencedTaskRunner* stores_task_runner,
     base::SequencedTaskRunner* database_task_runner,
     base::MessageLoopProxy* disk_cache_thread,
     quota::QuotaManagerProxy* quota_manager_proxy) {
@@ -153,6 +162,7 @@ void ServiceWorkerContextWrapper::InitInternal(
         base::Bind(&ServiceWorkerContextWrapper::InitInternal,
                    this,
                    user_data_directory,
+                   make_scoped_refptr(stores_task_runner),
                    make_scoped_refptr(database_task_runner),
                    make_scoped_refptr(disk_cache_thread),
                    make_scoped_refptr(quota_manager_proxy)));
@@ -160,6 +170,7 @@ void ServiceWorkerContextWrapper::InitInternal(
   }
   DCHECK(!context_core_);
   context_core_.reset(new ServiceWorkerContextCore(user_data_directory,
+                                                   stores_task_runner,
                                                    database_task_runner,
                                                    disk_cache_thread,
                                                    quota_manager_proxy,

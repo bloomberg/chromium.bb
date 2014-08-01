@@ -49,8 +49,6 @@ void CompleteFindSoon(
   RunSoon(from_here, base::Bind(callback, status, registration));
 }
 
-const base::FilePath::CharType kServiceWorkerDirectory[] =
-    FILE_PATH_LITERAL("Service Worker");
 const base::FilePath::CharType kDatabaseName[] =
     FILE_PATH_LITERAL("Database");
 const base::FilePath::CharType kDiskCacheName[] =
@@ -648,13 +646,15 @@ ServiceWorkerStorage::ServiceWorkerStorage(
 base::FilePath ServiceWorkerStorage::GetDatabasePath() {
   if (path_.empty())
     return base::FilePath();
-  return path_.Append(kServiceWorkerDirectory).Append(kDatabaseName);
+  return path_.Append(ServiceWorkerContextCore::kServiceWorkerDirectory)
+      .Append(kDatabaseName);
 }
 
 base::FilePath ServiceWorkerStorage::GetDiskCachePath() {
   if (path_.empty())
     return base::FilePath();
-  return path_.Append(kServiceWorkerDirectory).Append(kDiskCacheName);
+  return path_.Append(ServiceWorkerContextCore::kServiceWorkerDirectory)
+      .Append(kDiskCacheName);
 }
 
 bool ServiceWorkerStorage::LazyInitialize(const base::Closure& callback) {

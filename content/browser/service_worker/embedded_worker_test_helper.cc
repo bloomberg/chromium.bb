@@ -26,6 +26,7 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(int mock_render_process_id)
   wrapper_->InitInternal(base::FilePath(),
                          base::MessageLoopProxy::current(),
                          base::MessageLoopProxy::current(),
+                         base::MessageLoopProxy::current(),
                          NULL);
   wrapper_->process_manager()->SetProcessIdForTest(mock_render_process_id);
   registry()->AddChildProcessSender(mock_render_process_id, this);
