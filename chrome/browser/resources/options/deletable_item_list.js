@@ -137,17 +137,8 @@ cr.define('options', function() {
       var target = e.target;
       if (target.classList.contains('row-delete-button')) {
         var listItem = this.getListItemAncestor(target);
-        var selected = this.selectionModel.selectedIndexes;
-
-        // Check if the list item that contains the close button being clicked
-        // is not in the list of selected items. Only delete this item in that
-        // case.
         var idx = this.getIndexOfListItem(listItem);
-        if (selected.indexOf(idx) == -1) {
-          this.deleteItemAtIndex(idx);
-        } else {
-          this.deleteSelectedItems_();
-        }
+        this.deleteItemAtIndex(idx);
       }
     },
 
