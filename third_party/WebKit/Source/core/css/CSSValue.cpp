@@ -59,6 +59,11 @@
 namespace blink {
 
 struct SameSizeAsCSSValue : public RefCountedWillBeGarbageCollectedFinalized<SameSizeAsCSSValue>
+// FIXME: Figure out why only win builds with oilpan increase sizeof(CSSValue).
+// Deriving ScriptWrappableBase should not increase sizeof(CSSValue).
+#if ENABLE(OILPAN) && OS(WIN)
+    , public ScriptWrappableBase
+#endif
 {
     uint32_t bitfields;
 };
