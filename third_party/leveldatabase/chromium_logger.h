@@ -54,7 +54,7 @@ class ChromiumLogger : public Logger {
                     t.minute,
                     t.second,
                     t.millisecond,
-                    static_cast<long long unsigned int>(thread_id));
+                    static_cast<uint64>(thread_id));
 
       // Print the message
       if (p < limit) {

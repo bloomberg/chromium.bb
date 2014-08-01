@@ -90,6 +90,7 @@
       'sources': [
         # Include and then exclude so that all files show up in IDEs, even if
         # they don't build.
+        'chromium_logger.h',
         'env_chromium.cc',
         'env_chromium.h',
         'env_chromium_stdio.cc',
