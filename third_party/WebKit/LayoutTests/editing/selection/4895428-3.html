@@ -1,21 +1,33 @@
-<p>We delay focus until mouse up if the mouse down occurs inside a focusable node that is inside an already focused node. But we shouldn't delay focus unless the mouse down occurs in an already focused node.  The text field below should be focused. <b>To run manually, select everything from 'foo' though 'baz', then mouse down inside the text field.</b></p>
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<div id="container">
+<p>We delay focus until mouse up if the mouse down occurs inside a focusable node that is inside an already focused node. But we shouldn't delay focus unless the mouse down occurs in an already focused node.
+</p>
+<p>To run manually,
+<ol>
+<li>Select everything from 'foo' though 'baz'</li>
+<li>Mouse down inside the text field.</li>
+<li>The text field should be focused.</li>
+</ol>
+</ol>
+</p>
 <div id="div"><div>foo</div><input type="text" id="field"><div>baz</div></div>
-
+</div>
 <script>
-function runTest() {
-    if (!window.testRunner)
-        return;
-    var field = document.getElementById("field");
-    var div = document.getElementById("div");
+if (window.testRunner) {
+    var field = document.getElementById('field');
+    var div = document.getElementById('div');
     var selection = window.getSelection();
-    selection.setBaseAndExtent(div, 0, div, div.childNodes.length);
+    selection.collapse(div, 0);
+    selection.extend(div, div.childNodes.length);
 
-    var x, y;
-    x = field.offsetParent.offsetLeft + field.offsetLeft + field.offsetWidth / 2;
-    y = field.offsetParent.offsetTop + field.offsetTop + field.offsetHeight / 2;
+    var x = field.offsetParent.offsetLeft + field.offsetLeft + field.offsetWidth / 2;
+    var y = field.offsetParent.offsetTop + field.offsetTop + field.offsetHeight / 2;
     eventSender.mouseMoveTo(x, y);
     eventSender.mouseDown();
-}
 
-runTest();
+    shouldBe('document.activeElement', 'field');
+
+    document.getElementById('container').outerHTML = '';
+}
 </script>

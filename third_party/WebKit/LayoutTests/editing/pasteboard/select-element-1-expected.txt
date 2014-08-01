@@ -1,15 +1,13 @@
-EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
-EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
-EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
-EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
-EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
-EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
-EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
-EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 This tests copy/paste of select elements. All the options should be included.
 
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-Passed
-Passed
-Passed
-Passed
+
+PASS document.getElementById("select") === null is true
+PASS select.options[0].value is "One"
+PASS select.options[1].value is "Two"
+PASS select.options[2].value is "Three"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
