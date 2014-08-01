@@ -477,7 +477,6 @@ public:
     bool isInTopLayer() const { return hasElementFlag(IsInTopLayer); }
     void setIsInTopLayer(bool);
 
-    void webkitRequestPointerLock();
     void requestPointerLock();
 
     bool isSpellCheckingEnabled() const;

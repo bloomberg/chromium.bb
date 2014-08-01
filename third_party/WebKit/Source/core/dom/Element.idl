@@ -121,7 +121,6 @@
     // W3C version
     [LogActivity, LogAllWorlds, MeasureAs=PrefixedElementRequestFullscreen] void webkitRequestFullscreen();
 
-    [MeasureAs=PrefixedElementRequestPointerLock] void webkitRequestPointerLock();
     [MeasureAs=ElementRequestPointerLock] void requestPointerLock();
 
     // Event handler attributes

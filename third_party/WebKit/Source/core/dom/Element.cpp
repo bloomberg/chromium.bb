@@ -2706,12 +2706,6 @@ void Element::setIsInTopLayer(bool inTopLayer)
     lazyReattachIfAttached();
 }
 
-void Element::webkitRequestPointerLock()
-{
-    if (document().page())
-        document().page()->pointerLockController().requestPointerLock(this);
-}
-
 void Element::requestPointerLock()
 {
     if (document().page())
