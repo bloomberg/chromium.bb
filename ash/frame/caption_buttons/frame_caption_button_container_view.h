@@ -9,8 +9,13 @@
 
 #include "ash/ash_export.h"
 #include "ash/frame/caption_buttons/frame_size_button_delegate.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
+
+namespace gfx {
+class SlideAnimation;
+}
 
 namespace views {
 class Widget;
@@ -23,7 +28,8 @@ namespace ash {
 class ASH_EXPORT FrameCaptionButtonContainerView
     : public views::View,
       public views::ButtonListener,
-      public FrameSizeButtonDelegate {
+      public FrameSizeButtonDelegate,
+      public gfx::AnimationDelegate {
  public:
   static const char kViewClassName[];
 
@@ -42,11 +48,13 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   virtual ~FrameCaptionButtonContainerView();
 
   // For testing.
-  class TestApi {
+  class ASH_EXPORT TestApi {
    public:
     explicit TestApi(FrameCaptionButtonContainerView* container_view)
         : container_view_(container_view) {
     }
+
+    void EndAnimations();
 
     FrameCaptionButton* minimize_button() const {
       return container_view_->minimize_button_;
@@ -97,6 +105,10 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   virtual void Layout() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
 
+  // Overridden from gfx::AnimationDelegate:
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+
  private:
   friend class FrameCaptionButtonContainerViewTest;
 
@@ -121,6 +133,10 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   void SetButtonIcon(FrameCaptionButton* button,
                      CaptionButtonIcon icon,
                      Animate animate);
+
+  // Returns true if maximize mode is not enabled, and |frame_| widget delegate
+  // can be maximized.
+  bool ShouldSizeButtonBeVisible() const;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
@@ -150,6 +166,10 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   // Mapping of the images needed to paint a button for each of the values of
   // CaptionButtonIcon.
   std::map<CaptionButtonIcon, ButtonIconIds> button_icon_id_map_;
+
+  // Animation that affects the position of |minimize_button_| and the
+  // visibility of |size_button_|.
+  scoped_ptr<gfx::SlideAnimation> maximize_mode_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameCaptionButtonContainerView);
 };

@@ -58,6 +58,7 @@ class BrowserNonClientFrameViewAsh
   virtual const char* GetClassName() const OVERRIDE;
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
+  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
 
   // ash::ShellObserver:
   virtual void OnMaximizeModeStarted() OVERRIDE;

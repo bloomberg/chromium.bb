@@ -5,8 +5,11 @@
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 
 #include "ash/frame/caption_buttons/frame_caption_button.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "grit/ash_resources.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -16,7 +19,7 @@ namespace {
 
 class TestWidgetDelegate : public views::WidgetDelegateView {
  public:
-  TestWidgetDelegate(bool can_maximize) : can_maximize_(can_maximize) {
+  explicit TestWidgetDelegate(bool can_maximize) : can_maximize_(can_maximize) {
   }
   virtual ~TestWidgetDelegate() {
   }
@@ -143,6 +146,67 @@ TEST_F(FrameCaptionButtonContainerViewTest, ButtonVisibility) {
   EXPECT_TRUE(t3.close_button()->visible());
   EXPECT_TRUE(CheckButtonsAtEdges(
       &container3, *t3.close_button(), *t3.close_button()));
+}
+
+// Tests that the layout animations trigered by button visibility result in the
+// correct placement of the buttons.
+TEST_F(FrameCaptionButtonContainerViewTest,
+       TestUpdateSizeButtonVisibilityAnimation) {
+  scoped_ptr<views::Widget> widget_can_maximize(
+      CreateTestWidget(MAXIMIZE_ALLOWED));
+  FrameCaptionButtonContainerView container(widget_can_maximize.get(),
+      FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
+  SetMockImages(&container);
+  container.SetBoundsRect(gfx::Rect(container.GetPreferredSize()));
+  container.Layout();
+
+  FrameCaptionButtonContainerView::TestApi test(&container);
+  gfx::Rect initial_minimize_button_bounds = test.minimize_button()->bounds();
+  gfx::Rect initial_size_button_bounds = test.size_button()->bounds();
+  gfx::Rect initial_close_button_bounds = test.close_button()->bounds();
+  gfx::Rect initial_container_bounds = container.bounds();
+
+  ASSERT_EQ(initial_size_button_bounds.x(),
+            initial_minimize_button_bounds.right());
+  ASSERT_EQ(initial_close_button_bounds.x(),
+            initial_size_button_bounds.right());
+
+  // Hidden size button should result in minimize button animating to the
+  // right. The size button should not be visible, but should not have moved.
+  Shell::GetInstance()->maximize_mode_controller()->
+      EnableMaximizeModeWindowManager(true);
+  container.UpdateSizeButtonVisibility();
+  test.EndAnimations();
+  // Parent needs to layout in response to size change.
+  container.Layout();
+
+  EXPECT_TRUE(test.minimize_button()->visible());
+  EXPECT_FALSE(test.size_button()->visible());
+  EXPECT_TRUE(test.close_button()->visible());
+  gfx::Rect minimize_button_bounds = test.minimize_button()->bounds();
+  gfx::Rect close_button_bounds = test.close_button()->bounds();
+  EXPECT_EQ(close_button_bounds.x(), minimize_button_bounds.right());
+  EXPECT_EQ(initial_size_button_bounds, test.size_button()->bounds());
+  EXPECT_EQ(initial_close_button_bounds.size(), close_button_bounds.size());
+  EXPECT_LT(container.GetPreferredSize().width(),
+            initial_container_bounds.width());
+
+  // Revealing the size button should cause the minimize button to return to its
+  // original position.
+  Shell::GetInstance()->maximize_mode_controller()->
+      EnableMaximizeModeWindowManager(false);
+  container.UpdateSizeButtonVisibility();
+  // Calling code needs to layout in response to size change.
+  container.Layout();
+  test.EndAnimations();
+  EXPECT_TRUE(test.minimize_button()->visible());
+  EXPECT_TRUE(test.size_button()->visible());
+  EXPECT_TRUE(test.close_button()->visible());
+  EXPECT_EQ(initial_minimize_button_bounds, test.minimize_button()->bounds());
+  EXPECT_EQ(initial_size_button_bounds, test.size_button()->bounds());
+  EXPECT_EQ(initial_close_button_bounds, test.close_button()->bounds());
+  EXPECT_EQ(container.GetPreferredSize().width(),
+            initial_container_bounds.width());
 }
 
 }  // namespace ash

@@ -81,6 +81,12 @@ class TestWidgetConstraintsDelegate : public TestWidgetDelegate {
         bounds();
   }
 
+  void EndFrameCaptionButtonContainerViewAnimations() {
+    FrameCaptionButtonContainerView::TestApi test(custom_frame_view()->
+        GetFrameCaptionButtonContainerViewForTest());
+    test.EndAnimations();
+  }
+
   int GetTitleBarHeight() const {
     return custom_frame_view()->NonClientTopBorderHeight();
   }
@@ -212,11 +218,13 @@ TEST_F(CustomFrameViewAshTest, HeaderViewNotifiedOfChildSizeChange) {
       GetFrameCaptionButtonContainerViewBounds();
   Shell::GetInstance()->maximize_mode_controller()->
       EnableMaximizeModeWindowManager(true);
+  delegate->EndFrameCaptionButtonContainerViewAnimations();
   const gfx::Rect maximize_mode_bounds = delegate->
       GetFrameCaptionButtonContainerViewBounds();
   EXPECT_GT(initial.width(), maximize_mode_bounds.width());
   Shell::GetInstance()->maximize_mode_controller()->
       EnableMaximizeModeWindowManager(false);
+  delegate->EndFrameCaptionButtonContainerViewAnimations();
   const gfx::Rect after_restore = delegate->
       GetFrameCaptionButtonContainerViewBounds();
   EXPECT_EQ(initial, after_restore);

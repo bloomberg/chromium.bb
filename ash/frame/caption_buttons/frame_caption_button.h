@@ -46,6 +46,9 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
   // SetImages().
   bool IsAnimatingImageSwap() const;
 
+  // Sets the alpha to use for painting. Used to animate visibility changes.
+  void SetAlpha(int alpha);
+
   // views::View overrides:
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
@@ -77,6 +80,9 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
 
   // Whether the button should be painted as active.
   bool paint_as_active_;
+
+  // Current alpha to use for painting.
+  int alpha_;
 
   // The images and image ids used to paint the button.
   int icon_image_id_;

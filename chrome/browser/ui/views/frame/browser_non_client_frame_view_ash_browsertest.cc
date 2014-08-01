@@ -213,11 +213,15 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
   const gfx::Rect initial = frame_view->caption_button_container_->bounds();
   ash::Shell::GetInstance()->maximize_mode_controller()->
       EnableMaximizeModeWindowManager(true);
+  ash::FrameCaptionButtonContainerView::TestApi test(frame_view->
+                                                     caption_button_container_);
+  test.EndAnimations();
   const gfx::Rect during_maximize = frame_view->caption_button_container_->
       bounds();
   EXPECT_GT(initial.width(), during_maximize.width());
   ash::Shell::GetInstance()->maximize_mode_controller()->
       EnableMaximizeModeWindowManager(false);
+  test.EndAnimations();
   const gfx::Rect after_restore = frame_view->caption_button_container_->
       bounds();
   EXPECT_EQ(initial, after_restore);

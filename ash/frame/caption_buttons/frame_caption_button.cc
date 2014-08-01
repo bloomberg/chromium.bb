@@ -30,6 +30,7 @@ FrameCaptionButton::FrameCaptionButton(views::ButtonListener* listener,
     : CustomButton(listener),
       icon_(icon),
       paint_as_active_(false),
+      alpha_(255),
       icon_image_id_(-1),
       inactive_icon_image_id_(-1),
       hovered_background_image_id_(-1),
@@ -94,6 +95,13 @@ bool FrameCaptionButton::IsAnimatingImageSwap() const {
   return swap_images_animation_->is_animating();
 }
 
+void FrameCaptionButton::SetAlpha(int alpha) {
+  if (alpha_ != alpha) {
+    alpha_ = alpha;
+    SchedulePaint();
+  }
+}
+
 gfx::Size FrameCaptionButton::GetPreferredSize() const {
   return hovered_background_image_.isNull() ?
       gfx::Size() : hovered_background_image_.size();
@@ -130,8 +138,11 @@ void FrameCaptionButton::OnPaint(gfx::Canvas* canvas) {
     paint.setXfermodeMode(SkXfermode::kPlus_Mode);
     icon_canvas.DrawImageInt(crossfade_icon_image_, 0, 0, paint);
 
-    PaintCentered(canvas, gfx::ImageSkia(icon_canvas.ExtractImageRep()), 255);
+    PaintCentered(canvas, gfx::ImageSkia(icon_canvas.ExtractImageRep()),
+                  alpha_);
   } else {
+    if (!swap_images_animation_->is_animating())
+      icon_alpha = alpha_;
     PaintCentered(canvas, icon_image, icon_alpha);
   }
 }

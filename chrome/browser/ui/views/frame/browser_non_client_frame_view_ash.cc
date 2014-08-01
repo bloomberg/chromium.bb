@@ -316,6 +316,17 @@ gfx::Size BrowserNonClientFrameViewAsh::GetMinimumSize() const {
   return gfx::Size(min_width, min_client_view_size.height());
 }
 
+void BrowserNonClientFrameViewAsh::
+  ChildPreferredSizeChanged(views::View* child) {
+  // FrameCaptionButtonContainerView animates the visibility changes in
+  // UpdateSizeButtonVisibility(false). Due to this a new size is not available
+  // until the completion of the animation. Layout in response to the preferred
+  // size changes.
+  if (child != caption_button_container_)
+    return;
+  frame()->GetRootView()->Layout();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // ash::ShellObserver:
 
