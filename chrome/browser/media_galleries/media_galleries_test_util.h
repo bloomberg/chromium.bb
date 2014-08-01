@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_GALLERIES_TEST_UTIL_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_GALLERIES_TEST_UTIL_H_
 
+#include <string>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
@@ -42,6 +45,10 @@ class EnsureMediaDirectoriesExists {
   int num_galleries() const { return num_galleries_; }
 
   base::FilePath GetFakeAppDataPath() const;
+
+  // Changes the directories for the media paths (music, pictures, videos)
+  // overrides to new, different directories that are generated.
+  void ChangeMediaPathOverrides();
 #if defined(OS_WIN)
   base::FilePath GetFakeLocalAppDataPath() const;
 #endif
@@ -61,6 +68,8 @@ class EnsureMediaDirectoriesExists {
   base::ScopedTempDir fake_dir_;
 
   int num_galleries_;
+
+  int times_overrides_changed_;
 
   scoped_ptr<base::ScopedPathOverride> app_data_override_;
   scoped_ptr<base::ScopedPathOverride> music_override_;

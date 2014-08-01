@@ -70,7 +70,6 @@ const char kMediaGalleriesLastAttachTimeKey[] = "lastAttachTime";
 const char kMediaGalleriesScanAudioCountKey[] = "audioCount";
 const char kMediaGalleriesScanImageCountKey[] = "imageCount";
 const char kMediaGalleriesScanVideoCountKey[] = "videoCount";
-const char kMediaGalleriesPrefsVersionKey[] = "preferencesVersion";
 
 const char kMediaGalleriesTypeAutoDetectedValue[] = "autoDetected";
 const char kMediaGalleriesTypeBlackListedValue[] = "blackListed";
@@ -78,11 +77,16 @@ const char kMediaGalleriesTypeRemovedScanValue[] = "removedScan";
 const char kMediaGalleriesTypeScanResultValue[] = "scanResult";
 const char kMediaGalleriesTypeUserAddedValue[] = "userAdded";
 
+const char kMediaGalleriesDefaultGalleryTypeNotDefaultValue[] = "notDefault";
+const char kMediaGalleriesDefaultGalleryTypeMusicDefaultValue[] = "music";
+const char kMediaGalleriesDefaultGalleryTypePicturesDefaultValue[] = "pictures";
+const char kMediaGalleriesDefaultGalleryTypeVideosDefaultValue[] = "videos";
+
 const char kIPhotoGalleryName[] = "iPhoto";
 const char kITunesGalleryName[] = "iTunes";
 const char kPicasaGalleryName[] = "Picasa";
 
-const int kCurrentPrefsVersion = 2;
+const int kCurrentPrefsVersion = 3;
 
 int NumberExtensionsUsingMediaGalleries(Profile* profile) {
   int count = 0;
@@ -173,6 +177,51 @@ const char* TypeToStringValue(MediaGalleryPrefInfo::Type type) {
   return result;
 }
 
+MediaGalleryPrefInfo::DefaultGalleryType GetDefaultGalleryType(
+    const base::DictionaryValue& dict) {
+  std::string default_gallery_type_string;
+  if (!dict.GetString(
+          kMediaGalleriesDefaultGalleryTypeKey, &default_gallery_type_string))
+    return MediaGalleryPrefInfo::kNotDefault;
+
+  if (default_gallery_type_string ==
+      kMediaGalleriesDefaultGalleryTypeMusicDefaultValue) {
+    return MediaGalleryPrefInfo::kMusicDefault;
+  }
+  if (default_gallery_type_string ==
+      kMediaGalleriesDefaultGalleryTypePicturesDefaultValue) {
+    return MediaGalleryPrefInfo::kPicturesDefault;
+  }
+  if (default_gallery_type_string ==
+      kMediaGalleriesDefaultGalleryTypeVideosDefaultValue) {
+    return MediaGalleryPrefInfo::kVideosDefault;
+  }
+  return MediaGalleryPrefInfo::kNotDefault;
+}
+
+const char* DefaultGalleryTypeToStringValue(
+    MediaGalleryPrefInfo::DefaultGalleryType default_gallery_type) {
+  const char* result = NULL;
+  switch (default_gallery_type) {
+    case MediaGalleryPrefInfo::kNotDefault:
+      result = kMediaGalleriesDefaultGalleryTypeNotDefaultValue;
+      break;
+    case MediaGalleryPrefInfo::kMusicDefault:
+      result = kMediaGalleriesDefaultGalleryTypeMusicDefaultValue;
+      break;
+    case MediaGalleryPrefInfo::kPicturesDefault:
+      result = kMediaGalleriesDefaultGalleryTypePicturesDefaultValue;
+      break;
+    case MediaGalleryPrefInfo::kVideosDefault:
+      result = kMediaGalleriesDefaultGalleryTypeVideosDefaultValue;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return result;
+}
+
 bool PopulateGalleryPrefInfoFromDictionary(
     const base::DictionaryValue& dict, MediaGalleryPrefInfo* out_gallery_info) {
   MediaGalleryPrefId pref_id;
@@ -234,7 +283,7 @@ bool PopulateGalleryPrefInfoFromDictionary(
       base::Time::FromInternalValue(last_attach_time);
   out_gallery_info->volume_metadata_valid = volume_metadata_valid;
   out_gallery_info->prefs_version = prefs_version;
-
+  out_gallery_info->default_gallery_type = GetDefaultGalleryType(dict);
   return true;
 }
 
@@ -246,6 +295,12 @@ base::DictionaryValue* CreateGalleryPrefInfoDictionary(
   dict->SetString(kMediaGalleriesDeviceIdKey, gallery.device_id);
   dict->SetString(kMediaGalleriesPathKey, gallery.path.value());
   dict->SetString(kMediaGalleriesTypeKey, TypeToStringValue(gallery.type));
+
+  if (gallery.default_gallery_type != MediaGalleryPrefInfo::kNotDefault) {
+    dict->SetString(kMediaGalleriesDefaultGalleryTypeKey,
+                    DefaultGalleryTypeToStringValue(
+                        gallery.default_gallery_type));
+  }
 
   if (gallery.volume_metadata_valid) {
     dict->SetString(kMediaGalleriesVolumeLabelKey, gallery.volume_label);
@@ -325,6 +380,7 @@ MediaGalleryPrefInfo::MediaGalleryPrefInfo()
       audio_count(0),
       image_count(0),
       video_count(0),
+      default_gallery_type(kNotDefault),
       prefs_version(0) {
 }
 
@@ -443,11 +499,12 @@ void MediaGalleriesPreferences::EnsureInitialized(base::Closure callback) {
   }
 
   // We determine the freshness of the profile here, before any of the finders
-  // return and add media galleries to it.
+  // return and add media galleries to it (hence why the APIHasBeenUsed check
+  // needs to happen here rather than inside OnStorageMonitorInit itself).
   StorageMonitor::GetInstance()->EnsureInitialized(
       base::Bind(&MediaGalleriesPreferences::OnStorageMonitorInit,
                  weak_factory_.GetWeakPtr(),
-                 !APIHasBeenUsed(profile_) /* add_default_galleries */));
+                 APIHasBeenUsed(profile_)));
 
   // Look for optional default galleries every time.
   iapps::FindITunesLibrary(
@@ -512,25 +569,43 @@ void MediaGalleriesPreferences::FinishInitialization() {
 }
 
 void MediaGalleriesPreferences::AddDefaultGalleries() {
-  const int kDirectoryKeys[] = {
-    chrome::DIR_USER_MUSIC,
-    chrome::DIR_USER_PICTURES,
-    chrome::DIR_USER_VIDEOS,
+  const struct DefaultTypes {
+    int directory_key;
+    MediaGalleryPrefInfo::DefaultGalleryType default_gallery_type;
+  } kDirectories[] = {
+    {chrome::DIR_USER_MUSIC, MediaGalleryPrefInfo::kMusicDefault},
+    {chrome::DIR_USER_PICTURES, MediaGalleryPrefInfo::kPicturesDefault},
+    {chrome::DIR_USER_VIDEOS, MediaGalleryPrefInfo::kVideosDefault},
   };
 
-  for (size_t i = 0; i < arraysize(kDirectoryKeys); ++i) {
+  for (size_t i = 0; i < arraysize(kDirectories); ++i) {
     base::FilePath path;
-    if (!PathService::Get(kDirectoryKeys[i], &path))
+    if (!PathService::Get(kDirectories[i].directory_key, &path))
       continue;
 
     base::FilePath relative_path;
     StorageInfo info;
     if (MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path)) {
-      AddGalleryInternal(info.device_id(), base::string16(), relative_path,
-                         MediaGalleryPrefInfo::kAutoDetected,
-                         info.storage_label(), info.vendor_name(),
-                         info.model_name(), info.total_size_in_bytes(),
-                         base::Time(), true, 0, 0, 0, kCurrentPrefsVersion);
+      MediaGalleryPrefInfo::DefaultGalleryType default_gallery_type =
+          kDirectories[i].default_gallery_type;
+      DCHECK_NE(default_gallery_type, MediaGalleryPrefInfo::kNotDefault);
+
+      AddOrUpdateGalleryInternal(
+          info.device_id(),
+          base::string16(),
+          relative_path,
+          MediaGalleryPrefInfo::kAutoDetected,
+          info.storage_label(),
+          info.vendor_name(),
+          info.model_name(),
+          info.total_size_in_bytes(),
+          base::Time(),
+          true,
+          0,
+          0,
+          0,
+          kCurrentPrefsVersion,
+          default_gallery_type);
     }
   }
 }
@@ -577,9 +652,14 @@ bool MediaGalleriesPreferences::UpdateDeviceIDForSingletonType(
 }
 
 void MediaGalleriesPreferences::OnStorageMonitorInit(
-    bool add_default_galleries) {
-  if (add_default_galleries)
-    AddDefaultGalleries();
+    bool api_has_been_used) {
+  if (api_has_been_used)
+    UpdateDefaultGalleriesPaths();
+
+  // Invoke this method even if the API has been used before, in order to ensure
+  // we upgrade (migrate) prefs for galleries with prefs version prior to 3.
+  AddDefaultGalleries();
+
   OnInitializationCallbackReturned();
 }
 
@@ -606,10 +686,22 @@ void MediaGalleriesPreferences::OnFinderDeviceID(const std::string& device_id) {
 
     if (!UpdateDeviceIDForSingletonType(device_id)) {
       DCHECK(!gallery_name.empty());
-      AddGalleryInternal(device_id, base::ASCIIToUTF16(gallery_name),
-                         base::FilePath(), MediaGalleryPrefInfo::kAutoDetected,
-                         base::string16(), base::string16(), base::string16(),
-                         0, base::Time(), false, 0, 0, 0, kCurrentPrefsVersion);
+      AddOrUpdateGalleryInternal(
+          device_id,
+          base::ASCIIToUTF16(gallery_name),
+          base::FilePath(),
+          MediaGalleryPrefInfo::kAutoDetected,
+          base::string16(),
+          base::string16(),
+          base::string16(),
+          0,
+          base::Time(),
+          false,
+          0,
+          0,
+          0,
+          kCurrentPrefsVersion,
+          MediaGalleryPrefInfo::kNotDefault);
     }
   }
 
@@ -764,20 +856,32 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
     int image_count,
     int video_count) {
   DCHECK(IsInitialized());
-  return AddGalleryInternal(device_id, base::string16(), relative_path,
-                            type, volume_label, vendor_name, model_name,
-                            total_size_in_bytes, last_attach_time, true,
-                            audio_count, image_count, video_count,
-                            kCurrentPrefsVersion);
+  return AddOrUpdateGalleryInternal(
+      device_id,
+      base::string16(),
+      relative_path,
+      type,
+      volume_label,
+      vendor_name,
+      model_name,
+      total_size_in_bytes,
+      last_attach_time,
+      true,
+      audio_count,
+      image_count,
+      video_count,
+      kCurrentPrefsVersion,
+      MediaGalleryPrefInfo::kNotDefault);
 }
 
-MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
+MediaGalleryPrefId MediaGalleriesPreferences::AddOrUpdateGalleryInternal(
     const std::string& device_id, const base::string16& display_name,
     const base::FilePath& relative_path, MediaGalleryPrefInfo::Type type,
     const base::string16& volume_label, const base::string16& vendor_name,
     const base::string16& model_name, uint64 total_size_in_bytes,
     base::Time last_attach_time, bool volume_metadata_valid,
-    int audio_count, int image_count, int video_count, int prefs_version) {
+    int audio_count, int image_count, int video_count, int prefs_version,
+    MediaGalleryPrefInfo::DefaultGalleryType default_gallery_type) {
   DCHECK(type == MediaGalleryPrefInfo::kUserAdded ||
          type == MediaGalleryPrefInfo::kAutoDetected ||
          type == MediaGalleryPrefInfo::kScanResult);
@@ -785,6 +889,7 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
       relative_path.NormalizePathSeparators();
   MediaGalleryPrefIdSet galleries_on_device =
     LookUpGalleriesByDeviceId(device_id);
+
   for (MediaGalleryPrefIdSet::const_iterator pref_id_it =
            galleries_on_device.begin();
        pref_id_it != galleries_on_device.end();
@@ -812,13 +917,19 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
     // version 1. The name override is used by default galleries as well
     // as all device attach events.
     // We want to upgrade the name if the existing version is < 2. Leave it
-    // alone if the existing display name is set with version == 2 and the
+    // alone if the existing display name is set with version >= 2 and the
     // proposed new name is empty.
     bool update_gallery_name = existing.display_name != display_name;
-    if (existing.prefs_version == 2 && !existing.display_name.empty() &&
+    if (existing.prefs_version >= 2 && !existing.display_name.empty() &&
         display_name.empty()) {
       update_gallery_name = false;
     }
+
+    // Version 3 adds the default_gallery_type field.
+    bool update_default_gallery_type =
+         existing.prefs_version <= 2 &&
+         default_gallery_type != existing.default_gallery_type;
+
     bool update_gallery_metadata = volume_metadata_valid &&
         ((existing.volume_label != volume_label) ||
          (existing.vendor_name != vendor_name) ||
@@ -833,7 +944,8 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
        existing.audio_count || existing.image_count || existing.video_count);
 
     if (!update_gallery_name && !update_gallery_type &&
-        !update_gallery_metadata && !update_scan_counts)
+        !update_gallery_metadata && !update_scan_counts &&
+        !update_default_gallery_type)
       return *pref_id_it;
 
     PrefService* prefs = profile_->GetPrefs();
@@ -865,6 +977,11 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
           dict->SetInteger(kMediaGalleriesScanAudioCountKey, audio_count);
           dict->SetInteger(kMediaGalleriesScanImageCountKey, image_count);
           dict->SetInteger(kMediaGalleriesScanVideoCountKey, video_count);
+        }
+        if (update_default_gallery_type) {
+          dict->SetString(
+              kMediaGalleriesDefaultGalleryTypeKey,
+              DefaultGalleryTypeToStringValue(default_gallery_type));
         }
         dict->SetInteger(kMediaGalleriesPrefsVersionKey, prefs_version);
         break;
@@ -899,6 +1016,7 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
   gallery_info.image_count = image_count;
   gallery_info.video_count = video_count;
   gallery_info.prefs_version = prefs_version;
+  gallery_info.default_gallery_type = default_gallery_type;
 
   {
     ListPrefUpdate update(prefs, prefs::kMediaGalleriesRememberedGalleries);
@@ -913,6 +1031,82 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
   return gallery_info.pref_id;
 }
 
+
+void MediaGalleriesPreferences::UpdateDefaultGalleriesPaths() {
+  base::FilePath music_path;
+  base::FilePath pictures_path;
+  base::FilePath videos_path;
+  bool got_music_path = PathService::Get(chrome::DIR_USER_MUSIC, &music_path);
+  bool got_pictures_path =
+      PathService::Get(chrome::DIR_USER_PICTURES, &pictures_path);
+  bool got_videos_path =
+      PathService::Get(chrome::DIR_USER_VIDEOS, &videos_path);
+
+  PrefService* prefs = profile_->GetPrefs();
+  scoped_ptr<ListPrefUpdate> update(new ListPrefUpdate(
+      prefs, prefs::kMediaGalleriesRememberedGalleries));
+  base::ListValue* list = update->Get();
+
+  std::vector<MediaGalleryPrefId> pref_ids;
+
+  for (base::ListValue::iterator iter = list->begin();
+       iter != list->end();
+       ++iter) {
+    base::DictionaryValue* dict;
+    MediaGalleryPrefId pref_id;
+
+    if (!((*iter)->GetAsDictionary(&dict) && GetPrefId(*dict, &pref_id)))
+      continue;
+
+    std::string default_gallery_type_string;
+
+    // If the "default gallery type" key is set, just update the paths in place.
+    // If it's not set, then AddOrUpdateGalleryInternal will take care of
+    // setting it as part of migration to prefs version 3.
+    if (dict->GetString(kMediaGalleriesDefaultGalleryTypeKey,
+                        &default_gallery_type_string)) {
+      std::string device_id;
+      if (got_music_path &&
+          default_gallery_type_string ==
+              kMediaGalleriesDefaultGalleryTypeMusicDefaultValue) {
+        device_id = StorageInfo::MakeDeviceId(
+            StorageInfo::Type::FIXED_MASS_STORAGE,
+            music_path.AsUTF8Unsafe());
+      } else if (got_pictures_path &&
+                 default_gallery_type_string ==
+                     kMediaGalleriesDefaultGalleryTypePicturesDefaultValue) {
+        device_id = StorageInfo::MakeDeviceId(
+            StorageInfo::Type::FIXED_MASS_STORAGE,
+            pictures_path.AsUTF8Unsafe());
+      } else if (got_videos_path &&
+                 default_gallery_type_string ==
+                     kMediaGalleriesDefaultGalleryTypeVideosDefaultValue) {
+        device_id = StorageInfo::MakeDeviceId(
+            StorageInfo::Type::FIXED_MASS_STORAGE,
+            videos_path.AsUTF8Unsafe());
+      }
+
+      if (!device_id.empty())
+        dict->SetString(kMediaGalleriesDeviceIdKey, device_id);
+    }
+
+    pref_ids.push_back(pref_id);
+  }
+
+  // Commit the prefs update.
+  update.reset();
+  InitFromPrefs();
+
+  for (std::vector<MediaGalleryPrefId>::iterator iter = pref_ids.begin();
+       iter != pref_ids.end();
+       ++iter) {
+    FOR_EACH_OBSERVER(GalleryChangeObserver,
+                      gallery_change_observers_,
+                      OnGalleryInfoUpdated(this, *iter));
+  }
+}
+
+
 MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryByPath(
     const base::FilePath& path, MediaGalleryPrefInfo::Type type) {
   DCHECK(IsInitialized());
@@ -921,7 +1115,7 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryByPath(
       !gallery_info.IsBlackListedType()) {
     return gallery_info.pref_id;
   }
-  return AddGalleryInternal(gallery_info.device_id,
+  return AddOrUpdateGalleryInternal(gallery_info.device_id,
                             gallery_info.display_name,
                             gallery_info.path,
                             type,
@@ -932,7 +1126,8 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryByPath(
                             gallery_info.last_attach_time,
                             gallery_info.volume_metadata_valid,
                             0, 0, 0,
-                            kCurrentPrefsVersion);
+                            kCurrentPrefsVersion,
+                            MediaGalleryPrefInfo::kNotDefault);
 }
 
 void MediaGalleriesPreferences::ForgetGalleryById(MediaGalleryPrefId id) {

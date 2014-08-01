@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
@@ -37,6 +38,9 @@ class PrefRegistrySyncable;
 typedef uint64 MediaGalleryPrefId;
 const MediaGalleryPrefId kInvalidMediaGalleryPrefId = 0;
 
+const char kMediaGalleriesPrefsVersionKey[] = "preferencesVersion";
+const char kMediaGalleriesDefaultGalleryTypeKey[] = "defaultGalleryType";
+
 struct MediaGalleryPermission {
   MediaGalleryPrefId pref_id;
   bool has_permission;
@@ -50,6 +54,13 @@ struct MediaGalleryPrefInfo {
     kScanResult,    // Discovered by a disk scan.
     kRemovedScan,   // Discovered by a disk scan but then removed by the user.
     kInvalidType,
+  };
+
+  enum DefaultGalleryType {
+    kNotDefault,    // Normal gallery
+    kMusicDefault,
+    kPicturesDefault,
+    kVideosDefault,
   };
 
   MediaGalleryPrefInfo();
@@ -111,9 +122,15 @@ struct MediaGalleryPrefInfo {
   int image_count;
   int video_count;
 
+  // Which default gallery this corresponds to (or not default at all).
+  DefaultGalleryType default_gallery_type;
+
   // 0 if the display_name is set externally and always used for display.
   // 1 if the display_name is only set externally when it is overriding
   // the name constructed from volume metadata.
+  // 2 if the display_name is set in a consistent manner that has resolved
+  // the issues in earlier versions.
+  // 3 if the default_gallery_type is set (new field for this version).
   int prefs_version;
 
   // Called by views to provide details for the gallery permission entries.
@@ -294,7 +311,7 @@ class MediaGalleriesPreferences
   // device id.  It returns true if the device id is up to date.
   bool UpdateDeviceIDForSingletonType(const std::string& device_id);
 
-  void OnStorageMonitorInit(bool add_default_galleries);
+  void OnStorageMonitorInit(bool api_has_been_used);
 
   // Handle an iPhoto, iTunes, or Picasa finder returning a device ID to us.
   void OnFinderDeviceID(const std::string& device_id);
@@ -302,22 +319,32 @@ class MediaGalleriesPreferences
   // Builds |known_galleries_| from the persistent store.
   void InitFromPrefs();
 
-  MediaGalleryPrefId AddGalleryInternal(const std::string& device_id,
-                                        const base::string16& display_name,
-                                        const base::FilePath& relative_path,
-                                        MediaGalleryPrefInfo::Type type,
-                                        const base::string16& volume_label,
-                                        const base::string16& vendor_name,
-                                        const base::string16& model_name,
-                                        uint64 total_size_in_bytes,
-                                        base::Time last_attach_time,
-                                        bool volume_metadata_valid,
-                                        int audio_count,
-                                        int image_count,
-                                        int video_count,
-                                        int prefs_version);
+  // Adds a new gallery with the given parameters, or updates in-place an
+  // existing gallery with the given device_id if one exists.
+  // TODO(orenb): Simplify this and reduce the number of parameters.
+  MediaGalleryPrefId AddOrUpdateGalleryInternal(
+      const std::string& device_id,
+      const base::string16& display_name,
+      const base::FilePath& relative_path,
+      MediaGalleryPrefInfo::Type type,
+      const base::string16& volume_label,
+      const base::string16& vendor_name,
+      const base::string16& model_name,
+      uint64 total_size_in_bytes,
+      base::Time last_attach_time,
+      bool volume_metadata_valid,
+      int audio_count,
+      int image_count,
+      int video_count,
+      int prefs_version,
+      MediaGalleryPrefInfo::DefaultGalleryType default_gallery_type);
 
   void EraseOrBlacklistGalleryById(MediaGalleryPrefId id, bool erase);
+
+  // Updates the default galleries: finds the previously default galleries
+  // and updates their device IDs (i.e., their paths) inplace if they have
+  // changed.
+  void UpdateDefaultGalleriesPaths();
 
   // Sets permission for the media galleries identified by |gallery_id| for the
   // extension in the given |prefs|. Returns true only if anything changed.
