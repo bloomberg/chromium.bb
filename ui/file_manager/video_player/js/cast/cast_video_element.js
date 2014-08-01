@@ -39,7 +39,8 @@ function CastVideoElement(media, session) {
   this.currentMediaPlayerState_ = null;
   this.currentMediaCurrentTime_ = null;
   this.currentMediaDuration_ = null;
-  this.pausing_ = false;
+  this.playInProgress_ = false;
+  this.pauseInProgress_ = false;
 
   this.onMessageBound_ = this.onMessage_.bind(this);
   this.onCastMediaUpdatedBound_ = this.onCastMediaUpdated_.bind(this);
@@ -94,8 +95,9 @@ CastVideoElement.prototype = {
     if (!this.castMedia_)
       return false;
 
-    return this.pausing_ ||
-           this.castMedia_.playerState === chrome.cast.media.PlayerState.PAUSED;
+    return !this.playInProgress_ &&
+        (this.pauseInProgress_ ||
+         this.castMedia_.playerState === chrome.cast.media.PlayerState.PAUSED);
   },
 
   /**
@@ -175,18 +177,23 @@ CastVideoElement.prototype = {
    * Plays the video.
    */
   play: function() {
-    if (!this.castMedia_) {
-      this.load(function() {
-        this.castMedia_.play(null,
-            function () {},
-            this.onCastCommandError_.wrap(this));
-      }.wrap(this));
-      return;
-    }
+    var play = function() {
+      this.castMedia_.play(null,
+          function () {
+            this.playInProgress_ = false;
+          }.wrap(this),
+          function () {
+            this.playInProgress_ = false;
+            this.onCastCommandError_();
+          }.wrap(this));
+    }.wrap(this);
 
-    this.castMedia_.play(null,
-        function () {},
-        this.onCastCommandError_.wrap(this));
+    this.playInProgress_ = true;
+
+    if (!this.castMedia_)
+      this.load(play);
+    else
+      play();
   },
 
   /**
@@ -196,13 +203,13 @@ CastVideoElement.prototype = {
     if (!this.castMedia_)
       return;
 
-    this.pausing_ = true;
+    this.pauseInProgress_ = true;
     this.castMedia_.pause(null,
         function () {
-          this.pausing_ = false;
+          this.pauseInProgress_ = false;
         }.wrap(this),
         function () {
-          this.pausing_ = false;
+          this.pauseInProgress_ = false;
           this.onCastCommandError_();
         }.wrap(this));
   },
