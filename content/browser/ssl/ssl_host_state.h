@@ -19,6 +19,7 @@
 
 namespace content {
 class BrowserContext;
+class SSLHostStateDelegate;
 
 // SSLHostState
 //
@@ -27,11 +28,14 @@ class BrowserContext;
 // particular broken cert for use with particular host.  We separate this state
 // from the SSLManager because this state is shared across many navigation
 // controllers.
-
 class CONTENT_EXPORT SSLHostState
     : NON_EXPORTED_BASE(base::SupportsUserData::Data),
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
+  // Contexts may specify a NULL certificate decision storage strategy. In that
+  // case, the returned SSLHostState from GetFor() will implement a default
+  // strategy of ignoring all exception requests and returning
+  // net::QueryPolicy::Judgment::UNKOWN from QueryPolicy().
   static SSLHostState* GetFor(BrowserContext* browser_context);
 
   SSLHostState();
@@ -43,22 +47,27 @@ class CONTENT_EXPORT SSLHostState
   // Returns whether the specified host ran insecure content.
   bool DidHostRunInsecureContent(const std::string& host, int pid) const;
 
-  // Records that |cert| is not permitted to be used for |host| in the future,
-  // for a specified |error| type..
+  // Records that |cert| is not permitted to be used for |url| in the future,
+  // for a specified |error| type.
   void DenyCertForHost(net::X509Certificate* cert,
                        const std::string& host,
                        net::CertStatus error);
 
-  // Records that |cert| is permitted to be used for |host| in the future, for
+  // Records that |cert| is permitted to be used for |url| in the future, for
   // a specified |error| type.
   void AllowCertForHost(net::X509Certificate* cert,
                         const std::string& host,
                         net::CertStatus error);
 
+  // Revoke all allow/deny preferences for |url|.
+  void RevokeAllowAndDenyPreferences(const std::string& host);
+
+  bool HasAllowedOrDeniedCert(const std::string& host);
+
   // Clear all allow/deny preferences.
   void Clear();
 
-  // Queries whether |cert| is allowed or denied for |host| and |error|.
+  // Queries whether |cert| is allowed or denied for |url| and |error|.
   net::CertPolicy::Judgment QueryPolicy(net::X509Certificate* cert,
                                         const std::string& host,
                                         net::CertStatus error);
@@ -73,8 +82,9 @@ class CONTENT_EXPORT SSLHostState
   // same-origin frames in one processs but cannot jump between processes.
   std::set<BrokenHostEntry> ran_insecure_content_hosts_;
 
-  // Certificate policies for each host.
-  std::map<std::string, net::CertPolicy> cert_policy_for_host_;
+  // The certificate decision store. It may be NULL, depending on the browsing
+  // context. This is owned by the browsing context.
+  SSLHostStateDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLHostState);
 };

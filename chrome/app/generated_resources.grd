@@ -14412,6 +14412,22 @@ Do you accept?
       Share
     </message>
 
+    <message name="IDS_REMEMBER_CERTIFICATE_ERROR_DECISION_CHOICE_ONE_DAY">
+      Remember for one day
+    </message>
+    <message name="IDS_REMEMBER_CERTIFICATE_ERROR_DECISION_CHOICE_THREE_DAYS">
+      Remember for three days
+    </message>
+    <message name="IDS_REMEMBER_CERTIFICATE_ERROR_DECISION_CHOICE_ONE_WEEK">
+      Remember for one week
+    </message>
+    <message name="IDS_REMEMBER_CERTIFICATE_ERROR_DECISION_CHOICE_ONE_MONTH">
+      Remember for one month
+    </message>
+    <message name="IDS_REMEMBER_CERTIFICATE_ERROR_DECISION_CHOICE_THREE_MONTHS">
+      Remember for three months
+    </message>
+
     <!-- Zero suggest experiment flags -->
     <if expr="is_android">
       <message name="IDS_FLAGS_ZERO_SUGGEST_EXPERIMENT_NAME" desc="An about:flags experiment for zero suggest">
@@ -14637,6 +14653,14 @@ Do you accept?
     </message>
     <message name="IDS_EASY_UNLOCK_SETUP_COMPLETE_SETTINGS_LINK_TEXT" desc="The text to show as the link text to access Easy Unlock settings. This button is visible during the final step, once the Easy Unlock setup succeeds.">
       Easy unlock settings
+    </message>
+
+    <!-- Invalid SSL certificate memory strategy strings -->
+    <message name="IDS_FLAGS_REMEMBER_CERTIFICATE_ERROR_DECISIONS_NAME" desc="Name of the remember certificate error decisions lab">
+      Remember certificate error decisions
+    </message>
+    <message name="IDS_FLAGS_REMEMBER_CERTIFICATE_ERROR_DECISIONS_DESCRIPTION" desc="Description of the remember certificate error decisions lab">
+      Remember decisions to proceed through SSL errors for a specified length of time.
     </message>
   </messages>
   </release>

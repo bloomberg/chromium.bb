@@ -117,4 +117,8 @@ PushMessagingService* TestBrowserContext::GetPushMessagingService() {
   return NULL;
 }
 
+SSLHostStateDelegate* TestBrowserContext::GetSSLHostStateDelegate() {
+  return NULL;
+}
+
 }  // namespace content

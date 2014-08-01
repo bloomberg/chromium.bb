@@ -111,6 +111,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
   {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, "multiple-automatic-downloads"},
   {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, "midi-sysex"},
   {CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, "push-messaging"},
+  {CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, "ssl-cert-decisions"},
 #if defined(OS_CHROMEOS)
   {CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, "protectedContent"},
 #endif
@@ -748,6 +749,11 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       UpdateMIDISysExExceptionsView();
       break;
+    case CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS:
+      // The content settings type CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS is
+      // supposed to be set by flags and field trials only, thus there is no
+      // user facing UI for this content type and we skip it here.
+      break;
 #if defined(OS_WIN)
     case CONTENT_SETTINGS_TYPE_METRO_SWITCH_TO_DESKTOP:
       break;
@@ -773,6 +779,7 @@ void ContentSettingsHandler::UpdateOTRExceptionsViewFromModel(
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
     case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
+    case CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS:
       break;
     default:
       UpdateExceptionsViewFromOTRHostContentSettingsMap(type);

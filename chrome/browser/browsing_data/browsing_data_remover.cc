@@ -58,6 +58,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_data_remover.h"
 #include "content/public/browser/session_storage_usage_info.h"
+#include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "net/base/net_errors.h"
@@ -405,6 +406,11 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
         base::Bind(&BrowsingDataRemover::OnClearedWebRtcLogs,
                    base::Unretained(this)));
 #endif
+
+    // The SSL Host State that tracks SSL interstitial "proceed" decisions may
+    // include origins that the user has visited, so it must be cleared.
+    if (profile_->GetSSLHostStateDelegate())
+      profile_->GetSSLHostStateDelegate()->Clear();
   }
 
   if ((remove_mask & REMOVE_DOWNLOADS) && may_delete_history) {

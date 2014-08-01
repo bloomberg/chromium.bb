@@ -16,6 +16,7 @@
 
 namespace content {
 class MockResourceContext;
+class SSLHostStateDelegate;
 }
 
 namespace history {
@@ -224,6 +225,7 @@ class TestingProfile : public Profile {
   virtual content::BrowserPluginGuestManager* GetGuestManager() OVERRIDE;
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
   virtual content::PushMessagingService* GetPushMessagingService() OVERRIDE;
+  virtual content::SSLHostStateDelegate* GetSSLHostStateDelegate() OVERRIDE;
 
   virtual TestingProfile* AsTestingProfile() OVERRIDE;
 

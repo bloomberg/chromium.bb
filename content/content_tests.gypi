@@ -610,7 +610,6 @@
         'browser/speech/google_one_shot_remote_engine_unittest.cc',
         'browser/speech/google_streaming_remote_engine_unittest.cc',
         'browser/speech/speech_recognizer_impl_unittest.cc',
-        'browser/ssl/ssl_host_state_unittest.cc',
         'browser/startup_task_runner_unittest.cc',
         'browser/storage_partition_impl_map_unittest.cc',
         'browser/storage_partition_impl_unittest.cc',

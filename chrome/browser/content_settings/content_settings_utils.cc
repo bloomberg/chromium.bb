@@ -42,6 +42,7 @@ const char* kTypeNames[] = {
   "multiple-automatic-downloads",
   "midi-sysex",
   "push-messaging",
+  "ssl-cert-decisions",
 #if defined(OS_WIN)
   "metro-switch-to-desktop",
 #elif defined(OS_ANDROID) || defined(OS_CHROMEOS)

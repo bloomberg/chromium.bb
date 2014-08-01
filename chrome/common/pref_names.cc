@@ -1261,6 +1261,10 @@ const char kSSLVersionMax[] = "ssl.version_max";
 const char kCipherSuiteBlacklist[] = "ssl.cipher_suites.blacklist";
 const char kDisableSSLRecordSplitting[] = "ssl.ssl_record_splitting.disabled";
 
+// Dictionary of dates when a site's SSL blocking interstitial was proceeded
+// through.
+const char kSSLBlockingBypassed[] = "ssl.ssl_blocking_bypassed";
+
 // A boolean pref of the EULA accepted flag.
 const char kEulaAccepted[] = "EulaAccepted";
 

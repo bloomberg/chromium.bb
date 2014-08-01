@@ -40,6 +40,7 @@ class PushMessagingService;
 class ResourceContext;
 class SiteInstance;
 class StoragePartition;
+class SSLHostStateDelegate;
 
 // This class holds the context needed for a browsing session.
 // It lives on the UI thread. All these methods must only be called on the UI
@@ -149,6 +150,10 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // responsible for ensuring that it outlives RenderProcessHost. It's valid to
   // return NULL.
   virtual PushMessagingService* GetPushMessagingService() = 0;
+
+  // Returns the SSL host state decisions for this context. The context may
+  // return NULL, implementing the default exception storage strategy.
+  virtual SSLHostStateDelegate* GetSSLHostStateDelegate() = 0;
 };
 
 }  // namespace content

@@ -204,4 +204,8 @@ PushMessagingService* ShellBrowserContext::GetPushMessagingService() {
   return NULL;
 }
 
+SSLHostStateDelegate* ShellBrowserContext::GetSSLHostStateDelegate() {
+  return NULL;
+}
+
 }  // namespace content

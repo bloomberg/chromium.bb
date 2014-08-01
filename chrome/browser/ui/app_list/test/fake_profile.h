@@ -21,6 +21,7 @@ class URLRequestContextGetter;
 namespace content {
 class DownloadManagerDelegate;
 class ResourceContext;
+class SSLHostStateDelegate;
 }
 
 class FakeProfile : public Profile {
@@ -48,6 +49,7 @@ class FakeProfile : public Profile {
   virtual content::BrowserPluginGuestManager* GetGuestManager() OVERRIDE;
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
   virtual content::PushMessagingService* GetPushMessagingService() OVERRIDE;
+  virtual content::SSLHostStateDelegate* GetSSLHostStateDelegate() OVERRIDE;
   virtual scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() OVERRIDE;
   virtual Profile* GetOffTheRecordProfile() OVERRIDE;
   virtual void DestroyOffTheRecordProfile() OVERRIDE;

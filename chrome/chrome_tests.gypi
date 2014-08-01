@@ -1357,6 +1357,7 @@
         'browser/signin/signin_browsertest.cc',
         'browser/speech/extension_api/tts_extension_apitest.cc',
         'browser/spellchecker/spellcheck_service_browsertest.cc',
+        'browser/ssl/chrome_ssl_host_state_delegate_test.cc',
         'browser/ssl/ssl_browser_tests.cc',
         'browser/ssl/ssl_client_certificate_selector_test.cc',
         'browser/ssl/ssl_client_certificate_selector_test.h',

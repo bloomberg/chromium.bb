@@ -492,6 +492,30 @@ const Experiment::Choice kEnableSettingsWindowChoices[] = {
     ::switches::kDisableSettingsWindow, "" },
 };
 
+// Note that the value is specified in seconds (where 0 is equivalent to
+// disabled).
+const Experiment::Choice kRememberCertificateErrorDecisionsChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kRememberCertErrorDecisions,
+    "-1" },
+  { IDS_REMEMBER_CERTIFICATE_ERROR_DECISION_CHOICE_ONE_DAY,
+    switches::kRememberCertErrorDecisions,
+    "86400" },
+  { IDS_REMEMBER_CERTIFICATE_ERROR_DECISION_CHOICE_THREE_DAYS,
+    switches::kRememberCertErrorDecisions,
+    "259200" },
+  { IDS_REMEMBER_CERTIFICATE_ERROR_DECISION_CHOICE_ONE_WEEK,
+    switches::kRememberCertErrorDecisions,
+    "604800" },
+  { IDS_REMEMBER_CERTIFICATE_ERROR_DECISION_CHOICE_ONE_MONTH,
+    switches::kRememberCertErrorDecisions,
+    "2592000" },
+  { IDS_REMEMBER_CERTIFICATE_ERROR_DECISION_CHOICE_THREE_MONTHS,
+    switches::kRememberCertErrorDecisions,
+    "7776000" },
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -1901,6 +1925,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_WEBSITE_SETTINGS_DESCRIPTION,
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kEnableWebsiteSettingsManager)
+  },
+  {
+    "remember-cert-error-decisions",
+    IDS_FLAGS_REMEMBER_CERTIFICATE_ERROR_DECISIONS_NAME,
+    IDS_FLAGS_REMEMBER_CERTIFICATE_ERROR_DECISIONS_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kRememberCertificateErrorDecisionsChoices)
   },
 };
 

@@ -23,6 +23,7 @@ class PrefService;
 
 namespace content {
 class ResourceContext;
+class SSLHostStateDelegate;
 class WebContents;
 }
 
@@ -111,6 +112,7 @@ class AwBrowserContext : public content::BrowserContext,
   virtual content::BrowserPluginGuestManager* GetGuestManager() OVERRIDE;
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
   virtual content::PushMessagingService* GetPushMessagingService() OVERRIDE;
+  virtual content::SSLHostStateDelegate* GetSSLHostStateDelegate() OVERRIDE;
 
   // visitedlink::VisitedLinkDelegate implementation.
   virtual void RebuildTable(

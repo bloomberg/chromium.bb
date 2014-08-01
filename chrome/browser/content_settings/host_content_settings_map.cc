@@ -477,16 +477,19 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
 // static
 bool HostContentSettingsMap::ContentTypeHasCompoundValue(
     ContentSettingsType type) {
-  // Values for content type CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE and
-  // CONTENT_SETTINGS_TYPE_MEDIASTREAM are of type dictionary/map. Compound
-  // types like dictionaries can't be mapped to the type |ContentSetting|.
+  // Values for content type CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
+  // CONTENT_SETTINGS_TYPE_MEDIASTREAM, and
+  // CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS are of type dictionary/map.
+  // Compound types like dictionaries can't be mapped to the type
+  // |ContentSetting|.
 #if defined(OS_ANDROID)
   if (type == CONTENT_SETTINGS_TYPE_APP_BANNER)
     return true;
 #endif
 
   return (type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE ||
-          type == CONTENT_SETTINGS_TYPE_MEDIASTREAM);
+          type == CONTENT_SETTINGS_TYPE_MEDIASTREAM ||
+          type == CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS);
 }
 
 void HostContentSettingsMap::OnContentSettingChanged(

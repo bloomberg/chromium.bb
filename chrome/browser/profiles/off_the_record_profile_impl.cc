@@ -29,6 +29,8 @@
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
+#include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_constants.h"
@@ -360,8 +362,7 @@ HostContentSettingsMap* OffTheRecordProfileImpl::GetHostContentSettingsMap() {
   return host_content_settings_map_.get();
 }
 
-content::BrowserPluginGuestManager*
-    OffTheRecordProfileImpl::GetGuestManager() {
+content::BrowserPluginGuestManager* OffTheRecordProfileImpl::GetGuestManager() {
 #if defined(ENABLE_EXTENSIONS)
   return GuestViewManager::FromBrowserContext(this);
 #else
@@ -370,7 +371,7 @@ content::BrowserPluginGuestManager*
 }
 
 quota::SpecialStoragePolicy*
-    OffTheRecordProfileImpl::GetSpecialStoragePolicy() {
+OffTheRecordProfileImpl::GetSpecialStoragePolicy() {
   return GetExtensionSpecialStoragePolicy();
 }
 
@@ -378,6 +379,11 @@ content::PushMessagingService*
 OffTheRecordProfileImpl::GetPushMessagingService() {
   // TODO(johnme): Support push messaging in incognito if possible.
   return NULL;
+}
+
+content::SSLHostStateDelegate*
+OffTheRecordProfileImpl::GetSSLHostStateDelegate() {
+  return ChromeSSLHostStateDelegateFactory::GetForProfile(this);
 }
 
 bool OffTheRecordProfileImpl::IsSameProfile(Profile* profile) {

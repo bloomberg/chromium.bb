@@ -67,6 +67,8 @@
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/services/gcm/push_messaging_service_impl.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
+#include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -1057,6 +1059,10 @@ quota::SpecialStoragePolicy* ProfileImpl::GetSpecialStoragePolicy() {
 content::PushMessagingService* ProfileImpl::GetPushMessagingService() {
   return gcm::GCMProfileServiceFactory::GetForProfile(
       this)->push_messaging_service();
+}
+
+content::SSLHostStateDelegate* ProfileImpl::GetSSLHostStateDelegate() {
+  return ChromeSSLHostStateDelegateFactory::GetForProfile(this);
 }
 
 bool ProfileImpl::IsSameProfile(Profile* profile) {

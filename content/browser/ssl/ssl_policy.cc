@@ -33,10 +33,10 @@ SSLPolicy::SSLPolicy(SSLPolicyBackend* backend)
 
 void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
   // First we check if we know the policy for this error.
-  net::CertPolicy::Judgment judgment = backend_->QueryPolicy(
-      handler->ssl_info().cert.get(),
-      handler->request_url().host(),
-      handler->cert_error());
+  net::CertPolicy::Judgment judgment =
+      backend_->QueryPolicy(handler->ssl_info().cert.get(),
+                            handler->request_url().host(),
+                            handler->cert_error());
 
   if (judgment == net::CertPolicy::ALLOWED) {
     handler->ContinueRequest();

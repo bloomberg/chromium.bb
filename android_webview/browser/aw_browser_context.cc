@@ -23,6 +23,7 @@
 #include "components/user_prefs/user_prefs.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "net/cookies/cookie_store.h"
@@ -271,6 +272,10 @@ quota::SpecialStoragePolicy* AwBrowserContext::GetSpecialStoragePolicy() {
 
 content::PushMessagingService* AwBrowserContext::GetPushMessagingService() {
   // TODO(johnme): Support push messaging in WebView.
+  return NULL;
+}
+
+content::SSLHostStateDelegate* AwBrowserContext::GetSSLHostStateDelegate() {
   return NULL;
 }
 

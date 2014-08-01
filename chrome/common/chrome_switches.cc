@@ -1024,6 +1024,11 @@ const char kQuicVersion[]                   = "quic-version";
 // See also kPlaybackMode.
 const char kRecordMode[]                    = "record-mode";
 
+// Remember user proceeds through SSL interstitials for a specified amount of
+// time. In particular, remember these decisions through session restart. The
+// time delta to remember certificates should be specified in seconds.
+const char kRememberCertErrorDecisions[]    = "remember-cert-error-decisions";
+
 // Enables print preview in the renderer. This flag is generated internally by
 // Chrome and does nothing when directly passed to the browser.
 const char kRendererPrintPreview[]          = "renderer-print-preview";

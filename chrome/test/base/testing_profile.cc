@@ -900,6 +900,10 @@ quota::SpecialStoragePolicy* TestingProfile::GetSpecialStoragePolicy() {
 #endif
 }
 
+content::SSLHostStateDelegate* TestingProfile::GetSSLHostStateDelegate() {
+  return NULL;
+}
+
 bool TestingProfile::WasCreatedByVersionOrLater(const std::string& version) {
   return true;
 }

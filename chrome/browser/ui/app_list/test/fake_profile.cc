@@ -72,6 +72,10 @@ content::PushMessagingService* FakeProfile::GetPushMessagingService() {
   return NULL;
 }
 
+content::SSLHostStateDelegate* FakeProfile::GetSSLHostStateDelegate() {
+  return NULL;
+}
+
 scoped_refptr<base::SequencedTaskRunner>
 FakeProfile::GetIOTaskRunner() {
   return scoped_refptr<base::SequencedTaskRunner>();
