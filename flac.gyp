@@ -68,20 +68,13 @@
           'FLAC__NO_DLL',
         ],
       },
-      'conditions': [
-        ['clang == 1', {
-          'xcode_settings': {
-            'WARNING_CFLAGS': [
-              # libflac converts between FLAC__StreamDecoderState and
-              # FLAC__StreamDecoderInitStatus a lot in stream_decoder.c.
-              '-Wno-conversion',
-            ],
-          },
-          'cflags': [
-            '-Wno-conversion',
-          ],
-        }],
-      ],
+      'variables': {
+        'clang_warning_flags': [
+          # libflac converts between FLAC__StreamDecoderState and
+          # FLAC__StreamDecoderInitStatus a lot in stream_decoder.c.
+          '-Wno-conversion',
+        ],
+      },
     },
   ],
 }
