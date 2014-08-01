@@ -4,7 +4,6 @@
 */
 @font-face {
   font-family: 'Roboto';
-  font-style: normal;
   font-weight: 400;
   src: url(/roboto.woff) format('woff');
 }
@@ -12,10 +11,11 @@
 body {
   font-family: 'Roboto';
   font-size: 1em;
+  margin: 0;
 }
 
 p {
-  margin: 1em;
+  margin: 1.5em;
   text-align: justify;
 }
 
@@ -29,13 +29,19 @@ a {
 
 .label {
   display: inline-block;
-  padding: 0.5em;
-  text-align: center;
-  width: 41%;
+  padding: 1.5em;
+  white-space: nowrap;
 }
 
 .label a {
   font-weight: bold;
   text-decoration: none;
   text-transform: uppercase;
+}
+
+#button-container {
+  position: fixed;
+  text-align: right;
+  top: calc(70% - 76px /* action bar */ - 69px /* height of content */);
+  width: 100%;
 }
