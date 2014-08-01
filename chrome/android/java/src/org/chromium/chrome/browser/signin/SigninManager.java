@@ -65,6 +65,8 @@ public class SigninManager {
 
     private AlertDialog mPolicyConfirmationDialog;
 
+    private boolean mSigninAllowedByPolicy;
+
     /**
      * SignInAllowedObservers will be notified once signing-in becomes allowed or disallowed.
      */
@@ -113,6 +115,7 @@ public class SigninManager {
         ThreadUtils.assertOnUiThread();
         mContext = context.getApplicationContext();
         mNativeSigninManagerAndroid = nativeInit();
+        mSigninAllowedByPolicy = nativeIsSigninAllowedByPolicy(mNativeSigninManagerAndroid);
     }
 
     /**
@@ -132,7 +135,8 @@ public class SigninManager {
      * Returns true if signin can be started now.
      */
     public boolean isSignInAllowed() {
-        return !mFirstRunCheckIsPending &&
+        return mSigninAllowedByPolicy &&
+                !mFirstRunCheckIsPending &&
                 mSignInAccount == null &&
                 ChromeSigninController.get(mContext).getSignedInUser() == null;
     }
@@ -389,8 +393,15 @@ public class SigninManager {
         return nativeIsNewProfileManagementEnabled();
     }
 
+    @CalledByNative
+    private void onSigninAllowedByPolicyChanged(boolean newSigninAllowedByPolicy) {
+        mSigninAllowedByPolicy = newSigninAllowedByPolicy;
+        notifySignInAllowedChanged();
+    }
+
     // Native methods.
     private native long nativeInit();
+    private native boolean nativeIsSigninAllowedByPolicy(long nativeSigninManagerAndroid);
     private native boolean nativeShouldLoadPolicyForUser(String username);
     private native void nativeCheckPolicyBeforeSignIn(
             long nativeSigninManagerAndroid, String username);

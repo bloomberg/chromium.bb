@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "google_apis/gaia/merge_session_helper.h"
 
 class GoogleServiceAuthError;
@@ -54,6 +55,8 @@ class SigninManagerAndroid : public MergeSessionHelper::Observer {
 
   void ClearLastSignedInUser(JNIEnv* env, jobject obj);
 
+  jboolean IsSigninAllowedByPolicy(JNIEnv* env, jobject obj);
+
  private:
   virtual ~SigninManagerAndroid();
 
@@ -66,6 +69,8 @@ class SigninManagerAndroid : public MergeSessionHelper::Observer {
   void OnBrowsingDataRemoverDone();
 
   void ClearLastSignedInUser();
+
+  void OnSigninAllowedPrefChanged();
 
   // MergeSessionHelper::Observer implementation.
   virtual void MergeSessionCompleted(
@@ -90,6 +95,8 @@ class SigninManagerAndroid : public MergeSessionHelper::Observer {
 
   // Helper to merge the signed into account into the cookie jar session.
   scoped_ptr<MergeSessionHelper> merge_session_helper_;
+
+  PrefChangeRegistrar pref_change_registrar_;
 
   base::WeakPtrFactory<SigninManagerAndroid> weak_factory_;
 

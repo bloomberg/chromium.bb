@@ -77,6 +77,11 @@ SigninManagerAndroid::SigninManagerAndroid(JNIEnv* env, jobject obj)
   java_signin_manager_.Reset(env, obj);
   profile_ = ProfileManager::GetActiveUserProfile();
   DCHECK(profile_);
+  pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(
+      prefs::kSigninAllowed,
+      base::Bind(&SigninManagerAndroid::OnSigninAllowedPrefChanged,
+                 base::Unretained(this)));
 }
 
 SigninManagerAndroid::~SigninManagerAndroid() {}
@@ -249,6 +254,17 @@ void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env, jobject obj) {
         token_service, profile_->GetRequestContext(), this));
     merge_session_helper_->LogIn(signin_manager->GetAuthenticatedAccountId());
   }
+}
+
+jboolean SigninManagerAndroid::IsSigninAllowedByPolicy(JNIEnv* env,
+                                                       jobject obj) {
+  return SigninManagerFactory::GetForProfile(profile_)->IsSigninAllowed();
+}
+
+void SigninManagerAndroid::OnSigninAllowedPrefChanged() {
+  Java_SigninManager_onSigninAllowedByPolicyChanged(
+      base::android::AttachCurrentThread(), java_signin_manager_.obj(),
+      SigninManagerFactory::GetForProfile(profile_)->IsSigninAllowed());
 }
 
 static jlong Init(JNIEnv* env, jobject obj) {
