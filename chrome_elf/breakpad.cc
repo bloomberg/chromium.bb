@@ -23,6 +23,8 @@ const wchar_t kBreakpadVersionEntry[] = L"ver";
 const wchar_t kBreakpadProdEntry[] = L"prod";
 const wchar_t kBreakpadPlatformEntry[] = L"plat";
 const wchar_t kBreakpadPlatformWin32[] = L"Win32";
+const wchar_t kBreakpadProcessEntry[] = L"ptype";
+const wchar_t kBreakpadChannelEntry[] = L"channel";
 
 // The protocol for connecting to the out-of-process Breakpad crash
 // reporter is different for x86-32 and x86-64: the message sizes
@@ -37,14 +39,27 @@ const wchar_t kNoErrorDialogs[] = L"noerrdialogs";
 const wchar_t kChromeHeadless[] = L"CHROME_HEADLESS";
 
 google_breakpad::CustomClientInfo* GetCustomInfo() {
+  base::string16 process = IsNonBrowserProcess() ? L"renderer" : L"browser";
+
+  wchar_t exe_path[MAX_PATH] = {};
+  base::string16 channel;
+  if (GetModuleFileName(NULL, exe_path, arraysize(exe_path)) &&
+      IsCanary(exe_path)) {
+    channel = L"canary";
+  }
+
   static google_breakpad::CustomInfoEntry ver_entry(
       kBreakpadVersionEntry, TEXT(CHROME_VERSION_STRING));
   static google_breakpad::CustomInfoEntry prod_entry(
       kBreakpadProdEntry, kBreakpadProductName);
   static google_breakpad::CustomInfoEntry plat_entry(
       kBreakpadPlatformEntry, kBreakpadPlatformWin32);
+  static google_breakpad::CustomInfoEntry proc_entry(
+      kBreakpadProcessEntry, process.c_str());
+  static google_breakpad::CustomInfoEntry channel_entry(
+      kBreakpadChannelEntry, channel.c_str());
   static google_breakpad::CustomInfoEntry entries[] = {
-      ver_entry, prod_entry, plat_entry  };
+      ver_entry, prod_entry, plat_entry, proc_entry, channel_entry};
   static google_breakpad::CustomClientInfo custom_info = {
       entries, arraysize(entries) };
   return &custom_info;
