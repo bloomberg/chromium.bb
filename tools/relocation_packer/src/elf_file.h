@@ -69,7 +69,10 @@ namespace relocation_packer {
 // sections.
 class ElfFile {
  public:
-  explicit ElfFile(int fd) { memset(this, 0, sizeof(*this)); fd_ = fd; }
+  explicit ElfFile(int fd)
+      : fd_(fd), is_padding_relocations_(false), elf_(NULL),
+        relocations_section_(NULL), dynamic_section_(NULL),
+        android_relocations_section_(NULL), relocations_type_(NONE) {}
   ~ElfFile() {}
 
   // Set padding mode.  When padding, PackRelocations() will not shrink
@@ -109,12 +112,12 @@ class ElfFile {
   // Write ELF file changes.
   void Flush();
 
+  // File descriptor opened on the shared object.
+  int fd_;
+
   // If set, pad rather than shrink .rel.dyn or .rela.dyn.  Primarily for
   // debugging, allows packing to be checked without affecting load addresses.
   bool is_padding_relocations_;
-
-  // File descriptor opened on the shared object.
-  int fd_;
 
   // Libelf handle, assigned by Load().
   Elf* elf_;

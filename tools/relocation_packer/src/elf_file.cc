@@ -27,7 +27,9 @@ static const ELF::Sword DT_ANDROID_REL_SIZE = DT_LOOS + 1;
 
 // Alignment to preserve, in bytes.  This must be at least as large as the
 // largest d_align and sh_addralign values found in the loaded file.
-static const size_t kPreserveAlignment = 256;
+// Out of caution for RELRO page alignment, we preserve to a complete target
+// page.  See http://www.airs.com/blog/archives/189.
+static const size_t kPreserveAlignment = 4096;
 
 namespace {
 
@@ -130,6 +132,10 @@ bool ElfFile::Load() {
   }
   if (elf_header->e_machine != ELF::kMachine) {
     LOG(ERROR) << "ELF file architecture is not " << ELF::Machine();
+    return false;
+  }
+  if (elf_header->e_type != ET_DYN) {
+    LOG(ERROR) << "ELF file is not a shared object";
     return false;
   }
 
@@ -692,15 +698,19 @@ void AdjustRelocationTargets(Elf* elf,
   while ((section = elf_nextscn(elf, section)) != NULL) {
     const ELF::Shdr* section_header = ELF::getshdr(section);
 
-    // Identify this section's start and end addresses.
-    const ELF::Addr section_start = section_header->sh_addr;
-    const ELF::Addr section_end = section_start + section_header->sh_size;
+    // Ignore sections that do not appear in a process memory image.
+    if (section_header->sh_addr == 0)
+      continue;
 
     Elf_Data* data = GetSectionData(section);
 
     // Ignore sections with no effective data.
     if (data->d_buf == NULL)
       continue;
+
+    // Identify this section's start and end addresses.
+    const ELF::Addr section_start = section_header->sh_addr;
+    const ELF::Addr section_end = section_start + section_header->sh_size;
 
     // Create a copy-on-write pointer to the section's data.
     uint8_t* area = reinterpret_cast<uint8_t*>(data->d_buf);
@@ -984,8 +994,10 @@ bool ElfFile::UnpackRelocations() {
       packed_base + data->d_size / sizeof(packed[0]));
 
   if (packed.size() > 3 &&
-      packed[0] == 'A' && packed[1] == 'P' &&
-      packed[2] == 'R' && packed[3] == '1') {
+      packed[0] == 'A' &&
+      packed[1] == 'P' &&
+      packed[2] == 'R' &&
+      packed[3] == '1') {
     // Signature is APR1, unpack relocations.
     CHECK(relocations_type_ == REL);
     LOG(INFO) << "Relocations   : REL";
@@ -993,8 +1005,10 @@ bool ElfFile::UnpackRelocations() {
   }
 
   if (packed.size() > 3 &&
-      packed[0] == 'A' && packed[1] == 'P' &&
-      packed[2] == 'A' && packed[3] == '1') {
+      packed[0] == 'A' &&
+      packed[1] == 'P' &&
+      packed[2] == 'A' &&
+      packed[3] == '1') {
     // Signature is APA1, unpack relocations with addends.
     CHECK(relocations_type_ == RELA);
     LOG(INFO) << "Relocations   : RELA";

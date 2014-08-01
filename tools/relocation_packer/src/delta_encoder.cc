@@ -48,7 +48,7 @@ void RelocationDeltaCodec::Decode(const std::vector<ELF::Sxword>& packed,
 
   // Ensure that the packed data offers enough pairs.  There may be zero
   // padding on it that we ignore.
-  CHECK(packed[0] <= (packed.size() - 1) >> 1);
+  CHECK(static_cast<size_t>(packed[0]) <= (packed.size() - 1) >> 1);
 
   ELF::Addr offset = 0;
   ELF::Sxword addend = 0;
