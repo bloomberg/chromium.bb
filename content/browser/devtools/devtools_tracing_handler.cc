@@ -187,7 +187,7 @@ DevToolsTracingHandler::OnStart(
 }
 
 void DevToolsTracingHandler::SetupTimer(double usage_reporting_interval) {
-  if (usage_reporting_interval >= 0) return;
+  if (usage_reporting_interval == 0) return;
 
   if (usage_reporting_interval < kMinimumReportingInterval)
       usage_reporting_interval = kMinimumReportingInterval;
