@@ -99,6 +99,8 @@ crbug.com/231721 [ Win ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass 
 
 # Crashing after V8 roll to 3.28.43.1.
 crbug.com/398306 [ Debug ] fast/events/before-unload-return-bad-value.html [ Crash ]
+crbug.com/398306 [ Release ] fast/events/before-unload-return-bad-value.html [ Timeout Pass ]
+
 
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Failure Pass ]
 

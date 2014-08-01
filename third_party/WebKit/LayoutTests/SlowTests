@@ -157,8 +157,6 @@ crbug.com/358313 virtual/gpu/fast/canvas/webgl/webgl-large-texture.html [ Slow ]
 
 crbug.com/298188 virtual/implsidepainting/inspector/timeline/timeline-paint.html [ Slow ]
 
-crbug.com/399419 fast/events/before-unload-return-bad-value.html [ Slow ]
-
 crbug.com/24182 crbug.com/318490 [ Win Linux Android ] virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Slow ]
 
 crbug.com/313338 inspector/sources/debugger/debugger-proto-property.html [ Slow ]
