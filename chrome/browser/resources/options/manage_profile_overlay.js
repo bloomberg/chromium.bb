@@ -117,7 +117,7 @@ cr.define('options', function() {
         // is shown again when the import overlay loads. TODO(akuegel): Remove
         // this temporary fix when crbug/246304 is resolved.
         $('import-existing-supervised-user-link').hidden = true;
-        PageManager.showPageByName('managedUserImport');
+        PageManager.showPageByName('supervisedUserImport');
       };
     },
 
