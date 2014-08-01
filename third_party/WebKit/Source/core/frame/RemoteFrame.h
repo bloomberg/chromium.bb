@@ -18,6 +18,8 @@ public:
 
     virtual ~RemoteFrame();
 
+    virtual void detach() OVERRIDE;
+
     void setView(PassRefPtr<RemoteFrameView>);
     void createView();
 

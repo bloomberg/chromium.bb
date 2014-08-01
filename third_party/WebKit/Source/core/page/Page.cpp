@@ -602,8 +602,7 @@ void Page::willBeDestroyed()
 {
     RefPtr<Frame> mainFrame = m_mainFrame;
 
-    if (mainFrame->isLocalFrame())
-        toLocalFrame(mainFrame.get())->loader().frameDetached();
+    mainFrame->detach();
 
     // Disable all agents prior to resetting the frame view.
     m_inspectorController->willBeDestroyed();

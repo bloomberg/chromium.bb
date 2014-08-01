@@ -91,6 +91,18 @@ Frame::~Frame()
 #endif
 }
 
+void Frame::detachChildren()
+{
+    typedef Vector<RefPtr<Frame> > FrameVector;
+    FrameVector childrenToDetach;
+    childrenToDetach.reserveCapacity(tree().childCount());
+    for (Frame* child = tree().firstChild(); child; child = child->tree().nextSibling())
+        childrenToDetach.append(child);
+    FrameVector::iterator end = childrenToDetach.end();
+    for (FrameVector::iterator it = childrenToDetach.begin(); it != end; ++it)
+        (*it)->detach();
+}
+
 FrameHost* Frame::host() const
 {
     return m_host;

@@ -56,6 +56,9 @@ public:
 
     virtual ~Frame();
 
+    virtual void detach() = 0;
+    void detachChildren();
+
     FrameClient* client() const;
     void clearClient();
 

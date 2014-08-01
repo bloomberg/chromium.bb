@@ -26,6 +26,12 @@ RemoteFrame::~RemoteFrame()
     setView(nullptr);
 }
 
+void RemoteFrame::detach()
+{
+    detachChildren();
+    m_host = 0;
+}
+
 void RemoteFrame::setView(PassRefPtr<RemoteFrameView> view)
 {
     m_view = view;

@@ -77,6 +77,8 @@ namespace blink {
 
         virtual ~LocalFrame();
 
+        virtual void detach() OVERRIDE;
+
         void addDestructionObserver(FrameDestructionObserver*);
         void removeDestructionObserver(FrameDestructionObserver*);
 

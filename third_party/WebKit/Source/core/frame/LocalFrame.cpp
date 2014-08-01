@@ -124,6 +124,21 @@ LocalFrame::~LocalFrame()
         (*it)->frameDestroyed();
 }
 
+void LocalFrame::detach()
+{
+    // A lot of the following steps can result in the current frame being
+    // detached, so protect a reference to it.
+    RefPtr<LocalFrame> protect(this);
+    m_loader.stopAllLoaders();
+    m_loader.closeURL();
+    detachChildren();
+    // stopAllLoaders() needs to be called after detachChildren(), because detachChildren()
+    // will trigger the unload event handlers of any child frames, and those event
+    // handlers might start a new subresource load in this frame.
+    m_loader.stopAllLoaders();
+    m_loader.detachFromParent();
+}
+
 bool LocalFrame::inScope(TreeScope* scope) const
 {
     ASSERT(scope);
