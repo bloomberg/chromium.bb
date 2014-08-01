@@ -15,6 +15,12 @@
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
+#if defined(USE_AURA)
+#include "content/public/browser/render_widget_host_view.h"
+#include "ui/aura/client/focus_change_observer.h"
+#include "ui/aura/client/focus_client.h"
+#endif
+
 using ui::WebDialogDelegate;
 using ui::WebDialogWebContentsDelegate;
 
@@ -58,6 +64,44 @@ class ConstrainedWebDialogDelegateViews
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWebDialogDelegateViews);
 };
+
+#if defined(USE_AURA)
+// TODO(msw): Make this part of WebView? Modify various WebContentsDelegates?
+class WebViewFocusHelper : public aura::client::FocusChangeObserver {
+ public:
+  explicit WebViewFocusHelper(views::WebView* web_view)
+      : web_view_(web_view),
+        window_(NULL),
+        focus_client_(NULL) {
+    if (web_view_ && web_view_->web_contents()) {
+      content::RenderWidgetHostView* host_view =
+          web_view_->web_contents()->GetRenderWidgetHostView();
+      window_ = host_view ? host_view->GetNativeView() : NULL;
+    }
+    focus_client_ = window_ ? aura::client::GetFocusClient(window_) : NULL;
+    if (focus_client_)
+      focus_client_->AddObserver(this);
+  }
+
+  virtual ~WebViewFocusHelper() {
+    if (focus_client_)
+      focus_client_->RemoveObserver(this);
+  }
+
+  virtual void OnWindowFocused(aura::Window* gained_focus,
+                               aura::Window* lost_focus) OVERRIDE {
+    if (gained_focus == window_ && !web_view_->HasFocus())
+      web_view_->RequestFocus();
+  }
+
+ private:
+  views::WebView* web_view_;
+  aura::Window* window_;
+  aura::client::FocusClient* focus_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebViewFocusHelper);
+};
+#endif
 
 class ConstrainedWebDialogDelegateViewViews
     : public views::WebView,
@@ -147,8 +191,17 @@ class ConstrainedWebDialogDelegateViewViews
     return gfx::Size();
   }
 
+  void OnShow() {
+#if defined(USE_AURA)
+  web_view_focus_helper_.reset(new WebViewFocusHelper(this));
+#endif
+  }
+
  private:
   scoped_ptr<ConstrainedWebDialogDelegateViews> impl_;
+#if defined(USE_AURA)
+  scoped_ptr<WebViewFocusHelper> web_view_focus_helper_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWebDialogDelegateViewViews);
 };
@@ -164,5 +217,6 @@ ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
       new ConstrainedWebDialogDelegateViewViews(
           browser_context, delegate, tab_delegate);
   ShowWebModalDialogViews(dialog, web_contents);
+  dialog->OnShow();
   return dialog;
 }
