@@ -145,7 +145,7 @@ public:
     // FIXME: These methods should all be renamed to something better than "check",
     // since it's not clear that they alter the style bits of siblings and children.
     void checkForChildrenAdjacentRuleChanges();
-    enum SiblingCheckType { FinishedParsingChildren, SiblingRemoved, Other };
+    enum SiblingCheckType { FinishedParsingChildren, SiblingElementInserted, SiblingElementRemoved };
     void checkForSiblingStyleChanges(SiblingCheckType, Node* nodeBeforeChange, Node* nodeAfterChange);
 
     bool childrenSupportStyleSharing() const { return !hasRestyleFlags(); }
@@ -153,11 +153,37 @@ public:
     // -----------------------------------------------------------------------------
     // Notification of document structure changes (see core/dom/Node.h for more notification methods)
 
-    enum ChildrenChangeType { ChildInserted, ChildRemoved, AllChildrenRemoved, TextChanged };
+    enum ChildrenChangeType { ElementInserted, NonElementInserted, ElementRemoved, NonElementRemoved, AllChildrenRemoved, TextChanged };
     enum ChildrenChangeSource { ChildrenChangeSourceAPI, ChildrenChangeSourceParser };
     struct ChildrenChange {
         STACK_ALLOCATED();
     public:
+        static ChildrenChange forInsertion(Node& node, ChildrenChangeSource byParser)
+        {
+            ChildrenChange change = {
+                node.isElementNode() ? ElementInserted : NonElementInserted,
+                node.previousSibling(),
+                node.nextSibling(),
+                byParser
+            };
+            return change;
+        }
+
+        static ChildrenChange forRemoval(Node& node, Node* previousSibling, Node* nextSibling, ChildrenChangeSource byParser)
+        {
+            ChildrenChange change = {
+                node.isElementNode() ? ElementRemoved : NonElementRemoved,
+                previousSibling,
+                nextSibling,
+                byParser
+            };
+            return change;
+        }
+
+        bool isChildInsertion() const { return type == ElementInserted || type == NonElementInserted; }
+        bool isChildRemoval() const { return type == ElementRemoved || type == NonElementRemoved; }
+        bool isChildElementChange() const { return type == ElementInserted || type == ElementRemoved; }
+
         ChildrenChangeType type;
         RawPtrWillBeMember<Node> siblingBeforeChange;
         RawPtrWillBeMember<Node> siblingAfterChange;

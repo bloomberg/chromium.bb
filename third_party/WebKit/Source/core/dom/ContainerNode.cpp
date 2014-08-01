@@ -569,8 +569,7 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::removeChild(PassRefPtrWillBeRawPtr<N
         Node* next = child->nextSibling();
         removeBetween(prev, next, *child);
         notifyNodeRemoved(*child);
-        ChildrenChange change = {ChildRemoved, prev, next, ChildrenChangeSourceAPI};
-        childrenChanged(change);
+        childrenChanged(ChildrenChange::forRemoval(*child, prev, next, ChildrenChangeSourceAPI));
     }
     dispatchSubtreeModifiedEvent();
     return child;
@@ -616,9 +615,8 @@ void ContainerNode::parserRemoveChild(Node& oldChild)
 
     removeBetween(prev, next, oldChild);
 
-    ChildrenChange change = {ChildRemoved, prev, next, ChildrenChangeSourceParser};
     notifyNodeRemoved(oldChild);
-    childrenChanged(change);
+    childrenChanged(ChildrenChange::forRemoval(oldChild, prev, next, ChildrenChangeSourceParser));
 }
 
 // this differs from other remove functions because it forcibly removes all the children,
@@ -785,8 +783,7 @@ void ContainerNode::notifyNodeInserted(Node& root, ChildrenChangeSource source)
     NodeVector postInsertionNotificationTargets;
     notifyNodeInsertedInternal(root, postInsertionNotificationTargets);
 
-    ChildrenChange change = {ChildInserted, root.previousSibling(), root.nextSibling(), source};
-    childrenChanged(change);
+    childrenChanged(ChildrenChange::forInsertion(root, source));
 
     for (size_t i = 0; i < postInsertionNotificationTargets.size(); ++i) {
         Node* targetNode = postInsertionNotificationTargets[i].get();
@@ -852,7 +849,7 @@ void ContainerNode::childrenChanged(const ChildrenChange& change)
     if (!change.byParser && change.type != TextChanged)
         document().updateRangesAfterChildrenChanged(this);
     invalidateNodeListCachesInAncestors();
-    if (change.type == ChildInserted && !childNeedsStyleRecalc()) {
+    if (change.isChildInsertion() && !childNeedsStyleRecalc()) {
         setChildNeedsStyleRecalc();
         markAncestorsWithChildNeedsStyleRecalc();
     }
@@ -1274,11 +1271,13 @@ void ContainerNode::checkForSiblingStyleChanges(SiblingCheckType changeType, Nod
         RenderStyle* elementAfterChangeStyle = elementAfterChange ? elementAfterChange->renderStyle() : 0;
 
         // This is the element insertion as first child element case.
-        if (firstChildElement != elementAfterChange && elementAfterChangeStyle && elementAfterChangeStyle->firstChildState())
+        if (firstChildElement != elementAfterChange && elementAfterChangeStyle && elementAfterChangeStyle->firstChildState()) {
+            ASSERT(changeType == SiblingElementInserted);
             elementAfterChange->setNeedsStyleRecalc(SubtreeStyleChange);
+        }
 
         // This is the first child element removal case.
-        if (changeType == SiblingRemoved && firstChildElement == elementAfterChange && firstChildElement && (!firstChildElementStyle || !firstChildElementStyle->firstChildState()))
+        if (changeType == SiblingElementRemoved && firstChildElement == elementAfterChange && firstChildElement && (!firstChildElementStyle || !firstChildElementStyle->firstChildState()))
             firstChildElement->setNeedsStyleRecalc(SubtreeStyleChange);
     }
 
@@ -1294,12 +1293,14 @@ void ContainerNode::checkForSiblingStyleChanges(SiblingCheckType changeType, Nod
         RenderStyle* elementBeforeChangeStyle = elementBeforeChange ? elementBeforeChange->renderStyle() : 0;
 
         // This is the element insertion as last child element case.
-        if (lastChildElement != elementBeforeChange && elementBeforeChangeStyle && elementBeforeChangeStyle->lastChildState())
+        if (lastChildElement != elementBeforeChange && elementBeforeChangeStyle && elementBeforeChangeStyle->lastChildState()) {
+            ASSERT(SiblingElementInserted);
             elementBeforeChange->setNeedsStyleRecalc(SubtreeStyleChange);
+        }
 
         // This is the last child element removal case. The parser callback case is similar to node removal as well in that we need to change the last child
         // to match now.
-        if ((changeType == SiblingRemoved || changeType == FinishedParsingChildren) && lastChildElement == elementBeforeChange && lastChildElement && (!lastChildElementStyle || !lastChildElementStyle->lastChildState()))
+        if ((changeType == SiblingElementRemoved || changeType == FinishedParsingChildren) && lastChildElement == elementBeforeChange && lastChildElement && (!lastChildElementStyle || !lastChildElementStyle->lastChildState()))
             lastChildElement->setNeedsStyleRecalc(SubtreeStyleChange);
     }
 

@@ -1768,8 +1768,8 @@ void Element::childrenChanged(const ChildrenChange& change)
     ContainerNode::childrenChanged(change);
 
     checkForEmptyStyleChange();
-    if (!change.byParser)
-        checkForSiblingStyleChanges(change.type == ChildRemoved ? SiblingRemoved : Other, change.siblingBeforeChange, change.siblingAfterChange);
+    if (!change.byParser && change.isChildElementChange())
+        checkForSiblingStyleChanges(change.type == ElementRemoved ? SiblingElementRemoved : SiblingElementInserted, change.siblingBeforeChange, change.siblingAfterChange);
 
     if (ElementShadow* shadow = this->shadow())
         shadow->setNeedsDistributionRecalc();
