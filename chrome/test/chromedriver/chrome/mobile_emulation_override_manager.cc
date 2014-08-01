@@ -46,13 +46,13 @@ Status MobileEmulationOverrideManager::ApplyOverrideIfNeeded() {
   // Old revisions of Blink expect a parameter named |emulateViewport| but in
   // Blink revision 177367 (Chromium revision 281046, build number 2081) this
   // was renamed to |mobile|.
-  std::string tmp = "mobile";
+  std::string mobile_param_name = "mobile";
   if (browser_info_->browser_name == "chrome") {
     if (browser_info_->build_no <= 2081)
-      tmp = "emulateViewport";
+      mobile_param_name = "emulateViewport";
   } else {
     if (browser_info_->blink_revision < 177367)
-      tmp = "emulateViewport";
+      mobile_param_name = "emulateViewport";
   }
 
   base::DictionaryValue params;
@@ -60,7 +60,7 @@ Status MobileEmulationOverrideManager::ApplyOverrideIfNeeded() {
   params.SetInteger("height", overridden_device_metrics_->height);
   params.SetDouble("deviceScaleFactor",
                    overridden_device_metrics_->device_scale_factor);
-  params.SetBoolean(tmp, overridden_device_metrics_->mobile);
+  params.SetBoolean(mobile_param_name, overridden_device_metrics_->mobile);
   params.SetBoolean("fitWindow", overridden_device_metrics_->fit_window);
   params.SetBoolean("textAutosizing",
                     overridden_device_metrics_->text_autosizing);
