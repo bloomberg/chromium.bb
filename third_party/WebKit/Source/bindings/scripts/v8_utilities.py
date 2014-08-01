@@ -74,6 +74,15 @@ def has_extended_attribute_value(definition_or_member, name, value):
             extended_attribute_value_contains(extended_attributes[name], value))
 
 
+def sorted_extended_attribute_set(definition_or_member, name):
+    extended_attributes = definition_or_member.extended_attributes
+    if name not in extended_attributes:
+        return []
+
+    attribute_values = re.split('[|&]', extended_attributes[name])
+    return sorted(attribute_values)
+
+
 ################################################################################
 # String handling
 ################################################################################
@@ -223,6 +232,48 @@ def deprecate_as(member):
         return None
     includes.add('core/frame/UseCounter.h')
     return extended_attributes['DeprecateAs']
+
+
+# [Exposed]
+EXPOSED_EXECUTION_CONTEXT_METHOD = {
+    'DedicatedWorker': 'isDedicatedWorkerGlobalScope',
+    'ServiceWorker': 'isServiceWorkerGlobalScope',
+    'SharedWorker': 'isSharedWorkerGlobalScope',
+    'Window': 'isDocument',
+    'Worker': 'isWorkerGlobalScope',
+}
+
+
+def exposed(definition_or_member, interface):
+    exposure_set = sorted_extended_attribute_set(definition_or_member, 'Exposed')
+    if not exposure_set:
+        return None
+
+    interface_exposure_set = expanded_exposure_set_for_interface(interface)
+
+    # Methods must not be exposed to a broader scope than their interface.
+    if not set(exposure_set).issubset(interface_exposure_set):
+        raise ValueError('Interface members\' exposure sets must be a subset of the interface\'s.')
+
+    exposure_checks = []
+    for environment in exposure_set:
+        # Methods must be exposed on one of the scopes known to Blink.
+        if environment not in EXPOSED_EXECUTION_CONTEXT_METHOD:
+            raise ValueError('Values for the [Exposed] annotation must reflect to a valid exposure scope.')
+
+        exposure_checks.append('context->%s()' % EXPOSED_EXECUTION_CONTEXT_METHOD[environment])
+
+    return ' || '.join(exposure_checks)
+
+
+def expanded_exposure_set_for_interface(interface):
+    exposure_set = sorted_extended_attribute_set(interface, 'Exposed')
+
+    # "Worker" is an aggregation for the different kinds of workers.
+    if 'Worker' in exposure_set:
+        exposure_set.extend(('DedicatedWorker', 'SharedWorker', 'ServiceWorker'))
+
+    return sorted(set(exposure_set))
 
 
 # [GarbageCollected], [WillBeGarbageCollected]

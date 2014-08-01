@@ -64,6 +64,9 @@ public:
     // Delegating to ExecutionContextClient
     bool isDocument() const { return m_client && m_client->isDocument(); }
     bool isWorkerGlobalScope() const { return m_client && m_client->isWorkerGlobalScope(); }
+    bool isDedicatedWorkerGlobalScope() const { return m_client && m_client->isDedicatedWorkerGlobalScope(); }
+    bool isSharedWorkerGlobalScope() const { return m_client && m_client->isSharedWorkerGlobalScope(); }
+    bool isServiceWorkerGlobalScope() const { return m_client && m_client->isServiceWorkerGlobalScope(); }
     bool isJSExecutionForbidden() { return m_client && m_client->isJSExecutionForbidden(); }
     SecurityOrigin* securityOrigin() const;
     ContentSecurityPolicy* contentSecurityPolicy() const;

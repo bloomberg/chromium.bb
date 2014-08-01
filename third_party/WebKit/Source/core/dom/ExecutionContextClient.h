@@ -49,6 +49,9 @@ public:
 
     virtual bool isDocument() const { return false; }
     virtual bool isWorkerGlobalScope() const { return false; }
+    virtual bool isDedicatedWorkerGlobalScope() const { return false; }
+    virtual bool isSharedWorkerGlobalScope() const { return false; }
+    virtual bool isServiceWorkerGlobalScope() const { return false; }
     virtual bool isJSExecutionForbidden() const = 0;
     virtual LocalDOMWindow* executingWindow() { return 0; }
     virtual String userAgent(const KURL&) const = 0;

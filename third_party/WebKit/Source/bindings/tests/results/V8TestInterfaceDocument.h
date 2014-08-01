@@ -44,8 +44,8 @@ public:
     {
         return static_cast<TestInterfaceDocument*>(V8Document::fromInternalPointer(object));
     }
-    static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestInterfaceDocument*, v8::Isolate*) { }
-    static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
+    static void installConditionallyEnabledProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
+    static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
 
 private:
     friend v8::Handle<v8::Object> wrap(TestInterfaceDocument*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
