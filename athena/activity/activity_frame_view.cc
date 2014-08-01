@@ -30,6 +30,7 @@ ActivityFrameView::ActivityFrameView(views::Widget* frame,
   title_->SetFontList(font_list.Derive(1, gfx::Font::BOLD));
   title_->SetEnabledColor(SK_ColorBLACK);
   AddChildView(title_);
+  UpdateWindowTitle();
 }
 
 ActivityFrameView::~ActivityFrameView() {

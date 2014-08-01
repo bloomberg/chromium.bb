@@ -349,11 +349,11 @@ void WebActivity::Init() {
 
 SkColor WebActivity::GetRepresentativeColor() const {
   // TODO(sad): Compute the color from the favicon.
-  return SK_ColorGRAY;
+  return web_view_ ? SK_ColorGRAY : SkColorSetRGB(0xbb, 0x77, 0x77);
 }
 
 base::string16 WebActivity::GetTitle() const {
-  return web_view_->GetWebContents()->GetTitle();
+  return web_view_ ? web_view_->GetWebContents()->GetTitle() : base::string16();
 }
 
 bool WebActivity::UsesFrame() const {
