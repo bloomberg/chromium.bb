@@ -221,6 +221,7 @@ def main():
   columns = [('processing', 0), ('processed', 0), ('todo', 0)]
   progress = threading_utils.Progress(columns)
   index = 0
+  results = []
   with threading_utils.ThreadPoolWithProgress(
       progress, 1, options.concurrent, 0) as pool:
     try:
@@ -246,6 +247,19 @@ def main():
           index += 1
           progress.print_update()
         time.sleep(0.01)
+      progress.update_item('Getting results for on-going tasks.', raw=True)
+      for i in pool.iter_results():
+        results.append(i)
+        # This is a bit excessive but it's useful in the case where some tasks
+        # hangs, so at least partial data is available.
+        if options.dump:
+          results.sort()
+          if os.path.exists(options.dump):
+            os.rename(options.dump, options.dump + '.old')
+          with open(options.dump, 'wb') as f:
+            json.dump(results, f, separators=(',',':'))
+      if not options.dump:
+        results.sort()
     except KeyboardInterrupt:
       aborted = pool.abort()
       progress.update_item(
@@ -253,20 +267,12 @@ def main():
           raw=True,
           todo=-aborted)
       progress.print_update()
-    finally:
-      # TODO(maruel): We could give up on collecting results for the on-going
-      # tasks but that would need to be optional.
-      progress.update_item('Getting results for on-going tasks.', raw=True)
-      results = sorted(pool.join())
   progress.print_update()
   # At this point, progress is not used anymore.
   print('')
   print(' - Took %.1fs.' % (time.time() - start))
   print('')
   print_results(results, options.columns, options.buckets)
-  if options.dump:
-    with open(options.dump, 'w') as f:
-      json.dump(results, f, separators=(',',':'))
   return 0
 
 

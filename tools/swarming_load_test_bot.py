@@ -325,7 +325,7 @@ def main():
   print('')
   print('Ran for %.1fs.' % (time.time() - start))
   print('')
-  results = events.queue
+  results = list(events.queue)
   print_results(results, options.columns, options.buckets)
   if options.dump:
     with open(options.dump, 'w') as f:
