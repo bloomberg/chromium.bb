@@ -48,6 +48,10 @@ void ContentMainDelegate::ZygoteStarting(
 
 #endif
 
+bool ContentMainDelegate::ShouldEnableTerminationOnHeapCorruption() {
+  return true;
+}
+
 ContentBrowserClient* ContentMainDelegate::CreateContentBrowserClient() {
 #if defined(CHROME_MULTIPLE_DLL_CHILD)
   return NULL;

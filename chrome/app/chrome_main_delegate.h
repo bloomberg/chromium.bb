@@ -42,7 +42,10 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
   virtual void ZygoteStarting(
       ScopedVector<content::ZygoteForkDelegate>* delegates) OVERRIDE;
   virtual void ZygoteForked() OVERRIDE;
+#elif defined(OS_WIN)
+  virtual bool ShouldEnableTerminationOnHeapCorruption() OVERRIDE;
 #endif
+
   virtual content::ContentBrowserClient* CreateContentBrowserClient() OVERRIDE;
   virtual content::ContentPluginClient* CreateContentPluginClient() OVERRIDE;
   virtual content::ContentRendererClient*

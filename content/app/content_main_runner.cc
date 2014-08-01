@@ -554,10 +554,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     is_initialized_ = true;
     delegate_ = params.delegate;
 
-    if (params.enable_termination_on_heap_corruption)
-      base::EnableTerminationOnHeapCorruption();
-    base::EnableTerminationOnOutOfMemory();
-
     // The exit manager is in charge of calling the dtors of singleton objects.
     // On Android, AtExitManager is set up when library is loaded.
     // On iOS, it's set up in main(), which can't call directly through to here.
@@ -594,6 +590,10 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #endif
 
     CommandLine::Init(argc, argv);
+
+    if (!delegate_ || delegate_->ShouldEnableTerminationOnHeapCorruption())
+      base::EnableTerminationOnHeapCorruption();
+    base::EnableTerminationOnOutOfMemory();
 
 #if !defined(OS_IOS)
     SetProcessTitleFromCommandLine(argv);
