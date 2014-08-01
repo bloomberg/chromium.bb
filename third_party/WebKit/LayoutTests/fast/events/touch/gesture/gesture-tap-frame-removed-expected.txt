@@ -8,6 +8,7 @@ Sending GestureShowPress
 Sending GestureTap
 Received mousemove in child frame
 Removing iframe
+PASS document.getElementById('target') is null
 PASS successfullyParsed is true
 
 TEST COMPLETE

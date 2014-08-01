@@ -1,4 +1,4 @@
-Verifies that deleting the element being tapped during the event sequence doesn't cause any problems. Succeeds if the expected events are delivered to the div, events after removal don't bubble up, and we don't crash.
+Verifies that deleting the element being tapped during the event sequence doesn't cause any problems. Succeeds if the expected events are delivered, events after removal go to the new node at the point of tap, and we don't crash.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
@@ -12,7 +12,7 @@ Sending GestureTap
 Received mousemove on target
 Removed element
 Received mousemove on #document
-Received mousedown on target
-Received mouseup on target
-Received click on target
+Received mousedown on #document
+Received mouseup on #document
+Received click on #document
 

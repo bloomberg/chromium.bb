@@ -1,0 +1,37 @@
+
+Verifies that a tap occuring in a scrolled iframe has the correct co-ordinates
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Sending GestureTapDown to 25,19
+Sending GestureShowPress
+Sending GestureTap
+Received mousemove in child frame
+PASS event.screenX is point.x
+PASS event.screenY is point.y
+PASS event.clientX is 50 / 2
+PASS event.clientY is 50 / 2 + 7
+Received mousedown in child frame
+PASS event.screenX is point.x
+PASS event.screenY is point.y
+PASS event.clientX is 50 / 2
+PASS event.clientY is 50 / 2 + 7
+Received mouseup in child frame
+PASS event.screenX is point.x
+PASS event.screenY is point.y
+PASS event.clientX is 50 / 2
+PASS event.clientY is 50 / 2 + 7
+Received click in child frame
+PASS event.screenX is point.x
+PASS event.screenY is point.y
+PASS event.clientX is 50 / 2
+PASS event.clientY is 50 / 2 + 7
+PASS eventReceived.mousemove is true
+PASS eventReceived.mousedown is true
+PASS eventReceived.mouseup is true
+PASS eventReceived.click is true
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

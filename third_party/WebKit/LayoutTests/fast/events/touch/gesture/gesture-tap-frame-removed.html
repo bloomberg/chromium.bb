@@ -47,6 +47,8 @@ if (window.eventSender) {
         debug("Sending GestureTap");
         eventSender.gestureTap(point.x, point.y);
 
+        shouldBeNull("document.getElementById('target')");
+
         setTimeout(finishJSTest, 0);
     }
 } else {

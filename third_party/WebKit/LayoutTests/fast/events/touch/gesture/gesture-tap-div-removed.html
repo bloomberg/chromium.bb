@@ -12,10 +12,6 @@
   Tap me
 </div>
 <script>
-
-if (window.testRunner)
-    testRunner.dumpAsText();
-
 function eventLogger(e) {
     debug("Received " + e.type + " on " + (e.currentTarget.id || e.currentTarget.nodeName));
 }
@@ -38,13 +34,13 @@ function getTargetPoint() {
     // so that it's elligble for garbage collection.
     var target = document.getElementById('target');
     target.addEventListener('mousemove', logAndRemove);
-    target.addEventListener('mousedown', eventLogger);
-    target.addEventListener('mouseup', eventLogger);
-    target.addEventListener('click', eventLogger);
+    target.addEventListener('mousedown', logAndFail);
+    target.addEventListener('mouseup', logAndFail);
+    target.addEventListener('click', logAndFail);
     document.addEventListener('mousemove', eventLogger);
-    document.addEventListener('mousedown', logAndFail);
-    document.addEventListener('mouseup', logAndFail);
-    document.addEventListener('click', logAndFail);
+    document.addEventListener('mousedown', eventLogger);
+    document.addEventListener('mouseup', eventLogger);
+    document.addEventListener('click', eventLogger);
 
     var rect = target.getBoundingClientRect();
     return {
@@ -54,7 +50,7 @@ function getTargetPoint() {
 }
 
 onload = function() {
-    description("Verifies that deleting the element being tapped during the event sequence doesn't cause any problems.  Succeeds if the expected events are delivered to the div, events after removal don't bubble up, and we don't crash.");
+    description("Verifies that deleting the element being tapped during the event sequence doesn't cause any problems.  Succeeds if the expected events are delivered, events after removal go to the new node at the point of tap, and we don't crash.");
 
     var point = getTargetPoint();
 
