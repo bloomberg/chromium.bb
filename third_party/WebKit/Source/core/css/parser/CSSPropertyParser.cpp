@@ -7838,32 +7838,25 @@ bool CSSPropertyParser::parseLineBoxContain(bool important)
     LineBoxContain lineBoxContain = LineBoxContainNone;
 
     for (CSSParserValue* value = m_valueList->current(); value; value = m_valueList->next()) {
+        LineBoxContainFlags flag;
         if (value->id == CSSValueBlock) {
-            if (lineBoxContain & LineBoxContainBlock)
-                return false;
-            lineBoxContain |= LineBoxContainBlock;
+            flag = LineBoxContainBlock;
         } else if (value->id == CSSValueInline) {
-            if (lineBoxContain & LineBoxContainInline)
-                return false;
-            lineBoxContain |= LineBoxContainInline;
+            flag = LineBoxContainInline;
         } else if (value->id == CSSValueFont) {
-            if (lineBoxContain & LineBoxContainFont)
-                return false;
-            lineBoxContain |= LineBoxContainFont;
+            flag = LineBoxContainFont;
         } else if (value->id == CSSValueGlyphs) {
-            if (lineBoxContain & LineBoxContainGlyphs)
-                return false;
-            lineBoxContain |= LineBoxContainGlyphs;
+            flag = LineBoxContainGlyphs;
         } else if (value->id == CSSValueReplaced) {
-            if (lineBoxContain & LineBoxContainReplaced)
-                return false;
-            lineBoxContain |= LineBoxContainReplaced;
+            flag = LineBoxContainReplaced;
         } else if (value->id == CSSValueInlineBox) {
-            if (lineBoxContain & LineBoxContainInlineBox)
-                return false;
-            lineBoxContain |= LineBoxContainInlineBox;
-        } else
+            flag = LineBoxContainInlineBox;
+        } else {
             return false;
+        }
+        if (lineBoxContain & flag)
+            return false;
+        lineBoxContain |= flag;
     }
 
     if (!lineBoxContain)
