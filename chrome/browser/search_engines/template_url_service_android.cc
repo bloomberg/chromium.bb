@@ -209,8 +209,11 @@ TemplateUrlServiceAndroid::GetUrlForContextualSearchQuery(JNIEnv* env,
 
   if (!query.empty()) {
     GURL gurl(GetDefaultSearchURLForSearchTerms(template_url_service_, query));
-    if (google_util::IsGoogleSearchUrl(gurl))
+    if (google_util::IsGoogleSearchUrl(gurl)) {
       gurl = net::AppendQueryParameter(gurl, "ctxs", "1");
+      // Indicate that the search page is being prefetched.
+      gurl = net::AppendQueryParameter(gurl, "pf", "c");
+    }
     url = gurl.spec();
   }
 
