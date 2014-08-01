@@ -728,14 +728,8 @@ class IndexedDBBrowserTestSingleProcess : public IndexedDBBrowserTest {
   }
 };
 
-// Crashing on Android due to kSingleProcess flag: http://crbug.com/342525
-#if defined(OS_ANDROID)
-#define MAYBE_RenderThreadShutdownTest DISABLED_RenderThreadShutdownTest
-#else
-#define MAYBE_RenderThreadShutdownTest RenderThreadShutdownTest
-#endif
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestSingleProcess,
-                       MAYBE_RenderThreadShutdownTest) {
+                       RenderThreadShutdownTest) {
   SimpleTest(GetTestUrl("indexeddb", "shutdown_with_requests.html"));
 }
 
