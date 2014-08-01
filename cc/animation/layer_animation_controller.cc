@@ -724,7 +724,9 @@ void LayerAnimationController::MarkAnimationsForDeletion(
     base::TimeTicks monotonic_time,
     AnimationEventsVector* events) {
   bool marked_animations_for_deletions = false;
+  std::vector<size_t> animations_with_same_group_id;
 
+  animations_with_same_group_id.reserve(animations_.size());
   // Non-aborted animations are marked for deletion after a corresponding
   // AnimationEvent::Finished event is sent or received. This means that if
   // we don't have an events vector, we must ensure that non-aborted animations
@@ -757,16 +759,29 @@ void LayerAnimationController::MarkAnimationsForDeletion(
     // find out if all other animations in the same group are also finished.
     if (animations_[i]->run_state() == Animation::Finished &&
         animation_i_will_send_or_has_received_finish_event) {
+      // Clear the animations_with_same_group_id if it was added for
+      // the previous animation's iteration.
+      if (animations_with_same_group_id.size() > 0)
+        animations_with_same_group_id.clear();
       all_anims_with_same_id_are_finished = true;
       for (size_t j = 0; j < animations_.size(); ++j) {
         bool animation_j_will_send_or_has_received_finish_event =
             events || animations_[j]->received_finished_event();
-        if (group_id == animations_[j]->group() &&
-            (!animations_[j]->is_finished() ||
-             (animations_[j]->run_state() == Animation::Finished &&
-              !animation_j_will_send_or_has_received_finish_event))) {
-          all_anims_with_same_id_are_finished = false;
-          break;
+        if (group_id == animations_[j]->group()) {
+          if (!animations_[j]->is_finished() ||
+              (animations_[j]->run_state() == Animation::Finished &&
+               !animation_j_will_send_or_has_received_finish_event)) {
+            all_anims_with_same_id_are_finished = false;
+            break;
+          } else if (j >= i &&
+                     animations_[j]->run_state() != Animation::Aborted) {
+            // Mark down the animations which belong to the same group
+            // and is not yet aborted. If this current iteration finds that all
+            // animations with same ID are finished, then the marked
+            // animations below will be set to WaitingForDeletion in next
+            // iteration.
+            animations_with_same_group_id.push_back(j);
+          }
         }
       }
     }
@@ -774,24 +789,24 @@ void LayerAnimationController::MarkAnimationsForDeletion(
       // We now need to remove all animations with the same group id as
       // group_id (and send along animation finished notifications, if
       // necessary).
-      for (size_t j = i; j < animations_.size(); j++) {
-        if (animations_[j]->group() == group_id &&
-            animations_[j]->run_state() != Animation::Aborted) {
+      for (size_t j = 0; j < animations_with_same_group_id.size(); j++) {
+        size_t animation_index = animations_with_same_group_id[j];
           if (events) {
-            AnimationEvent finished_event(AnimationEvent::Finished,
-                                          id_,
-                                          animations_[j]->group(),
-                                          animations_[j]->target_property(),
-                                          monotonic_time);
-            finished_event.is_impl_only = animations_[j]->is_impl_only();
+            AnimationEvent finished_event(
+                AnimationEvent::Finished,
+                id_,
+                animations_[animation_index]->group(),
+                animations_[animation_index]->target_property(),
+                monotonic_time);
+            finished_event.is_impl_only =
+                animations_[animation_index]->is_impl_only();
             if (finished_event.is_impl_only)
               NotifyAnimationFinished(finished_event);
             else
               events->push_back(finished_event);
           }
-          animations_[j]->SetRunState(Animation::WaitingForDeletion,
-                                      monotonic_time);
-        }
+          animations_[animation_index]->SetRunState(
+              Animation::WaitingForDeletion, monotonic_time);
       }
       marked_animations_for_deletions = true;
     }
