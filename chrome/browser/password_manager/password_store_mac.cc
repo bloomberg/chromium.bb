@@ -967,6 +967,7 @@ PasswordStoreChangeList PasswordStoreMac::RemoveLoginsCreatedBetweenImpl(
     if (login_metadata_db_->RemoveLoginsCreatedBetween(delete_begin,
                                                        delete_end)) {
       RemoveKeychainForms(forms.get());
+      CleanOrphanedForms(&forms.get());
 
       for (std::vector<PasswordForm*>::const_iterator it = forms.begin();
            it != forms.end(); ++it) {
@@ -989,6 +990,7 @@ PasswordStoreChangeList PasswordStoreMac::RemoveLoginsSyncedBetweenImpl(
     if (login_metadata_db_->RemoveLoginsSyncedBetween(delete_begin,
                                                       delete_end)) {
       RemoveKeychainForms(forms.get());
+      CleanOrphanedForms(&forms.get());
 
       for (std::vector<PasswordForm*>::const_iterator it = forms.begin();
            it != forms.end();
@@ -1054,6 +1056,7 @@ void PasswordStoreMac::GetLoginsImpl(
   STLDeleteElements(&keychain_blacklist_forms);
 
   // Clean up any orphaned database entries.
+  // TODO(vasilii): fix somehow this cleanup so that Sync gets these updates.
   RemoveDatabaseForms(database_forms);
   STLDeleteElements(&database_forms);
 
@@ -1082,6 +1085,7 @@ bool PasswordStoreMac::FillAutofillableLogins(
                                                       &database_forms);
 
   // Clean up any orphaned database entries.
+  // TODO(vasilii): fix somehow this cleanup so that Sync gets these updates.
   RemoveDatabaseForms(database_forms);
   STLDeleteElements(&database_forms);
 
@@ -1140,4 +1144,19 @@ void PasswordStoreMac::RemoveKeychainForms(
        i != forms.end(); ++i) {
     owned_keychain_adapter.RemovePassword(**i);
   }
+}
+
+void PasswordStoreMac::CleanOrphanedForms(std::vector<PasswordForm*>* forms) {
+  DCHECK(forms);
+  std::vector<PasswordForm*> database_forms;
+  login_metadata_db_->GetAutofillableLogins(&database_forms);
+
+  ScopedVector<PasswordForm> merged_forms;
+  merged_forms.get() = internal_keychain_helpers::GetPasswordsForForms(
+      *keychain_, &database_forms);
+
+  // Clean up any orphaned database entries.
+  RemoveDatabaseForms(database_forms);
+
+  forms->insert(forms->end(), database_forms.begin(), database_forms.end());
 }

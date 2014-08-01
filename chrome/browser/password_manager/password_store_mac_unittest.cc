@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "chrome/browser/password_manager/password_store_mac.h"
 
 #include "base/basictypes.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
+#include "base/scoped_observer.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/password_manager/password_store_mac.h"
 #include "chrome/browser/password_manager/password_store_mac_internal.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "content/public/test/test_browser_thread.h"
 #include "crypto/mock_apple_keychain.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
@@ -1262,35 +1263,80 @@ TEST_F(PasswordStoreMacTest, TestDBKeychainAssociation) {
 
 namespace {
 
+class PasswordsChangeObserver :
+    public password_manager::PasswordStore::Observer {
+public:
+  PasswordsChangeObserver(TestPasswordStoreMac* store) : observer_(this) {
+    observer_.Add(store);
+  }
+
+  void WaitAndVerify(PasswordStoreMacTest* test) {
+    test->WaitForStoreUpdate();
+    ::testing::Mock::VerifyAndClearExpectations(this);
+  }
+
+  // password_manager::PasswordStore::Observer:
+  MOCK_METHOD1(OnLoginsChanged,
+               void(const password_manager::PasswordStoreChangeList& changes));
+
+private:
+  ScopedObserver<password_manager::PasswordStore,
+                PasswordsChangeObserver> observer_;
+};
+
+password_manager::PasswordStoreChangeList GetAddChangeList(
+    const PasswordForm& form) {
+  password_manager::PasswordStoreChange change(
+      password_manager::PasswordStoreChange::ADD, form);
+  return password_manager::PasswordStoreChangeList(1, change);
+}
+
 // Tests RemoveLoginsCreatedBetween or RemoveLoginsSyncedBetween depending on
 // |check_created|.
 void CheckRemoveLoginsBetween(PasswordStoreMacTest* test, bool check_created) {
-  PasswordFormData www_form_data1 = {
+  PasswordFormData www_form_data_facebook = {
       PasswordForm::SCHEME_HTML, "http://www.facebook.com/",
-      "http://www.facebook.com/index.html", "login", L"username", L"password",
-      L"submit", L"joe_user", L"sekrit", true, false, 0 };
-  PasswordFormData www_form_data2 = {
+      "http://www.facebook.com/index.html", "login", L"submit", L"username",
+      L"password", L"joe_user", L"sekrit", true, false, 0 };
+  // The old form doesn't have elements names.
+  PasswordFormData www_form_data_facebook_old = {
+      PasswordForm::SCHEME_HTML, "http://www.facebook.com/",
+      "http://www.facebook.com/index.html", "login", L"", L"",
+      L"", L"joe_user", L"oldsekrit", true, false, 0 };
+  PasswordFormData www_form_data_other = {
       PasswordForm::SCHEME_HTML, "http://different.com/",
-      "http://different.com/index.html", "login", L"username", L"password",
-      L"submit", L"different_joe_user", L"sekrit", true, false, 0 };
+      "http://different.com/index.html", "login", L"submit", L"username",
+      L"password", L"different_joe_user", L"sekrit", true, false, 0 };
   scoped_ptr<PasswordForm> form_facebook(
-      CreatePasswordFormFromData(www_form_data1));
+      CreatePasswordFormFromData(www_form_data_facebook));
+  scoped_ptr<PasswordForm> form_facebook_old(
+      CreatePasswordFormFromData(www_form_data_facebook_old));
   scoped_ptr<PasswordForm> form_other(
-      CreatePasswordFormFromData(www_form_data2));
+      CreatePasswordFormFromData(www_form_data_other));
   base::Time now = base::Time::Now();
+  // TODO(vasilii): remove the next line once crbug/374132 is fixed.
+  now = base::Time::FromTimeT(now.ToTimeT());
   base::Time next_day = now + base::TimeDelta::FromDays(1);
   if (check_created) {
-    form_facebook->date_created = now;
+    form_facebook_old->date_created = now;
+    form_facebook->date_created = next_day;
     form_other->date_created = next_day;
   } else {
-    form_facebook->date_synced = now;
+    form_facebook_old->date_synced = now;
+    form_facebook->date_synced = next_day;
     form_other->date_synced = next_day;
   }
 
+  PasswordsChangeObserver observer(test->store());
+  test->store()->AddLogin(*form_facebook_old);
   test->store()->AddLogin(*form_facebook);
   test->store()->AddLogin(*form_other);
-  test->WaitForStoreUpdate();
+  EXPECT_CALL(observer, OnLoginsChanged(GetAddChangeList(*form_facebook_old)));
+  EXPECT_CALL(observer, OnLoginsChanged(GetAddChangeList(*form_facebook)));
+  EXPECT_CALL(observer, OnLoginsChanged(GetAddChangeList(*form_other)));
+  observer.WaitAndVerify(test);
 
+  // Check the keychain content.
   MacKeychainPasswordFormAdapter owned_keychain_adapter(test->keychain());
   owned_keychain_adapter.SetFindsOnlyOwnedItems(false);
   ScopedVector<PasswordForm> matching_items;
@@ -1303,12 +1349,21 @@ void CheckRemoveLoginsBetween(PasswordStoreMacTest* test, bool check_created) {
   EXPECT_EQ(1u, matching_items.size());
   matching_items.clear();
 
-  // Remove form_facebook.
+  // Remove facebook.
   void (PasswordStore::*method)(base::Time, base::Time) =
       check_created ? &PasswordStore::RemoveLoginsCreatedBetween
                     : &PasswordStore::RemoveLoginsSyncedBetween;
   (test->store()->*method)(base::Time(), next_day);
-  test->WaitForStoreUpdate();
+  password_manager::PasswordStoreChangeList list;
+  form_facebook_old->password_value.clear();
+  form_facebook->password_value.clear();
+  list.push_back(password_manager::PasswordStoreChange(
+      password_manager::PasswordStoreChange::REMOVE, *form_facebook_old));
+  list.push_back(password_manager::PasswordStoreChange(
+      password_manager::PasswordStoreChange::REMOVE, *form_facebook));
+  EXPECT_CALL(observer, OnLoginsChanged(list));
+  list.clear();
+  observer.WaitAndVerify(test);
 
   matching_items.get() = owned_keychain_adapter.PasswordsFillingForm(
       form_facebook->signon_realm, form_facebook->scheme);
@@ -1318,9 +1373,13 @@ void CheckRemoveLoginsBetween(PasswordStoreMacTest* test, bool check_created) {
   EXPECT_EQ(1u, matching_items.size());
   matching_items.clear();
 
-  // Remove form_facebook.
+  // Remove form_other.
   (test->store()->*method)(next_day, base::Time());
-  test->WaitForStoreUpdate();
+  form_other->password_value.clear();
+  list.push_back(password_manager::PasswordStoreChange(
+      password_manager::PasswordStoreChange::REMOVE, *form_other));
+  EXPECT_CALL(observer, OnLoginsChanged(list));
+  observer.WaitAndVerify(test);
   matching_items.get() = owned_keychain_adapter.PasswordsFillingForm(
       form_other->signon_realm, form_other->scheme);
   EXPECT_EQ(0u, matching_items.size());
