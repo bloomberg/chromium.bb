@@ -560,7 +560,7 @@ static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> na
                               if is_active_dom_object else '0' %}
 {% set to_event_target = '%s::toEventTarget' % v8_class
                          if is_event_target else '0' %}
-const WrapperTypeInfo {{v8_class}}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}Constructor::domTemplate, {{v8_class}}::derefObject, {{to_active_dom_object}}, {{to_event_target}}, 0, {{v8_class}}::installConditionallyEnabledMethods, 0, WrapperTypeObjectPrototype, {{gc_type}} };
+const WrapperTypeInfo {{v8_class}}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}Constructor::domTemplate, {{v8_class}}::derefObject, {{to_active_dom_object}}, {{to_event_target}}, 0, {{v8_class}}::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype, {{gc_type}} };
 
 {{generate_constructor(named_constructor)}}
 v8::Handle<v8::FunctionTemplate> {{v8_class}}Constructor::domTemplate(v8::Isolate* isolate)
@@ -748,7 +748,6 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[]
                attribute.is_static or
                attribute.runtime_enabled_function or
                attribute.per_context_enabled_function or
-               attribute.exposed_test or
                (interface_name == 'Window' and attribute.is_unforgeable))
            and attribute.should_be_exposed_to_script %}
     {% filter conditional(attribute.conditional_string) %}
@@ -923,7 +922,6 @@ static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functio
     {% for attribute in attributes
        if attribute.runtime_enabled_function and
           not attribute.per_context_enabled_function and
-          not attribute.exposed_test and
           not attribute.is_static %}
     {% filter conditional(attribute.conditional_string) %}
     if ({{attribute.runtime_enabled_function}}()) {
@@ -1157,21 +1155,17 @@ v8::Handle<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Handle<v8:
 
 
 {##############################################################################}
-{% block install_conditional_attributes %}
-{% if has_conditional_attributes %}
-void {{v8_class}}::installConditionallyEnabledProperties(v8::Handle<v8::Object> instanceTemplate, v8::Isolate* isolate)
+{% block install_per_context_attributes %}
+{% if has_per_context_enabled_attributes %}
+void {{v8_class}}::installPerContextEnabledProperties(v8::Handle<v8::Object> instanceTemplate, {{cpp_class}}* impl, v8::Isolate* isolate)
 {
     v8::Local<v8::Object> prototypeTemplate = v8::Local<v8::Object>::Cast(instanceTemplate->GetPrototype());
-    ExecutionContext* context = toExecutionContext(prototypeTemplate->CreationContext());
-
-    {% for attribute in attributes if attribute.per_context_enabled_function or attribute.exposed_test %}
-    {% filter per_context_enabled(attribute.per_context_enabled_function) %}
-    {% filter exposed(attribute.exposed_test) %}
-    static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
-    {{attribute_configuration(attribute)}};
-    V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate);
-    {% endfilter %}
-    {% endfilter %}
+    {% for attribute in attributes if attribute.per_context_enabled_function %}
+    if ({{attribute.per_context_enabled_function}}(impl->document())) {
+        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
+        {{attribute_configuration(attribute)}};
+        V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate);
+    }
     {% endfor %}
 }
 
@@ -1180,20 +1174,17 @@ void {{v8_class}}::installConditionallyEnabledProperties(v8::Handle<v8::Object> 
 
 
 {##############################################################################}
-{% block install_conditional_methods %}
-{% if conditionally_enabled_methods %}
-void {{v8_class}}::installConditionallyEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate)
+{% block install_per_context_methods %}
+{% if per_context_enabled_methods %}
+void {{v8_class}}::installPerContextEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate)
 {
     {# Define per-context enabled operations #}
     v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate));
-    ExecutionContext* context = toExecutionContext(prototypeTemplate->CreationContext());
 
-    {% for method in conditionally_enabled_methods %}
-    {% filter per_context_enabled(method.per_context_enabled_function) %}
-    {% filter exposed(method.exposed_test) %}
-    prototypeTemplate->Set(v8AtomicString(isolate, "{{method.name}}"), v8::FunctionTemplate::New(isolate, {{cpp_class}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), defaultSignature, {{method.number_of_required_arguments}})->GetFunction());
-    {% endfilter %}
-    {% endfilter %}
+    ExecutionContext* context = toExecutionContext(prototypeTemplate->CreationContext());
+    {% for method in per_context_enabled_methods %}
+    if (context && context->isDocument() && {{method.per_context_enabled_function}}(toDocument(context)))
+        prototypeTemplate->Set(v8AtomicString(isolate, "{{method.name}}"), v8::FunctionTemplate::New(isolate, {{cpp_class}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), defaultSignature, {{method.number_of_required_arguments}})->GetFunction());
     {% endfor %}
 }
 
@@ -1330,7 +1321,7 @@ v8::Handle<v8::Object> {{v8_class}}::createWrapper({{pass_cpp_type}} impl, v8::H
         channelData->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instanceTemplate());
     }
     {% endif %}
-    installConditionallyEnabledProperties(wrapper, isolate);
+    installPerContextEnabledProperties(wrapper, impl.get(), isolate);
     V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl, &wrapperTypeInfo, wrapper, isolate, {{wrapper_configuration}});
     return wrapper;
 }

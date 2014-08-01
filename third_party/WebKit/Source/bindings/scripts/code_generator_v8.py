@@ -239,19 +239,9 @@ def initialize_jinja_env(cache_dir):
     jinja_env.filters.update({
         'blink_capitalize': capitalize,
         'conditional': conditional_if_endif,
-        'exposed': exposed_if,
-        'per_context_enabled': per_context_enabled_if,
         'runtime_enabled': runtime_enabled_if,
         })
     return jinja_env
-
-
-def generate_indented_conditional(code, conditional):
-    # Indent if statement to level of original code
-    indent = re.match(' *', code).group(0)
-    return ('%sif (%s) {\n' % (indent, conditional) +
-            '    %s\n' % '\n    '.join(code.splitlines()) +
-            '%s}\n' % indent)
 
 
 # [Conditional]
@@ -264,25 +254,15 @@ def conditional_if_endif(code, conditional_string):
             '#endif // %s\n' % conditional_string)
 
 
-# [Exposed]
-def exposed_if(code, exposed_test):
-    if not exposed_test:
-        return code
-    return generate_indented_conditional(code, 'context && (%s)' % exposed_test)
-
-
-# [PerContextEnabled]
-def per_context_enabled_if(code, per_context_enabled_function):
-    if not per_context_enabled_function:
-        return code
-    return generate_indented_conditional(code, 'context && context->isDocument() && %s(toDocument(context))' % per_context_enabled_function)
-
-
 # [RuntimeEnabled]
 def runtime_enabled_if(code, runtime_enabled_function_name):
     if not runtime_enabled_function_name:
         return code
-    return generate_indented_conditional(code, '%s()' % runtime_enabled_function_name)
+    # Indent if statement to level of original code
+    indent = re.match(' *', code).group(0)
+    return ('%sif (%s()) {\n' % (indent, runtime_enabled_function_name) +
+            '    %s\n' % '\n    '.join(code.splitlines()) +
+            '%s}\n' % indent)
 
 
 ################################################################################
