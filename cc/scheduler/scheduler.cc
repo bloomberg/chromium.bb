@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "base/auto_reset.h"
 #include "base/debug/trace_event.h"
+#include "base/debug/trace_event_argument.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "cc/debug/devtools_instrumentation.h"
@@ -61,8 +62,9 @@ void Scheduler::SyntheticBeginFrameSource::OnTimerTick() {
   scheduler_->BeginFrame(begin_frame_args);
 }
 
-scoped_ptr<base::Value> Scheduler::SyntheticBeginFrameSource::AsValue() const {
-  return time_source_->AsValue();
+void Scheduler::SyntheticBeginFrameSource::AsValueInto(
+    base::debug::TracedValue* state) const {
+  time_source_->AsValueInto(state);
 }
 
 BeginFrameArgs
@@ -93,7 +95,7 @@ Scheduler::Scheduler(
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
                "Scheduler::Scheduler",
                "settings",
-               ToTrace(settings_));
+               settings_.AsValue());
   DCHECK(client_);
   DCHECK(!state_machine_.BeginFrameNeeded());
   if (settings_.main_frame_before_activation_enabled) {
@@ -399,7 +401,7 @@ void Scheduler::SetupPollingMechanisms(bool needs_begin_frame) {
 // If the scheduler is busy, we queue the BeginFrame to be handled later as
 // a BeginRetroFrame.
 void Scheduler::BeginFrame(const BeginFrameArgs& args) {
-  TRACE_EVENT1("cc", "Scheduler::BeginFrame", "args", ToTrace(args));
+  TRACE_EVENT1("cc", "Scheduler::BeginFrame", "args", args.AsValue());
   DCHECK(settings_.throttle_frame_production);
 
   BeginFrameArgs adjusted_args(args);
@@ -496,7 +498,7 @@ void Scheduler::PostBeginRetroFrameIfNeeded() {
 // for a BeginMainFrame+activation to complete before it times out and draws
 // any asynchronous animation and scroll/pinch updates.
 void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
-  TRACE_EVENT1("cc", "Scheduler::BeginImplFrame", "args", ToTrace(args));
+  TRACE_EVENT1("cc", "Scheduler::BeginImplFrame", "args", args.AsValue());
   DCHECK(state_machine_.begin_impl_frame_state() ==
          SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
   DCHECK(state_machine_.HasInitializedOutputSurface());
@@ -626,7 +628,7 @@ void Scheduler::ProcessScheduledActions() {
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
                  "SchedulerStateMachine",
                  "state",
-                 ToTrace(this));
+                 AsValue());
     state_machine_.UpdateState(action);
     base::AutoReset<SchedulerStateMachine::Action>
         mark_inside_action(&inside_action_, action);
@@ -680,51 +682,54 @@ bool Scheduler::WillDrawIfNeeded() const {
   return !state_machine_.PendingDrawsShouldBeAborted();
 }
 
-scoped_ptr<base::Value> Scheduler::AsValue() const {
-  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue);
-  state->Set("state_machine", state_machine_.AsValue().release());
-  if (synthetic_begin_frame_source_)
-    state->Set("synthetic_begin_frame_source_",
-               synthetic_begin_frame_source_->AsValue().release());
+scoped_refptr<base::debug::ConvertableToTraceFormat> Scheduler::AsValue()
+    const {
+  scoped_refptr<base::debug::TracedValue> state =
+      new base::debug::TracedValue();
+  state->BeginDictionary("state_machine");
+  state_machine_.AsValueInto(state);
+  state->EndDictionary();
+  if (synthetic_begin_frame_source_) {
+    state->BeginDictionary("synthetic_begin_frame_source_");
+    synthetic_begin_frame_source_->AsValueInto(state);
+    state->EndDictionary();
+  }
 
-  scoped_ptr<base::DictionaryValue> scheduler_state(new base::DictionaryValue);
-  scheduler_state->SetDouble(
+  state->BeginDictionary("scheduler_state");
+  state->SetDouble(
       "time_until_anticipated_draw_time_ms",
       (AnticipatedDrawTime() - base::TimeTicks::Now()).InMillisecondsF());
-  scheduler_state->SetDouble("vsync_interval_ms",
-                             vsync_interval_.InMillisecondsF());
-  scheduler_state->SetDouble("estimated_parent_draw_time_ms",
-                             estimated_parent_draw_time_.InMillisecondsF());
-  scheduler_state->SetBoolean("last_set_needs_begin_frame_",
-                              last_set_needs_begin_frame_);
-  scheduler_state->SetBoolean("begin_unthrottled_frame_posted_",
-                              begin_unthrottled_frame_posted_);
-  scheduler_state->SetBoolean("begin_retro_frame_posted_",
-                              begin_retro_frame_posted_);
-  scheduler_state->SetInteger("begin_retro_frame_args_",
-                              begin_retro_frame_args_.size());
-  scheduler_state->SetBoolean("begin_impl_frame_deadline_task_",
-                              !begin_impl_frame_deadline_task_.IsCancelled());
-  scheduler_state->SetBoolean("poll_for_draw_triggers_task_",
-                              !poll_for_draw_triggers_task_.IsCancelled());
-  scheduler_state->SetBoolean("advance_commit_state_task_",
-                              !advance_commit_state_task_.IsCancelled());
-  scheduler_state->Set("begin_impl_frame_args",
-                       begin_impl_frame_args_.AsValue().release());
+  state->SetDouble("vsync_interval_ms", vsync_interval_.InMillisecondsF());
+  state->SetDouble("estimated_parent_draw_time_ms",
+                   estimated_parent_draw_time_.InMillisecondsF());
+  state->SetBoolean("last_set_needs_begin_frame_", last_set_needs_begin_frame_);
+  state->SetBoolean("begin_unthrottled_frame_posted_",
+                    begin_unthrottled_frame_posted_);
+  state->SetBoolean("begin_retro_frame_posted_", begin_retro_frame_posted_);
+  state->SetInteger("begin_retro_frame_args_", begin_retro_frame_args_.size());
+  state->SetBoolean("begin_impl_frame_deadline_task_",
+                    !begin_impl_frame_deadline_task_.IsCancelled());
+  state->SetBoolean("poll_for_draw_triggers_task_",
+                    !poll_for_draw_triggers_task_.IsCancelled());
+  state->SetBoolean("advance_commit_state_task_",
+                    !advance_commit_state_task_.IsCancelled());
+  state->BeginDictionary("begin_impl_frame_args");
+  begin_impl_frame_args_.AsValueInto(state);
+  state->EndDictionary();
 
-  state->Set("scheduler_state", scheduler_state.release());
+  state->EndDictionary();
 
-  scoped_ptr<base::DictionaryValue> client_state(new base::DictionaryValue);
-  client_state->SetDouble("draw_duration_estimate_ms",
-                          client_->DrawDurationEstimate().InMillisecondsF());
-  client_state->SetDouble(
+  state->BeginDictionary("client_state");
+  state->SetDouble("draw_duration_estimate_ms",
+                   client_->DrawDurationEstimate().InMillisecondsF());
+  state->SetDouble(
       "begin_main_frame_to_commit_duration_estimate_ms",
       client_->BeginMainFrameToCommitDurationEstimate().InMillisecondsF());
-  client_state->SetDouble(
+  state->SetDouble(
       "commit_to_activate_duration_estimate_ms",
       client_->CommitToActivateDurationEstimate().InMillisecondsF());
-  state->Set("client_state", client_state.release());
-  return state.PassAs<base::Value>();
+  state->EndDictionary();
+  return state;
 }
 
 bool Scheduler::CanCommitAndActivateBeforeDeadline() const {
@@ -741,7 +746,7 @@ bool Scheduler::CanCommitAndActivateBeforeDeadline() const {
       "time_left_after_drawing_ms",
       (begin_impl_frame_args_.deadline - estimated_draw_time).InMillisecondsF(),
       "state",
-      ToTrace(this));
+      AsValue());
 
   return estimated_draw_time < begin_impl_frame_args_.deadline;
 }

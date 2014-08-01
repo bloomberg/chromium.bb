@@ -16,6 +16,10 @@
 #include "cc/scheduler/scheduler_settings.h"
 
 namespace base {
+namespace debug {
+class ConvertableToTraceForamt;
+class TracedValue;
+}
 class Value;
 }
 
@@ -102,7 +106,8 @@ class CC_EXPORT SchedulerStateMachine {
   };
   static const char* ActionToString(Action action);
 
-  scoped_ptr<base::Value> AsValue() const;
+  scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;
+  void AsValueInto(base::debug::TracedValue* dict) const;
 
   Action NextAction() const;
   void UpdateState(Action action);

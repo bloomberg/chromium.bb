@@ -15,6 +15,13 @@
 #include "cc/resources/raster_worker_pool.h"
 #include "cc/resources/rasterizer.h"
 
+namespace base {
+namespace debug {
+class ConvertableToTraceFormat;
+class TracedValue;
+}
+}
+
 namespace cc {
 class ResourceProvider;
 
@@ -90,8 +97,8 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool,
   void CheckForCompletedRasterizerTasks();
 
   const char* StateName() const;
-  scoped_ptr<base::Value> StateAsValue() const;
-  scoped_ptr<base::Value> ThrottleStateAsValue() const;
+  scoped_refptr<base::debug::ConvertableToTraceFormat> StateAsValue() const;
+  void ThrottleStateAsValueInto(base::debug::TracedValue* throttle_state) const;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   TaskGraphRunner* task_graph_runner_;

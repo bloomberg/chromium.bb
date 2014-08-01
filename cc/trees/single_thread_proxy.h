@@ -49,7 +49,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   virtual size_t MaxPartialTextureUpdates() const OVERRIDE;
   virtual void ForceSerializeOnSwapBuffers() OVERRIDE;
   virtual bool SupportsImplScrolling() const OVERRIDE;
-  virtual scoped_ptr<base::Value> AsValue() const OVERRIDE;
+  virtual void AsValueInto(base::debug::TracedValue* state) const OVERRIDE;
   virtual bool CommitPendingForTesting() OVERRIDE;
 
   // LayerTreeHostImplClient implementation

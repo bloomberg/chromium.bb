@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/debug/trace_event_argument.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
@@ -528,8 +529,8 @@ void LayerTreeHostImpl::TrackDamageForAllSurfaces(
   }
 }
 
-scoped_ptr<base::Value> LayerTreeHostImpl::FrameData::AsValue() const {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+void LayerTreeHostImpl::FrameData::AsValueInto(
+    base::debug::TracedValue* value) const {
   value->SetBoolean("contains_incomplete_tile", contains_incomplete_tile);
   value->SetBoolean("has_no_damage", has_no_damage);
 
@@ -539,12 +540,14 @@ scoped_ptr<base::Value> LayerTreeHostImpl::FrameData::AsValue() const {
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(
       TRACE_DISABLED_BY_DEFAULT("cc.debug.quads"), &quads_enabled);
   if (quads_enabled) {
-    scoped_ptr<base::ListValue> render_pass_list(new base::ListValue());
-    for (size_t i = 0; i < render_passes.size(); ++i)
-      render_pass_list->Append(render_passes[i]->AsValue().release());
-    value->Set("render_passes", render_pass_list.release());
+    value->BeginArray("render_passes");
+    for (size_t i = 0; i < render_passes.size(); ++i) {
+      value->BeginDictionary();
+      render_passes[i]->AsValueInto(value);
+      value->EndDictionary();
+    }
+    value->EndArray();
   }
-  return value.PassAs<base::Value>();
 }
 
 void LayerTreeHostImpl::FrameData::AppendRenderPass(
@@ -1543,7 +1546,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
        TRACE_DISABLED_BY_DEFAULT("devtools.timeline.layers"),
        "cc::LayerTreeHostImpl",
        id_,
-       TracedValue::FromValue(AsValueWithFrame(frame).release()));
+       AsValueWithFrame(frame));
   }
 
   const DrawMode draw_mode = GetDrawMode();
@@ -3169,29 +3172,66 @@ base::TimeTicks LayerTreeHostImpl::CurrentFrameTimeTicks() {
   return gfx::FrameTime::Now();
 }
 
-scoped_ptr<base::Value> LayerTreeHostImpl::AsValueWithFrame(
-    FrameData* frame) const {
-  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
-  if (this->pending_tree_)
-      state->Set("activation_state", ActivationStateAsValue().release());
-  state->Set("device_viewport_size",
-             MathUtil::AsValue(device_viewport_size_).release());
-  if (tile_manager_)
-    state->Set("tiles", tile_manager_->AllTilesAsValue().release());
-  state->Set("active_tree", active_tree_->AsValue().release());
-  if (pending_tree_)
-    state->Set("pending_tree", pending_tree_->AsValue().release());
-  if (frame)
-    state->Set("frame", frame->AsValue().release());
-  return state.PassAs<base::Value>();
+scoped_refptr<base::debug::ConvertableToTraceFormat>
+LayerTreeHostImpl::AsValue() const {
+  return AsValueWithFrame(NULL);
 }
 
-scoped_ptr<base::Value> LayerTreeHostImpl::ActivationStateAsValue() const {
-  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
-  state->Set("lthi", TracedValue::CreateIDRef(this).release());
-  if (tile_manager_)
-    state->Set("tile_manager", tile_manager_->BasicStateAsValue().release());
-  return state.PassAs<base::Value>();
+scoped_refptr<base::debug::ConvertableToTraceFormat>
+LayerTreeHostImpl::AsValueWithFrame(FrameData* frame) const {
+  scoped_refptr<base::debug::TracedValue> state =
+      new base::debug::TracedValue();
+  AsValueWithFrameInto(frame, state.get());
+  return state;
+}
+
+void LayerTreeHostImpl::AsValueWithFrameInto(
+    FrameData* frame,
+    base::debug::TracedValue* state) const {
+  if (this->pending_tree_) {
+    state->BeginDictionary("activation_state");
+    ActivationStateAsValueInto(state);
+    state->EndDictionary();
+  }
+  state->BeginDictionary("device_viewport_size");
+  MathUtil::AddToTracedValue(device_viewport_size_, state);
+  state->EndDictionary();
+  if (tile_manager_) {
+    state->BeginArray("tiles");
+    tile_manager_->AllTilesAsValueInto(state);
+    state->EndArray();
+  }
+  state->BeginDictionary("active_tree");
+  active_tree_->AsValueInto(state);
+  state->EndDictionary();
+  if (pending_tree_) {
+    state->BeginDictionary("pending_tree");
+    pending_tree_->AsValueInto(state);
+    state->EndDictionary();
+  }
+  if (frame) {
+    state->BeginDictionary("frame");
+    frame->AsValueInto(state);
+    state->EndDictionary();
+  }
+}
+
+scoped_refptr<base::debug::ConvertableToTraceFormat>
+LayerTreeHostImpl::ActivationStateAsValue() const {
+  scoped_refptr<base::debug::TracedValue> state =
+      new base::debug::TracedValue();
+  ActivationStateAsValueInto(state.get());
+  return state;
+}
+
+void LayerTreeHostImpl::ActivationStateAsValueInto(
+    base::debug::TracedValue* state) const {
+  TracedValue::SetIDRef(this, state, "lthi");
+  if (tile_manager_) {
+    state->BeginDictionary("tile_manager");
+    tile_manager_->BasicStateAsValueInto(state);
+    state->EndDictionary();
+  }
 }
 
 void LayerTreeHostImpl::SetDebugState(

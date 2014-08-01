@@ -43,7 +43,7 @@ class FakeProxy : public Proxy {
   virtual bool SupportsImplScrolling() const OVERRIDE;
   virtual void SetDebugState(const LayerTreeDebugState& debug_state) OVERRIDE {}
   virtual bool CommitPendingForTesting() OVERRIDE;
-  virtual scoped_ptr<base::Value> AsValue() const OVERRIDE;
+  virtual void AsValueInto(base::debug::TracedValue* state) const OVERRIDE;
 
   virtual RendererCapabilities& GetRendererCapabilities();
   void SetMaxPartialTextureUpdates(size_t max);

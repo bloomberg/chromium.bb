@@ -9,6 +9,7 @@
 #include <limits>
 
 #include "base/debug/trace_event.h"
+#include "base/debug/trace_event_argument.h"
 #include "cc/base/math_util.h"
 #include "cc/resources/tile.h"
 #include "cc/resources/tile_priority.h"
@@ -658,12 +659,12 @@ void PictureLayerTiling::DidBecomeActive() {
   }
 }
 
-scoped_ptr<base::Value> PictureLayerTiling::AsValue() const {
-  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+void PictureLayerTiling::AsValueInto(base::debug::TracedValue* state) const {
   state->SetInteger("num_tiles", tiles_.size());
   state->SetDouble("content_scale", contents_scale_);
-  state->Set("tiling_size", MathUtil::AsValue(tiling_size()).release());
-  return state.PassAs<base::Value>();
+  state->BeginDictionary("tiling_size");
+  MathUtil::AddToTracedValue(tiling_size(), state);
+  state->EndDictionary();
 }
 
 size_t PictureLayerTiling::GPUMemoryUsageInBytes() const {

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/time/time.h"
 #include "base/values.h"
 #include "cc/debug/rendering_stats.h"
@@ -10,20 +12,18 @@
 namespace cc {
 namespace {
 
-void CompareDoubleValue(const base::ListValue& list_value,
-                        int index,
-                        double expected_value) {
-  double value;
-  EXPECT_TRUE(list_value.GetDouble(index, &value));
-  EXPECT_EQ(expected_value, value);
+static std::string ToString(const RenderingStats::TimeDeltaList& list) {
+  scoped_refptr<base::debug::TracedValue> value =
+      new base::debug::TracedValue();
+  value->BeginArray("list_value");
+  list.AddToTracedValue(value.get());
+  value->EndArray();
+  return value->ToString();
 }
 
 TEST(RenderingStatsTest, TimeDeltaListEmpty) {
   RenderingStats::TimeDeltaList time_delta_list;
-  scoped_ptr<base::ListValue> list_value =
-      time_delta_list.AsListValueInMilliseconds();
-  EXPECT_TRUE(list_value->empty());
-  EXPECT_EQ(0ul, list_value->GetSize());
+  EXPECT_EQ("{\"list_value\":[]}", ToString(time_delta_list));
 }
 
 TEST(RenderingStatsTest, TimeDeltaListNonEmpty) {
@@ -31,13 +31,7 @@ TEST(RenderingStatsTest, TimeDeltaListNonEmpty) {
   time_delta_list.Append(base::TimeDelta::FromMilliseconds(234));
   time_delta_list.Append(base::TimeDelta::FromMilliseconds(827));
 
-  scoped_ptr<base::ListValue> list_value =
-      time_delta_list.AsListValueInMilliseconds();
-  EXPECT_FALSE(list_value->empty());
-  EXPECT_EQ(2ul, list_value->GetSize());
-
-  CompareDoubleValue(*list_value.get(), 0, 234);
-  CompareDoubleValue(*list_value.get(), 1, 827);
+  EXPECT_EQ("{\"list_value\":[234.0,827.0]}", ToString(time_delta_list));
 }
 
 TEST(RenderingStatsTest, TimeDeltaListAdd) {
@@ -51,16 +45,8 @@ TEST(RenderingStatsTest, TimeDeltaListAdd) {
   time_delta_list_b.Append(base::TimeDelta::FromMilliseconds(2));
 
   time_delta_list_a.Add(time_delta_list_b);
-  scoped_ptr<base::ListValue> list_value =
-      time_delta_list_a.AsListValueInMilliseconds();
-  EXPECT_FALSE(list_value->empty());
-  EXPECT_EQ(5ul, list_value->GetSize());
-
-  CompareDoubleValue(*list_value.get(), 0, 810);
-  CompareDoubleValue(*list_value.get(), 1, 32);
-  CompareDoubleValue(*list_value.get(), 2, 43);
-  CompareDoubleValue(*list_value.get(), 3, 938);
-  CompareDoubleValue(*list_value.get(), 4, 2);
+  EXPECT_EQ("{\"list_value\":[810.0,32.0,43.0,938.0,2.0]}",
+            ToString(time_delta_list_a));
 }
 
 }  // namespace

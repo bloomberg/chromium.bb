@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <string>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -29,16 +30,14 @@ enum WhichTree {
   NUM_TREES = 2
   // Be sure to update WhichTreeAsValue when adding new fields.
 };
-scoped_ptr<base::Value> WhichTreeAsValue(
-    WhichTree tree);
+scoped_ptr<base::Value> WhichTreeAsValue(WhichTree tree);
 
 enum TileResolution {
   LOW_RESOLUTION = 0 ,
   HIGH_RESOLUTION = 1,
   NON_IDEAL_RESOLUTION = 2,
 };
-scoped_ptr<base::Value> TileResolutionAsValue(
-    TileResolution resolution);
+std::string TileResolutionToString(TileResolution resolution);
 
 struct CC_EXPORT TilePriority {
   enum PriorityBin { NOW, SOON, EVENTUALLY };
@@ -83,7 +82,7 @@ struct CC_EXPORT TilePriority {
     }
   }
 
-  scoped_ptr<base::Value> AsValue() const;
+  void AsValueInto(base::debug::TracedValue* dict) const;
 
   bool operator ==(const TilePriority& other) const {
     return resolution == other.resolution &&
@@ -108,7 +107,7 @@ struct CC_EXPORT TilePriority {
   float distance_to_visible;
 };
 
-scoped_ptr<base::Value> TilePriorityBinAsValue(TilePriority::PriorityBin bin);
+std::string TilePriorityBinToString(TilePriority::PriorityBin bin);
 
 enum TileMemoryLimitPolicy {
   // Nothing.
@@ -128,8 +127,7 @@ enum TileMemoryLimitPolicy {
   // NOTE: Be sure to update TreePriorityAsValue and kBinPolicyMap when adding
   // or reordering fields.
 };
-scoped_ptr<base::Value> TileMemoryLimitPolicyAsValue(
-    TileMemoryLimitPolicy policy);
+std::string TileMemoryLimitPolicyToString(TileMemoryLimitPolicy policy);
 
 enum TreePriority {
   SAME_PRIORITY_FOR_BOTH_TREES,
@@ -138,7 +136,7 @@ enum TreePriority {
   NUM_TREE_PRIORITIES
   // Be sure to update TreePriorityAsValue when adding new fields.
 };
-scoped_ptr<base::Value> TreePriorityAsValue(TreePriority prio);
+std::string TreePriorityToString(TreePriority prio);
 
 class GlobalStateThatImpactsTilePriority {
  public:
@@ -168,7 +166,7 @@ class GlobalStateThatImpactsTilePriority {
     return !(*this == other);
   }
 
-  scoped_ptr<base::Value> AsValue() const;
+  void AsValueInto(base::debug::TracedValue* dict) const;
 };
 
 }  // namespace cc

@@ -27,6 +27,13 @@
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/tile.h"
 
+namespace base {
+namespace debug {
+class ConvertableToTraceFormat;
+class TracedValue;
+}
+}
+
 namespace cc {
 class PictureLayerImpl;
 class ResourceProvider;
@@ -70,8 +77,8 @@ struct RasterTaskCompletionStats {
   size_t completed_count;
   size_t canceled_count;
 };
-scoped_ptr<base::Value> RasterTaskCompletionStatsAsValue(
-    const RasterTaskCompletionStats& stats);
+scoped_refptr<base::debug::ConvertableToTraceFormat>
+    RasterTaskCompletionStatsAsValue(const RasterTaskCompletionStats& stats);
 
 // This class manages tiles, deciding which should get rasterized and which
 // should no longer have any memory assigned to them. Tile objects are "owned"
@@ -102,8 +109,10 @@ class CC_EXPORT TileManager : public RasterizerClient,
                                  int source_frame_number,
                                  int flags);
 
-  scoped_ptr<base::Value> BasicStateAsValue() const;
-  scoped_ptr<base::Value> AllTilesAsValue() const;
+  scoped_refptr<base::debug::ConvertableToTraceFormat> BasicStateAsValue()
+      const;
+  void BasicStateAsValueInto(base::debug::TracedValue* dict) const;
+  void AllTilesAsValueInto(base::debug::TracedValue* array) const;
   const MemoryHistory::Entry& memory_stats_from_last_assign() const {
     return memory_stats_from_last_assign_;
   }

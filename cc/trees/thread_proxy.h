@@ -173,9 +173,8 @@ class CC_EXPORT ThreadProxy : public Proxy,
   virtual void ForceSerializeOnSwapBuffers() OVERRIDE;
   virtual bool SupportsImplScrolling() const OVERRIDE;
   virtual void SetDebugState(const LayerTreeDebugState& debug_state) OVERRIDE;
-  virtual scoped_ptr<base::Value> AsValue() const OVERRIDE;
+  virtual void AsValueInto(base::debug::TracedValue* value) const OVERRIDE;
   virtual bool CommitPendingForTesting() OVERRIDE;
-  virtual scoped_ptr<base::Value> SchedulerAsValueForTesting() OVERRIDE;
 
   // LayerTreeHostImplClient implementation
   virtual void UpdateRendererCapabilitiesOnImplThread() OVERRIDE;
@@ -277,9 +276,8 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void ForceSerializeOnSwapBuffersOnImplThread(CompletionEvent* completion);
   void CheckOutputSurfaceStatusOnImplThread();
   void CommitPendingOnImplThreadForTesting(CommitPendingRequest* request);
-  void SchedulerAsValueOnImplThreadForTesting(SchedulerStateRequest* request);
   void AsValueOnImplThread(CompletionEvent* completion,
-                           base::DictionaryValue* state) const;
+                           base::debug::TracedValue* state) const;
   void SetSwapUsedIncompleteTileOnImplThread(bool used_incomplete_tile);
   void MainThreadHasStoppedFlingingOnImplThread();
   void SetInputThrottledUntilCommitOnImplThread(bool is_throttled);

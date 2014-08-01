@@ -448,6 +448,7 @@
         'debug/leak_tracker_unittest.cc',
         'debug/proc_maps_linux_unittest.cc',
         'debug/stack_trace_unittest.cc',
+        'debug/trace_event_argument_unittest.cc',
         'debug/trace_event_memory_unittest.cc',
         'debug/trace_event_synthetic_delay_unittest.cc',
         'debug/trace_event_system_stats_monitor_unittest.cc',

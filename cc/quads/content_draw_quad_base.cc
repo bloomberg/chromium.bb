@@ -4,6 +4,7 @@
 
 #include "cc/quads/content_draw_quad_base.h"
 
+#include "base/debug/trace_event_argument.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
@@ -49,9 +50,15 @@ void ContentDrawQuadBase::SetAll(const SharedQuadState* shared_quad_state,
   this->swizzle_contents = swizzle_contents;
 }
 
-void ContentDrawQuadBase::ExtendValue(base::DictionaryValue* value) const {
-  value->Set("tex_coord_rect", MathUtil::AsValue(tex_coord_rect).release());
-  value->Set("texture_size", MathUtil::AsValue(texture_size).release());
+void ContentDrawQuadBase::ExtendValue(base::debug::TracedValue* value) const {
+  value->BeginArray("tex_coord_rect");
+  MathUtil::AddToTracedValue(tex_coord_rect, value);
+  value->EndArray();
+
+  value->BeginDictionary("texture_size");
+  MathUtil::AddToTracedValue(texture_size, value);
+  value->EndDictionary();
+
   value->SetBoolean("swizzle_contents", swizzle_contents);
 }
 

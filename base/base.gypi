@@ -160,6 +160,8 @@
           'debug/stack_trace_win.cc',
           'debug/trace_event.h',
           'debug/trace_event_android.cc',
+          'debug/trace_event_argument.cc',
+          'debug/trace_event_argument.h',
           'debug/trace_event_impl.cc',
           'debug/trace_event_impl.h',
           'debug/trace_event_impl_constants.cc',

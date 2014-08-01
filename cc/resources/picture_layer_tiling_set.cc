@@ -317,11 +317,12 @@ void PictureLayerTilingSet::DidBecomeRecycled() {
     tilings_[i]->DidBecomeRecycled();
 }
 
-scoped_ptr<base::Value> PictureLayerTilingSet::AsValue() const {
-  scoped_ptr<base::ListValue> state(new base::ListValue());
-  for (size_t i = 0; i < tilings_.size(); ++i)
-    state->Append(tilings_[i]->AsValue().release());
-  return state.PassAs<base::Value>();
+void PictureLayerTilingSet::AsValueInto(base::debug::TracedValue* state) const {
+  for (size_t i = 0; i < tilings_.size(); ++i) {
+    state->BeginDictionary();
+    tilings_[i]->AsValueInto(state);
+    state->EndDictionary();
+  }
 }
 
 size_t PictureLayerTilingSet::GPUMemoryUsageInBytes() const {

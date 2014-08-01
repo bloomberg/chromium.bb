@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "base/debug/trace_event_argument.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
@@ -1153,10 +1154,10 @@ void LayerTreeHost::UpdateTopControlsState(TopControlsState constraints,
                  animate));
 }
 
-scoped_ptr<base::Value> LayerTreeHost::AsValue() const {
-  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
-  state->Set("proxy", proxy_->AsValue().release());
-  return state.PassAs<base::Value>();
+void LayerTreeHost::AsValueInto(base::debug::TracedValue* state) const {
+  state->BeginDictionary("proxy");
+  proxy_->AsValueInto(state);
+  state->EndDictionary();
 }
 
 void LayerTreeHost::AnimateLayers(base::TimeTicks monotonic_time) {

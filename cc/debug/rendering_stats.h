@@ -8,6 +8,7 @@
 #include <list>
 
 #include "base/basictypes.h"
+#include "base/debug/trace_event_argument.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "cc/base/cc_export.h"
@@ -23,7 +24,8 @@ struct CC_EXPORT RenderingStats {
     ~TimeDeltaList();
 
     void Append(base::TimeDelta value);
-    scoped_ptr<base::ListValue> AsListValueInMilliseconds() const;
+    void AddToTracedValue(base::debug::TracedValue* list_value) const;
+
     void Add(const TimeDeltaList& other);
 
    private:

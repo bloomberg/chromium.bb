@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "base/debug/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
 #include "cc/output/filter_operation.h"
@@ -254,8 +255,7 @@ FilterOperation FilterOperation::Blend(const FilterOperation* from,
   return blended_filter;
 }
 
-scoped_ptr<base::Value> FilterOperation::AsValue() const {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue);
+void FilterOperation::AsValueInto(base::debug::TracedValue* value) const {
   value->SetInteger("type", type_);
   switch (type_) {
     case FilterOperation::GRAYSCALE:
@@ -272,14 +272,16 @@ scoped_ptr<base::Value> FilterOperation::AsValue() const {
       break;
     case FilterOperation::DROP_SHADOW:
       value->SetDouble("std_deviation", amount_);
-      value->Set("offset", MathUtil::AsValue(drop_shadow_offset_).release());
+      value->BeginArray("offset");
+      MathUtil::AddToTracedValue(drop_shadow_offset_, value);
+      value->EndArray();
       value->SetInteger("color", drop_shadow_color_);
       break;
     case FilterOperation::COLOR_MATRIX: {
-      scoped_ptr<base::ListValue> matrix(new base::ListValue);
+      value->BeginArray("matrix");
       for (size_t i = 0; i < arraysize(matrix_); ++i)
-        matrix->AppendDouble(matrix_[i]);
-      value->Set("matrix", matrix.release());
+        value->AppendDouble(matrix_[i]);
+      value->EndArray();
       break;
     }
     case FilterOperation::ZOOM:
@@ -302,17 +304,17 @@ scoped_ptr<base::Value> FilterOperation::AsValue() const {
         value->SetDouble("inner_threshold", amount_);
         value->SetDouble("outer_threshold", outer_threshold_);
         scoped_ptr<base::ListValue> region_value(new base::ListValue());
+        value->BeginArray("region");
         for (SkRegion::Iterator it(region_); !it.done(); it.next()) {
-          region_value->AppendInteger(it.rect().x());
-          region_value->AppendInteger(it.rect().y());
-          region_value->AppendInteger(it.rect().width());
-          region_value->AppendInteger(it.rect().height());
+          value->AppendInteger(it.rect().x());
+          value->AppendInteger(it.rect().y());
+          value->AppendInteger(it.rect().width());
+          value->AppendInteger(it.rect().height());
         }
-        value->Set("region", region_value.release());
+        value->EndArray();
       }
       break;
   }
-  return value.PassAs<base::Value>();
 }
 
 }  // namespace cc

@@ -16,14 +16,12 @@ void RenderingStats::TimeDeltaList::Append(base::TimeDelta value) {
   values.push_back(value);
 }
 
-scoped_ptr<base::ListValue>
-RenderingStats::TimeDeltaList::AsListValueInMilliseconds() const {
-  scoped_ptr<base::ListValue> list_value(new base::ListValue);
+void RenderingStats::TimeDeltaList::AddToTracedValue(
+    base::debug::TracedValue* list_value) const {
   std::list<base::TimeDelta>::const_iterator iter;
   for (iter = values.begin(); iter != values.end(); ++iter) {
     list_value->AppendDouble(iter->InMillisecondsF());
   }
-  return list_value.Pass();
 }
 
 void RenderingStats::TimeDeltaList::Add(const TimeDeltaList& other) {
@@ -39,13 +37,14 @@ RenderingStats::MainThreadRenderingStats::~MainThreadRenderingStats() {
 
 scoped_refptr<base::debug::ConvertableToTraceFormat>
 RenderingStats::MainThreadRenderingStats::AsTraceableData() const {
-  scoped_ptr<base::DictionaryValue> record_data(new base::DictionaryValue());
+  scoped_refptr<base::debug::TracedValue> record_data =
+      new base::debug::TracedValue();
   record_data->SetInteger("frame_count", frame_count);
   record_data->SetDouble("paint_time", paint_time.InSecondsF());
   record_data->SetInteger("painted_pixel_count", painted_pixel_count);
   record_data->SetDouble("record_time", record_time.InSecondsF());
   record_data->SetInteger("recorded_pixel_count", recorded_pixel_count);
-  return TracedValue::FromValue(record_data.release());
+  return record_data;
 }
 
 void RenderingStats::MainThreadRenderingStats::Add(
@@ -69,34 +68,39 @@ RenderingStats::ImplThreadRenderingStats::~ImplThreadRenderingStats() {
 
 scoped_refptr<base::debug::ConvertableToTraceFormat>
 RenderingStats::ImplThreadRenderingStats::AsTraceableData() const {
-  scoped_ptr<base::DictionaryValue> record_data(new base::DictionaryValue());
+  scoped_refptr<base::debug::TracedValue> record_data =
+      new base::debug::TracedValue();
   record_data->SetInteger("frame_count", frame_count);
   record_data->SetDouble("rasterize_time", rasterize_time.InSecondsF());
   record_data->SetInteger("rasterized_pixel_count", rasterized_pixel_count);
   record_data->SetInteger("visible_content_area", visible_content_area);
   record_data->SetInteger("approximated_visible_content_area",
                           approximated_visible_content_area);
-  record_data->Set("draw_duration_ms",
-                   draw_duration.AsListValueInMilliseconds().release());
-  record_data->Set(
-      "draw_duration_estimate_ms",
-      draw_duration_estimate.AsListValueInMilliseconds().release());
-  record_data->Set(
-      "begin_main_frame_to_commit_duration_ms",
-      begin_main_frame_to_commit_duration.AsListValueInMilliseconds()
-          .release());
-  record_data->Set(
-      "begin_main_frame_to_commit_duration_estimate_ms",
-      begin_main_frame_to_commit_duration_estimate.AsListValueInMilliseconds()
-          .release());
-  record_data->Set(
-      "commit_to_activate_duration_ms",
-      commit_to_activate_duration.AsListValueInMilliseconds().release());
-  record_data->Set(
-      "commit_to_activate_duration_estimate_ms",
-      commit_to_activate_duration_estimate.AsListValueInMilliseconds()
-          .release());
-  return TracedValue::FromValue(record_data.release());
+  record_data->BeginArray("draw_duration_ms");
+  draw_duration.AddToTracedValue(record_data.get());
+  record_data->EndArray();
+
+  record_data->BeginArray("draw_duration_estimate_ms");
+  draw_duration_estimate.AddToTracedValue(record_data.get());
+  record_data->EndArray();
+
+  record_data->BeginArray("begin_main_frame_to_commit_duration_ms");
+  begin_main_frame_to_commit_duration.AddToTracedValue(record_data.get());
+  record_data->EndArray();
+
+  record_data->BeginArray("begin_main_frame_to_commit_duration_estimate_ms");
+  begin_main_frame_to_commit_duration_estimate.AddToTracedValue(
+      record_data.get());
+  record_data->EndArray();
+
+  record_data->BeginArray("commit_to_activate_duration_ms");
+  commit_to_activate_duration.AddToTracedValue(record_data.get());
+  record_data->EndArray();
+
+  record_data->BeginArray("commit_to_activate_duration_estimate_ms");
+  commit_to_activate_duration_estimate.AddToTracedValue(record_data.get());
+  record_data->EndArray();
+  return record_data;
 }
 
 void RenderingStats::ImplThreadRenderingStats::Add(

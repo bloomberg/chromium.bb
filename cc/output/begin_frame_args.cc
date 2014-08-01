@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "cc/output/begin_frame_args.h"
+
+#include "base/debug/trace_event_argument.h"
 #include "ui/gfx/frame_time.h"
 
 namespace cc {
@@ -27,13 +29,19 @@ BeginFrameArgs BeginFrameArgs::Create(base::TimeTicks frame_time,
   return BeginFrameArgs(frame_time, deadline, interval);
 }
 
-scoped_ptr<base::Value> BeginFrameArgs::AsValue() const {
-  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue);
+scoped_refptr<base::debug::ConvertableToTraceFormat> BeginFrameArgs::AsValue()
+    const {
+  scoped_refptr<base::debug::TracedValue> state =
+      new base::debug::TracedValue();
+  AsValueInto(state.get());
+  return state;
+}
+
+void BeginFrameArgs::AsValueInto(base::debug::TracedValue* state) const {
   state->SetString("type", "BeginFrameArgs");
   state->SetDouble("frame_time_us", frame_time.ToInternalValue());
   state->SetDouble("deadline_us", deadline.ToInternalValue());
   state->SetDouble("interval_us", interval.InMicroseconds());
-  return state.PassAs<base::Value>();
 }
 
 BeginFrameArgs BeginFrameArgs::CreateForSynchronousCompositor(

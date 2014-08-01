@@ -36,7 +36,7 @@ class CC_EXPORT SurfaceDrawQuad : public DrawQuad {
   static const SurfaceDrawQuad* MaterialCast(const DrawQuad* quad);
 
  private:
-  virtual void ExtendValue(base::DictionaryValue* value) const OVERRIDE;
+  virtual void ExtendValue(base::debug::TracedValue* value) const OVERRIDE;
 };
 
 }  // namespace cc

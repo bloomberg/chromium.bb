@@ -11,6 +11,9 @@
 #include "cc/resources/resource_provider.h"
 
 namespace base {
+namespace debug {
+class TracedValue;
+}
 class Value;
 class DictionaryValue;
 }
@@ -123,7 +126,7 @@ class CC_EXPORT DrawQuad {
     return IsLeftEdge() || IsTopEdge() || IsRightEdge() || IsBottomEdge();
   }
 
-  scoped_ptr<base::Value> AsValue() const;
+  void AsValueInto(base::debug::TracedValue* value) const;
 
  protected:
   DrawQuad();
@@ -134,7 +137,7 @@ class CC_EXPORT DrawQuad {
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,
               bool needs_blending);
-  virtual void ExtendValue(base::DictionaryValue* value) const = 0;
+  virtual void ExtendValue(base::debug::TracedValue* value) const = 0;
 };
 
 }  // namespace cc
