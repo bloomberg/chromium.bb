@@ -505,7 +505,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
                 deleteTextFromNode(text, startOffset, text->length() - startOffset);
                 node = NodeTraversal::next(*node);
             } else {
-                node = startNode->traverseToChildAt(startOffset);
+                node = NodeTraversal::childAt(*startNode, startOffset);
             }
         } else if (startNode == m_upstreamEnd.deprecatedNode() && startNode->isTextNode()) {
             Text* text = toText(m_upstreamEnd.deprecatedNode());

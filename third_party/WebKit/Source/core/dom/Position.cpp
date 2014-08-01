@@ -234,7 +234,7 @@ Node* Position::computeNodeBeforePosition() const
     case PositionIsAfterChildren:
         return m_anchorNode->lastChild();
     case PositionIsOffsetInAnchor:
-        return m_anchorNode->traverseToChildAt(m_offset - 1); // -1 converts to traverseToChildAt((unsigned)-1) and returns null.
+        return m_offset ? NodeTraversal::childAt(*m_anchorNode, m_offset - 1) : 0;
     case PositionIsBeforeAnchor:
         return m_anchorNode->previousSibling();
     case PositionIsAfterAnchor:
@@ -255,7 +255,7 @@ Node* Position::computeNodeAfterPosition() const
     case PositionIsAfterChildren:
         return 0;
     case PositionIsOffsetInAnchor:
-        return m_anchorNode->traverseToChildAt(m_offset);
+        return NodeTraversal::childAt(*m_anchorNode, m_offset);
     case PositionIsBeforeAnchor:
         return m_anchorNode.get();
     case PositionIsAfterAnchor:
@@ -303,7 +303,7 @@ Position Position::previous(PositionMoveType moveType) const
     ASSERT(offset >= 0);
 
     if (offset > 0) {
-        if (Node* child = node->traverseToChildAt(offset - 1))
+        if (Node* child = NodeTraversal::childAt(*node, offset - 1))
             return lastPositionInOrAfterNode(child);
 
         // There are two reasons child might be 0:
@@ -338,7 +338,7 @@ Position Position::next(PositionMoveType moveType) const
     // FIXME: Negative offsets shouldn't be allowed. We should catch this earlier.
     ASSERT(offset >= 0);
 
-    if (Node* child = node->traverseToChildAt(offset))
+    if (Node* child = NodeTraversal::childAt(*node, offset))
         return firstPositionInOrBeforeNode(child);
 
     if (!node->hasChildren() && offset < lastOffsetForEditing(node)) {

@@ -27,6 +27,7 @@
 #define PositionIterator_h
 
 #include "core/dom/Node.h"
+#include "core/dom/NodeTraversal.h"
 #include "core/dom/Position.h"
 
 namespace blink {
@@ -46,7 +47,7 @@ public:
 
     PositionIterator(const Position& pos)
         : m_anchorNode(pos.anchorNode())
-        , m_nodeAfterPositionInAnchor(m_anchorNode->traverseToChildAt(pos.deprecatedEditingOffset()))
+        , m_nodeAfterPositionInAnchor(NodeTraversal::childAt(*m_anchorNode, pos.deprecatedEditingOffset()))
         , m_offsetInAnchor(m_nodeAfterPositionInAnchor ? 0 : pos.deprecatedEditingOffset())
     {
     }

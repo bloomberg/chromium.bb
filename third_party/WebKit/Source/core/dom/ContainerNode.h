@@ -75,7 +75,6 @@ public:
     PassRefPtrWillBeRawPtr<HTMLCollection> children();
 
     unsigned countChildren() const;
-    Node* traverseToChildAt(unsigned index) const;
 
     PassRefPtrWillBeRawPtr<Element> querySelector(const AtomicString& selectors, ExceptionState&);
     PassRefPtrWillBeRawPtr<StaticNodeList> querySelectorAll(const AtomicString& selectors, ExceptionState&);
@@ -279,13 +278,6 @@ inline unsigned Node::countChildren() const
     if (!isContainerNode())
         return 0;
     return toContainerNode(this)->countChildren();
-}
-
-inline Node* Node::traverseToChildAt(unsigned index) const
-{
-    if (!isContainerNode())
-        return 0;
-    return toContainerNode(this)->traverseToChildAt(index);
 }
 
 inline Node* Node::firstChild() const

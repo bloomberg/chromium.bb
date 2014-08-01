@@ -368,7 +368,7 @@ void CompositeEditCommand::appendNode(PassRefPtrWillBeRawPtr<Node> node, PassRef
 void CompositeEditCommand::removeChildrenInRange(PassRefPtrWillBeRawPtr<Node> node, unsigned from, unsigned to)
 {
     WillBeHeapVector<RefPtrWillBeMember<Node> > children;
-    Node* child = node->traverseToChildAt(from);
+    Node* child = NodeTraversal::childAt(*node, from);
     for (unsigned i = from; child && i < to; i++, child = child->nextSibling())
         children.append(child);
 

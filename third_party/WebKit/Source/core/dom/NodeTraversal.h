@@ -70,11 +70,17 @@ public:
     static Node* nextAncestorSibling(const Node&, const Node* stayWithin);
     static Node& highestAncestorOrSelf(Node&);
 
+    // Children traversal.
+    static Node* childAt(const Node& parent, unsigned index) { return childAtTemplate(parent, index); }
+    static Node* childAt(const ContainerNode& parent, unsigned index) { return childAtTemplate(parent, index); }
+
 private:
     template <class NodeType>
     static Node* traverseNextTemplate(NodeType&);
     template <class NodeType>
     static Node* traverseNextTemplate(NodeType&, const Node* stayWithin);
+    template <class NodeType>
+    static Node* childAtTemplate(NodeType&, unsigned);
 };
 
 template <class NodeType>
@@ -121,6 +127,15 @@ inline Node& NodeTraversal::highestAncestorOrSelf(Node& current)
     while (highest->parentNode())
         highest = highest->parentNode();
     return *highest;
+}
+
+template <class NodeType>
+inline Node* NodeTraversal::childAtTemplate(NodeType& parent, unsigned index)
+{
+    Node* child = parent.firstChild();
+    while (child && index--)
+        child = child->nextSibling();
+    return child;
 }
 
 } // namespace blink

@@ -1106,15 +1106,6 @@ unsigned ContainerNode::countChildren() const
     return count;
 }
 
-Node* ContainerNode::traverseToChildAt(unsigned index) const
-{
-    unsigned i;
-    Node *n = firstChild();
-    for (i = 0; n != 0 && i < index; i++)
-        n = n->nextSibling();
-    return n;
-}
-
 PassRefPtrWillBeRawPtr<Element> ContainerNode::querySelector(const AtomicString& selectors, ExceptionState& exceptionState)
 {
     if (selectors.isEmpty()) {

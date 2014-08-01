@@ -283,7 +283,7 @@ void InsertParagraphSeparatorCommand::doApply()
             refNode = startBlock->firstChild();
         }
         else if (insertionPosition.deprecatedNode() == startBlock && nestNewBlock) {
-            refNode = startBlock->traverseToChildAt(insertionPosition.deprecatedEditingOffset());
+            refNode = NodeTraversal::childAt(*startBlock, insertionPosition.deprecatedEditingOffset());
             ASSERT(refNode); // must be true or we'd be in the end of block case
         } else
             refNode = insertionPosition.deprecatedNode();

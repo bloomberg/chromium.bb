@@ -27,6 +27,7 @@
 #define RangeBoundaryPoint_h
 
 #include "core/dom/Node.h"
+#include "core/dom/NodeTraversal.h"
 #include "core/dom/Position.h"
 
 namespace blink {
@@ -124,7 +125,7 @@ inline void RangeBoundaryPoint::set(PassRefPtrWillBeRawPtr<Node> container, int 
 {
     ASSERT(container);
     ASSERT(offset >= 0);
-    ASSERT(childBefore == (offset ? container->traverseToChildAt(offset - 1) : 0));
+    ASSERT(childBefore == (offset ? NodeTraversal::childAt(*container, offset - 1) : 0));
     m_containerNode = container;
     m_offsetInContainer = offset;
     m_childBeforeBoundary = childBefore;

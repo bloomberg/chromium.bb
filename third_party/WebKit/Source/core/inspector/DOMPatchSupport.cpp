@@ -38,6 +38,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Node.h"
+#include "core/dom/NodeTraversal.h"
 #include "core/dom/XMLDocument.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLDocument.h"
@@ -380,7 +381,7 @@ bool DOMPatchSupport::innerPatchChildren(ContainerNode* parentNode, const Vector
     for (size_t i = 0; i < newMap.size(); ++i) {
         if (newMap[i].first || merges.contains(newList[i].get()))
             continue;
-        if (!insertBeforeAndMarkAsUsed(parentNode, newList[i].get(), parentNode->traverseToChildAt(i), exceptionState))
+        if (!insertBeforeAndMarkAsUsed(parentNode, newList[i].get(), NodeTraversal::childAt(*parentNode, i), exceptionState))
             return false;
     }
 
@@ -389,7 +390,7 @@ bool DOMPatchSupport::innerPatchChildren(ContainerNode* parentNode, const Vector
         if (!oldMap[i].first)
             continue;
         RefPtrWillBeRawPtr<Node> node = oldMap[i].first->m_node;
-        Node* anchorNode = parentNode->traverseToChildAt(oldMap[i].second);
+        Node* anchorNode = NodeTraversal::childAt(*parentNode, oldMap[i].second);
         if (node == anchorNode)
             continue;
         if (isHTMLBodyElement(*node) || isHTMLHeadElement(*node))

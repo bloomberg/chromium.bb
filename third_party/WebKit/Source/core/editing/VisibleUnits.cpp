@@ -993,7 +993,7 @@ VisiblePosition nextLinePosition(const VisiblePosition &visiblePosition, int lin
 
     if (!root) {
         // FIXME: We need do the same in previousLinePosition.
-        Node* child = node->traverseToChildAt(p.deprecatedEditingOffset());
+        Node* child = NodeTraversal::childAt(*node, p.deprecatedEditingOffset());
         node = child ? child : &NodeTraversal::lastWithinOrSelf(*node);
         Position position = nextRootInlineBoxCandidatePosition(node, visiblePosition, editableType);
         if (position.isNotNull()) {

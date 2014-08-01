@@ -908,7 +908,7 @@ void Range::insertNode(PassRefPtrWillBeRawPtr<Node> prpNewNode, ExceptionState& 
         }
 
         container = m_start.container();
-        container->insertBefore(newNode.release(), container->traverseToChildAt(m_start.offset()), exceptionState);
+        container->insertBefore(newNode.release(), NodeTraversal::childAt(*container, m_start.offset()), exceptionState);
         if (exceptionState.hadException())
             return;
 
@@ -1020,7 +1020,7 @@ Node* Range::checkNodeWOffset(Node* n, int offset, ExceptionState& exceptionStat
         case Node::ELEMENT_NODE: {
             if (!offset)
                 return 0;
-            Node* childBefore = n->traverseToChildAt(offset - 1);
+            Node* childBefore = NodeTraversal::childAt(*n, offset - 1);
             if (!childBefore)
                 exceptionState.throwDOMException(IndexSizeError, "There is no child at offset " + String::number(offset) + ".");
             return childBefore;
@@ -1310,7 +1310,7 @@ Node* Range::firstNode() const
 {
     if (m_start.container()->offsetInCharacters())
         return m_start.container();
-    if (Node* child = m_start.container()->traverseToChildAt(m_start.offset()))
+    if (Node* child = NodeTraversal::childAt(*m_start.container(), m_start.offset()))
         return child;
     if (!m_start.offset())
         return m_start.container();
@@ -1326,7 +1326,7 @@ Node* Range::pastLastNode() const
 {
     if (m_end.container()->offsetInCharacters())
         return NodeTraversal::nextSkippingChildren(*m_end.container());
-    if (Node* child = m_end.container()->traverseToChildAt(m_end.offset()))
+    if (Node* child = NodeTraversal::childAt(*m_end.container(), m_end.offset()))
         return child;
     return NodeTraversal::nextSkippingChildren(*m_end.container());
 }
