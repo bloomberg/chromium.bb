@@ -277,7 +277,7 @@ class LinkageTest(NonForgivingImageTestCase):
         else:
           to_test = os.path.join(os.path.dirname(to_test), link)
       try:
-        lddtree.ParseELF(to_test, ROOT_A, ldpaths)
+        lddtree.ParseELF(to_test, root=ROOT_A, ldpaths=ldpaths)
       except lddtree.exceptions.ELFError:
         continue
       except IOError as e:
