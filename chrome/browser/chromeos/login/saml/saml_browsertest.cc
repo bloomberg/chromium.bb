@@ -836,7 +836,7 @@ void SAMLPolicyTest::StoreCookieList(
                                    callback);
 }
 
-IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, FLAKY_PRE_NoSAML) {
+IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, DISABLED_PRE_NoSAML) {
   // Set the offline login time limit for SAML users to zero.
   SetSAMLOfflineSigninTimeLimitPolicy(0);
 
@@ -852,7 +852,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, FLAKY_PRE_NoSAML) {
 
 // Verifies that the offline login time limit does not affect a user who
 // authenticated without SAML.
-IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, FLAKY_NoSAML) {
+IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, DISABLED_NoSAML) {
   login_screen_load_observer_->Wait();
   // Verify that offline login is allowed.
   JsExpect("window.getComputedStyle(document.querySelector("
@@ -891,7 +891,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLZeroLimit) {
            "    '#pod-row .signin-button-container')).display != 'none'");
 }
 
-IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_PRE_TransferCookiesAffiliated) {
+IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, DISABLED_PRE_PRE_TransferCookiesAffiliated) {
   fake_saml_idp()->SetCookieValue(kSAMLIdPCookieValue1);
   LogInWithSAML(kFirstSAMLUserEmail);
   VerifySAMLIdPCookieValue(kSAMLIdPCookieValue1);
@@ -900,7 +900,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_PRE_TransferCookiesAffiliated) {
 // Verifies that when the DeviceTransferSAMLCookies policy is not enabled, SAML
 // IdP cookies are not transferred to a user's profile on subsequent login, even
 // if the user belongs to the domain that the device is enrolled into.
-IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_TransferCookiesAffiliated) {
+IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, DISABLED_PRE_TransferCookiesAffiliated) {
   fake_saml_idp()->SetCookieValue(kSAMLIdPCookieValue2);
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   ShowGAIALoginForm();
@@ -912,7 +912,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_TransferCookiesAffiliated) {
 // Verifies that when the DeviceTransferSAMLCookies policy is enabled, SAML IdP
 // cookies are transferred to a user's profile on subsequent login when the user
 // belongs to the domain that the device is enrolled into.
-IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TransferCookiesAffiliated) {
+IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, DISABLED_TransferCookiesAffiliated) {
   fake_saml_idp()->SetCookieValue(kSAMLIdPCookieValue2);
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   ShowGAIALoginForm();
