@@ -38,13 +38,14 @@
       'target_name': 'blink_heap_unittests',
       'type': 'executable',
       'dependencies': [
-        'blink_heap_run_all_tests',
         '../config.gyp:unittest_config',
         '../wtf/wtf.gyp:wtf',
         '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
+        '<(DEPTH)/base/base.gyp:test_support_base',
         'blink_platform.gyp:blink_platform',
       ],
       'sources': [
+        'heap/RunAllTests.cpp',
         '<@(platform_heap_test_files)',
       ],
       'conditions': [
@@ -64,32 +65,17 @@
       ],
     },
     {
-      'target_name': 'blink_heap_run_all_tests',
-      'type': 'static_library',
-      'dependencies': [
-        '../wtf/wtf.gyp:wtf',
-        '../config.gyp:unittest_config',
-        '<(DEPTH)/base/base.gyp:test_support_base',
-      ],
-      'export_dependent_settings': [
-        '<(DEPTH)/base/base.gyp:test_support_base',
-      ],
-      'sources': [
-        'heap/RunAllTests.cpp',
-      ]
-    },
-    {
       'target_name': 'blink_platform_unittests',
       'type': 'executable',
       'dependencies': [
-        'blink_platform_run_all_tests',
         '../config.gyp:unittest_config',
         '../wtf/wtf.gyp:wtf',
         '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
-        'blink_platform.gyp:blink_platform',
-        'blink_platform.gyp:blink_common',
+        '<(DEPTH)/base/base.gyp:test_support_base',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/url/url.gyp:url_lib',
+        'blink_platform.gyp:blink_common',
+        'blink_platform.gyp:blink_platform',
       ],
       'defines': [
         'INSIDE_BLINK',
@@ -98,6 +84,7 @@
         '<(SHARED_INTERMEDIATE_DIR)/blink',
       ],
       'sources': [
+        'testing/RunAllTests.cpp',
         '<@(platform_test_files)',
       ],
       'conditions': [
@@ -114,21 +101,6 @@
             '<(DEPTH)/tools/android/forwarder2/forwarder.gyp:forwarder2',
           ],
         }],
-      ],
-    },
-    {
-      'target_name': 'blink_platform_run_all_tests',
-      'type': 'static_library',
-      'dependencies': [
-        '../wtf/wtf.gyp:wtf',
-        '../config.gyp:unittest_config',
-        '<(DEPTH)/base/base.gyp:test_support_base',
-      ],
-      'export_dependent_settings': [
-        '<(DEPTH)/base/base.gyp:test_support_base',
-      ],
-      'sources': [
-        'testing/RunAllTests.cpp',
       ],
     },
   ],

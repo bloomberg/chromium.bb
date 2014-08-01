@@ -364,63 +364,28 @@ yasm_assemble("heap_asm_stubs") {
   }
 }
 
-source_set("heap_run_all_tests") {
-  sources = [
-    "heap/RunAllTests.cpp"
-  ]
-
-  configs += [
-    "//third_party/WebKit/Source/wtf:wtf_config",
-    "//third_party/WebKit/Source:config",
-    "//third_party/WebKit/Source:non_test_config",
-  ]
-
-  deps = [
-    "//base/test:test_support",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//third_party/WebKit/Source/wtf",
-  ]
-}
 
 test("heap_unittests") {
   visibility = "//third_party/WebKit/*"
   output_name = "blink_heap_unittests"
 
   sources = rebase_path(heap_gypi.platform_heap_test_files, ".", "heap")
-
-  configs += [
-    "//third_party/WebKit/Source:config",
-  ]
-
-  deps = [
-    ":heap_run_all_tests",
-    ":platform",
-    "//base",
-    "//base/allocator",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//third_party/WebKit/Source/wtf",
-    "//third_party/WebKit/Source/wtf:test_support",
-  ]
-}
-
-source_set("platform_run_all_tests") {
-  sources = [
-    "testing/RunAllTests.cpp"
-  ]
+  sources += [ "heap/RunAllTests.cpp" ]
 
   configs += [
     "//third_party/WebKit/Source/wtf:wtf_config",
     "//third_party/WebKit/Source:config",
-    "//third_party/WebKit/Source:non_test_config",
   ]
 
   deps = [
+    ":platform",
+    "//base",
+    "//base/allocator",
     "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/Source/wtf",
+    "//third_party/WebKit/Source/wtf:test_support",
   ]
 }
 
@@ -430,16 +395,19 @@ test("platform_unittests") {
 
   sources = platform_test_files
 
+  sources += [ "testing/RunAllTests.cpp" ]
+
   configs += [
+    "//third_party/WebKit/Source/wtf:wtf_config",
     "//third_party/WebKit/Source:config",
   ]
 
   deps = [
     ":blink_common",
-    ":platform_run_all_tests",
     ":platform",
     "//base",
     "//base/allocator",
+    "//base/test:test_support",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
