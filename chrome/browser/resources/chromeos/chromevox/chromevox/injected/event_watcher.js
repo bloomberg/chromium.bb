@@ -26,6 +26,7 @@ goog.require('cvox.Focuser');
 goog.require('cvox.History');
 goog.require('cvox.LiveRegions');
 goog.require('cvox.LiveRegionsDeprecated');
+goog.require('cvox.Memoize');
 goog.require('cvox.NavigationSpeaker');
 goog.require('cvox.PlatformFilter');  // TODO: Find a better place for this.
 goog.require('cvox.PlatformUtil');
@@ -497,7 +498,7 @@ cvox.ChromeVoxEventWatcher.getLastFocusedNode = function() {
  * Sets the last focused node.
  * @param {Element} element The last focused element.
  *
- * @private.
+ * @private
  */
 cvox.ChromeVoxEventWatcher.setLastFocusedNode_ = function(element) {
   cvox.ChromeVoxEventWatcher.lastFocusedNode = element;
@@ -619,13 +620,16 @@ cvox.ChromeVoxEventWatcher.mouseOverEventWatcher = function(evt) {
         if (evt.target != cvox.ChromeVoxEventWatcher.pendingMouseOverNode) {
           return;
         }
-        cvox.ChromeVoxEventWatcher.shouldFlushNextUtterance = true;
-        cvox.ChromeVox.navigationManager.stopReading(true);
-        var target = /** @type {Node} */(evt.target);
-        cvox.Focuser.setFocus(target);
-        cvox.ApiImplementation.syncToNode(
-            target, true, cvox.ChromeVoxEventWatcher.queueMode_());
-        cvox.ChromeVoxEventWatcher.announcedMouseOverNode = target;
+
+        cvox.Memoize.scope(function() {
+          cvox.ChromeVoxEventWatcher.shouldFlushNextUtterance = true;
+          cvox.ChromeVox.navigationManager.stopReading(true);
+          var target = /** @type {Node} */(evt.target);
+          cvox.Focuser.setFocus(target);
+          cvox.ApiImplementation.syncToNode(
+              target, true, cvox.ChromeVoxEventWatcher.queueMode_());
+          cvox.ChromeVoxEventWatcher.announcedMouseOverNode = target;
+        });
       }, mouseoverDelayMs);
 
   return true;
@@ -765,6 +769,18 @@ cvox.ChromeVoxEventWatcher.blurEventWatcher = function(evt) {
  * @return {boolean} True if the default action should be performed.
  */
 cvox.ChromeVoxEventWatcher.keyDownEventWatcher = function(evt) {
+  return /** @type {boolean} */ (cvox.Memoize.scope(
+      cvox.ChromeVoxEventWatcher.doKeyDownEventWatcher_.bind(this, evt)));
+};
+
+/**
+ * Implementation of |keyDownEventWatcher|.
+ *
+ * @param {Event} evt The keydown event to add to the queue.
+ * @return {boolean} True if the default action should be performed.
+ * @private
+ */
+cvox.ChromeVoxEventWatcher.doKeyDownEventWatcher_ = function(evt) {
   cvox.ChromeVoxEventWatcher.shouldFlushNextUtterance = true;
 
   if (cvox.ChromeVox.passThroughMode) {
@@ -1372,6 +1388,15 @@ cvox.ChromeVoxEventWatcher.queueMode_ = function() {
  * @private
  */
 cvox.ChromeVoxEventWatcher.processQueue_ = function() {
+  cvox.Memoize.scope(cvox.ChromeVoxEventWatcher.doProcessQueue_);
+};
+
+/**
+ * Implementation of |processQueue_|.
+ *
+ * @private
+ */
+cvox.ChromeVoxEventWatcher.doProcessQueue_ = function() {
   // Return now if there are no events in the queue.
   if (cvox.ChromeVoxEventWatcher.events_.length == 0) {
     return;

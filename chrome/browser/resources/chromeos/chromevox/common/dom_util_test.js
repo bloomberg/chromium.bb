@@ -1501,3 +1501,72 @@ TEST_F('CvoxDomUtilUnitTest', 'TitleOverridesInnerWhitespace', function() {
   var btn1 = $('btn1');
   assertEquals('Remove from Chrome', cvox.DomUtil.getName(btn1));
 });
+
+/** Test memoization. **/
+TEST_F('CvoxDomUtilUnitTest', 'Memoization', function() {
+  this.loadDoc(function() {/*!
+    <div id="container">
+    </div>
+  */});
+
+  // Nest divs 100 levels deep.
+  var container = $('container');
+  var outer = container;
+  for (var i = 0; i < 100; i++) {
+    var inner = document.createElement('div');
+    outer.appendChild(inner);
+    outer = inner;
+  }
+  var target = document.createElement('p');
+  target.innerHTML = 'Text';
+  outer.appendChild(target);
+
+  var iterations = 200;
+
+  function logTime(msg, fn) {
+    var t0 = new Date();
+    fn();
+    console.log(msg + ' elapsed time: ' + (new Date() - t0) + ' ms');
+  }
+
+  // First, test without memoization.
+  logTime('No memoization', function() {
+    container.style.visibility = 'hidden';
+    for (var i = 0; i < iterations; i++) {
+      assertFalse(cvox.DomUtil.isVisible(target));
+    }
+    container.style.visibility = 'visible';
+    for (var i = 0; i < iterations; i++) {
+      assertTrue(cvox.DomUtil.isVisible(target));
+    }
+  });
+
+  // Now test with memoization enabled.
+  logTime('With memoization', function() {
+    cvox.Memoize.scope(function() {
+      container.style.visibility = 'hidden';
+      for (var i = 0; i < iterations; i++) {
+        assertFalse(cvox.DomUtil.isVisible(target));
+      }
+    });
+    cvox.Memoize.scope(function() {
+      container.style.visibility = 'visible';
+      for (var i = 0; i < iterations; i++) {
+        assertTrue(cvox.DomUtil.isVisible(target));
+      }
+    });
+  });
+
+  // Finally as a sanity check that things are being memoized, turn on
+  // memoization and show that we get the wrong result if we change the
+  // DOM and call isVisible again.
+  cvox.Memoize.scope(function() {
+    container.style.visibility = 'hidden';
+    assertFalse(cvox.DomUtil.isVisible(target));
+
+    container.style.visibility = 'visible';
+    // This should be true! It will return the wrong answer because
+    // we're deliberately leaving memoization on while modifying the DOM.
+    assertFalse(cvox.DomUtil.isVisible(target));
+  });
+});

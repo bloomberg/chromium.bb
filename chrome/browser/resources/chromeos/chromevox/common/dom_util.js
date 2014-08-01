@@ -14,6 +14,7 @@ goog.require('cvox.AbstractTts');
 goog.require('cvox.AriaUtil');
 goog.require('cvox.ChromeVox');
 goog.require('cvox.DomPredicates');
+goog.require('cvox.Memoize');
 goog.require('cvox.NodeState');
 goog.require('cvox.XpathUtil');
 
@@ -118,7 +119,9 @@ cvox.DomUtil.FORMATTING_TAGS =
  * it is inside the document view-port as some sites try to communicate with
  * screen readers with such elements.
  * @param {Node} node The node to determine as visible or not.
- * @param {Object=} opt_options In certain cases, we already have information
+ * @param {{checkAncestors: (boolean|undefined),
+            checkDescendants: (boolean|undefined)}=} opt_options
+ *     In certain cases, we already have information
  *     on the context of the node. To improve performance and avoid redundant
  *     operations, you may wish to turn certain visibility checks off by
  *     passing in an options object. The following properties are configurable:
@@ -129,14 +132,39 @@ cvox.DomUtil.FORMATTING_TAGS =
  * @return {boolean} True if the node is visible.
  */
 cvox.DomUtil.isVisible = function(node, opt_options) {
-  opt_options = opt_options || {};
-  if (typeof(opt_options.checkAncestors) === 'undefined') {
-    opt_options.checkAncestors = true;
-  }
-  if (typeof(opt_options.checkDescendants) === 'undefined') {
-    opt_options.checkDescendants = true;
+  var checkAncestors = true;
+  var checkDescendants = true;
+  if (opt_options) {
+    if (opt_options.checkAncestors !== undefined) {
+      checkAncestors = opt_options.checkAncestors;
+    }
+    if (opt_options.checkDescendants !== undefined) {
+      checkDescendants = opt_options.checkDescendants;
+    }
   }
 
+  // Generate a unique function name based on the arguments, and
+  // memoize the result of the internal visibility computation so that
+  // within the same call stack, we don't need to recompute the visibility
+  // of the same node.
+  var fname = 'isVisible-' + checkAncestors + '-' + checkDescendants;
+  return /** @type {boolean} */ (cvox.Memoize.memoize(
+      cvox.DomUtil.computeIsVisible_.bind(
+          this, node, checkAncestors, checkDescendants), fname, node));
+};
+
+/**
+ * Implementation of |cvox.DomUtil.isVisible|.
+ * @param {Node} node The node to determine as visible or not.
+ * @param {boolean} checkAncestors True if we should check the ancestor chain
+ *       for forced invisibility traits of descendants.
+ * @param {boolean} checkDescendants True if we should consider descendants of
+ *       the  given node for visible elements.
+ * @return {boolean} True if the node is visible.
+ * @private
+ */
+cvox.DomUtil.computeIsVisible_ = function(
+    node, checkAncestors, checkDescendants) {
   // If the node is an iframe that we can never inject into, consider it hidden.
   if (node.tagName == 'IFRAME' && !node.src) {
     return false;
@@ -148,14 +176,13 @@ cvox.DomUtil.isVisible = function(node, opt_options) {
   }
 
   // Confirm that no subtree containing node is invisible.
-  if (opt_options.checkAncestors &&
+  if (checkAncestors &&
       cvox.DomUtil.hasInvisibleAncestor_(node)) {
     return false;
   }
 
   // If the node's subtree has a visible node, we declare it as visible.
-  var recursive = opt_options.checkDescendants;
-  if (cvox.DomUtil.hasVisibleNodeSubtree_(node, recursive)) {
+  if (cvox.DomUtil.hasVisibleNodeSubtree_(node, checkDescendants)) {
     return true;
   }
 
@@ -950,6 +977,21 @@ cvox.DomUtil.getLabelledByTargets = function() {
  * @return {boolean} True if the node has content.
  */
 cvox.DomUtil.hasContent = function(node) {
+  // Memoize the result of the internal content computation so that
+  // within the same call stack, we don't need to redo the computation
+  // on the same node twice.
+  return /** @type {boolean} */ (cvox.Memoize.memoize(
+      cvox.DomUtil.computeHasContent_.bind(this), 'hasContent', node));
+};
+
+/**
+ * Internal implementation of |cvox.DomUtil.hasContent|.
+ *
+ * @param {Node} node The node to be checked.
+ * @return {boolean} True if the node has content.
+ * @private
+ */
+cvox.DomUtil.computeHasContent_ = function(node) {
   // nodeType:8 == COMMENT_NODE
   if (node.nodeType == 8) {
     return false;
