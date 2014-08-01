@@ -100,6 +100,7 @@ void DeviceOrientationController::clearOverride()
 void DeviceOrientationController::trace(Visitor* visitor)
 {
     visitor->trace(m_overrideOrientationData);
+    DeviceSingleWindowEventController::trace(visitor);
     DocumentSupplement::trace(visitor);
 }
 

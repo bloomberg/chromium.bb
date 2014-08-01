@@ -12,13 +12,15 @@ namespace blink {
 
 class Event;
 
-class DeviceLightController FINAL : public NoBaseWillBeGarbageCollectedFinalized<DeviceLightController>, public DeviceSingleWindowEventController, public DocumentSupplement {
+class DeviceLightController FINAL : public DeviceSingleWindowEventController, public DocumentSupplement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DeviceLightController);
 public:
     virtual ~DeviceLightController();
 
     static const char* supplementName();
     static DeviceLightController& from(Document&);
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     explicit DeviceLightController(Document&);

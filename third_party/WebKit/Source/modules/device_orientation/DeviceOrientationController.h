@@ -13,7 +13,7 @@ namespace blink {
 class DeviceOrientationData;
 class Event;
 
-class DeviceOrientationController FINAL : public NoBaseWillBeGarbageCollectedFinalized<DeviceOrientationController>, public DeviceSingleWindowEventController, public DocumentSupplement {
+class DeviceOrientationController FINAL : public DeviceSingleWindowEventController, public DocumentSupplement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DeviceOrientationController);
 public:
     virtual ~DeviceOrientationController();

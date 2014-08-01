@@ -70,4 +70,11 @@ const AtomicString& DeviceLightController::eventTypeName() const
     return EventTypeNames::devicelight;
 }
 
+void DeviceLightController::trace(Visitor* visitor)
+{
+    DeviceSingleWindowEventController::trace(visitor);
+    DocumentSupplement::trace(visitor);
+}
+
+
 } // namespace blink

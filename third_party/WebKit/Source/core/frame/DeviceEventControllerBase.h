@@ -7,6 +7,7 @@
 
 #include "core/page/PageLifecycleObserver.h"
 #include "platform/Timer.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 

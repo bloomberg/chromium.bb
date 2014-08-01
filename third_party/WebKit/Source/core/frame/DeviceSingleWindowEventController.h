@@ -14,10 +14,13 @@ namespace blink {
 class Document;
 class Event;
 
-class DeviceSingleWindowEventController : public DeviceEventControllerBase, public DOMWindowLifecycleObserver {
+class DeviceSingleWindowEventController : public NoBaseWillBeGarbageCollectedFinalized<DeviceSingleWindowEventController>, public DeviceEventControllerBase, public DOMWindowLifecycleObserver {
 public:
+    virtual ~DeviceSingleWindowEventController();
+
     // Inherited from DeviceEventControllerBase.
     virtual void didUpdateData() OVERRIDE;
+    virtual void trace(Visitor*);
 
     // Inherited from DOMWindowLifecycleObserver.
     virtual void didAddEventListener(LocalDOMWindow*, const AtomicString&) OVERRIDE;
@@ -26,7 +29,6 @@ public:
 
 protected:
     explicit DeviceSingleWindowEventController(Document&);
-    virtual ~DeviceSingleWindowEventController();
 
     void dispatchDeviceEvent(const PassRefPtrWillBeRawPtr<Event>);
 
@@ -35,8 +37,10 @@ protected:
     virtual bool isNullEvent(Event*) const = 0;
 
 private:
+    Document& document() const { return *m_document; }
+
     bool m_needsCheckingNullEvents;
-    Document& m_document;
+    RawPtrWillBeMember<Document> m_document;
 };
 
 } // namespace blink

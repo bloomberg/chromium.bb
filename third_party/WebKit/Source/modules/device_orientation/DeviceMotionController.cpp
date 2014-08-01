@@ -69,4 +69,10 @@ const AtomicString& DeviceMotionController::eventTypeName() const
     return EventTypeNames::devicemotion;
 }
 
+void DeviceMotionController::trace(Visitor* visitor)
+{
+    DeviceSingleWindowEventController::trace(visitor);
+    DocumentSupplement::trace(visitor);
+}
+
 } // namespace blink
