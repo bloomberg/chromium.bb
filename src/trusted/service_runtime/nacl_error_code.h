@@ -18,8 +18,7 @@ extern "C" {
 /*
  * These error codes are reported via UMA so, if you edit them:
  * 1) make sure you understand UMA, first.
- * 2) update src/tools/histograms/histograms.xml in
- *  svn://svn.chromium.org/chrome-internal/trunk/src-internal
+ * 2) update src/tools/metrics/histograms/histograms.xml in Chromium
  * 3) never reuse old numbers for a different meaning; add new ones on the end
  * Values are explicitly specified to make sure they don't shift around when
  * edited, and also to make reading about:histograms easier.
