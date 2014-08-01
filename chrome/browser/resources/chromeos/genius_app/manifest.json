@@ -31,6 +31,8 @@
     "metricsPrivate",
     "webview",
     "storage",
+    "audioCapture",
+    "videoCapture",
     "unlimitedStorage",
     "https://*.ytimg.com/*",
     "https://www.google.com/*",
@@ -44,7 +46,8 @@
     "client_id": "929143421683.apps.googleusercontent.com",
     "scopes": [
         "https://www.googleapis.com/auth/userinfo.email",
-        "https://www.googleapis.com/auth/supportcontent"
+        "https://www.googleapis.com/auth/supportcontent",
+        "https://www.google.com/accounts/OAuthLogin"
     ]
   },
   "display_in_new_tab_page": false,
