@@ -233,15 +233,18 @@ CastVideoElement.prototype = {
     Promise.all([
       sendTokenPromise,
       this.mediaManager_.getUrl(),
-      this.mediaManager_.getMime()]).
+      this.mediaManager_.getMime(),
+      this.mediaManager_.getThumbnail()]).
         then(function(results) {
           var url = results[1];
           var mime = results[2];
+          var thumbnailUrl = results[3];
 
           this.mediaInfo_ = new chrome.cast.media.MediaInfo(url);
           this.mediaInfo_.contentType = mime;
           this.mediaInfo_.customData = {
             tokenRequired: true,
+            thumbnailUrl: thumbnailUrl,
           };
 
           var request = new chrome.cast.media.LoadRequest(this.mediaInfo_);

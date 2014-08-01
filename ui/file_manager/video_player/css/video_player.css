@@ -19,12 +19,25 @@ body {
   width: 100%;
 }
 
+#thumbnail {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  height: 100%;
+  position: absolute;
+  width: 100%;
+}
+
 #video-container {
   height: 100%;
   left: 0;
   position: absolute;
   top: 0;
   width: 100%;
+}
+
+#video-player[loading] #video-container {
+  display: none;
 }
 
 #spinner-container {
@@ -36,7 +49,7 @@ body {
   width: 100%;
 }
 
-#spinner-container.loading {
+#video-player[loading] #spinner-container {
   display: block;
 }
 

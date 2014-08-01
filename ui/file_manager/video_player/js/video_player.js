@@ -290,8 +290,20 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
     this.controls.inactivityWatcher.disabled = true;
     this.controls.decodeErrorOccured = false;
 
-    var spinnerContainer = document.querySelector('#spinner-container');
-    spinnerContainer.classList.add('loading');
+    videoPlayerElement.setAttribute('loading', true);
+
+    var media = new MediaManager(video.entry);
+
+    Promise.all([media.getThumbnail(), media.getToken()]).then(
+        function(results) {
+          var url = results[0];
+          var token = results[1];
+          document.querySelector('#thumbnail').style.backgroundImage =
+              'url(' + url + '&access_token=' + token + ')';
+        }).catch(function() {
+          // Shows no image on error.
+          document.querySelector('#thumbnail').style.backgroundImage = '';
+        });
 
     var media = new MediaManager(video.entry);
 
@@ -337,7 +349,7 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
             if (currentPos === this.currentPos_) {
               if (opt_callback)
                 opt_callback();
-              spinnerContainer.classList.remove('loading');
+              videoPlayerElement.removeAttribute('loading');
               this.controls.inactivityWatcher.disabled = false;
             }
 
@@ -350,7 +362,7 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
         }.bind(this)).
         // In case of error.
         catch(function(error) {
-          spinnerContainer.classList.remove('loading');
+          videoPlayerElement.removeAttribute('loading');
           console.error('Failed to initialize the video element.',
                         error.stack || error);
           this.controls_.showErrorMessage('GALLERY_VIDEO_ERROR');
