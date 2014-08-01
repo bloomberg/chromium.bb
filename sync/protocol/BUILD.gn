@@ -47,10 +47,10 @@ proto_library("protocol") {
     "unique_position.proto",
   ]
 
-  cc_generator_options = "dllexport_decl=SYNC_EXPORT:"
-  cc_include = "sync/base/sync_export.h"
+  cc_generator_options = "dllexport_decl=SYNC_PROTO_EXPORT:"
+  cc_include = "sync/protocol/sync_proto_export.h"
 
-  defines = [ "SYNC_IMPLEMENTATION" ]
+  defines = [ "SYNC_PROTO_IMPLEMENTATION" ]
 
   extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }
