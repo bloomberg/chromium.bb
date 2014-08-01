@@ -115,6 +115,14 @@ Gallery.Item.prototype.getFileName = function() {
 Gallery.Item.prototype.isOriginal = function() { return this.original_; };
 
 /**
+ * Obtains the item is on the drive volume or not.
+ * @return {boolean} True if the item is on the drive volume.
+ */
+Gallery.Item.prototype.isOnDrive = function() {
+  return !!this.metadata_.drive;
+};
+
+/**
  * Obtains the last accessed date.
  * @return {number} Last accessed date.
  */

@@ -17,16 +17,17 @@
     "256": "images/icon256.png"
   },
   "permissions": [
-    "fileSystem",
-    "fileBrowserHandler",
-    "fileBrowserPrivate",
-    "fullscreen",
-    "metricsPrivate",
-    "storage",
+    "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj",
     "chrome://extension-icon/",
     "chrome://resources/",
     "chrome://theme/",
-    "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj"
+    "fileBrowserHandler",
+    "fileBrowserPrivate",
+    "fileSystem",
+    "fullscreen",
+    "metricsPrivate",
+    "storage",
+    "webview"
   ],
   "file_handlers": {
     "open": {

@@ -54,6 +54,10 @@
 //<include src="../../file_manager/foreground/js/media/mouse_inactivity_watcher.js"/>
 //<include src="../../file_manager/foreground/js/metadata/metadata_cache.js"/>
 
+//<include src="../../file_manager/foreground/js/ui/file_manager_dialog_base.js">
+//<include src="../../file_manager/foreground/js/share_client.js">
+//<include src="../../file_manager/foreground/js/share_dialog.js">
+
 //<include src="gallery.js">
 //<include src="gallery_item.js">
 //<include src="mosaic_mode.js">

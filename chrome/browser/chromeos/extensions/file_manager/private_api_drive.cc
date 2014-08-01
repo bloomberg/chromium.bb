@@ -820,7 +820,7 @@ bool FileBrowserPrivateGetShareUrlFunction::RunAsync() {
 
   file_system->GetShareUrl(
       drive_path,
-      file_manager::util::GetFileManagerBaseUrl(),  // embed origin
+      GURL("chrome-extension://" + extension_id()),  // embed origin
       base::Bind(&FileBrowserPrivateGetShareUrlFunction::OnGetShareUrl, this));
   return true;
 }
