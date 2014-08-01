@@ -65,14 +65,20 @@ void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
     return;
   }
 
-  // setpriority(2) will set a thread's priority if it is passed a tid as
-  // the 'process identifier', not affecting the rest of the threads in the
-  // process. Setting this priority will only succeed if the user has been
-  // granted permission to adjust nice values on the system.
+  // setpriority(2) should change the whole thread group's (i.e. process)
+  // priority. however, on linux it will only change the target thread's
+  // priority. see the bugs section in
+  // http://man7.org/linux/man-pages/man2/getpriority.2.html.
+  // we prefer using 0 rather than the current thread id since they are
+  // equivalent but it makes sandboxing easier (https://crbug.com/399473).
   DCHECK_NE(handle.id_, kInvalidThreadId);
   int kNiceSetting = ThreadNiceValue(priority);
-  if (setpriority(PRIO_PROCESS, handle.id_, kNiceSetting))
+  const PlatformThreadId current_id = PlatformThread::CurrentId();
+  if (setpriority(PRIO_PROCESS,
+                  handle.id_ == current_id ? 0 : handle.id_,
+                  kNiceSetting)) {
     LOG(ERROR) << "Failed to set nice value of thread to " << kNiceSetting;
+  }
 }
 
 void PlatformThread::SetName(const char* name) {

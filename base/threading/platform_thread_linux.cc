@@ -75,22 +75,27 @@ void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
                                        ThreadPriority priority) {
 #if !defined(OS_NACL)
   if (priority == kThreadPriority_RealtimeAudio) {
-    const struct sched_param kRealTimePrio = { 8 };
+    const struct sched_param kRealTimePrio = {8};
     if (pthread_setschedparam(pthread_self(), SCHED_RR, &kRealTimePrio) == 0) {
       // Got real time priority, no need to set nice level.
       return;
     }
   }
 
-  // setpriority(2) will set a thread's priority if it is passed a tid as
-  // the 'process identifier', not affecting the rest of the threads in the
-  // process. Setting this priority will only succeed if the user has been
-  // granted permission to adjust nice values on the system.
+  // setpriority(2) should change the whole thread group's (i.e. process)
+  // priority. however, on linux it will only change the target thread's
+  // priority. see the bugs section in
+  // http://man7.org/linux/man-pages/man2/getpriority.2.html.
+  // we prefer using 0 rather than the current thread id since they are
+  // equivalent but it makes sandboxing easier (https://crbug.com/399473).
   DCHECK_NE(handle.id_, kInvalidThreadId);
   const int kNiceSetting = ThreadNiceValue(priority);
-  if (setpriority(PRIO_PROCESS, handle.id_, kNiceSetting)) {
-    DVPLOG(1) << "Failed to set nice value of thread ("
-              << handle.id_ << ") to " << kNiceSetting;
+  const PlatformThreadId current_id = PlatformThread::CurrentId();
+  if (setpriority(PRIO_PROCESS,
+                  handle.id_ == current_id ? 0 : handle.id_,
+                  kNiceSetting)) {
+    DVPLOG(1) << "Failed to set nice value of thread (" << handle.id_ << ") to "
+              << kNiceSetting;
   }
 #endif  //  !defined(OS_NACL)
 }
