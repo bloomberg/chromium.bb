@@ -132,6 +132,8 @@ TEST_F(MemoryCacheTest, VeryLargeResourceAccounting)
     cachedResource->fakeEncodedSize(resourceSize2);
     ASSERT_EQ(0u, memoryCache()->deadSize());
     ASSERT_EQ(cachedResource->size(), memoryCache()->liveSize());
+
+    cachedResource->removeClient(&client);
 }
 
 // Verifies that dead resources that exceed dead resource capacity are evicted
@@ -358,6 +360,9 @@ TEST_F(MemoryCacheTest, DecodeCacheOrder)
     memoryCache()->prune();
     ASSERT_EQ(memoryCache()->deadSize(), 0u);
     ASSERT_EQ(memoryCache()->liveSize(), totalSize - lowPriorityMockDecodeSize - highPriorityMockDecodeSize);
+
+    cachedImageLowPriority->removeClient(&clientLowPriority);
+    cachedImageHighPriority->removeClient(&clientHighPriority);
 }
 
 TEST_F(MemoryCacheTest, MultipleReplace)

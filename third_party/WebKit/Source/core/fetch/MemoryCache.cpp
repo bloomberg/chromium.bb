@@ -60,8 +60,18 @@ MemoryCache* memoryCache()
 
 PassOwnPtrWillBeRawPtr<MemoryCache> replaceMemoryCacheForTesting(PassOwnPtrWillBeRawPtr<MemoryCache> cache)
 {
+#if ENABLE(OILPAN)
+    // Move m_liveResources content to keep Resource objects alive.
+    for (HeapHashSet<Member<Resource> >::iterator i = memoryCache()->m_liveResources.begin();
+        i != memoryCache()->m_liveResources.end();
+        ++i) {
+        cache->m_liveResources.add(*i);
+    }
+    memoryCache()->m_liveResources.clear();
+#else
     // Make sure we have non-empty gMemoryCache.
     memoryCache();
+#endif
     OwnPtrWillBeRawPtr<MemoryCache> oldCache = gMemoryCache->release();
     *gMemoryCache = cache;
     return oldCache.release();

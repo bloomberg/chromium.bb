@@ -164,6 +164,11 @@ TEST_F(ImageBitmapTest, ImageBitmapLiveResourcePriority)
     // There is still an ImageBitmap that references this image.
     ASSERT_EQ(memoryCache()->priority(imageInteriorCrop->cachedImage()), MemoryCacheLiveResourcePriorityHigh);
     imageBitmapInteriorCrop = nullptr;
+
+    cachedImageNoCrop->removeClient(&mockClient1);
+    cachedImageInteriorCrop->removeClient(&mockClient2);
+    cachedImageExteriorCrop->removeClient(&mockClient3);
+    cachedImageOutsideCrop->removeClient(&mockClient4);
 }
 
 // Verifies that ImageBitmaps constructed from HTMLImageElements hold a reference to the original Image if the HTMLImageElement src is changed.

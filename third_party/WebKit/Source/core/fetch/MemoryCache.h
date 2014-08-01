@@ -285,6 +285,7 @@ private:
     // objects.
     // FIXME: Can we remove manual lifetime management of Resource and this?
     HeapHashSet<Member<Resource> > m_liveResources;
+    friend RawPtr<MemoryCache> replaceMemoryCacheForTesting(RawPtr<MemoryCache>);
 #endif
 
     friend class MemoryCacheTest;

@@ -54,12 +54,12 @@ TEST(RawResourceTest, DontIgnoreAcceptForCacheReuse)
     ResourceRequest jpegRequest;
     jpegRequest.setHTTPAccept("image/jpeg");
 
-    RawResource jpegResource(jpegRequest, Resource::Raw);
+    ResourcePtr<RawResource> jpegResource(new RawResource(jpegRequest, Resource::Raw));
 
     ResourceRequest pngRequest;
     pngRequest.setHTTPAccept("image/png");
 
-    ASSERT_FALSE(jpegResource.canReuse(pngRequest));
+    ASSERT_FALSE(jpegResource->canReuse(pngRequest));
 }
 
 TEST(RawResourceTest, RevalidationSucceeded)
