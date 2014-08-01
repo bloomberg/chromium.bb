@@ -3266,12 +3266,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DevTools.ActionTaken" enum="DevToolsAction">
+  <owner>sergeyv@chromium.org</owner>
+  <summary>Specified DevTools action has been taken.</summary>
+</histogram>
+
 <histogram name="DevTools.InspectElement" units="milliseconds">
   <owner>sergeyv@chromium.org</owner>
   <summary>
     Time to load Developer Tools when user clicks Inspect Element in the context
     menu.
   </summary>
+</histogram>
+
+<histogram name="DevTools.PanelShown" enum="DevToolsPanel">
+  <owner>sergeyv@chromium.org</owner>
+  <summary>Specified DevTools panel was shown.</summary>
+</histogram>
+
+<histogram name="DevTools.SettingChanged" enum="DevToolsSetting">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>Specified DevTools setting was changed.</summary>
 </histogram>
 
 <histogram name="Diagnostics.Recovery.ConflictingDlls" enum="DiagnosticsResult">
@@ -37176,6 +37191,40 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="10" label="REGISTER_CANCEL_ON_PRINTER"/>
   <int value="11" label="REGISTER_TIMEOUT"/>
   <int value="12" label="LOG_IN_STARTED_FROM_REGISTER_OVERLAY_PROMO"/>
+</enum>
+
+<enum name="DevToolsAction" type="int">
+  <int value="1" label="Window docked"/>
+  <int value="2" label="Window undocked"/>
+  <int value="3" label="Scripts breakpoint set"/>
+  <int value="4" label="Timeline started"/>
+  <int value="5" label="CPU profile taken"/>
+  <int value="6" label="Heap profile taken"/>
+  <int value="7" label="Audits started"/>
+  <int value="8" label="Console evaluated"/>
+</enum>
+
+<enum name="DevToolsPanel" type="int">
+  <int value="1" label="Elements"/>
+  <int value="2" label="Resources"/>
+  <int value="3" label="Network"/>
+  <int value="4" label="Scripts"/>
+  <int value="5" label="Timeline"/>
+  <int value="6" label="Profiles"/>
+  <int value="7" label="Audits"/>
+  <int value="8" label="Console"/>
+  <int value="9" label="Extension's Panel"/>
+</enum>
+
+<enum name="DevToolsSetting" type="int">
+  <int value="1" label="Elements DOM wrap on"/>
+  <int value="2" label="Elements DOM wrap off"/>
+  <int value="3" label="Console monitor XHR on"/>
+  <int value="4" label="Console monitor XHR off"/>
+  <int value="5" label="Console preserve log on"/>
+  <int value="6" label="Console preserve log off"/>
+  <int value="7" label="Network show large rows on"/>
+  <int value="8" label="Network show large rows off"/>
 </enum>
 
 <enum name="DiagnosticsRecoveryRun" type="int">
