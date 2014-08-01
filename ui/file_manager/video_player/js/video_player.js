@@ -290,6 +290,8 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
     this.controls.inactivityWatcher.disabled = false;
     this.controls.decodeErrorOccured = false;
 
+    var media = new MediaManager(video.entry);
+
     var videoElementInitializePromise;
     if (this.currentCast_) {
       videoPlayerElement.setAttribute('casting', true);
@@ -299,34 +301,17 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
       document.querySelector('#cast-name').textContent =
           this.currentCast_.friendlyName;
 
-      var urlPromise = new Promise(function(fulfill, reject) {
-        chrome.fileBrowserPrivate.getDownloadUrl(video.url, fulfill);
-      });
-
-      var mimePromise = new Promise(function(fulfill, reject) {
-        chrome.fileBrowserPrivate.getDriveEntryProperties(
-            [video.entry.toURL()], fulfill);
-      });
-
       videoElementInitializePromise =
-          Promise.all([urlPromise, mimePromise]).then(function(results) {
-            var downloadUrl = results[0];
-            var props = results[1];
-            var mime = '';
-            if (!props || props.length === 0 || !props[0].contentMimeType) {
-              // TODO(yoshiki): Adds a logic to guess the mime.
-            } else {
-              mime = props[0].contentMimeType;
-            }
+        media.isAvailableForCast().then(function(result) {
+            if (!result)
+              return Promise.reject('No casts are available.');
 
             return new Promise(function(fulfill, reject) {
               chrome.cast.requestSession(
                   fulfill, reject, undefined, this.currentCast_.label);
             }.bind(this)).then(function(session) {
               this.currentSession_ = session;
-              var mediaInfo = new chrome.cast.media.MediaInfo(downloadUrl);
-              mediaInfo.contentType = mime;
-              this.videoElement_ = new CastVideoElement(mediaInfo, session);
+              this.videoElement_ = new CastVideoElement(media, session);
               this.controls.attachMedia(this.videoElement_);
             }.bind(this));
           }.bind(this));

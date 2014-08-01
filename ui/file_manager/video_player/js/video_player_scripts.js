@@ -34,6 +34,7 @@
 
 //<include src="cast/cast_video_element.js"/>
 //<include src="cast/load_cast_extension_api.js"/>
+//<include src="cast/media_manager.js"/>
 //<include src="cast/caster.js"/>
 
 //<include src="video_player.js"/>

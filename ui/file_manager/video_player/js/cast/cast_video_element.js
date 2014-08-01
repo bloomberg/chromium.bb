@@ -12,16 +12,25 @@
 var MEDIA_UPDATE_INTERVAL = 250;
 
 /**
+ * The namespace for communication between the cast and the player.
+ * @type {string}
+ * @const
+ */
+var CAST_MESSAGE_NAMESPACE = 'urn:x-cast:com.google.chromeos.videoplayer';
+
+/**
  * This class is the dummy class which has same interface as VideoElement. This
  * behaves like VideoElement, and is used for making Chromecast player
  * controlled instead of the true Video Element tag.
  *
- * @param {chrome.cast.media.MediaInfo} mediaInfo Data of the media to play.
+ * @param {MediaManager} media Media manager with the media to play.
  * @param {chrome.cast.Session} session Session to play a video on.
  * @constructor
  */
-function CastVideoElement(mediaInfo, session) {
-  this.mediaInfo_ = mediaInfo;
+function CastVideoElement(media, session) {
+  this.mediaManager_ = media;
+  this.mediaInfo_ = null;
+
   this.castMedia_ = null;
   this.castSession_ = session;
   this.currentTime_ = null;
@@ -32,7 +41,10 @@ function CastVideoElement(mediaInfo, session) {
   this.currentMediaDuration_ = null;
   this.pausing_ = false;
 
+  this.onMessageBound_ = this.onMessage_.bind(this);
   this.onCastMediaUpdatedBound_ = this.onCastMediaUpdated_.bind(this);
+  this.castSession_.addMessageListener(
+      CAST_MESSAGE_NAMESPACE, this.onMessageBound_);
 }
 
 CastVideoElement.prototype = {
@@ -43,6 +55,8 @@ CastVideoElement.prototype = {
    */
   dispose: function() {
     this.unloadMedia_();
+    this.castSession_.removeMessageListener(
+        CAST_MESSAGE_NAMESPACE, this.onMessageBound_);
   },
 
   /**
@@ -197,14 +211,36 @@ CastVideoElement.prototype = {
    * Loads the video.
    */
   load: function(opt_callback) {
-    var request = new chrome.cast.media.LoadRequest(this.mediaInfo_);
-    this.castSession_.loadMedia(request,
-        function(media) {
-          this.onMediaDiscovered_(media);
-          if (opt_callback)
-            opt_callback();
-        }.bind(this),
-        this.onCastCommandError_.wrap(this));
+    var sendTokenPromise = this.mediaManager_.getToken().then(function(token) {
+      this.token_ = token;
+      this.sendMessage_({message: 'push-token', token: token});
+    }.bind(this));
+
+    Promise.all([
+      sendTokenPromise,
+      this.mediaManager_.getUrl(),
+      this.mediaManager_.getMime()]).
+        then(function(results) {
+          var url = results[1];
+          var mime = results[2];
+
+          this.mediaInfo_ = new chrome.cast.media.MediaInfo(url);
+          this.mediaInfo_.contentType = mime;
+          this.mediaInfo_.customData = {
+            tokenRequired: true,
+          };
+
+          var request = new chrome.cast.media.LoadRequest(this.mediaInfo_);
+          return new Promise(
+              this.castSession_.loadMedia.bind(this.castSession_, request)).
+              then(function(media) {
+                this.onMediaDiscovered_(media);
+                if (opt_callback)
+                  opt_callback();
+              }.bind(this));
+        }.bind(this)).catch(function(error) {
+          console.error('Cast failed.', error.stack || error);
+        });
   },
 
   /**
@@ -221,6 +257,44 @@ CastVideoElement.prototype = {
       this.castMedia_ = null;
     }
     clearInterval(this.updateTimerId_);
+  },
+
+  /**
+   * Sends the message to cast.
+   * @param {Object} message Message to be sent (Must be JSON-able object).
+   * @private
+   */
+  sendMessage_: function(message) {
+    this.castSession_.sendMessage(CAST_MESSAGE_NAMESPACE, message);
+  },
+
+  /**
+   * Invoked when receiving a message from the cast.
+   * @param {string} namespace Namespace of the message.
+   * @param {string} messageAsJson Content of message as json format.
+   * @private
+   */
+  onMessage_: function(namespace, messageAsJson) {
+    if (namespace !== CAST_MESSAGE_NAMESPACE || !messageAsJson)
+      return;
+
+    var message = JSON.parse(messageAsJson);
+    if (message['message'] === 'request-token') {
+      if (message['previousToken'] === this.token_) {
+          this.mediaManager_.getToken().then(function(token) {
+            this.sendMessage_({message: 'push-token', token: token});
+            // TODO(yoshiki): Revokes the previous token.
+          }.bind(this)).catch(function(error) {
+            // Send an empty token as an error.
+            this.sendMessage_({message: 'push-token', token: ''});
+            // TODO(yoshiki): Revokes the previous token.
+            console.error(error.stack || error);
+          });
+      } else {
+        console.error(
+            'New token is requested, but the previous token mismatches.');
+      }
+    }
   },
 
   /**
