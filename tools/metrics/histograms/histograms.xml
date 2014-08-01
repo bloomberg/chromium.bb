@@ -34275,6 +34275,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>How long it took to create the X-Client-Data header.</summary>
 </histogram>
 
+<histogram name="Variations.Headers.ExperimentCount">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Records number of experiment ids in the X-Client-Data header at the time the
+    header is constructed.
+  </summary>
+</histogram>
+
 <histogram name="Variations.LoadSeedSignature" enum="VariationSeedSignature">
   <owner>asvitkine@chromium.org</owner>
   <summary>

@@ -196,6 +196,8 @@ void VariationsHttpHeaderProvider::UpdateVariationIDsHeaderValue() {
   const size_t total_id_count =
       variation_ids_set_.size() + variation_trigger_ids_set_.size();
   DCHECK_LE(total_id_count, 10U);
+  UMA_HISTOGRAM_COUNTS_100("Variations.Headers.ExperimentCount",
+                           total_id_count);
   if (total_id_count > 20)
     return;
 
