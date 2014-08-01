@@ -47,10 +47,7 @@ public:
 
     virtual bool mainFrameResizesAreOrientationChanges() const OVERRIDE;
     virtual bool shrinksViewportContentToFit() const OVERRIDE;
-    virtual bool scrollAnimatorEnabled() const OVERRIDE;
-    virtual bool touchEditingEnabled() const OVERRIDE;
     virtual bool viewportEnabled() const OVERRIDE;
-    virtual bool viewportMetaEnabled() const OVERRIDE;
     virtual void setAccelerated2dCanvasEnabled(bool) OVERRIDE;
     virtual void setAccelerated2dCanvasMSAASampleCount(int) OVERRIDE;
     virtual void setAcceleratedCompositingEnabled(bool) OVERRIDE;

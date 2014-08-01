@@ -586,24 +586,9 @@ void WebSettingsImpl::setEnableTouchAdjustment(bool enabled)
     m_settings->setTouchAdjustmentEnabled(enabled);
 }
 
-bool WebSettingsImpl::scrollAnimatorEnabled() const
-{
-    return m_settings->scrollAnimatorEnabled();
-}
-
-bool WebSettingsImpl::touchEditingEnabled() const
-{
-    return m_settings->touchEditingEnabled();
-}
-
 bool WebSettingsImpl::viewportEnabled() const
 {
     return m_settings->viewportEnabled();
-}
-
-bool WebSettingsImpl::viewportMetaEnabled() const
-{
-    return m_settings->viewportMetaEnabled();
 }
 
 bool WebSettingsImpl::mainFrameResizesAreOrientationChanges() const
