@@ -58,11 +58,22 @@
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
 #include "wtf/Assertions.h"
+#include "wtf/CurrentTime.h"
 #include "wtf/RefCountedLeakCounter.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
 
 namespace blink {
+
+// To throttle readystatechange event fired when readystatechange is not
+// changed, we don't dispatch the event within 50ms.
+// As dispatching readystatechange when readystatechange is NOT changed is not
+// specified, 50ms is not specified, too.
+// We choose this value because progress event is dispatched every 50ms, but
+// actually this value doesn't have to equal to the interval.
+// Note: When readystate is actually changed readystatechange event must be
+// dispatched no matter how recently dispatched the event was.
+const double readyStateChangeFireInterval = 0.05;
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, xmlHttpRequestCounter, ("XMLHttpRequest"));
 
@@ -169,6 +180,7 @@ XMLHttpRequest::XMLHttpRequest(ExecutionContext* context, PassRefPtr<SecurityOri
     , m_progressEventThrottle(this)
     , m_responseTypeCode(ResponseTypeDefault)
     , m_securityOrigin(securityOrigin)
+    , m_previousReadyStateChangeFireTime(0)
     , m_async(true)
     , m_includeCredentials(false)
     , m_createdDocument(false)
@@ -420,12 +432,15 @@ void XMLHttpRequest::trackProgress(int length)
     if (m_state != LOADING) {
         changeState(LOADING);
     } else {
-        // Firefox calls readyStateChanged every time it receives data. Do
-        // the same to align with Firefox.
-        //
-        // FIXME: Make our implementation and the spec consistent. This
-        // behavior was needed when the progress event was not available.
-        dispatchReadyStateChangeEvent();
+        // FIXME: Make our implementation and the spec consistent. This extra
+        // invocation of readystatechange event in LOADING state was needed
+        // when the progress event was not available.
+        double now = monotonicallyIncreasingTime();
+        bool shouldFire = now - m_previousReadyStateChangeFireTime >= readyStateChangeFireInterval;
+        if (shouldFire) {
+            m_previousReadyStateChangeFireTime = now;
+            dispatchReadyStateChangeEvent();
+        }
     }
 }
 
