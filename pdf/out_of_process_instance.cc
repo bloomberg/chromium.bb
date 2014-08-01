@@ -1305,9 +1305,6 @@ pp::URLLoader OutOfProcessInstance::CreateURLLoaderInternal() {
 }
 
 int OutOfProcessInstance::GetInitialPage(const std::string& url) {
-#if defined(OS_NACL)
-  return -1;
-#else
   size_t found_idx = url.find('#');
   if (found_idx == std::string::npos)
     return -1;
@@ -1348,7 +1345,6 @@ int OutOfProcessInstance::GetInitialPage(const std::string& url) {
     }
   }
   return page;
-#endif
 }
 
 void OutOfProcessInstance::SetZoom(double scale) {
