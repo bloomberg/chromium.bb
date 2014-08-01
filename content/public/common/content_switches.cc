@@ -932,9 +932,6 @@ const char kDisableDirectWrite[]             = "disable-direct-write";
 // Disable the Legacy Window which corresponds to the size of the WebContents.
 const char kDisableLegacyIntermediateWindow[] = "disable-legacy-window";
 
-// Use high resolution timers for TimeTicks.
-const char kEnableHighResolutionTime[]      = "enable-high-resolution-time";
-
 // Enable the Win32K process mitigation policy for renderer processes which
 // prevents them from invoking user32 and gdi32 system calls which enter
 // the kernel. This is only supported on Windows 8 and beyond.

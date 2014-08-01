@@ -147,9 +147,6 @@ void BrowserChildProcessHostImpl::Launch(
     switches::kTraceToConsole,
     switches::kV,
     switches::kVModule,
-#if defined(OS_WIN)
-    switches::kEnableHighResolutionTime,
-#endif
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kForwardSwitches,
                              arraysize(kForwardSwitches));

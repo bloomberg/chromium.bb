@@ -1228,7 +1228,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #endif
 #if defined(OS_WIN)
     switches::kDisableDirectWrite,
-    switches::kEnableHighResolutionTime,
 #endif
 #if defined(OS_CHROMEOS)
     switches::kEnableVaapiAcceleratedVideoEncode,

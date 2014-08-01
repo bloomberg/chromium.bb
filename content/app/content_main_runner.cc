@@ -658,8 +658,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       MachBroker::ChildSendTaskPortToParent();
     }
 #elif defined(OS_WIN)
-    if (command_line.HasSwitch(switches::kEnableHighResolutionTime))
-      base::TimeTicks::SetNowIsHighResNowIfSupported();
+    base::TimeTicks::SetNowIsHighResNowIfSupported();
 
     bool init_device_scale_factor = true;
     if (command_line.HasSwitch(switches::kDeviceScaleFactor)) {

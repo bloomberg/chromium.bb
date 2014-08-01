@@ -275,7 +275,6 @@ extern const char kDisableCoreAnimationPlugins[];
 CONTENT_EXPORT extern const char kDeviceScaleFactor[];
 CONTENT_EXPORT extern const char kDisableDirectWrite[];
 CONTENT_EXPORT extern const char kDisableLegacyIntermediateWindow[];
-CONTENT_EXPORT extern const char kEnableHighResolutionTime[];
 // This switch will be removed when we enable the win32K lockdown process
 // mitigation.
 CONTENT_EXPORT extern const char kEnableWin32kRendererLockDown[];
