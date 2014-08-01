@@ -81,18 +81,12 @@ public:
         TopLeft,
         BottomRight
     };
-    BasicShapeCenterCoordinate()
-        : m_direction(TopLeft)
-        , m_length(Undefined)
-    {
-        updateComputedLength();
-    }
 
-    BasicShapeCenterCoordinate(Direction direction, const Length& length)
+    BasicShapeCenterCoordinate(Direction direction = TopLeft, const Length& length = Length(0, Fixed))
         : m_direction(direction)
         , m_length(length)
+        , m_computedLength(direction == TopLeft ? length : length.subtractFromOneHundredPercent())
     {
-        updateComputedLength();
     }
 
     BasicShapeCenterCoordinate(const BasicShapeCenterCoordinate& other)
@@ -117,8 +111,6 @@ private:
     Direction m_direction;
     Length m_length;
     Length m_computedLength;
-
-    void updateComputedLength();
 };
 
 class BasicShapeRadius {

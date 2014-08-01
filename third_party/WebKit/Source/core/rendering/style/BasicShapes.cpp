@@ -38,20 +38,6 @@
 
 namespace blink {
 
-void BasicShapeCenterCoordinate::updateComputedLength()
-{
-    if (m_direction == TopLeft) {
-        m_computedLength = m_length.isUndefined() ? Length(0, Fixed) : m_length;
-        return;
-    }
-    if (m_length.isUndefined()) {
-        m_computedLength = Length(100, Percent);
-        return;
-    }
-
-    m_computedLength = m_length.subtractFromOneHundredPercent();
-}
-
 bool BasicShape::canBlend(const BasicShape* other) const
 {
     // FIXME: Support animations between different shapes in the future.
