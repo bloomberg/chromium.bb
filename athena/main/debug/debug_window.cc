@@ -18,6 +18,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/network/network_type_pattern.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -125,6 +126,10 @@ class NetworkStatus : public chromeos::NetworkStateHandlerObserver {
     chromeos::NetworkStateHandler* handler =
         chromeos::NetworkHandler::Get()->network_state_handler();
     const chromeos::NetworkState* network = handler->DefaultNetwork();
+    if (!network) {
+      network = handler->ConnectedNetworkByType(
+          chromeos::NetworkTypePattern::NonVirtual());
+    }
     if (network) {
       status = base::StringPrintf(
           "%s (%s)", network->ip_address().c_str(), network->name().c_str());
