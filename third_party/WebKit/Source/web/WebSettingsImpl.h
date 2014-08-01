@@ -114,6 +114,7 @@ public:
     virtual void setMainFrameResizesAreOrientationChanges(bool) OVERRIDE;
     virtual void setMaxTouchPoints(int) OVERRIDE;
     virtual void setMediaControlsOverlayPlayButtonEnabled(bool) OVERRIDE;
+    virtual void setMediaPlaybackRequiresUserGesture(bool) OVERRIDE;
     virtual void setMinimumAccelerated2dCanvasSize(int) OVERRIDE;
     virtual void setMinimumFontSize(int) OVERRIDE;
     virtual void setMinimumLogicalFontSize(int) OVERRIDE;

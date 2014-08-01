@@ -121,6 +121,7 @@ allowRunningOfInsecureContent initial=true
 # milestone.
 allowConnectingInsecureWebSocket initial=false
 mediaControlsOverlayPlayButtonEnabled initial=false
+mediaPlaybackRequiresUserGesture initial=false
 
 scrollAnimatorEnabled initial=true
 

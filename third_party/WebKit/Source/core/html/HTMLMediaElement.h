@@ -546,6 +546,7 @@ private:
     PendingActionFlags m_pendingActionFlags;
 
     // FIXME: MediaElement has way too many state bits.
+    bool m_userGestureRequiredForPlay : 1;
     bool m_playing : 1;
     bool m_shouldDelayLoadEvent : 1;
     bool m_haveFiredLoadedData : 1;

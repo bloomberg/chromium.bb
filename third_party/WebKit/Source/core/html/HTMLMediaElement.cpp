@@ -39,6 +39,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLMediaSource.h"
@@ -335,6 +336,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_fragmentStartTime(MediaPlayer::invalidTime())
     , m_fragmentEndTime(MediaPlayer::invalidTime())
     , m_pendingActionFlags(0)
+    , m_userGestureRequiredForPlay(false)
     , m_playing(false)
     , m_shouldDelayLoadEvent(false)
     , m_haveFiredLoadedData(false)
@@ -369,6 +371,9 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
 
     WTF_LOG(Media, "HTMLMediaElement::HTMLMediaElement");
     ScriptWrappable::init(this);
+
+    if (document.settings() && document.settings()->mediaPlaybackRequiresUserGesture())
+        m_userGestureRequiredForPlay = true;
 
     setHasCustomStyleCallbacks();
     addElementToDocumentMap(this, &document);
@@ -716,6 +721,9 @@ void HTMLMediaElement::load()
 {
     WTF_LOG(Media, "HTMLMediaElement::load()");
 
+    if (UserGestureIndicator::processingUserGesture())
+        m_userGestureRequiredForPlay = false;
+
     prepareForLoad();
     loadInternal();
     prepareToPlay();
@@ -963,7 +971,9 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
     bool attemptLoad = true;
 
     if (url.protocolIs(mediaSourceBlobProtocol)) {
-        if (!isMediaStreamURL(url.string())) {
+        if (isMediaStreamURL(url.string())) {
+            m_userGestureRequiredForPlay = false;
+        } else {
             m_mediaSource = HTMLMediaSource::lookup(url.string());
 
             if (m_mediaSource) {
@@ -1841,7 +1851,7 @@ void HTMLMediaElement::setReadyState(ReadyState state)
                 scheduleEvent(EventTypeNames::playing);
         }
 
-        if (m_autoplaying && m_paused && autoplay() && !document().isSandboxed(SandboxAutomaticFeatures)) {
+        if (m_autoplaying && m_paused && autoplay() && !document().isSandboxed(SandboxAutomaticFeatures) && !m_userGestureRequiredForPlay) {
             m_paused = false;
             invalidateCachedTime();
             scheduleEvent(EventTypeNames::play);
@@ -2211,6 +2221,11 @@ void HTMLMediaElement::setPreload(const AtomicString& preload)
 void HTMLMediaElement::play()
 {
     WTF_LOG(Media, "HTMLMediaElement::play()");
+
+    if (m_userGestureRequiredForPlay && !UserGestureIndicator::processingUserGesture())
+        return;
+    if (UserGestureIndicator::processingUserGesture())
+        m_userGestureRequiredForPlay = false;
 
     playInternal();
 }

@@ -1,0 +1,16 @@
+request access to local media
+got a stream
+start preview
+EVENT(loadstart)
+EVENT(loadeddata)
+EVENT(canplay)
+EVENT(play)
+EVENT(canplaythrough)
+restart preview
+EVENT(loadstart)
+EVENT(loadeddata)
+EVENT(canplay)
+EVENT(play)
+EVENT(canplaythrough)
+END OF TEST
+
