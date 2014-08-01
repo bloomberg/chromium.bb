@@ -26,19 +26,13 @@ browserTest.Cancel_PIN.prototype.run = function(data) {
     return browserTest.onUIMode(AppMode.HOME);
   }).then(function() {
     return browserTest.connectMe2Me()
-  }).then(
-    this.enterPin_.bind(this, data.pin)
-  ).then(function() {
+  }).then(function() {
+    return browserTest.enterPIN(data.pin)
+  }).then(function() {
     // On fulfilled.
     browserTest.pass();
   }, function(reason) {
     // On rejected.
     browserTest.fail(reason);
   });
-};
-
-browserTest.Cancel_PIN.prototype.enterPin_ = function(pin) {
-  document.getElementById('pin-entry').value = pin;
-  browserTest.clickOnControl('pin-connect-button');
-  return browserTest.expectMe2MeConnected();
 };

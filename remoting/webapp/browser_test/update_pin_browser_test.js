@@ -28,18 +28,18 @@ browserTest.Update_PIN.prototype.run = function(data) {
 
   this.changePIN_(data.new_pin).then(
     browserTest.connectMe2Me
-  ).then(
-    this.enterPIN_.bind(this, data.old_pin, true /* expectError*/)
-  ).then(
+  ).then(function(){
+    return browserTest.enterPIN(data.old_pin, true /* expectError*/);
+  }).then(
     // Sleep for two seconds to allow for the login backoff logic to reset.
     base.Promise.sleep.bind(null, LOGIN_BACKOFF_WAIT)
   ).then(
     browserTest.connectMe2Me
-  ).then(
-    this.enterPIN_.bind(this, data.new_pin, false /* expectError*/)
-  ).then(
+  ).then(function(){
+    return browserTest.enterPIN_(data.new_pin, false /* expectError*/)
+  }).then(
     // Clean up the test by disconnecting and changing the PIN back
-    this.disconnect_.bind(this)
+    browserTest.disconnect
   ).then(
     // The PIN must be restored regardless of success or failure.
     this.changePIN_.bind(this, data.old_pin),
@@ -53,37 +53,8 @@ browserTest.Update_PIN.prototype.run = function(data) {
 };
 
 browserTest.Update_PIN.prototype.changePIN_ = function(newPin) {
+  var AppMode = remoting.AppMode;
+  var HOST_RESTART_WAIT = 10000;
   browserTest.clickOnControl('change-daemon-pin');
   return browserTest.setupPIN(newPin);
-};
-
-browserTest.Update_PIN.prototype.disconnect_ = function() {
-  var AppMode = remoting.AppMode;
-
-  remoting.disconnect();
-
-  return browserTest.onUIMode(AppMode.CLIENT_SESSION_FINISHED_ME2ME)
-  .then(function() {
-    var onHome = browserTest.onUIMode(AppMode.HOME);
-    browserTest.clickOnControl('client-finished-me2me-button');
-    return onHome;
-  });
-};
-
-browserTest.Update_PIN.prototype.enterPIN_ = function(pin, expectError) {
-  // Wait for 500ms before hitting the PIN button. From experiment, sometimes
-  // the PIN prompt does not dismiss without the timeout.
-  var CONNECT_PIN_WAIT = 500;
-
-  document.getElementById('pin-entry').value = pin;
-
-  return base.Promise.sleep(CONNECT_PIN_WAIT).then(function() {
-    browserTest.clickOnControl('pin-connect-button');
-  }).then(function() {
-    if (expectError) {
-      return browserTest.expectMe2MeError(remoting.Error.INVALID_ACCESS_CODE);
-    } else {
-      return browserTest.expectMe2MeConnected();
-    }
-  });
 };

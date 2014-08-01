@@ -167,8 +167,36 @@ browserTest.connectMe2Me = function() {
       // On time out.
       return Promise.resolve();
     }).then(function() {
-      return browserTest.onUIMode(AppMode.CLIENT_PIN_PROMPT);
+      return browserTest.onUIMode(AppMode.CLIENT_PIN_PROMPT, 10000);
     });
+};
+
+browserTest.disconnect = function() {
+  var AppMode = remoting.AppMode;
+  remoting.disconnect();
+  return browserTest.onUIMode(AppMode.CLIENT_SESSION_FINISHED_ME2ME).then(
+    function() {
+      browserTest.clickOnControl('client-finished-me2me-button');
+      return browserTest.onUIMode(AppMode.HOME);
+    });
+};
+
+browserTest.enterPIN = function(pin, opt_expectError) {
+  // Wait for 500ms before hitting the PIN button. From experiment, sometimes
+  // the PIN prompt does not dismiss without the timeout.
+  var CONNECT_PIN_WAIT = 500;
+
+  document.getElementById('pin-entry').value = pin;
+
+  return base.Promise.sleep(CONNECT_PIN_WAIT).then(function() {
+    browserTest.clickOnControl('pin-connect-button');
+  }).then(function() {
+    if (opt_expectError) {
+      return browserTest.expectMe2MeError(remoting.Error.INVALID_ACCESS_CODE);
+    } else {
+      return browserTest.expectMe2MeConnected();
+    }
+  });
 };
 
 browserTest.expectMe2MeError = function(errorTag) {
@@ -213,6 +241,25 @@ browserTest.expectMe2MeConnected = function() {
     return Promise.reject('Unexpected error - ' + errorMsg);
   });
   return Promise.race([onConnected, onFailure]);
+};
+
+browserTest.expectEvent = function(eventSource, event, timeoutMs,
+                                   opt_expectedData) {
+  return new Promise(function(fullfil, reject) {
+    var verifyEventParameters = function(actualData) {
+      if (opt_expectedData === undefined || opt_expectedData === actualData) {
+        fullfil();
+      } else {
+        reject('Bad event data; expected ' + opt_expectedData +
+               '; got ' + actualData);
+      }
+    };
+    eventSource.addEventListener(event, verifyEventParameters);
+    base.Promise.sleep(timeoutMs).then(function() {
+      reject(Error('Event ' + event + ' not received after ' +
+                   timeoutMs + 'ms.'));
+    });
+  });
 };
 
 browserTest.runTest = function(testClass, data) {

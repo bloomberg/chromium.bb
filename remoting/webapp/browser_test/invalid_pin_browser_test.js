@@ -21,9 +21,9 @@ browserTest.Invalid_PIN.prototype.run = function(data) {
   browserTest.expect(typeof data.pin == 'string');
 
   // Connect to me2me Host.
-  browserTest.connectMe2Me().then(
-    this.enterPIN_.bind(this, data.pin)
-  ).then(
+  browserTest.connectMe2Me().then(function(){
+    return browserTest.enterPIN(data.pin, true)
+  }).then(
     // Sleep for two seconds to allow the host backoff timer to reset.
     base.Promise.sleep.bind(window, 2000)
   ).then(function() {
@@ -33,10 +33,4 @@ browserTest.Invalid_PIN.prototype.run = function(data) {
     // On rejected.
     browserTest.fail(reason);
   });
-};
-
-browserTest.Invalid_PIN.prototype.enterPIN_ = function(pin) {
-  document.getElementById('pin-entry').value = pin;
-  browserTest.clickOnControl('pin-connect-button');
-  return browserTest.expectMe2MeError(remoting.Error.INVALID_ACCESS_CODE);
 };
