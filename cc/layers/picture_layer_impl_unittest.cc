@@ -303,7 +303,8 @@ TEST_F(PictureLayerImplTest, CloneNoInvalidation) {
     VerifyAllTilesExistAndHavePile(tilings->tiling_at(i), active_pile.get());
 }
 
-TEST_F(PictureLayerImplTest, ExternalViewportRectForPrioritizingTiles) {
+TEST_F(PictureLayerImplTest,
+       DISABLED_ExternalViewportRectForPrioritizingTiles) {
   base::TimeTicks time_ticks;
   host_impl_.SetCurrentFrameTimeTicks(time_ticks);
   gfx::Size tile_size(100, 100);
