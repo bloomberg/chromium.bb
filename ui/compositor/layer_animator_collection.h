@@ -10,41 +10,34 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "ui/compositor/compositor_animation_observer.h"
 #include "ui/compositor/compositor_export.h"
-
-namespace base {
-class TimeTicks;
-}
 
 namespace ui {
 
+class Compositor;
 class LayerAnimator;
-
-class COMPOSITOR_EXPORT LayerAnimatorCollectionDelegate {
- public:
-  virtual ~LayerAnimatorCollectionDelegate() {}
-
-  virtual void ScheduleAnimationForLayerCollection() = 0;
-};
 
 // A collection of LayerAnimators that should be updated at each animation step
 // in the compositor.
-class COMPOSITOR_EXPORT LayerAnimatorCollection {
+class COMPOSITOR_EXPORT LayerAnimatorCollection
+    : public CompositorAnimationObserver {
  public:
-  explicit LayerAnimatorCollection(LayerAnimatorCollectionDelegate* delegate);
-  ~LayerAnimatorCollection();
+  explicit LayerAnimatorCollection(Compositor* compositor);
+  virtual ~LayerAnimatorCollection();
 
   void StartAnimator(scoped_refptr<LayerAnimator> animator);
   void StopAnimator(scoped_refptr<LayerAnimator> animator);
 
   bool HasActiveAnimators() const;
 
-  void Progress(base::TimeTicks now);
-
   base::TimeTicks last_tick_time() const { return last_tick_time_; }
 
+  // CompositorAnimationObserver:
+  virtual void OnAnimationStep(base::TimeTicks timestamp) OVERRIDE;
+
  private:
-  LayerAnimatorCollectionDelegate* delegate_;
+  Compositor* compositor_;
   base::TimeTicks last_tick_time_;
   std::set<scoped_refptr<LayerAnimator> > animators_;
 

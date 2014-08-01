@@ -2524,7 +2524,7 @@ TEST(LayerAnimatorTest, LayerAnimatorCollectionTickTime) {
 
   LayerAnimatorCollection* collection = delegate.GetLayerAnimatorCollection();
   base::TimeTicks null;
-  collection->Progress(null);
+  collection->OnAnimationStep(null);
   EXPECT_TRUE(collection->last_tick_time().is_null());
 
   // Adding an animator to the collection should update the last tick time.

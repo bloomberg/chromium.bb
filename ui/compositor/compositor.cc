@@ -289,9 +289,25 @@ bool Compositor::HasObserver(CompositorObserver* observer) {
   return observer_list_.HasObserver(observer);
 }
 
+void Compositor::AddAnimationObserver(CompositorAnimationObserver* observer) {
+  animation_observer_list_.AddObserver(observer);
+  host_->SetNeedsAnimate();
+}
+
+void Compositor::RemoveAnimationObserver(
+    CompositorAnimationObserver* observer) {
+  animation_observer_list_.RemoveObserver(observer);
+}
+
+bool Compositor::HasAnimationObserver(CompositorAnimationObserver* observer) {
+  return animation_observer_list_.HasObserver(observer);
+}
+
 void Compositor::Animate(base::TimeTicks frame_begin_time) {
-  layer_animator_collection_.Progress(frame_begin_time);
-  if (layer_animator_collection_.HasActiveAnimators())
+  FOR_EACH_OBSERVER(CompositorAnimationObserver,
+                    animation_observer_list_,
+                    OnAnimationStep(frame_begin_time));
+  if (animation_observer_list_.might_have_observers())
     host_->SetNeedsAnimate();
 }
 
@@ -358,10 +374,6 @@ void Compositor::DidAbortSwapBuffers() {
   FOR_EACH_OBSERVER(CompositorObserver,
                     observer_list_,
                     OnCompositingAborted(this));
-}
-
-void Compositor::ScheduleAnimationForLayerCollection() {
-  host_->SetNeedsAnimate();
 }
 
 const cc::LayerTreeDebugState& Compositor::GetLayerTreeDebugState() const {

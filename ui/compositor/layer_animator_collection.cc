@@ -7,18 +7,19 @@
 #include <set>
 
 #include "base/time/time.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/frame_time.h"
 
 namespace ui {
 
-LayerAnimatorCollection::LayerAnimatorCollection(
-    LayerAnimatorCollectionDelegate* delegate)
-    : delegate_(delegate),
-      last_tick_time_(gfx::FrameTime::Now()) {
+LayerAnimatorCollection::LayerAnimatorCollection(Compositor* compositor)
+    : compositor_(compositor), last_tick_time_(gfx::FrameTime::Now()) {
 }
 
 LayerAnimatorCollection::~LayerAnimatorCollection() {
+  if (compositor_ && compositor_->HasAnimationObserver(this))
+    compositor_->RemoveAnimationObserver(this);
 }
 
 void LayerAnimatorCollection::StartAnimator(
@@ -27,21 +28,23 @@ void LayerAnimatorCollection::StartAnimator(
   if (!animators_.size())
     last_tick_time_ = gfx::FrameTime::Now();
   animators_.insert(animator);
-  if (delegate_)
-    delegate_->ScheduleAnimationForLayerCollection();
+  if (animators_.size() == 1U && compositor_)
+    compositor_->AddAnimationObserver(this);
 }
 
 void LayerAnimatorCollection::StopAnimator(
     scoped_refptr<LayerAnimator> animator) {
   DCHECK_GT(animators_.count(animator), 0U);
   animators_.erase(animator);
+  if (animators_.empty() && compositor_)
+    compositor_->RemoveAnimationObserver(this);
 }
 
 bool LayerAnimatorCollection::HasActiveAnimators() const {
   return !animators_.empty();
 }
 
-void LayerAnimatorCollection::Progress(base::TimeTicks now) {
+void LayerAnimatorCollection::OnAnimationStep(base::TimeTicks now) {
   last_tick_time_ = now;
   std::set<scoped_refptr<LayerAnimator> > list = animators_;
   for (std::set<scoped_refptr<LayerAnimator> >::iterator iter = list.begin();
@@ -51,6 +54,8 @@ void LayerAnimatorCollection::Progress(base::TimeTicks now) {
     if (animators_.count(*iter) > 0)
       (*iter)->Step(now);
   }
+  if (!HasActiveAnimators() && compositor_)
+    compositor_->RemoveAnimationObserver(this);
 }
 
 }  // namespace ui

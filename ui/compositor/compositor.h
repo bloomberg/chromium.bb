@@ -16,6 +16,7 @@
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/compositor/compositor_animation_observer.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/layer_animator_collection.h"
@@ -128,8 +129,7 @@ class COMPOSITOR_EXPORT CompositorLock
 // view hierarchy.
 class COMPOSITOR_EXPORT Compositor
     : NON_EXPORTED_BASE(public cc::LayerTreeHostClient),
-      NON_EXPORTED_BASE(public cc::LayerTreeHostSingleThreadClient),
-      NON_EXPORTED_BASE(public LayerAnimatorCollectionDelegate) {
+      NON_EXPORTED_BASE(public cc::LayerTreeHostSingleThreadClient) {
  public:
   Compositor(gfx::AcceleratedWidget widget,
              ui::ContextFactory* context_factory,
@@ -198,6 +198,10 @@ class COMPOSITOR_EXPORT Compositor
   void RemoveObserver(CompositorObserver* observer);
   bool HasObserver(CompositorObserver* observer);
 
+  void AddAnimationObserver(CompositorAnimationObserver* observer);
+  void RemoveAnimationObserver(CompositorAnimationObserver* observer);
+  bool HasAnimationObserver(CompositorAnimationObserver* observer);
+
   // Creates a compositor lock. Returns NULL if it is not possible to lock at
   // this time (i.e. we're waiting to complete a previous unlock).
   scoped_refptr<CompositorLock> GetCompositorLock();
@@ -235,9 +239,6 @@ class COMPOSITOR_EXPORT Compositor
   virtual void DidPostSwapBuffers() OVERRIDE;
   virtual void DidAbortSwapBuffers() OVERRIDE;
 
-  // LayerAnimatorCollectionDelegate implementation.
-  virtual void ScheduleAnimationForLayerCollection() OVERRIDE;
-
   int last_started_frame() { return last_started_frame_; }
   int last_ended_frame() { return last_ended_frame_; }
 
@@ -271,6 +272,7 @@ class COMPOSITOR_EXPORT Compositor
   Layer* root_layer_;
 
   ObserverList<CompositorObserver> observer_list_;
+  ObserverList<CompositorAnimationObserver> animation_observer_list_;
 
   gfx::AcceleratedWidget widget_;
   scoped_refptr<cc::Layer> root_web_layer_;
