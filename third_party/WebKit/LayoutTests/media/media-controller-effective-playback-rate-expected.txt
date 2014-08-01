@@ -2,7 +2,7 @@ EVENT(canplay)
 EXPECTED (video.controller.playbackRate == '1') OK
 EXPECTED (video.playbackRate == '0') OK
 RUN(video.play())
-EVENT(playing)
+EVENT(play)
 EVENT(timeupdate)
 EXPECTED (video.currentTime != '0') OK
 END OF TEST

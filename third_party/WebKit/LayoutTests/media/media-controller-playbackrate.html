@@ -4,15 +4,13 @@
         <script src=media-file.js></script>
         <script src=video-test.js></script>
         <script>
-            var start = function()
-            {
+            var start = function() {
                 findMediaElement();
-                waitForEventOnce('canplay',canplay);
+                waitForEvent('canplay',canplay);
                 video.src = findMediaFile('video', 'content/test');
             };
 
-            var canplay = function()
-            {
+            var canplay = function() {
                 video.mediaGroup = "group";
 
                 // Test non-finite rates.
@@ -32,17 +30,12 @@
                 video.play();
             };
 
-            var play = function()
-            {
+            var play = function() {
                 video.controller.playbackRate = 2;
-                waitForEventOnce("playing", function()
-                {
-                    waitForEventOnce("timeupdate", timeupdate);
-                });
+                waitForEventOnce('timeupdate', timeupdate);
             };
 
-            var timeupdate = function()
-            {
+            var timeupdate = function() {
                 testExpected('video.currentTime', 0, '!=');
                 endTest();
             };
