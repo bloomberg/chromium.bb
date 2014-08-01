@@ -29,11 +29,6 @@ std::string PrettyPrintEscapedJson(const std::string& query) {
   return pretty_json;
 }
 
-TEST(FileManagerUrlUtilTest, GetFileManagerBaseUrl) {
-  EXPECT_EQ("chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/",
-            GetFileManagerBaseUrl().spec());
-}
-
 TEST(FileManagerUrlUtilTest, GetFileManagerMainPageUrl) {
   EXPECT_EQ("chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/main.html",
             GetFileManagerMainPageUrl().spec());

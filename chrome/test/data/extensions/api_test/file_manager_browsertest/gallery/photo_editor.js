@@ -120,7 +120,7 @@ function cropImage(testVolumeName, volumeType) {
         then(function() {
           return waitForSlideImage(
               appWindow.contentWindow.document,
-              534,
+              533,
               400,
               'My Desktop Background');
         });

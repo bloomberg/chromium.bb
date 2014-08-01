@@ -22,14 +22,6 @@ function ShareClient(webView, url, observer) {
 }
 
 /**
- * Source origin of the client.
- * @type {string}
- * @const
- */
-ShareClient.SHARE_ORIGIN =
-    'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
-
-/**
  * Target origin of the embedded dialog.
  * @type {string}
  * @const

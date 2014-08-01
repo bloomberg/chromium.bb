@@ -211,7 +211,6 @@ function Gallery(volumeManager) {
     onMinimize: function() { chrome.app.window.current().minimize(); },
     onAppRegionChanged: function() {},
     metadataCache: MetadataCache.createFull(volumeManager),
-    shareActions: [],
     readonlyDirName: '',
     displayStringFunction: function() { return ''; },
     loadTimeData: {}
@@ -404,18 +403,16 @@ Gallery.prototype.initDom_ = function() {
   deleteButton.addEventListener('click', this.delete_.bind(this));
 
   this.shareButton_ = this.initToolbarButton_('share', 'GALLERY_SHARE');
-  this.shareButton_.setAttribute('disabled', '');
-  this.shareButton_.addEventListener('click', this.toggleShare_.bind(this));
-
-  this.shareMenu_ = util.createChild(this.container_, 'share-menu');
-  this.shareMenu_.hidden = true;
-  util.createChild(this.shareMenu_, 'bubble-point');
+  this.shareButton_.addEventListener(
+      'click', this.onShareButtonClick_.bind(this));
 
   this.dataModel_.addEventListener('splice', this.onSplice_.bind(this));
   this.dataModel_.addEventListener('content', this.onContentChange_.bind(this));
 
   this.selectionModel_.addEventListener('change', this.onSelection_.bind(this));
   this.slideMode_.addEventListener('useraction', this.onUserAction_.bind(this));
+
+  this.shareDialog_ = new ShareDialog(this.container_);
 };
 
 /**
@@ -531,7 +528,7 @@ Gallery.getFileBrowserPrivate = function() {
  */
 Gallery.prototype.hasActiveTool = function() {
   return (this.currentMode_ && this.currentMode_.hasActiveTool()) ||
-      this.isSharing_() || this.isRenaming_();
+      this.isRenaming_();
 };
 
 /**
@@ -539,7 +536,6 @@ Gallery.prototype.hasActiveTool = function() {
 * @private
 */
 Gallery.prototype.onUserAction_ = function() {
-  this.closeShareMenu_();
   // Show the toolbar and hide it after the default timeout.
   this.inactivityWatcher_.kick();
 };
@@ -702,11 +698,6 @@ Gallery.prototype.getSingleSelectedItem = function() {
   */
 Gallery.prototype.onSelection_ = function() {
   this.updateSelectionAndState_();
-  this.updateShareMenu_();
-  var currentItem = this.getSelectedItems()[0];
-  if (currentItem)
-    currentItem.touch();
-  this.dataModel_.evictCache();
 };
 
 /**
@@ -736,9 +727,6 @@ Gallery.prototype.onContentChange_ = function(event) {
  * @private
  */
 Gallery.prototype.onKeyDown_ = function(event) {
-  var wasSharing = this.isSharing_();
-  this.closeShareMenu_();
-
   if (this.currentMode_.onKeyDown(event))
     return;
 
@@ -779,11 +767,17 @@ Gallery.prototype.updateSelectionAndState_ = function() {
 
   // If it's selecting something, update the variable values.
   if (numSelectedItems) {
+    // Obtains selected item.
     var selectedItem =
         this.dataModel_.item(this.selectionModel_.selectedIndex);
     this.selectedEntry_ = selectedItem.getEntry();
     selectedEntryURL = this.selectedEntry_.toURL();
 
+    // Update cache.
+    selectedItem.touch();
+    this.dataModel_.evictCache();
+
+    // Update the title and the display name.
     if (numSelectedItems === 1) {
       window.top.document.title = this.selectedEntry_.name;
       displayName = ImageUtil.getDisplayNameFromName(this.selectedEntry_.name);
@@ -806,6 +800,10 @@ Gallery.prototype.updateSelectionAndState_ = function() {
   this.filenameEdit_.disabled = numSelectedItems !== 1 ||
                                 this.context_.readonlyDirName;
   this.filenameEdit_.value = displayName;
+
+  // Update the share button.
+  var item = this.getSingleSelectedItem();
+  this.shareButton_.hidden = !item || !item.isOnDrive();
 };
 
 /**
@@ -887,105 +885,18 @@ Gallery.prototype.isRenaming_ = function() {
  * @private
  */
 Gallery.prototype.onContentClick_ = function() {
-  this.closeShareMenu_();
   this.filenameEdit_.blur();
-};
-
-// Share button support.
-
-/**
- * @return {boolean} True if the Share menu is active.
- * @private
- */
-Gallery.prototype.isSharing_ = function() {
-  return !this.shareMenu_.hidden;
-};
-
-/**
- * Close Share menu if it is open.
- * @private
- */
-Gallery.prototype.closeShareMenu_ = function() {
-  if (this.isSharing_())
-    this.toggleShare_();
 };
 
 /**
  * Share button handler.
  * @private
  */
-Gallery.prototype.toggleShare_ = function() {
-  if (!this.shareButton_.hasAttribute('disabled'))
-    this.shareMenu_.hidden = !this.shareMenu_.hidden;
-  this.inactivityWatcher_.check();
-};
-
-/**
- * Updates available actions list based on the currently selected urls.
- * @private.
- */
-Gallery.prototype.updateShareMenu_ = function() {
-  var entries = this.getSelectedEntries();
-
-  function isShareAction(task) {
-    var taskParts = task.taskId.split('|');
-    return taskParts[0] !== chrome.runtime.id;
-  }
-
-  var api = Gallery.getFileBrowserPrivate();
-
-  var createShareMenu = function(tasks) {
-    var wasHidden = this.shareMenu_.hidden;
-    this.shareMenu_.hidden = true;
-    var items = this.shareMenu_.querySelectorAll('.item');
-    for (var i = 0; i !== items.length; i++) {
-      items[i].parentNode.removeChild(items[i]);
-    }
-
-    for (var t = 0; t !== tasks.length; t++) {
-      var task = tasks[t];
-      if (!isShareAction(task))
-        continue;
-      // Filter out Files.app tasks.
-      // TODO(hirono): Remove the hack after the files.app's handlers are
-      // removed.
-      if (task.taskId.indexOf('hhaomjibdihmijegdhdafkllkbggdgoj|') === 0)
-        continue;
-
-      var item = util.createChild(this.shareMenu_, 'item');
-      item.textContent = task.title;
-      item.style.backgroundImage = 'url(' + task.iconUrl + ')';
-      item.addEventListener('click', function(taskId) {
-        this.toggleShare_();  // Hide the menu.
-        // TODO(hirono): Use entries instead of URLs.
-        this.executeWhenReady(
-            api.executeTask.bind(
-                api,
-                taskId,
-                util.entriesToURLs(entries),
-                function(result) {
-                  var alertDialog =
-                      new cr.ui.dialogs.AlertDialog(this.container_);
-                  util.isTeleported(window).then(function(teleported) {
-                    if (teleported)
-                      util.showOpenInOtherDesktopAlert(alertDialog, entries);
-                  }.bind(this));
-                }.bind(this)));
-      }.bind(this, task.taskId));
-    }
-
-    var empty = this.shareMenu_.querySelector('.item') === null;
-    ImageUtil.setAttribute(this.shareButton_, 'disabled', empty);
-    this.shareMenu_.hidden = wasHidden || empty;
-  }.bind(this);
-
-  // Create or update the share menu with a list of sharing tasks and show
-  // or hide the share button.
-  // TODO(mtomasz): Pass Entries directly, instead of URLs.
-  if (!entries.length)
-    createShareMenu([]);  // Empty list of tasks, since there is no selection.
-  else
-    api.getFileTasks(util.entriesToURLs(entries), createShareMenu);
+Gallery.prototype.onShareButtonClick_ = function() {
+  var item = this.getSingleSelectedItem();
+  if (!item)
+    return;
+  this.shareDialog_.show(item.getEntry(), function() {});
 };
 
 /**

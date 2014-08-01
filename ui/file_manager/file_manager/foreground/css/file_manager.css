@@ -1,4 +1,4 @@
-/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2014 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
@@ -648,7 +648,7 @@ html[dir='rtl'] .breadcrumbs .separator {
 }
 
 .spinner {
-  background: 100% url(../images/common/spinner.svg);
+  background: url(../images/common/spinner.svg) center/100% no-repeat;
   height: 16px;
   left: 50%;
   margin-left: -8px;
@@ -1713,33 +1713,6 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
 
 .error-dialog-frame .cr-dialog-text {
   text-align: center;
-}
-
-.cr-dialog-frame.share-dialog-frame {
-  background-color: white;
-  width: auto;
-}
-
-.share-dialog-webview-wrapper {
-  height: 100px;
-  margin-top: 10px;
-  min-width: 300px;
-  overflow: hidden;
-  transition: height 200ms ease;
-}
-
-.share-dialog-webview {
-  height: 100%;
-  width: 100%;
-}
-
-.share-dialog-webview-wrapper:not(.loaded) .share-dialog-webview {
-  visibility: hidden;
-}
-
-.share-dialog-frame .cr-dialog-text,
-.share-dialog-frame .cr-dialog-buttons {
-  display: none;
 }
 
 #multi-profile-share-dialog .mail-label {
