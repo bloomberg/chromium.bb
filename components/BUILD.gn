@@ -159,6 +159,7 @@ group("all_components") {
 
   if (!is_ios && !is_android) {
     deps += [
+      "//components/copresence",
       "//components/storage_monitor",
     ]
   }

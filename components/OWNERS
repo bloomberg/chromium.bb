@@ -30,6 +30,11 @@ per-file cloud_devices*=gene@chromium.org
 per-file cloud_devices*=noamsml@chromium.org
 per-file cloud_devices*=vitalybuka@chromium.org
 
+per-file copresence.gypi=rkc@chromium.org
+per-file copresence.gypi=ckehoe@chromium.org
+per-file copresence.gypi=xiyuan@chromium.org
+per-file copresence.gypi=derat@chromium.org
+
 per-file cronet*=mef@chromium.org
 per-file cronet*=mmenke@chromium.org
 

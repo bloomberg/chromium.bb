@@ -76,6 +76,7 @@
     }],
     ['OS != "ios" and OS != "android"', {
       'includes': [
+        'copresence.gypi',
         'storage_monitor.gypi',
         'usb_service.gypi',
       ]
