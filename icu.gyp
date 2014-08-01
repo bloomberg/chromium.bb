@@ -186,6 +186,18 @@
               'source/i18n',
             ],
           },
+          'variables': {
+            'clang_warning_flags': [
+              # ICU uses its own deprecated functions.
+              '-Wno-deprecated-declarations',
+              # ICU prefers `a && b || c` over `(a && b) || c`.
+              '-Wno-logical-op-parentheses',
+              # ICU has some `unsigned < 0` checks.
+              '-Wno-tautological-compare',
+              # Looks like a real issue, see http://crbug.com/114660
+              '-Wno-return-type-c-linkage',
+            ],
+          },
           # Since ICU wants to internally use its own deprecated APIs, don't
           # complain about it.
           'cflags': [
@@ -211,26 +223,6 @@
             }],
             [ 'use_system_icu==0 and want_separate_host_toolset==0', {
               'toolsets': ['target'],
-            }],
-            ['clang==1', {
-              'xcode_settings': {
-                'WARNING_CFLAGS': [
-                  # ICU uses its own deprecated functions.
-                  '-Wno-deprecated-declarations',
-                  # ICU prefers `a && b || c` over `(a && b) || c`.
-                  '-Wno-logical-op-parentheses',
-                  # ICU has some `unsigned < 0` checks.
-                  '-Wno-tautological-compare',
-                  # Looks like a real issue, see http://crbug.com/114660
-                  '-Wno-return-type-c-linkage',
-                ],
-              },
-              'cflags': [
-                '-Wno-deprecated-declarations',
-                '-Wno-logical-op-parentheses',
-                '-Wno-tautological-compare',
-                '-Wno-return-type-c-linkage',
-              ],
             }],
             ['OS == "android" and clang==0', {
                 # Disable sincos() optimization to avoid a linker error since
@@ -280,6 +272,22 @@
                   'U_STATIC_IMPLEMENTATION',
                 ],
               }],
+            ],
+          },
+          'variables': {
+            'clang_warning_flags': [
+              # ICU uses its own deprecated functions.
+              '-Wno-deprecated-declarations',
+              # ICU prefers `a && b || c` over `(a && b) || c`.
+              '-Wno-logical-op-parentheses',
+              # ICU has some `unsigned < 0` checks.
+              '-Wno-tautological-compare',
+              # uresdata.c has switch(RES_GET_TYPE(x)) code. The
+              # RES_GET_TYPE macro returns an UResType enum, but some switch
+              # statement contains case values that aren't part of that
+              # enum (e.g. URES_TABLE32 which is in UResInternalType). This
+              # is on purpose.
+              '-Wno-switch',
             ],
           },
           'cflags': [
@@ -337,30 +345,6 @@
                     ],
                   },
                 }],
-              ],
-            }],
-            ['clang==1', {
-              'xcode_settings': {
-                'WARNING_CFLAGS': [
-                  # ICU uses its own deprecated functions.
-                  '-Wno-deprecated-declarations',
-                  # ICU prefers `a && b || c` over `(a && b) || c`.
-                  '-Wno-logical-op-parentheses',
-                  # ICU has some `unsigned < 0` checks.
-                  '-Wno-tautological-compare',
-                  # uresdata.c has switch(RES_GET_TYPE(x)) code. The
-                  # RES_GET_TYPE macro returns an UResType enum, but some switch
-                  # statement contains case values that aren't part of that
-                  # enum (e.g. URES_TABLE32 which is in UResInternalType). This
-                  # is on purpose.
-                  '-Wno-switch',
-                ],
-              },
-              'cflags': [
-                '-Wno-deprecated-declarations',
-                '-Wno-logical-op-parentheses',
-                '-Wno-tautological-compare',
-                '-Wno-switch',
               ],
             }],
           ], # conditions
