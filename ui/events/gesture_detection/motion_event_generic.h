@@ -5,9 +5,8 @@
 #ifndef UI_EVENTS_GESTURE_DETECTION_UI_MOTION_EVENT_GENERIC_H_
 #define UI_EVENTS_GESTURE_DETECTION_UI_MOTION_EVENT_GENERIC_H_
 
-#include <vector>
-
 #include "base/basictypes.h"
+#include "base/containers/stack_container.h"
 #include "ui/events/gesture_detection/gesture_detection_export.h"
 #include "ui/events/gesture_detection/motion_event.h"
 
@@ -73,12 +72,15 @@ class GESTURE_DETECTION_EXPORT MotionEventGeneric : public MotionEvent {
     return pointers_[index];
   }
 
+ private:
+  enum { kTypicalMaxPointerCount = 5 };
+
   Action action_;
   base::TimeTicks event_time_;
   int id_;
   int action_index_;
   int button_state_;
-  std::vector<PointerProperties> pointers_;
+  base::StackVector<PointerProperties, kTypicalMaxPointerCount> pointers_;
 };
 
 }  // namespace ui

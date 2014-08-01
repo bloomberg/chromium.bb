@@ -36,37 +36,49 @@ float MotionEvent::GetHistoricalY(size_t pointer_index,
   return 0.f;
 }
 
+int MotionEvent::FindPointerIndexOfId(int id) const {
+  const size_t pointer_count = GetPointerCount();
+  for (size_t i = 0; i < pointer_count; ++i) {
+    if (GetPointerId(i) == id)
+      return static_cast<int>(i);
+  }
+  return -1;
+}
+
 bool operator==(const MotionEvent& lhs, const MotionEvent& rhs) {
   if (lhs.GetId() != rhs.GetId() || lhs.GetAction() != rhs.GetAction() ||
       lhs.GetActionIndex() != rhs.GetActionIndex() ||
       lhs.GetPointerCount() != rhs.GetPointerCount() ||
       lhs.GetButtonState() != rhs.GetButtonState() ||
-      lhs.GetEventTime() != rhs.GetEventTime())
+      lhs.GetEventTime() != rhs.GetEventTime() ||
+      lhs.GetHistorySize() != rhs.GetHistorySize())
     return false;
 
   for (size_t i = 0; i < lhs.GetPointerCount(); ++i) {
-    if (lhs.GetX(i) != rhs.GetX(i) || lhs.GetY(i) != rhs.GetY(i) ||
-        lhs.GetRawX(i) != rhs.GetRawX(i) || lhs.GetRawY(i) != rhs.GetRawY(i) ||
-        lhs.GetTouchMajor(i) != rhs.GetTouchMajor(i) ||
-        lhs.GetPressure(i) != rhs.GetPressure(i) ||
-        lhs.GetToolType(i) != rhs.GetToolType(i))
+    int rhsi = rhs.FindPointerIndexOfId(lhs.GetPointerId(i));
+    if (rhsi == -1)
       return false;
-  }
 
-  if (lhs.GetHistorySize() != rhs.GetHistorySize())
-    return false;
+    if (lhs.GetX(i) != rhs.GetX(rhsi) || lhs.GetY(i) != rhs.GetY(rhsi) ||
+        lhs.GetRawX(i) != rhs.GetRawX(rhsi) ||
+        lhs.GetRawY(i) != rhs.GetRawY(rhsi) ||
+        lhs.GetTouchMajor(i) != rhs.GetTouchMajor(rhsi) ||
+        lhs.GetPressure(i) != rhs.GetPressure(rhsi) ||
+        lhs.GetToolType(i) != rhs.GetToolType(rhsi))
+      return false;
+
+    for (size_t h = 0; h < lhs.GetHistorySize(); ++h) {
+      if (lhs.GetHistoricalX(i, h) != rhs.GetHistoricalX(rhsi, h) ||
+          lhs.GetHistoricalY(i, h) != rhs.GetHistoricalY(rhsi, h) ||
+          lhs.GetHistoricalTouchMajor(i, h) !=
+              rhs.GetHistoricalTouchMajor(rhsi, h))
+        return false;
+    }
+  }
 
   for (size_t h = 0; h < lhs.GetHistorySize(); ++h) {
     if (lhs.GetHistoricalEventTime(h) != rhs.GetHistoricalEventTime(h))
       return false;
-
-    for (size_t i = 0; i < lhs.GetPointerCount(); ++i) {
-      if (lhs.GetHistoricalX(i, h) != rhs.GetHistoricalX(i, h) ||
-          lhs.GetHistoricalY(i, h) != rhs.GetHistoricalY(i, h) ||
-          lhs.GetHistoricalTouchMajor(i, h) !=
-              rhs.GetHistoricalTouchMajor(i, h))
-        return false;
-    }
   }
 
   return true;

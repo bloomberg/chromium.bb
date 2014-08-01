@@ -83,6 +83,9 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
   float GetRawOffsetY() const { return GetRawY() - GetY(); }
   float GetTouchMajor() const { return GetTouchMajor(0); }
   float GetPressure() const { return GetPressure(0); }
+
+  // O(N) search of pointers (use sparingly!). Returns -1 if |id| nonexistent.
+  int FindPointerIndexOfId(int id) const;
 };
 
 GESTURE_DETECTION_EXPORT bool operator==(const MotionEvent& lhs,

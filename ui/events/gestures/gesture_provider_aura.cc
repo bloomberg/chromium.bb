@@ -23,13 +23,8 @@ GestureProviderAura::GestureProviderAura(GestureProviderAuraClient* client)
 GestureProviderAura::~GestureProviderAura() {}
 
 bool GestureProviderAura::OnTouchEvent(const TouchEvent& event) {
-  bool pointer_id_is_active = false;
-  for (size_t i = 0; i < pointer_state_.GetPointerCount(); ++i) {
-    if (event.touch_id() != pointer_state_.GetPointerId(i))
-      continue;
-    pointer_id_is_active = true;
-    break;
-  }
+  bool pointer_id_is_active =
+      pointer_state_.FindPointerIndexOfId(event.touch_id()) != -1;
 
   if (event.type() == ET_TOUCH_PRESSED && pointer_id_is_active) {
     // Ignore touch press events if we already believe the pointer is down.

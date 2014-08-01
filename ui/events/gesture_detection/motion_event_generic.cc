@@ -41,8 +41,8 @@ MotionEventGeneric::MotionEventGeneric(Action action,
       event_time_(event_time),
       id_(0),
       action_index_(0),
-      button_state_(0),
-      pointers_(1, pointer) {
+      button_state_(0) {
+  PushPointer(pointer);
 }
 
 MotionEventGeneric::MotionEventGeneric(const MotionEventGeneric& other)
@@ -70,47 +70,47 @@ int MotionEventGeneric::GetActionIndex() const {
 }
 
 size_t MotionEventGeneric::GetPointerCount() const {
-  return pointers_.size();
+  return pointers_->size();
 }
 
 int MotionEventGeneric::GetPointerId(size_t pointer_index) const {
-  DCHECK_LT(pointer_index, pointers_.size());
+  DCHECK_LT(pointer_index, pointers_->size());
   return pointers_[pointer_index].id;
 }
 
 float MotionEventGeneric::GetX(size_t pointer_index) const {
-  DCHECK_LT(pointer_index, pointers_.size());
+  DCHECK_LT(pointer_index, pointers_->size());
   return pointers_[pointer_index].x;
 }
 
 float MotionEventGeneric::GetY(size_t pointer_index) const {
-  DCHECK_LT(pointer_index, pointers_.size());
+  DCHECK_LT(pointer_index, pointers_->size());
   return pointers_[pointer_index].y;
 }
 
 float MotionEventGeneric::GetRawX(size_t pointer_index) const {
-  DCHECK_LT(pointer_index, pointers_.size());
+  DCHECK_LT(pointer_index, pointers_->size());
   return pointers_[pointer_index].raw_x;
 }
 
 float MotionEventGeneric::GetRawY(size_t pointer_index) const {
-  DCHECK_LT(pointer_index, pointers_.size());
+  DCHECK_LT(pointer_index, pointers_->size());
   return pointers_[pointer_index].raw_y;
 }
 
 float MotionEventGeneric::GetTouchMajor(size_t pointer_index) const {
-  DCHECK_LT(pointer_index, pointers_.size());
+  DCHECK_LT(pointer_index, pointers_->size());
   return pointers_[pointer_index].touch_major;
 }
 
 float MotionEventGeneric::GetPressure(size_t pointer_index) const {
-  DCHECK_LT(pointer_index, pointers_.size());
+  DCHECK_LT(pointer_index, pointers_->size());
   return pointers_[pointer_index].pressure;
 }
 
 MotionEvent::ToolType MotionEventGeneric::GetToolType(
     size_t pointer_index) const {
-  DCHECK_LT(pointer_index, pointers_.size());
+  DCHECK_LT(pointer_index, pointers_->size());
   return pointers_[pointer_index].tool_type;
 }
 
@@ -133,12 +133,12 @@ scoped_ptr<MotionEvent> MotionEventGeneric::Cancel() const {
 }
 
 void MotionEventGeneric::PushPointer(const PointerProperties& pointer) {
-  pointers_.push_back(pointer);
+  pointers_->push_back(pointer);
 }
 
 void MotionEventGeneric::PopPointer() {
-  DCHECK_GT(pointers_.size(), 0U);
-  pointers_.pop_back();
+  DCHECK_GT(pointers_->size(), 0U);
+  pointers_->pop_back();
 }
 
 }  // namespace ui
