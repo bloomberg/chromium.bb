@@ -865,6 +865,21 @@ TEST_F(WindowSelectorTest, DisplayOrientationChanged) {
   }
 }
 
+// Tests traversing some windows in overview mode with the tab key.
+TEST_F(WindowSelectorTest, BasicTabKeyNavigation) {
+  gfx::Rect bounds(0, 0, 100, 100);
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  ToggleOverview();
+
+  SendKey(ui::VKEY_TAB);
+  EXPECT_EQ(GetSelectedWindow(), window1.get());
+  SendKey(ui::VKEY_TAB);
+  EXPECT_EQ(GetSelectedWindow(), window2.get());
+  SendKey(ui::VKEY_TAB);
+  EXPECT_EQ(GetSelectedWindow(), window1.get());
+}
+
 // Tests traversing some windows in overview mode with the arrow keys in every
 // possible direction.
 TEST_F(WindowSelectorTest, BasicArrowKeyNavigation) {
