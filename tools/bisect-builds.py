@@ -17,6 +17,8 @@ CHROMIUM_BASE_URL = ('http://commondatastorage.googleapis.com'
                      '/chromium-browser-snapshots')
 WEBKIT_BASE_URL = ('http://commondatastorage.googleapis.com'
                    '/chromium-webkit-snapshots')
+ASAN_BASE_URL = ('http://commondatastorage.googleapis.com'
+                 '/chromium-browser-asan')
 
 # The base URL for official builds.
 OFFICIAL_BASE_URL = 'http://master.chrome.corp.google.com/official_builds'
@@ -91,7 +93,7 @@ class PathContext(object):
   """A PathContext is used to carry the information used to construct URLs and
   paths when dealing with the storage server and archives."""
   def __init__(self, base_url, platform, good_revision, bad_revision,
-               is_official, is_aura, use_local_repo, flash_path = None,
+               is_official, is_aura, is_asan, use_local_repo, flash_path = None,
                pdf_path = None):
     super(PathContext, self).__init__()
     # Store off the input parameters.
@@ -101,6 +103,8 @@ class PathContext(object):
     self.bad_revision = bad_revision
     self.is_official = is_official
     self.is_aura = is_aura
+    self.is_asan = is_asan
+    self.build_type = 'release'
     self.flash_path = flash_path
     # Dictionary which stores svn revision number as key and it's
     # corresponding git hash as value. This data is populated in
@@ -167,16 +171,33 @@ class PathContext(object):
       elif self.platform == 'win':
         self._listing_platform_dir = 'Win/'
 
+  def GetASANPlatformDir(self):
+    """ASAN builds are in directories like "linux-release", or have filenames
+    like "asan-win32-release-277079.zip". This aligns to our platform names
+    except in the case of Windows where they use "win32" instead of "win"."""
+    if self.platform == 'win':
+      return 'win32'
+    else:
+      return self.platform
+
   def GetListingURL(self, marker=None):
     """Returns the URL for a directory listing, with an optional marker."""
     marker_param = ''
     if marker:
       marker_param = '&marker=' + str(marker)
-    return (self.base_url + '/?delimiter=/&prefix=' +
-            self._listing_platform_dir + marker_param)
+    if self.is_asan:
+      prefix = '%s-%s' % (self.GetASANPlatformDir(), self.build_type)
+      return self.base_url + '/?delimiter=&prefix=' + prefix + marker_param
+    else:
+      return (self.base_url + '/?delimiter=/&prefix=' +
+              self._listing_platform_dir + marker_param)
 
   def GetDownloadURL(self, revision):
     """Gets the download URL for a build archive of a specific revision."""
+    if self.is_asan:
+      return '%s/%s-%s/%s-%d.zip' % (
+          ASAN_BASE_URL, self.GetASANPlatformDir(), self.build_type,
+          self.GetASANBaseName(), revision)
     if self.is_official:
       return '%s/%s/%s%s' % (
           OFFICIAL_BASE_URL, revision, self._listing_platform_dir,
@@ -191,10 +212,22 @@ class PathContext(object):
     """Returns a URL to the LAST_CHANGE file."""
     return self.base_url + '/' + self._listing_platform_dir + 'LAST_CHANGE'
 
-  def GetLaunchPath(self):
+  def GetASANBaseName(self):
+    """Returns the base name of the ASAN zip file."""
+    if 'linux' in self.platform:
+      return 'asan-symbolized-%s-%s' % (self.GetASANPlatformDir(),
+                                        self.build_type)
+    else:
+      return 'asan-%s-%s' % (self.GetASANPlatformDir(), self.build_type)
+
+  def GetLaunchPath(self, revision):
     """Returns a relative path (presumably from the archive extraction location)
     that is used to run the executable."""
-    return os.path.join(self._archive_extract_dir, self._binary_name)
+    if self.is_asan:
+      extract_dir = '%s-%d' % (self.GetASANBaseName(), revision)
+    else:
+      extract_dir = self._archive_extract_dir
+    return os.path.join(extract_dir, self._binary_name)
 
   @staticmethod
   def IsAuraBuild(build):
@@ -202,7 +235,7 @@ class PathContext(object):
     return build.split('.')[3] == '1'
 
   @staticmethod
-  def IsASANBuild(build):
+  def IsOfficialASANBuild(build):
     """Checks whether the given build is an ASAN build."""
     return build.split('.')[3] == '2'
 
@@ -234,25 +267,39 @@ class PathContext(object):
       if is_truncated is not None and is_truncated.text.lower() == 'true':
         next_marker = document.find(namespace + 'NextMarker').text
       # Get a list of all the revisions.
-      all_prefixes = document.findall(namespace + 'CommonPrefixes/' +
-                                      namespace + 'Prefix')
-      # The <Prefix> nodes have content of the form of
-      # |_listing_platform_dir/revision/|. Strip off the platform dir and the
-      # trailing slash to just have a number.
       revisions = []
       githash_svn_dict = {}
-      for prefix in all_prefixes:
-        revnum = prefix.text[prefix_len:-1]
-        try:
-          if not revnum.isdigit():
-            git_hash = revnum
-            revnum = self.GetSVNRevisionFromGitHash(git_hash)
-            githash_svn_dict[revnum] = git_hash
-          if revnum is not None:
-            revnum = int(revnum)
-            revisions.append(revnum)
-        except ValueError:
-          pass
+      if self.is_asan:
+        asan_regex = re.compile(r'.*%s-(\d+)\.zip$' % (self.GetASANBaseName()))
+        # Non ASAN builds are in a <revision> directory. The ASAN builds are
+        # flat
+        all_prefixes = document.findall(namespace + 'Contents/' +
+                                        namespace + 'Key')
+        for prefix in all_prefixes:
+          m = asan_regex.match(prefix.text)
+          if m:
+            try:
+              revisions.append(int(m.group(1)))
+            except ValueError:
+              pass
+      else:
+        all_prefixes = document.findall(namespace + 'CommonPrefixes/' +
+                                        namespace + 'Prefix')
+        # The <Prefix> nodes have content of the form of
+        # |_listing_platform_dir/revision/|. Strip off the platform dir and the
+        # trailing slash to just have a number.
+        for prefix in all_prefixes:
+          revnum = prefix.text[prefix_len:-1]
+          try:
+            if not revnum.isdigit():
+              git_hash = revnum
+              revnum = self.GetSVNRevisionFromGitHash(git_hash)
+              githash_svn_dict[revnum] = git_hash
+            if revnum is not None:
+              revnum = int(revnum)
+              revisions.append(revnum)
+          except ValueError:
+            pass
       return (revisions, next_marker, githash_svn_dict)
 
     # Fetch the first list of revisions.
@@ -386,7 +433,7 @@ class PathContext(object):
           # we can not include builds which ends with '.1' or '.2' since
           # they have different folder hierarchy inside.
           elif (not self.IsAuraBuild(str(build_number)) and
-                not self.IsASANBuild(str(build_number))):
+                not self.IsOfficialASANBuild(str(build_number))):
             final_list.append(str(build_number))
       except urllib.HTTPError:
         pass
@@ -480,7 +527,8 @@ def RunRevision(context, revision, zip_file, profile, num_runs, command, args):
 
   # TODO(vitalybuka): Remove in the future. See crbug.com/395687.
   if context.pdf_path:
-    shutil.copy(context.pdf_path, os.path.dirname(context.GetLaunchPath()))
+    shutil.copy(context.pdf_path,
+                os.path.dirname(context.GetLaunchPath(revision)))
     testargs.append('--enable-print-preview')
 
   runcommand = []
@@ -489,8 +537,8 @@ def RunRevision(context, revision, zip_file, profile, num_runs, command, args):
       runcommand.extend(testargs)
     else:
       runcommand.append(
-          token.replace('%p',os.path.abspath(context.GetLaunchPath())).replace(
-              '%s', ' '.join(testargs)))
+          token.replace('%p', os.path.abspath(context.GetLaunchPath(revision))).
+          replace('%s', ' '.join(testargs)))
 
   results = []
   for _ in range(num_runs):
@@ -529,6 +577,22 @@ def AskIsGoodBuild(rev, official_builds, status, stdout, stderr):
     if response and response == 'q':
       raise SystemExit()
 
+
+def IsGoodASANBuild(rev, official_builds, status, stdout, stderr):
+  """Determine if an ASAN build |rev| is good or bad
+
+  Will examine stderr looking for the error message emitted by ASAN. If not
+  found then will fallback to asking the user."""
+  if stderr:
+    bad_count = 0
+    for line in stderr.splitlines():
+      print line
+      if line.find('ERROR: AddressSanitizer:') != -1:
+        bad_count += 1
+    if bad_count > 0:
+      print 'Revision %d determined to be bad.' % rev
+      return 'b'
+  return AskIsGoodBuild(rev, official_builds, status, stdout, stderr)
 
 class DownloadJob(object):
   """DownloadJob represents a task to download a given Chromium revision."""
@@ -576,6 +640,7 @@ def Bisect(base_url,
            platform,
            official_builds,
            is_aura,
+           is_asan,
            use_local_repo,
            good_rev=0,
            bad_rev=0,
@@ -621,8 +686,8 @@ def Bisect(base_url,
     profile = 'profile'
 
   context = PathContext(base_url, platform, good_rev, bad_rev,
-                        official_builds, is_aura, use_local_repo, flash_path,
-                        pdf_path)
+                        official_builds, is_aura, is_asan, use_local_repo,
+                        flash_path, pdf_path)
   cwd = os.getcwd()
 
   print 'Downloading list of known revisions...'
@@ -930,6 +995,11 @@ def main():
                     action='store_true',
                     default=False,
                     help='Allow the script to bisect aura builds')
+  parser.add_option('--asan',
+                    dest='asan',
+                    action='store_true',
+                    default=False,
+                    help='Allow the script to bisect ASAN builds')
   parser.add_option('--use-local-repo',
                     dest='use_local_repo',
                     action='store_true',
@@ -952,15 +1022,27 @@ def main():
              'and official builds.')
       return 1
 
-  if opts.blink:
+  if opts.asan:
+    supported_platforms = ['linux', 'mac', 'win']
+    if opts.archive not in supported_platforms:
+      print 'Error: ASAN bisecting only supported on these platforms: [%s].' % (
+            '|'.join(supported_platforms))
+      return 1
+    if opts.official_builds:
+      print 'Error: Do not yet support bisecting official ASAN builds.'
+      return 1
+
+  if opts.asan:
+    base_url = ASAN_BASE_URL
+  elif opts.blink:
     base_url = WEBKIT_BASE_URL
   else:
     base_url = CHROMIUM_BASE_URL
 
   # Create the context. Initialize 0 for the revisions as they are set below.
   context = PathContext(base_url, opts.archive, 0, 0,
-                        opts.official_builds, opts.aura, opts.use_local_repo,
-                        None)
+                        opts.official_builds, opts.aura, opts.asan,
+                        opts.use_local_repo, None)
   # Pick a starting point, try to get HEAD for this.
   if opts.bad:
     bad_rev = opts.bad
@@ -998,11 +1080,16 @@ def main():
     parser.print_help()
     return 1
 
+  if opts.asan:
+    evaluator = IsGoodASANBuild
+  else:
+    evaluator = AskIsGoodBuild
+
   (min_chromium_rev, max_chromium_rev) = Bisect(
-      base_url, opts.archive, opts.official_builds, opts.aura,
+      base_url, opts.archive, opts.official_builds, opts.aura, opts.asan,
       opts.use_local_repo, good_rev, bad_rev, opts.times, opts.command,
       args, opts.profile, opts.flash_path, opts.pdf_path,
-      not opts.not_interactive)
+      not opts.not_interactive, evaluator)
 
   # Get corresponding blink revisions.
   try:
