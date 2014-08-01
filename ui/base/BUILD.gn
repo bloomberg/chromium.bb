@@ -239,6 +239,8 @@ component("base") {
     "win/internal_constants.h",
     "win/lock_state.cc",
     "win/lock_state.h",
+    "win/open_file_name_win.cc",
+    "win/open_file_name_win.h",
     "win/message_box_win.cc",
     "win/message_box_win.h",
     "win/mouse_wheel_util.cc",

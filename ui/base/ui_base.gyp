@@ -352,6 +352,8 @@
         'win/message_box_win.h',
         'win/mouse_wheel_util.cc',
         'win/mouse_wheel_util.h',
+        'win/open_file_name_win.cc',
+        'win/open_file_name_win.h',
         'win/scoped_ole_initializer.cc',
         'win/scoped_ole_initializer.h',
         'win/shell.cc',

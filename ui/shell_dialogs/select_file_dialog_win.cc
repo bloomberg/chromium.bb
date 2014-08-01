@@ -30,6 +30,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/win/open_file_name_win.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/shell_dialogs/base_shell_dialog_win.h"
 #include "ui/shell_dialogs/shell_dialogs_delegate.h"
@@ -773,47 +774,22 @@ bool SelectFileDialogImpl::RunOpenFileDialog(
     const std::wstring& filter,
     HWND owner,
     base::FilePath* path) {
-  OPENFILENAME ofn;
-  // We must do this otherwise the ofn's FlagsEx may be initialized to random
-  // junk in release builds which can cause the Places Bar not to show up!
-  ZeroMemory(&ofn, sizeof(ofn));
-  ofn.lStructSize = sizeof(ofn);
-  ofn.hwndOwner = owner;
-
-  wchar_t filename[MAX_PATH];
-  // According to http://support.microsoft.com/?scid=kb;en-us;222003&x=8&y=12,
-  // The lpstrFile Buffer MUST be NULL Terminated.
-  filename[0] = 0;
-  // Define the dir in here to keep the string buffer pointer pointed to
-  // ofn.lpstrInitialDir available during the period of running the
-  // GetOpenFileName.
-  base::FilePath dir;
-  // Use lpstrInitialDir to specify the initial directory
-  if (!path->empty()) {
-    if (IsDirectory(*path)) {
-      ofn.lpstrInitialDir = path->value().c_str();
-    } else {
-      dir = path->DirName();
-      ofn.lpstrInitialDir = dir.value().c_str();
-      // Only pure filename can be put in lpstrFile field.
-      base::wcslcpy(filename, path->BaseName().value().c_str(),
-                    arraysize(filename));
-    }
-  }
-
-  ofn.lpstrFile = filename;
-  ofn.nMaxFile = MAX_PATH;
-
   // We use OFN_NOCHANGEDIR so that the user can rename or delete the directory
   // without having to close Chrome first.
-  ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+  ui::win::OpenFileName ofn(owner, OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR);
+  if (!path->empty()) {
+    if (IsDirectory(*path))
+      ofn.SetInitialSelection(*path, base::FilePath());
+    else
+      ofn.SetInitialSelection(path->DirName(), path->BaseName());
+  }
 
   if (!filter.empty())
-    ofn.lpstrFilter = filter.c_str();
-  bool success = CallGetOpenFileName(&ofn);
+    ofn.GetOPENFILENAME()->lpstrFilter = filter.c_str();
+  bool success = CallGetOpenFileName(ofn.GetOPENFILENAME());
   DisableOwner(owner);
   if (success)
-    *path = base::FilePath(filename);
+    *path = ofn.GetSingleResult();
   return success;
 }
 
@@ -822,53 +798,30 @@ bool SelectFileDialogImpl::RunOpenMultiFileDialog(
     const std::wstring& filter,
     HWND owner,
     std::vector<base::FilePath>* paths) {
-  OPENFILENAME ofn;
-  // We must do this otherwise the ofn's FlagsEx may be initialized to random
-  // junk in release builds which can cause the Places Bar not to show up!
-  ZeroMemory(&ofn, sizeof(ofn));
-  ofn.lStructSize = sizeof(ofn);
-  ofn.hwndOwner = owner;
-
-  scoped_ptr<wchar_t[]> filename(new wchar_t[UNICODE_STRING_MAX_CHARS]);
-  filename[0] = 0;
-
-  ofn.lpstrFile = filename.get();
-  ofn.nMaxFile = UNICODE_STRING_MAX_CHARS;
   // We use OFN_NOCHANGEDIR so that the user can rename or delete the directory
   // without having to close Chrome first.
-  ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_EXPLORER
-               | OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT | OFN_NOCHANGEDIR;
+  ui::win::OpenFileName ofn(owner,
+                            OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST |
+                                OFN_EXPLORER | OFN_HIDEREADONLY |
+                                OFN_ALLOWMULTISELECT | OFN_NOCHANGEDIR);
 
-  if (!filter.empty()) {
-    ofn.lpstrFilter = filter.c_str();
-  }
+  if (!filter.empty())
+    ofn.GetOPENFILENAME()->lpstrFilter = filter.c_str();
 
-  bool success = CallGetOpenFileName(&ofn);
+  base::FilePath directory;
+  std::vector<base::FilePath> filenames;
+
+  if (CallGetOpenFileName(ofn.GetOPENFILENAME()))
+    ofn.GetResult(&directory, &filenames);
   DisableOwner(owner);
-  if (success) {
-    std::vector<base::FilePath> files;
-    const wchar_t* selection = ofn.lpstrFile;
-    while (*selection) {  // Empty string indicates end of list.
-      files.push_back(base::FilePath(selection));
-      // Skip over filename and null-terminator.
-      selection += files.back().value().length() + 1;
-    }
-    if (files.empty()) {
-      success = false;
-    } else if (files.size() == 1) {
-      // When there is one file, it contains the path and filename.
-      paths->swap(files);
-    } else {
-      // Otherwise, the first string is the path, and the remainder are
-      // filenames.
-      std::vector<base::FilePath>::iterator path = files.begin();
-      for (std::vector<base::FilePath>::iterator file = path + 1;
-           file != files.end(); ++file) {
-        paths->push_back(path->Append(*file));
-      }
-    }
+
+  for (std::vector<base::FilePath>::iterator it = filenames.begin();
+       it != filenames.end();
+       ++it) {
+    paths->push_back(directory.Append(*it));
   }
-  return success;
+
+  return !paths->empty();
 }
 
 base::string16 SelectFileDialogImpl::GetFilterForFileTypes(
