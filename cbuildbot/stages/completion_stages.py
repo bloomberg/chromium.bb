@@ -128,7 +128,11 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
   # Max wait time for results from slaves.
   SLAVE_STATUS_TIMEOUT_SECONDS = 3 * 60 * 60
-  # Max wait time for results for PFQ type builder. Note that this
+  # Max wait time for results for Canary type builders. Canaries are
+  # scheduled to run every 8 hours, so this timeout must be smaller
+  # than that.
+  CANARY_SLAVE_STATUS_TIMEOUT_SECONDS = 460 * 60
+  # Max wait time for results for PFQ type builders. Note that this
   # does not include Chrome PFQ or CQ.
   PFQ_SLAVE_STATUS_TIMEOUT_SECONDS = 20 * 60
   SLAVE_CHECKING_PERIOD_SECONDS = constants.SLEEP_TIMEOUT
@@ -169,6 +173,8 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         timeout = 3 * 60
       elif self._run.config.build_type == constants.PFQ_TYPE:
         timeout = self.PFQ_SLAVE_STATUS_TIMEOUT_SECONDS
+      elif cbuildbot_config.IsCanaryType(self._run.config.build_type):
+        timeout = self.CANARY_SLAVE_STATUS_TIMEOUT_SECONDS
       else:
         timeout = self.SLAVE_STATUS_TIMEOUT_SECONDS
 
