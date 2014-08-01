@@ -137,7 +137,7 @@ table-layout
 tab-size type_name=unsigned
 text-align custom_value
 text-align-last type_name=TextAlignLast
-text-decoration custom_value
+text-decoration converter=convertFlags<TextDecoration>
 text-decoration-line use_handlers_for=CSSPropertyTextDecoration
 text-decoration-color custom_all
 text-decoration-style type_name=TextDecorationStyle
@@ -148,7 +148,7 @@ text-rendering font, type_name=TextRenderingMode
 text-shadow converter=convertShadow
 text-transform
 top initial=initialOffset, converter=convertLengthOrAuto
-touch-action custom_value
+touch-action converter=convertFlags<TouchAction>
 touch-action-delay type_name=TouchActionDelay
 unicode-bidi
 vertical-align custom_inherit, custom_value

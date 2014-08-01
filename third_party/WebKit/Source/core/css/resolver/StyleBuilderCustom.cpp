@@ -614,16 +614,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextAlign(StyleResolverState& s
         state.style()->setTextAlign(state.parentStyle()->textAlign());
 }
 
-void StyleBuilderFunctions::applyValueCSSPropertyTextDecoration(StyleResolverState& state, CSSValue* value)
-{
-    TextDecoration t = RenderStyle::initialTextDecoration();
-    for (CSSValueListIterator i(value); i.hasMore(); i.advance()) {
-        CSSValue* item = i.value();
-        t |= *toCSSPrimitiveValue(item);
-    }
-    state.style()->setTextDecoration(t);
-}
-
 void StyleBuilderFunctions::applyInheritCSSPropertyTextIndent(StyleResolverState& state)
 {
     state.style()->setTextIndent(state.parentStyle()->textIndent());
@@ -807,15 +797,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyVerticalAlign(StyleResolverStat
     }
 
     state.style()->setVerticalAlignLength(primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData()));
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyTouchAction(StyleResolverState& state, CSSValue* value)
-{
-    TouchAction action = RenderStyle::initialTouchAction();
-    for (CSSValueListIterator i(value); i.hasMore(); i.advance())
-        action |= *toCSSPrimitiveValue(i.value());
-
-    state.style()->setTouchAction(action);
 }
 
 static void resetEffectiveZoom(StyleResolverState& state)
