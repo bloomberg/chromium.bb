@@ -212,16 +212,6 @@ PassRefPtrWillBeRawPtr<ShareableElementData> UniqueElementData::makeShareableCop
     return adoptRefWillBeNoop(new (slot) ShareableElementData(*this));
 }
 
-Attribute* UniqueElementData::findAttributeByName(const QualifiedName& name)
-{
-    unsigned length = m_attributeVector.size();
-    for (unsigned i = 0; i < length; ++i) {
-        if (m_attributeVector.at(i).name().matches(name))
-            return &m_attributeVector.at(i);
-    }
-    return 0;
-}
-
 void UniqueElementData::traceAfterDispatch(Visitor* visitor)
 {
     visitor->trace(m_presentationAttributeStyle);

@@ -923,7 +923,7 @@ ALWAYS_INLINE void Element::setAttributeInternal(size_t index, const QualifiedNa
         if (RefPtrWillBeRawPtr<Attr> attrNode = inSynchronizationOfLazyAttribute ? nullptr : attrIfExists(existingAttributeName))
             attrNode->setValue(newValue);
         else
-            ensureUniqueElementData().attributeAt(index).setValue(newValue);
+            ensureUniqueElementData().attributes().at(index).setValue(newValue);
     }
 
     if (!inSynchronizationOfLazyAttribute)
@@ -1848,7 +1848,7 @@ PassRefPtrWillBeRawPtr<Attr> Element::setAttributeNode(Attr* attrNode, Exception
     }
 
     synchronizeAllAttributes();
-    UniqueElementData& elementData = ensureUniqueElementData();
+    const UniqueElementData& elementData = ensureUniqueElementData();
 
     AttributeCollection attributes = elementData.attributes();
     size_t index = attributes.findIndex(attrNode->qualifiedName(), shouldIgnoreAttributeCase());
@@ -1960,8 +1960,7 @@ void Element::setAttributeNS(const AtomicString& namespaceURI, const AtomicStrin
 
 void Element::removeAttributeInternal(size_t index, SynchronizationOfLazyAttribute inSynchronizationOfLazyAttribute)
 {
-    UniqueElementData& elementData = ensureUniqueElementData();
-    AttributeCollection attributes = elementData.attributes();
+    MutableAttributeCollection attributes = ensureUniqueElementData().attributes();
     ASSERT_WITH_SECURITY_IMPLICATION(index < attributes.size());
 
     QualifiedName name = attributes[index].name();
@@ -1975,7 +1974,7 @@ void Element::removeAttributeInternal(size_t index, SynchronizationOfLazyAttribu
     if (RefPtrWillBeRawPtr<Attr> attrNode = attrIfExists(name))
         detachAttrNodeFromElementWithValue(attrNode.get(), attributes[index].value());
 
-    elementData.removeAttributeAt(index);
+    attributes.remove(index);
 
     if (!inSynchronizationOfLazyAttribute)
         didRemoveAttribute(name);
@@ -1985,7 +1984,7 @@ void Element::appendAttributeInternal(const QualifiedName& name, const AtomicStr
 {
     if (!inSynchronizationOfLazyAttribute)
         willModifyAttribute(name, nullAtom, value);
-    ensureUniqueElementData().appendAttribute(name, value);
+    ensureUniqueElementData().attributes().append(name, value);
     if (!inSynchronizationOfLazyAttribute)
         didAddAttribute(name, value);
 }

@@ -166,14 +166,8 @@ public:
     static PassRefPtrWillBeRawPtr<UniqueElementData> create();
     PassRefPtrWillBeRawPtr<ShareableElementData> makeShareableCopy() const;
 
-    // These functions do no error/duplicate checking.
-    void appendAttribute(const QualifiedName&, const AtomicString&);
-    void removeAttributeAt(size_t index);
-
+    MutableAttributeCollection attributes();
     AttributeCollection attributes() const;
-
-    Attribute& attributeAt(unsigned index);
-    Attribute* findAttributeByName(const QualifiedName&);
 
     UniqueElementData();
     explicit UniqueElementData(const ShareableElementData&);
@@ -186,7 +180,7 @@ public:
     // attributes. Most modern pages don't use presentation attributes though
     // so this might not make sense.
     mutable RefPtrWillBeMember<StylePropertySet> m_presentationAttributeStyle;
-    Vector<Attribute, 4> m_attributeVector;
+    AttributeVector m_attributeVector;
 };
 
 DEFINE_ELEMENT_DATA_TYPE_CASTS(UniqueElementData, data->isUnique(), data.isUnique());
@@ -224,19 +218,9 @@ inline AttributeCollection UniqueElementData::attributes() const
     return AttributeCollection(m_attributeVector.data(), m_attributeVector.size());
 }
 
-inline void UniqueElementData::appendAttribute(const QualifiedName& attributeName, const AtomicString& value)
+inline MutableAttributeCollection UniqueElementData::attributes()
 {
-    m_attributeVector.append(Attribute(attributeName, value));
-}
-
-inline void UniqueElementData::removeAttributeAt(size_t index)
-{
-    m_attributeVector.remove(index);
-}
-
-inline Attribute& UniqueElementData::attributeAt(unsigned index)
-{
-    return m_attributeVector.at(index);
+    return MutableAttributeCollection(m_attributeVector);
 }
 
 } // namespace blink

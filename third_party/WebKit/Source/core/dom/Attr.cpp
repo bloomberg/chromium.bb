@@ -203,7 +203,7 @@ Attribute& Attr::elementAttribute()
 {
     ASSERT(m_element);
     ASSERT(m_element->elementData());
-    return *m_element->ensureUniqueElementData().findAttributeByName(qualifiedName());
+    return *m_element->ensureUniqueElementData().attributes().find(qualifiedName());
 }
 
 void Attr::detachFromElementWithValue(const AtomicString& value)

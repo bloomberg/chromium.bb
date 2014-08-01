@@ -334,7 +334,7 @@ void HTMLSelectElement::parseAttribute(const QualifiedName& name, const AtomicSt
         AtomicString attrSize = AtomicString::number(size);
         if (attrSize != value) {
             // FIXME: This is horribly factored.
-            if (Attribute* sizeAttribute = ensureUniqueElementData().findAttributeByName(sizeAttr))
+            if (Attribute* sizeAttribute = ensureUniqueElementData().attributes().find(sizeAttr))
                 sizeAttribute->setValue(attrSize);
         }
         size = std::max(size, 1);
