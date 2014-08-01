@@ -221,7 +221,7 @@ public:
 
     CSSSelector::Relation relation() const { return m_selector->relation(); }
     void setValue(const AtomicString& value) { m_selector->setValue(value); }
-    void setAttribute(const QualifiedName& value) { m_selector->setAttribute(value); }
+    void setAttribute(const QualifiedName& value, CSSSelector::AttributeMatchType matchType) { m_selector->setAttribute(value, matchType); }
     void setArgument(const AtomicString& value) { m_selector->setArgument(value); }
     void setMatch(CSSSelector::Match value) { m_selector->setMatch(value); }
     void setRelation(CSSSelector::Relation value) { m_selector->setRelation(value); }

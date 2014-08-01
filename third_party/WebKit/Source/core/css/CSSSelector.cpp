@@ -659,7 +659,7 @@ String CSSSelector::selectorText(const String& rightSide) const
             const AtomicString& prefix = cs->attribute().prefix();
             if (!prefix.isNull()) {
                 str.append(prefix);
-                str.append("|");
+                str.append('|');
             }
             str.append(cs->attribute().localName());
             switch (cs->m_match) {
@@ -690,6 +690,8 @@ String CSSSelector::selectorText(const String& rightSide) const
             }
             if (cs->m_match != CSSSelector::Set) {
                 serializeString(cs->value(), str);
+                if (cs->attributeMatchType() == CaseInsensitive)
+                    str.appendLiteral(" i");
                 str.append(']');
             }
         }
@@ -719,10 +721,11 @@ String CSSSelector::selectorText(const String& rightSide) const
     return str.toString() + rightSide;
 }
 
-void CSSSelector::setAttribute(const QualifiedName& value)
+void CSSSelector::setAttribute(const QualifiedName& value, AttributeMatchType matchType)
 {
     createRareData();
     m_data.m_rareData->m_attribute = value;
+    m_data.m_rareData->m_bits.m_attributeMatchType = matchType;
 }
 
 void CSSSelector::setArgument(const AtomicString& value)
@@ -826,8 +829,7 @@ bool CSSSelector::matchNth(int count) const
 
 CSSSelector::RareData::RareData(const AtomicString& value)
     : m_value(value)
-    , m_a(0)
-    , m_b(0)
+    , m_bits()
     , m_attribute(anyQName())
     , m_argument(nullAtom)
 {
@@ -845,55 +847,58 @@ bool CSSSelector::RareData::parseNth()
     if (argument.isEmpty())
         return false;
 
-    m_a = 0;
-    m_b = 0;
+    int nthA = 0;
+    int nthB = 0;
     if (argument == "odd") {
-        m_a = 2;
-        m_b = 1;
+        nthA = 2;
+        nthB = 1;
     } else if (argument == "even") {
-        m_a = 2;
-        m_b = 0;
+        nthA = 2;
+        nthB = 0;
     } else {
         size_t n = argument.find('n');
         if (n != kNotFound) {
             if (argument[0] == '-') {
                 if (n == 1)
-                    m_a = -1; // -n == -1n
+                    nthA = -1; // -n == -1n
                 else
-                    m_a = argument.substring(0, n).toInt();
-            } else if (!n)
-                m_a = 1; // n == 1n
-            else
-                m_a = argument.substring(0, n).toInt();
+                    nthA = argument.substring(0, n).toInt();
+            } else if (!n) {
+                nthA = 1; // n == 1n
+            } else {
+                nthA = argument.substring(0, n).toInt();
+            }
 
             size_t p = argument.find('+', n);
-            if (p != kNotFound)
-                m_b = argument.substring(p + 1, argument.length() - p - 1).toInt();
-            else {
+            if (p != kNotFound) {
+                nthB = argument.substring(p + 1, argument.length() - p - 1).toInt();
+            } else {
                 p = argument.find('-', n);
                 if (p != kNotFound)
-                    m_b = -argument.substring(p + 1, argument.length() - p - 1).toInt();
+                    nthB = -argument.substring(p + 1, argument.length() - p - 1).toInt();
             }
-        } else
-            m_b = argument.toInt();
+        } else {
+            nthB = argument.toInt();
+        }
     }
+    setNthAValue(nthA);
+    setNthBValue(nthB);
     return true;
 }
 
 // a helper function for checking nth-arguments
 bool CSSSelector::RareData::matchNth(int count)
 {
-    if (!m_a)
-        return count == m_b;
-    else if (m_a > 0) {
-        if (count < m_b)
+    if (!nthAValue())
+        return count == nthBValue();
+    if (nthAValue() > 0) {
+        if (count < nthBValue())
             return false;
-        return (count - m_b) % m_a == 0;
-    } else {
-        if (count > m_b)
-            return false;
-        return (m_b - count) % (-m_a) == 0;
+        return (count - nthBValue()) % nthAValue() == 0;
     }
+    if (count > nthBValue())
+        return false;
+    return (nthBValue() - count) % (-nthAValue()) == 0;
 }
 
 } // namespace blink

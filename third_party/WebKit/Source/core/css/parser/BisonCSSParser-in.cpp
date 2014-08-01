@@ -1110,6 +1110,17 @@ PassRefPtrWillBeRawPtr<MediaQuerySet> BisonCSSParser::parseMediaQueryList(const 
     return m_mediaList.release();
 }
 
+bool BisonCSSParser::parseAttributeMatchType(CSSSelector::AttributeMatchType& matchType, const String& string)
+{
+    if (!RuntimeEnabledFeatures::cssAttributeCaseSensitivityEnabled() && !isUASheetBehavior(m_context.mode()))
+        return false;
+    if (string == "i") {
+        matchType = CSSSelector::CaseInsensitive;
+        return true;
+    }
+    return false;
+}
+
 static inline void filterProperties(bool important, const WillBeHeapVector<CSSProperty, 256>& input, WillBeHeapVector<CSSProperty, 256>& output, size_t& unusedEntries, BitArray<numCSSProperties>& seenProperties)
 {
     // Add properties in reverse order so that highest priority definitions are reached first. Duplicate definitions can then be ignored when found.

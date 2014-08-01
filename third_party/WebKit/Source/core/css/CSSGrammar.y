@@ -83,6 +83,7 @@ using namespace HTMLNames;
     Vector<OwnPtr<CSSParserSelector> >* selectorList;
     CSSSelector::MarginBoxType marginBox;
     CSSSelector::Relation relation;
+    CSSSelector::AttributeMatchType attributeMatchType;
     MediaQuerySet* mediaList;
     MediaQuery* mediaQuery;
     MediaQuery::Restrictor mediaQueryRestrictor;
@@ -362,6 +363,9 @@ inline static CSSParserValue makeIdentValue(CSSParserString string)
 
 %type <string> element_name
 %type <string> attr_name
+
+%type <attributeMatchType> attr_match_type
+%type <attributeMatchType> maybe_attr_match_type
 
 %type <location> error_location
 
@@ -1242,26 +1246,40 @@ attr_name:
     }
     ;
 
+attr_match_type:
+    IDENT maybe_space {
+        CSSSelector::AttributeMatchType attrMatchType = CSSSelector::CaseSensitive;
+        if (!parser->parseAttributeMatchType(attrMatchType, $1))
+            YYERROR;
+        $$ = attrMatchType;
+    }
+    ;
+
+maybe_attr_match_type:
+    attr_match_type
+    | /* empty */ { $$ = CSSSelector::CaseSensitive; }
+    ;
+
 attrib:
     '[' maybe_space attr_name closing_square_bracket {
         $$ = parser->createFloatingSelector();
-        $$->setAttribute(QualifiedName(nullAtom, $3, nullAtom));
+        $$->setAttribute(QualifiedName(nullAtom, $3, nullAtom), CSSSelector::CaseSensitive);
         $$->setMatch(CSSSelector::Set);
     }
-    | '[' maybe_space attr_name match maybe_space ident_or_string maybe_space closing_square_bracket {
+    | '[' maybe_space attr_name match maybe_space ident_or_string maybe_space maybe_attr_match_type closing_square_bracket {
         $$ = parser->createFloatingSelector();
-        $$->setAttribute(QualifiedName(nullAtom, $3, nullAtom));
+        $$->setAttribute(QualifiedName(nullAtom, $3, nullAtom), $8);
         $$->setMatch((CSSSelector::Match)$4);
         $$->setValue($6);
     }
     | '[' maybe_space namespace_selector attr_name closing_square_bracket {
         $$ = parser->createFloatingSelector();
-        $$->setAttribute(parser->determineNameInNamespace($3, $4));
+        $$->setAttribute(parser->determineNameInNamespace($3, $4), CSSSelector::CaseSensitive);
         $$->setMatch(CSSSelector::Set);
     }
-    | '[' maybe_space namespace_selector attr_name match maybe_space ident_or_string maybe_space closing_square_bracket {
+    | '[' maybe_space namespace_selector attr_name match maybe_space ident_or_string maybe_space maybe_attr_match_type closing_square_bracket {
         $$ = parser->createFloatingSelector();
-        $$->setAttribute(parser->determineNameInNamespace($3, $4));
+        $$->setAttribute(parser->determineNameInNamespace($3, $4), $9);
         $$->setMatch((CSSSelector::Match)$5);
         $$->setValue($7);
     }

@@ -470,7 +470,8 @@ static bool anyAttributeMatches(Element& element, CSSSelector::Match match, cons
     if (!element.hasAttributesWithoutUpdate())
         return false;
 
-    const AtomicString& selectorValue =  selector.value();
+    const AtomicString& selectorValue = selector.value();
+    bool caseInsensitive = selector.attributeMatchType() == CSSSelector::CaseInsensitive;
 
     AttributeCollection attributes = element.attributes();
     AttributeCollection::const_iterator end = attributes.end();
@@ -480,16 +481,20 @@ static bool anyAttributeMatches(Element& element, CSSSelector::Match match, cons
         if (!attributeItem.matches(selectorAttr))
             continue;
 
-        if (attributeValueMatches(attributeItem, match, selectorValue, true))
+        if (attributeValueMatches(attributeItem, match, selectorValue, !caseInsensitive))
             return true;
 
-        // Case sensitivity for attribute matching is looser than hasAttribute or
-        // Element::shouldIgnoreAttributeCase() for now. Unclear if that's correct.
-        bool caseSensitive = !element.document().isHTMLDocument() || HTMLDocument::isCaseSensitiveAttribute(selectorAttr);
+        if (caseInsensitive)
+            continue;
+
+        // Legacy dictates that values of some attributes should be compared in
+        // a case-insensitive manner regardless of whether the case insensitive
+        // flag is set or not.
+        bool legacyCaseInsensitive = element.document().isHTMLDocument() && !HTMLDocument::isCaseSensitiveAttribute(selectorAttr);
 
         // If case-insensitive, re-check, and count if result differs.
         // See http://code.google.com/p/chromium/issues/detail?id=327060
-        if (!caseSensitive && attributeValueMatches(attributeItem, match, selectorValue, false)) {
+        if (legacyCaseInsensitive && attributeValueMatches(attributeItem, match, selectorValue, false)) {
             UseCounter::count(element.document(), UseCounter::CaseInsensitiveAttrSelectorMatch);
             return true;
         }

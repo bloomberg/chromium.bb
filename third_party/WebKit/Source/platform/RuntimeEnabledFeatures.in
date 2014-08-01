@@ -35,6 +35,7 @@ ThemeColor status=stable
 ClientHintsDpr status=experimental
 Crypto status=stable
 CSSAnimationUnprefixed status=experimental
+CSSAttributeCaseSensitivity status=experimental
 CSSCompositing status=experimental
 CSSGridLayout status=experimental
 CSSMaskSourceType status=experimental
