@@ -212,7 +212,7 @@ SlideMode.prototype.initDom_ = function() {
 
   this.editBarMode_ = util.createChild(this.container_, 'edit-modal');
   this.editBarModeWrapper_ = util.createChild(
-      this.editBarMode_, 'edit-modal-wrapper');
+      this.editBarMode_, 'edit-modal-wrapper dimmable');
   this.editBarModeWrapper_.hidden = true;
 
   // Objects supporting image display and editing.

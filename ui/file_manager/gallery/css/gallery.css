@@ -1014,7 +1014,7 @@ input[type='checkbox']:checked {
   display: none;
 }
 
-.gallery .prompt-wrapper > div.dimmable {
+.dimmable {
   opacity: 1;
   transition: opacity 220ms ease;
 }
