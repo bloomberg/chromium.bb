@@ -113,6 +113,30 @@ TEST(BoringSSL, RC4MD5) {
   TestProcess("aead_test", args);
 }
 
+TEST(BoringSSL, AESKW128) {
+  base::FilePath data_file;
+  ASSERT_TRUE(CryptoCipherPath(&data_file));
+  data_file = data_file.Append(FILE_PATH_LITERAL("aes_128_key_wrap_tests.txt"));
+
+  std::vector<base::CommandLine::StringType> args;
+  args.push_back(FILE_PATH_LITERAL("aes-128-key-wrap"));
+  args.push_back(data_file.value());
+
+  TestProcess("aead_test", args);
+}
+
+TEST(BoringSSL, AESKW256) {
+  base::FilePath data_file;
+  ASSERT_TRUE(CryptoCipherPath(&data_file));
+  data_file = data_file.Append(FILE_PATH_LITERAL("aes_256_key_wrap_tests.txt"));
+
+  std::vector<base::CommandLine::StringType> args;
+  args.push_back(FILE_PATH_LITERAL("aes-256-key-wrap"));
+  args.push_back(data_file.value());
+
+  TestProcess("aead_test", args);
+}
+
 TEST(BoringSSL, Base64) {
   TestSimple("base64_test");
 }
