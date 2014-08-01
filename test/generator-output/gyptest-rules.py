@@ -17,6 +17,7 @@ test.writable(test.workpath('rules'), False)
 
 test.run_gyp('rules.gyp',
              '--generator-output=' + test.workpath('gypfiles'),
+             '-G', 'xcode_ninja_target_pattern=^pull_in_all_actions$',
              chdir='rules')
 
 test.writable(test.workpath('rules'), True)
