@@ -137,48 +137,13 @@ body.fakebox-focused #cursor {
 }
 
 #mv-tiles {
-  /* Use GPU compositing if available. */
-  -webkit-transform: translate3d(0, 0, 0);
-  height: 260px;
-  overflow: hidden;
-  padding: 0 1em;
-  white-space: nowrap;
-  width: 304px;
-}
-
-@media only screen and (min-width:660px) {
-  #fakebox {
-    width: 458px;
-  }
-  #mv-tiles {
-    width: 460px;
-  }
-}
-
-@media only screen and (min-width:820px) {
-  #fakebox {
-    width: 618px;
-  }
-  #mv-tiles {
-    width: 620px;
-  }
-}
-
-.mv-row {
-  margin-bottom: 50px;
-}
-
-.mv-row:last-child {
-  margin-bottom: 0;
-}
-
-.mv-tile:first-child {
-  -webkit-margin-start: -1px;
+  height: calc(2 * 138px);
+  line-height: 138px;
+  margin: 0;
+  position: relative;
 }
 
 .mv-tile {
-  -webkit-margin-start: 20px;
-  -webkit-transform: translate3d(0, 0, 0);
   -webkit-transition-duration: 200ms;
   -webkit-transition-property: -webkit-transform, margin, opacity, width;
   background: -webkit-linear-gradient(#f2f2f2, #e8e8e8);
@@ -187,6 +152,10 @@ body.fakebox-focused #cursor {
   box-shadow: inset 0 2px 3px rgba(0, 0, 0, .09);
   display: inline-block;
   height: 83px;
+  margin-left: 10px;
+  margin-right: 10px;  /* Total horizontal margins add to TILE_MARGIN. */
+  position: relative;
+  vertical-align: top;
   width: 138px;
 }
 

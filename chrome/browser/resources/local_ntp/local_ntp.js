@@ -14,6 +14,7 @@
  */
 function LocalNTP() {
 <include src="../../../../ui/webui/resources/js/assert.js">
+<include src="local_ntp_util.js">
 <include src="window_disposition_util.js">
 
 
@@ -39,7 +40,6 @@ var CLASSES = {
   NON_GOOGLE_PAGE: 'non-google-page',
   PAGE: 'mv-page', // page tiles
   PAGE_READY: 'mv-page-ready',  // page tile when ready
-  ROW: 'mv-row',  // tile row
   RTL: 'rtl',  // Right-to-left language text.
   THUMBNAIL: 'mv-thumb',
   THUMBNAIL_MASK: 'mv-mask',
@@ -169,8 +169,8 @@ var numColumnsShown = 0;
 
 
 /**
- * True if the user initiated the current most visited change and false
- * otherwise.
+ * A flag to indicate Most Visited changed caused by user action. If true, then
+ * in onMostVisitedChange() tiles remain visible so no flickering occurs.
  * @type {boolean}
  */
 var userInitiatedMostVisitedChange = false;
@@ -213,11 +213,11 @@ var TILE_WIDTH = 140;
 
 
 /**
- * Margin between tiles. Should be equal to mv-tile's -webkit-margin-start.
+ * Margin between tiles. Should be equal to mv-tile's total horizontal margin.
  * @private {number}
  * @const
  */
-var TILE_MARGIN_START = 20;
+var TILE_MARGIN = 20;
 
 
 /** @type {number} @const */
@@ -298,13 +298,21 @@ var MOST_VISITED_PAINT_TIMEOUT_MSEC = 500;
  * pad out the section when not enough pages exist.
  *
  * @param {Element} elem The element for rendering the tile.
+ * @param {Element=} opt_titleElem The element for rendering the title.
+ * @param {Element=} opt_thumbnailElem The element for rendering the thumbnail.
  * @param {number=} opt_rid The RID for the corresponding Most Visited page.
  *     Should only be left unspecified when creating a filler tile.
  * @constructor
  */
-function Tile(elem, opt_rid) {
+function Tile(elem, opt_titleElem, opt_thumbnailElem, opt_rid) {
   /** @type {Element} */
   this.elem = elem;
+
+  /** @type {Element|undefined} */
+  this.titleElem = opt_titleElem;
+
+  /** @type {Element|undefined} */
+  this.thumbnailElem = opt_thumbnailElem;
 
   /** @type {number|undefined} */
   this.rid = opt_rid;
@@ -329,7 +337,9 @@ function onThemeChange() {
   document.body.classList.toggle(CLASSES.ALTERNATE_LOGO, info.alternateLogo);
   updateThemeAttribution(info.attributionUrl);
   setCustomThemeStyle(info);
-  renderTiles();
+
+  tilesContainer.innerHTML = '';
+  renderAndShowTiles();
 }
 
 
@@ -432,68 +442,120 @@ function convertToRGBAColor(color) {
  * Handles a new set of Most Visited page data.
  */
 function onMostVisitedChange() {
-  var pages = ntpApiHandle.mostVisited;
-
   if (isBlacklisting) {
-    // Trigger the blacklist animation and re-render the tiles when it
-    // completes.
+    // Trigger the blacklist animation, which then triggers reloadAllTiles().
     var lastBlacklistedTileElement = lastBlacklistedTile.elem;
     lastBlacklistedTileElement.addEventListener(
         'webkitTransitionEnd', blacklistAnimationDone);
     lastBlacklistedTileElement.classList.add(CLASSES.BLACKLIST);
-
   } else {
-    // Otherwise render the tiles using the new data without animation.
-    tiles = [];
-    for (var i = 0; i < MAX_NUM_TILES_TO_SHOW; ++i) {
-      tiles.push(createTile(pages[i], i));
-    }
+    reloadAllTiles();
+  }
+}
+
+
+/**
+ * Handles the end of the blacklist animation by showing the notification and
+ * re-rendering the new set of tiles.
+ */
+function blacklistAnimationDone() {
+  showNotification();
+  isBlacklisting = false;
+  tilesContainer.classList.remove(CLASSES.HIDE_BLACKLIST_BUTTON);
+  lastBlacklistedTile.elem.removeEventListener(
+      'webkitTransitionEnd', blacklistAnimationDone);
+  // Need to call explicitly to re-render the tiles, since the initial
+  // onmostvisitedchange issued by the blacklist function only triggered
+  // the animation.
+  reloadAllTiles();
+}
+
+
+/**
+ * Fetches new data, creates, and renders tiles.
+ */
+function reloadAllTiles() {
+  var pages = ntpApiHandle.mostVisited;
+
+  tiles = [];
+  for (var i = 0; i < MAX_NUM_TILES_TO_SHOW; ++i)
+    tiles.push(createTile(pages[i], i));
+
+  tilesContainer.innerHTML = '';
+  renderAndShowTiles();
+}
+
+
+/**
+ * Binds onload events for a tile's internal <iframe> elements.
+ * @param {Tile} tile The main tile to bind events to.
+ * @param {Barrier} tileVisibilityBarrier A barrier to make tile visible the
+ *   moment all tiles are loaded.
+ */
+function bindTileOnloadEvents(tile, tileVisibilityBarrier) {
+  if (tile.titleElem) {
+    tileVisibilityBarrier.add();
+    tile.titleElem.onload = function() {
+      tile.titleElem.hidden = false;
+      tileVisibilityBarrier.remove();
+    };
+  }
+
+  if (tile.thumbnailElem) {
+    tileVisibilityBarrier.add();
+    tile.thumbnailElem.onload = function() {
+      tile.thumbnailElem.hidden = false;
+      tile.elem.classList.add(CLASSES.PAGE_READY);
+      tileVisibilityBarrier.remove();
+    };
+  }
+}
+
+
+/**
+ * Renders the current list of visible tiles to DOM, and hides tiles that are
+ * already in the DOM but should not be seen.
+ */
+function renderAndShowTiles() {
+  var numExisting = tilesContainer.querySelectorAll('.' + CLASSES.TILE).length;
+  // Only add visible tiles to the DOM, to avoid creating invisible tiles that
+  // produce meaningless impression metrics. However, if a tile becomes
+  // invisible then we leave it in DOM to prevent reload if it's shown again.
+  var numDesired = Math.min(tiles.length, numColumnsShown * NUM_ROWS);
+
+  // If we need to render new tiles, manage the visibility to hide intermediate
+  // load states of the <iframe>s.
+  if (numExisting < numDesired) {
+    var tileVisibilityBarrier = new Barrier(function() {
+      tilesContainer.style.visibility = 'visible';
+    });
+
     if (!userInitiatedMostVisitedChange) {
-      tilesContainer.hidden = true;
+      // Make titleContainer invisible, but still taking up space.
+      // titleContainer becomes visible again (1) on timeout, or (2) when all
+      // tiles finish loading (using tileVisibilityBarrier).
+      tilesContainer.style.visibility = 'hidden';
       window.setTimeout(function() {
-        if (tilesContainer) {
-          tilesContainer.hidden = false;
-        }
+        tileVisibilityBarrier.cancel();
+        tilesContainer.style.visibility = 'visible';
       }, MOST_VISITED_PAINT_TIMEOUT_MSEC);
     }
-    renderTiles();
-  }
-}
+    userInitiatedMostVisitedChange = false;
 
-
-/**
- * Renders the current set of tiles.
- */
-function renderTiles() {
-  var rows = tilesContainer.children;
-  for (var i = 0; i < rows.length; ++i) {
-    removeChildren(rows[i]);
-  }
-
-  for (var i = 0, length = tiles.length;
-       i < Math.min(length, numColumnsShown * NUM_ROWS); ++i) {
-    rows[Math.floor(i / numColumnsShown)].appendChild(tiles[i].elem);
-  }
-}
-
-
-/**
- * Shows most visited tiles if all child iframes are loaded, and hides them
- * otherwise.
- */
-function updateMostVisitedVisibility() {
-  var iframes = tilesContainer.querySelectorAll('iframe');
-  var ready = true;
-  for (var i = 0, numIframes = iframes.length; i < numIframes; i++) {
-    if (iframes[i].hidden) {
-      ready = false;
-      break;
+    for (var i = numExisting; i < numDesired; ++i) {
+      bindTileOnloadEvents(tiles[i], tileVisibilityBarrier);
+      tilesContainer.appendChild(tiles[i].elem);
     }
   }
-  if (ready) {
-    tilesContainer.hidden = false;
-    userInitiatedMostVisitedChange = false;
-  }
+
+  // Show only the desired tiles. Not using .hidden because it does not work for
+  // inline-block elements.
+  for (var i = 0; i < numDesired; ++i)
+    tiles[i].elem.style.display = 'inline-block';
+  // If |numDesired| < |numExisting| then hide extra tiles (e.g., this occurs
+  // when window is downsized).
+  for (; i < numExisting; ++i)
+    tiles[i].elem.style.display = 'none';
 }
 
 
@@ -563,36 +625,25 @@ function createTile(page, position) {
     //
     // TODO(jered): Find and fix the root (probably Blink) bug.
 
+    // Keep this ID here. See comment above.
+    titleElement.id = 'title-' + rid;
+    titleElement.className = CLASSES.TITLE;
+    titleElement.hidden = true;
     titleElement.src = getMostVisitedIframeUrl(
         MOST_VISITED_TITLE_IFRAME, rid, MOST_VISITED_COLOR,
         MOST_VISITED_FONT_FAMILY, MOST_VISITED_FONT_SIZE, position);
-
-    // Keep this id here. See comment above.
-    titleElement.id = 'title-' + rid;
-    titleElement.hidden = true;
-    titleElement.onload = function() {
-      titleElement.hidden = false;
-      updateMostVisitedVisibility();
-    };
-    titleElement.className = CLASSES.TITLE;
     tileElement.appendChild(titleElement);
 
     // The iframe which renders either a thumbnail or domain element.
     var thumbnailElement = document.createElement('iframe');
     thumbnailElement.tabIndex = '-1';
+    // Keep this ID here. See comment above.
+    thumbnailElement.id = 'thumb-' + rid;
+    thumbnailElement.className = CLASSES.THUMBNAIL;
+    thumbnailElement.hidden = true;
     thumbnailElement.src = getMostVisitedIframeUrl(
         MOST_VISITED_THUMBNAIL_IFRAME, rid, MOST_VISITED_COLOR,
         MOST_VISITED_FONT_FAMILY, MOST_VISITED_FONT_SIZE, position);
-
-    // Keep this id here. See comment above.
-    thumbnailElement.id = 'thumb-' + rid;
-    thumbnailElement.hidden = true;
-    thumbnailElement.onload = function() {
-      thumbnailElement.hidden = false;
-      tileElement.classList.add(CLASSES.PAGE_READY);
-      updateMostVisitedVisibility();
-    };
-    thumbnailElement.className = CLASSES.THUMBNAIL;
     tileElement.appendChild(thumbnailElement);
 
     // A mask to darken the thumbnail on focus.
@@ -612,11 +663,10 @@ function createTile(page, position) {
     // The page favicon, if any.
     var faviconUrl = page.faviconUrl;
     if (faviconUrl) {
-      var favicon = createAndAppendElement(
-          tileElement, 'div', CLASSES.FAVICON);
+      var favicon = createAndAppendElement(tileElement, 'div', CLASSES.FAVICON);
       favicon.style.backgroundImage = 'url(' + faviconUrl + ')';
     }
-    return new Tile(tileElement, rid);
+    return new Tile(tileElement, titleElement, thumbnailElement, rid);
   } else {
     return new Tile(tileElement);
   }
@@ -664,23 +714,6 @@ function hideNotification() {
 
 
 /**
- * Handles the end of the blacklist animation by showing the notification and
- * re-rendering the new set of tiles.
- */
-function blacklistAnimationDone() {
-  showNotification();
-  isBlacklisting = false;
-  tilesContainer.classList.remove(CLASSES.HIDE_BLACKLIST_BUTTON);
-  lastBlacklistedTile.elem.removeEventListener(
-      'webkitTransitionEnd', blacklistAnimationDone);
-  // Need to call explicitly to re-render the tiles, since the initial
-  // onmostvisitedchange issued by the blacklist function only triggered
-  // the animation.
-  onMostVisitedChange();
-}
-
-
-/**
  * Handles a click on the notification undo link by hiding the notification and
  * informing Chrome.
  */
@@ -705,39 +738,30 @@ function onRestoreAll() {
 
 
 /**
- * Re-renders the tiles if the number of columns has changed.  As a temporary
- * fix for crbug/240510, updates the width of the fakebox and most visited tiles
- * container.
+ * Resizes elements because the number of tile columns may need to change in
+ * response to resizing. Also shows or hides extra tiles tiles according to the
+ * new width of the page.
  */
 function onResize() {
   // If innerWidth is zero, then use the maximum snap size.
   var innerWidth = window.innerWidth || 820;
+  // Each tile has left and right margins that sum to TILE_MARGIN.
+  var tileRequiredWidth = TILE_WIDTH + TILE_MARGIN;
+  var availableWidth = innerWidth + TILE_MARGIN - MIN_TOTAL_HORIZONTAL_PADDING;
+  var newNumColumns = Math.floor(availableWidth / tileRequiredWidth);
+  if (newNumColumns < MIN_NUM_COLUMNS)
+    newNumColumns = MIN_NUM_COLUMNS;
+  else if (newNumColumns > MAX_NUM_COLUMNS)
+    newNumColumns = MAX_NUM_COLUMNS;
 
-  // These values should remain in sync with local_ntp.css.
-  // TODO(jeremycho): Delete once the root cause of crbug/240510 is resolved.
-  var setWidths = function(tilesContainerWidth) {
+  if (numColumnsShown != newNumColumns) {
+    numColumnsShown = newNumColumns;
+    var tilesContainerWidth = numColumnsShown * tileRequiredWidth;
     tilesContainer.style.width = tilesContainerWidth + 'px';
-    if (fakebox)
-      fakebox.style.width = (tilesContainerWidth - 2) + 'px';
-  };
-  if (innerWidth >= 820)
-    setWidths(620);
-  else if (innerWidth >= 660)
-    setWidths(460);
-  else
-    setWidths(300);
-
-  var tileRequiredWidth = TILE_WIDTH + TILE_MARGIN_START;
-  // Adds margin-start to the available width to compensate the extra margin
-  // counted above for the first tile (which does not have a margin-start).
-  var availableWidth = innerWidth + TILE_MARGIN_START -
-      MIN_TOTAL_HORIZONTAL_PADDING;
-  var numColumnsToShow = Math.floor(availableWidth / tileRequiredWidth);
-  numColumnsToShow = Math.max(MIN_NUM_COLUMNS,
-                              Math.min(MAX_NUM_COLUMNS, numColumnsToShow));
-  if (numColumnsToShow != numColumnsShown) {
-    numColumnsShown = numColumnsToShow;
-    renderTiles();
+    if (fakebox)  // -2 to account for border.
+      fakebox.style.width = (tilesContainerWidth - TILE_MARGIN - 2) + 'px';
+    // Render without clearing tiles.
+    renderAndShowTiles();
   }
 }
 
@@ -880,15 +904,6 @@ function removeNode(node) {
 
 
 /**
- * Removes all the child nodes on a DOM node.
- * @param {Node} node Node to remove children from.
- */
-function removeChildren(node) {
-  node.innerHTML = '';
-}
-
-
-/**
  * @param {!Element} element The element to register the handler for.
  * @param {number} keycode The keycode of the key to register.
  * @param {!Function} handler The key handler to register.
@@ -924,12 +939,6 @@ function init() {
   attribution = $(IDS.ATTRIBUTION);
   ntpContents = $(IDS.NTP_CONTENTS);
 
-  for (var i = 0; i < NUM_ROWS; i++) {
-    var row = document.createElement('div');
-    row.classList.add(CLASSES.ROW);
-    tilesContainer.appendChild(row);
-  }
-
   if (configData.isGooglePage) {
     var logo = document.createElement('div');
     logo.id = IDS.LOGO;
@@ -939,7 +948,7 @@ function init() {
     fakebox.innerHTML =
         '<input id="' + IDS.FAKEBOX_INPUT +
             '" autocomplete="off" tabindex="-1" aria-hidden="true">' +
-        '<div id=cursor></div>';
+        '<div id="cursor"></div>';
 
     ntpContents.insertBefore(fakebox, ntpContents.firstChild);
     ntpContents.insertBefore(logo, ntpContents.firstChild);
@@ -965,7 +974,6 @@ function init() {
   var notificationCloseButton = $(IDS.NOTIFICATION_CLOSE_BUTTON);
   notificationCloseButton.addEventListener('click', hideNotification);
 
-  userInitiatedMostVisitedChange = false;
   window.addEventListener('resize', onResize);
   onResize();
 

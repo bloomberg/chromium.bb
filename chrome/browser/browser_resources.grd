@@ -205,6 +205,7 @@
       <include name="IDR_LOCAL_NTP_HTML" file="resources\local_ntp\local_ntp.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_LOCAL_NTP_CSS" file="resources\local_ntp\local_ntp.css" type="BINDATA" />
       <include name="IDR_LOCAL_NTP_JS" file="resources\local_ntp\local_ntp.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_LOCAL_NTP_UTIL_JS" file="resources\local_ntp\local_ntp_util.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_MOST_VISITED_IFRAME_CSS" file="resources\local_ntp\most_visited_iframe.css" type="BINDATA" />
       <include name="IDR_MOST_VISITED_TITLE_HTML" file="resources\local_ntp\most_visited_title.html" type="BINDATA" />
       <include name="IDR_MOST_VISITED_TITLE_CSS" file="resources\local_ntp\most_visited_title.css" type="BINDATA" />
