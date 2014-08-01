@@ -60,7 +60,7 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 // IsMsgHandled() from a member function to a define that checks if the weak
 // factory is still valid in addition to the member. Together these allow for
 // |this| to be deleted during dispatch.
-#define IsMsgHandled() !weak_factory_.GetWeakPtr().get() || msg_handled_
+#define IsMsgHandled() !ref.get() || msg_handled_
 
 #define BEGIN_SAFE_MSG_MAP_EX(the_class) \
  private: \
