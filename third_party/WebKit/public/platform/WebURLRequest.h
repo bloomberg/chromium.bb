@@ -70,7 +70,6 @@ public:
     // Corresponds to Fetch's "context": http://fetch.spec.whatwg.org/#concept-request-context
     enum RequestContext {
         RequestContextUnspecified = 0,
-        RequestContextInternal, // FIXME: This isn't part of Fetch. It should be.
         RequestContextAudio,
         RequestContextBeacon,
         RequestContextCSPReport,
@@ -85,6 +84,9 @@ public:
         RequestContextHyperlink,
         RequestContextIframe,
         RequestContextImage,
+        RequestContextImageSet,
+        RequestContextImport,
+        RequestContextInternal,
         RequestContextLocation,
         RequestContextManifest,
         RequestContextObject,
