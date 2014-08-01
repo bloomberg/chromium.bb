@@ -71,7 +71,8 @@ class APIDataSource(DataSource):
             self._json_cache,
             self._template_cache,
             self._platform_bundle.GetFeaturesBundle(platform),
-            self._LoadEventByName(platform)).ToDict()
+            self._LoadEventByName(platform),
+            platform).ToDict()
         self._view_cache.Set(object_store_key, jsc_view)
       return jsc_view
     return Future(callback=resolve)

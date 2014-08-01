@@ -11,6 +11,7 @@ from api_schema_graph import APINodeCursor
 from docs_server_utils import MarkFirstAndLast
 from extensions_paths import JSON_TEMPLATES, PRIVATE_TEMPLATES
 from operator import itemgetter
+from platform_util import PlatformToExtensionType
 import third_party.json_schema_compiler.model as model
 
 
@@ -59,8 +60,6 @@ def _FormatValue(value):
   return ','.join([s[max(0, i - 3):i] for i in range(len(s), 0, -3)][::-1])
 
 
-
-
 class JSCView(object):
   '''Uses a Model from the JSON Schema Compiler and generates a dict that
   a Handlebar template can use for a data source.
@@ -73,7 +72,8 @@ class JSCView(object):
                json_cache,
                template_cache,
                features_bundle,
-               event_byname_future):
+               event_byname_future,
+               platform):
     self._content_script_apis = content_script_apis
     self._availability = availability_finder.GetAPIAvailability(jsc_model.name)
     self._current_node = APINodeCursor(availability_finder, jsc_model.name)
@@ -85,6 +85,7 @@ class JSCView(object):
     self._template_cache = template_cache
     self._event_byname_future = event_byname_future
     self._jsc_model = jsc_model
+    self._platform = platform
 
   def _GetLink(self, link):
     ref = link if '.' in link else (self._jsc_model.name + '.' + link)
@@ -544,6 +545,10 @@ class JSCView(object):
     for category in table_info.iterkeys():
       content = []
       for node in table_info[category]:
+        ext_type = PlatformToExtensionType(self._platform)
+        # Don't display nodes restricted to a different platform.
+        if ext_type not in node.get('extension_types', (ext_type,)):
+          continue
         # If there is a 'partial' argument and it hasn't already been
         # converted to a Handlebar object, transform it to a template.
         if 'partial' in node:

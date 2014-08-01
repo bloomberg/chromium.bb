@@ -214,7 +214,8 @@
     "Learn More": [
       {
         "link": "app_lifecycle",
-        "text": "Manage App Lifecycle"
+        "text": "Manage App Lifecycle",
+        "extension_types": ["platform_app"]
       },
       {
         "link": "event_pages",

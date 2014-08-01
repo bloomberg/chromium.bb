@@ -123,7 +123,8 @@ class JSCViewTest(unittest.TestCase):
                     self._json_cache,
                     _FakeTemplateCache(),
                     self._features_bundle,
-                    None).ToDict()
+                    None,
+                    'extensions').ToDict()
     self.assertEquals('type-TypeA', dict_['types'][0]['id'])
     self.assertEquals('property-TypeA-b',
                       dict_['types'][0]['properties'][0]['id'])
@@ -140,7 +141,8 @@ class JSCViewTest(unittest.TestCase):
                     self._json_cache,
                     _FakeTemplateCache(),
                     self._features_bundle,
-                    None).ToDict()
+                    None,
+                    'extensions').ToDict()
     self.assertEquals(expected_json, dict_)
 
   def testAddRules(self):
@@ -151,7 +153,8 @@ class JSCViewTest(unittest.TestCase):
                     self._json_cache,
                     _FakeTemplateCache(),
                     self._features_bundle,
-                    self._FakeLoadAddRulesSchema()).ToDict()
+                    self._FakeLoadAddRulesSchema(),
+                    'extensions').ToDict()
 
     # Check that the first event has the addRulesFunction defined.
     self.assertEquals('add_rules_tester', dict_['name'])
@@ -176,7 +179,8 @@ class JSCViewTest(unittest.TestCase):
                     self._json_cache,
                     _FakeTemplateCache(),
                     self._features_bundle,
-                    None)
+                    None,
+                    'extensions')
     expected_list = [
       { 'title': 'Description',
         'content': [
@@ -238,7 +242,8 @@ class JSCViewTest(unittest.TestCase):
                     self._json_cache,
                     _FakeTemplateCache(),
                     self._features_bundle,
-                    None)
+                    None,
+                    'extensions')
     expected_list[1] = {
       'title': 'Availability',
       'content': [
@@ -282,7 +287,8 @@ class JSCViewWithoutNodeAvailabilityTest(unittest.TestCase):
           self._json_cache,
           _FakeTemplateCache(),
           _FakeFeaturesBundle(),
-          None).ToDict()
+          None,
+          'extensions').ToDict()
       self.assertEquals(availability,
                         model_dict['introList'][1]['content'][0]['version'])
 
@@ -356,7 +362,8 @@ class JSCViewWithNodeAvailabilityTest(unittest.TestCase):
         self._json_cache,
         _FakeTemplateCache(),
         _FakeFeaturesBundle(),
-        None).ToDict()
+        None,
+        'extensions').ToDict()
 
     # Test nodes that have the same availability as their parent.
 
