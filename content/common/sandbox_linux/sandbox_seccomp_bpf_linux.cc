@@ -37,7 +37,10 @@
 #include "sandbox/linux/services/linux_syscalls.h"
 
 using sandbox::BaselinePolicy;
+using sandbox::SandboxBPF;
 using sandbox::SyscallSets;
+using sandbox::bpf_dsl::Allow;
+using sandbox::bpf_dsl::ResultExpr;
 
 #else
 
@@ -77,19 +80,17 @@ class BlacklistDebugAndNumaPolicy : public SandboxBPFBasePolicy {
   BlacklistDebugAndNumaPolicy() {}
   virtual ~BlacklistDebugAndNumaPolicy() {}
 
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
-                                    int system_call_number) const OVERRIDE;
+  virtual ResultExpr EvaluateSyscall(int system_call_number) const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BlacklistDebugAndNumaPolicy);
 };
 
-ErrorCode BlacklistDebugAndNumaPolicy::EvaluateSyscall(SandboxBPF* sandbox,
-                                                       int sysno) const {
+ResultExpr BlacklistDebugAndNumaPolicy::EvaluateSyscall(int sysno) const {
   if (SyscallSets::IsDebug(sysno) || SyscallSets::IsNuma(sysno))
-    return sandbox->Trap(sandbox::CrashSIGSYS_Handler, NULL);
+    return sandbox::CrashSIGSYS();
 
-  return ErrorCode(ErrorCode::ERR_ALLOWED);
+  return Allow();
 }
 
 class AllowAllPolicy : public SandboxBPFBasePolicy {
@@ -97,8 +98,7 @@ class AllowAllPolicy : public SandboxBPFBasePolicy {
   AllowAllPolicy() {}
   virtual ~AllowAllPolicy() {}
 
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
-                                    int system_call_number) const OVERRIDE;
+  virtual ResultExpr EvaluateSyscall(int system_call_number) const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AllowAllPolicy);
@@ -107,8 +107,8 @@ class AllowAllPolicy : public SandboxBPFBasePolicy {
 // Allow all syscalls.
 // This will still deny x32 or IA32 calls in 64 bits mode or
 // 64 bits system calls in compatibility mode.
-ErrorCode AllowAllPolicy::EvaluateSyscall(SandboxBPF*, int sysno) const {
-  return ErrorCode(ErrorCode::ERR_ALLOWED);
+ResultExpr AllowAllPolicy::EvaluateSyscall(int sysno) const {
+  return Allow();
 }
 
 // If a BPF policy is engaged for |process_type|, run a few sanity checks.

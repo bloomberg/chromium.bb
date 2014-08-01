@@ -26,9 +26,12 @@
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 
-using sandbox::ErrorCode;
-using sandbox::SandboxBPF;
 using sandbox::SyscallSets;
+using sandbox::bpf_dsl::Allow;
+using sandbox::bpf_dsl::Arg;
+using sandbox::bpf_dsl::Error;
+using sandbox::bpf_dsl::If;
+using sandbox::bpf_dsl::ResultExpr;
 
 namespace content {
 
@@ -99,8 +102,7 @@ class CrosArmGpuBrokerProcessPolicy : public CrosArmGpuProcessPolicy {
   }
   virtual ~CrosArmGpuBrokerProcessPolicy() {}
 
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
-                                    int system_call_number) const OVERRIDE;
+  virtual ResultExpr EvaluateSyscall(int system_call_number) const OVERRIDE;
 
  private:
   CrosArmGpuBrokerProcessPolicy() : CrosArmGpuProcessPolicy(false) {}
@@ -109,15 +111,14 @@ class CrosArmGpuBrokerProcessPolicy : public CrosArmGpuProcessPolicy {
 
 // A GPU broker policy is the same as a GPU policy with open and
 // openat allowed.
-ErrorCode CrosArmGpuBrokerProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
-    int sysno) const {
+ResultExpr CrosArmGpuBrokerProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
     case __NR_access:
     case __NR_open:
     case __NR_openat:
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
+      return Allow();
     default:
-      return CrosArmGpuProcessPolicy::EvaluateSyscall(sandbox, sysno);
+      return CrosArmGpuProcessPolicy::EvaluateSyscall(sysno);
   }
 }
 
@@ -128,11 +129,10 @@ CrosArmGpuProcessPolicy::CrosArmGpuProcessPolicy(bool allow_shmat)
 
 CrosArmGpuProcessPolicy::~CrosArmGpuProcessPolicy() {}
 
-ErrorCode CrosArmGpuProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
-                                                   int sysno) const {
+ResultExpr CrosArmGpuProcessPolicy::EvaluateSyscall(int sysno) const {
 #if defined(__arm__)
   if (allow_shmat_ && sysno == __NR_shmat)
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
+    return Allow();
 #endif  // defined(__arm__)
 
   switch (sysno) {
@@ -144,21 +144,20 @@ ErrorCode CrosArmGpuProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
     case __NR_getsockname:
     case __NR_sysinfo:
     case __NR_uname:
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
+      return Allow();
     // Allow only AF_UNIX for |domain|.
     case __NR_socket:
-    case __NR_socketpair:
-      return sandbox->Cond(0, ErrorCode::TP_32BIT,
-                           ErrorCode::OP_EQUAL, AF_UNIX,
-                           ErrorCode(ErrorCode::ERR_ALLOWED),
-                           ErrorCode(EPERM));
+    case __NR_socketpair: {
+      const Arg<int> domain(0);
+      return If(domain == AF_UNIX, Allow()).Else(Error(EPERM));
+    }
 #endif  // defined(__arm__)
     default:
       if (SyscallSets::IsAdvancedScheduler(sysno))
-        return ErrorCode(ErrorCode::ERR_ALLOWED);
+        return Allow();
 
       // Default to the generic GPU policy.
-      return GpuProcessPolicy::EvaluateSyscall(sandbox, sysno);
+      return GpuProcessPolicy::EvaluateSyscall(sysno);
   }
 }
 

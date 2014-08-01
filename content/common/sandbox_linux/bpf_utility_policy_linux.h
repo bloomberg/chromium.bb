@@ -15,8 +15,8 @@ class UtilityProcessPolicy : public SandboxBPFBasePolicy {
   UtilityProcessPolicy();
   virtual ~UtilityProcessPolicy();
 
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
-                                    int system_call_number) const OVERRIDE;
+  virtual sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
+      int system_call_number) const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UtilityProcessPolicy);

@@ -15,17 +15,19 @@
 #include "sandbox/linux/services/linux_syscalls.h"
 
 using sandbox::SyscallSets;
+using sandbox::bpf_dsl::Allow;
+using sandbox::bpf_dsl::Error;
+using sandbox::bpf_dsl::ResultExpr;
 
 namespace content {
 
 RendererProcessPolicy::RendererProcessPolicy() {}
 RendererProcessPolicy::~RendererProcessPolicy() {}
 
-ErrorCode RendererProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
-                                                 int sysno) const {
+ResultExpr RendererProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
     case __NR_ioctl:
-      return sandbox::RestrictIoctl(sandbox);
+      return sandbox::RestrictIoctl();
     // Allow the system calls below.
     // The baseline policy allows __NR_clock_gettime. Allow
     // clock_getres() for V8. crbug.com/329053.
@@ -52,12 +54,12 @@ ErrorCode RendererProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
     case __NR_sysinfo:
     case __NR_times:
     case __NR_uname:
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
+      return Allow();
     case __NR_prlimit64:
-      return ErrorCode(EPERM);  // See crbug.com/160157.
+      return Error(EPERM);  // See crbug.com/160157.
     default:
       // Default on the content baseline policy.
-      return SandboxBPFBasePolicy::EvaluateSyscall(sandbox, sysno);
+      return SandboxBPFBasePolicy::EvaluateSyscall(sysno);
   }
 }
 

@@ -31,10 +31,10 @@
 #include "sandbox/linux/services/linux_syscalls.h"
 
 using sandbox::BrokerProcess;
-using sandbox::ErrorCode;
-using sandbox::SandboxBPF;
 using sandbox::SyscallSets;
 using sandbox::arch_seccomp_data;
+using sandbox::bpf_dsl::Allow;
+using sandbox::bpf_dsl::ResultExpr;
 
 namespace content {
 
@@ -121,8 +121,7 @@ class GpuBrokerProcessPolicy : public GpuProcessPolicy {
   }
   virtual ~GpuBrokerProcessPolicy() {}
 
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
-                                    int system_call_number) const OVERRIDE;
+  virtual ResultExpr EvaluateSyscall(int system_call_number) const OVERRIDE;
 
  private:
   GpuBrokerProcessPolicy() {}
@@ -132,15 +131,14 @@ class GpuBrokerProcessPolicy : public GpuProcessPolicy {
 // x86_64/i386 or desktop ARM.
 // A GPU broker policy is the same as a GPU policy with open and
 // openat allowed.
-ErrorCode GpuBrokerProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
-                                                  int sysno) const {
+ResultExpr GpuBrokerProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
     case __NR_access:
     case __NR_open:
     case __NR_openat:
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
+      return Allow();
     default:
-      return GpuProcessPolicy::EvaluateSyscall(sandbox, sysno);
+      return GpuProcessPolicy::EvaluateSyscall(sysno);
   }
 }
 
@@ -173,8 +171,7 @@ GpuProcessPolicy::GpuProcessPolicy() : broker_process_(NULL) {}
 GpuProcessPolicy::~GpuProcessPolicy() {}
 
 // Main policy for x86_64/i386. Extended by CrosArmGpuProcessPolicy.
-ErrorCode GpuProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
-                                            int sysno) const {
+ResultExpr GpuProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
     case __NR_ioctl:
 #if defined(__i386__) || defined(__x86_64__) || defined(__mips__)
@@ -190,18 +187,18 @@ ErrorCode GpuProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
     case __NR_sched_getaffinity:
     case __NR_sched_setaffinity:
     case __NR_setpriority:
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
+      return Allow();
     case __NR_access:
     case __NR_open:
     case __NR_openat:
       DCHECK(broker_process_);
-      return sandbox->Trap(GpuSIGSYS_Handler, broker_process_);
+      return Trap(GpuSIGSYS_Handler, broker_process_);
     default:
       if (SyscallSets::IsEventFd(sysno))
-        return ErrorCode(ErrorCode::ERR_ALLOWED);
+        return Allow();
 
       // Default on the baseline policy.
-      return SandboxBPFBasePolicy::EvaluateSyscall(sandbox, sysno);
+      return SandboxBPFBasePolicy::EvaluateSyscall(sysno);
   }
 }
 

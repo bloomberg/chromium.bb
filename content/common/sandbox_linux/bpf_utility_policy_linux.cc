@@ -15,6 +15,9 @@
 #include "sandbox/linux/services/linux_syscalls.h"
 
 using sandbox::SyscallSets;
+using sandbox::bpf_dsl::Allow;
+using sandbox::bpf_dsl::Error;
+using sandbox::bpf_dsl::ResultExpr;
 
 namespace content {
 
@@ -23,8 +26,7 @@ UtilityProcessPolicy::UtilityProcessPolicy() {
 UtilityProcessPolicy::~UtilityProcessPolicy() {
 }
 
-ErrorCode UtilityProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
-                                                int sysno) const {
+ResultExpr UtilityProcessPolicy::EvaluateSyscall(int sysno) const {
   // TODO(mdempsky): For now, this is just a copy of the renderer
   // policy, which happens to work well for utility processes too.  It
   // should be possible to limit further though.  In particular, the
@@ -33,7 +35,7 @@ ErrorCode UtilityProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
 
   switch (sysno) {
     case __NR_ioctl:
-      return sandbox::RestrictIoctl(sandbox);
+      return sandbox::RestrictIoctl();
     // Allow the system calls below.
     // The baseline policy allows __NR_clock_gettime. Allow
     // clock_getres() for V8. crbug.com/329053.
@@ -60,12 +62,12 @@ ErrorCode UtilityProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
     case __NR_sysinfo:
     case __NR_times:
     case __NR_uname:
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
+      return Allow();
     case __NR_prlimit64:
-      return ErrorCode(EPERM);  // See crbug.com/160157.
+      return Error(EPERM);  // See crbug.com/160157.
     default:
       // Default on the content baseline policy.
-      return SandboxBPFBasePolicy::EvaluateSyscall(sandbox, sysno);
+      return SandboxBPFBasePolicy::EvaluateSyscall(sysno);
   }
 }
 

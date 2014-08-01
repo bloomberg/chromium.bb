@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "build/build_config.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/sandbox_export.h"
 
 // The handlers are suitable for use in Trap() error codes. They are
@@ -46,6 +47,14 @@ SANDBOX_EXPORT intptr_t
 // argument.
 SANDBOX_EXPORT intptr_t
     SIGSYSFutexFailure(const struct arch_seccomp_data& args, void* aux);
+
+// Variants of the above functions for use with bpf_dsl.
+SANDBOX_EXPORT bpf_dsl::ResultExpr CrashSIGSYS();
+SANDBOX_EXPORT bpf_dsl::ResultExpr CrashSIGSYSClone();
+SANDBOX_EXPORT bpf_dsl::ResultExpr CrashSIGSYSPrctl();
+SANDBOX_EXPORT bpf_dsl::ResultExpr CrashSIGSYSIoctl();
+SANDBOX_EXPORT bpf_dsl::ResultExpr CrashSIGSYSKill();
+SANDBOX_EXPORT bpf_dsl::ResultExpr CrashSIGSYSFutex();
 
 // Following four functions return substrings of error messages used
 // in the above four functions. They are useful in death tests.

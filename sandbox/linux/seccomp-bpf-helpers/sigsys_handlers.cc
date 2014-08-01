@@ -201,6 +201,30 @@ intptr_t SIGSYSFutexFailure(const struct arch_seccomp_data& args,
     _exit(1);
 }
 
+bpf_dsl::ResultExpr CrashSIGSYS() {
+  return bpf_dsl::Trap(CrashSIGSYS_Handler, NULL);
+}
+
+bpf_dsl::ResultExpr CrashSIGSYSClone() {
+  return bpf_dsl::Trap(SIGSYSCloneFailure, NULL);
+}
+
+bpf_dsl::ResultExpr CrashSIGSYSPrctl() {
+  return bpf_dsl::Trap(SIGSYSPrctlFailure, NULL);
+}
+
+bpf_dsl::ResultExpr CrashSIGSYSIoctl() {
+  return bpf_dsl::Trap(SIGSYSIoctlFailure, NULL);
+}
+
+bpf_dsl::ResultExpr CrashSIGSYSKill() {
+  return bpf_dsl::Trap(SIGSYSKillFailure, NULL);
+}
+
+bpf_dsl::ResultExpr CrashSIGSYSFutex() {
+  return bpf_dsl::Trap(SIGSYSFutexFailure, NULL);
+}
+
 const char* GetErrorMessageContentForTests() {
   return SECCOMP_MESSAGE_COMMON_CONTENT;
 }
