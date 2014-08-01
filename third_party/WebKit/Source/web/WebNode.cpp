@@ -47,13 +47,11 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebDOMEvent.h"
-#include "public/web/WebDOMEventListener.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebElement.h"
 #include "public/web/WebElementCollection.h"
 #include "public/web/WebNodeList.h"
 #include "public/web/WebPluginContainer.h"
-#include "web/EventListenerWrapper.h"
 #include "web/FrameLoaderClientImpl.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
@@ -168,18 +166,6 @@ bool WebNode::isContentEditable() const
 bool WebNode::isElementNode() const
 {
     return m_private->isElementNode();
-}
-
-void WebNode::addEventListener(const WebString& eventType, WebDOMEventListener* listener, bool useCapture)
-{
-    // Please do not add more eventTypes to this list without an API review.
-    RELEASE_ASSERT(eventType == "mousedown");
-
-    EventListenerWrapper* listenerWrapper = listener->createEventListenerWrapper(eventType, useCapture, m_private.get());
-    // The listenerWrapper is only referenced by the actual Node.  Once it goes
-    // away, the wrapper notifies the WebEventListener so it can clear its
-    // pointer to it.
-    m_private->addEventListener(eventType, adoptRef(listenerWrapper), useCapture);
 }
 
 bool WebNode::dispatchEvent(const WebDOMEvent& event)
