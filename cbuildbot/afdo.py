@@ -248,11 +248,13 @@ def UpdateChromeEbuildAFDOFile(board, arch_profiles):
     arch_profiles: {arch: afdo_file} pairs to put into the ebuild.
   """
   # Find the Chrome ebuild file.
+  equery_prog = 'equery'
+  ebuild_prog = 'ebuild'
   if board:
-    equery_cmd = ['equery-%s' % board, 'w', 'chromeos-chrome']
-  else:
-    equery_cmd = ['equery', 'w', 'chromeos-chrome']
+    equery_prog += '-%s' % board
+    ebuild_prog += '-%s' % board
 
+  equery_cmd = [equery_prog, 'w', 'chromeos-chrome']
   ebuild_file = cros_build_lib.RunCommand(equery_cmd,
                                           enter_chroot=True,
                                           redirect_stdout=True).output.rstrip()
@@ -276,7 +278,7 @@ def UpdateChromeEbuildAFDOFile(board, arch_profiles):
   # chrome ebuild.
   if AFDO_BASE_URL == AFDO_TEST_URL:
     ebuild_gs_dir = {'AFDO_GS_DIRECTORY': AFDO_TEST_URL}
-  gen_manifest_cmd = ['ebuild-%s' % board,  ebuild_file, 'manifest', '--force']
+  gen_manifest_cmd = [ebuild_prog,  ebuild_file, 'manifest', '--force']
   cros_build_lib.RunCommand(gen_manifest_cmd, enter_chroot=True,
                             extra_env=ebuild_gs_dir, print_cmd=True)
 
