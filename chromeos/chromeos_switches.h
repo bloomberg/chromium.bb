@@ -80,8 +80,9 @@ CHROMEOS_EXPORT extern const char kShowHostPairingDemo[];
 CHROMEOS_EXPORT extern const char kSmsTestMessages[];
 CHROMEOS_EXPORT extern const char kStubCrosSettings[];
 CHROMEOS_EXPORT extern const char kTestAutoUpdateUI[];
-CHROMEOS_EXPORT extern const char kEnableScreenshotTesting[];
-CHROMEOS_EXPORT extern const char kScreenshotDestinationDir[];
+CHROMEOS_EXPORT extern const char kEnableScreenshotTestingWithMode[];
+CHROMEOS_EXPORT extern const char kGoldenScreenshotsDir[];
+CHROMEOS_EXPORT extern const char kArtifactsDir[];
 
 }  // namespace switches
 }  // namespace chromeos
