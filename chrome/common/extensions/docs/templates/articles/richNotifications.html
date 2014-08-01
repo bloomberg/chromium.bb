@@ -118,7 +118,7 @@ shows a simple integration between GCM and Rich Notifications API.
 
 <p>
 All template types
-(<code>basic</code>, <code>image</code>, and <code>list</code>)
+(<code>basic</code>, <code>image</code>, <code>list</code> and <code>progress</code>)
 must include a notification <code>title</code> and <code>message</code>,
 as well as an <code>iconUrl</code>, which is a link to a small icon that
 is displayed to the left of the notification message.
@@ -136,6 +136,31 @@ var opt = {
   iconUrl: "url_to_small_icon"
 }
 </pre>
+
+<h3 id="image">Create image notification</h3>
+
+<p>
+The <code>image</code>
+template type also includes an <code>imageUrl</code>, which is a link to
+an image that is previewed within the notification:
+</p>
+
+<pre>
+var opt = {
+  type: "basic",
+  title: "Primary Title",
+  message: "Primary message to display",
+  iconUrl: "url_to_small_icon",
+  imageUrl: "url_to_preview_image"
+}
+</pre>
+
+<p>
+In Chrome Apps, due to a strict <a href="contentSecurityPolicy">Content Security Policy</a>
+these URLs must point to a local resource or use a
+<a href="app_external">blob or data URL</a>.
+Use a 3:2 ratio for your image; otherwise a black border frames the image.
+</p>
 
 <h3 id="list">Create list notification</h3>
 
@@ -156,30 +181,23 @@ var opt = {
 }
 </pre>
 
-<h3 id="image">Create image notification</h3>
+<h3 id="list">Create progress notification</h3>
 
 <p>
-The <code>image</code>
-template type also includes an <code>imageUrl</code>, which is a link to
-an image that is previewed within the notification:
+The <code>progress</code> template displays a progress bar where current
+progress ranges from 0 to 100:
 </p>
 
 <pre>
 var opt = {
-  type: "basic",
+  type: "progress",
   title: "Primary Title",
   message: "Primary message to display",
-  iconUrl: "url_to_small_icon"
-  imageUrl: "url_to_preview_image"
+  iconUrl: "url_to_small_icon",
+  progress: 42
 }
 </pre>
 
-<p>
-In Chrome Apps, due to a strict <a href="contentSecurityPolicy">Content Security Policy</a>
-these URLs must point to a local resource or use a
-<a href="app_external">blob or data URL</a>.
-Use a 3:2 ratio for your image; otherwise a black border frames the image.
-</p>
 
 <h2 id="events">Listening for and responding to events</h2>
 
