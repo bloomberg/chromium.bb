@@ -240,17 +240,7 @@ void AudioContext::uninitialize()
     derefUnfinishedSourceNodes();
 
     m_isInitialized = false;
-}
-
-void AudioContext::stopDispatch(void* userData)
-{
-    AudioContext* context = reinterpret_cast<AudioContext*>(userData);
-    ASSERT(context);
-    if (!context)
-        return;
-
-    context->uninitialize();
-    context->clear();
+    clear();
 }
 
 void AudioContext::stop()
@@ -264,7 +254,7 @@ void AudioContext::stop()
     // of dealing with all of its ActiveDOMObjects at this point. uninitialize() can de-reference other
     // ActiveDOMObjects so let's schedule uninitialize() to be called later.
     // FIXME: see if there's a more direct way to handle this issue.
-    callOnMainThread(stopDispatch, this);
+    callOnMainThread(bind(&AudioContext::uninitialize, PassRefPtrWillBeRawPtr<AudioContext>(this)));
 }
 
 bool AudioContext::hasPendingActivity() const

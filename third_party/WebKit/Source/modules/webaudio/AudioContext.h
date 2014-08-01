@@ -250,7 +250,6 @@ private:
     // ExecutionContext calls stop twice.
     // We'd like to schedule only one stop action for them.
     bool m_isStopScheduled;
-    static void stopDispatch(void* userData);
     bool m_isCleared;
     void clear();
 
