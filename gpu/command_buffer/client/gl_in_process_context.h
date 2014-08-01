@@ -52,15 +52,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
   // Create a GLInProcessContext, if |is_offscreen| is true, renders to an
   // offscreen context. |attrib_list| must be NULL or a NONE-terminated list
   // of attribute/value pairs.
-  // TODO(boliu): Fix all callsites to use Create and remove this.
-  static GLInProcessContext* CreateContext(
-      bool is_offscreen,
-      gfx::AcceleratedWidget window,
-      const gfx::Size& size,
-      bool share_resources,
-      const GLInProcessContextAttribs& attribs,
-      gfx::GpuPreference gpu_preference);
-
   // If |surface| is not NULL, then it must match |is_offscreen| and |size|,
   // |window| must be gfx::kNullAcceleratedWidget, and the command buffer
   // service must run on the same thread as this client because GLSurface is

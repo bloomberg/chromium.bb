@@ -312,31 +312,6 @@ GLInProcessContextAttribs::GLInProcessContextAttribs()
       fail_if_major_perf_caveat(-1),
       lose_context_when_out_of_memory(-1) {}
 
-// static
-GLInProcessContext* GLInProcessContext::CreateContext(
-    bool is_offscreen,
-    gfx::AcceleratedWidget window,
-    const gfx::Size& size,
-    bool share_resources,
-    const GLInProcessContextAttribs& attribs,
-    gfx::GpuPreference gpu_preference) {
-  scoped_ptr<GLInProcessContextImpl> context(
-      new GLInProcessContextImpl());
-  if (!context->Initialize(
-      NULL /* surface */,
-      is_offscreen,
-      share_resources,
-      NULL,
-      window,
-      size,
-      attribs,
-      gpu_preference,
-      scoped_refptr<InProcessCommandBuffer::Service>()))
-    return NULL;
-
-  return context.release();
-}
-
 GLInProcessContext* GLInProcessContext::Create(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
     scoped_refptr<gfx::GLSurface> surface,
@@ -359,7 +334,7 @@ GLInProcessContext* GLInProcessContext::Create(
                            is_offscreen,
                            use_global_share_group,
                            share_context,
-                           gfx::kNullAcceleratedWidget,
+                           window,
                            size,
                            attribs,
                            gpu_preference,

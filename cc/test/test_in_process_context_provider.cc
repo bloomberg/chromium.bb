@@ -35,12 +35,16 @@ scoped_ptr<gpu::GLInProcessContext> CreateTestInProcessContext() {
   gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
 
   scoped_ptr<gpu::GLInProcessContext> context = make_scoped_ptr(
-      gpu::GLInProcessContext::CreateContext(is_offscreen,
-                                             gfx::AcceleratedWidget(),
-                                             gfx::Size(1, 1),
-                                             share_resources,
-                                             attribs,
-                                             gpu_preference));
+      gpu::GLInProcessContext::Create(NULL,
+                                      NULL,
+                                      is_offscreen,
+                                      gfx::kNullAcceleratedWidget,
+                                      gfx::Size(1, 1),
+                                      NULL,
+                                      share_resources,
+                                      attribs,
+                                      gpu_preference));
+
   DCHECK(context);
   return context.Pass();
 }
