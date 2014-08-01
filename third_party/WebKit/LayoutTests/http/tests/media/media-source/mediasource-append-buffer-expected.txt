@@ -17,7 +17,7 @@ PASS Test appendBuffer with partial media segments.
 PASS Test abort in the middle of an initialization segment. 
 PASS Test abort in the middle of a media segment. 
 PASS Test abort after removing sourcebuffer. 
-PASS Test abort after readyState is ended. 
+PASS Test abort after readyState is ended following init segment and media segment. 
 PASS Test abort after appendBuffer update ends. 
 PASS Test appending null. 
 PASS Test appending after removeSourceBuffer(). 

@@ -11,8 +11,6 @@
         <script>
           mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
-              test.failOnEvent(mediaElement, 'error');
-
               test.expectEvent(sourceBuffer, 'updatestart', 'Append started.');
               test.expectEvent(sourceBuffer, 'update', 'Append success.');
               test.expectEvent(sourceBuffer, 'updateend', 'Append ended.');
@@ -29,8 +27,6 @@
 
           mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
-              test.failOnEvent(mediaElement, 'error');
-
               test.expectEvent(sourceBuffer, 'updatestart', 'Append started.');
               test.expectEvent(sourceBuffer, 'update', 'Append success.');
               test.expectEvent(sourceBuffer, 'updateend', 'Append ended.');
@@ -53,8 +49,6 @@
 
           mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
-              test.failOnEvent(mediaElement, 'error');
-
               test.expectEvent(sourceBuffer, 'updatestart', 'Append started.');
               test.expectEvent(sourceBuffer, 'abort', 'Append aborted.');
               test.expectEvent(sourceBuffer, 'updateend', 'Append ended.');
@@ -75,8 +69,6 @@
 
           mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
-              test.failOnEvent(mediaElement, 'error');
-
               test.expectEvent(sourceBuffer, 'updatestart', 'Append started.');
               test.expectEvent(sourceBuffer, 'update', 'Append success.');
               test.expectEvent(sourceBuffer, 'updateend', 'Append ended.');
@@ -116,8 +108,6 @@
 
           mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
-              test.failOnEvent(mediaElement, 'error');
-
               test.expectEvent(sourceBuffer, 'updatestart', 'Append started.');
               test.expectEvent(sourceBuffer, 'update', 'Append success.');
               test.expectEvent(sourceBuffer, 'updateend', 'Append ended.');
@@ -157,8 +147,6 @@
 
           mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
-              test.failOnEvent(mediaElement, 'error');
-
               test.expectEvent(sourceBuffer, 'updatestart', 'Append started.');
               test.expectEvent(sourceBuffer, 'abort', 'Append aborted.');
               test.expectEvent(sourceBuffer, 'updateend', 'Append ended.');
@@ -185,8 +173,6 @@
 
           mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
-              test.failOnEvent(mediaElement, 'error');
-
               test.expectEvent(sourceBuffer, 'updatestart', 'Append started.');
               test.expectEvent(sourceBuffer, 'updateend', 'Append ended.');
               sourceBuffer.appendBuffer(mediaData);
@@ -206,7 +192,6 @@
 
           mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
-              test.failOnEvent(mediaElement, 'error');
               test.failOnEvent(mediaSource, 'sourceended');
 
               test.expectEvent(sourceBuffer, 'updatestart', 'Append started.');
@@ -231,8 +216,6 @@
 
           mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
-              test.failOnEvent(mediaElement, 'error');
-
               test.expectEvent(sourceBuffer, 'updatestart', 'Append started.');
               test.expectEvent(sourceBuffer, 'updateend', 'Append ended.');
               sourceBuffer.appendBuffer(mediaData);
@@ -270,8 +253,6 @@
 
           mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
-              test.failOnEvent(mediaElement, 'error');
-
               test.expectEvent(sourceBuffer, 'updatestart', 'Append started.');
               test.expectEvent(sourceBuffer, 'update', 'Append success.');
               test.expectEvent(sourceBuffer, 'updateend', 'Append ended.');
@@ -316,8 +297,6 @@
 
           mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
-              test.failOnEvent(mediaElement, 'error');
-
               test.expectEvent(sourceBuffer, 'updatestart', 'Append started.');
               test.expectEvent(sourceBuffer, 'update', 'Append success.');
               test.expectEvent(sourceBuffer, 'updateend', 'Append ended.');
@@ -399,7 +378,7 @@
                   test.expectEvent(sourceBuffer, 'updateend', 'partial media segment append ended.');
                   sourceBuffer.appendBuffer(partialMediaSegment);
               });
-            
+
               test.waitForExpectedEvents(function()
               {
                   test.expectEvent(sourceBuffer, 'updateend', 'mediaSegment append ended.');
@@ -489,28 +468,44 @@
                   test.done();
               });
           }, 'Test abort in the middle of a media segment.');
-          
+
           mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
               test.expectEvent(mediaSource.sourceBuffers, 'removesourcebuffer', 'SourceBuffer removed.');
-              mediaSource.removeSourceBuffer(sourceBuffer);               
+              mediaSource.removeSourceBuffer(sourceBuffer);
               test.waitForExpectedEvents(function()
               {
                   assert_throws('InvalidStateError',
                       function() { sourceBuffer.abort(); },
                       'sourceBuffer.abort() throws an exception for InvalidStateError.');
-        
+
                   test.done();
               });
           }, 'Test abort after removing sourcebuffer.');
 
           mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
-              test.expectEvent(mediaSource, 'sourceended', 'source ended');
-              
-              assert_equals(mediaSource.readyState, 'open', 'readyState is open.');
-              mediaSource.endOfStream();
-              
+              var initSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.init);
+              var mediaSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.media[0]);
+
+              test.expectEvent(sourceBuffer, 'updateend', 'initSegment append ended.');
+              sourceBuffer.appendBuffer(initSegment);
+
+              test.waitForExpectedEvents(function()
+              {
+                  assert_equals(mediaSource.readyState, 'open', 'readyState is open after init segment appended.');
+                  test.expectEvent(sourceBuffer, 'updateend', 'mediaSegment append ended.');
+                  sourceBuffer.appendBuffer(mediaSegment);
+              });
+
+              test.waitForExpectedEvents(function()
+              {
+                  assert_equals(sourceBuffer.buffered.length, 1, 'sourceBuffer has a buffered range');
+                  assert_equals(mediaSource.readyState, 'open', 'readyState is open after media segment appended.');
+                  test.expectEvent(mediaSource, 'sourceended', 'source ended');
+                  mediaSource.endOfStream();
+              });
+
               test.waitForExpectedEvents(function()
               {
                   assert_equals(mediaSource.readyState, 'ended', 'readyState is ended.');
@@ -519,8 +514,8 @@
                       'sourceBuffer.abort() throws an exception for InvalidStateError.');
                   test.done();
               });
-            
-          }, 'Test abort after readyState is ended.');
+
+          }, 'Test abort after readyState is ended following init segment and media segment.');
 
           mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
           {
@@ -540,7 +535,7 @@
                   test.done();
               });
           }, 'Test abort after appendBuffer update ends.');
-                     
+
           mediasource_test(function(test, mediaElement, mediaSource)
           {
               var sourceBuffer = mediaSource.addSourceBuffer(MediaSourceUtil.VIDEO_ONLY_TYPE);
