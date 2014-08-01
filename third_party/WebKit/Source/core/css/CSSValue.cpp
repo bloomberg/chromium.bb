@@ -59,11 +59,6 @@
 namespace blink {
 
 struct SameSizeAsCSSValue : public RefCountedWillBeGarbageCollectedFinalized<SameSizeAsCSSValue>
-// FIXME: Figure out why only win builds with oilpan increase sizeof(CSSValue).
-// Deriving ScriptWrappableBase should not increase sizeof(CSSValue).
-#if ENABLE(OILPAN) && OS(WIN)
-    , public ScriptWrappableBase
-#endif
 {
     uint32_t bitfields;
 };
@@ -93,6 +88,18 @@ private:
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(TextCloneCSSValue, isTextCloneCSSValue());
+
+#if COMPILER(MSVC)
+void CSSValueBaseAsEBCO::trace(Visitor* visitor)
+{
+    static_cast<CSSValue*>(this)->trace(visitor);
+}
+
+void CSSValueBaseAsEBCO::finalizeGarbageCollectedObject()
+{
+    static_cast<CSSValue*>(this)->finalizeGarbageCollectedObject();
+}
+#endif
 
 bool CSSValue::isImplicitInitialValue() const
 {
