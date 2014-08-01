@@ -961,7 +961,7 @@ Bug(gardener) [ Release SnowLeopard ] http/tests/serviceworker/indexeddb.html [ 
 Bug(gardener) [ Release Lion ] http/tests/serviceworker/indexeddb.html [ Pass Timeout ]
 Bug(gardener) [ Release MountainLion ] http/tests/serviceworker/indexeddb.html [ Pass Timeout ]
 Bug(gardener) [ Release Win7 ] http/tests/serviceworker/serviceworkerglobalscope-scope.html [ Pass Timeout ]
-Bug(gardener) [ Debug Linux ] http/tests/serviceworker/window-close-during-registration.html [ Crash Pass ]
+Bug(gardener) [ Debug Linux ] http/tests/serviceworker/chromium/window-close-during-registration.html [ Crash Pass ]
 Bug(gardener) crbug.com/30536 [ Release Win7 ] http/tests/ssl/referer-301.html [ Pass Timeout ]
 crbug.com/30536 [ Release XP ] http/tests/ssl/referer-301.html [ Pass Timeout ]
 crbug.com/368560 [ Release XP ] http/tests/svg/image-fetch-fail.svg [ Pass Timeout ]
