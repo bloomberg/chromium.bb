@@ -2830,17 +2830,12 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
 
     // FIXME: Calling layout() shouldn't trigger scripe execution or have any
     // observable effects on the frame tree but we're not quite there yet.
-    Vector<RefPtr<FrameView> > frameViews;
     for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (!child->isLocalFrame())
             continue;
         if (FrameView* view = toLocalFrame(child)->view())
-            frameViews.append(view);
+            view->updateLayoutAndStyleIfNeededRecursive();
     }
-
-    const Vector<RefPtr<FrameView> >::iterator end = frameViews.end();
-    for (Vector<RefPtr<FrameView> >::iterator it = frameViews.begin(); it != end; ++it)
-        (*it)->updateLayoutAndStyleIfNeededRecursive();
 
     // When an <iframe> gets composited, it triggers an extra style recalc in its containing FrameView.
     // To avoid pushing an invalid tree for display, we have to check for this case and do another
