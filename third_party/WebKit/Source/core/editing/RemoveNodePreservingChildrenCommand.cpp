@@ -41,15 +41,16 @@ RemoveNodePreservingChildrenCommand::RemoveNodePreservingChildrenCommand(PassRef
 
 void RemoveNodePreservingChildrenCommand::doApply()
 {
-    WillBeHeapVector<RefPtrWillBeMember<Node> > children;
-    for (Node* child = m_node->firstChild(); child; child = child->nextSibling())
-        children.append(child);
+    if (m_node->isContainerNode()) {
+        NodeVector children;
+        getChildNodes(toContainerNode(*m_node), children);
 
-    size_t size = children.size();
-    for (size_t i = 0; i < size; ++i) {
-        RefPtrWillBeRawPtr<Node> child = children[i].release();
-        removeNode(child, m_shouldAssumeContentIsAlwaysEditable);
-        insertNodeBefore(child.release(), m_node, m_shouldAssumeContentIsAlwaysEditable);
+        size_t size = children.size();
+        for (size_t i = 0; i < size; ++i) {
+            RefPtrWillBeRawPtr<Node> child = children[i].release();
+            removeNode(child, m_shouldAssumeContentIsAlwaysEditable);
+            insertNodeBefore(child.release(), m_node, m_shouldAssumeContentIsAlwaysEditable);
+        }
     }
     removeNode(m_node, m_shouldAssumeContentIsAlwaysEditable);
 }

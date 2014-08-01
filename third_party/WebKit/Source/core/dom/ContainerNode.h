@@ -319,7 +319,7 @@ inline bool Node::isTreeScope() const
     return &treeScope().rootNode() == this;
 }
 
-inline void getChildNodes(Node& node, NodeVector& nodes)
+inline void getChildNodes(ContainerNode& node, NodeVector& nodes)
 {
     ASSERT(!nodes.size());
     for (Node* child = node.firstChild(); child; child = child->nextSibling())

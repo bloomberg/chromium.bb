@@ -1059,7 +1059,7 @@ void ApplyStyleCommand::pushDownInlineStyleAroundNode(EditingStyle* style, Node*
     WillBeHeapVector<RefPtrWillBeMember<Element> > elementsToPushDown;
     while (current && current != targetNode && current->contains(targetNode)) {
         NodeVector currentChildren;
-        getChildNodes(*current, currentChildren);
+        getChildNodes(toContainerNode(*current), currentChildren);
         RefPtrWillBeRawPtr<Element> styledElement = nullptr;
         if (current->isStyledElement() && isStyledInlineElementToRemove(toElement(current))) {
             styledElement = toElement(current);

@@ -82,9 +82,8 @@ void SplitElementCommand::doUnapply()
     if (!m_element1 || !m_element1->hasEditableStyle() || !m_element2->hasEditableStyle())
         return;
 
-    WillBeHeapVector<RefPtrWillBeMember<Node> > children;
-    for (Node* node = m_element1->firstChild(); node; node = node->nextSibling())
-        children.append(node);
+    NodeVector children;
+    getChildNodes(*m_element1, children);
 
     RefPtrWillBeRawPtr<Node> refChild = m_element2->firstChild();
 

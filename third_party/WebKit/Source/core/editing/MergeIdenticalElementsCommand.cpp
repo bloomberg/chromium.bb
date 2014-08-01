@@ -49,9 +49,8 @@ void MergeIdenticalElementsCommand::doApply()
 
     m_atChild = m_element2->firstChild();
 
-    WillBeHeapVector<RefPtrWillBeMember<Node> > children;
-    for (Node* child = m_element1->firstChild(); child; child = child->nextSibling())
-        children.append(child);
+    NodeVector children;
+    getChildNodes(*m_element1, children);
 
     size_t size = children.size();
     for (size_t i = 0; i < size; ++i)
