@@ -30,6 +30,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptProfiler.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorConsoleMessage.h"
@@ -239,6 +240,7 @@ void InspectorConsoleAgent::setTracingBasedTimeline(ErrorString*, bool enabled)
 
 void InspectorConsoleAgent::consoleTimeline(ExecutionContext* context, const String& title, ScriptState* scriptState)
 {
+    UseCounter::count(context, UseCounter::DevToolsConsoleTimeline);
     if (m_tracingAgent && m_state->getBoolean(ConsoleAgentState::tracingBasedTimeline))
         m_tracingAgent->consoleTimeline(title);
     else

@@ -32,6 +32,8 @@
 
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptProfiler.h"
+#include "core/frame/ConsoleTypes.h"
+#include "core/frame/UseCounter.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InspectorOverlay.h"
@@ -39,7 +41,6 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/ScriptProfile.h"
-#include "core/frame/ConsoleTypes.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/StringConcatenate.h"
 
@@ -103,8 +104,9 @@ InspectorProfilerAgent::~InspectorProfilerAgent()
 {
 }
 
-void InspectorProfilerAgent::consoleProfile(const String& title, ScriptState* scriptState)
+void InspectorProfilerAgent::consoleProfile(ExecutionContext* context, const String& title, ScriptState* scriptState)
 {
+    UseCounter::count(context, UseCounter::DevToolsConsoleProfile);
     ASSERT(m_frontend && enabled());
     String id = nextProfileId();
     m_startedProfiles.append(ProfileDescriptor(id, title));

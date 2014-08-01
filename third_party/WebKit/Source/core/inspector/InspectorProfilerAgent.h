@@ -40,6 +40,7 @@
 
 namespace blink {
 
+class ExecutionContext;
 class InjectedScriptManager;
 class InspectorFrontend;
 class InspectorOverlay;
@@ -59,7 +60,7 @@ public:
     virtual ~InspectorProfilerAgent();
     virtual void trace(Visitor*) OVERRIDE;
 
-    void consoleProfile(const String& title, ScriptState*);
+    void consoleProfile(ExecutionContext*, const String& title, ScriptState*);
     void consoleProfileEnd(const String& title, ScriptState*);
 
     virtual void enable(ErrorString*) OVERRIDE;

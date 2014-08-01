@@ -510,7 +510,7 @@ interface InspectorConsoleInstrumentation {
     void consoleTimelineEnd([Keep] ExecutionContext* context, const String& title, ScriptState* state);
 
     [Profiler, Inline=FastReturn]
-    void consoleProfile(ExecutionContext* context, const String& title, ScriptState* state);
+    void consoleProfile([Keep] ExecutionContext* context, const String& title, ScriptState* state);
 
     [Profiler, Inline=FastReturn]
     void consoleProfileEnd(ExecutionContext* context, const String& title, ScriptState* state);
