@@ -7,13 +7,10 @@
     ['OS=="android"', {
       'toolsets': ['host'],
     }],
-    ['clang==1', {
-      'cflags': ['-Wno-tautological-constant-out-of-range-compare'],
-      'xcode_settings': {
-        'WARNING_CFLAGS': ['-Wno-tautological-constant-out-of-range-compare'],
-      },
-    }],
   ],
+  'variables': {
+    'clang_warning_flags': ['-Wno-tautological-constant-out-of-range-compare'],
+  },
   'include_dirs': [
     'src',
     'src/third_party',

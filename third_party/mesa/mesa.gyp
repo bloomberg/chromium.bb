@@ -129,6 +129,15 @@
       'msvs_disabled_warnings': [
           4005, 4018, 4065, 4090, 4099, 4273, 4291, 4345, 4267,
       ],
+      'variables': {
+        'clang_warning_flags': [
+          '-Wno-tautological-constant-out-of-range-compare',
+        ],
+        'clang_warning_flags_unset': [
+          # Don't warn about string->bool used in asserts.
+          '-Wstring-conversion',
+        ],
+      },
       'sources': [
         '<(generated_src_dir)/mesa/main/dispatch.h',
         'src/src/glsl/ast_expr.cpp',
@@ -229,25 +238,6 @@
         #'src/src/glsl/standalone_scaffolding.h',
         'src/src/glsl/strtod.c',
         'src/src/glsl/strtod.h',
-      ],
-      'conditions': [
-        ['clang == 1', {
-          'xcode_settings': {
-            'WARNING_CFLAGS': [
-              '-Wno-tautological-constant-out-of-range-compare',
-            ],
-            'WARNING_CFLAGS!': [
-              # Don't warn about string->bool used in asserts.
-              '-Wstring-conversion',
-            ],
-          },
-          'cflags': [
-            '-Wno-tautological-constant-out-of-range-compare',
-          ],
-          'cflags!': [
-            '-Wstring-conversion',
-          ],
-        }],
       ],
     },
     {

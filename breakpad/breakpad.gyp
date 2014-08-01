@@ -580,6 +580,12 @@
             'breakpad_processor_support',
             'linux_dumper_unittest_helper',
           ],
+          'variables': {
+            'clang_warning_flags': [
+              # See http://crbug.com/138571#c18
+              '-Wno-unused-value',
+            ],
+          },
 
           'sources': [
             'linux/breakpad_googletest_includes.h',
@@ -616,12 +622,6 @@
             '.',
           ],
           'conditions': [
-            [ 'clang == 1', {
-              'cflags': [
-                # See http://crbug.com/138571#c18
-                '-Wno-unused-value',
-              ],
-            }],
             ['OS=="android"', {
               'libraries': [
                 '-llog',

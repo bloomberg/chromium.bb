@@ -137,6 +137,11 @@
           'skia_support_pdf': 1,
         }],
       ],
+      # TODO(scottmg): http://crbug.com/177306
+      'clang_warning_flags': [
+        # Don't warn about string->bool used in asserts.
+        '-Wstring-conversion',
+      ]
     },
     'skia_support_gpu': '<(skia_support_gpu)',
     'skia_support_pdf': '<(skia_support_pdf)',

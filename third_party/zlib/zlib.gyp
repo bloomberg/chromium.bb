@@ -77,6 +77,12 @@
           '.',
         ],
       },
+      'variables': {
+        'clang_warning_flags': [
+          # zlib uses `if ((a == b))` for some reason.
+          '-Wno-parentheses-equality',
+        ],
+      },
       'conditions': [
         ['OS!="win"', {
           'sources!': [
@@ -92,17 +98,6 @@
           # systems.
           'defines': [
             'USE_FILE32API'
-          ],
-        }],
-        ['clang==1', {
-          'xcode_settings': {
-            'WARNING_CFLAGS': [
-              # zlib uses `if ((a == b))` for some reason.
-              '-Wno-parentheses-equality',
-            ],
-          },
-          'cflags': [
-            '-Wno-parentheses-equality',
           ],
         }],
       ],

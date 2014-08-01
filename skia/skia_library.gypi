@@ -358,18 +358,6 @@
         '../third_party/skia/src/utils/win/SkHRESULT.cpp',
       ],
     }],
-    # TODO(scottmg): http://crbug.com/177306
-    ['clang==1', {
-      'xcode_settings': {
-        'WARNING_CFLAGS!': [
-          # Don't warn about string->bool used in asserts.
-          '-Wstring-conversion',
-        ],
-      },
-      'cflags!': [
-        '-Wstring-conversion',
-      ],
-    }],
   ],
   'target_conditions': [
     # Pull in specific Mac files for iOS (which have been filtered out
