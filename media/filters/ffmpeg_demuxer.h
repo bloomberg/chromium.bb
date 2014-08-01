@@ -133,6 +133,7 @@ class FFmpegDemuxerStream : public DemuxerStream {
   base::TimeDelta duration_;
   bool end_of_stream_;
   base::TimeDelta last_packet_timestamp_;
+  base::TimeDelta last_packet_duration_;
   Ranges<base::TimeDelta> buffered_ranges_;
   VideoRotation video_rotation_;
 

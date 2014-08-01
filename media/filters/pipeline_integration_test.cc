@@ -1539,4 +1539,20 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_Opus441kHz) {
                 .samples_per_second());
 }
 
+// Ensures audio-only playback with missing or negative timestamps works.  Tests
+// the common live-streaming case for chained ogg.  See http://crbug.com/396864.
+TEST_F(PipelineIntegrationTest, BasicPlaybackChainedOgg) {
+  ASSERT_TRUE(Start(GetTestDataFilePath("double-sfx.ogg"), PIPELINE_OK));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+
+// Ensures audio-video playback with missing or negative timestamps fails softly
+// instead of crashing.  See http://crbug.com/396864.
+TEST_F(PipelineIntegrationTest, BasicPlaybackChainedOggVideo) {
+  ASSERT_TRUE(Start(GetTestDataFilePath("double-bear.ogv"), PIPELINE_OK));
+  Play();
+  EXPECT_EQ(PIPELINE_ERROR_DECODE, WaitUntilEndedOrError());
+}
+
 }  // namespace media
