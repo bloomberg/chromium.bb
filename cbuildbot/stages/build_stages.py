@@ -7,7 +7,6 @@
 import functools
 import glob
 import os
-import shutil
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
@@ -74,8 +73,7 @@ class CleanUpStage(generic_stages.BuilderStage):
                                      'autotest', 'files', 'site-packages')
     # Note that these shouldn't be recreated but might be around from stale
     # builders.
-    if os.path.exists(site_packages_dir):
-      shutil.rmtree(site_packages_dir)
+    osutils.RmDir(site_packages_dir, ignore_missing=True)
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
