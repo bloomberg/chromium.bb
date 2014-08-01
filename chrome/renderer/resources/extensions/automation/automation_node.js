@@ -21,7 +21,10 @@ var utils = require('utils');
 function AutomationNodeImpl(root) {
   this.rootImpl = root;
   this.childIds = [];
+  // Public attributes. No actual data gets set on this object.
   this.attributes = {};
+  // Internal object holding all attributes.
+  this.attributesInternal = {};
   this.listeners = {};
   this.location = { left: 0, top: 0, width: 0, height: 0 };
 }
@@ -135,10 +138,10 @@ AutomationNodeImpl.prototype = {
   toString: function() {
     return 'node id=' + this.id +
         ' role=' + this.role +
-        ' state=' + JSON.stringify(this.state) +
+        ' state=' + $JSON.stringify(this.state) +
         ' parentID=' + this.parentID +
-        ' childIds=' + JSON.stringify(this.childIds) +
-        ' attributes=' + JSON.stringify(this.attributes);
+        ' childIds=' + $JSON.stringify(this.childIds) +
+        ' attributes=' + $JSON.stringify(this.attributes);
   },
 
   dispatchEventAtCapturing_: function(event, path) {
@@ -232,6 +235,35 @@ var AutomationAttributeTypes = [
 
 
 /**
+ * Maps an attribute name to another attribute who's value is an id or an array
+ * of ids referencing an AutomationNode.
+ * @param {!Object.<string, string>}
+ * @const
+ */
+var ATTRIBUTE_NAME_TO_ATTRIBUTE_ID = {
+  'aria-activedescendant': 'activedescendantId',
+  'aria-controls': 'controlsIds',
+  'aria-describedby': 'describedbyIds',
+  'aria-flowto': 'flowtoIds',
+  'aria-labelledby': 'labelledbyIds',
+  'aria-owns': 'ownsIds'
+};
+
+/**
+ * A set of attributes ignored in the automation API.
+ * @param {!Object.<string, boolean>}
+ * @const
+ */
+var ATTRIBUTE_BLACKLIST = {'activedescendantId': true,
+                           'controlsIds': true,
+                           'describedbyIds': true,
+                           'flowtoIds': true,
+                           'labelledbyIds': true,
+                           'ownsIds': true
+};
+
+
+/**
  * AutomationRootNode.
  *
  * An AutomationRootNode is the javascript end of an AXTree living in the
@@ -268,7 +300,6 @@ AutomationRootNodeImpl.prototype = {
   },
 
   unserialize: function(update) {
-    console.log('got update:\n' + JSON.stringify(update));
     var updateState = { pendingNodes: {}, newNodes: {} };
     var oldRootId = this.id;
 
@@ -308,14 +339,13 @@ AutomationRootNodeImpl.prototype = {
 
     if (Object.keys(updateState.pendingNodes).length > 0) {
       logging.WARNING('Nodes left pending by the update: ' +
-                   updateState.pendingNodes.join(', '));
+          $JSON.stringify(updateState.pendingNodes));
       lastError.set('automation',
                     'Bad update received on automation tree',
                     null,
                     chrome);
       return false;
     }
-    console.log('after update:\n' + this.toString());
     return true;
   },
 
@@ -470,10 +500,41 @@ AutomationRootNodeImpl.prototype = {
     for (var i = 0; i < AutomationAttributeTypes.length; i++) {
       var attributeType = AutomationAttributeTypes[i];
       for (var attributeName in nodeData[attributeType]) {
-        nodeImpl.attributes[attributeName] =
-          nodeData[attributeType][attributeName];
+        nodeImpl.attributesInternal[attributeName] =
+            nodeData[attributeType][attributeName];
+        if (ATTRIBUTE_BLACKLIST.hasOwnProperty(attributeName) ||
+            nodeImpl.attributes.hasOwnProperty(attributeName)) {
+          continue;
+        } else if (
+            ATTRIBUTE_NAME_TO_ATTRIBUTE_ID.hasOwnProperty(attributeName)) {
+          this.defineReadonlyAttribute_(nodeImpl,
+              attributeName,
+              true);
+        } else {
+          this.defineReadonlyAttribute_(nodeImpl,
+                                        attributeName);
+        }
       }
     }
+  },
+
+  defineReadonlyAttribute_: function(node, attributeName, opt_isIDRef) {
+    $Object.defineProperty(node.attributes, attributeName, {
+      enumerable: true,
+      get: function() {
+        if (opt_isIDRef) {
+          var attributeId = node.attributesInternal[
+              ATTRIBUTE_NAME_TO_ATTRIBUTE_ID[attributeName]];
+          if (Array.isArray(attributeId)) {
+            return attributeId.map(function(current) {
+              return node.rootImpl.get(current);
+            }, this);
+          }
+          return node.rootImpl.get(attributeId);
+        }
+        return node.attributesInternal[attributeName];
+      }.bind(this),
+    });
   },
 
   updateNode_: function(nodeData, updateState) {
