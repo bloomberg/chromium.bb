@@ -154,7 +154,6 @@ void UsbServiceImpl::RefreshDevices() {
 
 // static
 UsbService* UsbService::GetInstance() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   UsbService* instance = g_usb_service_instance.Get().get();
   if (!instance) {
     PlatformUsbContext context = NULL;
@@ -175,7 +174,6 @@ UsbService* UsbService::GetInstance() {
 
 // static
 void UsbService::SetInstanceForTest(UsbService* instance) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   g_usb_service_instance.Get().reset(instance);
 }
 

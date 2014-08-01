@@ -42,6 +42,7 @@
         'nfc/nfc_chromeos_unittest.cc',
         'nfc/nfc_ndef_record_unittest.cc',
         'usb/usb_ids_unittest.cc',
+        'usb/usb_service_unittest.cc',
         'hid/hid_connection_unittest.cc',
         'hid/hid_report_descriptor_unittest.cc',
         'hid/hid_service_unittest.cc',
