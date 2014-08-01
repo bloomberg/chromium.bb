@@ -2584,6 +2584,8 @@
       'browser/policy/file_selection_dialogs_policy_handler.h',
       'browser/policy/javascript_policy_handler.cc',
       'browser/policy/javascript_policy_handler.h',
+      'browser/policy/network_prediction_policy_handler.cc',
+      'browser/policy/network_prediction_policy_handler.h',
       'browser/sessions/restore_on_startup_policy_handler.cc',
       'browser/sessions/restore_on_startup_policy_handler.h',
       'browser/sync/sync_policy_handler.cc',

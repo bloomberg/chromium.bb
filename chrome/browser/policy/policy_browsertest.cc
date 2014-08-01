@@ -43,6 +43,7 @@
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
+#include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/policy/cloud/test_request_interceptor.h"
@@ -374,6 +375,10 @@ bool IsJavascriptEnabled(content::WebContents* contents) {
   if (!value->GetAsInteger(&result))
     EXPECT_EQ(base::Value::TYPE_NULL, value->GetType());
   return result == 123;
+}
+
+bool IsNetworkPredictionEnabled(PrefService* prefs) {
+  return chrome_browser_net::CanPredictNetworkActionsUI(prefs);
 }
 
 void CopyPluginListAndQuit(std::vector<content::WebPluginInfo>* out,
@@ -1919,6 +1924,35 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, Javascript) {
   UpdateProviderPolicy(policies);
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   EXPECT_TRUE(IsJavascriptEnabled(contents));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, NetworkPrediction) {
+  PrefService* prefs = browser()->profile()->GetPrefs();
+
+  // Enabled by default.
+  EXPECT_TRUE(IsNetworkPredictionEnabled(prefs));
+
+  // Disable by old, deprecated policy.
+  PolicyMap policies;
+  policies.Set(key::kDnsPrefetchingEnabled,
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               new base::FundamentalValue(false),
+               NULL);
+  UpdateProviderPolicy(policies);
+
+  EXPECT_FALSE(IsNetworkPredictionEnabled(prefs));
+
+  // Enabled by new policy, this should override old one.
+  policies.Set(
+      key::kNetworkPredictionOptions,
+      POLICY_LEVEL_MANDATORY,
+      POLICY_SCOPE_USER,
+      new base::FundamentalValue(chrome_browser_net::NETWORK_PREDICTION_ALWAYS),
+      NULL);
+  UpdateProviderPolicy(policies);
+
+  EXPECT_TRUE(IsNetworkPredictionEnabled(prefs));
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, SavingBrowserHistoryDisabled) {

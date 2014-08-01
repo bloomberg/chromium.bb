@@ -120,7 +120,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 272
+#   For your editing convenience: highest ID currently used: 273
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -309,6 +309,48 @@
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If this policy is left not set, this will be enabled but the user will be able to change it.''',
+    },
+    {
+      'name': 'NetworkPredictionOptions',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2 ],
+      },
+      'items': [
+        {
+          'name': 'NetworkPredictionAlways',
+          'value': 0,
+          'caption': '''Predict network actions on any network connection''',
+        },
+        {
+          'name': 'NetworkPredictionWifiOnly',
+          'value': 1,
+          'caption': '''Predict network actions on any network that is not
+          cellular''',
+        },
+        {
+          'name': 'NetworkPredictionNever',
+          'value': 2,
+          'caption': '''Do not predict network actions on any network connection''',
+        },
+      ],
+      'supported_on': ['chrome.*:38-', 'chrome_os:38-', 'android:38-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 1,
+      'id': 273,
+      'caption': '''Enable network prediction''',
+      'desc': '''Enables network prediction in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
+
+      This controls DNS prefetching, TCP and SSL preconnection and prerendering of web pages.
+
+      If you set this preference to 'always', 'never', or 'WiFi only', users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      If this policy is left not set, network prediction will be enabled but the user will be able to change it.''',
     },
     {
       'name': 'WPADQuickCheckEnabled',

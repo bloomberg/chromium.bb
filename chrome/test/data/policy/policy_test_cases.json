@@ -121,6 +121,19 @@
     ]
   },
 
+  "NetworkPredictionOptions": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "can_be_recommended": true,
+    "test_policy": { "NetworkPredictionOptions": 2 },
+    "pref_mappings": [
+      { "pref": "dns_prefetching.enabled",
+        "indicator_tests": [
+          { "policy": { "NetworkPredictionOptions": 2 } }
+        ]
+      }
+    ]
+  },
+
   "DisableSpdy": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DisableSpdy": true },

@@ -38265,6 +38265,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="270" label="Enable deprecated web platform features"/>
   <int value="271" label="Transfer SAML IdP cookies during login"/>
   <int value="272" label="Enable EasyUnlock"/>
+  <int value="273" label="Enable network prediction"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

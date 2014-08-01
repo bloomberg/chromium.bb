@@ -32,6 +32,7 @@
 #include "chrome/browser/net/disk_cache_dir_policy_handler.h"
 #include "chrome/browser/policy/file_selection_dialogs_policy_handler.h"
 #include "chrome/browser/policy/javascript_policy_handler.h"
+#include "chrome/browser/policy/network_prediction_policy_handler.h"
 #include "chrome/browser/sessions/restore_on_startup_policy_handler.h"
 #include "chrome/browser/sync/sync_policy_handler.h"
 #endif
@@ -80,9 +81,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::TYPE_BOOLEAN },
   { key::kSearchSuggestEnabled,
     prefs::kSearchSuggestEnabled,
-    base::Value::TYPE_BOOLEAN },
-  { key::kDnsPrefetchingEnabled,
-    prefs::kNetworkPredictionEnabled,
     base::Value::TYPE_BOOLEAN },
   { key::kBuiltInDnsClientEnabled,
     prefs::kBuiltInDnsClientEnabled,
@@ -575,6 +573,8 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       new FileSelectionDialogsPolicyHandler()));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new JavascriptPolicyHandler()));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new NetworkPredictionPolicyHandler()));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new RestoreOnStartupPolicyHandler()));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
