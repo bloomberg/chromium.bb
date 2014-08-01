@@ -25,9 +25,14 @@ from subprocess import Popen, PIPE
 from textwrap import dedent
 
 
+SHA1_RE = re.compile('^[a-fA-F0-9]{40}$')
+GIT_SVN_ID_RE = re.compile('^git-svn-id: .*@([0-9]+) .*$')
+
+
 def posix_path(path):
   """Convert a possibly-Windows path to a posix-style path."""
-  return re.sub('^[A-Z]:', '', path.replace(os.sep, '/'))
+  (_, path) = os.path.splitdrive(path)
+  return path.replace(os.sep, '/')
 
 
 def platform_path(path):
@@ -67,9 +72,22 @@ def verify_git_revision(dep_path, revision):
   p = Popen(['git', 'rev-list', '-n', '1', revision],
             cwd=dep_path, stdout=PIPE, stderr=PIPE)
   result = p.communicate()[0].strip()
-  if p.returncode != 0 or not re.match('^[a-fA-F0-9]{40}$', result):
+  if p.returncode != 0 or not SHA1_RE.match(result):
     result = None
   return result
+
+
+def get_svn_revision(dep_path, git_revision):
+  """Given a git revision, return the corresponding svn revision."""
+  p = Popen(['git', 'log', '-n', '1', '--pretty=format:%B', git_revision],
+            stdout=PIPE, cwd=dep_path)
+  (log, _) = p.communicate()
+  assert p.returncode == 0, 'git log %s failed.' % git_revision
+  for line in reversed(log.splitlines()):
+    m = GIT_SVN_ID_RE.match(line.strip())
+    if m:
+      return m.group(1)
+  return None
 
 
 def convert_svn_revision(dep_path, revision):
@@ -115,22 +133,30 @@ def convert_svn_revision(dep_path, revision):
 
 def get_git_revision(dep_path, revision):
   """Convert the revision argument passed to the script to a git revision."""
+  svn_revision = None
   if revision.startswith('r'):
-    result = convert_svn_revision(dep_path, revision[1:])
+    git_revision = convert_svn_revision(dep_path, revision[1:])
+    svn_revision = revision[1:]
   elif re.search('[a-fA-F]', revision):
-    result = verify_git_revision(dep_path, revision)
+    git_revision = verify_git_revision(dep_path, revision)
+    svn_revision = get_svn_revision(dep_path, git_revision)
   elif len(revision) > 6:
-    result = verify_git_revision(dep_path, revision)
-    if not result:
-      result = convert_svn_revision(dep_path, revision)
+    git_revision = verify_git_revision(dep_path, revision)
+    if git_revision:
+      svn_revision = get_svn_revision(dep_path, git_revision)
+    else:
+      git_revision = convert_svn_revision(dep_path, revision)
+      svn_revision = revision
   else:
     try:
-      result = convert_svn_revision(dep_path, revision)
+      git_revision = convert_svn_revision(dep_path, revision)
+      svn_revision = revision
     except RuntimeError:
-      result = verify_git_revision(dep_path, revision)
-      if not result:
+      git_revision = verify_git_revision(dep_path, revision)
+      if not git_revision:
         raise
-  return result
+      svn_revision = get_svn_revision(dep_path, git_revision)
+  return git_revision, svn_revision
 
 
 def ast_err_msg(node):
@@ -186,7 +212,7 @@ def update_string(deps_lines, string_node, git_revision):
     tail_idx = start_idx + len(prefix)
     old_rev = prefix
   deps_lines[line_idx] = line[:start_idx] + git_revision + line[tail_idx:]
-  return old_rev
+  return line_idx
 
 
 def update_binop(deps_lines, deps_ast, binop_node, git_revision):
@@ -229,7 +255,15 @@ def generate_commit_message(deps_section, dep_name, new_rev):
       Summary of changes available at:
           %s\n''' % (dep_name, old_rev, new_rev, url))
 
-def update_deps(soln_path, dep_name, new_rev):
+def update_deps_entry(deps_lines, deps_ast, value_node, new_rev, comment):
+  line_idx = update_node(deps_lines, deps_ast, value_node, new_rev)
+  (content, _, _) = deps_lines[line_idx].partition('#')
+  if comment:
+    deps_lines[line_idx] = '%s # %s' % (content.rstrip(), comment)
+  else:
+    deps_lines[line_idx] = content.rstrip()
+
+def update_deps(soln_path, dep_name, new_rev, comment):
   """Update the DEPS file with the new git revision."""
   commit_msg = ''
   deps_file = os.path.join(soln_path, 'DEPS')
@@ -247,7 +281,7 @@ def update_deps(soln_path, dep_name, new_rev):
   dep_idx = find_dict_index(deps_node, dep_name)
   if dep_idx is not None:
     value_node = deps_node.values[dep_idx]
-    update_node(deps_lines, deps_ast, value_node, new_rev)
+    update_deps_entry(deps_lines, deps_ast, value_node, new_rev, comment)
     commit_msg = generate_commit_message(deps_locals['deps'], dep_name, new_rev)
   deps_os_node = find_deps_section(deps_ast, 'deps_os')
   if deps_os_node:
@@ -258,7 +292,7 @@ def update_deps(soln_path, dep_name, new_rev):
         if value_node.__class__ is ast.Name and value_node.id == 'None':
           pass
         else:
-          update_node(deps_lines, deps_ast, value_node, new_rev)
+          update_deps_entry(deps_lines, deps_ast, value_node, new_rev, comment)
           commit_msg = generate_commit_message(
               deps_locals['deps_os'][os_name], dep_name, new_rev)
   if commit_msg:
@@ -286,9 +320,10 @@ def main(argv):
   soln = get_solution(gclient_root, dep_path)
   soln_path = os.path.relpath(os.path.join(gclient_root, soln['name']))
   dep_name = posix_path(os.path.relpath(dep_path, gclient_root))
-  new_rev = get_git_revision(dep_path, revision)
-  assert new_rev, 'Could not find git revision matching %s' % revision
-  return update_deps(soln_path, dep_name, new_rev)
+  (git_rev, svn_rev) = get_git_revision(dep_path, revision)
+  comment = ('from svn revision %s' % svn_rev) if svn_rev else None
+  assert git_rev, 'Could not find git revision matching %s.' % revision
+  return update_deps(soln_path, dep_name, git_rev, comment)
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))
