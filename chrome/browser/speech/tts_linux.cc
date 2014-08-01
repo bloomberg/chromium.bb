@@ -12,8 +12,8 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/speech/tts_platform.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_switches.h"
 
 #include "library_loaders/libspeechd.h"
 

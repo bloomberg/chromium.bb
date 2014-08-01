@@ -915,6 +915,13 @@ const char kEnableVaapiAcceleratedVideoEncode[] =
     "enable-vaapi-accelerated-video-encode";
 #endif
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// Allows sending text-to-speech requests to speech-dispatcher, a common
+// Linux speech service. Because it's buggy, the user must explicitly
+// enable it so that visiting a random webpage can't cause instability.
+const char kEnableSpeechDispatcher[] = "enable-speech-dispatcher";
+#endif
+
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 // Disables support for Core Animation plugins. This is triggered when
 // accelerated compositing is disabled. See http://crbug.com/122430 .

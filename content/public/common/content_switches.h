@@ -265,6 +265,10 @@ CONTENT_EXPORT extern const char kDisablePanelFitting[];
 CONTENT_EXPORT extern const char kEnableVaapiAcceleratedVideoEncode[];
 #endif
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+CONTENT_EXPORT extern const char kEnableSpeechDispatcher[];
+#endif
+
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 extern const char kDisableCoreAnimationPlugins[];
 #endif

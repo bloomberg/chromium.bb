@@ -1285,11 +1285,6 @@ const char kPasswordStore[]                 = "password-store";
 // and sanity checks are made to avoid corrupting the profile.
 // The browser exits after migration is complete.
 const char kMigrateDataDirForSxS[]          = "migrate-data-dir-for-sxs";
-
-// Allows sending text-to-speech requests to speech-dispatcher, a common
-// Linux speech service. Because it's buggy, the user must explicitly
-// enable it so that visiting a random webpage can't cause instability.
-const char kEnableSpeechDispatcher[] = "enable-speech-dispatcher";
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)
