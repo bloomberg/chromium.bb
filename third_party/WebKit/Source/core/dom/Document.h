@@ -1238,7 +1238,7 @@ private:
     OwnPtrWillBeMember<FormController> m_formController;
 
     TextLinkColors m_textLinkColors;
-    const OwnPtr<VisitedLinkState> m_visitedLinkState;
+    const OwnPtrWillBeMember<VisitedLinkState> m_visitedLinkState;
 
     bool m_visuallyOrdered;
     ReadyState m_readyState;

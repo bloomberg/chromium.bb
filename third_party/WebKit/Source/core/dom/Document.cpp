@@ -5839,6 +5839,7 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_ranges);
     visitor->trace(m_styleEngine);
     visitor->trace(m_formController);
+    visitor->trace(m_visitedLinkState);
     visitor->trace(m_domWindow);
     visitor->trace(m_fetcher);
     visitor->trace(m_parser);

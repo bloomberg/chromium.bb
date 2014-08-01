@@ -38,12 +38,12 @@ namespace blink {
 
 class Document;
 
-class VisitedLinkState {
-    WTF_MAKE_FAST_ALLOCATED;
+class VisitedLinkState : public NoBaseWillBeGarbageCollectedFinalized<VisitedLinkState> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<VisitedLinkState> create(const Document& document)
+    static PassOwnPtrWillBeRawPtr<VisitedLinkState> create(const Document& document)
     {
-        return adoptPtr(new VisitedLinkState(document));
+        return adoptPtrWillBeNoop(new VisitedLinkState(document));
     }
 
     void invalidateStyleForAllLinks();
@@ -56,12 +56,15 @@ public:
         return NotInsideLink;
     }
 
+    void trace(Visitor*);
+
 private:
     explicit VisitedLinkState(const Document&);
+    const Document& document() const { return *m_document; }
 
     EInsideLink determineLinkStateSlowCase(const Element&);
 
-    const Document& m_document;
+    RawPtrWillBeMember<const Document> m_document;
     HashSet<LinkHash, LinkHashHash> m_linksCheckedForVisitedState;
 };
 
