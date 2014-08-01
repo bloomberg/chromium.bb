@@ -31,6 +31,9 @@ NSString* const kChromiumProfilePathPboardType =
 // of one profile.
 NSString* const kChromiumBookmarkId = @"ChromiumBookmarkId";
 
+// Internal bookmark meta info dictionary for a bookmark node.
+NSString* const kChromiumBookmarkMetaInfo = @"ChromiumBookmarkMetaInfo";
+
 // Mac WebKit uses this type, declared in
 // WebKit/mac/History/WebURLsWithTitles.h.
 NSString* const kCrWebURLsWithTitlesPboardType = @"WebURLsWithTitlesPboardType";
@@ -42,6 +45,17 @@ NSString* const kWebBookmarkTypeList = @"WebBookmarkTypeList";
 
 NSString* const kWebBookmarkTypeLeaf = @"WebBookmarkTypeLeaf";
 
+BookmarkNode::MetaInfoMap MetaInfoMapFromDictionary(NSDictionary* dictionary) {
+  BookmarkNode::MetaInfoMap meta_info_map;
+
+  for (NSString* key in dictionary) {
+    meta_info_map[base::SysNSStringToUTF8(key)] =
+        base::SysNSStringToUTF8([dictionary objectForKey:key]);
+  }
+
+  return meta_info_map;
+}
+
 void ConvertPlistToElements(NSArray* input,
                             std::vector<BookmarkNodeData::Element>& elements) {
   NSUInteger len = [input count];
@@ -51,6 +65,12 @@ void ConvertPlistToElements(NSArray* input,
     int64 node_id =
         [[pboardBookmark objectForKey:kChromiumBookmarkId] longLongValue];
     new_node->set_id(node_id);
+
+    NSDictionary* metaInfoDictionary =
+        [pboardBookmark objectForKey:kChromiumBookmarkMetaInfo];
+    if (metaInfoDictionary)
+      new_node->SetMetaInfoMap(MetaInfoMapFromDictionary(metaInfoDictionary));
+
     BOOL is_folder = [[pboardBookmark objectForKey:kWebBookmarkType]
         isEqualToString:kWebBookmarkTypeList];
     if (is_folder) {
@@ -67,9 +87,10 @@ void ConvertPlistToElements(NSArray* input,
       new_node->set_url(GURL(base::SysNSStringToUTF8(urlString)));
     }
     BookmarkNodeData::Element e = BookmarkNodeData::Element(new_node.get());
-    if(is_folder)
+    if (is_folder) {
       ConvertPlistToElements([pboardBookmark objectForKey:@"Children"],
                              e.children);
+    }
     elements.push_back(e);
   }
 }
@@ -135,11 +156,26 @@ bool ReadNSURLPboardType(NSPasteboard* pb,
   return true;
 }
 
+NSDictionary* DictionaryFromBookmarkMetaInfo(
+    const BookmarkNode::MetaInfoMap& meta_info_map) {
+  NSMutableDictionary* dictionary = [NSMutableDictionary dictionary];
+
+  for (BookmarkNode::MetaInfoMap::const_iterator it = meta_info_map.begin();
+      it != meta_info_map.end(); ++it) {
+    [dictionary setObject:base::SysUTF8ToNSString(it->second)
+                   forKey:base::SysUTF8ToNSString(it->first)];
+  }
+
+  return dictionary;
+}
+
 NSArray* GetPlistForBookmarkList(
     const std::vector<BookmarkNodeData::Element>& elements) {
   NSMutableArray* plist = [NSMutableArray array];
   for (size_t i = 0; i < elements.size(); ++i) {
     BookmarkNodeData::Element element = elements[i];
+    NSDictionary* metaInfoDictionary =
+        DictionaryFromBookmarkMetaInfo(element.meta_info_map);
     if (element.is_url) {
       NSString* title = base::SysUTF16ToNSString(element.title);
       NSString* url = base::SysUTF8ToNSString(element.url.spec());
@@ -152,6 +188,7 @@ NSArray* GetPlistForBookmarkList(
           url, @"URLString",
           kWebBookmarkTypeLeaf, kWebBookmarkType,
           idNum, kChromiumBookmarkId,
+          metaInfoDictionary, kChromiumBookmarkMetaInfo,
           nil];
       [plist addObject:object];
     } else {
@@ -164,6 +201,7 @@ NSArray* GetPlistForBookmarkList(
           children, @"Children",
           kWebBookmarkTypeList, kWebBookmarkType,
           idNum, kChromiumBookmarkId,
+          metaInfoDictionary, kChromiumBookmarkMetaInfo,
           nil];
       [plist addObject:object];
     }

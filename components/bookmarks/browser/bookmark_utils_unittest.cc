@@ -285,6 +285,43 @@ TEST_F(BookmarkUtilsTest, CopyPaste) {
   EXPECT_FALSE(CanPasteFromClipboard(model.get(), model->bookmark_bar_node()));
 }
 
+TEST_F(BookmarkUtilsTest, CopyPasteMetaInfo) {
+  test::TestBookmarkClient client;
+  scoped_ptr<BookmarkModel> model(client.CreateModel(false));
+  const BookmarkNode* node = model->AddURL(model->other_node(),
+                                           0,
+                                           ASCIIToUTF16("foo bar"),
+                                           GURL("http://www.google.com"));
+  model->SetNodeMetaInfo(node, "somekey", "somevalue");
+  model->SetNodeMetaInfo(node, "someotherkey", "someothervalue");
+
+  // Copy a node to the clipboard.
+  std::vector<const BookmarkNode*> nodes;
+  nodes.push_back(node);
+  CopyToClipboard(model.get(), nodes, false);
+
+  // Paste node to a different folder.
+  const BookmarkNode* folder =
+      model->AddFolder(model->bookmark_bar_node(), 0, ASCIIToUTF16("Folder"));
+  EXPECT_EQ(0, folder->child_count());
+
+  // And make sure we can paste a bookmark from the clipboard.
+  EXPECT_TRUE(CanPasteFromClipboard(model.get(), folder));
+
+  PasteFromClipboard(model.get(), folder, 0);
+  ASSERT_EQ(1, folder->child_count());
+
+  // Verify that the pasted node contains the same meta info.
+  const BookmarkNode* pasted = folder->GetChild(0);
+  ASSERT_TRUE(pasted->GetMetaInfoMap());
+  EXPECT_EQ(2u, pasted->GetMetaInfoMap()->size());
+  std::string value;
+  EXPECT_TRUE(pasted->GetMetaInfo("somekey", &value));
+  EXPECT_EQ("somevalue", value);
+  EXPECT_TRUE(pasted->GetMetaInfo("someotherkey", &value));
+  EXPECT_EQ("someothervalue", value);
+}
+
 TEST_F(BookmarkUtilsTest, CutToClipboard) {
   test::TestBookmarkClient client;
   scoped_ptr<BookmarkModel> model(client.CreateModel(false));
