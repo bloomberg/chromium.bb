@@ -4,9 +4,20 @@
 
 #include "ui/ozone/platform/test/test_event_factory.h"
 
+#include "ui/events/platform/platform_event_source.h"
+
 namespace ui {
 
-TestEventFactory::TestEventFactory() {}
+class TestPlatformEventSource : public PlatformEventSource {
+ public:
+  TestPlatformEventSource() {}
+};
+
+TestEventFactory::TestEventFactory() {
+  // This unbreaks tests that create their own.
+  if (!PlatformEventSource::GetInstance())
+    event_source_.reset(new TestPlatformEventSource);
+}
 
 TestEventFactory::~TestEventFactory() {}
 
