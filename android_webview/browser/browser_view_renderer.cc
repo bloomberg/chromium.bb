@@ -74,7 +74,17 @@ class TracedValue : public base::debug::ConvertableToTraceFormat {
 }  // namespace
 
 // static
-void BrowserViewRenderer::CalculateTileMemoryPolicy() {
+void BrowserViewRenderer::CalculateTileMemoryPolicy(bool use_zero_copy) {
+  if (!use_zero_copy) {
+    // Use chrome's default tile size, which varies from 256 to 512.
+    // Be conservative here and use the smallest tile size possible.
+    g_tile_area = 256 * 256;
+
+    // Also use a high tile limit since there are no file descriptor issues.
+    GlobalTileManager::GetInstance()->SetTileLimit(1000);
+    return;
+  }
+
   CommandLine* cl = CommandLine::ForCurrentProcess();
   const char kDefaultTileSize[] = "384";
 

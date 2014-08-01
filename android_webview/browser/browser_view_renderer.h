@@ -60,7 +60,7 @@ class BrowserViewRendererJavaHelper {
 class BrowserViewRenderer : public content::SynchronousCompositorClient,
                             public GlobalTileManagerClient {
  public:
-  static void CalculateTileMemoryPolicy();
+  static void CalculateTileMemoryPolicy(bool use_zero_copy);
 
   BrowserViewRenderer(
       BrowserViewRendererClient* client,

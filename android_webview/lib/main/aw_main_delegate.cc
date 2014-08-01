@@ -49,13 +49,17 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   content::SetContentClient(&content_client_);
 
   CommandLine* cl = CommandLine::ForCurrentProcess();
-  if (gpu_memory_buffer_factory_.get()->Initialize()) {
+  bool zero_copy_disabled_by_switch = cl->HasSwitch(switches::kDisableZeroCopy);
+  bool use_zero_copy = !zero_copy_disabled_by_switch &&
+                       gpu_memory_buffer_factory_.get()->Initialize();
+
+  if (use_zero_copy) {
     cl->AppendSwitch(switches::kEnableZeroCopy);
-  } else {
-    LOG(WARNING) << "Failed to initialize GpuMemoryBuffer factory";
+  } else if (!zero_copy_disabled_by_switch) {
+    cl->AppendSwitch(switches::kDisableZeroCopy);
   }
 
-  BrowserViewRenderer::CalculateTileMemoryPolicy();
+  BrowserViewRenderer::CalculateTileMemoryPolicy(use_zero_copy);
 
   cl->AppendSwitch(switches::kEnableBeginFrameScheduling);
   cl->AppendSwitch(switches::kEnableImplSidePainting);

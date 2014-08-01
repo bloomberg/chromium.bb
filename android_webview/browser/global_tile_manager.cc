@@ -9,8 +9,10 @@
 namespace android_webview {
 
 namespace {
+
 base::LazyInstance<GlobalTileManager>::Leaky g_tile_manager =
     LAZY_INSTANCE_INITIALIZER;
+
 // The soft limit of the number of file descriptors per process is 1024 on
 // Android and gralloc buffers may not be the only thing that uses file
 // descriptors. For each tile, there is a gralloc buffer backing it, which
@@ -58,6 +60,10 @@ size_t GlobalTileManager::Evict(size_t desired_num_tiles, Key key) {
   return total_evicted_tiles;
 }
 
+void GlobalTileManager::SetTileLimit(size_t num_tiles_limit) {
+  num_tiles_limit_ = num_tiles_limit;
+}
+
 void GlobalTileManager::RequestTiles(size_t new_num_of_tiles, Key key) {
   DCHECK(IsConsistent());
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
@@ -65,30 +71,31 @@ void GlobalTileManager::RequestTiles(size_t new_num_of_tiles, Key key) {
   size_t num_of_active_views = std::distance(mru_list_.begin(), key) + 1;
   size_t tiles_per_view_limit;
   if (num_of_active_views == 0)
-    tiles_per_view_limit = kNumTilesLimit;
+    tiles_per_view_limit = num_tiles_limit_;
   else
-    tiles_per_view_limit = kNumTilesLimit / num_of_active_views;
+    tiles_per_view_limit = num_tiles_limit_ / num_of_active_views;
   new_num_of_tiles = std::min(new_num_of_tiles, tiles_per_view_limit);
   size_t new_total_allocated_tiles =
       total_allocated_tiles_ - old_num_of_tiles + new_num_of_tiles;
   // Has enough tiles to satisfy the request.
-  if (new_total_allocated_tiles <= kNumTilesLimit) {
+  if (new_total_allocated_tiles <= num_tiles_limit_) {
     total_allocated_tiles_ = new_total_allocated_tiles;
     (*key)->SetNumTiles(new_num_of_tiles, false);
     return;
   }
 
   // Does not have enough tiles. Now evict other clients' tiles.
-  size_t tiles_left = kNumTilesLimit - total_allocated_tiles_;
+  size_t tiles_left = num_tiles_limit_ - total_allocated_tiles_;
 
-  size_t evicted_tiles = Evict(new_total_allocated_tiles - kNumTilesLimit, key);
-  if (evicted_tiles >= new_total_allocated_tiles - kNumTilesLimit) {
+  size_t evicted_tiles =
+      Evict(new_total_allocated_tiles - num_tiles_limit_, key);
+  if (evicted_tiles >= new_total_allocated_tiles - num_tiles_limit_) {
     new_total_allocated_tiles -= evicted_tiles;
     total_allocated_tiles_ = new_total_allocated_tiles;
     (*key)->SetNumTiles(new_num_of_tiles, false);
     return;
   } else {
-    total_allocated_tiles_ = kNumTilesLimit;
+    total_allocated_tiles_ = num_tiles_limit_;
     (*key)->SetNumTiles(tiles_left + old_num_of_tiles + evicted_tiles, false);
     return;
   }
@@ -112,8 +119,8 @@ void GlobalTileManager::DidUse(Key key) {
   mru_list_.splice(mru_list_.begin(), mru_list_, key);
 }
 
-GlobalTileManager::GlobalTileManager() {
-  total_allocated_tiles_ = 0;
+GlobalTileManager::GlobalTileManager()
+    : num_tiles_limit_(kNumTilesLimit), total_allocated_tiles_(0) {
 }
 
 GlobalTileManager::~GlobalTileManager() {
@@ -126,8 +133,8 @@ bool GlobalTileManager::IsConsistent() const {
     total_tiles += (*it)->GetNumTiles();
   }
 
-  bool is_consistent =
-      (total_tiles <= kNumTilesLimit && total_tiles == total_allocated_tiles_);
+  bool is_consistent = (total_tiles <= num_tiles_limit_ &&
+                        total_tiles == total_allocated_tiles_);
 
   return is_consistent;
 }
