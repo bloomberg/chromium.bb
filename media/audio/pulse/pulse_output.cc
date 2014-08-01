@@ -124,26 +124,31 @@ void PulseAudioOutputStream::FulfillWriteRequest(size_t requested_bytes) {
     CHECK_GE(pa_stream_begin_write(pa_stream_, &buffer, &bytes_to_fill), 0);
     CHECK_EQ(bytes_to_fill, static_cast<size_t>(params_.GetBytesPerBuffer()));
 
+    // NOTE: |bytes_to_fill| may be larger than |requested_bytes| now, this is
+    // okay since pa_stream_begin_write() is the authoritative source on how
+    // much can be written.
+
     int frames_filled = 0;
     if (source_callback_) {
-      uint32 hardware_delay = pulse::GetHardwareLatencyInBytes(
-          pa_stream_, params_.sample_rate(),
-          params_.GetBytesPerFrame());
+      const uint32 hardware_delay = pulse::GetHardwareLatencyInBytes(
+          pa_stream_, params_.sample_rate(), params_.GetBytesPerFrame());
       frames_filled = source_callback_->OnMoreData(
           audio_bus_.get(), AudioBuffersState(0, hardware_delay));
-    }
 
-    // Zero any unfilled data so it plays back as silence.
-    if (frames_filled < audio_bus_->frames()) {
-      audio_bus_->ZeroFramesPartial(
-          frames_filled, audio_bus_->frames() - frames_filled);
-    }
+      // Zero any unfilled data so it plays back as silence.
+      if (frames_filled < audio_bus_->frames()) {
+        audio_bus_->ZeroFramesPartial(
+            frames_filled, audio_bus_->frames() - frames_filled);
+      }
 
-    // Note: If this ever changes to output raw float the data must be clipped
-    // and sanitized since it may come from an untrusted source such as NaCl.
-    audio_bus_->Scale(volume_);
-    audio_bus_->ToInterleaved(
-        audio_bus_->frames(), params_.bits_per_sample() / 8, buffer);
+      // Note: If this ever changes to output raw float the data must be clipped
+      // and sanitized since it may come from an untrusted source such as NaCl.
+      audio_bus_->Scale(volume_);
+      audio_bus_->ToInterleaved(
+          audio_bus_->frames(), params_.bits_per_sample() / 8, buffer);
+    } else {
+      memset(buffer, 0, bytes_to_fill);
+    }
 
     if (pa_stream_write(pa_stream_, buffer, bytes_to_fill, NULL, 0LL,
                         PA_SEEK_RELATIVE) < 0) {
@@ -152,7 +157,23 @@ void PulseAudioOutputStream::FulfillWriteRequest(size_t requested_bytes) {
       }
     }
 
+    // NOTE: As mentioned above, |bytes_remaining| may be negative after this.
     bytes_remaining -= bytes_to_fill;
+
+    // Despite telling Pulse to only request certain buffer sizes, it will not
+    // always obey.  In these cases we need to avoid back to back reads from
+    // the renderer as it won't have time to complete the request.
+    //
+    // We can't defer the callback as Pulse will never call us again until we've
+    // satisfied writing the requested number of bytes.
+    //
+    // TODO(dalecurtis): It might be worth choosing the sleep duration based on
+    // the hardware latency return above.  Watch http://crbug.com/366433 to see
+    // if a more complicated wait process is necessary.  We may also need to see
+    // if a PostDelayedTask should be used here to avoid blocking the PulseAudio
+    // command thread.
+    if (source_callback_ && bytes_remaining > 0)
+      base::PlatformThread::Sleep(params_.GetBufferDuration() / 4);
   }
 }
 

@@ -274,9 +274,13 @@ bool CreateOutputStream(pa_threaded_mainloop** mainloop,
   // |minreq| bytes.  |tlength| should be a multiple of |minreq|; too low and
   // Pulse will issue callbacks way too fast, too high and we don't get
   // callbacks frequently enough.
+  //
+  // Setting |minreq| to the exact buffer size leads to more callbacks than
+  // necessary, so we've clipped it to half the buffer size.  Regardless of the
+  // requested amount, we'll always fill |params.GetBytesPerBuffer()| though.
   pa_buffer_attr pa_buffer_attributes;
   pa_buffer_attributes.maxlength = static_cast<uint32_t>(-1);
-  pa_buffer_attributes.minreq = params.GetBytesPerBuffer();
+  pa_buffer_attributes.minreq = params.GetBytesPerBuffer() / 2;
   pa_buffer_attributes.prebuf = static_cast<uint32_t>(-1);
   pa_buffer_attributes.tlength = params.GetBytesPerBuffer() * 3;
   pa_buffer_attributes.fragsize = static_cast<uint32_t>(-1);
