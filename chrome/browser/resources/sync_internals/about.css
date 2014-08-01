@@ -93,6 +93,14 @@
   width: 300px;
 }
 
+#dump-status {
+  margin: 2px;
+}
+
+#import-status {
+  margin: 2px;
+}
+
 #traffic-event-container {
   border: 1px solid;
   height: 500px;
