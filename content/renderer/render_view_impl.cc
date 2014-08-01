@@ -462,11 +462,6 @@ static bool ShouldUseAcceleratedFixedRootBackground(float device_scale_factor) {
   return DeviceScaleEnsuresTextQuality(device_scale_factor);
 }
 
-static bool ShouldUseExpandedHeuristicsForGpuRasterization() {
-  return base::FieldTrialList::FindFullName(
-             "GpuRasterizationExpandedContentWhitelist") == "Enabled";
-}
-
 static FaviconURL::IconType ToFaviconType(blink::WebIconURL::Type type) {
   switch (type) {
     case blink::WebIconURL::TypeFavicon:
@@ -817,8 +812,6 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
       ShouldUseAcceleratedFixedRootBackground(device_scale_factor_));
   webview()->settings()->setCompositedScrollingForFramesEnabled(
       ShouldUseCompositedScrollingForFrames(device_scale_factor_));
-  webview()->settings()->setUseExpandedHeuristicsForGpuRasterization(
-      ShouldUseExpandedHeuristicsForGpuRasterization());
 
   ApplyWebPreferences(webkit_preferences_, webview());
 
@@ -1121,6 +1114,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setViewportEnabled(prefs.viewport_enabled);
   settings->setLoadWithOverviewMode(prefs.initialize_at_minimum_page_scale);
   settings->setViewportMetaEnabled(prefs.viewport_meta_enabled);
+  settings->setUseExpandedHeuristicsForGpuRasterization(
+      prefs.use_expanded_heuristics_for_gpu_rasterization);
   settings->setMainFrameResizesAreOrientationChanges(
       prefs.main_frame_resizes_are_orientation_changes);
 

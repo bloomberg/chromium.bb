@@ -132,6 +132,7 @@ struct CONTENT_EXPORT WebPreferences {
   bool supports_multiple_windows;
   bool viewport_enabled;
   bool viewport_meta_enabled;
+  bool use_expanded_heuristics_for_gpu_rasterization;
   bool main_frame_resizes_are_orientation_changes;
   bool initialize_at_minimum_page_scale;
   bool smart_insert_delete_enabled;

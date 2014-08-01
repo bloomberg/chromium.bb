@@ -132,4 +132,9 @@ GPU_BLACKLIST_FEATURE_TEST(GpuRasterizationFieldTrial,
                            "gpu_rasterization_field_trial",
                            GPU_FEATURE_TYPE_GPU_RASTERIZATION_FIELD_TRIAL)
 
+GPU_BLACKLIST_FEATURE_TEST(
+    GpuRasterizationExpandedHeuristics,
+    "gpu_rasterization_expanded_heuristics",
+    GPU_FEATURE_TYPE_GPU_RASTERIZATION_EXPANDED_HEURISTICS)
+
 }  // namespace gpu

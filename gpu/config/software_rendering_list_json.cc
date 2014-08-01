@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "8.9",
+  "version": "8.10",
   "entries": [
     {
       "id": 1,
@@ -1171,6 +1171,25 @@ LONG_STRING_CONST(
       ],
       "features": [
         "gpu_rasterization_field_trial"
+      ]
+    },
+    {
+      "id": 98,
+      "description": "Whitelist for using GPU rasterization for a broader set of content",
+      "cr_bugs": [399306],
+      "exceptions": [
+        {
+          "os": {
+            "type": "android",
+            "version": {
+              "op": ">=",
+              "value": "4.4.99"
+            }
+          }
+        }
+      ],
+      "features": [
+        "gpu_rasterization_expanded_heuristics"
       ]
     }
   ]
