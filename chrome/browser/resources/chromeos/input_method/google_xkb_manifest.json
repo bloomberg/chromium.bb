@@ -19,7 +19,7 @@
     "page": "background.html",
     "persistent": false
   },
-  "ime_path": "/usr/share/chromeos-assets/input_methods/google_xkb",
+  "ime_path": "/usr/share/chromeos-assets/input_methods/input_tools",
   "input_components": [
     {
       "name": "__MSG_keyboard_us__",
