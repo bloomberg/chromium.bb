@@ -217,7 +217,7 @@ class FakeGCDApiFlowFactory
 
 class GcdPrivateAPITest : public ExtensionApiTest {
  public:
-  GcdPrivateAPITest() : url_fetcher_factory_(NULL) {
+  GcdPrivateAPITest() : url_fetcher_factory_(&url_fetcher_impl_factory_) {
 #if defined(ENABLE_MDNS)
     test_service_discovery_client_ =
         new local_discovery::TestServiceDiscoveryClient();
@@ -234,6 +234,7 @@ class GcdPrivateAPITest : public ExtensionApiTest {
 
  protected:
   FakeGCDApiFlowFactory api_flow_factory_;
+  net::URLFetcherImplFactory url_fetcher_impl_factory_;
   net::FakeURLFetcherFactory url_fetcher_factory_;
 
 #if defined(ENABLE_MDNS)
@@ -289,8 +290,7 @@ IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, AddAfter) {
       RunExtensionSubtest("gcd_private/api", "receive_new_device.html"));
 }
 
-// http://crbug.com/312328
-IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, DISABLED_AddRemove) {
+IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, AddRemove) {
   test_service_discovery_client_->SimulateReceive(kAnnouncePacket,
                                                   sizeof(kAnnouncePacket));
 
