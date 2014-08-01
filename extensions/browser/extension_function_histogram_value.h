@@ -912,7 +912,6 @@ enum HistogramValue {
   EXPERIENCESAMPLINGPRIVATE_GETBROWSERINFO,
   EASYUNLOCKPRIVATE_SEEKBLUETOOTHDEVICEBYADDRESS,
   EASYUNLOCKPRIVATE_GETSTRINGS,
-  GCDPRIVATE_GETPREFETCHEDWIFINAMELIST,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms/histograms.xml.
   ENUM_BOUNDARY

@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/local_discovery/gcd_api_flow.h"
-#include "chrome/browser/local_discovery/wifi/mock_wifi_manager.h"
 #include "chrome/common/extensions/api/mdns.h"
 #include "extensions/common/switches.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -21,8 +20,6 @@
 #endif  // ENABLE_MDNS
 
 namespace api = extensions::api;
-
-using testing::Invoke;
 
 namespace {
 
@@ -235,29 +232,6 @@ class GcdPrivateAPITest : public ExtensionApiTest {
         "ddchlicdkolnonkihahngkmmmjnjlkkf");
   }
 
-#if defined(ENABLE_WIFI_BOOTSTRAPPING)
-  virtual void OnCreateWifiManager() {
-    wifi_manager_ = wifi_manager_factory_.GetLastCreatedWifiManager();
-
-    EXPECT_CALL(*wifi_manager_, Start());
-
-    EXPECT_CALL(*wifi_manager_,
-                RequestNetworkCredentialsInternal("SuccessNetwork"))
-        .WillOnce(Invoke(this, &GcdPrivateAPITest::RespondToNetwork));
-
-    EXPECT_CALL(*wifi_manager_,
-                RequestNetworkCredentialsInternal("FailureNetwork"))
-        .WillOnce(Invoke(this, &GcdPrivateAPITest::RespondToNetwork));
-  }
-
-  void RespondToNetwork(const std::string& network) {
-    bool success = (network == "SuccessNetwork");
-
-    wifi_manager_->CallRequestNetworkCredentialsCallback(
-        success, network, success ? "SuccessPass" : "");
-  }
-#endif
-
  protected:
   FakeGCDApiFlowFactory api_flow_factory_;
   net::FakeURLFetcherFactory url_fetcher_factory_;
@@ -266,11 +240,6 @@ class GcdPrivateAPITest : public ExtensionApiTest {
   scoped_refptr<local_discovery::TestServiceDiscoveryClient>
       test_service_discovery_client_;
 #endif  // ENABLE_MDNS
-
-#if defined(ENABLE_WIFI_BOOTSTRAPPING)
-  local_discovery::wifi::MockWifiManagerFactory wifi_manager_factory_;
-  local_discovery::wifi::MockWifiManager* wifi_manager_;
-#endif
 };
 
 IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, GetCloudList) {
@@ -349,20 +318,5 @@ IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, SendQuery) {
 }
 
 #endif  // ENABLE_MDNS
-
-#if defined(ENABLE_WIFI_BOOTSTRAPPING)
-
-IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, WifiMessage) {
-  EXPECT_TRUE(RunExtensionSubtest("gcd_private/api", "wifi_message.html"));
-}
-
-IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, WifiPasswords) {
-  EXPECT_CALL(wifi_manager_factory_, WifiManagerCreated())
-      .WillOnce(Invoke(this, &GcdPrivateAPITest::OnCreateWifiManager));
-
-  EXPECT_TRUE(RunExtensionSubtest("gcd_private/api", "wifi_password.html"));
-}
-
-#endif  // ENABLE_WIFI_BOOTSTRAPPING
 
 }  // namespace
