@@ -82,6 +82,8 @@ class MockWifiManagerFactory : public WifiManagerFactory {
 
   MockWifiManager* GetLastCreatedWifiManager();
 
+  MOCK_METHOD0(WifiManagerCreated, void());
+
  private:
   MockWifiManager* last_created_manager_;
 };
