@@ -911,6 +911,8 @@ void WizardController::SetStatusAreaVisible(bool visible) {
 }
 
 void WizardController::OnHIDScreenNecessityCheck(bool screen_needed) {
+  if (!oobe_display_)
+    return;
   if (screen_needed)
     ShowHIDDetectionScreen();
   else
