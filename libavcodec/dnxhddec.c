@@ -25,15 +25,17 @@
 #include "libavutil/imgutils.h"
 #include "libavutil/timer.h"
 #include "avcodec.h"
+#include "blockdsp.h"
 #include "get_bits.h"
 #include "dnxhddata.h"
-#include "dsputil.h"
+#include "idctdsp.h"
 #include "internal.h"
 #include "thread.h"
 
 typedef struct DNXHDContext {
     AVCodecContext *avctx;
     GetBitContext gb;
+    BlockDSPContext bdsp;
     int64_t cid;                        ///< compression id
     unsigned int width, height;
     unsigned int mb_width, mb_height;
@@ -41,7 +43,7 @@ typedef struct DNXHDContext {
     int cur_field;                      ///< current interlaced field
     VLC ac_vlc, dc_vlc, run_vlc;
     int last_dc[3];
-    DSPContext dsp;
+    IDCTDSPContext idsp;
     DECLARE_ALIGNED(16, int16_t, blocks)[12][64];
     ScanTable scantable;
     const CIDEntry *cid_table;
@@ -102,7 +104,7 @@ static int dnxhd_init_vlc(DNXHDContext *ctx, uint32_t cid)
                  ctx->cid_table->run_bits, 1, 1,
                  ctx->cid_table->run_codes, 2, 2, 0);
 
-        ff_init_scantable(ctx->dsp.idct_permutation, &ctx->scantable,
+        ff_init_scantable(ctx->idsp.idct_permutation, &ctx->scantable,
                           ff_zigzag_direct);
         ctx->cid = cid;
     }
@@ -142,7 +144,8 @@ static int dnxhd_decode_header(DNXHDContext *ctx, AVFrame *frame,
         ctx->avctx->pix_fmt = AV_PIX_FMT_YUV444P10;
         ctx->avctx->bits_per_raw_sample = 10;
         if (ctx->bit_depth != 10) {
-            ff_dsputil_init(&ctx->dsp, ctx->avctx);
+            ff_blockdsp_init(&ctx->bdsp, ctx->avctx);
+            ff_idctdsp_init(&ctx->idsp, ctx->avctx);
             ctx->bit_depth = 10;
             ctx->decode_dct_block = dnxhd_decode_dct_block_10_444;
         }
@@ -151,7 +154,8 @@ static int dnxhd_decode_header(DNXHDContext *ctx, AVFrame *frame,
         ctx->avctx->pix_fmt = AV_PIX_FMT_YUV422P10;
         ctx->avctx->bits_per_raw_sample = 10;
         if (ctx->bit_depth != 10) {
-            ff_dsputil_init(&ctx->dsp, ctx->avctx);
+            ff_blockdsp_init(&ctx->bdsp, ctx->avctx);
+            ff_idctdsp_init(&ctx->idsp, ctx->avctx);
             ctx->bit_depth = 10;
             ctx->decode_dct_block = dnxhd_decode_dct_block_10;
         }
@@ -159,7 +163,8 @@ static int dnxhd_decode_header(DNXHDContext *ctx, AVFrame *frame,
         ctx->avctx->pix_fmt = AV_PIX_FMT_YUV422P;
         ctx->avctx->bits_per_raw_sample = 8;
         if (ctx->bit_depth != 8) {
-            ff_dsputil_init(&ctx->dsp, ctx->avctx);
+            ff_blockdsp_init(&ctx->bdsp, ctx->avctx);
+            ff_idctdsp_init(&ctx->idsp, ctx->avctx);
             ctx->bit_depth = 8;
             ctx->decode_dct_block = dnxhd_decode_dct_block_8;
         }
@@ -338,12 +343,12 @@ static int dnxhd_decode_macroblock(DNXHDContext *ctx, AVFrame *frame,
     }
 
     for (i = 0; i < 8; i++) {
-        ctx->dsp.clear_block(ctx->blocks[i]);
+        ctx->bdsp.clear_block(ctx->blocks[i]);
         ctx->decode_dct_block(ctx, ctx->blocks[i], i, qscale);
     }
     if (ctx->is_444) {
         for (; i < 12; i++) {
-            ctx->dsp.clear_block(ctx->blocks[i]);
+            ctx->bdsp.clear_block(ctx->blocks[i]);
             ctx->decode_dct_block(ctx, ctx->blocks[i], i, qscale);
         }
     }
@@ -366,34 +371,34 @@ static int dnxhd_decode_macroblock(DNXHDContext *ctx, AVFrame *frame,
     dct_y_offset = dct_linesize_luma << 3;
     dct_x_offset = 8 << shift1;
     if (!ctx->is_444) {
-        ctx->dsp.idct_put(dest_y,                               dct_linesize_luma, ctx->blocks[0]);
-        ctx->dsp.idct_put(dest_y + dct_x_offset,                dct_linesize_luma, ctx->blocks[1]);
-        ctx->dsp.idct_put(dest_y + dct_y_offset,                dct_linesize_luma, ctx->blocks[4]);
-        ctx->dsp.idct_put(dest_y + dct_y_offset + dct_x_offset, dct_linesize_luma, ctx->blocks[5]);
+        ctx->idsp.idct_put(dest_y,                               dct_linesize_luma, ctx->blocks[0]);
+        ctx->idsp.idct_put(dest_y + dct_x_offset,                dct_linesize_luma, ctx->blocks[1]);
+        ctx->idsp.idct_put(dest_y + dct_y_offset,                dct_linesize_luma, ctx->blocks[4]);
+        ctx->idsp.idct_put(dest_y + dct_y_offset + dct_x_offset, dct_linesize_luma, ctx->blocks[5]);
 
         if (!(ctx->avctx->flags & CODEC_FLAG_GRAY)) {
             dct_y_offset = dct_linesize_chroma << 3;
-            ctx->dsp.idct_put(dest_u,                dct_linesize_chroma, ctx->blocks[2]);
-            ctx->dsp.idct_put(dest_v,                dct_linesize_chroma, ctx->blocks[3]);
-            ctx->dsp.idct_put(dest_u + dct_y_offset, dct_linesize_chroma, ctx->blocks[6]);
-            ctx->dsp.idct_put(dest_v + dct_y_offset, dct_linesize_chroma, ctx->blocks[7]);
+            ctx->idsp.idct_put(dest_u,                dct_linesize_chroma, ctx->blocks[2]);
+            ctx->idsp.idct_put(dest_v,                dct_linesize_chroma, ctx->blocks[3]);
+            ctx->idsp.idct_put(dest_u + dct_y_offset, dct_linesize_chroma, ctx->blocks[6]);
+            ctx->idsp.idct_put(dest_v + dct_y_offset, dct_linesize_chroma, ctx->blocks[7]);
         }
     } else {
-        ctx->dsp.idct_put(dest_y,                               dct_linesize_luma, ctx->blocks[0]);
-        ctx->dsp.idct_put(dest_y + dct_x_offset,                dct_linesize_luma, ctx->blocks[1]);
-        ctx->dsp.idct_put(dest_y + dct_y_offset,                dct_linesize_luma, ctx->blocks[6]);
-        ctx->dsp.idct_put(dest_y + dct_y_offset + dct_x_offset, dct_linesize_luma, ctx->blocks[7]);
+        ctx->idsp.idct_put(dest_y,                               dct_linesize_luma, ctx->blocks[0]);
+        ctx->idsp.idct_put(dest_y + dct_x_offset,                dct_linesize_luma, ctx->blocks[1]);
+        ctx->idsp.idct_put(dest_y + dct_y_offset,                dct_linesize_luma, ctx->blocks[6]);
+        ctx->idsp.idct_put(dest_y + dct_y_offset + dct_x_offset, dct_linesize_luma, ctx->blocks[7]);
 
         if (!(ctx->avctx->flags & CODEC_FLAG_GRAY)) {
             dct_y_offset = dct_linesize_chroma << 3;
-            ctx->dsp.idct_put(dest_u,                               dct_linesize_chroma, ctx->blocks[2]);
-            ctx->dsp.idct_put(dest_u + dct_x_offset,                dct_linesize_chroma, ctx->blocks[3]);
-            ctx->dsp.idct_put(dest_u + dct_y_offset,                dct_linesize_chroma, ctx->blocks[8]);
-            ctx->dsp.idct_put(dest_u + dct_y_offset + dct_x_offset, dct_linesize_chroma, ctx->blocks[9]);
-            ctx->dsp.idct_put(dest_v,                               dct_linesize_chroma, ctx->blocks[4]);
-            ctx->dsp.idct_put(dest_v + dct_x_offset,                dct_linesize_chroma, ctx->blocks[5]);
-            ctx->dsp.idct_put(dest_v + dct_y_offset,                dct_linesize_chroma, ctx->blocks[10]);
-            ctx->dsp.idct_put(dest_v + dct_y_offset + dct_x_offset, dct_linesize_chroma, ctx->blocks[11]);
+            ctx->idsp.idct_put(dest_u,                               dct_linesize_chroma, ctx->blocks[2]);
+            ctx->idsp.idct_put(dest_u + dct_x_offset,                dct_linesize_chroma, ctx->blocks[3]);
+            ctx->idsp.idct_put(dest_u + dct_y_offset,                dct_linesize_chroma, ctx->blocks[8]);
+            ctx->idsp.idct_put(dest_u + dct_y_offset + dct_x_offset, dct_linesize_chroma, ctx->blocks[9]);
+            ctx->idsp.idct_put(dest_v,                               dct_linesize_chroma, ctx->blocks[4]);
+            ctx->idsp.idct_put(dest_v + dct_x_offset,                dct_linesize_chroma, ctx->blocks[5]);
+            ctx->idsp.idct_put(dest_v + dct_y_offset,                dct_linesize_chroma, ctx->blocks[10]);
+            ctx->idsp.idct_put(dest_v + dct_y_offset + dct_x_offset, dct_linesize_chroma, ctx->blocks[11]);
         }
     }
 

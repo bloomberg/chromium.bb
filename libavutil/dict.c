@@ -76,8 +76,11 @@ int av_dict_set(AVDictionary **pm, const char *key, const char *value,
         m = *pm = av_mallocz(sizeof(*m));
 
     if (tag) {
-        if (flags & AV_DICT_DONT_OVERWRITE)
+        if (flags & AV_DICT_DONT_OVERWRITE) {
+            if (flags & AV_DICT_DONT_STRDUP_KEY) av_free(key);
+            if (flags & AV_DICT_DONT_STRDUP_VAL) av_free(value);
             return 0;
+        }
         if (flags & AV_DICT_APPEND)
             oldval = tag->value;
         else
@@ -87,10 +90,9 @@ int av_dict_set(AVDictionary **pm, const char *key, const char *value,
     } else {
         AVDictionaryEntry *tmp = av_realloc(m->elems,
                                             (m->count + 1) * sizeof(*m->elems));
-        if (tmp)
-            m->elems = tmp;
-        else
+        if (!tmp)
             return AVERROR(ENOMEM);
+        m->elems = tmp;
     }
     if (value) {
         if (flags & AV_DICT_DONT_STRDUP_KEY)

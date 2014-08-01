@@ -4,29 +4,17 @@
  *
  * This file is part of FFmpeg.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
  *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *
- *   * Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in
- *     the documentation and/or other materials provided with the
- *     distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 #include <fdk-aac/aacdecoder_lib.h>
@@ -38,7 +26,6 @@
 #include "internal.h"
 
 enum ConcealMethod {
-    CONCEAL_METHOD_DEFAULT              = -1,
     CONCEAL_METHOD_SPECTRAL_MUTING      =  0,
     CONCEAL_METHOD_NOISE_SUBSTITUTION   =  1,
     CONCEAL_METHOD_ENERGY_INTERPOLATION =  2,
@@ -55,8 +42,7 @@ typedef struct FDKAACDecContext {
 #define OFFSET(x) offsetof(FDKAACDecContext, x)
 #define AD AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_DECODING_PARAM
 static const AVOption fdk_aac_dec_options[] = {
-    { "conceal", "Error concealment method", OFFSET(conceal_method), AV_OPT_TYPE_INT, { .i64 = CONCEAL_METHOD_DEFAULT }, CONCEAL_METHOD_DEFAULT, CONCEAL_METHOD_NB - 1, AD, "conceal" },
-    { "default",  "Default",              0, AV_OPT_TYPE_CONST, { .i64 = CONCEAL_METHOD_DEFAULT },              INT_MIN, INT_MAX, AD, "conceal" },
+    { "conceal", "Error concealment method", OFFSET(conceal_method), AV_OPT_TYPE_INT, { .i64 = CONCEAL_METHOD_NOISE_SUBSTITUTION }, CONCEAL_METHOD_SPECTRAL_MUTING, CONCEAL_METHOD_NB - 1, AD, "conceal" },
     { "spectral", "Spectral muting",      0, AV_OPT_TYPE_CONST, { .i64 = CONCEAL_METHOD_SPECTRAL_MUTING },      INT_MIN, INT_MAX, AD, "conceal" },
     { "noise",    "Noise Substitution",   0, AV_OPT_TYPE_CONST, { .i64 = CONCEAL_METHOD_NOISE_SUBSTITUTION },   INT_MIN, INT_MAX, AD, "conceal" },
     { "energy",   "Energy Interpolation", 0, AV_OPT_TYPE_CONST, { .i64 = CONCEAL_METHOD_ENERGY_INTERPOLATION }, INT_MIN, INT_MAX, AD, "conceal" },
@@ -207,12 +193,10 @@ static av_cold int fdk_aac_decode_init(AVCodecContext *avctx)
         }
     }
 
-    if (s->conceal_method != CONCEAL_METHOD_DEFAULT) {
-        if ((err = aacDecoder_SetParam(s->handle, AAC_CONCEAL_METHOD,
-                                       s->conceal_method)) != AAC_DEC_OK) {
-            av_log(avctx, AV_LOG_ERROR, "Unable to set error concealment method\n");
-            return AVERROR_UNKNOWN;
-        }
+    if ((err = aacDecoder_SetParam(s->handle, AAC_CONCEAL_METHOD,
+                                   s->conceal_method)) != AAC_DEC_OK) {
+        av_log(avctx, AV_LOG_ERROR, "Unable to set error concealment method\n");
+        return AVERROR_UNKNOWN;
     }
 
     avctx->sample_fmt = AV_SAMPLE_FMT_S16;
@@ -310,6 +294,6 @@ AVCodec ff_libfdk_aac_decoder = {
     .decode         = fdk_aac_decode_frame,
     .close          = fdk_aac_decode_close,
     .flush          = fdk_aac_decode_flush,
-    .capabilities   = CODEC_CAP_DR1,
+    .capabilities   = CODEC_CAP_DR1 | CODEC_CAP_CHANNEL_CONF,
     .priv_class     = &fdk_aac_dec_class,
 };

@@ -31,6 +31,7 @@
 
 #include "libavutil/attributes.h"
 #include "libavutil/channel_layout.h"
+#include "libavutil/display.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/intfloat.h"
 #include "libavutil/mathematics.h"
@@ -118,15 +119,13 @@ static int mov_metadata_gnre(MOVContext *c, AVIOContext *pb,
                              unsigned len, const char *key)
 {
     short genre;
-    char buf[20];
 
     avio_r8(pb); // unknown
 
     genre = avio_r8(pb);
     if (genre < 1 || genre > ID3v1_GENRE_MAX)
         return 0;
-    snprintf(buf, sizeof(buf), "%s", ff_id3v1_genre_str[genre-1]);
-    av_dict_set(&c->fc->metadata, key, buf, 0);
+    av_dict_set(&c->fc->metadata, key, ff_id3v1_genre_str[genre-1], 0);
 
     return 0;
 }
@@ -221,6 +220,43 @@ static int mov_metadata_raw(MOVContext *c, AVIOContext *pb,
     return av_dict_set(&c->fc->metadata, key, value, AV_DICT_DONT_STRDUP_VAL);
 }
 
+static int mov_metadata_loci(MOVContext *c, AVIOContext *pb, unsigned len)
+{
+    char language[4] = { 0 };
+    char buf[100];
+    uint16_t langcode = 0;
+    double longitude, latitude;
+    const char *key = "location";
+
+    if (len < 4 + 2 + 1 + 1 + 4 + 4 + 4)
+        return AVERROR_INVALIDDATA;
+
+    avio_skip(pb, 4); // version+flags
+    langcode = avio_rb16(pb);
+    ff_mov_lang_to_iso639(langcode, language);
+    len -= 6;
+
+    len -= avio_get_str(pb, len, buf, sizeof(buf)); // place name
+    if (len < 1)
+        return AVERROR_INVALIDDATA;
+    avio_skip(pb, 1); // role
+    len -= 1;
+
+    if (len < 14)
+        return AVERROR_INVALIDDATA;
+    longitude = ((int32_t) avio_rb32(pb)) / (float) (1 << 16);
+    latitude  = ((int32_t) avio_rb32(pb)) / (float) (1 << 16);
+
+    // Try to output in the same format as the ?xyz field
+    snprintf(buf, sizeof(buf), "%+08.4f%+09.4f/", latitude, longitude);
+    if (*language && strcmp(language, "und")) {
+        char key2[16];
+        snprintf(key2, sizeof(key2), "%s-%s", key, language);
+        av_dict_set(&c->fc->metadata, key2, buf, 0);
+    }
+    return av_dict_set(&c->fc->metadata, key, buf, 0);
+}
+
 static int mov_read_udta_string(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 {
 #ifdef MOV_EXPORT_ALL_METADATA
@@ -280,6 +316,8 @@ static int mov_read_udta_string(MOVContext *c, AVIOContext *pb, MOVAtom atom)
         return mov_metadata_raw(c, pb, atom.size, "premiere_version");
     case MKTAG( '@','P','R','Q'):
         return mov_metadata_raw(c, pb, atom.size, "quicktime_version");
+    case MKTAG( 'l','o','c','i'):
+        return mov_metadata_loci(c, pb, atom.size);
     }
 
     if (c->itunes_metadata && atom.size > 8) {
@@ -738,7 +776,7 @@ static int mov_read_moov(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 
 static int mov_read_moof(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 {
-    c->fragment.moof_offset = avio_tell(pb) - 8;
+    c->fragment.moof_offset = c->fragment.implicit_offset = avio_tell(pb) - 8;
     av_dlog(c->fc, "moof offset %"PRIx64"\n", c->fragment.moof_offset);
     return mov_read_default(c, pb, atom);
 }
@@ -2156,7 +2194,7 @@ static void mov_build_index(MOVContext *mov, AVStream *st)
                 if (sc->keyframe_absent
                     && !sc->stps_count
                     && !rap_group_present
-                    && st->codec->codec_type == AVMEDIA_TYPE_AUDIO)
+                    && (st->codec->codec_type == AVMEDIA_TYPE_AUDIO || (i==0 && j==0)))
                      keyframe = 1;
                 if (keyframe)
                     distance = 0;
@@ -2494,8 +2532,8 @@ static int mov_read_custom_2plus(MOVContext *c, AVIOContext *pb, int size)
                 if(priming>0 && priming<16384)
                     sc->start_pad = priming;
             }
-        } else if (strcmp(key, "cdec") == 0) {
-        } else {
+        }
+        if (strcmp(key, "cdec") != 0) {
             av_dict_set(&c->fc->metadata, key, val,
                         AV_DICT_DONT_STRDUP_KEY | AV_DICT_DONT_STRDUP_VAL);
             key = val = NULL;
@@ -2560,7 +2598,7 @@ static int mov_read_tkhd(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     int width;
     int height;
     int64_t disp_transform[2];
-    int display_matrix[3][2];
+    int display_matrix[3][3];
     AVStream *st;
     MOVStreamContext *sc;
     int version;
@@ -2597,11 +2635,12 @@ static int mov_read_tkhd(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 
     //read in the display matrix (outlined in ISO 14496-12, Section 6.2.2)
     // they're kept in fixed point format through all calculations
-    // ignore u,v,z b/c we don't need the scale factor to calc aspect ratio
+    // save u,v,z to store the whole matrix in the AV_PKT_DATA_DISPLAYMATRIX
+    // side data, but the scale factor is not needed to calculate aspect ratio
     for (i = 0; i < 3; i++) {
         display_matrix[i][0] = avio_rb32(pb);   // 16.16 fixed point
         display_matrix[i][1] = avio_rb32(pb);   // 16.16 fixed point
-        avio_rb32(pb);           // 2.30 fixed point (not used)
+        display_matrix[i][2] = avio_rb32(pb);   //  2.30 fixed point
     }
 
     width = avio_rb32(pb);       // 16.16 fixed point track width
@@ -2609,19 +2648,35 @@ static int mov_read_tkhd(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     sc->width = width >> 16;
     sc->height = height >> 16;
 
-    //Assign clockwise rotate values based on transform matrix so that
-    //we can compensate for iPhone orientation during capture.
+    // save the matrix and add rotate metadata when it is not the default
+    // identity
+    if (display_matrix[0][0] != (1 << 16) ||
+        display_matrix[1][1] != (1 << 16) ||
+        display_matrix[2][2] != (1 << 30) ||
+        display_matrix[0][1] || display_matrix[0][2] ||
+        display_matrix[1][0] || display_matrix[1][2] ||
+        display_matrix[2][0] || display_matrix[2][1]) {
+        int i, j;
+        double rotate;
 
-    if (display_matrix[1][0] == -65536 && display_matrix[0][1] == 65536) {
-         av_dict_set(&st->metadata, "rotate", "90", 0);
-    }
+        av_freep(&sc->display_matrix);
+        sc->display_matrix = av_malloc(sizeof(int32_t) * 9);
+        if (!sc->display_matrix)
+            return AVERROR(ENOMEM);
 
-    if (display_matrix[0][0] == -65536 && display_matrix[1][1] == -65536) {
-         av_dict_set(&st->metadata, "rotate", "180", 0);
-    }
+        for (i = 0; i < 3; i++)
+            for (j = 0; j < 3; j++)
+                sc->display_matrix[i * 3 + j] = display_matrix[j][i];
 
-    if (display_matrix[1][0] == 65536 && display_matrix[0][1] == -65536) {
-         av_dict_set(&st->metadata, "rotate", "270", 0);
+        rotate = av_display_rotation_get(sc->display_matrix);
+        if (!isnan(rotate)) {
+            char rotate_buf[64];
+            rotate = -rotate;
+            if (rotate < 0) // for backward compatibility
+                rotate += 360;
+            snprintf(rotate_buf, sizeof(rotate_buf), "%g", rotate);
+            av_dict_set(&st->metadata, "rotate", rotate_buf, 0);
+        }
     }
 
     // transform the display width/height according to the matrix
@@ -2672,7 +2727,8 @@ static int mov_read_tfhd(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     }
 
     frag->base_data_offset = flags & MOV_TFHD_BASE_DATA_OFFSET ?
-                             avio_rb64(pb) : frag->moof_offset;
+                             avio_rb64(pb) : flags & MOV_TFHD_DEFAULT_BASE_IS_MOOF ?
+                             frag->moof_offset : frag->implicit_offset;
     frag->stsd_id  = flags & MOV_TFHD_STSD_ID ? avio_rb32(pb) : trex->stsd_id;
 
     frag->duration = flags & MOV_TFHD_DEFAULT_DURATION ?
@@ -2814,7 +2870,7 @@ static int mov_read_trun(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     if (pb->eof_reached)
         return AVERROR_EOF;
 
-    frag->moof_offset = offset;
+    frag->implicit_offset = offset;
     st->duration = sc->track_end = dts + sc->time_offset;
     return 0;
 }
@@ -3102,6 +3158,19 @@ static int mov_read_default(MOVContext *c, AVIOContext *pb, MOVAtom atom)
         if (atom.size >= 8) {
             a.size = avio_rb32(pb);
             a.type = avio_rl32(pb);
+            if (a.type == MKTAG('f','r','e','e') &&
+                a.size >= 8 &&
+                c->moov_retry) {
+                uint8_t buf[8];
+                uint32_t *type = (uint32_t *)buf + 1;
+                avio_read(pb, buf, 8);
+                avio_seek(pb, -8, SEEK_CUR);
+                if (*type == MKTAG('m','v','h','d') ||
+                    *type == MKTAG('c','m','o','v')) {
+                    av_log(c->fc, AV_LOG_ERROR, "Detected moov in a free atom.\n");
+                    a.type = MKTAG('m','o','o','v');
+                }
+            }
             if (atom.type != MKTAG('r','o','o','t') &&
                 atom.type != MKTAG('m','o','o','v'))
             {
@@ -3192,7 +3261,6 @@ static int mov_probe(AVProbeData *p)
         /* check for obvious tags */
         case MKTAG('m','o','o','v'):
             moov_offset = offset + 4;
-        case MKTAG('j','P',' ',' '): /* jpeg 2000 signature */
         case MKTAG('m','d','a','t'):
         case MKTAG('p','n','o','t'): /* detect movs with preview pics like ew.mov and april.mov */
         case MKTAG('u','d','t','a'): /* Packet Video PVAuthor adds this and a lot of more junk */
@@ -3202,6 +3270,9 @@ static int mov_probe(AVProbeData *p)
                  offset + 12 > (unsigned int)p->buf_size ||
                  AV_RB64(p->buf+offset + 8) == 0)) {
                 score = FFMAX(score, AVPROBE_SCORE_EXTENSION);
+            } else if (tag == MKTAG('f','t','y','p') &&
+                       AV_RL32(p->buf + offset + 8) == MKTAG('j','p','2',' ')) {
+                score = FFMAX(score, 5);
             } else {
                 score = AVPROBE_SCORE_MAX;
             }
@@ -3282,6 +3353,11 @@ static void mov_read_chapters(AVFormatContext *s)
         uint8_t *title;
         uint16_t ch;
         int len, title_len;
+
+        if (end < sample->timestamp) {
+            av_log(s, AV_LOG_WARNING, "ignoring stream duration which is shorter than chapters\n");
+            end = AV_NOPTS_VALUE;
+        }
 
         if (avio_seek(sc->pb, sample->pos, SEEK_SET) != sample->pos) {
             av_log(s, AV_LOG_ERROR, "Chapter %d not found in file\n", i);
@@ -3395,15 +3471,12 @@ static int mov_read_close(AVFormatContext *s)
         av_freep(&sc->stts_data);
         av_freep(&sc->stps_data);
         av_freep(&sc->rap_group);
+        av_freep(&sc->display_matrix);
     }
 
     if (mov->dv_demux) {
-        for (i = 0; i < mov->dv_fctx->nb_streams; i++) {
-            av_freep(&mov->dv_fctx->streams[i]->codec);
-            av_freep(&mov->dv_fctx->streams[i]);
-        }
-        av_freep(&mov->dv_fctx);
-        av_freep(&mov->dv_demux);
+        avformat_free_context(mov->dv_fctx);
+        mov->dv_fctx = NULL;
     }
 
     av_freep(&mov->trex_data);
@@ -3462,11 +3535,15 @@ static int mov_read_header(AVFormatContext *s)
         atom.size = INT64_MAX;
 
     /* check MOV header */
+    do {
+    if (mov->moov_retry)
+        avio_seek(pb, 0, SEEK_SET);
     if ((err = mov_read_default(mov, pb, atom)) < 0) {
         av_log(s, AV_LOG_ERROR, "error reading header: %d\n", err);
         mov_read_close(s);
         return err;
     }
+    } while (pb->seekable && !mov->found_moov && !mov->moov_retry++);
     if (!mov->found_moov) {
         av_log(s, AV_LOG_ERROR, "moov atom not found\n");
         mov_read_close(s);
@@ -3544,14 +3621,35 @@ static int mov_read_header(AVFormatContext *s)
 
     for (i = 0; i < s->nb_streams; i++) {
         AVStream *st = s->streams[i];
+        MOVStreamContext *sc = st->priv_data;
 
-        if (st->codec->codec_type != AVMEDIA_TYPE_AUDIO)
-            continue;
+        switch (st->codec->codec_type) {
+        case AVMEDIA_TYPE_AUDIO:
+            err = ff_replaygain_export(st, s->metadata);
+            if (err < 0) {
+                mov_read_close(s);
+                return err;
+            }
+            break;
+        case AVMEDIA_TYPE_VIDEO:
+            if (sc->display_matrix) {
+                AVPacketSideData *sd, *tmp;
 
-        err = ff_replaygain_export(st, s->metadata);
-        if (err < 0) {
-            mov_read_close(s);
-            return err;
+                tmp = av_realloc_array(st->side_data,
+                                       st->nb_side_data + 1, sizeof(*tmp));
+                if (!tmp)
+                    return AVERROR(ENOMEM);
+
+                st->side_data = tmp;
+                st->nb_side_data++;
+
+                sd = &st->side_data[st->nb_side_data - 1];
+                sd->type = AV_PKT_DATA_DISPLAYMATRIX;
+                sd->size = sizeof(int32_t) * 9;
+                sd->data = (uint8_t*)sc->display_matrix;
+                sc->display_matrix = NULL;
+            }
+            break;
         }
     }
 

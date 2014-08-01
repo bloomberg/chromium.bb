@@ -1957,7 +1957,8 @@ int av_get_padded_bits_per_pixel(const AVPixFmtDescriptor *pixdesc)
     return bits >> log2_pixels;
 }
 
-char *av_get_pix_fmt_string (char *buf, int buf_size, enum AVPixelFormat pix_fmt)
+char *av_get_pix_fmt_string(char *buf, int buf_size,
+                            enum AVPixelFormat pix_fmt)
 {
     /* print header */
     if (pix_fmt < 0) {
@@ -2263,7 +2264,6 @@ enum AVPixelFormat av_find_best_pix_fmt_of_2(enum AVPixelFormat dst_pix_fmt1, en
     if(!has_alpha)
         loss_mask &= ~FF_LOSS_ALPHA;
 
-    dst_pix_fmt = AV_PIX_FMT_NONE;
     score1 = get_pix_fmt_score(dst_pix_fmt1, src_pix_fmt, &loss1, loss_mask);
     score2 = get_pix_fmt_score(dst_pix_fmt2, src_pix_fmt, &loss2, loss_mask);
 

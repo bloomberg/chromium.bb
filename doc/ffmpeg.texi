@@ -272,8 +272,13 @@ ffmpeg -i INPUT -map 0 -c copy -c:v:1 libx264 -c:a:137 libvorbis OUTPUT
 will copy all the streams except the second video, which will be encoded with
 libx264, and the 138th audio, which will be encoded with libvorbis.
 
-@item -t @var{duration} (@emph{output})
-Stop writing the output after its duration reaches @var{duration}.
+@item -t @var{duration} (@emph{input/output})
+When used as an input option (before @code{-i}), limit the @var{duration} of
+data read from the input file.
+
+When used as an output option (before an output filename), stop writing the
+output after its duration reaches @var{duration}.
+
 @var{duration} may be a number in seconds, or in @code{hh:mm:ss[.xxx]} form.
 
 -to and -t are mutually exclusive and -t has priority.
@@ -529,7 +534,7 @@ filter the stream.
 This is an alias for @code{-filter:v}, see the @ref{filter_option,,-filter option}.
 @end table
 
-@section Advanced Video Options
+@section Advanced Video options
 
 @table @option
 @item -pix_fmt[:@var{stream_specifier}] @var{format} (@emph{input/output,per-stream})
@@ -712,7 +717,7 @@ filter the stream.
 This is an alias for @code{-filter:a}, see the @ref{filter_option,,-filter option}.
 @end table
 
-@section Advanced Audio options:
+@section Advanced Audio options
 
 @table @option
 @item -atag @var{fourcc/tag} (@emph{output})
@@ -727,7 +732,7 @@ stereo but not 6 channels as 5.1. The default is to always try to guess. Use
 0 to disable all guessing.
 @end table
 
-@section Subtitle options:
+@section Subtitle options
 
 @table @option
 @item -scodec @var{codec} (@emph{input/output})
@@ -738,7 +743,7 @@ Disable subtitle recording.
 Deprecated, see -bsf
 @end table
 
-@section Advanced Subtitle options:
+@section Advanced Subtitle options
 
 @table @option
 
@@ -1140,6 +1145,30 @@ requested by @command{ffserver}.
 
 The option is intended for cases where features are needed that cannot be
 specified to @command{ffserver} but can be to @command{ffmpeg}.
+
+@item -discard (@emph{input})
+Allows discarding specific streams or frames of streams at the demuxer.
+Not all demuxers support this.
+
+@table @option
+@item none
+Discard no frame.
+
+@item default
+Default, which discards no frames.
+
+@item noref
+Discard all non-reference frames.
+
+@item bidir
+Discard all bidirectional frames.
+
+@item nokey
+Discard all frames excepts keyframes.
+
+@item all
+Discard all frames.
+@end table
 
 @end table
 

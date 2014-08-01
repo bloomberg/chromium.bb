@@ -344,7 +344,7 @@ static int hds_write_header(AVFormatContext *s)
         goto fail;
     }
 
-    c->streams = av_mallocz(sizeof(*c->streams) * s->nb_streams);
+    c->streams = av_mallocz_array(s->nb_streams, sizeof(*c->streams));
     if (!c->streams) {
         ret = AVERROR(ENOMEM);
         goto fail;
@@ -549,7 +549,7 @@ static int hds_write_packet(AVFormatContext *s, AVPacket *pkt)
     os->last_ts = pkt->dts;
 
     os->packets_written++;
-    return ff_write_chained(os->ctx, pkt->stream_index - os->first_stream, pkt, s);
+    return ff_write_chained(os->ctx, pkt->stream_index - os->first_stream, pkt, s, 0);
 }
 
 static int hds_write_trailer(AVFormatContext *s)

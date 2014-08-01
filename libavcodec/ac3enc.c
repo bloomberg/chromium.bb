@@ -36,7 +36,9 @@
 #include "libavutil/internal.h"
 #include "libavutil/opt.h"
 #include "avcodec.h"
+#include "me_cmp.h"
 #include "put_bits.h"
+#include "audiodsp.h"
 #include "ac3dsp.h"
 #include "ac3.h"
 #include "fft.h"
@@ -378,7 +380,7 @@ static void compute_exp_strategy(AC3EncodeContext *s)
                 exp_strategy[blk] = EXP_NEW;
                 continue;
             }
-            exp_diff = s->dsp.sad[0](NULL, exp, exp - AC3_MAX_COEFS, 16, 16);
+            exp_diff = s->mecc.sad[0](NULL, exp, exp - AC3_MAX_COEFS, 16, 16);
             exp_strategy[blk] = EXP_REUSE;
             if (ch == CPL_CH && exp_diff > (EXP_DIFF_THRESHOLD * (s->blocks[blk].end_freq[ch] - s->start_freq[ch]) / AC3_MAX_COEFS))
                 exp_strategy[blk] = EXP_NEW;
@@ -2478,8 +2480,8 @@ av_cold int ff_ac3_encode_init(AVCodecContext *avctx)
     if (ret)
         goto init_fail;
 
-    ff_dsputil_init(&s->dsp, avctx);
-    avpriv_float_dsp_init(&s->fdsp, avctx->flags & CODEC_FLAG_BITEXACT);
+    ff_audiodsp_init(&s->adsp);
+    ff_me_cmp_init(&s->mecc, avctx);
     ff_ac3dsp_init(&s->ac3dsp, avctx->flags & CODEC_FLAG_BITEXACT);
 
     dprint_options(s);

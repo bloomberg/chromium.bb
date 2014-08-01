@@ -29,9 +29,11 @@
 #include "libavutil/timer.h"
 
 #include "avcodec.h"
-#include "dsputil.h"
+#include "blockdsp.h"
+#include "fdctdsp.h"
 #include "internal.h"
 #include "mpegvideo.h"
+#include "pixblockdsp.h"
 #include "dnxhdenc.h"
 
 
@@ -108,7 +110,7 @@ static int dnxhd_10bit_dct_quantize(MpegEncContext *ctx, int16_t *block,
     int last_non_zero = 0;
     int i;
 
-    ctx->dsp.fdct(block);
+    ctx->fdsp.fdct(block);
 
     // Divide by 4 with rounding, to compensate scaling of DCT coefficients
     block[0] = (block[0] + 2) >> 2;
@@ -208,17 +210,17 @@ static av_cold int dnxhd_init_qmat(DNXHDEncContext *ctx, int lbias, int cbias)
 
     if (ctx->cid_table->bit_depth == 8) {
         for (i = 1; i < 64; i++) {
-            int j = ctx->m.dsp.idct_permutation[ff_zigzag_direct[i]];
+            int j = ctx->m.idsp.idct_permutation[ff_zigzag_direct[i]];
             weight_matrix[j] = ctx->cid_table->luma_weight[i];
         }
-        ff_convert_matrix(&ctx->m.dsp, ctx->qmatrix_l, ctx->qmatrix_l16,
+        ff_convert_matrix(&ctx->m, ctx->qmatrix_l, ctx->qmatrix_l16,
                           weight_matrix, ctx->m.intra_quant_bias, 1,
                           ctx->m.avctx->qmax, 1);
         for (i = 1; i < 64; i++) {
-            int j = ctx->m.dsp.idct_permutation[ff_zigzag_direct[i]];
+            int j = ctx->m.idsp.idct_permutation[ff_zigzag_direct[i]];
             weight_matrix[j] = ctx->cid_table->chroma_weight[i];
         }
-        ff_convert_matrix(&ctx->m.dsp, ctx->qmatrix_c, ctx->qmatrix_c16,
+        ff_convert_matrix(&ctx->m, ctx->qmatrix_c, ctx->qmatrix_c16,
                           weight_matrix, ctx->m.intra_quant_bias, 1,
                           ctx->m.avctx->qmax, 1);
 
@@ -236,7 +238,7 @@ static av_cold int dnxhd_init_qmat(DNXHDEncContext *ctx, int lbias, int cbias)
         // 10-bit
         for (qscale = 1; qscale <= ctx->m.avctx->qmax; qscale++) {
             for (i = 1; i < 64; i++) {
-                int j = ctx->m.dsp.idct_permutation[ff_zigzag_direct[i]];
+                int j = ctx->m.idsp.idct_permutation[ff_zigzag_direct[i]];
 
                 /* The quantization formula from the VC-3 standard is:
                  * quantized = sign(block[i]) * floor(abs(block[i]/s) * p /
@@ -320,6 +322,11 @@ static av_cold int dnxhd_encode_init(AVCodecContext *avctx)
 
     avctx->bits_per_raw_sample = ctx->cid_table->bit_depth;
 
+    ff_blockdsp_init(&ctx->bdsp, avctx);
+    ff_fdctdsp_init(&ctx->m.fdsp, avctx);
+    ff_idctdsp_init(&ctx->m.idsp, avctx);
+    ff_mpegvideoencdsp_init(&ctx->m.mpvencdsp, avctx);
+    ff_pixblockdsp_init(&ctx->m.pdsp, avctx);
     ff_dct_common_init(&ctx->m);
     ff_dct_encode_init(&ctx->m);
 
@@ -555,12 +562,12 @@ void dnxhd_get_blocks(DNXHDEncContext *ctx, int mb_x, int mb_y)
                            ((mb_y << 4) * ctx->m.uvlinesize) + (mb_x << bs);
     const uint8_t *ptr_v = ctx->thread[0]->src[2] +
                            ((mb_y << 4) * ctx->m.uvlinesize) + (mb_x << bs);
-    DSPContext *dsp = &ctx->m.dsp;
+    PixblockDSPContext *pdsp = &ctx->m.pdsp;
 
-    dsp->get_pixels(ctx->blocks[0], ptr_y,      ctx->m.linesize);
-    dsp->get_pixels(ctx->blocks[1], ptr_y + bw, ctx->m.linesize);
-    dsp->get_pixels(ctx->blocks[2], ptr_u,      ctx->m.uvlinesize);
-    dsp->get_pixels(ctx->blocks[3], ptr_v,      ctx->m.uvlinesize);
+    pdsp->get_pixels(ctx->blocks[0], ptr_y,      ctx->m.linesize);
+    pdsp->get_pixels(ctx->blocks[1], ptr_y + bw, ctx->m.linesize);
+    pdsp->get_pixels(ctx->blocks[2], ptr_u,      ctx->m.uvlinesize);
+    pdsp->get_pixels(ctx->blocks[3], ptr_v,      ctx->m.uvlinesize);
 
     if (mb_y + 1 == ctx->m.mb_height && ctx->m.avctx->height == 1080) {
         if (ctx->interlaced) {
@@ -577,20 +584,20 @@ void dnxhd_get_blocks(DNXHDEncContext *ctx, int mb_x, int mb_y)
                                     ptr_v + ctx->dct_uv_offset,
                                     ctx->m.uvlinesize);
         } else {
-            dsp->clear_block(ctx->blocks[4]);
-            dsp->clear_block(ctx->blocks[5]);
-            dsp->clear_block(ctx->blocks[6]);
-            dsp->clear_block(ctx->blocks[7]);
+            ctx->bdsp.clear_block(ctx->blocks[4]);
+            ctx->bdsp.clear_block(ctx->blocks[5]);
+            ctx->bdsp.clear_block(ctx->blocks[6]);
+            ctx->bdsp.clear_block(ctx->blocks[7]);
         }
     } else {
-        dsp->get_pixels(ctx->blocks[4],
-                        ptr_y + ctx->dct_y_offset, ctx->m.linesize);
-        dsp->get_pixels(ctx->blocks[5],
-                        ptr_y + ctx->dct_y_offset + bw, ctx->m.linesize);
-        dsp->get_pixels(ctx->blocks[6],
-                        ptr_u + ctx->dct_uv_offset, ctx->m.uvlinesize);
-        dsp->get_pixels(ctx->blocks[7],
-                        ptr_v + ctx->dct_uv_offset, ctx->m.uvlinesize);
+        pdsp->get_pixels(ctx->blocks[4],
+                         ptr_y + ctx->dct_y_offset, ctx->m.linesize);
+        pdsp->get_pixels(ctx->blocks[5],
+                         ptr_y + ctx->dct_y_offset + bw, ctx->m.linesize);
+        pdsp->get_pixels(ctx->blocks[6],
+                         ptr_u + ctx->dct_uv_offset, ctx->m.uvlinesize);
+        pdsp->get_pixels(ctx->blocks[7],
+                         ptr_v + ctx->dct_uv_offset, ctx->m.uvlinesize);
     }
 }
 
@@ -646,7 +653,7 @@ static int dnxhd_calc_bits_thread(AVCodecContext *avctx, void *arg,
 
             if (avctx->mb_decision == FF_MB_DECISION_RD || !RC_VARIANCE) {
                 dnxhd_unquantize_c(ctx, block, i, qscale, last_index);
-                ctx->m.dsp.idct(block);
+                ctx->m.idsp.idct(block);
                 ssd += dnxhd_ssd_block(block, src_block);
             }
         }
@@ -730,8 +737,8 @@ static int dnxhd_mb_var_thread(AVCodecContext *avctx, void *arg,
             int varc;
 
             if (!partial_last_row && mb_x * 16 <= avctx->width - 16) {
-                sum  = ctx->m.dsp.pix_sum(pix, ctx->m.linesize);
-                varc = ctx->m.dsp.pix_norm1(pix, ctx->m.linesize);
+                sum  = ctx->m.mpvencdsp.pix_sum(pix, ctx->m.linesize);
+                varc = ctx->m.mpvencdsp.pix_norm1(pix, ctx->m.linesize);
             } else {
                 int bw = FFMIN(avctx->width - 16 * mb_x, 16);
                 int bh = FFMIN((avctx->height >> ctx->interlaced) - 16 * mb_y, 16);

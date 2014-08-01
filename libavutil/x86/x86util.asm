@@ -288,7 +288,12 @@
     paddd   %1, %2
 %endif
 %if notcpuflag(xop) || sizeof%1 != 16
+%if cpuflag(mmxext)
     PSHUFLW %2, %1, q0032
+%else ; mmx
+    mova    %2, %1
+    psrlq   %2, 32
+%endif
     paddd   %1, %2
 %endif
 %undef %1
@@ -335,11 +340,19 @@
 %endif
 %endmacro
 
-%macro PAVGB 2
+%macro PAVGB 2-4
 %if cpuflag(mmxext)
     pavgb   %1, %2
 %elif cpuflag(3dnow)
     pavgusb %1, %2
+%elif cpuflag(mmx)
+    movu   %3, %2
+    por    %3, %1
+    pxor   %1, %2
+    pand   %1, %4
+    psrlq  %1, 1
+    psubb  %3, %1
+    SWAP   %1, %3
 %endif
 %endmacro
 
@@ -585,7 +598,9 @@
 %endmacro
 
 %macro SPLATW 2-3 0
-%if mmsize == 16
+%if cpuflag(avx2) && %3 == 0
+    vpbroadcastw %1, %2
+%elif mmsize == 16
     pshuflw    %1, %2, (%3)*0x55
     punpcklqdq %1, %1
 %elif cpuflag(mmxext)
@@ -729,4 +744,20 @@ PMA_EMU PMADCSWD, pmadcswd, pmaddwd, paddd
         mulps   %1, %2, %3
         addps   %1, %4
     %endif
+%endmacro
+
+%macro LSHIFT 2
+%if mmsize > 8
+    pslldq  %1, %2
+%else
+    psllq   %1, 8*(%2)
+%endif
+%endmacro
+
+%macro RSHIFT 2
+%if mmsize > 8
+    psrldq  %1, %2
+%else
+    psrlq   %1, 8*(%2)
+%endif
 %endmacro

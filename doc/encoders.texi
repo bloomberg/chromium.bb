@@ -80,7 +80,7 @@ thresholds with quantizer steps to find the appropriate quantization with
 distortion below threshold band by band.
 
 The quality of this method is comparable to the two loop searching method
-descibed below, but somewhat a little better and slower.
+described below, but somewhat a little better and slower.
 
 @item anmr
 Average noise to mask ratio (ANMR) trellis-based solution.
@@ -1032,7 +1032,7 @@ configuration. You need to explicitly configure the build with
 
 @subsection Option Mapping
 
-Most libopus options are modeled after the @command{opusenc} utility from
+Most libopus options are modelled after the @command{opusenc} utility from
 opus-tools. The following is an option mapping chart describing options
 supported by the libopus wrapper, and their @command{opusenc}-equivalent
 in parentheses.
@@ -2042,6 +2042,30 @@ fastest.
 
 @end table
 
+@section mpeg2
+
+MPEG-2 video encoder.
+
+@subsection Options
+
+@table @option
+@item seq_disp_ext @var{integer}
+Specifies if the encoder should write a sequence_display_extension to the
+output.
+@table @option
+@item -1
+@itemx auto
+Decide automatically to write it or not (this is the default) by checking if
+the data to be written is different from the default or unspecified values.
+@item 0
+@itemx never
+Never write it.
+@item 1
+@itemx always
+Always write it.
+@end table
+@end table
+
 @section png
 
 PNG image encoder.
@@ -2123,3 +2147,27 @@ For the fastest encoding speed set the @option{qscale} parameter (4 is the
 recommended value) and do not set a size constraint.
 
 @c man end VIDEO ENCODERS
+
+@chapter Subtitles Encoders
+@c man begin SUBTITLES ENCODERS
+
+@section dvdsub
+
+This codec encodes the bitmap subtitle format that is used in DVDs.
+Typically they are stored in VOBSUB file pairs (*.idx + *.sub),
+and they can also be used in Matroska files.
+
+@subsection Options
+
+@table @option
+@item even_rows_fix
+When set to 1, enable a work-around that makes the number of pixel rows
+even in all subtitles.  This fixes a problem with some players that
+cut off the bottom row if the number is odd.  The work-around just adds
+a fully transparent row if needed.  The overhead is low, typically
+one byte per subtitle on average.
+
+By default, this work-around is disabled.
+@end table
+
+@c man end SUBTITLES ENCODERS

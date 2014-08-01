@@ -22,7 +22,7 @@
 #include "libavutil/log.h"
 #include "libavutil/opt.h"
 #include "avcodec.h"
-#include "dsputil.h"
+#include "me_cmp.h"
 #include "snow_dwt.h"
 #include "internal.h"
 #include "snow.h"
@@ -64,6 +64,33 @@ void ff_snow_inner_add_yblock(const uint8_t *obmc, const int obmc_stride, uint8_
             }
         }
     }
+}
+
+int ff_snow_get_buffer(SnowContext *s, AVFrame *frame)
+{
+    int ret, i;
+    int edges_needed = av_codec_is_encoder(s->avctx->codec);
+
+    frame->width  = s->avctx->width ;
+    frame->height = s->avctx->height;
+    if (edges_needed) {
+        frame->width  += 2 * EDGE_WIDTH;
+        frame->height += 2 * EDGE_WIDTH;
+    }
+    if ((ret = ff_get_buffer(s->avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
+        return ret;
+    if (edges_needed) {
+        for (i = 0; frame->data[i]; i++) {
+            int offset = (EDGE_WIDTH >> (i ? s->chroma_v_shift : 0)) *
+                            frame->linesize[i] +
+                            (EDGE_WIDTH >> (i ? s->chroma_h_shift : 0));
+            frame->data[i] += offset;
+        }
+        frame->width  = s->avctx->width;
+        frame->height = s->avctx->height;
+    }
+
+    return 0;
 }
 
 void ff_snow_reset_contexts(SnowContext *s){ //FIXME better initial contexts
@@ -358,9 +385,13 @@ void ff_snow_pred_block(SnowContext *s, uint8_t *dst, uint8_t *tmp, ptrdiff_t st
 
         av_assert2(s->chroma_h_shift == s->chroma_v_shift); // only one mv_scale
 
-        av_assert2(b_w>1 && b_h>1);
         av_assert2((tab_index>=0 && tab_index<4) || b_w==32);
-        if((dx&3) || (dy&3) || !(b_w == b_h || 2*b_w == b_h || b_w == 2*b_h) || (b_w&(b_w-1)) || !s->plane[plane_index].fast_mc )
+        if(    (dx&3) || (dy&3)
+            || !(b_w == b_h || 2*b_w == b_h || b_w == 2*b_h)
+            || (b_w&(b_w-1))
+            || b_w == 1
+            || b_h == 1
+            || !s->plane[plane_index].fast_mc )
             mc_block(&s->plane[plane_index], dst, src, stride, b_w, b_h, dx, dy);
         else if(b_w==32){
             int y;
@@ -404,18 +435,18 @@ av_cold int ff_snow_common_init(AVCodecContext *avctx){
     s->avctx= avctx;
     s->max_ref_frames=1; //just make sure it's not an invalid value in case of no initial keyframe
 
-    ff_dsputil_init(&s->dsp, avctx);
+    ff_me_cmp_init(&s->mecc, avctx);
     ff_hpeldsp_init(&s->hdsp, avctx->flags);
     ff_videodsp_init(&s->vdsp, 8);
     ff_dwt_init(&s->dwt);
     ff_h264qpel_init(&s->h264qpel, 8);
 
 #define mcf(dx,dy)\
-    s->dsp.put_qpel_pixels_tab       [0][dy+dx/4]=\
-    s->dsp.put_no_rnd_qpel_pixels_tab[0][dy+dx/4]=\
+    s->qdsp.put_qpel_pixels_tab       [0][dy+dx/4]=\
+    s->qdsp.put_no_rnd_qpel_pixels_tab[0][dy+dx/4]=\
         s->h264qpel.put_h264_qpel_pixels_tab[0][dy+dx/4];\
-    s->dsp.put_qpel_pixels_tab       [1][dy+dx/4]=\
-    s->dsp.put_no_rnd_qpel_pixels_tab[1][dy+dx/4]=\
+    s->qdsp.put_qpel_pixels_tab       [1][dy+dx/4]=\
+    s->qdsp.put_no_rnd_qpel_pixels_tab[1][dy+dx/4]=\
         s->h264qpel.put_h264_qpel_pixels_tab[1][dy+dx/4];
 
     mcf( 0, 0)
@@ -614,22 +645,6 @@ void ff_snow_release_buffer(AVCodecContext *avctx)
 int ff_snow_frame_start(SnowContext *s){
    AVFrame *tmp;
    int i, ret;
-   int w= s->avctx->width; //FIXME round up to x16 ?
-   int h= s->avctx->height;
-
-    if (s->current_picture->data[0] && !(s->avctx->flags&CODEC_FLAG_EMU_EDGE)) {
-        s->dsp.draw_edges(s->current_picture->data[0],
-                          s->current_picture->linesize[0], w   , h   ,
-                          EDGE_WIDTH  , EDGE_WIDTH  , EDGE_TOP | EDGE_BOTTOM);
-        if (s->current_picture->data[2]) {
-            s->dsp.draw_edges(s->current_picture->data[1],
-                            s->current_picture->linesize[1], w>>s->chroma_h_shift, h>>s->chroma_v_shift,
-                            EDGE_WIDTH>>s->chroma_h_shift, EDGE_WIDTH>>s->chroma_v_shift, EDGE_TOP | EDGE_BOTTOM);
-            s->dsp.draw_edges(s->current_picture->data[2],
-                            s->current_picture->linesize[2], w>>s->chroma_h_shift, h>>s->chroma_v_shift,
-                            EDGE_WIDTH>>s->chroma_h_shift, EDGE_WIDTH>>s->chroma_v_shift, EDGE_TOP | EDGE_BOTTOM);
-        }
-    }
 
     ff_snow_release_buffer(s->avctx);
 
@@ -657,8 +672,7 @@ int ff_snow_frame_start(SnowContext *s){
             return -1;
         }
     }
-
-    if ((ret = ff_get_buffer(s->avctx, s->current_picture, AV_GET_BUFFER_FLAG_REF)) < 0)
+    if ((ret = ff_snow_get_buffer(s, s->current_picture)) < 0)
         return ret;
 
     s->current_picture->key_frame= s->keyframe;
