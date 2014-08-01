@@ -12,7 +12,6 @@ import psutil
 from pylib import cmd_helper
 from pylib import constants
 from pylib import valgrind_tools
-from pylib.device import device_errors
 
 # TODO(jbudorick) Remove once telemetry gets switched over.
 import pylib.android_commands
@@ -91,8 +90,8 @@ class Forwarder(object):
 
       device_serial = str(device)
       redirection_commands = [
-          ['--serial-id=' + device_serial, '--map', str(device),
-           str(host)] for device, host in port_pairs]
+          ['--serial-id=' + device_serial, '--map', str(device_port),
+           str(host_port)] for device_port, host_port in port_pairs]
       logging.info('Forwarding using commands: %s', redirection_commands)
 
       for redirection_command in redirection_commands:
@@ -105,12 +104,13 @@ class Forwarder(object):
                             ' built host_forwarder.')
           else: raise
         if exit_code != 0:
+          Forwarder._KillDeviceLocked(device, tool)
           raise Exception('%s exited with %d:\n%s' % (
               instance._host_forwarder_path, exit_code, '\n'.join(output)))
         tokens = output.split(':')
         if len(tokens) != 2:
-          raise Exception(('Unexpected host forwarder output "%s", ' +
-                          'expected "device_port:host_port"') % output)
+          raise Exception('Unexpected host forwarder output "%s", '
+                          'expected "device_port:host_port"' % output)
         device_port = int(tokens[0])
         host_port = int(tokens[1])
         serial_with_port = (device_serial, device_port)
@@ -158,8 +158,6 @@ class Forwarder(object):
       # There are no more ports mapped, kill the device_forwarder.
       tool = valgrind_tools.CreateTool(None, device)
       Forwarder._KillDeviceLocked(device, tool)
-      Forwarder._instance._initialized_devices.remove(adb_serial)
-
 
   @staticmethod
   def DevicePortForHostPort(host_port):
@@ -328,6 +326,7 @@ class Forwarder(object):
             forwarder (see valgrind_tools.py).
     """
     logging.info('Killing device_forwarder.')
+    Forwarder._instance._initialized_devices.discard(str(device))
     if not device.FileExists(Forwarder._DEVICE_FORWARDER_PATH):
       return
 
@@ -335,13 +334,3 @@ class Forwarder(object):
                                    Forwarder._DEVICE_FORWARDER_PATH)
     device.old_interface.GetAndroidToolStatusAndOutput(
         cmd, lib_path=Forwarder._DEVICE_FORWARDER_FOLDER)
-
-    # TODO(pliard): Remove the following call to KillAllBlocking() when we are
-    # sure that the old version of device_forwarder (not supporting
-    # 'kill-server') is not running on the bots anymore.
-    timeout_sec = 5
-    try:
-      device.KillAll('device_forwarder', blocking=True, timeout=timeout_sec)
-    except device_errors.CommandFailedError:
-      if device.GetPids('device_forwarder'):
-        raise
