@@ -19,12 +19,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
+import org.chromium.base.CommandLine;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.shell.omnibox.SuggestionPopup;
+import org.chromium.content.common.ContentSwitches;
 
 /**
  * A Toolbar {@link View} that shows the URL and navigation buttons.
@@ -43,7 +45,7 @@ public class ChromeShellToolbar extends LinearLayout {
     private ClipDrawable mProgressDrawable;
 
     private ChromeShellTab mTab;
-    private final TabObserver mTabObserver = new TabObserverImpl();
+    private final TabObserver mTabObserver;
 
     private AppMenuHandler mMenuHandler;
     private AppMenuButtonHelper mAppMenuButtonHelper;
@@ -56,6 +58,15 @@ public class ChromeShellToolbar extends LinearLayout {
      */
     public ChromeShellToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
+        // When running performance benchmark, we don't want to observe the tab
+        // invalidation which would interfere with browser's processing content
+        // frame. See crbug.com/394976.
+        if (CommandLine.getInstance().hasSwitch(
+                ContentSwitches.RUNNING_PERFORMANCE_BENCHMARK)) {
+            mTabObserver = new EmptyTabObserver();
+        } else {
+            mTabObserver = new TabObserverImpl();
+        }
     }
 
     /**

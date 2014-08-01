@@ -31,6 +31,10 @@ public abstract class ContentSwitches {
     // SelfBrailleService.
     public static final String ACCESSIBILITY_DEBUG_BRAILLE_SERVICE = "debug-braille-service";
 
+    // Indicates Chrome is running for performance benchmark.
+    public static final String RUNNING_PERFORMANCE_BENCHMARK =
+            "running-performance-benchmark";
+
     // Disables exposing web content using Android's accessibility
     // framework and enables the (older) javascript injection accessibility.
     // TODO(dmazzoni): remove this after native accessibility is in stable.
