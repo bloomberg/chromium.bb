@@ -33,7 +33,6 @@
 #include "platform/SharedBuffer.h"
 #include "platform/network/HTTPParsers.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

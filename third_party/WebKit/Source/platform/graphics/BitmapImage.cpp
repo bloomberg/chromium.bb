@@ -36,7 +36,6 @@
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

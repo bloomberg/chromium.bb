@@ -31,7 +31,6 @@
 #include "config.h"
 #include "modules/websockets/WebSocketPerMessageDeflate.h"
 
-#include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
 
 #include <algorithm>

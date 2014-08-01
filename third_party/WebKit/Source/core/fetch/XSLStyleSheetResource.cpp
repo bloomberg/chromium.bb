@@ -31,7 +31,6 @@
 #include "core/fetch/StyleSheetResourceClient.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

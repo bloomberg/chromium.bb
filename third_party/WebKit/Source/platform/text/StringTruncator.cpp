@@ -33,7 +33,6 @@
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextRun.h"
 #include "wtf/Assertions.h"
-#include "wtf/Vector.h"
 #include "wtf/unicode/CharacterNames.h"
 
 namespace blink {

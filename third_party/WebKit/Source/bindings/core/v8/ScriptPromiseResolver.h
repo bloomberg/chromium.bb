@@ -13,7 +13,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "platform/Timer.h"
 #include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
 #include <v8.h>
 
 namespace blink {

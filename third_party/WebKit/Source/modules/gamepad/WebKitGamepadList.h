@@ -9,7 +9,6 @@
 #include "modules/gamepad/WebKitGamepad.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebGamepads.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

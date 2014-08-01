@@ -29,7 +29,6 @@
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioSummingJunction.h"
 #include "wtf/HashSet.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

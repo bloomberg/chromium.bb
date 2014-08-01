@@ -34,7 +34,6 @@
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "platform/Task.h"
 #include "public/platform/WebThread.h"
-#include "wtf/Vector.h"
 #include <v8.h>
 
 namespace blink {

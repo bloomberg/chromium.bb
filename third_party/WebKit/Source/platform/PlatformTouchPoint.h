@@ -21,7 +21,6 @@
 #define PlatformTouchPoint_h
 
 #include "platform/geometry/FloatPoint.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

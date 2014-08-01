@@ -40,7 +40,6 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/StringHasher.h"
-#include "wtf/Vector.h"
 
 #include <gtest/gtest.h>
 

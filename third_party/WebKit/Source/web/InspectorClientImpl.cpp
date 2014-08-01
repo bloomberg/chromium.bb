@@ -44,7 +44,6 @@
 #include "public/web/WebViewClient.h"
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebViewImpl.h"
-#include "wtf/Vector.h"
 
 using namespace blink;
 

@@ -32,7 +32,6 @@
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
 #include "wtf/Uint8ClampedArray.h"
-#include "wtf/Vector.h"
 
 using namespace std;
 

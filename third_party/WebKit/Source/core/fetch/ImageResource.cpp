@@ -38,7 +38,6 @@
 #include "platform/graphics/BitmapImage.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

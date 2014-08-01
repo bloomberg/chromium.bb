@@ -24,7 +24,6 @@
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
-#include "wtf/Vector.h"
 
 #if OS(MACOSX)
 #include "platform/fonts/harfbuzz/HarfBuzzFace.h"

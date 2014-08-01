@@ -34,7 +34,6 @@
 #include "core/html/imports/HTMLImport.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/Vector.h"
 #include "wtf/WeakPtr.h"
 
 namespace blink {

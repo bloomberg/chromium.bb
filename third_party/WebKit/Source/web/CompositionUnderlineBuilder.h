@@ -34,7 +34,6 @@
 #include "core/editing/CompositionUnderline.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebCompositionUnderline.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

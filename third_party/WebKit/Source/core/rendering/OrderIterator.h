@@ -32,7 +32,6 @@
 #define OrderIterator_h
 
 #include "wtf/Noncopyable.h"
-#include "wtf/Vector.h"
 
 #include <set>
 

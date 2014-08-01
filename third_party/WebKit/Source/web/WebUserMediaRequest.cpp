@@ -44,7 +44,6 @@
 #include "public/platform/WebVector.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebSecurityOrigin.h"
-#include "wtf/Vector.h"
 
 using namespace blink;
 

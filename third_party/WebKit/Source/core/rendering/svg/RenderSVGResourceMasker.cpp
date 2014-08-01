@@ -28,7 +28,6 @@
 #include "platform/graphics/DisplayList.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/transforms/AffineTransform.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

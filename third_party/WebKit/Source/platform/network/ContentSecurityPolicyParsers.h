@@ -7,7 +7,6 @@
 
 #include "platform/Crypto.h"
 #include "platform/PlatformExport.h"
-#include "wtf/Vector.h"
 #include "wtf/unicode/Unicode.h"
 
 namespace blink {

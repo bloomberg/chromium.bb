@@ -36,7 +36,6 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

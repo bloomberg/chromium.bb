@@ -35,7 +35,6 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
 #include "wtf/Assertions.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 
