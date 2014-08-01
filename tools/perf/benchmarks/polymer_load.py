@@ -7,7 +7,6 @@ import page_sets
 from telemetry import benchmark
 
 
-@benchmark.Disabled
 class PolymerLoadPica(benchmark.Benchmark):
   """Measures time to polymer-ready for PICA."""
   test = polymer_load.PolymerLoadMeasurement
