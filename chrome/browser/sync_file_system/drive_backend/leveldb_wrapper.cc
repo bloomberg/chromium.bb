@@ -30,6 +30,17 @@ bool LevelDBWrapper::Iterator::Valid() {
       db_iterator_->Valid();
 }
 
+void LevelDBWrapper::Iterator::SeekToFirst() {
+  map_iterator_ = db_->pending_.begin();
+  db_iterator_->SeekToFirst();
+  AdvanceIterators();
+}
+
+void LevelDBWrapper::Iterator::SeekToLast() {
+  map_iterator_ = db_->pending_.end();
+  db_iterator_->SeekToLast();
+}
+
 void LevelDBWrapper::Iterator::Seek(const std::string& target) {
   map_iterator_ = db_->pending_.lower_bound(target);
   db_iterator_->Seek(target);

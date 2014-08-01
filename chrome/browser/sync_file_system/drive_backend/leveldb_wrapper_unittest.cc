@@ -58,8 +58,7 @@ class LevelDBWrapperTest : public testing::Test {
     DCHECK(db_);
 
     scoped_ptr<LevelDBWrapper::Iterator> itr = db_->NewIterator();
-    // TODO(peria): Use itr->SeekToFirst(), if available.
-    itr->Seek(std::string());
+    itr->SeekToFirst();
     for (size_t i = 0; i < size; ++i) {
       ASSERT_TRUE(itr->Valid());
       EXPECT_EQ(expects[i].key, itr->key().ToString());

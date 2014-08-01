@@ -53,6 +53,8 @@ class LevelDBWrapper {
 
     bool Valid();
     void Seek(const std::string& target);
+    void SeekToFirst();
+    void SeekToLast();
     void Next();
     leveldb::Slice key();
     leveldb::Slice value();
