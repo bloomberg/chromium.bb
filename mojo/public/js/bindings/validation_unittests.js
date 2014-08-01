@@ -3,10 +3,13 @@
 // found in the LICENSE file.
 
 define([
+    "file",
     "gin/test/expect",
     "mojo/public/js/bindings/buffer",
-    "mojo/public/js/bindings/tests/validation_test_input_parser"
-  ], function(expect, buffer, parser) {
+    "mojo/public/js/bindings/codec",
+    "mojo/public/js/bindings/tests/validation_test_input_parser",
+    "mojo/public/js/bindings/validator",
+  ], function(file, expect, buffer, codec, parser, validator) {
 
   function checkTestMessageParser() {
     function TestMessageParserFailure(message, input) {
@@ -158,6 +161,56 @@ define([
     return null;
   }
 
+  function getMessageTestFiles() {
+    var sourceRoot = file.getSourceRootDirectory();
+    expect(sourceRoot).not.toBeNull();
+
+    var testDir = sourceRoot +
+      "/mojo/public/interfaces/bindings/tests/data/validation/";
+    var testFiles = file.getFilesInDirectory(testDir);
+    expect(testFiles).not.toBeNull();
+    expect(testFiles.length).toBeGreaterThan(0);
+
+   // The ".data" pathnames with the extension removed.
+   var testPathNames = testFiles.filter(function(s) {
+     return s.substr(-5) == ".data";
+   }).map(function(s) {
+     return testDir + s.slice(0, -5);
+   });
+
+   // For now, just checking the message header tests.
+   return testPathNames.filter(function(s) {
+     return s.indexOf("_msghdr_") != -1;
+   });
+  }
+
+  function readTestMessage(filename) {
+    var contents = file.readFileToString(filename + ".data");
+    expect(contents).not.toBeNull();
+    return parser.parseTestMessage(contents);
+  }
+
+  function readTestExpected(filename) {
+    var contents = file.readFileToString(filename + ".expected");
+    expect(contents).not.toBeNull();
+    return contents.trim();
+  }
+
+  function testValidateMessageHeader() {
+    var testFiles = getMessageTestFiles();
+    expect(testFiles.length).toBeGreaterThan(0);
+
+    for (var i = 0; i < testFiles.length; i++) {
+      var testMessage = readTestMessage(testFiles[i]);
+      // TODO(hansmuller): add the message handles.
+      var message = new codec.Message(testMessage.buffer);
+      var actualResult = new validator.Validator(message).validateMessage();
+      var expectedResult = readTestExpected(testFiles[i]);
+      expect(actualResult).toEqual(expectedResult);
+    }
+  }
+
+  testValidateMessageHeader();
   expect(checkTestMessageParser()).toBeNull();
   this.result = "PASS";
 });
