@@ -34,7 +34,6 @@ nacl64.exe: %(VersionDir)s\
 nacl_irt_x86_32.nexe: %(VersionDir)s\
 nacl_irt_x86_64.nexe: %(VersionDir)s\
 pdf.dll: %(VersionDir)s\
-ppGoogleNaClPluginChrome.dll: %(VersionDir)s\
 resources.pak: %(VersionDir)s\
 syzyasan_rtl.dll: %(VersionDir)s\
 xinput1_3.dll: %(VersionDir)s\

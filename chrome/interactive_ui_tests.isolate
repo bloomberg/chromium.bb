@@ -79,7 +79,6 @@
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
           '<(PRODUCT_DIR)/libEGL.dll',
           '<(PRODUCT_DIR)/libGLESv2.dll',
-          '<(PRODUCT_DIR)/ppGoogleNaClPluginChrome.dll',
           '<(PRODUCT_DIR)/osmesa.dll',
         ],
         'isolate_dependency_untracked': [

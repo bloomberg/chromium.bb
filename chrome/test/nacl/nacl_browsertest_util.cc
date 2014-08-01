@@ -199,11 +199,6 @@ void NaClBrowserTestBase::SetUpCommandLine(base::CommandLine* command_line) {
 }
 
 void NaClBrowserTestBase::SetUpOnMainThread() {
-  // Sanity check.
-  base::FilePath plugin_lib;
-  ASSERT_TRUE(PathService::Get(chrome::FILE_NACL_PLUGIN, &plugin_lib));
-  ASSERT_TRUE(base::PathExists(plugin_lib)) << plugin_lib.value();
-
   ASSERT_TRUE(StartTestServer()) << "Cannot start test server.";
 }
 

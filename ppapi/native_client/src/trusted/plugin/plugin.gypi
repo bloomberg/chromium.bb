@@ -12,6 +12,7 @@
       'pnacl_coordinator.cc',
       'pnacl_resources.cc',
       'pnacl_translate_thread.cc',
+      'ppapi_entrypoints.cc',
       'sel_ldr_launcher_chrome.cc',
       'service_runtime.cc',
       'srpc_client.cc',

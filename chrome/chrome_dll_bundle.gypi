@@ -152,9 +152,6 @@
       ],
       'conditions': [
         ['disable_nacl!=1', {
-          'files': [
-            '<(PRODUCT_DIR)/ppGoogleNaClPluginChrome.plugin',
-          ],
           'conditions': [
             ['target_arch=="x64"', {
               'files': [

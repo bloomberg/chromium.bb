@@ -177,11 +177,6 @@ stage_install_common() {
     install -m 644 -s "${BUILDDIR}/lib/libpeerconnection.so" "${STAGEDIR}/${INSTALLDIR}/lib/"
   fi
 
-  # nacl pepper plugin
-  if [ -f "${BUILDDIR}/libppGoogleNaClPluginChrome.so" ]; then
-    install -m 644 -s "${BUILDDIR}/libppGoogleNaClPluginChrome.so" "${STAGEDIR}/${INSTALLDIR}/"
-  fi
-
   # nacl_helper and nacl_helper_bootstrap
   # Don't use "-s" (strip) because this runs binutils "strip", which
   # mangles the special ELF program headers of nacl_helper_bootstrap.

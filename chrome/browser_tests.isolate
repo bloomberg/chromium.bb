@@ -141,7 +141,6 @@
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/keyboard_resources.pak',
           '<(PRODUCT_DIR)/libexif.so',
-          '<(PRODUCT_DIR)/libppGoogleNaClPluginChrome.so',
           '<(PRODUCT_DIR)/nacl_helper',
           '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
           'browser/chromeos/login/test/https_forwarder.py',

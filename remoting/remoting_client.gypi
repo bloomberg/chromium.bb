@@ -14,6 +14,7 @@
       'dependencies': [
         '../net/net.gyp:net',
         '../ppapi/ppapi.gyp:ppapi_cpp_objects',
+        '../ppapi/ppapi.gyp:ppapi_internal_module',
         '../third_party/webrtc/modules/modules.gyp:desktop_capture',
         '../ui/events/events.gyp:dom4_keycode_converter',
         'remoting_base',
