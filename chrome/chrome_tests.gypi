@@ -1006,6 +1006,7 @@
         'browser/chromeos/login/wizard_controller_browsertest.cc',
         'browser/chromeos/memory/oom_priority_manager_browsertest.cc',
         'browser/chromeos/net/network_portal_detector_impl_browsertest.cc',
+        'browser/chromeos/policy/blocking_login_browsertest.cc',
         'browser/chromeos/policy/device_cloud_policy_browsertest.cc',
         'browser/chromeos/policy/device_local_account_browsertest.cc',
         'browser/chromeos/policy/device_policy_cros_browser_test.cc',
