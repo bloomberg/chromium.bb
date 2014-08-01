@@ -1,0 +1,7 @@
+This tests that a mouse events on the controls will not be seen by the video element.
+
+Also tests keyboard input.
+
+EVENT(loadeddata)
+END OF TEST
+

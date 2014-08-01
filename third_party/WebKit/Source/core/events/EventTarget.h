@@ -139,6 +139,8 @@ public:
 
     virtual void trace(Visitor*) { }
 
+    virtual bool keepEventInNode(Event*) { return false; };
+
 protected:
     EventTarget();
     virtual ~EventTarget();

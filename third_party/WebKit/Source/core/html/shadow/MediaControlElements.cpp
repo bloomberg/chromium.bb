@@ -59,6 +59,33 @@ static const AtomicString& getMediaControlTimeRemainingDisplayElementShadowPseud
 static const double fadeInDuration = 0.1;
 static const double fadeOutDuration = 0.3;
 
+static bool isUserInteractionEvent(Event* event)
+{
+    const AtomicString& type = event->type();
+    return type == EventTypeNames::mousedown
+        || type == EventTypeNames::mouseup
+        || type == EventTypeNames::click
+        || type == EventTypeNames::dblclick
+        || event->isKeyboardEvent()
+        || event->isTouchEvent();
+}
+
+// Sliders (the volume control and timeline) need to capture some additional events used when dragging the thumb.
+static bool isUserInteractionEventForSlider(Event* event)
+{
+    const AtomicString& type = event->type();
+    return type == EventTypeNames::mousedown
+        || type == EventTypeNames::mouseup
+        || type == EventTypeNames::click
+        || type == EventTypeNames::dblclick
+        || type == EventTypeNames::mouseover
+        || type == EventTypeNames::mouseout
+        || type == EventTypeNames::mousemove
+        || event->isKeyboardEvent()
+        || event->isTouchEvent();
+}
+
+
 MediaControlPanelElement::MediaControlPanelElement(MediaControls& mediaControls)
     : MediaControlDivElement(mediaControls, MediaControlsPanel)
     , m_isDisplayed(false)
@@ -145,6 +172,11 @@ void MediaControlPanelElement::makeTransparent()
 void MediaControlPanelElement::setIsDisplayed(bool isDisplayed)
 {
     m_isDisplayed = isDisplayed;
+}
+
+bool MediaControlPanelElement::keepEventInNode(Event* event)
+{
+    return isUserInteractionEvent(event);
 }
 
 // ----------------------------
@@ -295,6 +327,11 @@ const AtomicString& MediaControlOverlayPlayButtonElement::shadowPseudoId() const
     return id;
 }
 
+bool MediaControlOverlayPlayButtonElement::keepEventInNode(Event* event)
+{
+    return isUserInteractionEvent(event);
+}
+
 
 // ----------------------------
 
@@ -408,6 +445,11 @@ const AtomicString& MediaControlTimelineElement::shadowPseudoId() const
     return id;
 }
 
+bool MediaControlTimelineElement::keepEventInNode(Event* event)
+{
+    return isUserInteractionEventForSlider(event);
+}
+
 // ----------------------------
 
 MediaControlVolumeSliderElement::MediaControlVolumeSliderElement(MediaControls& mediaControls)
@@ -469,6 +511,11 @@ const AtomicString& MediaControlVolumeSliderElement::shadowPseudoId() const
 {
     DEFINE_STATIC_LOCAL(AtomicString, id, ("-webkit-media-controls-volume-slider", AtomicString::ConstructFromLiteral));
     return id;
+}
+
+bool MediaControlVolumeSliderElement::keepEventInNode(Event* event)
+{
+    return isUserInteractionEventForSlider(event);
 }
 
 // ----------------------------

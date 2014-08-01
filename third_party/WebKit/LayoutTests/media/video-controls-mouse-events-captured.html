@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+</head>
+<body>
+    <video controls></video>
+    <p>This tests that a mouse events on the controls will not be seen by the video element.</p>
+    <p>Also tests keyboard input.</p>
+    <script src=media-file.js></script>
+    <script src=video-test.js></script>
+    <script src=media-controls.js></script>
+    <script>
+        waitForEventAndFail("click");
+        waitForEventAndFail("dblclick");
+        waitForEventAndFail("mousedown");
+        waitForEventAndFail("mouseup");
+        waitForEventAndFail("keydown");
+
+        waitForEventAndEnd("loadeddata", function()
+        {
+            if (window.eventSender) {
+                // click the play button
+                var coords = mediaControlsButtonCoordinates(video, "play-button");
+                eventSender.mouseMoveTo(coords[0], coords[1]);
+
+                eventSender.mouseDown();
+                eventSender.mouseUp();
+                eventSender.keyDown('A');
+
+                // Click the current time display, which should not respond to events, but
+                // should still capture them
+                coords = mediaControlsButtonCoordinates(video, "current-time-display");
+                eventSender.mouseMoveTo(coords[0], coords[1]);
+
+                eventSender.mouseDown();
+                eventSender.mouseUp();
+                eventSender.keyDown('A');
+
+                // Click the timeline - this tests that multilevel shadow DOM elements work
+                coords = mediaControlsButtonCoordinates(video, "timeline");
+                eventSender.mouseMoveTo(coords[0], coords[1]);
+
+                eventSender.mouseDown();
+                eventSender.mouseUp();
+                eventSender.keyDown('A');
+
+                waitForEventAndFail("mousemove")
+                
+                // Check that the timeline also captures mousemove
+                eventSender.mouseMoveTo(coords[0]+10, coords[1]+10)
+            }
+        });
+        video.src = findMediaFile("video", "content/test");
+    </script>
+</body>
+</html>

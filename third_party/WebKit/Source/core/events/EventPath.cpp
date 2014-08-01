@@ -119,6 +119,8 @@ void EventPath::calculatePath()
     if (!m_node->inDocument())
         return;
     while (current) {
+        if (m_event && current->keepEventInNode(m_event))
+            break;
         if (current->isShadowRoot() && m_event && determineDispatchBehavior(m_event, toShadowRoot(current), m_node) == StayInsideShadowDOM)
             break;
         WillBeHeapVector<RawPtrWillBeMember<InsertionPoint>, 8> insertionPoints;
