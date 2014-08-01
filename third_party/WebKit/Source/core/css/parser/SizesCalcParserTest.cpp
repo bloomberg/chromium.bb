@@ -20,6 +20,7 @@ struct TestCase {
     const unsigned output;
     const bool valid;
     const bool dontRunInCSSCalc;
+    const bool viewportDependant;
 };
 
 static void initLengthArray(CSSLengthArray& lengthArray)
@@ -52,51 +53,52 @@ static void verifyCSSCalc(String text, double value, bool valid, unsigned fontSi
 TEST(SizesCalcParserTest, Basic)
 {
     TestCase testCases[] = {
-        {"calc(500px + 10em)", 660, true, false},
-        {"calc(500px + 2 * 10em)", 820, true, false},
-        {"calc(500px + 2*10em)", 820, true, false},
-        {"calc(500px + 0.5*10em)", 580, true, false},
-        {"calc(500px + (0.5*10em + 13px))", 593, true, false},
-        {"calc(100vw + (0.5*10em + 13px))", 593, true, false},
-        {"calc(100vh + (0.5*10em + 13px))", 736, true, false},
-        {"calc(100vh + calc(0.5*10em + 13px))", 736, true, true}, // CSSCalculationValue does not parse internal "calc(".
-        {"calc(100vh + (50%*10em + 13px))", 0, false, false},
-        {"calc(50em+13px)", 0, false, false},
-        {"calc(50em-13px)", 0, false, false},
-        {"calc(500px + 10)", 0, false, false},
-        {"calc(500 + 10)", 0, false, false},
-        {"calc(500px + 10s)", 0, false, true}, // This test ASSERTs in CSSCalculationValue.
-        {"calc(500px + 1cm)", 537, true, false},
-        {"calc(500px - 10s)", 0, false, true}, // This test ASSERTs in CSSCalculationValue.
-        {"calc(500px - 1cm)", 462, true, false},
-        {"calc(50px*10)", 500, true, false},
-        {"calc(50px*10px)", 0, false, false},
-        {"calc(50px/10px)", 0, false, false},
-        {"calc(500px/10)", 50, true, false},
-        {"calc(500/10)", 0, false, false},
-        {"calc(500px/0.5)", 1000, true, false},
-        {"calc(500px/.5)", 1000, true, false},
-        {"calc(500/0)", 0, false, false},
-        {"calc(500px/0)", 0, false, false},
-        {"calc(-500px/10)", 0, true, true}, // CSSCalculationValue does not clamp negative values to 0.
-        {"calc(((4) * ((10px))))", 40, true, false},
-        {"calc(50px / 0)", 0, false, false},
-        {"calc(50px / (10 + 10))", 2, true, false},
-        {"calc(50px / (10 - 10))", 0, false, false},
-        {"calc(50px / (10 * 10))", 0, true, false},
-        {"calc(50px / (10 / 10))", 50, true, false},
-        {"calc(200px*)", 0, false, false},
-        {"calc(+ +200px)", 0, false, false},
-        {"calc()", 0, false, false},
-        {"calc(100px + + +100px)", 0, false, false},
-        {"calc(200px 200px)", 0, false, false},
-        {"calc(100px * * 2)", 0, false, false},
-        {"calc(100px @ 2)", 0, false, false},
-        {"calc(1 flim 2)", 0, false, false},
-        {"calc(100px @ 2)", 0, false, false},
-        {"calc(1 flim 2)", 0, false, false},
-        {"calc(1 flim (2))", 0, false, false},
-        {0, 0, true, false} // Do not remove the terminator line.
+        {"calc(500px + 10em)", 660, true, false, false},
+        {"calc(500px + 2 * 10em)", 820, true, false, false},
+        {"calc(500px + 2*10em)", 820, true, false, false},
+        {"calc(500px + 0.5*10em)", 580, true, false, false},
+        {"calc(500px + (0.5*10em + 13px))", 593, true, false, false},
+        {"calc(100vw + (0.5*10em + 13px))", 593, true, false, true},
+        {"calc(100vh + (0.5*10em + 13px))", 736, true, false, true},
+        {"calc(100vh + calc(0.5*10em + 13px))", 736, true, true, true}, // CSSCalculationValue does not parse internal "calc(".
+        {"calc(100vh + (50%*10em + 13px))", 0, false, false, true},
+        {"calc(50em+13px)", 0, false, false, false},
+        {"calc(50em-13px)", 0, false, false, false},
+        {"calc(500px + 10)", 0, false, false, false},
+        {"calc(500 + 10)", 0, false, false, false},
+        {"calc(500px + 10s)", 0, false, true, false}, // This test ASSERTs in CSSCalculationValue.
+        {"calc(500px + 1cm)", 537, true, false, false},
+        {"calc(500px - 10s)", 0, false, true, false}, // This test ASSERTs in CSSCalculationValue.
+        {"calc(500px - 1cm)", 462, true, false, false},
+        {"calc(500px - 1vw)", 495, true, false, true},
+        {"calc(50px*10)", 500, true, false, false},
+        {"calc(50px*10px)", 0, false, false, false},
+        {"calc(50px/10px)", 0, false, false, false},
+        {"calc(500px/10)", 50, true, false, false},
+        {"calc(500/10)", 0, false, false, false},
+        {"calc(500px/0.5)", 1000, true, false, false},
+        {"calc(500px/.5)", 1000, true, false, false},
+        {"calc(500/0)", 0, false, false, false},
+        {"calc(500px/0)", 0, false, false, false},
+        {"calc(-500px/10)", 0, true, true, false}, // CSSCalculationValue does not clamp negative values to 0.
+        {"calc(((4) * ((10px))))", 40, true, false, false},
+        {"calc(50px / 0)", 0, false, false, false},
+        {"calc(50px / (10 + 10))", 2, true, false, false},
+        {"calc(50px / (10 - 10))", 0, false, false, false},
+        {"calc(50px / (10 * 10))", 0, true, false, false},
+        {"calc(50px / (10 / 10))", 50, true, false, false},
+        {"calc(200px*)", 0, false, false, false},
+        {"calc(+ +200px)", 0, false, false, false},
+        {"calc()", 0, false, false, false},
+        {"calc(100px + + +100px)", 0, false, false, false},
+        {"calc(200px 200px)", 0, false, false, false},
+        {"calc(100px * * 2)", 0, false, false, false},
+        {"calc(100px @ 2)", 0, false, false, false},
+        {"calc(1 flim 2)", 0, false, false, false},
+        {"calc(100px @ 2)", 0, false, false, false},
+        {"calc(1 flim 2)", 0, false, false, false},
+        {"calc(1 flim (2))", 0, false, false, false},
+        {0, 0, true, false, false} // Do not remove the terminator line.
     };
 
 
@@ -118,11 +120,12 @@ TEST(SizesCalcParserTest, Basic)
     for (unsigned i = 0; testCases[i].input; ++i) {
         Vector<MediaQueryToken> tokens;
         MediaQueryTokenizer::tokenize(testCases[i].input, tokens);
-        unsigned output;
-        bool valid = SizesCalcParser::parse(tokens.begin(), tokens.end(), mediaValues, output);
-        ASSERT_EQ(testCases[i].valid, valid);
-        if (valid)
-            ASSERT_EQ(testCases[i].output, output);
+        SizesCalcParser calcParser(tokens.begin(), tokens.end(), mediaValues);
+        ASSERT_EQ(testCases[i].valid, calcParser.isValid());
+        if (calcParser.isValid()) {
+            ASSERT_EQ(testCases[i].output, calcParser.result());
+            ASSERT_EQ(testCases[i].viewportDependant, calcParser.viewportDependant());
+        }
     }
 
     for (unsigned i = 0; testCases[i].input; ++i) {

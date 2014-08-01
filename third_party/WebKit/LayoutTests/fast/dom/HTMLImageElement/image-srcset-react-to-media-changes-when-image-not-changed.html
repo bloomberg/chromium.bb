@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<script src="../../../resources/js-test.js"></script>
+<script>
+var jsTestIsAsync = true;
+var img;
+
+onload = function() {
+    var iframe = document.getElementById('frame');
+    var iframeDoc = iframe.contentWindow.document;
+
+    iframeDoc.body.innerHTML = '<img id="srcset" srcset="resources/blue_rect.jpg 75w, resources/image-set-4x.png 120w">';
+
+    img = iframeDoc.getElementById('srcset');
+
+    var first = true;
+    img.onload = function() {
+        if (first) {
+            first = false;
+            shouldNotBe('img.currentSrc.indexOf("blue_rect")', '-1');
+            shouldBe('img.width', '70');
+            iframe.style.width = '75px';
+            // Make sure that once 2 RAFs have passed, the image is set to the right dimensions.
+            requestAnimationFrame(function() {
+                requestAnimationFrame(function() {
+                    setTimeout(function() {
+                    shouldNotBe('img.currentSrc.indexOf("blue_rect")', '-1');
+                    shouldBe('img.width', '75');
+                    finishJSTest();
+                    }, 0);
+                });
+            });
+        }
+    };
+    img.onerror = function() {
+        testFailed('Image should have loaded');
+    };
+}
+</script>
+
+<iframe id="frame" style="width: 70px;"></iframe>

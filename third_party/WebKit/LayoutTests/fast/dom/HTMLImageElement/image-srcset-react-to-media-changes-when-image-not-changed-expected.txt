@@ -1,0 +1,8 @@
+PASS img.currentSrc.indexOf("blue_rect") is not -1
+PASS img.width is 70
+PASS img.currentSrc.indexOf("blue_rect") is not -1
+PASS img.width is 75
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -49,6 +49,32 @@ namespace blink {
 
 using namespace HTMLNames;
 
+class HTMLImageElement::ViewportChangeListener FINAL : public MediaQueryListListener {
+public:
+    static RefPtrWillBeRawPtr<ViewportChangeListener> create(HTMLImageElement* element)
+    {
+        return adoptRefWillBeNoop(new ViewportChangeListener(element));
+    }
+
+    virtual void call() OVERRIDE
+    {
+        if (m_element)
+            m_element->notifyViewportChanged();
+    }
+
+#if !ENABLE(OILPAN)
+    void clearElement() { m_element = nullptr; }
+#endif
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_element);
+        MediaQueryListListener::trace(visitor);
+    }
+private:
+    explicit ViewportChangeListener(HTMLImageElement* element) : m_element(element) { }
+    RawPtrWillBeMember<HTMLImageElement> m_element;
+};
+
 HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form, bool createdByParser)
     : HTMLElement(imgTag, document)
     , m_imageLoader(HTMLImageLoader::create(this))
@@ -56,6 +82,8 @@ HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form, bo
     , m_imageDevicePixelRatio(1.0f)
     , m_formWasSetByParser(false)
     , m_elementCreatedByParser(createdByParser)
+    , m_intrinsicSizingViewportDependant(false)
+    , m_effectiveSizeViewportDependant(false)
 {
     ScriptWrappable::init(this);
     if (form && form->inDocument()) {
@@ -83,6 +111,10 @@ PassRefPtrWillBeRawPtr<HTMLImageElement> HTMLImageElement::create(Document& docu
 HTMLImageElement::~HTMLImageElement()
 {
 #if !ENABLE(OILPAN)
+    if (m_listener) {
+        document().mediaQueryMatcher().removeViewportListener(m_listener.get());
+        m_listener->clearElement();
+    }
     if (m_form)
         m_form->disassociate(*this);
 #endif
@@ -91,8 +123,17 @@ HTMLImageElement::~HTMLImageElement()
 void HTMLImageElement::trace(Visitor* visitor)
 {
     visitor->trace(m_imageLoader);
+    visitor->trace(m_listener);
     visitor->trace(m_form);
     HTMLElement::trace(visitor);
+}
+
+void HTMLImageElement::notifyViewportChanged()
+{
+    // Re-selecting the source URL in order to pick a more fitting resource
+    // And update the image's intrinsic dimensions when the viewport changes.
+    // Picking of a better fitting resource is UA dependant, not spec required.
+    selectSourceURL(ImageLoader::UpdateSizeChanged);
 }
 
 PassRefPtrWillBeRawPtr<HTMLImageElement> HTMLImageElement::createForJSConstructor(Document& document, int width, int height)
@@ -183,6 +224,8 @@ void HTMLImageElement::setBestFitURLAndDPRFromImageCandidate(const ImageCandidat
     float candidateDensity = candidate.density();
     if (candidateDensity >= 0)
         m_imageDevicePixelRatio = 1.0 / candidateDensity;
+    if (candidate.resourceWidth() > 0)
+        m_intrinsicSizingViewportDependant = true;
     if (renderer() && renderer()->isImage())
         toRenderImage(renderer())->setImageDevicePixelRatio(m_imageDevicePixelRatio);
 }
@@ -249,7 +292,9 @@ ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
         if (!source->mediaQueryMatches())
             continue;
 
-        unsigned effectiveSize = SizesAttributeParser::findEffectiveSize(source->fastGetAttribute(sizesAttr), MediaValuesDynamic::create(document()));
+        SizesAttributeParser parser = SizesAttributeParser(MediaValuesDynamic::create(document()), source->fastGetAttribute(sizesAttr));
+        unsigned effectiveSize = parser.length();
+        m_effectiveSizeViewportDependant = parser.viewportDependant();
         ImageCandidate candidate = bestFitSourceForSrcsetAttribute(document().devicePixelRatio(), effectiveSize, source->fastGetAttribute(srcsetAttr));
         if (candidate.isEmpty())
             continue;
@@ -573,10 +618,17 @@ void HTMLImageElement::selectSourceURL(ImageLoader::UpdateFromElementBehavior be
 
     if (!foundURL) {
         unsigned effectiveSize = 0;
-        if (RuntimeEnabledFeatures::pictureSizesEnabled())
-            effectiveSize = SizesAttributeParser::findEffectiveSize(fastGetAttribute(sizesAttr), MediaValuesDynamic::create(document()));
+        if (RuntimeEnabledFeatures::pictureSizesEnabled()) {
+            SizesAttributeParser parser = SizesAttributeParser(MediaValuesDynamic::create(document()), fastGetAttribute(sizesAttr));
+            effectiveSize = parser.length();
+            m_effectiveSizeViewportDependant = parser.viewportDependant();
+        }
         ImageCandidate candidate = bestFitSourceForImageAttributes(document().devicePixelRatio(), effectiveSize, fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr));
         setBestFitURLAndDPRFromImageCandidate(candidate);
+    }
+    if (m_intrinsicSizingViewportDependant && m_effectiveSizeViewportDependant && !m_listener.get()) {
+        m_listener = ViewportChangeListener::create(this);
+        document().mediaQueryMatcher().addViewportListener(m_listener.get());
     }
     imageLoader().updateFromElement(behavior);
 }

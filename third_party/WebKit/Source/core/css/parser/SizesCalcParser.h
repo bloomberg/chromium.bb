@@ -34,16 +34,15 @@ struct SizesCalcValue {
 class SizesCalcParser {
 
 public:
-    static bool parse(MediaQueryTokenIterator start, MediaQueryTokenIterator end, PassRefPtr<MediaValues>, unsigned& result);
+    SizesCalcParser(MediaQueryTokenIterator start, MediaQueryTokenIterator end, PassRefPtr<MediaValues>);
+
+    bool viewportDependant() const { return m_viewportDependant; }
+    unsigned result() const;
+    bool isValid() const { return m_isValid; }
 
 private:
-    SizesCalcParser(PassRefPtr<MediaValues> mediaValues)
-        : m_mediaValues(mediaValues)
-    {
-    }
-
     bool calcToReversePolishNotation(MediaQueryTokenIterator start, MediaQueryTokenIterator end);
-    bool calculate(unsigned& result);
+    bool calculate();
     void appendNumber(const MediaQueryToken&);
     bool appendLength(const MediaQueryToken&);
     bool handleOperator(Vector<MediaQueryToken>& stack, const MediaQueryToken&);
@@ -51,6 +50,9 @@ private:
 
     Vector<SizesCalcValue> m_valueList;
     RefPtr<MediaValues> m_mediaValues;
+    bool m_viewportDependant;
+    bool m_isValid;
+    unsigned m_result;
 };
 
 } // namespace blink

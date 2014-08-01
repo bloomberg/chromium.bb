@@ -75,7 +75,9 @@ public:
         // This should be the update behavior when the resource was changed (via 'src', 'srcset' or 'sizes').
         // Starts a new load even if a previous load of the same resource have failed, to match Firefox's behavior.
         // FIXME - Verify that this is the right behavior according to the spec.
-        UpdateIgnorePreviousError
+        UpdateIgnorePreviousError,
+        // This forces the image to update its intrinsic size, even if the image source has not changed.
+        UpdateSizeChanged
     };
 
     enum BypassMainWorldBehavior {
@@ -118,7 +120,7 @@ private:
     class Task;
 
     // Called from the task or from updateFromElement to initiate the load.
-    void doUpdateFromElement(BypassMainWorldBehavior);
+    void doUpdateFromElement(BypassMainWorldBehavior, UpdateFromElementBehavior);
 
     virtual void dispatchLoadEvent() = 0;
     virtual String sourceURI(const AtomicString&) const = 0;
@@ -135,7 +137,7 @@ private:
     void sourceImageChanged();
     void clearFailedLoadURL();
     void crossSiteOrCSPViolationOccured(AtomicString);
-    void enqueueImageLoadingMicroTask();
+    void enqueueImageLoadingMicroTask(UpdateFromElementBehavior);
     static ResourcePtr<ImageResource> createImageResourceForImageDocument(Document&, FetchRequest&);
 
     void timerFired(Timer<ImageLoader>*);

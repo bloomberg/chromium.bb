@@ -10,12 +10,18 @@
 
 namespace blink {
 
-bool SizesCalcParser::parse(MediaQueryTokenIterator start, MediaQueryTokenIterator end, PassRefPtr<MediaValues> mediaValues, unsigned& result)
+SizesCalcParser::SizesCalcParser(MediaQueryTokenIterator start, MediaQueryTokenIterator end, PassRefPtr<MediaValues> mediaValues)
+    : m_mediaValues(mediaValues)
+    , m_viewportDependant(false)
+    , m_result(0)
 {
-    SizesCalcParser parser(mediaValues);
-    if (!parser.calcToReversePolishNotation(start, end))
-        return false;
-    return parser.calculate(result);
+    m_isValid = calcToReversePolishNotation(start, end) && calculate();
+}
+
+unsigned SizesCalcParser::result() const
+{
+    ASSERT(m_isValid);
+    return m_result;
 }
 
 static bool operatorPriority(UChar cc, bool& highPriority)
@@ -93,6 +99,7 @@ bool SizesCalcParser::calcToReversePolishNotation(MediaQueryTokenIterator start,
             appendNumber(*it);
             break;
         case DimensionToken:
+            m_viewportDependant = m_viewportDependant || CSSPrimitiveValue::isViewportPercentageLength(it->unitType());
             if (!CSSPrimitiveValue::isLength(it->unitType()) || !appendLength(*it))
                 return false;
             break;
@@ -193,7 +200,7 @@ static bool operateOnStack(Vector<SizesCalcValue>& stack, UChar operation)
     return true;
 }
 
-bool SizesCalcParser::calculate(unsigned& result)
+bool SizesCalcParser::calculate()
 {
     Vector<SizesCalcValue> stack;
     for (Vector<SizesCalcValue>::iterator it = m_valueList.begin(); it != m_valueList.end(); ++it) {
@@ -205,7 +212,7 @@ bool SizesCalcParser::calculate(unsigned& result)
         }
     }
     if (stack.size() == 1 && stack.last().isLength) {
-        result = clampTo<unsigned>(stack.last().value);
+        m_result = clampTo<unsigned>(stack.last().value);
         return true;
     }
     return false;

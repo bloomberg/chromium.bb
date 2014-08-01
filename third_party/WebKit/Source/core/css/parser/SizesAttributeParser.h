@@ -15,16 +15,12 @@ namespace blink {
 class SizesAttributeParser {
     STACK_ALLOCATED();
 public:
-    static unsigned findEffectiveSize(const String& attribute, PassRefPtr<MediaValues>);
+    SizesAttributeParser(PassRefPtr<MediaValues>, const String&);
+
+    bool viewportDependant() const { return m_viewportDependant; }
+    unsigned length();
 
 private:
-    SizesAttributeParser(PassRefPtr<MediaValues> mediaValues)
-        : m_mediaValues(mediaValues)
-        , m_length(0)
-        , m_lengthWasSet(false)
-    {
-    }
-
     bool parse(Vector<MediaQueryToken>& tokens);
     bool parseMediaConditionAndLength(MediaQueryTokenIterator startToken, MediaQueryTokenIterator endToken);
     unsigned effectiveSize();
@@ -36,6 +32,9 @@ private:
     RefPtr<MediaValues> m_mediaValues;
     unsigned m_length;
     bool m_lengthWasSet;
+    bool m_viewportDependant;
+    Vector<MediaQueryToken> m_tokens;
+    bool m_isValid;
 };
 
 } // namespace

@@ -64,6 +64,12 @@ public:
     inline void setImageDevicePixelRatio(float factor) { m_imageDevicePixelRatio = factor; }
     float imageDevicePixelRatio() const { return m_imageDevicePixelRatio; }
 
+    virtual void intrinsicSizeChanged() OVERRIDE
+    {
+        if (m_imageResource)
+            imageChanged(m_imageResource->imagePtr());
+    }
+
 protected:
     virtual bool needsPreferredWidthsRecalculation() const OVERRIDE FINAL;
     virtual RenderBox* embeddedContentBox() const OVERRIDE FINAL;
@@ -75,12 +81,6 @@ protected:
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE FINAL;
     virtual void layout() OVERRIDE;
     virtual bool updateImageLoadingPriorities() OVERRIDE FINAL;
-
-    virtual void intrinsicSizeChanged() OVERRIDE
-    {
-        if (m_imageResource)
-            imageChanged(m_imageResource->imagePtr());
-    }
 
 private:
     virtual const char* renderName() const OVERRIDE { return "RenderImage"; }

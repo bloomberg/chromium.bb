@@ -12,15 +12,21 @@
 
 namespace blink {
 
-unsigned SizesAttributeParser::findEffectiveSize(const String& attribute, PassRefPtr<MediaValues> mediaValues)
+SizesAttributeParser::SizesAttributeParser(PassRefPtr<MediaValues> mediaValues, const String& attribute)
+    : m_mediaValues(mediaValues)
+    , m_length(0)
+    , m_lengthWasSet(false)
+    , m_viewportDependant(false)
 {
-    Vector<MediaQueryToken> tokens;
-    SizesAttributeParser parser(mediaValues);
+    MediaQueryTokenizer::tokenize(attribute, m_tokens);
+    m_isValid = parse(m_tokens);
+}
 
-    MediaQueryTokenizer::tokenize(attribute, tokens);
-    if (!parser.parse(tokens))
-        return parser.effectiveSizeDefaultValue();
-    return parser.effectiveSize();
+unsigned SizesAttributeParser::length()
+{
+    if (m_isValid)
+        return effectiveSize();
+    return effectiveSizeDefaultValue();
 }
 
 bool SizesAttributeParser::calculateLengthInPixels(MediaQueryTokenIterator startToken, MediaQueryTokenIterator endToken, unsigned& result)
@@ -32,12 +38,18 @@ bool SizesAttributeParser::calculateLengthInPixels(MediaQueryTokenIterator start
         int length;
         if (!CSSPrimitiveValue::isLength(startToken->unitType()))
             return false;
+        m_viewportDependant = CSSPrimitiveValue::isViewportPercentageLength(startToken->unitType());
         if ((m_mediaValues->computeLength(startToken->numericValue(), startToken->unitType(), length)) && (length > 0)) {
             result = (unsigned)length;
             return true;
         }
     } else if (type == FunctionToken) {
-        return SizesCalcParser::parse(startToken, endToken, m_mediaValues, result);
+        SizesCalcParser calcParser(startToken, endToken, m_mediaValues);
+        if (!calcParser.isValid())
+            return false;
+        m_viewportDependant = calcParser.viewportDependant();
+        result = calcParser.result();
+        return true;
     } else if (type == NumberToken && !startToken->numericValue()) {
         result = 0;
         return true;
@@ -133,7 +145,8 @@ unsigned SizesAttributeParser::effectiveSize()
 
 unsigned SizesAttributeParser::effectiveSizeDefaultValue()
 {
-    // Returning the equivalent of "100%"
+    // Returning the equivalent of "100vw"
+    m_viewportDependant = true;
     return m_mediaValues->viewportWidth();
 }
 

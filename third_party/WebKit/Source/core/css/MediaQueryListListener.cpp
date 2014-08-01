@@ -31,6 +31,7 @@ MediaQueryListListener::MediaQueryListListener()
     // only for use by subclasses
 }
 
+// FIXME: Rename MediaQueryListListener to something more generic, once it's no longer Web exposed.
 MediaQueryListListener::MediaQueryListListener(ScriptState* scriptState, const ScriptValue& function)
     : m_scriptState(scriptState)
     , m_function(function)

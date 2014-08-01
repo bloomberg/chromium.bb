@@ -72,22 +72,23 @@ static ImageLoader::BypassMainWorldBehavior shouldBypassMainWorldCSP(ImageLoader
 
 class ImageLoader::Task : public blink::WebThread::Task {
 public:
-    static PassOwnPtr<Task> create(ImageLoader* loader)
+    static PassOwnPtr<Task> create(ImageLoader* loader, UpdateFromElementBehavior updateBehavior)
     {
-        return adoptPtr(new Task(loader));
+        return adoptPtr(new Task(loader, updateBehavior));
     }
 
-    Task(ImageLoader* loader)
+    Task(ImageLoader* loader, UpdateFromElementBehavior updateBehavior)
         : m_loader(loader)
         , m_shouldBypassMainWorldCSP(shouldBypassMainWorldCSP(loader))
         , m_weakFactory(this)
+        , m_updateBehavior(updateBehavior)
     {
     }
 
     virtual void run() OVERRIDE
     {
         if (m_loader) {
-            m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP);
+            m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP, m_updateBehavior);
         }
     }
 
@@ -105,6 +106,7 @@ private:
     ImageLoader* m_loader;
     BypassMainWorldBehavior m_shouldBypassMainWorldCSP;
     WeakPtrFactory<Task> m_weakFactory;
+    UpdateFromElementBehavior m_updateBehavior;
 };
 
 ImageLoader::ImageLoader(Element* element)
@@ -210,15 +212,15 @@ inline void ImageLoader::clearFailedLoadURL()
     m_failedLoadURL = AtomicString();
 }
 
-inline void ImageLoader::enqueueImageLoadingMicroTask()
+inline void ImageLoader::enqueueImageLoadingMicroTask(UpdateFromElementBehavior updateBehavior)
 {
-    OwnPtr<Task> task = Task::create(this);
+    OwnPtr<Task> task = Task::create(this, updateBehavior);
     m_pendingTask = task->createWeakPtr();
     Microtask::enqueueMicrotask(task.release());
     m_loadDelayCounter = IncrementLoadEventDelayCount::create(m_element->document());
 }
 
-void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior)
+void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, UpdateFromElementBehavior updateBehavior)
 {
     // We don't need to call clearLoader here: Either we were called from the
     // task, or our caller updateFromElement cleared the task's loader (and set
@@ -288,6 +290,8 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior)
 
         if (oldImage)
             oldImage->removeClient(this);
+    } else if (updateBehavior == UpdateSizeChanged && m_element->renderer() && m_element->renderer()->isImage()) {
+        toRenderImage(m_element->renderer())->intrinsicSizeChanged();
     }
 
     if (RenderImageResource* imageResource = renderImageResource())
@@ -298,11 +302,11 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior)
     updatedHasPendingEvent();
 }
 
-void ImageLoader::updateFromElement(UpdateFromElementBehavior behavior, LoadType loadType)
+void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior, LoadType loadType)
 {
     AtomicString imageSourceURL = m_element->imageSourceURL();
 
-    if (behavior == UpdateIgnorePreviousError)
+    if (updateBehavior == UpdateIgnorePreviousError)
         clearFailedLoadURL();
 
     if (!m_failedLoadURL.isEmpty() && imageSourceURL == m_failedLoadURL)
@@ -317,10 +321,10 @@ void ImageLoader::updateFromElement(UpdateFromElementBehavior behavior, LoadType
 
     KURL url = imageSourceToKURL(imageSourceURL);
     if (imageSourceURL.isNull() || url.isNull() || shouldLoadImmediately(url, loadType)) {
-        doUpdateFromElement(DoNotBypassMainWorldCSP);
+        doUpdateFromElement(DoNotBypassMainWorldCSP, updateBehavior);
         return;
     }
-    enqueueImageLoadingMicroTask();
+    enqueueImageLoadingMicroTask(updateBehavior);
 }
 
 KURL ImageLoader::imageSourceToKURL(AtomicString imageSourceURL) const

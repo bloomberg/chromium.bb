@@ -100,6 +100,20 @@ void MediaQueryMatcher::removeMediaQueryList(MediaQueryList* query)
     m_mediaLists.remove(query);
 }
 
+void MediaQueryMatcher::addViewportListener(MediaQueryListListener* listener)
+{
+    if (!m_document)
+        return;
+    m_viewportListeners.add(listener);
+}
+
+void MediaQueryMatcher::removeViewportListener(MediaQueryListListener* listener)
+{
+    if (!m_document)
+        return;
+    m_viewportListeners.remove(listener);
+}
+
 void MediaQueryMatcher::mediaFeaturesChanged()
 {
     if (!m_document)
@@ -108,6 +122,17 @@ void MediaQueryMatcher::mediaFeaturesChanged()
     WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> > listenersToNotify;
     for (MediaQueryListSet::iterator it = m_mediaLists.begin(); it != m_mediaLists.end(); ++it)
         (*it)->mediaFeaturesChanged(&listenersToNotify);
+    m_document->enqueueMediaQueryChangeListeners(listenersToNotify);
+}
+
+void MediaQueryMatcher::viewportChanged()
+{
+    if (!m_document)
+        return;
+
+    WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> > listenersToNotify;
+    for (ViewportListenerSet::iterator it = m_viewportListeners.begin(); it != m_viewportListeners.end(); ++it)
+        listenersToNotify.append(*it);
 
     m_document->enqueueMediaQueryChangeListeners(listenersToNotify);
 }

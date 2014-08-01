@@ -34,9 +34,12 @@ namespace blink {
 
 class HTMLFormElement;
 class ImageCandidate;
+class MediaQueryList;
 
 class HTMLImageElement FINAL : public HTMLElement, public CanvasImageSource {
 public:
+    class ViewportChangeListener;
+
     static PassRefPtrWillBeRawPtr<HTMLImageElement> create(Document&);
     static PassRefPtrWillBeRawPtr<HTMLImageElement> create(Document&, HTMLFormElement*, bool createdByParser);
     static PassRefPtrWillBeRawPtr<HTMLImageElement> createForJSConstructor(Document&, int width, int height);
@@ -129,8 +132,11 @@ private:
     ImageCandidate findBestFitImageFromPictureParent();
     void setBestFitURLAndDPRFromImageCandidate(const ImageCandidate&);
     HTMLImageLoader& imageLoader() const { return *m_imageLoader; }
+    void notifyViewportChanged();
+    void createMediaQueryListIfDoesNotExist();
 
     OwnPtrWillBeMember<HTMLImageLoader> m_imageLoader;
+    RefPtrWillBeMember<ViewportChangeListener> m_listener;
 #if ENABLE(OILPAN)
     Member<HTMLFormElement> m_form;
 #else
@@ -139,8 +145,12 @@ private:
     CompositeOperator m_compositeOperator;
     AtomicString m_bestFitImageURL;
     float m_imageDevicePixelRatio;
-    bool m_formWasSetByParser;
-    bool m_elementCreatedByParser;
+    unsigned m_formWasSetByParser : 1;
+    unsigned m_elementCreatedByParser : 1;
+    // Intrinsic sizing is viewport dependant if the 'w' descriptor was used for the picked resource.
+    unsigned m_intrinsicSizingViewportDependant : 1;
+    // Effective size is viewport dependant if the sizes attribute's effective size used v* length units.
+    unsigned m_effectiveSizeViewportDependant : 1;
 };
 
 } //namespace
