@@ -755,7 +755,7 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
   osutils.SafeMakedirs(libdir)
   donelibs = set()
   for elf in elfs:
-    e = lddtree.ParseELF(elf, root, ldpaths)
+    e = lddtree.ParseELF(elf, root=root, ldpaths=ldpaths)
     interp = e['interp']
     if interp:
       # Generate a wrapper if it is executable.
