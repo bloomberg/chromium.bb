@@ -20,6 +20,8 @@ int WebModifiersToUIFlags(int modifiers) {
     flags |= ui::EF_CONTROL_DOWN;
   if (modifiers & blink::WebInputEvent::AltKey)
     flags |= ui::EF_ALT_DOWN;
+  if (modifiers & blink::WebInputEvent::MetaKey)
+    flags |= ui::EF_COMMAND_DOWN;
 
   if (modifiers & blink::WebInputEvent::LeftButtonDown)
     flags |= ui::EF_LEFT_MOUSE_BUTTON;
@@ -249,7 +251,9 @@ int EventFlagsToWebEventModifiers(int flags) {
     modifiers |= blink::WebInputEvent::ControlKey;
   if (flags & ui::EF_ALT_DOWN)
     modifiers |= blink::WebInputEvent::AltKey;
-  // TODO(beng): MetaKey/META_MASK
+  if (flags & ui::EF_COMMAND_DOWN)
+    modifiers |= blink::WebInputEvent::MetaKey;
+
   if (flags & ui::EF_LEFT_MOUSE_BUTTON)
     modifiers |= blink::WebInputEvent::LeftButtonDown;
   if (flags & ui::EF_MIDDLE_MOUSE_BUTTON)
