@@ -534,6 +534,7 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
+      # GN version: //extensions/renderer
       'target_name': 'extensions_renderer',
       'type': 'static_library',
       'dependencies': [
@@ -696,6 +697,7 @@
       ]
     },
     {
+      # GN version: //extensions:test_support
       'target_name': 'extensions_test_support',
       'type': 'static_library',
       'dependencies': [

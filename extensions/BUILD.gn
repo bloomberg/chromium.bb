@@ -35,3 +35,41 @@ grit("extensions_renderer_resources") {
     "//device/serial:serial_mojo",
   ]
 }
+
+source_set("test_support") {
+  sources = [
+    "browser/api/dns/mock_host_resolver_creator.cc",
+    "browser/api/dns/mock_host_resolver_creator.h",
+    "browser/api_test_utils.cc",
+    "browser/api_test_utils.h",
+    "browser/test_extensions_browser_client.cc",
+    "browser/test_extensions_browser_client.h",
+    "browser/test_management_policy.cc",
+    "browser/test_management_policy.h",
+    "browser/test_runtime_api_delegate.cc",
+    "browser/test_runtime_api_delegate.h",
+    "common/extension_builder.cc",
+    "common/extension_builder.h",
+    "common/test_util.cc",
+    "common/test_util.h",
+    "common/value_builder.cc",
+    "common/value_builder.h",
+    "renderer/test_extensions_renderer_client.cc",
+    "renderer/test_extensions_renderer_client.h",
+  ]
+
+  deps = [
+    "//base",
+    "//extensions/browser",
+    "//extensions/common",
+    "//extensions/common/api",
+    "//net:test_support",
+    "//testing/gtest",
+  ]
+
+  if (is_win) {
+    cflags = [
+      "/wd4267", # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    ]
+  }
+}

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# GYP version: extensions/extensions.gyp:extensions_renderer
 source_set("renderer") {
   sources = [
     "activity_log_converter_strategy.cc",
