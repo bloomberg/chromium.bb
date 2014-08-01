@@ -2138,7 +2138,7 @@ name=bug_372254
 UNINITIALIZED READ
 name=drm_i#1546
 *!testing::internal::CmpHelperEQ<>
-*!testing::internal::EqHelper<>::Compare<>
+...
 *!content::BrowserPluginTest_ResizeFlowControl_Test::TestBody
 
 UNINITIALIZED READ
