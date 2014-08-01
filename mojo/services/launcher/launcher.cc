@@ -35,7 +35,7 @@ class LauncherConnection : public InterfaceImpl<Launcher> {
 
  private:
   // Overridden from Launcher:
-  virtual void Launch(const String& url,
+  virtual void Launch(NavigationDetailsPtr nav_details,
                       const LaunchCallback& callback) OVERRIDE;
 
   LauncherApp* app_;
@@ -47,7 +47,7 @@ class LaunchInstance {
  public:
   LaunchInstance(LauncherApp* app,
                  const LaunchCallback& callback,
-                 const String& url);
+                 NavigationDetailsPtr nav_details);
   virtual ~LaunchInstance() {}
 
  private:
@@ -127,28 +127,28 @@ class LauncherApp : public ApplicationDelegate {
   DISALLOW_COPY_AND_ASSIGN(LauncherApp);
 };
 
-void LauncherConnection::Launch(const String& url_string,
+void LauncherConnection::Launch(NavigationDetailsPtr nav_details,
                                 const LaunchCallback& callback) {
-  GURL url(url_string.To<std::string>());
+  GURL url(nav_details->request->url.To<std::string>());
 
   // For Mojo URLs, the handler can always be found at the origin.
   // TODO(aa): Return error for invalid URL?
   if (url.is_valid() && url.SchemeIs("mojo")) {
-    callback.Run(url.GetOrigin().spec(), url_string, ResponseDetailsPtr());
+    callback.Run(url.GetOrigin().spec(),
+                 nav_details->request->url,
+                 ResponseDetailsPtr());
     return;
   }
-  new LaunchInstance(app_, callback, url_string);
+  new LaunchInstance(app_, callback, nav_details.Pass());
 }
 
 LaunchInstance::LaunchInstance(LauncherApp* app,
                                const LaunchCallback& callback,
-                               const String& url)
+                               NavigationDetailsPtr nav_details)
     : app_(app),
       destroy_scheduled_(false),
       callback_(callback) {
-  URLRequestPtr request(URLRequest::New());
-  request->url = url;
-  request->method = "GET";
+  URLRequestPtr request = nav_details->request.Pass();
   request->auto_follow_redirects = true;
 
   url_loader_ = app_->CreateURLLoader();

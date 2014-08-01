@@ -19,19 +19,20 @@ enum Target {
 };
 
 struct NavigationDetails {
-  string url;
-  // TODO(aa): method, data, etc.
+  // TODO(mpcomplete): will we ever need more than the URLRequest? Can
+  // we pass that around directly?
+  URLRequest request = default;
 };
 
 struct ResponseDetails {
   // TODO(beng): consider providing access to URLRequest too. Currently it is
   //             not possible to obtain from the URLLoader.
 
-  mojo.URLResponse response;
+  URLResponse response;
 
   // The URLLoader instance that generated the response. This must be kept
   // alive until the response body has been completely consumed.
-  mojo.URLLoader loader;
+  URLLoader loader;
 };
 
 // Embedders that support navigation of implement this interface.

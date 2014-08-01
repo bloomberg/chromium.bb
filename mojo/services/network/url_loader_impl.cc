@@ -4,11 +4,14 @@
 
 #include "mojo/services/network/url_loader_impl.h"
 
+#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/services/network/network_context.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
+#include "net/base/upload_bytes_element_reader.h"
+#include "net/base/upload_data_stream.h"
 #include "net/http/http_response_headers.h"
 
 namespace mojo {
@@ -52,6 +55,50 @@ NetworkErrorPtr MakeNetworkError(int error_code) {
   error->description = net::ErrorToString(error_code);
   return error.Pass();
 }
+
+// Reads the request body upload data from a DataPipe.
+class UploadDataPipeElementReader : public net::UploadElementReader {
+ public:
+  UploadDataPipeElementReader(ScopedDataPipeConsumerHandle pipe)
+      : pipe_(pipe.Pass()), num_bytes_(0) {}
+  virtual ~UploadDataPipeElementReader() {}
+
+  // UploadElementReader overrides:
+  virtual int Init(const net::CompletionCallback& callback) OVERRIDE {
+    offset_ = 0;
+    ReadDataRaw(pipe_.get(), NULL, &num_bytes_, MOJO_READ_DATA_FLAG_QUERY);
+    return net::OK;
+  }
+  virtual uint64 GetContentLength() const OVERRIDE {
+    return num_bytes_;
+  }
+  virtual uint64 BytesRemaining() const OVERRIDE {
+    return num_bytes_ - offset_;
+  }
+  virtual bool IsInMemory() const OVERRIDE {
+    return false;
+  }
+  virtual int Read(net::IOBuffer* buf,
+                   int buf_length,
+                   const net::CompletionCallback& callback) OVERRIDE {
+    uint32_t bytes_read =
+        std::min(BytesRemaining(), static_cast<uint64>(buf_length));
+    if (bytes_read > 0) {
+      ReadDataRaw(pipe_.get(), buf->data(), &bytes_read,
+                  MOJO_READ_DATA_FLAG_NONE);
+    }
+
+    offset_ += bytes_read;
+    return bytes_read;
+  }
+
+ private:
+  ScopedDataPipeConsumerHandle pipe_;
+  uint32_t num_bytes_;
+  uint32_t offset_;
+
+  DISALLOW_COPY_AND_ASSIGN(UploadDataPipeElementReader);
+};
 
 }  // namespace
 
@@ -142,9 +189,17 @@ void URLLoaderImpl::Start(URLRequestPtr request,
       headers.AddHeaderFromString(request->headers[i].To<base::StringPiece>());
     url_request_->SetExtraRequestHeaders(headers);
   }
+  if (request->body) {
+    ScopedVector<net::UploadElementReader> element_readers;
+    for (size_t i = 0; i < request->body.size(); ++i) {
+      element_readers.push_back(
+          new UploadDataPipeElementReader(request->body[i].Pass()));
+    }
+    url_request_->set_upload(make_scoped_ptr(
+        new net::UploadDataStream(element_readers.Pass(), 0)));
+  }
   if (request->bypass_cache)
     url_request_->SetLoadFlags(net::LOAD_BYPASS_CACHE);
-  // TODO(darin): Handle request body.
 
   callback_ = callback;
   response_body_buffer_size_ = request->response_body_buffer_size;

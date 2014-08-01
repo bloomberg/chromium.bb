@@ -67,6 +67,7 @@ void WebURLLoaderImpl::loadAsynchronously(const blink::WebURLRequest& request,
 
   URLRequestPtr url_request(URLRequest::New());
   url_request->url = String::From(url_);
+  url_request->method = request.httpMethod().utf8();
   url_request->auto_follow_redirects = false;
   // TODO(darin): Copy other fields.
 
@@ -113,7 +114,12 @@ void WebURLLoaderImpl::OnReceivedResponse(URLResponsePtr url_response) {
   } else if (url_response->redirect_url) {
     OnReceivedRedirect(url_response.Pass());
   } else {
+    base::WeakPtr<WebURLLoaderImpl> self(weak_factory_.GetWeakPtr());
     client_->didReceiveResponse(this, ToWebURLResponse(url_response));
+
+    // We may have been deleted during didReceiveResponse.
+    if (!self)
+      return;
 
     // Start streaming data
     response_body_stream_ = url_response->body.Pass();

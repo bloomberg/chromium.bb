@@ -23,8 +23,8 @@ interface Launcher {
   //
   // Note: |response| can be NULL in the case where a request was not needed to
   // determine the correct handler.
-  Launch(string url) => (string handler_url, string view_url,
-                         ResponseDetails response);
+  Launch(NavigationDetails details) =>
+      (string handler_url, string view_url, ResponseDetails response);
 };
 
 }

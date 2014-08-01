@@ -129,7 +129,7 @@ void DebugPanel::ButtonPressed(views::Button* sender, const ui::Event& event) {
 
 void DebugPanel::Navigate(const std::string& url) {
   NavigationDetailsPtr details(NavigationDetails::New());
-  details->url = url;
+  details->request->url = url;
   delegate_->RequestNavigate(node_->id(), TARGET_NEW_NODE, details.Pass());
 }
 

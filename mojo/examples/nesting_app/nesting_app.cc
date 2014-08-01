@@ -63,7 +63,7 @@ class NestingApp
   void NavigateChild() {
     if (!color_.empty() && nested_) {
       NavigationDetailsPtr details(NavigationDetails::New());
-      details->url =
+      details->request->url =
           base::StringPrintf("%s/%s", kEmbeddedAppURL, color_.c_str());
       ResponseDetailsPtr response_details(ResponseDetails::New());
       navigator_->Navigate(
@@ -132,7 +132,7 @@ class NestingApp
 void NavigatorImpl::Navigate(uint32 node_id,
                              NavigationDetailsPtr navigation_details,
                              ResponseDetailsPtr response_details) {
-  GURL url(navigation_details->url.To<std::string>());
+  GURL url(navigation_details->request->url.To<std::string>());
   if (!url.is_valid()) {
     LOG(ERROR) << "URL is invalid.";
     return;

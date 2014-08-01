@@ -313,7 +313,7 @@ class WindowManager
     uint32 source_node_id,
     Target target,
     NavigationDetailsPtr nav_details) OVERRIDE {
-    launcher_->Launch(nav_details->url,
+    launcher_->Launch(nav_details.Pass(),
                       base::Bind(&WindowManager::OnLaunch,
                                  base::Unretained(this),
                                  source_node_id,
@@ -388,8 +388,11 @@ class WindowManager
       const mojo::String& handler_url,
       const mojo::String& view_url,
       ResponseDetailsPtr response) {
+    // TODO(mpcomplete): This seems to be unused in favor of |response|. We
+    // might need to use it (and fill it in properly, with method, etc) if we
+    // need to preserve that information.
     NavigationDetailsPtr nav_details(NavigationDetails::New());
-    nav_details->url = view_url;
+    nav_details->request->url = view_url;
 
     Target target = debug_panel_->navigation_target();
     if (target == TARGET_DEFAULT) {

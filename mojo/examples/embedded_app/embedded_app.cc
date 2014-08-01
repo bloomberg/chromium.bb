@@ -96,7 +96,8 @@ class EmbeddedApp
     if (event->action == EVENT_TYPE_MOUSE_RELEASED) {
       if (event->flags & EVENT_FLAGS_LEFT_MOUSE_BUTTON) {
         NavigationDetailsPtr nav_details(NavigationDetails::New());
-        nav_details->url = "http://www.aaronboodman.com/z_dropbox/test.html";
+        nav_details->request->url =
+            "http://www.aaronboodman.com/z_dropbox/test.html";
         navigator_host_->RequestNavigate(view->node()->id(),
                                          TARGET_SOURCE_NODE,
                                          nav_details.Pass());
@@ -153,7 +154,7 @@ class EmbeddedApp
 void NavigatorImpl::Navigate(uint32 node_id,
                              NavigationDetailsPtr navigation_details,
                              ResponseDetailsPtr response_details) {
-  GURL url(navigation_details->url.To<std::string>());
+  GURL url(navigation_details->request->url.To<std::string>());
   if (!url.is_valid()) {
     LOG(ERROR) << "URL is invalid.";
     return;

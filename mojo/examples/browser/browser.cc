@@ -226,7 +226,7 @@ class Browser : public ApplicationDelegate,
       GURL url(sender->text());
       printf("User entered this URL: %s\n", url.spec().c_str());
       NavigationDetailsPtr nav_details(NavigationDetails::New());
-      nav_details->url = String::From(url);
+      nav_details->request->url = String::From(url);
       navigator_host_->RequestNavigate(view_manager_->GetRoots().front()->id(),
                                        TARGET_NEW_NODE,
                                        nav_details.Pass());
