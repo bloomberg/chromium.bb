@@ -259,6 +259,16 @@ void DevToolsUIBindings::FrontendWebContentsObserver::WebContentsDestroyed() {
 
 void DevToolsUIBindings::FrontendWebContentsObserver::RenderProcessGone(
     base::TerminationStatus status) {
+  switch (status) {
+    case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
+    case base::TERMINATION_STATUS_PROCESS_CRASHED:
+      content::DevToolsManager::GetInstance()->ClientHostClosing(
+          devtools_bindings_);
+      break;
+    default:
+      break;
+  }
   devtools_bindings_->delegate_->RenderProcessGone();
 }
 
@@ -266,10 +276,13 @@ void DevToolsUIBindings::FrontendWebContentsObserver::AboutToNavigateRenderView(
     content::RenderViewHost* render_view_host) {
   content::NavigationEntry* entry =
       web_contents()->GetController().GetActiveEntry();
-  if (devtools_bindings_->url_ == entry->GetURL())
-    content::DevToolsClientHost::SetupDevToolsFrontendClient(render_view_host);
-  else
+  if (devtools_bindings_->url_ == entry->GetURL()) {
+    devtools_bindings_->frontend_host_.reset(
+        content::DevToolsFrontendHost::Create(
+            render_view_host, devtools_bindings_));
+  } else {
     delete devtools_bindings_;
+  }
 }
 
 void DevToolsUIBindings::FrontendWebContentsObserver::
@@ -314,8 +327,6 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents,
   frontend_contents_observer_.reset(new FrontendWebContentsObserver(this));
   web_contents_->GetMutableRendererPrefs()->can_accept_load_drops = false;
 
-  frontend_host_.reset(content::DevToolsClientHost::CreateDevToolsFrontendHost(
-      web_contents_, this));
   file_helper_.reset(new DevToolsFileHelper(web_contents_, profile_));
   file_system_indexer_ = new DevToolsFileSystemIndexer();
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
@@ -342,8 +353,7 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents,
 }
 
 DevToolsUIBindings::~DevToolsUIBindings() {
-  content::DevToolsManager::GetInstance()->ClientHostClosing(
-      frontend_host_.get());
+  content::DevToolsManager::GetInstance()->ClientHostClosing(this);
 
   for (IndexingJobsMap::const_iterator jobs_it(indexing_jobs_.begin());
        jobs_it != indexing_jobs_.end(); ++jobs_it) {
@@ -354,10 +364,7 @@ DevToolsUIBindings::~DevToolsUIBindings() {
   SetDevicesUpdatesEnabled(false);
 }
 
-void DevToolsUIBindings::InspectedContentsClosing() {
-  delegate_->InspectedContentsClosing();
-}
-
+// content::NotificationObserver overrides ------------------------------------
 void DevToolsUIBindings::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
@@ -365,7 +372,9 @@ void DevToolsUIBindings::Observe(int type,
   UpdateTheme();
 }
 
-void DevToolsUIBindings::DispatchOnEmbedder(const std::string& message) {
+// content::DevToolsFrontendHost::Delegate implementation ---------------------
+void DevToolsUIBindings::HandleMessageFromDevToolsFrontend(
+    const std::string& message) {
   std::string method;
   base::ListValue empty_params;
   base::ListValue* params = &empty_params;
@@ -394,6 +403,27 @@ void DevToolsUIBindings::DispatchOnEmbedder(const std::string& message) {
   }
 }
 
+void DevToolsUIBindings::HandleMessageFromDevToolsFrontendToBackend(
+    const std::string& message) {
+  content::DevToolsManager::GetInstance()->DispatchOnInspectorBackend(
+      this, message);
+}
+
+// content::DevToolsClientHost implementation ---------------------------------
+void DevToolsUIBindings::DispatchOnInspectorFrontend(
+    const std::string& message) {
+  if (frontend_host_)
+    frontend_host_->DispatchOnDevToolsFrontend(message);
+}
+
+void DevToolsUIBindings::InspectedContentsClosing() {
+  delegate_->InspectedContentsClosing();
+}
+
+void DevToolsUIBindings::ReplacedWithAnotherClient() {
+}
+
+// DevToolsEmbedderMessageDispatcher::Delegate implementation -----------------
 void DevToolsUIBindings::ActivateWindow() {
   delegate_->ActivateWindow();
 }

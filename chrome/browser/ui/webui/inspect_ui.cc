@@ -295,7 +295,7 @@ void InspectUI::InspectBrowserWithCustomFrontend(
 
   // Engage remote debugging between front-end and agent host.
   content::DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
-      agent_host, bindings->frontend_host());
+      agent_host, bindings);
 }
 
 void InspectUI::InspectDevices(Browser* browser) {

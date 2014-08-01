@@ -18,7 +18,7 @@
 #include "chrome/browser/devtools/devtools_file_system_indexer.h"
 #include "chrome/browser/devtools/devtools_targets_ui.h"
 #include "content/public/browser/devtools_client_host.h"
-#include "content/public/browser/devtools_frontend_host_delegate.h"
+#include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/size.h"
@@ -34,9 +34,10 @@ class WebContents;
 
 // Base implementation of DevTools bindings around front-end.
 class DevToolsUIBindings : public content::NotificationObserver,
-                           public content::DevToolsFrontendHostDelegate,
+                           public content::DevToolsFrontendHost::Delegate,
                            public DevToolsEmbedderMessageDispatcher::Delegate,
-                           public DevToolsAndroidBridge::DeviceCountListener {
+                           public DevToolsAndroidBridge::DeviceCountListener,
+                           public content::DevToolsClientHost {
  public:
   static GURL ApplyThemeToURL(Profile* profile, const GURL& base_url);
 
@@ -65,7 +66,6 @@ class DevToolsUIBindings : public content::NotificationObserver,
 
   content::WebContents* web_contents() { return web_contents_; }
   Profile* profile() { return profile_; }
-  content::DevToolsClientHost* frontend_host() { return frontend_host_.get(); }
 
   // Takes ownership over the |delegate|.
   void SetDelegate(Delegate* delegate);
@@ -74,16 +74,23 @@ class DevToolsUIBindings : public content::NotificationObserver,
                           const base::Value* arg2,
                           const base::Value* arg3);
  private:
-  // content::NotificationObserver:
+  // content::NotificationObserver overrides.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // content::DevToolsFrontendHostDelegate override:
-  virtual void InspectedContentsClosing() OVERRIDE;
-  virtual void DispatchOnEmbedder(const std::string& message) OVERRIDE;
+  // content::DevToolsFrontendHost::Delegate implementation.
+  virtual void HandleMessageFromDevToolsFrontend(
+      const std::string& message) OVERRIDE;
+  virtual void HandleMessageFromDevToolsFrontendToBackend(
+      const std::string& message) OVERRIDE;
 
-  // DevToolsEmbedderMessageDispatcher::Delegate overrides:
+  // content::DevToolsClientHost implementation.
+  virtual void DispatchOnInspectorFrontend(const std::string& message) OVERRIDE;
+  virtual void InspectedContentsClosing() OVERRIDE;
+  virtual void ReplacedWithAnotherClient() OVERRIDE;
+
+  // DevToolsEmbedderMessageDispatcher::Delegate implementation.
   virtual void ActivateWindow() OVERRIDE;
   virtual void CloseWindow() OVERRIDE;
   virtual void SetInspectedPageBounds(const gfx::Rect& rect) OVERRIDE;
@@ -163,7 +170,7 @@ class DevToolsUIBindings : public content::NotificationObserver,
   content::WebContents* web_contents_;
   scoped_ptr<Delegate> delegate_;
   content::NotificationRegistrar registrar_;
-  scoped_ptr<content::DevToolsClientHost> frontend_host_;
+  scoped_ptr<content::DevToolsFrontendHost> frontend_host_;
   scoped_ptr<DevToolsFileHelper> file_helper_;
   scoped_refptr<DevToolsFileSystemIndexer> file_system_indexer_;
   typedef std::map<

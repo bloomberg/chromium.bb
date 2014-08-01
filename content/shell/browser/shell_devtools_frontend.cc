@@ -106,8 +106,6 @@ ShellDevToolsFrontend::ShellDevToolsFrontend(Shell* frontend_shell,
     : WebContentsObserver(frontend_shell->web_contents()),
       frontend_shell_(frontend_shell),
       agent_host_(agent_host) {
-  frontend_host_.reset(
-      DevToolsClientHost::CreateDevToolsFrontendHost(web_contents(), this));
 }
 
 ShellDevToolsFrontend::~ShellDevToolsFrontend() {
@@ -115,11 +113,11 @@ ShellDevToolsFrontend::~ShellDevToolsFrontend() {
 
 void ShellDevToolsFrontend::RenderViewCreated(
     RenderViewHost* render_view_host) {
-  DevToolsClientHost::SetupDevToolsFrontendClient(
-      web_contents()->GetRenderViewHost());
-  DevToolsManager* manager = DevToolsManager::GetInstance();
-  manager->RegisterDevToolsClientHostFor(agent_host_.get(),
-                                         frontend_host_.get());
+  if (!frontend_host_) {
+    frontend_host_.reset(DevToolsFrontendHost::Create(render_view_host, this));
+    DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
+        agent_host_.get(), this);
+  }
 }
 
 void ShellDevToolsFrontend::DocumentOnLoadCompletedInMainFrame() {
@@ -128,13 +126,25 @@ void ShellDevToolsFrontend::DocumentOnLoadCompletedInMainFrame() {
 }
 
 void ShellDevToolsFrontend::WebContentsDestroyed() {
-  DevToolsManager::GetInstance()->ClientHostClosing(frontend_host_.get());
+  DevToolsManager::GetInstance()->ClientHostClosing(this);
   delete this;
 }
 
 void ShellDevToolsFrontend::RenderProcessGone(base::TerminationStatus status) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     WebKitTestController::Get()->DevToolsProcessCrashed();
+}
+
+void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontendToBackend(
+    const std::string& message) {
+  DevToolsManager::GetInstance()->DispatchOnInspectorBackend(
+      this, message);
+}
+
+void ShellDevToolsFrontend::DispatchOnInspectorFrontend(
+    const std::string& message) {
+  if (frontend_host_)
+    frontend_host_->DispatchOnDevToolsFrontend(message);
 }
 
 void ShellDevToolsFrontend::InspectedContentsClosing() {
