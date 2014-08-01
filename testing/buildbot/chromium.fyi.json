@@ -223,9 +223,10 @@
       "browser_tests"
     ]
   },
-  "Chromium Linux MSan": {
+  "Linux MSan Tests": {
     "gtest_tests": [
       "accessibility_unittests",
+      "app_shell_browsertests",
       "base_unittests",
       "cacheinvalidation_unittests",
       "cc_unittests",
@@ -250,9 +251,19 @@
       "url_unittests"
     ]
   },
-  "Chromium Linux MSan (browser tests)": {
+  "Linux MSan Browser (1)": {
     "gtest_tests": [
-      "browser_tests"
+      {"test": "browser_tests", "shard_index": 0, "total_shards": 3}
+    ]
+  },
+  "Linux MSan Browser (2)": {
+    "gtest_tests": [
+      {"test": "browser_tests", "shard_index": 1, "total_shards": 3}
+    ]
+  },
+  "Linux MSan Browser (3)": {
+    "gtest_tests": [
+      {"test": "browser_tests", "shard_index": 2, "total_shards": 3}
     ]
   }
 }
