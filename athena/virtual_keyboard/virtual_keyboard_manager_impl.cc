@@ -109,6 +109,7 @@ VirtualKeyboardManager* VirtualKeyboardManager::Create(
     content::BrowserContext* browser_context) {
   CHECK(!instance);
   keyboard::InitializeKeyboard();
+  keyboard::SetTouchKeyboardEnabled(true);
   new VirtualKeyboardManagerImpl(browser_context);
   CHECK(instance);
   return instance;
