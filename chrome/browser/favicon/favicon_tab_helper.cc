@@ -43,7 +43,7 @@ FaviconTabHelper::FaviconTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())) {
   client_ = ChromeFaviconClientFactory::GetForProfile(profile_);
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   bool download_largest_icon = true;
 #else
   bool download_largest_icon = false;

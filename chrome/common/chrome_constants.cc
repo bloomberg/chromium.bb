@@ -226,7 +226,7 @@ const bool kRecordModeEnabled = true;
 
 const int kJavaScriptMessageExpectedDelay = 1000;
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
 const bool kEnableTouchIcon = true;
 #else
 const bool kEnableTouchIcon = false;
