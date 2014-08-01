@@ -37,7 +37,7 @@ namespace blink {
 
 class AutoStamper {
 public:
-    AutoStamper(ProfilingCanvas*);
+    explicit AutoStamper(ProfilingCanvas*);
     ~AutoStamper();
 
 private:

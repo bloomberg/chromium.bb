@@ -37,7 +37,7 @@ namespace blink {
 
 class AutoReplayer {
 public:
-    AutoReplayer(ReplayingCanvas*);
+    explicit AutoReplayer(ReplayingCanvas*);
     ~AutoReplayer();
 
 private:
@@ -70,10 +70,12 @@ void ReplayingCanvas::resetStepCount()
 
 void ReplayingCanvas::updateInRange()
 {
+    if (m_abortDrawing)
+        return;
     if (m_toStep && m_stepCount > m_toStep)
         m_abortDrawing = true;
     if (m_stepCount == m_fromStep)
-        this->SkCanvas::clear(SkColorSetARGB(255, 255, 255, 255)); // FIXME: get layers background color, it might make resulting image a bit more plausable.
+        this->SkCanvas::clear(SkColorSetARGB(255, 255, 255, 255)); // FIXME: fill with nine patch instead.
 }
 
 bool ReplayingCanvas::abortDrawing()
@@ -278,6 +280,11 @@ void ReplayingCanvas::willSave()
 SkCanvas::SaveLayerStrategy ReplayingCanvas::willSaveLayer(const SkRect* bounds, const SkPaint* paint, SaveFlags flags)
 {
     AutoReplayer replayer(this);
+    // We're about to create a layer and we have not cleared the device yet.
+    // Let's clear now, so it has effect on all layers.
+    if (m_stepCount < m_fromStep)
+        this->SkCanvas::clear(SkColorSetARGB(255, 255, 255, 255)); // FIXME: fill with nine patch instead.
+
     return this->SkCanvas::willSaveLayer(bounds, paint, flags);
 }
 

@@ -106,12 +106,12 @@ PassOwnPtr<Vector<char> > GraphicsContextSnapshot::replay(unsigned fromStep, uns
     int height = ceil(scale * m_picture->height());
     SkBitmap bitmap;
     bitmap.allocPixels(SkImageInfo::MakeN32Premul(width, height));
-    ReplayingCanvas canvas(bitmap, fromStep, toStep);
-    canvas.scale(scale, scale);
-    canvas.resetStepCount();
-
-    m_picture->draw(&canvas, &canvas);
-
+    {
+        ReplayingCanvas canvas(bitmap, fromStep, toStep);
+        canvas.scale(scale, scale);
+        canvas.resetStepCount();
+        m_picture->draw(&canvas, &canvas);
+    }
     OwnPtr<Vector<char> > base64Data = adoptPtr(new Vector<char>());
     Vector<char> encodedImage;
     if (!PNGImageEncoder::encode(bitmap, reinterpret_cast<Vector<unsigned char>*>(&encodedImage)))

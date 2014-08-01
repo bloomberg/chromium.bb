@@ -41,7 +41,7 @@ namespace blink {
 
 class AutoLogger {
 public:
-    AutoLogger(LoggingCanvas*);
+    explicit AutoLogger(LoggingCanvas*);
     PassRefPtr<JSONObject> logItem(const String& name);
     PassRefPtr<JSONObject> logItemWithParams(const String& name);
     ~AutoLogger();
@@ -365,15 +365,25 @@ void LoggingCanvas::didSetMatrix(const SkMatrix& matrix)
 
 void LoggingCanvas::didConcat(const SkMatrix& matrix)
 {
+    AutoLogger logger(this);
+    RefPtr<JSONObject> params;
+
     switch (matrix.getType()) {
     case SkMatrix::kTranslate_Mask:
-        translate(matrix.getTranslateX(), matrix.getTranslateY());
+        params = logger.logItemWithParams("translate");
+        params->setNumber("dx", matrix.getTranslateX());
+        params->setNumber("dy", matrix.getTranslateY());
         break;
+
     case SkMatrix::kScale_Mask:
-        scale(matrix.getScaleX(), matrix.getScaleY());
+        params = logger.logItemWithParams("scale");
+        params->setNumber("scaleX", matrix.getScaleX());
+        params->setNumber("scaleY", matrix.getScaleY());
         break;
+
     default:
-        concat(matrix);
+        params = logger.logItemWithParams("concat");
+        params->setArray("matrix", arrayForSkMatrix(matrix));
     }
     this->SkCanvas::didConcat(matrix);
 }
@@ -816,29 +826,6 @@ String LoggingCanvas::regionOpName(SkRegion::Op op)
     case SkRegion::kReplace_Op: return "kReplace_Op";
     default: return "Unknown type";
     };
-}
-
-void LoggingCanvas::translate(SkScalar dx, SkScalar dy)
-{
-    AutoLogger logger(this);
-    RefPtr<JSONObject> params = logger.logItemWithParams("translate");
-    params->setNumber("dx", dx);
-    params->setNumber("dy", dy);
-}
-
-void LoggingCanvas::scale(SkScalar scaleX, SkScalar scaleY)
-{
-    AutoLogger logger(this);
-    RefPtr<JSONObject> params = logger.logItemWithParams("scale");
-    params->setNumber("scaleX", scaleX);
-    params->setNumber("scaleY", scaleY);
-}
-
-void LoggingCanvas::concat(const SkMatrix& matrix)
-{
-    AutoLogger logger(this);
-    RefPtr<JSONObject> params = logger.logItemWithParams("concat");
-    params->setArray("matrix", arrayForSkMatrix(matrix));
 }
 
 String LoggingCanvas::saveFlagsToString(SkCanvas::SaveFlags flags)
