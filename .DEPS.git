@@ -9,7 +9,7 @@ vars = {
     'git_url':
          'https://chromium.googlesource.com',
     'webkit_rev':
-         '@1d7de29052c0fc0a3c0240b13be34476519b228d',
+         '@02abcc18d6a3d2f187b85d2f238103e1057e4118',
     'angle_revision':
          '07d49ef5350a95cfd6321226c178d22cc73aebc9'
 }
@@ -240,7 +240,7 @@ deps_os = {
         'src/third_party/mesa/src':
             None,
         'src/third_party/nss':
-            Var('git_url') + '/chromium/deps/nss.git@68d9da88919a50cd6a5140e2ea1f1572de3d257f',
+            Var('git_url') + '/chromium/deps/nss.git@980afa3f6c54b09b45e4060ab64243a0d46c8071',
         'src/third_party/openmax_dl':
             None,
         'src/third_party/opus/src':
@@ -287,7 +287,7 @@ deps_os = {
         'src/third_party/lighttpd':
             Var('git_url') + '/chromium/deps/lighttpd.git@9dfa55d15937a688a92cbf2b7a8621b0927d06eb',
         'src/third_party/nss':
-            Var('git_url') + '/chromium/deps/nss.git@68d9da88919a50cd6a5140e2ea1f1572de3d257f',
+            Var('git_url') + '/chromium/deps/nss.git@980afa3f6c54b09b45e4060ab64243a0d46c8071',
         'src/third_party/pdfsqueeze':
             Var('git_url') + '/external/pdfsqueeze.git@5936b871e6a087b7e50d4cbcb122378d8a07499f',
         'src/third_party/swig/mac':
@@ -337,7 +337,7 @@ deps_os = {
         'src/third_party/nacl_sdk_binaries':
             Var('git_url') + '/chromium/deps/nacl_sdk_binaries.git@759dfca03bdc774da7ecbf974f6e2b84f43699a5',
         'src/third_party/nss':
-            Var('git_url') + '/chromium/deps/nss.git@68d9da88919a50cd6a5140e2ea1f1572de3d257f',
+            Var('git_url') + '/chromium/deps/nss.git@980afa3f6c54b09b45e4060ab64243a0d46c8071',
         'src/third_party/pefile':
             Var('git_url') + '/external/pefile.git@72c6ae42396cb913bcab63c15585dc3b5c3f92f1',
         'src/third_party/perl':
