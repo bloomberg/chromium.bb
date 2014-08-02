@@ -5616,7 +5616,7 @@
    bug_332335
    Memcheck:Param
    sendmsg(msg.msg_iov[0])
-   fun:sys_sendmsg
+   ...
    fun:_ZN8breakpad12_GLOBAL__N_122NonBrowserCrashHandler11RequestDumpEPKvm
    fun:_ZN15google_breakpad16ExceptionHandler12GenerateDumpEPNS0_12CrashContextE
    fun:_ZN15google_breakpad16ExceptionHandler12HandleSignalEiP7siginfoPv
@@ -5758,6 +5758,7 @@
    obj:/lib/x86_64-linux-gnu/libpthread-2.15.so
    fun:_ZN3IPC12ChannelPosix23ProcessOutgoingMessagesEv
    fun:_ZN3IPC12ChannelPosix29OnFileCanWriteWithoutBlockingEi
+   ...
    fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcher29OnFileCanWriteWithoutBlockingEiPS0_
    ...
    fun:event_process_active
