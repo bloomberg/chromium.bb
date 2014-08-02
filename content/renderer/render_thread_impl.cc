@@ -1531,7 +1531,7 @@ void RenderThreadImpl::OnMemoryPressure(
   // Trigger full v8 garbage collection on critical memory notification. This
   // will potentially hang the renderer for a long time, however, when we
   // receive a memory pressure notification, we might be about to be killed.
-  if (blink::mainThreadIsolate()) {
+  if (webkit_platform_support_ && blink::mainThreadIsolate()) {
     blink::mainThreadIsolate()->LowMemoryNotification();
   }
 
