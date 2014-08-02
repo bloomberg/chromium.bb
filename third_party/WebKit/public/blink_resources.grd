@@ -9,6 +9,26 @@
   </outputs>
   <release seq="1">
     <includes>
+      <include name="IDR_UASTYLE_HTML_CSS" file="../Source/core/css/html.css" type="BINDATA"/>
+      <include name="IDR_UASTYLE_QUIRKS_CSS" file="../Source/core/css/quirks.css" type="BINDATA"/>
+      <include name="IDR_UASTYLE_VIEW_SOURCE_CSS" file="../Source/core/css/view-source.css" type="BINDATA"/>
+      <include name="IDR_UASTYLE_THEME_CHROMIUM_CSS" file="../Source/core/css/themeChromium.css" type="BINDATA"/>
+      <include name="IDR_UASTYLE_THEME_CHROMIUM_ANDROID_CSS" file="../Source/core/css/themeChromiumAndroid.css" type="BINDATA"/>
+      <include name="IDR_UASTYLE_THEME_CHROMIUM_LINUX_CSS" file="../Source/core/css/themeChromiumLinux.css" type="BINDATA"/>
+      <include name="IDR_UASTYLE_THEME_CHROMIUM_SKIA_CSS" file="../Source/core/css/themeChromiumSkia.css" type="BINDATA"/>
+      <include name="IDR_UASTYLE_THEME_INPUT_MULTIPLE_FIELDS_CSS" file="../Source/core/css/themeInputMultipleFields.css" type="BINDATA"/>
+      <include name="IDR_UASTYLE_THEME_MAC_CSS" file="../Source/core/css/themeMac.css" type="BINDATA"/>
+      <include name="IDR_UASTYLE_THEME_WIN_CSS" file="../Source/core/css/themeWin.css" type="BINDATA"/>
+      <include name="IDR_UASTYLE_THEME_WIN_QUIRKS_CSS" file="../Source/core/css/themeWinQuirks.css" type="BINDATA"/>
+      <include name="IDR_UASTYLE_SVG_CSS" file="../Source/core/css/svg.css" type="BINDATA"/>
+      <include name="IDR_UASTYLE_NAVIGATION_TRANSITIONS_CSS" file="../Source/core/css/navigationTransitions.css" type="BINDATA"/>
+      <include name="IDR_UASTYLE_MATHML_CSS" file="../Source/core/css/mathml.css" type="BINDATA"/>
+      <include name="IDR_UASTYLE_MEDIA_CONTROLS_CSS" file="../Source/core/css/mediaControls.css" type="BINDATA"/>
+      <include name="IDR_UASTYLE_MEDIA_CONTROLS_ANDROID_CSS" file="../Source/core/css/mediaControlsAndroid.css" type="BINDATA"/>
+      <include name="IDR_UASTYLE_FULLSCREEN_CSS" file="../Source/core/css/fullscreen.css" type="BINDATA"/>
+      <include name="IDR_UASTYLE_XHTMLMP_CSS" file="../Source/core/css/xhtmlmp.css" type="BINDATA"/>
+      <include name="IDR_UASTYLE_VIEWPORT_ANDROID_CSS" file="../Source/core/css/viewportAndroid.css" type="BINDATA"/>
+
       <include name="IDR_XML_VIEWER_JS" file="../Source/core/xml/XMLViewer.js" type="BINDATA"/>
       <include name="IDR_XML_VIEWER_CSS" file="../Source/core/xml/XMLViewer.css" type="BINDATA"/>
       <include name="IDR_INSPECTOR_OVERLAY_PAGE_HTML" file="../Source/core/inspector/InspectorOverlayPage.html" type="BINDATA"/>
