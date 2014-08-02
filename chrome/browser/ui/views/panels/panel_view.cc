@@ -1122,15 +1122,6 @@ bool PanelView::IsAnimatingBounds() const {
   return stack->IsAnimatingPanelBounds(panel_.get());
 }
 
-bool PanelView::IsWithinResizingArea(const gfx::Point& mouse_location) const {
-  gfx::Rect bounds = window_->GetWindowBoundsInScreen();
-  DCHECK(bounds.Contains(mouse_location));
-  return mouse_location.x() < bounds.x() + kResizeInsideBoundsSize ||
-         mouse_location.x() >= bounds.right() - kResizeInsideBoundsSize ||
-         mouse_location.y() < bounds.y() + kResizeInsideBoundsSize ||
-         mouse_location.y() >= bounds.bottom() - kResizeInsideBoundsSize;
-}
-
 #if defined(OS_WIN)
 void PanelView::UpdateWindowAttribute(int attribute_index,
                                       int attribute_value_to_set,

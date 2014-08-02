@@ -96,12 +96,6 @@ class PanelView : public NativePanel,
   PanelFrameView* GetFrameView() const;
   bool IsAnimatingBounds() const;
 
-  // The panel does not show a resizing border. Instead, the inner content area
-  // can be used to trigger the mouse resizing. Return true if |mouse_location|
-  // falls within this area.
-  // |mouse_location| is in screen coordinate system.
-  bool IsWithinResizingArea(const gfx::Point& mouse_location) const;
-
   Panel* panel() const { return panel_.get(); }
   views::Widget* window() const { return window_; }
   bool force_to_paint_as_inactive() const {

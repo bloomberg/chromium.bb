@@ -558,16 +558,16 @@ void PanelFrameView::OnPaint(gfx::Canvas* canvas) {
 }
 
 bool PanelFrameView::OnMousePressed(const ui::MouseEvent& event) {
-  if (event.IsOnlyLeftMouseButton()) {
+  // If the mouse location falls within the resizing area of the titlebar, do
+  // not handle the event so that the system resizing logic can kick in.
+  if (event.IsOnlyLeftMouseButton() &&
+      !IsWithinResizingArea(event.location())) {
     // |event.location| is in the view's coordinate system. Convert it to the
     // screen coordinate system.
     gfx::Point mouse_location = event.location();
     views::View::ConvertPointToScreen(this, &mouse_location);
 
-    // If the mouse location falls within the resizing area of the titlebar,
-    // do not handle the event so that the system resizing logic could kick in.
-    if (!panel_view_->IsWithinResizingArea(mouse_location) &&
-        panel_view_->OnTitlebarMousePressed(mouse_location))
+    if (panel_view_->OnTitlebarMousePressed(mouse_location))
       return true;
   }
   return NonClientFrameView::OnMousePressed(event);
@@ -765,4 +765,12 @@ void PanelFrameView::PaintFrameEdge(gfx::Canvas* canvas) {
                        height() - top_left_image.height() -
                            bottom_left_image.height());
 #endif
+}
+
+bool PanelFrameView::IsWithinResizingArea(
+    const gfx::Point& mouse_location) const {
+  panel::Resizability resizability = panel_view_->panel()->CanResizeByMouse();
+  int edge_hittest = GetFrameEdgeHitTest(
+      mouse_location, size(), PanelView::kResizeInsideBoundsSize, resizability);
+  return edge_hittest != HTNOWHERE;
 }
