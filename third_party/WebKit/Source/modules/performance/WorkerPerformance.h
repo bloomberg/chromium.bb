@@ -41,13 +41,12 @@ namespace blink {
 class ExecutionContext;
 class MemoryInfo;
 
-class WorkerPerformance : public GarbageCollectedFinalized<WorkerPerformance>, public ScriptWrappable {
+class WorkerPerformance FINAL : public GarbageCollected<WorkerPerformance>, public ScriptWrappable {
 public:
     static WorkerPerformance* create()
     {
         return new WorkerPerformance();
     }
-    ~WorkerPerformance();
 
     double now(ExecutionContext*) const;
     PassRefPtrWillBeRawPtr<MemoryInfo> memory() const;

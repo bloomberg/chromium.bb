@@ -46,10 +46,6 @@ DeprecatedStorageInfo::DeprecatedStorageInfo()
     ScriptWrappable::init(this);
 }
 
-DeprecatedStorageInfo::~DeprecatedStorageInfo()
-{
-}
-
 void DeprecatedStorageInfo::queryUsageAndQuota(ExecutionContext* executionContext, int storageType, PassOwnPtr<StorageUsageCallback> successCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
 {
     // Dispatching the request to DeprecatedStorageQuota, as this interface is deprecated in favor of DeprecatedStorageQuota.

@@ -43,10 +43,6 @@ WorkerPerformance::WorkerPerformance()
     ScriptWrappable::init(this);
 }
 
-WorkerPerformance::~WorkerPerformance()
-{
-}
-
 double WorkerPerformance::now(ExecutionContext* context) const
 {
     ASSERT(context);

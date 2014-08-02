@@ -40,8 +40,4 @@ StorageInfo::StorageInfo(unsigned long long usage, unsigned long long quota)
     ScriptWrappable::init(this);
 }
 
-StorageInfo::~StorageInfo()
-{
-}
-
 } // namespace blink

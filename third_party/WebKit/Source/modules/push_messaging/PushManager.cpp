@@ -29,10 +29,6 @@ PushManager::PushManager()
     ScriptWrappable::init(this);
 }
 
-PushManager::~PushManager()
-{
-}
-
 ScriptPromise PushManager::registerPushMessaging(ScriptState* scriptState, const String& senderId)
 {
     ASSERT(scriptState->executionContext()->isDocument());

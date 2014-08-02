@@ -15,13 +15,12 @@ class ExecutionContext;
 class ScriptPromise;
 class ScriptState;
 
-class PushManager FINAL : public GarbageCollectedFinalized<PushManager>, public ScriptWrappable {
+class PushManager FINAL : public GarbageCollected<PushManager>, public ScriptWrappable {
 public:
     static PushManager* create()
     {
         return new PushManager();
     }
-    virtual ~PushManager();
 
     ScriptPromise registerPushMessaging(ScriptState*, const String& senderId);
 

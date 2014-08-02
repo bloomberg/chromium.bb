@@ -34,7 +34,7 @@ namespace blink {
 
 class ExecutionContext;
 
-class SpeechGrammarList FINAL : public GarbageCollectedFinalized<SpeechGrammarList>, public ScriptWrappable {
+class SpeechGrammarList FINAL : public GarbageCollected<SpeechGrammarList>, public ScriptWrappable {
 public:
     static SpeechGrammarList* create();
 

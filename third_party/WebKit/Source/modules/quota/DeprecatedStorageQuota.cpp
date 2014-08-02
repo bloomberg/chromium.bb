@@ -94,8 +94,4 @@ void DeprecatedStorageQuota::requestQuota(ExecutionContext* executionContext, un
     client->requestQuota(executionContext, storageType, newQuotaInBytes, successCallback, errorCallback);
 }
 
-DeprecatedStorageQuota::~DeprecatedStorageQuota()
-{
-}
-
 } // namespace blink

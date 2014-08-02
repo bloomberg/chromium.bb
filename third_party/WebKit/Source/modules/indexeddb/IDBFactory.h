@@ -41,13 +41,12 @@ class IDBKey;
 class IDBKeyRange;
 class ExecutionContext;
 
-class IDBFactory : public GarbageCollectedFinalized<IDBFactory>, public ScriptWrappable {
+class IDBFactory FINAL : public GarbageCollected<IDBFactory>, public ScriptWrappable {
 public:
     static IDBFactory* create(IndexedDBClient* client)
     {
         return new IDBFactory(client);
     }
-    ~IDBFactory();
     void trace(Visitor*);
 
     IDBRequest* getDatabaseNames(ScriptState*, ExceptionState&);

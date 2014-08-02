@@ -32,7 +32,7 @@
 
 namespace blink {
 
-class SpeechRecognitionResultList : public GarbageCollectedFinalized<SpeechRecognitionResultList>, public ScriptWrappable {
+class SpeechRecognitionResultList : public GarbageCollected<SpeechRecognitionResultList>, public ScriptWrappable {
 public:
     static SpeechRecognitionResultList* create(const HeapVector<Member<SpeechRecognitionResult> >&);
 

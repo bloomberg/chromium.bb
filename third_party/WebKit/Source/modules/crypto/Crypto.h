@@ -38,7 +38,7 @@ namespace blink {
 
 class ExceptionState;
 
-class Crypto : public GarbageCollectedFinalized<Crypto>, public ScriptWrappable {
+class Crypto FINAL : public GarbageCollected<Crypto>, public ScriptWrappable {
 public:
     static Crypto* create()
     {

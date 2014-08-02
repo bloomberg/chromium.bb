@@ -34,7 +34,7 @@ namespace blink {
 
 class ExceptionState;
 
-class IDBKeyRange : public GarbageCollectedFinalized<IDBKeyRange>, public ScriptWrappable {
+class IDBKeyRange FINAL : public GarbageCollected<IDBKeyRange>, public ScriptWrappable {
 public:
     enum LowerBoundType {
         LowerBoundOpen,
@@ -52,7 +52,6 @@ public:
     // Null if the script value is null or undefined, the range if it is one, otherwise tries to convert to a key and throws if it fails.
     static IDBKeyRange* fromScriptValue(ExecutionContext*, const ScriptValue&, ExceptionState&);
 
-    ~IDBKeyRange() { }
     void trace(Visitor*);
 
     // Implement the IDBKeyRange IDL

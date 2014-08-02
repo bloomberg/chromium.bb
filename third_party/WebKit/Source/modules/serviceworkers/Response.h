@@ -24,7 +24,7 @@ class Blob;
 class ExceptionState;
 class ResponseInit;
 
-class Response FINAL : public RefCountedWillBeGarbageCollectedFinalized<Response>, public ScriptWrappable {
+class Response FINAL : public RefCountedWillBeGarbageCollected<Response>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Response);
 public:
     static PassRefPtrWillBeRawPtr<Response> create(Blob*, const Dictionary&, ExceptionState&);

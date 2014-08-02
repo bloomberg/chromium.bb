@@ -42,7 +42,7 @@ namespace blink {
 class CryptoKey;
 class Dictionary;
 
-class SubtleCrypto : public GarbageCollectedFinalized<SubtleCrypto>, public ScriptWrappable {
+class SubtleCrypto FINAL : public GarbageCollected<SubtleCrypto>, public ScriptWrappable {
 public:
     static SubtleCrypto* create()
     {

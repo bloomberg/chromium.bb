@@ -56,10 +56,6 @@ IDBFactory::IDBFactory(IndexedDBClient* permissionClient)
     ScriptWrappable::init(this);
 }
 
-IDBFactory::~IDBFactory()
-{
-}
-
 void IDBFactory::trace(Visitor* visitor)
 {
     visitor->trace(m_permissionClient);

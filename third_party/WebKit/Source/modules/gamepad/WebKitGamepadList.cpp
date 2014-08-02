@@ -12,10 +12,6 @@ WebKitGamepadList::WebKitGamepadList()
     ScriptWrappable::init(this);
 }
 
-WebKitGamepadList::~WebKitGamepadList()
-{
-}
-
 void WebKitGamepadList::set(unsigned index, WebKitGamepad* gamepad)
 {
     if (index >= blink::WebGamepads::itemsLengthCap)

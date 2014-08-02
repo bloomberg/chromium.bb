@@ -11,10 +11,9 @@
 
 namespace blink {
 
-class GamepadButton FINAL : public GarbageCollectedFinalized<GamepadButton>, public ScriptWrappable {
+class GamepadButton FINAL : public GarbageCollected<GamepadButton>, public ScriptWrappable {
 public:
     static GamepadButton* create();
-    ~GamepadButton();
 
     double value() const { return m_value; }
     void setValue(double val) { m_value = val; }
@@ -22,7 +21,7 @@ public:
     bool pressed() const { return m_pressed; }
     void setPressed(bool val) { m_pressed = val; }
 
-    void trace(Visitor*);
+    void trace(Visitor*) { }
 
 private:
     GamepadButton();

@@ -33,10 +33,6 @@ GamepadList::GamepadList()
     ScriptWrappable::init(this);
 }
 
-GamepadList::~GamepadList()
-{
-}
-
 void GamepadList::set(unsigned index, Gamepad* gamepad)
 {
     if (index >= blink::WebGamepads::itemsLengthCap)

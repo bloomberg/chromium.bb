@@ -19,12 +19,4 @@ GamepadButton::GamepadButton()
     ScriptWrappable::init(this);
 }
 
-GamepadButton::~GamepadButton()
-{
-}
-
-void GamepadButton::trace(Visitor* visitor)
-{
-}
-
-} // namespace blink
+} // namespace WebCore

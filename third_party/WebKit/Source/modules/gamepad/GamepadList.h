@@ -33,13 +33,12 @@
 
 namespace blink {
 
-class GamepadList FINAL : public GarbageCollectedFinalized<GamepadList>, public ScriptWrappable {
+class GamepadList FINAL : public GarbageCollected<GamepadList>, public ScriptWrappable {
 public:
     static GamepadList* create()
     {
         return new GamepadList();
     }
-    ~GamepadList();
 
     void set(unsigned index, Gamepad*);
     Gamepad* item(unsigned index);

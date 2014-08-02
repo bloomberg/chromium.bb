@@ -113,8 +113,4 @@ ScriptPromise StorageQuota::requestPersistentQuota(ScriptState* scriptState, uns
     return client->requestPersistentQuota(scriptState, newQuota);
 }
 
-StorageQuota::~StorageQuota()
-{
-}
-
 } // namespace blink

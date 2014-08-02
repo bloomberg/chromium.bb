@@ -38,7 +38,7 @@ namespace blink {
 
 class Document;
 
-class VideoPlaybackQuality : public GarbageCollectedFinalized<VideoPlaybackQuality>, public ScriptWrappable {
+class VideoPlaybackQuality : public GarbageCollected<VideoPlaybackQuality>, public ScriptWrappable {
 public:
     static VideoPlaybackQuality* create(const Document&, unsigned totalVideoFrames, unsigned droppedVideoFrames, unsigned corruptedVideoFrames);
 

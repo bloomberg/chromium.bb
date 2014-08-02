@@ -38,7 +38,7 @@ namespace blink {
 
 class ExceptionState;
 
-class SQLResultSet : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<SQLResultSet>, public ScriptWrappable {
+class SQLResultSet FINAL : public ThreadSafeRefCountedWillBeGarbageCollected<SQLResultSet>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<SQLResultSet> create() { return adoptRefWillBeNoop(new SQLResultSet); }
     void trace(Visitor*);

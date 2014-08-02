@@ -12,13 +12,12 @@
 
 namespace blink {
 
-class WebKitGamepadList FINAL : public GarbageCollectedFinalized<WebKitGamepadList>, public ScriptWrappable {
+class WebKitGamepadList FINAL : public GarbageCollected<WebKitGamepadList>, public ScriptWrappable {
 public:
     static WebKitGamepadList* create()
     {
         return new WebKitGamepadList;
     }
-    ~WebKitGamepadList();
 
     void set(unsigned index, WebKitGamepad*);
     WebKitGamepad* item(unsigned index);
