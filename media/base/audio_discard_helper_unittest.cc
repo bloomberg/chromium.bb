@@ -325,18 +325,40 @@ TEST(AudioDiscardHelperTest, InitialDiscardAndDiscardPaddingAndDecoderDelay) {
   encoded_buffer->set_discard_padding(
       std::make_pair(kDuration / 2, base::TimeDelta()));
 
-  // All of the first buffer should be discarded.
+  // All of the first buffer should be discarded, half from the inital delay and
+  // another half from the front discard padding.
+  //
+  //    Encoded                   Discard Delay
+  //   |--------|     |---------|     |----|
+  //   |AAAAAAAA| --> |....|AAAA| --> |AAAA| -------> NULL
+  //   |--------|     |---------|     |----|
+  //                    Decoded               Discard Front Padding
+  //
   ASSERT_FALSE(discard_helper.ProcessBuffers(encoded_buffer, decoded_buffer));
   ASSERT_TRUE(discard_helper.initialized());
 
-  // Processing another buffer (with the same discard padding) should discard
-  // the back half of the buffer since kDecoderDelay is half a buffer.
-  encoded_buffer->set_timestamp(kTimestamp + kDuration);
+  // Processing another buffer that has front discard set to half the buffer's
+  // duration should discard the back half of the buffer since kDecoderDelay is
+  // half a buffer.  The end padding should not be discarded until another
+  // buffer is processed.  kDuration / 4 is chosen for the end discard since it
+  // will force the end discard to start after position zero within the next
+  // decoded buffer.
+  //
+  //    Encoded                    Discard Front Padding (from B)
+  //   |--------|     |---------|             |----|
+  //   |BBBBBBBB| --> |AAAA|BBBB| ----------> |AAAA|
+  //   |--------|     |---------|             |----|
+  //                    Decoded
+  //           (includes carryover from A)
+  //
+  encoded_buffer->set_timestamp(encoded_buffer->timestamp() + kDuration);
+  encoded_buffer->set_discard_padding(
+      std::make_pair(kDuration / 2, kDuration / 4));
   decoded_buffer = CreateDecodedBuffer(kTestFrames);
   ASSERT_FLOAT_EQ(0.0f, ExtractDecodedData(decoded_buffer, 0));
   ASSERT_NEAR(kDecoderDelay * kDataStep,
               ExtractDecodedData(decoded_buffer, kDecoderDelay),
-              kDataStep * 1000);
+              kDataStep / 1000);
   ASSERT_TRUE(discard_helper.ProcessBuffers(encoded_buffer, decoded_buffer));
   EXPECT_EQ(kTimestamp, decoded_buffer->timestamp());
   EXPECT_EQ(kDuration / 2, decoded_buffer->duration());
@@ -344,6 +366,54 @@ TEST(AudioDiscardHelperTest, InitialDiscardAndDiscardPaddingAndDecoderDelay) {
 
   // Verify it was actually the latter half of the buffer that was removed.
   ASSERT_FLOAT_EQ(0.0f, ExtractDecodedData(decoded_buffer, 0));
+
+  // Verify the end discard padding is carried over to the next buffer.  Use
+  // kDuration / 2 for the end discard padding so that the next buffer has its
+  // start entirely discarded.
+  //
+  //    Encoded                      Discard End Padding (from B)
+  //   |--------|     |---------|             |-------|
+  //   |CCCCCCCC| --> |BBBB|CCCC| ----------> |BB|CCCC|
+  //   |--------|     |---------|             |-------|
+  //                    Decoded
+  //           (includes carryover from B)
+  //
+  encoded_buffer->set_timestamp(encoded_buffer->timestamp() + kDuration);
+  encoded_buffer->set_discard_padding(
+      std::make_pair(base::TimeDelta(), kDuration / 2));
+  decoded_buffer = CreateDecodedBuffer(kTestFrames);
+  ASSERT_TRUE(discard_helper.ProcessBuffers(encoded_buffer, decoded_buffer));
+  EXPECT_EQ(kTimestamp + kDuration / 2, decoded_buffer->timestamp());
+  EXPECT_EQ(3 * kDuration / 4, decoded_buffer->duration());
+  EXPECT_EQ(3 * kTestFrames / 4, decoded_buffer->frame_count());
+
+  // Verify it was actually the second quarter of the buffer that was removed.
+  const int kDiscardFrames = kTestFrames / 4;
+  ASSERT_FLOAT_EQ(0.0f, ExtractDecodedData(decoded_buffer, 0));
+  ASSERT_FLOAT_EQ(
+      kDiscardFrames * 2 * kDataStep,
+      ExtractDecodedData(decoded_buffer, kDecoderDelay - kDiscardFrames));
+
+  // One last test to ensure carryover discard from the start works.
+  //
+  //    Encoded                      Discard End Padding (from C)
+  //   |--------|     |---------|             |----|
+  //   |DDDDDDDD| --> |CCCC|DDDD| ----------> |DDDD|
+  //   |--------|     |---------|             |----|
+  //                    Decoded
+  //           (includes carryover from C)
+  //
+  encoded_buffer->set_timestamp(encoded_buffer->timestamp() + kDuration);
+  encoded_buffer->set_discard_padding(DecoderBuffer::DiscardPadding());
+  decoded_buffer = CreateDecodedBuffer(kTestFrames);
+  ASSERT_FLOAT_EQ(0.0f, ExtractDecodedData(decoded_buffer, 0));
+  ASSERT_TRUE(discard_helper.ProcessBuffers(encoded_buffer, decoded_buffer));
+  EXPECT_EQ(kTimestamp + kDuration / 2 + 3 * kDuration / 4,
+            decoded_buffer->timestamp());
+  EXPECT_EQ(kDuration / 2, decoded_buffer->duration());
+  EXPECT_EQ(kTestFrames / 2, decoded_buffer->frame_count());
+  ASSERT_FLOAT_EQ(kTestFrames / 2 * kDataStep,
+                  ExtractDecodedData(decoded_buffer, 0));
 }
 
 TEST(AudioDiscardHelperTest, DelayedDiscardInitialDiscardAndDiscardPadding) {

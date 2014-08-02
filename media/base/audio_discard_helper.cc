@@ -29,7 +29,8 @@ AudioDiscardHelper::AudioDiscardHelper(int sample_rate, size_t decoder_delay)
       timestamp_helper_(sample_rate_),
       discard_frames_(0),
       last_input_timestamp_(kNoTimestamp()),
-      delayed_discard_(false) {
+      delayed_discard_(false),
+      delayed_end_discard_(0) {
   DCHECK_GT(sample_rate_, 0);
 }
 
@@ -99,6 +100,9 @@ bool AudioDiscardHelper::ProcessBuffers(
     const size_t frames_to_discard = std::min(discard_frames_, decoded_frames);
     discard_frames_ -= frames_to_discard;
 
+    DVLOG(1) << "Initial discard of " << frames_to_discard << " out of "
+             << decoded_frames << " frames.";
+
     // If everything would be discarded, indicate a new buffer is required.
     if (frames_to_discard == decoded_frames) {
       // For simplicity disallow cases where a buffer with discard padding is
@@ -110,6 +114,24 @@ bool AudioDiscardHelper::ProcessBuffers(
     }
 
     decoded_buffer->TrimStart(frames_to_discard);
+  }
+
+  // Process any delayed end discard from the previous buffer.
+  if (delayed_end_discard_ > 0) {
+    DCHECK_GT(decoder_delay_, 0u);
+
+    const size_t discard_index = decoder_delay_ - delayed_end_discard_;
+    DCHECK_LT(discard_index, decoder_delay_);
+
+    const size_t decoded_frames = decoded_buffer->frame_count();
+    DCHECK_LT(delayed_end_discard_, decoded_frames);
+
+    DVLOG(1) << "Delayed end discard of " << delayed_end_discard_ << " out of "
+             << decoded_frames << " frames starting at " << discard_index;
+
+    decoded_buffer->TrimRange(discard_index,
+                              discard_index + delayed_end_discard_);
+    delayed_end_discard_ = 0;
   }
 
   // Handle front discard padding.
@@ -153,6 +175,9 @@ bool AudioDiscardHelper::ProcessBuffers(
     DCHECK(!discard_frames_);
     discard_frames_ = start_frames_to_discard - frames_to_discard;
 
+    DVLOG(1) << "Front discard of " << frames_to_discard << " out of "
+             << decoded_frames << " frames starting at " << discard_start;
+
     // If everything would be discarded, indicate a new buffer is required.
     if (frames_to_discard == decoded_frames) {
       // The buffer should not have been marked with end discard if the front
@@ -168,24 +193,42 @@ bool AudioDiscardHelper::ProcessBuffers(
 
   // Handle end discard padding.
   if (current_discard_padding.second > base::TimeDelta()) {
-    // Limit end discarding to when there is no |decoder_delay_|, otherwise it's
-    // non-trivial determining where to start discarding end frames.
-    CHECK(!decoder_delay_);
-
     const size_t decoded_frames = decoded_buffer->frame_count();
-    const size_t end_frames_to_discard =
+    size_t end_frames_to_discard =
         TimeDeltaToFrames(current_discard_padding.second);
+
+    if (decoder_delay_) {
+      // Delayed end discard only works if the decoder delay is less than a
+      // single buffer.
+      DCHECK_LT(decoder_delay_, original_frame_count);
+
+      // If the discard is >= the decoder delay, trim everything we can off the
+      // end of this buffer and the rest from the start of the next.
+      if (end_frames_to_discard >= decoder_delay_) {
+        DCHECK(!discard_frames_);
+        discard_frames_ = decoder_delay_;
+        end_frames_to_discard -= decoder_delay_;
+      } else {
+        DCHECK(!delayed_end_discard_);
+        std::swap(delayed_end_discard_, end_frames_to_discard);
+      }
+    }
 
     if (end_frames_to_discard > decoded_frames) {
       DLOG(ERROR) << "Encountered invalid discard padding value.";
       return false;
     }
 
-    // If everything would be discarded, indicate a new buffer is required.
-    if (end_frames_to_discard == decoded_frames)
-      return false;
+    if (end_frames_to_discard > 0) {
+      DVLOG(1) << "End discard of " << end_frames_to_discard << " out of "
+               << decoded_frames;
 
-    decoded_buffer->TrimEnd(end_frames_to_discard);
+      // If everything would be discarded, indicate a new buffer is required.
+      if (end_frames_to_discard == decoded_frames)
+        return false;
+
+      decoded_buffer->TrimEnd(end_frames_to_discard);
+    }
   } else {
     DCHECK(current_discard_padding.second == base::TimeDelta());
   }

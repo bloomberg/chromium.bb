@@ -114,7 +114,10 @@ class MEDIA_EXPORT FrameProcessor {
   // |append_window_start| will be marked for post-decode discard.  Further, if
   // |audio_preroll_buffer_| exists and abuts |buffer|, it will be set as
   // preroll on |buffer| and |audio_preroll_buffer_| will be cleared.  If the
-  // preroll buffer does not abut |buffer|, it will be discarded, but not used.
+  // preroll buffer does not abut |buffer|, it will be discarded unused.
+  //
+  // Likewise, if |buffer| overlaps |append_window_end|, the portion of |buffer|
+  // after |append_window_end| will be marked for post-decode discard.
   //
   // If |buffer| lies entirely before |append_window_start|, and thus would
   // normally be discarded, |audio_preroll_buffer_| will be set to |buffer| and

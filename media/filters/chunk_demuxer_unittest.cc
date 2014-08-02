@@ -458,6 +458,9 @@ class ChunkDemuxerTest : public ::testing::Test {
             << " All text blocks must be keyframes";
       }
 
+      if (track_number == kAudioTrackNum)
+        ASSERT_TRUE(block_info.flags & kWebMFlagKeyframe);
+
       blocks->push_back(block_info);
     }
   }
@@ -1370,19 +1373,19 @@ TEST_F(ChunkDemuxerTest, InitSegmentSetsNeedRandomAccessPointFlag) {
   ASSERT_TRUE(audio_stream && video_stream && text_stream);
 
   AppendMuxedCluster(
-      MuxedStreamInfo(kAudioTrackNum, "0 23K"),
+      MuxedStreamInfo(kAudioTrackNum, "23K"),
       MuxedStreamInfo(kVideoTrackNum, "0 30K"),
       MuxedStreamInfo(kTextTrackNum, "25K 40K"));
   CheckExpectedRanges(kSourceId, "{ [23,46) }");
 
   AppendInitSegment(HAS_TEXT | HAS_AUDIO | HAS_VIDEO);
   AppendMuxedCluster(
-      MuxedStreamInfo(kAudioTrackNum, "46 69K"),
+      MuxedStreamInfo(kAudioTrackNum, "46K 69K"),
       MuxedStreamInfo(kVideoTrackNum, "60 90K"),
       MuxedStreamInfo(kTextTrackNum, "80K 90K"));
   CheckExpectedRanges(kSourceId, "{ [23,92) }");
 
-  CheckExpectedBuffers(audio_stream, "23 69");
+  CheckExpectedBuffers(audio_stream, "23 46 69");
   CheckExpectedBuffers(video_stream, "30 90");
   CheckExpectedBuffers(text_stream, "25 40 80 90");
 }
@@ -2501,7 +2504,7 @@ TEST_F(ChunkDemuxerTest, GetBufferedRanges_AudioVideoText) {
 
   // Append audio & video data
   AppendMuxedCluster(
-      MuxedStreamInfo(kAudioTrackNum, "0K 23"),
+      MuxedStreamInfo(kAudioTrackNum, "0K 23K"),
       MuxedStreamInfo(kVideoTrackNum, "0K 33"));
 
   // Verify that a text track with no cues does not result in an empty buffered
@@ -2510,7 +2513,7 @@ TEST_F(ChunkDemuxerTest, GetBufferedRanges_AudioVideoText) {
 
   // Add some text cues.
   AppendMuxedCluster(
-      MuxedStreamInfo(kAudioTrackNum, "100K 123"),
+      MuxedStreamInfo(kAudioTrackNum, "100K 123K"),
       MuxedStreamInfo(kVideoTrackNum, "100K 133"),
       MuxedStreamInfo(kTextTrackNum, "100K 200K"));
 
@@ -3356,7 +3359,7 @@ TEST_F(ChunkDemuxerTest, AppendWindow_Audio) {
   //
   // The first 50ms of the range should be truncated since it overlaps
   // the start of the append window.
-  CheckExpectedRanges(kSourceId, "{ [50,270) }");
+  CheckExpectedRanges(kSourceId, "{ [50,280) }");
 
   // The "50P" buffer is the "0" buffer marked for complete discard.  The next
   // "50" buffer is the "30" buffer marked with 20ms of start discard.
@@ -3369,7 +3372,7 @@ TEST_F(ChunkDemuxerTest, AppendWindow_Audio) {
   AppendSingleStreamCluster(
       kSourceId, kAudioTrackNum,
       "360K 390K 420K 450K 480K 510K 540K 570K 600K 630K");
-  CheckExpectedRanges(kSourceId, "{ [50,270) [360,630) }");
+  CheckExpectedRanges(kSourceId, "{ [50,280) [360,650) }");
 }
 
 TEST_F(ChunkDemuxerTest, AppendWindow_AudioOverlapStartAndEnd) {
@@ -3382,9 +3385,8 @@ TEST_F(ChunkDemuxerTest, AppendWindow_AudioOverlapStartAndEnd) {
   // Append a cluster that starts before and ends after the append window.
   AppendSingleStreamCluster(kSourceId, kAudioTrackNum, "0K");
 
-  // Verify that everything is dropped in this case.  No partial append should
-  // be generated.
-  CheckExpectedRanges(kSourceId, "{ }");
+  // Verify the append is clipped to the append window.
+  CheckExpectedRanges(kSourceId, "{ [10,20) }");
 }
 
 TEST_F(ChunkDemuxerTest, AppendWindow_WebMFile_AudioOnly) {

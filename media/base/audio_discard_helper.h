@@ -31,8 +31,6 @@ class MEDIA_EXPORT AudioDiscardHelper {
   // corresponding to the first encoded buffer is output.  These frames are not
   // represented in the encoded data stream and instead are an artifact of how
   // most MP3 decoders work.  See http://lame.sourceforge.net/tech-FAQ.txt
-  //
-  // NOTE: End discard is only supported when there is no |decoder_delay|.
   AudioDiscardHelper(int sample_rate, size_t decoder_delay);
   ~AudioDiscardHelper();
 
@@ -63,15 +61,41 @@ class MEDIA_EXPORT AudioDiscardHelper {
   }
 
  private:
+  // The sample rate of the decoded audio samples.  Used by TimeDeltaToFrames()
+  // and the timestamp helper.
   const int sample_rate_;
+
+  // Some codecs output extra samples during the first decode.  In order to trim
+  // DiscardPadding correctly the helper must know the offset into the decoded
+  // buffers at which real samples start.
   const size_t decoder_delay_;
+
+  // Used to regenerate sample accurate timestamps for decoded buffers.  The
+  // timestamp of the first encoded buffer seen by ProcessBuffers() is used as
+  // the base timestamp.
   AudioTimestampHelper timestamp_helper_;
 
+  // The number of frames to discard from the front of the next buffer.  Can be
+  // set by Reset() and added to by a front DiscardPadding larger than its
+  // associated buffer.
   size_t discard_frames_;
+
+  // The last encoded buffer timestamp seen by ProcessBuffers() or kNoTimestamp
+  // if no buffers have been seen thus far.  Used to issue warnings for buffer
+  // sequences with non-monotonic timestamps.
   base::TimeDelta last_input_timestamp_;
 
+  // Certain codecs require two encoded buffers before they'll output the first
+  // decoded buffer.  In this case DiscardPadding must be carried over from the
+  // previous encoded buffer.  Enabled automatically if an encoded buffer is
+  // given to ProcessBuffers() with a NULL decoded buffer.
   bool delayed_discard_;
   DecoderBuffer::DiscardPadding delayed_discard_padding_;
+
+  // When |decoder_delay_| > 0, the number of frames which should be discarded
+  // from the next buffer.  The index at which to start discarding is calculated
+  // by subtracting |delayed_end_discard_| from |decoder_delay_|.
+  size_t delayed_end_discard_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AudioDiscardHelper);
 };
