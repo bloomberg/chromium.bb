@@ -9,6 +9,8 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "media/base/test_data_util.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 
 // TODO(wolenetz): Fix Media.YUV* tests on MSVS 2012 x64. crbug.com/180074
 #if defined(OS_WIN) && defined(ARCH_CPU_X86_64) && _MSC_VER == 1700
@@ -32,7 +34,11 @@ void MediaBrowserTest::RunMediaTestPage(const std::string& html_page,
   std::string query = media::GetURLQueryString(query_params);
   scoped_ptr<net::SpawnedTestServer> http_test_server;
   if (http) {
-    http_test_server = media::StartMediaHttpTestServer();
+    http_test_server.reset(
+        new net::SpawnedTestServer(net::SpawnedTestServer::TYPE_HTTP,
+                                   net::SpawnedTestServer::kLocalhost,
+                                   media::GetTestDataPath()));
+    CHECK(http_test_server->Start());
     gurl = http_test_server->GetURL("files/" + html_page + "?" + query);
   } else {
     gurl = content::GetFileUrlWithQuery(media::GetTestDataFilePath(html_page),

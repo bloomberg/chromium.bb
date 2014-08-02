@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
 
 namespace media {
 
@@ -26,9 +25,6 @@ base::FilePath GetTestDataFilePath(const std::string& name);
 
 // Returns relative path for test data folder: media/test/data.
 base::FilePath GetTestDataPath();
-
-// Starts an HTTP server serving files from media data path.
-scoped_ptr<net::SpawnedTestServer> StartMediaHttpTestServer();
 
 // Returns a string containing key value query params in the form of:
 // "key_1=value_1&key_2=value2"

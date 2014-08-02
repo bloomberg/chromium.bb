@@ -36,16 +36,6 @@ std::string GetURLQueryString(const QueryParams& query_params) {
   return query;
 }
 
-scoped_ptr<net::SpawnedTestServer> StartMediaHttpTestServer() {
-  scoped_ptr<net::SpawnedTestServer> http_test_server;
-  http_test_server.reset(new net::SpawnedTestServer(
-      net::SpawnedTestServer::TYPE_HTTP,
-      net::SpawnedTestServer::kLocalhost,
-      GetTestDataPath()));
-  CHECK(http_test_server->Start());
-  return http_test_server.Pass();
-}
-
 scoped_refptr<DecoderBuffer> ReadTestDataFile(const std::string& name) {
   base::FilePath file_path = GetTestDataFilePath(name);
 

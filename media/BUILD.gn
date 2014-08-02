@@ -826,7 +826,6 @@ test("media_unittests") {
     "//testing/gtest",
     # TODO(dalecurtis): Port the rest of Widevine stuff.
     "//third_party/widevine/cdm:version_h",
-    "//ui/base",
     "//ui/gfx:test_support",
   ]
   if (media_use_ffmpeg) {
@@ -863,9 +862,11 @@ test("media_perftests") {
     "//testing/gtest",
     "//testing/perf",
     "//third_party/widevine/cdm:version_h",
-    "//ui/gl",
     "//ui/gfx:test_support",
   ]
+  if (is_android) {
+    deps += [ "//ui/gl" ]
+  }
   if (media_use_ffmpeg) {
     deps += [
       "//third_party/ffmpeg",  # Direct dependency required to inherit config.
@@ -982,7 +983,6 @@ source_set("test_support") {
     ":media",
     ":shared_memory_support",
     "//base",
-    "//net:test_support",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
