@@ -54,9 +54,6 @@ crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [
 
 crbug.com/377013 [ Mac Debug ] fast/repaint/4776765.html [ Pass Failure ]
 
-# Bug(fmalita): re-enable after SK_IGNORE_QUAD_RR_CORNERS_OPT rebaseline if needed
-# crbug.com/245611 [ Linux ] fast/hidpi/video-controls-in-hidpi.html [ ImageOnlyFailure Pass ]
-
 crbug.com/304953 fast/css/font-face-download-error.html [ Pass Timeout ]
 
 # This batch were marked as NeedsRebaseline for crbug.com/133097 but are flaky:
@@ -1207,8 +1204,7 @@ crbug.com/374936 [ Mac Debug ] svg/dynamic-updates/SVGImageElement-svgdom-width-
 crbug.com/313438 svg/custom/relative-sized-use-on-symbol.xhtml [ NeedsManualRebaseline ]
 crbug.com/313438 svg/custom/relative-sized-use-without-attributes-on-symbol.xhtml [ NeedsManualRebaseline ]
 
-# Bug(fmalita): re-enable after SK_IGNORE_QUAD_RR_CORNERS_OPT rebaseline if needed
-# crbug.com/390488 [ SnowLeopard Debug ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
+crbug.com/390488 [ SnowLeopard Debug ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
 
 crbug.com/375565 [ Mac ] fast/repaint/caret-with-transformation.html [ Pass Failure ]
 
