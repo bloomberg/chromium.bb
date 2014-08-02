@@ -185,32 +185,30 @@ class EnterprisePlatformKeysTest : public ExtensionApiTest {
       loop.Run();
     }
 
-    {
-      base::RunLoop loop;
-      content::BrowserThread::PostTask(
-          content::BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(&EnterprisePlatformKeysTest::SetUpTestSystemSlot,
-                     base::Unretained(this),
-                     browser()->profile()->GetResourceContext(),
-                     loop.QuitClosure()));
-      loop.Run();
-    }
-
     SetPolicy();
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  void SetUpTestSystemSlot() {
     base::RunLoop loop;
     content::BrowserThread::PostTask(
         content::BrowserThread::IO,
         FROM_HERE,
-        base::Bind(&EnterprisePlatformKeysTest::TearDownTestSystemSlot,
+        base::Bind(&EnterprisePlatformKeysTest::SetUpTestSystemSlotOnIO,
+                   base::Unretained(this),
+                   browser()->profile()->GetResourceContext(),
+                   loop.QuitClosure()));
+    loop.Run();
+  }
+
+  void TearDownTestSystemSlot() {
+    base::RunLoop loop;
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&EnterprisePlatformKeysTest::TearDownTestSystemSlotOnIO,
                    base::Unretained(this),
                    loop.QuitClosure()));
     loop.Run();
-
-    ExtensionApiTest::TearDownOnMainThread();
   }
 
  private:
@@ -226,7 +224,7 @@ class EnterprisePlatformKeysTest : public ExtensionApiTest {
     done_callback.Run();
   }
 
-  void SetUpTestSystemSlot(content::ResourceContext* context,
+  void SetUpTestSystemSlotOnIO(content::ResourceContext* context,
                            const base::Closure& done_callback) {
     test_system_slot_.reset(new crypto::ScopedTestSystemNSSKeySlot());
     ASSERT_TRUE(test_system_slot_->ConstructedSuccessfully());
@@ -241,7 +239,7 @@ class EnterprisePlatformKeysTest : public ExtensionApiTest {
         content::BrowserThread::UI, FROM_HERE, done_callback);
   }
 
-  void TearDownTestSystemSlot(const base::Closure& done_callback) {
+  void TearDownTestSystemSlotOnIO(const base::Closure& done_callback) {
     test_system_slot_.reset();
 
     content::BrowserThread::PostTask(
@@ -284,7 +282,17 @@ class EnterprisePlatformKeysTest : public ExtensionApiTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(EnterprisePlatformKeysTest, Basic) {
+IN_PROC_BROWSER_TEST_F(EnterprisePlatformKeysTest, SystemTokenEnabled) {
+  SetUpTestSystemSlot();
+  ASSERT_TRUE(RunExtensionSubtest(
+      "",
+      base::StringPrintf("chrome-extension://%s/basic.html?systemTokenEnabled",
+                         kTestExtensionID)))
+      << message_;
+  TearDownTestSystemSlot();
+}
+
+IN_PROC_BROWSER_TEST_F(EnterprisePlatformKeysTest, SystemTokenDisabled) {
   ASSERT_TRUE(RunExtensionSubtest(
       "",
       base::StringPrintf("chrome-extension://%s/basic.html", kTestExtensionID)))

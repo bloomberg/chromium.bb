@@ -7,6 +7,8 @@
 
 'use strict';
 
+var systemTokenEnabled = (location.href.indexOf("systemTokenEnabled") != -1);
+
 var assertEq = chrome.test.assertEq;
 var assertTrue = chrome.test.assertTrue;
 var assertThrows = chrome.test.assertThrows;
@@ -245,6 +247,11 @@ function sortCerts(certs) {
  * The order of |expectedCerts| is ignored. Afterwards calls |callback|.
  */
 function assertCertsStored(token, expectedCerts, callback) {
+  if (!token) {
+    if (callback)
+      callback();
+    return;
+  }
   chrome.enterprise.platformKeys.getCertificates(
       token.id,
       callbackPass(function(actualCerts) {
@@ -301,13 +308,17 @@ function beforeTests(callback) {
   getTokens(function(userToken, systemToken) {
     if (!userToken)
       fail('no user token');
-    if (userToken.id != 'user')
-      fail('user token is not named "user".');
+    assertEq('user', userToken.id);
 
-    if (!systemToken)
-      fail('no system token');
-    if (systemToken.id != 'system')
-      fail('system token is not named "system".');
+    if (systemTokenEnabled) {
+      if (!systemToken)
+        fail('no system token');
+      assertEq('system', systemToken.id);
+    } else {
+      assertEq(null,
+               systemToken,
+               'system token is disabled, but found the token nonetheless.');
+    }
 
     callback(userToken, systemToken);
   });
@@ -431,223 +442,304 @@ function generateKeyAndVerify(token, algorithm, data, callback) {
   }), function(error) { fail("Verification failed: " + error); });
 }
 
-function runTests(userToken, systemToken) {
-  chrome.test.runTests([
-    function hasSubtleCryptoMethods() {
-      assertTrue(!!userToken.subtleCrypto.generateKey,
-                 "user token has no generateKey method");
-      assertTrue(!!userToken.subtleCrypto.sign,
-                 "user token has no sign method");
-      assertTrue(!!userToken.subtleCrypto.exportKey,
-                 "user token has no exportKey method");
-      succeed();
-    },
+function testInitiallyNoCerts(token) {
+  assertCertsStored(token, []);
+}
 
-    function initiallyNoCerts() {
-      assertCertsStored(userToken, []);
-      assertCertsStored(systemToken, []);
-    },
+function testHasSubtleCryptoMethods(token) {
+  assertTrue(!!token.subtleCrypto.generateKey,
+             "token has no generateKey method");
+  assertTrue(!!token.subtleCrypto.sign, "token has no sign method");
+  assertTrue(!!token.subtleCrypto.exportKey,
+             "token has no exportKey method");
+  succeed();
+}
 
-    // Generates a key and signs some data with it. Verifies the signature using
-    // WebCrypto. Verifies also that a second sign operation fails.
-    function generateKeyAndSign() {
-      var algorithm = {
-        name: "RSASSA-PKCS1-v1_5",
-        // RsaHashedKeyGenParams
-        modulusLength: 512,
-        // Equivalent to 65537
-        publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-        hash: {
-          name: "SHA-1",
-        }
-      };
+// Generates a key and signs some data with it. Verifies the signature using
+// WebCrypto. Verifies also that a second sign operation fails.
+function testGenerateKeyAndSign(token) {
+  var algorithm = {
+    name: "RSASSA-PKCS1-v1_5",
+    // RsaHashedKeyGenParams
+    modulusLength: 512,
+    // Equivalent to 65537
+    publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+    hash: {
+      name: "SHA-1",
+    }
+  };
 
-      // Some random data to sign.
-      var data = new Uint8Array([0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 6]);
-      generateKeyAndVerify(userToken,
-                           algorithm,
-                           data,
-                           callbackPass(function(keyPair) {
-        // Try to sign data with the same key a second time, which
-        // must fail.
-        var signParams = {name: 'RSASSA-PKCS1-v1_5'};
-        userToken.subtleCrypto.sign(signParams, keyPair.privateKey, data).then(
-            function(signature) {
-              fail("Second sign call was expected to fail.");
-            },
+  // Some random data to sign.
+  var data = new Uint8Array([0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 6]);
+  generateKeyAndVerify(token,
+                       algorithm,
+                       data,
+                       callbackPass(function(keyPair) {
+    // Try to sign data with the same key a second time, which
+    // must fail.
+    var signParams = {name: 'RSASSA-PKCS1-v1_5'};
+    token.subtleCrypto.sign(signParams, keyPair.privateKey, data).then(
+        function(signature) { fail("Second sign call was expected to fail."); },
+        callbackPass(function(error) {
+      assertTrue(error instanceof Error);
+      assertEq('The operation failed for an operation-specific reason',
+               error.message);
+    }));
+  }));
+}
+
+// Generates a key and signs some data with other parameters. Verifies the
+// signature using WebCrypto.
+function testGenerateKeyAndSignOtherParameters(token) {
+  var algorithm = {
+    name: "RSASSA-PKCS1-v1_5",
+    // RsaHashedKeyGenParams
+    modulusLength: 1024,
+    // Equivalent to 65537
+    publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+    hash: {
+      name: "SHA-512",
+    }
+  };
+
+  // Some random data to sign.
+  var data = new Uint8Array([5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 0, 0, 254]);
+  generateKeyAndVerify(token, algorithm, data, callbackPass());
+}
+
+// Call generate key with invalid algorithm parameter, missing
+// modulusLength.
+function testAlgorithmParameterMissingModulusLength(token) {
+  var algorithm = {
+    name: "RSASSA-PKCS1-v1_5",
+    // Equivalent to 65537
+    publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+    hash: {
+      name: "SHA-1",
+    }
+  };
+  token.subtleCrypto.generateKey(algorithm, false, ['sign'])
+      .then(function(keyPair) { fail('generateKey was expected to fail'); },
             callbackPass(function(error) {
-          assertTrue(error instanceof Error);
-          assertEq('The operation failed for an operation-specific reason',
-                   error.message);
-        }));
-      }));
-    },
+    assertTrue(error instanceof Error);
+    assertEq('A required parameter was missing or out-of-range', error.message);
+  }));
+}
 
-    // Generates a key and signs some data with other parameters. Verifies the
-    // signature using WebCrypto.
-    function generateKeyAndSignOtherParameters() {
-      var algorithm = {
-        name: "RSASSA-PKCS1-v1_5",
-        // RsaHashedKeyGenParams
-        modulusLength: 1024,
-        // Equivalent to 65537
-        publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-        hash: {
-          name: "SHA-512",
-        }
-      };
+// Call generate key with invalid algorithm parameter, missing hash.
+function testAlgorithmParameterMissingHash(token) {
+  var algorithm = {
+    name: 'RSASSA-PKCS1-v1_5',
+    modulusLength: 512,
+    // Equivalent to 65537
+    publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+  };
+  token.subtleCrypto.generateKey(algorithm, false, ['sign'])
+      .then(function(keyPair) { fail('generateKey was expected to fail'); },
+            callbackPass(function(error) {
+    assertEq(
+        new Error('Error: A required parameter was missing our out-of-range'),
+        error);
+  }));
+}
 
-      // Some random data to sign.
-      var data = new Uint8Array([5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 0, 0, 254]);
-      generateKeyAndVerify(userToken, algorithm, data, callbackPass());
-    },
+// Call generate key with invalid algorithm parameter, unsupported public
+// exponent.
+function testAlgorithmParameterUnsupportedPublicExponent(token) {
+  var algorithm = {
+    name: 'RSASSA-PKCS1-v1_5',
+    modulusLength: 512,
+                   // Different from 65537.
+    publicExponent: new Uint8Array([0x01, 0x01]),
+  };
+  token.subtleCrypto.generateKey(algorithm, false, ['sign'])
+      .then(function(keyPair) { fail('generateKey was expected to fail'); },
+            callbackPass(function(error) {
+    assertTrue(error instanceof Error);
+    assertEq('A required parameter was missing or out-of-range', error.message);
+  }));
+}
 
+function testImportInvalidCert(token) {
+  var invalidCert = new ArrayBuffer(16);
+  chrome.enterprise.platformKeys.importCertificate(
+      token.id,
+      invalidCert,
+      callbackFail('Certificate is not a valid X.509 certificate.'));
+}
+
+function testRemoveUnknownCert(token) {
+  chrome.enterprise.platformKeys.removeCertificate(
+      token.id, cert2.buffer, callbackFail('Certificate could not be found.'));
+}
+
+function testRemoveInvalidCert(token) {
+  var invalidCert = new ArrayBuffer(16);
+  chrome.enterprise.platformKeys.removeCertificate(
+      token.id,
+      invalidCert,
+      callbackFail('Certificate is not a valid X.509 certificate.'));
+}
+
+function bindTestsToToken(tests, token) {
+  return tests.map(function(test) {
+    var bound = test.bind(undefined, token);
+    bound.generatedName = test.name;
+    return bound;
+  });
+}
+
+function runTests(userToken, systemToken) {
+  // These tests don't depend on keys being loaded on C++ side (which will be
+  // removed by tests below) and are run for each available token.
+  var testsIndependentOfKeysWithTokenParameter = [
+    testInitiallyNoCerts,
+    testHasSubtleCryptoMethods,
+    testRemoveUnknownCert,
+    testGenerateKeyAndSign,
+    testGenerateKeyAndSignOtherParameters,
+    testAlgorithmParameterMissingModulusLength,
+    testAlgorithmParameterMissingHash,
+    testAlgorithmParameterUnsupportedPublicExponent,
+    testImportInvalidCert,
+    testRemoveInvalidCert,
+  ];
+  var testsIndependentOfKeys =
+      bindTestsToToken(testsIndependentOfKeysWithTokenParameter, userToken);
+  if (systemToken) {
+    testsIndependentOfKeys.concat(bindTestsToToken(
+        testsIndependentOfKeysWithTokenParameter, systemToken));
+  }
+
+  // These tests are not parameterized and work with the keys loaded by the C++
+  // side and potentially remove these keys from the tokens.
+  var testsNotParameterized = [
     // Importing a cert should fail, if the private key is stored in another
     // token.
-    // This uses the cert that refers to the privateKeyPkcs8, which was imported
-    // on C++'s side.
+    // This uses the certs that refers to the privateKeyPkcs8User and
+    // privateKeyPkcs8System keys, which were imported on C++'s side.
     function importCertWithKeyInOtherToken() {
-      chrome.enterprise.platformKeys.importCertificate(
-          systemToken.id, cert1a.buffer, callbackFail('Key not found.'));
+      if (!systemToken) {
+        succeed();
+        return;
+      }
+
+      function importToSystemWithKeyInUserToken(callback) {
+        chrome.enterprise.platformKeys.importCertificate(
+            systemToken.id,
+            cert1a.buffer,
+            callbackFail('Key not found.', callback));
+      }
+      function importToUserWithKeyInSystemToken(callback) {
+        chrome.enterprise.platformKeys.importCertificate(
+            userToken.id,
+            certSystem.buffer,
+            callbackFail('Key not found.', callback));
+      }
+
+      importToSystemWithKeyInUserToken(
+          importToUserWithKeyInSystemToken.bind(null, null));
     },
 
-    // Imports and removes certificates for privateKeyPkcs8User, which was
+    // Imports and removes certificates for privateKeyPkcs8User and
+    // privateKeyPkcs8System (if the system token is enabled), which were
     // imported on C++'s side.
-    // Note: After this test, privateKeyPkcs8User is not stored anymore!
-    function importAndRemoveCertsToUserToken() {
-      runAsyncSequence([
-        chrome.enterprise.platformKeys.importCertificate.bind(
-            null, userToken.id, cert1a.buffer),
-        assertCertsStored.bind(null, userToken, [cert1a]),
-        // Importing the same cert again shouldn't change anything.
-        chrome.enterprise.platformKeys.importCertificate.bind(
-            null, userToken.id, cert1a.buffer),
-        assertCertsStored.bind(null, userToken, [cert1a]),
-        // Importing another certificate should succeed.
-        chrome.enterprise.platformKeys.importCertificate.bind(
-            null, userToken.id, cert1b.buffer),
-        assertCertsStored.bind(null, userToken, [cert1a, cert1b]),
-        // Shouldn't affect the system token.
-        assertCertsStored.bind(null, systemToken, []),
-        chrome.enterprise.platformKeys.removeCertificate.bind(
-            null, userToken.id, cert1a.buffer),
-        assertCertsStored.bind(null, userToken, [cert1b]),
-        chrome.enterprise.platformKeys.removeCertificate.bind(
-            null, userToken.id, cert1b.buffer),
-        assertCertsStored.bind(null, userToken, [])
-      ]);
-    },
+    // Note: After this test, privateKeyPkcs8User and privateKeyPkcs8System are
+    // not stored anymore!
+    function importAndRemoveCerts() {
+      if (systemToken) {
+        runAsyncSequence([
+          chrome.enterprise.platformKeys.importCertificate.bind(
+              null, userToken.id, cert1a.buffer),
+          assertCertsStored.bind(null, userToken, [cert1a]),
 
-    // Imports and removes certificates for privateKeyPkcs8System, which was
-    // imported on C++'s side.
-    // Note: After this test, privateKeyPkcs8System is not stored anymore!
-    function importAndRemoveCertsToSystemToken() {
-      runAsyncSequence([
-        chrome.enterprise.platformKeys.importCertificate.bind(
-            null, systemToken.id, certSystem.buffer),
-        assertCertsStored.bind(null, systemToken, [certSystem]),
-        // Importing the same cert again shouldn't change anything.
-        chrome.enterprise.platformKeys.importCertificate.bind(
-            null, systemToken.id, certSystem.buffer),
-        assertCertsStored.bind(null, systemToken, [certSystem]),
-        // Shouldn't affect the user token.
-        assertCertsStored.bind(null, userToken, []),
-        chrome.enterprise.platformKeys.removeCertificate.bind(
-            null, systemToken.id, certSystem.buffer),
-        assertCertsStored.bind(null, systemToken, []),
-      ]);
-    },
+          // Importing the same cert again shouldn't change anything.
+          chrome.enterprise.platformKeys.importCertificate.bind(
+              null, userToken.id, cert1a.buffer),
+          assertCertsStored.bind(null, userToken, [cert1a]),
 
-    // Call generate key with invalid algorithm parameter, missing
-    // modulusLength.
-    function algorithmParameterMissingModulusLength() {
-      var algorithm = {
-        name: "RSASSA-PKCS1-v1_5",
-        // Equivalent to 65537
-        publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-        hash: {
-          name: "SHA-1",
-        }
-      };
-      userToken.subtleCrypto.generateKey(algorithm, false, ['sign']).then(
-          function(keyPair) { fail('generateKey was expected to fail'); },
-          callbackPass(function(error) {
-      assertTrue(error instanceof Error);
-      assertEq('A required parameter was missing or out-of-range',
-               error.message);
-      }));
-    },
+          // The system token should still be empty.
+          assertCertsStored.bind(null, systemToken, []),
 
-    // Call generate key with invalid algorithm parameter, missing hash.
-    function algorithmParameterMissingHash() {
-      var algorithm = {
-        name: 'RSASSA-PKCS1-v1_5',
-        modulusLength: 512,
-        // Equivalent to 65537
-        publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-      };
-      userToken.subtleCrypto.generateKey(algorithm, false, ['sign']).then(
-          function(keyPair) { fail('generateKey was expected to fail'); },
-          callbackPass(function(error) {
-      assertEq(
-          new Error('Error: A required parameter was missing our out-of-range'),
-          error);
-      }));
-    },
+          // Importing to the system token should not affect the user token.
+          chrome.enterprise.platformKeys.importCertificate.bind(
+              null, systemToken.id, certSystem.buffer),
+          assertCertsStored.bind(null, systemToken, [certSystem]),
+          assertCertsStored.bind(null, userToken, [cert1a]),
 
-    // Call generate key with invalid algorithm parameter, unsupported public
-    // exponent.
-    function algorithmParameterUnsupportedPublicExponent() {
-      var algorithm = {
-        name: 'RSASSA-PKCS1-v1_5',
-        modulusLength: 512,
-        // Different from 65537.
-        publicExponent: new Uint8Array([0x01, 0x01]),
-      };
-      userToken.subtleCrypto.generateKey(algorithm, false, ['sign']).then(
-          function(keyPair) { fail('generateKey was expected to fail'); },
-          callbackPass(function(error) {
-      assertTrue(error instanceof Error);
-      assertEq('A required parameter was missing or out-of-range',
-               error.message);
-      }));
-    },
+          // Importing the same cert again to the system token shouldn't change
+          // anything.
+          chrome.enterprise.platformKeys.importCertificate.bind(
+              null, systemToken.id, certSystem.buffer),
+          assertCertsStored.bind(null, systemToken, [certSystem]),
 
-    // Imports a certificate for which no private key was imported/generated
-    // before.
-    function missingPrivateKey() {
-      chrome.enterprise.platformKeys.importCertificate(
-          userToken.id, cert2.buffer, callbackFail('Key not found.'));
-    },
+          // Importing another certificate should succeed.
+          chrome.enterprise.platformKeys.importCertificate.bind(
+              null, userToken.id, cert1b.buffer),
+          assertCertsStored.bind(null, userToken, [cert1a, cert1b]),
 
-    function importInvalidCert() {
-      var invalidCert = new ArrayBuffer(16);
-      chrome.enterprise.platformKeys.importCertificate(
-          userToken.id,
-          invalidCert,
-          callbackFail('Certificate is not a valid X.509 certificate.'));
-    },
+          // Remove cert1a.
+          chrome.enterprise.platformKeys.removeCertificate.bind(
+              null, userToken.id, cert1a.buffer),
+          assertCertsStored.bind(null, userToken, [cert1b]),
 
-    function removeUnknownCert() {
-      chrome.enterprise.platformKeys.removeCertificate(
-          userToken.id,
-          cert2.buffer,
-          callbackFail('Certificate could not be found.'));
-    },
+          // Remove certSystem.
+          chrome.enterprise.platformKeys.removeCertificate.bind(
+              null, systemToken.id, certSystem.buffer),
+          assertCertsStored.bind(null, systemToken, []),
+          assertCertsStored.bind(null, userToken, [cert1b]),
 
-    function removeInvalidCert() {
-      var invalidCert = new ArrayBuffer(16);
-      chrome.enterprise.platformKeys.removeCertificate(
-          userToken.id,
-          invalidCert,
-          callbackFail('Certificate is not a valid X.509 certificate.'));
+          // Remove cert1b.
+          chrome.enterprise.platformKeys.removeCertificate.bind(
+              null, userToken.id, cert1b.buffer),
+          assertCertsStored.bind(null, userToken, [])
+        ]);
+      } else {
+        runAsyncSequence([
+          chrome.enterprise.platformKeys.importCertificate.bind(
+              null, userToken.id, cert1a.buffer),
+          assertCertsStored.bind(null, userToken, [cert1a]),
+          // Importing the same cert again shouldn't change anything.
+          chrome.enterprise.platformKeys.importCertificate.bind(
+              null, userToken.id, cert1a.buffer),
+          assertCertsStored.bind(null, userToken, [cert1a]),
+          // Importing another certificate should succeed.
+          chrome.enterprise.platformKeys.importCertificate.bind(
+              null, userToken.id, cert1b.buffer),
+          assertCertsStored.bind(null, userToken, [cert1a, cert1b]),
+          chrome.enterprise.platformKeys.removeCertificate.bind(
+              null, userToken.id, cert1a.buffer),
+          assertCertsStored.bind(null, userToken, [cert1b]),
+          chrome.enterprise.platformKeys.removeCertificate.bind(
+              null, userToken.id, cert1b.buffer),
+          assertCertsStored.bind(null, userToken, [])
+        ]);
+      }
     },
 
     function getCertsInvalidToken() {
       chrome.enterprise.platformKeys.getCertificates(
           'invalid token id', callbackFail('The token is not valid.'));
+    },
+
+    // Imports a certificate for which no private key was imported/generated
+    // before.
+    function missingPrivateKeyUserToken() {
+      chrome.enterprise.platformKeys.importCertificate(
+          userToken.id, cert2.buffer, callbackFail('Key not found.'));
+    },
+
+    function missingPrivateKeySystemToken() {
+      if (!systemToken) {
+        succeed();
+        return;
+      }
+      chrome.enterprise.platformKeys.importCertificate(
+          systemToken.id, certSystem.buffer, callbackFail('Key not found.'));
     }
-  ]);
+  ];
+
+  chrome.test.runTests(testsIndependentOfKeys.concat(testsNotParameterized));
 }
 
 beforeTests(runTests);
