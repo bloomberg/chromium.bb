@@ -37,9 +37,11 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_brand_chromeos.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/net/crl_set_fetcher.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -314,12 +316,6 @@ void UserSessionManager::InitRlz(Profile* profile) {
       base::Bind(&base::PathExists, GetRlzDisabledFlagPath()),
       base::Bind(&UserSessionManager::InitRlzImpl, AsWeakPtr(), profile));
 #endif
-}
-
-bool UserSessionManager::HasBrowserRestarted() const {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return base::SysInfo::IsRunningOnChromeOS() &&
-         command_line->HasSwitch(switches::kLoginUser);
 }
 
 OAuth2LoginManager::SessionRestoreStrategy
@@ -740,11 +736,10 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
   CryptohomeClient* client = DBusThreadManager::Get()->GetCryptohomeClient();
   btl->AddLoginTimeMarker("TPMOwn-Start", false);
   if (cryptohome_util::TpmIsEnabled() && !cryptohome_util::TpmIsBeingOwned()) {
-    if (cryptohome_util::TpmIsOwned()) {
+    if (cryptohome_util::TpmIsOwned())
       client->CallTpmClearStoredPasswordAndBlock();
-    } else {
+    else
       client->TpmCanAttemptOwnership(EmptyVoidDBusMethodCallback());
-    }
   }
   btl->AddLoginTimeMarker("TPMOwn-End", false);
 
@@ -768,15 +763,16 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
       content::NotificationService::AllSources(),
       content::Details<Profile>(profile));
 
-  InitializeCertsForPrimaryUser(profile);
-
-  // Initialize RLZ only for primary user.
+  // Initialize various services only for primary user.
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile);
-  if (user_manager->GetPrimaryUser() == user)
+  if (user_manager->GetPrimaryUser() == user) {
     InitRlz(profile);
+    InitializeCerts(profile);
+    InitializeCRLSetFetcher(user);
+  }
 
-  // TODO(altimofeev): This pointer should probably never be NULL, but it looks
+  // TODO(nkostylev): This pointer should probably never be NULL, but it looks
   // like LoginUtilsImpl::OnProfileCreated() may be getting called before
   // UserSessionManager::PrepareProfile() has set |delegate_| when Chrome is
   // killed during shutdown in tests -- see http://crosbug.com/18269.  Replace
@@ -878,18 +874,26 @@ void UserSessionManager::InitRlzImpl(Profile* profile, bool disabled) {
 #endif
 }
 
-void UserSessionManager::InitializeCertsForPrimaryUser(Profile* profile) {
+void UserSessionManager::InitializeCerts(Profile* profile) {
   // Now that the user profile has been initialized
   // |GetNSSCertDatabaseForProfile| is safe to be used.
-  UserManager* user_manager = UserManager::Get();
-  const user_manager::User* primary_user = user_manager->GetPrimaryUser();
-  if (user_manager->IsUserLoggedIn() &&
-      primary_user &&
-      profile == ProfileHelper::Get()->GetProfileByUser(primary_user) &&
-      CertLoader::IsInitialized() &&
-      base::SysInfo::IsRunningOnChromeOS()) {
+  if (CertLoader::IsInitialized() && base::SysInfo::IsRunningOnChromeOS()) {
     GetNSSCertDatabaseForProfile(profile,
                                  base::Bind(&OnGetNSSCertDatabaseForUser));
+  }
+}
+
+void UserSessionManager::InitializeCRLSetFetcher(
+    const user_manager::User* user) {
+  const std::string username_hash = user->username_hash();
+  if (!username_hash.empty()) {
+    base::FilePath path;
+    path = ProfileHelper::GetProfilePathByUserIdHash(username_hash);
+    component_updater::ComponentUpdateService* cus =
+        g_browser_process->component_updater();
+    CRLSetFetcher* crl_set = g_browser_process->crl_set_fetcher();
+    if (crl_set && cus)
+      crl_set->StartInitialLoad(cus, path);
   }
 }
 

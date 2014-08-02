@@ -19,7 +19,7 @@ class RemoveUserDelegate;
 class UserImageManager;
 class SupervisedUserManager;
 
-// Base class for UserManagerImpl - provides a mechanism for discovering users
+// Interface for UserManagerBase - provides a mechanism for discovering users
 // who have logged into this Chrome OS device before and updating that list.
 class UserManager {
  public:
@@ -122,7 +122,7 @@ class UserManager {
   // Returns a list of users who are currently logged in in the LRU order -
   // so the active user is the first one in the list. If there is no user logged
   // in, the current user will be returned.
-  virtual const user_manager::UserList& GetLRULoggedInUsers() = 0;
+  virtual const user_manager::UserList& GetLRULoggedInUsers() const = 0;
 
   // Returns a list of users who can unlock the device.
   // This list is based on policy and whether user is able to do unlock.
@@ -134,7 +134,7 @@ class UserManager {
 
   // Returns the email of the owner user. Returns an empty string if there is
   // no owner for the device.
-  virtual const std::string& GetOwnerEmail() = 0;
+  virtual const std::string& GetOwnerEmail() const = 0;
 
   // Indicates that a user with the given |user_id| has just logged in. The
   // persistent list is updated accordingly if the user is not ephemeral.

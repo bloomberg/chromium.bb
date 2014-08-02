@@ -63,9 +63,9 @@ class FakeUserManager : public UserManager {
   virtual UserImageManager* GetUserImageManager(
       const std::string& user_id) OVERRIDE;
   virtual SupervisedUserManager* GetSupervisedUserManager() OVERRIDE;
-  virtual const user_manager::UserList& GetLRULoggedInUsers() OVERRIDE;
+  virtual const user_manager::UserList& GetLRULoggedInUsers() const OVERRIDE;
   virtual user_manager::UserList GetUnlockUsers() const OVERRIDE;
-  virtual const std::string& GetOwnerEmail() OVERRIDE;
+  virtual const std::string& GetOwnerEmail() const OVERRIDE;
   virtual void SessionStarted() OVERRIDE {}
   virtual void RemoveUser(const std::string& email,
       RemoveUserDelegate* delegate) OVERRIDE {}

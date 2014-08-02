@@ -18,13 +18,14 @@
 #include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
+class ChromeUserManager;
 class FakeLoginUtils;
 class FakeUserManager;
 class MockUserManager;
 class SupervisedUserManagerImpl;
 class UserAddingScreenTest;
 class UserImageManagerImpl;
-class UserManagerImpl;
+class UserManagerBase;
 class UserSessionManager;
 }
 
@@ -143,9 +144,10 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   bool is_profile_created() const { return profile_is_created_; }
 
  protected:
+  friend class chromeos::ChromeUserManager;
   friend class chromeos::SupervisedUserManagerImpl;
-  friend class chromeos::UserManagerImpl;
   friend class chromeos::UserImageManagerImpl;
+  friend class chromeos::UserManagerBase;
   friend class chromeos::UserSessionManager;
 
   // For testing:

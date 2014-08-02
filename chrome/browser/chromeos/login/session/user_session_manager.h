@@ -98,10 +98,6 @@ class UserSessionManager
   // Initialize RLZ.
   void InitRlz(Profile* profile);
 
-  // Returns true when the browser has crashed and restarted during the current
-  // user's session.
-  bool HasBrowserRestarted() const;
-
   // TODO(nkostylev): Drop these methods once LoginUtilsImpl::AttemptRestart()
   // is migrated.
   OAuth2LoginManager::SessionRestoreStrategy GetSigninSessionRestoreStrategy();
@@ -203,9 +199,12 @@ class UserSessionManager
   // Initializes RLZ. If |disabled| is true, RLZ pings are disabled.
   void InitRlzImpl(Profile* profile, bool disabled);
 
-  // Get the NSS cert database for the primary user and start certificate
-  // loader with it.
-  void InitializeCertsForPrimaryUser(Profile* profile);
+  // Get the NSS cert database for the user represented with |profile|
+  // and start certificate loader with it.
+  void InitializeCerts(Profile* profile);
+
+  // Starts loading CRL set.
+  void InitializeCRLSetFetcher(const user_manager::User* user);
 
   // Callback to process RetrieveActiveSessions() request results.
   void OnRestoreActiveSessions(
