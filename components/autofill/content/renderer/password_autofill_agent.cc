@@ -1109,6 +1109,7 @@ void PasswordAutofillAgent::ProvisionallySavePassword(
     blink::WebLocalFrame* frame,
     const blink::WebFormElement& form,
     ProvisionallySaveRestriction restriction) {
+  DCHECK(frame);
   scoped_ptr<PasswordForm> password_form(CreatePasswordForm(form));
   if (!password_form || (restriction == RESTRICTION_NON_EMPTY_PASSWORD &&
                          password_form->password_value.empty() &&
