@@ -101,31 +101,21 @@
         'mesa_headers',
         'mesa_libglslcommon', # implicit dependency on generate_main_mesa_sources
       ],
+      'variables': {
+        'clang_warning_flags': [
+          '-Wno-tautological-constant-out-of-range-compare',
+        ],
+        'clang_warning_flags_unset': [
+          # Don't warn about string->bool used in asserts.
+          '-Wstring-conversion',
+        ],
+      },
       'sources': [
         'src/src/mesa/program/hash_table.c',
         'src/src/mesa/program/symbol_table.c',
         'src/src/glsl/standalone_scaffolding.cpp',
         'src/src/glsl/main.cpp',
         'src/src/glsl/builtin_stubs.cpp',
-      ],
-      'conditions': [
-        ['clang == 1', {
-          'xcode_settings': {
-            'WARNING_CFLAGS': [
-              '-Wno-tautological-constant-out-of-range-compare',
-            ],
-            'WARNING_CFLAGS!': [
-              # Don't warn about string->bool used in asserts.
-              '-Wstring-conversion',
-            ],
-          },
-          'cflags': [
-            '-Wtautological-constant-out-of-range-compare',
-          ],
-          'cflags!': [
-            '-Wstring-conversion',
-          ],
-        }],
       ],
     },
     {

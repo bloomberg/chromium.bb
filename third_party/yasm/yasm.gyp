@@ -71,6 +71,12 @@
         'genstring',
         're2c',
       ],
+      'variables': {
+        'clang_warning_flags': [
+          # yasm passes a `const elf_machine_sym*` through `void*`.
+          '-Wno-incompatible-pointer-types',
+        ],
+      },
       'sources': [
          'source/patched-yasm/frontends/yasm/yasm-options.c',
          'source/patched-yasm/frontends/yasm/yasm.c',
@@ -158,19 +164,6 @@
       ],
       'defines': [ '<@(yasm_defines)' ],
       'cflags': [ '<@(yasm_cflags)', ],
-      'conditions': [
-        ['clang==1', {
-          'xcode_settings': {
-            'WARNING_CFLAGS': [
-              # yasm passes a `const elf_machine_sym*` through `void*`.
-              '-Wno-incompatible-pointer-types',
-            ],
-          },
-          'cflags': [
-            '-Wno-incompatible-pointer-types',
-          ],
-        }],
-      ],
       'msvs_disabled_warnings': [ 4267 ],
       'rules': [
         {

@@ -148,6 +148,12 @@
         }
       },
     },
+    'variables': {
+      'clang_warning_flags_unset': [
+        # Don't warn about string->bool used in asserts.
+        '-Wstring-conversion',
+      ],
+    },
     'conditions': [
       ['"<(libpeer_target_type)"=="static_library"', {
         'defines': [ 'LIBPEERCONNECTION_LIB=1' ],
@@ -191,17 +197,6 @@
               '_USE_32BIT_TIME_T',
             ],
           }],
-        ],
-      }],
-      ['clang == 1', {
-        'xcode_settings': {
-          'WARNING_CFLAGS!': [
-            # Don't warn about string->bool used in asserts.
-            '-Wstring-conversion',
-          ],
-        },
-        'cflags!': [
-          '-Wstring-conversion',
         ],
       }],
       ['OS=="linux"', {

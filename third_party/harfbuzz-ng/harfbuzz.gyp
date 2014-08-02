@@ -145,17 +145,10 @@
           'dependencies': [
             '../../third_party/icu/icu.gyp:icuuc',
           ],
+          'variables': {
+            'clang_warning_flags': [ '-Wno-unused-value', ],
+          },
           'conditions': [
-            ['clang==1', {
-              'xcode_settings': {
-                'WARNING_CFLAGS': [
-                  '-Wno-unused-value',
-                ],
-              },
-              'cflags': [
-                '-Wno-unused-value',
-              ]
-            }],
             ['OS=="win"', {
               # TODO(eae): C4267 on amd64. size_t -> int, size_t -> unsigned int
               'msvs_disabled_warnings': [4267, 4334],
