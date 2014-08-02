@@ -23,7 +23,6 @@ static const uint32 kSourceSsrc = 0x40506;
 static const uint32 kUnknownSsrc = 0xDEAD;
 static const base::TimeDelta kTargetDelay =
     base::TimeDelta::FromMilliseconds(100);
-static const std::string kCName("test@10.1.1.1");
 
 namespace {
 
@@ -268,7 +267,6 @@ TEST_F(RtcpReceiverTest, InjectSenderReportPacketWithDlrr) {
   p.AddXrUnknownBlock();
   p.AddXrExtendedDlrrBlock(kSenderSsrc);
   p.AddXrUnknownBlock();
-  p.AddSdesCname(kSenderSsrc, kCName);
 
   // Expected to be ignored since the source ssrc does not match our
   // local ssrc.
@@ -320,7 +318,6 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportPacketWithIntraFrameRequest) {
   TestRtcpPacketBuilder p1;
   p1.AddRr(kSenderSsrc, 1);
   p1.AddRb(kUnknownSsrc);
-  p1.AddPli(kSenderSsrc, kUnknownSsrc);
 
   // Expected to be ignored since the source ssrc does not match our
   // local ssrc.
@@ -332,7 +329,6 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportPacketWithIntraFrameRequest) {
   TestRtcpPacketBuilder p2;
   p2.AddRr(kSenderSsrc, 1);
   p2.AddRb(kSourceSsrc);
-  p2.AddPli(kSenderSsrc, kSourceSsrc);
 
   // Expected to be pass through since the sender ssrc match our local ssrc.
   InjectRtcpPacket(p2.Data(), p2.Length());

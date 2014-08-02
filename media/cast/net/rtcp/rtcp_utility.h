@@ -13,19 +13,14 @@
 namespace media {
 namespace cast {
 
-static const int kRtcpRpsiDataSize = 30;
-
 // RFC 3550 page 44, including end null.
 static const size_t kRtcpCnameSize = 256;
-static const int kRtcpMaxNumberOfRembFeedbackSsrcs = 255;
 
-static const uint32 kRemb = ('R' << 24) + ('E' << 16) + ('M' << 8) + 'B';
 static const uint32 kCast = ('C' << 24) + ('A' << 16) + ('S' << 8) + 'T';
 
 static const uint8 kReceiverLogSubtype = 2;
 
 static const size_t kRtcpMaxReceiverLogMessages = 256;
-static const size_t kRtcpMaxNackFields = 253;
 static const size_t kRtcpMaxCastLossFields = 100;
 
 struct RtcpFieldReceiverReport {
@@ -56,56 +51,6 @@ struct RtcpFieldReportBlockItem {
   uint32 delay_last_sender_report;
 };
 
-struct RtcpFieldSdesCName {
-  // RFC 3550
-  uint32 sender_ssrc;
-  char name[kRtcpCnameSize];
-};
-
-struct RtcpFieldBye {
-  // RFC 3550.
-  uint32 sender_ssrc;
-};
-
-struct RtcpFieldGenericRtpFeedbackNack {
-  // RFC 4585.
-  uint32 sender_ssrc;
-  uint32 media_ssrc;
-};
-
-struct RtcpFieldGenericRtpFeedbackNackItem {
-  // RFC 4585.
-  uint16 packet_id;
-  uint16 bitmask;
-};
-
-struct RtcpFieldPayloadSpecificFir {
-  // RFC 5104.
-  uint32 sender_ssrc;
-  uint32 media_ssrc;  // zero!
-};
-
-struct RtcpFieldPayloadSpecificFirItem {
-  // RFC 5104.
-  uint32 ssrc;
-  uint8 command_sequence_number;
-};
-
-struct RtcpFieldPayloadSpecificPli {
-  // RFC 4585.
-  uint32 sender_ssrc;
-  uint32 media_ssrc;
-};
-
-struct RtcpFieldPayloadSpecificRpsi {
-  // RFC 4585.
-  uint32 sender_ssrc;
-  uint32 media_ssrc;
-  uint8 payload_type;
-  uint16 number_of_valid_bits;
-  uint8 native_bit_string[kRtcpRpsiDataSize];
-};
-
 struct RtcpFieldXr {
   // RFC 3611.
   uint32 sender_ssrc;
@@ -127,12 +72,6 @@ struct RtcpFieldXrDlrr {
 struct RtcpFieldPayloadSpecificApplication {
   uint32 sender_ssrc;
   uint32 media_ssrc;
-};
-
-struct RtcpFieldPayloadSpecificRembItem {
-  uint32 bitrate;
-  uint8 number_of_ssrcs;
-  uint32 ssrcs[kRtcpMaxNumberOfRembFeedbackSsrcs];
 };
 
 struct RtcpFieldPayloadSpecificCastItem {
@@ -163,22 +102,12 @@ union RtcpField {
   RtcpFieldReceiverReport receiver_report;
   RtcpFieldSenderReport sender_report;
   RtcpFieldReportBlockItem report_block_item;
-  RtcpFieldSdesCName c_name;
-  RtcpFieldBye bye;
 
   RtcpFieldXr extended_report;
   RtcpFieldXrRrtr rrtr;
   RtcpFieldXrDlrr dlrr;
 
-  RtcpFieldGenericRtpFeedbackNack nack;
-  RtcpFieldGenericRtpFeedbackNackItem nack_item;
-
-  RtcpFieldPayloadSpecificPli pli;
-  RtcpFieldPayloadSpecificRpsi rpsi;
-  RtcpFieldPayloadSpecificFir fir;
-  RtcpFieldPayloadSpecificFirItem fir_item;
   RtcpFieldPayloadSpecificApplication application_specific;
-  RtcpFieldPayloadSpecificRembItem remb_item;
   RtcpFieldPayloadSpecificCastItem cast_item;
   RtcpFieldPayloadSpecificCastNackItem cast_nack_item;
 
@@ -192,9 +121,6 @@ enum RtcpFieldTypes {
   kRtcpRrCode,
   kRtcpSrCode,
   kRtcpReportBlockItemCode,
-  kRtcpSdesCode,
-  kRtcpSdesChunkCode,
-  kRtcpByeCode,
 
   // RFC 3611.
   kRtcpXrCode,
@@ -203,27 +129,14 @@ enum RtcpFieldTypes {
   kRtcpXrUnknownItemCode,
 
   // RFC 4585.
-  kRtcpGenericRtpFeedbackNackCode,
-  kRtcpGenericRtpFeedbackNackItemCode,
-  kRtcpPayloadSpecificPliCode,
-  kRtcpPayloadSpecificRpsiCode,
   kRtcpPayloadSpecificAppCode,
 
   // Application specific.
-  kRtcpPayloadSpecificRembCode,
-  kRtcpPayloadSpecificRembItemCode,
   kRtcpPayloadSpecificCastCode,
   kRtcpPayloadSpecificCastNackItemCode,
   kRtcpApplicationSpecificCastReceiverLogCode,
   kRtcpApplicationSpecificCastReceiverLogFrameCode,
   kRtcpApplicationSpecificCastReceiverLogEventCode,
-
-  // RFC 5104.
-  kRtcpPayloadSpecificFirCode,
-  kRtcpPayloadSpecificFirItemCode,
-
-  // RFC 6051.
-  kRtcpGenericRtpFeedbackSrReqCode,
 };
 
 struct RtcpCommonHeader {
@@ -251,17 +164,11 @@ class RtcpParser {
   enum ParseState {
     kStateTopLevel,     // Top level packet
     kStateReportBlock,  // Sender/Receiver report report blocks.
-    kStateSdes,
-    kStateBye,
     kStateApplicationSpecificCastReceiverFrameLog,
     kStateApplicationSpecificCastReceiverEventLog,
     kStateExtendedReportBlock,
     kStateExtendedReportDelaySinceLastReceiverReport,
-    kStateGenericRtpFeedbackNack,
-    kStatePayloadSpecificRpsi,
-    kStatePayloadSpecificFir,
     kStatePayloadSpecificApplication,
-    kStatePayloadSpecificRemb,      // Application specific Remb.
     kStatePayloadSpecificCast,      // Application specific Cast.
     kStatePayloadSpecificCastNack,  // Application specific Nack for Cast.
   };
@@ -272,17 +179,11 @@ class RtcpParser {
 
   void IterateTopLevel();
   void IterateReportBlockItem();
-  void IterateSdesItem();
-  void IterateByeItem();
   void IterateCastReceiverLogFrame();
   void IterateCastReceiverLogEvent();
   void IterateExtendedReportItem();
   void IterateExtendedReportDelaySinceLastReceiverReportItem();
-  void IterateNackItem();
-  void IterateRpsiItem();
-  void IterateFirItem();
   void IteratePayloadSpecificAppItem();
-  void IteratePayloadSpecificRembItem();
   void IteratePayloadSpecificCastItem();
   void IteratePayloadSpecificCastNackItem();
 
@@ -293,11 +194,6 @@ class RtcpParser {
   bool ParseSR();
   bool ParseReportBlockItem();
 
-  bool ParseSdes();
-  bool ParseSdesItem();
-  bool ParseSdesTypes();
-  bool ParseBye();
-  bool ParseByeItem();
   bool ParseApplicationDefined(uint8 subtype);
   bool ParseCastReceiverLogFrameItem();
   bool ParseCastReceiverLogEventItem();
@@ -308,11 +204,7 @@ class RtcpParser {
   bool ParseExtendedReportDelaySinceLastReceiverReport();
 
   bool ParseFeedBackCommon(const RtcpCommonHeader& header);
-  bool ParseNackItem();
-  bool ParseRpsiItem();
-  bool ParseFirItem();
   bool ParsePayloadSpecificAppItem();
-  bool ParsePayloadSpecificRembItem();
   bool ParsePayloadSpecificCastItem();
   bool ParsePayloadSpecificCastNackItem();
 

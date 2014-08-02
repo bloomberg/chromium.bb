@@ -29,7 +29,6 @@ FrameReceiverConfig GetDefaultAudioReceiverConfig() {
   FrameReceiverConfig config;
   config.feedback_ssrc = 2;
   config.incoming_ssrc = 1;
-  config.rtcp_c_name = "audio_receiver@a.b.c.d";
   config.rtp_max_delay_ms = kDefaultRtpMaxDelayMs;
   config.rtp_payload_type = 127;
   config.frequency = 48000;
@@ -43,7 +42,6 @@ FrameReceiverConfig GetDefaultVideoReceiverConfig() {
   FrameReceiverConfig config;
   config.feedback_ssrc = 12;
   config.incoming_ssrc = 11;
-  config.rtcp_c_name = "video_receiver@a.b.c.d";
   config.rtp_max_delay_ms = kDefaultRtpMaxDelayMs;
   config.rtp_payload_type = 96;
   config.frequency = kVideoFrequency;

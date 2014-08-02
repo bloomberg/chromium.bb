@@ -118,8 +118,7 @@ void CastTransportSenderImpl::InitializeAudio(
                clock_,
                &pacer_,
                config.ssrc,
-               config.feedback_ssrc,
-               config.c_name));
+               config.feedback_ssrc));
   pacer_.RegisterAudioSsrc(config.ssrc);
   status_callback_.Run(TRANSPORT_AUDIO_INITIALIZED);
 }
@@ -150,8 +149,7 @@ void CastTransportSenderImpl::InitializeVideo(
                clock_,
                &pacer_,
                config.ssrc,
-               config.feedback_ssrc,
-               config.c_name));
+               config.feedback_ssrc));
   pacer_.RegisterVideoSsrc(config.ssrc);
   status_callback_.Run(TRANSPORT_VIDEO_INITIALIZED);
 }

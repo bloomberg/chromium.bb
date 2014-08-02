@@ -18,7 +18,6 @@ namespace cast {
 
 namespace {
 static const uint32 kSendingSsrc = 0x12345678;
-static const std::string kCName("test@10.1.1.1");
 }  // namespace
 
 class TestRtcpTransport : public PacedPacketSender {
@@ -63,7 +62,7 @@ class RtcpBuilderTest : public ::testing::Test {
         cast_environment_(new CastEnvironment(&testing_clock_, task_runner_,
             task_runner_, task_runner_, task_runner_, task_runner_,
             GetDefaultCastSenderLoggingConfig())),
-        rtcp_builder_(new RtcpBuilder(&test_transport_, kSendingSsrc, kCName)) {
+        rtcp_builder_(new RtcpBuilder(&test_transport_, kSendingSsrc)) {
   }
 
   base::SimpleTestTickClock testing_clock_;
@@ -81,18 +80,16 @@ TEST_F(RtcpBuilderTest, RtcpSenderReport) {
   sender_info.send_packet_count = kSendPacketCount;
   sender_info.send_octet_count = kSendOctetCount;
 
-  // Sender report + c_name.
+  // Sender report.
   TestRtcpPacketBuilder p;
   p.AddSr(kSendingSsrc, 0);
-  p.AddSdesCname(kSendingSsrc, kCName);
   test_transport_.SetExpectedRtcpPacket(p.Packet(), p.Length());
 
   rtcp_builder_->SendRtcpFromRtpSender(RtcpBuilder::kRtcpSr,
                                        &sender_info,
                                        NULL,
                                        NULL,
-                                       kSendingSsrc,
-                                       kCName);
+                                       kSendingSsrc);
 
   EXPECT_EQ(1, test_transport_.packet_count());
 }
@@ -105,10 +102,10 @@ TEST_F(RtcpBuilderTest, RtcpSenderReportWithDlrr) {
   sender_info.send_packet_count = kSendPacketCount;
   sender_info.send_octet_count = kSendOctetCount;
 
-  // Sender report + c_name + dlrr.
+  // Sender report + dlrr.
   TestRtcpPacketBuilder p1;
   p1.AddSr(kSendingSsrc, 0);
-  p1.AddSdesCname(kSendingSsrc, kCName);
+  p1.AddSdesCname(kSendingSsrc);
   p1.AddXrHeader(kSendingSsrc);
   p1.AddXrDlrrBlock(kSendingSsrc);
   test_transport_.SetExpectedRtcpPacket(p1.Packet(), p1.Length());
@@ -122,8 +119,7 @@ TEST_F(RtcpBuilderTest, RtcpSenderReportWithDlrr) {
       &sender_info,
       &dlrr_rb,
       NULL,
-      kSendingSsrc,
-      kCName);
+      kSendingSsrc);
 
   EXPECT_EQ(1, test_transport_.packet_count());
 }
@@ -136,10 +132,10 @@ TEST_F(RtcpBuilderTest, RtcpSenderReportWithDlrr) {
   sender_info.send_packet_count = kSendPacketCount;
   sender_info.send_octet_count = kSendOctetCount;
 
-  // Sender report + c_name + dlrr + sender log.
+  // Sender report + + dlrr + sender log.
   TestRtcpPacketBuilder p;
   p.AddSr(kSendingSsrc, 0);
-  p.AddSdesCname(kSendingSsrc, kCName);
+  p.AddSdesCname(kSendingSsrc);
   p.AddXrHeader(kSendingSsrc);
   p.AddXrDlrrBlock(kSendingSsrc);
 
@@ -154,8 +150,7 @@ TEST_F(RtcpBuilderTest, RtcpSenderReportWithDlrr) {
           RtcpBuilder::kRtcpSenderLog,
       &sender_info,
       &dlrr_rb,
-      kSendingSsrc,
-      kCName);
+      kSendingSsrc);
 
   EXPECT_EQ(1, test_transport_.packet_count());
 }

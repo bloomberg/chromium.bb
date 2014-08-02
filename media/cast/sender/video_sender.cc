@@ -68,7 +68,6 @@ VideoSender::VideoSender(
   media::cast::CastTransportRtpConfig transport_config;
   transport_config.ssrc = video_config.ssrc;
   transport_config.feedback_ssrc = video_config.incoming_feedback_ssrc;
-  transport_config.c_name = video_config.rtcp_c_name;
   transport_config.rtp_payload_type = video_config.rtp_payload_type;
   transport_config.stored_frames = max_unacked_frames_;
   transport_config.aes_key = video_config.aes_key;

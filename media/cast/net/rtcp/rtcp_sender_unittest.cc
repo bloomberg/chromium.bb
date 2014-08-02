@@ -23,7 +23,6 @@ static const uint32 kSendingSsrc = 0x12345678;
 static const uint32 kMediaSsrc = 0x87654321;
 static const base::TimeDelta kDefaultDelay =
     base::TimeDelta::FromMilliseconds(100);
-static const std::string kCName("test@10.1.1.1");
 
 RtcpReportBlock GetReportBlock() {
   RtcpReportBlock report_block;
@@ -94,7 +93,7 @@ class RtcpSenderTest : public ::testing::Test {
             task_runner_,
             task_runner_,
             task_runner_)),
-        rtcp_sender_(new RtcpSender(&test_transport_, kSendingSsrc, kCName)) {}
+        rtcp_sender_(new RtcpSender(&test_transport_, kSendingSsrc)) {}
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   TestRtcpTransport test_transport_;
@@ -106,10 +105,9 @@ class RtcpSenderTest : public ::testing::Test {
 };
 
 TEST_F(RtcpSenderTest, RtcpReceiverReport) {
-  // Empty receiver report + c_name.
+  // Empty receiver report.
   TestRtcpPacketBuilder p1;
   p1.AddRr(kSendingSsrc, 0);
-  p1.AddSdesCname(kSendingSsrc, kCName);
   test_transport_.SetExpectedRtcpPacket(p1.GetPacket());
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
@@ -117,11 +115,10 @@ TEST_F(RtcpSenderTest, RtcpReceiverReport) {
 
   EXPECT_EQ(1, test_transport_.packet_count());
 
-  // Receiver report with report block + c_name.
+  // Receiver report with report block.
   TestRtcpPacketBuilder p2;
   p2.AddRr(kSendingSsrc, 1);
   p2.AddRb(kMediaSsrc);
-  p2.AddSdesCname(kSendingSsrc, kCName);
   test_transport_.SetExpectedRtcpPacket(p2.GetPacket().Pass());
 
   RtcpReportBlock report_block = GetReportBlock();
@@ -133,11 +130,10 @@ TEST_F(RtcpSenderTest, RtcpReceiverReport) {
 }
 
 TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtr) {
-  // Receiver report with report block + c_name.
+  // Receiver report with report block.
   TestRtcpPacketBuilder p;
   p.AddRr(kSendingSsrc, 1);
   p.AddRb(kMediaSsrc);
-  p.AddSdesCname(kSendingSsrc, kCName);
   p.AddXrHeader(kSendingSsrc);
   p.AddXrRrtrBlock();
   test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
@@ -160,11 +156,10 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtr) {
 }
 
 TEST_F(RtcpSenderTest, RtcpReceiverReportWithCast) {
-  // Receiver report with report block + c_name.
+  // Receiver report with report block.
   TestRtcpPacketBuilder p;
   p.AddRr(kSendingSsrc, 1);
   p.AddRb(kMediaSsrc);
-  p.AddSdesCname(kSendingSsrc, kCName);
   p.AddCast(kSendingSsrc, kMediaSsrc, kDefaultDelay);
   test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
 
@@ -196,7 +191,6 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtraAndCastMessage) {
   TestRtcpPacketBuilder p;
   p.AddRr(kSendingSsrc, 1);
   p.AddRb(kMediaSsrc);
-  p.AddSdesCname(kSendingSsrc, kCName);
   p.AddXrHeader(kSendingSsrc);
   p.AddXrRrtrBlock();
   p.AddCast(kSendingSsrc, kMediaSsrc, kDefaultDelay);
@@ -237,7 +231,6 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtrCastMessageAndLog) {
   TestRtcpPacketBuilder p;
   p.AddRr(kSendingSsrc, 1);
   p.AddRb(kMediaSsrc);
-  p.AddSdesCname(kSendingSsrc, kCName);
   p.AddXrHeader(kSendingSsrc);
   p.AddXrRrtrBlock();
   p.AddCast(kSendingSsrc, kMediaSsrc, kDefaultDelay);
@@ -319,7 +312,6 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithOversizedFrameLog) {
   TestRtcpPacketBuilder p;
   p.AddRr(kSendingSsrc, 1);
   p.AddRb(kMediaSsrc);
-  p.AddSdesCname(kSendingSsrc, kCName);
 
   RtcpReportBlock report_block = GetReportBlock();
 
@@ -387,7 +379,6 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithTooManyLogFrames) {
   TestRtcpPacketBuilder p;
   p.AddRr(kSendingSsrc, 1);
   p.AddRb(kMediaSsrc);
-  p.AddSdesCname(kSendingSsrc, kCName);
 
   RtcpReportBlock report_block = GetReportBlock();
 
@@ -443,7 +434,6 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithOldLogFrames) {
   TestRtcpPacketBuilder p;
   p.AddRr(kSendingSsrc, 1);
   p.AddRb(kMediaSsrc);
-  p.AddSdesCname(kSendingSsrc, kCName);
 
   RtcpReportBlock report_block = GetReportBlock();
 
@@ -503,7 +493,6 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportRedundancy) {
     TestRtcpPacketBuilder p;
     p.AddRr(kSendingSsrc, 1);
     p.AddRb(kMediaSsrc);
-    p.AddSdesCname(kSendingSsrc, kCName);
 
     p.AddReceiverLog(kSendingSsrc);
 
@@ -564,10 +553,9 @@ TEST_F(RtcpSenderTest, RtcpSenderReport) {
   dlrr_rb.last_rr = kLastRr;
   dlrr_rb.delay_since_last_rr = kDelayLastRr;
 
-  // Sender report + c_name.
+  // Sender report.
   TestRtcpPacketBuilder p;
   p.AddSr(kSendingSsrc, 0);
-  p.AddSdesCname(kSendingSsrc, kCName);
   test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
 
   rtcp_sender_->SendRtcpFromRtpSender(kRtcpSr,
@@ -585,10 +573,9 @@ TEST_F(RtcpSenderTest, RtcpSenderReportWithDlrr) {
   sender_info.send_packet_count = kSendPacketCount;
   sender_info.send_octet_count = kSendOctetCount;
 
-  // Sender report + c_name + dlrr.
+  // Sender report + dlrr.
   TestRtcpPacketBuilder p1;
   p1.AddSr(kSendingSsrc, 0);
-  p1.AddSdesCname(kSendingSsrc, kCName);
   p1.AddXrHeader(kSendingSsrc);
   p1.AddXrDlrrBlock(kSendingSsrc);
   test_transport_.SetExpectedRtcpPacket(p1.GetPacket().Pass());

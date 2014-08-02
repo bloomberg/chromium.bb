@@ -36,13 +36,6 @@ static const int kDelayLastSr = 1000;
 static const int kLastRr = 0x34561234;
 static const int kDelayLastRr = 1000;
 
-// REMB.
-static const int kTestRembBitrate = 52428;
-
-// RPSI.
-static const int kPayloadtype = 126;
-static const uint64 kPictureId = 0x1234567890;
-
 // NACK.
 static const int kMissingPacket = 34567;
 
@@ -66,7 +59,6 @@ class TestRtcpPacketBuilder {
                     uint32 rtp_timestamp);
   void AddRr(uint32 sender_ssrc, int number_of_report_blocks);
   void AddRb(uint32 rtp_ssrc);
-  void AddSdesCname(uint32 sender_ssrc, const std::string& c_name);
 
   void AddXrHeader(uint32 sender_ssrc);
   void AddXrDlrrBlock(uint32 sender_ssrc);
@@ -77,9 +69,6 @@ class TestRtcpPacketBuilder {
   void AddNack(uint32 sender_ssrc, uint32 media_ssrc);
   void AddSendReportRequest(uint32 sender_ssrc, uint32 media_ssrc);
 
-  void AddPli(uint32 sender_ssrc, uint32 media_ssrc);
-  void AddRpsi(uint32 sender_ssrc, uint32 media_ssrc);
-  void AddRemb(uint32 sender_ssrc, uint32 media_ssrc);
   void AddCast(uint32 sender_ssrc,
                uint32 media_ssrc,
                base::TimeDelta target_delay);

@@ -62,42 +62,17 @@ class RtcpReceiver {
 
   void HandleReportBlock(const RtcpField* rtcp_field, uint32 remote_ssrc);
 
-  void HandleSDES(RtcpParser* rtcp_parser);
-  void HandleSDESChunk(RtcpParser* rtcp_parser);
-
-  void HandleBYE(RtcpParser* rtcp_parser);
-
   void HandleXr(RtcpParser* rtcp_parser);
   void HandleRrtr(RtcpParser* rtcp_parser, uint32 remote_ssrc);
   void HandleDlrr(RtcpParser* rtcp_parser);
 
-  //  Generic RTP Feedback.
-  void HandleNACK(RtcpParser* rtcp_parser);
-  void HandleNACKItem(const RtcpField* rtcp_field,
-                      std::list<uint16>* nack_sequence_numbers);
-
-  void HandleSendReportRequest(RtcpParser* rtcp_parser);
-
-  // Payload-specific.
-  void HandlePLI(RtcpParser* rtcp_parser);
-
-  void HandleSLI(RtcpParser* rtcp_parser);
-  void HandleSLIItem(RtcpField* rtcpPacket);
-
-  void HandleRpsi(RtcpParser* rtcp_parser);
-
-  void HandleFIR(RtcpParser* rtcp_parser);
-  void HandleFIRItem(const RtcpField* rtcp_field);
-
   void HandlePayloadSpecificApp(RtcpParser* rtcp_parser);
-  void HandlePayloadSpecificRembItem(RtcpParser* rtcp_parser);
   void HandlePayloadSpecificCastItem(RtcpParser* rtcp_parser);
   void HandlePayloadSpecificCastNackItem(
       const RtcpField* rtcp_field,
       MissingFramesAndPacketsMap* missing_frames_and_packets);
 
   void HandleApplicationSpecificCastReceiverLog(RtcpParser* rtcp_parser);
-  void HandleApplicationSpecificCastSenderLog(RtcpParser* rtcp_parser);
   void HandleApplicationSpecificCastReceiverEventLog(
       uint32 frame_rtp_timestamp,
       RtcpParser* rtcp_parser,

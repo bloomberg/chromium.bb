@@ -38,9 +38,6 @@ struct CastTransportRtpConfig {
   // Identifier for incoming RTCP traffic.
   uint32 feedback_ssrc;
 
-  // Identifier for this stream.
-  std::string c_name;
-
   // RTP payload type enum: Specifies the type/encoding of frame data.
   int rtp_payload_type;
 

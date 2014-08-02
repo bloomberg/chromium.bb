@@ -74,7 +74,6 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
   media::cast::CastTransportRtpConfig transport_config;
   transport_config.ssrc = audio_config.ssrc;
   transport_config.feedback_ssrc = audio_config.incoming_feedback_ssrc;
-  transport_config.c_name = audio_config.rtcp_c_name;
   transport_config.rtp_payload_type = audio_config.rtp_payload_type;
   // TODO(miu): AudioSender needs to be like VideoSender in providing an upper
   // limit on the number of in-flight frames.

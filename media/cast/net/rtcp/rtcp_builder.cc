@@ -27,28 +27,20 @@ void RtcpBuilder::SendRtcpFromRtpSender(
     uint32 packet_type_flags,
     const RtcpSenderInfo& sender_info,
     const RtcpDlrrReportBlock& dlrr,
-    uint32 sending_ssrc,
-    const std::string& c_name) {
+    uint32 sending_ssrc) {
   if (packet_type_flags & kRtcpRr ||
-      packet_type_flags & kRtcpPli ||
       packet_type_flags & kRtcpRrtr ||
       packet_type_flags & kRtcpCast ||
       packet_type_flags & kRtcpReceiverLog ||
-      packet_type_flags & kRtcpRpsi ||
-      packet_type_flags & kRtcpRemb ||
       packet_type_flags & kRtcpNack) {
     NOTREACHED() << "Invalid argument";
   }
   ssrc_ = sending_ssrc;
-  c_name_ = c_name;
   PacketRef packet(new base::RefCountedData<Packet>);
   packet->data.reserve(kMaxIpPacketSize);
   if (packet_type_flags & kRtcpSr) {
     if (!BuildSR(sender_info, &packet->data)) return;
     if (!BuildSdec(&packet->data)) return;
-  }
-  if (packet_type_flags & kRtcpBye) {
-    if (!BuildBye(&packet->data)) return;
   }
   if (packet_type_flags & kRtcpDlrr) {
     if (!BuildDlrrRb(dlrr, &packet->data)) return;
@@ -82,70 +74,6 @@ bool RtcpBuilder::BuildSR(const RtcpSenderInfo& sender_info,
   big_endian_writer.WriteU32(sender_info.rtp_timestamp);
   big_endian_writer.WriteU32(sender_info.send_packet_count);
   big_endian_writer.WriteU32(static_cast<uint32>(sender_info.send_octet_count));
-  return true;
-}
-
-bool RtcpBuilder::BuildSdec(Packet* packet) const {
-  size_t start_size = packet->size();
-  if (start_size + 12 + c_name_.length() > kMaxIpPacketSize) {
-    DLOG(FATAL) << "Not enough buffer space";
-    return false;
-  }
-
-  // SDES Source Description.
-  packet->resize(start_size + 10);
-
-  base::BigEndianWriter big_endian_writer(
-      reinterpret_cast<char*>(&((*packet)[start_size])), 10);
-  // We always need to add one SDES CNAME.
-  big_endian_writer.WriteU8(0x80 + 1);
-  big_endian_writer.WriteU8(kPacketTypeSdes);
-
-  // Handle SDES length later on.
-  uint32 sdes_length_position = static_cast<uint32>(start_size) + 3;
-  big_endian_writer.WriteU16(0);
-  big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.
-  big_endian_writer.WriteU8(1);  // CNAME = 1
-  big_endian_writer.WriteU8(static_cast<uint8>(c_name_.length()));
-
-  size_t sdes_length = 10 + c_name_.length();
-  packet->insert(packet->end(), c_name_.c_str(),
-                 c_name_.c_str() + c_name_.length());
-
-  size_t padding = 0;
-
-  // We must have a zero field even if we have an even multiple of 4 bytes.
-  if ((packet->size() % 4) == 0) {
-    padding++;
-    packet->push_back(0);
-  }
-  while ((packet->size() % 4) != 0) {
-    padding++;
-    packet->push_back(0);
-  }
-  sdes_length += padding;
-
-  // In 32-bit words minus one and we don't count the header.
-  uint8 buffer_length = static_cast<uint8>((sdes_length / 4) - 1);
-  (*packet)[sdes_length_position] = buffer_length;
-  return true;
-}
-
-bool RtcpBuilder::BuildBye(Packet* packet) const {
-  size_t start_size = packet->size();
-  if (start_size + 8 > kMaxIpPacketSize) {
-    DLOG(FATAL) << "Not enough buffer space";
-    return false;
-  }
-
-  packet->resize(start_size + 8);
-
-  base::BigEndianWriter big_endian_writer(
-      reinterpret_cast<char*>(&((*packet)[start_size])), 8);
-  big_endian_writer.WriteU8(0x80 + 1);
-  big_endian_writer.WriteU8(kPacketTypeBye);
-  big_endian_writer.WriteU16(1);  // Length.
-  big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.
   return true;
 }
 

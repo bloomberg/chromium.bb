@@ -65,8 +65,6 @@ const char kSwitchFps[] = "fps";
 media::cast::AudioSenderConfig GetAudioSenderConfig() {
   media::cast::AudioSenderConfig audio_config;
 
-  audio_config.rtcp_c_name = "audio_sender@a.b.c.d";
-
   audio_config.use_external_encoder = false;
   audio_config.frequency = kAudioSamplingFrequency;
   audio_config.channels = kAudioChannels;
@@ -84,7 +82,6 @@ media::cast::AudioSenderConfig GetAudioSenderConfig() {
 media::cast::VideoSenderConfig GetVideoSenderConfig() {
   media::cast::VideoSenderConfig video_config;
 
-  video_config.rtcp_c_name = "video_sender@a.b.c.d";
   video_config.use_external_encoder = false;
 
   // Resolution.

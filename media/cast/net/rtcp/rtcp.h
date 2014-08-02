@@ -56,8 +56,7 @@ class Rtcp {
        base::TickClock* clock,  // Not owned.
        PacedPacketSender* packet_sender,  // Not owned.
        uint32 local_ssrc,
-       uint32 remote_ssrc,
-       const std::string& c_name);
+       uint32 remote_ssrc);
 
   virtual ~Rtcp();
 
@@ -136,7 +135,6 @@ class Rtcp {
   const scoped_ptr<RtcpSender> rtcp_sender_;
   const uint32 local_ssrc_;
   const uint32 remote_ssrc_;
-  const std::string c_name_;
   const scoped_ptr<RtcpMessageHandlerImpl> handler_;
   const scoped_ptr<RtcpReceiver> rtcp_receiver_;
 

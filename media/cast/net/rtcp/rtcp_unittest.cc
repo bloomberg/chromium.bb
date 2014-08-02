@@ -22,7 +22,6 @@ using testing::_;
 
 static const uint32 kSenderSsrc = 0x10203;
 static const uint32 kReceiverSsrc = 0x40506;
-static const std::string kCName("test@10.1.1.1");
 static const int64 kAddedDelay = 123;
 static const int64 kAddedShortDelay = 100;
 
@@ -198,8 +197,7 @@ TEST_F(RtcpTest, BasicSenderReport) {
             testing_clock_,
             &sender_to_receiver_,
             kSenderSsrc,
-            kReceiverSsrc,
-            kCName);
+            kReceiverSsrc);
   sender_to_receiver_.set_rtcp_receiver(&rtcp);
   rtcp.SendRtcpFromRtpSender(base::TimeTicks(), 0, 1, 1);
 }
@@ -213,8 +211,7 @@ TEST_F(RtcpTest, BasicReceiverReport) {
             testing_clock_,
             &receiver_to_sender_,
             kSenderSsrc,
-            kReceiverSsrc,
-            kCName);
+            kReceiverSsrc);
   receiver_to_sender_.set_rtcp_receiver(&rtcp);
   rtcp.SendRtcpFromRtpReceiver(NULL, base::TimeDelta(), NULL, &stats_);
 }
@@ -231,8 +228,7 @@ TEST_F(RtcpTest, BasicCast) {
             testing_clock_,
             &receiver_to_sender_,
             kSenderSsrc,
-            kSenderSsrc,
-            kCName);
+            kSenderSsrc);
   receiver_to_sender_.set_rtcp_receiver(&rtcp);
   RtcpCastMessage cast_message(kSenderSsrc);
   cast_message.ack_frame_id = kAckFrameId;
@@ -255,8 +251,7 @@ TEST_F(RtcpTest, RttReducedSizeRtcp) {
                      testing_clock_,
                      &receiver_to_sender_,
                      kReceiverSsrc,
-                     kSenderSsrc,
-                     kCName);
+                     kSenderSsrc);
 
   // Media sender.
   Rtcp rtcp_sender(base::Bind(&MockFrameSender::OnReceivedCastFeedback,
@@ -267,8 +262,7 @@ TEST_F(RtcpTest, RttReducedSizeRtcp) {
                    testing_clock_,
                    &sender_to_receiver_,
                    kSenderSsrc,
-                   kReceiverSsrc,
-                   kCName);
+                   kReceiverSsrc);
 
   sender_to_receiver_.set_rtcp_receiver(&rtcp_receiver);
   receiver_to_sender_.set_rtcp_receiver(&rtcp_sender);
@@ -307,8 +301,7 @@ TEST_F(RtcpTest, Rtt) {
                      testing_clock_,
                      &receiver_to_sender_,
                      kReceiverSsrc,
-                     kSenderSsrc,
-                     kCName);
+                     kSenderSsrc);
 
   // Media sender.
   Rtcp rtcp_sender(base::Bind(&MockFrameSender::OnReceivedCastFeedback,
@@ -319,8 +312,7 @@ TEST_F(RtcpTest, Rtt) {
                    testing_clock_,
                    &sender_to_receiver_,
                    kSenderSsrc,
-                   kReceiverSsrc,
-                   kCName);
+                   kReceiverSsrc);
 
   receiver_to_sender_.set_rtcp_receiver(&rtcp_sender);
   sender_to_receiver_.set_rtcp_receiver(&rtcp_receiver);
@@ -396,8 +388,7 @@ TEST_F(RtcpTest, RttWithPacketLoss) {
                      testing_clock_,
                      &receiver_to_sender_,
                      kReceiverSsrc,
-                     kSenderSsrc,
-                     kCName);
+                     kSenderSsrc);
 
   // Media sender.
   Rtcp rtcp_sender(base::Bind(&MockFrameSender::OnReceivedCastFeedback,
@@ -408,8 +399,7 @@ TEST_F(RtcpTest, RttWithPacketLoss) {
                    testing_clock_,
                    &sender_to_receiver_,
                    kSenderSsrc,
-                   kReceiverSsrc,
-                   kCName);
+                   kReceiverSsrc);
 
   receiver_to_sender_.set_rtcp_receiver(&rtcp_sender);
   sender_to_receiver_.set_rtcp_receiver(&rtcp_receiver);

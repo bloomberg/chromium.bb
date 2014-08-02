@@ -23,15 +23,8 @@ RtcpReceiverFrameLogMessage::RtcpReceiverFrameLogMessage(uint32 timestamp)
     : rtp_timestamp_(timestamp) {}
 RtcpReceiverFrameLogMessage::~RtcpReceiverFrameLogMessage() {}
 
-RtcpRpsiMessage::RtcpRpsiMessage()
-    : remote_ssrc(0u), payload_type(0u), picture_id(0u) {}
-RtcpRpsiMessage::~RtcpRpsiMessage() {}
-
 RtcpNackMessage::RtcpNackMessage() : remote_ssrc(0u) {}
 RtcpNackMessage::~RtcpNackMessage() {}
-
-RtcpRembMessage::RtcpRembMessage() : remb_bitrate(0u) {}
-RtcpRembMessage::~RtcpRembMessage() {}
 
 RtcpReceiverReferenceTimeReport::RtcpReceiverReferenceTimeReport()
     : remote_ssrc(0u), ntp_seconds(0u), ntp_fraction(0u) {}

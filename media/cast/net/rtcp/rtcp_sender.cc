@@ -146,12 +146,9 @@ class NackStringBuilder {
 }  // namespace
 
 RtcpSender::RtcpSender(PacedPacketSender* outgoing_transport,
-                       uint32 sending_ssrc,
-                       const std::string& c_name)
+                       uint32 sending_ssrc)
     : ssrc_(sending_ssrc),
-      c_name_(c_name),
       transport_(outgoing_transport) {
-  DCHECK_LT(c_name_.length(), kRtcpCnameSize) << "Invalid config";
 }
 
 RtcpSender::~RtcpSender() {}
@@ -163,28 +160,13 @@ void RtcpSender::SendRtcpFromRtpReceiver(
     const RtcpCastMessage* cast_message,
     const ReceiverRtcpEventSubscriber::RtcpEventMultiMap* rtcp_events,
     base::TimeDelta target_delay) {
-  if (packet_type_flags & kRtcpSr ||
-      packet_type_flags & kRtcpDlrr ||
-      packet_type_flags & kRtcpSenderLog) {
+  if (packet_type_flags & kRtcpDlrr) {
     NOTREACHED() << "Invalid argument";
-  }
-  if (packet_type_flags & kRtcpPli ||
-      packet_type_flags & kRtcpRpsi ||
-      packet_type_flags & kRtcpRemb ||
-      packet_type_flags & kRtcpNack) {
-    // Implement these for webrtc interop.
-    NOTIMPLEMENTED();
   }
   PacketRef packet(new base::RefCountedData<Packet>);
   packet->data.reserve(kMaxIpPacketSize);
   if (packet_type_flags & kRtcpRr) {
     BuildRR(report_block, &packet->data);
-    if (!c_name_.empty()) {
-      BuildSdec(&packet->data);
-    }
-  }
-  if (packet_type_flags & kRtcpBye) {
-    BuildBye(&packet->data);
   }
   if (packet_type_flags & kRtcpRrtr) {
     DCHECK(rrtr) << "Invalid argument";
@@ -212,23 +194,15 @@ void RtcpSender::SendRtcpFromRtpSender(
     const RtcpSenderInfo& sender_info,
     const RtcpDlrrReportBlock& dlrr) {
   if (packet_type_flags & kRtcpRr ||
-      packet_type_flags & kRtcpPli ||
       packet_type_flags & kRtcpRrtr ||
       packet_type_flags & kRtcpCast ||
-      packet_type_flags & kRtcpReceiverLog ||
-      packet_type_flags & kRtcpRpsi ||
-      packet_type_flags & kRtcpRemb ||
-      packet_type_flags & kRtcpNack) {
+      packet_type_flags & kRtcpReceiverLog) {
     NOTREACHED() << "Invalid argument";
   }
   PacketRef packet(new base::RefCountedData<Packet>);
   packet->data.reserve(kMaxIpPacketSize);
   if (packet_type_flags & kRtcpSr) {
     BuildSR(sender_info, &packet->data);
-    BuildSdec(&packet->data);
-  }
-  if (packet_type_flags & kRtcpBye) {
-    BuildBye(&packet->data);
   }
   if (packet_type_flags & kRtcpDlrr) {
     BuildDlrrRb(dlrr, &packet->data);
@@ -291,250 +265,6 @@ void RtcpSender::AddReportBlocks(const RtcpReportBlock& report_block,
 
   // Delay since last received report, time since we received the report.
   big_endian_writer.WriteU32(report_block.delay_since_last_sr);
-}
-
-void RtcpSender::BuildSdec(Packet* packet) const {
-  size_t start_size = packet->size();
-  DCHECK_LT(start_size + 12 + c_name_.length(), kMaxIpPacketSize)
-      << "Not enough buffer space";
-  if (start_size + 12 > kMaxIpPacketSize)
-    return;
-
-  // SDES Source Description.
-  packet->resize(start_size + 10);
-
-  base::BigEndianWriter big_endian_writer(
-      reinterpret_cast<char*>(&((*packet)[start_size])), 10);
-  // We always need to add one SDES CNAME.
-  big_endian_writer.WriteU8(0x80 + 1);
-  big_endian_writer.WriteU8(kPacketTypeSdes);
-
-  // Handle SDES length later on.
-  uint32 sdes_length_position = static_cast<uint32>(start_size) + 3;
-  big_endian_writer.WriteU16(0);
-  big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.
-  big_endian_writer.WriteU8(1);       // CNAME = 1
-  big_endian_writer.WriteU8(static_cast<uint8>(c_name_.length()));
-
-  size_t sdes_length = 10 + c_name_.length();
-  packet->insert(
-      packet->end(), c_name_.c_str(), c_name_.c_str() + c_name_.length());
-
-  size_t padding = 0;
-
-  // We must have a zero field even if we have an even multiple of 4 bytes.
-  if ((packet->size() % 4) == 0) {
-    padding++;
-    packet->push_back(0);
-  }
-  while ((packet->size() % 4) != 0) {
-    padding++;
-    packet->push_back(0);
-  }
-  sdes_length += padding;
-
-  // In 32-bit words minus one and we don't count the header.
-  uint8 buffer_length = static_cast<uint8>((sdes_length / 4) - 1);
-  (*packet)[sdes_length_position] = buffer_length;
-}
-
-void RtcpSender::BuildPli(uint32 remote_ssrc, Packet* packet) const {
-  size_t start_size = packet->size();
-  DCHECK_LT(start_size + 12, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 12 > kMaxIpPacketSize)
-    return;
-
-  packet->resize(start_size + 12);
-
-  base::BigEndianWriter big_endian_writer(
-      reinterpret_cast<char*>(&((*packet)[start_size])), 12);
-  uint8 FMT = 1;  // Picture loss indicator.
-  big_endian_writer.WriteU8(0x80 + FMT);
-  big_endian_writer.WriteU8(kPacketTypePayloadSpecific);
-  big_endian_writer.WriteU16(2);            // Used fixed length of 2.
-  big_endian_writer.WriteU32(ssrc_);        // Add our own SSRC.
-  big_endian_writer.WriteU32(remote_ssrc);  // Add the remote SSRC.
-}
-
-/*
-    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |      PB       |0| Payload Type|    Native Rpsi bit string     |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |   defined per codec          ...                | Padding (0) |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-*/
-void RtcpSender::BuildRpsi(const RtcpRpsiMessage* rpsi,
-                           Packet* packet) const {
-  size_t start_size = packet->size();
-  DCHECK_LT(start_size + 24, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 24 > kMaxIpPacketSize)
-    return;
-
-  packet->resize(start_size + 24);
-
-  base::BigEndianWriter big_endian_writer(
-      reinterpret_cast<char*>(&((*packet)[start_size])), 24);
-  uint8 FMT = 3;  // Reference Picture Selection Indication.
-  big_endian_writer.WriteU8(0x80 + FMT);
-  big_endian_writer.WriteU8(kPacketTypePayloadSpecific);
-
-  // Calculate length.
-  uint32 bits_required = 7;
-  uint8 bytes_required = 1;
-  while ((rpsi->picture_id >> bits_required) > 0) {
-    bits_required += 7;
-    bytes_required++;
-  }
-  uint8 size = 3;
-  if (bytes_required > 6) {
-    size = 5;
-  } else if (bytes_required > 2) {
-    size = 4;
-  }
-  big_endian_writer.WriteU8(0);
-  big_endian_writer.WriteU8(size);
-  big_endian_writer.WriteU32(ssrc_);
-  big_endian_writer.WriteU32(rpsi->remote_ssrc);
-
-  uint8 padding_bytes = 4 - ((2 + bytes_required) % 4);
-  if (padding_bytes == 4) {
-    padding_bytes = 0;
-  }
-  // Add padding length in bits, padding can be 0, 8, 16 or 24.
-  big_endian_writer.WriteU8(padding_bytes * 8);
-  big_endian_writer.WriteU8(rpsi->payload_type);
-
-  // Add picture ID.
-  for (int i = bytes_required - 1; i > 0; i--) {
-    big_endian_writer.WriteU8(0x80 |
-                              static_cast<uint8>(rpsi->picture_id >> (i * 7)));
-  }
-  // Add last byte of picture ID.
-  big_endian_writer.WriteU8(static_cast<uint8>(rpsi->picture_id & 0x7f));
-
-  // Add padding.
-  for (int j = 0; j < padding_bytes; ++j) {
-    big_endian_writer.WriteU8(0);
-  }
-}
-
-void RtcpSender::BuildRemb(const RtcpRembMessage* remb,
-                           Packet* packet) const {
-  size_t start_size = packet->size();
-  size_t remb_size = 20 + 4 * remb->remb_ssrcs.size();
-  DCHECK_LT(start_size + remb_size, kMaxIpPacketSize)
-      << "Not enough buffer space";
-  if (start_size + remb_size > kMaxIpPacketSize)
-    return;
-
-  packet->resize(start_size + remb_size);
-
-  base::BigEndianWriter big_endian_writer(
-      reinterpret_cast<char*>(&((*packet)[start_size])), remb_size);
-
-  // Add application layer feedback.
-  uint8 FMT = 15;
-  big_endian_writer.WriteU8(0x80 + FMT);
-  big_endian_writer.WriteU8(kPacketTypePayloadSpecific);
-  big_endian_writer.WriteU8(0);
-  big_endian_writer.WriteU8(static_cast<uint8>(remb->remb_ssrcs.size() + 4));
-  big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.
-  big_endian_writer.WriteU32(0);      // Remote SSRC must be 0.
-  big_endian_writer.WriteU32(kRemb);
-  big_endian_writer.WriteU8(static_cast<uint8>(remb->remb_ssrcs.size()));
-
-  // 6 bit exponent and a 18 bit mantissa.
-  uint8 bitrate_exponent;
-  uint32 bitrate_mantissa;
-  BitrateToRembExponentBitrate(
-      remb->remb_bitrate, &bitrate_exponent, &bitrate_mantissa);
-
-  big_endian_writer.WriteU8(static_cast<uint8>(
-      (bitrate_exponent << 2) + ((bitrate_mantissa >> 16) & 0x03)));
-  big_endian_writer.WriteU8(static_cast<uint8>(bitrate_mantissa >> 8));
-  big_endian_writer.WriteU8(static_cast<uint8>(bitrate_mantissa));
-
-  std::list<uint32>::const_iterator it = remb->remb_ssrcs.begin();
-  for (; it != remb->remb_ssrcs.end(); ++it) {
-    big_endian_writer.WriteU32(*it);
-  }
-}
-
-void RtcpSender::BuildNack(const RtcpNackMessage* nack,
-                           Packet* packet) const {
-  size_t start_size = packet->size();
-  DCHECK_LT(start_size + 16, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 16 > kMaxIpPacketSize)
-    return;
-
-  packet->resize(start_size + 16);
-
-  base::BigEndianWriter big_endian_writer(
-      reinterpret_cast<char*>(&((*packet)[start_size])), 16);
-
-  uint8 FMT = 1;
-  big_endian_writer.WriteU8(0x80 + FMT);
-  big_endian_writer.WriteU8(kPacketTypeGenericRtpFeedback);
-  big_endian_writer.WriteU8(0);
-  size_t nack_size_pos = start_size + 3;
-  big_endian_writer.WriteU8(3);
-  big_endian_writer.WriteU32(ssrc_);              // Add our own SSRC.
-  big_endian_writer.WriteU32(nack->remote_ssrc);  // Add the remote SSRC.
-
-  // Build NACK bitmasks and write them to the Rtcp message.
-  // The nack list should be sorted and not contain duplicates.
-  size_t number_of_nack_fields = 0;
-  size_t max_number_of_nack_fields = std::min<size_t>(
-      kRtcpMaxNackFields, (kMaxIpPacketSize - packet->size()) / 4);
-
-  std::list<uint16>::const_iterator it = nack->nack_list.begin();
-  while (it != nack->nack_list.end() &&
-         number_of_nack_fields < max_number_of_nack_fields) {
-    uint16 nack_sequence_number = *it;
-    uint16 bitmask = 0;
-    ++it;
-    while (it != nack->nack_list.end()) {
-      int shift = static_cast<uint16>(*it - nack_sequence_number) - 1;
-      if (shift >= 0 && shift <= 15) {
-        bitmask |= (1 << shift);
-        ++it;
-      } else {
-        break;
-      }
-    }
-    // Write the sequence number and the bitmask to the packet.
-    start_size = packet->size();
-    DCHECK_LT(start_size + 4, kMaxIpPacketSize) << "Not enough buffer space";
-    if (start_size + 4 > kMaxIpPacketSize)
-      return;
-
-    packet->resize(start_size + 4);
-    base::BigEndianWriter big_endian_nack_writer(
-        reinterpret_cast<char*>(&((*packet)[start_size])), 4);
-    big_endian_nack_writer.WriteU16(nack_sequence_number);
-    big_endian_nack_writer.WriteU16(bitmask);
-    number_of_nack_fields++;
-  }
-  DCHECK_GE(kRtcpMaxNackFields, number_of_nack_fields);
-  (*packet)[nack_size_pos] = static_cast<uint8>(2 + number_of_nack_fields);
-}
-
-void RtcpSender::BuildBye(Packet* packet) const {
-  size_t start_size = packet->size();
-  DCHECK_LT(start_size + 8, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 8 > kMaxIpPacketSize)
-    return;
-
-  packet->resize(start_size + 8);
-
-  base::BigEndianWriter big_endian_writer(
-      reinterpret_cast<char*>(&((*packet)[start_size])), 8);
-  big_endian_writer.WriteU8(0x80 + 1);
-  big_endian_writer.WriteU8(kPacketTypeBye);
-  big_endian_writer.WriteU16(1);      // Length.
-  big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.
 }
 
 void RtcpSender::BuildRrtr(const RtcpReceiverReferenceTimeReport* rrtr,

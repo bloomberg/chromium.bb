@@ -53,24 +53,6 @@ void TestRtcpPacketBuilder::AddRb(uint32 rtp_ssrc) {
   big_endian_writer_.WriteU32(kDelayLastSr);
 }
 
-void TestRtcpPacketBuilder::AddSdesCname(uint32 sender_ssrc,
-                                         const std::string& c_name) {
-  AddRtcpHeader(202, 1);
-  big_endian_writer_.WriteU32(sender_ssrc);
-  big_endian_writer_.WriteU8(1);  // c_name.
-
-  DCHECK_LE(c_name.size(), 255u);
-  big_endian_writer_.WriteU8(
-      static_cast<uint8>(c_name.size()));  // c_name length in bytes.
-  for (size_t i = 0; i < c_name.size(); ++i) {
-    big_endian_writer_.WriteU8(c_name.c_str()[i]);
-  }
-  const int padding = 4 - ((c_name.size() + 2) % 4);
-  for (int j = 0; j < padding; ++j) {
-    big_endian_writer_.WriteU8(0);
-  }
-}
-
 void TestRtcpPacketBuilder::AddXrHeader(uint32 sender_ssrc) {
   AddRtcpHeader(207, 0);
   big_endian_writer_.WriteU32(sender_ssrc);
@@ -135,43 +117,6 @@ void TestRtcpPacketBuilder::AddSendReportRequest(uint32 sender_ssrc,
                                                  uint32 media_ssrc) {
   AddRtcpHeader(205, 5);
   big_endian_writer_.WriteU32(sender_ssrc);
-  big_endian_writer_.WriteU32(media_ssrc);
-}
-
-void TestRtcpPacketBuilder::AddPli(uint32 sender_ssrc, uint32 media_ssrc) {
-  AddRtcpHeader(206, 1);
-  big_endian_writer_.WriteU32(sender_ssrc);
-  big_endian_writer_.WriteU32(media_ssrc);
-}
-
-void TestRtcpPacketBuilder::AddRpsi(uint32 sender_ssrc, uint32 media_ssrc) {
-  AddRtcpHeader(206, 3);
-  big_endian_writer_.WriteU32(sender_ssrc);
-  big_endian_writer_.WriteU32(media_ssrc);
-  big_endian_writer_.WriteU8(0);  // Padding bits.
-  big_endian_writer_.WriteU8(kPayloadtype);
-  uint64 picture_id = kPictureId;
-
-  for (int i = 9; i > 0; i--) {
-    big_endian_writer_.WriteU8(0x80 |
-                               static_cast<uint8>(picture_id >> (i * 7)));
-  }
-  // Add last byte of picture ID.
-  big_endian_writer_.WriteU8(static_cast<uint8>(picture_id & 0x7f));
-}
-
-void TestRtcpPacketBuilder::AddRemb(uint32 sender_ssrc, uint32 media_ssrc) {
-  AddRtcpHeader(206, 15);
-  big_endian_writer_.WriteU32(sender_ssrc);
-  big_endian_writer_.WriteU32(0);
-  big_endian_writer_.WriteU8('R');
-  big_endian_writer_.WriteU8('E');
-  big_endian_writer_.WriteU8('M');
-  big_endian_writer_.WriteU8('B');
-  big_endian_writer_.WriteU8(1);  // Number of SSRCs.
-  big_endian_writer_.WriteU8(1);  // BR Exp.
-  //  BR Mantissa.
-  big_endian_writer_.WriteU16(static_cast<uint16>(kTestRembBitrate / 2));
   big_endian_writer_.WriteU32(media_ssrc);
 }
 

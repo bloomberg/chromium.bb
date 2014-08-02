@@ -36,7 +36,6 @@ struct AudioSenderConfig {
   uint32 incoming_feedback_ssrc;
 
   int rtcp_interval;
-  std::string rtcp_c_name;
 
   // The total amount of time between a frame's capture/recording on the sender
   // and its playback on the receiver (i.e., shown to a user).  This is fixed as
@@ -73,7 +72,6 @@ struct VideoSenderConfig {
   uint32 incoming_feedback_ssrc;  // TODO(miu): Rename to receiver_ssrc.
 
   int rtcp_interval;
-  std::string rtcp_c_name;
 
   // The total amount of time between a frame's capture/recording on the sender
   // and its playback on the receiver (i.e., shown to a user).  This is fixed as
@@ -122,11 +120,6 @@ struct FrameReceiverConfig {
   // Mean interval (in milliseconds) between RTCP reports.
   // TODO(miu): Remove this since it's never not kDefaultRtcpIntervalMs.
   int rtcp_interval;
-
-  // CNAME representing this receiver.
-  // TODO(miu): Remove this since it should be derived elsewhere (probably in
-  // the transport layer).
-  std::string rtcp_c_name;
 
   // The total amount of time between a frame's capture/recording on the sender
   // and its playback on the receiver (i.e., shown to a user).  This is fixed as

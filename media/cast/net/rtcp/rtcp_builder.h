@@ -24,19 +24,15 @@ class RtcpBuilder {
   void SendRtcpFromRtpSender(uint32 packet_type_flags,
                              const RtcpSenderInfo& sender_info,
                              const RtcpDlrrReportBlock& dlrr,
-                             uint32 ssrc,
-                             const std::string& c_name);
+                             uint32 ssrc);
 
  private:
   bool BuildSR(const RtcpSenderInfo& sender_info, Packet* packet) const;
-  bool BuildSdec(Packet* packet) const;
-  bool BuildBye(Packet* packet) const;
   bool BuildDlrrRb(const RtcpDlrrReportBlock& dlrr,
                    Packet* packet) const;
 
   PacedSender* const transport_;  // Not owned by this class.
   uint32 ssrc_;
-  std::string c_name_;
 
   DISALLOW_COPY_AND_ASSIGN(RtcpBuilder);
 };

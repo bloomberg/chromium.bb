@@ -59,15 +59,6 @@ struct RtcpReceiverFrameLogMessage {
 
 typedef std::list<RtcpReceiverFrameLogMessage> RtcpReceiverLogMessage;
 
-struct RtcpRpsiMessage {
-  RtcpRpsiMessage();
-  ~RtcpRpsiMessage();
-
-  uint32 remote_ssrc;
-  uint8 payload_type;
-  uint64 picture_id;
-};
-
 struct RtcpNackMessage {
   RtcpNackMessage();
   ~RtcpNackMessage();
@@ -76,16 +67,6 @@ struct RtcpNackMessage {
   std::list<uint16> nack_list;
 
   DISALLOW_COPY_AND_ASSIGN(RtcpNackMessage);
-};
-
-struct RtcpRembMessage {
-  RtcpRembMessage();
-  ~RtcpRembMessage();
-
-  uint32 remb_bitrate;
-  std::list<uint32> remb_ssrcs;
-
-  DISALLOW_COPY_AND_ASSIGN(RtcpRembMessage);
 };
 
 struct RtcpReceiverReferenceTimeReport {

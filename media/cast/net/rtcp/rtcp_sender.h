@@ -45,8 +45,7 @@ class PacedPacketSender;
 class RtcpSender {
  public:
   RtcpSender(PacedPacketSender* outgoing_transport,
-             uint32 sending_ssrc,
-             const std::string& c_name);
+             uint32 sending_ssrc);
   ~RtcpSender();
 
   // TODO(hclam): This method should be to build a packet instead of
@@ -72,18 +71,6 @@ class RtcpSender {
   void AddReportBlocks(const RtcpReportBlock& report_block,
                        Packet* packet) const;
 
-  void BuildSdec(Packet* packet) const;
-
-  void BuildPli(uint32 remote_ssrc, Packet* packet) const;
-
-  void BuildRemb(const RtcpRembMessage* remb, Packet* packet) const;
-
-  void BuildRpsi(const RtcpRpsiMessage* rpsi, Packet* packet) const;
-
-  void BuildNack(const RtcpNackMessage* nack, Packet* packet) const;
-
-  void BuildBye(Packet* packet) const;
-
   void BuildRrtr(const RtcpReceiverReferenceTimeReport* rrtr,
                  Packet* packet) const;
 
@@ -107,24 +94,9 @@ class RtcpSender {
       size_t* total_number_of_messages_to_send,
       size_t* rtcp_log_size);
 
-  inline void BitrateToRembExponentBitrate(uint32 bitrate,
-                                           uint8* exponent,
-                                           uint32* mantissa) const {
-    // 6 bit exponent and a 18 bit mantissa.
-    *exponent = 0;
-    for (int i = 0; i < 64; ++i) {
-      if (bitrate <= (262143u << i)) {
-        *exponent = i;
-        break;
-      }
-    }
-    *mantissa = (bitrate >> *exponent);
-  }
-
   const uint32 ssrc_;
-  const std::string c_name_;
 
-  // Not owned by this class.
+ // Not owned by this class.
   PacedPacketSender* const transport_;
 
   std::deque<RtcpReceiverLogMessage> rtcp_events_history_;
