@@ -61,7 +61,8 @@ void MostVisitedIframeSource::StartDataRequest(
     SendJSWithOrigin(IDR_MOST_VISITED_THUMBNAIL_JS, render_process_id,
                      render_frame_id, callback);
   } else if (path == kUtilJSPath) {
-    SendResource(IDR_MOST_VISITED_UTIL_JS, callback);
+    SendJSWithOrigin(IDR_MOST_VISITED_UTIL_JS, render_process_id,
+                     render_frame_id, callback);
   } else if (path == kCommonCSSPath) {
     SendResource(IDR_MOST_VISITED_IFRAME_CSS, callback);
   } else {

@@ -45,7 +45,6 @@ var NTP_LOGGING_EVENT_TYPE = {
   NTP_MOUSEOVER: 9
 };
 
-
 /**
  * Type of the impression provider for a generic client-provided suggestion.
  * @type {string}
@@ -59,6 +58,12 @@ var CLIENT_PROVIDER_NAME = 'client';
  * @const
  */
 var SERVER_PROVIDER_NAME = 'server';
+
+/**
+ * The origin of this request.
+ * @const {string}
+ */
+var DOMAIN_ORIGIN = '{{ORIGIN}}';
 
 /**
  * Parses query parameters from Location.
@@ -121,12 +126,19 @@ function createMostVisitedLink(params, href, title, text, provider) {
   // working (those with schemes different from http and https). Therefore,
   // navigateContentWindow is being used in order to get all schemes working.
   link.addEventListener('click', function handleNavigation(e) {
+    var isServerSuggestion = 'url' in params;
+
+    // Ping are only populated for server-side suggestions, never for MV.
+    if (isServerSuggestion && params.ping) {
+      generatePing(DOMAIN_ORIGIN + params.ping);
+    }
+
     var ntpApiHandle = chrome.embeddedSearch.newTabPage;
     if ('pos' in params && isFinite(params.pos)) {
       ntpApiHandle.logMostVisitedNavigation(parseInt(params.pos, 10),
                                             provider || '');
     }
-    var isServerSuggestion = 'url' in params;
+
     if (!isServerSuggestion) {
       e.preventDefault();
       ntpApiHandle.navigateContentWindow(href, getDispositionFromEvent(e));
@@ -175,7 +187,7 @@ function getMostVisitedStyles(params, isTitle) {
  *     data to fill.
  */
 function fillMostVisited(location, fill) {
-  var params = parseQueryParams(document.location);
+  var params = parseQueryParams(location);
   params.rid = parseInt(params.rid, 10);
   if (!isFinite(params.rid) && !params.url)
     return;
@@ -211,4 +223,21 @@ function fillMostVisited(location, fill) {
   if (data.direction)
     document.body.dir = data.direction;
   fill(params, data);
+}
+
+
+/**
+ * Sends a POST request to ping url.
+ * @param {string} url URL to be pinged.
+ */
+function generatePing(url) {
+  if (navigator.sendBeacon) {
+    navigator.sendBeacon(url);
+  } else {
+    // if sendBeacon is not enabled, we fallback for "a ping".
+    var a = document.createElement('a');
+    a.href = '#';
+    a.ping = url;
+    a.click();
+  }
 }
