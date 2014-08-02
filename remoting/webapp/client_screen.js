@@ -336,13 +336,13 @@ remoting.onConnected = function(clientSession) {
     // TODO(jamiewalch): Use a descriptive name for the local computer, for
     // example, its Chrome Sync name.
     var clientName = '';
-    if (navigator.platform.indexOf('Mac') != -1) {
+    if (remoting.platformIsMac()) {
       clientName = 'Mac';
-    } else if (navigator.platform.indexOf('Win32') != -1) {
+    } else if (remoting.platformIsWindows()) {
       clientName = 'Windows';
-    } else if (navigator.userAgent.match(/\bCrOS\b/)) {
+    } else if (remoting.platformIsChromeOS()) {
       clientName = 'ChromeOS';
-    } else if (navigator.platform.indexOf('Linux') != -1) {
+    } else if (remoting.platformIsLinux()) {
       clientName = 'Linux';
     } else {
       console.log('Unrecognized client platform. Using navigator.platform.');

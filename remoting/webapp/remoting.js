@@ -150,7 +150,7 @@ remoting.init = function() {
 
   // For Apps v1, check the tab type to warn the user if they are not getting
   // the best keyboard experience.
-  if (!remoting.isAppsV2 && navigator.platform.indexOf('Mac') == -1) {
+  if (!remoting.isAppsV2 && !remoting.platformIsMac()) {
     /** @param {boolean} isWindowed */
     var onIsWindowed = function(isWindowed) {
       if (!isWindowed) {
@@ -189,14 +189,12 @@ function isIT2MeSupported_() {
  * @return {boolean}
  */
 remoting.isMe2MeInstallable = function() {
-  /** @type {string} */
-  var platform = navigator.platform;
   // The chromoting host is currently not installable on ChromeOS.
   // For Linux, we have a install package for Ubuntu but not other distros.
   // Since we cannot tell from javascript alone the Linux distro the client is
   // on, we don't show the daemon-control UI for Linux unless the host is
   // installed.
-  return platform == 'Win32' || platform == 'MacIntel';
+  return remoting.platformIsWindows() || remoting.platformIsMac();
 }
 
 /**
@@ -527,3 +525,40 @@ remoting.generateXsrfToken = function() {
   var base64Token = window.btoa(String.fromCharCode.apply(null, random));
   return base64Token.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 };
+
+/**
+ * Tests whether we are running on Mac.
+ *
+ * @return {bool} True if the platform is Mac.
+ */
+remoting.platformIsMac = function() {
+  return navigator.platform.indexOf('Mac') != -1;
+}
+
+/**
+ * Tests whether we are running on Windows.
+ *
+ * @return {bool} True if the platform is Windows.
+ */
+remoting.platformIsWindows = function() {
+  return navigator.platform.indexOf('Win32') != -1;
+}
+
+/**
+ * Tests whether we are running on Linux.
+ *
+ * @return {bool} True if the platform is Linux.
+ */
+remoting.platformIsLinux = function() {
+  return (navigator.platform.indexOf('Linux') != -1) &&
+         !remoting.platformIsChromeOS();
+}
+
+/**
+ * Tests whether we are running on ChromeOS.
+ *
+ * @return {bool} True if the platform is ChromeOS.
+ */
+remoting.platformIsChromeOS = function() {
+  return navigator.userAgent.match(/\bCrOS\b/);
+}

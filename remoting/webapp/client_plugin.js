@@ -466,9 +466,9 @@ remoting.ClientPlugin.prototype.connect = function(
     authenticationMethods, authenticationTag,
     clientPairingId, clientPairedSecret) {
   var keyFilter = '';
-  if (navigator.platform.indexOf('Mac') == -1) {
+  if (remoting.platformIsMac()) {
     keyFilter = 'mac';
-  } else if (navigator.userAgent.match(/\bCrOS\b/)) {
+  } else if (remoting.platformIsChromeOS()) {
     keyFilter = 'cros';
   }
   this.plugin.postMessage(JSON.stringify(
