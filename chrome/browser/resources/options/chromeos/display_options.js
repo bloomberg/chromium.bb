@@ -203,13 +203,7 @@ cr.define('options', function() {
         maxSize = Math.max(maxSize, optionTitles[i].clientWidth);
       for (var i = 0; i < optionTitles.length; i++)
         optionTitles[i].style.width = maxSize + 'px';
-    },
-
-    /** @override */
-    onVisibilityChanged_: function() {
-      Page.prototype.onVisibilityChanged_(this);
-      if (this.visible)
-        chrome.send('getDisplayInfo');
+      chrome.send('getDisplayInfo');
     },
 
     /**
