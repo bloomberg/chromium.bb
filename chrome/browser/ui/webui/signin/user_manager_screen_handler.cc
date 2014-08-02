@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/signin/user_manager_screen_handler.h"
 
 #include "base/bind.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -141,6 +143,12 @@ extensions::ScreenlockPrivateEventRouter* GetScreenlockRouter(
       ->GetProfileByPath(info_cache.GetPathOfProfileAtIndex(profile_index));
   return extensions::ScreenlockPrivateEventRouter::GetFactoryInstance()->Get(
       profile);
+}
+
+bool IsGuestModeEnabled() {
+  PrefService* service = g_browser_process->local_state();
+  DCHECK(service);
+  return service->GetBoolean(prefs::kBrowserGuestModeEnabled);
 }
 
 }  // namespace
@@ -283,7 +291,8 @@ void UserManagerScreenHandler::Unlock(const std::string& user_email) {
 
 void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
   SendUserList();
-  web_ui()->CallJavascriptFunction("cr.ui.Oobe.showUserManagerScreen");
+  web_ui()->CallJavascriptFunction("cr.ui.Oobe.showUserManagerScreen",
+      base::FundamentalValue(IsGuestModeEnabled()));
   desktop_type_ = chrome::GetHostDesktopTypeForNativeView(
       web_ui()->GetWebContents()->GetNativeView());
 
@@ -370,9 +379,15 @@ void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
 }
 
 void UserManagerScreenHandler::HandleLaunchGuest(const base::ListValue* args) {
-  profiles::SwitchToGuestProfile(desktop_type_,
-                                 base::Bind(&OnSwitchToProfileComplete));
-  ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::SWITCH_PROFILE_GUEST);
+  if (IsGuestModeEnabled()) {
+    profiles::SwitchToGuestProfile(desktop_type_,
+                                   base::Bind(&OnSwitchToProfileComplete));
+    ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::SWITCH_PROFILE_GUEST);
+  } else {
+    // The UI should have prevented the user from allowing the selection of
+    // guest mode.
+    NOTREACHED();
+  }
 }
 
 void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
@@ -630,7 +645,7 @@ void UserManagerScreenHandler::SendUserList() {
   }
 
   web_ui()->CallJavascriptFunction("login.AccountPickerScreen.loadUsers",
-    users_list, base::FundamentalValue(true));
+      users_list, base::FundamentalValue(IsGuestModeEnabled()));
 }
 
 void UserManagerScreenHandler::ReportAuthenticationResult(

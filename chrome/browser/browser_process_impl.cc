@@ -772,6 +772,8 @@ void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 
   registry->RegisterBooleanPref(prefs::kAllowCrossOriginAuthPrompt, false);
 
+  registry->RegisterBooleanPref(prefs::kBrowserGuestModeEnabled, true);
+
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_IOS)
   registry->RegisterBooleanPref(prefs::kEulaAccepted, false);
 #endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_IOS)
