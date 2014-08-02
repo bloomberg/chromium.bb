@@ -14680,6 +14680,22 @@ Do you accept?
     <message name="IDS_EASY_UNLOCK_SETUP_COMPLETE_SETTINGS_LINK_TEXT" desc="The text to show as the link text to access Easy Unlock settings. This button is visible during the final step, once the Easy Unlock setup succeeds.">
       Easy unlock settings
     </message>
+    <!-- Error strings for the Easy Unlock setup dialog -->
+    <message name="IDS_EASY_UNLOCK_SETUP_ERROR_BLUETOOTH_UNAVAILBLE" desc="The error message to display when the user's Chromebook might not have Bluetooth functionality during Easy Unlock setup.">
+      Can't find your phone. Make sure your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> has Bluetooth enabled.
+    </message>
+    <message name="IDS_EASY_UNLOCK_SETUP_ERROR_OFFLINE" desc="The error message to display when the user's Chromebook appears to be offline during Easy Unlock setup.">
+      Can't find your phone. Make sure your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is connected to the Internet.
+    </message>
+    <message name="IDS_EASY_UNLOCK_SETUP_ERROR_FINDING_PHONE" desc="A generic catch-all error message to display when something goes wrong after the user clicks 'Find my phone' during Easy Unlock setup.">
+      Can't find your phone. Please make sure that it's with you and turned on.
+    </message>
+    <message name="IDS_EASY_UNLOCK_SETUP_ERROR_BLUETOOTH_CONNECTION_FAILED" desc="The error message to display when the Bluetooth connection between the phone and the Chromebook is disconnected during Easy Unlock setup.">
+      Couldn't connect your phone and <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Please make sure Bluetooth is turned on for both of your devices.
+    </message>
+    <message name="IDS_EASY_UNLOCK_SETUP_ERROR_CONNECTING_TO_PHONE" desc="A generic catch-all error message to display when something goes wrong after the user clicks 'Use this phone' during Easy Unlock setup.">
+      Couldn't connect your phone and <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Please make sure your phone is with you and turned on.
+    </message>
 
     <!-- Invalid SSL certificate memory strategy strings -->
     <message name="IDS_FLAGS_REMEMBER_CERTIFICATE_ERROR_DECISIONS_NAME" desc="Name of the remember certificate error decisions lab">

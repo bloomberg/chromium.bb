@@ -131,6 +131,27 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
       l10n_util::GetStringUTF16(
           IDS_EASY_UNLOCK_SETUP_COMPLETE_SETTINGS_LINK_TEXT));
 
+  // Error strings.
+  strings->SetString(
+      "setupErrorBluetoothUnavailable",
+      l10n_util::GetStringFUTF16(
+          IDS_EASY_UNLOCK_SETUP_ERROR_BLUETOOTH_UNAVAILBLE, device_type));
+  strings->SetString(
+      "setupErrorOffline",
+      l10n_util::GetStringFUTF16(
+          IDS_EASY_UNLOCK_SETUP_ERROR_OFFLINE, device_type));
+  strings->SetString(
+      "setupErrorFindingPhone",
+      l10n_util::GetStringUTF16(IDS_EASY_UNLOCK_SETUP_ERROR_FINDING_PHONE));
+  strings->SetString(
+      "setupErrorBluetoothConnectionFailed",
+      l10n_util::GetStringFUTF16(
+          IDS_EASY_UNLOCK_SETUP_ERROR_BLUETOOTH_CONNECTION_FAILED,
+          device_type));
+  strings->SetString(
+      "setupErrorConnectingToPhone",
+      l10n_util::GetStringFUTF16(
+          IDS_EASY_UNLOCK_SETUP_ERROR_CONNECTING_TO_PHONE, device_type));
 
   SetResult(strings.release());
   return true;
