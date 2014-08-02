@@ -2,6 +2,7 @@
 .file	"src/crypto/aes/asm/aesni-x86.S"
 .text
 .globl	_aesni_encrypt
+.private_extern	_aesni_encrypt
 .align	4
 _aesni_encrypt:
 L_aesni_encrypt_begin:
@@ -24,6 +25,7 @@ L000enc1_loop_1:
 	movups	%xmm2,(%eax)
 	ret
 .globl	_aesni_decrypt
+.private_extern	_aesni_decrypt
 .align	4
 _aesni_decrypt:
 L_aesni_decrypt_begin:
@@ -45,6 +47,7 @@ L001dec1_loop_2:
 .byte	102,15,56,223,209
 	movups	%xmm2,(%eax)
 	ret
+.private_extern	__aesni_encrypt2
 .align	4
 __aesni_encrypt2:
 	movups	(%edx),%xmm0
@@ -70,6 +73,7 @@ L002enc2_loop:
 .byte	102,15,56,221,208
 .byte	102,15,56,221,216
 	ret
+.private_extern	__aesni_decrypt2
 .align	4
 __aesni_decrypt2:
 	movups	(%edx),%xmm0
@@ -95,6 +99,7 @@ L003dec2_loop:
 .byte	102,15,56,223,208
 .byte	102,15,56,223,216
 	ret
+.private_extern	__aesni_encrypt3
 .align	4
 __aesni_encrypt3:
 	movups	(%edx),%xmm0
@@ -125,6 +130,7 @@ L004enc3_loop:
 .byte	102,15,56,221,216
 .byte	102,15,56,221,224
 	ret
+.private_extern	__aesni_decrypt3
 .align	4
 __aesni_decrypt3:
 	movups	(%edx),%xmm0
@@ -155,6 +161,7 @@ L005dec3_loop:
 .byte	102,15,56,223,216
 .byte	102,15,56,223,224
 	ret
+.private_extern	__aesni_encrypt4
 .align	4
 __aesni_encrypt4:
 	movups	(%edx),%xmm0
@@ -191,6 +198,7 @@ L006enc4_loop:
 .byte	102,15,56,221,224
 .byte	102,15,56,221,232
 	ret
+.private_extern	__aesni_decrypt4
 .align	4
 __aesni_decrypt4:
 	movups	(%edx),%xmm0
@@ -227,6 +235,7 @@ L007dec4_loop:
 .byte	102,15,56,223,224
 .byte	102,15,56,223,232
 	ret
+.private_extern	__aesni_encrypt6
 .align	4
 __aesni_encrypt6:
 	movups	(%edx),%xmm0
@@ -281,6 +290,7 @@ L_aesni_encrypt6_enter:
 .byte	102,15,56,221,240
 .byte	102,15,56,221,248
 	ret
+.private_extern	__aesni_decrypt6
 .align	4
 __aesni_decrypt6:
 	movups	(%edx),%xmm0
@@ -336,6 +346,7 @@ L_aesni_decrypt6_enter:
 .byte	102,15,56,223,248
 	ret
 .globl	_aesni_ecb_encrypt
+.private_extern	_aesni_ecb_encrypt
 .align	4
 _aesni_ecb_encrypt:
 L_aesni_ecb_encrypt_begin:
@@ -561,6 +572,7 @@ L010ecb_ret:
 	popl	%ebp
 	ret
 .globl	_aesni_ccm64_encrypt_blocks
+.private_extern	_aesni_ccm64_encrypt_blocks
 .align	4
 _aesni_ccm64_encrypt_blocks:
 L_aesni_ccm64_encrypt_blocks_begin:
@@ -639,6 +651,7 @@ L029ccm64_enc2_loop:
 	popl	%ebp
 	ret
 .globl	_aesni_ccm64_decrypt_blocks
+.private_extern	_aesni_ccm64_decrypt_blocks
 .align	4
 _aesni_ccm64_decrypt_blocks:
 L_aesni_ccm64_decrypt_blocks_begin:
@@ -752,6 +765,7 @@ L034enc1_loop_6:
 	popl	%ebp
 	ret
 .globl	_aesni_ctr32_encrypt_blocks
+.private_extern	_aesni_ctr32_encrypt_blocks
 .align	4
 _aesni_ctr32_encrypt_blocks:
 L_aesni_ctr32_encrypt_blocks_begin:
@@ -977,6 +991,7 @@ L038ctr32_ret:
 	popl	%ebp
 	ret
 .globl	_aesni_xts_encrypt
+.private_extern	_aesni_xts_encrypt
 .align	4
 _aesni_xts_encrypt:
 L_aesni_xts_encrypt_begin:
@@ -1321,6 +1336,7 @@ L054xts_enc_ret:
 	popl	%ebp
 	ret
 .globl	_aesni_xts_decrypt
+.private_extern	_aesni_xts_decrypt
 .align	4
 _aesni_xts_decrypt:
 L_aesni_xts_decrypt_begin:
@@ -1695,6 +1711,7 @@ L067xts_dec_ret:
 	popl	%ebp
 	ret
 .globl	_aesni_cbc_encrypt
+.private_extern	_aesni_cbc_encrypt
 .align	4
 _aesni_cbc_encrypt:
 L_aesni_cbc_encrypt_begin:
@@ -1929,6 +1946,7 @@ L072cbc_abort:
 	popl	%ebx
 	popl	%ebp
 	ret
+.private_extern	__aesni_set_encrypt_key
 .align	4
 __aesni_set_encrypt_key:
 	testl	%eax,%eax
@@ -2107,6 +2125,7 @@ L091bad_keybits:
 	movl	$-2,%eax
 	ret
 .globl	_aesni_set_encrypt_key
+.private_extern	_aesni_set_encrypt_key
 .align	4
 _aesni_set_encrypt_key:
 L_aesni_set_encrypt_key_begin:
@@ -2116,6 +2135,7 @@ L_aesni_set_encrypt_key_begin:
 	call	__aesni_set_encrypt_key
 	ret
 .globl	_aesni_set_decrypt_key
+.private_extern	_aesni_set_decrypt_key
 .align	4
 _aesni_set_decrypt_key:
 L_aesni_set_decrypt_key_begin:

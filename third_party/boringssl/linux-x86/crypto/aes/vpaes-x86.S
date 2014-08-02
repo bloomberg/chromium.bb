@@ -58,6 +58,7 @@
 .byte	114,103,32,40,83,116,97,110,102,111,114,100,32,85,110,105
 .byte	118,101,114,115,105,116,121,41,0
 .align	64
+.hidden	_vpaes_preheat
 .type	_vpaes_preheat,@function
 .align	16
 _vpaes_preheat:
@@ -66,6 +67,7 @@ _vpaes_preheat:
 	movdqa	-16(%ebp),%xmm6
 	ret
 .size	_vpaes_preheat,.-_vpaes_preheat
+.hidden	_vpaes_encrypt_core
 .type	_vpaes_encrypt_core,@function
 .align	16
 _vpaes_encrypt_core:
@@ -143,6 +145,7 @@ _vpaes_encrypt_core:
 .byte	102,15,56,0,193
 	ret
 .size	_vpaes_encrypt_core,.-_vpaes_encrypt_core
+.hidden	_vpaes_decrypt_core
 .type	_vpaes_decrypt_core,@function
 .align	16
 _vpaes_decrypt_core:
@@ -231,6 +234,7 @@ _vpaes_decrypt_core:
 .byte	102,15,56,0,194
 	ret
 .size	_vpaes_decrypt_core,.-_vpaes_decrypt_core
+.hidden	_vpaes_schedule_core
 .type	_vpaes_schedule_core,@function
 .align	16
 _vpaes_schedule_core:
@@ -325,6 +329,7 @@ _vpaes_schedule_core:
 	pxor	%xmm7,%xmm7
 	ret
 .size	_vpaes_schedule_core,.-_vpaes_schedule_core
+.hidden	_vpaes_schedule_192_smear
 .type	_vpaes_schedule_192_smear,@function
 .align	16
 _vpaes_schedule_192_smear:
@@ -337,6 +342,7 @@ _vpaes_schedule_192_smear:
 	movhlps	%xmm1,%xmm6
 	ret
 .size	_vpaes_schedule_192_smear,.-_vpaes_schedule_192_smear
+.hidden	_vpaes_schedule_round
 .type	_vpaes_schedule_round,@function
 .align	16
 _vpaes_schedule_round:
@@ -386,6 +392,7 @@ _vpaes_schedule_round:
 	movdqa	%xmm0,%xmm7
 	ret
 .size	_vpaes_schedule_round,.-_vpaes_schedule_round
+.hidden	_vpaes_schedule_transform
 .type	_vpaes_schedule_transform,@function
 .align	16
 _vpaes_schedule_transform:
@@ -401,6 +408,7 @@ _vpaes_schedule_transform:
 	pxor	%xmm2,%xmm0
 	ret
 .size	_vpaes_schedule_transform,.-_vpaes_schedule_transform
+.hidden	_vpaes_schedule_mangle
 .type	_vpaes_schedule_mangle,@function
 .align	16
 _vpaes_schedule_mangle:
@@ -461,6 +469,7 @@ _vpaes_schedule_mangle:
 	ret
 .size	_vpaes_schedule_mangle,.-_vpaes_schedule_mangle
 .globl	vpaes_set_encrypt_key
+.hidden	vpaes_set_encrypt_key
 .type	vpaes_set_encrypt_key,@function
 .align	16
 vpaes_set_encrypt_key:
@@ -494,6 +503,7 @@ vpaes_set_encrypt_key:
 	ret
 .size	vpaes_set_encrypt_key,.-.L_vpaes_set_encrypt_key_begin
 .globl	vpaes_set_decrypt_key
+.hidden	vpaes_set_decrypt_key
 .type	vpaes_set_decrypt_key,@function
 .align	16
 vpaes_set_decrypt_key:
@@ -532,6 +542,7 @@ vpaes_set_decrypt_key:
 	ret
 .size	vpaes_set_decrypt_key,.-.L_vpaes_set_decrypt_key_begin
 .globl	vpaes_encrypt
+.hidden	vpaes_encrypt
 .type	vpaes_encrypt,@function
 .align	16
 vpaes_encrypt:
@@ -561,6 +572,7 @@ vpaes_encrypt:
 	ret
 .size	vpaes_encrypt,.-.L_vpaes_encrypt_begin
 .globl	vpaes_decrypt
+.hidden	vpaes_decrypt
 .type	vpaes_decrypt,@function
 .align	16
 vpaes_decrypt:
@@ -590,6 +602,7 @@ vpaes_decrypt:
 	ret
 .size	vpaes_decrypt,.-.L_vpaes_decrypt_begin
 .globl	vpaes_cbc_encrypt
+.hidden	vpaes_cbc_encrypt
 .type	vpaes_cbc_encrypt,@function
 .align	16
 vpaes_cbc_encrypt:

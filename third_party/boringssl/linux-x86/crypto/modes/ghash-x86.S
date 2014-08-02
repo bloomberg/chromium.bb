@@ -2,6 +2,7 @@
 .file	"ghash-x86.S"
 .text
 .globl	gcm_gmult_4bit_x86
+.hidden	gcm_gmult_4bit_x86
 .type	gcm_gmult_4bit_x86,@function
 .align	16
 gcm_gmult_4bit_x86:
@@ -96,6 +97,7 @@ gcm_gmult_4bit_x86:
 	ret
 .size	gcm_gmult_4bit_x86,.-.L_gcm_gmult_4bit_x86_begin
 .globl	gcm_ghash_4bit_x86
+.hidden	gcm_ghash_4bit_x86
 .type	gcm_ghash_4bit_x86,@function
 .align	16
 gcm_ghash_4bit_x86:
@@ -205,6 +207,7 @@ gcm_ghash_4bit_x86:
 	ret
 .size	gcm_ghash_4bit_x86,.-.L_gcm_ghash_4bit_x86_begin
 .globl	gcm_gmult_4bit_mmx
+.hidden	gcm_gmult_4bit_mmx
 .type	gcm_gmult_4bit_mmx,@function
 .align	16
 gcm_gmult_4bit_mmx:
@@ -304,6 +307,7 @@ gcm_gmult_4bit_mmx:
 	ret
 .size	gcm_gmult_4bit_mmx,.-.L_gcm_gmult_4bit_mmx_begin
 .globl	gcm_ghash_4bit_mmx
+.hidden	gcm_ghash_4bit_mmx
 .type	gcm_ghash_4bit_mmx,@function
 .align	16
 gcm_ghash_4bit_mmx:
@@ -908,6 +912,7 @@ gcm_ghash_4bit_mmx:
 	ret
 .size	gcm_ghash_4bit_mmx,.-.L_gcm_ghash_4bit_mmx_begin
 .globl	gcm_init_clmul
+.hidden	gcm_init_clmul
 .type	gcm_init_clmul,@function
 .align	16
 gcm_init_clmul:
@@ -977,6 +982,7 @@ gcm_init_clmul:
 	ret
 .size	gcm_init_clmul,.-.L_gcm_init_clmul_begin
 .globl	gcm_gmult_clmul
+.hidden	gcm_gmult_clmul
 .type	gcm_gmult_clmul,@function
 .align	16
 gcm_gmult_clmul:
@@ -1030,6 +1036,7 @@ gcm_gmult_clmul:
 	ret
 .size	gcm_gmult_clmul,.-.L_gcm_gmult_clmul_begin
 .globl	gcm_ghash_clmul
+.hidden	gcm_ghash_clmul
 .type	gcm_ghash_clmul,@function
 .align	16
 gcm_ghash_clmul:

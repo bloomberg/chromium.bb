@@ -1,6 +1,7 @@
 #if defined(__i386__)
 .file	"aes-586.S"
 .text
+.hidden	_x86_AES_encrypt_compact
 .type	_x86_AES_encrypt_compact,@function
 .align	16
 _x86_AES_encrypt_compact:
@@ -268,6 +269,7 @@ _x86_AES_encrypt_compact:
 	xorl	28(%edi),%edx
 	ret
 .size	_x86_AES_encrypt_compact,.-_x86_AES_encrypt_compact
+.hidden	_sse_AES_encrypt_compact
 .type	_sse_AES_encrypt_compact,@function
 .align	16
 _sse_AES_encrypt_compact:
@@ -425,6 +427,7 @@ _sse_AES_encrypt_compact:
 	pxor	8(%edi),%mm4
 	ret
 .size	_sse_AES_encrypt_compact,.-_sse_AES_encrypt_compact
+.hidden	_x86_AES_encrypt
 .type	_x86_AES_encrypt,@function
 .align	16
 _x86_AES_encrypt:
@@ -977,11 +980,12 @@ _x86_AES_encrypt:
 .long	27,54,0,0
 .long	0,0,0,0
 .size	_x86_AES_encrypt,.-_x86_AES_encrypt
-.globl	AES_encrypt
-.type	AES_encrypt,@function
+.globl	asm_AES_encrypt
+.hidden	asm_AES_encrypt
+.type	asm_AES_encrypt,@function
 .align	16
-AES_encrypt:
-.L_AES_encrypt_begin:
+asm_AES_encrypt:
+.L_asm_AES_encrypt_begin:
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -1041,7 +1045,8 @@ AES_encrypt:
 	popl	%ebx
 	popl	%ebp
 	ret
-.size	AES_encrypt,.-.L_AES_encrypt_begin
+.size	asm_AES_encrypt,.-.L_asm_AES_encrypt_begin
+.hidden	_x86_AES_decrypt_compact
 .type	_x86_AES_decrypt_compact,@function
 .align	16
 _x86_AES_decrypt_compact:
@@ -1397,6 +1402,7 @@ _x86_AES_decrypt_compact:
 	xorl	28(%edi),%edx
 	ret
 .size	_x86_AES_decrypt_compact,.-_x86_AES_decrypt_compact
+.hidden	_sse_AES_decrypt_compact
 .type	_sse_AES_decrypt_compact,@function
 .align	16
 _sse_AES_decrypt_compact:
@@ -1613,6 +1619,7 @@ _sse_AES_decrypt_compact:
 	pxor	8(%edi),%mm4
 	ret
 .size	_sse_AES_decrypt_compact,.-_sse_AES_decrypt_compact
+.hidden	_x86_AES_decrypt
 .type	_x86_AES_decrypt,@function
 .align	16
 _x86_AES_decrypt:
@@ -2169,11 +2176,12 @@ _x86_AES_decrypt:
 .byte	23,43,4,126,186,119,214,38
 .byte	225,105,20,99,85,33,12,125
 .size	_x86_AES_decrypt,.-_x86_AES_decrypt
-.globl	AES_decrypt
-.type	AES_decrypt,@function
+.globl	asm_AES_decrypt
+.hidden	asm_AES_decrypt
+.type	asm_AES_decrypt,@function
 .align	16
-AES_decrypt:
-.L_AES_decrypt_begin:
+asm_AES_decrypt:
+.L_asm_AES_decrypt_begin:
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -2233,12 +2241,13 @@ AES_decrypt:
 	popl	%ebx
 	popl	%ebp
 	ret
-.size	AES_decrypt,.-.L_AES_decrypt_begin
-.globl	AES_cbc_encrypt
-.type	AES_cbc_encrypt,@function
+.size	asm_AES_decrypt,.-.L_asm_AES_decrypt_begin
+.globl	asm_AES_cbc_encrypt
+.hidden	asm_AES_cbc_encrypt
+.type	asm_AES_cbc_encrypt,@function
 .align	16
-AES_cbc_encrypt:
-.L_AES_cbc_encrypt_begin:
+asm_AES_cbc_encrypt:
+.L_asm_AES_cbc_encrypt_begin:
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -2766,7 +2775,8 @@ AES_cbc_encrypt:
 	popl	%ebx
 	popl	%ebp
 	ret
-.size	AES_cbc_encrypt,.-.L_AES_cbc_encrypt_begin
+.size	asm_AES_cbc_encrypt,.-.L_asm_AES_cbc_encrypt_begin
+.hidden	_x86_AES_set_encrypt_key
 .type	_x86_AES_set_encrypt_key,@function
 .align	16
 _x86_AES_set_encrypt_key:
@@ -2997,19 +3007,21 @@ _x86_AES_set_encrypt_key:
 	popl	%ebp
 	ret
 .size	_x86_AES_set_encrypt_key,.-_x86_AES_set_encrypt_key
-.globl	AES_set_encrypt_key
-.type	AES_set_encrypt_key,@function
+.globl	asm_AES_set_encrypt_key
+.hidden	asm_AES_set_encrypt_key
+.type	asm_AES_set_encrypt_key,@function
 .align	16
-AES_set_encrypt_key:
-.L_AES_set_encrypt_key_begin:
+asm_AES_set_encrypt_key:
+.L_asm_AES_set_encrypt_key_begin:
 	call	_x86_AES_set_encrypt_key
 	ret
-.size	AES_set_encrypt_key,.-.L_AES_set_encrypt_key_begin
-.globl	AES_set_decrypt_key
-.type	AES_set_decrypt_key,@function
+.size	asm_AES_set_encrypt_key,.-.L_asm_AES_set_encrypt_key_begin
+.globl	asm_AES_set_decrypt_key
+.hidden	asm_AES_set_decrypt_key
+.type	asm_AES_set_decrypt_key,@function
 .align	16
-AES_set_decrypt_key:
-.L_AES_set_decrypt_key_begin:
+asm_AES_set_decrypt_key:
+.L_asm_AES_set_decrypt_key_begin:
 	call	_x86_AES_set_encrypt_key
 	cmpl	$0,%eax
 	je	.L054proceed
@@ -3238,7 +3250,7 @@ AES_set_decrypt_key:
 	popl	%ebx
 	popl	%ebp
 	ret
-.size	AES_set_decrypt_key,.-.L_AES_set_decrypt_key_begin
+.size	asm_AES_set_decrypt_key,.-.L_asm_AES_set_decrypt_key_begin
 .byte	65,69,83,32,102,111,114,32,120,56,54,44,32,67,82,89
 .byte	80,84,79,71,65,77,83,32,98,121,32,60,97,112,112,114
 .byte	111,64,111,112,101,110,115,115,108,46,111,114,103,62,0

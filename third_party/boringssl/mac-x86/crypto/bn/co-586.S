@@ -2,6 +2,7 @@
 .file	"src/crypto/bn/asm/co-586.S"
 .text
 .globl	_bn_mul_comba8
+.private_extern	_bn_mul_comba8
 .align	4
 _bn_mul_comba8:
 L_bn_mul_comba8_begin:
@@ -544,6 +545,7 @@ L_bn_mul_comba8_begin:
 	popl	%esi
 	ret
 .globl	_bn_mul_comba4
+.private_extern	_bn_mul_comba4
 .align	4
 _bn_mul_comba4:
 L_bn_mul_comba4_begin:
@@ -710,6 +712,7 @@ L_bn_mul_comba4_begin:
 	popl	%esi
 	ret
 .globl	_bn_sqr_comba8
+.private_extern	_bn_sqr_comba8
 .align	4
 _bn_sqr_comba8:
 L_bn_sqr_comba8_begin:
@@ -1116,6 +1119,7 @@ L_bn_sqr_comba8_begin:
 	popl	%esi
 	ret
 .globl	_bn_sqr_comba4
+.private_extern	_bn_sqr_comba4
 .align	4
 _bn_sqr_comba4:
 L_bn_sqr_comba4_begin:

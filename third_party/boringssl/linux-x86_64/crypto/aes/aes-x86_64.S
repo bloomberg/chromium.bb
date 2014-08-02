@@ -326,13 +326,11 @@ _x86_64_AES_encrypt_compact:
 	xorl	12(%r15),%edx
 .byte	0xf3,0xc3
 .size	_x86_64_AES_encrypt_compact,.-_x86_64_AES_encrypt_compact
-.globl	AES_encrypt
-.type	AES_encrypt,@function
 .align	16
 .globl	asm_AES_encrypt
+.hidden asm_AES_encrypt
 .hidden	asm_AES_encrypt
 asm_AES_encrypt:
-AES_encrypt:
 	pushq	%rbx
 	pushq	%rbp
 	pushq	%r12
@@ -392,7 +390,7 @@ AES_encrypt:
 	leaq	48(%rsi),%rsp
 .Lenc_epilogue:
 	.byte	0xf3,0xc3
-.size	AES_encrypt,.-AES_encrypt
+.size	asm_AES_encrypt,.-asm_AES_encrypt
 .type	_x86_64_AES_decrypt,@function
 .align	16
 _x86_64_AES_decrypt:
@@ -773,13 +771,11 @@ _x86_64_AES_decrypt_compact:
 	xorl	12(%r15),%edx
 .byte	0xf3,0xc3
 .size	_x86_64_AES_decrypt_compact,.-_x86_64_AES_decrypt_compact
-.globl	AES_decrypt
-.type	AES_decrypt,@function
 .align	16
 .globl	asm_AES_decrypt
+.hidden asm_AES_decrypt
 .hidden	asm_AES_decrypt
 asm_AES_decrypt:
-AES_decrypt:
 	pushq	%rbx
 	pushq	%rbp
 	pushq	%r12
@@ -841,11 +837,11 @@ AES_decrypt:
 	leaq	48(%rsi),%rsp
 .Ldec_epilogue:
 	.byte	0xf3,0xc3
-.size	AES_decrypt,.-AES_decrypt
-.globl	AES_set_encrypt_key
-.type	AES_set_encrypt_key,@function
+.size	asm_AES_decrypt,.-asm_AES_decrypt
 .align	16
-AES_set_encrypt_key:
+.globl	asm_AES_set_encrypt_key
+.hidden asm_AES_set_encrypt_key
+asm_AES_set_encrypt_key:
 	pushq	%rbx
 	pushq	%rbp
 	pushq	%r12
@@ -862,7 +858,7 @@ AES_set_encrypt_key:
 	addq	$56,%rsp
 .Lenc_key_epilogue:
 	.byte	0xf3,0xc3
-.size	AES_set_encrypt_key,.-AES_set_encrypt_key
+.size	asm_AES_set_encrypt_key,.-asm_AES_set_encrypt_key
 
 .type	_x86_64_AES_set_encrypt_key,@function
 .align	16
@@ -1103,10 +1099,10 @@ _x86_64_AES_set_encrypt_key:
 .Lexit:
 .byte	0xf3,0xc3
 .size	_x86_64_AES_set_encrypt_key,.-_x86_64_AES_set_encrypt_key
-.globl	AES_set_decrypt_key
-.type	AES_set_decrypt_key,@function
 .align	16
-AES_set_decrypt_key:
+.globl	asm_AES_set_decrypt_key
+.hidden asm_AES_set_decrypt_key
+asm_AES_set_decrypt_key:
 	pushq	%rbx
 	pushq	%rbp
 	pushq	%r12
@@ -1289,15 +1285,13 @@ AES_set_decrypt_key:
 	addq	$56,%rsp
 .Ldec_key_epilogue:
 	.byte	0xf3,0xc3
-.size	AES_set_decrypt_key,.-AES_set_decrypt_key
-.globl	AES_cbc_encrypt
-.type	AES_cbc_encrypt,@function
+.size	asm_AES_set_decrypt_key,.-asm_AES_set_decrypt_key
 .align	16
 
 .globl	asm_AES_cbc_encrypt
+.hidden asm_AES_cbc_encrypt
 .hidden	asm_AES_cbc_encrypt
 asm_AES_cbc_encrypt:
-AES_cbc_encrypt:
 	cmpq	$0,%rdx
 	je	.Lcbc_epilogue
 	pushfq
@@ -1746,7 +1740,7 @@ AES_cbc_encrypt:
 	popfq
 .Lcbc_epilogue:
 	.byte	0xf3,0xc3
-.size	AES_cbc_encrypt,.-AES_cbc_encrypt
+.size	asm_AES_cbc_encrypt,.-asm_AES_cbc_encrypt
 .align	64
 .LAES_Te:
 .long	0xa56363c6,0xa56363c6

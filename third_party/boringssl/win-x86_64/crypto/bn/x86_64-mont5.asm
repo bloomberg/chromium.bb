@@ -1,5 +1,5 @@
 OPTION	DOTNAME
-.text$	SEGMENT ALIGN(64) 'CODE'
+.text$	SEGMENT ALIGN(256) 'CODE'
 
 EXTERN	OPENSSL_ia32cap_P:NEAR
 
@@ -57,7 +57,7 @@ $L$mul_body::
 	movq	xmm6,QWORD PTR[16+r10*8+rax]
 	movq	xmm7,QWORD PTR[24+r10*8+rax]
 
-	movq	xmm0,QWORD PTR[(((-96)))+r12]
+	movq	xmm0,QWORD PTR[((-96))+r12]
 	movq	xmm1,QWORD PTR[((-32))+r12]
 	pand	xmm0,xmm4
 	movq	xmm2,QWORD PTR[32+r12]
@@ -78,7 +78,7 @@ DB	102,72,15,126,195
 	xor	r14,r14
 	xor	r15,r15
 
-	movq	xmm0,QWORD PTR[(((-96)))+r12]
+	movq	xmm0,QWORD PTR[((-96))+r12]
 	movq	xmm1,QWORD PTR[((-32))+r12]
 	pand	xmm0,xmm4
 	movq	xmm2,QWORD PTR[32+r12]
@@ -158,7 +158,7 @@ $L$outer::
 	mov	rbp,r8
 	mov	r10,QWORD PTR[rsp]
 
-	movq	xmm0,QWORD PTR[(((-96)))+r12]
+	movq	xmm0,QWORD PTR[((-96))+r12]
 	movq	xmm1,QWORD PTR[((-32))+r12]
 	pand	xmm0,xmm4
 	movq	xmm2,QWORD PTR[32+r12]
@@ -390,7 +390,7 @@ mul4x_internal	PROC PRIVATE
 	movq	xmm7,QWORD PTR[24+r10*8+rax]
 	and	r11,7
 
-	movq	xmm0,QWORD PTR[(((-96)))+r12]
+	movq	xmm0,QWORD PTR[((-96))+r12]
 	lea	r14,QWORD PTR[256+r12]
 	movq	xmm1,QWORD PTR[((-32))+r12]
 	pand	xmm0,xmm4
@@ -588,7 +588,7 @@ $L$outer4x::
 	mov	rax,QWORD PTR[rcx]
 	adc	rdx,0
 
-	movq	xmm0,QWORD PTR[(((-96)))+r12]
+	movq	xmm0,QWORD PTR[((-96))+r12]
 	movq	xmm1,QWORD PTR[((-32))+r12]
 	pand	xmm0,xmm4
 	movq	xmm2,QWORD PTR[32+r12]
@@ -1882,7 +1882,7 @@ DB	00fh,029h,07ch,024h,010h
 	jmp	$L$gather
 ALIGN	16
 $L$gather::
-	movq	xmm0,QWORD PTR[(((-128)))+r8]
+	movq	xmm0,QWORD PTR[((-128))+r8]
 	movq	xmm1,QWORD PTR[((-64))+r8]
 	pand	xmm0,xmm4
 	movq	xmm2,QWORD PTR[r8]

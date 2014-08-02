@@ -2,6 +2,7 @@
 .file	"crypto/cpu-x86-asm.S"
 .text
 .globl	_OPENSSL_ia32_cpuid
+.private_extern	_OPENSSL_ia32_cpuid
 .align	4
 _OPENSSL_ia32_cpuid:
 L_OPENSSL_ia32_cpuid_begin:
@@ -145,6 +146,7 @@ L000nocpuid:
 	popl	%ebp
 	ret
 .globl	_OPENSSL_rdtsc
+.private_extern	_OPENSSL_rdtsc
 .align	4
 _OPENSSL_rdtsc:
 L_OPENSSL_rdtsc_begin:
@@ -160,6 +162,7 @@ L009PIC_me_up:
 L010notsc:
 	ret
 .globl	_OPENSSL_instrument_halt
+.private_extern	_OPENSSL_instrument_halt
 .align	4
 _OPENSSL_instrument_halt:
 L_OPENSSL_instrument_halt_begin:
@@ -190,6 +193,7 @@ L012nohalt:
 	xorl	%edx,%edx
 	ret
 .globl	_OPENSSL_far_spin
+.private_extern	_OPENSSL_far_spin
 .align	4
 _OPENSSL_far_spin:
 L_OPENSSL_far_spin_begin:
@@ -215,6 +219,7 @@ L013nospin:
 	xorl	%edx,%edx
 	ret
 .globl	_OPENSSL_wipe_cpu
+.private_extern	_OPENSSL_wipe_cpu
 .align	4
 _OPENSSL_wipe_cpu:
 L_OPENSSL_wipe_cpu_begin:
@@ -232,6 +237,7 @@ L016no_x87:
 	leal	4(%esp),%eax
 	ret
 .globl	_OPENSSL_atomic_add
+.private_extern	_OPENSSL_atomic_add
 .align	4
 _OPENSSL_atomic_add:
 L_OPENSSL_atomic_add_begin:
@@ -249,6 +255,7 @@ L017spin:
 	popl	%ebx
 	ret
 .globl	_OPENSSL_indirect_call
+.private_extern	_OPENSSL_indirect_call
 .align	4
 _OPENSSL_indirect_call:
 L_OPENSSL_indirect_call_begin:
@@ -273,51 +280,17 @@ L_OPENSSL_indirect_call_begin:
 	movl	%ebp,%esp
 	popl	%ebp
 	ret
-.globl	_OPENSSL_cleanse
-.align	4
-_OPENSSL_cleanse:
-L_OPENSSL_cleanse_begin:
-	movl	4(%esp),%edx
-	movl	8(%esp),%ecx
-	xorl	%eax,%eax
-	cmpl	$7,%ecx
-	jae	L018lot
-	cmpl	$0,%ecx
-	je	L019ret
-L020little:
-	movb	%al,(%edx)
-	subl	$1,%ecx
-	leal	1(%edx),%edx
-	jnz	L020little
-L019ret:
-	ret
-.align	4,0x90
-L018lot:
-	testl	$3,%edx
-	jz	L021aligned
-	movb	%al,(%edx)
-	leal	-1(%ecx),%ecx
-	leal	1(%edx),%edx
-	jmp	L018lot
-L021aligned:
-	movl	%eax,(%edx)
-	leal	-4(%ecx),%ecx
-	testl	$-4,%ecx
-	leal	4(%edx),%edx
-	jnz	L021aligned
-	cmpl	$0,%ecx
-	jne	L020little
-	ret
 .globl	_OPENSSL_ia32_rdrand
+.private_extern	_OPENSSL_ia32_rdrand
 .align	4
 _OPENSSL_ia32_rdrand:
 L_OPENSSL_ia32_rdrand_begin:
 	movl	$8,%ecx
-L022loop:
+L018loop:
 .byte	15,199,240
-	jc	L023break
-	loop	L022loop
-L023break:
+	jc	L019break
+	loop	L018loop
+L019break:
 	cmpl	$0,%eax
 	cmovel	%ecx,%eax
 	ret

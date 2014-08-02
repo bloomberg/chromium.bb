@@ -3,6 +3,7 @@
 .p2align	4
 
 .globl	_rc4_md5_enc
+.private_extern _rc4_md5_enc
 
 _rc4_md5_enc:
 	cmpq	$0,%r9

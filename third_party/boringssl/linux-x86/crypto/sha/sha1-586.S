@@ -2,6 +2,7 @@
 .file	"sha1-586.S"
 .text
 .globl	sha1_block_data_order
+.hidden	sha1_block_data_order
 .type	sha1_block_data_order,@function
 .align	16
 sha1_block_data_order:

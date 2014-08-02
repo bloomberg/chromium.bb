@@ -4,6 +4,7 @@
 
 
 .globl	_bn_mul_mont_gather5
+.private_extern _bn_mul_mont_gather5
 
 .p2align	6
 _bn_mul_mont_gather5:
@@ -729,6 +730,7 @@ L$inner4x:
 	jmp	L$sqr4x_sub
 
 .globl	_bn_power5
+.private_extern _bn_power5
 
 .p2align	5
 _bn_power5:
@@ -818,6 +820,7 @@ L$power5_epilogue:
 
 
 .globl	_bn_sqr8x_internal
+.private_extern _bn_sqr8x_internal
 .private_extern	_bn_sqr8x_internal
 
 .p2align	5
@@ -1627,6 +1630,7 @@ L$sqr4x_sub:
 	.byte	0xf3,0xc3
 
 .globl	_bn_from_montgomery
+.private_extern _bn_from_montgomery
 
 .p2align	5
 _bn_from_montgomery:
@@ -1752,6 +1756,7 @@ L$from_epilogue:
 	.byte	0xf3,0xc3
 
 .globl	_bn_get_bits5
+.private_extern _bn_get_bits5
 
 .p2align	4
 _bn_get_bits5:
@@ -1766,6 +1771,7 @@ _bn_get_bits5:
 
 
 .globl	_bn_scatter5
+.private_extern _bn_scatter5
 
 .p2align	4
 _bn_scatter5:
@@ -1784,6 +1790,7 @@ L$scatter_epilogue:
 
 
 .globl	_bn_gather5
+.private_extern _bn_gather5
 
 .p2align	4
 _bn_gather5:

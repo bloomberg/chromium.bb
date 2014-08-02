@@ -2,6 +2,7 @@
 .file	"src/crypto/bn/asm/x86-mont.S"
 .text
 .globl	bn_mul_mont
+.hidden	bn_mul_mont
 .type	bn_mul_mont,@function
 .align	16
 bn_mul_mont:

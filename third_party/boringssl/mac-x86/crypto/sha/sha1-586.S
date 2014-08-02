@@ -2,6 +2,7 @@
 .file	"sha1-586.S"
 .text
 .globl	_sha1_block_data_order
+.private_extern	_sha1_block_data_order
 .align	4
 _sha1_block_data_order:
 L_sha1_block_data_order_begin:

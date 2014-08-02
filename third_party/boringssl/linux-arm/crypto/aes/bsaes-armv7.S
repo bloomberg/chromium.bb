@@ -1053,6 +1053,7 @@ _bsaes_key_convert:
 .extern AES_decrypt
 
 .global	bsaes_cbc_encrypt
+.hidden	bsaes_cbc_encrypt
 .type	bsaes_cbc_encrypt,%function
 .align	5
 bsaes_cbc_encrypt:
@@ -1320,6 +1321,7 @@ bsaes_cbc_encrypt:
 .size	bsaes_cbc_encrypt,.-bsaes_cbc_encrypt
 .extern	AES_encrypt
 .global	bsaes_ctr32_encrypt_blocks
+.hidden	bsaes_ctr32_encrypt_blocks
 .type	bsaes_ctr32_encrypt_blocks,%function
 .align	5
 bsaes_ctr32_encrypt_blocks:
@@ -1537,6 +1539,7 @@ bsaes_ctr32_encrypt_blocks:
 	ldmia	sp!, {r4-r8, pc}
 .size	bsaes_ctr32_encrypt_blocks,.-bsaes_ctr32_encrypt_blocks
 .globl	bsaes_xts_encrypt
+.hidden	bsaes_xts_encrypt
 .type	bsaes_xts_encrypt,%function
 .align	4
 bsaes_xts_encrypt:
@@ -2027,6 +2030,7 @@ bsaes_xts_encrypt:
 .size	bsaes_xts_encrypt,.-bsaes_xts_encrypt
 
 .globl	bsaes_xts_decrypt
+.hidden	bsaes_xts_decrypt
 .type	bsaes_xts_decrypt,%function
 .align	4
 bsaes_xts_decrypt:

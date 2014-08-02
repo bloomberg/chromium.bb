@@ -2,6 +2,7 @@
 .text	
 
 .globl	_aesni_encrypt
+.private_extern _aesni_encrypt
 
 .p2align	4
 _aesni_encrypt:
@@ -23,6 +24,7 @@ L$oop_enc1_1:
 
 
 .globl	_aesni_decrypt
+.private_extern _aesni_decrypt
 
 .p2align	4
 _aesni_decrypt:
@@ -501,6 +503,7 @@ L$dec_loop8_enter:
 	.byte	0xf3,0xc3
 
 .globl	_aesni_ecb_encrypt
+.private_extern _aesni_ecb_encrypt
 
 .p2align	4
 _aesni_ecb_encrypt:
@@ -801,6 +804,7 @@ L$ecb_ret:
 	.byte	0xf3,0xc3
 
 .globl	_aesni_ccm64_encrypt_blocks
+.private_extern _aesni_ccm64_encrypt_blocks
 
 .p2align	4
 _aesni_ccm64_encrypt_blocks:
@@ -858,6 +862,7 @@ L$ccm64_enc2_loop:
 	.byte	0xf3,0xc3
 
 .globl	_aesni_ccm64_decrypt_blocks
+.private_extern _aesni_ccm64_decrypt_blocks
 
 .p2align	4
 _aesni_ccm64_decrypt_blocks:
@@ -949,6 +954,7 @@ L$oop_enc1_6:
 	.byte	0xf3,0xc3
 
 .globl	_aesni_ctr32_encrypt_blocks
+.private_extern _aesni_ctr32_encrypt_blocks
 
 .p2align	4
 _aesni_ctr32_encrypt_blocks:
@@ -1487,6 +1493,7 @@ L$ctr32_epilogue:
 	.byte	0xf3,0xc3
 
 .globl	_aesni_xts_encrypt
+.private_extern _aesni_xts_encrypt
 
 .p2align	4
 _aesni_xts_encrypt:
@@ -1927,6 +1934,7 @@ L$xts_enc_epilogue:
 	.byte	0xf3,0xc3
 
 .globl	_aesni_xts_decrypt
+.private_extern _aesni_xts_decrypt
 
 .p2align	4
 _aesni_xts_decrypt:
@@ -2405,6 +2413,7 @@ L$xts_dec_epilogue:
 	.byte	0xf3,0xc3
 
 .globl	_aesni_cbc_encrypt
+.private_extern _aesni_cbc_encrypt
 
 .p2align	4
 _aesni_cbc_encrypt:
@@ -2921,6 +2930,7 @@ L$cbc_ret:
 	.byte	0xf3,0xc3
 
 .globl	_aesni_set_decrypt_key
+.private_extern _aesni_set_decrypt_key
 
 .p2align	4
 _aesni_set_decrypt_key:
@@ -2959,6 +2969,7 @@ L$dec_key_ret:
 L$SEH_end_set_decrypt_key:
 
 .globl	_aesni_set_encrypt_key
+.private_extern _aesni_set_encrypt_key
 
 .p2align	4
 _aesni_set_encrypt_key:

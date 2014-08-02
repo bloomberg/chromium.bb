@@ -2,6 +2,7 @@
 .text	
 
 .globl	_rsaz_avx2_eligible
+.private_extern _rsaz_avx2_eligible
 
 _rsaz_avx2_eligible:
 	xorl	%eax,%eax
@@ -9,11 +10,17 @@ _rsaz_avx2_eligible:
 
 
 .globl	_rsaz_1024_sqr_avx2
+.private_extern _rsaz_1024_sqr_avx2
 .globl	_rsaz_1024_mul_avx2
+.private_extern _rsaz_1024_mul_avx2
 .globl	_rsaz_1024_norm2red_avx2
+.private_extern _rsaz_1024_norm2red_avx2
 .globl	_rsaz_1024_red2norm_avx2
+.private_extern _rsaz_1024_red2norm_avx2
 .globl	_rsaz_1024_scatter5_avx2
+.private_extern _rsaz_1024_scatter5_avx2
 .globl	_rsaz_1024_gather5_avx2
+.private_extern _rsaz_1024_gather5_avx2
 
 _rsaz_1024_sqr_avx2:
 _rsaz_1024_mul_avx2:

@@ -1065,6 +1065,7 @@ _bsaes_key_convert:
 .size	_bsaes_key_convert,.-_bsaes_key_convert
 
 .globl	bsaes_cbc_encrypt
+.hidden bsaes_cbc_encrypt
 .type	bsaes_cbc_encrypt,@function
 .align	16
 bsaes_cbc_encrypt:
@@ -1315,6 +1316,7 @@ bsaes_cbc_encrypt:
 .size	bsaes_cbc_encrypt,.-bsaes_cbc_encrypt
 
 .globl	bsaes_ctr32_encrypt_blocks
+.hidden bsaes_ctr32_encrypt_blocks
 .type	bsaes_ctr32_encrypt_blocks,@function
 .align	16
 bsaes_ctr32_encrypt_blocks:
@@ -1514,6 +1516,7 @@ bsaes_ctr32_encrypt_blocks:
 	.byte	0xf3,0xc3
 .size	bsaes_ctr32_encrypt_blocks,.-bsaes_ctr32_encrypt_blocks
 .globl	bsaes_xts_encrypt
+.hidden bsaes_xts_encrypt
 .type	bsaes_xts_encrypt,@function
 .align	16
 bsaes_xts_encrypt:
@@ -1966,6 +1969,7 @@ bsaes_xts_encrypt:
 .size	bsaes_xts_encrypt,.-bsaes_xts_encrypt
 
 .globl	bsaes_xts_decrypt
+.hidden bsaes_xts_decrypt
 .type	bsaes_xts_decrypt,@function
 .align	16
 bsaes_xts_decrypt:

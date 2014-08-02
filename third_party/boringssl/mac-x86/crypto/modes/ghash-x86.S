@@ -2,6 +2,7 @@
 .file	"ghash-x86.S"
 .text
 .globl	_gcm_gmult_4bit_x86
+.private_extern	_gcm_gmult_4bit_x86
 .align	4
 _gcm_gmult_4bit_x86:
 L_gcm_gmult_4bit_x86_begin:
@@ -94,6 +95,7 @@ L001x86_break:
 	popl	%ebp
 	ret
 .globl	_gcm_ghash_4bit_x86
+.private_extern	_gcm_ghash_4bit_x86
 .align	4
 _gcm_ghash_4bit_x86:
 L_gcm_ghash_4bit_x86_begin:
@@ -201,6 +203,7 @@ L004x86_break:
 	popl	%ebp
 	ret
 .globl	_gcm_gmult_4bit_mmx
+.private_extern	_gcm_gmult_4bit_mmx
 .align	4
 _gcm_gmult_4bit_mmx:
 L_gcm_gmult_4bit_mmx_begin:
@@ -298,6 +301,7 @@ L007mmx_break:
 	popl	%ebp
 	ret
 .globl	_gcm_ghash_4bit_mmx
+.private_extern	_gcm_ghash_4bit_mmx
 .align	4
 _gcm_ghash_4bit_mmx:
 L_gcm_ghash_4bit_mmx_begin:
@@ -900,6 +904,7 @@ L009outer:
 	popl	%ebp
 	ret
 .globl	_gcm_init_clmul
+.private_extern	_gcm_init_clmul
 .align	4
 _gcm_init_clmul:
 L_gcm_init_clmul_begin:
@@ -967,6 +972,7 @@ L010pic:
 	movdqu	%xmm4,32(%edx)
 	ret
 .globl	_gcm_gmult_clmul
+.private_extern	_gcm_gmult_clmul
 .align	4
 _gcm_gmult_clmul:
 L_gcm_gmult_clmul_begin:
@@ -1018,6 +1024,7 @@ L011pic:
 	movdqu	%xmm0,(%eax)
 	ret
 .globl	_gcm_ghash_clmul
+.private_extern	_gcm_ghash_clmul
 .align	4
 _gcm_ghash_clmul:
 L_gcm_ghash_clmul_begin:

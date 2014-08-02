@@ -3,6 +3,7 @@
 
 
 .globl	_gcm_gmult_4bit
+.private_extern _gcm_gmult_4bit
 
 .p2align	4
 _gcm_gmult_4bit:
@@ -91,6 +92,7 @@ L$gmult_epilogue:
 	.byte	0xf3,0xc3
 
 .globl	_gcm_ghash_4bit
+.private_extern _gcm_ghash_4bit
 
 .p2align	4
 _gcm_ghash_4bit:
@@ -657,6 +659,7 @@ L$ghash_epilogue:
 	.byte	0xf3,0xc3
 
 .globl	_gcm_init_clmul
+.private_extern _gcm_init_clmul
 
 .p2align	4
 _gcm_init_clmul:
@@ -813,6 +816,7 @@ L$_init_clmul:
 	.byte	0xf3,0xc3
 
 .globl	_gcm_gmult_clmul
+.private_extern _gcm_gmult_clmul
 
 .p2align	4
 _gcm_gmult_clmul:
@@ -864,6 +868,7 @@ L$_gmult_clmul:
 	.byte	0xf3,0xc3
 
 .globl	_gcm_ghash_clmul
+.private_extern _gcm_ghash_clmul
 
 .p2align	5
 _gcm_ghash_clmul:
@@ -1247,18 +1252,21 @@ L$done:
 	.byte	0xf3,0xc3
 
 .globl	_gcm_init_avx
+.private_extern _gcm_init_avx
 
 .p2align	5
 _gcm_init_avx:
 	jmp	L$_init_clmul
 
 .globl	_gcm_gmult_avx
+.private_extern _gcm_gmult_avx
 
 .p2align	5
 _gcm_gmult_avx:
 	jmp	L$_gmult_clmul
 
 .globl	_gcm_ghash_avx
+.private_extern _gcm_ghash_avx
 
 .p2align	5
 _gcm_ghash_avx:

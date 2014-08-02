@@ -4,6 +4,7 @@
 
 
 .globl	bn_mul_mont_gather5
+.hidden bn_mul_mont_gather5
 .type	bn_mul_mont_gather5,@function
 .align	64
 bn_mul_mont_gather5:
@@ -729,6 +730,7 @@ mul4x_internal:
 	jmp	.Lsqr4x_sub
 .size	mul4x_internal,.-mul4x_internal
 .globl	bn_power5
+.hidden bn_power5
 .type	bn_power5,@function
 .align	32
 bn_power5:
@@ -818,6 +820,7 @@ bn_power5:
 .size	bn_power5,.-bn_power5
 
 .globl	bn_sqr8x_internal
+.hidden bn_sqr8x_internal
 .hidden	bn_sqr8x_internal
 .type	bn_sqr8x_internal,@function
 .align	32
@@ -1627,6 +1630,7 @@ sqr8x_reduction:
 	.byte	0xf3,0xc3
 .size	bn_sqr8x_internal,.-bn_sqr8x_internal
 .globl	bn_from_montgomery
+.hidden bn_from_montgomery
 .type	bn_from_montgomery,@function
 .align	32
 bn_from_montgomery:
@@ -1752,6 +1756,7 @@ bn_from_mont8x:
 	.byte	0xf3,0xc3
 .size	bn_from_mont8x,.-bn_from_mont8x
 .globl	bn_get_bits5
+.hidden bn_get_bits5
 .type	bn_get_bits5,@function
 .align	16
 bn_get_bits5:
@@ -1766,6 +1771,7 @@ bn_get_bits5:
 .size	bn_get_bits5,.-bn_get_bits5
 
 .globl	bn_scatter5
+.hidden bn_scatter5
 .type	bn_scatter5,@function
 .align	16
 bn_scatter5:
@@ -1784,6 +1790,7 @@ bn_scatter5:
 .size	bn_scatter5,.-bn_scatter5
 
 .globl	bn_gather5
+.hidden bn_gather5
 .type	bn_gather5,@function
 .align	16
 bn_gather5:

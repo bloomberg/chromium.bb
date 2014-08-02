@@ -2,10 +2,12 @@
 .text	
 
 
-.globl	RC4
-.type	RC4,@function
+.globl	asm_RC4
+.hidden asm_RC4
+.type	asm_RC4,@function
 .align	16
-RC4:	orq	%rsi,%rsi
+asm_RC4:
+	orq	%rsi,%rsi
 	jne	.Lentry
 	.byte	0xf3,0xc3
 .Lentry:
@@ -518,11 +520,12 @@ RC4:	orq	%rsi,%rsi
 	addq	$24,%rsp
 .Lepilogue:
 	.byte	0xf3,0xc3
-.size	RC4,.-RC4
-.globl	RC4_set_key
-.type	RC4_set_key,@function
+.size	asm_RC4,.-asm_RC4
+.globl	asm_RC4_set_key
+.hidden asm_RC4_set_key
+.type	asm_RC4_set_key,@function
 .align	16
-RC4_set_key:
+asm_RC4_set_key:
 	leaq	8(%rdi),%rdi
 	leaq	(%rdx,%rsi,1),%rdx
 	negq	%rsi
@@ -590,9 +593,10 @@ RC4_set_key:
 	movl	%eax,-8(%rdi)
 	movl	%eax,-4(%rdi)
 	.byte	0xf3,0xc3
-.size	RC4_set_key,.-RC4_set_key
+.size	asm_RC4_set_key,.-asm_RC4_set_key
 
 .globl	RC4_options
+.hidden RC4_options
 .type	RC4_options,@function
 .align	16
 RC4_options:

@@ -2,6 +2,7 @@
 .file	"sha512-586.S"
 .text
 .globl	_sha512_block_data_order
+.private_extern	_sha512_block_data_order
 .align	4
 _sha512_block_data_order:
 L_sha512_block_data_order_begin:

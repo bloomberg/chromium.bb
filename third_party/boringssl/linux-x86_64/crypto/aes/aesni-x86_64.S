@@ -2,6 +2,7 @@
 .text	
 
 .globl	aesni_encrypt
+.hidden aesni_encrypt
 .type	aesni_encrypt,@function
 .align	16
 aesni_encrypt:
@@ -23,6 +24,7 @@ aesni_encrypt:
 .size	aesni_encrypt,.-aesni_encrypt
 
 .globl	aesni_decrypt
+.hidden aesni_decrypt
 .type	aesni_decrypt,@function
 .align	16
 aesni_decrypt:
@@ -501,6 +503,7 @@ _aesni_decrypt8:
 	.byte	0xf3,0xc3
 .size	_aesni_decrypt8,.-_aesni_decrypt8
 .globl	aesni_ecb_encrypt
+.hidden aesni_ecb_encrypt
 .type	aesni_ecb_encrypt,@function
 .align	16
 aesni_ecb_encrypt:
@@ -801,6 +804,7 @@ aesni_ecb_encrypt:
 	.byte	0xf3,0xc3
 .size	aesni_ecb_encrypt,.-aesni_ecb_encrypt
 .globl	aesni_ccm64_encrypt_blocks
+.hidden aesni_ccm64_encrypt_blocks
 .type	aesni_ccm64_encrypt_blocks,@function
 .align	16
 aesni_ccm64_encrypt_blocks:
@@ -858,6 +862,7 @@ aesni_ccm64_encrypt_blocks:
 	.byte	0xf3,0xc3
 .size	aesni_ccm64_encrypt_blocks,.-aesni_ccm64_encrypt_blocks
 .globl	aesni_ccm64_decrypt_blocks
+.hidden aesni_ccm64_decrypt_blocks
 .type	aesni_ccm64_decrypt_blocks,@function
 .align	16
 aesni_ccm64_decrypt_blocks:
@@ -949,6 +954,7 @@ aesni_ccm64_decrypt_blocks:
 	.byte	0xf3,0xc3
 .size	aesni_ccm64_decrypt_blocks,.-aesni_ccm64_decrypt_blocks
 .globl	aesni_ctr32_encrypt_blocks
+.hidden aesni_ctr32_encrypt_blocks
 .type	aesni_ctr32_encrypt_blocks,@function
 .align	16
 aesni_ctr32_encrypt_blocks:
@@ -1487,6 +1493,7 @@ aesni_ctr32_encrypt_blocks:
 	.byte	0xf3,0xc3
 .size	aesni_ctr32_encrypt_blocks,.-aesni_ctr32_encrypt_blocks
 .globl	aesni_xts_encrypt
+.hidden aesni_xts_encrypt
 .type	aesni_xts_encrypt,@function
 .align	16
 aesni_xts_encrypt:
@@ -1927,6 +1934,7 @@ aesni_xts_encrypt:
 	.byte	0xf3,0xc3
 .size	aesni_xts_encrypt,.-aesni_xts_encrypt
 .globl	aesni_xts_decrypt
+.hidden aesni_xts_decrypt
 .type	aesni_xts_decrypt,@function
 .align	16
 aesni_xts_decrypt:
@@ -2405,6 +2413,7 @@ aesni_xts_decrypt:
 	.byte	0xf3,0xc3
 .size	aesni_xts_decrypt,.-aesni_xts_decrypt
 .globl	aesni_cbc_encrypt
+.hidden aesni_cbc_encrypt
 .type	aesni_cbc_encrypt,@function
 .align	16
 aesni_cbc_encrypt:
@@ -2921,6 +2930,7 @@ aesni_cbc_encrypt:
 	.byte	0xf3,0xc3
 .size	aesni_cbc_encrypt,.-aesni_cbc_encrypt
 .globl	aesni_set_decrypt_key
+.hidden aesni_set_decrypt_key
 .type	aesni_set_decrypt_key,@function
 .align	16
 aesni_set_decrypt_key:
@@ -2959,6 +2969,7 @@ aesni_set_decrypt_key:
 .LSEH_end_set_decrypt_key:
 .size	aesni_set_decrypt_key,.-aesni_set_decrypt_key
 .globl	aesni_set_encrypt_key
+.hidden aesni_set_encrypt_key
 .type	aesni_set_encrypt_key,@function
 .align	16
 aesni_set_encrypt_key:

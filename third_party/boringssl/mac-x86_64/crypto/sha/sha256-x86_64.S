@@ -3,6 +3,7 @@
 
 
 .globl	_sha256_block_data_order
+.private_extern _sha256_block_data_order
 
 .p2align	4
 _sha256_block_data_order:

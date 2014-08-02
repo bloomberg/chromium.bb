@@ -13,7 +13,13 @@
       'sources': [
         '<@(boringssl_lib_sources)',
       ],
+      'defines': [ 'BORINGSSL_IMPLEMENTATION' ],
       'conditions': [
+        ['component == "shared_library"', {
+          'defines': [
+            'BORINGSSL_SHARED_LIBRARY',
+          ],
+        }],
         ['target_arch == "arm"', {
           'sources': [ '<@(boringssl_linux_arm_sources)' ],
         }],
@@ -49,19 +55,6 @@
         ['target_arch != "arm" and target_arch != "ia32" and target_arch != "x64"', {
           'defines': [ 'OPENSSL_NO_ASM' ],
         }],
-        ['component == "shared_library"', {
-          'xcode_settings': {
-            'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',  # no -fvisibility=hidden
-          },
-          'cflags!': [ '-fvisibility=hidden' ],
-          'conditions': [
-            ['os_posix == 1 and OS != "mac"', {
-              # Avoid link failures on Linux x86-64.
-              # See http://rt.openssl.org/Ticket/Display.html?id=2466&user=guest&pass=guest
-              'ldflags+': [ '-Wl,-Bsymbolic' ],
-            }],
-          ],
-        }],
       ],
       'include_dirs': [
         'src/include',
@@ -73,6 +66,13 @@
       'direct_dependent_settings': {
         'include_dirs': [
           'src/include',
+        ],
+        'conditions': [
+          ['component == "shared_library"', {
+            'defines': [
+              'BORINGSSL_SHARED_LIBRARY',
+            ],
+          }],
         ],
       },
     },

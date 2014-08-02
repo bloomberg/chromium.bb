@@ -3,6 +3,7 @@
 
 
 .globl	gcm_gmult_4bit
+.hidden gcm_gmult_4bit
 .type	gcm_gmult_4bit,@function
 .align	16
 gcm_gmult_4bit:
@@ -91,6 +92,7 @@ gcm_gmult_4bit:
 	.byte	0xf3,0xc3
 .size	gcm_gmult_4bit,.-gcm_gmult_4bit
 .globl	gcm_ghash_4bit
+.hidden gcm_ghash_4bit
 .type	gcm_ghash_4bit,@function
 .align	16
 gcm_ghash_4bit:
@@ -657,6 +659,7 @@ gcm_ghash_4bit:
 	.byte	0xf3,0xc3
 .size	gcm_ghash_4bit,.-gcm_ghash_4bit
 .globl	gcm_init_clmul
+.hidden gcm_init_clmul
 .type	gcm_init_clmul,@function
 .align	16
 gcm_init_clmul:
@@ -813,6 +816,7 @@ gcm_init_clmul:
 	.byte	0xf3,0xc3
 .size	gcm_init_clmul,.-gcm_init_clmul
 .globl	gcm_gmult_clmul
+.hidden gcm_gmult_clmul
 .type	gcm_gmult_clmul,@function
 .align	16
 gcm_gmult_clmul:
@@ -864,6 +868,7 @@ gcm_gmult_clmul:
 	.byte	0xf3,0xc3
 .size	gcm_gmult_clmul,.-gcm_gmult_clmul
 .globl	gcm_ghash_clmul
+.hidden gcm_ghash_clmul
 .type	gcm_ghash_clmul,@function
 .align	32
 gcm_ghash_clmul:
@@ -1247,18 +1252,21 @@ gcm_ghash_clmul:
 	.byte	0xf3,0xc3
 .size	gcm_ghash_clmul,.-gcm_ghash_clmul
 .globl	gcm_init_avx
+.hidden gcm_init_avx
 .type	gcm_init_avx,@function
 .align	32
 gcm_init_avx:
 	jmp	.L_init_clmul
 .size	gcm_init_avx,.-gcm_init_avx
 .globl	gcm_gmult_avx
+.hidden gcm_gmult_avx
 .type	gcm_gmult_avx,@function
 .align	32
 gcm_gmult_avx:
 	jmp	.L_gmult_clmul
 .size	gcm_gmult_avx,.-gcm_gmult_avx
 .globl	gcm_ghash_avx
+.hidden gcm_ghash_avx
 .type	gcm_ghash_avx,@function
 .align	32
 gcm_ghash_avx:

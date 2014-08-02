@@ -2,6 +2,7 @@
 .file	"crypto/cpu-x86-asm.S"
 .text
 .globl	OPENSSL_ia32_cpuid
+.hidden	OPENSSL_ia32_cpuid
 .type	OPENSSL_ia32_cpuid,@function
 .align	16
 OPENSSL_ia32_cpuid:
@@ -147,6 +148,7 @@ OPENSSL_ia32_cpuid:
 	ret
 .size	OPENSSL_ia32_cpuid,.-.L_OPENSSL_ia32_cpuid_begin
 .globl	OPENSSL_rdtsc
+.hidden	OPENSSL_rdtsc
 .type	OPENSSL_rdtsc,@function
 .align	16
 OPENSSL_rdtsc:
@@ -164,6 +166,7 @@ OPENSSL_rdtsc:
 	ret
 .size	OPENSSL_rdtsc,.-.L_OPENSSL_rdtsc_begin
 .globl	OPENSSL_instrument_halt
+.hidden	OPENSSL_instrument_halt
 .type	OPENSSL_instrument_halt,@function
 .align	16
 OPENSSL_instrument_halt:
@@ -196,6 +199,7 @@ OPENSSL_instrument_halt:
 	ret
 .size	OPENSSL_instrument_halt,.-.L_OPENSSL_instrument_halt_begin
 .globl	OPENSSL_far_spin
+.hidden	OPENSSL_far_spin
 .type	OPENSSL_far_spin,@function
 .align	16
 OPENSSL_far_spin:
@@ -223,6 +227,7 @@ OPENSSL_far_spin:
 	ret
 .size	OPENSSL_far_spin,.-.L_OPENSSL_far_spin_begin
 .globl	OPENSSL_wipe_cpu
+.hidden	OPENSSL_wipe_cpu
 .type	OPENSSL_wipe_cpu,@function
 .align	16
 OPENSSL_wipe_cpu:
@@ -242,6 +247,7 @@ OPENSSL_wipe_cpu:
 	ret
 .size	OPENSSL_wipe_cpu,.-.L_OPENSSL_wipe_cpu_begin
 .globl	OPENSSL_atomic_add
+.hidden	OPENSSL_atomic_add
 .type	OPENSSL_atomic_add,@function
 .align	16
 OPENSSL_atomic_add:
@@ -261,6 +267,7 @@ OPENSSL_atomic_add:
 	ret
 .size	OPENSSL_atomic_add,.-.L_OPENSSL_atomic_add_begin
 .globl	OPENSSL_indirect_call
+.hidden	OPENSSL_indirect_call
 .type	OPENSSL_indirect_call,@function
 .align	16
 OPENSSL_indirect_call:
@@ -287,54 +294,18 @@ OPENSSL_indirect_call:
 	popl	%ebp
 	ret
 .size	OPENSSL_indirect_call,.-.L_OPENSSL_indirect_call_begin
-.globl	OPENSSL_cleanse
-.type	OPENSSL_cleanse,@function
-.align	16
-OPENSSL_cleanse:
-.L_OPENSSL_cleanse_begin:
-	movl	4(%esp),%edx
-	movl	8(%esp),%ecx
-	xorl	%eax,%eax
-	cmpl	$7,%ecx
-	jae	.L018lot
-	cmpl	$0,%ecx
-	je	.L019ret
-.L020little:
-	movb	%al,(%edx)
-	subl	$1,%ecx
-	leal	1(%edx),%edx
-	jnz	.L020little
-.L019ret:
-	ret
-.align	16
-.L018lot:
-	testl	$3,%edx
-	jz	.L021aligned
-	movb	%al,(%edx)
-	leal	-1(%ecx),%ecx
-	leal	1(%edx),%edx
-	jmp	.L018lot
-.L021aligned:
-	movl	%eax,(%edx)
-	leal	-4(%ecx),%ecx
-	testl	$-4,%ecx
-	leal	4(%edx),%edx
-	jnz	.L021aligned
-	cmpl	$0,%ecx
-	jne	.L020little
-	ret
-.size	OPENSSL_cleanse,.-.L_OPENSSL_cleanse_begin
 .globl	OPENSSL_ia32_rdrand
+.hidden	OPENSSL_ia32_rdrand
 .type	OPENSSL_ia32_rdrand,@function
 .align	16
 OPENSSL_ia32_rdrand:
 .L_OPENSSL_ia32_rdrand_begin:
 	movl	$8,%ecx
-.L022loop:
+.L018loop:
 .byte	15,199,240
-	jc	.L023break
-	loop	.L022loop
-.L023break:
+	jc	.L019break
+	loop	.L018loop
+.L019break:
 	cmpl	$0,%eax
 	cmovel	%ecx,%eax
 	ret

@@ -326,13 +326,11 @@ L$enc_compact_done:
 	xorl	12(%r15),%edx
 .byte	0xf3,0xc3
 
-.globl	_AES_encrypt
-
 .p2align	4
 .globl	_asm_AES_encrypt
+.private_extern _asm_AES_encrypt
 .private_extern	_asm_AES_encrypt
 _asm_AES_encrypt:
-_AES_encrypt:
 	pushq	%rbx
 	pushq	%rbp
 	pushq	%r12
@@ -773,13 +771,11 @@ L$dec_compact_done:
 	xorl	12(%r15),%edx
 .byte	0xf3,0xc3
 
-.globl	_AES_decrypt
-
 .p2align	4
 .globl	_asm_AES_decrypt
+.private_extern _asm_AES_decrypt
 .private_extern	_asm_AES_decrypt
 _asm_AES_decrypt:
-_AES_decrypt:
 	pushq	%rbx
 	pushq	%rbp
 	pushq	%r12
@@ -842,10 +838,10 @@ L$dec_prologue:
 L$dec_epilogue:
 	.byte	0xf3,0xc3
 
-.globl	_AES_set_encrypt_key
-
 .p2align	4
-_AES_set_encrypt_key:
+.globl	_asm_AES_set_encrypt_key
+.private_extern _asm_AES_set_encrypt_key
+_asm_AES_set_encrypt_key:
 	pushq	%rbx
 	pushq	%rbp
 	pushq	%r12
@@ -1103,10 +1099,10 @@ L$badpointer:
 L$exit:
 .byte	0xf3,0xc3
 
-.globl	_AES_set_decrypt_key
-
 .p2align	4
-_AES_set_decrypt_key:
+.globl	_asm_AES_set_decrypt_key
+.private_extern _asm_AES_set_decrypt_key
+_asm_AES_set_decrypt_key:
 	pushq	%rbx
 	pushq	%rbp
 	pushq	%r12
@@ -1290,14 +1286,12 @@ L$abort:
 L$dec_key_epilogue:
 	.byte	0xf3,0xc3
 
-.globl	_AES_cbc_encrypt
-
 .p2align	4
 
 .globl	_asm_AES_cbc_encrypt
+.private_extern _asm_AES_cbc_encrypt
 .private_extern	_asm_AES_cbc_encrypt
 _asm_AES_cbc_encrypt:
-_AES_cbc_encrypt:
 	cmpq	$0,%rdx
 	je	L$cbc_epilogue
 	pushfq

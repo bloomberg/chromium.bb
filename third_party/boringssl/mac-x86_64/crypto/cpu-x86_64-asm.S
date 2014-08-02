@@ -2,6 +2,7 @@
 .text	
 
 .globl	_OPENSSL_ia32_cpuid
+.private_extern _OPENSSL_ia32_cpuid
 
 .p2align	4
 _OPENSSL_ia32_cpuid:

@@ -2,10 +2,12 @@
 .text	
 
 
-.globl	_RC4
+.globl	_asm_RC4
+.private_extern _asm_RC4
 
 .p2align	4
-_RC4:	orq	%rsi,%rsi
+_asm_RC4:
+	orq	%rsi,%rsi
 	jne	L$entry
 	.byte	0xf3,0xc3
 L$entry:
@@ -519,10 +521,11 @@ L$exit:
 L$epilogue:
 	.byte	0xf3,0xc3
 
-.globl	_RC4_set_key
+.globl	_asm_RC4_set_key
+.private_extern _asm_RC4_set_key
 
 .p2align	4
-_RC4_set_key:
+_asm_RC4_set_key:
 	leaq	8(%rdi),%rdi
 	leaq	(%rdx,%rsi,1),%rdx
 	negq	%rsi
@@ -593,6 +596,7 @@ L$exit_key:
 
 
 .globl	_RC4_options
+.private_extern _RC4_options
 
 .p2align	4
 _RC4_options:

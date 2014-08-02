@@ -2,6 +2,7 @@
 .file	"src/crypto/md5/asm/md5-586.S"
 .text
 .globl	md5_block_asm_data_order
+.hidden	md5_block_asm_data_order
 .type	md5_block_asm_data_order,@function
 .align	16
 md5_block_asm_data_order:

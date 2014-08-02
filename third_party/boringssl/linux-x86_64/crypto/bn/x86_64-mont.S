@@ -4,6 +4,7 @@
 
 
 .globl	bn_mul_mont
+.hidden bn_mul_mont
 .type	bn_mul_mont,@function
 .align	16
 bn_mul_mont:
@@ -609,7 +610,6 @@ bn_mul4x_mont:
 .Lmul4x_epilogue:
 	.byte	0xf3,0xc3
 .size	bn_mul4x_mont,.-bn_mul4x_mont
-
 
 
 .type	bn_sqr8x_mont,@function

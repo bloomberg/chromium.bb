@@ -58,12 +58,14 @@ L_vpaes_consts:
 .byte	114,103,32,40,83,116,97,110,102,111,114,100,32,85,110,105
 .byte	118,101,114,115,105,116,121,41,0
 .align	6,0x90
+.private_extern	__vpaes_preheat
 .align	4
 __vpaes_preheat:
 	addl	(%esp),%ebp
 	movdqa	-48(%ebp),%xmm7
 	movdqa	-16(%ebp),%xmm6
 	ret
+.private_extern	__vpaes_encrypt_core
 .align	4
 __vpaes_encrypt_core:
 	movl	$16,%ecx
@@ -139,6 +141,7 @@ L000enc_entry:
 	pxor	%xmm4,%xmm0
 .byte	102,15,56,0,193
 	ret
+.private_extern	__vpaes_decrypt_core
 .align	4
 __vpaes_decrypt_core:
 	leal	608(%ebp),%ebx
@@ -225,6 +228,7 @@ L002dec_entry:
 	pxor	%xmm4,%xmm0
 .byte	102,15,56,0,194
 	ret
+.private_extern	__vpaes_schedule_core
 .align	4
 __vpaes_schedule_core:
 	addl	(%esp),%ebp
@@ -317,6 +321,7 @@ L013schedule_mangle_last_dec:
 	pxor	%xmm6,%xmm6
 	pxor	%xmm7,%xmm7
 	ret
+.private_extern	__vpaes_schedule_192_smear
 .align	4
 __vpaes_schedule_192_smear:
 	pshufd	$128,%xmm6,%xmm1
@@ -327,6 +332,7 @@ __vpaes_schedule_192_smear:
 	movdqa	%xmm6,%xmm0
 	movhlps	%xmm1,%xmm6
 	ret
+.private_extern	__vpaes_schedule_round
 .align	4
 __vpaes_schedule_round:
 	movdqa	8(%esp),%xmm2
@@ -374,6 +380,7 @@ L_vpaes_schedule_low_round:
 	pxor	%xmm7,%xmm0
 	movdqa	%xmm0,%xmm7
 	ret
+.private_extern	__vpaes_schedule_transform
 .align	4
 __vpaes_schedule_transform:
 	movdqa	-16(%ebp),%xmm2
@@ -387,6 +394,7 @@ __vpaes_schedule_transform:
 .byte	102,15,56,0,193
 	pxor	%xmm2,%xmm0
 	ret
+.private_extern	__vpaes_schedule_mangle
 .align	4
 __vpaes_schedule_mangle:
 	movdqa	%xmm0,%xmm4
@@ -445,6 +453,7 @@ L015schedule_mangle_both:
 	movdqu	%xmm3,(%edx)
 	ret
 .globl	_vpaes_set_encrypt_key
+.private_extern	_vpaes_set_encrypt_key
 .align	4
 _vpaes_set_encrypt_key:
 L_vpaes_set_encrypt_key_begin:
@@ -476,6 +485,7 @@ L016pic_point:
 	popl	%ebp
 	ret
 .globl	_vpaes_set_decrypt_key
+.private_extern	_vpaes_set_decrypt_key
 .align	4
 _vpaes_set_decrypt_key:
 L_vpaes_set_decrypt_key_begin:
@@ -512,6 +522,7 @@ L017pic_point:
 	popl	%ebp
 	ret
 .globl	_vpaes_encrypt
+.private_extern	_vpaes_encrypt
 .align	4
 _vpaes_encrypt:
 L_vpaes_encrypt_begin:
@@ -539,6 +550,7 @@ L018pic_point:
 	popl	%ebp
 	ret
 .globl	_vpaes_decrypt
+.private_extern	_vpaes_decrypt
 .align	4
 _vpaes_decrypt:
 L_vpaes_decrypt_begin:
@@ -566,6 +578,7 @@ L019pic_point:
 	popl	%ebp
 	ret
 .globl	_vpaes_cbc_encrypt
+.private_extern	_vpaes_cbc_encrypt
 .align	4
 _vpaes_cbc_encrypt:
 L_vpaes_cbc_encrypt_begin:

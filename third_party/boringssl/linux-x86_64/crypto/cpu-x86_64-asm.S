@@ -2,6 +2,7 @@
 .text	
 
 .globl	OPENSSL_ia32_cpuid
+.hidden OPENSSL_ia32_cpuid
 .type	OPENSSL_ia32_cpuid,@function
 .align	16
 OPENSSL_ia32_cpuid:

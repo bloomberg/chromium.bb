@@ -1464,6 +1464,7 @@ sqr_reduce:
 
 
 .globl	_mod_exp_512
+.private_extern _mod_exp_512
 
 _mod_exp_512:
 	pushq	%rbp

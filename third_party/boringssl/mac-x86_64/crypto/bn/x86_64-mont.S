@@ -4,6 +4,7 @@
 
 
 .globl	_bn_mul_mont
+.private_extern _bn_mul_mont
 
 .p2align	4
 _bn_mul_mont:
@@ -608,7 +609,6 @@ L$copy4x:
 	leaq	48(%rsi),%rsp
 L$mul4x_epilogue:
 	.byte	0xf3,0xc3
-
 
 
 

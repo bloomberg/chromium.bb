@@ -150,7 +150,6 @@
       'src/crypto/lhash/lhash.c',
       'src/crypto/md5/md5.c',
       'src/crypto/mem.c',
-      'src/crypto/mem_clear.c',
       'src/crypto/modes/cbc.c',
       'src/crypto/modes/cfb.c',
       'src/crypto/modes/ctr.c',

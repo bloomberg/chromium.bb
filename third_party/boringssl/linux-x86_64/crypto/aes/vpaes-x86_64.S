@@ -606,6 +606,7 @@ _vpaes_schedule_mangle:
 
 
 .globl	vpaes_set_encrypt_key
+.hidden vpaes_set_encrypt_key
 .type	vpaes_set_encrypt_key,@function
 .align	16
 vpaes_set_encrypt_key:
@@ -622,6 +623,7 @@ vpaes_set_encrypt_key:
 .size	vpaes_set_encrypt_key,.-vpaes_set_encrypt_key
 
 .globl	vpaes_set_decrypt_key
+.hidden vpaes_set_decrypt_key
 .type	vpaes_set_decrypt_key,@function
 .align	16
 vpaes_set_decrypt_key:
@@ -643,6 +645,7 @@ vpaes_set_decrypt_key:
 .size	vpaes_set_decrypt_key,.-vpaes_set_decrypt_key
 
 .globl	vpaes_encrypt
+.hidden vpaes_encrypt
 .type	vpaes_encrypt,@function
 .align	16
 vpaes_encrypt:
@@ -654,6 +657,7 @@ vpaes_encrypt:
 .size	vpaes_encrypt,.-vpaes_encrypt
 
 .globl	vpaes_decrypt
+.hidden vpaes_decrypt
 .type	vpaes_decrypt,@function
 .align	16
 vpaes_decrypt:
@@ -664,6 +668,7 @@ vpaes_decrypt:
 	.byte	0xf3,0xc3
 .size	vpaes_decrypt,.-vpaes_decrypt
 .globl	vpaes_cbc_encrypt
+.hidden vpaes_cbc_encrypt
 .type	vpaes_cbc_encrypt,@function
 .align	16
 vpaes_cbc_encrypt:

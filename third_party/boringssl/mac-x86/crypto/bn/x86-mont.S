@@ -2,6 +2,7 @@
 .file	"src/crypto/bn/asm/x86-mont.S"
 .text
 .globl	_bn_mul_mont
+.private_extern	_bn_mul_mont
 .align	4
 _bn_mul_mont:
 L_bn_mul_mont_begin:

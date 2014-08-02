@@ -1065,6 +1065,7 @@ L$key_loop:
 
 
 .globl	_bsaes_cbc_encrypt
+.private_extern _bsaes_cbc_encrypt
 
 .p2align	4
 _bsaes_cbc_encrypt:
@@ -1315,6 +1316,7 @@ L$cbc_dec_epilogue:
 
 
 .globl	_bsaes_ctr32_encrypt_blocks
+.private_extern _bsaes_ctr32_encrypt_blocks
 
 .p2align	4
 _bsaes_ctr32_encrypt_blocks:
@@ -1514,6 +1516,7 @@ L$ctr_enc_epilogue:
 	.byte	0xf3,0xc3
 
 .globl	_bsaes_xts_encrypt
+.private_extern _bsaes_xts_encrypt
 
 .p2align	4
 _bsaes_xts_encrypt:
@@ -1966,6 +1969,7 @@ L$xts_enc_epilogue:
 
 
 .globl	_bsaes_xts_decrypt
+.private_extern _bsaes_xts_decrypt
 
 .p2align	4
 _bsaes_xts_decrypt:

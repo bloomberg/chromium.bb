@@ -1464,6 +1464,7 @@ sqr_reduce:
 
 .size	sqr_reduce,.-sqr_reduce
 .globl	mod_exp_512
+.hidden mod_exp_512
 .type	mod_exp_512,@function
 mod_exp_512:
 	pushq	%rbp

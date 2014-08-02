@@ -2,6 +2,7 @@
 .file	"src/crypto/bn/asm/bn-586.S"
 .text
 .globl	bn_mul_add_words
+.hidden	bn_mul_add_words
 .type	bn_mul_add_words,@function
 .align	16
 bn_mul_add_words:
@@ -189,6 +190,7 @@ bn_mul_add_words:
 	ret
 .size	bn_mul_add_words,.-.L_bn_mul_add_words_begin
 .globl	bn_mul_words
+.hidden	bn_mul_words
 .type	bn_mul_words,@function
 .align	16
 bn_mul_words:
@@ -344,6 +346,7 @@ bn_mul_words:
 	ret
 .size	bn_mul_words,.-.L_bn_mul_words_begin
 .globl	bn_sqr_words
+.hidden	bn_sqr_words
 .type	bn_sqr_words,@function
 .align	16
 bn_sqr_words:
@@ -463,6 +466,7 @@ bn_sqr_words:
 	ret
 .size	bn_sqr_words,.-.L_bn_sqr_words_begin
 .globl	bn_div_words
+.hidden	bn_div_words
 .type	bn_div_words,@function
 .align	16
 bn_div_words:
@@ -474,6 +478,7 @@ bn_div_words:
 	ret
 .size	bn_div_words,.-.L_bn_div_words_begin
 .globl	bn_add_words
+.hidden	bn_add_words
 .type	bn_add_words,@function
 .align	16
 bn_add_words:
@@ -656,6 +661,7 @@ bn_add_words:
 	ret
 .size	bn_add_words,.-.L_bn_add_words_begin
 .globl	bn_sub_words
+.hidden	bn_sub_words
 .type	bn_sub_words,@function
 .align	16
 bn_sub_words:
@@ -838,6 +844,7 @@ bn_sub_words:
 	ret
 .size	bn_sub_words,.-.L_bn_sub_words_begin
 .globl	bn_sub_part_words
+.hidden	bn_sub_part_words
 .type	bn_sub_part_words,@function
 .align	16
 bn_sub_part_words:

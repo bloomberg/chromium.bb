@@ -3,6 +3,7 @@
 .p2align	4
 
 .globl	_md5_block_asm_data_order
+.private_extern _md5_block_asm_data_order
 
 _md5_block_asm_data_order:
 	pushq	%rbp

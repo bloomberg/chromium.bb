@@ -3,6 +3,7 @@
 .align	16
 
 .globl	rc4_md5_enc
+.hidden rc4_md5_enc
 .type	rc4_md5_enc,@function
 rc4_md5_enc:
 	cmpq	$0,%r9

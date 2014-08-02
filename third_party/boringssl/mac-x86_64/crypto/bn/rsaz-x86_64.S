@@ -4,6 +4,7 @@
 
 
 .globl	_rsaz_512_sqr
+.private_extern _rsaz_512_sqr
 
 .p2align	5
 _rsaz_512_sqr:
@@ -396,6 +397,7 @@ L$sqr_epilogue:
 	.byte	0xf3,0xc3
 
 .globl	_rsaz_512_mul
+.private_extern _rsaz_512_mul
 
 .p2align	5
 _rsaz_512_mul:
@@ -452,6 +454,7 @@ L$mul_epilogue:
 	.byte	0xf3,0xc3
 
 .globl	_rsaz_512_mul_gather4
+.private_extern _rsaz_512_mul_gather4
 
 .p2align	5
 _rsaz_512_mul_gather4:
@@ -655,6 +658,7 @@ L$mul_gather4_epilogue:
 	.byte	0xf3,0xc3
 
 .globl	_rsaz_512_mul_scatter4
+.private_extern _rsaz_512_mul_scatter4
 
 .p2align	5
 _rsaz_512_mul_scatter4:
@@ -741,6 +745,7 @@ L$mul_scatter4_epilogue:
 	.byte	0xf3,0xc3
 
 .globl	_rsaz_512_mul_by_one
+.private_extern _rsaz_512_mul_by_one
 
 .p2align	5
 _rsaz_512_mul_by_one:
@@ -1077,6 +1082,7 @@ L$oop_mul:
 	.byte	0xf3,0xc3
 
 .globl	_rsaz_512_scatter4
+.private_extern _rsaz_512_scatter4
 
 .p2align	4
 _rsaz_512_scatter4:
@@ -1097,6 +1103,7 @@ L$oop_scatter:
 
 
 .globl	_rsaz_512_gather4
+.private_extern _rsaz_512_gather4
 
 .p2align	4
 _rsaz_512_gather4:

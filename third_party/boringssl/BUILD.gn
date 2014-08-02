@@ -6,6 +6,11 @@
 config("openssl_config") {
   include_dirs = []
   include_dirs += [ "src/include" ]
+  if (is_component_build) {
+    defines += [
+      "BORINGSSL_SHARED_LIBRARY",
+    ]
+  }
 }
 
 # Config internal to this build file.
@@ -26,7 +31,12 @@ component("boringssl") {
   direct_dependent_configs = [ ":openssl_config" ]
 
   cflags = []
-  defines = []
+  defines = [ "BORINGSSL_IMPLEMENTATION" ]
+  if (is_component_build) {
+    defines += [
+      "BORINGSSL_SHARED_LIBRARY",
+    ]
+  }
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
@@ -62,16 +72,5 @@ component("boringssl") {
     sources += gypi_values.boringssl_linux_arm_sources
   } else {
     defines += [ "OPENSSL_NO_ASM" ]
-  }
-
-  if (is_component_build) {
-    if (!is_win) {
-      configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
-    }
-    if (is_posix && !is_mac) {
-      # Avoid link failures on Linux x86-64.
-      # See http://rt.openssl.org/Ticket/Display.html?id=2466&user=guest&pass=guest
-      ldflags = [ "-Wl,-Bsymbolic" ]
-    }
   }
 }

@@ -2,6 +2,7 @@
 .text	
 
 .globl	_aesni_gcm_encrypt
+.private_extern _aesni_gcm_encrypt
 
 _aesni_gcm_encrypt:
 	xorl	%eax,%eax
@@ -9,6 +10,7 @@ _aesni_gcm_encrypt:
 
 
 .globl	_aesni_gcm_decrypt
+.private_extern _aesni_gcm_decrypt
 
 _aesni_gcm_decrypt:
 	xorl	%eax,%eax

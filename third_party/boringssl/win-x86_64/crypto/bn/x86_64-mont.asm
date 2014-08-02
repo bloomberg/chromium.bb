@@ -1,5 +1,5 @@
 OPTION	DOTNAME
-.text$	SEGMENT ALIGN(64) 'CODE'
+.text$	SEGMENT ALIGN(256) 'CODE'
 
 EXTERN	OPENSSL_ia32cap_P:NEAR
 
@@ -594,7 +594,7 @@ $L$sub4x::
 	mov	QWORD PTR[16+r14*8+rdi],rbx
 
 	sbb	rax,0
-DB 66h, 48h, 0fh, 6eh, 0c0h
+	movq	xmm0,rax
 	punpcklqdq	xmm0,xmm0
 	mov	QWORD PTR[24+r14*8+rdi],rbp
 	xor	r14,r14
@@ -640,7 +640,6 @@ $L$mul4x_epilogue::
 $L$SEH_end_bn_mul4x_mont::
 bn_mul4x_mont	ENDP
 EXTERN	bn_sqr8x_internal:NEAR
-EXTERN	bn_sqrx8x_internal:NEAR
 
 
 ALIGN	32

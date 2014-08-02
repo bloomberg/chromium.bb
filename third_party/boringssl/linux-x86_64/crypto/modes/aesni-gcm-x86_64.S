@@ -2,6 +2,7 @@
 .text	
 
 .globl	aesni_gcm_encrypt
+.hidden aesni_gcm_encrypt
 .type	aesni_gcm_encrypt,@function
 aesni_gcm_encrypt:
 	xorl	%eax,%eax
@@ -9,6 +10,7 @@ aesni_gcm_encrypt:
 .size	aesni_gcm_encrypt,.-aesni_gcm_encrypt
 
 .globl	aesni_gcm_decrypt
+.hidden aesni_gcm_decrypt
 .type	aesni_gcm_decrypt,@function
 aesni_gcm_decrypt:
 	xorl	%eax,%eax

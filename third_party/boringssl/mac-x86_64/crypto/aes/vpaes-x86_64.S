@@ -606,6 +606,7 @@ L$schedule_mangle_both:
 
 
 .globl	_vpaes_set_encrypt_key
+.private_extern _vpaes_set_encrypt_key
 
 .p2align	4
 _vpaes_set_encrypt_key:
@@ -622,6 +623,7 @@ _vpaes_set_encrypt_key:
 
 
 .globl	_vpaes_set_decrypt_key
+.private_extern _vpaes_set_decrypt_key
 
 .p2align	4
 _vpaes_set_decrypt_key:
@@ -643,6 +645,7 @@ _vpaes_set_decrypt_key:
 
 
 .globl	_vpaes_encrypt
+.private_extern _vpaes_encrypt
 
 .p2align	4
 _vpaes_encrypt:
@@ -654,6 +657,7 @@ _vpaes_encrypt:
 
 
 .globl	_vpaes_decrypt
+.private_extern _vpaes_decrypt
 
 .p2align	4
 _vpaes_decrypt:
@@ -664,6 +668,7 @@ _vpaes_decrypt:
 	.byte	0xf3,0xc3
 
 .globl	_vpaes_cbc_encrypt
+.private_extern _vpaes_cbc_encrypt
 
 .p2align	4
 _vpaes_cbc_encrypt:

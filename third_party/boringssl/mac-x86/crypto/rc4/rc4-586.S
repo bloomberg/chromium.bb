@@ -1,10 +1,11 @@
 #if defined(__i386__)
 .file	"rc4-586.S"
 .text
-.globl	_RC4
+.globl	_asm_RC4
+.private_extern	_asm_RC4
 .align	4
-_RC4:
-L_RC4_begin:
+_asm_RC4:
+L_asm_RC4_begin:
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -265,10 +266,11 @@ L000abort:
 	popl	%ebx
 	popl	%ebp
 	ret
-.globl	_RC4_set_key
+.globl	_asm_RC4_set_key
+.private_extern	_asm_RC4_set_key
 .align	4
-_RC4_set_key:
-L_RC4_set_key_begin:
+_asm_RC4_set_key:
+L_asm_RC4_set_key_begin:
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -342,6 +344,7 @@ L015exit:
 	popl	%ebp
 	ret
 .globl	_RC4_options
+.private_extern	_RC4_options
 .align	4
 _RC4_options:
 L_RC4_options_begin:

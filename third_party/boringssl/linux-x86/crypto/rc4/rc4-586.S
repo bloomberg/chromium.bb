@@ -1,11 +1,12 @@
 #if defined(__i386__)
 .file	"rc4-586.S"
 .text
-.globl	RC4
-.type	RC4,@function
+.globl	asm_RC4
+.hidden	asm_RC4
+.type	asm_RC4,@function
 .align	16
-RC4:
-.L_RC4_begin:
+asm_RC4:
+.L_asm_RC4_begin:
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -266,12 +267,13 @@ RC4:
 	popl	%ebx
 	popl	%ebp
 	ret
-.size	RC4,.-.L_RC4_begin
-.globl	RC4_set_key
-.type	RC4_set_key,@function
+.size	asm_RC4,.-.L_asm_RC4_begin
+.globl	asm_RC4_set_key
+.hidden	asm_RC4_set_key
+.type	asm_RC4_set_key,@function
 .align	16
-RC4_set_key:
-.L_RC4_set_key_begin:
+asm_RC4_set_key:
+.L_asm_RC4_set_key_begin:
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -344,8 +346,9 @@ RC4_set_key:
 	popl	%ebx
 	popl	%ebp
 	ret
-.size	RC4_set_key,.-.L_RC4_set_key_begin
+.size	asm_RC4_set_key,.-.L_asm_RC4_set_key_begin
 .globl	RC4_options
+.hidden	RC4_options
 .type	RC4_options,@function
 .align	16
 RC4_options:

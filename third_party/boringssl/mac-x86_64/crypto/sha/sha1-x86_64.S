@@ -3,6 +3,7 @@
 
 
 .globl	_sha1_block_data_order
+.private_extern _sha1_block_data_order
 
 .p2align	4
 _sha1_block_data_order:

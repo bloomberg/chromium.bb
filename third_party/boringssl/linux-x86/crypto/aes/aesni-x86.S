@@ -2,6 +2,7 @@
 .file	"src/crypto/aes/asm/aesni-x86.S"
 .text
 .globl	aesni_encrypt
+.hidden	aesni_encrypt
 .type	aesni_encrypt,@function
 .align	16
 aesni_encrypt:
@@ -26,6 +27,7 @@ aesni_encrypt:
 	ret
 .size	aesni_encrypt,.-.L_aesni_encrypt_begin
 .globl	aesni_decrypt
+.hidden	aesni_decrypt
 .type	aesni_decrypt,@function
 .align	16
 aesni_decrypt:
@@ -49,6 +51,7 @@ aesni_decrypt:
 	movups	%xmm2,(%eax)
 	ret
 .size	aesni_decrypt,.-.L_aesni_decrypt_begin
+.hidden	_aesni_encrypt2
 .type	_aesni_encrypt2,@function
 .align	16
 _aesni_encrypt2:
@@ -76,6 +79,7 @@ _aesni_encrypt2:
 .byte	102,15,56,221,216
 	ret
 .size	_aesni_encrypt2,.-_aesni_encrypt2
+.hidden	_aesni_decrypt2
 .type	_aesni_decrypt2,@function
 .align	16
 _aesni_decrypt2:
@@ -103,6 +107,7 @@ _aesni_decrypt2:
 .byte	102,15,56,223,216
 	ret
 .size	_aesni_decrypt2,.-_aesni_decrypt2
+.hidden	_aesni_encrypt3
 .type	_aesni_encrypt3,@function
 .align	16
 _aesni_encrypt3:
@@ -135,6 +140,7 @@ _aesni_encrypt3:
 .byte	102,15,56,221,224
 	ret
 .size	_aesni_encrypt3,.-_aesni_encrypt3
+.hidden	_aesni_decrypt3
 .type	_aesni_decrypt3,@function
 .align	16
 _aesni_decrypt3:
@@ -167,6 +173,7 @@ _aesni_decrypt3:
 .byte	102,15,56,223,224
 	ret
 .size	_aesni_decrypt3,.-_aesni_decrypt3
+.hidden	_aesni_encrypt4
 .type	_aesni_encrypt4,@function
 .align	16
 _aesni_encrypt4:
@@ -205,6 +212,7 @@ _aesni_encrypt4:
 .byte	102,15,56,221,232
 	ret
 .size	_aesni_encrypt4,.-_aesni_encrypt4
+.hidden	_aesni_decrypt4
 .type	_aesni_decrypt4,@function
 .align	16
 _aesni_decrypt4:
@@ -243,6 +251,7 @@ _aesni_decrypt4:
 .byte	102,15,56,223,232
 	ret
 .size	_aesni_decrypt4,.-_aesni_decrypt4
+.hidden	_aesni_encrypt6
 .type	_aesni_encrypt6,@function
 .align	16
 _aesni_encrypt6:
@@ -299,6 +308,7 @@ _aesni_encrypt6:
 .byte	102,15,56,221,248
 	ret
 .size	_aesni_encrypt6,.-_aesni_encrypt6
+.hidden	_aesni_decrypt6
 .type	_aesni_decrypt6,@function
 .align	16
 _aesni_decrypt6:
@@ -356,6 +366,7 @@ _aesni_decrypt6:
 	ret
 .size	_aesni_decrypt6,.-_aesni_decrypt6
 .globl	aesni_ecb_encrypt
+.hidden	aesni_ecb_encrypt
 .type	aesni_ecb_encrypt,@function
 .align	16
 aesni_ecb_encrypt:
@@ -583,6 +594,7 @@ aesni_ecb_encrypt:
 	ret
 .size	aesni_ecb_encrypt,.-.L_aesni_ecb_encrypt_begin
 .globl	aesni_ccm64_encrypt_blocks
+.hidden	aesni_ccm64_encrypt_blocks
 .type	aesni_ccm64_encrypt_blocks,@function
 .align	16
 aesni_ccm64_encrypt_blocks:
@@ -663,6 +675,7 @@ aesni_ccm64_encrypt_blocks:
 	ret
 .size	aesni_ccm64_encrypt_blocks,.-.L_aesni_ccm64_encrypt_blocks_begin
 .globl	aesni_ccm64_decrypt_blocks
+.hidden	aesni_ccm64_decrypt_blocks
 .type	aesni_ccm64_decrypt_blocks,@function
 .align	16
 aesni_ccm64_decrypt_blocks:
@@ -778,6 +791,7 @@ aesni_ccm64_decrypt_blocks:
 	ret
 .size	aesni_ccm64_decrypt_blocks,.-.L_aesni_ccm64_decrypt_blocks_begin
 .globl	aesni_ctr32_encrypt_blocks
+.hidden	aesni_ctr32_encrypt_blocks
 .type	aesni_ctr32_encrypt_blocks,@function
 .align	16
 aesni_ctr32_encrypt_blocks:
@@ -1005,6 +1019,7 @@ aesni_ctr32_encrypt_blocks:
 	ret
 .size	aesni_ctr32_encrypt_blocks,.-.L_aesni_ctr32_encrypt_blocks_begin
 .globl	aesni_xts_encrypt
+.hidden	aesni_xts_encrypt
 .type	aesni_xts_encrypt,@function
 .align	16
 aesni_xts_encrypt:
@@ -1351,6 +1366,7 @@ aesni_xts_encrypt:
 	ret
 .size	aesni_xts_encrypt,.-.L_aesni_xts_encrypt_begin
 .globl	aesni_xts_decrypt
+.hidden	aesni_xts_decrypt
 .type	aesni_xts_decrypt,@function
 .align	16
 aesni_xts_decrypt:
@@ -1727,6 +1743,7 @@ aesni_xts_decrypt:
 	ret
 .size	aesni_xts_decrypt,.-.L_aesni_xts_decrypt_begin
 .globl	aesni_cbc_encrypt
+.hidden	aesni_cbc_encrypt
 .type	aesni_cbc_encrypt,@function
 .align	16
 aesni_cbc_encrypt:
@@ -1963,6 +1980,7 @@ aesni_cbc_encrypt:
 	popl	%ebp
 	ret
 .size	aesni_cbc_encrypt,.-.L_aesni_cbc_encrypt_begin
+.hidden	_aesni_set_encrypt_key
 .type	_aesni_set_encrypt_key,@function
 .align	16
 _aesni_set_encrypt_key:
@@ -2143,6 +2161,7 @@ _aesni_set_encrypt_key:
 	ret
 .size	_aesni_set_encrypt_key,.-_aesni_set_encrypt_key
 .globl	aesni_set_encrypt_key
+.hidden	aesni_set_encrypt_key
 .type	aesni_set_encrypt_key,@function
 .align	16
 aesni_set_encrypt_key:
@@ -2154,6 +2173,7 @@ aesni_set_encrypt_key:
 	ret
 .size	aesni_set_encrypt_key,.-.L_aesni_set_encrypt_key_begin
 .globl	aesni_set_decrypt_key
+.hidden	aesni_set_decrypt_key
 .type	aesni_set_decrypt_key,@function
 .align	16
 aesni_set_decrypt_key:

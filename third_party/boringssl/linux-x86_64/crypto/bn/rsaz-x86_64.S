@@ -4,6 +4,7 @@
 
 
 .globl	rsaz_512_sqr
+.hidden rsaz_512_sqr
 .type	rsaz_512_sqr,@function
 .align	32
 rsaz_512_sqr:
@@ -396,6 +397,7 @@ rsaz_512_sqr:
 	.byte	0xf3,0xc3
 .size	rsaz_512_sqr,.-rsaz_512_sqr
 .globl	rsaz_512_mul
+.hidden rsaz_512_mul
 .type	rsaz_512_mul,@function
 .align	32
 rsaz_512_mul:
@@ -452,6 +454,7 @@ rsaz_512_mul:
 	.byte	0xf3,0xc3
 .size	rsaz_512_mul,.-rsaz_512_mul
 .globl	rsaz_512_mul_gather4
+.hidden rsaz_512_mul_gather4
 .type	rsaz_512_mul_gather4,@function
 .align	32
 rsaz_512_mul_gather4:
@@ -655,6 +658,7 @@ rsaz_512_mul_gather4:
 	.byte	0xf3,0xc3
 .size	rsaz_512_mul_gather4,.-rsaz_512_mul_gather4
 .globl	rsaz_512_mul_scatter4
+.hidden rsaz_512_mul_scatter4
 .type	rsaz_512_mul_scatter4,@function
 .align	32
 rsaz_512_mul_scatter4:
@@ -741,6 +745,7 @@ rsaz_512_mul_scatter4:
 	.byte	0xf3,0xc3
 .size	rsaz_512_mul_scatter4,.-rsaz_512_mul_scatter4
 .globl	rsaz_512_mul_by_one
+.hidden rsaz_512_mul_by_one
 .type	rsaz_512_mul_by_one,@function
 .align	32
 rsaz_512_mul_by_one:
@@ -1077,6 +1082,7 @@ __rsaz_512_mul:
 	.byte	0xf3,0xc3
 .size	__rsaz_512_mul,.-__rsaz_512_mul
 .globl	rsaz_512_scatter4
+.hidden rsaz_512_scatter4
 .type	rsaz_512_scatter4,@function
 .align	16
 rsaz_512_scatter4:
@@ -1097,6 +1103,7 @@ rsaz_512_scatter4:
 .size	rsaz_512_scatter4,.-rsaz_512_scatter4
 
 .globl	rsaz_512_gather4
+.hidden rsaz_512_gather4
 .type	rsaz_512_gather4,@function
 .align	16
 rsaz_512_gather4:

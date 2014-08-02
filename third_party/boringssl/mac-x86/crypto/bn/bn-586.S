@@ -2,6 +2,7 @@
 .file	"src/crypto/bn/asm/bn-586.S"
 .text
 .globl	_bn_mul_add_words
+.private_extern	_bn_mul_add_words
 .align	4
 _bn_mul_add_words:
 L_bn_mul_add_words_begin:
@@ -187,6 +188,7 @@ L003maw_end:
 	popl	%ebp
 	ret
 .globl	_bn_mul_words
+.private_extern	_bn_mul_words
 .align	4
 _bn_mul_words:
 L_bn_mul_words_begin:
@@ -340,6 +342,7 @@ L007mw_end:
 	popl	%ebp
 	ret
 .globl	_bn_sqr_words
+.private_extern	_bn_sqr_words
 .align	4
 _bn_sqr_words:
 L_bn_sqr_words_begin:
@@ -457,6 +460,7 @@ L010sw_end:
 	popl	%ebp
 	ret
 .globl	_bn_div_words
+.private_extern	_bn_div_words
 .align	4
 _bn_div_words:
 L_bn_div_words_begin:
@@ -466,6 +470,7 @@ L_bn_div_words_begin:
 	divl	%ecx
 	ret
 .globl	_bn_add_words
+.private_extern	_bn_add_words
 .align	4
 _bn_add_words:
 L_bn_add_words_begin:
@@ -646,6 +651,7 @@ L013aw_end:
 	popl	%ebp
 	ret
 .globl	_bn_sub_words
+.private_extern	_bn_sub_words
 .align	4
 _bn_sub_words:
 L_bn_sub_words_begin:
@@ -826,6 +832,7 @@ L016aw_end:
 	popl	%ebp
 	ret
 .globl	_bn_sub_part_words
+.private_extern	_bn_sub_part_words
 .align	4
 _bn_sub_part_words:
 L_bn_sub_part_words_begin:
