@@ -131,6 +131,7 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
   url_request_context_getter_ = url_request_context_getter;
   InitPrefMembers();
   RecordDataReductionInit();
+
   // Disable the proxy if it is not allowed to be used.
   if (!params_->allowed())
     return;
@@ -151,6 +152,12 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
                                  local_state_prefs,
                                  url_request_context_getter);
   SetProxyConfigurator(configurator.Pass());
+}
+
+void DataReductionProxySettings::SetOnDataReductionEnabledCallback(
+    const base::Callback<void(bool)>& on_data_reduction_proxy_enabled) {
+  on_data_reduction_proxy_enabled_ = on_data_reduction_proxy_enabled;
+  on_data_reduction_proxy_enabled_.Run(IsDataReductionProxyEnabled());
 }
 
 void DataReductionProxySettings::SetProxyConfigurator(
@@ -348,6 +355,8 @@ void DataReductionProxySettings::OnIPAddressChanged() {
 
 void DataReductionProxySettings::OnProxyEnabledPrefChange() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (!on_data_reduction_proxy_enabled_.is_null())
+    on_data_reduction_proxy_enabled_.Run(IsDataReductionProxyEnabled());
   if (!params_->allowed())
     return;
   MaybeActivateDataReductionProxy(false);

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -120,6 +121,11 @@ class DataReductionProxySettings
       PrefService* local_state_prefs,
       net::URLRequestContextGetter* url_request_context_getter,
       scoped_ptr<DataReductionProxyConfigurator> configurator);
+
+  // Sets the |on_data_reduction_proxy_enabled_| callback and runs to register
+  // the DataReductionProxyEnabled synthetic field trial.
+  void SetOnDataReductionEnabledCallback(
+      const base::Callback<void(bool)>& on_data_reduction_proxy_enabled);
 
   // Sets the logic the embedder uses to set the networking configuration that
   // causes traffic to be proxied.
@@ -309,6 +315,8 @@ class DataReductionProxySettings
   PrefService* local_state_prefs_;
 
   net::URLRequestContextGetter* url_request_context_getter_;
+
+  base::Callback<void(bool)> on_data_reduction_proxy_enabled_;
 
   scoped_ptr<DataReductionProxyConfigurator> configurator_;
 

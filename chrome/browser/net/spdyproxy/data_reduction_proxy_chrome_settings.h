@@ -33,6 +33,10 @@ class DataReductionProxyChromeSettings
   virtual void InitDataReductionProxySettings(Profile* profile);
 
  private:
+  // Registers the DataReductionProxyEnabled synthetic field trial with
+  // the group |data_reduction_proxy_enabled|.
+  void RegisterSyntheticFieldTrial(bool data_reduction_proxy_enabled);
+
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyChromeSettings);
 };
 

@@ -67,6 +67,8 @@ struct SyntheticTrialGroup {
   base::TimeTicks start_time;
 
  private:
+  // Synthetic field trial users:
+  friend class MetricsServiceAccessor;
   friend class MetricsService;
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, RegisterSyntheticTrial);
 

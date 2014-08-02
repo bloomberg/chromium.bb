@@ -46,3 +46,12 @@ bool ChromeMetricsServiceAccessor::IsCrashReportingEnabled() {
   return false;
 #endif
 }
+
+// static
+bool ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+    const std::string& trial, const std::string& group) {
+  return MetricsServiceAccessor::RegisterSyntheticFieldTrial(
+      g_browser_process->metrics_service(),
+      trial,
+      group);
+}

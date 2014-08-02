@@ -40,6 +40,7 @@ class ChromeMetricsServiceAccessor : public MetricsServiceAccessor {
   friend class ::ChromeBrowserMetricsServiceObserver;
   friend class ChromeRenderMessageFilter;
   friend class ::CrashesDOMHandler;
+  friend class DataReductionProxyChromeSettings;
   friend class extensions::ExtensionDownloader;
   friend class extensions::ManifestFetchData;
   friend class extensions::MetricsPrivateGetIsCrashReportingEnabledFunction;
@@ -61,6 +62,16 @@ class ChromeMetricsServiceAccessor : public MetricsServiceAccessor {
   // level for Android and ChromeOS, and otherwise is the same as
   // IsMetricsReportingEnabled for desktop Chrome.
   static bool IsCrashReportingEnabled();
+
+  // Registers a field trial name and group to be used to annotate a UMA report
+  // with a particular Chrome configuration state. A UMA report will be
+  // annotated with this trial group if and only if all events in the report
+  // were created after the trial is registered. Only one group name may be
+  // registered at a time for a given trial name. Only the last group name that
+  // is registered for a given trial name will be recorded. The values passed
+  // in must not correspond to any real field trial in the code.
+  static bool RegisterSyntheticFieldTrial(const std::string& trial,
+                                          const std::string& group);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChromeMetricsServiceAccessor);
 };

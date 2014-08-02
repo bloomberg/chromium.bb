@@ -4,6 +4,7 @@
 
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings_test_utils.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -299,12 +300,19 @@ void DataReductionProxySettingsTestBase::CheckInitDataReductionProxy(
   settings_->SetProxyConfigurator(configurator.Pass());
   scoped_refptr<net::TestURLRequestContextGetter> request_context =
       new net::TestURLRequestContextGetter(base::MessageLoopProxy::current());
-  settings_->InitDataReductionProxySettings(&pref_service_,
-                                            &pref_service_,
-                                            request_context.get());
+
+  settings_->InitDataReductionProxySettings(
+      &pref_service_,
+      &pref_service_,
+      request_context.get());
+  settings_->SetOnDataReductionEnabledCallback(
+      base::Bind(&DataReductionProxySettingsTestBase::
+                 RegisterSyntheticFieldTrialCallback,
+                 base::Unretained(this)));
 
   base::MessageLoop::current()->RunUntilIdle();
   CheckProxyConfigs(enabled_at_startup, false, false);
+  EXPECT_EQ(enabled_at_startup, proxy_enabled_);
 }
 
 }  // namespace data_reduction_proxy

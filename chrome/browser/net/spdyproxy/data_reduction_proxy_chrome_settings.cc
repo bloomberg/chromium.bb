@@ -5,6 +5,7 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -34,7 +35,17 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
       prefs,
       g_browser_process->local_state(),
       ProfileManager::GetActiveUserProfile()->GetRequestContext());
+  DataReductionProxySettings::SetOnDataReductionEnabledCallback(
+      base::Bind(&DataReductionProxyChromeSettings::RegisterSyntheticFieldTrial,
+                 base::Unretained(this)));
 
   SetDataReductionProxyAlternativeEnabled(
       DataReductionProxyParams::IsIncludedInAlternativeFieldTrial());
+}
+
+void DataReductionProxyChromeSettings::RegisterSyntheticFieldTrial(
+    bool data_reduction_proxy_enabled) {
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+      "DataReductionProxyEnabled",
+      data_reduction_proxy_enabled ? "true" : "false");
 }
