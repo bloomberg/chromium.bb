@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ContentViewUtil_jni.h"
 
@@ -19,6 +20,24 @@ static jlong CreateNativeWebContents(
 
   content::WebContents::CreateParams params(profile);
   params.initially_hidden = static_cast<bool>(initially_hidden);
+  return reinterpret_cast<intptr_t>(content::WebContents::Create(params));
+}
+
+static jlong CreateNativeWebContentsWithSharedSiteInstance(
+    JNIEnv* env,
+    jclass clazz,
+    jobject jcontent_view_core) {
+  content::ContentViewCore* content_view_core =
+      content::ContentViewCore::GetNativeContentViewCore(env,
+                                                         jcontent_view_core);
+  CHECK(content_view_core);
+
+  Profile* profile = Profile::FromBrowserContext(
+      content_view_core->GetWebContents()->GetBrowserContext());
+
+  content::WebContents::CreateParams params(
+      profile, content_view_core->GetWebContents()->GetSiteInstance());
+
   return reinterpret_cast<intptr_t>(content::WebContents::Create(params));
 }
 

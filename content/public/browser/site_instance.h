@@ -135,8 +135,11 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   // the same process if they can communicate with other via JavaScript.
   // (e.g., docs.google.com and mail.google.com have DOM access to each other
   // if they both set their document.domain properties to google.com.)
+  // Note that if the destination is a blank page, we consider that to be part
+  // of the same web site for the purposes for process assignment.
   static bool IsSameWebSite(content::BrowserContext* browser_context,
-                            const GURL& url1, const GURL& url2);
+                            const GURL& src_url,
+                            const GURL& dest_url);
 
   // Returns the site for the given URL, which includes only the scheme and
   // registered domain.  Returns an empty GURL if the URL has no host.

@@ -9,6 +9,7 @@
 #include "content/browser/transition_request_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -97,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(TransitionBrowserTest,
 
   NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
 
-  ASSERT_FALSE(observer->did_defer_response());
+  EXPECT_FALSE(observer->did_defer_response());
 }
 
 // This tests that when a navigation transition is detected, the response is
@@ -113,7 +114,36 @@ IN_PROC_BROWSER_TEST_F(TransitionBrowserTest,
 
   NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
 
-  ASSERT_TRUE(observer->did_defer_response());
+  EXPECT_TRUE(observer->did_defer_response());
+}
+
+// This tests that the renderer is reused between the outgoing and transition.
+IN_PROC_BROWSER_TEST_F(TransitionBrowserTest,
+                       TransitionNavigationSharesRenderer) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
+
+  int outgoing_process_id =
+      shell()->web_contents()->GetRenderProcessHost()->GetID();
+
+  WebContents::CreateParams create_params(
+      shell()->web_contents()->GetBrowserContext(),
+      shell()->web_contents()->GetSiteInstance());
+  scoped_ptr<WebContents> transition_web_contents(
+      WebContents::Create(create_params));
+
+  GURL about_blank(url::kAboutBlankURL);
+  NavigationController::LoadURLParams params(about_blank);
+  transition_web_contents->GetController().LoadURLWithParams(params);
+  transition_web_contents->Focus();
+
+  WaitForLoadStop(transition_web_contents.get());
+
+  int transition_process_id =
+      transition_web_contents->GetRenderProcessHost()->GetID();
+
+  EXPECT_EQ(outgoing_process_id, transition_process_id);
 }
 
 }  // namespace content

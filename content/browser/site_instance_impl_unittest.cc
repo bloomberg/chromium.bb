@@ -372,6 +372,7 @@ TEST_F(SiteInstanceTest, IsSameWebSite) {
   GURL url_foo_https = GURL("https://foo/a.html");
   GURL url_foo_port = GURL("http://foo:8080/a.html");
   GURL url_javascript = GURL("javascript:alert(1);");
+  GURL url_blank = GURL(url::kAboutBlankURL);
 
   // Same scheme and port -> same site.
   EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_foo, url_foo2));
@@ -387,6 +388,16 @@ TEST_F(SiteInstanceTest, IsSameWebSite) {
   EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_javascript, url_foo));
   EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_javascript, url_foo_https));
   EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_javascript, url_foo_port));
+
+  // Navigating to a blank page is considered the same site.
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_foo, url_blank));
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_foo_https, url_blank));
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_foo_port, url_blank));
+
+  // Navigating from a blank site is not considered to be the same site.
+  EXPECT_FALSE(SiteInstance::IsSameWebSite(NULL, url_blank, url_foo));
+  EXPECT_FALSE(SiteInstance::IsSameWebSite(NULL, url_blank, url_foo_https));
+  EXPECT_FALSE(SiteInstance::IsSameWebSite(NULL, url_blank, url_foo_port));
 
   DrainMessageLoops();
 }
