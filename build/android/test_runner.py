@@ -291,7 +291,6 @@ def ProcessInstrumentationOptions(options, error_func):
       options.exclude_annotations,
       options.test_filter,
       options.test_data,
-      options.test_runner,
       options.save_perf_json,
       options.screenshot_failures,
       options.wait_for_debugger,
@@ -299,6 +298,7 @@ def ProcessInstrumentationOptions(options, error_func):
       options.test_apk,
       options.test_apk_path,
       options.test_apk_jar_path,
+      options.test_runner,
       options.test_support_apk_path
       )
 
