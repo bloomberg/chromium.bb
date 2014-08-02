@@ -23,10 +23,6 @@ EasyUnlockServiceFactory* EasyUnlockServiceFactory::GetInstance() {
 
 // static
 EasyUnlockService* EasyUnlockServiceFactory::GetForProfile(Profile* profile) {
-#if defined(OS_CHROMEOS)
-  if (chromeos::ProfileHelper::IsSigninProfile(profile))
-    return NULL;
-#endif
   return static_cast<EasyUnlockService*>(
       EasyUnlockServiceFactory::GetInstance()->GetServiceForBrowserContext(
           profile, true));
@@ -50,6 +46,12 @@ KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
 
 content::BrowserContext* EasyUnlockServiceFactory::GetBrowserContextToUse(
       content::BrowserContext* context) const {
+#if defined(OS_CHROMEOS)
+  if (chromeos::ProfileHelper::IsSigninProfile(
+          Profile::FromBrowserContext(context))) {
+    return NULL;
+  }
+#endif
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
