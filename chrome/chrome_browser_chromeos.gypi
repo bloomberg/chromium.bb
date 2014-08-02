@@ -782,6 +782,7 @@
         'browser/chromeos/ownership/owner_settings_service.h',
         'browser/chromeos/ownership/owner_settings_service_factory.cc',
         'browser/chromeos/ownership/owner_settings_service_factory.h',
+        'browser/chromeos/platform_keys/platform_keys.cc',
         'browser/chromeos/platform_keys/platform_keys.h',
         'browser/chromeos/platform_keys/platform_keys_nss.cc',
         'browser/chromeos/platform_keys/platform_keys_service.cc',

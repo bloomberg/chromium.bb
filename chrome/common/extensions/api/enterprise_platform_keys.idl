@@ -10,8 +10,8 @@
 namespace enterprise.platformKeys {
   [nocompile, noinline_doc] dictionary Token {
     // Uniquely identifies this <code>Token</code>.
-    // <p>Static IDs are <code>"user"</code> and <code>"device"</code>,
-    // referring to the platform's user-specific and the device-wide hardware
+    // <p>Static IDs are <code>"user"</code> and <code>"system"</code>,
+    // referring to the platform's user-specific and the system-wide hardware
     // token, respectively. Any other tokens (with other identifiers) might be
     // returned by $(ref:enterprise.platformKeys.getTokens).</p>
     DOMString id;
@@ -47,9 +47,9 @@ namespace enterprise.platformKeys {
   interface Functions {
     // Returns the available Tokens. In a regular user's session the list will
     // always contain the user's token with <code>id</code> <code>"user"</code>.
-    // If a device-wide TPM token is available it will also contain the
-    // device-wide token with <code>id</code> <code>"device"</code>. The
-    // device-wide token will be the same for all sessions on this device
+    // If a system-wide TPM token is available, the returned list will also
+    // contain the system-wide token with <code>id</code> <code>"system"</code>.
+    // The system-wide token will be the same for all sessions on this device
     // (device in the sense of e.g. a Chromebook).
     [nocompile] static void getTokens(GetTokensCallback callback);
 

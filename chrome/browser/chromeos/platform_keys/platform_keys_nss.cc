@@ -72,10 +72,12 @@ class NSSOperationState {
 
 typedef base::Callback<void(net::NSSCertDatabase* cert_db)> GetCertDBCallback;
 
-// Called back with the NSSCertDatabase associated to the given |token_id|.
-// Calls |callback| if the database was successfully retrieved. Used by
-// GetCertDatabaseOnIOThread.
-void DidGetCertDBOnIOThread(const GetCertDBCallback& callback,
+// Used by GetCertDatabaseOnIOThread and called back with the requested
+// NSSCertDatabase.
+// If |token_id| is not empty, sets |slot_| of |state| accordingly and calls
+// |callback| if the database was successfully retrieved.
+void DidGetCertDBOnIOThread(const std::string& token_id,
+                            const GetCertDBCallback& callback,
                             NSSOperationState* state,
                             net::NSSCertDatabase* cert_db) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -85,42 +87,50 @@ void DidGetCertDBOnIOThread(const GetCertDBCallback& callback,
     return;
   }
 
-  state->slot_ = cert_db->GetPrivateSlot();
-  if (!state->slot_) {
-    LOG(ERROR) << "No private slot";
-    state->OnError(FROM_HERE, kErrorInternal);
-    return;
+  if (!token_id.empty()) {
+    if (token_id == kTokenIdUser)
+      state->slot_ = cert_db->GetPrivateSlot();
+    else if (token_id == kTokenIdSystem)
+      state->slot_ = cert_db->GetSystemSlot();
+
+    if (!state->slot_) {
+      LOG(ERROR) << "Slot for token id '" << token_id << "' not available.";
+      state->OnError(FROM_HERE, kErrorInternal);
+      return;
+    }
   }
 
   callback.Run(cert_db);
 }
 
-// Retrieves the NSSCertDatabase from |context|. Must be called on the IO
-// thread.
-void GetCertDatabaseOnIOThread(content::ResourceContext* context,
+// Retrieves the NSSCertDatabase from |context| and, if |token_id| is not empty,
+// the slot for |token_id|.
+// Must be called on the IO thread.
+void GetCertDatabaseOnIOThread(const std::string& token_id,
                                const GetCertDBCallback& callback,
+                               content::ResourceContext* context,
                                NSSOperationState* state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::NSSCertDatabase* cert_db = GetNSSCertDatabaseForResourceContext(
-      context, base::Bind(&DidGetCertDBOnIOThread, callback, state));
+      context, base::Bind(&DidGetCertDBOnIOThread, token_id, callback, state));
 
   if (cert_db)
-    DidGetCertDBOnIOThread(callback, state, cert_db);
+    DidGetCertDBOnIOThread(token_id, callback, state, cert_db);
 }
 
-// Asynchronously fetches the NSSCertDatabase and PK11Slot for |token_id|.
-// Stores the slot in |state| and passes the database to |callback|. Will run
-// |callback| on the IO thread.
+// Asynchronously fetches the NSSCertDatabase for |browser_context| and, if
+// |token_id| is not empty, the slot for |token_id|. Stores the slot in |state|
+// and passes the database to |callback|. Will run |callback| on the IO thread.
 void GetCertDatabase(const std::string& token_id,
                      const GetCertDBCallback& callback,
                      BrowserContext* browser_context,
                      NSSOperationState* state) {
-  // TODO(pneubeck): Decide which DB to retrieve depending on |token_id|.
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
                           base::Bind(&GetCertDatabaseOnIOThread,
-                                     browser_context->GetResourceContext(),
+                                     token_id,
                                      callback,
+                                     browser_context->GetResourceContext(),
                                      state));
 }
 
@@ -145,7 +155,7 @@ class GenerateRSAKeyState : public NSSOperationState {
   const unsigned int modulus_length_bits_;
 
  private:
-  // Must be called on origin thread, use CallBack() therefore.
+  // Must be called on origin thread, therefore use CallBack().
   subtle::GenerateKeyCallback callback_;
 };
 
@@ -174,7 +184,7 @@ class SignState : public NSSOperationState {
   const std::string data_;
 
  private:
-  // Must be called on origin thread, use CallBack() therefore.
+  // Must be called on origin thread, therefore use CallBack().
   subtle::SignCallback callback_;
 };
 
@@ -200,7 +210,7 @@ class GetCertificatesState : public NSSOperationState {
   scoped_ptr<net::CertificateList> certs_;
 
  private:
-  // Must be called on origin thread, use CallBack() therefore.
+  // Must be called on origin thread, therefore use CallBack().
   GetCertificatesCallback callback_;
 };
 
@@ -223,7 +233,7 @@ class ImportCertificateState : public NSSOperationState {
   scoped_refptr<net::X509Certificate> certificate_;
 
  private:
-  // Must be called on origin thread, use CallBack() therefore.
+  // Must be called on origin thread, therefore use CallBack().
   ImportCertificateCallback callback_;
 };
 
@@ -246,8 +256,32 @@ class RemoveCertificateState : public NSSOperationState {
   scoped_refptr<net::X509Certificate> certificate_;
 
  private:
-  // Must be called on origin thread, use CallBack() therefore.
+  // Must be called on origin thread, therefore use CallBack().
   RemoveCertificateCallback callback_;
+};
+
+class GetTokensState : public NSSOperationState {
+ public:
+  explicit GetTokensState(const GetTokensCallback& callback);
+  virtual ~GetTokensState() {}
+
+  virtual void OnError(const tracked_objects::Location& from,
+                       const std::string& error_message) OVERRIDE {
+    CallBack(from,
+             scoped_ptr<std::vector<std::string> >() /* no token ids */,
+             error_message);
+  }
+
+  void CallBack(const tracked_objects::Location& from,
+                scoped_ptr<std::vector<std::string> > token_ids,
+                const std::string& error_message) {
+    origin_task_runner_->PostTask(
+        from, base::Bind(callback_, base::Passed(&token_ids), error_message));
+  }
+
+ private:
+  // Must be called on origin thread, therefore use CallBack().
+  GetTokensCallback callback_;
 };
 
 NSSOperationState::NSSOperationState()
@@ -285,6 +319,10 @@ RemoveCertificateState::RemoveCertificateState(
     scoped_refptr<net::X509Certificate> certificate,
     const RemoveCertificateCallback& callback)
     : certificate_(certificate), callback_(callback) {
+}
+
+GetTokensState::GetTokensState(const GetTokensCallback& callback)
+    : callback_(callback) {
 }
 
 // Does the actual key generation on a worker thread. Used by
@@ -447,6 +485,14 @@ void ImportCertificateWithDB(scoped_ptr<ImportCertificateState> state,
     return;
   }
 
+  // Check that the private key is in the correct slot.
+  PK11SlotInfo* slot =
+      PK11_KeyForCertExists(state->certificate_->os_cert_handle(), NULL, NULL);
+  if (slot != state->slot_) {
+    state->OnError(FROM_HERE, kErrorKeyNotFound);
+    return;
+  }
+
   const net::Error import_status =
       static_cast<net::Error>(db->AddUserCert(state->certificate_.get()));
   if (import_status != net::OK) {
@@ -488,6 +534,20 @@ void RemoveCertificateWithDB(scoped_ptr<RemoveCertificateState> state,
       certificate,
       base::Bind(
           &DidRemoveCertificate, base::Passed(&state), certificate_found));
+}
+
+// Does the actual work to determine which tokens are available.
+void GetTokensWithDB(scoped_ptr<GetTokensState> state,
+                     net::NSSCertDatabase* cert_db) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  scoped_ptr<std::vector<std::string> > token_ids(new std::vector<std::string>);
+
+  // The user's token is always available.
+  token_ids->push_back(kTokenIdUser);
+  if (cert_db->GetSystemSlot())
+    token_ids->push_back(kTokenIdSystem);
+
+  state->CallBack(FROM_HERE, token_ids.Pass(), std::string() /* no error */);
 }
 
 }  // namespace
@@ -584,6 +644,18 @@ void RemoveCertificate(const std::string& token_id,
   // we would get more informative error messages.
   GetCertDatabase(token_id,
                   base::Bind(&RemoveCertificateWithDB, base::Passed(&state)),
+                  browser_context,
+                  state_ptr);
+}
+
+void GetTokens(const GetTokensCallback& callback,
+               content::BrowserContext* browser_context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  scoped_ptr<GetTokensState> state(new GetTokensState(callback));
+  // Get the pointer to |state| before base::Passed releases |state|.
+  NSSOperationState* state_ptr = state.get();
+  GetCertDatabase(std::string() /* don't get any specific slot */,
+                  base::Bind(&GetTokensWithDB, base::Passed(&state)),
                   browser_context,
                   state_ptr);
 }

@@ -98,6 +98,11 @@ class EnterprisePlatformKeysInternalGetTokensFunction
   virtual ~EnterprisePlatformKeysInternalGetTokensFunction();
   virtual ResponseAction Run() OVERRIDE;
 
+  // Called when the list of tokens was determined. If an error occurred,
+  // |token_ids| will be NULL and instead |error_message| be set.
+  void OnGotTokens(scoped_ptr<std::vector<std::string> > token_ids,
+                   const std::string& error_message);
+
   DECLARE_EXTENSION_FUNCTION("enterprise.platformKeysInternal.getTokens",
                              ENTERPRISE_PLATFORMKEYSINTERNAL_GETTOKENS);
 };

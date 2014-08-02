@@ -26,6 +26,15 @@ namespace chromeos {
 
 namespace platform_keys {
 
+// A token is a store for keys or certs and can provide cryptographic
+// operations.
+// ChromeOS provides itself a user token and conditionally a system wide token,
+// thus these tokens use static identifiers. The platform keys API is designed
+// to support arbitrary other tokens in the future, which could then use
+// run-time generated IDs.
+extern const char kTokenIdUser[];
+extern const char kTokenIdSystem[];
+
 // Supported hash algorithms.
 enum HashAlgorithm {
   HASH_ALGORITHM_SHA1,
@@ -114,6 +123,19 @@ void RemoveCertificate(const std::string& token_id,
                        scoped_refptr<net::X509Certificate> certificate,
                        const RemoveCertificateCallback& callback,
                        content::BrowserContext* browser_context);
+
+// If the list of available tokens could be successfully retrieved, |token_ids|
+// will contain the token ids. If an error occurs, |token_ids| will be NULL and
+// |error_message| will be set to an error message.
+typedef base::Callback<void(scoped_ptr<std::vector<std::string> > token_ids,
+                            const std::string& error_message)>
+    GetTokensCallback;
+
+// Gets the list of available tokens. |callback| will be invoked when the list
+// of available tokens is determined, possibly with an error message.
+// Must be called and calls |callback| on the UI thread.
+void GetTokens(const GetTokensCallback& callback,
+               content::BrowserContext* browser_context);
 
 }  // namespace platform_keys
 
