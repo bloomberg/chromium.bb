@@ -120,6 +120,8 @@
       'test/mock_keyboard_driver_win.h',
       'test/mock_render_process.cc',
       'test/mock_render_process.h',
+      'test/mock_webblob_registry_impl.cc',
+      'test/mock_webblob_registry_impl.h',
       'test/mock_webclipboard_impl.cc',
       'test/mock_webclipboard_impl.h',
       'test/mock_webframeclient.h',
