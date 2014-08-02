@@ -379,7 +379,10 @@
     },
     {
       'package_name': 'nss',
-      'dependencies=': [],
+      'dependencies=': [
+        # TODO(earthdok): get rid of this dependency
+        '<(_sanitizer_type)-libnspr4',
+      ],
       'patch': 'patches/nss.diff',
       'build_method': 'custom_nss',
       'includes': ['standard_instrumented_package_target.gypi'],
