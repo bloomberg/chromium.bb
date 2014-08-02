@@ -30,18 +30,18 @@ QuicStreamSequencer::QuicStreamSequencer(ReliableQuicStream* quic_stream)
 QuicStreamSequencer::~QuicStreamSequencer() {
 }
 
-bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
+void QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
   ++num_frames_received_;
   if (IsDuplicate(frame)) {
     ++num_duplicate_frames_received_;
     // Silently ignore duplicates.
-    return true;
+    return;
   }
 
   if (FrameOverlapsBufferedData(frame)) {
     stream_->CloseConnectionWithDetails(
         QUIC_INVALID_STREAM_FRAME, "Stream frame overlaps with buffered data.");
-    return false;
+    return;
   }
 
   QuicStreamOffset byte_offset = frame.offset;
@@ -50,13 +50,13 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
     // Stream frames must have data or a fin flag.
     stream_->CloseConnectionWithDetails(QUIC_INVALID_STREAM_FRAME,
                                         "Empty stream frame without FIN set.");
-    return false;
+    return;
   }
 
   if (frame.fin) {
     CloseStreamAtOffset(frame.offset + data_len);
     if (data_len == 0) {
-      return true;
+      return;
     }
   }
 
@@ -77,14 +77,14 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
     stream_->AddBytesConsumed(bytes_consumed);
 
     if (MaybeCloseStream()) {
-      return true;
+      return;
     }
     if (bytes_consumed > data_len) {
       stream_->Reset(QUIC_ERROR_PROCESSING_STREAM);
-      return false;
+      return;
     } else if (bytes_consumed == data_len) {
       FlushBufferedFrames();
-      return true;  // it's safe to ack this frame.
+      return;  // it's safe to ack this frame.
     } else {
       // Set ourselves up to buffer what's left.
       data_len -= bytes_consumed;
@@ -102,7 +102,7 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
     byte_offset += iov.iov_len;
     num_bytes_buffered_ += iov.iov_len;
   }
-  return true;
+  return;
 }
 
 void QuicStreamSequencer::CloseStreamAtOffset(QuicStreamOffset offset) {

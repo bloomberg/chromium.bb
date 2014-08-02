@@ -159,8 +159,6 @@ QuicVersionVector QuicSupportedVersions() {
 
 QuicTag QuicVersionToQuicTag(const QuicVersion version) {
   switch (version) {
-    case QUIC_VERSION_15:
-      return MakeQuicTag('Q', '0', '1', '5');
     case QUIC_VERSION_16:
       return MakeQuicTag('Q', '0', '1', '6');
     case QUIC_VERSION_18:
@@ -197,7 +195,6 @@ return #x
 
 string QuicVersionToString(const QuicVersion version) {
   switch (version) {
-    RETURN_STRING_LITERAL(QUIC_VERSION_15);
     RETURN_STRING_LITERAL(QUIC_VERSION_16);
     RETURN_STRING_LITERAL(QUIC_VERSION_18);
     RETURN_STRING_LITERAL(QUIC_VERSION_19);
@@ -241,25 +238,17 @@ ostream& operator<<(ostream& os, const QuicPacketHeader& header) {
   return os;
 }
 
-ReceivedPacketInfo::ReceivedPacketInfo()
-    : entropy_hash(0),
-      largest_observed(0),
-      delta_time_largest_observed(QuicTime::Delta::Infinite()),
-      is_truncated(false) {}
-
-ReceivedPacketInfo::~ReceivedPacketInfo() {}
-
-bool IsAwaitingPacket(const ReceivedPacketInfo& received_info,
+bool IsAwaitingPacket(const QuicAckFrame& ack_frame,
                       QuicPacketSequenceNumber sequence_number) {
-  return sequence_number > received_info.largest_observed ||
-      ContainsKey(received_info.missing_packets, sequence_number);
+  return sequence_number > ack_frame.largest_observed ||
+      ContainsKey(ack_frame.missing_packets, sequence_number);
 }
 
-void InsertMissingPacketsBetween(ReceivedPacketInfo* received_info,
+void InsertMissingPacketsBetween(QuicAckFrame* ack_frame,
                                  QuicPacketSequenceNumber lower,
                                  QuicPacketSequenceNumber higher) {
   for (QuicPacketSequenceNumber i = lower; i < higher; ++i) {
-    received_info->missing_packets.insert(i);
+    ack_frame->missing_packets.insert(i);
   }
 }
 
@@ -270,7 +259,13 @@ QuicStopWaitingFrame::QuicStopWaitingFrame()
 
 QuicStopWaitingFrame::~QuicStopWaitingFrame() {}
 
-QuicAckFrame::QuicAckFrame() {}
+QuicAckFrame::QuicAckFrame()
+    : entropy_hash(0),
+      largest_observed(0),
+      delta_time_largest_observed(QuicTime::Delta::Infinite()),
+      is_truncated(false) {}
+
+QuicAckFrame::~QuicAckFrame() {}
 
 CongestionFeedbackMessageTCP::CongestionFeedbackMessageTCP()
     : receive_window(0) {
@@ -384,22 +379,20 @@ ostream& operator<<(ostream& os, const QuicStopWaitingFrame& sent_info) {
   return os;
 }
 
-ostream& operator<<(ostream& os, const ReceivedPacketInfo& received_info) {
-  os << "entropy_hash: " << static_cast<int>(received_info.entropy_hash)
-     << " is_truncated: " << received_info.is_truncated
-     << " largest_observed: " << received_info.largest_observed
+ostream& operator<<(ostream& os, const QuicAckFrame& ack_frame) {
+  os << "entropy_hash: " << static_cast<int>(ack_frame.entropy_hash)
+     << " is_truncated: " << ack_frame.is_truncated
+     << " largest_observed: " << ack_frame.largest_observed
      << " delta_time_largest_observed: "
-     << received_info.delta_time_largest_observed.ToMicroseconds()
+     << ack_frame.delta_time_largest_observed.ToMicroseconds()
      << " missing_packets: [ ";
-  for (SequenceNumberSet::const_iterator it =
-           received_info.missing_packets.begin();
-       it != received_info.missing_packets.end(); ++it) {
+  for (SequenceNumberSet::const_iterator it = ack_frame.missing_packets.begin();
+       it != ack_frame.missing_packets.end(); ++it) {
     os << *it << " ";
   }
   os << " ] revived_packets: [ ";
-  for (SequenceNumberSet::const_iterator it =
-           received_info.revived_packets.begin();
-       it != received_info.revived_packets.end(); ++it) {
+  for (SequenceNumberSet::const_iterator it = ack_frame.revived_packets.begin();
+       it != ack_frame.revived_packets.end(); ++it) {
     os << *it << " ";
   }
   os << " ]";
@@ -448,6 +441,10 @@ ostream& operator<<(ostream& os, const QuicFrame& frame) {
     }
     case STOP_WAITING_FRAME: {
       os << "type { STOP_WAITING_FRAME } " << *(frame.stop_waiting_frame);
+      break;
+    }
+    case PING_FRAME: {
+      os << "type { PING_FRAME } ";
       break;
     }
     default: {
@@ -501,12 +498,6 @@ ostream& operator<<(ostream& os, const QuicStreamFrame& stream_frame) {
   return os;
 }
 
-ostream& operator<<(ostream& os, const QuicAckFrame& ack_frame) {
-  os << "sent info { " << ack_frame.sent_info << " } "
-     << "received info { " << ack_frame.received_info << " }\n";
-  return os;
-}
-
 ostream& operator<<(ostream& os,
                     const QuicCongestionFeedbackFrame& congestion_frame) {
   os << "type: " << congestion_frame.type;
@@ -523,11 +514,6 @@ ostream& operator<<(ostream& os,
       os << "]";
       break;
     }
-    case kFixRate: {
-      os << " bitrate_in_bytes_per_second: "
-         << congestion_frame.fix_rate.bitrate.ToBytesPerSecond();
-      break;
-    }
     case kTCP: {
       const CongestionFeedbackMessageTCP& tcp = congestion_frame.tcp;
       os << " receive_window: " << tcp.receive_window;
@@ -535,10 +521,6 @@ ostream& operator<<(ostream& os,
     }
   }
   return os;
-}
-
-CongestionFeedbackMessageFixRate::CongestionFeedbackMessageFixRate()
-    : bitrate(QuicBandwidth::Zero()) {
 }
 
 QuicGoAwayFrame::QuicGoAwayFrame()

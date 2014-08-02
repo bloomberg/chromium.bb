@@ -44,6 +44,9 @@ class QuicConnectionPeer {
 
   static QuicAckFrame* CreateAckFrame(QuicConnection* connection);
 
+  static QuicStopWaitingFrame* CreateStopWaitingFrame(
+      QuicConnection* connection);
+
   static QuicConnectionVisitorInterface* GetVisitor(
       QuicConnection* connection);
 

@@ -80,8 +80,13 @@ void QuicUnackedPacketMap::OnRetransmittedPacket(
       *(++transmission_info->all_transmissions->begin()) < largest_observed_) {
     QuicPacketSequenceNumber old_transmission =
         *transmission_info->all_transmissions->begin();
-    transmission_info->all_transmissions->erase(old_transmission);
-    unacked_packets_.erase(old_transmission);
+    TransmissionInfo* old_transmission_info =
+        FindOrNull(unacked_packets_, old_transmission);
+    // Don't remove old packets if they're still in flight.
+    if (old_transmission_info == NULL || !old_transmission_info->in_flight) {
+      transmission_info->all_transmissions->erase(old_transmission);
+      unacked_packets_.erase(old_transmission);
+    }
   }
   unacked_packets_[new_sequence_number] =
       TransmissionInfo(frames,

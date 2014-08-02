@@ -207,14 +207,13 @@ bool QuicPacketCreator::HasRoomForStreamFrame(QuicStreamId id,
   // is_in_fec_group a parameter. Same as with all public methods in
   // QuicPacketCreator.
   return BytesFree() >
-      QuicFramer::GetMinStreamFrameSize(framer_->version(), id, offset, true,
+      QuicFramer::GetMinStreamFrameSize(id, offset, true,
                                         should_fec_protect_ ? IN_FEC_GROUP :
                                                               NOT_IN_FEC_GROUP);
 }
 
 // static
 size_t QuicPacketCreator::StreamFramePacketOverhead(
-    QuicVersion version,
     QuicConnectionIdLength connection_id_length,
     bool include_version,
     QuicSequenceNumberLength sequence_number_length,
@@ -223,8 +222,7 @@ size_t QuicPacketCreator::StreamFramePacketOverhead(
   return GetPacketHeaderSize(connection_id_length, include_version,
                              sequence_number_length, is_in_fec_group) +
       // Assumes this is a stream with a single lone packet.
-      QuicFramer::GetMinStreamFrameSize(version, 1u, offset, true,
-                                        is_in_fec_group);
+      QuicFramer::GetMinStreamFrameSize(1u, offset, true, is_in_fec_group);
 }
 
 size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
@@ -233,7 +231,7 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
                                             bool fin,
                                             QuicFrame* frame) {
   DCHECK_GT(max_packet_length_, StreamFramePacketOverhead(
-                framer_->version(), PACKET_8BYTE_CONNECTION_ID, kIncludeVersion,
+                PACKET_8BYTE_CONNECTION_ID, kIncludeVersion,
                 PACKET_6BYTE_SEQUENCE_NUMBER, offset, IN_FEC_GROUP));
 
   InFecGroup is_in_fec_group = MaybeUpdateLengthsAndStartFec();
@@ -241,8 +239,7 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
   LOG_IF(DFATAL, !HasRoomForStreamFrame(id, offset))
       << "No room for Stream frame, BytesFree: " << BytesFree()
       << " MinStreamFrameSize: "
-      << QuicFramer::GetMinStreamFrameSize(
-          framer_->version(), id, offset, true, is_in_fec_group);
+      << QuicFramer::GetMinStreamFrameSize(id, offset, true, is_in_fec_group);
 
   if (data.Empty()) {
     LOG_IF(DFATAL, !fin)
@@ -254,8 +251,7 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
 
   const size_t data_size = data.TotalBufferSize();
   size_t min_frame_size = QuicFramer::GetMinStreamFrameSize(
-      framer_->version(), id, offset, /*last_frame_in_packet=*/ true,
-      is_in_fec_group);
+      id, offset, /* last_frame_in_packet= */ true, is_in_fec_group);
   size_t bytes_consumed = min<size_t>(BytesFree() - min_frame_size, data_size);
 
   bool set_fin = fin && bytes_consumed == data_size;  // Last frame.

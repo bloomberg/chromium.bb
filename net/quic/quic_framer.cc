@@ -132,12 +132,10 @@ QuicSequenceNumberLength ReadSequenceNumberLength(uint8 flags) {
   }
 }
 
-bool CanTruncate(
-    QuicVersion version, const QuicFrame& frame, size_t free_bytes) {
+bool CanTruncate(const QuicFrame& frame, size_t free_bytes) {
   if ((frame.type == ACK_FRAME || frame.type == CONNECTION_CLOSE_FRAME) &&
       free_bytes >=
-          QuicFramer::GetMinAckFrameSize(version,
-                                         PACKET_6BYTE_SEQUENCE_NUMBER,
+          QuicFramer::GetMinAckFrameSize(PACKET_6BYTE_SEQUENCE_NUMBER,
                                          PACKET_6BYTE_SEQUENCE_NUMBER)) {
     return true;
   }
@@ -181,8 +179,7 @@ QuicFramer::QuicFramer(const QuicVersionVector& supported_versions,
 QuicFramer::~QuicFramer() {}
 
 // static
-size_t QuicFramer::GetMinStreamFrameSize(QuicVersion version,
-                                         QuicStreamId stream_id,
+size_t QuicFramer::GetMinStreamFrameSize(QuicStreamId stream_id,
                                          QuicStreamOffset offset,
                                          bool last_frame_in_packet,
                                          InFecGroup is_in_fec_group) {
@@ -195,15 +192,10 @@ size_t QuicFramer::GetMinStreamFrameSize(QuicVersion version,
 
 // static
 size_t QuicFramer::GetMinAckFrameSize(
-    QuicVersion version,
     QuicSequenceNumberLength sequence_number_length,
     QuicSequenceNumberLength largest_observed_length) {
-  size_t len = kQuicFrameTypeSize + kQuicEntropyHashSize +
+  return kQuicFrameTypeSize + kQuicEntropyHashSize +
       largest_observed_length + kQuicDeltaTimeLargestObservedSize;
-  if (version <= QUIC_VERSION_15) {
-    len += sequence_number_length + kQuicEntropyHashSize;
-  }
-  return len;
 }
 
 // static
@@ -214,7 +206,7 @@ size_t QuicFramer::GetStopWaitingFrameSize(
 }
 
 // static
-size_t QuicFramer::GetMinRstStreamFrameSize(QuicVersion quic_version) {
+size_t QuicFramer::GetMinRstStreamFrameSize() {
   return kQuicFrameTypeSize + kQuicMaxStreamIdSize +
       kQuicMaxStreamOffsetSize + kQuicErrorCodeSize +
       kQuicErrorDetailsLengthSize;
@@ -310,7 +302,7 @@ size_t QuicFramer::GetSerializedFrameLength(
   if (!first_frame) {
     return 0;
   }
-  if (CanTruncate(quic_version_, frame, free_bytes)) {
+  if (CanTruncate(frame, free_bytes)) {
     // Truncate the frame so the packet will not exceed kMaxPacketSize.
     // Note that we may not use every byte of the writer in this case.
     DVLOG(1) << "Truncating large frame, free bytes: " << free_bytes;
@@ -382,11 +374,6 @@ SerializedPacket QuicFramer::BuildDataPacket(
         }
         break;
       case STOP_WAITING_FRAME:
-        if (quic_version_ <= QUIC_VERSION_15) {
-          LOG(DFATAL) << "Attempt to add a StopWaitingFrame in "
-                      << QuicVersionToString(quic_version_);
-          return kNoPacket;
-        }
         if (!AppendStopWaitingFrame(
                 header, *frame.stop_waiting_frame, &writer)) {
           LOG(DFATAL) << "AppendStopWaitingFrame failed";
@@ -394,7 +381,7 @@ SerializedPacket QuicFramer::BuildDataPacket(
         }
         break;
       case PING_FRAME:
-        if (quic_version_ <= QUIC_VERSION_16) {
+        if (quic_version_ == QUIC_VERSION_16) {
           LOG(DFATAL) << "Attempt to add a PingFrame in "
                       << QuicVersionToString(quic_version_);
           return kNoPacket;
@@ -976,18 +963,14 @@ uint8 QuicFramer::GetSequenceNumberFlags(
 // static
 QuicFramer::AckFrameInfo QuicFramer::GetAckFrameInfo(
     const QuicAckFrame& frame) {
-  const ReceivedPacketInfo& received_info = frame.received_info;
-
   AckFrameInfo ack_info;
-  if (!received_info.missing_packets.empty()) {
-    DCHECK_GE(received_info.largest_observed,
-              *received_info.missing_packets.rbegin());
+  if (!frame.missing_packets.empty()) {
+    DCHECK_GE(frame.largest_observed, *frame.missing_packets.rbegin());
     size_t cur_range_length = 0;
-    SequenceNumberSet::const_iterator iter =
-        received_info.missing_packets.begin();
+    SequenceNumberSet::const_iterator iter = frame.missing_packets.begin();
     QuicPacketSequenceNumber last_missing = *iter;
     ++iter;
-    for (; iter != received_info.missing_packets.end(); ++iter) {
+    for (; iter != frame.missing_packets.end(); ++iter) {
       if (cur_range_length != numeric_limits<uint8>::max() &&
           *iter == (last_missing + 1)) {
         ++cur_range_length;
@@ -1003,7 +986,7 @@ QuicFramer::AckFrameInfo QuicFramer::GetAckFrameInfo(
     ack_info.nack_ranges[last_missing - cur_range_length] = cur_range_length;
     // Include the range to the largest observed.
     ack_info.max_delta = max(ack_info.max_delta,
-                             received_info.largest_observed - last_missing);
+                             frame.largest_observed - last_missing);
   }
   return ack_info;
 }
@@ -1114,7 +1097,7 @@ bool QuicFramer::ProcessFrameData(const QuicPacketHeader& header) {
       // Ack Frame
       if (frame_type & kQuicFrameTypeAckMask) {
         QuicAckFrame frame;
-        if (!ProcessAckFrame(header, frame_type, &frame)) {
+        if (!ProcessAckFrame(frame_type, &frame)) {
           return RaiseError(QUIC_INVALID_ACK_DATA);
         }
         if (!visitor_->OnAckFrame(frame)) {
@@ -1219,11 +1202,6 @@ bool QuicFramer::ProcessFrameData(const QuicPacketHeader& header) {
       }
 
       case STOP_WAITING_FRAME: {
-        if (quic_version_ <= QUIC_VERSION_15) {
-          LOG(DFATAL) << "Trying to read a StopWaiting in "
-                      << QuicVersionToString(quic_version_);
-          return RaiseError(QUIC_INTERNAL_ERROR);
-        }
         QuicStopWaitingFrame stop_waiting_frame;
         if (!ProcessStopWaitingFrame(header, &stop_waiting_frame)) {
           return RaiseError(QUIC_INVALID_STOP_WAITING_DATA);
@@ -1236,7 +1214,7 @@ bool QuicFramer::ProcessFrameData(const QuicPacketHeader& header) {
         continue;
       }
       case PING_FRAME: {
-        if (quic_version_ <= QUIC_VERSION_16) {
+        if (quic_version_ == QUIC_VERSION_16) {
           LOG(DFATAL) << "Trying to read a Ping in "
                       << QuicVersionToString(quic_version_);
           return RaiseError(QUIC_INTERNAL_ERROR);
@@ -1318,22 +1296,7 @@ bool QuicFramer::ProcessStreamFrame(uint8 frame_type,
   return true;
 }
 
-bool QuicFramer::ProcessAckFrame(const QuicPacketHeader& header,
-                                 uint8 frame_type,
-                                 QuicAckFrame* frame) {
-  if (quic_version_ <= QUIC_VERSION_15) {
-    if (!ProcessStopWaitingFrame(header, &frame->sent_info)) {
-      return false;
-    }
-  }
-  if (!ProcessReceivedInfo(frame_type, &frame->received_info)) {
-    return false;
-  }
-  return true;
-}
-
-bool QuicFramer::ProcessReceivedInfo(uint8 frame_type,
-                                     ReceivedPacketInfo* received_info) {
+bool QuicFramer::ProcessAckFrame(uint8 frame_type, QuicAckFrame* ack_frame) {
   // Determine the three lengths from the frame type: largest observed length,
   // missing sequence number length, and missing range length.
   const QuicSequenceNumberLength missing_sequence_number_length =
@@ -1342,16 +1305,16 @@ bool QuicFramer::ProcessReceivedInfo(uint8 frame_type,
   const QuicSequenceNumberLength largest_observed_sequence_number_length =
       ReadSequenceNumberLength(frame_type);
   frame_type >>= kQuicSequenceNumberLengthShift;
-  received_info->is_truncated = frame_type & kQuicAckTruncatedMask;
+  ack_frame->is_truncated = frame_type & kQuicAckTruncatedMask;
   frame_type >>= kQuicAckTruncatedShift;
   bool has_nacks = frame_type & kQuicHasNacksMask;
 
-  if (!reader_->ReadBytes(&received_info->entropy_hash, 1)) {
+  if (!reader_->ReadBytes(&ack_frame->entropy_hash, 1)) {
     set_detailed_error("Unable to read entropy hash for received packets.");
     return false;
   }
 
-  if (!reader_->ReadBytes(&received_info->largest_observed,
+  if (!reader_->ReadBytes(&ack_frame->largest_observed,
                           largest_observed_sequence_number_length)) {
     set_detailed_error("Unable to read largest observed.");
     return false;
@@ -1364,9 +1327,9 @@ bool QuicFramer::ProcessReceivedInfo(uint8 frame_type,
   }
 
   if (delta_time_largest_observed_us == kUFloat16MaxValue) {
-    received_info->delta_time_largest_observed = QuicTime::Delta::Infinite();
+    ack_frame->delta_time_largest_observed = QuicTime::Delta::Infinite();
   } else {
-    received_info->delta_time_largest_observed =
+    ack_frame->delta_time_largest_observed =
         QuicTime::Delta::FromMicroseconds(delta_time_largest_observed_us);
   }
 
@@ -1380,8 +1343,7 @@ bool QuicFramer::ProcessReceivedInfo(uint8 frame_type,
     return false;
   }
 
-  QuicPacketSequenceNumber last_sequence_number =
-      received_info->largest_observed;
+  QuicPacketSequenceNumber last_sequence_number = ack_frame->largest_observed;
   for (size_t i = 0; i < num_missing_ranges; ++i) {
     QuicPacketSequenceNumber missing_delta = 0;
     if (!reader_->ReadBytes(&missing_delta, missing_sequence_number_length)) {
@@ -1395,7 +1357,7 @@ bool QuicFramer::ProcessReceivedInfo(uint8 frame_type,
       return false;
     }
     for (size_t i = 0; i <= range_length; ++i) {
-      received_info->missing_packets.insert(last_sequence_number - i);
+      ack_frame->missing_packets.insert(last_sequence_number - i);
     }
     // Subtract an extra 1 to ensure ranges are represented efficiently and
     // can't overlap by 1 sequence number.  This allows a missing_delta of 0
@@ -1418,7 +1380,7 @@ bool QuicFramer::ProcessReceivedInfo(uint8 frame_type,
       return false;
     }
 
-    received_info->revived_packets.insert(revived_packet);
+    ack_frame->revived_packets.insert(revived_packet);
   }
 
   return true;
@@ -1503,15 +1465,6 @@ bool QuicFramer::ProcessQuicCongestionFeedbackFrame(
                   QuicTime::Delta::FromMicroseconds(time_delta_us))));
         }
       }
-      break;
-    }
-    case kFixRate: {
-      uint32 bitrate = 0;
-      if (!reader_->ReadUInt32(&bitrate)) {
-        set_detailed_error("Unable to read bitrate.");
-        return false;
-      }
-      frame->fix_rate.bitrate = QuicBandwidth::FromBytesPerSecond(bitrate);
       break;
     }
     case kTCP: {
@@ -1797,18 +1750,17 @@ size_t QuicFramer::GetAckFrameSize(
     QuicSequenceNumberLength sequence_number_length) {
   AckFrameInfo ack_info = GetAckFrameInfo(ack);
   QuicSequenceNumberLength largest_observed_length =
-      GetMinSequenceNumberLength(ack.received_info.largest_observed);
+      GetMinSequenceNumberLength(ack.largest_observed);
   QuicSequenceNumberLength missing_sequence_number_length =
       GetMinSequenceNumberLength(ack_info.max_delta);
 
-  size_t ack_size = GetMinAckFrameSize(quic_version_,
-                                       sequence_number_length,
+  size_t ack_size = GetMinAckFrameSize(sequence_number_length,
                                        largest_observed_length);
   if (!ack_info.nack_ranges.empty()) {
     ack_size += kNumberOfNackRangesSize  + kNumberOfRevivedPacketsSize;
     ack_size += min(ack_info.nack_ranges.size(), kMaxNackRanges) *
       (missing_sequence_number_length + PACKET_1BYTE_SEQUENCE_NUMBER);
-    ack_size += min(ack.received_info.revived_packets.size(),
+    ack_size += min(ack.revived_packets.size(),
                     kMaxRevivedPackets) * largest_observed_length;
   }
   return ack_size;
@@ -1821,8 +1773,7 @@ size_t QuicFramer::ComputeFrameLength(
     QuicSequenceNumberLength sequence_number_length) {
   switch (frame.type) {
     case STREAM_FRAME:
-      return GetMinStreamFrameSize(quic_version_,
-                                   frame.stream_frame->stream_id,
+      return GetMinStreamFrameSize(frame.stream_frame->stream_id,
                                    frame.stream_frame->offset,
                                    last_frame_in_packet,
                                    is_in_fec_group) +
@@ -1850,9 +1801,6 @@ size_t QuicFramer::ComputeFrameLength(
           }
           break;
         }
-        case kFixRate:
-          len += 4;  // Bitrate.
-          break;
         case kTCP:
           len += 2;  // Receive window.
           break;
@@ -1869,7 +1817,7 @@ size_t QuicFramer::ComputeFrameLength(
       // Ping has no payload.
       return kQuicFrameTypeSize;
     case RST_STREAM_FRAME:
-      return GetMinRstStreamFrameSize(quic_version_) +
+      return GetMinRstStreamFrameSize() +
           frame.rst_stream_frame->error_details.size();
     case CONNECTION_CLOSE_FRAME:
       return GetMinConnectionCloseFrameSize() +
@@ -2007,8 +1955,7 @@ bool QuicFramer::AppendAckFrameAndTypeByte(
     const QuicAckFrame& frame,
     QuicDataWriter* writer) {
   AckFrameInfo ack_info = GetAckFrameInfo(frame);
-  QuicPacketSequenceNumber ack_largest_observed =
-      frame.received_info.largest_observed;
+  QuicPacketSequenceNumber ack_largest_observed = frame.largest_observed;
   QuicSequenceNumberLength largest_observed_length =
       GetMinSequenceNumberLength(ack_largest_observed);
   QuicSequenceNumberLength missing_sequence_number_length =
@@ -2016,8 +1963,7 @@ bool QuicFramer::AppendAckFrameAndTypeByte(
   // Determine whether we need to truncate ranges.
   size_t available_range_bytes = writer->capacity() - writer->length() -
       kNumberOfRevivedPacketsSize - kNumberOfNackRangesSize -
-      GetMinAckFrameSize(quic_version_,
-                         header.public_header.sequence_number_length,
+      GetMinAckFrameSize(header.public_header.sequence_number_length,
                          largest_observed_length);
   size_t max_num_ranges = available_range_bytes /
       (missing_sequence_number_length + PACKET_1BYTE_SEQUENCE_NUMBER);
@@ -2049,14 +1995,7 @@ bool QuicFramer::AppendAckFrameAndTypeByte(
     return false;
   }
 
-  if (quic_version_ <= QUIC_VERSION_15) {
-    if (!AppendStopWaitingFrame(header, frame.sent_info, writer)) {
-      return false;
-    }
-  }
-
-  const ReceivedPacketInfo& received_info = frame.received_info;
-  QuicPacketEntropyHash ack_entropy_hash = received_info.entropy_hash;
+  QuicPacketEntropyHash ack_entropy_hash = frame.entropy_hash;
   NackRangeMap::reverse_iterator ack_iter = ack_info.nack_ranges.rbegin();
   if (truncated) {
     // Skip the nack ranges which the truncated ack won't include and set
@@ -2084,11 +2023,10 @@ bool QuicFramer::AppendAckFrameAndTypeByte(
   }
 
   uint64 delta_time_largest_observed_us = kUFloat16MaxValue;
-  if (!received_info.delta_time_largest_observed.IsInfinite()) {
-    DCHECK_LE(0u,
-              frame.received_info.delta_time_largest_observed.ToMicroseconds());
+  if (!frame.delta_time_largest_observed.IsInfinite()) {
+    DCHECK_LE(0u, frame.delta_time_largest_observed.ToMicroseconds());
     delta_time_largest_observed_us =
-        received_info.delta_time_largest_observed.ToMicroseconds();
+        frame.delta_time_largest_observed.ToMicroseconds();
   }
 
   if (!writer->WriteUFloat16(delta_time_largest_observed_us)) {
@@ -2127,7 +2065,7 @@ bool QuicFramer::AppendAckFrameAndTypeByte(
 
   // Append revived packets.
   // If not all the revived packets fit, only mention the ones that do.
-  uint8 num_revived_packets = min(received_info.revived_packets.size(),
+  uint8 num_revived_packets = min(frame.revived_packets.size(),
                                   kMaxRevivedPackets);
   num_revived_packets = min(
       static_cast<size_t>(num_revived_packets),
@@ -2136,10 +2074,9 @@ bool QuicFramer::AppendAckFrameAndTypeByte(
     return false;
   }
 
-  SequenceNumberSet::const_iterator iter =
-      received_info.revived_packets.begin();
+  SequenceNumberSet::const_iterator iter = frame.revived_packets.begin();
   for (int i = 0; i < num_revived_packets; ++i, ++iter) {
-    LOG_IF(DFATAL, !ContainsKey(received_info.missing_packets, *iter));
+    LOG_IF(DFATAL, !ContainsKey(frame.missing_packets, *iter));
     if (!AppendPacketSequenceNumber(largest_observed_length,
                                     *iter, writer)) {
       return false;
@@ -2204,14 +2141,6 @@ bool QuicFramer::AppendCongestionFeedbackFrame(
             return false;
           }
         }
-      }
-      break;
-    }
-    case kFixRate: {
-      const CongestionFeedbackMessageFixRate& fix_rate =
-          frame.fix_rate;
-      if (!writer->WriteUInt32(fix_rate.bitrate.ToBytesPerSecond())) {
-        return false;
       }
       break;
     }

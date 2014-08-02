@@ -115,7 +115,7 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
   bool IsAwaitingPacket(QuicPacketSequenceNumber sequence_number);
 
   // Update the |received_info| for an outgoing ack.
-  void UpdateReceivedPacketInfo(ReceivedPacketInfo* received_info,
+  void UpdateReceivedPacketInfo(QuicAckFrame* ack_frame,
                                 QuicTime approximate_now);
 
   // Should be called before sending an ACK packet, to decide if we need
@@ -132,8 +132,7 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
       QuicPacketSequenceNumber sequence_number) const OVERRIDE;
 
   // Updates internal state based on |received_info|.
-  void UpdatePacketInformationReceivedByPeer(
-      const ReceivedPacketInfo& received_nfo);
+  void UpdatePacketInformationReceivedByPeer(const QuicAckFrame& ack_frame);
   // Updates internal state based on |stop_waiting|.
   void UpdatePacketInformationSentByPeer(
       const QuicStopWaitingFrame& stop_waiting);
@@ -181,7 +180,7 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
   QuicPacketSequenceNumber peer_least_packet_awaiting_ack_;
 
   // Received packet information used to produce acks.
-  ReceivedPacketInfo received_info_;
+  QuicAckFrame ack_frame_;
 
   // The time we received the largest_observed sequence number, or zero if
   // no sequence numbers have been received since UpdateReceivedPacketInfo.

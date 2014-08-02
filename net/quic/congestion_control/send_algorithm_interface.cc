@@ -4,7 +4,6 @@
 
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 
-#include "net/quic/congestion_control/fix_rate_sender.h"
 #include "net/quic/congestion_control/tcp_cubic_sender.h"
 #include "net/quic/quic_protocol.h"
 
@@ -27,8 +26,6 @@ SendAlgorithmInterface* SendAlgorithmInterface::Create(
       return new TcpCubicSender(clock, rtt_stats,
                                 true /* use Reno */,
                                 kMaxTcpCongestionWindow, stats);
-    case kFixRateCongestionControl:
-      return new FixRateSender(rtt_stats);
     case kBBR:
       LOG(DFATAL) << "BbrTcpSender is not supported.";
       return NULL;

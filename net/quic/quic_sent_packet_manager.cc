@@ -177,27 +177,26 @@ void QuicSentPacketManager::OnRetransmittedPacket(
   }
 }
 
-void QuicSentPacketManager::OnIncomingAck(
-    const ReceivedPacketInfo& received_info,
-    QuicTime ack_receive_time) {
+void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
+                                          QuicTime ack_receive_time) {
   QuicByteCount bytes_in_flight = unacked_packets_.bytes_in_flight();
 
   // We rely on delta_time_largest_observed to compute an RTT estimate, so
   // we only update rtt when the largest observed gets acked.
-  bool largest_observed_acked = MaybeUpdateRTT(received_info, ack_receive_time);
-  if (largest_observed_ < received_info.largest_observed) {
-    largest_observed_ = received_info.largest_observed;
+  bool largest_observed_acked = MaybeUpdateRTT(ack_frame, ack_receive_time);
+  if (largest_observed_ < ack_frame.largest_observed) {
+    largest_observed_ = ack_frame.largest_observed;
     unacked_packets_.IncreaseLargestObserved(largest_observed_);
   }
-  HandleAckForSentPackets(received_info);
+  HandleAckForSentPackets(ack_frame);
   InvokeLossDetection(ack_receive_time);
   MaybeInvokeCongestionEvent(largest_observed_acked, bytes_in_flight);
 
   // If we have received a truncated ack, then we need to clear out some
   // previous transmissions to allow the peer to actually ACK new packets.
-  if (received_info.is_truncated) {
+  if (ack_frame.is_truncated) {
     unacked_packets_.ClearPreviousRetransmissions(
-        received_info.missing_packets.size() / 2);
+        ack_frame.missing_packets.size() / 2);
   }
 
   // Anytime we are making forward progress and have a new RTT estimate, reset
@@ -210,11 +209,11 @@ void QuicSentPacketManager::OnIncomingAck(
   }
 
   if (debug_delegate_ != NULL) {
-    debug_delegate_->OnIncomingAck(received_info,
-        ack_receive_time,
-        largest_observed_,
-        largest_observed_acked,
-        GetLeastUnackedSentPacket());
+    debug_delegate_->OnIncomingAck(ack_frame,
+                                   ack_receive_time,
+                                   largest_observed_,
+                                   largest_observed_acked,
+                                   GetLeastUnackedSentPacket());
   }
 }
 
@@ -233,26 +232,26 @@ void QuicSentPacketManager::MaybeInvokeCongestionEvent(
 }
 
 void QuicSentPacketManager::HandleAckForSentPackets(
-    const ReceivedPacketInfo& received_info) {
+    const QuicAckFrame& ack_frame) {
   // Go through the packets we have not received an ack for and see if this
   // incoming_ack shows they've been seen by the peer.
   QuicTime::Delta delta_largest_observed =
-      received_info.delta_time_largest_observed;
+      ack_frame.delta_time_largest_observed;
   QuicUnackedPacketMap::const_iterator it = unacked_packets_.begin();
   while (it != unacked_packets_.end()) {
     QuicPacketSequenceNumber sequence_number = it->first;
-    if (sequence_number > received_info.largest_observed) {
+    if (sequence_number > ack_frame.largest_observed) {
       // These packets are still in flight.
       break;
     }
 
-    if (IsAwaitingPacket(received_info, sequence_number)) {
+    if (IsAwaitingPacket(ack_frame, sequence_number)) {
       // Consider it multiple nacks when there is a gap between the missing
       // packet and the largest observed, since the purpose of a nack
       // threshold is to tolerate re-ordering.  This handles both StretchAcks
       // and Forward Acks.
       // The nack count only increases when the largest observed increases.
-      size_t min_nacks = received_info.largest_observed - sequence_number;
+      size_t min_nacks = ack_frame.largest_observed - sequence_number;
       // Truncated acks can nack the largest observed, so use a min of 1.
       if (min_nacks == 0) {
         min_nacks = 1;
@@ -273,8 +272,8 @@ void QuicSentPacketManager::HandleAckForSentPackets(
 
   // Discard any retransmittable frames associated with revived packets.
   for (SequenceNumberSet::const_iterator revived_it =
-           received_info.revived_packets.begin();
-       revived_it != received_info.revived_packets.end(); ++revived_it) {
+           ack_frame.revived_packets.begin();
+       revived_it != ack_frame.revived_packets.end(); ++revived_it) {
     MarkPacketRevived(*revived_it, delta_largest_observed);
   }
 }
@@ -705,15 +704,15 @@ void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
 }
 
 bool QuicSentPacketManager::MaybeUpdateRTT(
-    const ReceivedPacketInfo& received_info,
+    const QuicAckFrame& ack_frame,
     const QuicTime& ack_receive_time) {
-  if (!unacked_packets_.IsUnacked(received_info.largest_observed)) {
+  if (!unacked_packets_.IsUnacked(ack_frame.largest_observed)) {
     return false;
   }
   // We calculate the RTT based on the highest ACKed sequence number, the lower
   // sequence numbers will include the ACK aggregation delay.
   const TransmissionInfo& transmission_info =
-      unacked_packets_.GetTransmissionInfo(received_info.largest_observed);
+      unacked_packets_.GetTransmissionInfo(ack_frame.largest_observed);
   // Don't update the RTT if it hasn't been sent.
   if (transmission_info.sent_time == QuicTime::Zero()) {
     return false;
@@ -722,7 +721,7 @@ bool QuicSentPacketManager::MaybeUpdateRTT(
   QuicTime::Delta send_delta =
       ack_receive_time.Subtract(transmission_info.sent_time);
   rtt_stats_.UpdateRtt(
-      send_delta, received_info.delta_time_largest_observed, ack_receive_time);
+      send_delta, ack_frame.delta_time_largest_observed, ack_receive_time);
   return true;
 }
 

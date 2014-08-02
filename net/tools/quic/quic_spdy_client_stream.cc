@@ -28,13 +28,13 @@ QuicSpdyClientStream::QuicSpdyClientStream(QuicStreamId id,
 QuicSpdyClientStream::~QuicSpdyClientStream() {
 }
 
-bool QuicSpdyClientStream::OnStreamFrame(const QuicStreamFrame& frame) {
+void QuicSpdyClientStream::OnStreamFrame(const QuicStreamFrame& frame) {
   if (!write_side_closed()) {
     DVLOG(1) << "Got a response before the request was complete.  "
              << "Aborting request.";
     CloseWriteSide();
   }
-  return QuicDataStream::OnStreamFrame(frame);
+  QuicDataStream::OnStreamFrame(frame);
 }
 
 void QuicSpdyClientStream::OnStreamHeadersComplete(bool fin,

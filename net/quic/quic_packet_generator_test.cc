@@ -136,13 +136,13 @@ class QuicPacketGeneratorTest : public ::testing::Test {
 
   QuicAckFrame* CreateAckFrame() {
     // TODO(rch): Initialize this so it can be verified later.
-    return new QuicAckFrame(MakeAckFrame(0, 0));
+    return new QuicAckFrame(MakeAckFrame(0));
   }
 
   QuicCongestionFeedbackFrame* CreateFeedbackFrame() {
     QuicCongestionFeedbackFrame* frame = new QuicCongestionFeedbackFrame;
-    frame->type = kFixRate;
-    frame->fix_rate.bitrate = QuicBandwidth::FromBytesPerSecond(42);
+    frame->type = kTCP;
+    frame->tcp.receive_window = 0x4030;
     return frame;
   }
 
@@ -526,10 +526,8 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
                           NOT_IN_FEC_GROUP) +
       // Add an extra 3 bytes for the payload and 1 byte so BytesFree is larger
       // than the GetMinStreamFrameSize.
-      QuicFramer::GetMinStreamFrameSize(framer_.version(), 1, 0, false,
-                                        NOT_IN_FEC_GROUP) + 3 +
-      QuicFramer::GetMinStreamFrameSize(framer_.version(), 1, 0, true,
-                                        NOT_IN_FEC_GROUP) + 1;
+      QuicFramer::GetMinStreamFrameSize(1, 0, false, NOT_IN_FEC_GROUP) + 3 +
+      QuicFramer::GetMinStreamFrameSize(1, 0, true, NOT_IN_FEC_GROUP) + 1;
   creator_->set_max_packet_length(length);
   delegate_.SetCanWriteAnything();
   {

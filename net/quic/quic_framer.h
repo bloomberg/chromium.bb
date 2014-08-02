@@ -255,21 +255,19 @@ class NET_EXPORT_PRIVATE QuicFramer {
                             base::StringPiece payload);
 
   // Largest size in bytes of all stream frame fields without the payload.
-  static size_t GetMinStreamFrameSize(QuicVersion version,
-                                      QuicStreamId stream_id,
+  static size_t GetMinStreamFrameSize(QuicStreamId stream_id,
                                       QuicStreamOffset offset,
                                       bool last_frame_in_packet,
                                       InFecGroup is_in_fec_group);
   // Size in bytes of all ack frame fields without the missing packets.
   static size_t GetMinAckFrameSize(
-      QuicVersion version,
       QuicSequenceNumberLength sequence_number_length,
       QuicSequenceNumberLength largest_observed_length);
   // Size in bytes of a stop waiting frame.
   static size_t GetStopWaitingFrameSize(
       QuicSequenceNumberLength sequence_number_length);
   // Size in bytes of all reset stream frame without the error details.
-  static size_t GetMinRstStreamFrameSize(QuicVersion quic_version);
+  static size_t GetMinRstStreamFrameSize();
   // Size in bytes of all connection close frame fields without the error
   // details and the missing packets from the enclosed ack frame.
   static size_t GetMinConnectionCloseFrameSize();
@@ -410,10 +408,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
       QuicPacketSequenceNumber* sequence_number);
   bool ProcessFrameData(const QuicPacketHeader& header);
   bool ProcessStreamFrame(uint8 frame_type, QuicStreamFrame* frame);
-  bool ProcessAckFrame(const QuicPacketHeader& header,
-                       uint8 frame_type,
-                       QuicAckFrame* frame);
-  bool ProcessReceivedInfo(uint8 frame_type, ReceivedPacketInfo* received_info);
+  bool ProcessAckFrame(uint8 frame_type, QuicAckFrame* frame);
   bool ProcessStopWaitingFrame(const QuicPacketHeader& public_header,
                                QuicStopWaitingFrame* stop_waiting);
   bool ProcessQuicCongestionFeedbackFrame(

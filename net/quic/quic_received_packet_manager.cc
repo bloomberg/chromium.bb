@@ -135,8 +135,8 @@ QuicReceivedPacketManager::QuicReceivedPacketManager(
       time_largest_observed_(QuicTime::Zero()),
       receive_algorithm_(ReceiveAlgorithmInterface::Create(congestion_type)),
       stats_(stats) {
-  received_info_.largest_observed = 0;
-  received_info_.entropy_hash = 0;
+  ack_frame_.largest_observed = 0;
+  ack_frame_.entropy_hash = 0;
 }
 
 QuicReceivedPacketManager::~QuicReceivedPacketManager() {}
@@ -149,19 +149,19 @@ void QuicReceivedPacketManager::RecordPacketReceived(
   DCHECK(IsAwaitingPacket(sequence_number));
 
   InsertMissingPacketsBetween(
-      &received_info_,
-      max(received_info_.largest_observed + 1, peer_least_packet_awaiting_ack_),
+      &ack_frame_,
+      max(ack_frame_.largest_observed + 1, peer_least_packet_awaiting_ack_),
       sequence_number);
 
-  if (received_info_.largest_observed > sequence_number) {
+  if (ack_frame_.largest_observed > sequence_number) {
     // We've gotten one of the out of order packets - remove it from our
     // "missing packets" list.
     DVLOG(1) << "Removing " << sequence_number << " from missing list";
-    received_info_.missing_packets.erase(sequence_number);
+    ack_frame_.missing_packets.erase(sequence_number);
 
     // Record how out of order stats.
     ++stats_->packets_reordered;
-    uint32 sequence_gap = received_info_.largest_observed - sequence_number;
+    uint32 sequence_gap = ack_frame_.largest_observed - sequence_number;
     stats_->max_sequence_reordering =
         max(stats_->max_sequence_reordering, sequence_gap);
     uint32 reordering_time_us =
@@ -169,8 +169,8 @@ void QuicReceivedPacketManager::RecordPacketReceived(
     stats_->max_time_reordering_us = max(stats_->max_time_reordering_us,
                                          reordering_time_us);
   }
-  if (sequence_number > received_info_.largest_observed) {
-    received_info_.largest_observed = sequence_number;
+  if (sequence_number > ack_frame_.largest_observed) {
+    ack_frame_.largest_observed = sequence_number;
     time_largest_observed_ = receipt_time;
   }
   entropy_tracker_.RecordPacketEntropyHash(sequence_number,
@@ -179,44 +179,43 @@ void QuicReceivedPacketManager::RecordPacketReceived(
   receive_algorithm_->RecordIncomingPacket(
       bytes, sequence_number, receipt_time);
 
-  received_info_.revived_packets.erase(sequence_number);
+  ack_frame_.revived_packets.erase(sequence_number);
 }
 
 void QuicReceivedPacketManager::RecordPacketRevived(
     QuicPacketSequenceNumber sequence_number) {
   LOG_IF(DFATAL, !IsAwaitingPacket(sequence_number));
-  received_info_.revived_packets.insert(sequence_number);
+  ack_frame_.revived_packets.insert(sequence_number);
 }
 
 bool QuicReceivedPacketManager::IsMissing(
     QuicPacketSequenceNumber sequence_number) {
-  return ContainsKey(received_info_.missing_packets, sequence_number);
+  return ContainsKey(ack_frame_.missing_packets, sequence_number);
 }
 
 bool QuicReceivedPacketManager::IsAwaitingPacket(
     QuicPacketSequenceNumber sequence_number) {
-  return ::net::IsAwaitingPacket(received_info_, sequence_number);
+  return ::net::IsAwaitingPacket(ack_frame_, sequence_number);
 }
 
 void QuicReceivedPacketManager::UpdateReceivedPacketInfo(
-    ReceivedPacketInfo* received_info,
-    QuicTime approximate_now) {
-  *received_info = received_info_;
-  received_info->entropy_hash = EntropyHash(received_info_.largest_observed);
+    QuicAckFrame* ack_frame, QuicTime approximate_now) {
+  *ack_frame = ack_frame_;
+  ack_frame->entropy_hash = EntropyHash(ack_frame_.largest_observed);
 
   if (time_largest_observed_ == QuicTime::Zero()) {
     // We have received no packets.
-    received_info->delta_time_largest_observed = QuicTime::Delta::Infinite();
+    ack_frame->delta_time_largest_observed = QuicTime::Delta::Infinite();
     return;
   }
 
   if (approximate_now < time_largest_observed_) {
     // Approximate now may well be "in the past".
-    received_info->delta_time_largest_observed = QuicTime::Delta::Zero();
+    ack_frame->delta_time_largest_observed = QuicTime::Delta::Zero();
     return;
   }
 
-  received_info->delta_time_largest_observed =
+  ack_frame->delta_time_largest_observed =
       approximate_now.Subtract(time_largest_observed_);
 }
 
@@ -231,28 +230,28 @@ QuicPacketEntropyHash QuicReceivedPacketManager::EntropyHash(
 }
 
 void QuicReceivedPacketManager::UpdatePacketInformationReceivedByPeer(
-    const ReceivedPacketInfo& received_info) {
+    const QuicAckFrame& ack_frame) {
   // ValidateAck should fail if largest_observed ever shrinks.
-  DCHECK_LE(peer_largest_observed_packet_, received_info.largest_observed);
-  peer_largest_observed_packet_ = received_info.largest_observed;
+  DCHECK_LE(peer_largest_observed_packet_, ack_frame.largest_observed);
+  peer_largest_observed_packet_ = ack_frame.largest_observed;
 
-  if (received_info.missing_packets.empty()) {
+  if (ack_frame.missing_packets.empty()) {
     least_packet_awaited_by_peer_ = peer_largest_observed_packet_ + 1;
   } else {
-    least_packet_awaited_by_peer_ = *(received_info.missing_packets.begin());
+    least_packet_awaited_by_peer_ = *(ack_frame.missing_packets.begin());
   }
 }
 
 bool QuicReceivedPacketManager::DontWaitForPacketsBefore(
     QuicPacketSequenceNumber least_unacked) {
-  received_info_.revived_packets.erase(
-      received_info_.revived_packets.begin(),
-      received_info_.revived_packets.lower_bound(least_unacked));
-  size_t missing_packets_count = received_info_.missing_packets.size();
-  received_info_.missing_packets.erase(
-      received_info_.missing_packets.begin(),
-      received_info_.missing_packets.lower_bound(least_unacked));
-  return missing_packets_count != received_info_.missing_packets.size();
+  ack_frame_.revived_packets.erase(
+      ack_frame_.revived_packets.begin(),
+      ack_frame_.revived_packets.lower_bound(least_unacked));
+  size_t missing_packets_count = ack_frame_.missing_packets.size();
+  ack_frame_.missing_packets.erase(
+      ack_frame_.missing_packets.begin(),
+      ack_frame_.missing_packets.lower_bound(least_unacked));
+  return missing_packets_count != ack_frame_.missing_packets.size();
 }
 
 void QuicReceivedPacketManager::UpdatePacketInformationSentByPeer(
@@ -270,19 +269,19 @@ void QuicReceivedPacketManager::UpdatePacketInformationSentByPeer(
     }
     peer_least_packet_awaiting_ack_ = stop_waiting.least_unacked;
   }
-  DCHECK(received_info_.missing_packets.empty() ||
-         *received_info_.missing_packets.begin() >=
+  DCHECK(ack_frame_.missing_packets.empty() ||
+         *ack_frame_.missing_packets.begin() >=
              peer_least_packet_awaiting_ack_);
 }
 
 bool QuicReceivedPacketManager::HasMissingPackets() {
-  return !received_info_.missing_packets.empty();
+  return !ack_frame_.missing_packets.empty();
 }
 
 bool QuicReceivedPacketManager::HasNewMissingPackets() {
   return HasMissingPackets() &&
-      (received_info_.largest_observed -
-       *received_info_.missing_packets.rbegin()) <= kMaxPacketsAfterNewMissing;
+      (ack_frame_.largest_observed -
+       *ack_frame_.missing_packets.rbegin()) <= kMaxPacketsAfterNewMissing;
 }
 
 }  // namespace net

@@ -156,7 +156,7 @@ QuicClientSession::QuicClientSession(
       num_total_streams_(0),
       task_runner_(task_runner),
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_QUIC_SESSION)),
-      logger_(net_log_),
+      logger_(new QuicConnectionLogger(net_log_)),
       num_packets_read_(0),
       going_away_(false),
       weak_factory_(this) {
@@ -168,7 +168,7 @@ QuicClientSession::QuicClientSession(
                                      new ProofVerifyContextChromium(net_log_),
                                      crypto_config));
 
-  connection->set_debug_visitor(&logger_);
+  connection->set_debug_visitor(logger_);
   // TODO(rch): pass in full host port proxy pair
   net_log_.BeginEvent(
       NetLog::TYPE_QUIC_SESSION,
@@ -521,7 +521,7 @@ QuicDataStream* QuicClientSession::CreateIncomingDataStream(
 void QuicClientSession::CloseStream(QuicStreamId stream_id) {
   ReliableQuicStream* stream = GetStream(stream_id);
   if (stream) {
-    logger_.UpdateReceivedFrameCounts(
+    logger_->UpdateReceivedFrameCounts(
         stream_id, stream->num_frames_received(),
         stream->num_duplicate_frames_received());
   }
@@ -577,18 +577,18 @@ void QuicClientSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
 
 void QuicClientSession::OnCryptoHandshakeMessageSent(
     const CryptoHandshakeMessage& message) {
-  logger_.OnCryptoHandshakeMessageSent(message);
+  logger_->OnCryptoHandshakeMessageSent(message);
 }
 
 void QuicClientSession::OnCryptoHandshakeMessageReceived(
     const CryptoHandshakeMessage& message) {
-  logger_.OnCryptoHandshakeMessageReceived(message);
+  logger_->OnCryptoHandshakeMessageReceived(message);
 }
 
 void QuicClientSession::OnConnectionClosed(QuicErrorCode error,
                                            bool from_peer) {
   DCHECK(!connection()->connected());
-  logger_.OnConnectionClosed(error, from_peer);
+  logger_->OnConnectionClosed(error, from_peer);
   if (from_peer) {
     UMA_HISTOGRAM_SPARSE_SLOWLY(
         "Net.QuicSession.ConnectionCloseErrorCodeServer", error);
@@ -643,7 +643,7 @@ void QuicClientSession::OnConnectionClosed(QuicErrorCode error,
 
 void QuicClientSession::OnSuccessfulVersionNegotiation(
     const QuicVersion& version) {
-  logger_.OnSuccessfulVersionNegotiation(version);
+  logger_->OnSuccessfulVersionNegotiation(version);
   QuicSession::OnSuccessfulVersionNegotiation(version);
 }
 
@@ -673,7 +673,7 @@ void QuicClientSession::OnProofVerifyDetailsAvailable(
   CertVerifyResult* result_copy = new CertVerifyResult;
   result_copy->CopyFrom(*cert_verify_result_other);
   cert_verify_result_.reset(result_copy);
-  logger_.OnCertificateVerified(*cert_verify_result_);
+  logger_->OnCertificateVerified(*cert_verify_result_);
 }
 
 void QuicClientSession::StartReading() {

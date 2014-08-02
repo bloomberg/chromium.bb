@@ -36,7 +36,7 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   // data is processed or the stream fails to consume data.  Any unconsumed
   // data will be buffered. If the frame is not the next in line, it will be
   // buffered.
-  bool OnStreamFrame(const QuicStreamFrame& frame);
+  void OnStreamFrame(const QuicStreamFrame& frame);
 
   // Once data is buffered, it's up to the stream to read it when the stream
   // can handle more data.  The following three functions make that possible.

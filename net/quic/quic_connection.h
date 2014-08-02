@@ -137,6 +137,17 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
                                 const IPEndPoint& peer_address,
                                 const QuicEncryptedPacket& packet) {}
 
+  // Called when a packet is recived with a connection id that does not
+  // match the ID of this connection.
+  virtual void OnIncorrectConnectionId(
+      QuicConnectionId connection_id) {}
+
+  // Called when an undecryptable packet has been received.
+  virtual void OnUndecryptablePacket() {}
+
+  // Called when a duplicate packet has been received.
+  virtual void OnDuplicatePacket(QuicPacketSequenceNumber sequence_number) {}
+
   // Called when the protocol version on the received packet doensn't match
   // current protocol version of the connection.
   virtual void OnProtocolVersionMismatch(QuicVersion version) {}
@@ -357,7 +368,7 @@ class NET_EXPORT_PRIVATE QuicConnection
     visitor_ = visitor;
   }
   void set_debug_visitor(QuicConnectionDebugVisitor* debug_visitor) {
-    debug_visitor_ = debug_visitor;
+    debug_visitor_.reset(debug_visitor);
     packet_generator_.set_debug_delegate(debug_visitor);
     sent_packet_manager_.set_debug_delegate(debug_visitor);
   }
@@ -719,7 +730,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   scoped_ptr<QuicAlarm> ping_alarm_;
 
   QuicConnectionVisitorInterface* visitor_;
-  QuicConnectionDebugVisitor* debug_visitor_;
+  scoped_ptr<QuicConnectionDebugVisitor> debug_visitor_;
   QuicPacketGenerator packet_generator_;
 
   // Network idle time before we kill of this connection.

@@ -104,16 +104,12 @@ base::Value* NetLogQuicStreamFrameCallback(const QuicStreamFrame* frame,
 base::Value* NetLogQuicAckFrameCallback(const QuicAckFrame* frame,
                                         NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
-  base::DictionaryValue* received_info = new base::DictionaryValue();
-  dict->Set("received_info", received_info);
-  received_info->SetString(
-      "largest_observed",
-      base::Uint64ToString(frame->received_info.largest_observed));
-  received_info->SetBoolean("truncated", frame->received_info.is_truncated);
+  dict->SetString("largest_observed",
+                  base::Uint64ToString(frame->largest_observed));
+  dict->SetBoolean("truncated", frame->is_truncated);
   base::ListValue* missing = new base::ListValue();
-  received_info->Set("missing_packets", missing);
-  const SequenceNumberSet& missing_packets =
-      frame->received_info.missing_packets;
+  dict->Set("missing_packets", missing);
+  const SequenceNumberSet& missing_packets = frame->missing_packets;
   for (SequenceNumberSet::const_iterator it = missing_packets.begin();
        it != missing_packets.end(); ++it) {
     missing->AppendString(base::Uint64ToString(*it));
@@ -139,11 +135,6 @@ base::Value* NetLogQuicCongestionFeedbackFrameCallback(
       }
       break;
     }
-    case kFixRate:
-      dict->SetString("type", "FixRate");
-      dict->SetInteger("bitrate_in_bytes_per_second",
-                       frame->fix_rate.bitrate.ToBytesPerSecond());
-      break;
     case kTCP:
       dict->SetString("type", "TCP");
       dict->SetInteger("receive_window", frame->tcp.receive_window);
@@ -383,7 +374,7 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
       net_log_.AddEvent(
           NetLog::TYPE_QUIC_SESSION_ACK_FRAME_SENT,
           base::Bind(&NetLogQuicAckFrameCallback, frame.ack_frame));
-      if (frame.ack_frame->received_info.is_truncated)
+      if (frame.ack_frame->is_truncated)
         ++num_truncated_acks_sent_;
       break;
     case CONGESTION_FEEDBACK_FRAME:
@@ -526,13 +517,13 @@ void QuicConnectionLogger::OnAckFrame(const QuicAckFrame& frame) {
       last_received_packet_size_ < kApproximateLargestSoloAckBytes)
     received_acks_[last_received_packet_sequence_number_] = true;
 
-  if (frame.received_info.is_truncated)
+  if (frame.is_truncated)
     ++num_truncated_acks_received_;
 
-  if (frame.received_info.missing_packets.empty())
+  if (frame.missing_packets.empty())
     return;
 
-  SequenceNumberSet missing_packets = frame.received_info.missing_packets;
+  SequenceNumberSet missing_packets = frame.missing_packets;
   SequenceNumberSet::const_iterator it = missing_packets.lower_bound(
       largest_received_missing_packet_sequence_number_);
   if (it == missing_packets.end())

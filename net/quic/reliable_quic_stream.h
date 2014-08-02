@@ -38,9 +38,8 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   virtual ~ReliableQuicStream();
 
   // Called when a (potentially duplicate) stream frame has been received
-  // for this stream.  Returns false if this frame can not be accepted
-  // because there is too much data already buffered.
-  virtual bool OnStreamFrame(const QuicStreamFrame& frame);
+  // for this stream.
+  virtual void OnStreamFrame(const QuicStreamFrame& frame);
 
   // Called when the connection becomes writeable to allow the stream
   // to write any pending data.

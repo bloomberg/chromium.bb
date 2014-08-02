@@ -1014,7 +1014,7 @@ bool HttpCache::RemovePendingTransactionFromPendingOp(PendingOp* pending_op,
 }
 
 void HttpCache::SetupQuicServerInfoFactory(HttpNetworkSession* session) {
-  if (session && session->params().enable_quic_persist_server_info &&
+  if (session &&
       !session->quic_stream_factory()->has_quic_server_info_factory()) {
     DCHECK(!quic_server_info_factory_);
     quic_server_info_factory_.reset(new QuicServerInfoFactoryAdaptor(this));

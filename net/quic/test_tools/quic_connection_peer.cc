@@ -43,6 +43,12 @@ QuicAckFrame* QuicConnectionPeer::CreateAckFrame(QuicConnection* connection) {
 }
 
 // static
+QuicStopWaitingFrame* QuicConnectionPeer::CreateStopWaitingFrame(
+    QuicConnection* connection) {
+  return connection->CreateStopWaitingFrame();
+}
+
+// static
 QuicConnectionVisitorInterface* QuicConnectionPeer::GetVisitor(
     QuicConnection* connection) {
   return connection->visitor_;

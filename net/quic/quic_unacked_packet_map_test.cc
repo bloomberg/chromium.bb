@@ -177,7 +177,7 @@ TEST_F(QuicUnackedPacketMapTest, RetransmittedPacket) {
   VerifyRetransmittablePackets(NULL, 0);
 }
 
-TEST_F(QuicUnackedPacketMapTest, RetransmitTwice) {
+TEST_F(QuicUnackedPacketMapTest, RetransmitThreeTimes) {
   // Simulate a retransmittable packet being sent and retransmitted twice.
   unacked_packets_.AddPacket(CreateRetransmittablePacket(1));
   unacked_packets_.SetSent(1, now_, kDefaultLength, true);
@@ -211,16 +211,31 @@ TEST_F(QuicUnackedPacketMapTest, RetransmitTwice) {
   unacked_packets_.IncreaseLargestObserved(4);
   unacked_packets_.RemoveFromInFlight(4);
   unacked_packets_.RemoveRetransmittability(4);
-  unacked_packets_.RemoveFromInFlight(3);
   unacked_packets_.OnRetransmittedPacket(3, 5, LOSS_RETRANSMISSION);
   unacked_packets_.SetSent(5, now_, kDefaultLength, true);
+  unacked_packets_.AddPacket(CreateRetransmittablePacket(6));
+  unacked_packets_.SetSent(6, now_, kDefaultLength, true);
 
-  QuicPacketSequenceNumber unacked3[] = { 3, 5 };
+  QuicPacketSequenceNumber unacked3[] = { 3, 5, 6 };
   VerifyUnackedPackets(unacked3, arraysize(unacked3));
-  QuicPacketSequenceNumber pending3[] = { 5 };
+  QuicPacketSequenceNumber pending3[] = { 3, 5, 6 };
   VerifyInFlightPackets(pending3, arraysize(pending3));
-  QuicPacketSequenceNumber retransmittable3[] = { 5 };
+  QuicPacketSequenceNumber retransmittable3[] = { 5, 6 };
   VerifyRetransmittablePackets(retransmittable3, arraysize(retransmittable3));
+
+  // Early retransmit 5 as 7 and ensure in flight packet 3 is not removed.
+  unacked_packets_.IncreaseLargestObserved(6);
+  unacked_packets_.RemoveFromInFlight(6);
+  unacked_packets_.RemoveRetransmittability(6);
+  unacked_packets_.OnRetransmittedPacket(5, 7, LOSS_RETRANSMISSION);
+  unacked_packets_.SetSent(7, now_, kDefaultLength, true);
+
+  QuicPacketSequenceNumber unacked4[] = { 3, 5, 7 };
+  VerifyUnackedPackets(unacked4, arraysize(unacked4));
+  QuicPacketSequenceNumber pending4[] = { 3, 5, 7 };
+  VerifyInFlightPackets(pending4, arraysize(pending4));
+  QuicPacketSequenceNumber retransmittable4[] = { 7 };
+  VerifyRetransmittablePackets(retransmittable4, arraysize(retransmittable4));
 }
 
 }  // namespace

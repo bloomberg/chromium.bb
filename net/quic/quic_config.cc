@@ -435,8 +435,8 @@ QuicConfig::QuicConfig()
       max_time_before_crypto_handshake_(QuicTime::Delta::Zero()),
       initial_congestion_window_(kSWND, PRESENCE_OPTIONAL),
       initial_round_trip_time_us_(kIRTT, PRESENCE_OPTIONAL),
-      // TODO(rjshade): Make this PRESENCE_REQUIRED when QUIC_VERSION_16 and
-      // QUIC_VERSION_15 are retired.
+      // TODO(rjshade): Make this PRESENCE_REQUIRED when QUIC_VERSION_16 is
+      // retired.
       initial_flow_control_window_bytes_(kIFCW, PRESENCE_OPTIONAL),
       // TODO(rjshade): Make this PRESENCE_REQUIRED when retiring
       // QUIC_VERSION_19.

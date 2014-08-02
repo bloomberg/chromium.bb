@@ -236,7 +236,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase {
   base::TaskRunner* task_runner_;
   BoundNetLog net_log_;
   base::TimeTicks handshake_start_;  // Time the handshake was started.
-  QuicConnectionLogger logger_;
+  QuicConnectionLogger* logger_;  // Owned by |connection_|.
   // Number of packets read in the current read loop.
   size_t num_packets_read_;
   // True when the session is going away, and streams may no longer be created

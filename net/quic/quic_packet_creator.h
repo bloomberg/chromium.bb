@@ -69,7 +69,6 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
 
   // The overhead the framing will add for a packet with one frame.
   static size_t StreamFramePacketOverhead(
-      QuicVersion version,
       QuicConnectionIdLength connection_id_length,
       bool include_version,
       QuicSequenceNumberLength sequence_number_length,

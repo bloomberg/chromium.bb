@@ -166,16 +166,16 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id, QuicSession* session)
 ReliableQuicStream::~ReliableQuicStream() {
 }
 
-bool ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
+void ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
   if (read_side_closed_) {
     DVLOG(1) << ENDPOINT << "Ignoring frame " << frame.stream_id;
     // We don't want to be reading: blackhole the data.
-    return true;
+    return;
   }
 
   if (frame.stream_id != id_) {
-    LOG(ERROR) << "Error!";
-    return false;
+    session_->connection()->SendConnectionClose(QUIC_INTERNAL_ERROR);
+    return;
   }
 
   if (frame.fin) {
@@ -194,11 +194,11 @@ bool ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
         connection_flow_controller_->FlowControlViolation()) {
       session_->connection()->SendConnectionClose(
           QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA);
-      return false;
+      return;
     }
   }
 
-  return sequencer_.OnStreamFrame(frame);
+  sequencer_.OnStreamFrame(frame);
 }
 
 int ReliableQuicStream::num_frames_received() const {

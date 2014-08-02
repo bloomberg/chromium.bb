@@ -65,7 +65,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
         QuicTime time) {}
 
     virtual void OnIncomingAck(
-        const ReceivedPacketInfo& received_info,
+        const QuicAckFrame& ack_frame,
         QuicTime ack_receive_time,
         QuicPacketSequenceNumber largest_observed,
         bool largest_observed_acked,
@@ -122,7 +122,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
                              QuicPacketSequenceNumber new_sequence_number);
 
   // Processes the incoming ack.
-  void OnIncomingAck(const ReceivedPacketInfo& received_info,
+  void OnIncomingAck(const QuicAckFrame& ack_frame,
                      QuicTime ack_receive_time);
 
   // Returns true if the non-FEC packet |sequence_number| is unacked.
@@ -250,7 +250,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
                           TransmissionType> PendingRetransmissionMap;
 
   // Process the incoming ack looking for newly ack'd data packets.
-  void HandleAckForSentPackets(const ReceivedPacketInfo& received_info);
+  void HandleAckForSentPackets(const QuicAckFrame& ack_frame);
 
   // Returns the current retransmission mode.
   RetransmissionTimeoutMode GetRetransmissionMode() const;
@@ -272,7 +272,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Update the RTT if the ack is for the largest acked sequence number.
   // Returns true if the rtt was updated.
-  bool MaybeUpdateRTT(const ReceivedPacketInfo& received_info,
+  bool MaybeUpdateRTT(const QuicAckFrame& ack_frame,
                       const QuicTime& ack_receive_time);
 
   // Invokes the loss detection algorithm and loses and retransmits packets if

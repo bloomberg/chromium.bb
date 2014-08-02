@@ -61,8 +61,8 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
   header.fec_flag = false;
   header.fec_group = 0;
 
-  QuicAckFrame ack(MakeAckFrame(largest_received, least_unacked));
-  ack.received_info.delta_time_largest_observed = QuicTime::Delta::Zero();
+  QuicAckFrame ack(MakeAckFrame(largest_received));
+  ack.delta_time_largest_observed = QuicTime::Delta::Zero();
   QuicFrames frames;
   frames.push_back(QuicFrame(&ack));
   QuicCongestionFeedbackFrame feedback;
@@ -74,10 +74,8 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
   }
 
   QuicStopWaitingFrame stop_waiting;
-  if (version_ > QUIC_VERSION_15) {
-    stop_waiting.least_unacked = least_unacked;
-    frames.push_back(QuicFrame(&stop_waiting));
-  }
+  stop_waiting.least_unacked = least_unacked;
+  frames.push_back(QuicFrame(&stop_waiting));
 
   QuicRstStreamFrame rst(stream_id, error_code, 0);
   frames.push_back(QuicFrame(&rst));
@@ -122,8 +120,8 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckPacket(
   header.fec_flag = false;
   header.fec_group = 0;
 
-  QuicAckFrame ack(MakeAckFrame(largest_received, least_unacked));
-  ack.received_info.delta_time_largest_observed = QuicTime::Delta::Zero();
+  QuicAckFrame ack(MakeAckFrame(largest_received));
+  ack.delta_time_largest_observed = QuicTime::Delta::Zero();
 
   QuicCongestionFeedbackFrame feedback;
   feedback.type = kTCP;
@@ -137,10 +135,8 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckPacket(
   }
 
   QuicStopWaitingFrame stop_waiting;
-  if (version_ > QUIC_VERSION_15) {
-    stop_waiting.least_unacked = least_unacked;
-    frames.push_back(QuicFrame(&stop_waiting));
-  }
+  stop_waiting.least_unacked = least_unacked;
+  frames.push_back(QuicFrame(&stop_waiting));
 
   scoped_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames).packet);

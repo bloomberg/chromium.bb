@@ -92,8 +92,7 @@ QuicVersionVector SupportedVersions(QuicVersion version);
 
 // Testing convenience method to construct a QuicAckFrame with all packets
 // from least_unacked to largest_observed acked.
-QuicAckFrame MakeAckFrame(QuicPacketSequenceNumber largest_observed,
-                          QuicPacketSequenceNumber least_unacked);
+QuicAckFrame MakeAckFrame(QuicPacketSequenceNumber largest_observed);
 
 // Testing convenience method to construct a QuicAckFrame with |num_nack_ranges|
 // nack ranges of width 1 packet, starting from |least_unacked|.

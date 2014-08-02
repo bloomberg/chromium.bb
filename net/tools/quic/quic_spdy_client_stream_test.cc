@@ -102,7 +102,7 @@ TEST_P(QuicSpdyClientStreamTest, TestNoBidirectionalStreaming) {
   QuicStreamFrame frame(3, false, 3, MakeIOVector("asd"));
 
   EXPECT_FALSE(stream_->write_side_closed());
-  EXPECT_TRUE(stream_->OnStreamFrame(frame));
+  stream_->OnStreamFrame(frame);
   EXPECT_TRUE(stream_->write_side_closed());
 }
 

@@ -118,8 +118,7 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
   // Returns the number of bytes consumed by the non-data fields of a stream
   // frame, assuming it is the last frame in the packet
   size_t GetStreamFrameOverhead(InFecGroup is_in_fec_group) {
-    return QuicFramer::GetMinStreamFrameSize(client_framer_.version(),
-                                             kClientDataStreamId1, kOffset,
+    return QuicFramer::GetMinStreamFrameSize(kClientDataStreamId1, kOffset,
                                              true, is_in_fec_group);
   }
 
@@ -151,7 +150,7 @@ INSTANTIATE_TEST_CASE_P(QuicPacketCreatorTests,
                         ::testing::ValuesIn(GetTestParams()));
 
 TEST_P(QuicPacketCreatorTest, SerializeFrames) {
-  frames_.push_back(QuicFrame(new QuicAckFrame(MakeAckFrame(0u, 0u))));
+  frames_.push_back(QuicFrame(new QuicAckFrame(MakeAckFrame(0u))));
   frames_.push_back(QuicFrame(new QuicStreamFrame(0u, false, 0u, IOVector())));
   frames_.push_back(QuicFrame(new QuicStreamFrame(0u, true, 0u, IOVector())));
   SerializedPacket serialized = creator_.SerializeAllFrames(frames_);
@@ -223,7 +222,7 @@ TEST_P(QuicPacketCreatorTest, SerializeWithFEC) {
 }
 
 TEST_P(QuicPacketCreatorTest, SerializeChangingSequenceNumberLength) {
-  frames_.push_back(QuicFrame(new QuicAckFrame(MakeAckFrame(0u, 0u))));
+  frames_.push_back(QuicFrame(new QuicAckFrame(MakeAckFrame(0u))));
   creator_.AddSavedFrame(frames_[0]);
   creator_.set_next_sequence_number_length(PACKET_4BYTE_SEQUENCE_NUMBER);
   SerializedPacket serialized = creator_.SerializePacket();
@@ -264,9 +263,6 @@ TEST_P(QuicPacketCreatorTest, SerializeChangingSequenceNumberLength) {
 }
 
 TEST_P(QuicPacketCreatorTest, ChangeSequenceNumberLengthMidPacket) {
-  if (GetParam().version <= QUIC_VERSION_15) {
-    return;
-  }
   // Changing the sequence number length with queued frames in the creator
   // should hold the change until after any currently queued frames are
   // serialized.
@@ -274,7 +270,7 @@ TEST_P(QuicPacketCreatorTest, ChangeSequenceNumberLengthMidPacket) {
   // Packet 1.
   // Queue a frame in the creator.
   EXPECT_FALSE(creator_.HasPendingFrames());
-  QuicFrame ack_frame = QuicFrame(new QuicAckFrame(MakeAckFrame(0u, 0u)));
+  QuicFrame ack_frame = QuicFrame(new QuicAckFrame(MakeAckFrame(0u)));
   creator_.AddSavedFrame(ack_frame);
 
   // Now change sequence number length.
@@ -353,7 +349,7 @@ TEST_P(QuicPacketCreatorTest, SerializeWithFECChangingSequenceNumberLength) {
   // Should return false since we do not have enough packets in the FEC group to
   // trigger an FEC packet.
   ASSERT_FALSE(creator_.ShouldSendFec(/*force_close=*/false));
-  frames_.push_back(QuicFrame(new QuicAckFrame(MakeAckFrame(0u, 0u))));
+  frames_.push_back(QuicFrame(new QuicAckFrame(MakeAckFrame(0u))));
 
   // Generate Packet 1.
   creator_.AddSavedFrame(frames_[0]);
@@ -871,12 +867,13 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndSerialize) {
             creator_.BytesFree());
 
   // Add a variety of frame types and then a padding frame.
-  QuicAckFrame ack_frame(MakeAckFrame(0u, 0u));
+  QuicAckFrame ack_frame(MakeAckFrame(0u));
   EXPECT_TRUE(creator_.AddSavedFrame(QuicFrame(&ack_frame)));
   EXPECT_TRUE(creator_.HasPendingFrames());
 
   QuicCongestionFeedbackFrame congestion_feedback;
-  congestion_feedback.type = kFixRate;
+  congestion_feedback.type = kTCP;
+  congestion_feedback.tcp.receive_window = 0x4030;
   EXPECT_TRUE(creator_.AddSavedFrame(QuicFrame(&congestion_feedback)));
   EXPECT_TRUE(creator_.HasPendingFrames());
 

@@ -129,7 +129,7 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_TRUE(params.enable_quic);
   EXPECT_FALSE(params.enable_quic_pacing);
   EXPECT_FALSE(params.enable_quic_time_based_loss_detection);
-  EXPECT_EQ(1200u, params.quic_max_packet_length);
+  EXPECT_EQ(1350u, params.quic_max_packet_length);
   EXPECT_EQ(default_params.quic_supported_versions,
             params.quic_supported_versions);
   EXPECT_EQ(net::QuicTagVector(), params.quic_connection_options);

@@ -97,8 +97,6 @@ QuicCryptoClientStream::~QuicCryptoClientStream() {
 
 void QuicCryptoClientStream::OnHandshakeMessage(
     const CryptoHandshakeMessage& message) {
-  DVLOG(1) << "Client: Received " << message.DebugString();
-
   QuicCryptoStream::OnHandshakeMessage(message);
 
   if (message.tag() == kSCUP) {
@@ -225,7 +223,6 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           }
           out.set_minimum_size(max_packet_size - kFramingOverhead);
           next_state_ = STATE_RECV_REJ;
-          DVLOG(1) << "Client: Sending " << out.DebugString();
           SendHandshakeMessage(out);
           return;
         }
@@ -256,7 +253,6 @@ void QuicCryptoClientStream::DoHandshakeLoop(
               *cached->proof_verify_details());
         }
         next_state_ = STATE_RECV_SHLO;
-        DVLOG(1) << "Client: Sending " << out.DebugString();
         SendHandshakeMessage(out);
         // Be prepared to decrypt with the new server write key.
         session()->connection()->SetAlternativeDecrypter(
