@@ -20,6 +20,7 @@ include_rules = [
   "+ui/events",
   "+ui/gl",
   "+ui/keyboard",
+  "+ui/views",
   "+ui/wm/core",
 ]
 

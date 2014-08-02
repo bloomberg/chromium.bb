@@ -52,6 +52,7 @@ class WindowManagerImpl : public WindowManager,
   virtual void OnSelectWindow(aura::Window* window) OVERRIDE;
 
   // aura::WindowObserver
+  virtual void OnWindowAdded(aura::Window* new_window) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   // AcceleratorHandler:
@@ -116,14 +117,12 @@ WindowManagerImpl::~WindowManagerImpl() {
 void WindowManagerImpl::Layout() {
   if (!container_)
     return;
-  SetInOverview(false);
   gfx::Rect bounds = gfx::Rect(container_->bounds().size());
   const aura::Window::Windows& children = container_->children();
   for (aura::Window::Windows::const_iterator iter = children.begin();
        iter != children.end();
        ++iter) {
-    if ((*iter)->type() == ui::wm::WINDOW_TYPE_NORMAL ||
-        (*iter)->type() == ui::wm::WINDOW_TYPE_POPUP)
+    if ((*iter)->type() == ui::wm::WINDOW_TYPE_NORMAL)
       (*iter)->SetBounds(bounds);
   }
 }
@@ -170,6 +169,11 @@ void WindowManagerImpl::OnSelectWindow(aura::Window* window) {
   container_->StackChildAtTop(window);
   wm::ActivateWindow(window);
   SetInOverview(false);
+}
+
+void WindowManagerImpl::OnWindowAdded(aura::Window* new_window) {
+  if (new_window->type() == ui::wm::WINDOW_TYPE_NORMAL)
+    SetInOverview(false);
 }
 
 void WindowManagerImpl::OnWindowDestroying(aura::Window* window) {
