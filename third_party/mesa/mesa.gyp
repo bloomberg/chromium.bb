@@ -266,6 +266,16 @@
       'msvs_disabled_warnings': [
           4005, 4018, 4090, 4099, 4146, 4273, 4291, 4305, 4334, 4748, 4267,
       ],
+      'variables': {
+        'clang_warning_flags': [
+          '-Wno-tautological-constant-out-of-range-compare',
+          '-Wno-absolute-value',  # Fires on st_atom_array.c, might be a bug
+        ],
+        'clang_warning_flags_unset': [
+          # Don't warn about string->bool used in asserts.
+          '-Wstring-conversion',
+        ],
+      },
       'sources': [
         '<(generated_src_dir)/mesa/builtin_function.cpp',
         '<(generated_src_dir)/mesa/glapi_mapi_tmp_shared.h',
@@ -637,25 +647,6 @@
         'src/src/mesa/x86-64/x86-64.h',
       ],
       'conditions': [
-        ['clang == 1', {
-          'xcode_settings': {
-            'WARNING_CFLAGS': [
-              '-Wno-tautological-constant-out-of-range-compare',
-              '-Wno-absolute-value',  # Fires on st_atom_array.c, might be a bug
-            ],
-            'WARNING_CFLAGS!': [
-              # Don't warn about string->bool used in asserts.
-              '-Wstring-conversion',
-            ],
-          },
-          'cflags': [
-            '-Wno-tautological-constant-out-of-range-compare',
-            '-Wno-absolute-value',
-          ],
-          'cflags!': [
-            '-Wstring-conversion',
-          ],
-        }],
         ['OS=="android" and clang==0', {
           # Disable sincos() optimization to avoid a linker error
           # since Android's math library doesn't have sincos().
