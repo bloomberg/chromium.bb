@@ -39,6 +39,9 @@ struct GaiaContext {
 
   // Email of current user.
   std::string email;
+
+  // Whether consumer management enrollment is in progress.
+  bool is_enrolling_consumer_management;
 };
 
 // A class that handles WebUI hooks in Gaia screen.
@@ -116,7 +119,7 @@ class GaiaScreenHandler : public BaseScreenHandler {
   // principals API was used during SAML login.
   void SetSAMLPrincipalsAPIUsed(bool api_used);
 
-  void ShowGaia();
+  void ShowGaia(bool is_enrolling_consumer_management);
 
   // Shows signin screen after dns cache and cookie cleanup operations finish.
   void ShowGaiaScreenIfReady();
@@ -177,6 +180,9 @@ class GaiaScreenHandler : public BaseScreenHandler {
   // If the user authenticated via SAML, this indicates whether the principals
   // API was used.
   bool using_saml_api_;
+
+  // Whether consumer management enrollment is in progress.
+  bool is_enrolling_consumer_management_;
 
   // Test credentials.
   std::string test_user_;

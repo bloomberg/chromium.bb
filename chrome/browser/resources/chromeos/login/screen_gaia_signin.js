@@ -56,6 +56,13 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     email: '',
 
     /**
+     * Whether consumer management enrollment is in progress.
+     * @type {boolean}
+     * @private
+     */
+    isEnrollingConsumerManagement_: false,
+
+    /**
      * Timer id of pending load.
      * @type {number}
      * @private
@@ -211,7 +218,10 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     onBeforeShow: function(data) {
       chrome.send('loginUIStateChanged', ['gaia-signin', true]);
-      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.GAIA_SIGNIN;
+      $('login-header-bar').signinUIState =
+          this.isEnrollingConsumerManagement_ ?
+          SIGNIN_UI_STATE.CONSUMER_MANAGEMENT_ENROLLMENT :
+          SIGNIN_UI_STATE.GAIA_SIGNIN;
 
       // Ensure that GAIA signin (or loading UI) is actually visible.
       window.webkitRequestAnimationFrame(function() {
@@ -308,14 +318,20 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       $('createSupervisedUserNoManagerText').textContent =
           data.supervisedUsersRestrictionReason;
 
+      $('consumerManagementEnrollment').hidden =
+          !data.isEnrollingConsumerManagement;
+
       this.isShowUsers_ = data.isShowUsers;
       this.updateCancelButtonState();
+
+      this.isEnrollingConsumerManagement_ = data.isEnrollingConsumerManagement;
 
       // Sign-in right panel is hidden if all of its items are hidden.
       var noRightPanel = $('gaia-signin-reason').hidden &&
                          $('createAccount').hidden &&
                          $('guestSignin').hidden &&
-                         $('createSupervisedUserPane').hidden;
+                         $('createSupervisedUserPane').hidden &&
+                         $('consumerManagementEnrollment').hidden;
       this.classList.toggle('no-right-panel', noRightPanel);
       if (Oobe.getInstance().currentScreen === this)
         Oobe.getInstance().updateScreenSize(this);
@@ -563,6 +579,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
               'createSupervisedUser',
               '<a id="createSupervisedUserLink" class="signin-link" href="#">',
               '</a>');
+      $('consumerManagementEnrollment').innerHTML = loadTimeData.getString(
+          'consumerManagementEnrollmentSigninMessage');
       $('createAccountLink').addEventListener('click', function(e) {
         chrome.send('createAccount');
         e.preventDefault();

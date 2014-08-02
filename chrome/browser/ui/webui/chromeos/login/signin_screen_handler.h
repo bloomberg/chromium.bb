@@ -359,6 +359,7 @@ class SigninScreenHandler
   void HandleRetrieveAuthenticatedUserEmail(double attempt_token);
   void HandleGetPublicSessionKeyboardLayouts(const std::string& user_id,
                                              const std::string& locale);
+  void HandleCancelConsumerManagementEnrollment();
 
   // Sends the list of keyboard layouts available for the currently selected
   // public session locale.
@@ -469,6 +470,9 @@ class SigninScreenHandler
 
   // Helper that retrieves the authenticated user's e-mail address.
   scoped_ptr<AuthenticatedUserEmailRetriever> email_retriever_;
+
+  // Whether consumer management enrollment is in progress.
+  bool is_enrolling_consumer_management_;
 
   base::WeakPtrFactory<SigninScreenHandler> weak_factory_;
 

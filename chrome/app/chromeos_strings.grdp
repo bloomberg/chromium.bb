@@ -5053,6 +5053,9 @@ Battery full
   <message name="IDS_LOGIN_CONNECTING_INDICATOR_TEXT" desc="A message to show telling the user that the device is attempting to re-connect to the network.">
     Connecting and verifying<ph name="ANIMATED_ELLIPSIS">$1<ex>...</ex></ph>
   </message>
+  <message name="IDS_LOGIN_CONSUMER_MANAGEMENT_ENROLLMENT" desc="A message to show at the signin page when consumer management enrollment is in progress.">
+    The owner must sign in to complete enrollment with Google Device Manager.
+  </message>
 
   <!-- Idle warning dialog -->
   <message name="IDS_IDLE_WARNING_TITLE" desc="Title of the warning dialog shown when the user becomes idle and is about to get logged out.">

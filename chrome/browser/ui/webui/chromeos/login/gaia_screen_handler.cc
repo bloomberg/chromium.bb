@@ -36,7 +36,8 @@ namespace {
 
 const char kJsScreenPath[] = "login.GaiaSigninScreen";
 
-void UpdateAuthParams(base::DictionaryValue* params, bool has_users) {
+void UpdateAuthParams(base::DictionaryValue* params, bool has_users,
+                      bool is_enrolling_consumer_management) {
   CrosSettings* cros_settings = CrosSettings::Get();
   bool allow_new_user = true;
   cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
@@ -73,7 +74,10 @@ void UpdateAuthParams(base::DictionaryValue* params, bool has_users) {
 
   // Now check whether we're in multi-profiles user adding scenario and
   // disable GAIA right panel features if that's the case.
-  if (UserAddingScreen::Get()->IsRunning()) {
+  // For consumer management enrollment, we also hide all right panel components
+  // and show only an enrollment message.
+  if (UserAddingScreen::Get()->IsRunning() ||
+      is_enrolling_consumer_management) {
     params->SetBoolean("createAccount", false);
     params->SetBoolean("guestSignin", false);
     params->SetBoolean("supervisedUsersEnabled", false);
@@ -116,6 +120,7 @@ GaiaScreenHandler::GaiaScreenHandler(
       focus_stolen_(false),
       gaia_silent_load_(false),
       using_saml_api_(false),
+      is_enrolling_consumer_management_(false),
       test_expects_complete_login_(false),
       signin_screen_handler_(NULL),
       weak_factory_(this) {
@@ -134,8 +139,11 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
   params.SetBoolean("isShowUsers", context.show_users);
   params.SetBoolean("useOffline", context.use_offline);
   params.SetString("email", context.email);
+  params.SetBoolean("isEnrollingConsumerManagement",
+                    context.is_enrolling_consumer_management);
 
-  UpdateAuthParams(&params, context.has_users);
+  UpdateAuthParams(&params, context.has_users,
+                   context.is_enrolling_consumer_management);
 
   if (!context.use_offline) {
     const std::string app_locale = g_browser_process->GetApplicationLocale();
@@ -178,7 +186,8 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
 
 void GaiaScreenHandler::UpdateGaia(const GaiaContext& context) {
   base::DictionaryValue params;
-  UpdateAuthParams(&params, context.has_users);
+  UpdateAuthParams(&params, context.has_users,
+                   context.is_enrolling_consumer_management);
   CallJS("updateAuthExtension", params);
 }
 
@@ -209,6 +218,8 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_CREATE_LOCALLY_MANAGED_USER_HTML);
   builder->Add("createSupervisedUserFeatureName",
                IDS_CREATE_LOCALLY_MANAGED_USER_FEATURE_NAME);
+  builder->Add("consumerManagementEnrollmentSigninMessage",
+               IDS_LOGIN_CONSUMER_MANAGEMENT_ENROLLMENT);
 
   // Strings used by the SAML fatal error dialog.
   builder->Add("fatalErrorMessageNoEmail", IDS_LOGIN_FATAL_ERROR_NO_EMAIL);
@@ -278,6 +289,14 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
 void GaiaScreenHandler::HandleCompleteLogin(const std::string& typed_email,
                                             const std::string& password,
                                             bool using_saml) {
+  std::string owner_email = UserManager::Get()->GetOwnerEmail();
+  if (is_enrolling_consumer_management_ && typed_email != owner_email) {
+    // Show Gaia signin page again since we only allow the owner to sign in.
+    populated_email_ = owner_email;
+    ShowGaia(is_enrolling_consumer_management_);
+    return;
+  }
+
   if (!Delegate())
     return;
 
@@ -446,7 +465,8 @@ void GaiaScreenHandler::SetSAMLPrincipalsAPIUsed(bool api_used) {
   UMA_HISTOGRAM_BOOLEAN("ChromeOS.SAML.APIUsed", api_used);
 }
 
-void GaiaScreenHandler::ShowGaia() {
+void GaiaScreenHandler::ShowGaia(bool is_enrolling_consumer_management) {
+  is_enrolling_consumer_management_ = is_enrolling_consumer_management;
   if (gaia_silent_load_ && populated_email_.empty()) {
     dns_cleared_ = true;
     cookies_cleared_ = true;
@@ -523,6 +543,7 @@ void GaiaScreenHandler::LoadAuthExtension(bool force,
                              password_changed_for_.count(populated_email_);
   context.use_offline = offline;
   context.email = populated_email_;
+  context.is_enrolling_consumer_management = is_enrolling_consumer_management_;
   if (Delegate()) {
     context.show_users = Delegate()->IsShowUsers();
     context.has_users = !Delegate()->GetUsers().empty();

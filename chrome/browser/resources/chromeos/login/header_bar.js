@@ -45,6 +45,9 @@ cr.define('login', function() {
           this.handleSignoutClick_);
       $('cancel-multiple-sign-in-button').addEventListener('click',
           this.handleCancelMultipleSignInClick_);
+      $('cancel-consumer-management-enrollment-button')
+          .addEventListener('click',
+              this.handleCancelConsumerManagementEnrollmentClick_);
       if (Oobe.getInstance().displayType == DISPLAY_TYPE.LOGIN ||
           Oobe.getInstance().displayType == DISPLAY_TYPE.OOBE) {
         if (Oobe.getInstance().newKioskUI)
@@ -154,6 +157,16 @@ cr.define('login', function() {
     },
 
     /**
+     * Cancel consumer management enrollment button handler.
+     *
+     * @private
+     */
+    handleCancelConsumerManagementEnrollmentClick_: function(e) {
+      chrome.send('cancelConsumerManagementEnrollment');
+      e.stopPropagation();
+    },
+
+    /**
      * If true then "Browse as Guest" button is shown.
      *
      * @type {boolean}
@@ -213,6 +226,8 @@ cr.define('login', function() {
           (this.signinUIState_ == SIGNIN_UI_STATE.WRONG_HWID_WARNING);
       var isSamlPasswordConfirm =
           (this.signinUIState_ == SIGNIN_UI_STATE.SAML_PASSWORD_CONFIRM);
+      var isEnrollingConsumerManagement = (this.signinUIState_ ==
+          SIGNIN_UI_STATE.CONSUMER_MANAGEMENT_ENROLLMENT);
       var isMultiProfilesUI =
           (Oobe.getInstance().displayType == DISPLAY_TYPE.USER_ADDING);
       var isLockScreen =
@@ -237,6 +252,8 @@ cr.define('login', function() {
       $('apps-header-bar-item').hidden = !this.hasApps_ ||
           (!gaiaIsActive && !accountPickerIsActive);
       $('cancel-multiple-sign-in-item').hidden = !isMultiProfilesUI;
+      $('cancel-consumer-management-enrollment').hidden =
+          !isEnrollingConsumerManagement;
 
       if (!Oobe.getInstance().newKioskUI) {
         if (!$('apps-header-bar-item').hidden)

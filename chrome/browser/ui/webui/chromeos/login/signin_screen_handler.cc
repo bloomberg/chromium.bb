@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
+#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -52,6 +54,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/ime/ime_keyboard.h"
@@ -295,6 +298,13 @@ SigninScreenHandler::SigninScreenHandler(
       chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
   if (keyboard)
     keyboard->AddObserver(this);
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  PrefService* prefs = g_browser_process->local_state();
+  is_enrolling_consumer_management_ =
+      command_line->HasSwitch(chromeos::switches::kEnableConsumerManagement) &&
+      prefs->GetBoolean(prefs::kConsumerManagementEnrollmentRequested);
+
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
@@ -418,7 +428,17 @@ void SigninScreenHandler::Show(const LoginScreenContext& context) {
 
   // Just initialize internal fields from context and call ShowImpl().
   oobe_ui_ = context.oobe_ui();
-  gaia_screen_handler_->PopulateEmail(context.email());
+
+  std::string email;
+  if (is_enrolling_consumer_management_) {
+    // We don't check if the value of the owner email is trusted because it is
+    // only used to pre-fill the email field in Gaia sign-in page and a cached
+    // value is sufficient.
+    CrosSettings::Get()->GetString(kDeviceOwner, &email);
+  } else {
+    email = context.email();
+  }
+  gaia_screen_handler_->PopulateEmail(email);
   ShowImpl();
 }
 
@@ -457,7 +477,7 @@ void SigninScreenHandler::ShowImpl() {
     return;
   }
 
-  if (oobe_ui_) {
+  if (oobe_ui_ || is_enrolling_consumer_management_) {
     // Shows new user sign-in for OOBE.
     OnShowAddUser();
   } else {
@@ -749,6 +769,8 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleRetrieveAuthenticatedUserEmail);
   AddCallback("getPublicSessionKeyboardLayouts",
               &SigninScreenHandler::HandleGetPublicSessionKeyboardLayouts);
+  AddCallback("cancelConsumerManagementEnrollment",
+              &SigninScreenHandler::HandleCancelConsumerManagementEnrollment);
 
 
   // This message is sent by the kiosk app menu, but is handled here
@@ -1322,6 +1344,13 @@ void SigninScreenHandler::HandleLaunchKioskApp(const std::string& app_id,
     delegate_->Login(context, specifics);
 }
 
+void SigninScreenHandler::HandleCancelConsumerManagementEnrollment() {
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetBoolean(prefs::kConsumerManagementEnrollmentRequested, false);
+  is_enrolling_consumer_management_ = false;
+  ShowImpl();
+}
+
 bool SigninScreenHandler::AllWhitelistedUsersPresent() {
   CrosSettings* cros_settings = CrosSettings::Get();
   bool allow_new_user = false;
@@ -1427,7 +1456,7 @@ void SigninScreenHandler::ContinueKioskEnableFlow(
 void SigninScreenHandler::OnShowAddUser() {
   is_account_picker_showing_first_time_ = false;
   DCHECK(gaia_screen_handler_);
-  gaia_screen_handler_->ShowGaia();
+  gaia_screen_handler_->ShowGaia(is_enrolling_consumer_management_);
 }
 
 GaiaScreenHandler::FrameState SigninScreenHandler::FrameState() const {
