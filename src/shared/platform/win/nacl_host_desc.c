@@ -584,7 +584,6 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
   DWORD     dwMaximumSizeLow;
   uintptr_t map_result;
   size_t    chunk_offset;
-  size_t    unmap_offset;
   size_t    chunk_size;
 
   if (NULL == d && 0 == (flags & NACL_ABI_MAP_ANONYMOUS)) {
@@ -830,19 +829,12 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
             map_result, chunk_addr, (addr + chunk_offset));
     if ((addr + chunk_offset) != map_result) {
       DWORD err = GetLastError();
-      NaClLog(LOG_INFO,
+      NaClLog(LOG_FATAL,
               "MapViewOfFileEx failed at 0x%08"NACL_PRIxPTR
               ", got 0x%08"NACL_PRIxPTR", err %x\n",
               addr + chunk_offset,
               map_result,
               err);
-      for (unmap_offset = 0;
-           unmap_offset < chunk_offset;
-           unmap_offset += NACL_MAP_PAGESIZE) {
-        (void) UnmapViewOfFile((void *) (addr + unmap_offset));
-      }
-      retval = (uintptr_t) -NaClXlateSystemError(err);
-      goto cleanup;
     }
     if (!VirtualProtect((void *) map_result,
                         NaClRoundPage(chunk_size),
