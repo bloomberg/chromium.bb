@@ -16,6 +16,7 @@
 #include "ash/wm/session_state_animator.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/strings/string_util.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/layer_animation_sequence.h"
@@ -584,8 +585,17 @@ void LockStateController::LockAnimationCancelled() {
 }
 
 void LockStateController::PreLockAnimationFinished(bool request_lock) {
-  can_cancel_lock_animation_ = false;
   VLOG(1) << "PreLockAnimationFinished";
+  can_cancel_lock_animation_ = false;
+
+  // Don't do anything (including starting the lock-fail timer) if the screen
+  // was already locked while the animation was going.
+  if (system_is_locked_) {
+    DCHECK(!request_lock) << "Got request to lock already-locked system "
+                          << "at completion of pre-lock animation";
+    return;
+  }
+
   if (request_lock) {
     Shell::GetInstance()->metrics()->RecordUserMetricsAction(
         shutdown_after_lock_ ?
@@ -594,24 +604,19 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
     delegate_->RequestLockScreen();
   }
 
-  int lock_timeout = kLockFailTimeoutMs;
-
+  base::TimeDelta timeout =
+      base::TimeDelta::FromMilliseconds(kLockFailTimeoutMs);
 #if defined(OS_CHROMEOS)
-  std::string board = base::SysInfo::GetLsbReleaseBoard();
-
   // Increase lock timeout for slower hardware, see http://crbug.com/350628
+  const std::string board = base::SysInfo::GetLsbReleaseBoard();
   if (board == "x86-mario" ||
-      board.substr(0, 8) == "x86-alex" ||
-      board.substr(0, 7) == "x86-zgb") {
-    lock_timeout *= 2;
+      StartsWithASCII(board, "x86-alex", true /* case_sensitive */) ||
+      StartsWithASCII(board, "x86-zgb", true /* case_sensitive */)) {
+    timeout *= 2;
   }
 #endif
-
   lock_fail_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(lock_timeout),
-      this,
-      &LockStateController::OnLockFailTimeout);
+      FROM_HERE, timeout, this, &LockStateController::OnLockFailTimeout);
 }
 
 void LockStateController::PostLockAnimationFinished() {
