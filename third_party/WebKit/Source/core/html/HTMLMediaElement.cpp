@@ -3499,7 +3499,7 @@ void HTMLMediaElement::exitFullscreen()
 {
     WTF_LOG(Media, "HTMLMediaElement::exitFullscreen");
 
-    FullscreenElementStack::from(document()).fullyExitFullscreen();
+    FullscreenElementStack::from(document()).exitFullscreen();
 }
 
 void HTMLMediaElement::didBecomeFullscreenElement()
