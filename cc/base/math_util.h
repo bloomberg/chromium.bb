@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -123,6 +124,10 @@ class CC_EXPORT MathUtil {
                              const gfx::QuadF& src_quad,
                              gfx::PointF clipped_quad[8],
                              int* num_vertices_in_clipped_quad);
+  static bool MapClippedQuad3d(const gfx::Transform& transform,
+                               const gfx::QuadF& src_quad,
+                               gfx::Point3F clipped_quad[8],
+                               int* num_vertices_in_clipped_quad);
 
   static gfx::RectF ComputeEnclosingRectOfVertices(const gfx::PointF vertices[],
                                                    int num_vertices);
@@ -137,6 +142,10 @@ class CC_EXPORT MathUtil {
   static gfx::QuadF MapQuad(const gfx::Transform& transform,
                             const gfx::QuadF& quad,
                             bool* clipped);
+  static gfx::QuadF MapQuad3d(const gfx::Transform& transform,
+                              const gfx::QuadF& q,
+                              gfx::Point3F* p,
+                              bool* clipped);
   static gfx::PointF MapPoint(const gfx::Transform& transform,
                               const gfx::PointF& point,
                               bool* clipped);

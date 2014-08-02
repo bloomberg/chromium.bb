@@ -111,6 +111,13 @@ static inline void AddVertexToClippedQuad(const gfx::PointF& new_vertex,
   (*num_vertices_in_clipped_quad)++;
 }
 
+static inline void AddVertexToClippedQuad3d(const gfx::Point3F& new_vertex,
+                                            gfx::Point3F clipped_quad[8],
+                                            int* num_vertices_in_clipped_quad) {
+  clipped_quad[*num_vertices_in_clipped_quad] = new_vertex;
+  (*num_vertices_in_clipped_quad)++;
+}
+
 gfx::Rect MathUtil::MapEnclosingClippedRect(const gfx::Transform& transform,
                                             const gfx::Rect& src_rect) {
   if (transform.IsIdentityOrIntegerTranslation()) {
@@ -253,6 +260,76 @@ void MathUtil::MapClippedQuad(const gfx::Transform& transform,
   DCHECK_LE(*num_vertices_in_clipped_quad, 8);
 }
 
+bool MathUtil::MapClippedQuad3d(const gfx::Transform& transform,
+                                const gfx::QuadF& src_quad,
+                                gfx::Point3F clipped_quad[8],
+                                int* num_vertices_in_clipped_quad) {
+  HomogeneousCoordinate h1 =
+      MapHomogeneousPoint(transform, gfx::Point3F(src_quad.p1()));
+  HomogeneousCoordinate h2 =
+      MapHomogeneousPoint(transform, gfx::Point3F(src_quad.p2()));
+  HomogeneousCoordinate h3 =
+      MapHomogeneousPoint(transform, gfx::Point3F(src_quad.p3()));
+  HomogeneousCoordinate h4 =
+      MapHomogeneousPoint(transform, gfx::Point3F(src_quad.p4()));
+
+  // The order of adding the vertices to the array is chosen so that
+  // clockwise / counter-clockwise orientation is retained.
+
+  *num_vertices_in_clipped_quad = 0;
+
+  if (!h1.ShouldBeClipped()) {
+    AddVertexToClippedQuad3d(
+        h1.CartesianPoint3d(), clipped_quad, num_vertices_in_clipped_quad);
+  }
+
+  if (h1.ShouldBeClipped() ^ h2.ShouldBeClipped()) {
+    AddVertexToClippedQuad3d(
+        ComputeClippedPointForEdge(h1, h2).CartesianPoint3d(),
+        clipped_quad,
+        num_vertices_in_clipped_quad);
+  }
+
+  if (!h2.ShouldBeClipped()) {
+    AddVertexToClippedQuad3d(
+        h2.CartesianPoint3d(), clipped_quad, num_vertices_in_clipped_quad);
+  }
+
+  if (h2.ShouldBeClipped() ^ h3.ShouldBeClipped()) {
+    AddVertexToClippedQuad3d(
+        ComputeClippedPointForEdge(h2, h3).CartesianPoint3d(),
+        clipped_quad,
+        num_vertices_in_clipped_quad);
+  }
+
+  if (!h3.ShouldBeClipped()) {
+    AddVertexToClippedQuad3d(
+        h3.CartesianPoint3d(), clipped_quad, num_vertices_in_clipped_quad);
+  }
+
+  if (h3.ShouldBeClipped() ^ h4.ShouldBeClipped()) {
+    AddVertexToClippedQuad3d(
+        ComputeClippedPointForEdge(h3, h4).CartesianPoint3d(),
+        clipped_quad,
+        num_vertices_in_clipped_quad);
+  }
+
+  if (!h4.ShouldBeClipped()) {
+    AddVertexToClippedQuad3d(
+        h4.CartesianPoint3d(), clipped_quad, num_vertices_in_clipped_quad);
+  }
+
+  if (h4.ShouldBeClipped() ^ h1.ShouldBeClipped()) {
+    AddVertexToClippedQuad3d(
+        ComputeClippedPointForEdge(h4, h1).CartesianPoint3d(),
+        clipped_quad,
+        num_vertices_in_clipped_quad);
+  }
+
+  DCHECK_LE(*num_vertices_in_clipped_quad, 8);
+  return (*num_vertices_in_clipped_quad >= 4);
+}
+
 gfx::RectF MathUtil::ComputeEnclosingRectOfVertices(
     const gfx::PointF vertices[],
     int num_vertices) {
@@ -380,6 +457,48 @@ gfx::QuadF MathUtil::MapQuad(const gfx::Transform& transform,
 
   // Result will be invalid if clipped == true. But, compute it anyway just in
   // case, to emulate existing behavior.
+  return gfx::QuadF(h1.CartesianPoint2d(),
+                    h2.CartesianPoint2d(),
+                    h3.CartesianPoint2d(),
+                    h4.CartesianPoint2d());
+}
+
+gfx::QuadF MathUtil::MapQuad3d(const gfx::Transform& transform,
+                               const gfx::QuadF& q,
+                               gfx::Point3F* p,
+                               bool* clipped) {
+  if (transform.IsIdentityOrTranslation()) {
+    gfx::QuadF mapped_quad(q);
+    mapped_quad +=
+        gfx::Vector2dF(SkMScalarToFloat(transform.matrix().get(0, 3)),
+                       SkMScalarToFloat(transform.matrix().get(1, 3)));
+    *clipped = false;
+    p[0] = gfx::Point3F(mapped_quad.p1().x(), mapped_quad.p1().y(), 0.0f);
+    p[1] = gfx::Point3F(mapped_quad.p2().x(), mapped_quad.p2().y(), 0.0f);
+    p[2] = gfx::Point3F(mapped_quad.p3().x(), mapped_quad.p3().y(), 0.0f);
+    p[3] = gfx::Point3F(mapped_quad.p4().x(), mapped_quad.p4().y(), 0.0f);
+    return mapped_quad;
+  }
+
+  HomogeneousCoordinate h1 =
+      MapHomogeneousPoint(transform, gfx::Point3F(q.p1()));
+  HomogeneousCoordinate h2 =
+      MapHomogeneousPoint(transform, gfx::Point3F(q.p2()));
+  HomogeneousCoordinate h3 =
+      MapHomogeneousPoint(transform, gfx::Point3F(q.p3()));
+  HomogeneousCoordinate h4 =
+      MapHomogeneousPoint(transform, gfx::Point3F(q.p4()));
+
+  *clipped = h1.ShouldBeClipped() || h2.ShouldBeClipped() ||
+             h3.ShouldBeClipped() || h4.ShouldBeClipped();
+
+  // Result will be invalid if clipped == true. But, compute it anyway just in
+  // case, to emulate existing behavior.
+  p[0] = h1.CartesianPoint3d();
+  p[1] = h2.CartesianPoint3d();
+  p[2] = h3.CartesianPoint3d();
+  p[3] = h4.CartesianPoint3d();
+
   return gfx::QuadF(h1.CartesianPoint2d(),
                     h2.CartesianPoint2d(),
                     h3.CartesianPoint2d(),

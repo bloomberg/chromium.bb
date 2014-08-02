@@ -9,12 +9,15 @@
 
 #include "cc/base/math_util.h"
 #include "cc/output/bsp_compare_result.h"
-#include "cc/quads/draw_quad.h"
 #include "ui/gfx/point3_f.h"
 #include "ui/gfx/quad_f.h"
+#include "ui/gfx/rect_f.h"
+#include "ui/gfx/transform.h"
 #include "ui/gfx/vector3d_f.h"
 
 namespace cc {
+
+class DrawQuad;
 
 class CC_EXPORT DrawPolygon {
  public:
@@ -24,6 +27,10 @@ class CC_EXPORT DrawPolygon {
   DrawPolygon(DrawQuad* original_ref,
               const std::vector<gfx::Point3F>& in_points,
               const gfx::Vector3dF& normal,
+              int draw_order_index = 0);
+  DrawPolygon(DrawQuad* original_ref,
+              const gfx::RectF& visible_content_rect,
+              const gfx::Transform& transform,
               int draw_order_index = 0);
 
   // Split takes this DrawPolygon and splits it into two pieces that are on

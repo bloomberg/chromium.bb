@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "cc/output/bsp_compare_result.h"
+#include "cc/quads/draw_quad.h"
 
 namespace {
 // This allows for some imperfection in the normal comparison when checking if
@@ -43,6 +44,32 @@ DrawPolygon::DrawPolygon(DrawQuad* original,
     points_.push_back(in_points[i]);
   }
   normal_ = normal;
+}
+
+// This takes the original DrawQuad that this polygon should be based on,
+// a visible content rect to make the 4 corner points from, and a transformation
+// to move it and its normal into screen space.
+DrawPolygon::DrawPolygon(DrawQuad* original_ref,
+                         const gfx::RectF& visible_content_rect,
+                         const gfx::Transform& transform,
+                         int draw_order_index)
+    : order_index_(draw_order_index), original_ref_(original_ref) {
+  normal_ = default_normal;
+  gfx::Point3F points[8];
+  int num_vertices_in_clipped_quad;
+  gfx::QuadF send_quad(visible_content_rect);
+
+  // Doing this mapping here is very important, since we can't just transform
+  // the points without clipping and not run into strange geometry issues when
+  // crossing w = 0. At this point, in the constructor, we know that we're
+  // working with a quad, so we can reuse the MathUtil::MapClippedQuad3d
+  // function instead of writing a generic polygon version of it.
+  MathUtil::MapClippedQuad3d(
+      transform, send_quad, points, &num_vertices_in_clipped_quad);
+  for (int i = 0; i < num_vertices_in_clipped_quad; i++) {
+    points_.push_back(points[i]);
+  }
+  ApplyTransformToNormal(transform);
 }
 
 DrawPolygon::~DrawPolygon() {
