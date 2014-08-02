@@ -32,8 +32,6 @@ crbug.com/9798 [ Win Release ] http/tests/xmlhttprequest/small-chunks-response-t
 crbug.com/339118 perf/compositor-touch-hit-rects.html [ Failure Pass ]
 crbug.com/339118 fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure Pass ]
 
-crbug.com/358947 fast/events/updateLayoutForHitTest.html [ NeedsRebaseline ]
-
 # Vertical text needs to be implemented in platforms other than OS X.
 crbug.com/65877 [ Linux Win ] fast/writing-mode/japanese-ruby-vertical-lr.html [ Failure Pass ]
 crbug.com/65877 [ Linux Win ] fast/writing-mode/japanese-ruby-vertical-rl.html [ Failure Pass ]
