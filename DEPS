@@ -42,7 +42,7 @@ vars = {
   "google_toolbox_for_mac_revision": "662",
   "libaddressinput_revision": "316",
   "libphonenumber_revision": "621",
-  "libvpx_revision": "286315",
+  "libvpx_revision": "287125",
   "lss_revision": "26",
   "sfntly_revision": "239",
   "lighttpd_revision": "33737",
@@ -126,13 +126,13 @@ deps = {
     "/external/w3c/csswg-test.git@bacbb4a8dca702cd86646761fde96793db13d4f1",
 
   "src/third_party/icu":
-    "/trunk/deps/third_party/icu52@285387",
+    "/trunk/deps/third_party/icu52@287122",
 
   "src/third_party/libexif/sources":
     "/trunk/deps/third_party/libexif/sources@265008",
 
   "src/third_party/hunspell":
-    "/trunk/deps/third_party/hunspell@283809",
+    "/trunk/deps/third_party/hunspell@287123",
 
   "src/third_party/hunspell_dictionaries":
     "/trunk/deps/third_party/hunspell_dictionaries@255132",
@@ -243,7 +243,7 @@ deps = {
     "/trunk/deps/third_party/libjpeg_turbo@272637",
 
   "src/third_party/flac":
-    "/trunk/deps/third_party/flac@222897",
+    "/trunk/deps/third_party/flac@287124",
 
   "src/third_party/pyftpdlib/src":
     (Var("googlecode_url") % "pyftpdlib") + "/trunk@977",
