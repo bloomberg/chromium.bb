@@ -10,22 +10,25 @@
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/sync_helper.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/native_theme/native_theme.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/sync_helper.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
-#include "ui/gfx/color_utils.h"
-#include "ui/native_theme/native_theme.h"
+#endif
 
 namespace {
 
@@ -192,6 +195,7 @@ bool HasBeenShutdown(Profile* profile) {
 }
 
 bool HasSyncedExtensions(Profile* profile) {
+#if defined(ENABLE_EXTENSIONS)
   extensions::ExtensionSystem* system =
       extensions::ExtensionSystem::Get(profile);
   if (system && system->extension_service()) {
@@ -211,6 +215,7 @@ bool HasSyncedExtensions(Profile* profile) {
       }
     }
   }
+#endif
   return false;
 }
 
