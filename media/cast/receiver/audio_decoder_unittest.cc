@@ -35,6 +35,11 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
       : cast_environment_(new StandaloneCastEnvironment()),
         cond_(&lock_) {}
 
+  virtual ~AudioDecoderTest() {
+    // Make sure all threads have stopped before the environment goes away.
+    cast_environment_->Shutdown();
+  }
+
  protected:
   virtual void SetUp() OVERRIDE {
     audio_decoder_.reset(new AudioDecoder(cast_environment_,

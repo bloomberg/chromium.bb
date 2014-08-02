@@ -44,6 +44,11 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
     vp8_encoder_.Initialize();
   }
 
+  virtual ~VideoDecoderTest() {
+    // Make sure all threads have stopped before the environment goes away.
+    cast_environment_->Shutdown();
+  }
+
  protected:
   virtual void SetUp() OVERRIDE {
     video_decoder_.reset(new VideoDecoder(cast_environment_, GetParam()));

@@ -30,11 +30,14 @@ StandaloneCastEnvironment::StandaloneCastEnvironment()
 }
 
 StandaloneCastEnvironment::~StandaloneCastEnvironment() {
-  DCHECK(CalledOnValidThread());
+  CHECK(CalledOnValidThread());
+  CHECK(!main_thread_.IsRunning());
+  CHECK(!audio_thread_.IsRunning());
+  CHECK(!video_thread_.IsRunning());
 }
 
 void StandaloneCastEnvironment::Shutdown() {
-  DCHECK(CalledOnValidThread());
+  CHECK(CalledOnValidThread());
   main_thread_.Stop();
   audio_thread_.Stop();
   video_thread_.Stop();

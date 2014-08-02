@@ -14,6 +14,10 @@ namespace cast {
 
 // A complete CastEnvironment where all task runners are spurned from
 // internally-owned threads.  Uses base::DefaultTickClock as a clock.
+//
+// A user of StandaloneCastEnvironment *must* call Shutdown() on the same thread
+// that constructed the instance before the ref-count reaches zero.
+// http://crbug.com/396480
 class StandaloneCastEnvironment : public CastEnvironment,
                                   public base::ThreadChecker {
  public:
