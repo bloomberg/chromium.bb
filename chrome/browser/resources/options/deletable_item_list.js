@@ -92,6 +92,13 @@ cr.define('options', function() {
      * @private
      */
     handleFocus_: function() {
+      // This handler is also fired when the child receives focus as a result of
+      // the item getting selected by the customized mouse/keyboard handling in
+      // SelectionController. Take care not to destroy a potential multiple
+      // selection in this case.
+      if (this.selected)
+        return;
+
       var list = this.parentNode;
       var index = list.getIndexOfListItem(this);
       list.selectionModel.selectedIndex = index;
