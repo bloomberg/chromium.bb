@@ -179,15 +179,6 @@ public class ScreenOrientationListener {
     }
 
     /**
-     * Creates a ScreenOrientationConfigurationListener backend regardless of
-     * the current SDK.
-     */
-    @VisibleForTesting
-    void injectConfigurationListenerBackendForTest() {
-        mBackend = new ScreenOrientationConfigurationListener();
-    }
-
-    /**
      * Add |observer| in the ScreenOrientationListener observer list and
      * immediately call |onScreenOrientationChanged| on it with the current
      * orientation value.
