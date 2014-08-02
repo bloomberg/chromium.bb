@@ -400,9 +400,9 @@ as a text notification when it arrives:
 
 <pre>
 function showPushMessage(message) {
-  var notification = window.webkitNotifications.createNotification(
-    '', 'New notification', message.payload + " [" + message.subchannelId + "]");
-  notification.show();
+  new Notification('New notification', {
+    body: message.payload + " [" + message.subchannelId + "]"
+  });
 }
 </pre>
 

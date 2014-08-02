@@ -327,28 +327,24 @@ function checkForNickReference(server, channel, nick, message) {
   }
 
   // Notifications will be enabled by the app install. Otherwise, don't notity.
-  if (window.webkitNotifications.checkPermission() != 0) {
+  if (Notification.permission != "granted") {
     return;
   }
-  
+
   // Remove a previous notification from the same channel. Show the newer one.
   if (notifications[server.name + channel]) {
-    notifications[server.name + channel].cancel();
+    notifications[server.name + channel].close();
   }
 
-  var title = "On " + server.name + channel;
-  var icon = "http://www.google.com/favicon.ico";
-  var text = nick + ": " + message;
-  var url = location.protocol + "//" + location.host + "/notification.html";
-  url += "?title=" + encodeURIComponent(title) +
-         "&content=" + encodeURIComponent(text);
+  var n = new Notification("On " + server.name + channel, {
+    icon: "https://www.google.com/favicon.ico",
+    body: nick + ": " + message,
+  });
 
-  var n = window.webkitNotifications.createHTMLNotification(url);
-  n.ondisplay = function() {};
+  n.onshow = function() {};
   n.onclose = function() {
     delete notifications[server.name + channel];
   };
-  n.show();
 
   notifications[server.name + channel] = n;
 }
