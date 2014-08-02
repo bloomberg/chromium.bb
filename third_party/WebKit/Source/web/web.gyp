@@ -104,6 +104,15 @@
                         '<(DEPTH)/url/url.gyp:url_lib',
                         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
                     ],
+                    'variables': {
+                      'clang_warning_flags_unset': [
+                        # FIXME: It would be nice to enable this in shared builds too,
+                        # but the test files have global constructors from the GTEST macro
+                        # and we pull in the test files into the blink_web target in the
+                        # shared build.
+                        '-Wglobal-constructors',
+                      ],
+                    },
                     'sources': [
                         # Compile Blink unittest files into blink_web.dll in component build mode
                         '<@(bindings_unittest_files)',
@@ -119,16 +128,6 @@
                             'dependencies': [
                                 '<(DEPTH)/third_party/nss/nss.gyp:*',
                             ],
-                        }],
-                        ['clang==1', {
-                            # FIXME: It would be nice to enable this in shared builds too,
-                            # but the test files have global constructors from the GTEST macro
-                            # and we pull in the test files into the blink_web target in the
-                            # shared build.
-                            'cflags!': ['-Wglobal-constructors'],
-                            'xcode_settings': {
-                              'WARNING_CFLAGS!': ['-Wglobal-constructors'],
-                            },
                         }],
                     ],
                     'msvs_settings': {

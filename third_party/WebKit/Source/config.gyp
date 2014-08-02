@@ -60,6 +60,7 @@
       ],
       'variables': {
         'chromium_code': 1,
+        'clang_warning_flags': [ '-Wglobal-constructors' ],
       },
       'conditions': [
         ['OS=="win" and component=="shared_library"', {
@@ -100,12 +101,6 @@
           # timesNewRoman.unstatic.3258 and colorTransparent.unstatic.4879.
           'cflags': ['-Wno-uninitialized'],
         }],
-        ['clang==1', {
-          'cflags': ['-Wglobal-constructors'],
-          'xcode_settings': {
-            'WARNING_CFLAGS': ['-Wglobal-constructors'],
-          },
-        }],
         # Only enable the blink_gc_plugin when using clang and chrome plugins.
         ['blink_gc_plugin==1 and clang==1 and clang_use_chrome_plugins==1', {
           'cflags': ['<!@(../../../tools/clang/scripts/blink_gc_plugin_flags.sh enable-oilpan=<(enable_oilpan) dump-graph=<(blink_gc_plugin_dump_graph))'],
@@ -135,12 +130,9 @@
       '<(DEPTH)/testing/gtest.gyp:gtest',
     ],
     'direct_dependent_settings': {
-      'cflags!': ['-Wglobal-constructors'],
-      'xcode_settings': {
-        'WARNING_CFLAGS!': ['-Wglobal-constructors'],
-      },
       'variables': {
         'chromium_code': 1,
+        'clang_warning_flags_unset': [ '-Wglobal-constructors' ],
       },
     },
   }
