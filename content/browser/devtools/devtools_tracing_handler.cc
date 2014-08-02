@@ -103,7 +103,8 @@ void DevToolsTracingHandler::ReadRecordingResult(
       if (buffer.size())
         buffer.append(",");
       buffer.append(item);
-      if (i % 1000 == 0) {
+      const size_t kMessageSizeThreshold = 1024 * 1024;
+      if (buffer.size() > kMessageSizeThreshold) {
         OnTraceDataCollected(buffer);
         buffer.clear();
       }
