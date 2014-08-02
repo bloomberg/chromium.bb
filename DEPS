@@ -210,9 +210,8 @@ deps = {
   "src/third_party/swig/Lib":
     "/trunk/deps/third_party/swig/Lib@" + Var("swig_revision"),
 
-  # Make sure you update the two functional.DEPS and webdriver.DEPS too.
   "src/third_party/webdriver/pylib":
-    (Var("googlecode_url") % "selenium") + "/trunk/py@18337",
+    (Var("googlecode_url") % "selenium") + "/trunk/py@18456",
 
   "src/third_party/libvpx":
     "/trunk/deps/third_party/libvpx@" +
