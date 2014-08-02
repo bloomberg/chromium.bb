@@ -2735,10 +2735,9 @@
             'common/net/x509_certificate_model_unittest.cc',
           ],
         }],
-        ['use_openssl==1', {
+        ['OS=="android"', {
           'sources/': [
-            # OpenSSL build does not support firefox importer. See
-            # http://crbug.com/64926
+            # Android doesn't build the importer.
             ['exclude', '^browser/importer/'],
           ],
         }],
