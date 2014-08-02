@@ -336,4 +336,12 @@ SkColorType RenderWidgetHostViewChildFrame::PreferredReadbackFormat() {
   return kN32_SkColorType;
 }
 
+BrowserAccessibilityManager*
+RenderWidgetHostViewChildFrame::CreateBrowserAccessibilityManager(
+    BrowserAccessibilityDelegate* delegate) {
+  // This eventually needs to be implemented for cross-process iframes.
+  // http://crbug.com/368298
+  return NULL;
+}
+
 }  // namespace content

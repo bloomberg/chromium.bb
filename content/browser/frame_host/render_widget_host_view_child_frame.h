@@ -151,6 +151,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
       gfx::NativeViewAccessible accessible_parent) OVERRIDE;
   virtual gfx::NativeViewId GetParentForWindowlessPlugin() const OVERRIDE;
 #endif
+  virtual BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
+      BrowserAccessibilityDelegate* delegate) OVERRIDE;
 
   virtual SkColorType PreferredReadbackFormat() OVERRIDE;
 
