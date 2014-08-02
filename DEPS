@@ -43,7 +43,7 @@ vars = {
   "libaddressinput_revision": "316",
   "libphonenumber_revision": "621",
   "libvpx_revision": "287125",
-  "lss_revision": "26",
+  "lss_revision": "31",
   "sfntly_revision": "239",
   "lighttpd_revision": "33737",
   "skia_revision": "c6f57840475cb17aa1cf2f50c181d3235b924056",
