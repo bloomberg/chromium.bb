@@ -5726,7 +5726,7 @@ void Document::getTransitionElementData(Vector<TransitionElementData>& elementDa
 void Document::hideTransitionElements(const AtomicString& cssSelector)
 {
     TrackExceptionState exceptionState;
-    RefPtr<StaticNodeList> nodeList = querySelectorAll(cssSelector, exceptionState);
+    RefPtrWillBeRawPtr<StaticNodeList> nodeList = querySelectorAll(cssSelector, exceptionState);
     if (nodeList && !exceptionState.hadException()) {
         unsigned nodeListLength = nodeList->length();
 

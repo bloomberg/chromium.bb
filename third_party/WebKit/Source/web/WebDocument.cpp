@@ -273,7 +273,7 @@ void WebDocument::setIsTransitionDocument()
 
 void WebDocument::beginExitTransition(const WebString& cssSelector)
 {
-    RefPtr<Document> document = unwrap<Document>();
+    RefPtrWillBeRawPtr<Document> document = unwrap<Document>();
     document->hideTransitionElements(cssSelector);
     document->styleEngine()->enableExitTransitionStylesheets();
 }
