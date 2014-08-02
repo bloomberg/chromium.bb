@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -30,17 +31,25 @@
 
 namespace {
 
+// Constants related to the Material Design NTP field trial.
+const char kMaterialDesignNTPFieldTrialName[] = "MaterialDesignNTP";
+const char kMaterialDesignNTPFieldTrialEnabledPrefix[] = "Enabled";
+
+// Class name to be used for the new design in local resources.
+const char kMaterialDesignNTPClassName[] = "md";
+
 // Signifies a locally constructed resource, i.e. not from grit/.
 const int kLocalResource = -1;
 
 const char kConfigDataFilename[] = "config.js";
+const char kLocalNTPFilename[] = "local-ntp.html";
 
 const struct Resource{
   const char* filename;
   int identifier;
   const char* mime_type;
 } kResources[] = {
-  { "local-ntp.html", IDR_LOCAL_NTP_HTML, "text/html" },
+  { kLocalNTPFilename, IDR_LOCAL_NTP_HTML, "text/html" },
   { "local-ntp.js", IDR_LOCAL_NTP_JS, "application/javascript" },
   { "local-ntp-util.js", IDR_LOCAL_NTP_UTIL_JS, "application/javascript" },
   { kConfigDataFilename, kLocalResource, "application/javascript" },
@@ -74,6 +83,14 @@ bool DefaultSearchProviderIsGoogle(Profile* profile) {
       (TemplateURLPrepopulateData::GetEngineType(
           *default_provider, template_url_service->search_terms_data()) ==
        SEARCH_ENGINE_GOOGLE);
+}
+
+// Returns whether the user is part of a group where the Material Design NTP is
+// enabled.
+bool IsMaterialDesignEnabled() {
+  return StartsWithASCII(
+      base::FieldTrialList::FindFullName(kMaterialDesignNTPFieldTrialName),
+      kMaterialDesignNTPFieldTrialEnabledPrefix, true);
 }
 
 // Adds a localized string keyed by resource id to the dictionary.
@@ -151,6 +168,13 @@ void LocalNtpSource::StartDataRequest(
     callback.Run(base::RefCountedString::TakeString(&config_data_js));
     return;
   }
+  if (stripped_path == kLocalNTPFilename) {
+    SendResourceWithClass(
+        IDR_LOCAL_NTP_HTML,
+        IsMaterialDesignEnabled() ? kMaterialDesignNTPClassName : "",
+        callback);
+    return;
+  }
   float scale = 1.0f;
   std::string filename;
   webui::ParsePathAndScale(
@@ -199,4 +223,15 @@ std::string LocalNtpSource::GetContentSecurityPolicyFrameSrc() const {
   // Allow embedding of most visited iframes.
   return base::StringPrintf("frame-src %s;",
                             chrome::kChromeSearchMostVisitedUrl);
+}
+
+void LocalNtpSource::SendResourceWithClass(
+    int resource_id,
+    const std::string& class_name,
+    const content::URLDataSource::GotDataCallback& callback) {
+  base::StringPiece resource_data =
+      ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
+  std::string response(resource_data.as_string());
+  ReplaceFirstSubstringAfterOffset(&response, 0, "{{CLASS}}", class_name);
+  callback.Run(base::RefCountedString::TakeString(&response));
 }

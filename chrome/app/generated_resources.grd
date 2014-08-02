@@ -6228,6 +6228,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_SYNC_APP_LIST_DESCRIPTION" desc="Description for the flag to enable syncing the app list.">
         Enable App Launcher sync. This also enables Folders where available (non OSX).
       </message>
+      <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_NTP_NAME" desc="Name of the flag to enable the Material Design New Tab Page (NTP).">
+        Enable Material Design NTP.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_NTP_DESCRIPTION" desc="Description for the flag to enable the Material Design New Tab Page (NTP).">
+        Enable the Material Design New Tab Page.
+      </message>
       <if expr="is_macosx">
         <message name="IDS_FLAGS_ENABLE_AVFOUNDATION_NAME" desc="Name of the flag to enable Mac AVFoundation.">
           Enable use of Mac OS X AVFoundation APIs, instead of QTKit.

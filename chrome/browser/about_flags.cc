@@ -894,6 +894,14 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableNTPOtherSessionsMenu)
   },
   {
+    "enable-material-design-ntp",
+    IDS_FLAGS_ENABLE_MATERIAL_DESIGN_NTP_NAME,
+    IDS_FLAGS_ENABLE_MATERIAL_DESIGN_NTP_DESCRIPTION,
+    kOsDesktop,
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableMaterialDesignNTP,
+                              switches::kDisableMaterialDesignNTP)
+  },
+  {
     "enable-devtools-experiments",
     IDS_FLAGS_ENABLE_DEVTOOLS_EXPERIMENTS_NAME,
     IDS_FLAGS_ENABLE_DEVTOOLS_EXPERIMENTS_DESCRIPTION,
