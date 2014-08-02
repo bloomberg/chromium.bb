@@ -9,6 +9,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "components/user_manager/user.h"
 
 namespace extensions {
 
@@ -40,11 +41,9 @@ FeedbackServiceImpl::~FeedbackServiceImpl() {
 }
 
 std::string FeedbackServiceImpl::GetUserEmail() {
-  chromeos::UserManager* manager = chromeos::UserManager::Get();
-  if (!manager)
-    return std::string();
-  else
-    return manager->GetLoggedInUser()->display_email();
+  const chromeos::UserManager* manager = chromeos::UserManager::Get();
+  const user_manager::User* user = manager ? manager->GetActiveUser() : NULL;
+  return user ? user->display_email() : std::string();
 }
 
 void FeedbackServiceImpl::GetHistograms(std::string* histograms) {
