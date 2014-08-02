@@ -31,6 +31,7 @@ class FileCache(object):
 
 
 class Flattener(object):
+  _IF_TAGS_REG = "</?if[^>]*?>"
   _INCLUDE_REG = "<include[^>]+src=['\"]([^>]*)['\"]>"
 
   def __init__(self, file):
@@ -45,6 +46,11 @@ class Flattener(object):
         self._inline_file(os.path.join(file_dir, match.group(1)))
       else:
         self.index += 1
+
+    # Replace every occurrence of tags like <if expr="..."> and </if>
+    # with an empty string.
+    for i, line in enumerate(self.lines):
+      self.lines[i] = line[:2] + (re.sub(self._IF_TAGS_REG, "", line[2]),)
 
     self.contents = "\n".join(l[2] for l in self.lines)
 

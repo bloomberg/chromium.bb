@@ -68,5 +68,35 @@ debug(global);
     self.assertLineNumber(11, LineNumber("/checked.js", 8))
 
 
+class IfStrippingTest(unittest.TestCase):
+  def __init__(self, *args, **kwargs):
+    unittest.TestCase.__init__(self, *args, **kwargs)
+    self.maxDiff = None
+
+  def setUp(self):
+    FileCache._cache["/century.js"] = """
+  function getCurrentCentury() {
+<if expr="netscape_os">
+    alert("Oh wow!");
+    return "XX";
+</if>
+    return "XXI";
+  }
+""".strip()
+
+    self.flattener_ = Flattener("/century.js")
+
+  def testIfStripping(self):
+    self.assertMultiLineEqual("""
+  function getCurrentCentury() {
+
+    alert("Oh wow!");
+    return "XX";
+
+    return "XXI";
+  }
+""".strip(), self.flattener_.contents)
+
+
 if __name__ == '__main__':
   unittest.main()
