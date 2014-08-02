@@ -4834,7 +4834,7 @@
    fun:_ZN3WTF9BitVector13OutOfLineBits6createEm
    fun:_ZN3WTF9BitVector15resizeOutOfLineEm
    fun:_ZN3WTF9BitVector10ensureSizeEm
-   fun:_ZN3WTF9BitVectorC1Em
+   fun:_ZN3WTF9BitVectorC*
    fun:_ZN5blink10UseCounter17recordMeasurementENS0_7FeatureE
 }
 {
@@ -6263,6 +6263,25 @@
    fun:_ZN5blink11RenderBlock6layoutEv
 }
 {
+   bug_397066_d
+   Memcheck:Uninitialized
+   fun:_ZN5blink13InlineFlowBox45clearDescendantsHaveSameLineHeightAndBaselineEv
+   fun:_ZN5blink13InlineFlowBox9addToLineEPNS_9InlineBoxE
+   ...
+   fun:_ZN5blink15RenderBlockFlow13constructLineERNS_11BidiRunListINS_7BidiRunEEERKNS_8LineInfoE
+   fun:_ZN5blink15RenderBlockFlow27createLineBoxesFromBidiRuns*
+}
+{
+   bug_397066_e
+   Memcheck:Uninitialized
+   fun:_ZN5blink13InlineFlowBox9addToLineEPNS_9InlineBox*
+   fun:_ZN5blink15RenderBlockFlow*
+   ...
+   fun:_ZN5blink15RenderBlockFlow27createLineBoxesFromBidiRunsEjRNS*
+   fun:_ZN5blink15RenderBlockFlow26layoutRunsAndFloatsInRangeERNS_15LineLayoutStateERNS_12BidiResolver*
+   fun:_ZN5blink15RenderBlockFlow19layoutRunsAndFloatsERNS_15LineLayoutState*
+}
+{
    bug_397075_a
    Memcheck:Uninitialized
    fun:_ZN2v88internal6Object11SetPropertyEPNS0_14LookupIteratorENS0_6HandleIS1_EENS0_10StrictModeENS1_14StoreFromKeyedE
@@ -6309,4 +6328,35 @@
    fun:_ZN2v88internal19JSObjectWalkVisitorINS0_26AllocationSiteUsageContextEE13StructureWalkENS0_6HandleINS0_8JSObjectEEE
    fun:_ZN2v88internal8JSObject8DeepCopyENS0_6HandleIS1_EEPNS0_26AllocationSiteUsageContextENS1_13DeepCopyHintsE
    fun:_ZN2v88internal27Runtime_CreateObjectLiteralEiPPNS0_6ObjectEPNS0_7IsolateE
+}
+{
+   bug_399852
+   Memcheck:Uninitialized
+   fun:_ZN5blink14DateComponents9parseTimeERKN3WTF6StringEjRj
+   fun:_ZNK5blink13TimeInputType29parseToDateComponentsInternalERKN3WTF6StringEPNS_14DateComponentsE
+   fun:_ZNK5blink24BaseDateAndTimeInputType21parseToDateComponentsERKN3WTF6StringEPNS_14DateComponentsE
+}
+{
+   bug_399853_a
+   Memcheck:Uninitialized
+   fun:_ZNK8SkStroke10strokePathERK6SkPathPS0_
+   fun:_ZNK11SkStrokeRec11applyToPathEP6SkPathRKS0_
+   fun:_ZNK7SkPaint11getFillPathERK6SkPathPS0_PK6SkRect
+}
+{
+   bug_399853_b
+   Memcheck:Uninitialized
+   fun:_ZNK8SkStroke10strokePathERK6SkPathPS0_
+   fun:_ZNK11SkStrokeRec11applyToPathEP6SkPathRKS0_
+   fun:_ZN15SkScalerContext15internalGetPathERK7SkGlyphP6SkPathS4_P8SkMatrix
+}
+{
+   bug_399854
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN5blink4Heap19checkAndMarkPointerEPNS_7VisitorEPh
+   fun:_ZN5blink11ThreadState10visitStackEPNS_7VisitorE
+   fun:_ZN5blink11ThreadState15visitStackRootsEPNS_7VisitorE
+   fun:_ZN5blink4Heap14collectGarbageENS_11ThreadState10StackStateE
+   fun:_ZN5blink14V8GCController10gcEpilogueEN2v86GCTypeENS1_15GCCallbackFlagsE
 }
