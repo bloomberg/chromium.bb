@@ -457,3 +457,7 @@ void TtsControllerImpl::SetTtsEngineDelegate(
     TtsEngineDelegate* delegate) {
   tts_engine_delegate_ = delegate;
 }
+
+TtsEngineDelegate* TtsControllerImpl::GetTtsEngineDelegate() {
+  return tts_engine_delegate_;
+}

@@ -98,6 +98,9 @@ class TtsEngineDelegate {
 
   // Resume speaking this utterance.
   virtual void Resume(Utterance* utterance) = 0;
+
+  // Load the built-in component extension for ChromeOS.
+  virtual bool LoadBuiltInTtsExtension(Profile* profile) = 0;
 };
 
 // Class that wants to receive events on utterances.
@@ -320,6 +323,10 @@ class TtsController {
   // Set the delegate that processes TTS requests with user-installed
   // extensions.
   virtual void SetTtsEngineDelegate(TtsEngineDelegate* delegate) = 0;
+
+  // Get the delegate that processes TTS requests with user-installed
+  // extensions.
+  virtual TtsEngineDelegate* GetTtsEngineDelegate() = 0;
 
   // For unit testing.
   virtual void SetPlatformImpl(TtsPlatformImpl* platform_impl) = 0;

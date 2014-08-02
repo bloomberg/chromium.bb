@@ -2,20 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/component_loader.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/speech/extension_api/tts_engine_extension_observer.h"
 #include "chrome/browser/speech/tts_platform.h"
-#include "chrome/common/extensions/extension_constants.h"
-#include "extensions/browser/extension_system.h"
 
 // Chrome OS doesn't have native TTS, instead it includes a built-in
 // component extension that provides speech synthesis. This class includes
 // an implementation of LoadBuiltInTtsExtension and dummy implementations of
 // everything else.
-class TtsPlatformImplChromeOs
-    : public TtsPlatformImpl {
+
+class Profile;
+
+class TtsPlatformImplChromeOs : public TtsPlatformImpl {
  public:
   // TtsPlatformImpl overrides:
   virtual bool PlatformImplAvailable() OVERRIDE {
@@ -23,19 +19,11 @@ class TtsPlatformImplChromeOs
   }
 
   virtual bool LoadBuiltInTtsExtension(Profile* profile) OVERRIDE {
-    // Check to see if the engine was previously loaded.
-    if (TtsEngineExtensionObserver::GetInstance(profile)->SawExtensionLoad(
-            extension_misc::kSpeechSynthesisExtensionId, true)) {
-      return false;
-    }
-
-    // Load the component extension into this profile.
-    ExtensionService* extension_service =
-        extensions::ExtensionSystem::Get(profile)->extension_service();
-    DCHECK(extension_service);
-    extension_service->component_loader()
-        ->AddChromeOsSpeechSynthesisExtension();
-    return true;
+    TtsEngineDelegate* tts_engine_delegate =
+        TtsController::GetInstance()->GetTtsEngineDelegate();
+    if (tts_engine_delegate)
+      return tts_engine_delegate->LoadBuiltInTtsExtension(profile);
+    return false;
   }
 
   virtual bool Speak(

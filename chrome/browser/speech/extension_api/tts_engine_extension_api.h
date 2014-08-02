@@ -40,6 +40,7 @@ class TtsExtensionEngine : public TtsEngineDelegate {
   virtual void Stop(Utterance* utterance) OVERRIDE;
   virtual void Pause(Utterance* utterance) OVERRIDE;
   virtual void Resume(Utterance* utterance) OVERRIDE;
+  virtual bool LoadBuiltInTtsExtension(Profile* profile) OVERRIDE;
 };
 
 // Hidden/internal extension function used to allow TTS engine extensions

@@ -42,6 +42,7 @@ class TtsControllerImpl : public TtsController {
   virtual void RemoveVoicesChangedDelegate(
       VoicesChangedDelegate* delegate) OVERRIDE;
   virtual void SetTtsEngineDelegate(TtsEngineDelegate* delegate) OVERRIDE;
+  virtual TtsEngineDelegate* GetTtsEngineDelegate() OVERRIDE;
   virtual void SetPlatformImpl(TtsPlatformImpl* platform_impl) OVERRIDE;
   virtual int QueueSize() OVERRIDE;
 
