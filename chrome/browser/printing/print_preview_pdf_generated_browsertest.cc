@@ -368,7 +368,7 @@ class PrintPreviewPdfGeneratedBrowserTest : public InProcessBrowserTest {
 
     ASSERT_GT(num_pages, 0);
     double max_width_in_pixels =
-        ConvertPointsToPixelDouble(max_width_in_points);
+        ConvertUnitDouble(max_width_in_points, kPointsPerInch, kDpi);
 
     for (int i = 0; i < num_pages; ++i) {
       double width_in_points, height_in_points;
@@ -378,8 +378,10 @@ class PrintPreviewPdfGeneratedBrowserTest : public InProcessBrowserTest {
                                       &width_in_points,
                                       &height_in_points));
 
-      double width_in_pixels = ConvertPointsToPixelDouble(width_in_points);
-      double height_in_pixels = ConvertPointsToPixelDouble(height_in_points);
+      double width_in_pixels = ConvertUnitDouble(
+          width_in_points, kPointsPerInch, kDpi);
+      double height_in_pixels = ConvertUnitDouble(
+          height_in_points, kPointsPerInch, kDpi);
 
       // The image will be rotated if |width_in_pixels| is greater than
       // |height_in_pixels|. This is because the page will be rotated to fit
