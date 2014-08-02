@@ -107,12 +107,12 @@ VideoFrameRecorder::VideoFrameRecorder()
 }
 
 VideoFrameRecorder::~VideoFrameRecorder() {
-  SetEnableRecording(false);
-  STLDeleteElements(&recorded_frames_);
+  DetachVideoEncoderWrapper();
 }
 
 scoped_ptr<VideoEncoder> VideoFrameRecorder::WrapVideoEncoder(
     scoped_ptr<VideoEncoder> encoder) {
+  DCHECK(!encoder_task_runner_);
   DCHECK(!caller_task_runner_);
   caller_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
@@ -123,6 +123,28 @@ scoped_ptr<VideoEncoder> VideoFrameRecorder::WrapVideoEncoder(
   recording_encoder_ = recording_encoder->AsWeakPtr();
 
   return recording_encoder.PassAs<VideoEncoder>();
+}
+
+void VideoFrameRecorder::DetachVideoEncoderWrapper() {
+  DCHECK(!caller_task_runner_ || caller_task_runner_->BelongsToCurrentThread());
+
+  // Immediately detach the wrapper from this recorder.
+  weak_factory_.InvalidateWeakPtrs();
+
+  // Clean up any pending recorded frames.
+  STLDeleteElements(&recorded_frames_);
+  content_bytes_ = 0;
+
+  // Tell the wrapper to stop recording and posting frames to us.
+  if (encoder_task_runner_) {
+    encoder_task_runner_->PostTask(FROM_HERE,
+        base::Bind(&RecordingVideoEncoder::SetEnableRecording,
+                   recording_encoder_, false));
+  }
+
+  // Detach this recorder from the calling and encode threads.
+  caller_task_runner_ = NULL;
+  encoder_task_runner_ = NULL;
 }
 
 void VideoFrameRecorder::SetEnableRecording(bool enable_recording) {

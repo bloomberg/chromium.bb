@@ -23,7 +23,7 @@ class VideoEncoder;
 
 // Allows sequences of DesktopFrames passed to a VideoEncoder to be recorded.
 //
-// VideoFrameRecorder is design to support applications which use a dedicated
+// VideoFrameRecorder is designed to support applications which use a dedicated
 // thread for video encoding, but need to manage that process from a "main"
 // or "control" thread.
 //
@@ -50,8 +50,13 @@ class VideoFrameRecorder {
 
   // Wraps the supplied VideoEncoder, returning a replacement VideoEncoder that
   // will route frames to the recorder, as well as passing them for encoding.
-  // This may be called at most once on each VideoFrameRecorder instance.
+  // The caller must delete the previous recording VideoEncoder, or call
+  // DetachVideoEncoderWrapper() before calling WrapVideoEncoder() to create
+  // a new wrapper.
   scoped_ptr<VideoEncoder> WrapVideoEncoder(scoped_ptr<VideoEncoder> encoder);
+
+  // Detaches the existing VideoEncoder wrapper, stopping it from recording.
+  void DetachVideoEncoderWrapper();
 
   // Enables/disables frame recording. Frame recording is initially disabled.
   void SetEnableRecording(bool enable_recording);

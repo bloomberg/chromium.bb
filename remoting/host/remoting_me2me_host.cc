@@ -68,6 +68,7 @@
 #include "remoting/host/token_validator_factory_impl.h"
 #include "remoting/host/usage_stats_consent.h"
 #include "remoting/host/username.h"
+#include "remoting/host/video_frame_recorder_host_extension.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/pairing_registry.h"
@@ -124,6 +125,9 @@ const char kSignalParentSwitchName[] = "signal-parent";
 
 // Command line switch used to enable VP9 encoding.
 const char kEnableVp9SwitchName[] = "enable-vp9";
+
+// Command line switch used to enable and configure the frame-recorder.
+const char kFrameRecorderBufferKbName[] = "frame-recorder-buffer-kb";
 
 // Value used for --host-config option to indicate that the path must be read
 // from stdin.
@@ -289,6 +293,7 @@ class HostProcess
   std::string host_owner_;
   bool use_service_account_;
   bool enable_vp9_;
+  int64_t frame_recorder_buffer_size_;
 
   scoped_ptr<policy_hack::PolicyWatcher> policy_watcher_;
   std::string host_domain_;
@@ -334,6 +339,7 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
       state_(HOST_INITIALIZING),
       use_service_account_(false),
       enable_vp9_(false),
+      frame_recorder_buffer_size_(0),
       host_username_match_required_(false),
       allow_nat_traversal_(true),
       allow_relay_(true),
@@ -827,6 +833,24 @@ bool HostProcess::ApplyConfig(scoped_ptr<JsonHostConfig> config) {
     config->GetBoolean(kEnableVp9ConfigPath, &enable_vp9_);
   }
 
+  // Allow the command-line to override the size of the frame recorder buffer.
+  std::string frame_recorder_buffer_kb;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          kFrameRecorderBufferKbName)) {
+    frame_recorder_buffer_kb =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            kFrameRecorderBufferKbName);
+  } else {
+    config->GetString(kFrameRecorderBufferKbConfigPath,
+                      &frame_recorder_buffer_kb);
+  }
+  if (!frame_recorder_buffer_kb.empty()) {
+    int buffer_kb = 0;
+    if (base::StringToInt(frame_recorder_buffer_kb, &buffer_kb)) {
+      frame_recorder_buffer_size_ = 1024LL * buffer_kb;
+    }
+  }
+
   return true;
 }
 
@@ -1207,6 +1231,13 @@ void HostProcess::StartHost() {
     host_->set_protocol_config(config.Pass());
   }
 
+  if (frame_recorder_buffer_size_ > 0) {
+    scoped_ptr<VideoFrameRecorderHostExtension> frame_recorder_extension(
+        new VideoFrameRecorderHostExtension());
+    frame_recorder_extension->SetMaxContentBytes(frame_recorder_buffer_size_);
+    host_->AddExtension(frame_recorder_extension.PassAs<HostExtension>());
+  }
+
   // TODO(simonmorris): Get the maximum session duration from a policy.
 #if defined(OS_LINUX)
   host_->SetMaximumSessionDuration(base::TimeDelta::FromHours(20));
@@ -1226,7 +1257,7 @@ void HostProcess::StartHost() {
       new HostStatusLogger(host_->AsWeakPtr(), ServerLogEntry::ME2ME,
                            signal_strategy_.get(), directory_bot_jid_));
 
-  // Set up repoting the host status notifications.
+  // Set up reporting the host status notifications.
 #if defined(REMOTING_MULTI_PROCESS)
   host_event_logger_.reset(
       new IpcHostEventLogger(host_->AsWeakPtr(), daemon_channel_.get()));

@@ -42,6 +42,8 @@ extern const char kPrivateKeyConfigPath[];
 extern const char kUsageStatsConsentConfigPath[];
 // Whether to offer VP9 encoding to clients.
 extern const char kEnableVp9ConfigPath[];
+// Number of Kibibytes of frame data to allow each client to record.
+extern const char kFrameRecorderBufferKbConfigPath[];
 
 // HostConfig interace provides read-only access to host configuration.
 class HostConfig {

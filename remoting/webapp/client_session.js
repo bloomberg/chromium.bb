@@ -362,7 +362,8 @@ remoting.ClientSession.Capability = {
   // resolution to the host once connection has been established. See
   // this.plugin_.notifyClientResolution().
   SEND_INITIAL_RESOLUTION: 'sendInitialResolution',
-  RATE_LIMIT_RESIZE_REQUESTS: 'rateLimitResizeRequests'
+  RATE_LIMIT_RESIZE_REQUESTS: 'rateLimitResizeRequests',
+  VIDEO_RECORDER: 'videoRecorder'
 };
 
 /**

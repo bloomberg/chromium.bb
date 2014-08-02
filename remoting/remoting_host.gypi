@@ -251,6 +251,8 @@
             'host/username.h',
             'host/video_frame_recorder.cc',
             'host/video_frame_recorder.h',
+            'host/video_frame_recorder_host_extension.cc',
+            'host/video_frame_recorder_host_extension.h',
             'host/video_scheduler.cc',
             'host/video_scheduler.h',
             'host/win/com_imported_mstscax.tlh',

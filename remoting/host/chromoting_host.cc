@@ -18,6 +18,7 @@
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/input_injector.h"
+#include "remoting/host/video_frame_recorder.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/host_stub.h"
