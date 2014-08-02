@@ -1,0 +1,13 @@
+{
+  "name": "chrome.notificationProvider",
+  "version": "0.1",
+  "description": "Tests chrome.notificationProvider API events",
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  },
+  "permissions": [
+    "notificationProvider"
+  ]
+}

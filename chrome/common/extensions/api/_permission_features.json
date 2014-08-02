@@ -801,6 +801,10 @@
       "75E3CFFFC530582C583E4690EF97C70B9C8423B7"   // CCD Release
     ]
   },
+  "notificationProvider": {
+    "channel": "trunk",
+    "extension_types": ["extension", "platform_app"]
+  },
   "notifications": {
     // The chrome.notifications functionality listed in notifications.idl is
     // available only to extension/platform_app types. The implementation of

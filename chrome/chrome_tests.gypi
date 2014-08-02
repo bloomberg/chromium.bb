@@ -1115,6 +1115,7 @@
         'browser/extensions/api/metrics_private/metrics_apitest.cc',
         'browser/extensions/api/module/module_apitest.cc',
         'browser/extensions/api/music_manager_private/music_manager_private_browsertest.cc',
+        'browser/extensions/api/notification_provider/notification_provider_apitest.cc',
         'browser/extensions/api/notifications/notifications_apitest.cc',
         'browser/extensions/api/omnibox/omnibox_api_browsertest.cc',
         'browser/extensions/api/page_capture/page_capture_apitest.cc',

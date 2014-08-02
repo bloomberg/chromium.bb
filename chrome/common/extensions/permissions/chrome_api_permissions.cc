@@ -83,6 +83,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kGcdPrivate, "gcdPrivate"},
       {APIPermission::kGcm, "gcm"},
+      {APIPermission::kNotificationProvider, "notificationProvider"},
 
       // Register extension permissions.
       {APIPermission::kAccessibilityFeaturesModify,

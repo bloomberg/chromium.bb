@@ -82,6 +82,7 @@
       'media_galleries_private.idl',
       'metrics_private.json',
       'networking_private.json',
+      'notification_provider.idl',
       'notifications.idl',
       'omnibox.json',
       'page_capture.json',

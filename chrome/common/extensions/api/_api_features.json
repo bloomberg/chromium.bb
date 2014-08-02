@@ -563,6 +563,10 @@
     "dependencies": ["permission:networkingPrivate"],
     "contexts": ["blessed_extension"]
   },
+  "notificationProvider": {
+    "dependencies": ["permission:notificationProvider"],
+    "contexts": ["blessed_extension"]
+  },
   "notifications": {
     "dependencies": ["permission:notifications"],
     "contexts": ["blessed_extension"]

@@ -700,6 +700,8 @@
       'browser/extensions/api/networking_private/networking_private_event_router_factory.h',
       'browser/extensions/api/networking_private/networking_private_factory_chromeos.cc',
       'browser/extensions/api/networking_private/networking_private_factory_chromeos.h',
+      'browser/extensions/api/notification_provider/notification_provider_api.cc',
+      'browser/extensions/api/notification_provider/notification_provider_api.h',
       'browser/extensions/api/notifications/notifications_api.cc',
       'browser/extensions/api/notifications/notifications_api.h',
       'browser/extensions/api/omnibox/omnibox_api.cc',
