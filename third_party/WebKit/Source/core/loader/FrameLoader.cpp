@@ -263,7 +263,7 @@ void FrameLoader::clear()
 
     m_frame->script().enableEval();
 
-    m_frame->navigationScheduler().clear();
+    m_frame->navigationScheduler().cancel();
 
     m_checkTimer.stop();
     m_shouldCallCheckCompleted = false;

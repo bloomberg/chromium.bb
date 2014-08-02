@@ -158,9 +158,9 @@ public:
         : ScheduledURLNavigation(0.0, originDocument, url, referrer, lockBackForwardList, true) { }
 };
 
-class ScheduledRefresh FINAL : public ScheduledNavigation {
+class ScheduledReload FINAL : public ScheduledNavigation {
 public:
-    ScheduledRefresh()
+    ScheduledReload()
         : ScheduledNavigation(0.0, true, true)
     {
     }
@@ -201,15 +201,6 @@ public:
     virtual void fire(LocalFrame* frame) OVERRIDE
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
-
-        if (!m_historySteps) {
-            FrameLoadRequest frameRequest(frame->document(), ResourceRequest(frame->document()->url()));
-            frameRequest.setLockBackForwardList(lockBackForwardList());
-            // Special case for go(0) from a frame -> reload only the frame
-            // To follow Firefox and IE's behavior, history reload can only navigate the self frame.
-            frame->loader().load(frameRequest);
-            return;
-        }
         // go(i!=0) from a frame navigates into the history of the frame only,
         // in both IE and NS (but not in Mozilla). We can't easily do that.
         frame->page()->deprecatedLocalMainFrame()->loader().client()->navigateBackForward(m_historySteps);
@@ -259,14 +250,6 @@ NavigationScheduler::~NavigationScheduler()
 bool NavigationScheduler::locationChangePending()
 {
     return m_redirect && m_redirect->isLocationChange();
-}
-
-void NavigationScheduler::clear()
-{
-    if (m_timer.isActive())
-        InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
-    m_timer.stop();
-    m_redirect.clear();
 }
 
 inline bool NavigationScheduler::shouldScheduleNavigation() const
@@ -356,13 +339,13 @@ void NavigationScheduler::scheduleFormSubmission(PassRefPtrWillBeRawPtr<FormSubm
     schedule(adoptPtr(new ScheduledFormSubmission(submission, mustLockBackForwardList(m_frame))));
 }
 
-void NavigationScheduler::scheduleRefresh()
+void NavigationScheduler::scheduleReload()
 {
     if (!shouldScheduleNavigation())
         return;
     if (m_frame->document()->url().isEmpty())
         return;
-    schedule(adoptPtr(new ScheduledRefresh));
+    schedule(adoptPtr(new ScheduledReload));
 }
 
 void NavigationScheduler::scheduleHistoryNavigation(int steps)
@@ -379,7 +362,10 @@ void NavigationScheduler::scheduleHistoryNavigation(int steps)
     }
 
     // In all other cases, schedule the history traversal to occur asynchronously.
-    schedule(adoptPtr(new ScheduledHistoryNavigation(steps)));
+    if (steps)
+        schedule(adoptPtr(new ScheduledHistoryNavigation(steps)));
+    else
+        schedule(adoptPtr(new ScheduledReload));
 }
 
 void NavigationScheduler::timerFired(Timer<NavigationScheduler>*)

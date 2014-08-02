@@ -239,7 +239,7 @@ void Location::reload(LocalDOMWindow* callingWindow)
         return;
     if (protocolIsJavaScript(m_frame->document()->url()))
         return;
-    m_frame->navigationScheduler().scheduleRefresh();
+    m_frame->navigationScheduler().scheduleReload();
 }
 
 void Location::setLocation(const String& url, LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow)
