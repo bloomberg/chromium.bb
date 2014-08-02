@@ -265,6 +265,19 @@ WebElement WebDocument::createElement(const WebString& tagName)
     return element;
 }
 
+void WebDocument::setIsTransitionDocument()
+{
+    // This ensures the transition UA stylesheet gets applied.
+    unwrap<Document>()->setIsTransitionDocument();
+}
+
+void WebDocument::beginExitTransition(const WebString& cssSelector)
+{
+    RefPtr<Document> document = unwrap<Document>();
+    document->hideTransitionElements(cssSelector);
+    document->styleEngine()->enableExitTransitionStylesheets();
+}
+
 WebAXObject WebDocument::accessibilityObject() const
 {
     const Document* document = constUnwrap<Document>();

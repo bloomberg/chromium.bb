@@ -5723,6 +5723,20 @@ void Document::getTransitionElementData(Vector<TransitionElementData>& elementDa
     }
 }
 
+void Document::hideTransitionElements(const AtomicString& cssSelector)
+{
+    TrackExceptionState exceptionState;
+    RefPtr<StaticNodeList> nodeList = querySelectorAll(cssSelector, exceptionState);
+    if (nodeList && !exceptionState.hadException()) {
+        unsigned nodeListLength = nodeList->length();
+
+        for (unsigned nodeIndex = 0; nodeIndex < nodeListLength; ++nodeIndex) {
+            Node* node = nodeList->item(nodeIndex);
+            toElement(node)->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+        }
+    }
+}
+
 bool Document::hasFocus() const
 {
     Page* page = this->page();

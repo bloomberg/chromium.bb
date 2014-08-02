@@ -41,6 +41,7 @@
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/FullscreenElementStack.h"
+#include "core/dom/NodeRenderStyle.h"
 #include "core/dom/Range.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
@@ -4336,6 +4337,27 @@ TEST_F(WebFrameTest, MoveCaretSelectionTowardsWindowPointWithNoSelection)
 
     // This test passes if this doesn't crash.
     frame->moveCaretSelection(WebPoint(0, 0));
+}
+
+TEST_F(WebFrameTest, NavigateToSandboxedMarkup)
+{
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad("about:blank", true);
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
+
+    frame->document().setIsTransitionDocument();
+
+    std::string markup("<div id='foo'></div><script>document.getElementById('foo').setAttribute('dir', 'rtl')</script>");
+    frame->navigateToSandboxedMarkup(WebData(markup.data(), markup.length()));
+    FrameTestHelpers::runPendingTasks();
+
+    WebDocument document = webViewImpl->mainFrame()->document();
+    WebElement transitionElement = document.getElementById("foo");
+    // Check that the markup got navigated to successfully.
+    EXPECT_FALSE(transitionElement.isNull());
+
+    // Check that the inline script was not executed.
+    EXPECT_FALSE(transitionElement.hasAttribute("dir"));
 }
 
 class SpellCheckClient : public WebSpellCheckClient {

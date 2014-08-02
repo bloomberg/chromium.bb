@@ -385,6 +385,7 @@ public:
 
     bool isTransitionDocument() const { return m_isTransitionDocument; }
     void setIsTransitionDocument() { m_isTransitionDocument = true; }
+    void hideTransitionElements(const AtomicString& cssSelector);
 
     struct TransitionElementData {
         String scope;

@@ -34,6 +34,7 @@ public:
 
     // Navigation Transitions  ---------------------------------------------
     virtual void addStyleSheetByURL(const WebString& url) = 0;
+    virtual void navigateToSandboxedMarkup(const WebData& markup) = 0;
 
     virtual void sendPings(const WebNode& linkNode, const WebURL& destinationURL) = 0;
 };

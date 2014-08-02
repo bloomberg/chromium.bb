@@ -15,14 +15,17 @@
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/graphics/Color.h"
 #include "web/tests/FrameTestHelpers.h"
+#include "web/tests/URLTestHelpers.h"
 
 #include <gtest/gtest.h>
 
+using namespace blink;
 using blink::Color;
 using blink::Document;
 using blink::HTMLElement;
 using blink::RenderStyle;
 using blink::FrameTestHelpers::WebViewHelper;
+using blink::URLTestHelpers::toKURL;
 using blink::WebDocument;
 
 namespace {
@@ -58,6 +61,49 @@ TEST(WebDocumentTest, InsertStyleSheet)
 
     // Inserted stylesheet applied.
     ASSERT_EQ(Color(0, 128, 0), style->visitedDependentColor(blink::CSSPropertyColor));
+}
+
+TEST(WebDocumentTest, BeginExitTransition)
+{
+    std::string baseURL = "http://www.test.com:0/";
+    const char* htmlURL = "transition_exit.html";
+    const char* cssURL = "transition_exit.css";
+    URLTestHelpers::registerMockedURLLoad(toKURL(baseURL + htmlURL), WebString::fromUTF8(htmlURL));
+    URLTestHelpers::registerMockedURLLoad(toKURL(baseURL + cssURL), WebString::fromUTF8(cssURL));
+
+    WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(baseURL + htmlURL);
+
+    WebFrame* frame = webViewHelper.webView()->mainFrame();
+    Document* coreDoc = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->document();
+    Element* transitionElement = coreDoc->getElementById("foo");
+    ASSERT(transitionElement);
+
+    RenderStyle* transitionStyle = transitionElement->renderStyle();
+    ASSERT(transitionStyle);
+
+    HTMLElement* bodyElement = coreDoc->body();
+    ASSERT(bodyElement);
+
+    RenderStyle* bodyStyle = bodyElement->renderStyle();
+    ASSERT(bodyStyle);
+    // The transition_exit.css stylesheet should not have been applied at this point.
+    ASSERT_EQ(Color(0, 0, 0), bodyStyle->visitedDependentColor(blink::CSSPropertyColor));
+
+    frame->document().beginExitTransition("#foo");
+
+    // Make sure the stylesheet load request gets processed.
+    FrameTestHelpers::pumpPendingRequestsDoNotUse(frame);
+    coreDoc->updateRenderTreeIfNeeded();
+
+    // The element should now be hidden.
+    transitionStyle = transitionElement->renderStyle();
+    ASSERT_FALSE(transitionStyle);
+
+    // The stylesheet should now have been applied.
+    bodyStyle = bodyElement->renderStyle();
+    ASSERT(bodyStyle);
+    ASSERT_EQ(Color(0, 128, 0), bodyStyle->visitedDependentColor(blink::CSSPropertyColor));
 }
 
 }
