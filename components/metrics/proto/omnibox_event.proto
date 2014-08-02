@@ -161,6 +161,9 @@ message OmniboxEventProto {
     // This enum value is currently only used by Android GSA. It represents
     // a suggestion from the phone.
     ON_DEVICE = 12;
+    // This enum value is currently only used by Android GSA. It represents
+    // a suggestion powered by a Chrome content provider.
+    ON_DEVICE_CHROME = 13;
   }
 
   // The result set displayed on the completion popup
