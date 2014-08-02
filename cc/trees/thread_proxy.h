@@ -94,8 +94,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
     base::TimeTicks last_monotonic_frame_begin_time;
   };
 
-  struct ReadbackRequest;
-
   struct CompositorThreadOnly {
     CompositorThreadOnly(
         ThreadProxy* proxy,
