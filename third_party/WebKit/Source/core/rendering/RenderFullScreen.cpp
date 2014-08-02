@@ -169,7 +169,7 @@ void RenderFullScreen::unwrapRenderer()
     if (placeholder())
         placeholder()->remove();
     remove();
-    FullscreenElementStack::from(document()).setFullScreenRenderer(0);
+    destroy();
 }
 
 void RenderFullScreen::setPlaceholder(RenderBlock* placeholder)

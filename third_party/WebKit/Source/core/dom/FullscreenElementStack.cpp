@@ -127,7 +127,7 @@ void FullscreenElementStack::documentWasDetached()
     m_eventQueue.clear();
 
     if (m_fullScreenRenderer)
-        setFullScreenRenderer(0);
+        m_fullScreenRenderer->destroy();
 
 #if ENABLE(OILPAN)
     m_fullScreenElement = nullptr;
@@ -475,7 +475,7 @@ void FullscreenElementStack::setFullScreenRenderer(RenderFullScreen* renderer)
     }
 
     if (m_fullScreenRenderer)
-        m_fullScreenRenderer->destroy();
+        m_fullScreenRenderer->unwrapRenderer();
     ASSERT(!m_fullScreenRenderer);
 
     m_fullScreenRenderer = renderer;
