@@ -60,13 +60,13 @@ deps = {
     'src/third_party/ffmpeg':
         Var('git_url') + '/chromium/third_party/ffmpeg.git@e2a05d173d49547ed8aa5edc0209941a8941f450',
     'src/third_party/flac':
-        Var('git_url') + '/chromium/deps/flac.git@71e33f190a7bb144fe4e2014897b8d15c8247198',
+        Var('git_url') + '/chromium/deps/flac.git@0635a091379d9677f1ddde5f2eec85d0f096f219',
     'src/third_party/hunspell':
-        Var('git_url') + '/chromium/deps/hunspell.git@865a80477878dde0b4fa8c4bde5a0c9d9c7868a0',
+        Var('git_url') + '/chromium/deps/hunspell.git@c956c0e97af00ef789afb2f64d02c9a5a50e6eb1',
     'src/third_party/hunspell_dictionaries':
         Var('git_url') + '/chromium/deps/hunspell_dictionaries.git@4560bdd463a3500e2334e85c8a0e9e5d5d6774e7',
     'src/third_party/icu':
-        Var('git_url') + '/chromium/deps/icu52.git@533466397f1085e135e82a308ea4d9d83373e91a',
+        Var('git_url') + '/chromium/deps/icu52.git@471c37c8bf67983b26e0db03d6d7ee81112ce2dd',
     'src/third_party/jsoncpp/source/include':
         Var('git_url') + '/external/jsoncpp/jsoncpp/include.git@b0dd48e02b6e6248328db78a65b5c601f150c349',
     'src/third_party/jsoncpp/source/src/lib_json':
@@ -94,7 +94,7 @@ deps = {
     'src/third_party/libsrtp':
         Var('git_url') + '/chromium/deps/libsrtp.git@662d81de5cbf3667f1baaafe051b8b4ab0b12fe2',
     'src/third_party/libvpx':
-        Var('git_url') + '/chromium/deps/libvpx.git@371cfcef774dae7dc7e3ad0bf94dc2a4f830817f',
+        Var('git_url') + '/chromium/deps/libvpx.git@7b82466c4e2f56b62b21e95178f15568448beab4',
     'src/third_party/libwebm/source':
         Var('git_url') + '/webm/libwebm.git@0d4cb404ea4195e5e21d04db2c955615535ce62e',
     'src/third_party/libyuv':
