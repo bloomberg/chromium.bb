@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/notification_provider/notification_provider_api.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -29,8 +30,8 @@ IN_PROC_BROWSER_TEST_F(NotificationProviderApiTest, Events) {
       LoadExtension(test_data_dir_.AppendASCII("notification_provider/events"));
   ASSERT_TRUE(extension);
 
-  extensions::NotificationProviderEventRouter* event_router =
-      new extensions::NotificationProviderEventRouter(browser()->profile());
+  scoped_ptr<extensions::NotificationProviderEventRouter> event_router(
+      new extensions::NotificationProviderEventRouter(browser()->profile()));
 
   event_router->CreateNotification(
       extension->id(), sender_id1, notification_id1, options);
