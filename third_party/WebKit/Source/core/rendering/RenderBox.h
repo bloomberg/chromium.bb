@@ -31,6 +31,7 @@
 namespace blink {
 
 struct PaintInfo;
+class RenderLayerScrollableArea;
 
 enum SizeType { MainOrPreferredSize, MinSize, MaxSize };
 enum AvailableLogicalHeightType { ExcludeMarginBorderPadding, IncludeMarginBorderPadding };
@@ -681,6 +682,11 @@ protected:
     virtual InvalidationReason getPaintInvalidationReason(const RenderLayerModelObject& paintInvalidationContainer,
         const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationContainer,
         const LayoutRect& newBounds, const LayoutPoint& newPositionFromPaintInvalidationContainer) OVERRIDE;
+
+    virtual void clearPaintInvalidationState() OVERRIDE;
+#if ENABLE(ASSERT)
+    virtual bool paintInvalidationStateIsDirty() const OVERRIDE;
+#endif
 
 private:
     void updateShapeOutsideInfoAfterStyleChange(const RenderStyle&, const RenderStyle* oldStyle);

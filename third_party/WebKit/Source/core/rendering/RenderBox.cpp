@@ -1597,16 +1597,32 @@ void RenderBox::invalidatePaintIfNeeded(const PaintInvalidationState& paintInval
         invalidatePaintForOverflowIfNeeded();
 
     // Issue paint invalidations for any scrollbars if there is a scrollable area for this renderer.
-    if (enclosingLayer()) {
-        if (RenderLayerScrollableArea* area = enclosingLayer()->scrollableArea()) {
-            if (area->hasVerticalBarDamage())
-                invalidatePaintRectangle(area->verticalBarDamage());
-            if (area->hasHorizontalBarDamage())
-                invalidatePaintRectangle(area->horizontalBarDamage());
-            area->resetScrollbarDamage();
-        }
+    if (ScrollableArea* area = scrollableArea()) {
+        if (area->hasVerticalBarDamage())
+            invalidatePaintRectangle(area->verticalBarDamage());
+        if (area->hasHorizontalBarDamage())
+            invalidatePaintRectangle(area->horizontalBarDamage());
     }
 }
+
+void RenderBox::clearPaintInvalidationState()
+{
+    RenderBoxModelObject::clearPaintInvalidationState();
+
+    if (ScrollableArea* area = scrollableArea())
+        area->resetScrollbarDamage();
+}
+
+#if ENABLE(ASSERT)
+bool RenderBox::paintInvalidationStateIsDirty() const
+{
+    if (ScrollableArea* area = scrollableArea()) {
+        if (area->hasVerticalBarDamage() || area->hasHorizontalBarDamage())
+            return true;
+    }
+    return RenderBoxModelObject::paintInvalidationStateIsDirty();
+}
+#endif
 
 bool RenderBox::pushContentsClip(PaintInfo& paintInfo, const LayoutPoint& accumulatedOffset, ContentsClipBehavior contentsClipBehavior)
 {

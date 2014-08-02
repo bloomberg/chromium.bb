@@ -1036,7 +1036,7 @@ public:
     bool onlyNeededPositionedMovementLayout() const { return m_bitfields.onlyNeededPositionedMovementLayout(); }
     void setOnlyNeededPositionedMovementLayout(bool b) { m_bitfields.setOnlyNeededPositionedMovementLayout(b); }
 
-    void clearPaintInvalidationState();
+    virtual void clearPaintInvalidationState();
 
     // layoutDidGetCalled indicates whether this render object was re-laid-out
     // since the last call to setLayoutDidGetCalled(false) on this object.
@@ -1124,6 +1124,14 @@ protected:
     void incrementallyInvalidatePaint(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds);
     void fullyInvalidatePaint(const RenderLayerModelObject& paintInvalidationContainer, InvalidationReason, const LayoutRect& oldBounds, const LayoutRect& newBounds);
 
+#if ENABLE(ASSERT)
+    virtual bool paintInvalidationStateIsDirty() const
+    {
+        return layoutDidGetCalled() || shouldDoFullPaintInvalidation() || shouldDoFullPaintInvalidationIfSelfPaintingLayer()
+            || onlyNeededPositionedMovementLayout() || neededLayoutBecauseOfChildren() || mayNeedPaintInvalidation();
+    }
+#endif
+
 private:
     const RenderLayerModelObject* enclosingCompositedContainer() const;
 
@@ -1144,12 +1152,6 @@ private:
 
 #if ENABLE(ASSERT)
     void checkBlockPositionedObjectsNeedLayout();
-
-    bool paintInvalidationStateIsDirty() const
-    {
-        return layoutDidGetCalled() || shouldDoFullPaintInvalidation() || shouldDoFullPaintInvalidationIfSelfPaintingLayer()
-            || onlyNeededPositionedMovementLayout() || neededLayoutBecauseOfChildren() || mayNeedPaintInvalidation();
-    }
 #endif
     const char* invalidationReasonToString(InvalidationReason) const;
 
