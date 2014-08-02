@@ -9,6 +9,10 @@
 #include "base/macros.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
 
+namespace content {
+class ResourceContext;
+}
+
 namespace extensions {
 
 class BrowserPermissionsPolicyDelegate;
@@ -19,6 +23,38 @@ class ChromeContentBrowserClientExtensionsPart
  public:
   ChromeContentBrowserClientExtensionsPart();
   virtual ~ChromeContentBrowserClientExtensionsPart();
+
+  // Corresponds to the ChromeContentBrowserClient function of the same name.
+  static GURL GetEffectiveURL(Profile* profile, const GURL& url);
+  static bool ShouldUseProcessPerSite(Profile* profile,
+                                      const GURL& effective_url);
+  static bool CanCommitURL(content::RenderProcessHost* process_host,
+                           const GURL& url);
+  static bool IsSuitableHost(Profile* profile,
+                             content::RenderProcessHost* process_host,
+                             const GURL& site_url);
+  static bool ShouldTryToUseExistingProcessHost(Profile* profile,
+                                                const GURL& url);
+  static bool ShouldSwapBrowsingInstancesForNavigation(
+      content::SiteInstance* site_instance,
+      const GURL& current_url,
+      const GURL& new_url);
+  static bool ShouldSwapProcessesForRedirect(
+      content::ResourceContext* resource_context,
+      const GURL& current_url,
+      const GURL& new_url);
+  static std::string GetWorkerProcessTitle(const GURL& url,
+                                           content::ResourceContext* context);
+
+  // Similiar to ChromeContentBrowserClient::ShouldAllowOpenURL(), but the
+  // return value indicates whether to use |result| or not.
+  static bool ShouldAllowOpenURL(content::SiteInstance* site_instance,
+                                 const GURL& from_url,
+                                 const GURL& to_url,
+                                 bool* result);
+
+  // Helper function to call InfoMap::SetSigninProcess().
+  static void SetSigninProcess(content::SiteInstance* site_instance);
 
  private:
   // ChromeContentBrowserClientParts:
@@ -49,6 +85,8 @@ class ChromeContentBrowserClientExtensionsPart
       base::CommandLine* command_line,
       content::RenderProcessHost* process,
       Profile* profile) OVERRIDE;
+
+  scoped_ptr<BrowserPermissionsPolicyDelegate> permissions_policy_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentBrowserClientExtensionsPart);
 };

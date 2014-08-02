@@ -339,8 +339,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   // versions of Chrome.
   std::set<std::string> allowed_dev_channel_origins_;
 #endif
-  scoped_ptr<extensions::BrowserPermissionsPolicyDelegate>
-      permissions_policy_delegate_;
 
   // The prerender tracker used to determine whether a render process is used
   // for prerendering and an override cookie store must be provided.
