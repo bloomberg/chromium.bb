@@ -756,12 +756,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (NSView*)buildEndPreviewView;
 
 // Creates a button with |text|, an icon given by |imageResourceId| and with
-// |action|. The icon |alternateImageResourceId| is displayed in the button's
-// hovered and pressed states.
+// |action|.
 - (NSButton*)hoverButtonWithRect:(NSRect)rect
                             text:(NSString*)text
                  imageResourceId:(int)imageResourceId
-        alternateImageResourceId:(int)alternateImageResourceId
                           action:(SEL)action;
 
 // Creates a generic link button with |title| and an |action| positioned at
@@ -1431,7 +1429,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     NSTextField* promo = BuildLabel(
         l10n_util::GetNSString(IDS_PROFILES_SIGNIN_PROMO),
         NSMakePoint(0, NSMaxY([link frame]) + kVerticalSpacing),
-        nil, nil);
+        GetDialogBackgroundColor(), nil);
     [promo setFrameSize:NSMakeSize(rect.size.width, 0)];
     [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:promo];
     [container addSubview:promo];
@@ -1514,7 +1512,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                              text:l10n_util::GetNSString(
                                   IDS_PROFILES_PROFILE_SIGNOUT_BUTTON)
                   imageResourceId:IDR_ICON_PROFILES_MENU_LOCK
-         alternateImageResourceId:IDR_ICON_PROFILES_MENU_LOCK
                            action:@selector(lockProfile:)];
     [container addSubview:lockButton];
     viewRect.origin.y = NSMaxY([lockButton frame]);
@@ -1531,7 +1528,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                              text:l10n_util::GetNSString(
                                   IDS_PROFILES_GO_INCOGNITO_BUTTON)
                   imageResourceId:IDR_ICON_PROFILES_MENU_AVATAR
-         alternateImageResourceId:IDR_ICON_PROFILES_MENU_AVATAR
                            action:@selector(goIncognito:)];
     viewRect.origin.y = NSMaxY([goIncognitoButton frame]);
     [container addSubview:goIncognitoButton];
@@ -1548,7 +1544,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       [self hoverButtonWithRect:viewRect
                            text:text
                 imageResourceId:IDR_ICON_PROFILES_MENU_AVATAR
-       alternateImageResourceId:IDR_ICON_PROFILES_MENU_AVATAR
                          action:isGuestSession_? @selector(exitGuest:) :
                                                  @selector(showUserManager:)];
   viewRect.origin.y = NSMaxY([switchUsersButton frame]);
@@ -1838,7 +1833,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (NSButton*)hoverButtonWithRect:(NSRect)rect
                             text:(NSString*)text
                  imageResourceId:(int)imageResourceId
-        alternateImageResourceId:(int)alternateImageResourceId
                           action:(SEL)action {
   base::scoped_nsobject<BackgroundColorHoverButton> button(
       [[BackgroundColorHoverButton alloc]
@@ -1848,11 +1842,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   [button setTitle:text];
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-  NSImage* alternateImage = rb->GetNativeImageNamed(
-      alternateImageResourceId).ToNSImage();
-  [button setDefaultImage:rb->GetNativeImageNamed(imageResourceId).ToNSImage()];
-  [button setHoverImage:alternateImage];
-  [button setPressedImage:alternateImage];
+  NSImage* image = rb->GetNativeImageNamed(imageResourceId).ToNSImage();
+  [button setDefaultImage:image];
+  [button setHoverImage:image];
+  [button setPressedImage:image];
   [button setImagePosition:NSImageLeft];
   [button setAlignment:NSLeftTextAlignment];
   [button setBordered:NO];
