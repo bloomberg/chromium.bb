@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
+#include "crypto/scoped_test_nss_db.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/cert_database.h"
 #include "net/test/cert_test_util.h"
@@ -61,6 +62,8 @@ class NSSCertDatabaseChromeOSTest : public testing::Test,
             user_1_.username_hash(),
             base::Callback<void(crypto::ScopedPK11Slot)>())));
     db_1_->SetSlowTaskRunnerForTest(base::MessageLoopProxy::current());
+    db_1_->SetSystemSlot(
+        crypto::ScopedPK11Slot(PK11_ReferenceSlot(system_db_.slot())));
     db_2_.reset(new NSSCertDatabaseChromeOS(
         crypto::GetPublicSlotForChromeOSUser(user_2_.username_hash()),
         crypto::GetPrivateSlotForChromeOSUser(
@@ -98,6 +101,7 @@ class NSSCertDatabaseChromeOSTest : public testing::Test,
 
   crypto::ScopedTestNSSChromeOSUser user_1_;
   crypto::ScopedTestNSSChromeOSUser user_2_;
+  crypto::ScopedTestNSSDB system_db_;
   scoped_ptr<NSSCertDatabaseChromeOS> db_1_;
   scoped_ptr<NSSCertDatabaseChromeOS> db_2_;
 };
@@ -274,6 +278,42 @@ TEST_F(NSSCertDatabaseChromeOSTest, NoCrashIfShutdownBeforeDoneOnWorkerPool) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_LT(0U, certlist.size());
+}
+
+TEST_F(NSSCertDatabaseChromeOSTest, ListCertsReadsSystemSlot) {
+  scoped_refptr<X509Certificate> cert_1(
+      ImportClientCertAndKeyFromFile(GetTestCertsDirectory(),
+                                     "client_1.pem",
+                                     "client_1.pk8",
+                                     db_1_->GetPublicSlot().get()));
+
+  scoped_refptr<X509Certificate> cert_2(
+      ImportClientCertAndKeyFromFile(GetTestCertsDirectory(),
+                                     "client_2.pem",
+                                     "client_2.pk8",
+                                     db_1_->GetSystemSlot().get()));
+  CertificateList certs;
+  db_1_->ListCertsSync(&certs);
+  EXPECT_TRUE(IsCertInCertificateList(cert_1.get(), certs));
+  EXPECT_TRUE(IsCertInCertificateList(cert_2.get(), certs));
+}
+
+TEST_F(NSSCertDatabaseChromeOSTest, ListCertsDoesNotCrossReadSystemSlot) {
+  scoped_refptr<X509Certificate> cert_1(
+      ImportClientCertAndKeyFromFile(GetTestCertsDirectory(),
+                                     "client_1.pem",
+                                     "client_1.pk8",
+                                     db_2_->GetPublicSlot().get()));
+
+  scoped_refptr<X509Certificate> cert_2(
+      ImportClientCertAndKeyFromFile(GetTestCertsDirectory(),
+                                     "client_2.pem",
+                                     "client_2.pk8",
+                                     system_db_.slot()));
+  CertificateList certs;
+  db_2_->ListCertsSync(&certs);
+  EXPECT_TRUE(IsCertInCertificateList(cert_1.get(), certs));
+  EXPECT_FALSE(IsCertInCertificateList(cert_2.get(), certs));
 }
 
 }  // namespace net

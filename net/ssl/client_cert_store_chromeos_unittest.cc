@@ -10,13 +10,11 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/run_loop.h"
-#include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
 #include "crypto/scoped_test_system_nss_key_slot.h"
 #include "net/base/test_data_directory.h"
-#include "net/cert/cert_type.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/client_cert_store_unittest-inl.h"
 #include "net/test/cert_test_util.h"
@@ -24,24 +22,6 @@
 namespace net {
 
 namespace {
-
-bool ImportClientCertToSlot(const scoped_refptr<X509Certificate>& cert,
-                            PK11SlotInfo* slot) {
-  std::string nickname = cert->GetDefaultNickname(USER_CERT);
-  {
-    crypto::AutoNSSWriteLock lock;
-    SECStatus rv = PK11_ImportCert(slot,
-                                   cert->os_cert_handle(),
-                                   CK_INVALID_HANDLE,
-                                   nickname.c_str(),
-                                   PR_FALSE);
-    if (rv != SECSuccess) {
-      LOG(ERROR) << "Could not import cert";
-      return false;
-    }
-  }
-  return true;
-}
 
 enum ReadFromSlot {
   READ_FROM_SLOT_USER,
@@ -166,33 +146,6 @@ INSTANTIATE_TYPED_TEST_CASE_P(ChromeOS_ReadSystem,
 
 class ClientCertStoreChromeOSTest : public ::testing::Test {
  public:
-  scoped_refptr<X509Certificate> ImportCertToSlot(
-      const std::string& cert_filename,
-      const std::string& key_filename,
-      PK11SlotInfo* slot) {
-    if (!ImportSensitiveKeyFromFile(
-            GetTestCertsDirectory(), key_filename, slot)) {
-      LOG(ERROR) << "Could not import private key from file " << key_filename;
-      return NULL;
-    }
-
-    scoped_refptr<X509Certificate> cert(
-        ImportCertFromFile(GetTestCertsDirectory(), cert_filename));
-
-    if (!cert) {
-      LOG(ERROR) << "Failed to parse cert from file " << cert_filename;
-      return NULL;
-    }
-
-    if (!ImportClientCertToSlot(cert, slot))
-      return NULL;
-
-    // |cert| continues to point to the original X509Certificate before the
-    // import to |slot|. However this should not make a difference for this
-    // test.
-    return cert;
-  }
-
   scoped_refptr<X509Certificate> ImportCertForUser(
       const std::string& username_hash,
       const std::string& cert_filename,
@@ -204,7 +157,8 @@ class ClientCertStoreChromeOSTest : public ::testing::Test {
       return NULL;
     }
 
-    return ImportCertToSlot(cert_filename, key_filename, slot.get());
+    return ImportClientCertAndKeyFromFile(
+        GetTestCertsDirectory(), cert_filename, key_filename, slot.get());
   }
 
 };
@@ -347,7 +301,10 @@ TEST_F(ClientCertStoreChromeOSTest, RequestDoesCrossReadSystemDB) {
       ImportCertForUser(user1.username_hash(), "client_1.pem", "client_1.pk8"));
   ASSERT_TRUE(cert_1);
   scoped_refptr<X509Certificate> cert_2(
-      ImportCertToSlot("client_2.pem", "client_2.pk8", system_slot.slot()));
+      ImportClientCertAndKeyFromFile(GetTestCertsDirectory(),
+                                     "client_2.pem",
+                                     "client_2.pk8",
+                                     system_slot.slot()));
   ASSERT_TRUE(cert_2);
 
   scoped_refptr<SSLCertRequestInfo> request_all(new SSLCertRequestInfo());

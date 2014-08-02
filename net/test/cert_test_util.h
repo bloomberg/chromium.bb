@@ -38,6 +38,15 @@ scoped_ptr<crypto::RSAPrivateKey> ImportSensitiveKeyFromFile(
     const base::FilePath& dir,
     const std::string& key_filename,
     PK11SlotInfo* slot);
+
+bool ImportClientCertToSlot(const scoped_refptr<X509Certificate>& cert,
+                            PK11SlotInfo* slot);
+
+scoped_refptr<X509Certificate> ImportClientCertAndKeyFromFile(
+    const base::FilePath& dir,
+    const std::string& cert_filename,
+    const std::string& key_filename,
+    PK11SlotInfo* slot);
 #endif
 
 // Imports all of the certificates in |cert_file|, a file in |certs_dir|, into a

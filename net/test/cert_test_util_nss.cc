@@ -4,10 +4,15 @@
 
 #include "net/test/cert_test_util.h"
 
+#include <pk11pub.h>
+#include <secmodt.h>
+
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "crypto/nss_util.h"
 #include "crypto/rsa_private_key.h"
+#include "net/cert/cert_type.h"
 
 namespace net {
 
@@ -34,6 +39,50 @@ scoped_ptr<crypto::RSAPrivateKey> ImportSensitiveKeyFromFile(
   LOG_IF(ERROR, !private_key) << "Could not create key from file "
                               << key_path.value();
   return private_key.Pass();
+}
+
+bool ImportClientCertToSlot(const scoped_refptr<X509Certificate>& cert,
+                            PK11SlotInfo* slot) {
+  std::string nickname = cert->GetDefaultNickname(USER_CERT);
+  {
+    crypto::AutoNSSWriteLock lock;
+    SECStatus rv = PK11_ImportCert(slot,
+                                   cert->os_cert_handle(),
+                                   CK_INVALID_HANDLE,
+                                   nickname.c_str(),
+                                   PR_FALSE);
+    if (rv != SECSuccess) {
+      LOG(ERROR) << "Could not import cert";
+      return false;
+    }
+  }
+  return true;
+}
+
+scoped_refptr<X509Certificate> ImportClientCertAndKeyFromFile(
+    const base::FilePath& dir,
+    const std::string& cert_filename,
+    const std::string& key_filename,
+    PK11SlotInfo* slot) {
+  if (!ImportSensitiveKeyFromFile(dir, key_filename, slot)) {
+    LOG(ERROR) << "Could not import private key from file " << key_filename;
+    return NULL;
+  }
+
+  scoped_refptr<X509Certificate> cert(ImportCertFromFile(dir, cert_filename));
+
+  if (!cert) {
+    LOG(ERROR) << "Failed to parse cert from file " << cert_filename;
+    return NULL;
+  }
+
+  if (!ImportClientCertToSlot(cert, slot))
+    return NULL;
+
+  // |cert| continues to point to the original X509Certificate before the
+  // import to |slot|. However this should not make a difference as NSS handles
+  // state globally.
+  return cert;
 }
 
 }  // namespace net
