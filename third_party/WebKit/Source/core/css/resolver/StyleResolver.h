@@ -145,8 +145,6 @@ public:
 
     SelectorFilter& selectorFilter() { return m_selectorFilter; }
 
-    bool styleTreeHasOnlyScopedResolverForDocument() const { return m_scopedStyleResolvers.size() == 1; }
-
     void styleTreeResolveScopedKeyframesRules(const Element*, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>&);
 
     // These methods will give back the set of rules that matched for a given element (or a pseudo-element).
@@ -295,9 +293,6 @@ private:
     OwnPtrWillBeMember<ViewportStyleResolver> m_viewportStyleResolver;
 
     WillBeHeapListHashSet<RawPtrWillBeMember<CSSStyleSheet>, 16> m_pendingStyleSheets;
-
-    // FIXME: Probably this should move to StyleEngine eventually.
-    WillBeHeapHashSet<RawPtrWillBeMember<const ScopedStyleResolver> > m_scopedStyleResolvers;
 
     // FIXME: The entire logic of collecting features on StyleResolver, as well as transferring them
     // between various parts of machinery smells wrong. This needs to be better somehow.

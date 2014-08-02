@@ -143,8 +143,6 @@ StyleResolver::StyleResolver(Document& document)
     else
         m_medium = adoptPtr(new MediaQueryEvaluator("all"));
 
-    m_scopedStyleResolvers.add(&document.ensureScopedStyleResolver());
-
     initWatchedSelectorRules(CSSSelectorWatch::from(document).watchedCallbackSelectors());
 
 #if ENABLE(SVG_FONTS)
@@ -191,7 +189,7 @@ void StyleResolver::appendCSSStyleSheet(CSSStyleSheet* cssSheet)
         return;
 
     ScopedStyleResolver* resolver = &scopingNode->treeScope().ensureScopedStyleResolver();
-    m_scopedStyleResolvers.add(resolver);
+    document().styleEngine()->addScopedStyleResolver(resolver);
     ASSERT(resolver);
     resolver->addRulesFromSheet(cssSheet, *m_medium, this);
 }
@@ -239,7 +237,7 @@ void StyleResolver::processScopedRules(const RuleSet& authorRules, CSSStyleSheet
 {
     const WillBeHeapVector<RawPtrWillBeMember<StyleRuleKeyframes> > keyframesRules = authorRules.keyframesRules();
     ScopedStyleResolver* resolver = &scope.treeScope().ensureScopedStyleResolver();
-    m_scopedStyleResolvers.add(resolver);
+    document().styleEngine()->addScopedStyleResolver(resolver);
     for (unsigned i = 0; i < keyframesRules.size(); ++i)
         resolver->addKeyframeStyle(keyframesRules[i]);
 
@@ -269,7 +267,7 @@ void StyleResolver::resetAuthorStyle(TreeScope& treeScope)
         return;
 
     // resolver is going to be freed below.
-    m_scopedStyleResolvers.remove(resolver);
+    document().styleEngine()->removeScopedStyleResolver(resolver);
     treeScope.clearScopedStyleResolver();
 }
 
@@ -305,9 +303,7 @@ void StyleResolver::collectFeatures()
 
     m_treeBoundaryCrossingRules.collectFeaturesTo(m_features);
 
-    HashSet<const StyleSheetContents*> visitedSharedStyleSheetContents;
-    for (WillBeHeapHashSet<RawPtrWillBeMember<const ScopedStyleResolver> >::iterator it = m_scopedStyleResolvers.begin(); it != m_scopedStyleResolvers.end(); ++it)
-        (*it)->collectFeaturesTo(m_features, visitedSharedStyleSheetContents);
+    document().styleEngine()->collectScopedStyleFeaturesTo(m_features);
 
     m_siblingRuleSet = makeRuleSet(m_features.siblingRules);
     m_uncommonAttributeRuleSet = makeRuleSet(m_features.uncommonAttributeRules);
@@ -409,7 +405,7 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
     collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
 
     bool applyAuthorStyles = applyAuthorStylesOf(element);
-    if (m_scopedStyleResolvers.size() == 1) {
+    if (document().styleEngine()->hasOnlyScopedResolverForDocument()) {
         document().scopedStyleResolver()->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, ignoreCascadeScope);
         m_treeBoundaryCrossingRules.collectTreeBoundaryCrossingRules(element, collector, includeEmptyRules);
         collector.sortAndTransferMatchedRules();
@@ -1607,7 +1603,6 @@ void StyleResolver::trace(Visitor* visitor)
     visitor->trace(m_treeBoundaryCrossingRules);
     visitor->trace(m_styleSharingLists);
     visitor->trace(m_pendingStyleSheets);
-    visitor->trace(m_scopedStyleResolvers);
     visitor->trace(m_document);
 #endif
 }

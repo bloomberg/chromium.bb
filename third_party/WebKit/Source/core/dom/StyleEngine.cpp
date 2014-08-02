@@ -99,6 +99,9 @@ void StyleEngine::detachFromDocument()
     m_fontSelector.clear();
     m_resolver.clear();
     m_styleSheetCollectionMap.clear();
+    for (ScopedStyleResolverSet::iterator it = m_scopedStyleResolvers.begin(); it != m_scopedStyleResolvers.end(); ++it)
+        const_cast<TreeScope&>((*it)->treeScope()).clearScopedStyleResolver();
+    m_scopedStyleResolvers.clear();
 }
 #endif
 
@@ -451,6 +454,8 @@ const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> > StyleEngine::activeSt
 
 void StyleEngine::didRemoveShadowRoot(ShadowRoot* shadowRoot)
 {
+    if (shadowRoot->scopedStyleResolver())
+        removeScopedStyleResolver(shadowRoot->scopedStyleResolver());
     m_styleSheetCollectionMap.remove(shadowRoot);
 }
 
@@ -478,6 +483,8 @@ void StyleEngine::createResolver()
     ASSERT(document().frame());
 
     m_resolver = adoptPtrWillBeNoop(new StyleResolver(*m_document));
+    addScopedStyleResolver(&m_document->ensureScopedStyleResolver());
+
     appendActiveAuthorStyleSheets();
     combineCSSFeatureFlags(m_resolver->ensureUpdatedRuleFeatureSet());
 }
@@ -487,9 +494,9 @@ void StyleEngine::clearResolver()
     ASSERT(!document().inStyleRecalc());
     ASSERT(isMaster() || !m_resolver);
 
-    m_document->clearScopedStyleResolver();
-    for (StyleSheetCollectionMap::iterator it = m_styleSheetCollectionMap.begin(); it != m_styleSheetCollectionMap.end(); ++it)
-        it->key->clearScopedStyleResolver();
+    for (ScopedStyleResolverSet::iterator it = m_scopedStyleResolvers.begin(); it != m_scopedStyleResolvers.end(); ++it)
+        const_cast<TreeScope&>((*it)->treeScope()).clearScopedStyleResolver();
+    m_scopedStyleResolvers.clear();
 
     if (m_resolver)
         document().updateStyleInvalidationIfNeeded();
@@ -669,6 +676,13 @@ void StyleEngine::removeSheet(StyleSheetContents* contents)
     m_sheetToTextCache.remove(contents);
 }
 
+void StyleEngine::collectScopedStyleFeaturesTo(RuleFeatureSet& features) const
+{
+    HashSet<const StyleSheetContents*> visitedSharedStyleSheetContents;
+    for (ScopedStyleResolverSet::iterator it = m_scopedStyleResolvers.begin(); it != m_scopedStyleResolvers.end(); ++it)
+        (*it)->collectFeaturesTo(features, visitedSharedStyleSheetContents);
+}
+
 void StyleEngine::fontsNeedUpdate(CSSFontSelector*)
 {
     if (!document().isActive())
@@ -687,6 +701,7 @@ void StyleEngine::trace(Visitor* visitor)
     visitor->trace(m_authorStyleSheets);
     visitor->trace(m_documentStyleSheetCollection);
     visitor->trace(m_styleSheetCollectionMap);
+    visitor->trace(m_scopedStyleResolvers);
     visitor->trace(m_resolver);
     visitor->trace(m_fontSelector);
     visitor->trace(m_textToSheetCache);

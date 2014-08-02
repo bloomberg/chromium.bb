@@ -44,6 +44,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
 #include "core/dom/PseudoElement.h"
+#include "core/dom/StyleEngine.h"
 #include "core/events/TransitionEvent.h"
 #include "core/events/WebKitAnimationEvent.h"
 #include "core/frame/UseCounter.h"
@@ -200,7 +201,7 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const El
 const StyleRuleKeyframes* CSSAnimations::matchScopedKeyframesRule(StyleResolver* resolver, const Element* element, const StringImpl* animationName)
 {
     // FIXME: This is all implementation detail of style resolver, CSSAnimations shouldn't be reaching into any of it.
-    if (resolver->styleTreeHasOnlyScopedResolverForDocument())
+    if (resolver->document().styleEngine()->hasOnlyScopedResolverForDocument())
         return element->document().scopedStyleResolver()->keyframeStylesForAnimation(animationName);
 
     WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8> stack;
