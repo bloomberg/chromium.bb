@@ -8,6 +8,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_channel_id_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_cookie_helper.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/mock_settings_observer.h"
-#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_types.h"
@@ -29,7 +29,9 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include "base/strings/utf_string_conversions.h"
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/extension_special_storage_policy.h"
+#endif
 
 using ::testing::_;
 using content::BrowserThread;
@@ -40,7 +42,9 @@ class CookiesTreeModelTest : public testing::Test {
  public:
   virtual ~CookiesTreeModelTest() {
     // Avoid memory leaks.
+#if defined(ENABLE_EXTENSIONS)
     special_storage_policy_ = NULL;
+#endif
     profile_.reset();
     base::MessageLoop::current()->RunUntilIdle();
   }
@@ -71,8 +75,10 @@ class CookiesTreeModelTest : public testing::Test {
     scoped_refptr<CookieSettings> cookie_settings =
         new CookieSettings(profile_->GetHostContentSettingsMap(),
                            profile_->GetPrefs());
+#if defined(ENABLE_EXTENSIONS)
     special_storage_policy_ =
         new ExtensionSpecialStoragePolicy(cookie_settings.get());
+#endif
   }
 
   virtual void TearDown() OVERRIDE {
@@ -102,7 +108,7 @@ class CookiesTreeModelTest : public testing::Test {
         mock_browsing_data_flash_lso_helper_.get());
 
     CookiesTreeModel* cookies_model =
-        new CookiesTreeModel(container, special_storage_policy_.get(), false);
+        new CookiesTreeModel(container, special_storage_policy(), false);
     mock_browsing_data_cookie_helper_->
         AddCookieSamples(GURL("http://foo1"), "A=1");
     mock_browsing_data_cookie_helper_->
@@ -191,29 +197,28 @@ class CookiesTreeModelTest : public testing::Test {
 
     switch (node_type) {
       case CookieTreeNode::DetailedInfo::TYPE_SESSION_STORAGE:
-        return node->GetDetailedInfo().
-            session_storage_info->origin_url.spec() + ",";
+        return node->GetDetailedInfo().session_storage_info->origin_url.spec() +
+            ",";
       case CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE:
-        return node->GetDetailedInfo().
-            local_storage_info->origin_url.spec() + ",";
+        return node->GetDetailedInfo().local_storage_info->origin_url.spec() +
+            ",";
       case CookieTreeNode::DetailedInfo::TYPE_DATABASE:
         return node->GetDetailedInfo().database_info->database_name + ",";
       case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
         return node->GetDetailedInfo().cookie->Name() + ",";
       case CookieTreeNode::DetailedInfo::TYPE_APPCACHE:
         return node->GetDetailedInfo().appcache_info->manifest_url.spec() +
-               ",";
+            ",";
       case CookieTreeNode::DetailedInfo::TYPE_INDEXED_DB:
         return node->GetDetailedInfo().indexed_db_info->origin_.spec() +
-               ",";
+            ",";
       case CookieTreeNode::DetailedInfo::TYPE_FILE_SYSTEM:
         return node->GetDetailedInfo().file_system_info->origin.spec() +
-               ",";
+            ",";
       case CookieTreeNode::DetailedInfo::TYPE_QUOTA:
         return node->GetDetailedInfo().quota_info->host + ",";
       case CookieTreeNode::DetailedInfo::TYPE_CHANNEL_ID:
-        return node->GetDetailedInfo(
-            ).channel_id->server_identifier() + ",";
+        return node->GetDetailedInfo().channel_id->server_identifier() + ",";
       case CookieTreeNode::DetailedInfo::TYPE_FLASH_LSO:
         return node->GetDetailedInfo().flash_lso_domain + ",";
       default:
@@ -332,6 +337,14 @@ class CookiesTreeModelTest : public testing::Test {
   }
 
  protected:
+  ExtensionSpecialStoragePolicy* special_storage_policy() {
+#if defined(ENABLE_EXTENSIONS)
+    return special_storage_policy_.get();
+#else
+    return NULL;
+#endif
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<MockBrowsingDataCookieHelper>
@@ -355,7 +368,9 @@ class CookiesTreeModelTest : public testing::Test {
   scoped_refptr<MockBrowsingDataFlashLSOHelper>
       mock_browsing_data_flash_lso_helper_;
 
+#if defined(ENABLE_EXTENSIONS)
   scoped_refptr<ExtensionSpecialStoragePolicy> special_storage_policy_;
+#endif
 };
 
 TEST_F(CookiesTreeModelTest, RemoveAll) {
@@ -818,8 +833,7 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNode) {
                              mock_browsing_data_quota_helper_.get(),
                              mock_browsing_data_channel_id_helper_.get(),
                              mock_browsing_data_flash_lso_helper_.get());
-  CookiesTreeModel cookies_model(
-      container, special_storage_policy_.get(), false);
+  CookiesTreeModel cookies_model(container, special_storage_policy(), false);
 
   mock_browsing_data_cookie_helper_->
       AddCookieSamples(GURL("http://foo1"), "A=1");
@@ -907,8 +921,7 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNodeOf3) {
                              mock_browsing_data_quota_helper_.get(),
                              mock_browsing_data_channel_id_helper_.get(),
                              mock_browsing_data_flash_lso_helper_.get());
-  CookiesTreeModel cookies_model(
-      container, special_storage_policy_.get(), false);
+  CookiesTreeModel cookies_model(container, special_storage_policy(), false);
 
   mock_browsing_data_cookie_helper_->
       AddCookieSamples(GURL("http://foo1"), "A=1");
@@ -999,8 +1012,7 @@ TEST_F(CookiesTreeModelTest, RemoveSecondOrigin) {
                              mock_browsing_data_quota_helper_.get(),
                              mock_browsing_data_channel_id_helper_.get(),
                              mock_browsing_data_flash_lso_helper_.get());
-  CookiesTreeModel cookies_model(
-      container, special_storage_policy_.get(), false);
+  CookiesTreeModel cookies_model(container, special_storage_policy(), false);
 
   mock_browsing_data_cookie_helper_->
       AddCookieSamples(GURL("http://foo1"), "A=1");
@@ -1042,8 +1054,7 @@ TEST_F(CookiesTreeModelTest, OriginOrdering) {
                              mock_browsing_data_quota_helper_.get(),
                              mock_browsing_data_channel_id_helper_.get(),
                              mock_browsing_data_flash_lso_helper_.get());
-  CookiesTreeModel cookies_model(
-      container, special_storage_policy_.get(), false);
+  CookiesTreeModel cookies_model(container, special_storage_policy(), false);
 
   mock_browsing_data_cookie_helper_->
       AddCookieSamples(GURL("http://a.foo2.com"), "A=1");
@@ -1090,8 +1101,7 @@ TEST_F(CookiesTreeModelTest, ContentSettings) {
                              mock_browsing_data_quota_helper_.get(),
                              mock_browsing_data_channel_id_helper_.get(),
                              mock_browsing_data_flash_lso_helper_.get());
-  CookiesTreeModel cookies_model(
-      container, special_storage_policy_.get(), false);
+  CookiesTreeModel cookies_model(container, special_storage_policy(), false);
 
   mock_browsing_data_cookie_helper_->AddCookieSamples(host, "A=1");
   mock_browsing_data_cookie_helper_->Notify();
@@ -1164,8 +1174,7 @@ TEST_F(CookiesTreeModelTest, CookiesFilter) {
                              mock_browsing_data_quota_helper_.get(),
                              mock_browsing_data_channel_id_helper_.get(),
                              mock_browsing_data_flash_lso_helper_.get());
-  CookiesTreeModel cookies_model(
-      container, special_storage_policy_.get(), false);
+  CookiesTreeModel cookies_model(container, special_storage_policy(), false);
 
   mock_browsing_data_cookie_helper_->
       AddCookieSamples(GURL("http://123.com"), "A=1");

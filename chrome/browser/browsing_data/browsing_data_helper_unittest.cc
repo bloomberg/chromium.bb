@@ -5,12 +5,15 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
+#endif
 
 namespace {
 
@@ -49,7 +52,7 @@ class BrowsingDataHelperTest : public testing::Test {
 
   bool Match(const GURL& origin,
              int mask,
-             ExtensionSpecialStoragePolicy* policy) {
+             quota::SpecialStoragePolicy* policy) {
     return BrowsingDataHelper::DoesOriginMatchMask(origin, mask, policy);
   }
 
@@ -104,6 +107,7 @@ TEST_F(BrowsingDataHelperTest, ChromeSchemesAreNotAllExtension) {
   EXPECT_FALSE(IsExtensionScheme(content::kViewSourceScheme));
 }
 
+#if defined(ENABLE_EXTENSIONS)
 TEST_F(BrowsingDataHelperTest, TestMatches) {
   scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy =
       new MockExtensionSpecialStoragePolicy;
@@ -153,6 +157,7 @@ TEST_F(BrowsingDataHelperTest, TestMatches) {
                      kUnprotected | kProtected | kExtension,
                      mock_policy.get()));
 }
+#endif
 
 // If extensions are disabled, there is no policy.
 TEST_F(BrowsingDataHelperTest, TestNoPolicyMatches) {

@@ -20,8 +20,6 @@
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/io_thread.h"
@@ -87,6 +85,8 @@
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/apps/ephemeral_app_service.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #endif
 
 #if defined(ENABLE_WEBRTC)
@@ -110,8 +110,7 @@ bool DoesOriginMatchMask(int origin_set_mask,
                          const GURL& origin,
                          quota::SpecialStoragePolicy* special_storage_policy) {
   return BrowsingDataHelper::DoesOriginMatchMask(
-      origin, origin_set_mask,
-      static_cast<ExtensionSpecialStoragePolicy*>(special_storage_policy));
+      origin, origin_set_mask, special_storage_policy);
 }
 
 BrowsingDataRemover::NotificationDetails::NotificationDetails()
@@ -184,7 +183,6 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
                                          base::Time delete_begin,
                                          base::Time delete_end)
     : profile_(profile),
-      special_storage_policy_(profile->GetExtensionSpecialStoragePolicy()),
       delete_begin_(delete_begin),
       delete_end_(delete_end),
       next_cache_state_(STATE_NONE),

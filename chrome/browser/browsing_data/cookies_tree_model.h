@@ -428,7 +428,6 @@ class CookieTreeLocalStoragesNode : public CookieTreeNode {
   }
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(CookieTreeLocalStoragesNode);
 };
 
@@ -468,7 +467,6 @@ class CookieTreeSessionStoragesNode : public CookieTreeNode {
   }
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(CookieTreeSessionStoragesNode);
 };
 
@@ -640,12 +638,14 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   // Filter the origins to only display matched results.
   void UpdateSearchResults(const base::string16& filter);
 
+#if defined(ENABLE_EXTENSIONS)
   // Returns the set of extensions which protect the data item represented by
   // this node from deletion.
   // Returns NULL if the node doesn't represent a protected data item or the
   // special storage policy is NULL.
   const extensions::ExtensionSet* ExtensionsProtectingNode(
       const CookieTreeNode& cookie_node);
+#endif
 
   // Manages CookiesTreeModel::Observers. This will also call
   // TreeNodeModel::AddObserver so that it gets all the proper notifications.
@@ -718,8 +718,10 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   // locally stored data.
   scoped_ptr<LocalDataContainer> data_container_;
 
+#if defined(ENABLE_EXTENSIONS)
   // The extension special storage policy; see ExtensionsProtectingNode() above.
   scoped_refptr<ExtensionSpecialStoragePolicy> special_storage_policy_;
+#endif
 
   // The CookiesTreeModel maintains a separate list of observers that are
   // specifically of the type CookiesTreeModel::Observer.

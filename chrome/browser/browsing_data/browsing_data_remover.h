@@ -388,9 +388,6 @@ class BrowsingDataRemover
   // Profile we're to remove from.
   Profile* profile_;
 
-  // 'Protected' origins are not subject to data removal.
-  scoped_refptr<ExtensionSpecialStoragePolicy> special_storage_policy_;
-
   // Start time to delete from.
   const base::Time delete_begin_;
 

@@ -16,10 +16,7 @@
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "content/public/common/url_constants.h"
-#include "extensions/common/extension_set.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -29,6 +26,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/extension_special_storage_policy.h"
+#include "extensions/common/extension_set.h"
+#endif
 
 namespace {
 
@@ -111,6 +113,7 @@ std::string CanonicalizeHost(const GURL& url) {
   return retval;
 }
 
+#if defined(ENABLE_EXTENSIONS)
 bool TypeIsProtected(CookieTreeNode::DetailedInfo::NodeType type) {
   switch (type) {
     case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
@@ -138,6 +141,7 @@ bool TypeIsProtected(CookieTreeNode::DetailedInfo::NodeType type) {
   }
   return false;
 }
+#endif
 
 // This function returns the local data container associated with a leaf tree
 // node. The app node is assumed to be 3 levels above the leaf because of the
@@ -867,7 +871,9 @@ CookiesTreeModel::CookiesTreeModel(
     bool group_by_cookie_source)
     : ui::TreeNodeModel<CookieTreeNode>(new CookieTreeRootNode(this)),
       data_container_(data_container),
+#if defined(ENABLE_EXTENSIONS)
       special_storage_policy_(special_storage_policy),
+#endif
       group_by_cookie_source_(group_by_cookie_source),
       batch_update_(0) {
   data_container_->Init(this);
@@ -963,9 +969,10 @@ void CookiesTreeModel::UpdateSearchResults(const base::string16& filter) {
   PopulateChannelIDInfoWithFilter(data_container(), &notifier, filter);
 }
 
+#if defined(ENABLE_EXTENSIONS)
 const extensions::ExtensionSet* CookiesTreeModel::ExtensionsProtectingNode(
     const CookieTreeNode& cookie_node) {
-  if (!special_storage_policy_.get())
+  if (!special_storage_policy_)
     return NULL;
 
   CookieTreeNode::DetailedInfo info = cookie_node.GetDetailedInfo();
@@ -976,6 +983,7 @@ const extensions::ExtensionSet* CookiesTreeModel::ExtensionsProtectingNode(
   DCHECK(!info.origin.is_empty());
   return special_storage_policy_->ExtensionsProtectingOrigin(info.origin);
 }
+#endif
 
 void CookiesTreeModel::AddCookiesTreeObserver(Observer* observer) {
   cookies_observer_list_.AddObserver(observer);
@@ -1015,7 +1023,7 @@ void CookiesTreeModel::PopulateSessionStorageInfo(
   PopulateSessionStorageInfoWithFilter(container, &notifier, base::string16());
 }
 
-void CookiesTreeModel::PopulateIndexedDBInfo(LocalDataContainer* container){
+void CookiesTreeModel::PopulateIndexedDBInfo(LocalDataContainer* container) {
   ScopedBatchUpdateNotifier notifier(this, GetRoot());
   PopulateIndexedDBInfoWithFilter(container, &notifier, base::string16());
 }
