@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "content/public/browser/notification_service.h"
 #include "extensions/browser/event_listener_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -81,9 +82,18 @@ scoped_ptr<EventListener> CreateEventListenerForURL(
 }  // namespace
 
 class EventRouterTest : public testing::Test {
+ public:
+  EventRouterTest()
+      : notification_service_(content::NotificationService::Create()) {}
+
  protected:
   // Tests adding and removing observers from EventRouter.
   void RunEventRouterObserverTest(const EventListenerConstructor& constructor);
+
+ private:
+  scoped_ptr<content::NotificationService> notification_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventRouterTest);
 };
 
 TEST_F(EventRouterTest, GetBaseEventName) {

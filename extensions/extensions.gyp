@@ -806,6 +806,7 @@
         '../mojo/mojo_base.gyp:mojo_system_impl',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         'extensions_common',
         'extensions_renderer',
         'extensions_resources.gyp:extensions_resources',
@@ -813,8 +814,33 @@
         'extensions_strings.gyp:extensions_strings',
         'extensions_test_support',
       ],
+      # Needed for third_party libraries like leveldb.
+      'include_dirs': [
+        '..',
+      ],
       'sources': [
+        'browser/admin_policy_unittest.cc',
+        'browser/computed_hashes_unittest.cc',
+        'browser/content_hash_tree_unittest.cc',
+        'browser/event_listener_map_unittest.cc',
+        'browser/event_router_unittest.cc',
+        'browser/extension_pref_value_map_unittest.cc',
+        'browser/extension_registry_unittest.cc',
+        'browser/file_highlighter_unittest.cc',
+        'browser/file_reader_unittest.cc',
+        'browser/image_util_unittest.cc',
+        'browser/management_policy_unittest.cc',
         'browser/process_manager_unittest.cc',
+        'browser/process_map_unittest.cc',
+        'browser/quota_service_unittest.cc',
+        'browser/runtime_data_unittest.cc',
+        'browser/value_store/leveldb_value_store_unittest.cc',
+        'browser/value_store/testing_value_store_unittest.cc',
+        'browser/value_store/value_store_change_unittest.cc',
+        'browser/value_store/value_store_frontend_unittest.cc',
+        'browser/value_store/value_store_unittest.cc',
+        'browser/value_store/value_store_unittest.h',
+        'browser/verified_contents_unittest.cc',
         'common/api/sockets/sockets_manifest_permission_unittest.cc',
         'common/csp_validator_unittest.cc',
         'common/event_filter_unittest.cc',
@@ -842,6 +868,8 @@
         'test/test_permissions_provider.cc',
         'test/test_permissions_provider.h',
       ],
+      # Disable c4267 warnings until we fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
       'conditions': [
         ['OS=="win" and win_use_allocator_shim==1', {
           'dependencies': [
