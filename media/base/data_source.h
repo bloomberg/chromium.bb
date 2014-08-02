@@ -28,7 +28,7 @@ class MEDIA_EXPORT DataSource {
 
   // Stops the DataSource. Once this is called all future Read() calls will
   // return an error.
-  virtual void Stop(const base::Closure& callback) = 0;
+  virtual void Stop() = 0;
 
   // Returns true and the file size, false if the file size could not be
   // retrieved.

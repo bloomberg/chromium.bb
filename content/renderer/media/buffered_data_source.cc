@@ -207,12 +207,11 @@ void BufferedDataSource::MediaIsPaused() {
 
 /////////////////////////////////////////////////////////////////////////////
 // media::DataSource implementation.
-void BufferedDataSource::Stop(const base::Closure& closure) {
+void BufferedDataSource::Stop() {
   {
     base::AutoLock auto_lock(lock_);
     StopInternal_Locked();
   }
-  closure.Run();
 
   render_loop_->PostTask(
       FROM_HERE,

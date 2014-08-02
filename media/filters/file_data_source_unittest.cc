@@ -77,7 +77,7 @@ TEST(FileDataSourceTest, ReadData) {
       &ReadCBHandler::ReadCB, base::Unretained(&handler)));
   EXPECT_EQ('5', ten_bytes[0]);
 
-  data_source.Stop(NewExpectedClosure());
+  data_source.Stop();
 }
 
 }  // namespace media
