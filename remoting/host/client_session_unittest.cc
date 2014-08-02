@@ -87,6 +87,19 @@ ACTION_P2(SetCapabilities, client_session, capabilities) {
   client_session->SetCapabilities(capabilities_message);
 }
 
+MATCHER_P2(EqualsUsbEvent, usb_keycode, pressed, "") {
+  return arg.usb_keycode() == (unsigned int)usb_keycode &&
+         arg.pressed() == pressed;
+}
+
+MATCHER_P2(EqualsMouseEvent, x, y, "") {
+  return arg.x() == x && arg.y() == y;
+}
+
+MATCHER_P2(EqualsMouseButtonEvent, button, down, "") {
+  return arg.button() == button && arg.button_down() == down;
+}
+
 // Matches a |protocol::Capabilities| argument against a list of capabilities
 // formatted as a space-separated string.
 MATCHER_P(EqCapabilities, expected_capabilities, "") {
@@ -368,23 +381,6 @@ TEST_F(ClientSessionTest, ClipboardStubFilter) {
 
   ConnectClientSession();
 }
-
-namespace {
-
-MATCHER_P2(EqualsUsbEvent, usb_keycode, pressed, "") {
-  return arg.usb_keycode() == (unsigned int)usb_keycode &&
-         arg.pressed() == pressed;
-}
-
-MATCHER_P2(EqualsMouseEvent, x, y, "") {
-  return arg.x() == x && arg.y() == y;
-}
-
-MATCHER_P2(EqualsMouseButtonEvent, button, down, "") {
-  return arg.button() == button && arg.button_down() == down;
-}
-
-}  // namespace
 
 TEST_F(ClientSessionTest, InputStubFilter) {
   CreateClientSession();

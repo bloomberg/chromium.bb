@@ -65,8 +65,8 @@ TEST(CapabilitiesTest, HasCapability) {
     Tokenize(data[i].capabilities, " ", &caps);
 
     do {
-      EXPECT_EQ(HasCapability(JoinString(caps, " "), data[i].key),
-                data[i].result);
+      EXPECT_EQ(data[i].result,
+                HasCapability(JoinString(caps, " "), data[i].key));
     } while (std::next_permutation(caps.begin(), caps.end()));
   }
 }
@@ -97,8 +97,8 @@ TEST(CapabilitiesTest, Intersect) {
     Tokenize(data[i].left, " ", &caps);
 
     do {
-      EXPECT_EQ(IntersectCapabilities(JoinString(caps, " "), data[i].right),
-                data[i].result);
+      EXPECT_EQ(data[i].result,
+                IntersectCapabilities(JoinString(caps, " "), data[i].right));
     } while (std::next_permutation(caps.begin(), caps.end()));
   }
 }
