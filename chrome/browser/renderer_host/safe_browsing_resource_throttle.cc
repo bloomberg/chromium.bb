@@ -86,6 +86,12 @@ void SafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
   CHECK(url == url_being_checked_) << "Was expecting: " << url_being_checked_
                                    << " but got: " << url;
 
+#if defined(OS_ANDROID)
+  // Temporarily disable SB interstitial during Finch experiment.
+  // The database check is still exercised, but the interstitial never shown.
+  threat_type = SB_THREAT_TYPE_SAFE;
+#endif
+
   timer_.Stop();  // Cancel the timeout timer.
   threat_type_ = threat_type;
   state_ = STATE_NONE;
