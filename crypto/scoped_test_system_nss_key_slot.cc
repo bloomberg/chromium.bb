@@ -25,4 +25,8 @@ bool ScopedTestSystemNSSKeySlot::ConstructedSuccessfully() const {
   return test_db_->is_open();
 }
 
+PK11SlotInfo* ScopedTestSystemNSSKeySlot::slot() const {
+  return test_db_->slot();
+}
+
 }  // namespace crypto

@@ -46,6 +46,14 @@ net::NSSCertDatabase* GetNSSCertDatabaseForResourceContext(
     const base::Callback<void(net::NSSCertDatabase*)>& callback)
     WARN_UNUSED_RESULT;
 
+#if defined(OS_CHROMEOS)
+// Enables the system key slot in the NSSCertDatabase for the user associated
+// with |context|.
+// Must be called only on the IO thread.
+void EnableNSSSystemKeySlotForResourceContext(
+    content::ResourceContext* context);
+#endif
+
 // Gets a pointer to the NSSCertDatabase for the user associated with |context|.
 // It's a wrapper around |GetNSSCertDatabaseForResourceContext| which makes
 // sure it's called on IO thread (with |profile|'s resource context). The

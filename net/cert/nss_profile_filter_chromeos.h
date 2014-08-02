@@ -36,7 +36,8 @@ class NET_EXPORT NSSProfileFilterChromeOS {
   // Initialize the filter with the slot handles to allow. This method is not
   // thread-safe.
   void Init(crypto::ScopedPK11Slot public_slot,
-            crypto::ScopedPK11Slot private_slot);
+            crypto::ScopedPK11Slot private_slot,
+            crypto::ScopedPK11Slot system_slot);
 
   bool IsModuleAllowed(PK11SlotInfo* slot) const;
   bool IsCertAllowed(CERTCertificate* cert) const;
@@ -64,6 +65,7 @@ class NET_EXPORT NSSProfileFilterChromeOS {
  private:
   crypto::ScopedPK11Slot public_slot_;
   crypto::ScopedPK11Slot private_slot_;
+  crypto::ScopedPK11Slot system_slot_;
 };
 
 }  // namespace net

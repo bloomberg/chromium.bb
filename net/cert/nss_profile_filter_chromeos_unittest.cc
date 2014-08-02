@@ -11,6 +11,7 @@
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
+#include "crypto/scoped_test_nss_db.h"
 #include "net/base/test_data_directory.h"
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,7 +59,7 @@ class NSSProfileFilterChromeOSTest : public testing::Test {
   NSSProfileFilterChromeOSTest() : user_1_("user1"), user_2_("user2") {}
 
   virtual void SetUp() OVERRIDE {
-    // Initialize nss_util slots.
+    ASSERT_TRUE(system_slot_user_.is_open());
     ASSERT_TRUE(user_1_.constructed_successfully());
     ASSERT_TRUE(user_2_.constructed_successfully());
     user_1_.FinishInit();
@@ -74,7 +75,8 @@ class NSSProfileFilterChromeOSTest : public testing::Test {
     ASSERT_TRUE(private_slot_1.get());
     profile_filter_1_.Init(
         crypto::GetPublicSlotForChromeOSUser(user_1_.username_hash()),
-        private_slot_1.Pass());
+        private_slot_1.Pass(),
+        get_system_slot());
 
     profile_filter_1_copy_ = profile_filter_1_;
 
@@ -84,7 +86,8 @@ class NSSProfileFilterChromeOSTest : public testing::Test {
     ASSERT_TRUE(private_slot_2.get());
     profile_filter_2_.Init(
         crypto::GetPublicSlotForChromeOSUser(user_2_.username_hash()),
-        private_slot_2.Pass());
+        private_slot_2.Pass(),
+        crypto::ScopedPK11Slot() /* no system slot */);
 
     certs_ = CreateCertificateListFromFile(GetTestCertsDirectory(),
                                            "root_ca_cert.pem",
@@ -92,8 +95,13 @@ class NSSProfileFilterChromeOSTest : public testing::Test {
     ASSERT_EQ(1U, certs_.size());
   }
 
+  crypto::ScopedPK11Slot get_system_slot() {
+    return crypto::ScopedPK11Slot(PK11_ReferenceSlot(system_slot_user_.slot()));
+  }
+
  protected:
   CertificateList certs_;
+  crypto::ScopedTestNSSDB system_slot_user_;
   crypto::ScopedTestNSSChromeOSUser user_1_;
   crypto::ScopedTestNSSChromeOSUser user_2_;
   NSSProfileFilterChromeOS no_slots_profile_filter_;
@@ -148,6 +156,7 @@ TEST_F(NSSProfileFilterChromeOSTest, RootCertsAllowed) {
 }
 
 TEST_F(NSSProfileFilterChromeOSTest, SoftwareSlots) {
+  crypto::ScopedPK11Slot system_slot(get_system_slot());
   crypto::ScopedPK11Slot slot_1(
       crypto::GetPublicSlotForChromeOSUser(user_1_.username_hash()));
   ASSERT_TRUE(slot_1);
@@ -160,6 +169,12 @@ TEST_F(NSSProfileFilterChromeOSTest, SoftwareSlots) {
       GetTestCertsDirectory(), "ok_cert.pem", X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1U, certs_2.size());
   scoped_refptr<X509Certificate> cert_2 = certs_2[0];
+  CertificateList system_certs =
+      CreateCertificateListFromFile(GetTestCertsDirectory(),
+                                    "mit.davidben.der",
+                                    X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, system_certs.size());
+  scoped_refptr<X509Certificate> system_cert = system_certs[0];
 
   ASSERT_EQ(SECSuccess,
             PK11_ImportCert(slot_1.get(),
@@ -174,19 +189,31 @@ TEST_F(NSSProfileFilterChromeOSTest, SoftwareSlots) {
                             CK_INVALID_HANDLE,
                             "cert2",
                             PR_FALSE /* includeTrust (unused) */));
+  ASSERT_EQ(SECSuccess,
+            PK11_ImportCert(system_slot.get(),
+                            system_cert->os_cert_handle(),
+                            CK_INVALID_HANDLE,
+                            "systemcert",
+                            PR_FALSE /* includeTrust (unused) */));
 
   EXPECT_FALSE(
       no_slots_profile_filter_.IsCertAllowed(cert_1->os_cert_handle()));
   EXPECT_FALSE(
       no_slots_profile_filter_.IsCertAllowed(cert_2->os_cert_handle()));
+  EXPECT_FALSE(
+      no_slots_profile_filter_.IsCertAllowed(system_cert->os_cert_handle()));
 
   EXPECT_TRUE(profile_filter_1_.IsCertAllowed(cert_1->os_cert_handle()));
   EXPECT_TRUE(profile_filter_1_copy_.IsCertAllowed(cert_1->os_cert_handle()));
   EXPECT_FALSE(profile_filter_1_.IsCertAllowed(cert_2->os_cert_handle()));
   EXPECT_FALSE(profile_filter_1_copy_.IsCertAllowed(cert_2->os_cert_handle()));
+  EXPECT_TRUE(profile_filter_1_.IsCertAllowed(system_cert->os_cert_handle()));
+  EXPECT_TRUE(
+      profile_filter_1_copy_.IsCertAllowed(system_cert->os_cert_handle()));
 
   EXPECT_FALSE(profile_filter_2_.IsCertAllowed(cert_1->os_cert_handle()));
   EXPECT_TRUE(profile_filter_2_.IsCertAllowed(cert_2->os_cert_handle()));
+  EXPECT_FALSE(profile_filter_2_.IsCertAllowed(system_cert->os_cert_handle()));
 }
 
 }  // namespace net

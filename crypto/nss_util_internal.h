@@ -53,11 +53,10 @@ class CRYPTO_EXPORT AutoSECMODListReadLock {
 CRYPTO_EXPORT ScopedPK11Slot GetSystemNSSKeySlot(
     const base::Callback<void(ScopedPK11Slot)>& callback) WARN_UNUSED_RESULT;
 
-// Sets the test system slot. If this was called before
-// InitializeTPMTokenAndSystemSlot and no system token is provided by the Chaps
-// module, then this test slot will be used and the initialization continues as
-// if Chaps had provided this test slot. In particular, |slot| will be exposed
-// by |GetSystemNSSKeySlot| and |IsTPMTokenReady| will return true.
+// Sets the test system slot to |slot|, which means that |slot| will be exposed
+// through |GetSystemNSSKeySlot| and |IsTPMTokenReady| will return true.
+// |InitializeTPMTokenAndSystemSlot|, which triggers the TPM initialization,
+// does not have to be called if the test system slot is set.
 // This must must not be called consecutively with a |slot| != NULL. If |slot|
 // is NULL, the test system slot is unset.
 CRYPTO_EXPORT_PRIVATE void SetSystemKeySlotForTesting(ScopedPK11Slot slot);

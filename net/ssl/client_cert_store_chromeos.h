@@ -15,7 +15,11 @@ namespace net {
 
 class NET_EXPORT ClientCertStoreChromeOS : public ClientCertStoreNSS {
  public:
+  // Constructs a ClientCertStore that will return client certs available on
+  // the user's private and public slots. If |use_system_slot| is true, certs on
+  // the system slot will also be returned.
   ClientCertStoreChromeOS(
+      bool use_system_slot,
       const std::string& username_hash,
       const PasswordDelegateFactory& password_delegate_factory);
   virtual ~ClientCertStoreChromeOS();
@@ -33,13 +37,13 @@ class NET_EXPORT ClientCertStoreChromeOS : public ClientCertStoreNSS {
                                   CertificateList* selected_certs) OVERRIDE;
 
  private:
-  friend class ClientCertStoreChromeOSTestDelegate;
+  void DidGetSystemAndPrivateSlot(const SSLCertRequestInfo* request,
+                                  CertificateList* selected_certs,
+                                  const base::Closure& callback,
+                                  crypto::ScopedPK11Slot system_slot,
+                                  crypto::ScopedPK11Slot private_slot);
 
-  void DidGetPrivateSlot(const SSLCertRequestInfo* request,
-                         CertificateList* selected_certs,
-                         const base::Closure& callback,
-                         crypto::ScopedPK11Slot private_slot);
-
+  bool use_system_slot_;
   std::string username_hash_;
   NSSProfileFilterChromeOS profile_filter_;
 

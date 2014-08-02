@@ -29,7 +29,10 @@ CertVerifyProcChromeOS::CertVerifyProcChromeOS() {}
 
 CertVerifyProcChromeOS::CertVerifyProcChromeOS(
     crypto::ScopedPK11Slot public_slot) {
-  profile_filter_.Init(public_slot.Pass(), crypto::ScopedPK11Slot());
+  // Only the software slot is passed, since that is the only one where user
+  // trust settings are stored.
+  profile_filter_.Init(
+      public_slot.Pass(), crypto::ScopedPK11Slot(), crypto::ScopedPK11Slot());
 }
 
 CertVerifyProcChromeOS::~CertVerifyProcChromeOS() {}

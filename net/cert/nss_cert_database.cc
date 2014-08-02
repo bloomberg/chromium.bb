@@ -130,6 +130,12 @@ void NSSCertDatabase::ListCertsInSlot(const ListCertsCallback& callback,
       base::Bind(callback, base::Passed(&certs)));
 }
 
+#if defined(OS_CHROMEOS)
+crypto::ScopedPK11Slot NSSCertDatabase::GetSystemSlot() const {
+  return crypto::ScopedPK11Slot();
+}
+#endif
+
 crypto::ScopedPK11Slot NSSCertDatabase::GetPublicSlot() const {
   return crypto::ScopedPK11Slot(PK11_ReferenceSlot(public_slot_.get()));
 }

@@ -22,10 +22,20 @@ NSSCertDatabaseChromeOS::NSSCertDatabaseChromeOS(
     crypto::ScopedPK11Slot public_slot,
     crypto::ScopedPK11Slot private_slot)
     : NSSCertDatabase(public_slot.Pass(), private_slot.Pass()) {
-  profile_filter_.Init(GetPublicSlot(), GetPrivateSlot());
+  // By default, don't use a system slot. Only if explicitly set by
+  // SetSystemSlot, the system slot will be used.
+  profile_filter_.Init(GetPublicSlot(),
+                       GetPrivateSlot(),
+                       crypto::ScopedPK11Slot() /* no system slot */);
 }
 
 NSSCertDatabaseChromeOS::~NSSCertDatabaseChromeOS() {}
+
+void NSSCertDatabaseChromeOS::SetSystemSlot(
+    crypto::ScopedPK11Slot system_slot) {
+  system_slot_ = system_slot.Pass();
+  profile_filter_.Init(GetPublicSlot(), GetPrivateSlot(), GetSystemSlot());
+}
 
 void NSSCertDatabaseChromeOS::ListCertsSync(CertificateList* certs) {
   ListCertsImpl(profile_filter_, certs);
@@ -43,6 +53,12 @@ void NSSCertDatabaseChromeOS::ListCerts(
                  profile_filter_,
                  base::Unretained(raw_certs)),
       base::Bind(callback, base::Passed(&certs)));
+}
+
+crypto::ScopedPK11Slot NSSCertDatabaseChromeOS::GetSystemSlot() const {
+  if (system_slot_)
+    return crypto::ScopedPK11Slot(PK11_ReferenceSlot(system_slot_.get()));
+  return crypto::ScopedPK11Slot();
 }
 
 void NSSCertDatabaseChromeOS::ListModules(CryptoModuleList* modules,

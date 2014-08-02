@@ -43,6 +43,8 @@ NSSProfileFilterChromeOS::NSSProfileFilterChromeOS(
   private_slot_.reset(other.private_slot_ ?
       PK11_ReferenceSlot(other.private_slot_.get()) :
       NULL);
+  system_slot_.reset(
+      other.system_slot_ ? PK11_ReferenceSlot(other.system_slot_.get()) : NULL);
 }
 
 NSSProfileFilterChromeOS::~NSSProfileFilterChromeOS() {}
@@ -55,11 +57,14 @@ NSSProfileFilterChromeOS& NSSProfileFilterChromeOS::operator=(
   private_slot_.reset(other.private_slot_ ?
       PK11_ReferenceSlot(other.private_slot_.get()) :
       NULL);
+  system_slot_.reset(
+      other.system_slot_ ? PK11_ReferenceSlot(other.system_slot_.get()) : NULL);
   return *this;
 }
 
 void NSSProfileFilterChromeOS::Init(crypto::ScopedPK11Slot public_slot,
-                                    crypto::ScopedPK11Slot private_slot) {
+                                    crypto::ScopedPK11Slot private_slot,
+                                    crypto::ScopedPK11Slot system_slot) {
   // crypto::ScopedPK11Slot actually holds a reference counted object.
   // Because scoped_ptr<T> assignment is a no-op if it already points to
   // the same pointer, a reference would be leaked because .Pass() does
@@ -69,12 +74,17 @@ void NSSProfileFilterChromeOS::Init(crypto::ScopedPK11Slot public_slot,
     public_slot_ = public_slot.Pass();
   if (private_slot_.get() != private_slot.get())
     private_slot_ = private_slot.Pass();
+  if (system_slot_.get() != system_slot.get())
+    system_slot_ = system_slot.Pass();
 }
 
 bool NSSProfileFilterChromeOS::IsModuleAllowed(PK11SlotInfo* slot) const {
-  // If this is one of the public/private slots for this profile, allow it.
-  if (slot == public_slot_.get() || slot == private_slot_.get())
+  // If this is one of the public/private slots for this profile or the system
+  // slot, allow it.
+  if (slot == public_slot_.get() || slot == private_slot_.get() ||
+      slot == system_slot_.get()) {
     return true;
+  }
   // Allow the root certs module.
   if (PK11_HasRootCerts(slot))
     return true;
@@ -86,11 +96,17 @@ bool NSSProfileFilterChromeOS::IsModuleAllowed(PK11SlotInfo* slot) const {
   if (!public_slot_.get() || !private_slot_.get())
     return false;
   // If this is not the internal (file-system) module or the TPM module, allow
-  // it.
+  // it. This would allow smartcards/etc, although ChromeOS doesn't currently
+  // support that. (This assumes that private_slot_ and system_slot_ are on the
+  // same module.)
+  DCHECK(!system_slot_.get() ||
+         PK11_GetModule(private_slot_.get()) ==
+             PK11_GetModule(system_slot_.get()));
   SECMODModule* module_for_slot = PK11_GetModule(slot);
   if (module_for_slot != PK11_GetModule(public_slot_.get()) &&
-      module_for_slot != PK11_GetModule(private_slot_.get()))
+      module_for_slot != PK11_GetModule(private_slot_.get())) {
     return true;
+  }
   return false;
 }
 

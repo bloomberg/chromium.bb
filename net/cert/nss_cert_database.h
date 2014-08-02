@@ -130,6 +130,16 @@ class NET_EXPORT NSSCertDatabase {
   virtual void ListCertsInSlot(const ListCertsCallback& callback,
                                PK11SlotInfo* slot);
 
+#if defined(OS_CHROMEOS)
+  // Get the slot for system-wide key data. May be NULL if the system token was
+  // not explicitly set.
+  // Note: The System slot is set after the NSSCertDatabase is constructed and
+  // this call returns synchronously. Thus, it is possible to call this function
+  // before SetSystemSlot is called and get a NULL result.
+  // See https://crbug.com/399554 .
+  virtual crypto::ScopedPK11Slot GetSystemSlot() const;
+#endif
+
   // Get the default slot for public key data.
   crypto::ScopedPK11Slot GetPublicSlot() const;
 

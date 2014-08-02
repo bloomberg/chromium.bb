@@ -14,6 +14,7 @@
 #include "crypto/nss_util_internal.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
+#include "crypto/scoped_test_system_nss_key_slot.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/cert_type.h"
 #include "net/cert/x509_certificate.h"
@@ -42,15 +43,28 @@ bool ImportClientCertToSlot(const scoped_refptr<X509Certificate>& cert,
   return true;
 }
 
+enum ReadFromSlot {
+  READ_FROM_SLOT_USER,
+  READ_FROM_SLOT_SYSTEM
+};
+
+enum SystemSlotAvailability {
+  SYSTEM_SLOT_AVAILABILITY_ENABLED,
+  SYSTEM_SLOT_AVAILABILITY_DISABLED
+};
+
 }  // namespace
 
 // Define a delegate to be used for instantiating the parameterized test set
 // ClientCertStoreTest.
+template <ReadFromSlot read_from,
+          SystemSlotAvailability system_slot_availability>
 class ClientCertStoreChromeOSTestDelegate {
  public:
   ClientCertStoreChromeOSTestDelegate()
       : user_("scopeduser"),
-        store_(user_.username_hash(),
+        store_(system_slot_availability == SYSTEM_SLOT_AVAILABILITY_ENABLED,
+               user_.username_hash(),
                ClientCertStoreChromeOS::PasswordDelegateFactory()) {
     // Defer futher initialization and checks to SelectClientCerts, because the
     // constructor doesn't allow us to return an initialization result. Could be
@@ -72,10 +86,19 @@ class ClientCertStoreChromeOSTestDelegate {
     }
     user_.FinishInit();
 
-    crypto::ScopedPK11Slot slot(
-        crypto::GetPublicSlotForChromeOSUser(user_.username_hash()));
+    crypto::ScopedPK11Slot slot;
+    switch (read_from) {
+      case READ_FROM_SLOT_USER:
+        slot = crypto::GetPublicSlotForChromeOSUser(user_.username_hash());
+        break;
+      case READ_FROM_SLOT_SYSTEM:
+        slot.reset(PK11_ReferenceSlot(system_db_.slot()));
+        break;
+      default:
+        CHECK(false);
+    }
     if (!slot) {
-      LOG(ERROR) << "Could not get the user's public slot";
+      LOG(ERROR) << "Could not get the NSS key slot";
       return false;
     }
 
@@ -104,6 +127,7 @@ class ClientCertStoreChromeOSTestDelegate {
 
  private:
   crypto::ScopedTestNSSChromeOSUser user_;
+  crypto::ScopedTestSystemNSSKeySlot system_db_;
   ClientCertStoreChromeOS store_;
 };
 
@@ -112,26 +136,43 @@ class ClientCertStoreChromeOSTestDelegate {
 // To verify that this delegation is functional, run the same filtering tests as
 // for the other implementations. These tests are defined in
 // client_cert_store_unittest-inl.h and are instantiated for each platform.
-INSTANTIATE_TYPED_TEST_CASE_P(ChromeOS,
+
+// In this case, all requested certs are read from the user's slot and the
+// system slot is not enabled in the store.
+typedef ClientCertStoreChromeOSTestDelegate<READ_FROM_SLOT_USER,
+                                            SYSTEM_SLOT_AVAILABILITY_DISABLED>
+    DelegateReadUserDisableSystem;
+INSTANTIATE_TYPED_TEST_CASE_P(ChromeOS_ReadUserDisableSystem,
                               ClientCertStoreTest,
-                              ClientCertStoreChromeOSTestDelegate);
+                              DelegateReadUserDisableSystem);
+
+// In this case, all requested certs are read from the user's slot and the
+// system slot is enabled in the store.
+typedef ClientCertStoreChromeOSTestDelegate<READ_FROM_SLOT_USER,
+                                            SYSTEM_SLOT_AVAILABILITY_ENABLED>
+    DelegateReadUserEnableSystem;
+INSTANTIATE_TYPED_TEST_CASE_P(ChromeOS_ReadUserEnableSystem,
+                              ClientCertStoreTest,
+                              DelegateReadUserEnableSystem);
+
+// In this case, all requested certs are read from the system slot, therefore
+// the system slot is enabled in the store.
+typedef ClientCertStoreChromeOSTestDelegate<READ_FROM_SLOT_SYSTEM,
+                                            SYSTEM_SLOT_AVAILABILITY_ENABLED>
+    DelegateReadSystem;
+INSTANTIATE_TYPED_TEST_CASE_P(ChromeOS_ReadSystem,
+                              ClientCertStoreTest,
+                              DelegateReadSystem);
 
 class ClientCertStoreChromeOSTest : public ::testing::Test {
  public:
-  scoped_refptr<X509Certificate> ImportCertForUser(
-      const std::string& username_hash,
+  scoped_refptr<X509Certificate> ImportCertToSlot(
       const std::string& cert_filename,
-      const std::string& key_filename) {
-    crypto::ScopedPK11Slot slot(
-        crypto::GetPublicSlotForChromeOSUser(username_hash));
-    if (!slot) {
-      LOG(ERROR) << "No slot for user " << username_hash;
-      return NULL;
-    }
-
+      const std::string& key_filename,
+      PK11SlotInfo* slot) {
     if (!ImportSensitiveKeyFromFile(
-            GetTestCertsDirectory(), key_filename, slot.get())) {
-      LOG(ERROR) << "Could not import private key for user " << username_hash;
+            GetTestCertsDirectory(), key_filename, slot)) {
+      LOG(ERROR) << "Could not import private key from file " << key_filename;
       return NULL;
     }
 
@@ -143,7 +184,7 @@ class ClientCertStoreChromeOSTest : public ::testing::Test {
       return NULL;
     }
 
-    if (!ImportClientCertToSlot(cert, slot.get()))
+    if (!ImportClientCertToSlot(cert, slot))
       return NULL;
 
     // |cert| continues to point to the original X509Certificate before the
@@ -151,6 +192,21 @@ class ClientCertStoreChromeOSTest : public ::testing::Test {
     // test.
     return cert;
   }
+
+  scoped_refptr<X509Certificate> ImportCertForUser(
+      const std::string& username_hash,
+      const std::string& cert_filename,
+      const std::string& key_filename) {
+    crypto::ScopedPK11Slot slot(
+        crypto::GetPublicSlotForChromeOSUser(username_hash));
+    if (!slot) {
+      LOG(ERROR) << "No slot for user " << username_hash;
+      return NULL;
+    }
+
+    return ImportCertToSlot(cert_filename, key_filename, slot.get());
+  }
+
 };
 
 // Ensure that cert requests, that are started before the user's NSS DB is
@@ -158,8 +214,13 @@ class ClientCertStoreChromeOSTest : public ::testing::Test {
 TEST_F(ClientCertStoreChromeOSTest, RequestWaitsForNSSInitAndSucceeds) {
   crypto::ScopedTestNSSChromeOSUser user("scopeduser");
   ASSERT_TRUE(user.constructed_successfully());
+
+  crypto::ScopedTestSystemNSSKeySlot system_slot;
+
   ClientCertStoreChromeOS store(
-      user.username_hash(), ClientCertStoreChromeOS::PasswordDelegateFactory());
+      true /* use system slot */,
+      user.username_hash(),
+      ClientCertStoreChromeOS::PasswordDelegateFactory());
   scoped_refptr<X509Certificate> cert_1(
       ImportCertForUser(user.username_hash(), "client_1.pem", "client_1.pk8"));
   ASSERT_TRUE(cert_1);
@@ -194,8 +255,12 @@ TEST_F(ClientCertStoreChromeOSTest, RequestsAfterNSSInitSucceed) {
   ASSERT_TRUE(user.constructed_successfully());
   user.FinishInit();
 
+  crypto::ScopedTestSystemNSSKeySlot system_slot;
+
   ClientCertStoreChromeOS store(
-      user.username_hash(), ClientCertStoreChromeOS::PasswordDelegateFactory());
+      true /* use system slot */,
+      user.username_hash(),
+      ClientCertStoreChromeOS::PasswordDelegateFactory());
   scoped_refptr<X509Certificate> cert_1(
       ImportCertForUser(user.username_hash(), "client_1.pem", "client_1.pk8"));
   ASSERT_TRUE(cert_1);
@@ -213,7 +278,7 @@ TEST_F(ClientCertStoreChromeOSTest, RequestsAfterNSSInitSucceed) {
 // This verifies that a request in the context of User1 doesn't see certificates
 // of User2, and the other way round. We check both directions, to ensure that
 // the behavior doesn't depend on initialization order of the DBs, for example.
-TEST_F(ClientCertStoreChromeOSTest, RequestDoesCrossReadSecondDB) {
+TEST_F(ClientCertStoreChromeOSTest, RequestDoesCrossReadOtherUserDB) {
   crypto::ScopedTestNSSChromeOSUser user1("scopeduser1");
   ASSERT_TRUE(user1.constructed_successfully());
   crypto::ScopedTestNSSChromeOSUser user2("scopeduser2");
@@ -222,10 +287,14 @@ TEST_F(ClientCertStoreChromeOSTest, RequestDoesCrossReadSecondDB) {
   user1.FinishInit();
   user2.FinishInit();
 
+  crypto::ScopedTestSystemNSSKeySlot system_slot;
+
   ClientCertStoreChromeOS store1(
+      true /* use system slot */,
       user1.username_hash(),
       ClientCertStoreChromeOS::PasswordDelegateFactory());
   ClientCertStoreChromeOS store2(
+      true /* use system slot */,
       user2.username_hash(),
       ClientCertStoreChromeOS::PasswordDelegateFactory());
 
@@ -257,6 +326,42 @@ TEST_F(ClientCertStoreChromeOSTest, RequestDoesCrossReadSecondDB) {
   // store2 should only return certs of user2, namely cert_2.
   ASSERT_EQ(1u, selected_certs2.size());
   EXPECT_TRUE(cert_2->Equals(selected_certs2[0]));
+}
+
+// This verifies that a request in the context of User1 doesn't see certificates
+// of the system store if the system store is disabled.
+TEST_F(ClientCertStoreChromeOSTest, RequestDoesCrossReadSystemDB) {
+  crypto::ScopedTestNSSChromeOSUser user1("scopeduser1");
+  ASSERT_TRUE(user1.constructed_successfully());
+
+  user1.FinishInit();
+
+  crypto::ScopedTestSystemNSSKeySlot system_slot;
+
+  ClientCertStoreChromeOS store(
+      false /* do not use system slot */,
+      user1.username_hash(),
+      ClientCertStoreChromeOS::PasswordDelegateFactory());
+
+  scoped_refptr<X509Certificate> cert_1(
+      ImportCertForUser(user1.username_hash(), "client_1.pem", "client_1.pk8"));
+  ASSERT_TRUE(cert_1);
+  scoped_refptr<X509Certificate> cert_2(
+      ImportCertToSlot("client_2.pem", "client_2.pk8", system_slot.slot()));
+  ASSERT_TRUE(cert_2);
+
+  scoped_refptr<SSLCertRequestInfo> request_all(new SSLCertRequestInfo());
+
+  base::RunLoop run_loop;
+
+  CertificateList selected_certs;
+  store.GetClientCerts(*request_all, &selected_certs, run_loop.QuitClosure());
+
+  run_loop.Run();
+
+  // store should only return certs of the user, namely cert_1.
+  ASSERT_EQ(1u, selected_certs.size());
+  EXPECT_TRUE(cert_1->Equals(selected_certs[0]));
 }
 
 }  // namespace net

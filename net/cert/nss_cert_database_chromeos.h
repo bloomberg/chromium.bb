@@ -20,12 +20,17 @@ class NET_EXPORT NSSCertDatabaseChromeOS : public NSSCertDatabase {
                           crypto::ScopedPK11Slot private_slot);
   virtual ~NSSCertDatabaseChromeOS();
 
+  // |system_slot| is the system TPM slot, which is only enabled for certain
+  // users.
+  void SetSystemSlot(crypto::ScopedPK11Slot system_slot);
+
   // NSSCertDatabase implementation.
   virtual void ListCertsSync(CertificateList* certs) OVERRIDE;
   virtual void ListCerts(const NSSCertDatabase::ListCertsCallback& callback)
       OVERRIDE;
   virtual void ListModules(CryptoModuleList* modules, bool need_rw) const
       OVERRIDE;
+  virtual crypto::ScopedPK11Slot GetSystemSlot() const OVERRIDE;
 
   // TODO(mattm): handle trust setting, deletion, etc correctly when certs exist
   // in multiple slots.
@@ -40,6 +45,7 @@ class NET_EXPORT NSSCertDatabaseChromeOS : public NSSCertDatabase {
                             CertificateList* certs);
 
   NSSProfileFilterChromeOS profile_filter_;
+  crypto::ScopedPK11Slot system_slot_;
 
   DISALLOW_COPY_AND_ASSIGN(NSSCertDatabaseChromeOS);
 };

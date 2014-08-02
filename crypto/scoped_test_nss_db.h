@@ -20,8 +20,8 @@ class CRYPTO_EXPORT_PRIVATE ScopedTestNSSDB {
   ScopedTestNSSDB();
   ~ScopedTestNSSDB();
 
-  bool is_open() { return slot_; }
-  PK11SlotInfo* slot() { return slot_.get(); }
+  bool is_open() const { return slot_; }
+  PK11SlotInfo* slot() const { return slot_.get(); }
 
  private:
   base::ScopedTempDir temp_dir_;

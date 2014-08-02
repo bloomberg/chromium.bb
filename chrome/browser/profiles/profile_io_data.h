@@ -213,6 +213,8 @@ class ProfileIOData {
   std::string username_hash() const {
     return username_hash_;
   }
+
+  bool use_system_key_slot() const { return use_system_key_slot_; }
 #endif
 
   Profile::ProfileType profile_type() const {
@@ -326,6 +328,7 @@ class ProfileIOData {
 
 #if defined(OS_CHROMEOS)
     std::string username_hash;
+    bool use_system_key_slot;
 #endif
 
     // The profile this struct was populated from. It's passed as a void* to
@@ -589,6 +592,7 @@ class ProfileIOData {
 #if defined(OS_CHROMEOS)
   mutable scoped_ptr<policy::PolicyCertVerifier> cert_verifier_;
   mutable std::string username_hash_;
+  mutable bool use_system_key_slot_;
 #endif
 
   mutable scoped_ptr<net::TransportSecurityPersister>

@@ -110,11 +110,13 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/net/nss_context.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -382,6 +384,15 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
                                          user->email(),
                                          user->username_hash(),
                                          profile->GetPath()));
+
+      // Use the device-wide system key slot only if the user is of the same
+      // domain as the device is registered to.
+      policy::BrowserPolicyConnectorChromeOS* connector =
+          g_browser_process->platform_part()
+              ->browser_policy_connector_chromeos();
+      params->use_system_key_slot =
+          connector->GetUserAffiliation(user->email()) ==
+          policy::USER_AFFILIATION_MANAGED;
     }
   }
 #endif
@@ -577,6 +588,9 @@ ProfileIOData::AppRequestContext::~AppRequestContext() {
 
 ProfileIOData::ProfileParams::ProfileParams()
     : io_thread(NULL),
+#if defined(OS_CHROMEOS)
+      use_system_key_slot(false),
+#endif
       profile(NULL) {
 }
 
@@ -584,6 +598,9 @@ ProfileIOData::ProfileParams::~ProfileParams() {}
 
 ProfileIOData::ProfileIOData(Profile::ProfileType profile_type)
     : initialized_(false),
+#if defined(OS_CHROMEOS)
+      use_system_key_slot_(false),
+#endif
       resource_context_(new ResourceContext(this)),
       initialized_on_UI_thread_(false),
       profile_type_(profile_type) {
@@ -904,6 +921,7 @@ ProfileIOData::ResourceContext::CreateClientCertStore() {
     return io_data_->client_cert_store_factory_.Run();
 #if defined(OS_CHROMEOS)
   return scoped_ptr<net::ClientCertStore>(new net::ClientCertStoreChromeOS(
+      io_data_->use_system_key_slot(),
       io_data_->username_hash(),
       base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
                  chrome::kCryptoModulePasswordClientAuth)));
@@ -1091,6 +1109,10 @@ void ProfileIOData::Init(
 
 #if defined(OS_CHROMEOS)
   username_hash_ = profile_params_->username_hash;
+  use_system_key_slot_ = profile_params_->use_system_key_slot;
+  if (use_system_key_slot_)
+    EnableNSSSystemKeySlotForResourceContext(resource_context_.get());
+
   scoped_refptr<net::CertVerifyProc> verify_proc;
   crypto::ScopedPK11Slot public_slot =
       crypto::GetPublicSlotForChromeOSUser(username_hash_);

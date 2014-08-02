@@ -394,17 +394,20 @@ class NSSInitSingleton {
     }
     initializing_tpm_token_ = false;
 
-    if (tpm_slot_) {
-      TPMReadyCallbackList callback_list;
-      callback_list.swap(tpm_ready_callback_list_);
-      for (TPMReadyCallbackList::iterator i = callback_list.begin();
-           i != callback_list.end();
-           ++i) {
-        (*i).Run();
-      }
-    }
+    if (tpm_slot_)
+      RunAndClearTPMReadyCallbackList();
 
     callback.Run(!!tpm_slot_);
+  }
+
+  void RunAndClearTPMReadyCallbackList() {
+    TPMReadyCallbackList callback_list;
+    callback_list.swap(tpm_ready_callback_list_);
+    for (TPMReadyCallbackList::iterator i = callback_list.begin();
+         i != callback_list.end();
+         ++i) {
+      i->Run();
+    }
   }
 
   bool IsTPMTokenReady(const base::Closure& callback) {
@@ -579,6 +582,12 @@ class NSSInitSingleton {
     // Unsetting, i.e. setting a NULL, however is allowed.
     DCHECK(!slot || !test_system_slot_);
     test_system_slot_ = slot.Pass();
+    if (test_system_slot_) {
+      tpm_slot_.reset(PK11_ReferenceSlot(test_system_slot_.get()));
+      RunAndClearTPMReadyCallbackList();
+    } else {
+      tpm_slot_.reset();
+    }
   }
 #endif  // defined(OS_CHROMEOS)
 
@@ -1014,7 +1023,7 @@ ScopedPK11Slot GetSystemNSSKeySlot(
 }
 
 void SetSystemKeySlotForTesting(ScopedPK11Slot slot) {
-  g_nss_singleton.Get().SetSystemKeySlotForTesting(ScopedPK11Slot());
+  g_nss_singleton.Get().SetSystemKeySlotForTesting(slot.Pass());
 }
 
 void EnableTPMTokenForNSS() {
