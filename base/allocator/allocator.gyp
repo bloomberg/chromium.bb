@@ -306,6 +306,9 @@
             # e.g. for profiling (it's more rare to profile Debug builds,
             # but people sometimes need to do that).
             'disable_debugallocation%': 0,
+            # This code gets run a lot and debugged rarely, so it should be fast
+            # by default. See http://crbug.com/388949.
+            'debug_optimize': 2,
           },
           'conditions': [
             # TODO(phajdan.jr): Also enable on Windows.
