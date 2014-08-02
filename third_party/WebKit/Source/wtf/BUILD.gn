@@ -28,6 +28,8 @@ config("wtf_config") {
       "/wd4344",
       # Conversion from 'size_t' to 'type'.
       "/wd4267",
+      # dtoa, icu, etc. like doing assignment within conditional.
+      "/wd4706",
     ]
 
     if (component_mode == "shared_library") {
