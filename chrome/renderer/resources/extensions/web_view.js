@@ -88,6 +88,7 @@ function WebViewInternal(webviewNode) {
   privates(webviewNode).internal = this;
   this.webviewNode = webviewNode;
   this.attached = false;
+  this.elementAttached = false;
 
   this.beforeFirstNavigation = true;
   this.validPartitionId = true;
@@ -626,6 +627,10 @@ WebViewInternal.prototype.parseSrcAttribute = function(result) {
     return true;
   }
 
+  if (!this.elementAttached) {
+    return true;
+  }
+
   if (!this.hasGuestInstanceID()) {
     if (this.beforeFirstNavigation) {
       this.beforeFirstNavigation = false;
@@ -853,8 +858,6 @@ function registerWebViewElement() {
     new WebViewInternal(this);
   };
 
-  proto.customElementDetached = false;
-
   proto.attributeChangedCallback = function(name, oldValue, newValue) {
     var internal = privates(this).internal;
     if (!internal) {
@@ -864,16 +867,23 @@ function registerWebViewElement() {
   };
 
   proto.detachedCallback = function() {
-    this.customElementDetached = true;
+    var internal = privates(this).internal;
+    if (!internal) {
+      return;
+    }
+    internal.elementAttached = false;
   };
 
   proto.attachedCallback = function() {
-    if (this.customElementDetached) {
-      var webViewInternal = privates(this).internal;
-      webViewInternal.resetUponReattachment();
-      webViewInternal.allocateInstanceId();
+    var internal = privates(this).internal;
+    if (!internal) {
+      return;
     }
-    this.customElementDetached = false;
+    if (!internal.elementAttached) {
+      internal.elementAttached = true;
+      internal.resetUponReattachment();
+      internal.parseAttributes();
+    }
   };
 
   var methods = [
