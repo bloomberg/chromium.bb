@@ -60,6 +60,8 @@ void LevelDBWrapper::Iterator::Next() {
       db_iterator_->Next();
     if (comp >= 0)
       ++map_iterator_;
+  } else {
+    ++map_iterator_;
   }
 
   AdvanceIterators();

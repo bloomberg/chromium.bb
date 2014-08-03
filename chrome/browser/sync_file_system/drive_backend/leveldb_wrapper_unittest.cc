@@ -115,6 +115,29 @@ TEST_F(LevelDBWrapperTest, IteratorTest) {
   EXPECT_FALSE(itr->Valid());
 }
 
+TEST_F(LevelDBWrapperTest, Iterator2Test) {
+  GetDB()->Put("a", "1");
+  GetDB()->Put("b", "2");
+  GetDB()->Put("c", "3");
+  // Keep pending transanctions on memory.
+
+  scoped_ptr<LevelDBWrapper::Iterator> itr = GetDB()->NewIterator();
+
+  std::string prev_key;
+  std::string prev_value;
+  int loop_counter = 0;
+  for (itr->SeekToFirst(); itr->Valid(); itr->Next()) {
+    ASSERT_NE(prev_key, itr->key().ToString());
+    ASSERT_NE(prev_value, itr->value().ToString());
+    prev_key = itr->key().ToString();
+    prev_value = itr->value().ToString();
+    ++loop_counter;
+  }
+  EXPECT_EQ(3, loop_counter);
+  EXPECT_EQ("c", prev_key);
+  EXPECT_EQ("3", prev_value);
+}
+
 TEST_F(LevelDBWrapperTest, PutTest) {
   TestData merged_data[] = {{"a", "1"}, {"aa", "new0"}, {"ab", "0"},
                             {"bb", "new2"}, {"c", "new1"}, {"d", "4"}};
