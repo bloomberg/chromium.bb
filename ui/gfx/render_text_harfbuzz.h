@@ -107,6 +107,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_BreakRunsByUnicodeBlocks);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_SubglyphGraphemeCases);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_SubglyphGraphemePartition);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_NonExistentFont);
 
   // Return the run index that contains the argument; or the length of the
   // |runs_| vector if argument exceeds the text length or width.
@@ -126,7 +127,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
 
   // Shape the glyphs needed for the text |run|.
   void ShapeRun(internal::TextRunHarfBuzz* run);
-  void ShapeRunWithFont(internal::TextRunHarfBuzz* run,
+  bool ShapeRunWithFont(internal::TextRunHarfBuzz* run,
                         const std::string& font);
 
   // Text runs in logical order.

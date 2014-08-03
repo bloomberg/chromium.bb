@@ -175,6 +175,7 @@ struct Line {
 };
 
 // Creates an SkTypeface from a font |family| name and a |gfx::Font::FontStyle|.
+// May return NULL.
 skia::RefPtr<SkTypeface> CreateSkiaTypeface(const std::string& family,
                                             int style);
 

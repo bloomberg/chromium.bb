@@ -2262,4 +2262,33 @@ TEST_F(RenderTextTest, HarfBuzz_GlyphBounds) {
   }
 }
 
+// Ensure that shaping with a non-existent font does not cause a crash.
+TEST_F(RenderTextTest, HarfBuzz_NonExistentFont) {
+  RenderTextHarfBuzz render_text;
+  render_text.SetText(ASCIIToUTF16("test"));
+  render_text.EnsureLayout();
+  ASSERT_EQ(1U, render_text.runs_.size());
+  internal::TextRunHarfBuzz* run = render_text.runs_[0];
+  render_text.ShapeRunWithFont(run, "TheFontThatDoesntExist");
+}
+
+// Ensure an empty run returns sane values to queries.
+TEST_F(RenderTextTest, HarfBuzz_EmptyRun) {
+  internal::TextRunHarfBuzz run;
+  const base::string16 kString = ASCIIToUTF16("abcdefgh");
+  scoped_ptr<base::i18n::BreakIterator> iter(new base::i18n::BreakIterator(
+      kString, base::i18n::BreakIterator::BREAK_CHARACTER));
+  ASSERT_TRUE(iter->Init());
+
+  run.range = Range(3, 8);
+  run.glyph_count = 0;
+  EXPECT_EQ(Range(0, 0), run.CharRangeToGlyphRange(Range(4, 5)));
+  EXPECT_EQ(Range(0, 0), run.GetGraphemeBounds(iter.get(), 4));
+  Range chars;
+  Range glyphs;
+  run.GetClusterAt(4, &chars, &glyphs);
+  EXPECT_EQ(Range(3, 8), chars);
+  EXPECT_EQ(Range(0, 0), glyphs);
+}
+
 }  // namespace gfx

@@ -454,6 +454,12 @@ void TextRunHarfBuzz::GetClusterAt(size_t pos,
   DCHECK(chars);
   DCHECK(glyphs);
 
+  if (glyph_count == 0) {
+    *chars = range;
+    *glyphs = Range();
+    return;
+  }
+
   if (is_rtl) {
     GetClusterAtImpl(pos, range, glyph_to_char.rbegin(), glyph_to_char.rend(),
         true, chars, glyphs);
@@ -491,6 +497,8 @@ Range TextRunHarfBuzz::GetGraphemeBounds(
     base::i18n::BreakIterator* grapheme_iterator,
     size_t text_index) {
   DCHECK_LT(text_index, range.end());
+  if (glyph_count == 0)
+    return Range(preceding_run_widths, preceding_run_widths + width);
 
   Range chars;
   Range glyphs;
@@ -1008,25 +1016,35 @@ void RenderTextHarfBuzz::ShapeRun(internal::TextRunHarfBuzz* run) {
   const std::string primary_font_name = primary_font.GetFontName();
   run->font_size = primary_font.GetFontSize();
 
-  // Try shaping with |primary_font|.
-  ShapeRunWithFont(run, primary_font_name);
-  size_t best_font_missing = run->CountMissingGlyphs();
-  if (best_font_missing == 0)
-    return;
-  std::string best_font = primary_font_name;
+  size_t best_font_missing = std::numeric_limits<size_t>::max();
+  std::string best_font;
+  std::string current_font;
 
-#if defined(OS_WIN)
-  Font uniscribe_font;
-  const base::char16* run_text = &(GetLayoutText()[run->range.start()]);
-  if (GetUniscribeFallbackFont(primary_font, run_text, run->range.length(),
-                               &uniscribe_font)) {
-    ShapeRunWithFont(run, uniscribe_font.GetFontName());
+  // Try shaping with |primary_font|.
+  if (ShapeRunWithFont(run, primary_font_name)) {
+    current_font = primary_font_name;
     size_t current_missing = run->CountMissingGlyphs();
     if (current_missing == 0)
       return;
     if (current_missing < best_font_missing) {
       best_font_missing = current_missing;
-      best_font = uniscribe_font.GetFontName();
+      best_font = current_font;
+    }
+  }
+
+#if defined(OS_WIN)
+  Font uniscribe_font;
+  const base::char16* run_text = &(GetLayoutText()[run->range.start()]);
+  if (GetUniscribeFallbackFont(primary_font, run_text, run->range.length(),
+                               &uniscribe_font) &&
+      ShapeRunWithFont(run, uniscribe_font.GetFontName())) {
+    current_font = uniscribe_font.GetFontName();
+    size_t current_missing = run->CountMissingGlyphs();
+    if (current_missing == 0)
+      return;
+    if (current_missing < best_font_missing) {
+      best_font_missing = current_missing;
+      best_font = current_font;
     }
   }
 #endif
@@ -1035,23 +1053,35 @@ void RenderTextHarfBuzz::ShapeRun(internal::TextRunHarfBuzz* run) {
   // |primary_font|.
   std::vector<std::string> fonts = GetFallbackFontFamilies(primary_font_name);
   for (size_t i = 1; i < fonts.size(); ++i) {
-    ShapeRunWithFont(run, fonts[i]);
+    if (!ShapeRunWithFont(run, fonts[i]))
+      continue;
+    current_font = fonts[i];
     size_t current_missing = run->CountMissingGlyphs();
     if (current_missing == 0)
       return;
     if (current_missing < best_font_missing) {
       best_font_missing = current_missing;
-      best_font = fonts[i];
+      best_font = current_font;
     }
   }
 
-  ShapeRunWithFont(run, best_font);
+  if (!best_font.empty() &&
+      (best_font == current_font || ShapeRunWithFont(run, best_font))) {
+    return;
+  }
+
+  run->glyph_count = 0;
+  run->width = 0;
 }
 
-void RenderTextHarfBuzz::ShapeRunWithFont(internal::TextRunHarfBuzz* run,
+bool RenderTextHarfBuzz::ShapeRunWithFont(internal::TextRunHarfBuzz* run,
                                           const std::string& font_family) {
   const base::string16& text = GetLayoutText();
-  run->skia_face = internal::CreateSkiaTypeface(font_family, run->font_style);
+  skia::RefPtr<SkTypeface> skia_face =
+      internal::CreateSkiaTypeface(font_family, run->font_style);
+  if (skia_face == NULL)
+    return false;
+  run->skia_face = skia_face;
   hb_font_t* harfbuzz_font = CreateHarfBuzzFont(run->skia_face.get(),
                                                 run->font_size);
 
@@ -1094,6 +1124,7 @@ void RenderTextHarfBuzz::ShapeRunWithFont(internal::TextRunHarfBuzz* run,
 
   hb_buffer_destroy(buffer);
   hb_font_destroy(harfbuzz_font);
+  return true;
 }
 
 }  // namespace gfx
