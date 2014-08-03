@@ -595,8 +595,6 @@ crbug.com/305345 fast/events/mouseover-mouseout.html [ Failure Pass ]
 crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed.html [ Failure Pass ]
 crbug.com/243782 virtual/android/fullscreen/full-screen-remove-ancestor.html [ Pass Timeout ]
 
-crbug.com/267888 [ Android ] crypto [ Skip ]
-
 # On Linux RSA support in WebCrypto requires a very recent version of NSS (which fixes some bugs).
 crbug.com/382732 [ Linux ] crypto/rsa-oaep-generate-non-extractable-key.html [ Failure Pass ]
 crbug.com/382732 [ Linux ] crypto/rsa-oaep-key-manipulation.html [ Failure Pass ]
