@@ -5339,14 +5339,6 @@
    fun:_ZN3gpu13CommandParser14ProcessCommandEv
 }
 {
-   bug_290435
-   Memcheck:Uninitialized
-   fun:_ZN5blink12AudioContext20scheduleNodeDeletionEv
-   fun:_ZN5blink12AudioContext21handlePostRenderTasksEv
-   fun:_ZN5blink20AudioDestinationNode6renderEPNS_8AudioBusES2_m
-   fun:_ZN5blink27OfflineAudioDestinationNode13offlineRenderEv
-}
-{
    bug_293024_b
    Memcheck:Leak
    fun:malloc
