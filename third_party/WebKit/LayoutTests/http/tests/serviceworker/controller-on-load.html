@@ -24,8 +24,7 @@ t.step(function() {
             var controller = w.navigator.serviceWorker.controller;
             assert_true(controller instanceof w.ServiceWorker,
                         'controller should be a ServiceWorker object');
-            assert_equals(controller.scope, normalizeURL(scope));
-            assert_equals(controller.url, normalizeURL(url));
+            assert_equals(controller.scriptURL, normalizeURL(url));
             service_worker_unregister_and_done(t, scope);
         }));
     }

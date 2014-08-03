@@ -27,7 +27,7 @@ async_test(function(t) {
         assert_equals(container.controller, null);
         assert_equals(container.active, null);
         assert_equals(container.waiting, null);
-        assert_equals(container.installing.url, normalizeURL(url));
+        assert_equals(container.installing.scriptURL, normalizeURL(url));
 
         // FIXME: Add a test for a frame created after installation.
         // Should the existing frame ("frame") block activation?

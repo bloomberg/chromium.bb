@@ -47,8 +47,7 @@ enum ServiceWorkerState {
     // FIXME: Should inherit this from Worker.
     [Custom, RaisesException] void postMessage(SerializedScriptValue message, optional sequence<Transferable> transfer);
 
-    readonly attribute ScalarValueString scope;
-    readonly attribute ScalarValueString url;
+    readonly attribute ScalarValueString scriptURL;
     readonly attribute ServiceWorkerState  state;
 
     attribute EventHandler onstatechange;

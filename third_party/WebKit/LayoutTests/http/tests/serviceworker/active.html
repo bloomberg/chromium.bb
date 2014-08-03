@@ -28,7 +28,7 @@ async_test(function(t) {
             null,
             'On activating state a document should not have a controller');
           assert_equals(
-            container.active.url,
+            container.active.scriptURL,
             normalizeURL(url),
             'On activating state a document should have an active worker ');
           assert_equals(

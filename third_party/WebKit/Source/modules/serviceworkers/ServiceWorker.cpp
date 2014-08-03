@@ -96,12 +96,7 @@ void ServiceWorker::dispatchStateChangeEvent()
     this->dispatchEvent(Event::create(EventTypeNames::statechange));
 }
 
-String ServiceWorker::scope() const
-{
-    return m_outerWorker->scope().string();
-}
-
-String ServiceWorker::url() const
+String ServiceWorker::scriptURL() const
 {
     return m_outerWorker->url().string();
 }

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<title>ServiceWorker object: scriptURL property</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.js"></script>
+<script>
+
+function url_test(name, url) {
+  var scope = '';
+  async_test(function(t) {
+    var expectedURL = normalizeURL(url);
+    service_worker_unregister_and_register(t, url, scope)
+      .then(t.step_func(function(worker) {
+        assert_equals(worker.scriptURL, expectedURL,
+                      'Returned ServiceWorker object should have scriptURL');
+        service_worker_unregister_and_done(t, scope);
+      }));
+    t.done();
+  }, 'Verify the scriptURL property: ' + name);
+}
+
+url_test('relative', 'resources/worker-no-op.js');
+url_test('with fragment', 'resources/worker-no-op.js#ref');
+url_test('absolute',
+         'http://127.0.0.1:8000/serviceworker/resources/worker-no-op.js');
+
+</script>
