@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/js-test.js"></script>
+<script>
+description("Test no garbage collection of battery manager object when listeners are attached.");
+
+if (!window.testRunner)
+    debug('This test cannot be run without the TestRunner');
+
+// Clean-up any unused battery manager objects from previous tests.
+gc();
+jsTestIsAsync = true;
+testRunner.waitUntilDone();
+
+var mockBatteryInfo;
+function setAndFireMockBatteryInfo(charging, chargingTime, dischargingTime, level) {
+    mockBatteryInfo = { charging: charging,
+                        chargingTime: chargingTime,
+                        dischargingTime: dischargingTime,
+                        level: level };
+    testRunner.didChangeBatteryStatus(charging, chargingTime, dischargingTime, level);
+}
+
+// compare obtained battery values with the mock values
+function checkBatteryInfo(batteryManager) {
+    batteryInfo = batteryManager;
+    shouldBe('batteryInfo.charging', 'mockBatteryInfo.charging');
+    shouldBe('batteryInfo.chargingTime', 'mockBatteryInfo.chargingTime');
+    shouldBe('batteryInfo.dischargingTime', 'mockBatteryInfo.dischargingTime');
+    shouldBe('batteryInfo.level', 'mockBatteryInfo.level');
+}
+
+function fireLevelChange() {
+    gc();
+    setAndFireMockBatteryInfo(false, 10, 20, 0.6);
+}
+
+navigator.getBattery().then(function(battery) {
+    battery.addEventListener('levelchange', function() {
+        checkBatteryInfo(battery);
+        battery.removeEventListener('levelchange', arguments.callee);
+        setTimeout(finishJSTest, 0);
+    });
+    setTimeout(fireLevelChange, 0);
+});
+
+setAndFireMockBatteryInfo(false, 10, 20, 0.5); 
+</script>
+</body>
+</html>

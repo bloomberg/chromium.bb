@@ -51,6 +51,7 @@ public:
     virtual void suspend() OVERRIDE;
     virtual void resume() OVERRIDE;
     virtual void stop() OVERRIDE;
+    virtual bool hasPendingActivity() const OVERRIDE;
 
     virtual void trace(Visitor*) OVERRIDE;
 

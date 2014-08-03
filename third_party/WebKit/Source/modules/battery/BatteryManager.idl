@@ -6,6 +6,7 @@
 [
     RuntimeEnabled=BatteryStatus,
     TypeChecking=Unrestricted,
+    ActiveDOMObject
 ] interface BatteryManager : EventTarget {
     readonly attribute boolean charging;
     readonly attribute unrestricted double chargingTime;

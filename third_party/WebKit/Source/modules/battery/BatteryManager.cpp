@@ -140,7 +140,15 @@ void BatteryManager::resume()
 void BatteryManager::stop()
 {
     m_hasEventListener = false;
+    m_state = NotStarted;
     stopUpdating();
+}
+
+bool BatteryManager::hasPendingActivity() const
+{
+    // Prevent V8 from garbage collecting the wrapper object if there are
+    // event listeners attached to it.
+    return m_state == Resolved && hasEventListeners();
 }
 
 void BatteryManager::trace(Visitor* visitor)
