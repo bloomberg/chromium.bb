@@ -14,8 +14,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/extensions/webstore_install_result.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_constants.h"
 
 using extensions::ExtensionRegistry;
 
@@ -25,9 +27,46 @@ namespace {
 const char kWebstoreUrlFormat[] =
     "https://chrome.google.com/webstore/detail/%s";
 
+// Error given when the extension is not an app.
+const char kInstallChromeAppErrorNotAnApp[] =
+    "--install-chrome-app can only be used to install apps.";
+
 // Returns the webstore URL for an app.
 GURL GetAppInstallUrl(const std::string& app_id) {
   return GURL(base::StringPrintf(kWebstoreUrlFormat, app_id.c_str()));
+}
+
+// Checks the manifest and completes the installation with NOT_PERMITTED if the
+// extension is not an app.
+class WebstoreInstallWithPromptAppsOnly
+    : public extensions::WebstoreInstallWithPrompt {
+ public:
+  WebstoreInstallWithPromptAppsOnly(const std::string& app_id,
+                                    Profile* profile,
+                                    gfx::NativeWindow parent_window)
+      : WebstoreInstallWithPrompt(
+            app_id,
+            profile,
+            parent_window,
+            extensions::WebstoreStandaloneInstaller::Callback()) {}
+
+ private:
+  virtual ~WebstoreInstallWithPromptAppsOnly() {}
+
+  // extensions::WebstoreStandaloneInstaller overrides:
+  virtual void OnManifestParsed() OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(WebstoreInstallWithPromptAppsOnly);
+};
+
+void WebstoreInstallWithPromptAppsOnly::OnManifestParsed() {
+  if (!manifest()->HasKey(extensions::manifest_keys::kApp)) {
+    CompleteInstall(extensions::webstore_install::NOT_PERMITTED,
+                    kInstallChromeAppErrorNotAnApp);
+    return;
+  }
+
+  ProceedWithInstallPrompt();
 }
 
 }  // namespace
@@ -63,12 +102,9 @@ void InstallChromeApp(const std::string& app_id) {
   if (installed_extension)
     return;
 
-  extensions::WebstoreInstallWithPrompt* installer =
-      new extensions::WebstoreInstallWithPrompt(
-          app_id,
-          browser->profile(),
-          browser->window()->GetNativeWindow(),
-          extensions::WebstoreStandaloneInstaller::Callback());
+  WebstoreInstallWithPromptAppsOnly* installer =
+      new WebstoreInstallWithPromptAppsOnly(
+          app_id, browser->profile(), browser->window()->GetNativeWindow());
   installer->BeginInstall();
 }
 
