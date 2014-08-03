@@ -30,6 +30,7 @@
         'autocomplete/autocomplete_match_type.h',
         'autocomplete/autocomplete_provider.cc',
         'autocomplete/autocomplete_provider.h',
+        'autocomplete/autocomplete_provider_listener.h',
         'autocomplete/autocomplete_scheme_classifier.h',
         'autocomplete/search_suggestion_parser.cc',
         'autocomplete/search_suggestion_parser.h',

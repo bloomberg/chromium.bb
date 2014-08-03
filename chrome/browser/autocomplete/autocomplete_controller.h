@@ -12,10 +12,10 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "components/autocomplete/autocomplete_input.h"
 #include "components/autocomplete/autocomplete_provider.h"
+#include "components/autocomplete/autocomplete_provider_listener.h"
 
 class AutocompleteControllerDelegate;
 class HistoryURLProvider;
