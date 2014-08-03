@@ -41,9 +41,7 @@ class TestSafeBrowsingBlockingPageV2 :  public SafeBrowsingBlockingPageV2 {
       : SafeBrowsingBlockingPageV2(manager, web_contents, unsafe_resources) {
     // Don't delay details at all for the unittest.
     malware_details_proceed_delay_ms_ = 0;
-
-    // Don't create a view.
-    interstitial_page()->DontCreateViewForTesting();
+    DontCreateViewForTesting();
   }
 };
 
@@ -56,9 +54,7 @@ class TestSafeBrowsingBlockingPageV3 :  public SafeBrowsingBlockingPageV3 {
       : SafeBrowsingBlockingPageV3(manager, web_contents, unsafe_resources) {
     // Don't delay details at all for the unittest.
     malware_details_proceed_delay_ms_ = 0;
-
-    // Don't create a view.
-    interstitial_page()->DontCreateViewForTesting();
+    DontCreateViewForTesting();
   }
 };
 

@@ -319,6 +319,7 @@ SSLBlockingPage::SSLBlockingPage(
       request_url_(request_url),
       overridable_(overridable),
       strict_enforcement_(strict_enforcement),
+      interstitial_page_(NULL),
       internal_(false),
       num_visits_(-1),
       captive_portal_detection_enabled_(false),
@@ -362,9 +363,8 @@ SSLBlockingPage::SSLBlockingPage(
                  content::Source<Profile>(profile));
 #endif
 
-  interstitial_page_ = InterstitialPage::Create(
-      web_contents_, true, request_url, this);
-  interstitial_page_->Show();
+  // Creating an interstitial without showing (e.g. from chrome://interstitials)
+  // it leaks memory, so don't create it here.
 }
 
 SSLBlockingPage::~SSLBlockingPage() {
@@ -382,6 +382,13 @@ SSLBlockingPage::~SSLBlockingPage() {
     // deny.
     NotifyDenyCertificate();
   }
+}
+
+void SSLBlockingPage::Show() {
+  DCHECK(!interstitial_page_);
+  interstitial_page_ = InterstitialPage::Create(
+      web_contents_, true, request_url_, this);
+  interstitial_page_->Show();
 }
 
 std::string SSLBlockingPage::GetHTMLContents() {

@@ -61,6 +61,13 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
 
   virtual ~SafeBrowsingBlockingPage();
 
+  // Creates a blocking page. Use ShowBlockingPage if you don't need to access
+  // the blocking page directly.
+  static SafeBrowsingBlockingPage* CreateBlockingPage(
+      SafeBrowsingUIManager* ui_manager,
+      content::WebContents* web_contents,
+      const UnsafeResource& unsafe_resource);
+
   // Shows a blocking page warning the user about phishing/malware for a
   // specific resource.
   // You can call this method several times, if an interstitial is already
@@ -69,7 +76,7 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   static void ShowBlockingPage(
       SafeBrowsingUIManager* ui_manager, const UnsafeResource& resource);
 
-  // Makes the passed |factory| the factory used to instanciate
+  // Makes the passed |factory| the factory used to instantiate
   // SafeBrowsingBlockingPage objects. Useful for tests.
   static void RegisterFactory(SafeBrowsingBlockingPageFactory* factory) {
     factory_ = factory;
@@ -89,10 +96,12 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
                            ProceedThenDontProceed);
 
+  void DontCreateViewForTesting();
+  void Show();
   void SetReportingPreference(bool report);
   void UpdateReportingPref();  // Used for the transition from old to new pref.
 
-  // Don't instanciate this class directly, use ShowBlockingPage instead.
+  // Don't instantiate this class directly, use ShowBlockingPage instead.
   SafeBrowsingBlockingPage(SafeBrowsingUIManager* ui_manager,
                            content::WebContents* web_contents,
                            const UnsafeResourceList& unsafe_resources);
@@ -205,6 +214,9 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   // Whether the user has left the reporting checkbox checked.
   bool reporting_checkbox_checked_;
 
+  // Whether the interstitial should create a view.
+  bool create_view_;
+
   // Which type of interstitial this is.
   enum {
     TYPE_MALWARE,
@@ -212,7 +224,7 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
     TYPE_MALWARE_AND_PHISHING,
   } interstitial_type_;
 
-  // The factory used to instanciate SafeBrowsingBlockingPage objects.
+  // The factory used to instantiate SafeBrowsingBlockingPage objects.
   // Usefull for tests, so they can provide their own implementation of
   // SafeBrowsingBlockingPage.
   static SafeBrowsingBlockingPageFactory* factory_;
@@ -224,9 +236,38 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPage);
 };
 
+class SafeBrowsingBlockingPageV1 : public SafeBrowsingBlockingPage {
+ public:
+  // Don't instantiate this class directly, use ShowBlockingPage instead.
+  SafeBrowsingBlockingPageV1(SafeBrowsingUIManager* ui_manager,
+                             content::WebContents* web_contents,
+                             const UnsafeResourceList& unsafe_resources);
+
+  // InterstitialPageDelegate method:
+  virtual std::string GetHTMLContents() OVERRIDE;
+
+ private:
+  // Fills the passed dictionary with the strings passed to JS Template when
+  // creating the HTML.
+  void PopulateMultipleThreatStringDictionary(base::DictionaryValue* strings);
+  void PopulateMalwareStringDictionary(base::DictionaryValue* strings);
+  void PopulatePhishingStringDictionary(base::DictionaryValue* strings);
+
+  // A helper method used by the Populate methods above used to populate common
+  // fields.
+  void PopulateStringDictionary(base::DictionaryValue* strings,
+                                const base::string16& title,
+                                const base::string16& headline,
+                                const base::string16& description1,
+                                const base::string16& description2,
+                                const base::string16& description3);
+
+  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageV1);
+};
+
 class SafeBrowsingBlockingPageV2 : public SafeBrowsingBlockingPage {
  public:
-  // Don't instanciate this class directly, use ShowBlockingPage instead.
+  // Don't instantiate this class directly, use ShowBlockingPage instead.
   SafeBrowsingBlockingPageV2(SafeBrowsingUIManager* ui_manager,
                              content::WebContents* web_contents,
                              const UnsafeResourceList& unsafe_resources);

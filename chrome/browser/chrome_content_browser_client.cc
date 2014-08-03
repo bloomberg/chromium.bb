@@ -1693,9 +1693,12 @@ void ChromeContentBrowserClient::AllowCertificateError(
     captive_portal_tab_helper->OnSSLCertError(ssl_info);
 #endif
 
-  // Otherwise, display an SSL blocking page.
-  new SSLBlockingPage(tab, cert_error, ssl_info, request_url, overridable,
-                      strict_enforcement, callback);
+  // Otherwise, display an SSL blocking page. The interstitial page takes
+  // ownership of ssl_blocking_page.
+  SSLBlockingPage* ssl_blocking_page = new SSLBlockingPage(
+      tab, cert_error, ssl_info, request_url, overridable,
+      strict_enforcement, callback);
+  ssl_blocking_page->Show();
 }
 
 void ChromeContentBrowserClient::SelectClientCertificate(

@@ -48,6 +48,14 @@ class SSLBlockingPage : public content::InterstitialPageDelegate,
     CMD_CLOCK = 5
   };
 
+  virtual ~SSLBlockingPage();
+
+  // Create an interstitial and show it.
+  void Show();
+
+  // Creates an SSL blocking page. If the blocking page isn't shown, the caller
+  // is responsible for cleaning up the blocking page, otherwise the
+  // interstitial takes ownership when shown.
   SSLBlockingPage(
       content::WebContents* web_contents,
       int cert_error,
@@ -56,7 +64,6 @@ class SSLBlockingPage : public content::InterstitialPageDelegate,
       bool overridable,
       bool strict_enforcement,
       const base::Callback<void(bool)>& callback);
-  virtual ~SSLBlockingPage();
 
   // A method that sets strings in the specified dictionary from the passed
   // vector so that they can be used to resource the ssl_roadblock.html/
