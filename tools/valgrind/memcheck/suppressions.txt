@@ -6236,8 +6236,6 @@
    fun:_ZN5blink15RenderBlockFlow20layoutInlineChildrenEbRNS_10LayoutUnitES2_S1_
    fun:_ZN5blink15RenderBlockFlow15layoutBlockFlowEbRNS_10LayoutUnitERNS_18SubtreeLayoutScopeE
    fun:_ZN5blink15RenderBlockFlow11layoutBlockEb
-   ...
-   fun:_ZN5blink11RenderBlock6layoutEv
 }
 {
    bug_397066_c
@@ -6250,8 +6248,6 @@
    fun:_ZN5blink15RenderBlockFlow20layoutInlineChildrenEbRNS_10LayoutUnitES2_S1_
    fun:_ZN5blink15RenderBlockFlow15layoutBlockFlowEbRNS_10LayoutUnitERNS_18SubtreeLayoutScopeE
    fun:_ZN5blink15RenderBlockFlow11layoutBlockEb
-   ...
-   fun:_ZN5blink11RenderBlock6layoutEv
 }
 {
    bug_397066_d
@@ -6271,6 +6267,16 @@
    fun:_ZN5blink15RenderBlockFlow27createLineBoxesFromBidiRunsEjRNS*
    fun:_ZN5blink15RenderBlockFlow26layoutRunsAndFloatsInRangeERNS_15LineLayoutStateERNS_12BidiResolver*
    fun:_ZN5blink15RenderBlockFlow19layoutRunsAndFloatsERNS_15LineLayoutState*
+}
+{
+   bug_397066_f
+   Memcheck:Uninitialized
+   fun:_ZNK5blink13InlineFlowBox35constrainToLineTopAndBottomIfNeededERNS_10LayoutRectE
+   fun:_ZN5blink13InlineFlowBox28paintBoxDecorationBackgroundERNS_9PaintInfoERKNS_11LayoutPointE
+   fun:_ZN5blink13InlineFlowBox5paintERNS_9PaintInfoERKNS_11LayoutPointENS_10LayoutUnitES6_
+   fun:_ZN5blink13InlineFlowBox5paintERNS_9PaintInfoERKNS_11LayoutPointENS_10LayoutUnitES6_
+   fun:_ZN5blink13RootInlineBox5paintERNS_9PaintInfoERKNS_11LayoutPointENS_10LayoutUnitES6_
+   fun:_ZNK5blink17RenderLineBoxList5paintEPNS_20RenderBoxModelObjectERNS_9PaintInfoERKNS_11LayoutPointE
 }
 {
    bug_397075_a
