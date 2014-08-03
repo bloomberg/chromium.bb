@@ -22,6 +22,9 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
   void set_process_manager_delegate(ProcessManagerDelegate* delegate) {
     process_manager_delegate_ = delegate;
   }
+  void set_extension_system_factory(ExtensionSystemProvider* factory) {
+    extension_system_factory_ = factory;
+  }
 
   // Associates an incognito context with |main_context_|.
   void SetIncognitoContext(content::BrowserContext* incognito_context);
@@ -87,6 +90,9 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
 
   // Not owned, defaults to NULL.
   ProcessManagerDelegate* process_manager_delegate_;
+
+  // Not owned, defaults to NULL.
+  ExtensionSystemProvider* extension_system_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestExtensionsBrowserClient);
 };

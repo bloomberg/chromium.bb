@@ -557,7 +557,6 @@
         '../extensions/browser/extension_protocols_unittest.cc',
         '../extensions/browser/image_loader_unittest.cc',
         '../extensions/browser/info_map_unittest.cc',
-        '../extensions/browser/lazy_background_task_queue_unittest.cc',
         '../extensions/common/extension_l10n_util_unittest.cc',
         '../extensions/common/extension_resource_unittest.cc',
         '../extensions/common/extension_set_unittest.cc',

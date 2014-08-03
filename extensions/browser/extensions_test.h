@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_EXTENSIONS_TEST_H_
 #define EXTENSIONS_BROWSER_EXTENSIONS_TEST_H_
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,6 +38,10 @@ class ExtensionsTest : public testing::Test {
   TestExtensionsBrowserClient* extensions_browser_client() {
     return extensions_browser_client_.get();
   }
+
+  // testing::Test overrides:
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
  private:
   scoped_ptr<content::ContentClient> content_client_;

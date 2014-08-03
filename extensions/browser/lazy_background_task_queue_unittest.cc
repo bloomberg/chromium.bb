@@ -5,28 +5,35 @@
 #include "extensions/browser/lazy_background_task_queue.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_service_test_base.h"
-#include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/test/test_browser_context.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_factory.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_system_provider.h"
+#include "extensions/browser/extensions_test.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/test_extensions_browser_client.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/one_shot_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserContext;
+
 namespace extensions {
+namespace {
 
 // A ProcessManager that doesn't create background host pages.
 class TestProcessManager : public ProcessManager {
  public:
-  explicit TestProcessManager(Profile* profile)
-      : ProcessManager(profile,
-                       profile->GetOriginalProfile(),
-                       ExtensionRegistry::Get(profile)),
-        create_count_(0) {}
+  explicit TestProcessManager(BrowserContext* context)
+      : ProcessManager(context, context, ExtensionRegistry::Get(context)),
+        create_count_(0) {
+    // ProcessManager constructor above assumes non-incognito.
+    DCHECK(!context->IsOffTheRecord());
+  }
   virtual ~TestProcessManager() {}
 
   int create_count() { return create_count_; }
@@ -45,12 +52,85 @@ class TestProcessManager : public ProcessManager {
   DISALLOW_COPY_AND_ASSIGN(TestProcessManager);
 };
 
-// Derives from ExtensionServiceTestBase because ExtensionService is difficult
-// to initialize alone.
-class LazyBackgroundTaskQueueTest
-    : public extensions::ExtensionServiceTestBase {
+// A simple ExtensionSystem that returns a TestProcessManager.
+class MockExtensionSystem : public ExtensionSystem {
  public:
-  LazyBackgroundTaskQueueTest() : task_run_count_(0) {}
+  explicit MockExtensionSystem(BrowserContext* context)
+      : test_process_manager_(context) {}
+  virtual ~MockExtensionSystem() {}
+
+  virtual void InitForRegularProfile(bool extensions_enabled) OVERRIDE {}
+  virtual ExtensionService* extension_service() OVERRIDE { return NULL; }
+  virtual RuntimeData* runtime_data() OVERRIDE { return NULL; }
+  virtual ManagementPolicy* management_policy() OVERRIDE { return NULL; }
+  virtual UserScriptMaster* user_script_master() OVERRIDE { return NULL; }
+  virtual ProcessManager* process_manager() OVERRIDE {
+    return &test_process_manager_;
+  }
+  virtual StateStore* state_store() OVERRIDE { return NULL; }
+  virtual StateStore* rules_store() OVERRIDE { return NULL; }
+  virtual InfoMap* info_map() OVERRIDE { return NULL; }
+  virtual LazyBackgroundTaskQueue* lazy_background_task_queue() OVERRIDE {
+    return NULL;
+  }
+  virtual EventRouter* event_router() OVERRIDE { return NULL; }
+  virtual ExtensionWarningService* warning_service() OVERRIDE { return NULL; }
+  virtual Blacklist* blacklist() OVERRIDE { return NULL; }
+  virtual ErrorConsole* error_console() OVERRIDE { return NULL; }
+  virtual InstallVerifier* install_verifier() OVERRIDE { return NULL; }
+  virtual QuotaService* quota_service() OVERRIDE { return NULL; }
+  virtual const OneShotEvent& ready() const OVERRIDE { return ready_; }
+  virtual ContentVerifier* content_verifier() OVERRIDE { return NULL; }
+  virtual scoped_ptr<ExtensionSet> GetDependentExtensions(
+      const Extension* extension) OVERRIDE {
+    return scoped_ptr<ExtensionSet>();
+  }
+
+ private:
+  TestProcessManager test_process_manager_;
+  OneShotEvent ready_;
+};
+
+// A factory to create a MockExtensionSystem.
+class MockExtensionSystemFactory : public ExtensionSystemProvider {
+ public:
+  MockExtensionSystemFactory()
+      : ExtensionSystemProvider(
+            "MockExtensionSystem",
+            BrowserContextDependencyManager::GetInstance()) {
+    DependsOn(ExtensionRegistryFactory::GetInstance());
+  }
+  virtual ~MockExtensionSystemFactory() {}
+
+  // BrowserContextKeyedServiceFactory overrides:
+  virtual KeyedService* BuildServiceInstanceFor(
+      BrowserContext* context) const OVERRIDE {
+    return new MockExtensionSystem(context);
+  }
+
+  // ExtensionSystemProvider overrides:
+  virtual ExtensionSystem* GetForBrowserContext(
+      BrowserContext* context) OVERRIDE {
+    return static_cast<MockExtensionSystem*>(
+        GetServiceForBrowserContext(context, true));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockExtensionSystemFactory);
+};
+
+}  // namespace
+
+// Derives from ExtensionsTest to provide content module and keyed service
+// initialization.
+class LazyBackgroundTaskQueueTest : public ExtensionsTest {
+ public:
+  LazyBackgroundTaskQueueTest()
+      : notification_service_(content::NotificationService::Create()),
+        task_run_count_(0) {
+    extensions_browser_client()->set_extension_system_factory(
+        &extension_system_factory_);
+  }
   virtual ~LazyBackgroundTaskQueueTest() {}
 
   int task_run_count() { return task_run_count_; }
@@ -69,7 +149,7 @@ class LazyBackgroundTaskQueueTest
                      .Set("manifest_version", 2))
         .SetID("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
         .Build();
-    service_->AddExtension(extension);
+    ExtensionRegistry::Get(browser_context())->AddEnabled(extension);
     return extension;
   }
 
@@ -86,11 +166,14 @@ class LazyBackgroundTaskQueueTest
                   .SetBoolean("persistent", false)))
         .SetID("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
         .Build();
-    service_->AddExtension(extension);
+    ExtensionRegistry::Get(browser_context())->AddEnabled(extension);
     return extension;
   }
 
  private:
+  scoped_ptr<content::NotificationService> notification_service_;
+  MockExtensionSystemFactory extension_system_factory_;
+
   // The total number of pending tasks that have been executed.
   int task_run_count_;
 
@@ -99,41 +182,35 @@ class LazyBackgroundTaskQueueTest
 
 // Tests that only extensions with background pages should have tasks queued.
 TEST_F(LazyBackgroundTaskQueueTest, ShouldEnqueueTask) {
-  InitializeEmptyExtensionService();
-  InitializeProcessManager();
-
-  LazyBackgroundTaskQueue queue(profile_.get());
+  LazyBackgroundTaskQueue queue(browser_context());
 
   // Build a simple extension with no background page.
   scoped_refptr<Extension> no_background = CreateSimpleExtension();
-  EXPECT_FALSE(queue.ShouldEnqueueTask(profile_.get(), no_background.get()));
+  EXPECT_FALSE(queue.ShouldEnqueueTask(browser_context(), no_background.get()));
 
   // Build another extension with a background page.
   scoped_refptr<Extension> with_background = CreateLazyBackgroundExtension();
-  EXPECT_TRUE(queue.ShouldEnqueueTask(profile_.get(), with_background.get()));
+  EXPECT_TRUE(
+      queue.ShouldEnqueueTask(browser_context(), with_background.get()));
 }
 
 // Tests that adding tasks actually increases the pending task count, and that
 // multiple extensions can have pending tasks.
 TEST_F(LazyBackgroundTaskQueueTest, AddPendingTask) {
-  InitializeEmptyExtensionService();
+  // Get our TestProcessManager.
+  MockExtensionSystem* extension_system = static_cast<MockExtensionSystem*>(
+      ExtensionSystem::Get(browser_context()));
+  TestProcessManager* process_manager =
+      static_cast<TestProcessManager*>(extension_system->process_manager());
 
-  // Swap in our stub TestProcessManager.
-  TestExtensionSystem* extension_system =
-      static_cast<extensions::TestExtensionSystem*>(
-          ExtensionSystem::Get(profile_.get()));
-  // Owned by |extension_system|.
-  TestProcessManager* process_manager = new TestProcessManager(profile_.get());
-  extension_system->SetProcessManager(process_manager);
-
-  LazyBackgroundTaskQueue queue(profile_.get());
+  LazyBackgroundTaskQueue queue(browser_context());
 
   // Build a simple extension with no background page.
   scoped_refptr<Extension> no_background = CreateSimpleExtension();
 
   // Adding a pending task increases the number of extensions with tasks, but
   // doesn't run the task.
-  queue.AddPendingTask(profile_.get(),
+  queue.AddPendingTask(browser_context(),
                        no_background->id(),
                        base::Bind(&LazyBackgroundTaskQueueTest::RunPendingTask,
                                   base::Unretained(this)));
@@ -142,7 +219,7 @@ TEST_F(LazyBackgroundTaskQueueTest, AddPendingTask) {
 
   // Another task on the same extension doesn't increase the number of
   // extensions that have tasks and doesn't run any tasks.
-  queue.AddPendingTask(profile_.get(),
+  queue.AddPendingTask(browser_context(),
                        no_background->id(),
                        base::Bind(&LazyBackgroundTaskQueueTest::RunPendingTask,
                                   base::Unretained(this)));
@@ -152,7 +229,7 @@ TEST_F(LazyBackgroundTaskQueueTest, AddPendingTask) {
   // Adding a task on an extension with a lazy background page tries to create
   // a background host, and if that fails, runs the task immediately.
   scoped_refptr<Extension> lazy_background = CreateLazyBackgroundExtension();
-  queue.AddPendingTask(profile_.get(),
+  queue.AddPendingTask(browser_context(),
                        lazy_background->id(),
                        base::Bind(&LazyBackgroundTaskQueueTest::RunPendingTask,
                                   base::Unretained(this)));
@@ -165,32 +242,30 @@ TEST_F(LazyBackgroundTaskQueueTest, AddPendingTask) {
 
 // Tests that pending tasks are actually run.
 TEST_F(LazyBackgroundTaskQueueTest, ProcessPendingTasks) {
-  InitializeEmptyExtensionService();
-
-  LazyBackgroundTaskQueue queue(profile_.get());
+  LazyBackgroundTaskQueue queue(browser_context());
 
   // ProcessPendingTasks is a no-op if there are no tasks.
   scoped_refptr<Extension> extension = CreateSimpleExtension();
-  queue.ProcessPendingTasks(NULL, profile_.get(), extension);
+  queue.ProcessPendingTasks(NULL, browser_context(), extension);
   EXPECT_EQ(0, task_run_count());
 
   // Schedule a task to run.
-  queue.AddPendingTask(profile_.get(),
+  queue.AddPendingTask(browser_context(),
                        extension->id(),
                        base::Bind(&LazyBackgroundTaskQueueTest::RunPendingTask,
                                   base::Unretained(this)));
   EXPECT_EQ(0, task_run_count());
   EXPECT_EQ(1u, queue.extensions_with_pending_tasks());
 
-  // Trying to run tasks for an unrelated profile should do nothing.
-  TestingProfile profile2;
-  queue.ProcessPendingTasks(NULL, &profile2, extension);
+  // Trying to run tasks for an unrelated BrowserContext should do nothing.
+  content::TestBrowserContext unrelated_context;
+  queue.ProcessPendingTasks(NULL, &unrelated_context, extension);
   EXPECT_EQ(0, task_run_count());
   EXPECT_EQ(1u, queue.extensions_with_pending_tasks());
 
   // Processing tasks when there is one pending runs the task and removes the
   // extension from the list of extensions with pending tasks.
-  queue.ProcessPendingTasks(NULL, profile_.get(), extension);
+  queue.ProcessPendingTasks(NULL, browser_context(), extension);
   EXPECT_EQ(1, task_run_count());
   EXPECT_EQ(0u, queue.extensions_with_pending_tasks());
 }

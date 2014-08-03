@@ -44,6 +44,8 @@ LazyBackgroundTaskQueue::~LazyBackgroundTaskQueue() {
 bool LazyBackgroundTaskQueue::ShouldEnqueueTask(
     content::BrowserContext* browser_context,
     const Extension* extension) {
+  // Note: browser_context may not be the same as browser_context_ for incognito
+  // extension tasks.
   DCHECK(extension);
   if (BackgroundInfo::HasBackgroundPage(extension)) {
     ProcessManager* pm = ExtensionSystem::Get(

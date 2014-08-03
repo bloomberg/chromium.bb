@@ -148,9 +148,8 @@ ApiActivityMonitor* TestExtensionsBrowserClient::GetApiActivityMonitor(
 
 ExtensionSystemProvider*
 TestExtensionsBrowserClient::GetExtensionSystemFactory() {
-  // Tests requiring an extension system should override this function.
-  NOTREACHED();
-  return NULL;
+  DCHECK(extension_system_factory_);
+  return extension_system_factory_;
 }
 
 void TestExtensionsBrowserClient::RegisterExtensionFunctions(

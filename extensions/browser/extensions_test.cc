@@ -29,19 +29,26 @@ ExtensionsTest::ExtensionsTest()
   content::SetContentClient(content_client_.get());
   content::SetBrowserClientForTesting(content_browser_client_.get());
   ExtensionsBrowserClient::Set(extensions_browser_client_.get());
+}
 
+ExtensionsTest::~ExtensionsTest() {
+  ExtensionsBrowserClient::Set(NULL);
+  content::SetBrowserClientForTesting(NULL);
+  content::SetContentClient(NULL);
+}
+
+void ExtensionsTest::SetUp() {
   // Crashing here? Don't use this class in Chrome's unit_tests. See header.
   BrowserContextDependencyManager::GetInstance()
       ->CreateBrowserContextServicesForTest(browser_context_.get());
 }
 
-ExtensionsTest::~ExtensionsTest() {
+void ExtensionsTest::TearDown() {
+  // Allows individual tests to have BrowserContextKeyedServiceFactory objects
+  // as member variables instead of singletons. The individual services will be
+  // cleaned up before the factories are destroyed.
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
       browser_context_.get());
-
-  ExtensionsBrowserClient::Set(NULL);
-  content::SetBrowserClientForTesting(NULL);
-  content::SetContentClient(NULL);
 }
 
 }  // namespace extensions

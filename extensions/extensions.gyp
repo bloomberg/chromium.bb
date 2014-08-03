@@ -829,6 +829,7 @@
         'browser/file_highlighter_unittest.cc',
         'browser/file_reader_unittest.cc',
         'browser/image_util_unittest.cc',
+        'browser/lazy_background_task_queue_unittest.cc',
         'browser/management_policy_unittest.cc',
         'browser/process_manager_unittest.cc',
         'browser/process_map_unittest.cc',
