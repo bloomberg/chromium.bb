@@ -61,7 +61,6 @@
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
-#include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/task_manager/task_manager.h"
@@ -115,6 +114,7 @@
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/launch_util.h"
+#include "chrome/browser/signin/easy_unlock_service.h"
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
@@ -361,7 +361,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   chrome_prefs::RegisterProfilePrefs(registry);
   dom_distiller::DistilledPagePrefs::RegisterProfilePrefs(registry);
   DownloadPrefs::RegisterProfilePrefs(registry);
-  EasyUnlockService::RegisterProfilePrefs(registry);
   gcm::GCMProfileService::RegisterProfilePrefs(registry);
   HostContentSettingsMap::RegisterProfilePrefs(registry);
   IncognitoModePrefs::RegisterProfilePrefs(registry);
@@ -394,6 +393,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if defined(ENABLE_EXTENSIONS)
   apps::RegisterProfilePrefs(registry);
+  EasyUnlockService::RegisterProfilePrefs(registry);
   extensions::ActivityLog::RegisterProfilePrefs(registry);
   extensions::launch_util::RegisterProfilePrefs(registry);
 #endif

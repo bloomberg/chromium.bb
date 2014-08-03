@@ -37,7 +37,6 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
-#include "chrome/browser/signin/easy_unlock_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -56,6 +55,7 @@
 #include "chrome/browser/apps/shortcut_manager_factory.h"
 #include "chrome/browser/extensions/browser_context_keyed_service_factories.h"
 #include "chrome/browser/search/hotword_service_factory.h"
+#include "chrome/browser/signin/easy_unlock_service_factory.h"
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 #endif
 
@@ -178,7 +178,9 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   dom_distiller::DomDistillerServiceFactory::GetInstance();
   domain_reliability::DomainReliabilityServiceFactory::GetInstance();
   DownloadServiceFactory::GetInstance();
+#if defined(ENABLE_EXTENSIONS)
   EasyUnlockServiceFactory::GetInstance();
+#endif
   FaviconServiceFactory::GetInstance();
   FindBarStateFactory::GetInstance();
   GAIAInfoUpdateServiceFactory::GetInstance();
