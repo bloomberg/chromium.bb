@@ -108,6 +108,7 @@ namespace blink {
         void initialize();
         void cleanup();
         void idleHandler();
+        void postDelayedTask(PassOwnPtr<ExecutionContextTask>, long long delayMs);
 
         bool m_terminated;
         OwnPtr<blink::WebThread> m_thread;
@@ -123,8 +124,6 @@ namespace blink {
         Mutex m_threadCreationMutex;
         RefPtrWillBePersistent<WorkerGlobalScope> m_workerGlobalScope;
         OwnPtrWillBePersistent<WorkerThreadStartupData> m_startupData;
-
-        OwnPtr<WeakPtrFactory<WorkerThread> > m_weakFactory;
 
         // Used to signal thread shutdown.
         OwnPtr<blink::WebWaitableEvent> m_shutdownEvent;

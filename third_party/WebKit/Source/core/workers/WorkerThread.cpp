@@ -105,7 +105,7 @@ public:
 
         m_running = true;
         m_nextFireTime = currentTime() + interval;
-        m_workerThread->m_thread->postDelayedTask(new Task(WTF::bind(&WorkerSharedTimer::OnTimeout, this)), delay);
+        m_workerThread->postDelayedTask(createSameThreadTask(&WorkerSharedTimer::OnTimeout, this), delay);
     }
 
     virtual void stop()
@@ -118,6 +118,7 @@ public:
 private:
     void OnTimeout()
     {
+        ASSERT(m_workerThread->workerGlobalScope());
         if (m_sharedTimerFunction && m_running && !m_workerThread->workerGlobalScope()->isClosing())
             m_sharedTimerFunction();
     }
@@ -141,6 +142,11 @@ public:
     virtual void run() OVERRIDE
     {
         WorkerGlobalScope* workerGlobalScope = m_workerThread.workerGlobalScope();
+        // Tasks could be put on the message loop after the cleanup task,
+        // ensure none of those are ran.
+        if (!workerGlobalScope)
+            return;
+
         if (m_isInstrumented)
             InspectorInstrumentation::willPerformExecutionContextTask(workerGlobalScope, m_task.get());
         if ((!workerGlobalScope->isClosing() && !m_workerThread.terminated()) || m_task->isCleanupTask())
@@ -255,13 +261,11 @@ void WorkerThread::initialize()
 
     postInitialize();
 
-    m_weakFactory = adoptPtr(new WeakPtrFactory<WorkerThread>(this));
-    m_thread->postDelayedTask(new Task(WTF::bind(&WorkerThread::idleHandler, m_weakFactory->createWeakPtr())), kShortIdleHandlerDelayMs);
+    postDelayedTask(createSameThreadTask(&WorkerThread::idleHandler, this), kShortIdleHandlerDelayMs);
 }
 
 void WorkerThread::cleanup()
 {
-    m_weakFactory.release();
 
     // This should be called before we start the shutdown procedure.
     workerReportingProxy().willDestroyWorkerGlobalScope();
@@ -373,6 +377,7 @@ bool WorkerThread::isCurrentThread() const
 
 void WorkerThread::idleHandler()
 {
+    ASSERT(m_workerGlobalScope.get());
     int64 delay = kLongIdleHandlerDelayMs;
 
     // Do a script engine idle notification if the next event is distant enough.
@@ -383,12 +388,17 @@ void WorkerThread::idleHandler()
             delay = kShortIdleHandlerDelayMs;
     }
 
-    m_thread->postDelayedTask(new Task(WTF::bind(&WorkerThread::idleHandler, m_weakFactory->createWeakPtr())), delay);
+    postDelayedTask(createSameThreadTask(&WorkerThread::idleHandler, this), delay);
 }
 
 void WorkerThread::postTask(PassOwnPtr<ExecutionContextTask> task)
 {
     m_thread->postTask(WorkerThreadTask::create(*this, task, true).leakPtr());
+}
+
+void WorkerThread::postDelayedTask(PassOwnPtr<ExecutionContextTask> task, long long delayMs)
+{
+    m_thread->postDelayedTask(WorkerThreadTask::create(*this, task, true).leakPtr(), delayMs);
 }
 
 void WorkerThread::postDebuggerTask(PassOwnPtr<ExecutionContextTask> task)
