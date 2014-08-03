@@ -5351,9 +5351,7 @@
                   # TODO(hans): Make this list shorter eventually.
                   '-Qunused-arguments',
                   '-Wno-c++11-compat-deprecated-writable-strings',
-                  '-Wno-char-subscripts',
                   '-Wno-deprecated-declarations',
-                  '-Wno-deprecated-register',
                   '-Wno-empty-body',
                   '-Wno-enum-conversion',
                   '-Wno-extra-tokens',

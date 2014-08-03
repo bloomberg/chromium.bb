@@ -39,6 +39,12 @@
         'WARNING_CFLAGS': ['>@(clang_warning_flags)'],
         'WARNING_CFLAGS!': ['>@(clang_warning_flags_unset)'],
       },
+      'msvs_settings': {
+        'VCCLCompilerTool': {
+          'AdditionalOptions': [ '>@(clang_warning_flags)' ],
+          'AdditionalOptions!': [ '>@(clang_warning_flags_unset)' ],
+        },
+      },
     }],
   ],
 }
