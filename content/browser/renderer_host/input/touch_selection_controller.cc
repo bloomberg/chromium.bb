@@ -120,7 +120,7 @@ void TouchSelectionController::OnLongPressEvent() {
   last_input_event_type_ = LONG_PRESS;
   ShowSelectionHandlesAutomatically();
   ShowInsertionHandleAutomatically();
-  ResetCachedValues();
+  ResetCachedValuesIfInactive();
 }
 
 void TouchSelectionController::OnTapEvent() {
@@ -128,7 +128,7 @@ void TouchSelectionController::OnTapEvent() {
   activate_selection_automatically_ = false;
   DeactivateSelection();
   ShowInsertionHandleAutomatically();
-  ResetCachedValues();
+  ResetCachedValuesIfInactive();
 }
 
 void TouchSelectionController::HideAndDisallowShowingAutomatically() {
@@ -157,7 +157,7 @@ void TouchSelectionController::OnSelectionEditable(bool editable) {
   if (selection_editable_ == editable)
     return;
   selection_editable_ = editable;
-  ResetCachedValues();
+  ResetCachedValuesIfInactive();
   if (!selection_editable_)
     DeactivateInsertion();
 }
@@ -166,7 +166,7 @@ void TouchSelectionController::OnSelectionEmpty(bool empty) {
   if (selection_empty_ == empty)
     return;
   selection_empty_ = empty;
-  ResetCachedValues();
+  ResetCachedValuesIfInactive();
 }
 
 bool TouchSelectionController::Animate(base::TimeTicks frame_time) {
@@ -230,16 +230,14 @@ void TouchSelectionController::ShowInsertionHandleAutomatically() {
   if (activate_insertion_automatically_)
     return;
   activate_insertion_automatically_ = true;
-  if (!is_insertion_active_ && !is_selection_active_)
-    ResetCachedValues();
+  ResetCachedValuesIfInactive();
 }
 
 void TouchSelectionController::ShowSelectionHandlesAutomatically() {
   if (activate_selection_automatically_)
     return;
   activate_selection_automatically_ = true;
-  if (!is_insertion_active_ && !is_selection_active_)
-    ResetCachedValues();
+  ResetCachedValuesIfInactive();
 }
 
 void TouchSelectionController::OnInsertionChanged() {
@@ -338,7 +336,9 @@ void TouchSelectionController::DeactivateSelection() {
   client_->OnSelectionEvent(SELECTION_CLEARED, gfx::PointF());
 }
 
-void TouchSelectionController::ResetCachedValues() {
+void TouchSelectionController::ResetCachedValuesIfInactive() {
+  if (is_selection_active_ || is_insertion_active_)
+    return;
   start_rect_ = gfx::RectF();
   end_rect_ = gfx::RectF();
   start_orientation_ = TOUCH_HANDLE_ORIENTATION_UNDEFINED;

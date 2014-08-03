@@ -105,7 +105,7 @@ class CONTENT_EXPORT TouchSelectionController : public TouchHandleClient {
   void DeactivateInsertion();
   void ActivateSelection();
   void DeactivateSelection();
-  void ResetCachedValues();
+  void ResetCachedValuesIfInactive();
 
   gfx::PointF GetStartPosition() const;
   gfx::PointF GetEndPosition() const;
