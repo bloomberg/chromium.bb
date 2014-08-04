@@ -1,4 +1,4 @@
-# Please include joth@ and (joi@ or erikwright@) on the review for any changes
+# Please include benm@ and (erikwright@) on the review for any changes
 # to DEPS files under android_webview/
 
 # Do not add any includes under chrome/ anywhere in android_webview.
@@ -8,6 +8,7 @@ include_rules = [
   "-android_webview/lib",
 
   "+components/data_reduction_proxy",
+  "+content/browser/media/android",
   "+content/public/common",
   "+crypto",
   "+gpu",

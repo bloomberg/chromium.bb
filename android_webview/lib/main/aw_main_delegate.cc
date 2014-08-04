@@ -9,6 +9,7 @@
 #include "android_webview/browser/gpu_memory_buffer_factory_impl.h"
 #include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
+#include "android_webview/native/aw_media_url_interceptor.h"
 #include "android_webview/native/aw_quota_manager_bridge_impl.h"
 #include "android_webview/native/aw_web_contents_view_delegate.h"
 #include "android_webview/native/aw_web_preferences_populater_impl.h"
@@ -20,6 +21,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_restrictions.h"
+#include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
@@ -58,6 +60,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   } else if (!zero_copy_disabled_by_switch) {
     cl->AppendSwitch(switches::kDisableZeroCopy);
   }
+
+  content::BrowserMediaPlayerManager::RegisterMediaUrlInterceptor(
+      new AwMediaUrlInterceptor());
 
   BrowserViewRenderer::CalculateTileMemoryPolicy(use_zero_copy);
 

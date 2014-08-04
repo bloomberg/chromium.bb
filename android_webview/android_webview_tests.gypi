@@ -107,6 +107,7 @@
         'browser/net/input_stream_reader_unittest.cc',
         'lib/main/webview_tests.cc',
         'native/aw_contents_client_bridge_unittest.cc',
+        'native/aw_media_url_interceptor_unittest.cc',
         'native/input_stream_unittest.cc',
         'native/permission/media_access_permission_request_unittest.cc',
         'native/permission/permission_request_handler_unittest.cc',
@@ -147,7 +148,18 @@
       ],
       'variables': {
         'test_suite_name': 'android_webview_unittests',
+        'additional_input_paths': [
+          '<(PRODUCT_DIR)/android_webview_unittests_apk/assets/asset_file.ogg',
+        ],
       },
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)/android_webview_unittests_apk/assets',
+          'files': [
+            'test/unittest/assets/asset_file.ogg',
+          ],
+        },
+      ],
       'includes': [ '../build/apk_test.gypi' ],
     },
   ],
