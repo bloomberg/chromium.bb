@@ -41,6 +41,7 @@ ResourceType WebURLRequestToResourceType(const WebURLRequest& request) {
 
     // Image
     case WebURLRequest::RequestContextImage:
+    case WebURLRequest::RequestContextImageSet:
       return RESOURCE_TYPE_IMAGE;
 
     // Media
@@ -64,6 +65,7 @@ ResourceType WebURLRequestToResourceType(const WebURLRequest& request) {
       return RESOURCE_TYPE_PREFETCH;
 
     // Script
+    case WebURLRequest::RequestContextImport:
     case WebURLRequest::RequestContextScript:
       return RESOURCE_TYPE_SCRIPT;
 
