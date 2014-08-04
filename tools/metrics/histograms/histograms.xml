@@ -3135,6 +3135,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.BypassedBytes.NotBypassed" units="bytes">
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Counts the response bytes that went through the data reduction proxy and
+    were not bypassed.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.BypassInfoFallback"
     enum="DataReductionProxyBypassEventType_Deprecated">
   <obsolete>
@@ -49552,7 +49560,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram_suffixes>
 
 <histogram_suffixes name="DataReductionProxyBypassedBytes" separator=".">
-  <suffix name="NotBypassed" label="Not bypassed"/>
   <suffix name="SSL" label="Bypass due to SSL"/>
   <suffix name="LocalBypassRules"
       label="Bypass due to client-side bypass rules"/>
