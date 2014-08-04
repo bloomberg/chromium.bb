@@ -18,7 +18,7 @@ std::string GetProduct() {
   // "Chrome/XX.0.0.0" identifies that this WebView is derived from the
   // corresponding Chromium version XX.
   // TODO(torne): Use chrome/VERSION file. See http://crbug.com/297522
-  return "Chrome/37.0.0.0";
+  return "Chrome/38.0.0.0";
 }
 
 }
