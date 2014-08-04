@@ -339,6 +339,9 @@ class DriveBackendSyncTest : public testing::Test,
     SyncStatusCode local_sync_status;
     SyncStatusCode remote_sync_status;
     while (true) {
+      base::RunLoop().RunUntilIdle();
+      WaitForIdleWorker();
+
       if (!task_limit--)
         return SYNC_STATUS_ABORT;
 

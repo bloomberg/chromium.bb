@@ -243,6 +243,7 @@ void LocalFileChangeTracker::PromoteDemotedChangesForURL(
   change_seqs_[iter->second.change_seq] = url;
   changes_.insert(*iter);
   demoted_changes_.erase(iter);
+  UpdateNumChanges();
 }
 
 bool LocalFileChangeTracker::PromoteDemotedChanges() {

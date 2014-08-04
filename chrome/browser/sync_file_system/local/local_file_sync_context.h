@@ -274,6 +274,12 @@ class LocalFileSyncContext
       SyncStatusCode status,
       const LocalFileSyncInfo& sync_file_info,
       webkit_blob::ScopedFile snapshot);
+  void PromoteDemotedChangesForURL(
+      fileapi::FileSystemContext* file_system_context,
+      const fileapi::FileSystemURL& url);
+  void PromoteDemotedChangesForURLs(
+      fileapi::FileSystemContext* file_system_context,
+      scoped_ptr<FileSystemURLQueue> url);
 
   // Callback routine for PrepareForSync and GetFileForLocalSync.
   void DidGetWritingStatusForSync(

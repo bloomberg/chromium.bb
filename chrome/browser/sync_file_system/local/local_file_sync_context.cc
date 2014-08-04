@@ -173,8 +173,6 @@ void LocalFileSyncContext::FinalizeSnapshotSync(
   } else {
     // Abort in-memory mirror change.
     backend->change_tracker()->RemoveMirrorAndCommitChangesForURL(url);
-    if (sync_finish_status == SYNC_STATUS_FILE_BUSY)
-      backend->change_tracker()->DemoteChangesForURL(url);
   }
 
   // We've been keeping it in writing mode, so clear the writing counter
@@ -697,9 +695,9 @@ SyncStatusCode LocalFileSyncContext::InitializeChangeTrackerOnFileThread(
     return status;
 
   // Get all origins that have pending changes.
-  std::deque<FileSystemURL> urls;
+  FileSystemURLQueue urls;
   (*tracker_ptr)->GetNextChangedURLs(&urls, 0);
-  for (std::deque<FileSystemURL>::iterator iter = urls.begin();
+  for (FileSystemURLQueue::iterator iter = urls.begin();
        iter != urls.end(); ++iter) {
     origins_with_changes->insert(iter->origin());
   }
@@ -785,6 +783,10 @@ LocalFileSyncContext::GetNextURLsForSyncOnFileThread(
   scoped_ptr<FileSystemURLQueue> urls(new FileSystemURLQueue);
   backend->change_tracker()->GetNextChangedURLs(
       urls.get(), kMaxURLsToFetchForLocalSync);
+  for (FileSystemURLQueue::iterator iter = urls->begin();
+       iter != urls->end(); ++iter)
+    backend->change_tracker()->DemoteChangesForURL(*iter);
+
   return urls.Pass();
 }
 
@@ -826,11 +828,61 @@ void LocalFileSyncContext::DidTryPrepareForLocalSync(
     webkit_blob::ScopedFile snapshot) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   if (status != SYNC_STATUS_FILE_BUSY) {
+    PromoteDemotedChangesForURLs(file_system_context,
+                                 remaining_urls.Pass());
     callback.Run(status, sync_file_info, snapshot.Pass());
     return;
   }
+
+  PromoteDemotedChangesForURL(file_system_context, sync_file_info.url);
+
   // Recursively call TryPrepareForLocalSync with remaining_urls.
   TryPrepareForLocalSync(file_system_context, callback, remaining_urls.Pass());
+}
+
+void LocalFileSyncContext::PromoteDemotedChangesForURL(
+    FileSystemContext* file_system_context,
+    const FileSystemURL& url) {
+  DCHECK(file_system_context);
+  if (!file_system_context->default_file_task_runner()->
+          RunsTasksOnCurrentThread()) {
+    DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+    if (shutdown_on_ui_)
+      return;
+    file_system_context->default_file_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LocalFileSyncContext::PromoteDemotedChangesForURL,
+                   this, make_scoped_refptr(file_system_context), url));
+    return;
+  }
+
+  SyncFileSystemBackend* backend =
+      SyncFileSystemBackend::GetBackend(file_system_context);
+  DCHECK(backend);
+  DCHECK(backend->change_tracker());
+  backend->change_tracker()->PromoteDemotedChangesForURL(url);
+}
+
+void LocalFileSyncContext::PromoteDemotedChangesForURLs(
+    FileSystemContext* file_system_context,
+    scoped_ptr<FileSystemURLQueue> urls) {
+  DCHECK(file_system_context);
+  if (!file_system_context->default_file_task_runner()->
+          RunsTasksOnCurrentThread()) {
+    DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+    if (shutdown_on_ui_)
+      return;
+    file_system_context->default_file_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LocalFileSyncContext::PromoteDemotedChangesForURLs,
+                   this, make_scoped_refptr(file_system_context),
+                   base::Passed(&urls)));
+    return;
+  }
+
+  for (FileSystemURLQueue::iterator iter = urls->begin();
+       iter != urls->end(); ++iter)
+    PromoteDemotedChangesForURL(file_system_context, *iter);
 }
 
 void LocalFileSyncContext::DidGetWritingStatusForSync(
