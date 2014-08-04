@@ -39,26 +39,29 @@ namespace WTF {
 
 #if COMPILER(CLANG)
 const size_t extractNameFunctionPrefixLength = sizeof("const char *WTF::extractNameFunction() [T = ") - 1;
-const size_t extractNameFunctionPostfixLength = 1;
+const size_t extractNameFunctionPostfixLength = sizeof("]") - 1;
 #elif COMPILER(GCC)
 const size_t extractNameFunctionPrefixLength = sizeof("const char* WTF::extractNameFunction() [with T = ") - 1;
-const size_t extractNameFunctionPostfixLength = 1;
+const size_t extractNameFunctionPostfixLength = sizeof("]") - 1;
+#elif COMPILER(MSVC)
+const size_t extractNameFunctionPrefixLength = sizeof("const char *__cdecl WTF::extractNameFunction<class ") - 1;
+const size_t extractNameFunctionPostfixLength = sizeof(">(void)") - 1;
 #else
-#warning "Extracting typename in a compiler other than GCC isn't supported atm"
+#warning "Extracting typename is supported only in compiler GCC, CLANG and MSVC at this moment"
 #endif
 
 // This function is used to stringify a typename T without using RTTI.
 // The result of extractNameFunction<T>() is given as |funcName|. |extractTypeNameFromFunctionName| then extracts a typename string from |funcName|.
 String extractTypeNameFromFunctionName(const char* funcName)
 {
-#if COMPILER(CLANG) || COMPILER(GCC)
+#if COMPILER(CLANG) || COMPILER(GCC) || COMPILER(MSVC)
     size_t funcNameLength = strlen(funcName);
-    ASSERT(funcNameLength > extractNameFunctionPrefixLength + 1);
+    ASSERT(funcNameLength > extractNameFunctionPrefixLength + extractNameFunctionPostfixLength);
 
     const char* funcNameWithoutPrefix = funcName + extractNameFunctionPrefixLength;
-    return String(funcNameWithoutPrefix, funcNameLength - extractNameFunctionPrefixLength - extractNameFunctionPostfixLength /* last ] */);
+    return String(funcNameWithoutPrefix, funcNameLength - extractNameFunctionPrefixLength - extractNameFunctionPostfixLength);
 #else
-    return String();
+    return String("unknown");
 #endif
 }
 
