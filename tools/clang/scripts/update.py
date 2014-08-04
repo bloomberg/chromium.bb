@@ -152,9 +152,9 @@ def UpdateClang():
 
   # TODO(hans): Make this (and the .gypi file) version number independent.
   asan_rt_lib_src_dir = os.path.join(COMPILER_RT_BUILD_DIR, 'lib', 'clang',
-                                     '3.5.0', 'lib', 'windows')
+                                     '3.6.0', 'lib', 'windows')
   asan_rt_lib_dst_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang',
-                                     '3.5.0', 'lib', 'windows')
+                                     '3.6.0', 'lib', 'windows')
 
   if not os.path.exists(asan_rt_lib_dst_dir):
     os.makedirs(asan_rt_lib_dst_dir)
@@ -168,10 +168,10 @@ def UpdateClang():
 
   # Make an extra copy of the sanitizer headers, to be put on the include path
   # of the fallback compiler.
-  sanitizer_include_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang', '3.5.0',
+  sanitizer_include_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang', '3.6.0',
                                        'include', 'sanitizer')
   aux_sanitizer_include_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang',
-                                           '3.5.0', 'include_sanitizer',
+                                           '3.6.0', 'include_sanitizer',
                                            'sanitizer')
   if not os.path.exists(aux_sanitizer_include_dir):
     os.makedirs(aux_sanitizer_include_dir)

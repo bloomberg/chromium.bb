@@ -5417,13 +5417,13 @@
                   # invoked via /fallback. This is critical for using macros
                   # like ASAN_UNPOISON_MEMORY_REGION in files where we fall
                   # back.
-                  '<(DEPTH)/<(make_clang_dir)/lib/clang/3.5.0/include_sanitizer',
+                  '<(DEPTH)/<(make_clang_dir)/lib/clang/3.6.0/include_sanitizer',
                 ],
               },
               'VCLinkerTool': {
                 'AdditionalLibraryDirectories': [
                   # TODO(hans): If make_clang_dir is absolute, this breaks.
-                  '<(DEPTH)/<(make_clang_dir)/lib/clang/3.5.0/lib/windows',
+                  '<(DEPTH)/<(make_clang_dir)/lib/clang/3.6.0/lib/windows',
                 ],
               },
               'target_conditions': [
