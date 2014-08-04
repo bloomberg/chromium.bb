@@ -933,16 +933,6 @@ void BlinkPlatformImpl::didStopWorkerRunLoop(
   worker_task_runner->OnWorkerRunLoopStopped(runLoop);
 }
 
-void BlinkPlatformImpl::didStartWorkerThread(blink::WebThread* thread) {
-  WorkerTaskRunner* worker_task_runner = WorkerTaskRunner::Instance();
-  worker_task_runner->OnWorkerThreadStarted(thread);
-}
-
-void BlinkPlatformImpl::didStopWorkerThread(blink::WebThread* thread) {
-  WorkerTaskRunner* worker_task_runner = WorkerTaskRunner::Instance();
-  worker_task_runner->OnWorkerThreadStopped(thread);
-}
-
 blink::WebCrypto* BlinkPlatformImpl::crypto() {
   return &web_crypto_;
 }

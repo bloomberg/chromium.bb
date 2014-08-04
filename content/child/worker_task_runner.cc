@@ -16,22 +16,11 @@ namespace content {
 
 namespace {
 
-class RunLoopRunClosureTask : public WebWorkerRunLoop::Task {
- public:
-  RunLoopRunClosureTask(const base::Closure& task) : task_(task) {}
-  virtual ~RunLoopRunClosureTask() {}
-  virtual void Run() {
-    task_.Run();
-  }
- private:
-  base::Closure task_;
-};
-
-class RunClosureTask : public blink::WebThread::Task {
+class RunClosureTask : public WebWorkerRunLoop::Task {
  public:
   RunClosureTask(const base::Closure& task) : task_(task) {}
   virtual ~RunClosureTask() {}
-  virtual void run() {
+  virtual void Run() {
     task_.Run();
   }
  private:
@@ -42,14 +31,10 @@ class RunClosureTask : public blink::WebThread::Task {
 
 struct WorkerTaskRunner::ThreadLocalState {
   ThreadLocalState(int id, const WebWorkerRunLoop& loop)
-      : id_(id), run_loop_(loop), thread_(0) {
-  }
-  ThreadLocalState(int id, blink::WebThread* thread)
-      : id_(id), thread_(thread) {
+      : id_(id), run_loop_(loop) {
   }
   int id_;
   WebWorkerRunLoop run_loop_;
-  blink::WebThread* thread_;
   ObserverList<WorkerTaskRunner::Observer> stop_observers_;
 };
 
@@ -63,31 +48,18 @@ bool WorkerTaskRunner::PostTask(
     int id, const base::Closure& closure) {
   DCHECK(id > 0);
   base::AutoLock locker(loop_map_lock_);
-
   IDToLoopMap::iterator found = loop_map_.find(id);
-  if (found != loop_map_.end())
-    return found->second.postTask(new RunLoopRunClosureTask(closure));
-
-  IDToThreadMap::iterator thread_found = thread_map_.find(id);
-  if (thread_found != thread_map_.end()) {
-    thread_found->second->postTask(new RunClosureTask(closure));
-    return true;
-  }
-
-  return false;
+  if (found == loop_map_.end())
+    return false;
+  return found->second.postTask(new RunClosureTask(closure));
 }
 
 int WorkerTaskRunner::PostTaskToAllThreads(const base::Closure& closure) {
   base::AutoLock locker(loop_map_lock_);
   IDToLoopMap::iterator it;
   for (it = loop_map_.begin(); it != loop_map_.end(); ++it)
-    it->second.postTask(new RunLoopRunClosureTask(closure));
-
-  IDToThreadMap::iterator iter;
-  for (iter = thread_map_.begin(); iter != thread_map_.end(); ++iter)
-    iter->second->postTask(new RunClosureTask(closure));
-
-  return static_cast<int>(loop_map_.size() + thread_map_.size());
+    it->second.postTask(new RunClosureTask(closure));
+  return static_cast<int>(loop_map_.size());
 }
 
 int WorkerTaskRunner::CurrentWorkerId() {
@@ -132,28 +104,6 @@ void WorkerTaskRunner::OnWorkerRunLoopStopped(const WebWorkerRunLoop& loop) {
     base::AutoLock locker(loop_map_lock_);
     DCHECK(loop_map_[CurrentWorkerId()] == loop);
     loop_map_.erase(CurrentWorkerId());
-  }
-  delete current_tls_.Get();
-  current_tls_.Set(NULL);
-}
-
-void WorkerTaskRunner::OnWorkerThreadStarted(blink::WebThread* thread) {
-  DCHECK(!current_tls_.Get());
-  int id = id_sequence_.GetNext();
-  current_tls_.Set(new ThreadLocalState(id, thread));
-
-  base::AutoLock locker_(loop_map_lock_);
-  thread_map_[id] = thread;
-}
-
-void WorkerTaskRunner::OnWorkerThreadStopped(blink::WebThread* thread) {
-  DCHECK(current_tls_.Get());
-  FOR_EACH_OBSERVER(Observer, current_tls_.Get()->stop_observers_,
-                    OnWorkerRunLoopStopped());
-  {
-    base::AutoLock locker(loop_map_lock_);
-    DCHECK(thread_map_[CurrentWorkerId()] == thread);
-    thread_map_.erase(CurrentWorkerId());
   }
   delete current_tls_.Get();
   current_tls_.Set(NULL);

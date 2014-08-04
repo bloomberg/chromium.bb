@@ -148,10 +148,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
       const blink::WebWorkerRunLoop& runLoop) OVERRIDE;
   virtual void didStopWorkerRunLoop(
       const blink::WebWorkerRunLoop& runLoop) OVERRIDE;
-  virtual void didStartWorkerThread(
-      blink::WebThread* thread);
-  virtual void didStopWorkerThread(
-      blink::WebThread* thread);
   virtual blink::WebCrypto* crypto() OVERRIDE;
 
   void SetFlingCurveParameters(const std::vector<float>& new_touchpad,
