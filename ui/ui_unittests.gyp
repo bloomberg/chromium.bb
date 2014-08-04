@@ -75,8 +75,6 @@
         'base/view_prop_unittest.cc',
         'base/webui/web_ui_util_unittest.cc',
         'base/x/selection_requestor_unittest.cc',
-        'gfx/canvas_unittest_mac.mm',
-        'gfx/platform_font_mac_unittest.mm',
       ],
       'include_dirs': [
         '../',
@@ -180,7 +178,6 @@
           'dependencies': [
             '../third_party/mozilla/mozilla.gyp:mozilla',
             'events/events.gyp:events_test_support',
-            'gfx/gfx.gyp:gfx_test_support',
             'ui_unittests_bundle',
           ],
           'conditions': [
