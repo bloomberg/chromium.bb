@@ -31,7 +31,8 @@ function test()
 
         InspectorTest.addResult("\nSetting new content");
         uiSourceCode.setWorkingCopy("#inspected { background-color: green; }");
-        uiSourceCode.commitWorkingCopy(step3.bind(this, uiSourceCode));
+        uiSourceCode.commitWorkingCopy();
+        step3(uiSourceCode);
     }
 
     function step3(uiSourceCode)
