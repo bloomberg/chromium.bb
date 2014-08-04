@@ -53,8 +53,8 @@ void TestSerialIoHandler::CancelReadImpl() {
 void TestSerialIoHandler::WriteImpl() {
   DCHECK(pending_read_buffer());
   DCHECK_LE(pending_write_buffer_len(), pending_read_buffer_len());
-  memcpy(pending_read_buffer()->data(),
-         pending_write_buffer()->data(),
+  memcpy(pending_read_buffer(),
+         pending_write_buffer(),
          pending_write_buffer_len());
   QueueReadCompleted(pending_write_buffer_len(), serial::RECEIVE_ERROR_NONE);
   QueueWriteCompleted(pending_write_buffer_len(), serial::SEND_ERROR_NONE);

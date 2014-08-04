@@ -133,6 +133,53 @@ device::serial::StopBits ConvertStopBitsToMojo(
   return device::serial::STOP_BITS_NONE;
 }
 
+class SendBuffer : public device::ReadOnlyBuffer {
+ public:
+  SendBuffer(
+      const std::string& data,
+      const base::Callback<void(int, device::serial::SendError)>& callback)
+      : data_(data), callback_(callback) {}
+  virtual ~SendBuffer() {}
+  virtual const char* GetData() OVERRIDE { return data_.c_str(); }
+  virtual uint32_t GetSize() OVERRIDE {
+    return static_cast<uint32_t>(data_.size());
+  }
+  virtual void Done(uint32_t bytes_read) OVERRIDE {
+    callback_.Run(bytes_read, device::serial::SEND_ERROR_NONE);
+  }
+  virtual void DoneWithError(uint32_t bytes_read, int32_t error) OVERRIDE {
+    callback_.Run(bytes_read, static_cast<device::serial::SendError>(error));
+  }
+
+ private:
+  const std::string data_;
+  const base::Callback<void(int, device::serial::SendError)> callback_;
+};
+
+class ReceiveBuffer : public device::WritableBuffer {
+ public:
+  ReceiveBuffer(
+      scoped_refptr<net::IOBuffer> buffer,
+      uint32_t size,
+      const base::Callback<void(int, device::serial::ReceiveError)>& callback)
+      : buffer_(buffer), size_(size), callback_(callback) {}
+  virtual ~ReceiveBuffer() {}
+  virtual char* GetData() OVERRIDE { return buffer_->data(); }
+  virtual uint32_t GetSize() OVERRIDE { return size_; }
+  virtual void Done(uint32_t bytes_written) OVERRIDE {
+    callback_.Run(bytes_written, device::serial::RECEIVE_ERROR_NONE);
+  }
+  virtual void DoneWithError(uint32_t bytes_written, int32_t error) OVERRIDE {
+    callback_.Run(bytes_written,
+                  static_cast<device::serial::ReceiveError>(error));
+  }
+
+ private:
+  scoped_refptr<net::IOBuffer> buffer_;
+  const uint32_t size_;
+  const base::Callback<void(int, device::serial::ReceiveError)> callback_;
+};
+
 }  // namespace
 
 static base::LazyInstance<
@@ -159,9 +206,6 @@ SerialConnection::SerialConnection(const std::string& port,
           content::BrowserThread::GetMessageLoopProxyForThread(
               content::BrowserThread::FILE))) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  io_handler_->Initialize(
-      base::Bind(&SerialConnection::OnAsyncReadComplete, AsWeakPtr()),
-      base::Bind(&SerialConnection::OnAsyncWriteComplete, AsWeakPtr()));
 }
 
 SerialConnection::~SerialConnection() {
@@ -202,7 +246,11 @@ bool SerialConnection::Receive(const ReceiveCompleteCallback& callback) {
   if (!receive_complete_.is_null())
     return false;
   receive_complete_ = callback;
-  io_handler_->Read(buffer_size_);
+  receive_buffer_ = new net::IOBuffer(buffer_size_);
+  io_handler_->Read(scoped_ptr<device::WritableBuffer>(new ReceiveBuffer(
+      receive_buffer_,
+      buffer_size_,
+      base::Bind(&SerialConnection::OnAsyncReadComplete, AsWeakPtr()))));
   receive_timeout_task_.reset();
   if (receive_timeout_ > 0) {
     receive_timeout_task_.reset(new TimeoutTask(
@@ -218,7 +266,8 @@ bool SerialConnection::Send(const std::string& data,
   if (!send_complete_.is_null())
     return false;
   send_complete_ = callback;
-  io_handler_->Write(data);
+  io_handler_->Write(scoped_ptr<device::ReadOnlyBuffer>(new SendBuffer(
+      data, base::Bind(&SerialConnection::OnAsyncWriteComplete, AsWeakPtr()))));
   send_timeout_task_.reset();
   if (send_timeout_ > 0) {
     send_timeout_task_.reset(new TimeoutTask(
@@ -250,9 +299,6 @@ bool SerialConnection::Configure(
 void SerialConnection::SetIoHandlerForTest(
     scoped_refptr<device::SerialIoHandler> handler) {
   io_handler_ = handler;
-  io_handler_->Initialize(
-      base::Bind(&SerialConnection::OnAsyncReadComplete, AsWeakPtr()),
-      base::Bind(&SerialConnection::OnAsyncWriteComplete, AsWeakPtr()));
 }
 
 bool SerialConnection::GetInfo(core_api::serial::ConnectionInfo* info) const {
@@ -309,14 +355,16 @@ void SerialConnection::OnSendTimeout() {
   io_handler_->CancelWrite(device::serial::SEND_ERROR_TIMEOUT);
 }
 
-void SerialConnection::OnAsyncReadComplete(const std::string& data,
+void SerialConnection::OnAsyncReadComplete(int bytes_read,
                                            device::serial::ReceiveError error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!receive_complete_.is_null());
   ReceiveCompleteCallback callback = receive_complete_;
   receive_complete_.Reset();
   receive_timeout_task_.reset();
-  callback.Run(data, ConvertReceiveErrorFromMojo(error));
+  callback.Run(std::string(receive_buffer_->data(), bytes_read),
+               ConvertReceiveErrorFromMojo(error));
+  receive_buffer_ = NULL;
 }
 
 void SerialConnection::OnAsyncWriteComplete(int bytes_sent,

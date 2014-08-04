@@ -9,6 +9,8 @@ static_library("serial") {
   output_name = "device_serial"
 
   sources = [
+    "buffer.cc",
+    "buffer.h",
     "serial_connection.cc",
     "serial_connection.h",
     "serial_connection_factory.cc",

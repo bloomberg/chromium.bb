@@ -173,7 +173,7 @@ void SerialIoHandlerPosix::OnFileCanReadWithoutBlocking(int fd) {
 
   if (pending_read_buffer()) {
     int bytes_read = HANDLE_EINTR(read(file().GetPlatformFile(),
-                                       pending_read_buffer()->data(),
+                                       pending_read_buffer(),
                                        pending_read_buffer_len()));
     if (bytes_read < 0) {
       if (errno == ENXIO) {
@@ -200,7 +200,7 @@ void SerialIoHandlerPosix::OnFileCanWriteWithoutBlocking(int fd) {
 
   if (pending_write_buffer()) {
     int bytes_written = HANDLE_EINTR(write(file().GetPlatformFile(),
-                                           pending_write_buffer()->data(),
+                                           pending_write_buffer(),
                                            pending_write_buffer_len()));
     if (bytes_written < 0) {
       WriteCompleted(0, serial::SEND_ERROR_SYSTEM_ERROR);

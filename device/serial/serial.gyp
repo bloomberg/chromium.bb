@@ -44,6 +44,8 @@
       'sources': [
         '<(SHARED_INTERMEDIATE_DIR)/device/serial/serial.mojom.cc',
         '<(SHARED_INTERMEDIATE_DIR)/device/serial/serial.mojom.h',
+        'buffer.cc',
+        'buffer.h',
         'serial_connection.cc',
         'serial_connection.h',
         'serial_connection_factory.cc',

@@ -15,6 +15,7 @@
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/common/api/serial.h"
+#include "net/base/io_buffer.h"
 
 using content::BrowserThread;
 
@@ -140,8 +141,7 @@ class SerialConnection : public ApiResource,
   void OnSendTimeout();
 
   // Receives read completion notification from the |io_handler_|.
-  void OnAsyncReadComplete(const std::string& data,
-                           device::serial::ReceiveError error);
+  void OnAsyncReadComplete(int bytes_read, device::serial::ReceiveError error);
 
   // Receives write completion notification from the |io_handler_|.
   void OnAsyncWriteComplete(int bytes_sent, device::serial::SendError error);
@@ -184,6 +184,8 @@ class SerialConnection : public ApiResource,
   // Write timeout closure. Reset on initialization and after every successful
   // Send().
   scoped_ptr<TimeoutTask> send_timeout_task_;
+
+  scoped_refptr<net::IOBuffer> receive_buffer_;
 
   // Asynchronous I/O handler.
   scoped_refptr<device::SerialIoHandler> io_handler_;

@@ -217,7 +217,7 @@ void SerialIoHandlerWin::WriteImpl() {
   DCHECK(file().IsValid());
 
   BOOL ok = ::WriteFile(file().GetPlatformFile(),
-                        pending_write_buffer()->data(),
+                        pending_write_buffer(),
                         pending_write_buffer_len(),
                         NULL,
                         &write_context_->overlapped);
@@ -260,7 +260,7 @@ void SerialIoHandlerWin::OnIOCompleted(
       ReadCompleted(0, serial::RECEIVE_ERROR_SYSTEM_ERROR);
     } else if (pending_read_buffer()) {
       BOOL ok = ::ReadFile(file().GetPlatformFile(),
-                           pending_read_buffer()->data(),
+                           pending_read_buffer(),
                            pending_read_buffer_len(),
                            NULL,
                            &read_context_->overlapped);

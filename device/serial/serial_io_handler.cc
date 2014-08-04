@@ -13,21 +13,12 @@ namespace device {
 
 SerialIoHandler::SerialIoHandler(
     scoped_refptr<base::MessageLoopProxy> file_thread_message_loop)
-    : pending_read_buffer_len_(0),
-      pending_write_buffer_len_(0),
-      file_thread_message_loop_(file_thread_message_loop) {
+    : file_thread_message_loop_(file_thread_message_loop) {
 }
 
 SerialIoHandler::~SerialIoHandler() {
   DCHECK(CalledOnValidThread());
   Close();
-}
-
-void SerialIoHandler::Initialize(const ReadCompleteCallback& read_callback,
-                                 const WriteCompleteCallback& write_callback) {
-  DCHECK(CalledOnValidThread());
-  read_complete_ = read_callback;
-  write_complete_ = write_callback;
 }
 
 void SerialIoHandler::Open(const std::string& port,
@@ -101,23 +92,19 @@ void SerialIoHandler::DoClose(base::File port) {
   // port closed by destructor.
 }
 
-void SerialIoHandler::Read(int max_bytes) {
+void SerialIoHandler::Read(scoped_ptr<WritableBuffer> buffer) {
   DCHECK(CalledOnValidThread());
   DCHECK(!IsReadPending());
-  pending_read_buffer_ = new net::IOBuffer(max_bytes);
-  pending_read_buffer_len_ = max_bytes;
+  pending_read_buffer_ = buffer.Pass();
   read_canceled_ = false;
   AddRef();
   ReadImpl();
 }
 
-void SerialIoHandler::Write(const std::string& data) {
+void SerialIoHandler::Write(scoped_ptr<ReadOnlyBuffer> buffer) {
   DCHECK(CalledOnValidThread());
   DCHECK(!IsWritePending());
-  int length = static_cast<int>(data.length());
-  pending_write_buffer_ = new net::IOBuffer(length);
-  pending_write_buffer_len_ = length;
-  memcpy(pending_write_buffer_->data(), data.data(), pending_write_buffer_len_);
+  pending_write_buffer_ = buffer.Pass();
   write_canceled_ = false;
   AddRef();
   WriteImpl();
@@ -127,10 +114,12 @@ void SerialIoHandler::ReadCompleted(int bytes_read,
                                     serial::ReceiveError error) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsReadPending());
-  read_complete_.Run(std::string(pending_read_buffer_->data(), bytes_read),
-                     error);
-  pending_read_buffer_ = NULL;
-  pending_read_buffer_len_ = 0;
+  if (error == serial::RECEIVE_ERROR_NONE) {
+    pending_read_buffer_->Done(bytes_read);
+  } else {
+    pending_read_buffer_->DoneWithError(bytes_read, error);
+  }
+  pending_read_buffer_.reset();
   Release();
 }
 
@@ -138,9 +127,12 @@ void SerialIoHandler::WriteCompleted(int bytes_written,
                                      serial::SendError error) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsWritePending());
-  write_complete_.Run(bytes_written, error);
-  pending_write_buffer_ = NULL;
-  pending_write_buffer_len_ = 0;
+  if (error == serial::SEND_ERROR_NONE) {
+    pending_write_buffer_->Done(bytes_written);
+  } else {
+    pending_write_buffer_->DoneWithError(bytes_written, error);
+  }
+  pending_write_buffer_.reset();
   Release();
 }
 

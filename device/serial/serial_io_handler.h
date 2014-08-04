@@ -10,8 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/non_thread_safe.h"
+#include "device/serial/buffer.h"
 #include "device/serial/serial.mojom.h"
-#include "net/base/io_buffer.h"
 
 namespace device {
 
@@ -28,34 +28,19 @@ class SerialIoHandler : public base::NonThreadSafe,
 
   typedef base::Callback<void(bool success)> OpenCompleteCallback;
 
-  // Called with a string of bytes read, and a result code. Note that an error
-  // result does not necessarily imply 0 bytes read.
-  typedef base::Callback<void(const std::string& data,
-                              serial::ReceiveError error)> ReadCompleteCallback;
-
-  // Called with the number of bytes written and a result code. Note that an
-  // error result does not necessarily imply 0 bytes written.
-  typedef base::Callback<void(int bytes_written, serial::SendError error)>
-      WriteCompleteCallback;
-
-  // Initializes the handler on the current message loop. Must be called exactly
-  // once before performing any I/O through the handler.
-  virtual void Initialize(const ReadCompleteCallback& read_callback,
-                          const WriteCompleteCallback& write_callback);
-
   // Initiates an asynchronous Open of the device.
   virtual void Open(const std::string& port,
                     const OpenCompleteCallback& callback);
 
   // Performs an async Read operation. Behavior is undefined if this is called
-  // while a Read is already pending. Otherwise, the ReadCompleteCallback
-  // (see above) will eventually be called with a result.
-  void Read(int max_bytes);
+  // while a Read is already pending. Otherwise, the Done or DoneWithError
+  // method on |buffer| will eventually be called with a result.
+  void Read(scoped_ptr<WritableBuffer> buffer);
 
   // Performs an async Write operation. Behavior is undefined if this is called
-  // while a Write is already pending. Otherwise, the WriteCompleteCallback
-  // (see above) will eventually be called with a result.
-  void Write(const std::string& data);
+  // while a Write is already pending. Otherwise, the Done or DoneWithError
+  // method on |buffer| will eventually be called with a result.
+  void Write(scoped_ptr<ReadOnlyBuffer> buffer);
 
   // Indicates whether or not a read is currently pending.
   bool IsReadPending() const;
@@ -142,11 +127,13 @@ class SerialIoHandler : public base::NonThreadSafe,
 
   const base::File& file() const { return file_; }
 
-  net::IOBuffer* pending_read_buffer() const {
-    return pending_read_buffer_.get();
+  char* pending_read_buffer() const {
+    return pending_read_buffer_ ? pending_read_buffer_->GetData() : NULL;
   }
 
-  int pending_read_buffer_len() const { return pending_read_buffer_len_; }
+  uint32_t pending_read_buffer_len() const {
+    return pending_read_buffer_ ? pending_read_buffer_->GetSize() : 0;
+  }
 
   serial::ReceiveError read_cancel_reason() const {
     return read_cancel_reason_;
@@ -154,11 +141,13 @@ class SerialIoHandler : public base::NonThreadSafe,
 
   bool read_canceled() const { return read_canceled_; }
 
-  net::IOBuffer* pending_write_buffer() const {
-    return pending_write_buffer_.get();
+  const char* pending_write_buffer() const {
+    return pending_write_buffer_ ? pending_write_buffer_->GetData() : NULL;
   }
 
-  int pending_write_buffer_len() const { return pending_write_buffer_len_; }
+  uint32_t pending_write_buffer_len() const {
+    return pending_write_buffer_ ? pending_write_buffer_->GetSize() : 0;
+  }
 
   serial::SendError write_cancel_reason() const { return write_cancel_reason_; }
 
@@ -186,18 +175,13 @@ class SerialIoHandler : public base::NonThreadSafe,
   // thread.
   base::File file_;
 
-  scoped_refptr<net::IOBuffer> pending_read_buffer_;
-  int pending_read_buffer_len_;
+  scoped_ptr<WritableBuffer> pending_read_buffer_;
   serial::ReceiveError read_cancel_reason_;
   bool read_canceled_;
 
-  scoped_refptr<net::IOBuffer> pending_write_buffer_;
-  int pending_write_buffer_len_;
+  scoped_ptr<ReadOnlyBuffer> pending_write_buffer_;
   serial::SendError write_cancel_reason_;
   bool write_canceled_;
-
-  ReadCompleteCallback read_complete_;
-  WriteCompleteCallback write_complete_;
 
   // Callback to handle the completion of a pending Open() request.
   OpenCompleteCallback open_complete_;
