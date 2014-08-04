@@ -3,21 +3,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
-
 from buildbot_lib import (
     BuildContext, BuildStatus, ParseStandardCommandLine,
-    RemoveSconsBuildDirectories, RemoveGypBuildDirectories, RunBuild,
-    SetupLinuxEnvironment, SetupMacEnvironment, SetupWindowsEnvironment, SCons,
-    Step )
+    RemoveSconsBuildDirectories, RunBuild, SetupLinuxEnvironment,
+    SetupMacEnvironment, SetupWindowsEnvironment, SCons, Step )
 
 
-
-def BuildScriptX86(status, context):
+def RunSconsTests(status, context):
   # Clean out build directories.
-  with Step('clobber', status):
+  with Step('clobber scons', status):
     RemoveSconsBuildDirectories()
-    RemoveGypBuildDirectories()
 
   # Unlike their arm counterparts we do not run trusted tests on x86 bots.
   # Trusted tests get plenty of coverage by other bots, e.g. nacl-gcc bots.
@@ -27,28 +22,30 @@ def BuildScriptX86(status, context):
   flags_run = ['skip_trusted_tests=1']
   smoke_tests = ['small_tests', 'medium_tests']
 
-  with Step('build_all', status):
+  arch = context['default_scons_platform']
+
+  with Step('build_all ' + arch, status):
     SCons(context, parallel=True, args=flags_build)
 
   # Normal pexe-mode tests
-  with Step('smoke_tests', status, halt_on_fail=False):
+  with Step('smoke_tests ' + arch, status, halt_on_fail=False):
     SCons(context, parallel=True, args=flags_run + smoke_tests)
   # Large tests cannot be run in parallel
-  with Step('large_tests', status, halt_on_fail=False):
+  with Step('large_tests ' + arch, status, halt_on_fail=False):
     SCons(context, parallel=False, args=flags_run + ['large_tests'])
 
   # non-pexe-mode tests. Build everything to make sure it all builds in nonpexe
   # mode, but just run the nonpexe_tests
-  with Step('build_nonpexe', status):
+  with Step('build_nonpexe ' + arch, status):
     SCons(context, parallel=True, args=flags_build + ['pnacl_generate_pexe=0'])
-  with Step('nonpexe_tests', status, halt_on_fail=False):
+  with Step('nonpexe_tests ' + arch, status, halt_on_fail=False):
     SCons(context, parallel=True,
           args=flags_run + ['pnacl_generate_pexe=0', 'nonpexe_tests'])
 
   irt_mode = context['default_scons_mode'] + ['nacl_irt_test']
   smoke_tests_irt = ['small_tests_irt', 'medium_tests_irt']
   # Run some tests with the IRT
-  with Step('smoke_tests_irt', status, halt_on_fail=False):
+  with Step('smoke_tests_irt ' + arch, status, halt_on_fail=False):
     SCons(context, parallel=True, mode=irt_mode,
           args=flags_run + smoke_tests_irt)
 
@@ -61,29 +58,30 @@ def BuildScriptX86(status, context):
     # The mac standalone sandboxed translator is flaky.
     # https://code.google.com/p/nativeclient/issues/detail?id=3856
 
-    with Step('toolchain_tests_sandboxed_translator', status,
+    if arch == 'arm':
+      # The ARM sandboxed translator is flaky under qemu, so run a very small
+      # set of tests there.
+      sbtc_tests = ['run_hello_world_test_irt']
+    else:
+      sbtc_tests = ['toolchain_tests_irt', 'large_code']
+
+    with Step('sandboxed_translator_tests ' + arch, status,
+              halt_on_fail=False):
+      SCons(context, parallel=True, mode=irt_mode,
+            args=flags_run + ['use_sandboxed_translator=1'] + sbtc_tests)
+    with Step('sandboxed_translator_fast_tests ' + arch, status,
               halt_on_fail=False):
       SCons(context, parallel=True, mode=irt_mode,
             args=flags_run + ['use_sandboxed_translator=1',
-                              'toolchain_tests_irt'])
-    with Step('toolchain_tests_sandboxed_fast', status, halt_on_fail=False):
-      SCons(context, parallel=True, mode=irt_mode,
-            args=flags_run + ['use_sandboxed_translator=1', 'translate_fast=1',
-                              'toolchain_tests_irt'])
-
-    # Translator memory consumption regression test
-    with Step('large_code_test', status, halt_on_fail=False):
-      SCons(context, parallel=True, mode=irt_mode,
-            args=flags_run + ['use_sandboxed_translator=1', 'large_code'])
+                              'translate_fast=1'] + sbtc_tests)
 
   # Test Non-SFI Mode.
   # The only architectures that the PNaCl toolchain supports Non-SFI
-  # versions of are currently x86-32 and ARM, and ARM testing is covered
-  # by buildbot_pnacl.sh rather than this Python script.
+  # versions of are currently x86-32 and ARM.
   # The x86-64 toolchain bot currently also runs these tests from
   # buildbot_pnacl.sh
-  if context.Linux() and context['default_scons_platform'] == 'x86-32':
-    with Step('nonsfi_tests', status, halt_on_fail=False):
+  if context.Linux() and (arch == 'x86-32' or arch == 'arm'):
+    with Step('nonsfi_tests ' + arch, status, halt_on_fail=False):
       SCons(context, parallel=True, mode=irt_mode,
             args=flags_run +
                 ['nonsfi_nacl=1',
@@ -91,7 +89,7 @@ def BuildScriptX86(status, context):
                  'nonsfi_tests_irt'])
 
     # Test nonsfi_loader linked against host's libc.
-    with Step('nonsfi_tests_host_libc', status, halt_on_fail=False):
+    with Step('nonsfi_tests_host_libc ' + arch, status, halt_on_fail=False):
       # Using skip_nonstable_bitcode=1 here disables the tests for
       # zero-cost C++ exception handling, which don't pass for Non-SFI
       # mode yet because we don't build libgcc_eh for Non-SFI mode.
@@ -102,8 +100,7 @@ def BuildScriptX86(status, context):
                  'toolchain_tests_irt', 'skip_nonstable_bitcode=1'])
 
   # Test unsandboxed mode.
-  if ((context.Linux() or context.Mac()) and
-      context['default_scons_platform'] == 'x86-32'):
+  if (context.Linux() or context.Mac()) and arch == 'x86-32':
     if context.Linux():
       tests = ['run_' + test + '_test_irt' for test in
                ['hello_world', 'irt_futex', 'thread', 'float',
@@ -113,7 +110,7 @@ def BuildScriptX86(status, context):
       # TODO(mseaborn): Use the same test list as on Linux when the threading
       # tests pass for Mac.
       tests = ['run_hello_world_test_irt']
-    with Step('unsandboxed_tests', status, halt_on_fail=False):
+    with Step('unsandboxed_tests ' + arch, status, halt_on_fail=False):
       SCons(context, parallel=True, mode=irt_mode,
             args=flags_run + ['pnacl_unsandboxed=1'] + tests)
 
@@ -132,7 +129,7 @@ def Main():
   else:
     raise Exception('Unsupported platform')
 
-  RunBuild(BuildScriptX86, status)
+  RunBuild(RunSconsTests, status)
 
 if __name__ == '__main__':
   Main()
