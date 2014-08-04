@@ -25,6 +25,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/file_util.h"
+#include "extensions/common/one_shot_event.h"
 #include "extensions/common/message_bundle.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -350,11 +351,12 @@ UserScriptMaster::UserScriptMaster(Profile* profile)
       extension_registry_observer_(this),
       weak_factory_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
-                 content::Source<Profile>(profile_));
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
+  ExtensionSystem::Get(profile)->ready().Post(
+      FROM_HERE,
+      base::Bind(&UserScriptMaster::OnExtensionsReady,
+        weak_factory_.GetWeakPtr()));
 }
 
 UserScriptMaster::~UserScriptMaster() {
@@ -437,36 +439,26 @@ void UserScriptMaster::OnExtensionUnloaded(
 void UserScriptMaster::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
-  bool should_start_load = false;
-  switch (type) {
-    case extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED:
-      extensions_service_ready_ = true;
-      should_start_load = true;
-      break;
-    case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
-      content::RenderProcessHost* process =
-          content::Source<content::RenderProcessHost>(source).ptr();
-      Profile* profile = Profile::FromBrowserContext(
-          process->GetBrowserContext());
-      if (!profile_->IsSameProfile(profile))
-        return;
-      if (ScriptsReady()) {
-        SendUpdate(process,
-                   GetSharedMemory(),
-                   std::set<std::string>());  // Include all extensions.
-      }
-      break;
-    }
-    default:
-      DCHECK(false);
+  DCHECK_EQ(type, content::NOTIFICATION_RENDERER_PROCESS_CREATED);
+  content::RenderProcessHost* process =
+      content::Source<content::RenderProcessHost>(source).ptr();
+  Profile* profile = Profile::FromBrowserContext(
+      process->GetBrowserContext());
+  if (!profile_->IsSameProfile(profile))
+    return;
+  if (ScriptsReady()) {
+    SendUpdate(process,
+               GetSharedMemory(),
+               std::set<std::string>());  // Include all extensions.
   }
+}
 
-  if (should_start_load) {
-    if (is_loading())
-      pending_load_ = true;
-    else
-      StartLoad();
-  }
+void UserScriptMaster::OnExtensionsReady() {
+  extensions_service_ready_ = true;
+  if (is_loading())
+    pending_load_ = true;
+  else
+    StartLoad();
 }
 
 void UserScriptMaster::StartLoad() {

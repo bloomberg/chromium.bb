@@ -80,6 +80,9 @@ class UserScriptMaster : public content::NotificationObserver,
       const Extension* extension,
       UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
+  // Called when ExtensionSystem is ready.
+  void OnExtensionsReady();
+
   // Called once we have finished loading the scripts on the file thread.
   void OnScriptsLoaded(scoped_ptr<UserScriptList> user_scripts,
                        scoped_ptr<base::SharedMemory> shared_memory);
