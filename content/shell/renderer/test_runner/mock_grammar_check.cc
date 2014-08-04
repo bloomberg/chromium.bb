@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "content/shell/renderer/test_runner/TestCommon.h"
+#include "content/shell/renderer/test_runner/test_common.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
@@ -19,7 +19,7 @@ bool MockGrammarCheck::CheckGrammarOfString(
     std::vector<blink::WebTextCheckingResult>* results) {
   DCHECK(results);
   base::string16 string_text = text;
-  if (std::find_if(string_text.begin(), string_text.end(), isASCIIAlpha) ==
+  if (std::find_if(string_text.begin(), string_text.end(), IsASCIIAlpha) ==
       string_text.end())
     return true;
 
