@@ -37,7 +37,6 @@ class DesktopDragDropClientAuraX11;
 class DesktopDispatcherClient;
 class DesktopWindowTreeHostObserverX11;
 class X11DesktopWindowMoveClient;
-class X11ScopedCapture;
 class X11WindowEventFilter;
 
 class VIEWS_EXPORT DesktopWindowTreeHostX11
@@ -202,10 +201,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // Sets whether the window's borders are provided by the window manager.
   void SetUseNativeFrame(bool use_native_frame);
 
-  // Called when another DRWHL takes capture, or when capture is released
-  // entirely.
-  void OnCaptureReleased();
-
   // Dispatches a mouse event, taking mouse capture into account. If a
   // different host has capture, we translate the event to its coordinate space
   // and dispatch it to that host instead.
@@ -323,18 +318,13 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // The size of the window manager provided borders (if any).
   gfx::Insets native_window_frame_borders_;
 
-  // The current root window host that has capture. While X11 has something
-  // like Windows SetCapture()/ReleaseCapture(), it is entirely implicit and
-  // there are no notifications when this changes. We need to track this so we
-  // can notify widgets when they have lost capture, which controls a bunch of
-  // things in views like hiding menus.
+  // The current DesktopWindowTreeHostX11 which has capture. Set synchronously
+  // when capture is requested via SetCapture().
   static DesktopWindowTreeHostX11* g_current_capture;
 
   // A list of all (top-level) windows that have been created but not yet
   // destroyed.
   static std::list<XID>* open_windows_;
-
-  scoped_ptr<X11ScopedCapture> x11_capture_;
 
   base::string16 window_title_;
 

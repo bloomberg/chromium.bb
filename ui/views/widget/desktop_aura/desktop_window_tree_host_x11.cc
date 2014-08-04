@@ -49,7 +49,6 @@
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_observer_x11.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_window_move_client.h"
-#include "ui/views/widget/desktop_aura/x11_scoped_capture.h"
 #include "ui/views/widget/desktop_aura/x11_window_event_filter.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/window_util.h"
@@ -921,24 +920,33 @@ gfx::Point DesktopWindowTreeHostX11::GetLocationOnNativeScreen() const {
 }
 
 void DesktopWindowTreeHostX11::SetCapture() {
-  // This is vaguely based on the old NativeWidgetGtk implementation.
-  //
-  // X11's XPointerGrab() shouldn't be used for everything; it doesn't map
-  // cleanly to Windows' SetCapture(). GTK only provides a separate concept of
-  // a grab that wasn't the X11 pointer grab, but was instead a manual
-  // redirection of the event. (You need to drop into GDK if you want to
-  // perform a raw X11 grab).
-
+  // Grabbing the mouse is asynchronous. However, we synchronously start
+  // forwarding all mouse events received by Chrome to the
+  // aura::WindowEventDispatcher which has capture. This makes capture
+  // synchronous for all intents and purposes if either:
+  // - |g_current_capture|'s X window has capture.
+  // OR
+  // - The topmost window underneath the mouse is managed by Chrome.
   if (g_current_capture)
-    g_current_capture->OnCaptureReleased();
-
+    g_current_capture->OnHostLostWindowCapture();
   g_current_capture = this;
-  x11_capture_.reset(new X11ScopedCapture(xwindow_));
+
+  unsigned int event_mask = PointerMotionMask | ButtonReleaseMask |
+                            ButtonPressMask;
+  XGrabPointer(xdisplay_, xwindow_, True, event_mask, GrabModeAsync,
+               GrabModeAsync, None, None, CurrentTime);
 }
 
 void DesktopWindowTreeHostX11::ReleaseCapture() {
-  if (g_current_capture == this)
-    g_current_capture->OnCaptureReleased();
+  if (g_current_capture == this) {
+    // Release mouse grab asynchronously. A window managed by Chrome is likely
+    // the topmost window underneath the mouse so the capture release being
+    // asynchronous is likely inconsequential.
+    g_current_capture = NULL;
+    XUngrabPointer(xdisplay_, CurrentTime);
+
+    OnHostLostWindowCapture();
+  }
 }
 
 void DesktopWindowTreeHostX11::SetCursorNative(gfx::NativeCursor cursor) {
@@ -1365,12 +1373,6 @@ void DesktopWindowTreeHostX11::SetUseNativeFrame(bool use_native_frame) {
   use_native_frame_ = use_native_frame;
   ui::SetUseOSWindowFrame(xwindow_, use_native_frame);
   ResetWindowRegion();
-}
-
-void DesktopWindowTreeHostX11::OnCaptureReleased() {
-  x11_capture_.reset();
-  g_current_capture = NULL;
-  OnHostLostWindowCapture();
 }
 
 void DesktopWindowTreeHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
