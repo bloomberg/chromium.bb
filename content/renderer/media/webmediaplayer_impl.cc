@@ -616,18 +616,6 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
   if (mailbox_holder->texture_target != GL_TEXTURE_2D)
     return false;
 
-  // Since this method changes which texture is bound to the TEXTURE_2D target,
-  // ideally it would restore the currently-bound texture before returning.
-  // The cost of getIntegerv is sufficiently high, however, that we want to
-  // avoid it in user builds. As a result assume (below) that |texture| is
-  // bound when this method is called, and only verify this fact when
-  // DCHECK_IS_ON.
-#if DCHECK_IS_ON
-  GLint bound_texture = 0;
-  web_graphics_context->getIntegerv(GL_TEXTURE_BINDING_2D, &bound_texture);
-  DCHECK_EQ(static_cast<GLuint>(bound_texture), texture);
-#endif
-
   web_graphics_context->waitSyncPoint(mailbox_holder->sync_point);
   uint32 source_texture = web_graphics_context->createAndConsumeTextureCHROMIUM(
       GL_TEXTURE_2D, mailbox_holder->mailbox.name);
