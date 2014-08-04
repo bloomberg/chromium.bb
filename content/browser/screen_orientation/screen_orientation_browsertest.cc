@@ -89,8 +89,11 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationBrowserTest);
 };
 
-#if !defined(OS_ANDROID) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, OrientationChange) {
+// This test doesn't work on MacOS X but the reason is mostly because it is not
+// used Aura. It could be set as !defined(OS_MACOSX) but the rule below will
+// actually support MacOS X if and when it switches to Aura.
+#if defined(USE_AURA) || defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, ScreenOrientationChange) {
   std::string types[] = { "portrait-primary",
                           "portrait-secondary",
                           "landscape-primary",
@@ -98,7 +101,14 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, OrientationChange) {
   GURL test_url = GetTestUrl("screen_orientation",
                              "screen_orientation_orientationchange.html");
 
-  TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+  TestNavigationObserver navigation_observer(
+      shell()->web_contents(), 1
+  // Android doesn't paint (ie. UseSoftwareCompositing() has no effect) so we
+  // shouldn't wait for the first paint.
+  #if !defined(OS_ANDROID)
+    , TestNavigationObserver::FirstPaintRequired
+  #endif
+  );
   shell()->LoadURL(test_url);
   navigation_observer.Wait();
 
@@ -108,12 +118,12 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, OrientationChange) {
     angle = (angle + 90) % 360;
     SendFakeScreenOrientation(angle, types[i]);
 
-    TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+    TestNavigationObserver navigation_observer(shell()->web_contents());
     navigation_observer.Wait();
     EXPECT_EQ(angle, GetOrientationAngle());
     EXPECT_EQ(types[i], GetOrientationType());
   }
 }
-#endif // !defined(OS_ANDROID) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+#endif // defined(USE_AURA) || defined(OS_ANDROID)
 
 } // namespace content

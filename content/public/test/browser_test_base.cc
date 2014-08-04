@@ -295,10 +295,6 @@ void BrowserTestBase::PostTaskToInProcessRendererAndWait(
 void BrowserTestBase::EnablePixelOutput() { enable_pixel_output_ = true; }
 
 void BrowserTestBase::UseSoftwareCompositing() {
-#if !defined(USE_AURA) && !defined(OS_MACOSX)
-  // TODO(danakj): Remove when GTK linux is no more.
-  NOTREACHED();
-#endif
   use_software_compositing_ = true;
 }
 
