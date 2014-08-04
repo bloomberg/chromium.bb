@@ -24,7 +24,7 @@ class WebScrollOffsetAnimationCurveImpl
       TimingFunctionType timing_function);
   virtual ~WebScrollOffsetAnimationCurveImpl();
 
-  // blink::WebAnimationCurve implementation.
+  // blink::WebCompositorAnimationCurve implementation.
   virtual AnimationCurveType type() const;
 
   // blink::WebScrollOffsetAnimationCurve implementation.

@@ -23,9 +23,9 @@ WebScrollOffsetAnimationCurveImpl::WebScrollOffsetAnimationCurveImpl(
 WebScrollOffsetAnimationCurveImpl::~WebScrollOffsetAnimationCurveImpl() {
 }
 
-blink::WebAnimationCurve::AnimationCurveType
+blink::WebCompositorAnimationCurve::AnimationCurveType
 WebScrollOffsetAnimationCurveImpl::type() const {
-  return WebAnimationCurve::AnimationCurveTypeScrollOffset;
+  return WebCompositorAnimationCurve::AnimationCurveTypeScrollOffset;
 }
 
 void WebScrollOffsetAnimationCurveImpl::setInitialValue(

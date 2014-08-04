@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_COMPOSITOR_BINDINGS_WEB_ANIMATION_CURVE_COMMON_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "third_party/WebKit/public/platform/WebAnimationCurve.h"
+#include "third_party/WebKit/public/platform/WebCompositorAnimationCurve.h"
 
 namespace cc {
 class TimingFunction;
@@ -14,7 +14,7 @@ class TimingFunction;
 
 namespace content {
 scoped_ptr<cc::TimingFunction> CreateTimingFunction(
-    blink::WebAnimationCurve::TimingFunctionType);
+    blink::WebCompositorAnimationCurve::TimingFunctionType);
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_COMPOSITOR_BINDINGS_WEB_ANIMATION_CURVE_COMMON_H_

@@ -9,17 +9,17 @@
 namespace content {
 
 scoped_ptr<cc::TimingFunction> CreateTimingFunction(
-    blink::WebAnimationCurve::TimingFunctionType type) {
+    blink::WebCompositorAnimationCurve::TimingFunctionType type) {
   switch (type) {
-    case blink::WebAnimationCurve::TimingFunctionTypeEase:
+    case blink::WebCompositorAnimationCurve::TimingFunctionTypeEase:
       return cc::EaseTimingFunction::Create();
-    case blink::WebAnimationCurve::TimingFunctionTypeEaseIn:
+    case blink::WebCompositorAnimationCurve::TimingFunctionTypeEaseIn:
       return cc::EaseInTimingFunction::Create();
-    case blink::WebAnimationCurve::TimingFunctionTypeEaseOut:
+    case blink::WebCompositorAnimationCurve::TimingFunctionTypeEaseOut:
       return cc::EaseOutTimingFunction::Create();
-    case blink::WebAnimationCurve::TimingFunctionTypeEaseInOut:
+    case blink::WebCompositorAnimationCurve::TimingFunctionTypeEaseInOut:
       return cc::EaseInOutTimingFunction::Create();
-    case blink::WebAnimationCurve::TimingFunctionTypeLinear:
+    case blink::WebCompositorAnimationCurve::TimingFunctionTypeLinear:
       return scoped_ptr<cc::TimingFunction>();
   }
   return scoped_ptr<cc::TimingFunction>();

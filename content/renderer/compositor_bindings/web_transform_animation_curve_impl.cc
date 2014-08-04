@@ -21,9 +21,9 @@ WebTransformAnimationCurveImpl::WebTransformAnimationCurveImpl()
 WebTransformAnimationCurveImpl::~WebTransformAnimationCurveImpl() {
 }
 
-blink::WebAnimationCurve::AnimationCurveType
+blink::WebCompositorAnimationCurve::AnimationCurveType
 WebTransformAnimationCurveImpl::type() const {
-  return WebAnimationCurve::AnimationCurveTypeTransform;
+  return WebCompositorAnimationCurve::AnimationCurveTypeTransform;
 }
 
 void WebTransformAnimationCurveImpl::add(const WebTransformKeyframe& keyframe) {

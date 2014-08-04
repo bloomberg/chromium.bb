@@ -25,7 +25,7 @@ class WebFloatAnimationCurveImpl : public blink::WebFloatAnimationCurve {
   CONTENT_EXPORT WebFloatAnimationCurveImpl();
   virtual ~WebFloatAnimationCurveImpl();
 
-  // WebAnimationCurve implementation.
+  // WebCompositorAnimationCurve implementation.
   virtual AnimationCurveType type() const;
 
   // WebFloatAnimationCurve implementation.

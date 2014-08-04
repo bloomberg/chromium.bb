@@ -20,9 +20,9 @@ WebFloatAnimationCurveImpl::WebFloatAnimationCurveImpl()
 WebFloatAnimationCurveImpl::~WebFloatAnimationCurveImpl() {
 }
 
-blink::WebAnimationCurve::AnimationCurveType
-    WebFloatAnimationCurveImpl::type() const {
-  return blink::WebAnimationCurve::AnimationCurveTypeFloat;
+blink::WebCompositorAnimationCurve::AnimationCurveType
+WebFloatAnimationCurveImpl::type() const {
+  return blink::WebCompositorAnimationCurve::AnimationCurveTypeFloat;
 }
 
 void WebFloatAnimationCurveImpl::add(const WebFloatKeyframe& keyframe) {

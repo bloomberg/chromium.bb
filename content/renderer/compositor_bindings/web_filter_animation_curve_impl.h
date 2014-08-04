@@ -25,7 +25,7 @@ class WebFilterAnimationCurveImpl : public blink::WebFilterAnimationCurve {
   CONTENT_EXPORT WebFilterAnimationCurveImpl();
   virtual ~WebFilterAnimationCurveImpl();
 
-  // blink::WebAnimationCurve implementation.
+  // blink::WebCompositorAnimationCurve implementation.
   virtual AnimationCurveType type() const;
 
   // blink::WebFilterAnimationCurve implementation.

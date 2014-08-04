@@ -24,8 +24,8 @@
 #include "content/renderer/compositor_bindings/web_transform_animation_curve_impl.h"
 #include "content/renderer/compositor_bindings/web_transform_operations_impl.h"
 
-using blink::WebAnimation;
-using blink::WebAnimationCurve;
+using blink::WebCompositorAnimation;
+using blink::WebCompositorAnimationCurve;
 using blink::WebContentLayer;
 using blink::WebContentLayerClient;
 using blink::WebExternalTextureLayer;
@@ -97,11 +97,11 @@ WebScrollbarLayer* WebCompositorSupportImpl::createSolidColorScrollbarLayer(
                                    is_left_side_vertical_scrollbar);
 }
 
-WebAnimation* WebCompositorSupportImpl::createAnimation(
-    const blink::WebAnimationCurve& curve,
-    blink::WebAnimation::TargetProperty target,
+WebCompositorAnimation* WebCompositorSupportImpl::createAnimation(
+    const blink::WebCompositorAnimationCurve& curve,
+    blink::WebCompositorAnimation::TargetProperty target,
     int animation_id) {
-  return new WebAnimationImpl(curve, target, animation_id, 0);
+  return new WebCompositorAnimationImpl(curve, target, animation_id, 0);
 }
 
 WebFilterAnimationCurve*
@@ -116,7 +116,7 @@ WebFloatAnimationCurve* WebCompositorSupportImpl::createFloatAnimationCurve() {
 WebScrollOffsetAnimationCurve*
 WebCompositorSupportImpl::createScrollOffsetAnimationCurve(
     blink::WebFloatPoint target_value,
-    blink::WebAnimationCurve::TimingFunctionType timing_function) {
+    blink::WebCompositorAnimationCurve::TimingFunctionType timing_function) {
   return new WebScrollOffsetAnimationCurveImpl(target_value, timing_function);
 }
 

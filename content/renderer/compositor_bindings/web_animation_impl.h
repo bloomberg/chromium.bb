@@ -7,28 +7,25 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebAnimation.h"
+#include "third_party/WebKit/public/platform/WebCompositorAnimation.h"
+#include "third_party/WebKit/public/platform/WebCompositorAnimationCurve.h"
 
 namespace cc {
 class Animation;
 }
 
-namespace blink {
-class WebAnimationCurve;
-}
-
 namespace content {
 
-class WebAnimationImpl : public blink::WebAnimation {
+class WebCompositorAnimationImpl : public blink::WebCompositorAnimation {
  public:
-  CONTENT_EXPORT WebAnimationImpl(
-      const blink::WebAnimationCurve& curve,
+  CONTENT_EXPORT WebCompositorAnimationImpl(
+      const blink::WebCompositorAnimationCurve& curve,
       TargetProperty target,
       int animation_id,
       int group_id);
-  virtual ~WebAnimationImpl();
+  virtual ~WebCompositorAnimationImpl();
 
-  // blink::WebAnimation implementation
+  // blink::WebCompositorAnimation implementation
   virtual int id();
   virtual TargetProperty targetProperty() const;
   virtual int iterations() const;
@@ -50,7 +47,7 @@ class WebAnimationImpl : public blink::WebAnimation {
  private:
   scoped_ptr<cc::Animation> animation_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebAnimationImpl);
+  DISALLOW_COPY_AND_ASSIGN(WebCompositorAnimationImpl);
 };
 
 }  // namespace content

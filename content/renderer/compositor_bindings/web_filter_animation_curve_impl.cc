@@ -21,9 +21,9 @@ WebFilterAnimationCurveImpl::WebFilterAnimationCurveImpl()
 WebFilterAnimationCurveImpl::~WebFilterAnimationCurveImpl() {
 }
 
-blink::WebAnimationCurve::AnimationCurveType WebFilterAnimationCurveImpl::type()
-    const {
-  return WebAnimationCurve::AnimationCurveTypeFilter;
+blink::WebCompositorAnimationCurve::AnimationCurveType
+WebFilterAnimationCurveImpl::type() const {
+  return WebCompositorAnimationCurve::AnimationCurveTypeFilter;
 }
 
 void WebFilterAnimationCurveImpl::add(const WebFilterKeyframe& keyframe,

@@ -7,7 +7,7 @@
 #include "content/renderer/compositor_bindings/web_float_animation_curve_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using blink::WebAnimationCurve;
+using blink::WebCompositorAnimationCurve;
 using blink::WebFloatAnimationCurve;
 using blink::WebFloatKeyframe;
 
@@ -18,7 +18,7 @@ namespace {
 TEST(WebFloatAnimationCurveTest, OneFloatKeyframe) {
   scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
   curve->add(WebFloatKeyframe(0, 2),
-             WebAnimationCurve::TimingFunctionTypeLinear);
+             WebCompositorAnimationCurve::TimingFunctionTypeLinear);
   EXPECT_FLOAT_EQ(2, curve->getValue(-1));
   EXPECT_FLOAT_EQ(2, curve->getValue(0));
   EXPECT_FLOAT_EQ(2, curve->getValue(0.5));
@@ -30,9 +30,9 @@ TEST(WebFloatAnimationCurveTest, OneFloatKeyframe) {
 TEST(WebFloatAnimationCurveTest, TwoFloatKeyframe) {
   scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
   curve->add(WebFloatKeyframe(0, 2),
-             WebAnimationCurve::TimingFunctionTypeLinear);
+             WebCompositorAnimationCurve::TimingFunctionTypeLinear);
   curve->add(WebFloatKeyframe(1, 4),
-             WebAnimationCurve::TimingFunctionTypeLinear);
+             WebCompositorAnimationCurve::TimingFunctionTypeLinear);
   EXPECT_FLOAT_EQ(2, curve->getValue(-1));
   EXPECT_FLOAT_EQ(2, curve->getValue(0));
   EXPECT_FLOAT_EQ(3, curve->getValue(0.5));
@@ -44,11 +44,11 @@ TEST(WebFloatAnimationCurveTest, TwoFloatKeyframe) {
 TEST(WebFloatAnimationCurveTest, ThreeFloatKeyframe) {
   scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
   curve->add(WebFloatKeyframe(0, 2),
-             WebAnimationCurve::TimingFunctionTypeLinear);
+             WebCompositorAnimationCurve::TimingFunctionTypeLinear);
   curve->add(WebFloatKeyframe(1, 4),
-             WebAnimationCurve::TimingFunctionTypeLinear);
+             WebCompositorAnimationCurve::TimingFunctionTypeLinear);
   curve->add(WebFloatKeyframe(2, 8),
-             WebAnimationCurve::TimingFunctionTypeLinear);
+             WebCompositorAnimationCurve::TimingFunctionTypeLinear);
   EXPECT_FLOAT_EQ(2, curve->getValue(-1));
   EXPECT_FLOAT_EQ(2, curve->getValue(0));
   EXPECT_FLOAT_EQ(3, curve->getValue(0.5));
@@ -62,13 +62,13 @@ TEST(WebFloatAnimationCurveTest, ThreeFloatKeyframe) {
 TEST(WebFloatAnimationCurveTest, RepeatedFloatKeyTimes) {
   scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
   curve->add(WebFloatKeyframe(0, 4),
-             WebAnimationCurve::TimingFunctionTypeLinear);
+             WebCompositorAnimationCurve::TimingFunctionTypeLinear);
   curve->add(WebFloatKeyframe(1, 4),
-             WebAnimationCurve::TimingFunctionTypeLinear);
+             WebCompositorAnimationCurve::TimingFunctionTypeLinear);
   curve->add(WebFloatKeyframe(1, 6),
-             WebAnimationCurve::TimingFunctionTypeLinear);
+             WebCompositorAnimationCurve::TimingFunctionTypeLinear);
   curve->add(WebFloatKeyframe(2, 6),
-             WebAnimationCurve::TimingFunctionTypeLinear);
+             WebCompositorAnimationCurve::TimingFunctionTypeLinear);
 
   EXPECT_FLOAT_EQ(4, curve->getValue(-1));
   EXPECT_FLOAT_EQ(4, curve->getValue(0));
@@ -87,11 +87,11 @@ TEST(WebFloatAnimationCurveTest, RepeatedFloatKeyTimes) {
 TEST(WebFloatAnimationCurveTest, UnsortedKeyframes) {
   scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
   curve->add(WebFloatKeyframe(2, 8),
-             WebAnimationCurve::TimingFunctionTypeLinear);
+             WebCompositorAnimationCurve::TimingFunctionTypeLinear);
   curve->add(WebFloatKeyframe(0, 2),
-             WebAnimationCurve::TimingFunctionTypeLinear);
+             WebCompositorAnimationCurve::TimingFunctionTypeLinear);
   curve->add(WebFloatKeyframe(1, 4),
-             WebAnimationCurve::TimingFunctionTypeLinear);
+             WebCompositorAnimationCurve::TimingFunctionTypeLinear);
 
   EXPECT_FLOAT_EQ(2, curve->getValue(-1));
   EXPECT_FLOAT_EQ(2, curve->getValue(0));
@@ -107,7 +107,7 @@ TEST(WebFloatAnimationCurveTest, CubicBezierTimingFunction) {
   scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
   curve->add(WebFloatKeyframe(0, 0), 0.25, 0, 0.75, 1);
   curve->add(WebFloatKeyframe(1, 1),
-             WebAnimationCurve::TimingFunctionTypeLinear);
+             WebCompositorAnimationCurve::TimingFunctionTypeLinear);
 
   EXPECT_FLOAT_EQ(0, curve->getValue(0));
   EXPECT_LT(0, curve->getValue(0.25));
@@ -121,9 +121,10 @@ TEST(WebFloatAnimationCurveTest, CubicBezierTimingFunction) {
 // Tests that an ease timing function works as expected.
 TEST(WebFloatAnimationCurveTest, EaseTimingFunction) {
   scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
-  curve->add(WebFloatKeyframe(0, 0), WebAnimationCurve::TimingFunctionTypeEase);
+  curve->add(WebFloatKeyframe(0, 0),
+             WebCompositorAnimationCurve::TimingFunctionTypeEase);
   curve->add(WebFloatKeyframe(1, 1),
-             WebAnimationCurve::TimingFunctionTypeLinear);
+             WebCompositorAnimationCurve::TimingFunctionTypeLinear);
 
   scoped_ptr<cc::TimingFunction> timing_function(
       cc::EaseTimingFunction::Create());
@@ -137,9 +138,9 @@ TEST(WebFloatAnimationCurveTest, EaseTimingFunction) {
 TEST(WebFloatAnimationCurveTest, LinearTimingFunction) {
   scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
   curve->add(WebFloatKeyframe(0, 0),
-             WebAnimationCurve::TimingFunctionTypeLinear);
+             WebCompositorAnimationCurve::TimingFunctionTypeLinear);
   curve->add(WebFloatKeyframe(1, 1),
-             WebAnimationCurve::TimingFunctionTypeLinear);
+             WebCompositorAnimationCurve::TimingFunctionTypeLinear);
 
   for (int i = 0; i <= 4; ++i) {
     const double time = i * 0.25;
@@ -151,9 +152,9 @@ TEST(WebFloatAnimationCurveTest, LinearTimingFunction) {
 TEST(WebFloatAnimationCurveTest, EaseInTimingFunction) {
   scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
   curve->add(WebFloatKeyframe(0, 0),
-             WebAnimationCurve::TimingFunctionTypeEaseIn);
+             WebCompositorAnimationCurve::TimingFunctionTypeEaseIn);
   curve->add(WebFloatKeyframe(1, 1),
-             WebAnimationCurve::TimingFunctionTypeLinear);
+             WebCompositorAnimationCurve::TimingFunctionTypeLinear);
 
   scoped_ptr<cc::TimingFunction> timing_function(
       cc::EaseInTimingFunction::Create());
@@ -167,9 +168,9 @@ TEST(WebFloatAnimationCurveTest, EaseInTimingFunction) {
 TEST(WebFloatAnimationCurveTest, EaseOutTimingFunction) {
   scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
   curve->add(WebFloatKeyframe(0, 0),
-             WebAnimationCurve::TimingFunctionTypeEaseOut);
+             WebCompositorAnimationCurve::TimingFunctionTypeEaseOut);
   curve->add(WebFloatKeyframe(1, 1),
-             WebAnimationCurve::TimingFunctionTypeLinear);
+             WebCompositorAnimationCurve::TimingFunctionTypeLinear);
 
   scoped_ptr<cc::TimingFunction> timing_function(
       cc::EaseOutTimingFunction::Create());
@@ -183,9 +184,9 @@ TEST(WebFloatAnimationCurveTest, EaseOutTimingFunction) {
 TEST(WebFloatAnimationCurveTest, EaseInOutTimingFunction) {
   scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
   curve->add(WebFloatKeyframe(0, 0),
-             WebAnimationCurve::TimingFunctionTypeEaseInOut);
+             WebCompositorAnimationCurve::TimingFunctionTypeEaseInOut);
   curve->add(WebFloatKeyframe(1, 1),
-             WebAnimationCurve::TimingFunctionTypeLinear);
+             WebCompositorAnimationCurve::TimingFunctionTypeLinear);
 
   scoped_ptr<cc::TimingFunction> timing_function(
       cc::EaseInOutTimingFunction::Create());
@@ -204,7 +205,7 @@ TEST(WebFloatAnimationCurveTest, CustomBezierTimingFunction) {
   double y2 = 0.7;
   curve->add(WebFloatKeyframe(0, 0), x1, y1, x2, y2);
   curve->add(WebFloatKeyframe(1, 1),
-             WebAnimationCurve::TimingFunctionTypeLinear);
+             WebCompositorAnimationCurve::TimingFunctionTypeLinear);
 
   scoped_ptr<cc::TimingFunction> timing_function(
       cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2));
@@ -219,7 +220,7 @@ TEST(WebFloatAnimationCurveTest, DefaultTimingFunction) {
   scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
   curve->add(WebFloatKeyframe(0, 0));
   curve->add(WebFloatKeyframe(1, 1),
-             WebAnimationCurve::TimingFunctionTypeLinear);
+             WebCompositorAnimationCurve::TimingFunctionTypeLinear);
 
   scoped_ptr<cc::TimingFunction> timing_function(
       cc::EaseTimingFunction::Create());

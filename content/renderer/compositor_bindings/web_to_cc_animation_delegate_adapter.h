@@ -8,17 +8,14 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "cc/animation/animation_delegate.h"
-
-namespace blink {
-class WebAnimationDelegate;
-}
+#include "third_party/WebKit/public/platform/WebCompositorAnimationDelegate.h"
 
 namespace content {
 
 class WebToCCAnimationDelegateAdapter : public cc::AnimationDelegate {
  public:
   explicit WebToCCAnimationDelegateAdapter(
-      blink::WebAnimationDelegate* delegate);
+      blink::WebCompositorAnimationDelegate* delegate);
 
  private:
   virtual void NotifyAnimationStarted(
@@ -28,7 +25,7 @@ class WebToCCAnimationDelegateAdapter : public cc::AnimationDelegate {
       base::TimeTicks monotonic_time,
       cc::Animation::TargetProperty target_property) OVERRIDE;
 
-  blink::WebAnimationDelegate* delegate_;
+  blink::WebCompositorAnimationDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebToCCAnimationDelegateAdapter);
 };

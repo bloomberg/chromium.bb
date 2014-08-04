@@ -11,9 +11,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/layer_client.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebAnimation.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebColor.h"
+#include "third_party/WebKit/public/platform/WebCompositorAnimation.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebLayer.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
@@ -90,7 +90,7 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
   virtual void setAnchorPoint(const blink::WebFloatPoint&);
   virtual blink::WebFloatPoint anchorPoint() const;
   virtual void setAnchorPointZ(float);
-  virtual float anchorPointZ() const ;
+  virtual float anchorPointZ() const;
 
   virtual SkMatrix44 transform() const;
   virtual void setDrawsContent(bool draws_content);
@@ -102,11 +102,12 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
   virtual blink::WebColor backgroundColor() const;
   virtual void setFilters(const blink::WebFilterOperations& filters);
   virtual void setBackgroundFilters(const blink::WebFilterOperations& filters);
-  virtual void setAnimationDelegate(blink::WebAnimationDelegate* delegate);
-  virtual bool addAnimation(blink::WebAnimation* animation);
+  virtual void setAnimationDelegate(
+      blink::WebCompositorAnimationDelegate* delegate);
+  virtual bool addAnimation(blink::WebCompositorAnimation* animation);
   virtual void removeAnimation(int animation_id);
   virtual void removeAnimation(int animation_id,
-                               blink::WebAnimation::TargetProperty);
+                               blink::WebCompositorAnimation::TargetProperty);
   virtual void pauseAnimation(int animation_id, double time_offset);
   virtual bool hasActiveAnimation();
   virtual void setForceRenderSurface(bool force);

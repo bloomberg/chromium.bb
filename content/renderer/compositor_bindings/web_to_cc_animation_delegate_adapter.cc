@@ -4,12 +4,10 @@
 
 #include "content/renderer/compositor_bindings/web_to_cc_animation_delegate_adapter.h"
 
-#include "third_party/WebKit/public/platform/WebAnimationDelegate.h"
-
 namespace content {
 
 WebToCCAnimationDelegateAdapter::WebToCCAnimationDelegateAdapter(
-    blink::WebAnimationDelegate* delegate)
+    blink::WebCompositorAnimationDelegate* delegate)
     : delegate_(delegate) {
 }
 
@@ -18,7 +16,8 @@ void WebToCCAnimationDelegateAdapter::NotifyAnimationStarted(
     cc::Animation::TargetProperty target_property) {
   delegate_->notifyAnimationStarted(
       (monotonic_time - base::TimeTicks()).InSecondsF(),
-      static_cast<blink::WebAnimation::TargetProperty>(target_property));
+      static_cast<blink::WebCompositorAnimation::TargetProperty>(
+          target_property));
 }
 
 void WebToCCAnimationDelegateAdapter::NotifyAnimationFinished(
@@ -26,7 +25,8 @@ void WebToCCAnimationDelegateAdapter::NotifyAnimationFinished(
     cc::Animation::TargetProperty target_property) {
   delegate_->notifyAnimationFinished(
       (monotonic_time - base::TimeTicks()).InSecondsF(),
-      static_cast<blink::WebAnimation::TargetProperty>(target_property));
+      static_cast<blink::WebCompositorAnimation::TargetProperty>(
+          target_property));
 }
 
 }  // namespace content

@@ -26,7 +26,7 @@ class WebTransformAnimationCurveImpl
   CONTENT_EXPORT WebTransformAnimationCurveImpl();
   virtual ~WebTransformAnimationCurveImpl();
 
-  // blink::WebAnimationCurve implementation.
+  // blink::WebCompositorAnimationCurve implementation.
   virtual AnimationCurveType type() const;
 
   // blink::WebTransformAnimationCurve implementation.

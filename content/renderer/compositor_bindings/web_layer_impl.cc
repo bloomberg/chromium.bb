@@ -193,7 +193,7 @@ void WebLayerImpl::setAnchorPointZ(float) {}
 
 float WebLayerImpl::anchorPointZ() const {
   return 0.f;
-};
+}
 
 SkMatrix44 WebLayerImpl::transform() const {
   return layer_->transform().matrix();
@@ -240,15 +240,16 @@ void WebLayerImpl::setBackgroundFilters(const WebFilterOperations& filters) {
   layer_->SetBackgroundFilters(filters_impl.AsFilterOperations());
 }
 
-void WebLayerImpl::setAnimationDelegate(blink::WebAnimationDelegate* delegate) {
+void WebLayerImpl::setAnimationDelegate(
+    blink::WebCompositorAnimationDelegate* delegate) {
   animation_delegate_adapter_.reset(
       new WebToCCAnimationDelegateAdapter(delegate));
   layer_->set_layer_animation_delegate(animation_delegate_adapter_.get());
 }
 
-bool WebLayerImpl::addAnimation(blink::WebAnimation* animation) {
+bool WebLayerImpl::addAnimation(blink::WebCompositorAnimation* animation) {
   bool result = layer_->AddAnimation(
-      static_cast<WebAnimationImpl*>(animation)->PassAnimation());
+      static_cast<WebCompositorAnimationImpl*>(animation)->PassAnimation());
   delete animation;
   return result;
 }
@@ -259,7 +260,7 @@ void WebLayerImpl::removeAnimation(int animation_id) {
 
 void WebLayerImpl::removeAnimation(
     int animation_id,
-    blink::WebAnimation::TargetProperty target_property) {
+    blink::WebCompositorAnimation::TargetProperty target_property) {
   layer_->layer_animation_controller()->RemoveAnimation(
       animation_id, static_cast<Animation::TargetProperty>(target_property));
 }
