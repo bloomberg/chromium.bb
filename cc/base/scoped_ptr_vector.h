@@ -166,6 +166,21 @@ class ScopedPtrVector {
     std::sort(data_.begin(), data_.end(), comp);
   }
 
+  template <class Compare>
+  inline void make_heap(Compare comp) {
+    std::make_heap(data_.begin(), data_.end(), comp);
+  }
+
+  template <class Compare>
+  inline void push_heap(Compare comp) {
+    std::push_heap(data_.begin(), data_.end(), comp);
+  }
+
+  template <class Compare>
+  inline void pop_heap(Compare comp) {
+    std::pop_heap(data_.begin(), data_.end(), comp);
+  }
+
   iterator begin() { return static_cast<iterator>(data_.begin()); }
   const_iterator begin() const { return data_.begin(); }
   iterator end() { return static_cast<iterator>(data_.end()); }
