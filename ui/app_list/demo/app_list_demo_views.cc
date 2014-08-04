@@ -36,7 +36,7 @@ class DemoAppListViewDelegate : public app_list::test::AppListTestViewDelegate {
       : view_(NULL), browser_context_(browser_context) {}
   virtual ~DemoAppListViewDelegate() {}
 
-  app_list::AppListView* InitView(gfx::NativeView window_context);
+  app_list::AppListView* InitView(gfx::NativeWindow window_context);
 
   // Overridden from AppListViewDelegate:
   virtual void Dismiss() OVERRIDE;
@@ -52,10 +52,18 @@ class DemoAppListViewDelegate : public app_list::test::AppListTestViewDelegate {
 };
 
 app_list::AppListView* DemoAppListViewDelegate::InitView(
-    gfx::NativeView window_context) {
+    gfx::NativeWindow window_context) {
+  gfx::NativeView container = NULL;
+  // On Ash, the app list is placed into an aura::Window container. For the demo
+  // use the root window context as the parent. This only works on Aura since an
+  // aura::Window is also a NativeView.
+#if defined(USE_AURA)
+  container = window_context;
+#endif
+
   // Note AppListView takes ownership of |this| on the next line.
   view_ = new app_list::AppListView(this);
-  view_->InitAsBubbleAtFixedLocation(window_context,
+  view_->InitAsBubbleAtFixedLocation(container,
                                      0,
                                      gfx::Point(300, 300),
                                      views::BubbleBorder::FLOAT,
@@ -100,7 +108,7 @@ views::View* DemoAppListViewDelegate::CreateStartPageWebView(
 }
 
 void ShowAppList(content::BrowserContext* browser_context,
-                 gfx::NativeView window_context) {
+                 gfx::NativeWindow window_context) {
   DemoAppListViewDelegate* delegate =
       new DemoAppListViewDelegate(browser_context);
   app_list::AppListView* view = delegate->InitView(window_context);
