@@ -28,8 +28,7 @@ using feedback::FeedbackData;
 
 namespace {
 
-// Feedback bucket labels.
-const char kProfileResetPromptBucket[] = "SamplingOfSettingsResetPrompt";
+// Feedback bucket label.
 const char kProfileResetWebUIBucket[] = "ProfileResetReport";
 
 // Dictionary keys for feedback report.
@@ -215,19 +214,9 @@ std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
 }
 
 void SendSettingsFeedback(const std::string& report,
-                          Profile* profile,
-                          SnapshotCaller caller) {
+                          Profile* profile) {
   scoped_refptr<FeedbackData> feedback_data = new FeedbackData();
-  std::string bucket;
-  switch (caller) {
-    case PROFILE_RESET_WEBUI:
-      bucket = kProfileResetWebUIBucket;
-      break;
-    case PROFILE_RESET_PROMPT:
-      bucket = kProfileResetPromptBucket;
-      break;
-  }
-  feedback_data->set_category_tag(bucket);
+  feedback_data->set_category_tag(kProfileResetWebUIBucket);
   feedback_data->set_description(report);
 
   feedback_data->set_image(make_scoped_ptr(new std::string));

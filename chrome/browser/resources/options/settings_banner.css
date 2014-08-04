@@ -2,8 +2,8 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-/* These styles are used bby both reset_profile_settings_banner.html and
- * automatic_settings_reset_banner.html. */
+/* TODO(engedy): These styles are used by automatic_settings_reset_banner.html
+ * only. Rename/refactor this into automatic_settings_reset_banner.css. */
 
 .settings-banner {
   background-color: #f5f5f5;

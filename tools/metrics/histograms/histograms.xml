@@ -48489,7 +48489,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="11" label="prefs::kPinnedTabs"/>
   <int value="12"
       label="extensions::pref_names::kKnownDisabled (Obsolete 07/2014)"/>
-  <int value="13" label="prefs::kProfileResetPromptMemento"/>
+  <int value="13" label="prefs::kProfileResetPromptMemento (Obsolete 07/2014)"/>
   <int value="14"
       label="DefaultSearchManager::kDefaultSearchProviderDataPrefName"/>
   <int value="15" label="prefs::kPreferenceResetTime"/>

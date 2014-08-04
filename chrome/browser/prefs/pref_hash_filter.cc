@@ -31,6 +31,10 @@ void CleanupDeprecatedTrackedPreferences(
   static const char* kDeprecatedTrackedPreferences[] = {
     // TODO(gab): Remove in M41+.
     "extensions.known_disabled",
+#if !defined(OS_ANDROID)
+    // TODO(engedy): Remove this in M42 or later. See crbug.com/398813.
+    "profile.reset_prompt_memento",
+#endif
   };
 
   for (size_t i = 0; i < arraysize(kDeprecatedTrackedPreferences); ++i) {

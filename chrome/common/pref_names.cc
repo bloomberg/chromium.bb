@@ -1195,11 +1195,6 @@ const char kLocalDiscoveryNotificationsEnabled[] =
 // a preference was reset.
 const char kPreferenceResetTime[] = "prefs.preference_reset_time";
 
-// String that indicates if the Profile Reset prompt has already been shown to
-// the user. Used both in user preferences and local state, in the latter, it is
-// actually a dictionary that maps profile keys to before-mentioned strings.
-const char kProfileResetPromptMemento[] = "profile.reset_prompt_memento";
-
 // The GCM channel's enabled state.
 const char kGCMChannelEnabled[] = "gcm.channel_enabled";
 

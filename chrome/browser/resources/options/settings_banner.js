@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(engedy): AutomaticSettingsResetBanner is the sole class to derive from
+// SettingsBannerBase. Refactor this into automatic_settings_reset_banner.js.
+
 cr.define('options', function() {
 
   /**

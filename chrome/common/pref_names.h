@@ -381,7 +381,6 @@ extern const char kFullscreenAllowed[];
 extern const char kLocalDiscoveryNotificationsEnabled[];
 
 extern const char kPreferenceResetTime[];
-extern const char kProfileResetPromptMemento[];
 
 extern const char kGCMChannelEnabled[];
 extern const char kPushMessagingRegistrationCount[];

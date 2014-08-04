@@ -1166,9 +1166,6 @@
         'browser/printing/print_preview_test.h',
         'browser/process_info_snapshot_mac_unittest.cc',
         'browser/process_singleton_posix_unittest.cc',
-        'browser/profile_resetter/automatic_profile_resetter_delegate_unittest.cc',
-        'browser/profile_resetter/automatic_profile_resetter_unittest.cc',
-        'browser/profile_resetter/jtl_interpreter_unittest.cc',
         'browser/profile_resetter/profile_resetter_unittest.cc',
         'browser/profiles/file_path_verifier_win_unittest.cc',
         'browser/profiles/gaia_info_update_service_unittest.cc',
@@ -1929,8 +1926,6 @@
         'test/data/unit/framework_unittest.gtestjs',
         'test/logging/win/mof_data_parser_unittest.cc',
         'tools/convert_dict/convert_dict_unittest.cc',
-        'tools/profile_reset/jtl_compiler_unittest.cc',
-        'tools/profile_reset/jtl_parser_unittest.cc',
         'utility/cloud_print/pwg_encoder_unittest.cc',
         'utility/extensions/unpacker_unittest.cc',
         'utility/image_writer/image_writer_unittest.cc',
@@ -2509,7 +2504,6 @@
         }],
         ['OS!="android" and OS!="ios"', {
           'dependencies': [
-            'tools/profile_reset/jtl_compiler.gyp:jtl_compiler_lib',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
           ],
           'sources!': [

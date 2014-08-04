@@ -274,6 +274,17 @@ PrefStore* CreateExtensionPrefStore(Profile* profile,
 #endif
 }
 
+#if !defined(OS_ANDROID)
+// Deletes the file that was used by the AutomaticProfileResetter service, which
+// has since been removed, to store that the prompt had already been shown.
+// TODO(engedy): Remove this and caller in M42 or later. See crbug.com/398813.
+void DeleteResetPromptMementoFile(const base::FilePath& profile_dir) {
+  base::FilePath memento_path =
+      profile_dir.Append(FILE_PATH_LITERAL("Reset Prompt Memento"));
+  base::DeleteFile(memento_path, false);
+}
+#endif
+
 }  // namespace
 
 // static
@@ -638,6 +649,13 @@ void ProfileImpl::DoFinalInit() {
   // The DomDistillerViewerSource is not a normal WebUI so it must be registered
   // as a URLDataSource early.
   RegisterDomDistillerViewerSource(this);
+
+#if !defined(OS_ANDROID)
+  BrowserThread::GetBlockingPool()->PostDelayedWorkerTask(
+      FROM_HERE,
+      base::Bind(&DeleteResetPromptMementoFile, GetPath()),
+      base::TimeDelta::FromMilliseconds(2 * create_readme_delay_ms));
+#endif
 
   // Creation has been finished.
   TRACE_EVENT_END1("browser",
