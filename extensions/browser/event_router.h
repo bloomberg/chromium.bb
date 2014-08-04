@@ -15,10 +15,12 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/scoped_observer.h"
 #include "base/values.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/event_listener_map.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/event_filtering_info.h"
 #include "ipc/ipc_sender.h"
 
@@ -35,12 +37,14 @@ class ActivityLog;
 class Extension;
 class ExtensionHost;
 class ExtensionPrefs;
+class ExtensionRegistry;
 
 struct Event;
 struct EventDispatchInfo;
 struct EventListenerInfo;
 
 class EventRouter : public content::NotificationObserver,
+                    public ExtensionRegistryObserver,
                     public EventListenerMap::Delegate {
  public:
   // These constants convey the state of our knowledge of whether we're in
@@ -207,6 +211,13 @@ class EventRouter : public content::NotificationObserver,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
   // Returns true if the given listener map contains a event listeners for
   // the given event. If |extension_id| is non-empty, we also check that that
@@ -291,6 +302,9 @@ class EventRouter : public content::NotificationObserver,
   ExtensionPrefs* extension_prefs_;
 
   content::NotificationRegistrar registrar_;
+
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   EventListenerMap listeners_;
 

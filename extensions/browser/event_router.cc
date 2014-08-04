@@ -169,6 +169,7 @@ EventRouter::EventRouter(BrowserContext* browser_context,
                          ExtensionPrefs* extension_prefs)
     : browser_context_(browser_context),
       extension_prefs_(extension_prefs),
+      extension_registry_observer_(this),
       listeners_(this) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllSources());
@@ -177,12 +178,7 @@ EventRouter::EventRouter(BrowserContext* browser_context,
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_ENABLED,
                  content::Source<BrowserContext>(browser_context_));
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<BrowserContext>(browser_context_));
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<BrowserContext>(browser_context_));
+  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }
 
 EventRouter::~EventRouter() {}
@@ -750,31 +746,27 @@ void EventRouter::Observe(int type,
       }
       break;
     }
-    case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
-      // Add all registered lazy listeners to our cache.
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
-      std::set<std::string> registered_events =
-          GetRegisteredEvents(extension->id());
-      listeners_.LoadUnfilteredLazyListeners(extension->id(),
-                                             registered_events);
-      const DictionaryValue* filtered_events =
-          GetFilteredEvents(extension->id());
-      if (filtered_events)
-        listeners_.LoadFilteredLazyListeners(extension->id(), *filtered_events);
-      break;
-    }
-    case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      // Remove all registered lazy listeners from our cache.
-      UnloadedExtensionInfo* unloaded =
-          content::Details<UnloadedExtensionInfo>(details).ptr();
-      listeners_.RemoveLazyListenersForExtension(unloaded->extension->id());
-      break;
-    }
     default:
       NOTREACHED();
-      return;
   }
+}
+
+void EventRouter::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                    const Extension* extension) {
+  // Add all registered lazy listeners to our cache.
+  std::set<std::string> registered_events =
+      GetRegisteredEvents(extension->id());
+  listeners_.LoadUnfilteredLazyListeners(extension->id(), registered_events);
+  const DictionaryValue* filtered_events = GetFilteredEvents(extension->id());
+  if (filtered_events)
+    listeners_.LoadFilteredLazyListeners(extension->id(), *filtered_events);
+}
+
+void EventRouter::OnExtensionUnloaded(content::BrowserContext* browser_context,
+                                      const Extension* extension,
+                                      UnloadedExtensionInfo::Reason reason) {
+  // Remove all registered lazy listeners from our cache.
+  listeners_.RemoveLazyListenersForExtension(extension->id());
 }
 
 Event::Event(const std::string& event_name,

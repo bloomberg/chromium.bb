@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/event_listener_map.h"
+#include "extensions/browser/extensions_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -81,7 +82,7 @@ scoped_ptr<EventListener> CreateEventListenerForURL(
 
 }  // namespace
 
-class EventRouterTest : public testing::Test {
+class EventRouterTest : public ExtensionsTest {
  public:
   EventRouterTest()
       : notification_service_(content::NotificationService::Create()) {}
