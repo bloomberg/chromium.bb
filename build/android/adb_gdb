@@ -964,9 +964,20 @@ log "Job control: $(jobs -l)"
 STATE=$(jobs -l | awk '$2 == "'$GDBSERVER_PID'" { print $3; }')
 if [ "$STATE" != "Running" ]; then
   echo "ERROR: GDBServer could not attach to PID $PID!"
-  echo "Failure log (use --verbose for more information):"
-  cat $GDBSERVER_LOG
-  exit 1
+  if [ $(adb_shell su -c getenforce) != "Permissive" ];  then
+    echo "Device mode is Enforcing. Changing Device mode to Permissive "
+    $(adb_shell su -c setenforce 0)
+    if [ $(adb_shell su -c getenforce) != "Permissive" ]; then
+      echo "ERROR: Failed to Change Device mode to Permissive"
+      echo "Failure log (use --verbose for more information):"
+      cat $GDBSERVER_LOG
+      exit 1
+    fi
+  else
+    echo "Failure log (use --verbose for more information):"
+    cat $GDBSERVER_LOG
+    exit 1
+  fi
 fi
 
 # Generate a file containing useful GDB initialization commands
