@@ -31,6 +31,8 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/SharedTimer.h"
+#include "platform/heap/glue/MessageLoopInterruptor.h"
+#include "platform/heap/glue/PendingGCRunner.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Forward.h"
@@ -114,6 +116,8 @@ namespace blink {
         OwnPtr<blink::WebThread> m_thread;
         OwnPtr<WorkerSharedTimer> m_sharedTimer;
         MessageQueue<WorkerThreadTask> m_debuggerMessageQueue;
+        OwnPtr<PendingGCRunner> m_pendingGCRunner;
+        OwnPtr<MessageLoopInterruptor> m_messageLoopInterruptor;
 
         WorkerLoaderProxy& m_workerLoaderProxy;
         WorkerReportingProxy& m_workerReportingProxy;
