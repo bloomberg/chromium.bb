@@ -37,7 +37,6 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextIterator.h"
-#include "core/editing/htmlediting.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
@@ -207,6 +206,13 @@ void HTMLTextFormControlElement::dispatchFormControlChangeEvent()
     setChangedSinceLastFormControlChangeEvent(false);
 }
 
+static inline bool hasVisibleTextArea(RenderObject* renderer, HTMLElement* innerText)
+{
+    ASSERT(renderer);
+    return renderer->style()->visibility() != HIDDEN && innerText && innerText->renderer() && innerText->renderBox()->height();
+}
+
+
 void HTMLTextFormControlElement::setRangeText(const String& replacement, ExceptionState& exceptionState)
 {
     setRangeText(replacement, selectionStart(), selectionEnd(), String(), exceptionState);
@@ -282,49 +288,18 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, const Str
     return setSelectionRange(start, end, direction);
 }
 
-static Position positionForIndex(HTMLElement* innerEditor, int index)
-{
-    ASSERT(index >= 0);
-    if (index == 0) {
-        Node* node = NodeTraversal::next(*innerEditor, innerEditor);
-        if (node && node->isTextNode())
-            return Position(node, 0, Position::PositionIsOffsetInAnchor);
-        return Position(innerEditor, 0, Position::PositionIsOffsetInAnchor);
-    }
-    int remainingCharactersToMoveForward = index;
-    Node* lastBrOrText = innerEditor;
-    for (Node* node = NodeTraversal::next(*innerEditor, innerEditor); node; node = NodeTraversal::next(*node, innerEditor)) {
-        ASSERT(remainingCharactersToMoveForward >= 0);
-        if (node->hasTagName(brTag)) {
-            if (remainingCharactersToMoveForward == 0)
-                return positionBeforeNode(node);
-            --remainingCharactersToMoveForward;
-            lastBrOrText = node;
-            continue;
-        }
-
-        if (node->isTextNode()) {
-            Text& text = toText(*node);
-            if (remainingCharactersToMoveForward < static_cast<int>(text.length()))
-                return Position(&text, remainingCharactersToMoveForward);
-            remainingCharactersToMoveForward -= text.length();
-            lastBrOrText = node;
-            continue;
-        }
-
-        ASSERT_NOT_REACHED();
-    }
-    return lastPositionInOrAfterNode(lastBrOrText);
-}
-
 void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextFieldSelectionDirection direction, SelectionOption selectionOption)
 {
-    if (!isTextFormControl())
+    document().updateLayoutIgnorePendingStylesheets();
+
+    if (!renderer() || !renderer()->isTextControl())
         return;
 
     end = std::max(end, 0);
     start = std::min(std::max(start, 0), end);
     cacheSelection(start, end, direction);
+    if (!hasVisibleTextArea(renderer(), innerEditorElement()))
+        return;
 
     LocalFrame* frame = document().frame();
 
@@ -334,24 +309,24 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
     if (selectionOption == NotChangeSelection && document().focusedElement() != this)
         return;
 
-    HTMLElement* innerEditor = innerEditorElement();
-    if (!innerEditor)
-        return;
-
-    Position startPosition = positionForIndex(innerEditor, start);
-    Position endPosition = start == end ? startPosition : positionForIndex(innerEditor, end);
+    VisiblePosition startPosition = visiblePositionForIndex(start);
+    VisiblePosition endPosition;
+    if (start == end)
+        endPosition = startPosition;
+    else
+        endPosition = visiblePositionForIndex(end);
 
     // startPosition and endPosition can be null position for example when
     // "-webkit-user-select: none" style attribute is specified.
     if (startPosition.isNotNull() && endPosition.isNotNull()) {
-        ASSERT(startPosition.anchorNode()->shadowHost() == this
-            && endPosition.anchorNode()->shadowHost() == this);
+        ASSERT(startPosition.deepEquivalent().deprecatedNode()->shadowHost() == this
+            && endPosition.deepEquivalent().deprecatedNode()->shadowHost() == this);
     }
     VisibleSelection newSelection;
     if (direction == SelectionHasBackwardDirection)
-        newSelection.setWithoutValidation(endPosition, startPosition);
+        newSelection = VisibleSelection(endPosition, startPosition);
     else
-        newSelection.setWithoutValidation(startPosition, endPosition);
+        newSelection = VisibleSelection(startPosition, endPosition);
     newSelection.setIsDirectional(direction != SelectionHasNoDirection);
 
     frame->selection().setSelection(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | FrameSelection::DoNotSetFocus);
@@ -390,37 +365,6 @@ int HTMLTextFormControlElement::selectionStart() const
     return computeSelectionStart();
 }
 
-static int indexForPosition(HTMLElement* innerText, const Position& passedPosition)
-{
-    if (!innerText || !innerText->contains(passedPosition.anchorNode()) || passedPosition.isNull())
-        return 0;
-
-    if (positionBeforeNode(innerText) == passedPosition)
-        return 0;
-
-    int index = 0;
-    Node* startNode = passedPosition.computeNodeBeforePosition();
-    if (!startNode)
-        startNode = passedPosition.containerNode();
-    ASSERT(startNode);
-    ASSERT(innerText->contains(startNode));
-
-    for (Node* node = startNode; node; node = NodeTraversal::previous(*node, innerText)) {
-        if (node->isTextNode()) {
-            int length = toText(*node).length();
-            if (node == passedPosition.containerNode())
-                index += std::min(length, passedPosition.offsetInContainerNode());
-            else
-                index += length;
-        } else if (node->hasTagName(brTag)) {
-            ++index;
-        }
-    }
-
-    ASSERT(index >= 0);
-    return index;
-}
-
 int HTMLTextFormControlElement::computeSelectionStart() const
 {
     ASSERT(isTextFormControl());
@@ -428,7 +372,7 @@ int HTMLTextFormControlElement::computeSelectionStart() const
     if (!frame)
         return 0;
 
-    return indexForPosition(innerEditorElement(), frame->selection().start());
+    return indexForVisiblePosition(VisiblePosition(frame->selection().start()));
 }
 
 int HTMLTextFormControlElement::selectionEnd() const
@@ -447,7 +391,7 @@ int HTMLTextFormControlElement::computeSelectionEnd() const
     if (!frame)
         return 0;
 
-    return indexForPosition(innerEditorElement(), frame->selection().end());
+    return indexForVisiblePosition(VisiblePosition(frame->selection().end()));
 }
 
 static const AtomicString& directionString(TextFieldSelectionDirection direction)
