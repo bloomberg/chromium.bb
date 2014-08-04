@@ -482,6 +482,19 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
         base::Bind(&DisplayNameMatches, user_id_1_, kDisplayName)).Wait();
   }
 
+  void GetWebContents(content::WebContents** contents) {
+    chromeos::LoginDisplayHostImpl* host =
+        reinterpret_cast<chromeos::LoginDisplayHostImpl*>(
+            chromeos::LoginDisplayHostImpl::default_host());
+    ASSERT_TRUE(host);
+    chromeos::WebUILoginView* web_ui_login_view = host->GetWebUILoginView();
+    ASSERT_TRUE(web_ui_login_view);
+    content::WebUI* web_ui = web_ui_login_view->GetWebUI();
+    ASSERT_TRUE(web_ui);
+    *contents = web_ui->GetWebContents();
+    ASSERT_TRUE(*contents);
+  }
+
   void WaitForLoginUI() {
     // Wait for the login UI to be ready.
     chromeos::LoginDisplayHostImpl* host =
@@ -494,6 +507,26 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     const bool oobe_ui_ready = oobe_ui->IsJSReady(run_loop.QuitClosure());
     if (!oobe_ui_ready)
       run_loop.Run();
+
+    // The network selection screen changes the application locale on load and
+    // once again on blur. Wait for the screen to load and blur it so that any
+    // locale changes caused by this screen happen now and do not affect any
+    // subsequent parts of the test.
+    content::WebContents* contents = NULL;
+    ASSERT_NO_FATAL_FAILURE(GetWebContents(&contents));
+    bool done = false;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        contents,
+        "var languageSelect = document.getElementById('language-select');"
+        "var blurAndReportSuccess = function() {"
+        "  languageSelect.blur();"
+        "  domAutomationController.send(true);"
+        "};"
+        "if (document.activeElement == languageSelect)"
+        "  blurAndReportSuccess();"
+        "else"
+        "  languageSelect.addEventListener('focus', blurAndReportSuccess);",
+        &done));
   }
 
   void StartLogin(const std::string& locale,
@@ -1244,16 +1277,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest,
             wizard_controller->current_screen()->GetName());
 
   // Wait for the Terms of Service to finish downloading.
-  chromeos::LoginDisplayHostImpl* host =
-      reinterpret_cast<chromeos::LoginDisplayHostImpl*>(
-          chromeos::LoginDisplayHostImpl::default_host());
-  ASSERT_TRUE(host);
-  chromeos::WebUILoginView* web_ui_login_view = host->GetWebUILoginView();
-  ASSERT_TRUE(web_ui_login_view);
-  content::WebUI* web_ui = web_ui_login_view->GetWebUI();
-  ASSERT_TRUE(web_ui);
-  content::WebContents* contents = web_ui->GetWebContents();
-  ASSERT_TRUE(contents);
+  content::WebContents* contents = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetWebContents(&contents));
   bool done = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(contents,
       "var screenElement = document.getElementById('terms-of-service');"
@@ -1334,16 +1359,8 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
 
   // Wait for the Terms of Service to finish downloading, then get the status of
   // the screen's UI elements.
-  chromeos::LoginDisplayHostImpl* host =
-      reinterpret_cast<chromeos::LoginDisplayHostImpl*>(
-          chromeos::LoginDisplayHostImpl::default_host());
-  ASSERT_TRUE(host);
-  chromeos::WebUILoginView* web_ui_login_view = host->GetWebUILoginView();
-  ASSERT_TRUE(web_ui_login_view);
-  content::WebUI* web_ui = web_ui_login_view->GetWebUI();
-  ASSERT_TRUE(web_ui);
-  content::WebContents* contents = web_ui->GetWebContents();
-  ASSERT_TRUE(contents);
+  content::WebContents* contents = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetWebContents(&contents));
   std::string json;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents,
       "var screenElement = document.getElementById('terms-of-service');"
