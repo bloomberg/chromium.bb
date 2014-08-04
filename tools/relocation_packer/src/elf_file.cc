@@ -204,10 +204,12 @@ bool ElfFile::Load() {
     }
 
     // Note special sections as we encounter them.
-    if (name == ".rel.dyn" || name == ".rela.dyn") {
+    if ((name == ".rel.dyn" || name == ".rela.dyn") &&
+        section_header->sh_size > 0) {
       found_relocations_section = section;
     }
-    if (name == ".android.rel.dyn" || name == ".android.rela.dyn") {
+    if ((name == ".android.rel.dyn" || name == ".android.rela.dyn") &&
+        section_header->sh_size > 0) {
       found_android_relocations_section = section;
     }
     if (section_header->sh_offset == dynamic_program_header->p_offset) {
@@ -231,17 +233,17 @@ bool ElfFile::Load() {
 
   // Loading failed if we did not find the required special sections.
   if (!found_relocations_section) {
-    LOG(ERROR) << "Missing .rel.dyn or .rela.dyn section";
+    LOG(ERROR) << "Missing or empty .rel.dyn or .rela.dyn section";
+    return false;
+  }
+  if (!found_android_relocations_section) {
+    LOG(ERROR) << "Missing or empty .android.rel.dyn or .android.rela.dyn "
+               << "section (to fix, run with --help and follow the "
+               << "pre-packing instructions)";
     return false;
   }
   if (!found_dynamic_section) {
     LOG(ERROR) << "Missing .dynamic section";
-    return false;
-  }
-  if (!found_android_relocations_section) {
-    LOG(ERROR) << "Missing .android.rel.dyn or .android.rela.dyn section "
-               << "(to fix, run with --help and follow the pre-packing "
-               << "instructions)";
     return false;
   }
 
@@ -686,14 +688,52 @@ void RemoveDynamicEntry(ELF::Sword tag,
   CHECK(dynamics->at(dynamics->size() - 1).d_tag == DT_NULL);
 }
 
-// Apply relative relocations to the file data to which they refer.
-// This relocates data into the area it will occupy after the hole in
+// Adjust a relocation.  For a relocation without addend, we find its target
+// in the section and adjust that.  For a relocation with addend, the target
+// is the relocation addend, and the section data at the target is zero.
+template <typename Rel>
+void AdjustRelocation(ssize_t index,
+                      ELF::Addr hole_start,
+                      ssize_t hole_size,
+                      Rel* relocation,
+                      ELF::Off* target);
+
+template <>
+void AdjustRelocation<ELF::Rel>(ssize_t index,
+                                ELF::Addr hole_start,
+                                ssize_t hole_size,
+                                ELF::Rel* relocation,
+                                ELF::Off* target) {
+  // Adjust the target if after the hole start.
+  if (*target > hole_start) {
+    *target += hole_size;
+    VLOG(1) << "relocation[" << index << "] target adjusted to " << *target;
+  }
+}
+
+template <>
+void AdjustRelocation<ELF::Rela>(ssize_t index,
+                                 ELF::Addr hole_start,
+                                 ssize_t hole_size,
+                                 ELF::Rela* relocation,
+                                 ELF::Off* target) {
+  // The relocation's target is the addend.  Adjust if after the hole start.
+  if (relocation->r_addend > hole_start) {
+    relocation->r_addend += hole_size;
+    VLOG(1) << "relocation["
+            << index << "] addend adjusted to " << relocation->r_addend;
+  }
+}
+
+// For relative relocations without addends, adjust the file data to which
+// they refer.  For relative relocations with addends, adjust the addends.
+// This translates data into the area it will occupy after the hole in
 // the dynamic relocations is added or removed.
 template <typename Rel>
 void AdjustRelocationTargets(Elf* elf,
                              ELF::Off hole_start,
                              ssize_t hole_size,
-                             const std::vector<Rel>& relocations) {
+                             std::vector<Rel>* relocations) {
   Elf_Scn* section = NULL;
   while ((section = elf_nextscn(elf, section)) != NULL) {
     const ELF::Shdr* section_header = ELF::getshdr(section);
@@ -712,40 +752,32 @@ void AdjustRelocationTargets(Elf* elf,
     const ELF::Addr section_start = section_header->sh_addr;
     const ELF::Addr section_end = section_start + section_header->sh_size;
 
-    // Create a copy-on-write pointer to the section's data.
-    uint8_t* area = reinterpret_cast<uint8_t*>(data->d_buf);
+    // Create a copy of the section's data.
+    uint8_t* area = new uint8_t[data->d_size];
+    memcpy(area, data->d_buf, data->d_size);
 
-    for (size_t i = 0; i < relocations.size(); ++i) {
-      const Rel* relocation = &relocations[i];
+    for (size_t i = 0; i < relocations->size(); ++i) {
+      Rel* relocation = &relocations->at(i);
       CHECK(ELF_R_TYPE(relocation->r_info) == ELF::kRelativeRelocationCode);
 
       // See if this relocation points into the current section.
       if (relocation->r_offset >= section_start &&
           relocation->r_offset < section_end) {
+        // The relocation's target is what it points to in area.
+        // For relocations without addend, this is what we adjust; for
+        // relocations with addend, we leave this (it will be zero)
+        // and instead adjust the addend.
         ELF::Addr byte_offset = relocation->r_offset - section_start;
         ELF::Off* target = reinterpret_cast<ELF::Off*>(area + byte_offset);
-
-        // Is the relocation's target after the hole's start?
-        if (*target > hole_start) {
-          // Copy on first write.  Recompute target to point into the newly
-          // allocated buffer.
-          if (area == data->d_buf) {
-            area = new uint8_t[data->d_size];
-            memcpy(area, data->d_buf, data->d_size);
-            target = reinterpret_cast<ELF::Off*>(area + byte_offset);
-          }
-
-          *target += hole_size;
-          VLOG(1) << "relocation[" << i << "] target adjusted to " << *target;
-        }
+        AdjustRelocation<Rel>(i, hole_start, hole_size, relocation, target);
       }
     }
 
-    // If we applied any relocation to this section, write it back.
-    if (area != data->d_buf) {
+    // If we altered the data for this section, write it back.
+    if (memcmp(area, data->d_buf, data->d_size)) {
       RewriteSectionData(data, area, data->d_size);
-      delete [] area;
     }
+    delete [] area;
   }
 }
 
@@ -884,17 +916,31 @@ bool ElfFile::PackTypedRelocations(const std::vector<Rel>& relocations,
       return false;
     }
 
-    // Add null relocations to other_relocations to preserve alignment.
-    const size_t padding_bytes = unaligned_hole_size - hole_size;
+    // Find the padding needed in other_relocations to preserve alignment.
+    // Ensure that we never completely empty the real relocations section.
+    size_t padding_bytes = unaligned_hole_size - hole_size;
+    if (padding_bytes == 0 && other_relocations.size() == 0) {
+      do {
+        padding_bytes += sizeof(relative_relocations[0]);
+      } while (padding_bytes % kPreserveAlignment);
+    }
     CHECK(padding_bytes % sizeof(other_relocations[0]) == 0);
-    const size_t required = padding_bytes / sizeof(other_relocations[0]);
-    PadRelocations(required, &other_relocations);
-    LOG(INFO) << "Alignment pad : " << required << " relocations";
+    const size_t padding = padding_bytes / sizeof(other_relocations[0]);
+
+    // Padding may have removed any packing benefit.
+    if (padding >= relative_relocations.size()) {
+      LOG(INFO) << "Too few relative relocations to pack after padding";
+      return false;
+    }
+
+    // Add null relocations to other_relocations to preserve alignment.
+    PadRelocations<Rel>(padding, &other_relocations);
+    LOG(INFO) << "Alignment pad : " << padding << " relocations";
 
     // Apply relocations to all relative data to relocate it into the
     // area it will occupy once the hole in the dynamic relocations is removed.
     AdjustRelocationTargets<Rel>(
-        elf_, hole_start, -hole_size, relative_relocations);
+        elf_, hole_start, -hole_size, &relative_relocations);
     // Relocate the relocations.
     AdjustRelocations<Rel>(hole_start, -hole_size, &relative_relocations);
     AdjustRelocations<Rel>(hole_start, -hole_size, &other_relocations);
@@ -902,8 +948,8 @@ bool ElfFile::PackTypedRelocations(const std::vector<Rel>& relocations,
     // If padding, add NONE-type relocations to other_relocations to make it
     // the same size as the the original relocations we read in.  This makes
     // the ResizeSection() below a no-op.
-    const size_t required = relocations.size() - other_relocations.size();
-    PadRelocations(required, &other_relocations);
+    const size_t padding = relocations.size() - other_relocations.size();
+    PadRelocations<Rel>(padding, &other_relocations);
   }
 
   // Pack relative relocations.
@@ -1081,7 +1127,7 @@ bool ElfFile::UnpackTypedRelocations(const std::vector<uint8_t>& packed,
     // Apply relocations to all relative data to relocate it into the
     // area it will occupy once the hole in dynamic relocations is opened.
     AdjustRelocationTargets<Rel>(
-        elf_, hole_start, hole_size, relative_relocations);
+        elf_, hole_start, hole_size, &relative_relocations);
     // Relocate the relocations.
     AdjustRelocations<Rel>(hole_start, hole_size, &relative_relocations);
     AdjustRelocations<Rel>(hole_start, hole_size, &other_relocations);
