@@ -597,9 +597,6 @@ public:
     virtual void didStartWorkerRunLoop(const WebWorkerRunLoop&) { }
     virtual void didStopWorkerRunLoop(const WebWorkerRunLoop&) { }
 
-    virtual void didStartWorkerThread(WebThread*) { }
-    virtual void didStopWorkerThread(WebThread*) { }
-
     // WebCrypto ----------------------------------------------------------
 
     virtual WebCrypto* crypto() { return 0; }

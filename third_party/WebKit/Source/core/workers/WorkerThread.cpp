@@ -250,7 +250,7 @@ void WorkerThread::initialize()
         }
     }
 
-    // The corresponding call to didStopWorkerThread is in
+    // The corresponding call to didStopWorkerRunLoop is in
     // ~WorkerScriptController.
     blink::Platform::current()->didStartWorkerRunLoop(blink::WebWorkerRunLoop(this));
 
