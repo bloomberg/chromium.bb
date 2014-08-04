@@ -68,6 +68,12 @@ const char kGServiceSettingsDigestKey[] = "gservices_digest";
 const char kLastCheckinAccountsKey[] = "last_checkin_accounts_count";
 // Key used to timestamp last checkin (marked with G services settings update).
 const char kLastCheckinTimeKey[] = "last_checkin_time";
+// Lowest lexicographically ordered account key.
+// Used for prefixing account information.
+const char kAccountKeyStart[] = "account1-";
+// Key guaranteed to be higher than all account keys.
+// Used for limiting iteration.
+const char kAccountKeyEnd[] = "account2-";
 
 std::string MakeRegistrationKey(const std::string& app_id) {
   return kRegistrationKeyStart + app_id;
@@ -95,6 +101,14 @@ std::string MakeGServiceSettingKey(const std::string& setting_name) {
 
 std::string ParseGServiceSettingKey(const std::string& key) {
   return key.substr(arraysize(kGServiceSettingKeyStart) - 1);
+}
+
+std::string MakeAccountKey(const std::string& account_id) {
+  return kAccountKeyStart + account_id;
+}
+
+std::string ParseAccountKey(const std::string& key) {
+  return key.substr(arraysize(kAccountKeyStart) - 1);
 }
 
 // Note: leveldb::Slice keeps a pointer to the data in |s|, which must therefore
@@ -148,6 +162,10 @@ class GCMStoreImpl::Backend
       const std::map<std::string, std::string>& settings,
       const std::string& digest,
       const UpdateCallback& callback);
+  void AddAccountMapping(const AccountInfo& account_info,
+                         const UpdateCallback& callback);
+  void RemoveAccountMapping(const std::string& account_id,
+                            const UpdateCallback& callback);
 
  private:
   friend class base::RefCountedThreadSafe<Backend>;
@@ -161,6 +179,7 @@ class GCMStoreImpl::Backend
                            std::set<std::string>* accounts);
   bool LoadGServicesSettings(std::map<std::string, std::string>* settings,
                              std::string* digest);
+  bool LoadAccountMappingInfo(AccountInfoMap* account_infos);
 
   const base::FilePath path_;
   scoped_refptr<base::SequencedTaskRunner> foreground_task_runner_;
@@ -214,15 +233,9 @@ void GCMStoreImpl::Backend::Load(const LoadCallback& callback) {
       !LoadLastCheckinInfo(&result->last_checkin_time,
                            &result->last_checkin_accounts) ||
       !LoadGServicesSettings(&result->gservices_settings,
-                             &result->gservices_digest)) {
-    result->device_android_id = 0;
-    result->device_security_token = 0;
-    result->registrations.clear();
-    result->incoming_messages.clear();
-    result->outgoing_messages.clear();
-    result->gservices_settings.clear();
-    result->gservices_digest.clear();
-    result->last_checkin_time = base::Time::FromInternalValue(0LL);
+                             &result->gservices_digest) ||
+      !LoadAccountMappingInfo(&result->account_infos)) {
+    result->Reset();
     foreground_task_runner_->PostTask(FROM_HERE,
                                       base::Bind(callback,
                                                  base::Passed(&result)));
@@ -561,6 +574,48 @@ void GCMStoreImpl::Backend::SetGServicesSettings(
   foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, s.ok()));
 }
 
+void GCMStoreImpl::Backend::AddAccountMapping(const AccountInfo& account_info,
+                                              const UpdateCallback& callback) {
+  DVLOG(1) << "Saving account info for account with email: "
+           << account_info.email;
+  if (!db_.get()) {
+    LOG(ERROR) << "GCMStore db doesn't exist.";
+    foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
+    return;
+  }
+
+  leveldb::WriteOptions write_options;
+  write_options.sync = true;
+
+  std::string data = account_info.SerializeAsString();
+  std::string key = MakeAccountKey(account_info.account_id);
+  const leveldb::Status s =
+      db_->Put(write_options, MakeSlice(key), MakeSlice(data));
+  if (!s.ok())
+    LOG(ERROR) << "LevelDB adding account mapping failed: " << s.ToString();
+  foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, s.ok()));
+}
+
+void GCMStoreImpl::Backend::RemoveAccountMapping(
+    const std::string& account_id,
+    const UpdateCallback& callback) {
+  if (!db_.get()) {
+    LOG(ERROR) << "GCMStore db doesn't exist.";
+    foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
+    return;
+  }
+
+  leveldb::WriteOptions write_options;
+  write_options.sync = true;
+
+  leveldb::Status s =
+      db_->Delete(write_options, MakeSlice(MakeAccountKey(account_id)));
+
+  if (!s.ok())
+    LOG(ERROR) << "LevelDB removal of account mapping failed: " << s.ToString();
+  foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, s.ok()));
+}
+
 bool GCMStoreImpl::Backend::LoadDeviceCredentials(uint64* android_id,
                                                   uint64* security_token) {
   leveldb::ReadOptions read_options;
@@ -730,6 +785,29 @@ bool GCMStoreImpl::Backend::LoadGServicesSettings(
 
   // Load the settings digest. It's ok if it is empty.
   db_->Get(read_options, MakeSlice(kGServiceSettingsDigestKey), digest);
+
+  return true;
+}
+
+bool GCMStoreImpl::Backend::LoadAccountMappingInfo(
+    AccountInfoMap* account_infos) {
+  leveldb::ReadOptions read_options;
+  read_options.verify_checksums = true;
+
+  scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
+  for (iter->Seek(MakeSlice(kAccountKeyStart));
+       iter->Valid() && iter->key().ToString() < kAccountKeyEnd;
+       iter->Next()) {
+    AccountInfo account_info;
+    account_info.account_id = ParseAccountKey(iter->key().ToString());
+    if (!account_info.ParseFromString(iter->value().ToString())) {
+      DVLOG(1) << "Failed to parse account info with ID: "
+               << account_info.account_id;
+      return false;
+    }
+    DVLOG(1) << "Found account mapping with ID: " << account_info.account_id;
+    (*account_infos)[account_info.account_id] = account_info;
+  }
 
   return true;
 }
@@ -930,6 +1008,26 @@ void GCMStoreImpl::SetGServicesSettings(
                  backend_,
                  settings,
                  digest,
+                 callback));
+}
+
+void GCMStoreImpl::AddAccountMapping(const AccountInfo& account_info,
+                                     const UpdateCallback& callback) {
+  blocking_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GCMStoreImpl::Backend::AddAccountMapping,
+                 backend_,
+                 account_info,
+                 callback));
+}
+
+void GCMStoreImpl::RemoveAccountMapping(const std::string& account_id,
+                                        const UpdateCallback& callback) {
+  blocking_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GCMStoreImpl::Backend::RemoveAccountMapping,
+                 backend_,
+                 account_id,
                  callback));
 }
 

@@ -14,6 +14,20 @@ GCMStore::LoadResult::LoadResult()
 
 GCMStore::LoadResult::~LoadResult() {}
 
+void GCMStore::LoadResult::Reset() {
+  device_android_id = 0;
+  device_security_token = 0;
+  registrations.clear();
+  incoming_messages.clear();
+  outgoing_messages.clear();
+  gservices_settings.clear();
+  gservices_digest.clear();
+  last_checkin_time = base::Time::FromInternalValue(0LL);
+  last_checkin_accounts.clear();
+  account_infos.clear();
+  success = false;
+}
+
 GCMStore::GCMStore() {}
 
 GCMStore::~GCMStore() {}

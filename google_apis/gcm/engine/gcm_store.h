@@ -19,6 +19,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "google_apis/gcm/base/gcm_export.h"
+#include "google_apis/gcm/engine/account_info.h"
 #include "google_apis/gcm/engine/registration_info.h"
 
 namespace gcm {
@@ -33,10 +34,15 @@ class GCM_EXPORT GCMStore {
   typedef std::map<std::string, linked_ptr<google::protobuf::MessageLite> >
       OutgoingMessageMap;
 
+  // Map of account id to account info for account mappings.
+  typedef std::map<std::string, AccountInfo> AccountInfoMap;
+
   // Container for Load(..) results.
   struct GCM_EXPORT LoadResult {
     LoadResult();
     ~LoadResult();
+
+    void Reset();
 
     bool success;
     uint64 device_android_id;
@@ -48,6 +54,7 @@ class GCM_EXPORT GCMStore {
     std::string gservices_digest;
     base::Time last_checkin_time;
     std::set<std::string> last_checkin_accounts;
+    AccountInfoMap account_infos;
   };
 
   typedef std::vector<std::string> PersistentIdList;
@@ -102,7 +109,7 @@ class GCM_EXPORT GCMStore {
   virtual void RemoveOutgoingMessages(const PersistentIdList& persistent_ids,
                                       const UpdateCallback& callback) = 0;
 
-  // Sets last device's checkin time.
+  // Sets last device's checkin information.
   virtual void SetLastCheckinInfo(const base::Time& time,
                                   const std::set<std::string>& accounts,
                                   const UpdateCallback& callback) = 0;
@@ -114,6 +121,12 @@ class GCM_EXPORT GCMStore {
       const std::map<std::string, std::string>& settings,
       const std::string& settings_digest,
       const UpdateCallback& callback) = 0;
+
+  // Sets the account information related to device to account mapping.
+  virtual void AddAccountMapping(const AccountInfo& account_info,
+                                 const UpdateCallback& callback) = 0;
+  virtual void RemoveAccountMapping(const std::string& account_id,
+                                    const UpdateCallback& callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GCMStore);

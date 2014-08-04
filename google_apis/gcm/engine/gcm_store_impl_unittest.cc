@@ -45,8 +45,6 @@ class GCMStoreImplTest : public testing::Test {
   GCMStoreImplTest();
   virtual ~GCMStoreImplTest();
 
-  virtual void SetUp() OVERRIDE;
-
   scoped_ptr<GCMStore> BuildGCMStore();
 
   std::string GetNextPersistentId();
@@ -73,10 +71,6 @@ GCMStoreImplTest::GCMStoreImplTest()
 }
 
 GCMStoreImplTest::~GCMStoreImplTest() {}
-
-void GCMStoreImplTest::SetUp() {
-  testing::Test::SetUp();
-}
 
 scoped_ptr<GCMStore> GCMStoreImplTest::BuildGCMStore() {
   return scoped_ptr<GCMStore>(new GCMStoreImpl(
@@ -504,6 +498,81 @@ TEST_F(GCMStoreImplTest, PerAppMessageLimits) {
                                base::Unretained(this))));
     PumpLoop();
   }
+}
+
+TEST_F(GCMStoreImplTest, AccountMapping) {
+  scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
+  scoped_ptr<GCMStore::LoadResult> load_result;
+  gcm_store->Load(base::Bind(
+      &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
+
+  // Add account mappings.
+  AccountInfo account_info1;
+  account_info1.account_id = "account_id_1";
+  account_info1.email = "account_id_1@gmail.com";
+  account_info1.last_message_type = AccountInfo::MSG_ADD;
+  account_info1.last_message_id = "message_1";
+  account_info1.last_message_timestamp =
+      base::Time::FromInternalValue(1305797421259935LL);
+  AccountInfo account_info2;
+  account_info2.account_id = "account_id_2";
+  account_info2.email = "account_id_2@gmail.com";
+  account_info2.last_message_type = AccountInfo::MSG_REMOVE;
+  account_info2.last_message_id = "message_2";
+  account_info2.last_message_timestamp =
+      base::Time::FromInternalValue(1305734521259935LL);
+
+  gcm_store->AddAccountMapping(
+      account_info1,
+      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+  PumpLoop();
+  gcm_store->AddAccountMapping(
+      account_info2,
+      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+  PumpLoop();
+
+  gcm_store = BuildGCMStore().Pass();
+  gcm_store->Load(base::Bind(
+      &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
+  PumpLoop();
+
+  EXPECT_EQ(2UL, load_result->account_infos.size());
+  GCMStore::AccountInfoMap::iterator iter = load_result->account_infos.begin();
+  EXPECT_EQ("account_id_1", iter->first);
+  EXPECT_EQ(account_info1.account_id, iter->second.account_id);
+  EXPECT_EQ(account_info1.email, iter->second.email);
+  EXPECT_EQ(account_info1.last_message_type, iter->second.last_message_type);
+  EXPECT_EQ(account_info1.last_message_id, iter->second.last_message_id);
+  EXPECT_EQ(account_info1.last_message_timestamp,
+            iter->second.last_message_timestamp);
+  ++iter;
+  EXPECT_EQ("account_id_2", iter->first);
+  EXPECT_EQ(account_info2.account_id, iter->second.account_id);
+  EXPECT_EQ(account_info2.email, iter->second.email);
+  EXPECT_EQ(account_info2.last_message_type, iter->second.last_message_type);
+  EXPECT_EQ(account_info2.last_message_id, iter->second.last_message_id);
+  EXPECT_EQ(account_info2.last_message_timestamp,
+            iter->second.last_message_timestamp);
+
+  gcm_store->RemoveAccountMapping(
+      account_info1.account_id,
+      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+  PumpLoop();
+
+  gcm_store = BuildGCMStore().Pass();
+  gcm_store->Load(base::Bind(
+      &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
+  PumpLoop();
+
+  EXPECT_EQ(1UL, load_result->account_infos.size());
+  iter = load_result->account_infos.begin();
+  EXPECT_EQ("account_id_2", iter->first);
+  EXPECT_EQ(account_info2.account_id, iter->second.account_id);
+  EXPECT_EQ(account_info2.email, iter->second.email);
+  EXPECT_EQ(account_info2.last_message_type, iter->second.last_message_type);
+  EXPECT_EQ(account_info2.last_message_id, iter->second.last_message_id);
+  EXPECT_EQ(account_info2.last_message_timestamp,
+            iter->second.last_message_timestamp);
 }
 
 // When the database is destroyed, all database updates should fail. At the
