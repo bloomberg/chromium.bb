@@ -264,6 +264,9 @@ class SupervisedUserService : public KeyedService,
   // corresponding preference is changed.
   void UpdateManualURLs();
 
+  // Returns the human readable name of the supervised user.
+  std::string GetSupervisedUserName() const;
+
   // Owns us via the KeyedService mechanism.
   Profile* profile_;
 
