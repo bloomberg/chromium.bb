@@ -1721,6 +1721,9 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 	wl_resource_set_implementation(cr, &keyboard_interface,
 				       seat, unbind_resource);
 
+	if (wl_resource_get_version(cr) >= WL_KEYBOARD_REPEAT_INFO_SINCE_VERSION)
+		wl_keyboard_send_repeat_info(cr, 30, 200);
+
 	if (seat->compositor->use_xkbcommon) {
 		wl_keyboard_send_keymap(cr, WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
 					keyboard->xkb_info->keymap_fd,
@@ -2207,7 +2210,7 @@ weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec,
 	wl_signal_init(&seat->destroy_signal);
 	wl_signal_init(&seat->updated_caps_signal);
 
-	seat->global = wl_global_create(ec->wl_display, &wl_seat_interface, 3,
+	seat->global = wl_global_create(ec->wl_display, &wl_seat_interface, 4,
 					seat, bind_seat);
 
 	seat->compositor = ec;
