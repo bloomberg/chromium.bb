@@ -93,7 +93,7 @@ leveldb::Slice LevelDBWrapper::Iterator::value() {
   if (db_key.compare(map_key) < 0)
     return db_iterator_->value();
 
-  DCHECK(map_iterator_->second.first == DB_PUT);
+  DCHECK(map_iterator_->second.first == PUT_OPERATION);
   return map_iterator_->second.second;
 }
 
@@ -101,16 +101,16 @@ void LevelDBWrapper::Iterator::AdvanceIterators() {
   // Iterator is valid iff any of below holds:
   // - |db_itr.key| < |map_itr.key| OR |map_itr| == end()
   // - (|db_itr.key| >= |map_itr.key| OR !|db_itr|->IsValid())
-  //   AND |map_itr.operation| == DB_PUT
+  //   AND |map_itr.operation| == PUT_OPERATION
 
   if (map_iterator_ == db_->pending_.end())
     return;
 
   while (map_iterator_ != db_->pending_.end() && db_iterator_->Valid()) {
     int cmp_key = db_iterator_->key().compare(map_iterator_->first);
-    if (cmp_key < 0 || map_iterator_->second.first == DB_PUT)
+    if (cmp_key < 0 || map_iterator_->second.first == PUT_OPERATION)
       return;
-    // |db_itr.key| >= |map_itr.key| && |map_itr.operation| != DB_PUT
+    // |db_itr.key| >= |map_itr.key| && |map_itr.operation| != PUT_OPERATION
     if (cmp_key == 0)
       db_iterator_->Next();
     ++map_iterator_;
@@ -120,7 +120,7 @@ void LevelDBWrapper::Iterator::AdvanceIterators() {
     return;
 
   while (map_iterator_ != db_->pending_.end() &&
-         map_iterator_->second.first == DB_DELETE)
+         map_iterator_->second.first == DELETE_OPERATION)
     ++map_iterator_;
 }
 
@@ -136,11 +136,11 @@ LevelDBWrapper::~LevelDBWrapper() {}
 
 void LevelDBWrapper::Put(const std::string& key,
                          const std::string& value) {
-  pending_[key] = Transaction(DB_PUT, value);
+  pending_[key] = Transaction(PUT_OPERATION, value);
 }
 
 void LevelDBWrapper::Delete(const std::string& key) {
-  pending_[key] = Transaction(DB_DELETE, std::string());
+  pending_[key] = Transaction(DELETE_OPERATION, std::string());
 }
 
 leveldb::Status LevelDBWrapper::Get(const std::string& key,
@@ -151,10 +151,10 @@ leveldb::Status LevelDBWrapper::Get(const std::string& key,
 
   const Transaction& transaction = itr->second;
   switch (transaction.first) {
-    case DB_PUT:
+    case PUT_OPERATION:
       *value = transaction.second;
       return leveldb::Status();
-    case DB_DELETE:
+    case DELETE_OPERATION:
       return leveldb::Status::NotFound(leveldb::Slice());
   }
   NOTREACHED();
@@ -172,10 +172,10 @@ leveldb::Status LevelDBWrapper::Commit() {
     const leveldb::Slice key(itr->first);
     const Transaction& transaction = itr->second;
     switch (transaction.first) {
-      case DB_PUT:
+      case PUT_OPERATION:
         batch.Put(key, transaction.second);
         break;
-      case DB_DELETE:
+      case DELETE_OPERATION:
         batch.Delete(key);
         break;
     }

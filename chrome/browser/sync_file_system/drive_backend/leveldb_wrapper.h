@@ -38,8 +38,8 @@ class SliceComparator {
 class LevelDBWrapper {
  private:
   enum Operation {
-    DB_PUT,
-    DB_DELETE,
+    PUT_OPERATION,
+    DELETE_OPERATION,
   };
   typedef std::pair<Operation, std::string> Transaction;
   typedef std::map<std::string, Transaction, SliceComparator>
