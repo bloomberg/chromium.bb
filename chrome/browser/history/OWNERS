@@ -5,6 +5,3 @@ per-file download_database.*=benjhayden@chromium.org
 
 # Temporary owner, for refactoring changes only.
 blundell@chromium.org
-
-# Temporary owner, for refactoring changes only.
-sdefresne@chromium.org
