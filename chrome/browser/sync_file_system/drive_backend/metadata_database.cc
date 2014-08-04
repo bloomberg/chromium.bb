@@ -191,19 +191,6 @@ scoped_ptr<FileTracker> CloneFileTracker(const FileTracker* obj) {
   return scoped_ptr<FileTracker>(new FileTracker(*obj));
 }
 
-void WriteOnFileTaskRunner(
-    leveldb::DB* db,
-    scoped_ptr<leveldb::WriteBatch> batch,
-    scoped_refptr<base::SequencedTaskRunner> worker_task_runner,
-    const SyncStatusCallback& callback) {
-  DCHECK(db);
-  DCHECK(batch);
-  leveldb::Status status = db->Write(leveldb::WriteOptions(), batch.get());
-  worker_task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(callback, LevelDBStatusToSyncStatusCode(status)));
-}
-
 // Returns true if |db| has no content.
 bool IsDatabaseEmpty(leveldb::DB* db) {
   DCHECK(db);
@@ -543,16 +530,13 @@ void RemoveFileTracker(int64 tracker_id,
 
 struct MetadataDatabase::CreateParam {
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner;
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner;
   base::FilePath database_path;
   leveldb::Env* env_override;
 
   CreateParam(base::SequencedTaskRunner* worker_task_runner,
-              base::SequencedTaskRunner* file_task_runner,
               const base::FilePath& database_path,
               leveldb::Env* env_override)
       : worker_task_runner(worker_task_runner),
-        file_task_runner(file_task_runner),
         database_path(database_path),
         env_override(env_override) {
   }
@@ -560,15 +544,13 @@ struct MetadataDatabase::CreateParam {
 
 // static
 void MetadataDatabase::Create(base::SequencedTaskRunner* worker_task_runner,
-                              base::SequencedTaskRunner* file_task_runner,
                               const base::FilePath& database_path,
                               leveldb::Env* env_override,
                               const CreateCallback& callback) {
-  file_task_runner->PostTask(FROM_HERE, base::Bind(
-      &MetadataDatabase::CreateOnFileTaskRunner,
+  worker_task_runner->PostTask(FROM_HERE, base::Bind(
+      &MetadataDatabase::CreateOnWorkerTaskRunner,
       base::Passed(make_scoped_ptr(new CreateParam(
           worker_task_runner,
-          file_task_runner,
           database_path,
           env_override))),
       callback));
@@ -580,31 +562,29 @@ SyncStatusCode MetadataDatabase::CreateForTesting(
     scoped_ptr<MetadataDatabase>* metadata_database_out) {
   scoped_ptr<MetadataDatabase> metadata_database(
       new MetadataDatabase(base::ThreadTaskRunnerHandle::Get(),
-                           base::ThreadTaskRunnerHandle::Get(),
                            base::FilePath(), NULL));
   metadata_database->db_ = db.Pass();
-  SyncStatusCode status =
-      metadata_database->InitializeOnFileTaskRunner();
+  SyncStatusCode status = metadata_database->Initialize();
   if (status == SYNC_STATUS_OK)
     *metadata_database_out = metadata_database.Pass();
   return status;
 }
 
 MetadataDatabase::~MetadataDatabase() {
-  file_task_runner_->DeleteSoon(FROM_HERE, db_.release());
+  worker_task_runner_->DeleteSoon(FROM_HERE, db_.release());
 }
 
 // static
 void MetadataDatabase::ClearDatabase(
     scoped_ptr<MetadataDatabase> metadata_database) {
   DCHECK(metadata_database);
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner =
-      metadata_database->file_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> worker_task_runner =
+      metadata_database->worker_task_runner_;
   base::FilePath database_path = metadata_database->database_path_;
   DCHECK(!database_path.empty());
   metadata_database.reset();
 
-  file_task_runner->PostTask(
+  worker_task_runner->PostTask(
       FROM_HERE,
       base::Bind(base::IgnoreResult(base::DeleteFile),
                  database_path, true /* recursive */));
@@ -1423,30 +1403,27 @@ void MetadataDatabase::GetRegisteredAppIDs(std::vector<std::string>* app_ids) {
 
 MetadataDatabase::MetadataDatabase(
     base::SequencedTaskRunner* worker_task_runner,
-    base::SequencedTaskRunner* file_task_runner,
     const base::FilePath& database_path,
     leveldb::Env* env_override)
     : worker_task_runner_(worker_task_runner),
-      file_task_runner_(file_task_runner),
       database_path_(database_path),
       env_override_(env_override),
       largest_known_change_id_(0),
       weak_ptr_factory_(this) {
   DCHECK(worker_task_runner);
-  DCHECK(file_task_runner);
 }
 
 // static
-void MetadataDatabase::CreateOnFileTaskRunner(
+void MetadataDatabase::CreateOnWorkerTaskRunner(
     scoped_ptr<CreateParam> create_param,
     const CreateCallback& callback) {
+  DCHECK(create_param->worker_task_runner->RunsTasksOnCurrentThread());
+
   scoped_ptr<MetadataDatabase> metadata_database(
       new MetadataDatabase(create_param->worker_task_runner.get(),
-                           create_param->file_task_runner.get(),
                            create_param->database_path,
                            create_param->env_override));
-  SyncStatusCode status =
-      metadata_database->InitializeOnFileTaskRunner();
+  SyncStatusCode status = metadata_database->Initialize();
   if (status != SYNC_STATUS_OK)
     metadata_database.reset();
 
@@ -1457,9 +1434,9 @@ void MetadataDatabase::CreateOnFileTaskRunner(
           callback, status, base::Passed(&metadata_database)));
 }
 
-SyncStatusCode MetadataDatabase::InitializeOnFileTaskRunner() {
+SyncStatusCode MetadataDatabase::Initialize() {
   base::ThreadRestrictions::AssertIOAllowed();
-  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(worker_sequence_checker_.CalledOnValidSequencedThread());
 
   SyncStatusCode status = SYNC_STATUS_UNKNOWN;
   bool created = false;
@@ -1738,20 +1715,12 @@ void MetadataDatabase::WriteToDatabase(scoped_ptr<leveldb::WriteBatch> batch,
   DCHECK(worker_sequence_checker_.CalledOnValidSequencedThread());
 
   if (!batch) {
-    worker_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(callback, SYNC_STATUS_OK));
+    callback.Run(SYNC_STATUS_OK);
     return;
   }
 
-  // TODO(peria): Write to DB on disk synchronously.
-  file_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&WriteOnFileTaskRunner,
-                 base::Unretained(db_.get()),
-                 base::Passed(&batch),
-                 worker_task_runner_,
-                 callback));
+  leveldb::Status status = db_->Write(leveldb::WriteOptions(), batch.get());
+  callback.Run(LevelDBStatusToSyncStatusCode(status));
 }
 
 scoped_ptr<base::ListValue> MetadataDatabase::DumpFiles(

@@ -134,7 +134,6 @@ class MetadataDatabase {
   // of leveldb::Env::Default().  Use leveldb::MemEnv in test code for faster
   // testing.
   static void Create(base::SequencedTaskRunner* worker_task_runner,
-                     base::SequencedTaskRunner* file_task_runner,
                      const base::FilePath& database_path,
                      leveldb::Env* env_override,
                      const CreateCallback& callback);
@@ -350,13 +349,12 @@ class MetadataDatabase {
   struct CreateParam;
 
   MetadataDatabase(base::SequencedTaskRunner* worker_task_runner,
-                   base::SequencedTaskRunner* file_task_runner,
                    const base::FilePath& database_path,
                    leveldb::Env* env_override);
-  static void CreateOnFileTaskRunner(
+  static void CreateOnWorkerTaskRunner(
       scoped_ptr<CreateParam> create_param,
       const CreateCallback& callback);
-  SyncStatusCode InitializeOnFileTaskRunner();
+  SyncStatusCode Initialize();
 
   // Database manipulation methods.
   void RegisterTrackerAsAppRoot(const std::string& app_id,
@@ -418,7 +416,6 @@ class MetadataDatabase {
   void DetachFromSequence();
 
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   base::FilePath database_path_;
   leveldb::Env* env_override_;
   scoped_ptr<leveldb::DB> db_;

@@ -37,8 +37,7 @@ class SyncEngineContext {
       scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
       TaskLogger* task_logger,
       base::SingleThreadTaskRunner* ui_task_runner,
-      base::SequencedTaskRunner* worker_task_runner,
-      base::SequencedTaskRunner* file_task_runner);
+      base::SequencedTaskRunner* worker_task_runner);
   ~SyncEngineContext();
 
   void SetMetadataDatabase(scoped_ptr<MetadataDatabase> metadata_database);
@@ -52,7 +51,6 @@ class SyncEngineContext {
   RemoteChangeProcessor* GetRemoteChangeProcessor();
   base::SingleThreadTaskRunner* GetUITaskRunner();
   base::SequencedTaskRunner* GetWorkerTaskRunner();
-  base::SequencedTaskRunner* GetFileTaskRunner();
 
   scoped_ptr<MetadataDatabase> PassMetadataDatabase();
 
@@ -69,7 +67,6 @@ class SyncEngineContext {
   scoped_ptr<MetadataDatabase> metadata_database_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   base::SequenceChecker sequence_checker_;
 

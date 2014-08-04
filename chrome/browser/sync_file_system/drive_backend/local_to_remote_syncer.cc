@@ -498,22 +498,7 @@ void LocalToRemoteSyncer::UploadExistingFile(scoped_ptr<SyncTaskToken> token) {
   DCHECK(remote_file_tracker_->has_synced_details());
   DCHECK(sync_context_->GetWorkerTaskRunner()->RunsTasksOnCurrentThread());
 
-  base::Callback<void(const std::string&)> did_calculate_callback =
-      base::Bind(&LocalToRemoteSyncer::DidGetMD5ForUpload,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&token));
-
-  sync_context_->GetFileTaskRunner()->PostTask(
-      FROM_HERE,
-      CreateComposedFunction(
-          base::Bind(&drive::util::GetMd5Digest, local_path_),
-          RelayCallbackToTaskRunner(
-              sync_context_->GetWorkerTaskRunner(), FROM_HERE,
-              did_calculate_callback)));
-}
-
-void LocalToRemoteSyncer::DidGetMD5ForUpload(
-    scoped_ptr<SyncTaskToken> token,
-    const std::string& local_file_md5) {
+  const std::string local_file_md5 = drive::util::GetMd5Digest(local_path_);
   if (local_file_md5 == remote_file_tracker_->synced_details().md5()) {
     // Local file is not changed.
     SyncCompleted(token.Pass(), SYNC_STATUS_OK);

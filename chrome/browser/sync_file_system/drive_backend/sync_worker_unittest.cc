@@ -118,8 +118,7 @@ class SyncWorkerTest : public testing::Test,
             scoped_ptr<drive::DriveUploaderInterface>(),
             NULL /* task_logger */,
             base::ThreadTaskRunnerHandle::Get() /* ui_task_runner */,
-            base::ThreadTaskRunnerHandle::Get() /* worker_task_runner */,
-            base::ThreadTaskRunnerHandle::Get() /* file_task_runner */));
+            base::ThreadTaskRunnerHandle::Get() /* worker_task_runner */));
 
     sync_worker_.reset(new SyncWorker(
         profile_dir_.path(),

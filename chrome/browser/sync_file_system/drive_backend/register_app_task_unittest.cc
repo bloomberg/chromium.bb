@@ -64,7 +64,6 @@ class RegisterAppTaskTest : public testing::Test {
             drive_uploader.Pass(),
             NULL,
             base::ThreadTaskRunnerHandle::Get(),
-            base::ThreadTaskRunnerHandle::Get(),
             base::ThreadTaskRunnerHandle::Get()));
 
     ASSERT_EQ(google_apis::HTTP_CREATED,

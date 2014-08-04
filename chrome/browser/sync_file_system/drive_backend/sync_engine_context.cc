@@ -23,8 +23,7 @@ SyncEngineContext::SyncEngineContext(
     scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
     TaskLogger* task_logger,
     base::SingleThreadTaskRunner* ui_task_runner,
-    base::SequencedTaskRunner* worker_task_runner,
-    base::SequencedTaskRunner* file_task_runner)
+    base::SequencedTaskRunner* worker_task_runner)
     : drive_service_(drive_service.Pass()),
       drive_uploader_(drive_uploader.Pass()),
       task_logger_(task_logger
@@ -32,8 +31,7 @@ SyncEngineContext::SyncEngineContext(
                    : base::WeakPtr<TaskLogger>()),
       remote_change_processor_(NULL),
       ui_task_runner_(ui_task_runner),
-      worker_task_runner_(worker_task_runner),
-      file_task_runner_(file_task_runner) {
+      worker_task_runner_(worker_task_runner) {
   sequence_checker_.DetachFromSequence();
 }
 
@@ -79,11 +77,6 @@ base::SingleThreadTaskRunner* SyncEngineContext::GetUITaskRunner() {
 base::SequencedTaskRunner* SyncEngineContext::GetWorkerTaskRunner() {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   return worker_task_runner_.get();
-}
-
-base::SequencedTaskRunner* SyncEngineContext::GetFileTaskRunner() {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  return file_task_runner_.get();
 }
 
 void SyncEngineContext::SetMetadataDatabase(

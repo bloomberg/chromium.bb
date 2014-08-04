@@ -47,7 +47,6 @@ class SyncEngineTest : public testing::Test,
     sync_engine_.reset(new drive_backend::SyncEngine(
         ui_task_runner,
         worker_task_runner_,
-        NULL /* file_task_runner */,
         NULL /* drive_task_runner */,
         profile_dir_.path(),
         NULL /* task_logger */,

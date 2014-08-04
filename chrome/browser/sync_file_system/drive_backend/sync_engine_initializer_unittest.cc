@@ -57,7 +57,6 @@ class SyncEngineInitializerTest : public testing::Test {
         scoped_ptr<drive::DriveUploaderInterface>(),
         NULL,
         base::ThreadTaskRunnerHandle::Get(),
-        base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get()));
 
     sync_task_manager_.reset(new SyncTaskManager(
@@ -110,7 +109,6 @@ class SyncEngineInitializerTest : public testing::Test {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     scoped_ptr<MetadataDatabase> database;
     MetadataDatabase::Create(
-        base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get(),
         database_path(),
         in_memory_env_.get(),

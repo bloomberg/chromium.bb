@@ -173,15 +173,10 @@ class RemoteToLocalSyncer : public SyncTask {
 
   void DeleteLocalFile(const SyncStatusCallback& callback);
   void DownloadFile(const SyncStatusCallback& callback);
-  void DidCreateTemporaryFileForDownload(const SyncStatusCallback& callback,
-                                         webkit_blob::ScopedFile file);
   void DidDownloadFile(const SyncStatusCallback& callback,
                        webkit_blob::ScopedFile file,
                        google_apis::GDataErrorCode error,
                        const base::FilePath&);
-  void DidCalculateMD5ForDownload(const SyncStatusCallback& callback,
-                                  webkit_blob::ScopedFile file,
-                                  const std::string& md5);
   void DidApplyDownload(const SyncStatusCallback& callback,
                         webkit_blob::ScopedFile,
                         SyncStatusCode status);

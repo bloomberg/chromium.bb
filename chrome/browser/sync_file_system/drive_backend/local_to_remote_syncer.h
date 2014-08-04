@@ -76,8 +76,6 @@ class LocalToRemoteSyncer : public SyncTask {
                            google_apis::GDataErrorCode error);
 
   void UploadExistingFile(scoped_ptr<SyncTaskToken> token);
-  void DidGetMD5ForUpload(scoped_ptr<SyncTaskToken> token,
-                          const std::string& local_file_md5);
   void DidUploadExistingFile(scoped_ptr<SyncTaskToken> token,
                              google_apis::GDataErrorCode error,
                              const GURL&,

@@ -74,7 +74,6 @@ class ConflictResolverTest : public testing::Test {
         drive_uploader.Pass(),
         NULL,
         base::ThreadTaskRunnerHandle::Get(),
-        base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get()));
     context_->SetRemoteChangeProcessor(remote_change_processor_.get());
 

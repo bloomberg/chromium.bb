@@ -115,7 +115,6 @@ class DriveBackendSyncTest : public testing::Test,
     remote_sync_service_.reset(new SyncEngine(
         base::ThreadTaskRunnerHandle::Get(),  // ui_task_runner
         worker_task_runner_,
-        file_task_runner_,
         drive_task_runner,
         base_dir_.path(),
         NULL,  // task_logger

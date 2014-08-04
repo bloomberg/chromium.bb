@@ -67,7 +67,6 @@ class ListChangesTaskTest : public testing::Test {
         drive_uploader.Pass(),
         NULL,
         base::ThreadTaskRunnerHandle::Get(),
-        base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get()));
 
     SetUpRemoteFolders();

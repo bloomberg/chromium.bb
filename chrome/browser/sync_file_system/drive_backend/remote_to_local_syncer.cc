@@ -689,24 +689,9 @@ void RemoteToLocalSyncer::DeleteLocalFile(const SyncStatusCallback& callback) {
 void RemoteToLocalSyncer::DownloadFile(const SyncStatusCallback& callback) {
   DCHECK(sync_context_->GetWorkerTaskRunner()->RunsTasksOnCurrentThread());
 
-  base::Callback<void(webkit_blob::ScopedFile)> did_create_callback =
-      base::Bind(&RemoteToLocalSyncer::DidCreateTemporaryFileForDownload,
-                 weak_ptr_factory_.GetWeakPtr(), callback);
+  webkit_blob::ScopedFile file = CreateTemporaryFile(
+      make_scoped_refptr(sync_context_->GetWorkerTaskRunner()));
 
-  sync_context_->GetFileTaskRunner()->PostTask(
-      FROM_HERE,
-      CreateComposedFunction(
-          base::Bind(&CreateTemporaryFile,
-                     make_scoped_refptr(sync_context_->GetFileTaskRunner())),
-          RelayCallbackToTaskRunner(
-              sync_context_->GetWorkerTaskRunner(), FROM_HERE,
-              did_create_callback)));
-}
-
-void RemoteToLocalSyncer::DidCreateTemporaryFileForDownload(
-    const SyncStatusCallback& callback,
-    webkit_blob::ScopedFile file) {
-  DCHECK(sync_context_->GetWorkerTaskRunner()->RunsTasksOnCurrentThread());
   base::FilePath path = file.path();
   drive_service()->DownloadFile(
       path, remote_metadata_->file_id(),
@@ -730,24 +715,7 @@ void RemoteToLocalSyncer::DidDownloadFile(const SyncStatusCallback& callback,
   }
 
   base::FilePath path = file.path();
-  base::Callback<void(const std::string&)> did_calculate_callback =
-      base::Bind(&RemoteToLocalSyncer::DidCalculateMD5ForDownload,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback, base::Passed(&file));
-
-  sync_context_->GetFileTaskRunner()->PostTask(
-      FROM_HERE,
-      CreateComposedFunction(
-          base::Bind(&drive::util::GetMd5Digest, path),
-          RelayCallbackToTaskRunner(
-              sync_context_->GetWorkerTaskRunner(), FROM_HERE,
-              did_calculate_callback)));
-}
-
-void RemoteToLocalSyncer::DidCalculateMD5ForDownload(
-    const SyncStatusCallback& callback,
-    webkit_blob::ScopedFile file,
-    const std::string& md5) {
+  const std::string md5 = drive::util::GetMd5Digest(path);
   if (md5.empty()) {
     callback.Run(SYNC_FILE_ERROR_NOT_FOUND);
     return;
@@ -763,7 +731,6 @@ void RemoteToLocalSyncer::DidCalculateMD5ForDownload(
     return;
   }
 
-  base::FilePath path = file.path();
   remote_change_processor()->ApplyRemoteChange(
       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE, SYNC_FILE_TYPE_FILE),
       path, url_,

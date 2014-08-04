@@ -181,10 +181,6 @@ scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
       worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
           worker_pool->GetSequenceToken(),
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner =
-      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
-          worker_pool->GetSequenceToken(),
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   scoped_refptr<base::SequencedTaskRunner> drive_task_runner =
       worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
           worker_pool->GetSequenceToken(),
@@ -205,7 +201,6 @@ scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
   scoped_ptr<drive_backend::SyncEngine> sync_engine(
       new SyncEngine(ui_task_runner,
                      worker_task_runner,
-                     file_task_runner,
                      drive_task_runner,
                      GetSyncFileSystemDir(context->GetPath()),
                      task_logger,
@@ -321,8 +316,7 @@ void SyncEngine::InitializeInternal(
                             drive_uploader_on_worker.Pass(),
                             task_logger_,
                             ui_task_runner_,
-                            worker_task_runner_,
-                            file_task_runner_));
+                            worker_task_runner_));
 
   worker_observer_.reset(
       new WorkerObserver(ui_task_runner_, weak_ptr_factory_.GetWeakPtr()));
@@ -713,7 +707,6 @@ void SyncEngine::GoogleSignedOut(const std::string& username) {
 SyncEngine::SyncEngine(
     base::SingleThreadTaskRunner* ui_task_runner,
     base::SequencedTaskRunner* worker_task_runner,
-    base::SequencedTaskRunner* file_task_runner,
     base::SequencedTaskRunner* drive_task_runner,
     const base::FilePath& sync_file_system_dir,
     TaskLogger* task_logger,
@@ -725,7 +718,6 @@ SyncEngine::SyncEngine(
     leveldb::Env* env_override)
     : ui_task_runner_(ui_task_runner),
       worker_task_runner_(worker_task_runner),
-      file_task_runner_(file_task_runner),
       drive_task_runner_(drive_task_runner),
       sync_file_system_dir_(sync_file_system_dir),
       task_logger_(task_logger),

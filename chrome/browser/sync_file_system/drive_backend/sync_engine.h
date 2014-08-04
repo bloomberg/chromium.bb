@@ -148,7 +148,6 @@ class SyncEngine : public RemoteFileSyncService,
 
   SyncEngine(base::SingleThreadTaskRunner* ui_task_runner,
              base::SequencedTaskRunner* worker_task_runner,
-             base::SequencedTaskRunner* file_task_runner,
              base::SequencedTaskRunner* drive_task_runner,
              const base::FilePath& sync_file_system_dir,
              TaskLogger* task_logger,
@@ -172,7 +171,6 @@ class SyncEngine : public RemoteFileSyncService,
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> drive_task_runner_;
 
   const base::FilePath sync_file_system_dir_;
