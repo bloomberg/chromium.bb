@@ -212,7 +212,7 @@ static WebURLRequest::RequestContext requestContextFromType(const ResourceFetche
     case Resource::Raw:
         return WebURLRequest::RequestContextSubresource;
     case Resource::ImportResource:
-        return WebURLRequest::RequestContextScript;
+        return WebURLRequest::RequestContextImport;
     case Resource::LinkPrefetch:
         return WebURLRequest::RequestContextPrefetch;
     case Resource::LinkSubresource:
@@ -326,7 +326,7 @@ ResourcePtr<FontResource> ResourceFetcher::fetchFont(FetchRequest& request)
 ResourcePtr<RawResource> ResourceFetcher::fetchImport(FetchRequest& request)
 {
     ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
-    request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextScript);
+    request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextImport);
     return toRawResource(requestResource(Resource::ImportResource, request));
 }
 

@@ -40,6 +40,7 @@
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/svg/RenderSVGImage.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebURLRequest.h"
 
 namespace blink {
 
@@ -240,8 +241,11 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
     if (!url.isNull()) {
         // Unlike raw <img>, we block mixed content inside of <picture> or <img srcset>.
         ResourceLoaderOptions resourceLoaderOptions = ResourceFetcher::defaultResourceOptions();
-        if (isHTMLPictureElement(element()->parentNode()) || !element()->fastGetAttribute(HTMLNames::srcsetAttr).isEmpty())
+        ResourceRequest resourceRequest(url);
+        if (isHTMLPictureElement(element()->parentNode()) || !element()->fastGetAttribute(HTMLNames::srcsetAttr).isEmpty()) {
             resourceLoaderOptions.mixedContentBlockingTreatment = TreatAsActiveContent;
+            resourceRequest.setRequestContext(WebURLRequest::RequestContextImageSet);
+        }
         FetchRequest request(ResourceRequest(url), element()->localName(), resourceLoaderOptions);
         configureRequest(request, bypassBehavior, *m_element);
 
