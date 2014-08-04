@@ -3790,7 +3790,7 @@ widget_schedule_resize(struct widget *widget, int32_t width, int32_t height)
 static int
 window_get_shadow_margin(struct window *window)
 {
-	if (window->frame)
+	if (window->frame && !window->fullscreen)
 		return frame_get_shadow_margin(window->frame->frame);
 	else
 		return 0;
@@ -3896,7 +3896,7 @@ window_sync_parent(struct window *window)
 static void
 window_get_geometry(struct window *window, struct rectangle *geometry)
 {
-	if (window->frame)
+	if (window->frame && !window->fullscreen)
 		frame_input_rect(window->frame->frame,
 				 &geometry->x,
 				 &geometry->y,
