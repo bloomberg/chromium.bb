@@ -78,7 +78,7 @@ public:
 protected:
     void appendString(const String&);
     void appendStartTag(Node&, Namespaces* = 0);
-    virtual void appendEndTag(const Node&);
+    virtual void appendEndTag(const Element&);
     static size_t totalLength(const Vector<String>&);
     size_t length() const { return m_markup.length(); }
     void concatenateMarkup(StringBuilder&);
@@ -99,9 +99,9 @@ protected:
     void appendAttribute(StringBuilder&, const Element&, const Attribute&, Namespaces*);
     void appendCDATASection(StringBuilder&, const String&);
     void appendStartMarkup(StringBuilder&, Node&, Namespaces*);
-    bool shouldSelfClose(const Node&);
+    bool shouldSelfClose(const Element&);
     bool elementCannotHaveEndTag(const Node&);
-    void appendEndMarkup(StringBuilder&, const Node&);
+    void appendEndMarkup(StringBuilder&, const Element&);
 
     RawPtrWillBeMember<WillBeHeapVector<RawPtrWillBeMember<Node> > > const m_nodes;
     RawPtrWillBeMember<const Range> const m_range;

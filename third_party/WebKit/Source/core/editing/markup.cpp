@@ -181,7 +181,8 @@ void StyledMarkupAccumulator::wrapWithNode(ContainerNode& node, bool convertBloc
     else
         appendStartMarkup(markup, node, 0);
     m_reversedPrecedingMarkup.append(markup.toString());
-    appendEndTag(node);
+    if (node.isElementNode())
+        appendEndTag(toElement(node));
     if (m_nodes)
         m_nodes->append(&node);
 }
@@ -402,8 +403,8 @@ Node* StyledMarkupAccumulator::traverseNodesForSerialization(Node* startNode, No
                 openedTag = true;
                 ancestorsToClose.append(toContainerNode(n));
             } else {
-                if (shouldEmit)
-                    appendEndTag(*n);
+                if (shouldEmit && n->isElementNode())
+                    appendEndTag(toElement(*n));
                 lastClosed = n;
             }
         }
@@ -418,8 +419,8 @@ Node* StyledMarkupAccumulator::traverseNodesForSerialization(Node* startNode, No
                 if (next != pastEnd && next->isDescendantOf(ancestor))
                     break;
                 // Not at the end of the range, close ancestors up to sibling of next node.
-                if (shouldEmit)
-                    appendEndTag(*ancestor);
+                if (shouldEmit && ancestor->isElementNode())
+                    appendEndTag(toElement(*ancestor));
                 lastClosed = ancestor;
                 ancestorsToClose.removeLast();
             }

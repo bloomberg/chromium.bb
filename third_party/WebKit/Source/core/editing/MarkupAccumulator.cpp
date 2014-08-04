@@ -145,8 +145,8 @@ void MarkupAccumulator::serializeNodesWithNamespaces(Node& targetNode, EChildren
             serializeNodesWithNamespaces(*current, IncludeNode, &namespaceHash, tagNamesToSkip);
     }
 
-    if (!childrenOnly)
-        appendEndTag(targetNode);
+    if (!childrenOnly && targetNode.isElementNode())
+        appendEndTag(toElement(targetNode));
 }
 
 String MarkupAccumulator::resolveURLIfNeeded(const Element& element, const String& urlString) const
@@ -178,9 +178,9 @@ void MarkupAccumulator::appendStartTag(Node& node, Namespaces* namespaces)
         m_nodes->append(&node);
 }
 
-void MarkupAccumulator::appendEndTag(const Node& node)
+void MarkupAccumulator::appendEndTag(const Element& element)
 {
-    appendEndMarkup(m_markup, node);
+    appendEndMarkup(m_markup, element);
 }
 
 size_t MarkupAccumulator::totalLength(const Vector<String>& strings)
@@ -398,15 +398,10 @@ void MarkupAccumulator::appendElement(StringBuilder& result, Element& element, N
     appendCloseTag(result, element);
 }
 
-static String nodeNamePreservingCase(const Element& element)
-{
-    return element.tagQName().toString();
-}
-
 void MarkupAccumulator::appendOpenTag(StringBuilder& result, const Element& element, Namespaces* namespaces)
 {
     result.append('<');
-    result.append(nodeNamePreservingCase(element));
+    result.append(element.tagQName().toString());
     if (!serializeAsHTMLDocument(element) && namespaces && shouldAddNamespaceElement(element, *namespaces))
         appendNamespace(result, element.prefix(), element.namespaceURI(), *namespaces);
 }
@@ -527,13 +522,13 @@ void MarkupAccumulator::appendStartMarkup(StringBuilder& result, Node& node, Nam
 // 2. Elements w/ children never self-close because they use a separate end tag.
 // 3. HTML elements which do not have a "forbidden" end tag will close with a separate end tag.
 // 4. Other elements self-close.
-bool MarkupAccumulator::shouldSelfClose(const Node& node)
+bool MarkupAccumulator::shouldSelfClose(const Element& element)
 {
-    if (serializeAsHTMLDocument(node))
+    if (serializeAsHTMLDocument(element))
         return false;
-    if (node.hasChildren())
+    if (element.hasChildren())
         return false;
-    if (node.isHTMLElement() && !elementCannotHaveEndTag(node))
+    if (element.isHTMLElement() && !elementCannotHaveEndTag(element))
         return false;
     return true;
 }
@@ -550,13 +545,13 @@ bool MarkupAccumulator::elementCannotHaveEndTag(const Node& node)
     return toHTMLElement(node).ieForbidsInsertHTML();
 }
 
-void MarkupAccumulator::appendEndMarkup(StringBuilder& result, const Node& node)
+void MarkupAccumulator::appendEndMarkup(StringBuilder& result, const Element& element)
 {
-    if (!node.isElementNode() || shouldSelfClose(node) || (!node.hasChildren() && elementCannotHaveEndTag(node)))
+    if (shouldSelfClose(element) || (!element.hasChildren() && elementCannotHaveEndTag(element)))
         return;
 
     result.appendLiteral("</");
-    result.append(nodeNamePreservingCase(toElement(node)));
+    result.append(element.tagQName().toString());
     result.append('>');
 }
 
