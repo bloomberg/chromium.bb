@@ -226,6 +226,7 @@
       'WebSharedWorkerImpl.cpp',
       'WebSharedWorkerImpl.h',
       'WebSocket.cpp',
+      'WebSocketChannelClientProxy.h',
       'WebSocketImpl.cpp',
       'WebSocketImpl.h',
       'WebSpeechGrammar.cpp',

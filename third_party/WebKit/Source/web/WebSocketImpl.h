@@ -40,15 +40,14 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace blink { class WebSocketChannel; }
-
 namespace blink {
 
 class WebDocument;
+class WebSocketChannel;
+class WebSocketChannelClientProxy;
 class WebURL;
 
-class WebSocketImpl FINAL : public NoBaseWillBeGarbageCollectedFinalized<WebSocketImpl>, public WebSocket, public blink::WebSocketChannelClient {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WebSocketImpl)
+class WebSocketImpl FINAL : public WebSocket {
 public:
     WebSocketImpl(const WebDocument&, WebSocketClient*);
     virtual ~WebSocketImpl();
@@ -67,20 +66,19 @@ public:
     virtual void fail(const WebString& reason) OVERRIDE;
     virtual void disconnect() OVERRIDE;
 
-    // WebSocketChannelClient
-    virtual void didConnect(const String& subprotocol, const String& extensions) OVERRIDE;
-    virtual void didReceiveMessage(const String& message) OVERRIDE;
-    virtual void didReceiveBinaryData(PassOwnPtr<Vector<char> > binaryData) OVERRIDE;
-    virtual void didReceiveMessageError() OVERRIDE;
-    virtual void didConsumeBufferedAmount(unsigned long consumed) OVERRIDE;
-    virtual void didStartClosingHandshake() OVERRIDE;
-    virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) OVERRIDE;
-
-    virtual void trace(blink::Visitor*) OVERRIDE;
+    // WebSocketChannelClient methods proxied by WebSocketChannelClientProxy.
+    void didConnect(const String& subprotocol, const String& extensions);
+    void didReceiveMessage(const String& message);
+    void didReceiveBinaryData(PassOwnPtr<Vector<char> > binaryData);
+    void didReceiveMessageError();
+    void didConsumeBufferedAmount(unsigned long consumed);
+    void didStartClosingHandshake();
+    void didClose(WebSocketChannelClient::ClosingHandshakeCompletionStatus, unsigned short code, const String& reason);
 
 private:
-    RefPtrWillBeMember<blink::WebSocketChannel> m_private;
+    RefPtrWillBePersistent<blink::WebSocketChannel> m_private;
     WebSocketClient* m_client;
+    OwnPtrWillBePersistent<WebSocketChannelClientProxy> m_channelProxy;
     BinaryType m_binaryType;
     WebString m_subprotocol;
     WebString m_extensions;
