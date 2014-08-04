@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
+#include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -159,7 +160,9 @@ AppListViewDelegate::AppListViewDelegate(Profile* profile,
       LOG(ERROR) << "Invalid custom launcher page URL: "
                  << custom_launcher_page_url.possibly_invalid_spec();
     } else {
-      custom_page_contents_.reset(new apps::CustomLauncherPageContents());
+      std::string extension_id = custom_launcher_page_url.host();
+      custom_page_contents_.reset(new apps::CustomLauncherPageContents(
+          scoped_ptr<apps::AppDelegate>(new ChromeAppDelegate), extension_id));
       custom_page_contents_->Initialize(profile, custom_launcher_page_url);
     }
   }

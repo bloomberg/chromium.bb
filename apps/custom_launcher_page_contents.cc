@@ -6,9 +6,10 @@
 
 #include <string>
 
+#include "apps/app_delegate.h"
+#include "apps/app_web_contents_helper.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -17,7 +18,10 @@
 
 namespace apps {
 
-CustomLauncherPageContents::CustomLauncherPageContents() {
+CustomLauncherPageContents::CustomLauncherPageContents(
+    scoped_ptr<AppDelegate> app_delegate,
+    const std::string& extension_id)
+    : app_delegate_(app_delegate.Pass()), extension_id_(extension_id) {
 }
 
 CustomLauncherPageContents::~CustomLauncherPageContents() {
@@ -37,6 +41,10 @@ void CustomLauncherPageContents::Initialize(content::BrowserContext* context,
       ->browser_handles_all_top_level_requests = true;
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 
+  helper_.reset(new AppWebContentsHelper(
+      context, extension_id_, web_contents_.get(), app_delegate_.get()));
+  web_contents_->SetDelegate(this);
+
   // This observer will activate the extension when it is navigated to, which
   // allows Dispatcher to give it the proper context and makes it behave like an
   // extension.
@@ -47,6 +55,72 @@ void CustomLauncherPageContents::Initialize(content::BrowserContext* context,
                                          content::Referrer(),
                                          content::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                          std::string());
+}
+
+content::WebContents* CustomLauncherPageContents::OpenURLFromTab(
+    content::WebContents* source,
+    const content::OpenURLParams& params) {
+  DCHECK_EQ(web_contents_.get(), source);
+  return helper_->OpenURLFromTab(params);
+}
+
+void CustomLauncherPageContents::AddNewContents(
+    content::WebContents* source,
+    content::WebContents* new_contents,
+    WindowOpenDisposition disposition,
+    const gfx::Rect& initial_pos,
+    bool user_gesture,
+    bool* was_blocked) {
+  app_delegate_->AddNewContents(new_contents->GetBrowserContext(),
+                                new_contents,
+                                disposition,
+                                initial_pos,
+                                user_gesture,
+                                was_blocked);
+}
+
+bool CustomLauncherPageContents::IsPopupOrPanel(
+    const content::WebContents* source) const {
+  return true;
+}
+
+bool CustomLauncherPageContents::ShouldSuppressDialogs() {
+  return true;
+}
+
+bool CustomLauncherPageContents::PreHandleGestureEvent(
+    content::WebContents* source,
+    const blink::WebGestureEvent& event) {
+  return AppWebContentsHelper::ShouldSuppressGestureEvent(event);
+}
+
+content::ColorChooser* CustomLauncherPageContents::OpenColorChooser(
+    content::WebContents* web_contents,
+    SkColor initial_color,
+    const std::vector<content::ColorSuggestion>& suggestionss) {
+  return app_delegate_->ShowColorChooser(web_contents, initial_color);
+}
+
+void CustomLauncherPageContents::RunFileChooser(
+    content::WebContents* tab,
+    const content::FileChooserParams& params) {
+  app_delegate_->RunFileChooser(tab, params);
+}
+
+void CustomLauncherPageContents::RequestToLockMouse(
+    content::WebContents* web_contents,
+    bool user_gesture,
+    bool last_unlocked_by_target) {
+  DCHECK_EQ(web_contents_.get(), web_contents);
+  helper_->RequestToLockMouse();
+}
+
+void CustomLauncherPageContents::RequestMediaAccessPermission(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest& request,
+    const content::MediaResponseCallback& callback) {
+  DCHECK_EQ(web_contents_.get(), web_contents);
+  helper_->RequestMediaAccessPermission(request, callback);
 }
 
 bool CustomLauncherPageContents::OnMessageReceived(
