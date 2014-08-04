@@ -26,8 +26,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::debug::HighResSleepForTraceTest;
-
 namespace base {
 namespace debug {
 
@@ -81,9 +79,10 @@ class TraceEventTestFixture : public testing::Test {
 
   void BeginSpecificTrace(const std::string& filter) {
     event_watch_notification_ = 0;
-    TraceLog::GetInstance()->SetEnabled(CategoryFilter(filter),
-                                        base::debug::TraceLog::RECORDING_MODE,
-                                        TraceLog::RECORD_UNTIL_FULL);
+    TraceLog::GetInstance()->SetEnabled(
+        CategoryFilter(filter),
+        TraceLog::RECORDING_MODE,
+        TraceOptions());
   }
 
   void EndTraceAndFlush() {
@@ -149,8 +148,8 @@ class TraceEventTestFixture : public testing::Test {
 
   char* old_thread_name_;
   ListValue trace_parsed_;
-  base::debug::TraceResultBuffer trace_buffer_;
-  base::debug::TraceResultBuffer::SimpleOutput json_output_;
+  TraceResultBuffer trace_buffer_;
+  TraceResultBuffer::SimpleOutput json_output_;
   int event_watch_notification_;
 
  private:
@@ -882,9 +881,10 @@ void HighResSleepForTraceTest(base::TimeDelta elapsed) {
 
 // Simple Test for emitting data and validating it was received.
 TEST_F(TraceEventTestFixture, DataCaptured) {
-  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("*"),
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
 
   TraceWithAllMacroVariants(NULL);
 
@@ -894,7 +894,7 @@ TEST_F(TraceEventTestFixture, DataCaptured) {
 }
 
 class MockEnabledStateChangedObserver :
-      public base::debug::TraceLog::EnabledStateObserver {
+      public TraceLog::EnabledStateObserver {
  public:
   MOCK_METHOD0(OnTraceLogEnabled, void());
   MOCK_METHOD0(OnTraceLogDisabled, void());
@@ -906,9 +906,10 @@ TEST_F(TraceEventTestFixture, EnabledObserverFiresOnEnable) {
 
   EXPECT_CALL(observer, OnTraceLogEnabled())
       .Times(1);
-  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("*"),
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
   testing::Mock::VerifyAndClear(&observer);
   EXPECT_TRUE(TraceLog::GetInstance()->IsEnabled());
 
@@ -918,9 +919,10 @@ TEST_F(TraceEventTestFixture, EnabledObserverFiresOnEnable) {
 }
 
 TEST_F(TraceEventTestFixture, EnabledObserverDoesntFireOnSecondEnable) {
-  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("*"),
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
 
   testing::StrictMock<MockEnabledStateChangedObserver> observer;
   TraceLog::GetInstance()->AddEnabledStateObserver(&observer);
@@ -929,9 +931,10 @@ TEST_F(TraceEventTestFixture, EnabledObserverDoesntFireOnSecondEnable) {
       .Times(0);
   EXPECT_CALL(observer, OnTraceLogDisabled())
       .Times(0);
-  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("*"),
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
   testing::Mock::VerifyAndClear(&observer);
   EXPECT_TRUE(TraceLog::GetInstance()->IsEnabled());
 
@@ -943,12 +946,14 @@ TEST_F(TraceEventTestFixture, EnabledObserverDoesntFireOnSecondEnable) {
 
 TEST_F(TraceEventTestFixture, EnabledObserverFiresOnFirstDisable) {
   CategoryFilter cf_inc_all("*");
-  TraceLog::GetInstance()->SetEnabled(cf_inc_all,
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::RECORD_UNTIL_FULL);
-  TraceLog::GetInstance()->SetEnabled(cf_inc_all,
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(
+      cf_inc_all,
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
+  TraceLog::GetInstance()->SetEnabled(
+      cf_inc_all,
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
 
   testing::StrictMock<MockEnabledStateChangedObserver> observer;
   TraceLog::GetInstance()->AddEnabledStateObserver(&observer);
@@ -966,9 +971,10 @@ TEST_F(TraceEventTestFixture, EnabledObserverFiresOnFirstDisable) {
 }
 
 TEST_F(TraceEventTestFixture, EnabledObserverFiresOnDisable) {
-  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("*"),
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
 
   MockEnabledStateChangedObserver observer;
   TraceLog::GetInstance()->AddEnabledStateObserver(&observer);
@@ -984,12 +990,12 @@ TEST_F(TraceEventTestFixture, EnabledObserverFiresOnDisable) {
 
 // Tests the IsEnabled() state of TraceLog changes before callbacks.
 class AfterStateChangeEnabledStateObserver
-    : public base::debug::TraceLog::EnabledStateObserver {
+    : public TraceLog::EnabledStateObserver {
  public:
   AfterStateChangeEnabledStateObserver() {}
   virtual ~AfterStateChangeEnabledStateObserver() {}
 
-  // base::debug::TraceLog::EnabledStateObserver overrides:
+  // TraceLog::EnabledStateObserver overrides:
   virtual void OnTraceLogEnabled() OVERRIDE {
     EXPECT_TRUE(TraceLog::GetInstance()->IsEnabled());
   }
@@ -1003,9 +1009,10 @@ TEST_F(TraceEventTestFixture, ObserversFireAfterStateChange) {
   AfterStateChangeEnabledStateObserver observer;
   TraceLog::GetInstance()->AddEnabledStateObserver(&observer);
 
-  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("*"),
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
   EXPECT_TRUE(TraceLog::GetInstance()->IsEnabled());
 
   TraceLog::GetInstance()->SetDisabled();
@@ -1016,12 +1023,12 @@ TEST_F(TraceEventTestFixture, ObserversFireAfterStateChange) {
 
 // Tests that a state observer can remove itself during a callback.
 class SelfRemovingEnabledStateObserver
-    : public base::debug::TraceLog::EnabledStateObserver {
+    : public TraceLog::EnabledStateObserver {
  public:
   SelfRemovingEnabledStateObserver() {}
   virtual ~SelfRemovingEnabledStateObserver() {}
 
-  // base::debug::TraceLog::EnabledStateObserver overrides:
+  // TraceLog::EnabledStateObserver overrides:
   virtual void OnTraceLogEnabled() OVERRIDE {}
 
   virtual void OnTraceLogDisabled() OVERRIDE {
@@ -1036,9 +1043,10 @@ TEST_F(TraceEventTestFixture, SelfRemovingObserver) {
   TraceLog::GetInstance()->AddEnabledStateObserver(&observer);
   EXPECT_EQ(1u, TraceLog::GetInstance()->GetObserverCountForTest());
 
-  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("*"),
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
   TraceLog::GetInstance()->SetDisabled();
   // The observer removed itself on disable.
   EXPECT_EQ(0u, TraceLog::GetInstance()->GetObserverCountForTest());
@@ -1052,9 +1060,10 @@ bool IsNewTrace() {
 
 TEST_F(TraceEventTestFixture, NewTraceRecording) {
   ASSERT_FALSE(IsNewTrace());
-  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("*"),
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
   // First call to IsNewTrace() should succeed. But, the second shouldn't.
   ASSERT_TRUE(IsNewTrace());
   ASSERT_FALSE(IsNewTrace());
@@ -1065,9 +1074,10 @@ TEST_F(TraceEventTestFixture, NewTraceRecording) {
 
   // Start another trace. IsNewTrace() should become true again, briefly, as
   // before.
-  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("*"),
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
   ASSERT_TRUE(IsNewTrace());
   ASSERT_FALSE(IsNewTrace());
 
@@ -1122,9 +1132,10 @@ TEST_F(TraceEventTestFixture, Categories) {
   // Include nonexistent category -> no events
   Clear();
   included_categories.clear();
-  TraceLog::GetInstance()->SetEnabled(CategoryFilter("not_found823564786"),
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("not_found823564786"),
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
   TRACE_EVENT_INSTANT0("cat1", "name", TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("cat2", "name", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
@@ -1134,9 +1145,10 @@ TEST_F(TraceEventTestFixture, Categories) {
   // Include existent category -> only events of that category
   Clear();
   included_categories.clear();
-  TraceLog::GetInstance()->SetEnabled(CategoryFilter("inc"),
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("inc"),
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
   TRACE_EVENT_INSTANT0("inc", "name", TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("inc2", "name", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
@@ -1149,8 +1161,8 @@ TEST_F(TraceEventTestFixture, Categories) {
   included_categories.clear();
   TraceLog::GetInstance()->SetEnabled(
       CategoryFilter("inc_wildcard_*,inc_wildchar_?_end"),
-      base::debug::TraceLog::RECORDING_MODE,
-      TraceLog::RECORD_UNTIL_FULL);
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
   TRACE_EVENT_INSTANT0("inc_wildcard_abc", "included",
       TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("inc_wildcard_", "included", TRACE_EVENT_SCOPE_THREAD);
@@ -1178,9 +1190,10 @@ TEST_F(TraceEventTestFixture, Categories) {
 
   // Exclude nonexistent category -> all events
   Clear();
-  TraceLog::GetInstance()->SetEnabled(CategoryFilter("-not_found823564786"),
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("-not_found823564786"),
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
   TRACE_EVENT_INSTANT0("cat1", "name", TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("cat2", "name", TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("category1,category2", "name", TRACE_EVENT_SCOPE_THREAD);
@@ -1191,9 +1204,10 @@ TEST_F(TraceEventTestFixture, Categories) {
 
   // Exclude existent category -> only events of other categories
   Clear();
-  TraceLog::GetInstance()->SetEnabled(CategoryFilter("-inc"),
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("-inc"),
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
   TRACE_EVENT_INSTANT0("inc", "name", TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("inc2", "name", TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("inc2,inc", "name", TRACE_EVENT_SCOPE_THREAD);
@@ -1208,8 +1222,8 @@ TEST_F(TraceEventTestFixture, Categories) {
   Clear();
   TraceLog::GetInstance()->SetEnabled(
       CategoryFilter("-inc_wildcard_*,-inc_wildchar_?_end"),
-      base::debug::TraceLog::RECORDING_MODE,
-      TraceLog::RECORD_UNTIL_FULL);
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
   TRACE_EVENT_INSTANT0("inc_wildcard_abc", "not_inc",
       TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("inc_wildcard_", "not_inc",
@@ -1361,12 +1375,12 @@ TEST_F(TraceEventTestFixture, StaticStringVsString) {
   {
     BeginTrace();
     // Test that string arguments are copied.
-    base::debug::TraceEventHandle handle1 =
+    TraceEventHandle handle1 =
         trace_event_internal::AddTraceEvent(
             TRACE_EVENT_PHASE_INSTANT, category_group_enabled, "name1", 0, 0,
             "arg1", std::string("argval"), "arg2", std::string("argval"));
     // Test that static TRACE_STR_COPY string arguments are copied.
-    base::debug::TraceEventHandle handle2 =
+    TraceEventHandle handle2 =
         trace_event_internal::AddTraceEvent(
             TRACE_EVENT_PHASE_INSTANT, category_group_enabled, "name2", 0, 0,
             "arg1", TRACE_STR_COPY("argval"),
@@ -1389,14 +1403,14 @@ TEST_F(TraceEventTestFixture, StaticStringVsString) {
   {
     BeginTrace();
     // Test that static literal string arguments are not copied.
-    base::debug::TraceEventHandle handle1 =
+    TraceEventHandle handle1 =
         trace_event_internal::AddTraceEvent(
             TRACE_EVENT_PHASE_INSTANT, category_group_enabled, "name1", 0, 0,
             "arg1", "argval", "arg2", "argval");
     // Test that static TRACE_STR_COPY NULL string arguments are not copied.
     const char* str1 = NULL;
     const char* str2 = NULL;
-    base::debug::TraceEventHandle handle2 =
+    TraceEventHandle handle2 =
         trace_event_internal::AddTraceEvent(
             TRACE_EVENT_PHASE_INSTANT, category_group_enabled, "name2", 0, 0,
             "arg1", TRACE_STR_COPY(str1),
@@ -1717,20 +1731,20 @@ TEST_F(TraceEventTestFixture, TraceEnableDisable) {
   TraceLog* trace_log = TraceLog::GetInstance();
   CategoryFilter cf_inc_all("*");
   trace_log->SetEnabled(cf_inc_all,
-                        base::debug::TraceLog::RECORDING_MODE,
-                        TraceLog::RECORD_UNTIL_FULL);
+                        TraceLog::RECORDING_MODE,
+                        TraceOptions());
   EXPECT_TRUE(trace_log->IsEnabled());
   trace_log->SetDisabled();
   EXPECT_FALSE(trace_log->IsEnabled());
 
   trace_log->SetEnabled(cf_inc_all,
-                        base::debug::TraceLog::RECORDING_MODE,
-                        TraceLog::RECORD_UNTIL_FULL);
+                        TraceLog::RECORDING_MODE,
+                        TraceOptions());
   EXPECT_TRUE(trace_log->IsEnabled());
   const std::vector<std::string> empty;
-  trace_log->SetEnabled(CategoryFilter(""),
-                        base::debug::TraceLog::RECORDING_MODE,
-                        TraceLog::RECORD_UNTIL_FULL);
+  trace_log->SetEnabled(CategoryFilter(),
+                        TraceLog::RECORDING_MODE,
+                        TraceOptions());
   EXPECT_TRUE(trace_log->IsEnabled());
   trace_log->SetDisabled();
   EXPECT_FALSE(trace_log->IsEnabled());
@@ -1741,20 +1755,20 @@ TEST_F(TraceEventTestFixture, TraceEnableDisable) {
 TEST_F(TraceEventTestFixture, TraceCategoriesAfterNestedEnable) {
   TraceLog* trace_log = TraceLog::GetInstance();
   trace_log->SetEnabled(CategoryFilter("foo,bar"),
-                        base::debug::TraceLog::RECORDING_MODE,
-                        TraceLog::RECORD_UNTIL_FULL);
+                        TraceLog::RECORDING_MODE,
+                        TraceOptions());
   EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("foo"));
   EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("bar"));
   EXPECT_FALSE(*trace_log->GetCategoryGroupEnabled("baz"));
   trace_log->SetEnabled(CategoryFilter("foo2"),
-                        base::debug::TraceLog::RECORDING_MODE,
-                        TraceLog::RECORD_UNTIL_FULL);
+                        TraceLog::RECORDING_MODE,
+                        TraceOptions());
   EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("foo2"));
   EXPECT_FALSE(*trace_log->GetCategoryGroupEnabled("baz"));
   // The "" becomes the default catergory set when applied.
-  trace_log->SetEnabled(CategoryFilter(""),
-                        base::debug::TraceLog::RECORDING_MODE,
-                        TraceLog::RECORD_UNTIL_FULL);
+  trace_log->SetEnabled(CategoryFilter(),
+                        TraceLog::RECORDING_MODE,
+                        TraceOptions());
   EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("foo"));
   EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("baz"));
   EXPECT_STREQ("-*Debug,-*Test",
@@ -1766,13 +1780,13 @@ TEST_F(TraceEventTestFixture, TraceCategoriesAfterNestedEnable) {
   EXPECT_FALSE(*trace_log->GetCategoryGroupEnabled("baz"));
 
   trace_log->SetEnabled(CategoryFilter("-foo,-bar"),
-                        base::debug::TraceLog::RECORDING_MODE,
-                        TraceLog::RECORD_UNTIL_FULL);
+                        TraceLog::RECORDING_MODE,
+                        TraceOptions());
   EXPECT_FALSE(*trace_log->GetCategoryGroupEnabled("foo"));
   EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("baz"));
   trace_log->SetEnabled(CategoryFilter("moo"),
-                        base::debug::TraceLog::RECORDING_MODE,
-                        TraceLog::RECORD_UNTIL_FULL);
+                        TraceLog::RECORDING_MODE,
+                        TraceOptions());
   EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("baz"));
   EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("moo"));
   EXPECT_FALSE(*trace_log->GetCategoryGroupEnabled("foo"));
@@ -1783,12 +1797,12 @@ TEST_F(TraceEventTestFixture, TraceCategoriesAfterNestedEnable) {
 
   // Make sure disabled categories aren't cleared if we set in the second.
   trace_log->SetEnabled(CategoryFilter("disabled-by-default-cc,foo"),
-                        base::debug::TraceLog::RECORDING_MODE,
-                        TraceLog::RECORD_UNTIL_FULL);
+                        TraceLog::RECORDING_MODE,
+                        TraceOptions());
   EXPECT_FALSE(*trace_log->GetCategoryGroupEnabled("bar"));
   trace_log->SetEnabled(CategoryFilter("disabled-by-default-gpu"),
-                        base::debug::TraceLog::RECORDING_MODE,
-                        TraceLog::RECORD_UNTIL_FULL);
+                        TraceLog::RECORDING_MODE,
+                        TraceOptions());
   EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("disabled-by-default-cc"));
   EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("disabled-by-default-gpu"));
   EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("bar"));
@@ -1799,11 +1813,11 @@ TEST_F(TraceEventTestFixture, TraceCategoriesAfterNestedEnable) {
 }
 
 TEST_F(TraceEventTestFixture, TraceSampling) {
-  TraceLog::GetInstance()->SetEnabled(
-      CategoryFilter("*"),
-      base::debug::TraceLog::RECORDING_MODE,
-      TraceLog::Options(TraceLog::RECORD_UNTIL_FULL |
-                        TraceLog::ENABLE_SAMPLING));
+  TraceOptions trace_options(RECORD_UNTIL_FULL);
+  trace_options.enable_sampling = true;
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
+                                      TraceLog::RECORDING_MODE,
+                                      trace_options);
 
   TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(1, "cc", "Stuff");
   TraceLog::GetInstance()->WaitSamplingEventForTesting();
@@ -1818,11 +1832,11 @@ TEST_F(TraceEventTestFixture, TraceSampling) {
 }
 
 TEST_F(TraceEventTestFixture, TraceSamplingScope) {
-  TraceLog::GetInstance()->SetEnabled(
-    CategoryFilter("*"),
-    base::debug::TraceLog::RECORDING_MODE,
-    TraceLog::Options(TraceLog::RECORD_UNTIL_FULL |
-                      TraceLog::ENABLE_SAMPLING));
+  TraceOptions trace_options(RECORD_UNTIL_FULL);
+  trace_options.enable_sampling = true;
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
+                                      TraceLog::RECORDING_MODE,
+                                      trace_options);
 
   TRACE_EVENT_SCOPED_SAMPLING_STATE("AAA", "name");
   TraceLog::GetInstance()->WaitSamplingEventForTesting();
@@ -1853,10 +1867,12 @@ TEST_F(TraceEventTestFixture, TraceSamplingScope) {
 }
 
 TEST_F(TraceEventTestFixture, TraceContinuousSampling) {
-  TraceLog::GetInstance()->SetEnabled(
-      CategoryFilter("*"),
-      base::debug::TraceLog::MONITORING_MODE,
-      TraceLog::Options(TraceLog::ENABLE_SAMPLING));
+  TraceOptions trace_options(RECORD_UNTIL_FULL);
+  trace_options.enable_sampling = true;
+
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
+                                      TraceLog::MONITORING_MODE,
+                                      trace_options);
 
   TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(1, "category", "AAA");
   TraceLog::GetInstance()->WaitSamplingEventForTesting();
@@ -1899,7 +1915,7 @@ TEST_F(TraceEventTestFixture, TraceContinuousSampling) {
   Clear();
 }
 
-class MyData : public base::debug::ConvertableToTraceFormat {
+class MyData : public ConvertableToTraceFormat {
  public:
   MyData() {}
 
@@ -1913,9 +1929,10 @@ class MyData : public base::debug::ConvertableToTraceFormat {
 };
 
 TEST_F(TraceEventTestFixture, ConvertableTypes) {
-  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
-      base::debug::TraceLog::RECORDING_MODE,
-      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("*"),
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
 
   scoped_refptr<ConvertableToTraceFormat> data(new MyData());
   scoped_refptr<ConvertableToTraceFormat> data1(new MyData());
@@ -2019,9 +2036,10 @@ TEST_F(TraceEventTestFixture, ConvertableTypes) {
 }
 
 TEST_F(TraceEventTestFixture, PrimitiveArgs) {
-  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
-      base::debug::TraceLog::RECORDING_MODE,
-      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("*"),
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
 
   TRACE_EVENT1("foo", "event1", "int_one", 1);
   TRACE_EVENT1("foo", "event2", "int_neg_ten", -10);
@@ -2282,9 +2300,10 @@ TEST_F(TraceEventCallbackTest, TraceEventCallback) {
 }
 
 TEST_F(TraceEventCallbackTest, TraceEventCallbackWhileFull) {
-  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
-      base::debug::TraceLog::RECORDING_MODE,
-      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("*"),
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
   do {
     TRACE_EVENT_INSTANT0("all", "badger badger", TRACE_EVENT_SCOPE_GLOBAL);
   } while (!TraceLog::GetInstance()->BufferIsFull());
@@ -2304,9 +2323,10 @@ TEST_F(TraceEventCallbackTest, TraceEventCallbackAndRecording1) {
                                                    Callback);
   TRACE_EVENT_INSTANT0("recording", "no", TRACE_EVENT_SCOPE_GLOBAL);
   TRACE_EVENT_INSTANT0("callback", "yes", TRACE_EVENT_SCOPE_GLOBAL);
-  TraceLog::GetInstance()->SetEnabled(CategoryFilter("recording"),
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("recording"),
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
   TRACE_EVENT_INSTANT0("recording", "yes", TRACE_EVENT_SCOPE_GLOBAL);
   TRACE_EVENT_INSTANT0("callback", "yes", TRACE_EVENT_SCOPE_GLOBAL);
   TraceLog::GetInstance()->SetEventCallbackDisabled();
@@ -2328,9 +2348,10 @@ TEST_F(TraceEventCallbackTest, TraceEventCallbackAndRecording2) {
                                                    Callback);
   TRACE_EVENT_INSTANT0("recording", "no", TRACE_EVENT_SCOPE_GLOBAL);
   TRACE_EVENT_INSTANT0("callback", "yes", TRACE_EVENT_SCOPE_GLOBAL);
-  TraceLog::GetInstance()->SetEnabled(CategoryFilter("recording"),
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("recording"),
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
   TRACE_EVENT_INSTANT0("recording", "yes", TRACE_EVENT_SCOPE_GLOBAL);
   TRACE_EVENT_INSTANT0("callback", "yes", TRACE_EVENT_SCOPE_GLOBAL);
   EndTraceAndFlush();
@@ -2348,9 +2369,10 @@ TEST_F(TraceEventCallbackTest, TraceEventCallbackAndRecording2) {
 TEST_F(TraceEventCallbackTest, TraceEventCallbackAndRecording3) {
   TRACE_EVENT_INSTANT0("recording", "no", TRACE_EVENT_SCOPE_GLOBAL);
   TRACE_EVENT_INSTANT0("callback", "no", TRACE_EVENT_SCOPE_GLOBAL);
-  TraceLog::GetInstance()->SetEnabled(CategoryFilter("recording"),
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("recording"),
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
   TRACE_EVENT_INSTANT0("recording", "yes", TRACE_EVENT_SCOPE_GLOBAL);
   TRACE_EVENT_INSTANT0("callback", "no", TRACE_EVENT_SCOPE_GLOBAL);
   TraceLog::GetInstance()->SetEventCallbackEnabled(CategoryFilter("callback"),
@@ -2372,9 +2394,10 @@ TEST_F(TraceEventCallbackTest, TraceEventCallbackAndRecording3) {
 TEST_F(TraceEventCallbackTest, TraceEventCallbackAndRecording4) {
   TRACE_EVENT_INSTANT0("recording", "no", TRACE_EVENT_SCOPE_GLOBAL);
   TRACE_EVENT_INSTANT0("callback", "no", TRACE_EVENT_SCOPE_GLOBAL);
-  TraceLog::GetInstance()->SetEnabled(CategoryFilter("recording"),
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("recording"),
+      TraceLog::RECORDING_MODE,
+      TraceOptions());
   TRACE_EVENT_INSTANT0("recording", "yes", TRACE_EVENT_SCOPE_GLOBAL);
   TRACE_EVENT_INSTANT0("callback", "no", TRACE_EVENT_SCOPE_GLOBAL);
   TraceLog::GetInstance()->SetEventCallbackEnabled(CategoryFilter("callback"),
@@ -2397,9 +2420,10 @@ TEST_F(TraceEventCallbackTest, TraceEventCallbackAndRecordingDuration) {
                                                    Callback);
   {
     TRACE_EVENT0("callback", "duration1");
-    TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
-                                        base::debug::TraceLog::RECORDING_MODE,
-                                        TraceLog::RECORD_UNTIL_FULL);
+    TraceLog::GetInstance()->SetEnabled(
+        CategoryFilter("*"),
+        TraceLog::RECORDING_MODE,
+        TraceOptions());
     TRACE_EVENT0("callback", "duration2");
     EndTraceAndFlush();
     TRACE_EVENT0("callback", "duration3");
@@ -2424,8 +2448,8 @@ TEST_F(TraceEventCallbackTest, TraceEventCallbackAndRecordingDuration) {
 TEST_F(TraceEventTestFixture, MAYBE_TraceBufferVectorReportFull) {
   TraceLog* trace_log = TraceLog::GetInstance();
   trace_log->SetEnabled(CategoryFilter("*"),
-      base::debug::TraceLog::RECORDING_MODE,
-      TraceLog::RECORD_UNTIL_FULL);
+                        TraceLog::RECORDING_MODE,
+                        TraceOptions());
   trace_log->logged_events_.reset(
       trace_log->CreateTraceBufferVectorOfSize(100));
   do {
@@ -2471,8 +2495,8 @@ TEST_F(TraceEventTestFixture, MAYBE_TraceBufferVectorReportFull) {
 
 TEST_F(TraceEventTestFixture, TraceBufferRingBufferGetReturnChunk) {
   TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::RECORD_CONTINUOUSLY);
+                                      TraceLog::RECORDING_MODE,
+                                      TraceOptions(RECORD_CONTINUOUSLY));
   TraceBuffer* buffer = TraceLog::GetInstance()->trace_buffer();
   size_t capacity = buffer->Capacity();
   size_t num_chunks = capacity / TraceBufferChunk::kTraceBufferChunkSize;
@@ -2531,8 +2555,8 @@ TEST_F(TraceEventTestFixture, TraceBufferRingBufferGetReturnChunk) {
 
 TEST_F(TraceEventTestFixture, TraceBufferRingBufferHalfIteration) {
   TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::RECORD_CONTINUOUSLY);
+                                      TraceLog::RECORDING_MODE,
+                                      TraceOptions(RECORD_CONTINUOUSLY));
   TraceBuffer* buffer = TraceLog::GetInstance()->trace_buffer();
   size_t capacity = buffer->Capacity();
   size_t num_chunks = capacity / TraceBufferChunk::kTraceBufferChunkSize;
@@ -2559,8 +2583,8 @@ TEST_F(TraceEventTestFixture, TraceBufferRingBufferHalfIteration) {
 
 TEST_F(TraceEventTestFixture, TraceBufferRingBufferFullIteration) {
   TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::RECORD_CONTINUOUSLY);
+                                      TraceLog::RECORDING_MODE,
+                                      TraceOptions(RECORD_CONTINUOUSLY));
   TraceBuffer* buffer = TraceLog::GetInstance()->trace_buffer();
   size_t capacity = buffer->Capacity();
   size_t num_chunks = capacity / TraceBufferChunk::kTraceBufferChunkSize;
@@ -2599,7 +2623,7 @@ TEST_F(TraceEventTestFixture, CategoryFilter) {
   EXPECT_FALSE(default_cf.IsCategoryGroupEnabled("CategoryTest,Category2"));
 
   // Make sure that upon an empty string, we fall back to the default filter.
-  default_cf = CategoryFilter("");
+  default_cf = CategoryFilter();
   category_filter_str = default_cf.ToString();
   EXPECT_STREQ("-*Debug,-*Test", category_filter_str.c_str());
   EXPECT_TRUE(default_cf.IsCategoryGroupEnabled("not-excluded-category"));
@@ -2716,6 +2740,43 @@ TEST_F(TraceEventTestFixture, SetCurrentThreadBlocksMessageLoopBeforeTracing) {
   thread.Stop();
 }
 
+TEST_F(TraceEventTestFixture, ConvertTraceOptionsToInternalOptions) {
+  TraceLog* trace_log = TraceLog::GetInstance();
+  TraceOptions options(RECORD_UNTIL_FULL);
+  EXPECT_EQ(TraceLog::kInternalRecordUntilFull,
+            trace_log->GetInternalOptionsFromTraceOptions(options));
+
+  options.record_mode = RECORD_CONTINUOUSLY;
+  EXPECT_EQ(TraceLog::kInternalRecordContinuously,
+            trace_log->GetInternalOptionsFromTraceOptions(options));
+
+  options.record_mode = ECHO_TO_CONSOLE;
+  EXPECT_EQ(TraceLog::kInternalEchoToConsole,
+            trace_log->GetInternalOptionsFromTraceOptions(options));
+
+  options.enable_sampling = true;
+
+  options.record_mode = RECORD_UNTIL_FULL;
+  EXPECT_EQ(
+      TraceLog::kInternalRecordUntilFull | TraceLog::kInternalEnableSampling,
+      trace_log->GetInternalOptionsFromTraceOptions(options));
+
+  options.record_mode = RECORD_CONTINUOUSLY;
+  EXPECT_EQ(
+      TraceLog::kInternalRecordContinuously | TraceLog::kInternalEnableSampling,
+      trace_log->GetInternalOptionsFromTraceOptions(options));
+
+  options.record_mode = ECHO_TO_CONSOLE;
+  EXPECT_EQ(
+      TraceLog::kInternalEchoToConsole | TraceLog::kInternalEnableSampling,
+      trace_log->GetInternalOptionsFromTraceOptions(options));
+
+  options.enable_systrace = true;
+  EXPECT_EQ(
+      TraceLog::kInternalEchoToConsole | TraceLog::kInternalEnableSampling,
+      trace_log->GetInternalOptionsFromTraceOptions(options));
+}
+
 void SetBlockingFlagAndBlockUntilStopped(WaitableEvent* task_start_event,
                                          WaitableEvent* task_stop_event) {
   TraceLog::GetInstance()->SetCurrentThreadBlocksMessageLoop();
@@ -2807,9 +2868,10 @@ TEST_F(TraceEventTestFixture, EchoToConsole) {
       logging::GetLogMessageHandler();
   logging::SetLogMessageHandler(MockLogMessageHandler);
 
-  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::ECHO_TO_CONSOLE);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("*"),
+      TraceLog::RECORDING_MODE,
+      TraceOptions(ECHO_TO_CONSOLE));
   TRACE_EVENT_BEGIN0("a", "begin_end");
   {
     TRACE_EVENT0("b", "duration");
@@ -2843,9 +2905,10 @@ TEST_F(TraceEventTestFixture, EchoToConsoleTraceEventRecursion) {
       logging::GetLogMessageHandler();
   logging::SetLogMessageHandler(LogMessageHandlerWithTraceEvent);
 
-  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
-                                      base::debug::TraceLog::RECORDING_MODE,
-                                      TraceLog::ECHO_TO_CONSOLE);
+  TraceLog::GetInstance()->SetEnabled(
+      CategoryFilter("*"),
+      TraceLog::RECORDING_MODE,
+      TraceOptions(ECHO_TO_CONSOLE));
   {
     // This should not cause deadlock or infinite recursion.
     TRACE_EVENT0("b", "duration");
@@ -2931,6 +2994,77 @@ TEST_F(TraceEventTestFixture, SyntheticDelayConfigurationToString) {
   CategoryFilter filter(config);
   EXPECT_EQ(config, filter.ToString());
 }
+
+TEST(TraceOptionsTest, TraceOptionsFromString) {
+  TraceOptions options = TraceOptions("record-until-full");
+  EXPECT_EQ(RECORD_UNTIL_FULL, options.record_mode);
+  EXPECT_FALSE(options.enable_sampling);
+  EXPECT_FALSE(options.enable_systrace);
+
+  options = TraceOptions(RECORD_CONTINUOUSLY);
+  EXPECT_EQ(RECORD_CONTINUOUSLY, options.record_mode);
+  EXPECT_FALSE(options.enable_sampling);
+  EXPECT_FALSE(options.enable_systrace);
+
+  options = TraceOptions("trace-to-console");
+  EXPECT_EQ(ECHO_TO_CONSOLE, options.record_mode);
+  EXPECT_FALSE(options.enable_sampling);
+  EXPECT_FALSE(options.enable_systrace);
+
+  options = TraceOptions("record-until-full, enable-sampling");
+  EXPECT_EQ(RECORD_UNTIL_FULL, options.record_mode);
+  EXPECT_TRUE(options.enable_sampling);
+  EXPECT_FALSE(options.enable_systrace);
+
+  options = TraceOptions("enable-systrace,record-continuously");
+  EXPECT_EQ(RECORD_CONTINUOUSLY, options.record_mode);
+  EXPECT_FALSE(options.enable_sampling);
+  EXPECT_TRUE(options.enable_systrace);
+
+  options = TraceOptions("enable-systrace, trace-to-console,enable-sampling");
+  EXPECT_EQ(ECHO_TO_CONSOLE, options.record_mode);
+  EXPECT_TRUE(options.enable_sampling);
+  EXPECT_TRUE(options.enable_systrace);
+
+  options =
+      TraceOptions("record-continuously,record-until-full,trace-to-console");
+  EXPECT_EQ(ECHO_TO_CONSOLE, options.record_mode);
+  EXPECT_FALSE(options.enable_systrace);
+  EXPECT_FALSE(options.enable_sampling);
+
+  options = TraceOptions("");
+  EXPECT_EQ(RECORD_UNTIL_FULL, options.record_mode);
+  EXPECT_FALSE(options.enable_systrace);
+  EXPECT_FALSE(options.enable_sampling);
+
+#if GTEST_HAS_EXCEPTIONS
+  EXPECT_THROW(TraceOptions("foo-bar-baz"), int);
+#endif
+}
+
+TEST(TraceOptionsTest, TraceOptionsToString) {
+  // Test that we can intialize TraceOptions from a string got from
+  // TraceOptions.ToString() method to get a same TraceOptions.
+  TraceRecordMode modes[] = {
+      RECORD_UNTIL_FULL, RECORD_CONTINUOUSLY, ECHO_TO_CONSOLE};
+  bool enable_sampling_options[] = {true, false};
+  bool enable_systrace_options[] = {true, false};
+
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 2; ++j) {
+      for (int k = 0; k < 2; ++k) {
+        TraceOptions original_option = TraceOptions(modes[i]);
+        original_option.enable_sampling = enable_sampling_options[j];
+        original_option.enable_systrace = enable_systrace_options[k];
+        TraceOptions new_options = TraceOptions(original_option.ToString());
+        EXPECT_EQ(original_option.record_mode, new_options.record_mode);
+        EXPECT_EQ(original_option.enable_sampling, new_options.enable_sampling);
+        EXPECT_EQ(original_option.enable_systrace, new_options.enable_systrace);
+      }
+    }
+  }
+}
+
 
 }  // namespace debug
 }  // namespace base

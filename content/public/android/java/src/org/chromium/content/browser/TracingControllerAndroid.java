@@ -143,11 +143,10 @@ public class TracingControllerAndroid {
     /**
      * Start profiling to a new file in the Downloads directory.
      *
-     * Calls #startTracing(String, boolean, String, boolean) with a new timestamped filename.
-     * @see #startTracing(String, boolean, String, boolean)
+     * Calls #startTracing(String, boolean, String, String) with a new timestamped filename.
+     * @see #startTracing(String, boolean, String, String)
      */
-    public boolean startTracing(boolean showToasts, String categories,
-            boolean recordContinuously) {
+    public boolean startTracing(boolean showToasts, String categories, String traceOptions) {
         mShowToasts = showToasts;
 
         String filePath = generateTracingFilePath();
@@ -155,7 +154,7 @@ public class TracingControllerAndroid {
           logAndToastError(
               mContext.getString(R.string.profiler_no_storage_toast));
         }
-        return startTracing(filePath, showToasts, categories, recordContinuously);
+        return startTracing(filePath, showToasts, categories, traceOptions);
     }
 
     private void initializeNativeControllerIfNeeded() {
@@ -177,11 +176,12 @@ public class TracingControllerAndroid {
      * notifications about the profiling system.
      * @param categories Which categories to trace. See TracingControllerAndroid::BeginTracing()
      * (in content/public/browser/trace_controller.h) for the format.
-     * @param recordContinuously Record until the user ends the trace. The trace buffer is fixed
-     * size and we use it as a ring buffer during recording.
+     * @param traceOptions Which trace options to use. See
+     * TraceOptions::TraceOptions(const std::string& options_string)
+     * (in base/debug/trace_event_impl.h) for the format.
      */
     public boolean startTracing(String filename, boolean showToasts, String categories,
-            boolean recordContinuously) {
+            String traceOptions) {
         mShowToasts = showToasts;
         if (isTracing()) {
             // Don't need a toast because this shouldn't happen via the UI.
@@ -191,7 +191,7 @@ public class TracingControllerAndroid {
         // Lazy initialize the native side, to allow construction before the library is loaded.
         initializeNativeControllerIfNeeded();
         if (!nativeStartTracing(mNativeTracingControllerAndroid, categories,
-                recordContinuously)) {
+                traceOptions.toString())) {
             logAndToastError(mContext.getString(R.string.profiler_error_toast));
             return false;
         }
@@ -290,13 +290,14 @@ public class TracingControllerAndroid {
                     categories = categories.replaceFirst(
                             DEFAULT_CHROME_CATEGORIES_PLACE_HOLDER, nativeGetDefaultCategories());
                 }
-                boolean recordContinuously =
-                        intent.getStringExtra(RECORD_CONTINUOUSLY_EXTRA) != null;
+                String traceOptions =
+                        intent.getStringExtra(RECORD_CONTINUOUSLY_EXTRA) == null ?
+                        "record-until-full" : "record-continuously";
                 String filename = intent.getStringExtra(FILE_EXTRA);
                 if (filename != null) {
-                    startTracing(filename, true, categories, recordContinuously);
+                    startTracing(filename, true, categories, traceOptions);
                 } else {
-                    startTracing(true, categories, recordContinuously);
+                    startTracing(true, categories, traceOptions);
                 }
             } else if (intent.getAction().endsWith(ACTION_STOP)) {
                 stopTracing();
@@ -312,7 +313,7 @@ public class TracingControllerAndroid {
     private native long nativeInit();
     private native void nativeDestroy(long nativeTracingControllerAndroid);
     private native boolean nativeStartTracing(
-            long nativeTracingControllerAndroid, String categories, boolean recordContinuously);
+            long nativeTracingControllerAndroid, String categories, String traceOptions);
     private native void nativeStopTracing(long nativeTracingControllerAndroid, String filename);
     private native boolean nativeGetKnownCategoryGroupsAsync(long nativeTracingControllerAndroid);
     private native String nativeGetDefaultCategories();

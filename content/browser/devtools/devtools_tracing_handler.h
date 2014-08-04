@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/debug/trace_event.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/devtools/devtools_protocol.h"
 #include "content/public/browser/tracing_controller.h"
@@ -53,7 +54,7 @@ class DevToolsTracingHandler : public DevToolsProtocol::Handler {
   void OnCategoriesReceived(scoped_refptr<DevToolsProtocol::Command> command,
                             const std::set<std::string>& category_set);
 
-  TracingController::Options TraceOptionsFromString(const std::string& options);
+  base::debug::TraceOptions TraceOptionsFromString(const std::string& options);
 
   void SetupTimer(double usage_reporting_interval);
 

@@ -50,7 +50,7 @@ ChildTraceMessageFilter::~ChildTraceMessageFilter() {}
 void ChildTraceMessageFilter::OnBeginTracing(
     const std::string& category_filter_str,
     base::TimeTicks browser_time,
-    int options) {
+    const std::string& options) {
 #if defined(__native_client__)
   // NaCl and system times are offset by a bit, so subtract some time from
   // the captured timestamps. The value might be off by a bit due to messaging
@@ -63,7 +63,7 @@ void ChildTraceMessageFilter::OnBeginTracing(
   TraceLog::GetInstance()->SetEnabled(
       base::debug::CategoryFilter(category_filter_str),
       base::debug::TraceLog::RECORDING_MODE,
-      static_cast<base::debug::TraceLog::Options>(options));
+      base::debug::TraceOptions(options));
 }
 
 void ChildTraceMessageFilter::OnEndTracing() {
@@ -80,11 +80,11 @@ void ChildTraceMessageFilter::OnEndTracing() {
 void ChildTraceMessageFilter::OnEnableMonitoring(
     const std::string& category_filter_str,
     base::TimeTicks browser_time,
-    int options) {
+    const std::string& options) {
   TraceLog::GetInstance()->SetEnabled(
       base::debug::CategoryFilter(category_filter_str),
       base::debug::TraceLog::MONITORING_MODE,
-      static_cast<base::debug::TraceLog::Options>(options));
+      base::debug::TraceOptions(options));
 }
 
 void ChildTraceMessageFilter::OnDisableMonitoring() {

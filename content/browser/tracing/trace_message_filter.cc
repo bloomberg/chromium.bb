@@ -57,12 +57,12 @@ bool TraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void TraceMessageFilter::SendBeginTracing(
-    const std::string& category_filter_str,
-    base::debug::TraceLog::Options options) {
+    const base::debug::CategoryFilter& category_filter,
+    const base::debug::TraceOptions& options) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Send(new TracingMsg_BeginTracing(category_filter_str,
+  Send(new TracingMsg_BeginTracing(category_filter.ToString(),
                                    base::TimeTicks::NowFromSystemTraceTime(),
-                                   options));
+                                   options.ToString()));
 }
 
 void TraceMessageFilter::SendEndTracing() {
@@ -73,12 +73,12 @@ void TraceMessageFilter::SendEndTracing() {
 }
 
 void TraceMessageFilter::SendEnableMonitoring(
-    const std::string& category_filter_str,
-    base::debug::TraceLog::Options options) {
+    const base::debug::CategoryFilter& category_filter,
+    const base::debug::TraceOptions& options) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Send(new TracingMsg_EnableMonitoring(category_filter_str,
+  Send(new TracingMsg_EnableMonitoring(category_filter.ToString(),
       base::TimeTicks::NowFromSystemTraceTime(),
-      options));
+      options.ToString()));
 }
 
 void TraceMessageFilter::SendDisableMonitoring() {

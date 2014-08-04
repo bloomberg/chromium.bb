@@ -48,7 +48,7 @@ void TraceEventAnalyzerTest::BeginTracing() {
   base::debug::TraceLog::GetInstance()->SetEnabled(
       base::debug::CategoryFilter("*"),
       base::debug::TraceLog::RECORDING_MODE,
-      base::debug::TraceLog::RECORD_UNTIL_FULL);
+      base::debug::TraceOptions());
 }
 
 void TraceEventAnalyzerTest::EndTracing() {

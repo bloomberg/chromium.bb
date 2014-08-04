@@ -30,21 +30,22 @@ class TracingControllerImpl : public TracingController {
   virtual bool GetCategories(
       const GetCategoriesDoneCallback& callback) OVERRIDE;
   virtual bool EnableRecording(
-      const std::string& category_filter,
-      TracingController::Options options,
+      const base::debug::CategoryFilter& category_filter,
+      const base::debug::TraceOptions& trace_options,
       const EnableRecordingDoneCallback& callback) OVERRIDE;
   virtual bool DisableRecording(
       const base::FilePath& result_file_path,
       const TracingFileResultCallback& callback) OVERRIDE;
-  virtual bool EnableMonitoring(const std::string& category_filter,
-      TracingController::Options options,
+  virtual bool EnableMonitoring(
+      const base::debug::CategoryFilter& category_filter,
+      const base::debug::TraceOptions& trace_options,
       const EnableMonitoringDoneCallback& callback) OVERRIDE;
   virtual bool DisableMonitoring(
       const DisableMonitoringDoneCallback& callback) OVERRIDE;
   virtual void GetMonitoringStatus(
       bool* out_enabled,
-      std::string* out_category_filter,
-      TracingController::Options* out_options) OVERRIDE;
+      base::debug::CategoryFilter* out_category_filter,
+      base::debug::TraceOptions* out_trace_options) OVERRIDE;
   virtual bool CaptureMonitoringSnapshot(
       const base::FilePath& result_file_path,
       const TracingFileResultCallback& callback) OVERRIDE;
@@ -131,19 +132,21 @@ class TracingControllerImpl : public TracingController {
 
   void OnWatchEventMatched();
 
-  void SetEnabledOnFileThread(const std::string& category_filter,
-                              int mode,
-                              int options,
-                              const base::Closure& callback);
+  void SetEnabledOnFileThread(
+      const base::debug::CategoryFilter& category_filter,
+      int mode,
+      const base::debug::TraceOptions& trace_options,
+      const base::Closure& callback);
   void SetDisabledOnFileThread(const base::Closure& callback);
-  void OnEnableRecordingDone(const std::string& category_filter,
-                             int trace_options,
+  void OnEnableRecordingDone(const base::debug::CategoryFilter& category_filter,
+                             const base::debug::TraceOptions& trace_options,
                              const EnableRecordingDoneCallback& callback);
   void OnDisableRecordingDone(const base::FilePath& result_file_path,
                               const TracingFileResultCallback& callback);
-  void OnEnableMonitoringDone(const std::string& category_filter,
-                              int trace_options,
-                              const EnableMonitoringDoneCallback& callback);
+  void OnEnableMonitoringDone(
+      const base::debug::CategoryFilter& category_filter,
+      const base::debug::TraceOptions& trace_options,
+      const EnableMonitoringDoneCallback& callback);
   void OnDisableMonitoringDone(const DisableMonitoringDoneCallback& callback);
 
   void OnMonitoringStateChanged(bool is_monitoring);
@@ -166,7 +169,7 @@ class TracingControllerImpl : public TracingController {
 #endif
   bool is_recording_;
   bool is_monitoring_;
-  TracingController::Options options_;
+  base::debug::TraceOptions trace_options_;
 
   GetCategoriesDoneCallback pending_get_categories_done_callback_;
   TracingFileResultCallback pending_disable_recording_done_callback_;

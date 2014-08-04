@@ -44,6 +44,7 @@ using blink::WebVector;
 using blink::WebView;
 
 using base::debug::TraceLog;
+using base::debug::TraceOptions;
 
 namespace content {
 
@@ -173,7 +174,7 @@ void DevToolsAgent::enableTracing(const WebString& category_filter) {
   TraceLog* trace_log = TraceLog::GetInstance();
   trace_log->SetEnabled(base::debug::CategoryFilter(category_filter.utf8()),
                         TraceLog::RECORDING_MODE,
-                        TraceLog::RECORD_UNTIL_FULL);
+                        TraceOptions());
 }
 
 void DevToolsAgent::disableTracing() {

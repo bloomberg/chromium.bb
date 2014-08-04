@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/debug/trace_event.h"
 #include "content/common/content_export.h"
 
 namespace base {
@@ -25,12 +26,6 @@ class TracingController;
 // the UI thread.
 class TracingController {
  public:
-  enum Options {
-    DEFAULT_OPTIONS = 0,
-    ENABLE_SYSTRACE = 1 << 0,
-    ENABLE_SAMPLING = 1 << 1,
-    RECORD_CONTINUOUSLY = 1 << 2,  // For EnableRecording() only.
-  };
 
   CONTENT_EXPORT static TracingController* GetInstance();
 
@@ -65,8 +60,8 @@ class TracingController {
   // |options| controls what kind of tracing is enabled.
   typedef base::Callback<void()> EnableRecordingDoneCallback;
   virtual bool EnableRecording(
-      const std::string& category_filter,
-      TracingController::Options options,
+      const base::debug::CategoryFilter& category_filter,
+      const base::debug::TraceOptions& trace_options,
       const EnableRecordingDoneCallback& callback) = 0;
 
   // Stop recording on all processes.
@@ -105,8 +100,8 @@ class TracingController {
   // |options| controls what kind of tracing is enabled.
   typedef base::Callback<void()> EnableMonitoringDoneCallback;
   virtual bool EnableMonitoring(
-      const std::string& category_filter,
-      TracingController::Options options,
+      const base::debug::CategoryFilter& category_filter,
+      const base::debug::TraceOptions& trace_options,
       const EnableMonitoringDoneCallback& callback) = 0;
 
   // Stop monitoring on all processes.
@@ -118,9 +113,10 @@ class TracingController {
       const DisableMonitoringDoneCallback& callback) = 0;
 
   // Get the current monitoring configuration.
-  virtual void GetMonitoringStatus(bool* out_enabled,
-                                   std::string* out_category_filter,
-                                   TracingController::Options* out_options) = 0;
+  virtual void GetMonitoringStatus(
+      bool* out_enabled,
+      base::debug::CategoryFilter* out_category_filter,
+      base::debug::TraceOptions* out_trace_options) = 0;
 
   // Get the current monitoring traced data.
   //

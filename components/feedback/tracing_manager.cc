@@ -91,7 +91,8 @@ void TracingManager::DiscardTraceData(int id) {
 
 void TracingManager::StartTracing() {
   content::TracingController::GetInstance()->EnableRecording(
-      "", content::TracingController::DEFAULT_OPTIONS,
+      base::debug::CategoryFilter(),
+      base::debug::TraceOptions(),
       content::TracingController::EnableRecordingDoneCallback());
 }
 

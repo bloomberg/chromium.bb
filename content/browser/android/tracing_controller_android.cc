@@ -32,17 +32,18 @@ void TracingControllerAndroid::Destroy(JNIEnv* env, jobject obj) {
 bool TracingControllerAndroid::StartTracing(JNIEnv* env,
                                             jobject obj,
                                             jstring jcategories,
-                                            jboolean record_continuously) {
+                                            jstring jtraceoptions) {
   std::string categories =
       base::android::ConvertJavaStringToUTF8(env, jcategories);
+  std::string trace_options =
+      base::android::ConvertJavaStringToUTF8(env, jtraceoptions);
 
   // This log is required by adb_profile_chrome.py.
   LOG(WARNING) << "Logging performance trace to file";
 
   return TracingController::GetInstance()->EnableRecording(
-      categories,
-      record_continuously ? TracingController::RECORD_CONTINUOUSLY
-                          : TracingController::DEFAULT_OPTIONS,
+      base::debug::CategoryFilter(categories),
+      base::debug::TraceOptions(trace_options),
       TracingController::EnableRecordingDoneCallback());
 }
 

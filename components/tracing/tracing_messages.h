@@ -19,7 +19,7 @@
 IPC_MESSAGE_CONTROL3(TracingMsg_BeginTracing,
                      std::string /*  category_filter_str */,
                      base::TimeTicks /* browser_time */,
-                     int /* base::debug::TraceLog::Options */)
+                     std::string /* base::debug::TraceOptions */)
 
 // Sent to all child processes to disable trace event recording.
 IPC_MESSAGE_CONTROL0(TracingMsg_EndTracing)
@@ -28,7 +28,7 @@ IPC_MESSAGE_CONTROL0(TracingMsg_EndTracing)
 IPC_MESSAGE_CONTROL3(TracingMsg_EnableMonitoring,
                      std::string /*  category_filter_str */,
                      base::TimeTicks /* browser_time */,
-                     int /* base::debug::TraceLog::Options */)
+                     std::string /* base::debug::TraceOptions */)
 
 // Sent to all child processes to stop monitoring.
 IPC_MESSAGE_CONTROL0(TracingMsg_DisableMonitoring)

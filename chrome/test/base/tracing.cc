@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/tracing.h"
 
+#include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
@@ -32,7 +33,8 @@ class InProcessTraceController {
   bool BeginTracing(const std::string& category_patterns) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     return content::TracingController::GetInstance()->EnableRecording(
-        category_patterns, content::TracingController::DEFAULT_OPTIONS,
+        base::debug::CategoryFilter(category_patterns),
+        base::debug::TraceOptions(),
         content::TracingController::EnableRecordingDoneCallback());
   }
 
@@ -50,7 +52,8 @@ class InProcessTraceController {
       return false;
     }
     if (!content::TracingController::GetInstance()->EnableRecording(
-            category_patterns, content::TracingController::DEFAULT_OPTIONS,
+            base::debug::CategoryFilter(category_patterns),
+            base::debug::TraceOptions(),
             base::Bind(&InProcessTraceController::OnEnableTracingComplete,
                        base::Unretained(this)))) {
       return false;

@@ -316,6 +316,8 @@ class BASE_EXPORT CategoryFilter {
   //          is called.
   explicit CategoryFilter(const std::string& filter_string);
 
+  CategoryFilter();
+
   CategoryFilter(const CategoryFilter& cf);
 
   ~CategoryFilter();
@@ -341,7 +343,7 @@ class BASE_EXPORT CategoryFilter {
 
   // Clears both included/excluded pattern lists. This would be equivalent to
   // creating a CategoryFilter with an empty string, through the constructor.
-  // i.e: CategoryFilter("").
+  // i.e: CategoryFilter().
   //
   // When using an empty filter, all categories are considered included as we
   // are not excluding anything.
@@ -371,28 +373,58 @@ class BASE_EXPORT CategoryFilter {
 
 class TraceSamplingThread;
 
+// Options determines how the trace buffer stores data.
+enum TraceRecordMode {
+  // Record until the trace buffer is full.
+  RECORD_UNTIL_FULL,
+
+  // Record until the user ends the trace. The trace buffer is a fixed size
+  // and we use it as a ring buffer during recording.
+  RECORD_CONTINUOUSLY,
+
+  // Echo to console. Events are discarded.
+  ECHO_TO_CONSOLE,
+};
+
+struct BASE_EXPORT TraceOptions {
+
+  TraceOptions()
+      : record_mode(RECORD_UNTIL_FULL),
+        enable_sampling(false),
+        enable_systrace(false) {}
+
+  TraceOptions(TraceRecordMode record_mode)
+      : record_mode(record_mode),
+        enable_sampling(false),
+        enable_systrace(false) {}
+
+  // |options_string| is a comma-delimited list of trace options.
+  // Possible options are: "record-until-full", "record-continuously",
+  // "trace-to-console", "enable-sampling" and "enable-systrace".
+  // The first 3 options are trace recoding modes and hence
+  // mutually exclusive. If more than one trace recording modes appear in the
+  // options_string, the last one takes precedence. If none of the trace
+  // recording mode is specified, recording mode is RECORD_UNTIL_FULL.
+  //
+  // Example: TraceOptions("record-until-full")
+  // Example: TraceOptions("record-continuously, enable-sampling")
+  // Example: TraceOptions("record-until-full, trace-to-console") would have
+  //          ECHO_TO_CONSOLE as the recording mode.
+  explicit TraceOptions(const std::string& options_string);
+
+  std::string ToString() const;
+
+  TraceRecordMode record_mode;
+  bool enable_sampling;
+  bool enable_systrace;
+};
+
 class BASE_EXPORT TraceLog {
  public:
   enum Mode {
     DISABLED = 0,
     RECORDING_MODE,
     MONITORING_MODE,
-  };
-
-  // Options determines how the trace buffer stores data.
-  enum Options {
-    // Record until the trace buffer is full.
-    RECORD_UNTIL_FULL = 1 << 0,
-
-    // Record until the user ends the trace. The trace buffer is a fixed size
-    // and we use it as a ring buffer during recording.
-    RECORD_CONTINUOUSLY = 1 << 1,
-
-    // Enable the sampling profiler in the recording mode.
-    ENABLE_SAMPLING = 1 << 2,
-
-    // Echo to console. Events are discarded.
-    ECHO_TO_CONSOLE = 1 << 3,
   };
 
   // The pointer returned from GetCategoryGroupEnabledInternal() points to a
@@ -417,16 +449,15 @@ class BASE_EXPORT TraceLog {
   // Retrieves a copy (for thread-safety) of the current CategoryFilter.
   CategoryFilter GetCurrentCategoryFilter();
 
-  Options trace_options() const {
-    return static_cast<Options>(subtle::NoBarrier_Load(&trace_options_));
-  }
+  // Retrieves a copy (for thread-safety) of the current TraceOptions.
+  TraceOptions GetCurrentTraceOptions() const;
 
   // Enables normal tracing (recording trace events in the trace buffer).
   // See CategoryFilter comments for details on how to control what categories
   // will be traced. If tracing has already been enabled, |category_filter| will
   // be merged into the current category filter.
   void SetEnabled(const CategoryFilter& category_filter,
-                  Mode mode, Options options);
+                  Mode mode, const TraceOptions& options);
 
   // Disables normal tracing for all categories.
   void SetDisabled();
@@ -606,6 +637,8 @@ class BASE_EXPORT TraceLog {
   void SetCurrentThreadBlocksMessageLoop();
 
  private:
+  typedef unsigned int InternalTraceOptions;
+
   FRIEND_TEST_ALL_PREFIXES(TraceEventTestFixture,
                            TraceBufferRingBufferGetReturnChunk);
   FRIEND_TEST_ALL_PREFIXES(TraceEventTestFixture,
@@ -614,6 +647,9 @@ class BASE_EXPORT TraceLog {
                            TraceBufferRingBufferFullIteration);
   FRIEND_TEST_ALL_PREFIXES(TraceEventTestFixture,
                            TraceBufferVectorReportFull);
+  FRIEND_TEST_ALL_PREFIXES(TraceEventTestFixture,
+                           ConvertTraceOptionsToInternalOptions);
+
 
   // This allows constructor and destructor to be private and usable only
   // by the Singleton class.
@@ -631,6 +667,9 @@ class BASE_EXPORT TraceLog {
   // category filter.
   void UpdateSyntheticDelaysFromCategoryFilter();
 
+  InternalTraceOptions GetInternalOptionsFromTraceOptions(
+      const TraceOptions& options);
+
   class ThreadLocalEventBuffer;
   class OptionalAutoLock;
 
@@ -638,6 +677,11 @@ class BASE_EXPORT TraceLog {
   ~TraceLog();
   const unsigned char* GetCategoryGroupEnabledInternal(const char* name);
   void AddMetadataEventsWhileLocked();
+
+  InternalTraceOptions trace_options() const {
+    return static_cast<InternalTraceOptions>(
+        subtle::NoBarrier_Load(&trace_options_));
+  }
 
   TraceBuffer* trace_buffer() const { return logged_events_.get(); }
   TraceBuffer* CreateTraceBuffer();
@@ -677,6 +721,14 @@ class BASE_EXPORT TraceLog {
   TimeTicks OffsetTimestamp(const TimeTicks& timestamp) const {
     return timestamp - time_offset_;
   }
+
+  // Internal representation of trace options since we store the currently used
+  // trace option as an AtomicWord.
+  static const InternalTraceOptions kInternalNone;
+  static const InternalTraceOptions kInternalRecordUntilFull;
+  static const InternalTraceOptions kInternalRecordContinuously;
+  static const InternalTraceOptions kInternalEchoToConsole;
+  static const InternalTraceOptions kInternalEnableSampling;
 
   // This lock protects TraceLog member accesses (except for members protected
   // by thread_info_lock_) from arbitrary threads.

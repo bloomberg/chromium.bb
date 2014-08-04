@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
@@ -54,8 +55,8 @@ void OnGotCategories(const WebUIDataSource::GotDataCallback& callback,
 }
 
 bool GetTracingOptions(const std::string& data64,
-                       std::string* category_filter_string,
-                       int* tracing_options) {
+                       base::debug::CategoryFilter* category_filter,
+                       base::debug::TraceOptions* tracing_options) {
   std::string data;
   if (!base::Base64Decode(data64, &data)) {
     LOG(ERROR) << "Options were not base64 encoded.";
@@ -73,28 +74,39 @@ bool GetTracingOptions(const std::string& data64,
     return false;
   }
 
-  bool use_system_tracing;
-  bool use_continuous_tracing;
-  bool use_sampling;
+  if (!category_filter) {
+    LOG(ERROR) << "category_filter can't be passed as NULL";
+    return false;
+  }
+
+  if (!tracing_options) {
+    LOG(ERROR) << "tracing_options can't be passed as NULL";
+    return false;
+  }
 
   bool options_ok = true;
-  options_ok &= options->GetString("categoryFilter", category_filter_string);
-  options_ok &= options->GetBoolean("useSystemTracing", &use_system_tracing);
-  options_ok &= options->GetBoolean("useContinuousTracing",
-                                    &use_continuous_tracing);
-  options_ok &= options->GetBoolean("useSampling", &use_sampling);
+  std::string category_filter_string;
+  options_ok &= options->GetString("categoryFilter", &category_filter_string);
+  *category_filter = base::debug::CategoryFilter(category_filter_string);
+
+  options_ok &= options->GetBoolean("useSystemTracing",
+                                    &tracing_options->enable_systrace);
+  options_ok &=
+      options->GetBoolean("useSampling", &tracing_options->enable_sampling);
+
+  bool use_continuous_tracing;
+  options_ok &=
+      options->GetBoolean("useContinuousTracing", &use_continuous_tracing);
+
+  if (use_continuous_tracing)
+    tracing_options->record_mode = base::debug::RECORD_CONTINUOUSLY;
+  else
+    tracing_options->record_mode = base::debug::RECORD_UNTIL_FULL;
+
   if (!options_ok) {
     LOG(ERROR) << "Malformed options";
     return false;
   }
-
-  *tracing_options = 0;
-  if (use_system_tracing)
-    *tracing_options |= TracingController::ENABLE_SYSTRACE;
-  if (use_sampling)
-    *tracing_options |= TracingController::ENABLE_SAMPLING;
-  if (use_continuous_tracing)
-    *tracing_options |= TracingController::RECORD_CONTINUOUSLY;
   return true;
 }
 
@@ -102,14 +114,14 @@ void OnRecordingEnabledAck(const WebUIDataSource::GotDataCallback& callback);
 
 bool BeginRecording(const std::string& data64,
                     const WebUIDataSource::GotDataCallback& callback) {
-  std::string category_filter_string;
-  int tracing_options = 0;
-  if (!GetTracingOptions(data64, &category_filter_string, &tracing_options))
+  base::debug::CategoryFilter category_filter("");
+  base::debug::TraceOptions tracing_options;
+  if (!GetTracingOptions(data64, &category_filter, &tracing_options))
     return false;
 
   return TracingController::GetInstance()->EnableRecording(
-      category_filter_string,
-      static_cast<TracingController::Options>(tracing_options),
+      category_filter,
+      tracing_options,
       base::Bind(&OnRecordingEnabledAck, callback));
 }
 
@@ -145,14 +157,14 @@ void OnMonitoringEnabledAck(const WebUIDataSource::GotDataCallback& callback);
 
 bool EnableMonitoring(const std::string& data64,
                       const WebUIDataSource::GotDataCallback& callback) {
-  std::string category_filter_string;
-  int tracing_options = 0;
-  if (!GetTracingOptions(data64, &category_filter_string, &tracing_options))
+  base::debug::TraceOptions tracing_options;
+  base::debug::CategoryFilter category_filter("");
+  if (!GetTracingOptions(data64, &category_filter, &tracing_options))
     return false;
 
   return TracingController::GetInstance()->EnableMonitoring(
-      category_filter_string,
-      static_cast<TracingController::Options>(tracing_options),
+      category_filter,
+      tracing_options,
       base::Bind(OnMonitoringEnabledAck, callback));
 }
 
@@ -168,21 +180,20 @@ void OnMonitoringDisabled(const WebUIDataSource::GotDataCallback& callback) {
 
 void GetMonitoringStatus(const WebUIDataSource::GotDataCallback& callback) {
   bool is_monitoring;
-  std::string category_filter;
-  TracingController::Options options;
+  base::debug::CategoryFilter category_filter("");
+  base::debug::TraceOptions options;
   TracingController::GetInstance()->GetMonitoringStatus(
       &is_monitoring, &category_filter, &options);
 
   scoped_ptr<base::DictionaryValue>
     monitoring_options(new base::DictionaryValue());
   monitoring_options->SetBoolean("isMonitoring", is_monitoring);
-  monitoring_options->SetString("categoryFilter", category_filter);
-  monitoring_options->SetBoolean("useSystemTracing",
-      (options & TracingController::ENABLE_SYSTRACE) != 0);
-  monitoring_options->SetBoolean("useContinuousTracing",
-      (options & TracingController::RECORD_CONTINUOUSLY) != 0);
-  monitoring_options->SetBoolean("useSampling",
-      (options & TracingController::ENABLE_SAMPLING) != 0);
+  monitoring_options->SetString("categoryFilter", category_filter.ToString());
+  monitoring_options->SetBoolean("useSystemTracing", options.enable_systrace);
+  monitoring_options->SetBoolean(
+      "useContinuousTracing",
+      options.record_mode == base::debug::RECORD_CONTINUOUSLY);
+  monitoring_options->SetBoolean("useSampling", options.enable_sampling);
 
   std::string monitoring_options_json;
   base::JSONWriter::Write(monitoring_options.get(), &monitoring_options_json);

@@ -80,9 +80,10 @@ bool LibraryLoaded(JNIEnv* env, jclass clazz,
   if (command_line->HasSwitch(switches::kTraceStartup)) {
     base::debug::CategoryFilter category_filter(
         command_line->GetSwitchValueASCII(switches::kTraceStartup));
-    base::debug::TraceLog::GetInstance()->SetEnabled(category_filter,
+    base::debug::TraceLog::GetInstance()->SetEnabled(
+        category_filter,
         base::debug::TraceLog::RECORDING_MODE,
-        base::debug::TraceLog::RECORD_UNTIL_FULL);
+        base::debug::TraceOptions());
   }
 
   // Android's main browser loop is custom so we set the browser

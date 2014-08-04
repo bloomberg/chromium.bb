@@ -182,7 +182,7 @@ void StartShutdownTracing() {
     base::debug::TraceLog::GetInstance()->SetEnabled(
         category_filter,
         base::debug::TraceLog::RECORDING_MODE,
-        base::debug::TraceLog::RECORD_UNTIL_FULL);
+        base::debug::TraceOptions());
   }
   TRACE_EVENT0("shutdown", "StartShutdownTracing");
 }

@@ -33,7 +33,8 @@ public class TracingControllerAndroidTest extends ContentShellTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertTrue(tracingController.startTracing(true, "*", false));
+                assertTrue(tracingController.startTracing(
+                    true, "*", "record-until-full"));
             }
         });
 

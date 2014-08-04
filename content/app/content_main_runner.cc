@@ -633,7 +633,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       base::debug::TraceLog::GetInstance()->SetEnabled(
           category_filter,
           base::debug::TraceLog::RECORDING_MODE,
-          base::debug::TraceLog::RECORD_UNTIL_FULL);
+          base::debug::TraceOptions(
+              base::debug::RECORD_UNTIL_FULL));
     }
 #if !defined(OS_ANDROID)
     // Android tracing started at the beginning of the method.

@@ -77,7 +77,8 @@ class GLHelperTest : public testing::Test {
     base::debug::TraceLog::GetInstance()->SetEnabled(
         base::debug::CategoryFilter(filter),
         base::debug::TraceLog::RECORDING_MODE,
-        base::debug::TraceLog::RECORD_UNTIL_FULL);
+        base::debug::TraceOptions(
+            base::debug::RECORD_UNTIL_FULL));
   }
 
   static void TraceDataCB(

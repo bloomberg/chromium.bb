@@ -24,11 +24,11 @@ class TraceMessageFilter : public BrowserMessageFilter {
   virtual void OnChannelClosing() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  void SendBeginTracing(const std::string& category_filter_str,
-                        base::debug::TraceLog::Options options);
+  void SendBeginTracing(const base::debug::CategoryFilter& category_filter_str,
+                        const base::debug::TraceOptions& options);
   void SendEndTracing();
-  void SendEnableMonitoring(const std::string& category_filter_str,
-                            base::debug::TraceLog::Options options);
+  void SendEnableMonitoring(const base::debug::CategoryFilter& category_filter,
+                            const base::debug::TraceOptions& options);
   void SendDisableMonitoring();
   void SendCaptureMonitoringSnapshot();
   void SendGetTraceBufferPercentFull();
