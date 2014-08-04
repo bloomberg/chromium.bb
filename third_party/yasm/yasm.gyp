@@ -534,19 +534,10 @@
       'cflags': [
         '-std=gnu99',
       ],
-      'conditions': [
-        ['clang==1', {
-          'xcode_settings': {
-            'WARNING_CFLAGS': [
-              # re2c is missing CLOSEVOP from one switch.
-              '-Wno-switch',
-            ],
-          },
-          'cflags': [
-            '-Wno-switch',
-          ],
-        }],
-      ],
+      'variables': {
+          # re2c is missing CLOSEVOP from one switch.
+        'clang_warning_flags': [ '-Wno-switch' ],
+      },
       'msvs_disabled_warnings': [ 4267 ],
     },
     {
