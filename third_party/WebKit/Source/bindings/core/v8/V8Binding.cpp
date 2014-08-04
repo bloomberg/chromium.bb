@@ -73,16 +73,6 @@
 
 namespace blink {
 
-v8::Handle<v8::Value> throwError(V8ErrorType errorType, const String& message, v8::Isolate* isolate)
-{
-    return V8ThrowException::throwError(errorType, message, isolate);
-}
-
-v8::Handle<v8::Value> throwError(v8::Handle<v8::Value> exception, v8::Isolate* isolate)
-{
-    return V8ThrowException::throwError(exception, isolate);
-}
-
 v8::Handle<v8::Value> throwTypeError(const String& message, v8::Isolate* isolate)
 {
     return V8ThrowException::throwTypeError(message, isolate);

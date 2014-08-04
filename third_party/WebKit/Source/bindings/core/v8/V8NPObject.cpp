@@ -91,7 +91,7 @@ static void npObjectInvokeImpl(const v8::FunctionCallbackInfo<v8::Value>& info, 
         // The holder object is not a subtype of HTMLPlugInElement, it must be an NPObject which has three
         // internal fields.
         if (info.Holder()->InternalFieldCount() != npObjectInternalFieldCount) {
-            throwError(v8ReferenceError, "NPMethod called on non-NPObject", info.GetIsolate());
+            V8ThrowException::throwReferenceError("NPMethod called on non-NPObject", info.GetIsolate());
             return;
         }
 
@@ -100,7 +100,7 @@ static void npObjectInvokeImpl(const v8::FunctionCallbackInfo<v8::Value>& info, 
 
     // Verify that our wrapper wasn't using a NPObject which has already been deleted.
     if (!npObject || !_NPN_IsAlive(npObject)) {
-        throwError(v8ReferenceError, "NPObject deleted", isolate);
+        V8ThrowException::throwReferenceError("NPObject deleted", isolate);
         return;
     }
 
@@ -136,7 +136,7 @@ static void npObjectInvokeImpl(const v8::FunctionCallbackInfo<v8::Value>& info, 
     }
 
     if (!retval)
-        throwError(v8GeneralError, "Error calling method on NPObject.", isolate);
+        V8ThrowException::throwGeneralError("Error calling method on NPObject.", isolate);
 
     for (int i = 0; i < numArgs; i++)
         _NPN_ReleaseVariantValue(&npArgs[i]);
@@ -240,12 +240,12 @@ static v8::Handle<v8::Value> npObjectGetProperty(v8::Local<v8::Object> self, NPI
     // Verify that our wrapper wasn't using a NPObject which
     // has already been deleted.
     if (!npObject || !_NPN_IsAlive(npObject))
-        return throwError(v8ReferenceError, "NPObject deleted", isolate);
+        return V8ThrowException::throwReferenceError("NPObject deleted", isolate);
 
 
     if (npObject->_class->hasProperty && npObject->_class->getProperty && npObject->_class->hasProperty(npObject, identifier)) {
         if (!_NPN_IsAlive(npObject))
-            return throwError(v8ReferenceError, "NPObject deleted", isolate);
+            return V8ThrowException::throwReferenceError("NPObject deleted", isolate);
 
         NPVariant result;
         VOID_TO_NPVARIANT(result);
@@ -261,11 +261,11 @@ static v8::Handle<v8::Value> npObjectGetProperty(v8::Local<v8::Object> self, NPI
     }
 
     if (!_NPN_IsAlive(npObject))
-        return throwError(v8ReferenceError, "NPObject deleted", isolate);
+        return V8ThrowException::throwReferenceError("NPObject deleted", isolate);
 
     if (key->IsString() && npObject->_class->hasMethod && npObject->_class->hasMethod(npObject, identifier)) {
         if (!_NPN_IsAlive(npObject))
-            return throwError(v8ReferenceError, "NPObject deleted", isolate);
+            return V8ThrowException::throwReferenceError("NPObject deleted", isolate);
 
         PrivateIdentifier* id = static_cast<PrivateIdentifier*>(identifier);
         v8::Local<v8::FunctionTemplate> functionTemplate = V8NPTemplateMap::sharedInstance(isolate).get(id);
@@ -322,13 +322,13 @@ static v8::Handle<v8::Value> npObjectSetProperty(v8::Local<v8::Object> self, NPI
 
     // Verify that our wrapper wasn't using a NPObject which has already been deleted.
     if (!npObject || !_NPN_IsAlive(npObject)) {
-        throwError(v8ReferenceError, "NPObject deleted", isolate);
+        V8ThrowException::throwReferenceError("NPObject deleted", isolate);
         return value; // Intercepted, but an exception was thrown.
     }
 
     if (npObject->_class->hasProperty && npObject->_class->setProperty && npObject->_class->hasProperty(npObject, identifier)) {
         if (!_NPN_IsAlive(npObject))
-            return throwError(v8ReferenceError, "NPObject deleted", isolate);
+            return V8ThrowException::throwReferenceError("NPObject deleted", isolate);
 
         NPVariant npValue;
         VOID_TO_NPVARIANT(npValue);
@@ -374,7 +374,7 @@ void npObjectPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info,
     // Verify that our wrapper wasn't using a NPObject which
     // has already been deleted.
     if (!npObject || !_NPN_IsAlive(npObject))
-        throwError(v8ReferenceError, "NPObject deleted", info.GetIsolate());
+        V8ThrowException::throwReferenceError("NPObject deleted", info.GetIsolate());
 
     if (NP_CLASS_STRUCT_VERSION_HAS_ENUM(npObject->_class) && npObject->_class->enumerate) {
         uint32_t count;

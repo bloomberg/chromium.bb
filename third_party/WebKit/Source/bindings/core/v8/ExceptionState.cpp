@@ -84,13 +84,13 @@ void ExceptionState::setException(v8::Handle<v8::Value> exception)
 void ExceptionState::throwException()
 {
     ASSERT(!m_exception.isEmpty());
-    V8ThrowException::throwError(m_exception.newLocal(m_isolate), m_isolate);
+    V8ThrowException::throwException(m_exception.newLocal(m_isolate), m_isolate);
 }
 
 void ExceptionState::throwTypeError(const String& message)
 {
     ASSERT(m_isolate);
-    m_code = TypeError;
+    m_code = V8TypeError;
     m_message = message;
     setException(V8ThrowException::createTypeError(addExceptionContext(message), m_isolate));
 }
@@ -98,9 +98,9 @@ void ExceptionState::throwTypeError(const String& message)
 void ExceptionState::throwRangeError(const String& message)
 {
     ASSERT(m_isolate);
-    m_code = RangeError;
+    m_code = V8RangeError;
     m_message = message;
-    setException(V8ThrowException::createError(v8RangeError, addExceptionContext(message), m_isolate));
+    setException(V8ThrowException::createRangeError(addExceptionContext(message), m_isolate));
 }
 
 void NonThrowableExceptionState::throwDOMException(const ExceptionCode& ec, const String& message)
@@ -113,7 +113,7 @@ void NonThrowableExceptionState::throwDOMException(const ExceptionCode& ec, cons
 void NonThrowableExceptionState::throwTypeError(const String& message)
 {
     ASSERT_NOT_REACHED();
-    m_code = TypeError;
+    m_code = V8TypeError;
     m_message = message;
 }
 
@@ -127,7 +127,7 @@ void NonThrowableExceptionState::throwSecurityError(const String& sanitizedMessa
 void NonThrowableExceptionState::throwRangeError(const String& message)
 {
     ASSERT_NOT_REACHED();
-    m_code = RangeError;
+    m_code = V8RangeError;
     m_message = message;
 }
 
@@ -139,7 +139,7 @@ void TrackExceptionState::throwDOMException(const ExceptionCode& ec, const Strin
 
 void TrackExceptionState::throwTypeError(const String& message)
 {
-    m_code = TypeError;
+    m_code = V8TypeError;
     m_message = message;
 }
 
@@ -151,7 +151,7 @@ void TrackExceptionState::throwSecurityError(const String& sanitizedMessage, con
 
 void TrackExceptionState::throwRangeError(const String& message)
 {
-    m_code = RangeError;
+    m_code = V8RangeError;
     m_message = message;
 }
 

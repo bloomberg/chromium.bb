@@ -198,14 +198,14 @@ bool PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(v8::Isolate* 
     if (exceptionName == "TypeError") {
         v8::Handle<v8::Value> message = exceptionObject->Get(v8String(isolate, "message"));
         RELEASE_ASSERT(!message.IsEmpty() && message->IsString());
-        exceptionState.throwDOMException(TypeError, toCoreString(v8::Handle<v8::String>::Cast(message)));
+        exceptionState.throwDOMException(V8TypeError, toCoreString(v8::Handle<v8::String>::Cast(message)));
         exceptionState.throwIfNeeded();
         return true;
     }
     if (exceptionName == "RangeError") {
         v8::Handle<v8::Value> message = exceptionObject->Get(v8String(isolate, "message"));
         RELEASE_ASSERT(!message.IsEmpty() && message->IsString());
-        exceptionState.throwDOMException(RangeError, toCoreString(v8::Handle<v8::String>::Cast(message)));
+        exceptionState.throwDOMException(V8RangeError, toCoreString(v8::Handle<v8::String>::Cast(message)));
         exceptionState.throwIfNeeded();
         return true;
     }

@@ -124,11 +124,11 @@ installClass("PrivateScriptTest", function(global, InternalsPrototype) {
     }
 
     InternalsPrototype.voidMethodThrowsTypeError = function() {
-        throw new DOMExceptionInPrivateScript("TypeError", "method threw TypeError");
+        throw new TypeError("method threw TypeError");
     }
 
     InternalsPrototype.voidMethodThrowsRangeError = function() {
-        throw new DOMExceptionInPrivateScript("RangeError", "method threw RangeError");
+        throw new RangeError("method threw RangeError");
     }
 
     InternalsPrototype.voidMethodWithStackOverflow = function() {

@@ -51,11 +51,16 @@ v8::Handle<v8::Value> V8ThrowException::createDOMException(int ec, const String&
 
     ASSERT(ec == SecurityError || unsanitizedMessage.isEmpty());
 
-    // FIXME: Handle other WebIDL exception types.
-    if (ec == TypeError)
+    if (ec == V8GeneralError)
+        return V8ThrowException::createGeneralError(sanitizedMessage, isolate);
+    if (ec == V8TypeError)
         return V8ThrowException::createTypeError(sanitizedMessage, isolate);
-    if (ec == RangeError)
+    if (ec == V8RangeError)
         return V8ThrowException::createRangeError(sanitizedMessage, isolate);
+    if (ec == V8SyntaxError)
+        return V8ThrowException::createSyntaxError(sanitizedMessage, isolate);
+    if (ec == V8ReferenceError)
+        return V8ThrowException::createReferenceError(sanitizedMessage, isolate);
 
     RefPtrWillBeRawPtr<DOMException> domException = DOMException::create(ec, sanitizedMessage, unsanitizedMessage);
     v8::Handle<v8::Value> exception = toV8(domException, creationContext, isolate);
@@ -79,34 +84,18 @@ v8::Handle<v8::Value> V8ThrowException::throwDOMException(int ec, const String& 
     if (exception.IsEmpty())
         return v8Undefined();
 
-    return V8ThrowException::throwError(exception, isolate);
+    return V8ThrowException::throwException(exception, isolate);
 }
 
-v8::Handle<v8::Value> V8ThrowException::createError(V8ErrorType type, const String& message, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::createGeneralError(const String& message, v8::Isolate* isolate)
 {
-    switch (type) {
-    case v8RangeError:
-        return v8::Exception::RangeError(v8String(isolate, message));
-    case v8ReferenceError:
-        return v8::Exception::ReferenceError(v8String(isolate, message));
-    case v8SyntaxError:
-        return v8::Exception::SyntaxError(v8String(isolate, message));
-    case v8TypeError:
-        return v8::Exception::TypeError(v8String(isolate, message));
-    case v8GeneralError:
-        return v8::Exception::Error(v8String(isolate, message));
-    default:
-        ASSERT_NOT_REACHED();
-        return v8Undefined();
-    }
+    return v8::Exception::Error(v8String(isolate, message.isNull() ? "Error" : message));
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwError(V8ErrorType type, const String& message, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::throwGeneralError(const String& message, v8::Isolate* isolate)
 {
-    v8::Handle<v8::Value> exception = V8ThrowException::createError(type, message, isolate);
-    if (exception.IsEmpty())
-        return v8Undefined();
-    return V8ThrowException::throwError(exception, isolate);
+    v8::Handle<v8::Value> exception = V8ThrowException::createGeneralError(message, isolate);
+    return V8ThrowException::throwException(exception, isolate);
 }
 
 v8::Handle<v8::Value> V8ThrowException::createTypeError(const String& message, v8::Isolate* isolate)
@@ -117,7 +106,7 @@ v8::Handle<v8::Value> V8ThrowException::createTypeError(const String& message, v
 v8::Handle<v8::Value> V8ThrowException::throwTypeError(const String& message, v8::Isolate* isolate)
 {
     v8::Handle<v8::Value> exception = V8ThrowException::createTypeError(message, isolate);
-    return V8ThrowException::throwError(exception, isolate);
+    return V8ThrowException::throwException(exception, isolate);
 }
 
 v8::Handle<v8::Value> V8ThrowException::createRangeError(const String& message, v8::Isolate* isolate)
@@ -128,10 +117,32 @@ v8::Handle<v8::Value> V8ThrowException::createRangeError(const String& message, 
 v8::Handle<v8::Value> V8ThrowException::throwRangeError(const String& message, v8::Isolate* isolate)
 {
     v8::Handle<v8::Value> exception = V8ThrowException::createRangeError(message, isolate);
-    return V8ThrowException::throwError(exception, isolate);
+    return V8ThrowException::throwException(exception, isolate);
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwError(v8::Handle<v8::Value> exception, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::createSyntaxError(const String& message, v8::Isolate* isolate)
+{
+    return v8::Exception::SyntaxError(v8String(isolate, message.isNull() ? "Syntax error" : message));
+}
+
+v8::Handle<v8::Value> V8ThrowException::throwSyntaxError(const String& message, v8::Isolate* isolate)
+{
+    v8::Handle<v8::Value> exception = V8ThrowException::createSyntaxError(message, isolate);
+    return V8ThrowException::throwException(exception, isolate);
+}
+
+v8::Handle<v8::Value> V8ThrowException::createReferenceError(const String& message, v8::Isolate* isolate)
+{
+    return v8::Exception::ReferenceError(v8String(isolate, message.isNull() ? "Reference error" : message));
+}
+
+v8::Handle<v8::Value> V8ThrowException::throwReferenceError(const String& message, v8::Isolate* isolate)
+{
+    v8::Handle<v8::Value> exception = V8ThrowException::createReferenceError(message, isolate);
+    return V8ThrowException::throwException(exception, isolate);
+}
+
+v8::Handle<v8::Value> V8ThrowException::throwException(v8::Handle<v8::Value> exception, v8::Isolate* isolate)
 {
     if (!v8::V8::IsExecutionTerminating())
         isolate->ThrowException(exception);

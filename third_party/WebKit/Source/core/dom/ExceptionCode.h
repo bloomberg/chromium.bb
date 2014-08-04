@@ -81,11 +81,14 @@ namespace blink {
 
         // Web Crypto
         OperationError,
+    };
 
-        // WebIDL exception types, handled by the binding layer.
-        // FIXME: Add GeneralError, EvalError, etc. when implemented in the bindings.
-        TypeError,
-        RangeError,
+    enum V8ErrorType {
+        V8GeneralError = 1000,
+        V8TypeError,
+        V8RangeError,
+        V8SyntaxError,
+        V8ReferenceError,
     };
 
 } // namespace blink

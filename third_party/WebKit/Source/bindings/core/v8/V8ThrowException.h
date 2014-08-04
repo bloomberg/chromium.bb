@@ -30,14 +30,6 @@
 
 namespace blink {
 
-enum V8ErrorType {
-    v8RangeError,
-    v8ReferenceError,
-    v8SyntaxError,
-    v8TypeError,
-    v8GeneralError
-};
-
 class V8ThrowException {
 public:
 
@@ -53,14 +45,18 @@ public:
     }
     static v8::Handle<v8::Value> throwDOMException(int, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Handle<v8::Object>& creationContext, v8::Isolate*);
 
-    static v8::Handle<v8::Value> createError(V8ErrorType, const String&, v8::Isolate*);
-    static v8::Handle<v8::Value> throwError(V8ErrorType, const String&, v8::Isolate*);
-    static v8::Handle<v8::Value> throwError(v8::Handle<v8::Value>, v8::Isolate*);
+    static v8::Handle<v8::Value> throwException(v8::Handle<v8::Value>, v8::Isolate*);
 
+    static v8::Handle<v8::Value> createGeneralError(const String&, v8::Isolate*);
+    static v8::Handle<v8::Value> throwGeneralError(const String&, v8::Isolate*);
     static v8::Handle<v8::Value> createTypeError(const String&, v8::Isolate*);
     static v8::Handle<v8::Value> throwTypeError(const String&, v8::Isolate*);
     static v8::Handle<v8::Value> createRangeError(const String&, v8::Isolate*);
     static v8::Handle<v8::Value> throwRangeError(const String&, v8::Isolate*);
+    static v8::Handle<v8::Value> createSyntaxError(const String&, v8::Isolate*);
+    static v8::Handle<v8::Value> throwSyntaxError(const String&, v8::Isolate*);
+    static v8::Handle<v8::Value> createReferenceError(const String&, v8::Isolate*);
+    static v8::Handle<v8::Value> throwReferenceError(const String&, v8::Isolate*);
 };
 
 } // namespace blink

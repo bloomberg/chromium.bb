@@ -316,7 +316,7 @@ void WorkerScriptController::rethrowExceptionFromImportedScript(PassRefPtrWillBe
     const String& errorMessage = errorEvent->message();
     if (m_globalScopeExecutionState)
         m_globalScopeExecutionState->m_errorEventFromImportedScript = errorEvent;
-    exceptionState.rethrowV8Exception(V8ThrowException::createError(v8GeneralError, errorMessage, m_isolate));
+    exceptionState.rethrowV8Exception(V8ThrowException::createGeneralError(errorMessage, m_isolate));
 }
 
 } // namespace blink

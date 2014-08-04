@@ -46,7 +46,7 @@ namespace {
 // throwStackOverflowException and call it.
 void throwStackOverflowException(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    throwError(v8RangeError, "Maximum call stack size exceeded.", info.GetIsolate());
+    V8ThrowException::throwRangeError("Maximum call stack size exceeded.", info.GetIsolate());
 }
 
 v8::Local<v8::Value> throwStackOverflowExceptionIfNeeded(v8::Isolate* isolate)
