@@ -80,7 +80,7 @@
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/content_shell.pak',
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
-          '<(PRODUCT_DIR)/os_mesa.dll',
+          '<(PRODUCT_DIR)/osmesa.dll',
           '<(PRODUCT_DIR)/plugins/np_test_netscape_plugin.dll',
           '<(PRODUCT_DIR)/plugins/npapi_test_plugin.dll',
           '<(PRODUCT_DIR)/ppapi_tests.dll',
