@@ -25,12 +25,19 @@
  *     });
  */
 
+/**
+ * @typedef {function(!Element, string, Object)}
+ * TODO(dbeam): move inside (function() {...})() after
+ * https://github.com/google/closure-compiler/issues/544 is fixed.
+ */
+var Handler;
+
 var i18nTemplate = (function() {
   /**
    * This provides the handlers for the templating engine. The key is used as
    * the attribute name and the value is the function that gets called for every
    * single node that has this attribute.
-   * @type {Object}
+   * @type {Object.<Handler>}
    */
   var handlers = {
     /**
@@ -79,9 +86,8 @@ var i18nTemplate = (function() {
                 object[path] = value;
                 // In case we set innerHTML (ignoring others) we need to
                 // recursively check the content
-                if (path == 'innerHTML') {
+                if (path == 'innerHTML')
                   process(element, obj);
-                }
               }
             } else {
               element.setAttribute(propName, value);
@@ -102,6 +108,8 @@ var i18nTemplate = (function() {
 
   /**
    * Processes a DOM tree with the {@code obj} map.
+   * @param {Node} node A node to process.
+   * @param {Object} obj Values to process |node| with.
    */
   function process(node, obj) {
     var elements = node.querySelectorAll(selector);
@@ -109,9 +117,8 @@ var i18nTemplate = (function() {
       for (var j = 0; j < attributeNames.length; j++) {
         var name = attributeNames[j];
         var att = element.getAttribute(name);
-        if (att != null) {
+        if (att != null)
           handlers[name](element, att, obj);
-        }
       }
     }
   }

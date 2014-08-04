@@ -30,7 +30,7 @@ var i18nTemplate = (function() {
    * This provides the handlers for the templating engine. The key is used as
    * the attribute name and the value is the function that gets called for every
    * single node that has this attribute.
-   * @type {Object}
+   * @type {!Object}
    */
   var handlers = {
     /**
@@ -104,7 +104,7 @@ var i18nTemplate = (function() {
               process(element, dictionary);
           }
         } else {
-          element.setAttribute(propName, value);
+          element.setAttribute(propName, /** @type {string} */(value));
         }
       });
     }

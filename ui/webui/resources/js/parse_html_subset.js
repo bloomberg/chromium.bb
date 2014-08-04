@@ -37,7 +37,8 @@ var parseHtmlSubset = (function() {
    */
   var allowedTags = ['A', 'B', 'STRONG'];
 
-  function merge() {
+  /** @param {...Object} var_args Objects to merge. */
+  function merge(var_args) {
     var clone = {};
     for (var i = 0; i < arguments.length; ++i) {
       if (typeof arguments[i] == 'object') {

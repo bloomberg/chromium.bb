@@ -5,13 +5,6 @@
 <include src="assert.js">
 
 /**
- * The global object.
- * @type {!Object}
- * @const
- */
-var global = this;
-
-/**
  * Alias for document.getElementById.
  * @param {string} id The ID of the element to find.
  * @return {HTMLElement} The found element or null if not found.
@@ -60,7 +53,7 @@ function chromeSend(name, params, callbackName, callback) {
 
 /**
  * Returns the scale factors supported by this platform.
- * @return {array} The supported scale factors.
+ * @return {Array} The supported scale factors.
  */
 function getSupportedScaleFactors() {
   var supportedScaleFactors = [];
@@ -97,8 +90,8 @@ function url(s) {
  * Returns the URL of the image, or an image set of URLs for the profile avatar.
  * Default avatars have resources available for multiple scalefactors, whereas
  * the GAIA profile image only comes in one size.
-
- * @param {string} url The path of the image.
+ *
+ * @param {string} path The path of the image.
  * @return {string} The url, or an image set of URLs of the avatar image.
  */
 function getProfileAvatarIcon(path) {
@@ -140,8 +133,8 @@ function imageset(path) {
 
 /**
  * Parses query parameters from Location.
- * @param {string} location The URL to generate the CSS url for.
- * @return {object} Dictionary containing name value pairs for URL
+ * @param {Location} location The URL to generate the CSS url for.
+ * @return {Object} Dictionary containing name value pairs for URL
  */
 function parseQueryParams(location) {
   var params = {};
@@ -157,7 +150,7 @@ function parseQueryParams(location) {
 /**
  * Creates a new URL by appending or replacing the given query key and value.
  * Not supporting URL with username and password.
- * @param {object} location The original URL.
+ * @param {Location} location The original URL.
  * @param {string} key The query parameter name.
  * @param {string} value The query parameter value.
  * @return {string} The constructed new URL.
@@ -174,18 +167,21 @@ function setQueryParam(location, key, value) {
   return location.origin + location.pathname + newQuery + location.hash;
 }
 
+/**
+ * @param {Node} el An element to search for ancestors with |className|.
+ * @param {string} className A class to search for.
+ * @return {Node} A node with class of |className| or null if none is found.
+ */
 function findAncestorByClass(el, className) {
   return findAncestor(el, function(el) {
-    if (el.classList)
-      return el.classList.contains(className);
-    return null;
+    return el.classList && el.classList.contains(className);
   });
 }
 
 /**
  * Return the first ancestor for which the {@code predicate} returns true.
  * @param {Node} node The node to check.
- * @param {function(Node) : boolean} predicate The function that tests the
+ * @param {function(Node):boolean} predicate The function that tests the
  *     nodes.
  * @return {Node} The found ancestor or null if not found.
  */
@@ -236,7 +232,7 @@ function disableTextSelectAndDrag(opt_allowSelectStart, opt_allowDragStart) {
  */
 function preventDefaultOnPoundLinkClicks() {
   document.addEventListener('click', function(e) {
-    var anchor = findAncestor(e.target, function(el) {
+    var anchor = findAncestor(/** @type {Node} */(e.target), function(el) {
       return el.tagName == 'A';
     });
     // Use getAttribute() to prevent URL normalization.
@@ -263,7 +259,7 @@ function isRTL() {
 function getRequiredElement(id) {
   var element = $(id);
   assert(element, 'Missing required element: ' + id);
-  return element;
+  return /** @type {!Element} */(element);
 }
 
 // Handle click on a link. If the link points to a chrome: or file: url, then

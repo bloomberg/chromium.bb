@@ -2,42 +2,45 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @fileoverview EventTracker is a simple class that manages the addition and
- *  removal of DOM event listeners. In particular, it keeps track of all
- *  listeners that have been added and makes it easy to remove some or all of
- *  them without requiring all the information again. This is particularly
- *  handy when the listener is a generated function such as a lambda or the
- *  result of calling Function.bind.
+/**
+ * @fileoverview EventTracker is a simple class that manages the addition and
+ * removal of DOM event listeners. In particular, it keeps track of all
+ * listeners that have been added and makes it easy to remove some or all of
+ * them without requiring all the information again. This is particularly handy
+ * when the listener is a generated function such as a lambda or the result of
+ * calling Function.bind.
  */
 
+/**
+ * The type of the internal tracking entry. TODO(dbeam): move this back to
+ * EventTracker.Entry when https://github.com/google/closure-compiler/issues/544
+ * is fixed.
+ * @typedef {{node: !Node,
+ *            eventType: string,
+ *            listener: Function,
+ *            capture: boolean}}
+ */
+var EventTrackerEntry;
+
 // Use an anonymous function to enable strict mode just for this file (which
-// will be concatenated with other files when embedded in Chrome)
+// will be concatenated with other files when embedded in Chrome).
 var EventTracker = (function() {
   'use strict';
 
   /**
-   *  Create an EventTracker to track a set of events.
-   *  EventTracker instances are typically tied 1:1 with other objects or
-   *  DOM elements whose listeners should be removed when the object is disposed
-   *  or the corresponding elements are removed from the DOM.
-   *  @constructor
+   * Create an EventTracker to track a set of events.
+   * EventTracker instances are typically tied 1:1 with other objects or
+   * DOM elements whose listeners should be removed when the object is disposed
+   * or the corresponding elements are removed from the DOM.
+   * @constructor
    */
   function EventTracker() {
     /**
-     *  @type {Array.<EventTracker.Entry>}
-     *  @private
+     * @type {Array.<EventTrackerEntry>}
+     * @private
      */
     this.listeners_ = [];
   }
-
-  /**
-   * The type of the internal tracking entry.
-   *  @typedef {{node: !Node,
-   *            eventType: string,
-   *            listener: Function,
-   *            capture: boolean}}
-   */
-  EventTracker.Entry;
 
   EventTracker.prototype = {
     /**
@@ -83,9 +86,9 @@ var EventTracker = (function() {
   };
 
   /**
-   * Remove a single event listener given it's tracker entry.  It's up to the
+   * Remove a single event listener given it's tracking entry. It's up to the
    * caller to ensure the entry is removed from listeners_.
-   * @param {EventTracker.Entry} h The entry describing the listener to remove.
+   * @param {EventTrackerEntry} h The entry describing the listener to remove.
    * @private
    */
   EventTracker.removeEventListener_ = function(h) {

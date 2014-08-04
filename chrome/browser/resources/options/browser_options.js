@@ -1372,8 +1372,7 @@ cr.define('options', function() {
           return profile;
       }
 
-      assert(false,
-             'There should always be a current profile, but none found.');
+      assertNotReached('There should always be a current profile.');
     },
 
     /**

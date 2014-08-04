@@ -77,7 +77,7 @@ cr.define('extensions', function() {
     else if (chrome.developerPrivate)
       chrome.developerPrivate.openDevTools(args);
     else
-      assert(false, 'Cannot call either openDevTools function.');
+      assertNotReached('Cannot call either openDevTools function.');
   };
 
   RuntimeErrorContent.prototype = {
@@ -335,7 +335,7 @@ cr.define('extensions', function() {
         extensions.ExtensionErrorOverlay.requestFileSourceResponse(result);
       });
     } else {
-      assert(false, 'Cannot call either requestFileSource function.');
+      assertNotReached('Cannot call either requestFileSource function.');
     }
   };
 

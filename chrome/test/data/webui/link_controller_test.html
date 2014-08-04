@@ -24,11 +24,10 @@ var URL2 = '#hash';
 var BASE = 'http://www.google.com/';
 
 function setUp() {
-
   mockController = new MockController();
   mockController.createFunctionMock(chrome.tabs, 'create');
   mockController.createFunctionMock(chrome.windows, 'create');
-  oldIsMac = cr.isMac;
+  oldIsMac = Object.getOwnPropertyDescriptor(cr, 'isMac');
 
   mockWindow = {
     confirm: mockController.createFunctionMock(),
@@ -47,7 +46,7 @@ function setUp() {
 function tearDown() {
   mockController.verifyMocks();
   mockController.reset();
-  cr.isMac = oldIsMac;
+  Object.defineProperty(cr, 'isMac', oldIsMac);
 }
 
 function testGetWarningMessage() {
@@ -59,7 +58,7 @@ function testGetWarningMessage() {
 function openUrlFromEventHelper(event, isMac, expectedKind) {
   var lc = new cr.LinkController(localStrings);
 
-  cr.isMac = isMac;
+  Object.defineProperty(cr, 'isMac', {get: function() { return isMac }});
 
   var mock = lc.openUrls = mockController.createFunctionMock();
   mock.addExpectation([URL1], expectedKind);

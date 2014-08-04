@@ -1372,7 +1372,7 @@ cr.define('ntp', function() {
      * @param {number} index The tile index at which the drop occurred.
      */
     addDragData: function(dataTransfer, index) {
-      assert(false);
+      assertNotReached();
     },
 
     /**
@@ -1390,7 +1390,7 @@ cr.define('ntp', function() {
      * @param {Object} dataTransfer The drag event dataTransfer object.
      */
     setDropEffect: function(dataTransfer) {
-      assert(false);
+      assertNotReached();
     },
   };
 

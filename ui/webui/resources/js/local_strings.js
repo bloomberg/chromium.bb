@@ -9,10 +9,11 @@
  * {@code templateData}. This class provides a simpler interface to access those
  * strings.
  *
- * @param {Object} opt_templateData Optional object containing translated
- *     strings.  If this is not supplied during construction, it can be
- *     assigned to the templateData property after construction.  If all else
- *     fails, the value of window.templateDate will be used.
+ * @param {Object=} opt_templateData Object containing translated strings.  If
+ *     this is not supplied during construction, it can be assigned to the
+ *     templateData property after construction.  If all else fails, the value
+ *     of window.templateDate will be used.
+
  * @constructor
  */
 function LocalStrings(opt_templateData) {
@@ -26,7 +27,8 @@ function LocalStrings(opt_templateData) {
  * Returns a formatted string where $1 to $9 are replaced by the second to the
  * tenth argument.
  * @param {string} s The format string.
- * @param {...string} The extra values to include in the formatted output.
+ * @param {Arguments} args The extra values to include in the formatted
+ *     output.
  * @return {string} The string after format substitution.
  */
 function replaceArgs(s, args) {
@@ -49,13 +51,13 @@ function trimAccelerators(s) {
 LocalStrings.prototype = {
   /**
    * The template data object.
-   * @type {Object}
+   * @type {Object|undefined}
    */
-  templateData: null,
+  templateData: undefined,
 
   /**
    * Gets a localized string by its id.
-   * @param {string} s The ID of the string we want.
+   * @param {string} id The ID of the string we want.
    * @return {string} The localized string.
    */
   getString: function(id) {
@@ -72,7 +74,8 @@ LocalStrings.prototype = {
    * Returns a formatted localized string where $1 to $9 are replaced by the
    * second to the tenth argument.
    * @param {string} id The ID of the string we want.
-   * @param {...string} The extra values to include in the formatted output.
+   * @param {...string} var_args The extra values to include in the formatted
+   *     output.
    * @return {string} The formatted string.
    */
   getStringF: function(id, var_args) {

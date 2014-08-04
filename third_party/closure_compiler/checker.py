@@ -94,6 +94,8 @@ class Checker(object):
     "--jscomp_error=unknownDefines",
     "--jscomp_error=uselessCode",
     "--jscomp_error=visibility",
+    # TODO(dbeam): happens when the same file is <include>d multiple times.
+    "--jscomp_off=duplicate",
   ]
 
   _found_java = False

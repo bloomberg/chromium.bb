@@ -109,7 +109,7 @@ cr.define('uiAccountTweaks', function() {
    * disables interactive elements (input/select/button), and removes href
    * attribute from <a> elements.
    *
-   * @param {Element} element Root element of DOM subtree that should be
+   * @param {!Element} element Root element of DOM subtree that should be
    *     disabled.
    * @param {string} sessionType session type specificator.
    */
@@ -125,7 +125,8 @@ cr.define('uiAccountTweaks', function() {
 
     var node = walker.nextNode();
     while (node) {
-      UIAccountTweaks.disableElementForSessionType_(node, sessionType);
+      UIAccountTweaks.disableElementForSessionType_(
+          /** @type {!Element} */(node), sessionType);
       node = walker.nextNode();
     }
   };
@@ -137,7 +138,7 @@ cr.define('uiAccountTweaks', function() {
    * <a> element.
    *
    * @private
-   * @param {Element} element Element that should be disabled.
+   * @param {!Element} element Element that should be disabled.
    * @param {string} sessionType account session Type specificator.
    */
   UIAccountTweaks.disableElementForSessionType_ = function(element,
@@ -145,9 +146,9 @@ cr.define('uiAccountTweaks', function() {
     element.classList.add(sessionType + '-disabled');
     if (element.nodeName == 'INPUT' ||
         element.nodeName == 'SELECT' ||
-        element.nodeName == 'BUTTON')
+        element.nodeName == 'BUTTON') {
       element.disabled = true;
-    if (element.nodeName == 'A') {
+    } else if (element.nodeName == 'A') {
       element.onclick = function() {
         return false;
       };
