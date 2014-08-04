@@ -45,4 +45,8 @@ void LatencyInfoSwapPromise::DidNotSwap(DidNotSwapReason reason) {
   // DCHECK(latency_.terminated);
 }
 
+int64 LatencyInfoSwapPromise::TraceId() const {
+  return latency_.trace_id;
+}
+
 }  // namespace cc

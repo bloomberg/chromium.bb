@@ -33,6 +33,7 @@ class CC_EXPORT SwapPromiseMonitor {
 
   virtual void OnSetNeedsCommitOnMain() = 0;
   virtual void OnSetNeedsRedrawOnImpl() = 0;
+  virtual void OnForwardScrollUpdateToMainThreadOnImpl() = 0;
 
  protected:
   LayerTreeHost* layer_tree_host_;
