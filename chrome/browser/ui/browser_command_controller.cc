@@ -318,6 +318,10 @@ void BrowserCommandController::TabStateChanged() {
   UpdateCommandsForTabState();
 }
 
+void BrowserCommandController::ZoomStateChanged() {
+  UpdateCommandsForZoomState();
+}
+
 void BrowserCommandController::ContentRestrictionsChanged() {
   UpdateCommandsForContentRestrictionState();
 }
@@ -946,7 +950,7 @@ void BrowserCommandController::InitCommandState() {
   // Zoom
   command_updater_.UpdateCommandEnabled(IDC_ZOOM_MENU, true);
   command_updater_.UpdateCommandEnabled(IDC_ZOOM_PLUS, true);
-  command_updater_.UpdateCommandEnabled(IDC_ZOOM_NORMAL, true);
+  command_updater_.UpdateCommandEnabled(IDC_ZOOM_NORMAL, false);
   command_updater_.UpdateCommandEnabled(IDC_ZOOM_MINUS, true);
 
   // Show various bits of UI
@@ -1126,6 +1130,18 @@ void BrowserCommandController::UpdateCommandsForTabState() {
   UpdateCommandsForContentRestrictionState();
   UpdateCommandsForBookmarkEditing();
   UpdateCommandsForFind();
+  // Update the zoom commands when an active tab is selected.
+  UpdateCommandsForZoomState();
+}
+
+void BrowserCommandController::UpdateCommandsForZoomState() {
+  WebContents* contents =
+      browser_->tab_strip_model()->GetActiveWebContents();
+  if (!contents)
+    return;
+  command_updater_.UpdateCommandEnabled(IDC_ZOOM_PLUS, CanZoomIn(contents));
+  command_updater_.UpdateCommandEnabled(IDC_ZOOM_NORMAL, ActualSize(contents));
+  command_updater_.UpdateCommandEnabled(IDC_ZOOM_MINUS, CanZoomOut(contents));
 }
 
 void BrowserCommandController::UpdateCommandsForContentRestrictionState() {

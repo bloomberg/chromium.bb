@@ -56,6 +56,7 @@ class BrowserCommandController : public CommandUpdaterDelegate,
   // Notifies the controller that state has changed in one of the following
   // areas and it should update command states.
   void TabStateChanged();
+  void ZoomStateChanged();
   void ContentRestrictionsChanged();
   void FullscreenStateChanged();
   void PrintingStateChanged();
@@ -112,6 +113,9 @@ class BrowserCommandController : public CommandUpdaterDelegate,
 
   // Update commands whose state depends on the tab's state.
   void UpdateCommandsForTabState();
+
+  // Update Zoom commands based on zoom state.
+  void UpdateCommandsForZoomState();
 
   // Updates commands when the content's restrictions change.
   void UpdateCommandsForContentRestrictionState();

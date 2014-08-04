@@ -53,6 +53,7 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
+#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
@@ -583,6 +584,23 @@ void NewTab(Browser* browser) {
 void CloseTab(Browser* browser) {
   content::RecordAction(UserMetricsAction("CloseTab_Accelerator"));
   browser->tab_strip_model()->CloseSelectedTabs();
+}
+
+bool CanZoomIn(content::WebContents* contents) {
+  ZoomController* zoom_controller = ZoomController::FromWebContents(contents);
+  return zoom_controller->GetZoomPercent() !=
+      contents->GetMaximumZoomPercent() + 1;
+}
+
+bool CanZoomOut(content::WebContents* contents) {
+  ZoomController* zoom_controller = ZoomController::FromWebContents(contents);
+  return zoom_controller->GetZoomPercent() !=
+      contents->GetMinimumZoomPercent();
+}
+
+bool ActualSize(content::WebContents* contents) {
+  ZoomController* zoom_controller = ZoomController::FromWebContents(contents);
+  return zoom_controller->GetZoomPercent() != 100.0f;
 }
 
 void RestoreTab(Browser* browser) {
