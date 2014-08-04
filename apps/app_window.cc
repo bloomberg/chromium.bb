@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "apps/app_delegate.h"
+#include "apps/app_web_contents_helper.h"
 #include "apps/app_window_geometry_cache.h"
 #include "apps/app_window_registry.h"
 #include "apps/apps_client.h"
@@ -42,8 +43,8 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/view_type_utils.h"
+#include "extensions/common/draggable_region.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "grit/theme_resources.h"
@@ -292,6 +293,9 @@ void AppWindow::Init(const GURL& url,
 
   native_app_window_.reset(delegate_->CreateNativeAppWindow(this, new_params));
 
+  helper_.reset(new AppWebContentsHelper(
+      browser_context_, extension_id_, web_contents, app_delegate_.get()));
+
   popup_manager_.reset(
       new web_modal::PopupManager(GetWebContentsModalDialogHost()));
   popup_manager_->RegisterWith(web_contents);
@@ -368,48 +372,14 @@ void AppWindow::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  const extensions::Extension* extension = GetExtension();
-  if (!extension)
-    return;
-
-  app_delegate_->RequestMediaAccessPermission(
-      web_contents, request, callback, extension);
+  DCHECK_EQ(AppWindow::web_contents(), web_contents);
+  helper_->RequestMediaAccessPermission(request, callback);
 }
 
 WebContents* AppWindow::OpenURLFromTab(WebContents* source,
                                        const content::OpenURLParams& params) {
-  // Don't allow the current tab to be navigated. It would be nice to map all
-  // anchor tags (even those without target="_blank") to new tabs, but right
-  // now we can't distinguish between those and <meta> refreshes or window.href
-  // navigations, which we don't want to allow.
-  // TOOD(mihaip): Can we check for user gestures instead?
-  WindowOpenDisposition disposition = params.disposition;
-  if (disposition == CURRENT_TAB) {
-    AddMessageToDevToolsConsole(
-        content::CONSOLE_MESSAGE_LEVEL_ERROR,
-        base::StringPrintf(
-            "Can't open same-window link to \"%s\"; try target=\"_blank\".",
-            params.url.spec().c_str()));
-    return NULL;
-  }
-
-  // These dispositions aren't really navigations.
-  if (disposition == SUPPRESS_OPEN || disposition == SAVE_TO_DISK ||
-      disposition == IGNORE_ACTION) {
-    return NULL;
-  }
-
-  WebContents* contents =
-      app_delegate_->OpenURLFromTab(browser_context_, source, params);
-  if (!contents) {
-    AddMessageToDevToolsConsole(
-        content::CONSOLE_MESSAGE_LEVEL_ERROR,
-        base::StringPrintf(
-            "Can't navigate to \"%s\"; apps do not support navigation.",
-            params.url.spec().c_str()));
-  }
-
-  return contents;
+  DCHECK_EQ(web_contents(), source);
+  return helper_->OpenURLFromTab(params);
 }
 
 void AppWindow::AddNewContents(WebContents* source,
@@ -472,24 +442,13 @@ void AppWindow::HandleKeyboardEvent(
 void AppWindow::RequestToLockMouse(WebContents* web_contents,
                                    bool user_gesture,
                                    bool last_unlocked_by_target) {
-  const extensions::Extension* extension = GetExtension();
-  if (!extension)
-    return;
-
-  bool has_permission = IsExtensionWithPermissionOrSuggestInConsole(
-      APIPermission::kPointerLock,
-      extension,
-      web_contents->GetRenderViewHost());
-
-  web_contents->GotResponseToLockMouseRequest(has_permission);
+  DCHECK_EQ(AppWindow::web_contents(), web_contents);
+  helper_->RequestToLockMouse();
 }
 
 bool AppWindow::PreHandleGestureEvent(WebContents* source,
                                       const blink::WebGestureEvent& event) {
-  // Disable pinch zooming in app windows.
-  return event.type == blink::WebGestureEvent::GesturePinchBegin ||
-         event.type == blink::WebGestureEvent::GesturePinchUpdate ||
-         event.type == blink::WebGestureEvent::GesturePinchEnd;
+  return AppWebContentsHelper::ShouldSuppressGestureEvent(event);
 }
 
 void AppWindow::DidFirstVisuallyNonEmptyPaint() {
@@ -1034,13 +993,6 @@ bool AppWindow::IsWebContentsVisible(content::WebContents* web_contents) {
 
 WebContentsModalDialogHost* AppWindow::GetWebContentsModalDialogHost() {
   return native_app_window_.get();
-}
-
-void AppWindow::AddMessageToDevToolsConsole(ConsoleMessageLevel level,
-                                            const std::string& message) {
-  content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
-  rvh->Send(new ExtensionMsg_AddMessageToConsole(
-      rvh->GetRoutingID(), level, message));
 }
 
 void AppWindow::SaveWindowPosition() {

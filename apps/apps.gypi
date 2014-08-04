@@ -44,6 +44,8 @@
         'app_window_geometry_cache.h',
         'app_window_registry.cc',
         'app_window_registry.h',
+        'app_web_contents_helper.cc',
+        'app_web_contents_helper.h',
         'apps_client.cc',
         'apps_client.h',
         'browser_context_keyed_service_factories.cc',

@@ -17,7 +17,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/console_message_level.h"
 #include "extensions/browser/extension_icon_image.h"
 #include "ui/base/ui_base_types.h"  // WindowShowState
 #include "ui/gfx/image/image.h"
@@ -50,6 +49,7 @@ class BaseWindow;
 namespace apps {
 
 class AppDelegate;
+class AppWebContentsHelper;
 class NativeAppWindow;
 
 // Manages the web contents for app windows. The implementation for this
@@ -427,10 +427,6 @@ class AppWindow : public content::NotificationObserver,
   virtual bool IsWebContentsVisible(content::WebContents* web_contents)
       OVERRIDE;
 
-  // Helper method to add a message to the renderer's DevTools console.
-  void AddMessageToDevToolsConsole(content::ConsoleMessageLevel level,
-                                   const std::string& message);
-
   // Saves the window geometry/position/screen bounds.
   void SaveWindowPosition();
 
@@ -519,6 +515,7 @@ class AppWindow : public content::NotificationObserver,
   scoped_ptr<AppWindowContents> app_window_contents_;
   scoped_ptr<AppDelegate> app_delegate_;
   scoped_ptr<Delegate> delegate_;
+  scoped_ptr<AppWebContentsHelper> helper_;
 
   // Manages popup windows (bubbles, tab-modals) visible overlapping the
   // app window.
