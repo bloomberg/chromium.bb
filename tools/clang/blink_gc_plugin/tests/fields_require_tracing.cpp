@@ -7,7 +7,7 @@
 namespace blink {
 
 void PartObject::trace(Visitor* visitor) {
-    // Missing visitor->trace(m_obj1);
+    m_obj1->trace(visitor); // Don't allow direct tracing.
     visitor->trace(m_obj2);
     // Missing visitor->trace(m_obj3);
 }

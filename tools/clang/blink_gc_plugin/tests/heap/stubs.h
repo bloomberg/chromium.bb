@@ -218,6 +218,11 @@ class GarbageCollectedMixin {
     virtual bool isAlive(Visitor*) const = 0;
 };
 
+template<typename T>
+struct TraceIfNeeded {
+    static void trace(Visitor*, T*);
+};
+
 // blink::ScriptWrappable receives special treatment
 // so as to allow it to be used together with GarbageCollected<T>,
 // even when its user-declared destructor is provided.

@@ -17,6 +17,7 @@ const char kFinalizeName[] = "finalizeGarbageCollectedObject";
 const char kTraceAfterDispatchName[] = "traceAfterDispatch";
 const char kRegisterWeakMembersName[] = "registerWeakMembers";
 const char kHeapAllocatorName[] = "HeapAllocator";
+const char kTraceIfNeededName[] = "TraceIfNeeded";
 
 class Config {
  public:
@@ -139,7 +140,7 @@ class Config {
 
   static bool IsVisitor(const std::string& name) { return name == "Visitor"; }
 
-  static bool IsTraceMethod(clang::CXXMethodDecl* method,
+  static bool IsTraceMethod(clang::FunctionDecl* method,
                             bool* isTraceAfterDispatch = 0) {
     if (method->getNumParams() != 1)
       return false;

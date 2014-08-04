@@ -23,7 +23,6 @@ void GCedClassWithAScriptWrappableBase::trace(Visitor* visitor)
 
 void GCedClassWithAScriptWrappableAndAFinalizableBase::trace(Visitor* visitor)
 {
-    A::trace(visitor);
     GCedClassWithAScriptWrappableBase::trace(visitor);
 }
 

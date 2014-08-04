@@ -307,70 +307,187 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
   CheckTraceVisitor(CXXMethodDecl* trace, RecordInfo* info)
       : trace_(trace), info_(info) {}
 
-  // Allow recursive traversal by using VisitMemberExpr.
   bool VisitMemberExpr(MemberExpr* member) {
-    // If this member expression references a field decl, mark it as traced.
-    if (FieldDecl* field = dyn_cast<FieldDecl>(member->getMemberDecl())) {
-      if (IsTemplateInstantiation(info_->record())) {
-        // Pointer equality on fields does not work for template instantiations.
-        // The trace method refers to fields of the template definition which
-        // are different from the instantiated fields that need to be traced.
-        const string& name = field->getNameAsString();
-        for (RecordInfo::Fields::iterator it = info_->GetFields().begin();
-             it != info_->GetFields().end();
-             ++it) {
-          if (it->first->getNameAsString() == name) {
-            MarkTraced(it);
-            break;
-          }
-        }
-      } else {
-        RecordInfo::Fields::iterator it = info_->GetFields().find(field);
-        if (it != info_->GetFields().end())
-          MarkTraced(it);
-      }
-      return true;
+    // In weak callbacks, consider any occurrence as a correct usage.
+    // TODO: We really want to require that isAlive is checked on manually
+    // processed weak fields.
+    if (IsWeakCallback()) {
+      if (FieldDecl* field = dyn_cast<FieldDecl>(member->getMemberDecl()))
+        FoundField(field);
     }
+    return true;
+  }
 
-    // If this is a weak callback function we only check field tracing.
+  bool VisitCallExpr(CallExpr* call) {
+    // In weak callbacks we don't check calls (see VisitMemberExpr).
     if (IsWeakCallback())
       return true;
 
-    // For method calls, check tracing of bases and other special GC methods.
-    if (CXXMethodDecl* fn = dyn_cast<CXXMethodDecl>(member->getMemberDecl())) {
-      const string& name = fn->getNameAsString();
-      // Check weak callbacks.
-      if (name == kRegisterWeakMembersName) {
-        if (fn->isTemplateInstantiation()) {
-          const TemplateArgumentList& args =
-              *fn->getTemplateSpecializationInfo()->TemplateArguments;
-          // The second template argument is the callback method.
-          if (args.size() > 1 &&
-              args[1].getKind() == TemplateArgument::Declaration) {
-            if (FunctionDecl* callback =
-                    dyn_cast<FunctionDecl>(args[1].getAsDecl())) {
-              if (callback->hasBody()) {
-                CheckTraceVisitor nested_visitor(info_);
-                nested_visitor.TraverseStmt(callback->getBody());
-              }
-            }
-          }
+    Expr* callee = call->getCallee();
+
+    // Trace calls from a templated derived class result in a
+    // DependentScopeMemberExpr because the concrete trace call depends on the
+    // instantiation of any shared template parameters. In this case the call is
+    // "unresolved" and we resort to comparing the syntactic type names.
+    if (CXXDependentScopeMemberExpr* expr =
+        dyn_cast<CXXDependentScopeMemberExpr>(callee)) {
+      CheckCXXDependentScopeMemberExpr(call, expr);
+      return true;
+    }
+
+    // A tracing call will have either a |visitor| or a |m_field| argument.
+    // A registerWeakMembers call will have a |this| argument.
+    if (call->getNumArgs() != 1)
+      return true;
+    Expr* arg = call->getArg(0);
+
+    if (UnresolvedMemberExpr* expr = dyn_cast<UnresolvedMemberExpr>(callee)) {
+      // If we find a call to registerWeakMembers which is unresolved we
+      // unsoundly consider all weak members as traced.
+      // TODO: Find out how to validate weak member tracing for unresolved call.
+      if (expr->getMemberName().getAsString() == kRegisterWeakMembersName) {
+        for (RecordInfo::Fields::iterator it = info_->GetFields().begin();
+             it != info_->GetFields().end();
+             ++it) {
+          if (it->second.edge()->IsWeakMember())
+            it->second.MarkTraced();
         }
-        return true;
       }
 
-      // Currently, a manually dispatched class cannot have mixin bases (having
-      // one would add a vtable which we explicitly check against). This means
-      // that we can only make calls to a trace method of the same name. Revisit
-      // this if our mixin/vtable assumption changes.
-      if (Config::IsTraceMethod(fn) &&
-          fn->getName() == trace_->getName() &&
-          member->hasQualifier()) {
-        if (const Type* type = member->getQualifier()->getAsType()) {
-          if (CXXRecordDecl* decl = type->getAsCXXRecordDecl()) {
-            RecordInfo::Bases::iterator it = info_->GetBases().find(decl);
-            if (it != info_->GetBases().end())
-              it->second.MarkTraced();
+      QualType base = expr->getBaseType();
+      if (!base->isPointerType())
+        return true;
+      CXXRecordDecl* decl = base->getPointeeType()->getAsCXXRecordDecl();
+      if (decl)
+        CheckTraceFieldCall(expr->getMemberName().getAsString(), decl, arg);
+      return true;
+    }
+
+    if (CXXMemberCallExpr* expr = dyn_cast<CXXMemberCallExpr>(call)) {
+      if (CheckTraceFieldCall(expr) || CheckRegisterWeakMembers(expr))
+        return true;
+    }
+
+    CheckTraceBaseCall(call);
+    return true;
+  }
+
+ private:
+
+  CXXRecordDecl* GetDependentTemplatedDecl(CXXDependentScopeMemberExpr* expr) {
+    NestedNameSpecifier* qual = expr->getQualifier();
+    if (!qual)
+      return 0;
+
+    const Type* type = qual->getAsType();
+    if (!type)
+      return 0;
+
+    const TemplateSpecializationType* tmpl_type =
+        type->getAs<TemplateSpecializationType>();
+    if (!tmpl_type)
+      return 0;
+
+    TemplateDecl* tmpl_decl = tmpl_type->getTemplateName().getAsTemplateDecl();
+    if (!tmpl_decl)
+      return 0;
+
+    return dyn_cast<CXXRecordDecl>(tmpl_decl->getTemplatedDecl());
+  }
+
+  void CheckCXXDependentScopeMemberExpr(CallExpr* call,
+                                        CXXDependentScopeMemberExpr* expr) {
+    string fn_name = expr->getMember().getAsString();
+    CXXRecordDecl* tmpl = GetDependentTemplatedDecl(expr);
+    if (!tmpl)
+      return;
+
+    // Check for Super<T>::trace(visitor)
+    if (call->getNumArgs() == 1 && fn_name == trace_->getName()) {
+      RecordInfo::Bases::iterator it = info_->GetBases().begin();
+      for (; it != info_->GetBases().end(); ++it) {
+        if (it->first->getName() == tmpl->getName())
+          it->second.MarkTraced();
+      }
+      return;
+    }
+
+    // Check for TraceIfNeeded<T>::trace(visitor, &field)
+    if (call->getNumArgs() == 2 && fn_name == kTraceName &&
+        tmpl->getName() == kTraceIfNeededName) {
+      FindFieldVisitor finder;
+      finder.TraverseStmt(call->getArg(1));
+      if (finder.field())
+        FoundField(finder.field());
+    }
+  }
+
+  bool CheckTraceBaseCall(CallExpr* call) {
+    MemberExpr* callee = dyn_cast<MemberExpr>(call->getCallee());
+    if (!callee)
+      return false;
+
+    FunctionDecl* fn = dyn_cast<FunctionDecl>(callee->getMemberDecl());
+    if (!fn || !Config::IsTraceMethod(fn))
+      return false;
+
+    // Currently, a manually dispatched class cannot have mixin bases (having
+    // one would add a vtable which we explicitly check against). This means
+    // that we can only make calls to a trace method of the same name. Revisit
+    // this if our mixin/vtable assumption changes.
+    if (fn->getName() != trace_->getName())
+      return false;
+
+    CXXRecordDecl* decl = 0;
+    if (callee && callee->hasQualifier()) {
+      if (const Type* type = callee->getQualifier()->getAsType())
+        decl = type->getAsCXXRecordDecl();
+    }
+    if (!decl)
+      return false;
+
+    RecordInfo::Bases::iterator it = info_->GetBases().find(decl);
+    if (it != info_->GetBases().end()) {
+      it->second.MarkTraced();
+    }
+
+    return true;
+  }
+
+  bool CheckTraceFieldCall(CXXMemberCallExpr* call) {
+    return CheckTraceFieldCall(call->getMethodDecl()->getNameAsString(),
+                               call->getRecordDecl(),
+                               call->getArg(0));
+  }
+
+  bool CheckTraceFieldCall(string name, CXXRecordDecl* callee, Expr* arg) {
+    if (name != kTraceName || !Config::IsVisitor(callee->getName()))
+      return false;
+
+    FindFieldVisitor finder;
+    finder.TraverseStmt(arg);
+    if (finder.field())
+      FoundField(finder.field());
+
+    return true;
+  }
+
+  bool CheckRegisterWeakMembers(CXXMemberCallExpr* call) {
+    CXXMethodDecl* fn = call->getMethodDecl();
+    if (fn->getName() != kRegisterWeakMembersName)
+      return false;
+
+    if (fn->isTemplateInstantiation()) {
+      const TemplateArgumentList& args =
+          *fn->getTemplateSpecializationInfo()->TemplateArguments;
+      // The second template argument is the callback method.
+      if (args.size() > 1 &&
+          args[1].getKind() == TemplateArgument::Declaration) {
+        if (FunctionDecl* callback =
+            dyn_cast<FunctionDecl>(args[1].getAsDecl())) {
+          if (callback->hasBody()) {
+            CheckTraceVisitor nested_visitor(info_);
+            nested_visitor.TraverseStmt(callback->getBody());
           }
         }
       }
@@ -378,7 +495,24 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
     return true;
   }
 
- private:
+  class FindFieldVisitor : public RecursiveASTVisitor<FindFieldVisitor> {
+   public:
+    FindFieldVisitor() : member_(0), field_(0) {}
+    MemberExpr* member() const { return member_; }
+    FieldDecl* field() const { return field_; }
+    bool TraverseMemberExpr(MemberExpr* member) {
+      if (FieldDecl* field = dyn_cast<FieldDecl>(member->getMemberDecl())) {
+        member_ = member;
+        field_ = field;
+        return false;
+      }
+      return true;
+    }
+   private:
+    MemberExpr* member_;
+    FieldDecl* field_;
+  };
+
   // Nested checking for weak callbacks.
   CheckTraceVisitor(RecordInfo* info) : trace_(0), info_(info) {}
 
@@ -389,6 +523,27 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
     if (IsWeakCallback() && !it->second.edge()->IsWeakMember())
       return;
     it->second.MarkTraced();
+  }
+
+  void FoundField(FieldDecl* field) {
+    if (IsTemplateInstantiation(info_->record())) {
+      // Pointer equality on fields does not work for template instantiations.
+      // The trace method refers to fields of the template definition which
+      // are different from the instantiated fields that need to be traced.
+      const string& name = field->getNameAsString();
+      for (RecordInfo::Fields::iterator it = info_->GetFields().begin();
+           it != info_->GetFields().end();
+           ++it) {
+        if (it->first->getNameAsString() == name) {
+          MarkTraced(it);
+          break;
+        }
+      }
+    } else {
+      RecordInfo::Fields::iterator it = info_->GetFields().find(field);
+      if (it != info_->GetFields().end())
+        MarkTraced(it);
+    }
   }
 
   CXXMethodDecl* trace_;
@@ -574,8 +729,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         options_(options),
         json_(0) {
 
-    // Only check structures in the blink, blink and WebKit namespaces.
-    options_.checked_namespaces.insert("blink");
+    // Only check structures in the blink and WebKit namespaces.
     options_.checked_namespaces.insert("blink");
     options_.checked_namespaces.insert("WebKit");
 
