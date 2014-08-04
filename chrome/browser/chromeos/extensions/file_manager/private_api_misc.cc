@@ -47,6 +47,7 @@ namespace extensions {
 
 namespace {
 const char kCWSScope[] = "https://www.googleapis.com/auth/chromewebstore";
+const char kGoogleCastApiExtensionId[] = "mafeflapfdfljijmlienjedomfjfmhpd";
 
 // Obtains the current app window.
 apps::AppWindow* GetCurrentAppWindow(ChromeSyncExtensionFunction* function) {
@@ -269,12 +270,19 @@ bool FileBrowserPrivateInstallWebstoreItemFunction::RunAsync() {
           &FileBrowserPrivateInstallWebstoreItemFunction::OnInstallComplete,
           this);
 
+  // Only GoogleCastAPI extension can use silent installation.
+  if (params->silent_installation &&
+      params->item_id != kGoogleCastApiExtensionId) {
+    SetError("Only whiltelisted items can do silent installation.");
+    return false;
+  }
+
   scoped_refptr<file_manager::AppInstaller> installer(
-      new file_manager::AppInstaller(
-          GetAssociatedWebContents(),
-          params->item_id,
-          GetProfile(),
-          callback));
+      new file_manager::AppInstaller(GetAssociatedWebContents(),
+                                     params->item_id,
+                                     GetProfile(),
+                                     params->silent_installation,
+                                     callback));
   // installer will be AddRef()'d in BeginInstall().
   installer->BeginInstall();
   return true;

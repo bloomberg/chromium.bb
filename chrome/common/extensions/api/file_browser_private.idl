@@ -785,8 +785,10 @@ interface Functions {
 
   // Requests to install a webstore item.
   // |item_id| The id of the item to install.
+  // |silentInstallation| False to show installation prompt. True not to show.
   // |callback|
-  static void installWebstoreItem(DOMString item_id,
+  static void installWebstoreItem(DOMString itemId,
+                                  boolean silentInstallation,
                                   SimpleCallback callback);
 
   // Obtains a list of profiles that are logged-in.

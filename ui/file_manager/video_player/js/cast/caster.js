@@ -24,31 +24,72 @@ chrome.commandLinePrivate.hasSwitch(CAST_COMMAND_LINE_FLAG, function(result) {
   if (!result)
     return;
 
-  ensureLoad(initializeApi);
+  // TODO(yoshiki): Check if the Google Cast extension is installed or not.
+  // If not installed, we should skip all cast-related functionality.
+
+  loadCastAPI(initializeApi);
 });
 
 /**
  * Executes the given callback after the cast extension is initialized.
  * @param {function} callback Callback (executed asynchronously).
+ * @param {boolean=} opt_secondTry Spericy try if it's second call after
+ *     installation of Cast API extension.
  */
-function ensureLoad(callback) {
-  if(!chrome.cast || !chrome.cast.isAvailable) {
-    var checkTimer = setTimeout(function() {
-      console.error('Either "Google Cast API" or "Google Cast" extension ' +
-                    'seems not to be installed?');
-    }, 5000);
+function loadCastAPI(callback, opt_secondTry) {
+  var script = document.createElement('script');
 
-    window['__onGCastApiAvailable'] = function(loaded, errorInfo) {
-      if (loaded) {
-        callback();
-        clearTimeout(checkTimer);
-      } else {
-        console.error(errorInfo);
-      }
+  var onError = function() {
+    script.removeEventListener('error', onError);
+    document.body.removeChild(script);
+
+    if (opt_secondTry) {
+      // Shows error message and exits if it's the 2nd try.
+      console.error('Google Cast API extension load failed.');
+      return;
     }
-  } else {
-    setTimeout(callback);  // Runs asynchronously.
-  }
+
+    // Installs the Google Cast API extension and retry loading.
+    chrome.fileBrowserPrivate.installWebstoreItem(
+        'mafeflapfdfljijmlienjedomfjfmhpd',
+        true,  // Don't use installation prompt.
+        function() {
+          if (chrome.runtime.lastError) {
+            console.error('Google Cast API extension installation error.',
+                          chrome.runtime.lastError.message);
+            return;
+          }
+
+          console.info('Google Cast API extension installed.');
+          // Loads API again.
+          setTimeout(loadCastAPI.bind(null, callback, true));
+        }.wrap());
+  }.wrap();
+
+  var onLoad = function() {
+    if(!chrome.cast || !chrome.cast.isAvailable) {
+      var checkTimer = setTimeout(function() {
+        console.error('Either "Google Cast API" or "Google Cast" extension ' +
+                      'seems not to be installed?');
+      }.wrap(), 5000);
+
+      window['__onGCastApiAvailable'] = function(loaded, errorInfo) {
+        clearTimeout(checkTimer);
+
+        if (loaded)
+          callback();
+        else
+          console.error('Google Cast exntnsion load failed.', errorInfo);
+      }.wrap();
+    } else {
+      setTimeout(callback);  // Runs asynchronously.
+    }
+  }.wrap();
+
+  script.src = '_modules/mafeflapfdfljijmlienjedomfjfmhpd/cast_sender.js';
+  script.addEventListener('error', onError);
+  script.addEventListener('load', onLoad);
+  document.body.appendChild(script);
 }
 
 /**

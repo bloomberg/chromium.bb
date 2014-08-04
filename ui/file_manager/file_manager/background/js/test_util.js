@@ -565,7 +565,7 @@ test.util.sync.overrideInstallWebstoreItemApi =
         message ? {message: message} : null;
   };
 
-  var installWebstoreItem = function(itemId, callback) {
+  var installWebstoreItem = function(itemId, silentInstallation, callback) {
     setTimeout(function() {
       if (itemId !== expectedItemId) {
         setLastError('Invalid Chrome Web Store item ID');

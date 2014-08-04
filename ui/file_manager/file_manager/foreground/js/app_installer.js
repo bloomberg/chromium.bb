@@ -52,6 +52,7 @@ AppInstaller.prototype.install = function(callback) {
   this.callback_ = callback;
   chrome.fileBrowserPrivate.installWebstoreItem(
       this.itemId_,
+      false,  // Shows installation prompt.
       function() {
         this.onInstallCompleted_(chrome.runtime.lastError);
       }.bind(this));
