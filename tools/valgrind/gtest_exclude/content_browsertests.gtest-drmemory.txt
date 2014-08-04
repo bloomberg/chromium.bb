@@ -1,2 +1,6 @@
 # crbug.com/399289
 WebRtcBrowserTest.NoCrashWhenConnectChromiumSinkToRemoteTrack
+
+# crbug.com/400490
+PluginTest.PluginSingleRangeRequest
+PluginTest.PluginThreadAsyncCall
