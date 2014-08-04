@@ -37,14 +37,6 @@
 #include "crypto/scoped_nss_types.h"
 #endif
 
-// The OpenSSL implementation of WebCrypto is less complete, so don't run all of
-// the tests: http://crbug.com/267888
-#if defined(USE_OPENSSL)
-#define MAYBE(test_name) DISABLED_##test_name
-#else
-#define MAYBE(test_name) test_name
-#endif
-
 #define EXPECT_BYTES_EQ(expected, actual) \
   EXPECT_EQ(CryptoData(expected), CryptoData(actual))
 
