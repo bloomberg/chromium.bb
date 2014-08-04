@@ -180,10 +180,10 @@ config("skia_library_config") {
 
   if (cpu_arch == "arm") {
     if (arm_use_neon) {
-      defines += [ "SK_ARM_HAS_NEON", "__ARM_HAVE_NEON" ]
+      defines += [ "SK_ARM_HAS_NEON" ]
     }
     if (arm_optionally_use_neon) {
-      defines += [ "SK_ARM_HAS_OPTIONAL_NEON", "__ARM_HAVE_OPTIONAL_NEON_SUPPORT" ]
+      defines += [ "SK_ARM_HAS_OPTIONAL_NEON" ]
     }
   }
 
