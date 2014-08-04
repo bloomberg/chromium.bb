@@ -29,9 +29,12 @@
     [ImplementedInPrivateScript] attribute DOMString stringAttribute;
     [ImplementedInPrivateScript] attribute Node nodeAttribute;
     [ImplementedInPrivateScript] attribute Node nodeAttributeThrowsIndexSizeError;
-    [ImplementedInPrivateScript] void voidMethodThrowsSyntaxError();
+    [ImplementedInPrivateScript] void voidMethodThrowsDOMSyntaxError();
+    [ImplementedInPrivateScript] void voidMethodThrowsError();
     [ImplementedInPrivateScript] void voidMethodThrowsTypeError();
     [ImplementedInPrivateScript] void voidMethodThrowsRangeError();
+    [ImplementedInPrivateScript] void voidMethodThrowsSyntaxError();
+    [ImplementedInPrivateScript] void voidMethodThrowsReferenceError();
     [ImplementedInPrivateScript] void voidMethodWithStackOverflow();
     [ImplementedInPrivateScript, OnlyExposedToPrivateScript] short addIntegerForPrivateScriptOnly(short value1, short value2);
     [ImplementedInPrivateScript, OnlyExposedToPrivateScript] attribute DOMString stringAttributeForPrivateScriptOnly;

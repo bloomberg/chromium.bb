@@ -119,8 +119,12 @@ installClass("PrivateScriptTest", function(global, InternalsPrototype) {
         set: function(value) { throw new DOMExceptionInPrivateScript("IndexSizeError", "setter threw error"); }
     });
 
-    InternalsPrototype.voidMethodThrowsSyntaxError = function() {
+    InternalsPrototype.voidMethodThrowsDOMSyntaxError = function() {
         throw new DOMExceptionInPrivateScript("SyntaxError", "method threw error");
+    }
+
+    InternalsPrototype.voidMethodThrowsError = function() {
+        throw new Error("method threw Error");
     }
 
     InternalsPrototype.voidMethodThrowsTypeError = function() {
@@ -129,6 +133,14 @@ installClass("PrivateScriptTest", function(global, InternalsPrototype) {
 
     InternalsPrototype.voidMethodThrowsRangeError = function() {
         throw new RangeError("method threw RangeError");
+    }
+
+    InternalsPrototype.voidMethodThrowsSyntaxError = function() {
+        throw new SyntaxError("method threw SyntaxError");
+    }
+
+    InternalsPrototype.voidMethodThrowsReferenceError = function() {
+        throw new ReferenceError("method threw ReferenceError");
     }
 
     InternalsPrototype.voidMethodWithStackOverflow = function() {

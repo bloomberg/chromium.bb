@@ -195,6 +195,13 @@ bool PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(v8::Isolate* 
         exceptionState.throwIfNeeded();
         return true;
     }
+    if (exceptionName == "Error") {
+        v8::Handle<v8::Value> message = exceptionObject->Get(v8String(isolate, "message"));
+        RELEASE_ASSERT(!message.IsEmpty() && message->IsString());
+        exceptionState.throwDOMException(V8GeneralError, toCoreString(v8::Handle<v8::String>::Cast(message)));
+        exceptionState.throwIfNeeded();
+        return true;
+    }
     if (exceptionName == "TypeError") {
         v8::Handle<v8::Value> message = exceptionObject->Get(v8String(isolate, "message"));
         RELEASE_ASSERT(!message.IsEmpty() && message->IsString());
@@ -209,7 +216,20 @@ bool PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(v8::Isolate* 
         exceptionState.throwIfNeeded();
         return true;
     }
-    // FIXME: Support other JavaScript errors such as SecurityError.
+    if (exceptionName == "SyntaxError") {
+        v8::Handle<v8::Value> message = exceptionObject->Get(v8String(isolate, "message"));
+        RELEASE_ASSERT(!message.IsEmpty() && message->IsString());
+        exceptionState.throwDOMException(V8SyntaxError, toCoreString(v8::Handle<v8::String>::Cast(message)));
+        exceptionState.throwIfNeeded();
+        return true;
+    }
+    if (exceptionName == "ReferenceError") {
+        v8::Handle<v8::Value> message = exceptionObject->Get(v8String(isolate, "message"));
+        RELEASE_ASSERT(!message.IsEmpty() && message->IsString());
+        exceptionState.throwDOMException(V8ReferenceError, toCoreString(v8::Handle<v8::String>::Cast(message)));
+        exceptionState.throwIfNeeded();
+        return true;
+    }
     return false;
 }
 
