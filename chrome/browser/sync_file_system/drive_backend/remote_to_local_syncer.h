@@ -106,11 +106,11 @@ class RemoteToLocalSyncer : public SyncTask {
   // Fetches remote metadata and updates MetadataDatabase by that.  The sync
   // operation itself will be deferred to the next sync round.
   // Note: if the file is not found, it should be handled as if deleted.
-  void HandleMissingRemoteMetadata(const SyncStatusCallback& callback);
-  void DidGetRemoteMetadata(const SyncStatusCallback& callback,
+  void HandleMissingRemoteMetadata(scoped_ptr<SyncTaskToken> token);
+  void DidGetRemoteMetadata(scoped_ptr<SyncTaskToken> token,
                             google_apis::GDataErrorCode error,
                             scoped_ptr<google_apis::FileResource> entry);
-  void DidUpdateDatabaseForRemoteMetadata(const SyncStatusCallback& callback,
+  void DidUpdateDatabaseForRemoteMetadata(scoped_ptr<SyncTaskToken> token,
                                           SyncStatusCode status);
 
   // This implements the body of the HandleNewFile and HandleContentUpdate.
@@ -125,16 +125,16 @@ class RemoteToLocalSyncer : public SyncTask {
   //  # The file has local modification.
   //  - Handle this case as a conflict.  Lower the priority of the tracker, and
   //    defer further handling to local-to-remote change.
-  void DidPrepareForAddOrUpdateFile(const SyncStatusCallback& callback,
+  void DidPrepareForAddOrUpdateFile(scoped_ptr<SyncTaskToken> token,
                                     SyncStatusCode status);
 
   // Handles remotely added folder.  Needs Prepare() call.
   // TODO(tzik): Write details and implement this.
-  void HandleFolderUpdate(const SyncStatusCallback& callback);
-  void DidPrepareForFolderUpdate(const SyncStatusCallback& callback,
+  void HandleFolderUpdate(scoped_ptr<SyncTaskToken> token);
+  void DidPrepareForFolderUpdate(scoped_ptr<SyncTaskToken> token,
                                  SyncStatusCode status);
 
-  void HandleSyncRootDeletion(const SyncStatusCallback& callback);
+  void HandleSyncRootDeletion(scoped_ptr<SyncTaskToken> token);
 
   // Handles deleted remote file.  Needs Prepare() call.
   // If the deleted tracker is the sync-root:
@@ -148,16 +148,16 @@ class RemoteToLocalSyncer : public SyncTask {
   // Else, if the local file is not modified:
   //  - Delete local file.
   //  # Note: if the local file is a folder, delete recursively.
-  void HandleDeletion(const SyncStatusCallback& callback);
-  void DidPrepareForDeletion(const SyncStatusCallback& callback,
+  void HandleDeletion(scoped_ptr<SyncTaskToken> token);
+  void DidPrepareForDeletion(scoped_ptr<SyncTaskToken> token,
                              SyncStatusCode status);
 
   // Handles new file.  Needs Prepare() call.
-  void HandleContentUpdate(const SyncStatusCallback& callback);
+  void HandleContentUpdate(scoped_ptr<SyncTaskToken> token);
 
-  void ListFolderContent(const SyncStatusCallback& callback);
+  void ListFolderContent(scoped_ptr<SyncTaskToken> token);
   void DidListFolderContent(
-      const SyncStatusCallback& callback,
+      scoped_ptr<SyncTaskToken> token,
       scoped_ptr<FileIDList> children,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::FileList> file_list);
@@ -171,17 +171,17 @@ class RemoteToLocalSyncer : public SyncTask {
                   const SyncFileMetadata& metadata,
                   const FileChangeList& changes);
 
-  void DeleteLocalFile(const SyncStatusCallback& callback);
-  void DownloadFile(const SyncStatusCallback& callback);
-  void DidDownloadFile(const SyncStatusCallback& callback,
+  void DeleteLocalFile(scoped_ptr<SyncTaskToken> token);
+  void DownloadFile(scoped_ptr<SyncTaskToken> token);
+  void DidDownloadFile(scoped_ptr<SyncTaskToken> token,
                        webkit_blob::ScopedFile file,
                        google_apis::GDataErrorCode error,
                        const base::FilePath&);
-  void DidApplyDownload(const SyncStatusCallback& callback,
+  void DidApplyDownload(scoped_ptr<SyncTaskToken> token,
                         webkit_blob::ScopedFile,
                         SyncStatusCode status);
 
-  void CreateFolder(const SyncStatusCallback& callback);
+  void CreateFolder(scoped_ptr<SyncTaskToken> token);
 
   // TODO(tzik): After we convert all callbacks to token-passing style,
   // drop this function.
