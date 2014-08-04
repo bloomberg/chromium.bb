@@ -24,7 +24,7 @@ var test = function()
     {
         InspectorTest.addResult("Main resource was shown.");
         InspectorTest.setBreakpoint(sourceFrame, 8, "", true);
-        InspectorTest.addSniffer(WebInspector.debuggerModel, "_debuggerWasDisabled", step3);
+        WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasDisabled, step3, this);
         WebInspector.debuggerModel.disableDebugger();
     }
 
@@ -38,7 +38,7 @@ var test = function()
     function step4()
     {
         InspectorTest.addResult("function evaluated without a pause on the breakpoint.");
-        InspectorTest.addSniffer(WebInspector.debuggerModel, "_debuggerWasEnabled", step5);
+        WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, step5, this);
         WebInspector.debuggerModel.enableDebugger();
     }
 

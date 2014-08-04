@@ -24,21 +24,23 @@ var test = function()
     {
         testSourceFrame = sourceFrame;
         InspectorTest.addResult("Main resource was shown.");
-        InspectorTest.addSniffer(WebInspector.debuggerModel, "_debuggerWasDisabled", step3);
+        WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasDisabled, step3, this);
         WebInspector.debuggerModel.disableDebugger();
     }
 
     function step3()
     {
+        WebInspector.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.DebuggerWasDisabled, step3, this);
         InspectorTest.addResult("Debugger disabled.");
         InspectorTest.setBreakpoint(testSourceFrame, 8, "", true);
         InspectorTest.addResult("Breakpoint added");
-        InspectorTest.addSniffer(WebInspector.debuggerModel, "_debuggerWasEnabled", step4);
+        WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, step4, this);
         WebInspector.debuggerModel.enableDebugger();
     }
 
     function step4()
     {
+        WebInspector.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, step4, this);
         InspectorTest.addResult("Debugger was enabled");
         InspectorTest.runTestFunctionAndWaitUntilPaused(step5);
     }
@@ -51,7 +53,7 @@ var test = function()
     function step6()
     {
         InspectorTest.addResult("Disable debugger again");
-        InspectorTest.addSniffer(WebInspector.debuggerModel, "_debuggerWasDisabled", step7);
+        WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasDisabled, step7, this);
         WebInspector.debuggerModel.disableDebugger();
     }
 
@@ -61,7 +63,7 @@ var test = function()
         var breakpoint = WebInspector.breakpointManager.findBreakpointOnLine(testSourceFrame.uiSourceCode(), 8);
         breakpoint.remove();
         InspectorTest.addResult("Breakpoint removed");
-        InspectorTest.addSniffer(WebInspector.debuggerModel, "_debuggerWasEnabled", step8);
+        WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, step8, this);
         WebInspector.debuggerModel.enableDebugger();
     }
 
