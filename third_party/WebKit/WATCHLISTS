@@ -346,6 +346,7 @@
                  'falken@chromium.org' ],
     'wtf': [ 'abarth@chromium.org',
              'mikhail.pozdnyakov@intel.com',
+             'aandrey+blink@chromium.org',
              'blink-reviews-wtf@chromium.org' ],
     'indexed_db': ['alecflett@chromium.org','dgrogan@chromium.org',
                    'jsbell+idb@chromium.org', 'cmumford@chromium.org'],
