@@ -410,6 +410,10 @@
       # builds.
       'use_custom_libcxx%': 0,
 
+      # Use system libc++ instead of the default C++ library, usually libstdc++.
+      # This is intended for iOS builds only.
+      'use_system_libcxx%': 0,
+
       # Use a modified version of Clang to intercept allocated types and sizes
       # for allocated objects. clang_type_profiler=1 implies clang=1.
       # See http://dev.chromium.org/developers/deep-memory-profiler/cpp-object-type-identifier
@@ -1094,6 +1098,7 @@
     'ubsan_vptr_blacklist%': '<(ubsan_vptr_blacklist)',
     'use_instrumented_libraries%': '<(use_instrumented_libraries)',
     'use_custom_libcxx%': '<(use_custom_libcxx)',
+    'use_system_libcxx%': '<(use_system_libcxx)',
     'clang_type_profiler%': '<(clang_type_profiler)',
     'order_profiling%': '<(order_profiling)',
     'order_text_section%': '<(order_text_section)',
@@ -1456,6 +1461,12 @@
     'use_chromevox_next%': 0,
 
     'conditions': [
+      # The version of clang shipped upstream does not find C++ headers when
+      # using -stdlib=libc++ so we instead need to use the version of clang
+      # coming with Xcode.
+      ['OS=="ios" and use_system_libcxx==1', {
+        'clang_xcode%': 1,
+      }],
       # Enable the Syzygy optimization step for the official builds.
       ['OS=="win" and buildtype=="Official" and syzyasan!=1', {
         'syzygy_optimize%': 1,
@@ -4999,6 +5010,16 @@
             ['target_subarch=="both"', {
               'VALID_ARCHS': ['arm64', 'armv7', 'x86_64', 'i386'],
             }],
+            ['use_system_libcxx==1', {
+              'target_conditions': [
+                # Only use libc++ when building target for iOS not when building
+                # tools for the host (OS X) as Mac targets OS X SDK 10.6 which
+                # does not support libc++.
+                ['_toolset=="target"', {
+                  'CLANG_CXX_LIBRARY': 'libc++',  # -stdlib=libc++
+                }]
+              ],
+            }],
           ],
         },
         'target_conditions': [
@@ -5233,7 +5254,7 @@
           # on program correctness and there's no real reason to waste time
           # trying to prevent it.
           4503,
-          
+
           # C4611: interaction between 'function' and C++ object destruction is
           #        non-portable
           # This warning is unavoidable when using e.g. setjmp/longjmp.  MSDN
