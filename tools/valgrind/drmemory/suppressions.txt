@@ -645,3 +645,10 @@ aura.dll!aura::Window::Contains
 aura.dll!aura::WindowEventDispatcher::OnWindowHidden
 aura.dll!aura::WindowEventDispatcher::OnPostNotifiedWindowDestroying
 aura.dll!aura::Window::~Window
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/400511
+content.dll!content::WebThreadBase::TaskObserverAdapter::WillProcessTask
+base.dll!base::MessageLoop::RunTask
+base.dll!base::Thread::StopSoon
+base.dll!base::MessageLoop::DeferOrRunPendingTask

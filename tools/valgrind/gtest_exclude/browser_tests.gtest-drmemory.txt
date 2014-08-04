@@ -1,0 +1,5 @@
+# http://crbug.com/400503
+InterstitialUITest.OpenInterstitial
+
+# http://crbug.com/400509
+CustomLauncherPageBrowserTest.LoadPageAndOpenLauncher

@@ -28,3 +28,6 @@ URLRequestTest.ResolveShortcutTest
 
 # Crashes, http://crbug.com/369840
 ProxyResolverV8TracingTest.MultipleResolvers
+
+# http://crbug.com/400521
+HttpServerTest.RequestWithTooLargeBody
