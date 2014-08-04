@@ -289,5 +289,7 @@ DevToolsEmbedderMessageDispatcher*
                      &Delegate::SetDeviceCountUpdatesEnabled, delegate);
   d->RegisterHandler("setDevicesUpdatesEnabled",
                      &Delegate::SetDevicesUpdatesEnabled, delegate);
+  d->RegisterHandler("sendMessageToBrowser",
+                     &Delegate::SendMessageToBrowser, delegate);
   return d;
 }

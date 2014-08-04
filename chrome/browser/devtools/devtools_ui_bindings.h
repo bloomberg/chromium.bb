@@ -125,6 +125,7 @@ class DevToolsUIBindings : public content::NotificationObserver,
                                                const std::string& url) OVERRIDE;
   virtual void SetDeviceCountUpdatesEnabled(bool enabled) OVERRIDE;
   virtual void SetDevicesUpdatesEnabled(bool enabled) OVERRIDE;
+  virtual void SendMessageToBrowser(const std::string& message) OVERRIDE;
 
   void EnableRemoteDeviceCounter(bool enable);
 

@@ -50,7 +50,7 @@ class ShellDevToolsFrontend : public WebContentsObserver,
 
   // content::DevToolsFrontendHost::Delegate implementation.
   virtual void HandleMessageFromDevToolsFrontend(
-      const std::string& message) OVERRIDE {}
+      const std::string& message) OVERRIDE;
   virtual void HandleMessageFromDevToolsFrontendToBackend(
       const std::string& message) OVERRIDE;
 

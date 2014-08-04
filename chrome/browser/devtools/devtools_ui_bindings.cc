@@ -630,6 +630,11 @@ void DevToolsUIBindings::SetDevicesUpdatesEnabled(bool enabled) {
   }
 }
 
+void DevToolsUIBindings::SendMessageToBrowser(const std::string& message) {
+  content::DevToolsManager::GetInstance()->DispatchOnInspectorBackend(
+      this, message);
+}
+
 void DevToolsUIBindings::DeviceCountChanged(int count) {
   base::FundamentalValue value(count);
   CallClientFunction("InspectorFrontendAPI.deviceCountUpdated", &value, NULL,
