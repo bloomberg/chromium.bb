@@ -633,7 +633,7 @@ void ChromeUserManager::SupervisedUserLoggedIn(const std::string& user_id) {
       SetIsCurrentUserNew(true);
       WallpaperManager::Get()->SetUserWallpaperNow(user_id);
     } else {
-      SetIsCurrentUserNew(true);
+      SetIsCurrentUserNew(false);
     }
   }
 
