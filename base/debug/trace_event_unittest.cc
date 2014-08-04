@@ -3042,7 +3042,7 @@ TEST(TraceOptionsTest, TraceOptionsFromString) {
 #endif
 }
 
-TEST(TraceOptionsTest, TraceOptionsToString) {
+TEST(TraceOptionsTest, DISABLED_TraceOptionsToString) {
   // Test that we can intialize TraceOptions from a string got from
   // TraceOptions.ToString() method to get a same TraceOptions.
   TraceRecordMode modes[] = {
