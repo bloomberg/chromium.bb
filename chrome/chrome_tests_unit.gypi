@@ -1307,6 +1307,8 @@
         'browser/sync/glue/autofill_data_type_controller_unittest.cc',
         'browser/sync/glue/bookmark_data_type_controller_unittest.cc',
         'browser/sync/glue/browser_thread_model_worker_unittest.cc',
+        'browser/sync/glue/device_info_data_type_controller_unittest.cc',
+        'browser/sync/glue/device_info_sync_service_unittest.cc',
         'browser/sync/glue/extensions_activity_monitor_unittest.cc',
         'browser/sync/glue/favicon_cache_unittest.cc',
         'browser/sync/glue/frontend_data_type_controller_mock.cc',
