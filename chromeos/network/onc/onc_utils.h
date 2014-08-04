@@ -130,6 +130,10 @@ CHROMEOS_EXPORT bool ResolveServerCertRefsInNetwork(
 CHROMEOS_EXPORT NetworkTypePattern NetworkTypePatternFromOncType(
     const std::string& type);
 
+// Returns true if |property_key| is a recommended value in the ONC dictionary.
+CHROMEOS_EXPORT bool IsRecommendedValue(const base::DictionaryValue* onc,
+                                        const std::string& property_key);
+
 }  // namespace onc
 }  // namespace chromeos
 

@@ -672,5 +672,26 @@ NetworkTypePattern NetworkTypePatternFromOncType(const std::string& type) {
   return NetworkTypePattern::Default();
 }
 
+bool IsRecommendedValue(const base::DictionaryValue* onc,
+                        const std::string& property_key) {
+  std::string property_basename, recommended_property_key;
+  size_t pos = property_key.find_last_of('.');
+  if (pos != std::string::npos) {
+    // 'WiFi.AutoConnect' -> 'AutoConnect', 'WiFi.Recommended'
+    property_basename = property_key.substr(pos + 1);
+    recommended_property_key =
+        property_key.substr(0, pos + 1) + ::onc::kRecommended;
+  } else {
+    // 'Name' -> 'Name', 'Recommended'
+    property_basename = property_key;
+    recommended_property_key = ::onc::kRecommended;
+  }
+
+  const base::ListValue* recommended_keys = NULL;
+  return (onc->GetList(recommended_property_key, &recommended_keys) &&
+          recommended_keys->Find(base::StringValue(property_basename)) !=
+          recommended_keys->end());
+}
+
 }  // namespace onc
 }  // namespace chromeos
