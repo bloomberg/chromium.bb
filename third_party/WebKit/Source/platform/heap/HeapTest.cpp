@@ -3686,8 +3686,10 @@ void rawPtrInHashHelper()
     set.add(new int(42));
     set.add(new int(42));
     EXPECT_EQ(2u, set.size());
-    for (typename Set::iterator it = set.begin(); it != set.end(); ++it)
+    for (typename Set::iterator it = set.begin(); it != set.end(); ++it) {
         EXPECT_EQ(42, **it);
+        delete *it;
+    }
 }
 
 TEST(HeapTest, RawPtrInHash)
