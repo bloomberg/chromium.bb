@@ -428,6 +428,7 @@ bool QuicClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
   ssl_info->channel_id_sent = crypto_stream_->WasChannelIDSent();
   ssl_info->security_bits = security_bits;
   ssl_info->handshake_type = SSLInfo::HANDSHAKE_FULL;
+  ssl_info->pinning_failure_log = pinning_failure_log_;
   return true;
 }
 
@@ -667,12 +668,12 @@ void QuicClientSession::OnProofValid(
 
 void QuicClientSession::OnProofVerifyDetailsAvailable(
     const ProofVerifyDetails& verify_details) {
-  const CertVerifyResult* cert_verify_result_other =
-      &(reinterpret_cast<const ProofVerifyDetailsChromium*>(
-          &verify_details))->cert_verify_result;
+  const ProofVerifyDetailsChromium* verify_details_chromium =
+      reinterpret_cast<const ProofVerifyDetailsChromium*>(&verify_details);
   CertVerifyResult* result_copy = new CertVerifyResult;
-  result_copy->CopyFrom(*cert_verify_result_other);
+  result_copy->CopyFrom(verify_details_chromium->cert_verify_result);
   cert_verify_result_.reset(result_copy);
+  pinning_failure_log_ = verify_details_chromium->pinning_failure_log;
   logger_->OnCertificateVerified(*cert_verify_result_);
 }
 

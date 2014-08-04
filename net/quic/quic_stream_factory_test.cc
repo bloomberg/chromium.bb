@@ -12,6 +12,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_util.h"
+#include "net/http/transport_security_state.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/crypto/quic_decrypter.h"
@@ -96,7 +97,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
             base::MessageLoopProxy::current())),
         factory_(&host_resolver_, &socket_factory_,
                  base::WeakPtr<HttpServerProperties>(), cert_verifier_.get(),
-                 channel_id_service_.get(),
+                 channel_id_service_.get(), &transport_security_state_,
                  &crypto_client_stream_factory_, &random_generator_, clock_,
                  kDefaultMaxPacketSize, std::string(),
                  SupportedVersions(GetParam()), true, true, true,
@@ -189,6 +190,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
   MockClock* clock_;  // Owned by factory_.
   scoped_ptr<CertVerifier> cert_verifier_;
   scoped_ptr<ChannelIDService> channel_id_service_;
+  TransportSecurityState transport_security_state_;
   QuicStreamFactory factory_;
   HostPortPair host_port_pair_;
   bool is_https_;

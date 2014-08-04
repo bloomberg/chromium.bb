@@ -228,6 +228,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase {
   scoped_refptr<IOBufferWithSize> read_buffer_;
   scoped_ptr<QuicServerInfo> server_info_;
   scoped_ptr<CertVerifyResult> cert_verify_result_;
+  std::string pinning_failure_log_;
   ObserverSet observers_;
   StreamRequestQueue stream_requests_;
   bool read_pending_;
