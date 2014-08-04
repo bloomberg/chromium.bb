@@ -85,6 +85,20 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
     return type;
   }
 
+  bool WindowOrientationSupported() {
+    bool support;
+    ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
+                             "'orientation' in window")->GetAsBoolean(&support);
+    return support;
+  }
+
+  int GetWindowOrientationAngle() {
+    int angle;
+    ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
+                             "window.orientation")->GetAsInteger(&angle);
+    return angle;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationBrowserTest);
 };
@@ -99,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, ScreenOrientationChange) {
                           "landscape-primary",
                           "landscape-secondary" };
   GURL test_url = GetTestUrl("screen_orientation",
-                             "screen_orientation_orientationchange.html");
+                             "screen_orientation_screenorientationchange.html");
 
   TestNavigationObserver navigation_observer(
       shell()->web_contents(), 1
@@ -125,5 +139,28 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, ScreenOrientationChange) {
   }
 }
 #endif // defined(USE_AURA) || defined(OS_ANDROID)
+
+IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, WindowOrientationChange) {
+  GURL test_url = GetTestUrl("screen_orientation",
+                             "screen_orientation_windoworientationchange.html");
+
+  TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+  shell()->LoadURL(test_url);
+  navigation_observer.Wait();
+
+  if (!WindowOrientationSupported())
+    return;
+
+  int angle = GetWindowOrientationAngle();
+
+  for (int i = 0; i < 4; ++i) {
+    angle = (angle + 90) % 360;
+    SendFakeScreenOrientation(angle, "portrait-primary");
+
+    TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+    navigation_observer.Wait();
+    EXPECT_EQ(angle == 270 ? -90 : angle, GetWindowOrientationAngle());
+  }
+}
 
 } // namespace content
