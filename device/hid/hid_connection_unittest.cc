@@ -6,10 +6,12 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "device/hid/hid_connection.h"
 #include "device/hid/hid_service.h"
+#include "device/test/usb_test_gadget.h"
 #include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,109 +21,112 @@ namespace {
 
 using net::IOBufferWithSize;
 
-const int kUSBLUFADemoVID = 0x03eb;
-const int kUSBLUFADemoPID = 0x204f;
-const uint64_t kReport = 0x0903a65d030f8ec9ULL;
+class TestCompletionCallback {
+ public:
+  TestCompletionCallback()
+    : callback_(base::Bind(&TestCompletionCallback::SetResult,
+                base::Unretained(this))) {}
 
-int g_read_times = 0;
-void Read(scoped_refptr<HidConnection> conn);
-
-void OnRead(scoped_refptr<HidConnection> conn,
-            scoped_refptr<IOBufferWithSize> buffer,
-            bool success,
-            size_t bytes) {
-  EXPECT_TRUE(success);
-  if (success) {
-    g_read_times++;
-    EXPECT_EQ(8U, bytes);
-    if (bytes == 8) {
-      uint64_t* data = reinterpret_cast<uint64_t*>(buffer->data());
-      EXPECT_EQ(kReport, *data);
-    } else {
-      base::MessageLoop::current()->Quit();
-    }
-  } else {
-    LOG(ERROR) << "~";
-    g_read_times++;
+  void SetResult(bool success, size_t size) {
+    result_ = success;
+    transferred_ = size;
+    run_loop_.Quit();
   }
 
-  if (g_read_times < 3){
-    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(Read, conn));
-  } else {
-    base::MessageLoop::current()->Quit();
+  bool WaitForResult() {
+    run_loop_.Run();
+    return result_;
   }
-}
 
-void Read(scoped_refptr<HidConnection> conn) {
-  scoped_refptr<IOBufferWithSize> buffer(new IOBufferWithSize(8));
-  conn->Read(buffer, base::Bind(OnRead, conn, buffer));
-}
+  const HidConnection::IOCallback& callback() const { return callback_; }
+  size_t transferred() const { return transferred_; }
 
-void OnWriteNormal(bool success,
-                   size_t bytes) {
-  ASSERT_TRUE(success);
-  base::MessageLoop::current()->Quit();
-}
-
-void WriteNormal(scoped_refptr<HidConnection> conn) {
-  scoped_refptr<IOBufferWithSize> buffer(new IOBufferWithSize(8));
-  *(int64_t*)buffer->data() = kReport;
-
-  conn->Write(0, buffer, base::Bind(OnWriteNormal));
-}
+ private:
+  const HidConnection::IOCallback callback_;
+  base::RunLoop run_loop_;
+  bool result_;
+  size_t transferred_;
+};
 
 }  // namespace
 
 class HidConnectionTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
+    if (!UsbTestGadget::IsTestEnabled()) return;
+
     message_loop_.reset(new base::MessageLoopForIO());
     service_.reset(HidService::Create(message_loop_->message_loop_proxy()));
     ASSERT_TRUE(service_);
 
+    test_gadget_ = UsbTestGadget::Claim();
+    ASSERT_TRUE(test_gadget_);
+    ASSERT_TRUE(test_gadget_->SetType(UsbTestGadget::HID_ECHO));
+
+    device_id_ = kInvalidHidDeviceId;
+
+    base::RunLoop run_loop;
+    message_loop_->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&HidConnectionTest::FindDevice,
+                   base::Unretained(this), run_loop.QuitClosure(), 5),
+        base::TimeDelta::FromMilliseconds(250));
+    run_loop.Run();
+
+    ASSERT_NE(device_id_, kInvalidHidDeviceId);
+  }
+
+  void FindDevice(const base::Closure& done, int retries) {
     std::vector<HidDeviceInfo> devices;
     service_->GetDevices(&devices);
-    device_id_ = kInvalidHidDeviceId;
+
     for (std::vector<HidDeviceInfo>::iterator it = devices.begin();
-        it != devices.end();
-        ++it) {
-      if (it->vendor_id == kUSBLUFADemoVID &&
-          it->product_id == kUSBLUFADemoPID) {
+         it != devices.end();
+         ++it) {
+      if (it->serial_number == test_gadget_->GetSerial()) {
         device_id_ = it->device_id;
-        return;
+        break;
       }
+    }
+
+    if (device_id_ == kInvalidHidDeviceId && --retries > 0) {
+      message_loop_->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&HidConnectionTest::FindDevice, base::Unretained(this),
+                     done, retries),
+          base::TimeDelta::FromMilliseconds(10));
+    } else {
+      message_loop_->PostTask(FROM_HERE, done);
     }
   }
 
-  virtual void TearDown() OVERRIDE {
-    service_.reset(NULL);
-    message_loop_.reset(NULL);
-  }
-
-  HidDeviceId device_id_;
   scoped_ptr<base::MessageLoopForIO> message_loop_;
   scoped_ptr<HidService> service_;
+  scoped_ptr<UsbTestGadget> test_gadget_;
+  HidDeviceId device_id_;
 };
 
-TEST_F(HidConnectionTest, Create) {
-  scoped_refptr<HidConnection> connection = service_->Connect(device_id_);
-  ASSERT_TRUE(connection || device_id_ == kInvalidHidDeviceId);
-}
+TEST_F(HidConnectionTest, ReadWrite) {
+  if (!UsbTestGadget::IsTestEnabled()) return;
 
-TEST_F(HidConnectionTest, Read) {
-  scoped_refptr<HidConnection> connection = service_->Connect(device_id_);
-  if (connection) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(Read, connection));
-    message_loop_->Run();
-  }
-}
+  scoped_refptr<HidConnection> conn = service_->Connect(device_id_);
+  ASSERT_TRUE(conn);
 
-TEST_F(HidConnectionTest, Write) {
-  scoped_refptr<HidConnection> connection = service_->Connect(device_id_);
+  for (int i = 0; i < 8; ++i) {
+    scoped_refptr<IOBufferWithSize> write_buffer(new IOBufferWithSize(8));
+    *(int64_t*)write_buffer->data() = i;
 
-  if (connection) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(WriteNormal, connection));
-    message_loop_->Run();
+    TestCompletionCallback write_callback;
+    conn->Write(0, write_buffer, write_callback.callback());
+    ASSERT_TRUE(write_callback.WaitForResult());
+    ASSERT_EQ(8UL, write_callback.transferred());
+
+    scoped_refptr<IOBufferWithSize> read_buffer(new IOBufferWithSize(8));
+    TestCompletionCallback read_callback;
+    conn->Read(read_buffer, read_callback.callback());
+    ASSERT_TRUE(read_callback.WaitForResult());
+    ASSERT_EQ(8UL, read_callback.transferred());
+    ASSERT_EQ(i, *(int64_t*)read_buffer->data());
   }
 }
 

@@ -22,6 +22,7 @@ class UsbTestGadget {
     DEFAULT = 0,
     KEYBOARD,
     MOUSE,
+    HID_ECHO,
   };
 
   virtual ~UsbTestGadget() {}

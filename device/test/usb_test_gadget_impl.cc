@@ -61,6 +61,7 @@ static const struct UsbTestGadgetConfiguration kConfigurations[] = {
   { UsbTestGadget::DEFAULT, "/unconfigure", 0x2000 },
   { UsbTestGadget::KEYBOARD, "/keyboard/configure", 0x2001 },
   { UsbTestGadget::MOUSE, "/mouse/configure", 0x2002 },
+  { UsbTestGadget::HID_ECHO, "/hid_echo/configure", 0x2003 },
 };
 
 class UsbTestGadgetImpl : public UsbTestGadget {

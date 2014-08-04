@@ -11,6 +11,7 @@
       'usb_gadget/gadget.py',
       'usb_gadget/hid_constants.py',
       'usb_gadget/hid_descriptors.py',
+      'usb_gadget/hid_echo_gadget.py',
       'usb_gadget/hid_gadget.py',
       'usb_gadget/keyboard_gadget.py',
       'usb_gadget/linux_gadgetfs.py',

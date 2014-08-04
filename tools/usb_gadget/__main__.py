@@ -9,6 +9,7 @@ import argparse
 import netifaces
 from tornado import ioloop
 
+import hid_echo_gadget
 import keyboard_gadget
 import linux_gadgetfs
 import mouse_gadget
@@ -48,6 +49,7 @@ def main():
   server.chip = linux_gadgetfs.LinuxGadgetfs(server.hardware)
   server.SwitchGadget(server.default)
 
+  hid_echo_gadget.RegisterHandlers()
   keyboard_gadget.RegisterHandlers()
   mouse_gadget.RegisterHandlers()
 
