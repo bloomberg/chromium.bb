@@ -11,6 +11,7 @@
 #include "ash/ash_switches.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
@@ -40,6 +41,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/user_names.h"
 #include "components/user_manager/user.h"
@@ -145,19 +147,6 @@ bool ShouldUseCustomizedDefaultWallpaper() {
   return !(pref_service->FindPreference(
                              prefs::kCustomizationDefaultWallpaperURL)
                ->IsDefaultValue());
-}
-
-// Deletes everything else except |path| in the same directory.
-void DeleteAllExcept(const base::FilePath& path) {
-  base::FilePath dir = path.DirName();
-  if (base::DirectoryExists(dir)) {
-    base::FileEnumerator files(dir, false, base::FileEnumerator::FILES);
-    for (base::FilePath current = files.Next(); !current.empty();
-         current = files.Next()) {
-      if (current != path)
-        base::DeleteFile(current, false);
-    }
-  }
 }
 
 // Deletes a list of wallpaper files in |file_list|.
@@ -844,13 +833,41 @@ void WallpaperManager::SetPolicyControlledWallpaper(
     NOTREACHED() << "Unknown user.";
     return;
   }
+
+  if (user->username_hash().empty()) {
+    cryptohome::AsyncMethodCaller::GetInstance()->AsyncGetSanitizedUsername(
+        user_id,
+        base::Bind(&WallpaperManager::SetCustomWallpaperOnSanitizedUsername,
+                   weak_factory_.GetWeakPtr(),
+                   user_id,
+                   user_image.image(),
+                   true /* update wallpaper */));
+  } else {
+    SetCustomWallpaper(user_id,
+                       user->username_hash(),
+                       "policy-controlled.jpeg",
+                       ash::WALLPAPER_LAYOUT_CENTER_CROPPED,
+                       user_manager::User::POLICY,
+                       user_image.image(),
+                       true /* update wallpaper */);
+  }
+}
+
+void WallpaperManager::SetCustomWallpaperOnSanitizedUsername(
+    const std::string& user_id,
+    const gfx::ImageSkia& image,
+    bool update_wallpaper,
+    bool cryptohome_success,
+    const std::string& user_id_hash) {
+  if (!cryptohome_success)
+    return;
   SetCustomWallpaper(user_id,
-                     user->username_hash(),
+                     user_id_hash,
                      "policy-controlled.jpeg",
                      ash::WALLPAPER_LAYOUT_CENTER_CROPPED,
                      user_manager::User::POLICY,
-                     user_image.image(),
-                     true /* update wallpaper */);
+                     image,
+                     update_wallpaper);
 }
 
 void WallpaperManager::SetCustomWallpaper(
@@ -862,7 +879,6 @@ void WallpaperManager::SetCustomWallpaper(
     const gfx::ImageSkia& image,
     bool update_wallpaper) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(UserManager::Get()->IsUserLoggedIn());
 
   // There is no visible background in kiosk mode.
   if (UserManager::Get()->IsLoggedInAsKioskApp())
@@ -882,8 +898,12 @@ void WallpaperManager::SetCustomWallpaper(
     return;
   }
 
+  const user_manager::User *user = UserManager::Get()->FindUser(user_id);
+  CHECK(user);
   bool is_persistent =
-      !UserManager::Get()->IsUserNonCryptohomeDataEphemeral(user_id);
+      !UserManager::Get()->IsUserNonCryptohomeDataEphemeral(user_id) ||
+      (type == user_manager::User::POLICY &&
+       user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT);
 
   WallpaperInfo wallpaper_info = {
       wallpaper_path.value(),
@@ -999,6 +1019,15 @@ void WallpaperManager::SaveCustomWallpaper(const std::string& user_id_hash,
                                            const base::FilePath& original_path,
                                            ash::WallpaperLayout layout,
                                            scoped_ptr<gfx::ImageSkia> image) {
+  base::DeleteFile(
+      GetCustomWallpaperDir(kOriginalWallpaperSubDir).Append(user_id_hash),
+      true /* recursive */);
+  base::DeleteFile(
+      GetCustomWallpaperDir(kSmallWallpaperSubDir).Append(user_id_hash),
+      true /* recursive */);
+  base::DeleteFile(
+      GetCustomWallpaperDir(kLargeWallpaperSubDir).Append(user_id_hash),
+      true /* recursive */);
   EnsureCustomWallpaperDirectories(user_id_hash);
   std::string file_name = original_path.BaseName().value();
   base::FilePath small_wallpaper_path =
@@ -1015,22 +1044,18 @@ void WallpaperManager::SaveCustomWallpaper(const std::string& user_id_hash,
                          image->width(),
                          image->height(),
                          NULL);
-  DeleteAllExcept(original_path);
-
   ResizeAndSaveWallpaper(*image,
                          small_wallpaper_path,
                          layout,
                          kSmallWallpaperMaxWidth,
                          kSmallWallpaperMaxHeight,
                          NULL);
-  DeleteAllExcept(small_wallpaper_path);
   ResizeAndSaveWallpaper(*image,
                          large_wallpaper_path,
                          layout,
                          kLargeWallpaperMaxWidth,
                          kLargeWallpaperMaxHeight,
                          NULL);
-  DeleteAllExcept(large_wallpaper_path);
 }
 
 // static
