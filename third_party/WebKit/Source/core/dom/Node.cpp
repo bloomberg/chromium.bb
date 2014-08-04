@@ -696,24 +696,24 @@ void Node::markAncestorsWithChildNeedsDistributionRecalc()
 
 namespace {
 
-void addJsStack(TracedArray<TracedValue>& stackFrames)
+void addJsStack(TracedValue* stackFrames)
 {
     RefPtrWillBeRawPtr<ScriptCallStack> stack = createScriptCallStack(10);
     if (!stack)
         return;
     for (size_t i = 0; i < stack->size(); i++)
-        stackFrames.pushString(stack->at(i).functionName());
+        stackFrames->pushString(stack->at(i).functionName());
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> jsonObjectForStyleInvalidation(unsigned nodeCount, const Node* rootNode)
 {
-    TracedValue value;
-    value.setInteger("node_count", nodeCount);
-    value.setString("root_node", rootNode->debugName());
-    TracedArray<TracedValue>& array = value.beginArray("js_stack");
-    addJsStack(array);
-    array.endArray();
-    return value.finish();
+    RefPtr<TracedValue> value = TracedValue::create();
+    value->setInteger("node_count", nodeCount);
+    value->setString("root_node", rootNode->debugName());
+    value->beginArray("js_stack");
+    addJsStack(value.get());
+    value->endArray();
+    return value;
 }
 
 } // anonymous namespace'd functions supporting traceStyleChange

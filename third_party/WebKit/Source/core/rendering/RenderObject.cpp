@@ -1454,22 +1454,23 @@ bool RenderObject::isPaintInvalidationContainer() const
     return hasLayer() && toRenderLayerModelObject(this)->layer()->isPaintInvalidationContainer();
 }
 
-template<typename T> void addJsonObjectForRect(TracedValue& value, const char* name, const T& rect)
+template <typename T>
+void addJsonObjectForRect(TracedValue* value, const char* name, const T& rect)
 {
-    value.beginDictionary(name)
-        .setDouble("x", rect.x())
-        .setDouble("y", rect.y())
-        .setDouble("width", rect.width())
-        .setDouble("height", rect.height())
-        .endDictionary();
+    value->beginDictionary(name);
+    value->setDouble("x", rect.x());
+    value->setDouble("y", rect.y());
+    value->setDouble("width", rect.width());
+    value->setDouble("height", rect.height());
+    value->endDictionary();
 }
 
 static PassRefPtr<TraceEvent::ConvertableToTraceFormat> jsonObjectForPaintInvalidationInfo(const LayoutRect& rect, const String& invalidationReason)
 {
-    TracedValue value;
-    addJsonObjectForRect(value, "rect", rect);
-    value.setString("invalidation_reason", invalidationReason);
-    return value.finish();
+    RefPtr<TracedValue> value = TracedValue::create();
+    addJsonObjectForRect(value.get(), "rect", rect);
+    value->setString("invalidation_reason", invalidationReason);
+    return value;
 }
 
 LayoutRect RenderObject::computePaintInvalidationRect(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
@@ -1616,10 +1617,10 @@ void RenderObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInv
 
 static PassRefPtr<TraceEvent::ConvertableToTraceFormat> jsonObjectForOldAndNewRects(const LayoutRect& oldRect, const LayoutRect& newRect)
 {
-    TracedValue value;
-    addJsonObjectForRect(value, "old", oldRect);
-    addJsonObjectForRect(value, "new", newRect);
-    return value.finish();
+    RefPtr<TracedValue> value = TracedValue::create();
+    addJsonObjectForRect(value.get(), "old", oldRect);
+    addJsonObjectForRect(value.get(), "new", newRect);
+    return value;
 }
 
 bool RenderObject::invalidatePaintIfNeeded(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutPoint& oldLocation, const PaintInvalidationState& paintInvalidationState)

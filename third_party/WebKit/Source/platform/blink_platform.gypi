@@ -907,6 +907,7 @@
       'SharedBufferTest.cpp',
       'TestingPlatformSupport.cpp',
       'TestingPlatformSupport.h',
+      'TracedValueTest.cpp',
       'animation/TimingFunctionTest.cpp',
       'animation/UnitBezierTest.cpp',
       'clipboard/ClipboardUtilitiesTest.cpp',
