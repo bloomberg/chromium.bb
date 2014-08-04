@@ -2995,7 +2995,7 @@ TEST_F(TraceEventTestFixture, SyntheticDelayConfigurationToString) {
   EXPECT_EQ(config, filter.ToString());
 }
 
-TEST(TraceOptionsTest, TraceOptionsFromString) {
+TEST(TraceOptionsTest, DISABLED_TraceOptionsFromString) {
   TraceOptions options = TraceOptions("record-until-full");
   EXPECT_EQ(RECORD_UNTIL_FULL, options.record_mode);
   EXPECT_FALSE(options.enable_sampling);
@@ -3042,7 +3042,7 @@ TEST(TraceOptionsTest, TraceOptionsFromString) {
 #endif
 }
 
-TEST(TraceOptionsTest, DISABLED_TraceOptionsToString) {
+TEST(TraceOptionsTest, TraceOptionsToString) {
   // Test that we can intialize TraceOptions from a string got from
   // TraceOptions.ToString() method to get a same TraceOptions.
   TraceRecordMode modes[] = {
