@@ -24,6 +24,7 @@
 
 #include <xf86drm.h>
 
+#include "libdrm.h"
 #include "exynos_drm.h"
 #include "fimg2d_reg.h"
 #include "fimg2d.h"
@@ -184,7 +185,7 @@ static int g2d_flush(struct g2d_context *ctx)
  *
  * fd: a file descriptor to drm device driver opened.
  */
-struct g2d_context *g2d_init(int fd)
+drm_public struct g2d_context *g2d_init(int fd)
 {
 	struct drm_exynos_g2d_get_ver ver;
 	struct g2d_context *ctx;
@@ -212,7 +213,7 @@ struct g2d_context *g2d_init(int fd)
 	return ctx;
 }
 
-void g2d_fini(struct g2d_context *ctx)
+drm_public void g2d_fini(struct g2d_context *ctx)
 {
 	if (ctx)
 		free(ctx);
@@ -223,7 +224,7 @@ void g2d_fini(struct g2d_context *ctx)
  *
  * @ctx: a pointer to g2d_context structure.
  */
-int g2d_exec(struct g2d_context *ctx)
+drm_public int g2d_exec(struct g2d_context *ctx)
 {
 	struct drm_exynos_g2d_exec exec;
 	int ret;
@@ -255,7 +256,8 @@ int g2d_exec(struct g2d_context *ctx)
  * @w: width value to buffer filled with given color data.
  * @h: height value to buffer filled with given color data.
  */
-int g2d_solid_fill(struct g2d_context *ctx, struct g2d_image *img,
+drm_public int
+g2d_solid_fill(struct g2d_context *ctx, struct g2d_image *img,
 			unsigned int x, unsigned int y, unsigned int w,
 			unsigned int h)
 {
@@ -315,7 +317,8 @@ int g2d_solid_fill(struct g2d_context *ctx, struct g2d_image *img,
  * @w: width value to source and destination buffers.
  * @h: height value to source and destination buffers.
  */
-int g2d_copy(struct g2d_context *ctx, struct g2d_image *src,
+drm_public int
+g2d_copy(struct g2d_context *ctx, struct g2d_image *src,
 		struct g2d_image *dst, unsigned int src_x, unsigned int src_y,
 		unsigned int dst_x, unsigned dst_y, unsigned int w,
 		unsigned int h)
@@ -414,7 +417,8 @@ int g2d_copy(struct g2d_context *ctx, struct g2d_image *src,
  * @negative: indicate that it uses color negative to source and
  *	destination buffers.
  */
-int g2d_copy_with_scale(struct g2d_context *ctx, struct g2d_image *src,
+drm_public int
+g2d_copy_with_scale(struct g2d_context *ctx, struct g2d_image *src,
 				struct g2d_image *dst, unsigned int src_x,
 				unsigned int src_y, unsigned int src_w,
 				unsigned int src_h, unsigned int dst_x,
@@ -526,7 +530,8 @@ int g2d_copy_with_scale(struct g2d_context *ctx, struct g2d_image *src,
  * @h: height value to source and destination buffer.
  * @op: blend operation type.
  */
-int g2d_blend(struct g2d_context *ctx, struct g2d_image *src,
+drm_public int
+g2d_blend(struct g2d_context *ctx, struct g2d_image *src,
 		struct g2d_image *dst, unsigned int src_x,
 		unsigned int src_y, unsigned int dst_x, unsigned int dst_y,
 		unsigned int w, unsigned int h, enum e_g2d_op op)
