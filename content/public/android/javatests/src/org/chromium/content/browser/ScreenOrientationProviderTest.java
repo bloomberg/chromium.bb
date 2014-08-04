@@ -5,8 +5,9 @@
 package org.chromium.content.browser;
 
 import android.os.Build;
-import android.test.FlakyTest;
+import android.test.suitebuilder.annotation.MediumTest;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -54,60 +55,62 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
     }
 
     /**
-     * Locks the screen orientation to |orientations| using ScreenOrientationProvider.
-     */
-    private void lockOrientation(int orientations) {
-        ScreenOrientationProvider.lockOrientation((byte)orientations);
-    }
-
-    /**
      * Call |lockOrientation| and wait for an orientation change.
      */
-    private boolean lockOrientationAndWait(int orientations)
-            throws InterruptedException {
+    private boolean lockOrientationAndWait(final int orientations) throws InterruptedException {
         OrientationChangeObserverCriteria criteria =
                 new OrientationChangeObserverCriteria(mObserver);
 
-        lockOrientation(orientations);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ScreenOrientationProvider.lockOrientation((byte)orientations);
+            }
+        });
+        getInstrumentation().waitForIdleSync();
 
         return CriteriaHelper.pollForCriteria(criteria);
-    }
-
-    /**
-     * Unlock the screen orientation using |ScreenOrientationProvider|.
-     */
-    private void unlockOrientation() {
-        ScreenOrientationProvider.unlockOrientation();
     }
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
 
-        ContentShellActivity activity = launchContentShellWithUrl(DEFAULT_URL);
-        waitForActiveShellToBeDoneLoading();
-
         mObserver = new MockOrientationObserver();
-        ScreenOrientationListener.getInstance().addObserver(
-                mObserver, getInstrumentation().getTargetContext());
-
-        // Make sure mObserver is updated before we start the tests.
         OrientationChangeObserverCriteria criteria =
                 new OrientationChangeObserverCriteria(mObserver);
+
+        final ContentShellActivity activity = launchContentShellWithUrl(DEFAULT_URL);
+        waitForActiveShellToBeDoneLoading();
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ScreenOrientationListener.getInstance().addObserver(mObserver, activity);
+            }
+        });
+
+        // Make sure we start all the tests with the same orientation.
+        lockOrientationAndWait(ScreenOrientationValues.PORTRAIT_PRIMARY);
+
+        // Make sure mObserver is updated before we start the tests.
         CriteriaHelper.pollForCriteria(criteria);
     }
 
     @Override
     public void tearDown() throws Exception {
-        unlockOrientation();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ScreenOrientationProvider.unlockOrientation();
+            }
+        });
 
         mObserver = null;
         super.tearDown();
     }
 
-    // @SmallTest
-    // crbug.com/353500
-    @FlakyTest
+    @MediumTest
     @Feature({"ScreenOrientation"})
     public void testBasicValues() throws Exception {
         lockOrientationAndWait(ScreenOrientationValues.PORTRAIT_PRIMARY);
@@ -123,11 +126,17 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
         assertTrue(checkOrientationForLock(ScreenOrientationValues.LANDSCAPE_SECONDARY));
     }
 
-    // @MediumTest
-    // crbug.com/353500
-    @FlakyTest
+    @MediumTest
     @Feature({"ScreenOrientation"})
     public void testPortrait() throws Exception {
+        // Do not run that test for versions of Android before JB-MR1 because
+        // the ScreenOrientationListener for those versions isn't accurate
+        // enough. We will later simply not run that code in that version or add
+        // an "accurate mode" that will fix this by polling.
+        // See http://crbug.com/400158
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1)
+            return;
+
         lockOrientationAndWait(ScreenOrientationValues.PORTRAIT_PRIMARY);
         assertTrue(checkOrientationForLock(ScreenOrientationValues.PORTRAIT_PRIMARY));
 
@@ -145,24 +154,19 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
                 ScreenOrientationValues.PORTRAIT_SECONDARY));
     }
 
-    // @MediumTest
-    // crbug.com/353500
-    @FlakyTest
+    @MediumTest
     @Feature({"ScreenOrientation"})
     public void testLandscape() throws Exception {
-        int initialOrientation = mObserver.mOrientation;
+        // Do not run that test for versions of Android before JB-MR1 because
+        // the ScreenOrientationListener for those versions isn't accurate
+        // enough. We will later simply not run that code in that version or add
+        // an "accurate mode" that will fix this by polling.
+        // See http://crbug.com/400158
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1)
+            return;
 
         lockOrientationAndWait(ScreenOrientationValues.LANDSCAPE_PRIMARY);
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            // If we were in LANDSCAPE_SECONDARY (90 degrees), old SDK will not
-            // be able to catch this change correctly. However, we still want to
-            // wait to not break the rest of the test.
-            boolean result = checkOrientationForLock(ScreenOrientationValues.LANDSCAPE_PRIMARY);
-            if (initialOrientation != -90)
-                assertTrue(result);
-        } else {
-            assertTrue(checkOrientationForLock(ScreenOrientationValues.LANDSCAPE_PRIMARY));
-        }
+        assertTrue(checkOrientationForLock(ScreenOrientationValues.LANDSCAPE_PRIMARY));
 
         lockOrientationAndWait(ScreenOrientationValues.LANDSCAPE_PRIMARY |
                 ScreenOrientationValues.LANDSCAPE_SECONDARY);
@@ -170,14 +174,7 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
                 ScreenOrientationValues.LANDSCAPE_SECONDARY));
 
         lockOrientationAndWait(ScreenOrientationValues.LANDSCAPE_SECONDARY);
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            // Exactly the opposite situation as above.
-            boolean result = checkOrientationForLock(ScreenOrientationValues.LANDSCAPE_SECONDARY);
-            if (initialOrientation == -90)
-                assertTrue(result);
-        } else {
-            assertTrue(checkOrientationForLock(ScreenOrientationValues.LANDSCAPE_SECONDARY));
-        }
+        assertTrue(checkOrientationForLock(ScreenOrientationValues.LANDSCAPE_SECONDARY));
 
         lockOrientationAndWait(ScreenOrientationValues.LANDSCAPE_PRIMARY |
                 ScreenOrientationValues.LANDSCAPE_SECONDARY);
