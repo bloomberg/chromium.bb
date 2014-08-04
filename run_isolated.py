@@ -268,6 +268,7 @@ def rmtree(root):
   # delete and sleep a bit in between.
   max_tries = 3
   for i in xrange(max_tries):
+    # errors is a list of tuple(function, path, excinfo).
     errors = []
     shutil.rmtree(root, onerror=lambda *args: errors.append(args))
     if not errors:
@@ -328,7 +329,7 @@ def rmtree(root):
     processes = get_processes()
     if processes:
       sys.stderr.write('Failed to terminate processes.\n')
-      raise errors[0][0][0], errors[0][0][1], errors[0][0][2]
+      raise errors[0][2][0], errors[0][2][1], errors[0][2][2]
 
   # Now that annoying processes in root are evicted, try again.
   errors = []
@@ -339,7 +340,7 @@ def rmtree(root):
         'Failed to delete %s. The following files remain:\n' % root)
     for _, path, _ in errors:
       sys.stderr.write('- %s\n' % path)
-    raise errors[0][0][0], errors[0][0][1], errors[0][0][2]
+    raise errors[0][2][0], errors[0][2][1], errors[0][2][2]
   return False
 
 
