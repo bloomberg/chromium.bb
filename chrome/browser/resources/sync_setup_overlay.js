@@ -282,6 +282,7 @@ cr.define('options', function() {
      * @private
      */
     setInputElementsDisabledState_: function(disabled) {
+      var self = this;
       var configureElements =
           $('customize-sync-preferences').querySelectorAll('input');
       for (var i = 0; i < configureElements.length; i++)
@@ -291,7 +292,7 @@ cr.define('options', function() {
       $('customize-link').hidden = disabled;
       $('customize-link').disabled = disabled;
       $('customize-link').onclick = disabled ? null : function() {
-        SyncSetupOverlay.showCustomizePage(null,
+        SyncSetupOverlay.showCustomizePage(self.syncConfigureArgs_,
                                            DataTypeSelection.SYNC_EVERYTHING);
         return false;
       };
@@ -599,7 +600,7 @@ cr.define('options', function() {
       if (wasCustomizePageHidden)
         $('choose-datatypes-ok').focus();
 
-      if (args && args.showPassphrase) {
+      if (args.showPassphrase) {
         this.showPassphraseContainer_(args);
         // Give the passphrase field focus only when the dialog wasn't already
         // visible.
