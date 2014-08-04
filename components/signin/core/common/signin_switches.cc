@@ -16,14 +16,14 @@ const char kDisableAccountConsistency[] = "disable-account-consistency";
 // Disables new profile management system, including new profile chooser UI.
 const char kDisableNewProfileManagement[] = "disable-new-profile-management";
 
+// Disable sending signin scoped device id to LSO with refresh token request.
+const char kDisableSigninScopedDeviceId[] = "disable-signin-scoped-device-id";
+
 // Enables consistent identity features.
 const char kEnableAccountConsistency[] = "enable-account-consistency";
 
 // Enables new profile management system, including new profile chooser UI.
 const char kEnableNewProfileManagement[] = "new-profile-management";
-
-// Enable sending signin scopde device id to LSO with refresh token request.
-const char kEnableSigninScopedDeviceId[] = "enable-signin-scoped-device-id";
 
 // Enables the pure web-based flow for sign in on first run/NTP/wrench menu/
 // settings page.

@@ -133,11 +133,14 @@ bool ChromeSigninClient::CanRevokeCredentials() {
 }
 
 std::string ChromeSigninClient::GetSigninScopedDeviceId() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSigninScopedDeviceId)) {
+    return std::string();
+  }
+
   std::string signin_scoped_device_id =
       GetPrefs()->GetString(prefs::kGoogleServicesSigninScopedDeviceId);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSigninScopedDeviceId) &&
-      signin_scoped_device_id.empty()) {
+  if (signin_scoped_device_id.empty()) {
     // If device_id doesn't exist then generate new and save in prefs.
     signin_scoped_device_id = base::GenerateGUID();
     DCHECK(!signin_scoped_device_id.empty());
