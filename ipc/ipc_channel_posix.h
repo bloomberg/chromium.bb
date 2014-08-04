@@ -62,6 +62,8 @@ class IPC_EXPORT ChannelPosix : public Channel,
   virtual void Close() OVERRIDE;
   virtual bool Send(Message* message) OVERRIDE;
   virtual base::ProcessId GetPeerPID() const OVERRIDE;
+  virtual base::ProcessId GetSelfPID() const OVERRIDE;
+  virtual ChannelHandle TakePipeHandle() OVERRIDE;
   virtual int GetClientFileDescriptor() const OVERRIDE;
   virtual int TakeClientFileDescriptor() OVERRIDE;
 
@@ -94,7 +96,7 @@ class IPC_EXPORT ChannelPosix : public Channel,
 
   bool AcceptConnection();
   void ClosePipeOnError();
-  int GetHelloMessageProcId();
+  int GetHelloMessageProcId() const;
   void QueueHelloMessage();
   void CloseFileDescriptors(Message* msg);
   void QueueCloseFDMessage(int fd, int hops);

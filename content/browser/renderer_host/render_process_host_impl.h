@@ -279,6 +279,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   friend class VisitRelayingRenderProcessHost;
 
   void MaybeActivateMojo();
+  bool ShouldUseMojoChannel() const;
+  scoped_ptr<IPC::ChannelProxy> CreateChannelProxy(
+      const std::string& channel_id);
 
   // Creates and adds the IO thread message filters.
   void CreateMessageFilters();

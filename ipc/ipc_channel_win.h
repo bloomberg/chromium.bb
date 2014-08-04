@@ -35,6 +35,8 @@ class ChannelWin : public Channel,
   virtual void Close() OVERRIDE;
   virtual bool Send(Message* message) OVERRIDE;
   virtual base::ProcessId GetPeerPID() const OVERRIDE;
+  virtual base::ProcessId GetSelfPID() const OVERRIDE;
+  virtual ChannelHandle TakePipeHandle() OVERRIDE;
 
   static bool IsNamedServerInitialized(const std::string& channel_id);
 

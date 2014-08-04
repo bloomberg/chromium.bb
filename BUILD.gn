@@ -46,6 +46,7 @@ group("root") {
     "//google_apis",
     "//google_apis/gcm",
     "//ipc",
+    "//ipc/mojo",
     "//media",
     "//media/cast",
     "//mojo",

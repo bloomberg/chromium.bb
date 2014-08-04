@@ -37,7 +37,7 @@ UtilityThreadImpl::UtilityThreadImpl() : single_process_(false) {
 }
 
 UtilityThreadImpl::UtilityThreadImpl(const std::string& channel_name)
-    : ChildThread(channel_name),
+    : ChildThread(Options(channel_name, false)),
       single_process_(true) {
   Init();
 }

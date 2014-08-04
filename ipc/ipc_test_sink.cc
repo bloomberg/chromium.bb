@@ -35,6 +35,15 @@ base::ProcessId TestSink::GetPeerPID() const {
   return base::ProcessId();
 }
 
+base::ProcessId TestSink::GetSelfPID() const {
+  NOTIMPLEMENTED();
+  return base::ProcessId();
+}
+
+ChannelHandle TestSink::TakePipeHandle() {
+  NOTIMPLEMENTED();
+  return ChannelHandle();
+}
 
 bool TestSink::OnMessageReceived(const Message& msg) {
   ObserverListBase<Listener>::Iterator it(filter_list_);

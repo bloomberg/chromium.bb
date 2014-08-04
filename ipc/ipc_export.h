@@ -17,16 +17,31 @@
 #define IPC_EXPORT __declspec(dllimport)
 #endif  // defined(IPC_IMPLEMENTATION)
 
+#if defined(IPC_MOJO_IMPLEMENTATION)
+#define IPC_MOJO_EXPORT __declspec(dllexport)
+#else
+#define IPC_MOJO_EXPORT __declspec(dllimport)
+#endif  // defined(IPC_MOJO_IMPLEMENTATION)
+
 #else  // defined(WIN32)
+
 #if defined(IPC_IMPLEMENTATION)
 #define IPC_EXPORT __attribute__((visibility("default")))
 #else
 #define IPC_EXPORT
 #endif
+
+#if defined(IPC_MOJO_IMPLEMENTATION)
+#define IPC_MOJO_EXPORT __attribute__((visibility("default")))
+#else
+#define IPC_MOJO_EXPORT
+#endif
+
 #endif
 
 #else  // defined(COMPONENT_BUILD)
 #define IPC_EXPORT
+#define IPC_MOJO_EXPORT
 #endif
 
 #endif  // IPC_IPC_EXPORT_H_

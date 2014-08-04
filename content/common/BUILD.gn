@@ -48,6 +48,7 @@ source_set("common") {
     deps += [
       "//cc",
       "//ipc",
+      "//ipc/mojo",
       "//mojo/environment:chromium",
       "//mojo/system",
       # TODO: the dependency on gl_in_process_context should be decoupled from

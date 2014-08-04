@@ -747,7 +747,7 @@ void ChannelPosix::ClosePipeOnError() {
   }
 }
 
-int ChannelPosix::GetHelloMessageProcId() {
+int ChannelPosix::GetHelloMessageProcId() const {
   int pid = base::GetCurrentProcId();
 #if defined(OS_LINUX)
   // Our process may be in a sandbox with a separate PID namespace.
@@ -1048,6 +1048,17 @@ void ChannelPosix::Close() {
 
 base::ProcessId ChannelPosix::GetPeerPID() const {
   return peer_pid_;
+}
+
+base::ProcessId ChannelPosix::GetSelfPID() const {
+  return GetHelloMessageProcId();
+}
+
+ChannelHandle ChannelPosix::TakePipeHandle() {
+  ChannelHandle handle = ChannelHandle(pipe_name_,
+                                       base::FileDescriptor(pipe_, false));
+  pipe_ = -1;
+  return handle;
 }
 
 //------------------------------------------------------------------------------

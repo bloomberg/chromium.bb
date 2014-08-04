@@ -295,6 +295,11 @@ void CreateRenderFrameSetup(mojo::InterfaceRequest<RenderFrameSetup> request) {
   mojo::BindToRequest(new RenderFrameSetupImpl(), &request);
 }
 
+bool ShouldUseMojoChannel() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableRendererMojoChannel);
+}
+
 }  // namespace
 
 // For measuring memory usage after each task. Behind a command line flag.
@@ -363,12 +368,13 @@ RenderThreadImpl* RenderThreadImpl::current() {
 
 // When we run plugins in process, we actually run them on the render thread,
 // which means that we need to make the render thread pump UI events.
-RenderThreadImpl::RenderThreadImpl() {
+RenderThreadImpl::RenderThreadImpl()
+    : ChildThread(Options(ShouldUseMojoChannel())) {
   Init();
 }
 
 RenderThreadImpl::RenderThreadImpl(const std::string& channel_name)
-    : ChildThread(channel_name) {
+    : ChildThread(Options(channel_name, ShouldUseMojoChannel())) {
   Init();
 }
 

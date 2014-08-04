@@ -47,6 +47,11 @@ class IPCTestBase : public base::MultiProcessTest {
   bool ConnectChannel();
   void DestroyChannel();
 
+  // Releases or replaces existing channel.
+  // These are useful for testing specific types of channel subclasses.
+  scoped_ptr<IPC::Channel> ReleaseChannel();
+  void SetChannel(scoped_ptr<IPC::Channel> channel);
+
   // Use this instead of CreateChannel() if you want to use some different
   // channel specification (then use ConnectChannel() as usual).
   void CreateChannelFromChannelHandle(const IPC::ChannelHandle& channel_handle,
@@ -81,6 +86,7 @@ class IPCTestBase : public base::MultiProcessTest {
   IPC::ChannelProxy* channel_proxy() { return channel_proxy_.get(); }
 
   const base::ProcessHandle& client_process() const { return client_process_; }
+  scoped_refptr<base::TaskRunner> io_thread_task_runner();
 
  private:
   std::string test_client_name_;

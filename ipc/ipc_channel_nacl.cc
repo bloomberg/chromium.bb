@@ -145,6 +145,15 @@ base::ProcessId ChannelNacl::GetPeerPID() const {
   return -1;
 }
 
+base::ProcessId ChannelNacl::GetSelfPID() const {
+  return -1;
+}
+
+ChannelHandle ChannelNacl::TakePipeHandle() {
+  // NACL doesn't have any platform-level handles.
+  return ChannelHandle();
+}
+
 bool ChannelNacl::Connect() {
   if (pipe_ == -1) {
     DLOG(WARNING) << "Channel creation failed: " << pipe_name_;

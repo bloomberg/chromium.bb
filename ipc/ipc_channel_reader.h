@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "ipc/ipc_channel.h"
+#include "ipc/ipc_export.h"
 
 namespace IPC {
 namespace internal {
@@ -44,11 +45,11 @@ class ChannelReader {
 
   // Returns true if the given message is internal to the IPC implementation,
   // like the "hello" message sent on channel set-up.
-  bool IsInternalMessage(const Message& m) const;
+  bool IsInternalMessage(const Message& m);
 
   // Returns true if the given message is an Hello message
   // sent on channel set-up.
-  bool IsHelloMessage(const Message& m) const;
+  bool IsHelloMessage(const Message& m);
 
  protected:
   enum ReadState { READ_SUCCEEDED, READ_FAILED, READ_PENDING };

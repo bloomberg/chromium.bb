@@ -22,6 +22,7 @@ class SingleThreadTaskRunner;
 
 namespace IPC {
 
+class ChannelFactory;
 class MessageFilter;
 class MessageFilterRouter;
 class SendCallbackHelper;
@@ -70,6 +71,11 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
       Listener* listener,
       base::SingleThreadTaskRunner* ipc_task_runner);
 
+  static scoped_ptr<ChannelProxy> Create(
+      scoped_ptr<ChannelFactory> factory,
+      Listener* listener,
+      base::SingleThreadTaskRunner* ipc_task_runner);
+
   virtual ~ChannelProxy();
 
   // Initializes the channel proxy. Only call this once to initialize a channel
@@ -78,6 +84,7 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   // thread.
   void Init(const IPC::ChannelHandle& channel_handle, Channel::Mode mode,
             bool create_pipe_now);
+  void Init(scoped_ptr<ChannelFactory> factory, bool create_pipe_now);
 
   // Close the IPC::Channel.  This operation completes asynchronously, once the
   // background thread processes the command to close the channel.  It is ok to
@@ -171,8 +178,7 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     friend class SendCallbackHelper;
 
     // Create the Channel
-    void CreateChannel(const IPC::ChannelHandle& channel_handle,
-                       const Channel::Mode& mode);
+    void CreateChannel(scoped_ptr<ChannelFactory> factory);
 
     // Methods called on the IO thread.
     void OnSendMessage(scoped_ptr<Message> message_ptr);

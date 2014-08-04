@@ -8,6 +8,8 @@ component("ipc") {
     "file_descriptor_set_posix.h",
     "ipc_channel.cc",
     "ipc_channel.h",
+    "ipc_channel_factory.cc",
+    "ipc_channel_factory.h",
     "ipc_channel_common.cc",
     "ipc_channel_handle.h",
     "ipc_channel_nacl.cc",
@@ -95,8 +97,6 @@ if (!is_android) {
       "ipc_sync_channel_unittest.cc",
       "ipc_sync_message_unittest.cc",
       "ipc_sync_message_unittest.h",
-      "ipc_test_base.cc",
-      "ipc_test_base.h",
       "sync_socket_unittest.cc",
       "unix_domain_socket_util_unittest.cc",
     ]
@@ -131,8 +131,6 @@ if (!is_android) {
   test("ipc_perftests") {
     sources = [
       "ipc_perftests.cc",
-      "ipc_test_base.cc",
-      "ipc_test_base.h",
     ]
 
     # TODO(brettw) hook up Android testing.
@@ -165,6 +163,10 @@ static_library("test_support") {
     "ipc_multiprocess_test.h",
     "ipc_test_sink.cc",
     "ipc_test_sink.h",
+    "ipc_test_base.cc",
+    "ipc_test_base.h",
+    "ipc_test_channel_listener.h",
+    "ipc_test_channel_listener.cc",
   ]
   deps = [
     ":ipc",

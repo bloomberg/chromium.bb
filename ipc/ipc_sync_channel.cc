@@ -13,6 +13,7 @@
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_local.h"
+#include "ipc/ipc_channel_factory.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_sync_message.h"
@@ -415,6 +416,19 @@ scoped_ptr<SyncChannel> SyncChannel::Create(
   scoped_ptr<SyncChannel> channel =
       Create(listener, ipc_task_runner, shutdown_event);
   channel->Init(channel_handle, mode, create_pipe_now);
+  return channel.Pass();
+}
+
+// static
+scoped_ptr<SyncChannel> SyncChannel::Create(
+    scoped_ptr<ChannelFactory> factory,
+    Listener* listener,
+    base::SingleThreadTaskRunner* ipc_task_runner,
+    bool create_pipe_now,
+    base::WaitableEvent* shutdown_event) {
+  scoped_ptr<SyncChannel> channel =
+      Create(listener, ipc_task_runner, shutdown_event);
+  channel->Init(factory.Pass(), create_pipe_now);
   return channel.Pass();
 }
 

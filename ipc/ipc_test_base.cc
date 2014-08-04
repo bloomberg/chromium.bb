@@ -59,6 +59,15 @@ bool IPCTestBase::ConnectChannel() {
   return channel_->Connect();
 }
 
+scoped_ptr<IPC::Channel> IPCTestBase::ReleaseChannel() {
+  return channel_.Pass();
+}
+
+void IPCTestBase::SetChannel(scoped_ptr<IPC::Channel> channel) {
+  channel_ = channel.Pass();
+}
+
+
 void IPCTestBase::DestroyChannel() {
   DCHECK(channel_.get());
   channel_.reset();
@@ -119,4 +128,8 @@ bool IPCTestBase::WaitForClientShutdown() {
   base::CloseProcessHandle(client_process_);
   client_process_ = base::kNullProcessHandle;
   return rv;
+}
+
+scoped_refptr<base::TaskRunner> IPCTestBase::io_thread_task_runner() {
+  return message_loop_->message_loop_proxy();
 }

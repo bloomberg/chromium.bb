@@ -15,6 +15,8 @@
           'file_descriptor_set_posix.h',
           'ipc_channel.cc',
           'ipc_channel.h',
+          'ipc_channel_factory.cc',
+          'ipc_channel_factory.h',
           'ipc_channel_common.cc',
           'ipc_channel_handle.h',
           'ipc_channel_nacl.cc',

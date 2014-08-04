@@ -425,6 +425,10 @@ const char kEnablePreparsedJsCaching[]      = "enable-preparsed-js-caching";
 const char kEnableRegionBasedColumns[] =
     "enable-region-based-columns";
 
+// Replaces renderer-browser IPC channel with ChnanelMojo.
+const char kEnableRendererMojoChannel[] =
+    "enable-renderer-mojo-channel";
+
 // Enables targeted style recalculation optimizations.
 const char kEnableTargetedStyleRecalc[] =
     "enable-targeted-style-recalc";

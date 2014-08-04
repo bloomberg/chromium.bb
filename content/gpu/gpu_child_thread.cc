@@ -61,7 +61,7 @@ GpuChildThread::GpuChildThread(GpuWatchdogThread* watchdog_thread,
 }
 
 GpuChildThread::GpuChildThread(const std::string& channel_id)
-    : ChildThread(channel_id),
+    : ChildThread(Options(channel_id, false)),
       dead_on_arrival_(false),
       in_browser_process_(true) {
 #if defined(OS_WIN)
