@@ -19,14 +19,44 @@ namespace ui {
 namespace {
 
 const char kChromeSelection[] = "CHROME_SELECTION";
+const char kIncr[] = "INCR";
 
 const char* kAtomsToCache[] = {
   kChromeSelection,
+  kIncr,
   NULL
 };
 
-// The amount of time to wait for a request to complete.
-const int kRequestTimeoutMs = 300;
+// The period of |abort_timer_|. Arbitrary but must be <= than
+// kRequestTimeoutMs.
+const int kTimerPeriodMs = 100;
+
+// The amount of time to wait for a request to complete before aborting it.
+const int kRequestTimeoutMs = 10000;
+
+COMPILE_ASSERT(kTimerPeriodMs <= kRequestTimeoutMs,
+               timer_period_must_be_less_or_equal_to_request_timeout);
+
+// Combines |data| into a single RefCountedMemory object.
+scoped_refptr<base::RefCountedMemory> CombineRefCountedMemory(
+    const std::vector<scoped_refptr<base::RefCountedMemory> >& data) {
+  if (data.size() == 1u)
+    return data[0];
+
+  size_t length = 0;
+  for (size_t i = 0; i < data.size(); ++i)
+    length += data[i]->size();
+  std::vector<unsigned char> combined_data;
+  combined_data.reserve(length);
+
+  for (size_t i = 0; i < data.size(); ++i) {
+    combined_data.insert(combined_data.end(),
+                         data[i]->front(),
+                         data[i]->front() + data[i]->size());
+  }
+  return scoped_refptr<base::RefCountedMemory>(
+      base::RefCountedBytes::TakeVector(&combined_data));
+}
 
 }  // namespace
 
@@ -55,7 +85,7 @@ bool SelectionRequestor::PerformBlockingConvertSelection(
       base::TimeDelta::FromMilliseconds(kRequestTimeoutMs);
   Request request(selection, target, timeout);
   requests_.push_back(&request);
-  if (requests_.size() == 1u)
+  if (current_request_index_ == (requests_.size() - 1))
     ConvertSelectionForCurrentRequest();
   BlockTillSelectionNotifyForRequest(&request);
 
@@ -73,7 +103,7 @@ bool SelectionRequestor::PerformBlockingConvertSelection(
 
   if (request.success) {
     if (out_data)
-      *out_data = request.out_data;
+      *out_data = CombineRefCountedMemory(request.out_data);
     if (out_data_items)
       *out_data_items = request.out_data_items;
     if (out_type)
@@ -123,40 +153,98 @@ void SelectionRequestor::OnSelectionNotify(const XEvent& event) {
     return;
   }
 
-  request->success = false;
+  bool success = false;
   if (event_property == x_property_) {
-    request->success = ui::GetRawBytesOfProperty(x_window_,
-                                                 x_property_,
-                                                 &request->out_data,
-                                                 &request->out_data_items,
-                                                 &request->out_type);
+    scoped_refptr<base::RefCountedMemory> out_data;
+    success = ui::GetRawBytesOfProperty(x_window_,
+                                        x_property_,
+                                        &out_data,
+                                        &request->out_data_items,
+                                        &request->out_type);
+    if (success) {
+      request->out_data.clear();
+      request->out_data.push_back(out_data);
+    }
   }
   if (event_property != None)
     XDeleteProperty(x_display_, x_window_, event_property);
 
-  CompleteRequest(current_request_index_);
+  if (request->out_type == atom_cache_.GetAtom(kIncr)) {
+    request->data_sent_incrementally = true;
+    request->out_data.clear();
+    request->out_data_items = 0u;
+    request->out_type = None;
+    request->timeout = base::TimeTicks::Now() +
+        base::TimeDelta::FromMilliseconds(kRequestTimeoutMs);
+  } else {
+    CompleteRequest(current_request_index_, success);
+  }
+}
+
+bool SelectionRequestor::CanDispatchPropertyEvent(const XEvent& event) {
+  return event.xproperty.window == x_window_ &&
+      event.xproperty.atom == x_property_ &&
+      event.xproperty.state == PropertyNewValue;
+}
+
+void SelectionRequestor::OnPropertyEvent(const XEvent& event) {
+  Request* request = GetCurrentRequest();
+  if (!request || !request->data_sent_incrementally)
+    return;
+
+  scoped_refptr<base::RefCountedMemory> out_data;
+  size_t out_data_items = 0u;
+  Atom out_type = None;
+  bool success = ui::GetRawBytesOfProperty(x_window_,
+                                           x_property_,
+                                           &out_data,
+                                           &out_data_items,
+                                           &out_type);
+  if (!success) {
+    CompleteRequest(current_request_index_, false);
+    return;
+  }
+
+  if (request->out_type != None && request->out_type != out_type) {
+    CompleteRequest(current_request_index_, false);
+    return;
+  }
+
+  request->out_data.push_back(out_data);
+  request->out_data_items += out_data_items;
+  request->out_type = out_type;
+
+  // Delete the property to tell the selection owner to send the next chunk.
+  XDeleteProperty(x_display_, x_window_, x_property_);
+
+  request->timeout = base::TimeTicks::Now() +
+      base::TimeDelta::FromMilliseconds(kRequestTimeoutMs);
+
+  if (out_data->size() == 0u)
+    CompleteRequest(current_request_index_, true);
 }
 
 void SelectionRequestor::AbortStaleRequests() {
   base::TimeTicks now = base::TimeTicks::Now();
-  for (size_t i = current_request_index_;
-       i < requests_.size() && requests_[i]->timeout <= now;
-       ++i) {
-    CompleteRequest(i);
+  for (size_t i = current_request_index_; i < requests_.size(); ++i) {
+    if (requests_[i]->timeout <= now)
+      CompleteRequest(i, false);
   }
 }
 
-void SelectionRequestor::CompleteRequest(size_t index) {
+void SelectionRequestor::CompleteRequest(size_t index, bool success) {
    if (index >= requests_.size())
      return;
 
   Request* request = requests_[index];
   if (request->completed)
     return;
+  request->success = success;
   request->completed = true;
 
   if (index == current_request_index_) {
-    ++current_request_index_;
+    while (GetCurrentRequest() && GetCurrentRequest()->completed)
+      ++current_request_index_;
     ConvertSelectionForCurrentRequest();
   }
 
@@ -180,7 +268,7 @@ void SelectionRequestor::BlockTillSelectionNotifyForRequest(Request* request) {
   if (PlatformEventSource::GetInstance()) {
     if (!abort_timer_.IsRunning()) {
       abort_timer_.Start(FROM_HERE,
-                         base::TimeDelta::FromMilliseconds(kRequestTimeoutMs),
+                         base::TimeDelta::FromMilliseconds(kTimerPeriodMs),
                          this,
                          &SelectionRequestor::AbortStaleRequests);
     }
@@ -219,6 +307,7 @@ SelectionRequestor::Request::Request(XAtom selection,
                                      base::TimeTicks timeout)
     : selection(selection),
       target(target),
+      data_sent_incrementally(false),
       out_data_items(0u),
       out_type(None),
       success(false),

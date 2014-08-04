@@ -9,6 +9,9 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/gfx/x/x11_atom_cache.h"
@@ -45,14 +48,66 @@ class UI_BASE_EXPORT SelectionOwner {
   // It is our owner's responsibility to plumb X11 events on |xwindow_| to us.
   void OnSelectionRequest(const XEvent& event);
   void OnSelectionClear(const XEvent& event);
-  // TODO(erg): Do we also need to follow PropertyNotify events? We currently
-  // don't, but there were open todos in the previous implementation.
+
+  // Returns true if SelectionOwner can process the XPropertyEvent event,
+  // |event|.
+  bool CanDispatchPropertyEvent(const XEvent& event);
+
+  void OnPropertyEvent(const XEvent& event);
 
  private:
+  // Holds state related to an incremental data transfer.
+  struct IncrementalTransfer {
+    IncrementalTransfer(XID window,
+                        XAtom target,
+                        XAtom property,
+                        const scoped_refptr<base::RefCountedMemory>& data,
+                        int offset,
+                        base::TimeTicks timeout,
+                        int foreign_window_manager_id);
+    ~IncrementalTransfer();
+
+    // Parameters from the XSelectionRequest. The data is transferred over
+    // |property| on |window|.
+    XID window;
+    XAtom target;
+    XAtom property;
+
+    // The data to be transferred.
+    scoped_refptr<base::RefCountedMemory> data;
+
+    // The offset from the beginning of |data| of the first byte to be
+    // transferred in the next chunk.
+    size_t offset;
+
+    // Time when the transfer should be aborted because the selection requestor
+    // is taking too long to notify us that we can send the next chunk.
+    base::TimeTicks timeout;
+
+    // Used to unselect PropertyChangeMask on |window| when we are done with
+    // the data transfer.
+    int foreign_window_manager_id;
+  };
+
   // Attempts to convert the selection to |target|. If the conversion is
   // successful, true is returned and the result is stored in the |property|
   // of |requestor|.
   bool ProcessTarget(XAtom target, XID requestor, XAtom property);
+
+  // Sends the next chunk of data for given the incremental data transfer.
+  void ProcessIncrementalTransfer(IncrementalTransfer* transfer);
+
+  // Aborts any incremental data transfers which have timed out.
+  void AbortStaleIncrementalTransfers();
+
+  // Called when the transfer at |it| has completed to do cleanup.
+  void CompleteIncrementalTransfer(
+      std::vector<IncrementalTransfer>::iterator it);
+
+  // Returns the incremental data transfer, if any, which was waiting for
+  // |event|.
+  std::vector<IncrementalTransfer>::iterator FindIncrementalTransferForEvent(
+      const XEvent& event);
 
   // Our X11 state.
   XDisplay* x_display_;
@@ -61,8 +116,16 @@ class UI_BASE_EXPORT SelectionOwner {
   // The X11 selection that this instance communicates on.
   XAtom selection_name_;
 
+  // The maximum size of data we can put in XChangeProperty().
+  size_t max_request_size_;
+
   // The data we are currently serving.
   SelectionFormatMap format_map_;
+
+  std::vector<IncrementalTransfer> incremental_transfers_;
+
+  // Used to abort stale incremental data transfers.
+  base::RepeatingTimer<SelectionOwner> incremental_transfer_abort_timer_;
 
   X11AtomCache atom_cache_;
 

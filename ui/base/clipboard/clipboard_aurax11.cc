@@ -513,7 +513,15 @@ void Clipboard::AuraX11Details::StoreCopyPasteDataAndWait() {
 }
 
 bool Clipboard::AuraX11Details::CanDispatchEvent(const PlatformEvent& event) {
-  return event->xany.window == x_window_;
+  if (event->xany.window == x_window_)
+    return true;
+
+  if (event->type == PropertyNotify) {
+    return primary_owner_.CanDispatchPropertyEvent(*event) ||
+        clipboard_owner_.CanDispatchPropertyEvent(*event) ||
+        selection_requestor_.CanDispatchPropertyEvent(*event);
+  }
+  return false;
 }
 
 uint32_t Clipboard::AuraX11Details::DispatchEvent(const PlatformEvent& xev) {
@@ -542,6 +550,15 @@ uint32_t Clipboard::AuraX11Details::DispatchEvent(const PlatformEvent& xev) {
         DCHECK_EQ(GetCopyPasteSelection(), xev->xselection.selection);
         clipboard_owner_.OnSelectionClear(*xev);
         }
+      break;
+    }
+    case PropertyNotify: {
+      if (primary_owner_.CanDispatchPropertyEvent(*xev))
+        primary_owner_.OnPropertyEvent(*xev);
+      if (clipboard_owner_.CanDispatchPropertyEvent(*xev))
+        clipboard_owner_.OnPropertyEvent(*xev);
+      if (selection_requestor_.CanDispatchPropertyEvent(*xev))
+        selection_requestor_.OnPropertyEvent(*xev);
       break;
     }
     default:

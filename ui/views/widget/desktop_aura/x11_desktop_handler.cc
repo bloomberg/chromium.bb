@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/x/x11_foreign_window_manager.h"
 #include "ui/base/x/x11_menu_list.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -167,26 +168,12 @@ uint32_t X11DesktopHandler::DispatchEvent(const ui::PlatformEvent& event) {
       break;
     }
 
-    // Menus created by Chrome can be drag and drop targets. Since they are
-    // direct children of the screen root window and have override_redirect
-    // we cannot use regular _NET_CLIENT_LIST_STACKING property to find them
-    // and use a separate cache to keep track of them.
-    // TODO(varkha): Implement caching of all top level X windows and their
-    // coordinates and stacking order to eliminate repeated calls to X server
-    // during mouse movement, drag and shaping events.
-    case CreateNotify: {
-      // The window might be destroyed if the message pump haven't gotten a
-      // chance to run but we can safely ignore the X error.
-      gfx::X11ErrorTracker error_tracker;
-      XCreateWindowEvent *xcwe = &event->xcreatewindow;
-      ui::XMenuList::GetInstance()->MaybeRegisterMenu(xcwe->window);
+    case CreateNotify:
+      OnWindowCreatedOrDestroyed(event->type, event->xcreatewindow.window);
       break;
-    }
-    case DestroyNotify: {
-      XDestroyWindowEvent *xdwe = &event->xdestroywindow;
-      ui::XMenuList::GetInstance()->MaybeUnregisterMenu(xdwe->window);
+    case DestroyNotify:
+      OnWindowCreatedOrDestroyed(event->type, event->xdestroywindow.window);
       break;
-    }
     default:
       NOTREACHED();
   }
@@ -223,6 +210,30 @@ void X11DesktopHandler::OnActiveWindowChanged(::Window xid,
         views::DesktopWindowTreeHostX11::GetHostForXID(xid);
     if (new_host)
       new_host->HandleNativeWidgetActivationChanged(true);
+  }
+}
+
+void X11DesktopHandler::OnWindowCreatedOrDestroyed(int event_type,
+                                                   XID window) {
+  // Menus created by Chrome can be drag and drop targets. Since they are
+  // direct children of the screen root window and have override_redirect
+  // we cannot use regular _NET_CLIENT_LIST_STACKING property to find them
+  // and use a separate cache to keep track of them.
+  // TODO(varkha): Implement caching of all top level X windows and their
+  // coordinates and stacking order to eliminate repeated calls to the X server
+  // during mouse movement, drag and shaping events.
+  if (event_type == CreateNotify) {
+    // The window might be destroyed if the message pump did not get a chance to
+    // run but we can safely ignore the X error.
+    gfx::X11ErrorTracker error_tracker;
+    ui::XMenuList::GetInstance()->MaybeRegisterMenu(window);
+  } else {
+    ui::XMenuList::GetInstance()->MaybeUnregisterMenu(window);
+  }
+
+  if (event_type == DestroyNotify) {
+    // Notify the XForeignWindowManager that |window| has been destroyed.
+    ui::XForeignWindowManager::GetInstance()->OnWindowDestroyed(window);
   }
 }
 

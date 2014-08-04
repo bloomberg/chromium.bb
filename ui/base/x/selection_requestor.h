@@ -62,6 +62,12 @@ class UI_BASE_EXPORT SelectionRequestor {
   // |xwindow_| to us.
   void OnSelectionNotify(const XEvent& event);
 
+  // Returns true if SelectionOwner can process the XChangeProperty event,
+  // |event|.
+  bool CanDispatchPropertyEvent(const XEvent& event);
+
+  void OnPropertyEvent(const XEvent& event);
+
  private:
   friend class SelectionRequestorTest;
 
@@ -75,8 +81,12 @@ class UI_BASE_EXPORT SelectionRequestor {
     XAtom selection;
     XAtom target;
 
+    // Whether the result of the XConvertSelection() request is being sent
+    // incrementally.
+    bool data_sent_incrementally;
+
     // The result data for the XConvertSelection() request.
-    scoped_refptr<base::RefCountedMemory> out_data;
+    std::vector<scoped_refptr<base::RefCountedMemory> > out_data;
     size_t out_data_items;
     XAtom out_type;
 
@@ -98,7 +108,7 @@ class UI_BASE_EXPORT SelectionRequestor {
 
   // Mark |request| as completed. If the current request is completed, converts
   // the selection for the next request.
-  void CompleteRequest(size_t index);
+  void CompleteRequest(size_t index, bool success);
 
   // Converts the selection for the request at |current_request_index_|.
   void ConvertSelectionForCurrentRequest();

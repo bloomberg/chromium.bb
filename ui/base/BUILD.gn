@@ -256,6 +256,8 @@ component("base") {
     "window_open_disposition.cc",
     "window_open_disposition.h",
     "work_area_watcher_observer.h",
+    "x/x11_foreign_window_manager.cc",
+    "x/x11_foreign_window_manager.h",
     "x/x11_menu_list.cc",
     "x/x11_menu_list.h",
     "x/x11_util.cc",
@@ -331,6 +333,8 @@ component("base") {
   }
   if (!use_x11) {
     sources -= [
+      "x/x11_foreign_window_manager.cc",
+      "x/x11_foreign_window_manager.h",
       "x/x11_menu_list.cc",
       "x/x11_menu_list.h",
       "x/x11_util.cc",

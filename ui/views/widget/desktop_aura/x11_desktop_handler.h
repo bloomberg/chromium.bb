@@ -76,6 +76,10 @@ class VIEWS_EXPORT X11DesktopHandler : public ui::PlatformEventDispatcher,
   // Handles changes in activation.
   void OnActiveWindowChanged(::Window window, ActiveState active_state);
 
+  // Called when |window| has been created or destroyed. |window| may not be
+  // managed by Chrome.
+  void OnWindowCreatedOrDestroyed(int event_type, XID window);
+
   // The display and the native X window hosting the root window.
   XDisplay* xdisplay_;
 

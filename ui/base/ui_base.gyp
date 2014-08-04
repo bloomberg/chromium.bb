@@ -371,6 +371,8 @@
         'x/selection_requestor.h',
         'x/selection_utils.cc',
         'x/selection_utils.h',
+        'x/x11_foreign_window_manager.cc',
+        'x/x11_foreign_window_manager.h',
         'x/x11_menu_list.cc',
         'x/x11_menu_list.h',
         'x/x11_util.cc',

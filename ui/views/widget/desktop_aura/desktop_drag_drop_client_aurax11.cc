@@ -16,6 +16,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aurax11.h"
 #include "ui/base/x/selection_utils.h"
+#include "ui/base/x/x11_foreign_window_manager.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -141,6 +142,14 @@ class DesktopDragDropClientAuraX11::X11DragContext
   // The XID of the window that's initiated the drag.
   unsigned long source_window_;
 
+  // The DesktopDragDropClientAuraX11 for |source_window_| if |source_window_|
+  // belongs to a Chrome window.
+  DesktopDragDropClientAuraX11* source_client_;
+
+  // Used to unselect PropertyChangeMask on |source_window_| if |source_window_|
+  // does not belong to a Chrome window when X11DragContext is destroyed.
+  int foreign_window_manager_source_window_id_;
+
   // The client we inform once we're done with requesting data.
   DesktopDragDropClientAuraX11* drag_drop_client_;
 
@@ -175,6 +184,9 @@ DesktopDragDropClientAuraX11::X11DragContext::X11DragContext(
     : atom_cache_(atom_cache),
       local_window_(local_window),
       source_window_(event.data.l[0]),
+      source_client_(
+          DesktopDragDropClientAuraX11::GetForWindow(source_window_)),
+      foreign_window_manager_source_window_id_(0),
       drag_drop_client_(NULL),
       waiting_to_handle_position_(false),
       suggested_action_(None) {
@@ -195,13 +207,13 @@ DesktopDragDropClientAuraX11::X11DragContext::X11DragContext(
     }
   }
 
-  DesktopDragDropClientAuraX11* client =
-      DesktopDragDropClientAuraX11::GetForWindow(source_window_);
-  if (!client) {
+  if (!source_client_) {
     // The window doesn't have a DesktopDragDropClientAuraX11, that means it's
     // created by some other process. Listen for messages on it.
     ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
-    XSelectInput(gfx::GetXDisplay(), source_window_, PropertyChangeMask);
+    foreign_window_manager_source_window_id_ =
+        ui::XForeignWindowManager::GetInstance()->RequestEvents(
+            source_window_, PropertyChangeMask);
 
     // We must perform a full sync here because we could be racing
     // |source_window_|.
@@ -210,7 +222,7 @@ DesktopDragDropClientAuraX11::X11DragContext::X11DragContext(
     // This drag originates from an aura window within our process. This means
     // that we can shortcut the X11 server and ask the owning SelectionOwner
     // for the data it's offering.
-    fetched_targets_ = client->GetFormatMap();
+    fetched_targets_ = source_client_->GetFormatMap();
     unfetched_targets_.clear();
   }
 
@@ -218,8 +230,12 @@ DesktopDragDropClientAuraX11::X11DragContext::X11DragContext(
 }
 
 DesktopDragDropClientAuraX11::X11DragContext::~X11DragContext() {
-  // Unsubscribe from message events.
-  ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
+  if (!source_client_) {
+    // Unsubscribe from message events.
+    ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
+    ui::XForeignWindowManager::GetInstance()->CancelRequest(
+        foreign_window_manager_source_window_id_);
+  }
 }
 
 void DesktopDragDropClientAuraX11::X11DragContext::OnStartXdndPositionMessage(
@@ -283,9 +299,7 @@ void DesktopDragDropClientAuraX11::X11DragContext::OnSelectionNotify(
 }
 
 void DesktopDragDropClientAuraX11::X11DragContext::ReadActions() {
-  DesktopDragDropClientAuraX11* client =
-      DesktopDragDropClientAuraX11::GetForWindow(source_window_);
-  if (!client) {
+  if (!source_client_) {
     std::vector<Atom> atom_array;
     if (!ui::GetAtomArrayProperty(source_window_,
                                   "XdndActionList",
@@ -298,7 +312,7 @@ void DesktopDragDropClientAuraX11::X11DragContext::ReadActions() {
     // We have a property notify set up for other windows in case they change
     // their action list. Thankfully, the views interface is static and you
     // can't change the action list after you enter StartDragAndDrop().
-    actions_ = client->GetOfferedDragOperations();
+    actions_ = source_client_->GetOfferedDragOperations();
   }
 }
 
