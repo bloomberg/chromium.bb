@@ -43,6 +43,11 @@
         '../wtf/wtf.gypi',
         'web.gypi',
     ],
+    'target_defaults': {
+        'variables': {
+            'clang_warning_flags': ['-Wglobal-constructors'],
+        },
+    },
     'targets': [
         {
             'target_name': 'blink_web',
@@ -245,14 +250,6 @@
                     }],
                 },
             ],
-        }],
-        ['clang==1', {
-            'target_defaults': {
-                'cflags': ['-Wglobal-constructors'],
-                'xcode_settings': {
-                    'WARNING_CFLAGS': ['-Wglobal-constructors'],
-                },
-            },
         }],
     ], # conditions
 }
