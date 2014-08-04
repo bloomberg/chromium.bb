@@ -292,9 +292,17 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
   EXPECT_EQ(file_path.value(), last_actual_monitoring_file_path().value());
 }
 
+// See http://crbug.com/392446
+#if defined(OS_ANDROID)
+#define MAYBE_EnableCaptureAndDisableMonitoringWithEmptyFileAndNullCallback \
+    DISABLED_EnableCaptureAndDisableMonitoringWithEmptyFileAndNullCallback
+#else
+#define MAYBE_EnableCaptureAndDisableMonitoringWithEmptyFileAndNullCallback \
+    EnableCaptureAndDisableMonitoringWithEmptyFileAndNullCallback
+#endif
 IN_PROC_BROWSER_TEST_F(
     TracingControllerTest,
-    EnableCaptureAndDisableMonitoringWithEmptyFileAndNullCallback) {
+    MAYBE_EnableCaptureAndDisableMonitoringWithEmptyFileAndNullCallback) {
   Navigate(shell());
 
   TracingController* controller = TracingController::GetInstance();
