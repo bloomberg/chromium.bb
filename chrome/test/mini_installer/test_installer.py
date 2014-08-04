@@ -232,40 +232,6 @@ def ParseConfigFile(filename):
   return config
 
 
-def RunTests(mini_installer_path, config, force_clean, verbosity,
-             json_output_path, tests):
-  """Tests the installer using the given Config object.
-
-  Args:
-    mini_installer_path: The path to mini_installer.exe.
-    config: A Config object.
-    force_clean: A boolean indicating whether to force cleaning existing
-        installations.
-    verbosity: Verbosity level for the test runner (0..n).
-    json_output_path: Path to JSON output file.
-    tests: List of tests to run. All tests are run if omitted.
-
-  Returns:
-    True if all the tests passed, or False otherwise.
-  """
-  suite = unittest.TestSuite()
-  variable_expander = VariableExpander(mini_installer_path)
-  RunCleanCommand(force_clean, variable_expander)
-  for test in config.tests:
-    # If tests were specified via |tests|, their names are formatted like this:
-    test_name = '%s.%s.%s' % (InstallerTest.__module__, InstallerTest.__name__,
-                              test['name'])
-    if not tests or test_name in tests:
-      suite.addTest(InstallerTest(test['name'], test['traversal'], config,
-                                  variable_expander))
-  result = unittest.TextTestRunner(verbosity=(verbosity + 1)).run(suite)
-  if json_output_path:
-    with open(json_output_path, 'w') as fp:
-      json.dump(_FullResults(suite, result, {}), fp, indent=2)
-      fp.write("\n")
-  return result.wasSuccessful()
-
-
 def IsComponentBuild(mini_installer_path):
   """ Invokes the mini_installer asking whether it is a component build.
 
@@ -306,18 +272,34 @@ def main():
   assert os.path.exists(mini_installer_path), ('Could not find file %s' %
                                                mini_installer_path)
 
+  suite = unittest.TestSuite()
+
   # Set the env var used by mini_installer.exe to decide to not show UI.
   os.environ['MINI_INSTALLER_TEST'] = '1'
-  if IsComponentBuild(mini_installer_path):
+  is_component_build = IsComponentBuild(mini_installer_path)
+  if not is_component_build:
+    config = ParseConfigFile(args.config)
+
+    variable_expander = VariableExpander(mini_installer_path)
+    RunCleanCommand(args.force_clean, variable_expander)
+    for test in config.tests:
+      # If tests were specified via |tests|, their names are formatted like so:
+      test_name = '%s.%s.%s' % (InstallerTest.__module__,
+                                InstallerTest.__name__,
+                                test['name'])
+      if not args.test or test_name in args.test:
+        suite.addTest(InstallerTest(test['name'], test['traversal'], config,
+                                    variable_expander))
+
+  result = unittest.TextTestRunner(verbosity=(args.verbose + 1)).run(suite)
+  if is_component_build:
     print ('Component build is currently unsupported by the mini_installer: '
            'http://crbug.com/377839')
-    return 0
-
-  config = ParseConfigFile(args.config)
-  if not RunTests(mini_installer_path, config, args.force_clean, args.verbose,
-                  args.write_full_results_to, args.test):
-    return 1
-  return 0
+  if args.write_full_results_to:
+    with open(args.write_full_results_to, 'w') as fp:
+      json.dump(_FullResults(suite, result, {}), fp, indent=2)
+      fp.write("\n")
+  return 0 if result.wasSuccessful() else 1
 
 
 # TODO(dpranke): Find a way for this to be shared with the mojo and other tests.
