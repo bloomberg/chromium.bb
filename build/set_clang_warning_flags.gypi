@@ -46,5 +46,13 @@
         },
       },
     }],
+    ['clang==0 and host_clang==1', {
+      'target_conditions': [
+        ['_toolset=="host"', {
+          'cflags': [ '>@(clang_warning_flags)' ],
+          'cflags!': [ '>@(clang_warning_flags_unset)' ],
+        }],
+      ],
+    }],
   ],
 }

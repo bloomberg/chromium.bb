@@ -543,8 +543,12 @@
       # for details.
       'chromium_win_pch%': 0,
 
+      # Clang stuff.
+      'make_clang_dir%': 'third_party/llvm-build/Release+Asserts',
       # Set this to true when building with Clang.
       # See http://code.google.com/p/chromium/wiki/Clang for details.
+      # If this is set, clang is used as both host and target compiler in
+      # cross-compile builds.
       'clang%': 0,
 
       # Enable plug-in installation by default.
@@ -604,6 +608,14 @@
       'ozone_auto_platforms%': 1,
 
       'conditions': [
+        ['android_webview_build==0', {
+          # If this is set clang is used as host compiler, but not as target
+          # compiler. Always do this by default, except when building for AOSP.
+          'host_clang%': 1,
+        }, {
+          # See http://crbug.com/377684
+          'host_clang%': 0,
+        }],
         # A flag for POSIX platforms
         ['OS=="win"', {
           'os_posix%': 0,
@@ -1254,7 +1266,8 @@
 
     # Clang stuff.
     'clang%': '<(clang)',
-    'make_clang_dir%': 'third_party/llvm-build/Release+Asserts',
+    'host_clang%': '<(host_clang)',
+    'make_clang_dir%': '<(make_clang_dir)',
 
     # Control which version of clang to use when building for iOS.  If set to
     # '1', uses the version of clang that ships with Xcode.  If set to '0', uses
@@ -2271,6 +2284,14 @@
 
       ['OS=="win" and (clang==1 or asan==1)', {
         'chromium_win_pch': 0,
+      }],
+
+      ['host_clang==1', {
+        'host_cc': '<(make_clang_dir)/bin/clang',
+        'host_cxx': '<(make_clang_dir)/bin/clang++',
+      }, {
+        'host_cc': '<!(which gcc)',
+        'host_cxx': '<!(which g++)',
       }],
 
       # The seccomp-bpf sandbox is only supported on four architectures
@@ -3907,6 +3928,13 @@
               '-std=gnu++11',
             ],
           }],
+          ['clang==0 and host_clang==1', {
+            'target_conditions': [
+              ['_toolset=="host"', {
+                'cflags_cc': [ '-std=gnu++11', ],
+              }],
+            ],
+          }],
           ['clang==1 and clang_use_chrome_plugins==1', {
             'cflags': [
               '<@(clang_chrome_plugins_flags)',
@@ -4254,7 +4282,7 @@
               }],
             ],
           }],
-          ['host_gcc_version>=47 and clang==0', {
+          ['host_gcc_version>=47 and clang==0 and host_clang==0', {
             'target_conditions': [
               ['_toolset=="host"', {
                 'cflags_cc': [
@@ -5518,6 +5546,13 @@
         ],
       },
     }],
+    ['gcc_version>=48 and clang==0 and host_clang==1', {
+      'target_defaults': {
+        'target_conditions': [
+          ['_toolset=="host"', { 'cflags!': [ '-Wno-unused-local-typedefs' ]}],
+        ],
+      },
+    }],
     # We need a special case to handle the android webview build on mac because
     # the host gcc there doesn't accept this flag, but the target gcc may
     # require it.
@@ -5553,16 +5588,16 @@
       'make_global_settings': [
         ['CC', '<!(/bin/echo -n <(android_toolchain)/*-gcc)'],
         ['CXX', '<!(/bin/echo -n <(android_toolchain)/*-g++)'],
-        ['CC.host', '<!(which gcc)'],
-        ['CXX.host', '<!(which g++)'],
+        ['CC.host', '<(host_cc)'],
+        ['CXX.host', '<(host_cxx)'],
       ],
     }],
     ['OS=="linux" and target_arch=="mipsel"', {
       'make_global_settings': [
         ['CC', '<(sysroot)/../bin/mipsel-linux-gnu-gcc'],
         ['CXX', '<(sysroot)/../bin/mipsel-linux-gnu-g++'],
-        ['CC.host', '<!(which gcc)'],
-        ['CXX.host', '<!(which g++)'],
+        ['CC.host', '<(host_cc)'],
+        ['CXX.host', '<(host_cxx)'],
       ],
     }],
     ['OS=="linux" and target_arch=="arm" and host_arch!="arm" and chromeos==0 and clang==0', {
@@ -5571,8 +5606,8 @@
       'make_global_settings': [
         ['CC', '<!(which arm-linux-gnueabihf-gcc)'],
         ['CXX', '<!(which arm-linux-gnueabihf-g++)'],
-        ['CC.host', '<!(which gcc)'],
-        ['CXX.host', '<!(which g++)'],
+        ['CC.host', '<(host_cc)'],
+        ['CXX.host', '<(host_cxx)'],
       ],
     }],
 
