@@ -1,0 +1,47 @@
+"{{A|B={{C|D=blablabla}}}}" is parsed
+{
+    A : {
+        B : {
+            C : {
+                D : "blablabla"
+            }
+        }
+    }
+}
+"{{CS|Init=black|Values={{CSS Property Value
+|Data Type=color
+|Description=[[css/color|CSS color value]]}}
+}}" is parsed
+{
+    CS : {
+        Init : "black"
+        Values : {
+            CSS Property Value : {
+                Data Type : "color"
+                Description : "[[css/color|CSS color value]]"
+            }
+        }
+    }
+}
+"{{A}}" is parsed
+{
+    A : {
+    }
+}
+"{{A|B=bla<a=c>bla}}" is parsed
+{
+    A : {
+        B : "bla<a=c>bla"
+    }
+}
+"{{A}}" is parsed
+{
+    A : {
+    }
+}
+"{{AbC|xyz 
+ 	 \r}}" is parsed
+{
+    AbC : "xyz"
+}
+
