@@ -124,6 +124,14 @@ class TileManagerTest : public testing::TestWithParam<bool>,
         count, active_priority, pending_priority, settings_.default_tile_size);
   }
 
+  void ReleaseTiles(TileVector* tiles) {
+    for (TileVector::iterator it = tiles->begin(); it != tiles->end(); it++) {
+      Tile* tile = *it;
+      tile->SetPriority(ACTIVE_TREE, TilePriority());
+      tile->SetPriority(PENDING_TREE, TilePriority());
+    }
+  }
+
   FakeTileManager* tile_manager() { return tile_manager_.get(); }
 
   int AssignedMemoryCount(const TileVector& tiles) {
@@ -179,6 +187,11 @@ TEST_P(TileManagerTest, EnoughMemoryAllowAnything) {
   EXPECT_EQ(3, AssignedMemoryCount(pending_now));
   EXPECT_EQ(3, AssignedMemoryCount(active_pending_soon));
   EXPECT_EQ(0, AssignedMemoryCount(never_bin));
+
+  ReleaseTiles(&active_now);
+  ReleaseTiles(&pending_now);
+  ReleaseTiles(&active_pending_soon);
+  ReleaseTiles(&never_bin);
 }
 
 TEST_P(TileManagerTest, EnoughMemoryAllowPrepaintOnly) {
@@ -200,6 +213,11 @@ TEST_P(TileManagerTest, EnoughMemoryAllowPrepaintOnly) {
   EXPECT_EQ(3, AssignedMemoryCount(pending_now));
   EXPECT_EQ(3, AssignedMemoryCount(active_pending_soon));
   EXPECT_EQ(0, AssignedMemoryCount(never_bin));
+
+  ReleaseTiles(&active_now);
+  ReleaseTiles(&pending_now);
+  ReleaseTiles(&active_pending_soon);
+  ReleaseTiles(&never_bin);
 }
 
 TEST_P(TileManagerTest, EnoughMemoryPendingLowResAllowAbsoluteMinimum) {
@@ -213,6 +231,7 @@ TEST_P(TileManagerTest, EnoughMemoryPendingLowResAllowAbsoluteMinimum) {
   tile_manager()->AssignMemoryToTiles(global_state_);
 
   EXPECT_EQ(5, AssignedMemoryCount(pending_low_res));
+  ReleaseTiles(&pending_low_res);
 }
 
 TEST_P(TileManagerTest, EnoughMemoryAllowAbsoluteMinimum) {
@@ -234,6 +253,11 @@ TEST_P(TileManagerTest, EnoughMemoryAllowAbsoluteMinimum) {
   EXPECT_EQ(3, AssignedMemoryCount(pending_now));
   EXPECT_EQ(0, AssignedMemoryCount(active_pending_soon));
   EXPECT_EQ(0, AssignedMemoryCount(never_bin));
+
+  ReleaseTiles(&active_now);
+  ReleaseTiles(&pending_now);
+  ReleaseTiles(&active_pending_soon);
+  ReleaseTiles(&never_bin);
 }
 
 TEST_P(TileManagerTest, EnoughMemoryAllowNothing) {
@@ -255,6 +279,11 @@ TEST_P(TileManagerTest, EnoughMemoryAllowNothing) {
   EXPECT_EQ(0, AssignedMemoryCount(pending_now));
   EXPECT_EQ(0, AssignedMemoryCount(active_pending_soon));
   EXPECT_EQ(0, AssignedMemoryCount(never_bin));
+
+  ReleaseTiles(&active_now);
+  ReleaseTiles(&pending_now);
+  ReleaseTiles(&active_pending_soon);
+  ReleaseTiles(&never_bin);
 }
 
 TEST_P(TileManagerTest, PartialOOMMemoryToPending) {
@@ -279,6 +308,9 @@ TEST_P(TileManagerTest, PartialOOMMemoryToPending) {
 
   EXPECT_EQ(3, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(5, AssignedMemoryCount(pending_tree_tiles));
+
+  ReleaseTiles(&active_tree_tiles);
+  ReleaseTiles(&pending_tree_tiles);
 }
 
 TEST_P(TileManagerTest, PartialOOMMemoryToActive) {
@@ -298,6 +330,9 @@ TEST_P(TileManagerTest, PartialOOMMemoryToActive) {
 
   EXPECT_EQ(5, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(3, AssignedMemoryCount(pending_tree_tiles));
+
+  ReleaseTiles(&active_tree_tiles);
+  ReleaseTiles(&pending_tree_tiles);
 }
 
 TEST_P(TileManagerTest, TotalOOMMemoryToPending) {
@@ -329,6 +364,9 @@ TEST_P(TileManagerTest, TotalOOMMemoryToPending) {
     EXPECT_EQ(0, AssignedMemoryCount(active_tree_tiles));
     EXPECT_EQ(8, AssignedMemoryCount(pending_tree_tiles));
   }
+
+  ReleaseTiles(&active_tree_tiles);
+  ReleaseTiles(&pending_tree_tiles);
 }
 
 TEST_P(TileManagerTest, TotalOOMActiveSoonMemoryToPending) {
@@ -360,6 +398,9 @@ TEST_P(TileManagerTest, TotalOOMActiveSoonMemoryToPending) {
     EXPECT_EQ(0, AssignedMemoryCount(active_tree_tiles));
     EXPECT_EQ(8, AssignedMemoryCount(pending_tree_tiles));
   }
+
+  ReleaseTiles(&active_tree_tiles);
+  ReleaseTiles(&pending_tree_tiles);
 }
 
 TEST_P(TileManagerTest, TotalOOMMemoryToActive) {
@@ -384,6 +425,9 @@ TEST_P(TileManagerTest, TotalOOMMemoryToActive) {
     EXPECT_EQ(8, AssignedMemoryCount(active_tree_tiles));
     EXPECT_EQ(0, AssignedMemoryCount(pending_tree_tiles));
   }
+
+  ReleaseTiles(&active_tree_tiles);
+  ReleaseTiles(&pending_tree_tiles);
 }
 
 TEST_P(TileManagerTest, TotalOOMMemoryToNewContent) {
@@ -423,6 +467,9 @@ TEST_P(TileManagerTest, TotalOOMMemoryToNewContent) {
   tile_manager()->AssignMemoryToTiles(global_state_);
   EXPECT_EQ(0, AssignedMemoryCount(active_tree_tiles));
   EXPECT_EQ(10, AssignedMemoryCount(pending_tree_tiles));
+
+  ReleaseTiles(&active_tree_tiles);
+  ReleaseTiles(&pending_tree_tiles);
 }
 
 // If true, the max tile limit should be applied as bytes; if false,

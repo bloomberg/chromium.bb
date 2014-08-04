@@ -58,6 +58,13 @@ class TileEvictionOrder {
  private:
   TreePriority tree_priority_;
 };
+
+void ReleaseTile(Tile* tile, WhichTree tree) {
+  // Reset priority as tile is ref-counted and might still be used
+  // even though we no longer hold a reference to it here anymore.
+  tile->SetPriority(tree, TilePriority());
+}
+
 }  // namespace
 
 scoped_ptr<PictureLayerTiling> PictureLayerTiling::Create(
@@ -99,6 +106,8 @@ PictureLayerTiling::PictureLayerTiling(float contents_scale,
 }
 
 PictureLayerTiling::~PictureLayerTiling() {
+  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
+    ReleaseTile(it->second.get(), client_->GetTree());
 }
 
 void PictureLayerTiling::SetClient(PictureLayerTilingClient* client) {
@@ -219,6 +228,9 @@ void PictureLayerTiling::DoInvalidate(const Region& layer_region,
       TileMap::iterator find = tiles_.find(key);
       if (find == tiles_.end())
         continue;
+
+      ReleaseTile(find->second.get(), client_->GetTree());
+
       tiles_.erase(find);
       new_tile_keys.push_back(key);
     }
@@ -614,8 +626,10 @@ void PictureLayerTiling::SetLiveTilesRect(
     TileMap::iterator found = tiles_.find(key);
     // If the tile was outside of the recorded region, it won't exist even
     // though it was in the live rect.
-    if (found != tiles_.end())
+    if (found != tiles_.end()) {
+      ReleaseTile(found->second.get(), client_->GetTree());
       tiles_.erase(found);
+    }
   }
 
   const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);

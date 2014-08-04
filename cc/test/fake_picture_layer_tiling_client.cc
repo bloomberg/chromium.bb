@@ -79,4 +79,8 @@ const PictureLayerTiling* FakePictureLayerTilingClient::GetTwinTiling(
   return twin_tiling_;
 }
 
+WhichTree FakePictureLayerTilingClient::GetTree() const {
+  return tree_;
+}
+
 }  // namespace cc

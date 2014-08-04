@@ -332,7 +332,7 @@ class TileManagerPerfTest : public testing::Test {
 
     // Ensure that we start with blank trees and no tiles.
     host_impl_.ResetTreesForTesting();
-    tile_manager()->CleanUpReleasedTilesForTesting();
+    tile_manager()->FreeResourcesAndCleanUpReleasedTilesForTesting();
 
     gfx::Size layer_bounds(width, height);
     gfx::Size viewport(width / 5, height / 5);

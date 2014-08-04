@@ -391,9 +391,6 @@ TileManager::~TileManager() {
   // our memory usage to drop to zero.
   global_state_ = GlobalStateThatImpactsTilePriority();
 
-  CleanUpReleasedTiles();
-  DCHECK_EQ(0u, tiles_.size());
-
   RasterTaskQueue empty;
   rasterizer_->ScheduleTasks(&empty);
   orphan_raster_tasks_.clear();
@@ -403,11 +400,18 @@ TileManager::~TileManager() {
   rasterizer_->Shutdown();
   rasterizer_->CheckForCompletedTasks();
 
+  prioritized_tiles_.Clear();
+
+  FreeResourcesForReleasedTiles();
+  CleanUpReleasedTiles();
+
   DCHECK_EQ(0u, bytes_releasable_);
   DCHECK_EQ(0u, resources_releasable_);
 }
 
 void TileManager::Release(Tile* tile) {
+  DCHECK(TilePriority() == tile->combined_priority());
+
   prioritized_tiles_dirty_ = true;
   released_tiles_.push_back(tile);
 }
@@ -420,18 +424,30 @@ bool TileManager::ShouldForceTasksRequiredForActivationToComplete() const {
   return global_state_.tree_priority != SMOOTHNESS_TAKES_PRIORITY;
 }
 
-void TileManager::CleanUpReleasedTiles() {
+void TileManager::FreeResourcesForReleasedTiles() {
   for (std::vector<Tile*>::iterator it = released_tiles_.begin();
        it != released_tiles_.end();
        ++it) {
     Tile* tile = *it;
-    ManagedTileState& mts = tile->managed_state();
+    FreeResourcesForTile(tile);
+  }
+}
 
-    for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
-      FreeResourceForTile(tile, static_cast<RasterMode>(mode));
-      orphan_raster_tasks_.push_back(mts.tile_versions[mode].raster_task_);
+void TileManager::CleanUpReleasedTiles() {
+  // Make sure |prioritized_tiles_| doesn't contain any of the tiles
+  // we're about to delete.
+  DCHECK(prioritized_tiles_.IsEmpty());
+
+  std::vector<Tile*>::iterator it = released_tiles_.begin();
+  while (it != released_tiles_.end()) {
+    Tile* tile = *it;
+
+    if (tile->HasRasterTask()) {
+      ++it;
+      continue;
     }
 
+    DCHECK(!tile->HasResources());
     DCHECK(tiles_.find(tile->id()) != tiles_.end());
     tiles_.erase(tile->id());
 
@@ -444,18 +460,19 @@ void TileManager::CleanUpReleasedTiles() {
     }
 
     delete tile;
+    it = released_tiles_.erase(it);
   }
-
-  released_tiles_.clear();
 }
 
 void TileManager::UpdatePrioritizedTileSetIfNeeded() {
   if (!prioritized_tiles_dirty_)
     return;
 
+  prioritized_tiles_.Clear();
+
+  FreeResourcesForReleasedTiles();
   CleanUpReleasedTiles();
 
-  prioritized_tiles_.Clear();
   GetTilesWithAssignedBins(&prioritized_tiles_);
   prioritized_tiles_dirty_ = false;
 }
@@ -485,6 +502,8 @@ void TileManager::DidFinishRunningTasks() {
     ScheduleTasks(tiles_that_need_to_be_rasterized);
     return;
   }
+
+  FreeResourcesForReleasedTiles();
 
   resource_pool_->ReduceResourceUsage();
 
@@ -1080,14 +1099,9 @@ void TileManager::OnRasterTaskCompleted(
     RasterMode raster_mode,
     const PicturePileImpl::Analysis& analysis,
     bool was_canceled) {
-  TileMap::iterator it = tiles_.find(tile_id);
-  if (it == tiles_.end()) {
-    ++update_visible_tiles_stats_.canceled_count;
-    resource_pool_->ReleaseResource(resource.Pass());
-    return;
-  }
+  DCHECK(tiles_.find(tile_id) != tiles_.end());
 
-  Tile* tile = it->second;
+  Tile* tile = tiles_[tile_id];
   ManagedTileState& mts = tile->managed_state();
   ManagedTileState::TileVersion& tile_version = mts.tile_versions[raster_mode];
   DCHECK(tile_version.raster_task_);

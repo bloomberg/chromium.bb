@@ -100,6 +100,8 @@ void FakeTileManager::DidFinishRunningTasksForTesting() {
 
 void FakeTileManager::Release(Tile* tile) {
   TileManager::Release(tile);
+
+  FreeResourcesForReleasedTiles();
   CleanUpReleasedTiles();
 }
 

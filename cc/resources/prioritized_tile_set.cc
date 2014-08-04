@@ -81,6 +81,14 @@ void PrioritizedTileSet::Clear() {
   }
 }
 
+bool PrioritizedTileSet::IsEmpty() {
+  for (int bin = 0; bin < NUM_BINS; ++bin)
+    if (!tiles_[bin].empty())
+      return false;
+
+  return true;
+}
+
 void PrioritizedTileSet::SortBinIfNeeded(ManagedTileBin bin) {
   if (!bin_sorted_[bin]) {
     SortBinTiles(bin, &tiles_[bin]);

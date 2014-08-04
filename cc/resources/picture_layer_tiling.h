@@ -47,6 +47,7 @@ class CC_EXPORT PictureLayerTilingClient {
   virtual size_t GetMaxTilesForInterestArea() const = 0;
   virtual float GetSkewportTargetTimeInSeconds() const = 0;
   virtual int GetSkewportExtrapolationLimitInContentPixels() const = 0;
+  virtual WhichTree GetTree() const = 0;
 
  protected:
   virtual ~PictureLayerTilingClient() {}

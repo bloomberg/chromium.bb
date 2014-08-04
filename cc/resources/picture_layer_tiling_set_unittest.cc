@@ -207,6 +207,7 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
 
     FakePictureLayerTilingClient client(resource_provider.get());
     client.SetTileSize(gfx::Size(256, 256));
+    client.set_tree(PENDING_TREE);
     gfx::Size layer_bounds(1000, 800);
     PictureLayerTilingSet set(&client, layer_bounds);
 
@@ -287,7 +288,9 @@ class PictureLayerTilingSetSyncTest : public testing::Test {
         source_bounds_(gfx::Size(30, 20)),
         target_bounds_(gfx::Size(30, 30)) {
     source_client_.SetTileSize(tile_size_);
+    source_client_.set_tree(PENDING_TREE);
     target_client_.SetTileSize(tile_size_);
+    target_client_.set_tree(PENDING_TREE);
     source_.reset(new PictureLayerTilingSet(&source_client_, source_bounds_));
     target_.reset(new PictureLayerTilingSet(&target_client_, target_bounds_));
   }

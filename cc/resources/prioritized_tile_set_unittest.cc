@@ -77,6 +77,15 @@ class PrioritizedTileSetTest : public testing::Test {
                                      0,
                                      0);
   }
+  void ReleaseTiles(std::vector<scoped_refptr<Tile> >* tiles) {
+    for (std::vector<scoped_refptr<Tile> >::iterator it = tiles->begin();
+         it != tiles->end();
+         it++) {
+      Tile* tile = *it;
+      tile->SetPriority(ACTIVE_TREE, TilePriority());
+      tile->SetPriority(PENDING_TREE, TilePriority());
+    }
+  }
 
  private:
   LayerTreeSettings settings_;
@@ -142,6 +151,8 @@ TEST_F(PrioritizedTileSetTest, NowAndReadyToDrawBin) {
     ++i;
   }
   EXPECT_EQ(20, i);
+
+  ReleaseTiles(&tiles);
 }
 
 TEST_F(PrioritizedTileSetTest, NowBin) {
@@ -176,6 +187,8 @@ TEST_F(PrioritizedTileSetTest, NowBin) {
     ++i;
   }
   EXPECT_EQ(20, i);
+
+  ReleaseTiles(&tiles);
 }
 
 TEST_F(PrioritizedTileSetTest, SoonBin) {
@@ -210,6 +223,8 @@ TEST_F(PrioritizedTileSetTest, SoonBin) {
     ++i;
   }
   EXPECT_EQ(20, i);
+
+  ReleaseTiles(&tiles);
 }
 
 TEST_F(PrioritizedTileSetTest, SoonBinNoPriority) {
@@ -242,6 +257,8 @@ TEST_F(PrioritizedTileSetTest, SoonBinNoPriority) {
     ++i;
   }
   EXPECT_EQ(20, i);
+
+  ReleaseTiles(&tiles);
 }
 
 TEST_F(PrioritizedTileSetTest, EventuallyAndActiveBin) {
@@ -276,6 +293,8 @@ TEST_F(PrioritizedTileSetTest, EventuallyAndActiveBin) {
     ++i;
   }
   EXPECT_EQ(20, i);
+
+  ReleaseTiles(&tiles);
 }
 
 TEST_F(PrioritizedTileSetTest, EventuallyBin) {
@@ -310,6 +329,8 @@ TEST_F(PrioritizedTileSetTest, EventuallyBin) {
     ++i;
   }
   EXPECT_EQ(20, i);
+
+  ReleaseTiles(&tiles);
 }
 
 TEST_F(PrioritizedTileSetTest, AtLastAndActiveBin) {
@@ -344,6 +365,8 @@ TEST_F(PrioritizedTileSetTest, AtLastAndActiveBin) {
     ++i;
   }
   EXPECT_EQ(20, i);
+
+  ReleaseTiles(&tiles);
 }
 
 TEST_F(PrioritizedTileSetTest, AtLastBin) {
@@ -378,6 +401,8 @@ TEST_F(PrioritizedTileSetTest, AtLastBin) {
     ++i;
   }
   EXPECT_EQ(20, i);
+
+  ReleaseTiles(&tiles);
 }
 
 TEST_F(PrioritizedTileSetTest, TilesForEachBin) {
@@ -528,6 +553,14 @@ TEST_F(PrioritizedTileSetTest, ManyTilesForEachBin) {
   }
 
   EXPECT_FALSE(it);
+
+  ReleaseTiles(&now_and_ready_to_draw_bins);
+  ReleaseTiles(&now_bins);
+  ReleaseTiles(&soon_bins);
+  ReleaseTiles(&eventually_and_active_bins);
+  ReleaseTiles(&eventually_bins);
+  ReleaseTiles(&at_last_bins);
+  ReleaseTiles(&at_last_and_active_bins);
 }
 
 TEST_F(PrioritizedTileSetTest, ManyTilesForEachBinDisablePriority) {
@@ -637,6 +670,14 @@ TEST_F(PrioritizedTileSetTest, ManyTilesForEachBinDisablePriority) {
   }
 
   EXPECT_FALSE(it);
+
+  ReleaseTiles(&now_and_ready_to_draw_bins);
+  ReleaseTiles(&now_bins);
+  ReleaseTiles(&soon_bins);
+  ReleaseTiles(&eventually_and_active_bins);
+  ReleaseTiles(&eventually_bins);
+  ReleaseTiles(&at_last_bins);
+  ReleaseTiles(&at_last_and_active_bins);
 }
 
 TEST_F(PrioritizedTileSetTest, TilesForFirstAndLastBins) {

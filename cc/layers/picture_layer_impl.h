@@ -123,6 +123,7 @@ class CC_EXPORT PictureLayerImpl
   virtual size_t GetMaxTilesForInterestArea() const OVERRIDE;
   virtual float GetSkewportTargetTimeInSeconds() const OVERRIDE;
   virtual int GetSkewportExtrapolationLimitInContentPixels() const OVERRIDE;
+  virtual WhichTree GetTree() const OVERRIDE;
 
   // PushPropertiesTo active tree => pending tree.
   void SyncTiling(const PictureLayerTiling* tiling);
@@ -137,7 +138,6 @@ class CC_EXPORT PictureLayerImpl
 
   // Functions used by tile manager.
   PictureLayerImpl* GetTwinLayer() { return twin_layer_; }
-  WhichTree GetTree() const;
   bool IsOnActiveOrPendingTree() const;
   bool HasValidTilePriorities() const;
   bool AllTilesRequiredForActivationAreReadyToDraw() const;

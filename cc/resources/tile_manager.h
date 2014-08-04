@@ -151,7 +151,11 @@ class CC_EXPORT TileManager : public RasterizerClient,
 
   void SetRasterizerForTesting(Rasterizer* rasterizer);
 
-  void CleanUpReleasedTilesForTesting() { CleanUpReleasedTiles(); }
+  void FreeResourcesAndCleanUpReleasedTilesForTesting() {
+    prioritized_tiles_.Clear();
+    FreeResourcesForReleasedTiles();
+    CleanUpReleasedTiles();
+  }
 
  protected:
   TileManager(TileManagerClient* client,
@@ -164,6 +168,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
   friend class Tile;
   void DidChangeTilePriority(Tile* tile);
 
+  void FreeResourcesForReleasedTiles();
   void CleanUpReleasedTiles();
 
   // Overriden from RefCountedManager<Tile>:

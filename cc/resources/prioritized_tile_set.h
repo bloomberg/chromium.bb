@@ -20,6 +20,7 @@ class CC_EXPORT PrioritizedTileSet {
 
   void InsertTile(Tile* tile, ManagedTileBin bin);
   void Clear();
+  bool IsEmpty();
 
   class CC_EXPORT Iterator {
    public:

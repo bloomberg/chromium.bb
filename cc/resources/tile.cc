@@ -113,4 +113,12 @@ RasterMode Tile::DetermineRasterModeForResolution(
   return std::min(raster_mode, current_mode);
 }
 
+bool Tile::HasRasterTask() const {
+  for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
+    if (managed_state_.tile_versions[mode].raster_task_)
+      return true;
+  }
+  return false;
+}
+
 }  // namespace cc
