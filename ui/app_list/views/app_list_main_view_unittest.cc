@@ -73,7 +73,10 @@ class AppListMainViewTest : public views::ViewsTestBase {
     views::ViewsTestBase::SetUp();
     delegate_.reset(new AppListTestViewDelegate);
 
-    main_view_ = new AppListMainView(delegate_.get(), 0, GetContext());
+    // In Ash, the third argument is a container aura::Window, but it is always
+    // NULL on Windows, and not needed for tests. It is only used to determine
+    // the scale factor for preloading icons.
+    main_view_ = new AppListMainView(delegate_.get(), 0, NULL);
     main_view_->SetPaintToLayer(true);
     main_view_->model()->SetFoldersEnabled(true);
 

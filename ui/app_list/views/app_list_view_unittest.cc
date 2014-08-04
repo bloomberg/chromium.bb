@@ -25,8 +25,6 @@
 #include "ui/app_list/views/start_page_view.h"
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
 #include "ui/app_list/views/tile_item_view.h"
-#include "ui/aura/test/aura_test_base.h"
-#include "ui/aura/window.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/views_delegate.h"
@@ -67,7 +65,7 @@ const int kInitialItems = 34;
 // root window or a desktop window tree host.
 class AppListViewTestContext {
  public:
-  AppListViewTestContext(int test_type, aura::Window* parent);
+  AppListViewTestContext(int test_type, gfx::NativeView parent);
   ~AppListViewTestContext();
 
   // Test displaying the app list and performs a standard set of checks on its
@@ -150,7 +148,7 @@ class UnitTestViewDelegate : public app_list::test::AppListTestViewDelegate {
 };
 
 AppListViewTestContext::AppListViewTestContext(int test_type,
-                                               aura::Window* parent)
+                                               gfx::NativeView parent)
     : test_type_(static_cast<TestType>(test_type)) {
   switch (test_type_) {
     case NORMAL:
@@ -530,7 +528,17 @@ class AppListViewTestAura : public views::ViewsTestBase,
   // testing::Test overrides:
   virtual void SetUp() OVERRIDE {
     views::ViewsTestBase::SetUp();
-    test_context_.reset(new AppListViewTestContext(GetParam(), GetContext()));
+
+    // On Ash (only) the app list is placed into an aura::Window "container",
+    // which is also used to determine the context. In tests, use the ash root
+    // window as the parent. This only works on aura where the root window is a
+    // NativeView as well as a NativeWindow.
+    gfx::NativeView container = NULL;
+#if defined(USE_AURA)
+    container = GetContext();
+#endif
+
+    test_context_.reset(new AppListViewTestContext(GetParam(), container));
   }
 
   virtual void TearDown() OVERRIDE {
