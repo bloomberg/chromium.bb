@@ -76,7 +76,7 @@ init_cache_buckets(struct fd_device *dev)
 	}
 }
 
-struct fd_device * fd_device_new(int fd)
+drm_public struct fd_device * fd_device_new(int fd)
 {
 	struct fd_device *dev;
 	drmVersionPtr version;
@@ -115,7 +115,7 @@ struct fd_device * fd_device_new(int fd)
 /* like fd_device_new() but creates it's own private dup() of the fd
  * which is close()d when the device is finalized.
  */
-struct fd_device * fd_device_new_dup(int fd)
+drm_public struct fd_device * fd_device_new_dup(int fd)
 {
 	struct fd_device *dev = fd_device_new(dup(fd));
 	if (dev)
@@ -123,7 +123,7 @@ struct fd_device * fd_device_new_dup(int fd)
 	return dev;
 }
 
-struct fd_device * fd_device_ref(struct fd_device *dev)
+drm_public struct fd_device * fd_device_ref(struct fd_device *dev)
 {
 	atomic_inc(&dev->refcnt);
 	return dev;
@@ -146,7 +146,7 @@ void fd_device_del_locked(struct fd_device *dev)
 	fd_device_del_impl(dev);
 }
 
-void fd_device_del(struct fd_device *dev)
+drm_public void fd_device_del(struct fd_device *dev)
 {
 	if (!atomic_dec_and_test(&dev->refcnt))
 		return;

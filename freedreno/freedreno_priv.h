@@ -29,6 +29,10 @@
 #ifndef FREEDRENO_PRIV_H_
 #define FREEDRENO_PRIV_H_
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
@@ -41,6 +45,7 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "libdrm.h"
 #include "xf86drm.h"
 #include "xf86atomic.h"
 

@@ -32,8 +32,8 @@
 #include "freedreno_priv.h"
 #include "freedreno_ringbuffer.h"
 
-struct fd_ringbuffer * fd_ringbuffer_new(struct fd_pipe *pipe,
-		uint32_t size)
+drm_public struct fd_ringbuffer *
+fd_ringbuffer_new(struct fd_pipe *pipe, uint32_t size)
 {
 	struct fd_ringbuffer *ring;
 
@@ -51,7 +51,7 @@ struct fd_ringbuffer * fd_ringbuffer_new(struct fd_pipe *pipe,
 	return ring;
 }
 
-void fd_ringbuffer_del(struct fd_ringbuffer *ring)
+drm_public void fd_ringbuffer_del(struct fd_ringbuffer *ring)
 {
 	ring->funcs->destroy(ring);
 }
@@ -60,13 +60,13 @@ void fd_ringbuffer_del(struct fd_ringbuffer *ring)
  * the IB source) as it's parent before emitting reloc's, to ensure
  * the bookkeeping works out properly.
  */
-void fd_ringbuffer_set_parent(struct fd_ringbuffer *ring,
-		struct fd_ringbuffer *parent)
+drm_public void fd_ringbuffer_set_parent(struct fd_ringbuffer *ring,
+					 struct fd_ringbuffer *parent)
 {
 	ring->parent = parent;
 }
 
-void fd_ringbuffer_reset(struct fd_ringbuffer *ring)
+drm_public void fd_ringbuffer_reset(struct fd_ringbuffer *ring)
 {
 	uint32_t *start = ring->start;
 	if (ring->pipe->id == FD_PIPE_2D)
@@ -77,30 +77,32 @@ void fd_ringbuffer_reset(struct fd_ringbuffer *ring)
 }
 
 /* maybe get rid of this and use fd_ringmarker_flush() from DDX too? */
-int fd_ringbuffer_flush(struct fd_ringbuffer *ring)
+drm_public int fd_ringbuffer_flush(struct fd_ringbuffer *ring)
 {
 	return ring->funcs->flush(ring, ring->last_start);
 }
 
-uint32_t fd_ringbuffer_timestamp(struct fd_ringbuffer *ring)
+drm_public uint32_t fd_ringbuffer_timestamp(struct fd_ringbuffer *ring)
 {
 	return ring->last_timestamp;
 }
 
-void fd_ringbuffer_reloc(struct fd_ringbuffer *ring,
-		const struct fd_reloc *reloc)
+drm_public void fd_ringbuffer_reloc(struct fd_ringbuffer *ring,
+				    const struct fd_reloc *reloc)
 {
 	ring->funcs->emit_reloc(ring, reloc);
 }
 
-void fd_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
-		struct fd_ringmarker *target, struct fd_ringmarker *end)
+drm_public void
+fd_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
+			      struct fd_ringmarker *target,
+			      struct fd_ringmarker *end)
 {
 	assert(target->ring == end->ring);
 	ring->funcs->emit_reloc_ring(ring, target, end);
 }
 
-struct fd_ringmarker * fd_ringmarker_new(struct fd_ringbuffer *ring)
+drm_public struct fd_ringmarker * fd_ringmarker_new(struct fd_ringbuffer *ring)
 {
 	struct fd_ringmarker *marker = NULL;
 
@@ -117,23 +119,23 @@ struct fd_ringmarker * fd_ringmarker_new(struct fd_ringbuffer *ring)
 	return marker;
 }
 
-void fd_ringmarker_del(struct fd_ringmarker *marker)
+drm_public void fd_ringmarker_del(struct fd_ringmarker *marker)
 {
 	free(marker);
 }
 
-void fd_ringmarker_mark(struct fd_ringmarker *marker)
+drm_public void fd_ringmarker_mark(struct fd_ringmarker *marker)
 {
 	marker->cur = marker->ring->cur;
 }
 
-uint32_t fd_ringmarker_dwords(struct fd_ringmarker *start,
-		struct fd_ringmarker *end)
+drm_public uint32_t fd_ringmarker_dwords(struct fd_ringmarker *start,
+					 struct fd_ringmarker *end)
 {
 	return end->cur - start->cur;
 }
 
-int fd_ringmarker_flush(struct fd_ringmarker *marker)
+drm_public int fd_ringmarker_flush(struct fd_ringmarker *marker)
 {
 	struct fd_ringbuffer *ring = marker->ring;
 	return ring->funcs->flush(ring, marker->cur);
