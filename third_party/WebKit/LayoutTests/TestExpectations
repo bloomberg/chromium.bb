@@ -994,9 +994,8 @@ crbug.com/267302 [ Win ] http/tests/htmlimports/import-script-block-crossorigin-
 crbug.com/268111 [ Win Release ] http/tests/inspector/appcache/appcache-swap.html [ Pass Timeout ]
 crbug.com/268111 [ Win ] http/tests/appcache/online-whitelist.html [ Failure Pass Timeout ]
 
-crbug.com/394833 fast/repaint/repaint-composited-child-in-scrolled-container.html [ NeedsRebaseline ]
-crbug.com/394833 compositing/squashing/invalidations-with-large-negative-margin.html [ NeedsRebaseline ]
-crbug.com/394833 virtual/softwarecompositing/squashing/invalidations-with-large-negative-margin.html [ NeedsRebaseline ]
+crbug.com/394833 [ Linux Mac Win ] fast/repaint/repaint-composited-child-in-scrolled-container.html [ NeedsRebaseline ]
+crbug.com/394833 [ Linux Lion Mavericks MountainLion SnowLeopard Win7 ] compositing/squashing/invalidations-with-large-negative-margin.html [ NeedsRebaseline ]
 
 crbug.com/268588 [ Release ] http/tests/w3c/webperf/submission/Google/HighResolutionTime/worker-shared-basic.html [ Failure Pass ]
 crbug.com/316148 [ Win ] http/tests/w3c/webperf/approved/UserTiming/idlharness.html [ Pass Crash ]
