@@ -459,14 +459,16 @@ private:
 #endif
 
     // Helpers for drawing a focus ring (drawFocusRing)
-    void drawOuterPath(const SkPath&, SkPaint&, int);
-    void drawInnerPath(const SkPath&, SkPaint&, int);
+    float prepareFocusRingPaint(SkPaint&, const Color&, int width) const;
+    void drawFocusRingPath(const SkPath&, const Color&, int width);
+    void drawFocusRingRect(const SkRect&, const Color&, int width);
+
 
     // SkCanvas wrappers.
     void clipPath(const SkPath&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
     void clipRRect(const SkRRect&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
-
     void concat(const SkMatrix&);
+    void drawRRect(const SkRRect&, const SkPaint&);
 
     // Apply deferred paint state saves
     void realizePaintSave()

@@ -577,19 +577,65 @@ void GraphicsContext::drawConvexPolygon(size_t numPoints, const FloatPoint* poin
         drawPath(path, immutableState()->strokePaint());
 }
 
+float GraphicsContext::prepareFocusRingPaint(SkPaint& paint, const Color& color, int width) const
+{
+    paint.setAntiAlias(true);
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setColor(color.rgb());
+    paint.setStrokeWidth(focusRingWidth(width));
+
+#if OS(MACOSX)
+    paint.setAlpha(64);
+    return (width - 1) * 0.5f;
+#else
+    return 1;
+#endif
+}
+
+void GraphicsContext::drawFocusRingPath(const SkPath& path, const Color& color, int width)
+{
+    SkPaint paint;
+    float cornerRadius = prepareFocusRingPaint(paint, color, width);
+
+    paint.setPathEffect(SkCornerPathEffect::Create(SkFloatToScalar(cornerRadius)))->unref();
+
+    // Outer path
+    drawPath(path, paint);
+
+#if OS(MACOSX)
+    // Inner path
+    paint.setAlpha(128);
+    paint.setStrokeWidth(paint.getStrokeWidth() * 0.5f);
+    drawPath(path, paint);
+#endif
+}
+
+void GraphicsContext::drawFocusRingRect(const SkRect& rect, const Color& color, int width)
+{
+    SkPaint paint;
+    float cornerRadius = prepareFocusRingPaint(paint, color, width);
+
+    SkRRect rrect;
+    rrect.setRectXY(rect, SkFloatToScalar(cornerRadius), SkFloatToScalar(cornerRadius));
+
+    // Outer rect
+    drawRRect(rrect, paint);
+
+#if OS(MACOSX)
+    // Inner rect
+    paint.setAlpha(128);
+    paint.setStrokeWidth(paint.getStrokeWidth() * 0.5f);
+    drawRRect(rrect, paint);
+#endif
+}
+
 void GraphicsContext::drawFocusRing(const Path& focusRingPath, int width, int offset, const Color& color)
 {
     // FIXME: Implement support for offset.
     if (contextDisabled())
         return;
 
-    SkPaint paint;
-    paint.setAntiAlias(true);
-    paint.setStyle(SkPaint::kStroke_Style);
-    paint.setColor(color.rgb());
-
-    drawOuterPath(focusRingPath.skPath(), paint, width);
-    drawInnerPath(focusRingPath.skPath(), paint, width);
+    drawFocusRingPath(focusRingPath.skPath(), color, width);
 }
 
 void GraphicsContext::drawFocusRing(const Vector<IntRect>& rects, int width, int offset, const Color& color)
@@ -609,15 +655,13 @@ void GraphicsContext::drawFocusRing(const Vector<IntRect>& rects, int width, int
         focusRingRegion.op(r, SkRegion::kUnion_Op);
     }
 
-    SkPath path;
-    SkPaint paint;
-    paint.setAntiAlias(true);
-    paint.setStyle(SkPaint::kStroke_Style);
-
-    paint.setColor(color.rgb());
-    focusRingRegion.getBoundaryPath(&path);
-    drawOuterPath(path, paint, width);
-    drawInnerPath(path, paint, width);
+    if (focusRingRegion.isRect()) {
+        drawFocusRingRect(SkRect::MakeFromIRect(focusRingRegion.getBounds()), color, width);
+    } else {
+        SkPath path;
+        if (focusRingRegion.getBoundaryPath(&path))
+            drawFocusRingPath(path, color, width);
+    }
 }
 
 static inline IntRect areaCastingShadowInHole(const IntRect& holeRect, int shadowBlur, int shadowSpread, const IntSize& shadowOffset)
@@ -1172,6 +1216,17 @@ void GraphicsContext::drawRect(const SkRect& rect, const SkPaint& paint)
         m_trackedRegion.didDrawRect(this, rect, paint, 0);
 }
 
+void GraphicsContext::drawRRect(const SkRRect& rrect, const SkPaint& paint)
+{
+    if (contextDisabled())
+        return;
+
+    m_canvas->drawRRect(rrect, paint);
+
+    if (regionTrackingEnabled())
+        m_trackedRegion.didDrawBounded(this, rrect.rect(), paint);
+}
+
 void GraphicsContext::didDrawRect(const SkRect& rect, const SkPaint& paint, const SkBitmap* bitmap)
 {
     if (contextDisabled())
@@ -1711,27 +1766,6 @@ void GraphicsContext::setPathFromConvexPoints(SkPath* path, size_t numPoints, co
     if (numPoints == 4)
         convexity = SkPath::kUnknown_Convexity;
     path->setConvexity(convexity);
-}
-
-void GraphicsContext::drawOuterPath(const SkPath& path, SkPaint& paint, int width)
-{
-#if OS(MACOSX)
-    paint.setAlpha(64);
-    paint.setPathEffect(SkCornerPathEffect::Create((width - 1) * 0.5f))->unref();
-#else
-    paint.setPathEffect(SkCornerPathEffect::Create(1))->unref();
-#endif
-    paint.setStrokeWidth(focusRingWidth(width));
-    drawPath(path, paint);
-}
-
-void GraphicsContext::drawInnerPath(const SkPath& path, SkPaint& paint, int width)
-{
-#if OS(MACOSX)
-    paint.setAlpha(128);
-    paint.setStrokeWidth(width * 0.5f);
-    drawPath(path, paint);
-#endif
 }
 
 void GraphicsContext::setRadii(SkVector* radii, IntSize topLeft, IntSize topRight, IntSize bottomRight, IntSize bottomLeft)
