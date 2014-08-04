@@ -82,7 +82,7 @@ function test()
 
     function liveLocationsCount()
     {
-        return script._locations.size();
+        return WebInspector.debuggerWorkspaceBinding._ensureInfoForScript(script)._locations.size();
     }
 }
 

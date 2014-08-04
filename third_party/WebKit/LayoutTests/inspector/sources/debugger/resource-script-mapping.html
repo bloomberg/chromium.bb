@@ -7,20 +7,21 @@
 function test()
 {
     var defaultScriptMapping;
+    var target = WebInspector.debuggerModel.target();
+
     function createResourceScriptMapping()
     {
         InspectorTest.createWorkspace();
-        defaultScriptMapping = new WebInspector.DefaultScriptMapping(WebInspector.debuggerModel, InspectorTest.testWorkspace);
-        var resourceScriptMapping = new WebInspector.ResourceScriptMapping(WebInspector.debuggerModel, InspectorTest.testWorkspace);
+        InspectorTest.testTargetManager.addTarget(target);
+        defaultScriptMapping = new WebInspector.DefaultScriptMapping(WebInspector.debuggerModel, InspectorTest.testWorkspace, InspectorTest.testDebuggerWorkspaceBinding);
+        var resourceScriptMapping = new WebInspector.ResourceScriptMapping(WebInspector.debuggerModel, InspectorTest.testWorkspace, InspectorTest.testDebuggerWorkspaceBinding);
         return resourceScriptMapping;
     }
-
-    var target = WebInspector.debuggerModel.target();
 
     function uiLocation(script, lineNumber, columnNumber)
     {
         var location = script.target().debuggerModel.createRawLocation(script, lineNumber, columnNumber);
-        return WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(location);
+        return InspectorTest.testDebuggerWorkspaceBinding.rawLocationToUILocation(location);
     }
 
     function resetModels()

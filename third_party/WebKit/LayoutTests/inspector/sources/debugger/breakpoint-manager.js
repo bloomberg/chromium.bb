@@ -4,7 +4,8 @@ InspectorTest.uiSourceCodes = {};
 
 InspectorTest.dumpTargetIds = false;
 
-InspectorTest.initializeDefaultMappingOnTarget = function (target) {
+InspectorTest.initializeDefaultMappingOnTarget = function(target)
+{
     var defaultMapping = {
         rawLocationToUILocation: function(rawLocation)
         {
@@ -23,11 +24,10 @@ InspectorTest.initializeDefaultMappingOnTarget = function (target) {
             return true;
         }
     };
-
     target.defaultMapping = defaultMapping;
 }
 
-InspectorTest.createMockTarget = function(targetManager, id)
+InspectorTest.createMockTarget = function(id)
 {
     var target = {
         id: function()
@@ -37,9 +37,13 @@ InspectorTest.createMockTarget = function(targetManager, id)
 
         addEventListener: function() { },
         removeEventListener: function() { },
-        dispose: function() { }
+        dispose: function() { },
+        isDetached: function() { return !!this.detached; }
     };
+    target._modelByConstructor = new Map();
     InspectorTest.initializeDefaultMappingOnTarget(target);
+    target.debuggerModel = new InspectorTest.DebuggerModelMock(target, target.defaultMapping, InspectorTest.testDebuggerWorkspaceBinding);
+    target.debuggerModel._target = target;
     return target;
 }
 
@@ -48,14 +52,14 @@ InspectorTest.dumpTarget = function(targetAware)
     return InspectorTest.dumpTargetIds ?  "target " + targetAware.target().id() + " " : "";
 }
 
-InspectorTest.DebuggerModelMock = function(target, sourceMapping)
+InspectorTest.DebuggerModelMock = function(target, sourceMapping, debuggerWorkspaceBinding)
 {
-    target.debuggerModel = this;
-    this._target = target;
+    WebInspector.SDKModel.call(this, WebInspector.DebuggerModel, target);
     this._breakpointResolvedEventTarget = new WebInspector.Object();
     this._scripts = {};
     this._sourceMapping = sourceMapping;
     this._breakpoints = {};
+    this._debuggerWorkspaceBinding = InspectorTest.testDebuggerWorkspaceBinding;
 }
 
 InspectorTest.DebuggerModelMock.prototype = {
@@ -69,10 +73,23 @@ InspectorTest.DebuggerModelMock.prototype = {
         return true;
     },
 
+    scriptsForSourceURL: function(url)
+    {
+        var script = this._scriptForURL(url);
+        return script ? [script] : [];
+    },
+
     _addScript: function(scriptId, url)
     {
-        this._scripts[scriptId] = new WebInspector.Script(this._target, scriptId, url);
-        this._scripts[scriptId].pushSourceMapping(this._sourceMapping);
+        var script = new WebInspector.Script(this._target, scriptId, url);
+        this._scripts[scriptId] = script;
+        this._debuggerWorkspaceBinding._targetToData.get(this._target)._parsedScriptSource({data: script});
+    },
+
+    _registerScript: function(script)
+    {
+        this._scripts[script.scriptId] = script;
+        this._debuggerWorkspaceBinding._targetToData.get(this._target)._parsedScriptSource({data: script});
     },
 
     _scriptForURL: function(url)
@@ -100,9 +117,9 @@ InspectorTest.DebuggerModelMock.prototype = {
         }
     },
 
-    rawLocationToUILocation: function(rawLocation)
+    createRawLocation: function(script, line, column)
     {
-        return this._scripts[rawLocation.scriptId].rawLocationToUILocation(rawLocation.lineNumber, rawLocation.columnNumber);
+        return new WebInspector.DebuggerModel.Location(this.target(), script.scriptId, line, column);
     },
 
     setBreakpointByURL: function(url, lineNumber, columnNumber, condition, callback)
@@ -146,11 +163,6 @@ InspectorTest.DebuggerModelMock.prototype = {
 
     setBreakpointsActive: function() { },
 
-    createLiveLocation: function(rawLocation, updateDelegate)
-    {
-        return this._scripts[rawLocation.scriptId].createLiveLocation(rawLocation, updateDelegate);
-    },
-
     scriptForId: function(scriptId)
     {
         return this._scripts[scriptId];
@@ -160,19 +172,20 @@ InspectorTest.DebuggerModelMock.prototype = {
     {
         InspectorTest.addResult("  Resetting debugger.");
         this._scripts = {};
+        this._debuggerWorkspaceBinding._reset(this._target);
     },
 
     pushSourceMapping: function(sourceMapping)
     {
         for (var scriptId in this._scripts)
-            this._scripts[scriptId].pushSourceMapping(sourceMapping);
+            this._debuggerWorkspaceBinding.pushSourceMapping(this._scripts[scriptId], sourceMapping);
     },
 
     disableSourceMapping: function(sourceMapping)
     {
         sourceMapping._disabled = true;
         for (var scriptId in this._scripts)
-            this._scripts[scriptId].updateLocations();
+            this._debuggerWorkspaceBinding.updateLocations(this._scripts[scriptId]);
     },
 
     addBreakpointListener: function(breakpointId, listener, thisObject)
@@ -199,7 +212,7 @@ InspectorTest.setupLiveLocationSniffers = function()
     {
         InspectorTest.addResult("    Location created: " + InspectorTest.dumpTarget(rawLocation) + rawLocation.scriptId + ":" + rawLocation.lineNumber);
     }, true);
-    InspectorTest.addSniffer(WebInspector.Script.Location.prototype, "dispose", function()
+    InspectorTest.addSniffer(WebInspector.DebuggerWorkspaceBinding.Location.prototype, "dispose", function()
     {
         InspectorTest.addResult("    Location disposed: " + InspectorTest.dumpTarget(this._rawLocation) + this._rawLocation.scriptId + ":" + this._rawLocation.lineNumber);
     }, true);
@@ -209,12 +222,15 @@ InspectorTest.addScript = function(target, breakpointManager, url)
 {
     target.debuggerModel._addScript(url, url);
     InspectorTest.addResult("  Adding script: " + url);
-    var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
-    var path = breakpointManager._debuggerProjectDelegate.addContentProvider("", url, url, contentProvider);
-    var uiSourceCode = breakpointManager._workspace.uiSourceCode("debugger:", path);
-    uiSourceCode.setSourceMappingForTarget(target, target.defaultMapping);
-    InspectorTest.uiSourceCodes[url] = uiSourceCode;
-    return uiSourceCode;
+    var uiSourceCodes = breakpointManager._workspace.uiSourceCodesForProjectType(WebInspector.projectTypes.Debugger);
+    for (var i = 0; i < uiSourceCodes.length; ++i) {
+        var uiSourceCode = uiSourceCodes[i];
+        if (uiSourceCode.url === url) {
+            uiSourceCode.setSourceMappingForTarget(target, breakpointManager.defaultMapping);
+            InspectorTest.uiSourceCodes[url] = uiSourceCode;
+            return uiSourceCode;
+        }
+    }
 }
 
 InspectorTest.addUISourceCode = function(target, breakpointManager, url, doNotSetSourceMapping, doNotAddScript)
@@ -223,16 +239,17 @@ InspectorTest.addUISourceCode = function(target, breakpointManager, url, doNotSe
         InspectorTest.addScript(target, breakpointManager, url);
     InspectorTest.addResult("  Adding UISourceCode: " + url);
     var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
-    var uiSourceCode = breakpointManager._networkWorkspaceBinding.addFileForURL(url, contentProvider);
+    var binding = breakpointManager._debuggerWorkspaceBinding;
+    var uiSourceCode = binding._networkWorkspaceBinding.addFileForURL(url, contentProvider);
     InspectorTest.uiSourceCodes[url] = uiSourceCode;
     if (!doNotSetSourceMapping) {
-        uiSourceCode.setSourceMappingForTarget(target, target.defaultMapping);
-        target.debuggerModel.scriptForId(url).updateLocations();
+        uiSourceCode.setSourceMappingForTarget(target, breakpointManager.defaultMapping);
+        breakpointManager._debuggerWorkspaceBinding.updateLocations(target.debuggerModel.scriptForId(url));
     }
     return uiSourceCode;
 }
 
-InspectorTest.createBreakpointManager = function(targetManager, persistentBreakpoints)
+InspectorTest.createBreakpointManager = function(targetManager, debuggerWorkspaceBinding, persistentBreakpoints)
 {
     InspectorTest._pendingBreakpointUpdates = 0;
     InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_updateInDebugger", updateInDebugger, true);
@@ -268,13 +285,17 @@ InspectorTest.createBreakpointManager = function(targetManager, persistentBreakp
         InspectorTest.addResult("    breakpointRemoved(" + [uiLocation.uiSourceCode.originURL(), uiLocation.lineNumber, uiLocation.columnNumber].join(", ") + ")");
     }
     var targets = targetManager.targets();
-    for (var i = 0; i < targets.length; ++i)
-        new InspectorTest.DebuggerModelMock(targets[i], targets[i].defaultMapping);
+    var mappingForManager;
+    for (var i = 0; i < targets.length; ++i) {
+        InspectorTest.initializeDefaultMappingOnTarget(targets[i]);
+        if (!mappingForManager)
+            mappingForManager = targets[i].defaultMapping;
+        var model = new InspectorTest.DebuggerModelMock(targets[i], targets[i].defaultMapping, debuggerWorkspaceBinding);
+        targets[i].debuggerModel = model;
+    }
 
-    var workspace = new WebInspector.Workspace();
-    var breakpointManager = new WebInspector.BreakpointManager(setting, workspace, targetManager);
-    breakpointManager._networkWorkspaceBinding = new WebInspector.NetworkWorkspaceBinding(workspace);
-    breakpointManager._debuggerProjectDelegate = new WebInspector.DebuggerProjectDelegate(workspace, "debugger:", WebInspector.projectTypes.Debugger);
+    var breakpointManager = new WebInspector.BreakpointManager(setting, debuggerWorkspaceBinding._workspace, targetManager, debuggerWorkspaceBinding);
+    breakpointManager.defaultMapping = mappingForManager;
     breakpointManager.addEventListener(WebInspector.BreakpointManager.Events.BreakpointAdded, breakpointAdded);
     breakpointManager.addEventListener(WebInspector.BreakpointManager.Events.BreakpointRemoved, breakpointRemoved);
     InspectorTest.addResult("  Created breakpoints manager");

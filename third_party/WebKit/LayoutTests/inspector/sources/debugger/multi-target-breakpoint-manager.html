@@ -1,36 +1,42 @@
 <html>
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/workspace-test.js"></script>
 <script src="breakpoint-manager.js"></script>
 
 <script>
+
 
 function test()
 {
     InspectorTest.dumpTargetIds = true;
     InspectorTest.setupLiveLocationSniffers();
 
+    function removeTarget(target)
+    {
+        target.detached = true;
+        InspectorTest.testTargetManager.removeTarget(target);
+    }
 
     InspectorTest.runTestSuite([
 
         function testResolvedBreakpointInBothTarget(next)
         {
-            var targetManager = new WebInspector.TargetManager();
-            var target1 = InspectorTest.createMockTarget(targetManager, 1);
-            targetManager._targets.push(target1);
-            var breakpointManager = InspectorTest.createBreakpointManager(targetManager);
+            InspectorTest.createWorkspace(true);
+            var breakpointManager = InspectorTest.createBreakpointManager(InspectorTest.testTargetManager, InspectorTest.testDebuggerWorkspaceBinding);
+            var target1 = InspectorTest.createMockTarget(1);
+            InspectorTest.testTargetManager.addTarget(target1);
             var uiSourceCode = InspectorTest.addUISourceCode(target1, breakpointManager, "a.js");
             var target2;
             InspectorTest.setBreakpoint(breakpointManager, uiSourceCode, 30, 0, "", true, step1);
 
             function step1()
             {
-                target1.debuggerModel._breakpointResolved("a.js:30", new WebInspector.DebuggerModel.Location(target1, "a.js", 131, 5));
+                target1.debuggerModel._breakpointResolved("a.js:30", new WebInspector.DebuggerModel.Location(target1, "a.js", 131, 0));
                 InspectorTest.dumpBreakpointLocations(breakpointManager);
                 InspectorTest.addResult("  Second target added");
-                target2 = InspectorTest.createMockTarget(targetManager, 2);
-                new InspectorTest.DebuggerModelMock(target2, target2.defaultMapping);
-                targetManager.addTarget(target2);
+                target2 = InspectorTest.createMockTarget(2);
+                InspectorTest.testTargetManager.addTarget(target2);
                 target2.debuggerModel._addScript("a.js", "a.js");
                 uiSourceCode.setSourceMappingForTarget(target2, target2.defaultMapping);
                 window.setBreakpointCallback = step2;
@@ -38,27 +44,27 @@ function test()
 
             function step2()
             {
-                target2.debuggerModel._breakpointResolved("a.js:30", new WebInspector.DebuggerModel.Location(target2, "a.js", 30, 5));
+                target2.debuggerModel._breakpointResolved("a.js:30", new WebInspector.DebuggerModel.Location(target2, "a.js", 30, 0));
                 InspectorTest.dumpBreakpointLocations(breakpointManager);
-                InspectorTest.addResult("  First target removed")
-                targetManager.removeTarget(target1);
+                InspectorTest.addResult("  First target removed");
+                removeTarget(target1);
                 InspectorTest.dumpBreakpointLocations(breakpointManager);
-                InspectorTest.addResult("  Second target removed")
-                targetManager.removeTarget(target2);
-                InspectorTest.finishBreakpointTest(breakpointManager, next)
+                InspectorTest.addResult("  Second target removed");
+                removeTarget(target2);
+                InspectorTest.finishBreakpointTest(breakpointManager, next);
             }
 
         },
 
         function testResolvedBreakpointInOneTarget(next)
         {
-            var targetManager = new WebInspector.TargetManager();
-            var target1 = InspectorTest.createMockTarget(targetManager, 1);
-            var target2 = InspectorTest.createMockTarget(targetManager, 2);
+            InspectorTest.createWorkspace(true);
+            var target1 = InspectorTest.createMockTarget(1);
+            var target2 = InspectorTest.createMockTarget(2);
 
-            targetManager._targets.push(target1);
-            targetManager._targets.push(target2);
-            var breakpointManager = InspectorTest.createBreakpointManager(targetManager);
+            InspectorTest.testTargetManager.addTarget(target1);
+            InspectorTest.testTargetManager.addTarget(target2);
+            var breakpointManager = InspectorTest.createBreakpointManager(InspectorTest.testTargetManager, InspectorTest.testDebuggerWorkspaceBinding);
             var uiSourceCode = InspectorTest.addUISourceCode(target1, breakpointManager, "a.js");
             InspectorTest.setBreakpoint(breakpointManager, uiSourceCode, 30, 0, "", true, step1);
 
@@ -70,7 +76,7 @@ function test()
             function step2()
             {
                 InspectorTest.addResult("  First target removed!")
-                targetManager.removeTarget(target1);
+                removeTarget(target1);
                 InspectorTest.dumpBreakpointLocations(breakpointManager);
                 InspectorTest.finishBreakpointTest(breakpointManager, next);
             }
@@ -78,7 +84,6 @@ function test()
 
     ]);
 };
-
 </script>
 
 </head>

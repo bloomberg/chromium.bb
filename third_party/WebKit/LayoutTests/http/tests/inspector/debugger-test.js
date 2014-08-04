@@ -416,20 +416,23 @@ InspectorTest.queryScripts = function(filter)
     return scripts;
 };
 
-InspectorTest.createScriptMock = function(url, startLine, startColumn, isContentScript, source)
+InspectorTest.createScriptMock = function(url, startLine, startColumn, isContentScript, source, target, preRegisterCallback)
 {
+    target = target || WebInspector.targetManager.mainTarget();
     var scriptId = ++InspectorTest._lastScriptId;
     var lineCount = source.lineEndings().length;
     var endLine = startLine + lineCount - 1;
     var endColumn = lineCount === 1 ? startColumn + source.length : source.length - source.lineEndings()[lineCount - 2];
     var hasSourceURL = !!source.match(/\/\/#\ssourceURL=\s*(\S*?)\s*$/m) || !!source.match(/\/\/@\ssourceURL=\s*(\S*?)\s*$/m);
-    var script = new WebInspector.Script(WebInspector.targetManager.mainTarget(), scriptId, url, startLine, startColumn, endLine, endColumn, isContentScript, null, hasSourceURL);
+    var script = new WebInspector.Script(target, scriptId, url, startLine, startColumn, endLine, endColumn, isContentScript, null, hasSourceURL);
     script.requestContent = function(callback)
     {
         var trimmedSource = WebInspector.Script._trimSourceURLComment(source);
         callback(trimmedSource, false, "text/javascript");
     };
-    WebInspector.debuggerModel._registerScript(script);
+    if (preRegisterCallback)
+        preRegisterCallback(script);
+    target.debuggerModel._registerScript(script);
     return script;
 };
 

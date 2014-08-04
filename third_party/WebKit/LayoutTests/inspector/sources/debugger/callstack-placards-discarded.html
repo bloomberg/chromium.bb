@@ -55,9 +55,10 @@ var test = function()
     function liveLocationsCount()
     {
         var count = 0;
-        var scripts = WebInspector.debuggerModel.scripts;
-        for (var id in scripts)
-            count += scripts[id]._locations.size();
+        var infos = WebInspector.debuggerWorkspaceBinding._targetToData.get(WebInspector.debuggerModel.target()).scriptDataMap.values();
+        infos.forEach(function(info) {
+            count += info._locations.size();
+        });
         return count;
     }
 }

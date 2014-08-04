@@ -403,7 +403,7 @@ Running: testProvisionalBreakpointsResolve
     breakpointAdded(a.js, 11, 0, foo == bar, true)
     Location created: a.js:11
   Dumping Breakpoint Locations
-    UISourceCode (url='a.js', uri='debugger:/a.js')
+    UISourceCode (url='a.js', uri='debugger:1/VMa.js a.js')
       Location: (11, 0)
   Dumping Storage
     a.js:10 enabled:true condition:foo == bar

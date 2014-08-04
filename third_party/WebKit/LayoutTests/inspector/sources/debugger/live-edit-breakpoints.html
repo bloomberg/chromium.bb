@@ -19,7 +19,7 @@ function loadDynamicAnonymousScript()
 function test()
 {
     var panel = WebInspector.inspectorView.showPanel("sources");
-    var liveEditSupport = WebInspector.DebuggerScriptMapping.registry.instance(WebInspector.targetManager.targets()[0]).liveEditSupport();
+    var liveEditSupport = WebInspector.debuggerWorkspaceBinding.liveEditSupport(WebInspector.targetManager.targets()[0]);
 
     function pathToFileName(path)
     {
