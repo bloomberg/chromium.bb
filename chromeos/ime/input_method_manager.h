@@ -13,6 +13,8 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/ime/input_method_descriptor.h"
 
+class Profile;
+
 namespace ui {
 class Accelerator;
 }  // namespace ui
@@ -142,11 +144,13 @@ class CHROMEOS_EXPORT InputMethodManager {
   // Adds an input method extension. This function does not takes ownership of
   // |instance|.
   virtual void AddInputMethodExtension(
+      Profile* profile,
       const std::string& imm_id,
       InputMethodEngineInterface* instance) = 0;
 
   // Removes an input method extension.
-  virtual void RemoveInputMethodExtension(const std::string& id) = 0;
+  virtual void RemoveInputMethodExtension(Profile* profile,
+                                          const std::string& id) = 0;
 
   // Returns a list of descriptors for all Input Method Extensions.
   virtual void GetInputMethodExtensions(InputMethodDescriptors* result) = 0;

@@ -13,6 +13,8 @@
 #include "chromeos/ime/input_method_descriptor.h"
 #include "url/gurl.h"
 
+class Profile;
+
 namespace ui {
 class CandidateWindow;
 class KeyEvent;
@@ -38,7 +40,8 @@ class InputMethodEngine : public InputMethodEngineInterface {
 
   virtual ~InputMethodEngine();
 
-  void Initialize(scoped_ptr<InputMethodEngineInterface::Observer> observer,
+  void Initialize(Profile* profile,
+                  scoped_ptr<InputMethodEngineInterface::Observer> observer,
                   const char* engine_name,
                   const char* extension_id,
                   const char* engine_id,
@@ -162,6 +165,9 @@ class InputMethodEngine : public InputMethodEngineInterface {
   // The start & end time of using this input method. This is for UMA.
   base::Time start_time_;
   base::Time end_time_;
+
+  // User profile that owns this method.
+  Profile* profile_;
 };
 
 }  // namespace chromeos

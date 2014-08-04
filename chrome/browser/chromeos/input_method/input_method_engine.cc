@@ -119,15 +119,19 @@ InputMethodEngine::InputMethodEngine()
       composition_cursor_(0),
       candidate_window_(new ui::CandidateWindow()),
       window_visible_(false),
-      sent_key_event_(NULL) {}
+      sent_key_event_(NULL),
+      profile_(NULL) {
+}
 
 InputMethodEngine::~InputMethodEngine() {
   if (start_time_.ToInternalValue())
     RecordHistogram("WorkingTime", (end_time_ - start_time_).InSeconds());
-  input_method::InputMethodManager::Get()->RemoveInputMethodExtension(imm_id_);
+  input_method::InputMethodManager::Get()->RemoveInputMethodExtension(profile_,
+                                                                      imm_id_);
 }
 
 void InputMethodEngine::Initialize(
+    Profile* profile,
     scoped_ptr<InputMethodEngineInterface::Observer> observer,
     const char* engine_name,
     const char* extension_id,
@@ -137,6 +141,8 @@ void InputMethodEngine::Initialize(
     const GURL& options_page,
     const GURL& input_view) {
   DCHECK(observer) << "Observer must not be null.";
+
+  profile_ = profile;
 
   // TODO(komatsu): It is probably better to set observer out of Initialize.
   observer_ = observer.Pass();
@@ -168,7 +174,7 @@ void InputMethodEngine::Initialize(
 
   // TODO(komatsu): It is probably better to call AddInputMethodExtension
   // out of Initialize.
-  manager->AddInputMethodExtension(imm_id_, this);
+  manager->AddInputMethodExtension(profile, imm_id_, this);
 }
 
 const input_method::InputMethodDescriptor& InputMethodEngine::GetDescriptor()

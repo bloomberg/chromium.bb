@@ -58,6 +58,59 @@ std::string ImeIdFromEngineId(const std::string& id) {
   return extension_ime_util::GetInputMethodIDByEngineID(id);
 }
 
+class TestObserver : public InputMethodManager::Observer,
+                     public ash::ime::InputMethodMenuManager::Observer {
+ public:
+  TestObserver()
+      : input_method_changed_count_(0),
+        input_method_menu_item_changed_count_(0),
+        last_show_message_(false) {
+  }
+  virtual ~TestObserver() {}
+
+  virtual void InputMethodChanged(InputMethodManager* manager,
+                                  bool show_message) OVERRIDE {
+    ++input_method_changed_count_;
+    last_show_message_ = show_message;
+  }
+  virtual void InputMethodMenuItemChanged(
+      ash::ime::InputMethodMenuManager* manager) OVERRIDE {
+    ++input_method_menu_item_changed_count_;
+  }
+
+  int input_method_changed_count_;
+  int input_method_menu_item_changed_count_;
+  bool last_show_message_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestObserver);
+};
+
+class TestCandidateWindowObserver
+    : public InputMethodManager::CandidateWindowObserver {
+ public:
+  TestCandidateWindowObserver()
+      : candidate_window_opened_count_(0),
+        candidate_window_closed_count_(0) {
+  }
+
+  virtual ~TestCandidateWindowObserver() {}
+
+  virtual void CandidateWindowOpened(InputMethodManager* manager) OVERRIDE {
+    ++candidate_window_opened_count_;
+  }
+  virtual void CandidateWindowClosed(InputMethodManager* manager) OVERRIDE {
+    ++candidate_window_closed_count_;
+  }
+
+  int candidate_window_opened_count_;
+  int candidate_window_closed_count_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestCandidateWindowObserver);
+};
+}  // namespace
+
 class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
  public:
   InputMethodManagerImplTest()
@@ -108,6 +161,7 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
   }
 
  protected:
+  Profile* GetProfile() { return manager_->GetProfile(); }
   // Helper function to initialize component extension stuff for testing.
   void InitComponentExtension() {
     mock_delegate_ = new MockComponentExtIMEManagerDelegate();
@@ -117,13 +171,17 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
     // Note, for production, these SetEngineHandler are called when
     // IMEEngineHandlerInterface is initialized via
     // InitializeComponentextension.
-    manager_->AddInputMethodExtension(ImeIdFromEngineId(kNaclMozcUsId),
+    manager_->AddInputMethodExtension(GetProfile(),
+                                      ImeIdFromEngineId(kNaclMozcUsId),
                                       mock_engine_handler_.get());
-    manager_->AddInputMethodExtension(ImeIdFromEngineId(kNaclMozcJpId),
+    manager_->AddInputMethodExtension(GetProfile(),
+                                      ImeIdFromEngineId(kNaclMozcJpId),
                                       mock_engine_handler_.get());
-    manager_->AddInputMethodExtension(ImeIdFromEngineId(kExt2Engine1Id),
+    manager_->AddInputMethodExtension(GetProfile(),
+                                      ImeIdFromEngineId(kExt2Engine1Id),
                                       mock_engine_handler_.get());
-    manager_->AddInputMethodExtension(ImeIdFromEngineId(kExt2Engine2Id),
+    manager_->AddInputMethodExtension(GetProfile(),
+                                      ImeIdFromEngineId(kExt2Engine2Id),
                                       mock_engine_handler_.get());
     manager_->InitializeComponentExtensionForTesting(delegate.Pass());
   }
@@ -268,58 +326,6 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(InputMethodManagerImplTest);
 };
-
-class TestObserver : public InputMethodManager::Observer,
-                     public ash::ime::InputMethodMenuManager::Observer{
- public:
-  TestObserver()
-      : input_method_changed_count_(0),
-        input_method_menu_item_changed_count_(0),
-        last_show_message_(false) {
-  }
-  virtual ~TestObserver() {}
-
-  virtual void InputMethodChanged(InputMethodManager* manager,
-                                  bool show_message) OVERRIDE {
-    ++input_method_changed_count_;
-    last_show_message_ = show_message;
-  }
-  virtual void InputMethodMenuItemChanged(
-      ash::ime::InputMethodMenuManager* manager) OVERRIDE {
-    ++input_method_menu_item_changed_count_;
-  }
-
-  int input_method_changed_count_;
-  int input_method_menu_item_changed_count_;
-  bool last_show_message_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestObserver);
-};
-
-class TestCandidateWindowObserver
-    : public InputMethodManager::CandidateWindowObserver {
- public:
-  TestCandidateWindowObserver()
-      : candidate_window_opened_count_(0),
-        candidate_window_closed_count_(0) {
-  }
-  virtual ~TestCandidateWindowObserver() {}
-
-  virtual void CandidateWindowOpened(InputMethodManager* manager) OVERRIDE {
-    ++candidate_window_opened_count_;
-  }
-  virtual void CandidateWindowClosed(InputMethodManager* manager) OVERRIDE {
-    ++candidate_window_closed_count_;
-  }
-
-  int candidate_window_opened_count_;
-  int candidate_window_closed_count_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestCandidateWindowObserver);
-};
-}  // namespace
 
 TEST_F(InputMethodManagerImplTest, TestGetImeKeyboard) {
   EXPECT_TRUE(manager_->GetImeKeyboard());
@@ -1129,7 +1135,7 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
                                           GURL(),
                                           GURL());
   MockInputMethodEngine engine(descriptor1);
-  manager_->AddInputMethodExtension(ext1_id, &engine);
+  manager_->AddInputMethodExtension(GetProfile(), ext1_id, &engine);
 
   // Extension IMEs are not enabled by default.
   EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());
@@ -1158,7 +1164,7 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
                                           GURL(),
                                           GURL());
   MockInputMethodEngine engine2(descriptor2);
-  manager_->AddInputMethodExtension(ext2_id, &engine2);
+  manager_->AddInputMethodExtension(GetProfile(), ext2_id, &engine2);
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
 
   extension_ime_ids.push_back(ext2_id);
@@ -1174,9 +1180,9 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
   }
 
   // Remove them.
-  manager_->RemoveInputMethodExtension(ext1_id);
+  manager_->RemoveInputMethodExtension(GetProfile(), ext1_id);
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
-  manager_->RemoveInputMethodExtension(ext2_id);
+  manager_->RemoveInputMethodExtension(GetProfile(), ext2_id);
   EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());
 }
 
@@ -1210,7 +1216,7 @@ TEST_F(InputMethodManagerImplTest, TestAddExtensionInputThenLockScreen) {
                                          GURL(),
                                          GURL());
   MockInputMethodEngine engine(descriptor);
-  manager_->AddInputMethodExtension(ext_id, &engine);
+  manager_->AddInputMethodExtension(GetProfile(), ext_id, &engine);
 
   // Extension IME is not enabled by default.
   EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());

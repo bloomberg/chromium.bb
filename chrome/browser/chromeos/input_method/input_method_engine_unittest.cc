@@ -175,7 +175,8 @@ class InputMethodEngineTest :  public testing::Test {
     engine_.reset(new InputMethodEngine());
     observer_ = new TestObserver();
     scoped_ptr<InputMethodEngineInterface::Observer> observer_ptr(observer_);
-    engine_->Initialize(observer_ptr.Pass(),
+    engine_->Initialize(NULL /* profile */,
+                        observer_ptr.Pass(),
                         "",
                         whitelisted ? kTestExtensionId : kTestExtensionId2,
                         kTestImeEngineId,

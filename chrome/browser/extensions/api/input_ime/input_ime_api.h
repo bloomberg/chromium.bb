@@ -36,7 +36,8 @@ class InputImeEventRouter {
  public:
   static InputImeEventRouter* GetInstance();
 
-  bool RegisterIme(const std::string& extension_id,
+  bool RegisterIme(Profile*,
+                   const std::string& extension_id,
                    const extensions::InputComponentInfo& component);
   void UnregisterAllImes(const std::string& extension_id);
   chromeos::InputMethodEngineInterface* GetEngine(

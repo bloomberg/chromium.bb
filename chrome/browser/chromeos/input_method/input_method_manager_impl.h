@@ -65,9 +65,11 @@ class InputMethodManagerImpl : public InputMethodManager,
   virtual void ChangeInputMethod(const std::string& input_method_id) OVERRIDE;
   virtual void ActivateInputMethodMenuItem(const std::string& key) OVERRIDE;
   virtual void AddInputMethodExtension(
+      Profile* profile,
       const std::string& id,
       InputMethodEngineInterface* instance) OVERRIDE;
-  virtual void RemoveInputMethodExtension(const std::string& id) OVERRIDE;
+  virtual void RemoveInputMethodExtension(Profile* profile,
+                                          const std::string& id) OVERRIDE;
   virtual void GetInputMethodExtensions(
       InputMethodDescriptors* result) OVERRIDE;
   virtual void SetEnabledExtensionImes(std::vector<std::string>* ids) OVERRIDE;
@@ -101,6 +103,8 @@ class InputMethodManagerImpl : public InputMethodManager,
       scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate);
 
  private:
+  friend class InputMethodManagerImplTest;
+
   // CandidateWindowController::Observer overrides:
   virtual void CandidateClicked(int index) OVERRIDE;
   virtual void CandidateWindowOpened() OVERRIDE;
@@ -153,6 +157,9 @@ class InputMethodManagerImpl : public InputMethodManager,
   void ReconfigureIMFramework();
 
   // Gets the current active user profile.
+  // Note: this method is deprecated as ActiveUserProfile might change
+  // during asynchronous operations that leads to strange crashes.
+  // Use with caution!
   Profile* GetProfile() const;
 
   scoped_ptr<InputMethodDelegate> delegate_;

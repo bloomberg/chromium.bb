@@ -349,12 +349,12 @@ InputImeEventRouter::GetInstance() {
 }
 
 bool InputImeEventRouter::RegisterIme(
+    Profile* profile,
     const std::string& extension_id,
     const extensions::InputComponentInfo& component) {
 #if defined(USE_X11)
   VLOG(1) << "RegisterIme: " << extension_id << " id: " << component.id;
 
-  Profile* profile = ProfileManager::GetActiveUserProfile();
   // Avoid potential mem leaks due to duplicated component IDs.
   if (!profile_engine_map_[profile][extension_id][component.id]) {
     std::vector<std::string> layouts;
@@ -371,7 +371,8 @@ bool InputImeEventRouter::RegisterIme(
     scoped_ptr<chromeos::InputMethodEngineInterface::Observer> observer(
         new chromeos::ImeObserver(profile, extension_id));
     chromeos::InputMethodEngine* engine = new chromeos::InputMethodEngine();
-    engine->Initialize(observer.Pass(),
+    engine->Initialize(profile,
+                       observer.Pass(),
                        component.name.c_str(),
                        extension_id.c_str(),
                        component.id.c_str(),
@@ -854,14 +855,17 @@ void InputImeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
        component != input_components->end();
        ++component) {
     if (component->type == extensions::INPUT_COMPONENT_TYPE_IME) {
-      // Don't pass profile_ to register ime, instead always use
-      // GetActiveUserProfile. It is because:
-      // The original profile for login screen is called signin profile.
-      // And the active profile is the incognito profile based on signin
-      // profile. So if |profile_| is signin profile, we need to make sure
+      // If |browser_context| looks like signin profile, use the real signin
+      // profile. This is because IME extensions for signin profile are run
+      // in Off-The-Record profile, based on given static defaults.
+      // So if |profile_| is signin profile, we need to make sure
       // the router/observer runs under its incognito profile, because the
       // component extensions were installed under its incognito profile.
-      input_ime_event_router()->RegisterIme(extension->id(), *component);
+      Profile* profile = Profile::FromBrowserContext(browser_context);
+      if (chromeos::ProfileHelper::IsSigninProfile(profile))
+        profile = chromeos::ProfileHelper::GetSigninProfile();
+      input_ime_event_router()->RegisterIme(
+          profile, extension->id(), *component);
     }
   }
 }

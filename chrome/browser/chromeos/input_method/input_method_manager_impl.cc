@@ -433,6 +433,7 @@ void InputMethodManagerImpl::ActivateInputMethodMenuItem(
 }
 
 void InputMethodManagerImpl::AddInputMethodExtension(
+    Profile* profile,
     const std::string& id,
     InputMethodEngineInterface* engine) {
   if (state_ == STATE_TERMINATING)
@@ -440,7 +441,7 @@ void InputMethodManagerImpl::AddInputMethodExtension(
 
   DCHECK(engine);
 
-  profile_engine_map_[GetProfile()][id] = engine;
+  profile_engine_map_[profile][id] = engine;
 
   if (id == current_input_method_.id()) {
     IMEBridge::Get()->SetCurrentEngineHandler(engine);
@@ -469,7 +470,8 @@ void InputMethodManagerImpl::AddInputMethodExtension(
   }
 }
 
-void InputMethodManagerImpl::RemoveInputMethodExtension(const std::string& id) {
+void InputMethodManagerImpl::RemoveInputMethodExtension(Profile* profile,
+                                                        const std::string& id) {
   if (!extension_ime_util::IsExtensionIME(id))
     DVLOG(1) << id << " is not a valid extension input method ID.";
 
@@ -479,7 +481,7 @@ void InputMethodManagerImpl::RemoveInputMethodExtension(const std::string& id) {
     active_input_method_ids_.erase(i);
   extra_input_methods_.erase(id);
 
-  EngineMap& engine_map = profile_engine_map_[GetProfile()];
+  EngineMap& engine_map = profile_engine_map_[profile];
   if (IMEBridge::Get()->GetCurrentEngineHandler() == engine_map[id])
     IMEBridge::Get()->SetCurrentEngineHandler(NULL);
   engine_map.erase(id);
