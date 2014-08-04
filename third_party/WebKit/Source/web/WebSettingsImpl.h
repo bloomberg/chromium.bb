@@ -96,6 +96,7 @@ public:
     virtual void setExperimentalWebGLEnabled(bool) OVERRIDE;
     virtual void setFantasyFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) OVERRIDE;
     virtual void setFixedFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) OVERRIDE;
+    virtual void setFullscreenSupported(bool) OVERRIDE;
     virtual void setHyperlinkAuditingEnabled(bool) OVERRIDE;
     virtual void setIgnoreMainFrameOverflowHiddenQuirk(bool) OVERRIDE;
     virtual void setImagesEnabled(bool) OVERRIDE;
@@ -174,7 +175,6 @@ public:
     bool showPaintRects() const { return m_showPaintRects; }
     bool renderVSyncNotificationEnabled() const { return m_renderVSyncNotificationEnabled; }
     bool autoZoomFocusedNodeToLegibleScale() const { return m_autoZoomFocusedNodeToLegibleScale; }
-    bool disallowFullscreenForNonMediaElements() const { return m_disallowFullscreenForNonMediaElements; }
     bool doubleTapToZoomEnabled() const { return m_doubleTapToZoomEnabled; }
     bool perTilePaintingEnabled() const { return m_perTilePaintingEnabled; }
     bool supportDeprecatedTargetDensityDPI() const { return m_supportDeprecatedTargetDensityDPI; }
@@ -209,7 +209,6 @@ private:
     // can be removed any time after 2015. See http://crbug.com/313754.
     bool m_clobberUserAgentInitialScaleQuirk;
     bool m_mainFrameResizesAreOrientationChanges;
-    bool m_disallowFullscreenForNonMediaElements;
 };
 
 } // namespace blink

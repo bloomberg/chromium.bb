@@ -270,3 +270,16 @@ deviceScaleAdjustment type=double, initial=1.0, invalidate=TextAutosizing
 # API will return 'false' in that case.
 maxBeaconTransmission type=int, initial=16384
 
+# This value is set to false if the platform does not support fullscreen.
+# When set to false all the requests to enter fullscreen will return an error
+# (fullscreenerror or webkitfullscreenerror) as specified in the standard:
+# http://fullscreen.spec.whatwg.org/#dom-element-requestfullscreen
+fullscreenSupported initial=true
+
+# FIXME: This is a temporary flag and should be removed once
+# the Android WebView framework supports fullscreen for non-media elements
+# (crbug.com/398485).
+# This value is set to false if the platform does not support fullscreen
+# for non-media elements. When set to true all the requests to enter fullscreen
+# on non-media elements will return an error.
+disallowFullscreenForNonMediaElements initial=false

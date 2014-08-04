@@ -33,8 +33,10 @@
 #include "core/events/Event.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html/HTMLMediaElement.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/rendering/RenderFullScreen.h"
@@ -212,6 +214,10 @@ void FullscreenElementStack::requestFullScreenForElement(Element& element, Reque
             break;
 
         // There is a previously-established user preference, security risk, or platform limitation.
+        if (!document()->settings()->fullscreenSupported())
+            break;
+        if (document()->settings()->disallowFullscreenForNonMediaElements() && !isHTMLMediaElement(element))
+            break;
 
         // 2. Let doc be element's node document. (i.e. "this")
         Document* currentDoc = document();

@@ -1,0 +1,4 @@
+EVENT(webkitfullscreenerror)
+EVENT(webkitfullscreenchange)
+END OF TEST
+Tests for the disallowFullscreenForNonMediaElements setting which will be set in those platforms where fullscreen for non-media elements is not supported.

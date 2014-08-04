@@ -155,9 +155,6 @@ void FullscreenController::didExitFullScreen()
 
 void FullscreenController::enterFullScreenForElement(blink::Element* element)
 {
-    if (m_webViewImpl->settingsImpl()->disallowFullscreenForNonMediaElements() && !isHTMLMediaElement(element))
-        return;
-
     // We are already transitioning to fullscreen for a different element.
     if (m_provisionalFullScreenElement) {
         m_provisionalFullScreenElement = element;

@@ -1,0 +1,22 @@
+<body>
+<script src="full-screen-test.js"></script>
+<span id="span" width="300"></span>
+<video id="video" width="300"></video>
+<div>Tests for the disallowFullscreenForNonMediaElements setting which will be set
+in those platforms where fullscreen for non-media elements is not supported.
+<script>
+    if (window.internals) {
+        window.internals.settings.setDisallowFullscreenForNonMediaElements(true);
+
+        var testStep2 = function() {
+            // Fullscreen for media elements is supported, video in this case.
+            waitForEventAndEnd(document, 'webkitfullscreenchange');
+            runWithKeyDown(function(){document.getElementById('video').webkitRequestFullScreen()});
+        };
+
+        // Fullscreen for non media elements is not supported.
+        waitForEventOnce(document, 'webkitfullscreenerror', testStep2);
+        runWithKeyDown(function(){document.getElementById('span').webkitRequestFullScreen()})
+    }
+</script>
+</body>
