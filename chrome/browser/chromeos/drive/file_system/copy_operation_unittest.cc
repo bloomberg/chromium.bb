@@ -126,8 +126,8 @@ TEST_F(CopyOperationTest,
   // matches "drive/root/Document 1 excludeDir-test".
   ASSERT_TRUE(util::CreateGDocFile(
       local_src_path,
-      GURL("https://3_document_self_link/document:5_document_resource_id"),
-      "document:5_document_resource_id"));
+      GURL("https://3_document_self_link/5_document_resource_id"),
+      "5_document_resource_id"));
 
   ResourceEntry entry;
   ASSERT_EQ(FILE_ERROR_NOT_FOUND,
@@ -147,7 +147,7 @@ TEST_F(CopyOperationTest,
   EXPECT_EQ(1U, delegate()->get_changed_files().size());
   EXPECT_TRUE(delegate()->get_changed_files().count(remote_dest_path));
   // New copy is created.
-  EXPECT_NE("document:5_document_resource_id", entry.resource_id());
+  EXPECT_NE("5_document_resource_id", entry.resource_id());
 }
 
 TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_OrphanHostedDocument) {
@@ -159,8 +159,8 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_OrphanHostedDocument) {
   // matches "drive/other/Orphan Document".
   ASSERT_TRUE(util::CreateGDocFile(
       local_src_path,
-      GURL("https://3_document_self_link/document:orphan_doc_1"),
-      "document:orphan_doc_1"));
+      GURL("https://3_document_self_link/orphan_doc_1"),
+      "orphan_doc_1"));
 
   ResourceEntry entry;
   ASSERT_EQ(FILE_ERROR_NOT_FOUND,
@@ -182,7 +182,7 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_OrphanHostedDocument) {
   EXPECT_EQ(1U, delegate()->get_changed_files().size());
   EXPECT_TRUE(delegate()->get_changed_files().count(remote_dest_path));
   // The original document got new parent.
-  EXPECT_EQ("document:orphan_doc_1", entry.resource_id());
+  EXPECT_EQ("orphan_doc_1", entry.resource_id());
 }
 
 TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_NewHostedDocument) {

@@ -577,7 +577,7 @@ TEST_F(FileSystemTest, GetExistingFile) {
       FILE_PATH_LITERAL("drive/root/Directory 1/SubDirectory File 1.txt"));
   scoped_ptr<ResourceEntry> entry = GetResourceEntrySync(kFilePath);
   ASSERT_TRUE(entry);
-  EXPECT_EQ("file:subdirectory_file_1_id", entry->resource_id());
+  EXPECT_EQ("subdirectory_file_1_id", entry->resource_id());
 
   EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
   EXPECT_EQ(2, fake_drive_service_->directory_load_count());
@@ -589,7 +589,7 @@ TEST_F(FileSystemTest, GetExistingDocument) {
       FILE_PATH_LITERAL("drive/root/Document 1 excludeDir-test.gdoc"));
   scoped_ptr<ResourceEntry> entry = GetResourceEntrySync(kFilePath);
   ASSERT_TRUE(entry);
-  EXPECT_EQ("document:5_document_resource_id", entry->resource_id());
+  EXPECT_EQ("5_document_resource_id", entry->resource_id());
 }
 
 TEST_F(FileSystemTest, GetNonExistingFile) {
@@ -605,7 +605,7 @@ TEST_F(FileSystemTest, GetInSubSubdir) {
                         "Sub Sub Directory Folder"));
   scoped_ptr<ResourceEntry> entry = GetResourceEntrySync(kFilePath);
   ASSERT_TRUE(entry);
-  ASSERT_EQ("folder:sub_sub_directory_folder_id", entry->resource_id());
+  ASSERT_EQ("sub_sub_directory_folder_id", entry->resource_id());
 }
 
 TEST_F(FileSystemTest, GetOrphanFile) {
@@ -616,7 +616,7 @@ TEST_F(FileSystemTest, GetOrphanFile) {
       FILE_PATH_LITERAL("drive/other/Orphan File 1.txt"));
   scoped_ptr<ResourceEntry> entry = GetResourceEntrySync(kFilePath);
   ASSERT_TRUE(entry);
-  EXPECT_EQ("file:1_orphanfile_resource_id", entry->resource_id());
+  EXPECT_EQ("1_orphanfile_resource_id", entry->resource_id());
 }
 
 TEST_F(FileSystemTest, ReadDirectory_Root) {

@@ -195,7 +195,7 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_NotFound) {
 
 TEST_F(EntryUpdatePerformerTest, UpdateEntry_ContentUpdate) {
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  const std::string kResourceId("file:2_file_resource_id");
+  const std::string kResourceId("2_file_resource_id");
 
   const std::string local_id = GetLocalId(kFilePath);
   EXPECT_FALSE(local_id.empty());
@@ -239,7 +239,7 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_ContentUpdate) {
 
 TEST_F(EntryUpdatePerformerTest, UpdateEntry_ContentUpdateMd5Check) {
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  const std::string kResourceId("file:2_file_resource_id");
+  const std::string kResourceId("2_file_resource_id");
 
   const std::string local_id = GetLocalId(kFilePath);
   EXPECT_FALSE(local_id.empty());
@@ -317,7 +317,7 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_ContentUpdateMd5Check) {
 
 TEST_F(EntryUpdatePerformerTest, UpdateEntry_OpenedForWrite) {
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  const std::string kResourceId("file:2_file_resource_id");
+  const std::string kResourceId("2_file_resource_id");
 
   const std::string local_id = GetLocalId(kFilePath);
   EXPECT_FALSE(local_id.empty());

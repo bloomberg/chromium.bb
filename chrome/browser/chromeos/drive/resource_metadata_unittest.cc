@@ -540,7 +540,7 @@ TEST_F(ResourceMetadataTest, GetResourceEntryById) {
 
   // Confirm that a non existing file is not found.
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, resource_metadata_->GetResourceEntryById(
-      "file:non_existing", &entry));
+      "non_existing", &entry));
 }
 
 TEST_F(ResourceMetadataTest, Iterate) {

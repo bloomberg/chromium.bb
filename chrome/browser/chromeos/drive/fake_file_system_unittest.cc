@@ -122,7 +122,7 @@ TEST_F(FakeFileSystemTest, GetResourceEntry) {
 
   ASSERT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry);
-  EXPECT_EQ("folder:sub_dir_folder_resource_id", entry->resource_id());
+  EXPECT_EQ("sub_dir_folder_resource_id", entry->resource_id());
 }
 
 TEST_F(FakeFileSystemTest, GetResourceEntry_Root) {

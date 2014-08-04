@@ -537,7 +537,7 @@ TEST_F(FileCacheTest, RenameCacheFilesToNewFormat) {
 }
 
 TEST_F(FileCacheTest, ClearAll) {
-  const std::string id("pdf:1a2b");
+  const std::string id("1a2b");
   const std::string md5("abcdef0123456789");
 
   // Store an existing file.

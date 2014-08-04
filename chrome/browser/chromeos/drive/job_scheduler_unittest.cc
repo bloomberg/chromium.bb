@@ -359,7 +359,7 @@ TEST_F(JobSchedulerTest, GetFileResource) {
   scoped_ptr<google_apis::FileResource> entry;
 
   scheduler_->GetFileResource(
-      "file:2_file_resource_id",  // resource ID
+      "2_file_resource_id",  // resource ID
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
@@ -375,7 +375,7 @@ TEST_F(JobSchedulerTest, GetShareUrl) {
   GURL share_url;
 
   scheduler_->GetShareUrl(
-      "file:2_file_resource_id",  // resource ID
+      "2_file_resource_id",  // resource ID
       GURL("chrome-extension://test-id/"), // embed origin
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error, &share_url));
@@ -391,7 +391,7 @@ TEST_F(JobSchedulerTest, TrashResource) {
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
 
   scheduler_->TrashResource(
-      "file:2_file_resource_id",
+      "2_file_resource_id",
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
@@ -406,8 +406,8 @@ TEST_F(JobSchedulerTest, CopyResource) {
   scoped_ptr<google_apis::FileResource> entry;
 
   scheduler_->CopyResource(
-      "file:2_file_resource_id",  // resource ID
-      "folder:1_folder_resource_id",  // parent resource ID
+      "2_file_resource_id",  // resource ID
+      "1_folder_resource_id",  // parent resource ID
       "New Document",  // new title
       base::Time(),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
@@ -424,8 +424,8 @@ TEST_F(JobSchedulerTest, UpdateResource) {
   scoped_ptr<google_apis::FileResource> entry;
 
   scheduler_->UpdateResource(
-      "file:2_file_resource_id",  // resource ID
-      "folder:1_folder_resource_id",  // parent resource ID
+      "2_file_resource_id",  // resource ID
+      "1_folder_resource_id",  // parent resource ID
       "New Document",  // new title
       base::Time(),
       base::Time(),
@@ -443,7 +443,7 @@ TEST_F(JobSchedulerTest, RenameResource) {
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
 
   scheduler_->RenameResource(
-      "file:2_file_resource_id",
+      "2_file_resource_id",
       "New Title",
       google_apis::test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
@@ -457,8 +457,8 @@ TEST_F(JobSchedulerTest, AddResourceToDirectory) {
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
 
   scheduler_->AddResourceToDirectory(
-      "folder:1_folder_resource_id",
-      "file:2_file_resource_id",
+      "1_folder_resource_id",
+      "2_file_resource_id",
       google_apis::test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
 
@@ -471,8 +471,8 @@ TEST_F(JobSchedulerTest, RemoveResourceFromDirectory) {
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
 
   scheduler_->RemoveResourceFromDirectory(
-      "folder:1_folder_resource_id",
-      "file:subdirectory_file_1_id",  // resource ID
+      "1_folder_resource_id",
+      "subdirectory_file_1_id",  // resource ID
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
@@ -504,7 +504,7 @@ TEST_F(JobSchedulerTest, PriorityHandling) {
   google_apis::GDataErrorCode error_dontcare = google_apis::GDATA_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> entry_dontcare;
   for (int i = 0; i < GetMetadataQueueMaxJobCount(); ++i) {
-    std::string resource_id("file:2_file_resource_id");
+    std::string resource_id("2_file_resource_id");
     scheduler_->GetFileResource(
         resource_id,
         ClientContext(USER_INITIATED),
@@ -556,7 +556,7 @@ TEST_F(JobSchedulerTest, PriorityHandling) {
 TEST_F(JobSchedulerTest, NoConnectionUserInitiated) {
   ConnectToNone();
 
-  std::string resource_id("file:2_file_resource_id");
+  std::string resource_id("2_file_resource_id");
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> entry;
@@ -572,7 +572,7 @@ TEST_F(JobSchedulerTest, NoConnectionUserInitiated) {
 TEST_F(JobSchedulerTest, NoConnectionBackground) {
   ConnectToNone();
 
-  std::string resource_id("file:2_file_resource_id");
+  std::string resource_id("2_file_resource_id");
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   scoped_ptr<google_apis::FileResource> entry;
@@ -611,7 +611,7 @@ TEST_F(JobSchedulerTest, DownloadFileCellularDisabled) {
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       kDummyDownloadFileSize,
       kOutputFilePath,
-      "file:2_file_resource_id",
+      "2_file_resource_id",
       ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(
           &download_error, &output_file_path),
@@ -664,7 +664,7 @@ TEST_F(JobSchedulerTest, DownloadFileWimaxDisabled) {
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       kDummyDownloadFileSize,
       kOutputFilePath,
-      "file:2_file_resource_id",
+      "2_file_resource_id",
       ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(
           &download_error, &output_file_path),
@@ -717,7 +717,7 @@ TEST_F(JobSchedulerTest, DownloadFileCellularEnabled) {
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       kDummyDownloadFileSize,
       kOutputFilePath,
-      "file:2_file_resource_id",
+      "2_file_resource_id",
       ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(
           &download_error, &output_file_path),
@@ -762,7 +762,7 @@ TEST_F(JobSchedulerTest, DownloadFileWimaxEnabled) {
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       kDummyDownloadFileSize,
       kOutputFilePath,
-      "file:2_file_resource_id",
+      "2_file_resource_id",
       ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(
           &download_error, &output_file_path),
@@ -821,7 +821,7 @@ TEST_F(JobSchedulerTest, JobInfo) {
           &error, &about_resource));
   expected_types.insert(TYPE_RENAME_RESOURCE);
   scheduler_->RenameResource(
-      "file:2_file_resource_id",
+      "2_file_resource_id",
       "New Title",
       google_apis::test_util::CreateCopyResultCallback(&error));
   expected_types.insert(TYPE_DOWNLOAD_FILE);
@@ -829,7 +829,7 @@ TEST_F(JobSchedulerTest, JobInfo) {
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       kDummyDownloadFileSize,
       temp_dir.path().AppendASCII("whatever.txt"),
-      "file:2_file_resource_id",
+      "2_file_resource_id",
       ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(&error, &path),
       google_apis::GetContentCallback());
@@ -848,12 +848,12 @@ TEST_F(JobSchedulerTest, JobInfo) {
   // Add more jobs.
   expected_types.insert(TYPE_ADD_RESOURCE_TO_DIRECTORY);
   scheduler_->AddResourceToDirectory(
-      "folder:1_folder_resource_id",
-      "file:2_file_resource_id",
+      "1_folder_resource_id",
+      "2_file_resource_id",
       google_apis::test_util::CreateCopyResultCallback(&error));
   expected_types.insert(TYPE_COPY_RESOURCE);
   scheduler_->CopyResource(
-      "document:5_document_resource_id",
+      "5_document_resource_id",
       fake_drive_service_->GetRootResourceId(),
       "New Document",
       base::Time(),  // last_modified
@@ -926,7 +926,7 @@ TEST_F(JobSchedulerTest, JobInfoProgress) {
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       kDummyDownloadFileSize,
       temp_dir.path().AppendASCII("whatever.txt"),
-      "file:2_file_resource_id",
+      "2_file_resource_id",
       ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(&error, &path),
       google_apis::GetContentCallback());

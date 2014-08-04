@@ -165,7 +165,7 @@ TEST_F(FakeDriveServiceTest, GetFileListInDirectory_InNonRootDirectory) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<FileList> file_list;
   fake_service_.GetFileListInDirectory(
-      "folder:1_folder_resource_id",
+      "1_folder_resource_id",
       test_util::CreateCopyResultCallback(&error, &file_list));
   base::RunLoop().RunUntilIdle();
 
@@ -271,7 +271,7 @@ TEST_F(FakeDriveServiceTest, Search_Deleted) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.DeleteResource("file:2_file_resource_id",
+  fake_service_.DeleteResource("2_file_resource_id",
                                std::string(),  // etag
                                test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
@@ -295,7 +295,7 @@ TEST_F(FakeDriveServiceTest, Search_Trashed) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.TrashResource("file:2_file_resource_id",
+  fake_service_.TrashResource("2_file_resource_id",
                               test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -432,17 +432,17 @@ TEST_F(FakeDriveServiceTest, GetChangeList_Offline) {
 
 TEST_F(FakeDriveServiceTest, GetChangeList_DeletedEntry) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
-  ASSERT_TRUE(Exists("file:2_file_resource_id"));
+  ASSERT_TRUE(Exists("2_file_resource_id"));
   const int64 old_largest_change_id =
       fake_service_.about_resource().largest_change_id();
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.DeleteResource("file:2_file_resource_id",
+  fake_service_.DeleteResource("2_file_resource_id",
                                std::string(),  // etag
                                test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(HTTP_NO_CONTENT, error);
-  ASSERT_FALSE(Exists("file:2_file_resource_id"));
+  ASSERT_FALSE(Exists("2_file_resource_id"));
 
   // Get the resource list newer than old_largest_change_id.
   error = GDATA_OTHER_ERROR;
@@ -459,7 +459,7 @@ TEST_F(FakeDriveServiceTest, GetChangeList_DeletedEntry) {
   // The result should only contain the deleted file.
   ASSERT_EQ(1U, change_list->items().size());
   const ChangeResource& item = *change_list->items()[0];
-  EXPECT_EQ("file:2_file_resource_id", item.file_id());
+  EXPECT_EQ("2_file_resource_id", item.file_id());
   EXPECT_FALSE(item.file());
   EXPECT_TRUE(item.is_deleted());
   EXPECT_EQ(1, fake_service_.change_list_load_count());
@@ -467,16 +467,16 @@ TEST_F(FakeDriveServiceTest, GetChangeList_DeletedEntry) {
 
 TEST_F(FakeDriveServiceTest, GetChangeList_TrashedEntry) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
-  ASSERT_TRUE(Exists("file:2_file_resource_id"));
+  ASSERT_TRUE(Exists("2_file_resource_id"));
   const int64 old_largest_change_id =
       fake_service_.about_resource().largest_change_id();
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.TrashResource("file:2_file_resource_id",
+  fake_service_.TrashResource("2_file_resource_id",
                               test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(HTTP_SUCCESS, error);
-  ASSERT_FALSE(Exists("file:2_file_resource_id"));
+  ASSERT_FALSE(Exists("2_file_resource_id"));
 
   // Get the resource list newer than old_largest_change_id.
   error = GDATA_OTHER_ERROR;
@@ -493,7 +493,7 @@ TEST_F(FakeDriveServiceTest, GetChangeList_TrashedEntry) {
   // The result should only contain the trashed file.
   ASSERT_EQ(1U, change_list->items().size());
   const ChangeResource& item = *change_list->items()[0];
-  EXPECT_EQ("file:2_file_resource_id", item.file_id());
+  EXPECT_EQ("2_file_resource_id", item.file_id());
   ASSERT_TRUE(item.file());
   EXPECT_TRUE(item.file()->labels().is_trashed());
   EXPECT_EQ(1, fake_service_.change_list_load_count());
@@ -764,7 +764,7 @@ TEST_F(FakeDriveServiceTest, GetAppList_Offline) {
 TEST_F(FakeDriveServiceTest, GetFileResource_ExistingFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  const std::string kResourceId = "file:2_file_resource_id";
+  const std::string kResourceId = "2_file_resource_id";
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.GetFileResource(
@@ -780,7 +780,7 @@ TEST_F(FakeDriveServiceTest, GetFileResource_ExistingFile) {
 TEST_F(FakeDriveServiceTest, GetFileResource_NonexistingFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  const std::string kResourceId = "file:nonexisting_resource_id";
+  const std::string kResourceId = "nonexisting_resource_id";
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.GetFileResource(
@@ -795,7 +795,7 @@ TEST_F(FakeDriveServiceTest, GetFileResource_Offline) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
-  const std::string kResourceId = "file:2_file_resource_id";
+  const std::string kResourceId = "2_file_resource_id";
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.GetFileResource(
@@ -809,7 +809,7 @@ TEST_F(FakeDriveServiceTest, GetFileResource_Offline) {
 TEST_F(FakeDriveServiceTest, GetShareUrl) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  const std::string kResourceId = "file:2_file_resource_id";
+  const std::string kResourceId = "2_file_resource_id";
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL share_url;
   fake_service_.GetShareUrl(
@@ -825,33 +825,33 @@ TEST_F(FakeDriveServiceTest, GetShareUrl) {
 TEST_F(FakeDriveServiceTest, DeleteResource_ExistingFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  // Resource "file:2_file_resource_id" should now exist.
-  ASSERT_TRUE(Exists("file:2_file_resource_id"));
+  // Resource "2_file_resource_id" should now exist.
+  ASSERT_TRUE(Exists("2_file_resource_id"));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.DeleteResource("file:2_file_resource_id",
+  fake_service_.DeleteResource("2_file_resource_id",
                                std::string(),  // etag
                                test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_NO_CONTENT, error);
-  // Resource "file:2_file_resource_id" should be gone now.
-  EXPECT_FALSE(Exists("file:2_file_resource_id"));
+  // Resource "2_file_resource_id" should be gone now.
+  EXPECT_FALSE(Exists("2_file_resource_id"));
 
   error = GDATA_OTHER_ERROR;
-  fake_service_.DeleteResource("file:2_file_resource_id",
+  fake_service_.DeleteResource("2_file_resource_id",
                                std::string(),  // etag
                                test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(HTTP_NOT_FOUND, error);
-  EXPECT_FALSE(Exists("file:2_file_resource_id"));
+  EXPECT_FALSE(Exists("2_file_resource_id"));
 }
 
 TEST_F(FakeDriveServiceTest, DeleteResource_NonexistingFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.DeleteResource("file:nonexisting_resource_id",
+  fake_service_.DeleteResource("nonexisting_resource_id",
                                std::string(),  // etag
                                test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
@@ -862,30 +862,30 @@ TEST_F(FakeDriveServiceTest, DeleteResource_NonexistingFile) {
 TEST_F(FakeDriveServiceTest, DeleteResource_ETagMatch) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  // Resource "file:2_file_resource_id" should now exist.
-  scoped_ptr<FileResource> entry = FindEntry("file:2_file_resource_id");
+  // Resource "2_file_resource_id" should now exist.
+  scoped_ptr<FileResource> entry = FindEntry("2_file_resource_id");
   ASSERT_TRUE(entry);
   ASSERT_FALSE(entry->labels().is_trashed());
   ASSERT_FALSE(entry->etag().empty());
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.DeleteResource("file:2_file_resource_id",
+  fake_service_.DeleteResource("2_file_resource_id",
                                entry->etag() + "_mismatch",
                                test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_PRECONDITION, error);
-  // Resource "file:2_file_resource_id" should still exist.
-  EXPECT_TRUE(Exists("file:2_file_resource_id"));
+  // Resource "2_file_resource_id" should still exist.
+  EXPECT_TRUE(Exists("2_file_resource_id"));
 
   error = GDATA_OTHER_ERROR;
-  fake_service_.DeleteResource("file:2_file_resource_id",
+  fake_service_.DeleteResource("2_file_resource_id",
                                entry->etag(),
                                test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(HTTP_NO_CONTENT, error);
-  // Resource "file:2_file_resource_id" should be gone now.
-  EXPECT_FALSE(Exists("file:2_file_resource_id"));
+  // Resource "2_file_resource_id" should be gone now.
+  EXPECT_FALSE(Exists("2_file_resource_id"));
 }
 
 TEST_F(FakeDriveServiceTest, DeleteResource_Offline) {
@@ -893,7 +893,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_Offline) {
   fake_service_.set_offline(true);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.DeleteResource("file:2_file_resource_id",
+  fake_service_.DeleteResource("2_file_resource_id",
                                std::string(),  // etag
                                test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
@@ -904,31 +904,31 @@ TEST_F(FakeDriveServiceTest, DeleteResource_Offline) {
 TEST_F(FakeDriveServiceTest, TrashResource_ExistingFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  // Resource "file:2_file_resource_id" should now exist.
-  ASSERT_TRUE(Exists("file:2_file_resource_id"));
+  // Resource "2_file_resource_id" should now exist.
+  ASSERT_TRUE(Exists("2_file_resource_id"));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.TrashResource("file:2_file_resource_id",
+  fake_service_.TrashResource("2_file_resource_id",
                               test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
-  // Resource "file:2_file_resource_id" should be gone now.
-  EXPECT_FALSE(Exists("file:2_file_resource_id"));
+  // Resource "2_file_resource_id" should be gone now.
+  EXPECT_FALSE(Exists("2_file_resource_id"));
 
   error = GDATA_OTHER_ERROR;
-  fake_service_.TrashResource("file:2_file_resource_id",
+  fake_service_.TrashResource("2_file_resource_id",
                               test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(HTTP_NOT_FOUND, error);
-  EXPECT_FALSE(Exists("file:2_file_resource_id"));
+  EXPECT_FALSE(Exists("2_file_resource_id"));
 }
 
 TEST_F(FakeDriveServiceTest, TrashResource_NonexistingFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.TrashResource("file:nonexisting_resource_id",
+  fake_service_.TrashResource("nonexisting_resource_id",
                               test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
 
@@ -940,7 +940,7 @@ TEST_F(FakeDriveServiceTest, TrashResource_Offline) {
   fake_service_.set_offline(true);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.TrashResource("file:2_file_resource_id",
+  fake_service_.TrashResource("2_file_resource_id",
                               test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
 
@@ -962,7 +962,7 @@ TEST_F(FakeDriveServiceTest, DownloadFile_ExistingFile) {
   test_util::TestGetContentCallback get_content_callback;
   fake_service_.DownloadFile(
       kOutputFilePath,
-      "file:2_file_resource_id",
+      "2_file_resource_id",
       test_util::CreateCopyResultCallback(&error, &output_file_path),
       get_content_callback.callback(),
       base::Bind(&test_util::AppendProgressCallbackResult,
@@ -993,7 +993,7 @@ TEST_F(FakeDriveServiceTest, DownloadFile_NonexistingFile) {
   base::FilePath output_file_path;
   fake_service_.DownloadFile(
       kOutputFilePath,
-      "file:non_existent_file_resource_id",
+      "non_existent_file_resource_id",
       test_util::CreateCopyResultCallback(&error, &output_file_path),
       GetContentCallback(),
       ProgressCallback());
@@ -1015,7 +1015,7 @@ TEST_F(FakeDriveServiceTest, DownloadFile_Offline) {
   base::FilePath output_file_path;
   fake_service_.DownloadFile(
       kOutputFilePath,
-      "file:2_file_resource_id",
+      "2_file_resource_id",
       test_util::CreateCopyResultCallback(&error, &output_file_path),
       GetContentCallback(),
       ProgressCallback());
@@ -1031,8 +1031,8 @@ TEST_F(FakeDriveServiceTest, CopyResource) {
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
-  const std::string kResourceId = "file:2_file_resource_id";
-  const std::string kParentResourceId = "folder:2_folder_resource_id";
+  const std::string kResourceId = "2_file_resource_id";
+  const std::string kParentResourceId = "2_folder_resource_id";
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.CopyResource(
@@ -1059,12 +1059,12 @@ TEST_F(FakeDriveServiceTest, CopyResource) {
 TEST_F(FakeDriveServiceTest, CopyResource_NonExisting) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  const std::string kResourceId = "document:nonexisting_resource_id";
+  const std::string kResourceId = "nonexisting_resource_id";
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.CopyResource(
       kResourceId,
-      "folder:1_folder_resource_id",
+      "1_folder_resource_id",
       "new title",
       base::Time(),
       test_util::CreateCopyResultCallback(&error, &entry));
@@ -1078,7 +1078,7 @@ TEST_F(FakeDriveServiceTest, CopyResource_EmptyParentResourceId) {
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
-  const std::string kResourceId = "file:2_file_resource_id";
+  const std::string kResourceId = "2_file_resource_id";
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.CopyResource(
@@ -1105,12 +1105,12 @@ TEST_F(FakeDriveServiceTest, CopyResource_Offline) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
-  const std::string kResourceId = "file:2_file_resource_id";
+  const std::string kResourceId = "2_file_resource_id";
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.CopyResource(
       kResourceId,
-      "folder:1_folder_resource_id",
+      "1_folder_resource_id",
       "new title",
       base::Time(),
       test_util::CreateCopyResultCallback(&error, &entry));
@@ -1128,8 +1128,8 @@ TEST_F(FakeDriveServiceTest, UpdateResource) {
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
-  const std::string kResourceId = "file:2_file_resource_id";
-  const std::string kParentResourceId = "folder:2_folder_resource_id";
+  const std::string kResourceId = "2_file_resource_id";
+  const std::string kParentResourceId = "2_folder_resource_id";
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.UpdateResource(
@@ -1160,12 +1160,12 @@ TEST_F(FakeDriveServiceTest, UpdateResource) {
 TEST_F(FakeDriveServiceTest, UpdateResource_NonExisting) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  const std::string kResourceId = "document:nonexisting_resource_id";
+  const std::string kResourceId = "nonexisting_resource_id";
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.UpdateResource(
       kResourceId,
-      "folder:1_folder_resource_id",
+      "1_folder_resource_id",
       "new title",
       base::Time(),
       base::Time(),
@@ -1180,7 +1180,7 @@ TEST_F(FakeDriveServiceTest, UpdateResource_EmptyParentResourceId) {
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
-  const std::string kResourceId = "file:2_file_resource_id";
+  const std::string kResourceId = "2_file_resource_id";
 
   // Just make sure that the resource is under root.
   ASSERT_TRUE(HasParent(kResourceId, "fake_root"));
@@ -1212,7 +1212,7 @@ TEST_F(FakeDriveServiceTest, UpdateResource_Offline) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
-  const std::string kResourceId = "file:2_file_resource_id";
+  const std::string kResourceId = "2_file_resource_id";
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.UpdateResource(
@@ -1233,7 +1233,7 @@ TEST_F(FakeDriveServiceTest, RenameResource_ExistingFile) {
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
-  const std::string kResourceId = "file:2_file_resource_id";
+  const std::string kResourceId = "2_file_resource_id";
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.RenameResource(kResourceId,
@@ -1255,7 +1255,7 @@ TEST_F(FakeDriveServiceTest, RenameResource_ExistingFile) {
 TEST_F(FakeDriveServiceTest, RenameResource_NonexistingFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  const std::string kResourceId = "file:nonexisting_file";
+  const std::string kResourceId = "nonexisting_file";
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.RenameResource(kResourceId,
@@ -1270,7 +1270,7 @@ TEST_F(FakeDriveServiceTest, RenameResource_Offline) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
-  const std::string kResourceId = "file:2_file_resource_id";
+  const std::string kResourceId = "2_file_resource_id";
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.RenameResource(kResourceId,
@@ -1286,9 +1286,9 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInRootDirectory) {
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
-  const std::string kResourceId = "file:2_file_resource_id";
+  const std::string kResourceId = "2_file_resource_id";
   const std::string kOldParentResourceId = fake_service_.GetRootResourceId();
-  const std::string kNewParentResourceId = "folder:1_folder_resource_id";
+  const std::string kNewParentResourceId = "1_folder_resource_id";
 
   // Here's the original parent link.
   EXPECT_TRUE(HasParent(kResourceId, kOldParentResourceId));
@@ -1317,9 +1317,9 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInNonRootDirectory) {
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
-  const std::string kResourceId = "file:subdirectory_file_1_id";
-  const std::string kOldParentResourceId = "folder:1_folder_resource_id";
-  const std::string kNewParentResourceId = "folder:2_folder_resource_id";
+  const std::string kResourceId = "subdirectory_file_1_id";
+  const std::string kOldParentResourceId = "1_folder_resource_id";
+  const std::string kNewParentResourceId = "2_folder_resource_id";
 
   // Here's the original parent link.
   EXPECT_TRUE(HasParent(kResourceId, kOldParentResourceId));
@@ -1346,8 +1346,8 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInNonRootDirectory) {
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_NonexistingFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  const std::string kResourceId = "file:nonexisting_file";
-  const std::string kNewParentResourceId = "folder:1_folder_resource_id";
+  const std::string kResourceId = "nonexisting_file";
+  const std::string kNewParentResourceId = "1_folder_resource_id";
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.AddResourceToDirectory(
@@ -1364,8 +1364,8 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_OrphanFile) {
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
-  const std::string kResourceId = "file:1_orphanfile_resource_id";
-  const std::string kNewParentResourceId = "folder:1_folder_resource_id";
+  const std::string kResourceId = "1_orphanfile_resource_id";
+  const std::string kNewParentResourceId = "1_folder_resource_id";
 
   // The file does not belong to any directory, even to the root.
   EXPECT_FALSE(HasParent(kResourceId, kNewParentResourceId));
@@ -1393,8 +1393,8 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_Offline) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
-  const std::string kResourceId = "file:2_file_resource_id";
-  const std::string kNewParentResourceId = "folder:1_folder_resource_id";
+  const std::string kResourceId = "2_file_resource_id";
+  const std::string kNewParentResourceId = "1_folder_resource_id";
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.AddResourceToDirectory(
@@ -1411,8 +1411,8 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_ExistingFile) {
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
-  const std::string kResourceId = "file:subdirectory_file_1_id";
-  const std::string kParentResourceId = "folder:1_folder_resource_id";
+  const std::string kResourceId = "subdirectory_file_1_id";
+  const std::string kParentResourceId = "1_folder_resource_id";
 
   scoped_ptr<FileResource> entry = FindEntry(kResourceId);
   ASSERT_TRUE(entry);
@@ -1441,8 +1441,8 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_ExistingFile) {
 TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_NonexistingFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  const std::string kResourceId = "file:nonexisting_file";
-  const std::string kParentResourceId = "folder:1_folder_resource_id";
+  const std::string kResourceId = "nonexisting_file";
+  const std::string kParentResourceId = "1_folder_resource_id";
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.RemoveResourceFromDirectory(
@@ -1457,7 +1457,7 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_NonexistingFile) {
 TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_OrphanFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  const std::string kResourceId = "file:1_orphanfile_resource_id";
+  const std::string kResourceId = "1_orphanfile_resource_id";
   const std::string kParentResourceId = fake_service_.GetRootResourceId();
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -1474,8 +1474,8 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_Offline) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
-  const std::string kResourceId = "file:subdirectory_file_1_id";
-  const std::string kParentResourceId = "folder:1_folder_resource_id";
+  const std::string kResourceId = "subdirectory_file_1_id";
+  const std::string kParentResourceId = "1_folder_resource_id";
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.RemoveResourceFromDirectory(
@@ -1568,7 +1568,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonRootDirectory) {
 
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
-  const std::string kParentResourceId = "folder:1_folder_resource_id";
+  const std::string kParentResourceId = "1_folder_resource_id";
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
@@ -1594,7 +1594,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonRootDirectory) {
 TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonexistingDirectory) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  const std::string kParentResourceId = "folder:nonexisting_resource_id";
+  const std::string kParentResourceId = "nonexisting_resource_id";
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
@@ -1635,7 +1635,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_Offline) {
   fake_service_.InitiateUploadNewFile(
       "test/foo",
       13,
-      "folder:1_folder_resource_id",
+      "1_folder_resource_id",
       "new file.foo",
       FakeDriveService::InitiateUploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
@@ -1671,7 +1671,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile) {
   fake_service_.InitiateUploadNewFile(
       "test/foo",
       13,
-      "folder:1_folder_resource_id",
+      "1_folder_resource_id",
       "new file.foo",
       FakeDriveService::InitiateUploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
@@ -1692,7 +1692,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_Offline) {
   fake_service_.InitiateUploadExistingFile(
       "test/foo",
       13,
-      "file:2_file_resource_id",
+      "2_file_resource_id",
       FakeDriveService::InitiateUploadExistingFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
@@ -1729,7 +1729,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_WrongETag) {
   fake_service_.InitiateUploadExistingFile(
       "text/plain",
       13,
-      "file:2_file_resource_id",
+      "2_file_resource_id",
       options,
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
@@ -1741,7 +1741,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_WrongETag) {
 TEST_F(FakeDriveServiceTest, InitiateUpload_ExistingFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  scoped_ptr<FileResource> entry = FindEntry("file:2_file_resource_id");
+  scoped_ptr<FileResource> entry = FindEntry("2_file_resource_id");
   ASSERT_TRUE(entry);
 
   FakeDriveService::InitiateUploadExistingFileOptions options;
@@ -1752,7 +1752,7 @@ TEST_F(FakeDriveServiceTest, InitiateUpload_ExistingFile) {
   fake_service_.InitiateUploadExistingFile(
       "text/plain",
       13,
-      "file:2_file_resource_id",
+      "2_file_resource_id",
       options,
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
@@ -1769,7 +1769,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
   fake_service_.InitiateUploadNewFile(
       "test/foo",
       15,
-      "folder:1_folder_resource_id",
+      "1_folder_resource_id",
       "new file.foo",
       FakeDriveService::InitiateUploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
@@ -1804,7 +1804,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NotFound) {
   fake_service_.InitiateUploadNewFile(
       "test/foo",
       15,
-      "folder:1_folder_resource_id",
+      "1_folder_resource_id",
       "new file.foo",
       FakeDriveService::InitiateUploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
@@ -1836,7 +1836,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
 
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  scoped_ptr<FileResource> entry = FindEntry("file:2_file_resource_id");
+  scoped_ptr<FileResource> entry = FindEntry("2_file_resource_id");
   ASSERT_TRUE(entry);
 
   FakeDriveService::InitiateUploadExistingFileOptions options;
@@ -1847,7 +1847,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
   fake_service_.InitiateUploadExistingFile(
       "text/plain",
       contents.size(),
-      "file:2_file_resource_id",
+      "2_file_resource_id",
       options,
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
@@ -1911,7 +1911,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
   fake_service_.InitiateUploadNewFile(
       "test/foo",
       contents.size(),
-      "folder:1_folder_resource_id",
+      "1_folder_resource_id",
       "new file.foo",
       FakeDriveService::InitiateUploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
@@ -2038,7 +2038,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToNonRootDirectory) {
   const std::string kContentType = "text/plain";
   const std::string kContentData = "This is some test content.";
   const std::string kTitle = "new file";
-  const std::string kParentResourceId = "folder:1_folder_resource_id";
+  const std::string kParentResourceId = "1_folder_resource_id";
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
@@ -2071,7 +2071,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToNonexistingDirectory) {
   const std::string kContentType = "text/plain";
   const std::string kContentData = "This is some test content.";
   const std::string kTitle = "new file";
-  const std::string kParentResourceId = "folder:nonexisting_resource_id";
+  const std::string kParentResourceId = "nonexisting_resource_id";
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
@@ -2149,7 +2149,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_SharedWithMeLabel) {
 TEST_F(FakeDriveServiceTest, SetLastModifiedTime_ExistingFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  const std::string kResourceId = "file:2_file_resource_id";
+  const std::string kResourceId = "2_file_resource_id";
   base::Time time;
   ASSERT_TRUE(base::Time::FromString("1 April 2013 12:34:56", &time));
 
@@ -2169,7 +2169,7 @@ TEST_F(FakeDriveServiceTest, SetLastModifiedTime_ExistingFile) {
 TEST_F(FakeDriveServiceTest, SetLastModifiedTime_NonexistingFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  const std::string kResourceId = "file:nonexisting_resource_id";
+  const std::string kResourceId = "nonexisting_resource_id";
   base::Time time;
   ASSERT_TRUE(base::Time::FromString("1 April 2013 12:34:56", &time));
 
@@ -2189,7 +2189,7 @@ TEST_F(FakeDriveServiceTest, SetLastModifiedTime_Offline) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_offline(true);
 
-  const std::string kResourceId = "file:2_file_resource_id";
+  const std::string kResourceId = "2_file_resource_id";
   base::Time time;
   ASSERT_TRUE(base::Time::FromString("1 April 2013 12:34:56", &time));
 

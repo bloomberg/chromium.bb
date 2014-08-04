@@ -49,24 +49,24 @@ ScopedVector<ChangeList> CreateBaseChangeList() {
   directory.mutable_file_info()->set_is_directory(true);
 
   directory.set_title("Directory 1");
-  directory.set_resource_id("folder:1_folder_resource_id");
+  directory.set_resource_id("1_folder_resource_id");
   change_lists[0]->mutable_entries()->push_back(directory);
   change_lists[0]->mutable_parent_resource_ids()->push_back(kRootId);
 
   directory.set_title("Sub Directory Folder");
-  directory.set_resource_id("folder:sub_dir_folder_resource_id");
+  directory.set_resource_id("sub_dir_folder_resource_id");
   change_lists[0]->mutable_entries()->push_back(directory);
   change_lists[0]->mutable_parent_resource_ids()->push_back(
-      "folder:1_folder_resource_id");
+      "1_folder_resource_id");
 
   directory.set_title("Sub Sub Directory Folder");
-  directory.set_resource_id("folder:sub_sub_directory_folder_id");
+  directory.set_resource_id("sub_sub_directory_folder_id");
   change_lists[0]->mutable_entries()->push_back(directory);
   change_lists[0]->mutable_parent_resource_ids()->push_back(
-      "folder:sub_dir_folder_resource_id");
+      "sub_dir_folder_resource_id");
 
   directory.set_title("Directory 2 excludeDir-test");
-  directory.set_resource_id("folder:sub_dir_folder_2_self_link");
+  directory.set_resource_id("sub_dir_folder_2_self_link");
   change_lists[0]->mutable_entries()->push_back(directory);
   change_lists[0]->mutable_parent_resource_ids()->push_back(kRootId);
 
@@ -74,18 +74,18 @@ ScopedVector<ChangeList> CreateBaseChangeList() {
   ResourceEntry file;
 
   file.set_title("File 1.txt");
-  file.set_resource_id("file:2_file_resource_id");
+  file.set_resource_id("2_file_resource_id");
   change_lists[0]->mutable_entries()->push_back(file);
   change_lists[0]->mutable_parent_resource_ids()->push_back(kRootId);
 
   file.set_title("SubDirectory File 1.txt");
-  file.set_resource_id("file:subdirectory_file_1_id");
+  file.set_resource_id("subdirectory_file_1_id");
   change_lists[0]->mutable_entries()->push_back(file);
   change_lists[0]->mutable_parent_resource_ids()->push_back(
-      "folder:1_folder_resource_id");
+      "1_folder_resource_id");
 
   file.set_title("Orphan File 1.txt");
-  file.set_resource_id("file:1_orphanfile_resource_id");
+  file.set_resource_id("1_orphanfile_resource_id");
   change_lists[0]->mutable_entries()->push_back(file);
   change_lists[0]->mutable_parent_resource_ids()->push_back("");
 
@@ -175,23 +175,23 @@ TEST_F(ChangeListProcessorTest, ApplyFullResourceList) {
       // Root files
       {"drive/root", kRootId, "", DIRECTORY},
       {"drive/root/File 1.txt",
-          "file:2_file_resource_id", kRootId, FILE},
+          "2_file_resource_id", kRootId, FILE},
       // Subdirectory files
       {"drive/root/Directory 1",
-          "folder:1_folder_resource_id", kRootId, DIRECTORY},
+          "1_folder_resource_id", kRootId, DIRECTORY},
       {"drive/root/Directory 1/SubDirectory File 1.txt",
-          "file:subdirectory_file_1_id", "folder:1_folder_resource_id", FILE},
+          "subdirectory_file_1_id", "1_folder_resource_id", FILE},
       {"drive/root/Directory 2 excludeDir-test",
-          "folder:sub_dir_folder_2_self_link", kRootId, DIRECTORY},
+          "sub_dir_folder_2_self_link", kRootId, DIRECTORY},
       // Deeper
       {"drive/root/Directory 1/Sub Directory Folder",
-          "folder:sub_dir_folder_resource_id",
-          "folder:1_folder_resource_id", DIRECTORY},
+          "sub_dir_folder_resource_id",
+          "1_folder_resource_id", DIRECTORY},
       {"drive/root/Directory 1/Sub Directory Folder/Sub Sub Directory Folder",
-          "folder:sub_sub_directory_folder_id",
-          "folder:sub_dir_folder_resource_id", DIRECTORY},
+          "sub_sub_directory_folder_id",
+          "sub_dir_folder_resource_id", DIRECTORY},
       // Orphan
-      {"drive/other/Orphan File 1.txt", "file:1_orphanfile_resource_id",
+      {"drive/other/Orphan File 1.txt", "1_orphanfile_resource_id",
            "", FILE},
   };
 
@@ -218,14 +218,14 @@ TEST_F(ChangeListProcessorTest, DeltaFileAddedInNewDirectory) {
   change_lists.push_back(new ChangeList);
 
   ResourceEntry new_folder;
-  new_folder.set_resource_id("folder:new_folder_resource_id");
+  new_folder.set_resource_id("new_folder_resource_id");
   new_folder.set_title("New Directory");
   new_folder.mutable_file_info()->set_is_directory(true);
   change_lists[0]->mutable_entries()->push_back(new_folder);
   change_lists[0]->mutable_parent_resource_ids()->push_back(kRootId);
 
   ResourceEntry new_file;
-  new_file.set_resource_id("document:file_added_in_new_dir_id");
+  new_file.set_resource_id("file_added_in_new_dir_id");
   new_file.set_title("File in new dir.txt");
   change_lists[0]->mutable_entries()->push_back(new_file);
   change_lists[0]->mutable_parent_resource_ids()->push_back(
@@ -259,12 +259,12 @@ TEST_F(ChangeListProcessorTest, DeltaDirMovedFromRootToDirectory) {
   change_lists.push_back(new ChangeList);
 
   ResourceEntry entry;
-  entry.set_resource_id("folder:1_folder_resource_id");
+  entry.set_resource_id("1_folder_resource_id");
   entry.set_title("Directory 1");
   entry.mutable_file_info()->set_is_directory(true);
   change_lists[0]->mutable_entries()->push_back(entry);
   change_lists[0]->mutable_parent_resource_ids()->push_back(
-      "folder:sub_dir_folder_2_self_link");
+      "sub_dir_folder_2_self_link");
 
   change_lists[0]->set_largest_changestamp(16809);
 
@@ -298,7 +298,7 @@ TEST_F(ChangeListProcessorTest, DeltaFileMovedFromDirectoryToRoot) {
   change_lists.push_back(new ChangeList);
 
   ResourceEntry entry;
-  entry.set_resource_id("file:subdirectory_file_1_id");
+  entry.set_resource_id("subdirectory_file_1_id");
   entry.set_title("SubDirectory File 1.txt");
   change_lists[0]->mutable_entries()->push_back(entry);
   change_lists[0]->mutable_parent_resource_ids()->push_back(kRootId);
@@ -330,11 +330,11 @@ TEST_F(ChangeListProcessorTest, DeltaFileRenamedInDirectory) {
   change_lists.push_back(new ChangeList);
 
   ResourceEntry entry;
-  entry.set_resource_id("file:subdirectory_file_1_id");
+  entry.set_resource_id("subdirectory_file_1_id");
   entry.set_title("New SubDirectory File 1.txt");
   change_lists[0]->mutable_entries()->push_back(entry);
   change_lists[0]->mutable_parent_resource_ids()->push_back(
-      "folder:1_folder_resource_id");
+      "1_folder_resource_id");
 
   change_lists[0]->set_largest_changestamp(16767);
 
@@ -365,7 +365,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileInRoot) {
   change_lists.push_back(new ChangeList);
 
   ResourceEntry entry;
-  entry.set_resource_id("document:added_in_root_id");
+  entry.set_resource_id("added_in_root_id");
   entry.set_title("Added file.txt");
   change_lists[0]->mutable_entries()->push_back(entry);
   change_lists[0]->mutable_parent_resource_ids()->push_back(kRootId);
@@ -413,11 +413,11 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileFromExistingDirectory) {
   change_lists.push_back(new ChangeList);
 
   ResourceEntry entry;
-  entry.set_resource_id("document:added_in_root_id");
+  entry.set_resource_id("added_in_root_id");
   entry.set_title("Added file.txt");
   change_lists[0]->mutable_entries()->push_back(entry);
   change_lists[0]->mutable_parent_resource_ids()->push_back(
-      "folder:1_folder_resource_id");
+      "1_folder_resource_id");
 
   change_lists[0]->set_largest_changestamp(16730);
 
@@ -441,7 +441,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileFromExistingDirectory) {
   entry.set_deleted(true);
   change_lists[0]->mutable_entries()->push_back(entry);
   change_lists[0]->mutable_parent_resource_ids()->push_back(
-      "folder:1_folder_resource_id");
+      "1_folder_resource_id");
 
   change_lists[0]->set_largest_changestamp(16770);
 
@@ -466,15 +466,15 @@ TEST_F(ChangeListProcessorTest, DeltaAddFileToNewButDeletedDirectory) {
   change_lists.push_back(new ChangeList);
 
   ResourceEntry file;
-  file.set_resource_id("pdf:file_added_in_deleted_id");
+  file.set_resource_id("file_added_in_deleted_id");
   file.set_title("new_pdf_file.pdf");
   file.set_deleted(true);
   change_lists[0]->mutable_entries()->push_back(file);
   change_lists[0]->mutable_parent_resource_ids()->push_back(
-      "folder:new_folder_resource_id");
+      "new_folder_resource_id");
 
   ResourceEntry directory;
-  directory.set_resource_id("folder:new_folder_resource_id");
+  directory.set_resource_id("new_folder_resource_id");
   directory.set_title("New Directory");
   directory.mutable_file_info()->set_is_directory(true);
   directory.set_deleted(true);

@@ -23,7 +23,7 @@ bool SetUpTestEntries(FakeDriveService* drive_service) {
   scoped_ptr<FileResource> entry;
 
   drive_service->AddNewFileWithResourceId(
-      "file:2_file_resource_id",
+      "2_file_resource_id",
       "audio/mpeg",
       "This is some test content.",
       drive_service->GetRootResourceId(),
@@ -35,7 +35,7 @@ bool SetUpTestEntries(FakeDriveService* drive_service) {
     return false;
 
   drive_service->AddNewFileWithResourceId(
-      "file:slash_file_resource_id",
+      "slash_file_resource_id",
       "audio/mpeg",
       "This is some test content.",
       drive_service->GetRootResourceId(),
@@ -47,7 +47,7 @@ bool SetUpTestEntries(FakeDriveService* drive_service) {
     return false;
 
   drive_service->AddNewFileWithResourceId(
-      "file:3_file_resource_id",
+      "3_file_resource_id",
       "audio/mpeg",
       "This is some test content.",
       drive_service->GetRootResourceId(),
@@ -59,7 +59,7 @@ bool SetUpTestEntries(FakeDriveService* drive_service) {
     return false;
 
   drive_service->AddNewFileWithResourceId(
-      "file:4_file_resource_id",
+      "4_file_resource_id",
       "audio/mpeg",
       "This is some test content.",
       drive_service->GetRootResourceId(),
@@ -71,7 +71,7 @@ bool SetUpTestEntries(FakeDriveService* drive_service) {
     return false;
 
   drive_service->AddNewFileWithResourceId(
-      "document:5_document_resource_id",
+      "5_document_resource_id",
       util::kGoogleDocumentMimeType,
       std::string(),
       drive_service->GetRootResourceId(),
@@ -83,7 +83,7 @@ bool SetUpTestEntries(FakeDriveService* drive_service) {
     return false;
 
   drive_service->AddNewFileWithResourceId(
-      "folder:1_folder_resource_id",
+      "1_folder_resource_id",
       util::kDriveFolderMimeType,
       std::string(),
       drive_service->GetRootResourceId(),
@@ -95,10 +95,10 @@ bool SetUpTestEntries(FakeDriveService* drive_service) {
     return false;
 
   drive_service->AddNewFileWithResourceId(
-      "file:subdirectory_file_1_id",
+      "subdirectory_file_1_id",
       "audio/mpeg",
       "This is some test content.",
-      "folder:1_folder_resource_id",
+      "1_folder_resource_id",
       "SubDirectory File 1.txt",
       false,  // shared_with_me
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
@@ -107,10 +107,10 @@ bool SetUpTestEntries(FakeDriveService* drive_service) {
     return false;
 
   drive_service->AddNewFileWithResourceId(
-      "file:subdirectory_unowned_file_1_id",
+      "subdirectory_unowned_file_1_id",
       "audio/mpeg",
       "This is some test content.",
-      "folder:1_folder_resource_id",
+      "1_folder_resource_id",
       "Shared to The Account Owner.txt",
       true,  // shared_with_me
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
@@ -119,8 +119,8 @@ bool SetUpTestEntries(FakeDriveService* drive_service) {
     return false;
 
   drive_service->AddNewDirectoryWithResourceId(
-      "folder:sub_dir_folder_resource_id",
-      "folder:1_folder_resource_id",
+      "sub_dir_folder_resource_id",
+      "1_folder_resource_id",
       "Sub Directory Folder",
       DriveServiceInterface::AddNewDirectoryOptions(),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
@@ -129,8 +129,8 @@ bool SetUpTestEntries(FakeDriveService* drive_service) {
     return false;
 
   drive_service->AddNewDirectoryWithResourceId(
-      "folder:sub_sub_directory_folder_id",
-      "folder:sub_dir_folder_resource_id",
+      "sub_sub_directory_folder_id",
+      "sub_dir_folder_resource_id",
       "Sub Sub Directory Folder",
       DriveServiceInterface::AddNewDirectoryOptions(),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
@@ -139,7 +139,7 @@ bool SetUpTestEntries(FakeDriveService* drive_service) {
     return false;
 
   drive_service->AddNewDirectoryWithResourceId(
-      "folder:slash_dir_folder_resource_id",
+      "slash_dir_folder_resource_id",
       drive_service->GetRootResourceId(),
       "Slash / in directory",
       DriveServiceInterface::AddNewDirectoryOptions(),
@@ -149,10 +149,10 @@ bool SetUpTestEntries(FakeDriveService* drive_service) {
     return false;
 
   drive_service->AddNewFileWithResourceId(
-      "file:slash_subdir_file",
+      "slash_subdir_file",
       "audio/mpeg",
       "This is some test content.",
-      "folder:slash_dir_folder_resource_id",
+      "slash_dir_folder_resource_id",
       "Slash SubDir File.txt",
       false,  // shared_with_me
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
@@ -161,7 +161,7 @@ bool SetUpTestEntries(FakeDriveService* drive_service) {
     return false;
 
   drive_service->AddNewDirectoryWithResourceId(
-      "folder:sub_dir_folder_2_self_link",
+      "sub_dir_folder_2_self_link",
       drive_service->GetRootResourceId(),
       "Directory 2 excludeDir-test",
       DriveServiceInterface::AddNewDirectoryOptions(),
@@ -171,7 +171,7 @@ bool SetUpTestEntries(FakeDriveService* drive_service) {
     return false;
 
   drive_service->AddNewFileWithResourceId(
-      "file:1_orphanfile_resource_id",
+      "1_orphanfile_resource_id",
       "text/plain",
       "This is some test content.",
       std::string(),
@@ -183,7 +183,7 @@ bool SetUpTestEntries(FakeDriveService* drive_service) {
     return false;
 
   drive_service->AddNewFileWithResourceId(
-      "document:orphan_doc_1",
+      "orphan_doc_1",
       util::kGoogleDocumentMimeType,
       std::string(),
       std::string(),
