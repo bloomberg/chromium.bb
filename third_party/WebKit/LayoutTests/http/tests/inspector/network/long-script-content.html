@@ -22,6 +22,9 @@ function gc()
 {
     if (window.internals)
         window.internals.garbageCollectDocumentResources(document);
+    // In Oilpan, Resource objects are not destructed until GC.
+    if (window.GCController)
+        GCController.collectAll();
 }
 
 function test()

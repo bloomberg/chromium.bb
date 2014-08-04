@@ -67,6 +67,8 @@ function test()
 
     function step5(msg)
     {
+        // In Oilpan, Resource objects are not destructed until GC.
+        InspectorTest.evaluateInPage("GCController.collectAll()");
         NetworkAgent.setCacheDisabled(false, step6);
     }
 
