@@ -132,6 +132,7 @@ void MockScreenOrientationClient::UpdateLockSync(
   if (!IsOrientationAllowedByCurrentLock(current_orientation_))
     UpdateScreenOrientation(SuitableOrientationForCurrentLock());
   callback->onSuccess();
+  delete callback;
 }
 
 void MockScreenOrientationClient::ResetLockSync() {
