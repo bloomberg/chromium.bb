@@ -2165,6 +2165,7 @@ WebTextInputInfo WebViewImpl::textInputInfo()
     info.inputMode = inputModeOfFocusedElement();
 
     info.type = textInputType();
+    info.flags = textInputFlags();
     if (info.type == WebTextInputTypeNone)
         return info;
 
@@ -2254,6 +2255,35 @@ WebTextInputType WebViewImpl::textInputType()
         return WebTextInputTypeContentEditable;
 
     return WebTextInputTypeNone;
+}
+
+int WebViewImpl::textInputFlags()
+{
+    Element* element = focusedElement();
+    if (!element)
+        return WebTextInputFlagNone;
+
+    int flags = 0;
+
+    const AtomicString& autocomplete = element->getAttribute("autocomplete");
+    if (autocomplete == "on")
+        flags |= WebTextInputFlagAutocompleteOn;
+    else if (autocomplete == "off")
+        flags |= WebTextInputFlagAutocompleteOff;
+
+    const AtomicString& autocorrect = element->getAttribute("autocorrect");
+    if (autocorrect == "on")
+        flags |= WebTextInputFlagAutocorrectOn;
+    else if (autocorrect == "off")
+        flags |= WebTextInputFlagAutocorrectOff;
+
+    const AtomicString& spellcheck = element->getAttribute("spellcheck");
+    if (spellcheck == "on")
+        flags |= WebTextInputFlagSpellcheckOn;
+    else if (spellcheck == "off")
+        flags |= WebTextInputFlagSpellcheckOff;
+
+    return flags;
 }
 
 WebString WebViewImpl::inputModeOfFocusedElement()

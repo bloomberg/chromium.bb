@@ -521,6 +521,7 @@ private:
     virtual ~WebViewImpl();
 
     WebTextInputType textInputType();
+    int textInputFlags();
 
     WebString inputModeOfFocusedElement();
 
