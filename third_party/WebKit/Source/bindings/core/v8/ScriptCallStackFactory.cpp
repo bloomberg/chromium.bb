@@ -80,7 +80,7 @@ static void toScriptCallFramesVector(v8::Handle<v8::StackTrace> stackTrace, Vect
         // Successfully grabbed stack trace, but there are no frames. It may happen in case
         // when a bound function is called from native code for example.
         // Fallback to setting lineNumber to 0, and source and function name to "undefined".
-        scriptCallFrames.append(ScriptCallFrame("undefined", "", "undefined", 0));
+        scriptCallFrames.append(ScriptCallFrame());
     }
 }
 

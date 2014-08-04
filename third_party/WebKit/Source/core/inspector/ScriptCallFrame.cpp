@@ -33,6 +33,15 @@
 
 namespace blink {
 
+ScriptCallFrame::ScriptCallFrame()
+    : m_functionName("undefined")
+    , m_scriptId("")
+    , m_scriptName("undefined")
+    , m_lineNumber(0)
+    , m_column(0)
+{
+}
+
 ScriptCallFrame::ScriptCallFrame(const String& functionName, const String& scriptId, const String& scriptName, unsigned lineNumber, unsigned column)
     : m_functionName(functionName)
     , m_scriptId(scriptId)
