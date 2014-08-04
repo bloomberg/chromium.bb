@@ -57,6 +57,7 @@
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
+#include "wtf/Vector.h"
 #include "wtf/text/StringBuilder.h"
 #include <v8.h>
 

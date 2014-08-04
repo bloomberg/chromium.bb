@@ -23,6 +23,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/page/Page.h"
 #include "platform/plugins/PluginData.h"
+#include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {

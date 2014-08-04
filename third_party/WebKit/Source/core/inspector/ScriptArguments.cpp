@@ -33,7 +33,6 @@
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "wtf/Vector.h"
 #include "wtf/text/StringBuilder.h"
 #include <v8.h>
 

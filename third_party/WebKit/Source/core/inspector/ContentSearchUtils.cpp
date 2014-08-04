@@ -31,6 +31,7 @@
 #include "core/inspector/ContentSearchUtils.h"
 
 #include "bindings/core/v8/ScriptRegexp.h"
+#include "wtf/Vector.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {

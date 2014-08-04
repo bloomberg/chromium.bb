@@ -42,7 +42,6 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Uint8ClampedArray.h"
-#include "wtf/Vector.h"
 
 class SkCanvas;
 

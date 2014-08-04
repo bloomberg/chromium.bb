@@ -28,6 +28,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 

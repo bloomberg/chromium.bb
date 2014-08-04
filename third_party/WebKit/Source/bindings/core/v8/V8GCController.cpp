@@ -51,6 +51,7 @@
 #include "core/svg/SVGElement.h"
 #include "platform/Partitions.h"
 #include "platform/TraceEvent.h"
+#include "wtf/Vector.h"
 #include <algorithm>
 
 namespace blink {

@@ -56,6 +56,7 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "wtf/OwnPtr.h"
+#include "wtf/Vector.h"
 
 using namespace blink;
 

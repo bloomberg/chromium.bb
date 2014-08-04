@@ -8,6 +8,7 @@
 #include "core/MediaTypeNames.h"
 #include "core/css/parser/CSSPropertyParser.h"
 #include "core/css/parser/MediaQueryTokenizer.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 

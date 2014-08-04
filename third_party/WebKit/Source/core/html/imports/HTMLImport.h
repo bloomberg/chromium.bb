@@ -34,7 +34,6 @@
 #include "core/html/imports/HTMLImportState.h"
 #include "platform/heap/Handle.h"
 #include "wtf/TreeNode.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 
