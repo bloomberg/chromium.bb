@@ -1592,10 +1592,6 @@ const char kCloseStorage[] = "CloseStorage";
 const char kReadDirectoryEntryIds[] = "ReadDirectoryEntryIds";
 const char kGetFileInfo[] = "GetFileInfo";
 const char kReadFileChunk[] = "ReadFileChunk";
-// TODO(thestig): Remove these 3 deprecated methods.
-const char kReadDirectoryById[] = "ReadDirectoryById";
-const char kReadFileChunkById[] = "ReadFileChunkById";
-const char kGetFileInfoById[] = "GetFileInfoById";
 
 // Signals.
 const char kMTPStorageAttached[] = "MTPStorageAttached";
