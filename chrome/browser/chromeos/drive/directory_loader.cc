@@ -298,13 +298,6 @@ void DirectoryLoader::ReadDirectoryAfterGetEntry(
   if (pending_load_callback_[local_id].size() > 1)
     return;
 
-  // Note: To be precise, we need to call UpdateAboutResource() here. However,
-  // - It is costly to do GetAboutResource HTTP request every time.
-  // - The chance using an old value is small; it only happens when
-  //   ReadDirectory is called during one GetAboutResource roundtrip time
-  //   of a change list fetching.
-  // - Even if the value is old, it just marks the directory as older. It may
-  //   trigger one future unnecessary re-fetch, but it'll never lose data.
   about_resource_loader_->GetAboutResource(
       base::Bind(&DirectoryLoader::ReadDirectoryAfterGetAboutResource,
                  weak_ptr_factory_.GetWeakPtr(), local_id));
