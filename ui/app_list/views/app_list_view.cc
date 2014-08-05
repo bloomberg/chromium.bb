@@ -118,7 +118,7 @@ class HideViewAnimationObserver : public ui::ImplicitAnimationObserver {
   }
 
   void SetTarget(views::View* target) {
-    if (!target_)
+    if (target_)
       StopObservingImplicitAnimations();
     target_ = target;
   }
@@ -133,7 +133,8 @@ class HideViewAnimationObserver : public ui::ImplicitAnimationObserver {
       target_ = NULL;
 
       // Should update the background by invoking SchedulePaint().
-      frame_->SchedulePaint();
+      if (frame_)
+        frame_->SchedulePaint();
     }
   }
 
@@ -221,7 +222,29 @@ void AppListView::UpdateBounds() {
 
 void AppListView::SetAppListOverlayVisible(bool visible) {
   DCHECK(overlay_view_);
-  overlay_view_->SetVisible(visible);
+
+  // Display the overlay immediately so we can begin the animation.
+  overlay_view_->SetVisible(true);
+
+  ui::ScopedLayerAnimationSettings settings(
+      overlay_view_->layer()->GetAnimator());
+  settings.SetTweenType(gfx::Tween::LINEAR);
+
+  // If we're dismissing the overlay, hide the view at the end of the animation.
+  if (!visible) {
+    // Since only one animation is visible at a time, it's safe to re-use
+    // animation_observer_ here.
+    animation_observer_->set_frame(NULL);
+    animation_observer_->SetTarget(overlay_view_);
+    settings.AddObserver(animation_observer_.get());
+  }
+
+  const float kOverlayFadeInMilliseconds = 125;
+  settings.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kOverlayFadeInMilliseconds));
+
+  const float kOverlayOpacity = 0.75f;
+  overlay_view_->layer()->SetOpacity(visible ? kOverlayOpacity : 0.0f);
 }
 
 bool AppListView::ShouldCenterWindow() const {
@@ -366,12 +389,11 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
   // To make the overlay view, construct a view with a white background, rather
   // than a white rectangle in it. This is because we need overlay_view_ to be
   // drawn to its own layer (so it appears correctly in the foreground).
-  const float kOverlayOpacity = 0.75f;
   overlay_view_ = new views::View();
   overlay_view_->SetPaintToLayer(true);
-  overlay_view_->layer()->SetOpacity(kOverlayOpacity);
   overlay_view_->SetBoundsRect(GetContentsBounds());
   overlay_view_->SetVisible(false);
+  overlay_view_->layer()->SetOpacity(0.0f);
   // On platforms that don't support a shadow, the rounded border of the app
   // list is constructed _inside_ the view, so a rectangular background goes
   // over the border in the rounded corners. To fix this, give the background a
