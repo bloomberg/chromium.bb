@@ -62,6 +62,10 @@ class OpenSSLInitSingleton {
         (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
     if (has_neon)
       CRYPTO_set_NEON_capable(1);
+    // In all cases, currently, mark the NEON unit as broken because some
+    // phones can't execute the Poly1305 code correctly. See
+    // https://code.google.com/p/chromium/issues/detail?id=341598
+    CRYPTO_set_NEON_functional(0);
 #endif
   }
 
