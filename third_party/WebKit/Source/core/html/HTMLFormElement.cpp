@@ -503,7 +503,7 @@ void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicStri
         // If the new action attribute is pointing to insecure "action" location from a secure page
         // it is marked as "passive" mixed content.
         KURL actionURL = document().completeURL(m_attributes.action().isEmpty() ? document().url().string() : m_attributes.action());
-        if (MixedContentChecker::isMixedContent(document().securityOrigin(), actionURL))
+        if (document().frame() && MixedContentChecker::isMixedContent(document().securityOrigin(), actionURL))
             document().frame()->loader().mixedContentChecker()->canSubmitToInsecureForm(document().securityOrigin(), actionURL);
     } else if (name == targetAttr)
         m_attributes.setTarget(value);
