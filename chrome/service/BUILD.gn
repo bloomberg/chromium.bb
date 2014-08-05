@@ -55,10 +55,10 @@ static_library("service") {
     "//base",
     "//components/cloud_devices/common",
     "//google_apis",
+    "//jingle:notifier",
     "//net",
     "//printing",
     "//skia",
-    #'../jingle/jingle.gyp:notifier',  TODO(GYP)
     #'../third_party/libjingle/libjingle.gyp:libjingle',  TODO(GYP)
   ]
 

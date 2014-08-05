@@ -27,6 +27,7 @@ source_set("renderer") {
     "//content:resources",
     "//content/common:mojo_bindings",
     "//gin",
+    "//jingle:jingle_glue",
     "//media",
     "//mojo/bindings/js",
     "//mojo/environment:chromium",
@@ -47,7 +48,6 @@ source_set("renderer") {
     "//webkit/common",
     "//webkit/common:storage",
     "//webkit/common/gpu",
-    #'../jingle/jingle.gyp:jingle_glue',  TODO(GYP)
     #'../third_party/libjingle/libjingle.gyp:libjingle',  TODO(GYP)
   ]
 
