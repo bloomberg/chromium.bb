@@ -111,13 +111,6 @@ TEST_F(ProcessManagerTest, ExtensionNotificationRegistration) {
                            extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
                            original_context()));
   EXPECT_TRUE(IsRegistered(manager1.get(),
-                           extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                           original_context()));
-  EXPECT_TRUE(
-      IsRegistered(manager1.get(),
-                   extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                   original_context()));
-  EXPECT_TRUE(IsRegistered(manager1.get(),
                            extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                            original_context()));
 
@@ -130,11 +123,6 @@ TEST_F(ProcessManagerTest, ExtensionNotificationRegistration) {
 
   EXPECT_EQ(incognito_context(), manager2->GetBrowserContext());
   EXPECT_EQ(0u, manager2->background_hosts().size());
-
-  // Some notifications are observed for the original context.
-  EXPECT_TRUE(IsRegistered(manager2.get(),
-                           extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                           original_context()));
 
   // Some notifications are observed for the incognito context.
   EXPECT_TRUE(IsRegistered(manager2.get(),
