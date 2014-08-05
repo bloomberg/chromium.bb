@@ -28,18 +28,17 @@ class TestMediaTransferProtocolManagerLinux
                            const OpenStorageCallback& callback) OVERRIDE;
   virtual void CloseStorage(const std::string& storage_handle,
                             const CloseStorageCallback& callback) OVERRIDE;
-  virtual void ReadDirectoryById(
-      const std::string& storage_handle,
-      uint32 file_id,
-      const ReadDirectoryCallback& callback) OVERRIDE;
-  virtual void ReadFileChunkById(const std::string& storage_handle,
-                                 uint32 file_id,
-                                 uint32 offset,
-                                 uint32 count,
-                                 const ReadFileCallback& callback) OVERRIDE;
-  virtual void GetFileInfoById(const std::string& storage_handle,
-                               uint32 file_id,
-                               const GetFileInfoCallback& callback) OVERRIDE;
+  virtual void ReadDirectory(const std::string& storage_handle,
+                             uint32 file_id,
+                             const ReadDirectoryCallback& callback) OVERRIDE;
+  virtual void ReadFileChunk(const std::string& storage_handle,
+                             uint32 file_id,
+                             uint32 offset,
+                             uint32 count,
+                             const ReadFileCallback& callback) OVERRIDE;
+  virtual void GetFileInfo(const std::string& storage_handle,
+                           uint32 file_id,
+                           const GetFileInfoCallback& callback) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(TestMediaTransferProtocolManagerLinux);
 };

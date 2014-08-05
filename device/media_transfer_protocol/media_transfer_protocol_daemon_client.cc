@@ -151,15 +151,14 @@ class MediaTransferProtocolDaemonClientImpl
   }
 
   // MediaTransferProtocolDaemonClient override.
-  virtual void ReadFileChunkById(const std::string& handle,
-                                 uint32 file_id,
-                                 uint32 offset,
-                                 uint32 bytes_to_read,
-                                 const ReadFileCallback& callback,
-                                 const ErrorCallback& error_callback) OVERRIDE {
+  virtual void ReadFileChunk(const std::string& handle,
+                             uint32 file_id,
+                             uint32 offset,
+                             uint32 bytes_to_read,
+                             const ReadFileCallback& callback,
+                             const ErrorCallback& error_callback) OVERRIDE {
     DCHECK_LE(bytes_to_read, kMaxChunkSize);
-    dbus::MethodCall method_call(mtpd::kMtpdInterface,
-                                 mtpd::kReadFileChunkById);
+    dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kReadFileChunk);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(handle);
     writer.AppendUint32(file_id);
@@ -331,7 +330,7 @@ class MediaTransferProtocolDaemonClientImpl
     callback.Run(file_entries);
   }
 
-  // Handles the result of ReadFileChunkById and calls |callback| or
+  // Handles the result of ReadFileChunk and calls |callback| or
   // |error_callback|.
   void OnReadFile(const ReadFileCallback& callback,
                   const ErrorCallback& error_callback,

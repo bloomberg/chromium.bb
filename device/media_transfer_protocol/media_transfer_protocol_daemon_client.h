@@ -125,17 +125,17 @@ class MediaTransferProtocolDaemonClient {
                            const GetFileInfoCallback& callback,
                            const ErrorCallback& error_callback) = 0;
 
-  // TODO(thestig): Rename to ReadFileChunk.
-  // Calls ReadFilePathById method. |callback| is called after the method call
+  // Calls ReadFileChunk method. |callback| is called after the method call
   // succeeds, otherwise, |error_callback| is called.
   // |file_id| is a MTP-device specific id for a file.
+  // |offset| is the offset into the file.
   // |bytes_to_read| cannot exceed 1 MiB.
-  virtual void ReadFileChunkById(const std::string& handle,
-                                 uint32 file_id,
-                                 uint32 offset,
-                                 uint32 bytes_to_read,
-                                 const ReadFileCallback& callback,
-                                 const ErrorCallback& error_callback) = 0;
+  virtual void ReadFileChunk(const std::string& handle,
+                             uint32 file_id,
+                             uint32 offset,
+                             uint32 bytes_to_read,
+                             const ReadFileCallback& callback,
+                             const ErrorCallback& error_callback) = 0;
 
   // Registers given callback for events. Should only be called once.
   // |storage_event_handler| is called when a mtp storage attach or detach

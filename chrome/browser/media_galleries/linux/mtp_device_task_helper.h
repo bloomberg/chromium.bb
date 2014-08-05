@@ -50,8 +50,7 @@ class MTPDeviceTaskHelper {
   void OpenStorage(const std::string& storage_name,
                    const OpenStorageCallback& callback);
 
-  // Dispatches the GetFileInfoById request to the
-  // MediaTransferProtocolManager.
+  // Dispatches the GetFileInfo request to the MediaTransferProtocolManager.
   //
   // |file_id| specifies the id of the file whose details are requested.
   //
@@ -60,10 +59,9 @@ class MTPDeviceTaskHelper {
   //
   // If there is an error, |error_callback| is invoked on the IO thread to
   // notify the caller about the file error.
-  void GetFileInfoById(
-      uint32 file_id,
-      const GetFileInfoSuccessCallback& success_callback,
-      const ErrorCallback& error_callback);
+  void GetFileInfo(uint32 file_id,
+                   const GetFileInfoSuccessCallback& success_callback,
+                   const ErrorCallback& error_callback);
 
   // Dispatches the read directory request to the MediaTransferProtocolManager.
   //
@@ -77,9 +75,9 @@ class MTPDeviceTaskHelper {
   //
   // If there is an error, |error_callback| is invoked on the IO thread to
   // notify the caller about the file error.
-  void ReadDirectoryById(uint32 dir_id,
-                         const ReadDirectorySuccessCallback& success_callback,
-                         const ErrorCallback& error_callback);
+  void ReadDirectory(uint32 dir_id,
+                     const ReadDirectorySuccessCallback& success_callback,
+                     const ErrorCallback& error_callback);
 
   // Forwards the WriteDataIntoSnapshotFile request to the MTPReadFileWorker
   // object.
@@ -126,7 +124,7 @@ class MTPDeviceTaskHelper {
                      const MtpFileEntry& file_entry,
                      bool error) const;
 
-  // Query callback for ReadDirectoryById().
+  // Query callback for ReadDirectory().
   //
   // If there is no error, |error| is set to false, |file_entries| has the
   // directory file entries and |success_callback| is invoked on the IO thread
@@ -134,12 +132,11 @@ class MTPDeviceTaskHelper {
   //
   // If there is an error, |error| is set to true, |file_entries| is empty
   // and |error_callback| is invoked on the IO thread to notify the caller.
-  void OnDidReadDirectoryById(
-      const ReadDirectorySuccessCallback& success_callback,
-      const ErrorCallback& error_callback,
-      const std::vector<MtpFileEntry>& file_entries,
-      bool has_more,
-      bool error) const;
+  void OnDidReadDirectory(const ReadDirectorySuccessCallback& success_callback,
+                          const ErrorCallback& error_callback,
+                          const std::vector<MtpFileEntry>& file_entries,
+                          bool has_more,
+                          bool error) const;
 
   // Intermediate step to finish a ReadBytes request.
   void OnGetFileInfoToReadBytes(

@@ -101,7 +101,7 @@ void ReadDirectoryOnUIThread(
       GetDeviceTaskHelperForStorage(storage_name);
   if (!task_helper)
     return;
-  task_helper->ReadDirectoryById(dir_id, success_callback, error_callback);
+  task_helper->ReadDirectory(dir_id, success_callback, error_callback);
 }
 
 // Gets the |file_path| details.
@@ -123,7 +123,7 @@ void GetFileInfoOnUIThread(
       GetDeviceTaskHelperForStorage(storage_name);
   if (!task_helper)
     return;
-  task_helper->GetFileInfoById(file_id, success_callback, error_callback);
+  task_helper->GetFileInfo(file_id, success_callback, error_callback);
 }
 
 // Copies the contents of |device_file_path| to |snapshot_file_path|.

@@ -160,10 +160,9 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   // MediaTransferProtocolManager override.
-  virtual void ReadDirectoryById(
-      const std::string& storage_handle,
-      uint32 file_id,
-      const ReadDirectoryCallback& callback) OVERRIDE {
+  virtual void ReadDirectory(const std::string& storage_handle,
+                             uint32 file_id,
+                             const ReadDirectoryCallback& callback) OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(std::vector<MtpFileEntry>(),
@@ -183,18 +182,18 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   // MediaTransferProtocolManager override.
-  virtual void ReadFileChunkById(const std::string& storage_handle,
-                                 uint32 file_id,
-                                 uint32 offset,
-                                 uint32 count,
-                                 const ReadFileCallback& callback) OVERRIDE {
+  virtual void ReadFileChunk(const std::string& storage_handle,
+                             uint32 file_id,
+                             uint32 offset,
+                             uint32 count,
+                             const ReadFileCallback& callback) OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(std::string(), true);
       return;
     }
     read_file_callbacks_.push(callback);
-    mtp_client_->ReadFileChunkById(
+    mtp_client_->ReadFileChunk(
         storage_handle, file_id, offset, count,
         base::Bind(&MediaTransferProtocolManagerImpl::OnReadFile,
                    weak_ptr_factory_.GetWeakPtr()),
@@ -202,9 +201,9 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  virtual void GetFileInfoById(const std::string& storage_handle,
-                               uint32 file_id,
-                               const GetFileInfoCallback& callback) OVERRIDE {
+  virtual void GetFileInfo(const std::string& storage_handle,
+                           uint32 file_id,
+                           const GetFileInfoCallback& callback) OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(MtpFileEntry(), true);

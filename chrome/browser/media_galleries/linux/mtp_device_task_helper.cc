@@ -75,7 +75,7 @@ void MTPDeviceTaskHelper::OpenStorage(const std::string& storage_name,
                  callback));
 }
 
-void MTPDeviceTaskHelper::GetFileInfoById(
+void MTPDeviceTaskHelper::GetFileInfo(
     uint32 file_id,
     const GetFileInfoSuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
@@ -83,7 +83,7 @@ void MTPDeviceTaskHelper::GetFileInfoById(
   if (device_handle_.empty())
     return HandleDeviceError(error_callback, base::File::FILE_ERROR_FAILED);
 
-  GetMediaTransferProtocolManager()->GetFileInfoById(
+  GetMediaTransferProtocolManager()->GetFileInfo(
       device_handle_, file_id,
       base::Bind(&MTPDeviceTaskHelper::OnGetFileInfo,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -91,7 +91,7 @@ void MTPDeviceTaskHelper::GetFileInfoById(
                  error_callback));
 }
 
-void MTPDeviceTaskHelper::ReadDirectoryById(
+void MTPDeviceTaskHelper::ReadDirectory(
     uint32 dir_id,
     const ReadDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
@@ -99,9 +99,9 @@ void MTPDeviceTaskHelper::ReadDirectoryById(
   if (device_handle_.empty())
     return HandleDeviceError(error_callback, base::File::FILE_ERROR_FAILED);
 
-  GetMediaTransferProtocolManager()->ReadDirectoryById(
+  GetMediaTransferProtocolManager()->ReadDirectory(
       device_handle_, dir_id,
-      base::Bind(&MTPDeviceTaskHelper::OnDidReadDirectoryById,
+      base::Bind(&MTPDeviceTaskHelper::OnDidReadDirectory,
                  weak_ptr_factory_.GetWeakPtr(),
                  success_callback,
                  error_callback));
@@ -130,7 +130,7 @@ void MTPDeviceTaskHelper::ReadBytes(
                              base::File::FILE_ERROR_FAILED);
   }
 
-  GetMediaTransferProtocolManager()->GetFileInfoById(
+  GetMediaTransferProtocolManager()->GetFileInfo(
       device_handle_, request.file_id,
       base::Bind(&MTPDeviceTaskHelper::OnGetFileInfoToReadBytes,
                  weak_ptr_factory_.GetWeakPtr(), request));
@@ -172,7 +172,7 @@ void MTPDeviceTaskHelper::OnGetFileInfo(
       base::Bind(success_callback, FileInfoFromMTPFileEntry(file_entry)));
 }
 
-void MTPDeviceTaskHelper::OnDidReadDirectoryById(
+void MTPDeviceTaskHelper::OnDidReadDirectory(
     const ReadDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback,
     const std::vector<MtpFileEntry>& file_entries,
@@ -237,7 +237,7 @@ void MTPDeviceTaskHelper::OnGetFileInfoToReadBytes(
       base::checked_cast<uint32>(request.buf_len),
       base::saturated_cast<uint32>(file_info.size - request.offset));
 
-  GetMediaTransferProtocolManager()->ReadFileChunkById(
+  GetMediaTransferProtocolManager()->ReadFileChunk(
       device_handle_,
       request.file_id,
       base::checked_cast<uint32>(request.offset),
