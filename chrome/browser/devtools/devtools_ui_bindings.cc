@@ -412,8 +412,9 @@ void DevToolsUIBindings::HandleMessageFromDevToolsFrontendToBackend(
 // content::DevToolsClientHost implementation ---------------------------------
 void DevToolsUIBindings::DispatchOnInspectorFrontend(
     const std::string& message) {
-  if (frontend_host_)
-    frontend_host_->DispatchOnDevToolsFrontend(message);
+  base::StringValue message_value(message);
+  CallClientFunction("InspectorFrontendAPI.dispatchMessage",
+                     &message_value, NULL, NULL);
 }
 
 void DevToolsUIBindings::InspectedContentsClosing() {
@@ -804,8 +805,9 @@ void DevToolsUIBindings::CallClientFunction(const std::string& function_name,
       }
     }
   }
-  base::string16 javascript =
-      base::UTF8ToUTF16(function_name + "(" + params + ");");
+
+  base::string16 javascript = base::UTF8ToUTF16(
+      function_name + "(" + params + ");");
   web_contents_->GetMainFrame()->ExecuteJavaScript(javascript);
 }
 

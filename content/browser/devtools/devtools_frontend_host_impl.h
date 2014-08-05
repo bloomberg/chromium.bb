@@ -17,9 +17,6 @@ class DevToolsFrontendHostImpl : public DevToolsFrontendHost,
                            DevToolsFrontendHost::Delegate* delegate);
   virtual ~DevToolsFrontendHostImpl();
 
-  // DevToolsFrontendHost implementation.
-  virtual void DispatchOnDevToolsFrontend(const std::string& message) OVERRIDE;
-
  private:
   // WebContentsObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

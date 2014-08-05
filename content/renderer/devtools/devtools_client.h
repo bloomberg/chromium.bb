@@ -35,9 +35,6 @@ class CONTENT_EXPORT DevToolsClient
   virtual ~DevToolsClient();
 
  private:
-  // RenderView::Observer implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
   // WebDevToolsFrontendClient implementation.
   virtual void sendMessageToBackend(const blink::WebString&) OVERRIDE;
   virtual void sendMessageToEmbedder(const blink::WebString&) OVERRIDE;
