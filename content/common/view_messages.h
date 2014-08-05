@@ -977,6 +977,8 @@ IPC_MESSAGE_ROUTED2(ViewMsg_ReclaimCompositorResources,
 IPC_MESSAGE_ROUTED0(ViewMsg_SelectWordAroundCaret)
 
 // Sent by the browser to ask the renderer to redraw.
+// If |request_id| is not zero, it is added to the forced frame's latency info
+// as ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT.
 IPC_MESSAGE_ROUTED1(ViewMsg_ForceRedraw,
                     int /* request_id */)
 

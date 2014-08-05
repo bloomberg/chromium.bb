@@ -1633,9 +1633,11 @@ void RenderViewImpl::GetWindowSnapshot(const WindowSnapshotCallback& callback) {
 
 void RenderViewImpl::OnForceRedraw(int id) {
   ui::LatencyInfo latency_info;
-  latency_info.AddLatencyNumber(ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT,
-                                0,
-                                id);
+  if (id) {
+    latency_info.AddLatencyNumber(ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT,
+                                  0,
+                                  id);
+  }
   scoped_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor;
   if (RenderWidgetCompositor* rwc = compositor()) {
     latency_info_swap_promise_monitor =

@@ -109,6 +109,7 @@ class CONTENT_EXPORT RendererOverridesHandler
 
   DevToolsAgentHost* agent_;
   scoped_refptr<DevToolsProtocol::Command> screencast_command_;
+  bool has_last_compositor_frame_metadata_;
   cc::CompositorFrameMetadata last_compositor_frame_metadata_;
   base::TimeTicks last_frame_time_;
   int capture_retry_count_;

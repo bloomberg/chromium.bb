@@ -186,7 +186,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       has_touch_handler_(false),
       weak_factory_(this),
       last_input_number_(static_cast<int64>(GetProcess()->GetID()) << 32),
-      next_browser_snapshot_id_(0) {
+      next_browser_snapshot_id_(1) {
   CHECK(delegate_);
   if (routing_id_ == MSG_ROUTING_NONE) {
     routing_id_ = process_->GetNextRoutingID();

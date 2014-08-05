@@ -90,6 +90,7 @@ void ParseGenericInputParams(base::DictionaryValue* params,
 
 RendererOverridesHandler::RendererOverridesHandler(DevToolsAgentHost* agent)
     : agent_(agent),
+      has_last_compositor_frame_metadata_(false),
       capture_retry_count_(0),
       weak_factory_(this) {
   RegisterCommandHandler(
@@ -191,6 +192,7 @@ void RendererOverridesHandler::OnClientDetached() {
 void RendererOverridesHandler::OnSwapCompositorFrame(
     const cc::CompositorFrameMetadata& frame_metadata) {
   last_compositor_frame_metadata_ = frame_metadata;
+  has_last_compositor_frame_metadata_ = true;
 
   if (screencast_command_)
     InnerSwapCompositorFrame();
@@ -541,8 +543,12 @@ RendererOverridesHandler::PageStartScreencast(
   host->SetTouchEventEmulationEnabled(true, true);
   bool visible = !host->is_hidden();
   NotifyScreencastVisibility(visible);
-  if (visible)
-    InnerSwapCompositorFrame();
+  if (visible) {
+    if (has_last_compositor_frame_metadata_)
+      InnerSwapCompositorFrame();
+    else
+      host->Send(new ViewMsg_ForceRedraw(host->GetRoutingID(), 0));
+  }
   return command->SuccessResponse(NULL);
 }
 
