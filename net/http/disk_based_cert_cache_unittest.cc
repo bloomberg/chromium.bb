@@ -51,9 +51,9 @@ MockTransaction CreateMockTransaction(const char* key, int test_mode) {
   return transaction;
 }
 
-// Helper class, for use with DiskBasedCertCache::Get, that will ensure that
-// the returned certificate handle is kept alive after the callback has been
-// executed and allow a user to WaitForResult of DiskBasedCertCache::Get.
+// Helper class, for use with DiskBasedCertCache::GetCertificate, that will
+// store the returned certificate handle and allow users to WaitForResult of
+// DiskBasedCertCache::GetCertificate.
 class TestGetCallback {
  public:
   TestGetCallback() : cert_handle_(NULL) {}
@@ -62,12 +62,12 @@ class TestGetCallback {
       X509Certificate::FreeOSCertHandle(cert_handle_);
   }
 
-  // Blocks until the underlying Get() operation has succeeded.
+  // Blocks until the underlying GetCertificate() operation has succeeded.
   void WaitForResult() { cb_.WaitForResult(); }
 
-  // Returns a Callback suitable for use with DiskBasedCertCache::Get(). The
-  // returned callback is only valid while the TestGetCallback object is still
-  // valid.
+  // Returns a Callback suitable for use with
+  // DiskBasedCertCache::GetCertificate(). The returned callback is only valid
+  // while the TestGetCallback object is still valid.
   DiskBasedCertCache::GetCallback callback() {
     return base::Bind(&TestGetCallback::OnGetComplete, base::Unretained(this));
   }
@@ -88,19 +88,20 @@ class TestGetCallback {
   X509Certificate::OSCertHandle cert_handle_;
 };
 
-// Helper class, for use with DiskBasedCertCache::Set, that will store the
-// returned key and allow a user to WaitForResult of DiskBasedCertCache::Set.
+// Helper class, for use with DiskBasedCertCache::SetCertificate, that will
+// store the returned key and allow a user to WaitForResult of
+// DiskBasedCertCache::SetCertificate.
 class TestSetCallback {
  public:
   TestSetCallback() {}
   ~TestSetCallback() {}
 
-  // Blocks until the underlying Set() operation has succeeded.
+  // Blocks until the underlying SetCertificate() operation has succeeded.
   void WaitForResult() { cb_.WaitForResult(); }
 
-  // Returns a Callback suitable for use with DiskBasedCertCache::Set(). The
-  // returned callback is only valid while the TestSetCallback object is still
-  // valid.
+  // Returns a Callback suitable for use with
+  // DiskBasedCertCache::SetCertificate(). The returned callback is only valid
+  // while the TestSetCallback object is still  valid.
   DiskBasedCertCache::SetCallback callback() {
     return base::Bind(&TestSetCallback::OnSetComplete, base::Unretained(this));
   }
@@ -193,7 +194,7 @@ TEST(DiskBasedCertCache, SetCert) {
   ASSERT_TRUE(cert.get());
   TestSetCallback set_callback;
 
-  cache.Set(cert->os_cert_handle(), set_callback.callback());
+  cache.SetCertificate(cert->os_cert_handle(), set_callback.callback());
   set_callback.WaitForResult();
   EXPECT_EQ(kCert1.cache_key, set_callback.key());
   ASSERT_NO_FATAL_FAILURE(CheckCertCached(&backend, kCert1));
@@ -209,7 +210,7 @@ TEST(DiskBasedCertCache, GetCert) {
   DiskBasedCertCache cache(&backend);
   TestGetCallback get_callback;
 
-  cache.Get(kCert1.cache_key, get_callback.callback());
+  cache.GetCertificate(kCert1.cache_key, get_callback.callback());
   get_callback.WaitForResult();
 
   scoped_refptr<X509Certificate> cert(
@@ -230,7 +231,7 @@ TEST(DiskBasedCertCache, SyncSet) {
   ASSERT_TRUE(cert.get());
 
   TestSetCallback set_callback;
-  cache.Set(cert->os_cert_handle(), set_callback.callback());
+  cache.SetCertificate(cert->os_cert_handle(), set_callback.callback());
   set_callback.WaitForResult();
   EXPECT_EQ(kCert1.cache_key, set_callback.key());
   ASSERT_NO_FATAL_FAILURE(CheckCertCached(&backend, kCert1));
@@ -250,13 +251,13 @@ TEST(DiskBasedCertCache, SyncGet) {
   ASSERT_TRUE(cert.get());
 
   TestGetCallback get_callback;
-  cache.Get(kCert1.cache_key, get_callback.callback());
+  cache.GetCertificate(kCert1.cache_key, get_callback.callback());
   get_callback.WaitForResult();
   EXPECT_TRUE(X509Certificate::IsSameOSCert(get_callback.cert_handle(),
                                             cert->os_cert_handle()));
 }
 
-// Tests that Get will fail on a corrupted certificate.
+// Tests that GetCertificate will fail on a corrupted certificate.
 TEST(DiskBasedCertCache, GetBrokenCert) {
   ScopedMockTransaction trans1(
       CreateMockTransaction(kCert1.cache_key, TEST_MODE_NORMAL));
@@ -265,7 +266,7 @@ TEST(DiskBasedCertCache, GetBrokenCert) {
   DiskBasedCertCache cache(&backend);
   TestGetCallback get_callback;
 
-  cache.Get(kCert1.cache_key, get_callback.callback());
+  cache.GetCertificate(kCert1.cache_key, get_callback.callback());
   get_callback.WaitForResult();
 
   EXPECT_FALSE(get_callback.cert_handle());
@@ -280,7 +281,7 @@ TEST(DiskBasedCertCache, GetUncachedCert) {
   DiskBasedCertCache cache(&backend);
   TestGetCallback get_callback;
 
-  cache.Get(kCert1.cache_key, get_callback.callback());
+  cache.GetCertificate(kCert1.cache_key, get_callback.callback());
   get_callback.WaitForResult();
   EXPECT_EQ(NULL, get_callback.cert_handle());
 }
@@ -300,12 +301,12 @@ TEST(DiskBasedCertCache, SetMultiple) {
 
   // Behind the scenes, these two operations will be combined
   // into one operation. IgnoreCallbacks guarantees that the
-  // first Set operation is not yet complete when the second Set is
-  // called, and then IgnoreCallbacks(false) continues the
+  // first SetCertificate operation is not yet complete when the second
+  // SetCertificate is called, and then IgnoreCallbacks(false) continues the
   // (combined) operation in the |cache|.
   MockDiskEntry::IgnoreCallbacks(true);
-  cache.Set(cert->os_cert_handle(), set_callback1.callback());
-  cache.Set(cert->os_cert_handle(), set_callback2.callback());
+  cache.SetCertificate(cert->os_cert_handle(), set_callback1.callback());
+  cache.SetCertificate(cert->os_cert_handle(), set_callback2.callback());
   MockDiskEntry::IgnoreCallbacks(false);
 
   set_callback1.WaitForResult();
@@ -328,9 +329,9 @@ TEST(DiskBasedCertCache, SetOverwrite) {
   ASSERT_TRUE(cert.get());
   TestSetCallback set_callback1, set_callback2;
 
-  cache.Set(cert->os_cert_handle(), set_callback1.callback());
+  cache.SetCertificate(cert->os_cert_handle(), set_callback1.callback());
   set_callback1.WaitForResult();
-  cache.Set(cert->os_cert_handle(), set_callback2.callback());
+  cache.SetCertificate(cert->os_cert_handle(), set_callback2.callback());
   set_callback2.WaitForResult();
 
   EXPECT_EQ(set_callback1.key(), set_callback2.key());
@@ -350,9 +351,9 @@ TEST(DiskBasedCertCache, SimpleSetAndGet) {
   TestSetCallback set_callback;
   TestGetCallback get_callback;
 
-  cache.Set(cert->os_cert_handle(), set_callback.callback());
+  cache.SetCertificate(cert->os_cert_handle(), set_callback.callback());
   set_callback.WaitForResult();
-  cache.Get(set_callback.key(), get_callback.callback());
+  cache.GetCertificate(set_callback.key(), get_callback.callback());
   get_callback.WaitForResult();
   EXPECT_TRUE(X509Certificate::IsSameOSCert(get_callback.cert_handle(),
                                             cert->os_cert_handle()));
@@ -381,8 +382,8 @@ TEST(DiskBasedCertCache, BasicUsage) {
   // operations of the DiskBasedCertCache are always executed in the same
   // order.
   MockDiskEntry::IgnoreCallbacks(true);
-  cache.Set(cert1->os_cert_handle(), set_callback1.callback());
-  cache.Set(cert2->os_cert_handle(), set_callback2.callback());
+  cache.SetCertificate(cert1->os_cert_handle(), set_callback1.callback());
+  cache.SetCertificate(cert2->os_cert_handle(), set_callback2.callback());
   MockDiskEntry::IgnoreCallbacks(false);
   set_callback1.WaitForResult();
   set_callback2.WaitForResult();
@@ -390,8 +391,8 @@ TEST(DiskBasedCertCache, BasicUsage) {
   TestGetCallback get_callback1, get_callback2;
 
   MockDiskEntry::IgnoreCallbacks(true);
-  cache.Get(set_callback1.key(), get_callback1.callback());
-  cache.Get(set_callback2.key(), get_callback2.callback());
+  cache.GetCertificate(set_callback1.key(), get_callback1.callback());
+  cache.GetCertificate(set_callback2.key(), get_callback2.callback());
   MockDiskEntry::IgnoreCallbacks(false);
   get_callback1.WaitForResult();
   get_callback2.WaitForResult();
@@ -418,8 +419,8 @@ TEST(DiskBasedCertCache, SimultaneousGetSet) {
   TestSetCallback set_callback;
 
   MockDiskEntry::IgnoreCallbacks(true);
-  cache.Get(kCert1.cache_key, get_callback.callback());
-  cache.Set(cert->os_cert_handle(), set_callback.callback());
+  cache.GetCertificate(kCert1.cache_key, get_callback.callback());
+  cache.SetCertificate(cert->os_cert_handle(), set_callback.callback());
   MockDiskEntry::IgnoreCallbacks(false);
   get_callback.WaitForResult();
   set_callback.WaitForResult();
@@ -444,8 +445,8 @@ TEST(DiskBasedCertCache, SimultaneousSetGet) {
   TestGetCallback get_callback;
 
   MockDiskEntry::IgnoreCallbacks(true);
-  cache.Set(cert->os_cert_handle(), set_callback.callback());
-  cache.Get(kCert1.cache_key, get_callback.callback());
+  cache.SetCertificate(cert->os_cert_handle(), set_callback.callback());
+  cache.GetCertificate(kCert1.cache_key, get_callback.callback());
   MockDiskEntry::IgnoreCallbacks(false);
   set_callback.WaitForResult();
   get_callback.WaitForResult();
@@ -467,7 +468,7 @@ TEST(DiskBasedCertCache, DeletedCertCache) {
   ASSERT_TRUE(cert.get());
   TestSetCallback set_callback;
 
-  cache->Set(cert->os_cert_handle(), set_callback.callback());
+  cache->SetCertificate(cert->os_cert_handle(), set_callback.callback());
   cache.reset();
   set_callback.WaitForResult();
   EXPECT_EQ(std::string(), set_callback.key());
@@ -485,10 +486,10 @@ TEST(DiskBasedCertCache, MemCacheGet) {
   DiskBasedCertCache cache(&backend);
 
   TestGetCallback get_callback1, get_callback2;
-  cache.Get(kCert1.cache_key, get_callback1.callback());
+  cache.GetCertificate(kCert1.cache_key, get_callback1.callback());
   get_callback1.WaitForResult();
   EXPECT_EQ(0U, cache.mem_cache_hits_for_testing());
-  cache.Get(kCert1.cache_key, get_callback2.callback());
+  cache.GetCertificate(kCert1.cache_key, get_callback2.callback());
   get_callback2.WaitForResult();
   EXPECT_EQ(1U, cache.mem_cache_hits_for_testing());
   EXPECT_TRUE(X509Certificate::IsSameOSCert(get_callback1.cert_handle(),
@@ -507,7 +508,7 @@ TEST(DiskBasedCertCache, CorruptOverwrite) {
   DiskBasedCertCache cache(&backend);
   TestGetCallback get_callback1, get_callback2;
 
-  cache.Get(kCert1.cache_key, get_callback1.callback());
+  cache.GetCertificate(kCert1.cache_key, get_callback1.callback());
   get_callback1.WaitForResult();
   EXPECT_FALSE(get_callback2.cert_handle());
 
@@ -515,12 +516,12 @@ TEST(DiskBasedCertCache, CorruptOverwrite) {
       ImportCertFromFile(GetTestCertsDirectory(), kCert1.file_name));
   TestSetCallback set_callback;
 
-  cache.Set(cert->os_cert_handle(), set_callback.callback());
+  cache.SetCertificate(cert->os_cert_handle(), set_callback.callback());
   set_callback.WaitForResult();
   EXPECT_EQ(kCert1.cache_key, set_callback.key());
   EXPECT_EQ(0U, cache.mem_cache_hits_for_testing());
 
-  cache.Get(kCert1.cache_key, get_callback2.callback());
+  cache.GetCertificate(kCert1.cache_key, get_callback2.callback());
   get_callback2.WaitForResult();
   EXPECT_TRUE(X509Certificate::IsSameOSCert(get_callback2.cert_handle(),
                                             cert->os_cert_handle()));

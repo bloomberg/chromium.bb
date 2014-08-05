@@ -39,7 +39,6 @@ enum CacheResult {
   DISK_CACHE_HIT,
   DISK_CACHE_ENTRY_CORRUPT,
   DISK_CACHE_ERROR,
-  CACHE_MISS,
   CACHE_RESULT_MAX
 };
 
@@ -50,9 +49,9 @@ void RecordCacheResult(CacheResult result) {
 
 }  // namespace
 
-// WriteWorkers represent pending Set jobs in the DiskBasedCertCache. Each
-// certificate requested to be cached is assigned a Writeworker on a one-to-one
-// basis. The same certificate should not have multiple WriteWorkers at the same
+// WriteWorkers represent pending SetCertificate jobs in the DiskBasedCertCache.
+// Each certificate requested to be stored is assigned a WriteWorker.
+// The same certificate should not have multiple WriteWorkers at the same
 // time; instead, add a user callback to the existing WriteWorker.
 class DiskBasedCertCache::WriteWorker {
  public:
@@ -112,7 +111,7 @@ class DiskBasedCertCache::WriteWorker {
   bool canceled_;
 
   disk_cache::Entry* entry_;
-  State state_;
+  State next_state_;
   scoped_refptr<IOBuffer> buffer_;
   int io_buf_len_;
 
@@ -131,7 +130,7 @@ DiskBasedCertCache::WriteWorker::WriteWorker(
       key_(key),
       canceled_(false),
       entry_(NULL),
-      state_(STATE_NONE),
+      next_state_(STATE_NONE),
       io_buf_len_(0),
       cleanup_callback_(cleanup_callback),
       io_callback_(
@@ -146,8 +145,8 @@ DiskBasedCertCache::WriteWorker::~WriteWorker() {
 }
 
 void DiskBasedCertCache::WriteWorker::Start() {
-  DCHECK_EQ(STATE_NONE, state_);
-  state_ = STATE_CREATE;
+  DCHECK_EQ(STATE_NONE, next_state_);
+  next_state_ = STATE_CREATE;
   int rv = DoLoop(OK);
 
   if (rv == ERR_IO_PENDING)
@@ -181,9 +180,9 @@ void DiskBasedCertCache::WriteWorker::OnIOComplete(int rv) {
 
 int DiskBasedCertCache::WriteWorker::DoLoop(int rv) {
   do {
-    State next_state = state_;
-    state_ = STATE_NONE;
-    switch (next_state) {
+    State state = next_state_;
+    next_state_ = STATE_NONE;
+    switch (state) {
       case STATE_CREATE:
         rv = DoCreate();
         break;
@@ -206,13 +205,13 @@ int DiskBasedCertCache::WriteWorker::DoLoop(int rv) {
         NOTREACHED();
         break;
     }
-  } while (rv != ERR_IO_PENDING && state_ != STATE_NONE);
+  } while (rv != ERR_IO_PENDING && next_state_ != STATE_NONE);
 
   return rv;
 }
 
 int DiskBasedCertCache::WriteWorker::DoCreate() {
-  state_ = STATE_CREATE_COMPLETE;
+  next_state_ = STATE_CREATE_COMPLETE;
 
   return backend_->CreateEntry(key_, &entry_, io_callback_);
 }
@@ -222,16 +221,16 @@ int DiskBasedCertCache::WriteWorker::DoCreateComplete(int rv) {
   // If this occurs, it is necessary to instead open the previously
   // existing entry.
   if (rv < 0) {
-    state_ = STATE_OPEN;
+    next_state_ = STATE_OPEN;
     return OK;
   }
 
-  state_ = STATE_WRITE;
+  next_state_ = STATE_WRITE;
   return OK;
 }
 
 int DiskBasedCertCache::WriteWorker::DoOpen() {
-  state_ = STATE_OPEN_COMPLETE;
+  next_state_ = STATE_OPEN_COMPLETE;
   return backend_->OpenEntry(key_, &entry_, io_callback_);
 }
 
@@ -239,7 +238,7 @@ int DiskBasedCertCache::WriteWorker::DoOpenComplete(int rv) {
   if (rv < 0)
     return rv;
 
-  state_ = STATE_WRITE;
+  next_state_ = STATE_WRITE;
   return OK;
 }
 
@@ -254,7 +253,7 @@ int DiskBasedCertCache::WriteWorker::DoWrite() {
   io_buf_len_ = write_data.size();
   memcpy(buffer_->data(), write_data.data(), io_buf_len_);
 
-  state_ = STATE_WRITE_COMPLETE;
+  next_state_ = STATE_WRITE_COMPLETE;
 
   return entry_->WriteData(0 /* index */,
                            0 /* offset */,
@@ -291,11 +290,11 @@ void DiskBasedCertCache::WriteWorker::RunCallbacks(int rv) {
   user_callbacks_.clear();
 }
 
-// ReadWorkers represent pending Get jobs in the DiskBasedCertCache. Each
-// certificate requested to be retrieved from the cache is assigned a ReadWorker
-// on a one-to-one basis. The same |key| should not have multiple ReadWorkers
-// at the same time; instead, call AddCallback to add a user_callback_ to
-// the the existing ReadWorker.
+// ReadWorkers represent pending GetCertificate jobs in the DiskBasedCertCache.
+// Each certificate requested to be retrieved from the cache is assigned a
+// ReadWorker. The same |key| should not have multiple ReadWorkers at the
+// same time; instead, call AddCallback to add a user callback to the
+// existing ReadWorker.
 class DiskBasedCertCache::ReadWorker {
  public:
   // |backend| is the backend to read |certificate| from, using
@@ -348,7 +347,7 @@ class DiskBasedCertCache::ReadWorker {
 
   disk_cache::Entry* entry_;
 
-  State state_;
+  State next_state_;
   scoped_refptr<IOBuffer> buffer_;
   int io_buf_len_;
 
@@ -365,7 +364,7 @@ DiskBasedCertCache::ReadWorker::ReadWorker(disk_cache::Backend* backend,
       key_(key),
       canceled_(false),
       entry_(NULL),
-      state_(STATE_NONE),
+      next_state_(STATE_NONE),
       io_buf_len_(0),
       cleanup_callback_(cleanup_callback),
       io_callback_(
@@ -380,8 +379,8 @@ DiskBasedCertCache::ReadWorker::~ReadWorker() {
 }
 
 void DiskBasedCertCache::ReadWorker::Start() {
-  DCHECK_EQ(STATE_NONE, state_);
-  state_ = STATE_OPEN;
+  DCHECK_EQ(STATE_NONE, next_state_);
+  next_state_ = STATE_OPEN;
   int rv = DoLoop(OK);
 
   if (rv == ERR_IO_PENDING)
@@ -415,9 +414,9 @@ void DiskBasedCertCache::ReadWorker::OnIOComplete(int rv) {
 
 int DiskBasedCertCache::ReadWorker::DoLoop(int rv) {
   do {
-    State next_state = state_;
-    state_ = STATE_NONE;
-    switch (next_state) {
+    State state = next_state_;
+    next_state_ = STATE_NONE;
+    switch (state) {
       case STATE_OPEN:
         rv = DoOpen();
         break;
@@ -434,30 +433,28 @@ int DiskBasedCertCache::ReadWorker::DoLoop(int rv) {
         NOTREACHED();
         break;
     }
-  } while (rv != ERR_IO_PENDING && state_ != STATE_NONE);
+  } while (rv != ERR_IO_PENDING && next_state_ != STATE_NONE);
 
   return rv;
 }
 
 int DiskBasedCertCache::ReadWorker::DoOpen() {
-  state_ = STATE_OPEN_COMPLETE;
+  next_state_ = STATE_OPEN_COMPLETE;
   return backend_->OpenEntry(key_, &entry_, io_callback_);
 }
 
 int DiskBasedCertCache::ReadWorker::DoOpenComplete(int rv) {
   if (rv < 0) {
-    // Errors other than ERR_CACHE_MISS are not recorded as either a hit
-    // or a miss.
-    RecordCacheResult(rv == ERR_CACHE_MISS ? CACHE_MISS : DISK_CACHE_ERROR);
+    RecordCacheResult(DISK_CACHE_ERROR);
     return rv;
   }
 
-  state_ = STATE_READ;
+  next_state_ = STATE_READ;
   return OK;
 }
 
 int DiskBasedCertCache::ReadWorker::DoRead() {
-  state_ = STATE_READ_COMPLETE;
+  next_state_ = STATE_READ_COMPLETE;
   io_buf_len_ = entry_->GetDataSize(0 /* index */);
   buffer_ = new IOBuffer(io_buf_len_);
   return entry_->ReadData(
@@ -525,7 +522,8 @@ DiskBasedCertCache::~DiskBasedCertCache() {
   }
 }
 
-void DiskBasedCertCache::Get(const std::string& key, const GetCallback& cb) {
+void DiskBasedCertCache::GetCertificate(const std::string& key,
+                                        const GetCallback& cb) {
   DCHECK(!key.empty());
 
   // If the handle is already in the MRU cache, just return that (via callback).
@@ -557,8 +555,9 @@ void DiskBasedCertCache::Get(const std::string& key, const GetCallback& cb) {
   }
 }
 
-void DiskBasedCertCache::Set(const X509Certificate::OSCertHandle cert_handle,
-                             const SetCallback& cb) {
+void DiskBasedCertCache::SetCertificate(
+    const X509Certificate::OSCertHandle cert_handle,
+    const SetCallback& cb) {
   DCHECK(!cb.is_null());
   DCHECK(cert_handle);
   std::string key = GetCacheKeyForCert(cert_handle);

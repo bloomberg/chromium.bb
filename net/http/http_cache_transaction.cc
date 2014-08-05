@@ -1886,11 +1886,11 @@ void HttpCache::Transaction::ReadCertChain() {
 
   scoped_refptr<SharedChainData> shared_chain_data(
       new SharedChainData(intermediates.size() + 1, TimeTicks::Now()));
-  cache_->cert_cache()->Get(key,
-                            base::Bind(&OnCertReadIOComplete,
-                                       dist_from_root,
-                                       true /* is leaf */,
-                                       shared_chain_data));
+  cache_->cert_cache()->GetCertificate(key,
+                                       base::Bind(&OnCertReadIOComplete,
+                                                  dist_from_root,
+                                                  true /* is leaf */,
+                                                  shared_chain_data));
 
   for (X509Certificate::OSCertHandles::const_iterator it =
            intermediates.begin();
@@ -1898,11 +1898,11 @@ void HttpCache::Transaction::ReadCertChain() {
        ++it) {
     --dist_from_root;
     key = GetCacheKeyForCert(*it);
-    cache_->cert_cache()->Get(key,
-                              base::Bind(&OnCertReadIOComplete,
-                                         dist_from_root,
-                                         false /* is not leaf */,
-                                         shared_chain_data));
+    cache_->cert_cache()->GetCertificate(key,
+                                         base::Bind(&OnCertReadIOComplete,
+                                                    dist_from_root,
+                                                    false /* is not leaf */,
+                                                    shared_chain_data));
   }
   DCHECK_EQ(0, dist_from_root);
 }
@@ -1914,21 +1914,22 @@ void HttpCache::Transaction::WriteCertChain() {
 
   scoped_refptr<SharedChainData> shared_chain_data(
       new SharedChainData(intermediates.size() + 1, TimeTicks::Now()));
-  cache_->cert_cache()->Set(response_.ssl_info.cert->os_cert_handle(),
-                            base::Bind(&OnCertWriteIOComplete,
-                                       dist_from_root,
-                                       true /* is leaf */,
-                                       shared_chain_data));
+  cache_->cert_cache()->SetCertificate(
+      response_.ssl_info.cert->os_cert_handle(),
+      base::Bind(&OnCertWriteIOComplete,
+                 dist_from_root,
+                 true /* is leaf */,
+                 shared_chain_data));
   for (X509Certificate::OSCertHandles::const_iterator it =
            intermediates.begin();
        it != intermediates.end();
        ++it) {
     --dist_from_root;
-    cache_->cert_cache()->Set(*it,
-                              base::Bind(&OnCertWriteIOComplete,
-                                         dist_from_root,
-                                         false /* is not leaf */,
-                                         shared_chain_data));
+    cache_->cert_cache()->SetCertificate(*it,
+                                         base::Bind(&OnCertWriteIOComplete,
+                                                    dist_from_root,
+                                                    false /* is not leaf */,
+                                                    shared_chain_data));
   }
   DCHECK_EQ(0, dist_from_root);
 }
@@ -1944,7 +1945,7 @@ void HttpCache::Transaction::SetRequest(const BoundNetLog& net_log,
       break;
     case RECORD:
       // When in record mode, we want to NEVER load from the cache.
-      // The reason for this is beacuse we save the Set-Cookie headers
+      // The reason for this is because we save the Set-Cookie headers
       // (intentionally).  If we read from the cache, we replay them
       // prematurely.
       effective_load_flags_ |= LOAD_BYPASS_CACHE;

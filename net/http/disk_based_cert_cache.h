@@ -29,8 +29,8 @@ class NET_EXPORT_PRIVATE DiskBasedCertCache {
       GetCallback;
   typedef base::Callback<void(const std::string&)> SetCallback;
 
-  // Initializes a new DiskBasedCertCache that will use |backend|, which has
-  // previously been initialized, to store the certificate in the cache.
+  // Initializes a new DiskBasedCertCache that will access the disk cache via
+  // |backend|.
   explicit DiskBasedCertCache(disk_cache::Backend* backend);
   ~DiskBasedCertCache();
 
@@ -39,20 +39,22 @@ class NET_EXPORT_PRIVATE DiskBasedCertCache {
   // Otherwise, |cb| will be called with NULL. Callers that wish to store
   // a reference to the certificate need to use X509Certificate::DupOSCertHandle
   // inside |cb|.
-  void Get(const std::string& key, const GetCallback& cb);
+  void GetCertificate(const std::string& key, const GetCallback& cb);
 
   // Stores |cert_handle| in the cache. If |cert_handle| is successfully stored,
   // |cb| will be called with the key. If |cb| is called with an empty
   // string, then |cert_handle| was not stored.
-  void Set(const X509Certificate::OSCertHandle cert_handle,
-           const SetCallback& cb);
+  void SetCertificate(const X509Certificate::OSCertHandle cert_handle,
+                      const SetCallback& cb);
 
   // Returns the number of in-memory MRU cache hits that have occurred
-  // on Set and Get operations. Intended for test purposes only.
+  // on SetCertificate and GetCertificate operations. Intended for test purposes
+  // only.
   size_t mem_cache_hits_for_testing() const { return mem_cache_hits_; }
 
   // Returns the number of in-memory MRU cache misses that have occurred
-  // on Set and Get operations. Intended for test purposes only.
+  // on SetCertificate and GetCertificate operations. Intended for test purposes
+  // only.
   size_t mem_cache_misses_for_testing() const { return mem_cache_misses_; }
 
  private:
@@ -64,8 +66,8 @@ class NET_EXPORT_PRIVATE DiskBasedCertCache {
     void operator()(X509Certificate::OSCertHandle cert_handle);
   };
 
-  // An in-memory cache that is used to prevent redundant reads and writes
-  // to and from the disk cache.
+  // An in-memory cache that is used to prevent redundantly reading
+  // from disk.
   typedef base::MRUCacheBase<std::string,
                              X509Certificate::OSCertHandle,
                              CertFree> MRUCertCache;
@@ -75,9 +77,9 @@ class NET_EXPORT_PRIVATE DiskBasedCertCache {
   typedef base::hash_map<std::string, ReadWorker*> ReadWorkerMap;
   typedef base::hash_map<std::string, WriteWorker*> WriteWorkerMap;
 
-  // FinishedReadOperation and FinishedWriteOperation are used by callbacks
-  // given to the workers to signal the DiskBasedCertCache they have completed
-  // their work.
+  // FinishedReadOperation and FinishedWriteOperation are used to remove
+  // workers from their respective worker maps, and perform other necessary
+  // cleanup. They are called from the workers via callback.
   void FinishedReadOperation(const std::string& key,
                              X509Certificate::OSCertHandle cert_handle);
   void FinishedWriteOperation(const std::string& key,
