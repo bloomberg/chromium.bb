@@ -15,6 +15,11 @@ per-file chrome_elf_init_*=robertshield@chromium.org
 
 per-file enumerate_modules_model*=finnur@chromium.org
 
+per-file io_thread*=cbentzel@chromium.org
+per-file io_thread*=mmenke@chromium.org
+per-file io_thread*=rsleevi@chromium.org
+per-file io_thread*=willchan@chromium.org
+
 per-file shell_integration_win*=gab@chromium.org
 per-file shell_integration_win*=grt@chromium.org
 per-file shell_integration_linux*=erg@chromium.org
