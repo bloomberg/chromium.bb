@@ -15,6 +15,7 @@
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_animations.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -72,14 +73,51 @@ class LayerControlView : public views::View {
 
 }  // namespace
 
+// This event handler receives events in the pre-target phase and takes care of
+// the following:
+//   - Disabling overview mode on touch release.
+//   - Disabling overview mode on mouse release.
+class PreEventDispatchHandler : public ui::EventHandler {
+ public:
+  PreEventDispatchHandler() {}
+  virtual ~PreEventDispatchHandler() {}
+
+ private:
+  // ui::EventHandler:
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    CHECK_EQ(ui::EP_PRETARGET, event->phase());
+    WindowSelectorController* controller =
+        Shell::GetInstance()->window_selector_controller();
+    if (event->type() == ui::ET_MOUSE_RELEASED && controller->IsSelecting()) {
+      controller->ToggleOverview();
+      event->StopPropagation();
+    }
+  }
+
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    CHECK_EQ(ui::EP_PRETARGET, event->phase());
+    WindowSelectorController* controller =
+        Shell::GetInstance()->window_selector_controller();
+    if (event->type() == ui::ET_GESTURE_TAP && controller->IsSelecting()) {
+      controller->ToggleOverview();
+      event->StopPropagation();
+    }
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(PreEventDispatchHandler);
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopBackgroundView, public:
 
-DesktopBackgroundView::DesktopBackgroundView() {
+DesktopBackgroundView::DesktopBackgroundView()
+    : pre_dispatch_handler_(new PreEventDispatchHandler()) {
   set_context_menu_controller(this);
+  AddPreTargetHandler(pre_dispatch_handler_.get());
 }
 
 DesktopBackgroundView::~DesktopBackgroundView() {
+  RemovePreTargetHandler(pre_dispatch_handler_.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
