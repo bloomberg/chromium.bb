@@ -57,6 +57,7 @@ def print_landmines(target):
     print 'Clobber to rebuild GN files for V8'
   print 'Need to clobber everything due to build_nexe change in nacl r13424'
   print '[chromium-dev] PSA: clobber build needed for IDR_INSPECTOR_* compil...'
+  print 'blink_resources.grd changed: crbug.com/400860'
 
 
 def main():
