@@ -185,10 +185,17 @@ void P2PSocketHostTcpBase::StartTls() {
 
   // Default ssl config.
   const net::SSLConfig ssl_config;
-  net::HostPortPair dest_host_port_pair =
-      net::HostPortPair::FromIPEndPoint(remote_address_.ip_address);
-  if (!remote_address_.hostname.empty())
-    dest_host_port_pair.set_host(remote_address_.hostname);
+  net::HostPortPair dest_host_port_pair;
+  if (remote_address_.ip_address.address().empty()) {
+    DCHECK(!remote_address_.hostname.empty());
+    dest_host_port_pair = net::HostPortPair::FromString(
+        remote_address_.hostname);
+  } else {
+    dest_host_port_pair = net::HostPortPair::FromIPEndPoint(
+        remote_address_.ip_address);
+    if (!remote_address_.hostname.empty())
+      dest_host_port_pair.set_host(remote_address_.hostname);
+  }
 
   net::ClientSocketFactory* socket_factory =
       net::ClientSocketFactory::GetDefaultFactory();
