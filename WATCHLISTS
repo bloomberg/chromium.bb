@@ -225,6 +225,9 @@
     'clipboard': {
       'filepath': 'clipboard|dnd|drag|drop',
     },
+    'closure': {
+      'filepath': 'third_party/closure_(compiler|linter)/',
+    },
     'content': {
       'filepath': 'content/',
     },
@@ -811,6 +814,7 @@
                      'eugenis+clang@chromium.org',
                      'glider+clang@chromium.org'],
     'clipboard': ['dcheng@chromium.org'],
+    'closure': ['dbeam+watch-closure@chromium.org'],
     'content': ['jam@chromium.org',
                 'darin-cc@chromium.org'],
     'content_input': ['jdduke+watch@chromium.org'],
