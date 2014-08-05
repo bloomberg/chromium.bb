@@ -927,7 +927,8 @@ void LayerAnimationController::NotifyObserversOpacityAnimated(
         value_observers_);
     LayerAnimationValueObserver* obs;
     while ((obs = it.GetNext()) != NULL) {
-      if ((notify_active_observers && obs->IsActive()) ||
+      if ((notify_active_observers && notify_pending_observers) ||
+          (notify_active_observers && obs->IsActive()) ||
           (notify_pending_observers && !obs->IsActive()))
         obs->OnOpacityAnimated(opacity);
     }
@@ -943,7 +944,8 @@ void LayerAnimationController::NotifyObserversTransformAnimated(
         value_observers_);
     LayerAnimationValueObserver* obs;
     while ((obs = it.GetNext()) != NULL) {
-      if ((notify_active_observers && obs->IsActive()) ||
+      if ((notify_active_observers && notify_pending_observers) ||
+          (notify_active_observers && obs->IsActive()) ||
           (notify_pending_observers && !obs->IsActive()))
         obs->OnTransformAnimated(transform);
     }
@@ -959,7 +961,8 @@ void LayerAnimationController::NotifyObserversFilterAnimated(
         value_observers_);
     LayerAnimationValueObserver* obs;
     while ((obs = it.GetNext()) != NULL) {
-      if ((notify_active_observers && obs->IsActive()) ||
+      if ((notify_active_observers && notify_pending_observers) ||
+          (notify_active_observers && obs->IsActive()) ||
           (notify_pending_observers && !obs->IsActive()))
         obs->OnFilterAnimated(filters);
     }
@@ -975,7 +978,8 @@ void LayerAnimationController::NotifyObserversScrollOffsetAnimated(
         value_observers_);
     LayerAnimationValueObserver* obs;
     while ((obs = it.GetNext()) != NULL) {
-      if ((notify_active_observers && obs->IsActive()) ||
+      if ((notify_active_observers && notify_pending_observers) ||
+          (notify_active_observers && obs->IsActive()) ||
           (notify_pending_observers && !obs->IsActive()))
         obs->OnScrollOffsetAnimated(scroll_offset);
     }
