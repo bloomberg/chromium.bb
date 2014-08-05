@@ -17,7 +17,7 @@ import java.io.InputStream;
  */
 @JNINamespace("android_webview")
 class InputStreamUtil {
-    private static final String LOGTAG = "AwAssets";
+    private static final String LOGTAG = "InputStreamUtil";
     // The InputStream APIs return -1 in some cases. In order to convey the extra information that
     // the call had failed due to an exception being thrown we simply map all negative return values
     // from the original calls to -1 and make -2 mean that an exception has been thrown.
