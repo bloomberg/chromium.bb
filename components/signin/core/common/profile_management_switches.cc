@@ -122,8 +122,8 @@ bool IsFastUserSwitching() {
 }
 
 bool IsGoogleProfileInfo() {
-  return CheckFlag(switches::kGoogleProfileInfo,
-                   STATE_NEW_PROFILE_MANAGEMENT);
+  return IsNewAvatarMenu() ||
+      CheckFlag(switches::kGoogleProfileInfo, STATE_NONE);
 }
 
 bool IsNewAvatarMenu() {
