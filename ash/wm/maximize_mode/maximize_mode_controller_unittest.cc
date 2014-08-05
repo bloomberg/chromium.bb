@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <math.h>
+
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 
 #include "ash/accelerometer/accelerometer_controller.h"
@@ -14,6 +16,7 @@
 #include "ash/test/test_screenshot_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/test/test_volume_control_delegate.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/vector3d_f.h"
@@ -90,41 +93,176 @@ class MaximizeModeControllerTest : public test::AshTestBase {
         SetDisplayRotation(gfx::Display::InternalDisplayId(), rotation);
   }
 
+  // Attaches a SimpleTestTickClock to the MaximizeModeController with a non
+  // null value initial value.
+  void AttachTickClockForTest() {
+    scoped_ptr<base::TickClock> tick_clock(
+        test_tick_clock_ = new base::SimpleTestTickClock());
+    test_tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
+    maximize_mode_controller()->SetTickClockForTest(tick_clock.Pass());
+  }
+
+  void AdvanceTickClock(const base::TimeDelta& delta) {
+    DCHECK(test_tick_clock_);
+    test_tick_clock_->Advance(delta);
+  }
+
+  void OpenLidToAngle(float degrees) {
+    DCHECK(degrees >= 0.0f);
+    DCHECK(degrees <= 360.0f);
+
+    float radians = degrees * kDegreesToRadians;
+    gfx::Vector3dF base_vector(1.0f, 0.0f, 0.0f);
+    gfx::Vector3dF lid_vector(cos(radians), 0.0f, sin(radians));
+    TriggerAccelerometerUpdate(base_vector, lid_vector);
+  }
+
+#if defined(OS_CHROMEOS)
+  void OpenLid() {
+    maximize_mode_controller()->LidEventReceived(true /* open */,
+        maximize_mode_controller()->tick_clock_->NowTicks());
+  }
+
+  void CloseLid() {
+    maximize_mode_controller()->LidEventReceived(false /* open */,
+        maximize_mode_controller()->tick_clock_->NowTicks());
+  }
+#endif  // OS_CHROMEOS
+
+  bool WasLidOpenedRecently() {
+    return maximize_mode_controller()->WasLidOpenedRecently();
+  }
+
  private:
+  base::SimpleTestTickClock* test_tick_clock_;
+
   DISALLOW_COPY_AND_ASSIGN(MaximizeModeControllerTest);
 };
 
-// Tests that opening the lid beyond 180 will enter touchview, and that it will
-// exit when the lid comes back from 180. Also tests the thresholds, i.e. it
-// will stick to the current mode.
-TEST_F(MaximizeModeControllerTest, EnterExitThresholds) {
-  // For the simple test the base remains steady.
-  gfx::Vector3dF base(0.0f, 0.0f, 1.0f);
+#if defined(OS_CHROMEOS)
 
-  // Lid open 90 degrees.
-  TriggerAccelerometerUpdate(base, gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
+// Verify that closing the lid will exit maximize mode.
+TEST_F(MaximizeModeControllerTest, CloseLidWhileInMaximizeMode) {
+  OpenLidToAngle(315.0f);
+  ASSERT_TRUE(IsMaximizeModeStarted());
+
+  CloseLid();
+  EXPECT_FALSE(IsMaximizeModeStarted());
+}
+
+// Verify that maximize mode will not be entered when the lid is closed.
+TEST_F(MaximizeModeControllerTest,
+    HingeAnglesWithLidClosed) {
+  AttachTickClockForTest();
+
+  CloseLid();
+
+  OpenLidToAngle(270.0f);
   EXPECT_FALSE(IsMaximizeModeStarted());
 
-  // Open just past 180.
-  TriggerAccelerometerUpdate(base, gfx::Vector3dF(0.05f, 0.0f, -1.0f));
+  OpenLidToAngle(315.0f);
   EXPECT_FALSE(IsMaximizeModeStarted());
 
-  // Open up 270 degrees.
-  TriggerAccelerometerUpdate(base, gfx::Vector3dF(1.0f, 0.0f, 0.0f));
-  EXPECT_TRUE(IsMaximizeModeStarted());
-
-  // Open up 360 degrees and appearing to be slightly past it (i.e. as if almost
-  // closed).
-  TriggerAccelerometerUpdate(base, gfx::Vector3dF(-0.05f, 0.0f, 1.0f));
-  EXPECT_TRUE(IsMaximizeModeStarted());
-
-  // Open just before 180.
-  TriggerAccelerometerUpdate(base, gfx::Vector3dF(-0.05f, 0.0f, -1.0f));
-  EXPECT_TRUE(IsMaximizeModeStarted());
-
-  // Open 90 degrees.
-  TriggerAccelerometerUpdate(base, gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
+  OpenLidToAngle(355.0f);
   EXPECT_FALSE(IsMaximizeModeStarted());
+}
+
+// Verify the maximize mode state for unstable hinge angles when the lid was
+// recently open.
+TEST_F(MaximizeModeControllerTest,
+    UnstableHingeAnglesWhenLidRecentlyOpened) {
+  AttachTickClockForTest();
+
+  OpenLid();
+  ASSERT_TRUE(WasLidOpenedRecently());
+
+  OpenLidToAngle(5.0f);
+  EXPECT_FALSE(IsMaximizeModeStarted());
+
+  OpenLidToAngle(355.0f);
+  EXPECT_FALSE(IsMaximizeModeStarted());
+
+  // This is a stable reading and should clear the last lid opened time.
+  OpenLidToAngle(45.0f);
+  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(WasLidOpenedRecently());
+
+  OpenLidToAngle(355.0f);
+  EXPECT_TRUE(IsMaximizeModeStarted());
+}
+
+#endif  // OS_CHROMEOS
+
+// Verify the WasLidOpenedRecently signal with respect to time.
+TEST_F(MaximizeModeControllerTest, WasLidOpenedRecentlyOverTime) {
+#if defined(OS_CHROMEOS)
+
+  AttachTickClockForTest();
+
+  // No lid open time initially.
+  ASSERT_FALSE(WasLidOpenedRecently());
+
+  CloseLid();
+  EXPECT_FALSE(WasLidOpenedRecently());
+
+  OpenLid();
+  EXPECT_TRUE(WasLidOpenedRecently());
+
+  // 1 second after lid open.
+  AdvanceTickClock(base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(WasLidOpenedRecently());
+
+  // 3 seconds after lid open.
+  AdvanceTickClock(base::TimeDelta::FromSeconds(2));
+  EXPECT_FALSE(WasLidOpenedRecently());
+
+#else
+
+  EXPECT_FALSE(WasLidOpenedRecently());
+
+#endif  // OS_CHROMEOS
+}
+
+// Verify the maximize mode enter/exit thresholds for stable angles.
+TEST_F(MaximizeModeControllerTest, StableHingeAnglesWithLidOpened) {
+  ASSERT_FALSE(IsMaximizeModeStarted());
+  ASSERT_FALSE(WasLidOpenedRecently());
+
+  OpenLidToAngle(180.0f);
+  EXPECT_FALSE(IsMaximizeModeStarted());
+
+  OpenLidToAngle(315.0f);
+  EXPECT_TRUE(IsMaximizeModeStarted());
+
+  OpenLidToAngle(180.0f);
+  EXPECT_TRUE(IsMaximizeModeStarted());
+
+  OpenLidToAngle(45.0f);
+  EXPECT_FALSE(IsMaximizeModeStarted());
+
+  OpenLidToAngle(270.0f);
+  EXPECT_TRUE(IsMaximizeModeStarted());
+
+  OpenLidToAngle(90.0f);
+  EXPECT_FALSE(IsMaximizeModeStarted());
+}
+
+// Verify the maximize mode state for unstable hinge angles when the lid is open
+// but not recently.
+TEST_F(MaximizeModeControllerTest, UnstableHingeAnglesWithLidOpened) {
+  AttachTickClockForTest();
+
+  ASSERT_FALSE(WasLidOpenedRecently());
+  ASSERT_FALSE(IsMaximizeModeStarted());
+
+  OpenLidToAngle(5.0f);
+  EXPECT_FALSE(IsMaximizeModeStarted());
+
+  OpenLidToAngle(355.0f);
+  EXPECT_TRUE(IsMaximizeModeStarted());
+
+  OpenLidToAngle(5.0f);
+  EXPECT_TRUE(IsMaximizeModeStarted());
 }
 
 // Tests that when the hinge is nearly vertically aligned, the current state
@@ -157,8 +295,8 @@ TEST_F(MaximizeModeControllerTest, HingeAligned) {
   EXPECT_TRUE(IsMaximizeModeStarted());
 }
 
-// Tests that accelerometer readings in each of the screen angles will trigger
-// a rotation of the internal display.
+// Tests that accelerometer readings in each of the screen angles will trigger a
+// rotation of the internal display.
 TEST_F(MaximizeModeControllerTest, DisplayRotation) {
   // Trigger maximize mode by opening to 270.
   TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, -1.0f),
@@ -275,8 +413,7 @@ TEST_F(MaximizeModeControllerTest, Screenshot) {
   delegate->set_can_take_screenshot(true);
 
   // Open up 270 degrees.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, 1.0f),
-                             gfx::Vector3dF(1.0f, 0.0f, 0.0f));
+  OpenLidToAngle(270.0f);
   ASSERT_TRUE(IsMaximizeModeStarted());
 
   // Pressing power alone does not take a screenshot.
@@ -363,22 +500,17 @@ TEST_F(MaximizeModeControllerTest, RotationLockPreventsRotation) {
 // Tests that when MaximizeModeController turns off MaximizeMode that on the
 // next accelerometer update the rotation lock is cleared.
 TEST_F(MaximizeModeControllerTest, ExitingMaximizeModeClearRotationLock) {
-  // The base remains steady.
-  gfx::Vector3dF base(0.0f, 0.0f, 1.0f);
-
   // Trigger maximize mode by opening to 270.
-  TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, -1.0f),
-  gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
+  OpenLidToAngle(270.0f);
   ASSERT_TRUE(IsMaximizeModeStarted());
 
   maximize_mode_controller()->SetRotationLocked(true);
 
-  // Open 90 degrees.
-  TriggerAccelerometerUpdate(base, gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
+  OpenLidToAngle(90.0f);
   EXPECT_FALSE(IsMaximizeModeStarted());
 
-  // Send an update that would not relaunch MaximizeMode. 90 degrees.
-  TriggerAccelerometerUpdate(base, gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
+  // Send an update that would not relaunch MaximizeMode.
+  OpenLidToAngle(90.0f);
   EXPECT_FALSE(maximize_mode_controller()->rotation_locked());
 }
 

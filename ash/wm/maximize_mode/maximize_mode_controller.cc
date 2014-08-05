@@ -15,6 +15,8 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "base/time/default_tick_clock.h"
+#include "base/time/tick_clock.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
@@ -24,6 +26,10 @@
 #if defined(USE_X11)
 #include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.h"
 #endif
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_thread_manager.h"
+#endif  // OS_CHROMEOS
 
 namespace ash {
 
@@ -36,11 +42,19 @@ const float kEnterMaximizeModeAngle = 200.0f;
 // angle to enter maximize mode to prevent rapid toggling when near the angle.
 const float kExitMaximizeModeAngle = 160.0f;
 
-// When the lid is fully open 360 degrees, the accelerometer readings can
-// occasionally appear as though the lid is almost closed. If the lid appears
-// near closed but the device is on we assume it is an erroneous reading from
-// it being open 360 degrees.
-const float kFullyOpenAngleErrorTolerance = 20.0f;
+// Defines a range for which accelerometer readings are considered accurate.
+// When the lid is near open (or near closed) the accelerometer readings may be
+// inaccurate and a lid that is fully open may appear to be near closed (and
+// vice versa).
+const float kMinStableAngle = 20.0f;
+const float kMaxStableAngle = 340.0f;
+
+// The time duration to consider the lid to be recently opened.
+// This is used to prevent entering maximize mode if an erroneous accelerometer
+// reading makes the lid appear to be fully open when the user is opening the
+// lid from a closed position.
+const base::TimeDelta kLidRecentlyOpenedDuration =
+    base::TimeDelta::FromSeconds(2);
 
 // When the device approaches vertical orientation (i.e. portrait orientation)
 // the accelerometers for the base and lid approach the same values (i.e.
@@ -144,14 +158,24 @@ MaximizeModeController::MaximizeModeController()
       have_seen_accelerometer_data_(false),
       in_set_screen_rotation_(false),
       user_rotation_(gfx::Display::ROTATE_0),
-      last_touchview_transition_time_(base::Time::Now()) {
+      last_touchview_transition_time_(base::Time::Now()),
+      tick_clock_(new base::DefaultTickClock()),
+      lid_is_closed_(false) {
   Shell::GetInstance()->accelerometer_controller()->AddObserver(this);
   Shell::GetInstance()->AddShellObserver(this);
+#if defined(OS_CHROMEOS)
+  chromeos::DBusThreadManager::Get()->
+      GetPowerManagerClient()->AddObserver(this);
+#endif  // OS_CHROMEOS
 }
 
 MaximizeModeController::~MaximizeModeController() {
   Shell::GetInstance()->RemoveShellObserver(this);
   Shell::GetInstance()->accelerometer_controller()->RemoveObserver(this);
+#if defined(OS_CHROMEOS)
+  chromeos::DBusThreadManager::Get()->
+      GetPowerManagerClient()->RemoveObserver(this);
+#endif  // OS_CHROMEOS
 }
 
 void MaximizeModeController::SetRotationLocked(bool rotation_locked) {
@@ -239,6 +263,25 @@ void MaximizeModeController::OnDisplayConfigurationChanged() {
   }
 }
 
+#if defined(OS_CHROMEOS)
+void MaximizeModeController::LidEventReceived(bool open,
+                                              const base::TimeTicks& time) {
+  if (open)
+    last_lid_open_time_ = time;
+  lid_is_closed_ = !open;
+  LeaveMaximizeMode();
+}
+
+void MaximizeModeController::SuspendImminent() {
+  RecordTouchViewStateTransition();
+}
+
+void MaximizeModeController::SuspendDone(
+    const base::TimeDelta& sleep_duration) {
+  last_touchview_transition_time_ = base::Time::Now();
+}
+#endif  // OS_CHROMEOS
+
 void MaximizeModeController::HandleHingeRotation(const gfx::Vector3dF& base,
                                                  const gfx::Vector3dF& lid) {
   static const gfx::Vector3dF hinge_vector(0.0f, 1.0f, 0.0f);
@@ -262,16 +305,24 @@ void MaximizeModeController::HandleHingeRotation(const gfx::Vector3dF& base,
   float angle = ClockwiseAngleBetweenVectorsInDegrees(base_flattened,
       lid_flattened, hinge_vector);
 
+  bool is_angle_stable = angle > kMinStableAngle && angle < kMaxStableAngle;
+
+  // Clear the last_lid_open_time_ for a stable reading so that there is less
+  // chance of a delay if the lid is moved from the close state to the fully
+  // open state very quickly.
+  if (is_angle_stable)
+    last_lid_open_time_ = base::TimeTicks();
+
   // Toggle maximize mode on or off when corresponding thresholds are passed.
   // TODO(flackr): Make MaximizeModeController own the MaximizeModeWindowManager
   // such that observations of state changes occur after the change and shell
   // has fewer states to track.
-  if (maximize_mode_engaged &&
-      angle > kFullyOpenAngleErrorTolerance &&
+  if (maximize_mode_engaged && is_angle_stable &&
       angle < kExitMaximizeModeAngle) {
     LeaveMaximizeMode();
-  } else if (!maximize_mode_engaged &&
-      angle > kEnterMaximizeModeAngle) {
+  } else if (!lid_is_closed_ && !maximize_mode_engaged &&
+             angle > kEnterMaximizeModeAngle &&
+             (is_angle_stable || !WasLidOpenedRecently())) {
     EnterMaximizeMode();
   }
 }
@@ -350,6 +401,8 @@ void MaximizeModeController::SetDisplayRotation(
 }
 
 void MaximizeModeController::EnterMaximizeMode() {
+  if (IsMaximizeModeWindowManagerEnabled())
+    return;
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   current_rotation_ = user_rotation_ = display_manager->
       GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
@@ -364,6 +417,8 @@ void MaximizeModeController::EnterMaximizeMode() {
 }
 
 void MaximizeModeController::LeaveMaximizeMode() {
+  if (!IsMaximizeModeWindowManagerEnabled())
+    return;
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   gfx::Display::Rotation current_rotation = display_manager->
       GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
@@ -373,14 +428,7 @@ void MaximizeModeController::LeaveMaximizeMode() {
   EnableMaximizeModeWindowManager(false);
   event_blocker_.reset();
   event_handler_.reset();
-}
-
-void MaximizeModeController::OnSuspend() {
-  RecordTouchViewStateTransition();
-}
-
-void MaximizeModeController::OnResume() {
-  last_touchview_transition_time_ = base::Time::Now();
+  Shell::GetInstance()->display_controller()->RemoveObserver(this);
 }
 
 // Called after maximize mode has started, windows might still animate though.
@@ -426,6 +474,22 @@ void MaximizeModeController::OnAppTerminating() {
     }
   }
   Shell::GetInstance()->display_controller()->RemoveObserver(this);
+}
+
+bool MaximizeModeController::WasLidOpenedRecently() const {
+  if (last_lid_open_time_.is_null())
+    return false;
+
+  base::TimeTicks now = tick_clock_->NowTicks();
+  DCHECK(now >= last_lid_open_time_);
+  base::TimeDelta elapsed_time = now - last_lid_open_time_;
+  return elapsed_time <= kLidRecentlyOpenedDuration;
+}
+
+void MaximizeModeController::SetTickClockForTest(
+    scoped_ptr<base::TickClock> tick_clock) {
+  DCHECK(tick_clock_);
+  tick_clock_ = tick_clock.Pass();
 }
 
 }  // namespace ash
