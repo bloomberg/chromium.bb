@@ -84,6 +84,11 @@ def SplitUrlRevision(url):
   return tuple(components)
 
 
+def IsGitSha(revision):
+  """Returns true if the given string is a valid hex-encoded sha"""
+  return re.match('^[a-fA-F0-9]{6,40}$', revision) is not None
+
+
 def IsDateRevision(revision):
   """Returns true if the given revision is of the form "{ ... }"."""
   return bool(revision and re.match(r'^\{.+\}$', str(revision)))
