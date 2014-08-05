@@ -71,14 +71,6 @@ class CONTENT_EXPORT FrameTree {
                                 const std::string& frame_name);
   void RemoveFrame(FrameTreeNode* child);
 
-  // This method walks the entire frame tree and creates a RenderFrameProxyHost
-  // for the given |site_instance| in each node except the |source| one --
-  // the source will have a RenderFrameHost. It assumes that no frame tree
-  // nodes already have RenderFrameProxyHost for the given |site_instance|.
-  void CreateProxiesForSiteInstance(
-      FrameTreeNode* source,
-      SiteInstance* site_instance);
-
   // Clears process specific-state after a main frame process swap.
   // This destroys most of the frame tree but retains the root node so that
   // navigation state may be kept on it between process swaps. Used to
@@ -108,19 +100,20 @@ class CONTENT_EXPORT FrameTree {
   void SetFrameRemoveListener(
       const base::Callback<void(RenderFrameHost*)>& on_frame_removed);
 
-  // Creates a RenderViewHost for a new RenderFrameHost in the given
+  // Creates a RenderViewHost for a new main frame RenderFrameHost in the given
   // |site_instance|.  The RenderViewHost will have its Shutdown method called
   // when all of the RenderFrameHosts using it are deleted.
-  RenderViewHostImpl* CreateRenderViewHost(SiteInstance* site_instance,
-                                           int routing_id,
-                                           int main_frame_routing_id,
-                                           bool swapped_out,
-                                           bool hidden);
+  RenderViewHostImpl* CreateRenderViewHostForMainFrame(
+      SiteInstance* site_instance,
+      int routing_id,
+      int main_frame_routing_id,
+      bool swapped_out,
+      bool hidden);
 
-  // Returns the existing RenderViewHost for a new RenderFrameHost.
+  // Returns the existing RenderViewHost for a new subframe RenderFrameHost.
   // There should always be such a RenderViewHost, because the main frame
   // RenderFrameHost for each SiteInstance should be created before subframes.
-  RenderViewHostImpl* GetRenderViewHost(SiteInstance* site_instance);
+  RenderViewHostImpl* GetRenderViewHostForSubFrame(SiteInstance* site_instance);
 
   // Keeps track of which RenderFrameHosts are using each RenderViewHost.  When
   // the number drops to zero, we call Shutdown on the RenderViewHost.

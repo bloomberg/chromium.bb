@@ -63,10 +63,6 @@ class RenderFrameProxyHost
     return site_instance_->GetProcess();
   }
 
-  // Initializes the object and creates the RenderFrameProxy in the process
-  // for the SiteInstance.
-  bool InitRenderFrameProxy();
-
   int GetRoutingID() {
     return routing_id_;
   }

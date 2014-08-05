@@ -114,8 +114,7 @@ IN_PROC_BROWSER_TEST_F(OpenedByDOMTest, Popup) {
 
 // Tests that window.close() works in a popup window that has navigated a few
 // times and swapped processes.
-// Crashes on all platforms. http://crbug.com/399709
-IN_PROC_BROWSER_TEST_F(OpenedByDOMTest, DISABLED_CrossProcessPopup) {
+IN_PROC_BROWSER_TEST_F(OpenedByDOMTest, CrossProcessPopup) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 

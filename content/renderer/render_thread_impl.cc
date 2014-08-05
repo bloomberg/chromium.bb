@@ -47,7 +47,6 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/database_messages.h"
 #include "content/common/dom_storage/dom_storage_messages.h"
-#include "content/common/frame_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
@@ -91,7 +90,6 @@
 #include "content/renderer/media/webrtc_identity_service.h"
 #include "content/renderer/net_info_helper.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
-#include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
@@ -1308,6 +1306,13 @@ void RenderThreadImpl::DoNotNotifyWebKitOfModalLoop() {
   notify_webkit_of_modal_loop_ = false;
 }
 
+void RenderThreadImpl::OnSetZoomLevelForCurrentURL(const std::string& scheme,
+                                                   const std::string& host,
+                                                   double zoom_level) {
+  RenderViewZoomer zoomer(scheme, host, zoom_level);
+  RenderView::ForEach(&zoomer);
+}
+
 bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   ObserverListBase<RenderProcessObserver>::Iterator it(observers_);
   RenderProcessObserver* observer;
@@ -1325,8 +1330,6 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderThreadImpl, msg)
-    IPC_MESSAGE_HANDLER(FrameMsg_NewFrame, OnCreateNewFrame)
-    IPC_MESSAGE_HANDLER(FrameMsg_NewFrameProxy, OnCreateNewFrameProxy)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForCurrentURL,
                         OnSetZoomLevelForCurrentURL)
     // TODO(port): removed from render_messages_internal.h;
@@ -1347,24 +1350,6 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void RenderThreadImpl::OnCreateNewFrame(int routing_id, int parent_routing_id) {
-  RenderFrameImpl::CreateFrame(routing_id, parent_routing_id);
-}
-
-void RenderThreadImpl::OnCreateNewFrameProxy(int routing_id,
-                                             int parent_routing_id,
-                                             int render_view_routing_id) {
-  RenderFrameProxy::CreateFrameProxy(
-      routing_id, parent_routing_id, render_view_routing_id);
-}
-
-void RenderThreadImpl::OnSetZoomLevelForCurrentURL(const std::string& scheme,
-                                                   const std::string& host,
-                                                   double zoom_level) {
-  RenderViewZoomer zoomer(scheme, host, zoom_level);
-  RenderView::ForEach(&zoomer);
 }
 
 void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {
@@ -1500,6 +1485,7 @@ void RenderThreadImpl::OnTempCrashWithData(const GURL& data) {
 void RenderThreadImpl::OnUpdateTimezone() {
   NotifyTimezoneChange();
 }
+
 
 #if defined(OS_ANDROID)
 void RenderThreadImpl::OnSetWebKitSharedTimersSuspended(bool suspend) {

@@ -883,15 +883,6 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
     RenderFrameHost* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params) const {
   if (params.page_id == -1) {
-    // TODO(nasko, creis):  An out-of-process child frame has no way of
-    // knowing the page_id of its parent, so it is passing back -1. The
-    // semantics here should be re-evaluated during session history refactor
-    // (see http://crbug.com/236848). For now, we assume this means the
-    // child frame loaded and proceed. Note that this may do the wrong thing
-    // for cross-process AUTO_SUBFRAME navigations.
-    if (rfh->IsCrossProcessSubframe())
-      return NAVIGATION_TYPE_NEW_SUBFRAME;
-
     // The renderer generates the page IDs, and so if it gives us the invalid
     // page ID (-1) we know it didn't actually navigate. This happens in a few
     // cases:

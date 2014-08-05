@@ -5,11 +5,9 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 
 #include "content/browser/frame_host/cross_process_frame_connector.h"
-#include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/frame_messages.h"
@@ -82,32 +80,6 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
     return render_frame_host_->OnMessageReceived(msg);
 
   return false;
-}
-
-bool RenderFrameProxyHost::InitRenderFrameProxy() {
-  // The process may (if we're sharing a process with another host that already
-  // initialized it) or may not (we have our own process or the old process
-  // crashed) have been initialized. Calling Init multiple times will be
-  // ignored, so this is safe.
-  if (!site_instance_->GetProcess()->Init())
-    return false;
-
-  DCHECK(GetProcess()->HasConnection());
-
-  int parent_routing_id = MSG_ROUTING_NONE;
-  if (frame_tree_node_->parent()) {
-    parent_routing_id = frame_tree_node_->parent()->render_manager()->
-        GetRoutingIdForSiteInstance(site_instance_);
-    CHECK_NE(parent_routing_id, MSG_ROUTING_NONE);
-  }
-
-  Send(new FrameMsg_NewFrameProxy(
-      routing_id_,
-      parent_routing_id,
-      frame_tree_node_->frame_tree()->GetRenderViewHost(
-          site_instance_)->GetRoutingID()));
-
-  return true;
 }
 
 }  // namespace content

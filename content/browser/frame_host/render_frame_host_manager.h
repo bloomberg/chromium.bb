@@ -31,7 +31,6 @@ class NavigationEntryImpl;
 class NavigationRequest;
 class RenderFrameHost;
 class RenderFrameHostDelegate;
-class RenderFrameHost;
 class RenderFrameHostImpl;
 class RenderFrameHostManagerTest;
 class RenderFrameProxyHost;
@@ -61,17 +60,14 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
     // corresponding to this view host. If this method is not called and the
     // process is not shared, then the WebContentsImpl will act as though the
     // renderer is not running (i.e., it will render "sad tab"). This method is
-    // automatically called from LoadURL. |for_main_frame_navigation| indicates
-    // whether this RenderViewHost is used to render a top-level frame, so the
+    // automatically called from LoadURL. |for_main_frame| indicates whether
+    // this RenderViewHost is used to render a top-level frame, so the
     // appropriate RenderWidgetHostView type is used.
     virtual bool CreateRenderViewForRenderManager(
         RenderViewHost* render_view_host,
         int opener_route_id,
         int proxy_routing_id,
-        bool for_main_frame_navigation) = 0;
-    virtual bool CreateRenderFrameForRenderManager(
-        RenderFrameHost* render_frame_host,
-        int parent_routing_id) = 0;
+        bool for_main_frame) = 0;
     virtual void BeforeUnloadFiredFromRenderManager(
         bool proceed, const base::TimeTicks& proceed_time,
         bool* proceed_to_fire_unload) = 0;
@@ -255,12 +251,7 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   int CreateRenderFrame(SiteInstance* instance,
                         int opener_route_id,
                         bool swapped_out,
-                        bool for_main_frame_navigation,
                         bool hidden);
-
-  // Helper method to create and initialize a RenderFrameProxyHost and return
-  // its routing id.
-  int CreateRenderFrameProxy(SiteInstance* instance);
 
   // Sets the passed passed interstitial as the currently showing interstitial.
   // |interstitial_page| should be non NULL (use the remove_interstitial_page
@@ -314,17 +305,9 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // Used to start a navigation, part of browser-side navigation project.
   void OnBeginNavigation(const FrameHostMsg_BeginNavigation_Params& params);
 
-  // Returns the routing id for a RenderFrameHost or RenderFrameHostProxy
-  // that has the given SiteInstance and is associated with this
-  // RenderFrameHostManager. Returns MSG_ROUTING_NONE if none is found.
-  int GetRoutingIdForSiteInstance(SiteInstance* site_instance);
-
  private:
   friend class RenderFrameHostManagerTest;
   friend class TestWebContents;
-
-  FRIEND_TEST_ALL_PREFIXES(CrossProcessFrameTreeBrowserTest,
-                           CreateCrossProcessSubframeProxies);
 
   // Tracks information about a navigation while a cross-process transition is
   // in progress, in case we need to transfer it to a new RenderFrameHost.
@@ -428,21 +411,17 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   bool InitRenderView(RenderViewHost* render_view_host,
                       int opener_route_id,
                       int proxy_routing_id,
-                      bool for_main_frame_navigation);
-
-  // Initialization for RenderFrameHost uses the same sequence as InitRenderView
-  // above.
-  bool InitRenderFrame(RenderFrameHost* render_frame_host);
+                      bool for_main_frame);
 
   // Sets the pending RenderFrameHost/WebUI to be the active one. Note that this
   // doesn't require the pending render_frame_host_ pointer to be non-NULL,
   // since there could be Web UI switching as well. Call this for every commit.
   void CommitPending();
 
-  // Shutdown all RenderFrameProxyHosts in a SiteInstance. This is called to
-  // shutdown frames when all the frames in a SiteInstance are confirmed to be
-  // swapped out.
-  void ShutdownRenderFrameProxyHostsInSiteInstance(int32 site_instance_id);
+  // Shutdown all RenderFrameHosts in a SiteInstance. This is called to shutdown
+  // frames when all the frames in a SiteInstance are confirmed to be swapped
+  // out.
+  void ShutdownRenderFrameHostsInSiteInstance(int32 site_instance_id);
 
   // Helper method to terminate the pending RenderViewHost.
   void CancelPending();
