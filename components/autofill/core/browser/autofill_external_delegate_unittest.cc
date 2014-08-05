@@ -177,6 +177,10 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateDataList) {
   std::vector<base::string16> data_list_items;
   data_list_items.push_back(base::string16());
 
+  EXPECT_CALL(
+      autofill_client_,
+      UpdateAutofillPopupDataListValues(data_list_items, data_list_items));
+
   external_delegate_->SetCurrentDataListValues(data_list_items,
                                                data_list_items);
 
@@ -241,6 +245,10 @@ TEST_F(AutofillExternalDelegateUnitTest, UpdateDataListWhileShowingPopup) {
   // appear.
   std::vector<base::string16> data_list_items;
   data_list_items.push_back(base::string16());
+
+  EXPECT_CALL(
+      autofill_client_,
+      UpdateAutofillPopupDataListValues(data_list_items, data_list_items));
 
   external_delegate_->SetCurrentDataListValues(data_list_items,
                                                data_list_items);
