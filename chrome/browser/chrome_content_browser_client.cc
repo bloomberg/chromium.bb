@@ -1320,9 +1320,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       extensions::switches::kEnableScriptsRequireAction,
       extensions::switches::kExtensionsOnChromeURLs,
       extensions::switches::kWhitelistedExtensionID,
-      // TODO(victorhsieh): remove the following flag once we move PPAPI FileIO
-      // to browser.
-      switches::kAllowNaClFileHandleAPI,
       switches::kAppsCheckoutURL,
       switches::kAppsGalleryURL,
       switches::kCloudPrintURL,

@@ -961,8 +961,7 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kEnableDownloadResumption)
   },
-  // Native client is compiled out when DISABLE_NACL is defined.
-#if !defined(DISABLE_NACL)
+#if defined(ENABLE_PLUGINS)
   {
     "allow-nacl-socket-api",
     IDS_FLAGS_ALLOW_NACL_SOCKET_API_NAME,

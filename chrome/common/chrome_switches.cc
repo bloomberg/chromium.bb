@@ -33,6 +33,7 @@ const char kAllowFileAccess[]               = "allow-file-access";
 // extension API.
 const char kAllowHttpScreenCapture[] = "allow-http-screen-capture";
 
+#if defined(ENABLE_PLUGINS)
 // Specifies comma-separated list of extension ids or hosts to grant
 // access to CRX file system APIs.
 const char kAllowNaClCrxFsAPI[]             = "allow-nacl-crxfs-api";
@@ -44,6 +45,7 @@ const char kAllowNaClFileHandleAPI[]        = "allow-nacl-file-handle-api";
 // Specifies comma-separated list of extension ids or hosts to grant
 // access to TCP/UDP socket APIs.
 const char kAllowNaClSocketAPI[]            = "allow-nacl-socket-api";
+#endif
 
 // Don't block outdated plugins.
 const char kAllowOutdatedPlugins[]          = "allow-outdated-plugins";

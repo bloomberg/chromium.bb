@@ -30,9 +30,6 @@ namespace switches {
 extern const char kAllowCrossOriginAuthPrompt[];
 extern const char kAllowFileAccess[];
 extern const char kAllowHttpScreenCapture[];
-extern const char kAllowNaClCrxFsAPI[];
-extern const char kAllowNaClFileHandleAPI[];
-extern const char kAllowNaClSocketAPI[];
 extern const char kAllowOutdatedPlugins[];
 extern const char kAllowRunningInsecureContent[];
 extern const char kAlternateProtocolProbabilityThreshold[];
@@ -402,6 +399,12 @@ extern const char kWindows8Search[];
 
 #if defined(ENABLE_FULL_PRINTING) && !defined(OFFICIAL_BUILD)
 extern const char kDebugPrint[];
+#endif
+
+#if defined(ENABLE_PLUGINS)
+extern const char kAllowNaClCrxFsAPI[];
+extern const char kAllowNaClFileHandleAPI[];
+extern const char kAllowNaClSocketAPI[];
 #endif
 
 #ifndef NDEBUG
