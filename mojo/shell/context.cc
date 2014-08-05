@@ -11,7 +11,7 @@
 #include "mojo/embedder/embedder.h"
 #include "mojo/gles2/gles2_support_impl.h"
 #include "mojo/public/cpp/application/application_impl.h"
-#include "mojo/service_manager/background_service_loader.h"
+#include "mojo/service_manager/background_shell_service_loader.h"
 #include "mojo/service_manager/service_loader.h"
 #include "mojo/service_manager/service_manager.h"
 #include "mojo/services/native_viewport/native_viewport_service.h"
@@ -116,13 +116,18 @@ void Context::Init() {
               this)),
       GURL("mojo:mojo_native_viewport_service"));
 #else
-  service_manager_.SetLoaderForURL(
-      scoped_ptr<ServiceLoader>(
-          new BackgroundServiceLoader(
-              scoped_ptr<ServiceLoader>(new NativeViewportServiceLoader()),
-              "native_viewport",
-              base::MessageLoop::TYPE_UI)),
-      GURL("mojo:mojo_native_viewport_service"));
+  {
+    scoped_ptr<BackgroundShellServiceLoader> loader(
+        new BackgroundShellServiceLoader(
+            scoped_ptr<ServiceLoader>(new NativeViewportServiceLoader()),
+            "native_viewport",
+             base::MessageLoop::TYPE_UI));
+    // TODO(tim): NativeViewportService doesn't quit itself yet.
+    loader->set_quit_on_shutdown();
+    service_manager_.SetLoaderForURL(
+        loader.PassAs<ServiceLoader>(),
+        GURL("mojo:mojo_native_viewport_service"));
+  }
 #endif
 #if defined(USE_AURA)
   // TODO(sky): need a better way to find this. It shouldn't be linked in.
@@ -145,13 +150,17 @@ void Context::Init() {
 #if defined(OS_ANDROID)
   // On android, the network service is bundled with the shell because the
   // network stack depends on the android runtime.
-  service_manager_.SetLoaderForURL(
-      scoped_ptr<ServiceLoader>(
-          new BackgroundServiceLoader(
-              scoped_ptr<ServiceLoader>(new NetworkServiceLoader()),
-              "network_service",
-              base::MessageLoop::TYPE_IO)),
-      GURL("mojo:mojo_network_service"));
+  {
+    scoped_ptr<BackgroundShellServiceLoader> loader(
+        new BackgroundShellServiceLoader(
+            scoped_ptr<ServiceLoader>(new NetworkServiceLoader()),
+            "network_service",
+             base::MessageLoop::TYPE_IO));
+    // TODO(tim): NetworkService doesn't quit itself yet.
+    loader->set_quit_on_shutdown();
+    service_manager_.SetLoaderForURL(loader.PassAs<ServiceLoader>(),
+                                     GURL("mojo:mojo_network_service"));
+  }
 #endif
 }
 

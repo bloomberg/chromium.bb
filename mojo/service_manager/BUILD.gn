@@ -6,8 +6,8 @@
 component("service_manager") {
   output_name = "mojo_service_manager"
   sources = [
-    "background_service_loader.cc",
-    "background_service_loader.h",
+    "background_shell_service_loader.cc",
+    "background_shell_service_loader.h",
     "service_loader.h",
     "service_manager.cc",
     "service_manager.h",

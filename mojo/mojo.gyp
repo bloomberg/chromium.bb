@@ -344,8 +344,8 @@
         '<(mojo_system_for_component)',
       ],
       'sources': [
-        'service_manager/background_service_loader.cc',
-        'service_manager/background_service_loader.h',
+        'service_manager/background_shell_service_loader.cc',
+        'service_manager/background_shell_service_loader.h',
         'service_manager/service_loader.h',
         'service_manager/service_manager.cc',
         'service_manager/service_manager.h',
@@ -372,6 +372,7 @@
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'sources': [
+        'service_manager/background_shell_service_loader_unittest.cc',
         'service_manager/service_manager_unittest.cc',
         'service_manager/test.mojom',
       ],

@@ -10,7 +10,7 @@
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/interface_factory.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
-#include "mojo/service_manager/background_service_loader.h"
+#include "mojo/service_manager/background_shell_service_loader.h"
 #include "mojo/service_manager/service_loader.h"
 #include "mojo/service_manager/service_manager.h"
 #include "mojo/service_manager/test.mojom.h"
@@ -251,7 +251,11 @@ class TestAImpl : public InterfaceImpl<TestA> {
       : test_context_(test_context) {
     connection->ConnectToApplication(kTestBURLString)->ConnectToService(&b_);
   }
-  virtual ~TestAImpl() { test_context_->IncrementNumADeletes(); }
+  virtual ~TestAImpl() {
+    test_context_->IncrementNumADeletes();
+    if (base::MessageLoop::current()->is_running())
+      Quit();
+  }
 
  private:
   virtual void CallB() OVERRIDE {
@@ -263,6 +267,7 @@ class TestAImpl : public InterfaceImpl<TestA> {
   }
 
   void Quit() {
+    base::MessageLoop::current()->Quit();
     test_context_->set_a_called_quit();
     test_context_->QuitSoon();
   }
@@ -280,6 +285,8 @@ class TestBImpl : public InterfaceImpl<TestB> {
 
   virtual ~TestBImpl() {
     test_context_->IncrementNumBDeletes();
+    if (base::MessageLoop::current()->is_running())
+      base::MessageLoop::current()->Quit();
     test_context_->QuitSoon();
   }
 
@@ -341,6 +348,7 @@ class Tester : public ApplicationDelegate,
           requestor_url_ != connection->GetRemoteApplicationURL()) {
       context_->set_tester_called_quit();
       context_->QuitSoon();
+      base::MessageLoop::current()->Quit();
       return false;
     }
     // If we're coming from A, then add B, otherwise A.
@@ -431,13 +439,19 @@ class ServiceManagerTest : public testing::Test {
     service_manager_.reset(NULL);
   }
 
-  void AddLoaderForURL(const GURL& url, const std::string& requestor_url) {
+  scoped_ptr<BackgroundShellServiceLoader> MakeLoader(
+      const std::string& requestor_url) {
     scoped_ptr<ServiceLoader> real_loader(
         new Tester(&tester_context_, requestor_url));
+    scoped_ptr<BackgroundShellServiceLoader> loader(
+        new BackgroundShellServiceLoader(real_loader.Pass(), std::string(),
+                                         base::MessageLoop::TYPE_DEFAULT));
+    return loader.Pass();
+  }
+
+  void AddLoaderForURL(const GURL& url, const std::string& requestor_url) {
     service_manager_->SetLoaderForURL(
-        scoped_ptr<ServiceLoader>(new BackgroundServiceLoader(
-            real_loader.Pass(), "", base::MessageLoop::TYPE_DEFAULT)),
-        url);
+        MakeLoader(requestor_url).PassAs<ServiceLoader>(), url);
   }
 
   bool HasFactoryForTestURL() {
@@ -598,11 +612,20 @@ TEST_F(ServiceManagerTest, ANoLoadB) {
   a->CallB();
   loop_.Run();
   EXPECT_EQ(0, tester_context_.num_b_calls());
+
+  EXPECT_FALSE(tester_context_.a_called_quit());
   EXPECT_TRUE(tester_context_.tester_called_quit());
 }
 
 TEST_F(ServiceManagerTest, NoServiceNoLoad) {
-  AddLoaderForURL(GURL(kTestAURLString), std::string());
+  // Because we'll never successfully connect to anything here and apps are not
+  // capable of noticing zero incoming connections and quitting, we need to use
+  // a quittable loader.
+  scoped_ptr<BackgroundShellServiceLoader> loader(MakeLoader(std::string()));
+  loader->set_quit_on_shutdown();
+  service_manager_->SetLoaderForURL(loader.PassAs<ServiceLoader>(),
+                                    GURL(kTestAURLString));
+
 
   // There is no TestC service implementation registered with ServiceManager,
   // so this cannot succeed (but also shouldn't crash).
