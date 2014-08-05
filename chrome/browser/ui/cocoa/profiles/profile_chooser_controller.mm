@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/avatar_menu_observer.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -775,6 +776,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                              title:(const std::string&)title
                                tag:(int)tag
                     reauthRequired:(BOOL)reauthRequired;
+
+- (bool)shouldShowGoIncognito;
 @end
 
 @implementation ProfileChooserController
@@ -801,7 +804,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (IBAction)goIncognito:(id)sender {
-  DCHECK(!browser_->profile()->IsGuestSession());
+  DCHECK([self shouldShowGoIncognito]);
   chrome::NewIncognitoWindow(browser_);
 }
 
@@ -1521,7 +1524,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     viewRect.origin.y = NSMaxY([separator frame]);
   }
 
-  if (!isGuestSession_) {
+  if ([self shouldShowGoIncognito]) {
     // TODO(noms): Use the correct incognito icon when it's available.
     NSButton* goIncognitoButton =
         [self hoverButtonWithRect:viewRect
@@ -1936,6 +1939,13 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (void)postActionPerformed:(ProfileMetrics::ProfileDesktopMenu)action {
   ProfileMetrics::LogProfileDesktopMenu(action, serviceType_);
   serviceType_ = signin::GAIA_SERVICE_TYPE_NONE;
+}
+
+- (bool)shouldShowGoIncognito {
+  bool incognitoAvailable =
+      IncognitoModePrefs::GetAvailability(browser_->profile()->GetPrefs()) !=
+          IncognitoModePrefs::DISABLED;
+  return incognitoAvailable && !browser_->profile()->IsGuestSession();
 }
 
 @end

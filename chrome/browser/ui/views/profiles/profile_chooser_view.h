@@ -183,6 +183,8 @@ class ProfileChooserView : public views::BubbleDelegateView,
 
   views::View* CreateEndPreviewView();
 
+  bool ShouldShowGoIncognito() const;
+
   // Clean-up done after an action was performed in the ProfileChooser.
   void PostActionPerformed(ProfileMetrics::ProfileDesktopMenu action_performed);
 

@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -661,7 +662,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     if (browser_->profile()->IsGuestSession())
       profiles::CloseGuestProfileWindows();
   } else if (sender == go_incognito_button_) {
-    DCHECK(!browser_->profile()->IsGuestSession());
+    DCHECK(ShouldShowGoIncognito());
     chrome::NewIncognitoWindow(browser_);
   } else if (sender == lock_button_) {
     profiles::LockProfile(browser_->profile());
@@ -823,12 +824,6 @@ bool ProfileChooserView::HandleKeyEvent(views::Textfield* sender,
     return true;
   }
   return false;
-}
-
-void ProfileChooserView::PostActionPerformed(
-    ProfileMetrics::ProfileDesktopMenu action_performed) {
-  ProfileMetrics::LogProfileDesktopMenu(action_performed, gaia_service_type_);
-  gaia_service_type_ = signin::GAIA_SERVICE_TYPE_NONE;
 }
 
 views::View* ProfileChooserView::CreateProfileChooserView(
@@ -1242,7 +1237,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool enable_lock) {
   layout->StartRow(1, 0);
   layout->AddView(users_button_);
 
-  if (!browser_->profile()->IsGuestSession()) {
+  if (ShouldShowGoIncognito()) {
     layout->StartRow(1, 0);
     layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
 
@@ -1532,4 +1527,17 @@ views::View* ProfileChooserView::CreateEndPreviewView() {
       IDS_PROFILES_END_PREVIEW, this, &end_preview_cancel_button_);
   return TitleCard::AddPaddedTitleCard(
       view, title_card, kFixedAccountRemovalViewWidth);
+}
+
+bool ProfileChooserView::ShouldShowGoIncognito() const {
+  bool incognito_available =
+      IncognitoModePrefs::GetAvailability(browser_->profile()->GetPrefs()) !=
+          IncognitoModePrefs::DISABLED;
+  return incognito_available && !browser_->profile()->IsGuestSession();
+}
+
+void ProfileChooserView::PostActionPerformed(
+    ProfileMetrics::ProfileDesktopMenu action_performed) {
+  ProfileMetrics::LogProfileDesktopMenu(action_performed, gaia_service_type_);
+  gaia_service_type_ = signin::GAIA_SERVICE_TYPE_NONE;
 }
