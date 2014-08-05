@@ -36,11 +36,6 @@ void ProcessBackgroundMessageFilter::SetTimerSlack(bool background) {
 
 void ProcessBackgroundMessageFilter::OnProcessBackgrounded(bool background) {
   DCHECK(base::MessageLoopForIO::IsCurrent());
-#ifdef OS_WIN
-  // Windows Vista+ has a fancy process backgrounding mode that can only be set
-  // from within the process.
-  base::Process::Current().SetProcessBackgrounded(background);
-#endif  // OS_WIN
   // Post to the main thread to set the timer slack.
   main_thread_task_runner_->PostTask(
       FROM_HERE,
