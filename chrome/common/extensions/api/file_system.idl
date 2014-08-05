@@ -107,12 +107,11 @@ namespace fileSystem {
                             EntriesCallback callback);
 
     // Returns the file entry with the given id if it can be restored. This call
-    // will fail with a runtime error otherwise. This method is new in Chrome
-    // 31.
+    // will fail with a runtime error otherwise.
     static void restoreEntry(DOMString id, EntryCallback callback);
 
     // Returns whether the app has permission to restore the entry with the
-    // given id. This method is new in Chrome 31.
+    // given id.
     static void isRestorable(DOMString id, IsRestorableCallback callback);
 
     // Returns an id that can be passed to restoreEntry to regain access to a
@@ -120,7 +119,7 @@ namespace fileSystem {
     // where calls to retainEntry and restoreEntry count as use. If the app has
     // the 'retainEntries' permission under 'fileSystem', entries are retained
     // indefinitely. Otherwise, entries are retained only while the app is
-    // running and across restarts. This method is new in Chrome 31.
+    // running and across restarts.
     static DOMString retainEntry([instanceOf=Entry] object entry);
   };
 };
