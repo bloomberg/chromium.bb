@@ -456,6 +456,36 @@
   fun:_ZN14HistoryService14ScheduleDBTask*
   fun:_ZN7history19URLIndexPrivateData26ScheduleUpdateRecentVisits*
 }
+{
+   bug_399852_a
+   Memcheck:Uninitialized
+   fun:_ZN5blink14DateComponents9parseTimeERKN3WTF6StringEjRj
+   fun:_ZNK5blink13TimeInputType29parseToDateComponentsInternalERKN3WTF6StringEPNS_14DateComponentsE
+   fun:_ZNK5blink24BaseDateAndTimeInputType21parseToDateComponentsERKN3WTF6StringEPNS_14DateComponentsE
+}
+{
+   bug_399852_b
+   Memcheck:Uninitialized
+   fun:_ZN5blink12_GLOBAL__N_117parseJSONInternalIhEEN3WTF10PassRefPtrINS_9JSONValueEEEPKT_j
+   fun:_ZN5blink9parseJSONERKN3WTF6StringE
+   fun:_ZN5blink*InspectorBackendDispatcher*
+   ...
+   fun:_ZN5blink*WebDevToolsAgent*
+   fun:_ZN7content*DevToolsAgent*
+}
+{
+   bug_399852_c
+   Memcheck:Uninitialized
+   fun:_ZN5blinkL21extractRangeComponentEPN3WTF6StringERKNS0_6RefPtrINS_10JSONObjectEEERKS1_Rj
+   fun:_ZN5blinkL22jsonRangeToSourceRangeEPN3WTF6StringEPNS_23InspectorStyleSheetBase*
+   fun:_ZN5blink17InspectorCSSAgent*
+   fun:_ZThn40_N5blink17InspectorCSSAgent*
+   fun:_ZN5blink30InspectorBackendDispatcherImpl*
+   fun:_ZN5blink30InspectorBackendDispatcherImpl8dispatchERKN3WTF6StringE
+   fun:_ZN5blink19InspectorController27dispatchMessageFromFrontendERKN3WTF6StringE
+   fun:_ZN5blink20WebDevToolsAgentImpl26dispatchOnInspectorBackendERKNS_9WebStringE
+   fun:_ZN7content13DevToolsAgent28OnDispatchOnInspectorBackendERKSs
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
@@ -6270,13 +6300,6 @@
    fun:_ZN2v88internal27Runtime_CreateObjectLiteralEiPPNS0_6ObjectEPNS0_7IsolateE
 }
 {
-   bug_399852
-   Memcheck:Uninitialized
-   fun:_ZN5blink14DateComponents9parseTimeERKN3WTF6StringEjRj
-   fun:_ZNK5blink13TimeInputType29parseToDateComponentsInternalERKN3WTF6StringEPNS_14DateComponentsE
-   fun:_ZNK5blink24BaseDateAndTimeInputType21parseToDateComponentsERKN3WTF6StringEPNS_14DateComponentsE
-}
-{
    bug_399853_a
    Memcheck:Uninitialized
    fun:_ZNK8SkStroke10strokePathERK6SkPathPS0_
@@ -6289,16 +6312,6 @@
    fun:_ZNK8SkStroke10strokePathERK6SkPathPS0_
    fun:_ZNK11SkStrokeRec11applyToPathEP6SkPathRKS0_
    fun:_ZN15SkScalerContext15internalGetPathERK7SkGlyphP6SkPathS4_P8SkMatrix
-}
-{
-   bug_399916
-   Memcheck:Uninitialized
-   fun:_ZN5blink12_GLOBAL__N_117parseJSONInternalIhEEN3WTF10PassRefPtrINS_9JSONValueEEEPKT_j
-   fun:_ZN5blink9parseJSONERKN3WTF6StringE
-   fun:_ZN5blink*InspectorBackendDispatcher*
-   ...
-   fun:_ZN5blink*WebDevToolsAgent*
-   fun:_ZN7content*DevToolsAgent*
 }
 {
    bug_399924
@@ -6314,19 +6327,6 @@
    fun:avcodec_decode_video2
    fun:avcodec_decode_video2
    fun:_ZN5media18FFmpegVideoDecoder12FFmpegDecodeERK13scoped_refptrINS_13DecoderBufferEEPb
-}
-{
-   bug_399925
-   Memcheck:Uninitialized
-   fun:_ZN5blinkL21extractRangeComponentEPN3WTF6StringERKNS0_6RefPtrINS_10JSONObjectEEERKS1_Rj
-   fun:_ZN5blinkL22jsonRangeToSourceRangeEPN3WTF6StringEPNS_23InspectorStyleSheetBase*
-   fun:_ZN5blink17InspectorCSSAgent*
-   fun:_ZThn40_N5blink17InspectorCSSAgent*
-   fun:_ZN5blink30InspectorBackendDispatcherImpl*
-   fun:_ZN5blink30InspectorBackendDispatcherImpl8dispatchERKN3WTF6StringE
-   fun:_ZN5blink19InspectorController27dispatchMessageFromFrontendERKN3WTF6StringE
-   fun:_ZN5blink20WebDevToolsAgentImpl26dispatchOnInspectorBackendERKNS_9WebStringE
-   fun:_ZN7content13DevToolsAgent28OnDispatchOnInspectorBackendERKSs
 }
 {
    bug_400547
