@@ -52,9 +52,6 @@
           '<(PRODUCT_DIR)/locales/fr.pak',
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
-        'isolate_dependency_touched': [
-          '<(PRODUCT_DIR)/libppGoogleNaClPluginChrome.so',
-        ],
       },
     }],
     ['OS=="linux" or OS=="mac" or OS=="win"', {

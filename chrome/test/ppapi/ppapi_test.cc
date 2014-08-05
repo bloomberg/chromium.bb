@@ -342,9 +342,6 @@ void PPAPINaClTest::SetUpCommandLine(base::CommandLine* command_line) {
 }
 
 void PPAPINaClTest::SetUpOnMainThread() {
-  base::FilePath plugin_lib;
-  EXPECT_TRUE(PathService::Get(chrome::FILE_NACL_PLUGIN, &plugin_lib));
-  EXPECT_TRUE(base::PathExists(plugin_lib));
 }
 
 void PPAPINaClTest::RunTest(const std::string& test_case) {
@@ -464,8 +461,4 @@ std::string PPAPINaClTestDisallowedSockets::BuildQuery(
 void PPAPIBrokerInfoBarTest::SetUpOnMainThread() {
   // The default content setting for the PPAPI broker is ASK. We purposefully
   // don't call PPAPITestBase::SetUpOnMainThread() to keep it that way.
-
-  base::FilePath plugin_lib;
-  EXPECT_TRUE(PathService::Get(chrome::FILE_NACL_PLUGIN, &plugin_lib));
-  EXPECT_TRUE(base::PathExists(plugin_lib));
 }

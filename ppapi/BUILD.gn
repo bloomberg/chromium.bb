@@ -54,6 +54,13 @@ source_set("ppapi_cpp") {
   ]
 }
 
+source_set("ppapi_internal_module") {
+  sources = [
+    "cpp/private/internal_module.cc",
+    "cpp/private/internal_module.h",
+  ]
+}
+
 source_set("ppapi_gles2") {
   sources = [
     "lib/gl/gles2/gl2ext_ppapi.c",

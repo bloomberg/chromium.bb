@@ -418,6 +418,7 @@
         ['disable_nacl==0', {
           'dependencies': [
             '<(DEPTH)/components/nacl.gyp:nacl_common',
+            '<(DEPTH)/ppapi/native_client/src/trusted/plugin/plugin.gyp:nacl_trusted_plugin',
           ],
           'sources': [
             'common/extensions/manifest_handlers/nacl_modules_handler.cc',

@@ -21,7 +21,6 @@ ln -f -s /opt/google/chrome/*.pak "$this_dir/"
 ln -f -s /opt/google/chrome/nacl_helper "$this_dir/"
 ln -f -s /opt/google/chrome/nacl_helper_bootstrap "$this_dir/"
 ln -f -s /opt/google/chrome/nacl_irt_*.nexe "$this_dir/"
-ln -f -s /opt/google/chrome/libppGoogleNaClPluginChrome.so "$this_dir/"
 
 # Create links to resources from pyauto_dep.
 

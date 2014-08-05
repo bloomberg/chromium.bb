@@ -1693,7 +1693,7 @@
           ],
           'dependencies': [
             # Runtime dependency.
-            '../ppapi/native_client/src/trusted/plugin/plugin.gyp:ppGoogleNaClPluginChrome',
+            '../ppapi/native_client/src/trusted/plugin/plugin.gyp:nacl_trusted_plugin',
           ],
           'conditions': [
             ['disable_nacl_untrusted==0', {
