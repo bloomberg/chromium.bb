@@ -543,9 +543,6 @@ TEST_F(ProfileSyncServiceTest, BackupAfterSyncDisabled) {
 }
 
 TEST_F(ProfileSyncServiceTest, RollbackThenBackup) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kSyncEnableRollback);
-
   CreateService(browser_sync::MANUAL_START);
   service()->SetSyncSetupCompleted();
   ExpectDataTypeManagerCreation(3);

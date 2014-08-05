@@ -117,9 +117,6 @@ TEST_F(BackupRollbackControllerTest, StartOnUserSignedOut) {
 }
 
 TEST_F(BackupRollbackControllerTest, StartRollback) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kSyncEnableRollback);
-
   EXPECT_CALL(signin_wrapper_, GetEffectiveUsername())
       .Times(2)
       .WillOnce(Return("test"))
@@ -134,18 +131,12 @@ TEST_F(BackupRollbackControllerTest, StartRollback) {
 }
 
 TEST_F(BackupRollbackControllerTest, RollbackOnBrowserStart) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kSyncEnableRollback);
-
   fake_prefs_.SetRemainingRollbackTries(1);
   controller_->Start(base::TimeDelta());
   EXPECT_TRUE(rollback_started_);
 }
 
 TEST_F(BackupRollbackControllerTest, BackupAfterRollbackDone) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kSyncEnableRollback);
-
   fake_prefs_.SetRemainingRollbackTries(3);
   controller_->Start(base::TimeDelta());
   EXPECT_TRUE(rollback_started_);
@@ -157,9 +148,6 @@ TEST_F(BackupRollbackControllerTest, BackupAfterRollbackDone) {
 }
 
 TEST_F(BackupRollbackControllerTest, GiveUpRollback) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kSyncEnableRollback);
-
   fake_prefs_.SetRemainingRollbackTries(3);
   for (int i = 0; i < 3; ++i) {
     controller_->Start(base::TimeDelta());
@@ -174,6 +162,9 @@ TEST_F(BackupRollbackControllerTest, GiveUpRollback) {
 }
 
 TEST_F(BackupRollbackControllerTest, SkipRollbackIfNotEnabled) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kSyncDisableRollback);
+
   EXPECT_CALL(signin_wrapper_, GetEffectiveUsername())
       .Times(2)
       .WillOnce(Return("test"))

@@ -41,8 +41,8 @@ void BackupRollbackController::Start(base::TimeDelta delay) {
   if (!IsBackupEnabled())
     return;
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSyncEnableRollback)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSyncDisableRollback)) {
     sync_prefs_->SetRemainingRollbackTries(0);
   }
 

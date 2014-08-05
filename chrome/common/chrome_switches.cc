@@ -1174,8 +1174,8 @@ const char kSyncEnableGetUpdateAvoidance[]   =
 // Disable data backup when user's not signed in.
 const char kSyncDisableBackup[] = "disable-sync-backup";
 
-// Enable data rollback when receiving sync rollback command.
-const char kSyncEnableRollback[] = "enable-sync-rollback";
+// Disable sync rollback.
+const char kSyncDisableRollback[] = "disable-sync-rollback";
 
 // Passes the name of the current running automated test to Chrome.
 const char kTestName[]                      = "test-name";

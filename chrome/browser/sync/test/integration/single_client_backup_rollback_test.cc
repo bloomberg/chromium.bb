@@ -43,9 +43,9 @@ class SingleClientBackupRollbackTest : public SyncTest {
           switches::kSyncDisableBackup);
   }
 
-  void EnableRollback() {
+  void DisableRollback() {
     CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kSyncEnableRollback);
+          switches::kSyncDisableRollback);
   }
 
   base::Time GetBackupDbLastModified() {
@@ -135,6 +135,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
 #endif
 IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
                        MAYBE_TestBackupOnly) {
+  DisableRollback();
+
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   // Starting state:
@@ -185,8 +187,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
 #endif
 IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
                        MAYBE_TestBackupRollback) {
-  EnableRollback();
-
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   // Starting state:
@@ -253,8 +253,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
 // backup mode.
 IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
                        MAYBE_TestPrefBackupRollback) {
-  EnableRollback();
-
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   preferences_helper::ChangeStringPref(0, prefs::kHomePage, kUrl1);
@@ -300,8 +298,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
 #endif
 IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
                        MAYBE_RollbackNoBackup) {
-  EnableRollback();
-
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   // Setup sync, wait for its completion, and make sure changes were synced.
