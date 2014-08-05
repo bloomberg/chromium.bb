@@ -223,9 +223,8 @@ void SupervisedUserCreationScreenHandler::Show() {
     UserSelectionScreen::FillUserDictionary(
         *it,
         is_owner,
-        false, /* is_signin_to_add */
+        false /* is_signin_to_add */,
         ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
-        NULL, /* public_session_recommended_locales */
         user_dict);
     users_list->Append(user_dict);
   }

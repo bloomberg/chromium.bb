@@ -200,12 +200,7 @@ void AppLaunchSigninScreen::HandleGetUsers() {
             : ScreenlockBridge::LockHandler::OFFLINE_PASSWORD;
     base::DictionaryValue* user_dict = new base::DictionaryValue();
     UserSelectionScreen::FillUserDictionary(
-        *it,
-        true,   /* is_owner */
-        false,  /* is_signin_to_add */
-        initial_auth_type,
-        NULL,   /* public_session_recommended_locales */
-        user_dict);
+        *it, true, false, initial_auth_type, user_dict);
     users_list.Append(user_dict);
   }
 

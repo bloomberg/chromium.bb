@@ -239,9 +239,7 @@ scoped_ptr<base::ListValue> GetLanguageList(
   }
 
   base::string16 divider16;
-  if (insert_divider && !out_display_names.empty()) {
-    // Insert a divider if requested, but only if
-    // |most_relevant_locales_display_names| is not empty.
+  if (insert_divider) {
     divider16 = base::ASCIIToUTF16(kMostRelevantLanguagesDivider);
     out_display_names.push_back(divider16);
   }

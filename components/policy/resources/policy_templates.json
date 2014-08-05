@@ -120,7 +120,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 274
+#   For your editing convenience: highest ID currently used: 273
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -6613,40 +6613,6 @@
       If this policy is left not set, EasyUnlock is allowed if the requirements for the feature are satified.
       ''',
     },
-    {
-      'name': 'SessionLocales',
-      'type': 'list',
-      'schema': {
-        'type': 'array',
-        'items': { 'type': 'string' },
-      },
-      'supported_on': ['chrome_os:38-'],
-      'features': {
-        'can_be_recommended': True,
-        'dynamic_refresh': True,
-        'per_profile': True,
-      },
-      'example_value': ['de', 'fr'],
-      'id': 274,
-      'caption': '''Set the recommended locales for a public session''',
-      'desc': '''Sets one or more recommended locales for a public sessions, allowing users to easily choose one of these locales.
-
-      The user can choose a locale and a keyboard layout before starting a public session. By default, all locales supported by <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> are listed in alphabetic order. You can use this policy to move a set of recommended locales to the top of the list.
-
-      If this policy is not set, the current UI locale will be pre-selected.
-
-      If this policy is set, the recommended locales will be moved to the top of the list and will be visually separated from all other locales. The recommended locales will be listed in the order in which they appear in the policy. The first recommended locale will be pre-selected.
-
-      If there is more than one recommended locale, it is assumed that users will want to select among these locales. Locale and keyboard layout selection will be prominently offered when starting a public session. Otherwise, it is assumed that most users will want to use the pre-selected locale. Locale and keyboard layout selection will be less prominently offered when starting a public session.
-
-      When this policy is set and automatic login is enabled (see the |DeviceLocalAccountAutoLoginId| and |DeviceLocalAccountAutoLoginDelay| policies), the automatically started public session will use the first recommended locale and the most popular keyboard layout matching this locale.
-
-      The pre-selected keyboard layout will always be the most popular layout matching the pre-selected locale.
-
-      This policy can only be set as recommended. You can use this policy to move a set of recommended locales to the top but users are always allowed to choose any locale supported by <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> for their session.
-      ''',
-    },
-
   ],
   'messages': {
     # Messages that are not associated to any policies.

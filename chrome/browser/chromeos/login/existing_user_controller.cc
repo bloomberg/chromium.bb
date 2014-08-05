@@ -22,7 +22,6 @@
 #include "base/version.h"
 #include "chrome/browser/accessibility/accessibility_events.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
@@ -37,11 +36,9 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
-#include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
@@ -54,11 +51,7 @@
 #include "chromeos/login/user_names.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/google/core/browser/google_util.h"
-#include "components/policy/core/common/cloud/cloud_policy_core.h"
-#include "components/policy/core/common/cloud/cloud_policy_store.h"
-#include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_service.h"
-#include "components/policy/core/common/policy_types.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -72,7 +65,6 @@
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "policy/policy_constants.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
@@ -590,57 +582,13 @@ void ExistingUserController::LoginAsPublicSession(
     return;
   }
 
-  UserContext new_user_context = user_context;
-  std::string locale = user_context.GetPublicSessionLocale();
-  if (locale.empty()) {
-    // When performing auto-login, no locale is chosen by the user. Check
-    // whether a list of recommended locales was set by policy. If so, use its
-    // first entry. Otherwise, |locale| will remain blank, indicating that the
-    // public session should use the current UI locale.
-    const policy::PolicyMap::Entry* entry = g_browser_process->platform_part()->
-        browser_policy_connector_chromeos()->
-            GetDeviceLocalAccountPolicyService()->
-                GetBrokerForUser(user_context.GetUserID())->core()->store()->
-                    policy_map().Get(policy::key::kSessionLocales);
-    base::ListValue const* list = NULL;
-    if (entry &&
-        entry->level == policy::POLICY_LEVEL_RECOMMENDED &&
-        entry->value &&
-        entry->value->GetAsList(&list)) {
-      if (list->GetString(0, &locale))
-        new_user_context.SetPublicSessionLocale(locale);
-    }
-  }
-
-  if (!locale.empty() &&
-      new_user_context.GetPublicSessionInputMethod().empty()) {
-    // When |locale| is set, a suitable keyboard layout should be chosen. In
-    // most cases, this will already be the case because the UI shows a list of
-    // keyboard layouts suitable for the |locale| and ensures that one of them
-    // us selected. However, it is still possible that |locale| is set but no
-    // keyboard layout was chosen:
-    // * The list of keyboard layouts is updated asynchronously. If the user
-    //   enters the public session before the list of keyboard layouts for the
-    //   |locale| has been retrieved, the UI will indicate that no keyboard
-    //   layout was chosen.
-    // * During auto-login, the |locale| is set in this method and a suitable
-    //   keyboard layout must be chosen next.
-    //
-    // The list of suitable keyboard layouts is constructed asynchronously. Once
-    // it has been retrieved, |SetPublicSessionKeyboardLayoutAndLogin| will
-    // select the first layout from the list and continue login.
-    GetKeyboardLayoutsForLocale(
-        base::Bind(
-            &ExistingUserController::SetPublicSessionKeyboardLayoutAndLogin,
-            weak_factory_.GetWeakPtr(),
-            new_user_context),
-        locale);
-    return;
-  }
-
-  // The user chose a locale and a suitable keyboard layout or left both unset.
-  // Login can continue immediately.
-  LoginAsPublicSessionInternal(new_user_context);
+  // Only one instance of LoginPerformer should exist at a time.
+  login_performer_.reset(NULL);
+  login_performer_.reset(new LoginPerformer(this));
+  is_login_in_progress_ = true;
+  login_performer_->LoginAsPublicSession(user_context);
+  SendAccessibilityAlert(
+      l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_PUBLIC_ACCOUNT));
 }
 
 void ExistingUserController::LoginAsKioskApp(const std::string& app_id,
@@ -1214,38 +1162,6 @@ void ExistingUserController::SendAccessibilityAlert(
   AccessibilityAlertInfo event(ProfileHelper::GetSigninProfile(), alert_text);
   SendControlAccessibilityNotification(
       ui::AX_EVENT_VALUE_CHANGED, &event);
-}
-
-void ExistingUserController::SetPublicSessionKeyboardLayoutAndLogin(
-    const UserContext& user_context,
-    scoped_ptr<base::ListValue> keyboard_layouts) {
-  UserContext new_user_context = user_context;
-  std::string keyboard_layout;
-  for (size_t i = 0; i < keyboard_layouts->GetSize(); ++i) {
-    base::DictionaryValue* entry = NULL;
-    keyboard_layouts->GetDictionary(i, &entry);
-    bool selected = false;
-    entry->GetBoolean("selected", &selected);
-    if (selected) {
-      entry->GetString("value", &keyboard_layout);
-      break;
-    }
-  }
-  DCHECK(!keyboard_layout.empty());
-  new_user_context.SetPublicSessionInputMethod(keyboard_layout);
-
-  LoginAsPublicSessionInternal(new_user_context);
-}
-
-void ExistingUserController::LoginAsPublicSessionInternal(
-    const UserContext& user_context) {
-  // Only one instance of LoginPerformer should exist at a time.
-  login_performer_.reset(NULL);
-  login_performer_.reset(new LoginPerformer(this));
-  is_login_in_progress_ = true;
-  login_performer_->LoginAsPublicSession(user_context);
-  SendAccessibilityAlert(
-      l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_PUBLIC_ACCOUNT));
 }
 
 }  // namespace chromeos

@@ -885,18 +885,6 @@ void SigninScreenHandler::SetPublicSessionDisplayName(
          display_name);
 }
 
-void SigninScreenHandler::SetPublicSessionLocales(
-    const std::string& user_id,
-    scoped_ptr<base::ListValue> locales,
-    const std::string& default_locale,
-    bool multipleRecommendedLocales) {
-  CallJS("login.AccountPickerScreen.setPublicSessionLocales",
-         user_id,
-         *locales,
-         default_locale,
-         multipleRecommendedLocales);
-}
-
 void SigninScreenHandler::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
@@ -1342,19 +1330,17 @@ void SigninScreenHandler::HandleGetPublicSessionKeyboardLayouts(
   GetKeyboardLayoutsForLocale(
       base::Bind(&SigninScreenHandler::SendPublicSessionKeyboardLayouts,
                  weak_factory_.GetWeakPtr(),
-                 user_id,
-                 locale),
+                 user_id),
       locale);
 }
 
 void SigninScreenHandler::SendPublicSessionKeyboardLayouts(
     const std::string& user_id,
-    const std::string& locale,
     scoped_ptr<base::ListValue> keyboard_layouts) {
-  CallJS("login.AccountPickerScreen.setPublicSessionKeyboardLayouts",
-         user_id,
-         locale,
-         *keyboard_layouts);
+  web_ui()->CallJavascriptFunction(
+      "login.AccountPickerScreen.setPublicSessionKeyboardLayouts",
+      base::StringValue(user_id),
+      *keyboard_layouts);
 }
 
 void SigninScreenHandler::HandleLaunchKioskApp(const std::string& app_id,
