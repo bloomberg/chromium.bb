@@ -40,7 +40,6 @@ namespace blink { class Range; }
 
 namespace blink {
 
-struct WebFloatQuad;
 class WebNode;
 class WebString;
 
@@ -73,8 +72,6 @@ public:
     BLINK_EXPORT WebRange expandedToParagraph() const;
 
     BLINK_EXPORT static WebRange fromDocumentRange(WebLocalFrame*, int start, int length);
-
-    BLINK_EXPORT WebVector<WebFloatQuad> textQuads() const;
 
 #if BLINK_IMPLEMENTATION
     WebRange(const PassRefPtrWillBeRawPtr<blink::Range>&);

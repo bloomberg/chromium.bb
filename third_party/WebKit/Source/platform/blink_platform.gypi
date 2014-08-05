@@ -279,7 +279,6 @@
       'exported/WebDeviceOrientationData.cpp',
       'exported/WebFileSystemCallbacks.cpp',
       'exported/WebFilterKeyframe.cpp',
-      'exported/WebFloatQuad.cpp',
       'exported/WebHTTPBody.cpp',
       'exported/WebHTTPLoadInfo.cpp',
       'exported/WebImageSkia.cpp',
