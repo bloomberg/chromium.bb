@@ -25,6 +25,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/wm/core/shadow.h"
 #include "ui/wm/core/visibility_controller.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -101,14 +102,14 @@ class HomeCardView : public views::WidgetDelegateView {
   HomeCardView(app_list::AppListViewDelegate* view_delegate,
                aura::Window* container,
                MinimizedHomeDragDelegate* minimized_delegate) {
-    set_background(views::Background::CreateSolidBackground(SK_ColorWHITE));
-
     bottom_view_ = new BottomHomeView(view_delegate);
     AddChildView(bottom_view_);
 
     main_view_ = new app_list::AppListMainView(
         view_delegate, 0 /* initial_apps_page */, container);
     AddChildView(main_view_);
+    main_view_->set_background(
+        views::Background::CreateSolidBackground(SK_ColorWHITE));
 
     minimized_view_ = CreateMinimizedHome(minimized_delegate);
     AddChildView(minimized_view_);
@@ -123,6 +124,12 @@ class HomeCardView : public views::WidgetDelegateView {
       contents_view->SetActivePage(contents_view->GetPageIndexForNamedPage(
           app_list::ContentsView::NAMED_PAGE_START));
     }
+
+    if (state != HomeCard::VISIBLE_BOTTOM)
+      shadow_.reset();
+    // Do not create the shadow yet. Instead, create it in OnWidgetMove(), to
+    // make sure that widget has been resized correctly (because the size of the
+    // shadow depends on the size of the widget).
   }
 
   // views::View:
@@ -141,6 +148,19 @@ class HomeCardView : public views::WidgetDelegateView {
 
  private:
   // views::WidgetDelegate:
+  virtual void OnWidgetMove() OVERRIDE {
+    if (bottom_view_->visible() && !shadow_) {
+      aura::Window* window = GetWidget()->GetNativeWindow();
+      shadow_.reset(new wm::Shadow());
+      shadow_->Init(wm::Shadow::STYLE_ACTIVE);
+      shadow_->SetContentBounds(gfx::Rect(window->bounds().size()));
+      shadow_->layer()->SetVisible(true);
+
+      ui::Layer* layer = window->layer();
+      layer->Add(shadow_->layer());
+    }
+  }
+
   virtual views::View* GetContentsView() OVERRIDE {
     return this;
   }
@@ -148,6 +168,7 @@ class HomeCardView : public views::WidgetDelegateView {
   app_list::AppListMainView* main_view_;
   BottomHomeView* bottom_view_;
   views::View* minimized_view_;
+  scoped_ptr<wm::Shadow> shadow_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeCardView);
 };
@@ -213,7 +234,7 @@ class HomeCardImpl : public HomeCard,
 
   virtual int GetHorizontalMargin() const OVERRIDE {
     CHECK_NE(HIDDEN, state_);
-    const int kHomeCardHorizontalMargin = 50;
+    const int kHomeCardHorizontalMargin = 100;
     return state_ == VISIBLE_BOTTOM ? kHomeCardHorizontalMargin : 0;
   }
 

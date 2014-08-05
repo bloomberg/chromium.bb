@@ -6,7 +6,7 @@ include_rules = [
   "+ui/aura",
   "+ui/app_list",
   "+ui/events",
-  "+ui/gfx/image",
+  "+ui/gfx",
   "+ui/views",
   "+ui/wm/core",
   "+ui/wm/public",
