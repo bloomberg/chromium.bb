@@ -87,7 +87,9 @@ public:
     StyleColor color() const { return m_colorIsCurrentColor ? StyleColor::currentColor() : StyleColor(m_color); }
 
     unsigned width() const { return m_width; }
+
     EBorderStyle style() const { return static_cast<EBorderStyle>(m_style); }
+    void setStyle(EBorderStyle style) { m_style = style; }
 
 protected:
     Color m_color;

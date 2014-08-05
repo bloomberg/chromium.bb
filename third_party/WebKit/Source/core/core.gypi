@@ -3439,6 +3439,7 @@
             'rendering/RenderTableCellTest.cpp',
             'rendering/RenderTableRowTest.cpp',
             'rendering/shapes/BoxShapeTest.cpp',
+            'rendering/style/OutlineValueTest.cpp',
             'testing/PrivateScriptTestTest.cpp',
             'streams/ReadableStreamTest.cpp',
             'testing/UnitTestHelpers.cpp',
