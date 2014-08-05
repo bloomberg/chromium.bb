@@ -483,24 +483,21 @@ Visit.prototype.getFocusableControls_ = function() {
  * @private
  */
 Visit.prototype.handleKeydown_ = function(e) {
-  var keyCode = e.keyCode;
-  if (keyCode == 8 || keyCode == 46) {  // Delete or Backspace.
+  if (e.keyCode == 8 || e.keyCode == 46) {  // Delete or Backspace.
     if (!this.model_.isDeletingVisits())
       this.removeEntryFromHistory_(e);
     return;
   }
 
   var target = e.target;
-  if (target != document.activeElement || !(keyCode == 37 || keyCode == 39)) {
-    // Handling key code for inactive element or key wasn't left or right.
+  var key = e.keyIdentifier;
+  if (target != document.activeElement || !(key == 'Left' || key == 'Right'))
     return;
-  }
 
   var controls = this.getFocusableControls_();
   for (var i = 0; i < controls.length; ++i) {
     if (controls[i].contains(target)) {
-      /** @const */ var isLeft = e.keyCode == 37;
-      var toFocus = isLeft ? controls[i - 1] : controls[i + 1];
+      var toFocus = key == 'Left' ? controls[i - 1] : controls[i + 1];
       if (toFocus) {
         this.focusControl(toFocus);
         e.preventDefault();
@@ -1684,14 +1681,14 @@ HistoryView.prototype.swapFocusedVisit_ = function(visit) {
  */
 HistoryView.prototype.handleKeydown_ = function(e) {
   // Only handle up or down arrows on the focused element.
-  var keyCode = e.keyCode, target = e.target;
-  if (target != document.activeElement || !(keyCode == 38 || keyCode == 40))
+  var key = e.keyIdentifier, target = e.target;
+  if (target != document.activeElement || !(key == 'Up' || key == 'Down'))
     return;
 
   var entry = findAncestorByClass(e.target, 'entry');
   var visit = entry && entry.visit;
-  this.swapFocusedVisit_(keyCode == 38 ? this.getVisitBefore_(visit) :
-                                         this.getVisitAfter_(visit));
+  this.swapFocusedVisit_(key == 'Up' ? this.getVisitBefore_(visit) :
+                                       this.getVisitAfter_(visit));
 };
 
 /**
