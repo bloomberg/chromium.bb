@@ -98,6 +98,7 @@ public class CronetSampleActivity extends Activity {
         public void onResponseStarted(HttpUrlRequest request) {
             Log.i(TAG, "****** Response Started, content length is "
                     + request.getContentLength());
+            Log.i(TAG, "*** Headers Are *** " + request.getAllHeaders());
         }
 
         @Override

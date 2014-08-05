@@ -7,6 +7,8 @@ package org.chromium.net;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
+import java.util.List;
+import java.util.Map;
 
 /**
  * HTTP request (GET or POST).
@@ -134,6 +136,12 @@ public interface HttpUrlRequest {
      */
     String getHeader(String name);
 
+    /**
+     * Returns an unmodifiable map of the response-header fields and values.
+     * The null key is mapped to the HTTP status line for compatibility with
+     * HttpUrlConnection.
+     */
+    Map<String, List<String>> getAllHeaders();
 
     /**
      * Returns the exception that occurred while executing the request of null

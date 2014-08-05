@@ -18,6 +18,7 @@
 
 namespace net {
 class GrowableIOBuffer;
+class HttpResponseHeaders;
 class UploadDataStream;
 }  // namespace net
 
@@ -89,6 +90,9 @@ class URLRequestPeer : public net::URLRequest::Delegate {
 
   // Returns the value of the specified response header.
   std::string GetHeader(const std::string& name) const;
+
+  // Get all response headers, as a HttpResponseHeaders object.
+  net::HttpResponseHeaders* GetResponseHeaders() const;
 
   // Returns the overall number of bytes read.
   size_t bytes_read() const { return bytes_read_; }

@@ -15,7 +15,9 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -276,6 +278,14 @@ public class UrlRequest {
         return nativeGetHeader(mUrlRequestPeer, name);
     }
 
+    // All response headers.
+    public Map<String, List<String>> getAllHeaders() {
+        validateHeadersAvailable();
+        ResponseHeadersMap result = new ResponseHeadersMap();
+        nativeGetAllHeaders(mUrlRequestPeer, result);
+        return result;
+    }
+
     /**
      * A callback invoked when the first chunk of the response has arrived.
      */
@@ -335,6 +345,19 @@ public class UrlRequest {
         }
     }
 
+    /**
+     * Appends header |name| with value |value| to |headersMap|.
+     */
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onAppendResponseHeader(ResponseHeadersMap headersMap,
+            String name, String value) {
+        if (!headersMap.containsKey(name)) {
+            headersMap.put(name, new ArrayList<String>());
+        }
+        headersMap.get(name).add(value);
+    }
+
     private void validateNotRecycled() {
         if (mRecycled) {
             throw new IllegalStateException("Accessing recycled request");
@@ -389,4 +412,11 @@ public class UrlRequest {
     private native long nativeGetContentLength(long urlRequestPeer);
 
     private native String nativeGetHeader(long urlRequestPeer, String name);
+
+    private native void nativeGetAllHeaders(long urlRequestPeer,
+            ResponseHeadersMap headers);
+
+    // Explicit class to work around JNI-generator generics confusion.
+    private class ResponseHeadersMap extends HashMap<String, List<String>> {
+    }
 }

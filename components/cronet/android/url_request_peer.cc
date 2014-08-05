@@ -67,6 +67,13 @@ std::string URLRequestPeer::GetHeader(const std::string &name) const {
   return value;
 }
 
+net::HttpResponseHeaders* URLRequestPeer::GetResponseHeaders() const {
+  if (url_request_ == NULL) {
+    return NULL;
+  }
+  return url_request_->response_headers();
+}
+
 void URLRequestPeer::Start() {
   context_->GetNetworkTaskRunner()->PostTask(
       FROM_HERE,

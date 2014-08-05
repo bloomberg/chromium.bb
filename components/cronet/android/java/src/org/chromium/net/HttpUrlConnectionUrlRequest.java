@@ -476,7 +476,6 @@ class HttpUrlConnectionUrlRequest implements HttpUrlRequest {
         return mContentType;
     }
 
-
     @Override
     public String getHeader(String name) {
         if (mConnection == null) {
@@ -490,6 +489,14 @@ class HttpUrlConnectionUrlRequest implements HttpUrlRequest {
             }
         }
         return null;
+    }
+
+    @Override
+    public Map<String, List<String>> getAllHeaders() {
+        if (mConnection == null) {
+            throw new IllegalStateException("Response headers not available");
+        }
+        return mConnection.getHeaderFields();
     }
 
     private void validateNotStarted() {

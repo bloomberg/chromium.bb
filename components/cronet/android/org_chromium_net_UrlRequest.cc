@@ -12,6 +12,7 @@
 #include "jni/UrlRequest_jni.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
+#include "net/http/http_response_headers.h"
 
 using base::android::ConvertUTF8ToJavaString;
 
@@ -305,6 +306,38 @@ static jstring GetHeader(
   } else {
     return NULL;
   }
+}
+
+static void GetAllHeaders(JNIEnv* env,
+                          jobject object,
+                          jlong urlRequestPeer,
+                          jobject headersMap) {
+  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
+  if (request == NULL)
+    return;
+
+  net::HttpResponseHeaders* headers = request->GetResponseHeaders();
+  if (headers == NULL)
+    return;
+
+  void* iter = NULL;
+  std::string header_name;
+  std::string header_value;
+  while (headers->EnumerateHeaderLines(&iter, &header_name, &header_value)) {
+    ScopedJavaLocalRef<jstring> name =
+        ConvertUTF8ToJavaString(env, header_name);
+    ScopedJavaLocalRef<jstring> value =
+        ConvertUTF8ToJavaString(env, header_value);
+    Java_UrlRequest_onAppendResponseHeader(
+        env, object, headersMap, name.Release(), value.Release());
+  }
+
+  // Some implementations (notably HttpURLConnection) include a mapping for the
+  // null key; in HTTP's case, this maps to the HTTP status line.
+  ScopedJavaLocalRef<jstring> status_line =
+      ConvertUTF8ToJavaString(env, headers->GetStatusLine());
+  Java_UrlRequest_onAppendResponseHeader(
+      env, object, headersMap, NULL, status_line.Release());
 }
 
 }  // namespace cronet
