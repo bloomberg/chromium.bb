@@ -198,19 +198,6 @@ void GraphicsLayer::addChild(GraphicsLayer* childLayer)
     updateChildList();
 }
 
-void GraphicsLayer::addChildAtIndex(GraphicsLayer* childLayer, int index)
-{
-    ASSERT(childLayer != this);
-
-    if (childLayer->parent())
-        childLayer->removeFromParent();
-
-    childLayer->setParent(this);
-    m_children.insert(index, childLayer);
-
-    updateChildList();
-}
-
 void GraphicsLayer::addChildBelow(GraphicsLayer* childLayer, GraphicsLayer* sibling)
 {
     ASSERT(childLayer != this);
@@ -231,53 +218,6 @@ void GraphicsLayer::addChildBelow(GraphicsLayer* childLayer, GraphicsLayer* sibl
         m_children.append(childLayer);
 
     updateChildList();
-}
-
-void GraphicsLayer::addChildAbove(GraphicsLayer* childLayer, GraphicsLayer* sibling)
-{
-    childLayer->removeFromParent();
-    ASSERT(childLayer != this);
-
-    bool found = false;
-    for (unsigned i = 0; i < m_children.size(); i++) {
-        if (sibling == m_children[i]) {
-            m_children.insert(i+1, childLayer);
-            found = true;
-            break;
-        }
-    }
-
-    childLayer->setParent(this);
-
-    if (!found)
-        m_children.append(childLayer);
-
-    updateChildList();
-}
-
-bool GraphicsLayer::replaceChild(GraphicsLayer* oldChild, GraphicsLayer* newChild)
-{
-    ASSERT(!newChild->parent());
-    bool found = false;
-    for (unsigned i = 0; i < m_children.size(); i++) {
-        if (oldChild == m_children[i]) {
-            m_children[i] = newChild;
-            found = true;
-            break;
-        }
-    }
-
-    if (found) {
-        oldChild->setParent(0);
-
-        newChild->removeFromParent();
-        newChild->setParent(this);
-
-        updateChildList();
-        return true;
-    }
-
-    return false;
 }
 
 void GraphicsLayer::removeAllChildren()

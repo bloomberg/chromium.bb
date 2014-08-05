@@ -109,10 +109,7 @@ public:
 
     // Add child layers. If the child is already parented, it will be removed from its old parent.
     void addChild(GraphicsLayer*);
-    void addChildAtIndex(GraphicsLayer*, int index);
-    void addChildAbove(GraphicsLayer*, GraphicsLayer* sibling);
     void addChildBelow(GraphicsLayer*, GraphicsLayer* sibling);
-    bool replaceChild(GraphicsLayer* oldChild, GraphicsLayer* newChild);
 
     void removeAllChildren();
     void removeFromParent();
