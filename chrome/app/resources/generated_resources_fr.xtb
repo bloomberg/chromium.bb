@@ -396,7 +396,7 @@ puis cliquez sur <ph name="BEGIN_BOLD"/>OK<ph name="END_BOLD"/>.</translation>
 <translation id="8034955203865359138">Aucune entrée d'historique trouvée.</translation>
 <translation id="9130015405878219958">Le mode indiqué est incorrect.</translation>
 <translation id="6615807189585243369"><ph name="BURNT_AMOUNT"/> copié(s) sur <ph name="TOTAL_SIZE"/></translation>
-<translation id="7501143156951160001">Le cas échéant, vous pouvez <ph name="LINK_START"/>créer un compte Google<ph name="LINK_END"/> maintenant.</translation>
+<translation id="7501143156951160001">Si vous ne possédez pas de compte Google, vous pouvez en <ph name="LINK_START"/>créer un <ph name="LINK_END"/> maintenant.</translation>
 <translation id="4950138595962845479">Options...</translation>
 <translation id="4653235815000740718">Un problème est survenu lors de la création du support de récupération du système d'exploitation. Le périphérique de stockage utilisé est introuvable.</translation>
 <translation id="1407489512183974736">Rogner et centrer</translation>
@@ -3969,6 +3969,7 @@ au site <ph name="SITE"/>, des identifiants inhabituels et incorrects ont été 
 <translation id="6460601847208524483">Rechercher le suivant</translation>
 <translation id="397703832102027365">Finalisation en cours…</translation>
 <translation id="8146177459103116374">Si vous êtes déjà enregistré sur ​​cet appareil, vous pouvez vous <ph name="LINK2_START"/>connecter en tant qu'utilisateur existant<ph name="LINK2_END"/>.</translation>
+<translation id="5072836811783999860">Afficher les favoris gérés</translation>
 <translation id="4856478137399998590">Votre service Internet mobile est activé et prêt à l'emploi.</translation>
 <translation id="3305389145870741612">Le processus de formatage peut prendre quelques secondes. Veuillez patienter.</translation>
 <translation id="3648607100222897006">Ces fonctionnalités expérimentales sont susceptibles d'être modifiées, de cesser de fonctionner ou de disparaître à tout moment. Nous ne garantissons en aucun cas les conséquences de l'activation de l'une d'entre elles. Il est même possible que votre navigateur s'auto-détruise ! Plus sérieusement, votre navigateur risque de supprimer toutes vos données. Votre sécurité et la confidentialité de vos données peuvent également être compromises de manière inattendue. Toute fonctionnalité expérimentale que vous activez le sera pour tous les utilisateurs de ce navigateur. Faites donc attention.</translation>
@@ -4398,6 +4399,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME"/> ?</translation>
 <translation id="6869402422344886127">Case cochée</translation>
 <translation id="3428010780253032925">Désactiver le ciblage rectangulaire dans les affichages</translation>
 <translation id="5637380810526272785">Mode de saisie</translation>
+<translation id="3613134908380545408">Afficher &quot;<ph name="FOLDER_NAME"/>&quot;</translation>
 <translation id="2837049386027881519">Une nouvelle tentative de connexion a dû être effectuée à l'aide d'une ancienne version du protocole TLS ou SSL. Cela signifie généralement que le serveur utilise un logiciel obsolète, et qu'il est possible qu'il rencontre d'autres problèmes de sécurité.</translation>
 <translation id="404928562651467259">AVERTISSEMENT</translation>
 <translation id="4289300219472526559">Commencer à parler</translation>
@@ -4730,6 +4732,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME"/> ?</translation>
 <translation id="6934265752871836553">Utilisez le code &quot;bleeding-edge&quot; afin que le chargement du contenu soit plus rapide dans Chrome.
         Les modifications que ce chemin implique sont fortement susceptibles de diviser une grande partie du contenu.</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">Toujours ouvrir dans Adobe Reader</translation>
 <translation id="8274359292107649245">Ouvrir Google Chrome sur le Bureau</translation>
 <translation id="1571119610742640910">Composition pour les images de fond racine fixes</translation>
 <translation id="6514565641373682518">Cette page a désactivé le curseur de votre souris.</translation>
@@ -4929,6 +4932,7 @@ Pour poursuivre l'exploration, veuillez appuyer sur n'importe quelle touche.</tr
 <translation id="824543159844843373">Activer l'élément 3 du lanceur d'applications</translation>
 <translation id="3819800052061700452">&amp;Plein écran</translation>
 <translation id="48607902311828362">Mode Avion</translation>
+<translation id="711840821796638741">Afficher les favoris gérés</translation>
 <translation id="3360297538363969800">Échec de l'impression. Veuillez vérifier votre imprimante, puis réessayer.</translation>
 <translation id="680572642341004180">Activer le suivi RLZ pour <ph name="SHORT_PRODUCT_OS_NAME"/></translation>
 <translation id="688797901999351107">Veuillez cesser toute utilisation du chargeur que nous avons rappelé.</translation>

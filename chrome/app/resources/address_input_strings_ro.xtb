@@ -17,8 +17,8 @@
 <translation id="2096368010154057602">Departament</translation>
 <translation id="7738983109397305830">Acest cod poștal ZIP nu pare să se potrivească cu restul adresei. Nu știți ce cod poștal ZIP aveți? Aflați <ph name="BEGIN_LINK"/>aici<ph name="END_LINK"/>.</translation>
 <translation id="3174168572213147020">Insulă</translation>
-<translation id="7139724024395191329">Emirat</translation>
-<translation id="6970216967273061347">District</translation>
+<translation id="7139724024395191329">Emiratul</translation>
+<translation id="6970216967273061347">Județ</translation>
 <translation id="6207937957461833379">Țară/Regiune</translation>
 <translation id="6777217372746654521">Se pare că rândul pentru adresă conține o căsuță poștală. Introdu o adresă cu numele străzii sau numărul clădirii.</translation>
 <translation id="8471101563037901452">Acest cod poștal nu pare să se potrivească cu restul adresei. Nu știți ce cod poștal aveți? Aflați <ph name="BEGIN_LINK"/>aici<ph name="END_LINK"/>.</translation>
@@ -27,7 +27,7 @@
 <translation id="6735419622867539268">Valoarea <ph name="FIELD_VALUE"/> nu este recunoscută pentru acest câmp.</translation>
 <translation id="43113324827158664">Acest câmp nu poate rămâne necompletat.</translation>
 <translation id="3050787670591910834">Trebuie să specificați un cod poștal, de exemplu, <ph name="EXAMPLE"/>.</translation>
-<translation id="6282194474023008486">Cod poştal</translation>
+<translation id="6282194474023008486">Cod poștal</translation>
 <translation id="4376888869070172068">Formatul codului poștal nu este recunoscut.</translation>
 <translation id="8446364922515257065">Do/Si</translation>
 <translation id="4518701284698680367">Trebuie să specificați un cod poștal ZIP, de exemplu, <ph name="EXAMPLE"/>. Nu știți ce cod poștal ZIP aveți? Aflați <ph name="BEGIN_LINK"/>aici<ph name="END_LINK"/>.</translation>

@@ -124,7 +124,7 @@
 <translation id="4654488276758583406">Molto piccole</translation>
 <translation id="6647228709620733774">URL di revoca dell'autorità di certificazione Netscape</translation>
 <translation id="546411240573627095">Stile tastierino</translation>
-<translation id="2310216585920710503">Configura Sblocco facilitato</translation>
+<translation id="2310216585920710503">Configura Sblocco rapido</translation>
 <translation id="8425213833346101688">Cambia</translation>
 <translation id="2972581237482394796">&amp;Ripeti</translation>
 <translation id="5895138241574237353">Riavvia</translation>
@@ -512,7 +512,7 @@
 <translation id="413121957363593859">Componenti</translation>
 <translation id="715487527529576698">La modalità cinese iniziale è il cinese semplificato</translation>
 <translation id="6522350652862471760">Attiva nome e icona del profilo Google</translation>
-<translation id="6181259999130430430">Attiva Sblocco facilitato per questo dispositivo.</translation>
+<translation id="6181259999130430430">Attiva Sblocco rapido per questo dispositivo.</translation>
 <translation id="8703575177326907206">La connessione a <ph name="DOMAIN"/> non è crittografata.</translation>
 <translation id="6135622770221372891">ID canali</translation>
 <translation id="8472623782143987204">basato sull'hardware</translation>
@@ -702,7 +702,7 @@ Per continuare, devono disconnettersi tutti gli utenti.</translation>
 <translation id="3984921062031549150">Blocchi del renderer</translation>
 <translation id="7925285046818567682">In attesa di risposta da <ph name="HOST_NAME"/>...</translation>
 <translation id="1079766198702302550">Impedisci sempre l'accesso alla webcam</translation>
-<translation id="2964845078799970531">La funzione Sblocco facilitato ti consente di sbloccare il Chromebook quando è vicino al tuo telefono.</translation>
+<translation id="2964845078799970531">La funzione Sblocco rapido ti consente di sbloccare il Chromebook quando è vicino al tuo telefono.</translation>
 <translation id="5053803681436838483">Nuovo indirizzo di spedizione...</translation>
 <translation id="5952256601775839173">Attiva clic con tre dita su touchpad.</translation>
 <translation id="3280237271814976245">Salva con &amp;nome...</translation>
@@ -1278,7 +1278,7 @@ La pagina potrà essere caricata dopo che ti sei connesso a una rete.</translati
 <translation id="9033857511263905942">&amp;Incolla</translation>
 <translation id="1028690605877243613">Consente di utilizzare il layout scaffale alternativo.</translation>
 <translation id="6736045498964449756">Spiacenti, le password non corrispondono.</translation>
-<translation id="4558985768677321342">Attiva Sblocco facilitato.</translation>
+<translation id="4558985768677321342">Attiva Sblocco rapido.</translation>
 <translation id="1221825588892235038">Solo selezione</translation>
 <translation id="2227939492629426903">Consente di attivare il nuovo menu avatar. Quando utilizzato in combinazione con la nuova gestione del profilo, mostra semplicemente il nuovo menu avatar di gestione del profilo. In caso contrario, mostra un menu avatar riprogettato con le stesse funzionalità di quello precedente, oltre a una scheda tutorial nella parte superiore in cui all'utente viene chiesto di provare la nuova interfaccia utente di gestione del profilo.</translation>
 <translation id="5582883434676861778"><ph name="PRODUCT_NAME"/> ha bloccato l'accesso a <ph name="HOST_NAME"/>. Questo sito web è stato segnalato come sito di phishing.</translation>
@@ -3297,7 +3297,7 @@ Assicurati di non mostrare informazioni riservate.</translation>
 <translation id="5917011688104426363">Imposta barra degli indirizzi su modalità di ricerca</translation>
 <translation id="3269101346657272573">Inserisci il PIN.</translation>
 <translation id="2822854841007275488">Arabo</translation>
-<translation id="6559948977408379772">Questa icona viene visualizzata quando il tuo telefono è vicino a te ed è disponibile la funzione Sblocco facilitato. Fai clic per accedere; non servono password.</translation>
+<translation id="6559948977408379772">Questa icona viene visualizzata quando il tuo telefono è vicino a te ed è disponibile la funzione Sblocco rapido. Fai clic per accedere; non servono password.</translation>
 <translation id="5857090052475505287">Nuova cartella</translation>
 <translation id="7450732239874446337">Operazioni di I/O di rete sospese.</translation>
 <translation id="4003393903129308792">Attiva unità di rasterizzazione one-copy</translation>
@@ -3416,7 +3416,7 @@ Assicurati di non mostrare informazioni riservate.</translation>
 <translation id="1526560967942511387">Documento senza titolo</translation>
 <translation id="3979748722126423326">Abilita <ph name="NETWORKDEVICE"/></translation>
 <translation id="7819857487979277519">PSK (WPA o RSN)</translation>
-<translation id="7561031016893995297">Gestisci i dispositivi con Sblocco facilitato nelle impostazioni del tuo account.</translation>
+<translation id="7561031016893995297">Gestisci i dispositivi con Sblocco rapido nelle impostazioni del tuo account.</translation>
 <translation id="2238379619048995541">Dati sullo stato di frequenza</translation>
 <translation id="4367133129601245178">C&amp;opia URL immagine</translation>
 <translation id="6326175484149238433">Rimuovi da Chrome</translation>
@@ -3914,6 +3914,7 @@ Assicurati di non mostrare informazioni riservate.</translation>
 <translation id="6460601847208524483">Trova successivo</translation>
 <translation id="397703832102027365">Finalizzazione in corso...</translation>
 <translation id="8146177459103116374">Se sei già registrato sul dispositivo in uso, puoi <ph name="LINK2_START"/>accedere come utente esistente<ph name="LINK2_END"/>.</translation>
+<translation id="5072836811783999860">Mostra Preferiti gestiti</translation>
 <translation id="4856478137399998590">Il servizio dati mobile è attivo e pronto all'uso</translation>
 <translation id="3305389145870741612">La procedura di formattazione può richiedere alcuni secondi. Attendi.</translation>
 <translation id="3648607100222897006">Queste funzioni sperimentali potrebbero essere modificate, essere interrotte o scomparire in qualsiasi momento. Non offriamo assolutamente alcuna garanzia su ciò potrebbe accadere se attivi uno di questi esperimenti: il tuo browser potrebbe persino andare in autocombustione! Scherzi a parte, il browser potrebbe eliminare tutti i tuoi dati oppure la tua sicurezza e la tua privacy potrebbero essere compromesse in modi inaspettati. Tutti gli esperimenti che attivi saranno abilitati per tutti gli utenti di questo browser. Procedi con cautela.</translation>
@@ -4148,7 +4149,7 @@ Assicurati di non mostrare informazioni riservate.</translation>
 <translation id="1639239467298939599">Caricamento</translation>
 <translation id="5457599981699367932">Esplora come ospite</translation>
 <translation id="8525428584879632762">Attivato nelle pagine dei risultati di ricerca o durante l'inserimento</translation>
-<translation id="2487656424763972284">Sblocco facilitato</translation>
+<translation id="2487656424763972284">Sblocco rapido</translation>
 <translation id="7047998246166230966">Puntatore</translation>
 <translation id="743268637741709136">Disattiva ricerca vocale in Avvio applicazioni. Se disattivi la funzione, l'utente non potrà eseguire ricerche utilizzando comandi vocali.</translation>
 <translation id="3252266817569339921">Francese</translation>
@@ -4342,6 +4343,7 @@ Assicurati di non mostrare informazioni riservate.</translation>
 <translation id="6869402422344886127">Casella di controllo selezionata</translation>
 <translation id="3428010780253032925">Disattiva targeting basato su rettangolo nelle visualizzazioni</translation>
 <translation id="5637380810526272785">Metodo di immissione</translation>
+<translation id="3613134908380545408">Mostra <ph name="FOLDER_NAME"/></translation>
 <translation id="2837049386027881519">È stato necessario ritentare la connessione utilizzando una versione precedente del protocollo TLS o SSL. In genere questo significa che il server utilizza software molto obsoleto e che potrebbe avere altri problemi di sicurezza.</translation>
 <translation id="404928562651467259">AVVISO</translation>
 <translation id="4289300219472526559">Avvia comandi vocali</translation>
@@ -4411,7 +4413,7 @@ Assicurati di non mostrare informazioni riservate.</translation>
 <translation id="8148264977957212129">Metodo di immissione Pinyin</translation>
 <translation id="2288278176040912387">Giradischi</translation>
 <translation id="7772032839648071052">Conferma passphrase</translation>
-<translation id="3676582787770338561">Attiva Sblocco facilitato per il dispositivo <ph name="DEVICE_TYPE"/>.</translation>
+<translation id="3676582787770338561">Attiva Sblocco rapido per il dispositivo <ph name="DEVICE_TYPE"/>.</translation>
 <translation id="2871813825302180988">Questo account è già in uso su questo dispositivo.</translation>
 <translation id="1642505962779453775">Ultimo trimestre</translation>
 <translation id="3323235640813116393">Consente di attivare il salvataggio delle pagine in MHTML: un singolo file di testo contenente il codice HTML e tutte le risorse secondarie.</translation>
@@ -4674,6 +4676,7 @@ Assicurati di non mostrare informazioni riservate.</translation>
 <translation id="6934265752871836553">Utilizza il codice sperimentale per consentire a Chrome di individuare contenuti più rapidamente. È molto probabile
         che le modifiche dovute a questo percorso rendano inutilizzabili molti contenuti.</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">Apri sempre in Adobe Reader</translation>
 <translation id="8274359292107649245">Apri Chrome su desktop</translation>
 <translation id="1571119610742640910">Composizione per sfondi principali fissi.</translation>
 <translation id="6514565641373682518">Questa pagina ha disattivato il puntatore del mouse.</translation>
@@ -4869,6 +4872,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="824543159844843373">Consente di attivare l'elemento 3 di Avvio applicazioni</translation>
 <translation id="3819800052061700452">&amp;Schermo intero</translation>
 <translation id="48607902311828362">Modalità aereo</translation>
+<translation id="711840821796638741">Mostra Preferiti gestiti</translation>
 <translation id="3360297538363969800">Errore di stampa. Controlla la stampante e riprova.</translation>
 <translation id="680572642341004180">Attiva tracciamento RLZ su <ph name="SHORT_PRODUCT_OS_NAME"/>.</translation>
 <translation id="688797901999351107">Ti invitiamo a non utilizzare più il caricabatterie da sostituire.</translation>

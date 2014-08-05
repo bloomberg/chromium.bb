@@ -3983,6 +3983,7 @@ luar biasa dan salah. Sama ada penyerang sedang cuba menyamar sebagai <ph name="
 <translation id="6460601847208524483">Cari Seterusnya</translation>
 <translation id="397703832102027365">Menyelesaikan...</translation>
 <translation id="8146177459103116374">Jika anda telah mendaftar pada peranti ini, anda boleh <ph name="LINK2_START"/>log masuk sebagai pengguna sedia ada<ph name="LINK2_END"/>.</translation>
+<translation id="5072836811783999860">Tunjukkan penanda halaman terurus</translation>
 <translation id="4856478137399998590">Perkhidmatan data mudah alih anda diaktifkan dan sedia untuk digunakan</translation>
 <translation id="3305389145870741612">Proses memformat boleh mengambil masa beberapa saat. Sila tunggu.</translation>
 <translation id="3648607100222897006">Ciri percubaan ini mungkin berubah, pecah atau hilang pada bila-bila masa. Kami sama sekali tidak menjamin mengenai apa yang akan berlaku jika anda menghidupkan salah satu percubaan ini, dan penyemak imbas anda juga mungkin terbakar secara spontan. Saya tidak melawak, penyemak imbas anda boleh memadamkan semua data, atau keselamatan dan privasi anda boleh terjejas dalam cara yang tidak dijangka. Sebarang percubaan yang anda dayakan akan dilumpuhkan untuk semua pengguna penyemak imbas ini. Sila teruskan dengan berhati-hati.</translation>
@@ -4413,6 +4414,7 @@ luar biasa dan salah. Sama ada penyerang sedang cuba menyamar sebagai <ph name="
 <translation id="6869402422344886127">Kotak pilihan ditandakan</translation>
 <translation id="3428010780253032925">Lumpuhkan penyasaran berdasarkan segi empat bujur dalam paparan</translation>
 <translation id="5637380810526272785">Kaedah Masukan</translation>
+<translation id="3613134908380545408">Tunjukkan <ph name="FOLDER_NAME"/></translation>
 <translation id="2837049386027881519">Sambungan perlu dicuba semula menggunakan versi protokol TLS atau SSL yang lebih lama. Biasanya, perkara ini bermaksud bahawa pelayan menggunakan perisian yang sangat lama dan mungkin mempunyai isu keselamatan yang lain.</translation>
 <translation id="404928562651467259">AMARAN</translation>
 <translation id="4289300219472526559">Mula Bercakap</translation>
@@ -4613,7 +4615,7 @@ luar biasa dan salah. Sama ada penyerang sedang cuba menyamar sebagai <ph name="
 <translation id="3004391367407090544">Sila datang lagi kemudian</translation>
 <translation id="751288520640551775">Cipta pengguna</translation>
 <translation id="6262654738522632143">Penyegerakan latar belakang ServiceWorker membenarkan ServiceWorker menghantar mesej dan mengemas kini sumber walaupun semasa halaman adalah di  latar belakang.</translation>
-<translation id="8698171900303917290">Masalah memasang?</translation>
+<translation id="8698171900303917290">Masalah pemasangan?</translation>
 <translation id="2440443888409942524">Kaedah input Pinyin (untuk papan kekunci AS Dvorak)</translation>
 <translation id="830868413617744215">Beta</translation>
 <translation id="2501797496290880632">Taipkan pintasan</translation>
@@ -4746,6 +4748,7 @@ Mengira masa sehingga penuh</translation>
 <translation id="6934265752871836553">Gunakan kod terbaharu untuk membuatkan Chrome mengatur kandungan dengan lebih pantas. Perubahan
         di belakang laluan ini amat berkemungkinan akan memisahkan banyak kandungan.</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">Sentiasa buka dalam Adobe Reader</translation>
 <translation id="8274359292107649245">Buka Chrome pada desktop</translation>
 <translation id="1571119610742640910">Penggubahan untuk latar belakang punca tetap.</translation>
 <translation id="6514565641373682518">Halaman ini telah melumpuhkan kursor tetikus anda.</translation>
@@ -4945,6 +4948,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="824543159844843373">Aktifkan item pelancar 3</translation>
 <translation id="3819800052061700452">&amp;Skrin penuh</translation>
 <translation id="48607902311828362">Mod kapal terbang</translation>
+<translation id="711840821796638741">Tunjukkan Penanda Halaman Terurus</translation>
 <translation id="3360297538363969800">Pencetakan gagal. Sila periksa pencetak anda dan cuba lagi.</translation>
 <translation id="680572642341004180">Dayakan pengesan RLZ pada <ph name="SHORT_PRODUCT_OS_NAME"/>.</translation>
 <translation id="688797901999351107">Tolong berhenti menggunakan pengecas yang dipanggil balik.</translation>

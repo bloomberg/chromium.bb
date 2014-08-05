@@ -3937,6 +3937,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6460601847208524483">Következő keresése</translation>
 <translation id="397703832102027365">Véglegesítés...</translation>
 <translation id="8146177459103116374">Ha már regisztrálva van ezen az eszközön, akkor <ph name="LINK2_START"/>bejelentkezhet meglévő felhasználóként<ph name="LINK2_END"/>.</translation>
+<translation id="5072836811783999860">Kezelt könyvjelzők megjelenítése</translation>
 <translation id="4856478137399998590">Adatszolgáltatását aktiválta, és az használatra kész</translation>
 <translation id="3305389145870741612">A formázási folyamat eltarthat néhány másodpercig. Kérjük, várjon.</translation>
 <translation id="3648607100222897006">Ezek a kísérleti funkciók bármikor megváltozhatnak, elromolhatnak vagy eltűnhetnek. Nem vállalunk semmilyen garanciát az ezen kísérleti funkciók bekapcsolásából származó eseményekért; továbbá böngészője váratlanul összeomolhat. A viccet félretéve, a böngészője törölheti az összes adatot, valamint különböző módokon veszélyeztetheti biztonságát és adatvédelmét. Ha bármilyen kísérleti funkciót engedélyez, az a böngésző minden felhasználója számára engedélyezve lesz. Kérjük, óvatosan lépjen tovább.</translation>
@@ -4366,6 +4367,7 @@ letiltásához nyomja le a Ctrl+Alt+Z billentyűkombinációt.</translation>
 <translation id="6869402422344886127">Bejelölt jelölőnégyzet</translation>
 <translation id="3428010780253032925">A téglalap alapú célzás letiltása a nézetekben</translation>
 <translation id="5637380810526272785">Beviteli módszer</translation>
+<translation id="3613134908380545408"><ph name="FOLDER_NAME"/> megjelenítése</translation>
 <translation id="2837049386027881519">A kapcsolat felépítését újra meg kellett próbálni egy régebbi verziójú TLS- vagy SSL-protokoll használatával. Ez általában azt jelenti, hogy a szerver nagyon régi szoftvert használ, és lehetnek vele más biztonsági problémák is.</translation>
 <translation id="404928562651467259">FIGYELMEZTETÉS</translation>
 <translation id="4289300219472526559">Beszéd megkezdése</translation>
@@ -4698,6 +4700,7 @@ letiltásához nyomja le a Ctrl+Alt+Z billentyűkombinációt.</translation>
 <translation id="6934265752871836553">Instabil kód használata, hogy a Chrome gyorsabban kirajzolja a tartalmakat. Az e mögött az útvonal mögött álló
         változtatások miatt sok tartalom valószínűleg rosszul fog megjelenni.</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">Megnyitás mindig az Adobe Readerben</translation>
 <translation id="8274359292107649245">A Chrome megnyitása az asztalon</translation>
 <translation id="1571119610742640910">Összeállítás rögzített gyökérhátterekhez.</translation>
 <translation id="6514565641373682518">Ez az oldal letiltotta az egérmutatóját.</translation>
@@ -4895,6 +4898,7 @@ letiltásához nyomja le a Ctrl+Alt+Z billentyűkombinációt.</translation>
 <translation id="824543159844843373">3. indítóelem bekapcsolása</translation>
 <translation id="3819800052061700452">&amp;Teljes képernyő</translation>
 <translation id="48607902311828362">Repülőgép üzemmód</translation>
+<translation id="711840821796638741">Kezelt könyvjelzők megjelenítése</translation>
 <translation id="3360297538363969800">A nyomtatás sikertelen. Ellenőrizze a nyomtatót, majd próbálja újra.</translation>
 <translation id="680572642341004180">RLZ-követés engedélyezése a következő esetében: <ph name="SHORT_PRODUCT_OS_NAME"/>.</translation>
 <translation id="688797901999351107">Kérjük, ne használja tovább a visszahívott töltőt!</translation>

@@ -105,11 +105,11 @@ Denne regelen brukes internt av Chrome.</translation>
 <translation id="3816312845600780067">Aktiver hurtigtasten for avbrytelse av automatisk pålogging</translation>
 <translation id="3214164532079860003">Denne retningslinjen tvinger startsiden til å bli importert fra nåværende standard nettleser hvis den er aktivert. Hvis retningslinjen er deaktivert, importeres ikke startsiden. Hvis retningslinjen ikke er angitt, er det mulig at brukeren får spørsmål om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
 <translation id="5330684698007383292">Gi <ph name="PRODUCT_FRAME_NAME"/> tillatelse til å håndtere de følgende innholdstypene</translation>
-<translation id="6647965994887675196">Hvis angitt til «true», kan overvåkede brukere opprettes og brukes.
+<translation id="6647965994887675196">Hvis angitt til «true», kan administrerte brukere opprettes og brukes.
 
-          Hvis angitt til «false» eller ikke konfigurert, er oppretting og bruk av overvåkede brukere deaktivert. Alle eksisterende overvåkede brukere skjules.
+          Hvis angitt til «false» eller ikke konfigurert, er oppretting og bruk av administrerte brukere deaktivert. Alle eksisterende administrerte brukere skjules.
 
-          MERK: Standardatferden for forbruker- og bedriftsenheter er ikke den samme. På forbrukerenheter er overvåkede brukere aktivert som standard, men på bedriftsenheter er de deaktivert.</translation>
+          MERK: Standardatferden for forbruker- og bedriftsenheter er ikke den samme. På forbrukerenheter er administrerte brukere aktivert som standard, men på bedriftsenheter er de deaktivert.</translation>
 <translation id="69525503251220566">Parameteret som tilbyr search-by-image-funksjonen for standardsøkemotoren</translation>
 <translation id="5469825884154817306">Blokkér bilder på disse nettstedene</translation>
 <translation id="8412312801707973447">Angir om OCSP/CRL-kontroller utføres på nettet</translation>
@@ -316,7 +316,7 @@ Denne regelen brukes internt av Chrome.</translation>
       På alle plattformer unntatt <ph name="PRODUCT_OS_NAME"/>, er kioskmodus utilgjengelig når fullskjermmodus er deaktivert.</translation>
 <translation id="8828766846428537606">Angir standard startside i <ph name="PRODUCT_NAME"/> og forhindrer brukerne i å endre den. Brukerens innstillinger for startside blir kun fullstendig overstyrt dersom du enten angir nettstedet på siden Ny fane som startside, eller angir den til å være en spesifikk nettadresse du velger. Hvis du ikke spesifiserer nettadressen for startsiden, kan brukeren fremdeles angi nettstedet på siden Ny fane som startside ved å spesifisere «chrome://newtab».</translation>
 <translation id="2231817271680715693">Importér nettleserlogg fra standard nettleser ved første kjøring</translation>
-<translation id="1353966721814789986">Oppstartssider</translation>
+<translation id="1353966721814789986">Oppstartsider</translation>
 <translation id="7173856672248996428">Midlertidig profil</translation>
 <translation id="1841130111523795147">Tillater brukeren å logge seg på <ph name="PRODUCT_NAME"/> og hindrer brukere i å endre denne innstillingen. 
 
@@ -325,7 +325,7 @@ Denne regelen brukes internt av Chrome.</translation>
 <translation id="4668325077104657568">Standardinnstilling for bilder</translation>
 <translation id="4492287494009043413">Deaktiver mulighet til å ta skjermdumper</translation>
 <translation id="6368403635025849609">Tillat JavaScript på disse nettstedene</translation>
-<translation id="6074963268421707432">Ikke tillat noen nettsteder å vise skrivebordsvarslinger</translation>
+<translation id="6074963268421707432">Ikke tillat noen nettsteder å vise skrivebordsvarsler</translation>
 <translation id="8614804915612153606">Deaktiverer automatiske oppdateringer</translation>
 <translation id="4834526953114077364">Det fjernes brukere til nok plass er frigjort, i rekkefølgen «lengst tid siden forrige gang brukt og ikke pålogget de siste tre månedene»</translation>
 <translation id="382476126209906314">Konfigurer TalkGadget-prefikset for verter med ekstern adgang</translation>
@@ -863,7 +863,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
       Når denne innstillingen aktiveres, åpner <ph name="PRODUCT_NAME"/> utskriftsdialogen for systemet i stedet for den innebygde utskriftsforhåndsvisningen når en bruker ber om å skrive ut en side.
 
       Hvis denne innstillingen ikke angis, eller angis som feil, kommer utskriftskommandoene til å utløse forhåndsvisningsskjermen for utskrifter.</translation>
-<translation id="7933141401888114454">Slå på oppretting av overvåkede brukere</translation>
+<translation id="7933141401888114454">Slå på oppretting av administrerte brukere</translation>
 <translation id="2824715612115726353">Aktiver inkognitomodus</translation>
 <translation id="1057535219415338480">Aktiverer nettverksforslag i <ph name="PRODUCT_NAME"/> og hindrer brukerne i å endre denne innstillingen.
 
@@ -1253,7 +1253,7 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
      Hvis denne innstillingen er aktivert, lagres ikke nettleserloggen.
 
       Hvis denne innstillingen er deaktivert, lagres nettleserloggen.</translation>
-<translation id="7295019613773647480">Aktiver overvåkede brukere</translation>
+<translation id="7295019613773647480">Aktivér administrerte brukere</translation>
 <translation id="2759224876420453487">Kontrollér brukeradferd i flerprofilsøkter</translation>
 <translation id="3844092002200215574">Konfigurerer katalogen som <ph name="PRODUCT_NAME"/> skal bruke til lagring av bufrede filer på disken.
 
@@ -1371,9 +1371,9 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="8864975621965365890">Ignorerer avslagsforespørselen som vises når et nettsted gjengis av <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="3264793472749429012">Kodinger av standard søkeleverandør</translation>
 <translation id="285480231336205327">Aktiver modus for høy kontrast</translation>
-<translation id="5366977351895725771">Hvis angitt til «false» kan ikke denne brukeren opprette overvåkede brukere. Eksisterende overvåkede brukere er fortsatt tilgjengelige.
+<translation id="5366977351895725771">Hvis angitt til «false» kan ikke denne brukeren opprette administrerte brukere. Eksisterende administrerte brukere er fortsatt tilgjengelige.
 
-          Hvis angitt til «true» eller ikke konfigurert, kan denne brukeren opprette og administrere overvåkede brukere.</translation>
+          Hvis angitt til «true» eller ikke konfigurert, kan denne brukeren opprette og administrere administrerte brukere.</translation>
 <translation id="5469484020713359236">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får angi informasjonskapsler.
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultCookiesSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>

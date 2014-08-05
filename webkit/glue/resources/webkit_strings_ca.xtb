@@ -18,7 +18,7 @@
 <translation id="8785498733064193001">inicia la reproducció</translation>
 <translation id="7057186640035488495">moment de la pel·lícula</translation>
 <translation id="8199524924445686405">aaaa</translation>
-<translation id="795667975304826397">Cap fitxer seleccionat.</translation>
+<translation id="795667975304826397">No s'ha triat cap fitxer</translation>
 <translation id="7789962463072032349">pausa</translation>
 <translation id="6853785296079745596">amaga els subtítols ocults</translation>
 <translation id="4360991593054037559">Introduïu un valor vàlid. Els valors vàlids més propers són <ph name="VALID_VALUE_LOW"/> i <ph name="VALID_VALUE_HIGHER"/>.</translation>
@@ -54,7 +54,7 @@
 <translation id="2674318244760992338">peu</translation>
 <translation id="8987927404178983737">Mes</translation>
 <translation id="8115662671911883373">comença a mostrar subtítols ocults</translation>
-<translation id="7364796246159120393">Selecciona el fitxer</translation>
+<translation id="7364796246159120393">Tria un fitxer</translation>
 <translation id="2761667185364618470">Marqueu aquesta casella si voleu continuar.</translation>
 <translation id="8534579021159131403">Minuts</translation>
 <translation id="819205353528511139">reprodueix la pel·lícula en mode de pantalla completa</translation>

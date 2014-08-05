@@ -63,7 +63,7 @@
 <translation id="6976652535392081960">Hiển thị đích cho <ph name="EMAIL"/></translation>
 <translation id="7180611975245234373">Làm mới</translation>
 <translation id="4940047036413029306">Dấu ngoặc kép</translation>
-<translation id="1497897566809397301">Cho phép thiết lập dữ liệu cục bộ (nên chọn)</translation>
+<translation id="1497897566809397301">Cho phép nhớ dữ liệu trên máy (nên chọn)</translation>
 <translation id="3275778913554317645">Mở dưới dạng cửa sổ</translation>
 <translation id="7994370417837006925">Đăng nhập nhiều tài khoản</translation>
 <translation id="1420684932347524586">Rất tiếc! Không thể tạo khóa cá nhân RSA ngẫu nhiên.</translation>
@@ -101,7 +101,7 @@
 <translation id="3484869148456018791">Nhận chứng chỉ mới</translation>
 <translation id="151501797353681931">Đã nhập Từ Safari</translation>
 <translation id="586567932979200359">Bạn đang chạy <ph name="PRODUCT_NAME"/> từ hình ảnh đĩa của nó. Cài đặt trình duyệt này trên máy tính cho phép bạn chạy trình duyệt mà không cần có hình ảnh đĩa và đảm bảo trình duyệt sẽ được cập nhật.</translation>
-<translation id="1036860914056215505">ID tiện ích mở rộng</translation>
+<translation id="1036860914056215505">ID tiện ích</translation>
 <translation id="3775432569830822555">Chứng chỉ Máy chủ SSL</translation>
 <translation id="1829192082282182671">Thu &amp;nhỏ</translation>
 <translation id="5042319201438341383">(UTC)</translation>
@@ -112,7 +112,7 @@
 <translation id="4714531393479055912"><ph name="PRODUCT_NAME"/> hiện có thể đồng bộ hóa mật khẩu của bạn.</translation>
 <translation id="6307990684951724544">Hệ thống đang bận</translation>
 <translation id="7904094684485781019">Quản trị viên của tài khoản này đã không cho phép đăng nhập nhiều tài khoản.</translation>
-<translation id="2025632980034333559"><ph name="APP_NAME"/> đã xảy ra lỗi. Nhấp vào bong bóng này để tải lại tiện ích mở rộng.</translation>
+<translation id="2025632980034333559"><ph name="APP_NAME"/> đã xảy ra lỗi. Nhấp vào bong bóng này để tải lại tiện ích.</translation>
 <translation id="687588960939994211">Đồng thời, xóa lịch sử, dấu trang, cài đặt và các dữ liệu Chrome khác của bạn được lưu trữ trên thiết bị này.</translation>
 <translation id="4581823559337371475">Dịch vụ đăng nhập dưới đây do <ph name="SAML_DOMAIN"/> lưu trữ. Đăng nhập để tiếp tục.</translation>
 <translation id="6322279351188361895">Không thể đọc khóa cá nhân.</translation>
@@ -186,7 +186,7 @@
 <translation id="2566124945717127842">Powerwash để đặt lại thiết bị <ph name="IDS_SHORT_PRODUCT_NAME"/> của bạn giống như mới.</translation>
 <translation id="3609785682760573515">Đang đồng bộ hóa...</translation>
 <translation id="1383861834909034572">Mở khi hoàn tất</translation>
-<translation id="5727728807527375859">Tiện ích mở rộng, ứng dụng và chủ đề có thể gây hại cho máy tính của bạn. Bạn có chắc chắn muốn tiếp tục không?</translation>
+<translation id="5727728807527375859">Tiện ích, ứng dụng và chủ đề có thể gây hại cho máy tính của bạn. Bạn có chắc chắn muốn tiếp tục không?</translation>
 <translation id="3857272004253733895">Giản đồ Kép Pinyin</translation>
 <translation id="3559661023937741623">Để bảo mật cho bạn, vui lòng xác minh chi tiết thẻ của bạn.</translation>
 <translation id="1830550083491357902">Chưa đăng nhập</translation>
@@ -258,7 +258,7 @@
 <translation id="1657406563541664238">Trợ giúp cải thiện <ph name="PRODUCT_NAME"/> bằng cách tự động gửi cho Google thống kê sử dụng và báo cáo sự cố</translation>
 <translation id="8339012082103782726">Không cho phép trang web truy cập vào micrô của bạn</translation>
 <translation id="7982789257301363584">Mạng</translation>
-<translation id="2271281383664374369">Yêu cầu của tiện ích mở rộng đến URL này tạm thời bị chặn.</translation>
+<translation id="2271281383664374369">Yêu cầu của tiện ích đến URL này tạm thời bị chặn.</translation>
 <translation id="8528962588711550376">Đang đăng nhập.</translation>
 <translation id="2336228925368920074">Đánh dấu trang Tất cả các Tab...</translation>
 <translation id="8774934320277480003">Lề trên</translation>
@@ -289,8 +289,8 @@
 <translation id="5078796286268621944">Mã PIN không chính xác</translation>
 <translation id="3480411814272635771">Số lần một tab không phản hồi</translation>
 <translation id="8487678622945914333">Phóng To</translation>
-<translation id="3846593650622216128">Các cài đặt này được tiện ích mở rộng thực hiện.</translation>
-<translation id="8185331656081929126">Hiển thị thông báo khi phát hiện thấy máy tin mới trên mạng</translation>
+<translation id="3846593650622216128">Các cài đặt này được tiện ích thực hiện.</translation>
+<translation id="8185331656081929126">Hiển thị thông báo khi phát hiện thấy máy in mới trên mạng</translation>
 <translation id="2972557485845626008">Chương trình cơ sở</translation>
 <translation id="735327918767574393">Đã xảy ra lỗi khi hiển thị trang web này. Để tiếp tục, hãy tải lại hoặc truy cập vào một trang khác.</translation>
 <translation id="7607274158153386860">Yêu cầu trang web máy tính bảng</translation>
@@ -309,7 +309,7 @@
 <translation id="3868718841498638222">Bạn đã chuyển sang kênh <ph name="CHANNEL_NAME"/>.</translation>
 <translation id="7931071620596053769">(Các) trang sau không hồi đáp. Bạn có thể chờ các trang trở về trạng thái hồi đáp hoặc xóa chúng.</translation>
 <translation id="7938958445268990899">Chứng chỉ của máy chủ chưa hợp lệ.</translation>
-<translation id="4569998400745857585">Menu chứa các tiện ích mở rộng bị ẩn</translation>
+<translation id="4569998400745857585">Menu chứa các tiện ích bị ẩn</translation>
 <translation id="4081383687659939437">Lưu thông tin</translation>
 <translation id="1801827354178857021">Khoảng thời gian</translation>
 <translation id="238526402387145295">Bạn không thể truy cập <ph name="SITE"/> ngay bây giờ do trang web <ph name="BEGIN_LINK"/>sử dụng HSTS<ph name="END_LINK"/>. Lỗi mạng và các cuộc tấn công mạng thường chỉ là tạm thời do đó trang này có thể sẽ hoạt động lại sau.</translation>
@@ -347,7 +347,7 @@
 <translation id="5245965967288377800">Mạng WiMAX</translation>
 <translation id="40027638859996362">Di chuyển từ</translation>
 <translation id="3522708245912499433">Tiếng Bồ Đào Nha</translation>
-<translation id="6303187936217840894">Cài đặt trình duyệt của bạn sẽ được khôi phục về mặc định ban đầu. Việc này sẽ đặt lại trang chủ, trang tab mới và công cụ tìm kiếm, tắt các tiện ích mở rộng của bạn và bỏ ghim tất cả các tab. Hành động này cũng xóa dữ liệu tạm thời và được lưu trong bộ nhớ cache khác, chẳng hạn như cookie, nội dung và dữ liệu trang web.</translation>
+<translation id="6303187936217840894">Cài đặt trình duyệt của bạn sẽ được khôi phục về mặc định ban đầu. Việc này sẽ đặt lại trang chủ, trang tab mới và công cụ tìm kiếm, tắt các tiện ích của bạn và bỏ ghim tất cả các tab. Hành động này cũng xóa dữ liệu tạm thời và được lưu trong bộ nhớ cache khác, chẳng hạn như cookie, nội dung và dữ liệu trang web.</translation>
 <translation id="6928441285542626375">Bật TCP Fast Open</translation>
 <translation id="7792388396321542707">Dừng chia sẻ</translation>
 <translation id="5463275305984126951">Chỉ mục của <ph name="LOCATION"/></translation>
@@ -397,7 +397,7 @@
 <translation id="6698381487523150993">Tạo:</translation>
 <translation id="4684748086689879921">Bỏ qua bước Nhập</translation>
 <translation id="6418443601594065950">Tắt thanh thông tin bật lên của phương tiện được bảo vệ.</translation>
-<translation id="8191230140820435481">Quản lý ứng dụng, tiện ích mở rộng và chủ đề của bạn</translation>
+<translation id="8191230140820435481">Quản lý ứng dụng, tiện ích và chủ đề của bạn</translation>
 <translation id="8279107132611114222">Yêu cầu truy cập trang web này của bạn đã được gửi tới <ph name="NAME"/>.</translation>
 <translation id="8034955203865359138">Không tìm thấy mục nhập lịch sử nào.</translation>
 <translation id="9130015405878219958">Chế độ không hợp lệ được nhập.</translation>
@@ -414,9 +414,9 @@
 <translation id="4159435316791146348">Với sự hướng dẫn và phê duyệt của CPSC và các cơ quan chức năng khác, Google và HP đang thu hồi bộ sạc gốc của HP Chromebook 11.</translation>
 <translation id="2716483787622029543">Truy cập và xóa ảnh, nhạc và phương tiện khác từ máy tính của bạn</translation>
 <translation id="7659660321065362272">Cập nhật quan trọng trên HP Chromebook 11</translation>
-<translation id="5965661248935608907">Tiện ích mở rộng này cũng điều khiển trang nào được hiển thị khi bạn nhấp vào nút Trang chủ hoặc tìm kiếm từ Thanh địa chỉ.</translation>
+<translation id="5965661248935608907">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn nhấp vào nút Trang chủ hoặc tìm kiếm từ Thanh địa chỉ.</translation>
 <translation id="9177499212658576372">Bạn hiện kết nối với mạng <ph name="NETWORK_TYPE"/>.</translation>
-<translation id="8589311641140863898">API tiện ích mở rộng thử nghiệm</translation>
+<translation id="8589311641140863898">API tiện ích thử nghiệm</translation>
 <translation id="869891660844655955">Ngày hết hạn</translation>
 <translation id="8336153091935557858">Hôm qua <ph name="YESTERDAY_DAYTIME"/></translation>
 <translation id="8642171459927087831">Mã thông báo truy cập</translation>
@@ -432,7 +432,7 @@
 <translation id="1199341378292808368">Tuần vừa qua</translation>
 <translation id="8295070100601117548">Lỗi máy chủ</translation>
 <translation id="2638942478653899953">Không thể truy cập Google Drive. Vui lòng <ph name="BEGIN_LINK"/>đăng xuất<ph name="END_LINK"/> và đăng nhập lại.</translation>
-<translation id="1983450660696935749">Số lần tắt một tiện ích mở rộng</translation>
+<translation id="1983450660696935749">Số lần tắt một tiện ích</translation>
 <translation id="3084548735795614657">Thả để cài đặt</translation>
 <translation id="5661272705528507004">Thẻ SIM này bị vô hiệu hóa và không thể sử dụng. Vui lòng liên hệ nhà cung cấp dịch vụ của bạn để lấy thẻ SIM thay thế.</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
@@ -474,7 +474,7 @@
 <translation id="238039057627789696">Nếu bật, trình kết xuất sẽ ủy quyền kết hợp cho trình duyệt, sáp nhập cả hai quá trình thông qua kết hợp.</translation>
 <translation id="4792148404905252597">Bật thử nghiệm bằng cách chạy ứng dụng tạm thời từ các siêu liên kết. Ví dụ: các liên kết tới các trang chi tiết về ứng dụng Cửa hàng Chrome trực tuyến trong kết quả tìm kiếm của Google sẽ chạy ứng dụng thay vì điều hướng tới trang chi tiết.</translation>
 <translation id="3245321423178950146">Nghệ sĩ không xác định</translation>
-<translation id="2437838871182492352">Số lần bật một tiện ích mở rộng</translation>
+<translation id="2437838871182492352">Số lần bật một tiện ích</translation>
 <translation id="9050666287014529139">Cụm mật khẩu</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="8787254343425541995">Cho phép các proxy đối với mạng chia sẻ</translation>
@@ -488,7 +488,7 @@
           là đối tượng xâm nhập trên thiết bị của bạn và chặn đối tượng này kết nối Internet.</translation>
 <translation id="3873139305050062481">Kiểm tra Phầ&amp;n tử</translation>
 <translation id="7445762425076701745">Không thể xác thực đầy đủ nhận dạng của máy chủ bạn đã kết nối. Bạn đã kết nối vào máy chủ bằng một tên chỉ hợp lệ trong mạng của bạn và đó là tên mà các tổ chức phát hành chứng chỉ bên ngoài không thể xác thực được. Vì một số tổ chức phát hành chứng chỉ sẽ cấp chứng chỉ cho các tên này thay thế, nên không có cách nào đảm bảo bạn được kết nối tới trang web đã chỉ định và không phải là kẻ tấn công.</translation>
-<translation id="1556537182262721003">Không thể di chuyển thư mục tiện ích mở rộng vào tiểu sử.</translation>
+<translation id="1556537182262721003">Không thể di chuyển thư mục tiện ích vào hồ sơ.</translation>
 <translation id="2946640296642327832">Bật bluetooth</translation>
 <translation id="5866557323934807206">Xóa các cài đặt này cho những lần truy cập tiếp theo</translation>
 <translation id="126710816202626562">Ngôn ngữ dịch:</translation>
@@ -526,7 +526,7 @@
 <translation id="8656768832129462377">Không kiểm tra</translation>
 <translation id="413121957363593859">Thành phần</translation>
 <translation id="715487527529576698">Chế độ tiếng Trung ban đầu là tiếng Trung Giản thể</translation>
-<translation id="6522350652862471760">Bật tên và biểu tượng tiểu sử trên Google</translation>
+<translation id="6522350652862471760">Bật tên và biểu tượng hồ sơ trên Google</translation>
 <translation id="6181259999130430430">Bật Mở khóa dễ dàng cho thiết bị này.</translation>
 <translation id="8703575177326907206">Kết nối của bạn đến <ph name="DOMAIN"/> không được mã hóa.</translation>
 <translation id="6135622770221372891">ID kênh</translation>
@@ -594,7 +594,7 @@
 <translation id="8757640015637159332">Đăng nhập vào phiên công khai</translation>
 <translation id="5829990587040054282">Khóa màn hình hoặc tắt nguồn</translation>
 <translation id="7800304661137206267">Kết nối được mã hóa bằng <ph name="CIPHER"/>, với <ph name="MAC"/> để xác thực thư và <ph name="KX"/> là cơ chế trao đổi chính.</translation>
-<translation id="5707185214361380026">Không tải được tiện ích mở rộng từ:</translation>
+<translation id="5707185214361380026">Không tải được tiện ích từ:</translation>
 <translation id="7331786426925973633">Trình duyệt web tốc độ, đơn giản và bảo mật</translation>
 <translation id="5584537427775243893">Nhập</translation>
 <translation id="4779735050989188948">Thực hiện cài đặt kiểm soát quyền truy cập của trang web vào các cookie, JavaScript và plugin</translation>
@@ -664,7 +664,7 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME"/> sẽ thiết lập cập nhật tự động cho tất cả người dùng của máy tính này.</translation>
 <translation id="4973698491777102067">Xóa các mục sau từ:</translation>
 <translation id="9021662811137657072">Đã phát hiện thấy vi-rút</translation>
-<translation id="4241404202385006548">Tắt tiện ích mở rộng của bạn rồi tải lại trang web này</translation>
+<translation id="4241404202385006548">Tắt tiện ích của bạn rồi tải lại trang web này</translation>
 <translation id="6074963268421707432">Không cho phép bất kỳ trang web nào hiển thị thông báo trên màn hình</translation>
 <translation id="3603385196401704894">Tiếng Pháp ở Canada</translation>
 <translation id="4869253927035988743">Bật hỗ trợ thư mục cho hệ thống tệp đồng bộ hóa.</translation>
@@ -754,13 +754,13 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="4092067639640979396">Bật hỗ trợ thu hẹp phạm vi thử nghiệm.</translation>
 <translation id="5569602728237807248">Truy cập biểu tượng của các trang web mà bạn truy cập</translation>
 <translation id="1547297114045837579">Bật tạo điểm ảnh GPU.</translation>
-<translation id="3241680850019875542">Chọn thư mục gốc của tiện ích mở rộng để đóng gói. Để cập nhật tiện ích mở rộng, bạn cũng chọn tệp khóa cá nhân để sử dụng lại.</translation>
+<translation id="3241680850019875542">Chọn thư mục gốc của tiện ích để đóng gói. Để cập nhật tiện ích, bạn cũng chọn tệp khóa cá nhân để sử dụng lại.</translation>
 <translation id="7845849068167576533">Ngay cả khi bạn đã truy cập trang web này trước đây thì bây giờ trang web cũng không an toàn. Duyệt web an toàn của Google gần đây <ph name="BEGIN_LINK"/>đã phát hiện phần mềm độc hại<ph name="END_LINK"/> trên <ph name="SITE"/>. Các trang web thường được coi là an toàn đôi khi vẫn bị nhiễm phần mềm độc hại. Nội dung độc hại xuất phát từ <ph name="SUBRESOURCE_HOST"/>, một nguồn phát tán phần mềm độc hại đã xác định.</translation>
 <translation id="2541178044065537882">Plugin bị chặn</translation>
 <translation id="2149850907588596975">Mật khẩu và biểu mẫu</translation>
 <translation id="6972069480564005577">Cửa hàng trực tuyến</translation>
 <translation id="3672928695873425336">Không cho phép giá thu nhỏ khi nhấp chuột.</translation>
-<translation id="1445572445564823378">Tiện ích mở rộng này đang làm chậm <ph name="PRODUCT_NAME"/>. Bạn phải tắt tiện ích để khôi phục hiệu suất của <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="1445572445564823378">Tiện ích này đang làm chậm <ph name="PRODUCT_NAME"/>. Bạn phải tắt tiện ích để khôi phục hiệu suất của <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="7528983820605922285">Trình quản lý người dùng</translation>
 <translation id="657402800789773160">&amp;Tải lại trang này</translation>
 <translation id="6163363155248589649">Thườ&amp;ng</translation>
@@ -773,7 +773,7 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="5524517123096967210">Không thể đọc tệp.</translation>
 <translation id="8426519927982004547">HTTPS/SSL</translation>
 <translation id="5548207786079516019">Đây là cài đặt thứ cấp của <ph name="PRODUCT_NAME"/> và không thể trở thành trình duyệt mặc định của bạn.</translation>
-<translation id="3984413272403535372">Lỗi khi ký tiện ích mở rộng.</translation>
+<translation id="3984413272403535372">Lỗi khi ký tiện ích.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="3298461240075561421">Ngay cả khi bạn đã tải xuống các tệp từ trang web này trước đây, trang web có thể đã bị tấn công. Thay vì khôi phục tệp này, bạn có thể thử tải xuống sau.</translation>
 <translation id="672609503628871915">Xem tính năng mới</translation>
@@ -781,7 +781,7 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="1274997165432133392">Cookie và các dữ liệu trang web khác</translation>
 <translation id="4299729908419173967">Tiếng Braxin</translation>
 <translation id="375841316537350618">Đang tải xuống tập lệnh proxy...</translation>
-<translation id="45400070127195133">Bật tùy chọn này cho phép ứng dụng web truy cập các tiện ích mở rộng WebGL vẫn đang ở trạng thái thử nghiệm.</translation>
+<translation id="45400070127195133">Bật tùy chọn này cho phép ứng dụng web truy cập các tiện ích WebGL vẫn đang ở trạng thái thử nghiệm.</translation>
 <translation id="9169664750068251925">Luôn chặn trên trang web này</translation>
 <translation id="6406303162637086258">Mô phỏng khởi động lại trình duyệt</translation>
 <translation id="7428296649065852053">Lượng thời gian tải một trang web</translation>
@@ -818,8 +818,8 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="119944043368869598">Xóa tất cả</translation>
 <translation id="3467848195100883852">Bật tự động sửa lỗi chính tả</translation>
 <translation id="1336254985736398701">Xem Thông t&amp;in Trang</translation>
-<translation id="5039440886426314758">Cài đặt các ứng dụng và tiện ích mở rộng này?</translation>
-<translation id="7839963980801867006">Chọn các IME tiện ích mở rộng sẽ khả dụng trong menu ngôn ngữ.</translation>
+<translation id="5039440886426314758">Cài đặt các ứng dụng và tiện ích này?</translation>
+<translation id="7839963980801867006">Chọn các IME tiện ích sẽ khả dụng trong menu ngôn ngữ.</translation>
 <translation id="7665369617277396874">Thêm tài khoản</translation>
 <translation id="1007408791287232274">Không thể tải các thiết bị.</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP"/>.html</translation>
@@ -843,7 +843,7 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="1202290638211552064">Cổng hoặc máy chủ proxy đã hết thời gian khi đợi phản hồi từ máy chủ luồng trên.</translation>
 <translation id="5089823027662815955">&amp;Tìm kiếm hình ảnh này trong <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7765158879357617694">Di chuyển</translation>
-<translation id="2192280117622171197">Một tiện ích mở rộng đã thay đổi trang nào được hiển thị khi bạn tìm kiếm từ Thanh địa chỉ.</translation>
+<translation id="2192280117622171197">Một tiện ích đã thay đổi trang nào được hiển thị khi bạn tìm kiếm từ Thanh địa chỉ.</translation>
 <translation id="2731700343119398978">Vui lòng chờ...</translation>
 <translation id="5731751937436428514">Phương pháp nhập tiếng Việt (VIQR)</translation>
 <translation id="8412144371993786373">Đánh dấu trang trang hiện tại</translation>
@@ -868,7 +868,7 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="863718024604665812">Đã đóng băng trình kết xuất</translation>
 <translation id="1124772482545689468">Người dùng</translation>
 <translation id="6039651071822577588">Từ điển thuộc tính mạng có định dạng không đúng</translation>
-<translation id="8772559521634908780">Xác nhận tiện ích mở rộng mới</translation>
+<translation id="8772559521634908780">Xác nhận tiện ích mới</translation>
 <translation id="4022426551683927403">&amp;Thêm vào Từ điển</translation>
 <translation id="5639549361331209298">Tải lại trang này, giữ để xem các tùy chọn khác</translation>
 <translation id="2897878306272793870">Bạn có chắc chắn muốn mở <ph name="TAB_COUNT"/> tab không?</translation>
@@ -907,11 +907,11 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="3464868340187708956">Thêm người dùng mới</translation>
 <translation id="7986039047000333986">Cập nhật bảo mật đặc biệt cho <ph name="PRODUCT_NAME"/> vừa được áp dụng; bạn phải khởi động lại ngay bây giờ để cập nhật có hiệu lực (chúng tôi sẽ khôi phục các tab của bạn).</translation>
 <translation id="2787591391657537328">Cho phép tài nguyên đã tải xuống bị gián đoạn được tiếp tục hoặc khởi động lại bằng mục menu ngữ cảnh Tiếp tục.</translation>
-<translation id="3926862159284741883">Bật tiện ích mở rộng WebGL thử nghiệm</translation>
+<translation id="3926862159284741883">Bật tiện ích WebGL thử nghiệm</translation>
 <translation id="7684540948112007255">tải xuống nhiều tệp.</translation>
 <translation id="2537271621194795300">Thời gian khởi động</translation>
 <translation id="3636096452488277381">Xin chào <ph name="USER_GIVEN_NAME"/>!</translation>
-<translation id="4911714727432509308">Không có tiện ích mở rộng nào được gán phím tắt.</translation>
+<translation id="4911714727432509308">Không có tiện ích nào được gán phím tắt.</translation>
 <translation id="5999606216064768721">Sử dụng Đường viền và Thanh Tiêu đề của Hệ thống</translation>
 <translation id="921568617530782833">Đọc và sửa đổi tất cả dữ liệu của bạn trên các trang web bạn truy cập</translation>
 <translation id="225943865679747347">Mã lỗi: <ph name="ERROR_CODE"/></translation>
@@ -941,7 +941,7 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="8280151743281770066">Phiên âm tiếng Armenia</translation>
 <translation id="567881659373499783">Phiên bản <ph name="PRODUCT_VERSION"/></translation>
 <translation id="344100820105975148">Bật các luồng đăng nhập dựa trên web đơn thuần</translation>
-<translation id="8261378640211443080">Tiện ích mở rộng này không được liệt kê trong <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> và có thể đã được thêm mà bạn không biết.</translation>
+<translation id="8261378640211443080">Tiện ích này không được liệt kê trong <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> và có thể đã được thêm mà bạn không biết.</translation>
 <translation id="8899851313684471736">Mở liên kết bằng cửa sổ &amp;mới</translation>
 <translation id="4110342520124362335">Đã chặn cookie từ <ph name="DOMAIN"/>.</translation>
 <translation id="2198315389084035571">Tiếng Trung giản thể</translation>
@@ -949,7 +949,7 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="2019718679933488176">&amp;Mở Âm thanh trong Tab Mới</translation>
 <translation id="1031362278801463162">Đang tải chế độ xem trước</translation>
 <translation id="4409697491990005945">Lề</translation>
-<translation id="3456236151053308041">Bật tiện ích mở rộng IME để cung cấp chế độ xem tùy chỉnh cho thao tác nhập của người dùng chẳng hạn như bàn phím ảo.</translation>
+<translation id="3456236151053308041">Bật tiện ích IME để cung cấp chế độ xem tùy chỉnh cho thao tác nhập của người dùng chẳng hạn như bàn phím ảo.</translation>
 <translation id="4138267921960073861">Hiển thị tên người dùng và ảnh trên màn hình đăng nhập</translation>
 <translation id="3045551944631926023">Chỉ tự động tải lại tab hiển thị</translation>
 <translation id="6921598660714597024">Byte</translation>
@@ -964,7 +964,7 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="7421925624202799674">&amp;Xem Nguồn Trang</translation>
 <translation id="4439244508678316632">Giấy phép nội dung</translation>
 <translation id="3940082421246752453">Máy chủ không hỗ trợ phiên bản HTTP được sử dụng trong yêu cầu này.</translation>
-<translation id="6909461304779452601">Không thể thêm các ứng dụng, tiện ích mở rộng và tập lệnh của người dùng từ trang web này.</translation>
+<translation id="6909461304779452601">Không thể thêm các ứng dụng, tiện ích và tập lệnh của người dùng từ trang web này.</translation>
 <translation id="661719348160586794">Mật khẩu đã lưu của bạn sẽ xuất hiện tại đây.</translation>
 <translation id="6874604403660855544">&amp;Làm lại thêm</translation>
 <translation id="8352772353338965963">Thêm một tài khoản để đăng nhập nhiều lần. Tất cả các tài khoản đã đăng nhập đều có thể truy cập được mà không cần mật khẩu, do đó bạn chỉ nên sử dụng tính năng này với các tài khoản đáng tin cậy.</translation>
@@ -975,7 +975,7 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="6686490380836145850">Đóng tab phía bên phải</translation>
 <translation id="8366694425498033255">Phím chọn</translation>
 <translation id="6011503819411930212">Mức sử dụng CPU kết hợp của tất cả các quá trình liên quan đến <ph name="SHORT_PRODUCT_NAME"/></translation>
-<translation id="420665587194630159">(Tiện ích mở rộng này đã được quản lý và không thể bị xóa hoặc tắt).</translation>
+<translation id="420665587194630159">(Tiện ích này đã được quản lý và không thể bị xóa hoặc tắt).</translation>
 <translation id="6535758682390046055">Đã hủy tải xuống <ph name="PLUGIN_NAME"/>.</translation>
 <translation id="2809346626032021864">Đọc</translation>
 <translation id="9156814239012955406">MD5</translation>
@@ -1037,7 +1037,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="3586931643579894722">Ẩn chi tiết</translation>
 <translation id="6285395082104474418">Khay trạng thái hiển thị cho bạn trạng thái hiện tại của mạng, pin và các thông tin khác.</translation>
 <translation id="3317459757438853210">Hai mặt</translation>
-<translation id="6020949471045037306">Bật hệ thống quản lý tiểu sử mới, bao gồm khóa tiểu sử và giao diện người dùng menu hình đại diện mới.</translation>
+<translation id="6020949471045037306">Bật hệ thống quản lý hồ sơ mới, bao gồm khóa hồ sơ và giao diện người dùng menu hình đại diện mới.</translation>
 <translation id="2011110593081822050">Người làm việc trên Web: <ph name="WORKER_NAME"/></translation>
 <translation id="3294437725009624529">Khách</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN"/> hiện ở chế độ toàn màn hình.</translation>
@@ -1090,7 +1090,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="5956585768868398362">Đây có phải là trang tìm kiếm bạn muốn không?</translation>
 <translation id="2103460544384441978">Bạn tự chịu rủi ro nếu tiếp tục</translation>
 <translation id="939736085109172342">Thư mục mới</translation>
-<translation id="5182671122927417841">Tắt tiện ích mở rộng</translation>
+<translation id="5182671122927417841">Tắt tiện ích</translation>
 <translation id="4242577469625748426">Không thể cài đặt các cài đặt chính sách trên thiết bị: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="8165208966034452696"><ph name="PLUGIN_NAME"/></translation>
 <translation id="4933484234309072027">được nhúng trên <ph name="URL"/></translation>
@@ -1102,7 +1102,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="7690853182226561458">Thêm &amp;thư mục...</translation>
 <translation id="7968982339740310781">Xem chi tiết</translation>
 <translation id="2726934403674109201">(Tổng số <ph name="COUNT"/>)</translation>
-<translation id="6204994989617056362">Thiếu tiện ích mở rộng đàm phán lại SSL từ cái bắt tay an toàn. Đối với một số trang web, có hỗ trợ tiện ích mở rộng đàm phán lại, Chrome yêu cầu nhiều bắt tay an toàn hơn để ngăn các cuộc tấn công đã xác định. Thiếu tiện ích mở rộng này cho thấy kết nối của bạn bị chặn và bị sửa đổi khi gửi.</translation>
+<translation id="6204994989617056362">Thiếu tiện ích đàm phán lại SSL từ cái bắt tay an toàn. Đối với một số trang web, có hỗ trợ tiện ích đàm phán lại, Chrome yêu cầu nhiều bắt tay an toàn hơn để ngăn các cuộc tấn công đã xác định. Thiếu tiện ích này cho thấy kết nối của bạn bị chặn và bị sửa đổi khi gửi.</translation>
 <translation id="5800020978570554460">Tệp đích đã bị cắt bớt hoặc xóa kể từ lần tải xuống cuối cùng.</translation>
 <translation id="4887424188275796356">Mở bằng trình xem hệ thống</translation>
 <translation id="5823933238730612365">PPAPI (không có hộp cát)</translation>
@@ -1118,7 +1118,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="7051943809462976355">Đang tìm kiếm chuột...</translation>
 <translation id="6344783595350022745">Xóa văn bản</translation>
 <translation id="1426410128494586442">Có</translation>
-<translation id="2359345697448000899">Quản lý tiện ích mở rộng của bạn bằng cách nhấp vào Tiện ích mở rộng trong menu Công cụ.</translation>
+<translation id="2359345697448000899">Quản lý tiện ích của bạn bằng cách nhấp vào Tiện ích trong menu Công cụ.</translation>
 <translation id="6725970970008349185">Số lượng ứng viên để hiển thị trên mỗi trang</translation>
 <translation id="6513615899227776181">Plugin: <ph name="PLUGIN_NAME"/></translation>
 <translation id="6198252989419008588">Thay đổi mã PIN</translation>
@@ -1137,9 +1137,9 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="7989023212944932320">Duyệt web an toàn của Google gần đây <ph name="BEGIN_LINK"/>đã phát hiện phần mềm độc hại<ph name="END_LINK"/> trên <ph name="SITE"/>. Các trang web thường được coi là an toàn đôi khi vẫn bị nhiễm phần mềm độc hại. Nội dung độc hại xuất phát từ <ph name="SUBRESOURCE_HOST"/>, một nguồn phát tán phần mềm độc hại đã xác định. Bạn nên quay lại sau vài giờ.</translation>
 <translation id="121201262018556460">Bạn đã cố truy cập vào <ph name="DOMAIN"/> nhưng máy chủ xuất trình chứng chỉ chứa khóa yếu. Kẻ tấn công có thể đã phá khóa cá nhân và máy chủ đó có thể không phải là máy chủ bạn mong đợi (bạn có thể đang giao tiếp với một kẻ tấn công).</translation>
 <translation id="5553089923092577885">Ánh xạ Chính sách của Chứng chỉ</translation>
-<translation id="7410744438574300812">Không hiển thị thanh thông tin khi tiện ích mở rộng đính kèm với trang thông qua API chrome.debugger. Cần phải có cờ này để gỡ lỗi trang nền tiện ích mở rộng.</translation>
+<translation id="7410744438574300812">Không hiển thị thanh thông tin khi tiện ích đính kèm với trang thông qua API chrome.debugger. Cần phải có cờ này để gỡ lỗi trang nền tiện ích.</translation>
 <translation id="1275018677838892971">Trang web tại <ph name="HOST_NAME"/> có chứa các yếu tố từ những trang web đã được báo cáo là trang web &quot;lừa đảo&quot;.  Các trang web lừa đảo lừa người dùng khai báo thông tin cá nhân hoặc thông tin tài chính, thông thường bằng cách giả làm đại diện cho những tổ chức đáng tin cậy, chẳng hạn như ngân hàng.</translation>
-<translation id="1357589289913453911">Id tiện ích mở rộng</translation>
+<translation id="1357589289913453911">Id tiện ích</translation>
 <translation id="7570477672765183">Nhấp để bắt đầu</translation>
 <translation id="8688579245973331962">Bạn không thấy tên của mình?</translation>
 <translation id="3804941997676372569">Tìm kiếm hoặc nói &quot;Ok, Google&quot;</translation>
@@ -1154,7 +1154,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="2772936498786524345">Lén lút</translation>
 <translation id="5595485650161345191">Chỉnh sửa địa chỉ</translation>
 <translation id="1849186935225320012">Trang này có quyền kiểm soát toàn bộ thiết bị MIDI.</translation>
-<translation id="7309416673261215716">Phiên bản tiện ích mở rộng</translation>
+<translation id="7309416673261215716">Phiên bản tiện ích</translation>
 <translation id="6840313690797192085">$1 PB</translation>
 <translation id="5971037678316050792">Kiểm soát ghép nối và trạng thái bộ đổi nguồn Bluetooth</translation>
 <translation id="3313590242757056087">Để đặt các trang web mà người dùng bị giám sát có thể xem, bạn có thể định cấu hình
@@ -1198,7 +1198,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="3778152852029592020">Đã hủy tải xuống.</translation>
 <translation id="1455069690867658873">Phiên bản mới và chuỗi lịch sử</translation>
 <translation id="6241530762627360640">Truy cập thông tin về thiết bị Bluetooth được ghép nối với hệ thống của bạn và khám phá các thiết bị Bluetooth lân cận.</translation>
-<translation id="7831368056091621108">để nhận tiện ích mở rộng này, lịch sử và các cài đặt Chrome khác trên tất cả thiết bị của bạn.</translation>
+<translation id="7831368056091621108">để nhận tiện ích này, lịch sử và các cài đặt Chrome khác trên tất cả thiết bị của bạn.</translation>
 <translation id="5469868506864199649">Tiếng Ý</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7894561412851759784">Trong trường hợp này, chứng chỉ chưa được xác minh bởi bên thứ ba mà thiết bị của bạn tin cậy. Bất cứ ai có thể tạo chứng chỉ đều có thể tự nhận là bất kỳ trang web nào mà họ chọn và đó là lý do tại sao chứng chỉ phải được bên thứ ba đáng tin cậy xác minh. Không có sự xác minh này, thông tin nhận dạng trong chứng chỉ sẽ vô nghĩa. Do đó, không thể xác minh rằng bạn đang kết nối với <ph name="DOMAIN"/> thay vì một kẻ tấn công tự tạo chứng chỉ riêng và mạo nhận là <ph name="DOMAIN2"/>. Bạn không nên tiếp tục duyệt trang web này.</translation>
@@ -1210,7 +1210,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="5053604404986157245">Mật khẩu TPM được tạo ngẫu nhiên hiện không khả dụng. Đây là hiện tượng bình thường sau khi tiến hành Powerwash.</translation>
 <translation id="6333049849394141510">Chọn loại dữ liệu để đồng bộ hoá</translation>
 <translation id="1944921356641260203">Đã tìm thấy bản cập nhật</translation>
-<translation id="5990559369517809815">Tiện ích mở rộng đã chặn yêu cầu tới máy chủ.</translation>
+<translation id="5990559369517809815">Tiện ích đã chặn yêu cầu tới máy chủ.</translation>
 <translation id="3828440302402348524">Đã đăng nhập với tên <ph name="USER_NAME"/>...</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>
 <translation id="8965697826696209160">Không có đủ dung lượng.</translation>
@@ -1226,7 +1226,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="7903984238293908205">Katakana</translation>
 <translation id="268053382412112343">Lị&amp;ch sử</translation>
 <translation id="7478485216301680444">Không thể cài đặt ứng dụng kiosk.</translation>
-<translation id="7119964749269738905">Số lần gỡ cài đặt một tiện ích mở rộng</translation>
+<translation id="7119964749269738905">Số lần gỡ cài đặt một tiện ích</translation>
 <translation id="1722567105086139392">Liên kết</translation>
 <translation id="6171294113586936163">Máy in mới trên mạng của bạn</translation>
 <translation id="2620436844016719705">Hệ thống</translation>
@@ -1271,7 +1271,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="236141728043665931">Luôn chặn quyền truy cập micrô</translation>
 <translation id="2307462900900812319">Định cấu hình mạng</translation>
 <translation id="3324301154597925148">Đây có phải là Trang tìm kiếm bạn muốn không?</translation>
-<translation id="3555812735919707620">Xóa tiện ích mở rộng</translation>
+<translation id="3555812735919707620">Xóa tiện ích</translation>
 <translation id="220858061631308971">Vui lòng nhập mã PIN này trên &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="6263082573641595914">Phiên bản CA của Microsoft</translation>
 <translation id="7716020873543636594">Tự động nhấp chuột khi con trỏ dừng lại</translation>
@@ -1291,7 +1291,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="6880587130513028875">Hình ảnh đã bị chặn trên trang này.</translation>
 <translation id="6964308487066031935">Thêm các thư mục vào &quot;<ph name="EXTENSION"/>&quot;?</translation>
 <translation id="851263357009351303">Luôn cho phép <ph name="HOST"/> hiển thị hình ảnh</translation>
-<translation id="7852934890287130200">Tạo, thay đổi hoặc xóa tiểu sử.</translation>
+<translation id="7852934890287130200">Tạo, thay đổi hoặc xóa hồ sơ.</translation>
 <translation id="3511307672085573050">S&amp;ao chép Địa chỉ Liên kết</translation>
 <translation id="751507702149411736">Tiếng Bê-la-rút</translation>
 <translation id="6655190889273724601">Chế độ dành cho nhà phát triển</translation>
@@ -1313,7 +1313,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="2462724976360937186">ID khóa của tổ chức phát hành chứng chỉ</translation>
 <translation id="981121421437150478">Ngoại tuyến</translation>
 <translation id="2964193600955408481">Tắt Wi-Fi</translation>
-<translation id="6786747875388722282">Tiện ích mở rộng</translation>
+<translation id="6786747875388722282">Tiện ích</translation>
 <translation id="2570648609346224037">Đã xảy ra sự cố trong quá trình tải xuống hình ảnh khôi phục.</translation>
 <translation id="5372384633701027870">Xóa cookie và dữ liệu trang web khác khi bạn thoát khỏi trình duyệt của bạn</translation>
 <translation id="4781787911582943401">Phóng to màn hình</translation>
@@ -1331,7 +1331,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="7079038783243627996">&quot;<ph name="EXTENSION"/>&quot; sẽ có thể đọc và xóa hình ảnh, video cũng như các tệp âm thanh trong thư mục đã chọn.</translation>
 <translation id="1737968601308870607">Lỗi tệp</translation>
 <translation id="8437238597147034694">&amp;Hoàn tác di chuyển</translation>
-<translation id="1389297115360905376">Chỉ có thể thêm ứng dụng/tiện ích mở rộng này từ <ph name="CHROME_WEB_STORE"/>.</translation>
+<translation id="1389297115360905376">Chỉ có thể thêm ứng dụng/tiện ích này từ <ph name="CHROME_WEB_STORE"/>.</translation>
 <translation id="5474139872592516422">Khi kết thúc quá trình cập nhật <ph name="PLUGIN_NAME"/>, hãy tải lại trang để kích hoạt plugin này.</translation>
 <translation id="4012550234655138030">Thiết lập hoặc quản lý máy in trong <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="315116470104423982">Dữ liệu di động</translation>
@@ -1366,7 +1366,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="333371639341676808">Ngăn không cho trang này tạo hộp thoại bổ sung.</translation>
 <translation id="2280486287150724112">Lề phải</translation>
 <translation id="5631017369956619646">Mức sử dụng CPU</translation>
-<translation id="7223775956298141902">Này... Bạn không có tiện ích mở rộng nào :-(</translation>
+<translation id="7223775956298141902">Này... Bạn không có tiện ích nào :-(</translation>
 <translation id="8909407620850305640">Phương pháp tổng hợp</translation>
 <translation id="3118046075435288765">Máy chủ đã bất ngờ đóng kết nối.</translation>
 <translation id="6133173853026656527">Đang di chuyển <ph name="FILE_NAME"/>...</translation>
@@ -1379,7 +1379,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="4275663329226226506">Truyền thông</translation>
 <translation id="3629630062892748850">Tìm kiếm bằng URL liên quan và Google.com</translation>
 <translation id="5649768706273821470">Nghe</translation>
-<translation id="4096508467498758490">Vô hiệu hóa tiện ích mở rộng chế độ nhà phát triển</translation>
+<translation id="4096508467498758490">Vô hiệu hóa tiện ích chế độ nhà phát triển</translation>
 <translation id="9064939804718829769">Đang chuyển...</translation>
 <translation id="48838266408104654">&amp;Trình quản lý Tác vụ</translation>
 <translation id="4378154925671717803">Điện thoại</translation>
@@ -1392,7 +1392,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="3341703758641437857">Cho phép truy cập vào các URL của tệp</translation>
 <translation id="6948142510520900350">&lt;strong&gt;Quản trị viên hệ thống&lt;/strong&gt; của bạn đã chặn quyền truy cập vào trang web này.</translation>
 <translation id="5702898740348134351">&amp;Chỉnh sửa Công cụ Tìm kiếm...</translation>
-<translation id="3687701603889589626">Cho phép chạy tiện ích mở rộng trên các URL chrome:// mà tiện ích mở rộng yêu cầu quyền này một cách rõ ràng.</translation>
+<translation id="3687701603889589626">Cho phép chạy tiện ích trên các URL chrome:// mà tiện ích yêu cầu quyền này một cách rõ ràng.</translation>
 <translation id="1756681705074952506">Phương thức nhập</translation>
 <translation id="8545211332741562162">Cho phép trang web sử dụng các tính năng JavaScript thử nghiệm.</translation>
 <translation id="734303607351427494">Quản lý công cụ tìm kiếm...</translation>
@@ -1401,7 +1401,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="2073514786687846182">Tắt hỗ trợ cho Native Client di động (PNaCl).</translation>
 <translation id="3001660530462287301">Có, cài đặt</translation>
 <translation id="7973174304586609605">Thêm người dùng mới...</translation>
-<translation id="7676077734785147678">IME tiện ích mở rộng</translation>
+<translation id="7676077734785147678">IME tiện ích</translation>
 <translation id="8326478304147373412">PKCS #7, chuỗi chứng chỉ</translation>
 <translation id="3242765319725186192">Khóa chia sẻ trước:</translation>
 <translation id="8249048954461686687">Thư mục OEM</translation>
@@ -1413,7 +1413,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="4249248555939881673">Đang chờ kết nối mạng...</translation>
 <translation id="996987097147224996">Nhấn Ctrl+dấu cách để chọn phương thức nhập trước đó.</translation>
 <translation id="4240069395079660403">Không thể hiển thị <ph name="PRODUCT_NAME"/> bằng ngôn ngữ này</translation>
-<translation id="747114903913869239">Lỗi: Không thể giải mã tiện ích mở rộng</translation>
+<translation id="747114903913869239">Lỗi: Không thể giải mã tiện ích</translation>
 <translation id="7187885785158279764">Thu hồi quyền truy cập tệp</translation>
 <translation id="3574210789297084292">đăng nhập</translation>
 <translation id="5254480569305195883">Bật hỗ trợ cho sự kiện đồng bộ hóa nền ServiceWorker.</translation>
@@ -1428,7 +1428,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="4906679076183257864">Đặt lại về mặc định</translation>
 <translation id="4747597332667805440">Bật giao diện người dùng trong bong bóng khôi phục phiên.</translation>
 <translation id="2344262275956902282">Sử dụng các phím - và = để đánh số trang danh sách tùy chọn</translation>
-<translation id="3609138628363401169">Máy chủ không hỗ trợ tiện ích mở rộng đàm phán lại TLS.</translation>
+<translation id="3609138628363401169">Máy chủ không hỗ trợ tiện ích đàm phán lại TLS.</translation>
 <translation id="4926098191708537519">RSA</translation>
 <translation id="3369624026883419694">Đang phân giải máy chủ...</translation>
 <translation id="8870413625673593573">Các tab đã Đóng gần đây</translation>
@@ -1449,7 +1449,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="7339898014177206373">Cửa sổ mới</translation>
 <translation id="8362900609631365882">Bật trình chuyển đổi tab khả năng truy cập.</translation>
 <translation id="1895215930471128025">Không bao giờ cho phép plug-in không có hộp cát trên <ph name="HOST"/></translation>
-<translation id="1171000732235946541">Phương thức nhập này có thể thu thập tất cả nội dung bạn nhập, bao gồm dữ liệu cá nhân chẳng hạn như mật khẩu và số thẻ tín dụng. Phương thức nhập này xuất phát từ tiện ích mở rộng &quot;<ph name="EXTENSION_NAME"/>&quot;. Bạn có muốn sử dụng phương thức nhập này?</translation>
+<translation id="1171000732235946541">Phương thức nhập này có thể thu thập tất cả nội dung bạn nhập, bao gồm dữ liệu cá nhân chẳng hạn như mật khẩu và số thẻ tín dụng. Phương thức nhập này xuất phát từ tiện ích &quot;<ph name="EXTENSION_NAME"/>&quot;. Bạn có muốn sử dụng phương thức nhập này?</translation>
 <translation id="7788080748068240085">Để lưu &quot;<ph name="FILE_NAME"/>&quot; ngoại tuyến, bạn phải giải phóng thêm <ph name="TOTAL_FILE_SIZE"/> dung lượng lưu trữ:<ph name="MARKUP_1"/>
     <ph name="MARKUP_2"/>bỏ ghim các tệp mà bạn không cần truy cập ngoại tuyến nữa<ph name="MARKUP_3"/>
     <ph name="MARKUP_4"/>xóa các tệp khỏi thư mục Tải xuống của bạn<ph name="MARKUP_5"/></translation>
@@ -1478,7 +1478,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="6815206662964743929">Chuyển người dùng</translation>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="2150139952286079145">Tìm kiếm máy in đích</translation>
-<translation id="4713309396072794887">Cài đặt các tiện ích mở rộng này?</translation>
+<translation id="4713309396072794887">Cài đặt các tiện ích này?</translation>
 <translation id="5637940320504994319">Bạn đã hết dung lượng lưu trữ trong Google Drive</translation>
 <translation id="8194797478851900357">&amp;Hoàn tác di chuyển</translation>
 <translation id="2266011376676382776">(Các) Trang không Hồi đáp</translation>
@@ -1561,7 +1561,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="6476634420120651145">Bật tính năng tự động thay đổi kích thước văn bản nhanh chóng</translation>
 <translation id="5402367795255837559">Chữ nổi</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME"/> không thể hoàn tất cài đặt nhưng sẽ tiếp tục chạy từ hình ảnh đĩa của trình duyệt này.</translation>
-<translation id="4726710629007580002">Đã có cảnh báo khi cố cài đặt tiện ích mở rộng này:</translation>
+<translation id="4726710629007580002">Đã có cảnh báo khi cố cài đặt tiện ích này:</translation>
 <translation id="7025190659207909717">Quản lý dịch vụ dữ liệu di động</translation>
 <translation id="946810925362320585">Theo khuyến cáo</translation>
 <translation id="1685944703056982650">Ngoại lệ cho con trỏ chuột</translation>
@@ -1583,7 +1583,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="6022526133015258832">Mở chế độ toàn màn hình</translation>
 <translation id="8933960630081805351">&amp;Hiển thị trong Trình tìm kiếm</translation>
 <translation id="3009779501245596802">Cơ sở dữ liệu được lập chỉ mục</translation>
-<translation id="1404301347395550388">Bật Tiện ích mở rộng phương tiện có mã hóa.</translation>
+<translation id="1404301347395550388">Bật Tiện ích phương tiện có mã hóa.</translation>
 <translation id="3041612393474885105">Thông tin Chứng chỉ</translation>
 <translation id="5023943178135355362">Cuộn theo kiểu Úc <ph name="BEGIN_LINK"/>Tìm hiểu thêm<ph name="END_LINK"/></translation>
 <translation id="7378810950367401542">/</translation>
@@ -1621,7 +1621,7 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="8899388739470541164">Vietnamese</translation>
 <translation id="2053686653008575655">Bạn có thể tham khảo các <ph name="BEGIN_LINK"/>Câu hỏi thường gặp<ph name="END_LINK"/> và tiếp tục sử dụng HP Chromebook 11 của mình với bất kỳ bộ sạc micro-USB được chứng nhận nào khác, chẳng hạn như bộ sạc đi kèm với máy tính bảng hoặc điện thoại thông minh. Chúng tôi xin lỗi một lần nữa vì sự bất tiện này. Sự an toàn của bạn là ưu tiên hàng đầu.</translation>
 <translation id="6423064450797205562">Số liệu liên quan đến tốc độ mà <ph name="SHORT_PRODUCT_NAME"/> thực hiện các tác vụ được yêu cầu</translation>
-<translation id="3690673539902120157">Bạn có chắc chắn muốn cài đặt tiện ích mở rộng này dù bắt buộc phải có những đặc quyền này không?</translation>
+<translation id="3690673539902120157">Bạn có chắc chắn muốn cài đặt tiện ích này dù bắt buộc phải có những đặc quyền này không?</translation>
 <translation id="4091434297613116013">trang giấy</translation>
 <translation id="7475671414023905704">URL Mật khẩu đã Mất của Netscape</translation>
 <translation id="3335947283844343239">Mở lại Tab đã Đóng</translation>
@@ -1663,10 +1663,10 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="4411578466613447185">Trình ký mã</translation>
 <translation id="3029595853063638932">Đang tạo thẻ ảo trên Google Wallet...</translation>
 <translation id="1354868058853714482">Adobe Reader đã lỗi thời và có thể không an toàn.</translation>
-<translation id="6915711422691334155">Tiện ích mở rộng này có thể đọc và thay đổi tất cả dữ liệu trên máy tính của bạn và tất cả trang web bao gồm cả Google, Facebook, Yahoo, v.v.</translation>
+<translation id="6915711422691334155">Tiện ích này có thể đọc và thay đổi tất cả dữ liệu trên máy tính của bạn và tất cả trang web bao gồm cả Google, Facebook, Yahoo, v.v.</translation>
 <translation id="6095666334801788310">Hãy nhập lại mật khẩu của bạn</translation>
 <translation id="7360506455591495242">Trình xem Dấu thời gian chứng chỉ đã ký</translation>
-<translation id="3925083541997316308">Người dùng được giám sát không thể sửa đổi ứng dụng và tiện ích mở rộng.</translation>
+<translation id="3925083541997316308">Người dùng được giám sát không thể sửa đổi ứng dụng và tiện ích.</translation>
 <translation id="8425755597197517046">Dá&amp;n và Tìm kiếm</translation>
 <translation id="6341850831632289108">Phát hiện vị trí thực của bạn</translation>
 <translation id="3003623123441819449">Bộ nhớ cache CSS</translation>
@@ -1679,19 +1679,19 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="1123316951456119629">Bằng cách ngắt kết nối tài khoản Google khỏi <ph name="PRODUCT_NAME"/>, dữ liệu của bạn sẽ vẫn còn trên máy tính này nhưng các thay đổi sẽ không còn được đồng bộ hóa với tài khoản Google của bạn. Dữ liệu đã được lưu trữ trong tài khoản Google của bạn sẽ vẫn ở đó cho tới khi bạn xóa dữ liệu bằng <ph name="BEGIN_LINK"/>Trang tổng quan của Google<ph name="END_LINK"/>.</translation>
 <translation id="8705331520020532516">Số Sê-ri</translation>
 <translation id="1665770420914915777">Sử dụng trang Tab mới</translation>
-<translation id="160747070824041275">Đã cập nhật tiện ích mở rộng</translation>
+<translation id="160747070824041275">Đã cập nhật tiện ích</translation>
 <translation id="1691063574428301566">Máy tính của bạn sẽ khởi động lại khi cập nhật hoàn tất.</translation>
 <translation id="1042574203789536285"><ph name="URL"/> muốn lưu trữ vĩnh viễn một lượng lớn dữ liệu trên thiết bị của bạn.</translation>
 <translation id="4697551882387947560">Khi phiên duyệt kết thúc</translation>
 <translation id="7779249319235708104">Cảnh báo tấn công lừa đảo</translation>
-<translation id="5900302528761731119">Ảnh tiểu sử trên Google</translation>
+<translation id="5900302528761731119">Ảnh hồ sơ trên Google</translation>
 <translation id="3512810056947640266">URL (tùy chọn):</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="2335122562899522968">Trang này đã đặt các cookie.</translation>
 <translation id="4628757576491864469">Thiết bị</translation>
 <translation id="8461914792118322307">Proxy</translation>
 <translation id="4707934200082538898">Vui lòng kiểm tra email của bạn tại <ph name="BEGIN_BOLD"/><ph name="MANAGER_EMAIL"/><ph name="END_BOLD"/> để được hướng dẫn thêm.</translation>
-<translation id="8680544835056685300">Chúng tôi không ngừng tìm cách để giúp cho quá trình duyệt web của bạn trở nên an toàn hơn. Trước đây, bất kỳ trang web nào cũng có thể nhắc bạn thêm tiện ích mở rộng vào trình duyệt. Trong các phiên bản mới nhất của Google Chrome, bạn phải cho Chrome biết rõ rằng bạn muốn cài đặt các tiện ích mở rộng này bằng cách thêm chúng thông qua trang Tiện ích mở rộng. <ph name="BEGIN_LINK"/>Tìm hiểu thêm<ph name="END_LINK"/></translation>
+<translation id="8680544835056685300">Chúng tôi không ngừng tìm cách để giúp cho quá trình duyệt web của bạn trở nên an toàn hơn. Trước đây, bất kỳ trang web nào cũng có thể nhắc bạn thêm tiện ích vào trình duyệt. Trong các phiên bản mới nhất của Google Chrome, bạn phải cho Chrome biết rõ rằng bạn muốn cài đặt các tiện ích này bằng cách thêm chúng thông qua trang Tiện ích. <ph name="BEGIN_LINK"/>Tìm hiểu thêm<ph name="END_LINK"/></translation>
 <translation id="4089521618207933045">Có menu con</translation>
 <translation id="3470442499439619530">Xóa người dùng này</translation>
 <translation id="1936157145127842922">Hiển thị trong Thư mục</translation>
@@ -1829,14 +1829,14 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="1745087082567737511">Kích hoạt mục trình chạy 1</translation>
 <translation id="2937174152333875430">Bật đồng bộ hóa Trình chạy ứng dụng</translation>
 <translation id="2386255080630008482">Chứng chỉ của máy chủ đã bị thu hồi.</translation>
-<translation id="1586260122947707821">Tắt tiện ích mở rộng thành phần của Quickoffice</translation>
+<translation id="1586260122947707821">Tắt tiện ích thành phần của Quickoffice</translation>
 <translation id="6365411474437319296">Thêm gia đình và bạn bè</translation>
 <translation id="2135787500304447609">&amp;Tiếp tục</translation>
-<translation id="6143635259298204954">Không thể giải nén tiện ích mở rộng.  Để giải nén tiện ích mở rộng một cách an toàn, phải có đường dẫn đến thư mục tiểu sử không chứa liên kết dạng biểu tượng của bạn.  Không có đường dẫn như vậy tồn tại cho tiểu sử của bạn.</translation>
+<translation id="6143635259298204954">Không thể giải nén tiện ích.  Để giải nén tiện ích một cách an toàn, phải có đường dẫn đến thư mục hồ sơ không chứa liên kết dạng biểu tượng của bạn.  Không có đường dẫn như vậy tồn tại cho hồ sơ của bạn.</translation>
 <translation id="3326821416087822643">Đang nén <ph name="FILE_NAME"/>...</translation>
 <translation id="3081104028562135154">Tăng</translation>
 <translation id="3734816294831429815"><ph name="PRODUCT_NAME"/> sẽ khởi động lại sau <ph name="SECONDS"/> giây.</translation>
-<translation id="8732030010853991079">Sử dụng tiện ích mở rộng này bằng cách nhấp vào biểu tượng này.</translation>
+<translation id="8732030010853991079">Sử dụng tiện ích này bằng cách nhấp vào biểu tượng này.</translation>
 <translation id="32330993344203779">Thiết bị của bạn đã được đăng ký thành công cho quản lý doanh nghiệp.</translation>
 <translation id="9177483892433212068">Trình quản lý tiêu điểm nhập văn bản thử nghiệm.</translation>
 <translation id="158917669717260118">Không thể tải trang web do máy tính của bạn đã chuyển sang chế độ ngủ hoặc chế độ ngủ đông. Khi điều này xảy ra, kết nối mạng bị tắt và yêu cầu mạng mới không thành công. Tải lại trang sẽ giải quyết vấn đề này.</translation>
@@ -1877,7 +1877,7 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="3204741654590142272">Thay đổi kênh sẽ được áp dụng sau.</translation>
 <translation id="901974403500617787">Chỉ chủ sở hữu mới có thể đặt cờ áp dụng cho toàn hệ thống: <ph name="OWNER_EMAIL"/>.</translation>
 <translation id="201192063813189384">Lỗi đọc dữ liệu từ bộ nhớ cache.</translation>
-<translation id="9126706773198551170">Bật hệ thống quản lý tiểu sử mới</translation>
+<translation id="9126706773198551170">Bật hệ thống quản lý hồ sơ mới</translation>
 <translation id="2345303327200536445">Phiên bản mới với nền sặc sỡ</translation>
 <translation id="7441570539304949520">Ngoại lệ cho JavaScript</translation>
 <translation id="1789575671122666129">Cửa sổ bật lên</translation>
@@ -1906,7 +1906,7 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="5015344424288992913">Đang phân giải proxy…</translation>
 <translation id="4389091756366370506">Người dùng <ph name="VALUE"/></translation>
 <translation id="4528459871550620573">Nếu bạn đang sử dụng Bluetooth, hãy đảm bảo các thiết bị của bạn đã sẵn sàng ghép nối.</translation>
-<translation id="4620809267248568679">Cài đặt này được tiện ích mở rộng thực hiện.</translation>
+<translation id="4620809267248568679">Cài đặt này được tiện ích thực hiện.</translation>
 <translation id="2398703750948514961">Hủy</translation>
 <translation id="4724168406730866204">Eten 26</translation>
 <translation id="308268297242056490">URI</translation>
@@ -1920,7 +1920,7 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="5451285724299252438">hộp văn bản phạm vi trang</translation>
 <translation id="4112917766894695549">Các cài đặt này được quản trị viên của bạn thực hiện.</translation>
 <translation id="5669267381087807207">Đang kích hoạt</translation>
-<translation id="8825366169884721447">Tiện ích mở rộng này không thể sửa đổi tiêu đề yêu cầu &quot;<ph name="HEADER_NAME"/>&quot; của một yêu cầu mạng do sửa đổi đã xung đột với một tiện ích mở rộng khác (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="8825366169884721447">Tiện ích này không thể sửa đổi tiêu đề yêu cầu &quot;<ph name="HEADER_NAME"/>&quot; của một yêu cầu mạng do sửa đổi đã xung đột với một tiện ích khác (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="1707463636381878959">Chia sẻ mạng này với những người dùng khác</translation>
 <translation id="7971930306777004076">Phiên bản cũ</translation>
 <translation id="2084978867795361905">MS-IME</translation>
@@ -1933,7 +1933,7 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="750413812607578381">Bạn phải khởi động lại <ph name="PRODUCT_NAME"/> ngay bây giờ.</translation>
 <translation id="2638286699381354126">Cập nhật...</translation>
 <translation id="1196338895211115272">Không thể xuất khóa cá nhân.</translation>
-<translation id="1459967076783105826">Công cụ tìm kiếm được thêm bởi tiện ích mở rộng</translation>
+<translation id="1459967076783105826">Công cụ tìm kiếm được thêm bởi tiện ích</translation>
 <translation id="629730747756840877">Tài khoản</translation>
 <translation id="8525306231823319788">Toàn màn hình</translation>
 <translation id="5892507820957994680">Ghi đè danh sách kết xuất phần mềm tích hợp sẵn và cho phép tăng tốc GPU trên cấu hình hệ thống không được hỗ trợ.</translation>
@@ -1958,15 +1958,15 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="4075084141581903552">Tự động đăng nhập hiện khả dụng <ph name="EMAIL_ADDRESS"/></translation>
 <translation id="1293556467332435079">Tệp</translation>
 <translation id="2287590536030307392">Tắt tất cả các kết nối không dây.</translation>
-<translation id="8535658110233909809">Vị trí tiện ích mở rộng</translation>
+<translation id="8535658110233909809">Vị trí tiện ích</translation>
 <translation id="8116483400482790018">Từ điển chính tả tùy chỉnh</translation>
 <translation id="1343517687228689568">Bỏ ghim trang này khỏi màn hình Bắt đầu...</translation>
-<translation id="9123104177314065219">Cho phép sử dụng thông tin Google để nhập tên và biểu tượng tiểu sử vào menu hình đại diện.</translation>
+<translation id="9123104177314065219">Cho phép sử dụng thông tin Google để nhập tên và biểu tượng hồ sơ vào menu hình đại diện.</translation>
 <translation id="3188366215310983158">Đang xác thực...</translation>
 <translation id="2177950615300672361">Tab ẩn danh: <ph name="TAB_NAME"/></translation>
 <translation id="5457113250005438886">Không hợp lệ</translation>
 <translation id="5185403602014064051">Tính năng này cho phép bạn truy cập nhanh bất kỳ người dùng đã đăng nhập nào mà không cần mật khẩu.</translation>
-<translation id="8852742364582744935">Các ứng dụng và tiện ích mở rộng sau đã được thêm:</translation>
+<translation id="8852742364582744935">Các ứng dụng và tiện ích sau đã được thêm:</translation>
 <translation id="2916073183900451334">Bấm Tab trên liên kết đánh dấu của trang web, cũng như các trường biểu mẫu</translation>
 <translation id="7772127298218883077">Giới thiệu về <ph name="PRODUCT_NAME"/></translation>
 <translation id="2090876986345970080">Cài đặt bảo mật hệ thống</translation>
@@ -1974,7 +1974,7 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="3475447146579922140">Bảng tính Google</translation>
 <translation id="6856526171412069413">Bật thu hẹp phạm vi.</translation>
 <translation id="9219103736887031265">Hình ảnh</translation>
-<translation id="3207538738351718781">Tiện ích mở rộng này có thể đã bị hỏng do phần mềm độc hại.</translation>
+<translation id="3207538738351718781">Tiện ích này có thể đã bị hỏng do phần mềm độc hại.</translation>
 <translation id="6655458902729017087">Ẩn tài khoản</translation>
 <translation id="5545687460454274870">Tắt phát hiện thiết bị trên mạng cục bộ.</translation>
 <translation id="6975147921678461939">Đang sạc pin: <ph name="PRECENTAGE"/>%</translation>
@@ -2062,7 +2062,7 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="5399158067281117682">Các mã PIN không khớp!</translation>
 <translation id="6277105963844135994">Hết thời gian chờ mạng</translation>
 <translation id="6731255991101203740">Không thể tạo thư mục để giải nén: '<ph name="DIRECTORY_PATH"/>'</translation>
-<translation id="3816846830151612068">Bạn có tin tưởng tiện ích mở rộng để sử dụng những đặc quyền này một cách an toàn không?</translation>
+<translation id="3816846830151612068">Bạn có tin tưởng tiện ích để sử dụng những đặc quyền này một cách an toàn không?</translation>
 <translation id="7885253890047913815">Máy in đích gần đây</translation>
 <translation id="3646789916214779970">Đặt lại về chủ đề mặc định</translation>
 <translation id="9220525904950070496">Xóa tài khoản</translation>
@@ -2133,7 +2133,7 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="7910768399700579500">&amp;Thư mục mới</translation>
 <translation id="7472639616520044048">Loại MIME:</translation>
 <translation id="6533019874004191247">URL không được hỗ trợ.</translation>
-<translation id="1476758165362135857">Có, tôi tin tưởng tiện ích mở rộng này!</translation>
+<translation id="1476758165362135857">Có, tôi tin tưởng tiện ích này!</translation>
 <translation id="3192947282887913208">Tệp âm thanh</translation>
 <translation id="5422781158178868512">Rất tiếc, thiết bị lưu trữ bên ngoài của bạn không thể nhận dạng được.</translation>
 <translation id="6295535972717341389">Plug-in</translation>
@@ -2151,10 +2151,10 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="197288927597451399">Giữ</translation>
 <translation id="5880867612172997051">Quyền truy cập mạng bị treo</translation>
 <translation id="5495466433285976480">Quá trình này sẽ xóa tất cả dữ liệu, tệp, người dùng cục bộ và các cài đặt khác sau khi bạn khởi động lại vào lần kế tiếp. Tất cả người dùng sẽ cần đăng nhập lại.</translation>
-<translation id="7842346819602959665">Phiên bản mới nhất của tiện ích mở rộng &quot;<ph name="EXTENSION_NAME"/>&quot; yêu cầu được cấp thêm quyền; do đó nó đã bị vô hiệu hóa.</translation>
+<translation id="7842346819602959665">Phiên bản mới nhất của tiện ích &quot;<ph name="EXTENSION_NAME"/>&quot; yêu cầu được cấp thêm quyền; do đó nó đã bị vô hiệu hóa.</translation>
 <translation id="3776667127601582921">Trong trường hợp này, chứng chỉ máy chủ hoặc một chứng chỉ CA trung gian cấp cho trình duyệt của bạn không hợp lệ. Điều này có thể nghĩa là chứng chỉ không đúng định dạng, chứa các trường không hợp lệ hoặc không được hỗ trợ.</translation>
 <translation id="2412835451908901523">Vui lòng nhập Khóa mở mã PIN gồm 8 chữ số do <ph name="CARRIER_ID"/> cung cấp.</translation>
-<translation id="25770266525034120">URL tiện ích mở rộng</translation>
+<translation id="25770266525034120">URL tiện ích</translation>
 <translation id="7548916768233393626">Buộc chế độ DPI cao</translation>
 <translation id="33562952999632466">DevTools yêu cầu toàn quyền truy cập vào <ph name="FOLDER_PATH"/>.
 Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm nào.</translation>
@@ -2162,7 +2162,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="7019805045859631636">Nhanh</translation>
 <translation id="4880520557730313061">Tự động sửa</translation>
 <translation id="6122589160611523048">Có lừa đảo trực tuyến!</translation>
-<translation id="8049913480579063185">Tên tiện ích mở rộng</translation>
+<translation id="8049913480579063185">Tên tiện ích</translation>
 <translation id="7584802760054545466">Đang kết nối đến <ph name="NETWORK_ID"/></translation>
 <translation id="9088175547465404130">Đây là người dùng được giám sát do <ph name="CUSTODIAN_EMAIL"/> quản lý.</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS"/>)</translation>
@@ -2260,14 +2260,14 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="1383876407941801731">Tìm kiếm</translation>
 <translation id="23362385947277794">Màu nền và hình nền</translation>
 <translation id="409579654357498729">Thêm vào Cloud Print</translation>
-<translation id="2120316813730635488">Số lần cài đặt một tiện ích mở rộng</translation>
+<translation id="2120316813730635488">Số lần cài đặt một tiện ích</translation>
 <translation id="8398877366907290961">Tiếp tục truy cập</translation>
 <translation id="5063180925553000800">Mã PIN mới:</translation>
 <translation id="4883178195103750615">Xuất dấu trang sang tệp  HTML...</translation>
 <translation id="2496540304887968742">Thiết bị phải có dung lượng 4 GB hoặc cao hơn.</translation>
 <translation id="6974053822202609517">Phải sang Trái</translation>
 <translation id="3752673729237782832">Thiết bị của tôi</translation>
-<translation id="1552752544932680961">Quản lý tiện ích mở rộng</translation>
+<translation id="1552752544932680961">Quản lý tiện ích</translation>
 <translation id="2370882663124746154">Bật chế độ Double-Pinyin</translation>
 <translation id="3967885517199024316">Đăng nhập để nhận dấu trang, lịch sử và cài đặt trên tất cả các thiết bị của bạn.</translation>
 <translation id="5463856536939868464">Menu chứa các dấu trang bị ẩn</translation>
@@ -2283,7 +2283,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="457386861538956877">Thêm...</translation>
 <translation id="9210991923655648139">Có thể truy cập vào tập lệnh:</translation>
 <translation id="3898521660513055167">Trạng thái mã thông báo</translation>
-<translation id="1950295184970569138">* Ảnh tiểu sử trên Google (đang tải)</translation>
+<translation id="1950295184970569138">* Ảnh hồ sơ trên Google (đang tải)</translation>
 <translation id="8063491445163840780">Kích hoạt tab 4</translation>
 <translation id="7939997691108949385">Người quản lý có thể định cấu hình các giới hạn và cài đặt cho người dùng bị giám sát này tại <ph name="MANAGEMENT_URL"/>.</translation>
 <translation id="2322193970951063277">Đầu trang và chân trang</translation>
@@ -2320,7 +2320,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="8264718194193514834">&quot;<ph name="EXTENSION_NAME"/>&quot; đã kích hoạt chế độ toàn màn hình.</translation>
 <translation id="6223447490656896591">Hình tùy chỉnh:</translation>
 <translation id="6362853299801475928">&amp;Báo cáo sự cố...</translation>
-<translation id="5527463195266282916">Cố gắng hạ cấp tiện ích mở rộng.</translation>
+<translation id="5527463195266282916">Cố gắng hạ cấp tiện ích.</translation>
 <translation id="3289566588497100676">Nhập biểu tượng đơn giản</translation>
 <translation id="6507969014813375884">Chinese Simplified</translation>
 <translation id="7341982465543599097">rất ngắn</translation>
@@ -2364,7 +2364,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
     từ màn hình đăng nhập. Sau đó, bạn có thể đăng xuất khỏi tài khoản Google của mình và
     thử tạo lại người dùng được giám sát.</translation>
 <translation id="6644715561133361290">Bật hoặc tắt bằng cách sử dụng phiên bản phát triển của proxy giảm bớt dữ liệu</translation>
-<translation id="3530279468460174821">Tắt tiện ích mở rộng thành phần của Quickoffice cho mục đích thử nghiệm.</translation>
+<translation id="3530279468460174821">Tắt tiện ích thành phần của Quickoffice cho mục đích thử nghiệm.</translation>
 <translation id="3578308799074845547">Kích hoạt mục trình chạy 7</translation>
 <translation id="2956070106555335453">Tổng hợp</translation>
 <translation id="917450738466192189">Chứng chỉ của máy chủ không hợp lệ.</translation>
@@ -2416,7 +2416,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="8870318296973696995">Trang chủ</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="8283475148136688298">Mã xác thực bị từ chối trong khi kết nối với &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
-<translation id="6194025908252121648">Không thể nhập tiện ích mở rộng có ID &quot;<ph name="IMPORT_ID"/>&quot; do tiện ích mở rộng không phải là mô-đun được chia sẻ.</translation>
+<translation id="6194025908252121648">Không thể nhập tiện ích có ID &quot;<ph name="IMPORT_ID"/>&quot; do tiện ích không phải là mô-đun được chia sẻ.</translation>
 <translation id="3491170932824591984">Danh tính của trang web này đã được xác minh bởi <ph name="ISSUER"/> nhưng xác minh hồ sơ kiểm toán công khai lại không thành công.</translation>
 <translation id="6575134580692778371">Chưa được định cấu hình</translation>
 <translation id="4624768044135598934">Thành công!</translation>
@@ -2542,7 +2542,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="7503191893372251637">Loại Chứng chỉ Netscape</translation>
 <translation id="4135450933899346655">Chứng chỉ của bạn</translation>
 <translation id="971774202801778802">URL dấu trang</translation>
-<translation id="3979395879372752341">Đã thêm tiện ích mở rộng mới (<ph name="EXTENSION_NAME"/>)</translation>
+<translation id="3979395879372752341">Đã thêm tiện ích mới (<ph name="EXTENSION_NAME"/>)</translation>
 <translation id="2609632851001447353">Các biến thể</translation>
 <translation id="2127166530420714525">Không thể thay đổi trạng thái nguồn của bộ điều hợp Bluetooth.</translation>
 <translation id="2765718175690078089">Bật ứng dụng được lưu trữ hợp lý cho mục đích thử nghiệm.</translation>
@@ -2677,7 +2677,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="6256412060882652702">Powerwash thiết bị <ph name="IDS_SHORT_PRODUCT_NAME"/> của bạn</translation>
 <translation id="736515969993332243">Đang quét mạng.</translation>
 <translation id="7806513705704909664">Bật Tự động điền để điền các biểu mẫu web bằng một nhấp chuột duy nhất.</translation>
-<translation id="3150994199788134383">Một tiện ích mở rộng đã chiếm quyền kiểm soát cài đặt proxy của bạn, điều đó có nghĩa là tiện ích mở rộng này có thể thay đổi, làm gián đoạn hoặc nghe trộm bất kỳ điều gì bạn thực hiện trực tuyến. Nếu bạn không chắc chắn về lý do thay đổi này diễn ra, bạn có thể không cần tiện ích mở rộng này.</translation>
+<translation id="3150994199788134383">Một tiện ích đã chiếm quyền kiểm soát cài đặt proxy của bạn, điều đó có nghĩa là tiện ích này có thể thay đổi, làm gián đoạn hoặc nghe trộm bất kỳ điều gì bạn thực hiện trực tuyến. Nếu bạn không chắc chắn về lý do thay đổi này diễn ra, bạn có thể không cần tiện ích này.</translation>
 <translation id="8026334261755873520">Xóa dữ liệu duyệt web</translation>
 <translation id="605011065011551813">Plugin (<ph name="PLUGIN_NAME"/>) hiện không phản hồi.</translation>
 <translation id="1467432559032391204">Trái</translation>
@@ -2706,11 +2706,11 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="4262113024799883061">Tiếng Trung</translation>
 <translation id="3478315065074101056">XPS bật tùy chọn nâng cao cho máy in cổ điển được kết nối với Cloud Print bằng Chrome. Máy in phải được kết nối lại sau khi thay đổi cờ này.</translation>
 <translation id="1744108098763830590">trang nền</translation>
-<translation id="5575473780076478375">Tiện ích mở rộng Ẩn danh: <ph name="EXTENSION_NAME"/></translation>
+<translation id="5575473780076478375">Tiện ích Ẩn danh: <ph name="EXTENSION_NAME"/></translation>
 <translation id="2040822234646148327">Bật tính năng Nền tảng web thử nghiệm.</translation>
 <translation id="1932240834133965471">Các cài đặt này thuộc về <ph name="OWNER_EMAIL"/>.</translation>
 <translation id="271033894570825754">Mới</translation>
-<translation id="2585116156172706706">Tiện ích mở rộng này có thể đã được thêm mà bạn không biết.</translation>
+<translation id="2585116156172706706">Tiện ích này có thể đã được thêm mà bạn không biết.</translation>
 <translation id="56907980372820799">Liên kết dữ liệu</translation>
 <translation id="2780046210906776326">Ko có TK email nào</translation>
 <translation id="2111843886872897694">Ứng dụng phải được cung cấp từ máy chủ lưu trữ mà chúng ảnh hưởng.</translation>
@@ -2728,7 +2728,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="1658424621194652532">Trang này đang truy cập micrô của bạn.</translation>
 <translation id="3355823806454867987">Thay đổi cài đặt proxy...</translation>
 <translation id="3569382839528428029">Bạn có muốn <ph name="APP_NAME"/> chia sẻ màn hình của bạn không?</translation>
-<translation id="4780374166989101364">Bật API tiện ích mở rộng thử nghiệm. Xin lưu ý rằng thư viện tiện ích mở rộng không cho phép bạn tải lên tiện ích mở rộng sử dụng API thử nghiệm.</translation>
+<translation id="4780374166989101364">Bật API tiện ích thử nghiệm. Xin lưu ý rằng thư viện tiện ích không cho phép bạn tải lên tiện ích sử dụng API thử nghiệm.</translation>
 <translation id="7117247127439884114">Đăng nhập lại...</translation>
 <translation id="2932960728421974162">Không thể kết nối với <ph name="SITE"/> thực</translation>
 <translation id="509429900233858213">Đã xảy ra lỗi.</translation>
@@ -2766,7 +2766,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="9088917181875854783">Vui lòng xác nhận mã xác nhận này được hiển thị trên &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="5236831943526452400">Xóa cookie và dữ liệu trang web khác khi bạn đóng trình duyệt</translation>
-<translation id="1558834950088298812">Số lần cập nhật một tiện ích mở rộng</translation>
+<translation id="1558834950088298812">Số lần cập nhật một tiện ích</translation>
 <translation id="8410619858754994443">Xác nhận mật khẩu:</translation>
 <translation id="2400837204278978822">Loại tệp không xác định.</translation>
 <translation id="8987927404178983737">Tháng</translation>
@@ -2808,7 +2808,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="7469237359338869056">Tìm lại văn bản</translation>
 <translation id="8053390638574070785">Tải lại Trang Này</translation>
 <translation id="5507756662695126555">Không tuân thủ</translation>
-<translation id="3678156199662914018">Tiện ích mở rộng: <ph name="EXTENSION_NAME"/></translation>
+<translation id="3678156199662914018">Tiện ích: <ph name="EXTENSION_NAME"/></translation>
 <translation id="2620090360073999360">Không thể kết nối với Google Drive tại thời điểm này.</translation>
 <translation id="725387188884494207">Bạn có chắc chắn muốn xóa người dùng này và tất cả dữ liệu được liên kết với người dùng đó khỏi máy tính này không? Thao tác này không thể hoàn tác!</translation>
 <translation id="3531250013160506608">Hộp văn bản nhập mật khẩu</translation>
@@ -2836,7 +2836,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="3944266449990965865">Toàn màn hình</translation>
 <translation id="942954117721265519">Không có hình ảnh nào trong thư mục này.</translation>
 <translation id="671928215901716392">Khóa màn hình</translation>
-<translation id="2241468422635044128">Được cho phép bởi tiện ích mở rộng</translation>
+<translation id="2241468422635044128">Được cho phép bởi tiện ích</translation>
 <translation id="3727187387656390258">Kiểm tra cửa sổ bật lên</translation>
 <translation id="361106536627977100">Dữ liệu Flash</translation>
 <translation id="569068482611873351">Nhập...</translation>
@@ -2848,7 +2848,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="7922282834014874897"><ph name="SITE_NAME"/> muốn sử dụng:</translation>
 <translation id="6192792657125177640">Ngoại lệ</translation>
 <translation id="5622158329259661758">Vô hiệu hóa việc sử dụng GPU để thực hiện kết xuất canvas 2d, thay vào đó sử dụng kết xuất phần mềm.</translation>
-<translation id="8670869118777164560">Tiện ích mở rộng này không thể chuyển hướng yêu cầu mạng đến <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> do tiện ích mở rộng khác (<ph name="EXTENSION_NAME"/>) đã chuyển hướng yêu cầu mạng này đến <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
+<translation id="8670869118777164560">Tiện ích này không thể chuyển hướng yêu cầu mạng đến <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> do tiện ích khác (<ph name="EXTENSION_NAME"/>) đã chuyển hướng yêu cầu mạng này đến <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Lỗi đồng bộ hóa:  <ph name="PRODUCT_NAME"/> đã cũ và cần được cập nhật.</translation>
 <translation id="790040513076446191">Thực hiện cài đặt liên quan đến bảo mật</translation>
 <translation id="7260002739296185724">Bật sử dụng AV Foundation để quay video và giám sát thiết bị video trên OS X &gt;= 10.7. Thay vào đó, QTKit sẽ được sử dụng.</translation>
@@ -2906,7 +2906,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="872451400847464257">Chỉnh sửa Công cụ Tìm kiếm</translation>
 <translation id="5512653252560939721">Chứng chỉ người dùng phải được phần cứng hỗ trợ.</translation>
 <translation id="5372529912055771682">Chế độ đăng ký đã cung cấp không được phiên bản hệ điều hành này hỗ trợ. Hãy đảm bảo bạn đang chạy phiên bản mới nhất và thử lại.</translation>
-<translation id="3288047731229977326">Tiện ích mở rộng chạy ở chế độ nhà phát triển có thể gây hại cho máy tính của bạn. Nếu bạn không phải là nhà phát triển, bạn nên vô hiệu hóa các tiện ích mở rộng này chạy trong chế độ nhà phát triển để giữ an toàn.</translation>
+<translation id="3288047731229977326">Tiện ích chạy ở chế độ nhà phát triển có thể gây hại cho máy tính của bạn. Nếu bạn không phải là nhà phát triển, bạn nên vô hiệu hóa các tiện ích này chạy trong chế độ nhà phát triển để giữ an toàn.</translation>
 <translation id="474031007102415700">Kiểm tra mọi cáp và khởi động lại mọi bộ định tuyến, modem hoặc các
         thiết bị mạng khác mà bạn có thể sẽ dùng.</translation>
 <translation id="5681833099441553262">Kích hoạt tab trước đó</translation>
@@ -2919,9 +2919,9 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="515594325917491223">Cờ vua</translation>
 <translation id="1594155067816010104">Tệp này sẽ làm hại máy tính của bạn.</translation>
 <translation id="3378503599595235699">Chỉ lưu dữ liệu cục bộ cho đến khi bạn thoát trình duyệt của mình</translation>
-<translation id="8047248493720652249">Tiện ích mở rộng này không thể đặt tên cho bản tải xuống &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; vì một tiện ích mở rộng khác (<ph name="EXTENSION_NAME"/>) đã xác định tên tệp khác &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
+<translation id="8047248493720652249">Tiện ích này không thể đặt tên cho bản tải xuống &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; vì một tiện ích khác (<ph name="EXTENSION_NAME"/>) đã xác định tên tệp khác &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
 <translation id="5605830556594064952">Dvorak Hoa Kỳ</translation>
-<translation id="7347751611463936647">Để sử dụng tiện ích mở rộng này, nhập &quot;<ph name="EXTENSION_KEYWORD"/>&quot;, sau đó nhấn TAB rồi câu lệnh hoặc tìm kiếm của bạn.</translation>
+<translation id="7347751611463936647">Để sử dụng tiện ích này, nhập &quot;<ph name="EXTENSION_KEYWORD"/>&quot;, sau đó nhấn TAB rồi câu lệnh hoặc tìm kiếm của bạn.</translation>
 <translation id="878431691778285679">Có vẻ như bạn đang quản lý người dùng có tên đó.<ph name="LINE_BREAK"/>Bạn có muốn <ph name="BEGIN_LINK"/>nhập<ph name="PROFILE_NAME"/> vào thiết bị này<ph name="END_LINK"/> không?</translation>
 <translation id="2912905526406334195"><ph name="HOST"/> muốn sử dụng micrô của bạn.</translation>
 <translation id="2805756323405976993">Ứng dụng</translation>
@@ -2953,10 +2953,10 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="7136984461011502314">Chào mừng bạn đến với <ph name="PRODUCT_NAME"/></translation>
 <translation id="1826516787628120939">Đang kiểm tra</translation>
 <translation id="204497730941176055">Tên Mẫu Chứng chỉ của Microsoft</translation>
-<translation id="992032470292211616">Tiện ích mở rộng, ứng dụng và chủ đề có thể gây hại cho thiết bị của bạn. Bạn có chắc chắn muốn tiếp tục không?</translation>
-<translation id="2665919335226618153">Rất tiếc! Đã xảy ra lỗi trong khi định dạng.</translation>
+<translation id="992032470292211616">Tiện ích, ứng dụng và chủ đề có thể gây hại cho thiết bị của bạn. Bạn có chắc chắn muốn tiếp tục không?</translation>
+<translation id="2665919335226618153">Ôi, hỏng! Đã xảy ra lỗi trong khi định dạng.</translation>
 <translation id="5930693802084567591">Dữ liệu của bạn đã được mã hóa với mật khẩu Google của bạn kể từ <ph name="TIME"/>. Vui lòng nhập mật khẩu đó dưới đây.</translation>
-<translation id="4087089424473531098">Đã tạo tiện ích mở rộng:
+<translation id="4087089424473531098">Đã tạo tiện ích:
 
 <ph name="EXTENSION_FILE"/></translation>
 <translation id="499165176004408815">Sử dụng chế độ tương phản cao</translation>
@@ -2967,7 +2967,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="247500748408468353">Hãy liên hệ với quản trị viên của bạn hoặc thử lại.</translation>
 <translation id="450070808725753129">Nếu chương trình đã được liệt kê là chương trình được phép truy cập mạng, hãy thử
         xóa chương trình đó khỏi danh sách và thêm chương trình một lần nữa.</translation>
-<translation id="778627899913883287">Hãy chắc chắn những đặc quyền này hợp lý với những gì bạn cho rằng tiện ích mở rộng cần làm. Nếu không, hãy nhấn Hủy.</translation>
+<translation id="778627899913883287">Hãy chắc chắn những đặc quyền này hợp lý với những gì bạn cho rằng tiện ích cần làm. Nếu không, hãy nhấn Hủy.</translation>
 <translation id="4742746985488890273">Ghim vào giá</translation>
 <translation id="8074984796671539016">Bật nút tải bản sao cũ ngoại tuyến</translation>
 <translation id="1113869188872983271">&amp;Hoàn tác sắp xếp lại</translation>
@@ -2981,14 +2981,14 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="3113551216836192921">Tệp đính kèm được tải lên máy chủ Google để gỡ lỗi.</translation>
 <translation id="2498765460639677199">Rất lớn</translation>
 <translation id="4801448226354548035">Ẩn tài khoản</translation>
-<translation id="2378982052244864789">Chọn thư mục tiện ích mở rộng.</translation>
+<translation id="2378982052244864789">Chọn thư mục tiện ích.</translation>
 <translation id="7861215335140947162">&amp;Tải xuống</translation>
 <translation id="1358735829858566124">Không thể sử dụng được tệp hoặc thư mục.</translation>
 <translation id="175772926354468439">Bật chủ đề</translation>
 <translation id="3144135466825225871">Không thể thay thế tệp crx. Kiểm tra để xem tệp có đang được sử dụng hay không.</translation>
 <translation id="2744221223678373668">Được chia sẻ</translation>
-<translation id="9064142312330104323">Ảnh tiểu sử trên Google (đang tải)</translation>
-<translation id="3930617119570072742">Bạn có tin tưởng tiện ích mở rộng này để thực hiện những tác vụ này không?</translation>
+<translation id="9064142312330104323">Ảnh hồ sơ trên Google (đang tải)</translation>
+<translation id="3930617119570072742">Bạn có tin tưởng tiện ích này để thực hiện những tác vụ này không?</translation>
 <translation id="4708849949179781599">Thoát <ph name="PRODUCT_NAME"/></translation>
 <translation id="3752439026432317933">Nhập chi tiết thanh toán...</translation>
 <translation id="4103419683916926126">Mili giây</translation>
@@ -2996,7 +2996,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="9127762771585363996">Lật hình trong máy ảnh theo chiều ngang</translation>
 <translation id="4724450788351008910">Đã thay đổi Liên kết</translation>
 <translation id="2249605167705922988">ví dụ: 1-5, 8, 11-13</translation>
-<translation id="1520505881707245707">Cờ này có thể được sử dụng để xác minh rằng nội dung của tệp trên đĩa dành cho tiện ích mở rộng từ cửa hàng trực tuyến phù hợp với nội dung được mong đợi. Cờ này có thể được sử dụng để bật tính năng này nếu tính năng này chưa được bật nhưng không thể sử dụng để tắt (do cài đặt này có thể bị can thiệp bởi phần mềm độc hại).</translation>
+<translation id="1520505881707245707">Cờ này có thể được sử dụng để xác minh rằng nội dung của tệp trên đĩa dành cho tiện ích từ cửa hàng trực tuyến phù hợp với nội dung được mong đợi. Cờ này có thể được sử dụng để bật tính năng này nếu tính năng này chưa được bật nhưng không thể sử dụng để tắt (do cài đặt này có thể bị can thiệp bởi phần mềm độc hại).</translation>
 <translation id="8572510699242209592">Gigabyte</translation>
 <translation id="8691686986795184760">(Bật bởi chính sách doanh nghiệp)</translation>
 <translation id="878763818693997570">Tên này quá dài</translation>
@@ -3004,14 +3004,14 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="6775200426306143288">Đăng nhập bằng tên người dùng do tổ chức cấp cho bạn để đăng ký thiết bị của bạn cho quản lý doanh nghiệp.</translation>
 <translation id="7913678092679498828">OK</translation>
 <translation id="3655670868607891010">Nếu bạn thường xuyên thấy thông báo này, hãy thử các <ph name="HELP_LINK"/> sau.</translation>
-<translation id="4504940961672722399">Sử dụng tiện ích mở rộng này bằng cách nhấp vào biểu tượng này hoặc bằng cách nhấn <ph name="EXTENSION_SHORTCUT"/>.</translation>
+<translation id="4504940961672722399">Sử dụng tiện ích này bằng cách nhấp vào biểu tượng này hoặc bằng cách nhấn <ph name="EXTENSION_SHORTCUT"/>.</translation>
 <translation id="2523966157338854187">Mở một trang cụ thể hoặc tập hợp các trang.</translation>
 <translation id="4176463684765177261">Đã bị vô hiệu</translation>
 <translation id="2483350027598201151">Megabyte</translation>
 <translation id="3880349122676857713">Truy cập bất cứ thứ gì mà bạn nhập</translation>
 <translation id="154603084978752493">Thêm làm côn&amp;g cụ tìm kiếm...</translation>
 <translation id="2079545284768500474">Hoàn tác</translation>
-<translation id="114140604515785785">Thư mục gốc của tiện ích mở rộng:</translation>
+<translation id="114140604515785785">Thư mục gốc của tiện ích:</translation>
 <translation id="3925842537050977900">Bỏ ghim khỏi giá</translation>
 <translation id="6664237456442406323">Rất tiếc, máy tính của bạn được định cấu hình bằng ID phần cứng không đúng định dạng. Điều này ngăn Chrome OS cập nhật các bản vá bảo mật mới nhất và máy tính của bạn <ph name="BEGIN_BOLD"/>có thể bị các cuộc tấn công làm hại<ph name="END_BOLD"/>.</translation>
 <translation id="2707024448553392710">Thành phần đang tải xuống</translation>
@@ -3072,7 +3072,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="761779991806306006">Không có mật khẩu nào được lưu.</translation>
 <translation id="1692602667007917253">Rất tiếc, đã xảy ra lỗi</translation>
 <translation id="3922476559105512920">Sử dụng các thiết bị nối tiếp được gắn vào máy tính của bạn</translation>
-<translation id="1415990189994829608"><ph name="EXTENSION_NAME"/> (ID tiện ích mở rộng &quot;<ph name="EXTENSION_ID"/>&quot;) không được cho phép trong loại phiên này.</translation>
+<translation id="1415990189994829608"><ph name="EXTENSION_NAME"/> (ID tiện ích &quot;<ph name="EXTENSION_ID"/>&quot;) không được cho phép trong loại phiên này.</translation>
 <translation id="7062080924541270064"><ph name="BEGIN_LINK"/>Plugin Native Client<ph name="END_LINK"/> cần được bật để sử dụng tính năng này.</translation>
 <translation id="3613796918523876348">Vẫn khôi phục</translation>
 <translation id="7974087985088771286">Kích hoạt tab 6</translation>
@@ -3141,7 +3141,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="6206337697064384582">Máy chủ 1</translation>
 <translation id="8963410529089786787">Phiên bản mới với nền màu xám</translation>
 <translation id="7052633198403197513">F1</translation>
-<translation id="411319158827715214">Các sự kiện liên quan đến mọi tiện ích mở rộng được (hoặc đã được) cài đặt trong <ph name="SHORT_PRODUCT_NAME"/></translation>
+<translation id="411319158827715214">Các sự kiện liên quan đến mọi tiện ích được (hoặc đã được) cài đặt trong <ph name="SHORT_PRODUCT_NAME"/></translation>
 <translation id="7466861475611330213">Kiểu dấu chấm câu</translation>
 <translation id="2496180316473517155">Lịch sử duyệt web</translation>
 <translation id="602251597322198729">Trang web này đang cố tải xuống nhiều tệp. Bạn có muốn thực hiện việc tải xuống này không?</translation>
@@ -3156,9 +3156,9 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="5411472733320185105">Không sử dụng cài đặt proxy cho các máy chủ và tên miền này:</translation>
 <translation id="7358682983403815415">Các tab đang mở, dấu trang, lịch sử và nhiều nội dung khác đang được đồng bộ hóa với tài khoản Google của bạn.</translation>
 <translation id="3685121001045880436">Có thể máy chủ lưu trữ trang web đã bị quá tải hoặc gặp lỗi.
-        Nhằm tránh để các tiện ích mở rộng chiếm quá nhiều lưu lượng truy cập và khiến tình trạng tồi tệ hơn,
+        Nhằm tránh để các tiện ích chiếm quá nhiều lưu lượng truy cập và khiến tình trạng tồi tệ hơn,
         <ph name="PRODUCT_NAME"/>
-        đã tạm thời ngừng cho phép các yêu cầu của tiện ích mở rộng tới URL này.
+        đã tạm thời ngừng cho phép các yêu cầu của tiện ích tới URL này.
         <ph name="LINE_BREAK"/>
         Nếu bạn cho rằng điều này là ngoài mong muốn, chẳng hạn như bạn đang gỡ lỗi trang web của riêng mình, vui lòng truy cập <ph name="URL_FOR_MORE_INFO"/>,
         nơi bạn có thể tìm thêm thông tin bao gồm cách tắt tính năng này.</translation>
@@ -3183,7 +3183,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="7582582252461552277">Thích mạng này</translation>
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">&amp;Hiển thị trong Thư mục</translation>
-<translation id="5990198433782424697">Tiện ích mở rộng trên URL chrome://</translation>
+<translation id="5990198433782424697">Tiện ích trên URL chrome://</translation>
 <translation id="7456142309650173560">nhà phát triển</translation>
 <translation id="4605399136610325267">Chưa được kết nối Internet</translation>
 <translation id="6797493596609571643">Rất tiếc, đã xảy ra lỗi.</translation>
@@ -3193,7 +3193,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
           Bắt đầu &gt; Bảng điều khiển &gt;Kết nối mạng&gt; Trình hướng dẫn kết nối mới
           <ph name="END_BOLD"/>
           để kiểm tra kết nối của bạn.</translation>
-<translation id="5554489410841842733">Biểu tượng này sẽ hiển thị khi tiện ích mở rộng có thể hoạt động trên trang hiện tại.</translation>
+<translation id="5554489410841842733">Biểu tượng này sẽ hiển thị khi tiện ích có thể hoạt động trên trang hiện tại.</translation>
 <translation id="5317217568993504939">Hoặc, chọn một mạng mới</translation>
 <translation id="7487969577036436319">Không có thành phần nào được cài đặt</translation>
 <translation id="8249462233460427882">Tự khởi động (nhận được nội dung băm mong đợi nhưng không thực thi chúng)</translation>
@@ -3232,7 +3232,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="6056710589053485679">Tải lại bình thường</translation>
 <translation id="4563210852471260509">Ngôn ngữ nhập vào ban đầu là tiếng Trung</translation>
 <translation id="2888807692577297075">Không có mục nào khớp với <ph name="SEARCH_STRING"/></translation>
-<translation id="3908501907586732282">Bật tiện ích mở rộng</translation>
+<translation id="3908501907586732282">Bật tiện ích</translation>
 <translation id="6897140037006041989">Tác nhân Người dùng</translation>
 <translation id="3413122095806433232">Nhà cung cấp CA: <ph name="LOCATION"/></translation>
 <translation id="701080569351381435">Xem Nguồn</translation>
@@ -3247,7 +3247,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="795025003224538582">Không khởi động lại</translation>
 <translation id="8680787084697685621">Chi tiết đăng nhập tài khoản đã lỗi thời.</translation>
 <translation id="5649823029736413118"><ph name="URL"/> cần nhận dạng duy nhất thiết bị của bạn để phát nội dung trả phí.</translation>
-<translation id="8899285681604219177">Tiện ích mở rộng không được hỗ trợ đã bị tắt</translation>
+<translation id="8899285681604219177">Tiện ích không được hỗ trợ đã bị tắt</translation>
 <translation id="889901481107108152">Rất tiếc, thử nghiệm này không sẵn có trên nền tảng của bạn.</translation>
 <translation id="8238191901674777266">Hoa Kỳ</translation>
 <translation id="1873879463550486830">Hộp cát SUID</translation>
@@ -3294,7 +3294,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="7006634003215061422">Lề dưới</translation>
 <translation id="7014174261166285193">Cài đặt không thành công.</translation>
 <translation id="1970746430676306437">Xem thông t&amp;in trang</translation>
-<translation id="4384652540891215547">Kích hoạt tiện ích mở rộng</translation>
+<translation id="4384652540891215547">Kích hoạt tiện ích</translation>
 <translation id="9133055936679483811">Nén không thành công. <ph name="ERROR_MESSAGE"/></translation>
 <translation id="2718998670920917754">Phần mềm chống vi-rút đã phát hiện thấy một vi-rút.</translation>
 <translation id="3199127022143353223">Máy chủ</translation>
@@ -3303,15 +3303,15 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="6607831829715835317">Côn&amp;g cụ khác</translation>
 <translation id="2532589005999780174">Chế độ tương phản cao</translation>
 <translation id="2805646850212350655">Hệ thống Tệp Mã hóa của Microsoft</translation>
-<translation id="2643698698624765890">Quản lý tiện ích mở rộng của bạn bằng cách nhấp vào Tiện ích mở rộng trong menu Cửa sổ.</translation>
+<translation id="2643698698624765890">Quản lý tiện ích của bạn bằng cách nhấp vào Tiện ích trong menu Cửa sổ.</translation>
 <translation id="4846680374085650406">Bạn đang theo khuyến cáo của quản trị viên về cài đặt này.</translation>
 <translation id="1974060860693918893">Nâng cao</translation>
 <translation id="4509017836361568632">Hủy ảnh</translation>
-<translation id="1244303850296295656">Lỗi tiện ích mở rộng</translation>
+<translation id="1244303850296295656">Lỗi tiện ích</translation>
 <translation id="3541661933757219855">Nhấn Ctrl+Alt+/ hoặc Escape để ẩn</translation>
 <translation id="2948300991547862301">Truy cập <ph name="PAGE_TITLE"/></translation>
 <translation id="5357579842739549440">Gỡ lỗi phím tắt</translation>
-<translation id="4284834956062510583">Đã gỡ cài đặt tiện ích mở rộng</translation>
+<translation id="4284834956062510583">Đã gỡ cài đặt tiện ích</translation>
 <translation id="3660234220361471169">Không đáng tin cậy</translation>
 <translation id="2679385451463308372">In bằng hộp thoại hệ thống...</translation>
 <translation id="959890390740139744">Tự động sửa lỗi chính tả</translation>
@@ -3329,7 +3329,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="5894253024636469711">Bật chế độ xem toàn màn hình được đơn giản hóa.</translation>
 <translation id="6325191661371220117">Tắt tính năng tự động chạy</translation>
 <translation id="6817358880000653228">Đã lưu mật khẩu cho trang web này:</translation>
-<translation id="4613271546271159013">Tiện ích mở rộng đã thay đổi trang nào sẽ được hiển thị khi bạn mở một tab mới.</translation>
+<translation id="4613271546271159013">Tiện ích đã thay đổi trang nào sẽ được hiển thị khi bạn mở một tab mới.</translation>
 <translation id="351152300840026870">Phông chữ có chiều rộng cố định</translation>
 <translation id="4301786491084298653">Tắt trên <ph name="DOMAIN"/></translation>
 <translation id="5827266244928330802">Safari</translation>
@@ -3377,10 +3377,10 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="5227808808023563348">Tìm văn bản trước đó</translation>
 <translation id="4561162271279554092">Tắt tính năng liệt kê thiết bị WebRTC.</translation>
 <translation id="3012917896646559015">Vui lòng liên hệ ngay với nhà sản xuất phần cứng của bạn để gửi máy tính đến cơ sở sửa chữa.</translation>
-<translation id="3694678678240097321">Yêu cầu có sự đồng ý của người dùng để tiện ích mở rộng chạy tập lệnh trên trang, nếu tiện ích mở rộng đó yêu cầu quyền chạy trên tất cả các url.</translation>
+<translation id="3694678678240097321">Yêu cầu có sự đồng ý của người dùng để tiện ích chạy tập lệnh trên trang, nếu tiện ích đó yêu cầu quyền chạy trên tất cả các url.</translation>
 <translation id="902638246363752736">Cài đặt bàn phím</translation>
 <translation id="7925686952655276919">Không sử dụng dữ liệu di động để đồng bộ hóa</translation>
-<translation id="8014914694548037591">Tiện ích mở rộng này có thể đọc và thay đổi thông tin của bạn trên tất cả trang web bao gồm cả Google, Facebook, Yahoo, v.v.</translation>
+<translation id="8014914694548037591">Tiện ích này có thể đọc và thay đổi thông tin của bạn trên tất cả trang web bao gồm cả Google, Facebook, Yahoo, v.v.</translation>
 <translation id="6503077044568424649">Truy cập nhiều nhất</translation>
 <translation id="9016164105820007189">Đang kết nối với &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
 <translation id="7168109975831002660">Kích thước phông chữ tối thiểu</translation>
@@ -3443,7 +3443,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="4916657783933881060">Điều này có nghĩa là gì?</translation>
 <translation id="5851868085455377790">Nhà cung cấp</translation>
 <translation id="3549797760399244642">Truy cập drive.google.com...</translation>
-<translation id="1704148620735921991">Sau khi cài đặt, tiện ích mở rộng này có khả năng sử dụng những đặc quyền này để thực hiện những điều gây hại đến trải nghiệm duyệt web của bạn. Bạn có chắc chắn muốn cài đặt tiện ích mở rộng này không?</translation>
+<translation id="1704148620735921991">Sau khi cài đặt, tiện ích này có khả năng sử dụng những đặc quyền này để thực hiện những điều gây hại đến trải nghiệm duyệt web của bạn. Bạn có chắc chắn muốn cài đặt tiện ích này không?</translation>
 <translation id="1470719357688513792">Cài đặt cookie mới sẽ có hiệu lực sau khi tải lại trang.</translation>
 <translation id="5578327870501192725">Kết nối của bạn đến <ph name="DOMAIN"/> được mã hóa bằng mã <ph name="BIT_COUNT"/>-bit.</translation>
 <translation id="699220179437400583">Tự động báo cáo với Google chi tiết về sự cố bảo mật có thể xảy ra</translation>
@@ -3483,9 +3483,9 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="5731247495086897348">Dá&amp;n và Truy cập</translation>
 <translation id="6426993025560594914">Tất cả các thử nghiệm đều khả dụng trên nền tảng của bạn!</translation>
 <translation id="1834560242799653253">Hướng:</translation>
-<translation id="6440616190620341629">Bật giải mã không kết hợp trong MediaDrm theo mặc định cho Tiện ích mở rộng phương tiện đã mã hóa.</translation>
+<translation id="6440616190620341629">Bật giải mã không kết hợp trong MediaDrm theo mặc định cho Tiện ích phương tiện đã mã hóa.</translation>
 <translation id="7185025270390719314">Đọc và sửa đổi tất cả dữ liệu của bạn trên máy tính và các trang web bạn truy cập</translation>
-<translation id="8353683614194668312">Tiện ích mở rộng/ứng dụng có thể:</translation>
+<translation id="8353683614194668312">Tiện ích/ứng dụng có thể:</translation>
 <translation id="1047956942837015229">Đang xóa <ph name="COUNT"/> mục...</translation>
 <translation id="1531961661616401172">Bật Thông báo được đồng bộ hóa thử nghiệm.</translation>
 <translation id="7361039089383199231">$1 byte</translation>
@@ -3533,7 +3533,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="6938369162930547262">Những kẻ tấn công hiện đang truy cập <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/> có thể cố gắng cài đặt các chương trình nguy hiểm trên thiết bị của bạn. Các chương trình này sẽ đánh cắp hoặc xóa thông tin của bạn (ví dụ: ảnh, mật khẩu, thư và thẻ tín dụng).</translation>
 <translation id="1199232041627643649">Giữ <ph name="KEY_EQUIVALENT"/> để thoát.</translation>
 <translation id="5428562714029661924">Ẩn plugin này</translation>
-<translation id="3777806571986431400">Đã bật tiện ích mở rộng</translation>
+<translation id="3777806571986431400">Đã bật tiện ích</translation>
 <translation id="2568774940984945469">Bộ chứa Thanh thông tin</translation>
 <translation id="8971063699422889582">Chứng chỉ của máy chủ đã hết hạn.</translation>
 <translation id="3672681487849735243">Đã phát hiện lỗi khi xuất xưởng</translation>
@@ -3551,10 +3551,10 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="1114901192629963971">Mật khẩu của bạn không thể xác minh được trên mạng hiện tại này. Vui lòng chọn mạng khác.</translation>
 <translation id="6430814529589430811">ASCII được mã hóa base64, chứng chỉ đơn</translation>
 <translation id="3305661444342691068">Mở PDF ở chế độ xem trước</translation>
-<translation id="329650768420594634">Cảnh báo đóng gói tiện ích mở rộng</translation>
+<translation id="329650768420594634">Cảnh báo đóng gói tiện ích</translation>
 <translation id="8363095875018065315">chính thức</translation>
 <translation id="5143712164865402236">Vào Chế độ Toàn Màn hình</translation>
-<translation id="2575247648642144396">Biểu tượng này sẽ hiển thị khi tiện ích mở rộng có thể hoạt động trên trang hiện tại. Sử dụng tiện ích mở rộng này bằng cách nhấp vào biểu tượng hoặc bằng cách nhấn <ph name="EXTENSION_SHORTCUT"/>.</translation>
+<translation id="2575247648642144396">Biểu tượng này sẽ hiển thị khi tiện ích có thể hoạt động trên trang hiện tại. Sử dụng tiện ích này bằng cách nhấp vào biểu tượng hoặc bằng cách nhấn <ph name="EXTENSION_SHORTCUT"/>.</translation>
 <translation id="8434177709403049435">&amp;Mã hóa</translation>
 <translation id="8757803915342932642">Thiết bị trên Google Cloud Devices</translation>
 <translation id="1196849605089373692">Chỉ định cài đặt chất lượng cho hình ảnh được chụp nếu giảm tỷ lệ.</translation>
@@ -3562,11 +3562,11 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="3810838688059735925">Video</translation>
 <translation id="2747011872211212100">Máy in mới trên mạng của bạn</translation>
 <translation id="2028531481946156667">Không thể bắt đầu quá trình định dạng.</translation>
-<translation id="7439964298085099379">Bạn đã bật chế độ Tương phản cao. Bạn có muốn cài đặt tiện ích mở rộng Tương phản cao của chúng tôi và chủ đề tối không?</translation>
+<translation id="7439964298085099379">Bạn đã bật chế độ Tương phản cao. Bạn có muốn cài đặt tiện ích Tương phản cao của chúng tôi và chủ đề tối không?</translation>
 <translation id="9012607008263791152">Tôi hiểu rằng truy cập vào trang web này có thể gây hại cho máy vi tính của mình.</translation>
 <translation id="6640442327198413730">Không tìm thấy trong bộ nhớ cache</translation>
-<translation id="3788401245189148511">Tiện ích mở rộng/ứng dụng này có thể:</translation>
-<translation id="8926518602592448999">Vô hiệu hóa tiện ích mở rộng chế độ nhà phát triển</translation>
+<translation id="3788401245189148511">Tiện ích/ứng dụng này có thể:</translation>
+<translation id="8926518602592448999">Vô hiệu hóa tiện ích chế độ nhà phát triển</translation>
 <translation id="2902734494705624966">Mở rộng của Hoa Kỳ</translation>
 <translation id="5793220536715630615">Sao &amp;chép URL video</translation>
 <translation id="523397668577733901">Bạn có muốn <ph name="BEGIN_LINK"/>duyệt qua thư viện<ph name="END_LINK"/> thay thế không?</translation>
@@ -3592,7 +3592,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="5045550434625856497">Mật khẩu sai</translation>
 <translation id="6397592254427394018">Mở tất cả dấu trang trong &amp;cửa sổ ẩn danh</translation>
 <translation id="8155481074575809396">Nếu được bật, văn bản hiển thị với các trường khoảng cách được đánh dấu thay vì các mặt nạ bitmap alpha.</translation>
-<translation id="27822970480436970">Tiện ích mở rộng này không thể sửa đổi yêu cầu mạng vì việc sửa đổi xung đột với một tiện ích mở rộng khác.</translation>
+<translation id="27822970480436970">Tiện ích này không thể sửa đổi yêu cầu mạng vì việc sửa đổi xung đột với một tiện ích khác.</translation>
 <translation id="2453860139492968684">Kết thúc</translation>
 <translation id="756445078718366910">Mở Cửa sổ Trình duyệt</translation>
 <translation id="6132383530370527946">Bản in nhỏ</translation>
@@ -3608,7 +3608,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="8663099077749055505">Luôn chặn nhiều bản tải xuống tự động trên <ph name="HOST"/></translation>
 <translation id="778330624322499012">Không thể tải <ph name="PLUGIN_NAME"/></translation>
 <translation id="9026731007018893674">tải xuống</translation>
-<translation id="3212792897911394068">Tắt phiên bản thử nghiệm của Tiện ích mở rộng phương tiện được mã hóa trên phần tử video và âm thanh.</translation>
+<translation id="3212792897911394068">Tắt phiên bản thử nghiệm của Tiện ích phương tiện được mã hóa trên phần tử video và âm thanh.</translation>
 <translation id="6199775032047436064">Tải lại trang hiện tại</translation>
 <translation id="6981982820502123353">Truy cập</translation>
 <translation id="7210998213739223319">Tên người dùng.</translation>
@@ -3641,7 +3641,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="8986494364107987395">Tự động gửi số liệu thống kê về việc sử dụng và báo cáo sự cố cho Google</translation>
 <translation id="2377619091472055321">Đặt lại cài đặt <ph name="IDS_SHORT_PRODUCT_NAME"/> đã thay đổi?</translation>
 <translation id="4062251648694601778">Trải nghiệm thiết bị <ph name="SHORT_PRODUCT_NAME"/> của bạn. Bạn có câu hỏi? Bạn luôn có thể nhận trợ giúp bằng cách nhấp vào &quot;?&quot; trong khay trạng thái.</translation>
-<translation id="6701535245008341853">Không thể tải tiểu sử.</translation>
+<translation id="6701535245008341853">Không thể tải hồ sơ.</translation>
 <translation id="8303655282093186569">Cài đặt phương thức nhập Pinyin</translation>
 <translation id="992779717417561630">In bằng cách sử dụng hộp thoại <ph name="CLOUD_PRINT_NAME"/>... <ph name="SHORTCUT_KEY"/></translation>
 <translation id="1991402313603869273"><ph name="PLUGIN_NAME"/> không được phép.</translation>
@@ -3687,7 +3687,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="2608770217409477136">Sử dụng cài đặt mặc định</translation>
 <translation id="3157931365184549694">Khôi phục</translation>
 <translation id="996250603853062861">Thiết lập kết nối an toàn...</translation>
-<translation id="7529471622666797993"><ph name="BEGIN_LINK"/>Cài đặt phông chữ nâng cao<ph name="END_LINK"/> (yêu cầu tiện ích mở rộng)</translation>
+<translation id="7529471622666797993"><ph name="BEGIN_LINK"/>Cài đặt phông chữ nâng cao<ph name="END_LINK"/> (yêu cầu tiện ích)</translation>
 <translation id="6059232451013891645">Thư mục:</translation>
 <translation id="1233721473400465416">Ngôn ngữ</translation>
 <translation id="7042418530779813870">Dán &amp;và tìm kiếm</translation>
@@ -3700,7 +3700,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="3031557471081358569">Chọn các mục cần nhập:</translation>
 <translation id="6728144975495880845">Nếu được bật, chuỗi đường quét sẽ ghi vào bộ nhớ GPU.</translation>
 <translation id="1368832886055348810">Trái sang Phải</translation>
-<translation id="8689102680909215706">Tiện ích mở rộng &quot;<ph name="EXTENSION_NAME"/>&quot; đã được cài đặt từ xa.</translation>
+<translation id="8689102680909215706">Tiện ích &quot;<ph name="EXTENSION_NAME"/>&quot; đã được cài đặt từ xa.</translation>
 <translation id="834106456999819211">Đơn đặt hàng của bạn đang được xử lý</translation>
 <translation id="133014027510889724">Bật giám sát hiệu suất</translation>
 <translation id="3627320433825461852">Còn chưa đến 1 phút</translation>
@@ -3803,7 +3803,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="5396704340251753095">Bật chỗ trợ MTP trong Trình quản lý tệp.</translation>
 <translation id="7039912931802252762">Đăng nhập Thẻ Thông minh của Microsoft</translation>
 <translation id="5436430103864390185">Cửa sổ đã định hình không được hỗ trợ.</translation>
-<translation id="1529798832346767951">Dùng thử <ph name="BEGIN_LINK"/>Công cụ dành cho nhà phát triển tiện ích mở rộng và ứng dụng Chrome<ph name="END_LINK"/> mới.</translation>
+<translation id="1529798832346767951">Dùng thử <ph name="BEGIN_LINK"/>Công cụ dành cho nhà phát triển tiện ích và ứng dụng Chrome<ph name="END_LINK"/> mới.</translation>
 <translation id="3915280005470252504">Tìm kiếm bằng giọng nói</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="6224481128663248237">Đã hoàn tất định dạng thành công!</translation>
@@ -3815,12 +3815,12 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="8581690024797204327">256</translation>
 <translation id="2491120439723279231">Chứng chỉ của máy chủ có lỗi.</translation>
 <translation id="5765780083710877561">Mô tả:</translation>
-<translation id="1740044382983372319">Đã cài đặt tiện ích mở rộng</translation>
+<translation id="1740044382983372319">Đã cài đặt tiện ích</translation>
 <translation id="338583716107319301">Dấu phân tách</translation>
 <translation id="2079053412993822885">Nếu bạn xóa một trong các chứng chỉ của mình, bạn sẽ không thể sử dụng chứng chỉ đó để nhận dạng mình nữa.</translation>
 <translation id="7221869452894271364">Tải lại trang này</translation>
 <translation id="8446884382197647889">Tìm hiểu thêm</translation>
-<translation id="9006533633560719845">Đồng ý của người dùng đối với các tập lệnh tiện ích mở rộng</translation>
+<translation id="9006533633560719845">Đồng ý của người dùng đối với các tập lệnh tiện ích</translation>
 <translation id="4555769855065597957">Bóng</translation>
 <translation id="4366837566726634418">Mức sử dụng bộ nhớ dùng chung kết hợp của tất cả các quá trình liên quan đến <ph name="SHORT_PRODUCT_NAME"/></translation>
 <translation id="6787839852456839824">Phím tắt</translation>
@@ -3828,7 +3828,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="6791443592650989371">Trạng thái kích hoạt:</translation>
 <translation id="4801257000660565496">Tạo Phím tắt cho Ứng dụng</translation>
 <translation id="8154790740888707867">Không có tệp nào</translation>
-<translation id="2498826285048723189">Tiện ích mở rộng &quot;<ph name="EXTENSION_NAME"/>&quot; đã bị xóa tự động.</translation>
+<translation id="2498826285048723189">Tiện ích &quot;<ph name="EXTENSION_NAME"/>&quot; đã bị xóa tự động.</translation>
 <translation id="6175314957787328458">GUID Tên miền của Microsoft</translation>
 <translation id="6883209331334683549">Trợ giúp của <ph name="PRODUCT_NAME"/></translation>
 <translation id="6970480684834282392">Kiểu khởi động</translation>
@@ -3857,7 +3857,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="3527085408025491307">Thư mục</translation>
 <translation id="2375701438512326360">Buộc hỗ trợ màn hình cảm ứng luôn được bật hoặc tắt hoặc được bật khi phát hiện màn hình cảm ứng vào lúc khởi động (Tự động, mặc định).</translation>
 <translation id="3665842570601375360">Bảo mật:</translation>
-<translation id="5699533844376998780">Đã thêm tiện ích mở rộng &quot;<ph name="EXTENSION_NAME"/>&quot;.</translation>
+<translation id="5699533844376998780">Đã thêm tiện ích &quot;<ph name="EXTENSION_NAME"/>&quot;.</translation>
 <translation id="1430915738399379752">In</translation>
 <translation id="7999087758969799248">Phương pháp nhập chuẩn</translation>
 <translation id="8958084571232797708">Sử dụng URL tự động định cấu hình</translation>
@@ -3892,7 +3892,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="4647697156028544508">Vui lòng nhập PIN cho &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="1062866675591297858">Quản lý người dùng được giám sát của bạn qua <ph name="BEGIN_LINK"/>Bảng điều khiển người dùng được giám sát<ph name="END_LINK"/>.</translation>
 <translation id="7671130400130574146">Sử dụng thanh tiêu đề và đường viền của hệ thống</translation>
-<translation id="9111791539553342076">Tiện ích mở rộng này không thể sửa đổi tiêu đề phản hồi &quot;<ph name="HEADER_NAME"/>&quot; của một yêu cầu mạng do sửa đổi đã xung đột với một tiện ích mở rộng khác (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="9111791539553342076">Tiện ích này không thể sửa đổi tiêu đề phản hồi &quot;<ph name="HEADER_NAME"/>&quot; của một yêu cầu mạng do sửa đổi đã xung đột với một tiện ích khác (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="9170848237812810038">H&amp;oàn tác</translation>
 <translation id="284970761985428403"><ph name="ASCII_NAME"/> (<ph name="UNICODE_NAME"/>)</translation>
 <translation id="3903912596042358459">Máy chủ từ chối hoàn thành yêu cầu.</translation>
@@ -3946,9 +3946,9 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="2440604414813129000">Xem &amp;nguồn</translation>
 <translation id="816095449251911490"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/>, <ph name="TIME_REMAINING"/></translation>
 <translation id="1084300930170237385">Thông tin minh bạch</translation>
-<translation id="774465434535803574">Lỗi đóng gói tiện ích mở rộng</translation>
+<translation id="774465434535803574">Lỗi đóng gói tiện ích</translation>
 <translation id="8200772114523450471">Tiếp tục</translation>
-<translation id="5750676294091770309">Bị chặn bởi tiện ích mở rộng</translation>
+<translation id="5750676294091770309">Bị chặn bởi tiện ích</translation>
 <translation id="1302191857856401062">Bật chuyển đổi nhanh giữa những người dùng trong menu hình đại diện.</translation>
 <translation id="7865978820218947446">Chỉnh sửa người dùng</translation>
 <translation id="523299859570409035">Ngoại lệ cho thông báo</translation>
@@ -3968,11 +3968,12 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="1122988962988799712">Tắt WebGL</translation>
 <translation id="7762095352367421639">Bật thông báo được đồng bộ hóa</translation>
 <translation id="9154194610265714752">Đã cập nhật</translation>
-<translation id="1803133642364907127">Xác minh nội dung tiện ích mở rộng</translation>
+<translation id="1803133642364907127">Xác minh nội dung tiện ích</translation>
 <translation id="5438430601586617544">(Đã bung)</translation>
 <translation id="6460601847208524483">Tìm Tiếp theo</translation>
 <translation id="397703832102027365">Đang hoàn tất...</translation>
 <translation id="8146177459103116374">Nếu bạn đã đăng ký trên thiết bị này, bạn có thể <ph name="LINK2_START"/>đăng nhập với tư cách là người dùng hiện tại<ph name="LINK2_END"/>.</translation>
+<translation id="5072836811783999860">Hiển thị dấu trang được quản lý</translation>
 <translation id="4856478137399998590">Dịch vụ dữ liệu di động của bạn đã được kích hoạt và sẵn sàng để sử dụng</translation>
 <translation id="3305389145870741612">Quá trình định dạng có thể mất vài giây. Vui lòng đợi.</translation>
 <translation id="3648607100222897006">Các tính năng thử nghiệm này có thể thay đổi, hỏng hoặc biến mất bất kỳ lúc nào. Chúng tôi hoàn toàn không đảm bảo về những điều có thể xảy ra nếu bạn bật một trong các thử nghiệm này và trình duyệt của bạn thậm chí có thể tự động biến mất. Ngoài những điều đã nói, trình duyệt của bạn có thể xóa tất cả dữ liệu của bạn hoặc tính bảo mật và sự riêng tư của bạn có thể bị xâm phạm theo cách không mong đợi. Bất kỳ tính năng thử nghiệm nào mà bạn bật sẽ được bật cho tất cả người dùng của trình duyệt này. Hãy tiến hành một cách thận trọng.</translation>
@@ -3990,7 +3991,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="5159383109919732130"><ph name="BEGIN_BOLD"/>Không tháo thiết bị của bạn khi chưa đến lúc!<ph name="END_BOLD"/>
    <ph name="LINE_BREAKS"/>
    Tháo thiết bị của bạn khi đang được sử dụng có thể gây mất dữ liệu. Vui lòng đợi cho đến khi thao tác kết thúc, sau đó đẩy thiết bị ra bằng ứng dụng Tệp.</translation>
-<translation id="3411172647261449857">Tiện ích mở rộng TLS</translation>
+<translation id="3411172647261449857">Tiện ích TLS</translation>
 <translation id="7253521419891527137">&amp;Tìm hiểu thêm</translation>
 <translation id="496226124210045887">Thư mục bạn đã chọn chứa các tệp nhạy cảm. Bạn có chắc chắn muốn cấp quyền truy cập đọc vĩnh viễn &quot;$1&quot; cho thư mục này không?</translation>
 <translation id="6463607988716135494">Ứng dụng &quot;<ph name="EXTENSION_NAME"/>&quot; đã được cài đặt từ xa.</translation>
@@ -4023,7 +4024,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="6120205520491252677">Ghim trang này vào màn hình Bắt đầu...</translation>
 <translation id="4190120546241260780">Kích hoạt mục trình chạy 5</translation>
 <translation id="194030505837763158">Truy cập <ph name="LINK"/></translation>
-<translation id="8272443605911821513">Quản lý tiện ích mở rộng của bạn bằng cách nhấp vào Tiện ích mở rộng trong menu &quot;Công cụ khác&quot;.</translation>
+<translation id="8272443605911821513">Quản lý tiện ích của bạn bằng cách nhấp vào Tiện ích trong menu &quot;Công cụ khác&quot;.</translation>
 <translation id="6905163627763043954">Dùng thử</translation>
 <translation id="3510797500218907545">WiMAX</translation>
 <translation id="1104054824888299003">lâu</translation>
@@ -4044,7 +4045,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="6873213799448839504">Tự động xác nhận chuỗi</translation>
 <translation id="7238585580608191973">SHA-256 Fingerprint</translation>
 <translation id="2501278716633472235">Quay lại</translation>
-<translation id="3588662957555259973">* Ảnh tiểu sử trên Google</translation>
+<translation id="3588662957555259973">* Ảnh hồ sơ trên Google</translation>
 <translation id="131461803491198646">Mạng chủ, không chuyển vùng</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE"/> - <ph name="FULL_DATE"/></translation>
 <translation id="1285320974508926690">Không bao giờ dịch trang web này</translation>
@@ -4057,8 +4058,8 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="5833726373896279253">Chỉ có chủ nhân mới có thể sửa đổi các cài đặt này:</translation>
 <translation id="9203962528777363226">Quản trị viên của thiết bị này đã vô hiệu hóa thêm người dùng mới</translation>
 <translation id="3758760622021964394">Trang này muốn tắt con trỏ chuột của bạn.</translation>
-<translation id="8341840687457896278">Tiện ích mở rộng này không thể cung cấp bằng chứng xác thực cho một yêu cầu mạng do tiện ích mở rộng khác (<ph name="EXTENSION_NAME"/>) đã cung cấp các bằng chứng xác thực khác nhau.</translation>
-<translation id="5627523580512561598">tiện ích mở rộng <ph name="EXTENSION_NAME"/></translation>
+<translation id="8341840687457896278">Tiện ích này không thể cung cấp bằng chứng xác thực cho một yêu cầu mạng do tiện ích khác (<ph name="EXTENSION_NAME"/>) đã cung cấp các bằng chứng xác thực khác nhau.</translation>
+<translation id="5627523580512561598">tiện ích <ph name="EXTENSION_NAME"/></translation>
 <translation id="8831104962952173133">Phát hiện Lừa đảo trực tuyến!</translation>
 <translation id="5633230395929474992">Chuyển đổi ChromeVox (phản hồi bằng giọng nói)</translation>
 <translation id="4106164762195622179">Các trang bạn xem trong tab ẩn danh sẽ không bị lưu vào lịch sử của trình duyệt, kho cookie hoặc lịch sử tìm kiếm sau khi bạn đóng <ph name="BEGIN_BOLD"/>tất cả<ph name="END_BOLD"/> các tab ẩn danh. Mọi tệp bạn tải xuống hoặc dấu trang mà bạn tạo sẽ được giữ nguyên.</translation>
@@ -4107,7 +4108,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="5436492226391861498">Chờ đường hầm proxy...</translation>
 <translation id="3803991353670408298">Vui lòng thêm phương thức nhập khác trước khi xóa phương thức này.</translation>
 <translation id="4209267054566995313">Không phát hiện thấy chuột hoặc bàn chi chuột cảm ứng.</translation>
-<translation id="3369521687965833290">Không thể giải nén tiện ích mở rộng.  Để giải nén tiện ích mở rộng một cách an toàn, phải có đường dẫn đến thư mục tiểu sử của bạn bắt đầu bằng ký tự ổ đĩa và không chứa ký tự liên kết, điểm lắp hoặc liên kết dạng biểu tượng.  Không có đường dẫn như vậy tồn tại cho tiểu sử của bạn.</translation>
+<translation id="3369521687965833290">Không thể giải nén tiện ích.  Để giải nén tiện ích một cách an toàn, phải có đường dẫn đến thư mục hồ sơ của bạn bắt đầu bằng ký tự ổ đĩa và không chứa ký tự liên kết, điểm lắp hoặc liên kết dạng biểu tượng.  Không có đường dẫn như vậy tồn tại cho hồ sơ của bạn.</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME"/> sẽ được cài đặt.</translation>
 <translation id="5636996382092289526">Để sử dụng <ph name="NETWORK_ID"/>, trước hết bạn cần <ph name="LINK_START"/>truy cập vào trang đăng nhập của mạng<ph name="LINK_END"/>. Trang này thường tự động mở sau vài giây. Nếu trang này không mở thì không thể sử dụng mạng này.</translation>
 <translation id="8579896762084163417">Tắt Native Client di động.</translation>
@@ -4129,7 +4130,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="440150639010863291">Sử dụng Google Wallet</translation>
 <translation id="8888432776533519951">Màu:</translation>
 <translation id="5294529402252479912">Cập nhật Adobe Reader bây giờ</translation>
-<translation id="641087317769093025">Không thể giải nén tiện ích mở rộng</translation>
+<translation id="641087317769093025">Không thể giải nén tiện ích</translation>
 <translation id="7461850476009326849">Tắt các plug-in riêng...</translation>
 <translation id="2231990265377706070">Dấu chấm than</translation>
 <translation id="7199540622786492483"><ph name="PRODUCT_NAME"/> đã lỗi thời vì sản phẩm này không được chạy lại trong một thời gian. Đã có bản cập nhật và bản cập nhật này sẽ được áp dụng ngay khi bạn chạy lại.</translation>
@@ -4148,13 +4149,13 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES"/>K (<ph name="NUM_KILOBYTES_LIVE"/>K hiện có)</translation>
 <translation id="5554573843028719904">Mạng Wi-Fi khác...</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED"/>, <ph name="TIME_LEFT"/></translation>
-<translation id="7013485839273047434">Tải thêm tiện ích mở rộng</translation>
+<translation id="7013485839273047434">Tải thêm tiện ích</translation>
 <translation id="2124335647227850314">Tắt hiệu chỉnh màu của màn hình ngay cả khi màn hình hỗ trợ tính năng này.</translation>
 <translation id="428565720843367874">Phần mềm chống vi-rút bị lỗi bất ngờ khi đang quét tệp này.</translation>
 <translation id="7709152031285164251">Không thành công - <ph name="INTERRUPT_REASON"/></translation>
 <translation id="3838486795898716504"><ph name="PAGE_TITLE"/> khác</translation>
 <translation id="7003339318920871147">Cơ sở dữ liệu web</translation>
-<translation id="8885905466771744233">Khoá cá nhân cho tiện ích mở rộng chỉ định đã tồn tại. Hãy sử dụng lại hoặc xóa khóa đó trước tiên.</translation>
+<translation id="8885905466771744233">Khoá cá nhân cho tiện ích chỉ định đã tồn tại. Hãy sử dụng lại hoặc xóa khóa đó trước tiên.</translation>
 <translation id="7583419135027754249">Luôn gửi các sự kiện nhấp chuột ngay sau khi nhấn, ngay cả khi đó là một phần trong cử chỉ nhấn đúp. Điều này giúp tăng tốc tác vụ điều hướng và các tác vụ nhấn khác lên 300 ms trên hầu hết các trang, nhưng có nghĩa là cần phải tránh các liên kết và các nút khi nhấn đúp để thu phóng.</translation>
 <translation id="4100843820583867709">Yêu cầu chia sẻ màn hình Google Talk</translation>
 <translation id="2406941037785138796">Số lần tắt</translation>
@@ -4229,7 +4230,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="5626134646977739690">Tên:</translation>
 <translation id="4899837262951879307">Chế độ cuộn cảm ứng.</translation>
 <translation id="5854409662653665676">Nếu bạn đang gặp phải sự cố thông thường, bạn có thể thử cách sau để giải quyết sự cố với mô-đun này:</translation>
-<translation id="3776796446459804932">Tiện ích mở rộng này vi phạm chính sách của Cửa hàng Chrome trực tuyến.</translation>
+<translation id="3776796446459804932">Tiện ích này vi phạm chính sách của Cửa hàng Chrome trực tuyến.</translation>
 <translation id="3681007416295224113">Thông tin chứng chỉ</translation>
 <translation id="3046084099139788433">Kích hoạt tab 7</translation>
 <translation id="8230421197304563332">Những kẻ tấn công hiện đang truy cập <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/> có thể cố gắng cài đặt các chương trình nguy hiểm trên máy tính của bạn. Các chương trình này sẽ đánh cắp hoặc xóa thông tin của bạn (ví dụ: ảnh, mật khẩu, thư và thẻ tín dụng).</translation>
@@ -4250,7 +4251,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="4375035964737468845">Mở các tệp đã tải xuống</translation>
 <translation id="3968739731834770921">Kana</translation>
 <translation id="7387829944233909572">Hộp thoại &quot;Xóa dữ liệu duyệt web&quot;</translation>
-<translation id="8023801379949507775">Cập nhật tiện ích mở rộng ngay bây giờ</translation>
+<translation id="8023801379949507775">Cập nhật tiện ích ngay bây giờ</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES"/> (tối đa <ph name="NUM_KILOBYTES_LIVE"/>)</translation>
 <translation id="2524800364695118482">Ứng dụng có thể:</translation>
 <translation id="6782622603507084740">Bật API EmbeddedSearch</translation>
@@ -4269,7 +4270,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="2113479184312716848">Mở &amp;tệp...</translation>
 <translation id="884264119367021077">Ðịa chỉ giao hàng</translation>
 <translation id="634208815998129842">Trình quản lý tác vụ</translation>
-<translation id="8475313423285172237">Một chương trình khác trên máy tính của bạn đã thêm một tiện ích mở rộng có thể thay đổi cách Chrome hoạt động.</translation>
+<translation id="8475313423285172237">Một chương trình khác trên máy tính của bạn đã thêm một tiện ích có thể thay đổi cách Chrome hoạt động.</translation>
 <translation id="4850458635498951714">Thêm thiết bị</translation>
 <translation id="3140353188828248647">Thanh địa chỉ chính</translation>
 <translation id="1371806038977523515">Các cài đặt này được kiểm soát bởi:</translation>
@@ -4285,7 +4286,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="5963026469094486319">Tải chủ đề</translation>
 <translation id="7586312264284919041">Bạn có muốn dịch trang này không?</translation>
 <translation id="3855072293748278406">Truy cập plugin chưa được đặt hộp cát</translation>
-<translation id="8357224663288891423">Phím tắt cho tiện ích mở rộng và ứng dụng</translation>
+<translation id="8357224663288891423">Phím tắt cho tiện ích và ứng dụng</translation>
 <translation id="1893137424981664888">Chưa cài đặt plugin nào.</translation>
 <translation id="4919810557098212913"><ph name="HOST"/> muốn sử dụng máy ảnh của bạn.</translation>
 <translation id="5434706434408777842">F3</translation>
@@ -4305,7 +4306,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="3737514536860147030">Tìm hiểu thêm về duyệt web ẩn danh</translation>
 <translation id="621638399744152264"><ph name="VALUE"/>%</translation>
 <translation id="3082520371031013475">Cài đặt bàn di chuột và chuột</translation>
-<translation id="4927301649992043040">Đóng gói tiện ích mở rộng</translation>
+<translation id="4927301649992043040">Đóng gói tiện ích</translation>
 <translation id="5939518447894949180">Đặt lại</translation>
 <translation id="8679658258416378906">Kích hoạt tab 5</translation>
 <translation id="9049835026521739061">Chế độ Hangul</translation>
@@ -4393,7 +4394,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="8204484782770036444">• <ph name="PERMISSION"/></translation>
 <translation id="7144878232160441200">Thử lại</translation>
 <translation id="3570985609317741174">Nội dung web</translation>
-<translation id="3951872452847539732">Cài đặt proxy mạng của bạn hiện đang được quản lý bởi một tiện ích mở rộng.</translation>
+<translation id="3951872452847539732">Cài đặt proxy mạng của bạn hiện đang được quản lý bởi một tiện ích.</translation>
 <translation id="4720113199587244118">Thêm thiết bị</translation>
 <translation id="6442697326824312960">Bỏ gắn Tab</translation>
 <translation id="8714406895390098252">Xe đạp</translation>
@@ -4403,6 +4404,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="6869402422344886127">Đã chọn hộp kiểm</translation>
 <translation id="3428010780253032925">Vô hiệu hóa nhắm mục tiêu theo hình chữ nhật trong các chế độ xem</translation>
 <translation id="5637380810526272785">Phương pháp Nhập</translation>
+<translation id="3613134908380545408">Hiển thị <ph name="FOLDER_NAME"/></translation>
 <translation id="2837049386027881519">Phải thử lại kết nối bằng phiên bản giao thức TLS hoặc SSL cũ hơn. Điều này thường có nghĩa là máy chủ đang sử dụng phần mềm rất cũ và có thể gặp các vấn đề bảo mật khác.</translation>
 <translation id="404928562651467259">CẢNH BÁO</translation>
 <translation id="4289300219472526559">Bắt đầu nói</translation>
@@ -4449,7 +4451,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="6757994640088602342">Thử nghiệm cảnh báo phần mềm độc hại</translation>
 <translation id="5367091008316207019">Đang đọc tệp..</translation>
 <translation id="936801553271523408">Dữ liệu chẩn đoán hệ thống</translation>
-<translation id="820791781874064845">Trang web này bị chặn bởi tiện ích mở rộng</translation>
+<translation id="820791781874064845">Trang web này bị chặn bởi tiện ích</translation>
 <translation id="2649120831653069427">Cá cầu vồng</translation>
 <translation id="2781645665747935084">Tiếng Bỉ</translation>
 <translation id="186612162884103683">&quot;<ph name="EXTENSION"/>&quot; có thể đọc và ghi hình ảnh, video và tệp âm thanh trong các vị trí đã chọn.</translation>
@@ -4555,7 +4557,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="4253787465144837701">Chứng chỉ máy chủ chứa tên miền nằm ngoài phạm vi.</translation>
 <translation id="2649911884196340328">Chứng chỉ an toàn của máy chủ có lỗi!</translation>
-<translation id="1698647588772720278">Tắt Tiện ích mở rộng phương tiện có mã hóa được định sẵn.</translation>
+<translation id="1698647588772720278">Tắt Tiện ích phương tiện có mã hóa được định sẵn.</translation>
 <translation id="2286454467119466181">Đơn giản</translation>
 <translation id="6666647326143344290">với Tài khoản Google của bạn</translation>
 <translation id="4564097437843356814">Đã xảy ra lỗi với tài khoản Google Wallet của bạn.</translation>
@@ -4587,7 +4589,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="5409029099497331039">Khiến tôi ngạc nhiên</translation>
 <translation id="7845920762538502375"><ph name="PRODUCT_NAME"/> không thể đồng bộ hóa dữ liệu của bạn do không thể kết nối đến máy chủ đồng bộ hóa. Đang thử lại...</translation>
 <translation id="3819415294190923087">Chọn mạng</translation>
-<translation id="7325437708553334317">Tiện ích mở rộng tương phản cao</translation>
+<translation id="7325437708553334317">Tiện ích tương phản cao</translation>
 <translation id="9203394577866137354">Trạng thái xác thực</translation>
 <translation id="4076313158939304412">Bảo vệ thanh toán của bạn bằng Google Wallet.</translation>
 <translation id="6708242697268981054">Bản gốc:</translation>
@@ -4661,12 +4663,12 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="2509857212037838238">Cài đặt <ph name="PLUGIN_NAME"/></translation>
 <translation id="2943400156390503548">Trang trình bày</translation>
 <translation id="3790146417033334899"><ph name="PLUGIN_NAME"/> chỉ hoạt động trên máy tính để bàn.</translation>
-<translation id="5117930984404104619">Giám sát hoạt động của các tiện ích mở rộng khác, bao gồm cả các URL đã truy cập</translation>
+<translation id="5117930984404104619">Giám sát hoạt động của các tiện ích khác, bao gồm cả các URL đã truy cập</translation>
 <translation id="33022249435934718">Xử lý GDI</translation>
 <translation id="6308937455967653460">Lưu liên &amp;kết thành...</translation>
 <translation id="741689768643916402">Thật không may, chỉ người mua có địa chỉ ở Hoa Kỳ mới có thể sử dụng Google Wallet tại người bán này. Nếu bạn là cư dân Hoa Kỳ, vui lòng |thay đổi địa chỉ nhà riêng của bạn với Wallet| hoặc thanh toán mà không sử dụng Google Wallet.</translation>
 <translation id="5828633471261496623">Đang in...</translation>
-<translation id="2420698750843121542">Bật Tiện ích mở rộng phương tiện được mã hóa trên phần tử video hoặc âm thanh. Thao tác này sẽ bật phiên bản mới nhất của Tiện ích mở rộng phương tiện được mã hóa.</translation>
+<translation id="2420698750843121542">Bật Tiện ích phương tiện được mã hóa trên phần tử video hoặc âm thanh. Thao tác này sẽ bật phiên bản mới nhất của Tiện ích phương tiện được mã hóa.</translation>
 <translation id="5421136146218899937">Xóa dữ liệu duyệt web...</translation>
 <translation id="5441100684135434593">Mạng có dây</translation>
 <translation id="3285322247471302225">&amp;Tab Mới</translation>
@@ -4679,7 +4681,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="6380143666419481200">Đồng ý và tiếp tục</translation>
 <translation id="713122686776214250">Thêm tran&amp;g...</translation>
 <translation id="4816492930507672669">Vừa với trang</translation>
-<translation id="1485015260175968628">Tiện ích mở rộng/ứng dụng giờ đây có thể:</translation>
+<translation id="1485015260175968628">Tiện ích/ứng dụng giờ đây có thể:</translation>
 <translation id="7496192982082800780">Ngày</translation>
 <translation id="1122198203221319518">&amp;Công cụ</translation>
 <translation id="5143151113947480436">Truy cập dữ liệu bạn sao chép và dán</translation>
@@ -4688,7 +4690,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="1979718561647571293">Đây có phải là trang khởi động bạn muốn không?</translation>
 <translation id="6608140561353073361">Tất cả cookie và dữ liệu trang web...</translation>
 <translation id="6485131920355264772">Không thể truy xuất thông tin dung lượng</translation>
-<translation id="6547316139431024316">Không cảnh báo lại đối với tiện ích mở rộng này</translation>
+<translation id="6547316139431024316">Không cảnh báo lại đối với tiện ích này</translation>
 <translation id="8007030362289124303">Pin Yếu</translation>
 <translation id="3790909017043401679">Nhập mã PIN của thẻ SIM</translation>
 <translation id="1135328998467923690">Gói không hợp lệ: '<ph name="ERROR_CODE"/>'.</translation>
@@ -4715,7 +4717,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="8775404590947523323">Chỉnh sửa của bạn đã được lưu tự động.<ph name="BREAKS"/>Để giữ bản sao của ảnh gốc, hãy bỏ chọn &quot;Ghi đè tệp gốc&quot;</translation>
 <translation id="5208988882104884956">Nửa độ rộng</translation>
 <translation id="1507170440449692343">Trang này đã bị chặn truy cập máy ảnh của bạn.</translation>
-<translation id="4189406272289638749">Tiện ích mở rộng, &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;, đang kiểm soát cài đặt này.</translation>
+<translation id="4189406272289638749">Tiện ích, &lt;b&gt;<ph name="EXTENSION_NAME"/>&lt;/b&gt;, đang kiểm soát cài đặt này.</translation>
 <translation id="803771048473350947">Tệp</translation>
 <translation id="6206311232642889873">Sao ché&amp;p Hình ảnh</translation>
 <translation id="5158983316805876233">Sử dụng cùng một proxy cho tất cả các giao thức</translation>
@@ -4735,6 +4737,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="6934265752871836553">Sử dụng mã hàng đầu để giúp Chrome thu hút nội dung nhanh hơn. Những thay đổi
         đằng sau đường dẫn này rất có thể sẽ phá vỡ nhiều nội dung.</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">Luôn mở trong Adobe Reader</translation>
 <translation id="8274359292107649245">Mở Chrome trên máy tính để bàn</translation>
 <translation id="1571119610742640910">Kết hợp cho nền gốc cố định.</translation>
 <translation id="6514565641373682518">Trang này đã tắt con trỏ chuột của bạn.</translation>
@@ -4755,7 +4758,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="4088536322074090758">Bật NTP mới.</translation>
 <translation id="3414856743105198592">Định dạng phương tiện di động sẽ xóa tất cả dữ liệu. Bạn có muốn tiếp tục không?</translation>
 <translation id="5338503421962489998">Bộ nhớ cục bộ</translation>
-<translation id="5627086634964711283">Tiện ích mở rộng cũng điều khiển trang nào sẽ hiển thị khi bạn nhấp vào nút Trang chủ.</translation>
+<translation id="5627086634964711283">Tiện ích cũng điều khiển trang nào sẽ hiển thị khi bạn nhấp vào nút Trang chủ.</translation>
 <translation id="1702534956030472451">Western</translation>
 <translation id="766747607778166022">Quản lý thẻ tín dụng...</translation>
 <translation id="794676567536738329">Xác nhận quyền</translation>
@@ -4779,7 +4782,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="8940081510938872932">Máy tính của bạn hiện đang thực hiện quá nhiều tác vụ.  Hãy thử lại sau.</translation>
 <translation id="8848709220963126773">Chuyển chế độ phím shift</translation>
 <translation id="6316806695097060329">Thiết bị <ph name="SHORT_PRODUCT_NAME"/> này được thiết kế nhằm cung cấp trải nghiệm web tốt nhất cho bạn.</translation>
-<translation id="49122815993216733">Lỗi tải tiện ích mở rộng</translation>
+<translation id="49122815993216733">Lỗi tải tiện ích</translation>
 <translation id="3241720467332021590">Tiếng Ai-len</translation>
 <translation id="8828933418460119530">Tên DNS</translation>
 <translation id="424546999567421758">Đã phát hiện mức sử dụng ổ đĩa cao</translation>
@@ -4790,7 +4793,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="6581162200855843583">Liên kết Google Drive</translation>
 <translation id="5783221160790377646">Do xảy ra lỗi nên không tạo được người dùng được giám sát. Vui lòng thử lại sau.</translation>
 <translation id="340771324714262530">Dừng phản chiếu</translation>
-<translation id="3303260552072730022">Một tiện ích mở rộng đã kích hoạt chế độ toàn màn hình.</translation>
+<translation id="3303260552072730022">Một tiện ích đã kích hoạt chế độ toàn màn hình.</translation>
 <translation id="7619338682741516875">Ứng dụng giúp Chrome tiếp tục kết nối.</translation>
 <translation id="5212108862377457573">Điều chỉnh chuyển đổi dựa vào nhập trước</translation>
 <translation id="3020960800108671197">Quản lý chặn plug-in không có hộp cát...</translation>
@@ -4809,7 +4812,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="3705722231355495246">-</translation>
 <translation id="6251889282623539337">Điều khoản dịch vụ <ph name="DOMAIN"/></translation>
 <translation id="1952456732281820252">Thêm lối tắt?</translation>
-<translation id="2470702053775288986">Tiện ích mở rộng không được hỗ trợ đã bị tắt</translation>
+<translation id="2470702053775288986">Tiện ích không được hỗ trợ đã bị tắt</translation>
 <translation id="5461512418490148136">Vui lòng đợi. Chúng tôi đang tìm nạp tệp của bạn.</translation>
 <translation id="4268574628540273656">URL:</translation>
 <translation id="2766585356456507052">Danh tính của <ph name="ORGANIZATION"/> tại <ph name="LOCALITY"/> đã được xác minh bởi <ph name="ISSUER"/>, tổ chức khai là có hồ sơ kiểm toán công khai nhưng không thể xác minh các hồ sơ đó.</translation>
@@ -4854,10 +4857,10 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
         bất kỳ đâu, ra mọi nơi. Chia sẻ máy in với bất cứ ai bạn chọn và
         in nội dung cho họ từ Chrome, điện thoại, máy tính bảng, PC hoặc bất kỳ
         thiết bị kết nối web nào khác.</translation>
-<translation id="6154080734794712683">Tiện ích mở rộng đã thay đổi trang nào sẽ hiển thị khi bạn nhập vào nút Trang chủ.</translation>
+<translation id="6154080734794712683">Tiện ích đã thay đổi trang nào sẽ hiển thị khi bạn nhập vào nút Trang chủ.</translation>
 <translation id="4668954208278016290">Đã xảy ra sự cố khi trích xuất hình ảnh vào máy.</translation>
 <translation id="5822838715583768518">Chạy Ứng dụng</translation>
-<translation id="8351419472474436977">Tiện ích mở rộng này đã chiếm quyền kiểm soát cài đặt proxy của bạn, điều đó có nghĩa là tiện ích mở rộng này có thể thay đổi, làm gián đoạn hoặc nghe trộm bất kỳ điều gì bạn thực hiện trực tuyến. Nếu bạn không chắc chắn về lý do thay đổi này diễn ra, bạn có thể không cần tiện ích mở rộng này.</translation>
+<translation id="8351419472474436977">Tiện ích này đã chiếm quyền kiểm soát cài đặt proxy của bạn, điều đó có nghĩa là tiện ích này có thể thay đổi, làm gián đoạn hoặc nghe trộm bất kỳ điều gì bạn thực hiện trực tuyến. Nếu bạn không chắc chắn về lý do thay đổi này diễn ra, bạn có thể không cần tiện ích này.</translation>
 <translation id="5914724413750400082">Mô-đun (<ph name="MODULUS_NUM_BITS"/> bit):
   <ph name="MODULUS_HEX_DUMP"/>
 
@@ -4868,16 +4871,16 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="3942974664341190312">Bộ 2</translation>
 <translation id="8477241577829954800">Đã thay thế</translation>
 <translation id="6735304988756581115">Hiển thị cookie và dữ liệu trang web khác...</translation>
-<translation id="5996258716334177896">Không thể mở tiểu sử của bạn đúng cách.
+<translation id="5996258716334177896">Không thể mở hồ sơ của bạn đúng cách.
 
-Một số tính năng có thể không có sẵn. Hãy kiểm tra xem tiểu sử có tồn tại và bạn có quyền đọc và ghi nội dung trong tiểu sử không.</translation>
+Một số tính năng có thể không có sẵn. Hãy kiểm tra xem hồ sơ có tồn tại và bạn có quyền đọc và ghi nội dung trong hồ sơ không.</translation>
 <translation id="7040138676081995583">Mở bằng...</translation>
 <translation id="7953739707111622108">Thiết bị này không thể mở được vì hệ thống tệp của thiết bị không được nhận dạng.</translation>
 <translation id="2433507940547922241">Hình thức</translation>
 <translation id="6051354611314852653">Rất tiếc! Hệ thống không cho phép truy cập API cho thiết bị này.</translation>
 <translation id="7851716364080026749">Luôn chặn truy cập vào máy ảnh và micrô</translation>
 <translation id="839072384475670817">Tạo các &amp;Phím tắt cho Ứng dụng...</translation>
-<translation id="2176045495080708525">Các tiện ích mở rộng sau hiện đã được cài đặt:</translation>
+<translation id="2176045495080708525">Các tiện ích sau hiện đã được cài đặt:</translation>
 <translation id="3046910703532196514">Trang web, toàn bộ</translation>
 <translation id="5062930723426326933">Không đăng nhập được, vui lòng kết nối với internet và thử lại.</translation>
 <translation id="5316716239522500219">Phản chiếu màn hình</translation>
@@ -4920,7 +4923,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="3270847123878663523">&amp;Hoàn tác sắp xếp lại</translation>
 <translation id="4959447747655704388">Nếu bạn hiểu các rủi ro bảo mật, bạn có thể <ph name="BEGIN_LINK"/>truy cập trang web bị nhiễm độc này<ph name="END_LINK"/>.</translation>
 <translation id="7928558495458479764">Đọc và sửa đổi tất cả dữ liệu của bạn trên thiết bị của bạn và các trang web bạn truy cập</translation>
-<translation id="4503387275462811823">Mô tả tiện ích mở rộng</translation>
+<translation id="4503387275462811823">Mô tả tiện ích</translation>
 <translation id="2157875535253991059">Trang này hiện ở chế độ toàn màn hình.</translation>
 <translation id="4888558933371567598">Tính năng này tạm thời không khả dụng.</translation>
 <translation id="4434147949468540706">Hiệu ứng kết thúc cuộn</translation>
@@ -4935,6 +4938,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="824543159844843373">Kích hoạt mục trình chạy 3</translation>
 <translation id="3819800052061700452">&amp;Toàn màn hình</translation>
 <translation id="48607902311828362">Chế độ trên máy bay</translation>
+<translation id="711840821796638741">Hiển thị dấu trang được quản lý</translation>
 <translation id="3360297538363969800">Không in được. Vui lòng kiểm tra máy in và thử lại.</translation>
 <translation id="680572642341004180">Bật theo dõi RLZ trên <ph name="SHORT_PRODUCT_OS_NAME"/>.</translation>
 <translation id="688797901999351107">Hãy ngừng sử dụng bộ sạc bị thu hồi.</translation>
@@ -4995,7 +4999,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="2951247061394563839">Căn giữa cửa sổ</translation>
 <translation id="3435738964857648380">Bảo mật</translation>
 <translation id="9112987648460918699">Tìm...</translation>
-<translation id="786804765947661699">Đã tắt tiện ích mở rộng</translation>
+<translation id="786804765947661699">Đã tắt tiện ích</translation>
 <translation id="8449218563485801324">Thoát tất cả ứng dụng</translation>
 <translation id="3439153939049640737">Luôn cho phép <ph name="HOST"/> truy cập micrô của bạn</translation>
 <translation id="870805141700401153">Ký Mã Cá nhân của Microsoft</translation>
@@ -5054,7 +5058,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="3184560914950696195">Không thể lưu vào $1. Ảnh đã chỉnh sửa sẽ được lưu vào thư mục Tải xuống.</translation>
 <translation id="8366396658833131068">Kết nối mạng của bạn đã được khôi phục. Hãy chọn mạng khác hoặc nhấn nút 'Tiếp tục' bên dưới để khởi chạy ứng dụng kiosk của bạn.</translation>
 <translation id="4664482161435122549">Lỗi xuất PKCS #12</translation>
-<translation id="2445081178310039857">Thư mục gốc của tiện ích mở rộng là bắt buộc.</translation>
+<translation id="2445081178310039857">Thư mục gốc của tiện ích là bắt buộc.</translation>
 <translation id="146187176629751223">Một người tham gia trong Hangout này đã đề nghị giúp bạn bằng cách kiểm soát máy tính của bạn. Nếu bạn chấp nhận:
 
   • Mọi người trong Hangout này có thể nhìn thấy màn hình của bạn
@@ -5069,7 +5073,7 @@ Bạn có chấp nhận không?</translation>
 <translation id="2726231345817023827">Không có</translation>
 <translation id="2085470240340828803">Tệp có tên &quot;<ph name="FILENAME"/>&quot; đã tồn tại. Bạn muốn làm gì?</translation>
 <translation id="7088674813905715446">Thiết bị này đã được quản trị viên đặt sang trạng thái hủy cấp phép. Để cho phép đăng ký thiết bị, quản trị viên phải đặt thiết bị về trạng thái đang chờ xử lý.</translation>
-<translation id="3037605927509011580">Xin lỗi!</translation>
+<translation id="3037605927509011580">Ôi, hỏng! </translation>
 <translation id="5803531701633845775">Chọn cụm từ từ phía sau, mà không cần di chuyển con trỏ</translation>
 <translation id="1434886155212424586">Trang chủ là trang Tab mới</translation>
 <translation id="6057141540394398784">Đây là người dùng được giám sát sẽ do bạn quản lý.
@@ -5086,7 +5090,7 @@ Bạn có chấp nhận không?</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="421182450098841253">&amp;Hiển thị thanh dấu trang</translation>
 <translation id="2948083400971632585">Bạn có thể tắt mọi proxy được định cấu hình cho kết nối từ trang cài đặt.</translation>
-<translation id="4481249487722541506">Tải tiện ích mở rộng đã bung...</translation>
+<translation id="4481249487722541506">Tải tiện ích đã bung...</translation>
 <translation id="356512994079769807">Cài đặt trong cài đặt hệ thống</translation>
 <translation id="8180239481735238521">trang</translation>
 <translation id="7532099961752278950">Thiết lập theo ứng dụng:</translation>
@@ -5107,10 +5111,10 @@ Bạn có chấp nhận không?</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
 <translation id="2050339315714019657">Khổ dọc</translation>
 <translation id="6991128190741664836">Sau</translation>
-<translation id="8261490674758214762">Các tiện ích mở rộng/ứng dụng này có thể:</translation>
+<translation id="8261490674758214762">Các tiện ích/ứng dụng này có thể:</translation>
 <translation id="8647750283161643317">Đặt lại tất cả về mặc định</translation>
 <translation id="5112577000029535889">&amp;Công cụ dành cho Nhà phát triển</translation>
-<translation id="2301382460326681002">Thư mục gốc của tiện ích mở rộng không hợp lệ.</translation>
+<translation id="2301382460326681002">Thư mục gốc của tiện ích không hợp lệ.</translation>
 <translation id="4912643508233590958">Đánh thức khỏi chế độ rảnh</translation>
 <translation id="7839192898639727867">ID Khoá Đối tượng của Chứng chỉ</translation>
 <translation id="4759238208242260848">Tải xuống</translation>
@@ -5150,7 +5154,7 @@ Bạn có chấp nhận không?</translation>
 <translation id="2704184184447774363">Ký Tài liệu của Microsoft</translation>
 <translation id="5677928146339483299">Bị chặn</translation>
 <translation id="4645676300727003670">&amp;Giữ</translation>
-<translation id="3225579507836276307">Một tiện ích mở rộng bên thứ ba đã chặn truy cập vào trang web này.</translation>
+<translation id="3225579507836276307">Một tiện ích bên thứ ba đã chặn truy cập vào trang web này.</translation>
 <translation id="6815551780062710681">chỉnh sửa</translation>
 <translation id="6911468394164995108">Tham gia mạng khác...</translation>
 <translation id="2510708650472996893">Cấu hình màu:</translation>
@@ -5233,11 +5237,11 @@ Bạn có chấp nhận không?</translation>
 <translation id="3709244229496787112">Trình duyệt bị tắt trước khi quá trình tải xuống hoàn tất.</translation>
 <translation id="7999229196265990314">Đã tạo các tệp sau:
 
-Tiện ích mở rộng: <ph name="EXTENSION_FILE"/>
+Tiện ích: <ph name="EXTENSION_FILE"/>
 Tệp Khoá: <ph name="KEY_FILE"/>
 
-Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa để tạo phiên bản tiện ích mở rộng mới của mình.</translation>
-<translation id="5522156646677899028">Tiện ích mở rộng này chứa lỗ hổng bảo mật nghiêm trọng.</translation>
+Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa để tạo phiên bản tiện ích mới của mình.</translation>
+<translation id="5522156646677899028">Tiện ích này chứa lỗ hổng bảo mật nghiêm trọng.</translation>
 <translation id="1004032892340602806">Cho phép tất cả các trang web sử dụng plugin để truy cập vào máy tính của bạn</translation>
 <translation id="3813984289128269159">Ok Google</translation>
 <translation id="417475959318757854">Đặt trình chạy ứng dụng ở vị trí trung tâm.</translation>
@@ -5257,7 +5261,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="3331321258768829690">(<ph name="UTCOFFSET"/>) <ph name="LONGTZNAME"/> (<ph name="EXEMPLARCITY"/>)</translation>
 <translation id="2813137708069460534">Số liệu liên quan đến mức sử dụng mạng của <ph name="SHORT_PRODUCT_NAME"/></translation>
 <translation id="7250799832286185545">Năm</translation>
-<translation id="5849869942539715694">Đóng gói tiện ích mở rộng...</translation>
+<translation id="5849869942539715694">Đóng gói tiện ích...</translation>
 <translation id="7339785458027436441">Kiểm tra Chính tả Trong khi Nhập</translation>
 <translation id="5233736638227740678">&amp;Dán</translation>
 <translation id="1828901632669367785">In bằng hộp thoại hệ thống...</translation>
@@ -5272,8 +5276,8 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="1559528461873125649">Không có tệp hoặc thư mục nào như vậy</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="1533920822694388968">Căn chỉnh TV</translation>
-<translation id="6109534693970294947">Cho phép <ph name="ORIGIN"/> giao tiếp với tiện ích mở rộng &quot;<ph name="EXTENSION_NAME"/>&quot;?</translation>
-<translation id="1729533290416704613">Tiện ích mở rộng này cũng điều khiển trang nào được hiển thị khi bạn tìm kiếm từ Thanh địa chỉ.</translation>
+<translation id="6109534693970294947">Cho phép <ph name="ORIGIN"/> giao tiếp với tiện ích &quot;<ph name="EXTENSION_NAME"/>&quot;?</translation>
+<translation id="1729533290416704613">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn tìm kiếm từ Thanh địa chỉ.</translation>
 <translation id="2650446666397867134">Truy cập vào tệp bị từ chối</translation>
 <translation id="3568838446092468648">ECDSA</translation>
 <translation id="5832830184511718549">Sử dụng chuỗi phụ để tổng hợp trang web. Điều này cho phép cuộn dễ dàng hơn, ngay cả khi chuỗi chính không phản hồi.</translation>

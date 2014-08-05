@@ -3948,6 +3948,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="6460601847208524483">Buscar siguiente</translation>
 <translation id="397703832102027365">Finalizando...</translation>
 <translation id="8146177459103116374">Si ya te has registrado en este dispositivo, puedes <ph name="LINK2_START"/>iniciar sesión con tu nombre de usuario<ph name="LINK2_END"/>.</translation>
+<translation id="5072836811783999860">Mostrar marcadores administrados</translation>
 <translation id="4856478137399998590">Tu servicio de datos móviles se ha activado y está listo para utilizarse.</translation>
 <translation id="3305389145870741612">El proceso de formateo puede tardar unos segundos. Espera...</translation>
 <translation id="3648607100222897006">Estas funciones experimentales pueden cambiar, dejar de funcionar o desaparecer en cualquier momento. No ofrecemos ningún tipo de garantía de lo que pueda ocurrir si se habilita alguna de estas funciones experimentales, y es posible que el navegador se bloquee repentinamente. Bromas aparte, ten en cuenta que el navegador puede eliminar todos tus datos y que tu seguridad y tu privacidad se podrían ver comprometidas de forma inesperada. Cualquier experimento que habilites se habilitará para todos los usuarios del navegador, así que te recomendamos que actúes con precaución.</translation>
@@ -4377,6 +4378,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="6869402422344886127">Casilla de verificación seleccionada</translation>
 <translation id="3428010780253032925">Inhabilitar determinación de objetivo por rectángulos en vistas</translation>
 <translation id="5637380810526272785">Método de entrada</translation>
+<translation id="3613134908380545408">Mostrar <ph name="FOLDER_NAME"/></translation>
 <translation id="2837049386027881519">Se ha vuelto a recuperar la conexión con una versión anterior del protocolo SSL o TLS. Este error suele indicar que el servidor utiliza un software demasiado obsoleto y que es posible que se produzcan otros problemas de seguridad.</translation>
 <translation id="404928562651467259">ADVERTENCIA</translation>
 <translation id="4289300219472526559">Empezar a hablar</translation>
@@ -4708,6 +4710,7 @@ Calculando el tiempo de carga completa</translation>
 <translation id="2859369953631715804">Selecciona una red móvil</translation>
 <translation id="6934265752871836553">Utiliza el código bleeding-edge para que Chrome obtenga contenido de forma más rápida. Es muy probable que los cambios en esta ruta impidan que diferentes tipos de contenido funcionen correctamente.</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">Abrir siempre en Adobe Reader</translation>
 <translation id="8274359292107649245">Abrir Chrome en el escritorio</translation>
 <translation id="1571119610742640910">Composición de fondos raíz fijos.</translation>
 <translation id="6514565641373682518">Esta página ha inhabilitado el cursor de tu ratón.</translation>
@@ -4908,6 +4911,7 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="824543159844843373">Activar elemento selector 3</translation>
 <translation id="3819800052061700452">&amp;Pantalla completa</translation>
 <translation id="48607902311828362">Modo avión</translation>
+<translation id="711840821796638741">Mostrar marcadores administrados</translation>
 <translation id="3360297538363969800">Se ha producido un error al imprimir. Comprueba la impresora y vuelve a intentarlo.</translation>
 <translation id="680572642341004180">Habilitar seguimiento de RLZ en <ph name="SHORT_PRODUCT_OS_NAME"/></translation>
 <translation id="688797901999351107">Deja de utilizar el cargador retirado del mercado.</translation>

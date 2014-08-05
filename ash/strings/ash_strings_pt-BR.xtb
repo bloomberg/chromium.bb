@@ -35,7 +35,7 @@
 <translation id="2248649616066688669">Você pode continuar usando o Chromebook enquanto estiver conectado a uma tela externa, mesmo com a tampa fechada.</translation>
 <translation id="40400351611212369">Erro de ativação de rede</translation>
 <translation id="4237016987259239829">Erro de conexão da rede</translation>
-<translation id="2946640296642327832">Ativar bluetooth</translation>
+<translation id="2946640296642327832">Ativar Bluetooth</translation>
 <translation id="6459472438155181876">Estendendo tela para <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Celular</translation>
 <translation id="6596816719288285829">Endereço IP</translation>
@@ -56,6 +56,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="4628814525959230255">Compartilhando o controle de sua tela com <ph name="HELPER_NAME"/> por meio do Hangouts.</translation>
 <translation id="7864539943188674973">Desativar bluetooth</translation>
 <translation id="939252827960237676">Falha ao salvar a captura de tela</translation>
+<translation id="9080206825613744995">O microfone está sendo usado.</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="3126069444801937830">Reiniciar para atualizar</translation>
 <translation id="2268813581635650749">Desconectar todos</translation>

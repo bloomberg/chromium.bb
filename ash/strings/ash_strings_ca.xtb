@@ -35,7 +35,7 @@
 <translation id="2248649616066688669">Podeu continuar utilitzant el dispositiu Chromebook mentre estigui connectat a una pantalla externa, encara que la tapa estigui tancada.</translation>
 <translation id="40400351611212369">Error d'activació de xarxa</translation>
 <translation id="4237016987259239829">Error de connexió a la xarxa</translation>
-<translation id="2946640296642327832">Activa el Bluetooth</translation>
+<translation id="2946640296642327832">Activa Bluetooth</translation>
 <translation id="6459472438155181876">S'està ampliant la pantalla a <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Cel·lular</translation>
 <translation id="6596816719288285829">Adreça IP</translation>
@@ -56,6 +56,7 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="4628814525959230255">Comparteix el control de la pantalla amb <ph name="HELPER_NAME"/> mitjançant Hangouts.</translation>
 <translation id="7864539943188674973">Desactiva el Bluetooth</translation>
 <translation id="939252827960237676">S'ha produït un error en desar la captura de pantalla.</translation>
+<translation id="9080206825613744995">S'està fent servir el micròfon.</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="3126069444801937830">Reinicia per actualitzar</translation>
 <translation id="2268813581635650749">Tanca la sessió de tots els usuaris</translation>
@@ -162,15 +163,15 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="2966449113954629791">És possible que hàgiu esgotat la quantitat assignada de dades mòbils. Visiteu el portal d'activació <ph name="NAME"/> per comprar més dades.</translation>
 <translation id="742594950370306541">La càmera s'està utilitzant.</translation>
 <translation id="8132793192354020517">Connectat a <ph name="NAME"/></translation>
-<translation id="7052914147756339792">Defineix l'empaperat...</translation>
+<translation id="7052914147756339792">Estableix fons de pantalla...</translation>
 <translation id="8678698760965522072">Estat en línia</translation>
 <translation id="2532589005999780174">Mode de contrast elevat</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
 <translation id="1119447706177454957">Error intern</translation>
 <translation id="3019353588588144572">Temps restant fins que la bateria no estigui totalment carregada: <ph name="TIME_REMAINING"/></translation>
-<translation id="3473479545200714844">Augment de pantalla</translation>
+<translation id="3473479545200714844">Lupa</translation>
 <translation id="7005812687360380971">Error</translation>
-<translation id="882279321799040148">Feu clic per visualitzar-la.</translation>
+<translation id="882279321799040148">Feu clic per visualitzar-la</translation>
 <translation id="1753067873202720523">Pot ser que el Chromebook no es carregui mentre estigui activat.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> no admet <ph name="SPECIFIED_RESOLUTION"/>. S'ha canviat la resolució per <ph name="FALLBACK_RESOLUTION"/>.</translation>
 <translation id="5045550434625856497">Contrasenya incorrecta</translation>
@@ -194,7 +195,7 @@ Missatge del servidor: <ph name="SERVER_MSG"/></translation>
 <translation id="7029814467594812963">Tanca la sessió</translation>
 <translation id="8454013096329229812">La Wi-Fi està activada.</translation>
 <translation id="4872237917498892622">Alt+Cerca o Maj</translation>
-<translation id="2429753432712299108">El dispositiu Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; sol·licita permís per emparellar-se. Abans d'acceptar, comproveu que aquesta contrasenya es mostri al dispositiu: <ph name="PASSKEY"/>.</translation>
+<translation id="2429753432712299108">El dispositiu Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; sol·licita permís per emparellar-se. Abans d'acceptar, comproveu que aquesta clau d'accés es mostri al dispositiu: <ph name="PASSKEY"/>.</translation>
 <translation id="9201131092683066720">La bateria està carregada fins al <ph name="PERCENTAGE"/>%.</translation>
 <translation id="2983818520079887040">Configuració...</translation>
 <translation id="3871838685472846647">Xarxa mòbil activada</translation>
@@ -249,7 +250,7 @@ Premeu Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="520760366042891468">Compartiu el control de la pantalla mitjançant Hangouts.</translation>
 <translation id="8000066093800657092">No hi ha xarxa</translation>
 <translation id="4015692727874266537">Inicia la sessió amb un altre compte...</translation>
-<translation id="6911468394164995108">Uneix-te a una altra...</translation>
+<translation id="6911468394164995108">Connecta't a una altra xarxa...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Enhorabona. El servei de dades &quot;<ph name="NAME"/>&quot; s'ha activat i ja es pot fer servir.</translation>
 <translation id="412065659894267608">Falten <ph name="HOUR"/> h <ph name="MINUTE"/> min fins que estigui carregada completament</translation>

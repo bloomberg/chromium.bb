@@ -56,6 +56,7 @@
 <translation id="4628814525959230255">ハングアウトを介して画面の制御を <ph name="HELPER_NAME"/> さんと共有しています。</translation>
 <translation id="7864539943188674973">Bluetooth を無効にする</translation>
 <translation id="939252827960237676">スクリーンショットを保存できませんでした</translation>
+<translation id="9080206825613744995">マイクは使用中です。</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/>（USB）</translation>
 <translation id="3126069444801937830">再起動して更新</translation>
 <translation id="2268813581635650749">すべてログアウト</translation>
@@ -86,7 +87,7 @@
 <translation id="7823564328645135659">設定の同期後に言語が「<ph name="FROM_LOCALE"/>」から「<ph name="TO_LOCALE"/>」に変更されました。</translation>
 <translation id="3368922792935385530">接続済み</translation>
 <translation id="3606978283550408104">ブライユ点字ディスプレイが接続されています。</translation>
-<translation id="8654520615680304441">Wi-Fi をオンにしています...</translation>
+<translation id="8654520615680304441">Wi-Fi をオンにする...</translation>
 <translation id="6650933572246256093">Bluetooth デバイス「<ph name="DEVICE_NAME"/>」がペア設定の権限をリクエストしています。このデバイスに次のパスキーを入力してください: <ph name="PASSKEY"/></translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">入力方法を <ph name="INPUT_METHOD_ID"/> に変更しました。

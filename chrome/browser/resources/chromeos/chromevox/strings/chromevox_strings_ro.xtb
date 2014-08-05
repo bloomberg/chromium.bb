@@ -26,7 +26,7 @@
 <translation id="4688873778442829762">grilă</translation>
 <translation id="4047216625641135770">Marcaj</translation>
 <translation id="2223693656926968778">Acționați asupra elementului curent</translation>
-<translation id="528468243742722775">End (La sfârșit)</translation>
+<translation id="528468243742722775">Sfârșit</translation>
 <translation id="158493514907962286">Decembrie</translation>
 <translation id="6438968337250688271"><ph name="NAME"/>, meniu</translation>
 <translation id="8540054775867439484">Încadrare sus</translation>
@@ -314,11 +314,11 @@
 <translation id="5310788376443009632">eliminate:</translation>
 <translation id="1905379170753160525">Afișați lista de titluri</translation>
 <translation id="5748623122140342504">Titlul de nivel 5 anterior</translation>
-<translation id="7434509671034404296">Programator</translation>
+<translation id="7434509671034404296">Dezvoltator</translation>
 <translation id="7332592614823088566">Rândul <ph name="ROWINDEX"/> din <ph name="ROWTOTAL"/>, coloana <ph name="COLINDEX"/> din <ph name="COLTOTAL"/></translation>
 <translation id="794091007957014205">{COUNT,plural, =1{arond}few{# aronduri}other{# de aronduri}}</translation>
 <translation id="1107942983112791593">text derulant</translation>
-<translation id="1383876407941801731">Căutare</translation>
+<translation id="1383876407941801731">Căutați</translation>
 <translation id="9065283790526219006">+fereastră pop-up</translation>
 <translation id="5203930734796605961"><ph name="KEY"/> este deja atribuită pentru o comandă.</translation>
 <translation id="3486232535569802404">De la <ph name="V1"/> la <ph name="V2"/></translation>
@@ -339,7 +339,7 @@
 <translation id="4532633738839459153">{COUNT,plural, =1{bară oblică spre dreapta}few{# bare oblice spre dreapta}other{# de bare oblice spre dreapta}}</translation>
 <translation id="4099274309791143834">cu submeniu</translation>
 <translation id="1346748346194534595">Dreapta</translation>
-<translation id="6659594942844771486">Tab</translation>
+<translation id="6659594942844771486">Filă</translation>
 <translation id="2777845298774924149">S-a ieșit</translation>
 <translation id="3389259863310851658">Câmpul anterior din formular</translation>
 <translation id="1321576897702511272">Ascundeți ajutorul pentru ChromeVox</translation>
@@ -568,7 +568,7 @@
 <translation id="7819187121850078213">fila ferestrei <ph name="TITLE"/></translation>
 <translation id="2121067395472282800">tastă de acces: <ph name="KEY"/></translation>
 <translation id="6193330012414963395">a.m. p.m.</translation>
-<translation id="1177863135347784049">Personalizat</translation>
+<translation id="1177863135347784049">Personalizați</translation>
 <translation id="1722716240000795234">buton radio</translation>
 <translation id="1613476421962910979">Semnalele audio sunt activate</translation>
 <translation id="2089387485033699258">ro</translation>

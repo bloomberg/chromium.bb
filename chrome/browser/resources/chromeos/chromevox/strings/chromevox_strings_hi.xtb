@@ -67,7 +67,7 @@
 <translation id="6633350132811819843">कोई अगली तालिका नहीं.</translation>
 <translation id="8382679411218029383">स्वत: पूर्णता इनलाइन और सूची</translation>
 <translation id="6734854816611871228"><ph name="VALUE"/>, कॉम्‍बो बॉक्‍स</translation>
-<translation id="3793710123303304873">संवाद से बाहर हो गए हैं.</translation>
+<translation id="3793710123303304873">डॉयलॉग से बाहर हो गए हैं.</translation>
 <translation id="4004802134384979325">चेक किया गया</translation>
 <translation id="4973717656530883744">न्‍यूनतम <ph name="X"/></translation>
 <translation id="3312997241656799641">बाद में देखा गया लिंक</translation>
@@ -296,7 +296,7 @@
 <translation id="7037042857287298941">पिछली सूची</translation>
 <translation id="3687295507293856493">वर्तमान सेल के स्‍तंभ शीर्ष लेख पर कोई अनुमान लगाएं</translation>
 <translation id="6307969636681130414">दबाया गया</translation>
-<translation id="5956928062748260866">संवाद</translation>
+<translation id="5956928062748260866">डॉयलॉग</translation>
 <translation id="1546370775711804143">स्क्रॉल बार</translation>
 <translation id="4253168017788158739">नोट</translation>
 <translation id="4877261390094455813">खोज क्वेरी डालें.</translation>
@@ -375,7 +375,7 @@
 <translation id="207477615537953741">शब्दार्थ विज्ञान बंद</translation>
 <translation id="2045490512405922022">चेक नहीं किया गया</translation>
 <translation id="2972078295414139404">पहले देखा गया कोई लिंक नहीं.</translation>
-<translation id="7492049978501397201">डाला गया संवाद</translation>
+<translation id="7492049978501397201">डाला गया डॉयलॉग</translation>
 <translation id="6186305613600865047">पृष्ठ में नीचे जाएं</translation>
 <translation id="2740779364947153571">frm</translation>
 <translation id="8066678206530322333">बैनर</translation>
@@ -455,8 +455,8 @@
 <translation id="78826985582142166">sldr</translation>
 <translation id="81960742267269908">काटें.</translation>
 <translation id="2149594028072271924">x</translation>
-<translation id="2911433807131383493">ChromeVox ट्यूटोरियल खोलें</translation>
-<translation id="6444046323172968959">सूचना संवाद</translation>
+<translation id="2911433807131383493">ChromeVox निर्देश खोलें</translation>
+<translation id="6444046323172968959">सूचना डॉयलॉग</translation>
 <translation id="8931936695772494138">रिक्त शीर्षलेख</translation>
 <translation id="6697092096875747123">पिछला कॉम्बो बॉक्स</translation>
 <translation id="8428603554127842284">स्तर <ph name="DEPTH"/></translation>

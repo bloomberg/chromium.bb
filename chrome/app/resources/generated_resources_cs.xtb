@@ -516,7 +516,7 @@ Tyto i další pokyny naleznete v e-mailu, který byl odeslán na adresu <ph nam
 <translation id="413121957363593859">Komponenty</translation>
 <translation id="715487527529576698">Výchozí režim čínštiny je zjednodušená čínština</translation>
 <translation id="6522350652862471760">Aktivovat název a ikonu profilu Google</translation>
-<translation id="6181259999130430430">Povolit pro toto zařízení Snadné odemknutí</translation>
+<translation id="6181259999130430430">Povolit pro toto zařízení snadné odemknutí</translation>
 <translation id="8703575177326907206">Vaše spojení se serverem <ph name="DOMAIN"/> není šifrované.</translation>
 <translation id="6135622770221372891">ID kanálu</translation>
 <translation id="8472623782143987204">hardwarová</translation>
@@ -2183,7 +2183,7 @@ Dejte pozor, abyste mu nezpřístupnili žádné citlivé informace.</translatio
 <translation id="8758455334359714415">Integrovaný asynchronní klient DNS</translation>
 <translation id="5585912436068747822">Formátování se nezdařilo</translation>
 <translation id="8766796754185931010">Kotoeri</translation>
-<translation id="6357619544108132570">Vítejte v rodině produktů <ph name="SHORT_PRODUCT_NAME"/>. Toto není žádný obyčejný počítač.</translation>
+<translation id="6357619544108132570">Vítejte v rodině produktů <ph name="SHORT_PRODUCT_NAME"/>. Nejedná se o obyčejný počítač.</translation>
 <translation id="7786207843293321886">Odhlásit hosta</translation>
 <translation id="3359256513598016054">Omezení zásad certifikátu</translation>
 <translation id="4433914671537236274">Vytvoření média pro obnovení operačního systému</translation>
@@ -3323,7 +3323,7 @@ Zde poskytnutý diagnostický nástroj na řešení problémů s připojením v�
 <translation id="5917011688104426363">Přepnout na adresní řádek v režimu vyhledávání</translation>
 <translation id="3269101346657272573">Zadejte kód PIN.</translation>
 <translation id="2822854841007275488">Arabština</translation>
-<translation id="6559948977408379772">Tato ikona se zobrazí, když jste s telefonem poblíž a je k dispozici Snadné odemknutí. Ke vstupu stačí kliknout, není potřeba zadávat heslo.</translation>
+<translation id="6559948977408379772">Tato ikona se zobrazí, když jste s telefonem poblíž a je k dispozici snadné odemknutí. Ke vstupu stačí kliknout, není potřeba zadávat heslo.</translation>
 <translation id="5857090052475505287">Nová složka</translation>
 <translation id="7450732239874446337">Funkce vstupu a výstupu sítě byly pozastaveny.</translation>
 <translation id="4003393903129308792">Povolit rasterizátor s jednou kopií</translation>
@@ -3443,7 +3443,7 @@ Zde poskytnutý diagnostický nástroj na řešení problémů s připojením v�
 <translation id="1526560967942511387">Dokument bez názvu</translation>
 <translation id="3979748722126423326">Aktivovat <ph name="NETWORKDEVICE"/></translation>
 <translation id="7819857487979277519">PSK (WPA nebo RSN)</translation>
-<translation id="7561031016893995297">Zařízení pro Snadné odemknutí můžete spravovat v nastavení účtu.</translation>
+<translation id="7561031016893995297">Zařízení se snadným odemknutím můžete spravovat v nastavení účtu.</translation>
 <translation id="2238379619048995541">Data o stavu frekvence</translation>
 <translation id="4367133129601245178">K&amp;opírovat adresu URL obrázku</translation>
 <translation id="6326175484149238433">Odstranit z Chromu</translation>
@@ -3941,6 +3941,7 @@ Zde poskytnutý diagnostický nástroj na řešení problémů s připojením v�
 <translation id="6460601847208524483">Najít další</translation>
 <translation id="397703832102027365">Dokončování...</translation>
 <translation id="8146177459103116374">V tomto zařízení jste již zaregistrováni. Můžete se <ph name="LINK2_START"/>přihlásit jako stávající uživatel<ph name="LINK2_END"/>.</translation>
+<translation id="5072836811783999860">Zobrazit spravované záložky</translation>
 <translation id="4856478137399998590">Datové služby jsou aktivovány a můžete je začít používat</translation>
 <translation id="3305389145870741612">Proces formátování může trvat několik sekund. Čekejte prosím.</translation>
 <translation id="3648607100222897006">Tyto experimentální funkce se mohou kdykoli změnit, zhroutit nebo zmizet. Nemůžeme vůbec zaručit, co se po zapnutí těchto experimentů stane. Prohlížeč může například samovolně vybouchnout. Ale bez legrace: Prohlížeč může smazat veškeré vaše údaje nebo neočekávanými způsoby narušit vaše zabezpečení či soukromí. Experimenty, které zapnete, budou k dispozici všem uživatelům prohlížeče. Buďte prosím obezřetní.</translation>
@@ -4372,6 +4373,7 @@ Zde poskytnutý diagnostický nástroj na řešení problémů s připojením v�
 <translation id="6869402422344886127">Označené zaškrtávací políčko</translation>
 <translation id="3428010780253032925">Deaktivovat v zobrazeních cílení založené na obdélnících</translation>
 <translation id="5637380810526272785">Metoda zadávání dat</translation>
+<translation id="3613134908380545408">Zobrazit <ph name="FOLDER_NAME"/></translation>
 <translation id="2837049386027881519">Pokus o připojení musel proběhnout znovu pomocí starší verze protokolu TLS nebo SSL. Obvykle to znamená, že server používá zastaralý software a může mít další problémy se zabezpečením.</translation>
 <translation id="404928562651467259">UPOZORNĚNÍ</translation>
 <translation id="4289300219472526559">Začít mluvit</translation>
@@ -4440,7 +4442,7 @@ Zde poskytnutý diagnostický nástroj na řešení problémů s připojením v�
 <translation id="8148264977957212129">Metoda zadávání textu Pinyin</translation>
 <translation id="2288278176040912387">Gramofon</translation>
 <translation id="7772032839648071052">Potvrďte přístupové heslo</translation>
-<translation id="3676582787770338561">Povolit pro toto zařízení <ph name="DEVICE_TYPE"/> funkci Snadné odemknutí.</translation>
+<translation id="3676582787770338561">Povolit pro toto zařízení <ph name="DEVICE_TYPE"/> funkci snadného odemknutí.</translation>
 <translation id="2871813825302180988">Tento účet je v tomto zařízení již používán.</translation>
 <translation id="1642505962779453775">Poslední tři měsíce</translation>
 <translation id="3323235640813116393">Aktivuje ukládání stránek ve formátu MHTML, tj. do jednoho textového souboru s kódem HTML a všemi dílčími zdroji.</translation>
@@ -4703,6 +4705,7 @@ Výpočet času zbývajícího do úplného nabití</translation>
 <translation id="2859369953631715804">Vyberte mobilní síť</translation>
 <translation id="6934265752871836553">Aktivuje použití experimentálního nového kódu, který v Chromu zrychlí vykreslování obsahu. Kvůli změnám v této trase se pravděpodobně hodně obsahu nezobrazí správně.</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">Vždy otevřít v aplikaci Adobe Reader</translation>
 <translation id="8274359292107649245">Spustit Chrome na klasické ploše</translation>
 <translation id="1571119610742640910">Skládání pro pozadí s fixním kořenovým adresářem</translation>
 <translation id="6514565641373682518">Tato stránka deaktivovala ukazatel myši.</translation>
@@ -4902,6 +4905,7 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="824543159844843373">Aktivovat 3. položku spouštěče</translation>
 <translation id="3819800052061700452">&amp;Celá obrazovka</translation>
 <translation id="48607902311828362">Režim V letadle</translation>
+<translation id="711840821796638741">Zobrazit spravované záložky</translation>
 <translation id="3360297538363969800">Tisk se nezdařil. Zkontrolujte tiskárnu a zkuste to znovu.</translation>
 <translation id="680572642341004180">Aktivovat v systému <ph name="SHORT_PRODUCT_OS_NAME"/> sledování RLZ.</translation>
 <translation id="688797901999351107">Přestaňte prosím používat nabíječky, kterých se tento problém týká.</translation>
@@ -5142,7 +5146,7 @@ Přijímáte?</translation>
 <translation id="9013587737291179248">Jejda, dozorovaného uživatele nebylo možné importovat. Zkontrolujte místo na disku a oprávnění a zkuste to znovu.</translation>
 <translation id="7254951428499890870">Opravdu chcete aplikaci <ph name="APP_NAME"/> spustit v diagnostickém režimu?</translation>
 <translation id="4462159676511157176">Vlastní názvové servery</translation>
-<translation id="4575703660920788003">Rozložení klávesnice změníte stisknutím kláves Shift+Alt</translation>
+<translation id="4575703660920788003">Rozložení klávesnice změníte stisknutím kláves Shift+Alt.</translation>
 <translation id="7240120331469437312">Alternativní název subjektu certifikátu</translation>
 <translation id="2669198762040460457">Zadané uživatelské jméno nebo heslo je nesprávné.</translation>
 <translation id="5849626805825065073">Pokud je možnost deaktivována, při zrychleném skládání bude text vykreslen s antialiasingem ve stupních šedi, nikoli v režimu LCD (pomocí subpixelů).</translation>

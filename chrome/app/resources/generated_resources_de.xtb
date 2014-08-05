@@ -209,7 +209,7 @@
 <translation id="2391762656119864333">Aufheben</translation>
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME"/> ausblenden</translation>
 <translation id="7069168971636881066">Auf diesem Gerät muss mindestens ein Konto vorhanden sein, bevor ein betreuter Nutzer erstellt werden kann.</translation>
-<translation id="7766807826975222231">Tour</translation>
+<translation id="7766807826975222231">Tour starten</translation>
 <translation id="2269471294353474737"><ph name="MARKUP_1"/>Greifen Sie überall auf Ihre Dateien zu, auch offline.<ph name="MARKUP_2"/>
     Dateien in Google Drive sind aktuell und auf jedem Gerät verfügbar.<ph name="MARKUP_3"/>
     <ph name="MARKUP_4"/>Bewahren Sie Ihre Dateien sicher auf.<ph name="MARKUP_5"/>
@@ -710,7 +710,7 @@ Alle Nutzer müssen sich abmelden, um fortfahren zu können.</translation>
 <translation id="3984921062031549150">Renderer reagiert nicht mehr</translation>
 <translation id="7925285046818567682">Warten auf <ph name="HOST_NAME"/>...</translation>
 <translation id="1079766198702302550">Zugriff auf die Kamera immer blockieren</translation>
-<translation id="2964845078799970531">Mit dem einfachen Entsperren können Sie Ihr Chromebook entsperren, sofern es sich in der Nähe Ihres Telefons befindet.</translation>
+<translation id="2964845078799970531">Mit &quot;Einfaches Entsperren&quot; können Sie Ihr Chromebook entsperren, sofern es sich in der Nähe Ihres Telefons befindet.</translation>
 <translation id="5053803681436838483">Neue Versandadresse...</translation>
 <translation id="5952256601775839173">Klicken mit drei Fingern für das Touchpad aktivieren</translation>
 <translation id="3280237271814976245">Speichern &amp;unter...</translation>
@@ -899,7 +899,7 @@ Alle Nutzer müssen sich abmelden, um fortfahren zu können.</translation>
 <translation id="7684540948112007255">Mehrere Dateien herunterladen</translation>
 <translation id="2537271621194795300">Starts</translation>
 <translation id="3636096452488277381">Hallo <ph name="USER_GIVEN_NAME"/></translation>
-<translation id="4911714727432509308">Es sind für keine Erweiterungen Tastaturkürzel zugewiesen.</translation>
+<translation id="4911714727432509308">Es sind für keine Erweiterungen Tastenkombinationen zugewiesen.</translation>
 <translation id="5999606216064768721">Titelleiste und Ränder des Systems verwenden</translation>
 <translation id="921568617530782833">Alle eigenen Daten auf von Ihnen besuchten Websites lesen und ändern</translation>
 <translation id="225943865679747347">Fehlercode: <ph name="ERROR_CODE"/></translation>
@@ -1357,7 +1357,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognito-Modus (<ph name="SHORTCUT_
 <translation id="3118046075435288765">Server hat die Verbindung unerwartet geschlossen.</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME"/> wird verschoben...</translation>
 <translation id="4697214168136963651"><ph name="URL"/> wurde blockiert.</translation>
-<translation id="5380103295189760361">Halten Sie Strg, Alt, Shift oder Suchen gedrückt, um die Tastaturkürzel für diese Modifikatoren anzuzeigen.</translation>
+<translation id="5380103295189760361">Halten Sie Strg, Alt, Shift oder Suchen gedrückt, um die Tastenkombinationen für diese Modifikatoren anzuzeigen.</translation>
 <translation id="7791543448312431591">Hinzufügen</translation>
 <translation id="8569764466147087991">Zu öffnende Datei auswählen</translation>
 <translation id="9131487537093447019">Nachrichten an Bluetooth-Geräte senden und von diesen erhalten</translation>
@@ -2261,7 +2261,7 @@ Achten Sie darauf, dass dadurch keine vertraulichen Informationen offengelegt we
 <translation id="2322193970951063277">Kopf- und Fußzeilen</translation>
 <translation id="6436164536244065364">Im Web Store ansehen</translation>
 <translation id="9137013805542155359">Original anzeigen</translation>
-<translation id="6423731501149634044">Adobe Reader als Standard-PDF Viewer verwenden?</translation>
+<translation id="6423731501149634044">Adobe Reader als Standard-PDF-Viewer verwenden?</translation>
 <translation id="1965328510789761112">Privater Speicher</translation>
 <translation id="7312441861087971374"><ph name="PLUGIN_NAME"/> ist veraltet.</translation>
 <translation id="5790085346892983794">Abgeschlossen</translation>
@@ -2879,7 +2879,7 @@ Achten Sie darauf, dass dadurch keine vertraulichen Informationen offengelegt we
 <translation id="7347751611463936647">Um diese Erweiterung zu verwenden, geben Sie &quot;<ph name="EXTENSION_KEYWORD"/>&quot; ein, dann TAB, und dann Ihren Befehl oder Ihre Suchanfrage.</translation>
 <translation id="878431691778285679">Offenbar verwalten Sie bereits einen Nutzer dieses Namens.<ph name="LINE_BREAK"/>Möchten Sie <ph name="BEGIN_LINK"/><ph name="PROFILE_NAME"/> auf dieses Gerät importieren<ph name="END_LINK"/>?</translation>
 <translation id="2912905526406334195"><ph name="HOST"/> möchte Ihr Mikrofon verwenden.</translation>
-<translation id="2805756323405976993">Apps definitiv möglich</translation>
+<translation id="2805756323405976993">Apps</translation>
 <translation id="5151511998946489774">Die Identität dieser Website wurde von <ph name="ISSUER"/> überprüft und ist öffentlich überprüfbar.</translation>
 <translation id="1608626060424371292">Diesen Nutzer entfernen</translation>
 <translation id="2779552785085366231">Diese Seite kann zum App Launcher hinzugefügt werden.</translation>
@@ -3182,7 +3182,7 @@ Achten Sie darauf, dass dadurch keine vertraulichen Informationen offengelegt we
 <translation id="991969738502325513">Was sollten Sie tun?</translation>
 <translation id="1017280919048282932">&amp;Zum Wörterbuch hinzufügen</translation>
 <translation id="3534879087479077042">Was ist ein betreuter Nutzer?</translation>
-<translation id="7211828883345145708">Aktiviert zusätzliche Tastaturkürzel für die Fehlersuche in Chromium</translation>
+<translation id="7211828883345145708">Aktiviert zusätzliche Tastenkombinationen für die Fehlersuche in Chromium</translation>
 <translation id="8319414634934645341">Erweiterte Schlüsselverwendung</translation>
 <translation id="6056710589053485679">Normales Aktualisieren</translation>
 <translation id="4563210852471260509">Anfängliche Eingabesprache ist Chinesisch.</translation>
@@ -3264,7 +3264,7 @@ Achten Sie darauf, dass dadurch keine vertraulichen Informationen offengelegt we
 <translation id="1244303850296295656">Erweiterungsfehler</translation>
 <translation id="3541661933757219855">Drücken Sie zum Ausblenden &quot;Strg+Alt+/&quot; oder &quot;Esc&quot;</translation>
 <translation id="2948300991547862301">Zu <ph name="PAGE_TITLE"/> wechseln</translation>
-<translation id="5357579842739549440">Debugging-Tastaturkürzel</translation>
+<translation id="5357579842739549440">Debugging-Tastenkombinationen</translation>
 <translation id="4284834956062510583">Erweiterung deinstalliert</translation>
 <translation id="3660234220361471169">Nicht vertrauenswürdig</translation>
 <translation id="2679385451463308372">Über den Systemdialog drucken...</translation>
@@ -3306,7 +3306,7 @@ Achten Sie darauf, dass dadurch keine vertraulichen Informationen offengelegt we
 <translation id="5917011688104426363">Adressleiste im Suchmodus fokussieren</translation>
 <translation id="3269101346657272573">Geben Sie die PIN ein.</translation>
 <translation id="2822854841007275488">Arabisch</translation>
-<translation id="6559948977408379772">Dieses Symbol erscheint, wenn Ihr Telefon sich in der Nähe des Netzwerks befindet und die einfache Entsperrung verfügbar ist. Sie erhalten dann ohne Eingabe eines Passworts Zugriff.</translation>
+<translation id="6559948977408379772">Dieses Symbol erscheint, wenn Ihr Telefon sich in der Nähe des Netzwerks befindet und &quot;Einfaches Entsperren&quot; verfügbar ist. Sie erhalten dann ohne Eingabe eines Passworts Zugriff.</translation>
 <translation id="5857090052475505287">Neuer Ordner</translation>
 <translation id="7450732239874446337">Netzwerk-E/A unterbrochen</translation>
 <translation id="4003393903129308792">Rasterung mit 1 Kopie aktivieren</translation>
@@ -3422,7 +3422,7 @@ Achten Sie darauf, dass dadurch keine vertraulichen Informationen offengelegt we
 <translation id="1526560967942511387">Unbenanntes Dokument</translation>
 <translation id="3979748722126423326"><ph name="NETWORKDEVICE"/> aktivieren</translation>
 <translation id="7819857487979277519">PSK (WPA oder RSN)</translation>
-<translation id="7561031016893995297">Geräte mit einfacher Entsperrung in den Kontoeinstellungen verwalten</translation>
+<translation id="7561031016893995297">Geräte mit der Option &quot;Einfaches Entsperren&quot; in den Kontoeinstellungen verwalten</translation>
 <translation id="2238379619048995541">Daten für aktiven Zustand</translation>
 <translation id="4367133129601245178">Bild-URL k&amp;opieren</translation>
 <translation id="6326175484149238433">Aus Chrome entfernen</translation>
@@ -3772,7 +3772,7 @@ Achten Sie darauf, dass dadurch keine vertraulichen Informationen offengelegt we
 <translation id="9006533633560719845">Zustimmung des Nutzers für Erweiterungsskripts</translation>
 <translation id="4555769855065597957">Schatten</translation>
 <translation id="4366837566726634418">Die Auslastung des gemeinsamen Speichers insgesamt für alle Prozesse im Zusammenhang mit <ph name="SHORT_PRODUCT_NAME"/></translation>
-<translation id="6787839852456839824">Tastaturkürzel</translation>
+<translation id="6787839852456839824">Tastenkombinationen</translation>
 <translation id="1327297493974051953">Klickverzögerung deaktivieren</translation>
 <translation id="6791443592650989371">Aktivierungsstatus:</translation>
 <translation id="4801257000660565496">App-Verknüpfungen erstellen</translation>
@@ -3922,6 +3922,7 @@ Achten Sie darauf, dass dadurch keine vertraulichen Informationen offengelegt we
 <translation id="6460601847208524483">Nächste Übereinstimmung suchen</translation>
 <translation id="397703832102027365">Aktualisierung wird abgeschlossen...</translation>
 <translation id="8146177459103116374">Wenn Sie bereits auf diesem Gerät registriert sind, können Sie sich <ph name="LINK2_START"/>als vorhandener Nutzer anmelden<ph name="LINK2_END"/>.</translation>
+<translation id="5072836811783999860">Verwaltete Lesezeichen anzeigen</translation>
 <translation id="4856478137399998590">Ihr mobiler Datendienst ist aktiviert und einsatzbereit.</translation>
 <translation id="3305389145870741612">Die Formatierung kann einige Sekunden dauern. Bitte warten...</translation>
 <translation id="3648607100222897006">Diese experimentellen Funktionen können sich jederzeit ändern, abstürzen oder deaktiviert werden. Wir übernehmen keinerlei Gewährleistung für die Folgen der Aktivierung eines dieser Experimente. Es ist sogar möglich, dass Ihr Browser spontan in Flammen aufgeht. Spaß beiseite: Es ist möglich, dass Ihr Browser alle Ihre Daten löscht. Möglicherweise werden auch Ihre Sicherheits- und Datenschutzeinstellungen auf unerwartete Weise manipuliert. Alle von Ihnen aktivierten Experimente werden für alle Nutzer dieses Browsers aktiviert. Seien Sie also vorsichtig, wenn Sie fortfahren.</translation>
@@ -4233,7 +4234,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME"/> starten?</translation>
 <translation id="5963026469094486319">Designs abrufen</translation>
 <translation id="7586312264284919041">Möchten Sie diese Seite übersetzen?</translation>
 <translation id="3855072293748278406">Plug-in-Zugriff ohne Sandbox</translation>
-<translation id="8357224663288891423">Tastaturkürzel für Erweiterungen und Apps</translation>
+<translation id="8357224663288891423">Tastenkombinationen für Erweiterungen und Apps</translation>
 <translation id="1893137424981664888">Keine Plug-ins installiert</translation>
 <translation id="4919810557098212913"><ph name="HOST"/> möchte Ihre Kamera verwenden.</translation>
 <translation id="5434706434408777842">F3</translation>
@@ -4351,6 +4352,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME"/> starten?</translation>
 <translation id="6869402422344886127">Aktiviertes Kontrollkästchen</translation>
 <translation id="3428010780253032925">Zielbestimmung in Ansichten mithilfe von Rechtecken deaktivieren</translation>
 <translation id="5637380810526272785">Eingabemethode</translation>
+<translation id="3613134908380545408">&quot;<ph name="FOLDER_NAME"/>&quot; anzeigen</translation>
 <translation id="2837049386027881519">Das Herstellen der Verbindung musste mit einer älteren Version des TLS- oder SSL-Protokolls wiederholt werden. Normalerweise bedeutet dies, dass der Server sehr alte Software verwendet und möglicherweise andere Sicherheitsprobleme bestehen.</translation>
 <translation id="404928562651467259">Warnung</translation>
 <translation id="4289300219472526559">Sprachausgabe starten</translation>
@@ -4682,6 +4684,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME"/> starten?</translation>
 <translation id="2859369953631715804">Mobilfunknetz auswählen</translation>
 <translation id="6934265752871836553">Aktiviert den neuesten experimentellen Code für ein schnelleres Rendering von Inhalten in Chrome. Aufgrund der Änderungen dieses Pfades werden viele Inhalte wahrscheinlich nicht korrekt dargestellt.</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">Immer mit Adobe Reader öffnen</translation>
 <translation id="8274359292107649245">Chrome auf dem Desktop öffnen</translation>
 <translation id="1571119610742640910">Erstellung für feste Root-Hintergründe</translation>
 <translation id="6514565641373682518">Diese Seite hat den Mauszeiger deaktiviert.</translation>
@@ -4877,6 +4880,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="824543159844843373">Übersichtselement 3 aktivieren</translation>
 <translation id="3819800052061700452">V&amp;ollbildmodus</translation>
 <translation id="48607902311828362">Flugmodus</translation>
+<translation id="711840821796638741">Verwaltete Lesezeichen anzeigen</translation>
 <translation id="3360297538363969800">Fehler beim Drucken. Bitte überprüfen Sie Ihren Drucker und versuchen Sie es erneut.</translation>
 <translation id="680572642341004180">RLZ-Nachverfolgung für <ph name="SHORT_PRODUCT_OS_NAME"/> aktivieren</translation>
 <translation id="688797901999351107">Verwenden Sie das zurückgerufene Ladegerät bitte nicht mehr.</translation>
@@ -5150,11 +5154,11 @@ Sind Sie einverstanden?</translation>
 <translation id="5284518706373932381">Sie sollten die Website in ein paar Stunden erneut besuchen. Google Safe Browsing hat kürzlich <ph name="BEGIN_LINK"/>Malware<ph name="END_LINK"/> auf <ph name="SITE"/> gefunden. Websites, die in der Regel sicher sind, können gelegentlich mit Malware infiziert sein.</translation>
 <translation id="969892804517981540">Offizieller Build</translation>
 <translation id="1691608011302982743">Sie haben das Gerät zu früh entfernt!</translation>
-<translation id="445923051607553918">WLAN-Netzwerk verwenden</translation>
+<translation id="445923051607553918">Mit WLAN-Netzwerk verbinden</translation>
 <translation id="1898137169133852367">Durch einen Powerwash wird Ihr <ph name="IDS_SHORT_PRODUCT_NAME"/>-Gerät auf den Werkszustand zurückgesetzt. Zusätzlich wird bei Ihrem Gerät ein früheres Update von <ph name="IDS_SHORT_PRODUCT_NAME"/> wiederhergestellt.</translation>
 <translation id="4215898373199266584">Geheimtipp: Verwenden Sie nächstes Mal den Inkognito-Modus (<ph name="INCOGNITO_MODE_SHORTCUT"/>).</translation>
 <translation id="1048597748939794622">Erzwingt die Einstellung auf allen Ebenen</translation>
-<translation id="9169496697824289689">Tastaturkürzel ansehen</translation>
+<translation id="9169496697824289689">Tastenkombinationen ansehen</translation>
 <translation id="420676372321767680">Dekodieren ohne Aufbau aktivieren</translation>
 <translation id="2925966894897775835">Tabellen</translation>
 <translation id="3349155901412833452">Kandidatenliste mit den Tasten &quot;,&quot; und &quot;.&quot; paginieren</translation>

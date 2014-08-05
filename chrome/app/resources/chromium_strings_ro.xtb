@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
-<translation id="6676384891291319759">Accesați Internetul</translation>
+<translation id="6676384891291319759">Accesați internetul</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> The Chromium Authors. Toate drepturile rezervate.</translation>
 <translation id="6373523479360886564">Sigur doriți să dezinstalați Chromium?</translation>
 <translation id="5065199687811594072">Doriți ca Chromium să salveze informațiile privind cardul de credit pentru completarea formularelor web?</translation>
@@ -134,7 +134,7 @@
 <translation id="6309712487085796862">Chromium utilizează camera foto.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="5820394555380036790">Sistemul de operare Chromium</translation>
-<translation id="6757767188268205357">Doresc să nu mai fiu deranjat</translation>
+<translation id="6757767188268205357">Nu mă mai întreba</translation>
 <translation id="1745962126679160932">Chromium va stoca în siguranță informațiile dvs., astfel încât să nu trebuiască să le introduceți din nou, dar va trebui în continuare să confirmați codul de securitate al cardului pentru viitoarele plăți.</translation>
 <translation id="275588974610408078">Raportarea blocărilor nu este disponibilă în Chromium.</translation>
 <translation id="5909170354645388250">Nu se utilizează în Chromium. Substituent pentru a păstra hărțile cu resurse sincronizate. Este necesar un singur argument: $1.</translation>
@@ -191,7 +191,7 @@ Este posibil ca unele funcții să nu fie disponibile. Specificați un director 
 <translation id="6485906693002546646">În prezent, folosiți <ph name="PROFILE_EMAIL"/> pentru a sincroniza datele Chromium. Pentru a actualiza preferințele de sincronizare sau pentru a folosi Chromium fără un Cont Google, accesați <ph name="SETTINGS_LINK"/>.</translation>
 <translation id="5772805321386874569">(necesită <ph name="BEGIN_BUTTON"/>repornirea<ph name="END_BUTTON"/> Chromium)</translation>
 <translation id="1688750314291223739">Configurați sincronizarea pentru a salva funcțiile personalizate ale browserului pe web și accesați-le din Chromium de pe orice computer.</translation>
-<translation id="8865765905101981392">Browser de Internet</translation>
+<translation id="8865765905101981392">Browser internet</translation>
 <translation id="8610831143142469229">Permiteți Chromium să acceseze rețeaua din setările pentru firewall sau
         antivirus.</translation>
 <translation id="6424492062988593837">Chromium a devenit și mai bun! Este disponibilă o nouă versiune.</translation>
@@ -201,7 +201,7 @@ Este posibil ca unele funcții să nu fie disponibile. Specificați un director 
 <translation id="3889543394854987837">Dați clic pe numele dvs. pentru a deschide Chromium și a începe să navigați.</translation>
 <translation id="3130323860337406239">Chromium utilizează microfonul.</translation>
 <translation id="3249425904492147663">Ați încercat să accesați &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar serverul a furnizat un certificat expirat. Nu sunt disponibile informații care să indice dacă certificatul respectiv a fost compromis, din cauza faptului că este expirat. Acest lucru înseamnă că Chromium nu vă poate garanta că dvs. comunicați cu &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; și nu cu un atacator. Ora computerului dvs. este setată la <ph name="CURRENT_TIME"/>. Credeți că această setare este corectă? În caz contrar, trebuie să corectați eroarea și să actualizați această pagină.</translation>
-<translation id="7196020411877309443">De ce primesc această notificare?</translation>
+<translation id="7196020411877309443">De ce văd acest lucru?</translation>
 <translation id="457845228957001925">Informații importante cu privire la datele dvs. Chromium</translation>
 <translation id="4567424176335768812">V-ați conectat ca <ph name="USER_EMAIL_ADDRESS"/>. Acum vă puteți accesa marcajele, istoricul și alte setări de pe toate dispozitivele pe care v-ați conectat.</translation>
 <translation id="7483335560992089831">Nu se poate instala aceeași versiune de Chromium care rulează în prezent. Închideți Chromium și încercați din nou.</translation>

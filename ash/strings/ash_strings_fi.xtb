@@ -15,7 +15,7 @@
 <translation id="6713285437468012787">Bluetooth-laitteeseen <ph name="DEVICE_NAME"/> on nyt muodostettu laitepariyhteys, ja se on kaikkien käyttäjien saatavilla. Voit poistaa laiteparin Asetuksien kautta.</translation>
 <translation id="7165320105431587207">Verkon asetuksien määrittäminen epäonnistui</translation>
 <translation id="3775358506042162758">Sinulla voi olla enintään kolme tiliä useaan tiliin kirjautuessasi.</translation>
-<translation id="370649949373421643">Ota wifi käyttöön</translation>
+<translation id="370649949373421643">Ota Wi-Fi käyttöön</translation>
 <translation id="3626281679859535460">Kirkkaus</translation>
 <translation id="3621202678540785336">Äänitulo:</translation>
 <translation id="7348093485538360975">Virtuaalinäppäimistö</translation>
@@ -56,6 +56,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="4628814525959230255">Näytönhallinnan jakaminen henkilön <ph name="HELPER_NAME"/> kanssa Hangout-keskustelujen kautta.</translation>
 <translation id="7864539943188674973">Poista Bluetooth käytöstä</translation>
 <translation id="939252827960237676">Kuvakaappauksen tallentaminen epäonnistui</translation>
+<translation id="9080206825613744995">Mikrofoni on käytössä.</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="3126069444801937830">Päivitä käynnistämällä uudelleen</translation>
 <translation id="2268813581635650749">Kirjaa kaikki ulos</translation>

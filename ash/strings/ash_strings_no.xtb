@@ -35,7 +35,7 @@
 <translation id="2248649616066688669">Du kan fortsette å bruke Chromebooken din mens den er tilkoblet en ekstern skjerm, selv når du lukker lokket.</translation>
 <translation id="40400351611212369">Nettverksaktiveringsfeil</translation>
 <translation id="4237016987259239829">Feil i nettverkstilkobling</translation>
-<translation id="2946640296642327832">Aktiver Bluetooth</translation>
+<translation id="2946640296642327832">Aktivér Bluetooth</translation>
 <translation id="6459472438155181876">Utvider skjermen til <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="6596816719288285829">IP-adresse</translation>
@@ -57,6 +57,7 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="4628814525959230255">Deling av skjermkontrollen din med <ph name="HELPER_NAME"/> via Hangouts.</translation>
 <translation id="7864539943188674973">Deaktiver Bluetooth</translation>
 <translation id="939252827960237676">Lagringen av skjermdumpen mislyktes</translation>
+<translation id="9080206825613744995">Mikrofonen er i bruk.</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="3126069444801937830">Start på nytt for å oppdatere</translation>
 <translation id="2268813581635650749">Logg alle av</translation>
@@ -78,7 +79,7 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2688477613306174402">Konfigurasjon</translation>
 <translation id="1272079795634619415">Stopp</translation>
-<translation id="4957722034734105353">Finn ut mer</translation>
+<translation id="4957722034734105353">Les mer</translation>
 <translation id="2964193600955408481">Deaktiver Wi-Fi</translation>
 <translation id="4279490309300973883">Speiling</translation>
 <translation id="7973962044839454485">PPP-autentiseringen mislyktes på grunn av feil brukernavn eller passord</translation>
@@ -154,7 +155,7 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="1882897271359938046">Speiler <ph name="DISPLAY_NAME"/></translation>
 <translation id="2727977024730340865">Tilkoblet laveffektslader. Batteriladingen kan være upålitelig.</translation>
 <translation id="3784455785234192852">Lås</translation>
-<translation id="2805756323405976993">Apps</translation>
+<translation id="2805756323405976993">Apper</translation>
 <translation id="1512064327686280138">Aktiveringen mislyktes</translation>
 <translation id="5097002363526479830">Kunne ikke koble til nettverket «<ph name="NAME"/>»: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi er slått av.</translation>
@@ -163,7 +164,7 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="2966449113954629791">Du kan ha brukt opp mobildatakvoten din. Gå til aktiveringsportalen for <ph name="NAME"/> for å kjøpe mer data.</translation>
 <translation id="742594950370306541">Kameraet er i bruk.</translation>
 <translation id="8132793192354020517">Tilkoblet <ph name="NAME"/></translation>
-<translation id="7052914147756339792">Angi bakgrunnsbilde</translation>
+<translation id="7052914147756339792">Angi bakgrunn</translation>
 <translation id="8678698760965522072">Tilkoblet tilstand</translation>
 <translation id="2532589005999780174">Høykontrastmodus</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
@@ -209,7 +210,7 @@ Tjenermelding: <ph name="SERVER_MSG"/></translation>
 <translation id="8300849813060516376">OTASP mislyktes</translation>
 <translation id="2792498699870441125">Alt + Søk</translation>
 <translation id="8660803626959853127">Synkroniserer <ph name="COUNT"/> fil(er)</translation>
-<translation id="5958529069007801266">Overvåket bruker</translation>
+<translation id="5958529069007801266">Administrert bruker</translation>
 <translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">CAPS LOCK er av</translation>
 <translation id="6248847161401822652">Trykk Control+Shift+Q to ganger for å avslutte.</translation>

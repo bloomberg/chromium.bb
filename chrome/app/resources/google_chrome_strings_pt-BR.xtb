@@ -169,7 +169,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="7161904924553537242">Bem-vindo ao Google Chrome</translation>
 <translation id="4147555960264124640">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Google Chrome. Seus dados do Google Chrome, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME"/>. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. <ph name="LEARN_MORE"/></translation>
 <translation id="4568169453579447500">O Google Chrome não pode ser atualizado devido a configurações inconsistentes da política de grupo do Google Update. Utilize o Editor de Política de grupo para definir a substituição de política de atualização para o aplicativo dos binários do Google Chrome e tente novamente. Veja mais detalhes em http://goo.gl/uJ9gV.</translation>
-<translation id="1348153800635493797">É necessário fazer upgrade do Google Chrome para usar a Carteira virtual do Google [<ph name="ERROR_CODE"/>].</translation>
+<translation id="1348153800635493797">É necessário fazer upgrade do Google Chrome para usar a Google Wallet [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Vá para
           Aplicativos &gt; Preferências do Sistema &gt; Rede &gt; Avançado &gt; Proxies
           e desmarque todos os proxies que estiverem selecionados.</translation>
@@ -200,7 +200,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
         firewall ou antivírus.</translation>
 <translation id="9102715433345326100">Este arquivo é malicioso e foi bloqueado pelo Google Chrome.</translation>
 <translation id="3170677364322086041">Este site está usando o plug-in do Google Chrome Frame, que não recebe mais atualizações de segurança e de estabilidade. Desinstale o plug-in e faça upgrade para um navegador moderno.</translation>
-<translation id="8205111949707227942">Opcional: ajude a melhorar este sistema operacional enviando-nos estatísticas de uso e relatórios de problemas.</translation>
+<translation id="8205111949707227942">Opcional: ajude a melhorar este sistema operacional enviando-nos estatísticas de uso e relatórios de erros.</translation>
 <translation id="7253415505590551024">Há downloads em andamento. Deseja sair do Google Chrome e cancelar os downloads?</translation>
 <translation id="3622797965165704966">Agora ficou mais fácil usar o Chrome com sua Conta do Google e em computadores compartilhados.</translation>
 <translation id="7196020411877309443">Por que estou vendo este aviso?</translation>

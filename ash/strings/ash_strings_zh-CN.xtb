@@ -56,6 +56,7 @@
 <translation id="4628814525959230255">通过环聊与<ph name="HELPER_NAME"/>共享您屏幕的控制权。</translation>
 <translation id="7864539943188674973">停用蓝牙</translation>
 <translation id="939252827960237676">无法保存屏幕截图</translation>
+<translation id="9080206825613744995">麦克风目前处于使用状态。</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="3126069444801937830">重新启动以进行更新</translation>
 <translation id="2268813581635650749">全部退出</translation>
@@ -249,7 +250,7 @@
 <translation id="520760366042891468">通过环聊共享您屏幕的控制权。</translation>
 <translation id="8000066093800657092">未连接任何网络</translation>
 <translation id="4015692727874266537">登录其他帐户…</translation>
-<translation id="6911468394164995108">连接其他...</translation>
+<translation id="6911468394164995108">连接其他网络...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>：<ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">恭喜！“<ph name="NAME"/>”数据服务已激活，您可以开始使用了。</translation>
 <translation id="412065659894267608">还需要 <ph name="HOUR"/> 小时 <ph name="MINUTE"/> 分钟才能充满电</translation>

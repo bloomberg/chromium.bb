@@ -56,6 +56,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="4628814525959230255">Bildschirmfreigabe für <ph name="HELPER_NAME"/> über Hangouts</translation>
 <translation id="7864539943188674973">Bluetooth deaktivieren</translation>
 <translation id="939252827960237676">Screenshot konnte nicht gespeichert werden.</translation>
+<translation id="9080206825613744995">Mikrofon wird verwendet.</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="3126069444801937830">Zum Aktualisieren neu starten</translation>
 <translation id="2268813581635650749">Alle abmelden</translation>
@@ -153,7 +154,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="1882897271359938046">Wird auf <ph name="DISPLAY_NAME"/> gespiegelt...</translation>
 <translation id="2727977024730340865">Das Gerät ist an ein Schwachstrom-Ladegerät angeschlossen. Möglicherweise kann der Akku nicht zuverlässig aufgeladen werden.</translation>
 <translation id="3784455785234192852">Sperren</translation>
-<translation id="2805756323405976993">Apps definitiv möglich</translation>
+<translation id="2805756323405976993">Apps</translation>
 <translation id="1512064327686280138">Aktivierungsfehler</translation>
 <translation id="5097002363526479830">Fehler beim Herstellen einer Verbindung mit dem Netzwerk &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">WLAN ist deaktiviert.</translation>

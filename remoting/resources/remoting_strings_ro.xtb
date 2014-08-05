@@ -11,7 +11,7 @@ Chromoting</translation>
 <translation id="4068946408131579958">Toate conexiunile</translation>
 <translation id="2208514473086078157">Setările politicii nu acceptă permiterea accesului la acest computer în calitate de gazdă pentru Desktop la distanță Chrome. Contactați administratorul de sistem pentru asistență.</translation>
 <translation id="2801119484858626560">A fost detectată o versiune incompatibilă a aplicației Desktop la distanță Chrome. Asigurați-vă că aveți cea mai recentă versiune Chrome și Desktop la distanță Chrome pe ambele computere și încercați din nou.</translation>
-<translation id="6998989275928107238">Către</translation>
+<translation id="6998989275928107238">La</translation>
 <translation id="406849768426631008">Doriți să ajutați pe cineva, iar în același timp să și discutați pe chatul video? Încercați <ph name="LINK_BEGIN"/>Control desktop la distanță din Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="906458777597946297">Maximizați fereastra</translation>
 <translation id="5397086374758643919">Program de dezinstalare a gazdei pentru Desktop la distanță Chrome</translation>
@@ -27,7 +27,7 @@ Chromoting</translation>
 <translation id="332624996707057614">Modificați numele computerului</translation>
 <translation id="1996161829609978754">Chrome descarcă programul de instalare a gazdei pentru Chromoting. După ce se descarcă, rulați programul de instalare înainte de a continua.</translation>
 <translation id="2046651113449445291">Următorii clienți au fost împerecheați cu acest computer și se pot conecta fără să indice un PIN. Puteți revoca oricând această permisiune, pentru fiecare client în parte sau pentru toți clienții.</translation>
-<translation id="7658239707568436148">Anulaţi</translation>
+<translation id="7658239707568436148">Anulați</translation>
 <translation id="7782471917492991422">Verificați setările de gestionare a energiei pentru computerul dvs. și asigurați-vă că nu este configurat să treacă în modul inactiv când este în repaus.</translation>
 <translation id="7665369617277396874">Adăugați un cont</translation>
 <translation id="4939475390270873744">• S-a remediat o blocare la pornire.</translation>
@@ -41,7 +41,7 @@ Chromoting</translation>
 <translation id="8355326866731426344">Acest cod de acces va expira în <ph name="TIMEOUT"/></translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="2498359688066513246">Ajutor și feedback</translation>
-<translation id="6198252989419008588">Schimbați codul PIN</translation>
+<translation id="6198252989419008588">Modificați codul PIN</translation>
 <translation id="170207782578677537">Înregistrarea acestui computer nu a reușit.</translation>
 <translation id="4804818685124855865">Deconectați-vă</translation>
 <translation id="5708869785009007625">În prezent, accesul la desktopul dvs. este permis pentru <ph name="USER"/>.</translation>
@@ -153,7 +153,7 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="2359808026110333948">Continuați</translation>
 <translation id="2078880767960296260">Proces gazdă</translation>
 <translation id="1643640058022401035">Părăsind această pagină, veți încheia sesiunea Chromoting.</translation>
-<translation id="8261506727792406068">Ștergeţi</translation>
+<translation id="8261506727792406068">Ștergeți</translation>
 <translation id="2235518894410572517">Permiteți accesul la acest computer altui utilizator, pentru ca acesta să îl poată vedea și controla.</translation>
 <translation id="6939719207673461467">Afișați/Ascundeți tastatura.</translation>
 <translation id="1023096696228309145">Cereți-i utilizatorului al cărui computer doriți să îl accesați să dea clic pe „Permiteți accesul acum” și să vă transmită codul de acces.</translation>
@@ -162,7 +162,7 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="4006787130661126000">Trebuie să activați conexiunile la distanță dacă doriți să utilizați Desktop la distanță Chrome pentru a accesa acest computer.</translation>
 <translation id="177096447311351977">IP canal pentru client: <ph name="CLIENT_GAIA_IDENTIFIER"/> ip=„<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>” host_ip=„<ph name="HOST_IP_ADDRESS_AND_PORT"/>” channel=„<ph name="CHANNEL_TYPE"/>” connection=„<ph name="CONNECTION_TYPE"/>”.</translation>
 <translation id="6930242544192836755">Durată</translation>
-<translation id="6527303717912515753">Distribuiți</translation>
+<translation id="6527303717912515753">Trimiteți</translation>
 <translation id="2926340305933667314">Dezactivarea accesului la distanță la acest computer nu a reușit. Încercați din nou mai târziu.</translation>
 <translation id="6865175692670882333">Afișați/Editați</translation>
 <translation id="5859141382851488196">Fereastră nouă...</translation>

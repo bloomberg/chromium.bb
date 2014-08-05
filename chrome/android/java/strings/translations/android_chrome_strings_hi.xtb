@@ -22,7 +22,7 @@
 
 आप प्रबंधित खाते से प्रवेश कर रहे हैं और अपनी Chrome प्रोफ़ाइल को इसका व्यवस्थापक नियंत्रण दे रहे हैं. आपका Chrome डेटा इस खाते से स्थायी रूप से जुड़ जाएगा. इस खाते से डिस्कनेक्ट करने से स्थानीय Chrome डेटा हट जाएगा.</translation>
 <translation id="1966710179511230534">कृपया अपने प्रवेश विवरण अपडेट करें.</translation>
-<translation id="1623104350909869708">इस पृष्ठ को अतिरिक्त संवाद बनाने से रोकें</translation>
+<translation id="1623104350909869708">इस पृष्ठ को अतिरिक्त डॉयलॉग बनाने से रोकें</translation>
 <translation id="1426410128494586442">हां</translation>
 <translation id="8218346974737627104">प्रवेश की पुष्टि करें</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE"/>, टैब</translation>
@@ -52,6 +52,7 @@
 <translation id="3992315671621218278">लिंक सहेजें</translation>
 <translation id="8034522405403831421">यह पृष्ठ <ph name="SOURCE_LANGUAGE"/> में है. इसका <ph name="TARGET_LANGUAGE"/> में अनुवाद करें?</translation>
 <translation id="4195643157523330669">नए टैब में खोलें</translation>
+<translation id="651048280540227067">मेनू को खारिज करें</translation>
 <translation id="3089395242580810162">गुप्त टैब में खोलें</translation>
 <translation id="8725066075913043281">पुन: प्रयास करें</translation>
 <translation id="8909135823018751308">साझा करें…</translation>

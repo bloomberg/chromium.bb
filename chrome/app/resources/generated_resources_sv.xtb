@@ -1076,7 +1076,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY"/> kan vara nå
 <translation id="8744641000906923997">Romaji</translation>
 <translation id="5451561500892538488">Dölj aviseringsikonen</translation>
 <translation id="8784626084144195648">Fackmedelvärde</translation>
-<translation id="348620396154188443">Tillåt alla webbplatser att visa popup-fönster</translation>
+<translation id="348620396154188443">Tillåt alla webbplatser att visa aviseringar på skrivbordet</translation>
 <translation id="7375125077091615385">Typ:</translation>
 <translation id="8214489666383623925">Öppna fil...</translation>
 <translation id="4583537898417244378">Ogiltig eller skadad fil.</translation>
@@ -1131,7 +1131,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY"/> kan vara nå
 <translation id="932327136139879170">Startsida</translation>
 <translation id="3561204836318837461">BSSID:</translation>
 <translation id="2560794850818211873">K&amp;opiera videons webbadress</translation>
-<translation id="2981113813906970160">Visa en stor pekare</translation>
+<translation id="2981113813906970160">Visa stor muspekare</translation>
 <translation id="412730574613779332">Superhjälte</translation>
 <translation id="5302048478445481009">Språk</translation>
 <translation id="1395730723686586365">Uppdateringstjänsten startades</translation>
@@ -1734,7 +1734,7 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="8337399713761067085">Du är för närvarande offline.</translation>
 <translation id="5199729219167945352">Experiment</translation>
 <translation id="3730227913294943590">Aktiverade funktioner för Google Cloud Devices</translation>
-<translation id="6499143127267478107">Löser värd i proxyskript ...</translation>
+<translation id="6499143127267478107">Slår upp adress i proxyscript</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="5055518462594137986">Kom ihåg mitt val för alla länkar av samma typ.</translation>
 <translation id="246059062092993255">Plugin-program är blockerade på den här sidan.</translation>
@@ -2495,7 +2495,7 @@ Lämna inte ut känsliga uppgifter.</translation>
 <translation id="452785312504541111">Engelska - helbredd</translation>
 <translation id="7589461650300748890">Ta det försiktigt.</translation>
 <translation id="3966388904776714213">Ljudspelare</translation>
-<translation id="4722735886719213187">Tv-justering:</translation>
+<translation id="4722735886719213187">TV-justering:</translation>
 <translation id="1526925867532626635">Bekräfta synkroniseringsinställningarna</translation>
 <translation id="6185696379715117369">Uppåt en sida</translation>
 <translation id="6702639462873609204">&amp;Redigera ...</translation>
@@ -3287,7 +3287,7 @@ och felaktiga uppgifter. Antingen utger sig en angripare för att vara <ph name=
 <translation id="4384652540891215547">Aktivera tillägget</translation>
 <translation id="9133055936679483811">Komprimeringen misslyckades. <ph name="ERROR_MESSAGE"/></translation>
 <translation id="2718998670920917754">Antivirusprogrammet har identifierat ett virus.</translation>
-<translation id="3199127022143353223">Servrar:</translation>
+<translation id="3199127022143353223">Servrar</translation>
 <translation id="408898940369358887">Aktivera experimentell Javascript</translation>
 <translation id="7489605380874780575">Kontrollera behörighet</translation>
 <translation id="6607831829715835317">Fler verkt&amp;yg</translation>
@@ -3472,7 +3472,7 @@ och felaktiga uppgifter. Antingen utger sig en angripare för att vara <ph name=
 <translation id="2356070529366658676">Fråga</translation>
 <translation id="5731247495086897348">Kl&amp;istra in och öppna</translation>
 <translation id="6426993025560594914">Alla experiment finns på din plattform!</translation>
-<translation id="1834560242799653253">Orientering</translation>
+<translation id="1834560242799653253">Orientering:</translation>
 <translation id="6440616190620341629">Aktiverar icke-sammansatt avkodning i MediaDrm som standard för krypterade medietillägg.</translation>
 <translation id="7185025270390719314">Läsa och ändra all din data på datorn och på de webbplatser du besöker</translation>
 <translation id="8353683614194668312">Appen eller tillägget kan:</translation>
@@ -3966,6 +3966,7 @@ hanteraren
 <translation id="6460601847208524483">Sök nästa</translation>
 <translation id="397703832102027365">Slutför ...</translation>
 <translation id="8146177459103116374">Om du redan är registrerad på den här enheten kan du <ph name="LINK2_START"/>logga in som en befintlig användare<ph name="LINK2_END"/>.</translation>
+<translation id="5072836811783999860">Visa hanterade bokmärken</translation>
 <translation id="4856478137399998590">Datatjänsten har aktiverats och är klar att användas</translation>
 <translation id="3305389145870741612">Formateringen kan ta ett par sekunder. Vänta.</translation>
 <translation id="3648607100222897006">Dessa experimentella funktioner kan ändras, avbrytas eller försvinna när som helst. Vi lämnar inga som helst garantier om vad som kan ske om du aktiverar något av dessa experiment. Webbläsaren kanske t.o.m. går upp i rök. Skämt åsido, alla data i webbläsaren kan raderas och säkerheten och sekretessen kan äventyras på oväntade sätt. Experiment som du aktiverar kommer att aktiveras för alla som använder webbläsaren. Var försiktig.</translation>
@@ -4395,6 +4396,7 @@ hanteraren
 <translation id="6869402422344886127">Markerad kryssruta</translation>
 <translation id="3428010780253032925">Inaktivera rektangelbaserad inriktning i visningar</translation>
 <translation id="5637380810526272785">Inmatningsmetod</translation>
+<translation id="3613134908380545408">Visa <ph name="FOLDER_NAME"/></translation>
 <translation id="2837049386027881519">Anslutningen var tvungen att återupprättas via en äldre version av TLS- eller SSL-protokollet. Detta innebär vanligtvis att servern använder mycket gammal programvara och kanske har andra säkerhetsproblem.</translation>
 <translation id="404928562651467259">VARNING</translation>
 <translation id="4289300219472526559">Börja tala</translation>
@@ -4727,6 +4729,7 @@ hanteraren
 <translation id="6934265752871836553">Låt Chrome rita upp innehåll snabbare med den allra senaste koden. Risken är stor
         att ändringarna bakom sökvägen leder till att innehåll slutar fungera.</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">Öppna alltid i Adobe Reader</translation>
 <translation id="8274359292107649245">Öppna Chrome på datorn</translation>
 <translation id="1571119610742640910">Sammansättning för fasta rotbakgrunder.</translation>
 <translation id="6514565641373682518">Muspekaren har inaktiverats av sidan.</translation>
@@ -4927,6 +4930,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="824543159844843373">Aktivera startprogramsobjekt 3</translation>
 <translation id="3819800052061700452">&amp;Helskärm</translation>
 <translation id="48607902311828362">Flygplansläge</translation>
+<translation id="711840821796638741">Visa hanterade bokmärken</translation>
 <translation id="3360297538363969800">Utskriften misslyckades. Kontrollera skrivaren och försök igen.</translation>
 <translation id="680572642341004180">Aktivera RLZ-spårning på <ph name="SHORT_PRODUCT_OS_NAME"/>.</translation>
 <translation id="688797901999351107">Använd inte den återkallade laddaren mer.</translation>
@@ -5263,7 +5267,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="6596325263575161958">Krypteringsalternativ</translation>
 <translation id="1559528461873125649">Filen eller katalogen finns inte</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
-<translation id="1533920822694388968">Tv-justering</translation>
+<translation id="1533920822694388968">TV-justering</translation>
 <translation id="6109534693970294947">Vill du tillåta att <ph name="ORIGIN"/> kommunicerar med tillägget <ph name="EXTENSION_NAME"/>?</translation>
 <translation id="1729533290416704613">Det styr också vilken sida som visas när du söker i adressfältet.</translation>
 <translation id="2650446666397867134">Åtkomst till filen nekades</translation>

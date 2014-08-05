@@ -3930,6 +3930,7 @@ Ne otkrivajte nikakve osjetljive podatke.</translation>
 <translation id="6460601847208524483">Traži sljedeće</translation>
 <translation id="397703832102027365">Dovršavanje...</translation>
 <translation id="8146177459103116374">Ako ste već registrirani na ovom uređaju, možete <ph name="LINK2_START"/>se prijaviti kao postojeći korisnik<ph name="LINK2_END"/>.</translation>
+<translation id="5072836811783999860">Prikaži upravljane oznake</translation>
 <translation id="4856478137399998590">Vaša mobilna podatkovna usluga aktivirana je i spremna za upotrebu</translation>
 <translation id="3305389145870741612">Postupak formatiranja može potrajati nekoliko sekundi. Pričekajte.</translation>
 <translation id="3648607100222897006">Te eksperimentalne značajke mogu se promijeniti, pokvariti ili nestati u bilo kojem trenutku. Ne dajemo apsolutno nikakva jamstva o tome što se može dogoditi ako uključite jedan od tih eksperimenata, a vaš preglednik čak može spontano sagorjeti. Šalu na stranu, vaš preglednik može izbrisati sve vaše podatke ili vaša sigurnost i privatnost mogu biti ugrožene na neočekivane načine. Svi eksperimenti koje omogućite bit će omogućeni za sve korisnike ovog preglednika. Nastavite uz oprez.</translation>
@@ -4359,6 +4360,7 @@ Ne otkrivajte nikakve osjetljive podatke.</translation>
 <translation id="6869402422344886127">Označeni okvir za izbor</translation>
 <translation id="3428010780253032925">Onemogući ciljanje na temelju pravokutnika u prikazima</translation>
 <translation id="5637380810526272785">Način unosa</translation>
+<translation id="3613134908380545408">Prikaži <ph name="FOLDER_NAME"/></translation>
 <translation id="2837049386027881519">Bio je nužan ponovni pokušaj povezivanja starijom verzijom protokola TLS ili SSL. To uobičajeno znači da poslužitelj upotrebljava vrlo stari softver te da može imati druge sigurnosne probleme.</translation>
 <translation id="404928562651467259">UPOZORENJE</translation>
 <translation id="4289300219472526559">Počni govoriti</translation>
@@ -4690,6 +4692,7 @@ Ne otkrivajte nikakve osjetljive podatke.</translation>
 <translation id="2859369953631715804">Odaberite mobilnu mrežu</translation>
 <translation id="6934265752871836553">Upotrijebite najnoviji kôd u razvoju za brže iscrtavanje sadržaja u Chromeu. Promjene na kojima se temelji putanja vjerojatno će prekinuti mnogo sadržaja.</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">Uvijek otvaraj u Adobe Readeru</translation>
 <translation id="8274359292107649245">Otvori Chrome na radnoj površini</translation>
 <translation id="1571119610742640910">Uslojavanje za fiksne korijenske pozadine.</translation>
 <translation id="6514565641373682518">Ova stranica onemogućila je pokazivač miša.</translation>
@@ -4888,6 +4891,7 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="824543159844843373">Aktiviranje 3. stavke pokretača</translation>
 <translation id="3819800052061700452">&amp;Puni ekran</translation>
 <translation id="48607902311828362">Način rada u zrakoplovu</translation>
+<translation id="711840821796638741">Prikaži upravljane oznake</translation>
 <translation id="3360297538363969800">Ispis nije uspio. Provjerite svoj pisač i pokušajte ponovo.</translation>
 <translation id="680572642341004180">Omogući praćenje RLZ-a za <ph name="SHORT_PRODUCT_OS_NAME"/>.</translation>
 <translation id="688797901999351107">Prestanite upotrebljavati opozvani punjač.</translation>

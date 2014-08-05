@@ -25,7 +25,7 @@
 <translation id="8114679593444120202">อ่านและแก้ไขข้อมูลของคุณบนเว็บไซต์ <ph name="NUMBER_OF_WEBSITES"/> แห่ง</translation>
 <translation id="8602184400052594090">ไฟล์มานิเฟสต์หายไปหรืออ่านไม่ได้</translation>
 <translation id="7893008570150657497">เข้าถึงรูปภาพ เพลง และสื่ออื่นๆ จากคอมพิวเตอร์ของคุณ</translation>
-<translation id="7217838517480956708">ผู้ดูแลระบบของเครื่องนี้ต้องการให้มีการติดตั้ง <ph name="EXTENSION_NAME"/> โดยไม่สามารถนำออกหรือแก้ไขได้</translation>
+<translation id="7217838517480956708">ผู้ดูแลระบบของเครื่องนี้ต้องการให้มีการติดตั้ง <ph name="EXTENSION_NAME"/> โดยไม่สามารถลบหรือแก้ไขได้</translation>
 <translation id="7154130902455071009">เปลี่ยนหน้าเริ่มต้นของคุณเป็น: <ph name="START_PAGE"/></translation>
 <translation id="6094507746643187368">อ่านและแก้ไขข้อมูลของคุณบน <ph name="WEBSITE_1"/> และ <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">ไม่สามารถโหลดหน้าพื้นหลัง &quot;<ph name="BACKGROUND_PAGE"/>&quot;</translation>

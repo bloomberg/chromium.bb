@@ -3944,6 +3944,7 @@ dan tidak biasa. Bisa jadi penyerang berpura-pura menjadi <ph name="SITE"/>, ata
 <translation id="6460601847208524483">Temukan Berikutnya</translation>
 <translation id="397703832102027365">Mengakhiri...</translation>
 <translation id="8146177459103116374">Jika Anda telah terdaftar di perangkat ini, Anda dapat <ph name="LINK2_START"/>masuk sebagai pengguna yang ada<ph name="LINK2_END"/>.</translation>
+<translation id="5072836811783999860">Tampilkan bookmark yang dikelola</translation>
 <translation id="4856478137399998590">Layangan data seluler Anda diaktifkan dan siap untuk digunakan</translation>
 <translation id="3305389145870741612">Proses pemformatan dapat memakan waktu beberapa detik. Harap tunggu.</translation>
 <translation id="3648607100222897006">Fitur eksperimental ini bisa berubah, rusak, atau hilang kapan saja. Kami sama sekali tidak menjamin apa yang akan terjadi saat eksperimen ini dinyalakan, siapa tahu browser Anda tiba-tiba hangus terbakar! Becanda! Tapi bisa jadi browser akan menghapus semua data, atau keamanan dan privasi Anda akan disusupi secara tak terduga. Eksperimen yang Anda aktifkan akan diaktifkan untuk semua pengguna browser ini. Lanjutkan dengan hati-hati.</translation>
@@ -4220,7 +4221,7 @@ dan tidak biasa. Bisa jadi penyerang berpura-pura menjadi <ph name="SITE"/>, ata
 <translation id="4375035964737468845">Membuka file yang diunduh</translation>
 <translation id="3968739731834770921">Kana</translation>
 <translation id="7387829944233909572">Dialog &quot;Hapus data penjelajahan&quot;</translation>
-<translation id="8023801379949507775">Mutakhirkan ekstensi sekarang</translation>
+<translation id="8023801379949507775">Perbarui ekstensi sekarang</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES"/> (<ph name="NUM_KILOBYTES_LIVE"/> maksimal)</translation>
 <translation id="2524800364695118482">Ini Dapat:</translation>
 <translation id="6782622603507084740">Aktifkan API Penelusuran yang Disematkan</translation>
@@ -4275,7 +4276,7 @@ dan tidak biasa. Bisa jadi penyerang berpura-pura menjadi <ph name="SITE"/>, ata
 <translation id="3737514536860147030">Pelajari lebih lanjut tentang penjelajahan dalam penyamaran</translation>
 <translation id="621638399744152264"><ph name="VALUE"/>%</translation>
 <translation id="3082520371031013475">Setelan touchpad dan mouse</translation>
-<translation id="4927301649992043040">Paket Ekstensi</translation>
+<translation id="4927301649992043040">Kemas Ekstensi</translation>
 <translation id="5939518447894949180">Atur ulang</translation>
 <translation id="8679658258416378906">Aktifkan tab 5</translation>
 <translation id="9049835026521739061">Mode Hangul</translation>
@@ -4372,6 +4373,7 @@ dan tidak biasa. Bisa jadi penyerang berpura-pura menjadi <ph name="SITE"/>, ata
 <translation id="6869402422344886127">Kotak centang yang telah dicentang</translation>
 <translation id="3428010780253032925">Nonaktifkan penargetan berbasis kotak pada tampilan</translation>
 <translation id="5637380810526272785">Metode Masukan</translation>
+<translation id="3613134908380545408">Tampilkan <ph name="FOLDER_NAME"/></translation>
 <translation id="2837049386027881519">Sambungan harus dicoba lagi menggunakan versi yang lebih lama dari protokol TLS atau SSL. Biasanya, ini artinya server menggunakan perangkat lunak yang amat lawas dan mungkin mengalami masalah keamanan lainnya.</translation>
 <translation id="404928562651467259">PERINGATAN</translation>
 <translation id="4289300219472526559">Mulai Berbicara</translation>
@@ -4704,6 +4706,7 @@ dan tidak biasa. Bisa jadi penyerang berpura-pura menjadi <ph name="SITE"/>, ata
 <translation id="6934265752871836553">Gunakan kode bleeding-edge untuk membuat Chrome menggambar konten lebih cepat. Perubahan
         di balik jalur ini sangat mungkin merusak banyak konten.</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">Selalu buka di Adobe Reader</translation>
 <translation id="8274359292107649245">Buka Chrome di desktop</translation>
 <translation id="1571119610742640910">Pengomposisian untuk memperbaiki latar belakang akar.</translation>
 <translation id="6514565641373682518">Laman ini telah menonaktifkan kursor mouse Anda.</translation>
@@ -4902,6 +4905,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="824543159844843373">Aktifkan item peluncur 3</translation>
 <translation id="3819800052061700452">Layar penuh</translation>
 <translation id="48607902311828362">Mode pesawat</translation>
+<translation id="711840821796638741">Tampilkan Bookmark yang Dikelola</translation>
 <translation id="3360297538363969800">Gagal mencetak. Periksa printer Anda dan coba lagi.</translation>
 <translation id="680572642341004180">Aktifkan pelacakan RLZ pada <ph name="SHORT_PRODUCT_OS_NAME"/>.</translation>
 <translation id="688797901999351107">Jangan memakai pengisi daya (charger) yang ditarik kembali.</translation>
@@ -5205,7 +5209,7 @@ File Kunci: <ph name="KEY_FILE"/>
 
 Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membuat versi baru ekstensi.</translation>
 <translation id="5522156646677899028">Ekstensi ini berisi kerentanan keamanan serius.</translation>
-<translation id="1004032892340602806">Izinkan semua situs menggunakan plugin unuk mengakses komputer Anda</translation>
+<translation id="1004032892340602806">Izinkan semua situs menggunakan plugin untuk mengakses komputer Anda</translation>
 <translation id="3813984289128269159">Ok Google</translation>
 <translation id="417475959318757854">Letakkan Peluncur Aplikasi di tengah.</translation>
 <translation id="5218183485292899140">Prancis Swiss</translation>

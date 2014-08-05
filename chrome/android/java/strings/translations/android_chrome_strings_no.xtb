@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
 <translation id="8588878054171169263">Lagre bildet</translation>
-<translation id="7998918019931843664">Åpne lukkede faner på nytt</translation>
+<translation id="7998918019931843664">Åpne lukkede faner igjen</translation>
 <translation id="4996978546172906250">Del via</translation>
 <translation id="5578795271662203820">Søk etter dette bildet i <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Oversett</translation>
@@ -52,6 +52,7 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="3992315671621218278">Lagre linken</translation>
 <translation id="8034522405403831421">Denne siden er på <ph name="SOURCE_LANGUAGE"/>. Vil du oversette den til <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="4195643157523330669">Åpne i ny fane</translation>
+<translation id="651048280540227067">Lukk menyen</translation>
 <translation id="3089395242580810162">Åpne i inkognitofane</translation>
 <translation id="8725066075913043281">Prøv igjen</translation>
 <translation id="8909135823018751308">Del</translation>
@@ -60,7 +61,7 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="1206892813135768548">Kopiér linkteksten</translation>
 <translation id="9154176715500758432">Bli værende på denne siden</translation>
 <translation id="7063006564040364415">Kunne ikke koble til synkroniseringstjeneren.</translation>
-<translation id="4271185234001491831">Aldri oversett <ph name="LANGUAGE"/></translation>
+<translation id="4271185234001491831">Oversett aldri <ph name="LANGUAGE"/></translation>
 <translation id="6671495933530132209">Kopiér bildet</translation>
 <translation id="8209050860603202033">Åpne bildet</translation>
 <translation id="2501278716633472235">Gå tilbake</translation>

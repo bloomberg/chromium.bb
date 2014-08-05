@@ -642,7 +642,7 @@
 
       En webadresse har formatet &quot;netværk://vært:port/sti&quot;.
       Det valgfrie netværk kan være http, https eller ftp. Kun dette netværk blokeres. Hvis ingen er angivet, blokeres alle netværk.
-      Værten kan være et hostname eller en IP-adresse. Underdomæner af et hostname vil også blive blokeret. Medtag et &quot;.&quot; før hostname for at forhindre blokering af underdomæner. Det særlige hostname &quot;*&quot; blokerer alle domæner.
+      Værten kan være et hostname eller en IP-adresse. Underdomæner af et hostname vil også blive blokeret. Inkluder et &quot;.&quot; før hostname for at forhindre blokering af underdomæner. Det særlige hostname &quot;*&quot; blokerer alle domæner.
       Den valgfrie port består af et gyldigt portnummer mellem 1 og 65.535. Hvis intet nummer angives, blokeres alle porte.
       Hvis den valgfri sti er angivet, blokeres kun stier med det pågældende præfiks.
 
@@ -888,7 +888,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
       størrelser er kvantiseret, og opdateringshastigheden er begrænset af sikkerhedsmæssige hensyn. Du kan få
       nøjagtige data i realtid ved at bruge værktøjer som f.eks. Telemetri.</translation>
 <translation id="8731693562790917685">Indstillinger for indhold giver dig mulighed for at angive, hvordan en bestemt type indhold (for eksempel cookies, billeder eller JavaScript) skal behandles.</translation>
-<translation id="2411919772666155530">Bloker meddelelser på disse websites</translation>
+<translation id="2411919772666155530">Bloker underretninger på disse websites</translation>
 <translation id="7332963785317884918">Denne politik er udfaset. <ph name="PRODUCT_OS_NAME"/> vil altid anvende oprydningsstrategien &quot;RemoveLRU&quot;.
 
       Kontrollerer adfærden for automatisk oprydning på <ph name="PRODUCT_OS_NAME"/>-enheder. Automatisk oprydning udløses, når mængden af ledig plads på harddisken når et kritisk niveau, i et forsøg på at frigøre plads.
@@ -1063,7 +1063,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
           Hvis du aktiverer denne indstilling, kan brugere ikke ændre eller overskrive den i <ph name="PRODUCT_NAME"/>.
 
           Hvis du deaktiverer denne indstilling, svarer det til ikke at konfigurere den. Brugeren vil fortsat kunne ændre den i <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="2872961005593481000">Luk</translation>
+<translation id="2872961005593481000">Sluk</translation>
 <translation id="4445684791305970001">Deaktiverer udviklerværktøjerne og JavaScript-konsollen. Hvis du aktiverer denne indstilling, kan man ikke få adgang til udviklerværktøjerne, og webstedselementer kan ikke inspiceres. Alle tastaturgenveje og menuer eller genvejsmenuer, der åbner udviklerværktøjerne eller JavaScript-konsollen, vil blive deaktiveret. Hvis du deaktiverer denne indstilling eller ikke angiver den, tillades brugen af udviklerværktøjer og JavaScript-konsollen.</translation>
 <translation id="9203071022800375458">Deaktiverer skærmbilleder.
 
@@ -1088,10 +1088,16 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="389421284571827139">Giver dig mulighed for at angive den proxyserver, der anvendes af <ph name="PRODUCT_NAME"/>, og forhindrer brugerne i at ændre proxyindstillingerne. Hvis du vælger aldrig at bruge en proxyserver og altid opretter forbindelse direkte, ignoreres alle andre valgmuligheder. Hvis du vælger at registrere proxyserveren automatisk, ignoreres alle andre valgmuligheder. Få detaljerede eksempler på: <ph name="PROXY_HELP_URL"/> Hvis du aktiverer denne indstilling, ignorerer <ph name="PRODUCT_NAME"/> alle proxyrelaterede valgmuligheder, der specificeres fra kommandolinjen. Hvis disse politikker ikke angives, kan brugerne selv vælge proxyindstillingerne.</translation>
 <translation id="681446116407619279">Understøttede godkendelsesskemaer</translation>
 <translation id="4027608872760987929">Aktiver standardsøgemaskine</translation>
-<translation id="2223598546285729819">Standardindstilling for meddelelser</translation>
+<translation id="2223598546285729819">Standardindstilling for underretninger</translation>
 <translation id="6158324314836466367">Navn på virksomhedens webshop (udfaset)</translation>
 <translation id="3984028218719007910">Bestemmer, om <ph name="PRODUCT_OS_NAME"/> bevarer lokale kontodata efter logout. Hvis den er angivet til sand, er der ingen vedvarende konti, der bevares af <ph name="PRODUCT_OS_NAME"/>, og alle data fra brugersessionen kasseres efter logout. Hvis denne politik er angivet til falsk eller ikke er konfigureret, kan enheden beholde (krypterede) lokale brugerdata.</translation>
-<translation id="3793095274466276777">Konfigurerer standardbrowserens tjek i <ph name="PRODUCT_NAME"/> og forhindrer brugerne i at ændre dem. Hvis du aktiverer denne indstilling, tjekker <ph name="PRODUCT_NAME"/> altid ved opstart, om den er standardbrowser, og registrerer automatisk sig selv, hvis det er muligt. Hvis denne indstilling deaktiveres, tjekker <ph name="PRODUCT_NAME"/> aldrig se om den er standardbrowseren, og deaktivere brugerens kontrol over denne indstilling. Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME"/> tillade brugere at tjekke, om den er standardbrowseren, og om der skal vises meddelelser til brugeren, når den ikke er det.</translation>
+<translation id="3793095274466276777">Konfigurerer standardbrowserens tjek i <ph name="PRODUCT_NAME"/> og forhindrer brugerne i at ændre dem. 
+
+Hvis du aktiverer denne indstilling, tjekker <ph name="PRODUCT_NAME"/> altid ved opstart, om den er standardbrowser, og registrerer automatisk sig selv, hvis det er muligt. 
+
+Hvis denne indstilling deaktiveres, tjekker <ph name="PRODUCT_NAME"/> aldrig se om den er standardbrowseren, og deaktivere brugerens kontrol over denne indstilling. 
+
+Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME"/> tillade brugere at tjekke, om den er standardbrowseren, og om der skal vises underretninger til brugeren, når den ikke er det.</translation>
 <translation id="3504791027627803580">Angiver webadressen på den søgemaskine, der bruges til billedsøgning. Søgeanmodninger sendes ved hjælp af GET-metoden. Hvis politikken DefaultSearchProviderImageURLPostParams er angivet, vil anmodninger om billedsøgning anvende POST-metoden i stedet.
 
           Denne politik er valgfri. Hvis den ikke er angivet, anvendes der ikke nogen billedsøgning.
@@ -1524,7 +1530,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
       Den eksperimentelle indstilling fjernes på et tidspunkt i fremtiden, når inLine-login understøtter alle SSO-loginprocesser fuldt ud.</translation>
 <translation id="4121350739760194865">Undgå, at appkampagner vises på ny fane-siden</translation>
-<translation id="2127599828444728326">Tillad meddelelser på disse websites</translation>
+<translation id="2127599828444728326">Tillad underretninger på disse websites</translation>
 <translation id="3973371701361892765">Skjul aldrig hylden automatisk</translation>
 <translation id="7635471475589566552">Konfigurerer applikationens landestandard i <ph name="PRODUCT_NAME"/> og forhindrer brugerne i at ændre landestandarden. Hvis du aktiverer denne indstilling, anvender <ph name="PRODUCT_NAME"/> den angivne landestandard. Hvis den konfigurerede landestandard ikke understøttes, bruges &quot;en-US&quot; i stedet. Hvis denne indstilling er deaktiveret eller ikke konfigureret, bruger <ph name="PRODUCT_NAME"/> enten den brugerdefinerede landestandard (hvis denne er konfigureret), systemets landestandard eller reservelandestandarden &quot;en-US&quot;.</translation>
 <translation id="2948087343485265211">Angiver, om lydaktivitet påvirker strømstyring.
@@ -1566,7 +1572,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="4604931264910482931">Konfigurer spærrelisten for indbyggede beskedhosts</translation>
 <translation id="6810445994095397827">Bloker JavaScript på disse websites</translation>
 <translation id="6672934768721876104">Denne politik er forældet, brug ProxyMode i stedet. Giver dig mulighed for at angive den proxyserver, der anvendes af <ph name="PRODUCT_NAME"/>, og forhindrer brugerne i at ændre proxyindstillingerne. Hvis du vælger aldrig at bruge en proxyserver og altid oprette forbindelse direkte, ignoreres alle andre valgmuligheder. Hvis du vælger indstillinger for systemproxy eller automatisk registrering af proxyserver, ignoreres alle andre muligheder. Hvis du vælger indstillinger for manuel proxy, kan du angive yderligere indstillinger i &quot;Adresse eller webadresse på proxyserver&quot;, &quot;Webadresse til en proxy .pac-fil&quot; og &quot;Komma-adskilt liste over regler for tilsidesættelse af proxy&quot;. Få detaljerede eksempler på: <ph name="PROXY_HELP_URL"/> Hvis du aktiverer denne indstilling, ignorerer <ph name="PRODUCT_NAME"/> alle proxyrelaterede valgmuligheder, der angives via kommandolinjen. Hvis denne politik ikke angives, kan brugerne selv vælge proxyindstillingerne.</translation>
-<translation id="3780152581321609624">Medtag en port, der ikke er standard, i Kerberos-SPN</translation>
+<translation id="3780152581321609624">Inkluder en port, der ikke er standard, i Kerberos-SPN</translation>
 <translation id="1749815929501097806">Angiver de Servicevilkår, som brugeren skal acceptere, inden en enhedslokal kontosession kan påbegyndes.
 
       Hvis denne politik indstilles, downloader <ph name="PRODUCT_OS_NAME"/> servicevilkårene og præsenterer dem for brugeren, når en enhedslokal kontosession påbegyndes. Brugeren får først tilladelse til sessionen, når servicevilkårene accepteres.

@@ -30,7 +30,7 @@
 <translation id="6753269504797312559">Hodnota pravidla</translation>
 <translation id="8834246243508017242">Povoliť automatické dopĺňanie pomocou Kontaktov…</translation>
 <translation id="7275334191706090484">Spravované záložky</translation>
-<translation id="7400418766976504921">Adresa URL</translation>
+<translation id="7400418766976504921">Webová adresa</translation>
 <translation id="7378627244592794276">Nie</translation>
 <translation id="2704283930420550640">Hodnota nezodpovedá formátu.</translation>
 <translation id="8943805475239098364">Hľadať pomocou novej stránky <ph name="NEW_GOOGLE_HOST"/> namiesto súčasnej stránky <ph name="CURRENT_GOOGLE_HOST"/>?</translation>
@@ -38,17 +38,17 @@
 <translation id="8091372947890762290">Aktivácia čaká na server</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Oblasť</translation>
-<translation id="1871208020102129563">Proxy je nastavené na použitie pevne daných serverov proxy, nie skriptov PAC adresy URL.</translation>
+<translation id="1871208020102129563">Proxy je nastavené na použitie pevne daných serverov proxy, nie skriptov PAC webovej adresy.</translation>
 <translation id="3380365263193509176">Neznáma chyba</translation>
 <translation id="112840717907525620">Vyrovnávacia pamäť pravidla je v poriadku</translation>
 <translation id="3452404311384756672">Interval načítania:</translation>
 <translation id="7441627299479586546">Chybný predmet pravidla</translation>
 <translation id="3885155851504623709">Okrsok</translation>
-<translation id="6973656660372572881">Určené sú pevne dané servery proxy aj skript PAC adresy URL.</translation>
+<translation id="6973656660372572881">Určené sú pevne dané servery proxy aj skript PAC webovej adresy.</translation>
 <translation id="7108649287766967076">Preklad do jazyka <ph name="TARGET_LANGUAGE"/> zlyhal.</translation>
 <translation id="4103249731201008433">Sériové číslo zariadenia je neplatné</translation>
 <translation id="3667681724235208644">Zobraziť pôvodnú stránku</translation>
-<translation id="4079302484614802869">Konfigurácia proxy je nastavená na použitie skriptu PAC adresy URL, nie pevne daných serverov proxy.</translation>
+<translation id="4079302484614802869">Konfigurácia proxy je nastavená na použitie skriptu PAC webovej adresy, nie pevne daných serverov proxy.</translation>
 <translation id="5540224163453853">Požadovaný článok sa nepodarilo nájsť.</translation>
 <translation id="5523118979700054094">Názov pravidla</translation>
 <translation id="7791543448312431591">Pridať</translation>
@@ -95,7 +95,7 @@
 <translation id="5455374756549232013">Chybná časová pečiatka pravidla</translation>
 <translation id="1962204205936693436">Záložky (<ph name="DOMAIN"/>)</translation>
 <translation id="1973335181906896915">Chyba serializácie</translation>
-<translation id="5989320800837274978">Nie sú určené pevne dané servery proxy ani skript PAC adresy URL.</translation>
+<translation id="5989320800837274978">Nie sú určené pevne dané servery proxy ani skript PAC webovej adresy.</translation>
 <translation id="7805768142964895445">Stav</translation>
 <translation id="536296301121032821">Nastavenia pravidla sa nepodarilo uložiť</translation>
 <translation id="5439770059721715174">Pri overení schémy sa vyskytla chyba na mieste <ph name="ERROR_PATH"/>: <ph name="ERROR"/></translation>
@@ -148,7 +148,7 @@
     podpis poľa: <ph name="FIELD_SIGNATURE"/>
     podpis formulára: <ph name="FORM_SIGNATURE"/>
     ID experimentu: „<ph name="EXPERIMENT_ID"/>“</translation>
-<translation id="2479410451996844060">Neplatná adresa URL vyhľadávania.</translation>
+<translation id="2479410451996844060">Neplatná webová adresa vyhľadávania.</translation>
 <translation id="5509780412636533143">Spravované záložky</translation>
 <translation id="8866481888320382733">Pri analýze nastavení pravidla sa vyskytla chyba</translation>
 <translation id="6644283850729428850">Toto pravidlo bolo označené ako zastarané.</translation>

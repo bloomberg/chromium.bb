@@ -406,7 +406,7 @@
 <translation id="8034955203865359138">Geen items gevonden.</translation>
 <translation id="9130015405878219958">Ongeldige modus opgegeven.</translation>
 <translation id="6615807189585243369"><ph name="BURNT_AMOUNT"/> van <ph name="TOTAL_SIZE"/> gekopieerd</translation>
-<translation id="7501143156951160001">Als je geen Google-account heeft, kun je nu <ph name="LINK_START"/>een Google-account maken<ph name="LINK_END"/>.</translation>
+<translation id="7501143156951160001">Als je geen Google-account hebt, kun je nu <ph name="LINK_START"/>een Google-account maken<ph name="LINK_END"/>.</translation>
 <translation id="4950138595962845479">Opties...</translation>
 <translation id="4653235815000740718">Er is een probleem opgetreden tijdens het maken van het OS-herstelmedium. Het gebruikte opslagapparaat kan niet worden gevonden.</translation>
 <translation id="1407489512183974736">Midden bijsnijden</translation>
@@ -724,7 +724,7 @@ Alle gebruikers moet uitloggen om door te gaan.</translation>
 <translation id="3984921062031549150">Renderer loopt vast</translation>
 <translation id="7925285046818567682">Wachten op <ph name="HOST_NAME"/>...</translation>
 <translation id="1079766198702302550">Cameratoegang altijd blokkeren</translation>
-<translation id="2964845078799970531">Met 'Eenvoudig ontgrendelen' kun je je Chromebook ontgrendelen wanneer deze in de buurt van je telefoon is.</translation>
+<translation id="2964845078799970531">Met Eenvoudig ontgrendelen kun je je Chromebook ontgrendelen wanneer deze in de buurt van je telefoon is.</translation>
 <translation id="5053803681436838483">Nieuw verzendadres…</translation>
 <translation id="5952256601775839173">Drie keer met de vinger klikken op de touchpad inschakelen.</translation>
 <translation id="3280237271814976245">Opslaan &amp;als...</translation>
@@ -1306,7 +1306,7 @@ Resterende tijd berekenen</translation>
 <translation id="9033857511263905942">&amp;Plakken</translation>
 <translation id="1028690605877243613">De alternatieve indeling van Toolbar gebruiken.</translation>
 <translation id="6736045498964449756">De wachtwoorden komen niet overeen.</translation>
-<translation id="4558985768677321342">'Eenvoudig ontgrendelen' inschakelen.</translation>
+<translation id="4558985768677321342">Eenvoudig ontgrendelen inschakelen.</translation>
 <translation id="1221825588892235038">Alleen selectie</translation>
 <translation id="2227939492629426903">Schakelt het nieuwe avatarmenu in. Indien gecombineerd met beheer van nieuwe profielen wordt het avatarmenu voor het beheren van nieuwe profielen weergegeven. Anders wordt een vernieuwd avatarmenu weergegeven met dezelfde functionaliteit als het oude menu, evenals een trainingskaart boven aan het scherm waarin de gebruiker wordt gevraagd de gebruikersinterface voor het beheren van nieuwe profielen te proberen.</translation>
 <translation id="5582883434676861778"><ph name="PRODUCT_NAME"/> heeft de toegang tot <ph name="HOST_NAME"/> geblokkeerd. Deze website is gemeld als phishingwebsite.</translation>
@@ -3975,6 +3975,7 @@ Zorg ervoor dat je geen gevoelige informatie weergeeft.</translation>
 <translation id="6460601847208524483">Zoek volgende</translation>
 <translation id="397703832102027365">Wordt voltooid...</translation>
 <translation id="8146177459103116374">Als je al bent geregistreerd op dit apparaat, kun je <ph name="LINK2_START"/>inloggen als een bestaande gebruiker<ph name="LINK2_END"/>.</translation>
+<translation id="5072836811783999860">Beheerde bladwijzers weergeven</translation>
 <translation id="4856478137399998590">Je mobiele netwerk is actief en klaar voor gebruik</translation>
 <translation id="3305389145870741612">Het formatteren kan enkele seconden duren. Een ogenblik geduld.</translation>
 <translation id="3648607100222897006">Deze experimentele functies kunnen op elk moment worden aangepast, vastlopen of verdwijnen. We bieden geen enkele garantie aangaande wat er gebeurt als je een van deze experimenten inschakelt: je browser kan zelfs spontaan in brand vliegen. Alle gekheid op een stokje, het is mogelijk dat alle gegevens in je browser worden gewist, of dat je veiligheid en privacy op onverwachte manieren risico lopen. Experimenten die je inschakelt, worden ingeschakeld voor alle gebruikers van deze browser. Let dus goed op wat je doet.</translation>
@@ -4407,6 +4408,7 @@ Zorg ervoor dat je geen gevoelige informatie weergeeft.</translation>
 <translation id="6869402422344886127">Aangevinkt selectievakje</translation>
 <translation id="3428010780253032925">Targeting op basis van rechthoeken in weergaven uitschakelen</translation>
 <translation id="5637380810526272785">Invoermethode</translation>
+<translation id="3613134908380545408"><ph name="FOLDER_NAME"/> weergeven</translation>
 <translation id="2837049386027881519">Er moest opnieuw worden geprobeerd verbinding te maken met een oudere versie van het TLS- of SSL-protocol. Dit betekent meestal dat de server zeer oude software gebruikt en mogelijk andere beveiligingsproblemen heeft.</translation>
 <translation id="404928562651467259">WAARSCHUWING</translation>
 <translation id="4289300219472526559">Inspreken starten</translation>
@@ -4739,6 +4741,7 @@ Tijd berekenen tot vol</translation>
 <translation id="6934265752871836553">Gebruik uiterst geavanceerde code om Chrome sneller inhoud te laten weergeven. Met de wijzigingen
         in dit pad wordt hoogstwaarschijnlijk veel inhoud onderbroken.</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">Altijd in Adobe Reader openen</translation>
 <translation id="8274359292107649245">Chrome openen op desktop</translation>
 <translation id="1571119610742640910">Samenstelling voor vaste basisachtergronden.</translation>
 <translation id="6514565641373682518">Deze pagina heeft je muisaanwijzer uitgeschakeld.</translation>
@@ -4939,6 +4942,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="824543159844843373">Item 3 in het opstartprogramma activeren</translation>
 <translation id="3819800052061700452">&amp;Volledig scherm</translation>
 <translation id="48607902311828362">Vliegmodus</translation>
+<translation id="711840821796638741">Beheerde bladwijzers weergeven</translation>
 <translation id="3360297538363969800">Afdrukken is mislukt. Controleer je printer en probeer het opnieuw.</translation>
 <translation id="680572642341004180">Bijhouden met RLZ inschakelen voor <ph name="SHORT_PRODUCT_OS_NAME"/>.</translation>
 <translation id="688797901999351107">Stop met het gebruiken van de teruggeroepen oplader.</translation>

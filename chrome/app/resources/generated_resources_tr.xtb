@@ -3969,6 +3969,7 @@ Dolması için gereken süre: <ph name="HOUR"/>:<ph name="MINUTE"/></translation
 <translation id="6460601847208524483">Sonrakini Bul</translation>
 <translation id="397703832102027365">Sonlandırılıyor...</translation>
 <translation id="8146177459103116374">Zaten bu cihazda kayıtlıysanız, <ph name="LINK2_START"/>varolan kullanıcı olarak oturum açabilirsiniz<ph name="LINK2_END"/>.</translation>
+<translation id="5072836811783999860">Yönetilen yer işaretlerini göster</translation>
 <translation id="4856478137399998590">Mobil veri hizmetiniz etkinleştirildi ve kullanıma hazır</translation>
 <translation id="3305389145870741612">Biçimlendirme işlemi birkaç saniye sürebilir. Lütfen bekleyin.</translation>
 <translation id="3648607100222897006">Bu deneysel özellikler zaman zaman değişebilir, bozulabilir veya kullanımdan kaldırılabilir. Bu deneylerden herhangi birini açtığınızda tarayıcınızın aniden yanmaya başlaması mümkün olduğundan, başınıza gelebilecekler konusunda kesinlikle hiçbir garanti vermeyiz. Şaka bir yana, tarayıcınız tüm verilerinizi silebilir ya da güvenliğiniz ve gizliliğiniz beklenmedik şekillerde riske girebilir. Etkinleştireceğiniz her deney bu tarayıcının tüm kullanıcıları için etkin hale gelecektir. Lütfen dikkatle ilerleyin.</translation>
@@ -4400,6 +4401,7 @@ Dolması için gereken süre: <ph name="HOUR"/>:<ph name="MINUTE"/></translation
 <translation id="6869402422344886127">İşaretli onay kutusu</translation>
 <translation id="3428010780253032925">Görünümlerde dikdörtgen tabanlı hedeflemeyi devre dışı bırak</translation>
 <translation id="5637380810526272785">Giriş Yöntemi</translation>
+<translation id="3613134908380545408"><ph name="FOLDER_NAME"/> Klasörünü Göster</translation>
 <translation id="2837049386027881519">Bağlantı, TLS veya SSL protokolünün eski bir sürümü kullanılarak tekrar denendi. Bu genellikle sunucunun çok eski bir yazılım kullandığı ve başka güvenlik sorunları olabileceği anlamına gelir.</translation>
 <translation id="404928562651467259">UYARI</translation>
 <translation id="4289300219472526559">Konuşmaya Başla</translation>
@@ -4733,6 +4735,7 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="6934265752871836553">Chrome'un içeriği daha hızlı çizmesini sağlamak için yeni teknoloji kodunu kullanın. Bu yolun
         arkasındaki değişiklikler muhtemelen birçok içeriği bozar.</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">Her zaman Adobe Reader programında aç</translation>
 <translation id="8274359292107649245">Chrome'u masaüstünde aç</translation>
 <translation id="1571119610742640910">Sabit köklü arka planlar için birleştirme.</translation>
 <translation id="6514565641373682518">Bu sayfa fare imlecinizi devre dışı bıraktı.</translation>
@@ -4931,6 +4934,7 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="824543159844843373">3. başlatıcı öğesini etkinleştir</translation>
 <translation id="3819800052061700452">Tam ek&amp;ran</translation>
 <translation id="48607902311828362">Uçak modu</translation>
+<translation id="711840821796638741">Yönetilen Yer İşaretlerini Göster</translation>
 <translation id="3360297538363969800">Yazdırma işlemi başarısız oldu. Lütfen yazıcınızı kontrol edin ve tekrar deneyin.</translation>
 <translation id="680572642341004180"><ph name="SHORT_PRODUCT_OS_NAME"/> üzerinde RLZ izlemeyi etkinleştir.</translation>
 <translation id="688797901999351107">Lütfen geri toplanmak istenen şarj cihazını artık kullanmayın.</translation>

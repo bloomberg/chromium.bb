@@ -720,7 +720,7 @@
 <translation id="3984921062031549150">렌더러 정지</translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME"/>의 응답을 기다리는 중...</translation>
 <translation id="1079766198702302550">카메라 액세스 항상 차단</translation>
-<translation id="2964845078799970531">내 휴대전화와 가까워지면 편리한 잠금 해제 기능이 Chromebook을 해제해 줍니다.</translation>
+<translation id="2964845078799970531">내 휴대전화와 가까워지면 간편 잠금 해제 기능이 Chromebook을 잠금 해제해 줍니다.</translation>
 <translation id="5053803681436838483">새 배송지 주소...</translation>
 <translation id="5952256601775839173">손가락 세 개로 터치패드를 클릭하는 기능을 사용하도록 설정합니다.</translation>
 <translation id="3280237271814976245">다른 이름으로 저장(&amp;A)...</translation>
@@ -1303,7 +1303,7 @@ http://support.google.com/chromebook/?p=tpm</translation>
 <translation id="9033857511263905942">붙여넣기(&amp;P)</translation>
 <translation id="1028690605877243613">대체 임시보관함 레이아웃을 사용합니다.</translation>
 <translation id="6736045498964449756">비밀번호가 일치하지 않습니다.</translation>
-<translation id="4558985768677321342">편리한 잠금 해제 사용 설정</translation>
+<translation id="4558985768677321342">간편 잠금 해제 사용 설정</translation>
 <translation id="1221825588892235038">선택 영역만</translation>
 <translation id="2227939492629426903">새 아바타 메뉴를 사용 설정합니다. 새 프로필 관리 시스템과 결합되면 새 프로필 관리 아바타 메뉴를 표시합니다. 그렇지 않은 경우, 사용자에게 새 프로필 관리 UI 사용을 권하는 메시지가 상단에 표시된 안내 카드와 함께, 기존 메뉴와 같은 기능을 가진 새로운 아바타 메뉴를 표시합니다.</translation>
 <translation id="5582883434676861778"><ph name="PRODUCT_NAME"/>이(가) <ph name="HOST_NAME"/> 액세스를 차단하고 있습니다.  이 웹사이트는 피싱 웹사이트로 신고되었습니다.</translation>
@@ -3964,6 +3964,7 @@ http://support.google.com/chromebook/?p=tpm</translation>
 <translation id="6460601847208524483">다음 찾기</translation>
 <translation id="397703832102027365">완료 중...</translation>
 <translation id="8146177459103116374">이 기기에 이미 등록한 경우 <ph name="LINK2_START"/>기존 사용자로 로그인<ph name="LINK2_END"/>할 수 있습니다.</translation>
+<translation id="5072836811783999860">관리 북마크 표시</translation>
 <translation id="4856478137399998590">모바일 데이터 서비스가 활성화되었으며 사용할 준비가 되었습니다.</translation>
 <translation id="3305389145870741612">포맷하는 데 몇 초 정도 걸립니다. 잠시 기다려 주세요.</translation>
 <translation id="3648607100222897006">해당 실험용 기능은 언제든지 변경, 중지 및 취소될 수 있습니다. 해당 실험용 기능을 사용할 때 발생하는 일에 대해 Google은 보장하지 않습니다. 데이터가 삭제되거나 개인 정보가 예기치 않은 방법으로 유출될 수 있습니다. 본인이 사용 설정한 모든 실험 기능은 해당 브라우저의 다른 사용자도 사용하게 됩니다. 주의해서 진행하시기 바랍니다.</translation>
@@ -4395,6 +4396,7 @@ http://support.google.com/chromebook/?p=tpm</translation>
 <translation id="6869402422344886127">확인란 선택함</translation>
 <translation id="3428010780253032925">보기에 직사각형 기반 타겟팅 사용 중지</translation>
 <translation id="5637380810526272785">입력 방법</translation>
+<translation id="3613134908380545408"><ph name="FOLDER_NAME"/> 표시</translation>
 <translation id="2837049386027881519">TLS 또는 SSL 프로토콜의 이전 버전을 사용하여 다시 연결을 시도했습니다. 일반적으로 서버가 아주 오래된 소프트웨어를 사용 중이며 기타 보안 문제가 있기 때문일 수 있습니다.</translation>
 <translation id="404928562651467259">경고</translation>
 <translation id="4289300219472526559">말하기 시작</translation>
@@ -4728,6 +4730,7 @@ http://support.google.com/chromebook/?p=tpm</translation>
 <translation id="6934265752871836553">최첨단 코드를 사용하여 Chrome에서 더욱 빨리 콘텐츠를 가져오도록 합니다. 이 경로
         뒤에 있는 변경사항으로 인해 더 많은 콘텐츠가 중단될 수 있습니다.</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">항상 Adobe Reader에서 열기</translation>
 <translation id="8274359292107649245">데스크톱에서 Chrome 열기</translation>
 <translation id="1571119610742640910">고정 루트 백그라운드 합성</translation>
 <translation id="6514565641373682518">이 페이지에서 마우스 커서를 사용 중지했습니다.</translation>
@@ -4928,6 +4931,7 @@ http://support.google.com/chromebook/?p=tpm</translation>
 <translation id="824543159844843373">실행기 항목 3 활성화</translation>
 <translation id="3819800052061700452">전체화면(&amp;F)</translation>
 <translation id="48607902311828362">비행 모드</translation>
+<translation id="711840821796638741">관리 북마크 표시</translation>
 <translation id="3360297538363969800">인쇄에 실패했습니다. 프린터를 확인한 후 다시 시도해 주세요.</translation>
 <translation id="680572642341004180"><ph name="SHORT_PRODUCT_OS_NAME"/>에서 RLZ 추적을 사용합니다.</translation>
 <translation id="688797901999351107">리콜된 충전기 사용을 중단하세요.</translation>

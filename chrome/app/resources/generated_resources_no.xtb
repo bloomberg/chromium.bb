@@ -5,7 +5,7 @@
 <translation id="6879617193011158416">Vis eller skjul bokmerkefelt</translation>
 <translation id="4590324241397107707">Databaselagring</translation>
 <translation id="9056953843249698117">Butikk</translation>
-<translation id="6431217872648827691">Alle dataene ble kryptert med Google-passordet ditt fra den <ph name="TIME"/></translation>
+<translation id="6431217872648827691">Alle dataene ble kryptert med Google-passordet ditt fra og med <ph name="TIME"/></translation>
 <translation id="335581015389089642">Tale</translation>
 <translation id="1890570400853666479">Bruk det nye eksperimentelle galleriet i stedet for den stabile versjonen.</translation>
 <translation id="8206745257863499010">Plystre</translation>
@@ -52,7 +52,7 @@
 <translation id="7900476766547206086">Passord er nødvendig for påloggede brukere, fordi én eller flere brukere har denne innstillingen aktivert.</translation>
 <translation id="8870272765758621889">Dette er en administrert bruker som administreres av <ph name="CUSTODIAN_EMAIL"/>. Påloggingsinformasjonen for kontoen din er utløpt.</translation>
 <translation id="3300394989536077382">Signert av</translation>
-<translation id="654233263479157500">Bruk en nettjeneste til å løse problemer med navigasjonsfeil</translation>
+<translation id="654233263479157500">Bruk en nettjeneste til å løse problemer med navigeringsfeil</translation>
 <translation id="3792890930871100565">Koble fra skrivere</translation>
 <translation id="5378437846548426165">Bytt mellom ulike versjoner av TLS-/SSL-advarselen.</translation>
 <translation id="6476748132434603124"><ph name="SITE"/> har bedt Chrome om å blokkere eventuelle sertifikater med feil, men sertifikatet Chrome mottok under denne tilkoblingen, inneholder en feil.</translation>
@@ -70,7 +70,7 @@
 <translation id="7409233648990234464">Start på nytt og bruk Powerwash</translation>
 <translation id="7428534988046001922">Følgende programmer er nå installert:</translation>
 <translation id="787386463582943251">Legg til e-postadresse</translation>
-<translation id="2833791489321462313">Krev passord for å vekke fra sovemodus</translation>
+<translation id="2833791489321462313">Krev passord for å vekke fra hvilemodus</translation>
 <translation id="8208216423136871611">Ikke lagre</translation>
 <translation id="4405141258442788789">Operasjonen ble tidsavbrutt.</translation>
 <translation id="5048179823246820836">Nordisk</translation>
@@ -133,7 +133,7 @@
 <translation id="528468243742722775">End</translation>
 <translation id="1723824996674794290">&amp;Nytt vindu</translation>
 <translation id="1313405956111467313">Automatisk konfigurasjon av mellomtjener</translation>
-<translation id="3527276236624876118">En overvåket bruker ved navn <ph name="USER_DISPLAY_NAME"/> er opprettet.</translation>
+<translation id="3527276236624876118">En administrert bruker med navnet <ph name="USER_DISPLAY_NAME"/> er opprettet.</translation>
 <translation id="4367782753568896354">Vi kunne ikke installere følgende:</translation>
 <translation id="1589055389569595240">Vis stavekontroll og grammatikk</translation>
 <translation id="7017587484910029005">Skriv inn tegnene du ser i bildet nedenfor.</translation>
@@ -203,7 +203,7 @@
 <translation id="3899968422636198696"><ph name="ORGNAME"/> <ph name="HOSTNAME"/></translation>
 <translation id="2391762656119864333">Opphev</translation>
 <translation id="3315158641124845231">Skjul <ph name="PRODUCT_NAME"/></translation>
-<translation id="7069168971636881066">Minst én konto må finnes på denne enheten før du oppretter en overvåket bruker.</translation>
+<translation id="7069168971636881066">Minst én konto må finnes på denne enheten før du oppretter en administrert bruker.</translation>
 <translation id="7766807826975222231">Få en innføring</translation>
 <translation id="2269471294353474737"><ph name="MARKUP_1"/>Tilgang til filer uansett hvor du er, til og med uten nett.<ph name="MARKUP_2"/>
         Filer i Google Disk er oppdatert og tilgjengelige fra hvilken som helst enhet.<ph name="MARKUP_3"/>
@@ -224,11 +224,11 @@
 <translation id="4920887663447894854">Følgende nettsteder har blitt nektet tillatelse til å spore posisjonen din på siden:</translation>
 <translation id="8133676275609324831">&amp;Vis i mappe</translation>
 <translation id="302014277942214887">Skriv inn app-ID-en eller nettadressen til nettbutikken.</translation>
-<translation id="26224892172169984">Ikke tillat nettsteder å behandle protokoller</translation>
+<translation id="26224892172169984">Ikke tillat noen nettsteder å behandle protokoller</translation>
 <translation id="645705751491738698">Fortsett blokkering av JavaScript</translation>
 <translation id="9177556055091995297">Administrer kredittkort</translation>
 <translation id="4780321648949301421">L&amp;agre side som</translation>
-<translation id="8630903300770275248">Importer den overvåkede brukeren</translation>
+<translation id="8630903300770275248">Importér den administrerte brukeren</translation>
 <translation id="4552678318981539154">Kjøp mer lagringsplass</translation>
 <translation id="5780066559993805332">(Best)</translation>
 <translation id="3011284594919057757">Om Flash</translation>
@@ -268,7 +268,7 @@
 <translation id="1510030919967934016">Denne siden har blitt nektet tillatelse til å spore posisjonen din.</translation>
 <translation id="5748743223699164725">Aktiver eksperimentelle nettplattform-funksjoner som er under utvikling.</translation>
 <translation id="8110513421455578152">Angi standardhøyden for paneler</translation>
-<translation id="7002454948392136538">Velg administratoren for denne overvåkede brukeren</translation>
+<translation id="7002454948392136538">Velg administratoren for denne administrerte brukeren</translation>
 <translation id="4640525840053037973">Logg på med Google-kontoen din</translation>
 <translation id="4923279099980110923">Ja, jeg ønsker å hjelpe</translation>
 <translation id="5255315797444241226">Passordet du skrev inn, er feil.</translation>
@@ -342,12 +342,12 @@
 <translation id="5245965967288377800">WiMAX-nettverk</translation>
 <translation id="40027638859996362">Ordforflytning</translation>
 <translation id="3522708245912499433">Portugisisk</translation>
-<translation id="6303187936217840894">Nettleserinnstillingene dine gjenopprettes til opprinnelig standard. Dette tilbakestiller startsiden, Ny fane-siden og søkemotoren – i tillegg til at utvidelser deaktiveres og at festede faner løses ut. Tilbakestillingen fjerner også andre midlertidige eller bufrede data, som informasjonskapsler og innholds- og nettstedsdata.</translation>
+<translation id="6303187936217840894">Nettleserinnstillingene dine gjenopprettes til opprinnelig standard. Dette tilbakestiller startsiden, Ny fane-siden og søkemotoren – i tillegg til at utvidelser deaktiveres og at festede faner løsnes. Tilbakestillingen fjerner også andre midlertidige eller bufrede data, som informasjonskapsler og innholds- og nettstedsdata.</translation>
 <translation id="6928441285542626375">Aktiver TCP Fast Open</translation>
 <translation id="7792388396321542707">Stopp deling</translation>
 <translation id="5463275305984126951">Indeks for <ph name="LOCATION"/></translation>
 <translation id="8034304765210371109">Aktiver den eksperimentelle versjonen av appvelgeren.</translation>
-<translation id="8959810181433034287">Den overvåkede brukeren må bruke dette passordet til å logge seg på, så velg et sikkert passord, og husk å formidle det til den overvåkede brukeren.</translation>
+<translation id="8959810181433034287">Den administrerte brukeren må bruke dette passordet til å logge seg på, så velg et sikkert passord, og husk å formidle det til den administrerte brukeren.</translation>
 <translation id="5154917547274118687">Minne</translation>
 <translation id="1493492096534259649">Dette språket kan ikke brukes til stavekontroll</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> Søk</translation>
@@ -368,7 +368,7 @@
 <translation id="3382073616108123819">Beklager. Systemet kunne ikke fastslå enhetsidentifikatorer for denne enheten.</translation>
 <translation id="9041603713188951722">Vis innstillingene i et vindu</translation>
 <translation id="5419294236999569767">Systemtid</translation>
-<translation id="8158300065514217730">Logg på for å importere overvåkede brukere</translation>
+<translation id="8158300065514217730">Logg på for å importere administrerte brukere</translation>
 <translation id="2789486458103222910">OK</translation>
 <translation id="4792711294155034829">&amp;Rapporter et problem</translation>
 <translation id="5819484510464120153">Opprett &amp;snarveier til programmer...</translation>
@@ -416,7 +416,7 @@
 <translation id="4218259925454408822">Logg på en annen konto</translation>
 <translation id="2178614541317717477">Sertifiseringsinstans-kompromiss</translation>
 <translation id="6464076120278668805">Deaktiver ignoreringen av autocomplete='off'</translation>
-<translation id="4449935293120761385">Om funksjonen Autofyll</translation>
+<translation id="4449935293120761385">Om autofyll-funksjonen</translation>
 <translation id="4194570336751258953">Aktiver berøringsklikk</translation>
 <translation id="6066742401428748382">Tilgang til nettstedet ble avvist</translation>
 <translation id="5111692334209731439">&amp;Bokmerkebehandling</translation>
@@ -429,7 +429,7 @@
 <translation id="5661272705528507004">Dette SIM-kortet er deaktivert og kan ikke brukes. Kontakt tjenesteleverandøren og be om nytt SIM-kort.</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="3583413473134066075">Tre... To... En...</translation>
-<translation id="6585234750898046415">Velg et bilde som vises på påloggingsskjermen til kontoen.</translation>
+<translation id="6585234750898046415">Velg et bilde som vises på påloggingsskjermen for kontoen.</translation>
 <translation id="7957054228628133943">Administrer blokkering av forgrunnsvinduer</translation>
 <translation id="179767530217573436">de fire siste ukene</translation>
 <translation id="2279770628980885996">En uventet tilstand oppstod mens tjeneren forsøkte å utføre forespørselen.</translation>
@@ -481,7 +481,7 @@ Sjekk e-posten din på <ph name="ACCOUNT_EMAIL"/> for instruksjoner om dette og 
 <translation id="3873139305050062481">I&amp;nspiser element</translation>
 <translation id="7445762425076701745">Identiteten til tjernen du er tilkoblet kan ikke valideres. Du er tilkoblet en tjener som bruker et navn som kun er gyldig i ditt nettverk, som en ekstern sertifiseringsinstans ikke har noen mulighet til å validere eierskap for. Siden enkelte sertifiseringsinstanser likevel utsteder sertifikater for disse navnene, er det umulig å sikre at du er tilkoblet ønsket nettsted og ikke en angriper.</translation>
 <translation id="1556537182262721003">Katalogen over utvidelser kan ikke flyttes til profilen.</translation>
-<translation id="2946640296642327832">Aktiver Bluetooth</translation>
+<translation id="2946640296642327832">Aktivér Bluetooth</translation>
 <translation id="5866557323934807206">Fjern disse innstillingene for fremtidige besøk</translation>
 <translation id="126710816202626562">Målspråket:</translation>
 <translation id="1194381338562257973">Slå på eksperimentelle midlertidige apper.</translation>
@@ -490,7 +490,7 @@ Sjekk e-posten din på <ph name="ACCOUNT_EMAIL"/> for instruksjoner om dette og 
 <translation id="949088605431823851">Hvor kjøpte du din HP Chromebook 11?</translation>
 <translation id="9087353528325876418">Nettadresse for automatisk oppdagelse av nettmellomtjener</translation>
 <translation id="4801956050125744859">Behold begge</translation>
-<translation id="3878840326289104869">Oppretter en overvåket bruker …</translation>
+<translation id="3878840326289104869">Oppretter en administrert bruker</translation>
 <translation id="406070391919917862">Bakgrunnsprogrammer</translation>
 <translation id="8820817407110198400">Bokmerker</translation>
 <translation id="6347003977836730270">«Aktiver nye Translate bubble UX» tilbys i stedet for informasjonsraden.</translation>
@@ -507,12 +507,12 @@ Sjekk e-posten din på <ph name="ACCOUNT_EMAIL"/> for instruksjoner om dette og 
 <translation id="3809280248639369696">Marsboer</translation>
 <translation id="1985136186573666099"><ph name="PRODUCT_NAME"/> bruker innstillingene for datamaskinens systemmellomtjener for å koble til nettverket.</translation>
 <translation id="6435285122322546452">Administrer kioskapper</translation>
-<translation id="5748409721703101646">Chromebooken din kunne ikke koble til Internett via <ph name="NETWORK_NAME"/>. Velg et annet nettverk. <ph name="LEARN_MORE_LINK_START"/>Finn ut mer<ph name="LEARN_MORE_LINK_END"/></translation>
+<translation id="5748409721703101646">Chromebooken din kunne ikke koble til Internett via <ph name="NETWORK_NAME"/>. Velg et annet nettverk. <ph name="LEARN_MORE_LINK_START"/>Les mer<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">Tilkobling til privat nettverk</translation>
 <translation id="6508261954199872201">Program: <ph name="APP_NAME"/></translation>
 <translation id="3700528541715530410">Beklager. Det ser ut til at du ikke har tillatelse til å åpne denne siden.</translation>
 <translation id="2713008223070811050">Administrer skjermer</translation>
-<translation id="5145331109270917438">Endringsdato</translation>
+<translation id="5145331109270917438">Dato endret</translation>
 <translation id="6596816719288285829">IP-adresse</translation>
 <translation id="7603461642606849762">Feilsøk bare hvis nettadressen til manifestet slutter med debug.nmf.</translation>
 <translation id="8656768832129462377">Ikke merk av</translation>
@@ -533,24 +533,23 @@ Sjekk e-posten din på <ph name="ACCOUNT_EMAIL"/> for instruksjoner om dette og 
           dvalemodus. Når dette skjer, stenges nettverkstilkoblinger av,
           og nye nettverksforespørsler mislykkes. Du skal kunne løse dette ved å
           laste inn siden på nytt.</translation>
-<translation id="8791534160414513928">Send en Deaktivering av sporing-forespørsel med nettrafikken din</translation>
+<translation id="8791534160414513928">Send en «Ingen sporing»-forespørsel med nettrafikken din</translation>
 <translation id="485316830061041779">Tysk</translation>
 <translation id="9132971099789715557">Hold Søk-tasten nede for å endre funksjonene for tastene på øverste rad.</translation>
 <translation id="6500116422101723010">Tjeneren kan ikke behandle forespørselen for øyeblikket. Denne koden antyder at dette er en midlertidig tilstand, og at tjeneren vil fungere igjen etter en forsinkelse.</translation>
 <translation id="1644574205037202324">Logg</translation>
 <translation id="2386631145847373156">Du må være pålogget for å logge deg av.</translation>
 <translation id="4206944295053515692">Be Google om forslag</translation>
-<translation id="1297175357211070620">Til</translation>
+<translation id="1297175357211070620">Destinasjon</translation>
 <translation id="479280082949089240">Denne siden har lagret informasjonskapsler på datamaskinen</translation>
 <translation id="1984642098429648350">Forankre vinduet til høyre</translation>
-<translation id="6204930791202015665">Vis...</translation>
+<translation id="6204930791202015665">Se</translation>
 <translation id="8713570323158206935">Send <ph name="BEGIN_LINK1"/>systeminformasjon<ph name="END_LINK1"/></translation>
 <translation id="727952162645687754">Nedlastingsfeil</translation>
 <translation id="5941343993301164315">Logg på <ph name="TOKEN_NAME"/>.</translation>
 <translation id="1916935104118658523">Skjul dette programtillegget</translation>
 <translation id="1046059554679513793">Dette navnet er allerede i bruk!</translation>
-<translation id="2587922270115112871">Oppretting av en overvåket bruker oppretter ikke noen Google-konto, og vedkommendes innstillinger
-    og data blir ikke kopiert til andre enheter med Chrome-synkronisering. En overvåket bruker er bare tilgjengelig på denne enheten.</translation>
+<translation id="2587922270115112871">Når du oppretter en administrert bruker, oppretter du ikke en Google-konto, og vedkommendes innstillinger og data blir ikke kopiert til andre enheter med Chrome-synkronisering. En administrert bruker er bare tilgjengelig på denne enheten.</translation>
 <translation id="7342729285348293164">Logg på <ph name="PRODUCT_NAME"/> med Google-kontoen for å lagre personlig tilpassede nettleserfunksjoner på nettet, slik at du kan få tilgang til dem i <ph name="PRODUCT_NAME"/> fra alle datamaskiner. Du blir også automatisk logget på alle Google-tjenestene du liker.</translation>
 <translation id="2542049655219295786">Google-tabell</translation>
 <translation id="3899879303189199559">Frakoblet i over ett år</translation>
@@ -613,7 +612,7 @@ Sjekk e-posten din på <ph name="ACCOUNT_EMAIL"/> for instruksjoner om dette og 
 <translation id="5948544841277865110">Legg til privat nettverk</translation>
 <translation id="7088434364990739311">Kunne ikke starte søk etter oppdateringer (feilkode <ph name="ERROR"/>).</translation>
 <translation id="7113536735712968774">Vis færre …</translation>
-<translation id="1353966721814789986">Oppstartssider</translation>
+<translation id="1353966721814789986">Oppstartsider</translation>
 <translation id="5233019165164992427">NaCl-feilsøkingsport</translation>
 <translation id="2617604345341980855">Selv om du trygt har besøkt dette nettstedet i det siste, er svært sannsynlig at enheten din blir infisert med skadelig programvare hvis du besøker det nå.</translation>
 <translation id="2038896902310685531">Beklager. <ph name="WALLET_ERROR"/> – Du kan fullføre denne transaksjonen uten Google Wallet.</translation>
@@ -657,7 +656,7 @@ Alle brukere må logge av for å fortsette.</translation>
 <translation id="4973698491777102067">Slett følgende elementer fra:</translation>
 <translation id="9021662811137657072">Virus oppdaget</translation>
 <translation id="4241404202385006548">Slå av utvidelsene dine, og last så inn denne nettsiden på nytt</translation>
-<translation id="6074963268421707432">Ikke tillat noen nettsteder å vise skrivebordsvarslinger</translation>
+<translation id="6074963268421707432">Ikke tillat noen nettsteder å vise skrivebordsvarsler</translation>
 <translation id="3603385196401704894">Canadisk fransk</translation>
 <translation id="4869253927035988743">Aktiverer katalogstøtte for synkronisering av filsystem.</translation>
 <translation id="1995173078718234136">Skanner innhold ...</translation>
@@ -732,7 +731,7 @@ Alle brukere må logge av for å fortsette.</translation>
 <translation id="5396126354477659676"><ph name="PEPPER_PLUGIN_NAME"/> på <ph name="PEPPER_PLUGIN_DOMAIN"/> ber om tilgang til datamaskinen din.</translation>
 <translation id="7850851215703745691">Disse Disk-filene er ikke delt ennå</translation>
 <translation id="5946591249682680882">Rapport-ID <ph name="WEBRTC_LOG_REPORT_ID"/></translation>
-<translation id="3435896845095436175">Aktiver</translation>
+<translation id="3435896845095436175">Aktivér</translation>
 <translation id="1891668193654680795">Stol på dette sertifikatet for å identifisere programvareprodusenter.</translation>
 <translation id="7968833647796919681">Aktiverer innsamling av ytelsesdata</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME"/> (eier)</translation>
@@ -807,7 +806,7 @@ Alle brukere må logge av for å fortsette.</translation>
 <translation id="8257950718085972371">Fortsett blokkering av kameratilgang</translation>
 <translation id="5390284375844109566">Indeksert database</translation>
 <translation id="411666854932687641">Privat minne</translation>
-<translation id="119944043368869598">Tøm listen</translation>
+<translation id="119944043368869598">Fjern alle</translation>
 <translation id="3467848195100883852">Aktiver automatisk stavekorreksjon</translation>
 <translation id="1336254985736398701">Vis side&amp;informasjon</translation>
 <translation id="5039440886426314758">Vil du installere disse programmene og utvidelsene?</translation>
@@ -816,9 +815,9 @@ Alle brukere må logge av for å fortsette.</translation>
 <translation id="1007408791287232274">Kunne ikke laste inn enhetene.</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP"/>.html</translation>
 <translation id="8437332772351535342">Starter du på nytt i skrivebordsmodus, lukkes og startes Chrome-appene dine på nytt.</translation>
-<translation id="164814987133974965">En overvåket bruker kan utforske nettet med din veiledning. Som administrator for en overvåket bruker, kan du
+<translation id="164814987133974965">En administrert bruker kan utforske nettet med din veiledning. Som administrator for en administrert bruker, kan du
     <ph name="BEGIN_BOLD"/>tillate eller blokkere<ph name="END_BOLD"/> bestemte nettsteder,
-    <ph name="BEGIN_BOLD"/>gjennomgå<ph name="END_BOLD"/> nettsteder den overvåkede brukeren har besøkt og
+    <ph name="BEGIN_BOLD"/>gjennomgå<ph name="END_BOLD"/> nettsteder den administrerte brukeren har besøkt og
     <ph name="BEGIN_BOLD"/>administrere<ph name="END_BOLD"/> andre innstillinger.</translation>
 <translation id="6828153365543658583">Begrens pålogging til følgende brukere:</translation>
 <translation id="8106045200081704138">Delt med meg</translation>
@@ -842,7 +841,7 @@ Alle brukere må logge av for å fortsette.</translation>
 <translation id="1151169732719877940">Aktiver identitetssamsvar mellom nettleseren og informasjonskapsel-lageret</translation>
 <translation id="7615851733760445951">&lt;ingen informasjonskapsel valgt&gt;</translation>
 <translation id="2493021387995458222">Velg «ord om gangen»</translation>
-<translation id="5279600392753459966">Blokker alle</translation>
+<translation id="5279600392753459966">Blokkér alle</translation>
 <translation id="5723508132121499792">Ingen bakgrunnsprogrammer kjører</translation>
 <translation id="474421578985060416">Blokkert av deg</translation>
 <translation id="7392915005464253525">Gj&amp;enåpne det lukkede vinduet</translation>
@@ -902,7 +901,7 @@ Alle brukere må logge av for å fortsette.</translation>
 <translation id="3926862159284741883">Aktiver utkastutvidelser for WebGL</translation>
 <translation id="7684540948112007255">last ned flere filer.</translation>
 <translation id="2537271621194795300">Oppstarter</translation>
-<translation id="3636096452488277381">Heisann <ph name="USER_GIVEN_NAME"/>.</translation>
+<translation id="3636096452488277381">Heisann, <ph name="USER_GIVEN_NAME"/>.</translation>
 <translation id="4911714727432509308">Ingen utvidelser har tildelte hurtigtaster.</translation>
 <translation id="5999606216064768721">Bruk systemets tittelfelt og kantlinjer</translation>
 <translation id="921568617530782833">lese og endre alle dataene på nettstedene du besøker</translation>
@@ -923,9 +922,9 @@ Alle brukere må logge av for å fortsette.</translation>
 <translation id="2018352199541442911">Beklager, men den eksterne lagringsenheten din støttes foreløpig ikke.</translation>
 <translation id="2678063897982469759">Slå på igjen</translation>
 <translation id="1779766957982586368">Lukk vindu</translation>
-<translation id="4850886885716139402">Vis</translation>
+<translation id="4850886885716139402">Visning</translation>
 <translation id="89217462949994770">Du har angitt feil personlig kode for mange ganger. Kontakt <ph name="CARRIER_ID"/> for å få en ny 8-sifret opplåsingskode</translation>
-<translation id="2776441542064982094">Det ser ut til at det ikke er noen enheter som kan registreres på nettverket. Hvis enheten din er slått på og koblet til Internett, kan du prøve å registerer den ved å følge instruksjonene i instruksjonsmanualen.</translation>
+<translation id="2776441542064982094">Det ser ut til at det ikke er noen enheter som kan registreres på nettverket. Hvis enheten din er slått på og koblet til Internett, kan du prøve å registrere den ved å følge instruksjonene i instruksjonshåndboken.</translation>
 <translation id="8659716501582523573">IP-adresse:</translation>
 <translation id="7782102568078991263">Google har ikke flere forslag</translation>
 <translation id="8038111231936746805">(standard)</translation>
@@ -934,7 +933,7 @@ Alle brukere må logge av for å fortsette.</translation>
 <translation id="567881659373499783">Versjon <ph name="PRODUCT_VERSION"/></translation>
 <translation id="344100820105975148">Aktiver rene, nettbaserte påloggingsflyter.</translation>
 <translation id="8261378640211443080">Denne utvidelsen er ikke oppført i <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>, og kan ha blitt lagt uten at du har vært klar over det.</translation>
-<translation id="8899851313684471736">&amp;Åpne link i nytt vindu</translation>
+<translation id="8899851313684471736">Å&amp;pne linken i et nytt vindu</translation>
 <translation id="4110342520124362335">Informasjonskapsler fra <ph name="DOMAIN"/> blokkert.</translation>
 <translation id="2198315389084035571">Kinesisk (forenklet)</translation>
 <translation id="3303818374450886607">Kopier</translation>
@@ -957,7 +956,7 @@ Alle brukere må logge av for å fortsette.</translation>
 <translation id="4439244508678316632">Innholdslisenser</translation>
 <translation id="3940082421246752453">Tjeneren støtter ikke HTTP-versjonen som ble brukt i forespørselen.</translation>
 <translation id="6909461304779452601">Programmer, utvidelser og brukerskript kan ikke legges til fra dette nettstedet.</translation>
-<translation id="661719348160586794">Dine lagrede passord listes opp her.</translation>
+<translation id="661719348160586794">Dine lagrede passord vises her.</translation>
 <translation id="6874604403660855544">&amp;Legg til likevel</translation>
 <translation id="8352772353338965963">Legg til en konto for multipålogging. Alle påloggede kontoer kan brukes uten passord, så denne funksjonen burde bare brukes med pålitelige kontoer.</translation>
 <translation id="5361686177218315158">Unntakene for kamera og mikrofon i Adobe Flash Player er forskjellige.</translation>
@@ -1027,7 +1026,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY"/>) kan være kjekt neste gang
 <translation id="159359590073980872">Bildebuffer</translation>
 <translation id="4668711410219362250">https://support.google.com/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=165139&amp;p=settings_sign_in</translation>
 <translation id="3586931643579894722">Skjul detaljer</translation>
-<translation id="6285395082104474418">Statusfeltet viser deg den gjeldende tilstanden til nettverket, batteriet og mer.</translation>
+<translation id="6285395082104474418">Statusfeltet viser deg status for nettverket, batteriet og mer.</translation>
 <translation id="3317459757438853210">Tosidig</translation>
 <translation id="6020949471045037306">Aktiverer det nye systemet for profiladministrasjon, inkludert profil-låsing og det nye brukergrensesnittet for brukerbilder.</translation>
 <translation id="2011110593081822050">Nettarbeider: <ph name="WORKER_NAME"/></translation>
@@ -1134,7 +1133,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY"/>) kan være kjekt neste gang
 <translation id="1357589289913453911">Utvidelses-ID</translation>
 <translation id="7570477672765183">Klikk for å starte</translation>
 <translation id="8688579245973331962">Ser du ikke navnet ditt?</translation>
-<translation id="3804941997676372569">Søk eller si OK Google</translation>
+<translation id="3804941997676372569">Søk, eller si «Ok Google»</translation>
 <translation id="3226128629678568754">Trykk på knappen for å laste inn på nytt, for å sende inn dataene som trengs for å laste inn siden på nytt.</translation>
 <translation id="1384035515048721170"><ph name="LEGAL_DOC_AGREEMENT"/> For å beskytte deg mot svindel, deles informasjon om datamaskinen din (inkludert plasseringen) med Google Wallet.</translation>
 <translation id="6166101525540035714">Bruk av Chrome er underlagt <ph name="BEGIN_LINK1"/>vilkårene for bruk<ph name="END_LINK1"/> og <ph name="BEGIN_LINK2"/>personvernmerknaden<ph name="END_LINK2"/> for Chrome.</translation>
@@ -1149,7 +1148,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY"/>) kan være kjekt neste gang
 <translation id="7309416673261215716">Versjon av utvidelse</translation>
 <translation id="6840313690797192085">$1 PB</translation>
 <translation id="5971037678316050792">kontrollere statusen og tilkoblingen for Bluetooth-adapteren</translation>
-<translation id="3313590242757056087">For å angi hvilke nettsteder den overvåkede brukeren kan bruke, kan du konfigurere begrensninger og innstillinger ved å gå til <ph name="MANAGEMENT_URL"/>.
+<translation id="3313590242757056087">For å angi hvilke nettsteder den administrerte brukeren kan bruke, kan du konfigurere begrensninger og innstillinger ved å gå til <ph name="MANAGEMENT_URL"/>.
     Hvis du ikke endrer standardinnstillingene, kan <ph name="USER_DISPLAY_NAME"/>
     surfe på hele nettet.</translation>
 <translation id="2694026874607847549">Én informasjonskapsel</translation>
@@ -1167,7 +1166,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY"/>) kan være kjekt neste gang
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6802031077390104172"><ph name="USAGE"/> (<ph name="OID"/>)</translation>
 <translation id="6025215716629925253">Stabelsporing</translation>
-<translation id="4052120076834320548">Bittelite</translation>
+<translation id="4052120076834320548">Bitteliten</translation>
 <translation id="3791151686802386313">Forbereder den første bedriftspåloggingen …</translation>
 <translation id="3393716657345709557">Forespurt oppføring ble ikke funnet i bufferen.</translation>
 <translation id="7191454237977785534">Lagre filen som</translation>
@@ -1182,7 +1181,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY"/>) kan være kjekt neste gang
 <translation id="2585300050980572691">Standardinnstillinger for søk</translation>
 <translation id="2617919205928008385">Ikke tilstrekkelig plass</translation>
 <translation id="1608306110678187802">Sk&amp;riv ut ramme...</translation>
-<translation id="3623574769078102674">Denne overvåkede brukeren blir administrert av <ph name="MANAGER_EMAIL"/>.</translation>
+<translation id="3623574769078102674">Denne administrerte brukeren blir administrert av <ph name="MANAGER_EMAIL"/>.</translation>
 <translation id="8919081441417203123">Dansk</translation>
 <translation id="5323213332664049067">Latinamerikansk</translation>
 <translation id="3778152852029592020">Nedlastingen ble avbrutt.</translation>
@@ -1299,7 +1298,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY"/>) kan være kjekt neste gang
 <translation id="508794495705880051">Legg til nytt kredittkort</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="2462724976360937186">Nøkkel-ID for sertifiseringsinstans</translation>
-<translation id="981121421437150478">Uten nettilgang</translation>
+<translation id="981121421437150478">Uten nett</translation>
 <translation id="2964193600955408481">Deaktiver Wi-Fi</translation>
 <translation id="6786747875388722282">Utvidelser</translation>
 <translation id="2570648609346224037">Det oppstod et problem under nedlasting av gjenopprettingsbilde.</translation>
@@ -1313,7 +1312,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY"/>) kan være kjekt neste gang
 <translation id="222931766245975952">Filen er komprimert</translation>
 <translation id="3101709781009526431">Dato og klokkeslett</translation>
 <translation id="2394566832561516196">Innstillingene slettes neste gang siden lastes inn på nytt</translation>
-<translation id="4514542542275172126">Konfigurer en ny overvåket bruker</translation>
+<translation id="4514542542275172126">Konfigurer en ny administrert bruker</translation>
 <translation id="4279490309300973883">Speiling</translation>
 <translation id="2869742291459757746">Tillat brukeren å la Chrome generere passord når sider for kontoopprettelse oppdages.</translation>
 <translation id="7079038783243627996">«<ph name="EXTENSION"/>» får tillatelse til å lese og slette bilde-, video- og lydfiler i de valgte mappene.</translation>
@@ -1395,7 +1394,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY"/>) kan være kjekt neste gang
 <translation id="8249048954461686687">OEM-mappe</translation>
 <translation id="1105608846356399385">Gå til nettsted</translation>
 <translation id="7218608093942361839"><ph name="PRODUCT_NAME"/> <ph name="PRODUCT_VERSION"/> (plattform <ph name="PLATFORM_VERSION"/>)</translation>
-<translation id="54870580363317966">Velg et brukerbilde for denne overvåkede brukeren.</translation>
+<translation id="54870580363317966">Velg et brukerbilde for denne administrerte brukeren.</translation>
 <translation id="839736845446313156">Registrer</translation>
 <translation id="2660779039299703961">Aktivitet</translation>
 <translation id="4249248555939881673">Venter på nettverkstilkobling …</translation>
@@ -1406,7 +1405,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY"/>) kan være kjekt neste gang
 <translation id="3574210789297084292">logg på</translation>
 <translation id="5254480569305195883">Aktiver støtte for ServiceWorker-synkroniseringshendelser i bakgrunnen.</translation>
 <translation id="2134149231879627725">La Google hjelpe deg med å låse, slette og finne enheten din fra en ekstern plassering.</translation>
-<translation id="1146204723345436916">Importer bokmerker fra HTML-fil</translation>
+<translation id="1146204723345436916">Importér bokmerker fra HTML-fil</translation>
 <translation id="2113921862428609753">Informasjonstilgang til instans</translation>
 <translation id="9190063653747922532">L2TP/IPsec + forhåndsdelt nøkkel</translation>
 <translation id="5227536357203429560">Legg til privat nettverk</translation>
@@ -1478,7 +1477,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY"/>) kan være kjekt neste gang
 <translation id="641702813324074008">Aktiver boblegrensesnittet for passordlagring</translation>
 <translation id="3627671146180677314">Tid for fornying av Netscape-sertifikat</translation>
 <translation id="6869967057083711802">Denne filtypen støttes ikke. Gå til <ph name="BEGIN_LINK"/>Chrome Nettmarked<ph name="END_LINK"/> for å finne en liknende app.
-    <ph name="BEGIN_LINK_HELP"/>Finn ut mer<ph name="END_LINK_HELP"/></translation>
+    <ph name="BEGIN_LINK_HELP"/>Les mer<ph name="END_LINK_HELP"/></translation>
 <translation id="6980956047710795611">Overfør alle Chrome OS-data til det nye passordet (krever det forrige passordet)</translation>
 <translation id="8652487083013326477">alternativknapp for sideomfang</translation>
 <translation id="5204967432542742771">Skriv inn passordet</translation>
@@ -1510,7 +1509,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY"/>) kan være kjekt neste gang
 <translation id="3616113530831147358">Lyd</translation>
 <translation id="23030561267973084">«<ph name="EXTENSION_NAME"/>» har bedt om ekstra tilgang.</translation>
 <translation id="6957887021205513506">Tjenersertifikatet ser ut til å være forfalsket.</translation>
-<translation id="8957709627709183338">Det er bare eieren av enheten som kan opprette overvåkede brukere.</translation>
+<translation id="8957709627709183338">Det er bare eieren av enheten som kan opprette administrerte brukere.</translation>
 <translation id="8551494947769799688">Latvisk</translation>
 <translation id="4567676092950881857">Deaktiver SAML-pålogging.</translation>
 <translation id="4803909571878637176">Avinstallering</translation>
@@ -1570,7 +1569,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY"/>) kan være kjekt neste gang
 <translation id="3009779501245596802">Indekserte databaser</translation>
 <translation id="1404301347395550388">Aktiver krypterte mediautvidelser.</translation>
 <translation id="3041612393474885105">Sertifikatinformasjon</translation>
-<translation id="5023943178135355362">Australsk rulling <ph name="BEGIN_LINK"/>Finn ut mer<ph name="END_LINK"/></translation>
+<translation id="5023943178135355362">Australsk rulling <ph name="BEGIN_LINK"/>Les mer<ph name="END_LINK"/></translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="6426039856985689743">Deaktiver mobildata</translation>
 <translation id="8571992327053899347">En administrert bruker kan utforske nettet med veiledning fra deg. Som administrator av en administrert bruker i Chrome, kan du
@@ -1624,11 +1623,8 @@ Når du har opprettet en ny administrert bruker, kan du når som helst administr
 <translation id="5889282057229379085">Maksimalt antall mellomliggende sertifiseringsinstanser: <ph name="NUM_INTERMEDIATE_CA"/></translation>
 <translation id="3180365125572747493">Skriv inn et passord for å kryptere denne sertifikatfilen.</translation>
 <translation id="8663625831674359823">MERK: Fungerer bare med utvikler- og canary-kanaler. Slår på forslag i multifunksjonsfeltet som vises før du begynner å skrive i feltet.</translation>
-<translation id="7386824183915085801">Chrome- og operativsystem-versjonen din sendes inn i tillegg til annen
-        informasjon du tar med ovenfor. Hvis du inkluderer e-postadressen
-        din, kan det hende at Google kontakter deg angående tilbakemeldingen din. Tilbakemeldingene brukes til å diagnostisere problemer, og forbedre Chrome.
-        Personlige opplysninger du sender inn, med intensjon eller ved et uhell, beskyttes i henhold til personvernreglene våre.<ph name="BEGIN_BOLD"/> Ved å sende inn denne tilbakemeldingen godtar du at Google bruker tilbakemeldingen du sender inn til å forbedre et Google-produkt eller -tjeneste.
-        <ph name="END_BOLD"/></translation>
+<translation id="7386824183915085801">Chrome- og operativsystem-versjonen din sendes inn, i tillegg til annen informasjon du tar med ovenfor. Hvis du inkluderer e-postadressen din, kan det hende at Google kontakter deg angående tilbakemeldingen din. Tilbakemeldingene brukes til å diagnostisere problemer og forbedre Chrome. Personlige opplysninger du sender inn, med hensikt eller ved et uhell, beskyttes i henhold til personvernreglene våre.<ph name="BEGIN_BOLD"/> Ved å sende inn denne tilbakemeldingen godtar du at Google bruker tilbakemeldingen du sender inn, til å forbedre et Google-produkt eller en Google-tjeneste.
+<ph name="END_BOLD"/></translation>
 <translation id="123578888592755962">Harddisken er full</translation>
 <translation id="5496587651328244253">Organiser</translation>
 <translation id="5967867314010545767">Fjern fra loggen</translation>
@@ -1648,7 +1644,7 @@ Når du har opprettet en ny administrert bruker, kan du når som helst administr
 <translation id="6915711422691334155">Denne utvidelsen kan lese og endre alle dataene på datamaskinen din og alle nettsteder, herunder Google, Facebook, Yahoo osv.</translation>
 <translation id="6095666334801788310">Skriv inn passordet ditt på nytt</translation>
 <translation id="7360506455591495242">Signert sertifikat for tidsstempelvisning</translation>
-<translation id="3925083541997316308">Apper og utvidelser kan ikke endres av overvåkede brukere.</translation>
+<translation id="3925083541997316308">Apper og utvidelser kan ikke endres av administrerte brukere.</translation>
 <translation id="8425755597197517046">&amp;Lim inn og søk</translation>
 <translation id="6341850831632289108">Oppdaging av den fysiske plasseringen din</translation>
 <translation id="3003623123441819449">CSS-buffer</translation>
@@ -1673,7 +1669,7 @@ Når du har opprettet en ny administrert bruker, kan du når som helst administr
 <translation id="4628757576491864469">Enheter</translation>
 <translation id="8461914792118322307">Mellomtjener</translation>
 <translation id="4707934200082538898">Sjekk e-posten din på <ph name="BEGIN_BOLD"/><ph name="MANAGER_EMAIL"/><ph name="END_BOLD"/> for flere instruksjoner.</translation>
-<translation id="8680544835056685300">Vi er stadig på utkikk etter måter å gjøre surfingen din tryggere på. Tidligere kunne et hvilket som helst nettsted be deg å legge til en utvidelse i nettleseren din. I de nyeste versjonene av Google Chrome, må du eksplisitt gi beskjed til Chrome om at du ønsker å installere disse utvidelsene ved å legge dem til via Utvidelser-siden. <ph name="BEGIN_LINK"/>Finn ut mer<ph name="END_LINK"/></translation>
+<translation id="8680544835056685300">Vi er stadig på utkikk etter måter å gjøre surfingen din tryggere på. Tidligere kunne et hvilket som helst nettsted be deg å legge til en utvidelse i nettleseren din. I de nyeste versjonene av Google Chrome, må du eksplisitt gi beskjed til Chrome om at du ønsker å installere disse utvidelsene ved å legge dem til via Utvidelser-siden. <ph name="BEGIN_LINK"/>Les mer<ph name="END_LINK"/></translation>
 <translation id="4089521618207933045">Har undermeny</translation>
 <translation id="3470442499439619530">Fjern denne brukeren</translation>
 <translation id="1936157145127842922">Vis i mappe</translation>
@@ -1763,7 +1759,7 @@ Når du har opprettet en ny administrert bruker, kan du når som helst administr
 <translation id="4284105660453474798">Er du sikker på at du vil slette $1?</translation>
 <translation id="1600857548979126453">få tilgang til bakdata for sidefeilsøkingsprogrammet</translation>
 <translation id="2862043554446264826">Feilsøk alt unntatt det sikre skallet og PNaCl-oversetteren.</translation>
-<translation id="3516765099410062445">Viser loggen fra de påloggede enhetene. <ph name="BEGIN_LINK"/>Finn ut mer<ph name="END_LINK"/></translation>
+<translation id="3516765099410062445">Viser loggen fra de påloggede enhetene. <ph name="BEGIN_LINK"/>Les mer<ph name="END_LINK"/></translation>
 <translation id="4378551569595875038">Kobler til...</translation>
 <translation id="7573172247376861652">Batterilading</translation>
 <translation id="7029809446516969842">Passord</translation>
@@ -1861,7 +1857,7 @@ Når du har opprettet en ny administrert bruker, kan du når som helst administr
 <translation id="201192063813189384">Feil under lesing fra hurtigbuffer.</translation>
 <translation id="9126706773198551170">Aktiver et nytt profiladministrasjons-system</translation>
 <translation id="2345303327200536445">Ny versjon med fargerik bakgrunn</translation>
-<translation id="7441570539304949520">Unntak for JavaScript</translation>
+<translation id="7441570539304949520">JavaScript-unntak</translation>
 <translation id="1789575671122666129">Forgrunnsvinduer</translation>
 <translation id="8002117456258496331">Skadelig programvare er ondsinnet programvare som forårsaker ting som identitetstyveri, økonomisk tap og permanent sletting av filer.</translation>
 <translation id="3215028073430859994">Den har permanent tilgang til  <ph name="NUMBER_OF_FILES"/> filer.</translation>
@@ -1924,7 +1920,7 @@ Når du har opprettet en ny administrert bruker, kan du når som helst administr
 <translation id="3058212636943679650">Hvis du noen gang skulle trenge å gjenopprette datamaskinens operativsystem, må du ha SD-kort eller USB-minnepinne for gjenoppretting.</translation>
 <translation id="7238196028794870999">Fortsett å tillate programtillegg uten prosessisolering</translation>
 <translation id="7252661675567922360">Ikke last inn</translation>
-<translation id="1983959805486816857">Når du har opprettet en ny overvåket bruker, kan du administrere innstillingene når som helst fra hvilken som helst enhet på <ph name="MANAGEMENT_URL"/>.</translation>
+<translation id="1983959805486816857">Når du har opprettet en ny administrert bruker, kan du administrere innstillingene når som helst fra hvilken som helst enhet på <ph name="MANAGEMENT_URL"/>.</translation>
 <translation id="2815382244540487333">Følgende informasjonskapsler ble blokkert:</translation>
 <translation id="1084538181352409184">Sjekk innstillingene for mellomtjeneren eller kontakt en nettverksadministrator for å kontrollere at den fungerer.
           <ph name="PLATFORM_TEXT"/></translation>
@@ -1989,7 +1985,7 @@ Når du har opprettet en ny administrert bruker, kan du når som helst administr
 <translation id="6588399906604251380">Aktiver stavekontroll</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE"/>-fil</translation>
 <translation id="3012890944909934180">Start Chrome på nytt via skrivebordet</translation>
-<translation id="7053983685419859001">Blokker</translation>
+<translation id="7053983685419859001">Blokkér</translation>
 <translation id="7912024687060120840">I mappen:</translation>
 <translation id="2485056306054380289">Tjenerens CA-sertifikat:</translation>
 <translation id="5631861698741076898">Beklager. Du kunne ikke logge på. Påloggingen mislyktes fordi den var konfigurert til å bruke en usikret nettadresse (<ph name="BLOCKED_URL"/>).</translation>
@@ -2001,7 +1997,7 @@ Når du har opprettet en ny administrert bruker, kan du når som helst administr
           for mange viderekoblinger. Problemet kan kanskje løses ved å slette informasjonskapslene dine for dette nettstedet eller tillate informasjonskapsler fra tredjeparter.
           Hvis dette ikke løser problemet, dreier det seg kanskje om et problem med konfigurasjonen av tjeneren, og ikke med
           datamaskinen din.</translation>
-<translation id="5488468185303821006">Tillat inkognitoer</translation>
+<translation id="5488468185303821006">Tillat i inkognitomodus</translation>
 <translation id="1546703252838446285">På kontoen <ph name="ACCOUNT_EMAIL"/> kan den:</translation>
 <translation id="6556866813142980365">Gjør om</translation>
 <translation id="8824701697284169214">Legg til si&amp;de</translation>
@@ -2051,7 +2047,7 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="9220525904950070496">Fjern konto</translation>
 <translation id="151922265591345427">1024</translation>
 <translation id="3039828483675273919">Flytter $1 elementer ...</translation>
-<translation id="7816949580378764503">Identiteten ble bekreftet</translation>
+<translation id="7816949580378764503">Identiteten er bekreftet</translation>
 <translation id="1521442365706402292">Administrer sertifikater</translation>
 <translation id="1679068421605151609">Utviklerverktøy</translation>
 <translation id="7014051144917845222"><ph name="PRODUCT_NAME"/> sitt forsøk på tilkobling til <ph name="HOST_NAME"/> ble avvist. Nettstedet kan være nede, eller det kan hende at nettverket ditt ikke er riktig konfigurert.</translation>
@@ -2059,7 +2055,7 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="4332213577120623185">Mer informasjon er nødvendig for å fullføre dette kjøpet.</translation>
 <translation id="9201305942933582053">Google Nå for Chrome!</translation>
 <translation id="1708338024780164500">(Inaktiv)</translation>
-<translation id="6896758677409633944">Kopier</translation>
+<translation id="6896758677409633944">Kopiér</translation>
 <translation id="8986362086234534611">Glem</translation>
 <translation id="5260508466980570042">Beklager, e-postadressen eller passordet kan ikke verifiseres. Prøv på nytt.</translation>
 <translation id="7887998671651498201">Følgende programtillegg svarer ikke: <ph name="PLUGIN_NAME"/>Vil du stoppe det?</translation>
@@ -2093,7 +2089,7 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="4197674956721858839">Zip-utvalg</translation>
 <translation id="707392107419594760">Velg tastatur:</translation>
 <translation id="8605503133013456784">Kunne ikke fjerne tilknytning til og koble fra «<ph name="DEVICE_NAME"/>».</translation>
-<translation id="2007404777272201486">Rapporter et problem</translation>
+<translation id="2007404777272201486">Rapportér et problem</translation>
 <translation id="4366509400410520531">Tillatt av deg</translation>
 <translation id="2218947405056773815">Beklager. <ph name="API_NAME"/> støtte på et hinder.</translation>
 <translation id="1783075131180517613">Oppdater passordfrasen for synkronisering.</translation>
@@ -2101,7 +2097,7 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="2390045462562521613">Glem dette nettverket</translation>
 <translation id="1450927657625573300">Deaktiverer en optimalisering som skal forbedre reaksjonsfølsomhet ved berøringsrulling. Tvinger alle berøringsaktiviteter i retning signalets hovedtråd for å se etter behandlere, i stedet for potensielt å forårsake kortslutning fra komposisjonstråden.</translation>
 <translation id="3348038390189153836">Oppdaget flyttbar enhet</translation>
-<translation id="1663298465081438178">Alt du trenger å vite – helt enkelt.</translation>
+<translation id="1663298465081438178">Alt du trenger å vite – enkelt og greit.</translation>
 <translation id="8005540215158006229">Chrome er nesten klar.</translation>
 <translation id="1666788816626221136">Du har en fil med sertifikater som ikke passer inn i de angitte kategoriene:</translation>
 <translation id="4821935166599369261">&amp;Profilering aktivert</translation>
@@ -2126,7 +2122,7 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="4131410914670010031">Svarthvitt</translation>
 <translation id="3800503346337426623">Hopp over pålogging og surf som gjest</translation>
 <translation id="2615413226240911668">Denne siden inneholder imidlertid ressurser som ikke er sikre. Disse ressursene er synlige for andre mens de er i transitt, og en angriper kan modifisere dem for å endre på sidens utseende.</translation>
-<translation id="1416136326154112077">Innstillingene og surfeloggen for denne overvåkede brukeren kan fortsatt ses av administratoren på <ph name="BEGIN_LINK"/>www.chrome.com/manage<ph name="END_LINK"/></translation>
+<translation id="1416136326154112077">Innstillingene og surfeloggen for denne administrerte brukeren kan fortsatt ses av administratoren på <ph name="BEGIN_LINK"/>www.chrome.com/manage<ph name="END_LINK"/></translation>
 <translation id="197288927597451399">Behold</translation>
 <translation id="5880867612172997051">Nettverkstilgang er sperret</translation>
 <translation id="5495466433285976480">Dette fjerner alle lokale brukere, filer, data og andre innstillinger etter neste omstart. Alle brukere må logge inn på nytt.</translation>
@@ -2143,7 +2139,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="6122589160611523048">Nettfisking i sikte!</translation>
 <translation id="8049913480579063185">Navn på utvidelse</translation>
 <translation id="7584802760054545466">Kobler til <ph name="NETWORK_ID"/></translation>
-<translation id="9088175547465404130">Dette er en overvåket bruker som administreres av <ph name="CUSTODIAN_EMAIL"/>.</translation>
+<translation id="9088175547465404130">Dette er en administrert bruker som administreres av <ph name="CUSTODIAN_EMAIL"/>.</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS"/>)</translation>
 <translation id="450099669180426158">Utropstegnikon</translation>
 <translation id="902061379691003866">&lt;p&gt;<ph name="SITE"/> bruker normalt sett kryptering (SSL) for å beskytte informasjonen din. Når Chrome forsøkte å koble til <ph name="SITE"/> denne gangen, returnerte <ph name="SITE"/> uvanlig og ukorrekt legitimasjon. Enten er det en hacker som gir seg ut for å være <ph name="SITE"/>, eller så har en påloggingsside for et Wi-Fi-nettverk avbrutt tilkoblingen. Informasjonen er fortsatt sikker, fordi Chrome avbrøt tilkoblingen før det ble overført noen data.&lt;/p&gt; &lt;p&gt;Nettverksfeil og -angrep er som regel kortvarige, så denne siden fungerer nok igjen senere. Du kan også prøve å bytte til et annet nettverk.&lt;/p&gt;</translation>
@@ -2166,7 +2162,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="1559235587769913376">Angi Unicode-tegn</translation>
 <translation id="3297788108165652516">Dette nettverket deles med andre brukere.</translation>
 <translation id="4810984886082414856">Enkel buffer for HTTP.</translation>
-<translation id="1548132948283577726">Nettsteder som aldri lagrer passord listes opp her.</translation>
+<translation id="1548132948283577726">Nettsteder som aldri lagrer passord, vises her.</translation>
 <translation id="583281660410589416">Ukjent</translation>
 <translation id="3774278775728862009">Inndatametode for thai (TIS-820.2538-tastatur)</translation>
 <translation id="9115675100829699941">&amp;Bokmerker</translation>
@@ -2180,7 +2176,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="5528368756083817449">Bokmerkebehandling</translation>
 <translation id="8345300166402955056">Reduser databruken ved å laste inn optimaliserte nettsider via Google-mellomtjenere.</translation>
-<translation id="2826760142808435982">Tilkoblingen er kryptert ved hjelp av <ph name="CIPHER"/>, og bruker <ph name="KX"/> som nøkkelutvekslingsmekanisme.</translation>
+<translation id="2826760142808435982">Tilkoblingen er kryptert ved hjelp av <ph name="CIPHER"/>, og bruker <ph name="KX"/> som mekanisme for nøkkelutveksling.</translation>
 <translation id="215753907730220065">Avslutt fullskjermmodus</translation>
 <translation id="7849264908733290972">Åpne b&amp;ilde i ny fane</translation>
 <translation id="1560991001553749272">Bokmerke lagt til.</translation>
@@ -2241,7 +2237,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="2120316813730635488">Forekomster der en utvidelse ble installert</translation>
 <translation id="8398877366907290961">Fortsett likevel</translation>
 <translation id="5063180925553000800">Ny personlig kode:</translation>
-<translation id="4883178195103750615">Eksporter bokmerker til HTML-fil</translation>
+<translation id="4883178195103750615">Eksportér bokmerker til HTML-fil</translation>
 <translation id="2496540304887968742">Enheten må ha kapasitet på 4 GB eller mer.</translation>
 <translation id="6974053822202609517">Høyre til venstre</translation>
 <translation id="3752673729237782832">Mine enheter</translation>
@@ -2263,7 +2259,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="3898521660513055167">Tokenstatus</translation>
 <translation id="1950295184970569138">*Google-profilbilde (laster inn)</translation>
 <translation id="8063491445163840780">Aktiver fane 4</translation>
-<translation id="7939997691108949385">Administratoren kan konfigurere begrensninger og innstillinger for denne overvåkede brukeren på <ph name="MANAGEMENT_URL"/>.</translation>
+<translation id="7939997691108949385">Administratoren kan konfigurere begrensninger og innstillinger for denne administrerte brukeren på <ph name="MANAGEMENT_URL"/>.</translation>
 <translation id="2322193970951063277">Topp- og bunntekst</translation>
 <translation id="6436164536244065364">Se i Nettmarked</translation>
 <translation id="9137013805542155359">Vis original</translation>
@@ -2310,7 +2306,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="542872847390508405">Du surfer som gjest</translation>
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN"/> kjører nå i full skjerm, og vil deaktivere markøren din.</translation>
 <translation id="1497522201463361063">Kunne ikke gi «<ph name="FILE_NAME"/>» nytt navn. <ph name="ERROR_MESSAGE"/></translation>
-<translation id="8226742006292257240">Nedenfor ser du et tilfeldig generert TPM-passord som har blitt tildelt datamaskinen din:</translation>
+<translation id="8226742006292257240">Nedenfor ser du et tilfeldig generert TPM-passord som er tildelt datamaskinen din:</translation>
 <translation id="5010043101506446253">Sertifiseringsinstanser</translation>
 <translation id="5452005759330179535">Spør når et nettsted ønsker å vise skrivebordsvarsler (anbefales)</translation>
 <translation id="5287425679749926365">Dine kontoer</translation>
@@ -2321,7 +2317,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="8300259894948942413">Dra og slipp-funksjonalitet ved berøring kan startes ved å holde lenge på elementet som skal flyttes.</translation>
 <translation id="1240892293903523606">DOM-inspektør</translation>
 <translation id="5249624017678798539">Nettleseren krasjet før nedlastingen var ferdig.</translation>
-<translation id="4474155171896946103">Legg inn bokmerke for alle åpne faner</translation>
+<translation id="4474155171896946103">Bokmerk alle fanene</translation>
 <translation id="5895187275912066135">Utstedt</translation>
 <translation id="9100825730060086615">Tastaturtype</translation>
 <translation id="5197680270886368025">Synkroniseringen er fullført.</translation>
@@ -2338,8 +2334,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="4419409365248380979">Tillat alltid at <ph name="HOST"/> angir informasjonskapsler</translation>
 <translation id="813582937903338561">Den siste dagen</translation>
 <translation id="5337771866151525739">Installert av en tredjepart.</translation>
-<translation id="7563991800558061108">For å rette opp i denne feilen må du logge på Google-kontoen din
-    fra påloggingssiden. Du kan deretter logge av Google-kontoen, og prøve å opprette en overvåket bruker på nytt.</translation>
+<translation id="7563991800558061108">For å rette opp i denne feilen må du logge på Google-kontoen din fra påloggingssiden. Deretter kan du logge av Google-kontoen, og prøve å opprette en administrert bruker på nytt.</translation>
 <translation id="6644715561133361290">Aktiver eller deaktiver bruk av utviklingsversjonen av proxy-tjeneren for datareduksjon.</translation>
 <translation id="3530279468460174821">Deaktiver Quickoffice-komponentutvidelsen for testformål.</translation>
 <translation id="3578308799074845547">Aktiver programlisteelement 7</translation>
@@ -2415,7 +2410,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="18139523105317219">Navn på EDI-enhet</translation>
 <translation id="8356258244599961364">Dette språket har ingen inndatametoder.</translation>
 <translation id="733186066867378544">Unntak for geografisk posisjonering</translation>
-<translation id="3328801116991980348">Opplysninger om nettstedet</translation>
+<translation id="3328801116991980348">Informasjon om nettstedet</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME"/>
           har problemer med tilgangen til nettverket.
           <ph name="LINE_BREAK"/>
@@ -2443,7 +2438,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="3866249974567520381">Beskrivelse</translation>
 <translation id="2294358108254308676">Ønsker du å installere <ph name="PRODUCT_NAME"/>?</translation>
 <translation id="6549689063733911810">Siste</translation>
-<translation id="1529968269513889022">den foregående uken</translation>
+<translation id="1529968269513889022">den siste uken</translation>
 <translation id="5542132724887566711">Profil</translation>
 <translation id="7912145082919339430">Last inn siden på nytt for å aktivere <ph name="PLUGIN_NAME"/> etter installering.</translation>
 <translation id="5196117515621749903">Last inn buffer på nytt</translation>
@@ -2504,7 +2499,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="5094721898978802975">kommunisere med samarbeidende integrerte apper</translation>
 <translation id="1077946062898560804">Valg av automatiske oppdateringer for alle brukere</translation>
 <translation id="3122496702278727796">Kan ikke opprette datakatalog</translation>
-<translation id="6690751852586194791">Velg en overvåket bruker som skal legges til på denne enheten.</translation>
+<translation id="6690751852586194791">Velg en administrert bruker som skal legges til på denne enheten.</translation>
 <translation id="8572981282494768930">Ikke la nettsteder få tilgang til kameraet og mikrofonen din</translation>
 <translation id="6990081529015358884">Du har ikke tilgjengelig lagringsplass</translation>
 <translation id="5273628206174272911">Eksperimentell loggnavigering som følge av horisontal overrulling.</translation>
@@ -2559,7 +2554,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="8186706823560132848">Programvare</translation>
 <translation id="8121548268521822197">mobil</translation>
 <translation id="4692623383562244444">Søkemotorer</translation>
-<translation id="10614374240317010">Aldri lagrede</translation>
+<translation id="10614374240317010">Aldri lagret</translation>
 <translation id="3495304270784461826"><ph name="COUNT"/> feil.</translation>
 <translation id="5116300307302421503">Kan ikke analysere filen.</translation>
 <translation id="2745080116229976798">Microsoft kvalifisert underordning</translation>
@@ -2615,7 +2610,7 @@ Pass på at du ikke deler privat informasjon.</translation>
         tilfeller kan dette være et symptom på at maskinvaren er i ferd med å svikte.</translation>
 <translation id="5154176924561037127">F8</translation>
 <translation id="5298219193514155779">Tema opprettet av</translation>
-<translation id="6307722552931206656">Google-navnetjenere – <ph name="BEGIN_LINK"/>Finn ut mer<ph name="END_LINK"/></translation>
+<translation id="6307722552931206656">Google-navnetjenere – <ph name="BEGIN_LINK"/>Les mer<ph name="END_LINK"/></translation>
 <translation id="6628328486509726751">Lastet opp <ph name="WEBRTC_LOG_UPLOAD_TIME"/></translation>
 <translation id="1047726139967079566">Legg til bokmerke for denne siden</translation>
 <translation id="151279668805528202">Aktiver den nye lydavspilleren</translation>
@@ -2628,7 +2623,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="1774833706453699074">Bokmerk åpne sider …</translation>
 <translation id="5702389759209837579">Få tilgang til de åpne fanene dine, på alle enhetene dine.</translation>
 <translation id="8381055888183086563">Aktiverer menyalternativer for feilsøkingskontekst slik som Inspiser element for pakkede apper.</translation>
-<translation id="1189418886587279221">Aktiver tilgjengelighetsfunksjoner for å gjøre enheten din enklere å bruke.</translation>
+<translation id="1189418886587279221">Aktivér tilgjengelighetsfunksjoner for å gjøre enheten din enklere å bruke.</translation>
 <translation id="1152921474424827756">Åpne en <ph name="BEGIN_LINK"/>bufret kopi<ph name="END_LINK"/> av <ph name="URL"/></translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN"/> har deaktivert markøren din.</translation>
 <translation id="6404451368029478467"><ph name="PRODUCT_NAME"/> oppdateres automatisk slik at du alltid har den nyeste versjonen. Når nedlastingen er ferdig startes <ph name="PRODUCT_NAME"/> på nytt og du kan fortsette.</translation>
@@ -2653,9 +2648,9 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="8420728540268437431">Denne siden blir oversatt …</translation>
 <translation id="6256412060882652702">Powerwash <ph name="IDS_SHORT_PRODUCT_NAME"/>-enheten din</translation>
 <translation id="736515969993332243">Skanner etter nettverk.</translation>
-<translation id="7806513705704909664">Aktiver autofyll for å fylle ut nettskjemaer med ett enkelt klikk.</translation>
+<translation id="7806513705704909664">Aktivér autofyll for å fylle ut nettskjemaer med ett enkelt klikk.</translation>
 <translation id="3150994199788134383">En utvidelse har tatt kontrollen over proxy-tjenerinnstillingene dine, noe som betyr at den kan endre, ødelegge eller spionere på alt du foretar deg på nettet. Hvis du ikke er sikker på hvorfor denne endringen fant sted, vil du mest sannsynlig ikke ha den.</translation>
-<translation id="8026334261755873520">Slett logg</translation>
+<translation id="8026334261755873520">Slett nettleserdata</translation>
 <translation id="605011065011551813">En programutvidelse (<ph name="PLUGIN_NAME"/>) svarer ikke.</translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="6395423953133416962">Send <ph name="BEGIN_LINK1"/>systeminformasjon<ph name="END_LINK1"/> og <ph name="BEGIN_LINK2"/>-målinger<ph name="END_LINK2"/></translation>
@@ -2776,7 +2771,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="8915370057835397490">Laster inn forslag …</translation>
 <translation id="264911923226702984">Amerikansk Mystery</translation>
 <translation id="1511623662787566703">Logget på som <ph name="USER_EMAIL_ADDRESS"/>. Synkronisering har blitt stoppet via Google Oversikt.</translation>
-<translation id="4352333825734680558">Beklager, den nye overvåkede brukeren kunne ikke opprettes. Kontrollér nettverksforbindelsen din og prøv på nytt senere.</translation>
+<translation id="4352333825734680558">Beklager, den nye administrerte brukeren kunne ikke opprettes. Kontrollér nettverksforbindelsen din, og prøv på nytt senere.</translation>
 <translation id="174773101815569257">Muselås</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="5349232103361262400">Hvis aktivert, analyseres nettsteders metatagger for installeringsvarsler for app.</translation>
@@ -2808,7 +2803,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="7374461526650987610">Protokollbehandlere</translation>
 <translation id="2192505247865591433">Fra:</translation>
 <translation id="4634771451598206121">Logg på igjen</translation>
-<translation id="1035590878859356651">Legg til bokmerke for denne siden</translation>
+<translation id="1035590878859356651">Bokmerk denne siden</translation>
 <translation id="5630205793128597629">Deaktiver DirectWrite</translation>
 <translation id="3944266449990965865">Hele skjermen</translation>
 <translation id="942954117721265519">Det fins ingen bilder i denne katalogen.</translation>
@@ -2855,7 +2850,7 @@ Pass på at du ikke deler privat informasjon.</translation>
           kan ikke koble seg til mellomtjeneren.</translation>
 <translation id="7687314205250676044">Endre tilbake til <ph name="FROM_LOCALE"/> (krever avlogging)</translation>
 <translation id="1899708097738826574"><ph name="OPTIONS_TITLE"/> – <ph name="SUBPAGE_TITLE"/></translation>
-<translation id="6862635236584086457">Alle filene som lagres i denne mappen blir automatisk sikkerhetskopiert på nettet</translation>
+<translation id="6862635236584086457">Alle filene som lagres i denne mappen, blir automatisk sikkerhetskopiert på nettet</translation>
 <translation id="5854912040170951372">Pizzaelsker</translation>
 <translation id="4027804175521224372">(Du går glipp av ting – <ph name="IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK"/>)</translation>
 <translation id="8112425722462119913">Aktiver det nye galleriet</translation>
@@ -2900,11 +2895,11 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="7347751611463936647">For å bruke denne utvidelsen, skriver du «<ph name="EXTENSION_KEYWORD"/>» , trykker på TAB, og skriver kommandoordet eller søkeordet.</translation>
 <translation id="878431691778285679">Det ser ut som om du allerede administrerer en bruker med det navnet.<ph name="LINE_BREAK"/>Ville du <ph name="BEGIN_LINK"/>importere <ph name="PROFILE_NAME"/> til denne enheten<ph name="END_LINK"/>?</translation>
 <translation id="2912905526406334195"><ph name="HOST"/> ønsker å bruke mikrofonen din.</translation>
-<translation id="2805756323405976993">Apps</translation>
+<translation id="2805756323405976993">Apper</translation>
 <translation id="5151511998946489774">Identiteten til dette nettstedet har blitt bekreftet av <ph name="ISSUER"/> og er offentlig tilgjengelig.</translation>
 <translation id="1608626060424371292">Fjern denne brukeren</translation>
 <translation id="2779552785085366231">Denne siden kan legges til i appvelgeren</translation>
-<translation id="3075239840551149663"><ph name="NEW_PROFILE_NAME"/> er opprettet som overvåket bruker.</translation>
+<translation id="3075239840551149663"><ph name="NEW_PROFILE_NAME"/> er opprettet som administrert bruker.</translation>
 <translation id="3651020361689274926">Den forespurte ressursen finnes ikke lenger, og har ingen videresendingsadresse. Det antas at denne tilstanden er varig.</translation>
 <translation id="6003284010415283671">Legg til apper</translation>
 <translation id="2989786307324390836">DER-kodet binært, enkelt sertifikat</translation>
@@ -2920,7 +2915,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="8193362611902704788">Aktiver appvelgeren. Når du aktiverer den, opprettes det operativsystem-snarveier til appvelgeren.</translation>
 <translation id="5121130586824819730">Harddisken din er full. Lagre på et annet sted, eller frigjør plass på harddisken.</translation>
 <translation id="1875987452136482705">Dette alternativet deaktiverer støtte i WebRTC for dekoding av videostrømmer ved hjelp plattformsmaskinvare.</translation>
-<translation id="6164005077879661055">Alle filer og lokale data tilknyttet den overvåkede brukeren slettes permanent når den overvåkede brukeren fjernes. Besøkte nettsteder og innstillinger for denne overvåkende brukeren kan fortsatt ses av administratoren på <ph name="MANAGEMENT_URL"/>.</translation>
+<translation id="6164005077879661055">Alle filer og lokale data tilknyttet den administrerte brukeren slettes permanent når den administrerte brukeren fjernes. Besøkte nettsteder og innstillinger for denne administrerte brukeren kan fortsatt ses av administratoren på <ph name="MANAGEMENT_URL"/>.</translation>
 <translation id="6723839937902243910">Strøm</translation>
 <translation id="1031460590482534116">Det oppstod en feil under lagring av klientsertifikatet. Feil <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>).</translation>
 <translation id="8221511411222784897">Chrome oppdaget at noen av nettleserens innstillinger ble endret av et annet program. De aktuelle innstillingene er tilbakestilt til de opprinnelige standardinnstillingene.</translation>
@@ -2970,7 +2965,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT"/> av <ph name="TOTAL_SIZE"/></translation>
 <translation id="9127762771585363996">Snu kamerabildet horisontalt</translation>
 <translation id="4724450788351008910">Tilknytning endret</translation>
-<translation id="2249605167705922988">for eksempel 1-5, 8, 11-13</translation>
+<translation id="2249605167705922988">f.eks. 1–5, 8, 11–13</translation>
 <translation id="1520505881707245707">Du kan bruke dette flagget til å slå på en funksjon som kan bekrefte om filinnholdet i utvidelsene fra nettmarkedet, samsvarer med det du kan forvente (det som er oppgitt). Med dette flagget kan du slå på funksjonen om denne ikke alt er slått på, men du kan ikke slå den av (siden det ville åpnet for at skadelig programvare kunne tuklet med denne innstillingen).</translation>
 <translation id="8572510699242209592">Gigabyte</translation>
 <translation id="8691686986795184760">(Aktivert av virksomhetens retningslinjer)</translation>
@@ -3011,7 +3006,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="8119631488458759651">fjern dette nettstedet</translation>
 <translation id="158765438169997550">Hvis aktivert, gjøres tegning i en separat tråd i stedet for hovedtråden.</translation>
 <translation id="5225324770654022472">Vis appsnarveien</translation>
-<translation id="1408803555324839240">Beklager! Den nye overvåkede brukeren kunne ikke opprettes. Sjekk at du er pålogget og prøv på nytt.</translation>
+<translation id="1408803555324839240">Beklager! Den nye administrerte brukeren kunne ikke opprettes. Sjekk at du er pålogget og prøv på nytt.</translation>
 <translation id="8153607920959057464">Denne filen kan ikke vises.</translation>
 <translation id="5817397429773072584">Kinesisk (tradisjonell)</translation>
 <translation id="444134486829715816">Utvid</translation>
@@ -3023,7 +3018,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="4031910098617850788">F5</translation>
 <translation id="8960795431111723921">Vi undersøker dette problemet for øyeblikket.</translation>
 <translation id="862727964348362408">Stanset</translation>
-<translation id="2482878487686419369">Varslinger</translation>
+<translation id="2482878487686419369">Varsler</translation>
 <translation id="8004582292198964060">Nettleser</translation>
 <translation id="2040460856718599782">Beklager!  Det oppsto en feil da vi forsøkte å autentisere deg. Kontrollér påloggingslegitimasjonen, og prøv på nytt.</translation>
 <translation id="695755122858488207">Ikke valgt alternativknapp</translation>
@@ -3063,14 +3058,14 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="6739254200873843030">Kortet er utløpt. Sjekk datoen eller legg inn et nytt kort.</translation>
 <translation id="8106211421800660735">Kredittkortnummer</translation>
 <translation id="9159562891634783594">Aktiver registrering av uregistrerte nettskyskrivere fra utskriftsforhåndsvisningen.</translation>
-<translation id="8843709518995654957"><ph name="LINK_START"/>Opprett en overvåket bruker <ph name="LINK_END"/> for denne enheten.</translation>
+<translation id="8843709518995654957"><ph name="LINK_START"/>Opprett en administrert bruker<ph name="LINK_END"/> for denne enheten.</translation>
 <translation id="2872961005593481000">Avslutt</translation>
 <translation id="8986267729801483565">Plassering for nedlasting:</translation>
 <translation id="5385003951485962612">Deaktiverer støtte for SAML-pålogging for Chrome OS-pålogging.</translation>
 <translation id="2044540568167155862">Goats Teleported</translation>
 <translation id="1776712937009046120">Legg til bruker</translation>
 <translation id="506152810699123561">Beregninger knyttet til effekten <ph name="SHORT_PRODUCT_NAME"/> har på systemets minne</translation>
-<translation id="674632704103926902">Aktiver trykk og dra</translation>
+<translation id="674632704103926902">Aktivér trykk og dra</translation>
 <translation id="8954952943849489823">Flytting mislyktes på grunn av uventet feil: $1</translation>
 <translation id="2318143611928805047">Papirstørrelse</translation>
 <translation id="7100897339030255923"><ph name="COUNT"/> elementer er valgt</translation>
@@ -3127,7 +3122,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="2332131598580221120">Se i Nettmarked</translation>
 <translation id="7026338066939101231">Reduser</translation>
 <translation id="2556876185419854533">&amp;Angre endringen</translation>
-<translation id="5875858680971105888">Beklager, den overvåkede brukeren kunne ikke importeres. Sjekk nettverksforbindelsen din og prøv på nytt senere.</translation>
+<translation id="5875858680971105888">Beklager, den administrerte brukeren kunne ikke importeres. Sjekk nettverksforbindelsen din og prøv på nytt senere.</translation>
 <translation id="5411472733320185105">Ikke bruk mellomtjenerinnstillinger for følgende tjenere og domener:</translation>
 <translation id="7358682983403815415">De åpne fanene, bokmerkene, loggen og mer blir synkronisert med Google-kontoen din.</translation>
 <translation id="3685121001045880436">Det er sannsynlig at tjeneren som er vert for nettsiden har blitt overbelastet eller at det har oppstått en feil.
@@ -3202,7 +3197,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="3543393733900874979">Oppdatering mislyktes (feil: <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="991969738502325513">Hva bør du gjøre?</translation>
 <translation id="1017280919048282932">&amp;Legg til i ordliste</translation>
-<translation id="3534879087479077042">Hva er en overvåket bruker?</translation>
+<translation id="3534879087479077042">Hva er en administrert bruker?</translation>
 <translation id="7211828883345145708">Aktiverer flere hurtigtaster som er nyttige for feilsøking av Chromium.</translation>
 <translation id="8319414634934645341">Utvidet bruk av nøkkel</translation>
 <translation id="6056710589053485679">Normal innlasting på nytt</translation>
@@ -3244,7 +3239,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="8755376271068075440">&amp;Større</translation>
 <translation id="8132793192354020517">Tilkoblet <ph name="NAME"/></translation>
 <translation id="8187473050234053012">Tjenerens sikkerhetssertifikat er tilbakekalt.</translation>
-<translation id="7052914147756339792">Angi bakgrunnsbilde</translation>
+<translation id="7052914147756339792">Angi bakgrunn</translation>
 <translation id="5865597920301323962">Informasjonskapsler fra <ph name="DOMAIN"/> blir slettet ved avslutning.</translation>
 <translation id="2702540957532124911">Tastatur:</translation>
 <translation id="7444983668544353857">Deaktiver <ph name="NETWORKDEVICE"/></translation>
@@ -3355,7 +3350,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="7925686952655276919">Ikke bruk mobildata ved synkronisering</translation>
 <translation id="8014914694548037591">Denne utvidelsen kan lese og endre informasjonen din på alle nettsteder, herunder Google, Facebook, Yahoo osv.</translation>
 <translation id="6503077044568424649">Mest besøkt</translation>
-<translation id="9016164105820007189">Tilknytter «<ph name="DEVICE_NAME"/>».</translation>
+<translation id="9016164105820007189">Kobler til «<ph name="DEVICE_NAME"/>».</translation>
 <translation id="7168109975831002660">Minste skriftstørrelse</translation>
 <translation id="7070804685954057874">Direkte inndata</translation>
 <translation id="2631006050119455616">Lagret</translation>
@@ -3399,11 +3394,11 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="6672789615126913676">Bruken og loggen for denne brukeren kan gjennomgås av administratoren (<ph name="CUSTODIAN_EMAIL"/>) på chrome.com</translation>
 <translation id="4010065515774514159">Nettleserhandling</translation>
 <translation id="3733533226834394996">SHA-224</translation>
-<translation id="7295019613773647480">Aktiver overvåkede brukere</translation>
+<translation id="7295019613773647480">Aktivér administrerte brukere</translation>
 <translation id="2419414843209660528">Legg til en snarvei til denne nettsiden</translation>
 <translation id="3529423920239848704">Forekomster der <ph name="SHORT_PRODUCT_NAME"/> ikke ble avsluttet på riktig måte</translation>
 <translation id="7022562585984256452">Startsiden din er angitt.</translation>
-<translation id="267285457822962309">Endre innstillinger spesifikke for enheten din og eksterne enheter.</translation>
+<translation id="267285457822962309">Endre innstillinger som er spesifikke for enheten din og eksterne enheter.</translation>
 <translation id="1154228249304313899">Åpne denne siden:</translation>
 <translation id="6976108581241006975">JavaScript-konsoll</translation>
 <translation id="60357267506638014">Tsjekkisk QWERTY</translation>
@@ -3411,7 +3406,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="3473479545200714844">Skjermforstørrer</translation>
 <translation id="6759193508432371551">Tilbakestilling til fabrikkstandard</translation>
 <translation id="2981493173545878420">Slått på for alle sider</translation>
-<translation id="3627588569887975815">Åpne linken i inkognitovindu</translation>
+<translation id="3627588569887975815">Åpne linken i inko&amp;gnitovindu</translation>
 <translation id="4916657783933881060">Hva betyr dette?</translation>
 <translation id="5851868085455377790">Utsteder </translation>
 <translation id="3549797760399244642">Gå til drive.google.com</translation>
@@ -3602,7 +3597,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="7054808953701320293">Den er grei. Ikke vis meg dette igjen.</translation>
 <translation id="144932861331386147">Du må koble til Internett for å oppdatere Chromebook.</translation>
 <translation id="2938685643439809023">Mongolsk</translation>
-<translation id="5737306429639033676">Forutsi nettverkshandlinger for å forbedre lastingen av sider</translation>
+<translation id="5737306429639033676">Forutsi nettverkshandlinger for å forbedre innlastingen av sider</translation>
 <translation id="4530494379350999373">Opprinnelse</translation>
 <translation id="2070909990982335904">Navn som starter med et punktum, er reservert for systemet. Velg et annet navn.</translation>
 <translation id="3707020109030358290">Ikke en sertifiseringsinstans.</translation>
@@ -3615,7 +3610,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="4062251648694601778">Kos deg med <ph name="SHORT_PRODUCT_NAME"/>-enheten din. Har du spørsmål? Du kan alltid få hjelp ved å klikke på spørsmålstegnet i statusfeltet.</translation>
 <translation id="6701535245008341853">Kan ikke hente profil.</translation>
 <translation id="8303655282093186569">Inndatainnstillinger for pinyin</translation>
-<translation id="992779717417561630">Skriv ut ved hjelp av dialogen <ph name="CLOUD_PRINT_NAME"/> – <ph name="SHORTCUT_KEY"/></translation>
+<translation id="992779717417561630">Skriv ut via <ph name="CLOUD_PRINT_NAME"/>-dialogen (<ph name="SHORTCUT_KEY"/>)</translation>
 <translation id="1991402313603869273"><ph name="PLUGIN_NAME"/> tillates ikke.</translation>
 <translation id="527605982717517565">Tillat alltid JavaScript på <ph name="HOST"/></translation>
 <translation id="702373420751953740">PRL-versjon:</translation>
@@ -3633,7 +3628,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="2750518858905599015"><ph name="SHORT_PRODUCT_NAME"/> er oppdatert</translation>
 <translation id="7554791636758816595">Ny fane</translation>
 <translation id="3630337581925712713"><ph name="PERMISSION_TYPE_LABEL"/>:</translation>
-<translation id="2740393541869613458">gjennomgå nettstedene den overvåkede brukeren har besøkt, og</translation>
+<translation id="2740393541869613458">gjennomgå nettstedene den administrerte brukeren har besøkt, og</translation>
 <translation id="1114091355035739006">Bruk medianer for å minimere avvik i ytelsesdataene</translation>
 <translation id="3330616135759834145">Mottok flere distinkte Content-Disposition-overskrifter.  Dette tillates ikke, som et
         beskyttelsestiltak mot angrep som splitter HTTP-svar.</translation>
@@ -3652,7 +3647,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="4677772697204437347">GPU-minne</translation>
 <translation id="3085235303151103497">Aktiver feilsøking for pakkede apper.</translation>
 <translation id="2645575947416143543">Hvis du imidlertid jobber i en organisasjon som produserer sine egne sertifikater og du prøver å koble deg til et internt nettsted tilhørende denne organisasjonen med et slikt sertifikat, kan du muligens løse dette problemet på en trygg måte. Du kan importere organisasjonens rotsertifikat som «rotsertifikat». Da vil sertifikater som er utstedt eller bekreftet av din organisasjon, betraktes som pålitelige, og du vil ikke få denne feilen neste gang du prøver å koble deg til et internt nettsted. Ta kontakt med organisasjonens brukerstøtte for å få hjelp med å legge til et nytt rotsertifikat på datamaskinen.</translation>
-<translation id="2433728760128592593">Trykk på alt + shift for å bytte mellom inndatametoder.</translation>
+<translation id="2433728760128592593">Trykk på Alt + Shift for å bytte mellom inndatametoder.</translation>
 <translation id="1056898198331236512">Advarsel</translation>
 <translation id="5934281776477898549">Ingen oppdatering</translation>
 <translation id="537813040452600081">Sider i dette vinduet vises ikke i nettleserloggen, og de legger ikke igjen andre spor (f.eks. informasjonskapsler) på datamaskinen etter at du har logget av. Filer du laster ned og bokmerker du oppretter, lagres ikke.</translation>
@@ -3715,7 +3710,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="166278006618318542">Algoritme for enhetens offentlige nøkkel</translation>
 <translation id="5759272020525228995">Nettstedet støtte på en feil ved henting av <ph name="URL"/>. Det kan være stengt for vedlikehold eller feilaktig konfigurert.</translation>
 <translation id="4450472573074061292">Aktiver støtte for Syncfs-mapper.</translation>
-<translation id="2946119680249604491">Legg til tilknytning</translation>
+<translation id="2946119680249604491">Legg til forbindelse</translation>
 <translation id="641480858134062906">Fikk ikke lastet inn <ph name="URL"/></translation>
 <translation id="3693415264595406141">Passord:</translation>
 <translation id="8671210955687109937">Kan kommentere</translation>
@@ -3725,10 +3720,10 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="7077829361966535409">Påloggingssiden kunne ikke lastes inn med de gjeldende mellomtjenerinnstillingene. <ph name="GAIA_RELOAD_LINK_START"/>Forsøk å logge deg på igjen<ph name="GAIA_RELOAD_LINK_END"/> eller endre <ph name="PROXY_SETTINGS_LINK_START"/>mellomtjenerinnstillingene<ph name="PROXY_SETTINGS_LINK_END"/>.</translation>
 <translation id="4055023634561256217">En omstart er nødvendig før enheten din kan tilbakestilles med Powerwash.</translation>
 <translation id="8088137642766812908">Forsiktig, denne funksjonen kan bite</translation>
-<translation id="7587809973037713780">Ikke la nettsteder bruke et programtillegg for å få tilgang til datamaskinen din</translation>
+<translation id="7587809973037713780">Ikke la noen nettsteder bruke et programtillegg for å få tilgang til datamaskinen din</translation>
 <translation id="4831943061551898619">Testoppstarter</translation>
 <translation id="3412265149091626468">Gå til utvalg</translation>
-<translation id="3764800135428056022">Tilby å lagre passordene dine på nett.</translation>
+<translation id="3764800135428056022">Tilby å lagre passordene du bruker på nettet.</translation>
 <translation id="5358016106459232452">Tiden det tar å fullføre en oppstart av <ph name="SHORT_PRODUCT_NAME"/> i et testmiljø</translation>
 <translation id="7509179828847922845">Forbindelsen til <ph name="HOST_NAME"/> ble avbrutt.</translation>
 <translation id="2911372483530471524">PID-navneområder</translation>
@@ -3839,7 +3834,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="7385854874724088939">Det oppstod en feil under forsøket på å skrive ut. Kontroller skriveren og prøv igjen.</translation>
 <translation id="770015031906360009">Gresk</translation>
 <translation id="7455133967321480974">Bruk global standardinnstilling (Blokkér)</translation>
-<translation id="8463215747450521436">Denne overvåkede brukeren kan ha blitt slettet eller deaktivert av administratoren. Ta kontakt med administratoren hvis du vil fortsette å logge på som denne brukeren.</translation>
+<translation id="8463215747450521436">Denne administrerte brukeren kan ha blitt slettet eller deaktivert av administratoren. Ta kontakt med administratoren hvis du vil fortsette å logge på som denne brukeren.</translation>
 <translation id="3454157711543303649">Aktiveringen er fullført</translation>
 <translation id="3895034729709274924">Aktiver stille feilsøking.</translation>
 <translation id="884923133447025588">Finner ingen tilbakekallingsmekanisme.</translation>
@@ -3861,7 +3856,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="8782565991310229362">Oppstart av kiosk-appen er avbrutt.</translation>
 <translation id="2252923619938421629">Bidra til å gjøre Google Chrome bedre ved å rapportere gjeldende innstillinger</translation>
 <translation id="4647697156028544508">Skriv inn PIN-koden for «<ph name="DEVICE_NAME"/>»:</translation>
-<translation id="1062866675591297858">Administrer de overvåkede brukerne dine via <ph name="BEGIN_LINK"/>oversikten for overvåkede brukere<ph name="END_LINK"/>.</translation>
+<translation id="1062866675591297858">Administrer de administrerte brukerne dine via <ph name="BEGIN_LINK"/>oversikten for administrerte brukere<ph name="END_LINK"/>.</translation>
 <translation id="7671130400130574146">Bruk systemets tittellinje og kantlinjer</translation>
 <translation id="9111791539553342076">Denne utvidelsen kunne ikke endre svaroverskriften «<ph name="HEADER_NAME"/>» i en nettverksforespørsel fordi endringen kom i konflikt med en annen utvidelse (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="9170848237812810038">&amp;Angre</translation>
@@ -3944,6 +3939,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="6460601847208524483">Finn neste</translation>
 <translation id="397703832102027365">Fullfører …</translation>
 <translation id="8146177459103116374">Hvis du allerede er registrert på denne enheten, kan du <ph name="LINK2_START"/>logge deg på som en eksisterende bruker<ph name="LINK2_END"/>.</translation>
+<translation id="5072836811783999860">Vis administrerte bokmerker</translation>
 <translation id="4856478137399998590">Mobildatatjenesten er aktivert og klar til bruk</translation>
 <translation id="3305389145870741612">Formateringsprosessen kan ta et par sekunder. Vent litt.</translation>
 <translation id="3648607100222897006">Disse eksperimentelle funksjonene kan bli endret, satt på pause eller forsvinne når som helst. Vi gir absolutt ingen garantier om hva som kan skje hvis du slår på et av disse eksperimentene – nettleseren kan til og med spontanantenne. Spøk til side: Nettleseren kan komme til å slette alle dataene dine eller sikkerheten og personvernet kan bli kompromittert på uventede måter. Eventuelle eksperimenter du aktiverer bli aktivert for alle brukere av denne nettleseren. Vær forsiktig hvis du fortsetter.</translation>
@@ -3972,7 +3968,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="2836802726677668254">Ny versjon</translation>
 <translation id="5233930340889611108">WebKit</translation>
 <translation id="8260864402787962391">Mus</translation>
-<translation id="1775135663370355363">Viser loggen fra denne enheten. <ph name="BEGIN_LINK"/>Finn ut mer<ph name="END_LINK"/></translation>
+<translation id="1775135663370355363">Viser loggen fra denne enheten. <ph name="BEGIN_LINK"/>Les mer<ph name="END_LINK"/></translation>
 <translation id="8276560076771292512">Tøm bufferen og kjør en hard nyinnlasting</translation>
 <translation id="9076523132036239772">Beklager, men angitt e-postadresse eller passord kunne ikke bekreftes. Prøv å koble deg til et nettverk først.</translation>
 <translation id="4260442535208228602">Legg til i appvelgeren</translation>
@@ -4003,7 +3999,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="1465619815762735808">Klikk for å spille av</translation>
 <translation id="6941937518557314510">Logg på <ph name="TOKEN_NAME"/> for å godkjenne <ph name="HOST_NAME"/> med sertifikatet ditt.</translation>
 <translation id="5850516540536751549">Denne filtypen støttes ikke. Gå til <ph name="BEGIN_LINK"/>Chrome Nettmarked<ph name="END_LINK"/> for å finne en app som kan åpne denne filtypen.
-    <ph name="BEGIN_LINK_HELP"/>Finn ut mer<ph name="END_LINK_HELP"/></translation>
+    <ph name="BEGIN_LINK_HELP"/>Les mer<ph name="END_LINK_HELP"/></translation>
 <translation id="7361824946268431273">En raskere, enklere og sikrere datamaskin</translation>
 <translation id="1313705515580255288">Bokmerkene, loggen og andre innstillinger synkroniseres til Google-kontoen din.</translation>
 <translation id="2099686503067610784">Slette tjenersertifikatet «<ph name="CERTIFICATE_NAME"/>»?</translation>
@@ -4039,7 +4035,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="6681668084120808868">Ta et bilde</translation>
 <translation id="1368265273904755308">Rapportér problem</translation>
 <translation id="780301667611848630">Nei takk</translation>
-<translation id="8209677645716428427">En overvåket bruker kan utforske nettet med veiledning fra deg. Som administrator for en overvåket bruker i Chrome kan du:</translation>
+<translation id="8209677645716428427">En administrert bruker kan utforske nettet med veiledning fra deg. Som administrator for en administrert bruker i Chrome kan du:</translation>
 <translation id="2812989263793994277">Ikke vis bilder</translation>
 <translation id="722363467515709460">Aktiver skjermforstørrer</translation>
 <translation id="7190251665563814471">Tillat alltid disse programtilleggene på <ph name="HOST"/></translation>
@@ -4112,7 +4108,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="8686213429977032554">Denne Disk-filen er ikke delt ennå</translation>
 <translation id="2448046586580826824">Sikker HTTP-mellomtjener</translation>
 <translation id="4032534284272647190">Tilgang til <ph name="URL"/> ble avvist.</translation>
-<translation id="5958529069007801266">Overvåket bruker</translation>
+<translation id="5958529069007801266">Administrert bruker</translation>
 <translation id="3129173833825111527">Venstre marg</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES"/> kB (<ph name="NUM_KILOBYTES_LIVE"/> kB ubrukt)</translation>
 <translation id="5554573843028719904">Annet Wi-Fi-nettverk</translation>
@@ -4150,7 +4146,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="7015226785571892184">Følgende program startes hvis du godtar denne forespørselen:
 
  <ph name="APPLICATION"/></translation>
-<translation id="177336675152937177">Data for apper tjeneren er vert for</translation>
+<translation id="177336675152937177">Appdata tjeneren er vert for</translation>
 <translation id="6804671422566312077">Åpne alle bokmerker i &amp;nytt vindu</translation>
 <translation id="4356871690555779302">Nettstedet på <ph name="HOST_NAME"/> inneholder elementer fra nettsteder som ser ut til å være vert for skadelig programvare – programvare som kan skade enheten din eller utføre handlinger uten ditt samtykke. Det å besøke et nettsted med skadelig programvare kan være nok til at den mobile enheten din blir infisert.</translation>
 <translation id="4009293373538135798">Uriktige avslutninger</translation>
@@ -4254,19 +4250,19 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="4350711002179453268">Kan ikke opprette en sikker tilkobling til tjeneren. Det kan være at tjeneren har problemer, eller at det kreves et klientautentiseringssertifikat som du mangler.</translation>
 <translation id="750509436279396091">Åpne nedlastingsmappen</translation>
 <translation id="5963026469094486319">Hent temaer</translation>
-<translation id="7586312264284919041">Har du lyst til å få denne siden oversatt?</translation>
+<translation id="7586312264284919041">Vil du få denne siden oversatt?</translation>
 <translation id="3855072293748278406">Tilgang til programtillegg utenfor testmiljø</translation>
 <translation id="8357224663288891423">Hurtigtaster for utvidelser og apper</translation>
 <translation id="1893137424981664888">Ingen programtillegg er installert.</translation>
 <translation id="4919810557098212913"><ph name="HOST"/> ønsker å bruke kameraet ditt.</translation>
 <translation id="5434706434408777842">F3</translation>
-<translation id="3718288130002896473">Atferd</translation>
+<translation id="3718288130002896473">Funksjonalitet</translation>
 <translation id="2300302924877190394">Deaktiver Google Disk på denne enheten</translation>
 <translation id="4813512666221746211">Nettverksfeil</translation>
 <translation id="8711402221661888347">Burger</translation>
 <translation id="1967178421351654130">Kortet ditt har blitt beskyttet med det virtuelle kortet for Google Wallet (<ph name="FRONTING_CREDIT_CARD"/>), og dette nummeret kommer til å vises på kvitteringen. Dette kjøpet blir fortsatt belastet til <ph name="BACKING_CREDIT_CARD"/>.</translation>
 <translation id="1254117744268754948">Valg av mappe</translation>
-<translation id="2168725742002792683">Filutvidelser</translation>
+<translation id="2168725742002792683">Filetternavn</translation>
 <translation id="7936369818837152377">Tiden det tar å gjenopprette en tidligere nettleserøkt</translation>
 <translation id="3974195870082915331">Klikk for å vise passord</translation>
 <translation id="2612676031748830579">Kortnummer</translation>
@@ -4322,10 +4318,10 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="76113267417806263">Ja, jeg er sikker</translation>
 <translation id="7209475358897642338">Hva er språket ditt?</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (administrert)</translation>
-<translation id="9149866541089851383">Rediger...</translation>
+<translation id="9149866541089851383">Rediger</translation>
 <translation id="8735794438432839558">Koble til Internett for å logge deg på Chromebook.</translation>
 <translation id="7939412583708276221">Behold uansett</translation>
-<translation id="8140778357236808512">Importer en eksisterende overvåket bruker</translation>
+<translation id="8140778357236808512">Importér en eksisterende administrert bruker</translation>
 <translation id="6953992620120116713">HTTPS via eksperimentell QUIC-protokoll.</translation>
 <translation id="8737260648576902897">Installer Adobe Reader</translation>
 <translation id="7876243839304621966">Fjern alle</translation>
@@ -4360,7 +4356,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="7052500709156631672">Portner- eller mellomtjeneren mottok et ugyldig svar fra en annen tjener.</translation>
 <translation id="281133045296806353">Opprettet nytt vindu i eksisterende nettleserøkt.</translation>
 <translation id="3605780360466892872">Businessmann</translation>
-<translation id="4709423352780499397">Data lagret lokalt</translation>
+<translation id="4709423352780499397">Data som er lagret lokalt</translation>
 <translation id="8204484782770036444">• <ph name="PERMISSION"/></translation>
 <translation id="7144878232160441200">Prøv på nytt</translation>
 <translation id="3570985609317741174">Nettinnhold</translation>
@@ -4374,6 +4370,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="6869402422344886127">Avmerket avmerkingsboks</translation>
 <translation id="3428010780253032925">Deaktiver rect-basert målretting i visninger</translation>
 <translation id="5637380810526272785">Inndatametode</translation>
+<translation id="3613134908380545408">Vis <ph name="FOLDER_NAME"/></translation>
 <translation id="2837049386027881519">Tilkoblingen måtte måtte prøves på nytt ved hjelp av en eldre versjon av TLS- eller SSL-protokollen. Dette betyr vanligvis at tjeneren bruker veldig gammel programvare og kan ha andre sikkerhetsproblemer.</translation>
 <translation id="404928562651467259">ADVARSEL</translation>
 <translation id="4289300219472526559">Begynn å snakke</translation>
@@ -4408,7 +4405,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="7353651168734309780"><ph name="EXTENSION_NAME"/> krever nye tillatelser</translation>
 <translation id="5582414689677315220">Ved å klikke på «Fortsett» godtar du <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/> og <ph name="LEGAL_DOC_LINK_TEXT_3"/>.</translation>
 <translation id="8928220460877261598">Du er nå logget på Chrome.</translation>
-<translation id="1409390508152595145">Opprett overvåket bruker</translation>
+<translation id="1409390508152595145">Opprett administrert bruker</translation>
 <translation id="7484964289312150019">Åpne alle bokmerker i &amp;nytt vindu</translation>
 <translation id="1731346223650886555">Semikolon</translation>
 <translation id="4450974146388585462">Diagnostiser</translation>
@@ -4480,7 +4477,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="359283478042092570">Angi</translation>
 <translation id="6791586529990783225">Tilbakestill nettleserinnstillingene</translation>
 <translation id="449782841102640887">Ikke ta sjansen!</translation>
-<translation id="2927657246008729253">Endre...</translation>
+<translation id="2927657246008729253">Endre</translation>
 <translation id="7978412674231730200">Privatnøkkel</translation>
 <translation id="7026195417816346611">Lokal datalagring</translation>
 <translation id="5308380583665731573">Koble til</translation>
@@ -4617,7 +4614,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="978146274692397928">Opprinnelig tegnsettingsbredde er satt til Full</translation>
 <translation id="4775266380558160821">Tillat alltid disse programtilleggene på <ph name="HOST"/></translation>
 <translation id="6921812972154549137">Informasjonskapsler og andre nettsteds- og programtilleggsdata</translation>
-<translation id="6886871292305414135">Åpne link i ny &amp;fane</translation>
+<translation id="6886871292305414135">Åpne linken i en ny &amp;fane</translation>
 <translation id="4499634737431431434">Uker</translation>
 <translation id="7961015016161918242">Aldri</translation>
 <translation id="3950924596163729246">Får ikke tilgang til nettverket.</translation>
@@ -4656,7 +4653,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="6051028581720248124">Ved utskrift til FedEx-kontorer, godtar du <ph name="START_LINK"/>vilkårene<ph name="END_LINK"/> deres.</translation>
 <translation id="5435226530530647560">Uriktig avslutning</translation>
 <translation id="1979718561647571293">Er dette oppstartssiden du forventet?</translation>
-<translation id="6608140561353073361">Se alle informasjonskapsler og data fra nettsteder</translation>
+<translation id="6608140561353073361">Se alle informasjonskapsler og nettstedsdata</translation>
 <translation id="6485131920355264772">Kunne ikke hente informasjon om lagringsplass</translation>
 <translation id="6547316139431024316">Ikke advar om denne utvidelsen igjen</translation>
 <translation id="8007030362289124303">Lavt batteri</translation>
@@ -4674,7 +4671,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="3955493773677071476">Opprett snarveier</translation>
 <translation id="8655319619291175901">Beklager. Noe gikk galt.</translation>
 <translation id="5040262127954254034">Personvern</translation>
-<translation id="4345703751611431217">Programvareinkompatibilitet: Finn ut mer</translation>
+<translation id="4345703751611431217">Inkompatibel programvare: Les mer</translation>
 <translation id="7148311641502571842"><ph name="PLUGIN_NAME"/> er deaktivert. Gå til <ph name="CHROME_PLUGINS_LINK"/> for å aktivere det på nytt.</translation>
 <translation id="3258281577757096226">3 sett (endelig)</translation>
 <translation id="973473557718930265">Avslutt</translation>
@@ -4704,6 +4701,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="2859369953631715804">Velg et mobilt nettverk</translation>
 <translation id="6934265752871836553">Du kan bruke ny kode som ikke er ferdig testet for å få Chrome til å gjengi innhold kjappere. Det er stor sjanse for at endringene bak denne banen kan ødelegge mye av innholdsvisningen.</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">Åpne alltid i Adobe Reader</translation>
 <translation id="8274359292107649245">Åpne Chrome fra skrivebordet</translation>
 <translation id="1571119610742640910">Sammensetting for bakgrunner med fast rot.</translation>
 <translation id="6514565641373682518">Denne siden har deaktivert markøren din.</translation>
@@ -4742,7 +4740,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="4799797264838369263">Dette alternativet kontrolleres av virksomhetens retningslinjer. Kontakt administratoren for mer informasjon.</translation>
 <translation id="1931152874660185993">Ingen komponenter er installert.</translation>
 <translation id="8704521619148782536">Dette tar mye lengre tid enn normalt. Du kan fortsette å vente eller avbryte og prøve på nytt senere.</translation>
-<translation id="4492190037599258964">Søkeresultater for <ph name="SEARCH_STRING"/></translation>
+<translation id="4492190037599258964">Søkeresultater for «<ph name="SEARCH_STRING"/>»</translation>
 <translation id="9154418932169119429">Dette bildet er ikke tilgjengelig utenfor Internett.</translation>
 <translation id="2739842825616753233">Spør når et nettsted krever tilgang til kameraet og mikrofonen (anbefales)</translation>
 <translation id="8940081510938872932">Datamaskinen din har for mange baller i luften nå. Prøv på nytt senere.</translation>
@@ -4757,7 +4755,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="5170477580121653719">Ledig lagringsplass på Google Disk: <ph name="SPACE_AVAILABLE"/>.</translation>
 <translation id="4114470632216071239">Lås SIM-kort (krev personlig kode for å bruke mobildata)</translation>
 <translation id="6581162200855843583">Google Disk-link</translation>
-<translation id="5783221160790377646">På grunn av en feil ble det ikke opprettet noen overvåket bruker. Prøv på nytt senere.</translation>
+<translation id="5783221160790377646">På grunn av en feil ble det ikke opprettet noen administrert bruker. Prøv på nytt senere.</translation>
 <translation id="340771324714262530">Stopp speiling</translation>
 <translation id="3303260552072730022">En utvidelse utløste full skjerm.</translation>
 <translation id="7619338682741516875">Apper holder Chrome i gang.</translation>
@@ -4874,7 +4872,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="1981905533439890161">Bekreftelse av nytt program</translation>
 <translation id="7717014941119698257">Laster ned: <ph name="STATUS"/></translation>
 <translation id="2785530881066938471">Kan ikke laste inn filen «<ph name="RELATIVE_PATH"/>» for innholdsskript. Den er ikke UTF-8-kodet.</translation>
-<translation id="8744525654891896746">Velg et brukerbilde for denne overvåkede brukeren</translation>
+<translation id="8744525654891896746">Velg et brukerbilde for denne administrerte brukeren</translation>
 <translation id="3807747707162121253">&amp;Avbryt</translation>
 <translation id="202352106777823113">Nedlastingen tok for lang tid og ble stoppet av nettverket.</translation>
 <translation id="6155817405098385604">Ikke bruk 3D-programvare for rasterisering som alternativ når GPU ikke kan brukes.</translation>
@@ -4902,13 +4900,14 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="824543159844843373">Aktiver programlisteelement 3</translation>
 <translation id="3819800052061700452">&amp;Full skjerm</translation>
 <translation id="48607902311828362">Flymodus</translation>
+<translation id="711840821796638741">Vis administrerte bokmerker</translation>
 <translation id="3360297538363969800">Utskriften mislyktes. Kontrollér skriveren og prøv på nytt.</translation>
 <translation id="680572642341004180">Aktiver RLZ-sporing for <ph name="SHORT_PRODUCT_OS_NAME"/>.</translation>
 <translation id="688797901999351107">Vi ber deg slutte å bruke den tilbakekalte laderen.</translation>
 <translation id="4746971725921104503">Det kan virke som om du allerede administrerer en bruker med det navnet. Ville du <ph name="LINK_START"/>importere <ph name="USER_DISPLAY_NAME"/> til denne enheten<ph name="LINK_END"/>?</translation>
 <translation id="8142699993796781067">Privat nettverk</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME"/> ønsker å dele innholdet på skjermen din. Velg hva du ønsker å dele.</translation>
-<translation id="1374468813861204354">forslag</translation>
+<translation id="1374468813861204354">forslagene</translation>
 <translation id="5906065664303289925">Maskinvareadresse:</translation>
 <translation id="2498436043474441766">Legg til skrivere</translation>
 <translation id="1190144681599273207">Henting av denne filen kommer til å bruke ca. <ph name="FILE_SIZE"/> mobildata.</translation>
@@ -5053,7 +5052,7 @@ Vil du godta dette?</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="421182450098841253">&amp;Vis bokmerkerad</translation>
 <translation id="2948083400971632585">På innstillingssiden kan du deaktivere eventuelle mellomtjenere for tilkoblinger.</translation>
-<translation id="4481249487722541506">Last upakket utvidelse</translation>
+<translation id="4481249487722541506">Last inn upakket utvidelse</translation>
 <translation id="356512994079769807">Systeminstallasjonsinnstillinger</translation>
 <translation id="8180239481735238521">side</translation>
 <translation id="7532099961752278950">Angitt av program:</translation>
@@ -5121,13 +5120,13 @@ Vil du godta dette?</translation>
 <translation id="6815551780062710681">rediger</translation>
 <translation id="6911468394164995108">Koble til annet</translation>
 <translation id="2510708650472996893">Fargeprofil:</translation>
-<translation id="343467364461911375">Noen innholdstjenester bruker maskinidentifikatorer for å identifisere deg med tanke på autorisasjon for tilgang til beskyttet innhold.</translation>
+<translation id="343467364461911375">Noen innholdstjenester bruker maskinidentifikatorer for å identifisere deg før du får tilgang til beskyttet innhold.</translation>
 <translation id="5061708541166515394">Kontrast</translation>
 <translation id="3307950238492803740">Feilsøk alt.</translation>
 <translation id="2087822576218954668">Skriv ut: <ph name="PRINT_NAME"/></translation>
 <translation id="747459581954555080">Gjenopprett alt</translation>
 <translation id="7602079150116086782">Ingen faner fra andre enheter</translation>
-<translation id="7167486101654761064">&amp;Alltid åpne filer av denne typen</translation>
+<translation id="7167486101654761064">Åpne &amp;alltid filer av denne typen</translation>
 <translation id="6218364611373262432">Tilbakestill installeringstilstanden til appvelgeren ved hver oppstart. Når dette flagget er angitt, anser Chrome appvelgeren som ikke-installert ved alle oppstarter. Dette gjøres for å teste installeringsflyten til appvelgeren.</translation>
 <translation id="4396124683129237657">Nytt kredittkort</translation>
 <translation id="4103763322291513355">Gå til &lt;strong&gt;chrome://policy&lt;/strong&gt; for å se listen over sperrede nettadresser og andre innstillinger aktivert av systemadministratoren din.</translation>
@@ -5140,7 +5139,7 @@ Vil du godta dette?</translation>
 <translation id="8241806945692107836">Fastslår enhetskonfigurasjonen …</translation>
 <translation id="2273562597641264981">Operatør:</translation>
 <translation id="122082903575839559">Signaturalgoritme for sertifikat</translation>
-<translation id="9013587737291179248">Ojsann! Den overvåkede brukeren kunne ikke importeres. Sjekk harddiskplassen og tillatelsene dine og prøv på nytt.</translation>
+<translation id="9013587737291179248">Ojsann! Den administrerte brukeren kunne ikke importeres. Sjekk harddiskplassen og tillatelsene dine, og prøv på nytt.</translation>
 <translation id="7254951428499890870">Er du sikker på at du ønsker å starte <ph name="APP_NAME"/> i diagnostikkmodus?</translation>
 <translation id="4462159676511157176">Egendefinerte navnetjenere</translation>
 <translation id="4575703660920788003">Trykk på Shift + Alt for å bytte tastaturoppsett.</translation>
@@ -5152,7 +5151,7 @@ Vil du godta dette?</translation>
 <translation id="7056526158851679338">&amp;Inspiser enheter</translation>
 <translation id="1718559768876751602">Opprett Google-konto nå</translation>
 <translation id="7408287099496324465">Hvis aktivert, blir API-en for innebygde søk brukt til å sende inn søkene på siden med søkeresultater.</translation>
-<translation id="2731710757838467317">Oppretter den overvåkede brukeren din. Dette kan ta litt tid.</translation>
+<translation id="2731710757838467317">Oppretter den administrerte brukeren din. Dette kan ta litt tid.</translation>
 <translation id="1884319566525838835">Sandkassestatus</translation>
 <translation id="2770465223704140727">Fjern fra listen</translation>
 <translation id="8314013494437618358">Trådbasert sammensetting</translation>
@@ -5170,7 +5169,7 @@ Vil du godta dette?</translation>
 <translation id="7353601530677266744">Kommandolinje </translation>
 <translation id="2766006623206032690">&amp;Lim inn og gå til</translation>
 <translation id="5286673433070377078">Gjengivelsesbaner som ikke er testet – STOR SJANSE FOR AT NETTLESEREN DIN KRASJER</translation>
-<translation id="4682551433947286597">Bakgrunnsbilder vises på påloggingsskjermen.</translation>
+<translation id="4682551433947286597">Bakgrunner vises på påloggingsskjermen.</translation>
 <translation id="4394049700291259645">Deaktiver</translation>
 <translation id="5284518706373932381">Du bør komme tilbake til denne siden om noen timer. Google Safe Browsing oppdaget nylig<ph name="BEGIN_LINK"/>skadelig programvare<ph name="END_LINK"/> på <ph name="SITE"/>. Nettsteder som vanligvis er trygge, er noen ganger infisert med skadelig programvare.</translation>
 <translation id="969892804517981540">Offisiell delversjon</translation>

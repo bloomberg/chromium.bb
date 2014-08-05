@@ -13,10 +13,10 @@
 <translation id="641643625718530986">Printați...</translation>
 <translation id="5763382633136178763">File incognito</translation>
 <translation id="5210365745912300556">Închideți fila</translation>
-<translation id="7658239707568436148">Anulaţi</translation>
+<translation id="7658239707568436148">Anulați</translation>
 <translation id="6458785801851713928">Sincronizarea nu este disponibilă pentru domeniul dvs.</translation>
 <translation id="2731700343119398978">Așteptați...</translation>
-<translation id="6846298663435243399">Se încarcă...</translation>
+<translation id="6846298663435243399">Se încarcă…</translation>
 <translation id="7378627244592794276">Nu</translation>
 <translation id="3358663646935160692">Acest cont este gestionat de <ph name="DOMAIN_NAME"/>.
 
@@ -40,31 +40,32 @@ Urmează să vă conectați cu un cont gestionat și să acordați administrator
 <translation id="8374821112118309944">Trebuie să actualizați TalkBack la o versiune mai nouă.</translation>
 <translation id="4043215103217793252">Editați marcajul pentru această pagină</translation>
 <translation id="656628257199996201">Tradu întotdeauna din <ph name="SOURCE_LANGUAGE"/></translation>
-<translation id="9137013805542155359">Afișați originalul</translation>
+<translation id="9137013805542155359">Afișați varianta originală</translation>
 <translation id="5684874026226664614">Hopa. Această pagină nu a putut fi tradusă.</translation>
 <translation id="4619298195800598081">Imagine originală în filă nouă</translation>
 <translation id="907015151729920253">Card inteligent</translation>
 <translation id="3063601790762993062">Salvați videoclipul</translation>
-<translation id="6042308850641462728">Mai mult</translation>
+<translation id="6042308850641462728">Mai multe</translation>
 <translation id="7267430310003164111">Notificare pentru a descărca aplicația din Magazin Google Play.  Numele aplicației: <ph name="APP_NAME"/>.  Evaluarea medie a aplicației: <ph name="APP_RATING"/>.</translation>
 <translation id="303955801043931176">Fila a fost închisă</translation>
 <translation id="4148957013307229264">Se instalează...</translation>
 <translation id="3992315671621218278">Salvați linkul</translation>
 <translation id="8034522405403831421">Această pagină este în <ph name="SOURCE_LANGUAGE"/>. Doriți traducere în <ph name="TARGET_LANGUAGE"/>?</translation>
-<translation id="4195643157523330669">Deschideți într-o filă nouă</translation>
+<translation id="4195643157523330669">Deschideți în filă nouă</translation>
+<translation id="651048280540227067">Închide meniul</translation>
 <translation id="3089395242580810162">Deschideți într-o filă incognito</translation>
 <translation id="8725066075913043281">Încercați din nou</translation>
 <translation id="8909135823018751308">Trimiteți…</translation>
 <translation id="4269820728363426813">Copiați adresa linkului</translation>
 <translation id="4510973599275542560">Nu reîncărcați</translation>
 <translation id="1206892813135768548">Copiați textul linkului</translation>
-<translation id="9154176715500758432">Rămâneți pe această pagină</translation>
+<translation id="9154176715500758432">Rămâneți pe pagină</translation>
 <translation id="7063006564040364415">Nu s-a putut stabili conexiunea cu serverul de sincronizare.</translation>
 <translation id="4271185234001491831">Nu traduce niciodată din <ph name="LANGUAGE"/></translation>
 <translation id="6671495933530132209">Copiați imaginea</translation>
 <translation id="8209050860603202033">Deschideți imaginea</translation>
 <translation id="2501278716633472235">Înapoi</translation>
-<translation id="1285320974508926690">Nu doresc să se traducă niciodată acest site</translation>
+<translation id="1285320974508926690">Nu traduce niciodată acest site</translation>
 <translation id="5164482624172255778">Doriți ca data viitoare Google Chrome să propună traducerea paginilor în limba <ph name="LANGUAGE"/> de pe acest site?</translation>
 <translation id="8528538445849828817">Limba paginii: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="4881695831933465202">Deschideți</translation>

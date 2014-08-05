@@ -60,7 +60,7 @@
 <translation id="5378437846548426165">TLS / SSL 警告のバージョンを切り替えます。</translation>
 <translation id="6476748132434603124"><ph name="SITE"/> は Chrome に対してエラーのある証明書をブロックするよう指示していますが、この接続の試行中に Chrome が受け取った証明書にエラーがあります。</translation>
 <translation id="3293894718455402932">「<ph name="EXTENSION"/>」は、選択されたフォルダ内の画像、動画、音声ファイルの読み取りと書き込みを行うことができます。</translation>
-<translation id="6976652535392081960"><ph name="EMAIL"/> の送信先を表示しています</translation>
+<translation id="6976652535392081960">送信先を表示しています（<ph name="EMAIL"/>）</translation>
 <translation id="7180611975245234373">更新</translation>
 <translation id="4940047036413029306">引用符</translation>
 <translation id="1497897566809397301">ローカルへのデータ設定を許可する（推奨）</translation>
@@ -353,7 +353,7 @@
 <translation id="8651324101757295372">このユーザーとチャット</translation>
 <translation id="6460423884798879930">以前接続したクライアントの認証情報を最初の SYN パケットで送信し、データ送信が迅速に開始されるようにするには、このオプションを有効にします。</translation>
 <translation id="6563261555270336410"><ph name="ELEMENTS_HOST_NAME"/> の詳細</translation>
-<translation id="3200025317479269283">困ったらここをクリック。</translation>
+<translation id="3200025317479269283">困ったらいつでもヘルプをクリック。</translation>
 <translation id="5656983780125483728">前回の <ph name="IDS_SHORT_PRODUCT_NAME"/> アップデートの状態に戻しています。</translation>
 <translation id="3470502288861289375">コピーしています...</translation>
 <translation id="2719473049159220459">発行元: <ph name="ISSUER"/></translation>
@@ -1050,7 +1050,7 @@
 <translation id="409504436206021213">再読み込みしない</translation>
 <translation id="3785308913036335955">アプリのショートカットを表示</translation>
 <translation id="8795916974678578410">新規ウインドウ</translation>
-<translation id="2733275712367076659">自分を識別するためにこれらの機関から発行された証明書を所持しています:</translation>
+<translation id="2733275712367076659">次の機関から発行された、ユーザーを識別する証明書があります:</translation>
 <translation id="230927227160767054">このページはサービス ハンドラのインストールを求めています。</translation>
 <translation id="5334142896108694079">スクリプト キャッシュ</translation>
 <translation id="4801512016965057443">モバイル データ ローミングを許可する</translation>
@@ -2226,7 +2226,7 @@
 <translation id="6597017209724497268">サンプル</translation>
 <translation id="8183644773978894558">現在シークレット モードでダウンロードを実行中です。ダウンロードがキャンセルされますが、シークレット モードを終了してもよろしいですか？</translation>
 <translation id="8767072502252310690">ユーザー</translation>
-<translation id="683526731807555621">新しい検索エンジンを追加</translation>
+<translation id="683526731807555621">検索エンジンを追加</translation>
 <translation id="6871644448911473373">OCSP レスポンダ: <ph name="LOCATION"/></translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT"/> 個のフォルダを選択しました</translation>
 <translation id="8281886186245836920">スキップ</translation>
@@ -2392,7 +2392,7 @@
 <translation id="5261073535210137151">このフォルダには <ph name="COUNT"/> 件のブックマークがあります。削除してもよろしいですか？</translation>
 <translation id="59174027418879706">有効</translation>
 <translation id="4194415033234465088">Dachen 26</translation>
-<translation id="8800004011501252845">対象の宛先の表示</translation>
+<translation id="8800004011501252845">送信先を表示しています:</translation>
 <translation id="3554751249011484566">以下の詳細が <ph name="SITE"/> と共有されます</translation>
 <translation id="872537912056138402">クロアチア語</translation>
 <translation id="6639554308659482635">SQLite メモリ</translation>
@@ -2485,7 +2485,7 @@
 <translation id="4534166495582787863">タッチパッドの 3 本指タップをミドル ボタン（ホイール クリック）として認識する機能を有効にします。</translation>
 <translation id="3668570675727296296">言語設定</translation>
 <translation id="2190469909648452501">減少</translation>
-<translation id="7754704193130578113">ファイルごとに保存する場所を確認する</translation>
+<translation id="7754704193130578113">ダウンロード前に各ファイルの保存場所を確認する</translation>
 <translation id="222949136907494149"><ph name="URL"/> ではパソコンの現在地情報が必要となります。</translation>
 <translation id="7654941827281939388">このアカウントは既にこのパソコンで使用されています。</translation>
 <translation id="204914487372604757">ショートカットを作成</translation>
@@ -2506,7 +2506,7 @@
 <translation id="4087148366934348322">お使いの充電器は最新です。</translation>
 <translation id="1270699273812232624">アイテムを許可</translation>
 <translation id="4018133169783460046"><ph name="PRODUCT_NAME"/> をこの言語で表示</translation>
-<translation id="1257390253112646227">再生、編集、共有、各種作業。</translation>
+<translation id="1257390253112646227">遊ぶ、編集する、共有する、他にもいろいろ。</translation>
 <translation id="7482533734313877746"><ph name="SHORT_PRODUCT_NAME"/> が完全に起動するまでの所要時間</translation>
 <translation id="1503914375822320413">コピーできませんでした。予期しないエラー: $1</translation>
 <translation id="3264544094376351444">Sans Serif フォント</translation>
@@ -2528,7 +2528,7 @@
 <translation id="2965328226365382335">15 分以内</translation>
 <translation id="6731320427842222405">数分かかることがあります</translation>
 <translation id="7503191893372251637">Netscape 証明書タイプ</translation>
-<translation id="4135450933899346655">自分の証明書</translation>
+<translation id="4135450933899346655">ユーザーの証明書</translation>
 <translation id="971774202801778802">ブックマーク URL</translation>
 <translation id="3979395879372752341">新しい拡張機能が追加されました（<ph name="EXTENSION_NAME"/>）</translation>
 <translation id="2609632851001447353">バリエーション</translation>
@@ -3019,7 +3019,7 @@
 <translation id="5141240743006678641">Google の認証情報で同期パスワードを暗号化する</translation>
 <translation id="5866389191145427800">キャプチャ画像がアップスケーリングされる場合の品質設定を指定します。</translation>
 <translation id="5500122897333236901">アイスランド語</translation>
-<translation id="4958202758642732872">フルスクリーンの例外</translation>
+<translation id="4958202758642732872">全画面表示の例外</translation>
 <translation id="6990778048354947307">暗色系テーマ</translation>
 <translation id="8119631488458759651">このサイトを削除</translation>
 <translation id="158765438169997550">このオプションを有効にすると、描画はメイン スレッドではなく別のスレッドで行われます。</translation>
@@ -3067,7 +3067,7 @@
 <translation id="2857421400871862029">サイトがマウス カーソルを無効にしようとしたときに確認する（推奨）</translation>
 <translation id="1910721550319506122">ようこそ！</translation>
 <translation id="4035758313003622889">タスク マネージャ(&amp;T)</translation>
-<translation id="6356936121715252359">Adobe Flash Player の保存設定...</translation>
+<translation id="6356936121715252359">Adobe Flash Player のストレージ設定...</translation>
 <translation id="8874184842967597500">未接続</translation>
 <translation id="7313804056609272439">ベトナム語の入力方法（VNI）</translation>
 <translation id="8599675288025166194">リンク可能な一時アプリの試験運用機能を有効にする。</translation>
@@ -3279,7 +3279,7 @@
 <translation id="8232829399891359332">セッションの復元</translation>
 <translation id="3308116878371095290">このページの Cookie は設定されませんでした。</translation>
 <translation id="7521387064766892559">Javascript</translation>
-<translation id="1545786162090505744">検索キーワードの代わりに %s を含む URL</translation>
+<translation id="1545786162090505744">URL（%s=検索語句）</translation>
 <translation id="7219179957768738017">この接続には <ph name="SSL_VERSION"/> を使用しています。</translation>
 <translation id="7006634003215061422">下余白</translation>
 <translation id="7014174261166285193">インストールできませんでした。</translation>
@@ -3806,7 +3806,7 @@
 <translation id="5765780083710877561">説明:</translation>
 <translation id="1740044382983372319">インストールされた拡張機能</translation>
 <translation id="338583716107319301">セパレータ</translation>
-<translation id="2079053412993822885">自分の証明書のいずれかを削除すると、それを使った自分の身元の確認はできなくなります。</translation>
+<translation id="2079053412993822885">ユーザーの証明書のいずれかを削除すると、それを使って身元を証明することはできなくなります。</translation>
 <translation id="7221869452894271364">このページを再読み込みします</translation>
 <translation id="8446884382197647889">詳細</translation>
 <translation id="9006533633560719845">拡張機能のスクリプトに対するユーザーの同意</translation>
@@ -3962,6 +3962,7 @@
 <translation id="6460601847208524483">次を検索</translation>
 <translation id="397703832102027365">最終処理中...</translation>
 <translation id="8146177459103116374">このデバイスでの登録が済んでいる場合は<ph name="LINK2_START"/>既存のユーザー<ph name="LINK2_END"/>としてログインできます。</translation>
+<translation id="5072836811783999860">管理対象のブックマークを表示</translation>
 <translation id="4856478137399998590">モバイル データ サービスがご利用いただけるようになりました</translation>
 <translation id="3305389145870741612">フォーマット処理には数秒かかることがあります。しばらくお待ちください。</translation>
 <translation id="3648607100222897006">この試験運用機能は、随時変更、中断、提供中止されることがあります。これらの機能のいずれかを有効にした場合に生じる結果について、Google は一切保証しません。ブラウザによってすべてのデータが削除されたり、予期せぬ方法でセキュリティやプライバシーが侵害されたりする可能性があります。有効にした試験運用機能は同じブラウザを使用する全ユーザーに対して有効になります。続行する場合は十分ご注意ください。</translation>
@@ -4392,6 +4393,7 @@
 <translation id="6869402422344886127">チェックボックスがオン</translation>
 <translation id="3428010780253032925">四角形エリアからの目標認識機能を無効にする</translation>
 <translation id="5637380810526272785">入力方法</translation>
+<translation id="3613134908380545408">「<ph name="FOLDER_NAME"/>」を表示</translation>
 <translation id="2837049386027881519">旧バージョンの TLS または SSL プロトコルで接続を再試行する必要がありました。これは通常、サーバーのソフトウェアが非常に古く、他のセキュリティ問題が発生している可能性があるということです。</translation>
 <translation id="404928562651467259">警告</translation>
 <translation id="4289300219472526559">読み上げを開始</translation>
@@ -4449,7 +4451,7 @@
 <translation id="5187295959347858724"><ph name="SHORT_PRODUCT_NAME"/> にログインしています。ブックマーク、履歴、その他の設定は Google アカウントに同期されます。</translation>
 <translation id="2421956571193030337">この機能は信頼できるアカウントでのみ使用してください。</translation>
 <translation id="3608454375274108141">F10</translation>
-<translation id="444267095790823769">保護コンテンツの例外</translation>
+<translation id="444267095790823769">保護されたコンテンツの例外</translation>
 <translation id="7419106976560586862">プロフィール パス</translation>
 <translation id="6929214587416566742">デスクトップ通知</translation>
 <translation id="5271549068863921519">パスワードを保存</translation>
@@ -4724,6 +4726,7 @@
 <translation id="6934265752871836553">試験運用版のコードを使用して、Chrome でより高速にコンテンツが読み込まれるようにします。
         このパスの背後での変更により、多くのコンテンツが壊れる可能性があります。</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">常に Adobe Reader で開く</translation>
 <translation id="8274359292107649245">デスクトップで Chrome を開く</translation>
 <translation id="1571119610742640910">固定ルート バックグラウンドの合成。</translation>
 <translation id="6514565641373682518">このページではマウス カーソルが無効になります。</translation>
@@ -4922,6 +4925,7 @@
 <translation id="824543159844843373">ランチャー アイテム 3 をアクティブにする</translation>
 <translation id="3819800052061700452">全画面表示(&amp;F)</translation>
 <translation id="48607902311828362">機内モード</translation>
+<translation id="711840821796638741">管理対象のブックマークを表示</translation>
 <translation id="3360297538363969800">印刷できませんでした。プリンタを確認してもう一度お試しください。</translation>
 <translation id="680572642341004180"><ph name="SHORT_PRODUCT_OS_NAME"/> での RLZ トラッキングを有効にする。</translation>
 <translation id="688797901999351107">リコール対象の充電器はご使用を中止してください。</translation>
@@ -4977,7 +4981,7 @@
     <ph name="DESCRIPTION"/></translation>
 <translation id="1088086359088493902">秒</translation>
 <translation id="73289266812733869">選択されていません</translation>
-<translation id="1758230322558024056">クリックするか「Ok Google」と話して、音声検索を開始します</translation>
+<translation id="1758230322558024056">クリックするか「OK Google」と話して、音声検索を開始します</translation>
 <translation id="8639963783467694461">自動入力の設定</translation>
 <translation id="2951247061394563839">ウィンドウを中央に配置</translation>
 <translation id="3435738964857648380">セキュリティ</translation>
@@ -5146,7 +5150,7 @@
 <translation id="3307950238492803740">すべてをデバッグする。</translation>
 <translation id="2087822576218954668">印刷: <ph name="PRINT_NAME"/></translation>
 <translation id="747459581954555080">すべて復元</translation>
-<translation id="7602079150116086782">他のデバイスからのタブはありません</translation>
+<translation id="7602079150116086782">他のデバイスからのタブなし</translation>
 <translation id="7167486101654761064">この種類のファイルは常に開く(&amp;A)</translation>
 <translation id="6218364611373262432">再起動の都度、アプリ ランチャーのインストール状態をリセットします。このフラグが設定されている場合、Chrome は起動のたびにランチャーのインストール記録を消去します。この設定はアプリ ランチャーのインストール手順をテストするために使用します。</translation>
 <translation id="4396124683129237657">新しいクレジット カード...</translation>

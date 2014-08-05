@@ -904,7 +904,7 @@
 <translation id="8912793549644936705">延伸</translation>
 <translation id="1464724975715666883">發生 1 個錯誤。</translation>
 <translation id="7864539943188674973">停用藍牙</translation>
-<translation id="1486096554574027028">搜尋關鍵字</translation>
+<translation id="1486096554574027028">搜尋密碼</translation>
 <translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME"/> 偵測到瀏覽器設定可能已在您不知情的情況下遭到變更。您要將瀏覽器設定重設為其原始預設值嗎？</translation>
 <translation id="1836938920852968258">停用 NTP [其他裝置] 選單。</translation>
 <translation id="8184538546369750125">使用全域預設值 (允許)</translation>
@@ -1600,7 +1600,7 @@
 <translation id="2053686653008575655">您可以參閱<ph name="BEGIN_LINK"/>常見問題<ph name="END_LINK"/>，並繼續搭配使用 HP Chromebook 11 和任何其他經過認證的 micro-USB 充電器 (例如平板電腦或智慧型手機隨附的充電器)。確保您的安全是我們的第一優先要務，造成不便，敬請見諒。</translation>
 <translation id="6423064450797205562"><ph name="SHORT_PRODUCT_NAME"/> 執行要求動作的速度相關數據</translation>
 <translation id="3690673539902120157">這個擴充功能需要以下權限，您確定要安裝嗎？</translation>
-<translation id="4091434297613116013">張</translation>
+<translation id="4091434297613116013">張紙</translation>
 <translation id="7475671414023905704">Netscape 遺失密碼網址</translation>
 <translation id="3335947283844343239">重新開啟先前關閉的分頁</translation>
 <translation id="5848934677402291689">正在儲存為 PDF</translation>
@@ -1618,13 +1618,11 @@
 <translation id="3180365125572747493">請輸入對這個憑證檔案進行加密時使用的密碼。</translation>
 <translation id="8663625831674359823">注意：僅適用於開發頻道和 Canary 頻道。請在焦點處顯示的網址列中開啟建議功能，然後再輸入。</translation>
 <translation id="7386824183915085801">系統會提交您的 Chrome 和作業系統版本，
-          以及您在上方選擇一併提交的任何資訊。
-          如果您一併提交電子郵件地址，Google 可能會針對您的意見回報與您聯絡。
-          這些意見的用途是協助診斷問題及改善 Chrome，若其中含有任何個人資訊，
-          無論是您本身願意提供或是不慎加入其中，我們一律會根據隱私權政策
-          保障資訊安全。<ph name="BEGIN_BOLD"/>提交這些資訊，即表示您同意 Google 使用您所提供的意見
-          改善任何 Google 產品或服務。
-          <ph name="END_BOLD"/></translation>
+以及您在上方選擇一併提交的任何資訊。
+如果您一併提交電子郵件地址，Google 可能會針對您的意見回報與您聯絡。
+這些意見的用途是協助診斷問題及改善 Chrome，若其中含有任何個人資訊，
+無論是您本身願意提供或是不慎加入其中，我們一律會根據隱私權政策保障資訊安全。<ph name="BEGIN_BOLD"/>提交這些資訊，即表示您同意 Google 使用您所提供的意見改善任何 Google 產品或服務。
+<ph name="END_BOLD"/></translation>
 <translation id="123578888592755962">磁碟空間已滿</translation>
 <translation id="5496587651328244253">整理</translation>
 <translation id="5967867314010545767">從紀錄中移除</translation>
@@ -2702,7 +2700,7 @@
 <translation id="4278390842282768270">允許</translation>
 <translation id="2074527029802029717">取消分頁固定</translation>
 <translation id="1533897085022183721">電池可使用時間低於 <ph name="MINUTES"/>。</translation>
-<translation id="7382160026931194400">已儲存的|內容設定|和#搜尋引擎#資料不會被清除，而且可能會反映您的瀏覽習慣。</translation>
+<translation id="7382160026931194400">已儲存的內容設定及搜尋引擎不會遭到清除，而這可能反映您的瀏覽習慣。</translation>
 <translation id="7503821294401948377">無法載入瀏覽器動作的圖示「<ph name="ICON"/>」。</translation>
 <translation id="4809190954660909198">新增帳單詳細資訊...</translation>
 <translation id="3942946088478181888">我需要進一步資訊</translation>
@@ -3536,7 +3534,7 @@
 <translation id="523397668577733901">或許您想要<ph name="BEGIN_LINK"/>瀏覽擴充功能庫<ph name="END_LINK"/>？</translation>
 <translation id="2922350208395188000">無法檢查伺服器憑證。</translation>
 <translation id="3778740492972734840">開發人員工具(&amp;D)</translation>
-<translation id="8335971947739877923">匯出中...</translation>
+<translation id="8335971947739877923">匯出</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN"/> 已顯示為全螢幕，並且停用了滑鼠游標。</translation>
 <translation id="38275787300541712">完成時請按下 Enter 鍵</translation>
 <translation id="6004539838376062211">拼字檢查程式選項(&amp;S)</translation>
@@ -3936,6 +3934,7 @@
 <translation id="6460601847208524483">尋找下一個項目</translation>
 <translation id="397703832102027365">即將完成...</translation>
 <translation id="8146177459103116374">如果您已在這部裝置上註冊，您可以<ph name="LINK2_START"/>用現有的使用者身分登入<ph name="LINK2_END"/>。</translation>
+<translation id="5072836811783999860">顯示受管理書籤</translation>
 <translation id="4856478137399998590">您的行動數據服務已啟用，隨時可供使用</translation>
 <translation id="3305389145870741612">格式化程序可能需要幾秒鐘，請稍候。</translation>
 <translation id="3648607100222897006">這些實驗性功能隨時都有可能變動、中斷或消失。我們完全無法保證啟用這些實驗性功能會導致何種後果，您的瀏覽器說不定會突然自己燒掉。當然這只是玩笑話，不過您的瀏覽器可能真的會刪除您的所有資料，或是意外洩漏您的安全性和隱私權設定。只要您啟用了任何實驗性功能，這個瀏覽器的所有使用者都會啟用該功能。使用時請務必小心謹慎。</translation>
@@ -4364,6 +4363,7 @@
 <translation id="6869402422344886127">勾選的核取方塊</translation>
 <translation id="3428010780253032925">停止顯示矩形觸控目標</translation>
 <translation id="5637380810526272785">輸入法</translation>
+<translation id="3613134908380545408">顯示「<ph name="FOLDER_NAME"/>」</translation>
 <translation id="2837049386027881519">必須使用較舊版的 TLS 或 SSL 通訊協定重試連線。這通常表示伺服器所使用的軟體非常老舊，而且可能產生其他安全問題。</translation>
 <translation id="404928562651467259">警告</translation>
 <translation id="4289300219472526559">Start Speaking</translation>
@@ -4694,6 +4694,7 @@
 <translation id="2859369953631715804">選擇行動網路</translation>
 <translation id="6934265752871836553">使用試驗性程式碼來加快 Chrome 繪製內容的速度。這個路徑以下的變更很可能導致大量內容無法正常顯示。</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">一律在 Adobe Reader 中開啟</translation>
 <translation id="8274359292107649245">以電腦模式開啟 Chrome</translation>
 <translation id="1571119610742640910">合成修正根背景。</translation>
 <translation id="6514565641373682518">這個網頁已停用滑鼠游標。</translation>
@@ -4890,6 +4891,7 @@
 <translation id="824543159844843373">啟用啟動器項目 3</translation>
 <translation id="3819800052061700452">全螢幕(&amp;F)</translation>
 <translation id="48607902311828362">飛航模式</translation>
+<translation id="711840821796638741">顯示受管理書籤</translation>
 <translation id="3360297538363969800">列印失敗。請檢查您的印表機，然後再試一次。</translation>
 <translation id="680572642341004180">針對 <ph name="SHORT_PRODUCT_OS_NAME"/> 啟用 RLZ  追蹤功能。</translation>
 <translation id="688797901999351107">請停止使用應回收的充電器。</translation>

@@ -3052,7 +3052,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="2044540568167155862">Goats Teleported</translation>
 <translation id="1776712937009046120">הוסף משתמש</translation>
 <translation id="506152810699123561">מדדים המתייחסים להשפעה של <ph name="SHORT_PRODUCT_NAME"/> על הזיכרון של המערכת</translation>
-<translation id="674632704103926902">הפעל גרירה בהקשה</translation>
+<translation id="674632704103926902">הפעל גרירה והקשה</translation>
 <translation id="8954952943849489823">ההעברה נכשלה, שגיאה לא צפויה: $1</translation>
 <translation id="2318143611928805047">גודל נייר</translation>
 <translation id="7100897339030255923">נבחרו <ph name="COUNT"/> פריטים</translation>
@@ -3310,7 +3310,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="5917011688104426363">התמקד בסרגל הכתובות במצב חיפוש</translation>
 <translation id="3269101346657272573">‏הזן את ה-PIN.</translation>
 <translation id="2822854841007275488">ערבית</translation>
-<translation id="6559948977408379772">הסמל הזה מופיע כשאתה והטלפון שלך נמצאים בקרבת מקום והתכונה 'ביטול קל של נעילה' זמינה. לחץ כדי להיכנס, ללא צורך בסיסמה.</translation>
+<translation id="6559948977408379772">הסמל הזה מופיע כשאתה והטלפון שלך נמצאים בקרבת מקום והתכונה 'ביטול נעילה קל' זמינה. לחץ כדי להיכנס, ללא צורך בסיסמה.</translation>
 <translation id="5857090052475505287">תיקייה חדשה</translation>
 <translation id="7450732239874446337">הקלט והפלט של הרשת הושעו.</translation>
 <translation id="4003393903129308792">הפעל את יוצר רשת הנקודות עבור עותק יחיד</translation>
@@ -3426,7 +3426,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="1526560967942511387">מסמך ללא שם</translation>
 <translation id="3979748722126423326">אפשר <ph name="NETWORKDEVICE"/></translation>
 <translation id="7819857487979277519">‏PSK ‏(WPA או RSN)</translation>
-<translation id="7561031016893995297">נהל מכשירים שהופעל בהם 'ביטול קל של נעילה' בהגדרות החשבון שלך.</translation>
+<translation id="7561031016893995297">נהל מכשירים שהופעל בהם 'ביטול נעילה קל' בהגדרות החשבון שלך.</translation>
 <translation id="2238379619048995541">נתוני מצב תדירות</translation>
 <translation id="4367133129601245178">ה&amp;עתק כתובת אתר של תמונה</translation>
 <translation id="6326175484149238433">‏הסר מ-Chrome</translation>
@@ -3926,6 +3926,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="6460601847208524483">חפש את הבא</translation>
 <translation id="397703832102027365">מסיים...</translation>
 <translation id="8146177459103116374">אם אתה כבר רשום במכשיר זה, תוכל <ph name="LINK2_START"/>להתחבר כמשתמש קיים<ph name="LINK2_END"/>.</translation>
+<translation id="5072836811783999860">הצג סימניות מנוהלות</translation>
 <translation id="4856478137399998590">שירות הנתונים הסלולריים פועל ומוכן לשימוש</translation>
 <translation id="3305389145870741612">תהליך הפרמוט עשוי להימשך מספר שניות. אנא המתן.</translation>
 <translation id="3648607100222897006">תכונות ניסיוניות אלה עשויות להשתנות, להפסיק לעבוד או להיעלם בכל עת. איננו מביעים כל אחריות לגבי ההשלכות של הפעלה של אחד מניסויים אלה, וייתכן אף שהדפדפן שלך יתלקח באופן ספונטני. צחוק בצד, הדפדפן עלול למחוק את כל הנתונים שלך, או שהאבטחה והפרטיות שלך ייפגעו בדרכים לא צפויות. כל ניסוי שתאפשר יהפוך לפעיל עבור כל המשתמשים בדפדפן זה. המשך בזהירות.</translation>
@@ -4028,7 +4029,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="780301667611848630">לא תודה</translation>
 <translation id="8209677645716428427">‏משתמש בפיקוח יכול לסייר באינטרנט בהדרכתך. כמנהל של משתמש בפיקוח ב-Chrome, אתה יכול:</translation>
 <translation id="2812989263793994277">אל תציג אף תמונה</translation>
-<translation id="722363467515709460">אפשר את מגדיל התצוגה</translation>
+<translation id="722363467515709460">הפעל את מגדיל התצוגה</translation>
 <translation id="7190251665563814471">אפשר תמיד יישומי פלאגין אלה ב-<ph name="HOST"/></translation>
 <translation id="2043684166640445160"><ph name="PRODUCT_NAME"/> אינו יכול להציג את דף האינטרנט מכיוון שהמחשב אינו מחובר לאינטרנט.</translation>
 <translation id="5390222677196640946">‏הצג קובצי Cookie ונתוני אתר אחרים</translation>
@@ -4163,7 +4164,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="1639239467298939599">טוען</translation>
 <translation id="5457599981699367932">גלוש כאורח</translation>
 <translation id="8525428584879632762">מופעל בדפים של תוצאות חיפוש או כשמתבצעת הזנת קלט.</translation>
-<translation id="2487656424763972284">ביטול קל של נעילה</translation>
+<translation id="2487656424763972284">ביטול נעילה קל</translation>
 <translation id="7047998246166230966">מצביע</translation>
 <translation id="743268637741709136">השבת חיפוש קולי במפעיל היישומים. אם אפשרות זו מושבתת, המשתמש לא יוכל לחפש באמצעות דיבור.</translation>
 <translation id="3252266817569339921">צרפתית</translation>
@@ -4358,6 +4359,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="6869402422344886127">תיבת סימון שסומנה</translation>
 <translation id="3428010780253032925">השבת מיקוד מבוסס-מלבן בתצוגות</translation>
 <translation id="5637380810526272785">שיטת קלט</translation>
+<translation id="3613134908380545408">הצג את <ph name="FOLDER_NAME"/></translation>
 <translation id="2837049386027881519">‏היה צורך לנסות שוב את החיבור באמצעות גרסה ישנה יותר של פרוטוקול TLS או SSL. לרוב, פירוש הדבר הוא שהשרת משתמש בתוכנה ישנה מאוד וייתכן שיש לו בעיות אבטחה אחרות.</translation>
 <translation id="404928562651467259">אזהרה</translation>
 <translation id="4289300219472526559">התחל לדבר</translation>
@@ -4427,7 +4429,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="8148264977957212129">‏שיטת קלט Pinyin</translation>
 <translation id="2288278176040912387">פטיפון</translation>
 <translation id="7772032839648071052">אשר משפט-סיסמה</translation>
-<translation id="3676582787770338561">הפעל 'ביטול קל של נעילה' עבור <ph name="DEVICE_TYPE"/> זה.</translation>
+<translation id="3676582787770338561">הפעל 'ביטול נעילה קל' עבור <ph name="DEVICE_TYPE"/> זה.</translation>
 <translation id="2871813825302180988">חשבון זה כבר נמצא בשימוש במכשיר זה.</translation>
 <translation id="1642505962779453775">ברבעון האחרון</translation>
 <translation id="3323235640813116393">‏מפעיל שמירה של דפים כ-HTML: קובץ טקסט יחיד המכיל HTML ואת כל משאבי המשנה.</translation>
@@ -4693,6 +4695,7 @@ Del</translation>
 <translation id="2859369953631715804">בחר רשת לנייד</translation>
 <translation id="6934265752871836553">‏השתמש בקוד ניסיוני כדי לגרום ל-Chrome לעבד תוכן מהר יותר. ייתכן מאוד שהשינויים שברקע הנתיב הזה יפגמו בחלק גדול מהתוכן.</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">‏פתח תמיד ב-Adobe Reader</translation>
 <translation id="8274359292107649245">‏פתח את Chrome בשולחן העבודה</translation>
 <translation id="1571119610742640910">כתיבה עבור רקעי בסיס קבועים.</translation>
 <translation id="6514565641373682518">דף זה השבית את סמן העכבר שלך.</translation>
@@ -4891,6 +4894,7 @@ Del</translation>
 <translation id="824543159844843373">הפעל את פריט המפעיל 3</translation>
 <translation id="3819800052061700452">&amp;מסך מלא</translation>
 <translation id="48607902311828362">מצב טיסה</translation>
+<translation id="711840821796638741">הצג סימניות מנוהלות</translation>
 <translation id="3360297538363969800">ההדפסה נכשלה. בדוק את המדפסת ונסה שוב.</translation>
 <translation id="680572642341004180">‏הפעל מעקב RLZ ב-<ph name="SHORT_PRODUCT_OS_NAME"/>.</translation>
 <translation id="688797901999351107">אנו מבקשים שתפסיק להשתמש במטען שהוצא לו ריקול.</translation>

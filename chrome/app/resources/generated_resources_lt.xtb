@@ -524,7 +524,7 @@
 <translation id="413121957363593859">Komponentai</translation>
 <translation id="715487527529576698">Pradinis kinų k. režimas yra supaprastinta kinų k.</translation>
 <translation id="6522350652862471760">Įgalinti „Google“ profilio pavadinimą ir piktogramą</translation>
-<translation id="6181259999130430430">Šiame įrenginyje įgalinti lengvo atrakinimo funkciją.</translation>
+<translation id="6181259999130430430">Šiame įrenginyje įgalinti Lengvą atrakinimą.</translation>
 <translation id="8703575177326907206">Jūsų ryšys su <ph name="DOMAIN"/> nekoduotas.</translation>
 <translation id="6135622770221372891">Kanalų ID</translation>
 <translation id="8472623782143987204">palaikoma aparatinės įrangos</translation>
@@ -718,7 +718,7 @@ Norint tęsti, visi naudotojai turi atsijungti.</translation>
 <translation id="3984921062031549150">Pateikimo priemonės strigtys</translation>
 <translation id="7925285046818567682">Laukiama <ph name="HOST_NAME"/>...</translation>
 <translation id="1079766198702302550">Visada blokuoti prieigą prie fotoaparato</translation>
-<translation id="2964845078799970531">Naudodami lengvo atrakinimo funkciją galite atrakinti „Chromebook“, kai esate netoli telefono.</translation>
+<translation id="2964845078799970531">Naudodami Lengvą atrakinimą galite atrakinti „Chromebook“, kai esate netoli telefono.</translation>
 <translation id="5053803681436838483">Naujas pristatymo adresas...</translation>
 <translation id="5952256601775839173">Įgalinti jutiklinės dalies paspaudimą trim pirštais.</translation>
 <translation id="3280237271814976245">Išsaugoti &amp;kaip...</translation>
@@ -1299,7 +1299,7 @@ likęs akumuliatoriaus laikas</translation>
 <translation id="9033857511263905942">&amp;Įklijuoti</translation>
 <translation id="1028690605877243613">Naudoti alternatyvų lentynos išdėstymą.</translation>
 <translation id="6736045498964449756">Oi, slaptažodžiai nesutampa.</translation>
-<translation id="4558985768677321342">Įgalinti lengvo atrakinimo funkciją.</translation>
+<translation id="4558985768677321342">Įgalinti Lengvą atrakinimą.</translation>
 <translation id="1221825588892235038">Tik pasirinkimas</translation>
 <translation id="2227939492629426903">Įgalinamas naujas pseudoportreto meniu. Kai derinama su naujo profilio tvarkymo funkcija, tiesiog rodomas naujas profilio tvarkymo pseudoportreto meniu. Kitu atveju rodomas atnaujinto dizaino pseudoportreto meniu, kurio funkcijos tokios pačios kaip ir seno meniu, o viršuje rodoma mokymo programos kortelė, kuri ragina naudotoją išbandyti naują profilio tvarkymo NS.</translation>
 <translation id="5582883434676861778">„<ph name="PRODUCT_NAME"/>“ užblokavo prieigą prie <ph name="HOST_NAME"/>.  Pranešta, kad šioje svetainėje sukčiaujama.</translation>
@@ -3353,7 +3353,7 @@ Sukūrę naują prižiūrimą naudotoją, bet kuriuo metu galite valdyti jo nust
 <translation id="5917011688104426363">Fokusuoti adreso juostą paieškos režimu</translation>
 <translation id="3269101346657272573">Įveskite PIN kodą.</translation>
 <translation id="2822854841007275488">arabų</translation>
-<translation id="6559948977408379772">Ši piktograma rodoma, kai jūs ir jūsų telefonas esate netoliese ir lengvo atrakinimo funkcija yra pasiekiama. Tiesiog spustelėkite, kad paleistumėte funkciją (jokio slaptažodžio nereikia).</translation>
+<translation id="6559948977408379772">Ši piktograma rodoma, kai jūs ir jūsų telefonas esate netoliese ir Lengvas atrakinimas yra pasiekiamas. Tiesiog spustelėkite, kad paleistumėte funkciją (jokio slaptažodžio nereikia).</translation>
 <translation id="5857090052475505287">Naujas aplankas</translation>
 <translation id="7450732239874446337">Tinklo IO sustabdytas.</translation>
 <translation id="4003393903129308792">Įgalinti vienos kopijos rastrinio vaizdo keitimo priemonę</translation>
@@ -3473,7 +3473,7 @@ Sukūrę naują prižiūrimą naudotoją, bet kuriuo metu galite valdyti jo nust
 <translation id="1526560967942511387">Dokumentas be pavadinimo</translation>
 <translation id="3979748722126423326">Įgalinti <ph name="NETWORKDEVICE"/></translation>
 <translation id="7819857487979277519">PSK (WPA ar RSN)</translation>
-<translation id="7561031016893995297">Tvarkykite lengvo atrakinimo funkciją naudojančius įrenginius savo paskyros nustatymuose.</translation>
+<translation id="7561031016893995297">Tvarkykite Lengvo atrakinimą naudojančius įrenginius savo paskyros nustatymuose.</translation>
 <translation id="2238379619048995541">Dažnumo būsenos duomenys</translation>
 <translation id="4367133129601245178">K&amp;opijuoti vaizdo URL</translation>
 <translation id="6326175484149238433">Pašalinti iš „Chrome“</translation>
@@ -3974,6 +3974,7 @@ Sukūrę naują prižiūrimą naudotoją, bet kuriuo metu galite valdyti jo nust
 <translation id="6460601847208524483">Rasti kitą</translation>
 <translation id="397703832102027365">Užbaigiama...</translation>
 <translation id="8146177459103116374">Jei jau esate užsiregistravę šiame įrenginyje, galite <ph name="LINK2_START"/>prisijungti kaip esamas naudotojas<ph name="LINK2_END"/>.</translation>
+<translation id="5072836811783999860">Rodyti tvarkomas žymes</translation>
 <translation id="4856478137399998590">Duomenų mobiliesiems paslauga suaktyvinta ir paruošta naudoti</translation>
 <translation id="3305389145870741612">Formatavimas gali užtrukti kelias sekundes. Palaukite.</translation>
 <translation id="3648607100222897006">Šios eksperimentinės funkcijos gali bet kada pasikeisti, neveikti ar išnykti. Negarantuojame, kas nutiks, kai įjungsite šiuo eksperimentus. Jūsų naršyklė gali netgi savaime sudegti. Kalbant rimtai, naršyklė gali ištrinti visus duomenis arba jūsų saugumas ir privatumas gali būti pažeisti netikėtais būdais. Visi eksperimentai, kuriuos įgalinsite, bus įgalinti visiems naudotojams. Elkitės atsargiai.</translation>
@@ -4406,6 +4407,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME"/>“?</translation>
 <translation id="6869402422344886127">Pažymėtas žymimasis laukelis</translation>
 <translation id="3428010780253032925">Išjungti taikymą pagal stačiakampį rodiniuose</translation>
 <translation id="5637380810526272785">Įvesties metodas</translation>
+<translation id="3613134908380545408">Rodyti „<ph name="FOLDER_NAME"/>“</translation>
 <translation id="2837049386027881519">Buvo bandyta prisijungti iš naujo naudojant senesnės versijos TLS arba SSL protokolą. Tai paprastai reiškia, kad serveryje naudojama labai sena programinė įranga ir jame gali būti kitų saugumo problemų.</translation>
 <translation id="404928562651467259">ĮSPĖJIMAS</translation>
 <translation id="4289300219472526559">Pradėti kalbėti</translation>
@@ -4474,7 +4476,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME"/>“?</translation>
 <translation id="8148264977957212129">„Pinyin“ įvesties metodas</translation>
 <translation id="2288278176040912387">Grotuvas</translation>
 <translation id="7772032839648071052">Patvirtinti slaptafrazę</translation>
-<translation id="3676582787770338561">Šiame „<ph name="DEVICE_TYPE"/>“ įgalinti lengvo atrakinimo funkciją.</translation>
+<translation id="3676582787770338561">Šiame „<ph name="DEVICE_TYPE"/>“ įgalinti Lengvą atrakinimą.</translation>
 <translation id="2871813825302180988">Ši paskyra jau naudojama šiame įrenginyje.</translation>
 <translation id="1642505962779453775">Pastarasis ketvirtis</translation>
 <translation id="3323235640813116393">Leidžia saugoti puslapius kaip HTML: vieną teksto failą su HTML ir visais papildomais ištekliais.</translation>
@@ -4738,6 +4740,7 @@ Skaičiuojamas laikas, kol bus įkrauta</translation>
 <translation id="6934265752871836553">Naudokite moderniausią kodą, kad „Chrome“ greičiau gautų turinį. Dėl šio kelio
         pakeitimų gali būti sugadinta didelė dalis turinio.</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">Visada atidaryti naudojant „Adobe Reader“</translation>
 <translation id="8274359292107649245">Atidaryti „Chrome“ darbalaukio režimu</translation>
 <translation id="1571119610742640910">Fiksuotų pagrindinių fonų kūrimas.</translation>
 <translation id="6514565641373682518">Šiame puslapyje neleidžiamas pelės žymeklis.</translation>
@@ -4938,6 +4941,7 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="824543159844843373">Aktyvinti 3 paleidimo priemonės elementą</translation>
 <translation id="3819800052061700452">&amp;Visas ekranas</translation>
 <translation id="48607902311828362">Lėktuvo režimas</translation>
+<translation id="711840821796638741">Rodyti tvarkomas žymes</translation>
 <translation id="3360297538363969800">Spausdinti nepavyko. Patikrinkite spausdintuvą ir bandykite dar kartą.</translation>
 <translation id="680572642341004180">Įgalinti RLZ stebėjimą „<ph name="SHORT_PRODUCT_OS_NAME"/>“.</translation>
 <translation id="688797901999351107">Nebenaudokite panaikinto įkroviklio.</translation>

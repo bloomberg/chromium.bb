@@ -907,7 +907,7 @@ All users must sign out to continue.</translation>
 <translation id="3926862159284741883">Enable WebGL Draft Extensions</translation>
 <translation id="7684540948112007255">download multiple files.</translation>
 <translation id="2537271621194795300">Startups</translation>
-<translation id="3636096452488277381">Howdy, <ph name="USER_GIVEN_NAME"/>.</translation>
+<translation id="3636096452488277381">Hi, <ph name="USER_GIVEN_NAME"/>.</translation>
 <translation id="4911714727432509308">No extensions have keyboard shortcuts assigned.</translation>
 <translation id="5999606216064768721">Use System Title Bar and Borders</translation>
 <translation id="921568617530782833">Read and modify all your data on the websites that you visit</translation>
@@ -3963,6 +3963,7 @@ and incorrect credentials. Either an attacker is trying to pretend to be <ph nam
 <translation id="6460601847208524483">Find Next</translation>
 <translation id="397703832102027365">Finalising...</translation>
 <translation id="8146177459103116374">If you've already registered on this device, you can <ph name="LINK2_START"/>sign in as an existing user<ph name="LINK2_END"/>.</translation>
+<translation id="5072836811783999860">Show managed bookmarks</translation>
 <translation id="4856478137399998590">Your data service is activated and ready to use</translation>
 <translation id="3305389145870741612">The formatting process can take a couple of seconds. Please wait.</translation>
 <translation id="3648607100222897006">These experimental features may change, break or disappear at any time. We make absolutely no guarantees about what may happen if you turn one of these experiments on, and your browser may even spontaneously combust. Jokes aside, your browser may delete all your data or your security and privacy could be compromised in unexpected ways. Any experiments that you enable will be enabled for all users of this browser. Please proceed with caution.</translation>
@@ -4393,6 +4394,7 @@ and incorrect credentials. Either an attacker is trying to pretend to be <ph nam
 <translation id="6869402422344886127">Ticked checkbox</translation>
 <translation id="3428010780253032925">Disable rect-based targeting in views</translation>
 <translation id="5637380810526272785">Input Method</translation>
+<translation id="3613134908380545408">Show <ph name="FOLDER_NAME"/></translation>
 <translation id="2837049386027881519">The connection had to be retried using an older version of the TLS or SSL protocol. This typically means that the server is using very old software and may have other security issues.</translation>
 <translation id="404928562651467259">WARNING</translation>
 <translation id="4289300219472526559">Start Speaking</translation>
@@ -4726,6 +4728,7 @@ Calculating time until full</translation>
 <translation id="6934265752871836553">Use bleeding-edge code to make Chrome draw content faster. The changes
         behind this path are very likely to break lots of content.</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">Always open in Adobe Reader</translation>
 <translation id="8274359292107649245">Open Chrome on the desktop</translation>
 <translation id="1571119610742640910">Compositing for fixed root backgrounds.</translation>
 <translation id="6514565641373682518">This page has disabled your mouse cursor.</translation>
@@ -4926,6 +4929,7 @@ Press any key to continue exploring.</translation>
 <translation id="824543159844843373">Activate launcher item 3</translation>
 <translation id="3819800052061700452">&amp;Full screen</translation>
 <translation id="48607902311828362">Aeroplane mode</translation>
+<translation id="711840821796638741">Show Managed Bookmarks</translation>
 <translation id="3360297538363969800">Printing failed. Please check your printer and try again.</translation>
 <translation id="680572642341004180">Enable RLZ tracking on <ph name="SHORT_PRODUCT_OS_NAME"/>.</translation>
 <translation id="688797901999351107">Please stop using the recalled charger.</translation>

@@ -3937,6 +3937,7 @@ i nieprawidłowe poświadczenia. Albo osoba atakująca próbuje podszyć się po
 <translation id="6460601847208524483">Znajdź następne</translation>
 <translation id="397703832102027365">Kończę...</translation>
 <translation id="8146177459103116374">Jeśli zarejestrowałeś się już na tym urządzeniu, możesz <ph name="LINK2_START"/>zalogować się jako istniejący użytkownik<ph name="LINK2_END"/>.</translation>
+<translation id="5072836811783999860">Pokaż zakładki zarządzane</translation>
 <translation id="4856478137399998590">Komórkowa usługa transmisji danych została aktywowana i jest gotowa do użycia</translation>
 <translation id="3305389145870741612">Proces formatowania może potrwać kilka sekund. Czekaj.</translation>
 <translation id="3648607100222897006">Funkcje eksperymentalne mogą w dowolnej chwili ulec zmianie, awarii lub też zostać wycofane. Nie dajemy absolutnie żadnych gwarancji dotyczących tego, co się może stać po włączeniu jednego z tych eksperymentów – równie dobrze może dojść do samozapłonu przeglądarki. Żarty żartami, ale teoretycznie jest możliwe na przykład usunięcie wszystkich Twoich danych przez przeglądarkę lub nieprzewidziane naruszenie Twojego bezpieczeństwa i prywatności. Każdy włączony eksperyment zostanie włączony dla wszystkich użytkowników tej przeglądarki. Prosimy o zachowanie ostrożności.</translation>
@@ -4365,6 +4366,7 @@ i nieprawidłowe poświadczenia. Albo osoba atakująca próbuje podszyć się po
 <translation id="6869402422344886127">Zaznaczone pole wyboru</translation>
 <translation id="3428010780253032925">Wyłącz oparte na prostokątach kierowanie w widokach</translation>
 <translation id="5637380810526272785">Sposób wprowadzania tekstu</translation>
+<translation id="3613134908380545408">Pokaż <ph name="FOLDER_NAME"/></translation>
 <translation id="2837049386027881519">Konieczne było ponowienie próby połączenia przy użyciu starszej wersji protokołu TLS lub SSL. To zwykle oznacza, że serwer używa bardzo starego oprogramowania i może zawierać inne luki w zabezpieczeniach.</translation>
 <translation id="404928562651467259">OSTRZEŻENIE</translation>
 <translation id="4289300219472526559">Zacznij mówić</translation>
@@ -4696,6 +4698,7 @@ i nieprawidłowe poświadczenia. Albo osoba atakująca próbuje podszyć się po
 <translation id="2859369953631715804">Wybierz sieć komórkową</translation>
 <translation id="6934265752871836553">Użyj najnowszego, nieprzetestowanego kodu, by przyspieszyć wyświetlanie materiałów w Chrome. Zmiany mogą jednak spowodować zatrzymanie dużej ilości treści.</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">Zawsze otwieraj w Adobe Reader</translation>
 <translation id="8274359292107649245">Otwórz Chrome na pulpicie</translation>
 <translation id="1571119610742640910">Komponowanie w celu uzyskania stałych teł podstawowych.</translation>
 <translation id="6514565641373682518">Ta strona wyłączyła kursor myszy.</translation>
@@ -4891,6 +4894,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="824543159844843373">Aktywuj element 3 programu uruchamiającego</translation>
 <translation id="3819800052061700452">&amp;Pełny ekran</translation>
 <translation id="48607902311828362">Tryb samolotowy</translation>
+<translation id="711840821796638741">Pokaż zakładki zarządzane</translation>
 <translation id="3360297538363969800">Drukowanie nie udało się. Sprawdź swoją drukarkę i spróbuj ponownie.</translation>
 <translation id="680572642341004180">Włącz monitorowanie RLZ w <ph name="SHORT_PRODUCT_OS_NAME"/>.</translation>
 <translation id="688797901999351107">Nie korzystaj już więcej z wycofanej ładowarki.</translation>

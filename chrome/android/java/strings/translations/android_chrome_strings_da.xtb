@@ -31,7 +31,7 @@ Du logger ind med en administreret konto, og du giver administratoren kontrol ov
 <translation id="3896036286668839683">Certifikatvisning</translation>
 <translation id="8583805026567836021">Kontodataene ryddes</translation>
 <translation id="4250680216510889253">Nej</translation>
-<translation id="8073388330009372546">Åbn billede i ny fane</translation>
+<translation id="8073388330009372546">Åbn billede på ny fane</translation>
 <translation id="552553974213252141">Blev teksten trukket korrekt ud?</translation>
 <translation id="8730621377337864115">Udfør</translation>
 <translation id="4170011742729630528">Tjenesten er ikke tilgængelig. Prøv igen senere.</translation>
@@ -42,7 +42,7 @@ Du logger ind med en administreret konto, og du giver administratoren kontrol ov
 <translation id="656628257199996201">Oversæt altid <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Vis oprindelig</translation>
 <translation id="5684874026226664614">Ups! Denne side kunne ikke oversættes.</translation>
-<translation id="4619298195800598081">Åbn originalbillede i ny fane</translation>
+<translation id="4619298195800598081">Åbn originalbillede på ny fane</translation>
 <translation id="907015151729920253">Smart card</translation>
 <translation id="3063601790762993062">Gem video</translation>
 <translation id="6042308850641462728">Mere</translation>
@@ -51,7 +51,8 @@ Du logger ind med en administreret konto, og du giver administratoren kontrol ov
 <translation id="4148957013307229264">Installerer...</translation>
 <translation id="3992315671621218278">Gem link</translation>
 <translation id="8034522405403831421">Denne side er på <ph name="SOURCE_LANGUAGE"/>. Vil du oversætte den til <ph name="TARGET_LANGUAGE"/>?</translation>
-<translation id="4195643157523330669">Åbn i ny fane</translation>
+<translation id="4195643157523330669">Åbn på ny fane</translation>
+<translation id="651048280540227067">Luk menuen</translation>
 <translation id="3089395242580810162">Åbn i inkognitofane</translation>
 <translation id="8725066075913043281">Forsøg igen</translation>
 <translation id="8909135823018751308">Del…</translation>

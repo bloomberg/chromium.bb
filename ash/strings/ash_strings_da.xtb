@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
-<translation id="3595596368722241419">Batteri fuldt</translation>
+<translation id="3595596368722241419">Batteri helt opladet</translation>
 <translation id="6895424601869865703">Føj en konto til <ph name="GIVEN_NAME"/></translation>
 <translation id="1057289296854808272">Rotation er slået til (tryk her for at ændre indstillingen)</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> og <ph name="MINUTE"/></translation>
@@ -56,6 +56,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="4628814525959230255">Deler kontrollen over din skærm med <ph name="HELPER_NAME"/> via Hangouts.</translation>
 <translation id="7864539943188674973">Deaktiver Bluetooth</translation>
 <translation id="939252827960237676">Skærmbilledet kunne ikke gemmes</translation>
+<translation id="9080206825613744995">Mikrofonen er i brug.</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="3126069444801937830">Genstart for at opdatere</translation>
 <translation id="2268813581635650749">Log alle ud</translation>
@@ -82,7 +83,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="4279490309300973883">Spejling</translation>
 <translation id="7973962044839454485">PPP-godkendelsen mislykkedes på grund af forkert brugernavn eller adgangskode</translation>
 <translation id="2509468283778169019">CAPS LOCK er slået til</translation>
-<translation id="3892641579809465218">Internt display</translation>
+<translation id="3892641579809465218">Intern skærm</translation>
 <translation id="7823564328645135659">Sproget er blevet ændret fra &quot;<ph name="FROM_LOCALE"/>&quot; til &quot;<ph name="TO_LOCALE"/>&quot;, efter at du har synkroniseret dine indstillinger.</translation>
 <translation id="3368922792935385530">Tilsluttet</translation>
 <translation id="3606978283550408104">Der er tilsluttet en brailleskærm.</translation>
@@ -157,7 +158,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="1512064327686280138">Aktiveringsfejl:</translation>
 <translation id="5097002363526479830">Der kunne ikke oprettes forbindelse til netværket &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi er slået fra.</translation>
-<translation id="2872961005593481000">Luk</translation>
+<translation id="2872961005593481000">Sluk</translation>
 <translation id="3433830597744061105">Administrer konti</translation>
 <translation id="2966449113954629791">Du har muligvis opbrugt den tilladte mobildatamængde. Gå til aktiveringsportalen for <ph name="NAME"/> for at købe mere data.</translation>
 <translation id="742594950370306541">Kameraet er i brug.</translation>
@@ -249,7 +250,7 @@ Tryk på Alt+Søg eller Skift for at annullere.</translation>
 <translation id="520760366042891468">Deler kontrollen over din skærm via Hangouts.</translation>
 <translation id="8000066093800657092">Intet netværk</translation>
 <translation id="4015692727874266537">Log ind på en anden konto...</translation>
-<translation id="6911468394164995108">Find andre... </translation>
+<translation id="6911468394164995108">Vælg et andet...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Datatjenesten &quot;<ph name="NAME"/>&quot; er blevet aktiveret og er klar til brug.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/> t <ph name="MINUTE"/> m, indtil det er fuldt opladet</translation>

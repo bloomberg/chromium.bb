@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
-<translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (ID tiện ích mở rộng &quot;<ph name="EXTENSION_ID"/>&quot;) bị quản trị viên chặn.</translation>
+<translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (ID tiện ích &quot;<ph name="EXTENSION_ID"/>&quot;) bị quản trị viên chặn.</translation>
 <translation id="2857834222104759979">Tệp kê khai không hợp lệ.</translation>
 <translation id="8978038008714088448">Đọc và sửa đổi dữ liệu của bạn trên <ph name="WEBSITE_1"/></translation>
 <translation id="4205302772098850608">Đọc và sửa đổi dữ liệu của bạn trên <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> và <ph name="WEBSITE_3"/></translation>
@@ -11,11 +11,11 @@
 <translation id="4719685943208231314">Truy cập thiết bị USB từ <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Không thể tải tập lệnh nền '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
 <translation id="8597109877291678953">Trao đổi dữ liệu với máy tính có tên <ph name="HOSTNAME"/></translation>
-<translation id="5456409301717116725">Tiện ích mở rộng này bao gồm tệp khóa '<ph name="KEY_PATH"/>'. Bạn có thể không muốn thực hiện việc đó.</translation>
+<translation id="5456409301717116725">Tiện ích này bao gồm tệp khóa '<ph name="KEY_PATH"/>'. Bạn có thể không muốn thực hiện việc đó.</translation>
 <translation id="2350172092385603347">Sử dụng bản địa hóa nhưng không chỉ định default_locale trong tệp kê khai.</translation>
 <translation id="8058376558882514200">Truy cập thiết bị USB <ph name="PRODUCT_NAME"/> từ <ph name="VENDOR_NAME"/></translation>
 <translation id="8774379383902544371">Truy cập thiết bị USB</translation>
-<translation id="149347756975725155">Không thể tải biểu tượng tiện ích mở rộng '<ph name="ICON"/>'.</translation>
+<translation id="149347756975725155">Không thể tải biểu tượng tiện ích '<ph name="ICON"/>'.</translation>
 <translation id="6344170822609224263">Truy cập danh sách kết nối mạng</translation>
 <translation id="2518849872271000461">Trao đổi dữ liệu với các máy tính có tên: <ph name="HOSTNAMES"/></translation>
 <translation id="1389014510128217152">- <ph name="WEBSITE_1"/></translation>
@@ -25,7 +25,7 @@
 <translation id="8114679593444120202">Đọc và sửa đổi dữ liệu của bạn trên <ph name="NUMBER_OF_WEBSITES"/> trang web</translation>
 <translation id="8602184400052594090">Tệp kê khai bị thiếu hoặc không thể đọc được.</translation>
 <translation id="7893008570150657497">Truy cập ảnh, nhạc và các phương tiện khác từ máy tính của bạn</translation>
-<translation id="7217838517480956708">Quản trị viên của máy này yêu cầu cài đặt <ph name="EXTENSION_NAME"/>. Bạn không thể xóa hoặc sửa đổi tiện ích mở rộng này.</translation>
+<translation id="7217838517480956708">Quản trị viên của máy này yêu cầu cài đặt <ph name="EXTENSION_NAME"/>. Bạn không thể xóa hoặc sửa đổi tiện ích này.</translation>
 <translation id="7154130902455071009">Thay đổi trang chủ của bạn thành: <ph name="START_PAGE"/></translation>
 <translation id="6094507746643187368">Đọc và sửa đổi dữ liệu của bạn trên <ph name="WEBSITE_1"/> và <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Không thể tải trang nền '<ph name="BACKGROUND_PAGE"/>'.</translation>

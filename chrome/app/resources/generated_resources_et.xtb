@@ -3954,6 +3954,7 @@ Veenduge, et te ei avalikustaks tundlikke andmeid.</translation>
 <translation id="6460601847208524483">Otsi järgmine</translation>
 <translation id="397703832102027365">Lõpetamine ...</translation>
 <translation id="8146177459103116374">Kui olete seadmes juba registreeritud, siis võite <ph name="LINK2_START"/>logida sisse olemasoleva kasutajana<ph name="LINK2_END"/>.</translation>
+<translation id="5072836811783999860">Kuva hallatud järjehoidjad</translation>
 <translation id="4856478137399998590">Teie mobiilne andmesideteenus on aktiveeritud ja kasutamiseks valmis</translation>
 <translation id="3305389145870741612">Vormindusprotsessile võib kuluda paar sekundit. Oodake.</translation>
 <translation id="3648607100222897006">Need eksperimentaalsed funktsioonid võivad igal ajal muutuda, rikki minna või kaduda. Me ei anna mingeid garantiisid selle kohta, mis juhtub, kui mõne eksperimendi sisse lülitate. Võimalik on teie brauseri iseeneslik süttimine. Kui tõsiselt rääkida, siis võib brauser kustutada kõik teie andmed või ootamatul viisil võidakse rikkuda teie turvalisust ja privaatsust. Kõik eksperimendid, mis te brauseris lubate, lubatakse brauseri kõigile kasutajatele. Jätkake ettevaatlikult.</translation>
@@ -4384,6 +4385,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME"/>.
 <translation id="6869402422344886127">Märgitud märkeruut</translation>
 <translation id="3428010780253032925">Keela ristkülikul põhinev sihtimine kuvades</translation>
 <translation id="5637380810526272785">Sisestusmeetod</translation>
+<translation id="3613134908380545408">Kuva <ph name="FOLDER_NAME"/></translation>
 <translation id="2837049386027881519">Ühenduse loomist tuli korrata TLS- või SSL-protokolli vanema versiooniga. See tähendab tavaliselt seda, et serveri tarkvara on väga vana ja sellel võib olla muid turvaprobleeme.</translation>
 <translation id="404928562651467259">HOIATUS</translation>
 <translation id="4289300219472526559">Alusta rääkimist</translation>
@@ -4717,6 +4719,7 @@ Täislaadimiseks kuluva aja arvutamine</translation>
 <translation id="6934265752871836553">Kasutage üliuut koodi, et Chrome joonistaks sisu kiiremini. Selle tee
         muudatused rikuvad väga suure tõenäosusega palju sisu.</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">Ava alati programmis Adobe Reader</translation>
 <translation id="8274359292107649245">Ava Chrome töölaual</translation>
 <translation id="1571119610742640910">Liitmine fikseeritud juurtaustade jaoks.</translation>
 <translation id="6514565641373682518">Leht keelas teie hiirekursori.</translation>
@@ -4916,6 +4919,7 @@ Mõned funktsioonid ei pruugi olla saadaval. Veenduge, et profiil on olemas ning
 <translation id="824543159844843373">Käiviti üksuse 3 aktiveerimine</translation>
 <translation id="3819800052061700452">&amp;Täisekraan</translation>
 <translation id="48607902311828362">Lennurežiim</translation>
+<translation id="711840821796638741">Kuva hallatud järjehoidjad</translation>
 <translation id="3360297538363969800">Printimine ebaõnnestus. Kontrollige printerit ja proovige uuesti.</translation>
 <translation id="680572642341004180">Lubage RLZ-i jälgimine rakenduses <ph name="SHORT_PRODUCT_OS_NAME"/>.</translation>
 <translation id="688797901999351107">Ärge kasutage rohkem tagasikutsutud laadijat.</translation>

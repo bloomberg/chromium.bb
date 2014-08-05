@@ -3939,6 +3939,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="6460601847208524483">Buscar siguiente</translation>
 <translation id="397703832102027365">Finalizando...</translation>
 <translation id="8146177459103116374">Si ya estás registrado en este dispositivo, puedes <ph name="LINK2_START"/>acceder como un usuario existente<ph name="LINK2_END"/> .</translation>
+<translation id="5072836811783999860">Mostrar marcadores administrados</translation>
 <translation id="4856478137399998590">Tu servicio de datos para celulares está activado y listo para ser utilizado</translation>
 <translation id="3305389145870741612">El proceso de formato puede tardar algunos segundos. Espera.</translation>
 <translation id="3648607100222897006">Estas funciones experimentales pueden modificarse, dejar de funcionar o desaparecer en cualquier momento. No ofrecemos ninguna garantía para lo que pueda ocurrir si activas alguno de estos experimentos, y es posible que tu navegador se bloquee repentinamente. Bromas aparte, ten en cuenta que el navegador puede eliminar todos tus datos y que tu seguridad y tu privacidad se podrían ver comprometidas de forma inesperada. Cualquier experimento que actives, se activará  para todos los usuarios de este navegador, así que te recomendamos que actúes con precaución.</translation>
@@ -4171,7 +4172,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="2867768963760577682">Abrir como pestaña fija</translation>
 <translation id="8631032106121706562">Pétalos</translation>
 <translation id="1639239467298939599">Cargando</translation>
-<translation id="5457599981699367932">Navega como invitado</translation>
+<translation id="5457599981699367932">Navegar como invitado</translation>
 <translation id="8525428584879632762">Habilitado en páginas de resultados de búsqueda o durante el ingreso de texto</translation>
 <translation id="2487656424763972284">Desbloqueo sencillo</translation>
 <translation id="7047998246166230966">Puntero</translation>
@@ -4368,6 +4369,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="6869402422344886127">Casilla de verificación marcada</translation>
 <translation id="3428010780253032925">Inhabilitar destinación por rectángulo en las vistas</translation>
 <translation id="5637380810526272785">Método de entrada</translation>
+<translation id="3613134908380545408">Mostrar <ph name="FOLDER_NAME"/></translation>
 <translation id="2837049386027881519">Se intentó establecer la conexión nuevamente utilizando una versión anterior del protocolo SSL o TLS. Esto normalmente significa que el servidor está utilizando software muy antiguo y puede tener otros problemas de seguridad.</translation>
 <translation id="404928562651467259">ADVERTENCIA</translation>
 <translation id="4289300219472526559">Empezar a hablar</translation>
@@ -4699,6 +4701,7 @@ Asegúrate de no revelar información confidencial.</translation>
 <translation id="6934265752871836553">Utiliza el código nuevo y riesgoso para que Chrome obtenga contenido en menos tiempo. Es muy probable que
         los cambios en esta ruta causen fallos en gran parte del contenido.</translation>
 <translation id="2788135150614412178">+</translation>
+<translation id="424726838611654458">Abrir siempre en Adobe Reader</translation>
 <translation id="8274359292107649245">Abrir Chrome en el escritorio</translation>
 <translation id="1571119610742640910">Composición de fondos raíz fijos</translation>
 <translation id="6514565641373682518">Esta página ha inhabilitado el cursor del mouse.</translation>
@@ -4897,6 +4900,7 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="824543159844843373">Activar el elemento selector 3</translation>
 <translation id="3819800052061700452">&amp;Pantalla completa</translation>
 <translation id="48607902311828362">Modo de avión</translation>
+<translation id="711840821796638741">Mostrar marcadores administrados</translation>
 <translation id="3360297538363969800">Se produjo un error al imprimir. Revisa la impresora y vuelve a intentarlo.</translation>
 <translation id="680572642341004180">Habilitar el seguimiento de RLZ en <ph name="SHORT_PRODUCT_OS_NAME"/></translation>
 <translation id="688797901999351107">Deja de utilizar el cargador retirado del mercado.</translation>
@@ -5170,7 +5174,7 @@ Debes acceder para utilizar esta función.</translation>
 <translation id="5284518706373932381">Deberás regresar a este sitio web en unas horas. La Navegación segura de Google <ph name="BEGIN_LINK"/>detectó software malicioso<ph name="END_LINK"/> en <ph name="SITE"/> recientemente. A veces, los sitios web que suelen ser seguros contienen software malicioso.</translation>
 <translation id="969892804517981540">Build oficial</translation>
 <translation id="1691608011302982743">¡Retiraste tu dispositivo antes de tiempo!</translation>
-<translation id="445923051607553918">Unirte a la red Wi-Fi</translation>
+<translation id="445923051607553918">Únete a la red Wi-Fi</translation>
 <translation id="1898137169133852367">La función Powerwash restablece el dispositivo <ph name="IDS_SHORT_PRODUCT_NAME"/> para que quede como nuevo. Además, el dispositivo recuperará una actualización previa de <ph name="IDS_SHORT_PRODUCT_NAME"/>.</translation>
 <translation id="4215898373199266584">¡No se lo digas a nadie! El modo incógnito (<ph name="INCOGNITO_MODE_SHORTCUT"/>) puede resultarte útil la próxima vez.</translation>
 <translation id="1048597748939794622">Forzado en todas las capas</translation>
