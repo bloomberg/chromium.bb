@@ -99,6 +99,10 @@ class TestLauncher {
   // Called when a test has finished running.
   void OnTestFinished(const TestResult& result);
 
+  // Constructs a full test name given a test case name and a test name.
+  static std::string FormatFullTestName(const std::string& test_case_name,
+                                        const std::string& test_name);
+
  private:
   bool Init() WARN_UNUSED_RESULT;
 

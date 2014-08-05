@@ -576,6 +576,12 @@ void TestLauncher::OnTestFinished(const TestResult& result) {
   test_started_count_ += retry_started_count;
 }
 
+// static
+std::string TestLauncher::FormatFullTestName(const std::string& test_case_name,
+                                             const std::string& test_name) {
+  return test_case_name + "." + test_name;
+}
+
 bool TestLauncher::Init() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
@@ -785,9 +791,8 @@ void TestLauncher::RunTests() {
     const testing::TestCase* test_case = unit_test->GetTestCase(i);
     for (int j = 0; j < test_case->total_test_count(); ++j) {
       const testing::TestInfo* test_info = test_case->GetTestInfo(j);
-      std::string test_name = test_info->test_case_name();
-      test_name.append(".");
-      test_name.append(test_info->name());
+      std::string test_name = FormatFullTestName(
+          test_info->test_case_name(), test_info->name());
 
       results_tracker_.AddTest(test_name);
 
