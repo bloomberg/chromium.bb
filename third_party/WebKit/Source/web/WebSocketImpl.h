@@ -76,9 +76,9 @@ public:
     void didClose(WebSocketChannelClient::ClosingHandshakeCompletionStatus, unsigned short code, const String& reason);
 
 private:
-    RefPtrWillBePersistent<blink::WebSocketChannel> m_private;
+    Persistent<blink::WebSocketChannel> m_private;
     WebSocketClient* m_client;
-    OwnPtrWillBePersistent<WebSocketChannelClientProxy> m_channelProxy;
+    Persistent<WebSocketChannelClientProxy> m_channelProxy;
     BinaryType m_binaryType;
     WebString m_subprotocol;
     WebString m_extensions;

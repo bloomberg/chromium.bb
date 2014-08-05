@@ -64,16 +64,15 @@ class WebSocketHandshakeRequest;
 
 // This class may replace MainThreadWebSocketChannel.
 class NewWebSocketChannelImpl FINAL : public WebSocketChannel, public blink::WebSocketHandleClient, public ContextLifecycleObserver {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     // You can specify the source file and the line number information
     // explicitly by passing the last parameter.
     // In the usual case, they are set automatically and you don't have to
     // pass it.
     // Specify handle explicitly only in tests.
-    static PassRefPtrWillBeRawPtr<NewWebSocketChannelImpl> create(ExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL = String(), unsigned lineNumber = 0, blink::WebSocketHandle *handle = 0)
+    static NewWebSocketChannelImpl* create(ExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL = String(), unsigned lineNumber = 0, blink::WebSocketHandle *handle = 0)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new NewWebSocketChannelImpl(context, client, sourceURL, lineNumber, handle));
+        return adoptRefCountedGarbageCollected(new NewWebSocketChannelImpl(context, client, sourceURL, lineNumber, handle));
     }
     virtual ~NewWebSocketChannelImpl();
 
@@ -152,7 +151,6 @@ private:
     // LifecycleObserver functions.
     virtual void contextDestroyed() OVERRIDE
     {
-#if ENABLE(OILPAN)
         // In oilpan we cannot assume this channel's finalizer has been called
         // before the document it is observing is dead and finalized since there
         // is no eager finalization. Instead the finalization happens at the
@@ -164,10 +162,6 @@ private:
         ASSERT(!m_client);
         ASSERT(!m_identifier);
         ContextLifecycleObserver::contextDestroyed();
-#else
-        // This object must be destroyed before the context.
-        ASSERT_NOT_REACHED();
-#endif
     }
 
     // m_handle is a handle of the connection.
@@ -176,11 +170,11 @@ private:
 
     // m_client can be deleted while this channel is alive, but this class
     // expects that disconnect() is called before the deletion.
-    RawPtrWillBeMember<WebSocketChannelClient> m_client;
+    Member<WebSocketChannelClient> m_client;
     KURL m_url;
     // m_identifier > 0 means calling scriptContextExecution() returns a Document.
     unsigned long m_identifier;
-    OwnPtrWillBeMember<BlobLoader> m_blobLoader;
+    Member<BlobLoader> m_blobLoader;
     Deque<OwnPtr<Message> > m_messages;
     Vector<char> m_receivingMessageData;
 

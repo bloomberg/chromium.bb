@@ -36,9 +36,9 @@ typedef testing::StrictMock<testing::MockFunction<void(int)> > Checkpoint;  // N
 
 class MockWebSocketChannel : public WebSocketChannel {
 public:
-    static PassRefPtrWillBeRawPtr<MockWebSocketChannel> create()
+    static MockWebSocketChannel* create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new testing::StrictMock<MockWebSocketChannel>());
+        return adoptRefCountedGarbageCollected(new testing::StrictMock<MockWebSocketChannel>());
     }
 
     virtual ~MockWebSocketChannel()
@@ -64,16 +64,16 @@ public:
 
 class DOMWebSocketWithMockChannel FINAL : public DOMWebSocket {
 public:
-    static PassRefPtrWillBeRawPtr<DOMWebSocketWithMockChannel> create(ExecutionContext* context)
+    static DOMWebSocketWithMockChannel* create(ExecutionContext* context)
     {
-        RefPtrWillBeRawPtr<DOMWebSocketWithMockChannel> websocket = adoptRefWillBeRefCountedGarbageCollected(new DOMWebSocketWithMockChannel(context));
+        DOMWebSocketWithMockChannel* websocket = adoptRefCountedGarbageCollectedWillBeNoop(new DOMWebSocketWithMockChannel(context));
         websocket->suspendIfNeeded();
-        return websocket.release();
+        return websocket;
     }
 
     MockWebSocketChannel* channel() { return m_channel.get(); }
 
-    virtual PassRefPtrWillBeRawPtr<WebSocketChannel> createChannel(ExecutionContext*, WebSocketChannelClient*) OVERRIDE
+    virtual WebSocketChannel* createChannel(ExecutionContext*, WebSocketChannelClient*) OVERRIDE
     {
         ASSERT(!m_hasCreatedChannel);
         m_hasCreatedChannel = true;
@@ -92,7 +92,7 @@ private:
         , m_channel(MockWebSocketChannel::create())
         , m_hasCreatedChannel(false) { }
 
-    RefPtrWillBeMember<MockWebSocketChannel> m_channel;
+    Member<MockWebSocketChannel> m_channel;
     bool m_hasCreatedChannel;
 };
 
@@ -124,7 +124,7 @@ public:
     MockWebSocketChannel& channel() { return *m_websocket->channel(); }
 
     OwnPtr<DummyPageHolder> m_pageHolder;
-    RefPtrWillBePersistent<DOMWebSocketWithMockChannel> m_websocket;
+    Persistent<DOMWebSocketWithMockChannel> m_websocket;
     V8TestingScope m_executionScope;
     ExceptionState m_exceptionState;
 };

@@ -180,10 +180,17 @@ namespace blink {
     };
 
     template<typename T> struct AllowCrossThreadAccessWrapper {
+        STACK_ALLOCATED();
     public:
         explicit AllowCrossThreadAccessWrapper(T* value) : m_value(value) { }
         T* value() const { return m_value; }
     private:
+        // This raw pointer is safe since AllowCrossThreadAccessWrapper is
+        // always stack-allocated. Ideally this should be Member<T> if T is
+        // garbage-collected and T* otherwise, but we don't want to introduce
+        // another template magic just for distinguishing Member<T> from T*.
+        // From the perspective of GC, T* always works correctly.
+        GC_PLUGIN_IGNORE("")
         T* m_value;
     };
 

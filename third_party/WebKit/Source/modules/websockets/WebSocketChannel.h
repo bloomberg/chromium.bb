@@ -35,7 +35,6 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -48,11 +47,11 @@ class WebSocketChannelClient;
 // FIXME: WebSocketChannel needs to be RefCountedGarbageCollected to support manual ref/deref
 // in MainThreadWebSocketChannelImpl. We should change it to GarbageCollectedFinalized once
 // we remove MainThreadWebSocketChannelImpl.
-class WebSocketChannel : public RefCountedWillBeRefCountedGarbageCollected<WebSocketChannel> {
+class WebSocketChannel : public RefCountedGarbageCollected<WebSocketChannel> {
     WTF_MAKE_NONCOPYABLE(WebSocketChannel);
 public:
     WebSocketChannel() { }
-    static PassRefPtrWillBeRawPtr<WebSocketChannel> create(ExecutionContext*, WebSocketChannelClient*);
+    static WebSocketChannel* create(ExecutionContext*, WebSocketChannelClient*);
 
     enum CloseEventCode {
         CloseEventCodeNotSpecified = -1,

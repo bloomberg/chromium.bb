@@ -233,8 +233,6 @@ void SocketStreamHandle::close()
 
 void SocketStreamHandle::disconnect()
 {
-    RefPtrWillBeRawPtr<SocketStreamHandle> protect(this); // closeInternal calls the client, which may make the handle get deallocated immediately.
-
     closeInternal();
     m_state = Closed;
 }
