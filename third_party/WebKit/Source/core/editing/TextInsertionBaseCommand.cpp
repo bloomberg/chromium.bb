@@ -73,12 +73,12 @@ String dispatchBeforeTextInsertedEvent(const String& text, const VisibleSelectio
 
 bool canAppendNewLineFeedToSelection(const VisibleSelection& selection)
 {
-    Node* node = selection.rootEditableElement();
-    if (!node)
+    Element* element = selection.rootEditableElement();
+    if (!element)
         return false;
 
     RefPtrWillBeRawPtr<BeforeTextInsertedEvent> event = BeforeTextInsertedEvent::create(String("\n"));
-    node->dispatchEvent(event, IGNORE_EXCEPTION);
+    element->dispatchEvent(event, IGNORE_EXCEPTION);
     return event->text().length();
 }
 

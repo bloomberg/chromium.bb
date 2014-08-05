@@ -163,7 +163,7 @@ unsigned BitStack::size() const
 static unsigned depthCrossingShadowBoundaries(Node* node)
 {
     unsigned depth = 0;
-    for (Node* parent = node->parentOrShadowHostNode(); parent; parent = parent->parentOrShadowHostNode())
+    for (ContainerNode* parent = node->parentOrShadowHostNode(); parent; parent = parent->parentOrShadowHostNode())
         ++depth;
     return depth;
 }
@@ -225,8 +225,8 @@ static void pushFullyClippedState(BitStack& stack, Node* node)
 static void setUpFullyClippedStack(BitStack& stack, Node* node)
 {
     // Put the nodes in a vector so we can iterate in reverse order.
-    WillBeHeapVector<RawPtrWillBeMember<Node>, 100> ancestry;
-    for (Node* parent = node->parentOrShadowHostNode(); parent; parent = parent->parentOrShadowHostNode())
+    WillBeHeapVector<RawPtrWillBeMember<ContainerNode>, 100> ancestry;
+    for (ContainerNode* parent = node->parentOrShadowHostNode(); parent; parent = parent->parentOrShadowHostNode())
         ancestry.append(parent);
 
     // Call pushFullyClippedState on each node starting with the earliest ancestor.
@@ -464,11 +464,11 @@ void TextIterator::advance()
                 if (renderer->isText() && m_node->nodeType() == Node::TEXT_NODE) { // FIXME: What about CDATA_SECTION_NODE?
                     handledNode = handleTextNode();
                 } else if (renderer && (renderer->isImage() || renderer->isWidget()
-                    || (m_node && m_node->isElementNode()
-                    && (toElement(m_node)->isFormControlElement()
-                    || isHTMLLegendElement(toElement(*m_node))
-                    || isHTMLMeterElement(toElement(*m_node))
-                    || isHTMLProgressElement(toElement(*m_node)))))) {
+                    || (m_node && m_node->isHTMLElement()
+                    && (isHTMLFormControlElement(toHTMLElement(*m_node))
+                    || isHTMLLegendElement(toHTMLElement(*m_node))
+                    || isHTMLMeterElement(toHTMLElement(*m_node))
+                    || isHTMLProgressElement(toHTMLElement(*m_node)))))) {
                     handledNode = handleReplacedElement();
                 } else {
                     handledNode = handleNonTextNode();
@@ -492,7 +492,7 @@ void TextIterator::advance()
             if (!next) {
                 // 3. If we are at the last child, go up the node tree until we find a next sibling.
                 bool pastEnd = NodeTraversal::next(*m_node) == m_pastEndNode;
-                Node* parentNode = m_node->parentNode();
+                ContainerNode* parentNode = m_node->parentNode();
                 while (!next && parentNode) {
                     if ((pastEnd && parentNode == m_endContainer) || m_endContainer->isDescendantOf(parentNode))
                         return;
@@ -605,23 +605,24 @@ bool TextIterator::handleTextNode()
     if (m_fullyClippedStack.top() && !m_ignoresStyleVisibility)
         return false;
 
-    RenderText* renderer = toRenderText(m_node->renderer());
+    Text* textNode = toText(m_node);
+    RenderText* renderer = textNode->renderer();
 
-    m_lastTextNode = m_node;
+    m_lastTextNode = textNode;
     String str = renderer->text();
 
     // handle pre-formatted text
     if (!renderer->style()->collapseWhiteSpace()) {
         int runStart = m_offset;
         if (m_lastTextNodeEndedWithCollapsedSpace && hasVisibleTextNode(renderer)) {
-            emitCharacter(' ', m_node, 0, runStart, runStart);
+            emitCharacter(' ', textNode, 0, runStart, runStart);
             return false;
         }
         if (!m_handledFirstLetter && renderer->isTextFragment() && !m_offset) {
             handleTextNodeFirstLetter(toRenderTextFragment(renderer));
             if (m_firstLetterText) {
                 String firstLetter = m_firstLetterText->text();
-                emitText(m_node, m_firstLetterText, m_offset, m_offset + firstLetter.length());
+                emitText(textNode, m_firstLetterText, m_offset, m_offset + firstLetter.length());
                 m_firstLetterText = 0;
                 m_textBox = 0;
                 return false;
@@ -630,13 +631,13 @@ bool TextIterator::handleTextNode()
         if (renderer->style()->visibility() != VISIBLE && !m_ignoresStyleVisibility)
             return false;
         int strLength = str.length();
-        int end = (m_node == m_endContainer) ? m_endOffset : INT_MAX;
+        int end = (textNode == m_endContainer) ? m_endOffset : INT_MAX;
         int runEnd = std::min(strLength, end);
 
         if (runStart >= runEnd)
             return true;
 
-        emitText(m_node, runStart, runEnd);
+        emitText(textNode, textNode->renderer(), runStart, runEnd);
         return true;
     }
 
@@ -1156,9 +1157,8 @@ void TextIterator::emitCharacter(UChar c, Node* textNode, Node* offsetBaseNode, 
     m_lastCharacter = c;
 }
 
-void TextIterator::emitText(Node* textNode, RenderObject* renderObject, int textStartOffset, int textEndOffset)
+void TextIterator::emitText(Node* textNode, RenderText* renderer, int textStartOffset, int textEndOffset)
 {
-    RenderText* renderer = toRenderText(renderObject);
     m_text = m_emitsOriginalText ? renderer->originalText() : renderer->text();
     ASSERT(!m_text.isEmpty());
     ASSERT(0 <= textStartOffset && textStartOffset < static_cast<int>(m_text.length()));
@@ -1175,11 +1175,6 @@ void TextIterator::emitText(Node* textNode, RenderObject* renderObject, int text
 
     m_lastTextNodeEndedWithCollapsedSpace = false;
     m_hasEmitted = true;
-}
-
-void TextIterator::emitText(Node* textNode, int textStartOffset, int textEndOffset)
-{
-    emitText(textNode, m_node->renderer(), textStartOffset, textEndOffset);
 }
 
 PassRefPtrWillBeRawPtr<Range> TextIterator::range() const
@@ -1379,7 +1374,7 @@ void SimplifiedBackwardsTextIterator::advance()
 
 bool SimplifiedBackwardsTextIterator::handleTextNode()
 {
-    m_lastTextNode = m_node;
+    m_lastTextNode = toText(m_node);
 
     int startOffset;
     int offsetInNode;

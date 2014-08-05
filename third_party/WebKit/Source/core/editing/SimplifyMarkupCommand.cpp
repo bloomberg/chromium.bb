@@ -41,8 +41,8 @@ SimplifyMarkupCommand::SimplifyMarkupCommand(Document& document, Node* firstNode
 
 void SimplifyMarkupCommand::doApply()
 {
-    Node* rootNode = m_firstNode->parentNode();
-    WillBeHeapVector<RefPtrWillBeMember<Node> > nodesToRemove;
+    ContainerNode* rootNode = m_firstNode->parentNode();
+    WillBeHeapVector<RefPtrWillBeMember<ContainerNode> > nodesToRemove;
 
     // Walk through the inserted nodes, to see if there are elements that could be removed
     // without affecting the style. The goal is to produce leaner markup even when starting
@@ -52,14 +52,14 @@ void SimplifyMarkupCommand::doApply()
         if (node->hasChildren() || (node->isTextNode() && node->nextSibling()))
             continue;
 
-        Node* startingNode = node->parentNode();
+        ContainerNode* startingNode = node->parentNode();
         if (!startingNode)
             continue;
         RenderStyle* startingStyle = startingNode->renderStyle();
         if (!startingStyle)
             continue;
-        Node* currentNode = startingNode;
-        Node* topNodeWithStartingStyle = 0;
+        ContainerNode* currentNode = startingNode;
+        ContainerNode* topNodeWithStartingStyle = 0;
         while (currentNode != rootNode) {
             if (currentNode->parentNode() != rootNode && isRemovableBlock(currentNode))
                 nodesToRemove.append(currentNode);
@@ -81,7 +81,7 @@ void SimplifyMarkupCommand::doApply()
 
         }
         if (topNodeWithStartingStyle) {
-            for (Node* node = startingNode; node != topNodeWithStartingStyle; node = node->parentNode())
+            for (ContainerNode* node = startingNode; node != topNodeWithStartingStyle; node = node->parentNode())
                 nodesToRemove.append(node);
         }
     }
@@ -97,7 +97,7 @@ void SimplifyMarkupCommand::doApply()
     }
 }
 
-int SimplifyMarkupCommand::pruneSubsequentAncestorsToRemove(WillBeHeapVector<RefPtrWillBeMember<Node> >& nodesToRemove, size_t startNodeIndex)
+int SimplifyMarkupCommand::pruneSubsequentAncestorsToRemove(WillBeHeapVector<RefPtrWillBeMember<ContainerNode> >& nodesToRemove, size_t startNodeIndex)
 {
     size_t pastLastNodeToRemove = startNodeIndex + 1;
     for (; pastLastNodeToRemove < nodesToRemove.size(); ++pastLastNodeToRemove) {
@@ -106,7 +106,7 @@ int SimplifyMarkupCommand::pruneSubsequentAncestorsToRemove(WillBeHeapVector<Ref
         ASSERT(nodesToRemove[pastLastNodeToRemove]->firstChild() == nodesToRemove[pastLastNodeToRemove]->lastChild());
     }
 
-    Node* highestAncestorToRemove = nodesToRemove[pastLastNodeToRemove - 1].get();
+    ContainerNode* highestAncestorToRemove = nodesToRemove[pastLastNodeToRemove - 1].get();
     RefPtrWillBeRawPtr<ContainerNode> parent = highestAncestorToRemove->parentNode();
     if (!parent) // Parent has already been removed.
         return -1;

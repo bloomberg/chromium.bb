@@ -142,8 +142,7 @@ private:
     void handleTextNodeFirstLetter(RenderTextFragment*);
     bool hasVisibleTextNode(RenderText*);
     void emitCharacter(UChar, Node* textNode, Node* offsetBaseNode, int textStartOffset, int textEndOffset);
-    void emitText(Node* textNode, RenderObject* renderObject, int textStartOffset, int textEndOffset);
-    void emitText(Node* textNode, int textStartOffset, int textEndOffset);
+    void emitText(Node* textNode, RenderText* renderer, int textStartOffset, int textEndOffset);
 
     // Current position, not necessarily of the text being returned, but position
     // as we walk through the DOM tree.
@@ -179,7 +178,7 @@ private:
     RenderText *m_firstLetterText;
 
     // Used to do the whitespace collapsing logic.
-    RawPtrWillBeMember<Node> m_lastTextNode;
+    RawPtrWillBeMember<Text> m_lastTextNode;
     bool m_lastTextNodeEndedWithCollapsedSpace;
     UChar m_lastCharacter;
 
@@ -281,7 +280,7 @@ private:
     int m_textLength;
 
     // Used to do the whitespace logic.
-    RawPtrWillBeMember<Node> m_lastTextNode;
+    RawPtrWillBeMember<Text> m_lastTextNode;
     UChar m_lastCharacter;
 
     // Used for whitespace characters that aren't in the DOM, so we can point at them.
