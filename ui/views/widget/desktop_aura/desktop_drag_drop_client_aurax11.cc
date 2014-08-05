@@ -22,7 +22,6 @@
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 #include "ui/views/widget/desktop_aura/x11_topmost_window_finder.h"
-#include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop.h"
 #include "ui/wm/public/drag_drop_client.h"
 #include "ui/wm/public/drag_drop_delegate.h"
 
@@ -362,7 +361,8 @@ DesktopDragDropClientAuraX11::DesktopDragDropClientAuraX11(
     views::DesktopNativeCursorManager* cursor_manager,
     Display* xdisplay,
     ::Window xwindow)
-    : root_window_(root_window),
+    : move_loop_(this),
+      root_window_(root_window),
       xdisplay_(xdisplay),
       xwindow_(xwindow),
       atom_cache_(xdisplay_, kAtomsToCache),
@@ -405,10 +405,6 @@ DesktopDragDropClientAuraX11* DesktopDragDropClientAuraX11::GetForWindow(
   if (it == g_live_client_map.Get().end())
     return NULL;
   return it->second;
-}
-
-void DesktopDragDropClientAuraX11::Init() {
-  move_loop_ = CreateMoveLoop(this);
 }
 
 void DesktopDragDropClientAuraX11::OnXdndEnter(
@@ -487,7 +483,7 @@ void DesktopDragDropClientAuraX11::OnXdndStatus(
   if (source_state_ == SOURCE_STATE_PENDING_DROP) {
     // We were waiting on the status message so we could send the XdndDrop.
     if (negotiated_operation_ == ui::DragDropTypes::DRAG_NONE) {
-      move_loop_->EndMoveLoop();
+      move_loop_.EndMoveLoop();
       return;
     }
     source_state_ = SOURCE_STATE_DROPPED;
@@ -497,13 +493,13 @@ void DesktopDragDropClientAuraX11::OnXdndStatus(
 
   switch (negotiated_operation_) {
     case ui::DragDropTypes::DRAG_COPY:
-      move_loop_->UpdateCursor(copy_grab_cursor_);
+      move_loop_.UpdateCursor(copy_grab_cursor_);
       break;
     case ui::DragDropTypes::DRAG_MOVE:
-      move_loop_->UpdateCursor(move_grab_cursor_);
+      move_loop_.UpdateCursor(move_grab_cursor_);
       break;
     default:
-      move_loop_->UpdateCursor(grab_cursor_);
+      move_loop_.UpdateCursor(grab_cursor_);
       break;
   }
 
@@ -538,7 +534,7 @@ void DesktopDragDropClientAuraX11::OnXdndFinished(
   // Clear |source_current_window_| to avoid sending XdndLeave upon ending the
   // move loop.
   source_current_window_ = None;
-  move_loop_->EndMoveLoop();
+  move_loop_.EndMoveLoop();
 }
 
 void DesktopDragDropClientAuraX11::OnXdndDrop(
@@ -631,12 +627,12 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
   // Windows has a specific method, DoDragDrop(), which performs the entire
   // drag. We have to emulate this, so we spin off a nested runloop which will
   // track all cursor movement and reroute events to a specific handler.
-  move_loop_->SetDragImage(source_provider_->GetDragImage(),
-                           source_provider_->GetDragImageOffset());
-  move_loop_->RunMoveLoop(source_window, grab_cursor_);
+  move_loop_.SetDragImage(source_provider_->GetDragImage(),
+                          source_provider_->GetDragImageOffset());
+  move_loop_.RunMoveLoop(source_window, grab_cursor_);
 
   if (alive) {
-    move_loop_->SetDragImage(gfx::ImageSkia(), gfx::Vector2dF());
+    move_loop_.SetDragImage(gfx::ImageSkia(), gfx::Vector2dF());
 
     source_provider_ = NULL;
     g_current_drag_drop_client = NULL;
@@ -660,7 +656,7 @@ void DesktopDragDropClientAuraX11::Drop(aura::Window* target,
 }
 
 void DesktopDragDropClientAuraX11::DragCancel() {
-  move_loop_->EndMoveLoop();
+  move_loop_.EndMoveLoop();
 }
 
 bool DesktopDragDropClientAuraX11::IsDragDropInProgress() {
@@ -683,7 +679,7 @@ void DesktopDragDropClientAuraX11::OnMouseReleased() {
   if (source_state_ != SOURCE_STATE_OTHER) {
     // The user has previously released the mouse and is clicking in
     // frustration.
-    move_loop_->EndMoveLoop();
+    move_loop_.EndMoveLoop();
     return;
   }
 
@@ -700,7 +696,7 @@ void DesktopDragDropClientAuraX11::OnMouseReleased() {
         return;
       }
 
-      move_loop_->EndMoveLoop();
+      move_loop_.EndMoveLoop();
       return;
     }
 
@@ -719,7 +715,7 @@ void DesktopDragDropClientAuraX11::OnMouseReleased() {
     }
   }
 
-  move_loop_->EndMoveLoop();
+  move_loop_.EndMoveLoop();
 }
 
 void DesktopDragDropClientAuraX11::OnMoveLoopEnded() {
@@ -730,11 +726,6 @@ void DesktopDragDropClientAuraX11::OnMoveLoopEnded() {
   target_current_context_.reset();
   repeat_mouse_move_timer_.Stop();
   end_move_loop_timer_.Stop();
-}
-
-scoped_ptr<X11MoveLoop> DesktopDragDropClientAuraX11::CreateMoveLoop(
-    X11MoveLoopDelegate* delegate) {
-  return scoped_ptr<X11MoveLoop>(new X11WholeScreenMoveLoop(this));
 }
 
 XID DesktopDragDropClientAuraX11::FindWindowFor(
@@ -841,7 +832,7 @@ void DesktopDragDropClientAuraX11::StartEndMoveLoopTimer() {
 }
 
 void DesktopDragDropClientAuraX11::EndMoveLoop() {
-  move_loop_->EndMoveLoop();
+  move_loop_.EndMoveLoop();
 }
 
 void DesktopDragDropClientAuraX11::DragTranslate(

@@ -12,8 +12,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/vector2d_f.h"
-#include "ui/views/widget/desktop_aura/x11_move_loop.h"
-#include "ui/views/widget/desktop_aura/x11_move_loop_delegate.h"
+#include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop_delegate.h"
 
 typedef struct _XDisplay XDisplay;
 
@@ -31,23 +30,29 @@ class Widget;
 
 // Runs a nested message loop and grabs the mouse. This is used to implement
 // dragging.
-class X11WholeScreenMoveLoop : public X11MoveLoop,
-                               public ui::PlatformEventDispatcher {
+class X11WholeScreenMoveLoop : public ui::PlatformEventDispatcher {
  public:
-  explicit X11WholeScreenMoveLoop(X11MoveLoopDelegate* delegate);
+  explicit X11WholeScreenMoveLoop(X11WholeScreenMoveLoopDelegate* delegate);
   virtual ~X11WholeScreenMoveLoop();
 
   // ui:::PlatformEventDispatcher:
   virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
   virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
 
-  // X11MoveLoop:
-  virtual bool RunMoveLoop(aura::Window* window,
-                           gfx::NativeCursor cursor) OVERRIDE;
-  virtual void UpdateCursor(gfx::NativeCursor cursor) OVERRIDE;
-  virtual void EndMoveLoop() OVERRIDE;
-  virtual void SetDragImage(const gfx::ImageSkia& image,
-                            const gfx::Vector2dF& offset) OVERRIDE;
+  // Runs the nested message loop. While the mouse is grabbed, use |cursor| as
+  // the mouse cursor. Returns true if the move-loop is completed successfully.
+  // If the pointer-grab fails, or the move-loop is canceled by the user (e.g.
+  // by pressing escape), then returns false.
+  bool RunMoveLoop(aura::Window* window, gfx::NativeCursor cursor);
+
+  // Updates the cursor while the move loop is running.
+  void UpdateCursor(gfx::NativeCursor cursor);
+
+  // Ends the RunMoveLoop() that's currently in progress.
+  void EndMoveLoop();
+
+  // Sets an image to be used during the drag.
+  void SetDragImage(const gfx::ImageSkia& image, gfx::Vector2dF offset);
 
  private:
   // Grabs the pointer and keyboard, setting the mouse cursor to |cursor|.
@@ -67,7 +72,7 @@ class X11WholeScreenMoveLoop : public X11MoveLoop,
   // Dispatch mouse movement event to |delegate_| in a posted task.
   void DispatchMouseMovement();
 
-  X11MoveLoopDelegate* delegate_;
+  X11WholeScreenMoveLoopDelegate* delegate_;
 
   // Are we running a nested message loop from RunMoveLoop()?
   bool in_move_loop_;

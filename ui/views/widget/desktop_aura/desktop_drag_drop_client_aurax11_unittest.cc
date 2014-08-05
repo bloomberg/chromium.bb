@@ -10,7 +10,6 @@
 #include "ui/views/test/views_test_base.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -22,7 +21,6 @@
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_aurax11.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
-#include "ui/views/widget/desktop_aura/x11_move_loop.h"
 #include "ui/views/widget/widget.h"
 
 #include <X11/Xlib.h>
@@ -75,34 +73,6 @@ class ClientMessageEventCollector {
   DISALLOW_COPY_AND_ASSIGN(ClientMessageEventCollector);
 };
 
-// An implementation of X11MoveLoop where RunMoveLoop() always starts the move
-// loop.
-class TestMoveLoop : public X11MoveLoop {
- public:
-  explicit TestMoveLoop(X11MoveLoopDelegate* delegate);
-  virtual ~TestMoveLoop();
-
-  // Returns true if the move loop is running.
-  bool IsRunning() const;
-
-  // X11MoveLoop:
-  virtual bool RunMoveLoop(aura::Window* window,
-                           gfx::NativeCursor cursor) OVERRIDE;
-  virtual void UpdateCursor(gfx::NativeCursor cursor) OVERRIDE;
-  virtual void EndMoveLoop() OVERRIDE;
-  virtual void SetDragImage(const gfx::ImageSkia& image,
-                            const gfx::Vector2dF& offset) OVERRIDE;
-
- private:
-  // Not owned.
-  X11MoveLoopDelegate* delegate_;
-
-  // Ends the move loop.
-  base::Closure quit_closure_;
-
-  bool is_running_;
-};
-
 // Implementation of DesktopDragDropClientAuraX11 which works with a fake
 // |DesktopDragDropClientAuraX11::source_current_window_|.
 class TestDragDropClient : public DesktopDragDropClientAuraX11 {
@@ -152,10 +122,18 @@ class TestDragDropClient : public DesktopDragDropClientAuraX11 {
   // Returns true if the move loop is running.
   bool IsMoveLoopRunning();
 
+  // DesktopDragDropClientAuraX11:
+  virtual int StartDragAndDrop(
+      const ui::OSExchangeData& data,
+      aura::Window* root_window,
+      aura::Window* source_window,
+      const gfx::Point& root_location,
+      int operation,
+      ui::DragDropTypes::DragEventSource source) OVERRIDE;
+  virtual void OnMoveLoopEnded() OVERRIDE;
+
  private:
   // DesktopDragDropClientAuraX11:
-  virtual scoped_ptr<X11MoveLoop> CreateMoveLoop(
-      X11MoveLoopDelegate* delegate) OVERRIDE;
   virtual ::Window FindWindowFor(const gfx::Point& screen_point) OVERRIDE;
   virtual void SendXClientEvent(::Window xid, XEvent* event) OVERRIDE;
 
@@ -166,8 +144,8 @@ class TestDragDropClient : public DesktopDragDropClientAuraX11 {
   // current mouse position.
   ::Window target_xid_;
 
-  // The move loop. Not owned.
-  TestMoveLoop* loop_;
+  // Whether the move loop is running.
+  bool move_loop_running_;
 
   // Map of ::Windows to the collector which intercepts XClientMessageEvents
   // for that window.
@@ -205,46 +183,6 @@ void ClientMessageEventCollector::RecordEvent(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// TestMoveLoop
-
-TestMoveLoop::TestMoveLoop(X11MoveLoopDelegate* delegate)
-    : delegate_(delegate),
-      is_running_(false) {
-}
-
-TestMoveLoop::~TestMoveLoop() {
-}
-
-bool TestMoveLoop::IsRunning() const {
-  return is_running_;
-}
-
-bool TestMoveLoop::RunMoveLoop(
-    aura::Window* window,
-    gfx::NativeCursor cursor) {
-  is_running_ = true;
-  base::RunLoop run_loop;
-  quit_closure_ = run_loop.QuitClosure();
-  run_loop.Run();
-  return true;
-}
-
-void TestMoveLoop::UpdateCursor(gfx::NativeCursor cursor) {
-}
-
-void TestMoveLoop::EndMoveLoop() {
-  if (is_running_) {
-    delegate_->OnMoveLoopEnded();
-    is_running_ = false;
-    quit_closure_.Run();
-  }
-}
-
-void TestMoveLoop::SetDragImage(const gfx::ImageSkia& image,
-                                const gfx::Vector2dF& offset) {
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // TestDragDropClient
 
 // static
@@ -262,7 +200,7 @@ TestDragDropClient::TestDragDropClient(
                                    window->GetHost()->GetAcceleratedWidget()),
       source_xid_(window->GetHost()->GetAcceleratedWidget()),
       target_xid_(None),
-      loop_(NULL),
+      move_loop_running_(false),
       atom_cache_(gfx::GetXDisplay(), kAtomsToCache) {
 }
 
@@ -328,13 +266,24 @@ void TestDragDropClient::SetTopmostXWindowAndMoveMouse(::Window xid) {
 }
 
 bool TestDragDropClient::IsMoveLoopRunning() {
-  return loop_->IsRunning();
+  return move_loop_running_;
 }
 
-scoped_ptr<X11MoveLoop> TestDragDropClient::CreateMoveLoop(
-    X11MoveLoopDelegate* delegate) {
-  loop_ = new TestMoveLoop(delegate);
-  return scoped_ptr<X11MoveLoop>(loop_);
+int TestDragDropClient::StartDragAndDrop(
+    const ui::OSExchangeData& data,
+    aura::Window* root_window,
+    aura::Window* source_window,
+    const gfx::Point& root_location,
+    int operation,
+    ui::DragDropTypes::DragEventSource source) {
+  move_loop_running_ = true;
+  return DesktopDragDropClientAuraX11::StartDragAndDrop(data, root_window,
+      source_window, root_location, operation, source);
+}
+
+void TestDragDropClient::OnMoveLoopEnded() {
+  DesktopDragDropClientAuraX11::OnMoveLoopEnded();
+  move_loop_running_ = false;
 }
 
 ::Window TestDragDropClient::FindWindowFor(const gfx::Point& screen_point) {
@@ -389,7 +338,6 @@ class DesktopDragDropClientAuraX11Test : public ViewsTestBase {
 
     client_.reset(new TestDragDropClient(widget_->GetNativeWindow(),
                                          cursor_manager_.get()));
-    client_->Init();
   }
 
   virtual void TearDown() OVERRIDE {

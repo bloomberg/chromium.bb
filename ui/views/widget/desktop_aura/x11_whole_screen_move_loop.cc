@@ -55,7 +55,8 @@ class ScopedCapturer {
 
 }  // namespace
 
-X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(X11MoveLoopDelegate* delegate)
+X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(
+    X11WholeScreenMoveLoopDelegate* delegate)
     : delegate_(delegate),
       in_move_loop_(false),
       should_reset_mouse_flags_(false),
@@ -276,7 +277,7 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
 }
 
 void X11WholeScreenMoveLoop::SetDragImage(const gfx::ImageSkia& image,
-                                          const gfx::Vector2dF& offset) {
+                                          gfx::Vector2dF offset) {
   drag_image_ = image;
   drag_offset_ = offset;
 }
