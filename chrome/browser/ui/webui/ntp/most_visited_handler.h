@@ -89,11 +89,6 @@ class MostVisitedHandler : public content::WebUIMessageHandler,
   // Returns the key used in url_blacklist_ for the passed |url|.
   std::string GetDictionaryKeyForUrl(const std::string& url);
 
-  // Removes recommended URLs if a matching URL is already open in the Browser,
-  // if the Most Visited Tile Placement experiment is enabled, and the client is
-  // in the experiment group.
-  void MaybeRemovePageValues();
-
   // Sends pages_value_ to the javascript side and resets page_value_.
   void SendPagesValue();
 

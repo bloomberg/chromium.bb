@@ -5,7 +5,6 @@
 #include "chrome/browser/search/instant_service.h"
 
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/most_visited_tiles_experiment.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
@@ -265,8 +264,6 @@ void InstantService::OnRendererProcessTerminated(int process_id) {
 void InstantService::OnMostVisitedItemsReceived(
     const history::MostVisitedURLList& data) {
   history::MostVisitedURLList reordered_data(data);
-  history::MostVisitedTilesExperiment::MaybeShuffle(&reordered_data);
-
   std::vector<InstantMostVisitedItem> new_most_visited_items;
   for (size_t i = 0; i < reordered_data.size(); i++) {
     const history::MostVisitedURL& url = reordered_data[i];

@@ -183,11 +183,6 @@ class SearchTabHelper : public content::WebContentsObserver,
       const std::vector<InstantMostVisitedItem>& items) OVERRIDE;
   virtual void OmniboxStartMarginChanged(int omnibox_start_margin) OVERRIDE;
 
-  // Removes recommended URLs if a matching URL is already open in the Browser,
-  // if the Most Visited Tile Placement experiment is enabled, and the client is
-  // in the experiment group.
-  void MaybeRemoveMostVisitedItems(std::vector<InstantMostVisitedItem>* items);
-
   // Sets the mode of the model based on the current URL of web_contents().
   // Only updates the origin part of the mode if |update_origin| is true,
   // otherwise keeps the current origin. If |is_preloaded_ntp| is true, the mode
