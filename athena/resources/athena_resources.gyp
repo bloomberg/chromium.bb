@@ -15,6 +15,8 @@
         '../../extensions/extensions.gyp:extensions_shell_and_test_pak',
         '../../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
         '../../ui/chromeos/ui_chromeos.gyp:ui_chromeos_strings',
+        '../../webkit/webkit_resources.gyp:webkit_resources',
+        '../../webkit/webkit_resources.gyp:webkit_strings',
       ],
       'actions': [{
         'action_name': 'repack_athena_pack',
@@ -24,6 +26,8 @@
             '<(SHARED_INTERMEDIATE_DIR)/ash/resources/ash_resources_100_percent.pak',
             '<(SHARED_INTERMEDIATE_DIR)/ui/chromeos/resources/ui_chromeos_resources_100_percent.pak',
             '<(SHARED_INTERMEDIATE_DIR)/ui/chromeos/strings/ui_chromeos_strings_en-US.pak',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_100_percent.pak',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.pak',
           ],
           'pak_output': '<(PRODUCT_DIR)/athena_resources.pak',
         },
