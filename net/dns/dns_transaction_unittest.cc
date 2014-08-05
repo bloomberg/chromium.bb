@@ -100,6 +100,11 @@ class DnsSocketData {
     AddResponse(response.Pass(), mode);
   }
 
+  // Add error response.
+  void AddReadError(int error, IoMode mode) {
+    reads_.push_back(MockRead(mode, error));
+  }
+
   // Build, if needed, and return the SocketDataProvider. No new responses
   // should be added afterwards.
   SocketDataProvider* GetProvider() {
@@ -902,6 +907,9 @@ TEST_F(DnsTransactionTest, TCPMalformed) {
   scoped_ptr<DnsSocketData> data(
       new DnsSocketData(0 /* id */, kT0HostName, kT0Qtype, ASYNC, true));
   // Valid response but length too short.
+  // This must be truncated in the question section. The DnsResponse doesn't
+  // examine the answer section until asked to parse it, so truncating it in
+  // the answer section would result in the DnsTransaction itself succeeding.
   data->AddResponseWithLength(
       make_scoped_ptr(
           new DnsResponse(reinterpret_cast<const char*>(kT0ResponseDatagram),
@@ -924,6 +932,70 @@ TEST_F(DnsTransactionTest, TCPTimeout) {
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_DNS_TIMED_OUT);
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
+}
+
+TEST_F(DnsTransactionTest, TCPReadReturnsZeroAsync) {
+  AddAsyncQueryAndRcode(kT0HostName, kT0Qtype,
+                        dns_protocol::kRcodeNOERROR | dns_protocol::kFlagTC);
+  scoped_ptr<DnsSocketData> data(
+      new DnsSocketData(0 /* id */, kT0HostName, kT0Qtype, ASYNC, true));
+  // Return all but the last byte of the response.
+  data->AddResponseWithLength(
+      make_scoped_ptr(
+          new DnsResponse(reinterpret_cast<const char*>(kT0ResponseDatagram),
+                          arraysize(kT0ResponseDatagram) - 1, 0)),
+      ASYNC,
+      static_cast<uint16>(arraysize(kT0ResponseDatagram)));
+  // Then return a 0-length read.
+  data->AddReadError(0, ASYNC);
+  AddSocketData(data.Pass());
+
+  TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_CONNECTION_CLOSED);
+  EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
+}
+
+TEST_F(DnsTransactionTest, TCPReadReturnsZeroSynchronous) {
+  AddAsyncQueryAndRcode(kT0HostName, kT0Qtype,
+                        dns_protocol::kRcodeNOERROR | dns_protocol::kFlagTC);
+  scoped_ptr<DnsSocketData> data(
+      new DnsSocketData(0 /* id */, kT0HostName, kT0Qtype, ASYNC, true));
+  // Return all but the last byte of the response.
+  data->AddResponseWithLength(
+      make_scoped_ptr(
+          new DnsResponse(reinterpret_cast<const char*>(kT0ResponseDatagram),
+                          arraysize(kT0ResponseDatagram) - 1, 0)),
+      SYNCHRONOUS,
+      static_cast<uint16>(arraysize(kT0ResponseDatagram)));
+  // Then return a 0-length read.
+  data->AddReadError(0, SYNCHRONOUS);
+  AddSocketData(data.Pass());
+
+  TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_CONNECTION_CLOSED);
+  EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
+}
+
+TEST_F(DnsTransactionTest, TCPConnectionClosedAsync) {
+  AddAsyncQueryAndRcode(kT0HostName, kT0Qtype,
+                        dns_protocol::kRcodeNOERROR | dns_protocol::kFlagTC);
+  scoped_ptr<DnsSocketData> data(
+      new DnsSocketData(0 /* id */, kT0HostName, kT0Qtype, ASYNC, true));
+  data->AddReadError(ERR_CONNECTION_CLOSED, ASYNC);
+  AddSocketData(data.Pass());
+
+  TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_CONNECTION_CLOSED);
+  EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
+}
+
+TEST_F(DnsTransactionTest, TCPConnectionClosedSynchronous) {
+  AddAsyncQueryAndRcode(kT0HostName, kT0Qtype,
+                        dns_protocol::kRcodeNOERROR | dns_protocol::kFlagTC);
+  scoped_ptr<DnsSocketData> data(
+      new DnsSocketData(0 /* id */, kT0HostName, kT0Qtype, ASYNC, true));
+  data->AddReadError(ERR_CONNECTION_CLOSED, SYNCHRONOUS);
+  AddSocketData(data.Pass());
+
+  TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_CONNECTION_CLOSED);
+  EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
 }
 
 TEST_F(DnsTransactionTest, InvalidQuery) {
