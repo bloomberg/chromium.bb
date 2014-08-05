@@ -68,6 +68,9 @@ class SSLClientSocketNSS : public SSLClientSocket {
   virtual ~SSLClientSocketNSS();
 
   // SSLClientSocket implementation.
+  virtual bool InSessionCache() const OVERRIDE;
+  virtual void SetHandshakeCompletionCallback(
+      const base::Closure& callback) OVERRIDE;
   virtual void GetSSLCertRequestInfo(
       SSLCertRequestInfo* cert_request_info) OVERRIDE;
   virtual NextProtoStatus GetNextProto(std::string* proto) OVERRIDE;

@@ -10,6 +10,7 @@
 #include <openssl/rand.h>
 #include <openssl/ssl.h>
 
+#include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -236,14 +237,56 @@ class SSLSessionCacheOpenSSLImpl {
     return SSL_set_session(ssl, session) == 1;
   }
 
+  // Return true iff a cached session was associated with the given |cache_key|.
+  bool SSLSessionIsInCache(const std::string& cache_key) const {
+    base::AutoLock locked(lock_);
+    KeyIndex::const_iterator it = key_index_.find(cache_key);
+    if (it == key_index_.end())
+      return false;
+
+    SSL_SESSION* session = *it->second;
+    DCHECK(session);
+
+    void* session_is_good =
+        SSL_SESSION_get_ex_data(session, GetSSLSessionExIndex());
+
+    return session_is_good;
+  }
+
+  void SetSessionAddedCallback(SSL* ssl, const base::Closure& callback) {
+    // Add |ssl| to the SSLToCallbackMap.
+    ssl_to_callback_map_.insert(SSLToCallbackMap::value_type(
+        ssl, CallbackAndCompletionCount(callback, 0)));
+  }
+
+  // Determines if the session for |ssl| is in the cache, and calls the
+  // appropriate callback if that is the case.
+  //
+  // The session must be both MarkedAsGood and Added in order for the
+  // callback to be run. These two events can occur in either order.
+  void CheckIfSessionFinished(SSL* ssl) {
+    SSLToCallbackMap::iterator it = ssl_to_callback_map_.find(ssl);
+    if (it == ssl_to_callback_map_.end())
+      return;
+    // Increment the session's completion count.
+    if (++it->second.count == 2) {
+      base::Closure callback = it->second.callback;
+      ssl_to_callback_map_.erase(it);
+      callback.Run();
+    }
+  }
+
+  void RemoveSessionAddedCallback(SSL* ssl) { ssl_to_callback_map_.erase(ssl); }
+
   void MarkSSLSessionAsGood(SSL* ssl) {
     SSL_SESSION* session = SSL_get_session(ssl);
-    if (!session)
-      return;
+    CHECK(session);
 
     // Mark the session as good, allowing it to be used for future connections.
     SSL_SESSION_set_ex_data(
         session, GetSSLSessionExIndex(), reinterpret_cast<void*>(1));
+
+    CheckIfSessionFinished(ssl);
   }
 
   // Flush all entries from the cache.
@@ -259,12 +302,30 @@ class SSLSessionCacheOpenSSLImpl {
   }
 
  private:
+  // CallbackAndCompletionCounts are used to group a callback that should be
+  // run when a certain sesssion is added to the session cache with an integer
+  // indicating the status of that session.
+  struct CallbackAndCompletionCount {
+    CallbackAndCompletionCount(const base::Closure& completion_callback,
+                               int completion_count)
+        : callback(completion_callback), count(completion_count) {}
+
+    const base::Closure callback;
+    // |count| < 2 means that the ssl session associated with this object
+    // has not been added to the session cache or has not been marked as good.
+    // |count| is incremented when a session is added to the cache or marked as
+    // good, thus |count| == 2 means that the session is ready for use.
+    int count;
+  };
+
   // Type for list of SSL_SESSION handles, ordered in MRU order.
   typedef std::list<SSL_SESSION*> MRUSessionList;
   // Type for a dictionary from unique cache keys to session list nodes.
   typedef base::hash_map<std::string, MRUSessionList::iterator> KeyIndex;
   // Type for a dictionary from SessionId values to key index nodes.
   typedef base::hash_map<SessionId, KeyIndex::iterator> SessionIdIndex;
+  // Type for a map from SSL* to associated callbacks
+  typedef std::map<SSL*, CallbackAndCompletionCount> SSLToCallbackMap;
 
   // Return the key associated with a given session, or the empty string if
   // none exist. This shall only be used for debugging.
@@ -342,7 +403,9 @@ class SSLSessionCacheOpenSSLImpl {
   // to indicate that it took ownership of the session, i.e. that the caller
   // should not decrement its reference count after completion.
   static int NewSessionCallbackStatic(SSL* ssl, SSL_SESSION* session) {
-    GetCache(ssl->ctx)->OnSessionAdded(ssl, session);
+    SSLSessionCacheOpenSSLImpl* cache = GetCache(ssl->ctx);
+    cache->OnSessionAdded(ssl, session);
+    cache->CheckIfSessionFinished(ssl);
     return 1;
   }
 
@@ -466,10 +529,11 @@ class SSLSessionCacheOpenSSLImpl {
 
   SSL_CTX* ctx_;
   SSLSessionCacheOpenSSL::Config config_;
+  SSLToCallbackMap ssl_to_callback_map_;
 
   // method to get the index which can later be used with SSL_CTX_get_ex_data()
   // or SSL_CTX_set_ex_data().
-  base::Lock lock_;  // Protects access to containers below.
+  mutable base::Lock lock_;  // Protects access to containers below.
 
   MRUSessionList ordering_;
   KeyIndex key_index_;
@@ -497,6 +561,20 @@ bool SSLSessionCacheOpenSSL::SetSSLSessionWithKey(
     SSL* ssl,
     const std::string& cache_key) {
   return impl_->SetSSLSessionWithKey(ssl, cache_key);
+}
+
+bool SSLSessionCacheOpenSSL::SSLSessionIsInCache(
+    const std::string& cache_key) const {
+  return impl_->SSLSessionIsInCache(cache_key);
+}
+
+void SSLSessionCacheOpenSSL::RemoveSessionAddedCallback(SSL* ssl) {
+  impl_->RemoveSessionAddedCallback(ssl);
+}
+
+void SSLSessionCacheOpenSSL::SetSessionAddedCallback(SSL* ssl,
+                                                     const base::Closure& cb) {
+  impl_->SetSessionAddedCallback(ssl, cb);
 }
 
 void SSLSessionCacheOpenSSL::MarkSSLSessionAsGood(SSL* ssl) {

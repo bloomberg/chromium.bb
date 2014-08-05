@@ -57,6 +57,9 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   }
 
   // SSLClientSocket implementation.
+  virtual bool InSessionCache() const OVERRIDE;
+  virtual void SetHandshakeCompletionCallback(
+      const base::Closure& callback) OVERRIDE;
   virtual void GetSSLCertRequestInfo(
       SSLCertRequestInfo* cert_request_info) OVERRIDE;
   virtual NextProtoStatus GetNextProto(std::string* proto) OVERRIDE;
@@ -106,6 +109,10 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   int Init();
   void DoReadCallback(int result);
   void DoWriteCallback(int result);
+
+  // Compute a unique key string for the SSL session cache.
+  std::string GetSessionCacheKey() const;
+  void OnHandshakeCompletion();
 
   bool DoTransportIO();
   int DoHandshake();
@@ -223,6 +230,12 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
 
   // The service for retrieving Channel ID keys.  May be NULL.
   ChannelIDService* channel_id_service_;
+
+  // Callback that is invoked when the connection finishes.
+  //
+  // Note: this callback will be run in Disconnect(). It will not alter
+  // any member variables of the SSLClientSocketOpenSSL.
+  base::Closure handshake_completion_callback_;
 
   // OpenSSL stuff
   SSL* ssl_;

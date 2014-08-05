@@ -2834,6 +2834,15 @@ bool SSLClientSocketNSS::GetSSLInfo(SSLInfo* ssl_info) {
   return true;
 }
 
+bool SSLClientSocketNSS::InSessionCache() const {
+  // For now, always return true so that SSLConnectJobs are never held back.
+  return true;
+}
+
+void SSLClientSocketNSS::SetHandshakeCompletionCallback(
+    const base::Closure& callback) {
+  NOTIMPLEMENTED();
+}
 void SSLClientSocketNSS::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) {
   EnterFunction("");

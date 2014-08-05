@@ -36,9 +36,9 @@ net::ClientSocketPoolManager* CreateSocketPoolManager(
   // simultaneous connections for WebSockets.
   return new net::ClientSocketPoolManagerImpl(
       params.net_log,
-      params.client_socket_factory ?
-      params.client_socket_factory :
-      net::ClientSocketFactory::GetDefaultFactory(),
+      params.client_socket_factory
+          ? params.client_socket_factory
+          : net::ClientSocketFactory::GetDefaultFactory(),
       params.host_resolver,
       params.cert_verifier,
       params.channel_id_service,
@@ -47,6 +47,7 @@ net::ClientSocketPoolManager* CreateSocketPoolManager(
       params.ssl_session_cache_shard,
       params.proxy_service,
       params.ssl_config_service,
+      params.enable_ssl_connect_job_waiting,
       pool_type);
 }
 

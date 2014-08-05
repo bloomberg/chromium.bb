@@ -604,6 +604,10 @@ const char kEnableSpellingAutoCorrect[]     = "enable-spelling-auto-correct";
 const char kEnableSpellingFeedbackFieldTrial[] =
     "enable-spelling-feedback-field-trial";
 
+// Enables a feature that holds back some SSLConnectJobs in order to
+// minimize the number of full SSL handshakes completed.
+const char kEnableSSLConnectJobWaiting[] = "enable-ssl-connect-job-waiting";
+
 // Enables an experimental hosted app experience.
 const char kEnableStreamlinedHostedApps[]   = "enable-streamlined-hosted-apps";
 

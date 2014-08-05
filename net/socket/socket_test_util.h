@@ -334,6 +334,12 @@ struct SSLSocketDataProvider {
   bool channel_id_sent;
   ChannelIDService* channel_id_service;
   int connection_status;
+  // Indicates that the socket should block in the Connect method.
+  bool should_block_on_connect;
+  // Whether or not the Socket should behave like there is a pre-existing
+  // session to resume. Whether or not such a session is reported as
+  // resumed is controlled by |connection_status|.
+  bool is_in_session_cache;
 };
 
 // A DataProvider where the client must write a request before the reads (e.g.
@@ -637,6 +643,12 @@ class MockClientSocketFactory : public ClientSocketFactory {
     return mock_data_;
   }
 
+  // Note: this method is unsafe; the elements of the returned vector
+  // are not necessarily valid.
+  const std::vector<MockSSLClientSocket*>& ssl_client_sockets() const {
+    return ssl_client_sockets_;
+  }
+
   // ClientSocketFactory
   virtual scoped_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
@@ -657,6 +669,7 @@ class MockClientSocketFactory : public ClientSocketFactory {
  private:
   SocketDataProviderArray<SocketDataProvider> mock_data_;
   SocketDataProviderArray<SSLSocketDataProvider> mock_ssl_data_;
+  std::vector<MockSSLClientSocket*> ssl_client_sockets_;
 };
 
 class MockClientSocket : public SSLClientSocket {
@@ -690,6 +703,8 @@ class MockClientSocket : public SSLClientSocket {
   virtual void SetOmniboxSpeculation() OVERRIDE {}
 
   // SSLClientSocket implementation.
+  virtual bool InSessionCache() const OVERRIDE;
+  virtual void SetHandshakeCompletionCallback(const base::Closure& cb) OVERRIDE;
   virtual void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info)
       OVERRIDE;
   virtual int ExportKeyingMaterial(const base::StringPiece& label,
@@ -718,6 +733,7 @@ class MockClientSocket : public SSLClientSocket {
 
   BoundNetLog net_log_;
 
+ private:
   base::WeakPtrFactory<MockClientSocket> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockClientSocket);
@@ -948,6 +964,8 @@ class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
   virtual bool GetSSLInfo(SSLInfo* ssl_info) OVERRIDE;
 
   // SSLClientSocket implementation.
+  virtual bool InSessionCache() const OVERRIDE;
+  virtual void SetHandshakeCompletionCallback(const base::Closure& cb) OVERRIDE;
   virtual void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info)
       OVERRIDE;
   virtual NextProtoStatus GetNextProto(std::string* proto) OVERRIDE;
@@ -963,10 +981,30 @@ class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
   virtual void set_channel_id_sent(bool channel_id_sent) OVERRIDE;
   virtual ChannelIDService* GetChannelIDService() const OVERRIDE;
 
+  bool reached_connect() const { return reached_connect_; }
+
+  // Resumes the connection of a socket that was paused for testing.
+  // |connect_callback_| should be set before invoking this method.
+  void RestartPausedConnect();
+
  private:
-  static void ConnectCallback(MockSSLClientSocket* ssl_client_socket,
-                              const CompletionCallback& callback,
-                              int rv);
+  enum ConnectState {
+    STATE_NONE,
+    STATE_TRANSPORT_CONNECT,
+    STATE_TRANSPORT_CONNECT_COMPLETE,
+    STATE_SSL_CONNECT,
+    STATE_SSL_CONNECT_COMPLETE,
+  };
+
+  void OnIOComplete(int result);
+
+  // Runs the state transistion loop.
+  int DoConnectLoop(int result);
+
+  int DoTransportConnect();
+  int DoTransportConnectComplete(int result);
+  int DoSSLConnect();
+  int DoSSLConnectComplete(int result);
 
   scoped_ptr<ClientSocketHandle> transport_;
   SSLSocketDataProvider* data_;
@@ -974,6 +1012,16 @@ class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
   bool new_npn_value_;
   bool is_protocol_negotiated_set_;
   NextProto protocol_negotiated_;
+
+  CompletionCallback connect_callback_;
+  // Indicates what state of Connect the socket should enter.
+  ConnectState next_connect_state_;
+  // True if the Connect method has been called on the socket.
+  bool reached_connect_;
+
+  base::Closure handshake_completion_callback_;
+
+  base::WeakPtrFactory<MockSSLClientSocket> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSSLClientSocket);
 };

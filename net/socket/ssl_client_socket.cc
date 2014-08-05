@@ -7,6 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "crypto/ec_private_key.h"
+#include "net/base/host_port_pair.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_config_service.h"
 
@@ -86,6 +87,16 @@ bool SSLClientSocket::WasNpnNegotiated() const {
 
 NextProto SSLClientSocket::GetNegotiatedProtocol() const {
   return protocol_negotiated_;
+}
+
+// static
+std::string SSLClientSocket::CreateSessionCacheKey(
+    const HostPortPair& host_and_port,
+    const std::string& ssl_session_cache_shard) {
+  std::string result = host_and_port.ToString();
+  result.append("/");
+  result.append(ssl_session_cache_shard);
+  return result;
 }
 
 bool SSLClientSocket::IgnoreCertError(int error, int load_flags) {

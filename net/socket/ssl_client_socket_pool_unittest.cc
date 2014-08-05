@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -124,7 +125,8 @@ class SSLClientSocketPoolTest
                                 &host_resolver_,
                                 &transport_socket_pool_,
                                 NULL,
-                                NULL) {
+                                NULL),
+        enable_ssl_connect_job_waiting_(false) {
     scoped_refptr<SSLConfigService> ssl_config_service(
         new SSLConfigServiceDefaults);
     ssl_config_service->GetSSLConfig(&ssl_config_);
@@ -147,6 +149,7 @@ class SSLClientSocketPoolTest
         socks_pool ? &socks_socket_pool_ : NULL,
         http_proxy_pool ? &http_proxy_socket_pool_ : NULL,
         NULL,
+        enable_ssl_connect_job_waiting_,
         NULL));
   }
 
@@ -221,6 +224,8 @@ class SSLClientSocketPoolTest
   SSLConfig ssl_config_;
   scoped_ptr<ClientSocketPoolHistograms> ssl_histograms_;
   scoped_ptr<SSLClientSocketPool> pool_;
+
+  bool enable_ssl_connect_job_waiting_;
 };
 
 INSTANTIATE_TEST_CASE_P(
@@ -228,6 +233,462 @@ INSTANTIATE_TEST_CASE_P(
     SSLClientSocketPoolTest,
     testing::Values(kProtoDeprecatedSPDY2,
                     kProtoSPDY3, kProtoSPDY31, kProtoSPDY4));
+
+// Tests that the final socket will connect even if all sockets
+// prior to it fail.
+//
+// All sockets should wait for the first socket to attempt to
+// connect. Once it fails to connect, all other sockets should
+// attempt to connect. All should fail, except the final socket.
+TEST_P(SSLClientSocketPoolTest, AllSocketsFailButLast) {
+  // Although we request four sockets, the first three socket connect
+  // failures cause the socket pool to create three more sockets because
+  // there are pending requests.
+  StaticSocketDataProvider data1;
+  StaticSocketDataProvider data2;
+  StaticSocketDataProvider data3;
+  StaticSocketDataProvider data4;
+  StaticSocketDataProvider data5;
+  StaticSocketDataProvider data6;
+  StaticSocketDataProvider data7;
+  socket_factory_.AddSocketDataProvider(&data1);
+  socket_factory_.AddSocketDataProvider(&data2);
+  socket_factory_.AddSocketDataProvider(&data3);
+  socket_factory_.AddSocketDataProvider(&data4);
+  socket_factory_.AddSocketDataProvider(&data5);
+  socket_factory_.AddSocketDataProvider(&data6);
+  socket_factory_.AddSocketDataProvider(&data7);
+  SSLSocketDataProvider ssl(ASYNC, ERR_SSL_PROTOCOL_ERROR);
+  ssl.is_in_session_cache = false;
+  SSLSocketDataProvider ssl2(ASYNC, ERR_SSL_PROTOCOL_ERROR);
+  ssl2.is_in_session_cache = false;
+  SSLSocketDataProvider ssl3(ASYNC, ERR_SSL_PROTOCOL_ERROR);
+  ssl3.is_in_session_cache = false;
+  SSLSocketDataProvider ssl4(ASYNC, OK);
+  ssl4.is_in_session_cache = false;
+  SSLSocketDataProvider ssl5(ASYNC, OK);
+  ssl5.is_in_session_cache = false;
+  SSLSocketDataProvider ssl6(ASYNC, OK);
+  ssl6.is_in_session_cache = false;
+  SSLSocketDataProvider ssl7(ASYNC, OK);
+  ssl7.is_in_session_cache = false;
+
+  socket_factory_.AddSSLSocketDataProvider(&ssl);
+  socket_factory_.AddSSLSocketDataProvider(&ssl2);
+  socket_factory_.AddSSLSocketDataProvider(&ssl3);
+  socket_factory_.AddSSLSocketDataProvider(&ssl4);
+  socket_factory_.AddSSLSocketDataProvider(&ssl5);
+  socket_factory_.AddSSLSocketDataProvider(&ssl6);
+  socket_factory_.AddSSLSocketDataProvider(&ssl7);
+
+  enable_ssl_connect_job_waiting_ = true;
+  CreatePool(true, false, false);
+
+  scoped_refptr<SSLSocketParams> params1 =
+      SSLParams(ProxyServer::SCHEME_DIRECT, false);
+  scoped_refptr<SSLSocketParams> params2 =
+      SSLParams(ProxyServer::SCHEME_DIRECT, false);
+  scoped_refptr<SSLSocketParams> params3 =
+      SSLParams(ProxyServer::SCHEME_DIRECT, false);
+  scoped_refptr<SSLSocketParams> params4 =
+      SSLParams(ProxyServer::SCHEME_DIRECT, false);
+  ClientSocketHandle handle1;
+  ClientSocketHandle handle2;
+  ClientSocketHandle handle3;
+  ClientSocketHandle handle4;
+  TestCompletionCallback callback1;
+  TestCompletionCallback callback2;
+  TestCompletionCallback callback3;
+  TestCompletionCallback callback4;
+
+  handle1.Init(
+      "b", params1, MEDIUM, callback1.callback(), pool_.get(), BoundNetLog());
+  handle2.Init(
+      "b", params2, MEDIUM, callback2.callback(), pool_.get(), BoundNetLog());
+  handle3.Init(
+      "b", params3, MEDIUM, callback3.callback(), pool_.get(), BoundNetLog());
+  handle4.Init(
+      "b", params4, MEDIUM, callback4.callback(), pool_.get(), BoundNetLog());
+
+  base::RunLoop().RunUntilIdle();
+
+  // Only the last socket should have connected.
+  EXPECT_FALSE(handle1.socket());
+  EXPECT_FALSE(handle2.socket());
+  EXPECT_FALSE(handle3.socket());
+  EXPECT_TRUE(handle4.socket()->IsConnected());
+}
+
+// Tests that sockets will still connect in parallel if the
+// EnableSSLConnectJobWaiting flag is not enabled.
+TEST_P(SSLClientSocketPoolTest, SocketsConnectWithoutFlag) {
+  StaticSocketDataProvider data1;
+  StaticSocketDataProvider data2;
+  StaticSocketDataProvider data3;
+  socket_factory_.AddSocketDataProvider(&data1);
+  socket_factory_.AddSocketDataProvider(&data2);
+  socket_factory_.AddSocketDataProvider(&data3);
+
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  ssl.is_in_session_cache = false;
+  ssl.should_block_on_connect = true;
+  SSLSocketDataProvider ssl2(ASYNC, OK);
+  ssl2.is_in_session_cache = false;
+  ssl2.should_block_on_connect = true;
+  SSLSocketDataProvider ssl3(ASYNC, OK);
+  ssl3.is_in_session_cache = false;
+  ssl3.should_block_on_connect = true;
+  socket_factory_.AddSSLSocketDataProvider(&ssl);
+  socket_factory_.AddSSLSocketDataProvider(&ssl2);
+  socket_factory_.AddSSLSocketDataProvider(&ssl3);
+
+  CreatePool(true, false, false);
+
+  scoped_refptr<SSLSocketParams> params1 =
+      SSLParams(ProxyServer::SCHEME_DIRECT, false);
+  scoped_refptr<SSLSocketParams> params2 =
+      SSLParams(ProxyServer::SCHEME_DIRECT, false);
+  scoped_refptr<SSLSocketParams> params3 =
+      SSLParams(ProxyServer::SCHEME_DIRECT, false);
+  ClientSocketHandle handle1;
+  ClientSocketHandle handle2;
+  ClientSocketHandle handle3;
+  TestCompletionCallback callback1;
+  TestCompletionCallback callback2;
+  TestCompletionCallback callback3;
+
+  handle1.Init(
+      "b", params1, MEDIUM, callback1.callback(), pool_.get(), BoundNetLog());
+  handle2.Init(
+      "b", params2, MEDIUM, callback2.callback(), pool_.get(), BoundNetLog());
+  handle3.Init(
+      "b", params3, MEDIUM, callback3.callback(), pool_.get(), BoundNetLog());
+
+  base::RunLoop().RunUntilIdle();
+
+  std::vector<MockSSLClientSocket*> sockets =
+      socket_factory_.ssl_client_sockets();
+
+  // All sockets should have started their connections.
+  for (std::vector<MockSSLClientSocket*>::iterator it = sockets.begin();
+       it != sockets.end();
+       ++it) {
+    EXPECT_TRUE((*it)->reached_connect());
+  }
+
+  // Resume connecting all of the sockets.
+  for (std::vector<MockSSLClientSocket*>::iterator it = sockets.begin();
+       it != sockets.end();
+       ++it) {
+    (*it)->RestartPausedConnect();
+  }
+
+  callback1.WaitForResult();
+  callback2.WaitForResult();
+  callback3.WaitForResult();
+
+  EXPECT_TRUE(handle1.socket()->IsConnected());
+  EXPECT_TRUE(handle2.socket()->IsConnected());
+  EXPECT_TRUE(handle3.socket()->IsConnected());
+}
+
+// Tests that the pool deleting an SSLConnectJob will not cause a crash,
+// or prevent pending sockets from connecting.
+TEST_P(SSLClientSocketPoolTest, DeletedSSLConnectJob) {
+  StaticSocketDataProvider data1;
+  StaticSocketDataProvider data2;
+  StaticSocketDataProvider data3;
+  socket_factory_.AddSocketDataProvider(&data1);
+  socket_factory_.AddSocketDataProvider(&data2);
+  socket_factory_.AddSocketDataProvider(&data3);
+
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  ssl.is_in_session_cache = false;
+  ssl.should_block_on_connect = true;
+  SSLSocketDataProvider ssl2(ASYNC, OK);
+  ssl2.is_in_session_cache = false;
+  SSLSocketDataProvider ssl3(ASYNC, OK);
+  ssl3.is_in_session_cache = false;
+  socket_factory_.AddSSLSocketDataProvider(&ssl);
+  socket_factory_.AddSSLSocketDataProvider(&ssl2);
+  socket_factory_.AddSSLSocketDataProvider(&ssl3);
+
+  enable_ssl_connect_job_waiting_ = true;
+  CreatePool(true, false, false);
+
+  scoped_refptr<SSLSocketParams> params1 =
+      SSLParams(ProxyServer::SCHEME_DIRECT, false);
+  scoped_refptr<SSLSocketParams> params2 =
+      SSLParams(ProxyServer::SCHEME_DIRECT, false);
+  scoped_refptr<SSLSocketParams> params3 =
+      SSLParams(ProxyServer::SCHEME_DIRECT, false);
+  ClientSocketHandle handle1;
+  ClientSocketHandle handle2;
+  ClientSocketHandle handle3;
+  TestCompletionCallback callback1;
+  TestCompletionCallback callback2;
+  TestCompletionCallback callback3;
+
+  handle1.Init(
+      "b", params1, MEDIUM, callback1.callback(), pool_.get(), BoundNetLog());
+  handle2.Init(
+      "b", params2, MEDIUM, callback2.callback(), pool_.get(), BoundNetLog());
+  handle3.Init(
+      "b", params3, MEDIUM, callback3.callback(), pool_.get(), BoundNetLog());
+
+  // Allow the connections to proceed until the first socket has started
+  // connecting.
+  base::RunLoop().RunUntilIdle();
+
+  std::vector<MockSSLClientSocket*> sockets =
+      socket_factory_.ssl_client_sockets();
+
+  pool_->CancelRequest("b", &handle2);
+
+  sockets[0]->RestartPausedConnect();
+
+  callback1.WaitForResult();
+  callback3.WaitForResult();
+
+  EXPECT_TRUE(handle1.socket()->IsConnected());
+  EXPECT_FALSE(handle2.socket());
+  EXPECT_TRUE(handle3.socket()->IsConnected());
+}
+
+// Tests that all pending sockets still connect when the pool deletes a pending
+// SSLConnectJob which immediately followed a failed leading connection.
+TEST_P(SSLClientSocketPoolTest, DeletedSocketAfterFail) {
+  StaticSocketDataProvider data1;
+  StaticSocketDataProvider data2;
+  StaticSocketDataProvider data3;
+  StaticSocketDataProvider data4;
+  socket_factory_.AddSocketDataProvider(&data1);
+  socket_factory_.AddSocketDataProvider(&data2);
+  socket_factory_.AddSocketDataProvider(&data3);
+  socket_factory_.AddSocketDataProvider(&data4);
+
+  SSLSocketDataProvider ssl(ASYNC, ERR_SSL_PROTOCOL_ERROR);
+  ssl.is_in_session_cache = false;
+  ssl.should_block_on_connect = true;
+  SSLSocketDataProvider ssl2(ASYNC, OK);
+  ssl2.is_in_session_cache = false;
+  SSLSocketDataProvider ssl3(ASYNC, OK);
+  ssl3.is_in_session_cache = false;
+  SSLSocketDataProvider ssl4(ASYNC, OK);
+  ssl4.is_in_session_cache = false;
+  socket_factory_.AddSSLSocketDataProvider(&ssl);
+  socket_factory_.AddSSLSocketDataProvider(&ssl2);
+  socket_factory_.AddSSLSocketDataProvider(&ssl3);
+  socket_factory_.AddSSLSocketDataProvider(&ssl4);
+
+  enable_ssl_connect_job_waiting_ = true;
+  CreatePool(true, false, false);
+
+  scoped_refptr<SSLSocketParams> params1 =
+      SSLParams(ProxyServer::SCHEME_DIRECT, false);
+  scoped_refptr<SSLSocketParams> params2 =
+      SSLParams(ProxyServer::SCHEME_DIRECT, false);
+  scoped_refptr<SSLSocketParams> params3 =
+      SSLParams(ProxyServer::SCHEME_DIRECT, false);
+  ClientSocketHandle handle1;
+  ClientSocketHandle handle2;
+  ClientSocketHandle handle3;
+  TestCompletionCallback callback1;
+  TestCompletionCallback callback2;
+  TestCompletionCallback callback3;
+
+  handle1.Init(
+      "b", params1, MEDIUM, callback1.callback(), pool_.get(), BoundNetLog());
+  handle2.Init(
+      "b", params2, MEDIUM, callback2.callback(), pool_.get(), BoundNetLog());
+  handle3.Init(
+      "b", params3, MEDIUM, callback3.callback(), pool_.get(), BoundNetLog());
+
+  // Allow the connections to proceed until the first socket has started
+  // connecting.
+  base::RunLoop().RunUntilIdle();
+
+  std::vector<MockSSLClientSocket*> sockets =
+      socket_factory_.ssl_client_sockets();
+
+  EXPECT_EQ(3u, sockets.size());
+  EXPECT_TRUE(sockets[0]->reached_connect());
+  EXPECT_FALSE(handle1.socket());
+
+  pool_->CancelRequest("b", &handle2);
+
+  sockets[0]->RestartPausedConnect();
+
+  callback1.WaitForResult();
+  callback3.WaitForResult();
+
+  EXPECT_FALSE(handle1.socket());
+  EXPECT_FALSE(handle2.socket());
+  EXPECT_TRUE(handle3.socket()->IsConnected());
+}
+
+// Make sure that sockets still connect after the leader socket's
+// connection fails.
+TEST_P(SSLClientSocketPoolTest, SimultaneousConnectJobsFail) {
+  StaticSocketDataProvider data1;
+  StaticSocketDataProvider data2;
+  StaticSocketDataProvider data3;
+  StaticSocketDataProvider data4;
+  StaticSocketDataProvider data5;
+  socket_factory_.AddSocketDataProvider(&data1);
+  socket_factory_.AddSocketDataProvider(&data2);
+  socket_factory_.AddSocketDataProvider(&data3);
+  socket_factory_.AddSocketDataProvider(&data4);
+  socket_factory_.AddSocketDataProvider(&data5);
+  SSLSocketDataProvider ssl(ASYNC, ERR_SSL_PROTOCOL_ERROR);
+  ssl.is_in_session_cache = false;
+  ssl.should_block_on_connect = true;
+  SSLSocketDataProvider ssl2(ASYNC, OK);
+  ssl2.is_in_session_cache = false;
+  ssl2.should_block_on_connect = true;
+  SSLSocketDataProvider ssl3(ASYNC, OK);
+  ssl3.is_in_session_cache = false;
+  SSLSocketDataProvider ssl4(ASYNC, OK);
+  ssl4.is_in_session_cache = false;
+  SSLSocketDataProvider ssl5(ASYNC, OK);
+  ssl5.is_in_session_cache = false;
+
+  socket_factory_.AddSSLSocketDataProvider(&ssl);
+  socket_factory_.AddSSLSocketDataProvider(&ssl2);
+  socket_factory_.AddSSLSocketDataProvider(&ssl3);
+  socket_factory_.AddSSLSocketDataProvider(&ssl4);
+  socket_factory_.AddSSLSocketDataProvider(&ssl5);
+
+  enable_ssl_connect_job_waiting_ = true;
+  CreatePool(true, false, false);
+  scoped_refptr<SSLSocketParams> params1 =
+      SSLParams(ProxyServer::SCHEME_DIRECT, false);
+  scoped_refptr<SSLSocketParams> params2 =
+      SSLParams(ProxyServer::SCHEME_DIRECT, false);
+  scoped_refptr<SSLSocketParams> params3 =
+      SSLParams(ProxyServer::SCHEME_DIRECT, false);
+  scoped_refptr<SSLSocketParams> params4 =
+      SSLParams(ProxyServer::SCHEME_DIRECT, false);
+  ClientSocketHandle handle1;
+  ClientSocketHandle handle2;
+  ClientSocketHandle handle3;
+  ClientSocketHandle handle4;
+  TestCompletionCallback callback1;
+  TestCompletionCallback callback2;
+  TestCompletionCallback callback3;
+  TestCompletionCallback callback4;
+  handle1.Init(
+      "b", params1, MEDIUM, callback1.callback(), pool_.get(), BoundNetLog());
+  handle2.Init(
+      "b", params2, MEDIUM, callback2.callback(), pool_.get(), BoundNetLog());
+  handle3.Init(
+      "b", params3, MEDIUM, callback3.callback(), pool_.get(), BoundNetLog());
+  handle4.Init(
+      "b", params4, MEDIUM, callback4.callback(), pool_.get(), BoundNetLog());
+
+  base::RunLoop().RunUntilIdle();
+
+  std::vector<MockSSLClientSocket*> sockets =
+      socket_factory_.ssl_client_sockets();
+
+  std::vector<MockSSLClientSocket*>::const_iterator it = sockets.begin();
+
+  // The first socket should have had Connect called on it.
+  EXPECT_TRUE((*it)->reached_connect());
+  ++it;
+
+  // No other socket should have reached connect yet.
+  for (; it != sockets.end(); ++it)
+    EXPECT_FALSE((*it)->reached_connect());
+
+  // Allow the first socket to resume it's connection process.
+  sockets[0]->RestartPausedConnect();
+
+  base::RunLoop().RunUntilIdle();
+
+  // The second socket should have reached connect.
+  EXPECT_TRUE(sockets[1]->reached_connect());
+
+  // Allow the second socket to continue its connection.
+  sockets[1]->RestartPausedConnect();
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(handle1.socket());
+  EXPECT_TRUE(handle2.socket()->IsConnected());
+  EXPECT_TRUE(handle3.socket()->IsConnected());
+  EXPECT_TRUE(handle4.socket()->IsConnected());
+}
+
+// Make sure that no sockets connect before the "leader" socket,
+// given that the leader has a successful connection.
+TEST_P(SSLClientSocketPoolTest, SimultaneousConnectJobsSuccess) {
+  StaticSocketDataProvider data1;
+  StaticSocketDataProvider data2;
+  StaticSocketDataProvider data3;
+  socket_factory_.AddSocketDataProvider(&data1);
+  socket_factory_.AddSocketDataProvider(&data2);
+  socket_factory_.AddSocketDataProvider(&data3);
+
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  ssl.is_in_session_cache = false;
+  ssl.should_block_on_connect = true;
+  SSLSocketDataProvider ssl2(ASYNC, OK);
+  ssl2.is_in_session_cache = false;
+  SSLSocketDataProvider ssl3(ASYNC, OK);
+  ssl3.is_in_session_cache = false;
+  socket_factory_.AddSSLSocketDataProvider(&ssl);
+  socket_factory_.AddSSLSocketDataProvider(&ssl2);
+  socket_factory_.AddSSLSocketDataProvider(&ssl3);
+
+  enable_ssl_connect_job_waiting_ = true;
+  CreatePool(true, false, false);
+
+  scoped_refptr<SSLSocketParams> params1 =
+      SSLParams(ProxyServer::SCHEME_DIRECT, false);
+  scoped_refptr<SSLSocketParams> params2 =
+      SSLParams(ProxyServer::SCHEME_DIRECT, false);
+  scoped_refptr<SSLSocketParams> params3 =
+      SSLParams(ProxyServer::SCHEME_DIRECT, false);
+  ClientSocketHandle handle1;
+  ClientSocketHandle handle2;
+  ClientSocketHandle handle3;
+  TestCompletionCallback callback1;
+  TestCompletionCallback callback2;
+  TestCompletionCallback callback3;
+
+  handle1.Init(
+      "b", params1, MEDIUM, callback1.callback(), pool_.get(), BoundNetLog());
+  handle2.Init(
+      "b", params2, MEDIUM, callback2.callback(), pool_.get(), BoundNetLog());
+  handle3.Init(
+      "b", params3, MEDIUM, callback3.callback(), pool_.get(), BoundNetLog());
+
+  // Allow the connections to proceed until the first socket has finished
+  // connecting.
+  base::RunLoop().RunUntilIdle();
+
+  std::vector<MockSSLClientSocket*> sockets =
+      socket_factory_.ssl_client_sockets();
+
+  std::vector<MockSSLClientSocket*>::const_iterator it = sockets.begin();
+  // The first socket should have reached connect.
+  EXPECT_TRUE((*it)->reached_connect());
+  ++it;
+  // No other socket should have reached connect yet.
+  for (; it != sockets.end(); ++it)
+    EXPECT_FALSE((*it)->reached_connect());
+
+  sockets[0]->RestartPausedConnect();
+
+  callback1.WaitForResult();
+  callback2.WaitForResult();
+  callback3.WaitForResult();
+
+  EXPECT_TRUE(handle1.socket()->IsConnected());
+  EXPECT_TRUE(handle2.socket()->IsConnected());
+  EXPECT_TRUE(handle3.socket()->IsConnected());
+}
 
 TEST_P(SSLClientSocketPoolTest, TCPFail) {
   StaticSocketDataProvider data;

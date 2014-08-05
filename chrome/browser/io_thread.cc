@@ -432,6 +432,7 @@ SystemRequestContextLeakChecker::~SystemRequestContextLeakChecker() {
 
 IOThread::Globals::Globals()
     : system_request_context_leak_checker(this),
+      enable_ssl_connect_job_waiting(false),
       ignore_certificate_errors(false),
       testing_fixed_http_port(0),
       testing_fixed_https_port(0),
@@ -694,6 +695,8 @@ void IOThread::InitAsync() {
         command_line.GetSwitchValueASCII(switches::kHostRules));
     TRACE_EVENT_END0("startup", "IOThread::InitAsync:SetRulesFromString");
   }
+  if (command_line.HasSwitch(switches::kEnableSSLConnectJobWaiting))
+    globals_->enable_ssl_connect_job_waiting = true;
   if (command_line.HasSwitch(switches::kIgnoreCertificateErrors))
     globals_->ignore_certificate_errors = true;
   if (command_line.HasSwitch(switches::kTestingFixedHttpPort)) {
@@ -1010,6 +1013,8 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       globals.http_server_properties->GetWeakPtr();
   params->network_delegate = globals.system_network_delegate.get();
   params->host_mapping_rules = globals.host_mapping_rules.get();
+  params->enable_ssl_connect_job_waiting =
+      globals.enable_ssl_connect_job_waiting;
   params->ignore_certificate_errors = globals.ignore_certificate_errors;
   params->testing_fixed_http_port = globals.testing_fixed_http_port;
   params->testing_fixed_https_port = globals.testing_fixed_https_port;

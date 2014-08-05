@@ -658,11 +658,14 @@ class SSLClientSocketTest : public PlatformTest {
   SSLClientSocketTest()
       : socket_factory_(ClientSocketFactory::GetDefaultFactory()),
         cert_verifier_(new MockCertVerifier),
-        transport_security_state_(new TransportSecurityState) {
+        transport_security_state_(new TransportSecurityState),
+        ran_handshake_completion_callback_(false) {
     cert_verifier_->set_default_result(OK);
     context_.cert_verifier = cert_verifier_.get();
     context_.transport_security_state = transport_security_state_.get();
   }
+
+  void RecordCompletedHandshake() { ran_handshake_completion_callback_ = true; }
 
  protected:
   // The address of the spawned test server, after calling StartTestServer().
@@ -740,6 +743,7 @@ class SSLClientSocketTest : public PlatformTest {
   SSLClientSocketContext context_;
   scoped_ptr<SSLClientSocket> sock_;
   CapturingNetLog log_;
+  bool ran_handshake_completion_callback_;
 
  private:
   scoped_ptr<StreamSocket> transport_;
@@ -2645,6 +2649,89 @@ TEST_F(SSLClientSocketTest, ReuseStates) {
   // SSL_pending, although the former isn't actually implemented or perhaps
   // attempt to read one byte extra.
 }
+
+#if defined(USE_OPENSSL)
+
+TEST_F(SSLClientSocketTest, HandshakeCallbackIsRun_WithFailure) {
+  SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS,
+                                SpawnedTestServer::kLocalhost,
+                                base::FilePath());
+  ASSERT_TRUE(test_server.Start());
+
+  AddressList addr;
+  ASSERT_TRUE(test_server.GetAddressList(&addr));
+
+  TestCompletionCallback callback;
+  scoped_ptr<StreamSocket> real_transport(
+      new TCPClientSocket(addr, NULL, NetLog::Source()));
+  scoped_ptr<SynchronousErrorStreamSocket> transport(
+      new SynchronousErrorStreamSocket(real_transport.Pass()));
+  int rv = callback.GetResult(transport->Connect(callback.callback()));
+  EXPECT_EQ(OK, rv);
+
+  // Disable TLS False Start to avoid handshake non-determinism.
+  SSLConfig ssl_config;
+  ssl_config.false_start_enabled = false;
+
+  SynchronousErrorStreamSocket* raw_transport = transport.get();
+  scoped_ptr<SSLClientSocket> sock(
+      CreateSSLClientSocket(transport.PassAs<StreamSocket>(),
+                            test_server.host_port_pair(),
+                            ssl_config));
+
+  sock->SetHandshakeCompletionCallback(base::Bind(
+      &SSLClientSocketTest::RecordCompletedHandshake, base::Unretained(this)));
+
+  raw_transport->SetNextWriteError(ERR_CONNECTION_RESET);
+
+  rv = callback.GetResult(sock->Connect(callback.callback()));
+  EXPECT_EQ(ERR_CONNECTION_RESET, rv);
+  EXPECT_FALSE(sock->IsConnected());
+
+  EXPECT_TRUE(ran_handshake_completion_callback_);
+}
+
+// Tests that the completion callback is run when an SSL connection
+// completes successfully.
+TEST_F(SSLClientSocketTest, HandshakeCallbackIsRun_WithSuccess) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS,
+                                SpawnedTestServer::kLocalhost,
+                                base::FilePath());
+  ASSERT_TRUE(test_server.Start());
+
+  AddressList addr;
+  ASSERT_TRUE(test_server.GetAddressList(&addr));
+
+  scoped_ptr<StreamSocket> transport(
+      new TCPClientSocket(addr, NULL, NetLog::Source()));
+
+  TestCompletionCallback callback;
+  int rv = transport->Connect(callback.callback());
+  if (rv == ERR_IO_PENDING)
+    rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  SSLConfig ssl_config = kDefaultSSLConfig;
+  ssl_config.false_start_enabled = false;
+
+  scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
+      transport.Pass(), test_server.host_port_pair(), ssl_config));
+
+  sock->SetHandshakeCompletionCallback(base::Bind(
+      &SSLClientSocketTest::RecordCompletedHandshake, base::Unretained(this)));
+
+  if (sock->IsConnected())
+    LOG(ERROR) << "SSL Socket prematurely connected";
+
+  rv = callback.GetResult(sock->Connect(callback.callback()));
+
+  EXPECT_EQ(OK, rv);
+  EXPECT_TRUE(sock->IsConnected());
+  EXPECT_TRUE(ran_handshake_completion_callback_);
+}
+
+#endif  // defined(USE_OPENSSL)
 
 TEST_F(SSLClientSocketFalseStartTest, FalseStartEnabled) {
   // False Start requires NPN and a forward-secret cipher suite.

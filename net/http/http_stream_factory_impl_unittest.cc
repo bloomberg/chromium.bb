@@ -403,7 +403,7 @@ CapturePreconnectsSSLSocketPool::CapturePreconnectsSocketPool(
     CertVerifier* cert_verifier)
     : SSLClientSocketPool(0,
                           0,
-                          NULL,           // ssl_histograms
+                          NULL,  // ssl_histograms
                           host_resolver,
                           cert_verifier,
                           NULL,           // channel_id_store
@@ -414,9 +414,11 @@ CapturePreconnectsSSLSocketPool::CapturePreconnectsSocketPool(
                           NULL,           // transport_socket_pool
                           NULL,
                           NULL,
-                          NULL,           // ssl_config_service
-                          NULL),          // net_log
-      last_num_streams_(-1) {}
+                          NULL,   // ssl_config_service
+                          false,  // enable_ssl_connect_job_waiting
+                          NULL),  // net_log
+      last_num_streams_(-1) {
+}
 
 class HttpStreamFactoryTest : public ::testing::Test,
                               public ::testing::WithParamInterface<NextProto> {

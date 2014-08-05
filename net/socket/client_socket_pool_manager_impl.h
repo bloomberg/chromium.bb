@@ -67,6 +67,7 @@ class ClientSocketPoolManagerImpl : public base::NonThreadSafe,
                               const std::string& ssl_session_cache_shard,
                               ProxyService* proxy_service,
                               SSLConfigService* ssl_config_service,
+                              bool enable_ssl_connect_job_waiting,
                               HttpNetworkSession::SocketPoolType pool_type);
   virtual ~ClientSocketPoolManagerImpl();
 
@@ -114,6 +115,7 @@ class ClientSocketPoolManagerImpl : public base::NonThreadSafe,
   const std::string ssl_session_cache_shard_;
   ProxyService* const proxy_service_;
   const scoped_refptr<SSLConfigService> ssl_config_service_;
+  bool enable_ssl_connect_job_waiting_;
   const HttpNetworkSession::SocketPoolType pool_type_;
 
   // Note: this ordering is important.

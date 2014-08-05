@@ -585,7 +585,9 @@ CaptureGroupNameSSLSocketPool::CaptureGroupNameSocketPool(
                           NULL,
                           NULL,
                           NULL,
-                          NULL) {}
+                          false,
+                          NULL) {
+}
 
 //-----------------------------------------------------------------------------
 
