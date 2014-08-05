@@ -1,5 +1,11 @@
 atwilson@chromium.org
 tim@chromium.org
 rogerta@chromium.org
+
 # Temporary, for refactoring purposes only.
 blundell@chromium.org
+
+per-file easy_unlock_*=isherman@chromium.org
+per-file easy_unlock_*=tbarzic@chromium.org
+per-file easy_unlock_*=tengs@chromium.org
+per-file easy_unlock_*=xiyuan@chromium.org
