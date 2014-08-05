@@ -100,6 +100,19 @@ class TestFileHandlerTest(unittest.TestCase):
         response = self.testapp.post('/testfile/upload', params=params, upload_files=upload_files)
         self.assertEqual(response.status_int, 200)
 
+        # Download file using deprecated master name.
+        params = collections.OrderedDict([
+            (testfilehandler.PARAM_BUILDER, builder),
+            (testfilehandler.PARAM_MASTER, master['name']),
+            (testfilehandler.PARAM_TEST_TYPE, test_type),
+            (testfilehandler.PARAM_BUILD_NUMBER, '123'),
+            (testfilehandler.PARAM_NAME, 'full_results.json')
+        ])
+        response = self.testapp.get('/testfile', params=params)
+        self.assertEqual(response.status_int, 200)
+        response_json = json.loads(response.normal_body)
+        self.assertEqual(response_json['chromium_revision'], '67890')
+
         # Download file using new-style name.
         params = collections.OrderedDict([
             (testfilehandler.PARAM_BUILDER, builder),

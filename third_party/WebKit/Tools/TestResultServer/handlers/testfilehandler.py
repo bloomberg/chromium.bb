@@ -221,7 +221,7 @@ class GetFile(webapp2.RequestHandler):
                 return
             json, date = self._get_file_content(master_data['url_name'], builder, test_type, build_number, name)
             if json is None:
-                json_date = self._get_file_content(master_data['name'], builder, test_type, build_number, name)
+                json, date = self._get_file_content(master_data['name'], builder, test_type, build_number, name)
 
         if json:
             json = _replace_jsonp_callback(json, callback_name)
