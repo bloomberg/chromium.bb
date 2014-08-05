@@ -186,12 +186,12 @@ CastVideoElement.prototype = {
   play: function() {
     var play = function() {
       this.castMedia_.play(null,
-          function () {
+          function() {
             this.playInProgress_ = false;
           }.wrap(this),
-          function () {
+          function(error) {
             this.playInProgress_ = false;
-            this.onCastCommandError_();
+            this.onCastCommandError_(error);
           }.wrap(this));
     }.wrap(this);
 
@@ -212,12 +212,12 @@ CastVideoElement.prototype = {
 
     this.pauseInProgress_ = true;
     this.castMedia_.pause(null,
-        function () {
+        function() {
           this.pauseInProgress_ = false;
         }.wrap(this),
-        function () {
+        function(error) {
           this.pauseInProgress_ = false;
-          this.onCastCommandError_();
+          this.onCastCommandError_(error);
         }.wrap(this));
   },
 
@@ -256,8 +256,10 @@ CastVideoElement.prototype = {
                   opt_callback();
               }.bind(this));
         }.bind(this)).catch(function(error) {
+          this.unloadMedia_();
+          this.dispatchEvent(new Event('error'));
           console.error('Cast failed.', error.stack || error);
-        });
+        }.bind(this));
   },
 
   /**
@@ -267,8 +269,8 @@ CastVideoElement.prototype = {
   unloadMedia_: function() {
     if (this.castMedia_) {
       this.castMedia_.stop(null,
-          function () {},
-          function () {
+          function() {},
+          function(error) {
             // Ignores session error, since session may already be closed.
             if (error.code !== chrome.cast.ErrorCode.SESSION_ERROR)
               this.onCastCommandError_(error);
@@ -354,11 +356,13 @@ CastVideoElement.prototype = {
 
   /**
    * This method should be called when a media command to cast is failed.
+   * @param {Object} error Object representing the error.
    * @private
    */
-  onCastCommandError_: function() {
+  onCastCommandError_: function(error) {
     this.unloadMedia_();
     this.dispatchEvent(new Event('error'));
+    console.error('Error on sending command to cast.', error.stack || error);
   },
 
   /**
