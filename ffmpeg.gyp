@@ -171,6 +171,21 @@
             'FF_API_DESTRUCT_PACKET=0',
             'FF_API_GET_BUFFER=0',
           ],
+          'variables': {
+            'clang_warning_flags': [
+              '-Wno-absolute-value',
+              # ffmpeg uses its own deprecated functions.
+              '-Wno-deprecated-declarations',
+              # ffmpeg doesn't care about pointer constness.
+              '-Wno-incompatible-pointer-types',
+              # ffmpeg doesn't follow usual parentheses conventions.
+              '-Wno-parentheses',
+              # ffmpeg doesn't care about pointer signedness.
+              '-Wno-pointer-sign',
+              # ffmpeg doesn't believe in exhaustive switch statements.
+              '-Wno-switch',
+            ],
+          },
           'cflags': [
             '-fPIC',
             '-fomit-frame-pointer',
@@ -183,48 +198,7 @@
                 'ffmpeg_yasm',
               ],
             }],
-            ['clang == 1', {
-              'xcode_settings': {
-                'WARNING_CFLAGS': [
-                  '-Wno-absolute-value',
-                  # ffmpeg uses its own deprecated functions.
-                  '-Wno-deprecated-declarations',
-                  # ffmpeg doesn't care about pointer constness.
-                  '-Wno-incompatible-pointer-types',
-                  # ffmpeg doesn't follow usual parentheses conventions.
-                  '-Wno-parentheses',
-                  # ffmpeg doesn't care about pointer signedness.
-                  '-Wno-pointer-sign',
-                  # ffmpeg doesn't believe in exhaustive switch statements.
-                  '-Wno-switch',
-                ],
-              },
-              'cflags': [
-                '-Wno-absolute-value',
-                '-Wno-incompatible-pointer-types',
-                '-Wno-logical-op-parentheses',
-                '-Wno-parentheses',
-                '-Wno-pointer-sign',
-                '-Wno-switch',
-                # Don't emit warnings for gcc -f flags clang doesn't implement.
-                '-Qunused-arguments',
-              ],
-              'conditions': [
-                ['ffmpeg_branding == "Chrome" or ffmpeg_branding == "ChromeOS"', {
-                  'xcode_settings': {
-                    'WARNING_CFLAGS': [
-                      # Clang doesn't support __attribute__((flatten)),
-                      # http://llvm.org/PR7559
-                      # This is used in the h264 decoder.
-                      '-Wno-attributes',
-                    ],
-                  },
-                  'cflags': [
-                    '-Wno-attributes',
-                  ],
-                }],
-              ],
-            }, {
+            ['clang != 1', {
               'cflags': [
                 # gcc doesn't have flags for specific warnings, so disable them
                 # all.
