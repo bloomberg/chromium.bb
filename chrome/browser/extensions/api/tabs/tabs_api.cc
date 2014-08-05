@@ -33,7 +33,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
-#include "chrome/browser/ui/apps/chrome_app_window_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -496,10 +495,8 @@ bool WindowsCreateFunction::RunSync() {
       create_params.window_type = AppWindow::WINDOW_TYPE_V1_PANEL;
       create_params.window_spec.bounds = window_bounds;
       create_params.focused = saw_focus_key && focused;
-      AppWindow* app_window = new AppWindow(window_profile,
-                                            new ChromeAppDelegate(),
-                                            new ChromeAppWindowDelegate(),
-                                            extension());
+      AppWindow* app_window =
+          new AppWindow(window_profile, new ChromeAppDelegate(), extension());
       AshPanelContents* ash_panel_contents = new AshPanelContents(app_window);
       app_window->Init(urls[0], ash_panel_contents, create_params);
       SetResult(ash_panel_contents->GetExtensionWindowController()

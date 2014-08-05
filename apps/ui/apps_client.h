@@ -1,11 +1,13 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_APPS_CLIENT_H_
-#define APPS_APPS_CLIENT_H_
+#ifndef APPS_UI_APPS_CLIENT_H_
+#define APPS_UI_APPS_CLIENT_H_
 
 #include <vector>
+
+#include "apps/app_window.h"
 
 namespace content {
 class BrowserContext;
@@ -17,7 +19,7 @@ class Extension;
 
 namespace apps {
 
-class AppWindow;
+class NativeAppWindow;
 
 // Sets up global state for the apps system. Should be Set() once in each
 // process. This should be implemented by the client of the apps system.
@@ -31,6 +33,11 @@ class AppsClient {
   virtual AppWindow* CreateAppWindow(
       content::BrowserContext* context,
       const extensions::Extension* extension) = 0;
+
+  // Creates a new apps::NativeAppWindow for |window|.
+  virtual NativeAppWindow* CreateNativeAppWindow(
+      AppWindow* window,
+      const AppWindow::CreateParams& params) = 0;
 
   // A positive keep-alive count is a request for the embedding application to
   // keep running after all windows are closed. The count starts at zero.
@@ -46,4 +53,4 @@ class AppsClient {
 
 }  // namespace apps
 
-#endif  // APPS_APPS_CLIENT_H_
+#endif  // APPS_UI_APPS_CLIENT_H_

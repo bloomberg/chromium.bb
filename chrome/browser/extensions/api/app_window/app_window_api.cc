@@ -7,7 +7,7 @@
 #include "apps/app_window.h"
 #include "apps/app_window_contents.h"
 #include "apps/app_window_registry.h"
-#include "apps/apps_client.h"
+#include "apps/ui/apps_client.h"
 #include "apps/ui/native_app_window.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"

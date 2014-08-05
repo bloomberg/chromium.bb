@@ -196,15 +196,6 @@ class AppWindow : public content::NotificationObserver,
     gfx::Size GetWindowMaximumSize(const gfx::Insets& frame_insets) const;
   };
 
-  class Delegate {
-   public:
-    virtual ~Delegate();
-
-    virtual NativeAppWindow* CreateNativeAppWindow(
-        AppWindow* window,
-        const CreateParams& params) = 0;
-  };
-
   // Convert draggable regions in raw format to SkRegion format. Caller is
   // responsible for deleting the returned SkRegion instance.
   static SkRegion* RawDraggableRegionsToSkRegion(
@@ -216,7 +207,6 @@ class AppWindow : public content::NotificationObserver,
   // Takes ownership of |app_delegate| and |delegate|.
   AppWindow(content::BrowserContext* context,
             AppDelegate* app_delegate,
-            Delegate* delegate,
             const extensions::Extension* extension);
 
   // Initializes the render interface, web contents, and native window.
@@ -514,7 +504,6 @@ class AppWindow : public content::NotificationObserver,
   scoped_ptr<NativeAppWindow> native_app_window_;
   scoped_ptr<AppWindowContents> app_window_contents_;
   scoped_ptr<AppDelegate> app_delegate_;
-  scoped_ptr<Delegate> delegate_;
   scoped_ptr<AppWebContentsHelper> helper_;
 
   // Manages popup windows (bubbles, tab-modals) visible overlapping the

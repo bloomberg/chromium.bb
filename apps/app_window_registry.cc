@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "apps/app_window.h"
-#include "apps/apps_client.h"
+#include "apps/ui/apps_client.h"
 #include "apps/ui/native_app_window.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"

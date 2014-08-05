@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/apps/chrome_apps_client.h"
+#include "chrome/browser/ui/apps/chrome_apps_client.h"
 
 #include "apps/app_window.h"
 #include "base/memory/singleton.h"
@@ -15,12 +15,13 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
-#include "chrome/browser/ui/apps/chrome_app_window_delegate.h"
 #endif
 
-ChromeAppsClient::ChromeAppsClient() {}
+ChromeAppsClient::ChromeAppsClient() {
+}
 
-ChromeAppsClient::~ChromeAppsClient() {}
+ChromeAppsClient::~ChromeAppsClient() {
+}
 
 // static
 ChromeAppsClient* ChromeAppsClient::GetInstance() {
@@ -29,7 +30,7 @@ ChromeAppsClient* ChromeAppsClient::GetInstance() {
 }
 
 std::vector<content::BrowserContext*>
-    ChromeAppsClient::GetLoadedBrowserContexts() {
+ChromeAppsClient::GetLoadedBrowserContexts() {
   std::vector<Profile*> profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
   return std::vector<content::BrowserContext*>(profiles.begin(),
@@ -42,8 +43,17 @@ apps::AppWindow* ChromeAppsClient::CreateAppWindow(
 #if defined(OS_ANDROID)
   return NULL;
 #else
-  return new apps::AppWindow(
-      context, new ChromeAppDelegate, new ChromeAppWindowDelegate, extension);
+  return new apps::AppWindow(context, new ChromeAppDelegate, extension);
+#endif
+}
+
+apps::NativeAppWindow* ChromeAppsClient::CreateNativeAppWindow(
+    apps::AppWindow* window,
+    const apps::AppWindow::CreateParams& params) {
+#if defined(OS_ANDROID)
+  return NULL;
+#else
+  return CreateNativeAppWindowImpl(window, params);
 #endif
 }
 

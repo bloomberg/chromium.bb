@@ -12,8 +12,8 @@
 #include "apps/app_web_contents_helper.h"
 #include "apps/app_window_geometry_cache.h"
 #include "apps/app_window_registry.h"
-#include "apps/apps_client.h"
 #include "apps/size_constraints.h"
+#include "apps/ui/apps_client.h"
 #include "apps/ui/native_app_window.h"
 #include "apps/ui/web_contents_sizer.h"
 #include "base/command_line.h"
@@ -226,21 +226,15 @@ gfx::Size AppWindow::CreateParams::GetWindowMaximumSize(
                                       frame_insets);
 }
 
-// AppWindow::Delegate
-
-AppWindow::Delegate::~Delegate() {}
-
 // AppWindow
 
 AppWindow::AppWindow(BrowserContext* context,
                      AppDelegate* app_delegate,
-                     Delegate* delegate,
                      const extensions::Extension* extension)
     : browser_context_(context),
       extension_id_(extension->id()),
       window_type_(WINDOW_TYPE_DEFAULT),
       app_delegate_(app_delegate),
-      delegate_(delegate),
       image_loader_ptr_factory_(this),
       fullscreen_types_(FULLSCREEN_TYPE_NONE),
       show_on_first_paint_(false),
@@ -291,7 +285,9 @@ void AppWindow::Init(const GURL& url,
 
   requested_transparent_background_ = new_params.transparent_background;
 
-  native_app_window_.reset(delegate_->CreateNativeAppWindow(this, new_params));
+  AppsClient* apps_client = AppsClient::Get();
+  native_app_window_.reset(
+      apps_client->CreateNativeAppWindow(this, new_params));
 
   helper_.reset(new AppWebContentsHelper(
       browser_context_, extension_id_, web_contents, app_delegate_.get()));
@@ -301,7 +297,7 @@ void AppWindow::Init(const GURL& url,
   popup_manager_->RegisterWith(web_contents);
 
   // Prevent the browser process from shutting down while this window exists.
-  AppsClient::Get()->IncrementKeepAliveCount();
+  apps_client->IncrementKeepAliveCount();
   UpdateExtensionAppIcon();
   AppWindowRegistry::Get(browser_context_)->AddAppWindow(this);
 

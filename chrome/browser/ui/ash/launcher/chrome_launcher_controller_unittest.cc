@@ -54,7 +54,6 @@
 #include "ash/test/test_shell_delegate.h"
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
-#include "chrome/browser/ui/apps/chrome_app_window_delegate.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
@@ -745,10 +744,7 @@ class V1App : public TestBrowserWindow {
 class V2App {
  public:
   V2App(Profile* profile, const extensions::Extension* extension) {
-    window_ = new apps::AppWindow(profile,
-                                  new ChromeAppDelegate(),
-                                  new ChromeAppWindowDelegate(),
-                                  extension);
+    window_ = new apps::AppWindow(profile, new ChromeAppDelegate(), extension);
     apps::AppWindow::CreateParams params = apps::AppWindow::CreateParams();
     window_->Init(
         GURL(std::string()), new apps::AppWindowContentsImpl(window_), params);
