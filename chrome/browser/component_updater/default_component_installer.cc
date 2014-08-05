@@ -164,17 +164,20 @@ void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
   }
 
   if (found) {
-    current_version_ = latest_version;
-    // TODO(ddorwin): Remove these members and pass them directly to
-    // FinishRegistration().
-    base::ReadFileToString(latest_dir.AppendASCII("manifest.fingerprint"),
-                           &current_fingerprint_);
     current_manifest_ = ReadManifest(latest_dir);
-    if (!current_manifest_) {
+    if (current_manifest_) {
+      current_version_ = latest_version;
+      // TODO(ddorwin): Remove these members and pass them directly to
+      // FinishRegistration().
+      base::ReadFileToString(latest_dir.AppendASCII("manifest.fingerprint"),
+                             &current_fingerprint_);
+    } else {
+      // If the manifest can't be read, mark the directory for deletion and
+      // continue as if there were no versioned directories at all.
       DLOG(ERROR) << "Failed to read manifest for "
                   << installer_traits_->GetName() << " ("
                   << base_dir.MaybeAsASCII() << ").";
-      return;
+      older_dirs.push_back(latest_dir);
     }
   }
 
