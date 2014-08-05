@@ -51,9 +51,12 @@ void AppListViewDelegate::SearchResultChanged() {
   app_list::SearchProvider* search_provider = search_providers_[0];
   std::vector<app_list::SearchResult*> results;
   search_provider->ReleaseResult(&results);
-  model_->results()->DeleteAll();
-  for (size_t i = 0; i < results.size(); ++i)
-    model_->results()->Add(results[i]);
+  if (results.empty()) {
+    model_->results()->DeleteAll();
+  } else {
+    for (size_t i = 0; i < results.size(); ++i)
+      model_->results()->Add(results[i]);
+  }
 }
 
 bool AppListViewDelegate::ForceNativeDesktop() const {
