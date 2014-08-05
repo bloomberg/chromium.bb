@@ -5,7 +5,7 @@
 #include "content/shell/renderer/test_runner/mock_spell_check.h"
 
 #include "base/logging.h"
-#include "content/shell/renderer/test_runner/test_common.h"
+#include "content/shell/renderer/test_runner/TestCommon.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 
 namespace content {
@@ -56,7 +56,7 @@ bool MockSpellCheck::SpellCheckWord(const blink::WebString& text,
     // If the given string doesn't include any ASCII characters, we can treat
     // the string as valid one.
     base::string16::iterator first_char =
-        std::find_if(string_text.begin(), string_text.end(), IsASCIIAlpha);
+        std::find_if(string_text.begin(), string_text.end(), isASCIIAlpha);
     if (first_char == string_text.end())
       return true;
     int word_offset = std::distance(string_text.begin(), first_char);
@@ -78,7 +78,7 @@ bool MockSpellCheck::SpellCheckWord(const blink::WebString& text,
       if (word == misspelled_words_.at(i) &&
           (static_cast<int>(string_text.length()) ==
                word_offset + word_length ||
-           IsNotASCIIAlpha(string_text[word_offset + word_length]))) {
+           isNotASCIIAlpha(string_text[word_offset + word_length]))) {
         *misspelled_offset = word_offset + skipped_length;
         *misspelled_length = word_length;
         break;
@@ -89,7 +89,7 @@ bool MockSpellCheck::SpellCheckWord(const blink::WebString& text,
       break;
 
     base::string16::iterator last_char = std::find_if(
-        string_text.begin() + word_offset, string_text.end(), IsNotASCIIAlpha);
+        string_text.begin() + word_offset, string_text.end(), isNotASCIIAlpha);
     if (last_char == string_text.end())
       word_length = static_cast<int>(string_text.length()) - word_offset;
     else

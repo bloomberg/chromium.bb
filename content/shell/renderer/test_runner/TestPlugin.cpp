@@ -8,8 +8,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
-#include "base/strings/stringprintf.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/shell/renderer/test_runner/TestCommon.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -87,10 +87,14 @@ const char* pointState(WebTouchPoint::State state)
 void printTouchList(WebTestDelegate* delegate, const WebTouchPoint* points, int length)
 {
     for (int i = 0; i < length; ++i) {
-      base::StringPrintf("* %.2f, %.2f: %s\n",
-                         points[i].position.x,
-                         points[i].position.y,
-                         pointState(points[i].state));
+        char buffer[100];
+        snprintf(buffer,
+                 sizeof(buffer),
+                 "* %.2f, %.2f: %s\n",
+                 points[i].position.x,
+                 points[i].position.y,
+                 pointState(points[i].state));
+        delegate->printMessage(buffer);
     }
 }
 
@@ -103,10 +107,14 @@ void printEventDetails(WebTestDelegate* delegate, const WebInputEvent& event)
         printTouchList(delegate, touch.targetTouches, touch.targetTouchesLength);
     } else if (WebInputEvent::isMouseEventType(event.type) || event.type == WebInputEvent::MouseWheel) {
         const WebMouseEvent& mouse = static_cast<const WebMouseEvent&>(event);
-        base::StringPrintf("* %d, %d\n", mouse.x, mouse.y);
+        char buffer[100];
+        snprintf(buffer, sizeof(buffer), "* %d, %d\n", mouse.x, mouse.y);
+        delegate->printMessage(buffer);
     } else if (WebInputEvent::isGestureEventType(event.type)) {
         const WebGestureEvent& gesture = static_cast<const WebGestureEvent&>(event);
-        base::StringPrintf("* %d, %d\n", gesture.x, gesture.y);
+        char buffer[100];
+        snprintf(buffer, sizeof(buffer), "* %d, %d\n", gesture.x, gesture.y);
+        delegate->printMessage(buffer);
     }
 }
 
