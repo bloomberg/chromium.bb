@@ -482,3 +482,63 @@ TEST(threading_cancel_read_tst)
 
 	display_destroy(d);
 }
+
+static void *
+thread_prepare_and_read2(void *data)
+{
+	struct client *c = data;
+
+	while(wl_display_prepare_read(c->wl_display) != 0 && errno == EAGAIN)
+		assert(wl_display_dispatch_pending(c->wl_display) == -1);
+	assert(wl_display_flush(c->wl_display) == -1);
+
+	c->display_stopped = 1;
+
+	assert(wl_display_read_events(c->wl_display) == -1);
+	assert(wl_display_dispatch_pending(c->wl_display) == -1);
+
+	pthread_exit(NULL);
+}
+
+static void
+threading_read_after_error(void)
+{
+	struct client *c = client_connect();
+	pthread_t thread;
+
+	/* create an error */
+	close(wl_display_get_fd(c->wl_display));
+	assert(wl_display_dispatch(c->wl_display) == -1);
+
+	/* try to prepare for reading */
+	while(wl_display_prepare_read(c->wl_display) != 0 && errno == EAGAIN)
+		assert(wl_display_dispatch_pending(c->wl_display) == -1);
+	assert(wl_display_flush(c->wl_display) == -1);
+
+	assert(pthread_create(&thread, NULL,
+			      thread_prepare_and_read2, c) == 0);
+
+	/* make sure thread is sleeping */
+	while (c->display_stopped == 0)
+		usleep(500);
+	usleep(10000);
+
+	assert(wl_display_read_events(c->wl_display) == -1);
+
+	/* kill test in 3 seconds */
+	alarm(3);
+	pthread_join(thread, NULL);
+
+	wl_proxy_destroy((struct wl_proxy *) c->tc);
+	wl_display_disconnect(c->wl_display);
+}
+
+TEST(threading_read_after_error_tst)
+{
+	struct display *d = display_create();
+
+	client_create(d, threading_read_after_error);
+	display_run(d);
+
+	display_destroy(d);
+}
