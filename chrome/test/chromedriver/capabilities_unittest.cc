@@ -7,6 +7,7 @@
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(Switches, Empty) {
@@ -333,6 +334,92 @@ TEST(ParseCapabilities, LoggingPrefsNotDict) {
   base::DictionaryValue caps;
   caps.SetString("loggingPrefs", "INFO");
   Status status = capabilities.Parse(caps);
+  ASSERT_FALSE(status.IsOk());
+}
+
+TEST(ParseCapabilities, PerfLoggingPrefsInspectorDomainStatus) {
+  Capabilities capabilities;
+  // Perf log must be enabled if performance log preferences are specified.
+  base::DictionaryValue logging_prefs;
+  logging_prefs.SetString(WebDriverLog::kPerformanceType, "INFO");
+  base::DictionaryValue desired_caps;
+  desired_caps.Set("loggingPrefs", logging_prefs.DeepCopy());
+  ASSERT_EQ(PerfLoggingPrefs::InspectorDomainStatus::kDefaultEnabled,
+            capabilities.perf_logging_prefs.network);
+  ASSERT_EQ(PerfLoggingPrefs::InspectorDomainStatus::kDefaultEnabled,
+            capabilities.perf_logging_prefs.page);
+  ASSERT_EQ(PerfLoggingPrefs::InspectorDomainStatus::kDefaultEnabled,
+            capabilities.perf_logging_prefs.timeline);
+  base::DictionaryValue perf_logging_prefs;
+  perf_logging_prefs.SetBoolean("enableNetwork", true);
+  perf_logging_prefs.SetBoolean("enablePage", false);
+  desired_caps.Set("chromeOptions.perfLoggingPrefs",
+                   perf_logging_prefs.DeepCopy());
+  Status status = capabilities.Parse(desired_caps);
+  ASSERT_TRUE(status.IsOk());
+  ASSERT_EQ(PerfLoggingPrefs::InspectorDomainStatus::kExplicitlyEnabled,
+            capabilities.perf_logging_prefs.network);
+  ASSERT_EQ(PerfLoggingPrefs::InspectorDomainStatus::kExplicitlyDisabled,
+            capabilities.perf_logging_prefs.page);
+  ASSERT_EQ(PerfLoggingPrefs::InspectorDomainStatus::kDefaultEnabled,
+            capabilities.perf_logging_prefs.timeline);
+}
+
+TEST(ParseCapabilities, PerfLoggingPrefsTraceCategories) {
+  Capabilities capabilities;
+  // Perf log must be enabled if performance log preferences are specified.
+  base::DictionaryValue logging_prefs;
+  logging_prefs.SetString(WebDriverLog::kPerformanceType, "INFO");
+  base::DictionaryValue desired_caps;
+  desired_caps.Set("loggingPrefs", logging_prefs.DeepCopy());
+  ASSERT_EQ("", capabilities.perf_logging_prefs.trace_categories);
+  base::DictionaryValue perf_logging_prefs;
+  perf_logging_prefs.SetString("traceCategories", "benchmark,webkit.console");
+  desired_caps.Set("chromeOptions.perfLoggingPrefs",
+                   perf_logging_prefs.DeepCopy());
+  Status status = capabilities.Parse(desired_caps);
+  ASSERT_TRUE(status.IsOk());
+  ASSERT_EQ("benchmark,webkit.console",
+            capabilities.perf_logging_prefs.trace_categories);
+}
+
+TEST(ParseCapabilities, PerfLoggingPrefsNotDict) {
+  Capabilities capabilities;
+  // Perf log must be enabled if performance log preferences are specified.
+  base::DictionaryValue logging_prefs;
+  logging_prefs.SetString(WebDriverLog::kPerformanceType, "INFO");
+  base::DictionaryValue desired_caps;
+  desired_caps.Set("loggingPrefs", logging_prefs.DeepCopy());
+  desired_caps.SetString("chromeOptions.perfLoggingPrefs", "traceCategories");
+  Status status = capabilities.Parse(desired_caps);
+  ASSERT_FALSE(status.IsOk());
+}
+
+TEST(ParseCapabilities, PerfLoggingPrefsNoPerfLogLevel) {
+  Capabilities capabilities;
+  base::DictionaryValue desired_caps;
+  base::DictionaryValue perf_logging_prefs;
+  perf_logging_prefs.SetBoolean("enableNetwork", true);
+  desired_caps.Set("chromeOptions.perfLoggingPrefs",
+                   perf_logging_prefs.DeepCopy());
+  // Should fail because perf log must be enabled if perf log prefs specified.
+  Status status = capabilities.Parse(desired_caps);
+  ASSERT_FALSE(status.IsOk());
+}
+
+TEST(ParseCapabilities, PerfLoggingPrefsPerfLogOff) {
+  Capabilities capabilities;
+  base::DictionaryValue logging_prefs;
+  // Disable performance log by setting logging level to OFF.
+  logging_prefs.SetString(WebDriverLog::kPerformanceType, "OFF");
+  base::DictionaryValue desired_caps;
+  desired_caps.Set("loggingPrefs", logging_prefs.DeepCopy());
+  base::DictionaryValue perf_logging_prefs;
+  perf_logging_prefs.SetBoolean("enableNetwork", true);
+  desired_caps.Set("chromeOptions.perfLoggingPrefs",
+                   perf_logging_prefs.DeepCopy());
+  // Should fail because perf log must be enabled if perf log prefs specified.
+  Status status = capabilities.Parse(desired_caps);
   ASSERT_FALSE(status.IsOk());
 }
 

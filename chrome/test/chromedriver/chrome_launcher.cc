@@ -195,6 +195,7 @@ Status WaitForDevToolsAndCheckVersion(
 
 Status CreateBrowserwideDevToolsClientAndConnect(
     const NetAddress& address,
+    const PerfLoggingPrefs& perf_logging_prefs,
     const SyncWebSocketFactory& socket_factory,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
     scoped_ptr<DevToolsClient>* browser_client) {
@@ -203,7 +204,7 @@ Status CreateBrowserwideDevToolsClientAndConnect(
                                          address.ToString().c_str()),
       DevToolsClientImpl::kBrowserwideDevToolsClientId));
   for (ScopedVector<DevToolsEventListener>::const_iterator it =
-      devtools_event_listeners.begin();
+          devtools_event_listeners.begin();
       it != devtools_event_listeners.end();
       ++it) {
     // Only add listeners that subscribe to the browser-wide |DevToolsClient|.
@@ -212,11 +213,17 @@ Status CreateBrowserwideDevToolsClientAndConnect(
     if ((*it)->subscribes_to_browser())
       client->AddListener(*it);
   }
-  // TODO(johnmoore): Call client->ConnectIfNecessary if tracing is enabled.
-  // For now, provide the client anyway, so that Chrome always has a valid
-  // |devtools_websocket_client_|. No listeners will be notified, and the client
-  // will just return kDisconnected errors if used.
+  // Provide the client regardless of whether it connects, so that Chrome always
+  // has a valid |devtools_websocket_client_|. If not connected, no listeners
+  // will be notified, and client will just return kDisconnected errors if used.
   *browser_client = client.Pass();
+  // To avoid unnecessary overhead, only connect if tracing is enabled, since
+  // the browser-wide client is currently only used for tracing.
+  if (!perf_logging_prefs.trace_categories.empty()) {
+    Status status = (*browser_client)->ConnectIfNecessary();
+    if (status.IsError())
+      return status;
+  }
   return Status(kOk);
 }
 
@@ -239,8 +246,8 @@ Status LaunchRemoteChromeSession(
 
   scoped_ptr<DevToolsClient> devtools_websocket_client;
   status = CreateBrowserwideDevToolsClientAndConnect(
-      capabilities.debugger_address, socket_factory, devtools_event_listeners,
-      &devtools_websocket_client);
+      capabilities.debugger_address, capabilities.perf_logging_prefs,
+      socket_factory, devtools_event_listeners, &devtools_websocket_client);
   if (status.IsError()) {
     LOG(WARNING) << "Browser-wide DevTools client failed to connect: "
                  << status.message();
@@ -365,8 +372,8 @@ Status LaunchDesktopChrome(
 
   scoped_ptr<DevToolsClient> devtools_websocket_client;
   status = CreateBrowserwideDevToolsClientAndConnect(
-      NetAddress(port), socket_factory, devtools_event_listeners,
-      &devtools_websocket_client);
+      NetAddress(port), capabilities.perf_logging_prefs, socket_factory,
+      devtools_event_listeners, &devtools_websocket_client);
   if (status.IsError()) {
     LOG(WARNING) << "Browser-wide DevTools client failed to connect: "
                  << status.message();
@@ -446,8 +453,8 @@ Status LaunchAndroidChrome(
 
   scoped_ptr<DevToolsClient> devtools_websocket_client;
   status = CreateBrowserwideDevToolsClientAndConnect(
-      NetAddress(port), socket_factory, devtools_event_listeners,
-      &devtools_websocket_client);
+      NetAddress(port), capabilities.perf_logging_prefs, socket_factory,
+      devtools_event_listeners, &devtools_websocket_client);
   if (status.IsError()) {
     LOG(WARNING) << "Browser-wide DevTools client failed to connect: "
                  << status.message();

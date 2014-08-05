@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+#include <vector>
+
 #include "chrome/test/chromedriver/performance_logger.h"
 
 #include "base/json/json_writer.h"
@@ -17,10 +20,6 @@ namespace {
 // DevTools event domain prefixes to intercept.
 const char* const kDomains[] = {"Network.", "Page.", "Timeline."};
 
-const char* const kDomainEnableCommands[] = {
-    "Network.enable", "Page.enable", "Timeline.start"
-};
-
 // Returns whether the event belongs to one of kDomains.
 bool ShouldLogEvent(const std::string& method) {
   for (size_t i_domain = 0; i_domain < arraysize(kDomains); ++i_domain) {
@@ -30,10 +29,27 @@ bool ShouldLogEvent(const std::string& method) {
   return false;
 }
 
+bool IsEnabled(const PerfLoggingPrefs::InspectorDomainStatus& domain_status) {
+  return (domain_status ==
+          PerfLoggingPrefs::InspectorDomainStatus::kDefaultEnabled ||
+          domain_status ==
+          PerfLoggingPrefs::InspectorDomainStatus::kExplicitlyEnabled);
+}
+
 }  // namespace
 
 PerformanceLogger::PerformanceLogger(Log* log)
     : log_(log) {}
+
+PerformanceLogger::PerformanceLogger(Log* log, const PerfLoggingPrefs& prefs)
+    : log_(log),
+      prefs_(prefs) {
+  if (!prefs_.trace_categories.empty()) {
+    LOG(WARNING) << "Ignoring trace categories because tracing support not yet "
+                 << "implemented: " << prefs_.trace_categories;
+    prefs_.trace_categories = "";
+  }
+}
 
 bool PerformanceLogger::subscribes_to_browser() {
   return true;
@@ -44,9 +60,22 @@ Status PerformanceLogger::OnConnected(DevToolsClient* client) {
     // TODO(johnmoore): Implement tracing log.
     return Status(kOk);
   }
-  base::DictionaryValue params;  // All our enable commands have empty params.
-  for (size_t i_cmd = 0; i_cmd < arraysize(kDomainEnableCommands); ++i_cmd) {
-    Status status = client->SendCommand(kDomainEnableCommands[i_cmd], params);
+  std::vector<std::string> enable_commands;
+  if (IsEnabled(prefs_.network))
+    enable_commands.push_back("Network.enable");
+  if (IsEnabled(prefs_.page))
+    enable_commands.push_back("Page.enable");
+  if (IsEnabled(prefs_.timeline)) {
+    // Timeline feed implicitly disabled when trace categories are specified.
+    // So even if kDefaultEnabled, don't enable unless empty |trace_categories|.
+    if (prefs_.trace_categories.empty() || prefs_.timeline ==
+        PerfLoggingPrefs::InspectorDomainStatus::kExplicitlyEnabled)
+      enable_commands.push_back("Timeline.start");
+  }
+  for (std::vector<std::string>::const_iterator it = enable_commands.begin();
+       it != enable_commands.end(); ++it) {
+    base::DictionaryValue params;  // All the enable commands have empty params.
+    Status status = client->SendCommand(*it, params);
     if (status.IsError())
       return status;
   }

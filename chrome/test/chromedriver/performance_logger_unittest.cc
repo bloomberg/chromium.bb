@@ -188,3 +188,22 @@ TEST(PerformanceLogger, TwoWebViews) {
   ValidateLogEntry(log.GetEntries()[0], "webview-1", "Page.gaga1");
   ValidateLogEntry(log.GetEntries()[1], "webview-2", "Timeline.gaga2");
 }
+
+TEST(PerformanceLogger, PerfLoggingPrefs) {
+  FakeDevToolsClient client("webview-1");
+  FakeLog log;
+  PerfLoggingPrefs prefs;
+  ASSERT_EQ(PerfLoggingPrefs::InspectorDomainStatus::kDefaultEnabled,
+            prefs.network);
+  prefs.network = PerfLoggingPrefs::InspectorDomainStatus::kExplicitlyDisabled;
+  // Trace categories should be ignored until tracing support is implemented.
+  prefs.trace_categories = "benchmark,webkit.console";
+  PerformanceLogger logger(&log, prefs);
+
+  client.AddListener(&logger);
+  logger.OnConnected(&client);
+  EXPECT_EQ("Page.enable", client.PopSentCommand());
+  // Trace categories ignored, so Timeline shouldn't be implicitly disabled.
+  EXPECT_EQ("Timeline.start", client.PopSentCommand());
+  EXPECT_TRUE(client.PopSentCommand().empty());
+}

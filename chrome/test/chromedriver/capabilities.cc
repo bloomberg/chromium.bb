@@ -302,6 +302,48 @@ Status ParseLoggingPrefs(const base::Value& option,
   return Status(kOk);
 }
 
+Status ParseInspectorDomainStatus(
+    PerfLoggingPrefs::InspectorDomainStatus* to_set,
+    const base::Value& option,
+    Capabilities* capabilities) {
+  bool desired_value;
+  if (!option.GetAsBoolean(&desired_value))
+    return Status(kUnknownError, "must be a boolean");
+  if (desired_value)
+    *to_set = PerfLoggingPrefs::InspectorDomainStatus::kExplicitlyEnabled;
+  else
+    *to_set = PerfLoggingPrefs::InspectorDomainStatus::kExplicitlyDisabled;
+  return Status(kOk);
+}
+
+Status ParsePerfLoggingPrefs(const base::Value& option,
+                             Capabilities* capabilities) {
+  const base::DictionaryValue* perf_logging_prefs = NULL;
+  if (!option.GetAsDictionary(&perf_logging_prefs))
+    return Status(kUnknownError, "must be a dictionary");
+
+  std::map<std::string, Parser> parser_map;
+  parser_map["enableNetwork"] = base::Bind(
+      &ParseInspectorDomainStatus, &capabilities->perf_logging_prefs.network);
+  parser_map["enablePage"] = base::Bind(
+      &ParseInspectorDomainStatus, &capabilities->perf_logging_prefs.page);
+  parser_map["enableTimeline"] = base::Bind(
+      &ParseInspectorDomainStatus, &capabilities->perf_logging_prefs.timeline);
+  parser_map["traceCategories"] = base::Bind(
+      &ParseString, &capabilities->perf_logging_prefs.trace_categories);
+
+  for (base::DictionaryValue::Iterator it(*perf_logging_prefs); !it.IsAtEnd();
+       it.Advance()) {
+     if (parser_map.find(it.key()) == parser_map.end())
+       return Status(kUnknownError, "unrecognized performance logging "
+                     "option: " + it.key());
+     Status status = parser_map[it.key()].Run(it.value(), capabilities);
+     if (status.IsError())
+       return Status(kUnknownError, "cannot parse " + it.key(), status);
+   }
+   return Status(kOk);
+}
+
 Status ParseChromeOptions(
     const base::Value& capability,
     Capabilities* capabilities) {
@@ -318,6 +360,9 @@ Status ParseChromeOptions(
   parser_map["args"] = base::Bind(&IgnoreCapability);
   parser_map["binary"] = base::Bind(&IgnoreCapability);
   parser_map["extensions"] = base::Bind(&IgnoreCapability);
+
+  parser_map["perfLoggingPrefs"] = base::Bind(&ParsePerfLoggingPrefs);
+
   if (is_android) {
     parser_map["androidActivity"] =
         base::Bind(&ParseString, &capabilities->android_activity);
@@ -473,6 +518,14 @@ std::string Switches::ToString() const {
   return str;
 }
 
+PerfLoggingPrefs::PerfLoggingPrefs()
+    : network(InspectorDomainStatus::kDefaultEnabled),
+      page(InspectorDomainStatus::kDefaultEnabled),
+      timeline(InspectorDomainStatus::kDefaultEnabled),
+      trace_categories() {}
+
+PerfLoggingPrefs::~PerfLoggingPrefs() {}
+
 Capabilities::Capabilities()
     : android_use_running_app(false),
       detach(false),
@@ -502,6 +555,17 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
         return Status(
             kUnknownError, "cannot parse capability: " + it->first, status);
       }
+    }
+  }
+  // Perf log must be enabled if perf log prefs are specified; otherwise, error.
+  LoggingPrefs::const_iterator iter = logging_prefs.find(
+      WebDriverLog::kPerformanceType);
+  if (iter == logging_prefs.end() || iter->second == Log::kOff) {
+    const base::DictionaryValue* chrome_options = NULL;
+    if (desired_caps.GetDictionary("chromeOptions", &chrome_options) &&
+        chrome_options->HasKey("perfLoggingPrefs")) {
+      return Status(kUnknownError, "perfLoggingPrefs specified, "
+                    "but performance logging was not enabled");
     }
   }
   return Status(kOk);

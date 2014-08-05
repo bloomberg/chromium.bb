@@ -474,16 +474,19 @@ bool ParseInspectorMessage(
   } else if (message_dict->GetInteger("id", &id)) {
     base::DictionaryValue* unscoped_error = NULL;
     base::DictionaryValue* unscoped_result = NULL;
-    if (!message_dict->GetDictionary("error", &unscoped_error) &&
-        !message_dict->GetDictionary("result", &unscoped_result))
-      return false;
-
     *type = kCommandResponseMessageType;
     command_response->id = id;
-    if (unscoped_result)
+    // As per Chromium issue 392577, DevTools does not necessarily return a
+    // "result" dictionary for every valid response. In particular,
+    // Tracing.start and Tracing.end command responses do not contain one.
+    // So, if neither "error" nor "result" keys are present, just provide
+    // a blank result dictionary.
+    if (message_dict->GetDictionary("result", &unscoped_result))
       command_response->result.reset(unscoped_result->DeepCopy());
-    else
+    else if (message_dict->GetDictionary("error", &unscoped_error))
       base::JSONWriter::Write(unscoped_error, &command_response->error);
+    else
+      command_response->result.reset(new base::DictionaryValue());
     return true;
   }
   return false;

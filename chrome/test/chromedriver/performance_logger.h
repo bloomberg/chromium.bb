@@ -5,8 +5,11 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_PERFORMANCE_LOGGER_H_
 #define CHROME_TEST_CHROMEDRIVER_PERFORMANCE_LOGGER_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/test/chromedriver/capabilities.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/command_listener.h"
 
@@ -21,9 +24,12 @@ class Log;
 // }
 class PerformanceLogger : public DevToolsEventListener, public CommandListener {
  public:
-  // Creates a PerformanceLogger that creates entries in the given Log object.
-  // The log is owned elsewhere and must not be null.
+  // Creates a |PerformanceLogger| with default preferences that creates entries
+  // in the given Log object. The log is owned elsewhere and must not be null.
   explicit PerformanceLogger(Log* log);
+
+  // Creates a |PerformanceLogger| with specific preferences.
+  PerformanceLogger(Log* log, const PerfLoggingPrefs& prefs);
 
   // Enables Page,Network,Timeline events for client, which must not be null.
   virtual Status OnConnected(DevToolsClient* client) OVERRIDE;
@@ -39,6 +45,7 @@ class PerformanceLogger : public DevToolsEventListener, public CommandListener {
 
  private:
   Log* log_;  // The log where to create entries.
+  PerfLoggingPrefs prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceLogger);
 };

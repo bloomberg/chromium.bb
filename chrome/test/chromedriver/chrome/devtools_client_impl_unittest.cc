@@ -569,8 +569,12 @@ TEST(ParseInspectorMessage, CommandNoErrorOrResult) {
   internal::InspectorMessageType type;
   internal::InspectorEvent event;
   internal::InspectorCommandResponse response;
-  ASSERT_FALSE(internal::ParseInspectorMessage(
+  // As per Chromium issue 392577, DevTools does not necessarily return a
+  // "result" dictionary for every valid response. If neither "error" nor
+  // "result" keys are present, a blank result dictionary should be inferred.
+  ASSERT_TRUE(internal::ParseInspectorMessage(
       "{\"id\":1}", 0, &type, &event, &response));
+  ASSERT_TRUE(response.result->empty());
 }
 
 TEST(ParseInspectorMessage, CommandError) {
