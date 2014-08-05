@@ -1,0 +1,136 @@
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<style>
+#t1 { color: 008000 }
+#t2 { background-color: 008000 }
+#t3 { border-color: 008000  }
+#t4 { border-bottom-color: 008000  }
+#t5 { border-left-color: 008000  }
+#t6 { border-right-color: 008000  }
+#t7 { border-top-color: 008000  }
+
+#t8 { background: ff0000 }
+#t9 { text-shadow: 1px 1px ff0000 }
+#t10 { box-shadow: 1px 1px ff0000 }
+#t11 { background-image: linear-gradient(ff0000, blue); }
+
+#t12 { -webkit-border-start-color: ff0000 }
+#t13 { -webkit-border-end-color: ff0000 }
+#t14 { -webkit-border-before-color: ff0000 }
+#t15 { -webkit-border-after-color: ff0000 }
+
+#t16 { -webkit-column-rule-color: ff0000 }
+
+#t17 { -webkit-text-emphasis-color: ff0000 }
+#t18 { -webkit-text-fill-color: ff0000 }
+#t19 { -webkit-text-stroke-color: ff0000 }
+
+#t20 { fill: ff0000 }
+#t21 { stroke: ff0000 }
+#t22 { stop-color: ff0000 }
+#t23 { flood-color: ff0000 }
+#t24 { lighting-color: ff0000 }
+
+</style>
+<script>
+var sheet = document.styleSheets[0];
+
+test(function(){ assert_true(!!sheet); }, "StyleSheet present");
+test(function(){ assert_equals(sheet.cssRules.length, 24); }, "All rules parsed");
+
+test(function(){
+    assert_equals(sheet.cssRules[0].style.color, "rgb(0, 128, 0)");
+}, "Hashless color quirk for color property");
+
+test(function(){
+    assert_equals(sheet.cssRules[1].style.backgroundColor, "rgb(0, 128, 0)");
+}, "Hashless color quirk for background-color property");
+
+test(function(){
+    assert_equals(sheet.cssRules[2].style.borderColor, "rgb(0, 128, 0)");
+}, "Hashless color quirk for border-color short-hand");
+
+test(function(){
+    assert_equals(sheet.cssRules[3].style.borderBottomColor, "rgb(0, 128, 0)");
+}, "Hashless color quirk for border-bottom-color property");
+
+test(function(){
+    assert_equals(sheet.cssRules[4].style.borderLeftColor, "rgb(0, 128, 0)");
+}, "Hashless color quirk for border-left-color property");
+
+test(function(){
+    assert_equals(sheet.cssRules[5].style.borderRightColor, "rgb(0, 128, 0)");
+}, "Hashless color quirk for border-right-color property");
+
+test(function(){
+    assert_equals(sheet.cssRules[6].style.borderTopColor, "rgb(0, 128, 0)");
+}, "Hashless color quirk for border-top-color property");
+
+test(function(){
+    assert_equals(sheet.cssRules[7].style.backgroundColor, "");
+}, "No hashless color quirk for background short-hand");
+
+test(function(){
+    assert_equals(sheet.cssRules[8].style.textShadow, "");
+}, "No hashless color quirk for text-shadow color");
+
+test(function(){
+    assert_equals(sheet.cssRules[9].style.boxShadow, "");
+}, "No hashless color quirk for box-shadow color");
+
+test(function(){
+    assert_equals(sheet.cssRules[10].style.backgroundImage, "");
+}, "No hashless color quirk for linear-gradient colors");
+
+test(function(){
+    assert_equals(sheet.cssRules[11].style.WebkitBorderStartColor, "");
+}, "No hashless color quirk for -webkit-border-start-color property");
+
+test(function(){
+    assert_equals(sheet.cssRules[12].style.WebkitBorderEndColor, "");
+}, "No hashless color quirk for -webkit-border-end-color property");
+
+test(function(){
+    assert_equals(sheet.cssRules[13].style.WebkitBorderBeforeColor, "");
+}, "No hashless color quirk for -webkit-border-before-property");
+
+test(function(){
+    assert_equals(sheet.cssRules[14].style.WebkitBorderAfterColor, "");
+}, "No hashless color quirk for -webkit-border-after-color property");
+
+test(function(){
+    assert_equals(sheet.cssRules[15].style.WebkitColumnRuleColor, "");
+}, "No hashless color quirk for -webkit-column-rule-color property");
+
+test(function(){
+    assert_equals(sheet.cssRules[16].style.WebkitTextEmphasisColor, "");
+}, "No hashless color quirk for -webkit-text-emphasis-color property");
+
+test(function(){
+    assert_equals(sheet.cssRules[17].style.WebkitTextFillColor, "");
+}, "No hashless color quirk for -webkit-text-fill-color property");
+
+test(function(){
+    assert_equals(sheet.cssRules[18].style.WebkitTextStrokeColor, "");
+}, "No hashless color quirk for -webkit-text-stroke-color property");
+
+test(function(){
+    assert_equals(sheet.cssRules[19].style.fill, "");
+}, "No hashless color quirk for fill property");
+
+test(function(){
+    assert_equals(sheet.cssRules[20].style.stroke, "");
+}, "No hashless color quirk for stroke property");
+
+test(function(){
+    assert_equals(sheet.cssRules[21].style.stopColor, "");
+}, "No hashless color quirk for stop-color property");
+
+test(function(){
+    assert_equals(sheet.cssRules[22].style.floodColor, "");
+}, "No hashless color quirk for flood-color property");
+
+test(function(){
+    assert_equals(sheet.cssRules[23].style.lightingColor, "");
+}, "No hashless color quirk for lighting-color property");
+</script>

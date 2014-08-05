@@ -611,7 +611,30 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         if ((id >= CSSValueAqua && id <= CSSValueWebkitText) || id == CSSValueMenu) {
             validPrimitive = isValueAllowedInMode(id, m_context.mode());
         } else {
-            parsedValue = parseColor();
+            if (!inQuirksMode()) {
+                parsedValue = parseColor();
+                if (parsedValue)
+                    m_valueList->next();
+                break;
+            }
+
+            bool acceptQuirkyColors = false;
+            switch (propId) {
+            case CSSPropertyBackgroundColor:
+                if (!inShorthand())
+                    acceptQuirkyColors = true;
+                break;
+            case CSSPropertyBorderBottomColor:
+            case CSSPropertyBorderLeftColor:
+            case CSSPropertyBorderRightColor:
+            case CSSPropertyBorderTopColor:
+            case CSSPropertyColor:
+                acceptQuirkyColors = true;
+                break;
+            default:
+                break;
+            }
+            parsedValue = parseColor(0, acceptQuirkyColors);
             if (parsedValue)
                 m_valueList->next();
         }
@@ -5435,26 +5458,26 @@ bool CSSPropertyParser::parseHSLParameters(CSSParserValue* value, double* colorA
     return true;
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseColor(CSSParserValue* value)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseColor(CSSParserValue* value, bool acceptQuirkyColors)
 {
     RGBA32 c = Color::transparent;
-    if (!parseColorFromValue(value ? value : m_valueList->current(), c))
+    if (!parseColorFromValue(value ? value : m_valueList->current(), c, acceptQuirkyColors))
         return nullptr;
     return cssValuePool().createColorValue(c);
 }
 
-bool CSSPropertyParser::parseColorFromValue(CSSParserValue* value, RGBA32& c)
+bool CSSPropertyParser::parseColorFromValue(CSSParserValue* value, RGBA32& c, bool acceptQuirkyColors)
 {
-    if (inQuirksMode() && value->unit == CSSPrimitiveValue::CSS_NUMBER
+    if (acceptQuirkyColors && value->unit == CSSPrimitiveValue::CSS_NUMBER
         && value->fValue >= 0. && value->fValue < 1000000.) {
         String str = String::format("%06d", static_cast<int>((value->fValue+.5)));
         // FIXME: This should be strict parsing for SVG as well.
-        if (!fastParseColor(c, str, !inQuirksMode()))
+        if (!fastParseColor(c, str, !acceptQuirkyColors))
             return false;
-    } else if (value->unit == CSSPrimitiveValue::CSS_PARSER_HEXCOLOR ||
-                value->unit == CSSPrimitiveValue::CSS_IDENT ||
-                (inQuirksMode() && value->unit == CSSPrimitiveValue::CSS_DIMENSION)) {
-        if (!fastParseColor(c, value->string, !inQuirksMode() && value->unit == CSSPrimitiveValue::CSS_IDENT))
+    } else if (value->unit == CSSPrimitiveValue::CSS_PARSER_HEXCOLOR
+        || value->unit == CSSPrimitiveValue::CSS_IDENT
+        || (acceptQuirkyColors && value->unit == CSSPrimitiveValue::CSS_DIMENSION)) {
+        if (!fastParseColor(c, value->string, !acceptQuirkyColors && value->unit == CSSPrimitiveValue::CSS_IDENT))
             return false;
     } else if (value->unit == CSSParserValue::Function &&
                 value->function->args != 0 &&
