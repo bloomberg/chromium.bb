@@ -1557,23 +1557,25 @@ void RenderBox::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvali
     // FIXME: SVG should probably also go through this unified paint invalidation system.
     ASSERT(!needsLayout());
 
-    if (!shouldCheckForPaintInvalidation())
+    if (!shouldCheckForPaintInvalidation(paintInvalidationState))
         return;
 
     bool establishesNewPaintInvalidationContainer = isPaintInvalidationContainer();
     const RenderLayerModelObject& newPaintInvalidationContainer = *adjustCompositedContainerForSpecialAncestors(establishesNewPaintInvalidationContainer ? this : &paintInvalidationState.paintInvalidationContainer());
     ASSERT(&newPaintInvalidationContainer == containerForPaintInvalidation());
 
-    invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
+    InvalidationReason reason = invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
 
     // This is for the next invalidatePaintIfNeeded so must be after invalidatePaintIfNeeded.
     savePreviousBorderBoxSizeIfNeeded();
 
     PaintInvalidationState childTreeWalkState(paintInvalidationState, *this, newPaintInvalidationContainer);
+    if (reason == InvalidationLocationChange || reason == InvalidationFull)
+        childTreeWalkState.setForceCheckForPaintInvalidation();
     RenderObject::invalidateTreeIfNeeded(childTreeWalkState);
 }
 
-void RenderBox::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const RenderLayerModelObject& newPaintInvalidationContainer)
+InvalidationReason RenderBox::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const RenderLayerModelObject& newPaintInvalidationContainer)
 {
     const LayoutRect oldPaintInvalidationRect = previousPaintInvalidationRect();
     const LayoutPoint oldPositionFromPaintInvalidationContainer = previousPositionFromPaintInvalidationContainer();
@@ -1584,7 +1586,7 @@ void RenderBox::invalidatePaintIfNeeded(const PaintInvalidationState& paintInval
     // issue paint invalidations. We can then skip issuing of paint invalidations for the child
     // renderers as they'll be covered by the RenderView.
     if (view()->doingFullPaintInvalidation())
-        return;
+        return InvalidationNone;
 
     if ((onlyNeededPositionedMovementLayout() && compositingState() != PaintsIntoOwnBacking)
         || (shouldDoFullPaintInvalidationIfSelfPaintingLayer()
@@ -1593,7 +1595,8 @@ void RenderBox::invalidatePaintIfNeeded(const PaintInvalidationState& paintInval
         setShouldDoFullPaintInvalidation(true, MarkOnlyThis);
     }
 
-    if (!RenderObject::invalidatePaintIfNeeded(newPaintInvalidationContainer, oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer, paintInvalidationState))
+    InvalidationReason reason = RenderObject::invalidatePaintIfNeeded(newPaintInvalidationContainer, oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer, paintInvalidationState);
+    if (reason == InvalidationNone || reason == InvalidationIncremental)
         invalidatePaintForOverflowIfNeeded();
 
     // Issue paint invalidations for any scrollbars if there is a scrollable area for this renderer.
@@ -1603,11 +1606,12 @@ void RenderBox::invalidatePaintIfNeeded(const PaintInvalidationState& paintInval
         if (area->hasHorizontalBarDamage())
             invalidatePaintRectangle(area->horizontalBarDamage());
     }
+    return reason;
 }
 
-void RenderBox::clearPaintInvalidationState()
+void RenderBox::clearPaintInvalidationState(const PaintInvalidationState& paintInvalidationState)
 {
-    RenderBoxModelObject::clearPaintInvalidationState();
+    RenderBoxModelObject::clearPaintInvalidationState(paintInvalidationState);
 
     if (ScrollableArea* area = scrollableArea())
         area->resetScrollbarDamage();

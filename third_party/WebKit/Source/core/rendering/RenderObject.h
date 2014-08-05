@@ -33,6 +33,7 @@
 #include "core/fetch/ImageResourceClient.h"
 #include "core/html/HTMLElement.h"
 #include "core/rendering/HitTestRequest.h"
+#include "core/rendering/PaintInvalidationState.h"
 #include "core/rendering/PaintPhase.h"
 #include "core/rendering/RenderObjectChildList.h"
 #include "core/rendering/ScrollAlignment.h"
@@ -55,7 +56,6 @@ class HitTestLocation;
 class HitTestResult;
 class InlineBox;
 class InlineFlowBox;
-class PaintInvalidationState;
 class Position;
 class PositionWithAffinity;
 class PseudoStyleRequest;
@@ -859,7 +859,7 @@ public:
     // Invalidate the paint of a specific subrectangle within a given object. The rect |r| is in the object's coordinate space.
     void invalidatePaintRectangle(const LayoutRect&) const;
 
-    bool invalidatePaintIfNeeded(const RenderLayerModelObject& paintInvalidationContainer,
+    InvalidationReason invalidatePaintIfNeeded(const RenderLayerModelObject& paintInvalidationContainer,
         const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationContainer, const PaintInvalidationState&);
 
     // Walk the tree after layout issuing paint invalidations for renderers that have changed or moved, updating bounds that have changed, and clearing paint invalidation state.
@@ -1036,7 +1036,7 @@ public:
     bool onlyNeededPositionedMovementLayout() const { return m_bitfields.onlyNeededPositionedMovementLayout(); }
     void setOnlyNeededPositionedMovementLayout(bool b) { m_bitfields.setOnlyNeededPositionedMovementLayout(b); }
 
-    virtual void clearPaintInvalidationState();
+    virtual void clearPaintInvalidationState(const PaintInvalidationState&);
 
     // layoutDidGetCalled indicates whether this render object was re-laid-out
     // since the last call to setLayoutDidGetCalled(false) on this object.
@@ -1056,7 +1056,12 @@ public:
     bool neededLayoutBecauseOfChildren() const { return m_bitfields.neededLayoutBecauseOfChildren(); }
     void setNeededLayoutBecauseOfChildren(bool b) { m_bitfields.setNeededLayoutBecauseOfChildren(b); }
 
-    bool shouldCheckForPaintInvalidation()
+    bool shouldCheckForPaintInvalidation(const PaintInvalidationState& paintInvalidationState)
+    {
+        return paintInvalidationState.forceCheckForPaintInvalidation() || shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
+    }
+
+    bool shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState()
     {
         return layoutDidGetCalled() || mayNeedPaintInvalidation() || shouldDoFullPaintInvalidation() || shouldDoFullPaintInvalidationIfSelfPaintingLayer();
     }
@@ -1157,7 +1162,7 @@ private:
 
     void markContainingBlockChainForPaintInvalidation()
     {
-        for (RenderObject* container = this->container(); container && !container->shouldCheckForPaintInvalidation(); container = container->container())
+        for (RenderObject* container = this->container(); container && !container->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState(); container = container->container())
             container->setMayNeedPaintInvalidation(true);
     }
 

@@ -260,11 +260,7 @@ void RenderLayer::updateLayerPositionsAfterLayout(const RenderLayer* rootLayer, 
 
 void RenderLayer::updateLayerPositionRecursive(UpdateLayerPositionsFlags flags)
 {
-    if (updateLayerPosition())
-        flags |= ForceMayNeedPaintInvalidation;
-
-    if (flags & ForceMayNeedPaintInvalidation)
-        m_renderer->setMayNeedPaintInvalidation(true);
+    updateLayerPosition();
 
     if (hasOverflowControls()) {
         // FIXME: We should figure out the right time to position the overflow controls.

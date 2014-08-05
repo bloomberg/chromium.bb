@@ -683,7 +683,7 @@ protected:
         const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationContainer,
         const LayoutRect& newBounds, const LayoutPoint& newPositionFromPaintInvalidationContainer) OVERRIDE;
 
-    virtual void clearPaintInvalidationState() OVERRIDE;
+    virtual void clearPaintInvalidationState(const PaintInvalidationState&) OVERRIDE;
 #if ENABLE(ASSERT)
     virtual bool paintInvalidationStateIsDirty() const OVERRIDE;
 #endif
@@ -736,7 +736,7 @@ private:
     void savePreviousBorderBoxSizeIfNeeded();
     bool logicalHeightComputesAsNone(SizeType) const;
 
-    void invalidatePaintIfNeeded(const PaintInvalidationState&, const RenderLayerModelObject& newPaintInvalidationContainer);
+    InvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const RenderLayerModelObject& newPaintInvalidationContainer);
 
     bool isBox() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
 

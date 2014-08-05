@@ -1565,6 +1565,14 @@ void RenderInline::invalidateTreeIfNeeded(const PaintInvalidationState& paintInv
     bool establishesNewPaintInvalidationContainer = isPaintInvalidationContainer();
     const RenderLayerModelObject& newPaintInvalidationContainer = *adjustCompositedContainerForSpecialAncestors(establishesNewPaintInvalidationContainer ? this : &paintInvalidationState.paintInvalidationContainer());
     PaintInvalidationState childPaintInvalidationState(paintInvalidationState, *this, newPaintInvalidationContainer);
+
+    if (isRelPositioned()) {
+        const LayoutPoint oldPosition = previousPositionFromPaintInvalidationContainer();
+        const LayoutPoint newPosition = RenderLayer::positionFromPaintInvalidationContainer(this, &newPaintInvalidationContainer, &paintInvalidationState);
+        if (oldPosition != newPosition)
+            childPaintInvalidationState.setForceCheckForPaintInvalidation();
+    }
+
     RenderObject::invalidateTreeIfNeeded(childPaintInvalidationState);
 }
 

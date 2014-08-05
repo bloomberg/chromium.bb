@@ -16,6 +16,7 @@ namespace blink {
 PaintInvalidationState::PaintInvalidationState(RenderObject& renderer)
     : m_clipped(false)
     , m_cachedOffsetsEnabled(true)
+    , m_forceCheckForPaintInvalidation(false)
     , m_paintInvalidationContainer(*renderer.containerForPaintInvalidation())
     , m_renderer(renderer)
 {
@@ -43,6 +44,7 @@ PaintInvalidationState::PaintInvalidationState(RenderObject& renderer)
 PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& next, RenderSVGModelObject& renderer, const RenderLayerModelObject& paintInvalidationContainer)
     : m_clipped(next.m_clipped)
     , m_cachedOffsetsEnabled(next.m_cachedOffsetsEnabled)
+    , m_forceCheckForPaintInvalidation(next.m_forceCheckForPaintInvalidation)
     , m_paintInvalidationContainer(paintInvalidationContainer)
     , m_renderer(renderer)
 {
@@ -53,11 +55,17 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& nex
 PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& next, RenderInline& renderer, const RenderLayerModelObject& paintInvalidationContainer)
     : m_clipped(false)
     , m_cachedOffsetsEnabled(true)
+    , m_forceCheckForPaintInvalidation(next.m_forceCheckForPaintInvalidation)
     , m_paintInvalidationContainer(paintInvalidationContainer)
     , m_renderer(renderer)
 {
     bool establishesPaintInvalidationContainer = &m_renderer == &m_paintInvalidationContainer;
-    if (!establishesPaintInvalidationContainer) {
+    if (establishesPaintInvalidationContainer) {
+        // When we hit a new paint invalidation container, we don't need to
+        // continue forcing a check for paint invalidation because movement
+        // from our parents will just move the whole invalidation container.
+        m_forceCheckForPaintInvalidation = false;
+    } else {
         if (!renderer.supportsLayoutStateCachedOffsets() || !next.m_cachedOffsetsEnabled) {
             m_cachedOffsetsEnabled = false;
         } else if (m_cachedOffsetsEnabled) {
@@ -78,13 +86,19 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& nex
 PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& next, RenderBox& renderer, const RenderLayerModelObject& paintInvalidationContainer)
     : m_clipped(false)
     , m_cachedOffsetsEnabled(true)
+    , m_forceCheckForPaintInvalidation(next.m_forceCheckForPaintInvalidation)
     , m_paintInvalidationContainer(paintInvalidationContainer)
     , m_renderer(renderer)
 {
     bool establishesPaintInvalidationContainer = &m_renderer == &m_paintInvalidationContainer;
     bool fixed = m_renderer.isOutOfFlowPositioned() && m_renderer.style()->position() == FixedPosition;
 
-    if (!establishesPaintInvalidationContainer) {
+    if (establishesPaintInvalidationContainer) {
+        // When we hit a new paint invalidation container, we don't need to
+        // continue forcing a check for paint invalidation because movement
+        // from our parents will just move the whole invalidation container.
+        m_forceCheckForPaintInvalidation = false;
+    } else {
         if (!renderer.supportsLayoutStateCachedOffsets() || !next.m_cachedOffsetsEnabled) {
             m_cachedOffsetsEnabled = false;
         } else {

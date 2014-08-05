@@ -1604,10 +1604,10 @@ void RenderObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInv
 {
     // If we didn't need paint invalidation then our children don't need as well.
     // Skip walking down the tree as everything should be fine below us.
-    if (!shouldCheckForPaintInvalidation())
+    if (!shouldCheckForPaintInvalidation(paintInvalidationState))
         return;
 
-    clearPaintInvalidationState();
+    clearPaintInvalidationState(paintInvalidationState);
 
     for (RenderObject* child = slowFirstChild(); child; child = child->nextSibling()) {
         if (!child->isOutOfFlowPositioned())
@@ -1623,11 +1623,11 @@ static PassRefPtr<TraceEvent::ConvertableToTraceFormat> jsonObjectForOldAndNewRe
     return value;
 }
 
-bool RenderObject::invalidatePaintIfNeeded(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutPoint& oldLocation, const PaintInvalidationState& paintInvalidationState)
+InvalidationReason RenderObject::invalidatePaintIfNeeded(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutPoint& oldLocation, const PaintInvalidationState& paintInvalidationState)
 {
     RenderView* v = view();
     if (v->document().printing())
-        return false; // Don't invalidate paints if we're printing.
+        return InvalidationNone; // Don't invalidate paints if we're printing.
 
     const LayoutRect& newBounds = previousPaintInvalidationRect();
     const LayoutPoint& newLocation = previousPositionFromPaintInvalidationContainer();
@@ -1644,15 +1644,15 @@ bool RenderObject::invalidatePaintIfNeeded(const RenderLayerModelObject& paintIn
     InvalidationReason invalidationReason = getPaintInvalidationReason(paintInvalidationContainer, oldBounds, oldLocation, newBounds, newLocation);
 
     if (invalidationReason == InvalidationNone)
-        return false;
+        return invalidationReason;
 
     if (invalidationReason == InvalidationIncremental) {
         incrementallyInvalidatePaint(paintInvalidationContainer, oldBounds, newBounds);
-        return false;
+        return invalidationReason;
     }
 
     fullyInvalidatePaint(paintInvalidationContainer, invalidationReason, oldBounds, newBounds);
-    return true;
+    return invalidationReason;
 }
 
 InvalidationReason RenderObject::getPaintInvalidationReason(const RenderLayerModelObject& paintInvalidationContainer,
@@ -3399,11 +3399,11 @@ bool RenderObject::isRelayoutBoundaryForInspector() const
     return objectIsRelayoutBoundary(this);
 }
 
-void RenderObject::clearPaintInvalidationState()
+void RenderObject::clearPaintInvalidationState(const PaintInvalidationState& paintInvalidationState)
 {
     // paintInvalidationStateIsDirty should be kept in sync with the
     // booleans that are cleared below.
-    ASSERT(paintInvalidationStateIsDirty());
+    ASSERT(paintInvalidationState.forceCheckForPaintInvalidation() || paintInvalidationStateIsDirty());
     setShouldDoFullPaintInvalidation(false);
     setShouldDoFullPaintInvalidationIfSelfPaintingLayer(false);
     setOnlyNeededPositionedMovementLayout(false);

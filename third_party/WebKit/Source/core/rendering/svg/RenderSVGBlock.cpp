@@ -114,7 +114,7 @@ bool RenderSVGBlock::nodeAtPoint(const HitTestRequest&, HitTestResult&, const Hi
 
 void RenderSVGBlock::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
-    if (!shouldCheckForPaintInvalidation())
+    if (!shouldCheckForPaintInvalidation(paintInvalidationState))
         return;
 
     ForceHorriblySlowRectMapping slowRectMapping(&paintInvalidationState);

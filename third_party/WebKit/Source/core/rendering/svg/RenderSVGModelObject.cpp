@@ -131,7 +131,7 @@ void RenderSVGModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& 
     // FIXME: Should share code with RenderBox::invalidateTreeIfNeeded().
     ASSERT(!needsLayout());
 
-    if (!shouldCheckForPaintInvalidation())
+    if (!shouldCheckForPaintInvalidation(paintInvalidationState))
         return;
 
     invalidatePaintIfNeeded(paintInvalidationState);

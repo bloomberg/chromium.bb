@@ -360,8 +360,7 @@ void RenderBlock::invalidateTreeIfNeeded(const PaintInvalidationState& paintInva
     // we have to make sure we go through any positioned objects as they won't be seen in
     // the normal tree walk.
 
-    if (shouldCheckForPaintInvalidation())
-        RenderBox::invalidateTreeIfNeeded(paintInvalidationState);
+    RenderBox::invalidateTreeIfNeeded(paintInvalidationState);
 
     // Take care of positioned objects. This is required as PaintInvalidationState keeps a single clip rect.
     if (TrackedRendererListHashSet* positionedObjects = this->positionedObjects()) {
