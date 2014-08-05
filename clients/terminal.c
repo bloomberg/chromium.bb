@@ -447,6 +447,7 @@ struct terminal {
 	int width, height, row, column, max_width;
 	uint32_t buffer_height;
 	uint32_t start, end, saved_start, log_size;
+	wl_fixed_t smooth_scroll;
 	int saved_row, saved_column;
 	int scrolling;
 	int send_cursor_position;
@@ -2785,6 +2786,55 @@ motion_handler(struct widget *widget,
 	return CURSOR_IBEAM;
 }
 
+/* This magnitude is chosen rather arbitrarily. Really, the scrolling
+ * should happen on a (fractional) pixel basis, not a line basis. */
+#define AXIS_UNITS_PER_LINE 256
+
+static void
+axis_handler(struct widget *widget,
+	     struct input *input, uint32_t time,
+	     uint32_t axis,
+	     wl_fixed_t value,
+	     void *data)
+{
+	struct terminal *terminal = data;
+	int lines;
+
+	if (axis != WL_POINTER_AXIS_VERTICAL_SCROLL)
+		return;
+
+	terminal->smooth_scroll += value;
+	lines = terminal->smooth_scroll / AXIS_UNITS_PER_LINE;
+	terminal->smooth_scroll -= lines * AXIS_UNITS_PER_LINE;
+
+	if (lines > 0) {
+		if (terminal->scrolling) {
+			if ((uint32_t)lines > terminal->saved_start - terminal->start)
+				lines = terminal->saved_start - terminal->start;
+		} else {
+			lines = 0;
+		}
+	} else if (lines < 0) {
+		uint32_t neg_lines = -lines;
+
+		if (neg_lines > terminal->log_size + terminal->start - terminal->end)
+			lines = terminal->end - terminal->log_size - terminal->start;
+	}
+
+	if (lines) {
+		if (!terminal->scrolling)
+			terminal->saved_start = terminal->start;
+		terminal->scrolling = 1;
+
+		terminal->start += lines;
+		terminal->row -= lines;
+		terminal->selection_start_row -= lines;
+		terminal->selection_end_row -= lines;
+
+		widget_schedule_redraw(widget);
+	}
+}
+
 static void
 output_handler(struct window *window, struct output *output, int enter,
 	       void *data)
@@ -2880,6 +2930,7 @@ terminal_create(struct display *display)
 	widget_set_button_handler(terminal->widget, button_handler);
 	widget_set_enter_handler(terminal->widget, enter_handler);
 	widget_set_motion_handler(terminal->widget, motion_handler);
+	widget_set_axis_handler(terminal->widget, axis_handler);
 	widget_set_touch_up_handler(terminal->widget, touch_up_handler);
 	widget_set_touch_down_handler(terminal->widget, touch_down_handler);
 	widget_set_touch_motion_handler(terminal->widget, touch_motion_handler);
