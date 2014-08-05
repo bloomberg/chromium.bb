@@ -10,20 +10,11 @@
 // cast extension. This line prevents an exception on using localStorage.
 window.__defineGetter__('localStorage', function() { return {}; });
 
-/**
- * @type {string}
- * @const
- */
-var CAST_COMMAND_LINE_FLAG = 'enable-video-player-chromecast-support';
-
 // THIS IS A TEST APP.
 // TODO(yoshiki): Fix this before launch.
 var APPLICATION_ID = '214CC863';
 
-chrome.commandLinePrivate.hasSwitch(CAST_COMMAND_LINE_FLAG, function(result) {
-  if (!result)
-    return;
-
+util.addPageLoadHandler(function() {
   // TODO(yoshiki): Check if the Google Cast extension is installed or not.
   // If not installed, we should skip all cast-related functionality.
 
