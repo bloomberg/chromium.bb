@@ -270,6 +270,8 @@ class SynchronousDrag : public ui::DragSourceWin {
 
   void EndDragExternally() {
     CancelDrag();
+    DCHECK(drag_view_);
+    drag_view_->SetVisible(true);
     drag_view_ = NULL;
   }
 
