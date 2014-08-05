@@ -11,6 +11,7 @@ class SimplePage(page_module.Page):
     super(SimplePage, self).__init__(url=url, page_set=page_set)
     self.credentials_path = 'data/credentials.json'
     self.archive_data_file = 'data/simple_mobile_sites.json'
+    self.disabled = 'Times out on Windows; crbug.com/400922'
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
