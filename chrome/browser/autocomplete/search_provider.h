@@ -45,7 +45,9 @@ class URLFetcher;
 // suggestions.
 class SearchProvider : public BaseSearchProvider {
  public:
-  SearchProvider(AutocompleteProviderListener* listener, Profile* profile);
+  SearchProvider(AutocompleteProviderListener* listener,
+                 TemplateURLService* template_url_service,
+                 Profile* profile);
 
   // Extracts the suggest response metadata which SearchProvider previously
   // stored for |match|.

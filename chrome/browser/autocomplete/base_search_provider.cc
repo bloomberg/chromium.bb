@@ -16,9 +16,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/search.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -29,7 +26,6 @@
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sync_driver/sync_prefs.h"
-#include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/url_request/url_fetcher.h"
@@ -99,10 +95,12 @@ const int BaseSearchProvider::kKeywordProviderURLFetcherID = 2;
 const int BaseSearchProvider::kDeletionURLFetcherID = 3;
 
 BaseSearchProvider::BaseSearchProvider(AutocompleteProviderListener* listener,
+                                       TemplateURLService* template_url_service,
                                        Profile* profile,
                                        AutocompleteProvider::Type type)
     : AutocompleteProvider(type),
       listener_(listener),
+      template_url_service_(template_url_service),
       profile_(profile),
       field_trial_triggered_(false),
       field_trial_triggered_in_session_(false),
@@ -149,9 +147,8 @@ void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
 
   HistoryService* const history_service =
       HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
-  TemplateURL* template_url = match.GetTemplateURL(template_url_service, false);
+  TemplateURL* template_url =
+      match.GetTemplateURL(template_url_service_, false);
   // This may be NULL if the template corresponding to the keyword has been
   // deleted or there is no keyword set.
   if (template_url != NULL) {
@@ -197,12 +194,11 @@ void BaseSearchProvider::SetDeletionURL(const std::string& deletion_url,
                                         AutocompleteMatch* match) {
   if (deletion_url.empty())
     return;
-  TemplateURLService* template_service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
-  if (!template_service)
+  if (!template_url_service_)
     return;
-  GURL url = template_service->GetDefaultSearchProvider()->GenerateSearchURL(
-      template_service->search_terms_data());
+  GURL url =
+      template_url_service_->GetDefaultSearchProvider()->GenerateSearchURL(
+          template_url_service_->search_terms_data());
   url = url.GetOrigin().Resolve(deletion_url);
   if (url.is_valid()) {
     match->RecordAdditionalInfo(BaseSearchProvider::kDeletionUrlKey,
@@ -295,6 +291,7 @@ bool BaseSearchProvider::ZeroSuggestEnabled(
     const GURL& suggest_url,
     const TemplateURL* template_url,
     OmniboxEventProto::PageClassification page_classification,
+    const SearchTermsData& search_terms_data,
     Profile* profile) {
   if (!OmniboxFieldTrial::InZeroSuggestFieldTrial())
     return false;
@@ -324,7 +321,6 @@ bool BaseSearchProvider::ZeroSuggestEnabled(
 
   // Only make the request if we know that the provider supports zero suggest
   // (currently only the prepopulated Google provider).
-  UIThreadSearchTermsData search_terms_data(profile);
   if (template_url == NULL ||
       !template_url->SupportsReplacement(search_terms_data) ||
       TemplateURLPrepopulateData::GetEngineType(
@@ -340,9 +336,10 @@ bool BaseSearchProvider::CanSendURL(
     const GURL& suggest_url,
     const TemplateURL* template_url,
     OmniboxEventProto::PageClassification page_classification,
+    const SearchTermsData& search_terms_data,
     Profile* profile) {
   if (!ZeroSuggestEnabled(suggest_url, template_url, page_classification,
-                          profile))
+                          search_terms_data, profile))
     return false;
 
   if (!current_page_url.is_valid())
@@ -412,7 +409,7 @@ void BaseSearchProvider::AddMatchToMap(
   AutocompleteMatch match = CreateSearchSuggestion(
       this, GetInput(result.from_keyword_provider()), result,
       GetTemplateURL(result.from_keyword_provider()),
-      UIThreadSearchTermsData(profile_), accepted_suggestion,
+      template_url_service_->search_terms_data(), accepted_suggestion,
       ShouldAppendExtraParams(result));
   if (!match.destination_url.is_valid())
     return;

@@ -86,7 +86,7 @@ void ZeroSuggestProviderTest::SetUp() {
   turl_model->Add(default_t_url_);
   turl_model->SetUserSelectedDefaultSearchProvider(default_t_url_);
 
-  provider_ = ZeroSuggestProvider::Create(this, &profile_);
+  provider_ = ZeroSuggestProvider::Create(this, turl_model, &profile_);
 }
 
 void ZeroSuggestProviderTest::TearDown() {

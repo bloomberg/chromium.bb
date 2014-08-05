@@ -28,9 +28,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ui/search/instant_controller.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/autocomplete/autocomplete_provider_listener.h"
 #include "components/autocomplete/url_prefix.h"
@@ -133,9 +130,11 @@ class SearchProvider::CompareScoredResults {
 int SearchProvider::kMinimumTimeBetweenSuggestQueriesMs = 100;
 
 SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
+                               TemplateURLService* template_url_service,
                                Profile* profile)
-    : BaseSearchProvider(listener, profile, AutocompleteProvider::TYPE_SEARCH),
-      providers_(TemplateURLServiceFactory::GetForProfile(profile)) {
+    : BaseSearchProvider(listener, template_url_service, profile,
+                         AutocompleteProvider::TYPE_SEARCH),
+      providers_(template_url_service) {
 }
 
 // static
@@ -667,7 +666,8 @@ net::URLFetcher* SearchProvider::CreateSuggestFetcher(
   // Send the current page URL if user setting and URL requirements are met and
   // the user is in the field trial.
   if (CanSendURL(current_page_url_, suggest_url, template_url,
-                 input.current_page_classification(), profile_) &&
+                 input.current_page_classification(),
+                 template_url_service_->search_terms_data(), profile_) &&
       OmniboxFieldTrial::InZeroSuggestAfterTypingFieldTrial()) {
     search_term_args.current_page_url = current_page_url_.spec();
     // Create the suggest URL again with the current page URL.

@@ -22,9 +22,7 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "components/autocomplete/autocomplete_input.h"
 #include "components/autocomplete/autocomplete_match.h"
 #include "components/autocomplete/autocomplete_provider_listener.h"
@@ -76,8 +74,9 @@ const int kDefaultZeroSuggestRelevance = 100;
 // static
 ZeroSuggestProvider* ZeroSuggestProvider::Create(
     AutocompleteProviderListener* listener,
+    TemplateURLService* template_url_service,
     Profile* profile) {
-  return new ZeroSuggestProvider(listener, profile);
+  return new ZeroSuggestProvider(listener, template_url_service, profile);
 }
 
 // static
@@ -118,7 +117,8 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
 
   // No need to send the current page URL in personalized suggest field trial.
   if (CanSendURL(input.current_url(), suggest_url, default_provider,
-                 current_page_classification_, profile_) &&
+                 current_page_classification_,
+                 template_url_service_->search_terms_data(), profile_) &&
       !OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial()) {
     // Update suggest_url to include the current_page_url.
     search_term_args.current_page_url = current_query_;
@@ -164,10 +164,10 @@ void ZeroSuggestProvider::ModifyProviderInfo(
 
 ZeroSuggestProvider::ZeroSuggestProvider(
   AutocompleteProviderListener* listener,
+  TemplateURLService* template_url_service,
   Profile* profile)
-    : BaseSearchProvider(listener, profile,
+    : BaseSearchProvider(listener, template_url_service, profile,
                          AutocompleteProvider::TYPE_ZERO_SUGGEST),
-      template_url_service_(TemplateURLServiceFactory::GetForProfile(profile)),
       results_from_cache_(false),
       weak_ptr_factory_(this) {
 }
@@ -428,7 +428,8 @@ bool ZeroSuggestProvider::CanShowZeroSuggestWithoutSendingURL(
     const GURL& current_page_url) const {
   if (!ZeroSuggestEnabled(suggest_url,
                           template_url_service_->GetDefaultSearchProvider(),
-                          current_page_classification_, profile_))
+                          current_page_classification_,
+                          template_url_service_->search_terms_data(), profile_))
     return false;
 
   // If we cannot send URLs, then only the MostVisited and Personalized

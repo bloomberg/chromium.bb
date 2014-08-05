@@ -200,13 +200,14 @@ AutocompleteController::AutocompleteController(
   }
 #endif
   if (provider_types & AutocompleteProvider::TYPE_SEARCH) {
-    search_provider_ = new SearchProvider(this, profile);
+    search_provider_ = new SearchProvider(this, template_url_service, profile);
     providers_.push_back(search_provider_);
   }
   if (provider_types & AutocompleteProvider::TYPE_SHORTCUTS)
     providers_.push_back(new ShortcutsProvider(profile));
   if (provider_types & AutocompleteProvider::TYPE_ZERO_SUGGEST) {
-    zero_suggest_provider_ = ZeroSuggestProvider::Create(this, profile);
+    zero_suggest_provider_ = ZeroSuggestProvider::Create(
+        this, template_url_service, profile);
     if (zero_suggest_provider_)
       providers_.push_back(zero_suggest_provider_);
   }

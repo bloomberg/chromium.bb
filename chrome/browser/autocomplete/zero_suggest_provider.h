@@ -51,6 +51,7 @@ class ZeroSuggestProvider : public BaseSearchProvider {
  public:
   // Creates and returns an instance of this provider.
   static ZeroSuggestProvider* Create(AutocompleteProviderListener* listener,
+                                     TemplateURLService* template_url_service,
                                      Profile* profile);
 
   // Registers a preference used to cache zero suggest results.
@@ -71,6 +72,7 @@ class ZeroSuggestProvider : public BaseSearchProvider {
 
  private:
   ZeroSuggestProvider(AutocompleteProviderListener* listener,
+                      TemplateURLService* template_url_service,
                       Profile* profile);
 
   virtual ~ZeroSuggestProvider();
@@ -131,9 +133,6 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   // Checks whether we have a set of zero suggest results cached, and if so
   // populates |matches_| with cached results.
   void MaybeUseCachedSuggestions();
-
-  // Used to build default search engine URLs for suggested queries.
-  TemplateURLService* template_url_service_;
 
   // The URL for which a suggestion fetch is pending.
   std::string current_query_;

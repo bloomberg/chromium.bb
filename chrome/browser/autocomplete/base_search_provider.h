@@ -26,8 +26,10 @@
 class AutocompleteProviderListener;
 class GURL;
 class Profile;
+class SearchTermsData;
 class SuggestionDeletionHandler;
 class TemplateURL;
+class TemplateURLService;
 
 namespace base {
 class DictionaryValue;
@@ -51,6 +53,7 @@ class BaseSearchProvider : public AutocompleteProvider,
   static const int kDeletionURLFetcherID;
 
   BaseSearchProvider(AutocompleteProviderListener* listener,
+                     TemplateURLService* template_url_service,
                      Profile* profile,
                      AutocompleteProvider::Type type);
 
@@ -142,6 +145,7 @@ class BaseSearchProvider : public AutocompleteProvider,
      const GURL& suggest_url,
      const TemplateURL* template_url,
      metrics::OmniboxEventProto::PageClassification page_classification,
+     const SearchTermsData& search_terms_data,
      Profile* profile);
 
   // Returns whether we can send the URL of the current page in any suggest
@@ -165,6 +169,7 @@ class BaseSearchProvider : public AutocompleteProvider,
       const GURL& suggest_url,
       const TemplateURL* template_url,
       metrics::OmniboxEventProto::PageClassification page_classification,
+      const SearchTermsData& search_terms_data,
       Profile* profile);
 
   // net::URLFetcherDelegate:
@@ -252,6 +257,7 @@ class BaseSearchProvider : public AutocompleteProvider,
   virtual void UpdateMatches() = 0;
 
   AutocompleteProviderListener* listener_;
+  TemplateURLService* template_url_service_;
   Profile* profile_;
 
   // Whether a field trial, if any, has triggered in the most recent
