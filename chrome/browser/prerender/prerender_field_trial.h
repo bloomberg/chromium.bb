@@ -71,6 +71,9 @@ int GetPrerenderServiceBehaviorID();
 // Returns the fetch timeout to be used for the prerender service, in ms.
 int GetPrerenderServiceFetchTimeoutMs();
 
+// Returns the timeout for entries in the prefetch list, in seconds.
+int GetPrerenderPrefetchListTimeoutSeconds();
+
 // Returns the TTL to be used for the local predictor.
 int GetLocalPredictorTTLSeconds();
 

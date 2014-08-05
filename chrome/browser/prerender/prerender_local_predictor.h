@@ -46,6 +46,8 @@ class PrerenderLocalPredictor : public history::VisitDatabaseObserver,
  public:
   struct LocalPredictorURLInfo;
   struct CandidatePrerenderInfo;
+  // A class simulating a set of URLs prefetched, for statistical purposes.
+  class PrefetchList;
   enum Event {
     EVENT_CONSTRUCTED = 0,
     EVENT_INIT_SCHEDULED = 1,
@@ -137,6 +139,9 @@ class PrerenderLocalPredictor : public history::VisitDatabaseObserver,
     EVENT_TAB_HELPER_URL_SEEN_MATCH_BROWSER_NAVIGATE = 87,
     EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MATCH_ENTRY = 88,
     EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MATCH_BROWSER_NAVIGATE = 89,
+    EVENT_PREFETCH_LIST_ADDED = 90,
+    EVENT_PREFETCH_LIST_SEEN_TABCONTENTS = 91,
+    EVENT_PREFETCH_LIST_SEEN_HISTORY = 92,
     EVENT_MAX_VALUE
   };
 
@@ -188,8 +193,7 @@ class PrerenderLocalPredictor : public history::VisitDatabaseObserver,
   void ContinuePrerenderCheck(scoped_ptr<CandidatePrerenderInfo> info);
   void LogCandidateURLStats(const GURL& url) const;
   void IssuePrerender(CandidatePrerenderInfo* info,
-                      LocalPredictorURLInfo* url_info,
-                      PrerenderProperties* prerender_properties);
+                      LocalPredictorURLInfo* url_info);
   void MaybeCancelURLFetcher(net::URLFetcher* fetcher);
   // Returns true if the parsed response is semantically correct and could
   // be fully applied.
@@ -227,6 +231,8 @@ class PrerenderLocalPredictor : public history::VisitDatabaseObserver,
   base::hash_set<int64> url_whitelist_;
 
   base::WeakPtrFactory<PrerenderLocalPredictor> weak_factory_;
+
+  scoped_ptr<PrefetchList> prefetch_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderLocalPredictor);
 };

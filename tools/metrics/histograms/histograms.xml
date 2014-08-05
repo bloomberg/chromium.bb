@@ -45729,6 +45729,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="88" label="Tab Helper URL seen namespace match entry"/>
   <int value="89"
       label="Tab Helper URL seen namespace match browser navigation"/>
+  <int value="90" label="Prefetch List item added"/>
+  <int value="91" label="Prefetch list seen tab contents"/>
+  <int value="92" label="Prefetch list seen history"/>
 </enum>
 
 <enum name="PrerenderLocalVisitCoreTransition" type="int">

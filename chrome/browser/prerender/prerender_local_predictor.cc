@@ -70,6 +70,7 @@ static const size_t kURLHashSize = 5;
 static const int kNumPrerenderCandidates = 5;
 static const int kInvalidProcessId = -1;
 static const int kInvalidFrameId = -1;
+static const int kMaxPrefetchItems = 100;
 
 }  // namespace
 
@@ -398,11 +399,111 @@ struct PrerenderLocalPredictor::PrerenderProperties {
   bool would_have_matched;
 };
 
+// A class simulating a set of URLs prefetched, for statistical purposes.
+class PrerenderLocalPredictor::PrefetchList {
+ public:
+  enum SeenType {
+    SEEN_TABCONTENTS_OBSERVER,
+    SEEN_HISTORY,
+    SEEN_MAX_VALUE
+  };
+
+  PrefetchList() {}
+  ~PrefetchList() {
+    STLDeleteValues(&entries_);
+  }
+
+  // Adds a new URL being prefetched. If the URL is already in the list,
+  // nothing will happen. Returns whether a new prefetch was added.
+  bool AddURL(const GURL& url) {
+    ExpireOldItems();
+    string url_string = url.spec().c_str();
+    base::hash_map<string, ListEntry*>::iterator it = entries_.find(url_string);
+    if (it != entries_.end()) {
+      // If a prefetch previously existed, and has not been seen yet in either
+      // a tab contents or a history, we will not re-issue it. Otherwise, if it
+      // may have been consumed by either tab contents or history, we will
+      // permit re-issuing another one.
+      if (!it->second->seen_history_ &&
+          !it->second->seen_tabcontents_) {
+        return false;
+      }
+    }
+    ListEntry* entry = new ListEntry(url_string);
+    entries_[entry->url_] = entry;
+    entry_list_.push_back(entry);
+    ExpireOldItems();
+    return true;
+  }
+
+  // Marks the URL provided as seen in the context specified. Returns true
+  // iff the item is currently in the list and had not been seen before in
+  // the context specified, i.e. the marking was successful.
+  bool MarkURLSeen(const GURL& url, SeenType type) {
+    ExpireOldItems();
+    bool return_value = false;
+    base::hash_map<string, ListEntry*>::iterator it =
+        entries_.find(url.spec().c_str());
+    if (it == entries_.end())
+      return return_value;
+    if (type == SEEN_TABCONTENTS_OBSERVER && !it->second->seen_tabcontents_) {
+      it->second->seen_tabcontents_ = true;
+      return_value = true;
+    }
+    if (type == SEEN_HISTORY && !it->second->seen_history_) {
+      it->second->seen_history_ = true;
+      return_value = true;
+    }
+    // If the item has been seen in both the history and in tab contents,
+    // erase it from the map to make room for new prefetches.
+    if (it->second->seen_tabcontents_ && it->second->seen_history_)
+      entries_.erase(url.spec().c_str());
+    return return_value;
+  }
+
+ private:
+  struct ListEntry {
+    explicit ListEntry(const string& url)
+        : url_(url),
+          add_time_(GetCurrentTime()),
+          seen_tabcontents_(false),
+          seen_history_(false) {
+    }
+    std::string url_;
+    base::Time add_time_;
+    bool seen_tabcontents_;
+    bool seen_history_;
+  };
+
+  void ExpireOldItems() {
+    base::Time expiry_cutoff = GetCurrentTime() -
+        base::TimeDelta::FromSeconds(GetPrerenderPrefetchListTimeoutSeconds());
+    while (!entry_list_.empty() &&
+           (entry_list_.front()->add_time_ < expiry_cutoff ||
+            entries_.size() > kMaxPrefetchItems)) {
+      ListEntry* entry = entry_list_.front();
+      entry_list_.pop_front();
+      // If the entry to be deleted is still the one active in entries_,
+      // we must erase it from entries_.
+      base::hash_map<string, ListEntry*>::iterator it =
+          entries_.find(entry->url_);
+      if (it != entries_.end() && it->second == entry)
+        entries_.erase(entry->url_);
+      delete entry;
+    }
+  }
+
+  base::hash_map<string, ListEntry*> entries_;
+  std::list<ListEntry*> entry_list_;
+  DISALLOW_COPY_AND_ASSIGN(PrefetchList);
+};
+
 PrerenderLocalPredictor::PrerenderLocalPredictor(
     PrerenderManager* prerender_manager)
     : prerender_manager_(prerender_manager),
       is_visit_database_observer_(false),
-      weak_factory_(this) {
+      weak_factory_(this),
+      prefetch_list_(new PrefetchList()) {
   RecordEvent(EVENT_CONSTRUCTED);
   if (base::MessageLoop::current()) {
     timer_.Start(FROM_HERE,
@@ -574,6 +675,11 @@ void PrerenderLocalPredictor::OnLookupURL(
   if (!info->source_url_.url_lookup_success) {
     RecordEvent(EVENT_PRERENDER_URL_LOOKUP_FAILED);
     return;
+  }
+
+  if (prefetch_list_->MarkURLSeen(info->source_url_.url,
+                                  PrefetchList::SEEN_HISTORY)) {
+    RecordEvent(EVENT_PREFETCH_LIST_SEEN_HISTORY);
   }
 
   if (info->candidate_urls_.size() > 0 &&
@@ -1125,10 +1231,9 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
   scoped_refptr<SafeBrowsingDatabaseManager> sb_db_manager =
       g_browser_process->safe_browsing_service()->database_manager();
 #endif
-  PrerenderProperties* prerender_properties = NULL;
   int num_issued = 0;
   for (int i = 0; i < static_cast<int>(info->candidate_urls_.size()); i++) {
-    if (num_issued > GetLocalPredictorMaxLaunchPrerenders())
+    if (num_issued >= GetLocalPredictorMaxLaunchPrerenders())
       return;
     RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_EXAMINE_NEXT_URL);
     url_info.reset(new LocalPredictorURLInfo(info->candidate_urls_[i]));
@@ -1162,13 +1267,6 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
       url_info.reset(NULL);
       continue;
     }
-    prerender_properties =
-        GetIssuedPrerenderSlotForPriority(url_info->url, url_info->priority);
-    if (!prerender_properties) {
-      RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_PRIORITY_TOO_LOW);
-      url_info.reset(NULL);
-      continue;
-    }
     if (!SkipLocalPredictorFragment() &&
         URLsIdenticalIgnoringFragments(info->source_url_.url,
                                        url_info->url)) {
@@ -1185,7 +1283,7 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
       // For root pages, we assume that they are reasonably safe, and we
       // will just prerender them without any additional checks.
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_ROOT_PAGE);
-      IssuePrerender(info.get(), url_info.get(), prerender_properties);
+      IssuePrerender(info.get(), url_info.get());
       num_issued++;
       continue;
     }
@@ -1205,7 +1303,7 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
       // If a page is on the side-effect free whitelist, we will just prerender
       // it without any additional checks.
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_ON_SIDE_EFFECT_FREE_WHITELIST);
-      IssuePrerender(info.get(), url_info.get(), prerender_properties);
+      IssuePrerender(info.get(), url_info.get());
       num_issued++;
       continue;
     }
@@ -1213,14 +1311,14 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
     if (!SkipLocalPredictorServiceWhitelist() &&
         url_info->service_whitelist && url_info->service_whitelist_lookup_ok) {
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_ON_SERVICE_WHITELIST);
-      IssuePrerender(info.get(), url_info.get(), prerender_properties);
+      IssuePrerender(info.get(), url_info.get());
       num_issued++;
       continue;
     }
     if (!SkipLocalPredictorLoggedIn() &&
         !url_info->logged_in && url_info->logged_in_lookup_ok) {
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_NOT_LOGGED_IN);
-      IssuePrerender(info.get(), url_info.get(), prerender_properties);
+      IssuePrerender(info.get(), url_info.get());
       num_issued++;
       continue;
     }
@@ -1229,7 +1327,7 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
       url_info.reset(NULL);
     } else {
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_FALLTHROUGH_PRERENDERING);
-      IssuePrerender(info.get(), url_info.get(), prerender_properties);
+      IssuePrerender(info.get(), url_info.get());
       num_issued++;
       continue;
     }
@@ -1238,9 +1336,16 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
 
 void PrerenderLocalPredictor::IssuePrerender(
     CandidatePrerenderInfo* info,
-    LocalPredictorURLInfo* url_info,
-    PrerenderProperties* prerender_properties) {
+    LocalPredictorURLInfo* url_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (prefetch_list_->AddURL(url_info->url))
+    RecordEvent(EVENT_PREFETCH_LIST_ADDED);
+  PrerenderProperties* prerender_properties =
+      GetIssuedPrerenderSlotForPriority(url_info->url, url_info->priority);
+  if (!prerender_properties) {
+    RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_PRIORITY_TOO_LOW);
+    return;
+  }
   RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_ISSUING_PRERENDER);
   DCHECK(prerender_properties != NULL);
   DCHECK(info != NULL);
@@ -1329,6 +1434,8 @@ void PrerenderLocalPredictor::OnTabHelperURLSeen(
     const GURL& url, WebContents* web_contents) {
   RecordEvent(EVENT_TAB_HELPER_URL_SEEN);
 
+  if (prefetch_list_->MarkURLSeen(url, PrefetchList::SEEN_TABCONTENTS_OBSERVER))
+    RecordEvent(EVENT_PREFETCH_LIST_SEEN_TABCONTENTS);
   bool browser_navigate_initiated = false;
   const content::NavigationEntry* entry =
       web_contents->GetController().GetPendingEntry();

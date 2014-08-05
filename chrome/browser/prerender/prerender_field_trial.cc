@@ -54,6 +54,7 @@ const char kPrerenderQueryPrerenderServiceCandidateURLsKeyName[] =
 const char kPrerenderServiceBehaviorIDKeyName[] = "PrerenderServiceBehaviorID";
 const char kPrerenderServiceFetchTimeoutKeyName[] =
     "PrerenderServiceFetchTimeoutMs";
+const char kPrefetchListTimeoutKeyName[] = "PrefetchListTimeoutSeconds";
 const char kPrerenderTTLKeyName[] = "PrerenderTTLSeconds";
 const char kPrerenderPriorityHalfLifeTimeKeyName[] =
     "PrerenderPriorityHalfLifeTimeSeconds";
@@ -72,6 +73,9 @@ const char kDefaultPrerenderServiceURLPrefix[] =
 const int kMinPrerenderServiceTimeoutMs = 1;
 const int kMaxPrerenderServiceTimeoutMs = 10000;
 const int kDefaultPrerenderServiceTimeoutMs = 1000;
+const int kMinPrefetchListTimeoutSeconds = 1;
+const int kMaxPrefetchListTimeoutSeconds = 1800;
+const int kDefaultPrefetchListTimeoutSeconds = 300;
 const char kSkipPrerenderLocalCanadidates[] = "SkipPrerenderLocalCandidates";
 const char kSkipPrerenderServiceCanadidates[] =
     "SkipPrerenderServiceCandidates";
@@ -380,6 +384,15 @@ int GetPrerenderServiceFetchTimeoutMs() {
   return (result < kMinPrerenderServiceTimeoutMs ||
           result > kMaxPrerenderServiceTimeoutMs) ?
       kDefaultPrerenderServiceTimeoutMs : result;
+}
+
+int GetPrerenderPrefetchListTimeoutSeconds() {
+  int result;
+  StringToInt(GetLocalPredictorSpecValue(kPrefetchListTimeoutKeyName), &result);
+  // If the value is outside the valid range, use the default value.
+  return (result < kMinPrefetchListTimeoutSeconds ||
+          result > kMaxPrefetchListTimeoutSeconds) ?
+      kDefaultPrefetchListTimeoutSeconds : result;
 }
 
 int GetLocalPredictorTTLSeconds() {
