@@ -36,9 +36,6 @@ class ManagePasswordsIconView : public ManagePasswordsIcon,
   virtual void UpdateVisibleUI() OVERRIDE;
 
  private:
-  // The ID of the icon and text resources that are currently displayed.
-  int icon_id_;
-  int tooltip_text_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsIconView);
 };

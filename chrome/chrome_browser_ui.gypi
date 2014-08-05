@@ -557,6 +557,8 @@
       'browser/ui/cocoa/location_bar/location_bar_view_mac.mm',
       'browser/ui/cocoa/location_bar/location_icon_decoration.h',
       'browser/ui/cocoa/location_bar/location_icon_decoration.mm',
+      'browser/ui/cocoa/location_bar/manage_passwords_decoration.h',
+      'browser/ui/cocoa/location_bar/manage_passwords_decoration.mm',
       'browser/ui/cocoa/location_bar/mic_search_decoration.h',
       'browser/ui/cocoa/location_bar/mic_search_decoration.mm',
       'browser/ui/cocoa/location_bar/origin_chip_decoration.h',

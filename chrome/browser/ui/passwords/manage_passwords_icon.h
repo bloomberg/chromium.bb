@@ -21,6 +21,10 @@ class ManagePasswordsIcon {
   bool active() const { return active_; }
 
  protected:
+  // The ID of the icon and text resources that are currently displayed.
+  int icon_id_;
+  int tooltip_text_id_;
+
   ManagePasswordsIcon();
   ~ManagePasswordsIcon();
 
@@ -29,6 +33,9 @@ class ManagePasswordsIcon {
   virtual void UpdateVisibleUI() = 0;
 
  private:
+  // Updates the resource IDs in response to state changes.
+  void UpdateIDs();
+
   password_manager::ui::State state_;
   bool active_;
 

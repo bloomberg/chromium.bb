@@ -1608,6 +1608,7 @@
         'browser/ui/cocoa/location_bar/ev_bubble_decoration_unittest.mm',
         'browser/ui/cocoa/location_bar/image_decoration_unittest.mm',
         'browser/ui/cocoa/location_bar/keyword_hint_decoration_unittest.mm',
+        'browser/ui/cocoa/location_bar/manage_passwords_decoration_unittest.mm',
         'browser/ui/cocoa/location_bar/selected_keyword_decoration_unittest.mm',
         'browser/ui/cocoa/media_picker/desktop_media_picker_controller_unittest.mm',
         'browser/ui/cocoa/menu_button_unittest.mm',
