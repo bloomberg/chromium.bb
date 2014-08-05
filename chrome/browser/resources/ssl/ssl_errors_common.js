@@ -44,10 +44,3 @@ function sharedSetup() {
 
 document.addEventListener('DOMContentLoaded', sharedSetup);
 
-// For the M37 Finch trial. https://crbug.com/386033
-function setupSSLFinchTrial() {
-  if (loadTimeData.getString('trialCondition') == 'V2Yellow')
-    $('body').classList.add('yellow');
-  else if (loadTimeData.getString('trialCondition') == 'V2WithGuard')
-    $('body').classList.add('ssl-guard');
-}

@@ -76,8 +76,6 @@
       </if>
       <structure name="IDR_READER_OUT_OF_DATE_HTML" file="resources\reader_out_of_date.html" flattenhtml="true" type="chrome_html" />
       <structure name="IRD_SSL_INTERSTITIAL_V2_HTML" file="resources\ssl\interstitial_v2.html" flattenhtml="true" type="chrome_html" />
-      <structure name="IDR_SSL_ROAD_BLOCK_HTML" file="resources\ssl\roadblock.html" flattenhtml="true" type="chrome_html" />
-      <structure name="IDR_SSL_BLOCKING_HTML" file="resources\ssl\blocking.html" flattenhtml="true" type="chrome_html" />
       <structure name="IDR_SAFE_BROWSING_MALWARE_BLOCK_V2" file="resources\safe_browsing\malware_block_v2.html" flattenhtml="true" type="chrome_html" />
     </structures>
     <includes>

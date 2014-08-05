@@ -433,23 +433,6 @@ const Experiment::Choice kAnswersInSuggestChoices[] = {
 // Using independent flags (instead of flag=value flags) to be able to
 // associate the version with a FieldTrial. FieldTrials don't currently support
 // flag=value flags.
-const Experiment::Choice kSSLInterstitialVersions[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_FLAGS_SSL_INTERSTITIAL_VERSION_V1,
-    switches::kSSLInterstitialV1, "" },
-  { IDS_FLAGS_SSL_INTERSTITIAL_VERSION_V2_GRAY,
-    switches::kSSLInterstitialV2, "" },
-  { IDS_FLAGS_SSL_INTERSTITIAL_VERSION_V2_COLORFUL,
-    switches::kSSLInterstitialV2Yellow, "" },
-  { IDS_FLAGS_SSL_INTERSTITIAL_VERSION_GUARD,
-    switches::kSSLInterstitialV2Guard, "" },
-  { IDS_FLAGS_SSL_INTERSTITIAL_VERSION_V1_V2,
-    switches::kSSLInterstitialV1WithV2Text, "" },
-};
-
-// Using independent flags (instead of flag=value flags) to be able to
-// associate the version with a FieldTrial. FieldTrials don't currently support
-// flag=value flags.
 const Experiment::Choice kMalwareInterstitialVersions[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V2,
@@ -1885,13 +1868,6 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kAnswersInSuggestChoices)
   },
 #endif
-  {
-    "ssl-interstitial-version",
-    IDS_FLAGS_SSL_INTERSTITIAL_TRIAL_NAME,
-    IDS_FLAGS_SSL_INTERSTITIAL_TRIAL_DESCRIPTION,
-    kOsAll,
-    MULTI_VALUE_TYPE(kSSLInterstitialVersions)
-  },
   {
     "malware-interstitial-version",
     IDS_FLAGS_MALWARE_INTERSTITIAL_TRIAL_NAME,

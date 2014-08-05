@@ -14524,29 +14524,6 @@ Do you accept?
       Enforce strict (hard fail if we can't get hashes)
     </message>
 
-    <!-- SSL interstitial V3 experiment -->
-    <message name="IDS_FLAGS_SSL_INTERSTITIAL_TRIAL_NAME" desc="Name of the about:flags SSL interstitial v2 experiment">
-      TLS/SSL Warning Experiment
-    </message>
-    <message name="IDS_FLAGS_SSL_INTERSTITIAL_TRIAL_DESCRIPTION" desc="Description of the about:flags SSL interstitial v2 experiment">
-      Switch between different versions of the TLS/SSL warning.
-    </message>
-    <message name="IDS_FLAGS_SSL_INTERSTITIAL_VERSION_V1" desc="Go back to the old (V1) version">
-      Old version
-    </message>
-    <message name="IDS_FLAGS_SSL_INTERSTITIAL_VERSION_V2_GRAY" desc="The new interstitial, with a gray background (also default)">
-      New version, with gray background
-    </message>
-    <message name="IDS_FLAGS_SSL_INTERSTITIAL_VERSION_V2_COLORFUL" desc="The new interstitial, with a colorful background">
-      New version, with colorful background
-    </message>
-    <message name="IDS_FLAGS_SSL_INTERSTITIAL_VERSION_V1_V2" desc="The old layout, with the new text">
-      Old layout with new text
-    </message>
-    <message name="IDS_FLAGS_SSL_INTERSTITIAL_VERSION_GUARD" desc="The new version, with a guard">
-      New version, with guard image
-    </message>
-
     <!-- Malware interstitial V3 experiment -->
     <message name="IDS_FLAGS_MALWARE_INTERSTITIAL_TRIAL_NAME" desc="Name of the about:flags malware interstitial v3 experiment">
       Malware Warning Experiment

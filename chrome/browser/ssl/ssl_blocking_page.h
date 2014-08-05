@@ -86,11 +86,6 @@ class SSLBlockingPage : public content::InterstitialPageDelegate,
   void NotifyDenyCertificate();
   void NotifyAllowCertificate();
 
-  // These fetch the appropriate HTML page, depending on the
-  // SSLInterstitialVersion Finch trial.
-  std::string GetHTMLContentsV1();
-  std::string GetHTMLContentsV2();
-
   // Used to query the HistoryService to see if the URL is in history. For UMA.
   void OnGotHistoryCount(bool success, int num_visits, base::Time first_visit);
 
@@ -125,9 +120,6 @@ class SSLBlockingPage : public content::InterstitialPageDelegate,
   bool captive_portal_no_response_;
   // Was a captive portal detected?
   bool captive_portal_detected_;
-
-  // For the FieldTrial: this contains the name of the condition.
-  std::string trial_condition_;
 
   content::NotificationRegistrar registrar_;
 

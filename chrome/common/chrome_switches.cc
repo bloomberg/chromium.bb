@@ -1131,13 +1131,6 @@ const char kSpellingServiceFeedbackUrl[] = "spelling-service-feedback-url";
 const char kSpellingServiceFeedbackIntervalSeconds[] =
     "spelling-service-feedback-interval-seconds";
 
-// Controls which version of the TLS/SSL interstitial is shown.
-const char kSSLInterstitialV1[]             = "ssl-interstitial-v1";
-const char kSSLInterstitialV2[]             = "ssl-interstitial-v2";
-const char kSSLInterstitialV1WithV2Text[]   = "ssl-interstitial-v1-v2-text";
-const char kSSLInterstitialV2Yellow[]       = "ssl-interstitial-v2-yellow";
-const char kSSLInterstitialV2Guard[]        = "ssl-interstitial-v2-guard";
-
 // Specifies the maximum SSL/TLS version ("ssl3", "tls1", "tls1.1", or
 // "tls1.2").
 const char kSSLVersionMax[]                 = "ssl-version-max";

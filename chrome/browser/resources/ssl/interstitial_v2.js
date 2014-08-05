@@ -13,7 +13,6 @@ function setupEvents() {
 
   if (ssl) {
     $('body').classList.add('ssl');
-    setupSSLFinchTrial();  /* From ssl_errors_common.js. */
     $('error-code').textContent = loadTimeData.getString('errorCode');
     $('error-code').classList.remove('hidden');
   } else {
