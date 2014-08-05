@@ -32,6 +32,7 @@ using blink::WebFrame;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
 using blink::WebKeyboardEvent;
+using blink::WebMenuItemInfo;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 using blink::WebPoint;
@@ -121,10 +122,26 @@ int GetKeyModifiersFromV8(v8::Handle<v8::Value> value) {
 // double or triple click.
 const double kMultipleClickTimeSec = 1;
 const int kMultipleClickRadiusPixels = 5;
+const char kSubMenuDepthIdentifier[] = "_";
+const char kSubMenuIdentifier[] = " >";
 
 bool OutsideMultiClickRadius(const WebPoint& a, const WebPoint& b) {
   return ((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)) >
          kMultipleClickRadiusPixels * kMultipleClickRadiusPixels;
+}
+
+void PopulateCustomItems(const WebVector<WebMenuItemInfo>& customItems,
+    const std::string& prefix, std::vector<std::string>* strings) {
+  for (size_t i = 0; i < customItems.size(); ++i) {
+    if (customItems[i].type == blink::WebMenuItemInfo::SubMenu) {
+      strings->push_back(prefix + customItems[i].label.utf8() +
+          kSubMenuIdentifier);
+      PopulateCustomItems(customItems[i].subMenuItems, prefix +
+          kSubMenuDepthIdentifier, strings);
+    } else {
+      strings->push_back(prefix + customItems[i].label.utf8());
+    }
+  }
 }
 
 // Because actual context menu is implemented by the browser side,
@@ -171,6 +188,9 @@ std::vector<std::string> MakeMenuItemStringsFor(
     return std::vector<std::string>();
 
   std::vector<std::string> strings;
+
+  // Populate custom menu items if provided by blink.
+  PopulateCustomItems(context_menu->customItems, "", &strings);
 
   if (context_menu->isEditable) {
     for (const char** item = kEditableMenuStrings; *item; ++item) {
