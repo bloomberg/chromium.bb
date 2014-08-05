@@ -1194,8 +1194,6 @@ crbug.com/24182 [ Win ] jquery/manipulation.html [ Pass Timeout ]
 crbug.com/353754 fast/scrolling/hover-during-scroll.html [ Pass Failure ]
 crbug.com/353790 [ Linux Win ] virtual/threaded/animations/import.html [ Pass Timeout ]
 
-crbug.com/355274 http/tests/navigation/same-and-different-back.html [ Pass Failure ]
-
 crbug.com/354785 [ Win Debug ] svg/as-background-image/animated-svg-animation-control.html [ ImageOnlyFailure ]
 crbug.com/354785 [ Linux Debug ] svg/as-background-image/animated-svg-animation-control.html [ ImageOnlyFailure Pass ]
 

@@ -7,15 +7,16 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 
-var setupStepsDone = 0;
-function setupDone() {
-    setupStepsDone++;
-    if (setupStepsDone < 2)
-        return;
+function sameDocumentSetupDone() {
+    frames[1].location.replace("notify-parent-setup-done.html");
+}
 
-    // Send a backspace to trigger a back navigation.
-    if (window.eventSender)
-        eventSender.keyDown('\u0008');
+function differentDocumentSetupDone() {
+    setTimeout(function() {
+        // Send a backspace to trigger a back navigation.
+        if (window.eventSender)
+            eventSender.keyDown('\u0008');
+     }, 0);
 }
 
 function addChild() {
@@ -27,5 +28,5 @@ function addChild() {
 }
 </script>
 <iframe src="resources/pushState-onload.html"></iframe>
-<iframe src="resources/location-replace.html"></iframe>
+<iframe src="resources/blank.txt"></iframe>
 </body>

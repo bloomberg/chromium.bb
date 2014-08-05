@@ -4,9 +4,11 @@ window.onpopstate = function() {
     parent.addChild();
 };
 
-setTimeout(function() {
-    history.pushState("Test", "", "#test");
-    parent.setupDone();
-}, 0);
+window.onload = function() {
+    setTimeout(function() {
+        history.pushState("Test", "", "#test");
+        parent.sameDocumentSetupDone();
+    }, 0);
+}
 </script>
 </body>
