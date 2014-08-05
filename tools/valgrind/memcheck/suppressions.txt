@@ -733,25 +733,6 @@
    fun:ChromeMain
 }
 {
-   bug_30346
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN13TCMallocGuardC1Ev
-   fun:_Z41__static_initialization_and_destruction_0ii
-   fun:_GLOBAL__I__ZN61FLAG__namespace_do_not_use_directly_use_DECLARE_int64_instead43FLAGS_tcmalloc_large_alloc_report_thresholdE
-}
-{
-   bug_30346b
-   Memcheck:Unaddressable
-   ...
-   fun:_ZSt22__get_temporary_bufferIPN7blink11RenderLayerEESt4pairIPT_iEiS5_
-   fun:_ZNSt17_Temporary_bufferIPPN7blink11RenderLayerES2_EC1ES3_S3_
-   fun:_ZN5blink11RenderLayer17updateZOrderListsEv
-   fun:_ZN5blink11RenderLayer24updateLayerListsIfNeededEv
-   fun:_ZN5blink11RenderLayer38updateCompositingAndLayerListsIfNeededEv
-}
-{
    bug_30703a
    Memcheck:Param
    write(buf)
@@ -775,16 +756,6 @@
    fun:_ZN5blink12base64EncodeEPKcjRN3WTF6VectorIcLj0EEEb
    fun:_ZN5blink12base64EncodeERKN3WTF6VectorIcLj0EEERS2_b
    fun:_ZN5blink*14ImageToDataURL*SkBitmapEEN3WTF6StringERT_*
-}
-{
-   bug_31985
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN3net16HttpNetworkLayer10GetSessionEv
-   fun:_ZN3net16HttpNetworkLayer17CreateTransactionEP10scoped_ptrINS_15HttpTransactionEE
-   fun:_ZN3net9HttpCache11Transaction13DoSendRequestEv
-   fun:_ZN3net9HttpCache11Transaction6DoLoopEi
 }
 {
    bug_32085
@@ -879,19 +850,6 @@
    fun:cert_VerifyCertChain
    fun:CERT_VerifyCertChain
    fun:CERT_VerifyCert
-}
-{
-   bug_30633_39325
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN11ProfileImpl17GetRequestContextEv
-   fun:_ZN19SafeBrowsingService5StartEv
-   fun:_ZN19SafeBrowsingService10InitializeEv
-   fun:_ZN22ResourceDispatcherHost10InitializeEv
-   fun:_ZN18BrowserProcessImpl28CreateResourceDispatcherHostEv
-   fun:_ZN18BrowserProcessImpl24resource_dispatcher_hostEv
-   fun:_ZN16ExtensionService4InitEv
 }
 {
    bug_42842
@@ -3494,20 +3452,6 @@
    fun:_Znw*
    ...
    fun:_ZN8notifier26ProxyResolvingClientSocket23ProcessProxyResolveDoneEi
-}
-{
-   bug_124500
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorIN6webkit17WebPluginMimeTypeEE8allocateEmPKv
-   fun:_ZNSt12_Vector_baseIN6webkit17WebPluginMimeTypeESaIS1_EE11_M_allocateEm
-   fun:_ZNSt6vectorIN6webkit17WebPluginMimeTypeESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_
-   fun:_ZNSt6vectorIN6webkit17WebPluginMimeTypeESaIS1_EE9push_backERKS1_
-   fun:_ZN6webkit5npapi9PluginLib20ParseMIMEDescriptionERKSsPSt6vectorINS_17WebPluginMimeTypeESaIS5_EE
-   fun:_ZN6webkit5npapi9PluginLib17ReadWebPluginInfoE*
-   fun:_ZN6webkit5npapi10PluginList14ReadPluginInfoE*
-   fun:_ZN6webkit5npapi10PluginList10LoadPluginE*
-   fun:_ZN17UtilityThreadImpl13OnLoadPluginsE*
 }
 {
    bug_127716
