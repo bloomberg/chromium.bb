@@ -303,9 +303,9 @@ TEST_F(PictureLayerImplTest, CloneNoInvalidation) {
     VerifyAllTilesExistAndHavePile(tilings->tiling_at(i), active_pile.get());
 }
 
-TEST_F(PictureLayerImplTest,
-       DISABLED_ExternalViewportRectForPrioritizingTiles) {
+TEST_F(PictureLayerImplTest, ExternalViewportRectForPrioritizingTiles) {
   base::TimeTicks time_ticks;
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentFrameTimeTicks(time_ticks);
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(400, 400);
@@ -320,6 +320,9 @@ TEST_F(PictureLayerImplTest,
   Region invalidation;
   AddDefaultTilingsWithInvalidation(invalidation);
   SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, false);
+
+  time_ticks += base::TimeDelta::FromMilliseconds(200);
+  host_impl_.SetCurrentFrameTimeTicks(time_ticks);
 
   // Update tiles with viewport for tile priority as (0, 0, 100, 100) and the
   // identify transform for tile priority.
