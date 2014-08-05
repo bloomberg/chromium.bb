@@ -455,12 +455,11 @@ if (is_win) {
   }
 } else if (is_android) {
   # Use clang for the x86/64 Linux host builds.
-  # (Disabled until the Clang build works properly.)
-  #if (build_cpu_arch == "x86" || build_cpu_arch == "x64") {
-  #  host_toolchain = "//build/toolchain/linux:clang_$build_cpu_arch"
-  #} else {
+  if (build_cpu_arch == "x86" || build_cpu_arch == "x64") {
+    host_toolchain = "//build/toolchain/linux:clang_$build_cpu_arch"
+  } else {
     host_toolchain = "//build/toolchain/linux:$build_cpu_arch"
-  #}
+  }
   set_default_toolchain("//build/toolchain/android:$cpu_arch")
 } else if (is_linux) {
   if (is_clang) {
