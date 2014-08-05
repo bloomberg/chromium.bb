@@ -825,25 +825,6 @@ class GitWrapper(SCMWrapper):
     # create it, so we need to do it manually.
     parent_dir = os.path.dirname(self.checkout_path)
     gclient_utils.safe_makedirs(parent_dir)
-
-    template_dir = None
-    if options.no_history:
-      if gclient_utils.IsGitSha(revision):
-        # In the case of a subproject, the pinned sha is not necessarily the
-        # head of the remote branch (so we can't just use --depth=N). Instead,
-        # we tell git to fetch all the remote objects from SHA..HEAD by means of
-        # a template git dir which has a 'shallow' file pointing to the sha.
-        template_dir = tempfile.mkdtemp(
-            prefix='_gclient_gittmp_%s' % os.path.basename(self.checkout_path),
-            dir=parent_dir)
-        self._Run(['init', '--bare', template_dir], options, cwd=self._root_dir)
-        with open(os.path.join(template_dir, 'shallow'), 'w') as template_file:
-          template_file.write(revision)
-        clone_cmd.append('--template=' + template_dir)
-      else:
-        # Otherwise, we're just interested in the HEAD. Just use --depth.
-        clone_cmd.append('--depth=1')
-
     tmp_dir = tempfile.mkdtemp(
         prefix='_gclient_%s_' % os.path.basename(self.checkout_path),
         dir=parent_dir)
@@ -860,8 +841,6 @@ class GitWrapper(SCMWrapper):
       if os.listdir(tmp_dir):
         self.Print('_____ removing non-empty tmp dir %s' % tmp_dir)
       gclient_utils.rmtree(tmp_dir)
-      if template_dir:
-        gclient_utils.rmtree(template_dir)
     self._UpdateBranchHeads(options, fetch=True)
     self._Checkout(options, revision.replace('refs/heads/', ''), quiet=True)
     if self._GetCurrentBranch() is None:
