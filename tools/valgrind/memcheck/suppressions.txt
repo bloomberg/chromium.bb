@@ -5375,9 +5375,8 @@
    fun:_ZN12SkBaseDevice10readPixelsE*
    fun:_ZN8SkCanvas10readPixelsE*
    fun:_ZN5blink15GraphicsContext10readPixelsE*
-   fun:_ZN5blink12getImageDataILNS_8MultiplyE*
-   fun:_ZNK7blink11ImageBuffer24getUnmultipliedImageDataE*
-   fun:_ZNK7blink24CanvasRenderingContext2D12getImageDataE*
+   ...
+   fun:_ZN*blink24CanvasRenderingContext2D12getImageDataE*
    ...
    fun:_ZN5blink34CanvasRenderingContext2DV8InternalL18getImageDataMethodERKN2v820FunctionCallbackInfoINS1_5ValueEEE
    fun:_ZN5blink34CanvasRenderingContext2DV8InternalL26getImageDataMethodCallbackERKN2v820FunctionCallbackInfoINS1_5ValueEEE
@@ -6328,4 +6327,13 @@
    fun:_ZN5blink19InspectorController27dispatchMessageFromFrontendERKN3WTF6StringE
    fun:_ZN5blink20WebDevToolsAgentImpl26dispatchOnInspectorBackendERKNS_9WebStringE
    fun:_ZN7content13DevToolsAgent28OnDispatchOnInspectorBackendERKSs
+}
+{
+   bug_400547
+   Memcheck:Uninitialized
+   fun:_ZNK5blink22GraphicsLayerDebugInfo17appendOwnerNodeIdEPNS_10JSONObjectE
+   fun:_ZNK5blink22GraphicsLayerDebugInfo19appendAsTraceFormatEPNS_9WebStringE
+   fun:_ZNK7content15TracedDebugInfo19AppendAsTraceFormatEPSs
+   fun:_ZNK2cc9LayerImpl11AsValueIntoEPN4base5debug11TracedValueE
+   fun:_ZNK2cc*LayerImpl11AsValueIntoEPN4base5debug11TracedValueE
 }
