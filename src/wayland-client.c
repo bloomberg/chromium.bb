@@ -878,10 +878,10 @@ wl_display_get_fd(struct wl_display *display)
 static void
 sync_callback(void *data, struct wl_callback *callback, uint32_t serial)
 {
-   int *done = data;
+	int *done = data;
 
-   *done = 1;
-   wl_callback_destroy(callback);
+	*done = 1;
+	wl_callback_destroy(callback);
 }
 
 static const struct wl_callback_listener sync_listener = {
