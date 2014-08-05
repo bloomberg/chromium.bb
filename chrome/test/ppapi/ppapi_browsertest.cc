@@ -988,31 +988,17 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, Flash) {
       LIST_TEST(WebSocket_UtilityBufferedAmount) \
   )
 
-// Repeatedly flaky on WinXP Tests(1): http://crbug.com/389084
-#if defined(OS_WIN)
-#define MAYBE_WebSocket1 DISABLED_WebSocket1
-#else
-#define MAYBE_WebSocket1 WebSocket1
-#endif
-IN_PROC_BROWSER_TEST_F(PPAPITest, MAYBE_WebSocket1) {
+IN_PROC_BROWSER_TEST_F(PPAPITest, WebSocket1) {
   RUN_WEBSOCKET_SUBTESTS_1;
 }
-
-// Repeatedly flaky on Win7 Tests(1): http://crbug.com/389084
-#if defined(OS_WIN)
-#define MAYBE_WebSocket2 DISABLED_WebSocket2
-#else
-#define MAYBE_WebSocket2 WebSocket2
-#endif
-IN_PROC_BROWSER_TEST_F(PPAPITest, MAYBE_WebSocket2) {
+IN_PROC_BROWSER_TEST_F(PPAPITest, WebSocket2) {
   RUN_WEBSOCKET_SUBTESTS_2;
 }
-#if !defined(OS_WIN)  // http://crbug.com/396399
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_WebSocket1) {
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, WebSocket1) {
   RUN_WEBSOCKET_SUBTESTS_1;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, WebSocket1) {
-  RUN_WEBSOCKET_SUBTESTS_1;
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, WebSocket2) {
+  RUN_WEBSOCKET_SUBTESTS_2;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(WebSocket1)) {
   RUN_WEBSOCKET_SUBTESTS_1;
@@ -1020,25 +1006,16 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(WebSocket1)) {
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(WebSocket2)) {
   RUN_WEBSOCKET_SUBTESTS_2;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, WebSocket1) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, WebSocket1) {
   RUN_WEBSOCKET_SUBTESTS_1;
 }
-#endif
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_WebSocket2) {
-  RUN_WEBSOCKET_SUBTESTS_2;
-}
-
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, WebSocket2) {
   RUN_WEBSOCKET_SUBTESTS_2;
 }
-
-// Flaky on XP Tests (3): http://crbug.com/389084
-#if defined(OS_WIN)
-#define MAYBE_WebSocket2 DISABLED_WebSocket2
-#else
-#define MAYBE_WebSocket2 WebSocket2
-#endif
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_WebSocket2) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, WebSocket1) {
+  RUN_WEBSOCKET_SUBTESTS_1;
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, WebSocket2) {
   RUN_WEBSOCKET_SUBTESTS_2;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
