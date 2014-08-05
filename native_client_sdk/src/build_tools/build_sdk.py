@@ -526,7 +526,7 @@ def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets,
       if force_arm_gcc:
         gyp_defines.append('nacl_enable_arm_gcc=1')
       if options.no_arm_trusted:
-        gyp_defines.append('disable_arm_trusted=1')
+        gyp_defines.append('disable_cross_trusted=1')
   if getos.GetPlatform() == 'mac':
     gyp_defines.append('clang=1')
 
