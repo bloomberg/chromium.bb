@@ -96,6 +96,6 @@ class TestPackage(object):
         continue
       if 'YOU HAVE' in test:
         break
-      test_name = test[2:]
+      test_name = test.split(None, 1)[0]
       ret += [current + test_name]
     return ret
