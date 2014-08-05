@@ -58,10 +58,10 @@ struct UsbTestGadgetConfiguration {
 };
 
 static const struct UsbTestGadgetConfiguration kConfigurations[] = {
-  { UsbTestGadget::DEFAULT, "/unconfigure", 0x2000 },
-  { UsbTestGadget::KEYBOARD, "/keyboard/configure", 0x2001 },
-  { UsbTestGadget::MOUSE, "/mouse/configure", 0x2002 },
-  { UsbTestGadget::HID_ECHO, "/hid_echo/configure", 0x2003 },
+  { UsbTestGadget::DEFAULT, "/unconfigure", 0x58F0 },
+  { UsbTestGadget::KEYBOARD, "/keyboard/configure", 0x58F1 },
+  { UsbTestGadget::MOUSE, "/mouse/configure", 0x58F2 },
+  { UsbTestGadget::HID_ECHO, "/hid_echo/configure", 0x58F3 },
 };
 
 class UsbTestGadgetImpl : public UsbTestGadget {
@@ -206,7 +206,7 @@ bool UsbTestGadgetImpl::FindUnclaimed() {
   for (std::vector<scoped_refptr<UsbDevice> >::const_iterator iter =
          devices.begin(); iter != devices.end(); ++iter) {
     const scoped_refptr<UsbDevice> &device = *iter;
-    if (device->vendor_id() == 0x18D1 && device->product_id() == 0x2000) {
+    if (device->vendor_id() == 0x18D1 && device->product_id() == 0x58F0) {
       scoped_refptr<UsbDeviceHandle> handle = device->Open();
       if (handle.get() == NULL) {
         continue;
