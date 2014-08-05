@@ -27,26 +27,29 @@ class RenderViewContextMenuMac : public RenderViewContextMenu {
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
 
-  // RenderViewContextMenuDelegate implementation.
-  virtual void UpdateMenuItem(int command_id,
-                              bool enabled,
-                              bool hidden,
-                              const base::string16& title) OVERRIDE;
-
   void Show();
 
  protected:
   // RenderViewContextMenu implementation.
-  virtual void PlatformInit() OVERRIDE;
-  virtual void PlatformCancel() OVERRIDE;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       ui::Accelerator* accelerator) OVERRIDE;
   virtual void AppendPlatformEditableItems() OVERRIDE;
 
  private:
-  // Adds platform-specific items to the menu.
-  void InitPlatformMenu();
+  friend class ToolkitDelegateMac;
+
+  // Adds menu to the platform's toolkit.
+  void InitToolkitMenu();
+
+  // Cancels the menu.
+  void CancelToolkitMenu();
+
+  // Updates the status and text of the specified context-menu item.
+  void UpdateToolkitMenuItem(int command_id,
+                             bool enabled,
+                             bool hidden,
+                             const base::string16& title);
 
   // Adds writing direction submenu.
   void AppendBidiSubMenu();

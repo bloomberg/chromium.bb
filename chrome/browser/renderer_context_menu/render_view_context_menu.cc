@@ -459,11 +459,13 @@ RenderViewContextMenu::~RenderViewContextMenu() {
 
 void RenderViewContextMenu::Init() {
   InitMenu();
-  PlatformInit();
+  if (toolkit_delegate_)
+    toolkit_delegate_->Init(&menu_model_);
 }
 
 void RenderViewContextMenu::Cancel() {
-  PlatformCancel();
+  if (toolkit_delegate_)
+    toolkit_delegate_->Cancel();
 }
 
 static bool ExtensionPatternMatch(const extensions::URLPatternSet& patterns,
@@ -769,8 +771,12 @@ void RenderViewContextMenu::UpdateMenuItem(int command_id,
                                            bool enabled,
                                            bool hidden,
                                            const base::string16& label) {
-  // This function needs platform-specific implementation.
-  NOTIMPLEMENTED();
+  if (toolkit_delegate_) {
+    toolkit_delegate_->UpdateMenuItem(command_id,
+                                      enabled,
+                                      hidden,
+                                      label);
+  }
 }
 
 RenderViewHost* RenderViewContextMenu::GetRenderViewHost() const {

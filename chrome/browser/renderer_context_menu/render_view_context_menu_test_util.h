@@ -35,8 +35,6 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
                                            const GURL& frame_url);
 
   // Implementation of pure virtuals in RenderViewContextMenu.
-  virtual void PlatformInit() OVERRIDE;
-  virtual void PlatformCancel() OVERRIDE;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       ui::Accelerator* accelerator) OVERRIDE;

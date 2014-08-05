@@ -85,8 +85,6 @@ class PlatformAppContextMenu : public RenderViewContextMenu {
       ui::Accelerator* accelerator) OVERRIDE {
     return false;
   }
-  virtual void PlatformInit() OVERRIDE {}
-  virtual void PlatformCancel() OVERRIDE {}
 };
 
 // This class keeps track of tabs as they are added to the browser. It will be

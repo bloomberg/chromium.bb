@@ -31,10 +31,6 @@ TestRenderViewContextMenu* TestRenderViewContextMenu::Create(
   return menu;
 }
 
-void TestRenderViewContextMenu::PlatformInit() {}
-
-void TestRenderViewContextMenu::PlatformCancel() {}
-
 bool TestRenderViewContextMenu::GetAcceleratorForCommandId(
     int command_id,
     ui::Accelerator* accelerator) {

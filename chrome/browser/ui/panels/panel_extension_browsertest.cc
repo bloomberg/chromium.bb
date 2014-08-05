@@ -130,8 +130,6 @@ class PanelContextMenu : public RenderViewContextMenu {
       ui::Accelerator* accelerator) OVERRIDE {
     return false;
   }
-  virtual void PlatformInit() OVERRIDE {}
-  virtual void PlatformCancel() OVERRIDE {}
 };
 
 IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, BasicContextMenu) {

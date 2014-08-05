@@ -5,10 +5,9 @@
 #include "chrome/browser/ui/views/renderer_context_menu/render_view_context_menu_views.h"
 
 #include "base/logging.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/strings/string16.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -21,6 +20,73 @@
 
 using content::WebContents;
 
+namespace {
+
+// Views implementation of the ToolkitDelegate.
+// TODO(oshima): Move this to components/renderer_context_menu/
+class ToolkitDelegateViews : public RenderViewContextMenu::ToolkitDelegate {
+ public:
+  ToolkitDelegateViews() : menu_view_(NULL) {}
+
+  virtual ~ToolkitDelegateViews() {}
+
+  void RunMenuAt(views::Widget* parent,
+                 const gfx::Point& point,
+                 ui::MenuSourceType type) {
+    views::MenuAnchorPosition anchor_position =
+        (type == ui::MENU_SOURCE_TOUCH ||
+         type == ui::MENU_SOURCE_TOUCH_EDIT_MENU)
+        ? views::MENU_ANCHOR_BOTTOMCENTER
+        : views::MENU_ANCHOR_TOPLEFT;
+    views::MenuRunner::RunResult result ALLOW_UNUSED = menu_runner_->RunMenuAt(
+        parent, NULL, gfx::Rect(point, gfx::Size()), anchor_position, type);
+  }
+
+ private:
+  // ToolkitDelegate:
+  virtual void Init(ui::SimpleMenuModel* menu_model) OVERRIDE {
+    menu_adapter_.reset(new views::MenuModelAdapter(menu_model));
+    menu_view_ = menu_adapter_->CreateMenu();
+    menu_runner_.reset(new views::MenuRunner(
+        menu_view_,
+        views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
+  }
+
+  virtual void Cancel() OVERRIDE{
+    DCHECK(menu_runner_.get());
+    menu_runner_->Cancel();
+  }
+
+  virtual void UpdateMenuItem(int command_id,
+                              bool enabled,
+                              bool hidden,
+                              const base::string16& title) OVERRIDE {
+    views::MenuItemView* item = menu_view_->GetMenuItemByID(command_id);
+    if (!item)
+      return;
+
+    item->SetEnabled(enabled);
+    item->SetTitle(title);
+    item->SetVisible(!hidden);
+
+    views::MenuItemView* parent = item->GetParentMenuItem();
+    if (!parent)
+      return;
+
+    parent->ChildrenChanged();
+  }
+
+  scoped_ptr<views::MenuModelAdapter> menu_adapter_;
+  scoped_ptr<views::MenuRunner> menu_runner_;
+
+  // Weak. Owned by menu_runner_;
+  views::MenuItemView* menu_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(ToolkitDelegateViews);
+};
+
+}  // namespace
+
 ////////////////////////////////////////////////////////////////////////////////
 // RenderViewContextMenuViews, public:
 
@@ -28,8 +94,9 @@ RenderViewContextMenuViews::RenderViewContextMenuViews(
     content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params)
     : RenderViewContextMenu(render_frame_host, params),
-      bidi_submenu_model_(this),
-      menu_view_(NULL) {
+      bidi_submenu_model_(this) {
+  scoped_ptr<ToolkitDelegate> delegate(new ToolkitDelegateViews);
+  set_toolkit_delegate(delegate.Pass());
 }
 
 RenderViewContextMenuViews::~RenderViewContextMenuViews() {
@@ -45,32 +112,12 @@ RenderViewContextMenuViews* RenderViewContextMenuViews::Create(
 void RenderViewContextMenuViews::RunMenuAt(views::Widget* parent,
                                            const gfx::Point& point,
                                            ui::MenuSourceType type) {
-  views::MenuAnchorPosition anchor_position =
-      (type == ui::MENU_SOURCE_TOUCH || type == ui::MENU_SOURCE_TOUCH_EDIT_MENU)
-          ? views::MENU_ANCHOR_BOTTOMCENTER
-          : views::MENU_ANCHOR_TOPLEFT;
-
-  if (menu_runner_->RunMenuAt(
-          parent, NULL, gfx::Rect(point, gfx::Size()), anchor_position, type) ==
-      views::MenuRunner::MENU_DELETED)
-    return;
+  static_cast<ToolkitDelegateViews*>(toolkit_delegate())->
+      RunMenuAt(parent, point, type);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // RenderViewContextMenuViews, protected:
-
-void RenderViewContextMenuViews::PlatformInit() {
-  menu_adapter_.reset(new views::MenuModelAdapter(&menu_model_));
-  menu_view_ = menu_adapter_->CreateMenu();
-  menu_runner_.reset(new views::MenuRunner(
-      menu_view_,
-      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
-}
-
-void RenderViewContextMenuViews::PlatformCancel() {
-  DCHECK(menu_runner_.get());
-  menu_runner_->Cancel();
-}
 
 bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
     int command_id,
@@ -189,23 +236,4 @@ void RenderViewContextMenuViews::AppendPlatformEditableItems() {
       IDC_WRITING_DIRECTION_MENU,
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_MENU),
       &bidi_submenu_model_);
-}
-
-void RenderViewContextMenuViews::UpdateMenuItem(int command_id,
-                                                bool enabled,
-                                                bool hidden,
-                                                const base::string16& title) {
-  views::MenuItemView* item = menu_view_->GetMenuItemByID(command_id);
-  if (!item)
-    return;
-
-  item->SetEnabled(enabled);
-  item->SetTitle(title);
-  item->SetVisible(!hidden);
-
-  views::MenuItemView* parent = item->GetParentMenuItem();
-  if (!parent)
-    return;
-
-  parent->ChildrenChanged();
 }

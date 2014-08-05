@@ -49,6 +49,23 @@ struct WebPluginAction;
 class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
                               public RenderViewContextMenuProxy {
  public:
+  // A delegate interface to communicate with the toolkit used by
+  // the embedder.
+  class ToolkitDelegate {
+   public:
+    virtual ~ToolkitDelegate() {}
+    // Initialize the toolkit's menu.
+    virtual void Init(ui::SimpleMenuModel* menu_model) = 0;
+
+    virtual void Cancel() = 0;
+
+    // Updates the actual menu items controlled by the toolkit.
+    virtual void UpdateMenuItem(int command_id,
+                                bool enabled,
+                                bool hidden,
+                                const base::string16& title) = 0;
+  };
+
   static const size_t kMaxSelectionTextLength;
 
   // Convert a command ID so that it fits within the range for
@@ -97,12 +114,18 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
 
  protected:
+  void set_toolkit_delegate(scoped_ptr<ToolkitDelegate> delegate) {
+    toolkit_delegate_ = delegate.Pass();
+  }
+
+  ToolkitDelegate* toolkit_delegate() {
+    return toolkit_delegate_.get();
+  }
+
   void InitMenu();
   Profile* GetProfile();
 
   // Platform specific functions.
-  virtual void PlatformInit() = 0;
-  virtual void PlatformCancel() = 0;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       ui::Accelerator* accelerator) = 0;
@@ -216,6 +239,8 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   bool command_executed_;
 
   scoped_ptr<ContextMenuContentType> content_type_;
+
+  scoped_ptr<ToolkitDelegate> toolkit_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenu);
 };
