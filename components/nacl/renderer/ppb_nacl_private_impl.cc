@@ -1535,6 +1535,8 @@ void SetPNaClStartTime(PP_Instance instance) {
     load_manager->set_pnacl_start_time(base::Time::Now());
 }
 
+// PexeDownloader is responsible for deleting itself when the download
+// finishes.
 class PexeDownloader : public blink::WebURLLoaderClient {
  public:
   PexeDownloader(PP_Instance instance,
@@ -1602,6 +1604,11 @@ class PexeDownloader : public blink::WebURLLoaderClient {
   virtual void didGetNexeFd(int32_t pp_error,
                             bool cache_hit,
                             PP_FileHandle file_handle) {
+    if (!content::PepperPluginInstance::Get(instance_)) {
+      delete this;
+      return;
+    }
+
     HistogramEnumerate("NaCl.Perf.PNaClCache.IsHit", cache_hit, 2);
     if (cache_hit) {
       stream_handler_->DidCacheHit(stream_handler_user_data_, file_handle);
@@ -1623,17 +1630,21 @@ class PexeDownloader : public blink::WebURLLoaderClient {
                               const char* data,
                               int data_length,
                               int encoded_data_length) {
-    // Stream the data we received to the stream callback.
-    stream_handler_->DidStreamData(stream_handler_user_data_,
-                                   data,
-                                   data_length);
+    if (content::PepperPluginInstance::Get(instance_)) {
+      // Stream the data we received to the stream callback.
+      stream_handler_->DidStreamData(stream_handler_user_data_,
+                                     data,
+                                     data_length);
+    }
   }
 
   virtual void didFinishLoading(blink::WebURLLoader* loader,
                                 double finish_time,
                                 int64_t total_encoded_data_length) {
     int32_t result = success_ ? PP_OK : PP_ERROR_FAILED;
-    stream_handler_->DidFinishStream(stream_handler_user_data_, result);
+
+    if (content::PepperPluginInstance::Get(instance_))
+      stream_handler_->DidFinishStream(stream_handler_user_data_, result);
     delete this;
   }
 
