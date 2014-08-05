@@ -410,6 +410,7 @@ StorageEvent
 String
 StyleSheet
 StyleSheetList
+Symbol
 SyntaxError
 Text
 TextDecoder

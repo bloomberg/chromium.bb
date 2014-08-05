@@ -58,6 +58,7 @@ Starting worker: resources/global-context-constructors-listing.js
 [Worker] ReferenceError
 [Worker] RegExp
 [Worker] String
+[Worker] Symbol
 [Worker] SyntaxError
 [Worker] TextDecoder
 [Worker] TextEncoder

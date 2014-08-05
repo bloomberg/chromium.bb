@@ -49,6 +49,7 @@ Starting worker: resources/global-context-constructors-listing.js
 [Worker] RegExp
 [Worker] SharedWorkerGlobalScope
 [Worker] String
+[Worker] Symbol
 [Worker] SyntaxError
 [Worker] TextDecoder
 [Worker] TextEncoder
