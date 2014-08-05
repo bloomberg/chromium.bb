@@ -485,6 +485,8 @@ TEST_F(GCMStatsRecorderImplTest, RegistrationTest) {
 }
 
 TEST_F(GCMStatsRecorderImplTest, RecordReceivingTest) {
+  recorder_.RecordConnectionInitiated(std::string());
+  recorder_.RecordConnectionSuccess();
   recorder_.RecordDataMessageReceived(kAppId, kFrom, kByteSize, true,
                                       GCMStatsRecorder::DATA_MESSAGE);
   VerifyRecordedReceivingCount(1);

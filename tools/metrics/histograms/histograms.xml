@@ -8403,6 +8403,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Net error results from GCM connection attempts.</summary>
 </histogram>
 
+<histogram name="GCM.ConnectionLatency" units="milliseconds">
+  <owner>juyik@chromium.org</owner>
+  <summary>
+    The time between the initiation of a connection and the successful
+    completion of it.
+  </summary>
+</histogram>
+
 <histogram name="GCM.ConnectionResetReason" enum="GCMConnectionResetReason">
   <owner>zea@chromium.org</owner>
   <summary>Reasons for GCM connection resets.</summary>
@@ -8421,6 +8429,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>zea@chromium.org</owner>
   <summary>
     Time (from login until reset) that a GCM connection was active.
+  </summary>
+</histogram>
+
+<histogram name="GCM.DataMessageBurstReceivedInterval" units="milliseconds">
+  <owner>juyik@chromium.org</owner>
+  <summary>
+    Interval between two successive received data message bursts.
+  </summary>
+</histogram>
+
+<histogram name="GCM.FirstReceivedDataMessageLatencyAfterConnection"
+    units="milliseconds">
+  <owner>juyik@chromium.org</owner>
+  <summary>
+    The time between the successful completion of the connection and the arrival
+    of the first data message.
   </summary>
 </histogram>
 
@@ -8455,6 +8479,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Category of TTL specified in the outgoing message: 0, less than or equal to
     1 minute, less than or equal to 1 hour and etc.
+  </summary>
+</histogram>
+
+<histogram name="GCM.ReceivedDataMessageBurstSize" units="messages">
+  <owner>juyik@chromium.org</owner>
+  <summary>Number of messages in a received GCM data message burst.</summary>
+</histogram>
+
+<histogram name="GCM.ReceivedDataMessageIntervalWithinBurstMs"
+    units="milliseconds">
+  <owner>juyik@chromium.org</owner>
+  <summary>
+    Interval between messages within a received GCM data message burst.
   </summary>
 </histogram>
 

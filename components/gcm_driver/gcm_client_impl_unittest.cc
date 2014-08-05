@@ -471,6 +471,8 @@ void GCMClientImplTest::StartGCMClient() {
 }
 
 void GCMClientImplTest::ReceiveMessageFromMCS(const MCSMessage& message) {
+  gcm_client_->recorder_.RecordConnectionInitiated(std::string());
+  gcm_client_->recorder_.RecordConnectionSuccess();
   gcm_client_->OnMessageReceivedFromMCS(message);
 }
 
