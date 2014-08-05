@@ -960,12 +960,14 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 	 * alternating names for the front/back buffer a linear search
 	 * provides a sufficiently fast match.
 	 */
+	pthread_mutex_lock(&bufmgr_gem->lock);
 	for (list = bufmgr_gem->named.next;
 	     list != &bufmgr_gem->named;
 	     list = list->next) {
 		bo_gem = DRMLISTENTRY(drm_intel_bo_gem, list, name_list);
 		if (bo_gem->global_name == handle) {
 			drm_intel_gem_bo_reference(&bo_gem->bo);
+			pthread_mutex_unlock(&bufmgr_gem->lock);
 			return &bo_gem->bo;
 		}
 	}
@@ -978,6 +980,7 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 	if (ret != 0) {
 		DBG("Couldn't reference %s handle 0x%08x: %s\n",
 		    name, handle, strerror(errno));
+		pthread_mutex_unlock(&bufmgr_gem->lock);
 		return NULL;
 	}
         /* Now see if someone has used a prime handle to get this
@@ -990,13 +993,16 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 		bo_gem = DRMLISTENTRY(drm_intel_bo_gem, list, name_list);
 		if (bo_gem->gem_handle == open_arg.handle) {
 			drm_intel_gem_bo_reference(&bo_gem->bo);
+			pthread_mutex_unlock(&bufmgr_gem->lock);
 			return &bo_gem->bo;
 		}
 	}
 
 	bo_gem = calloc(1, sizeof(*bo_gem));
-	if (!bo_gem)
+	if (!bo_gem) {
+		pthread_mutex_unlock(&bufmgr_gem->lock);
 		return NULL;
+	}
 
 	bo_gem->bo.size = open_arg.size;
 	bo_gem->bo.offset = 0;
@@ -1018,6 +1024,7 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 		       &get_tiling);
 	if (ret != 0) {
 		drm_intel_gem_bo_unreference(&bo_gem->bo);
+		pthread_mutex_unlock(&bufmgr_gem->lock);
 		return NULL;
 	}
 	bo_gem->tiling_mode = get_tiling.tiling_mode;
@@ -1027,6 +1034,7 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 
 	DRMINITLISTHEAD(&bo_gem->vma_list);
 	DRMLISTADDTAIL(&bo_gem->name_list, &bufmgr_gem->named);
+	pthread_mutex_unlock(&bufmgr_gem->lock);
 	DBG("bo_create_from_handle: %d (%s)\n", handle, bo_gem->name);
 
 	return &bo_gem->bo;
@@ -2633,25 +2641,29 @@ drm_intel_bo_gem_create_from_prime(drm_intel_bufmgr *bufmgr, int prime_fd, int s
 	 * for named buffers, we must not create two bo's pointing at the same
 	 * kernel object
 	 */
+	pthread_mutex_lock(&bufmgr_gem->lock);
 	for (list = bufmgr_gem->named.next;
 	     list != &bufmgr_gem->named;
 	     list = list->next) {
 		bo_gem = DRMLISTENTRY(drm_intel_bo_gem, list, name_list);
 		if (bo_gem->gem_handle == handle) {
 			drm_intel_gem_bo_reference(&bo_gem->bo);
+			pthread_mutex_unlock(&bufmgr_gem->lock);
 			return &bo_gem->bo;
 		}
 	}
 
 	if (ret) {
 	  fprintf(stderr,"ret is %d %d\n", ret, errno);
+	  pthread_mutex_unlock(&bufmgr_gem->lock);
 		return NULL;
 	}
 
 	bo_gem = calloc(1, sizeof(*bo_gem));
-	if (!bo_gem)
+	if (!bo_gem) {
+		pthread_mutex_unlock(&bufmgr_gem->lock);
 		return NULL;
-
+	}
 	/* Determine size of bo.  The fd-to-handle ioctl really should
 	 * return the size, but it doesn't.  If we have kernel 3.12 or
 	 * later, we can lseek on the prime fd to get the size.  Older
@@ -2679,6 +2691,7 @@ drm_intel_bo_gem_create_from_prime(drm_intel_bufmgr *bufmgr, int prime_fd, int s
 
 	DRMINITLISTHEAD(&bo_gem->vma_list);
 	DRMLISTADDTAIL(&bo_gem->name_list, &bufmgr_gem->named);
+	pthread_mutex_unlock(&bufmgr_gem->lock);
 
 	VG_CLEAR(get_tiling);
 	get_tiling.handle = bo_gem->gem_handle;
@@ -2703,8 +2716,10 @@ drm_intel_bo_gem_export_to_prime(drm_intel_bo *bo, int *prime_fd)
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 
+	pthread_mutex_lock(&bufmgr_gem->lock);
         if (DRMLISTEMPTY(&bo_gem->name_list))
                 DRMLISTADDTAIL(&bo_gem->name_list, &bufmgr_gem->named);
+	pthread_mutex_unlock(&bufmgr_gem->lock);
 
 	if (drmPrimeHandleToFD(bufmgr_gem->fd, bo_gem->gem_handle,
 			       DRM_CLOEXEC, prime_fd) != 0)
@@ -2728,15 +2743,20 @@ drm_intel_gem_bo_flink(drm_intel_bo *bo, uint32_t * name)
 		VG_CLEAR(flink);
 		flink.handle = bo_gem->gem_handle;
 
+		pthread_mutex_lock(&bufmgr_gem->lock);
+
 		ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_GEM_FLINK, &flink);
-		if (ret != 0)
+		if (ret != 0) {
+			pthread_mutex_unlock(&bufmgr_gem->lock);
 			return -errno;
+		}
 
 		bo_gem->global_name = flink.name;
 		bo_gem->reusable = false;
 
                 if (DRMLISTEMPTY(&bo_gem->name_list))
                         DRMLISTADDTAIL(&bo_gem->name_list, &bufmgr_gem->named);
+		pthread_mutex_unlock(&bufmgr_gem->lock);
 	}
 
 	*name = bo_gem->global_name;
