@@ -821,6 +821,7 @@
       ],
       'sources': [
         'browser/admin_policy_unittest.cc',
+        'browser/api/api_resource_manager_unittest.cc',
         'browser/computed_hashes_unittest.cc',
         'browser/content_hash_tree_unittest.cc',
         'browser/event_listener_map_unittest.cc',

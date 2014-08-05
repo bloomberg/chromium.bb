@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/scoped_observer.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -19,6 +20,8 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 
@@ -112,13 +115,12 @@ content::BrowserThread::ID TestThreadTraits<T>::thread_id_ =
 template <class T, typename ThreadingTraits = NamedThreadTraits<T> >
 class ApiResourceManager : public BrowserContextKeyedAPI,
                            public base::NonThreadSafe,
-                           public content::NotificationObserver {
+                           public content::NotificationObserver,
+                           public ExtensionRegistryObserver {
  public:
   explicit ApiResourceManager(content::BrowserContext* context)
-      : data_(new ApiResourceData()) {
-    registrar_.Add(this,
-                   extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                   content::NotificationService::AllSources());
+      : data_(new ApiResourceData()), extension_registry_observer_(this) {
+    extension_registry_observer_.Add(ExtensionRegistry::Get(context));
     registrar_.Add(this,
                    extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                    content::NotificationService::AllSources());
@@ -185,19 +187,17 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    switch (type) {
-      case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-        std::string id = content::Details<extensions::UnloadedExtensionInfo>(
-                             details)->extension->id();
-        data_->InitiateExtensionUnloadedCleanup(id);
-        break;
-      }
-      case extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
-        ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
-        data_->InitiateExtensionSuspendedCleanup(host->extension_id());
-        break;
-      }
-    }
+    DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED, type);
+    ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
+    data_->InitiateExtensionSuspendedCleanup(host->extension_id());
+  }
+
+  // ExtensionRegistryObserver:
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE {
+    data_->InitiateExtensionUnloadedCleanup(extension->id());
   }
 
  private:
@@ -398,6 +398,9 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
 
   content::NotificationRegistrar registrar_;
   scoped_refptr<ApiResourceData> data_;
+
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 };
 
 // With WorkerPoolThreadTraits, ApiResourceManager can be used to manage the
