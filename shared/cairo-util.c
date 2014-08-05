@@ -28,6 +28,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
+#include <wayland-util.h>
 #include <cairo.h>
 #include "cairo-util.h"
 
@@ -413,7 +414,8 @@ theme_destroy(struct theme *t)
 void
 theme_render_frame(struct theme *t,
 		   cairo_t *cr, int width, int height,
-		   const char *title, uint32_t flags)
+		   const char *title, struct wl_list *buttons,
+		   uint32_t flags)
 {
 	cairo_text_extents_t extents;
 	cairo_font_extents_t font_extents;
@@ -439,7 +441,7 @@ theme_render_frame(struct theme *t,
 	else
 		source = t->inactive_frame;
 
-	if (title)
+	if (title || !wl_list_empty(buttons))
 		top_margin = t->titlebar_height;
 	else
 		top_margin = t->width;
@@ -449,7 +451,7 @@ theme_render_frame(struct theme *t,
 		    width - margin * 2, height - margin * 2,
 		    t->width, top_margin);
 
-	if (title) {
+	if (title || !wl_list_empty(buttons)) {
 		cairo_rectangle (cr, margin + t->width, margin,
 				 width - (margin + t->width) * 2,
 				 t->titlebar_height - t->width);

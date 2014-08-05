@@ -853,7 +853,7 @@ frame_repaint(struct frame *frame, cairo_t *cr)
 
 	cairo_save(cr);
 	theme_render_frame(frame->theme, cr, frame->width, frame->height,
-			   frame->title, flags);
+			   frame->title, &frame->buttons, flags);
 	cairo_restore(cr);
 
 	wl_list_for_each(button, &frame->buttons, link)
