@@ -64,6 +64,13 @@
 // - Render and inject the omnibox background.
 // - Make sure to test with a light on dark theme, too.
 
+// Work around a header bug:
+// linux/debian_wheezy_i386-sysroot/usr/include/linux/stddef.h redefines NULL
+// to 0, which breaks -Wsentinel. Get back the normal definition of NULL.
+// TODO(thakis): Remove this once we update sysroots.
+#define __need_NULL
+#include <stddef.h>
+
 namespace libgtk2ui {
 
 namespace {
