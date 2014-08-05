@@ -44,13 +44,14 @@ class RenderWidgetHostViewFrameSubscriber {
                               bool /* frame_captured */)> DeliverFrameCallback;
 
   // Called when a new frame is going to be presented at time
-  // |present_time|. Implementation can decide whether the current frame should
-  // be captured or not.
+  // |present_time| with |damage_rect| being the region of the frame that has
+  // changed since the last frame. The implementation decides whether the
+  // current frame should be captured or not.
   //
   // Return true if the current frame should be captured. If so, |storage|
-  // should will be set to hold an appropriately sized and allocated buffer
-  // into which to copy the frame. The platform presenter will perform scaling
-  // and color space conversion to fit into the output frame.
+  // will be set to hold an appropriately sized and allocated buffer into which
+  // to copy the frame. The platform presenter will perform scaling and color
+  // space conversion to fit into the output frame.
   //
   // Destination format is determined by |storage|, currently only
   // media::VideoFrame::YV12 is supported. Platform layer will perform color
@@ -60,7 +61,8 @@ class RenderWidgetHostViewFrameSubscriber {
   // platform layer to decide when to deliver a captured frame.
   //
   // Return false if the current frame should not be captured.
-  virtual bool ShouldCaptureFrame(base::TimeTicks present_time,
+  virtual bool ShouldCaptureFrame(const gfx::Rect& damage_rect,
+                                  base::TimeTicks present_time,
                                   scoped_refptr<media::VideoFrame>* storage,
                                   DeliverFrameCallback* callback) = 0;
 };

@@ -66,7 +66,12 @@ class VideoCaptureBufferPool;
 
 class CONTENT_EXPORT VideoCaptureController {
  public:
-  VideoCaptureController();
+  // |max_buffers| is the maximum number of video frame buffers in-flight at any
+  // one time.  This value should be based on the logical capacity of the
+  // capture pipeline, and not on hardware performance.  For example, tab
+  // capture requires more buffers than webcam capture because the pipeline is
+  // longer (it includes read-backs pending in the GPU pipeline).
+  explicit VideoCaptureController(int max_buffers);
   virtual ~VideoCaptureController();
 
   base::WeakPtr<VideoCaptureController> GetWeakPtr();

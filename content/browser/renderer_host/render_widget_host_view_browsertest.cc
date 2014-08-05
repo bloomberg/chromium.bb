@@ -247,7 +247,8 @@ class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
       : callback_(callback) {
   }
 
-  virtual bool ShouldCaptureFrame(base::TimeTicks present_time,
+  virtual bool ShouldCaptureFrame(const gfx::Rect& damage_rect,
+                                  base::TimeTicks present_time,
                                   scoped_refptr<media::VideoFrame>* storage,
                                   DeliverFrameCallback* callback) OVERRIDE {
     // Only allow one frame capture to be made.  Otherwise, the compositor could

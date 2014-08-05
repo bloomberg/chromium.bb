@@ -374,7 +374,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // Update the IOSurface to be drawn and call setNeedsDisplay on
   // |cocoa_view_|.
   void CompositorSwapBuffers(IOSurfaceID surface_handle,
-                             const gfx::Size& size,
+                             const gfx::Rect& damage_rect,
+                             const gfx::Size& surface_size,
                              float scale_factor,
                              const std::vector<ui::LatencyInfo>& latency_info);
 
@@ -615,6 +616,11 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Display link for getting vsync info.
   scoped_refptr<DisplayLinkMac> display_link_;
+
+  // The current VSync timebase and interval. This is zero until the first call
+  // to SendVSyncParametersToRenderer(), and refreshed regularly thereafter.
+  base::TimeTicks vsync_timebase_;
+  base::TimeDelta vsync_interval_;
 
   // The current composition character range and its bounds.
   gfx::Range composition_range_;

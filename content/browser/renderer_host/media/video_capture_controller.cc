@@ -41,9 +41,6 @@ static const int kInfiniteRatio = 99999;
         name, \
         (height) ? ((width) * 100) / (height) : kInfiniteRatio);
 
-// The number of buffers that VideoCaptureBufferPool should allocate.
-const int kNoOfBuffers = 3;
-
 class PoolBuffer : public media::VideoCaptureDevice::Client::Buffer {
  public:
   PoolBuffer(const scoped_refptr<VideoCaptureBufferPool>& pool,
@@ -185,8 +182,8 @@ class VideoCaptureController::VideoCaptureDeviceClient
   bool first_frame_;
 };
 
-VideoCaptureController::VideoCaptureController()
-    : buffer_pool_(new VideoCaptureBufferPool(kNoOfBuffers)),
+VideoCaptureController::VideoCaptureController(int max_buffers)
+    : buffer_pool_(new VideoCaptureBufferPool(max_buffers)),
       state_(VIDEO_CAPTURE_STATE_STARTED),
       weak_ptr_factory_(this) {
 }

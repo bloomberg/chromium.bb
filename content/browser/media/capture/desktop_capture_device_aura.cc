@@ -214,7 +214,7 @@ bool DesktopVideoCaptureMachine::Start(
     desktop_window_->GetHost()->compositor()->AddObserver(this);
 
   // Starts timer.
-  timer_.Start(FROM_HERE, oracle_proxy_->capture_period(),
+  timer_.Start(FROM_HERE, oracle_proxy_->min_capture_period(),
                base::Bind(&DesktopVideoCaptureMachine::Capture, AsWeakPtr(),
                           false));
 
@@ -266,7 +266,7 @@ void DesktopVideoCaptureMachine::Capture(bool dirty) {
       dirty ? VideoCaptureOracle::kCompositorUpdate
             : VideoCaptureOracle::kTimerPoll;
   if (oracle_proxy_->ObserveEventAndDecideCapture(
-      event, start_time, &frame, &capture_frame_cb)) {
+          event, gfx::Rect(), start_time, &frame, &capture_frame_cb)) {
     scoped_ptr<cc::CopyOutputRequest> request =
         cc::CopyOutputRequest::CreateRequest(
             base::Bind(&DesktopVideoCaptureMachine::DidCopyOutput,

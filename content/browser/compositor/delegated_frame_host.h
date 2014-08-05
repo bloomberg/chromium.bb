@@ -225,7 +225,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   virtual void ReturnResources(
       const cc::ReturnedResourceArray& resources) OVERRIDE;
 
-  void DidReceiveFrameFromRenderer();
+  void DidReceiveFrameFromRenderer(const gfx::Rect& damage_rect);
 
   DelegatedFrameHostClient* client_;
 
@@ -237,6 +237,11 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // The vsync manager we are observing for changes, if any.
   scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;
+
+  // The current VSync timebase and interval. These are zero until the first
+  // call to OnUpdateVSyncParameters().
+  base::TimeTicks vsync_timebase_;
+  base::TimeDelta vsync_interval_;
 
   // With delegated renderer, this is the last output surface, used to
   // disambiguate resources with the same id coming from different output

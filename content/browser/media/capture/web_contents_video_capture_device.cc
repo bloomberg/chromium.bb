@@ -137,6 +137,7 @@ class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
         delivery_log_(delivery_log) {}
 
   virtual bool ShouldCaptureFrame(
+      const gfx::Rect& damage_rect,
       base::TimeTicks present_time,
       scoped_refptr<media::VideoFrame>* storage,
       RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback*
@@ -332,6 +333,7 @@ class WebContentsCaptureMachine
 };
 
 bool FrameSubscriber::ShouldCaptureFrame(
+    const gfx::Rect& damage_rect,
     base::TimeTicks present_time,
     scoped_refptr<media::VideoFrame>* storage,
     DeliverFrameCallback* deliver_frame_cb) {
@@ -340,7 +342,7 @@ bool FrameSubscriber::ShouldCaptureFrame(
 
   ThreadSafeCaptureOracle::CaptureFrameCallback capture_frame_cb;
   bool oracle_decision = oracle_proxy_->ObserveEventAndDecideCapture(
-      event_type_, present_time, storage, &capture_frame_cb);
+      event_type_, damage_rect, present_time, storage, &capture_frame_cb);
 
   if (!capture_frame_cb.is_null())
     *deliver_frame_cb = base::Bind(capture_frame_cb, *storage);
@@ -384,7 +386,7 @@ ContentCaptureSubscription::ContentCaptureSubscription(
       Source<RenderWidgetHost>(&source));
 
   // Subscribe to timer events. This instance will service these as well.
-  timer_.Start(FROM_HERE, oracle_proxy->capture_period(),
+  timer_.Start(FROM_HERE, oracle_proxy->min_capture_period(),
                base::Bind(&ContentCaptureSubscription::OnTimer,
                           base::Unretained(this)));
 }
@@ -433,7 +435,8 @@ void ContentCaptureSubscription::Observe(
   scoped_refptr<media::VideoFrame> frame;
   RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback deliver_frame_cb;
   const base::TimeTicks start_time = base::TimeTicks::Now();
-  if (paint_subscriber_.ShouldCaptureFrame(start_time,
+  if (paint_subscriber_.ShouldCaptureFrame(gfx::Rect(),
+                                           start_time,
                                            &frame,
                                            &deliver_frame_cb)) {
     // This message happens just before paint. If we post a task to do the copy,
@@ -452,7 +455,8 @@ void ContentCaptureSubscription::OnTimer() {
   RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback deliver_frame_cb;
 
   const base::TimeTicks start_time = base::TimeTicks::Now();
-  if (timer_subscriber_.ShouldCaptureFrame(start_time,
+  if (timer_subscriber_.ShouldCaptureFrame(gfx::Rect(),
+                                           start_time,
                                            &frame,
                                            &deliver_frame_cb)) {
     capture_callback_.Run(start_time, frame, deliver_frame_cb);

@@ -196,8 +196,8 @@ class CaptureTestView : public TestRenderWidgetHostView {
     const base::TimeTicks present_time = base::TimeTicks::Now();
     RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
     scoped_refptr<media::VideoFrame> target;
-    if (subscriber_ && subscriber_->ShouldCaptureFrame(present_time,
-                                                       &target, &callback)) {
+    if (subscriber_ && subscriber_->ShouldCaptureFrame(
+            gfx::Rect(), present_time, &target, &callback)) {
       SkColor c = ConvertRgbToYuv(controller_->GetSolidColor());
       media::FillYUV(
           target.get(), SkColorGetR(c), SkColorGetG(c), SkColorGetB(c));

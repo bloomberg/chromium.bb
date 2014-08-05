@@ -19,6 +19,7 @@ const int VideoCaptureBufferPool::kInvalidId = -1;
 VideoCaptureBufferPool::VideoCaptureBufferPool(int count)
     : count_(count),
       next_buffer_id_(0) {
+  DCHECK_GT(count, 0);
 }
 
 VideoCaptureBufferPool::~VideoCaptureBufferPool() {
@@ -168,4 +169,3 @@ VideoCaptureBufferPool::Buffer* VideoCaptureBufferPool::GetBuffer(
 }
 
 }  // namespace content
-

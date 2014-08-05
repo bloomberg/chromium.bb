@@ -115,7 +115,7 @@ class VideoCaptureControllerTest : public testing::Test {
   static const int kPoolSize = 3;
 
   virtual void SetUp() OVERRIDE {
-    controller_.reset(new VideoCaptureController());
+    controller_.reset(new VideoCaptureController(kPoolSize));
     device_ = controller_->NewDeviceClient().Pass();
     client_a_.reset(new MockVideoCaptureControllerEventHandler(
         controller_.get()));

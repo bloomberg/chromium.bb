@@ -62,12 +62,13 @@ class ThreadSafeCaptureOracle
                               bool success)> CaptureFrameCallback;
 
   bool ObserveEventAndDecideCapture(VideoCaptureOracle::Event event,
+                                    const gfx::Rect& damage_rect,
                                     base::TimeTicks event_time,
                                     scoped_refptr<media::VideoFrame>* storage,
                                     CaptureFrameCallback* callback);
 
-  base::TimeDelta capture_period() const {
-    return oracle_->capture_period();
+  base::TimeDelta min_capture_period() const {
+    return oracle_->min_capture_period();
   }
 
   // Returns the current capture resolution.

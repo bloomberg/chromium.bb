@@ -70,6 +70,11 @@ void ConsolidateCaptureFormats(media::VideoCaptureFormats* formats) {
   }
 }
 
+// The maximum number of buffers in the capture pipeline.  See
+// VideoCaptureController ctor comments for more details.
+const int kMaxNumberOfBuffers = 3;
+const int kMaxNumberOfBuffersForTabCapture = 5;
+
 }  // namespace
 
 namespace content {
@@ -582,8 +587,10 @@ VideoCaptureManager::DeviceEntry* VideoCaptureManager::GetOrCreateDeviceEntry(
     return existing_device;
   }
 
+  const int max_buffers = device_info.type == MEDIA_TAB_VIDEO_CAPTURE ?
+      kMaxNumberOfBuffersForTabCapture : kMaxNumberOfBuffers;
   scoped_ptr<VideoCaptureController> video_capture_controller(
-      new VideoCaptureController());
+      new VideoCaptureController(max_buffers));
   DeviceEntry* new_device = new DeviceEntry(device_info.type,
                                             device_info.id,
                                             video_capture_controller.Pass());
