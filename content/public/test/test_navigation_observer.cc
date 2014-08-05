@@ -46,10 +46,6 @@ class TestNavigationObserver::TestWebContentsObserver
     parent_->OnDidStopLoading(web_contents());
   }
 
-  virtual void DidFirstVisuallyNonEmptyPaint() OVERRIDE {
-    parent_->OnDidFirstVisuallyNonEmptyPaint(web_contents());
-  }
-
   TestNavigationObserver* parent_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsObserver);
@@ -57,28 +53,10 @@ class TestNavigationObserver::TestWebContentsObserver
 
 TestNavigationObserver::TestNavigationObserver(
     WebContents* web_contents,
-    int number_of_navigations,
-    FirstPaint first_paint)
-    : navigation_started_(false),
-      navigations_completed_(0),
-      number_of_navigations_(number_of_navigations),
-      first_paint_(first_paint),
-      message_loop_runner_(new MessageLoopRunner),
-      web_contents_created_callback_(
-          base::Bind(
-              &TestNavigationObserver::OnWebContentsCreated,
-              base::Unretained(this))) {
-  if (web_contents)
-    RegisterAsObserver(web_contents);
-}
-
-TestNavigationObserver::TestNavigationObserver(
-    WebContents* web_contents,
     int number_of_navigations)
     : navigation_started_(false),
       navigations_completed_(0),
       number_of_navigations_(number_of_navigations),
-      first_paint_(FirstPaintNotRequired),
       message_loop_runner_(new MessageLoopRunner),
       web_contents_created_callback_(
           base::Bind(
@@ -93,7 +71,6 @@ TestNavigationObserver::TestNavigationObserver(
     : navigation_started_(false),
       navigations_completed_(0),
       number_of_navigations_(1),
-      first_paint_(FirstPaintNotRequired),
       message_loop_runner_(new MessageLoopRunner),
       web_contents_created_callback_(
           base::Bind(
@@ -161,20 +138,7 @@ void TestNavigationObserver::OnDidStopLoading(WebContents* web_contents) {
     return;
 
   ++navigations_completed_;
-  if ((navigations_completed_ == number_of_navigations_) &&
-      first_paint_ == FirstPaintNotRequired) {
-    navigation_started_ = false;
-    message_loop_runner_->Quit();
-  }
-}
-
-void TestNavigationObserver::OnDidFirstVisuallyNonEmptyPaint(
-    WebContents* web_contents) {
-  if (!navigation_started_)
-    return;
-
-  if ((navigations_completed_ == number_of_navigations_) &&
-      first_paint_ == FirstPaintRequired) {
+  if (navigations_completed_ == number_of_navigations_) {
     navigation_started_ = false;
     message_loop_runner_->Quit();
   }

@@ -11,6 +11,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -115,16 +116,12 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, ScreenOrientationChange) {
   GURL test_url = GetTestUrl("screen_orientation",
                              "screen_orientation_screenorientationchange.html");
 
-  TestNavigationObserver navigation_observer(
-      shell()->web_contents(), 1
-  // Android doesn't paint (ie. UseSoftwareCompositing() has no effect) so we
-  // shouldn't wait for the first paint.
-  #if !defined(OS_ANDROID)
-    , TestNavigationObserver::FirstPaintRequired
-  #endif
-  );
+  TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
   shell()->LoadURL(test_url);
   navigation_observer.Wait();
+#if USE_AURA
+  WaitForResizeComplete(shell()->web_contents());
+#endif // USE_AURA
 
   int angle = GetOrientationAngle();
 

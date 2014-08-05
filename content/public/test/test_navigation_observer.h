@@ -20,17 +20,8 @@ struct LoadCommittedDetails;
 // MessageLoop and quit when the navigation completes loading.
 class TestNavigationObserver {
  public:
-  enum FirstPaint {
-    FirstPaintRequired,
-    FirstPaintNotRequired
-  };
-
   // Create and register a new TestNavigationObserver against the
   // |web_contents|.
-  TestNavigationObserver(WebContents* web_contents,
-                         int number_of_navigations,
-                         FirstPaint first_paint);
-  // Like above but doesn't wait for the first paint after the navigations.
   TestNavigationObserver(WebContents* web_contents,
                          int number_of_navigations);
   // Like above but waits for one navigation.
@@ -41,8 +32,6 @@ class TestNavigationObserver {
   // Runs a nested message loop and blocks until the expected number of
   // navigations are complete.
   void Wait();
-
-  // Runs a nested message loop and blocks until the expected
 
   // Start/stop watching newly created WebContents.
   void StartWatchingNewWebContents();
@@ -66,7 +55,6 @@ class TestNavigationObserver {
   void OnDidAttachInterstitialPage(WebContents* web_contents);
   void OnDidStartLoading(WebContents* web_contents);
   void OnDidStopLoading(WebContents* web_contents);
-  void OnDidFirstVisuallyNonEmptyPaint(WebContents* web_contents);
 
   // If true the navigation has started.
   bool navigation_started_;
@@ -76,9 +64,6 @@ class TestNavigationObserver {
 
   // The number of navigations to wait for.
   int number_of_navigations_;
-
-  // Whether we want to wait for first paint after navigations.
-  FirstPaint first_paint_;
 
   // The MessageLoopRunner used to spin the message loop.
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
