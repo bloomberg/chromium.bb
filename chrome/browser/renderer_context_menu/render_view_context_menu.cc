@@ -1540,15 +1540,18 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_SAVELINKAS: {
       RecordDownloadSource(DOWNLOAD_INITIATED_BY_CONTEXT_MENU);
-      const GURL& referrer =
-          params_.frame_url.is_empty() ? params_.page_url : params_.frame_url;
       const GURL& url = params_.link_url;
+      const GURL& referring_url =
+          params_.frame_url.is_empty() ? params_.page_url : params_.frame_url;
+      content::Referrer referrer = content::Referrer::SanitizeForRequest(
+          url,
+          content::Referrer(referring_url.GetAsReferrer(),
+                            params_.referrer_policy));
       DownloadManager* dlm =
           BrowserContext::GetDownloadManager(browser_context_);
       scoped_ptr<DownloadUrlParameters> dl_params(
           DownloadUrlParameters::FromWebContents(source_web_contents_, url));
-      dl_params->set_referrer(
-          content::Referrer(referrer, params_.referrer_policy));
+      dl_params->set_referrer(referrer);
       dl_params->set_referrer_encoding(params_.frame_charset);
       dl_params->set_suggested_name(params_.suggested_filename);
       dl_params->set_prompt(true);
@@ -1564,11 +1567,14 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       } else {
         // TODO(zino): We can use SaveImageAt() like a case of canvas.
         RecordDownloadSource(DOWNLOAD_INITIATED_BY_CONTEXT_MENU);
-        const GURL& referrer =
-            params_.frame_url.is_empty() ? params_.page_url : params_.frame_url;
         const GURL& url = params_.src_url;
-        source_web_contents_->SaveFrame(url, content::Referrer(
-            referrer, params_.referrer_policy));
+        const GURL& referring_url =
+            params_.frame_url.is_empty() ? params_.page_url : params_.frame_url;
+        content::Referrer referrer = content::Referrer::SanitizeForRequest(
+            url,
+            content::Referrer(referring_url.GetAsReferrer(),
+                              params_.referrer_policy));
+        source_web_contents_->SaveFrame(url, referrer);
       }
       break;
     }
@@ -1980,8 +1986,10 @@ void RenderViewContextMenu::OpenURL(
     const GURL& url, const GURL& referring_url,
     WindowOpenDisposition disposition,
     content::PageTransition transition) {
-  content::Referrer referrer(referring_url.GetAsReferrer(),
-      params_.referrer_policy);
+  content::Referrer referrer = content::Referrer::SanitizeForRequest(
+      url,
+      content::Referrer(referring_url.GetAsReferrer(),
+                        params_.referrer_policy));
 
   if (params_.link_url == url && disposition != OFF_THE_RECORD)
     params_.custom_context.link_followed = url;

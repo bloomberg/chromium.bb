@@ -27,15 +27,17 @@ function run() {
 
   if (matches[kRedirect] == "false") {
     destination = "http://127.0.0.1:" + matches[kPort] +
-        "/files/referrer-policy-log.html";
+                  "/files/referrer-policy-log.html";
   } else if (matches[kRedirect] == "http") {
     destination = "http://127.0.0.1:" + matches[kPort] +
-      "/server-redirect?http://127.0.0.1:" + matches[kPort] +
-      "/files/referrer-policy-log.html";
+                  "/server-redirect?http://127.0.0.1:" + matches[kPort] +
+                  "/files/referrer-policy-log.html";
+  } else if (matches[kRedirect] == "echoheader") {
+    destination = "http://127.0.0.1:" + matches[kPort] + "/echoheader?Referer";
   } else {
     destination = "https://127.0.0.1:" + matches[kSslPort] +
-      "/server-redirect?http://127.0.0.1:" + matches[kPort] +
-      "/files/referrer-policy-log.html";
+                  "/server-redirect?http://127.0.0.1:" + matches[kPort] +
+                  "/files/referrer-policy-log.html";
   }
 
   if (matches[kLink] == "true") {

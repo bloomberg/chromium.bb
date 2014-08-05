@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -44,6 +45,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection_service.h"
@@ -2748,6 +2750,116 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, LoadURLExternallyReferrerPolicy) {
   base::FilePath file(download_items[0]->GetTargetFilePath());
   std::string expected_contents = test_server()->GetURL(std::string()).spec();
   ASSERT_TRUE(VerifyFile(file, expected_contents, expected_contents.length()));
+}
+
+// This test ensures that the Referer header is properly sanitized when
+// Save Link As is chosen from the context menu.
+IN_PROC_BROWSER_TEST_F(DownloadTest, SaveLinkAsReferrerPolicyOrigin) {
+  // Do initial setup.
+  ASSERT_TRUE(test_server()->Start());
+  net::SpawnedTestServer ssl_test_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data/referrer_policy")));
+  ASSERT_TRUE(ssl_test_server.Start());
+  EnableFileChooser(true);
+  std::vector<DownloadItem*> download_items;
+  GetDownloads(browser(), &download_items);
+  ASSERT_TRUE(download_items.empty());
+
+  // Navigate to the initial page, where Save Link As will be executed.
+  GURL url = ssl_test_server.GetURL(
+      std::string("files/referrer-policy-start.html?policy=origin") +
+      "&port=" + base::IntToString(test_server()->host_port_pair().port()) +
+      "&ssl_port=" +
+      base::IntToString(ssl_test_server.host_port_pair().port()) +
+      "&redirect=echoheader&link=true&target=");
+  ASSERT_TRUE(url.is_valid());
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  scoped_ptr<content::DownloadTestObserver> waiter(
+      new content::DownloadTestObserverTerminal(
+          DownloadManagerForBrowser(browser()), 1,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+
+  // Right-click on the link and choose Save Link As. This will download the
+  // link target.
+  ContextMenuNotificationObserver context_menu_observer(
+      IDC_CONTENT_CONTEXT_SAVELINKAS);
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  blink::WebMouseEvent mouse_event;
+  mouse_event.type = blink::WebInputEvent::MouseDown;
+  mouse_event.button = blink::WebMouseEvent::ButtonRight;
+  mouse_event.x = 15;
+  mouse_event.y = 15;
+  mouse_event.clickCount = 1;
+  tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+  mouse_event.type = blink::WebInputEvent::MouseUp;
+  tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+
+  waiter->WaitForFinished();
+  EXPECT_EQ(1u, waiter->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+  CheckDownloadStates(1, DownloadItem::COMPLETE);
+
+  // Validate that the correct file was downloaded.
+  GetDownloads(browser(), &download_items);
+  EXPECT_EQ(1u, download_items.size());
+  EXPECT_EQ(test_server()->GetURL("echoheader?Referer"),
+            download_items[0]->GetOriginalUrl());
+
+  // Check that the file contains the expected referrer.
+  base::FilePath file(download_items[0]->GetTargetFilePath());
+  std::string expected_contents = ssl_test_server.GetURL(std::string()).spec();
+  EXPECT_TRUE(VerifyFile(file, expected_contents, expected_contents.length()));
+}
+
+// This test ensures that the Referer header is properly sanitized when
+// Save Image As is chosen from the context menu. The test succeeds if
+// it doesn't crash.
+IN_PROC_BROWSER_TEST_F(DownloadTest, SaveImageAsReferrerPolicyDefault) {
+  // Do initial setup.
+  ASSERT_TRUE(test_server()->Start());
+  net::SpawnedTestServer ssl_test_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data/")));
+  ASSERT_TRUE(ssl_test_server.Start());
+  EnableFileChooser(true);
+  std::vector<DownloadItem*> download_items;
+  GetDownloads(browser(), &download_items);
+  ASSERT_TRUE(download_items.empty());
+
+  GURL url = ssl_test_server.GetURL("files/title1.html");
+  GURL img_url = test_server()->GetURL("files/downloads/image.jpg");
+  ASSERT_TRUE(url.is_valid());
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Try to download an image via a context menu.
+  scoped_ptr<content::DownloadTestObserver> waiter_context_menu(
+      new content::DownloadTestObserverTerminal(
+          DownloadManagerForBrowser(browser()), 1,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+  content::ContextMenuParams context_menu_params;
+  context_menu_params.media_type = blink::WebContextMenuData::MediaTypeImage;
+  context_menu_params.page_url = url;
+  context_menu_params.src_url = img_url;
+  TestRenderViewContextMenu menu(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+      context_menu_params);
+  menu.Init();
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_SAVEIMAGEAS, 0);
+  waiter_context_menu->WaitForFinished();
+  EXPECT_EQ(
+      1u, waiter_context_menu->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+  CheckDownloadStates(1, DownloadItem::COMPLETE);
+
+  // Validate that the correct file was downloaded via the context menu.
+  download_items.clear();
+  GetDownloads(browser(), &download_items);
+  EXPECT_TRUE(DidShowFileChooser());
+  ASSERT_EQ(1u, download_items.size());
+  ASSERT_EQ(img_url, download_items[0]->GetOriginalUrl());
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, HiddenDownload) {

@@ -109,7 +109,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
 
   enum StartOnProtocol { START_ON_HTTP, START_ON_HTTPS, };
 
-  enum LinkType { REGULAR_LINK, LINk_WITH_TARGET_BLANK, };
+  enum LinkType { REGULAR_LINK, LINK_WITH_TARGET_BLANK, };
 
   enum RedirectType { NO_REDIRECT, SERVER_REDIRECT, SERVER_REDIRECT_ON_HTTP, };
 
@@ -159,7 +159,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
         base::IntToString(ssl_test_server_->host_port_pair().port()) +
         "&redirect=" + RedirectTypeToString(redirect) + "&link=" +
         (button == blink::WebMouseEvent::ButtonNone ? "false" : "true") +
-        "&target=" + (link_type == LINk_WITH_TARGET_BLANK ? "_blank" : ""));
+        "&target=" + (link_type == LINK_WITH_TARGET_BLANK ? "_blank" : ""));
 
     ui_test_utils::WindowedTabAddedNotificationObserver tab_added_observer(
         content::NotificationService::AllSources());
@@ -288,7 +288,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsMiddleClickOrigin) {
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, TargetBlankOrigin) {
   RunReferrerTest(blink::WebReferrerPolicyOrigin,
                   START_ON_HTTP,
-                  LINk_WITH_TARGET_BLANK,
+                  LINK_WITH_TARGET_BLANK,
                   NO_REDIRECT,
                   NEW_FOREGROUND_TAB,
                   blink::WebMouseEvent::ButtonLeft,
@@ -299,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, TargetBlankOrigin) {
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsTargetBlankOrigin) {
   RunReferrerTest(blink::WebReferrerPolicyOrigin,
                   START_ON_HTTPS,
-                  LINk_WITH_TARGET_BLANK,
+                  LINK_WITH_TARGET_BLANK,
                   NO_REDIRECT,
                   NEW_FOREGROUND_TAB,
                   blink::WebMouseEvent::ButtonLeft,
@@ -310,7 +310,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsTargetBlankOrigin) {
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MiddleClickTargetBlankOrigin) {
   RunReferrerTest(blink::WebReferrerPolicyOrigin,
                   START_ON_HTTP,
-                  LINk_WITH_TARGET_BLANK,
+                  LINK_WITH_TARGET_BLANK,
                   NO_REDIRECT,
                   NEW_FOREGROUND_TAB,
                   blink::WebMouseEvent::ButtonMiddle,
@@ -321,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MiddleClickTargetBlankOrigin) {
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsMiddleClickTargetBlankOrigin) {
   RunReferrerTest(blink::WebReferrerPolicyOrigin,
                   START_ON_HTTPS,
-                  LINk_WITH_TARGET_BLANK,
+                  LINK_WITH_TARGET_BLANK,
                   NO_REDIRECT,
                   NEW_FOREGROUND_TAB,
                   blink::WebMouseEvent::ButtonMiddle,
@@ -427,7 +427,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsMiddleClickRedirect) {
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, TargetBlankRedirect) {
   RunReferrerTest(blink::WebReferrerPolicyOrigin,
                   START_ON_HTTP,
-                  LINk_WITH_TARGET_BLANK,
+                  LINK_WITH_TARGET_BLANK,
                   SERVER_REDIRECT,
                   NEW_FOREGROUND_TAB,
                   blink::WebMouseEvent::ButtonLeft,
@@ -439,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, TargetBlankRedirect) {
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsTargetBlankRedirect) {
   RunReferrerTest(blink::WebReferrerPolicyOrigin,
                   START_ON_HTTPS,
-                  LINk_WITH_TARGET_BLANK,
+                  LINK_WITH_TARGET_BLANK,
                   SERVER_REDIRECT,
                   NEW_FOREGROUND_TAB,
                   blink::WebMouseEvent::ButtonLeft,
@@ -451,7 +451,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsTargetBlankRedirect) {
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MiddleClickTargetBlankRedirect) {
   RunReferrerTest(blink::WebReferrerPolicyOrigin,
                   START_ON_HTTP,
-                  LINk_WITH_TARGET_BLANK,
+                  LINK_WITH_TARGET_BLANK,
                   SERVER_REDIRECT,
                   NEW_FOREGROUND_TAB,
                   blink::WebMouseEvent::ButtonMiddle,
@@ -464,7 +464,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest,
                        HttpsMiddleClickTargetBlankRedirect) {
   RunReferrerTest(blink::WebReferrerPolicyOrigin,
                   START_ON_HTTPS,
-                  LINk_WITH_TARGET_BLANK,
+                  LINK_WITH_TARGET_BLANK,
                   SERVER_REDIRECT,
                   NEW_FOREGROUND_TAB,
                   blink::WebMouseEvent::ButtonMiddle,
