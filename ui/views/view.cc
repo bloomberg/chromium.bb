@@ -1030,6 +1030,15 @@ View::SetEventTargeter(scoped_ptr<ViewTargeter> targeter) {
   return old_targeter.Pass();
 }
 
+ViewTargeter* View::GetEffectiveViewTargeter() const {
+  DCHECK(GetWidget());
+  ViewTargeter* view_targeter = targeter();
+  if (!view_targeter)
+    view_targeter = GetWidget()->GetRootView()->targeter();
+  CHECK(view_targeter);
+  return view_targeter;
+}
+
 bool View::CanAcceptEvent(const ui::Event& event) {
   return IsDrawn();
 }
@@ -2268,14 +2277,6 @@ void View::ProcessMouseReleased(const ui::MouseEvent& event) {
     OnMouseReleased(event);
   }
   // WARNING: we may have been deleted.
-}
-
-ViewTargeter* View::GetEffectiveViewTargeter() const {
-  ViewTargeter* view_targeter = targeter();
-  if (!view_targeter)
-    view_targeter = GetWidget()->GetRootView()->targeter();
-  CHECK(view_targeter);
-  return view_targeter;
 }
 
 // Accelerators ----------------------------------------------------------------

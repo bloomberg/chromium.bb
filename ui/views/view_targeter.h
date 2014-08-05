@@ -13,13 +13,8 @@ namespace views {
 class View;
 class ViewTargeterDelegate;
 
-// Contains the logic used to determine the View to which an
-// event should be dispatched. A ViewTargeter (or one of its
-// derived classes) is installed on a View to specify the
-// targeting behaviour to be used for the subtree rooted at
-// that View.
-// TODO(tdanderson): Remove overrides of all EventHandler methods except for
-//                   FindTargetForEvent() and FindNextBestTarget().
+// A ViewTargeter is installed on a View that wishes to use the custom
+// hit-testing or event-targeting behaviour defined by |delegate|.
 class VIEWS_EXPORT ViewTargeter : public ui::EventTargeter {
  public:
   explicit ViewTargeter(ViewTargeterDelegate* delegate);
@@ -32,11 +27,6 @@ class VIEWS_EXPORT ViewTargeter : public ui::EventTargeter {
   View* TargetForRect(View* root, const gfx::Rect& rect) const;
 
  protected:
-  // Returns the location of |event| represented as a rect. If |event| is
-  // a gesture event, its bounding box is returned. Otherwise, a 1x1 rect
-  // having its origin at the location of |event| is returned.
-  gfx::RectF BoundsForEvent(const ui::LocatedEvent& event) const;
-
   // ui::EventTargeter:
   virtual ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
                                               ui::Event* event) OVERRIDE;
@@ -50,7 +40,8 @@ class VIEWS_EXPORT ViewTargeter : public ui::EventTargeter {
       const ui::LocatedEvent& event) const OVERRIDE;
 
  private:
-  View* FindTargetForKeyEvent(View* view, const ui::KeyEvent& key);
+  View* FindTargetForKeyEvent(View* root, const ui::KeyEvent& key);
+  View* FindTargetForScrollEvent(View* root, const ui::ScrollEvent& scroll);
 
   // ViewTargeter does not own the |delegate_|, but |delegate_| must
   // outlive the targeter.

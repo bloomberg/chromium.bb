@@ -15,9 +15,11 @@ class Rect;
 namespace views {
 class View;
 
-// Defines the default behaviour for hit-testing a rectangular region against
-// the bounds of a View. Subclasses of View wishing to define custom
-// hit-testing behaviour can extend this class.
+// Defines the default behaviour for hit-testing and event-targeting against a
+// View using a rectangular region representing an event's location. Views
+// wishing to define custom hit-testing or event-targeting behaviour do so by
+// extending ViewTargeterDelegate and then installing a ViewTargeter on
+// themselves.
 class VIEWS_EXPORT ViewTargeterDelegate {
  public:
   ViewTargeterDelegate() {}

@@ -704,6 +704,13 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // ViewTargeter.
   scoped_ptr<ViewTargeter> SetEventTargeter(scoped_ptr<ViewTargeter> targeter);
 
+  // Returns the ViewTargeter installed on |this| if one exists,
+  // otherwise returns the ViewTargeter installed on our root view.
+  // The return value is guaranteed to be non-null.
+  ViewTargeter* GetEffectiveViewTargeter() const;
+
+  ViewTargeter* targeter() const { return targeter_.get(); }
+
   // Overridden from ui::EventTarget:
   virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;
   virtual ui::EventTarget* GetParentTarget() OVERRIDE;
@@ -711,8 +718,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual ui::EventTargeter* GetEventTargeter() OVERRIDE;
   virtual void ConvertEventToTarget(ui::EventTarget* target,
                                     ui::LocatedEvent* event) OVERRIDE;
-
-  ViewTargeter* targeter() const { return targeter_.get(); }
 
   // Overridden from ui::EventHandler:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
@@ -1389,11 +1394,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   bool ProcessMousePressed(const ui::MouseEvent& event);
   bool ProcessMouseDragged(const ui::MouseEvent& event);
   void ProcessMouseReleased(const ui::MouseEvent& event);
-
-  // Returns the ViewTargeter installed on |this| if one exists,
-  // otherwise returns the ViewTargeter installed on our root view.
-  // The return value is guaranteed to be non-null.
-  ViewTargeter* GetEffectiveViewTargeter() const;
 
   // Accelerators --------------------------------------------------------------
 
