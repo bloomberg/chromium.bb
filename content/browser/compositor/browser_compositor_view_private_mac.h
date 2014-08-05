@@ -11,6 +11,7 @@
 #include "content/browser/compositor/browser_compositor_view_mac.h"
 #include "content/browser/renderer_host/compositing_iosurface_layer_mac.h"
 #include "content/browser/renderer_host/software_layer_mac.h"
+#include "ui/base/cocoa/remote_layer_api.h"
 
 namespace content {
 
@@ -37,8 +38,8 @@ class BrowserCompositorViewMacInternal
   void BeginPumpingFrames();
   void EndPumpingFrames();
 
-  void GotAcceleratedIOSurfaceFrame(
-      IOSurfaceID io_surface_id, int output_surface_id,
+  void GotAcceleratedFrame(
+      uint64 surface_handle, int output_surface_id,
       const std::vector<ui::LatencyInfo>& latency_info,
       gfx::Size pixel_size, float scale_factor);
 
@@ -49,6 +50,12 @@ private:
   // CompositingIOSurfaceLayerClient implementation:
   virtual bool AcceleratedLayerShouldAckImmediately() const OVERRIDE;
   virtual void AcceleratedLayerDidDrawFrame(bool succeeded) OVERRIDE;
+
+  void GotAcceleratedCAContextFrame(
+      CAContextID ca_context_id, gfx::Size pixel_size, float scale_factor);
+
+  void GotAcceleratedIOSurfaceFrame(
+      IOSurfaceID io_surface_id, gfx::Size pixel_size, float scale_factor);
 
   // The client of the BrowserCompositorViewMac that is using this as its
   // internals.
@@ -69,11 +76,20 @@ private:
   // behavior.
   base::scoped_nsobject<CALayer> flipped_layer_;
 
-  base::scoped_nsobject<CompositingIOSurfaceLayer> accelerated_layer_;
-  int accelerated_layer_output_surface_id_;
-  std::vector<ui::LatencyInfo> accelerated_latency_info_;
+  // The accelerated CoreAnimation layer hosted by the GPU process.
+  base::scoped_nsobject<CALayerHost> ca_context_layer_;
 
+  // The locally drawn accelerated CoreAnimation layer.
+  base::scoped_nsobject<CompositingIOSurfaceLayer> io_surface_layer_;
+
+  // The locally drawn software layer.
   base::scoped_nsobject<SoftwareLayer> software_layer_;
+
+  // The output surface and latency info of the last accelerated surface that
+  // was swapped. Sent back to the renderer when the accelerated surface is
+  // drawn.
+  int accelerated_output_surface_id_;
+  std::vector<ui::LatencyInfo> accelerated_latency_info_;
 
   // The size in DIP of the last swap received from |compositor_|.
   gfx::Size last_swap_size_dip_;

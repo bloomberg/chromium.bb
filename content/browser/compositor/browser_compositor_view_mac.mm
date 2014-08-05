@@ -7,7 +7,6 @@
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "content/browser/compositor/browser_compositor_view_private_mac.h"
-#include "content/common/gpu/surface_handle_types_mac.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserCompositorViewMac
@@ -80,11 +79,10 @@ void BrowserCompositorViewMac::GotAcceleratedFrame(
     gfx::Size pixel_size, float scale_factor) {
   BrowserCompositorViewMacInternal* internal_view =
       BrowserCompositorViewMacInternal::FromAcceleratedWidget(widget);
-  if (!internal_view)
-    return;
-  IOSurfaceID io_surface_id = IOSurfaceIDFromSurfaceHandle(surface_handle);
-  internal_view->GotAcceleratedIOSurfaceFrame(
-      io_surface_id, surface_id, latency_info, pixel_size, scale_factor);
+  if (internal_view) {
+    internal_view->GotAcceleratedFrame(
+        surface_handle, surface_id, latency_info, pixel_size, scale_factor);
+  }
 }
 
 // static
@@ -93,9 +91,8 @@ void BrowserCompositorViewMac::GotSoftwareFrame(
     cc::SoftwareFrameData* frame_data, float scale_factor, SkCanvas* canvas) {
   BrowserCompositorViewMacInternal* internal_view =
       BrowserCompositorViewMacInternal::FromAcceleratedWidget(widget);
-  if (!internal_view)
-    return;
-  internal_view->GotSoftwareFrame(frame_data, scale_factor, canvas);
+  if (internal_view)
+    internal_view->GotSoftwareFrame(frame_data, scale_factor, canvas);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
