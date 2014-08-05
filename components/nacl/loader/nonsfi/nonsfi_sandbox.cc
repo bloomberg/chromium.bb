@@ -28,10 +28,19 @@
 #define MAP_STACK 0x20000
 #endif
 
-using namespace sandbox::bpf_dsl;
 using sandbox::CrashSIGSYS;
 using sandbox::CrashSIGSYSClone;
 using sandbox::CrashSIGSYSPrctl;
+using sandbox::bpf_dsl::Allow;
+using sandbox::bpf_dsl::Arg;
+using sandbox::bpf_dsl::Error;
+using sandbox::bpf_dsl::If;
+using sandbox::bpf_dsl::ResultExpr;
+
+// TODO(mdempsky): Make BoolExpr a standalone class so these operators can
+// be resolved via argument-dependent lookup.
+using sandbox::bpf_dsl::operator&&;
+using sandbox::bpf_dsl::operator||;
 
 namespace nacl {
 namespace nonsfi {
