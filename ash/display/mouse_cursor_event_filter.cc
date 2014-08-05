@@ -14,6 +14,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -24,7 +25,6 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/screen.h"
-#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace {
@@ -42,7 +42,7 @@ const int kIndicatorThickness = 1;
 
 void ConvertPointFromScreenToNative(const aura::Window* root_window,
                                     gfx::Point* point) {
-  ::wm::ConvertPointFromScreen(root_window, point);
+  wm::ConvertPointFromScreen(root_window, point);
   root_window->GetHost()->ConvertPointToNativeScreen(point);
 }
 
@@ -204,7 +204,7 @@ void MouseCursorEventFilter::OnMouseEvent(ui::MouseEvent* event) {
 void MouseCursorEventFilter::MoveCursorTo(aura::Window* root,
                                           const gfx::Point& point_in_screen) {
   gfx::Point point_in_native = point_in_screen;
-  ::wm::ConvertPointFromScreen(root, &point_in_native);
+  wm::ConvertPointFromScreen(root, &point_in_native);
   root->GetHost()->ConvertPointToNativeScreen(&point_in_native);
 
   // now fit the point inside the native bounds.
@@ -234,7 +234,7 @@ bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(ui::MouseEvent* event) {
 
   gfx::Point point_in_screen = event->location();
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  ::wm::ConvertPointToScreen(target, &point_in_screen);
+  wm::ConvertPointToScreen(target, &point_in_screen);
 
   return WarpMouseCursorInNativeCoords(point_in_native, point_in_screen);
 }
@@ -379,7 +379,7 @@ bool MouseCursorEventFilter::WarpMouseCursorIfNecessaryForTest(
     aura::Window* target_root,
     const gfx::Point& point_in_screen) {
   gfx::Point native = point_in_screen;
-  ::wm::ConvertPointFromScreen(target_root, &native);
+  wm::ConvertPointFromScreen(target_root, &native);
   target_root->GetHost()->ConvertPointToNativeScreen(&native);
   return WarpMouseCursorInNativeCoords(native, point_in_screen);
 }

@@ -6,13 +6,13 @@
 
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
-#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace {
@@ -84,7 +84,7 @@ bool OverviewGestureHandler::ProcessGestureEvent(
       event.details().touch_points() == 1) {
     gfx::Point point_in_screen(event.location());
     aura::Window* target = static_cast<aura::Window*>(event.target());
-    ::wm::ConvertPointToScreen(target, &point_in_screen);
+    wm::ConvertPointToScreen(target, &point_in_screen);
     in_top_bezel_gesture_ = !Shell::GetScreen()->GetDisplayNearestPoint(
         point_in_screen).bounds().y() + kTopBezelExtraPixels >
             point_in_screen.y();

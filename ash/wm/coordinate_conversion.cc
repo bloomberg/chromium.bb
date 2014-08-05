@@ -31,5 +31,17 @@ aura::Window* GetRootWindowMatching(const gfx::Rect& rect) {
       GetRootWindowForDisplayId(display.id());
 }
 
+void ConvertPointToScreen(const aura::Window* window, gfx::Point* point) {
+  CHECK(aura::client::GetScreenPositionClient(window->GetRootWindow()));
+  aura::client::GetScreenPositionClient(window->GetRootWindow())->
+      ConvertPointToScreen(window, point);
+}
+
+void ConvertPointFromScreen(const aura::Window* window,
+                            gfx::Point* point_in_screen) {
+  aura::client::GetScreenPositionClient(window->GetRootWindow())->
+      ConvertPointFromScreen(window, point_in_screen);
+}
+
 }  // namespace wm
 }  // namespace ash

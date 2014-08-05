@@ -20,7 +20,6 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
-#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 
@@ -205,7 +204,7 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
     // for the current display but the window can move to a different one.
     aura::Window* parent = GetTarget()->parent();
     gfx::Point passed_location_in_screen(passed_location);
-    ::wm::ConvertPointToScreen(parent, &passed_location_in_screen);
+    wm::ConvertPointToScreen(parent, &passed_location_in_screen);
     gfx::Rect near_passed_location(passed_location_in_screen, gfx::Size());
     // Use a pointer location (matching the logic in DragWindowResizer) to
     // calculate the target display after the drag.

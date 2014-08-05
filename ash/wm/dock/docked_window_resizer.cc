@@ -12,6 +12,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -29,7 +30,6 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace {
@@ -61,7 +61,7 @@ DockedWindowResizer::Create(WindowResizer* next_window_resizer,
 
 void DockedWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   last_location_ = location;
-  ::wm::ConvertPointToScreen(GetTarget()->parent(), &last_location_);
+  wm::ConvertPointToScreen(GetTarget()->parent(), &last_location_);
   if (!did_move_or_resize_) {
     did_move_or_resize_ = true;
     StartedDragging();

@@ -55,7 +55,6 @@
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/coordinate_conversion.h"
 
 using gfx::Animation;
 using views::View;
@@ -618,8 +617,9 @@ bool ShelfView::StartDrag(const std::string& app_id,
   gfx::Point pt = drag_and_drop_view->GetBoundsInScreen().CenterPoint();
   views::View::ConvertPointFromScreen(drag_and_drop_view, &pt);
   gfx::Point point_in_root = location_in_screen_coordinates;
-  ::wm::ConvertPointFromScreen(
-      ash::wm::GetRootWindowAt(location_in_screen_coordinates), &point_in_root);
+  ash::wm::ConvertPointFromScreen(
+      ash::wm::GetRootWindowAt(location_in_screen_coordinates),
+      &point_in_root);
   ui::MouseEvent event(ui::ET_MOUSE_PRESSED, pt, point_in_root, 0, 0);
   PointerPressedOnButton(drag_and_drop_view,
                          ShelfButtonHost::DRAG_AND_DROP,
@@ -640,8 +640,9 @@ bool ShelfView::Drag(const gfx::Point& location_in_screen_coordinates) {
       model_->ItemIndexByID(drag_and_drop_shelf_id_));
   ConvertPointFromScreen(drag_and_drop_view, &pt);
   gfx::Point point_in_root = location_in_screen_coordinates;
-  ::wm::ConvertPointFromScreen(
-      ash::wm::GetRootWindowAt(location_in_screen_coordinates), &point_in_root);
+  ash::wm::ConvertPointFromScreen(
+      ash::wm::GetRootWindowAt(location_in_screen_coordinates),
+      &point_in_root);
   ui::MouseEvent event(ui::ET_MOUSE_DRAGGED, pt, point_in_root, 0, 0);
   PointerDraggedOnButton(drag_and_drop_view,
                          ShelfButtonHost::DRAG_AND_DROP,
@@ -1009,8 +1010,8 @@ bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
       delegate_->GetAppIDForShelfID(model_->items()[current_index].id);
 
   gfx::Point screen_location = event.root_location();
-  ::wm::ConvertPointToScreen(GetWidget()->GetNativeWindow()->GetRootWindow(),
-                             &screen_location);
+  ash::wm::ConvertPointToScreen(GetWidget()->GetNativeWindow()->GetRootWindow(),
+                                &screen_location);
 
   // To avoid ugly forwards and backwards flipping we use different constants
   // for ripping off / re-inserting the items.

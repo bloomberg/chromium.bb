@@ -7,6 +7,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/workspace/workspace_event_handler.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
@@ -24,7 +25,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/compound_event_filter.h"
-#include "ui/wm/core/coordinate_conversion.h"
 
 using aura::Window;
 
@@ -228,7 +228,7 @@ MultiWindowResizeController::DetermineWindowsFromScreenPoint(
     aura::Window* window) const {
   gfx::Point mouse_location(
       gfx::Screen::GetScreenFor(window)->GetCursorScreenPoint());
-  ::wm::ConvertPointFromScreen(window, &mouse_location);
+  wm::ConvertPointFromScreen(window, &mouse_location);
   const int component =
       window->delegate()->GetNonClientComponent(mouse_location);
   return DetermineWindows(window, component, mouse_location);

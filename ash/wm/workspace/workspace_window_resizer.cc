@@ -15,6 +15,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/default_window_resizer.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/dock/docked_window_resizer.h"
@@ -36,7 +37,6 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/transform.h"
-#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/window_types.h"
 
@@ -371,7 +371,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
   }
 
   gfx::Point location_in_screen = location_in_parent;
-  ::wm::ConvertPointToScreen(GetTarget()->parent(), &location_in_screen);
+  wm::ConvertPointToScreen(GetTarget()->parent(), &location_in_screen);
 
   aura::Window* root = NULL;
   gfx::Display display =
@@ -771,8 +771,8 @@ void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
     int sticky_size,
     gfx::Rect* bounds) {
   gfx::Point last_mouse_location_in_screen = last_mouse_location_;
-  ::wm::ConvertPointToScreen(GetTarget()->parent(),
-                             &last_mouse_location_in_screen);
+  wm::ConvertPointToScreen(GetTarget()->parent(),
+                           &last_mouse_location_in_screen);
   gfx::Display display = Shell::GetScreen()->GetDisplayNearestPoint(
       last_mouse_location_in_screen);
   gfx::Rect work_area =

@@ -18,6 +18,7 @@
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/panels/panel_layout_manager.h"
@@ -33,7 +34,6 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -105,7 +105,7 @@ class DockedWindowResizerTest
       aura::Window* root = ash::Shell::GetInstance()->display_controller()->
           GetRootWindowForDisplayId(display.id());
       gfx::Point origin = bounds.origin();
-      ::wm::ConvertPointFromScreen(root, &origin);
+      wm::ConvertPointFromScreen(root, &origin);
       window->SetBounds(gfx::Rect(origin, bounds.size()));
       aura::client::ParentWindowWithContext(window, root, bounds);
     }
@@ -216,7 +216,7 @@ class DockedWindowResizerTest
     gfx::Rect work_area =
         Shell::GetScreen()->GetDisplayNearestWindow(window).work_area();
     gfx::Point initial_location_in_screen = initial_location_in_parent_;
-    ::wm::ConvertPointToScreen(window->parent(), &initial_location_in_screen);
+    wm::ConvertPointToScreen(window->parent(), &initial_location_in_screen);
     // Drag the window left or right to the edge (or almost to it).
     if (edge == DOCKED_EDGE_LEFT)
       dx += work_area.x() - initial_location_in_screen.x();

@@ -28,6 +28,16 @@ ASH_EXPORT aura::Window* GetRootWindowAt(const gfx::Point& point);
 // the virtual scren coordinates.
 ASH_EXPORT aura::Window* GetRootWindowMatching(const gfx::Rect& rect);
 
+// Converts the |point| from a given |window|'s coordinates into the screen
+// coordinates.
+ASH_EXPORT void ConvertPointToScreen(const aura::Window* window,
+                                     gfx::Point* point);
+
+// Converts the |point| from the screen coordinates to a given |window|'s
+// coordinates.
+ASH_EXPORT void ConvertPointFromScreen(const aura::Window* window,
+                                       gfx::Point* point_in_screen);
+
 }  // namespace wm
 }  // namespace ash
 

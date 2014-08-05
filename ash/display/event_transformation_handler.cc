@@ -9,6 +9,7 @@
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -16,7 +17,6 @@
 #include "ui/events/event.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
-#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace {
@@ -41,7 +41,7 @@ void EventTransformationHandler::OnScrollEvent(ui::ScrollEvent* event) {
   // the event locations etc. are already in DIP.
   gfx::Point point_in_screen(event->location());
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  ::wm::ConvertPointToScreen(target, &point_in_screen);
+  wm::ConvertPointToScreen(target, &point_in_screen);
   const gfx::Display& display =
       Shell::GetScreen()->GetDisplayNearestPoint(point_in_screen);
 

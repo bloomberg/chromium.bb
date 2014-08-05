@@ -29,6 +29,7 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/test/test_shelf_item_delegate.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -46,7 +47,6 @@
 #include "ui/views/view_model.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace test {
@@ -1604,7 +1604,7 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
 
   // Fetch the start point of dragging.
   gfx::Point start_point = button->GetBoundsInScreen().CenterPoint();
-  ::wm::ConvertPointFromScreen(second_root, &start_point);
+  wm::ConvertPointFromScreen(second_root, &start_point);
 
   ui::test::EventGenerator generator(second_root, start_point);
 

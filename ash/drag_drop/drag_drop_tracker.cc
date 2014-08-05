@@ -12,7 +12,6 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event.h"
 #include "ui/gfx/screen.h"
-#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/public/activation_delegate.h"
 
 namespace ash {
@@ -69,11 +68,12 @@ void DragDropTracker::TakeCapture() {
 aura::Window* DragDropTracker::GetTarget(const ui::LocatedEvent& event) {
   DCHECK(capture_window_.get());
   gfx::Point location_in_screen = event.location();
-  ::wm::ConvertPointToScreen(capture_window_.get(), &location_in_screen);
+  wm::ConvertPointToScreen(capture_window_.get(),
+                           &location_in_screen);
   aura::Window* root_window_at_point =
       wm::GetRootWindowAt(location_in_screen);
   gfx::Point location_in_root = location_in_screen;
-  ::wm::ConvertPointFromScreen(root_window_at_point, &location_in_root);
+  wm::ConvertPointFromScreen(root_window_at_point, &location_in_root);
   return root_window_at_point->GetEventHandlerForPoint(location_in_root);
 }
 
@@ -85,7 +85,7 @@ ui::LocatedEvent* DragDropTracker::ConvertEvent(
   aura::Window::ConvertPointToTarget(capture_window_.get(), target,
                                      &target_location);
   gfx::Point location_in_screen = event.location();
-  ::wm::ConvertPointToScreen(capture_window_.get(), &location_in_screen);
+  ash::wm::ConvertPointToScreen(capture_window_.get(), &location_in_screen);
   gfx::Point target_root_location = event.root_location();
   aura::Window::ConvertPointToTarget(
       capture_window_->GetRootWindow(),
