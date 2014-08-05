@@ -35733,6 +35733,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.UserMediaRequest.Result"
+    enum="MediaStreamRequestResult">
+  <owner>andresp@chromium.org</owner>
+  <summary>
+    Counters for UserMediaRequests results such as failure reasons.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.webkitApiCount" enum="JavaScriptAPIName">
   <owner>perkj@chromium.org</owner>
   <summary>Counts number of calls to WebRTC APIs from JavaScript.</summary>
@@ -43186,6 +43194,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="Queried"/>
   <int value="1" label="No external link"/>
   <int value="2" label="All external links protected"/>
+</enum>
+
+<enum name="MediaStreamRequestResult" type="int">
+  <int value="0" label="Ok"/>
+  <int value="1" label="Permission Denied"/>
+  <int value="2" label="Permission Dismissed"/>
+  <int value="3" label="Invalid State"/>
+  <int value="4" label="No Hardware"/>
+  <int value="5" label="Invalid Security Origin"/>
+  <int value="6" label="Tab Capture Failure"/>
+  <int value="7" label="Capture Failure"/>
+  <int value="8" label="Track Start Failure"/>
 </enum>
 
 <enum name="MetaTagTypeEnum" type="int">

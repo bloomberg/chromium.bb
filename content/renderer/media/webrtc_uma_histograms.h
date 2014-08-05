@@ -8,8 +8,11 @@
 #include "base/memory/singleton.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
+#include "content/public/common/media_stream_request.h"
 
 namespace content {
+
+void LogUserMediaRequestResult(MediaStreamRequestResult result);
 
 // Helper enum used for histogramming calls to WebRTC APIs from JavaScript.
 enum JavaScriptAPIName {

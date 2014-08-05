@@ -601,12 +601,14 @@ void MediaStreamImpl::GetUserMediaRequestSucceeded(
     const blink::WebMediaStream& stream,
     blink::WebUserMediaRequest* request_info) {
   DVLOG(1) << "MediaStreamImpl::GetUserMediaRequestSucceeded";
+  LogUserMediaRequestResult(MEDIA_DEVICE_OK);
   request_info->requestSucceeded(stream);
 }
 
 void MediaStreamImpl::GetUserMediaRequestFailed(
     blink::WebUserMediaRequest* request_info,
     content::MediaStreamRequestResult result) {
+  LogUserMediaRequestResult(result);
   switch (result) {
     case MEDIA_DEVICE_OK:
       NOTREACHED();

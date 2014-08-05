@@ -8,6 +8,11 @@
 
 namespace content {
 
+void LogUserMediaRequestResult(MediaStreamRequestResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "WebRTC.UserMediaRequest.Result", result, NUM_MEDIA_REQUEST_RESULTS);
+}
+
 void UpdateWebRTCMethodCount(JavaScriptAPIName api_name) {
   DVLOG(3) << "Incrementing WebRTC.webkitApiCount for " << api_name;
   UMA_HISTOGRAM_ENUMERATION("WebRTC.webkitApiCount", api_name, INVALID_NAME);
