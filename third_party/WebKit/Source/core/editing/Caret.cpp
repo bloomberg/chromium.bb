@@ -115,7 +115,7 @@ void CaretBase::clearCaretRect()
 
 static inline bool caretRendersInsideNode(Node* node)
 {
-    return node && !isRenderedTable(node) && !editingIgnoresContent(node);
+    return node && !isRenderedTableElement(node) && !editingIgnoresContent(node);
 }
 
 RenderBlock* CaretBase::caretRenderer(Node* node)

@@ -76,8 +76,8 @@ Element* enclosingElementWithTag(const Position&, const QualifiedName&);
 Node* enclosingNodeOfType(const Position&, bool (*nodeIsOfType)(const Node*), EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 
 HTMLSpanElement* tabSpanElement(const Node*);
-Node* isLastPositionBeforeTable(const VisiblePosition&);
-Node* isFirstPositionAfterTable(const VisiblePosition&);
+Element* isLastPositionBeforeTable(const VisiblePosition&);
+Element* isFirstPositionAfterTable(const VisiblePosition&);
 
 // offset functions on Node
 
@@ -109,8 +109,8 @@ bool isSpecialHTMLElement(const Node*);
 bool isTabHTMLSpanElement(const Node*);
 bool isTabHTMLSpanElementTextNode(const Node*);
 bool isMailHTMLBlockquoteElement(const Node*);
-bool isRenderedTable(const Node*);
 bool isRenderedTableElement(const Node*);
+bool isRenderedHTMLTableElement(const Node*);
 bool isTableCell(const Node*);
 bool isEmptyTableCell(const Node*);
 bool isTableStructureNode(const Node*);

@@ -594,7 +594,7 @@ Position VisiblePosition::canonicalPosition(const Position& passedPosition)
     if (isHTMLHtmlElement(node) && !node->hasEditableStyle() && node->document().body() && node->document().body()->hasEditableStyle())
         return next.isNotNull() ? next : prev;
 
-    Node* editingRoot = editableRootForPosition(position);
+    Element* editingRoot = editableRootForPosition(position);
 
     // If the html element is editable, descending into its body will look like a descent
     // from non-editable to editable content since rootEditableElement() always stops at the body.
@@ -613,7 +613,7 @@ Position VisiblePosition::canonicalPosition(const Position& passedPosition)
         return Position();
 
     // The new position should be in the same block flow element. Favor that.
-    Node* originalBlock = node ? enclosingBlockFlowElement(*node) : 0;
+    Element* originalBlock = node ? enclosingBlockFlowElement(*node) : 0;
     bool nextIsOutsideOriginalBlock = !nextNode->isDescendantOf(originalBlock) && nextNode != originalBlock;
     bool prevIsOutsideOriginalBlock = !prevNode->isDescendantOf(originalBlock) && prevNode != originalBlock;
     if (nextIsOutsideOriginalBlock && !prevIsOutsideOriginalBlock)
@@ -750,7 +750,7 @@ Element* enclosingBlockFlowElement(const VisiblePosition& visiblePosition)
     return enclosingBlockFlowElement(*visiblePosition.deepEquivalent().deprecatedNode());
 }
 
-bool isFirstVisiblePositionInNode(const VisiblePosition &visiblePosition, const Node *node)
+bool isFirstVisiblePositionInNode(const VisiblePosition& visiblePosition, const ContainerNode* node)
 {
     if (visiblePosition.isNull())
         return false;
@@ -762,7 +762,7 @@ bool isFirstVisiblePositionInNode(const VisiblePosition &visiblePosition, const 
     return previous.isNull() || !previous.deepEquivalent().deprecatedNode()->isDescendantOf(node);
 }
 
-bool isLastVisiblePositionInNode(const VisiblePosition &visiblePosition, const Node *node)
+bool isLastVisiblePositionInNode(const VisiblePosition& visiblePosition, const ContainerNode* node)
 {
     if (visiblePosition.isNull())
         return false;

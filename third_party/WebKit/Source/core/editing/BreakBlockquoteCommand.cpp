@@ -102,7 +102,7 @@ void BreakBlockquoteCommand::doApply()
         pos = pos.next();
 
     // Adjust the position so we don't split at the beginning of a quote.
-    while (isFirstVisiblePositionInNode(VisiblePosition(pos), enclosingNodeOfType(pos, isMailHTMLBlockquoteElement)))
+    while (isFirstVisiblePositionInNode(VisiblePosition(pos), toHTMLQuoteElement(enclosingNodeOfType(pos, isMailHTMLBlockquoteElement))))
         pos = pos.previous();
 
     // startNode is the first node that we need to move to the new blockquote.

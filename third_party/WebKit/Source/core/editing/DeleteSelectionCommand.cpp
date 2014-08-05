@@ -799,7 +799,7 @@ void DeleteSelectionCommand::doApply()
         // Don't need a placeholder when deleting a selection that starts just before a table
         // and ends inside it (we do need placeholders to hold open empty cells, but that's
         // handled elsewhere).
-        if (Node* table = isLastPositionBeforeTable(m_selectionToDelete.visibleStart()))
+        if (Element* table = isLastPositionBeforeTable(m_selectionToDelete.visibleStart()))
             if (m_selectionToDelete.end().deprecatedNode()->isDescendantOf(table))
                 m_needPlaceholder = false;
     }

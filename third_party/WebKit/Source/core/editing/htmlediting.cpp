@@ -161,7 +161,7 @@ bool isEditablePosition(const Position& p, EditableType editableType, EUpdateSty
     else
         ASSERT(updateStyle == DoNotUpdateStyle);
 
-    if (isRenderedTableElement(node))
+    if (isRenderedHTMLTableElement(node))
         node = node->parentNode();
 
     return node->hasEditableStyle(editableType);
@@ -180,7 +180,7 @@ bool isRichlyEditablePosition(const Position& p, EditableType editableType)
     if (!node)
         return false;
 
-    if (isRenderedTableElement(node))
+    if (isRenderedHTMLTableElement(node))
         node = node->parentNode();
 
     return node->rendererIsRichlyEditable(editableType);
@@ -192,7 +192,7 @@ Element* editableRootForPosition(const Position& p, EditableType editableType)
     if (!node)
         return 0;
 
-    if (isRenderedTableElement(node))
+    if (isRenderedHTMLTableElement(node))
         node = node->parentNode();
 
     return node->rootEditableElement(editableType);
@@ -457,7 +457,7 @@ static HTMLElement* firstInSpecialElement(const Position& pos)
             HTMLElement* specialElement = toHTMLElement(n);
             VisiblePosition vPos = VisiblePosition(pos, DOWNSTREAM);
             VisiblePosition firstInElement = VisiblePosition(firstPositionInOrBeforeNode(specialElement), DOWNSTREAM);
-            if (isRenderedTable(specialElement) && vPos == firstInElement.next())
+            if (isRenderedTableElement(specialElement) && vPos == firstInElement.next())
                 return specialElement;
             if (vPos == firstInElement)
                 return specialElement;
@@ -474,7 +474,7 @@ static HTMLElement* lastInSpecialElement(const Position& pos)
             HTMLElement* specialElement = toHTMLElement(n);
             VisiblePosition vPos = VisiblePosition(pos, DOWNSTREAM);
             VisiblePosition lastInElement = VisiblePosition(lastPositionInOrAfterNode(specialElement), DOWNSTREAM);
-            if (isRenderedTable(specialElement) && vPos == lastInElement.previous())
+            if (isRenderedTableElement(specialElement) && vPos == lastInElement.previous())
                 return specialElement;
             if (vPos == lastInElement)
                 return specialElement;
@@ -509,20 +509,20 @@ Position positionAfterContainingSpecialElement(const Position& pos, HTMLElement*
     return result;
 }
 
-Node* isFirstPositionAfterTable(const VisiblePosition& visiblePosition)
+Element* isFirstPositionAfterTable(const VisiblePosition& visiblePosition)
 {
     Position upstream(visiblePosition.deepEquivalent().upstream());
-    if (isRenderedTable(upstream.deprecatedNode()) && upstream.atLastEditingPositionForNode())
-        return upstream.deprecatedNode();
+    if (isRenderedTableElement(upstream.deprecatedNode()) && upstream.atLastEditingPositionForNode())
+        return toElement(upstream.deprecatedNode());
 
     return 0;
 }
 
-Node* isLastPositionBeforeTable(const VisiblePosition& visiblePosition)
+Element* isLastPositionBeforeTable(const VisiblePosition& visiblePosition)
 {
     Position downstream(visiblePosition.deepEquivalent().downstream());
-    if (isRenderedTable(downstream.deprecatedNode()) && downstream.atFirstEditingPositionForNode())
-        return downstream.deprecatedNode();
+    if (isRenderedTableElement(downstream.deprecatedNode()) && downstream.atFirstEditingPositionForNode())
+        return toElement(downstream.deprecatedNode());
 
     return 0;
 }
@@ -750,12 +750,12 @@ bool canMergeLists(Element* firstList, Element* secondList)
     // Make sure there is no visible content between this li and the previous list
 }
 
-bool isRenderedTableElement(const Node* node)
+bool isRenderedHTMLTableElement(const Node* node)
 {
     return isHTMLTableElement(*node) && node->renderer();
 }
 
-bool isRenderedTable(const Node* node)
+bool isRenderedTableElement(const Node* node)
 {
     if (!node || !node->isElementNode())
         return false;
@@ -1081,7 +1081,7 @@ VisibleSelection selectionForParagraphIteration(const VisibleSelection& original
     // if the start of the selection is inside that table, then the last paragraph
     // that we'll want modify is the last one inside the table, not the table itself
     // (a table is itself a paragraph).
-    if (Node* table = isFirstPositionAfterTable(endOfSelection))
+    if (Element* table = isFirstPositionAfterTable(endOfSelection))
         if (startOfSelection.deepEquivalent().deprecatedNode()->isDescendantOf(table))
             newSelection = VisibleSelection(startOfSelection, endOfSelection.previous(CannotCrossEditingBoundary));
 
@@ -1089,7 +1089,7 @@ VisibleSelection selectionForParagraphIteration(const VisibleSelection& original
     // and if the end of the selection is inside that table, then the first paragraph
     // we'll want to modify is the first one inside the table, not the paragraph
     // containing the table itself.
-    if (Node* table = isLastPositionBeforeTable(startOfSelection))
+    if (Element* table = isLastPositionBeforeTable(startOfSelection))
         if (endOfSelection.deepEquivalent().deprecatedNode()->isDescendantOf(table))
             newSelection = VisibleSelection(startOfSelection.next(CannotCrossEditingBoundary), endOfSelection);
 

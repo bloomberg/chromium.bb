@@ -266,18 +266,17 @@ bool VisibleSelection::expandUsingGranularity(TextGranularity granularity)
 
 static PassRefPtrWillBeRawPtr<Range> makeSearchRange(const Position& pos)
 {
-    Node* n = pos.deprecatedNode();
-    if (!n)
+    Node* node = pos.deprecatedNode();
+    if (!node)
         return nullptr;
-    Document& d = n->document();
-    Node* de = d.documentElement();
-    if (!de)
+    Document& document = node->document();
+    if (!document.documentElement())
         return nullptr;
-    Node* boundary = enclosingBlockFlowElement(*n);
+    Element* boundary = enclosingBlockFlowElement(*node);
     if (!boundary)
         return nullptr;
 
-    RefPtrWillBeRawPtr<Range> searchRange(Range::create(d));
+    RefPtrWillBeRawPtr<Range> searchRange(Range::create(document));
     TrackExceptionState exceptionState;
 
     Position start(pos.parentAnchoredEquivalent());
@@ -374,7 +373,7 @@ void VisibleSelection::setStartAndEndFromBaseAndExtentRespectingGranularity(Text
                 // the next one) to match TextEdit.
                 end = wordEnd.next();
 
-                if (Node* table = isFirstPositionAfterTable(end)) {
+                if (Element* table = isFirstPositionAfterTable(end)) {
                     // The paragraph break after the last paragraph in the last cell of a block table ends
                     // at the start of the paragraph after the table.
                     if (isBlock(table))
@@ -424,7 +423,7 @@ void VisibleSelection::setStartAndEndFromBaseAndExtentRespectingGranularity(Text
             // of the next one) in the selection.
             VisiblePosition end(visibleParagraphEnd.next());
 
-            if (Node* table = isFirstPositionAfterTable(end)) {
+            if (Element* table = isFirstPositionAfterTable(end)) {
                 // The paragraph break after the last paragraph in the last cell of a block table ends
                 // at the start of the paragraph after the table, not at the position just after the table.
                 if (isBlock(table))
@@ -631,11 +630,11 @@ void VisibleSelection::adjustSelectionToAvoidCrossingEditingBoundaries()
         if (endRoot || endEditableAncestor != baseEditableAncestor) {
 
             Position p = previousVisuallyDistinctCandidate(m_end);
-            Node* shadowAncestor = endRoot ? endRoot->shadowHost() : 0;
+            Element* shadowAncestor = endRoot ? endRoot->shadowHost() : 0;
             if (p.isNull() && shadowAncestor)
                 p = positionAfterNode(shadowAncestor);
             while (p.isNotNull() && !(lowestEditableAncestor(p.containerNode()) == baseEditableAncestor && !isEditablePosition(p))) {
-                Node* root = editableRootForPosition(p);
+                Element* root = editableRootForPosition(p);
                 shadowAncestor = root ? root->shadowHost() : 0;
                 p = isAtomicNode(p.containerNode()) ? positionInParentBeforeNode(*p.containerNode()) : previousVisuallyDistinctCandidate(p);
                 if (p.isNull() && shadowAncestor)
@@ -660,11 +659,11 @@ void VisibleSelection::adjustSelectionToAvoidCrossingEditingBoundaries()
         Element* startEditableAncestor = lowestEditableAncestor(m_start.containerNode());
         if (startRoot || startEditableAncestor != baseEditableAncestor) {
             Position p = nextVisuallyDistinctCandidate(m_start);
-            Node* shadowAncestor = startRoot ? startRoot->shadowHost() : 0;
+            Element* shadowAncestor = startRoot ? startRoot->shadowHost() : 0;
             if (p.isNull() && shadowAncestor)
                 p = positionBeforeNode(shadowAncestor);
             while (p.isNotNull() && !(lowestEditableAncestor(p.containerNode()) == baseEditableAncestor && !isEditablePosition(p))) {
-                Node* root = editableRootForPosition(p);
+                Element* root = editableRootForPosition(p);
                 shadowAncestor = root ? root->shadowHost() : 0;
                 p = isAtomicNode(p.containerNode()) ? positionInParentAfterNode(*p.containerNode()) : nextVisuallyDistinctCandidate(p);
                 if (p.isNull() && shadowAncestor)

@@ -171,7 +171,7 @@ bool PositionIterator::isCandidate() const
         return false;
     }
 
-    if (isRenderedTableElement(m_anchorNode) || editingIgnoresContent(m_anchorNode))
+    if (isRenderedHTMLTableElement(m_anchorNode) || editingIgnoresContent(m_anchorNode))
         return (atStartOfNode() || atEndOfNode()) && !Position::nodeIsUserSelectNone(m_anchorNode->parentNode());
 
     if (!isHTMLHtmlElement(*m_anchorNode) && renderer->isRenderBlockFlow()) {

@@ -138,8 +138,8 @@ VisiblePosition startVisiblePosition(const Range*, EAffinity);
 
 Element* enclosingBlockFlowElement(const VisiblePosition&);
 
-bool isFirstVisiblePositionInNode(const VisiblePosition&, const Node*);
-bool isLastVisiblePositionInNode(const VisiblePosition&, const Node*);
+bool isFirstVisiblePositionInNode(const VisiblePosition&, const ContainerNode*);
+bool isLastVisiblePositionInNode(const VisiblePosition&, const ContainerNode*);
 
 } // namespace blink
 
