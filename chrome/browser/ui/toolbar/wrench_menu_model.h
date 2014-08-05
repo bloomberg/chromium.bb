@@ -89,10 +89,7 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
   static const int kMinRecentTabsCommandId = 1001;
   static const int kMaxRecentTabsCommandId = 1200;
 
-  // TODO: remove |is_new_menu|.
-  WrenchMenuModel(ui::AcceleratorProvider* provider,
-                  Browser* browser,
-                  bool is_new_menu);
+  WrenchMenuModel(ui::AcceleratorProvider* provider, Browser* browser);
   virtual ~WrenchMenuModel();
 
   // Overridden for ButtonMenuItemModel::Delegate:
@@ -144,23 +141,20 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
 
   WrenchMenuModel();
 
-  void Build(bool is_new_menu);
+  void Build();
 
   void AddGlobalErrorMenuItems();
 
   // Appends everything needed for the clipboard menu: a menu break, the
-  // clipboard menu content and the finalizing menu break. If the last break
-  // is not needed it can be suppressed by setting |new_menu|
-  // to false.
-  void CreateCutCopyPasteMenu(bool new_menu);
+  // clipboard menu content and the finalizing menu break.
+  void CreateCutCopyPasteMenu();
 
   // Add a menu item for the extension icons.
   void CreateExtensionToolbarOverflowMenu();
 
   // Appends everything needed for the zoom menu: a menu break, then the zoom
-  // menu content and then another menu break. If the new menu type is used,
-  // |new_menu| should be set to true.
-  void CreateZoomMenu(bool new_menu);
+  // menu content and then another menu break.
+  void CreateZoomMenu();
 
   void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change);
 

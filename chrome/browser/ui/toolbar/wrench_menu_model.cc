@@ -277,13 +277,12 @@ void ToolsMenuModel::Build(Browser* browser) {
 // WrenchMenuModel
 
 WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,
-                                 Browser* browser,
-                                 bool is_new_menu)
+                                 Browser* browser)
     : ui::SimpleMenuModel(this),
       provider_(provider),
       browser_(browser),
       tab_strip_model_(browser_->tab_strip_model()) {
-  Build(is_new_menu);
+  Build();
   UpdateZoomControls();
 
   content_zoom_subscription_ = content::HostZoomMap::GetForBrowserContext(
@@ -526,7 +525,7 @@ bool WrenchMenuModel::ShouldShowNewIncognitoWindowMenuItem() {
   return !browser_->profile()->IsGuestSession();
 }
 
-void WrenchMenuModel::Build(bool is_new_menu) {
+void WrenchMenuModel::Build() {
 #if defined(OS_WIN)
   AddItem(IDC_VIEW_INCOMPATIBILITIES,
       l10n_util::GetStringUTF16(IDS_VIEW_INCOMPATIBILITIES));
@@ -598,10 +597,7 @@ void WrenchMenuModel::Build(bool is_new_menu) {
 
   // Append the full menu including separators. The final separator only gets
   // appended when this is a touch menu - otherwise it would get added twice.
-  CreateCutCopyPasteMenu(is_new_menu);
-
-  if (!is_new_menu)
-    CreateZoomMenu(is_new_menu);
+  CreateCutCopyPasteMenu();
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableDomDistiller)) {
@@ -613,16 +609,7 @@ void WrenchMenuModel::Build(bool is_new_menu) {
   AddItemWithStringId(IDC_PRINT, IDS_PRINT);
 
   tools_menu_model_.reset(new ToolsMenuModel(this, browser_));
-  // In case of touch this is the last item.
-  if (!is_new_menu) {
-    AddSubMenuWithStringId(IDC_ZOOM_MENU, IDS_TOOLS_MENU,
-                           tools_menu_model_.get());
-  }
-
-  if (is_new_menu)
-    CreateZoomMenu(is_new_menu);
-  else
-    AddSeparator(ui::NORMAL_SEPARATOR);
+  CreateZoomMenu();
 
   AddItemWithStringId(IDC_SHOW_HISTORY, IDS_SHOW_HISTORY);
   AddItemWithStringId(IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS);
@@ -674,11 +661,9 @@ void WrenchMenuModel::Build(bool is_new_menu) {
 
   AddGlobalErrorMenuItems();
 
-  if (is_new_menu) {
-    AddSeparator(ui::NORMAL_SEPARATOR);
-    AddSubMenuWithStringId(IDC_ZOOM_MENU, IDS_MORE_TOOLS_MENU,
-                           tools_menu_model_.get());
-  }
+  AddSeparator(ui::NORMAL_SEPARATOR);
+  AddSubMenuWithStringId(
+      IDC_ZOOM_MENU, IDS_MORE_TOOLS_MENU, tools_menu_model_.get());
 
   bool show_exit_menu = browser_defaults::kShowExitMenuItem;
 #if defined(OS_WIN)
@@ -750,8 +735,8 @@ void WrenchMenuModel::CreateExtensionToolbarOverflowMenu() {
 #endif  // defined(TOOLKIT_VIEWS)
 }
 
-void WrenchMenuModel::CreateCutCopyPasteMenu(bool new_menu) {
-  AddSeparator(new_menu ? ui::LOWER_SEPARATOR : ui::NORMAL_SEPARATOR);
+void WrenchMenuModel::CreateCutCopyPasteMenu() {
+  AddSeparator(ui::LOWER_SEPARATOR);
 
 #if defined(OS_POSIX) && !defined(TOOLKIT_VIEWS)
   // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
@@ -770,13 +755,12 @@ void WrenchMenuModel::CreateCutCopyPasteMenu(bool new_menu) {
   AddItemWithStringId(IDC_PASTE, IDS_PASTE);
 #endif
 
-  if (new_menu)
-    AddSeparator(ui::UPPER_SEPARATOR);
+  AddSeparator(ui::UPPER_SEPARATOR);
 }
 
-void WrenchMenuModel::CreateZoomMenu(bool new_menu) {
+void WrenchMenuModel::CreateZoomMenu() {
   // This menu needs to be enclosed by separators.
-  AddSeparator(new_menu ? ui::LOWER_SEPARATOR : ui::NORMAL_SEPARATOR);
+  AddSeparator(ui::LOWER_SEPARATOR);
 
 #if defined(OS_POSIX) && !defined(TOOLKIT_VIEWS)
   // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
@@ -802,7 +786,7 @@ void WrenchMenuModel::CreateZoomMenu(bool new_menu) {
   AddItemWithStringId(IDC_FULLSCREEN, IDS_FULLSCREEN);
 #endif
 
-  AddSeparator(new_menu ? ui::UPPER_SEPARATOR : ui::NORMAL_SEPARATOR);
+  AddSeparator(ui::UPPER_SEPARATOR);
 }
 
 void WrenchMenuModel::UpdateZoomControls() {

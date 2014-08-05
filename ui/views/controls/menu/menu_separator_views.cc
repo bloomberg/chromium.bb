@@ -22,32 +22,9 @@ namespace views {
 void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
   OnPaintAura(canvas);
 }
-
-gfx::Size MenuSeparator::GetPreferredSize() const {
-  return GetPreferredSizeAura();
-}
 #endif
 
-void MenuSeparator::OnPaintAura(gfx::Canvas* canvas) {
-  int pos = 0;
-  switch (type_) {
-    case ui::LOWER_SEPARATOR:
-      pos = height() - kSeparatorHeight;
-      break;
-    case ui::SPACING_SEPARATOR:
-      return;
-    case ui::UPPER_SEPARATOR:
-      break;
-    default:
-      pos = height() / 2;
-      break;
-  }
-  canvas->FillRect(gfx::Rect(0, pos, width(), kSeparatorHeight),
-                   GetNativeTheme()->GetSystemColor(
-                       ui::NativeTheme::kColorId_MenuSeparatorColor));
-}
-
-gfx::Size MenuSeparator::GetPreferredSizeAura() const {
+gfx::Size MenuSeparator::GetPreferredSize() const {
   const MenuConfig& menu_config = parent_menu_item_->GetMenuConfig();
   int height = menu_config.separator_height;
   switch(type_) {
@@ -66,6 +43,30 @@ gfx::Size MenuSeparator::GetPreferredSizeAura() const {
   }
   return gfx::Size(10,  // Just in case we're the only item in a menu.
                    height);
+}
+
+gfx::Rect MenuSeparator::GetPaintBounds() {
+  int pos = 0;
+  switch (type_) {
+    case ui::LOWER_SEPARATOR:
+      pos = height() - kSeparatorHeight;
+      break;
+    case ui::SPACING_SEPARATOR:
+      return gfx::Rect();
+    case ui::UPPER_SEPARATOR:
+      break;
+    default:
+      pos = height() / 2;
+      break;
+  }
+
+  return gfx::Rect(0, pos, width(), kSeparatorHeight);
+}
+
+void MenuSeparator::OnPaintAura(gfx::Canvas* canvas) {
+  canvas->FillRect(GetPaintBounds(),
+                   GetNativeTheme()->GetSystemColor(
+                       ui::NativeTheme::kColorId_MenuSeparatorColor));
 }
 
 }  // namespace views

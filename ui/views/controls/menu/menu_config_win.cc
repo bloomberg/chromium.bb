@@ -73,6 +73,9 @@ void MenuConfig::Init(const NativeTheme* theme) {
        show_cues == TRUE);
 
   SystemParametersInfo(SPI_GETMENUSHOWDELAY, 0, &show_delay, 0);
+
+  separator_upper_height = 5;
+  separator_lower_height = 7;
 }
 
 // static

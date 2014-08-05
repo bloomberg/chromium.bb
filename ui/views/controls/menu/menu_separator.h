@@ -24,8 +24,10 @@ class MenuSeparator : public View {
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
  private:
+  // Gets the bounds where the separator should be painted.
+  gfx::Rect GetPaintBounds();
+
   void OnPaintAura(gfx::Canvas* canvas);
-  gfx::Size GetPreferredSizeAura() const;
 
   // The type of the separator.
   const ui::MenuSeparatorType type_;

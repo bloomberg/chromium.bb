@@ -38,12 +38,8 @@ class WrenchMenu : public views::MenuDelegate,
                    public content::NotificationObserver {
  public:
   enum RunFlags {
-    // TODO: remove |USE_NEW_MENU| and |SUPPORTS_NEW_SEPARATORS|.
-    USE_NEW_MENU            = 1 << 0,
-    SUPPORTS_NEW_SEPARATORS = 1 << 1,
-
     // Indicates that the menu was opened for a drag-and-drop operation.
-    FOR_DROP                = 1 << 2,
+    FOR_DROP = 1 << 0,
   };
 
   WrenchMenu(Browser* browser, int run_flags);
@@ -60,7 +56,6 @@ class WrenchMenu : public views::MenuDelegate,
   // Whether the menu is currently visible to the user.
   bool IsShowing();
 
-  bool use_new_menu() const { return (run_flags_ & USE_NEW_MENU) != 0; }
   bool for_drop() const { return (run_flags_ & FOR_DROP) != 0; }
 
   void AddObserver(WrenchMenuObserver* observer);
@@ -121,10 +116,6 @@ class WrenchMenu : public views::MenuDelegate,
   typedef std::pair<ui::MenuModel*,int> Entry;
   typedef std::map<int,Entry> CommandIDToEntry;
 
-  bool supports_new_separators() const {
-    return (run_flags_ & SUPPORTS_NEW_SEPARATORS) != 0;
-  }
-
   // Populates |parent| with all the child menus in |model|. Recursively invokes
   // |PopulateMenu| for any submenu.
   void PopulateMenu(views::MenuItemView* parent,
@@ -135,16 +126,13 @@ class WrenchMenu : public views::MenuDelegate,
   // - |menu_index|: position in |parent| to add the new item.
   // - |model_index|: position in |model| to retrieve information about the
   //   new menu item.
-  // - |height|: For button containing menu items, a |height| override can be
-  //   specified with a number bigger then 0.
   // The returned item's MenuItemView::GetCommand() is the same as that of
   // |model|->GetCommandIdAt(|model_index|).
   views::MenuItemView* AddMenuItem(views::MenuItemView* parent,
                                    int menu_index,
                                    ui::MenuModel* model,
                                    int model_index,
-                                   ui::MenuModel::ItemType menu_type,
-                                   int height);
+                                   ui::MenuModel::ItemType menu_type);
 
   // Invoked from the cut/copy/paste menus. Cancels the current active menu and
   // activates the menu item in |model| at |index|.

@@ -345,26 +345,15 @@ void ToolbarView::ShowAppMenu(bool for_drop) {
   if (wrench_menu_.get() && wrench_menu_->IsShowing())
     return;
 
-  int run_flags = 0;
-  bool use_new_menu = false;
-  // TODO: remove this.
-#if !defined(OS_LINUX) || defined(OS_CHROMEOS)
-  if (GetNativeTheme() == ui::NativeThemeAura::instance()) {
-    use_new_menu = true;
-    run_flags |= WrenchMenu::SUPPORTS_NEW_SEPARATORS | WrenchMenu::USE_NEW_MENU;
-  }
-#endif
-
   if (keyboard::KeyboardController::GetInstance() &&
       keyboard::KeyboardController::GetInstance()->keyboard_visible()) {
     keyboard::KeyboardController::GetInstance()->HideKeyboard(
         keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
   }
 
-  if (for_drop)
-    run_flags |= WrenchMenu::FOR_DROP;
-  wrench_menu_.reset(new WrenchMenu(browser_, run_flags));
-  wrench_menu_model_.reset(new WrenchMenuModel(this, browser_, use_new_menu));
+  wrench_menu_.reset(
+      new WrenchMenu(browser_, for_drop ? WrenchMenu::FOR_DROP : 0));
+  wrench_menu_model_.reset(new WrenchMenuModel(this, browser_));
   wrench_menu_->Init(wrench_menu_model_.get());
 
   FOR_EACH_OBSERVER(views::MenuListener, menu_listeners_, OnMenuOpened());

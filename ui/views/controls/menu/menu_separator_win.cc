@@ -25,7 +25,7 @@ void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
     return;
   }
 
-  int start_x = 0;
+  gfx::Rect separator_bounds = GetPaintBounds();
   if (config.render_gutter) {
     // If render_gutter is true, we're on Vista and need to render the
     // gutter, then indent the separator from the gutter.
@@ -36,25 +36,14 @@ void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
     config.native_theme->Paint(
         canvas->sk_canvas(), ui::NativeTheme::kMenuPopupGutter,
         ui::NativeTheme::kNormal, gutter_bounds, extra);
-    start_x = gutter_bounds.x() + config.gutter_width;
+    separator_bounds.set_x(gutter_bounds.x() + config.gutter_width);
   }
 
-  gfx::Rect separator_bounds(start_x, 0, width(), height());
   ui::NativeTheme::ExtraParams extra;
   extra.menu_separator.has_gutter = config.render_gutter;
   config.native_theme->Paint(
       canvas->sk_canvas(), ui::NativeTheme::kMenuPopupSeparator,
       ui::NativeTheme::kNormal, separator_bounds, extra);
-}
-
-gfx::Size MenuSeparator::GetPreferredSize() const {
-  const MenuConfig& config = parent_menu_item_->GetMenuConfig();
-
-  if (config.native_theme == ui::NativeThemeAura::instance())
-    return GetPreferredSizeAura();
-
-  return gfx::Size(10,  // Just in case we're the only item in a menu.
-                   config.separator_height);
 }
 
 }  // namespace views
