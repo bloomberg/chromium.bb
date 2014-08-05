@@ -98,6 +98,7 @@ ADDITIONAL_PATHS = (
     os.path.join('v8'),
     # Fake directory so we can include the strongtalk license.
     os.path.join('v8', 'strongtalk'),
+    os.path.join('v8', 'third_party', 'fdlibm'),
 )
 
 
@@ -219,6 +220,13 @@ SPECIAL_CASES = {
         "License": "BSD",
         # Absolute path here is resolved as relative to the source root.
         "License File": "/v8/LICENSE.strongtalk",
+    },
+    os.path.join('v8', 'third_party', 'fdlibm'): {
+        "Name": "fdlibm",
+        "URL": "http://www.netlib.org/fdlibm/",
+        "License": "Freely Distributable",
+        # Absolute path here is resolved as relative to the source root.
+        "License File" : "/v8/third_party/fdlibm/LICENSE",
     },
 }
 
