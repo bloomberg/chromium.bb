@@ -1133,7 +1133,7 @@ InspectorStyleSheetForInlineStyle* InspectorCSSAgent::asInspectorStyleSheet(Elem
     if (it != m_nodeToInspectorStyleSheet.end())
         return it->value.get();
 
-    CSSStyleDeclaration* style = element->isStyledElement() ? element->style() : 0;
+    CSSStyleDeclaration* style = element->style();
     if (!style)
         return 0;
 
