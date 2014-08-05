@@ -127,6 +127,12 @@ display_fatal_error(struct wl_display *display, int error)
 		error = EFAULT;
 
 	display->last_error = error;
+
+       pthread_cond_broadcast(&display->reader_cond);
+       /* prevent from indefinite looping in read_events()
+	* (when calling pthread_cond_wait under condition
+	* display->read_serial == serial) */
+       ++display->read_serial;
 }
 
 /**
@@ -174,6 +180,16 @@ display_protocol_error(struct wl_display *display, uint32_t code,
 	display->protocol_error.code = code;
 	display->protocol_error.id = id;
 	display->protocol_error.interface = intf;
+
+	/*
+	 * here it is not necessary to broadcast reader's cond like in
+	 * display_fatal_error, because this function is called from
+	 * an event handler and that means that read_events() is done
+	 * and woke up all threads. Since wl_display_prepare_read()
+	 * fails when there are events in the queue, no threads
+	 * can sleep in read_events() during dispatching
+	 * (and therefore during calling this function), so this is safe.
+	 */
 
 	pthread_mutex_unlock(&display->mutex);
 }
