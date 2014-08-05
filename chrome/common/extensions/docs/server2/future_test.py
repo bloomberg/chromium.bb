@@ -161,11 +161,12 @@ class FutureTest(unittest.TestCase):
 
   def testThen(self):
     def assertIs42(val):
-      self.assertEquals(val, 42)
+      self.assertEqual(val, 42)
+      return val
 
     then = Future(value=42).Then(assertIs42)
     # Shouldn't raise an error.
-    then.Get()
+    self.assertEqual(42, then.Get())
 
     # Test raising an error.
     then = Future(value=41).Then(assertIs42)
@@ -184,7 +185,7 @@ class FutureTest(unittest.TestCase):
       raise Exception
 
     then = Future(callback=raiseValueError).Then(assertIs42, handle)
-    self.assertEquals(then.Get(), 'Caught')
+    self.assertEqual('Caught', then.Get())
     then = Future(callback=raiseException).Then(assertIs42, handle)
     self.assertRaises(Exception, then.Get)
 
@@ -192,7 +193,7 @@ class FutureTest(unittest.TestCase):
     addOne = lambda val: val + 1
     then = Future(value=40).Then(addOne).Then(addOne).Then(assertIs42)
     # Shouldn't raise an error.
-    then.Get()
+    self.assertEqual(42, then.Get())
 
     # Test error in chain.
     then = Future(value=40).Then(addOne).Then(assertIs42).Then(addOne)
@@ -215,6 +216,46 @@ class FutureTest(unittest.TestCase):
     then = Future(value=40).Then(assertIs42).Then(addOne, handle).Then(addOne,
                                                                        myHandle)
     self.assertEquals(then.Get(), 10)
+
+  def testThenResolvesReturnedFutures(self):
+    def returnsFortyTwo():
+      return Future(value=42)
+    def inc(x):
+      return x + 1
+    def incFuture(x):
+      return Future(value=x + 1)
+
+    self.assertEqual(43, returnsFortyTwo().Then(inc).Get())
+    self.assertEqual(43, returnsFortyTwo().Then(incFuture).Get())
+    self.assertEqual(44, returnsFortyTwo().Then(inc).Then(inc).Get())
+    self.assertEqual(44, returnsFortyTwo().Then(inc).Then(incFuture).Get())
+    self.assertEqual(44, returnsFortyTwo().Then(incFuture).Then(inc).Get())
+    self.assertEqual(
+        44, returnsFortyTwo().Then(incFuture).Then(incFuture).Get())
+
+    # The same behaviour should apply to error handlers.
+    def raisesSomething():
+      def boom(): raise ValueError
+      return Future(callback=boom)
+    def shouldNotHappen(_):
+      raise AssertionError()
+    def oops(error):
+      return 'oops'
+    def oopsFuture(error):
+      return Future(value='oops')
+
+    self.assertEqual(
+        'oops', raisesSomething().Then(shouldNotHappen, oops).Get())
+    self.assertEqual(
+        'oops', raisesSomething().Then(shouldNotHappen, oopsFuture).Get())
+    self.assertEqual(
+        'oops',
+        raisesSomething().Then(shouldNotHappen, raisesSomething)
+                         .Then(shouldNotHappen, oops).Get())
+    self.assertEqual(
+        'oops',
+        raisesSomething().Then(shouldNotHappen, raisesSomething)
+                         .Then(shouldNotHappen, oopsFuture).Get())
 
 
 if __name__ == '__main__':

@@ -69,13 +69,38 @@ class Future(object):
     '''Creates and returns a future that runs |callback| on the value of this
     future, or runs optional |error_handler| if resolving this future results in
     an exception.
+
+    If |callback| returns a non-Future value then the returned Future will
+    resolve to that value.
+
+    If |callback| returns a Future then it gets chained to the current Future.
+    This means that the returned Future will resolve to *that* Future's value.
+    This behaviour is transitive.
+
+    For example,
+
+      def fortytwo():
+        return Future(value=42)
+
+      def inc(x):
+        return x + 1
+
+      def inc_future(x):
+        return Future(value=x + 1)
+
+    fortytwo().Then(inc).Get()                         ==> 43
+    fortytwo().Then(inc_future).Get()                  ==> 43
+    fortytwo().Then(inc_future).Then(inc_future).Get() ==> 44
     '''
     def then():
+      val = None
       try:
         val = self.Get()
       except Exception as e:
-        return error_handler(e)
-      return callback(val)
+        val = error_handler(e)
+      else:
+        val = callback(val)
+      return val.Get() if isinstance(val, Future) else val
     return Future(callback=then)
 
   def Get(self):

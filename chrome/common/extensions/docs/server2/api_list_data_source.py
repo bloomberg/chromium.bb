@@ -32,22 +32,24 @@ class APIListDataSource(DataSource):
 
   def _GenerateAPIDict(self):
     def make_list_for_content_scripts():
-      content_script_apis = self._platform_bundle.GetAPIModels(
-          'extensions').GetContentScriptAPIs().Get()
-      content_script_apis_list = [csa.__dict__ for api_name, csa
-                                  in content_script_apis.iteritems()
-                                  if self._platform_bundle.GetAPICategorizer(
-                                      'extensions').IsDocumented(api_name)]
+      def convert_to_list(content_script_apis):
+        content_script_apis_list = [csa.__dict__ for api_name, csa
+                                    in content_script_apis.iteritems()
+                                    if self._platform_bundle.GetAPICategorizer(
+                                        'extensions').IsDocumented(api_name)]
+        content_script_apis_list.sort(key=itemgetter('name'))
+        for csa in content_script_apis_list:
+          restricted_nodes = csa['restrictedTo']
+          if restricted_nodes:
+            restricted_nodes.sort(key=itemgetter('node'))
+            MarkFirstAndLast(restricted_nodes)
+          else:
+            del csa['restrictedTo']
+        return content_script_apis_list
 
-      content_script_apis_list.sort(key=itemgetter('name'))
-      for csa in content_script_apis_list:
-        restricted_nodes = csa['restrictedTo']
-        if restricted_nodes:
-          restricted_nodes.sort(key=itemgetter('node'))
-          MarkFirstAndLast(restricted_nodes)
-        else:
-          del csa['restrictedTo']
-      return content_script_apis_list
+      return (self._platform_bundle.GetAPIModels('extensions')
+              .GetContentScriptAPIs()
+              .Then(convert_to_list))
 
     def make_dict_for_platform(platform):
       platform_dict = {
@@ -95,20 +97,24 @@ class APIListDataSource(DataSource):
         platform_dict[key] = apis
 
       return platform_dict
-    api_dict = dict((platform, make_dict_for_platform(platform))
-                     for platform in GetPlatforms())
-    api_dict['contentScripts'] = make_list_for_content_scripts()
-    return api_dict
+
+    def make_api_dict(content_script_apis):
+      api_dict = dict((platform, make_dict_for_platform(platform))
+                       for platform in GetPlatforms())
+      api_dict['contentScripts'] = content_script_apis
+      return api_dict
+
+    return make_list_for_content_scripts().Then(make_api_dict)
 
   def _GetCachedAPIData(self):
-    data_future = self._object_store.Get('api_data')
-    def resolve():
-      data = data_future.Get()
-      if data is None:
-        data = self._GenerateAPIDict()
-        self._object_store.Set('api_data', data)
+    def persist_and_return(data):
+      self._object_store.Set('api_data', data)
       return data
-    return Future(callback=resolve)
+    def return_or_generate(data):
+      if data is None:
+        return self._GenerateAPIDict().Then(persist_and_return)
+      return data
+    return self._object_store.Get('api_data').Then(return_or_generate)
 
   def get(self, key):
     return self._GetCachedAPIData().Get().get(key)
