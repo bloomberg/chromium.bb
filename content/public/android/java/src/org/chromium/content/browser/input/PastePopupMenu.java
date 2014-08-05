@@ -27,6 +27,7 @@ public class PastePopupMenu implements OnClickListener {
     private int mRawPositionY;
     private int mPositionX;
     private int mPositionY;
+    private int mStatusBarHeight;
     private final View[] mPasteViews;
     private final int[] mPasteViewLayouts;
     private final int mLineOffsetY;
@@ -81,6 +82,13 @@ public class PastePopupMenu implements OnClickListener {
                 5.0f, mContext.getResources().getDisplayMetrics());
         mWidthOffsetX = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 30.0f, mContext.getResources().getDisplayMetrics());
+
+        final int statusBarHeightResourceId =
+                mContext.getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (statusBarHeightResourceId > 0) {
+            mStatusBarHeight =
+                    mContext.getResources().getDimensionPixelSize(statusBarHeightResourceId);
+        }
     }
 
     /**
@@ -131,8 +139,13 @@ public class PastePopupMenu implements OnClickListener {
         coords[0] += mPositionX;
         coords[1] += mPositionY;
 
+        int minOffsetY = 0;
+        if (mParent.getSystemUiVisibility() == View.SYSTEM_UI_FLAG_VISIBLE) {
+            minOffsetY = mStatusBarHeight;
+        }
+
         final int screenWidth = mContext.getResources().getDisplayMetrics().widthPixels;
-        if (coords[1] < 0) {
+        if (coords[1] < minOffsetY) {
             updateContent(false);
             // Update dimensions from new view
             contentView = mContainer.getContentView();
