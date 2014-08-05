@@ -8019,7 +8019,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <message name="IDS_WEBSITES_SETTINGS_TITLE" desc="Title for Website Settings dialog.">
-        Website Settings
+        Manage Sites
       </message>
       <message name="IDS_WEBSITE_SETTINGS_MANAGE" desc="The label on the button that launches the Websites Settings dialog.">
         Manage sites...

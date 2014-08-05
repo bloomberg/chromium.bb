@@ -2,8 +2,13 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.website-settings-page {
-  width: 540px;
+#website-settings-page {
+  max-height: 445px;
+  min-width: 540px;
+}
+
+.website-column-headers {
+  padding: 3px 0 6px;
 }
 
 .website-header-controls {
@@ -12,20 +17,37 @@
 
 .resource-type-select {
   -webkit-margin-end: auto;
+  min-width: 170px;
+}
+
+#website-settings-search-box {
+  -webkit-margin-start: 35px;
+  width: 165px;
+}
+
+#website-settings-page .action-area {
+  padding-bottom: 20px;
+}
+
+.content-area.website-list-content-area {
+  display: flex;
+  flex-direction: column;
 }
 
 /* Styles for the origin list elements in the website settings page. */
-.origin-list {
+#origin-list {
   border: 1px solid #d9d9d9;
   margin: 5px 0 0;
-  min-height: 0;
+  min-height: 287px;
 }
 
-.origin-list-item {
-  display: flex;
-  justify-content: space-between;
+#origin-list-item {
+  height: 30px;
 }
 
-.local-storage-usage {
-  margin: auto 0;
+list.origin-list .favicon-cell {
+  -webkit-margin-start: 6px;
+  -webkit-padding-start: 21px;
+  font-family: Noto Sans;
+  font-size: 13px;
 }
