@@ -559,6 +559,8 @@
       'browser/history/in_memory_url_index_types.h',
       'browser/history/most_visited_tiles_experiment.cc',
       'browser/history/most_visited_tiles_experiment.h',
+      'browser/history/page_usage_data.cc',
+      'browser/history/page_usage_data.h',
       'browser/history/scored_history_match.cc',
       'browser/history/scored_history_match.h',
       'browser/history/shortcuts_database.cc',

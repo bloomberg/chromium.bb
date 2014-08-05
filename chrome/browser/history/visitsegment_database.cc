@@ -14,7 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/history/core/browser/page_usage_data.h"
+#include "chrome/browser/history/page_usage_data.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 

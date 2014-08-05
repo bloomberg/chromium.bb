@@ -6,8 +6,6 @@ static_library("browser") {
   sources = [
     "history_client.cc",
     "history_client.h",
-    "history_types.cc",
-    "history_types.h",
     "history_match.cc",
     "history_match.h",
     "in_memory_database.cc",
@@ -15,8 +13,6 @@ static_library("browser") {
     "keyword_id.h",
     "keyword_search_term.cc",
     "keyword_search_term.h",
-    "page_usage_data.cc",
-    "page_usage_data.h",
     "url_database.cc",
     "url_database.h",
     "url_row.cc",
@@ -25,11 +21,9 @@ static_library("browser") {
 
   deps = [
     "//base",
-    "//components/favicon_base",
     "//components/keyed_service/core",
     "//components/query_parser",
     "//net",
     "//sql",
-    "//ui/gfx",
   ]
 }
