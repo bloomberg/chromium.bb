@@ -1215,7 +1215,6 @@ internal_chromium_pfq.add_config('master-chromium-pfq',
   master=True,
   push_overlays=constants.BOTH_OVERLAYS,
   afdo_update_ebuild=True,
-  sync_chrome=False,
   chrome_sdk=False,
 )
 

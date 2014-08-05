@@ -446,7 +446,7 @@ def main(_argv):
   usage_options = '|'.join(constants.VALID_CHROME_REVISIONS)
   usage = '%s OPTIONS [%s]' % (__file__, usage_options)
   parser = optparse.OptionParser(usage)
-  parser.add_option('-b', '--boards', default='x86-generic')
+  parser.add_option('-b', '--boards', default=None)
   parser.add_option('-c', '--chrome_url', default=gclient.GetBaseURLs()[0])
   parser.add_option('-f', '--force_version', default=None,
                     help='Chrome version or SVN revision number to use')
@@ -534,7 +534,7 @@ def main(_argv):
       stable_candidate, unstable_ebuild, chrome_rev, version_to_uprev,
       commit_to_use, overlay_dir)
   # Explicit print to communicate to caller.
-  if chrome_version_atom:
+  if chrome_version_atom and options.boards:
     cros_mark_as_stable.CleanStalePackages(options.boards.split(':'),
                                            [chrome_version_atom])
     print 'CHROME_VERSION_ATOM=%s' % chrome_version_atom

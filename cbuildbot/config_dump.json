@@ -36311,7 +36311,7 @@
         "sanity_check_slaves": null,
         "shared_user_password": null,
         "signer_tests": false,
-        "sync_chrome": false,
+        "sync_chrome": null,
         "tests_supported": true,
         "trybot_list": false,
         "unittest_blacklist": [],

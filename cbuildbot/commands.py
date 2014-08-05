@@ -975,8 +975,9 @@ def MarkChromeAsStable(buildroot,
   chroot_args = None
 
   command = ['../../chromite/bin/cros_mark_chrome_as_stable',
-             '--tracking_branch=%s' % tracking_branch,
-             '--boards=%s' % ':'.join(boards), ]
+             '--tracking_branch=%s' % tracking_branch]
+  if boards:
+    command.append('--boards=%s' % ':'.join(boards))
   if chrome_version:
     command.append('--force_version=%s' % chrome_version)
 
