@@ -798,6 +798,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
+        '../components/components.gyp:keyed_service_content',
         '../content/content_shell_and_tests.gyp:test_support_content',
         '../device/serial/serial.gyp:device_serial',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
