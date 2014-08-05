@@ -183,12 +183,7 @@ if (build_ffmpegsumo) {
           "-Wno-parentheses",
           "-Wno-pointer-sign",
           "-Wno-switch",
-          # Don't emit warnings for gcc -f flags clang doesn't implement.
-          "-Qunused-arguments",
         ]
-        if (ffmpeg_branding == "Chrome" || ffmpeg_branding == "ChromeOS") {
-          cflags += [ "-Wno-attributes" ]
-        }
       } else {
         # gcc doesn't have flags for specific warnings, so disable them
         # all.
