@@ -106,13 +106,12 @@ class FileSystem(object):
       return Future(value=True)
 
     parent, base = SplitParent(path)
-    list_future = self.ReadSingle(ToDirectory(parent))
-    def resolve():
-      try:
-        return base in list_future.Get()
-      except FileNotFoundError:
+    def handle(error):
+      if isinstance(error, FileNotFoundError):
         return False
-    return Future(callback=resolve)
+      raise error
+    return self.ReadSingle(ToDirectory(parent)).Then(lambda l: base in l,
+                                                     handle)
 
   def Refresh(self):
     '''Asynchronously refreshes the content of the FileSystem, returning a

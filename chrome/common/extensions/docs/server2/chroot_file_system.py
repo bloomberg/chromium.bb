@@ -32,13 +32,11 @@ class ChrootFileSystem(FileSystem):
       prefixed = posixpath.join(self._root, path)
       prefixed_paths[prefixed] = path
       return prefixed
-    future_result = self._file_system.Read(
-        tuple(prefix(path) for path in paths),
-        skip_not_found=skip_not_found)
-    def resolve():
+    def next(results):
       return dict((prefixed_paths[path], content)
-                  for path, content in future_result.Get().iteritems())
-    return Future(callback=resolve)
+                  for path, content in results.iteritems())
+    return self._file_system.Read(tuple(prefix(path) for path in paths),
+                                  skip_not_found-skip_not_found).Then(next)
 
   def Refresh(self):
     return self._file_system.Refresh()

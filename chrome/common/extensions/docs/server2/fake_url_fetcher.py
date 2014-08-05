@@ -129,11 +129,10 @@ class MockURLFetcher(object):
 
   def FetchAsync(self, url, **kwargs):
     self._fetch_async_count += 1
-    future = self._fetcher.FetchAsync(url, **kwargs)
-    def resolve():
+    def next(result):
       self._fetch_resolve_count += 1
-      return future.Get()
-    return Future(callback=resolve)
+      return result
+    return self._fetcher.FetchAsync(url, **kwargs).Then(next)
 
   def CheckAndReset(self,
                     fetch_count=0,

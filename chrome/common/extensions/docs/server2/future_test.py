@@ -159,6 +159,63 @@ class FutureTest(unittest.TestCase):
                  except_pass=(ValueError,))
     self.assertRaises(ValueError, race.Get)
 
+  def testThen(self):
+    def assertIs42(val):
+      self.assertEquals(val, 42)
+
+    then = Future(value=42).Then(assertIs42)
+    # Shouldn't raise an error.
+    then.Get()
+
+    # Test raising an error.
+    then = Future(value=41).Then(assertIs42)
+    self.assertRaises(AssertionError, then.Get)
+
+    # Test setting up an error handler.
+    def handle(error):
+      if isinstance(error, ValueError):
+        return 'Caught'
+      raise error
+
+    def raiseValueError():
+      raise ValueError
+
+    def raiseException():
+      raise Exception
+
+    then = Future(callback=raiseValueError).Then(assertIs42, handle)
+    self.assertEquals(then.Get(), 'Caught')
+    then = Future(callback=raiseException).Then(assertIs42, handle)
+    self.assertRaises(Exception, then.Get)
+
+    # Test chains of thens.
+    addOne = lambda val: val + 1
+    then = Future(value=40).Then(addOne).Then(addOne).Then(assertIs42)
+    # Shouldn't raise an error.
+    then.Get()
+
+    # Test error in chain.
+    then = Future(value=40).Then(addOne).Then(assertIs42).Then(addOne)
+    self.assertRaises(AssertionError, then.Get)
+
+    # Test handle error in chain.
+    def raiseValueErrorWithVal(val):
+      raise ValueError
+
+    then = Future(value=40).Then(addOne).Then(raiseValueErrorWithVal).Then(
+        addOne, handle).Then(lambda val: val + ' me')
+    self.assertEquals(then.Get(), 'Caught me')
+
+    # Test multiple handlers.
+    def myHandle(error):
+      if isinstance(error, AssertionError):
+        return 10
+      raise error
+
+    then = Future(value=40).Then(assertIs42).Then(addOne, handle).Then(addOne,
+                                                                       myHandle)
+    self.assertEquals(then.Get(), 10)
+
 
 if __name__ == '__main__':
   unittest.main()

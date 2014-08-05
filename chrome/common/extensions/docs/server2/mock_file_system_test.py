@@ -60,7 +60,7 @@ class MockFileSystemTest(unittest.TestCase):
     future = fs.Read(['notfound.html', 'apps/'])
     self.assertTrue(*fs.CheckAndReset(read_count=1))
     self.assertRaises(FileNotFoundError, future.Get)
-    self.assertTrue(*fs.CheckAndReset(read_resolve_count=1))
+    self.assertTrue(*fs.CheckAndReset(read_resolve_count=0))
 
     fs.Stat('404.html')
     fs.Stat('404.html')

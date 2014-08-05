@@ -7,6 +7,10 @@ import sys
 _no_value = object()
 
 
+def _DefaultErrorHandler(error):
+  raise error
+
+
 def All(futures, except_pass=None):
   '''Creates a Future which returns a list of results from each Future in
   |futures|.
@@ -61,12 +65,17 @@ class Future(object):
         self._exc_info is None):
       raise ValueError('Must have either a value, error, or callback.')
 
-  def Then(self, callback):
+  def Then(self, callback, error_handler=_DefaultErrorHandler):
     '''Creates and returns a future that runs |callback| on the value of this
-    future.
+    future, or runs optional |error_handler| if resolving this future results in
+    an exception.
     '''
     def then():
-      return callback(self.Get())
+      try:
+        val = self.Get()
+      except Exception as e:
+        return error_handler(e)
+      return callback(val)
     return Future(callback=then)
 
   def Get(self):
