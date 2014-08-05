@@ -13,13 +13,15 @@
 
 NotificationObjectProxy::NotificationObjectProxy(
     content::RenderFrameHost* render_frame_host,
-    content::DesktopNotificationDelegate* delegate)
+    scoped_ptr<content::DesktopNotificationDelegate> delegate)
     : render_process_id_(render_frame_host->GetProcess()->GetID()),
       render_frame_id_(render_frame_host->GetRoutingID()),
-      delegate_(delegate),
+      delegate_(delegate.Pass()),
       displayed_(false),
       id_(base::GenerateGUID()) {
 }
+
+NotificationObjectProxy::~NotificationObjectProxy() {}
 
 void NotificationObjectProxy::Display() {
   // This method is called each time the notification is shown to the user

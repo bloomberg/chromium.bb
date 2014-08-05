@@ -90,7 +90,6 @@ class DesktopNotificationDelegateImpl : public DesktopNotificationDelegate {
 
     rfh->Send(new DesktopNotificationMsg_PostError(
         rfh->GetRoutingID(), notification_id_));
-    delete this;
   }
 
   virtual void NotificationClosed(bool by_user) OVERRIDE {
@@ -103,7 +102,6 @@ class DesktopNotificationDelegateImpl : public DesktopNotificationDelegate {
         rfh->GetRoutingID(), notification_id_, by_user));
     static_cast<RenderFrameHostImpl*>(rfh)->NotificationClosed(
         notification_id_);
-    delete this;
   }
 
   virtual void NotificationClick() OVERRIDE {
@@ -833,10 +831,14 @@ void RenderFrameHostImpl::OnRequestDesktopNotificationPermission(
 void RenderFrameHostImpl::OnShowDesktopNotification(
     int notification_id,
     const ShowDesktopNotificationHostMsgParams& params) {
+  scoped_ptr<DesktopNotificationDelegateImpl> delegate(
+      new DesktopNotificationDelegateImpl(this, notification_id));
+
   base::Closure cancel_callback;
   GetContentClient()->browser()->ShowDesktopNotification(
-      params, this,
-      new DesktopNotificationDelegateImpl(this, notification_id),
+      params,
+      this,
+      delegate.PassAs<DesktopNotificationDelegate>(),
       &cancel_callback);
   cancel_notification_callbacks_[notification_id] = cancel_callback;
 }
