@@ -431,7 +431,7 @@ const AtomicString& Element::getAttribute(const QualifiedName& name) const
     if (!elementData())
         return nullAtom;
     synchronizeAttribute(name);
-    if (const Attribute* attribute = attributes().find(name))
+    if (const Attribute* attribute = elementData()->attributes().find(name))
         return attribute->value();
     return nullAtom;
 }
@@ -910,7 +910,7 @@ ALWAYS_INLINE void Element::setAttributeInternal(size_t index, const QualifiedNa
         return;
     }
 
-    const Attribute& existingAttribute = attributes().at(index);
+    const Attribute& existingAttribute = elementData()->attributes().at(index);
     QualifiedName existingAttributeName = existingAttribute.name();
 
     if (!inSynchronizationOfLazyAttribute)
@@ -1135,12 +1135,6 @@ void Element::parserSetAttributes(const Vector<Attribute>& attributeVector)
         attributeChangedFromParserOrByCloning(attributeVector[i].name(), attributeVector[i].value(), ModifiedDirectly);
 }
 
-bool Element::hasAttributes() const
-{
-    synchronizeAllAttributes();
-    return elementData() && !elementData()->attributes().isEmpty();
-}
-
 bool Element::hasEquivalentAttributes(const Element* other) const
 {
     synchronizeAllAttributes();
@@ -1192,13 +1186,11 @@ const AtomicString& Element::locateNamespacePrefix(const AtomicString& namespace
     if (!prefix().isNull() && namespaceURI() == namespaceToLocate)
         return prefix();
 
-    if (hasAttributes()) {
-        AttributeCollection attributes = this->attributes();
-        AttributeCollection::const_iterator end = attributes.end();
-        for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
-            if (it->prefix() == xmlnsAtom && it->value() == namespaceToLocate)
-                return it->localName();
-        }
+    AttributeCollection attributes = this->attributes();
+    AttributeCollection::const_iterator end = attributes.end();
+    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
+        if (it->prefix() == xmlnsAtom && it->value() == namespaceToLocate)
+            return it->localName();
     }
 
     if (Element* parent = parentElement())
@@ -2969,7 +2961,7 @@ void Element::detachAllAttrNodesFromElement()
     AttrNodeList* list = this->attrNodeList();
     ASSERT(list);
 
-    AttributeCollection attributes = this->attributes();
+    AttributeCollection attributes = elementData()->attributes();
     AttributeCollection::const_iterator end = attributes.end();
     for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
         if (RefPtrWillBeRawPtr<Attr> attrNode = findAttrNodeInList(*list, it->name()))

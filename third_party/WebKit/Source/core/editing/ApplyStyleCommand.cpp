@@ -76,7 +76,8 @@ bool isLegacyAppleStyleSpan(const Node* node)
 
 static bool hasNoAttributeOrOnlyStyleAttribute(const HTMLElement* element, ShouldStyleAttributeBeEmpty shouldStyleAttributeBeEmpty)
 {
-    if (!element->hasAttributes())
+    AttributeCollection attributes = element->attributes();
+    if (attributes.isEmpty())
         return true;
 
     unsigned matchedAttributes = 0;
@@ -86,8 +87,8 @@ static bool hasNoAttributeOrOnlyStyleAttribute(const HTMLElement* element, Shoul
         || !element->inlineStyle() || element->inlineStyle()->isEmpty()))
         matchedAttributes++;
 
-    ASSERT(matchedAttributes <= element->attributes().size());
-    return matchedAttributes == element->attributes().size();
+    ASSERT(matchedAttributes <= attributes.size());
+    return matchedAttributes == attributes.size();
 }
 
 bool isStyleSpanOrSpanWithOnlyStyleAttribute(const Element* element)

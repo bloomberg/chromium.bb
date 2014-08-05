@@ -76,13 +76,11 @@ static bool isCharsetSpecifyingNode(const Node& node)
 
     const HTMLMetaElement& element = toHTMLMetaElement(node);
     HTMLAttributeList attributeList;
-    if (element.hasAttributes()) {
-        AttributeCollection attributes = element.attributes();
-        AttributeCollection::const_iterator end = attributes.end();
-        for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
-            // FIXME: We should deal appropriately with the attribute if they have a namespace.
-            attributeList.append(std::make_pair(it->name().localName(), it->value().string()));
-        }
+    AttributeCollection attributes = element.attributes();
+    AttributeCollection::const_iterator end = attributes.end();
+    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
+        // FIXME: We should deal appropriately with the attribute if they have a namespace.
+        attributeList.append(std::make_pair(it->name().localName(), it->value().string()));
     }
     WTF::TextEncoding textEncoding = encodingFromMetaAttributes(attributeList);
     return textEncoding.isValid();

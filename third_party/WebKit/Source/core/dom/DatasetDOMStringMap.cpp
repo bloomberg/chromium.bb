@@ -154,9 +154,6 @@ void DatasetDOMStringMap::deref()
 
 void DatasetDOMStringMap::getNames(Vector<String>& names)
 {
-    if (!m_element->hasAttributes())
-        return;
-
     AttributeCollection attributes = m_element->attributes();
     AttributeCollection::const_iterator end = attributes.end();
     for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
@@ -167,9 +164,6 @@ void DatasetDOMStringMap::getNames(Vector<String>& names)
 
 String DatasetDOMStringMap::item(const String& name)
 {
-    if (!m_element->hasAttributes())
-        return String();
-
     AttributeCollection attributes = m_element->attributes();
     AttributeCollection::const_iterator end = attributes.end();
     for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
@@ -182,9 +176,6 @@ String DatasetDOMStringMap::item(const String& name)
 
 bool DatasetDOMStringMap::contains(const String& name)
 {
-    if (!m_element->hasAttributes())
-        return false;
-
     AttributeCollection attributes = m_element->attributes();
     AttributeCollection::const_iterator end = attributes.end();
     for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {

@@ -234,9 +234,6 @@ void NodeSet::traversalSort() const
             continue;
 
         Element* element = toElement(n);
-        if (!element->hasAttributes())
-            continue;
-
         AttributeCollection attributes = element->attributes();
         AttributeCollection::const_iterator end = attributes.end();
         for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {

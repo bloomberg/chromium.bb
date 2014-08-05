@@ -95,6 +95,10 @@ class AttributeCollection : public AttributeCollectionGeneric<const AttributeArr
 public:
     typedef iterator const_iterator;
 
+    AttributeCollection()
+        : AttributeCollectionGeneric<const AttributeArray>(AttributeArray(nullptr, 0))
+    { }
+
     AttributeCollection(const Attribute* array, unsigned size)
         : AttributeCollectionGeneric<const AttributeArray>(AttributeArray(array, size))
     { }

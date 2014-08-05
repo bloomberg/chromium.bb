@@ -115,8 +115,6 @@ static void completeURLs(DocumentFragment& fragment, const String& baseURL)
     KURL parsedBaseURL(ParsedURLString, baseURL);
 
     for (Element* element = ElementTraversal::firstWithin(fragment); element; element = ElementTraversal::next(*element, &fragment)) {
-        if (!element->hasAttributes())
-            continue;
         AttributeCollection attributes = element->attributes();
         AttributeCollection::const_iterator end = attributes.end();
         for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
@@ -297,15 +295,13 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element
     const bool shouldAnnotateOrForceInline = element.isHTMLElement() && (shouldAnnotate() || addDisplayInline);
     const bool shouldOverrideStyleAttr = shouldAnnotateOrForceInline || shouldApplyWrappingStyle(element);
 
-    if (element.hasAttributes()) {
-        AttributeCollection attributes = element.attributes();
-        AttributeCollection::const_iterator end = attributes.end();
-        for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
-            // We'll handle the style attribute separately, below.
-            if (it->name() == styleAttr && shouldOverrideStyleAttr)
-                continue;
-            appendAttribute(out, element, *it, 0);
-        }
+    AttributeCollection attributes = element.attributes();
+    AttributeCollection::const_iterator end = attributes.end();
+    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
+        // We'll handle the style attribute separately, below.
+        if (it->name() == styleAttr && shouldOverrideStyleAttr)
+            continue;
+        appendAttribute(out, element, *it, 0);
     }
 
     if (shouldOverrideStyleAttr) {

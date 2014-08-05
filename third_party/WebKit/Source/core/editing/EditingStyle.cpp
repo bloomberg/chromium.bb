@@ -909,7 +909,8 @@ bool EditingStyle::elementIsStyledSpanOrHTMLEquivalent(const HTMLElement* elemen
         }
     }
 
-    if (!element->hasAttributes())
+    AttributeCollection attributes = element->attributes();
+    if (attributes.isEmpty())
         return elementIsSpanOrElementEquivalent; // span, b, etc... without any attributes
 
     unsigned matchedAttributes = 0;
@@ -937,8 +938,8 @@ bool EditingStyle::elementIsStyledSpanOrHTMLEquivalent(const HTMLElement* elemen
     }
 
     // font with color attribute, span with style attribute, etc...
-    ASSERT(matchedAttributes <= element->attributes().size());
-    return matchedAttributes >= element->attributes().size();
+    ASSERT(matchedAttributes <= attributes.size());
+    return matchedAttributes >= attributes.size();
 }
 
 void EditingStyle::prepareToApplyAt(const Position& position, ShouldPreserveWritingDirection shouldPreserveWritingDirection)

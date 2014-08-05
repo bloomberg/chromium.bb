@@ -383,9 +383,6 @@ void Step::nodesInAxis(EvaluationContext& evaluationContext, Node* context, Node
             return;
         }
 
-        if (!contextElement->hasAttributes())
-            return;
-
         AttributeCollection attributes = contextElement->attributes();
         AttributeCollection::const_iterator end = attributes.end();
         for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {

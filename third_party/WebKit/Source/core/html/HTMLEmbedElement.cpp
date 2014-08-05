@@ -113,9 +113,6 @@ void HTMLEmbedElement::parseAttribute(const QualifiedName& name, const AtomicStr
 
 void HTMLEmbedElement::parametersForPlugin(Vector<String>& paramNames, Vector<String>& paramValues)
 {
-    if (!hasAttributes())
-        return;
-
     AttributeCollection attributes = this->attributes();
     AttributeCollection::const_iterator end = attributes.end();
     for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {

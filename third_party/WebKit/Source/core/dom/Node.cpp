@@ -1270,13 +1270,11 @@ bool Node::isDefaultNamespace(const AtomicString& namespaceURIMaybeEmpty) const
             if (element.prefix().isNull())
                 return element.namespaceURI() == namespaceURI;
 
-            if (element.hasAttributes()) {
-                AttributeCollection attributes = element.attributes();
-                AttributeCollection::const_iterator end = attributes.end();
-                for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
-                    if (it->localName() == xmlnsAtom)
-                        return it->value() == namespaceURI;
-                }
+            AttributeCollection attributes = element.attributes();
+            AttributeCollection::const_iterator end = attributes.end();
+            for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
+                if (it->localName() == xmlnsAtom)
+                    return it->value() == namespaceURI;
             }
 
             if (Element* parent = parentElement())
@@ -1355,22 +1353,21 @@ const AtomicString& Node::lookupNamespaceURI(const String& prefix) const
             if (!element.namespaceURI().isNull() && element.prefix() == prefix)
                 return element.namespaceURI();
 
-            if (element.hasAttributes()) {
-                AttributeCollection attributes = element.attributes();
-                AttributeCollection::const_iterator end = attributes.end();
-                for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
-                    if (it->prefix() == xmlnsAtom && it->localName() == prefix) {
-                        if (!it->value().isEmpty())
-                            return it->value();
-                        return nullAtom;
-                    }
-                    if (it->localName() == xmlnsAtom && prefix.isNull()) {
-                        if (!it->value().isEmpty())
-                            return it->value();
-                        return nullAtom;
-                    }
+            AttributeCollection attributes = element.attributes();
+            AttributeCollection::const_iterator end = attributes.end();
+            for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
+                if (it->prefix() == xmlnsAtom && it->localName() == prefix) {
+                    if (!it->value().isEmpty())
+                        return it->value();
+                    return nullAtom;
+                }
+                if (it->localName() == xmlnsAtom && prefix.isNull()) {
+                    if (!it->value().isEmpty())
+                        return it->value();
+                    return nullAtom;
                 }
             }
+
             if (Element* parent = parentElement())
                 return parent->lookupNamespaceURI(prefix);
             return nullAtom;
@@ -1517,7 +1514,6 @@ unsigned short Node::compareDocumentPosition(const Node* otherNode, ShadowTreesT
     if (attr1 && attr2 && start1 == start2 && start1) {
         // We are comparing two attributes on the same node. Crawl our attribute map and see which one we hit first.
         const Element* owner1 = attr1->ownerElement();
-        owner1->synchronizeAllAttributes();
         AttributeCollection attributes = owner1->attributes();
         AttributeCollection::const_iterator end = attributes.end();
         for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {

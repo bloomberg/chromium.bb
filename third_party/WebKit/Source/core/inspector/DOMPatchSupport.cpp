@@ -188,22 +188,18 @@ bool DOMPatchSupport::innerPatchNode(Digest* oldDigest, Digest* newDigest, Excep
     Element* newElement = toElement(newNode);
     if (oldDigest->m_attrsSHA1 != newDigest->m_attrsSHA1) {
         // FIXME: Create a function in Element for removing all properties. Take in account whether did/willModifyAttribute are important.
-        if (oldElement->hasAttributesWithoutUpdate()) {
-            while (oldElement->attributes().size()) {
-                const Attribute& attribute = oldElement->attributes().at(0);
-                if (!m_domEditor->removeAttribute(oldElement, attribute.localName(), exceptionState))
-                    return false;
-            }
+        while (oldElement->attributesWithoutUpdate().size()) {
+            const Attribute& attribute = oldElement->attributesWithoutUpdate().at(0);
+            if (!m_domEditor->removeAttribute(oldElement, attribute.localName(), exceptionState))
+                return false;
         }
 
         // FIXME: Create a function in Element for copying properties. cloneDataFromElement() is close but not enough for this case.
-        if (newElement->hasAttributesWithoutUpdate()) {
-            AttributeCollection attributes = newElement->attributes();
-            AttributeCollection::const_iterator end = attributes.end();
-            for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
-                if (!m_domEditor->setAttribute(oldElement, it->name().localName(), it->value(), exceptionState))
-                    return false;
-            }
+        AttributeCollection attributes = newElement->attributesWithoutUpdate();
+        AttributeCollection::const_iterator end = attributes.end();
+        for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
+            if (!m_domEditor->setAttribute(oldElement, it->name().localName(), it->value(), exceptionState))
+                return false;
         }
     }
 
@@ -429,9 +425,9 @@ PassOwnPtr<DOMPatchSupport::Digest> DOMPatchSupport::createDigest(Node* node, Un
             digest->m_children.append(childInfo.release());
         }
 
-        if (element.hasAttributesWithoutUpdate()) {
+        AttributeCollection attributes = element.attributesWithoutUpdate();
+        if (!attributes.isEmpty()) {
             OwnPtr<blink::WebCryptoDigestor> attrsDigestor = createDigestor(HashAlgorithmSha1);
-            AttributeCollection attributes = element.attributes();
             AttributeCollection::const_iterator end = attributes.end();
             for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
                 addStringToDigestor(attrsDigestor.get(), it->name().toString());

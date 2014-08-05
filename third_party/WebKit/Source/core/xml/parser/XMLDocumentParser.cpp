@@ -812,15 +812,13 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment, Element* parent
 
     for (; !elemStack.isEmpty(); elemStack.removeLast()) {
         Element* element = elemStack.last();
-        if (element->hasAttributes()) {
-            AttributeCollection attributes = element->attributes();
-            AttributeCollection::const_iterator end = attributes.end();
-            for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
-                if (it->localName() == xmlnsAtom)
-                    m_defaultNamespaceURI = it->value();
-                else if (it->prefix() == xmlnsAtom)
-                    m_prefixToNamespaceMap.set(it->localName(), it->value());
-            }
+        AttributeCollection attributes = element->attributes();
+        AttributeCollection::const_iterator end = attributes.end();
+        for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
+            if (it->localName() == xmlnsAtom)
+                m_defaultNamespaceURI = it->value();
+            else if (it->prefix() == xmlnsAtom)
+                m_prefixToNamespaceMap.set(it->localName(), it->value());
         }
     }
 

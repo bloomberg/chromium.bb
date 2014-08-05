@@ -139,9 +139,6 @@ public:
     bool hasNamedNodeMap() const;
 #endif
     bool hasAttributes() const;
-    // This variant will not update the potentially invalid attributes. To be used when not interested
-    // in style attribute or one of the SVG animation attributes.
-    bool hasAttributesWithoutUpdate() const;
 
     bool hasAttribute(const AtomicString& name) const;
     bool hasAttributeNS(const AtomicString& namespaceURI, const AtomicString& localName) const;
@@ -167,10 +164,14 @@ public:
     // so this function is not suitable for non-style uses.
     const AtomicString& idForStyleResolution() const;
 
-    // Internal method that assumes the existence of attribute storage, one should use hasAttributes()
-    // before calling it. This is not a trivial getter and its return value should be cached for
-    // performance.
+    // This getter takes care of synchronizing all attributes before returning the
+    // AttributeCollection. If the Element has no attributes, an empty AttributeCollection
+    // will be returned. This is not a trivial getter and its return value should be cached
+    // for performance.
     AttributeCollection attributes() const;
+    // This variant will not update the potentially invalid attributes. To be used when not interested
+    // in style attribute or one of the SVG animation attributes.
+    AttributeCollection attributesWithoutUpdate() const;
 
     void scrollIntoView(bool alignToTop = true);
     void scrollIntoViewIfNeeded(bool centerIfNeeded = true);
@@ -691,14 +692,14 @@ inline Element* Node::parentElement() const
 inline bool Element::fastHasAttribute(const QualifiedName& name) const
 {
     ASSERT(fastAttributeLookupAllowed(name));
-    return elementData() && attributes().findIndex(name) != kNotFound;
+    return elementData() && elementData()->attributes().findIndex(name) != kNotFound;
 }
 
 inline const AtomicString& Element::fastGetAttribute(const QualifiedName& name) const
 {
     ASSERT(fastAttributeLookupAllowed(name));
     if (elementData()) {
-        if (const Attribute* attribute = attributes().find(name))
+        if (const Attribute* attribute = elementData()->attributes().find(name))
             return attribute->value();
     }
     return nullAtom;
@@ -706,13 +707,22 @@ inline const AtomicString& Element::fastGetAttribute(const QualifiedName& name) 
 
 inline AttributeCollection Element::attributes() const
 {
-    ASSERT(elementData());
+    if (!elementData())
+        return AttributeCollection();
+    synchronizeAllAttributes();
     return elementData()->attributes();
 }
 
-inline bool Element::hasAttributesWithoutUpdate() const
+inline AttributeCollection Element::attributesWithoutUpdate() const
 {
-    return elementData() && !elementData()->attributes().isEmpty();
+    if (!elementData())
+        return AttributeCollection();
+    return elementData()->attributes();
+}
+
+inline bool Element::hasAttributes() const
+{
+    return !attributes().isEmpty();
 }
 
 inline const AtomicString& Element::idForStyleResolution() const

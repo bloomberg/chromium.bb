@@ -602,8 +602,7 @@ Value FunLang::evaluate(EvaluationContext& context) const
     while (node) {
         if (node->isElementNode()) {
             Element* element = toElement(node);
-            if (element->hasAttributes())
-                languageAttribute = element->attributes().find(XMLNames::langAttr);
+            languageAttribute = element->attributes().find(XMLNames::langAttr);
         }
         if (languageAttribute)
             break;

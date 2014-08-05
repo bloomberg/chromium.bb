@@ -407,7 +407,7 @@ void HTMLConstructionSite::mergeAttributesFromTokenIntoElement(AtomicHTMLToken* 
 
     for (unsigned i = 0; i < token->attributes().size(); ++i) {
         const Attribute& tokenAttribute = token->attributes().at(i);
-        if (!element->elementData() || element->attributes().findIndex(tokenAttribute.name()) == kNotFound)
+        if (element->attributesWithoutUpdate().findIndex(tokenAttribute.name()) == kNotFound)
             element->setAttribute(tokenAttribute.name(), tokenAttribute.value());
     }
 }

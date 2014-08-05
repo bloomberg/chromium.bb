@@ -448,7 +448,7 @@ void HTMLInputElement::updateType()
 
     if (didRespectHeightAndWidth != m_inputType->shouldRespectHeightAndWidthAttributes()) {
         ASSERT(elementData());
-        AttributeCollection attributes = this->attributes();
+        AttributeCollection attributes = attributesWithoutUpdate();
         if (const Attribute* height = attributes.find(heightAttr))
             attributeChanged(heightAttr, height->value());
         if (const Attribute* width = attributes.find(widthAttr))

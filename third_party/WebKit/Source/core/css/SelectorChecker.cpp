@@ -463,13 +463,10 @@ static bool anyAttributeMatches(Element& element, CSSSelector::Match match, cons
     // Currently all lazy properties have a null namespace, so only pass localName().
     element.synchronizeAttribute(selectorAttr.localName());
 
-    if (!element.hasAttributesWithoutUpdate())
-        return false;
-
     const AtomicString& selectorValue = selector.value();
     bool caseInsensitive = selector.attributeMatchType() == CSSSelector::CaseInsensitive;
 
-    AttributeCollection attributes = element.attributes();
+    AttributeCollection attributes = element.attributesWithoutUpdate();
     AttributeCollection::const_iterator end = attributes.end();
     for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
         const Attribute& attributeItem = *it;

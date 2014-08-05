@@ -754,13 +754,13 @@ void InspectorDOMAgent::setAttributesAsText(ErrorString* errorString, int elemen
 
     String caseAdjustedName = name ? (shouldIgnoreCase ? name->lower() : *name) : String();
 
-    if (!parsedElement->hasAttributes() && name) {
+    AttributeCollection attributes = parsedElement->attributes();
+    if (attributes.isEmpty() && name) {
         m_domEditor->removeAttribute(element, caseAdjustedName, errorString);
         return;
     }
 
     bool foundOriginalAttribute = false;
-    AttributeCollection attributes = parsedElement->attributes();
     AttributeCollection::const_iterator end = attributes.end();
     for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
         // Add attribute pair
@@ -1016,9 +1016,6 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
                 }
                 // Go through all attributes and serialize them.
                 const Element* element = toElement(node);
-                if (!element->hasAttributes())
-                    break;
-
                 AttributeCollection attributes = element->attributes();
                 AttributeCollection::const_iterator end = attributes.end();
                 for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
@@ -1644,8 +1641,6 @@ PassRefPtr<TypeBuilder::Array<String> > InspectorDOMAgent::buildArrayForElementA
 {
     RefPtr<TypeBuilder::Array<String> > attributesValue = TypeBuilder::Array<String>::create();
     // Go through all attributes and serialize them.
-    if (!element->hasAttributes())
-        return attributesValue.release();
     AttributeCollection attributes = element->attributes();
     AttributeCollection::const_iterator end = attributes.end();
     for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
