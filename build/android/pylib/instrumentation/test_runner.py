@@ -392,10 +392,16 @@ class TestRunner(base_test_runner.BaseTestRunner):
         if not log:
           log = 'No information.'
         result_type = base_test_result.ResultType.FAIL
-        package = self.device.old_interface.DismissCrashDialogIfNeeded()
-        # Assume test package convention of ".test" suffix
-        if package and package in self.test_pkg.GetPackageName():
-          result_type = base_test_result.ResultType.CRASH
+        # Dismiss any error dialogs. Limit the number in case we have an error
+        # loop or we are failing to dismiss.
+        for _ in xrange(10):
+          package = self.device.old_interface.DismissCrashDialogIfNeeded()
+          if not package:
+            break
+          # Assume test package convention of ".test" suffix
+          if package in self.test_pkg.GetPackageName():
+            result_type = base_test_result.ResultType.CRASH
+            break
         result = test_result.InstrumentationTestResult(
             test, result_type, start_date_ms, duration_ms, log=log)
       else:
