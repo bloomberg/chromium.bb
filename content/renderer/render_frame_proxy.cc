@@ -38,8 +38,7 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
 
   scoped_ptr<RenderFrameProxy> proxy(
       new RenderFrameProxy(routing_id, frame_to_replace->GetRoutingID()));
-#if 0
-  // TODO(nick): Enable this code when we're ready to create WebRemoteFrames.
+
   blink::WebRemoteFrame* web_frame = NULL;
   if (frame_to_replace->GetWebFrame()->parent() &&
       frame_to_replace->GetWebFrame()->parent()->isWebRemoteFrame()) {
@@ -49,9 +48,7 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
   } else {
     web_frame = blink::WebRemoteFrame::create(proxy.get());
   }
-#else
-  blink::WebFrame* web_frame = frame_to_replace->GetWebFrame();
-#endif
+
   proxy->Init(web_frame, frame_to_replace->render_view());
   return proxy.release();
 }
@@ -70,15 +67,12 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     web_frame = blink::WebRemoteFrame::create(proxy.get());
     render_view->webview()->setMainFrame(web_frame);
   } else {
-    // Create a frame under an existing parent. The parent is always expected to
-    // be a RenderFrameProxy, because navigations initiated by local frames
+    // Create a frame under an existing parent. The parent is always expected
+    // to be a RenderFrameProxy, because navigations initiated by local frames
     // should not wind up here.
     RenderFrameProxy* parent =
         RenderFrameProxy::FromRoutingID(parent_routing_id);
-    CHECK(parent);
-    CHECK(parent->web_frame()->isWebRemoteFrame());
-    web_frame = parent->web_frame()->toWebRemoteFrame()->createRemoteChild(
-        "", proxy.get());
+    web_frame = parent->web_frame()->createRemoteChild("", proxy.get());
     render_view = parent->render_view();
   }
 
@@ -132,7 +126,7 @@ RenderFrameProxy::~RenderFrameProxy() {
     web_frame()->close();
 }
 
-void RenderFrameProxy::Init(blink::WebFrame* web_frame,
+void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
                             RenderViewImpl* render_view) {
   CHECK(web_frame);
   CHECK(render_view);

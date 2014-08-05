@@ -344,6 +344,22 @@ IPC_MESSAGE_ROUTED2(FrameMsg_CustomContextMenuAction,
                     content::CustomContextMenuContext /* custom_context */,
                     unsigned /* action */)
 
+// Instructs the renderer to create a new RenderFrame object with |routing_id|.
+// The new frame should be created as a child of the object identified by
+// |parent_routing_id| or as top level if that is MSG_ROUTING_NONE.
+IPC_MESSAGE_CONTROL2(FrameMsg_NewFrame,
+                     int /* routing_id */,
+                     int /* parent_routing_id */)
+
+// Instructs the renderer to create a new RenderFrameProxy object with
+// |routing_id|. The new proxy should be created as a child of the object
+// identified by |parent_routing_id| or as top level if that is
+// MSG_ROUTING_NONE.
+IPC_MESSAGE_CONTROL3(FrameMsg_NewFrameProxy,
+                     int /* routing_id */,
+                     int /* parent_routing_id */,
+                     int /* render_view_routing_id */)
+
 // Tells the renderer to perform the specified navigation, interrupting any
 // existing navigation.
 IPC_MESSAGE_ROUTED1(FrameMsg_Navigate, FrameMsg_Navigate_Params)

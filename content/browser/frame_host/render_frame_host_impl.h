@@ -105,6 +105,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible()
       OVERRIDE;
 
+  bool CreateRenderFrame(int parent_routing_id);
+  bool IsRenderFrameLive();
   void Init();
   int routing_id() const { return routing_id_; }
   void OnCreateChildFrame(int new_routing_id,
@@ -375,6 +377,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   int routing_id_;
   bool is_swapped_out_;
+  bool renderer_initialized_;
 
   // When the last BeforeUnload message was sent.
   base::TimeTicks send_before_unload_start_time_;

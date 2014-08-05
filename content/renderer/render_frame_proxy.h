@@ -89,14 +89,14 @@ class CONTENT_EXPORT RenderFrameProxy
   // when a compositor frame has committed.
   void DidCommitCompositorFrame();
 
-  int routing_id() const { return routing_id_; }
-  RenderViewImpl* render_view() const { return render_view_; }
-  blink::WebFrame* web_frame() const { return web_frame_; }
+  int routing_id() { return routing_id_; }
+  RenderViewImpl* render_view() { return render_view_; }
+  blink::WebRemoteFrame* web_frame() { return web_frame_; }
 
  private:
   RenderFrameProxy(int routing_id, int frame_routing_id);
 
-  void Init(blink::WebFrame* frame, RenderViewImpl* render_view);
+  void Init(blink::WebRemoteFrame* frame, RenderViewImpl* render_view);
 
   // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -114,9 +114,8 @@ class CONTENT_EXPORT RenderFrameProxy
   // RenderFrameProxy is meant to replace in the frame tree.
   const int frame_routing_id_;
 
-  // Stores the WebFrame we are associated with.
-  // TODO(nick): Make this always a WebRemoteFrame.
-  blink::WebFrame* web_frame_;
+  // Stores the WebRemoteFrame we are associated with.
+  blink::WebRemoteFrame* web_frame_;
   scoped_refptr<ChildFrameCompositingHelper> compositing_helper_;
 
   RenderViewImpl* render_view_;
