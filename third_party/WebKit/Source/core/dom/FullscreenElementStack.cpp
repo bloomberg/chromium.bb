@@ -57,6 +57,20 @@ static bool fullscreenIsAllowedForAllOwners(const Document& document)
     return true;
 }
 
+static bool fullscreenIsSupported(const Document& document)
+{
+    // Fullscreen is supported if there is no previously-established user preference,
+    // security risk, or platform limitation.
+    return document.settings()->fullscreenSupported();
+}
+
+static bool fullscreenIsSupported(const Document& document, const Element& element)
+{
+    if (document.settings()->disallowFullscreenForNonMediaElements() && !isHTMLMediaElement(element))
+        return false;
+    return fullscreenIsSupported(document);
+}
+
 static PassRefPtrWillBeRawPtr<Event> createEvent(const AtomicString& type, EventTarget& target)
 {
     RefPtrWillBeRawPtr<Event> event = Event::createBubble(type);
@@ -213,10 +227,8 @@ void FullscreenElementStack::requestFullScreenForElement(Element& element, Reque
         if (!UserGestureIndicator::processingUserGesture())
             break;
 
-        // There is a previously-established user preference, security risk, or platform limitation.
-        if (!document()->settings()->fullscreenSupported())
-            break;
-        if (document()->settings()->disallowFullscreenForNonMediaElements() && !isHTMLMediaElement(element))
+        // Fullscreen is not supported.
+        if (!fullscreenIsSupported(element.document(), element))
             break;
 
         // 2. Let doc be element's node document. (i.e. "this")
@@ -377,11 +389,11 @@ void FullscreenElementStack::exitFullscreen()
 
 bool FullscreenElementStack::fullscreenEnabled(Document& document)
 {
-    // 4. The fullscreenEnabled attribute must return true if the context object and all ancestor
-    // browsing context's documents have their fullscreen enabled flag set, or false otherwise.
+    // 4. The fullscreenEnabled attribute must return true if the context object has its
+    //    fullscreen enabled flag set and fullscreen is supported, and false otherwise.
 
     // Top-level browsing contexts are implied to have their allowFullScreen attribute set.
-    return fullscreenIsAllowedForAllOwners(document);
+    return fullscreenIsAllowedForAllOwners(document) && fullscreenIsSupported(document);
 }
 
 void FullscreenElementStack::willEnterFullScreenForElement(Element* element)
