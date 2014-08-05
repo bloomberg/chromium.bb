@@ -1021,6 +1021,7 @@ source_set("prefs_test_support") {
     ":base",
     ":prefs",
     "//testing/gmock",
+    "//testing/gtest",
   ]
 }
 
