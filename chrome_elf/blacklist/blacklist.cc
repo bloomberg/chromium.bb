@@ -41,7 +41,12 @@ const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount] = {
   L"cplushook.dll",                     // Unknown (suspected malware).
   L"datamngr.dll",                      // Unknown (suspected adware).
   L"hk.dll",                            // Unknown (keystroke logger).
+  L"libapi2hook.dll",                   // V-Bates.
+  L"libinject.dll",                     // V-Bates.
+  L"libinject2.dll",                    // V-Bates.
+  L"libredir2.dll",                     // V-Bates.
   L"libsvn_tsvn32.dll",                 // TortoiseSVN.
+  L"libwinhook.dll",                    // V-Bates.
   L"lmrn.dll",                          // Unknown.
   L"minisp.dll",                        // Unknown (suspected malware).
   L"scdetour.dll",                      // Quick Heal Antivirus.
