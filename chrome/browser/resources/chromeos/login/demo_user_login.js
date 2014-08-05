@@ -25,7 +25,7 @@ initialize = function() {
   $('page').style.opacity = 1;
   document.addEventListener('click', onClick);
   // Report back sign in UI being painted.
-  window.webkitRequestAnimationFrame(function() {
+  window.requestAnimationFrame(function() {
     chrome.send('loginVisible', ['demo']);
   });
 };

@@ -224,7 +224,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           SIGNIN_UI_STATE.GAIA_SIGNIN;
 
       // Ensure that GAIA signin (or loading UI) is actually visible.
-      window.webkitRequestAnimationFrame(function() {
+      window.requestAnimationFrame(function() {
         chrome.send('loginVisible', ['gaia-loading']);
       });
 

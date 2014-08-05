@@ -64,13 +64,6 @@ cr.define('login', function() {
   var USER_POD_KEYBOARD_MIN_PADDING = 20;
 
   /**
-   * Whether to preselect the first pod automatically on login screen.
-   * @type {boolean}
-   * @const
-   */
-  var PRESELECT_FIRST_POD = true;
-
-  /**
    * Maximum time for which the pod row remains hidden until all user images
    * have been loaded.
    * @type {number}
@@ -1702,28 +1695,20 @@ cr.define('login', function() {
         $('pod-row').classList.remove('images-loading');
       }, POD_ROW_IMAGES_LOAD_TIMEOUT_MS);
 
-      var isCrosAccountPicker = $('login-header-bar').signinUIState ==
+      var isAccountPicker = $('login-header-bar').signinUIState ==
           SIGNIN_UI_STATE.ACCOUNT_PICKER;
-      var isDesktopUserManager = Oobe.getInstance().displayType ==
-          DISPLAY_TYPE.DESKTOP_USER_MANAGER;
 
-      // Chrome OS: immediately recalculate pods layout only when current UI
-      //            is account picker. Otherwise postpone it.
-      // Desktop: recalculate pods layout right away.
-      if (isDesktopUserManager || isCrosAccountPicker) {
+      // Immediately recalculate pods layout only when current UI is account
+      // picker. Otherwise postpone it.
+      if (isAccountPicker) {
         this.placePods_();
+        this.maybePreselectPod();
 
         // Without timeout changes in pods positions will be animated even
         // though it happened when 'flying-pods' class was disabled.
         setTimeout(function() {
           Oobe.getInstance().toggleClass('flying-pods', true);
         }, 0);
-
-        // On desktop, don't pre-select a pod if it's the only one.
-        if (isDesktopUserManager && this.pods.length == 1)
-          this.focusPod();
-        else
-          this.focusPod(this.preselectedPod);
       } else {
         this.podPlacementPostponed_ = true;
 
@@ -1938,6 +1923,11 @@ cr.define('login', function() {
       var height = this.userPodHeight_;
       var width = this.userPodWidth_;
       this.pods.forEach(function(pod, index) {
+        if (index >= maxPodsNumber) {
+           pod.hidden = true;
+           return;
+        }
+        pod.hidden = false;
         if (pod.offsetHeight != height) {
           console.error('Pod offsetHeight (' + pod.offsetHeight +
               ') and POD_HEIGHT (' + height + ') are not equal.');
@@ -1946,11 +1936,6 @@ cr.define('login', function() {
           console.error('Pod offsetWidth (' + pod.offsetWidth +
               ') and POD_WIDTH (' + width + ') are not equal.');
         }
-        if (index >= maxPodsNumber) {
-           pod.hidden = true;
-           return;
-        }
-        pod.hidden = false;
         var column = index % columns;
         var row = Math.floor(index / columns);
         var rowPadding = isDesktopUserManager ? DESKTOP_ROW_PADDING :
@@ -2119,8 +2104,14 @@ cr.define('login', function() {
      * @type {?UserPod}
      */
     get preselectedPod() {
+      // On desktop, don't pre-select a pod if it's the only one.
+      var isDesktopUserManager = Oobe.getInstance().displayType ==
+          DISPLAY_TYPE.DESKTOP_USER_MANAGER;
+      if (isDesktopUserManager && this.pods.length == 1)
+        return null;
+
       var lockedPod = this.lockedPod;
-      if (lockedPod || !PRESELECT_FIRST_POD)
+      if (lockedPod)
         return lockedPod;
       for (var i = 0, pod; pod = this.pods[i]; ++i) {
         if (!pod.multiProfilesPolicyApplied) {
@@ -2377,13 +2368,7 @@ cr.define('login', function() {
       if (this.podPlacementPostponed_) {
         this.podPlacementPostponed_ = false;
         this.placePods_();
-        pod = this.preselectedPod;
-        this.focusPod(pod);
-        // Hide user-type-bubble in case all user pods are disabled and we focus
-        // first pod.
-        if (pod && pod.multiProfilesPolicyApplied) {
-          pod.userTypeBubbleElement.classList.remove('bubble-shown');
-        }
+        this.maybePreselectPod();
       }
     },
 
@@ -2411,7 +2396,21 @@ cr.define('login', function() {
       if (this.podsWithPendingImages_.length == 0) {
         this.classList.remove('images-loading');
       }
-    }
+    },
+
+    /**
+     * Preselects pod, if needed.
+     */
+     maybePreselectPod: function() {
+       var pod = this.preselectedPod;
+       this.focusPod(pod);
+
+       // Hide user-type-bubble in case all user pods are disabled and we focus
+       // first pod.
+       if (pod && pod.multiProfilesPolicyApplied) {
+         pod.userTypeBubbleElement.classList.remove('bubble-shown');
+       }
+     }
   };
 
   return {

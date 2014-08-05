@@ -21,7 +21,7 @@ cr.define('login', function() {
     showGuest_: true,
 
     // Current UI state of the sign-in screen.
-    signinUIState_: SIGNIN_UI_STATE.ACCOUNT_PICKER,
+    signinUIState_: SIGNIN_UI_STATE.HIDDEN,
 
     // Whether to show kiosk apps menu.
     hasApps_: false,
@@ -117,6 +117,10 @@ cr.define('login', function() {
       this.updateUI_();
     },
 
+    get signinUIState() {
+      return this.signinUIState_;
+    },
+
     /**
      * Whether the Cancel button is enabled during Gaia sign-in.
      * @type {boolean}
@@ -175,7 +179,7 @@ cr.define('login', function() {
    */
   HeaderBar.animateIn = function() {
     $('login-header-bar').animateIn();
-  }
+  };
 
   return {
     HeaderBar: HeaderBar

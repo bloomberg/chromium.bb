@@ -13,12 +13,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
    * @const
    */
   var MAX_LOGIN_ATTEMPTS_IN_POD = 3;
-  /**
-   * Whether to preselect the first pod automatically on login screen.
-   * @type {boolean}
-   * @const
-   */
-  var PRESELECT_FIRST_POD = true;
 
   return {
     EXTERNAL_API: [
@@ -122,7 +116,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       this.firstShown_ = false;
 
       // Ensure that login is actually visible.
-      window.webkitRequestAnimationFrame(function() {
+      window.requestAnimationFrame(function() {
         chrome.send('accountPickerReady');
         chrome.send('loginVisible', ['account-picker']);
       });
