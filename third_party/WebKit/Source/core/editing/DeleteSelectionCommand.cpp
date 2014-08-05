@@ -430,8 +430,7 @@ void DeleteSelectionCommand::makeStylingElementsDirectChildrenOfEditableRootToPr
     RefPtrWillBeRawPtr<Node> node = range->firstNode();
     while (node && node != range->pastLastNode()) {
         RefPtrWillBeRawPtr<Node> nextNode = NodeTraversal::next(*node);
-        if ((isHTMLStyleElement(*node) && !toHTMLStyleElement(node)->hasAttribute(scopedAttr))
-            || isHTMLLinkElement(*node)) {
+        if (isHTMLStyleElement(*node) || isHTMLLinkElement(*node)) {
             nextNode = NodeTraversal::nextSkippingChildren(*node);
             RefPtrWillBeRawPtr<Element> rootEditableElement = node->rootEditableElement();
             if (rootEditableElement.get()) {
