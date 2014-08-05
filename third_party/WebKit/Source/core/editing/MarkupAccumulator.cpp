@@ -430,35 +430,39 @@ void MarkupAccumulator::appendAttribute(StringBuilder& result, const Element& el
         result.append(' ');
         result.append(attribute.name().localName());
     } else {
-        if (attribute.namespaceURI() == XLinkNames::xlinkNamespaceURI) {
-            if (!attribute.prefix())
-                prefixedName.setPrefix(xlinkAtom);
-        } else if (attribute.namespaceURI() == XMLNames::xmlNamespaceURI) {
-            if (!attribute.prefix())
-                prefixedName.setPrefix(xmlAtom);
-        } else if (attribute.namespaceURI() == XMLNSNames::xmlnsNamespaceURI) {
+        if (attribute.namespaceURI() == XMLNSNames::xmlnsNamespaceURI) {
             if (!attribute.prefix() && attribute.localName() != xmlnsAtom)
                 prefixedName.setPrefix(xmlnsAtom);
             if (namespaces) { // Account for the namespace attribute we're about to append.
                 const AtomicString& lookupKey = (!attribute.prefix()) ? emptyAtom : attribute.localName();
                 namespaces->set(lookupKey, attribute.value());
             }
-        } else if (namespaces && shouldAddNamespaceAttribute(attribute, element)) {
-            if (!attribute.prefix()) {
-                // This behavior is in process of being standardized. See crbug.com/248044 and https://www.w3.org/Bugs/Public/show_bug.cgi?id=24208
-                String prefixPrefix("ns", 2);
-                for (unsigned i = attribute.namespaceURI().impl()->existingHash(); ; ++i) {
-                    AtomicString newPrefix(String(prefixPrefix + String::number(i)));
-                    AtomicString foundURI = namespaces->get(newPrefix);
-                    if (foundURI == attribute.namespaceURI() || foundURI == nullAtom) {
-                        // We already generated a prefix for this namespace.
-                        prefixedName.setPrefix(newPrefix);
-                        break;
+        } else if (attribute.namespaceURI() == XMLNames::xmlNamespaceURI) {
+            if (!attribute.prefix())
+                prefixedName.setPrefix(xmlAtom);
+        } else {
+            if (attribute.namespaceURI() == XLinkNames::xlinkNamespaceURI) {
+                if (!attribute.prefix())
+                    prefixedName.setPrefix(xlinkAtom);
+            }
+
+            if (namespaces && shouldAddNamespaceAttribute(attribute, element)) {
+                if (!prefixedName.prefix()) {
+                    // This behavior is in process of being standardized. See crbug.com/248044 and https://www.w3.org/Bugs/Public/show_bug.cgi?id=24208
+                    String prefixPrefix("ns", 2);
+                    for (unsigned i = attribute.namespaceURI().impl()->existingHash(); ; ++i) {
+                        AtomicString newPrefix(String(prefixPrefix + String::number(i)));
+                        AtomicString foundURI = namespaces->get(newPrefix);
+                        if (foundURI == attribute.namespaceURI() || foundURI == nullAtom) {
+                            // We already generated a prefix for this namespace.
+                            prefixedName.setPrefix(newPrefix);
+                            break;
+                        }
                     }
                 }
+                ASSERT(prefixedName.prefix());
+                appendNamespace(result, prefixedName.prefix(), attribute.namespaceURI(), *namespaces);
             }
-            ASSERT(prefixedName.prefix());
-            appendNamespace(result, prefixedName.prefix(), attribute.namespaceURI(), *namespaces);
         }
         result.append(' ');
         result.append(prefixedName.toString());
