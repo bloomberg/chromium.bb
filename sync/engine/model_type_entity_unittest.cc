@@ -64,8 +64,7 @@ TEST_F(ModelTypeEntityTest, FromServerUpdate) {
                                         specifics,
                                         false,
                                         kCtime,
-                                        kMtime,
-                                        std::string()));
+                                        kMtime));
 
   EXPECT_TRUE(entity->IsWriteRequired());
   EXPECT_FALSE(entity->IsUnsynced());
@@ -88,8 +87,7 @@ TEST_F(ModelTypeEntityTest, TombstoneUpdate) {
                                         sync_pb::EntitySpecifics(),
                                         true,
                                         kCtime,
-                                        kMtime,
-                                        std::string()));
+                                        kMtime));
 
   EXPECT_TRUE(entity->IsWriteRequired());
   EXPECT_FALSE(entity->IsUnsynced());
@@ -109,15 +107,13 @@ TEST_F(ModelTypeEntityTest, ApplyUpdate) {
                                         specifics,
                                         false,
                                         kCtime,
-                                        kMtime,
-                                        std::string()));
+                                        kMtime));
 
   // A deletion update one version later.
   entity->ApplyUpdateFromServer(11,
                                 true,
                                 sync_pb::EntitySpecifics(),
-                                kMtime + base::TimeDelta::FromSeconds(10),
-                                std::string());
+                                kMtime + base::TimeDelta::FromSeconds(10));
 
   EXPECT_TRUE(entity->IsWriteRequired());
   EXPECT_FALSE(entity->IsUnsynced());
@@ -134,8 +130,7 @@ TEST_F(ModelTypeEntityTest, LocalChange) {
                                         specifics,
                                         false,
                                         kCtime,
-                                        kMtime,
-                                        std::string()));
+                                        kMtime));
 
   sync_pb::EntitySpecifics specifics2;
   specifics2.CopyFrom(specifics);
@@ -161,8 +156,7 @@ TEST_F(ModelTypeEntityTest, LocalDeletion) {
                                         specifics,
                                         false,
                                         kCtime,
-                                        kMtime,
-                                        std::string()));
+                                        kMtime));
 
   entity->Delete();
 

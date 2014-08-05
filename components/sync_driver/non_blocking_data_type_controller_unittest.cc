@@ -85,7 +85,6 @@ class MockSyncContextProxy : public syncer::SyncContextProxy {
   virtual void ConnectTypeToSync(
       syncer::ModelType type,
       const syncer::DataTypeState& data_type_state,
-      const syncer::UpdateResponseDataList& saved_pending_updates,
       const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& type_proxy)
       OVERRIDE {
     // Normally we'd use MessageLoopProxy::current() as the TaskRunner argument

@@ -18,7 +18,6 @@ ModelTypeSyncProxyImpl::ModelTypeSyncProxyImpl(ModelType type)
       is_preferred_(false),
       is_connected_(false),
       entities_deleter_(&entities_),
-      pending_updates_map_deleter_(&pending_updates_map_),
       weak_ptr_factory_for_ui_(this),
       weak_ptr_factory_for_sync_(this) {
 }
@@ -52,12 +51,10 @@ void ModelTypeSyncProxyImpl::Enable(
   data_type_state_.progress_marker.set_data_type_id(
       GetSpecificsFieldNumberFromModelType(type_));
 
-  UpdateResponseDataList saved_pending_updates = GetPendingUpdates();
   sync_context_proxy_ = sync_context_proxy.Pass();
   sync_context_proxy_->ConnectTypeToSync(
       GetModelType(),
       data_type_state_,
-      saved_pending_updates,
       weak_ptr_factory_for_sync_.GetWeakPtr());
 }
 
@@ -183,18 +180,16 @@ void ModelTypeSyncProxyImpl::OnCommitCompleted(
     } else {
       it->second->ReceiveCommitResponse(response_data.id,
                                         response_data.sequence_number,
-                                        response_data.response_version,
-                                        data_type_state_.encryption_key_name);
+                                        response_data.response_version);
     }
   }
 }
 
 void ModelTypeSyncProxyImpl::OnUpdateReceived(
     const DataTypeState& data_type_state,
-    const UpdateResponseDataList& response_list,
-    const UpdateResponseDataList& pending_updates) {
-  bool got_new_encryption_requirements = data_type_state_.encryption_key_name !=
-                                         data_type_state.encryption_key_name;
+    const UpdateResponseDataList& response_list) {
+  bool initial_sync_just_finished =
+      !data_type_state_.initial_sync_done && data_type_state.initial_sync_done;
 
   data_type_state_ = data_type_state;
 
@@ -203,14 +198,6 @@ void ModelTypeSyncProxyImpl::OnUpdateReceived(
        ++list_it) {
     const UpdateResponseData& response_data = *list_it;
     const std::string& client_tag_hash = response_data.client_tag_hash;
-
-    UpdateMap::iterator old_it = pending_updates_map_.find(client_tag_hash);
-    if (old_it != pending_updates_map_.end()) {
-      // If we're being asked to apply an update to this entity, this overrides
-      // the previous pending updates.
-      delete old_it->second;
-      pending_updates_map_.erase(old_it);
-    }
 
     EntityMap::iterator it = entities_.find(client_tag_hash);
     if (it == entities_.end()) {
@@ -222,74 +209,22 @@ void ModelTypeSyncProxyImpl::OnUpdateReceived(
                                             response_data.specifics,
                                             response_data.deleted,
                                             response_data.ctime,
-                                            response_data.mtime,
-                                            response_data.encryption_key_name);
+                                            response_data.mtime);
       entities_.insert(std::make_pair(client_tag_hash, entity.release()));
     } else {
       ModelTypeEntity* entity = it->second;
       entity->ApplyUpdateFromServer(response_data.response_version,
                                     response_data.deleted,
                                     response_data.specifics,
-                                    response_data.mtime,
-                                    response_data.encryption_key_name);
-
+                                    response_data.mtime);
       // TODO: Do something special when conflicts are detected.
     }
-
-    // If the received entity has out of date encryption, we schedule another
-    // commit to fix it.
-    if (data_type_state_.encryption_key_name !=
-        response_data.encryption_key_name) {
-      EntityMap::iterator it2 = entities_.find(client_tag_hash);
-      it2->second->UpdateDesiredEncryptionKey(
-          data_type_state_.encryption_key_name);
-    }
   }
 
-  // Save pending updates in the appropriate data structure.
-  for (UpdateResponseDataList::const_iterator list_it = pending_updates.begin();
-       list_it != pending_updates.end();
-       ++list_it) {
-    const UpdateResponseData& update = *list_it;
-    const std::string& client_tag_hash = update.client_tag_hash;
-
-    UpdateMap::iterator lookup_it = pending_updates_map_.find(client_tag_hash);
-    if (lookup_it == pending_updates_map_.end()) {
-      pending_updates_map_.insert(
-          std::make_pair(client_tag_hash, new UpdateResponseData(update)));
-    } else if (lookup_it->second->response_version <= update.response_version) {
-      delete lookup_it->second;
-      pending_updates_map_.erase(lookup_it);
-      pending_updates_map_.insert(
-          std::make_pair(client_tag_hash, new UpdateResponseData(update)));
-    } else {
-      // Received update is stale, do not overwrite existing.
-    }
-  }
-
-  if (got_new_encryption_requirements) {
-    for (EntityMap::iterator it = entities_.begin(); it != entities_.end();
-         ++it) {
-      it->second->UpdateDesiredEncryptionKey(
-          data_type_state_.encryption_key_name);
-    }
-  }
-
-  // We may have new reasons to commit by the time this function is done.
-  FlushPendingCommitRequests();
+  if (initial_sync_just_finished)
+    FlushPendingCommitRequests();
 
   // TODO: Inform the model of the new or updated data.
-  // TODO: Persist the new data on disk.
-}
-
-UpdateResponseDataList ModelTypeSyncProxyImpl::GetPendingUpdates() {
-  UpdateResponseDataList pending_updates_list;
-  for (UpdateMap::const_iterator it = pending_updates_map_.begin();
-       it != pending_updates_map_.end();
-       ++it) {
-    pending_updates_list.push_back(*it->second);
-  }
-  return pending_updates_list;
 }
 
 void ModelTypeSyncProxyImpl::ClearTransientSyncState() {
@@ -304,7 +239,7 @@ void ModelTypeSyncProxyImpl::ClearSyncState() {
        ++it) {
     it->second->ClearSyncState();
   }
-  STLDeleteValues(&pending_updates_map_);
+
   data_type_state_ = DataTypeState();
 }
 

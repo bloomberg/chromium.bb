@@ -251,7 +251,7 @@ bool Cryptographer::DecryptPendingKeys(const KeyParams& params) {
 
 bool Cryptographer::GetBootstrapToken(std::string* token) const {
   DCHECK(token);
-  std::string unencrypted_token = GetDefaultNigoriKeyData();
+  std::string unencrypted_token = GetDefaultNigoriKey();
   if (unencrypted_token.empty())
     return false;
 
@@ -324,11 +324,7 @@ bool Cryptographer::KeybagIsStale(
   return false;
 }
 
-std::string Cryptographer::GetDefaultNigoriKeyName() const {
-  return default_nigori_name_;
-}
-
-std::string Cryptographer::GetDefaultNigoriKeyData() const {
+std::string Cryptographer::GetDefaultNigoriKey() const {
   if (!is_initialized())
     return std::string();
   NigoriMap::const_iterator iter = nigoris_.find(default_nigori_name_);

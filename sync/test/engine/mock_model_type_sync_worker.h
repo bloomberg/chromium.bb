@@ -57,11 +57,6 @@ class MockModelTypeSyncWorker : public ModelTypeSyncWorker {
   CommitResponseData SuccessfulCommitResponse(
       const CommitRequestData& request_data);
 
-  // Sets the encryption key name used for updates from the server.
-  // (ie. the key other clients are using to encrypt their commits.)
-  // The default value is an empty string, which indicates no encryption.
-  void SetServerEncryptionKey(const std::string& key_name);
-
  private:
   // Generate an ID string.
   static std::string GenerateId(const std::string& tag_hash);
@@ -76,9 +71,6 @@ class MockModelTypeSyncWorker : public ModelTypeSyncWorker {
   // Map of versions by client tag.
   // This is an essential part of the mocked server state.
   std::map<const std::string, int64> server_versions_;
-
-  // Name of the encryption key in use on other clients.
-  std::string server_encryption_key_name_;
 
   DISALLOW_COPY_AND_ASSIGN(MockModelTypeSyncWorker);
 };

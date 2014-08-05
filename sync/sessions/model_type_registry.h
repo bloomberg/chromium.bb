@@ -12,11 +12,9 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "sync/base/sync_export.h"
-#include "sync/engine/directory_cryptographer_provider.h"
 #include "sync/engine/nudge_handler.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
-#include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/internal_api/public/sessions/type_debug_info_observer.h"
 #include "sync/internal_api/public/sync_context.h"
 
@@ -33,6 +31,7 @@ class DirectoryTypeDebugInfoEmitter;
 class ModelTypeSyncWorkerImpl;
 class ModelTypeSyncProxyImpl;
 class UpdateHandler;
+struct DataTypeState;
 
 typedef std::map<ModelType, UpdateHandler*> UpdateHandlerMap;
 typedef std::map<ModelType, CommitContributor*> CommitContributorMap;
@@ -58,7 +57,6 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry : public SyncContext {
   virtual void ConnectSyncTypeToWorker(
       syncer::ModelType type,
       const DataTypeState& data_type_state,
-      const syncer::UpdateResponseDataList& saved_pending_updates,
       const scoped_refptr<base::SequencedTaskRunner>& type_task_runner,
       const base::WeakPtr<ModelTypeSyncProxyImpl>& proxy) OVERRIDE;
 
@@ -113,9 +111,6 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry : public SyncContext {
 
   // The directory.  Not owned.
   syncable::Directory* directory_;
-
-  // Provides access to the Directory's cryptographer.
-  DirectoryCryptographerProvider cryptographer_provider_;
 
   // The NudgeHandler.  Not owned.
   NudgeHandler* nudge_handler_;

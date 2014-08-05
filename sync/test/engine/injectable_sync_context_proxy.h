@@ -6,7 +6,6 @@
 #define SYNC_TEST_ENGINE_INJECTABLE_SYNC_CONTEXT_PROXY_H_
 
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/internal_api/public/sync_context_proxy.h"
 
 namespace syncer {
@@ -25,7 +24,6 @@ class InjectableSyncContextProxy : public syncer::SyncContextProxy {
   virtual void ConnectTypeToSync(
       syncer::ModelType type,
       const DataTypeState& data_type_state,
-      const UpdateResponseDataList& pending_updates,
       const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& type_sync_proxy)
       OVERRIDE;
   virtual void Disconnect(syncer::ModelType type) OVERRIDE;

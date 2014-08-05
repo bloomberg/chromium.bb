@@ -6,7 +6,6 @@
 #define SYNC_INTERNAL_API_PUBLIC_TEST_NULL_SYNC_CONTEXT_PROXY_H_
 
 #include "base/memory/weak_ptr.h"
-#include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/internal_api/public/sync_context_proxy.h"
 
 namespace syncer {
@@ -24,7 +23,6 @@ class NullSyncContextProxy : public SyncContextProxy {
   virtual void ConnectTypeToSync(
       syncer::ModelType type,
       const DataTypeState& data_type_state,
-      const UpdateResponseDataList& saved_pending_updates,
       const base::WeakPtr<ModelTypeSyncProxyImpl>& type_sync_proxy) OVERRIDE;
   virtual void Disconnect(syncer::ModelType type) OVERRIDE;
   virtual scoped_ptr<SyncContextProxy> Clone() const OVERRIDE;

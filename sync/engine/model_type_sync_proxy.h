@@ -21,8 +21,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxy {
       const CommitResponseDataList& response_list) = 0;
   virtual void OnUpdateReceived(
       const DataTypeState& type_state,
-      const UpdateResponseDataList& response_list,
-      const UpdateResponseDataList& pending_updates) = 0;
+      const UpdateResponseDataList& response_list) = 0;
 };
 
 }  // namespace syncer

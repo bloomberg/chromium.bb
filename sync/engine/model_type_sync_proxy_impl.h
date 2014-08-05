@@ -73,16 +73,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
   // Informs this object that there are some incoming updates is should
   // handle.
   void OnUpdateReceived(const DataTypeState& type_state,
-                        const UpdateResponseDataList& response_list,
-                        const UpdateResponseDataList& pending_updates);
-
-  // Returns the list of pending updates.
-  //
-  // This is used as a helper function, but it's public mainly for testing.
-  // The current test harness setup doesn't allow us to test the data that the
-  // proxy sends to the worker during initialization, so we use this to inspect
-  // its state instead.
-  UpdateResponseDataList GetPendingUpdates();
+                        const UpdateResponseDataList& response_list);
 
   // Returns the long-lived WeakPtr that is intended to be registered with the
   // ProfileSyncService.
@@ -90,7 +81,6 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
 
  private:
   typedef std::map<std::string, ModelTypeEntity*> EntityMap;
-  typedef std::map<std::string, UpdateResponseData*> UpdateMap;
 
   // Sends all commit requests that are due to be sent to the sync thread.
   void FlushPendingCommitRequests();
@@ -132,12 +122,6 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
   // The set of sync entities known to this object.
   EntityMap entities_;
   STLValueDeleter<EntityMap> entities_deleter_;
-
-  // A set of updates that can not be applied at this time.  These are never
-  // used by the model.  They are kept here only so we can save and restore
-  // them across restarts, and keep them in sync with our progress markers.
-  UpdateMap pending_updates_map_;
-  STLValueDeleter<UpdateMap> pending_updates_map_deleter_;
 
   // We use two different WeakPtrFactories because we want the pointers they
   // issue to have different lifetimes.  When asked to disconnect from the sync
