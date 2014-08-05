@@ -33,9 +33,15 @@ except ImportError:
     print "ERROR: Add the TestResultServer, google_appengine and yaml/lib directories to your PYTHONPATH"
     raise
 
+import master_config
+
 import json
 import logging
 import unittest
+
+from google.appengine.ext import blobstore
+from google.appengine.ext import db
+from google.appengine.ext import testbed
 
 FULL_RESULT_EXAMPLE = """ADD_RESULTS({
     "seconds_since_epoch": 1368146629,
@@ -1087,6 +1093,74 @@ class JsonResultsTest(unittest.TestCase):
                            "times": [[10, 0]]},
                        },
              "version": 4})
+
+    def test_deprecated_master_name(self):
+        tb = testbed.Testbed()
+        tb.activate()
+        tb.init_datastore_v3_stub()
+        tb.init_blobstore_stub()
+
+        master = master_config.getMaster('chromium.chromiumos')
+        builder = 'test-builder'
+        test_type = 'test-type'
+
+        test_data = [
+            {
+                'tests': {
+                    'Test1.testproc1': {
+                        'expected': 'PASS',
+                        'actual': 'PASS',
+                        'time': 1,
+                    }
+                },
+                'build_number': '123',
+                'version': JSON_RESULTS_HIERARCHICAL_VERSION,
+                'builder_name': builder,
+                'blink_revision': '12345',
+                'seconds_since_epoch': 1406123456,
+                'num_failures_by_type': {
+                    'FAIL': 0,
+                    'SKIP': 0,
+                    'PASS': 1
+                },
+                'chromium_revision': '67890',
+            },
+            {
+                'tests': {
+                    'Test2.testproc2': {
+                        'expected': 'PASS',
+                        'actual': 'FAIL',
+                        'time': 2,
+                    }
+                },
+                'build_number': '456',
+                'version': JSON_RESULTS_HIERARCHICAL_VERSION,
+                'builder_name': builder,
+                'blink_revision': '54321',
+                'seconds_since_epoch': 1406654321,
+                'num_failures_by_type': {
+                    'FAIL': 1,
+                    'SKIP': 0,
+                    'PASS': 0
+                },
+                'chromium_revision': '98765',
+            },
+        ]
+
+        # Upload a file using old master name
+
+        # Seed results files using the old name.
+        JsonResults.update(master['name'], builder, test_type, test_data[0], None, True)
+        # Update results files using the new name.
+        JsonResults.update(master['url_name'], builder, test_type, test_data[1], master['name'], True)
+        # Verify that the file keyed by url_name contains both sets of results.
+        files = TestFile.get_files(master['url_name'], builder, test_type, None, None, limit=3)
+        self.assertEqual(len(files), 2)
+        for f in files:
+            j = json.loads(f.data)
+            self.assertItemsEqual(j[builder]['blinkRevision'], ['12345', '54321'])
+
+        tb.deactivate()
 
 if __name__ == '__main__':
     unittest.main()

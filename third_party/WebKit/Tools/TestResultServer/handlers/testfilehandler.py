@@ -36,6 +36,8 @@ from google.appengine.api import users
 from google.appengine.ext.webapp import template
 from google.appengine.ext import db
 
+import master_config
+
 from model.jsonresults import JsonResults
 from model.testfile import TestFile
 
@@ -67,6 +69,8 @@ class DeleteFile(webapp2.RequestHandler):
 
     def get(self):
         key = self.request.get(PARAM_KEY)
+        # Intentionally don't munge the master from deprecated names here.
+        # Assume anyone deleting files wants explicit control.
         master = self.request.get(PARAM_MASTER)
         builder = self.request.get(PARAM_BUILDER)
         test_type = self.request.get(PARAM_TEST_TYPE)
@@ -208,7 +212,16 @@ class GetFile(webapp2.RequestHandler):
             self._get_file_list(master, builder, test_type, build_number, name, before, limit, callback_name)
             return
         else:
-            json, date = self._get_file_content(master, builder, test_type, build_number, name)
+            # FIXME: Stop using the old master name style after all files have been updated.
+            master_data = master_config.getMaster(master)
+            if not master_data:
+                master_data = master_config.getMasterByMasterName(master)
+            if not master_data:
+                self.error(404)
+                return
+            json, date = self._get_file_content(master_data['url_name'], builder, test_type, build_number, name)
+            if json is None:
+                json_date = self._get_file_content(master_data['name'], builder, test_type, build_number, name)
 
         if json:
             json = _replace_jsonp_callback(json, callback_name)
@@ -230,7 +243,15 @@ class Upload(webapp2.RequestHandler):
             self.response.out.write("FAIL: missing builder parameter.")
             return
 
-        master = self.request.get(PARAM_MASTER)
+        master_parameter = self.request.get(PARAM_MASTER)
+
+        master_data = master_config.getMasterByMasterName(master_parameter)
+        if master_data:
+            deprecated_master = master_parameter
+            master = master_data['url_name']
+        else:
+            master = master_parameter
+
         test_type = self.request.get(PARAM_TEST_TYPE)
 
         logging.debug(
@@ -255,7 +276,8 @@ class Upload(webapp2.RequestHandler):
                 # FIXME: Ferret out and eliminate remaining incremental_results.json producers.
                 logging.info("incremental_results.json received from master: %s, builder: %s, test_type: %s.",
                              master, builder, test_type)
-                status_string, status_code = JsonResults.update(master, builder, test_type, file_json, is_full_results_format=False)
+                status_string, status_code = JsonResults.update(master, builder, test_type, file_json,
+                    deprecated_master=deprecated_master, is_full_results_format=False)
             else:
                 try:
                     build_number = int(file_json.get('build_number', 0))
@@ -272,7 +294,8 @@ class Upload(webapp2.RequestHandler):
                     final_status_code = status_code
 
             if status_code == 200 and file.filename == "full_results.json":
-                status_string, status_code = JsonResults.update(master, builder, test_type, file_json, is_full_results_format=True)
+                status_string, status_code = JsonResults.update(master, builder, test_type, file_json,
+                    deprecated_master=deprecated_master, is_full_results_format=True)
 
             if status_code == 200:
                 logging.info(status_string)

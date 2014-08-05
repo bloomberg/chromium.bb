@@ -456,10 +456,18 @@ class JsonResults(object):
         return cls._generate_file_data(aggregated_json, sort_keys), 200
 
     @classmethod
-    def _get_aggregate_file(cls, master, builder, test_type, filename):
+    def _get_aggregate_file(cls, master, builder, test_type, filename, deprecated_master):
         files = TestFile.get_files(master, builder, test_type, None, filename)
         if files:
             return files[0]
+
+        if deprecated_master:
+            files = TestFile.get_files(deprecated_master, builder, test_type, None, filename)
+            if files:
+                deprecated_file = files[0]
+                # Change the master so it gets saved out with the new master name.
+                deprecated_file.master = master
+                return deprecated_file
 
         file = TestFile()
         file.master = master
@@ -471,10 +479,10 @@ class JsonResults(object):
         return file
 
     @classmethod
-    def update(cls, master, builder, test_type, results_json, is_full_results_format):
+    def update(cls, master, builder, test_type, results_json, deprecated_master, is_full_results_format):
         logging.info("Updating %s and %s." % (JSON_RESULTS_FILE_SMALL, JSON_RESULTS_FILE))
-        small_file = cls._get_aggregate_file(master, builder, test_type, JSON_RESULTS_FILE_SMALL)
-        large_file = cls._get_aggregate_file(master, builder, test_type, JSON_RESULTS_FILE)
+        small_file = cls._get_aggregate_file(master, builder, test_type, JSON_RESULTS_FILE_SMALL, deprecated_master)
+        large_file = cls._get_aggregate_file(master, builder, test_type, JSON_RESULTS_FILE, deprecated_master)
         return cls.update_files(builder, results_json, small_file, large_file, is_full_results_format)
 
     @classmethod

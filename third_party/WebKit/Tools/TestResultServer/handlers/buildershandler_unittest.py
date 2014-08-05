@@ -80,7 +80,7 @@ class BuildersHandlerTest(unittest.TestCase):
                 {'name': 'ChromiumWebkit', 'url_name': 'chromium.webkit'},
             ]
 
-            buildbot_data = buildershandler.fetch_buildbot_data(masters)
+            buildbot_data = buildershandler.fetch_buildbot_data([m['url_name'] for m in masters])
 
             expected_fetched_urls = [
                 'http://chrome-build-extract.appspot.com/get_master/chromium.webkit',
@@ -99,6 +99,7 @@ class BuildersHandlerTest(unittest.TestCase):
                         'layout-tests': {'builders': ['WebKit Linux', 'WebKit Win']}},
                     'name': 'ChromiumWebkit',
                     'url_name': 'chromium.webkit',
+                    'groups': ['@ToT Chromium'],
                 }],
                 "no_upload_test_types": buildershandler.TEST_STEPS_THAT_DO_NOT_UPLOAD_YET,
             }
@@ -158,7 +159,7 @@ class BuildersHandlerTest(unittest.TestCase):
                 'http://chrome-build-extract.appspot.com/get_builds?builder=Win%20Empty&master=chromium.gpu&num_builds=1',
             ]
             with self.assertRaises(buildershandler.FetchBuildersException):
-                buildbot_data = buildershandler.fetch_buildbot_data(masters)
+                buildbot_data = buildershandler.fetch_buildbot_data([m['url_name'] for m in masters])
             self.assertEqual(set(expected_fetched_urls), set(fetched_urls))
 
         finally:

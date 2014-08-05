@@ -37,18 +37,7 @@ import webapp2
 
 from google.appengine.api import memcache
 
-MASTERS = [
-    {'name': 'ChromiumWin', 'url_name': 'chromium.win', 'groups': ['@ToT Chromium']},
-    {'name': 'ChromiumMac', 'url_name': 'chromium.mac', 'groups': ['@ToT Chromium']},
-    {'name': 'ChromiumLinux', 'url_name': 'chromium.linux', 'groups': ['@ToT Chromium']},
-    {'name': 'ChromiumChromiumOS', 'url_name': 'chromium.chromiumos', 'groups': ['@ToT ChromeOS']},
-    {'name': 'ChromiumGPU', 'url_name': 'chromium.gpu', 'groups': ['@ToT Chromium']},
-    {'name': 'ChromiumGPUFYI', 'url_name': 'chromium.gpu.fyi', 'groups': ['@ToT Chromium FYI']},
-    {'name': 'ChromiumWebkit', 'url_name': 'chromium.webkit', 'groups': ['@ToT Chromium', '@ToT Blink']},
-    {'name': 'ChromiumFYI', 'url_name': 'chromium.fyi', 'groups': ['@ToT Chromium FYI']},
-    {'name': 'GpuTryServer', 'url_name': 'tryserver.chromium.gpu', 'groups': ['TryServers']},
-    {'name': 'V8', 'url_name': 'client.v8', 'groups': ['@ToT V8']},
-]
+import master_config
 
 # Buildbot steps that have test in the name, but don't run tests.
 NON_TEST_STEP_NAMES = [
@@ -78,8 +67,8 @@ TEST_STEPS_THAT_DO_NOT_UPLOAD_YET = [
     'webkit_unit_tests',
 ]
 
-BUILDS_URL = 'http://chrome-build-extract.appspot.com/get_builds?builder=%s&master=%s&num_builds=1'
-MASTER_URL = 'http://chrome-build-extract.appspot.com/get_master/%s'
+BUILDS_URL_TEMPLATE = 'http://chrome-build-extract.appspot.com/get_builds?builder=%s&master=%s&num_builds=1'
+MASTER_URL_TEMPLATE = 'http://chrome-build-extract.appspot.com/get_master/%s'
 
 
 class FetchBuildersException(Exception):
@@ -109,27 +98,34 @@ def dump_json(data):
     return json.dumps(data, separators=(',', ':'), sort_keys=True)
 
 
-def fetch_buildbot_data(masters):
+def fetch_buildbot_data(masters=None):
     start_time = datetime.datetime.now()
-    master_data = masters[:]
-    for master in master_data:
-        master_url = MASTER_URL % master['url_name']
+    all_masters_data = []
+    if masters:
+        masters = [master_config.getMaster(m) for m in masters]
+    else:
+        masters = master_config.getAllMasters()
+
+    for master_data in masters:
+        all_masters_data.append(master_data)
+        url_name = master_data['url_name']
+        master_url = MASTER_URL_TEMPLATE % url_name
         builders = fetch_json(master_url)
         if not builders:
-            msg = 'Aborting fetch. Could not fetch builders from master "%s": %s.' % (master['name'], master_url)
+            msg = 'Aborting fetch. Could not fetch builders from %s' % master_url
             logging.warning(msg)
             raise FetchBuildersException(msg)
 
-        tests_object = master.setdefault('tests', {})
+        tests_object = master_data.setdefault('tests', {})
 
         for builder in builders['builders'].keys():
-            build = fetch_json(BUILDS_URL % (urllib2.quote(builder), master['url_name']))
+            build = fetch_json(BUILDS_URL_TEMPLATE % (urllib2.quote(builder), url_name))
             if not build:
-                logging.info('Skipping builder %s on master %s due to empty data.', builder, master['url_name'])
+                logging.info('Skipping builder %s on master %s due to empty data.', builder, url_name)
                 continue
 
             if not build['builds']:
-                logging.info('Skipping builder %s on master %s due to empty builds list.', builder, master['url_name'])
+                logging.info('Skipping builder %s on master %s due to empty builds list.', builder, url_name)
                 continue
 
             for step in build['builds'][0]['steps']:
@@ -153,7 +149,7 @@ def fetch_buildbot_data(masters):
         for builders in tests_object.values():
             builders['builders'].sort()
 
-    output_data = {'masters': master_data, 'no_upload_test_types': TEST_STEPS_THAT_DO_NOT_UPLOAD_YET}
+    output_data = {'masters': all_masters_data, 'no_upload_test_types': TEST_STEPS_THAT_DO_NOT_UPLOAD_YET}
 
     delta = datetime.datetime.now() - start_time
 
@@ -166,7 +162,7 @@ class UpdateBuilders(webapp2.RequestHandler):
     """Fetch and update the cached buildbot data."""
     def get(self):
         try:
-            buildbot_data = fetch_buildbot_data(MASTERS)
+            buildbot_data = fetch_buildbot_data()
             memcache.set('buildbot_data', buildbot_data)
             self.response.set_status(200)
             self.response.out.write("ok")
@@ -184,7 +180,7 @@ class GetBuilders(webapp2.RequestHandler):
         if not buildbot_data:
             logging.warning('No buildbot data in memcache. If this message repeats, something is probably wrong with memcache.')
             try:
-                buildbot_data = fetch_buildbot_data(MASTERS)
+                buildbot_data = fetch_buildbot_data()
                 memcache.set('buildbot_data', buildbot_data)
             except FetchBuildersException, ex:
                 logging.error('Builders fetch failed: %s', str(ex))
