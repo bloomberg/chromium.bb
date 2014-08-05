@@ -69,8 +69,6 @@ per-file history.gypi=brettw@chromium.org
 per-file history.gypi=sky@chromium.org
 # Temporary for the duration of the history componentization.
 per-file history.gypi=blundell@chromium.org
-# Temporary for the duration of the history componentization.
-per-file history.gypi=sdefresne@chromium.org
 
 per-file infobars.gypi=pkasting@chromium.org
 
