@@ -14,10 +14,6 @@ per-file breakpad.gypi=thestig@chromium.org
 
 per-file bookmarks.gypi=brettw@chromium.org
 per-file bookmarks.gypi=sky@chromium.org
-# Temporary for the duration of the bookmarks componentization.
-per-file bookmarks.gypi=blundell@chromium.org
-# Temporary for the duration of the bookmarks componentization.
-per-file bookmarks.gypi=sdefresne@chromium.org
 
 per-file data_reduction_proxy*=bengr@chromium.org
 per-file data_reduction_proxy*=marq@chromium.org
