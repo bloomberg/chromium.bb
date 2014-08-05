@@ -3315,7 +3315,7 @@ void EventHandler::defaultSpaceEventHandler(KeyboardEvent* event)
 {
     ASSERT(event->type() == EventTypeNames::keypress);
 
-    if (event->ctrlKey() || event->metaKey() || event->altKey() || event->altGraphKey())
+    if (event->ctrlKey() || event->metaKey() || event->altKey())
         return;
 
     ScrollDirection direction = event->shiftKey() ? ScrollBlockDirectionBackward : ScrollBlockDirectionForward;
@@ -3336,7 +3336,7 @@ void EventHandler::defaultBackspaceEventHandler(KeyboardEvent* event)
 {
     ASSERT(event->type() == EventTypeNames::keydown);
 
-    if (event->ctrlKey() || event->metaKey() || event->altKey() || event->altGraphKey())
+    if (event->ctrlKey() || event->metaKey() || event->altKey())
         return;
 
     if (!m_frame->editor().behavior().shouldNavigateBackOnBackspace())
@@ -3354,7 +3354,7 @@ void EventHandler::defaultArrowEventHandler(FocusType focusType, KeyboardEvent* 
 {
     ASSERT(event->type() == EventTypeNames::keydown);
 
-    if (event->ctrlKey() || event->metaKey() || event->altGraphKey() || event->shiftKey())
+    if (event->ctrlKey() || event->metaKey() || event->shiftKey())
         return;
 
     Page* page = m_frame->page();
@@ -3378,7 +3378,7 @@ void EventHandler::defaultTabEventHandler(KeyboardEvent* event)
     ASSERT(event->type() == EventTypeNames::keydown);
 
     // We should only advance focus on tabs if no special modifier keys are held down.
-    if (event->ctrlKey() || event->metaKey() || event->altGraphKey())
+    if (event->ctrlKey() || event->metaKey())
         return;
 
     Page* page = m_frame->page();

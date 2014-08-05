@@ -44,8 +44,6 @@ shouldBe("testInitEvent('Keyboard', '\"a\", false, true, window, \"b\", 1001, fa
 shouldBe("testInitEvent('Keyboard', '\"a\", false, true, window, \"b\", 1001, false, false, true, false, false').shiftKey", "true");
 shouldBe("testInitEvent('Keyboard', '\"a\", false, true, window, \"b\", 1001, false, false, false, false, false').metaKey", "false");
 shouldBe("testInitEvent('Keyboard', '\"a\", false, true, window, \"b\", 1001, false, false, false, true, false').metaKey", "true");
-shouldBe("testInitEvent('Keyboard', '\"a\", false, true, window, \"b\", 1001, false, false, false, false, false').altGraphKey", "false");
-shouldBe("testInitEvent('Keyboard', '\"a\", false, true, window, \"b\", 1001, false, false, false, false, true').altGraphKey", "true");
 shouldBe("testInitEvent('Keyboard', '\"a\", false, true, window, \"b\", 1001, false, false, false, false, true').detail", "0");
 shouldBe("testInitEvent('Keyboard', '\"a\", false, true, window, \"b\", 1001, false, false, false, false, false').keyCode", "0");
 shouldBe("testInitEvent('Keyboard', '\"a\", false, true, window, \"b\", 1001, false, false, false, false, false').charCode", "0");

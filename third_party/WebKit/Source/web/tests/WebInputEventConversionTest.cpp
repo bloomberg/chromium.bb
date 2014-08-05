@@ -57,7 +57,7 @@ namespace {
 
 PassRefPtrWillBeRawPtr<blink::KeyboardEvent> createKeyboardEventWithLocation(blink::KeyboardEvent::KeyLocationCode location)
 {
-    return blink::KeyboardEvent::create("keydown", true, true, 0, "", location, false, false, false, false, false);
+    return blink::KeyboardEvent::create("keydown", true, true, 0, "", location, false, false, false, false);
 }
 
 int getModifiersForKeyLocationCode(blink::KeyboardEvent::KeyLocationCode location)

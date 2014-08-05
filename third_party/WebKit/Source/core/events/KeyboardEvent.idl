@@ -34,7 +34,6 @@
     [InitializedByEventConstructor] readonly attribute boolean          altKey;
     [InitializedByEventConstructor] readonly attribute boolean          metaKey;
     [InitializedByEventConstructor] readonly attribute boolean          repeat;
-    readonly attribute boolean          altGraphKey;
 
     boolean getModifierState(DOMString keyArgument);
 
@@ -48,7 +47,6 @@
                            [Default=Undefined] optional boolean ctrlKey,
                            [Default=Undefined] optional boolean altKey,
                            [Default=Undefined] optional boolean shiftKey,
-                           [Default=Undefined] optional boolean metaKey,
-                           [Default=Undefined] optional boolean altGraphKey);
+                           [Default=Undefined] optional boolean metaKey);
 };
 

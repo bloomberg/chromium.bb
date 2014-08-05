@@ -71,24 +71,22 @@ public:
 
     static PassRefPtrWillBeRawPtr<KeyboardEvent> create(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view,
         const String& keyIdentifier, unsigned location,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool altGraphKey)
+        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
     {
         return adoptRefWillBeNoop(new KeyboardEvent(type, canBubble, cancelable, view, keyIdentifier, location,
-        ctrlKey, altKey, shiftKey, metaKey, altGraphKey));
+        ctrlKey, altKey, shiftKey, metaKey));
     }
 
     virtual ~KeyboardEvent();
 
     void initKeyboardEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView*,
         const String& keyIdentifier, unsigned location,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool altGraphKey = false);
+        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey);
 
     const String& keyIdentifier() const { return m_keyIdentifier; }
     unsigned location() const { return m_location; }
 
     bool getModifierState(const String& keyIdentifier) const;
-
-    bool altGraphKey() const { return m_altGraphKey; }
 
     const PlatformKeyboardEvent* keyEvent() const { return m_keyEvent.get(); }
 
@@ -108,12 +106,11 @@ private:
     KeyboardEvent(const AtomicString&, const KeyboardEventInit&);
     KeyboardEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView*,
         const String& keyIdentifier, unsigned location,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool altGraphKey);
+        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey);
 
     OwnPtr<PlatformKeyboardEvent> m_keyEvent;
     String m_keyIdentifier;
     unsigned m_location;
-    bool m_altGraphKey : 1;
     bool m_isAutoRepeat : 1;
 };
 

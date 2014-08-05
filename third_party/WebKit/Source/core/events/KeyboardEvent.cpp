@@ -97,7 +97,6 @@ KeyboardEventInit::KeyboardEventInit()
 
 KeyboardEvent::KeyboardEvent()
     : m_location(DOM_KEY_LOCATION_STANDARD)
-    , m_altGraphKey(false)
     , m_isAutoRepeat(false)
 {
     ScriptWrappable::init(this);
@@ -109,7 +108,6 @@ KeyboardEvent::KeyboardEvent(const PlatformKeyboardEvent& key, AbstractView* vie
     , m_keyEvent(adoptPtr(new PlatformKeyboardEvent(key)))
     , m_keyIdentifier(key.keyIdentifier())
     , m_location(keyLocationCode(key))
-    , m_altGraphKey(false)
     , m_isAutoRepeat(key.isAutoRepeat())
 {
     ScriptWrappable::init(this);
@@ -119,7 +117,6 @@ KeyboardEvent::KeyboardEvent(const AtomicString& eventType, const KeyboardEventI
     : UIEventWithKeyState(eventType, initializer.bubbles, initializer.cancelable, initializer.view, initializer.detail, initializer.ctrlKey, initializer.altKey, initializer.shiftKey, initializer.metaKey)
     , m_keyIdentifier(initializer.keyIdentifier)
     , m_location(initializer.location)
-    , m_altGraphKey(false)
     , m_isAutoRepeat(initializer.repeat)
 {
     ScriptWrappable::init(this);
@@ -127,11 +124,10 @@ KeyboardEvent::KeyboardEvent(const AtomicString& eventType, const KeyboardEventI
 
 KeyboardEvent::KeyboardEvent(const AtomicString& eventType, bool canBubble, bool cancelable, AbstractView *view,
                              const String &keyIdentifier,  unsigned location,
-                             bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool altGraphKey)
+                             bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
     : UIEventWithKeyState(eventType, canBubble, cancelable, view, 0, ctrlKey, altKey, shiftKey, metaKey)
     , m_keyIdentifier(keyIdentifier)
     , m_location(location)
-    , m_altGraphKey(altGraphKey)
     , m_isAutoRepeat(false)
 {
     ScriptWrappable::init(this);
@@ -143,7 +139,7 @@ KeyboardEvent::~KeyboardEvent()
 
 void KeyboardEvent::initKeyboardEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view,
                                       const String &keyIdentifier, unsigned location,
-                                      bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool altGraphKey)
+                                      bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
 {
     if (dispatched())
         return;
@@ -156,7 +152,6 @@ void KeyboardEvent::initKeyboardEvent(const AtomicString& type, bool canBubble, 
     m_shiftKey = shiftKey;
     m_altKey = altKey;
     m_metaKey = metaKey;
-    m_altGraphKey = altGraphKey;
 }
 
 bool KeyboardEvent::getModifierState(const String& keyIdentifier) const
