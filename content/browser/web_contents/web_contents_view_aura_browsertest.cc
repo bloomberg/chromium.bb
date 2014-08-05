@@ -383,9 +383,15 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 //  - interactively, when user does an overscroll gesture
 //  - interactively, when user navigates in history without the overscroll
 //    gesture.
-// Flaky (http://crbug.com/357311). Might be related to
+// Flaky on Windows (http://crbug.com/357311). Might be related to
 // OverscrollNavigation test.
-IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, DISABLED_OverscrollScreenshot) {
+// Flaky on Ozone (http://crbug.com/399676).
+#if defined(OS_WIN) || defined(USE_OZONE)
+#define MAYBE_OverscrollScreenshot DISABLED_OverscrollScreenshot
+#else
+#define MAYBE_OverscrollScreenshot OverscrollScreenshot
+#endif
+IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_OverscrollScreenshot) {
   // Disable the test for WinXP.  See http://crbug/294116.
 #if defined(OS_WIN)
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
