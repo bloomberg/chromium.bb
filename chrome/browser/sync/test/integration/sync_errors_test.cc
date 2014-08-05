@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(LegacySyncErrorTest, DISABLED_ErrorWhileSettingUp) {
 }
 
 IN_PROC_BROWSER_TEST_F(LegacySyncErrorTest,
-    BirthdayErrorUsingActionableErrorTest) {
+    DISABLED_BirthdayErrorUsingActionableErrorTest) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   const BookmarkNode* node1 = AddFolder(0, 0, "title1");
