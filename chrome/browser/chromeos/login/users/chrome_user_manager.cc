@@ -198,9 +198,9 @@ user_manager::UserList ChromeUserManager::GetUsersAdmittedForMultiProfile()
        ++it) {
     if ((*it)->GetType() == user_manager::USER_TYPE_REGULAR &&
         !(*it)->is_logged_in()) {
-      MultiProfileUserController::UserAllowedInSessionResult check =
-          multi_profile_user_controller_->IsUserAllowedInSession(
-              (*it)->email());
+      MultiProfileUserController::UserAllowedInSessionReason check;
+      multi_profile_user_controller_->IsUserAllowedInSession((*it)->email(),
+                                                             &check);
       if (check ==
           MultiProfileUserController::NOT_ALLOWED_PRIMARY_USER_POLICY_FORBIDS) {
         return user_manager::UserList();

@@ -28,12 +28,19 @@ namespace {
 std::string SanitizeBehaviorValue(const std::string& value) {
   if (value == MultiProfileUserController::kBehaviorUnrestricted ||
       value == MultiProfileUserController::kBehaviorPrimaryOnly ||
-      value == MultiProfileUserController::kBehaviorNotAllowed ||
-      value == MultiProfileUserController::kBehaviorOwnerPrimaryOnly) {
+      value == MultiProfileUserController::kBehaviorNotAllowed) {
     return value;
   }
 
   return std::string(MultiProfileUserController::kBehaviorUnrestricted);
+}
+
+bool SetUserAllowedReason(
+    MultiProfileUserController::UserAllowedInSessionReason* reason,
+    MultiProfileUserController::UserAllowedInSessionReason value) {
+  if (reason)
+    *reason = value;
+  return value == MultiProfileUserController::ALLOWED;
 }
 
 }  // namespace
@@ -80,9 +87,9 @@ void MultiProfileUserController::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
-MultiProfileUserController::UserAllowedInSessionResult
-MultiProfileUserController::IsUserAllowedInSession(
-    const std::string& user_email) const {
+bool MultiProfileUserController::IsUserAllowedInSession(
+    const std::string& user_email,
+    MultiProfileUserController::UserAllowedInSessionReason* reason) const {
   UserManager* user_manager = UserManager::Get();
   CHECK(user_manager);
 
@@ -94,16 +101,16 @@ MultiProfileUserController::IsUserAllowedInSession(
   // Always allow if there is no primary user or user being checked is the
   // primary user.
   if (primary_user_email.empty() || primary_user_email == user_email)
-    return ALLOWED;
+    return SetUserAllowedReason(reason, ALLOWED);
 
   // Owner is not allowed to be secondary user.
   if (user_manager->GetOwnerEmail() == user_email)
-    return NOT_ALLOWED_OWNER_AS_SECONDARY;
+    return SetUserAllowedReason(reason, NOT_ALLOWED_OWNER_AS_SECONDARY);
 
   // Don't allow profiles potentially tainted by data fetched with policy-pushed
   // certificates to join a multiprofile session.
   if (policy::PolicyCertServiceFactory::UsedPolicyCertificates(user_email))
-    return NOT_ALLOWED_POLICY_CERT_TAINTED;
+    return SetUserAllowedReason(reason, NOT_ALLOWED_POLICY_CERT_TAINTED);
 
   // Don't allow any secondary profiles if the primary profile is tainted.
   if (policy::PolicyCertServiceFactory::UsedPolicyCertificates(
@@ -111,7 +118,8 @@ MultiProfileUserController::IsUserAllowedInSession(
     // Check directly in local_state before checking if the primary user has
     // a PolicyCertService. His profile may have been tainted previously though
     // he didn't get a PolicyCertService created for this session.
-    return NOT_ALLOWED_PRIMARY_POLICY_CERT_TAINTED;
+    return SetUserAllowedReason(reason,
+                                NOT_ALLOWED_PRIMARY_POLICY_CERT_TAINTED);
   }
 
   // If the primary profile already has policy certificates installed but hasn't
@@ -125,19 +133,22 @@ MultiProfileUserController::IsUserAllowedInSession(
                                  primary_user_profile)
                            : NULL;
   if (service && service->has_policy_certificates())
-    return NOT_ALLOWED_PRIMARY_POLICY_CERT_TAINTED;
+    return SetUserAllowedReason(reason,
+                                NOT_ALLOWED_PRIMARY_POLICY_CERT_TAINTED);
 
   // No user is allowed if the primary user policy forbids it.
   const std::string primary_user_behavior =
       primary_user_profile->GetPrefs()->GetString(
           prefs::kMultiProfileUserBehavior);
   if (primary_user_behavior == kBehaviorNotAllowed)
-    return NOT_ALLOWED_PRIMARY_USER_POLICY_FORBIDS;
+    return SetUserAllowedReason(reason,
+                                NOT_ALLOWED_PRIMARY_USER_POLICY_FORBIDS);
 
   // The user must have 'unrestricted' policy to be a secondary user.
   const std::string behavior = GetCachedValue(user_email);
-  return behavior == kBehaviorUnrestricted ? ALLOWED :
-                                             NOT_ALLOWED_POLICY_FORBIDS;
+  return SetUserAllowedReason(
+      reason,
+      behavior == kBehaviorUnrestricted ? ALLOWED : NOT_ALLOWED_POLICY_FORBIDS);
 }
 
 void MultiProfileUserController::StartObserving(Profile* user_profile) {
@@ -173,10 +184,6 @@ std::string MultiProfileUserController::GetCachedValue(
   if (dict && dict->GetStringWithoutPathExpansion(user_email, &value))
     return SanitizeBehaviorValue(value);
 
-  // Owner is not allowed to be secondary user (see http://crbug.com/385034).
-  if (UserManager::Get()->GetOwnerEmail() == user_email)
-    return std::string(kBehaviorOwnerPrimaryOnly);
-
   return std::string(kBehaviorUnrestricted);
 }
 
@@ -194,7 +201,7 @@ void MultiProfileUserController::CheckSessionUsers() {
   for (user_manager::UserList::const_iterator it = users.begin();
        it != users.end();
        ++it) {
-    if (IsUserAllowedInSession((*it)->email()) != ALLOWED) {
+    if (!IsUserAllowedInSession((*it)->email(), NULL)) {
       delegate_->OnUserNotAllowed((*it)->email());
       return;
     }

@@ -88,11 +88,19 @@ void UserSelectionScreen::FillUserDictionary(
   if (is_signin_to_add) {
     MultiProfileUserController* multi_profile_user_controller =
         UserManager::Get()->GetMultiProfileUserController();
-    std::string behavior =
-        multi_profile_user_controller->GetCachedValue(user_id);
-    user_dict->SetBoolean(kKeyMultiProfilesAllowed,
-                          multi_profile_user_controller->IsUserAllowedInSession(
-                              user_id) == MultiProfileUserController::ALLOWED);
+    MultiProfileUserController::UserAllowedInSessionReason isUserAllowedReason;
+    bool isUserAllowed = multi_profile_user_controller->IsUserAllowedInSession(
+        user_id, &isUserAllowedReason);
+    user_dict->SetBoolean(kKeyMultiProfilesAllowed, isUserAllowed);
+
+    std::string behavior;
+    switch (isUserAllowedReason) {
+      case MultiProfileUserController::NOT_ALLOWED_OWNER_AS_SECONDARY:
+        behavior = MultiProfileUserController::kBehaviorOwnerPrimaryOnly;
+        break;
+      default:
+        behavior = multi_profile_user_controller->GetCachedValue(user_id);
+    }
     user_dict->SetString(kKeyMultiProfilesPolicy, behavior);
   } else {
     user_dict->SetBoolean(kKeyMultiProfilesAllowed, true);
