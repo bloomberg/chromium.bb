@@ -30,13 +30,14 @@
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/WTFExport.h"
 
 namespace WTF {
 
 class CString;
 class String;
 
-class PrintStream {
+class WTF_EXPORT PrintStream {
     WTF_MAKE_FAST_ALLOCATED; WTF_MAKE_NONCOPYABLE(PrintStream);
 public:
     PrintStream();
@@ -206,21 +207,21 @@ public:
     }
 };
 
-void printInternal(PrintStream&, const char*);
-void printInternal(PrintStream&, const CString&);
-void printInternal(PrintStream&, const String&);
+WTF_EXPORT void printInternal(PrintStream&, const char*);
+WTF_EXPORT void printInternal(PrintStream&, const CString&);
+WTF_EXPORT void printInternal(PrintStream&, const String&);
 inline void printInternal(PrintStream& out, char* value) { printInternal(out, static_cast<const char*>(value)); }
 inline void printInternal(PrintStream& out, CString& value) { printInternal(out, static_cast<const CString&>(value)); }
 inline void printInternal(PrintStream& out, String& value) { printInternal(out, static_cast<const String&>(value)); }
-void printInternal(PrintStream&, bool);
-void printInternal(PrintStream&, int);
-void printInternal(PrintStream&, unsigned);
-void printInternal(PrintStream&, long);
-void printInternal(PrintStream&, unsigned long);
-void printInternal(PrintStream&, long long);
-void printInternal(PrintStream&, unsigned long long);
-void printInternal(PrintStream&, float);
-void printInternal(PrintStream&, double);
+WTF_EXPORT void printInternal(PrintStream&, bool);
+WTF_EXPORT void printInternal(PrintStream&, int);
+WTF_EXPORT void printInternal(PrintStream&, unsigned);
+WTF_EXPORT void printInternal(PrintStream&, long);
+WTF_EXPORT void printInternal(PrintStream&, unsigned long);
+WTF_EXPORT void printInternal(PrintStream&, long long);
+WTF_EXPORT void printInternal(PrintStream&, unsigned long long);
+WTF_EXPORT void printInternal(PrintStream&, float);
+WTF_EXPORT void printInternal(PrintStream&, double);
 
 template<typename T>
 void printInternal(PrintStream& out, const T& value)
