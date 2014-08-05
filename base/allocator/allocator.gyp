@@ -3,6 +3,16 @@
 # found in the LICENSE file.
 
 {
+  'target_defaults': {
+    'variables': {
+      # This code gets run a lot and debugged rarely, so it should be fast
+      # by default. See http://crbug.com/388949.
+      'debug_optimize': '2',
+      'win_debug_Optimization': '2',
+      # Run time checks are incompatible with any level of optimizations.
+      'win_debug_RuntimeChecks': '0',
+    },
+  },
   'variables': {
     'tcmalloc_dir': '../../third_party/tcmalloc/chromium',
     'use_vtable_verify%': 0,
@@ -306,9 +316,6 @@
             # e.g. for profiling (it's more rare to profile Debug builds,
             # but people sometimes need to do that).
             'disable_debugallocation%': 0,
-            # This code gets run a lot and debugged rarely, so it should be fast
-            # by default. See http://crbug.com/388949.
-            'debug_optimize': 2,
           },
           'conditions': [
             # TODO(phajdan.jr): Also enable on Windows.
