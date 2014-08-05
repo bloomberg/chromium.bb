@@ -513,12 +513,6 @@ void ScriptDebugServer::handleV8AsyncTaskEvent(ScriptDebugListener* listener, Sc
     String name = toCoreStringWithUndefinedOrNullCheck(callInternalGetterFunction(eventData, "name", m_isolate));
     int id = callInternalGetterFunction(eventData, "id", m_isolate)->ToInteger()->Value();
 
-    // FIXME: Remove when not needed.
-    if (name == "Promise.Resolved")
-        name = "Promise.resolve";
-    else if (name == "Promise.Rejected")
-        name = "Promise.reject";
-
     m_pausedScriptState = pausedScriptState;
     m_executionState = executionState;
     listener->didReceiveV8AsyncTaskEvent(pausedScriptState->executionContext(), type, name, id);
