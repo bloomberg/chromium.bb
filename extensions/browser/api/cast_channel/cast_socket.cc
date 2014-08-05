@@ -99,7 +99,11 @@ CastSocket::CastSocket(const std::string& owner_extension_id,
   current_read_buffer_ = header_read_buffer_;
 }
 
-CastSocket::~CastSocket() { }
+CastSocket::~CastSocket() {
+  // Ensure that resources are freed but do not run pending callbacks to avoid
+  // any re-entrancy.
+  CloseInternal();
+}
 
 ReadyState CastSocket::ready_state() const {
   return ready_state_;
@@ -176,19 +180,24 @@ void CastSocket::Connect(const net::CompletionCallback& callback) {
   connect_callback_ = callback;
   connect_state_ = CONN_STATE_TCP_CONNECT;
   if (connect_timeout_.InMicroseconds() > 0) {
-    GetTimer()->Start(
-        FROM_HERE,
-        connect_timeout_,
-        base::Bind(&CastSocket::CancelConnect, AsWeakPtr()));
+    DCHECK(connect_timeout_callback_.IsCancelled());
+    connect_timeout_callback_.Reset(base::Bind(&CastSocket::CancelConnect,
+                                               base::Unretained(this)));
+    GetTimer()->Start(FROM_HERE,
+                      connect_timeout_,
+                      connect_timeout_callback_.callback());
   }
   DoConnectLoop(net::OK);
 }
 
 void CastSocket::PostTaskToStartConnectLoop(int result) {
   DCHECK(CalledOnValidThread());
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&CastSocket::DoConnectLoop, AsWeakPtr(), result));
+  DCHECK(connect_loop_callback_.IsCancelled());
+  connect_loop_callback_.Reset(base::Bind(&CastSocket::DoConnectLoop,
+                                          base::Unretained(this),
+                                          result));
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         connect_loop_callback_.callback());
 }
 
 void CastSocket::CancelConnect() {
@@ -204,6 +213,7 @@ void CastSocket::CancelConnect() {
 // 1. Connect method: this starts the flow
 // 2. Callback from network operations that finish asynchronously
 void CastSocket::DoConnectLoop(int result) {
+  connect_loop_callback_.Cancel();
   if (is_canceled_) {
     LOG(ERROR) << "CANCELLED - Aborting DoConnectLoop.";
     return;
@@ -258,11 +268,12 @@ void CastSocket::DoConnectLoop(int result) {
 }
 
 int CastSocket::DoTcpConnect() {
+  DCHECK(connect_loop_callback_.IsCancelled());
   VLOG_WITH_CONNECTION(1) << "DoTcpConnect";
   connect_state_ = CONN_STATE_TCP_CONNECT_COMPLETE;
   tcp_socket_ = CreateTcpSocket();
   return tcp_socket_->Connect(
-      base::Bind(&CastSocket::DoConnectLoop, AsWeakPtr()));
+      base::Bind(&CastSocket::DoConnectLoop, base::Unretained(this)));
 }
 
 int CastSocket::DoTcpConnectComplete(int result) {
@@ -277,11 +288,12 @@ int CastSocket::DoTcpConnectComplete(int result) {
 }
 
 int CastSocket::DoSslConnect() {
+  DCHECK(connect_loop_callback_.IsCancelled());
   VLOG_WITH_CONNECTION(1) << "DoSslConnect";
   connect_state_ = CONN_STATE_SSL_CONNECT_COMPLETE;
   socket_ = CreateSslSocket(tcp_socket_.PassAs<net::StreamSocket>());
   return socket_->Connect(
-      base::Bind(&CastSocket::DoConnectLoop, AsWeakPtr()));
+      base::Bind(&CastSocket::DoConnectLoop, base::Unretained(this)));
 }
 
 int CastSocket::DoSslConnectComplete(int result) {
@@ -306,14 +318,26 @@ int CastSocket::DoAuthChallengeSend() {
   // Post a task to send auth challenge so that DoWriteLoop is not nested inside
   // DoConnectLoop. This is not strictly necessary but keeps the write loop
   // code decoupled from connect loop code.
+  DCHECK(send_auth_challenge_callback_.IsCancelled());
+  send_auth_challenge_callback_.Reset(
+      base::Bind(&CastSocket::SendCastMessageInternal,
+                 base::Unretained(this),
+                 challenge_message,
+                 base::Bind(&CastSocket::DoAuthChallengeSendWriteComplete,
+                            base::Unretained(this))));
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&CastSocket::SendCastMessageInternal,
-                 AsWeakPtr(),
-                 challenge_message,
-                 base::Bind(&CastSocket::DoConnectLoop, AsWeakPtr())));
+      send_auth_challenge_callback_.callback());
   // Always return IO_PENDING since the result is always asynchronous.
   return net::ERR_IO_PENDING;
+}
+
+void CastSocket::DoAuthChallengeSendWriteComplete(int result) {
+  send_auth_challenge_callback_.Cancel();
+  VLOG_WITH_CONNECTION(2) << "DoAuthChallengeSendWriteComplete: " << result;
+  DCHECK_GT(result, 0);
+  DCHECK_EQ(write_queue_.size(), 1UL);
+  PostTaskToStartConnectLoop(result);
 }
 
 int CastSocket::DoAuthChallengeSendComplete(int result) {
@@ -354,15 +378,46 @@ void CastSocket::DoConnectCallback(int result) {
 }
 
 void CastSocket::Close(const net::CompletionCallback& callback) {
-  DCHECK(CalledOnValidThread());
+  CloseInternal();
+  RunPendingCallbacksOnClose();
+  // Run this callback last.  It may delete the socket.
+  callback.Run(net::OK);
+}
+
+void CastSocket::CloseInternal() {
+  // TODO(mfoltz): Enforce this when CastChannelAPITest is rewritten to create
+  // and free sockets on the same thread.  crbug.com/398242
+  // DCHECK(CalledOnValidThread());
+  if (ready_state_ == READY_STATE_CLOSED) {
+    return;
+  }
   VLOG_WITH_CONNECTION(1) << "Close ReadyState = " << ready_state_;
   tcp_socket_.reset();
   socket_.reset();
   cert_verifier_.reset();
   transport_security_state_.reset();
+  GetTimer()->Stop();
+
+  // Cancel callbacks that we queued ourselves to re-enter the connect or read
+  // loops.
+  connect_loop_callback_.Cancel();
+  send_auth_challenge_callback_.Cancel();
+  read_loop_callback_.Cancel();
+  connect_timeout_callback_.Cancel();
   ready_state_ = READY_STATE_CLOSED;
-  callback.Run(net::OK);
-  // |callback| can delete |this|
+}
+
+void CastSocket::RunPendingCallbacksOnClose() {
+  DCHECK_EQ(ready_state_, READY_STATE_CLOSED);
+  if (!connect_callback_.is_null()) {
+    connect_callback_.Run(net::ERR_CONNECTION_FAILED);
+    connect_callback_.Reset();
+  }
+  for (; !write_queue_.empty(); write_queue_.pop()) {
+    net::CompletionCallback& callback = write_queue_.front().callback;
+    callback.Run(net::ERR_FAILED);
+    callback.Reset();
+  }
 }
 
 void CastSocket::SendMessage(const MessageInfo& message,
@@ -377,7 +432,6 @@ void CastSocket::SendMessage(const MessageInfo& message,
     callback.Run(net::ERR_FAILED);
     return;
   }
-
   SendCastMessageInternal(message_proto, callback);
 }
 
@@ -454,11 +508,10 @@ int CastSocket::DoWrite() {
                           << request.io_buffer->BytesConsumed();
 
   write_state_ = WRITE_STATE_WRITE_COMPLETE;
-
   return socket_->Write(
       request.io_buffer.get(),
       request.io_buffer->BytesRemaining(),
-      base::Bind(&CastSocket::DoWriteLoop, AsWeakPtr()));
+      base::Bind(&CastSocket::DoWriteLoop, base::Unretained(this)));
 }
 
 int CastSocket::DoWriteComplete(int result) {
@@ -483,21 +536,11 @@ int CastSocket::DoWriteComplete(int result) {
 
 int CastSocket::DoWriteCallback() {
   DCHECK(!write_queue_.empty());
+  write_state_ = WRITE_STATE_WRITE;
   WriteRequest& request = write_queue_.front();
   int bytes_consumed = request.io_buffer->BytesConsumed();
-
-  // If inside connection flow, then there should be exaclty one item in
-  // the write queue.
-  if (ready_state_ == READY_STATE_CONNECTING) {
-    write_queue_.pop();
-    DCHECK(write_queue_.empty());
-    PostTaskToStartConnectLoop(bytes_consumed);
-  } else {
-    WriteRequest& request = write_queue_.front();
-    request.callback.Run(bytes_consumed);
-    write_queue_.pop();
-  }
-  write_state_ = WRITE_STATE_WRITE;
+  request.callback.Run(bytes_consumed);
+  write_queue_.pop();
   return net::OK;
 }
 
@@ -526,12 +569,15 @@ int CastSocket::DoWriteError(int result) {
 
 void CastSocket::PostTaskToStartReadLoop() {
   DCHECK(CalledOnValidThread());
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&CastSocket::StartReadLoop, AsWeakPtr()));
+  DCHECK(read_loop_callback_.IsCancelled());
+  read_loop_callback_.Reset(base::Bind(&CastSocket::StartReadLoop,
+                                       base::Unretained(this)));
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         read_loop_callback_.callback());
 }
 
 void CastSocket::StartReadLoop() {
+  read_loop_callback_.Cancel();
   // Read loop would have already been started if read state is not NONE
   if (read_state_ == READ_STATE_NONE) {
     read_state_ = READ_STATE_READ;
@@ -603,7 +649,7 @@ int CastSocket::DoRead() {
   return socket_->Read(
       current_read_buffer_.get(),
       num_bytes_to_read,
-      base::Bind(&CastSocket::DoReadLoop, AsWeakPtr()));
+      base::Bind(&CastSocket::DoReadLoop, base::Unretained(this)));
 }
 
 int CastSocket::DoReadComplete(int result) {
@@ -723,9 +769,9 @@ bool CastSocket::Serialize(const CastMessage& message_proto,
 
 void CastSocket::CloseWithError(ChannelError error) {
   DCHECK(CalledOnValidThread());
-  socket_.reset(NULL);
-  ready_state_ = READY_STATE_CLOSED;
+  CloseInternal();
   error_state_ = error;
+  RunPendingCallbacksOnClose();
   if (delegate_)
     delegate_->OnError(this, error);
 }
@@ -756,7 +802,7 @@ void CastSocket::MessageHeader::SetMessageSize(size_t size) {
 void CastSocket::MessageHeader::PrependToString(std::string* str) {
   MessageHeader output = *this;
   output.message_size = base::HostToNet32(message_size);
-  size_t header_size = base::checked_cast<size_t,uint32>(
+  size_t header_size = base::checked_cast<size_t, uint32>(
       MessageHeader::header_size());
   scoped_ptr<char, base::FreeDeleter> char_array(
       static_cast<char*>(malloc(header_size)));
@@ -769,7 +815,7 @@ void CastSocket::MessageHeader::PrependToString(std::string* str) {
 void CastSocket::MessageHeader::ReadFromIOBuffer(
     net::GrowableIOBuffer* buffer, MessageHeader* header) {
   uint32 message_size;
-  size_t header_size = base::checked_cast<size_t,uint32>(
+  size_t header_size = base::checked_cast<size_t, uint32>(
       MessageHeader::header_size());
   memcpy(&message_size, buffer->StartOfBuffer(), header_size);
   header->message_size = base::NetToHost32(message_size);

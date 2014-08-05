@@ -9,11 +9,9 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "extensions/browser/api/api_resource.h"
@@ -45,17 +43,16 @@ class CastMessage;
 //
 // NOTE: Not called "CastChannel" to reduce confusion with the generated API
 // code.
-class CastSocket : public ApiResource,
-                   public base::SupportsWeakPtr<CastSocket> {
+class CastSocket : public ApiResource {
  public:
-  // Object to be informed of incoming messages and errors.
+  // Object to be informed of incoming messages and errors.  The CastSocket that
+  // owns the delegate must not be deleted by it, only by the ApiResourceManager
+  // or in the callback to Close().
   class Delegate {
    public:
     // An error occurred on the channel.
-    // It is fine to delete the socket in this callback.
     virtual void OnError(const CastSocket* socket, ChannelError error) = 0;
     // A message was received on the channel.
-    // Do NOT delete the socket in this callback.
     virtual void OnMessage(const CastSocket* socket,
                            const MessageInfo& message) = 0;
 
@@ -72,6 +69,8 @@ class CastSocket : public ApiResource,
              CastSocket::Delegate* delegate,
              net::NetLog* net_log,
              const base::TimeDelta& connect_timeout);
+
+  // Ensures that the socket is closed.
   virtual ~CastSocket();
 
   // The IP endpoint for the destination of the channel.
@@ -98,8 +97,8 @@ class CastSocket : public ApiResource,
   virtual ChannelError error_state() const;
 
   // Connects the channel to the peer. If successful, the channel will be in
-  // READY_STATE_OPEN.
-  // It is fine to delete the CastSocket object in |callback|.
+  // READY_STATE_OPEN.  DO NOT delete the CastSocket object in |callback|.
+  // Instead use Close().
   virtual void Connect(const net::CompletionCallback& callback);
 
   // Sends a message over a connected channel. The channel must be in
@@ -108,15 +107,15 @@ class CastSocket : public ApiResource,
   // Note that if an error occurs the following happens:
   // 1. Completion callbacks for all pending writes are invoked with error.
   // 2. Delegate::OnError is called once.
-  // 3. Castsocket is closed.
+  // 3. CastSocket is closed.
   //
-  // DO NOT delete the CastSocket object in write completion callback.
-  // But it is fine to delete the socket in Delegate::OnError
+  // DO NOT delete the CastSocket object in |callback|. Instead use Close().
   virtual void SendMessage(const MessageInfo& message,
                            const net::CompletionCallback& callback);
 
-  // Closes the channel. On completion, the channel will be in
-  // READY_STATE_CLOSED.
+  // Closes the channel if not already closed. On completion, the channel will
+  // be in READY_STATE_CLOSED.
+  //
   // It is fine to delete the CastSocket object in |callback|.
   virtual void Close(const net::CompletionCallback& callback);
 
@@ -221,6 +220,7 @@ class CastSocket : public ApiResource,
   int DoSslConnectComplete(int result);
   int DoAuthChallengeSend();
   int DoAuthChallengeSendComplete(int result);
+  void DoAuthChallengeSendWriteComplete(int result);
   int DoAuthChallengeReplyComplete(int result);
   /////////////////////////////////////////////////////////////////////////////
 
@@ -266,9 +266,17 @@ class CastSocket : public ApiResource,
   // Parses the contents of body_read_buffer_ and sets current_message_ to
   // the message received.
   bool ProcessBody();
-  // Closes socket, updating the error state and signaling the delegate that
-  // |error| has occurred.
+  // Closes the socket, sets |error_state_| to |error| and signals the
+  // delegate that |error| has occurred.
   void CloseWithError(ChannelError error);
+  // Frees resources and cancels pending callbacks.  |ready_state_| will be set
+  // READY_STATE_CLOSED on completion.  A no-op if |ready_state_| is already
+  // READY_STATE_CLOSED.
+  void CloseInternal();
+  // Runs pending callbacks that are passed into us to notify API clients that
+  // pending operations will fail because the socket has been closed.
+  void RunPendingCallbacksOnClose();
+
   // Serializes the content of message_proto (with a header) to |message_data|.
   static bool Serialize(const CastMessage& message_proto,
                         std::string* message_data);
@@ -324,6 +332,8 @@ class CastSocket : public ApiResource,
   // Callback invoked when the socket is connected or fails to connect.
   net::CompletionCallback connect_callback_;
 
+  // Callback invoked by |connect_timeout_timer_| to cancel the connection.
+  base::CancelableClosure connect_timeout_callback_;
   // Duration to wait before timing out.
   base::TimeDelta connect_timeout_;
   // Timer invoked when the connection has timed out.
@@ -342,6 +352,16 @@ class CastSocket : public ApiResource,
   ChannelError error_state_;
   // The current status of the channel.
   ReadyState ready_state_;
+
+  // Task invoked to (re)start the connect loop.  Canceled on entry to the
+  // connect loop.
+  base::CancelableClosure connect_loop_callback_;
+  // Task invoked to send the auth challenge.  Canceled when the auth challenge
+  // has been sent.
+  base::CancelableClosure send_auth_challenge_callback_;
+  // Callback invoked to (re)start the read loop.  Canceled on entry to the read
+  // loop.
+  base::CancelableClosure read_loop_callback_;
 
   // Holds a message to be written to the socket. |callback| is invoked when the
   // message is fully written or an error occurrs.

@@ -98,12 +98,13 @@ class CastChannelAsyncApiFunction : public AsyncApiFunction {
   // manager.
   void RemoveSocket(int channel_id);
 
-  // Sets the function result to a ChannelInfo obtained from the state of the
-  // CastSocket corresponding to |channel_id|.
-  void SetResultFromSocket(int channel_id);
+  // Sets the function result to a ChannelInfo obtained from the state of
+  // |socket|.
+  void SetResultFromSocket(const cast_channel::CastSocket& socket);
 
-  // Sets the function result to a ChannelInfo with |error|.
-  void SetResultFromError(cast_channel::ChannelError error);
+  // Sets the function result to a ChannelInfo populated with |channel_id| and
+  // |error|.
+  void SetResultFromError(int channel_id, cast_channel::ChannelError error);
 
   // Returns the socket corresponding to |channel_id| if one exists, or null
   // otherwise.

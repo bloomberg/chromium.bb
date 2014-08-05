@@ -20,6 +20,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 
+// TODO(mfoltz): Mock out the ApiResourceManager to resolve threading issues
+// (crbug.com/398242) and simulate unloading of the extension.
+
 namespace cast_channel = extensions::core_api::cast_channel;
 using cast_channel::CastSocket;
 using cast_channel::ChannelError;
@@ -68,11 +71,6 @@ class MockCastSocket : public CastSocket {
                  cast_channel::CHANNEL_AUTH_TYPE_SSL, delegate, net_log,
                  base::TimeDelta::FromMilliseconds(kTimeoutMs)) {}
   virtual ~MockCastSocket() {}
-
-  virtual bool CalledOnValidThread() const OVERRIDE {
-    // Always return true in testing.
-    return true;
-  }
 
   MOCK_METHOD1(Connect, void(const net::CompletionCallback& callback));
   MOCK_METHOD2(SendMessage, void(const MessageInfo& message,
