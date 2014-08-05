@@ -413,3 +413,72 @@ TEST(threading_errors_tst)
 
 	display_destroy(d);
 }
+
+static void *
+thread_prepare_and_read(void *data)
+{
+	struct client *c = data;
+
+	register_reading(c->wl_display);
+
+	c->display_stopped = 1;
+
+	assert(wl_display_read_events(c->wl_display) == 0);
+	assert(wl_display_dispatch_pending(c->wl_display) == 0);
+
+	pthread_exit(NULL);
+}
+
+static pthread_t
+create_thread(struct client *c)
+{
+	pthread_t thread;
+
+	c->display_stopped = 0;
+	assert(pthread_create(&thread, NULL, thread_prepare_and_read, c) == 0);
+
+	/* make sure thread is sleeping */
+	while (c->display_stopped == 0)
+		usleep(500);
+	usleep(10000);
+
+	return thread;
+}
+
+/* test cancel read*/
+static void
+threading_cancel_read(void)
+{
+	struct client *c = client_connect();
+	pthread_t th1, th2, th3;
+
+	register_reading(c->wl_display);
+
+	th1 = create_thread(c);
+	th2 = create_thread(c);
+	th3 = create_thread(c);
+
+	/* all the threads are sleeping, waiting until read or cancel
+	 * is called. Cancel the read and let the threads proceed */
+	wl_display_cancel_read(c->wl_display);
+
+	/* kill test in 3 seconds. This should be enough time for the
+	 * thread to exit if it's not blocking. If everything is OK, than
+	 * the thread was woken up and the test will end before the SIGALRM */
+	alarm(3);
+	pthread_join(th1, NULL);
+	pthread_join(th2, NULL);
+	pthread_join(th3, NULL);
+
+	client_disconnect(c);
+}
+
+TEST(threading_cancel_read_tst)
+{
+	struct display *d = display_create();
+
+	client_create(d, threading_cancel_read);
+	display_run(d);
+
+	display_destroy(d);
+}
