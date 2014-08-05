@@ -34,6 +34,9 @@ Multiple tests may share one resource, or URI handler.
      websocket connections to the handler.
      Used by SendCloseFrameWhenTabIsClosed.
 
+- multiple-connections.html : Verify that HTTP connection limits are not applied
+     to WebSockets. Used by WebSocketBrowserTest.SSLConnectionLimit.
+
 - websocket_worker_simple.js : A JavaScript runs on Workers created from the
      websocket_shared_worker.html.
      Used by WorkerTest.WebSocketSharedWorker.

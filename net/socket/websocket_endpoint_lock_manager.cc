@@ -25,71 +25,108 @@ WebSocketEndpointLockManager* WebSocketEndpointLockManager::GetInstance() {
 
 int WebSocketEndpointLockManager::LockEndpoint(const IPEndPoint& endpoint,
                                                Waiter* waiter) {
-  EndPointWaiterMap::value_type insert_value(endpoint, NULL);
-  std::pair<EndPointWaiterMap::iterator, bool> rv =
-      endpoint_waiter_map_.insert(insert_value);
+  LockInfoMap::value_type insert_value(endpoint, LockInfo());
+  std::pair<LockInfoMap::iterator, bool> rv =
+      lock_info_map_.insert(insert_value);
+  LockInfo& lock_info_in_map = rv.first->second;
   if (rv.second) {
     DVLOG(3) << "Locking endpoint " << endpoint.ToString();
-    rv.first->second = new ConnectJobQueue;
+    lock_info_in_map.queue.reset(new LockInfo::WaiterQueue);
     return OK;
   }
   DVLOG(3) << "Waiting for endpoint " << endpoint.ToString();
-  rv.first->second->Append(waiter);
+  lock_info_in_map.queue->Append(waiter);
   return ERR_IO_PENDING;
 }
 
 void WebSocketEndpointLockManager::RememberSocket(StreamSocket* socket,
                                                   const IPEndPoint& endpoint) {
-  bool inserted = socket_endpoint_map_.insert(SocketEndPointMap::value_type(
-                                                  socket, endpoint)).second;
+  LockInfoMap::iterator lock_info_it = lock_info_map_.find(endpoint);
+  CHECK(lock_info_it != lock_info_map_.end());
+  bool inserted =
+      socket_lock_info_map_.insert(SocketLockInfoMap::value_type(
+                                       socket, lock_info_it)).second;
   DCHECK(inserted);
-  DCHECK(endpoint_waiter_map_.find(endpoint) != endpoint_waiter_map_.end());
+  DCHECK(!lock_info_it->second.socket);
+  lock_info_it->second.socket = socket;
   DVLOG(3) << "Remembered (StreamSocket*)" << socket << " for "
-           << endpoint.ToString() << " (" << socket_endpoint_map_.size()
-           << " sockets remembered)";
+           << endpoint.ToString() << " (" << socket_lock_info_map_.size()
+           << " socket(s) remembered)";
 }
 
 void WebSocketEndpointLockManager::UnlockSocket(StreamSocket* socket) {
-  SocketEndPointMap::iterator socket_it = socket_endpoint_map_.find(socket);
-  if (socket_it == socket_endpoint_map_.end()) {
-    DVLOG(3) << "Ignoring request to unlock already-unlocked socket"
-                "(StreamSocket*)" << socket;
+  SocketLockInfoMap::iterator socket_it = socket_lock_info_map_.find(socket);
+  if (socket_it == socket_lock_info_map_.end())
     return;
-  }
-  const IPEndPoint& endpoint = socket_it->second;
+
+  LockInfoMap::iterator lock_info_it = socket_it->second;
+
   DVLOG(3) << "Unlocking (StreamSocket*)" << socket << " for "
-           << endpoint.ToString() << " (" << socket_endpoint_map_.size()
-           << " sockets left)";
-  UnlockEndpoint(endpoint);
-  socket_endpoint_map_.erase(socket_it);
+           << lock_info_it->first.ToString() << " ("
+           << socket_lock_info_map_.size() << " socket(s) left)";
+  socket_lock_info_map_.erase(socket_it);
+  DCHECK(socket == lock_info_it->second.socket);
+  lock_info_it->second.socket = NULL;
+  UnlockEndpointByIterator(lock_info_it);
 }
 
 void WebSocketEndpointLockManager::UnlockEndpoint(const IPEndPoint& endpoint) {
-  EndPointWaiterMap::iterator found_it = endpoint_waiter_map_.find(endpoint);
-  CHECK(found_it != endpoint_waiter_map_.end());  // Security critical
-  ConnectJobQueue* queue = found_it->second;
-  if (queue->empty()) {
-    DVLOG(3) << "Unlocking endpoint " << endpoint.ToString();
-    delete queue;
-    endpoint_waiter_map_.erase(found_it);
-  } else {
-    DVLOG(3) << "Unlocking endpoint " << endpoint.ToString()
-             << " and activating next waiter";
-    Waiter* next_job = queue->head()->value();
-    next_job->RemoveFromList();
-    next_job->GotEndpointLock();
-  }
+  LockInfoMap::iterator lock_info_it = lock_info_map_.find(endpoint);
+  if (lock_info_it == lock_info_map_.end())
+    return;
+
+  UnlockEndpointByIterator(lock_info_it);
 }
 
 bool WebSocketEndpointLockManager::IsEmpty() const {
-  return endpoint_waiter_map_.empty() && socket_endpoint_map_.empty();
+  return lock_info_map_.empty() && socket_lock_info_map_.empty();
+}
+
+WebSocketEndpointLockManager::LockInfo::LockInfo() : socket(NULL) {}
+WebSocketEndpointLockManager::LockInfo::~LockInfo() {
+  DCHECK(!socket);
+}
+
+WebSocketEndpointLockManager::LockInfo::LockInfo(const LockInfo& rhs)
+    : socket(rhs.socket) {
+  DCHECK(!rhs.queue);
 }
 
 WebSocketEndpointLockManager::WebSocketEndpointLockManager() {}
 
 WebSocketEndpointLockManager::~WebSocketEndpointLockManager() {
-  DCHECK(endpoint_waiter_map_.empty());
-  DCHECK(socket_endpoint_map_.empty());
+  DCHECK(lock_info_map_.empty());
+  DCHECK(socket_lock_info_map_.empty());
+}
+
+void WebSocketEndpointLockManager::UnlockEndpointByIterator(
+    LockInfoMap::iterator lock_info_it) {
+  if (lock_info_it->second.socket)
+    EraseSocket(lock_info_it);
+  LockInfo::WaiterQueue* queue = lock_info_it->second.queue.get();
+  DCHECK(queue);
+  if (queue->empty()) {
+    DVLOG(3) << "Unlocking endpoint " << lock_info_it->first.ToString();
+    lock_info_map_.erase(lock_info_it);
+    return;
+  }
+
+  DVLOG(3) << "Unlocking endpoint " << lock_info_it->first.ToString()
+           << " and activating next waiter";
+  Waiter* next_job = queue->head()->value();
+  next_job->RemoveFromList();
+  // This must be last to minimise the excitement caused by re-entrancy.
+  next_job->GotEndpointLock();
+}
+
+void WebSocketEndpointLockManager::EraseSocket(
+    LockInfoMap::iterator lock_info_it) {
+  DVLOG(3) << "Removing (StreamSocket*)" << lock_info_it->second.socket
+           << " for " << lock_info_it->first.ToString() << " ("
+           << socket_lock_info_map_.size() << " socket(s) left)";
+  size_t erased = socket_lock_info_map_.erase(lock_info_it->second.socket);
+  DCHECK_EQ(1U, erased);
+  lock_info_it->second.socket = NULL;
 }
 
 }  // namespace net

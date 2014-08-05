@@ -285,4 +285,15 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserConnectToTest,
   EXPECT_EQ("FAIL", WaitAndGetTitle());
 }
 
+// HTTPS connection limits should not be applied to wss:. This is only tested
+// for secure connections here because the unencrypted case is tested in the
+// Blink layout tests, and browser tests are expensive to run.
+IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, SSLConnectionLimit) {
+  ASSERT_TRUE(wss_server_.Start());
+
+  NavigateToHTTPS("multiple-connections.html");
+
+  EXPECT_EQ("PASS", WaitAndGetTitle());
+}
+
 }  // namespace

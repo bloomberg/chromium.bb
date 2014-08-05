@@ -127,6 +127,9 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
 
   // Allow another connection to be started to the IPEndPoint that this |handle|
   // is connected to. Used when the WebSocket handshake completes successfully.
+  // This only works if the socket is connected, however the caller does not
+  // need to explicitly check for this. Instead, ensure that dead sockets are
+  // returned to ReleaseSocket() in a timely fashion.
   static void UnlockEndpoint(ClientSocketHandle* handle);
 
   // ClientSocketPool implementation.

@@ -1110,6 +1110,25 @@ TEST_F(WebSocketTransportClientSocketPoolTest, CancelRequestReclaimsSockets) {
   EXPECT_EQ(OK, StartRequest("a", kDefaultPriority));
 }
 
+// A handshake completing and then the WebSocket closing should only release one
+// Endpoint, not two.
+TEST_F(WebSocketTransportClientSocketPoolTest, EndpointLockIsOnlyReleasedOnce) {
+  host_resolver_->set_synchronous_mode(true);
+  EXPECT_EQ(OK, StartRequest("a", kDefaultPriority));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", kDefaultPriority));
+  // First socket completes handshake.
+  WebSocketTransportClientSocketPool::UnlockEndpoint(request(0)->handle());
+  // First socket is closed.
+  request(0)->handle()->Reset();
+  // Second socket should have been released.
+  EXPECT_EQ(OK, request(1)->WaitForResult());
+  // Third socket should still be waiting for endpoint.
+  ASSERT_FALSE(request(2)->handle()->is_initialized());
+  EXPECT_EQ(LOAD_STATE_WAITING_FOR_AVAILABLE_SOCKET,
+            request(2)->handle()->GetLoadState());
+}
+
 }  // namespace
 
 }  // namespace net

@@ -261,7 +261,10 @@ WebSocketTransportClientSocketPool::~WebSocketTransportClientSocketPool() {
 void WebSocketTransportClientSocketPool::UnlockEndpoint(
     ClientSocketHandle* handle) {
   DCHECK(handle->is_initialized());
-  WebSocketEndpointLockManager::GetInstance()->UnlockSocket(handle->socket());
+  DCHECK(handle->socket());
+  IPEndPoint address;
+  if (handle->socket()->GetPeerAddress(&address) == OK)
+    WebSocketEndpointLockManager::GetInstance()->UnlockEndpoint(address);
 }
 
 int WebSocketTransportClientSocketPool::RequestSocket(

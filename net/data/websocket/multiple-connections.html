@@ -1,0 +1,30 @@
+<title>WebSocket is not subject to HTTP(S) connection limit</title>
+<script>
+var protocol = location.protocol.replace('http', 'ws');
+var url = protocol + '//' + location.host + '/echo-with-no-extension';
+
+// TODO(ricea): The limit for ws: is 255, but wss: gets a limit of 30
+// (per-host:port, not ip:port!) because it still uses the HTTP pool code. This
+// should be fixed at some point. When it is, change this number back to 50 (or
+// even larger, if it works).
+var socketCount = 30;
+var connected = 0;
+
+for (i = 0; i < socketCount; ++i) {
+  var ws = new WebSocket(url);
+  ws.onopen = function() {
+    ++connected;
+    if (connected == socketCount) {
+      document.title = "PASS";
+    }
+  };
+  ws.onclose = function() {
+    document.title = "FAIL";
+  };
+}
+
+setTimeout(function() {
+  console.log("Got stuck after " + connected + " socket(s) connected");
+  document.title = "FAIL";
+}, 5000);
+</script>

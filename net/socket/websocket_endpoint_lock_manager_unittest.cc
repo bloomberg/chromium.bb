@@ -196,14 +196,33 @@ TEST_F(WebSocketEndpointLockManagerTest, RememberSocketWorks) {
   UnlockDummyEndpoint(1);
 }
 
-// Calling UnlockSocket() on the same socket a second time should be harmless.
-TEST_F(WebSocketEndpointLockManagerTest, UnlockSocketTwice) {
+// UnlockEndpoint() should cause any sockets remembered for this endpoint
+// to be forgotten.
+TEST_F(WebSocketEndpointLockManagerTest, SocketAssociationForgottenOnUnlock) {
   FakeWaiter waiter;
   FakeStreamSocket dummy_socket;
+
   EXPECT_EQ(OK, instance()->LockEndpoint(DummyEndpoint(), &waiter));
   instance()->RememberSocket(&dummy_socket, DummyEndpoint());
-  instance()->UnlockSocket(&dummy_socket);
-  instance()->UnlockSocket(&dummy_socket);
+  instance()->UnlockEndpoint(DummyEndpoint());
+  EXPECT_TRUE(instance()->IsEmpty());
+}
+
+// When ownership of the endpoint is passed to a new waiter, the new waiter can
+// call RememberSocket() again.
+TEST_F(WebSocketEndpointLockManagerTest, NextWaiterCanCallRememberSocketAgain) {
+  FakeWaiter waiters[2];
+  FakeStreamSocket dummy_sockets[2];
+  EXPECT_EQ(OK, instance()->LockEndpoint(DummyEndpoint(), &waiters[0]));
+  EXPECT_EQ(ERR_IO_PENDING,
+            instance()->LockEndpoint(DummyEndpoint(), &waiters[1]));
+
+  instance()->RememberSocket(&dummy_sockets[0], DummyEndpoint());
+  instance()->UnlockEndpoint(DummyEndpoint());
+  EXPECT_TRUE(waiters[1].called());
+  instance()->RememberSocket(&dummy_sockets[1], DummyEndpoint());
+
+  UnlockDummyEndpoint(1);
 }
 
 }  // namespace
