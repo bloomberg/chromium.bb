@@ -1,0 +1,29 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/timeline-test.js"></script>
+<script src="../../tracing-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.tracingModel.addEventListener(WebInspector.TracingModel.Events.BufferUsage, onBufferUsage, this);
+    InspectorTest.tracingTimelineModel.startRecording();
+    function onBufferUsage(event)
+    {
+        InspectorTest.tracingModel.removeEventListener(WebInspector.TracingModel.Events.BufferUsage, onBufferUsage, this);
+        InspectorTest.tracingTimelineModel.stopRecording();
+        InspectorTest.addResult("SUCCESS: Received buffer usage update.");
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that buffer usage update are sent when recording trace events.
+</p>
+</body>
+</html>
