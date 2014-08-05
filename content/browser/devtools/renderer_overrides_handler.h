@@ -98,13 +98,7 @@ class CONTENT_EXPORT RendererOverridesHandler
   void NotifyScreencastVisibility(bool visible);
 
   // Input domain.
-  scoped_refptr<DevToolsProtocol::Response> InputDispatchMouseEvent(
-      scoped_refptr<DevToolsProtocol::Command> command);
-  scoped_refptr<DevToolsProtocol::Response> InputDispatchGestureEvent(
-      scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> InputEmulateTouchFromMouseEvent(
-      scoped_refptr<DevToolsProtocol::Command> command);
-  bool DispatchMouseEventFromCommand(
       scoped_refptr<DevToolsProtocol::Command> command);
 
   DevToolsAgentHost* agent_;
