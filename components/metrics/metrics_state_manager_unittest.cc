@@ -220,6 +220,8 @@ TEST_F(MetricsStateManagerTest, ForceClientIdCreation) {
   const int64 kFakeInstallationDate = 12345;
   prefs_.SetInt64(prefs::kInstallDate, kFakeInstallationDate);
 
+  const int64 test_begin_time = base::Time::Now().ToTimeT();
+
   // Holds ClientInfo from previous scoped test for extra checks.
   scoped_ptr<ClientInfo> previous_client_info;
 
@@ -236,7 +238,8 @@ TEST_F(MetricsStateManagerTest, ForceClientIdCreation) {
     EXPECT_FALSE(stored_client_info_backup_);
     state_manager->ForceClientIdCreation();
     EXPECT_NE(std::string(), state_manager->client_id());
-    EXPECT_GT(prefs_.GetInt64(prefs::kMetricsReportingEnabledTimestamp), 0);
+    EXPECT_GE(prefs_.GetInt64(prefs::kMetricsReportingEnabledTimestamp),
+              test_begin_time);
 
     ASSERT_TRUE(stored_client_info_backup_);
     EXPECT_EQ(state_manager->client_id(),
@@ -341,8 +344,9 @@ TEST_F(MetricsStateManagerTest, ForceClientIdCreation) {
 
     scoped_ptr<MetricsStateManager> state_manager(CreateStateManager());
     EXPECT_EQ(kBackupClientId, state_manager->client_id());
-    EXPECT_GT(prefs_.GetInt64(prefs::kInstallDate), 0);
-    EXPECT_GT(prefs_.GetInt64(prefs::kMetricsReportingEnabledTimestamp), 0);
+    EXPECT_GE(prefs_.GetInt64(prefs::kInstallDate), test_begin_time);
+    EXPECT_GE(prefs_.GetInt64(prefs::kMetricsReportingEnabledTimestamp),
+              test_begin_time);
 
     EXPECT_TRUE(stored_client_info_backup_);
     previous_client_info = stored_client_info_backup_.Pass();
@@ -362,11 +366,13 @@ TEST_F(MetricsStateManagerTest, ForceClientIdCreation) {
     EXPECT_NE(std::string(), state_manager->client_id());
     EXPECT_NE(previous_client_info->client_id, state_manager->client_id());
 
-    // Dates should not have been affected.
+    // The installation date should not have been affected.
     EXPECT_EQ(previous_client_info->installation_date,
               prefs_.GetInt64(prefs::kInstallDate));
-    EXPECT_EQ(previous_client_info->reporting_enabled_date,
-              prefs_.GetInt64(prefs::kMetricsReportingEnabledTimestamp));
+
+    // The metrics-reporting-enabled date will be reset to Now().
+    EXPECT_GE(prefs_.GetInt64(prefs::kMetricsReportingEnabledTimestamp),
+              previous_client_info->reporting_enabled_date);
 
     stored_client_info_backup_.reset();
   }
