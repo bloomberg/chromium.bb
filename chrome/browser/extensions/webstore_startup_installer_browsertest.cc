@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
@@ -25,6 +26,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
@@ -236,20 +238,25 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallUnpackFailureTest,
   RunTest("runTest");
 }
 
-class CommandLineWebstoreInstall : public WebstoreStartupInstallerTest,
-                                   public content::NotificationObserver {
+class CommandLineWebstoreInstall
+    : public WebstoreStartupInstallerTest,
+      public content::NotificationObserver,
+      public extensions::ExtensionRegistryObserver {
  public:
   CommandLineWebstoreInstall() : saw_install_(false), browser_open_count_(0) {}
   virtual ~CommandLineWebstoreInstall() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
     WebstoreStartupInstallerTest::SetUpOnMainThread();
-    registrar_.Add(
-        this,
-        extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-        content::NotificationService::AllSources());
+    extensions::ExtensionRegistry::Get(browser()->profile())->AddObserver(this);
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
                    content::NotificationService::AllSources());
+  }
+
+  virtual void TearDownOnMainThread() OVERRIDE {
+    extensions::ExtensionRegistry::Get(browser()->profile())
+        ->RemoveObserver(this);
+    WebstoreStartupInstallerTest::TearDownOnMainThread();
   }
 
   bool saw_install() { return saw_install_; }
@@ -260,19 +267,18 @@ class CommandLineWebstoreInstall : public WebstoreStartupInstallerTest,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    if (type ==
-        extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED) {
-      const Extension* extension =
-          content::Details<const extensions::InstalledExtensionInfo>(details)->
-              extension;
-      ASSERT_TRUE(extension != NULL);
-      EXPECT_EQ(extension->id(), kTestExtensionId);
-      saw_install_ = true;
-    } else if (type == chrome::NOTIFICATION_BROWSER_OPENED) {
-      browser_open_count_++;
-    } else {
-      ASSERT_TRUE(false) << "Unexpected notification type : " << type;
-    }
+    DCHECK_EQ(type, chrome::NOTIFICATION_BROWSER_OPENED);
+    ++browser_open_count_;
+  }
+
+  virtual void OnExtensionWillBeInstalled(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      bool is_update,
+      bool from_ephemeral,
+      const std::string& old_name) OVERRIDE {
+    EXPECT_EQ(extension->id(), kTestExtensionId);
+    saw_install_ = true;
   }
 
   content::NotificationRegistrar registrar_;
