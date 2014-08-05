@@ -23,6 +23,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/component_updater/component_patcher_operation.h"
 #include "chrome/browser/component_updater/component_unpacker.h"
 #include "chrome/browser/component_updater/component_updater_configurator.h"
 #include "chrome/browser/component_updater/component_updater_ping_manager.h"
@@ -874,7 +875,7 @@ void CrxUpdateService::Install(scoped_ptr<CRXContext> context,
                                     crx_path,
                                     context->fingerprint,
                                     context->installer,
-                                    config_->InProcess(),
+                                    config_->CreateOutOfProcessPatcher(),
                                     blocking_task_runner_);
   unpacker_->Unpack(base::Bind(&CrxUpdateService::EndUnpacking,
                                base::Unretained(this),

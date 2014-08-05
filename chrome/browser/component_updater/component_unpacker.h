@@ -20,6 +20,7 @@ namespace component_updater {
 
 class ComponentInstaller;
 class ComponentPatcher;
+class OutOfProcessPatcher;
 
 // Deserializes the CRX manifest. The top level must be a dictionary.
 scoped_ptr<base::DictionaryValue> ReadManifest(
@@ -97,7 +98,7 @@ class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
                     const base::FilePath& path,
                     const std::string& fingerprint,
                     ComponentInstaller* installer,
-                    bool in_process,
+                    scoped_refptr<OutOfProcessPatcher> out_of_process_patcher,
                     scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // Begins the actual unpacking of the files. May invoke a patcher if the
@@ -147,7 +148,7 @@ class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
   scoped_refptr<ComponentPatcher> patcher_;
   ComponentInstaller* installer_;
   Callback callback_;
-  const bool in_process_;
+  scoped_refptr<OutOfProcessPatcher> out_of_process_patcher_;
   Error error_;
   int extended_error_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

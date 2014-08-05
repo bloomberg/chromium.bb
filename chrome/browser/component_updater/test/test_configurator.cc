@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/version.h"
+#include "chrome/browser/component_updater/component_patcher_operation.h"
 #include "chrome/browser/component_updater/test/test_configurator.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
@@ -96,9 +97,9 @@ net::URLRequestContextGetter* TestConfigurator::RequestContext() const {
   return context_.get();
 }
 
-// Don't use the utility process to run code out-of-process.
-bool TestConfigurator::InProcess() const {
-  return true;
+scoped_refptr<OutOfProcessPatcher> TestConfigurator::CreateOutOfProcessPatcher()
+    const {
+  return NULL;
 }
 
 bool TestConfigurator::DeltasEnabled() const {

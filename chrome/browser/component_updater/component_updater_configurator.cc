@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/version.h"
 #include "build/build_config.h"
+#include "chrome/browser/component_updater/component_patcher_operation_out_of_process.h"
 #include "chrome/browser/omaha_query_params/chrome_omaha_query_params_delegate.h"
 #include "chrome/common/chrome_version_info.h"
 #include "components/component_updater/component_updater_switches.h"
@@ -112,7 +113,8 @@ class ChromeConfigurator : public Configurator {
   virtual std::string ExtraRequestParams() const OVERRIDE;
   virtual size_t UrlSizeLimit() const OVERRIDE;
   virtual net::URLRequestContextGetter* RequestContext() const OVERRIDE;
-  virtual bool InProcess() const OVERRIDE;
+  virtual scoped_refptr<OutOfProcessPatcher> CreateOutOfProcessPatcher()
+      const OVERRIDE;
   virtual bool DeltasEnabled() const OVERRIDE;
   virtual bool UseBackgroundDownloader() const OVERRIDE;
   virtual scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
@@ -223,8 +225,9 @@ net::URLRequestContextGetter* ChromeConfigurator::RequestContext() const {
   return url_request_getter_;
 }
 
-bool ChromeConfigurator::InProcess() const {
-  return false;
+scoped_refptr<OutOfProcessPatcher>
+ChromeConfigurator::CreateOutOfProcessPatcher() const {
+  return make_scoped_refptr(new ChromeOutOfProcessPatcher);
 }
 
 bool ChromeConfigurator::DeltasEnabled() const {

@@ -44,12 +44,12 @@ ComponentPatcher::ComponentPatcher(
     const base::FilePath& input_dir,
     const base::FilePath& unpack_dir,
     ComponentInstaller* installer,
-    bool in_process,
+    scoped_refptr<OutOfProcessPatcher> out_of_process_patcher,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : input_dir_(input_dir),
       unpack_dir_(unpack_dir),
       installer_(installer),
-      in_process_(in_process),
+      out_of_process_patcher_(out_of_process_patcher),
       task_runner_(task_runner) {
 }
 
@@ -84,7 +84,13 @@ void ComponentPatcher::PatchNextFile() {
   }
   const base::DictionaryValue* command_args =
       static_cast<base::DictionaryValue*>(*next_command_);
-  current_operation_ = CreateDeltaUpdateOp(*command_args);
+
+  std::string operation;
+  if (command_args->GetString(kOp, &operation)) {
+    current_operation_ =
+        CreateDeltaUpdateOp(operation, out_of_process_patcher_);
+  }
+
   if (!current_operation_) {
     DonePatching(ComponentUnpacker::kDeltaUnsupportedCommand, 0);
     return;
@@ -93,7 +99,6 @@ void ComponentPatcher::PatchNextFile() {
                           input_dir_,
                           unpack_dir_,
                           installer_,
-                          in_process_,
                           base::Bind(&ComponentPatcher::DonePatchingFile,
                                      scoped_refptr<ComponentPatcher>(this)),
                           task_runner_);

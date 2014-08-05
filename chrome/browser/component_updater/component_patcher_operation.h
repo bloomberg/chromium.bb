@@ -12,15 +12,19 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/component_updater/component_patcher.h"
 #include "chrome/browser/component_updater/component_unpacker.h"
-#include "content/public/browser/utility_process_host_client.h"
 
 namespace base {
 class DictionaryValue;
 }  // namespace base
 
 namespace component_updater {
+
+extern const char kOp[];
+extern const char kBsdiff[];
+extern const char kCourgette[];
+extern const char kInput[];
+extern const char kPatch[];
 
 class ComponentInstaller;
 
@@ -34,14 +38,11 @@ class DeltaUpdateOp : public base::RefCountedThreadSafe<DeltaUpdateOp> {
            const base::FilePath& input_dir,
            const base::FilePath& unpack_dir,
            ComponentInstaller* installer,
-           bool in_process,
            const ComponentUnpacker::Callback& callback,
            scoped_refptr<base::SequencedTaskRunner> task_runner);
 
  protected:
   virtual ~DeltaUpdateOp();
-
-  bool InProcess();
 
   scoped_refptr<base::SequencedTaskRunner> GetTaskRunner();
 
@@ -71,7 +72,6 @@ class DeltaUpdateOp : public base::RefCountedThreadSafe<DeltaUpdateOp> {
   // callback.
   void DoneRunning(ComponentUnpacker::Error error, int extended_error);
 
-  bool in_process_;
   ComponentUnpacker::Callback callback_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
@@ -125,52 +125,21 @@ class DeltaUpdateOpCreate : public DeltaUpdateOp {
   DISALLOW_COPY_AND_ASSIGN(DeltaUpdateOpCreate);
 };
 
-class DeltaUpdateOpPatchStrategy {
+// An interface an embedder may fulfill to enable out-of-process patching.
+class OutOfProcessPatcher
+    : public base::RefCountedThreadSafe<OutOfProcessPatcher> {
  public:
-  virtual ~DeltaUpdateOpPatchStrategy();
+  virtual void Patch(const std::string& operation,
+                     scoped_refptr<base::SequencedTaskRunner> task_runner,
+                     base::FilePath& input_abs_path,
+                     base::FilePath& patch_abs_path,
+                     base::FilePath& output_abs_path,
+                     base::Callback<void(int result)> callback) = 0;
 
-  // Returns an integer to add to error codes to disambiguate their source.
-  virtual int GetErrorOffset() const = 0;
+ protected:
+  friend class base::RefCountedThreadSafe<OutOfProcessPatcher>;
 
-  // Returns the "error code" that is expected in the successful install case.
-  virtual int GetSuccessCode() const = 0;
-
-  // Returns an IPC message that will start patching if it is sent to a
-  // UtilityProcessClient.
-  virtual scoped_ptr<IPC::Message> GetPatchMessage(
-      base::FilePath input_abs_path,
-      base::FilePath patch_abs_path,
-      base::FilePath output_abs_path) = 0;
-
-  // Does the actual patching operation, and returns an error code.
-  virtual int Patch(base::FilePath input_abs_path,
-                    base::FilePath patch_abs_path,
-                    base::FilePath output_abs_path) = 0;
-};
-
-class DeltaUpdateOpPatch;
-
-class DeltaUpdateOpPatchHost : public content::UtilityProcessHostClient {
- public:
-  DeltaUpdateOpPatchHost(scoped_refptr<DeltaUpdateOpPatch> patcher,
-                         scoped_refptr<base::SequencedTaskRunner> task_runner);
-
-  void StartProcess(scoped_ptr<IPC::Message> message);
-
- private:
-  virtual ~DeltaUpdateOpPatchHost();
-
-  void OnPatchSucceeded();
-
-  void OnPatchFailed(int error_code);
-
-  // Overrides of content::UtilityProcessHostClient.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
-  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
-
-  scoped_refptr<DeltaUpdateOpPatch> patcher_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  virtual ~OutOfProcessPatcher() {}
 };
 
 // Both 'bsdiff' and 'courgette' operations take an existing file on disk,
@@ -179,9 +148,9 @@ class DeltaUpdateOpPatchHost : public content::UtilityProcessHostClient {
 // unpacking directory.
 class DeltaUpdateOpPatch : public DeltaUpdateOp {
  public:
-  explicit DeltaUpdateOpPatch(scoped_ptr<DeltaUpdateOpPatchStrategy> strategy);
-
-  void DonePatching(ComponentUnpacker::Error error, int error_code);
+  // |out_of_process_patcher| may be NULL.
+  DeltaUpdateOpPatch(const std::string& operation,
+                     scoped_refptr<OutOfProcessPatcher> out_of_process_patcher);
 
  private:
   virtual ~DeltaUpdateOpPatch();
@@ -194,19 +163,21 @@ class DeltaUpdateOpPatch : public DeltaUpdateOp {
 
   virtual void DoRun(const ComponentUnpacker::Callback& callback) OVERRIDE;
 
-  ComponentUnpacker::Callback callback_;
+  // |success_code| is the code that indicates a successful patch.
+  // |result| is the code the patching operation returned.
+  void DonePatching(const ComponentUnpacker::Callback& callback, int result);
+
+  std::string operation_;
+  scoped_refptr<OutOfProcessPatcher> out_of_process_patcher_;
   base::FilePath patch_abs_path_;
   base::FilePath input_abs_path_;
-  scoped_ptr<DeltaUpdateOpPatchStrategy> strategy_;
-  scoped_refptr<DeltaUpdateOpPatchHost> host_;
 
   DISALLOW_COPY_AND_ASSIGN(DeltaUpdateOpPatch);
 };
 
-// Factory functions to create DeltaUpdateOp instances.
-DeltaUpdateOp* CreateDeltaUpdateOp(const base::DictionaryValue& command);
-
-DeltaUpdateOp* CreateDeltaUpdateOp(const std::string& operation);
+DeltaUpdateOp* CreateDeltaUpdateOp(
+    const std::string& operation,
+    scoped_refptr<OutOfProcessPatcher> out_of_process_patcher);
 
 }  // namespace component_updater
 

@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/component_updater/component_patcher.h"
+#include "chrome/browser/component_updater/component_patcher_operation.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "crypto/secure_hash.h"
 #include "crypto/signature_verifier.h"
@@ -101,14 +102,14 @@ ComponentUnpacker::ComponentUnpacker(
     const base::FilePath& path,
     const std::string& fingerprint,
     ComponentInstaller* installer,
-    bool in_process,
+    scoped_refptr<OutOfProcessPatcher> out_of_process_patcher,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : pk_hash_(pk_hash),
       path_(path),
       is_delta_(false),
       fingerprint_(fingerprint),
       installer_(installer),
-      in_process_(in_process),
+      out_of_process_patcher_(out_of_process_patcher),
       error_(kNone),
       extended_error_(0),
       task_runner_(task_runner) {
@@ -211,7 +212,7 @@ bool ComponentUnpacker::BeginPatching() {
     patcher_ = new ComponentPatcher(unpack_diff_path_,
                                     unpack_path_,
                                     installer_,
-                                    in_process_,
+                                    out_of_process_patcher_,
                                     task_runner_);
     task_runner_->PostTask(
         FROM_HERE,

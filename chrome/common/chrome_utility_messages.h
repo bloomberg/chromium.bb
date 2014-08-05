@@ -108,12 +108,8 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_DecodeImage_Succeeded,
 // Reply when an error occurred decoding the image.
 IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_DecodeImage_Failed)
 
-// Reply when a file has been patched successfully.
-IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_PatchFile_Succeeded)
-
-// Reply when patching a file failed.
-IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_PatchFile_Failed,
-                     int /* error code */)
+// Reply when a file has been patched.
+IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_PatchFile_Finished, int /* result */)
 
 #if defined(OS_CHROMEOS)
 // Reply when the utility process has succeeded in creating the zip file.

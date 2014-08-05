@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 
 class GURL;
 
@@ -23,6 +24,8 @@ class URLRequestContextGetter;
 }
 
 namespace component_updater {
+
+class OutOfProcessPatcher;
 
 // Controls the component updater behavior.
 class Configurator {
@@ -84,8 +87,10 @@ class Configurator {
   // The source of contexts for all the url requests.
   virtual net::URLRequestContextGetter* RequestContext() const = 0;
 
-  // True means that all ops are performed in this process.
-  virtual bool InProcess() const = 0;
+  // Returns a new out of process patcher. May be NULL for implementations
+  // that patch in-process.
+  virtual scoped_refptr<OutOfProcessPatcher> CreateOutOfProcessPatcher()
+      const = 0;
 
   // True means that this client can handle delta updates.
   virtual bool DeltasEnabled() const = 0;

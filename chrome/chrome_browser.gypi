@@ -273,6 +273,8 @@
       'browser/component_updater/component_patcher.h',
       'browser/component_updater/component_patcher_operation.cc',
       'browser/component_updater/component_patcher_operation.h',
+      'browser/component_updater/component_patcher_operation_out_of_process.cc',
+      'browser/component_updater/component_patcher_operation_out_of_process.h',
       'browser/component_updater/component_updater_configurator.cc',
       'browser/component_updater/component_updater_configurator.h',
       'browser/component_updater/component_unpacker.cc',

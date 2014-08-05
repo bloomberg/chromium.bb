@@ -29,6 +29,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/component_updater/component_unpacker.h"
 
@@ -40,6 +41,7 @@ namespace component_updater {
 
 class ComponentInstaller;
 class DeltaUpdateOp;
+class OutOfProcessPatcher;
 
 // The type of a patch file.
 enum PatchType {
@@ -59,7 +61,7 @@ class ComponentPatcher : public base::RefCountedThreadSafe<ComponentPatcher> {
   ComponentPatcher(const base::FilePath& input_dir,
                    const base::FilePath& unpack_dir,
                    ComponentInstaller* installer,
-                   bool in_process,
+                   scoped_refptr<OutOfProcessPatcher> out_of_process_patcher,
                    scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // Starts patching files. This member function returns immediately, after
@@ -84,7 +86,7 @@ class ComponentPatcher : public base::RefCountedThreadSafe<ComponentPatcher> {
   const base::FilePath input_dir_;
   const base::FilePath unpack_dir_;
   ComponentInstaller* const installer_;
-  const bool in_process_;
+  scoped_refptr<OutOfProcessPatcher> out_of_process_patcher_;
   ComponentUnpacker::Callback callback_;
   scoped_ptr<base::ListValue> commands_;
   base::ValueVector::const_iterator next_command_;

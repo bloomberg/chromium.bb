@@ -92,7 +92,6 @@ TEST_F(ComponentPatcherOperationTest, CheckCreateOperation) {
           input_dir_.path(),
           unpack_dir_.path(),
           NULL,
-          true,
           base::Bind(&TestCallback::Set, base::Unretained(&callback)),
           task_runner_);
   base::RunLoop().RunUntilIdle();
@@ -123,7 +122,6 @@ TEST_F(ComponentPatcherOperationTest, CheckCopyOperation) {
           input_dir_.path(),
           unpack_dir_.path(),
           installer_.get(),
-          true,
           base::Bind(&TestCallback::Set, base::Unretained(&callback)),
           task_runner_);
   base::RunLoop().RunUntilIdle();
@@ -153,12 +151,12 @@ TEST_F(ComponentPatcherOperationTest, CheckCourgetteOperation) {
   command_args->SetString("patch", "binary_courgette_patch.bin");
 
   TestCallback callback;
-  scoped_refptr<DeltaUpdateOp> op = CreateDeltaUpdateOp("courgette");
+  scoped_refptr<DeltaUpdateOp> op =
+      CreateDeltaUpdateOp("courgette", NULL /* out_of_process_patcher */);
   op->Run(command_args.get(),
           input_dir_.path(),
           unpack_dir_.path(),
           installer_.get(),
-          true,
           base::Bind(&TestCallback::Set, base::Unretained(&callback)),
           task_runner_);
   base::RunLoop().RunUntilIdle();
@@ -188,12 +186,12 @@ TEST_F(ComponentPatcherOperationTest, CheckBsdiffOperation) {
   command_args->SetString("patch", "binary_bsdiff_patch.bin");
 
   TestCallback callback;
-  scoped_refptr<DeltaUpdateOp> op = CreateDeltaUpdateOp("bsdiff");
+  scoped_refptr<DeltaUpdateOp> op =
+      CreateDeltaUpdateOp("bsdiff", NULL /* out_of_process_patcher */);
   op->Run(command_args.get(),
           input_dir_.path(),
           unpack_dir_.path(),
           installer_.get(),
-          true,
           base::Bind(&TestCallback::Set, base::Unretained(&callback)),
           task_runner_);
   base::RunLoop().RunUntilIdle();

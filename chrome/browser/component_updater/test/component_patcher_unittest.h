@@ -22,11 +22,6 @@ class ReadOnlyTestInstaller;
 const char binary_output_hash[] =
     "599aba6d15a7da390621ef1bacb66601ed6aed04dadc1f9b445dcfe31296142a";
 
-// These constants are duplicated from chrome/installer/util/util_constants.h,
-// to avoid introducing a dependency from the unit tests to the installer.
-const int kCourgetteErrorOffset = 300;
-const int kBsdiffErrorOffset = 600;
-
 class ComponentPatcherOperationTest : public testing::Test {
  public:
   explicit ComponentPatcherOperationTest();
