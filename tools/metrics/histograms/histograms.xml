@@ -10748,7 +10748,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.TotalMBytes" units="MB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>scherkus@chromium.org</owner>
   <summary>Size of HTML5 media (when known), in MB.</summary>
 </histogram>
@@ -10955,14 +10956,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.BackingStore">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>TBD.</summary>
 </histogram>
 
 <histogram name="Memory.Browser" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by the browser process.  Recorded once per UMA
     ping.
@@ -10970,14 +10973,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.CachedFontAndDC">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>TBD.</summary>
 </histogram>
 
 <histogram name="Memory.Chrome" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by each chrome:// renderer process.  Each
     process provides one sample.  Recorded once per UMA ping.
@@ -10985,16 +10990,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.ChromeProcessCount">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The count of active chrome:// processes.  Recorded once per UMA ping.
   </summary>
 </histogram>
 
 <histogram name="Memory.Extension" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by each extension process.  Each process
     provides one sample.  Recorded once per UMA ping.
@@ -11002,8 +11009,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.GlyphPagesPerLoad">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The number of glyph pages present in the renderer when it commits a load.
     Since this is per-sub-process, you can get the average number of glyph pages
@@ -11021,9 +11029,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Gpu" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>jamescook@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by the GPU process.  Recorded once per UMA
     ping.
@@ -11031,9 +11040,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Graphics" units="MB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>jamescook@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     System-wide graphics driver memory consumption.  Recorded on Chrome OS for
     platforms where it is exposed by the kernel (for example, Intel i915 and
@@ -11042,8 +11052,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.NativeClient" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by each Native Client loader process.  Each
     process provides one sample.  Recorded once per UMA ping.
@@ -11051,8 +11062,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.NativeClientBroker" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by each Native Client broker process.  Each
     process provides one sample.  Recorded once per UMA ping.
@@ -11060,8 +11072,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.OtherProcessCount">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The count of other various utility processes (nacl, gpu, sandbox, zygote,
     utility).  Recorded once per UMA ping.
@@ -11069,8 +11082,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.PepperPlugin" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by each Pepper plugin process.  Each plugin
     process provides one sample.  Recorded once per UMA ping.
@@ -11078,8 +11092,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.PepperPluginBroker" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by each Pepper plugin broker process.  Each
     process provides one sample.  Recorded once per UMA ping.
@@ -11087,8 +11102,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.PepperPluginBrokerProcessCount">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The count of Pepper plugin broker processes, recorded once per metrics
     services (UMA) update.  See MetricsReportingScheduler for details.
@@ -11096,16 +11112,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.PepperPluginProcessCount">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The count of active Pepper plugin processes.  Recorded once per UMA ping.
   </summary>
 </histogram>
 
 <histogram name="Memory.Plugin" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by each plugin process.  Each plugin process
     provides one sample.  Recorded once per UMA ping.
@@ -11113,30 +11131,34 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.PluginProcessCount">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The count of active plugin processes.  Recorded once per UMA ping.
   </summary>
 </histogram>
 
 <histogram name="Memory.ProcessCount">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The count of all active processes.  Recorded once per UMA ping.
   </summary>
 </histogram>
 
 <histogram name="Memory.ProcessLimit">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>The current process limit.  Recorded once per UMA ping.</summary>
 </histogram>
 
 <histogram name="Memory.Renderer" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by each renderer process.  Each renderer
     process provides one sample.  Recorded once per UMA ping.
@@ -11144,8 +11166,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.RendererGrowthIn30Min" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Growth speed of the private working set used by each renderer process per 30
     minutes.  The usage and growth speed is recorded at most every 30 minutes,
@@ -11160,16 +11183,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.RendererProcessCount">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The count of active renderer processes.  Recorded once per UMA ping.
   </summary>
 </histogram>
 
 <histogram name="Memory.RendererShrinkIn30Min" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Shrink speed of the private working set used by each renderer process per 30
     minutes.  The usage and shrink speed is recorded at most every 30 minutes,
@@ -11184,8 +11209,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.SandboxHelper" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by each sandbox helper process.  Each sandbox
     helper process provides one sample.  Recorded once per UMA ping.
@@ -11193,8 +11219,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Swap.Browser" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by the browser process.  Recorded once per UMA ping if the
     system has swapped.
@@ -11202,8 +11229,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Swap.Chrome" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by each chrome:// renderer process.  Each process provides one
     sample.  Recorded once per UMA ping if the system has swapped.
@@ -11211,8 +11239,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Swap.CompressedDataSize" units="MB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The amount of memory that swap was compressed into. Recorded once per UMA
     ping if the system has swapped.
@@ -11220,8 +11249,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Swap.CompressionRatio">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The ratio of swapped data original size to compressed size. Recorded once
     per UMA ping if the system has swapped.
@@ -11229,8 +11259,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Swap.Extension" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by each extension process.  Each process provides one sample.
     Recorded once per UMA ping if the system has swapped.
@@ -11238,8 +11269,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Swap.Gpu" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by the GPU process.  Recorded once per UMA ping if the system
     has swapped.
@@ -11247,8 +11279,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Swap.HaveSwapped" units="BooleanSuccess">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Indicates that the system has swapped memory out at least once since boot.
     Recorded once per UMA ping.
@@ -11256,8 +11289,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Swap.MemUsedTotal" units="MB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The amount of memory that is used by swap, including bookkeeping.  Recorded
     once per UMA ping if the system has swapped.
@@ -11265,8 +11299,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Swap.NativeClient" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by each Native Client loader process.  Each process provides
     one sample.  Recorded once per UMA ping if the system has swapped.
@@ -11274,8 +11309,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Swap.NativeClientBroker" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by each Native Client broker process.  Each process provides
     one sample.  Recorded once per UMA ping if the system has swapped.
@@ -11283,8 +11319,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Swap.NumReads">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The number of reads from swap.  Recorded once per UMA ping  if the system
     has swapped.
@@ -11292,8 +11329,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Swap.NumWrites">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The number of writes to swap.  Recorded once per UMA ping if the system has
     swapped.
@@ -11301,8 +11339,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Swap.OriginalDataSize" units="MB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The amount of memory that was swapped out.  Recorded once per UMA ping if
     the system has swapped.
@@ -11310,8 +11349,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Swap.PepperPlugin" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by each Pepper plugin process.  Each plugin process provides
     one sample.  Recorded once per UMA ping if the system has swapped.
@@ -11319,8 +11359,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Swap.PepperPluginBroker" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by each Pepper plugin broker process.  Each process provides
     one sample.  Recorded once per UMA ping if the system has swapped.
@@ -11328,8 +11369,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Swap.Plugin" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by each plugin process.  Each plugin process provides one
     sample.  Recorded once per UMA ping if the system has swapped.
@@ -11337,8 +11379,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Swap.Renderer" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by each renderer process.  Each renderer process provides one
     sample.  Recorded once per UMA ping if the system has swapped.
@@ -11346,8 +11389,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Swap.SandboxHelper" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by each sandbox helper process.  Each sandbox helper process
     provides one sample.  Recorded once per UMA ping if the system has swapped.
@@ -11355,8 +11399,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Swap.Total" units="MB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The sum of all processes' swap.  Recorded once per UMA ping if the system
     has swapped.
@@ -11364,8 +11409,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Swap.Utility" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by each utility process.  Each utility process provides one
     sample.  Recorded once per UMA ping if the system has swapped.
@@ -11373,8 +11419,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Swap.Worker" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by each worker process.  Each worker process provides one
     sample.  Recorded once per UMA ping if the system has swapped.
@@ -11382,14 +11429,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Total" units="MB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>The sum of all processes.  Recorded once per UMA ping.</summary>
 </histogram>
 
 <histogram name="Memory.Utility" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by each utility process.  Each utility process
     provides one sample.  Recorded once per UMA ping.
@@ -11397,8 +11446,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.Worker" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by each worker process.  Each worker process
     provides one sample.  Recorded once per UMA ping.
@@ -11406,14 +11456,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Memory.WorkerProcessCount">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>TBD.</summary>
 </histogram>
 
 <histogram name="MemoryAndroid.DeviceMemoryClass">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>ppi@chromium.org</owner>
   <summary>
     Value of getMemoryClass() recorded once upon startup. This is an integer,
@@ -11423,8 +11475,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="MemoryAndroid.EvictionReason" enum="AndroidEvictionReason">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>ppi@chromium.org</owner>
   <summary>
     Reasons behind evictions of individual tabs, recorded upon each tab
@@ -11433,8 +11486,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="MemoryAndroid.LowMemoryLoadedTabCount">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>ppi@chromium.org</owner>
   <summary>
     Number of loaded (memory-resident) tabs when LowMemory notification is
@@ -11443,8 +11497,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="MemoryAndroid.LowMemoryTimeBetween" units="milliseconds">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>ppi@chromium.org</owner>
   <summary>
     Time between two consecutive LowMemory notification in one foreground
@@ -11454,8 +11509,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="MemoryAndroid.NotificationBackground"
     enum="AndroidMemoryNotificationBackground">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>ppi@chromium.org</owner>
   <summary>
     Memory notifications delivered through system callbacks to Chrome while in
@@ -11465,8 +11521,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="MemoryAndroid.NotificationForeground"
     enum="AndroidMemoryNotificationForeground">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>ppi@chromium.org</owner>
   <summary>
     Memory notifications delivered through system callbacks to Chrome while in
@@ -20037,13 +20094,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Platform.MeminfoActive">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>sonnyrao@chromium.org</owner>
   <summary>Chrome OS size of active memory as % of total memory.</summary>
 </histogram>
 
 <histogram name="Platform.MeminfoActiveAnon">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>sonnyrao@chromium.org</owner>
   <summary>
     Chrome OS active anonymous memory (data segments) as % of total memory.
@@ -20051,7 +20110,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Platform.MeminfoActiveFile">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>sonnyrao@chromium.org</owner>
   <summary>
     Chrome OS active file-backed memory (executables, ...) as % of total memory.
@@ -20059,19 +20119,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Platform.MeminfoAnonPages">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>sonnyrao@chromium.org</owner>
   <summary>Chrome OS size of anonymous memory as % of total memory.</summary>
 </histogram>
 
 <histogram name="Platform.MeminfoBuffers">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>sonnyrao@chromium.org</owner>
   <summary>Chrome OS size of buffer cache as % of total memory.</summary>
 </histogram>
 
 <histogram name="Platform.MeminfoCached">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>sonnyrao@chromium.org</owner>
   <summary>
     Chrome OS: size of file-backed memory minus swap and buffer cache, as % of
@@ -20080,13 +20143,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Platform.MeminfoInactive">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>sonnyrao@chromium.org</owner>
   <summary>Chrome OS size of inactive memory as % of total memory.</summary>
 </histogram>
 
 <histogram name="Platform.MeminfoInactiveAnon">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>sonnyrao@chromium.org</owner>
   <summary>
     Chrome OS inactive anonymous memory (data segments) as % of total memory.
@@ -20094,37 +20159,43 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Platform.MeminfoInactiveFile">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>sonnyrao@chromium.org</owner>
   <summary>Chrome OS inactive file-backed memory as % of total memory.</summary>
 </histogram>
 
 <histogram name="Platform.MeminfoMapped">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>sonnyrao@chromium.org</owner>
   <summary>Chrome OS size of mapped memory as % of total memory.</summary>
 </histogram>
 
 <histogram name="Platform.MeminfoMemFree">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>sonnyrao@chromium.org</owner>
   <summary>Chrome OS size of free memory as % of total memory.</summary>
 </histogram>
 
 <histogram name="Platform.MeminfoShmem">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>sonnyrao@chromium.org</owner>
   <summary>Chrome OS size of shared memory in Kbytes.</summary>
 </histogram>
 
 <histogram name="Platform.MeminfoSlab">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>sonnyrao@chromium.org</owner>
   <summary>Chrome OS size of slab memory in Kbytes.</summary>
 </histogram>
 
 <histogram name="Platform.MeminfoSwapUsed" units="kB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>sonnyrao@chromium.org</owner>
   <summary>
     Chrome OS amount of swapped-out memory in Kbytes.  These, and all other
@@ -20133,7 +20204,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Platform.MeminfoSwapUsedPercent" units="percent">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>sonnyrao@chromium.org</owner>
   <summary>
     Chrome OS amount of swapped-out memory as % of total RAM.  These, and all
@@ -20142,7 +20214,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Platform.MeminfoUnevictable">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>sonnyrao@chromium.org</owner>
   <summary>
     Chrome OS unevictable memory (ramfs, SHM_LOCKED, mlocked) in Kbytes.
@@ -20150,7 +20223,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Platform.MemoryBandwidth.ReadWrite" units="MB/s">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Peak memory bandwith (read and write) usage during the last sample interval.
     The sample interval may vary from seconds to several minutes.
@@ -20158,7 +20232,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Platform.MemuseAnon0">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Chrome OS total anonymous memory (active + inactive) as % of total memory 1
     minute after boot.
@@ -20166,7 +20241,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Platform.MemuseAnon1">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Chrome OS total anonymous memory (active + inactive) as % of total memory 5
     minutes after boot.
@@ -20174,7 +20250,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Platform.MemuseAnon2">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Chrome OS total anonymous memory (active + inactive) as % of total memory 30
     minutes after boot.
@@ -20182,7 +20259,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Platform.MemuseAnon3">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Chrome OS total anonymous memory (active + inactive) as % of total memory
     150 minutes after boot.
@@ -20190,7 +20268,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Platform.MemuseAnon4">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Chrome OS total anonymous memory (active + inactive) as % of total memory
     750 minutes after boot.
@@ -23022,8 +23101,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated May 13th 2014, use Prerender.NetworkBytesTotalForProfile instead.
   </obsolete>
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Number of bytes transferred on the network for URLRequests (not including
     HTTP/TLS/TCP/IP overhead).  Reported on event of a PrerenderContents
@@ -23038,8 +23118,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated May 13th 2014, use Prerender.NetworkBytes.Used instead.
   </obsolete>
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Number of bytes transferred on the network for URLRequests (not including
     HTTP/TLS/TCP/IP overhead) for a prerender that was used (or would have been
@@ -23051,8 +23132,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated May 13th 2014, use Prerender.NetworkBytes.Wasted instead.
   </obsolete>
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Number of bytes transferred on the network for URLRequests (not including
     HTTP/TLS/TCP/IP overhead) for a prerender that was not used.
@@ -23060,8 +23142,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.NetworkBytesTotalForProfile" units="bytes">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Number of bytes transferred on the network for URLRequests (not including
     HTTP/TLS/TCP/IP overhead).  Reported on event of a PrerenderContents
@@ -23073,8 +23156,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.NetworkBytesUsed" units="bytes">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Number of bytes transferred on the network for URLRequests (not including
     HTTP/TLS/TCP/IP overhead) for a prerender that was used (or would have been
@@ -23083,8 +23167,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.NetworkBytesWasted" units="bytes">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Number of bytes transferred on the network for URLRequests (not including
     HTTP/TLS/TCP/IP overhead) for a prerender that was not used.
@@ -23959,7 +24044,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Profile.HistorySize" units="MB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>Size of the history database.</summary>
 </histogram>
 
@@ -33846,7 +33932,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Uptime.ChromeExecToLoginPromptVisibleAfterLogout" units="ms">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Measures the time elapsed on Chrome OS between when Chrome is started, and
     when the login prompt is again visible after a logout.  This statistic is
@@ -33855,7 +33942,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Uptime.LoginPromptSetupTimeAfterLogout" units="ms">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Measures the time elapsed on Chrome OS for setting up for a login after a
     logout. More specifically, it is the time between when the Cryptohome is
@@ -33865,7 +33953,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Uptime.Logout" units="ms">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Measures the time elapsed on Chrome OS when performing a logout. More
     specifically, it is the time between when a logout is initiated and when the
@@ -33875,7 +33964,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Uptime.LogoutToLoginPromptVisible" units="ms">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Measures the time elapsed on Chrome OS between initiating a logout and the
     next time the login prompt is visible again.  This statistic is not
@@ -33885,7 +33975,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Uptime.LogoutToUIStopAfterLogout" units="ms">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Measures the time elapsed on Chrome OS between when a logout is initiated
     and the UI has stopped (and Chrome has exited) during the logout process.
@@ -33895,7 +33986,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Uptime.ProcessesTerminatedToXTerminatedAfterLogout" units="ms">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Measures the time elapsed on Chrome OS between when all user-associated
     processes (including the X server) have been terminated during the logout
@@ -33905,7 +33997,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Uptime.UIStopToProcessesTerminatedAfterLogout" units="ms">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Measures the time elapsed on Chrome OS between when the UI has stopped
     (Chrome has exited), and when all other associated processes have been
@@ -33915,7 +34008,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Uptime.XTerminatedToChromeExecAfterLogout" units="ms">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Measures the time elapsed on Chrome OS between when the X server has been
     terminated from a previous logout and when Chrome is started again to show
@@ -34037,40 +34131,46 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.GCCompactor">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>hpayer@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>Time spent in mark-sweep phase of GC.</summary>
 </histogram>
 
 <histogram name="V8.GCContext">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Time spent GC'ing on context creation to get rid of older contexts.
   </summary>
 </histogram>
 
 <histogram name="V8.GCScavenger">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>hpayer@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>Time spent in scavenging phase of GC.</summary>
 </histogram>
 
 <histogram name="V8.MemoryExternalFragmentationCellSpace" units="percent">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     External memory fragmentation in the cell space after each GC in percent.
   </summary>
 </histogram>
 
 <histogram name="V8.MemoryExternalFragmentationCodeSpace" units="percent">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     External memory fragmentation in the code space after each GC in percent.
   </summary>
 </histogram>
 
 <histogram name="V8.MemoryExternalFragmentationLoSpace" units="percent">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     External memory fragmentation in the large object space after each GC in
     percent.
@@ -34078,14 +34178,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryExternalFragmentationMapSpace" units="percent">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     External memory fragmentation in the map space after each GC in percent.
   </summary>
 </histogram>
 
 <histogram name="V8.MemoryExternalFragmentationOldDataSpace" units="percent">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     External memory fragmentation in the old data space after each GC in
     percent.
@@ -34093,7 +34195,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryExternalFragmentationOldPointerSpace" units="percent">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     External memory fragmentation in the old pointer space after each GC in
     percent.
@@ -34101,14 +34204,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryExternalFragmentationTotal" units="percent">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     Total external memory fragmentation after each GC in percent.
   </summary>
 </histogram>
 
 <histogram name="V8.MemoryHeapFractionCellSpace" units="percent">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>rmcilroy@chromium.org</owner>
   <summary>
     Fraction of the total heap used by the cell space after each GC in percent.
@@ -34116,7 +34221,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryHeapFractionCodeSpace" units="percent">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>rmcilroy@chromium.org</owner>
   <summary>
     Fraction of the total heap used by the code space after each GC in percent.
@@ -34124,7 +34230,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryHeapFractionLoSpace" units="percent">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>rmcilroy@chromium.org</owner>
   <summary>
     Fraction of the total heap used by the lo space after each GC in percent.
@@ -34132,7 +34239,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryHeapFractionMapSpace" units="percent">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>rmcilroy@chromium.org</owner>
   <summary>
     Fraction of the total heap used by the map space after each GC in percent.
@@ -34140,7 +34248,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryHeapFractionNewSpace" units="percent">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>rmcilroy@chromium.org</owner>
   <summary>
     Fraction of the total heap used by the new space after each GC in percent.
@@ -34148,7 +34257,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryHeapFractionOldDataSpace" units="percent">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>rmcilroy@chromium.org</owner>
   <summary>
     Fraction of the total heap used by the old data space after each GC in
@@ -34157,7 +34267,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryHeapFractionOldPointerSpace" units="percent">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>rmcilroy@chromium.org</owner>
   <summary>
     Fraction of the total heap used by the old pointer space after each GC in
@@ -34166,28 +34277,32 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryHeapSampleCellSpaceCommitted" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The size of committed memory in the cell space after each GC in KB.
   </summary>
 </histogram>
 
 <histogram name="V8.MemoryHeapSampleCodeSpaceCommitted" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The size of committed memory in the code space after each GC in KB.
   </summary>
 </histogram>
 
 <histogram name="V8.MemoryHeapSampleMapSpaceCommitted" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     The size of committed memory in the map space after each GC in KB.
   </summary>
 </histogram>
 
 <histogram name="V8.MemoryHeapSampleTotalCommitted" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>rmcilroy@chromium.org</owner>
   <summary>
     The total size of committed memory used by V8 after each GC in KB.
@@ -34195,7 +34310,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryHeapSampleTotalUsed" units="KB">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>rmcilroy@chromium.org</owner>
   <summary>
     The total size of live memory used by V8 after each GC in KB.
@@ -35055,8 +35171,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="WebFont.CacheHit" enum="WebFontCacheHit">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <summary>
     Recorded upon web fonts load. Counts the number of times web font is loaded
@@ -35266,8 +35383,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="WebFont.LocalFontUsed" enum="BooleanUsage">
-  <owner>dmikurube@chromium.org</owner>
+  <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <summary>
     Whether a locallly installed font is actually used when @font-face had local
