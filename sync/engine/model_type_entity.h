@@ -46,7 +46,8 @@ class SYNC_EXPORT_PRIVATE ModelTypeEntity {
       const sync_pb::EntitySpecifics& specifics,
       bool deleted,
       base::Time ctime,
-      base::Time mtime);
+      base::Time mtime,
+      const std::string& encryption_key_name);
 
   // TODO(rlarocque): Implement FromDisk constructor when we implement storage.
 
@@ -79,10 +80,16 @@ class SYNC_EXPORT_PRIVATE ModelTypeEntity {
   void ApplyUpdateFromServer(int64 update_version,
                              bool deleted,
                              const sync_pb::EntitySpecifics& specifics,
-                             base::Time mtime);
+                             base::Time mtime,
+                             const std::string& encryption_key_name);
 
   // Applies a local change to this item.
   void MakeLocalChange(const sync_pb::EntitySpecifics& specifics);
+
+  // Schedule a commit if the |name| does not match this item's last known
+  // encryption key.  The worker that performs the commit is expected to
+  // encrypt the item using the latest available key.
+  void UpdateDesiredEncryptionKey(const std::string& name);
 
   // Applies a local deletion to this item.
   void Delete();
@@ -104,7 +111,8 @@ class SYNC_EXPORT_PRIVATE ModelTypeEntity {
   // reached the server.
   void ReceiveCommitResponse(const std::string& id,
                              int64 sequence_number,
-                             int64 response_version);
+                             int64 response_version,
+                             const std::string& encryption_key_name);
 
   // Clears any in-memory sync state associated with outstanding commits.
   void ClearTransientSyncState();
@@ -124,7 +132,8 @@ class SYNC_EXPORT_PRIVATE ModelTypeEntity {
                   const sync_pb::EntitySpecifics& specifics,
                   bool deleted,
                   base::Time ctime,
-                  base::Time mtime);
+                  base::Time mtime,
+                  const std::string& encryption_key_name);
 
   // A sequence number used to track in-progress commits.  Each local change
   // increments this number.
@@ -185,6 +194,10 @@ class SYNC_EXPORT_PRIVATE ModelTypeEntity {
   // doesn't bother to inspect their values.
   base::Time ctime_;
   base::Time mtime_;
+
+  // The name of the encryption key used to encrypt this item on the server.
+  // Empty when no encryption is in use.
+  std::string encryption_key_name_;
 };
 
 }  // namespace syncer

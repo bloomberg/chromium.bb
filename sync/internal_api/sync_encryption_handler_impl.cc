@@ -1519,7 +1519,7 @@ bool SyncEncryptionHandlerImpl::GetKeystoreDecryptor(
   DCHECK(!keystore_key.empty());
   DCHECK(cryptographer.is_ready());
   std::string serialized_nigori;
-  serialized_nigori = cryptographer.GetDefaultNigoriKey();
+  serialized_nigori = cryptographer.GetDefaultNigoriKeyData();
   if (serialized_nigori.empty()) {
     LOG(ERROR) << "Failed to get cryptographer bootstrap token.";
     return false;

@@ -193,8 +193,14 @@ void EntityTracker::ReceiveCommitResponse(const std::string& response_id,
 }
 
 void EntityTracker::ReceiveUpdate(int64 version) {
-  highest_gu_response_version_ =
-      std::max(highest_gu_response_version_, version);
+  if (version <= highest_gu_response_version_)
+    return;
+
+  highest_gu_response_version_ = version;
+
+  // Got an applicable update newer than any pending updates.  It must be safe
+  // to discard the old pending update, if there was one.
+  ClearPendingUpdate();
 
   if (IsInConflict()) {
     // Incoming update clobbers the pending commit on the sync thread.
@@ -203,9 +209,34 @@ void EntityTracker::ReceiveUpdate(int64 version) {
   }
 }
 
+bool EntityTracker::ReceivePendingUpdate(const UpdateResponseData& data) {
+  if (data.response_version < highest_gu_response_version_)
+    return false;
+
+  highest_gu_response_version_ = data.response_version;
+  pending_update_.reset(new UpdateResponseData(data));
+  ClearPendingCommit();
+  return true;
+}
+
+bool EntityTracker::HasPendingUpdate() const {
+  return !!pending_update_;
+}
+
+UpdateResponseData EntityTracker::GetPendingUpdate() const {
+  return *pending_update_;
+}
+
+void EntityTracker::ClearPendingUpdate() {
+  pending_update_.reset();
+}
+
 bool EntityTracker::IsInConflict() const {
   if (!is_commit_pending_)
     return false;
+
+  if (HasPendingUpdate())
+    return true;
 
   if (highest_gu_response_version_ <= highest_commit_response_version_) {
     // The most recent server state was created in a commit made by this

@@ -77,6 +77,22 @@ class ModelTypeSyncProxyImplTest : public ::testing::Test {
                         const std::string& value);
   void TombstoneFromServer(int64 version_offset, const std::string& tag);
 
+  // Emulate the receipt of pending updates from the server.
+  // Pending updates are usually caused by a temporary decryption failure.
+  void PendingUpdateFromServer(int64 version_offset,
+                               const std::string& tag,
+                               const std::string& value,
+                               const std::string& key_name);
+
+  // Returns true if the proxy has an pending update with specified tag.
+  bool HasPendingUpdate(const std::string& tag) const;
+
+  // Returns the pending update with the specified tag.
+  UpdateResponseData GetPendingUpdate(const std::string& tag) const;
+
+  // Returns the number of pending updates.
+  size_t GetNumPendingUpdates() const;
+
   // Read emitted commit requests as batches.
   size_t GetNumCommitRequestLists();
   CommitRequestDataList GetNthCommitRequestList(size_t n);
@@ -88,10 +104,22 @@ class ModelTypeSyncProxyImplTest : public ::testing::Test {
   // Sends the type sync proxy a successful commit response.
   void SuccessfulCommitResponse(const CommitRequestData& request_data);
 
+  // Sends the type sync proxy an updated DataTypeState to let it know that
+  // the desired encryption key has changed.
+  void UpdateDesiredEncryptionKey(const std::string& key_name);
+
+  // Sets the key_name that the mock ModelTypeSyncWorker will claim is in use
+  // when receiving items.
+  void SetServerEncryptionKey(const std::string& key_name);
+
  private:
   static std::string GenerateTagHash(const std::string& tag);
   static sync_pb::EntitySpecifics GenerateSpecifics(const std::string& tag,
                                                     const std::string& value);
+  static sync_pb::EntitySpecifics GenerateEncryptedSpecifics(
+      const std::string& tag,
+      const std::string& value,
+      const std::string& key_name);
 
   int64 GetServerVersion(const std::string& tag);
   void SetServerVersion(const std::string& tag, int64 version);
@@ -141,7 +169,7 @@ void ModelTypeSyncProxyImplTest::Disable() {
 void ModelTypeSyncProxyImplTest::ReEnable() {
   DCHECK(!type_sync_proxy_->IsConnected());
 
-  // Prepare a new NonBlockingTypeProcesorCore instance, just as we would
+  // Prepare a new MockModelTypeSyncWorker instance, just as we would
   // if this happened in the real world.
   mock_worker_ = new MockModelTypeSyncWorker();
   injectable_sync_context_proxy_.reset(
@@ -165,7 +193,8 @@ void ModelTypeSyncProxyImplTest::OnInitialSyncDone() {
   data_type_state_.initial_sync_done = true;
   UpdateResponseDataList empty_update_list;
 
-  type_sync_proxy_->OnUpdateReceived(data_type_state_, empty_update_list);
+  type_sync_proxy_->OnUpdateReceived(
+      data_type_state_, empty_update_list, empty_update_list);
 }
 
 void ModelTypeSyncProxyImplTest::UpdateFromServer(int64 version_offset,
@@ -177,7 +206,25 @@ void ModelTypeSyncProxyImplTest::UpdateFromServer(int64 version_offset,
 
   UpdateResponseDataList list;
   list.push_back(data);
-  type_sync_proxy_->OnUpdateReceived(data_type_state_, list);
+  type_sync_proxy_->OnUpdateReceived(
+      data_type_state_, list, UpdateResponseDataList());
+}
+
+void ModelTypeSyncProxyImplTest::PendingUpdateFromServer(
+    int64 version_offset,
+    const std::string& tag,
+    const std::string& value,
+    const std::string& key_name) {
+  const std::string tag_hash = GenerateTagHash(tag);
+  UpdateResponseData data = mock_worker_->UpdateFromServer(
+      version_offset,
+      tag_hash,
+      GenerateEncryptedSpecifics(tag, value, key_name));
+
+  UpdateResponseDataList list;
+  list.push_back(data);
+  type_sync_proxy_->OnUpdateReceived(
+      data_type_state_, UpdateResponseDataList(), list);
 }
 
 void ModelTypeSyncProxyImplTest::TombstoneFromServer(int64 version_offset,
@@ -190,7 +237,40 @@ void ModelTypeSyncProxyImplTest::TombstoneFromServer(int64 version_offset,
 
   UpdateResponseDataList list;
   list.push_back(data);
-  type_sync_proxy_->OnUpdateReceived(data_type_state_, list);
+  type_sync_proxy_->OnUpdateReceived(
+      data_type_state_, list, UpdateResponseDataList());
+}
+
+bool ModelTypeSyncProxyImplTest::HasPendingUpdate(
+    const std::string& tag) const {
+  const std::string client_tag_hash = GenerateTagHash(tag);
+  const UpdateResponseDataList list = type_sync_proxy_->GetPendingUpdates();
+  for (UpdateResponseDataList::const_iterator it = list.begin();
+       it != list.end();
+       ++it) {
+    if (it->client_tag_hash == client_tag_hash)
+      return true;
+  }
+  return false;
+}
+
+UpdateResponseData ModelTypeSyncProxyImplTest::GetPendingUpdate(
+    const std::string& tag) const {
+  DCHECK(HasPendingUpdate(tag));
+  const std::string client_tag_hash = GenerateTagHash(tag);
+  const UpdateResponseDataList list = type_sync_proxy_->GetPendingUpdates();
+  for (UpdateResponseDataList::const_iterator it = list.begin();
+       it != list.end();
+       ++it) {
+    if (it->client_tag_hash == client_tag_hash)
+      return *it;
+  }
+  NOTREACHED();
+  return UpdateResponseData();
+}
+
+size_t ModelTypeSyncProxyImplTest::GetNumPendingUpdates() const {
+  return type_sync_proxy_->GetPendingUpdates().size();
 }
 
 void ModelTypeSyncProxyImplTest::SuccessfulCommitResponse(
@@ -198,6 +278,18 @@ void ModelTypeSyncProxyImplTest::SuccessfulCommitResponse(
   CommitResponseDataList list;
   list.push_back(mock_worker_->SuccessfulCommitResponse(request_data));
   type_sync_proxy_->OnCommitCompleted(data_type_state_, list);
+}
+
+void ModelTypeSyncProxyImplTest::UpdateDesiredEncryptionKey(
+    const std::string& key_name) {
+  data_type_state_.encryption_key_name = key_name;
+  type_sync_proxy_->OnUpdateReceived(
+      data_type_state_, UpdateResponseDataList(), UpdateResponseDataList());
+}
+
+void ModelTypeSyncProxyImplTest::SetServerEncryptionKey(
+    const std::string& key_name) {
+  mock_worker_->SetServerEncryptionKey(key_name);
 }
 
 std::string ModelTypeSyncProxyImplTest::GenerateTagHash(
@@ -211,6 +303,19 @@ sync_pb::EntitySpecifics ModelTypeSyncProxyImplTest::GenerateSpecifics(
   sync_pb::EntitySpecifics specifics;
   specifics.mutable_preference()->set_name(tag);
   specifics.mutable_preference()->set_value(value);
+  return specifics;
+}
+
+// These tests never decrypt anything, so we can get away with faking the
+// encryption for now.
+sync_pb::EntitySpecifics ModelTypeSyncProxyImplTest::GenerateEncryptedSpecifics(
+    const std::string& tag,
+    const std::string& value,
+    const std::string& key_name) {
+  sync_pb::EntitySpecifics specifics;
+  AddDefaultFieldValue(kModelType, &specifics);
+  specifics.mutable_encrypted()->set_key_name(key_name);
+  specifics.mutable_encrypted()->set_blob("BLOB" + key_name);
   return specifics;
 }
 
@@ -458,6 +563,127 @@ TEST_F(ModelTypeSyncProxyImplTest, Disable) {
   EXPECT_TRUE(HasCommitRequestForTag("tag1"));
   EXPECT_TRUE(HasCommitRequestForTag("tag2"));
   EXPECT_TRUE(HasCommitRequestForTag("tag3"));
+}
+
+// Test receipt of pending updates.
+TEST_F(ModelTypeSyncProxyImplTest, ReceivePendingUpdates) {
+  EXPECT_FALSE(HasPendingUpdate("tag1"));
+  EXPECT_EQ(0U, GetNumPendingUpdates());
+
+  // Receive a pending update.
+  PendingUpdateFromServer(5, "tag1", "value1", "key1");
+  EXPECT_EQ(1U, GetNumPendingUpdates());
+  ASSERT_TRUE(HasPendingUpdate("tag1"));
+  UpdateResponseData data1 = GetPendingUpdate("tag1");
+  EXPECT_EQ(5, data1.response_version);
+
+  // Receive an updated version of a pending update.
+  // It should overwrite the existing item.
+  PendingUpdateFromServer(10, "tag1", "value15", "key1");
+  EXPECT_EQ(1U, GetNumPendingUpdates());
+  ASSERT_TRUE(HasPendingUpdate("tag1"));
+  UpdateResponseData data2 = GetPendingUpdate("tag1");
+  EXPECT_EQ(15, data2.response_version);
+
+  // Receive a stale version of a pending update.
+  // It should have no effect.
+  PendingUpdateFromServer(-3, "tag1", "value12", "key1");
+  EXPECT_EQ(1U, GetNumPendingUpdates());
+  ASSERT_TRUE(HasPendingUpdate("tag1"));
+  UpdateResponseData data3 = GetPendingUpdate("tag1");
+  EXPECT_EQ(15, data3.response_version);
+}
+
+// Test that Disable clears pending update state.
+TEST_F(ModelTypeSyncProxyImplTest, DisableWithPendingUpdates) {
+  PendingUpdateFromServer(5, "tag1", "value1", "key1");
+  EXPECT_EQ(1U, GetNumPendingUpdates());
+  ASSERT_TRUE(HasPendingUpdate("tag1"));
+
+  Disable();
+  ReEnable();
+
+  EXPECT_EQ(0U, GetNumPendingUpdates());
+  EXPECT_FALSE(HasPendingUpdate("tag1"));
+}
+
+// Test that Disconnect does not clear pending update state.
+TEST_F(ModelTypeSyncProxyImplTest, DisconnectWithPendingUpdates) {
+  PendingUpdateFromServer(5, "tag1", "value1", "key1");
+  EXPECT_EQ(1U, GetNumPendingUpdates());
+  ASSERT_TRUE(HasPendingUpdate("tag1"));
+
+  Disconnect();
+  ReEnable();
+
+  EXPECT_EQ(1U, GetNumPendingUpdates());
+  EXPECT_TRUE(HasPendingUpdate("tag1"));
+}
+
+// Test re-encrypt everything when desired encryption key changes.
+TEST_F(ModelTypeSyncProxyImplTest, ReEncryptCommitsWithNewKey) {
+  InitializeToReadyState();
+
+  // Commit an item.
+  WriteItem("tag1", "value1");
+  ASSERT_TRUE(HasCommitRequestForTag("tag1"));
+  const CommitRequestData& tag1_v1_data = GetLatestCommitRequestForTag("tag1");
+  SuccessfulCommitResponse(tag1_v1_data);
+
+  // Create another item and don't wait for its commit response.
+  WriteItem("tag2", "value2");
+
+  ASSERT_EQ(2U, GetNumCommitRequestLists());
+
+  // Receive notice that the account's desired encryption key has changed.
+  UpdateDesiredEncryptionKey("k1");
+
+  // That should trigger a new commit request.
+  ASSERT_EQ(3U, GetNumCommitRequestLists());
+  EXPECT_EQ(2U, GetNthCommitRequestList(2).size());
+
+  const CommitRequestData& tag1_enc = GetLatestCommitRequestForTag("tag1");
+  const CommitRequestData& tag2_enc = GetLatestCommitRequestForTag("tag2");
+
+  SuccessfulCommitResponse(tag1_enc);
+  SuccessfulCommitResponse(tag2_enc);
+
+  // And that should be the end of it.
+  ASSERT_EQ(3U, GetNumCommitRequestLists());
+}
+
+// Test receipt of updates with new and old keys.
+TEST_F(ModelTypeSyncProxyImplTest, ReEncryptUpdatesWithNewKey) {
+  InitializeToReadyState();
+
+  // Receive an unencrpted update.
+  UpdateFromServer(5, "no_enc", "value1");
+
+  ASSERT_EQ(0U, GetNumCommitRequestLists());
+
+  // Set desired encryption key to k2 to force updates to some items.
+  UpdateDesiredEncryptionKey("k2");
+
+  ASSERT_EQ(1U, GetNumCommitRequestLists());
+  EXPECT_EQ(1U, GetNthCommitRequestList(0).size());
+  EXPECT_TRUE(HasCommitRequestForTag("no_enc"));
+
+  // Receive an update that was encrypted with key k1.
+  SetServerEncryptionKey("k1");
+  UpdateFromServer(10, "enc_k1", "value1");
+
+  // Receipt of updates encrypted with old key also forces a re-encrypt commit.
+  ASSERT_EQ(2U, GetNumCommitRequestLists());
+  EXPECT_EQ(1U, GetNthCommitRequestList(1).size());
+  EXPECT_TRUE(HasCommitRequestForTag("enc_k1"));
+
+  // Receive an update that was encrypted with key k2.
+  SetServerEncryptionKey("k2");
+  UpdateFromServer(15, "enc_k2", "value1");
+
+  // That was the correct key, so no re-encryption is required.
+  EXPECT_EQ(2U, GetNumCommitRequestLists());
+  EXPECT_FALSE(HasCommitRequestForTag("enc_k2"));
 }
 
 }  // namespace syncer

@@ -15,6 +15,7 @@
 #include "sync/engine/model_type_sync_worker_impl.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/sessions/directory_type_debug_info_emitter.h"
+#include "sync/util/cryptographer.h"
 
 namespace syncer {
 
@@ -32,7 +33,8 @@ class ModelTypeSyncProxyWrapper : public ModelTypeSyncProxy {
       const CommitResponseDataList& response_list) OVERRIDE;
   virtual void OnUpdateReceived(
       const DataTypeState& type_state,
-      const UpdateResponseDataList& response_list) OVERRIDE;
+      const UpdateResponseDataList& response_list,
+      const UpdateResponseDataList& pending_updates) OVERRIDE;
 
  private:
   base::WeakPtr<ModelTypeSyncProxyImpl> processor_;
@@ -61,13 +63,15 @@ void ModelTypeSyncProxyWrapper::OnCommitCompleted(
 
 void ModelTypeSyncProxyWrapper::OnUpdateReceived(
     const DataTypeState& type_state,
-    const UpdateResponseDataList& response_list) {
+    const UpdateResponseDataList& response_list,
+    const UpdateResponseDataList& pending_updates) {
   processor_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ModelTypeSyncProxyImpl::OnUpdateReceived,
                  processor_,
                  type_state,
-                 response_list));
+                 response_list,
+                 pending_updates));
 }
 
 class ModelTypeSyncWorkerWrapper : public ModelTypeSyncWorker {
@@ -107,6 +111,7 @@ ModelTypeRegistry::ModelTypeRegistry(
     syncable::Directory* directory,
     NudgeHandler* nudge_handler)
     : directory_(directory),
+      cryptographer_provider_(directory_),
       nudge_handler_(nudge_handler),
       weak_ptr_factory_(this) {
   for (size_t i = 0u; i < workers.size(); ++i) {
@@ -185,6 +190,7 @@ void ModelTypeRegistry::SetEnabledDirectoryTypes(
 void ModelTypeRegistry::ConnectSyncTypeToWorker(
     ModelType type,
     const DataTypeState& data_type_state,
+    const UpdateResponseDataList& saved_pending_updates,
     const scoped_refptr<base::SequencedTaskRunner>& type_task_runner,
     const base::WeakPtr<ModelTypeSyncProxyImpl>& proxy_impl) {
   DVLOG(1) << "Enabling an off-thread sync type: " << ModelTypeToString(type);
@@ -192,8 +198,13 @@ void ModelTypeRegistry::ConnectSyncTypeToWorker(
   // Initialize Worker -> Proxy communication channel.
   scoped_ptr<ModelTypeSyncProxy> proxy(
       new ModelTypeSyncProxyWrapper(proxy_impl, type_task_runner));
-  scoped_ptr<ModelTypeSyncWorkerImpl> worker(new ModelTypeSyncWorkerImpl(
-      type, data_type_state, nudge_handler_, proxy.Pass()));
+  scoped_ptr<ModelTypeSyncWorkerImpl> worker(
+      new ModelTypeSyncWorkerImpl(type,
+                                  data_type_state,
+                                  saved_pending_updates,
+                                  &cryptographer_provider_,
+                                  nudge_handler_,
+                                  proxy.Pass()));
 
   // Initialize Proxy -> Worker communication channel.
   scoped_ptr<ModelTypeSyncWorker> wrapped_worker(

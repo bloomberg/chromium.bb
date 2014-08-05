@@ -36,7 +36,8 @@ class MockModelTypeSyncProxy : public ModelTypeSyncProxy {
       const CommitResponseDataList& response_list) OVERRIDE;
   virtual void OnUpdateReceived(
       const DataTypeState& type_state,
-      const UpdateResponseDataList& response_list) OVERRIDE;
+      const UpdateResponseDataList& response_list,
+      const UpdateResponseDataList& pending_updates) OVERRIDE;
 
   // By default, this object behaves as if all messages are processed
   // immediately.  Sometimes it is useful to defer work until later, as might
@@ -65,6 +66,7 @@ class MockModelTypeSyncProxy : public ModelTypeSyncProxy {
   // Does not includes repsonses that are in pending tasks.
   size_t GetNumUpdateResponses() const;
   UpdateResponseDataList GetNthUpdateResponse(size_t n) const;
+  UpdateResponseDataList GetNthPendingUpdates(size_t n) const;
   DataTypeState GetNthTypeStateReceivedInUpdateResponse(size_t n) const;
 
   // Getters to access the log of received commit responses.
@@ -93,7 +95,8 @@ class MockModelTypeSyncProxy : public ModelTypeSyncProxy {
   //
   // Implemented as an Impl method so we can defer its execution in some cases.
   void OnUpdateReceivedImpl(const DataTypeState& type_state,
-                            const UpdateResponseDataList& response_list);
+                            const UpdateResponseDataList& response_list,
+                            const UpdateResponseDataList& pending_updates);
 
   // Getter and setter for per-item sequence number tracking.
   int64 GetCurrentSequenceNumber(const std::string& tag_hash) const;
@@ -116,6 +119,7 @@ class MockModelTypeSyncProxy : public ModelTypeSyncProxy {
   // A log of messages received by this object.
   std::vector<CommitResponseDataList> received_commit_responses_;
   std::vector<UpdateResponseDataList> received_update_responses_;
+  std::vector<UpdateResponseDataList> received_pending_updates_;
   std::vector<DataTypeState> type_states_received_on_update_;
   std::vector<DataTypeState> type_states_received_on_commit_;
 

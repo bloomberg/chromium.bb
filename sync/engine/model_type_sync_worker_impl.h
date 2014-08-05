@@ -10,11 +10,13 @@
 #include "base/threading/non_thread_safe.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/commit_contributor.h"
+#include "sync/engine/cryptographer_provider.h"
 #include "sync/engine/model_type_sync_worker.h"
 #include "sync/engine/nudge_handler.h"
 #include "sync/engine/update_handler.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
+#include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace base {
@@ -53,11 +55,18 @@ class SYNC_EXPORT ModelTypeSyncWorkerImpl : public UpdateHandler,
  public:
   ModelTypeSyncWorkerImpl(ModelType type,
                           const DataTypeState& initial_state,
+                          const UpdateResponseDataList& saved_pending_updates,
+                          CryptographerProvider* cryptographer_provider,
                           NudgeHandler* nudge_handler,
                           scoped_ptr<ModelTypeSyncProxy> type_sync_proxy);
   virtual ~ModelTypeSyncWorkerImpl();
 
   ModelType GetModelType() const;
+
+  bool IsEncryptionRequired() const;
+  void SetEncryptionKeyName(const std::string& name);
+
+  void OnCryptographerStateChanged();
 
   // UpdateHandler implementation.
   virtual void GetDownloadProgress(
@@ -87,20 +96,45 @@ class SYNC_EXPORT ModelTypeSyncWorkerImpl : public UpdateHandler,
 
  private:
   typedef std::map<std::string, EntityTracker*> EntityMap;
+  typedef std::map<std::string, UpdateResponseData*> UpdateMap;
 
   // Stores a single commit request in this object's internal state.
   void StorePendingCommit(const CommitRequestData& request);
 
-  // Returns true if all data type state required for commits is available.  In
-  // practice, this means that it returns true from the time this object first
-  // receives notice of a successful update fetch from the server.
-  bool CanCommitItems() const;
+  // Returns true if this type has successfully fetched all available updates
+  // from the server at least once.  Our state may or may not be stale, but at
+  // least we know that it was valid at some point in the past.
+  bool IsTypeInitialized() const;
+
+  // Returns true if this type is prepared to commit items.  Currently, this
+  // depends on having downloaded the initial data and having the encryption
+  // settings in a good state.
+  bool CanCommitItems(Cryptographer* cryptographer) const;
 
   // Initializes the parts of a commit entity that are the responsibility of
   // this class, and not the EntityTracker.  Some fields, like the
   // client-assigned ID, can only be set by an entity with knowledge of the
   // entire data type's state.
-  void HelpInitializeCommitEntity(sync_pb::SyncEntity* commit_entity);
+  void HelpInitializeCommitEntity(Cryptographer* cryptographer,
+                                  sync_pb::SyncEntity* commit_entity);
+
+  // Attempts to decrypt pending updates stored in the EntityMap.  If
+  // successful, will remove the update from the its EntityTracker and forward
+  // it to the proxy thread for application.
+  void TryDecryptPendingUpdates();
+
+  // Attempts to decrypt the given specifics and return them in the |out|
+  // parameter.  Assumes cryptographer->CanDecrypt(specifics) returned true.
+  //
+  // Returns false if the decryption failed.  There are no guarantees about the
+  // contents of |out| when that happens.
+  //
+  // In theory, this should never fail.  Only corrupt or invalid entries could
+  // cause this to fail, and no clients are known to create such entries.  The
+  // failure case is an attempt to be defensive against bad input.
+  static bool DecryptSpecifics(Cryptographer* cryptographer,
+                               const sync_pb::EntitySpecifics& in,
+                               sync_pb::EntitySpecifics* out);
 
   ModelType type_;
 
@@ -110,6 +144,10 @@ class SYNC_EXPORT ModelTypeSyncWorkerImpl : public UpdateHandler,
   // Pointer to the ModelTypeSyncProxy associated with this worker.
   // This is NULL when no proxy is connected..
   scoped_ptr<ModelTypeSyncProxy> type_sync_proxy_;
+
+  // A helper to provide access to the syncable::Directory's cryptographer.
+  // Not owned.
+  CryptographerProvider* cryptographer_provider_;
 
   // Interface used to access and send nudges to the sync scheduler.  Not owned.
   NudgeHandler* nudge_handler_;

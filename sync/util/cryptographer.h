@@ -176,9 +176,12 @@ class SYNC_EXPORT Cryptographer {
   // and/or has a different default key.
   bool KeybagIsStale(const sync_pb::EncryptedData& keybag) const;
 
+  // Returns the name of the Nigori key currently used for encryption.
+  std::string GetDefaultNigoriKeyName() const;
+
   // Returns a serialized sync_pb::NigoriKey version of current default
   // encryption key.
-  std::string GetDefaultNigoriKey() const;
+  std::string GetDefaultNigoriKeyData() const;
 
   // Generates a new Nigori from |serialized_nigori_key|, and if successful
   // installs the new nigori as the default key.

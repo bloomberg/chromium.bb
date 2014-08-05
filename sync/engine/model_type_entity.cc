@@ -24,7 +24,8 @@ scoped_ptr<ModelTypeEntity> ModelTypeEntity::NewLocalItem(
       specifics,
       false,
       now,
-      now));
+      now,
+      std::string()));
 }
 
 scoped_ptr<ModelTypeEntity> ModelTypeEntity::FromServerUpdate(
@@ -35,7 +36,8 @@ scoped_ptr<ModelTypeEntity> ModelTypeEntity::FromServerUpdate(
     const sync_pb::EntitySpecifics& specifics,
     bool deleted,
     base::Time ctime,
-    base::Time mtime) {
+    base::Time mtime,
+    const std::string& encryption_key_name) {
   return scoped_ptr<ModelTypeEntity>(new ModelTypeEntity(0,
                                                          0,
                                                          0,
@@ -47,7 +49,8 @@ scoped_ptr<ModelTypeEntity> ModelTypeEntity::FromServerUpdate(
                                                          specifics,
                                                          deleted,
                                                          ctime,
-                                                         mtime));
+                                                         mtime,
+                                                         encryption_key_name));
 }
 
 ModelTypeEntity::ModelTypeEntity(int64 sequence_number,
@@ -61,7 +64,8 @@ ModelTypeEntity::ModelTypeEntity(int64 sequence_number,
                                  const sync_pb::EntitySpecifics& specifics,
                                  bool deleted,
                                  base::Time ctime,
-                                 base::Time mtime)
+                                 base::Time mtime,
+                                 const std::string& encryption_key_name)
     : sequence_number_(sequence_number),
       commit_requested_sequence_number_(commit_requested_sequence_number),
       acked_sequence_number_(acked_sequence_number),
@@ -73,7 +77,8 @@ ModelTypeEntity::ModelTypeEntity(int64 sequence_number,
       specifics_(specifics),
       deleted_(deleted),
       ctime_(ctime),
-      mtime_(mtime) {
+      mtime_(mtime),
+      encryption_key_name_(encryption_key_name) {
 }
 
 ModelTypeEntity::~ModelTypeEntity() {
@@ -103,7 +108,8 @@ void ModelTypeEntity::ApplyUpdateFromServer(
     int64 update_version,
     bool deleted,
     const sync_pb::EntitySpecifics& specifics,
-    base::Time mtime) {
+    base::Time mtime,
+    const std::string& encryption_key_name) {
   // There was a conflict and the server just won it.
   // This implicitly acks all outstanding commits because a received update
   // will clobber any pending commits on the sync thread.
@@ -119,6 +125,15 @@ void ModelTypeEntity::MakeLocalChange(
     const sync_pb::EntitySpecifics& specifics) {
   sequence_number_++;
   specifics_ = specifics;
+}
+
+void ModelTypeEntity::UpdateDesiredEncryptionKey(const std::string& name) {
+  if (encryption_key_name_ == name)
+    return;
+
+  // Schedule commit with the expectation that the worker will re-encrypt with
+  // the latest encryption key as it does.
+  sequence_number_++;
 }
 
 void ModelTypeEntity::Delete() {
@@ -144,12 +159,15 @@ void ModelTypeEntity::SetCommitRequestInProgress() {
   commit_requested_sequence_number_ = sequence_number_;
 }
 
-void ModelTypeEntity::ReceiveCommitResponse(const std::string& id,
-                                            int64 sequence_number,
-                                            int64 response_version) {
+void ModelTypeEntity::ReceiveCommitResponse(
+    const std::string& id,
+    int64 sequence_number,
+    int64 response_version,
+    const std::string& encryption_key_name) {
   id_ = id;  // The server can assign us a new ID in a commit response.
   acked_sequence_number_ = sequence_number;
   base_version_ = response_version;
+  encryption_key_name_ = encryption_key_name;
 }
 
 void ModelTypeEntity::ClearTransientSyncState() {
