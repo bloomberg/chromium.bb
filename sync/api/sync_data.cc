@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "sync/api/attachments/attachment_service_proxy.h"
+#include "sync/internal_api/public/attachments/attachment_service_proxy.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base_node.h"
 #include "sync/protocol/proto_value_conversions.h"

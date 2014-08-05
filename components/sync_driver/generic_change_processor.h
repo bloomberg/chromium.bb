@@ -13,10 +13,10 @@
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_error_handler.h"
-#include "sync/api/attachments/attachment_service.h"
-#include "sync/api/attachments/attachment_service_proxy.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_merge_result.h"
+#include "sync/internal_api/public/attachments/attachment_service.h"
+#include "sync/internal_api/public/attachments/attachment_service_proxy.h"
 
 namespace syncer {
 class SyncData;

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_API_ATTACHMENTS_ATTACHMENT_SERVICE_PROXY_FOR_TEST_H_
-#define SYNC_API_ATTACHMENTS_ATTACHMENT_SERVICE_PROXY_FOR_TEST_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_SERVICE_PROXY_FOR_TEST_H_
+#define SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_SERVICE_PROXY_FOR_TEST_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "sync/api/attachments/attachment_service_proxy.h"
 #include "sync/base/sync_export.h"
+#include "sync/internal_api/public/attachments/attachment_service_proxy.h"
 
 namespace syncer {
 
@@ -48,4 +48,4 @@ class SYNC_EXPORT AttachmentServiceProxyForTest
 
 }  // namespace syncer
 
-#endif  // SYNC_API_ATTACHMENTS_ATTACHMENT_SERVICE_PROXY_FOR_TEST_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_SERVICE_PROXY_FOR_TEST_H_

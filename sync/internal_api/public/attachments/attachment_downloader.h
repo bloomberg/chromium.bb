@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_API_ATTACHMENTS_ATTACHMENT_DOWNLOADER_H_
-#define SYNC_API_ATTACHMENTS_ATTACHMENT_DOWNLOADER_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_DOWNLOADER_H_
+#define SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_DOWNLOADER_H_
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
@@ -62,4 +62,4 @@ class SYNC_EXPORT AttachmentDownloader {
 
 }  // namespace syncer
 
-#endif  // SYNC_API_ATTACHMENTS_ATTACHMENT_DOWNLOADER_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_DOWNLOADER_H_

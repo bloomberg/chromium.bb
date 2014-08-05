@@ -9,7 +9,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "google_apis/gaia/oauth2_token_service_request.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "sync/api/attachments/attachment_uploader.h"
+#include "sync/internal_api/public/attachments/attachment_uploader.h"
 
 class GURL;
 

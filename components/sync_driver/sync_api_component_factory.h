@@ -7,8 +7,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "sync/api/attachments/attachment_service.h"
 #include "sync/api/syncable_service.h"
+#include "sync/internal_api/public/attachments/attachment_service.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 namespace sync_driver {

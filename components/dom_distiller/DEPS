@@ -5,6 +5,7 @@ include_rules = [
   "+grit",  # For generated headers.
   "+jni",
   "+sync/api",
+  "+sync/internal_api/public/attachments", # Needed for tests.
   "+sync/protocol",
   "+third_party/dom_distiller_js",
   "+net/base",

@@ -1,0 +1,6 @@
+This directory contains the sync attachment interface code that is used by both
+consumers of sync and sync itself.
+
+Because parts of sync may depend on this code, it's important that it remains
+"leafy" and never depends on sync/internal_api/ or else we may end up with
+cycles.

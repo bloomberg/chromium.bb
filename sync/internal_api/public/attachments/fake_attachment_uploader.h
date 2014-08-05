@@ -6,7 +6,7 @@
 #define SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_FAKE_ATTACHMENT_UPLOADER_H_
 
 #include "base/threading/non_thread_safe.h"
-#include "sync/api/attachments/attachment_uploader.h"
+#include "sync/internal_api/public/attachments/attachment_uploader.h"
 
 namespace syncer {
 

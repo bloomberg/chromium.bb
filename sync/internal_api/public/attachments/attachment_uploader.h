@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_API_ATTACHMENTS_ATTACHMENT_UPLOADER_H_
-#define SYNC_API_ATTACHMENTS_ATTACHMENT_UPLOADER_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_UPLOADER_H_
+#define SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_UPLOADER_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -42,4 +42,4 @@ class SYNC_EXPORT AttachmentUploader {
 
 }  // namespace syncer
 
-#endif  // SYNC_API_ATTACHMENTS_ATTACHMENT_UPLOADER_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_UPLOADER_H_

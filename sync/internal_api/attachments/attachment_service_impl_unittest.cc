@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/api/attachments/attachment_service_impl.h"
+#include "sync/internal_api/public/attachments/attachment_service_impl.h"
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"

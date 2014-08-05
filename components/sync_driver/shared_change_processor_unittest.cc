@@ -15,8 +15,8 @@
 #include "components/sync_driver/generic_change_processor.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
 #include "components/sync_driver/sync_api_component_factory.h"
-#include "sync/api/attachments/attachment_service_impl.h"
 #include "sync/api/fake_syncable_service.h"
+#include "sync/internal_api/public/attachments/attachment_service_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

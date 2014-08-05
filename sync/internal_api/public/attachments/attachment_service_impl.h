@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_API_ATTACHMENTS_ATTACHMENT_SERVICE_IMPL_H_
-#define SYNC_API_ATTACHMENTS_ATTACHMENT_SERVICE_IMPL_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_SERVICE_IMPL_H_
+#define SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_SERVICE_IMPL_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "sync/api/attachments/attachment_downloader.h"
-#include "sync/api/attachments/attachment_service.h"
-#include "sync/api/attachments/attachment_service_proxy.h"
 #include "sync/api/attachments/attachment_store.h"
-#include "sync/api/attachments/attachment_uploader.h"
+#include "sync/internal_api/public/attachments/attachment_downloader.h"
+#include "sync/internal_api/public/attachments/attachment_service.h"
+#include "sync/internal_api/public/attachments/attachment_service_proxy.h"
+#include "sync/internal_api/public/attachments/attachment_uploader.h"
 
 namespace syncer {
 
@@ -88,4 +88,4 @@ class SYNC_EXPORT AttachmentServiceImpl : public AttachmentService,
 
 }  // namespace syncer
 
-#endif  // SYNC_API_ATTACHMENTS_ATTACHMENT_SERVICE_IMPL_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_SERVICE_IMPL_H_

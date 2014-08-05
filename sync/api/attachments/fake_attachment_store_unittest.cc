@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/public/attachments/fake_attachment_store.h"
+#include "sync/api/attachments/fake_attachment_store.h"
 
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"

@@ -63,12 +63,12 @@
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/oauth2_token_service_request.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "sync/api/attachments/attachment_downloader.h"
-#include "sync/api/attachments/attachment_service.h"
-#include "sync/api/attachments/attachment_service_impl.h"
+#include "sync/api/attachments/fake_attachment_store.h"
 #include "sync/api/syncable_service.h"
+#include "sync/internal_api/public/attachments/attachment_downloader.h"
+#include "sync/internal_api/public/attachments/attachment_service.h"
+#include "sync/internal_api/public/attachments/attachment_service_impl.h"
 #include "sync/internal_api/public/attachments/attachment_uploader_impl.h"
-#include "sync/internal_api/public/attachments/fake_attachment_store.h"
 
 #if defined(ENABLE_APP_LIST)
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"

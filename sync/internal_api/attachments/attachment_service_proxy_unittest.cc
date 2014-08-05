@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/api/attachments/attachment_service_proxy.h"
+#include "sync/internal_api/public/attachments/attachment_service_proxy.h"
 
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
@@ -14,8 +14,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
 #include "sync/api/attachments/attachment.h"
-#include "sync/api/attachments/attachment_service.h"
-#include "sync/api/sync_data.h"
+#include "sync/internal_api/public/attachments/attachment_service.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -101,11 +100,6 @@ class AttachmentServiceProxyTest : public testing::Test,
     proxy.reset(new AttachmentServiceProxy(stub_thread->message_loop_proxy(),
                                            stub->AsWeakPtr()));
 
-    sync_data =
-        SyncData::CreateLocalData("tag", "title", sync_pb::EntitySpecifics());
-    sync_data_delete =
-        SyncData::CreateLocalDelete("tag", syncer::PREFERENCES);
-
     callback_get_or_download =
         base::Bind(&AttachmentServiceProxyTest::IncrementGetOrDownload,
                    base::Unretained(this));
@@ -160,9 +154,6 @@ class AttachmentServiceProxyTest : public testing::Test,
   scoped_ptr<base::Thread> stub_thread;
   scoped_ptr<StubAttachmentService> stub;
   scoped_ptr<AttachmentServiceProxy> proxy;
-
-  SyncData sync_data;
-  SyncData sync_data_delete;
 
   AttachmentService::GetOrDownloadCallback callback_get_or_download;
   AttachmentService::DropCallback callback_drop;

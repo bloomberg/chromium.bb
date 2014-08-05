@@ -10,8 +10,8 @@
 #include "base/tracked_objects.h"
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/fake_generic_change_processor.h"
-#include "sync/api/attachments/attachment_service_impl.h"
 #include "sync/api/fake_syncable_service.h"
+#include "sync/internal_api/public/attachments/attachment_service_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;

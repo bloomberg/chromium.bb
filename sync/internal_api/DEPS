@@ -5,6 +5,10 @@ include_rules = [
   "+net/test",
   "+net/url_request",
   "+sql",
+  # For accessing attachment primitives like Attachment and AttachmentId.  This
+  # dependency is OK because sync/api/attachments is "leafy" and won't depend on
+  # sync/internal_api/.
+  "+sync/api/attachments",
   "+sync/base",
   "+sync/engine",
   "+sync/js",

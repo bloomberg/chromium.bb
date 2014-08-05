@@ -11,9 +11,9 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "sync/api/attachments/attachment_id.h"
-#include "sync/api/attachments/attachment_service.h"
-#include "sync/api/attachments/attachment_service_impl.h"
-#include "sync/api/attachments/attachment_service_proxy.h"
+#include "sync/internal_api/public/attachments/attachment_service.h"
+#include "sync/internal_api/public/attachments/attachment_service_impl.h"
+#include "sync/internal_api/public/attachments/attachment_service_proxy.h"
 #include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

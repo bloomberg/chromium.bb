@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/api/attachments/attachment_service_proxy_for_test.h"
+#include "sync/internal_api/public/attachments/attachment_service_proxy_for_test.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/thread_task_runner_handle.h"
-#include "sync/api/attachments/attachment_service_impl.h"
+#include "sync/internal_api/public/attachments/attachment_service_impl.h"
 
 namespace syncer {
 
