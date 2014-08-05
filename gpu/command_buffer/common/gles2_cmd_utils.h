@@ -156,8 +156,14 @@ class GLES2_UTILS_EXPORT GLES2Util {
   static uint32_t GetChannelsNeededForAttachmentType(
       int type, uint32_t max_color_attachments);
 
+  // Return true if value is neither a power of two nor zero.
   static bool IsNPOT(uint32_t value) {
-    return value > 0 && (value & (value - 1)) != 0;
+    return (value & (value - 1)) != 0;
+  }
+
+  // Return true if value is a power of two or zero.
+  static bool IsPOT(uint32_t value) {
+    return (value & (value - 1)) == 0;
   }
 
   static std::string GetStringEnum(uint32_t value);

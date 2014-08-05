@@ -7205,13 +7205,15 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
   }
   GLsizei component_size =
       GLES2Util::GetGLTypeSizeForTexturesAndBuffers(type);
-  if (offset % component_size > 0) {
+  // component_size must be a power of two to use & as optimized modulo.
+  DCHECK(GLES2Util::IsPOT(component_size));
+  if (offset & (component_size - 1)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glVertexAttribPointer", "offset not valid for type");
     return error::kNoError;
   }
-  if (stride % component_size > 0) {
+  if (stride & (component_size - 1)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glVertexAttribPointer", "stride not valid for type");
@@ -7984,8 +7986,7 @@ bool IsValidDXTSize(GLint level, GLsizei size) {
 }
 
 bool IsValidPVRTCSize(GLint level, GLsizei size) {
-  // Ensure that the size is a power of two
-  return (size & (size - 1)) == 0;
+  return GLES2Util::IsPOT(size);
 }
 
 }  // anonymous namespace.
