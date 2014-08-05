@@ -59,6 +59,8 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_constants.h"
@@ -744,6 +746,7 @@ class ExtensionServiceTest : public extensions::ExtensionServiceTestBase,
     FAILED,
     UPDATED,
     INSTALLED,
+    DISABLED,
     ENABLED
   };
 
@@ -772,6 +775,18 @@ class ExtensionServiceTest : public extensions::ExtensionServiceTestBase,
                                  const content::NotificationDetails& details) {
     return content::Source<extensions::CrxInstaller>(source).ptr() ==
            *installer;
+  }
+
+  void PackCRXAndUpdateExtension(const std::string& id,
+                                 const base::FilePath& dir_path,
+                                 const base::FilePath& pem_path,
+                                 UpdateState expected_state) {
+    base::ScopedTempDir temp_dir;
+    EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
+    base::FilePath crx_path = temp_dir.path().AppendASCII("temp.crx");
+
+    PackCRX(dir_path, pem_path, crx_path);
+    UpdateExtension(id, crx_path, expected_state);
   }
 
   void UpdateExtension(const std::string& id,
@@ -6104,7 +6119,104 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
   // TODO(akalin): Figure out a way to test |info.ShouldAllowInstall()|.
 }
 
-TEST_F(ExtensionServiceTest, SyncUninstallForSupervisedUser) {
+TEST_F(ExtensionServiceTest, SupervisedUser_InstallOnlyAllowedByCustodian) {
+  ExtensionServiceInitParams params = CreateDefaultInitParams();
+  params.profile_is_supervised = true;
+  InitializeExtensionService(params);
+
+  SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForProfile(profile());
+  GetManagementPolicy()->RegisterProvider(supervised_user_service);
+
+  base::FilePath path1 = data_dir().AppendASCII("good.crx");
+  base::FilePath path2 = data_dir().AppendASCII("good2048.crx");
+  const Extension* extensions[] = {
+    InstallCRX(path1, INSTALL_FAILED),
+    InstallCRX(path2, INSTALL_NEW, Extension::WAS_INSTALLED_BY_CUSTODIAN)
+  };
+
+  // Only the extension with the "installed by custodian" flag should have been
+  // installed and enabled.
+  EXPECT_FALSE(extensions[0]);
+  ASSERT_TRUE(extensions[1]);
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(extensions[1]->id()));
+}
+
+TEST_F(ExtensionServiceTest, SupervisedUser_UpdateWithoutPermissionIncrease) {
+  ExtensionServiceInitParams params = CreateDefaultInitParams();
+  params.profile_is_supervised = true;
+  InitializeExtensionService(params);
+
+  SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForProfile(profile());
+  GetManagementPolicy()->RegisterProvider(supervised_user_service);
+
+  base::FilePath base_path = data_dir().AppendASCII("autoupdate");
+  base::FilePath pem_path = base_path.AppendASCII("key.pem");
+
+  base::FilePath path = base_path.AppendASCII("v1");
+  const Extension* extension =
+      PackAndInstallCRX(path, pem_path, INSTALL_NEW,
+                        Extension::WAS_INSTALLED_BY_CUSTODIAN);
+  // The extension must now be installed and enabled.
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(registry()->enabled_extensions().Contains(extension->id()));
+
+  // Save the id, as the extension object will be destroyed during updating.
+  std::string id = extension->id();
+
+  std::string old_version = extension->VersionString();
+
+  // Update to a new version.
+  path = base_path.AppendASCII("v2");
+  PackCRXAndUpdateExtension(id, path, pem_path, ENABLED);
+
+  // The extension should still be there and enabled.
+  extension = registry()->enabled_extensions().GetByID(id);
+  ASSERT_TRUE(extension);
+  // The version should have changed.
+  EXPECT_NE(extension->VersionString(), old_version);
+}
+
+TEST_F(ExtensionServiceTest, SupervisedUser_UpdateWithPermissionIncrease) {
+  ExtensionServiceInitParams params = CreateDefaultInitParams();
+  params.profile_is_supervised = true;
+  InitializeExtensionService(params);
+
+  SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForProfile(profile());
+  GetManagementPolicy()->RegisterProvider(supervised_user_service);
+
+  base::FilePath base_path = data_dir().AppendASCII("permissions_increase");
+  base::FilePath pem_path = base_path.AppendASCII("permissions.pem");
+
+  base::FilePath path = base_path.AppendASCII("v1");
+  const Extension* extension =
+      PackAndInstallCRX(path, pem_path, INSTALL_NEW,
+                        Extension::WAS_INSTALLED_BY_CUSTODIAN);
+  // The extension must now be installed and enabled.
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(registry()->enabled_extensions().Contains(extension->id()));
+
+  // Save the id, as the extension object will be destroyed during updating.
+  std::string id = extension->id();
+
+  std::string old_version = extension->VersionString();
+
+  // Update to a new version with increased permissions.
+  path = base_path.AppendASCII("v2");
+  PackCRXAndUpdateExtension(id, path, pem_path, DISABLED);
+
+  // The extension should still be there, but disabled.
+  EXPECT_FALSE(registry()->enabled_extensions().Contains(id));
+  extension = registry()->disabled_extensions().GetByID(id);
+  ASSERT_TRUE(extension);
+  // The version should have changed.
+  EXPECT_NE(extension->VersionString(), old_version);
+}
+
+TEST_F(ExtensionServiceTest,
+       SupervisedUser_SyncUninstallByCustodianSkipsPolicy) {
   InitializeEmptyExtensionService();
   InitializeExtensionSyncService();
   extension_sync_service()->MergeDataAndStartSyncing(
@@ -6117,7 +6229,7 @@ TEST_F(ExtensionServiceTest, SyncUninstallForSupervisedUser) {
   // Install two extensions.
   base::FilePath path1 = data_dir().AppendASCII("good.crx");
   base::FilePath path2 = data_dir().AppendASCII("good2048.crx");
-  const Extension* extensions[2] = {
+  const Extension* extensions[] = {
     InstallCRX(path1, INSTALL_NEW),
     InstallCRX(path2, INSTALL_NEW, Extension::WAS_INSTALLED_BY_CUSTODIAN)
   };
@@ -6129,7 +6241,7 @@ TEST_F(ExtensionServiceTest, SyncUninstallForSupervisedUser) {
 
   // Create a sync deletion for each extension.
   syncer::SyncChangeList change_list;
-  for (int i = 0; i < 2; i++) {
+  for (size_t i = 0; i < arraysize(extensions); i++) {
     const std::string& id = extensions[i]->id();
     sync_pb::EntitySpecifics specifics;
     sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
@@ -6145,7 +6257,7 @@ TEST_F(ExtensionServiceTest, SyncUninstallForSupervisedUser) {
   }
 
   // Save the extension ids, as uninstalling destroys the Extension instance.
-  std::string extension_ids[2] = {
+  std::string extension_ids[] = {
     extensions[0]->id(),
     extensions[1]->id()
   };
@@ -6154,11 +6266,12 @@ TEST_F(ExtensionServiceTest, SyncUninstallForSupervisedUser) {
   extension_sync_service()->ProcessSyncChanges(FROM_HERE, change_list);
 
   // Uninstalling the extension without installed_by_custodian should have been
-  // blocked by policy.
-  EXPECT_TRUE(service()->GetExtensionById(extension_ids[0], true));
+  // blocked by policy, so it should still be there.
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(extension_ids[0]));
 
   // But installed_by_custodian should result in bypassing the policy check.
-  EXPECT_FALSE(service()->GetExtensionById(extension_ids[1], true));
+  EXPECT_FALSE(
+      registry()->GenerateInstalledExtensionsSet()->Contains(extension_ids[1]));
 }
 
 TEST_F(ExtensionServiceTest, InstallPriorityExternalUpdateUrl) {
