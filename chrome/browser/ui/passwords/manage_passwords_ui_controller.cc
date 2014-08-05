@@ -37,7 +37,21 @@ autofill::ConstPasswordFormMap ConstifyMap(
   return ret;
 }
 
-} // namespace
+// Performs a deep copy of the PasswordForm pointers in |map|. The resulting map
+// is returned via |ret|. |deleter| is populated with these new objects.
+void DeepCopyMap(const autofill::PasswordFormMap& map,
+                 autofill::ConstPasswordFormMap* ret,
+                 ScopedVector<autofill::PasswordForm>* deleter) {
+  ConstifyMap(map).swap(*ret);
+  deleter->clear();
+  for (autofill::ConstPasswordFormMap::iterator i = ret->begin();
+       i != ret->end(); ++i) {
+    deleter->push_back(new autofill::PasswordForm(*i->second));
+    i->second = deleter->back();
+  }
+}
+
+}  // namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ManagePasswordsUIController);
 
@@ -93,7 +107,7 @@ void ManagePasswordsUIController::OnAutomaticPasswordSave(
 
 void ManagePasswordsUIController::OnPasswordAutofilled(
     const PasswordFormMap& password_form_map) {
-  password_form_map_ = ConstifyMap(password_form_map);
+  DeepCopyMap(password_form_map, &password_form_map_, &new_password_forms_);
   origin_ = password_form_map_.begin()->second->origin;
   state_ = password_manager::ui::MANAGE_STATE;
   UpdateBubbleAndIconVisibility();
@@ -101,7 +115,7 @@ void ManagePasswordsUIController::OnPasswordAutofilled(
 
 void ManagePasswordsUIController::OnBlacklistBlockedAutofill(
     const PasswordFormMap& password_form_map) {
-  password_form_map_ = ConstifyMap(password_form_map);
+  DeepCopyMap(password_form_map, &password_form_map_, &new_password_forms_);
   origin_ = password_form_map_.begin()->second->origin;
   state_ = password_manager::ui::BLACKLIST_STATE;
   UpdateBubbleAndIconVisibility();

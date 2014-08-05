@@ -93,6 +93,12 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordAutofilled) {
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, controller()->state());
   EXPECT_FALSE(controller()->PasswordPendingUserDecision());
   EXPECT_EQ(test_form().origin, controller()->origin());
+  EXPECT_EQ(1u, controller()->best_matches().size());
+  ASSERT_EQ(1u, controller()->best_matches().count(kTestUsername));
+
+  // Controller should store a separate copy of the form as it doesn't own it.
+  EXPECT_NE(&test_form(),
+            controller()->best_matches().find(kTestUsername)->second);
 
   ManagePasswordsIconMock mock;
   controller()->UpdateIconAndBubbleState(&mock);
@@ -236,6 +242,12 @@ TEST_F(ManagePasswordsUIControllerTest, BlacklistBlockedAutofill) {
   EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, controller()->state());
   EXPECT_FALSE(controller()->PasswordPendingUserDecision());
   EXPECT_EQ(test_form().origin, controller()->origin());
+  EXPECT_EQ(1u, controller()->best_matches().size());
+  ASSERT_EQ(1u, controller()->best_matches().count(kTestUsername));
+
+  // Controller should store a separate copy of the form as it doesn't own it.
+  EXPECT_NE(&test_form(),
+            controller()->best_matches().find(kTestUsername)->second);
 
   ManagePasswordsIconMock mock;
   controller()->UpdateIconAndBubbleState(&mock);

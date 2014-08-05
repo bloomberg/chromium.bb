@@ -114,15 +114,16 @@ class ManagePasswordsUIController
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
 
+  // We create copies of PasswordForm objects that come in with unclear lifetime
+  // and store them in this vector as well as in |password_form_map_| to ensure
+  // that we destroy them correctly. If |new_password_forms_| gets cleared then
+  // |password_form_map_| is to be cleared too.
+  ScopedVector<autofill::PasswordForm> new_password_forms_;
+
   // All previously stored credentials for a specific site.
   // Protected, not private, so we can mess with the value in
   // ManagePasswordsUIControllerMock.
   autofill::ConstPasswordFormMap password_form_map_;
-
-  // We create copies of PasswordForm objects that come in via OnLoginsChanged()
-  // and store them in this vector as well as in |password_form_map_| to ensure
-  // that we destroy them correctly.
-  ScopedVector<autofill::PasswordForm> new_password_forms_;
 
   // The current state of the password manager. Protected so we can manipulate
   // the value in tests.
