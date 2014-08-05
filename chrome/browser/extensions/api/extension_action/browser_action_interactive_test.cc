@@ -290,7 +290,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, CloseBrowserWithDevTools) {
 
 #if defined(OS_WIN)
 // Test that forcibly closing the browser and popup HWND does not cause a crash.
-IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, DestroyHWNDDoesNotCrash) {
+// http://crbug.com/400646
+IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
+                       DISABLED_DestroyHWNDDoesNotCrash) {
   if (!ShouldRunPopupTest())
     return;
 
