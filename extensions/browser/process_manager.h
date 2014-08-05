@@ -14,11 +14,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/view_type.h"
 
 class GURL;
@@ -42,8 +40,7 @@ class ProcessManagerObserver;
 // Manages dynamic state of running Chromium extensions. There is one instance
 // of this class per Profile. OTR Profiles have a separate instance that keeps
 // track of split-mode extensions only.
-class ProcessManager : public content::NotificationObserver,
-                       public ExtensionRegistryObserver {
+class ProcessManager : public content::NotificationObserver {
  public:
   typedef std::set<extensions::ExtensionHost*> ExtensionHostSet;
   typedef ExtensionHostSet::const_iterator const_iterator;
@@ -176,14 +173,6 @@ class ProcessManager : public content::NotificationObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // ExtensionRegistryObserver:
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) OVERRIDE;
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
-
   content::NotificationRegistrar registrar_;
 
   // The set of ExtensionHosts running viewless background extensions.
@@ -289,9 +278,6 @@ class ProcessManager : public content::NotificationObserver,
 
   // Must be last member, see doc on WeakPtrFactory.
   base::WeakPtrFactory<ProcessManager> weak_ptr_factory_;
-
-  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessManager);
 };
