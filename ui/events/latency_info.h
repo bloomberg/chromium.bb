@@ -22,8 +22,6 @@ enum LatencyComponentType {
   INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
   // Timestamp when the input event is received in plugin.
   INPUT_EVENT_LATENCY_BEGIN_PLUGIN_COMPONENT,
-  // Timestamp when a scroll update for the main thread is begun.
-  INPUT_EVENT_LATENCY_BEGIN_SCROLL_UPDATE_MAIN_COMPONENT,
   // ---------------------------NORMAL COMPONENT-------------------------------
   // Timestamp when the scroll update gesture event is sent from RWH to
   // renderer. In Aura, touch event's LatencyInfo is carried over to the gesture
@@ -41,8 +39,6 @@ enum LatencyComponentType {
   // This is special component indicating there is rendering scheduled for
   // the event associated with this LatencyInfo.
   INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_COMPONENT,
-  // Timestamp when a scroll update is forwarded to the main thread.
-  INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT,
   // Timestamp when the touch event is acked.
   INPUT_EVENT_LATENCY_ACKED_TOUCH_COMPONENT,
   // Frame number when a window snapshot was requested. The snapshot

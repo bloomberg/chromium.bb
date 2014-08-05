@@ -62,8 +62,4 @@ void QueueMessageSwapPromise::PromiseCompleted() {
 #endif
 }
 
-int64 QueueMessageSwapPromise::TraceId() const {
-  return 0;
-}
-
 }  // namespace content

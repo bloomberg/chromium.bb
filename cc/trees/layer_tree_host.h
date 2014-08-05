@@ -228,7 +228,7 @@ class CC_EXPORT LayerTreeHost {
                                float scale,
                                base::TimeDelta duration);
 
-  void ApplyScrollAndScale(ScrollAndScaleSet* info);
+  void ApplyScrollAndScale(const ScrollAndScaleSet& info);
   void SetImplTransform(const gfx::Transform& transform);
 
   // Virtual for tests.

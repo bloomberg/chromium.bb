@@ -4460,8 +4460,6 @@ class TestSwapPromise : public SwapPromise {
     result_->reason = reason;
   }
 
-  virtual int64 TraceId() const OVERRIDE { return 0; }
-
  private:
   // Not owned.
   TestSwapPromiseResult* result_;
@@ -4592,7 +4590,8 @@ class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
                            int* set_needs_commit_count,
                            int* set_needs_redraw_count)
       : SwapPromiseMonitor(layer_tree_host, layer_tree_host_impl),
-        set_needs_commit_count_(set_needs_commit_count) {}
+        set_needs_commit_count_(set_needs_commit_count),
+        set_needs_redraw_count_(set_needs_redraw_count) {}
 
   virtual ~SimpleSwapPromiseMonitor() {}
 
@@ -4601,15 +4600,12 @@ class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
   }
 
   virtual void OnSetNeedsRedrawOnImpl() OVERRIDE {
-    ADD_FAILURE() << "Should not get called on main thread.";
-  }
-
-  virtual void OnForwardScrollUpdateToMainThreadOnImpl() OVERRIDE {
-    ADD_FAILURE() << "Should not get called on main thread.";
+    (*set_needs_redraw_count_)++;
   }
 
  private:
   int* set_needs_commit_count_;
+  int* set_needs_redraw_count_;
 };
 
 class LayerTreeHostTestSimpleSwapPromiseMonitor : public LayerTreeHostTest {

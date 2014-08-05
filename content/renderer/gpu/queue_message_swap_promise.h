@@ -29,8 +29,6 @@ class QueueMessageSwapPromise : public cc::SwapPromise {
 
   virtual void DidNotSwap(DidNotSwapReason reason) OVERRIDE;
 
-  virtual int64 TraceId() const OVERRIDE;
-
  private:
   void PromiseCompleted();
 

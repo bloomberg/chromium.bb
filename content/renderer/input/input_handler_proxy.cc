@@ -178,10 +178,11 @@ InputHandlerProxy::HandleInputEventWithLatencyInfo(
 
   SendScrollLatencyUma(event, *latency_info);
 
-  TRACE_EVENT_FLOW_STEP0("input",
-                         "LatencyInfo.Flow",
-                         TRACE_ID_DONT_MANGLE(latency_info->trace_id),
-                         "HandleInputEventImpl");
+  TRACE_EVENT_FLOW_STEP0(
+      "input",
+      "LatencyInfo.Flow",
+      TRACE_ID_DONT_MANGLE(latency_info->trace_id),
+      "HanldeInputEventImpl");
 
   scoped_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor =
       input_handler_->CreateLatencyInfoSwapPromiseMonitor(latency_info);

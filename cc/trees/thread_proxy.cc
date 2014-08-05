@@ -790,8 +790,7 @@ void ThreadProxy::BeginMainFrame(
   main().commit_requested = true;
   main().commit_request_sent_to_impl_thread = true;
 
-  layer_tree_host()->ApplyScrollAndScale(
-      begin_main_frame_state->scroll_info.get());
+  layer_tree_host()->ApplyScrollAndScale(*begin_main_frame_state->scroll_info);
 
   layer_tree_host()->WillBeginMainFrame();
 

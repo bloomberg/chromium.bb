@@ -972,24 +972,6 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
   }
 }
 
-TEST_F(LayerTreeHostImplTest, ScrollWithSwapPromises) {
-  ui::LatencyInfo latency_info;
-  latency_info.trace_id = 1234;
-  scoped_ptr<SwapPromise> swap_promise(
-      new LatencyInfoSwapPromise(latency_info));
-
-  SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  EXPECT_EQ(InputHandler::ScrollStarted,
-            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
-  host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 10));
-  host_impl_->QueueSwapPromiseForMainThreadScrollUpdate(swap_promise.Pass());
-  host_impl_->ScrollEnd();
-
-  scoped_ptr<ScrollAndScaleSet> scroll_info = host_impl_->ProcessScrollDeltas();
-  EXPECT_EQ(1u, scroll_info->swap_promises.size());
-  EXPECT_EQ(latency_info.trace_id, scroll_info->swap_promises[0]->TraceId());
-}
-
 TEST_F(LayerTreeHostImplTest, MasksToBoundsDoesntClobberInnerContainerSize) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->SetViewportSize(gfx::Size(50, 50));
@@ -6385,12 +6367,10 @@ class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
   SimpleSwapPromiseMonitor(LayerTreeHost* layer_tree_host,
                            LayerTreeHostImpl* layer_tree_host_impl,
                            int* set_needs_commit_count,
-                           int* set_needs_redraw_count,
-                           int* forward_to_main_count)
+                           int* set_needs_redraw_count)
       : SwapPromiseMonitor(layer_tree_host, layer_tree_host_impl),
         set_needs_commit_count_(set_needs_commit_count),
-        set_needs_redraw_count_(set_needs_redraw_count),
-        forward_to_main_count_(forward_to_main_count) {}
+        set_needs_redraw_count_(set_needs_redraw_count) {}
 
   virtual ~SimpleSwapPromiseMonitor() {}
 
@@ -6402,32 +6382,24 @@ class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
     (*set_needs_redraw_count_)++;
   }
 
-  virtual void OnForwardScrollUpdateToMainThreadOnImpl() OVERRIDE {
-    (*forward_to_main_count_)++;
-  }
-
  private:
   int* set_needs_commit_count_;
   int* set_needs_redraw_count_;
-  int* forward_to_main_count_;
 };
 
 TEST_F(LayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
   int set_needs_commit_count = 0;
   int set_needs_redraw_count = 0;
-  int forward_to_main_count = 0;
 
   {
     scoped_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
         new SimpleSwapPromiseMonitor(NULL,
                                      host_impl_.get(),
                                      &set_needs_commit_count,
-                                     &set_needs_redraw_count,
-                                     &forward_to_main_count));
+                                     &set_needs_redraw_count));
     host_impl_->SetNeedsRedraw();
     EXPECT_EQ(0, set_needs_commit_count);
     EXPECT_EQ(1, set_needs_redraw_count);
-    EXPECT_EQ(0, forward_to_main_count);
   }
 
   // Now the monitor is destroyed, SetNeedsRedraw() is no longer being
@@ -6435,19 +6407,16 @@ TEST_F(LayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
   host_impl_->SetNeedsRedraw();
   EXPECT_EQ(0, set_needs_commit_count);
   EXPECT_EQ(1, set_needs_redraw_count);
-  EXPECT_EQ(0, forward_to_main_count);
 
   {
     scoped_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
         new SimpleSwapPromiseMonitor(NULL,
                                      host_impl_.get(),
                                      &set_needs_commit_count,
-                                     &set_needs_redraw_count,
-                                     &forward_to_main_count));
+                                     &set_needs_redraw_count));
     host_impl_->SetNeedsRedrawRect(gfx::Rect(10, 10));
     EXPECT_EQ(0, set_needs_commit_count);
     EXPECT_EQ(2, set_needs_redraw_count);
-    EXPECT_EQ(0, forward_to_main_count);
   }
 
   {
@@ -6455,48 +6424,11 @@ TEST_F(LayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
         new SimpleSwapPromiseMonitor(NULL,
                                      host_impl_.get(),
                                      &set_needs_commit_count,
-                                     &set_needs_redraw_count,
-                                     &forward_to_main_count));
+                                     &set_needs_redraw_count));
     // Empty damage rect won't signal the monitor.
     host_impl_->SetNeedsRedrawRect(gfx::Rect());
     EXPECT_EQ(0, set_needs_commit_count);
     EXPECT_EQ(2, set_needs_redraw_count);
-    EXPECT_EQ(0, forward_to_main_count);
-  }
-
-  {
-    set_needs_commit_count = 0;
-    set_needs_redraw_count = 0;
-    forward_to_main_count = 0;
-    scoped_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-        new SimpleSwapPromiseMonitor(NULL,
-                                     host_impl_.get(),
-                                     &set_needs_commit_count,
-                                     &set_needs_redraw_count,
-                                     &forward_to_main_count));
-    LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
-
-    // Scrolling normally should not trigger any forwarding.
-    EXPECT_EQ(InputHandler::ScrollStarted,
-              host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
-    EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 10)));
-    host_impl_->ScrollEnd();
-
-    EXPECT_EQ(0, set_needs_commit_count);
-    EXPECT_EQ(1, set_needs_redraw_count);
-    EXPECT_EQ(0, forward_to_main_count);
-
-    // Scrolling with a scroll handler should defer the swap to the main
-    // thread.
-    scroll_layer->SetHaveScrollEventHandlers(true);
-    EXPECT_EQ(InputHandler::ScrollStarted,
-              host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
-    EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 10)));
-    host_impl_->ScrollEnd();
-
-    EXPECT_EQ(0, set_needs_commit_count);
-    EXPECT_EQ(2, set_needs_redraw_count);
-    EXPECT_EQ(1, forward_to_main_count);
   }
 }
 

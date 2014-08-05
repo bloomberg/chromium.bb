@@ -41,11 +41,6 @@ class CC_EXPORT SwapPromise {
 
   virtual void DidSwap(CompositorFrameMetadata* metadata) = 0;
   virtual void DidNotSwap(DidNotSwapReason reason) = 0;
-
-  // A non-zero trace id identifies a trace flow object that is embedded in the
-  // swap promise. This can be used for registering additional flow steps to
-  // visualize the object's path through the system.
-  virtual int64 TraceId() const = 0;
 };
 
 }  // namespace cc
