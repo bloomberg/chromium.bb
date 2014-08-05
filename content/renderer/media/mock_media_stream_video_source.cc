@@ -15,6 +15,7 @@ MockMediaStreamVideoSource::MockMediaStreamVideoSource(
     : manual_get_supported_formats_(manual_get_supported_formats),
       max_requested_height_(0),
       max_requested_width_(0),
+      max_requested_frame_rate_(0.0),
       attempted_to_start_(false) {
   supported_formats_.push_back(
       media::VideoCaptureFormat(
@@ -46,10 +47,12 @@ void MockMediaStreamVideoSource::CompleteGetSupportedFormats() {
 void MockMediaStreamVideoSource::GetCurrentSupportedFormats(
     int max_requested_height,
     int max_requested_width,
+    double max_requested_frame_rate,
     const VideoCaptureDeviceFormatsCB& callback) {
   DCHECK(formats_callback_.is_null());
   max_requested_height_ = max_requested_height;
   max_requested_width_ = max_requested_width;
+  max_requested_frame_rate_ = max_requested_frame_rate;
 
   if (manual_get_supported_formats_) {
     formats_callback_ = callback;

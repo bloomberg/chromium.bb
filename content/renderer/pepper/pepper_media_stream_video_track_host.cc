@@ -426,6 +426,7 @@ void PepperMediaStreamVideoTrackHost::OnVideoFrame(
 
 void PepperMediaStreamVideoTrackHost::GetCurrentSupportedFormats(
     int max_requested_width, int max_requested_height,
+    double max_requested_frame_rate,
     const VideoCaptureDeviceFormatsCB& callback) {
   if (type_ != kWrite) {
     DVLOG(1) << "GetCurrentSupportedFormats is only supported in output mode.";

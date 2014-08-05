@@ -173,9 +173,9 @@ bool UpdateFormatForConstraint(
   } else if (constraint_name == MediaStreamVideoSource::kMaxHeight) {
      return value > 0.0;
   } else if (constraint_name == MediaStreamVideoSource::kMinFrameRate) {
-    return (value <= format->frame_rate);
+    return (value > 0.0) && (value <= format->frame_rate);
   } else if (constraint_name == MediaStreamVideoSource::kMaxFrameRate) {
-    if (value == 0.0) {
+    if (value <= 0.0) {
       // The frame rate is set by constraint.
       // Don't allow 0 as frame rate if it is a mandatory constraint.
       // Set the frame rate to 1 if it is not mandatory.
@@ -387,10 +387,17 @@ void MediaStreamVideoSource::AddTrack(
       GetMandatoryConstraintValueAsInteger(constraints, kMaxHeight,
                                            &max_requested_height);
 
+      double max_requested_frame_rate;
+      if (!GetConstraintValueAsDouble(constraints, kMaxFrameRate,
+                                      &max_requested_frame_rate)) {
+        max_requested_frame_rate = kDefaultFrameRate;
+      }
+
       state_ = RETRIEVING_CAPABILITIES;
       GetCurrentSupportedFormats(
           max_requested_width,
           max_requested_height,
+          max_requested_frame_rate,
           base::Bind(&MediaStreamVideoSource::OnSupportedFormats,
                      weak_factory_.GetWeakPtr()));
 

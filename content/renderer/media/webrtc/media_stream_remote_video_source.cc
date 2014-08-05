@@ -138,6 +138,7 @@ MediaStreamRemoteVideoSource::~MediaStreamRemoteVideoSource() {
 void MediaStreamRemoteVideoSource::GetCurrentSupportedFormats(
     int max_requested_width,
     int max_requested_height,
+    double max_requested_frame_rate,
     const VideoCaptureDeviceFormatsCB& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   media::VideoCaptureFormats formats;

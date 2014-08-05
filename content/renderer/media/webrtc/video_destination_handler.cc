@@ -83,6 +83,7 @@ PpFrameWriter::~PpFrameWriter() {
 void PpFrameWriter::GetCurrentSupportedFormats(
     int max_requested_width,
     int max_requested_height,
+    double max_requested_frame_rate,
     const VideoCaptureDeviceFormatsCB& callback) {
   DCHECK(CalledOnValidThread());
   DVLOG(3) << "PpFrameWriter::GetCurrentSupportedFormats()";

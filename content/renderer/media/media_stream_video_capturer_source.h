@@ -28,12 +28,14 @@ class CONTENT_EXPORT VideoCapturerDelegate
       const StreamDeviceInfo& device_info);
 
   // Collects the formats that can currently be used.
-  // |max_requested_height| and |max_requested_width| is used by Tab and Screen
-  // capture to decide what resolution to generate.
-  // |callback| is triggered when the formats have been collected.
+  // |max_requested_height|, |max_requested_width|, and
+  // |max_requested_frame_rate| is used by Tab and Screen capture to decide what
+  // resolution/framerate to generate. |callback| is triggered when the formats
+  // have been collected.
   virtual void GetCurrentSupportedFormats(
       int max_requested_width,
       int max_requested_height,
+      double max_requested_frame_rate,
       const VideoCaptureDeviceFormatsCB& callback);
 
   // Starts capturing frames using the resolution in |params|.
@@ -102,6 +104,7 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
   virtual void GetCurrentSupportedFormats(
       int max_requested_width,
       int max_requested_height,
+      double max_requested_frame_rate,
       const VideoCaptureDeviceFormatsCB& callback) OVERRIDE;
 
   virtual void StartSourceImpl(

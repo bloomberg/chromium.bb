@@ -100,6 +100,7 @@ class CONTENT_EXPORT MediaStreamVideoSource
   virtual void GetCurrentSupportedFormats(
       int max_requested_width,
       int max_requested_height,
+      double max_requested_frame_rate,
       const VideoCaptureDeviceFormatsCB& callback) = 0;
 
   // An implementation must start capture frames using the resolution in

@@ -30,6 +30,9 @@ const SourceVideoResolution kVideoResolutions[] = {{1920, 1080},
 // Frame rates for sources with no support for capability enumeration.
 const int kVideoFrameRates[] = {30, 60};
 
+// Hard upper-bound frame rate for tab/desktop capture.
+const double kMaxScreenCastFrameRate = 120.0;
+
 }  // namespace
 
 namespace content {
@@ -59,23 +62,24 @@ VideoCapturerDelegate::~VideoCapturerDelegate() {
 void VideoCapturerDelegate::GetCurrentSupportedFormats(
     int max_requested_width,
     int max_requested_height,
+    double max_requested_frame_rate,
     const VideoCaptureDeviceFormatsCB& callback) {
-  DVLOG(3) << "GetCurrentSupportedFormats("
-           << " { max_requested_height = " << max_requested_height << "})"
-           << " { max_requested_width = " << max_requested_width << "})";
+  DVLOG(3)
+      << "GetCurrentSupportedFormats("
+      << " { max_requested_height = " << max_requested_height << "})"
+      << " { max_requested_width = " << max_requested_width << "})"
+      << " { max_requested_frame_rate = " << max_requested_frame_rate << "})";
 
   if (is_screen_cast_) {
-    media::VideoCaptureFormats formats;
     const int width = max_requested_width ?
         max_requested_width : MediaStreamVideoSource::kDefaultWidth;
     const int height = max_requested_height ?
         max_requested_height : MediaStreamVideoSource::kDefaultHeight;
-    formats.push_back(
-          media::VideoCaptureFormat(
-              gfx::Size(width, height),
-              MediaStreamVideoSource::kDefaultFrameRate,
-              media::PIXEL_FORMAT_I420));
-    callback.Run(formats);
+    callback.Run(media::VideoCaptureFormats(1, media::VideoCaptureFormat(
+        gfx::Size(width, height),
+        static_cast<float>(std::min(kMaxScreenCastFrameRate,
+                                    max_requested_frame_rate)),
+        media::PIXEL_FORMAT_I420)));
     return;
   }
 
@@ -216,10 +220,12 @@ MediaStreamVideoCapturerSource::~MediaStreamVideoCapturerSource() {
 void MediaStreamVideoCapturerSource::GetCurrentSupportedFormats(
     int max_requested_width,
     int max_requested_height,
+    double max_requested_frame_rate,
     const VideoCaptureDeviceFormatsCB& callback) {
   delegate_->GetCurrentSupportedFormats(
       max_requested_width,
       max_requested_height,
+      max_requested_frame_rate,
       callback);
 }
 
