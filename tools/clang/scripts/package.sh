@@ -158,7 +158,11 @@ fi
 
 cp -R "${LLVM_LIB_DIR}/clang" $PDIR/lib
 
-tar zcf $PDIR.tgz -C $PDIR bin lib buildlog.txt
+if [ "$(uname -s)" = "Darwin" ]; then
+  tar zcf $PDIR.tgz -C $PDIR bin include lib buildlog.txt
+else
+  tar zcf $PDIR.tgz -C $PDIR bin lib buildlog.txt
+fi
 
 if [ "$(uname -s)" = "Darwin" ]; then
   PLATFORM=Mac
