@@ -41,6 +41,11 @@ class DevToolsFrontendHost {
       RenderViewHost* frontend_rvh, Delegate* delegate);
 
   CONTENT_EXPORT virtual ~DevToolsFrontendHost() {}
+
+  // Dispatches message from embedder/backend to frontend.
+  // TODO(dgozman): remove and make embedder to take care of this.
+  CONTENT_EXPORT virtual void DispatchOnDevToolsFrontend(
+      const std::string& message) = 0;
 };
 
 }  // namespace content

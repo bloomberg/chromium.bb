@@ -36,6 +36,19 @@ DevToolsClient::DevToolsClient(RenderViewImpl* render_view)
 DevToolsClient::~DevToolsClient() {
 }
 
+bool DevToolsClient::OnMessageReceived(const IPC::Message& message) {
+  DCHECK(RenderThreadImpl::current());
+
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(DevToolsClient, message)
+    IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchOnInspectorFrontend,
+                        OnDispatchOnInspectorFrontend)
+    IPC_MESSAGE_UNHANDLED(handled = false);
+  IPC_END_MESSAGE_MAP()
+
+  return handled;
+}
+
 void DevToolsClient::sendMessageToBackend(const WebString& message)  {
   Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(routing_id(),
                                                        message.utf8()));
@@ -48,6 +61,11 @@ void DevToolsClient::sendMessageToEmbedder(const WebString& message) {
 
 bool DevToolsClient::isUnderTest() {
   return RenderThreadImpl::current()->layout_test_mode();
+}
+
+void DevToolsClient::OnDispatchOnInspectorFrontend(const std::string& message) {
+  web_tools_frontend_->dispatchOnInspectorFrontend(
+      WebString::fromUTF8(message));
 }
 
 }  // namespace content
