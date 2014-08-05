@@ -11,7 +11,7 @@ vars = {
     'webkit_rev':
          '@487f62d6b6447e2f62aa41cc6800a4a9d3e70d72',
     'angle_revision':
-         '07d49ef5350a95cfd6321226c178d22cc73aebc9'
+         '4fbd36ec50ff9e15887b948cc075526dd72d1415'
 }
 
 deps = {
