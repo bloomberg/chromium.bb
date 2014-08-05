@@ -50,7 +50,7 @@
           }],
         ],
         'cc_dir': 'extensions/common/api',
-        'root_namespace': 'extensions::core_api',
+        'root_namespace': 'extensions::core_api::%(namespace)s',
         'impl_dir': 'extensions/browser/api',
       },
       'conditions': [

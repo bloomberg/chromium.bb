@@ -90,13 +90,16 @@ def GetParameterDeclaration(param, type_):
   }
 
 
-def GenerateIfndefName(path, filename):
-  """Formats a path and filename as a #define name.
+def GenerateIfndefName(file_path):
+  """Formats |file_path| as a #define name. Presumably |file_path| is a header
+  file, or there's little point in generating a #define for it.
 
-  e.g chrome/extensions/gen, file.h becomes CHROME_EXTENSIONS_GEN_FILE_H__.
+  e.g chrome/extensions/gen/file.h becomes CHROME_EXTENSIONS_GEN_FILE_H__.
   """
-  return (('%s_%s_H__' % (path, filename))
-          .upper().replace(os.sep, '_').replace('/', '_'))
+  return (('%s__' % file_path).upper()
+      .replace('\\', '_')
+      .replace('/', '_')
+      .replace('.', '_'))
 
 
 def PadForGenerics(var):
@@ -106,28 +109,21 @@ def PadForGenerics(var):
   return ('%s ' % var) if var.endswith('>') else var
 
 
-def OpenNamespace(namespace):
+
+def OpenNamespace(cpp_namespace):
   """Get opening root namespace declarations.
   """
   c = Code()
-  # In lieu of GYP supporting None for the namespace variable the '' namespace
-  # implies there is no root namespace.
-  if namespace == '':
-    return c
-  for component in namespace.split('::'):
+  for component in cpp_namespace.split('::'):
     c.Append('namespace %s {' % component)
   return c
 
 
-def CloseNamespace(namespace):
+def CloseNamespace(cpp_namespace):
   """Get closing root namespace declarations.
   """
   c = Code()
-  # In lieu of GYP supporting None for the namespace variable the '' namespace
-  # implies there is no root namespace.
-  if namespace == '':
-    return c
-  for component in reversed(namespace.split('::')):
+  for component in reversed(cpp_namespace.split('::')):
     c.Append('}  // namespace %s' % component)
   return c
 
@@ -145,3 +141,18 @@ def CamelCase(unix_name):
 
 def ClassName(filepath):
   return CamelCase(os.path.split(filepath)[1])
+
+
+def GetCppNamespace(pattern, namespace):
+  '''Returns the C++ namespace given |pattern| which includes a %(namespace)s
+  substitution, and the |namespace| to substitute. It is expected that |pattern|
+  has been passed as a flag to compiler.py from GYP/GN.
+  '''
+  # For some reason Windows builds escape the % characters, so unescape them.
+  # This means that %% can never appear legitimately within a pattern, but
+  # that's ok. It should never happen.
+  cpp_namespace = pattern.replace('%%', '%') % { 'namespace': namespace }
+  assert '%' not in cpp_namespace, \
+         ('Did not manage to fully substitute namespace "%s" into pattern "%s"'
+           % (namespace, pattern))
+  return cpp_namespace

@@ -19,7 +19,7 @@
           'events.json',
         ],
         'cc_dir': 'chrome/browser/performance_monitor',
-        'root_namespace': 'performance_monitor',
+        'root_namespace': 'performance_monitor::%(namespace)s',
       },
     },
   ],

@@ -35,24 +35,6 @@ class CppTypeGenerator(object):
       self._default_namespace = model.namespaces.values()[0]
     self._schema_loader = schema_loader
 
-  def GetCppNamespaceName(self, namespace):
-    """Gets the mapped C++ namespace name for the given namespace relative to
-    the root namespace.
-    """
-    return namespace.unix_name
-
-  def GetNamespaceStart(self):
-    """Get opening self._default_namespace namespace declaration.
-    """
-    return Code().Append('namespace %s {' %
-        self.GetCppNamespaceName(self._default_namespace))
-
-  def GetNamespaceEnd(self):
-    """Get closing self._default_namespace namespace declaration.
-    """
-    return Code().Append('}  // %s' %
-        self.GetCppNamespaceName(self._default_namespace))
-
   def GetEnumNoneValue(self, type_):
     """Gets the enum value in the given model.Property indicating no value has
     been set.
@@ -148,23 +130,26 @@ class CppTypeGenerator(object):
                                                         PropertyType.OBJECT,
                                                         PropertyType.CHOICES))
 
-  def GenerateForwardDeclarations(self):
+  def GenerateForwardDeclarations(self, cpp_namespace_pattern):
     """Returns the forward declarations for self._default_namespace.
     """
     c = Code()
-
-    for namespace, dependencies in self._NamespaceTypeDependencies().items():
-      c.Append('namespace %s {' % namespace.unix_name)
-      for dependency in dependencies:
-        # No point forward-declaring hard dependencies.
-        if dependency.hard:
-          continue
+    for namespace, deps in self._NamespaceTypeDependencies().iteritems():
+      filtered_deps = [
+        dep for dep in deps
         # Add more ways to forward declare things as necessary.
-        if dependency.type_.property_type in (PropertyType.CHOICES,
-                                              PropertyType.OBJECT):
-          c.Append('struct %s;' % dependency.type_.name)
-      c.Append('}')
+        if (not dep.hard and
+            dep.type_.property_type in (PropertyType.CHOICES,
+                                        PropertyType.OBJECT))]
+      if not filtered_deps:
+        continue
 
+      cpp_namespace = cpp_util.GetCppNamespace(cpp_namespace_pattern,
+                                               namespace.unix_name)
+      c.Concat(cpp_util.OpenNamespace(cpp_namespace))
+      for dep in filtered_deps:
+        c.Append('struct %s;' % dep.type_.name)
+      c.Concat(cpp_util.CloseNamespace(cpp_namespace))
     return c
 
   def GenerateIncludes(self, include_soft=False):

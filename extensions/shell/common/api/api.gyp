@@ -25,7 +25,7 @@
           'shell.idl',
         ],
         'cc_dir': 'extensions/shell/common/api',
-        'root_namespace': 'extensions::shell_api',
+        'root_namespace': 'extensions::shell_api::%(namespace)s',
         'impl_dir': 'extensions/shell/browser/api',
       },
       'dependencies': [

@@ -33,19 +33,19 @@ from schema_loader import SchemaLoader
 GENERATORS = ['cpp', 'cpp-bundle', 'dart']
 
 def GenerateSchema(generator,
-                   filenames,
+                   file_paths,
                    root,
                    destdir,
-                   root_namespace,
+                   cpp_namespace_pattern,
                    dart_overrides_dir,
                    impl_dir):
   # Merge the source files into a single list of schemas.
   api_defs = []
-  for filename in filenames:
-    schema = os.path.normpath(filename)
+  for file_path in file_paths:
+    schema = os.path.normpath(file_path)
     schema_loader = SchemaLoader(
-        os.path.dirname(os.path.relpath(os.path.normpath(filename), root)),
-        os.path.dirname(filename))
+        os.path.dirname(os.path.relpath(schema, root)),
+        os.path.dirname(file_path))
     api_def = schema_loader.LoadSchema(os.path.split(schema)[1])
 
     # If compiling the C++ model code, delete 'nocompile' nodes.
@@ -64,8 +64,8 @@ def GenerateSchema(generator,
   src_path = None
 
   # Load the actual namespaces into the model.
-  for target_namespace, schema_filename in zip(api_defs, filenames):
-    relpath = os.path.relpath(os.path.normpath(schema_filename), root)
+  for target_namespace, file_path in zip(api_defs, file_paths):
+    relpath = os.path.relpath(os.path.normpath(file_path), root)
     namespace = api_model.AddNamespace(target_namespace,
                                        relpath,
                                        include_compiler_options=True)
@@ -78,19 +78,19 @@ def GenerateSchema(generator,
     else:
       src_path = os.path.commonprefix((src_path, namespace.source_file_dir))
 
-    path, filename = os.path.split(schema_filename)
-    short_filename, extension = os.path.splitext(filename)
+    path, filename = os.path.split(file_path)
+    filename_base, _ = os.path.splitext(filename)
 
   # Construct the type generator with all the namespaces in this model.
   type_generator = CppTypeGenerator(api_model,
                                     schema_loader,
-                                    default_namespace=default_namespace)
+                                    default_namespace)
   if generator == 'cpp-bundle':
     cpp_bundle_generator = CppBundleGenerator(root,
                                               api_model,
                                               api_defs,
                                               type_generator,
-                                              root_namespace,
+                                              cpp_namespace_pattern,
                                               src_path,
                                               impl_dir)
     generators = [
@@ -100,10 +100,10 @@ def GenerateSchema(generator,
       ('generated_schemas.h', cpp_bundle_generator.schemas_h_generator)
     ]
   elif generator == 'cpp':
-    cpp_generator = CppGenerator(type_generator, root_namespace)
+    cpp_generator = CppGenerator(type_generator, cpp_namespace_pattern)
     generators = [
-      ('%s.h' % short_filename, cpp_generator.h_generator),
-      ('%s.cc' % short_filename, cpp_generator.cc_generator)
+      ('%s.h' % filename_base, cpp_generator.h_generator),
+      ('%s.cc' % filename_base, cpp_generator.cc_generator)
     ]
   elif generator == 'dart':
     generators = [
@@ -147,18 +147,18 @@ if __name__ == '__main__':
   parser.add_option('-i', '--impl-dir', dest='impl_dir',
       help='The root path of all API implementations')
 
-  (opts, filenames) = parser.parse_args()
+  (opts, file_paths) = parser.parse_args()
 
-  if not filenames:
+  if not file_paths:
     sys.exit(0) # This is OK as a no-op
 
   # Unless in bundle mode, only one file should be specified.
-  if opts.generator != 'cpp-bundle' and len(filenames) > 1:
-    # TODO(sashab): Could also just use filenames[0] here and not complain.
+  if opts.generator != 'cpp-bundle' and len(file_paths) > 1:
+    # TODO(sashab): Could also just use file_paths[0] here and not complain.
     raise Exception(
         "Unless in bundle mode, only one file can be specified at a time.")
 
-  result = GenerateSchema(opts.generator, filenames, opts.root, opts.destdir,
+  result = GenerateSchema(opts.generator, file_paths, opts.root, opts.destdir,
                           opts.namespace, opts.dart_overrides_dir,
                           opts.impl_dir)
   if not opts.destdir:

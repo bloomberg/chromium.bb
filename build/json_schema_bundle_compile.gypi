@@ -5,9 +5,15 @@
 {
   'variables': {
     # When including this gypi, the following variables must be set:
-    #   schema_files: an array of json or idl files that comprise the api model.
-    #   cc_dir: path to generated files
-    #   root_namespace: the C++ namespace that all generated files go under
+    #   schema_files:
+    #     An array of json or idl files that comprise the api model.
+    #   cc_dir:
+    #     The directory to put the generated code in.
+    #   root_namespace:
+    #     A Python string substituion pattern used to generate the C++
+    #     namespace for each API. Use %(namespace)s to replace with the API
+    #     namespace, like "toplevel::%(namespace)s_api".
+    #
     # Functions and namespaces can be excluded by setting "nocompile" to true.
     # The default root path of API implementation sources is
     # chrome/browser/extensions/api and can be overridden by setting "impl_dir".

@@ -58,15 +58,26 @@ class CppTypeGeneratorTest(unittest.TestCase):
     self.assertEquals('', manager.GenerateIncludes().Render())
     self.assertEquals('#include "path/to/tabs.h"',
                       manager.GenerateIncludes(include_soft=True).Render())
-    self.assertEquals('namespace tabs {\n'
-                      'struct Tab;\n'
-                      '}',
-                      manager.GenerateForwardDeclarations().Render())
+    self.assertEquals(
+        'namespace tabs {\n'
+        'struct Tab;\n'
+        '}  // namespace tabs',
+        manager.GenerateForwardDeclarations('%(namespace)s').Render())
+    self.assertEquals(
+        'namespace foo {\n'
+        'namespace bar {\n'
+        'namespace tabs {\n'
+        'struct Tab;\n'
+        '}  // namespace tabs\n'
+        '}  // namespace bar\n'
+        '}  // namespace foo',
+        manager.GenerateForwardDeclarations('foo::bar::%(namespace)s').Render())
     manager = CppTypeGenerator(self.models.get('permissions'),
                                _FakeSchemaLoader(m))
     self.assertEquals('', manager.GenerateIncludes().Render())
     self.assertEquals('', manager.GenerateIncludes().Render())
-    self.assertEquals('', manager.GenerateForwardDeclarations().Render())
+    self.assertEquals(
+        '', manager.GenerateForwardDeclarations('%(namespace)s').Render())
     manager = CppTypeGenerator(self.models.get('content_settings'),
                                _FakeSchemaLoader(m))
     self.assertEquals('', manager.GenerateIncludes().Render())
@@ -85,11 +96,8 @@ class CppTypeGeneratorTest(unittest.TestCase):
     self.assertEquals('#include "path/to/browser_action.h"\n'
                       '#include "path/to/font_settings.h"',
                       manager.GenerateIncludes().Render())
-    self.assertEquals('namespace browser_action {\n'
-                      '}\n'
-                      'namespace font_settings {\n'
-                      '}',
-                      manager.GenerateForwardDeclarations().Render())
+    self.assertEquals(
+        '', manager.GenerateForwardDeclarations('%(namespace)s').Render())
 
   def testGetCppTypeSimple(self):
     manager = CppTypeGenerator(self.models.get('tabs'), _FakeSchemaLoader(None))

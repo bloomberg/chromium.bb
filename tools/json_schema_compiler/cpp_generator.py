@@ -6,6 +6,6 @@ from cc_generator import CCGenerator
 from h_generator import HGenerator
 
 class CppGenerator(object):
-  def __init__(self, type_generator, cpp_namespace):
-    self.h_generator = HGenerator(type_generator, cpp_namespace)
-    self.cc_generator = CCGenerator(type_generator, cpp_namespace)
+  def __init__(self, type_generator, cpp_namespace_pattern):
+    self.h_generator = HGenerator(type_generator, cpp_namespace_pattern)
+    self.cc_generator = CCGenerator(type_generator, cpp_namespace_pattern)

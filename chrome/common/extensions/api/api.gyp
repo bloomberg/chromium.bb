@@ -206,7 +206,7 @@
           }],
         ],
         'cc_dir': 'chrome/common/extensions/api',
-        'root_namespace': 'extensions::api',
+        'root_namespace': 'extensions::api::%(namespace)s',
       },
       'dependencies': [
         # Different APIs include some headers from chrome/common that in turn

@@ -24,7 +24,7 @@ generated_extensions_api("api") {
     "test.json",
     "usb.idl",
   ]
-  root_namespace = "extensions::core_api"
+  root_namespace = "extensions::core_api::%(namespace)s"
   impl_dir = "//extensions/browser/api"
   bundle = true
   deps = [

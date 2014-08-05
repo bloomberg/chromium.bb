@@ -28,7 +28,7 @@
           'error_generation.json'
         ],
         'cc_dir': 'tools/json_schema_compiler/test',
-        'root_namespace': 'test::api',
+        'root_namespace': 'test::api::%(namespace)s',
       },
       'inputs': [
         '<@(schema_files)',

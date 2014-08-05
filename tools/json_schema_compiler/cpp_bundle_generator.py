@@ -39,16 +39,20 @@ class CppBundleGenerator(object):
                model,
                api_defs,
                cpp_type_generator,
-               cpp_namespace,
+               cpp_namespace_pattern,
                source_file_dir,
                impl_dir):
     self._root = root
     self._model = model
     self._api_defs = api_defs
     self._cpp_type_generator = cpp_type_generator
-    self._cpp_namespace = cpp_namespace
     self._source_file_dir = source_file_dir
     self._impl_dir = impl_dir
+
+    # Hack: assume that the C++ namespace for the bundle is the namespace of the
+    # files without the last component of the namespace. A cleaner way to do
+    # this would be to make it a separate variable in the gyp file.
+    self._cpp_namespace = cpp_namespace_pattern.rsplit('::', 1)[0]
 
     self.api_cc_generator = _APICCGenerator(self)
     self.api_h_generator = _APIHGenerator(self)
@@ -65,7 +69,8 @@ class CppBundleGenerator(object):
     c.Append(cpp_util.CHROMIUM_LICENSE)
     c.Append()
     c.Append(cpp_util.GENERATED_BUNDLE_FILE_MESSAGE % self._source_file_dir)
-    ifndef_name = cpp_util.GenerateIfndefName(self._source_file_dir, file_base)
+    ifndef_name = cpp_util.GenerateIfndefName(
+        '%s/%s.h' % (self._source_file_dir, file_base))
     c.Append()
     c.Append('#ifndef %s' % ifndef_name)
     c.Append('#define %s' % ifndef_name)
@@ -147,7 +152,7 @@ class _APIHGenerator(object):
   def __init__(self, cpp_bundle):
     self._bundle = cpp_bundle
 
-  def Generate(self, namespace):
+  def Generate(self, _):  # namespace not relevant, this is a bundle
     c = code.Code()
 
     c.Append('#include <string>')
@@ -174,7 +179,7 @@ class _APICCGenerator(object):
   def __init__(self, cpp_bundle):
     self._bundle = cpp_bundle
 
-  def Generate(self, namespace):
+  def Generate(self, _):  # namespace not relevant, this is a bundle
     c = code.Code()
     c.Append(cpp_util.CHROMIUM_LICENSE)
     c.Append()
@@ -222,7 +227,7 @@ class _SchemasHGenerator(object):
   def __init__(self, cpp_bundle):
     self._bundle = cpp_bundle
 
-  def Generate(self, namespace):
+  def Generate(self, _):  # namespace not relevant, this is a bundle
     c = code.Code()
     c.Append('#include <map>')
     c.Append('#include <string>')
@@ -258,7 +263,7 @@ class _SchemasCCGenerator(object):
   def __init__(self, cpp_bundle):
     self._bundle = cpp_bundle
 
-  def Generate(self, namespace):
+  def Generate(self, _):  # namespace not relevant, this is a bundle
     c = code.Code()
     c.Append(cpp_util.CHROMIUM_LICENSE)
     c.Append()

@@ -2,31 +2,31 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+
 from code import Code
 from model import PropertyType
 import cpp_util
 import schema_util
 
 class HGenerator(object):
-  def __init__(self, type_generator, cpp_namespace):
+  def __init__(self, type_generator, cpp_namespace_pattern):
     self._type_generator = type_generator
-    self._cpp_namespace = cpp_namespace
+    self._cpp_namespace_pattern = cpp_namespace_pattern
 
   def Generate(self, namespace):
     return _Generator(namespace,
                       self._type_generator,
-                      self._cpp_namespace).Generate()
+                      self._cpp_namespace_pattern).Generate()
 
 
 class _Generator(object):
   """A .h generator for a namespace.
   """
-  def __init__(self, namespace, cpp_type_generator, cpp_namespace):
+  def __init__(self, namespace, cpp_type_generator, cpp_namespace_pattern):
     self._namespace = namespace
     self._type_helper = cpp_type_generator
-    self._cpp_namespace = cpp_namespace
-    self._target_namespace = (
-        self._type_helper.GetCppNamespaceName(self._namespace))
+    self._cpp_namespace_pattern = cpp_namespace_pattern
     self._generate_error_messages = namespace.compiler_options.get(
         'generate_error_messages', False)
 
@@ -40,8 +40,11 @@ class _Generator(object):
       .Append()
     )
 
-    ifndef_name = cpp_util.GenerateIfndefName(self._namespace.source_file_dir,
-                                              self._target_namespace)
+    # Hack: for the purpose of gyp the header file will always be the source
+    # file with its file extension replaced by '.h'. Assume so.
+    output_file = os.path.splitext(self._namespace.source_file)[0] + '.h'
+    ifndef_name = cpp_util.GenerateIfndefName(output_file)
+
     (c.Append('#ifndef %s' % ifndef_name)
       .Append('#define %s' % ifndef_name)
       .Append()
@@ -58,19 +61,16 @@ class _Generator(object):
       .Append()
     )
 
-    c.Concat(cpp_util.OpenNamespace(self._cpp_namespace))
     # TODO(calamity): These forward declarations should be #includes to allow
     # $ref types from other files to be used as required params. This requires
     # some detangling of windows and tabs which will currently lead to circular
     # #includes.
-    forward_declarations = (
-        self._type_helper.GenerateForwardDeclarations())
-    if not forward_declarations.IsEmpty():
-      (c.Append()
-        .Cblock(forward_declarations)
-      )
+    c.Cblock(self._type_helper.GenerateForwardDeclarations(
+        self._cpp_namespace_pattern))
 
-    c.Concat(self._type_helper.GetNamespaceStart())
+    cpp_namespace = cpp_util.GetCppNamespace(self._cpp_namespace_pattern,
+                                             self._namespace.unix_name)
+    c.Concat(cpp_util.OpenNamespace(cpp_namespace))
     c.Append()
     if self._namespace.properties:
       (c.Append('//')
@@ -109,8 +109,7 @@ class _Generator(object):
       )
       for event in self._namespace.events.values():
         c.Cblock(self._GenerateEvent(event))
-    (c.Concat(self._type_helper.GetNamespaceEnd())
-      .Concat(cpp_util.CloseNamespace(self._cpp_namespace))
+    (c.Concat(cpp_util.CloseNamespace(cpp_namespace))
       .Append('#endif  // %s' % ifndef_name)
       .Append()
     )

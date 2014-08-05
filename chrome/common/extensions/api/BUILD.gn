@@ -35,7 +35,7 @@ generated_extensions_api("api") {
   }
 
   impl_dir = "//chrome/browser/extensions/api"
-  root_namespace = "extensions::api"
+  root_namespace = "extensions::api::%(namespace)s"
   bundle = true
 
   deps = [

@@ -12,9 +12,9 @@
 # sources [required] A list of schema files to be compiled.
 #
 # root_namespace [required]
-#   The namespace in which generated API code is to be
-#   wrapped. C++ namespace syntax is accepted for nested namespace
-#   (e.g. "foo::bar::api").
+#     A Python string substituion pattern used to generate the C++
+#     namespace for each API. Use %(namespace)s to replace with the API
+#     namespace, like "toplevel::%(namespace)s_api".
 #
 # bundle [optional, default = false]
 #   Boolean indicating if the schema files should be bundled or not.

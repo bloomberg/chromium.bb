@@ -109,7 +109,7 @@
         'cc_dir': 'ui/accessibility',
         # TODO(dtseng): Change this once all files under ui/accessibility
         # namespaced under ui::ax.
-        'root_namespace': '',
+        'root_namespace': 'ui',
       },
     },
   ],

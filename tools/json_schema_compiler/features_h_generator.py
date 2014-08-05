@@ -32,8 +32,12 @@ class _Generator(object):
       .Append(cpp_util.GENERATED_FEATURE_MESSAGE % self._source_file)
       .Append()
     )
-    ifndef_name = cpp_util.GenerateIfndefName(self._source_file_filename,
-                                              self._class_name)
+
+    # Hack: for the purpose of gyp the header file will always be the source
+    # file with its file extension replaced by '.h'. Assume so.
+    output_file = os.path.splitext(self._namespace.source_file)[0] + '.h'
+    ifndef_name = cpp_util.GenerateIfndefName(output_file)
+
     (c.Append('#ifndef %s' % ifndef_name)
       .Append('#define %s' % ifndef_name)
       .Append()
