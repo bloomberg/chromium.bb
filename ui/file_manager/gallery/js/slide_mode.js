@@ -750,7 +750,11 @@ SlideMode.prototype.loadItem_ = function(
   }.bind(this);
 
   this.editor_.openSession(
-      item, effect, this.saveCurrentImage_.bind(this), displayDone, loadDone);
+      item,
+      effect,
+      this.saveCurrentImage_.bind(this, item),
+      displayDone,
+      loadDone);
 };
 
 /**
@@ -954,13 +958,13 @@ SlideMode.prototype.updateThumbnails = function() {
 /**
  * Save the current image to a file.
  *
+ * @param {Gallery.Item} item Item to save the image.
  * @param {function} callback Callback.
  * @private
  */
-SlideMode.prototype.saveCurrentImage_ = function(callback) {
+SlideMode.prototype.saveCurrentImage_ = function(item, callback) {
   this.showSpinner_(true);
 
-  var item = this.getSelectedItem();
   var savedPromise = this.dataModel_.saveItem(
       item,
       this.imageView_.getCanvas(),
