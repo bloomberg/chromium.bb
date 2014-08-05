@@ -735,8 +735,9 @@ class ChromeDriverAndroidTest(ChromeDriverBaseTest):
         for v in l['versions']:
           if (('stable' in v['channel'] and 'stable' in _ANDROID_PACKAGE_KEY) or
               ('beta' in v['channel'] and 'beta' in _ANDROID_PACKAGE_KEY)):
-            self.assertEquals(v['version'],
-                              self._driver.capabilities['version'])
+            omaha = map(int, v['version'].split('.'))
+            device = map(int, self._driver.capabilities['version'].split('.'))
+            self.assertTrue(omaha <= device)
             return
       raise RuntimeError('Malformed omaha JSON')
     except urllib2.URLError as e:
