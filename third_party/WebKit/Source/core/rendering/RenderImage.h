@@ -53,8 +53,6 @@ public:
     HTMLMapElement* imageMap() const;
     void areaElementFocusChanged(HTMLAreaElement*);
 
-    void highQualityRepaintTimerFired(Timer<RenderImage>*);
-
     void setIsGeneratedContent(bool generated = true) { m_isGeneratedContent = generated; }
 
     bool isGeneratedContent() const { return m_isGeneratedContent; }

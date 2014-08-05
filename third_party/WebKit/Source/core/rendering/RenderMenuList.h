@@ -94,7 +94,6 @@ private:
     virtual bool itemIsLabel(unsigned listIndex) const OVERRIDE;
     virtual bool itemIsSelected(unsigned listIndex) const OVERRIDE;
     virtual void setTextFromItem(unsigned listIndex) OVERRIDE;
-    virtual void listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow = true) OVERRIDE;
     virtual bool multiple() const OVERRIDE;
 
     virtual bool hasLineIfEmpty() const OVERRIDE { return true; }

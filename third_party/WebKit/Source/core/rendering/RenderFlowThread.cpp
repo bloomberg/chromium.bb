@@ -252,12 +252,6 @@ LayoutPoint RenderFlowThread::adjustedPositionRelativeToOffsetParent(const Rende
     return referencePoint;
 }
 
-LayoutUnit RenderFlowThread::pageLogicalTopForOffset(LayoutUnit offset)
-{
-    RenderMultiColumnSet* columnSet = columnSetAtBlockOffset(offset);
-    return columnSet ? columnSet->pageLogicalTopForOffset(offset) : LayoutUnit();
-}
-
 LayoutUnit RenderFlowThread::pageLogicalHeightForOffset(LayoutUnit offset)
 {
     RenderMultiColumnSet* columnSet = columnSetAtBlockOffset(offset);

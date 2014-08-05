@@ -144,18 +144,6 @@ void RenderRegion::repaintFlowThreadContentRectangle(const LayoutRect& repaintRe
     invalidatePaintRectangle(clippedRect);
 }
 
-LayoutUnit RenderRegion::logicalTopOfFlowThreadContentRect(const LayoutRect& rect) const
-{
-    ASSERT(isValid());
-    return flowThread()->isHorizontalWritingMode() ? rect.y() : rect.x();
-}
-
-LayoutUnit RenderRegion::logicalBottomOfFlowThreadContentRect(const LayoutRect& rect) const
-{
-    ASSERT(isValid());
-    return flowThread()->isHorizontalWritingMode() ? rect.maxY() : rect.maxX();
-}
-
 void RenderRegion::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
     if (!isValid()) {

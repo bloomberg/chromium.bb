@@ -176,18 +176,6 @@ bool HTMLSelectElement::valueMissing() const
     return firstSelectionIndex < 0 || (!firstSelectionIndex && hasPlaceholderLabelOption());
 }
 
-void HTMLSelectElement::listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow)
-{
-    if (!multiple())
-        optionSelectedByUser(listToOptionIndex(listIndex), fireOnChangeNow, false);
-    else {
-        updateSelectedState(listIndex, allowMultiplySelections, shift);
-        setNeedsValidityCheck();
-        if (fireOnChangeNow)
-            listBoxOnChange();
-    }
-}
-
 bool HTMLSelectElement::usesMenuList() const
 {
     if (RenderTheme::theme().delegatesMenuListRendering())
