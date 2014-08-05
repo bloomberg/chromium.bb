@@ -293,6 +293,14 @@ void RenderLayer::updateLayerPositionRecursive(UpdateLayerPositionsFlags flags)
 
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
         child->updateLayerPositionRecursive(flags);
+
+    // FIXME: why isn't FrameView just calling RenderLayerCompositor::repaintCompositedLayers? Does it really impact
+    // performance?
+    if ((flags & NeedsFullPaintInvalidationInBacking) && hasCompositedLayerMapping() && !compositedLayerMapping()->paintsIntoCompositedAncestor()) {
+        compositedLayerMapping()->setContentsNeedDisplay();
+        // This code is called when the FrameView wants to repaint the entire frame. This includes squashing content.
+        compositedLayerMapping()->setSquashingContentsNeedDisplay();
+    }
 }
 
 void RenderLayer::setAncestorChainHasSelfPaintingLayerDescendant()
