@@ -8,7 +8,6 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
 
 #include "base/basictypes.h"
-#include "content/shell/renderer/test_runner/TestCommon.h"
 #include "content/shell/renderer/test_runner/WebTask.h"
 
 namespace blink {

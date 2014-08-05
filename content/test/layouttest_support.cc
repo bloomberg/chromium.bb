@@ -16,7 +16,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
-#include "content/shell/renderer/test_runner/TestCommon.h"
+#include "content/shell/renderer/test_runner/test_common.h"
 #include "content/shell/renderer/test_runner/web_frame_test_proxy.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "third_party/WebKit/public/platform/WebBatteryStatus.h"
@@ -253,7 +253,7 @@ std::string DumpHistoryItem(HistoryEntry::HistoryNode* node,
     result.append(indent, ' ');
   }
 
-  std::string url = normalizeLayoutTestURL(item.urlString().utf8());
+  std::string url = NormalizeLayoutTestURL(item.urlString().utf8());
   result.append(url);
   if (!item.target().isEmpty()) {
     result.append(" (in frame \"");

@@ -4,8 +4,8 @@
 
 #include "content/shell/renderer/test_runner/web_permissions.h"
 
-#include "content/shell/renderer/test_runner/TestCommon.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
+#include "content/shell/renderer/test_runner/test_common.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
@@ -22,8 +22,8 @@ bool WebPermissions::allowImage(bool enabled_per_settings,
   bool allowed = enabled_per_settings && images_allowed_;
   if (dump_callbacks_ && delegate_) {
     delegate_->printMessage(std::string("PERMISSION CLIENT: allowImage(") +
-                             normalizeLayoutTestURL(image_url.spec()) + "): " +
-                             (allowed ? "true" : "false") + "\n");
+                            NormalizeLayoutTestURL(image_url.spec()) + "): " +
+                            (allowed ? "true" : "false") + "\n");
   }
   return allowed;
 }
@@ -32,8 +32,8 @@ bool WebPermissions::allowMedia(const blink::WebURL& image_url) {
   bool allowed = media_allowed_;
   if (dump_callbacks_ && delegate_)
     delegate_->printMessage(std::string("PERMISSION CLIENT: allowMedia(") +
-                             normalizeLayoutTestURL(image_url.spec()) + "): " +
-                             (allowed ? "true" : "false") + "\n");
+                            NormalizeLayoutTestURL(image_url.spec()) + "): " +
+                            (allowed ? "true" : "false") + "\n");
   return allowed;
 }
 
@@ -43,7 +43,7 @@ bool WebPermissions::allowScriptFromSource(bool enabled_per_settings,
   if (dump_callbacks_ && delegate_) {
     delegate_->printMessage(
         std::string("PERMISSION CLIENT: allowScriptFromSource(") +
-        normalizeLayoutTestURL(scriptURL.spec()) + "): " +
+        NormalizeLayoutTestURL(scriptURL.spec()) + "): " +
         (allowed ? "true" : "false") + "\n");
   }
   return allowed;
