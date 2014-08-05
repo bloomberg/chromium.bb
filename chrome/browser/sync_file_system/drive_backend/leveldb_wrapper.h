@@ -88,7 +88,10 @@ class LevelDBWrapper {
   // Clears pending transactions.
   void Clear();
 
-  leveldb::DB* GetLevelDBForTesting();
+  // TODO(peria): Rename this method to GetLevelDBForTesting, after removing
+  // usages of drive_backend::MigrateDatabaseFromVxToVy() under
+  // drive_backend_v1/.
+  leveldb::DB* GetLevelDB();
 
  private:
   scoped_ptr<leveldb::DB> db_;

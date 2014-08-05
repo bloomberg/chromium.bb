@@ -11,65 +11,62 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
+#include "chrome/browser/sync_file_system/drive_backend/leveldb_wrapper.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/gdata_wapi_parser.h"
-#include "third_party/leveldatabase/src/include/leveldb/db.h"
-#include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
+#include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace sync_file_system {
 namespace drive_backend {
 
-void PutVersionToBatch(int64 version, leveldb::WriteBatch* batch) {
-  if (batch)
-    batch->Put(kDatabaseVersionKey, base::Int64ToString(version));
+void PutVersionToDB(int64 version, LevelDBWrapper* db) {
+  if (db)
+    db->Put(kDatabaseVersionKey, base::Int64ToString(version));
 }
 
-void PutServiceMetadataToBatch(const ServiceMetadata& service_metadata,
-                               leveldb::WriteBatch* batch) {
-  if (!batch)
+void PutServiceMetadataToDB(const ServiceMetadata& service_metadata,
+                            LevelDBWrapper* db) {
+  if (!db)
     return;
 
   std::string value;
   bool success = service_metadata.SerializeToString(&value);
   DCHECK(success);
-  batch->Put(kServiceMetadataKey, value);
+  db->Put(kServiceMetadataKey, value);
 }
 
-void PutFileMetadataToBatch(const FileMetadata& file,
-                            leveldb::WriteBatch* batch) {
-  if (!batch)
+void PutFileMetadataToDB(const FileMetadata& file, LevelDBWrapper* db) {
+  if (!db)
     return;
 
   std::string value;
   bool success = file.SerializeToString(&value);
   DCHECK(success);
-  batch->Put(kFileMetadataKeyPrefix + file.file_id(), value);
+  db->Put(kFileMetadataKeyPrefix + file.file_id(), value);
 }
 
-void PutFileTrackerToBatch(const FileTracker& tracker,
-                           leveldb::WriteBatch* batch) {
-  if (!batch)
+void PutFileTrackerToDB(const FileTracker& tracker, LevelDBWrapper* db) {
+  if (!db)
     return;
 
   std::string value;
   bool success = tracker.SerializeToString(&value);
   DCHECK(success);
-  batch->Put(kFileTrackerKeyPrefix + base::Int64ToString(tracker.tracker_id()),
-             value);
+  db->Put(kFileTrackerKeyPrefix + base::Int64ToString(tracker.tracker_id()),
+          value);
 }
 
-void PutFileMetadataDeletionToBatch(const std::string& file_id,
-                                    leveldb::WriteBatch* batch) {
-  if (batch)
-    batch->Delete(kFileMetadataKeyPrefix + file_id);
+void PutFileMetadataDeletionToDB(const std::string& file_id,
+                                 LevelDBWrapper* db) {
+  if (db)
+    db->Delete(kFileMetadataKeyPrefix + file_id);
 }
 
-void PutFileTrackerDeletionToBatch(int64 tracker_id,
-                                   leveldb::WriteBatch* batch) {
-  if (batch)
-    batch->Delete(kFileTrackerKeyPrefix + base::Int64ToString(tracker_id));
+void PutFileTrackerDeletionToDB(int64 tracker_id, LevelDBWrapper* db) {
+  if (db)
+    db->Delete(kFileTrackerKeyPrefix + base::Int64ToString(tracker_id));
 }
 
 bool HasFileAsParent(const FileDetails& details, const std::string& file_id) {
@@ -171,14 +168,12 @@ bool RemovePrefix(const std::string& str, const std::string& prefix,
   return true;
 }
 
-scoped_ptr<ServiceMetadata> InitializeServiceMetadata(leveldb::DB* db) {
+scoped_ptr<ServiceMetadata> InitializeServiceMetadata(LevelDBWrapper* db) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(db);
 
   std::string value;
-  leveldb::Status status = db->Get(leveldb::ReadOptions(),
-                                   kServiceMetadataKey,
-                                   &value);
+  leveldb::Status status = db->Get(kServiceMetadataKey, &value);
 
   scoped_ptr<ServiceMetadata> service_metadata(new ServiceMetadata);
   if (!status.ok() || !service_metadata->ParseFromString(value))

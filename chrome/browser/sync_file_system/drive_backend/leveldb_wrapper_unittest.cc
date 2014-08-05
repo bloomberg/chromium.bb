@@ -38,7 +38,7 @@ class LevelDBWrapperTest : public testing::Test {
   }
 
   void CreateDefaultDatabase() {
-    leveldb::DB* db = db_->GetLevelDBForTesting();
+    leveldb::DB* db = db_->GetLevelDB();
 
     // Expected contents are
     // {"a": "1", "ab": "0", "bb": "3", "d": "4"}

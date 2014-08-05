@@ -22,27 +22,21 @@ class FileResource;
 class ResourceEntry;
 }
 
-namespace leveldb {
-class DB;
-class WriteBatch;
-}
-
 namespace sync_file_system {
 namespace drive_backend {
 
-void PutVersionToBatch(int64 version, leveldb::WriteBatch* batch);
+class LevelDBWrapper;
 
-void PutServiceMetadataToBatch(const ServiceMetadata& service_metadata,
-                               leveldb::WriteBatch* batch);
-void PutFileMetadataToBatch(const FileMetadata& file,
-                            leveldb::WriteBatch* batch);
-void PutFileTrackerToBatch(const FileTracker& tracker,
-                           leveldb::WriteBatch* batch);
+void PutVersionToDB(int64 version, LevelDBWrapper* db);
 
-void PutFileMetadataDeletionToBatch(const std::string& file_id,
-                                    leveldb::WriteBatch* batch);
-void PutFileTrackerDeletionToBatch(int64 tracker_id,
-                                   leveldb::WriteBatch* batch);
+void PutServiceMetadataToDB(const ServiceMetadata& service_metadata,
+                            LevelDBWrapper* db);
+void PutFileMetadataToDB(const FileMetadata& file, LevelDBWrapper* db);
+void PutFileTrackerToDB(const FileTracker& tracker, LevelDBWrapper* db);
+
+void PutFileMetadataDeletionToDB(const std::string& file_id,
+                                 LevelDBWrapper* db);
+void PutFileTrackerDeletionToDB(int64 tracker_id, LevelDBWrapper* db);
 
 bool HasFileAsParent(const FileDetails& details, const std::string& file_id);
 
@@ -58,7 +52,7 @@ SyncStatusCode GDataErrorCodeToSyncStatusCode(
 bool RemovePrefix(const std::string& str, const std::string& prefix,
                   std::string* out);
 
-scoped_ptr<ServiceMetadata> InitializeServiceMetadata(leveldb::DB* db);
+scoped_ptr<ServiceMetadata> InitializeServiceMetadata(LevelDBWrapper* db);
 
 template <typename Src, typename Dest>
 void AppendContents(const Src& src, Dest* dest) {

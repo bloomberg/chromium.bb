@@ -107,9 +107,9 @@ TEST(MetadataDatabaseIndexTest, UpdateTest) {
       MetadataDatabaseIndex::CreateForTesting(
           CreateTestDatabaseContents().get());
 
-  index->DemoteDirtyTracker(kPlaceholderTrackerID, NULL);
+  index->DemoteDirtyTracker(kPlaceholderTrackerID);
   EXPECT_EQ(kInvalidTrackerID, index->PickDirtyTracker());
-  index->PromoteDemotedDirtyTrackers(NULL);
+  index->PromoteDemotedDirtyTrackers();
   EXPECT_EQ(kPlaceholderTrackerID, index->PickDirtyTracker());
 
   FileMetadata metadata;
@@ -121,14 +121,14 @@ TEST(MetadataDatabaseIndexTest, UpdateTest) {
   scoped_ptr<FileTracker> new_tracker =
       test_util::CreateTracker(metadata, new_tracker_id, &app_root_tracker);
   new_tracker->set_active(false);
-  index->StoreFileTracker(new_tracker.Pass(), NULL);
+  index->StoreFileTracker(new_tracker.Pass());
 
   EXPECT_EQ("file_id", index->PickMultiTrackerFileID());
   EXPECT_EQ(ParentIDAndTitle(kAppRootTrackerID, std::string("file")),
             index->PickMultiBackingFilePath());
 
-  index->RemoveFileMetadata("file_id", NULL);
-  index->RemoveFileTracker(kFileTrackerID, NULL);
+  index->RemoveFileMetadata("file_id");
+  index->RemoveFileTracker(kFileTrackerID);
 
   EXPECT_FALSE(index->GetFileMetadata("file_id", NULL));
   EXPECT_FALSE(index->GetFileTracker(kFileTrackerID, NULL));

@@ -193,7 +193,7 @@ void LevelDBWrapper::Clear() {
   pending_.clear();
 }
 
-leveldb::DB* LevelDBWrapper::GetLevelDBForTesting() {
+leveldb::DB* LevelDBWrapper::GetLevelDB() {
   return db_.get();
 }
 

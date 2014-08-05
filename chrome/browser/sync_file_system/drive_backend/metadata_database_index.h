@@ -16,16 +16,12 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index_interface.h"
 #include "chrome/browser/sync_file_system/drive_backend/tracker_id_set.h"
 
-namespace leveldb {
-class DB;
-class WriteBatch;
-}
-
 namespace sync_file_system {
 namespace drive_backend {
 
 class FileMetadata;
 class FileTracker;
+class LevelDBWrapper;
 class ServiceMetadata;
 
 }  // namespace drive_backend
@@ -64,8 +60,7 @@ class MetadataDatabaseIndex : public MetadataDatabaseIndexInterface {
  public:
   virtual ~MetadataDatabaseIndex();
 
-  static scoped_ptr<MetadataDatabaseIndex> Create(
-      leveldb::DB* db, leveldb::WriteBatch* batch);
+  static scoped_ptr<MetadataDatabaseIndex> Create(LevelDBWrapper* db);
   static scoped_ptr<MetadataDatabaseIndex> CreateForTesting(
       DatabaseContents* contents);
 
@@ -74,14 +69,10 @@ class MetadataDatabaseIndex : public MetadataDatabaseIndexInterface {
       const std::string& file_id, FileMetadata* metadata) const OVERRIDE;
   virtual bool GetFileTracker(
       int64 tracker_id, FileTracker* tracker) const OVERRIDE;
-  virtual void StoreFileMetadata(
-      scoped_ptr<FileMetadata> metadata, leveldb::WriteBatch* batch) OVERRIDE;
-  virtual void StoreFileTracker(
-      scoped_ptr<FileTracker> tracker, leveldb::WriteBatch* batch) OVERRIDE;
-  virtual void RemoveFileMetadata(
-      const std::string& file_id, leveldb::WriteBatch* batch) OVERRIDE;
-  virtual void RemoveFileTracker(
-      int64 tracker_id, leveldb::WriteBatch* batch) OVERRIDE;
+  virtual void StoreFileMetadata(scoped_ptr<FileMetadata> metadata) OVERRIDE;
+  virtual void StoreFileTracker(scoped_ptr<FileTracker> tracker) OVERRIDE;
+  virtual void RemoveFileMetadata(const std::string& file_id) OVERRIDE;
+  virtual void RemoveFileTracker(int64 tracker_id) OVERRIDE;
   virtual TrackerIDSet GetFileTrackerIDsByFileID(
       const std::string& file_id) const OVERRIDE;
   virtual int64 GetAppRootTracker(const std::string& app_id) const OVERRIDE;
@@ -93,19 +84,15 @@ class MetadataDatabaseIndex : public MetadataDatabaseIndexInterface {
   virtual std::string PickMultiTrackerFileID() const OVERRIDE;
   virtual ParentIDAndTitle PickMultiBackingFilePath() const OVERRIDE;
   virtual int64 PickDirtyTracker() const OVERRIDE;
-  virtual void DemoteDirtyTracker(
-      int64 tracker_id, leveldb::WriteBatch* batch) OVERRIDE;
+  virtual void DemoteDirtyTracker(int64 tracker_id) OVERRIDE;
   virtual bool HasDemotedDirtyTracker() const OVERRIDE;
-  virtual void PromoteDemotedDirtyTrackers(leveldb::WriteBatch* batch) OVERRIDE;
+  virtual void PromoteDemotedDirtyTrackers() OVERRIDE;
   virtual size_t CountDirtyTracker() const OVERRIDE;
   virtual size_t CountFileMetadata() const OVERRIDE;
   virtual size_t CountFileTracker() const OVERRIDE;
-  virtual void SetSyncRootTrackerID(int64 sync_root_id,
-                                    leveldb::WriteBatch* batch) const OVERRIDE;
-  virtual void SetLargestChangeID(int64 largest_change_id,
-                                  leveldb::WriteBatch* batch) const OVERRIDE;
-  virtual void SetNextTrackerID(int64 next_tracker_id,
-                                leveldb::WriteBatch* batch) const OVERRIDE;
+  virtual void SetSyncRootTrackerID(int64 sync_root_id) const OVERRIDE;
+  virtual void SetLargestChangeID(int64 largest_change_id) const OVERRIDE;
+  virtual void SetNextTrackerID(int64 next_tracker_id) const OVERRIDE;
   virtual int64 GetSyncRootTrackerID() const OVERRIDE;
   virtual int64 GetLargestChangeID() const OVERRIDE;
   virtual int64 GetNextTrackerID() const OVERRIDE;
@@ -126,7 +113,7 @@ class MetadataDatabaseIndex : public MetadataDatabaseIndexInterface {
 
   friend class MetadataDatabaseTest;
 
-  MetadataDatabaseIndex();
+  explicit MetadataDatabaseIndex(LevelDBWrapper* db);
   void Initialize(scoped_ptr<ServiceMetadata> service_metadata,
                   DatabaseContents* contents);
 
@@ -155,6 +142,7 @@ class MetadataDatabaseIndex : public MetadataDatabaseIndexInterface {
   void RemoveFromDirtyTrackerIndexes(const FileTracker& tracker);
 
   scoped_ptr<ServiceMetadata> service_metadata_;
+  LevelDBWrapper* db_;  // Not owned
 
   MetadataByID metadata_by_id_;
   TrackerByID tracker_by_id_;

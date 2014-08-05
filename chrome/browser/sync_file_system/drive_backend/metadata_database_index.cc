@@ -10,6 +10,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/leveldb_wrapper.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/logger.h"
@@ -76,12 +77,11 @@ typename Container::mapped_type FindItem(
   return found->second;
 }
 
-void ReadDatabaseContents(leveldb::DB* db,
-                          DatabaseContents* contents) {
+void ReadDatabaseContents(LevelDBWrapper* db, DatabaseContents* contents) {
   DCHECK(db);
   DCHECK(contents);
 
-  scoped_ptr<leveldb::Iterator> itr(db->NewIterator(leveldb::ReadOptions()));
+  scoped_ptr<LevelDBWrapper::Iterator> itr(db->NewIterator());
   for (itr->SeekToFirst(); itr->Valid(); itr->Next()) {
     std::string key = itr->key().ToString();
     std::string value = itr->value().ToString();
@@ -122,7 +122,7 @@ void ReadDatabaseContents(leveldb::DB* db,
 
 void RemoveUnreachableItems(DatabaseContents* contents,
                             int64 sync_root_tracker_id,
-                            leveldb::WriteBatch* batch) {
+                            LevelDBWrapper* db) {
   typedef std::map<int64, std::set<int64> > ChildTrackersByParent;
   ChildTrackersByParent trackers_by_parent;
 
@@ -172,7 +172,7 @@ void RemoveUnreachableItems(DatabaseContents* contents,
       reachable_trackers.push_back(tracker);
       contents->file_trackers[i] = NULL;
     } else {
-      PutFileTrackerDeletionToBatch(tracker->tracker_id(), batch);
+      PutFileTrackerDeletionToDB(tracker->tracker_id(), db);
     }
   }
   contents->file_trackers = reachable_trackers.Pass();
@@ -190,7 +190,7 @@ void RemoveUnreachableItems(DatabaseContents* contents,
       referred_file_metadata.push_back(metadata);
       contents->file_metadata[i] = NULL;
     } else {
-      PutFileMetadataDeletionToBatch(metadata->file_id(), batch);
+      PutFileMetadataDeletionToDB(metadata->file_id(), db);
     }
   }
   contents->file_metadata = referred_file_metadata.Pass();
@@ -200,20 +200,19 @@ void RemoveUnreachableItems(DatabaseContents* contents,
 
 // static
 scoped_ptr<MetadataDatabaseIndex>
-MetadataDatabaseIndex::Create(leveldb::DB* db, leveldb::WriteBatch* batch) {
+MetadataDatabaseIndex::Create(LevelDBWrapper* db) {
   DCHECK(db);
-  DCHECK(batch);
 
   scoped_ptr<ServiceMetadata> service_metadata = InitializeServiceMetadata(db);
   DatabaseContents contents;
 
-  PutVersionToBatch(kCurrentDatabaseVersion, batch);
+  PutVersionToDB(kCurrentDatabaseVersion, db);
   ReadDatabaseContents(db, &contents);
   RemoveUnreachableItems(&contents,
                          service_metadata->sync_root_tracker_id(),
-                         batch);
+                         db);
 
-  scoped_ptr<MetadataDatabaseIndex> index(new MetadataDatabaseIndex);
+  scoped_ptr<MetadataDatabaseIndex> index(new MetadataDatabaseIndex(db));
   index->Initialize(service_metadata.Pass(), &contents);
   return index.Pass();
 }
@@ -221,7 +220,7 @@ MetadataDatabaseIndex::Create(leveldb::DB* db, leveldb::WriteBatch* batch) {
 // static
 scoped_ptr<MetadataDatabaseIndex>
 MetadataDatabaseIndex::CreateForTesting(DatabaseContents* contents) {
-  scoped_ptr<MetadataDatabaseIndex> index(new MetadataDatabaseIndex);
+  scoped_ptr<MetadataDatabaseIndex> index(new MetadataDatabaseIndex(NULL));
   index->Initialize(make_scoped_ptr(new ServiceMetadata), contents);
   return index.Pass();
 }
@@ -232,11 +231,11 @@ void MetadataDatabaseIndex::Initialize(
   service_metadata_ = service_metadata.Pass();
 
   for (size_t i = 0; i < contents->file_metadata.size(); ++i)
-    StoreFileMetadata(make_scoped_ptr(contents->file_metadata[i]), NULL);
+    StoreFileMetadata(make_scoped_ptr(contents->file_metadata[i]));
   contents->file_metadata.weak_clear();
 
   for (size_t i = 0; i < contents->file_trackers.size(); ++i)
-    StoreFileTracker(make_scoped_ptr(contents->file_trackers[i]), NULL);
+    StoreFileTracker(make_scoped_ptr(contents->file_trackers[i]));
   contents->file_trackers.weak_clear();
 
   UMA_HISTOGRAM_COUNTS("SyncFileSystem.MetadataNumber", metadata_by_id_.size());
@@ -245,7 +244,7 @@ void MetadataDatabaseIndex::Initialize(
                            app_root_by_app_id_.size());
 }
 
-MetadataDatabaseIndex::MetadataDatabaseIndex() {}
+MetadataDatabaseIndex::MetadataDatabaseIndex(LevelDBWrapper* db) : db_(db) {}
 MetadataDatabaseIndex::~MetadataDatabaseIndex() {}
 
 bool MetadataDatabaseIndex::GetFileMetadata(
@@ -269,8 +268,8 @@ bool MetadataDatabaseIndex::GetFileTracker(
 }
 
 void MetadataDatabaseIndex::StoreFileMetadata(
-    scoped_ptr<FileMetadata> metadata, leveldb::WriteBatch* batch) {
-  PutFileMetadataToBatch(*metadata.get(), batch);
+    scoped_ptr<FileMetadata> metadata) {
+  PutFileMetadataToDB(*metadata.get(), db_);
   if (!metadata) {
     NOTREACHED();
     return;
@@ -280,9 +279,9 @@ void MetadataDatabaseIndex::StoreFileMetadata(
   metadata_by_id_.set(file_id, metadata.Pass());
 }
 
-void MetadataDatabaseIndex::StoreFileTracker(scoped_ptr<FileTracker> tracker,
-                                             leveldb::WriteBatch* batch) {
-  PutFileTrackerToBatch(*tracker.get(), batch);
+void MetadataDatabaseIndex::StoreFileTracker(
+    scoped_ptr<FileTracker> tracker) {
+  PutFileTrackerToDB(*tracker.get(), db_);
   if (!tracker) {
     NOTREACHED();
     return;
@@ -312,15 +311,13 @@ void MetadataDatabaseIndex::StoreFileTracker(scoped_ptr<FileTracker> tracker,
   tracker_by_id_.set(tracker_id, tracker.Pass());
 }
 
-void MetadataDatabaseIndex::RemoveFileMetadata(const std::string& file_id,
-                                               leveldb::WriteBatch* batch) {
-  PutFileMetadataDeletionToBatch(file_id, batch);
+void MetadataDatabaseIndex::RemoveFileMetadata(const std::string& file_id) {
+  PutFileMetadataDeletionToDB(file_id, db_);
   metadata_by_id_.erase(file_id);
 }
 
-void MetadataDatabaseIndex::RemoveFileTracker(int64 tracker_id,
-                                              leveldb::WriteBatch* batch) {
-  PutFileTrackerDeletionToBatch(tracker_id, batch);
+void MetadataDatabaseIndex::RemoveFileTracker(int64 tracker_id) {
+  PutFileTrackerDeletionToDB(tracker_id, db_);
 
   FileTracker* tracker = tracker_by_id_.get(tracker_id);
   if (!tracker) {
@@ -393,8 +390,7 @@ int64 MetadataDatabaseIndex::PickDirtyTracker() const {
   return *dirty_trackers_.begin();
 }
 
-void MetadataDatabaseIndex::DemoteDirtyTracker(
-    int64 tracker_id, leveldb::WriteBatch* /* unused_batch */) {
+void MetadataDatabaseIndex::DemoteDirtyTracker(int64 tracker_id) {
   if (dirty_trackers_.erase(tracker_id))
     demoted_dirty_trackers_.insert(tracker_id);
 }
@@ -403,8 +399,7 @@ bool MetadataDatabaseIndex::HasDemotedDirtyTracker() const {
   return !demoted_dirty_trackers_.empty();
 }
 
-void MetadataDatabaseIndex::PromoteDemotedDirtyTrackers(
-    leveldb::WriteBatch* /* unused_batch */) {
+void MetadataDatabaseIndex::PromoteDemotedDirtyTrackers() {
   dirty_trackers_.insert(demoted_dirty_trackers_.begin(),
                          demoted_dirty_trackers_.end());
   demoted_dirty_trackers_.clear();
@@ -423,21 +418,21 @@ size_t MetadataDatabaseIndex::CountFileTracker() const {
 }
 
 void MetadataDatabaseIndex::SetSyncRootTrackerID(
-    int64 sync_root_id, leveldb::WriteBatch* batch) const {
+    int64 sync_root_id) const {
   service_metadata_->set_sync_root_tracker_id(sync_root_id);
-  PutServiceMetadataToBatch(*service_metadata_, batch);
+  PutServiceMetadataToDB(*service_metadata_, db_);
 }
 
 void MetadataDatabaseIndex::SetLargestChangeID(
-    int64 largest_change_id, leveldb::WriteBatch* batch) const {
+    int64 largest_change_id) const {
   service_metadata_->set_largest_change_id(largest_change_id);
-  PutServiceMetadataToBatch(*service_metadata_, batch);
+  PutServiceMetadataToDB(*service_metadata_, db_);
 }
 
 void MetadataDatabaseIndex::SetNextTrackerID(
-    int64 next_tracker_id, leveldb::WriteBatch* batch) const {
+    int64 next_tracker_id) const {
   service_metadata_->set_next_tracker_id(next_tracker_id);
-  PutServiceMetadataToBatch(*service_metadata_, batch);
+  PutServiceMetadataToDB(*service_metadata_, db_);
 }
 
 int64 MetadataDatabaseIndex::GetSyncRootTrackerID() const {
