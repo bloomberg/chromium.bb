@@ -315,7 +315,7 @@ DataReductionProxyRequestType GetDataReductionProxyRequestType(
   }
 #endif
   if (request->response_info().headers &&
-      HasDataReductionProxyViaHeader(request->response_info().headers)) {
+      HasDataReductionProxyViaHeader(request->response_info().headers, NULL)) {
     return VIA_DATA_REDUCTION_PROXY;
   }
   return UNKNOWN_TYPE;
