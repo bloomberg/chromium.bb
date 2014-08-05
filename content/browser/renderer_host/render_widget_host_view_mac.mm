@@ -427,8 +427,8 @@ RenderWidgetHostImpl* RenderWidgetHostViewMac::GetHost() {
 
 void RenderWidgetHostViewMac::SchedulePaintInRect(
     const gfx::Rect& damage_rect_in_dip) {
-  if (browser_compositor_view_)
-    browser_compositor_view_->GetCompositor()->ScheduleFullRedraw();
+  DCHECK(GetLayer());
+  GetLayer()->SchedulePaint(damage_rect_in_dip);
 }
 
 bool RenderWidgetHostViewMac::IsVisible() {
