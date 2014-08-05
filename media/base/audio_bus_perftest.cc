@@ -15,8 +15,8 @@ static const int kBenchmarkIterations = 20;
 template <typename T>
 void RunInterleaveBench(AudioBus* bus, const std::string& trace_name) {
   const int frame_size = bus->frames() * bus->channels();
-  scoped_ptr<T> interleaved(new T[frame_size]);
-  const int byte_size = sizeof(*interleaved);
+  scoped_ptr<T[]> interleaved(new T[frame_size]);
+  const int byte_size = sizeof(T);
 
   base::TimeTicks start = base::TimeTicks::HighResNow();
   for (int i = 0; i < kBenchmarkIterations; ++i) {
