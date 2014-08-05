@@ -1174,7 +1174,7 @@ void BrowserView::ShowTranslateBubble(
       chrome_translate_client->GetLanguageState();
   language_state.SetTranslateEnabled(true);
 
-  if (!IsActive())
+  if (IsMinimized())
     return;
 
   TranslateBubbleView::ShowBubble(
