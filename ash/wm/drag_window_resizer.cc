@@ -20,6 +20,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/screen.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -79,7 +80,7 @@ void DragWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   // Show a phantom window for dragging in another root window.
   if (HasSecondaryRootWindow()) {
     gfx::Point location_in_screen = location;
-    wm::ConvertPointToScreen(GetTarget()->parent(), &location_in_screen);
+    ::wm::ConvertPointToScreen(GetTarget()->parent(), &location_in_screen);
     const bool in_original_root =
         wm::GetRootWindowAt(location_in_screen) == GetTarget()->GetRootWindow();
     UpdateDragWindow(GetTarget()->bounds(), in_original_root);
@@ -96,8 +97,8 @@ void DragWindowResizer::CompleteDrag() {
 
   // Check if the destination is another display.
   gfx::Point last_mouse_location_in_screen = last_mouse_location_;
-  wm::ConvertPointToScreen(GetTarget()->parent(),
-                           &last_mouse_location_in_screen);
+  ::wm::ConvertPointToScreen(GetTarget()->parent(),
+                             &last_mouse_location_in_screen);
   gfx::Screen* screen = Shell::GetScreen();
   const gfx::Display dst_display =
       screen->GetDisplayNearestPoint(last_mouse_location_in_screen);

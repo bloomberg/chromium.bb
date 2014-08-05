@@ -37,6 +37,8 @@
         'core/capture_controller.h',
         'core/compound_event_filter.cc',
         'core/compound_event_filter.h',
+        'core/coordinate_conversion.cc',
+        'core/coordinate_conversion.h',
         'core/cursor_manager.cc',
         'core/cursor_manager.h',
         'core/default_activation_client.cc',

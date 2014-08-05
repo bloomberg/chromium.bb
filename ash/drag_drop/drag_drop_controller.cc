@@ -7,7 +7,6 @@
 #include "ash/drag_drop/drag_drop_tracker.h"
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/shell.h"
-#include "ash/wm/coordinate_conversion.h"
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -28,6 +27,7 @@
 #include "ui/gfx/rect_conversions.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_aura.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/public/drag_drop_delegate.h"
 
 namespace ash {
@@ -198,7 +198,7 @@ int DragDropController::StartDragAndDrop(
     drag_image_vertical_offset = kTouchDragImageVerticalOffset;
   }
   gfx::Point start_location = root_location;
-  ash::wm::ConvertPointToScreen(root_window, &start_location);
+  ::wm::ConvertPointToScreen(root_window, &start_location);
   drag_image_final_bounds_for_cancel_animation_ = gfx::Rect(
       start_location - provider->GetDragImageOffset(),
       provider->GetDragImage().size());
@@ -292,8 +292,8 @@ void DragDropController::DragUpdate(aura::Window* target,
   DCHECK(drag_image_.get());
   if (drag_image_->visible()) {
     gfx::Point root_location_in_screen = event.root_location();
-    ash::wm::ConvertPointToScreen(target->GetRootWindow(),
-                                  &root_location_in_screen);
+    ::wm::ConvertPointToScreen(target->GetRootWindow(),
+                               &root_location_in_screen);
     drag_image_->SetScreenPosition(
         root_location_in_screen - drag_image_offset_);
     drag_image_->SetTouchDragOperation(op);
