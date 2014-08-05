@@ -696,8 +696,12 @@ template <typename T> struct RemoveHeapPointerWrapperTypes {
     typedef typename WTF::RemoveTemplate<typename WTF::RemoveTemplate<typename WTF::RemoveTemplate<T, Member>::Type, WeakMember>::Type, RawPtr>::Type Type;
 };
 
+// FIXME: Oilpan: TraceIfNeeded should be implemented ala:
+// NeedsTracing<T>::value || IsWeakMember<T>::value. It should not need to test
+// raw pointer types. To remove these tests, we may need support for
+// instantiating a template with a RawPtrOrMember'ish template.
 template<typename T>
-struct TraceIfNeeded : public TraceIfEnabled<T, blink::IsGarbageCollectedType<typename RemoveHeapPointerWrapperTypes<typename WTF::RemovePointer<T>::Type>::Type>::value> { };
+struct TraceIfNeeded : public TraceIfEnabled<T, WTF::NeedsTracing<T>::value || blink::IsGarbageCollectedType<typename RemoveHeapPointerWrapperTypes<typename WTF::RemovePointer<T>::Type>::Type>::value> { };
 
 // This trace trait for std::pair will null weak members if their referent is
 // collected. If you have a collection that contain weakness it does not remove

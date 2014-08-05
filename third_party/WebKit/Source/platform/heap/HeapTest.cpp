@@ -4981,4 +4981,60 @@ TEST(HeapTest, RecursiveMutex)
     RecursiveLockingTester::test();
 }
 
+template<typename T>
+class TraceIfNeededTester : public GarbageCollected<TraceIfNeededTester<T> > {
+public:
+    static TraceIfNeededTester<T>* create() { return new TraceIfNeededTester<T>(); }
+    static TraceIfNeededTester<T>* create(const T& obj) { return new TraceIfNeededTester<T>(obj); }
+    void trace(Visitor* visitor) { TraceIfNeeded<T>::trace(visitor, &m_obj); }
+    T& obj() { return m_obj; }
+private:
+    TraceIfNeededTester() { }
+    explicit TraceIfNeededTester(const T& obj) : m_obj(obj) { }
+    T m_obj;
+};
+
+class PartObject {
+    DISALLOW_ALLOCATION();
+public:
+    PartObject() : m_obj(SimpleObject::create()) { }
+    void trace(Visitor* visitor) { visitor->trace(m_obj); }
+private:
+    Member<SimpleObject> m_obj;
+};
+
+TEST(HeapTest, TraceIfNeeded)
+{
+    CountingVisitor visitor;
+
+    {
+        TraceIfNeededTester<RefPtr<OffHeapInt> >* m_offHeap = TraceIfNeededTester<RefPtr<OffHeapInt> >::create(OffHeapInt::create(42));
+        visitor.reset();
+        m_offHeap->trace(&visitor);
+        EXPECT_EQ(0u, visitor.count());
+    }
+
+    {
+        TraceIfNeededTester<PartObject>* m_part = TraceIfNeededTester<PartObject>::create();
+        visitor.reset();
+        m_part->trace(&visitor);
+        EXPECT_EQ(1u, visitor.count());
+    }
+
+    {
+        TraceIfNeededTester<Member<SimpleObject> >* m_obj = TraceIfNeededTester<Member<SimpleObject> >::create(Member<SimpleObject>(SimpleObject::create()));
+        visitor.reset();
+        m_obj->trace(&visitor);
+        EXPECT_EQ(1u, visitor.count());
+    }
+
+    {
+        TraceIfNeededTester<HeapVector<Member<SimpleObject> > >* m_vec = TraceIfNeededTester<HeapVector<Member<SimpleObject> > >::create();
+        m_vec->obj().append(SimpleObject::create());
+        visitor.reset();
+        m_vec->trace(&visitor);
+        EXPECT_EQ(2u, visitor.count());
+    }
+}
+
 } // namespace blink
