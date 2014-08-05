@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_COPRESENCE_INTERFACE_WHISPERNET_CLIENT_H_
-#define COMPONENTS_COPRESENCE_INTERFACE_WHISPERNET_CLIENT_H_
+#ifndef COMPONENTS_COPRESENCE_PUBLIC_WHISPERNET_CLIENT_H_
+#define COMPONENTS_COPRESENCE_PUBLIC_WHISPERNET_CLIENT_H_
 
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 
 namespace media {
 class AudioBusRefCounted;
@@ -67,4 +67,4 @@ class WhispernetClient {
 
 }  // namespace copresence
 
-#endif  // COMPONENTS_COPRESENCE_INTERFACE_WHISPERNET_CLIENT_H_
+#endif  // COMPONENTS_COPRESENCE_PUBLIC_WHISPERNET_CLIENT_H_
