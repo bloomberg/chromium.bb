@@ -59,10 +59,6 @@ class FingerOriginCompare {
 }  // namespace {}
 
 void TapRecord::NoteTouch(short the_id, const FingerState& fs) {
-  if (&fs == NULL) {
-    Err("Error! Bad FingerState!");
-    return;
-  }
   // New finger must be close enough to an existing finger
   if (!touched_.empty()) {
     bool reject_new_finger = true;
