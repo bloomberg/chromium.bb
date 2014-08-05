@@ -42,7 +42,7 @@ class DispatcherDelegate {
   virtual void InitOriginPermissions(const Extension* extension,
                                      bool is_extension_active) {}
 
-  // Includes additional native handlers in a given ModuleSystem.
+  // Includes additional native handlers in a ScriptContext's ModuleSystem.
   virtual void RegisterNativeHandlers(Dispatcher* dispatcher,
                                       ModuleSystem* module_system,
                                       ScriptContext* context) {}
@@ -51,9 +51,7 @@ class DispatcherDelegate {
   virtual void PopulateSourceMap(ResourceBundleSourceMap* source_map) {}
 
   // Requires additional modules within an extension context's module system.
-  virtual void RequireAdditionalModules(ModuleSystem* module_system,
-                                        const Extension* extension,
-                                        Feature::Context context_type,
+  virtual void RequireAdditionalModules(ScriptContext* context,
                                         bool is_within_platform_app) {}
 
   // Allows the delegate to respond to an updated set of active extensions in

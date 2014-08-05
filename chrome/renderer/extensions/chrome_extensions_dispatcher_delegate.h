@@ -30,11 +30,8 @@ class ChromeExtensionsDispatcherDelegate
       extensions::ScriptContext* context) OVERRIDE;
   virtual void PopulateSourceMap(
       extensions::ResourceBundleSourceMap* source_map) OVERRIDE;
-  virtual void RequireAdditionalModules(
-      extensions::ModuleSystem* module_system,
-      const extensions::Extension* extension,
-      extensions::Feature::Context context_type,
-      bool is_within_platform_app) OVERRIDE;
+  virtual void RequireAdditionalModules(extensions::ScriptContext* context,
+                                        bool is_within_platform_app) OVERRIDE;
   virtual void OnActiveExtensionsUpdated(
       const std::set<std::string>& extensions_ids) OVERRIDE;
   virtual void SetChannel(int channel) OVERRIDE;

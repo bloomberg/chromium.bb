@@ -262,10 +262,11 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
 }
 
 void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(
-    extensions::ModuleSystem* module_system,
-    const extensions::Extension* extension,
-    extensions::Feature::Context context_type,
+    extensions::ScriptContext* context,
     bool is_within_platform_app) {
+  extensions::ModuleSystem* module_system = context->module_system();
+  extensions::Feature::Context context_type = context->context_type();
+
   // TODO(kalman, fsamuel): Eagerly calling Require on context startup is
   // expensive. It would be better if there were a light way of detecting when
   // a webview or appview is created and only then set up the infrastructure.
@@ -276,6 +277,8 @@ void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(
           ::switches::kEnableAppWindowControls)) {
     module_system->Require("windowControls");
   }
+
+  const extensions::Extension* extension = context->extension();
 
   // We used to limit WebView to |BLESSED_EXTENSION_CONTEXT| within platform
   // apps. An ext/app runs in a blessed extension context, if it is the active

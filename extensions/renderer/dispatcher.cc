@@ -304,8 +304,7 @@ void Dispatcher::DidCreateScriptContext(
     module_system->Require("platformApp");
   }
 
-  delegate_->RequireAdditionalModules(
-      module_system, extension, context_type, is_within_platform_app);
+  delegate_->RequireAdditionalModules(context, is_within_platform_app);
 
   VLOG(1) << "Num tracked contexts: " << script_context_set_.size();
 }
