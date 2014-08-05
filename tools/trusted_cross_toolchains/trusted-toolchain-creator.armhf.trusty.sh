@@ -64,11 +64,7 @@ readonly PACKAGE_LIST2="${ARMHF_REPO}/dists/trusty-security/main/binary-armhf/Pa
 
 # Packages for the host system
 readonly CROSS_ARM_TC_PACKAGES="\
-  g++-arm-linux-gnueabihf \
-  libgomp1-dbg-armhf-cross \
-  libgcc1-dbg-armhf-cross \
-  libmudflap0-dbg-armhf-cross
-"
+  g++-arm-linux-gnueabihf"
 
 # Jail packages: these are good enough for native client
 # NOTE: the package listing here should be updated using the
