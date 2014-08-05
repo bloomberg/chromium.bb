@@ -849,9 +849,9 @@ config("no_optimize") {
   }
 }
 
-# On Windows, turns up the optimization level. This implies whole program
+# Turns up the optimization level. On Windows, this implies whole program
 # optimization and link-time code generation which is very expensive and should
-# be used sparingly. For non-Windows, this is the same as "optimize".
+# be used sparingly.
 config("optimize_max") {
   cflags = common_optimize_on_cflags
   ldflags = common_optimize_on_ldflags
