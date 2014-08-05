@@ -157,11 +157,11 @@ void SupervisedUserCreationScreen::ShowManagerInconsistentStateErrorScreen() {
     return;
   actor_->ShowErrorPage(
       l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE_TITLE),
+          IDS_CREATE_SUPERVISED_USER_MANAGER_INCONSISTENT_STATE_TITLE),
       l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE),
+          IDS_CREATE_SUPERVISED_USER_MANAGER_INCONSISTENT_STATE),
       l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE_BUTTON));
+          IDS_CREATE_SUPERVISED_USER_MANAGER_INCONSISTENT_STATE_BUTTON));
 }
 
 void SupervisedUserCreationScreen::ShowInitialScreen() {
@@ -246,11 +246,11 @@ void SupervisedUserCreationScreen::ImportSupervisedUser(
   if (exists) {
     actor_->ShowErrorPage(
         l10n_util::GetStringUTF16(
-            IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR_TITLE),
+            IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR_TITLE),
         l10n_util::GetStringUTF16(
-            IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR),
+            IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR),
         l10n_util::GetStringUTF16(
-            IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR_BUTTON));
+            IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR_BUTTON));
     return;
   }
 
@@ -306,11 +306,11 @@ void SupervisedUserCreationScreen::ImportSupervisedUserWithPassword(
   if (exists) {
     actor_->ShowErrorPage(
         l10n_util::GetStringUTF16(
-            IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR_TITLE),
+            IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR_TITLE),
         l10n_util::GetStringUTF16(
-            IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR),
+            IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR),
         l10n_util::GetStringUTF16(
-            IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR_BUTTON));
+            IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR_BUTTON));
     return;
   }
 
@@ -358,7 +358,7 @@ void SupervisedUserCreationScreen::OnSupervisedUsersChanged() {
 void SupervisedUserCreationScreen::OnManagerCryptohomeAuthenticated() {
   if (actor_) {
     actor_->ShowStatusMessage(true /* progress */, l10n_util::GetStringUTF16(
-        IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_AUTH_PROGRESS_MESSAGE));
+        IDS_CREATE_SUPERVISED_USER_CREATION_AUTH_PROGRESS_MESSAGE));
   }
 }
 
@@ -380,20 +380,20 @@ void SupervisedUserCreationScreen::OnCreationError(
     case SupervisedUserCreationController::CRYPTOHOME_FAILED_MOUNT:
     case SupervisedUserCreationController::CRYPTOHOME_FAILED_TPM:
       title = l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_TPM_ERROR_TITLE);
+          IDS_CREATE_SUPERVISED_USER_TPM_ERROR_TITLE);
       message = l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_TPM_ERROR);
+          IDS_CREATE_SUPERVISED_USER_TPM_ERROR);
       button = l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_TPM_ERROR_BUTTON);
+          IDS_CREATE_SUPERVISED_USER_TPM_ERROR_BUTTON);
       break;
     case SupervisedUserCreationController::CLOUD_SERVER_ERROR:
     case SupervisedUserCreationController::TOKEN_WRITE_FAILED:
       title = l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR_TITLE);
+          IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR_TITLE);
       message = l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR);
+          IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR);
       button = l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR_BUTTON);
+          IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR_BUTTON);
       break;
     case SupervisedUserCreationController::NO_ERROR:
       NOTREACHED();
@@ -405,7 +405,7 @@ void SupervisedUserCreationScreen::OnCreationError(
 void SupervisedUserCreationScreen::OnCreationTimeout() {
   if (actor_) {
     actor_->ShowStatusMessage(false /* error */, l10n_util::GetStringUTF16(
-        IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_CREATION_TIMEOUT_MESSAGE));
+        IDS_CREATE_SUPERVISED_USER_CREATION_CREATION_TIMEOUT_MESSAGE));
   }
 }
 

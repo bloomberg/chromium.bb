@@ -352,7 +352,7 @@ Press Ctrl+Alt+Z to disable.
         Shut down
       </message>
 
-      <message name="IDS_ASH_STATUS_TRAY_LOCALLY_MANAGED_LABEL" desc="Label shown instead of email for supervised users">
+      <message name="IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL" desc="Label shown instead of email for supervised users">
          Supervised user
       </message>
 

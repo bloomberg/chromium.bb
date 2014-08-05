@@ -58,11 +58,11 @@ void UpdateAuthParams(base::DictionaryValue* params, bool has_users,
   int message_id = -1;
   if (!has_users) {
     supervised_users_can_create = false;
-    message_id = IDS_CREATE_LOCALLY_MANAGED_USER_NO_MANAGER_TEXT;
+    message_id = IDS_CREATE_SUPERVISED_USER_NO_MANAGER_TEXT;
   }
   if (!allow_new_user || !supervised_users_allowed) {
     supervised_users_can_create = false;
-    message_id = IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_RESTRICTED_TEXT;
+    message_id = IDS_CREATE_SUPERVISED_USER_CREATION_RESTRICTED_TEXT;
   }
 
   params->SetBoolean("supervisedUsersEnabled", supervised_users_allowed);
@@ -215,9 +215,9 @@ void GaiaScreenHandler::DeclareLocalizedValues(
   builder->Add("createAccount", IDS_CREATE_ACCOUNT_HTML);
   builder->Add("guestSignin", IDS_BROWSE_WITHOUT_SIGNING_IN_HTML);
   builder->Add("createSupervisedUser",
-               IDS_CREATE_LOCALLY_MANAGED_USER_HTML);
+               IDS_CREATE_SUPERVISED_USER_HTML);
   builder->Add("createSupervisedUserFeatureName",
-               IDS_CREATE_LOCALLY_MANAGED_USER_FEATURE_NAME);
+               IDS_CREATE_SUPERVISED_USER_FEATURE_NAME);
   builder->Add("consumerManagementEnrollmentSigninMessage",
                IDS_LOGIN_CONSUMER_MANAGEMENT_ENROLLMENT);
 

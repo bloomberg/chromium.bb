@@ -174,7 +174,7 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 
   if (status == user::LOGGED_IN_SUPERVISED) {
     label_->SetText(
-        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LOCALLY_MANAGED_LABEL));
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL));
   } else if (status == user::LOGGED_IN_GUEST) {
     label_->SetText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_GUEST_LABEL));
   }

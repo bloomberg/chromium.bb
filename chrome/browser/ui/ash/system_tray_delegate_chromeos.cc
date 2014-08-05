@@ -388,7 +388,7 @@ const base::string16 SystemTrayDelegateChromeOS::GetSupervisedUserMessage()
   if (GetUserLoginStatus() != ash::user::LOGGED_IN_SUPERVISED)
     return base::string16();
   return l10n_util::GetStringFUTF16(
-      IDS_USER_IS_LOCALLY_MANAGED_BY_NOTICE,
+      IDS_USER_IS_SUPERVISED_BY_NOTICE,
       base::UTF8ToUTF16(GetSupervisedUserManager()));
 }
 
