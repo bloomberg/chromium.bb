@@ -109,7 +109,7 @@ public:
     // Repaint the appropriate layers when the given RenderLayer starts or stops being composited.
     void repaintOnCompositingChange(RenderLayer*);
 
-    void repaintCompositedLayers();
+    void fullyInvalidatePaint();
 
     RenderLayer* rootRenderLayer() const;
     GraphicsLayer* rootGraphicsLayer() const;
@@ -193,8 +193,6 @@ private:
     bool needsOwnBacking(const RenderLayer*) const;
 
     void updateIfNeeded();
-
-    void recursiveRepaintLayer(RenderLayer*);
 
     void computeCompositingRequirements(RenderLayer* ancestorLayer, RenderLayer*, OverlapMap&, struct CompositingRecursionData&, bool& descendantHas3DTransform, Vector<RenderLayer*>& unclippedDescendants, IntRect& absoluteDecendantBoundingBox);
 

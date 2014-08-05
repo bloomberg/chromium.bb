@@ -619,33 +619,20 @@ bool RenderLayerCompositor::parentFrameContentLayers(RenderPart* renderer)
     return true;
 }
 
-void RenderLayerCompositor::repaintCompositedLayers()
+static void fullyInvalidatePaintRecursive(RenderLayer* layer)
 {
-    recursiveRepaintLayer(rootRenderLayer());
-}
-
-void RenderLayerCompositor::recursiveRepaintLayer(RenderLayer* layer)
-{
-    // FIXME: This method does not work correctly with transforms.
     if (layer->compositingState() == PaintsIntoOwnBacking) {
         layer->compositedLayerMapping()->setContentsNeedDisplay();
-        // This function is called only when it is desired to repaint the entire compositing graphics layer tree.
-        // This includes squashing.
         layer->compositedLayerMapping()->setSquashingContentsNeedDisplay();
     }
 
-    layer->stackingNode()->updateLayerListsIfNeeded();
+    for (RenderLayer* child = layer->firstChild(); child; child = child->nextSibling())
+        fullyInvalidatePaintRecursive(child);
+}
 
-#if ENABLE(ASSERT)
-    LayerListMutationDetector mutationChecker(layer->stackingNode());
-#endif
-
-    unsigned childrenToVisit = NormalFlowChildren;
-    if (layer->hasCompositingDescendant())
-        childrenToVisit |= PositiveZOrderChildren | NegativeZOrderChildren;
-    RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), childrenToVisit);
-    while (RenderLayerStackingNode* curNode = iterator.next())
-        recursiveRepaintLayer(curNode->layer());
+void RenderLayerCompositor::fullyInvalidatePaint()
+{
+    fullyInvalidatePaintRecursive(rootRenderLayer());
 }
 
 RenderLayer* RenderLayerCompositor::rootRenderLayer() const

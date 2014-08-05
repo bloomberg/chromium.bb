@@ -492,7 +492,7 @@ void RenderView::invalidatePaintForViewAndCompositedLayers()
     DisableCompositingQueryAsserts disabler;
 
     if (compositor()->inCompositingMode())
-        compositor()->repaintCompositedLayers();
+        compositor()->fullyInvalidatePaint();
 }
 
 void RenderView::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, bool fixed, const PaintInvalidationState* paintInvalidationState) const
