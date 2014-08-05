@@ -5,19 +5,18 @@
 function toggleHelpBox() {
   var helpBoxOuter = document.getElementById('help-box-outer');
   helpBoxOuter.classList.toggle('hidden');
-  var moreLessButton = document.getElementById('more-less-button');
-  if (helpBoxOuter.classList.contains('hidden')) {
-    moreLessButton.innerText = moreLessButton.moreText;
-  } else {
-    moreLessButton.innerText = moreLessButton.lessText;
-  }
+  var detailsButton = document.getElementById('details-button');
+  if (helpBoxOuter.classList.contains('hidden'))
+    detailsButton.innerText = detailsButton.detailsText;
+  else
+    detailsButton.innerText = detailsButton.hideDetailsText;
 }
 
 function diagnoseErrors() {
-  var extension_id = "idddmepepmjcgiedknnmlbadcokidhoa";
-  var diagnose_frame = document.getElementById('diagnose-frame');
-  diagnose_frame.innerHTML =
-      '<iframe src="chrome-extension://' + extension_id +
+  var extensionId = 'idddmepepmjcgiedknnmlbadcokidhoa';
+  var diagnoseFrame = document.getElementById('diagnose-frame');
+  diagnoseFrame.innerHTML =
+      '<iframe src="chrome-extension://' + extensionId +
       '/index.html"></iframe>';
 }
 
@@ -41,7 +40,7 @@ function updateIconClass(classList, newClass) {
   var oldClass;
 
   if (classList.hasOwnProperty('last_icon_class')) {
-    oldClass = classList['last_icon_class']
+    oldClass = classList['last_icon_class'];
     if (oldClass == newClass)
       return;
   }
@@ -94,21 +93,38 @@ function loadStaleButtonClick() {
   }
 }
 
-function moreButtonClick() {
-  if (window.errorPageController) {
-    errorPageController.moreButtonClick();
-  }
+function detailsButtonClick() {
+  if (window.errorPageController)
+    errorPageController.detailsButtonClick();
 }
 
+var primaryControlOnLeft = true;
 <if expr="is_macosx or is_ios or is_linux or is_android">
-// Re-orders buttons. Used on Mac, Linux, and Android, where reload should go
-// on the right.
-function swapButtonOrder() {
-  var reloadButton = document.getElementById('reload-button');
-  var moreLessButton = document.getElementById('more-less-button');
-  var staleLoadButton = document.getElementById('stale-load-button');
-  reloadButton.parentNode.insertBefore(moreLessButton, reloadButton);
-  reloadButton.parentNode.insertBefore(staleLoadButton, reloadButton)
-}
-document.addEventListener("DOMContentLoaded", swapButtonOrder);
+primaryControlOnLeft = false;
 </if>
+
+// Sets up the proper button layout for the current platform.
+function setButtonLayout() {
+  var buttonsDiv = document.getElementById('buttons');
+  var controlButtonDiv = document.getElementById('control-buttons');
+  var reloadButton = document.getElementById('reload-button');
+  var detailsButton = document.getElementById('details-button');
+  var staleLoadButton = document.getElementById('stale-load-button');
+
+  var primaryButton = reloadButton;
+  var secondaryButton = staleLoadButton;
+
+  if (primaryControlOnLeft) {
+    buttons.classList.add('suggested-left');
+    controlButtonDiv.insertBefore(primaryButton, secondaryButton);
+  } else {
+    buttons.classList.add('suggested-right');
+    controlButtonDiv.insertBefore(secondaryButton, primaryButton);
+  }
+
+  if (reloadButton.style.display == 'none' &&
+      staleLoadButton.style.display == 'none') {
+    detailsButton.classList.add('singular');
+  }
+}
+document.addEventListener('DOMContentLoaded', setButtonLayout);

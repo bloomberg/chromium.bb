@@ -60,7 +60,7 @@ bool NetErrorPageController::ReloadButtonClick() {
   return true;
 }
 
-bool NetErrorPageController::MoreButtonClick() {
+bool NetErrorPageController::DetailsButtonClick() {
   if (!render_frame())
     return false;
 
@@ -99,7 +99,8 @@ gin::ObjectTemplateBuilder NetErrorPageController::GetObjectTemplateBuilder(
                  &NetErrorPageController::LoadStaleButtonClick)
       .SetMethod("reloadButtonClick",
                  &NetErrorPageController::ReloadButtonClick)
-      .SetMethod("moreButtonClick", &NetErrorPageController::MoreButtonClick)
+      .SetMethod("detailsButtonClick",
+                 &NetErrorPageController::DetailsButtonClick)
       .SetMethod("trackClick",
                  &NetErrorPageController::TrackClick);
 }

@@ -20,20 +20,25 @@
           <span i18n-content="heading"></span>
         </h1>
         <div id="buttons">
-          <button id="reload-button" class="blue-button text-button"
-              onclick="trackClick(this.trackingId);
-                       reloadButtonClick(this.url);"
-              jsselect="reloadButton"
-              jsvalues=".url:reloadUrl; .trackingId:reloadTrackingId"
-              jscontent="msg"></button>
-          <button id="stale-load-button" class="blue-button text-button"
-              onclick="loadStaleButtonClick()"
-              jsselect="staleLoadButton"
-              jscontent="msg" jsvalues="title:title"></button>
-          <button id="more-less-button" class="text-button"
-              onclick="moreButtonClick(); toggleHelpBox()"
-              jsdisplay="more" jsvalues=".moreText:more; .lessText:less;"
-              jscontent="more"></button>
+          <div id="control-buttons">
+            <button id="reload-button"
+                class="blue-button text-button"
+                onclick="trackClick(this.trackingId);
+                         reloadButtonClick(this.url);" 
+                jsselect="reloadButton"
+                jsvalues=".url:reloadUrl; .trackingId:reloadTrackingId"
+                jscontent="msg"></button>
+            <button id="stale-load-button"
+                class="blue-button text-button"
+                onclick="loadStaleButtonClick()" 
+                jsselect="staleLoadButton"
+                jscontent="msg" jsvalues="title:title"></button>
+          </div>
+          <button id="details-button" class="text-button"
+             onclick="detailsButtonClick(); toggleHelpBox()"
+             jsdisplay="details" jscontent="details"
+             jsvalues=".detailsText:details; .hideDetailsText:hideDetails;">
+          </a>
         </div>
       </div>
        <!-- Outer and inner divs are needed both for margins and sizing. -->

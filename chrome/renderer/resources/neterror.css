@@ -2,13 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-/*******************************************************************************
- *
- * Note:  This is also used by a file in chrome/browser/resources/ssl.  When
- *        updating this file, make sure nothing in that directory regresses.
- *
- ******************************************************************************/
-
 body {
   background-color: #E6E6E6;
   font-family: Helvetica, Arial, sans-serif;
@@ -45,18 +38,18 @@ html:not([subframe]) #sub-frame-error {
 }
 
 #diagnose-button {
-  margin-top: 20px;
+  -webkit-margin-start: 0;
   margin-bottom: 10px;
-  -webkit-margin-start: 0px;
+  margin-top: 20px;
 }
 
 #content-top #buttons,
 #content-top h1 {
   color: #666;
-  margin: 10px 0px 30px 0px;
-  font-weight: normal;
   font-size: 1.5em;
+  font-weight: normal;
   text-align: center;
+  margin: 10px 0 30px;
 }
 
 h2 {
@@ -67,7 +60,7 @@ h2 {
 }
 
 a {
-  color: #15c;
+  color: rgb(17, 85, 204);
   text-decoration: none;
 }
 
@@ -96,8 +89,8 @@ a {
 }
 
 #help-box-outer {
-  overflow: hidden;
   -webkit-transition: height ease-in 218ms;
+  overflow: hidden;
 }
 
 #help-box-inner {
@@ -129,10 +122,10 @@ a {
 }
 
 button {
+  -webkit-user-select: none;
   border: 1px solid rgba(0, 0, 0, 0.25);
   border-radius: 2px;
   color: #444;
-  -webkit-user-select: none;
 <if expr="not is_android">
   /* iOS does not support linear-gradient without a prefix. */
   background-image: -webkit-linear-gradient(#ededed, #ededed 38%, #dedede);
@@ -145,7 +138,8 @@ button {
 </if>
 <if expr="not is_android and not is_ios">
   /* Not done on mobile for performance reasons. */
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08), inset 0 1px 2px rgba(255, 255, 255, 0.75);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08),
+              inset 0 1px 2px rgba(255, 255, 255, 0.75);
 </if>
 }
 
@@ -159,7 +153,8 @@ button:hover {
   background-color: #f0f0f0;
 </if>
 <if expr="not is_android and not is_ios">
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.95);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12),
+              inset 0 1px 2px rgba(255, 255, 255, 0.95);
 </if>
 }
 
@@ -178,7 +173,7 @@ button:active {
 }
 
 .text-button {
-  margin: 0px 5px;
+  margin: 0 5px;
   min-height: 29px;
   min-width: 65px;
   padding: 7px 13px;
@@ -196,7 +191,8 @@ button:active {
   border: 1px solid rgb(0, 152, 206);
 </if>
 <if expr="not is_android and not is_ios">
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15),
+              inset 0 1px 2px rgba(255, 255, 255, 0.2);
 </if>
 }
 
@@ -207,7 +203,8 @@ button:active {
   border: 1px solid rgba(45, 102, 195, 1);
 </if>
 <if expr="not is_android and not is_ios">
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25),
+              inset 0 1px 2px rgba(255, 255, 255, 0.2);
 </if>
 }
 
@@ -240,20 +237,20 @@ button:active {
 }
 
 #search-box:focus {
-  border: 1px solid #5d9aff;
+  border: 1px solid rgb(93, 154, 255);
   outline: none;
 }
 
 #search-button {
   border: none;
-  border-top-left-radius: 0;
   border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
   box-shadow: none;
   display: flex;
   height: 30px;
   margin: 0;
-  width: 60px;
   padding: 0;
+  width: 60px;
 }
 
 #search-image {
@@ -299,7 +296,7 @@ button:active {
     margin: 15px;
   }
   h1 {
-    margin: 10px 0px 15px 0px;
+    margin: 10px 0 15px;
   }
   #content-top {
     margin: 15px;
@@ -311,7 +308,7 @@ button:active {
     margin-top: 10px;
   }
   .suggestion-header {
-    margin-bottom: 0px;
+    margin-bottom: 0;
   }
   .error-code {
     margin-top: 10px;
@@ -330,9 +327,9 @@ html[subframe] body {
   -webkit-flex-flow: column;
   height: 100%;
   -webkit-justify-content: center;
-  left: 0px;
+  left: 0;
   position: absolute;
-  top: 0px;
+  top: 0;
   width: 100%;
 }
 
@@ -356,4 +353,42 @@ html[subframe] body {
   #sub-frame-error-details {
     display: none;
   }
+}
+
+/* details-button is special; it's a <button> element that looks like a link. */
+#details-button {
+  background-color: inherit;
+  background-image: none;
+  border: none;
+  box-shadow: none;
+  min-width: 0;
+  padding: 0;
+  text-decoration: underline;
+}
+
+#buttons {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+/* Styles for platform dependent separation of controls and details button. */
+.suggested-left > #control-buttons,
+.suggested-right > #details-button  {
+  float: left;
+}
+
+.suggested-right > #control-buttons,
+.suggested-left > #details-button  {
+  float: right;
+}
+
+#details-button.singular {
+  float: none;
+}
+
+#buttons::after {
+  clear: both;
+  content: '';
+  display: block;
+  width: 100%;
 }

@@ -8537,6 +8537,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
       <!-- error page messages -->
+      <message name="IDS_ERRORPAGE_NET_BUTTON_DETAILS" desc="Label for the button that expands the details on a net error page">
+        Details
+      </message>
+      <message name="IDS_ERRORPAGE_NET_BUTTON_HIDE_DETAILS" desc="Label for the button that hides the details on a net error page">
+        Hide details
+      </message>
       <message name="IDS_ERRORPAGES_BUTTON_MORE" desc="Label for the button that expands the details on an error page">
         More
       </message>

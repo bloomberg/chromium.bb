@@ -565,9 +565,10 @@ void LocalizedError::GetStrings(int error_code,
                      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
 
   error_strings->SetString(
-      "more", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_MORE));
+      "details", l10n_util::GetStringUTF16(IDS_ERRORPAGE_NET_BUTTON_DETAILS));
   error_strings->SetString(
-      "less", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_LESS));
+      "hideDetails", l10n_util::GetStringUTF16(
+          IDS_ERRORPAGE_NET_BUTTON_HIDE_DETAILS));
   error_strings->Set("summary", summary);
 
   if (options.details_resource_id != kErrorPagesNoDetails) {

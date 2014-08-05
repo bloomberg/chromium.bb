@@ -36,8 +36,8 @@ class NetErrorPageController
   // Execute a "Reload" button click.
   bool ReloadButtonClick();
 
-  // Execute a "More" button click.
-  bool MoreButtonClick();
+  // Execute a "Details" button click.
+  bool DetailsButtonClick();
 
   // Track a click when the page has suggestions from the navigation correction
   // service.
