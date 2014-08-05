@@ -99,6 +99,26 @@ def Checkout(name, url, dir):
               url + '@' + LLVM_WIN_REVISION, dir], tries=2)
 
 
+def AddCMakeToPath():
+  """Look for CMake and add it to PATH if it's not there already."""
+  try:
+    # First check if cmake is already on PATH.
+    subprocess.call(['cmake', '--version'])
+    return
+  except OSError as e:
+    if e.errno != os.errno.ENOENT:
+      raise
+
+  cmake_locations = ['C:\\Program Files (x86)\\CMake\\bin',
+                     'C:\\Program Files (x86)\\CMake 2.8\\bin']
+  for d in cmake_locations:
+    if os.path.isdir(d):
+      os.environ['PATH'] = os.environ.get('PATH', '') + os.pathsep + d
+      return
+  print 'Failed to find CMake!'
+  sys.exit(1)
+
+
 vs_version = None
 def GetVSVersion():
   global vs_version
@@ -118,6 +138,7 @@ def UpdateClang():
     print 'Already up to date.'
     return 0
 
+  AddCMakeToPath()
   ClobberChromiumBuildFiles()
 
   # Reset the stamp file in case the build is unsuccessful.
@@ -130,10 +151,6 @@ def UpdateClang():
   if not os.path.exists(LLVM_BUILD_DIR):
     os.makedirs(LLVM_BUILD_DIR)
   os.chdir(LLVM_BUILD_DIR)
-
-  if not re.search(r'cmake', os.environ['PATH'], flags=re.IGNORECASE):
-    # If CMake is not on the path, try looking in a standard location.
-    os.environ['PATH'] += os.pathsep + 'C:\\Program Files (x86)\\CMake 2.8\\bin'
 
   RunCommand(GetVSVersion().SetupScript('x64') +
              ['&&', 'cmake', '-GNinja', '-DCMAKE_BUILD_TYPE=Release',
