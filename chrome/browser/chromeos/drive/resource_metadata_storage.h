@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
-#include "chrome/browser/drive/drive_service_interface.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -81,8 +80,7 @@ class ResourceMetadataStorage {
   typedef std::map<std::string, RecoveredCacheInfo> RecoveredCacheInfoMap;
 
   // Returns true if the DB was successfully upgraded to the newest version.
-  static bool UpgradeOldDB(const base::FilePath& directory_path,
-                           const ResourceIdCanonicalizer& id_canonicalizer);
+  static bool UpgradeOldDB(const base::FilePath& directory_path);
 
   ResourceMetadataStorage(const base::FilePath& directory_path,
                           base::SequencedTaskRunner* blocking_task_runner);

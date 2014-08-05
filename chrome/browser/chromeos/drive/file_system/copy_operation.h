@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
-#include "chrome/browser/drive/drive_service_interface.h"
 #include "google_apis/drive/gdata_errorcode.h"
 
 namespace base {
@@ -48,8 +47,7 @@ class CopyOperation {
                 OperationDelegate* delegate,
                 JobScheduler* scheduler,
                 internal::ResourceMetadata* metadata,
-                internal::FileCache* cache,
-                const ResourceIdCanonicalizer& id_canonicalizer);
+                internal::FileCache* cache);
   ~CopyOperation();
 
   // Performs the copy operation on the file at drive path |src_file_path|
@@ -162,7 +160,6 @@ class CopyOperation {
   JobScheduler* scheduler_;
   internal::ResourceMetadata* metadata_;
   internal::FileCache* cache_;
-  ResourceIdCanonicalizer id_canonicalizer_;
 
   // Uploading a new file is internally implemented by creating a dirty file.
   scoped_ptr<CreateFileOperation> create_file_operation_;

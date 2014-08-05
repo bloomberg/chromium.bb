@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/drive/drive_service_interface.h"
 #include "google_apis/drive/drive_common_callbacks.h"
 #include "google_apis/drive/gdata_errorcode.h"
 
@@ -66,9 +65,6 @@ std::string ExtractResourceIdFromUrl(const GURL& url);
 // If |resource_id| is in the old resource ID format used by WAPI, converts it
 // into the new format.
 std::string CanonicalizeResourceId(const std::string& resource_id);
-
-// Returns a ResourceIdCanonicalizer which returns the argument.
-ResourceIdCanonicalizer GetIdentityResourceIdCanonicalizer();
 
 // Note: Following constants and a function are used to support GetShareUrl on
 // Drive API v2. Unfortunately, there is no support on Drive API v2, so we need

@@ -279,14 +279,12 @@ CopyOperation::CopyOperation(base::SequencedTaskRunner* blocking_task_runner,
                              OperationDelegate* delegate,
                              JobScheduler* scheduler,
                              internal::ResourceMetadata* metadata,
-                             internal::FileCache* cache,
-                             const ResourceIdCanonicalizer& id_canonicalizer)
+                             internal::FileCache* cache)
   : blocking_task_runner_(blocking_task_runner),
     delegate_(delegate),
     scheduler_(scheduler),
     metadata_(metadata),
     cache_(cache),
-    id_canonicalizer_(id_canonicalizer),
     create_file_operation_(new CreateFileOperation(blocking_task_runner,
                                                    delegate,
                                                    metadata)),
@@ -459,7 +457,7 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterPrepare(
 
   // GDoc file may contain a resource ID in the old format.
   const std::string canonicalized_resource_id =
-      id_canonicalizer_.Run(*gdoc_resource_id);
+      util::CanonicalizeResourceId(*gdoc_resource_id);
 
   // Drop the document extension, which should not be in the title.
   // TODO(yoshiki): Remove this code with crbug.com/223304.

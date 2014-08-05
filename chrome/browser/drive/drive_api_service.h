@@ -66,7 +66,6 @@ class DriveAPIService : public DriveServiceInterface,
   virtual void AddObserver(DriveServiceObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DriveServiceObserver* observer) OVERRIDE;
   virtual bool CanSendRequest() const OVERRIDE;
-  virtual ResourceIdCanonicalizer GetResourceIdCanonicalizer() const OVERRIDE;
   virtual bool HasAccessToken() const OVERRIDE;
   virtual void RequestAccessToken(
       const google_apis::AuthStatusCallback& callback) OVERRIDE;

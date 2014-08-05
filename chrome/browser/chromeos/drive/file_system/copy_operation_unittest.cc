@@ -40,12 +40,7 @@ class CopyOperationTest : public OperationTestBase {
   virtual void SetUp() OVERRIDE {
    OperationTestBase::SetUp();
    operation_.reset(new CopyOperation(
-       blocking_task_runner(),
-       delegate(),
-       scheduler(),
-       metadata(),
-       cache(),
-       util::GetIdentityResourceIdCanonicalizer()));
+       blocking_task_runner(), delegate(), scheduler(), metadata(), cache()));
   }
 
   scoped_ptr<CopyOperation> operation_;

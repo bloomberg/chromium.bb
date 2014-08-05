@@ -25,9 +25,6 @@ namespace drive {
 namespace util {
 namespace {
 
-// Returns the argument string.
-std::string Identity(const std::string& resource_id) { return resource_id; }
-
 struct HostedDocumentKind {
   const char* mime_type;
   const char* extension;
@@ -137,10 +134,6 @@ std::string CanonicalizeResourceId(const std::string& resource_id) {
                      &stripped_resource_id))
     return stripped_resource_id;
   return resource_id;
-}
-
-ResourceIdCanonicalizer GetIdentityResourceIdCanonicalizer() {
-  return base::Bind(&Identity);
 }
 
 const char kDocsListScope[] = "https://docs.google.com/feeds/";

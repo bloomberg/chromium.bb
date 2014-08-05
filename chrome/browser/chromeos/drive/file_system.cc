@@ -323,13 +323,11 @@ void FileSystem::ResetComponents() {
                                               temporary_file_directory_));
 
   copy_operation_.reset(
-      new file_system::CopyOperation(
-          blocking_task_runner_.get(),
-          delegate,
-          scheduler_,
-          resource_metadata_,
-          cache_,
-          drive_service_->GetResourceIdCanonicalizer()));
+      new file_system::CopyOperation(blocking_task_runner_.get(),
+                                     delegate,
+                                     scheduler_,
+                                     resource_metadata_,
+                                     cache_));
   create_directory_operation_.reset(new file_system::CreateDirectoryOperation(
       blocking_task_runner_.get(), delegate, resource_metadata_));
   create_file_operation_.reset(

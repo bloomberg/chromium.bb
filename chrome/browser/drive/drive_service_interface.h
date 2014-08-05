@@ -19,10 +19,6 @@ class Time;
 
 namespace drive {
 
-// Function which converts the given resource ID into the desired format.
-typedef base::Callback<std::string(
-    const std::string& resource_id)> ResourceIdCanonicalizer;
-
 // Observer interface for DriveServiceInterface.
 class DriveServiceObserver {
  public:
@@ -113,10 +109,6 @@ class DriveServiceInterface {
 
   // True if ready to send requests.
   virtual bool CanSendRequest() const = 0;
-
-  // Returns a function which converts the given resource ID into the desired
-  // format.
-  virtual ResourceIdCanonicalizer GetResourceIdCanonicalizer() const = 0;
 
   // Authentication service:
 

@@ -303,10 +303,6 @@ bool FakeDriveService::CanSendRequest() const {
   return true;
 }
 
-ResourceIdCanonicalizer FakeDriveService::GetResourceIdCanonicalizer() const {
-  return util::GetIdentityResourceIdCanonicalizer();
-}
-
 bool FakeDriveService::HasAccessToken() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return true;

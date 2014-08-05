@@ -10,7 +10,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
-#include "chrome/browser/drive/drive_api_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -309,8 +308,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M29) {
 
   // Upgrade and reopen.
   storage_.reset();
-  EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(
-      temp_dir_.path(), base::Bind(&util::CanonicalizeResourceId)));
+  EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(temp_dir_.path()));
   storage_.reset(new ResourceMetadataStorage(
       temp_dir_.path(), base::MessageLoopProxy::current().get()));
   ASSERT_TRUE(storage_->Initialize());
@@ -362,8 +360,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M32) {
 
   // Upgrade and reopen.
   storage_.reset();
-  EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(
-      temp_dir_.path(), base::Bind(&util::CanonicalizeResourceId)));
+  EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(temp_dir_.path()));
   storage_.reset(new ResourceMetadataStorage(
       temp_dir_.path(), base::MessageLoopProxy::current().get()));
   ASSERT_TRUE(storage_->Initialize());
@@ -424,8 +421,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M33) {
 
   // Upgrade and reopen.
   storage_.reset();
-  EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(
-      temp_dir_.path(), base::Bind(&util::CanonicalizeResourceId)));
+  EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(temp_dir_.path()));
   storage_.reset(new ResourceMetadataStorage(
       temp_dir_.path(), base::MessageLoopProxy::current().get()));
   ASSERT_TRUE(storage_->Initialize());
@@ -463,8 +459,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_Unknown) {
   // Set newer version, upgrade and reopen DB.
   SetDBVersion(ResourceMetadataStorage::kDBVersion + 1);
   storage_.reset();
-  EXPECT_FALSE(ResourceMetadataStorage::UpgradeOldDB(
-      temp_dir_.path(), base::Bind(&util::CanonicalizeResourceId)));
+  EXPECT_FALSE(ResourceMetadataStorage::UpgradeOldDB(temp_dir_.path()));
   storage_.reset(new ResourceMetadataStorage(
       temp_dir_.path(), base::MessageLoopProxy::current().get()));
   ASSERT_TRUE(storage_->Initialize());
@@ -497,8 +492,7 @@ TEST_F(ResourceMetadataStorageTest, DeleteUnusedIDEntries) {
 
   // Upgrade and reopen.
   storage_.reset();
-  EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(
-      temp_dir_.path(), base::Bind(&util::CanonicalizeResourceId)));
+  EXPECT_TRUE(ResourceMetadataStorage::UpgradeOldDB(temp_dir_.path()));
   storage_.reset(new ResourceMetadataStorage(
       temp_dir_.path(), base::MessageLoopProxy::current().get()));
   ASSERT_TRUE(storage_->Initialize());

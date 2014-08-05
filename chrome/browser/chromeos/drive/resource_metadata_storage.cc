@@ -13,6 +13,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
@@ -216,8 +217,7 @@ bool ResourceMetadataStorage::Iterator::HasError() const {
 
 // static
 bool ResourceMetadataStorage::UpgradeOldDB(
-    const base::FilePath& directory_path,
-    const ResourceIdCanonicalizer& id_canonicalizer) {
+    const base::FilePath& directory_path) {
   base::ThreadRestrictions::AssertIOAllowed();
   COMPILE_ASSERT(
       kDBVersion == 13,
@@ -309,7 +309,7 @@ bool ResourceMetadataStorage::UpgradeOldDB(
         // The resource ID might be in old WAPI format. We need to canonicalize
         // to the format of API service currently in use.
         const std::string& id = GetIdFromCacheEntryKey(it->key());
-        const std::string& id_new = id_canonicalizer.Run(id);
+        const std::string& id_new = util::CanonicalizeResourceId(id);
 
         // Before v11, resource ID was directly used as local ID. Such entries
         // can be migrated by adding an identity ID mapping.

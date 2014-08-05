@@ -103,7 +103,6 @@ FileError InitializeMetadata(
     internal::ResourceMetadataStorage* metadata_storage,
     internal::FileCache* cache,
     internal::ResourceMetadata* resource_metadata,
-    const ResourceIdCanonicalizer& id_canonicalizer,
     const base::FilePath& downloads_directory) {
   // Files in temporary directory need not persist across sessions. Clean up
   // the directory content while initialization.
@@ -128,7 +127,7 @@ FileError InitializeMetadata(
       base::FILE_PERMISSION_EXECUTE_BY_OTHERS);
 
   internal::ResourceMetadataStorage::UpgradeOldDB(
-      metadata_storage->directory_path(), id_canonicalizer);
+      metadata_storage->directory_path());
 
   if (!metadata_storage->Initialize()) {
     LOG(WARNING) << "Failed to initialize the metadata storage.";
@@ -485,7 +484,6 @@ void DriveIntegrationService::Initialize() {
                  metadata_storage_.get(),
                  cache_.get(),
                  resource_metadata_.get(),
-                 drive_service_->GetResourceIdCanonicalizer(),
                  file_manager::util::GetDownloadsFolderForProfile(profile_)),
       base::Bind(&DriveIntegrationService::InitializeAfterMetadataInitialized,
                  weak_ptr_factory_.GetWeakPtr()));

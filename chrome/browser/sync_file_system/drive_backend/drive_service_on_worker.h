@@ -92,8 +92,6 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
   virtual void AddObserver(drive::DriveServiceObserver* observer) OVERRIDE;
   virtual void RemoveObserver(drive::DriveServiceObserver* observer) OVERRIDE;
   virtual bool CanSendRequest() const OVERRIDE;
-  virtual drive::ResourceIdCanonicalizer GetResourceIdCanonicalizer()
-      const OVERRIDE;
   virtual bool HasAccessToken() const OVERRIDE;
   virtual void RequestAccessToken(
       const google_apis::AuthStatusCallback& callback) OVERRIDE;

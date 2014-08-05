@@ -277,12 +277,6 @@ bool DriveServiceOnWorker::CanSendRequest() const {
   return false;
 }
 
-drive::ResourceIdCanonicalizer
-DriveServiceOnWorker::GetResourceIdCanonicalizer() const {
-  NOTREACHED();
-  return drive::ResourceIdCanonicalizer();
-}
-
 bool DriveServiceOnWorker::HasAccessToken() const {
   NOTREACHED();
   return false;
