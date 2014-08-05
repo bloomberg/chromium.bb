@@ -42,6 +42,9 @@ const char kKeyInitialAuthType[] = "initialAuthType";
 const char kKeyMultiProfilesAllowed[] = "isMultiProfilesAllowed";
 const char kKeyMultiProfilesPolicy[] = "multiProfilesPolicy";
 const char kKeyInitialLocales[] = "initialLocales";
+const char kKeyInitialLocale[] = "initialLocale";
+const char kKeyInitialMultipleRecommendedLocales[] =
+    "initialMultipleRecommendedLocales";
 const char kKeyInitialKeyboardLayout[] = "initialKeyboardLayout";
 
 // Max number of users to show.
@@ -49,6 +52,51 @@ const char kKeyInitialKeyboardLayout[] = "initialKeyboardLayout";
 const size_t kMaxUsers = 18;
 
 const int kPasswordClearTimeoutSec = 60;
+
+void AddPublicSessionDetailsToUserDictionaryEntry(
+    base::DictionaryValue* user_dict,
+    const std::vector<std::string>* public_session_recommended_locales) {
+  policy::BrowserPolicyConnectorChromeOS* policy_connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+
+  if (policy_connector->IsEnterpriseManaged()) {
+    user_dict->SetString(kKeyEnterpriseDomain,
+                         policy_connector->GetEnterpriseDomain());
+  }
+
+  std::vector<std::string> kEmptyRecommendedLocales;
+  const std::vector<std::string>* recommended_locales =
+      public_session_recommended_locales ?
+          public_session_recommended_locales : &kEmptyRecommendedLocales;
+
+  // Set |kKeyInitialLocales| to the list of available locales. This list
+  // consists of the recommended locales, followed by all others.
+  user_dict->Set(
+      kKeyInitialLocales,
+      GetUILanguageList(recommended_locales, std::string()).release());
+
+  // Set |kKeyInitialLocale| to the initially selected locale. If the list of
+  // recommended locales is not empty, select its first entry. Otherwise,
+  // select the current UI locale.
+  user_dict->SetString(kKeyInitialLocale,
+                       recommended_locales->empty() ?
+                           g_browser_process->GetApplicationLocale() :
+                           recommended_locales->front());
+
+  // Set |kKeyInitialMultipleRecommendedLocales| to indicate whether the list
+  // of recommended locales contains at least two entries. This is used to
+  // decide whether the public session pod expands to its basic form (for zero
+  // or one recommended locales) or the advanced form (two or more recommended
+  // locales).
+  user_dict->SetBoolean(kKeyInitialMultipleRecommendedLocales,
+                        recommended_locales->size() >= 2);
+
+  // Set |kKeyInitialKeyboardLayout| to the current keyboard layout. This
+  // value will be used temporarily only because the UI immediately requests a
+  // list of keyboard layouts suitable for the currently selected locale.
+  user_dict->Set(kKeyInitialKeyboardLayout,
+                 GetCurrentKeyboardLayout().release());
+}
 
 }  // namespace
 
@@ -68,9 +116,10 @@ void UserSelectionScreen::FillUserDictionary(
     bool is_owner,
     bool is_signin_to_add,
     ScreenlockBridge::LockHandler::AuthType auth_type,
+    const std::vector<std::string>* public_session_recommended_locales,
     base::DictionaryValue* user_dict) {
   const std::string& user_id = user->email();
-  const bool is_public_account =
+  const bool is_public_session =
       user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
   const bool is_supervised_user =
       user->GetType() == user_manager::USER_TYPE_SUPERVISED;
@@ -78,7 +127,7 @@ void UserSelectionScreen::FillUserDictionary(
   user_dict->SetString(kKeyUsername, user_id);
   user_dict->SetString(kKeyEmailAddress, user->display_email());
   user_dict->SetString(kKeyDisplayName, user->GetDisplayName());
-  user_dict->SetBoolean(kKeyPublicAccount, is_public_account);
+  user_dict->SetBoolean(kKeyPublicAccount, is_public_session);
   user_dict->SetBoolean(kKeySupervisedUser, is_supervised_user);
   user_dict->SetInteger(kKeyInitialAuthType, auth_type);
   user_dict->SetBoolean(kKeySignedIn, user->is_logged_in());
@@ -106,24 +155,10 @@ void UserSelectionScreen::FillUserDictionary(
     user_dict->SetBoolean(kKeyMultiProfilesAllowed, true);
   }
 
-  if (is_public_account) {
-    policy::BrowserPolicyConnectorChromeOS* policy_connector =
-        g_browser_process->platform_part()->browser_policy_connector_chromeos();
-
-    if (policy_connector->IsEnterpriseManaged()) {
-      user_dict->SetString(kKeyEnterpriseDomain,
-                           policy_connector->GetEnterpriseDomain());
-    }
-
-    // TODO(bartfab): Initialize |most_relevant_languages| and |locale| based on
-    // policy.
-    const std::string locale = g_browser_process->GetApplicationLocale();
-    std::vector<std::string> most_relevant_languages;
-    user_dict->Set(
-        kKeyInitialLocales,
-        GetUILanguageList(&most_relevant_languages, locale).release());
-    user_dict->Set(kKeyInitialKeyboardLayout,
-                   GetCurrentKeyboardLayout().release());
+  if (is_public_session) {
+    AddPublicSessionDetailsToUserDictionaryEntry(
+        user_dict,
+        public_session_recommended_locales);
   }
 }
 
@@ -277,6 +312,7 @@ void UserSelectionScreen::SendUserList() {
 
   user_auth_type_map_.clear();
 
+  const std::vector<std::string> kEmptyRecommendedLocales;
   for (user_manager::UserList::const_iterator it = users_to_send.begin();
        it != users_to_send.end();
        ++it) {
@@ -293,8 +329,17 @@ void UserSelectionScreen::SendUserList() {
     user_auth_type_map_[user_id] = initial_auth_type;
 
     base::DictionaryValue* user_dict = new base::DictionaryValue();
-    FillUserDictionary(
-        *it, is_owner, is_signin_to_add, initial_auth_type, user_dict);
+    const std::vector<std::string>* public_session_recommended_locales =
+        public_session_recommended_locales_.find(user_id) ==
+            public_session_recommended_locales_.end() ?
+                &kEmptyRecommendedLocales :
+                &public_session_recommended_locales_[user_id];
+    FillUserDictionary(*it,
+                       is_owner,
+                       is_signin_to_add,
+                       initial_auth_type,
+                       public_session_recommended_locales,
+                       user_dict);
     bool signed_in = (*it)->is_logged_in();
     // Single user check here is necessary because owner info might not be
     // available when running into login screen on first boot.

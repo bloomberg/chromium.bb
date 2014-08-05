@@ -787,6 +787,14 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       new ExternalDataPolicyHandler(key::kUserAvatarImage)));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new ExternalDataPolicyHandler(key::kWallpaperImage)));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new SimpleSchemaValidatingPolicyHandler(
+          key::kSessionLocales,
+          NULL,
+          chrome_schema,
+          SCHEMA_STRICT,
+          SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
+          SimpleSchemaValidatingPolicyHandler::MANDATORY_PROHIBITED)));
 #endif  // defined(OS_CHROMEOS)
 
   return handlers.Pass();

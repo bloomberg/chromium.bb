@@ -989,6 +989,11 @@ cr.define('login', function() {
       this.resetTabOrder();
       this.classList.toggle('expanded', expanded);
       if (expanded) {
+        // Show the advanced expanded pod directly if there are at least two
+        // recommended locales. This will be the case in multilingual
+        // environments where users are likely to want to choose among locales.
+        if (this.querySelector('.language-select').multipleRecommendedLocales)
+          this.classList.add('advanced');
         this.usualLeft = this.left;
         this.makeSpaceForExpandedPod_();
       } else if (typeof(this.usualLeft) != 'undefined') {
@@ -1051,11 +1056,17 @@ cr.define('login', function() {
 
       var languageSelect = this.querySelector('.language-select');
       languageSelect.tabIndex = UserPodTabOrder.POD_INPUT;
+      languageSelect.manuallyChanged = false;
       languageSelect.addEventListener(
           'change',
-          this.getPublicSessionKeyboardLayouts_.bind(this));
-      this.querySelector('.keyboard-select').tabIndex =
-          UserPodTabOrder.POD_INPUT;
+          function() {
+            languageSelect.manuallyChanged = true;
+            this.getPublicSessionKeyboardLayouts_();
+          }.bind(this));
+
+      var keyboardSelect = this.querySelector('.keyboard-select');
+      keyboardSelect.tabIndex = UserPodTabOrder.POD_INPUT;
+      keyboardSelect.loadedLocale = null;
 
       var languageAndInput = this.querySelector('.language-and-input');
       languageAndInput.tabIndex = UserPodTabOrder.POD_INPUT;
@@ -1064,14 +1075,15 @@ cr.define('login', function() {
 
       this.enterButtonElement.addEventListener('click', (function(e) {
         this.enterButtonElement.disabled = true;
-        var locale = '';
-        var keyboardLayout = '';
-        if (this.advanced) {
-          // If the advanced pod is being shown, honor the selected UI language
-          // and keyboard layout.
-          locale = this.querySelector('.language-select').value;
-          keyboardLayout = this.querySelector('.keyboard-select').value;
-        }
+        var locale = this.querySelector('.language-select').value;
+        var keyboardSelect = this.querySelector('.keyboard-select');
+        // The contents of |keyboardSelect| is updated asynchronously. If its
+        // locale does not match |locale|, it has not updated yet and the
+        // currently selected keyboard layout may not be applicable to |locale|.
+        // Do not return any keyboard layout in this case and let the backend
+        // choose a suitable layout.
+        var keyboardLayout =
+            keyboardSelect.loadedLocale == locale ? keyboardSelect.value : '';
         chrome.send('launchPublicSession',
                     [this.user.username, locale, keyboardLayout]);
       }).bind(this));
@@ -1081,30 +1093,17 @@ cr.define('login', function() {
     initialize: function() {
       UserPod.prototype.initialize.call(this);
 
+      id = this.user.username + '-keyboard';
+      this.querySelector('.keyboard-select-label').htmlFor = id;
+      this.querySelector('.keyboard-select').setAttribute('id', id);
+
       var id = this.user.username + '-language';
       this.querySelector('.language-select-label').htmlFor = id;
       var languageSelect = this.querySelector('.language-select');
       languageSelect.setAttribute('id', id);
-      var list = this.user.initialLocales;
-      languageSelect.innerHTML = '';
-      var group = languageSelect;
-      for (var i = 0; i < list.length; ++i) {
-        var item = list[i];
-        if (item.optionGroupName) {
-          group = document.createElement('optgroup');
-          group.label = item.optionGroupName;
-          languageSelect.appendChild(group);
-        } else {
-          group.appendChild(
-              new Option(item.title, item.value, item.selected, item.selected));
-        }
-      }
-
-      id = this.user.username + '-keyboard';
-      this.querySelector('.keyboard-select-label').htmlFor = id;
-      this.querySelector('.keyboard-select').setAttribute('id', id);
-      this.populateKeyboardSelect_([this.user.initialKeyboardLayout]);
-      this.getPublicSessionKeyboardLayouts_();
+      this.populateLanguageSelect(this.user.initialLocales,
+                                  this.user.initialLocale,
+                                  this.user.initialMultipleRecommendedLocales);
     },
 
     /** @override **/
@@ -1229,24 +1228,76 @@ cr.define('login', function() {
      * selected locale.
      */
     getPublicSessionKeyboardLayouts_: function() {
-      var languageSelect = this.querySelector('.language-select');
-      chrome.send('getPublicSessionKeyboardLayouts', [
-                  this.user.username,
-                  languageSelect.options[languageSelect.selectedIndex].value]);
+      var selectedLocale = this.querySelector('.language-select').value;
+      if (selectedLocale ==
+          this.querySelector('.keyboard-select').loadedLocale) {
+        // If the list of keyboard layouts was loaded for the currently selected
+        // locale, it is already up to date.
+        return;
+      }
+      chrome.send('getPublicSessionKeyboardLayouts',
+                  [this.user.username, selectedLocale]);
      },
 
     /**
      * Populates the keyboard layout "select" element with a list of layouts.
+     * @param {string} locale The locale to which this list of keyboard layouts
+     *     applies
      * @param {!Object} list List of available keyboard layouts
      */
-    populateKeyboardSelect_: function(list) {
+    populateKeyboardSelect: function(locale, list) {
+      if (locale != this.querySelector('.language-select').value) {
+        // The selected locale has changed and the list of keyboard layouts is
+        // not applicable. This method will be called again when a list of
+        // keyboard layouts applicable to the selected locale is retrieved.
+        return;
+      }
+
       var keyboardSelect = this.querySelector('.keyboard-select');
+      keyboardSelect.loadedLocale = locale;
       keyboardSelect.innerHTML = '';
       for (var i = 0; i < list.length; ++i) {
         var item = list[i];
         keyboardSelect.appendChild(
             new Option(item.title, item.value, item.selected, item.selected));
       }
+    },
+
+    /**
+     * Populates the language "select" element with a list of locales.
+     * @param {!Object} locales The list of available locales
+     * @param {string} defaultLocale The locale to select by default
+     * @param {boolean} multipleRecommendedLocales Whether |locales| contains
+     *     two or more recommended locales
+     */
+    populateLanguageSelect: function(locales,
+                                     defaultLocale,
+                                     multipleRecommendedLocales) {
+      var languageSelect = this.querySelector('.language-select');
+      // If the user manually selected a locale, do not change the selection.
+      // Otherwise, select the new |defaultLocale|.
+      var selected =
+          languageSelect.manuallyChanged ? languageSelect.value : defaultLocale;
+      languageSelect.innerHTML = '';
+      var group = languageSelect;
+      for (var i = 0; i < locales.length; ++i) {
+        var item = locales[i];
+        if (item.optionGroupName) {
+          group = document.createElement('optgroup');
+          group.label = item.optionGroupName;
+          languageSelect.appendChild(group);
+        } else {
+          group.appendChild(new Option(item.title,
+                                       item.value,
+                                       item.value == selected,
+                                       item.value == selected));
+        }
+      }
+      languageSelect.multipleRecommendedLocales = multipleRecommendedLocales;
+
+      // Retrieve a list of keyboard layouts applicable to the locale that is
+      // now selected.
+      this.getPublicSessionKeyboardLayouts_();
     }
   };
 
@@ -1846,14 +1897,36 @@ cr.define('login', function() {
     },
 
     /**
+     * Updates the list of locales available for a public session.
+     * @param {string} userID The user ID of the public session
+     * @param {!Object} locales The list of available locales
+     * @param {string} defaultLocale The locale to select by default
+     * @param {boolean} multipleRecommendedLocales Whether |locales| contains
+     *     two or more recommended locales
+     */
+    setPublicSessionLocales: function(userID,
+                                      locales,
+                                      defaultLocale,
+                                      multipleRecommendedLocales) {
+      var pod = this.getPodWithUsername_(userID);
+      if (pod != null) {
+        pod.populateLanguageSelect(locales,
+                                   defaultLocale,
+                                   multipleRecommendedLocales);
+      }
+    },
+
+    /**
      * Updates the list of available keyboard layouts for a public session pod.
      * @param {string} userID The user ID of the public session
+     * @param {string} locale The locale to which this list of keyboard layouts
+     *     applies
      * @param {!Object} list List of available keyboard layouts
      */
-    setPublicSessionKeyboardLayouts: function(userID, list) {
+    setPublicSessionKeyboardLayouts: function(userID, locale, list) {
       var pod = this.getPodWithUsername_(userID);
       if (pod != null)
-        pod.populateKeyboardSelect_(list);
+        pod.populateKeyboardSelect(locale, list);
     },
 
     /**

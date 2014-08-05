@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -38,9 +39,20 @@ class ChromeUserSelectionScreen
   void CheckForPublicSessionDisplayNameChange(
       policy::DeviceLocalAccountPolicyBroker* broker);
 
+  // Check whether the list of recommended locales set by policy for a public
+  // session has changed and if so, notify the UI.
+  void CheckForPublicSessionLocalePolicyChange(
+      policy::DeviceLocalAccountPolicyBroker* broker);
+
   // Notify the UI that the display name for a public session has changed,
   // taking the display name from the |User| owned by |UserManager|.
   void SetPublicSessionDisplayName(const std::string& user_id);
+
+  // Send an updated list of locales for a public session to the UI, consisting
+  // of the |recommended_locales| followed by all other available locales.
+  void SetPublicSessionLocales(
+      const std::string& user_id,
+      const std::vector<std::string>* recommended_locales);
 
   bool handler_initialized_;
 
