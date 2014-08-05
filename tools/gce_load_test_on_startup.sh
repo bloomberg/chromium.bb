@@ -27,18 +27,20 @@ REPO=https://code.google.com/p/swarming.client.git
 #   scp "slave:/var/log/swarming/*.*" .
 LOG=/var/log/swarming
 
+# Delay to wait before starting each client load test. This soften the curve.
+CLIENT_DELAY=60s
+
 
 ## Actual work starts here.
-echo 'dirname $0'
-echo $PWD
-mkdir -p $LOG
-
-# Installs python and git.
-apt-get install -y git-core python
+# Installs python and git. Do not bail out if it fails, since we do want the
+# script to be usable as non-root.
+apt-get install -y git-core python || true
 
 # It will end up in /client.
-git clone $REPO client
-cd client
+rm -rf swarming_client
+git clone $REPO swarming_client
+TOOLS_DIR=./swarming_client/tools
+mkdir -p $LOG
 
 # This is assuming 8 cores system, so it's worth having 8 different python
 # processes, 4 fake bots load processes, 4 fake clients load processes. Each
@@ -49,17 +51,52 @@ cd client
 # a problem on GCE, these VMs have pretty high network I/O. This may not hold
 # true on other Cloud Hosting provider. Tune accordingly!
 
-# Start the bots first, 250 fake bots per process.
+echo "1. Starting bots."
+BOTS_PID=
+# Each load test bot process creates multiple (default is 250) fake bots.
 for i in {1..4}; do
-  ./tools/swarming_load_test_bot.py -S $SERVER --slaves 250 --suffix $i \
-      --dump=$LOG/bot$i.json > $LOG/bot$i.log &
-  echo "Bot $i pid: $!"
+  $TOOLS_DIR/swarming_load_test_bot.py -S $SERVER --suffix $i \
+      --slaves 250 \
+      --dump=$LOG/bot$i.json > $LOG/bot$i.log 2>&1 &
+  BOT_PID=$!
+  echo "  Bot $i pid: $BOT_PID"
+  BOTS_PID="$BOTS_PID $BOT_PID"
 done
 
+echo "2. Starting clients."
 # Each client will send by default 16 tasks/sec * 60 sec, so 16*60*4 = 3840
 # tasks per VM.
+CLIENTS_PID=
 for i in {1..4}; do
-  ./tools/swarming_load_test_client.py -S $SERVER --concurrent 250 \
-      --dump=$LOG/client$i.json > $LOG/client$i.log &
-  echo "Client $i pid: $!"
+  echo "  Sleeping for $CLIENT_DELAY before starting client #$i"
+  sleep $CLIENT_DELAY
+  $TOOLS_DIR/swarming_load_test_client.py -S $SERVER \
+      --send-rate 16 \
+      --duration 60 \
+      --timeout 180 \
+      --concurrent 250 \
+      --dump=$LOG/client$i.json > $LOG/client$i.log 2>&1 &
+  CLIENT_PID=$!
+  echo "  Client $i pid: $CLIENT_PID"
+  CLIENTS_PID="$CLIENTS_PID $CLIENT_PID"
 done
+
+echo "3. Waiting for the clients to complete; $CLIENTS_PID"
+for i in $CLIENTS_PID; do
+  echo "  Waiting for $i"
+  wait $i
+done
+
+echo "4. Sending a Ctrl-C to each bot process so they stop; $BOTS_PID"
+for i in $BOTS_PID; do
+  kill $i
+done
+
+echo "5. Waiting for the bot processes to stop."
+for i in $BOTS_PID; do
+  echo "  Waiting for $i"
+  wait $i || true
+done
+
+echo "6. Load test is complete."
+touch $LOG/done
