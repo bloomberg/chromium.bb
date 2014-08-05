@@ -110,9 +110,7 @@
   -webkit-padding-start: 15px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  box-shadow: 0 0 0 1px #222,
-              inset 0 1px 1px 1px #fff,
-              inset 0 -1px 1px 1px #eee;
+  box-shadow: 0 0 0 1px #222;
   color: #222;
   display: inline-block;
   font-size: 16px;
@@ -159,8 +157,6 @@
 
 .bluetooth-keyboard-button.key-untyped {
   border: 1px solid #d4d4d4;
-  box-shadow: 0 0 0 1px #888,
-              inset 0 1px 1px 1px #fff,
-              inset 0 -1px 1px 1px #eee;
+  box-shadow: 0 0 0 1px #888;
   color: #666;
 }
