@@ -142,7 +142,7 @@ TEST_F(ServiceWorkerContextTest, Register) {
   int64 version_id = kInvalidServiceWorkerVersionId;
   bool called = false;
   context()->RegisterServiceWorker(
-      GURL("http://www.example.com/*"),
+      GURL("http://www.example.com/"),
       GURL("http://www.example.com/service_worker.js"),
       render_process_id_,
       NULL,
@@ -185,7 +185,7 @@ TEST_F(ServiceWorkerContextTest, Register_RejectInstall) {
   int64 version_id = kInvalidServiceWorkerVersionId;
   bool called = false;
   context()->RegisterServiceWorker(
-      GURL("http://www.example.com/*"),
+      GURL("http://www.example.com/"),
       GURL("http://www.example.com/service_worker.js"),
       render_process_id_,
       NULL,
@@ -228,7 +228,7 @@ TEST_F(ServiceWorkerContextTest, Register_RejectActivate) {
   int64 version_id = kInvalidServiceWorkerVersionId;
   bool called = false;
   context()->RegisterServiceWorker(
-      GURL("http://www.example.com/*"),
+      GURL("http://www.example.com/"),
       GURL("http://www.example.com/service_worker.js"),
       render_process_id_,
       NULL,
@@ -263,7 +263,7 @@ TEST_F(ServiceWorkerContextTest, Register_RejectActivate) {
 
 // Make sure registrations are cleaned up when they are unregistered.
 TEST_F(ServiceWorkerContextTest, Unregister) {
-  GURL pattern("http://www.example.com/*");
+  GURL pattern("http://www.example.com/");
 
   bool called = false;
   int64 registration_id = kInvalidServiceWorkerRegistrationId;
@@ -303,7 +303,7 @@ TEST_F(ServiceWorkerContextTest, Unregister) {
 // Make sure that when a new registration replaces an existing
 // registration, that the old one is cleaned up.
 TEST_F(ServiceWorkerContextTest, RegisterNewScript) {
-  GURL pattern("http://www.example.com/*");
+  GURL pattern("http://www.example.com/");
 
   bool called = false;
   int64 old_registration_id = kInvalidServiceWorkerRegistrationId;
@@ -346,7 +346,7 @@ TEST_F(ServiceWorkerContextTest, RegisterNewScript) {
 // Make sure that when registering a duplicate pattern+script_url
 // combination, that the same registration is used.
 TEST_F(ServiceWorkerContextTest, RegisterDuplicateScript) {
-  GURL pattern("http://www.example.com/*");
+  GURL pattern("http://www.example.com/");
   GURL script_url("http://www.example.com/service_worker.js");
 
   bool called = false;
@@ -388,7 +388,7 @@ TEST_F(ServiceWorkerContextTest, DeleteAndStartOver) {
   int64 version_id = kInvalidServiceWorkerVersionId;
   bool called = false;
   context()->RegisterServiceWorker(
-      GURL("http://www.example.com/*"),
+      GURL("http://www.example.com/"),
       GURL("http://www.example.com/service_worker.js"),
       render_process_id_,
       NULL,
@@ -436,7 +436,7 @@ TEST_F(ServiceWorkerContextTest, DeleteAndStartOver) {
 
   called = false;
   context()->RegisterServiceWorker(
-      GURL("http://www.example.com/*"),
+      GURL("http://www.example.com/"),
       GURL("http://www.example.com/service_worker.js"),
       render_process_id_,
       NULL,

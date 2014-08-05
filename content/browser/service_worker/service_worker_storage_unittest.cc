@@ -318,7 +318,7 @@ class ServiceWorkerStorageTest : public testing::Test {
 };
 
 TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
-  const GURL kScope("http://www.test.not/scope/*");
+  const GURL kScope("http://www.test.not/scope/");
   const GURL kScript("http://www.test.not/script.js");
   const GURL kDocumentUrl("http://www.test.not/scope/document.html");
   const int64 kRegistrationId = 0;
@@ -445,7 +445,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
 }
 
 TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
-  const GURL kScope("http://www.test.not/scope/*");
+  const GURL kScope("http://www.test.not/scope/");
   const GURL kScript("http://www.test.not/script.js");
   const GURL kDocumentUrl("http://www.test.not/scope/document.html");
   const int64 kRegistrationId = 0;
@@ -534,7 +534,7 @@ class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
 
     storage()->LazyInitialize(base::Bind(&base::DoNothing));
     base::RunLoop().RunUntilIdle();
-    scope_ = GURL("http://www.test.not/scope/*");
+    scope_ = GURL("http://www.test.not/scope/");
     script_ = GURL("http://www.test.not/script.js");
     import_ = GURL("http://www.test.not/import.js");
     document_url_ = GURL("http://www.test.not/scope/document.html");
@@ -891,8 +891,8 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   const GURL kDocumentUrl("http://www.example.com/scope/foo");
   scoped_refptr<ServiceWorkerRegistration> found_registration;
 
-  // Registration for "/scope/*".
-  const GURL kScope1("http://www.example.com/scope/*");
+  // Registration for "/scope/".
+  const GURL kScope1("http://www.example.com/scope/");
   const GURL kScript1("http://www.example.com/script1.js");
   const int64 kRegistrationId1 = 1;
   const int64 kVersionId1 = 1;
@@ -905,8 +905,8 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   live_version1->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_registration1->SetWaitingVersion(live_version1);
 
-  // Registration for "/scope/foo*".
-  const GURL kScope2("http://www.example.com/scope/foo*");
+  // Registration for "/scope/foo".
+  const GURL kScope2("http://www.example.com/scope/foo");
   const GURL kScript2("http://www.example.com/script2.js");
   const int64 kRegistrationId2 = 2;
   const int64 kVersionId2 = 2;
@@ -919,8 +919,8 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   live_version2->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_registration2->SetWaitingVersion(live_version2);
 
-  // Registration for "/scope/foo".
-  const GURL kScope3("http://www.example.com/scope/foo");
+  // Registration for "/scope/foobar".
+  const GURL kScope3("http://www.example.com/scope/foobar");
   const GURL kScript3("http://www.example.com/script3.js");
   const int64 kRegistrationId3 = 3;
   const int64 kVersionId3 = 3;

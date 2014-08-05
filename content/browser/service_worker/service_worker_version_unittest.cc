@@ -120,7 +120,7 @@ class ServiceWorkerVersionTest : public testing::Test {
     helper_.reset(new MessageReceiver());
 
     registration_ = new ServiceWorkerRegistration(
-        GURL("http://www.example.com/*"),
+        GURL("http://www.example.com/"),
         GURL("http://www.example.com/service_worker.js"),
         1L,
         helper_->context()->AsWeakPtr());

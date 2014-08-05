@@ -117,7 +117,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, Register_SameOrigin) {
   context()->AddProviderHost(host.Pass());
 
   Register(kProviderId,
-           GURL("https://www.example.com/*"),
+           GURL("https://www.example.com/"),
            GURL("https://www.example.com/bar"),
            ServiceWorkerMsg_ServiceWorkerRegistered::ID);
 }
@@ -132,31 +132,31 @@ TEST_F(ServiceWorkerDispatcherHostTest, Register_CrossOrigin) {
 
   // Script has a different host
   SendRegister(kProviderId,
-               GURL("https://www.example.com/*"),
+               GURL("https://www.example.com/"),
                GURL("https://foo.example.com/bar"));
   EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
 
   // Scope has a different host
   SendRegister(kProviderId,
-               GURL("https://foo.example.com/*"),
+               GURL("https://foo.example.com/"),
                GURL("https://www.example.com/bar"));
   EXPECT_EQ(2, dispatcher_host_->bad_messages_received_count_);
 
   // Script has a different port
   SendRegister(kProviderId,
-               GURL("https://www.example.com/*"),
+               GURL("https://www.example.com/"),
                GURL("https://www.example.com:8080/bar"));
   EXPECT_EQ(3, dispatcher_host_->bad_messages_received_count_);
 
   // Scope has a different transport
   SendRegister(kProviderId,
-               GURL("wss://www.example.com/*"),
+               GURL("wss://www.example.com/"),
                GURL("https://www.example.com/bar"));
   EXPECT_EQ(4, dispatcher_host_->bad_messages_received_count_);
 
   // Script and scope have different hosts
   SendRegister(kProviderId,
-               GURL("https://foo.example.com/*"),
+               GURL("https://foo.example.com/"),
                GURL("https://foo.example.com/bar"));
   EXPECT_EQ(5, dispatcher_host_->bad_messages_received_count_);
 
@@ -176,7 +176,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, Unregister_SameOrigin) {
   context()->AddProviderHost(host.Pass());
 
   Unregister(kProviderId,
-             GURL("http://www.example.com/*"),
+             GURL("http://www.example.com/"),
              ServiceWorkerMsg_ServiceWorkerUnregistered::ID);
 }
 
@@ -188,7 +188,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, Unregister_CrossOrigin) {
   base::WeakPtr<ServiceWorkerProviderHost> provider_host = host->AsWeakPtr();
   context()->AddProviderHost(host.Pass());
 
-  SendUnregister(kProviderId, GURL("http://foo.example.com/*"));
+  SendUnregister(kProviderId, GURL("http://foo.example.com/"));
   EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
 }
 

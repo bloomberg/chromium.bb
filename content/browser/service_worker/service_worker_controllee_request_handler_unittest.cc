@@ -38,7 +38,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
     helper_.reset(new EmbeddedWorkerTestHelper(kMockRenderProcessId));
 
     // A new unstored registration/version.
-    scope_ = GURL("http://host/scope/*");
+    scope_ = GURL("http://host/scope/");
     script_url_ = GURL("http://host/script.js");
     registration_ = new ServiceWorkerRegistration(
         scope_, script_url_, 1L, context()->AsWeakPtr());

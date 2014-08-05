@@ -62,7 +62,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
 
   const int embedded_worker_id = worker->embedded_worker_id();
   const int64 service_worker_version_id = 55L;
-  const GURL scope("http://example.com/*");
+  const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
   // Simulate adding one process to the worker.
@@ -108,7 +108,7 @@ TEST_F(EmbeddedWorkerInstanceTest, InstanceDestroyedBeforeStartFinishes) {
   EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
 
   const int64 service_worker_version_id = 55L;
-  const GURL scope("http://example.com/*");
+  const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
   ServiceWorkerStatusCode status;

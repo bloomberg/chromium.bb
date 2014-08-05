@@ -95,7 +95,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
     helper_.reset(helper);
 
     registration_ = new ServiceWorkerRegistration(
-        GURL("http://example.com/*"),
+        GURL("http://example.com/"),
         GURL("http://example.com/service_worker.js"),
         1L,
         helper_->context()->AsWeakPtr());
