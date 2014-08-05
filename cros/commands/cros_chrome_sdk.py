@@ -588,11 +588,11 @@ class ChromeSDKCommand(cros.CrosCommand):
       env['CC'] = 'clang'
       env['CXX'] = 'clang++ %s' % ' '.join(includes)
 
-    env['CXX_host'] = 'g++'
-    env['CC_host'] = 'gcc'
+    clang_path = os.path.join(options.chrome_src, self._CLANG_DIR)
+    env['CC_host'] = os.path.join(clang_path, 'clang')
+    env['CXX_host'] = os.path.join(clang_path, 'clang++')
 
     if options.clang:
-      clang_path = os.path.join(options.chrome_src, self._CLANG_DIR)
       env['PATH'] = '%s:%s' % (clang_path, env['PATH'])
 
   def _SetupEnvironment(self, board, sdk_ctx, options, goma_dir=None,
@@ -642,7 +642,7 @@ class ChromeSDKCommand(cros.CrosCommand):
       gyp_dict['clang'] = 1
       gyp_dict['werror'] = ''
       gyp_dict['clang_use_chrome_plugins'] = 0
-      gyp_dict['linux_use_tcmalloc'] = 0
+      gyp_dict['use_allocator'] = 0
     if options.internal:
       gyp_dict['branding'] = 'Chrome'
       gyp_dict['buildtype'] = 'Official'
@@ -669,6 +669,7 @@ class ChromeSDKCommand(cros.CrosCommand):
     env['builddir_name'] = out_dir
     env['GYP_GENERATORS'] = 'make' if options.make else 'ninja'
     env['GYP_GENERATOR_FLAGS'] = 'output_dir=%s' % out_dir
+    env['GYP_CROSSCOMPILE'] = '1'
     return env
 
   @staticmethod
