@@ -1019,24 +1019,6 @@
    fun:_ZN11ProfileImpl22GetOffTheRecordProfileEv
 }
 {
-   bug_50968_a
-   Memcheck:Leak
-   ...
-   fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
-}
-{
-   bug_50968_b
-   Memcheck:Unaddressable
-   ...
-   fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
-}
-{
-   bug_50968_d
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
-}
-{
    bug_56359_a
    Memcheck:Leak
    fun:_Znw*
@@ -1051,12 +1033,6 @@
    fun:_ZN10URLRequest8StartJobEP13URLRequestJob
    fun:_ZN10URLRequest5StartEv
    fun:_ZN10URLFetcher4Core15StartURLRequestEv
-}
-{
-   bug_51153
-   Memcheck:Leak
-   ...
-   fun:_ZN7history14HistoryBackend16GetFaviconForURLE13scoped_refptrI17CancelableRequestI14CallbackRunnerI6Tuple5IibS1_I16RefCountedMemoryEb4GURLEEEERKS7_
 }
 {
    bug_51379
@@ -1186,20 +1162,6 @@
    fun:_ZN14ProfileManager17GetDefaultProfileEv
 }
 {
-   bug_58561
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN3net8internal26ClientSocketPoolBaseHelper16GetOrCreateGroupERKSs
-   fun:_ZN3net8internal26ClientSocketPoolBaseHelper13RequestSocketERKSsPKNS1_7RequestE
-   fun:_ZN3net20ClientSocketPoolBaseINS_*
-   fun:_ZN3net*SocketPool13RequestSocketE*
-   fun:_ZN3net18ClientSocketHandle4InitINS_*
-   ...
-   fun:_ZN3net21HttpStreamFactoryImpl3Job16DoInitConnectionEv
-   fun:_ZN3net21HttpStreamFactoryImpl3Job6DoLoopEi
-}
-{
    bug_58564
    Memcheck:Leak
    fun:calloc
@@ -1209,13 +1171,6 @@
    fun:_ZN3net18SSLClientSocketNSS7ConnectEP14CallbackRunnerI6Tuple1IiEE
    fun:_ZN3net13SSLConnectJob12DoSSLConnectEv
    fun:_ZN3net13SSLConnectJob6DoLoopEi
-}
-{
-   bug_58574
-   Memcheck:Unaddressable
-   ...
-   fun:_ZN4base11MessageLoop8PostTaskERKN15tracked_objects8LocationERKN4base8CallbackIFvvEEE
-   fun:_ZN3net12CertVerifier7Request8DoVerifyEv
 }
 {
    bug_60556a
@@ -5838,15 +5793,6 @@
    fun:_ZN3WTF16DefaultAllocator13backingMallocIPN7blink14InlineIteratorEvEET_m
    ...
    fun:_ZN3WTF17HashMapTranslatorINS_18HashMapValueTraitsINS_10HashTraitsIPN7blink7BidiRun*
-}
-{
-   bug_370210
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5blink20InternalsGeolocation24setGeolocationClientMockERNS_9InternalsEPNS_8DocumentE
-   fun:_ZN5blink19InternalsV8InternalL30setGeolocationClientMockMethodERKN2v820FunctionCallbackInfoINS1_5ValueEEE
-   fun:_ZN5blink19InternalsV8InternalL38setGeolocationClientMockMethodCallbackERKN2v820FunctionCallbackInfoINS1_5ValueEEE
-   fun:_ZN2v88internal25FunctionCallbackArguments4CallEPFvRKNS_20FunctionCallbackInfoINS_5ValueEEEE
 }
 {
   bug_371844
