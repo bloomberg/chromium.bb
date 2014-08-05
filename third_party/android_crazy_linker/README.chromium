@@ -33,3 +33,5 @@ Local Modifications:
 - Fix for crbug/394306 (Chrome crashes during startup ... on Arm64 AAW15)
 
 - Move packed relocation dynamic tags from DT_LOPROC range to DT_LOOS range.
+
+- Add support for x86_64.

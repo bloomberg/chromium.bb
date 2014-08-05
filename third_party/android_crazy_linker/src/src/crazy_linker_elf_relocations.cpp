@@ -66,6 +66,17 @@
 
 #endif  // __i386__
 
+#ifdef __x86_64__
+
+/* x86_64 relocations */
+#define R_X86_64_64 1
+#define R_X86_64_PC32 2
+#define R_X86_64_GLOB_DAT 6
+#define R_X86_64_JMP_SLOT 7
+#define R_X86_64_RELATIVE 8
+
+#endif  // __x86_64__
+
 namespace crazy {
 
 namespace {
@@ -119,6 +130,19 @@ RelocationType GetRelocationType(ELF::Word r_type) {
       return RELOCATION_TYPE_RELATIVE;
 
     case R_386_PC32:
+      return RELOCATION_TYPE_PC_RELATIVE;
+#endif
+
+#ifdef __x86_64__
+    case R_X86_64_JMP_SLOT:
+    case R_X86_64_GLOB_DAT:
+    case R_X86_64_64:
+      return RELOCATION_TYPE_ABSOLUTE;
+
+    case R_X86_64_RELATIVE:
+      return RELOCATION_TYPE_RELATIVE;
+
+    case R_X86_64_PC32:
       return RELOCATION_TYPE_PC_RELATIVE;
 #endif
 
@@ -473,6 +497,32 @@ bool ElfRelocations::ApplyRelaReloc(const ELF::Rela* rela,
       return false;
 #endif  // __aarch64__
 
+#ifdef __x86_64__
+    case R_X86_64_JMP_SLOT:
+      *target = sym_addr + addend;
+      break;
+
+    case R_X86_64_GLOB_DAT:
+      *target = sym_addr + addend;
+      break;
+
+    case R_X86_64_RELATIVE:
+      if (rela_symbol) {
+        *error = "Invalid relative relocation with symbol";
+        return false;
+      }
+      *target = load_bias_ + addend;
+      break;
+
+    case R_X86_64_64:
+      *target = sym_addr + addend;
+      break;
+
+    case R_X86_64_PC32:
+      *target = sym_addr + (addend - reloc);
+      break;
+#endif  // __x86_64__
+
     default:
       error->Format("Invalid relocation type (%d)", rela_type);
       return false;
@@ -811,6 +861,12 @@ void ElfRelocations::AdjustRelocation(ELF::Word rel_type,
 
 #ifdef __i386__
     case R_386_RELATIVE:
+      *dst_ptr += map_delta;
+      break;
+#endif
+
+#ifdef __x86_64__
+    case R_X86_64_RELATIVE:
       *dst_ptr += map_delta;
       break;
 #endif
