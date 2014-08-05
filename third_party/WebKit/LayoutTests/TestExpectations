@@ -1549,9 +1549,9 @@ crbug.com/365857 media/video-zoom-controls.html [ NeedsManualRebaseline ]
 crbug.com/365857 media/video-zoom.html [ NeedsManualRebaseline ]
 
 # Will fail once https://codereview.chromium.org/443573004/ lands.
-crbug.com/400841 media/video-canvas-draw.html [ Pass Failure ]
-crbug.com/400829 media/video-object-fit.html [ Pass Failure ]
-crbug.com/400829 virtual/stable/media/stable/video-object-fit-stable.html [ Pass Failure ]
+crbug.com/400841 media/video-canvas-draw.html [ Pass ImageOnlyFailure ]
+crbug.com/400829 media/video-object-fit.html [ Pass ImageOnlyFailure ]
+crbug.com/400829 virtual/stable/media/stable/video-object-fit-stable.html [ Pass ImageOnlyFailure ]
 
 # We only want to run one of the web-animations-api tests in stable mode.
 crbug.com/368946 virtual/stable/web-animations-api [ Skip ]
