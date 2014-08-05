@@ -53,7 +53,6 @@ NavigationEntryImpl::NavigationEntryImpl()
       should_replace_entry_(false),
       should_clear_history_list_(false),
       can_load_local_resources_(false),
-      xss_detected_(false),
       frame_tree_node_id_(-1) {
 }
 
@@ -83,7 +82,6 @@ NavigationEntryImpl::NavigationEntryImpl(SiteInstanceImpl* instance,
       should_replace_entry_(false),
       should_clear_history_list_(false),
       can_load_local_resources_(false),
-      xss_detected_(false),
       frame_tree_node_id_(-1) {
 }
 
@@ -310,10 +308,6 @@ void NavigationEntryImpl::SetCanLoadLocalResources(bool allow) {
 
 bool NavigationEntryImpl::GetCanLoadLocalResources() const {
   return can_load_local_resources_;
-}
-
-bool NavigationEntryImpl::GetXssDetected() const {
-  return xss_detected_;
 }
 
 void NavigationEntryImpl::SetFrameToNavigate(const std::string& frame_name) {

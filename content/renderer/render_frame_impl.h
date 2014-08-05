@@ -370,9 +370,6 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didRunInsecureContent(blink::WebLocalFrame* frame,
                                      const blink::WebSecurityOrigin& origin,
                                      const blink::WebURL& target);
-  virtual void didDetectXSS(blink::WebLocalFrame* frame,
-                            const blink::WebURL& url,
-                            bool blocked_entire_page);
   virtual void didAbortLoading(blink::WebLocalFrame* frame);
   virtual void didCreateScriptContext(blink::WebLocalFrame* frame,
                                       v8::Handle<v8::Context> context,

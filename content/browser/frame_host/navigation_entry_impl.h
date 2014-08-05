@@ -89,7 +89,6 @@ class CONTENT_EXPORT NavigationEntryImpl
   virtual void SetRedirectChain(const std::vector<GURL>& redirects) OVERRIDE;
   virtual const std::vector<GURL>& GetRedirectChain() const OVERRIDE;
   virtual bool IsRestored() const OVERRIDE;
-  virtual bool GetXssDetected() const OVERRIDE;
 
   // Once a navigation entry is committed, we should no longer track several
   // pieces of non-persisted state, as documented on the members below.
@@ -219,12 +218,6 @@ class CONTENT_EXPORT NavigationEntryImpl
     frame_tree_node_id_ = frame_tree_node_id;
   }
 
-  // Called when an XSS detected by Blink's XSSAuditor caused the page to
-  // be blocked.
-  void set_xss_detected(bool xss_detected) {
-    xss_detected_ = xss_detected;
-  }
-
  private:
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
   // Session/Tab restore save portions of this class so that it can be recreated
@@ -328,10 +321,6 @@ class CONTENT_EXPORT NavigationEntryImpl
   // Set when this entry should be able to access local file:// resources. This
   // value is not needed after the entry commits and is not persisted.
   bool can_load_local_resources_;
-
-  // Set when this entry was blocked by Blink's XSSAuditor.
-  // TODO(tsepez): persist xss_detected_ (see WARNING section above).
-  bool xss_detected_;
 
   // If not empty, the name of the frame to navigate. This field is not
   // persisted, because it is currently only used in tests.

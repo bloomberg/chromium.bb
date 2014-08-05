@@ -552,7 +552,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnDomOperationResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeThemeColor,
                         OnThemeColorChanged)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidDetectXSS, OnDidDetectXSS)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishDocumentLoad,
                         OnDocumentLoadedInFrame)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishLoad, OnDidFinishLoad)
@@ -2676,26 +2675,6 @@ void WebContentsImpl::OnDidRunInsecureContent(
   displayed_insecure_content_ = true;
   SSLManager::NotifySSLInternalStateChanged(
       GetController().GetBrowserContext());
-}
-
-
-void WebContentsImpl::OnDidDetectXSS(int32 page_id,
-                                     const GURL& url,
-                                     bool blocked_entire_page) {
-  if (!blocked_entire_page)
-    return;
-
-  int entry_index = controller_.GetEntryIndexWithPageID(
-      GetRenderViewHost()->GetSiteInstance(), page_id);
-  if (entry_index < 0)
-    return;
-
-  NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
-      controller_.GetEntryAtIndex(entry_index));
-  if (!entry)
-    return;
-
-  entry->set_xss_detected(true);
 }
 
 void WebContentsImpl::OnDocumentLoadedInFrame() {

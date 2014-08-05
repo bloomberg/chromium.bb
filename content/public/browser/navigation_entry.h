@@ -217,9 +217,6 @@ class NavigationEntry {
 
   // True if this entry is restored and hasn't been loaded.
   virtual bool IsRestored() const = 0;
-
-  // Whether an XSS was detected by Blink's XSSAuditor for this entry.
-  virtual bool GetXssDetected() const = 0;
 };
 
 }  // namespace content

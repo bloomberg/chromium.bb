@@ -2680,13 +2680,6 @@ void RenderFrameImpl::didRunInsecureContent(
       target));
 }
 
-void RenderFrameImpl::didDetectXSS(blink::WebLocalFrame* frame,
-                                  const blink::WebURL& url,
-                                  bool blocked_entire_page) {
-  Send(new FrameHostMsg_DidDetectXSS(routing_id_, render_view_->page_id_, url,
-                                     blocked_entire_page));
-}
-
 void RenderFrameImpl::didAbortLoading(blink::WebLocalFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
 #if defined(ENABLE_PLUGINS)

@@ -1175,17 +1175,6 @@ void ViewSource(Browser* browser, WebContents* contents) {
   if (!entry)
     return;
 
-  // The URL "data:," is a special case, since Blink uses it when it wants to
-  // show a "blocked page" from its reflected XSS filter. When the XSS filter
-  // triggers, the current entry gets marked as containing an XSS, and then a
-  // new navigation to "data:," occurs on top of it. Showing that page in place
-  // of the "data:," URL permits examination of the cause of the reflection.
-  if (entry->GetURL() == GURL("data:,")) {
-    NavigationEntry* previous = contents->GetController().GetEntryAtOffset(-1);
-    if (previous && previous->GetXssDetected())
-      entry = previous;
-  }
-
   ViewSource(browser, contents, entry->GetURL(), entry->GetPageState());
 }
 

@@ -606,12 +606,6 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_ForwardInputEvent,
 // user right clicked.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_ContextMenu, content::ContextMenuParams)
 
-// Sent when the renderer detects an XSS in a page.
-IPC_MESSAGE_ROUTED3(FrameHostMsg_DidDetectXSS,
-                    int32  /* page_id */,
-                    GURL  /* url */,
-                    bool  /* blocked entire page */)
-
 // Initial drawing parameters for a child frame that has been swapped out to
 // another process.
 IPC_MESSAGE_ROUTED2(FrameHostMsg_InitializeChildFrame,

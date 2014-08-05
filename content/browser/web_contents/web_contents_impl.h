@@ -740,7 +740,6 @@ class CONTENT_EXPORT WebContentsImpl
   void OnDidDisplayInsecureContent();
   void OnDidRunInsecureContent(const std::string& security_origin,
                                const GURL& target_url);
-  void OnDidDetectXSS(int32 page_id, const GURL& url, bool blocked_entire_page);
   void OnDocumentLoadedInFrame();
   void OnDidFinishLoad(const GURL& url);
   void OnDidStartLoading(bool to_different_document);
