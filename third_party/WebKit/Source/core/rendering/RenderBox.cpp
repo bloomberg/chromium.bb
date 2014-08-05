@@ -874,15 +874,11 @@ IntSize RenderBox::scrolledContentOffset() const
     return layer()->scrollableArea()->scrollOffset();
 }
 
-LayoutSize RenderBox::cachedSizeForOverflowClip() const
-{
-    ASSERT(hasOverflowClip());
-    ASSERT(hasLayer());
-    return layer()->size();
-}
-
 void RenderBox::applyCachedClipAndScrollOffsetForRepaint(LayoutRect& paintRect) const
 {
+    ASSERT(hasLayer());
+    ASSERT(hasOverflowClip());
+
     flipForWritingMode(paintRect);
     paintRect.move(-scrolledContentOffset()); // For overflow:auto/scroll/hidden.
 
@@ -895,7 +891,7 @@ void RenderBox::applyCachedClipAndScrollOffsetForRepaint(LayoutRect& paintRect) 
     // height() is inaccurate if we're in the middle of a layout of this RenderBox, so use the
     // layer's size instead. Even if the layer's size is wrong, the layer itself will repaint
     // anyway if its size does change.
-    LayoutRect clipRect(LayoutPoint(), cachedSizeForOverflowClip());
+    LayoutRect clipRect(LayoutPoint(), layer()->size());
     paintRect = intersection(paintRect, clipRect);
     flipForWritingMode(paintRect);
 }

@@ -138,7 +138,7 @@ void PaintInvalidationState::applyClipIfNeeded(const RenderObject& renderer)
         return;
 
     const RenderBox& box = toRenderBox(renderer);
-    LayoutRect clipRect(toPoint(m_paintOffset), box.cachedSizeForOverflowClip());
+    LayoutRect clipRect(toPoint(m_paintOffset), box.layer()->size());
     if (m_clipped) {
         m_clipRect.intersect(clipRect);
     } else {
