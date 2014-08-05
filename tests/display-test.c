@@ -31,6 +31,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <pthread.h>
 
 #include "wayland-private.h"
 #include "wayland-server.h"
@@ -320,6 +321,95 @@ TEST(post_nomem_tst)
 	assert(cl->data);
 	wl_client_post_no_memory(cl->wl_client);
 	display_resume(d);
+
+	display_destroy(d);
+}
+
+static void
+register_reading(struct wl_display *display)
+{
+	while(wl_display_prepare_read(display) != 0 && errno == EAGAIN)
+		assert(wl_display_dispatch_pending(display) >= 0);
+	assert(wl_display_flush(display) >= 0);
+}
+
+static void *
+thread_read_error(void *data)
+{
+	struct client *c = data;
+
+	register_reading(c->wl_display);
+
+	/*
+	 * Calling the read right now will block this thread
+	 * until the other thread will read the data.
+	 * However, after invoking an error, this
+	 * thread should be woken up or it will block indefinitely.
+	 */
+	c->display_stopped = 1;
+	assert(wl_display_read_events(c->wl_display) == 0);
+
+	wl_display_dispatch_pending(c->wl_display);
+	assert(wl_display_get_error(c->wl_display));
+
+	pthread_exit(NULL);
+}
+
+/* test posting an error in multi-threaded environment. */
+static void
+threading_post_err(void)
+{
+	struct client *c = client_connect();
+	pthread_t thread;
+
+	/* register read intention */
+	register_reading(c->wl_display);
+
+	/* use this var as an indicator that thread is sleeping */
+	c->display_stopped = 0;
+
+	/* create new thread that will register its intention too */
+	assert(pthread_create(&thread, NULL, thread_read_error, c) == 0);
+
+	/* make sure thread is sleeping. It's a little bit racy
+	 * (setting display_stopped to 1 and calling wl_display_read_events)
+	 * so call usleep once again after the loop ends - it should
+	 * be sufficient... */
+	while (c->display_stopped == 0)
+		usleep(500);
+
+	usleep(10000);
+
+	/* so now we have sleeping thread waiting for a pthread_cond signal.
+	 * The main thread must call wl_display_read_events().
+	 * If this call fails, then it won't call broadcast at the
+	 * end of the function and the sleeping thread will block indefinitely.
+	 * Make the call fail and watch if libwayland will unblock the thread! */
+
+	/* create error on fd, so that wl_display_read_events will fail.
+	 * The same can happen when server hangs up */
+	close(wl_display_get_fd(c->wl_display));
+	/* this read events will fail and will
+	 * post an error that should wake the sleeping thread
+	 * and dispatch the incoming events */
+	assert(wl_display_read_events(c->wl_display) == -1);
+
+	/* kill test in 3 seconds. This should be enough time for the
+	 * thread to exit if it's not blocking. If everything is OK, than
+	 * the thread was woken up and the test will end before the SIGALRM */
+	alarm(3);
+	pthread_join(thread, NULL);
+
+	wl_proxy_destroy((struct wl_proxy *) c->tc);
+	wl_display_disconnect(c->wl_display);
+}
+
+TEST(threading_errors_tst)
+{
+	struct display *d = display_create();
+
+	client_create(d, threading_post_err);
+	display_run(d);
 
 	display_destroy(d);
 }
