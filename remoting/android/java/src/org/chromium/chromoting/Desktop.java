@@ -112,6 +112,7 @@ public class Desktop extends Activity implements View.OnSystemUiVisibilityChange
         decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
     }
 
+    @SuppressLint("InlinedApi")
     public void hideActionBar() {
         mOverlayButton.setVisibility(View.VISIBLE);
         getActionBar().hide();
