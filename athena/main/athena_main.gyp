@@ -32,6 +32,7 @@
         '../../ui/app_list/app_list.gyp:app_list',
         '../../ui/chromeos/ui_chromeos.gyp:ui_chromeos',
         '../../ui/keyboard/keyboard.gyp:keyboard',
+        '../../ui/native_theme/native_theme.gyp:native_theme',
         '../../ui/views/views.gyp:views',
         '../../url/url.gyp:url_lib',
       ],

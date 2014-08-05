@@ -29,6 +29,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
+#include "ui/native_theme/native_theme_switches.h"
 #include "ui/wm/core/visibility_controller.h"
 
 namespace {
@@ -85,6 +86,7 @@ class AthenaBrowserMainDelegate : public extensions::ShellBrowserMainDelegate {
 
     // Force showing in the experimental app-list view.
     command_line->AppendSwitch(app_list::switches::kEnableExperimentalAppList);
+    command_line->AppendSwitch(switches::kEnableOverlayScrollbar);
 
     base::FilePath app_dir = base::FilePath::FromUTF8Unsafe(
         command_line->HasSwitch(extensions::switches::kAppShellAppPath)

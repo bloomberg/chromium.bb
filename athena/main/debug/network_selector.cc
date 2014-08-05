@@ -33,6 +33,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -376,6 +377,7 @@ class NetworkSelector : public ui::NetworkListDelegate,
     scroller_->SetContents(scroll_content_);
 
     scroller_->ClipHeightTo(kListHeight, kListHeight);
+    scroller_->SetVerticalScrollBar(new views::OverlayScrollBar(false));
     background_view_->AddChildView(scroller_);
 
     background_view_->Layout();
