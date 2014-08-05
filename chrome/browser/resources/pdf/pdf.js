@@ -164,28 +164,41 @@ PDFViewer.prototype = {
     // Certain scroll events may be sent from outside of the extension.
     var fromScriptingAPI = e.type == 'scriptingKeypress';
 
+    var pageUpHandler = function() {
+      // Go to the previous page if we are fit-to-page.
+      if (this.viewport_.fittingType == Viewport.FittingType.FIT_TO_PAGE) {
+        this.viewport_.goToPage(this.viewport_.getMostVisiblePage() - 1);
+        // Since we do the movement of the page.
+        e.preventDefault();
+      } else if (fromScriptingAPI) {
+        position.y -= this.viewport.size.height;
+        this.viewport.position = position;
+      }
+    };
+    var pageDownHandler = function() {
+      // Go to the next page if we are fit-to-page.
+      if (this.viewport_.fittingType == Viewport.FittingType.FIT_TO_PAGE) {
+        this.viewport_.goToPage(this.viewport_.getMostVisiblePage() + 1);
+        // Since we do the movement of the page.
+        e.preventDefault();
+      } else if (fromScriptingAPI) {
+        position.y += this.viewport.size.height;
+        this.viewport.position = position;
+      }
+    };
+
     switch (e.keyCode) {
+      case 32:  // Space key.
+        if (e.shiftKey)
+          pageUpHandler();
+        else
+          pageDownHandler();
+        return;
       case 33:  // Page up key.
-        // Go to the previous page if we are fit-to-page.
-        if (this.viewport_.fittingType == Viewport.FittingType.FIT_TO_PAGE) {
-          this.viewport_.goToPage(this.viewport_.getMostVisiblePage() - 1);
-          // Since we do the movement of the page.
-          e.preventDefault();
-        } else if (fromScriptingAPI) {
-          position.y -= this.viewport.size.height;
-          this.viewport.position = position;
-        }
+        pageUpHandler();
         return;
       case 34:  // Page down key.
-        // Go to the next page if we are fit-to-page.
-        if (this.viewport_.fittingType == Viewport.FittingType.FIT_TO_PAGE) {
-          this.viewport_.goToPage(this.viewport_.getMostVisiblePage() + 1);
-          // Since we do the movement of the page.
-          e.preventDefault();
-        } else if (fromScriptingAPI) {
-          position.y += this.viewport.size.height;
-          this.viewport.position = position;
-        }
+        pageDownHandler();
         return;
       case 37:  // Left arrow key.
         // Go to the previous page if there are no horizontal scrollbars.

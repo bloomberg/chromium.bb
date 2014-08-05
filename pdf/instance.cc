@@ -497,20 +497,20 @@ bool Instance::HandleInputEvent(const pp::InputEvent& event) {
   // Left/Right arrows should scroll to the beginning of the Prev/Next page if
   // there is no horizontal scroll bar.
   // If fit-to-height, PgDown/PgUp should scroll to the beginning of the
-  // Prev/Next page.
+  // Prev/Next page. Spacebar / shift+spacebar should do the same.
   if (v_scrollbar_.get() && event.GetType() == PP_INPUTEVENT_TYPE_KEYDOWN) {
     pp::KeyboardInputEvent keyboard_event(event);
-    bool page_down =
-        (!h_scrollbar_.get() &&
-            keyboard_event.GetKeyCode() == ui::VKEY_RIGHT) ||
-        (zoom_mode_ == ZOOM_FIT_TO_PAGE &&
-            keyboard_event.GetKeyCode() == ui::VKEY_NEXT);
-    bool page_up =
-        (!h_scrollbar_.get() &&
-            keyboard_event.GetKeyCode() == ui::VKEY_LEFT) ||
-        (zoom_mode_ == ZOOM_FIT_TO_PAGE &&
-            keyboard_event.GetKeyCode() == ui::VKEY_PRIOR);
-
+    bool no_h_scrollbar = !h_scrollbar_.get();
+    uint32_t key_code = keyboard_event.GetKeyCode();
+    bool page_down = no_h_scrollbar && key_code == ui::VKEY_RIGHT;
+    bool page_up = no_h_scrollbar && key_code == ui::VKEY_LEFT;
+    if (zoom_mode_ == ZOOM_FIT_TO_PAGE) {
+      bool has_shift =
+          keyboard_event.GetModifiers() & PP_INPUTEVENT_MODIFIER_SHIFTKEY;
+      bool key_is_space = key_code == ui::VKEY_SPACE;
+      page_down |= key_is_space || key_code == ui::VKEY_NEXT;
+      page_up |= (key_is_space && has_shift) || (key_code == ui::VKEY_PRIOR);
+    }
     if (page_down) {
       int page = engine_->GetFirstVisiblePage();
       // Engine calculates visible page including delimiter to the page size.
