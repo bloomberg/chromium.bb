@@ -406,6 +406,7 @@ TEST_F(PictureLayerImplTest, ExternalViewportRectForPrioritizingTiles) {
 
 TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   base::TimeTicks time_ticks;
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentFrameTimeTicks(time_ticks);
 
   gfx::Size tile_size(100, 100);
@@ -494,6 +495,7 @@ TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
 
 TEST_F(PictureLayerImplTest, InvalidViewportAfterReleaseResources) {
   base::TimeTicks time_ticks;
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentFrameTimeTicks(time_ticks);
 
   gfx::Size tile_size(100, 100);
@@ -2674,6 +2676,7 @@ TEST_F(NoLowResPictureLayerImplTest, NothingRequiredIfActiveMissingTiles) {
 
 TEST_F(NoLowResPictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   base::TimeTicks time_ticks;
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentFrameTimeTicks(time_ticks);
 
   gfx::Size tile_size(100, 100);
@@ -2762,6 +2765,7 @@ TEST_F(NoLowResPictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
 
 TEST_F(NoLowResPictureLayerImplTest, InvalidViewportAfterReleaseResources) {
   base::TimeTicks time_ticks;
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentFrameTimeTicks(time_ticks);
 
   gfx::Size tile_size(100, 100);
