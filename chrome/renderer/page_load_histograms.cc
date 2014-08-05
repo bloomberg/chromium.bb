@@ -177,8 +177,7 @@ bool DataReductionProxyWasUsed(WebFrame* frame) {
   std::replace(headers.begin(), headers.end(), '\n', '\0');
   scoped_refptr<net::HttpResponseHeaders> response_headers(
       new net::HttpResponseHeaders(headers));
-  return data_reduction_proxy::HasDataReductionProxyViaHeader(
-      response_headers, NULL);
+  return data_reduction_proxy::HasDataReductionProxyViaHeader(response_headers);
 }
 
 // Returns true if the provided URL is a referrer string that came from

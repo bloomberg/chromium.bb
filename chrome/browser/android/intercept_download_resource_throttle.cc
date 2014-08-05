@@ -62,7 +62,7 @@ void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
     if (headers.HasHeader(net::HttpRequestHeaders::kAuthorization) ||
         !(request_->response_info().headers &&
             data_reduction_proxy::HasDataReductionProxyViaHeader(
-                request_->response_info().headers, NULL))) {
+                request_->response_info().headers))) {
       return;
     }
 #else
