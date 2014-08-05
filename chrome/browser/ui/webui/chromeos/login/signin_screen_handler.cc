@@ -877,6 +877,14 @@ void SigninScreenHandler::ShowSigninScreenForCreds(
   gaia_screen_handler_->ShowSigninScreenForCreds(username, password);
 }
 
+void SigninScreenHandler::SetPublicSessionDisplayName(
+      const std::string& user_id,
+      const std::string& display_name) {
+  CallJS("login.AccountPickerScreen.setPublicSessionDisplayName",
+         user_id,
+         display_name);
+}
+
 void SigninScreenHandler::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {

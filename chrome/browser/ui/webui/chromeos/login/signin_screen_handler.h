@@ -92,6 +92,8 @@ class LoginDisplayWebUIHandler {
                                         const std::string& password) = 0;
   virtual void LoadUsers(const base::ListValue& users_list,
                          bool show_guest) = 0;
+  virtual void SetPublicSessionDisplayName(const std::string& user_id,
+                                           const std::string& display_name) = 0;
 
  protected:
   virtual ~LoginDisplayWebUIHandler() {}
@@ -291,6 +293,9 @@ class SigninScreenHandler
                                         const std::string& password) OVERRIDE;
   virtual void LoadUsers(const base::ListValue& users_list,
                          bool show_guest) OVERRIDE;
+  virtual void SetPublicSessionDisplayName(
+      const std::string& user_id,
+      const std::string& display_name) OVERRIDE;
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,

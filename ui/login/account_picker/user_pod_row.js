@@ -1154,6 +1154,15 @@ cr.define('login', function() {
     },
 
     /**
+     * Updates the display name shown on the pod.
+     * @param {string} displayName The new display name
+     */
+    setDisplayName: function(displayName) {
+      this.user_.displayName = displayName;
+      this.update();
+    },
+
+    /**
      * Handle mouse and keyboard events for the learn more button. Triggering
      * the button causes information about public sessions to be shown.
      * @param {Event} event Mouse or keyboard event.
@@ -1823,6 +1832,17 @@ cr.define('login', function() {
                                         bubbleContent,
                                         BUBBLE_OFFSET,
                                         BUBBLE_PADDING);
+    },
+
+    /**
+     * Updates the display name shown on a public session pod.
+     * @param {string} userID The user ID of the public session
+     * @param {string} displayName The new display name
+     */
+    setPublicSessionDisplayName: function(userID, displayName) {
+      var pod = this.getPodWithUsername_(userID);
+      if (pod != null)
+        pod.setDisplayName(displayName);
     },
 
     /**

@@ -578,6 +578,8 @@
         'browser/chromeos/login/saml/saml_offline_signin_limiter_factory.h',
         'browser/chromeos/login/screens/base_screen.cc',
         'browser/chromeos/login/screens/base_screen.h',
+        'browser/chromeos/login/screens/chrome_user_selection_screen.cc',
+        'browser/chromeos/login/screens/chrome_user_selection_screen.h',
         'browser/chromeos/login/screens/controller_pairing_screen_actor.cc',
         'browser/chromeos/login/screens/controller_pairing_screen_actor.h',
         'browser/chromeos/login/screens/controller_pairing_screen.cc',

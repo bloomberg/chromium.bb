@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -33,14 +32,14 @@ class UserSelectionScreen : public wm::UserActivityObserver {
 
   void SetHandler(LoginDisplayWebUIHandler* handler);
 
-  void Init(const user_manager::UserList& users, bool show_guest);
+  virtual void Init(const user_manager::UserList& users, bool show_guest);
   const user_manager::UserList& GetUsers() const;
   void OnUserImageChanged(const user_manager::User& user);
   void OnBeforeUserRemoved(const std::string& username);
   void OnUserRemoved(const std::string& username);
 
   void OnPasswordClearTimerExpired();
-  void SendUserList();
+  virtual void SendUserList();
   void HandleGetUsers();
   void SetAuthType(const std::string& username,
                    ScreenlockBridge::LockHandler::AuthType auth_type);
@@ -61,12 +60,13 @@ class UserSelectionScreen : public wm::UserActivityObserver {
   // Determines if user auth status requires online sign in.
   static bool ShouldForceOnlineSignIn(const user_manager::User* user);
 
- private:
+ protected:
   LoginDisplayWebUIHandler* handler_;
 
   // Set of Users that are visible.
   user_manager::UserList users_;
 
+ private:
   // Whether to show guest login.
   bool show_guest_;
 

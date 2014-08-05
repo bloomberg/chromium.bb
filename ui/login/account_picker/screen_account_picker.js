@@ -30,6 +30,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       'hideUserPodCustomIcon',
       'setAuthType',
       'showEasyUnlockBubble',
+      'setPublicSessionDisplayName',
       'setPublicSessionKeyboardLayouts',
     ],
 
@@ -301,6 +302,15 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      */
     showEasyUnlockBubble: function() {
       $('pod-row').showEasyUnlockBubble();
+    },
+
+    /**
+     * Updates the display name shown on a public session pod.
+     * @param {string} userID The user ID of the public session
+     * @param {string} displayName The new display name
+     */
+    setPublicSessionDisplayName: function(userID, displayName) {
+      $('pod-row').setPublicSessionDisplayName(userID, displayName);
     },
 
     /**

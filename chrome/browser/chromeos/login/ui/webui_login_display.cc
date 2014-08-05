@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
@@ -43,7 +44,7 @@ WebUILoginDisplay::WebUILoginDisplay(LoginDisplay::Delegate* delegate)
       show_new_user_(false),
       webui_handler_(NULL),
       gaia_screen_(new GaiaScreen()),
-      user_selection_screen_(new UserSelectionScreen()) {
+      user_selection_screen_(new ChromeUserSelectionScreen()) {
 }
 
 void WebUILoginDisplay::ClearAndEnablePassword() {

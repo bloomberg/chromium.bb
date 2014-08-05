@@ -417,7 +417,6 @@ void ChromeUserManager::OnPolicyUpdated(const std::string& user_id) {
   if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT)
     return;
   UpdatePublicAccountDisplayName(user_id);
-  NotifyUserListChanged();
 }
 
 void ChromeUserManager::OnDeviceLocalAccountsChanged() {

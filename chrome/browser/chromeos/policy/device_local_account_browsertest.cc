@@ -20,11 +20,13 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -142,7 +144,8 @@ namespace {
 const char kDomain[] = "example.com";
 const char kAccountId1[] = "dla1@example.com";
 const char kAccountId2[] = "dla2@example.com";
-const char kDisplayName[] = "display name";
+const char kDisplayName1[] = "display name 1";
+const char kDisplayName2[] = "display name 2";
 const char* kStartupURLs[] = {
   "chrome://policy",
   "chrome://about",
@@ -209,6 +212,30 @@ class TestingUpdateManifestProvider {
   DISALLOW_COPY_AND_ASSIGN(TestingUpdateManifestProvider);
 };
 
+// Helper that observes the dictionary |pref| in local state and waits until the
+// value stored for |key| matches |expected_value|.
+class DictionaryPrefValueWaiter {
+ public:
+  DictionaryPrefValueWaiter(const std::string& pref,
+                            const std::string& key,
+                            const std::string& expected_value);
+  ~DictionaryPrefValueWaiter();
+
+  void Wait();
+
+ private:
+  void QuitLoopIfExpectedValueFound();
+
+  const std::string pref_;
+  const std::string key_;
+  const std::string expected_value_;
+
+  base::RunLoop run_loop_;
+  PrefChangeRegistrar pref_change_registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(DictionaryPrefValueWaiter);
+};
+
 TestingUpdateManifestProvider::Update::Update(const std::string& version,
                                               const GURL& crx_url)
     : version(version),
@@ -265,6 +292,39 @@ scoped_ptr<net::test_server::HttpResponse>
   return http_response.PassAs<net::test_server::HttpResponse>();
 }
 
+DictionaryPrefValueWaiter::DictionaryPrefValueWaiter(
+    const std::string& pref,
+    const std::string& key,
+    const std::string& expected_value)
+    : pref_(pref),
+      key_(key),
+      expected_value_(expected_value) {
+  pref_change_registrar_.Init(g_browser_process->local_state());
+}
+
+DictionaryPrefValueWaiter::~DictionaryPrefValueWaiter() {
+}
+
+void DictionaryPrefValueWaiter::Wait() {
+  pref_change_registrar_.Add(
+      pref_.c_str(),
+      base::Bind(&DictionaryPrefValueWaiter::QuitLoopIfExpectedValueFound,
+                 base::Unretained(this)));
+  QuitLoopIfExpectedValueFound();
+  run_loop_.Run();
+}
+
+void DictionaryPrefValueWaiter::QuitLoopIfExpectedValueFound() {
+  const base::DictionaryValue* pref =
+      pref_change_registrar_.prefs()->GetDictionary(pref_.c_str());
+  ASSERT_TRUE(pref);
+  std::string actual_value;
+  if (pref->GetStringWithoutPathExpansion(key_, &actual_value) &&
+      actual_value == expected_value_) {
+    run_loop_.Quit();
+  }
+}
+
 bool DoesInstallSuccessReferToId(const std::string& id,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
@@ -290,16 +350,6 @@ scoped_ptr<net::FakeURLFetcher> RunCallbackAndReturnFakeURLFetcher(
   task_runner->PostTask(FROM_HERE, callback);
   return make_scoped_ptr(new net::FakeURLFetcher(
       url, delegate, response_data, response_code, status));
-}
-
-bool DisplayNameMatches(const std::string& account_id,
-                        const std::string& display_name) {
-  const user_manager::User* user =
-      chromeos::UserManager::Get()->FindUser(account_id);
-  if (!user || user->display_name().empty())
-    return false;
-  EXPECT_EQ(base::UTF8ToUTF16(display_name), user->display_name());
-  return true;
 }
 
 bool IsSessionStarted() {
@@ -409,7 +459,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
         kAccountId1);
     device_local_account_policy_.policy_data().set_public_key_version(1);
     device_local_account_policy_.payload().mutable_userdisplayname()->set_value(
-        kDisplayName);
+        kDisplayName1);
   }
 
   void BuildDeviceLocalAccountPolicy() {
@@ -473,13 +523,18 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     return ProfileManager::GetActiveUserProfile();
   }
 
+  void WaitForDisplayName(const std::string& user_id,
+                          const std::string& expected_display_name) {
+    DictionaryPrefValueWaiter("UserDisplayName",
+                              user_id,
+                              expected_display_name).Wait();
+  }
+
   void WaitForPolicy() {
-    // This observes the display name becoming available as this indicates
+    // Wait for the display name becoming available as that indicates
     // device-local account policy is fully loaded, which is a prerequisite for
     // successful login.
-    content::WindowedNotificationObserver(
-        chrome::NOTIFICATION_USER_LIST_CHANGED,
-        base::Bind(&DisplayNameMatches, user_id_1_, kDisplayName)).Wait();
+    WaitForDisplayName(user_id_1_, kDisplayName1);
   }
 
   void GetWebContents(content::WebContents** contents) {
@@ -579,9 +634,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LoginScreen) {
   content::WindowedNotificationObserver(chrome::NOTIFICATION_USER_LIST_CHANGED,
                                         base::Bind(&IsKnownUser, user_id_1_))
       .Wait();
-  content::WindowedNotificationObserver(chrome::NOTIFICATION_USER_LIST_CHANGED,
-                                        base::Bind(&IsKnownUser, user_id_2_))
-      .Wait();
+  EXPECT_TRUE(IsKnownUser(user_id_2_));
 
   CheckPublicSessionPresent(user_id_1_);
   CheckPublicSessionPresent(user_id_2_);
@@ -592,6 +645,87 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DisplayName) {
   AddPublicSessionToDevicePolicy(kAccountId1);
 
   WaitForPolicy();
+
+  // Skip to the login screen.
+  chromeos::WizardController* wizard_controller =
+      chromeos::WizardController::default_controller();
+  ASSERT_TRUE(wizard_controller);
+  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+      content::NotificationService::AllSources()).Wait();
+
+  // Verify that the display name is shown in the UI.
+  content::WebContents* contents = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetWebContents(&contents));
+  const std::string get_compact_pod_display_name = base::StringPrintf(
+      "domAutomationController.send(document.getElementById('pod-row')"
+      "    .getPodWithUsername_('%s').nameElement.textContent);",
+      user_id_1_.c_str());
+  std::string display_name;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      contents,
+      get_compact_pod_display_name,
+      &display_name));
+  EXPECT_EQ(kDisplayName1, display_name);
+  const std::string get_expanded_pod_display_name = base::StringPrintf(
+      "domAutomationController.send(document.getElementById('pod-row')"
+      "    .getPodWithUsername_('%s').querySelector('.expanded-pane-name')"
+      "        .textContent);",
+      user_id_1_.c_str());
+  display_name.clear();
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      contents,
+      get_expanded_pod_display_name,
+      &display_name));
+  EXPECT_EQ(kDisplayName1, display_name);
+
+  // Click on the pod to expand it.
+  ASSERT_TRUE(content::ExecuteScript(
+      contents,
+      base::StringPrintf(
+          "document.getElementById('pod-row').getPodWithUsername_('%s')"
+          "    .click();",
+      user_id_1_.c_str())));
+
+  // Change the display name.
+  device_local_account_policy_.payload().mutable_userdisplayname()->set_value(
+      kDisplayName2);
+  UploadAndInstallDeviceLocalAccountPolicy();
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  DeviceLocalAccountPolicyBroker* broker =
+      connector->GetDeviceLocalAccountPolicyService()->GetBrokerForUser(
+          user_id_1_);
+  ASSERT_TRUE(broker);
+  broker->core()->store()->Load();
+  WaitForDisplayName(user_id_1_, kDisplayName2);
+
+  // Verify that the new display name is shown in the UI.
+  display_name.clear();
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      contents,
+      get_compact_pod_display_name,
+      &display_name));
+  EXPECT_EQ(kDisplayName2, display_name);
+  display_name.clear();
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      contents,
+      get_expanded_pod_display_name,
+      &display_name));
+  EXPECT_EQ(kDisplayName2, display_name);
+
+  // Verify that the pod is still expanded. This indicates that the UI updated
+  // without reloading and losing state.
+  bool expanded = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents,
+      base::StringPrintf(
+          "domAutomationController.send(document.getElementById('pod-row')"
+          "    .getPodWithUsername_('%s').expanded);",
+          user_id_1_.c_str()),
+      &expanded));
+  EXPECT_TRUE(expanded);
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyDownload) {
@@ -609,17 +743,14 @@ static bool IsNotKnownUser(const std::string& account_id) {
   return !IsKnownUser(account_id);
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DevicePolicyChange) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, AccountListChange) {
   AddPublicSessionToDevicePolicy(kAccountId1);
   AddPublicSessionToDevicePolicy(kAccountId2);
 
-  // Wait until the login screen is up.
   content::WindowedNotificationObserver(chrome::NOTIFICATION_USER_LIST_CHANGED,
                                         base::Bind(&IsKnownUser, user_id_1_))
       .Wait();
-  content::WindowedNotificationObserver(chrome::NOTIFICATION_USER_LIST_CHANGED,
-                                        base::Bind(&IsKnownUser, user_id_2_))
-      .Wait();
+  EXPECT_TRUE(IsKnownUser(user_id_2_));
 
   // Update policy to remove kAccountId2.
   em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
@@ -639,9 +770,9 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DevicePolicyChange) {
   g_browser_process->policy_service()->RefreshPolicies(base::Closure());
 
   // Make sure the second device-local account disappears.
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_USER_LIST_CHANGED,
-      base::Bind(&IsNotKnownUser, user_id_2_)).Wait();
+  content::WindowedNotificationObserver(chrome::NOTIFICATION_USER_LIST_CHANGED,
+                                        base::Bind(&IsNotKnownUser, user_id_2_))
+      .Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
