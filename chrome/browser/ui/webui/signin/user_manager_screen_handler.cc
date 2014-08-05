@@ -120,7 +120,9 @@ size_t GetIndexOfProfileWithEmailAndName(const ProfileInfoCache& info_cache,
                                          const base::string16& name) {
   for (size_t i = 0; i < info_cache.GetNumberOfProfiles(); ++i) {
     if (info_cache.GetUserNameOfProfileAtIndex(i) == email &&
-        (name.empty() || info_cache.GetNameOfProfileAtIndex(i) == name)) {
+        (name.empty() ||
+         profiles::GetAvatarNameForProfile(
+             info_cache.GetPathOfProfileAtIndex(i)) == name)) {
       return i;
     }
   }
