@@ -23,6 +23,8 @@ def SmokeTestGenerator(benchmark):
   # fail, instead of this entire smoke test suite.
   # TODO(achuith): Multiple tests failing on CrOS. crbug.com/351114
   @benchmark_module.Disabled('chromeos')
+  # Flaky, http://crbug.com/400747 .
+  @benchmark_module.Disabled('mac')
   def BenchmarkSmokeTest(self):
     # Only measure a single page so that this test cycles reasonably quickly.
     benchmark.options['pageset_repeat'] = 1
