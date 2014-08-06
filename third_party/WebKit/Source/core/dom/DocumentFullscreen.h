@@ -36,7 +36,6 @@ public:
     static bool webkitIsFullScreen(Document&);
     static bool webkitFullScreenKeyboardInputAllowed(Document&);
     static Element* webkitCurrentFullScreenElement(Document&);
-    static void webkitCancelFullScreen(Document&);
 
     static bool webkitFullscreenEnabled(Document&);
     static Element* webkitFullscreenElement(Document&);

@@ -24,7 +24,7 @@ partial interface Document {
     [MeasureAs=PrefixedDocumentIsFullscreen] readonly attribute boolean webkitIsFullScreen;
     [MeasureAs=PrefixedDocumentFullScreenKeyboardInputAllowed] readonly attribute boolean webkitFullScreenKeyboardInputAllowed;
     [MeasureAs=PrefixedDocumentCurrentFullScreenElement] readonly attribute Element webkitCurrentFullScreenElement;
-    [MeasureAs=PrefixedDocumentCancelFullScreen] void webkitCancelFullScreen();
+    [MeasureAs=PrefixedDocumentCancelFullScreen, ImplementedAs=webkitExitFullscreen] void webkitCancelFullScreen();
 
     // W3C version
     [MeasureAs=PrefixedDocumentFullscreenEnabled] readonly attribute boolean webkitFullscreenEnabled;

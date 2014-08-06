@@ -51,11 +51,6 @@ Element* DocumentFullscreen::webkitCurrentFullScreenElement(Document& document)
     return 0;
 }
 
-void DocumentFullscreen::webkitCancelFullScreen(Document& document)
-{
-    FullscreenElementStack::from(document).fullyExitFullscreen();
-}
-
 bool DocumentFullscreen::webkitFullscreenEnabled(Document& document)
 {
     return FullscreenElementStack::fullscreenEnabled(document);

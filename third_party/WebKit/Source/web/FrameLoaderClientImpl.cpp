@@ -35,7 +35,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
-#include "core/dom/DocumentFullscreen.h"
+#include "core/dom/FullscreenElementStack.h"
 #include "core/events/MessageEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/FrameView.h"
@@ -523,7 +523,7 @@ void FrameLoaderClientImpl::loadURLExternally(const ResourceRequest& request, Na
 {
     if (m_webFrame->client()) {
         ASSERT(m_webFrame->frame()->document());
-        DocumentFullscreen::webkitCancelFullScreen(*m_webFrame->frame()->document());
+        FullscreenElementStack::from(*m_webFrame->frame()->document()).fullyExitFullscreen();
         WrappedResourceRequest webreq(request);
         m_webFrame->client()->loadURLExternally(
             m_webFrame, webreq, static_cast<WebNavigationPolicy>(policy), suggestedName);
