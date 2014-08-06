@@ -383,6 +383,9 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
         ASSERT(!layer->hasCompositedLayerMapping());
         setCompositingModeEnabled(true);
 
+        // If we need to repaint, do so before allocating the compositedLayerMapping and clearing out the groupedMapping.
+        repaintOnCompositingChange(layer);
+
         // If this layer was previously squashed, we need to remove its reference to a groupedMapping right away, so
         // that computing repaint rects will know the layer's correct compositingState.
         // FIXME: do we need to also remove the layer from it's location in the squashing list of its groupedMapping?
@@ -391,8 +394,6 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
         layer->setLostGroupedMapping(false);
         layer->setGroupedMapping(0);
 
-        // If we need to repaint, do so before allocating the compositedLayerMapping
-        repaintOnCompositingChange(layer);
         layer->ensureCompositedLayerMapping();
         compositedLayerMappingChanged = true;
 
