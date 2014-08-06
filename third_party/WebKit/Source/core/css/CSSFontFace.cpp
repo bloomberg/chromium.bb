@@ -160,7 +160,10 @@ void CSSFontFace::load(const FontDescription& fontDescription)
 void CSSFontFace::setLoadStatus(FontFace::LoadStatus newStatus)
 {
     ASSERT(m_fontFace);
-    m_fontFace->setLoadStatus(newStatus);
+    if (newStatus == FontFace::Error)
+        m_fontFace->setError();
+    else
+        m_fontFace->setLoadStatus(newStatus);
 
     if (!m_segmentedFontFace)
         return;

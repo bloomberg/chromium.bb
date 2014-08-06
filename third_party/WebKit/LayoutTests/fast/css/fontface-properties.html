@@ -72,7 +72,6 @@ function runTests() {
     shouldBeEqualToString('modifiedFace.featureSettings', "'dlig' 1, 'liga' 0");
 
     debug('');
-    shouldThrow("new FontFace('test', 'invalid_src')");
     face = new FontFace('test', 'local(foo)');
     shouldThrow("face.style = ''");
     shouldThrow("face.weight = 'a'");

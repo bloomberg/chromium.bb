@@ -451,7 +451,7 @@ ScriptPromise FontFaceSet::load(ScriptState* scriptState, const String& fontStri
     if (!resolveFontStyle(fontString, font)) {
         RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
         ScriptPromise promise = resolver->promise();
-        resolver->reject(DOMError::create(SyntaxError, "Could not resolve '" + fontString + "' as a font."));
+        resolver->reject(DOMException::create(SyntaxError, "Could not resolve '" + fontString + "' as a font."));
         return promise;
     }
 

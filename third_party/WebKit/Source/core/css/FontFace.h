@@ -35,7 +35,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSValue.h"
-#include "core/dom/DOMError.h"
+#include "core/dom/DOMException.h"
 #include "platform/fonts/FontTraits.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -56,9 +56,9 @@ class FontFace : public RefCountedWillBeGarbageCollectedFinalized<FontFace>, pub
 public:
     enum LoadStatus { Unloaded, Loading, Loaded, Error };
 
-    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<ArrayBuffer> source, const Dictionary&, ExceptionState&);
-    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<ArrayBufferView>, const Dictionary&, ExceptionState&);
-    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, const String& source, const Dictionary&, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<ArrayBuffer> source, const Dictionary&);
+    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<ArrayBufferView>, const Dictionary&);
+    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, const String& source, const Dictionary&);
     static PassRefPtrWillBeRawPtr<FontFace> create(Document*, const StyleRuleFontFace*);
 
     ~FontFace();
@@ -87,7 +87,8 @@ public:
 
     LoadStatus loadStatus() const { return m_status; }
     void setLoadStatus(LoadStatus);
-    DOMError* error() const { return m_error.get(); }
+    void setError(PassRefPtrWillBeRawPtr<DOMException> = nullptr);
+    DOMException* error() const { return m_error.get(); }
     FontTraits traits() const;
     CSSFontFace* cssFontFace() { return m_cssFontFace.get(); }
 
@@ -106,10 +107,11 @@ public:
 
 private:
     FontFace();
+    FontFace(ExecutionContext*, const AtomicString& family, const Dictionary& descriptors);
 
     void initCSSFontFace(Document*, PassRefPtrWillBeRawPtr<CSSValue> src);
     void initCSSFontFace(const unsigned char* data, unsigned size);
-    void setPropertyFromString(const Document*, const String&, CSSPropertyID, ExceptionState&);
+    void setPropertyFromString(const Document*, const String&, CSSPropertyID, ExceptionState* = 0);
     bool setPropertyFromStyle(const StylePropertySet&, CSSPropertyID);
     bool setPropertyValue(PassRefPtrWillBeRawPtr<CSSValue>, CSSPropertyID);
     bool setFamilyValue(CSSValueList*);
@@ -126,7 +128,7 @@ private:
     RefPtrWillBeMember<CSSValue> m_variant;
     RefPtrWillBeMember<CSSValue> m_featureSettings;
     LoadStatus m_status;
-    RefPtrWillBeMember<DOMError> m_error;
+    RefPtrWillBeMember<DOMException> m_error;
 
     Vector<OwnPtr<FontFaceReadyPromiseResolver> > m_readyResolvers;
     OwnPtrWillBeMember<CSSFontFace> m_cssFontFace;
