@@ -140,6 +140,110 @@ std::string GenerateDemotedDirtyIDKey(int64 tracker_id) {
   return kDemotedDirtyIDKeyPrefix + base::Int64ToString(tracker_id);
 }
 
+void RemoveUnreachableItems(LevelDBWrapper* db) {
+  DCHECK(db);
+
+  typedef std::map<int64, std::set<int64> > ChildTrackersByParent;
+  ChildTrackersByParent trackers_by_parent;
+  {
+    // Set up links from parent tracker to child trackers.
+    std::set<int64> inactive_trackers;
+    scoped_ptr<LevelDBWrapper::Iterator> itr = db->NewIterator();
+    for (itr->Seek(kFileTrackerKeyPrefix); itr->Valid(); itr->Next()) {
+      if (!RemovePrefix(itr->key().ToString(), kFileTrackerKeyPrefix, NULL))
+        break;
+
+      scoped_ptr<FileTracker> tracker(new FileTracker);
+      if (!tracker->ParseFromString(itr->value().ToString())) {
+        util::Log(logging::LOG_WARNING, FROM_HERE,
+                  "Failed to parse a Tracker");
+        continue;
+      }
+
+      int64 parent_tracker_id = tracker->parent_tracker_id();
+      int64 tracker_id = tracker->tracker_id();
+      trackers_by_parent[parent_tracker_id].insert(tracker_id);
+      if (!tracker->active())
+        inactive_trackers.insert(tracker_id);
+    }
+
+    // Drop links from inactive trackers.
+    for (std::set<int64>::iterator iter = inactive_trackers.begin();
+         iter != inactive_trackers.end(); ++iter) {
+      trackers_by_parent.erase(*iter);
+    }
+  }
+
+  // Traverse tracker tree from sync-root.
+  std::set<int64> visited_trackers;
+  {
+    scoped_ptr<ServiceMetadata> service_metadata =
+        InitializeServiceMetadata(db);
+    int64 sync_root_tracker_id = service_metadata->sync_root_tracker_id();
+    std::vector<int64> pending;
+    if (sync_root_tracker_id != kInvalidTrackerID)
+      pending.push_back(sync_root_tracker_id);
+
+    while (!pending.empty()) {
+      int64 tracker_id = pending.back();
+      DCHECK_NE(kInvalidTrackerID, tracker_id);
+      pending.pop_back();
+
+      if (!visited_trackers.insert(tracker_id).second) {
+        NOTREACHED();
+        continue;
+      }
+
+      AppendContents(
+          LookUpMap(trackers_by_parent, tracker_id, std::set<int64>()),
+          &pending);
+    }
+  }
+
+  // Delete all unreachable trackers, and list all |file_id| referred by
+  // remained trackers.
+  base::hash_set<std::string> referred_file_ids;
+  {
+    scoped_ptr<LevelDBWrapper::Iterator> itr = db->NewIterator();
+    for (itr->Seek(kFileTrackerKeyPrefix); itr->Valid(); itr->Next()) {
+      if (!RemovePrefix(itr->key().ToString(), kFileTrackerKeyPrefix, NULL))
+        break;
+
+      scoped_ptr<FileTracker> tracker(new FileTracker);
+      if (!tracker->ParseFromString(itr->value().ToString())) {
+        util::Log(logging::LOG_WARNING, FROM_HERE,
+                  "Failed to parse a Tracker");
+        continue;
+      }
+
+      if (ContainsKey(visited_trackers, tracker->tracker_id())) {
+        referred_file_ids.insert(tracker->file_id());
+      } else {
+        PutFileTrackerDeletionToDB(tracker->tracker_id(), db);
+      }
+    }
+  }
+
+  // Delete all unreferred metadata.
+  {
+    scoped_ptr<LevelDBWrapper::Iterator> itr = db->NewIterator();
+    for (itr->Seek(kFileMetadataKeyPrefix); itr->Valid(); itr->Next()) {
+      if (!RemovePrefix(itr->key().ToString(), kFileMetadataKeyPrefix, NULL))
+        break;
+
+      scoped_ptr<FileMetadata> metadata(new FileMetadata);
+      if (!metadata->ParseFromString(itr->value().ToString())) {
+        util::Log(logging::LOG_WARNING, FROM_HERE,
+                  "Failed to parse a Tracker");
+        continue;
+      }
+
+      if (!ContainsKey(referred_file_ids, metadata->file_id()))
+        PutFileMetadataDeletionToDB(metadata->file_id(), db);
+    }
+  }
+}
+
 }  // namespace
 
 // static
@@ -148,6 +252,9 @@ MetadataDatabaseIndexOnDisk::Create(LevelDBWrapper* db) {
   DCHECK(db);
 
   PutVersionToDB(kDatabaseOnDiskVersion, db);
+  // TODO(peria): It is not good to call RemoveUnreachableItems on every
+  // creation.
+  RemoveUnreachableItems(db);
   scoped_ptr<MetadataDatabaseIndexOnDisk>
       index(new MetadataDatabaseIndexOnDisk(db));
   return index.Pass();
@@ -571,6 +678,10 @@ void MetadataDatabaseIndexOnDisk::BuildTrackerIndexes() {
     AddToPathIndexes(tracker);
     AddToDirtyTrackerIndexes(tracker);
   }
+}
+
+LevelDBWrapper* MetadataDatabaseIndexOnDisk::GetDBForTesting() {
+  return db_;
 }
 
 MetadataDatabaseIndexOnDisk::MetadataDatabaseIndexOnDisk(LevelDBWrapper* db)

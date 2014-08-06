@@ -70,6 +70,8 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
   // Builds on-disk indexes from FileTracker entries on disk.
   void BuildTrackerIndexes();
 
+  LevelDBWrapper* GetDBForTesting();
+
  private:
   enum NumEntries {
     NONE,      // No entries are found.
