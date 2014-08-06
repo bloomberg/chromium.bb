@@ -35,7 +35,6 @@ private:
     CompositingReasons nonStyleDeterminedDirectReasons(const RenderLayer*) const;
 
     bool requiresCompositingForTransform(RenderObject*) const;
-    bool requiresCompositingForFilters(RenderObject*) const;
     bool requiresCompositingForAnimation(RenderStyle*) const;
 
     RenderView& m_renderView;

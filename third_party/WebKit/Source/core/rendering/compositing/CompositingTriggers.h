@@ -26,10 +26,9 @@ namespace blink {
 
 enum CompositingTrigger {
     CanvasTrigger = 1 << 1,
-    FilterTrigger = 1 << 2,
-    ScrollableInnerFrameTrigger = 1 << 3,
-    OverflowScrollTrigger = 1 << 4,
-    ViewportConstrainedPositionedTrigger = 1 << 5,
+    ScrollableInnerFrameTrigger = 1 << 2,
+    OverflowScrollTrigger = 1 << 3,
+    ViewportConstrainedPositionedTrigger = 1 << 4,
     AllCompositingTriggers = 0xFFFFFFFF,
 };
 

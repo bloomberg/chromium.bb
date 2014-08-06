@@ -439,11 +439,6 @@ void WebSettingsImpl::setMockScrollbarsEnabled(bool enabled)
     m_settings->setMockScrollbarsEnabled(enabled);
 }
 
-void WebSettingsImpl::setAcceleratedCompositingForFiltersEnabled(bool enabled)
-{
-    m_settings->setAcceleratedCompositingForFiltersEnabled(enabled);
-}
-
 void WebSettingsImpl::setAcceleratedCompositingForOverflowScrollEnabled(bool enabled)
 {
     m_settings->setAcceleratedCompositingForOverflowScrollEnabled(enabled);
