@@ -474,6 +474,44 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetByParentIDAndTitleTest) {
   EXPECT_TRUE(multi_backing.title.empty()) << multi_backing.title;
 }
 
+TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetDetailsTest) {
+  CreateTestDatabase(true, NULL);
+
+  FileTracker app_root;
+  EXPECT_TRUE(index()->GetFileTracker(kAppRootTrackerID, &app_root));
+
+  const int64 kFileTrackerID2 = 123;
+  const int64 kFileTrackerID3 = 124;
+  scoped_ptr<FileMetadata> file_metadata =
+      test_util::CreateFileMetadata("file_id2", "file_2", "file_md5_2");
+  scoped_ptr<FileTracker> file_tracker =
+      test_util::CreateTracker(*file_metadata, kFileTrackerID2, &app_root);
+  file_tracker->set_active(false);
+  scoped_ptr<FileTracker> file_tracker2 =
+      test_util::CreateTracker(*file_metadata, kFileTrackerID3, &app_root);
+  file_tracker2->set_active(false);
+
+  // Add 2 trackers related to one file metadata.
+  index()->StoreFileMetadata(file_metadata.Pass());
+  index()->StoreFileTracker(file_tracker.Pass());
+  index()->StoreFileTracker(file_tracker2.Pass());
+
+  TrackerIDSet idset = index()->GetFileTrackerIDsByFileID("file_id2");
+  EXPECT_EQ(2U, idset.size());
+  EXPECT_FALSE(idset.has_active());
+
+  // Activate one file tracker.
+  file_tracker.reset(new FileTracker);
+  index()->GetFileTracker(kFileTrackerID2, file_tracker.get());
+  file_tracker->set_active(true);
+  index()->StoreFileTracker(file_tracker.Pass());
+
+  idset = index()->GetFileTrackerIDsByFileID("file_id2");
+  EXPECT_EQ(2U, idset.size());
+  EXPECT_TRUE(idset.has_active());
+  EXPECT_EQ(kFileTrackerID2, idset.active_tracker());
+}
+
 TEST_F(MetadataDatabaseIndexOnDiskTest, DirtyTrackersTest) {
   CreateTestDatabase(true, NULL);
 

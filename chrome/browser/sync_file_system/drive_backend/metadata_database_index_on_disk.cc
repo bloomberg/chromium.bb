@@ -1075,8 +1075,9 @@ void MetadataDatabaseIndexOnDisk::ActivateInTrackerIDSetWithPrefix(
 
   std::string value;
   leveldb::Status status = db_->Get(active_tracker_key, &value);
-  int64 active_tracker_id;
-  if (status.ok() && base::StringToInt64(value, &active_tracker_id)) {
+  int64 active_tracker_id = kInvalidTrackerID;
+  if (status.IsNotFound() ||
+      (status.ok() && base::StringToInt64(value, &active_tracker_id))) {
     DCHECK(active_tracker_id != tracker_id);
     db_->Put(active_tracker_key, base::Int64ToString(tracker_id));
   }
