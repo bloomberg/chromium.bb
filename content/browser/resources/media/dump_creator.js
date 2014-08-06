@@ -86,7 +86,9 @@ var DumpCreator = (function() {
                               {type: 'octet/stream'});
       var URL = window.URL.createObjectURL(textBlob);
 
-      this.root_.getElementsByTagName('a')[0].href = URL;
+      var anchor = this.root_.getElementsByTagName('a')[0];
+      anchor.href = URL;
+      anchor.download = 'webrtc_internals_dump.txt';
       // The default action of the anchor will download the URL.
     },
 
