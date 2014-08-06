@@ -398,6 +398,8 @@ gfx::Size PictureLayerTiling::CoverageIterator::texture_size() const {
 
 void PictureLayerTiling::Reset() {
   live_tiles_rect_ = gfx::Rect();
+  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
+    ReleaseTile(it->second.get(), client_->GetTree());
   tiles_.clear();
 }
 

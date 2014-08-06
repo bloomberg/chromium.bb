@@ -166,6 +166,13 @@ class CC_EXPORT PictureLayerTiling {
     return all_tiles;
   }
 
+  std::vector<scoped_refptr<Tile> > AllRefTilesForTesting() const {
+    std::vector<scoped_refptr<Tile> > all_tiles;
+    for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
+      all_tiles.push_back(it->second);
+    return all_tiles;
+  }
+
   const gfx::Rect& GetCurrentVisibleRectForTesting() const {
     return current_visible_rect_;
   }

@@ -1886,5 +1886,39 @@ TEST(UpdateTilePrioritiesTest, RotationMotion) {
   EXPECT_EQ(TilePriority::NOW, priority.priority_bin);
 }
 
+TEST(PictureLayerTilingTest, ResetClearsPriorities) {
+  FakePictureLayerTilingClient client;
+  scoped_ptr<TestablePictureLayerTiling> tiling;
+
+  client.SetTileSize(gfx::Size(100, 100));
+  client.set_tree(ACTIVE_TREE);
+  tiling = TestablePictureLayerTiling::Create(1.0f,  // contents_scale
+                                              gfx::Size(100, 100),
+                                              &client);
+  tiling->UpdateTilePriorities(ACTIVE_TREE,
+                               gfx::Rect(0, 0, 100, 100),
+                               1.0f,
+                               1.0f,
+                               NULL,               // occlusion tracker
+                               NULL,               // render target
+                               gfx::Transform());  // draw transform
+
+  std::vector<scoped_refptr<Tile> > tiles = tiling->AllRefTilesForTesting();
+  ASSERT_GT(tiles.size(), 0u);
+  for (std::vector<scoped_refptr<Tile> >::const_iterator it = tiles.begin();
+       it != tiles.end();
+       ++it) {
+    EXPECT_NE(TilePriority(), (*it)->priority(ACTIVE_TREE));
+  }
+
+  tiling->Reset();
+  for (std::vector<scoped_refptr<Tile> >::const_iterator it = tiles.begin();
+       it != tiles.end();
+       ++it) {
+    EXPECT_EQ(TilePriority(), (*it)->priority(ACTIVE_TREE));
+  }
+  tiles.clear();
+}
+
 }  // namespace
 }  // namespace cc
