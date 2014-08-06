@@ -209,7 +209,7 @@ TEST_F(ServiceWorkerContainerTest, Register_NonSecureOriginIsRejected)
     setPageURL("http://www.example.com/");
     testRegisterRejected(
         "http://www.example.com/worker.js",
-        "http://www.example.com/*",
+        "http://www.example.com/",
         ExpectDOMException("NotSupportedError", "Only secure origins are allowed. http://goo.gl/lq4gCo"));
 }
 
@@ -218,7 +218,7 @@ TEST_F(ServiceWorkerContainerTest, Register_CrossOriginScriptIsRejected)
     setPageURL("https://www.example.com");
     testRegisterRejected(
         "https://www.example.com:8080/", // Differs by port
-        "https://www.example.com/*",
+        "https://www.example.com/",
         ExpectDOMException("SecurityError", "The origin of the script must match the current origin."));
 }
 
@@ -227,7 +227,7 @@ TEST_F(ServiceWorkerContainerTest, Register_CrossOriginScopeIsRejected)
     setPageURL("https://www.example.com");
     testRegisterRejected(
         "https://www.example.com",
-        "wss://www.example.com/*", // Differs by protocol
+        "wss://www.example.com/", // Differs by protocol
         ExpectDOMException("SecurityError", "The scope must match the current origin."));
 }
 
@@ -243,7 +243,7 @@ TEST_F(ServiceWorkerContainerTest, Unregister_CrossOriginScopeIsRejected)
 {
     setPageURL("https://www.example.com");
     testUnregisterRejected(
-        "https://example.com/*", // Differs by host
+        "https://example.com/", // Differs by host
         ExpectDOMException("SecurityError", "The scope must match the current origin."));
 }
 
@@ -321,21 +321,21 @@ TEST_F(ServiceWorkerContainerTest, RegisterUnregister_NonHttpsSecureOriginDelega
     {
         ScriptState::Scope scriptScope(scriptState());
         Dictionary options = Dictionary::createEmpty(isolate());
-        EXPECT_TRUE(options.set("scope", "y/*"));
+        EXPECT_TRUE(options.set("scope", "y/"));
         container->registerServiceWorker(scriptState(), "/z/worker.js", options);
 
         EXPECT_EQ(1ul, stubProvider.registerCallCount());
-        EXPECT_EQ(WebURL(KURL(KURL(), "http://localhost/x/y/*")), stubProvider.registerScope());
+        EXPECT_EQ(WebURL(KURL(KURL(), "http://localhost/x/y/")), stubProvider.registerScope());
         EXPECT_EQ(WebURL(KURL(KURL(), "http://localhost/z/worker.js")), stubProvider.registerScriptURL());
     }
 
     // unregister
     {
         ScriptState::Scope scriptScope(scriptState());
-        container->unregisterServiceWorker(scriptState(), "y/*");
+        container->unregisterServiceWorker(scriptState(), "y/");
 
         EXPECT_EQ(1ul, stubProvider.unregisterCallCount());
-        EXPECT_EQ(WebURL(KURL(KURL(), "http://localhost/x/y/*")), stubProvider.unregisterScope());
+        EXPECT_EQ(WebURL(KURL(KURL(), "http://localhost/x/y/")), stubProvider.unregisterScope());
     }
 
     container->willBeDetachedFromFrame();

@@ -13,7 +13,7 @@ function scope_test(name, scope) {
         if (scope) {
             expectedScope = new URL(scope, document.location).toString();
         } else {
-            expectedScope = new URL('/*', document.location).toString();
+            expectedScope = new URL('/', document.location).toString();
         }
 
         service_worker_unregister_and_register(
@@ -34,10 +34,7 @@ function scope_test(name, scope) {
 }
 
 scope_test('default');
-scope_test('wildcard', '*');
 scope_test('relative path', '/a/b/c/');
-scope_test('relative path with wildcard', '/a/b/c/*');
 scope_test('absolute url', 'http://127.0.0.1:8000/');
-scope_test('absolute url with wildcard', 'http://127.0.0.1:8000/*');
 
 </script>

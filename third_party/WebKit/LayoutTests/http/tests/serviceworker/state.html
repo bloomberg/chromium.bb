@@ -7,7 +7,7 @@
 (function () {
     var t = async_test('Service Worker state property and "statechange" event');
     var currentState = 'test-is-starting';
-    var scope = '/state/*';
+    var scope = '/state/';
 
     service_worker_unregister_and_register(t, 'resources/worker-no-op.js', scope).then(t.step_func(onRegister));
 

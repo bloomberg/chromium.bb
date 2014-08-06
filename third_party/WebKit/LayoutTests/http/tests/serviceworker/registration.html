@@ -7,7 +7,7 @@
 (function() {
     var t = async_test('Registering normal pattern');
     t.step(function() {
-        var scope = '/registration/*';
+        var scope = '/registration/';
         navigator.serviceWorker.register(
             'resources/registration-worker.js',
             {scope: scope}
@@ -29,7 +29,7 @@
     t.step(function() {
         navigator.serviceWorker.register(
             'resources/registration-worker.js',
-            {scope: 'http://example.com/*'}
+            {scope: 'http://example.com/'}
         ).then(
             t.step_func(function(worker) {
                 assert_unreached('Registration scope outside domain should fail.');

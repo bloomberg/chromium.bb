@@ -4,7 +4,7 @@
 <script src="resources/test-helpers.js"></script>
 <script>
 async_test(function(t) {
-  navigator.serviceWorker.unregister('http://example.com/*')
+  navigator.serviceWorker.unregister('http://example.com/')
     .then(function() {
       assert_unreached('unregistering out of origin should fail');
     }, function(reason) {
@@ -16,7 +16,7 @@ async_test(function(t) {
 }, 'Unregistering out of origin');
 
 async_test(function(t) {
-  navigator.serviceWorker.unregister('/nothing-here/*')
+  navigator.serviceWorker.unregister('/nothing-here/')
     .then(function(value) {
       assert_equals(value, undefined,
                     'unregistering with no existing registration should ' +
@@ -27,7 +27,7 @@ async_test(function(t) {
 }, 'Unregistering with no existing registration');
 
 async_test(function(t) {
-  var scope = '/register-then-unregister/*';
+  var scope = '/register-then-unregister/';
   navigator.serviceWorker.register(
     'resources/empty-worker.js', {scope: scope})
     .then(function(worker) {

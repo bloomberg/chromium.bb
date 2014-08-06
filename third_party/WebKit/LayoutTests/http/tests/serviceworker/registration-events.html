@@ -6,7 +6,7 @@
 <script>
 var t = async_test('Registration: events');
 t.step(function() {
-    var scope = '/in-scope/*';
+    var scope = '/in-scope/';
     service_worker_unregister_and_register(
         t, 'resources/events-worker.js', scope).then(t.step_func(onRegister));
 

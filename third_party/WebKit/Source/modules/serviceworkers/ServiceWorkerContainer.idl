@@ -41,5 +41,5 @@
     [CallWith=ScriptState] readonly attribute Promise ready;
 
     [CallWith=ScriptState, ImplementedAs=registerServiceWorker] Promise register(ScalarValueString url, optional Dictionary options);
-    [CallWith=ScriptState, ImplementedAs=unregisterServiceWorker] Promise unregister(optional ScalarValueString scope = "/*");
+    [CallWith=ScriptState, ImplementedAs=unregisterServiceWorker] Promise unregister(optional ScalarValueString scope = "/");
 };
