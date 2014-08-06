@@ -197,6 +197,48 @@ std::string GetPrefForRootWindow(PrefService* pref_service,
   return default_string;
 }
 
+// Gets the shelf auto hide behavior from prefs for a root window.
+ash::ShelfAutoHideBehavior GetShelfAutoHideBehaviorFromPrefs(
+    Profile* profile,
+    aura::Window* root_window) {
+  // Don't show the shelf in app mode.
+  if (chrome::IsRunningInAppMode())
+    return ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
+
+  // See comment in |kShelfAlignment| as to why we consider two prefs.
+  const std::string behavior_value(
+      GetPrefForRootWindow(profile->GetPrefs(),
+                           root_window,
+                           prefs::kShelfAutoHideBehaviorLocal,
+                           prefs::kShelfAutoHideBehavior));
+
+  // Note: To maintain sync compatibility with old images of chrome/chromeos
+  // the set of values that may be encountered includes the now-extinct
+  // "Default" as well as "Never" and "Always", "Default" should now
+  // be treated as "Never" (http://crbug.com/146773).
+  if (behavior_value == ash::kShelfAutoHideBehaviorAlways)
+    return ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+  return ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
+}
+
+// Gets the shelf alignment from prefs for a root window.
+ash::ShelfAlignment GetShelfAlignmentFromPrefs(Profile* profile,
+                                               aura::Window* root_window) {
+  // See comment in |kShelfAlignment| as to why we consider two prefs.
+  const std::string alignment_value(
+      GetPrefForRootWindow(profile->GetPrefs(),
+                           root_window,
+                           prefs::kShelfAlignmentLocal,
+                           prefs::kShelfAlignment));
+  if (alignment_value == ash::kShelfAlignmentLeft)
+    return ash::SHELF_ALIGNMENT_LEFT;
+  else if (alignment_value == ash::kShelfAlignmentRight)
+    return ash::SHELF_ALIGNMENT_RIGHT;
+  else if (alignment_value == ash::kShelfAlignmentTop)
+    return ash::SHELF_ALIGNMENT_TOP;
+  return ash::SHELF_ALIGNMENT_BOTTOM;
+}
+
 // If prefs have synced and no user-set value exists at |local_path|, the value
 // from |synced_path| is copied to |local_path|.
 void MaybePropagatePrefToLocal(PrefServiceSyncable* pref_service,
@@ -920,24 +962,7 @@ Profile* ChromeLauncherController::profile() {
 
 ash::ShelfAutoHideBehavior ChromeLauncherController::GetShelfAutoHideBehavior(
     aura::Window* root_window) const {
-  // Don't show the shelf in app mode.
-  if (chrome::IsRunningInAppMode())
-    return ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
-
-  // See comment in |kShelfAlignment| as to why we consider two prefs.
-  const std::string behavior_value(
-      GetPrefForRootWindow(profile_->GetPrefs(),
-                           root_window,
-                           prefs::kShelfAutoHideBehaviorLocal,
-                           prefs::kShelfAutoHideBehavior));
-
-  // Note: To maintain sync compatibility with old images of chrome/chromeos
-  // the set of values that may be encountered includes the now-extinct
-  // "Default" as well as "Never" and "Always", "Default" should now
-  // be treated as "Never" (http://crbug.com/146773).
-  if (behavior_value == ash::kShelfAutoHideBehaviorAlways)
-    return ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
-  return ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
+  return GetShelfAutoHideBehaviorFromPrefs(profile_, root_window);
 }
 
 bool ChromeLauncherController::CanUserModifyShelfAutoHideBehavior(
@@ -1438,6 +1463,25 @@ bool ChromeLauncherController::IsBrowserFromActiveUser(Browser* browser) {
   return multi_user_util::IsProfileFromActiveUser(browser->profile());
 }
 
+bool ChromeLauncherController::ShelfBoundsChangesProbablyWithUser(
+    aura::Window* root_window,
+    const std::string& user_id) const {
+  Profile* other_profile = multi_user_util::GetProfileFromUserID(user_id);
+  DCHECK_NE(other_profile, profile_);
+
+  // Note: The Auto hide state from preferences is not the same as the actual
+  // visibility of the shelf. Depending on all the various states (full screen,
+  // no window on desktop, multi user, ..) the shelf could be shown - or not.
+  bool currently_shown = ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER ==
+      GetShelfAutoHideBehaviorFromPrefs(profile_, root_window);
+  bool other_shown = ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER ==
+      GetShelfAutoHideBehaviorFromPrefs(other_profile, root_window);
+
+  return currently_shown != other_shown ||
+         GetShelfAlignmentFromPrefs(profile_, root_window) !=
+             GetShelfAlignmentFromPrefs(other_profile, root_window);
+}
+
 void ChromeLauncherController::LauncherItemClosed(ash::ShelfID id) {
   IDToItemControllerMap::iterator iter = id_to_item_controller_map_.find(id);
   CHECK(iter != id_to_item_controller_map_.end());
@@ -1696,20 +1740,8 @@ void ChromeLauncherController::SetShelfAlignmentFromPrefs() {
 
   for (aura::Window::Windows::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
-    // See comment in |kShelfAlignment| as to why we consider two prefs.
-    const std::string alignment_value(
-        GetPrefForRootWindow(profile_->GetPrefs(),
-                             *iter,
-                             prefs::kShelfAlignmentLocal,
-                             prefs::kShelfAlignment));
-    ash::ShelfAlignment alignment = ash::SHELF_ALIGNMENT_BOTTOM;
-    if (alignment_value == ash::kShelfAlignmentLeft)
-      alignment = ash::SHELF_ALIGNMENT_LEFT;
-    else if (alignment_value == ash::kShelfAlignmentRight)
-      alignment = ash::SHELF_ALIGNMENT_RIGHT;
-    else if (alignment_value == ash::kShelfAlignmentTop)
-      alignment = ash::SHELF_ALIGNMENT_TOP;
-    ash::Shell::GetInstance()->SetShelfAlignment(alignment, *iter);
+    ash::Shell::GetInstance()->SetShelfAlignment(
+        GetShelfAlignmentFromPrefs(profile_, *iter), *iter);
   }
 }
 

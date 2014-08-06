@@ -384,6 +384,13 @@ class ChromeLauncherController : public ash::ShelfDelegate,
   // Returns true if |browser| is owned by the active user.
   bool IsBrowserFromActiveUser(Browser* browser);
 
+  // Check if the shelf visibility (location, visibility) will change with a new
+  // user profile or not. However, since the full visibility calculation of the
+  // shelf cannot be performed here, this is only a probability used for
+  // animation predictions.
+  bool ShelfBoundsChangesProbablyWithUser(aura::Window* root_window,
+                                          const std::string& user_id) const;
+
   // Access to the BrowserStatusMonitor for tests.
   BrowserStatusMonitor* browser_status_monitor_for_test() {
     return browser_status_monitor_.get();

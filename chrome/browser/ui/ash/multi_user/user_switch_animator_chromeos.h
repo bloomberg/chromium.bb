@@ -84,8 +84,9 @@ class UserSwichAnimatorChromeOS {
   void TransitionWindows(AnimationStep animation_step);
 
   // Check if a window is maximized / fullscreen / covering the entire screen.
-  // TODO(skuhne): We might want to do this on a per screen basis.
-  TransitioningScreenCover GetScreenCover();
+  // If a |root_window| is given, the screen coverage of that root_window is
+  // tested, otherwise all screens.
+  TransitioningScreenCover GetScreenCover(aura::Window* root_window);
 
   // The owning window manager.
   MultiUserWindowManagerChromeOS* owner_;

@@ -45,6 +45,11 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
                            BackgroundAnimatorChangeType change_type);
   ShelfBackgroundType GetBackgroundType() const;
 
+  // Hide the shelf behind a black bar during e.g. a user transition when |hide|
+  // is true. The |animation_time_ms| will be used as animation duration.
+  void HideShelfBehindBlackBar(bool hide, int animation_time_ms);
+  bool IsShelfHiddenBehindBlackBar() const;
+
   // Causes shelf items to be slightly dimmed (e.g. when a window is maximized).
   void SetDimsShelf(bool dimming);
   bool GetDimsShelf() const;
