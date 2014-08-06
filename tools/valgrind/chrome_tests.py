@@ -512,7 +512,7 @@ class ChromeTests:
     # list of tests.  Wrap around to beginning of list at end.
     # If chunk_size is zero, run all tests in the list once.
     # If a text file is given as argument, it is used as the list of tests.
-    #
+    assert((chunk_size == 0) != (len(self._args) == 0))
     # Build the ginormous commandline in 'cmd'.
     # It's going to be roughly
     #  python valgrind_test.py ... python run_webkit_tests.py ...
@@ -592,7 +592,7 @@ class ChromeTests:
     # to continuously run small slices of the layout tests under valgrind rather
     # than having to run all of them in one shot.
     chunk_size = self._options.num_tests
-    if (chunk_size == 0):
+    if chunk_size == 0 or len(self._args):
       return self.TestLayoutChunk(0, 0)
     chunk_num = 0
     chunk_file = os.path.join("valgrind_layout_chunk.txt")
