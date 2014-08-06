@@ -190,8 +190,9 @@ public:
     static unsigned maxNumberOfChannels() { return MaxNumberOfChannels;}
 
     class AutoLocker {
+        STACK_ALLOCATED();
     public:
-        AutoLocker(AudioContext* context)
+        explicit AutoLocker(AudioContext* context)
             : m_context(context)
         {
             ASSERT(context);
@@ -204,7 +205,7 @@ public:
                 m_context->unlock();
         }
     private:
-        AudioContext* m_context;
+        RawPtrWillBeMember<AudioContext> m_context;
         bool m_mustReleaseLock;
     };
 
