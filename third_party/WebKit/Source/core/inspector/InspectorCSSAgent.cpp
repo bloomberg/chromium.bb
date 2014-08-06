@@ -822,7 +822,7 @@ void InspectorCSSAgent::setStyleSheetText(ErrorString* errorString, const String
 
 static bool extractRangeComponent(ErrorString* errorString, const RefPtr<JSONObject>& range, const String& component, unsigned& result)
 {
-    int parsedValue;
+    int parsedValue = 0;
     if (!range->getNumber(component, &parsedValue) || parsedValue < 0) {
         *errorString = "range." + component + " must be a non-negative integer";
         return false;
