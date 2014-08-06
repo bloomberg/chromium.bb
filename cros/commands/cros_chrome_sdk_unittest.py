@@ -298,15 +298,8 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
     """Verifies clang codepath."""
     with cros_test_lib.LoggingCapturer() as logs:
       cmd_cls = cros_chrome_sdk.ChromeSDKCommand
-      update_sh = os.path.join(self.chrome_src_dir, cmd_cls._CLANG_UPDATE_SH)
-      osutils.Touch(update_sh, makedirs=True)
-      self.rc_mock.AddCmdResult(partial_mock.ListRegex('.*-gcc -dumpversion'),
-                                output='4.7.3')
-      self.SetupCommandMock(extra_args=['--clang', '--make'])
+      self.SetupCommandMock(extra_args=['--clang'])
       self.cmd_mock.inst.Run()
-      self.assertTrue(self.FindInPath(
-        self.cmd_mock.env['PATH'], cmd_cls._CLANG_DIR))
-      self.AssertLogsContain(logs, '%s not found.' % cmd_cls._CLANG_DIR)
 
 
 class GomaTest(cros_test_lib.MockTempDirTestCase,
@@ -498,10 +491,9 @@ class PathVerifyTest(cros_test_lib.MockTempDirTestCase,
 
     with cros_test_lib.LoggingCapturer() as logs:
       cros_chrome_sdk.ChromeSDKCommand._VerifyGoma(None)
-      cros_chrome_sdk.ChromeSDKCommand._VerifyClang(None)
       cros_chrome_sdk.ChromeSDKCommand._VerifyChromiteBin(None)
 
-    for msg in ['managed Goma', 'default Clang', 'default Chromite']:
+    for msg in ['managed Goma', 'default Chromite']:
       self.AssertLogsMatch(logs, msg)
 
 
