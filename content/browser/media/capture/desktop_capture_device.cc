@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
@@ -389,12 +388,8 @@ scoped_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
   switch (source.type) {
     case DesktopMediaID::TYPE_SCREEN: {
 #if defined(OS_WIN)
-      if (base::FieldTrialList::FindFullName("ScreenCaptureUseMagnification") ==
-          "Enabled") {
-        options.set_allow_use_magnification_api(true);
-      }
+      options.set_allow_use_magnification_api(true);
 #endif
-
       scoped_ptr<webrtc::ScreenCapturer> screen_capturer(
           webrtc::ScreenCapturer::Create(options));
       if (screen_capturer && screen_capturer->SelectScreen(source.id)) {
