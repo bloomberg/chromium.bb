@@ -113,7 +113,7 @@ void WebExternalTextureLayerImpl::DidReleaseMailbox(
     WebExternalBitmapImpl* bitmap,
     unsigned sync_point,
     bool lost_resource) {
-  if (lost_resource || !layer) {
+  if (!layer) {
     delete bitmap;
     return;
   }
@@ -123,7 +123,7 @@ void WebExternalTextureLayerImpl::DidReleaseMailbox(
   available_mailbox.syncPoint = sync_point;
   if (bitmap)
     layer->free_bitmaps_.push_back(bitmap);
-  layer->client_->mailboxReleased(available_mailbox);
+  layer->client_->mailboxReleased(available_mailbox, lost_resource);
 }
 
 }  // namespace content
