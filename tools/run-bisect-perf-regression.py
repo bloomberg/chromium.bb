@@ -21,6 +21,7 @@ import sys
 import traceback
 
 from auto_bisect import bisect_utils
+from auto_bisect import math_utils
 
 bisect = imp.load_source('bisect-perf-regression',
     os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])),
@@ -308,7 +309,7 @@ def _RunPerformanceTest(config, path_to_file):
   # Calculate the % difference in the means of the 2 runs.
   percent_diff_in_means = (results_with_patch[0]['mean'] /
       max(0.0001, results_without_patch[0]['mean'])) * 100.0 - 100.0
-  std_err = bisect.CalculatePooledStandardError(
+  std_err = math_utils.PooledStandardError(
       [results_with_patch[0]['values'], results_without_patch[0]['values']])
 
   bisect_utils.OutputAnnotationStepClosed()
