@@ -1256,7 +1256,6 @@ crbug.com/296620 svg/W3C-SVG-1.1/filters-color-01-b.svg [ NeedsRebaseline ]
 crbug.com/296620 svg/W3C-SVG-1.1/filters-composite-02-b.svg [ NeedsRebaseline ]
 crbug.com/296620 svg/W3C-SVG-1.1/filters-comptran-01-b.svg [ NeedsRebaseline ]
 crbug.com/296620 svg/batik/filters/feTile.svg [ NeedsRebaseline ]
-crbug.com/296620 svg/filters/big-sized-filter.svg [ NeedsRebaseline ]
 crbug.com/296620 svg/filters/feImage-reference-svg-primitive.svg [ NeedsRebaseline ]
 crbug.com/296620 svg/filters/feLighting-crash.svg [ NeedsRebaseline ]
 
