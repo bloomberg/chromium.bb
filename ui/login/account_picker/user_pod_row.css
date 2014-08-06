@@ -383,7 +383,8 @@ html[dir=rtl] .action-box-area.active ~ .action-box-menu {
   padding: 20px;
 }
 
-.action-box-remove-user-warning-text {
+.action-box-remove-user-warning-text,
+.action-box-remove-supervised-user-warning-text {
   padding-bottom: 20px;
 }
 
