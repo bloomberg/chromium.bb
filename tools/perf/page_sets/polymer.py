@@ -112,9 +112,16 @@ class PolymerSampler(PolymerPage):
     #FIXME(wiltzius) workaround for crbug.com/391672
     action_runner.ExecuteJavaScript('window.location.href="about:blank";')
     super(PolymerSampler, self).RunNavigateSteps(action_runner)
-    #FIXME(wiltzius) this should wait for iframe to load and all load
-    # animations to end
-    action_runner.Wait(5)
+    waitForLoadJS = """
+      window.Polymer.whenPolymerReady(function() {
+        %s.contentWindow.Polymer.whenPolymerReady(function() {
+          window.__polymer_ready = true;
+        })
+      });
+      """ % self.iframe_js
+    action_runner.ExecuteJavaScript(waitForLoadJS)
+    action_runner.WaitForJavaScriptCondition(
+        'window.__polymer_ready')
 
   def RunSmoothness(self, action_runner):
     #TODO(wiltzius) Add interactions for input elements and shadow pages
