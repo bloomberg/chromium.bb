@@ -767,8 +767,7 @@ crbug.com/338475 crbug.com/307777 [ Android ] css1/color_and_background/color.ht
 crbug.com/338475 [ Android ] css1/font_properties/font_style.html [ Failure ]
 crbug.com/338475 [ Android ] css1/formatting_model/canvas.html [ Failure ]
 crbug.com/338475 [ Android ] css1/text_properties/text_align.html [ Failure ]
-# Bug(fmalita): should be re-enabled after https://codereview.chromium.org/430023002/
-# crbug.com/338475 [ Android ] editing/caret/caret-color.html [ Failure ]
+crbug.com/338475 [ Android ] editing/caret/caret-color.html [ Failure ]
 crbug.com/338475 [ Android ] fast/compact/002.html [ Failure ]
 crbug.com/338475 crbug.com/307777 [ Android ] fast/hidpi/clip-text-in-hidpi.html [ Failure Timeout ]
 crbug.com/338475 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
@@ -915,9 +914,8 @@ crbug.com/362992 storage/quota/storagequota-request-persistent-quota.html [ Skip
 crbug.com/362992 virtual/gpu/fast/canvas/canvas-createImageBitmap-invalid-args-in-workers.html [ Skip ]
 crbug.com/362992 virtual/gpu/fast/canvas/canvas-createImageBitmap-invalid-args.html [ Skip ]
 
-# Bug(fmalita): should be re-enabled after https://codereview.chromium.org/430023002/
-# crbug.com/362434 [ Mac ] compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ ImageOnlyFailure Pass ]
-# crbug.com/362434 [ Mac ] virtual/gpu/compositedscrolling/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ ImageOnlyFailure Pass ]
+crbug.com/362434 [ Mac ] compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ ImageOnlyFailure Pass ]
+crbug.com/362434 [ Mac ] virtual/gpu/compositedscrolling/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ ImageOnlyFailure Pass ]
 
 crbug.com/362499 [ Mac ] touchadjustment/context-menu-text-subtargets.html [ Failure Pass ]
 crbug.com/362499 [ Mac ] touchadjustment/touch-inlines.html [ Failure Pass ]
@@ -1307,8 +1305,7 @@ crbug.com/30536 [ Win ] http/tests/ssl/referer-301.html [ Timeout Pass ]
 
 crbug.com/400445 svg/filters/big-sized-filter.svg [ NeedsRebaseline ]
 
-# Bug(fmalita): should be re-enabled after https://codereview.chromium.org/430023002/
-# crbug.com/399430 [ Mac ] fast/transforms/transformed-focused-text-input.html [ Pass ImageOnlyFailure ]
+crbug.com/399430 [ Mac ] fast/transforms/transformed-focused-text-input.html [ Pass ImageOnlyFailure ]
 
 crbug.com/390204 [ Release ] inspector/console/console-viewport-selection.html [ Pass Failure ]
 crbug.com/390204 [ Debug ] inspector/console/console-viewport-selection.html [ Pass Failure Slow ]
