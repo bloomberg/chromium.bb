@@ -635,7 +635,7 @@ TEST_F(PinchViewportTest, TestWebFrameRangeAccountsForPinchViewportScroll)
 }
 
 // Test that the scrollFocusedNodeIntoRect method works with the pinch viewport.
-TEST_F(PinchViewportTest, TestScrollFocusedNodeIntoRect)
+TEST_F(PinchViewportTest, FLAKY_TestScrollFocusedNodeIntoRect)
 {
     initializeWithDesktopSettings();
     webViewImpl()->resize(IntSize(500, 300));
