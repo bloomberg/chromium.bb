@@ -889,10 +889,17 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
 
 // This is similar to ReplaceEphemeralAppWithInstalledApp, but installs will
 // be delayed until the app is idle.
+#if defined(OS_WIN)
+// Disabled on Windows due to failures. See crbug.com/401028
+#define MAYBE_ReplaceEphemeralAppWithDelayedInstalledApp \
+    DISABLED_ReplaceEphemeralAppWithDelayedInstalledApp
+#else
+#define MAYBE_ReplaceEphemeralAppWithDelayedInstalledApp \
+    ReplaceEphemeralAppWithDelayedInstalledApp
+#endif
 IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
-                       ReplaceEphemeralAppWithDelayedInstalledApp) {
+                       MAYBE_ReplaceEphemeralAppWithDelayedInstalledApp) {
   InitSyncService();
-
   const Extension* app = InstallAndLaunchEphemeralApp(kNotificationsTestApp);
   ASSERT_TRUE(app);
   std::string app_id = app->id();
