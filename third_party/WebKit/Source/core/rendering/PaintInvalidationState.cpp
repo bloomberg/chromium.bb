@@ -22,7 +22,7 @@ PaintInvalidationState::PaintInvalidationState(RenderObject& renderer)
 {
     bool establishesPaintInvalidationContainer = &m_renderer == &m_paintInvalidationContainer;
     if (!establishesPaintInvalidationContainer) {
-        if (!renderer.supportsLayoutStateCachedOffsets()) {
+        if (!renderer.supportsPaintInvalidationStateCachedOffsets()) {
             m_cachedOffsetsEnabled = false;
             return;
         }
@@ -66,7 +66,7 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& nex
         // from our parents will just move the whole invalidation container.
         m_forceCheckForPaintInvalidation = false;
     } else {
-        if (!renderer.supportsLayoutStateCachedOffsets() || !next.m_cachedOffsetsEnabled) {
+        if (!renderer.supportsPaintInvalidationStateCachedOffsets() || !next.m_cachedOffsetsEnabled) {
             m_cachedOffsetsEnabled = false;
         } else if (m_cachedOffsetsEnabled) {
             m_paintOffset = next.m_paintOffset;
@@ -99,7 +99,7 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& nex
         // from our parents will just move the whole invalidation container.
         m_forceCheckForPaintInvalidation = false;
     } else {
-        if (!renderer.supportsLayoutStateCachedOffsets() || !next.m_cachedOffsetsEnabled) {
+        if (!renderer.supportsPaintInvalidationStateCachedOffsets() || !next.m_cachedOffsetsEnabled) {
             m_cachedOffsetsEnabled = false;
         } else {
             LayoutSize offset = m_renderer.isTableRow() ? LayoutSize() : renderer.locationOffset();
