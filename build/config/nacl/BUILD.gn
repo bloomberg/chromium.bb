@@ -1,0 +1,18 @@
+# Copyright (c) 2014 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("nacl_defines.gni")
+
+# Native Client Definitions
+config("nacl_defines") {
+  defines = nacl_defines
+  include_dirs = ["//."]
+}
+
+config("nexe_defines") {
+  defines = [
+    "DYNAMIC_ANNOTATIONS_ENABLED=1",
+    "DYNAMIC_ANNOTATIONS_PREFIX=NACL_"
+  ]
+}

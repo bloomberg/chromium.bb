@@ -369,34 +369,34 @@ if (is_nacl) {
 # For NaCl targets, we inject a dependency on prepping the library for cooked
 # toolchain targets.  For raw targets we inject a dependency on untarring.
 #
-nacl_compiler_configs = [
-  "//native_client/build/config:nacl_defines",
-  "//native_client/build/config:nexe_defines"
+_nacl_compiler_configs = [
+  "//native_client/build/config/nacl:nacl_defines",
+  "//native_client/build/config/nacl:nexe_defines"
 ]
 
 # Holds all configs used for making native executables and libraries, to avoid
 # duplication in each target below.
-native_compiler_configs = [
-  "//native_client/build/config:nacl_defines",
+_native_compiler_configs = [
+  "//native_client/build/config/nacl:nacl_defines",
   "//native_client/build/config/compiler:compiler",
   "//native_client/build/config/compiler:default_warnings",
   "//native_client/build/config/compiler:no_rtti",
 ]
 
 if (is_clang) {
-  native_compiler_configs += [ "//native_client/build/config/clang:find_bad_constructs" ]
+  _native_compiler_configs += [ "//native_client/build/config/clang:find_bad_constructs" ]
 }
 
 # Optimizations and debug checking.
 if (is_debug) {
-  native_compiler_configs += [ "//native_client/build/config:debug" ]
+  _native_compiler_configs += [ "//native_client/build/config:debug" ]
   default_optimization_config = "//native_client/build/config/compiler:no_optimize"
 } else {
   native_compiler_configs += [ "//native_client/build/config:release" ]
-  default_optimization_config = "//native_client/build/config/compiler:optimize"
+  _default_optimization_config = "//native_client/build/config/compiler:optimize"
 }
 
-native_compiler_configs += [ default_optimization_config ]
+_native_compiler_configs += [ default_optimization_config ]
 
 # Symbol setup.
 if (is_clang && is_linux) {
@@ -414,7 +414,7 @@ if (is_clang && is_linux) {
 } else {
   assert(false, "Bad value for symbol_level.")
 }
-native_compiler_configs += [ default_symbols_config ]
+_native_compiler_configs += [ default_symbols_config ]
 
 # Windows linker setup for EXEs and DLLs.
 if (is_win) {
@@ -438,7 +438,7 @@ if (is_win) {
 set_defaults("executable") {
   configs = []
   if (os != "nacl") {
-    configs = native_compiler_configs + [
+    configs = _native_compiler_configs + [
       "//native_client/build/config:default_libs",
     ]
     if (is_win) {
@@ -451,23 +451,23 @@ set_defaults("executable") {
   #    configs += [ "//native_client/build/config/linux:executable_ldconfig" ]
     }
   } else {
-    configs = nacl_compiler_configs
+    configs = _nacl_compiler_configs
   }
 }
 
 set_defaults("static_library") {
   configs = []
   if (os != "nacl") {
-    configs += native_compiler_configs
+    configs += _native_compiler_configs
   } else {
-    configs += nacl_compiler_configs
+    configs += _nacl_compiler_configs
   }
 }
 
 set_defaults("shared_library") {
   configs = []
   if (os != "nacl") {
-    configs += native_compiler_configs + [
+    configs += _native_compiler_configs + [
       "//native_client/build/config:default_libs",
     ]
     if (is_win) {
@@ -476,16 +476,16 @@ set_defaults("shared_library") {
       configs += [ "//native_client/build/config/mac:mac_dynamic_flags" ]
     }
   } else {
-    configs = nacl_compiler_configs
+    configs = _nacl_compiler_configs
   }
 }
 
 set_defaults("source_set") {
   configs = []
   if (os != "nacl") {
-    configs = native_compiler_configs
+    configs = _native_compiler_configs
   } else {
-    configs = nacl_compiler_configs
+    configs = _nacl_compiler_configs
   }
 }
 

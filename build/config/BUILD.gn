@@ -5,7 +5,6 @@
 import("./allocator.gni")
 import("./crypto.gni")
 import("./features.gni")
-import("./nacl_defines.gni")
 import("./ui.gni")
 
 declare_args() {
@@ -19,19 +18,6 @@ declare_args() {
   # TODO(sebmarchand): Update this comment once this flag guarantee that
   #     there's no build metadata in the build artifacts.
   dont_embed_build_metadata = false
-}
-
-# Native Client Definitions
-config("nacl_defines") {
-  defines = nacl_defines
-  include_dirs = ["//."]
-}
-
-config("nexe_defines") {
-  defines = [
-    "DYNAMIC_ANNOTATIONS_ENABLED=1",
-    "DYNAMIC_ANNOTATIONS_PREFIX=NACL_"
-  ]
 }
 
 # TODO(brettw) Most of these should be removed. Instead of global feature
