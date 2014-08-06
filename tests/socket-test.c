@@ -22,7 +22,9 @@
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
+#include <stdio.h>
 #include <sys/un.h>
+#include <unistd.h>
 
 #include "wayland-client.h"
 #include "wayland-server.h"
@@ -37,12 +39,14 @@ static const struct sockaddr_un example_sockaddr_un;
 #define TOO_LONG (1 + sizeof example_sockaddr_un.sun_path)
 
 /* Ensure the connection doesn't fail due to lack of XDG_RUNTIME_DIR. */
-static void
+static const char *
 require_xdg_runtime_dir(void)
 {
 	char *val = getenv("XDG_RUNTIME_DIR");
 	if (!val)
 		assert(0 && "set $XDG_RUNTIME_DIR to run this test");
+
+	return val;
 }
 
 TEST(socket_path_overflow_client_connect)
@@ -77,6 +81,90 @@ TEST(socket_path_overflow_server_create)
 	ret = wl_display_add_socket(d, path);
 	assert(ret < 0);
 	assert(errno == ENAMETOOLONG);
+
+	wl_display_destroy(d);
+}
+
+TEST(add_existing_socket)
+{
+	char path[sizeof example_sockaddr_un.sun_path];
+	const char *name = "wayland-test-0";
+	const char *xdg_runtime_dir;
+	struct wl_display *d;
+	int ret;
+	size_t len;
+
+	xdg_runtime_dir = require_xdg_runtime_dir();
+
+	d = wl_display_create();
+	assert(d != NULL);
+
+	/* this one should be OK */
+	ret = wl_display_add_socket(d, name);
+	assert(ret == 0);
+
+	/* this on should fail */
+	ret = wl_display_add_socket(d, name);
+	assert(ret < 0);
+
+	/* the original socket should still exists,
+	 * this was a bug introduced in e2c0d47b0c77f18cd90e9c6eabb358c4d89681c8 */
+	len = snprintf(path, sizeof example_sockaddr_un.sun_path, "%s/%s",
+		       xdg_runtime_dir, name);
+	assert(len < sizeof example_sockaddr_un.sun_path
+	       && "Bug in test. Path too long");
+
+	assert(access(path, F_OK) != -1);
+
+	/* still should exists the original socket */
+	ret = wl_display_add_socket(d, name);
+	assert(ret < 0);
+
+	wl_display_destroy(d);
+}
+
+TEST(add_socket_auto)
+{
+	/* the number of auto sockets is currently 32 */
+	const int MAX_SOCKETS = 32;
+
+	char path[sizeof example_sockaddr_un.sun_path];
+	const char *name;
+	const char *xdg_runtime_dir;
+	struct wl_display *d;
+	int i;
+	size_t len;
+
+	xdg_runtime_dir = require_xdg_runtime_dir();
+
+	d = wl_display_create();
+	assert(d != NULL);
+
+	for (i = 0; i <= MAX_SOCKETS; ++i) {
+		name = wl_display_add_socket_auto(d);
+		assert(name != NULL);
+
+		len = snprintf(path, sizeof example_sockaddr_un.sun_path,
+			       "%s/%s", xdg_runtime_dir, name);
+		assert(len < sizeof example_sockaddr_un.sun_path
+		       && "Bug in test. Path too long");
+
+		/* was the socket? */
+		assert(access(path, F_OK) != -1);
+
+		/* is the name sequential? */
+		len = snprintf(path, sizeof example_sockaddr_un.sun_path,
+			       "wayland-%d", i);
+		assert(strcmp(name, path) == 0);
+	}
+
+	/* next addition should return NULL */
+	name = wl_display_add_socket_auto(d);
+	assert(name == NULL);
+
+	/* check if the socket was not deleted the last time */
+	name = wl_display_add_socket_auto(d);
+	assert(name == NULL);
 
 	wl_display_destroy(d);
 }
