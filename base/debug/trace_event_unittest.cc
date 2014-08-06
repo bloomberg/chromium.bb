@@ -2439,13 +2439,7 @@ TEST_F(TraceEventCallbackTest, TraceEventCallbackAndRecordingDuration) {
   VerifyCollectedEvent(5, TRACE_EVENT_PHASE_END, "callback", "duration1");
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/396403
-#define MAYBE_TraceBufferVectorReportFull DISABLED_TraceBufferVectorReportFull
-#else
-#define MAYBE_TraceBufferVectorReportFull TraceBufferVectorReportFull
-#endif
-TEST_F(TraceEventTestFixture, MAYBE_TraceBufferVectorReportFull) {
+TEST_F(TraceEventTestFixture, TraceBufferVectorReportFull) {
   TraceLog* trace_log = TraceLog::GetInstance();
   trace_log->SetEnabled(CategoryFilter("*"),
                         TraceLog::RECORDING_MODE,
