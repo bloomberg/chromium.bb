@@ -8,6 +8,7 @@
 
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/ImageBufferClient.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -22,6 +23,57 @@
 using namespace blink;
 using testing::Test;
 
+namespace {
+
+class FakeImageBufferClient : public ImageBufferClient, public WebThread::TaskObserver {
+public:
+    FakeImageBufferClient(ImageBuffer* imageBuffer)
+        : m_isDirty(false)
+        , m_imageBuffer(imageBuffer)
+        , m_frameCount(0)
+    { }
+
+    virtual ~FakeImageBufferClient() { }
+
+    // ImageBufferClient implementation
+    virtual void notifySurfaceInvalid() { }
+    virtual bool isDirty() { return m_isDirty; };
+    virtual void didFinalizeFrame()
+    {
+        if (m_isDirty) {
+            blink::Platform::current()->currentThread()->removeTaskObserver(this);
+            m_isDirty = false;
+        }
+        ++m_frameCount;
+    }
+
+    // TaskObserver implementation
+    virtual void willProcessTask() OVERRIDE { ASSERT_NOT_REACHED(); }
+    virtual void didProcessTask() OVERRIDE
+    {
+        ASSERT_TRUE(m_isDirty);
+        m_imageBuffer->finalizeFrame();
+        ASSERT_FALSE(m_isDirty);
+    }
+
+    void fakeDraw()
+    {
+        if (m_isDirty)
+            return;
+        m_isDirty = true;
+        blink::Platform::current()->currentThread()->addTaskObserver(this);
+    }
+
+    int frameCount() { return m_frameCount; }
+
+private:
+    bool m_isDirty;
+    ImageBuffer* m_imageBuffer;
+    int m_frameCount;
+};
+
+} // unnamed namespace
+
 class RecordingImageBufferSurfaceTest : public Test {
 protected:
     RecordingImageBufferSurfaceTest()
@@ -31,6 +83,8 @@ protected:
         // We create an ImageBuffer in order for the testSurface to be
         // properly initialized with a GraphicsContext
         m_imageBuffer = ImageBuffer::create(testSurface.release());
+        m_fakeImageBufferClient = adoptPtr(new FakeImageBufferClient(m_imageBuffer.get()));
+        m_imageBuffer->setClient(m_fakeImageBufferClient.get());
     }
 
 public:
@@ -39,6 +93,7 @@ public:
         m_testSurface->initializeCurrentFrame();
         RefPtr<SkPicture> picture = m_testSurface->getPicture();
         EXPECT_TRUE((bool)picture.get());
+        EXPECT_EQ(1, m_fakeImageBufferClient->frameCount());
         expectDisplayListEnabled(true);
     }
 
@@ -47,6 +102,7 @@ public:
         m_testSurface->initializeCurrentFrame();
         m_testSurface->didClearCanvas();
         m_testSurface->getPicture();
+        EXPECT_EQ(1, m_fakeImageBufferClient->frameCount());
         expectDisplayListEnabled(true);
     }
 
@@ -54,19 +110,23 @@ public:
     {
         m_testSurface->initializeCurrentFrame();
         // acquire picture twice to simulate a static canvas: nothing drawn between updates
+        m_fakeImageBufferClient->fakeDraw();
         m_testSurface->getPicture();
         m_testSurface->getPicture();
+        EXPECT_EQ(2, m_fakeImageBufferClient->frameCount());
         expectDisplayListEnabled(true);
     }
 
     void testAnimatedWithoutClear()
     {
         m_testSurface->initializeCurrentFrame();
+        m_fakeImageBufferClient->fakeDraw();
         m_testSurface->getPicture();
-        m_testSurface->didDraw();
-        expectDisplayListEnabled(true);
-        // This will trigger fallback
+        EXPECT_EQ(1, m_fakeImageBufferClient->frameCount());
+        expectDisplayListEnabled(true); // first frame has an implicit clear
+        m_fakeImageBufferClient->fakeDraw();
         m_testSurface->getPicture();
+        EXPECT_EQ(2, m_fakeImageBufferClient->frameCount());
         expectDisplayListEnabled(false);
     }
 
@@ -75,17 +135,28 @@ public:
         m_testSurface->initializeCurrentFrame();
         expectDisplayListEnabled(true);
         m_testSurface->getPicture();
+        EXPECT_EQ(1, m_fakeImageBufferClient->frameCount());
         expectDisplayListEnabled(true);
-        m_testSurface->didDraw();
+        m_fakeImageBufferClient->fakeDraw();
+        EXPECT_EQ(1, m_fakeImageBufferClient->frameCount());
+        expectDisplayListEnabled(true);
+        m_testSurface->getPicture();
+        EXPECT_EQ(2, m_fakeImageBufferClient->frameCount());
+        expectDisplayListEnabled(true);
+        m_fakeImageBufferClient->fakeDraw();
+        EXPECT_EQ(2, m_fakeImageBufferClient->frameCount());
         expectDisplayListEnabled(true);
         // Display list will be disabled only after exiting the runLoop
     }
     void testFrameFinalizedByTaskObserver2()
     {
+        EXPECT_EQ(3, m_fakeImageBufferClient->frameCount());
         expectDisplayListEnabled(false);
         m_testSurface->getPicture();
+        EXPECT_EQ(4, m_fakeImageBufferClient->frameCount());
         expectDisplayListEnabled(false);
-        m_testSurface->didDraw();
+        m_fakeImageBufferClient->fakeDraw();
+        EXPECT_EQ(4, m_fakeImageBufferClient->frameCount());
         expectDisplayListEnabled(false);
     }
 
@@ -94,13 +165,17 @@ public:
         m_testSurface->initializeCurrentFrame();
         m_testSurface->getPicture();
         m_testSurface->didClearCanvas();
-        m_testSurface->didDraw();
+        m_fakeImageBufferClient->fakeDraw();
+        EXPECT_EQ(1, m_fakeImageBufferClient->frameCount());
         m_testSurface->getPicture();
+        EXPECT_EQ(2, m_fakeImageBufferClient->frameCount());
         expectDisplayListEnabled(true);
         // clear after use
-        m_testSurface->didDraw();
+        m_fakeImageBufferClient->fakeDraw();
         m_testSurface->didClearCanvas();
+        EXPECT_EQ(2, m_fakeImageBufferClient->frameCount());
         m_testSurface->getPicture();
+        EXPECT_EQ(3, m_fakeImageBufferClient->frameCount());
         expectDisplayListEnabled(true);
     }
 
@@ -109,8 +184,10 @@ public:
         m_testSurface->initializeCurrentFrame();
         m_testSurface->getPicture();
         m_imageBuffer->context()->clearRect(FloatRect(FloatPoint(0, 0), FloatSize(m_testSurface->size())));
-        m_testSurface->didDraw();
+        m_fakeImageBufferClient->fakeDraw();
+        EXPECT_EQ(1, m_fakeImageBufferClient->frameCount());
         m_testSurface->getPicture();
+        EXPECT_EQ(2, m_fakeImageBufferClient->frameCount());
         expectDisplayListEnabled(true);
     }
 
@@ -122,6 +199,7 @@ public:
 
 private:
     RecordingImageBufferSurface* m_testSurface;
+    OwnPtr<FakeImageBufferClient> m_fakeImageBufferClient;
     OwnPtr<ImageBuffer> m_imageBuffer;
 };
 
@@ -236,9 +314,11 @@ TEST_F(RecordingImageBufferSurfaceTest, testNoFallbackWithClear)
     testNoFallbackWithClear();
 }
 
+DEFINE_TEST_TASK_WRAPPER_CLASS(testNonAnimatedCanvasUpdate)
 TEST_F(RecordingImageBufferSurfaceTest, testNonAnimatedCanvasUpdate)
 {
-    testNonAnimatedCanvasUpdate();
+    CALL_TEST_TASK_WRAPPER(testNonAnimatedCanvasUpdate)
+    expectDisplayListEnabled(true);
 }
 
 DEFINE_TEST_TASK_WRAPPER_CLASS(testAnimatedWithoutClear)

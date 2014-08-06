@@ -92,7 +92,11 @@ public:
 
     GraphicsContext* context() const;
 
-    void didDraw() { m_surface->didDraw(); }
+    // Called at the end of a task that rendered a whole frame
+    void finalizeFrame();
+    void didFinalizeFrame();
+
+    bool isDirty();
 
     const SkBitmap& bitmap() const;
 
@@ -123,7 +127,6 @@ public:
     void flush();
 
     void notifySurfaceInvalid();
-    void didPresent();
 
 private:
     ImageBuffer(PassOwnPtr<ImageBufferSurface>);

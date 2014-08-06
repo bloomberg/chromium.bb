@@ -53,7 +53,7 @@ public:
     }
 
     // ImageBufferSurface implementation
-    virtual void didDraw() OVERRIDE { m_layerBridge->didDraw(); }
+    virtual void finalizeFrame() OVERRIDE { m_layerBridge->finalizeFrame(); }
     virtual void willReadback() OVERRIDE { m_layerBridge->willReadback(); }
     virtual SkCanvas* canvas() const OVERRIDE { return m_layerBridge->canvas(); }
     virtual bool isValid() const OVERRIDE { return m_layerBridge && m_layerBridge->checkSurfaceValid(); }

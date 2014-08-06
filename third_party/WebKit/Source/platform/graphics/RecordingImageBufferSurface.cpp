@@ -18,20 +18,15 @@ namespace blink {
 
 RecordingImageBufferSurface::RecordingImageBufferSurface(const IntSize& size, OpacityMode opacityMode)
     : ImageBufferSurface(size, opacityMode)
-    , m_graphicsContext(0)
+    , m_imageBuffer(0)
     , m_initialSaveCount(0)
     , m_frameWasCleared(true)
-    , m_recordedSinceLastFrameWasFinalized(false)
 {
     initializeCurrentFrame();
 }
 
 RecordingImageBufferSurface::~RecordingImageBufferSurface()
-{
-    if (m_recordedSinceLastFrameWasFinalized) {
-        blink::Platform::current()->currentThread()->removeTaskObserver(this);
-    }
-}
+{ }
 
 void RecordingImageBufferSurface::initializeCurrentFrame()
 {
@@ -39,18 +34,18 @@ void RecordingImageBufferSurface::initializeCurrentFrame()
     m_currentFrame = adoptPtr(new SkPictureRecorder);
     m_currentFrame->beginRecording(size().width(), size().height(), &rTreeFactory);
     m_initialSaveCount = m_currentFrame->getRecordingCanvas()->getSaveCount();
-    if (m_graphicsContext) {
-        m_graphicsContext->resetCanvas(m_currentFrame->getRecordingCanvas());
-        m_graphicsContext->setRegionTrackingMode(GraphicsContext::RegionTrackingOverwrite);
+    if (m_imageBuffer) {
+        m_imageBuffer->context()->resetCanvas(m_currentFrame->getRecordingCanvas());
+        m_imageBuffer->context()->setRegionTrackingMode(GraphicsContext::RegionTrackingOverwrite);
     }
 }
 
 void RecordingImageBufferSurface::setImageBuffer(ImageBuffer* imageBuffer)
 {
-    m_graphicsContext = imageBuffer ? imageBuffer->context() : 0;
-    if (m_currentFrame && m_graphicsContext) {
-        m_graphicsContext->setRegionTrackingMode(GraphicsContext::RegionTrackingOverwrite);
-        m_graphicsContext->resetCanvas(m_currentFrame->getRecordingCanvas());
+    m_imageBuffer = imageBuffer;
+    if (m_currentFrame && m_imageBuffer) {
+        m_imageBuffer->context()->setRegionTrackingMode(GraphicsContext::RegionTrackingOverwrite);
+        m_imageBuffer->context()->resetCanvas(m_currentFrame->getRecordingCanvas());
     }
 }
 
@@ -78,9 +73,9 @@ void RecordingImageBufferSurface::fallBackToRasterCanvas()
         m_currentFrame.clear();
     }
 
-    if (m_graphicsContext) {
-        m_graphicsContext->setRegionTrackingMode(GraphicsContext::RegionTrackingDisabled);
-        m_graphicsContext->resetCanvas(m_rasterCanvas.get());
+    if (m_imageBuffer) {
+        m_imageBuffer->context()->setRegionTrackingMode(GraphicsContext::RegionTrackingDisabled);
+        m_imageBuffer->context()->resetCanvas(m_rasterCanvas.get());
     }
 }
 
@@ -95,7 +90,10 @@ SkCanvas* RecordingImageBufferSurface::canvas() const
 
 PassRefPtr<SkPicture> RecordingImageBufferSurface::getPicture()
 {
-    if (finalizeFrame()) {
+    bool canUsePicture = finalizeFrameInternal();
+    m_imageBuffer->didFinalizeFrame();
+
+    if (canUsePicture) {
         return m_previousFrame;
     }
 
@@ -104,28 +102,9 @@ PassRefPtr<SkPicture> RecordingImageBufferSurface::getPicture()
     return nullptr;
 }
 
-void RecordingImageBufferSurface::didDraw()
+void RecordingImageBufferSurface::finalizeFrame()
 {
-    if (!m_recordedSinceLastFrameWasFinalized && m_currentFrame) {
-        m_recordedSinceLastFrameWasFinalized = true;
-        blink::Platform::current()->currentThread()->addTaskObserver(this);
-    }
-}
-
-void RecordingImageBufferSurface::willProcessTask()
-{
-}
-
-void RecordingImageBufferSurface::didProcessTask()
-{
-    ASSERT(m_recordedSinceLastFrameWasFinalized);
-    // This is to insert a frame barrier at the end of each script execution
-    // task that touches the canvas. finalizeFrame() will discard the previous
-    // frame and replace it with the current frame even if it has not been
-    // consumed, thus allowing the renderer to skip ahead to the most recently
-    // recorded frame.
-    if (!finalizeFrame()) {
-        ASSERT(!m_rasterCanvas);
+    if (!finalizeFrameInternal() && !m_rasterCanvas) {
         fallBackToRasterCanvas();
     }
 }
@@ -135,23 +114,24 @@ void RecordingImageBufferSurface::didClearCanvas()
     m_frameWasCleared = true;
 }
 
-bool RecordingImageBufferSurface::finalizeFrame()
+bool RecordingImageBufferSurface::finalizeFrameInternal()
 {
+    if (!m_imageBuffer->isDirty()) {
+        if (m_currentFrame && !m_previousFrame) {
+            // Create an initial blank frame
+            m_previousFrame = adoptRef(m_currentFrame->endRecording());
+            initializeCurrentFrame();
+        }
+        return m_currentFrame;
+    }
+
     if (!m_currentFrame) {
-        ASSERT(!m_recordedSinceLastFrameWasFinalized);
         return false;
     }
 
-    bool canvasHasChanged = m_recordedSinceLastFrameWasFinalized;
-    if (m_recordedSinceLastFrameWasFinalized) {
-        blink::Platform::current()->currentThread()->removeTaskObserver(this);
-        m_recordedSinceLastFrameWasFinalized = false;
-    }
-
     IntRect canvasRect(IntPoint(0, 0), size());
-    if (!m_frameWasCleared && !m_graphicsContext->opaqueRegion().asRect().contains(canvasRect)) {
-        // No clear happened. If absolutely nothing was drawn, then we can just continue to use the previous frame.
-        return !canvasHasChanged;
+    if (!m_frameWasCleared && !m_imageBuffer->context()->opaqueRegion().asRect().contains(canvasRect)) {
+        return false;
     }
 
     SkCanvas* oldCanvas = m_currentFrame->getRecordingCanvas(); // Could be raster or picture

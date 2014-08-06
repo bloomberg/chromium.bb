@@ -23,6 +23,7 @@
         ctx.fillRect(0, 0, 10, 10);
         ctx.fillRect(40, 40, 10, 10);
         ctx.fillRect(80, 80, 10, 10);
+        window.testIsAsync = true;
         
         function repaintTest()
         {
@@ -30,6 +31,9 @@
             ctx.putImageData(imageDataGreen, 0, 0);
             ctx.putImageData(imageDataGreen, 40, 40);
             ctx.putImageData(imageDataRedWithInsetGreen, 70, 70, 10, 10, 10, 10);
+            // Because canvas invalidations are processed at the end of the current task,
+            // the repaint test has to end in a subsequent task in order to capture the repaint.
+            setTimeout(finishRepaintTest, 0);
         }
 
         window.onload = runRepaintTest;

@@ -459,9 +459,6 @@ bool Canvas2DLayerBridge::prepareMailbox(blink::WebExternalTextureMailbox* outMa
     mailboxInfo->m_parentLayerBridge = this;
     *outMailbox = mailboxInfo->m_mailbox;
 
-    if (m_imageBuffer)
-        m_imageBuffer->didPresent();
-
     return true;
 }
 
@@ -546,7 +543,7 @@ blink::WebLayer* Canvas2DLayerBridge::layer() const
     return m_layer->layer();
 }
 
-void Canvas2DLayerBridge::didDraw()
+void Canvas2DLayerBridge::finalizeFrame()
 {
     ASSERT(!m_destructionInProgress);
     Canvas2DLayerManager::get().layerDidDraw(this);

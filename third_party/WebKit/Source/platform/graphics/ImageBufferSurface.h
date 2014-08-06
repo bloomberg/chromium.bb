@@ -60,7 +60,6 @@ public:
 
     virtual SkCanvas* canvas() const = 0;
     virtual const SkBitmap& bitmap();
-    virtual void didDraw() { }
     virtual void willReadback() { }
     virtual bool isValid() const = 0;
     virtual bool restore() { return false; };
@@ -75,6 +74,7 @@ public:
     virtual void setImageBuffer(ImageBuffer*) { }
     virtual PassRefPtr<SkPicture> getPicture();
     virtual void didClearCanvas() { }
+    virtual void finalizeFrame() { }
 
     OpacityMode opacityMode() const { return m_opacityMode; }
     const IntSize& size() const { return m_size; }

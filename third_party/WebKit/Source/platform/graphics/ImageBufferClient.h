@@ -37,7 +37,8 @@ class ImageBufferClient {
 public:
     virtual ~ImageBufferClient() { }
     virtual void notifySurfaceInvalid() = 0;
-    virtual void didPresent() = 0;
+    virtual bool isDirty() = 0;
+    virtual void didFinalizeFrame() = 0;
 };
 
 }

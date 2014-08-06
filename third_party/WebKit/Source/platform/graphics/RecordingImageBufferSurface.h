@@ -16,9 +16,9 @@ class RecordingImageBufferSurfaceTest;
 
 namespace blink {
 
-class GraphicsContext;
+class ImageBuffer;
 
-class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface, public blink::WebThread::TaskObserver {
+class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
     WTF_MAKE_NONCOPYABLE(RecordingImageBufferSurface); WTF_MAKE_FAST_ALLOCATED;
 public:
     RecordingImageBufferSurface(const IntSize&, OpacityMode = NonOpaque);
@@ -29,7 +29,7 @@ public:
     virtual PassRefPtr<SkPicture> getPicture() OVERRIDE;
     virtual bool isValid() const OVERRIDE { return true; }
     virtual void willReadback() OVERRIDE;
-    virtual void didDraw() OVERRIDE;
+    virtual void finalizeFrame() OVERRIDE;
     virtual void didClearCanvas() OVERRIDE;
     virtual void setImageBuffer(ImageBuffer*) OVERRIDE;
 
@@ -37,19 +37,14 @@ private:
     friend class ::RecordingImageBufferSurfaceTest; // for unit testing
     void fallBackToRasterCanvas();
     void initializeCurrentFrame();
-    bool finalizeFrame();
-
-    // Implementation of WebThread::TaskObserver methods
-    virtual void willProcessTask() OVERRIDE;
-    virtual void didProcessTask() OVERRIDE;
+    bool finalizeFrameInternal();
 
     OwnPtr<SkPictureRecorder> m_currentFrame;
     RefPtr<SkPicture> m_previousFrame;
     OwnPtr<SkCanvas> m_rasterCanvas;
-    GraphicsContext* m_graphicsContext;
+    ImageBuffer* m_imageBuffer;
     int m_initialSaveCount;
     bool m_frameWasCleared;
-    bool m_recordedSinceLastFrameWasFinalized;
 };
 
 } // namespace blink

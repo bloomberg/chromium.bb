@@ -104,13 +104,29 @@ GraphicsContext* ImageBuffer::context() const
 
 const SkBitmap& ImageBuffer::bitmap() const
 {
-    m_surface->didDraw(); // conservative
     return m_surface->bitmap();
 }
 
 bool ImageBuffer::isSurfaceValid() const
 {
     return m_surface->isValid();
+}
+
+bool ImageBuffer::isDirty()
+{
+    return m_client ? m_client->isDirty() : false;
+}
+
+void ImageBuffer::didFinalizeFrame()
+{
+    if (m_client)
+        m_client->didFinalizeFrame();
+}
+
+void ImageBuffer::finalizeFrame()
+{
+    m_surface->finalizeFrame();
+    didFinalizeFrame();
 }
 
 bool ImageBuffer::restoreSurface() const
@@ -122,12 +138,6 @@ void ImageBuffer::notifySurfaceInvalid()
 {
     if (m_client)
         m_client->notifySurfaceInvalid();
-}
-
-void ImageBuffer::didPresent()
-{
-    if (m_client)
-        m_client->didPresent();
 }
 
 static SkBitmap deepSkBitmapCopy(const SkBitmap& bitmap)

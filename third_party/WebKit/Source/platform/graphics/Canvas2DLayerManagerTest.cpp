@@ -237,11 +237,11 @@ protected:
     void doDeferredFrameTestTask(FakeCanvas2DLayerBridge* layer, bool skipCommands)
     {
         EXPECT_FALSE(Canvas2DLayerManager::get().m_taskObserverActive);
-        layer->didDraw();
+        layer->finalizeFrame();
         layer->storageAllocatedForRecordingChanged(1);
         EXPECT_TRUE(Canvas2DLayerManager::get().m_taskObserverActive);
         if (skipCommands) {
-            layer->didDraw();
+            layer->finalizeFrame();
             layer->skippedPendingDrawCommands();
         }
         blink::Platform::current()->currentThread()->exitRunLoop();
