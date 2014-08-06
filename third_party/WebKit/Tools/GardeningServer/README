@@ -1,8 +1,8 @@
-garden-o-matic must be run from a server in order to handle polymer imports correctly.
+sheriff-o-matic must be run from a server in order to handle polymer imports correctly.
 
 1. cd Tools
 2. python -m SimpleHTTPServer
-3. Load http://localhost:8000/GardeningServer/garden-o-matic.html
+3. Load http://localhost:8000/GardeningServer/sheriff-o-matic.html
 
 Run the tests via http://localhost:8000/GardeningServer/run-unittests.html.
 
