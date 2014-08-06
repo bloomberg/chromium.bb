@@ -4,34 +4,40 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
+<link rel="import" href="../model/ct-builder.html">
 <link rel="import" href="ct-builder.html">
 
 <polymer-element name="ct-builder-grid" attributes="failures">
   <template>
-    <template repeat="{{ builder in _builders | _keys }}">
-      <template repeat="{{ masterUrl in _builders[builder] | _keys }}">
-        <ct-builder builder="{{ builder }}" masterUrl="{{ masterUrl }}"></ct-builder>
-      </template>
+    <template repeat="{{ builder in _builders }}">
+      <ct-builder builder="{{ builder }}"></ct-builder>
     </template>
   </template>
   <script>
     Polymer({
       failures: null,
-      _builders: {},
-
-      _keys: function(obj) {
-        return Object.keys(obj).sort();
-      },
+      _builders: null,
 
       failuresChanged: function() {
-        this._builders = {};
+        var builderMap = {};
         this.failures.forEach(function(failure) {
           var results = failure.resultNodesByBuilder;
           Object.keys(results, (function(builder, result) {
-            if (!this._builders[builder])
-              this._builders[builder] = {};
-            this._builders[builder][result.masterUrl] = 1;
+            if (!builderMap[builder])
+              builderMap[builder] = {};
+            // This assumes that duplicate builder/master pairs all have the same
+            // earliestFailingBuild.
+            builderMap[builder][result.masterUrl] = result.earliestFailingBuild;
           }).bind(this));
+        }, this);
+
+        this._builders = [];
+
+        Object.keys(builderMap).sort().forEach(function(builder) {
+          Object.keys(builderMap[builder]).sort().forEach(function(masterUrl) {
+            this._builders.push(new CTBuilder(masterUrl, builder,
+                builderMap[builder][masterUrl]));
+          }, this);
         }, this);
       },
     });

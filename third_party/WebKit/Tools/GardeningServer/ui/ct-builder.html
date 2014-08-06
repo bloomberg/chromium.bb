@@ -4,16 +4,11 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<!--
-Styled link to a builder. If an array is passed to |steps|, the
-link will show the builder name and architecture followed by the steps instead.
--->
-<polymer-element name="ct-builder" attributes="builder masterUrl steps">
+<polymer-element name="ct-builder" attributes="builder" noscript>
   <template>
     <style>
       a {
         border: 1px solid gray;
-        color: black;
         display: inline-block;
         font-size: 11px;
         margin-bottom: 2px;
@@ -22,38 +17,13 @@ link will show the builder name and architecture followed by the steps instead.
       }
 
       span {
-        padding: 0 2px;
-      }
-
-      .builder {
         background-color: #555;
         color: white;
+        padding: 0 2px;
       }
     </style>
-    <a href="{{ builder|builderURL }}">
-      <span class="builder">{{ builder }}</span>
-      <template if="{{ stepList }}">
-        <span class="details">{{ stepList }}</span>
-      </template>
+    <a href="{{ builder.buildUrl }}">
+      <span>{{ builder.builder }}</span>
     </a>
   </template>
-  <script>
-    Polymer({
-      builder: '',
-      masterUrl: '',
-      steps: [],
-
-      stepsChanged: function() {
-        this.stepList = this.steps.join(', ');
-      },
-
-      builderURL: function() {
-        // FIXME: This should move a model class.
-        // FIXME: Don't link to the waterfall, link to the first failing build.
-        return this.masterUrl + '/waterfall?' + Object.toQueryString({
-          builder: this.builder,
-        });
-      },
-    });
-  </script>
 </polymer-element>

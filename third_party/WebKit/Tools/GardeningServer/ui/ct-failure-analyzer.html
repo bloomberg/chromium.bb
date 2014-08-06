@@ -98,6 +98,7 @@ found in the LICENSE file.
             // FIXME: Rename to failureType.
             actual: failureType,
             lastFailingBuild: failure.last_failing_build,
+            earliestFailingBuild: failure.failing_build,
             masterUrl: failure.master_url,
           };
         }.bind(this));

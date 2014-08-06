@@ -6,36 +6,30 @@ found in the LICENSE file.
 
 <link rel="import" href="ct-builder.html">
 
+<link rel="import" href="../model/ct-builder.html">
+
 <script>
 (function () {
 
 module("ct-builder");
 
-asyncTest("basic", 2, function() {
+asyncTest("basic", 4, function() {
   var builder = document.createElement('ct-builder');
-  builder.builder = 'WebKit Linux (dbg)';
+
+  var masterUrl = 'http://url/';
+  var builderName = 'WebKit Linux (dbg)';
+  var firstFailingBuild = '1234';
+  builder.builder = new CTBuilder(masterUrl,
+    builderName, firstFailingBuild);
 
   builder.async(function() {
     var html = builder.shadowRoot.innerHTML;
 
     var a = builder.shadowRoot.querySelector('a');
     ok(a);
-    notEqual(a.href.indexOf('WebKit+Linux+(dbg)'), -1);
-
-    start();
-  });
-});
-
-asyncTest("steps", 3, function() {
-  var builder = document.createElement('ct-builder');
-  builder.builder = 'WebKit Linux (dbg)';
-  builder.steps = ['gclient_revert', 'compile', 'unittests'];
-
-  builder.async(function() {
-    var a = builder.shadowRoot.querySelector('a');
-    ok(a);
-    notEqual(a.href.indexOf('WebKit+Linux+(dbg)'), -1);
-    notEqual(a.innerText.indexOf('gclient_revert, compile, unittests'), -1);
+    equal(a.href.indexOf(masterUrl), 0);
+    notEqual(a.href.indexOf(encodeURIComponent(builderName)), -1);
+    notEqual(a.href.indexOf(firstFailingBuild), -1);
 
     start();
   });

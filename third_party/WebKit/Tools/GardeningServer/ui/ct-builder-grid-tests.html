@@ -6,6 +6,8 @@ found in the LICENSE file.
 
 <link rel="import" href="ct-builder-grid.html">
 
+<link rel="import" href="ct-builder.html">
+
 <script>
 (function () {
 
@@ -15,14 +17,17 @@ var kExampleFailures = [{
         "WebKit Win7 (dbg)": {
             "actual": "CRASH",
             "masterUrl": "http://master-one",
+            "earliestFailingBuild": "1",
         },
         "WebKit Mac10.6 (dbg)": {
             "actual": "CRASH",
             "masterUrl": "http://master-one",
+            "earliestFailingBuild": "2",
         },
         "WebKit Mac10.7": {
             "actual": "TEXT",
             "masterUrl": "http://master-one",
+            "earliestFailingBuild": "3",
         }
     },
     "oldestFailingRevision": 177164,
@@ -33,10 +38,12 @@ var kExampleFailures = [{
         "WebKit Win7 (dbg)": {
             "actual": "TEXT",
             "masterUrl": "http://master-one",
+            "earliestFailingBuild": "1",
         },
         "WebKit Mac10.7": {
             "actual": "CRASH",
             "masterUrl": "http://master-two",
+            "earliestFailingBuild": "4",
         },
     },
     "oldestFailingRevision": 177164,
@@ -57,21 +64,21 @@ var kExampleBuilderLatestRevisions = {
 
 module("ct-builder-grid");
 
-asyncTest("basic", 9, function() {
+asyncTest("basic", 5, function() {
   var grid = document.createElement('ct-builder-grid');
   grid.failures = kExampleFailures;
 
   requestAnimationFrame(function() {
     var builders = grid.shadowRoot.querySelectorAll('ct-builder');
     equal(builders.length, 4);
-    equal(builders[0].builder, 'WebKit Mac10.6 (dbg)');
-    equal(builders[0].masterUrl, 'http://master-one');
-    equal(builders[1].builder, 'WebKit Mac10.7');
-    equal(builders[1].masterUrl, 'http://master-one');
-    equal(builders[2].builder, 'WebKit Mac10.7');
-    equal(builders[2].masterUrl, 'http://master-two');
-    equal(builders[3].builder, 'WebKit Win7 (dbg)');
-    equal(builders[3].masterUrl, 'http://master-one');
+    deepEqual(builders[0].builder, new CTBuilder(
+        'http://master-one', 'WebKit Mac10.6 (dbg)', '2'));
+    deepEqual(builders[1].builder, new CTBuilder(
+        'http://master-one', 'WebKit Mac10.7', '3'));
+    deepEqual(builders[2].builder, new CTBuilder(
+        'http://master-two', 'WebKit Mac10.7', '4'));
+    deepEqual(builders[3].builder, new CTBuilder(
+        'http://master-one', 'WebKit Win7 (dbg)', '1'));
 
     start();
   });
