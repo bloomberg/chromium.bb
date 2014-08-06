@@ -16,8 +16,7 @@ assert(is_win)
 gyp_win_tool_path = rebase_path("//tools/gyp/pylib/gyp/win_tool.py",
                                 root_build_dir)
 exec_script("setup_toolchain.py",
-            [ visual_studio_path, gyp_win_tool_path, windows_sdk_path ],
-            "string")
+            [ visual_studio_path, gyp_win_tool_path, windows_sdk_path ])
 
 stamp_command = "$python_path gyp-win-tool stamp \$out"
 copy_command = "$python_path gyp-win-tool recursive-mirror \$in \$out"
