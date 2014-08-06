@@ -446,7 +446,12 @@ PASS areValuesIdentical(blobObj1, blobObj2) is true
 PASS areValuesIdentical(dictionaryWithBlob1, dictionaryWithBlob2) is true
 PASS self.blobContent1 is self.blobContent2
 
-Test deserialization of File objects
+Files created using the File constructor
+PASS areValuesIdentical(fileObj1, fileObj2) is true
+PASS areValuesIdentical(dictionaryWithFile1, dictionaryWithFile2) is true
+PASS self.fileContents1 is self.fileContents2
+
+Files selected by the user in an <input type='file'>
 PASS areValuesIdentical(fileObj1, fileObj2) is true
 PASS areValuesIdentical(dictionaryWithFile1, dictionaryWithFile2) is true
 PASS self.fileContents1 is self.fileContents2

@@ -117,10 +117,10 @@ File::File(const String& path, const String& name, ContentTypeLookupPolicy polic
     ScriptWrappable::init(this);
 }
 
-File::File(const String& path, const String& name, const String& relativePath, bool hasSnaphotData, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle> blobDataHandle)
+File::File(const String& path, const String& name, const String& relativePath, UserVisibility userVisibility, bool hasSnaphotData, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle> blobDataHandle)
     : Blob(blobDataHandle)
     , m_hasBackingFile(!path.isEmpty() || !relativePath.isEmpty())
-    , m_userVisibility(File::IsNotUserVisible)
+    , m_userVisibility(userVisibility)
     , m_path(path)
     , m_name(name)
     , m_snapshotSize(hasSnaphotData ? static_cast<long long>(size) : -1)

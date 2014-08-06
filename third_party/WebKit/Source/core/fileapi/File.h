@@ -62,13 +62,13 @@ public:
     }
 
     // For deserialization.
-    static PassRefPtrWillBeRawPtr<File> createFromSerialization(const String& path, const String& name, const String& relativePath, bool hasSnaphotData, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle> blobDataHandle)
+    static PassRefPtrWillBeRawPtr<File> createFromSerialization(const String& path, const String& name, const String& relativePath, UserVisibility userVisibility, bool hasSnaphotData, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle> blobDataHandle)
     {
-        return adoptRefWillBeNoop(new File(path, name, relativePath, hasSnaphotData, size, lastModified, blobDataHandle));
+        return adoptRefWillBeNoop(new File(path, name, relativePath, userVisibility, hasSnaphotData, size, lastModified, blobDataHandle));
     }
     static PassRefPtrWillBeRawPtr<File> createFromIndexedSerialization(const String& path, const String& name, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle> blobDataHandle)
     {
-        return adoptRefWillBeNoop(new File(path, name, String(), true, size, lastModified, blobDataHandle));
+        return adoptRefWillBeNoop(new File(path, name, String(), IsNotUserVisible, true, size, lastModified, blobDataHandle));
     }
 
     static PassRefPtrWillBeRawPtr<File> createWithRelativePath(const String& path, const String& relativePath);
@@ -132,7 +132,7 @@ public:
 private:
     File(const String& path, ContentTypeLookupPolicy, UserVisibility);
     File(const String& path, const String& name, ContentTypeLookupPolicy, UserVisibility);
-    File(const String& path, const String& name, const String& relativePath, bool hasSnaphotData, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle>);
+    File(const String& path, const String& name, const String& relativePath, UserVisibility, bool hasSnaphotData, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle>);
     File(const String& name, double modificationTime, PassRefPtr<BlobDataHandle>);
     File(const String& name, const FileMetadata&);
     File(const KURL& fileSystemURL, const FileMetadata&);

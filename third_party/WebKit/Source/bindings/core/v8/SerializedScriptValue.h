@@ -68,7 +68,8 @@ public:
     // Version 4: Extended File serialization to be complete.
     // Version 5: Added CryptoKeyTag for Key objects.
     // Version 6: Added indexed serialization for File, Blob, and FileList.
-    static const uint32_t wireFormatVersion = 6;
+    // Version 7: Extended File serialization with user visibility.
+    static const uint32_t wireFormatVersion = 7;
 
     ~SerializedScriptValue();
 

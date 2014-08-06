@@ -1,4 +1,4 @@
-var kSerializedScriptValueVersion = 6;
+var kSerializedScriptValueVersion = 7;
 
 function forVersion(version, values) {
     var versionTag = 0xff;
@@ -63,6 +63,13 @@ function areValuesIdentical(a, b) {
             return { key: key, value: sortObject(object[key]) };
         });
     }
+    var jsonA = JSON.stringify(sortObject(a));
+    var jsonB = JSON.stringify(sortObject(b));
+    if (jsonA != jsonB) {
+        debug("areValuesIdentical will fail");
+        debug("object A: " + jsonA);
+        debug("object B: " + jsonB);
+    }
     return JSON.stringify(sortObject(a)) === JSON.stringify(sortObject(b));
 }
 
@@ -126,10 +133,7 @@ function testBlobSerialization() {
     shouldBe("self.blobContent1", "self.blobContent2");
 }
 
-function testFileSerialization() {
-    debug("");
-    window.jsTestIsAsync = true;
-
+function _testFileSerialization(sourceFile, done) {
     function checkIfSameContent(file1, file2, continuation) {
         function step1()  {
             var fileReader = new FileReader();
@@ -137,6 +141,10 @@ function testFileSerialization() {
                 self.fileContents1 = fileReader.result;
                 step2();
             };
+            fileReader.onerror = function () {
+                testFailed("could not read file1. " + fileReader.error.message);
+                done();
+            }
             fileReader.readAsText(file1);
         }
         function step2() {
@@ -145,6 +153,10 @@ function testFileSerialization() {
                 self.fileContents2 = fileReader.result;
                 finish();
             };
+            fileReader.onerror = function () {
+                testFailed("could not read file2. " + fileReader.error.message);
+                done();
+            }
             fileReader.readAsText(file2);
         }
         function finish() {
@@ -154,8 +166,7 @@ function testFileSerialization() {
         step1();
     }
 
-    debug("Test deserialization of File objects");
-    self.fileObj1 = new File(['The', ' contents'], 'testfile.txt', {type: 'text/plain', lastModified: 0});
+    self.fileObj1 = sourceFile;
     self.fileObj2 = internals.deserializeBuffer(internals.serializeObject(self.fileObj1));
     shouldBeTrue("areValuesIdentical(fileObj1, fileObj2)");
     self.dictionaryWithFile1 = {file: fileObj1, string: 'stringValue'};
@@ -163,5 +174,39 @@ function testFileSerialization() {
     shouldBeTrue("areValuesIdentical(dictionaryWithFile1, dictionaryWithFile2)");
 
     // Read and compare actual contents.
-    checkIfSameContent(self.fileObj1, self.fileObj2, finishJSTest);
+    checkIfSameContent(self.fileObj1, self.fileObj2, done);
+}
+
+function testConstructedFileSerialization(done) {
+    debug("");
+    debug("Files created using the File constructor");
+
+    self.sourceFile = new File(['The', ' contents'], 'testfile.txt', {type: 'text/plain', lastModified: 0});
+    _testFileSerialization(sourceFile, done);
+}
+
+function testUserSelectedFileSerialization(done) {
+    debug("");
+    debug("Files selected by the user in an &lt;input type='file'&gt;");
+
+    var fileInput = document.getElementById("fileInput");
+    fileInput.addEventListener("change", function () {
+        self.sourceFile = fileInput.files.item(0);
+        _testFileSerialization(sourceFile, done);
+    });
+
+    eventSender.beginDragWithFiles(["resources/file.txt"]);
+    var centerX = fileInput.offsetLeft + fileInput.offsetWidth / 2;
+    var centerY = fileInput.offsetTop + fileInput.offsetHeight / 2;
+    eventSender.mouseMoveTo(centerX, centerY);
+    eventSender.mouseUp();
+}
+
+function testFileSerialization() {
+    window.jsTestIsAsync = true;
+    testConstructedFileSerialization(function () {
+        testUserSelectedFileSerialization(function () {
+          finishJSTest();
+        });
+    });
 }

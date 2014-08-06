@@ -672,7 +672,7 @@ private:
         doWriteWebCoreString(file.uuid());
         doWriteWebCoreString(file.type());
 
-        // FIXME don't use 4 bytes to encode a flag.
+        // FIXME don't use 1 byte to encode a flag.
         if (file.hasValidSnapshotMetadata()) {
             doWriteUint32(static_cast<uint8_t>(1));
 
@@ -682,8 +682,10 @@ private:
             doWriteUint64(static_cast<uint64_t>(size));
             doWriteNumber(lastModified);
         } else {
-            append(static_cast<uint8_t>(0));
+            doWriteUint32(static_cast<uint8_t>(0));
         }
+
+        doWriteUint32(static_cast<uint8_t>((file.userVisibility() == File::IsUserVisible) ? 1 : 0));
     }
 
     void doWriteArrayBuffer(const ArrayBuffer& arrayBuffer)
@@ -1466,7 +1468,7 @@ private:
         if (!m_blobInfo)
             return false;
         *index = m_blobInfo->size();
-        m_blobInfo->append(blink::WebBlobInfo(uuid, type, size));
+        m_blobInfo->append(WebBlobInfo(uuid, type, size));
         return true;
     }
 
@@ -1479,7 +1481,7 @@ private:
         double lastModified = invalidFileTime();
         file->captureSnapshot(size, lastModified);
         *index = m_blobInfo->size();
-        m_blobInfo->append(blink::WebBlobInfo(file->uuid(), file->path(), file->name(), file->type(), lastModified, size));
+        m_blobInfo->append(WebBlobInfo(file->uuid(), file->path(), file->name(), file->type(), lastModified, size));
         return true;
     }
 
@@ -2316,7 +2318,11 @@ private:
             if (!doReadNumber(&lastModified))
                 return nullptr;
         }
-        return File::createFromSerialization(path, name, relativePath, hasSnapshot > 0, size, lastModified, getOrCreateBlobDataHandle(uuid, type));
+        uint32_t isUserVisible = 1;
+        if (m_version >= 7 && !doReadUint32(&isUserVisible))
+            return nullptr;
+        const File::UserVisibility userVisibility = (isUserVisible > 0) ? File::IsUserVisible : File::IsNotUserVisible;
+        return File::createFromSerialization(path, name, relativePath, userVisibility, hasSnapshot > 0, size, lastModified, getOrCreateBlobDataHandle(uuid, type));
     }
 
     PassRefPtrWillBeRawPtr<File> readFileIndexHelper()
@@ -2327,7 +2333,7 @@ private:
         uint32_t index;
         if (!doReadUint32(&index) || index >= m_blobInfo->size())
             return nullptr;
-        const blink::WebBlobInfo& info = (*m_blobInfo)[index];
+        const WebBlobInfo& info = (*m_blobInfo)[index];
         return File::createFromIndexedSerialization(info.filePath(), info.fileName(), info.size(), info.lastModified(), getOrCreateBlobDataHandle(info.uuid(), info.type(), info.size()));
     }
 

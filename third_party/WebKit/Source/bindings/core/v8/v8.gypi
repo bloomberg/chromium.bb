@@ -167,6 +167,7 @@
             'ScriptPromiseResolverTest.cpp',
             'ScriptPromiseTest.cpp',
             'ScriptPromisePropertyTest.cpp',
+            'SerializedScriptValueTest.cpp',
             'V8BindingTest.cpp',
         ],
     },

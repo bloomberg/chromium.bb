@@ -2,9 +2,15 @@
 <html>
 <head>
 <script src="../../resources/js-test.js"></script>
-<script src="../storage/resources/serialized-script-value.js"></script>
+<script src="resources/serialized-script-value.js"></script>
 </head>
 <body>
+
+<div style="position: fixed; left: 0; top: 0;">
+    <!-- this shouldn't scroll, because we're dropping a file on it -->
+    <input type="file" id="fileInput" />
+</div>
+
 <script>
 
 function testSerialization(obj, values, oldFormat, serializeExceptionValue) {
