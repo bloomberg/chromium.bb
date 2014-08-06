@@ -1,0 +1,44 @@
+{
+  "Linux ASan LSan Tests (1)": {
+    "gtest_tests": [
+      "base_unittests",
+      "cacheinvalidation_unittests",
+      "crypto_unittests",
+      "device_unittests",
+      "gcm_unit_tests",
+      "gpu_unittests",
+      "jingle_unittests",
+      "net_unittests",
+      "sandbox_linux_unittests",
+      {"test": "browser_tests", "shard_index": 0, "total_shards": 3}
+    ]
+  },
+  "Linux ASan LSan Tests (2)": {
+    "gtest_tests": [
+      "display_unittests",
+      "media_unittests",
+      "ppapi_unittests",
+      "printing_unittests",
+      "remoting_unittests",
+      "unit_tests",
+      "url_unittests",
+      {"test": "browser_tests", "shard_index": 1, "total_shards": 3}
+    ]
+  },
+  "Linux ASan LSan Tests (3)": {
+    "gtest_tests": [
+      "cc_unittests",
+      "components_unittests",
+      "content_browsertests",
+      "interactive_ui_tests",
+      {"test": "browser_tests", "shard_index": 2, "total_shards": 3}
+    ]
+  },
+  "Linux ASan Tests (sandboxed)": {
+    "gtest_tests": [
+      "browser_tests",
+      "content_browsertests",
+      "interactive_ui_tests"
+    ]
+  }
+}
