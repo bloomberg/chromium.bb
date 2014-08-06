@@ -10,12 +10,12 @@
 
 namespace cc {
 
-FakePictureLayerImpl::FakePictureLayerImpl(
-    LayerTreeImpl* tree_impl,
-    int id,
-    scoped_refptr<PicturePileImpl> pile)
+FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl,
+                                           int id,
+                                           scoped_refptr<PicturePileImpl> pile)
     : PictureLayerImpl(tree_impl, id),
-      append_quads_count_(0) {
+      append_quads_count_(0),
+      did_become_active_call_count_(0) {
   pile_ = pile;
   SetBounds(pile_->tiling_size());
   SetContentBounds(pile_->tiling_size());
@@ -25,14 +25,19 @@ FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl,
                                            int id,
                                            scoped_refptr<PicturePileImpl> pile,
                                            const gfx::Size& layer_bounds)
-    : PictureLayerImpl(tree_impl, id), append_quads_count_(0) {
+    : PictureLayerImpl(tree_impl, id),
+      append_quads_count_(0),
+      did_become_active_call_count_(0) {
   pile_ = pile;
   SetBounds(layer_bounds);
   SetContentBounds(layer_bounds);
 }
 
 FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl, int id)
-    : PictureLayerImpl(tree_impl, id), append_quads_count_(0) {}
+    : PictureLayerImpl(tree_impl, id),
+      append_quads_count_(0),
+      did_become_active_call_count_(0) {
+}
 
 scoped_ptr<LayerImpl> FakePictureLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
@@ -151,6 +156,11 @@ void FakePictureLayerImpl::CreateDefaultTilingsAndTiles() {
   } else {
     DCHECK_EQ(tilings()->num_tilings(), 0u);
   }
+}
+
+void FakePictureLayerImpl::DidBecomeActive() {
+  PictureLayerImpl::DidBecomeActive();
+  ++did_become_active_call_count_;
 }
 
 }  // namespace cc

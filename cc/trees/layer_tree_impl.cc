@@ -579,6 +579,11 @@ void LayerTreeImpl::PushPersistedState(LayerTreeImpl* pending_tree) {
 
 static void DidBecomeActiveRecursive(LayerImpl* layer) {
   layer->DidBecomeActive();
+  if (layer->mask_layer())
+    layer->mask_layer()->DidBecomeActive();
+  if (layer->replica_layer() && layer->replica_layer()->mask_layer())
+    layer->replica_layer()->mask_layer()->DidBecomeActive();
+
   for (size_t i = 0; i < layer->children().size(); ++i)
     DidBecomeActiveRecursive(layer->children()[i]);
 }

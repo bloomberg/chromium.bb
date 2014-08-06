@@ -41,6 +41,11 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   virtual gfx::Size CalculateTileSize(
       const gfx::Size& content_bounds) const OVERRIDE;
 
+  virtual void DidBecomeActive() OVERRIDE;
+  size_t did_become_active_call_count() {
+    return did_become_active_call_count_;
+  }
+
   using PictureLayerImpl::AddTiling;
   using PictureLayerImpl::CleanUpTilingsOnActiveLayer;
   using PictureLayerImpl::CanHaveTilings;
@@ -110,6 +115,7 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   gfx::Size fixed_tile_size_;
 
   size_t append_quads_count_;
+  size_t did_become_active_call_count_;
 };
 
 }  // namespace cc
