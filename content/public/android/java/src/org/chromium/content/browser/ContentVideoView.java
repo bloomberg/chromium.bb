@@ -7,6 +7,7 @@ package org.chromium.content.browser;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.util.Log;
 import android.view.Gravity;
@@ -377,8 +378,8 @@ public class ContentVideoView extends FrameLayout
             boolean legacy) {
         ThreadUtils.assertOnUiThread();
         // The context needs be Activity to create the ContentVideoView correctly.
-        if (!(context instanceof Activity)) {
-            Log.w(TAG, "Wrong type of context, can't create fullscreen video");
+        if (!isActivityContext(context)) {
+            Log.e(TAG, "Wrong type of context, can't create fullscreen video");
             return null;
         }
         ContentVideoView videoView = null;
@@ -392,6 +393,15 @@ public class ContentVideoView extends FrameLayout
             return videoView;
         }
         return null;
+    }
+
+    private static boolean isActivityContext(Context context) {
+        // Only retrieve the base context if the supplied context is a ContextWrapper but not
+        // an Activity, given that Activity is already a subclass of ContextWrapper.
+        if (context instanceof ContextWrapper && !(context instanceof Activity)) {
+            context = ((ContextWrapper) context).getBaseContext();
+        }
+        return context instanceof Activity;
     }
 
     public void removeSurfaceView() {
