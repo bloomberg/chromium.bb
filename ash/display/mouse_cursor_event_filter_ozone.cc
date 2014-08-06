@@ -16,6 +16,9 @@ void MouseCursorEventFilter::OnDisplayConfigurationChanged() {
 }
 
 bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(ui::MouseEvent* event) {
+  if (event->flags() & ui::EF_IS_SYNTHESIZED)
+    return false;
+
   gfx::Point point_in_screen(event->location());
   aura::Window* target = static_cast<aura::Window*>(event->target());
   wm::ConvertPointToScreen(target, &point_in_screen);
