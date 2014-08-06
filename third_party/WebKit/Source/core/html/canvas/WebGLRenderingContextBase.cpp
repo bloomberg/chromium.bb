@@ -3872,7 +3872,7 @@ void WebGLRenderingContextBase::uniform2fv(const WebGLUniformLocation* location,
     if (isContextLost() || !validateUniformParameters("uniform2fv", location, v, 2))
         return;
 
-    webContext()->uniform2fv(location->location(), v->length() / 2, v->data());
+    webContext()->uniform2fv(location->location(), v->length() >> 1, v->data());
 }
 
 void WebGLRenderingContextBase::uniform2fv(const WebGLUniformLocation* location, GLfloat* v, GLsizei size)
@@ -3880,7 +3880,7 @@ void WebGLRenderingContextBase::uniform2fv(const WebGLUniformLocation* location,
     if (isContextLost() || !validateUniformParameters("uniform2fv", location, v, size, 2))
         return;
 
-    webContext()->uniform2fv(location->location(), size / 2, v);
+    webContext()->uniform2fv(location->location(), size >> 1, v);
 }
 
 void WebGLRenderingContextBase::uniform2i(const WebGLUniformLocation* location, GLint x, GLint y)
@@ -3901,7 +3901,7 @@ void WebGLRenderingContextBase::uniform2iv(const WebGLUniformLocation* location,
     if (isContextLost() || !validateUniformParameters("uniform2iv", location, v, 2))
         return;
 
-    webContext()->uniform2iv(location->location(), v->length() / 2, v->data());
+    webContext()->uniform2iv(location->location(), v->length() >> 1, v->data());
 }
 
 void WebGLRenderingContextBase::uniform2iv(const WebGLUniformLocation* location, GLint* v, GLsizei size)
@@ -3909,7 +3909,7 @@ void WebGLRenderingContextBase::uniform2iv(const WebGLUniformLocation* location,
     if (isContextLost() || !validateUniformParameters("uniform2iv", location, v, size, 2))
         return;
 
-    webContext()->uniform2iv(location->location(), size / 2, v);
+    webContext()->uniform2iv(location->location(), size >> 1, v);
 }
 
 void WebGLRenderingContextBase::uniform3f(const WebGLUniformLocation* location, GLfloat x, GLfloat y, GLfloat z)
@@ -3988,7 +3988,7 @@ void WebGLRenderingContextBase::uniform4fv(const WebGLUniformLocation* location,
     if (isContextLost() || !validateUniformParameters("uniform4fv", location, v, 4))
         return;
 
-    webContext()->uniform4fv(location->location(), v->length() / 4, v->data());
+    webContext()->uniform4fv(location->location(), v->length() >> 2, v->data());
 }
 
 void WebGLRenderingContextBase::uniform4fv(const WebGLUniformLocation* location, GLfloat* v, GLsizei size)
@@ -3996,7 +3996,7 @@ void WebGLRenderingContextBase::uniform4fv(const WebGLUniformLocation* location,
     if (isContextLost() || !validateUniformParameters("uniform4fv", location, v, size, 4))
         return;
 
-    webContext()->uniform4fv(location->location(), size / 4, v);
+    webContext()->uniform4fv(location->location(), size >> 2, v);
 }
 
 void WebGLRenderingContextBase::uniform4i(const WebGLUniformLocation* location, GLint x, GLint y, GLint z, GLint w)
@@ -4017,7 +4017,7 @@ void WebGLRenderingContextBase::uniform4iv(const WebGLUniformLocation* location,
     if (isContextLost() || !validateUniformParameters("uniform4iv", location, v, 4))
         return;
 
-    webContext()->uniform4iv(location->location(), v->length() / 4, v->data());
+    webContext()->uniform4iv(location->location(), v->length() >> 2, v->data());
 }
 
 void WebGLRenderingContextBase::uniform4iv(const WebGLUniformLocation* location, GLint* v, GLsizei size)
@@ -4025,21 +4025,21 @@ void WebGLRenderingContextBase::uniform4iv(const WebGLUniformLocation* location,
     if (isContextLost() || !validateUniformParameters("uniform4iv", location, v, size, 4))
         return;
 
-    webContext()->uniform4iv(location->location(), size / 4, v);
+    webContext()->uniform4iv(location->location(), size >> 2, v);
 }
 
 void WebGLRenderingContextBase::uniformMatrix2fv(const WebGLUniformLocation* location, GLboolean transpose, Float32Array* v)
 {
     if (isContextLost() || !validateUniformMatrixParameters("uniformMatrix2fv", location, transpose, v, 4))
         return;
-    webContext()->uniformMatrix2fv(location->location(), v->length() / 4, transpose, v->data());
+    webContext()->uniformMatrix2fv(location->location(), v->length() >> 2, transpose, v->data());
 }
 
 void WebGLRenderingContextBase::uniformMatrix2fv(const WebGLUniformLocation* location, GLboolean transpose, GLfloat* v, GLsizei size)
 {
     if (isContextLost() || !validateUniformMatrixParameters("uniformMatrix2fv", location, transpose, v, size, 4))
         return;
-    webContext()->uniformMatrix2fv(location->location(), size / 4, transpose, v);
+    webContext()->uniformMatrix2fv(location->location(), size >> 2, transpose, v);
 }
 
 void WebGLRenderingContextBase::uniformMatrix3fv(const WebGLUniformLocation* location, GLboolean transpose, Float32Array* v)
@@ -4060,14 +4060,14 @@ void WebGLRenderingContextBase::uniformMatrix4fv(const WebGLUniformLocation* loc
 {
     if (isContextLost() || !validateUniformMatrixParameters("uniformMatrix4fv", location, transpose, v, 16))
         return;
-    webContext()->uniformMatrix4fv(location->location(), v->length() / 16, transpose, v->data());
+    webContext()->uniformMatrix4fv(location->location(), v->length() >> 4, transpose, v->data());
 }
 
 void WebGLRenderingContextBase::uniformMatrix4fv(const WebGLUniformLocation* location, GLboolean transpose, GLfloat* v, GLsizei size)
 {
     if (isContextLost() || !validateUniformMatrixParameters("uniformMatrix4fv", location, transpose, v, size, 16))
         return;
-    webContext()->uniformMatrix4fv(location->location(), size / 16, transpose, v);
+    webContext()->uniformMatrix4fv(location->location(), size >> 4, transpose, v);
 }
 
 void WebGLRenderingContextBase::useProgram(WebGLProgram* program)
@@ -4187,13 +4187,9 @@ void WebGLRenderingContextBase::vertexAttribPointer(GLuint index, GLint size, GL
         synthesizeGLError(GL_INVALID_OPERATION, "vertexAttribPointer", "no bound ARRAY_BUFFER");
         return;
     }
-    // Determine the number of elements the bound buffer can hold, given the offset, size, type and stride
     unsigned typeSize = sizeInBytes(type);
-    if (!typeSize) {
-        synthesizeGLError(GL_INVALID_ENUM, "vertexAttribPointer", "invalid type");
-        return;
-    }
-    if ((stride % typeSize) || (static_cast<GLintptr>(offset) % typeSize)) {
+    ASSERT((typeSize & (typeSize - 1)) == 0); // Ensure that the value is POT.
+    if ((stride & (typeSize - 1)) || (static_cast<GLintptr>(offset) & (typeSize - 1))) {
         synthesizeGLError(GL_INVALID_OPERATION, "vertexAttribPointer", "stride or offset not valid for type");
         return;
     }
