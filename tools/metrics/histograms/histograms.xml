@@ -17653,6 +17653,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.DeviceConnectionStatus" enum="ConnectionStatus">
+  <owner>zqiu@chromium.org</owner>
+  <summary>
+    Chrome OS network performance metric that tracks the connection status of
+    the device. A sample is emitted once every 3 minutes.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.DHCPClientStatus" enum="NetworkDhcpClientStatus">
   <owner>pstew@chromium.org</owner>
   <summary>
@@ -18131,6 +18139,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.Wifi.NetworkProblemDetected"
+    enum="NetworkProblemType">
+  <owner>zqiu@chromium.org</owner>
+  <summary>
+    Chrome OS network performance metric that tracks the network problems
+    encountered by TrafficMonitor after WiFi connection is established.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.Wifi.PhyMode" enum="NetworkPhyModeType">
   <owner>quiche@chromium.org</owner>
   <summary>
@@ -18303,12 +18320,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.WiFi.UserInitiatedConnectionFailureReason"
+    enum="ConnectionFailureReason">
+  <owner>zqiu@chromium.org</owner>
+  <summary>
+    Chrome OS network performance metric that tracks the reasons of failed
+    user-initiated WiFi connection attempts. The result of the user-initiated
+    WiFi connection attempts are being tracked by
+    Network.Shill.WiFi.UserInitiatedConnectionResult.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.WiFi.UserInitiatedConnectionResult"
     enum="ConnectionResult">
   <owner>zqiu@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the result of
-    user-initiated wifi connection attempts.
+    user-initiated WiFi connection attempts.
   </summary>
 </histogram>
 
@@ -37069,10 +37097,30 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="GPU compositor"/>
 </enum>
 
+<enum name="ConnectionFailureReason" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Bad Passphrase"/>
+  <int value="2" label="Bad WEP Key"/>
+  <int value="3" label="Failed to Connect"/>
+  <int value="4" label="DHCP Failure"/>
+  <int value="5" label="DNS Lookup Failure"/>
+  <int value="6" label="EAP Authentication"/>
+  <int value="7" label="EAP Local TLS"/>
+  <int value="8" label="EAP Remote TLS"/>
+  <int value="9" label="Out-of-range"/>
+  <int value="10" label="Pin Missing"/>
+</enum>
+
 <enum name="ConnectionResult" type="int">
   <int value="0" label="Success"/>
   <int value="1" label="Failure"/>
   <int value="2" label="Aborted"/>
+</enum>
+
+<enum name="ConnectionStatus" type="int">
+  <int value="0" label="Offline"/>
+  <int value="1" label="Connected"/>
+  <int value="2" label="Online"/>
 </enum>
 
 <enum name="ConnectionType" type="int">
@@ -44096,6 +44144,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="7" label="Content Failure"/>
   <int value="8" label="Content Timeout"/>
   <int value="9" label="Unknown"/>
+</enum>
+
+<enum name="NetworkProblemType" type="int">
+  <int value="0" label="Congested TCP Queue"/>
+  <int value="1" label="DNS Failure"/>
 </enum>
 
 <enum name="NetworkSecurityType" type="int">
