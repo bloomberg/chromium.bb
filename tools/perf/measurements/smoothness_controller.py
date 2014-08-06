@@ -5,7 +5,7 @@ import sys
 
 from measurements import smooth_gesture_util
 from telemetry.timeline.model import TimelineModel
-from telemetry.page import page_measurement
+from telemetry.page import page_test
 from telemetry.page.actions import action_runner
 from telemetry.value import list_of_scalar_values
 from telemetry.value import scalar
@@ -22,7 +22,7 @@ DESCRIPTIONS = {
 }
 
 
-class MissingDisplayFrameRateError(page_measurement.MeasurementFailure):
+class MissingDisplayFrameRateError(page_test.MeasurementFailure):
   def __init__(self, name):
     super(MissingDisplayFrameRateError, self).__init__(
       'Missing display frame rate metrics: ' + name)

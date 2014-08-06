@@ -6,12 +6,11 @@ import sys
 import time
 
 from telemetry.core.util import TimeoutException
-from telemetry.page import page_measurement
 from telemetry.page import page_test
 from telemetry.value import scalar
 
 
-class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
+class RasterizeAndRecordMicro(page_test.PageTest):
   def __init__(self):
     super(RasterizeAndRecordMicro, self).__init__('')
     self._chrome_branch_number = None
@@ -83,7 +82,7 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
 
     benchmark_id = tab.EvaluateJavaScript('window.benchmark_results.id')
     if (not benchmark_id):
-      raise page_measurement.MeasurementFailure(
+      raise page_test.MeasurementFailure(
           'Failed to schedule rasterize_and_record_micro')
 
     tab.WaitForJavaScriptExpression(

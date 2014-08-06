@@ -3,10 +3,10 @@
 # found in the LICENSE file.
 
 from measurements import smoothness_controller
-from telemetry.page import page_measurement
+from telemetry.page import page_test
 
 
-class Repaint(page_measurement.PageMeasurement):
+class Repaint(page_test.PageTest):
   def __init__(self):
     super(Repaint, self).__init__('RunRepaint', False)
     self._smoothness_controller = None
@@ -62,7 +62,7 @@ class Repaint(page_measurement.PageMeasurement):
     self._micro_benchmark_id = tab.EvaluateJavaScript(
         'window.benchmark_results.id')
     if (not self._micro_benchmark_id):
-      raise page_measurement.MeasurementFailure(
+      raise page_test.MeasurementFailure(
           'Failed to schedule invalidation_benchmark.')
 
   def DidRunActions(self, page, tab):

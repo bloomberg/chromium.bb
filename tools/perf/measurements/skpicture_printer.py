@@ -4,14 +4,14 @@
 import glob
 import os
 
-from telemetry.page import page_measurement
+from telemetry.page import page_test
 from telemetry.value import scalar
 
 
 _JS = 'chrome.gpuBenchmarking.printToSkPicture("{0}");'
 
 
-class SkpicturePrinter(page_measurement.PageMeasurement):
+class SkpicturePrinter(page_test.PageTest):
   @classmethod
   def AddCommandLineArgs(cls, parser):
     parser.add_option('-s', '--skp-outdir',
@@ -30,7 +30,7 @@ class SkpicturePrinter(page_measurement.PageMeasurement):
 
   def MeasurePage(self, page, tab, results):
     if tab.browser.platform.GetOSName() in ['android', 'chromeos']:
-      raise page_measurement.MeasurementFailure(
+      raise page_test.MeasurementFailure(
           'SkPicture printing not supported on this platform')
 
     # Replace win32 path separator char '\' with '\\'.

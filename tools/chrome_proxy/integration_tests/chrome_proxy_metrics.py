@@ -7,11 +7,11 @@ import logging
 import os
 
 from integration_tests import network_metrics
-from telemetry.page import page_measurement
+from telemetry.page import page_test
 from telemetry.value import scalar
 
 
-class ChromeProxyMetricException(page_measurement.MeasurementFailure):
+class ChromeProxyMetricException(page_test.MeasurementFailure):
   pass
 
 
