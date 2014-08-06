@@ -11,21 +11,21 @@
 #include "base/values.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"
-#include "third_party/libjingle/source/talk/base/byteorder.h"
-#include "third_party/libjingle/source/talk/base/socketaddress.h"
 #include "third_party/libjingle/source/talk/p2p/base/candidate.h"
+#include "third_party/webrtc/base/byteorder.h"
+#include "third_party/webrtc/base/socketaddress.h"
 
 namespace jingle_glue {
 
 bool IPEndPointToSocketAddress(const net::IPEndPoint& ip_endpoint,
-                               talk_base::SocketAddress* address) {
+                               rtc::SocketAddress* address) {
   sockaddr_storage addr;
   socklen_t len = sizeof(addr);
   return ip_endpoint.ToSockAddr(reinterpret_cast<sockaddr*>(&addr), &len) &&
-      talk_base::SocketAddressFromSockAddrStorage(addr, address);
+      rtc::SocketAddressFromSockAddrStorage(addr, address);
 }
 
-bool SocketAddressToIPEndPoint(const talk_base::SocketAddress& address,
+bool SocketAddressToIPEndPoint(const rtc::SocketAddress& address,
                                net::IPEndPoint* ip_endpoint) {
   sockaddr_storage addr;
   int size = address.ToSockAddrStorage(&addr);
@@ -81,7 +81,7 @@ bool DeserializeP2PCandidate(const std::string& candidate_str,
     return false;
   }
 
-  candidate->set_address(talk_base::SocketAddress(ip, port));
+  candidate->set_address(rtc::SocketAddress(ip, port));
   candidate->set_type(type);
   candidate->set_protocol(protocol);
   candidate->set_username(username);

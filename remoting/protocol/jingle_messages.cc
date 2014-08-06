@@ -77,7 +77,7 @@ bool ParseCandidate(const buzz::XmlElement* element,
 
   candidate->name = name;
 
-  candidate->candidate.set_address(talk_base::SocketAddress(address, port));
+  candidate->candidate.set_address(rtc::SocketAddress(address, port));
   candidate->candidate.set_type(type);
   candidate->candidate.set_protocol(protocol);
   candidate->candidate.set_username(username);

@@ -16,12 +16,12 @@
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/signaling/jingle_info_request.h"
-#include "third_party/libjingle/source/talk/base/network.h"
 #include "third_party/libjingle/source/talk/p2p/base/constants.h"
 #include "third_party/libjingle/source/talk/p2p/base/p2ptransportchannel.h"
 #include "third_party/libjingle/source/talk/p2p/base/port.h"
 #include "third_party/libjingle/source/talk/p2p/client/basicportallocator.h"
 #include "third_party/libjingle/source/talk/p2p/client/httpportallocator.h"
+#include "third_party/webrtc/base/network.h"
 
 namespace remoting {
 namespace protocol {
@@ -127,8 +127,8 @@ LibjingleStreamTransport::LibjingleStreamTransport(
       network_settings_(network_settings),
       event_handler_(NULL),
       ice_username_fragment_(
-          talk_base::CreateRandomString(cricket::ICE_UFRAG_LENGTH)),
-      ice_password_(talk_base::CreateRandomString(cricket::ICE_PWD_LENGTH)),
+          rtc::CreateRandomString(cricket::ICE_UFRAG_LENGTH)),
+      ice_password_(rtc::CreateRandomString(cricket::ICE_PWD_LENGTH)),
       can_start_(false),
       channel_was_writable_(false),
       connect_attempts_left_(kMaxReconnectAttempts) {
@@ -379,7 +379,7 @@ void LibjingleStreamTransport::TryReconnect() {
   --connect_attempts_left_;
 
   // Restart ICE by resetting ICE password.
-  ice_password_ = talk_base::CreateRandomString(cricket::ICE_PWD_LENGTH);
+  ice_password_ = rtc::CreateRandomString(cricket::ICE_PWD_LENGTH);
   channel_->SetIceCredentials(ice_username_fragment_, ice_password_);
 }
 
@@ -475,7 +475,7 @@ void LibjingleTransportFactory::EnsureFreshJingleInfo() {
 void LibjingleTransportFactory::OnJingleInfo(
     const std::string& relay_token,
     const std::vector<std::string>& relay_hosts,
-    const std::vector<talk_base::SocketAddress>& stun_hosts) {
+    const std::vector<rtc::SocketAddress>& stun_hosts) {
   if (!relay_token.empty() && !relay_hosts.empty()) {
     port_allocator_->SetRelayHosts(relay_hosts);
     port_allocator_->SetRelayToken(relay_token);

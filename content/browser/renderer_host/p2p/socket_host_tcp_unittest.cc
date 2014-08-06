@@ -89,7 +89,7 @@ TEST_F(P2PSocketHostTcpTest, SendStunNoAuth) {
       .Times(3)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
-  talk_base::PacketOptions options;
+  rtc::PacketOptions options;
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
   socket_host_->Send(dest_.ip_address, packet1, options, 0);
@@ -121,7 +121,7 @@ TEST_F(P2PSocketHostTcpTest, ReceiveStun) {
       .Times(3)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
-  talk_base::PacketOptions options;
+  rtc::PacketOptions options;
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
   socket_host_->Send(dest_.ip_address, packet1, options, 0);
@@ -168,7 +168,7 @@ TEST_F(P2PSocketHostTcpTest, SendDataNoAuth) {
       MatchMessage(static_cast<uint32>(P2PMsg_OnError::ID))))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
-  talk_base::PacketOptions options;
+  rtc::PacketOptions options;
   std::vector<char> packet;
   CreateRandomPacket(&packet);
   socket_host_->Send(dest_.ip_address, packet, options, 0);
@@ -194,7 +194,7 @@ TEST_F(P2PSocketHostTcpTest, SendAfterStunRequest) {
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
   socket_->AppendInputData(&received_data[0], received_data.size());
 
-  talk_base::PacketOptions options;
+  rtc::PacketOptions options;
   // Now we should be able to send any data to |dest_|.
   std::vector<char> packet;
   CreateRandomPacket(&packet);
@@ -218,7 +218,7 @@ TEST_F(P2PSocketHostTcpTest, AsyncWrites) {
       .Times(2)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
-  talk_base::PacketOptions options;
+  rtc::PacketOptions options;
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
 
@@ -254,7 +254,7 @@ TEST_F(P2PSocketHostTcpTest, SendDataWithPacketOptions) {
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
   socket_->AppendInputData(&received_data[0], received_data.size());
 
-  talk_base::PacketOptions options;
+  rtc::PacketOptions options;
   options.packet_time_params.rtp_sendtime_extension_id = 3;
   // Now we should be able to send any data to |dest_|.
   std::vector<char> packet;
@@ -278,7 +278,7 @@ TEST_F(P2PSocketHostStunTcpTest, SendStunNoAuth) {
       .Times(3)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
-  talk_base::PacketOptions options;
+  rtc::PacketOptions options;
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
   socket_host_->Send(dest_.ip_address, packet1, options, 0);
@@ -307,7 +307,7 @@ TEST_F(P2PSocketHostStunTcpTest, ReceiveStun) {
       .Times(3)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
-  talk_base::PacketOptions options;
+  rtc::PacketOptions options;
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
   socket_host_->Send(dest_.ip_address, packet1, options, 0);
@@ -351,7 +351,7 @@ TEST_F(P2PSocketHostStunTcpTest, SendDataNoAuth) {
       MatchMessage(static_cast<uint32>(P2PMsg_OnError::ID))))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
-  talk_base::PacketOptions options;
+  rtc::PacketOptions options;
   std::vector<char> packet;
   CreateRandomPacket(&packet);
   socket_host_->Send(dest_.ip_address, packet, options, 0);
@@ -370,7 +370,7 @@ TEST_F(P2PSocketHostStunTcpTest, AsyncWrites) {
       .Times(2)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
-  talk_base::PacketOptions options;
+  rtc::PacketOptions options;
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
   socket_host_->Send(dest_.ip_address, packet1, options, 0);

@@ -76,7 +76,7 @@ int TransportChannelSocketAdapter::Write(
   }
 
   int result;
-  talk_base::PacketOptions options;
+  rtc::PacketOptions options;
   if (channel_->writable()) {
     result = channel_->SendPacket(buffer->data(), buffer_size, options);
     if (result < 0) {
@@ -101,13 +101,13 @@ int TransportChannelSocketAdapter::Write(
 
 int TransportChannelSocketAdapter::SetReceiveBufferSize(int32 size) {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
-  return (channel_->SetOption(talk_base::Socket::OPT_RCVBUF, size) == 0) ?
+  return (channel_->SetOption(rtc::Socket::OPT_RCVBUF, size) == 0) ?
       net::OK : net::ERR_SOCKET_SET_RECEIVE_BUFFER_SIZE_ERROR;
 }
 
 int TransportChannelSocketAdapter::SetSendBufferSize(int32 size) {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
-  return (channel_->SetOption(talk_base::Socket::OPT_SNDBUF, size) == 0) ?
+  return (channel_->SetOption(rtc::Socket::OPT_SNDBUF, size) == 0) ?
       net::OK : net::ERR_SOCKET_SET_SEND_BUFFER_SIZE_ERROR;
 }
 
@@ -142,7 +142,7 @@ void TransportChannelSocketAdapter::OnNewPacket(
     cricket::TransportChannel* channel,
     const char* data,
     size_t data_size,
-    const talk_base::PacketTime& packet_time,
+    const rtc::PacketTime& packet_time,
     int flags) {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   DCHECK_EQ(channel, channel_);
@@ -174,7 +174,7 @@ void TransportChannelSocketAdapter::OnWritableState(
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   // Try to send the packet if there is a pending write.
   if (!write_callback_.is_null()) {
-    talk_base::PacketOptions options;
+    rtc::PacketOptions options;
     int result = channel_->SendPacket(write_buffer_->data(),
                                       write_buffer_size_,
                                       options);

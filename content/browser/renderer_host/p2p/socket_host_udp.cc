@@ -15,7 +15,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
-#include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
+#include "third_party/webrtc/base/asyncpacketsocket.h"
 
 namespace {
 
@@ -52,7 +52,7 @@ namespace content {
 P2PSocketHostUdp::PendingPacket::PendingPacket(
     const net::IPEndPoint& to,
     const std::vector<char>& content,
-    const talk_base::PacketOptions& options,
+    const rtc::PacketOptions& options,
     uint64 id)
     : to(to),
       data(new net::IOBuffer(content.size())),
@@ -186,7 +186,7 @@ void P2PSocketHostUdp::HandleReadResult(int result) {
 
 void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
                             const std::vector<char>& data,
-                            const talk_base::PacketOptions& options,
+                            const rtc::PacketOptions& options,
                             uint64 packet_id) {
   if (!socket_) {
     // The Send message may be sent after the an OnError message was

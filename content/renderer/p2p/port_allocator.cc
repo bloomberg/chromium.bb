@@ -69,8 +69,8 @@ P2PPortAllocator::Config::RelayServerConfig::~RelayServerConfig() {
 P2PPortAllocator::P2PPortAllocator(
     blink::WebFrame* web_frame,
     P2PSocketDispatcher* socket_dispatcher,
-    talk_base::NetworkManager* network_manager,
-    talk_base::PacketSocketFactory* socket_factory,
+    rtc::NetworkManager* network_manager,
+    rtc::PacketSocketFactory* socket_factory,
     const Config& config)
     : cricket::BasicPortAllocator(network_manager, socket_factory),
       web_frame_(web_frame),
@@ -259,7 +259,7 @@ void P2PPortAllocatorSession::ParseRelayResponse() {
 void P2PPortAllocatorSession::AddConfig() {
   const P2PPortAllocator::Config& config = allocator_->config_;
   cricket::PortConfiguration* port_config = new cricket::PortConfiguration(
-      talk_base::SocketAddress(config.stun_server, config.stun_server_port),
+      rtc::SocketAddress(config.stun_server, config.stun_server_port),
       std::string(), std::string());
 
   for (size_t i = 0; i < config.relays.size(); ++i) {
@@ -278,7 +278,7 @@ void P2PPortAllocatorSession::AddConfig() {
     }
 
     relay_server.ports.push_back(cricket::ProtocolAddress(
-        talk_base::SocketAddress(config.relays[i].server_address,
+        rtc::SocketAddress(config.relays[i].server_address,
                                  config.relays[i].port),
         protocol,
         config.relays[i].secure));

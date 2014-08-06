@@ -18,7 +18,7 @@
 #include "net/socket/tcp_client_socket.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
+#include "third_party/webrtc/base/asyncpacketsocket.h"
 
 namespace {
 
@@ -330,7 +330,7 @@ void P2PSocketHostTcpBase::OnPacket(const std::vector<char>& data) {
 // but may be honored in the future.
 void P2PSocketHostTcpBase::Send(const net::IPEndPoint& to,
                                 const std::vector<char>& data,
-                                const talk_base::PacketOptions& options,
+                                const rtc::PacketOptions& options,
                                 uint64 packet_id) {
   if (!socket_) {
     // The Send message may be sent after the an OnError message was
@@ -490,7 +490,7 @@ int P2PSocketHostTcp::ProcessInput(char* input, int input_len) {
 
 void P2PSocketHostTcp::DoSend(const net::IPEndPoint& to,
                               const std::vector<char>& data,
-                              const talk_base::PacketOptions& options) {
+                              const rtc::PacketOptions& options) {
   int size = kPacketHeaderSize + data.size();
   scoped_refptr<net::DrainableIOBuffer> buffer =
       new net::DrainableIOBuffer(new net::IOBuffer(size), size);
@@ -543,7 +543,7 @@ int P2PSocketHostStunTcp::ProcessInput(char* input, int input_len) {
 
 void P2PSocketHostStunTcp::DoSend(const net::IPEndPoint& to,
                                   const std::vector<char>& data,
-                                  const talk_base::PacketOptions& options) {
+                                  const rtc::PacketOptions& options) {
   // Each packet is expected to have header (STUN/TURN ChannelData), where
   // header contains message type and and length of message.
   if (data.size() < kPacketHeaderSize + kPacketLengthOffset) {

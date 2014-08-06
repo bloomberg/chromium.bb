@@ -3,4 +3,5 @@ include_rules = [
   "+talk/base",
   "+talk/xmpp",
   "+talk/xmllite",
+  "+webrtc/base",
 ]

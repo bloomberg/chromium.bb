@@ -22,7 +22,7 @@
       'HAVE_SRTP',
       'HAVE_WEBRTC_VIDEO',
       'HAVE_WEBRTC_VOICE',
-      'LOGGING_INSIDE_LIBJINGLE',
+      'LOGGING_INSIDE_WEBRTC',
       'NO_MAIN_THREAD_WRAPPING',
       'NO_SOUND_SYSTEM',
       'SRTP_RELATIVE_PATH',
@@ -40,14 +40,13 @@
     },
     'include_dirs': [
       './overrides',
-      './<(libjingle_source)',
       '../../third_party/webrtc/overrides',
+      './<(libjingle_source)',
       '../..',
       '../../testing/gtest/include',
       '../../third_party',
       '../../third_party/libyuv/include',
       '../../third_party/usrsctp',
-      '../../third_party/webrtc',
     ],
     'dependencies': [
       '<(DEPTH)/base/base.gyp:base',
@@ -59,13 +58,12 @@
     ],
     'direct_dependent_settings': {
       'include_dirs': [
+        '../../third_party/webrtc/overrides',
         './overrides',
         './<(libjingle_source)',
-        '../../third_party/webrtc/overrides',
         '../..',
         '../../testing/gtest/include',
         '../../third_party',
-        '../../third_party/webrtc',
       ],
       'defines': [
         'FEATURE_ENABLE_SSL',
@@ -98,11 +96,25 @@
         ['OS=="linux"', {
           'defines': [
             'LINUX',
+            'WEBRTC_LINUX',
           ],
         }],
         ['OS=="mac"', {
           'defines': [
             'OSX',
+            'WEBRTC_MAC',
+          ],
+        }],
+        ['OS=="ios"', {
+          'defines': [
+            'IOS',
+            'WEBRTC_MAC',
+            'WEBRTC_IOS',
+          ],
+        }],
+        ['OS=="win"', {
+          'defines': [
+            'WEBRTC_WIN',
           ],
         }],
         ['OS=="android"', {
@@ -113,6 +125,7 @@
         ['os_posix==1', {
           'defines': [
             'POSIX',
+            'WEBRTC_POSIX',
           ],
         }],
         ['os_bsd==1', {
@@ -202,21 +215,31 @@
       ['OS=="linux"', {
         'defines': [
           'LINUX',
+          'WEBRTC_LINUX',
         ],
       }],
       ['OS=="mac"', {
         'defines': [
           'OSX',
+          'WEBRTC_MAC',
+        ],
+      }],
+      ['OS=="win"', {
+        'defines': [
+          'WEBRTC_WIN',
         ],
       }],
       ['OS=="ios"', {
         'defines': [
           'IOS',
+          'WEBRTC_MAC',
+          'WEBRTC_IOS',
         ],
       }],
       ['os_posix == 1', {
         'defines': [
           'POSIX',
+          'WEBRTC_POSIX',
         ],
       }],
       ['os_bsd==1', {
@@ -241,26 +264,13 @@
       'target_name': 'libjingle',
       'type': 'static_library',
       'includes': [ 'libjingle_common.gypi' ],
-      'sources': [
-        'overrides/talk/base/basictypes.h',
-        'overrides/talk/base/constructormagic.h',
-        'overrides/talk/base/win32socketinit.cc',
-
-        # Overrides logging.h/.cc because libjingle logging should be done to
-        # the same place as the chromium logging.
-        'overrides/talk/base/logging.cc',
-        'overrides/talk/base/logging.h',
-      ],
       'sources!' : [
         # Compiled as part of libjingle_p2p_constants.
         '<(libjingle_source)/talk/p2p/base/constants.cc',
         '<(libjingle_source)/talk/p2p/base/constants.h',
-
-        # Replaced with logging.cc in the overrides.
-        '<(libjingle_source)/talk/base/logging.h',
-        '<(libjingle_source)/talk/base/logging.cc',
       ],
       'dependencies': [
+        '<(DEPTH)/third_party/webrtc/base/base.gyp:webrtc_base',
         'libjingle_p2p_constants',
         '<@(libjingle_additional_deps)',
       ],
@@ -508,10 +518,6 @@
               'conditions': [
                 ['OS=="win"', {
                   'sources': [
-                    '<(libjingle_source)/talk/base/win32window.cc',
-                    '<(libjingle_source)/talk/base/win32window.h',
-                    '<(libjingle_source)/talk/base/win32windowpicker.cc',
-                    '<(libjingle_source)/talk/base/win32windowpicker.h',
                     '<(libjingle_source)/talk/media/devices/win32deviceinfo.cc',
                     '<(libjingle_source)/talk/media/devices/win32devicemanager.cc',
                     '<(libjingle_source)/talk/media/devices/win32devicemanager.h',
@@ -519,8 +525,6 @@
                 }],
                 ['OS=="linux"', {
                   'sources': [
-                    '<(libjingle_source)/talk/base/linuxwindowpicker.cc',
-                    '<(libjingle_source)/talk/base/linuxwindowpicker.h',
                     '<(libjingle_source)/talk/media/devices/libudevsymboltable.cc',
                     '<(libjingle_source)/talk/media/devices/libudevsymboltable.h',
                     '<(libjingle_source)/talk/media/devices/linuxdeviceinfo.cc',

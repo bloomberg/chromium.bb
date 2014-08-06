@@ -103,14 +103,14 @@ unsigned long RtcDataChannelHandler::bufferedAmount() {
 
 bool RtcDataChannelHandler::sendStringData(const blink::WebString& data) {
   std::string utf8_buffer = base::UTF16ToUTF8(data);
-  talk_base::Buffer buffer(utf8_buffer.c_str(), utf8_buffer.length());
+  rtc::Buffer buffer(utf8_buffer.c_str(), utf8_buffer.length());
   webrtc::DataBuffer data_buffer(buffer, false);
   RecordMessageSent(data_buffer.size());
   return channel_->Send(data_buffer);
 }
 
 bool RtcDataChannelHandler::sendRawData(const char* data, size_t length) {
-  talk_base::Buffer buffer(data, length);
+  rtc::Buffer buffer(data, length);
   webrtc::DataBuffer data_buffer(buffer, true);
   RecordMessageSent(data_buffer.size());
   return channel_->Send(data_buffer);

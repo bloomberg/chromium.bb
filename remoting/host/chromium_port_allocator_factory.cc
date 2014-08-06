@@ -20,12 +20,12 @@ ChromiumPortAllocatorFactory::ChromiumPortAllocatorFactory(
 
 ChromiumPortAllocatorFactory::~ChromiumPortAllocatorFactory() {}
 
-talk_base::scoped_refptr<webrtc::PortAllocatorFactoryInterface>
+rtc::scoped_refptr<webrtc::PortAllocatorFactoryInterface>
 ChromiumPortAllocatorFactory::Create(
     const protocol::NetworkSettings& network_settings,
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter) {
-  talk_base::RefCountedObject<ChromiumPortAllocatorFactory>* allocator_factory =
-      new talk_base::RefCountedObject<ChromiumPortAllocatorFactory>(
+  rtc::RefCountedObject<ChromiumPortAllocatorFactory>* allocator_factory =
+      new rtc::RefCountedObject<ChromiumPortAllocatorFactory>(
           network_settings, url_request_context_getter);
   return allocator_factory;
 }
@@ -37,7 +37,7 @@ cricket::PortAllocator* ChromiumPortAllocatorFactory::CreatePortAllocator(
       protocol::ChromiumPortAllocator::Create(url_request_context_getter_,
                                     network_settings_));
 
-  std::vector<talk_base::SocketAddress> stun_hosts;
+  std::vector<rtc::SocketAddress> stun_hosts;
   typedef std::vector<StunConfiguration>::const_iterator StunIt;
   for (StunIt stun_it = stun_servers.begin(); stun_it != stun_servers.end();
        ++stun_it) {

@@ -44,7 +44,7 @@
 #include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
 
 #if defined(USE_OPENSSL)
-#include "third_party/libjingle/source/talk/base/ssladapter.h"
+#include "third_party/webrtc/base/ssladapter.h"
 #else
 #include "net/socket/nss_ssl_util.h"
 #endif
@@ -115,8 +115,8 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
  public:
   P2PPortAllocatorFactory(
       P2PSocketDispatcher* socket_dispatcher,
-      talk_base::NetworkManager* network_manager,
-      talk_base::PacketSocketFactory* socket_factory,
+      rtc::NetworkManager* network_manager,
+      rtc::PacketSocketFactory* socket_factory,
       blink::WebFrame* web_frame)
       : socket_dispatcher_(socket_dispatcher),
         network_manager_(network_manager),
@@ -163,8 +163,8 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
   scoped_refptr<P2PSocketDispatcher> socket_dispatcher_;
   // |network_manager_| and |socket_factory_| are a weak references, owned by
   // PeerConnectionDependencyFactory.
-  talk_base::NetworkManager* network_manager_;
-  talk_base::PacketSocketFactory* socket_factory_;
+  rtc::NetworkManager* network_manager_;
+  rtc::PacketSocketFactory* socket_factory_;
   // Raw ptr to the WebFrame that created the P2PPortAllocatorFactory.
   blink::WebFrame* web_frame_;
 };
@@ -309,7 +309,7 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
 
   // Init SSL, which will be needed by PeerConnection.
 #if defined(USE_OPENSSL)
-  if (!talk_base::InitializeSSL()) {
+  if (!rtc::InitializeSSL()) {
     LOG(ERROR) << "Failed on InitializeSSL.";
     NOTREACHED();
     return;
@@ -385,7 +385,7 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
     return NULL;
 
   scoped_refptr<P2PPortAllocatorFactory> pa_factory =
-        new talk_base::RefCountedObject<P2PPortAllocatorFactory>(
+        new rtc::RefCountedObject<P2PPortAllocatorFactory>(
             p2p_socket_dispatcher_.get(),
             network_manager_,
             socket_factory_.get(),
@@ -549,7 +549,7 @@ PeerConnectionDependencyFactory::GetWebRtcAudioDevice() {
 }
 
 void PeerConnectionDependencyFactory::InitializeWorkerThread(
-    talk_base::Thread** thread,
+    rtc::Thread** thread,
     base::WaitableEvent* event) {
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
   jingle_glue::JingleThreadWrapper::current()->set_send_allowed(true);

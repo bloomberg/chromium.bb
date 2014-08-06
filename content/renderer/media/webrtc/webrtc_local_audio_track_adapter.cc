@@ -18,8 +18,8 @@ scoped_refptr<WebRtcLocalAudioTrackAdapter>
 WebRtcLocalAudioTrackAdapter::Create(
     const std::string& label,
     webrtc::AudioSourceInterface* track_source) {
-  talk_base::RefCountedObject<WebRtcLocalAudioTrackAdapter>* adapter =
-      new talk_base::RefCountedObject<WebRtcLocalAudioTrackAdapter>(
+  rtc::RefCountedObject<WebRtcLocalAudioTrackAdapter>* adapter =
+      new rtc::RefCountedObject<WebRtcLocalAudioTrackAdapter>(
           label, track_source);
   return adapter;
 }
@@ -98,7 +98,7 @@ bool WebRtcLocalAudioTrackAdapter::GetSignalLevel(int* level) {
   return true;
 }
 
-talk_base::scoped_refptr<webrtc::AudioProcessorInterface>
+rtc::scoped_refptr<webrtc::AudioProcessorInterface>
 WebRtcLocalAudioTrackAdapter::GetAudioProcessor() {
   base::AutoLock auto_lock(lock_);
   return audio_processor_.get();

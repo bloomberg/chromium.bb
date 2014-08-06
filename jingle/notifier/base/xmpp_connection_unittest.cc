@@ -28,11 +28,11 @@ class CaptchaChallenge;
 class Jid;
 }  // namespace buzz
 
-namespace talk_base {
+namespace rtc {
 class CryptString;
 class SocketAddress;
 class Task;
-}  // namespace talk_base
+}  // namespace rtc
 
 namespace notifier {
 
@@ -50,8 +50,8 @@ class MockPreXmppAuth : public buzz::PreXmppAuth {
                buzz::SaslMechanism*(const std::string&));
   MOCK_METHOD5(StartPreXmppAuth,
                void(const buzz::Jid&,
-                    const talk_base::SocketAddress&,
-                    const talk_base::CryptString&,
+                    const rtc::SocketAddress&,
+                    const rtc::CryptString&,
                     const std::string&,
                     const std::string&));
   MOCK_CONST_METHOD0(IsAuthDone, bool());
@@ -172,7 +172,7 @@ TEST_F(XmppConnectionTest, RaisedError) {
 #endif
 
 TEST_F(XmppConnectionTest, Connect) {
-  base::WeakPtr<talk_base::Task> weak_ptr;
+  base::WeakPtr<rtc::Task> weak_ptr;
   EXPECT_CALL(mock_xmpp_connection_delegate_, OnConnect(_)).
       WillOnce(SaveArg<0>(&weak_ptr));
 
@@ -191,7 +191,7 @@ TEST_F(XmppConnectionTest, Connect) {
 
 TEST_F(XmppConnectionTest, MultipleConnect) {
   EXPECT_DEBUG_DEATH({
-    base::WeakPtr<talk_base::Task> weak_ptr;
+    base::WeakPtr<rtc::Task> weak_ptr;
     EXPECT_CALL(mock_xmpp_connection_delegate_, OnConnect(_)).
         WillOnce(SaveArg<0>(&weak_ptr));
 
@@ -212,7 +212,7 @@ TEST_F(XmppConnectionTest, MultipleConnect) {
 
 #if !defined(_MSC_VER) || _MSC_VER < 1700 // http://crbug.com/158570
 TEST_F(XmppConnectionTest, ConnectThenError) {
-  base::WeakPtr<talk_base::Task> weak_ptr;
+  base::WeakPtr<rtc::Task> weak_ptr;
   EXPECT_CALL(mock_xmpp_connection_delegate_, OnConnect(_)).
       WillOnce(SaveArg<0>(&weak_ptr));
   EXPECT_CALL(mock_xmpp_connection_delegate_,
@@ -243,7 +243,7 @@ TEST_F(XmppConnectionTest, TasksDontRunAfterXmppConnectionDestructor) {
     jingle_glue::MockTask* task =
         new jingle_glue::MockTask(xmpp_connection.task_pump_.get());
     // We have to do this since the state enum is protected in
-    // talk_base::Task.
+    // rtc::Task.
     const int TASK_STATE_ERROR = 3;
     ON_CALL(*task, ProcessStart())
         .WillByDefault(Return(TASK_STATE_ERROR));

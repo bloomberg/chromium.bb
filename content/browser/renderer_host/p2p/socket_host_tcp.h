@@ -42,7 +42,7 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
                     const P2PHostAndIPEndPoint& remote_address) OVERRIDE;
   virtual void Send(const net::IPEndPoint& to,
                     const std::vector<char>& data,
-                    const talk_base::PacketOptions& options,
+                    const rtc::PacketOptions& options,
                     uint64 packet_id) OVERRIDE;
   virtual P2PSocketHost* AcceptIncomingTcpConnection(
       const net::IPEndPoint& remote_address, int id) OVERRIDE;
@@ -53,7 +53,7 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
   virtual int ProcessInput(char* input, int input_len) = 0;
   virtual void DoSend(const net::IPEndPoint& to,
                       const std::vector<char>& data,
-                      const talk_base::PacketOptions& options) = 0;
+                      const rtc::PacketOptions& options) = 0;
 
   void WriteOrQueue(scoped_refptr<net::DrainableIOBuffer>& buffer);
   void OnPacket(const std::vector<char>& data);
@@ -110,7 +110,7 @@ class CONTENT_EXPORT P2PSocketHostTcp : public P2PSocketHostTcpBase {
   virtual int ProcessInput(char* input, int input_len) OVERRIDE;
   virtual void DoSend(const net::IPEndPoint& to,
                       const std::vector<char>& data,
-                      const talk_base::PacketOptions& options) OVERRIDE;
+                      const rtc::PacketOptions& options) OVERRIDE;
  private:
   DISALLOW_COPY_AND_ASSIGN(P2PSocketHostTcp);
 };
@@ -132,7 +132,7 @@ class CONTENT_EXPORT P2PSocketHostStunTcp : public P2PSocketHostTcpBase {
   virtual int ProcessInput(char* input, int input_len) OVERRIDE;
   virtual void DoSend(const net::IPEndPoint& to,
                       const std::vector<char>& data,
-                      const talk_base::PacketOptions& options) OVERRIDE;
+                      const rtc::PacketOptions& options) OVERRIDE;
  private:
   int GetExpectedPacketSize(const char* data, int len, int* pad_bytes);
 

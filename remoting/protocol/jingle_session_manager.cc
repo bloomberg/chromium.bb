@@ -12,8 +12,8 @@
 #include "remoting/protocol/transport.h"
 #include "remoting/signaling/iq_sender.h"
 #include "remoting/signaling/signal_strategy.h"
-#include "third_party/libjingle/source/talk/base/socketaddress.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
+#include "third_party/webrtc/base/socketaddress.h"
 
 using buzz::QName;
 

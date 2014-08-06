@@ -9,9 +9,9 @@
 
 // The following include must be first in this file. It ensures that
 // libjingle style logging is used.
-#define LOGGING_INSIDE_LIBJINGLE
+#define LOGGING_INSIDE_WEBRTC
 
-#include "third_party/libjingle/overrides/talk/base/logging.h"
+#include "third_party/webrtc/overrides/webrtc/base/logging.h"
 
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -25,17 +25,17 @@ static const char* const log_file_name = "libjingle_logging.log";
 
 static const int kDefaultVerbosity = 0;
 
-static const char* AsString(talk_base::LoggingSeverity severity) {
+static const char* AsString(rtc::LoggingSeverity severity) {
   switch (severity) {
-    case talk_base::LS_ERROR:
+    case rtc::LS_ERROR:
       return "LS_ERROR";
-    case talk_base::LS_WARNING:
+    case rtc::LS_WARNING:
       return "LS_WARNING";
-    case talk_base::LS_INFO:
+    case rtc::LS_INFO:
       return "LS_INFO";
-    case talk_base::LS_VERBOSE:
+    case rtc::LS_VERBOSE:
       return "LS_VERBOSE";
-    case talk_base::LS_SENSITIVE:
+    case rtc::LS_SENSITIVE:
       return "LS_SENSITIVE";
     default:
       return "";
@@ -75,11 +75,11 @@ TEST(LibjingleLogTest, DefaultConfiguration) {
   ASSERT_TRUE(Initialize(kDefaultVerbosity));
 
   // In the default configuration nothing should be logged.
-  LOG_V(talk_base::LS_ERROR) << AsString(talk_base::LS_ERROR);
-  LOG_V(talk_base::LS_WARNING) << AsString(talk_base::LS_WARNING);
-  LOG_V(talk_base::LS_INFO) << AsString(talk_base::LS_INFO);
-  LOG_V(talk_base::LS_VERBOSE) << AsString(talk_base::LS_VERBOSE);
-  LOG_V(talk_base::LS_SENSITIVE) << AsString(talk_base::LS_SENSITIVE);
+  LOG_V(rtc::LS_ERROR) << AsString(rtc::LS_ERROR);
+  LOG_V(rtc::LS_WARNING) << AsString(rtc::LS_WARNING);
+  LOG_V(rtc::LS_INFO) << AsString(rtc::LS_INFO);
+  LOG_V(rtc::LS_VERBOSE) << AsString(rtc::LS_VERBOSE);
+  LOG_V(rtc::LS_SENSITIVE) << AsString(rtc::LS_SENSITIVE);
 
   // Read file to string.
   base::FilePath file_path(log_file_name);
@@ -87,26 +87,26 @@ TEST(LibjingleLogTest, DefaultConfiguration) {
   base::ReadFileToString(file_path, &contents_of_file);
 
   // Make sure string contains the expected values.
-  EXPECT_FALSE(ContainsString(contents_of_file, AsString(talk_base::LS_ERROR)));
+  EXPECT_FALSE(ContainsString(contents_of_file, AsString(rtc::LS_ERROR)));
   EXPECT_FALSE(ContainsString(contents_of_file,
-                              AsString(talk_base::LS_WARNING)));
-  EXPECT_FALSE(ContainsString(contents_of_file, AsString(talk_base::LS_INFO)));
+                              AsString(rtc::LS_WARNING)));
+  EXPECT_FALSE(ContainsString(contents_of_file, AsString(rtc::LS_INFO)));
   EXPECT_FALSE(ContainsString(contents_of_file,
-                              AsString(talk_base::LS_VERBOSE)));
+                              AsString(rtc::LS_VERBOSE)));
   EXPECT_FALSE(ContainsString(contents_of_file,
-                              AsString(talk_base::LS_SENSITIVE)));
+                              AsString(rtc::LS_SENSITIVE)));
 }
 
 TEST(LibjingleLogTest, InfoConfiguration) {
-  ASSERT_TRUE(Initialize(talk_base::LS_INFO));
+  ASSERT_TRUE(Initialize(rtc::LS_INFO));
 
   // In this configuration everything lower or equal to LS_INFO should be
   // logged.
-  LOG_V(talk_base::LS_ERROR) << AsString(talk_base::LS_ERROR);
-  LOG_V(talk_base::LS_WARNING) << AsString(talk_base::LS_WARNING);
-  LOG_V(talk_base::LS_INFO) << AsString(talk_base::LS_INFO);
-  LOG_V(talk_base::LS_VERBOSE) << AsString(talk_base::LS_VERBOSE);
-  LOG_V(talk_base::LS_SENSITIVE) << AsString(talk_base::LS_SENSITIVE);
+  LOG_V(rtc::LS_ERROR) << AsString(rtc::LS_ERROR);
+  LOG_V(rtc::LS_WARNING) << AsString(rtc::LS_WARNING);
+  LOG_V(rtc::LS_INFO) << AsString(rtc::LS_INFO);
+  LOG_V(rtc::LS_VERBOSE) << AsString(rtc::LS_VERBOSE);
+  LOG_V(rtc::LS_SENSITIVE) << AsString(rtc::LS_SENSITIVE);
 
   // Read file to string.
   base::FilePath file_path(log_file_name);
@@ -114,14 +114,14 @@ TEST(LibjingleLogTest, InfoConfiguration) {
   base::ReadFileToString(file_path, &contents_of_file);
 
   // Make sure string contains the expected values.
-  EXPECT_TRUE(ContainsString(contents_of_file, AsString(talk_base::LS_ERROR)));
+  EXPECT_TRUE(ContainsString(contents_of_file, AsString(rtc::LS_ERROR)));
   EXPECT_TRUE(ContainsString(contents_of_file,
-                             AsString(talk_base::LS_WARNING)));
-  EXPECT_TRUE(ContainsString(contents_of_file, AsString(talk_base::LS_INFO)));
+                             AsString(rtc::LS_WARNING)));
+  EXPECT_TRUE(ContainsString(contents_of_file, AsString(rtc::LS_INFO)));
   EXPECT_FALSE(ContainsString(contents_of_file,
-                              AsString(talk_base::LS_VERBOSE)));
+                              AsString(rtc::LS_VERBOSE)));
   EXPECT_FALSE(ContainsString(contents_of_file,
-                              AsString(talk_base::LS_SENSITIVE)));
+                              AsString(rtc::LS_SENSITIVE)));
 
   // Also check that the log is proper.
   EXPECT_TRUE(ContainsString(contents_of_file, "logging_unittest.cc"));
@@ -130,17 +130,17 @@ TEST(LibjingleLogTest, InfoConfiguration) {
 }
 
 TEST(LibjingleLogTest, LogEverythingConfiguration) {
-  ASSERT_TRUE(Initialize(talk_base::LS_SENSITIVE));
+  ASSERT_TRUE(Initialize(rtc::LS_SENSITIVE));
 
   // In this configuration everything should be logged.
-  LOG_V(talk_base::LS_ERROR) << AsString(talk_base::LS_ERROR);
-  LOG_V(talk_base::LS_WARNING) << AsString(talk_base::LS_WARNING);
-  LOG(LS_INFO) << AsString(talk_base::LS_INFO);
+  LOG_V(rtc::LS_ERROR) << AsString(rtc::LS_ERROR);
+  LOG_V(rtc::LS_WARNING) << AsString(rtc::LS_WARNING);
+  LOG(LS_INFO) << AsString(rtc::LS_INFO);
   static const int kFakeError = 1;
-  LOG_E(LS_INFO, EN, kFakeError) << "LOG_E(" << AsString(talk_base::LS_INFO) <<
+  LOG_E(LS_INFO, EN, kFakeError) << "LOG_E(" << AsString(rtc::LS_INFO) <<
       ")";
-  LOG_V(talk_base::LS_VERBOSE) << AsString(talk_base::LS_VERBOSE);
-  LOG_V(talk_base::LS_SENSITIVE) << AsString(talk_base::LS_SENSITIVE);
+  LOG_V(rtc::LS_VERBOSE) << AsString(rtc::LS_VERBOSE);
+  LOG_V(rtc::LS_SENSITIVE) << AsString(rtc::LS_SENSITIVE);
 
   // Read file to string.
   base::FilePath file_path(log_file_name);
@@ -148,14 +148,14 @@ TEST(LibjingleLogTest, LogEverythingConfiguration) {
   base::ReadFileToString(file_path, &contents_of_file);
 
   // Make sure string contains the expected values.
-  EXPECT_TRUE(ContainsString(contents_of_file, AsString(talk_base::LS_ERROR)));
+  EXPECT_TRUE(ContainsString(contents_of_file, AsString(rtc::LS_ERROR)));
   EXPECT_TRUE(ContainsString(contents_of_file,
-                             AsString(talk_base::LS_WARNING)));
-  EXPECT_TRUE(ContainsString(contents_of_file, AsString(talk_base::LS_INFO)));
+                             AsString(rtc::LS_WARNING)));
+  EXPECT_TRUE(ContainsString(contents_of_file, AsString(rtc::LS_INFO)));
   // LOG_E
   EXPECT_TRUE(ContainsString(contents_of_file, strerror(kFakeError)));
   EXPECT_TRUE(ContainsString(contents_of_file,
-                             AsString(talk_base::LS_VERBOSE)));
+                             AsString(rtc::LS_VERBOSE)));
   EXPECT_TRUE(ContainsString(contents_of_file,
-                             AsString(talk_base::LS_SENSITIVE)));
+                             AsString(rtc::LS_SENSITIVE)));
 }

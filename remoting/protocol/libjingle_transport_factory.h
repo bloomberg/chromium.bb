@@ -20,11 +20,11 @@ namespace net {
 class URLRequestContextGetter;
 }  // namespace net
 
-namespace talk_base {
+namespace rtc {
 class NetworkManager;
 class PacketSocketFactory;
 class SocketAddress;
-}  // namespace talk_base
+}  // namespace rtc
 
 namespace remoting {
 
@@ -54,7 +54,7 @@ class LibjingleTransportFactory : public TransportFactory {
   void EnsureFreshJingleInfo();
   void OnJingleInfo(const std::string& relay_token,
                     const std::vector<std::string>& relay_hosts,
-                    const std::vector<talk_base::SocketAddress>& stun_hosts);
+                    const std::vector<rtc::SocketAddress>& stun_hosts);
 
   SignalStrategy* signal_strategy_;
   scoped_ptr<cricket::HttpPortAllocatorBase> port_allocator_;

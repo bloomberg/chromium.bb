@@ -18,9 +18,9 @@ namespace buzz {
 class XmlElement;
 }  // namespace buzz
 
-namespace talk_base {
+namespace rtc {
 class SocketAddress;
-}  // namespace talk_base
+}  // namespace rtc
 
 namespace remoting {
 
@@ -39,7 +39,7 @@ class JingleInfoRequest {
   // if the request has timed out.
   typedef base::Callback<void(const std::string& relay_token,
                               const std::vector<std::string>& relay_servers,
-                              const std::vector<talk_base::SocketAddress>&
+                              const std::vector<rtc::SocketAddress>&
                                   stun_servers)> OnJingleInfoCallback;
 
   explicit JingleInfoRequest(SignalStrategy* signal_strategy);

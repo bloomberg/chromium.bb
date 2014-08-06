@@ -35,7 +35,7 @@ class PepperPortAllocatorSession
       int component,
       const std::string& ice_username_fragment,
       const std::string& ice_password,
-      const std::vector<talk_base::SocketAddress>& stun_hosts,
+      const std::vector<rtc::SocketAddress>& stun_hosts,
       const std::vector<std::string>& relay_hosts,
       const std::string& relay_token,
       const pp::InstanceHandle& instance);
@@ -57,7 +57,7 @@ class PepperPortAllocatorSession
   pp::InstanceHandle instance_;
 
   pp::HostResolver stun_address_resolver_;
-  talk_base::SocketAddress stun_address_;
+  rtc::SocketAddress stun_address_;
   int stun_port_;
 
   scoped_ptr<pp::URLLoader> relay_url_loader_;
@@ -75,7 +75,7 @@ PepperPortAllocatorSession::PepperPortAllocatorSession(
     int component,
     const std::string& ice_username_fragment,
     const std::string& ice_password,
-    const std::vector<talk_base::SocketAddress>& stun_hosts,
+    const std::vector<rtc::SocketAddress>& stun_hosts,
     const std::vector<std::string>& relay_hosts,
     const std::string& relay_token,
     const pp::InstanceHandle& instance)
@@ -132,7 +132,7 @@ void PepperPortAllocatorSession::GetPortConfigurations() {
   // Add an empty configuration synchronously, so a local connection
   // can be started immediately.
   ConfigReady(new cricket::PortConfiguration(
-      talk_base::SocketAddress(), std::string(), std::string()));
+      rtc::SocketAddress(), std::string(), std::string()));
 
   ResolveStunServerAddress();
   TryCreateRelaySession();
@@ -293,9 +293,9 @@ void PepperPortAllocatorSession::OnResponseBodyRead(int32_t result) {
 // static
 scoped_ptr<PepperPortAllocator> PepperPortAllocator::Create(
     const pp::InstanceHandle& instance) {
-  scoped_ptr<talk_base::NetworkManager> network_manager(
+  scoped_ptr<rtc::NetworkManager> network_manager(
       new PepperNetworkManager(instance));
-  scoped_ptr<talk_base::PacketSocketFactory> socket_factory(
+  scoped_ptr<rtc::PacketSocketFactory> socket_factory(
       new PepperPacketSocketFactory(instance));
   scoped_ptr<PepperPortAllocator> result(new PepperPortAllocator(
       instance, network_manager.Pass(), socket_factory.Pass()));
@@ -304,8 +304,8 @@ scoped_ptr<PepperPortAllocator> PepperPortAllocator::Create(
 
 PepperPortAllocator::PepperPortAllocator(
     const pp::InstanceHandle& instance,
-    scoped_ptr<talk_base::NetworkManager> network_manager,
-    scoped_ptr<talk_base::PacketSocketFactory> socket_factory)
+    scoped_ptr<rtc::NetworkManager> network_manager,
+    scoped_ptr<rtc::PacketSocketFactory> socket_factory)
     : HttpPortAllocatorBase(network_manager.get(),
                             socket_factory.get(),
                             std::string()),

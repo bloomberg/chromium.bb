@@ -72,7 +72,7 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
   // Otherwise, starts the connection process and returns true.
   // SignalConnected will be raised when the connection is successful;
   // otherwise, SignalClosed will be raised with a net error set.
-  virtual bool Connect(const talk_base::SocketAddress& address) OVERRIDE;
+  virtual bool Connect(const rtc::SocketAddress& address) OVERRIDE;
 
   // Tries to read at most |len| bytes into |data|.
   //

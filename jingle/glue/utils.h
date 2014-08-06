@@ -11,9 +11,9 @@ namespace net {
 class IPEndPoint;
 }  // namespace net
 
-namespace talk_base {
+namespace rtc {
 class SocketAddress;
-}  // namespace talk_base
+}  // namespace rtc
 
 namespace cricket {
 class Candidate;
@@ -25,8 +25,8 @@ namespace jingle_glue {
 // following two functions are used to convert addresses from one
 // representation to another.
 bool IPEndPointToSocketAddress(const net::IPEndPoint& ip_endpoint,
-                               talk_base::SocketAddress* address);
-bool SocketAddressToIPEndPoint(const talk_base::SocketAddress& address,
+                               rtc::SocketAddress* address);
+bool SocketAddressToIPEndPoint(const rtc::SocketAddress& address,
                                net::IPEndPoint* ip_endpoint);
 
 // Helper functions to serialize and deserialize P2P candidates.

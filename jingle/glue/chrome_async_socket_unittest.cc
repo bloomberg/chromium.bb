@@ -23,9 +23,9 @@
 #include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/libjingle/source/talk/base/ipaddress.h"
-#include "third_party/libjingle/source/talk/base/sigslot.h"
-#include "third_party/libjingle/source/talk/base/socketaddress.h"
+#include "third_party/webrtc/base/ipaddress.h"
+#include "third_party/webrtc/base/sigslot.h"
+#include "third_party/webrtc/base/socketaddress.h"
 
 namespace jingle_glue {
 
@@ -431,7 +431,7 @@ class ChromeAsyncSocketTest
 
   scoped_ptr<ChromeAsyncSocket> chrome_async_socket_;
   std::deque<SignalSocketState> signal_socket_states_;
-  const talk_base::SocketAddress addr_;
+  const rtc::SocketAddress addr_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeAsyncSocketTest);
@@ -473,9 +473,9 @@ TEST_F(ChromeAsyncSocketTest, DoubleClose) {
 }
 
 TEST_F(ChromeAsyncSocketTest, NoHostnameConnect) {
-  talk_base::IPAddress ip_address;
-  EXPECT_TRUE(talk_base::IPFromString("127.0.0.1", &ip_address));
-  const talk_base::SocketAddress no_hostname_addr(ip_address, addr_.port());
+  rtc::IPAddress ip_address;
+  EXPECT_TRUE(rtc::IPFromString("127.0.0.1", &ip_address));
+  const rtc::SocketAddress no_hostname_addr(ip_address, addr_.port());
   EXPECT_FALSE(chrome_async_socket_->Connect(no_hostname_addr));
   ExpectErrorState(ChromeAsyncSocket::STATE_CLOSED,
                    ChromeAsyncSocket::ERROR_DNS);
@@ -485,7 +485,7 @@ TEST_F(ChromeAsyncSocketTest, NoHostnameConnect) {
 }
 
 TEST_F(ChromeAsyncSocketTest, ZeroPortConnect) {
-  const talk_base::SocketAddress zero_port_addr(addr_.hostname(), 0);
+  const rtc::SocketAddress zero_port_addr(addr_.hostname(), 0);
   EXPECT_FALSE(chrome_async_socket_->Connect(zero_port_addr));
   ExpectErrorState(ChromeAsyncSocket::STATE_CLOSED,
                    ChromeAsyncSocket::ERROR_DNS);

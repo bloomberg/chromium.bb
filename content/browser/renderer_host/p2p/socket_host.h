@@ -20,7 +20,7 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-namespace talk_base {
+namespace rtc {
 struct PacketOptions;
 }
 
@@ -34,7 +34,7 @@ namespace packet_processing_helpers {
 // if present with current time and 2. update HMAC in RTP packet.
 // If abs_send_time is 0, ApplyPacketOption will get current time from system.
 CONTENT_EXPORT bool ApplyPacketOptions(char* data, int length,
-                                       const talk_base::PacketOptions& options,
+                                       const rtc::PacketOptions& options,
                                        uint32 abs_send_time);
 
 // Helper method which finds RTP ofset and length if the packet is encapsulated
@@ -70,7 +70,7 @@ class CONTENT_EXPORT P2PSocketHost {
   // Sends |data| on the socket to |to|.
   virtual void Send(const net::IPEndPoint& to,
                     const std::vector<char>& data,
-                    const talk_base::PacketOptions& options,
+                    const rtc::PacketOptions& options,
                     uint64 packet_id) = 0;
 
   virtual P2PSocketHost* AcceptIncomingTcpConnection(

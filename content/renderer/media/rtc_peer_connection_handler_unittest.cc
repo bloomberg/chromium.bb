@@ -93,7 +93,7 @@ class MockRTCStatsRequest : public LocalRTCStatsRequest {
   }
   virtual scoped_refptr<LocalRTCStatsResponse> createResponse() OVERRIDE {
     DCHECK(!response_.get());
-    response_ = new talk_base::RefCountedObject<MockRTCStatsResponse>();
+    response_ = new rtc::RefCountedObject<MockRTCStatsResponse>();
     return response_;
   }
 
@@ -459,7 +459,7 @@ TEST_F(RTCPeerConnectionHandlerTest, addStreamWithStoppedAudioAndVideoTrack) {
 
 TEST_F(RTCPeerConnectionHandlerTest, GetStatsNoSelector) {
   scoped_refptr<MockRTCStatsRequest> request(
-      new talk_base::RefCountedObject<MockRTCStatsRequest>());
+      new rtc::RefCountedObject<MockRTCStatsRequest>());
   pc_handler_->getStats(request.get());
   // Note that callback gets executed synchronously by mock.
   ASSERT_TRUE(request->result());
@@ -468,7 +468,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsNoSelector) {
 
 TEST_F(RTCPeerConnectionHandlerTest, GetStatsAfterClose) {
   scoped_refptr<MockRTCStatsRequest> request(
-      new talk_base::RefCountedObject<MockRTCStatsRequest>());
+      new rtc::RefCountedObject<MockRTCStatsRequest>());
   pc_handler_->stop();
   pc_handler_->getStats(request.get());
   // Note that callback gets executed synchronously by mock.
@@ -486,7 +486,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithLocalSelector) {
   ASSERT_LE(1ul, tracks.size());
 
   scoped_refptr<MockRTCStatsRequest> request(
-      new talk_base::RefCountedObject<MockRTCStatsRequest>());
+      new rtc::RefCountedObject<MockRTCStatsRequest>());
   request->setSelector(tracks[0]);
   pc_handler_->getStats(request.get());
   EXPECT_EQ(1, request->result()->report_count());
@@ -503,7 +503,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithRemoteSelector) {
   ASSERT_LE(1ul, tracks.size());
 
   scoped_refptr<MockRTCStatsRequest> request(
-      new talk_base::RefCountedObject<MockRTCStatsRequest>());
+      new rtc::RefCountedObject<MockRTCStatsRequest>());
   request->setSelector(tracks[0]);
   pc_handler_->getStats(request.get());
   EXPECT_EQ(1, request->result()->report_count());
@@ -522,7 +522,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithBadSelector) {
   mock_peer_connection_->SetGetStatsResult(false);
 
   scoped_refptr<MockRTCStatsRequest> request(
-      new talk_base::RefCountedObject<MockRTCStatsRequest>());
+      new rtc::RefCountedObject<MockRTCStatsRequest>());
   request->setSelector(component);
   pc_handler_->getStats(request.get());
   EXPECT_EQ(0, request->result()->report_count());

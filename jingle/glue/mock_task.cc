@@ -6,7 +6,7 @@
 
 namespace jingle_glue {
 
-MockTask::MockTask(TaskParent* parent) : talk_base::Task(parent) {}
+MockTask::MockTask(TaskParent* parent) : rtc::Task(parent) {}
 
 MockTask::~MockTask() {}
 

@@ -81,17 +81,18 @@ config("libjingle_stub_config") {
   ]
 
   if (is_mac) {
-    defines += [ "OSX" ]
+    defines += [ "OSX", "WEBRTC_MAC" ]
   } else if (is_linux) {
-    defines += [ "LINUX" ]
+    defines += [ "LINUX", "WEBRTC_LINUX" ]
   } else if (is_android) {
-    defines += [ "ANDROID" ]
+    defines += [ "ANDROID", "WEBRTC_LINUX", "WEBRTC_ANDROID" ]
   } else if (is_win) {
     libs = [ "secur32.lib", "crypt32.lib", "iphlpapi.lib" ]
+    defines += [ "WEBRTC_WIN" ]
   }
 
   if (is_posix) {
-    defines += [ "POSIX" ]
+    defines += [ "POSIX", "WEBRTC_POSIX" ]
   }
   if (is_chromeos) {
     defines += [ "CHROMEOS" ]

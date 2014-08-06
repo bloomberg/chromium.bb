@@ -28,9 +28,9 @@ static const int kMaxTestDelay = 40;
 
 namespace {
 
-class MockMessageHandler : public talk_base::MessageHandler {
+class MockMessageHandler : public rtc::MessageHandler {
  public:
-  MOCK_METHOD1(OnMessage, void(talk_base::Message* msg));
+  MOCK_METHOD1(OnMessage, void(rtc::Message* msg));
 };
 
 MATCHER_P3(MatchMessage, handler, message_id, data, "") {
@@ -66,7 +66,7 @@ class ThreadWrapperTest : public testing::Test {
   // This method is used by the SendDuringSend test. It sends message to the
   // main thread synchronously using Send().
   void PingMainThread() {
-    talk_base::MessageData* data = new talk_base::MessageData();
+    rtc::MessageData* data = new rtc::MessageData();
     MockMessageHandler handler;
 
     EXPECT_CALL(handler, OnMessage(
@@ -82,21 +82,21 @@ class ThreadWrapperTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     JingleThreadWrapper::EnsureForCurrentMessageLoop();
-    thread_ = talk_base::Thread::Current();
+    thread_ = rtc::Thread::Current();
   }
 
   // ThreadWrapper destroyes itself when |message_loop_| is destroyed.
   base::MessageLoop message_loop_;
-  talk_base::Thread* thread_;
+  rtc::Thread* thread_;
   MockMessageHandler handler1_;
   MockMessageHandler handler2_;
 };
 
 TEST_F(ThreadWrapperTest, Post) {
-  talk_base::MessageData* data1 = new talk_base::MessageData();
-  talk_base::MessageData* data2 = new talk_base::MessageData();
-  talk_base::MessageData* data3 = new talk_base::MessageData();
-  talk_base::MessageData* data4 = new talk_base::MessageData();
+  rtc::MessageData* data1 = new rtc::MessageData();
+  rtc::MessageData* data2 = new rtc::MessageData();
+  rtc::MessageData* data3 = new rtc::MessageData();
+  rtc::MessageData* data4 = new rtc::MessageData();
 
   thread_->Post(&handler1_, kTestMessage1, data1);
   thread_->Post(&handler1_, kTestMessage2, data2);
@@ -122,10 +122,10 @@ TEST_F(ThreadWrapperTest, Post) {
 }
 
 TEST_F(ThreadWrapperTest, PostDelayed) {
-  talk_base::MessageData* data1 = new talk_base::MessageData();
-  talk_base::MessageData* data2 = new talk_base::MessageData();
-  talk_base::MessageData* data3 = new talk_base::MessageData();
-  talk_base::MessageData* data4 = new talk_base::MessageData();
+  rtc::MessageData* data1 = new rtc::MessageData();
+  rtc::MessageData* data2 = new rtc::MessageData();
+  rtc::MessageData* data3 = new rtc::MessageData();
+  rtc::MessageData* data4 = new rtc::MessageData();
 
   thread_->PostDelayed(kTestDelayMs1, &handler1_, kTestMessage1, data1);
   thread_->PostDelayed(kTestDelayMs2, &handler1_, kTestMessage2, data2);
@@ -164,7 +164,7 @@ TEST_F(ThreadWrapperTest, Clear) {
 
   InSequence in_seq;
 
-  talk_base::MessageData* null_data = NULL;
+  rtc::MessageData* null_data = NULL;
   EXPECT_CALL(handler1_, OnMessage(
       MatchMessage(&handler1_, kTestMessage1, null_data)))
       .WillOnce(DeleteMessageData());
@@ -188,7 +188,7 @@ TEST_F(ThreadWrapperTest, ClearDelayed) {
 
   InSequence in_seq;
 
-  talk_base::MessageData* null_data = NULL;
+  rtc::MessageData* null_data = NULL;
   EXPECT_CALL(handler1_, OnMessage(
       MatchMessage(&handler1_, kTestMessage1, null_data)))
       .WillOnce(DeleteMessageData());
@@ -214,15 +214,15 @@ TEST_F(ThreadWrapperTest, ClearDestoroyed) {
     handler_ptr = &handler;
     thread_->Post(&handler, kTestMessage1, NULL);
   }
-  talk_base::MessageList removed;
-  thread_->Clear(handler_ptr, talk_base::MQID_ANY, &removed);
+  rtc::MessageList removed;
+  thread_->Clear(handler_ptr, rtc::MQID_ANY, &removed);
   DCHECK_EQ(0U, removed.size());
 }
 
 // Verify that Send() calls handler synchronously when called on the
 // same thread.
 TEST_F(ThreadWrapperTest, SendSameThread) {
-  talk_base::MessageData* data = new talk_base::MessageData();
+  rtc::MessageData* data = new rtc::MessageData();
 
   EXPECT_CALL(handler1_, OnMessage(
       MatchMessage(&handler1_, kTestMessage1, data)))
@@ -230,7 +230,7 @@ TEST_F(ThreadWrapperTest, SendSameThread) {
   thread_->Send(&handler1_, kTestMessage1, data);
 }
 
-void InitializeWrapperForNewThread(talk_base::Thread** thread,
+void InitializeWrapperForNewThread(rtc::Thread** thread,
                                    base::WaitableEvent* done_event) {
   JingleThreadWrapper::EnsureForCurrentMessageLoop();
   JingleThreadWrapper::current()->set_send_allowed(true);
@@ -247,7 +247,7 @@ TEST_F(ThreadWrapperTest, SendToOtherThread) {
   second_thread.Start();
 
   base::WaitableEvent initialized_event(true, false);
-  talk_base::Thread* target;
+  rtc::Thread* target;
   second_thread.message_loop()->PostTask(
       FROM_HERE, base::Bind(&InitializeWrapperForNewThread,
                             &target, &initialized_event));
@@ -255,7 +255,7 @@ TEST_F(ThreadWrapperTest, SendToOtherThread) {
 
   ASSERT_TRUE(target != NULL);
 
-  talk_base::MessageData* data = new talk_base::MessageData();
+  rtc::MessageData* data = new rtc::MessageData();
 
   EXPECT_CALL(handler1_, OnMessage(
       MatchMessage(&handler1_, kTestMessage1, data)))
@@ -276,7 +276,7 @@ TEST_F(ThreadWrapperTest, SendDuringSend) {
   second_thread.Start();
 
   base::WaitableEvent initialized_event(true, false);
-  talk_base::Thread* target;
+  rtc::Thread* target;
   second_thread.message_loop()->PostTask(
       FROM_HERE, base::Bind(&InitializeWrapperForNewThread,
                             &target, &initialized_event));
@@ -284,7 +284,7 @@ TEST_F(ThreadWrapperTest, SendDuringSend) {
 
   ASSERT_TRUE(target != NULL);
 
-  talk_base::MessageData* data = new talk_base::MessageData();
+  rtc::MessageData* data = new rtc::MessageData();
 
   EXPECT_CALL(handler1_, OnMessage(
       MatchMessage(&handler1_, kTestMessage1, data)))

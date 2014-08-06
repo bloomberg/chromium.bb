@@ -19,7 +19,7 @@
 #include "content/renderer/p2p/socket_client_impl.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "jingle/glue/utils.h"
-#include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
+#include "third_party/webrtc/base/asyncpacketsocket.h"
 
 namespace content {
 
@@ -36,22 +36,22 @@ bool IsTcpClientSocket(P2PSocketType type) {
          (type == P2P_SOCKET_STUN_TLS_CLIENT);
 }
 
-bool JingleSocketOptionToP2PSocketOption(talk_base::Socket::Option option,
+bool JingleSocketOptionToP2PSocketOption(rtc::Socket::Option option,
                                          P2PSocketOption* ipc_option) {
   switch (option) {
-    case talk_base::Socket::OPT_RCVBUF:
+    case rtc::Socket::OPT_RCVBUF:
       *ipc_option = P2P_SOCKET_OPT_RCVBUF;
       break;
-    case talk_base::Socket::OPT_SNDBUF:
+    case rtc::Socket::OPT_SNDBUF:
       *ipc_option = P2P_SOCKET_OPT_SNDBUF;
       break;
-    case talk_base::Socket::OPT_DSCP:
+    case rtc::Socket::OPT_DSCP:
       *ipc_option = P2P_SOCKET_OPT_DSCP;
       break;
-    case talk_base::Socket::OPT_DONTFRAGMENT:
-    case talk_base::Socket::OPT_NODELAY:
-    case talk_base::Socket::OPT_IPV6_V6ONLY:
-    case talk_base::Socket::OPT_RTP_SENDTIME_EXTN_ID:
+    case rtc::Socket::OPT_DONTFRAGMENT:
+    case rtc::Socket::OPT_NODELAY:
+    case rtc::Socket::OPT_IPV6_V6ONLY:
+    case rtc::Socket::OPT_RTP_SENDTIME_EXTN_ID:
       return false;  // Not supported by the chrome sockets.
     default:
       NOTREACHED();
@@ -63,10 +63,10 @@ bool JingleSocketOptionToP2PSocketOption(talk_base::Socket::Option option,
 // TODO(miu): This needs tuning.  http://crbug.com/237960
 const size_t kMaximumInFlightBytes = 64 * 1024;  // 64 KB
 
-// IpcPacketSocket implements talk_base::AsyncPacketSocket interface
+// IpcPacketSocket implements rtc::AsyncPacketSocket interface
 // using P2PSocketClient that works over IPC-channel. It must be used
 // on the thread it was created.
-class IpcPacketSocket : public talk_base::AsyncPacketSocket,
+class IpcPacketSocket : public rtc::AsyncPacketSocket,
                         public P2PSocketClientDelegate {
  public:
   IpcPacketSocket();
@@ -74,21 +74,21 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
 
   // Always takes ownership of client even if initialization fails.
   bool Init(P2PSocketType type, P2PSocketClientImpl* client,
-            const talk_base::SocketAddress& local_address,
-            const talk_base::SocketAddress& remote_address);
+            const rtc::SocketAddress& local_address,
+            const rtc::SocketAddress& remote_address);
 
-  // talk_base::AsyncPacketSocket interface.
-  virtual talk_base::SocketAddress GetLocalAddress() const OVERRIDE;
-  virtual talk_base::SocketAddress GetRemoteAddress() const OVERRIDE;
+  // rtc::AsyncPacketSocket interface.
+  virtual rtc::SocketAddress GetLocalAddress() const OVERRIDE;
+  virtual rtc::SocketAddress GetRemoteAddress() const OVERRIDE;
   virtual int Send(const void *pv, size_t cb,
-                   const talk_base::PacketOptions& options) OVERRIDE;
+                   const rtc::PacketOptions& options) OVERRIDE;
   virtual int SendTo(const void *pv, size_t cb,
-                     const talk_base::SocketAddress& addr,
-                     const talk_base::PacketOptions& options) OVERRIDE;
+                     const rtc::SocketAddress& addr,
+                     const rtc::PacketOptions& options) OVERRIDE;
   virtual int Close() OVERRIDE;
   virtual State GetState() const OVERRIDE;
-  virtual int GetOption(talk_base::Socket::Option option, int* value) OVERRIDE;
-  virtual int SetOption(talk_base::Socket::Option option, int value) OVERRIDE;
+  virtual int GetOption(rtc::Socket::Option option, int* value) OVERRIDE;
+  virtual int SetOption(rtc::Socket::Option option, int value) OVERRIDE;
   virtual int GetError() const OVERRIDE;
   virtual void SetError(int error) OVERRIDE;
 
@@ -119,8 +119,8 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
   void TraceSendThrottlingState() const;
 
   void InitAcceptedTcp(P2PSocketClient* client,
-                       const talk_base::SocketAddress& local_address,
-                       const talk_base::SocketAddress& remote_address);
+                       const rtc::SocketAddress& local_address,
+                       const rtc::SocketAddress& remote_address);
 
   int DoSetOption(P2PSocketOption option, int value);
 
@@ -135,10 +135,10 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
   // Local address is allocated by the browser process, and the
   // renderer side doesn't know the address until it receives OnOpen()
   // event from the browser.
-  talk_base::SocketAddress local_address_;
+  rtc::SocketAddress local_address_;
 
   // Remote address for client TCP connections.
-  talk_base::SocketAddress remote_address_;
+  rtc::SocketAddress remote_address_;
 
   // Current state of the object.
   InternalState state_;
@@ -169,15 +169,15 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
 // of MT sig slots clients must call disconnect. This class is to make sure
 // we destruct from the same thread on which is created.
 class AsyncAddressResolverImpl :  public base::NonThreadSafe,
-                                  public talk_base::AsyncResolverInterface {
+                                  public rtc::AsyncResolverInterface {
  public:
   AsyncAddressResolverImpl(P2PSocketDispatcher* dispatcher);
   virtual ~AsyncAddressResolverImpl();
 
-  // talk_base::AsyncResolverInterface interface.
-  virtual void Start(const talk_base::SocketAddress& addr) OVERRIDE;
+  // rtc::AsyncResolverInterface interface.
+  virtual void Start(const rtc::SocketAddress& addr) OVERRIDE;
   virtual bool GetResolvedAddress(
-      int family, talk_base::SocketAddress* addr) const OVERRIDE;
+      int family, rtc::SocketAddress* addr) const OVERRIDE;
   virtual int GetError() const OVERRIDE;
   virtual void Destroy(bool wait) OVERRIDE;
 
@@ -186,7 +186,7 @@ class AsyncAddressResolverImpl :  public base::NonThreadSafe,
 
   scoped_refptr<P2PAsyncAddressResolver> resolver_;
   int port_;   // Port number in |addr| from Start() method.
-  std::vector<talk_base::IPAddress> addresses_;  // Resolved addresses.
+  std::vector<rtc::IPAddress> addresses_;  // Resolved addresses.
 };
 
 IpcPacketSocket::IpcPacketSocket()
@@ -217,8 +217,8 @@ void IpcPacketSocket::TraceSendThrottlingState() const {
 
 bool IpcPacketSocket::Init(P2PSocketType type,
                            P2PSocketClientImpl* client,
-                           const talk_base::SocketAddress& local_address,
-                           const talk_base::SocketAddress& remote_address) {
+                           const rtc::SocketAddress& local_address,
+                           const rtc::SocketAddress& remote_address) {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   DCHECK_EQ(state_, IS_UNINITIALIZED);
 
@@ -255,8 +255,8 @@ bool IpcPacketSocket::Init(P2PSocketType type,
 
 void IpcPacketSocket::InitAcceptedTcp(
     P2PSocketClient* client,
-    const talk_base::SocketAddress& local_address,
-    const talk_base::SocketAddress& remote_address) {
+    const rtc::SocketAddress& local_address,
+    const rtc::SocketAddress& remote_address) {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   DCHECK_EQ(state_, IS_UNINITIALIZED);
 
@@ -268,26 +268,26 @@ void IpcPacketSocket::InitAcceptedTcp(
   client_->SetDelegate(this);
 }
 
-// talk_base::AsyncPacketSocket interface.
-talk_base::SocketAddress IpcPacketSocket::GetLocalAddress() const {
+// rtc::AsyncPacketSocket interface.
+rtc::SocketAddress IpcPacketSocket::GetLocalAddress() const {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   return local_address_;
 }
 
-talk_base::SocketAddress IpcPacketSocket::GetRemoteAddress() const {
+rtc::SocketAddress IpcPacketSocket::GetRemoteAddress() const {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   return remote_address_;
 }
 
 int IpcPacketSocket::Send(const void *data, size_t data_size,
-                          const talk_base::PacketOptions& options) {
+                          const rtc::PacketOptions& options) {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   return SendTo(data, data_size, remote_address_, options);
 }
 
 int IpcPacketSocket::SendTo(const void *data, size_t data_size,
-                            const talk_base::SocketAddress& address,
-                            const talk_base::PacketOptions& options) {
+                            const rtc::SocketAddress& address,
+                            const rtc::PacketOptions& options) {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
 
   switch (state_) {
@@ -355,7 +355,7 @@ int IpcPacketSocket::Close() {
   return 0;
 }
 
-talk_base::AsyncPacketSocket::State IpcPacketSocket::GetState() const {
+rtc::AsyncPacketSocket::State IpcPacketSocket::GetState() const {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
 
   switch (state_) {
@@ -382,7 +382,7 @@ talk_base::AsyncPacketSocket::State IpcPacketSocket::GetState() const {
   return STATE_CLOSED;
 }
 
-int IpcPacketSocket::GetOption(talk_base::Socket::Option option, int* value) {
+int IpcPacketSocket::GetOption(rtc::Socket::Option option, int* value) {
   P2PSocketOption p2p_socket_option = P2P_SOCKET_OPT_MAX;
   if (!JingleSocketOptionToP2PSocketOption(option, &p2p_socket_option)) {
     // unsupported option.
@@ -393,7 +393,7 @@ int IpcPacketSocket::GetOption(talk_base::Socket::Option option, int* value) {
   return 0;
 }
 
-int IpcPacketSocket::SetOption(talk_base::Socket::Option option, int value) {
+int IpcPacketSocket::SetOption(rtc::Socket::Option option, int value) {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
 
   P2PSocketOption p2p_socket_option = P2P_SOCKET_OPT_MAX;
@@ -456,7 +456,7 @@ void IpcPacketSocket::OnOpen(const net::IPEndPoint& local_address,
     // in the callback. This address will be used while sending the packets
     // over the network.
     if (remote_address_.IsUnresolvedIP()) {
-      talk_base::SocketAddress jingle_socket_address;
+      rtc::SocketAddress jingle_socket_address;
       if (!jingle_glue::IPEndPointToSocketAddress(
             remote_address, &jingle_socket_address)) {
         NOTREACHED();
@@ -474,7 +474,7 @@ void IpcPacketSocket::OnIncomingTcpConnection(
 
   scoped_ptr<IpcPacketSocket> socket(new IpcPacketSocket());
 
-  talk_base::SocketAddress remote_address;
+  rtc::SocketAddress remote_address;
   if (!jingle_glue::IPEndPointToSocketAddress(address, &remote_address)) {
     // Always expect correct IPv4 address to be allocated.
     NOTREACHED();
@@ -519,7 +519,7 @@ void IpcPacketSocket::OnDataReceived(const net::IPEndPoint& address,
                                      const base::TimeTicks& timestamp) {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
 
-  talk_base::SocketAddress address_lj;
+  rtc::SocketAddress address_lj;
   if (!jingle_glue::IPEndPointToSocketAddress(address, &address_lj)) {
     // We should always be able to convert address here because we
     // don't expect IPv6 address on IPv4 connections.
@@ -527,7 +527,7 @@ void IpcPacketSocket::OnDataReceived(const net::IPEndPoint& address,
     return;
   }
 
-  talk_base::PacketTime packet_time(timestamp.ToInternalValue(), 0);
+  rtc::PacketTime packet_time(timestamp.ToInternalValue(), 0);
   SignalReadPacket(this, &data[0], data.size(), address_lj,
                    packet_time);
 }
@@ -540,7 +540,7 @@ AsyncAddressResolverImpl::AsyncAddressResolverImpl(
 AsyncAddressResolverImpl::~AsyncAddressResolverImpl() {
 }
 
-void AsyncAddressResolverImpl::Start(const talk_base::SocketAddress& addr) {
+void AsyncAddressResolverImpl::Start(const rtc::SocketAddress& addr) {
   DCHECK(CalledOnValidThread());
   // Copy port number from |addr|. |port_| must be copied
   // when resolved address is returned in GetResolvedAddress.
@@ -552,7 +552,7 @@ void AsyncAddressResolverImpl::Start(const talk_base::SocketAddress& addr) {
 }
 
 bool AsyncAddressResolverImpl::GetResolvedAddress(
-    int family, talk_base::SocketAddress* addr) const {
+    int family, rtc::SocketAddress* addr) const {
   DCHECK(CalledOnValidThread());
 
   if (addresses_.empty())
@@ -585,7 +585,7 @@ void AsyncAddressResolverImpl::OnAddressResolved(
     const net::IPAddressList& addresses) {
   DCHECK(CalledOnValidThread());
   for (size_t i = 0; i < addresses.size(); ++i) {
-    talk_base::SocketAddress socket_address;
+    rtc::SocketAddress socket_address;
     if (!jingle_glue::IPEndPointToSocketAddress(
             net::IPEndPoint(addresses[i], 0), &socket_address)) {
       NOTREACHED();
@@ -605,54 +605,54 @@ IpcPacketSocketFactory::IpcPacketSocketFactory(
 IpcPacketSocketFactory::~IpcPacketSocketFactory() {
 }
 
-talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateUdpSocket(
-    const talk_base::SocketAddress& local_address, int min_port, int max_port) {
-  talk_base::SocketAddress crome_address;
+rtc::AsyncPacketSocket* IpcPacketSocketFactory::CreateUdpSocket(
+    const rtc::SocketAddress& local_address, int min_port, int max_port) {
+  rtc::SocketAddress crome_address;
   P2PSocketClientImpl* socket_client =
       new P2PSocketClientImpl(socket_dispatcher_);
   scoped_ptr<IpcPacketSocket> socket(new IpcPacketSocket());
   // TODO(sergeyu): Respect local_address and port limits here (need
   // to pass them over IPC channel to the browser).
   if (!socket->Init(P2P_SOCKET_UDP, socket_client,
-                    local_address, talk_base::SocketAddress())) {
+                    local_address, rtc::SocketAddress())) {
     return NULL;
   }
   return socket.release();
 }
 
-talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateServerTcpSocket(
-    const talk_base::SocketAddress& local_address, int min_port, int max_port,
+rtc::AsyncPacketSocket* IpcPacketSocketFactory::CreateServerTcpSocket(
+    const rtc::SocketAddress& local_address, int min_port, int max_port,
     int opts) {
   // TODO(sergeyu): Implement SSL support.
-  if (opts & talk_base::PacketSocketFactory::OPT_SSLTCP)
+  if (opts & rtc::PacketSocketFactory::OPT_SSLTCP)
     return NULL;
 
-  P2PSocketType type = (opts & talk_base::PacketSocketFactory::OPT_STUN) ?
+  P2PSocketType type = (opts & rtc::PacketSocketFactory::OPT_STUN) ?
       P2P_SOCKET_STUN_TCP_SERVER : P2P_SOCKET_TCP_SERVER;
   P2PSocketClientImpl* socket_client =
       new P2PSocketClientImpl(socket_dispatcher_);
   scoped_ptr<IpcPacketSocket> socket(new IpcPacketSocket());
   if (!socket->Init(type, socket_client, local_address,
-                    talk_base::SocketAddress())) {
+                    rtc::SocketAddress())) {
     return NULL;
   }
   return socket.release();
 }
 
-talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateClientTcpSocket(
-    const talk_base::SocketAddress& local_address,
-    const talk_base::SocketAddress& remote_address,
-    const talk_base::ProxyInfo& proxy_info,
+rtc::AsyncPacketSocket* IpcPacketSocketFactory::CreateClientTcpSocket(
+    const rtc::SocketAddress& local_address,
+    const rtc::SocketAddress& remote_address,
+    const rtc::ProxyInfo& proxy_info,
     const std::string& user_agent, int opts) {
   P2PSocketType type;
-  if (opts & talk_base::PacketSocketFactory::OPT_SSLTCP) {
-    type = (opts & talk_base::PacketSocketFactory::OPT_STUN) ?
+  if (opts & rtc::PacketSocketFactory::OPT_SSLTCP) {
+    type = (opts & rtc::PacketSocketFactory::OPT_STUN) ?
         P2P_SOCKET_STUN_SSLTCP_CLIENT : P2P_SOCKET_SSLTCP_CLIENT;
-  } else if (opts & talk_base::PacketSocketFactory::OPT_TLS) {
-    type = (opts & talk_base::PacketSocketFactory::OPT_STUN) ?
+  } else if (opts & rtc::PacketSocketFactory::OPT_TLS) {
+    type = (opts & rtc::PacketSocketFactory::OPT_STUN) ?
         P2P_SOCKET_STUN_TLS_CLIENT : P2P_SOCKET_TLS_CLIENT;
   } else {
-    type = (opts & talk_base::PacketSocketFactory::OPT_STUN) ?
+    type = (opts & rtc::PacketSocketFactory::OPT_STUN) ?
         P2P_SOCKET_STUN_TCP_CLIENT : P2P_SOCKET_TCP_CLIENT;
   }
   P2PSocketClientImpl* socket_client =
@@ -663,7 +663,7 @@ talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateClientTcpSocket(
   return socket.release();
 }
 
-talk_base::AsyncResolverInterface*
+rtc::AsyncResolverInterface*
 IpcPacketSocketFactory::CreateAsyncResolver() {
   scoped_ptr<AsyncAddressResolverImpl> resolver(
     new AsyncAddressResolverImpl(socket_dispatcher_));

@@ -87,7 +87,7 @@ class WebRtcAudioRendererTest : public testing::Test {
             message_loop_->message_loop_proxy())),
         factory_(new MockAudioDeviceFactory()),
         source_(new MockAudioRendererSource()),
-        stream_(new talk_base::RefCountedObject<MockMediaStream>("label")),
+        stream_(new rtc::RefCountedObject<MockMediaStream>("label")),
         renderer_(new WebRtcAudioRenderer(stream_, 1, 1, 1, 44100, 441)) {
     EXPECT_CALL(*factory_.get(), CreateOutputDevice(1))
         .WillOnce(Return(mock_output_device_));

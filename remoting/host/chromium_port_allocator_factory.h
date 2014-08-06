@@ -21,7 +21,7 @@ struct NetworkSettings;
 class ChromiumPortAllocatorFactory
     : public webrtc::PortAllocatorFactoryInterface {
  public:
-  static talk_base::scoped_refptr<webrtc::PortAllocatorFactoryInterface> Create(
+  static rtc::scoped_refptr<webrtc::PortAllocatorFactoryInterface> Create(
       const protocol::NetworkSettings& network_settings,
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
 

@@ -30,7 +30,7 @@ class ChromiumPortAllocatorSession
       int component,
       const std::string& ice_username_fragment,
       const std::string& ice_password,
-      const std::vector<talk_base::SocketAddress>& stun_hosts,
+      const std::vector<rtc::SocketAddress>& stun_hosts,
       const std::vector<std::string>& relay_hosts,
       const std::string& relay,
       const scoped_refptr<net::URLRequestContextGetter>& url_context);
@@ -56,7 +56,7 @@ ChromiumPortAllocatorSession::ChromiumPortAllocatorSession(
     int component,
     const std::string& ice_username_fragment,
     const std::string& ice_password,
-    const std::vector<talk_base::SocketAddress>& stun_hosts,
+    const std::vector<rtc::SocketAddress>& stun_hosts,
     const std::vector<std::string>& relay_hosts,
     const std::string& relay,
     const scoped_refptr<net::URLRequestContextGetter>& url_context)
@@ -133,9 +133,9 @@ void ChromiumPortAllocatorSession::OnURLFetchComplete(
 scoped_ptr<ChromiumPortAllocator> ChromiumPortAllocator::Create(
     const scoped_refptr<net::URLRequestContextGetter>& url_context,
     const NetworkSettings& network_settings) {
-  scoped_ptr<talk_base::NetworkManager> network_manager(
-      new talk_base::BasicNetworkManager());
-  scoped_ptr<talk_base::PacketSocketFactory> socket_factory(
+  scoped_ptr<rtc::NetworkManager> network_manager(
+      new rtc::BasicNetworkManager());
+  scoped_ptr<rtc::PacketSocketFactory> socket_factory(
       new ChromiumPacketSocketFactory());
   scoped_ptr<ChromiumPortAllocator> result(
       new ChromiumPortAllocator(url_context, network_manager.Pass(),
@@ -164,8 +164,8 @@ scoped_ptr<ChromiumPortAllocator> ChromiumPortAllocator::Create(
 
 ChromiumPortAllocator::ChromiumPortAllocator(
     const scoped_refptr<net::URLRequestContextGetter>& url_context,
-    scoped_ptr<talk_base::NetworkManager> network_manager,
-    scoped_ptr<talk_base::PacketSocketFactory> socket_factory)
+    scoped_ptr<rtc::NetworkManager> network_manager,
+    scoped_ptr<rtc::PacketSocketFactory> socket_factory)
     : HttpPortAllocatorBase(network_manager.get(),
                             socket_factory.get(),
                             std::string()),

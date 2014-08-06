@@ -13,7 +13,7 @@
 #include "ppapi/utility/completion_callback_factory.h"
 #include "remoting/client/plugin/pepper_util.h"
 #include "remoting/protocol/socket_util.h"
-#include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
+#include "third_party/webrtc/base/asyncpacketsocket.h"
 
 namespace remoting {
 
@@ -81,30 +81,30 @@ int PepperErrorToNetError(int error) {
   }
 }
 
-class UdpPacketSocket : public talk_base::AsyncPacketSocket {
+class UdpPacketSocket : public rtc::AsyncPacketSocket {
  public:
   explicit UdpPacketSocket(const pp::InstanceHandle& instance);
   virtual ~UdpPacketSocket();
 
   // |min_port| and |max_port| are set to zero if the port number
   // should be assigned by the OS.
-  bool Init(const talk_base::SocketAddress& local_address,
+  bool Init(const rtc::SocketAddress& local_address,
             int min_port,
             int max_port);
 
-  // talk_base::AsyncPacketSocket interface.
-  virtual talk_base::SocketAddress GetLocalAddress() const OVERRIDE;
-  virtual talk_base::SocketAddress GetRemoteAddress() const OVERRIDE;
+  // rtc::AsyncPacketSocket interface.
+  virtual rtc::SocketAddress GetLocalAddress() const OVERRIDE;
+  virtual rtc::SocketAddress GetRemoteAddress() const OVERRIDE;
   virtual int Send(const void* data, size_t data_size,
-                   const talk_base::PacketOptions& options) OVERRIDE;
+                   const rtc::PacketOptions& options) OVERRIDE;
   virtual int SendTo(const void* data,
                      size_t data_size,
-                     const talk_base::SocketAddress& address,
-                     const talk_base::PacketOptions& options) OVERRIDE;
+                     const rtc::SocketAddress& address,
+                     const rtc::PacketOptions& options) OVERRIDE;
   virtual int Close() OVERRIDE;
   virtual State GetState() const OVERRIDE;
-  virtual int GetOption(talk_base::Socket::Option opt, int* value) OVERRIDE;
-  virtual int SetOption(talk_base::Socket::Option opt, int value) OVERRIDE;
+  virtual int GetOption(rtc::Socket::Option opt, int* value) OVERRIDE;
+  virtual int SetOption(rtc::Socket::Option opt, int value) OVERRIDE;
   virtual int GetError() const OVERRIDE;
   virtual void SetError(int error) OVERRIDE;
 
@@ -135,7 +135,7 @@ class UdpPacketSocket : public talk_base::AsyncPacketSocket {
   State state_;
   int error_;
 
-  talk_base::SocketAddress local_address_;
+  rtc::SocketAddress local_address_;
 
   // Used to scan ports when necessary. Both values are set to 0 when
   // the port number is assigned by OS.
@@ -179,7 +179,7 @@ UdpPacketSocket::~UdpPacketSocket() {
   Close();
 }
 
-bool UdpPacketSocket::Init(const talk_base::SocketAddress& local_address,
+bool UdpPacketSocket::Init(const rtc::SocketAddress& local_address,
                            int min_port,
                            int max_port) {
   if (socket_.is_null()) {
@@ -239,19 +239,19 @@ void UdpPacketSocket::OnBindCompleted(int result) {
   }
 }
 
-talk_base::SocketAddress UdpPacketSocket::GetLocalAddress() const {
+rtc::SocketAddress UdpPacketSocket::GetLocalAddress() const {
   DCHECK_EQ(state_, STATE_BOUND);
   return local_address_;
 }
 
-talk_base::SocketAddress UdpPacketSocket::GetRemoteAddress() const {
+rtc::SocketAddress UdpPacketSocket::GetRemoteAddress() const {
   // UDP sockets are not connected - this method should never be called.
   NOTREACHED();
-  return talk_base::SocketAddress();
+  return rtc::SocketAddress();
 }
 
 int UdpPacketSocket::Send(const void* data, size_t data_size,
-                          const talk_base::PacketOptions& options) {
+                          const rtc::PacketOptions& options) {
   // UDP sockets are not connected - this method should never be called.
   NOTREACHED();
   return EWOULDBLOCK;
@@ -259,8 +259,8 @@ int UdpPacketSocket::Send(const void* data, size_t data_size,
 
 int UdpPacketSocket::SendTo(const void* data,
                             size_t data_size,
-                            const talk_base::SocketAddress& address,
-                            const talk_base::PacketOptions& options) {
+                            const rtc::SocketAddress& address,
+                            const rtc::PacketOptions& options) {
   if (state_ != STATE_BOUND) {
     // TODO(sergeyu): StunPort may try to send stun request before we
     // are bound. Fix that problem and change this to DCHECK.
@@ -292,16 +292,16 @@ int UdpPacketSocket::Close() {
   return 0;
 }
 
-talk_base::AsyncPacketSocket::State UdpPacketSocket::GetState() const {
+rtc::AsyncPacketSocket::State UdpPacketSocket::GetState() const {
   return state_;
 }
 
-int UdpPacketSocket::GetOption(talk_base::Socket::Option opt, int* value) {
+int UdpPacketSocket::GetOption(rtc::Socket::Option opt, int* value) {
   // Options are not supported for Pepper UDP sockets.
   return -1;
 }
 
-int UdpPacketSocket::SetOption(talk_base::Socket::Option opt, int value) {
+int UdpPacketSocket::SetOption(rtc::Socket::Option opt, int value) {
   // Options are not supported for Pepper UDP sockets.
   return -1;
 }
@@ -385,10 +385,10 @@ void UdpPacketSocket::OnReadCompleted(int result, pp::NetAddress address) {
 
 void UdpPacketSocket::HandleReadResult(int result, pp::NetAddress address) {
   if (result > 0) {
-    talk_base::SocketAddress socket_address;
+    rtc::SocketAddress socket_address;
     PpNetAddressToSocketAddress(address, &socket_address);
     SignalReadPacket(this, &receive_buffer_[0], result, socket_address,
-                     talk_base::CreatePacketTime(0));
+                     rtc::CreatePacketTime(0));
   } else if (result != PP_ERROR_ABORTED) {
     LOG(ERROR) << "Received error when reading from UDP socket: " << result;
   }
@@ -404,8 +404,8 @@ PepperPacketSocketFactory::PepperPacketSocketFactory(
 PepperPacketSocketFactory::~PepperPacketSocketFactory() {
 }
 
-talk_base::AsyncPacketSocket* PepperPacketSocketFactory::CreateUdpSocket(
-      const talk_base::SocketAddress& local_address,
+rtc::AsyncPacketSocket* PepperPacketSocketFactory::CreateUdpSocket(
+      const rtc::SocketAddress& local_address,
       int min_port,
       int max_port) {
   scoped_ptr<UdpPacketSocket> result(new UdpPacketSocket(pp_instance_));
@@ -414,8 +414,8 @@ talk_base::AsyncPacketSocket* PepperPacketSocketFactory::CreateUdpSocket(
   return result.release();
 }
 
-talk_base::AsyncPacketSocket* PepperPacketSocketFactory::CreateServerTcpSocket(
-    const talk_base::SocketAddress& local_address,
+rtc::AsyncPacketSocket* PepperPacketSocketFactory::CreateServerTcpSocket(
+    const rtc::SocketAddress& local_address,
     int min_port,
     int max_port,
     int opts) {
@@ -424,10 +424,10 @@ talk_base::AsyncPacketSocket* PepperPacketSocketFactory::CreateServerTcpSocket(
   return NULL;
 }
 
-talk_base::AsyncPacketSocket* PepperPacketSocketFactory::CreateClientTcpSocket(
-      const talk_base::SocketAddress& local_address,
-      const talk_base::SocketAddress& remote_address,
-      const talk_base::ProxyInfo& proxy_info,
+rtc::AsyncPacketSocket* PepperPacketSocketFactory::CreateClientTcpSocket(
+      const rtc::SocketAddress& local_address,
+      const rtc::SocketAddress& remote_address,
+      const rtc::ProxyInfo& proxy_info,
       const std::string& user_agent,
       int opts) {
   // We don't use TCP sockets for remoting connections.
@@ -435,7 +435,7 @@ talk_base::AsyncPacketSocket* PepperPacketSocketFactory::CreateClientTcpSocket(
   return NULL;
 }
 
-talk_base::AsyncResolverInterface*
+rtc::AsyncResolverInterface*
 PepperPacketSocketFactory::CreateAsyncResolver() {
   NOTREACHED();
   return NULL;

@@ -80,7 +80,7 @@ class MediaStreamTrackMetricsTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
     metrics_.reset(new MockMediaStreamTrackMetrics());
-    stream_ = new talk_base::RefCountedObject<MockMediaStream>("stream");
+    stream_ = new rtc::RefCountedObject<MockMediaStream>("stream");
   }
 
   virtual void TearDown() OVERRIDE {
@@ -89,11 +89,11 @@ class MediaStreamTrackMetricsTest : public testing::Test {
   }
 
   scoped_refptr<MockAudioTrackInterface> MakeAudioTrack(std::string id) {
-    return new talk_base::RefCountedObject<MockAudioTrackInterface>(id);
+    return new rtc::RefCountedObject<MockAudioTrackInterface>(id);
   }
 
   scoped_refptr<MockVideoTrackInterface> MakeVideoTrack(std::string id) {
-    return new talk_base::RefCountedObject<MockVideoTrackInterface>(id);
+    return new rtc::RefCountedObject<MockVideoTrackInterface>(id);
   }
 
   scoped_ptr<MockMediaStreamTrackMetrics> metrics_;

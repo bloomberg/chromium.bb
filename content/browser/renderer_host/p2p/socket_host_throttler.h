@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
-namespace talk_base {
+namespace rtc {
 class RateLimiter;
 class Timing;
 }
@@ -24,13 +24,13 @@ class CONTENT_EXPORT P2PMessageThrottler {
   P2PMessageThrottler();
   virtual ~P2PMessageThrottler();
 
-  void SetTiming(scoped_ptr<talk_base::Timing> timing);
+  void SetTiming(scoped_ptr<rtc::Timing> timing);
   bool DropNextPacket(size_t packet_len);
   void SetSendIceBandwidth(int bandwith_kbps);
 
  private:
-  scoped_ptr<talk_base::Timing> timing_;
-  scoped_ptr<talk_base::RateLimiter> rate_limiter_;
+  scoped_ptr<rtc::Timing> timing_;
+  scoped_ptr<rtc::RateLimiter> rate_limiter_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PMessageThrottler);
 };

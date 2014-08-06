@@ -11,7 +11,7 @@
 #include "content/common/p2p_socket_type.h"
 #include "net/base/ip_endpoint.h"
 
-namespace talk_base {
+namespace rtc {
 struct PacketOptions;
 };
 
@@ -44,7 +44,7 @@ class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
   // |dscp|.
   virtual void SendWithDscp(const net::IPEndPoint& address,
                             const std::vector<char>& data,
-                            const talk_base::PacketOptions& options) = 0;
+                            const rtc::PacketOptions& options) = 0;
 
   virtual void SetOption(P2PSocketOption option, int value) = 0;
 

@@ -11,9 +11,9 @@
 #include "base/time/time.h"
 #include "net/base/net_util.h"
 #include "remoting/signaling/iq_sender.h"
-#include "third_party/libjingle/source/talk/base/socketaddress.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 #include "third_party/libjingle/source/talk/xmpp/constants.h"
+#include "third_party/webrtc/base/socketaddress.h"
 
 namespace remoting {
 
@@ -35,7 +35,7 @@ void JingleInfoRequest::Send(const OnJingleInfoCallback& callback) {
   if (!request_) {
     // If we failed to send IqRequest it means that SignalStrategy is
     // disconnected. Notify the caller.
-    std::vector<talk_base::SocketAddress> stun_hosts;
+    std::vector<rtc::SocketAddress> stun_hosts;
     std::vector<std::string> relay_hosts;
     std::string relay_token;
     on_jingle_info_cb_.Run(relay_token, relay_hosts, stun_hosts);
@@ -46,7 +46,7 @@ void JingleInfoRequest::Send(const OnJingleInfoCallback& callback) {
 
 void JingleInfoRequest::OnResponse(IqRequest* request,
                                    const buzz::XmlElement* stanza) {
-  std::vector<talk_base::SocketAddress> stun_hosts;
+  std::vector<rtc::SocketAddress> stun_hosts;
   std::vector<std::string> relay_hosts;
   std::string relay_token;
 
@@ -80,7 +80,7 @@ void JingleInfoRequest::OnResponse(IqRequest* request,
           continue;
         }
 
-        stun_hosts.push_back(talk_base::SocketAddress(host, port));
+        stun_hosts.push_back(rtc::SocketAddress(host, port));
       }
     }
   }

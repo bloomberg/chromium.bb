@@ -8,9 +8,9 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "talk/base/socketaddress.h"
 #include "talk/xmpp/constants.h"
 #include "talk/xmpp/saslcookiemechanism.h"
+#include "webrtc/base/socketaddress.h"
 
 namespace notifier {
 
@@ -64,8 +64,8 @@ GaiaTokenPreXmppAuth::~GaiaTokenPreXmppAuth() { }
 
 void GaiaTokenPreXmppAuth::StartPreXmppAuth(
     const buzz::Jid& jid,
-    const talk_base::SocketAddress& server,
-    const talk_base::CryptString& pass,
+    const rtc::SocketAddress& server,
+    const rtc::CryptString& pass,
     const std::string& auth_mechanism,
     const std::string& auth_token) {
   SignalAuthDone();

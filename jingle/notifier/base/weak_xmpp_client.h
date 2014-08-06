@@ -15,18 +15,18 @@
 #include "base/threading/non_thread_safe.h"
 #include "talk/xmpp/xmppclient.h"
 
-namespace talk_base {
+namespace rtc {
 class TaskParent;
 }  // namespace
 
 namespace notifier {
 
 // buzz::XmppClient's destructor isn't marked virtual, but it inherits
-// from talk_base::Task, whose destructor *is* marked virtual, so we
+// from rtc::Task, whose destructor *is* marked virtual, so we
 // can safely inherit from it.
 class WeakXmppClient : public buzz::XmppClient, public base::NonThreadSafe {
  public:
-  explicit WeakXmppClient(talk_base::TaskParent* parent);
+  explicit WeakXmppClient(rtc::TaskParent* parent);
 
   virtual ~WeakXmppClient();
 

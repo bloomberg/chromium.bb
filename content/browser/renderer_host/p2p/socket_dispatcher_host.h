@@ -22,7 +22,7 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-namespace talk_base {
+namespace rtc {
 struct PacketOptions;
 }
 
@@ -84,7 +84,7 @@ class P2PSocketDispatcherHost
   void OnSend(int socket_id,
               const net::IPEndPoint& socket_address,
               const std::vector<char>& data,
-              const talk_base::PacketOptions& options,
+              const rtc::PacketOptions& options,
               uint64 packet_id);
   void OnSetOption(int socket_id, P2PSocketOption option, int value);
   void OnDestroySocket(int socket_id);

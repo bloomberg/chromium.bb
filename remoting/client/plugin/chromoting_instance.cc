@@ -9,8 +9,8 @@
 #include <vector>
 
 #if defined(OS_NACL)
-#include <sys/mount.h>
 #include <nacl_io/nacl_io.h>
+#include <sys/mount.h>
 #endif
 
 #include "base/bind.h"
@@ -52,8 +52,8 @@
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
-#include "third_party/libjingle/source/talk/base/helpers.h"
-#include "third_party/libjingle/source/talk/base/ssladapter.h"
+#include "third_party/webrtc/base/helpers.h"
+#include "third_party/webrtc/base/ssladapter.h"
 #include "url/gurl.h"
 
 // Windows defines 'PostMessage', so we have to undef it.
@@ -247,12 +247,12 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
   // Initialize random seed for libjingle. It's necessary only with OpenSSL.
   char random_seed[kRandomSeedSize];
   crypto::RandBytes(random_seed, sizeof(random_seed));
-  talk_base::InitRandom(random_seed, sizeof(random_seed));
+  rtc::InitRandom(random_seed, sizeof(random_seed));
 #else
   // Libjingle's SSL implementation is not really used, but it has to be
   // initialized for NSS builds to make sure that RNG is initialized in NSS,
   // because libjingle uses it.
-  talk_base::InitializeSSL();
+  rtc::InitializeSSL();
 #endif  // !defined(USE_OPENSSL)
 
   // Send hello message.

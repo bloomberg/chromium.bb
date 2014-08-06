@@ -11,8 +11,8 @@
 #include "base/metrics/field_trial.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
-#include "talk/base/basictypes.h"
-#include "third_party/libjingle/overrides/talk/base/logging.h"
+#include "webrtc/base/basictypes.h"
+#include "webrtc/base/logging.h"
 
 const unsigned char* GetCategoryGroupEnabled(const char* category_group) {
   return TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(category_group);
@@ -136,7 +136,7 @@ bool InitializeWebRtcModule() {
       &init_diagnostic_logging);
 
   if (init_ok)
-    talk_base::SetExtraLoggingInit(init_diagnostic_logging);
+    rtc::SetExtraLoggingInit(init_diagnostic_logging);
   return init_ok;
 }
 
