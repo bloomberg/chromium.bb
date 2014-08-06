@@ -13,9 +13,11 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Deque.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -25,6 +27,10 @@ class UnderlyingSource;
 
 class ReadableStream FINAL : public GarbageCollectedFinalized<ReadableStream>, public ScriptWrappable, public ContextLifecycleObserver {
 public:
+    // We use String as ChunkType for now.
+    // Make this class templated.
+    typedef String ChunkType;
+
     enum State {
         Readable,
         Waiting,
@@ -42,12 +48,12 @@ public:
     bool isPulling() const { return m_isPulling; }
     State state() const { return m_state; }
 
-    // FIXME: Implement bool read();
+    ChunkType read(ExceptionState*);
     ScriptPromise wait(ScriptState*);
-    // FIXME: Implement void close();
+    // FIXME: Implement ScriptPromise cancel();
+    ScriptPromise closed(ScriptState*);
 
-    // FIXME: enqueue must accept any type.
-    bool enqueue(const String& chunk);
+    bool enqueue(const ChunkType&);
     void close();
     void error(PassRefPtrWillBeRawPtr<DOMException>);
 
@@ -57,9 +63,9 @@ private:
     class OnStarted;
     class OnStartFailed;
     typedef ScriptPromiseProperty<Member<ReadableStream>, V8UndefinedType, RefPtrWillBeMember<DOMException> > WaitPromise;
+    typedef ScriptPromiseProperty<Member<ReadableStream>, V8UndefinedType, RefPtrWillBeMember<DOMException> > ClosedPromise;
 
     void onStarted(void);
-    void enqueueValueWithSize(const String& chunk);
 
     void callOrSchedulePull();
 
@@ -70,7 +76,9 @@ private:
     bool m_isSchedulingPull;
     State m_state;
 
+    Deque<ChunkType> m_queue;
     Member<WaitPromise> m_wait;
+    Member<ClosedPromise> m_closed;
     RefPtrWillBeMember<DOMException> m_exception;
 };
 

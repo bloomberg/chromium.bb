@@ -10,6 +10,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/streams/UnderlyingSource.h"
 #include "core/testing/DummyPageHolder.h"
 #include <gmock/gmock.h>
@@ -87,6 +88,11 @@ public:
 
     ScriptState* scriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
     v8::Isolate* isolate() { return scriptState()->isolate(); }
+
+    PassOwnPtr<StringCapturingFunction> createCaptor(String* value)
+    {
+        return StringCapturingFunction::create(isolate(), value);
+    }
 
     // Note: This function calls RunMicrotasks.
     ReadableStream* construct()
@@ -250,7 +256,7 @@ TEST_F(ReadableStreamTest, WaitAndError)
     }
 
     ScriptPromise promise = stream->wait(scriptState());
-    promise.then(StringCapturingFunction::create(isolate(), &onFulfilled), StringCapturingFunction::create(isolate(), &onRejected));
+    promise.then(createCaptor(&onFulfilled), createCaptor(&onRejected));
     EXPECT_EQ(ReadableStream::Waiting, stream->state());
     EXPECT_TRUE(stream->isPulling());
     stream->error(DOMException::create(NotFoundError, "hello, error"));
@@ -277,6 +283,18 @@ TEST_F(ReadableStreamTest, ErrorAndEnqueue)
     EXPECT_EQ(ReadableStream::Errored, stream->state());
 }
 
+TEST_F(ReadableStreamTest, CloseAndEnqueue)
+{
+    ReadableStream* stream = construct();
+
+    stream->close();
+    EXPECT_EQ(ReadableStream::Closed, stream->state());
+
+    bool result = stream->enqueue("hello");
+    EXPECT_FALSE(result);
+    EXPECT_EQ(ReadableStream::Closed, stream->state());
+}
+
 TEST_F(ReadableStreamTest, EnqueueAndWait)
 {
     ReadableStream* stream = construct();
@@ -287,7 +305,7 @@ TEST_F(ReadableStreamTest, EnqueueAndWait)
     EXPECT_TRUE(result);
     EXPECT_EQ(ReadableStream::Readable, stream->state());
 
-    stream->wait(scriptState()).then(StringCapturingFunction::create(isolate(), &onFulfilled), StringCapturingFunction::create(isolate(), &onRejected));
+    stream->wait(scriptState()).then(createCaptor(&onFulfilled), createCaptor(&onRejected));
     EXPECT_EQ(ReadableStream::Readable, stream->state());
     EXPECT_FALSE(stream->isPulling());
     EXPECT_TRUE(onFulfilled.isNull());
@@ -311,7 +329,7 @@ TEST_F(ReadableStreamTest, WaitAndEnqueue)
         EXPECT_CALL(*m_underlyingSource, pullSource()).Times(1);
     }
 
-    stream->wait(scriptState()).then(StringCapturingFunction::create(isolate(), &onFulfilled), StringCapturingFunction::create(isolate(), &onRejected));
+    stream->wait(scriptState()).then(createCaptor(&onFulfilled), createCaptor(&onRejected));
     isolate()->RunMicrotasks();
 
     EXPECT_EQ(ReadableStream::Waiting, stream->state());
@@ -343,7 +361,7 @@ TEST_F(ReadableStreamTest, WaitAndEnqueueAndError)
     }
 
     ScriptPromise promise = stream->wait(scriptState());
-    promise.then(StringCapturingFunction::create(isolate(), &onFulfilled), StringCapturingFunction::create(isolate(), &onRejected));
+    promise.then(createCaptor(&onFulfilled), createCaptor(&onRejected));
     isolate()->RunMicrotasks();
 
     EXPECT_EQ(ReadableStream::Waiting, stream->state());
@@ -368,6 +386,219 @@ TEST_F(ReadableStreamTest, WaitAndEnqueueAndError)
     // FIXME: This expectation should hold but doesn't because of
     // a ScriptPromiseProperty bug. Enable it when the defect is fixed.
     // EXPECT_NE(promise, stream->wait(scriptState()));
+}
+
+TEST_F(ReadableStreamTest, CloseWhenWaiting)
+{
+    String onWaitFulfilled, onWaitRejected;
+    String onClosedFulfilled, onClosedRejected;
+
+    ReadableStream* stream = construct();
+
+    {
+        InSequence s;
+        EXPECT_CALL(*m_underlyingSource, pullSource()).Times(1);
+    }
+
+    EXPECT_EQ(ReadableStream::Waiting, stream->state());
+    stream->wait(scriptState()).then(createCaptor(&onWaitFulfilled), createCaptor(&onWaitRejected));
+    stream->closed(scriptState()).then(createCaptor(&onClosedFulfilled), createCaptor(&onClosedRejected));
+
+    isolate()->RunMicrotasks();
+    EXPECT_TRUE(onWaitFulfilled.isNull());
+    EXPECT_TRUE(onWaitRejected.isNull());
+    EXPECT_TRUE(onClosedFulfilled.isNull());
+    EXPECT_TRUE(onClosedRejected.isNull());
+
+    stream->close();
+    EXPECT_EQ(ReadableStream::Closed, stream->state());
+    isolate()->RunMicrotasks();
+    EXPECT_EQ("undefined", onWaitFulfilled);
+    EXPECT_TRUE(onWaitRejected.isNull());
+    EXPECT_EQ("undefined", onClosedFulfilled);
+    EXPECT_TRUE(onClosedRejected.isNull());
+}
+
+TEST_F(ReadableStreamTest, CloseWhenErrored)
+{
+    String onFulfilled, onRejected;
+    ReadableStream* stream = construct();
+    EXPECT_EQ(ReadableStream::Waiting, stream->state());
+    stream->closed(scriptState()).then(createCaptor(&onFulfilled), createCaptor(&onRejected));
+
+    stream->error(DOMException::create(NotFoundError, "error"));
+    stream->close();
+
+    EXPECT_EQ(ReadableStream::Errored, stream->state());
+    isolate()->RunMicrotasks();
+
+    EXPECT_TRUE(onFulfilled.isNull());
+    EXPECT_EQ("NotFoundError: error", onRejected);
+}
+
+TEST_F(ReadableStreamTest, ReadWhenWaiting)
+{
+    ReadableStream* stream = construct();
+    EXPECT_EQ(ReadableStream::Waiting, stream->state());
+    EXPECT_FALSE(m_exceptionState.hadException());
+
+    stream->read(&m_exceptionState);
+    EXPECT_EQ(ReadableStream::Waiting, stream->state());
+    EXPECT_TRUE(m_exceptionState.hadException());
+    EXPECT_EQ(V8TypeError, m_exceptionState.code());
+    EXPECT_EQ("read is called while state is waiting", m_exceptionState.message());
+}
+
+TEST_F(ReadableStreamTest, ReadWhenClosed)
+{
+    ReadableStream* stream = construct();
+    stream->close();
+
+    EXPECT_EQ(ReadableStream::Closed, stream->state());
+    EXPECT_FALSE(m_exceptionState.hadException());
+
+    stream->read(&m_exceptionState);
+    EXPECT_EQ(ReadableStream::Closed, stream->state());
+    EXPECT_TRUE(m_exceptionState.hadException());
+    EXPECT_EQ(V8TypeError, m_exceptionState.code());
+    EXPECT_EQ("read is called while state is closed", m_exceptionState.message());
+}
+
+TEST_F(ReadableStreamTest, ReadWhenErrored)
+{
+    // DOMException values specified in the spec are different from enum values
+    // defined in ExceptionCode.h.
+    const int notFoundExceptionCode = 8;
+    ReadableStream* stream = construct();
+    stream->error(DOMException::create(NotFoundError, "error"));
+
+    EXPECT_EQ(ReadableStream::Errored, stream->state());
+    EXPECT_FALSE(m_exceptionState.hadException());
+
+    stream->read(&m_exceptionState);
+    EXPECT_EQ(ReadableStream::Errored, stream->state());
+    EXPECT_TRUE(m_exceptionState.hadException());
+    EXPECT_EQ(notFoundExceptionCode, m_exceptionState.code());
+    EXPECT_EQ("error", m_exceptionState.message());
+}
+
+TEST_F(ReadableStreamTest, EnqueuedAndRead)
+{
+    ReadableStream* stream = construct();
+    String onFulfilled, onRejected;
+    Checkpoint checkpoint;
+
+    {
+        InSequence s;
+        EXPECT_CALL(checkpoint, Call(0));
+        EXPECT_CALL(*m_underlyingSource, pullSource()).Times(1);
+        EXPECT_CALL(checkpoint, Call(1));
+    }
+
+    stream->enqueue("hello");
+    ScriptPromise promise = stream->wait(scriptState());
+    EXPECT_EQ(ReadableStream::Readable, stream->state());
+    EXPECT_FALSE(stream->isPulling());
+
+    checkpoint.Call(0);
+    String chunk = stream->read(&m_exceptionState);
+    checkpoint.Call(1);
+    EXPECT_FALSE(m_exceptionState.hadException());
+    EXPECT_EQ("hello", chunk);
+    EXPECT_EQ(ReadableStream::Waiting, stream->state());
+    EXPECT_TRUE(stream->isPulling());
+    EXPECT_FALSE(stream->isDraining());
+
+    ScriptPromise newPromise = stream->wait(scriptState());
+    newPromise.then(createCaptor(&onFulfilled), createCaptor(&onRejected));
+    isolate()->RunMicrotasks();
+    // FIXME: Uncomment the following assertions once
+    // |ScriptPromiseProperty.reset| is implemented and used.
+    // EXPECT_NE(promise, newPromise);
+    // EXPECT_TRUE(onFulfilled.isNull());
+    // EXPECT_TRUE(onRejected.isNull());
+}
+
+TEST_F(ReadableStreamTest, EnqueTwiceAndRead)
+{
+    ReadableStream* stream = construct();
+    Checkpoint checkpoint;
+
+    {
+        InSequence s;
+        EXPECT_CALL(checkpoint, Call(0));
+        EXPECT_CALL(checkpoint, Call(1));
+    }
+
+    EXPECT_TRUE(stream->enqueue("hello"));
+    EXPECT_TRUE(stream->enqueue("bye"));
+    ScriptPromise promise = stream->wait(scriptState());
+    EXPECT_EQ(ReadableStream::Readable, stream->state());
+    EXPECT_FALSE(stream->isPulling());
+
+    checkpoint.Call(0);
+    String chunk = stream->read(&m_exceptionState);
+    checkpoint.Call(1);
+    EXPECT_FALSE(m_exceptionState.hadException());
+    EXPECT_EQ("hello", chunk);
+    EXPECT_EQ(ReadableStream::Readable, stream->state());
+    EXPECT_FALSE(stream->isPulling());
+    EXPECT_FALSE(stream->isDraining());
+
+    ScriptPromise newPromise = stream->wait(scriptState());
+    EXPECT_EQ(promise, newPromise);
+}
+
+TEST_F(ReadableStreamTest, CloseWhenReadable)
+{
+    ReadableStream* stream = construct();
+    String onWaitFulfilled, onWaitRejected;
+    String onClosedFulfilled, onClosedRejected;
+
+    stream->closed(scriptState()).then(createCaptor(&onClosedFulfilled), createCaptor(&onClosedRejected));
+    EXPECT_TRUE(stream->enqueue("hello"));
+    EXPECT_TRUE(stream->enqueue("bye"));
+    stream->close();
+    EXPECT_FALSE(stream->enqueue("should be ignored"));
+
+    ScriptPromise promise = stream->wait(scriptState());
+    EXPECT_EQ(ReadableStream::Readable, stream->state());
+    EXPECT_FALSE(stream->isPulling());
+    EXPECT_TRUE(stream->isDraining());
+
+    String chunk = stream->read(&m_exceptionState);
+    EXPECT_EQ("hello", chunk);
+    EXPECT_EQ(promise, stream->wait(scriptState()));
+
+    isolate()->RunMicrotasks();
+
+    EXPECT_EQ(ReadableStream::Readable, stream->state());
+    EXPECT_FALSE(stream->isPulling());
+    EXPECT_TRUE(stream->isDraining());
+
+    chunk = stream->read(&m_exceptionState);
+    EXPECT_EQ("bye", chunk);
+    EXPECT_FALSE(m_exceptionState.hadException());
+
+    // FIXME: This assertion should be enabled once
+    // ScriptPromiseProperty.reset is implemented and used.
+    // EXPECT_NE(promise, stream->wait(scriptState()));
+    stream->wait(scriptState()).then(createCaptor(&onWaitFulfilled), createCaptor(&onWaitRejected));
+
+    EXPECT_EQ(ReadableStream::Closed, stream->state());
+    EXPECT_FALSE(stream->isPulling());
+    EXPECT_TRUE(stream->isDraining());
+
+    EXPECT_TRUE(onWaitFulfilled.isNull());
+    EXPECT_TRUE(onWaitRejected.isNull());
+    EXPECT_TRUE(onClosedFulfilled.isNull());
+    EXPECT_TRUE(onClosedRejected.isNull());
+
+    isolate()->RunMicrotasks();
+    EXPECT_EQ("undefined", onWaitFulfilled);
+    EXPECT_TRUE(onWaitRejected.isNull());
+    EXPECT_EQ("undefined", onClosedFulfilled);
+    EXPECT_TRUE(onClosedRejected.isNull());
 }
 
 } // namespace blink
