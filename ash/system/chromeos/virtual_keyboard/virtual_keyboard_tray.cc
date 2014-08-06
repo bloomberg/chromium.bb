@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/virtual_keyboard/virtual_keyboard_tray.h"
 
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -20,42 +21,11 @@
 #include "ui/views/controls/button/image_button.h"
 
 namespace ash {
-namespace {
-
-class VirtualKeyboardButton : public views::ImageButton {
- public:
-  VirtualKeyboardButton(views::ButtonListener* listener);
-  virtual ~VirtualKeyboardButton();
-
-  // Overridden from views::ImageButton:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardButton);
-};
-
-VirtualKeyboardButton::VirtualKeyboardButton(views::ButtonListener* listener)
-    : views::ImageButton(listener) {
-}
-
-VirtualKeyboardButton::~VirtualKeyboardButton() {
-}
-
-gfx::Size VirtualKeyboardButton::GetPreferredSize() const {
-  const int virtual_keyboard_button_height = kShelfSize;
-  gfx::Size size = ImageButton::GetPreferredSize();
-  int padding = virtual_keyboard_button_height - size.height();
-  size.set_height(virtual_keyboard_button_height);
-  size.set_width(size.width() + padding);
-  return size;
-}
-
-}  // namespace
 
 VirtualKeyboardTray::VirtualKeyboardTray(StatusAreaWidget* status_area_widget)
     : TrayBackgroundView(status_area_widget),
       button_(NULL) {
-  button_ = new VirtualKeyboardButton(this);
+  button_ = new views::ImageButton(this);
   button_->SetImage(views::CustomButton::STATE_NORMAL,
                     ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                         IDR_AURA_UBER_TRAY_VIRTUAL_KEYBOARD));
@@ -82,6 +52,30 @@ VirtualKeyboardTray::~VirtualKeyboardTray() {
 void VirtualKeyboardTray::SetShelfAlignment(ShelfAlignment alignment) {
   TrayBackgroundView::SetShelfAlignment(alignment);
   tray_container()->SetBorder(views::Border::NullBorder());
+
+  // Pad button size to align with other controls in the system tray.
+  const gfx::ImageSkia image = button_->GetImage(
+      views::CustomButton::STATE_NORMAL);
+  int top_padding = (kTrayBarButtonWidth - image.height()) / 2;
+  int left_padding = (kTrayBarButtonWidth - image.width()) / 2;
+  int bottom_padding = kTrayBarButtonWidth - image.height() - top_padding;
+  int right_padding = kTrayBarButtonWidth - image.width() - left_padding;
+
+  // Square up the padding if horizontally aligned. Avoid extra padding when
+  // vertically aligned as the button would violate the width constraint on the
+  // shelf.
+  if (alignment == SHELF_ALIGNMENT_BOTTOM || alignment == SHELF_ALIGNMENT_TOP) {
+    gfx::Insets insets = button_->GetInsets();
+    int additional_padding = std::max(0, top_padding - left_padding);
+    left_padding += additional_padding;
+    right_padding += additional_padding;
+  }
+
+  button_->SetBorder(views::Border::CreateEmptyBorder(
+      top_padding,
+      left_padding,
+      bottom_padding,
+      right_padding));
 }
 
 base::string16 VirtualKeyboardTray::GetAccessibleNameForTray() {
