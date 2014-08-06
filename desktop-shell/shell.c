@@ -3116,7 +3116,8 @@ shell_map_popup(struct shell_surface *shsurf)
 	weston_view_set_position(shsurf->view, shsurf->popup.x, shsurf->popup.y);
 	weston_view_update_transform(shsurf->view);
 
-	if (shseat->seat->pointer->grab_serial == shsurf->popup.serial) {
+	if (shseat->seat->pointer &&
+	    shseat->seat->pointer->grab_serial == shsurf->popup.serial) {
 		add_popup_grab(shsurf, shseat);
 	} else {
 		shell_surface_send_popup_done(shsurf);
