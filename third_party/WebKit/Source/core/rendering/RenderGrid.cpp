@@ -425,7 +425,8 @@ void RenderGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
         track.m_usedBreadth = computeUsedBreadthOfMinLength(direction, minTrackBreadth);
         track.m_maxBreadth = computeUsedBreadthOfMaxLength(direction, maxTrackBreadth, track.m_usedBreadth);
 
-        track.m_maxBreadth = std::max(track.m_maxBreadth, track.m_usedBreadth);
+        if (track.m_maxBreadth != infinity)
+            track.m_maxBreadth = std::max(track.m_maxBreadth, track.m_usedBreadth);
 
         if (trackSize.isContentSized())
             sizingData.contentSizedTracksIndex.append(i);
@@ -683,7 +684,8 @@ void RenderGrid::resolveContentBasedTrackSizingFunctions(GridTrackSizingDirectio
     // FIXME: Split the grid tracks into groups that doesn't overlap a <flex> grid track (crbug.com/235258).
 
     for (size_t i = 0; i < sizingData.contentSizedTracksIndex.size(); ++i) {
-        GridIterator iterator(m_grid, direction, sizingData.contentSizedTracksIndex[i]);
+        size_t trackIndex = sizingData.contentSizedTracksIndex[i];
+        GridIterator iterator(m_grid, direction, trackIndex);
         Vector<GridItemWithSpan> itemsSortedByIncreasingSpan;
 
         while (RenderBox* gridItem = iterator.nextGridItem())
@@ -699,7 +701,7 @@ void RenderGrid::resolveContentBasedTrackSizingFunctions(GridTrackSizingDirectio
             resolveContentBasedTrackSizingFunctionsForItems(direction, sizingData, gridItem, &GridTrackSize::hasMaxContentMaxTrackBreadth, &RenderGrid::maxContentForChild, &GridTrack::maxBreadthIfNotInfinite, &GridTrack::growMaxBreadth);
         }
 
-        GridTrack& track = (direction == ForColumns) ? sizingData.columnTracks[i] : sizingData.rowTracks[i];
+        GridTrack& track = (direction == ForColumns) ? sizingData.columnTracks[trackIndex] : sizingData.rowTracks[trackIndex];
         if (track.m_maxBreadth == infinity)
             track.m_maxBreadth = track.m_usedBreadth;
     }
@@ -731,16 +733,27 @@ void RenderGrid::resolveContentBasedTrackSizingFunctionsForItems(GridTrackSizing
     }
 
     // FIXME: We should pass different values for |tracksForGrowthAboveMaxBreadth|.
-    distributeSpaceToTracks(sizingData.filteredTracks, &sizingData.filteredTracks, trackGetter, trackGrowthFunction, sizingData, additionalBreadthSpace);
+
+    // Specs mandate to floor additionalBreadthSpace (extra-space in specs) to 0. Instead we directly avoid the function
+    // call in those cases as it will be a noop in terms of track sizing.
+    if (additionalBreadthSpace > 0)
+        distributeSpaceToTracks(sizingData.filteredTracks, &sizingData.filteredTracks, trackGetter, trackGrowthFunction, sizingData, additionalBreadthSpace);
 }
 
 static bool sortByGridTrackGrowthPotential(const GridTrack* track1, const GridTrack* track2)
 {
+    if (track1->m_maxBreadth == infinity)
+        return track2->m_maxBreadth == infinity;
+
+    if (track2->m_maxBreadth == infinity)
+        return true;
+
     return (track1->m_maxBreadth - track1->m_usedBreadth) < (track2->m_maxBreadth - track2->m_usedBreadth);
 }
 
 void RenderGrid::distributeSpaceToTracks(Vector<GridTrack*>& tracks, Vector<GridTrack*>* tracksForGrowthAboveMaxBreadth, AccumulatorGetter trackGetter, AccumulatorGrowFunction trackGrowthFunction, GridSizingData& sizingData, LayoutUnit& availableLogicalSpace)
 {
+    ASSERT(availableLogicalSpace > 0);
     std::sort(tracks.begin(), tracks.end(), sortByGridTrackGrowthPotential);
 
     size_t tracksSize = tracks.size();
@@ -750,7 +763,8 @@ void RenderGrid::distributeSpaceToTracks(Vector<GridTrack*>& tracks, Vector<Grid
         GridTrack& track = *tracks[i];
         LayoutUnit availableLogicalSpaceShare = availableLogicalSpace / (tracksSize - i);
         LayoutUnit trackBreadth = (tracks[i]->*trackGetter)();
-        LayoutUnit growthShare = std::min(availableLogicalSpaceShare, track.m_maxBreadth - trackBreadth);
+        LayoutUnit growthShare = track.m_maxBreadth == infinity ? availableLogicalSpaceShare : std::min(availableLogicalSpaceShare, track.m_maxBreadth - trackBreadth);
+        ASSERT(growthShare != infinity);
         sizingData.distributeTrackVector[i] = trackBreadth;
         // We should never shrink any grid track or else we can't guarantee we abide by our min-sizing function.
         if (growthShare > 0) {
