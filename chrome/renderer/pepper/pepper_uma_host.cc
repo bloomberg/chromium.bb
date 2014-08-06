@@ -29,8 +29,7 @@ const char* const kPredefinedAllowedUMAOrigins[] = {
 };
 
 const char* const kWhitelistedHistogramPrefixes[] = {
-    "22F67DA2061FFC4DC9A4974036348D9C38C22919",  // see http://crbug.com/390221
-    "CD190EA2B764EDF0BB97552A638D32072F3CFD41",  // see http://crbug.com/317833
+    "22F67DA2061FFC4DC9A4974036348D9C38C22919"  // see http://crbug.com/390221
 };
 
 const char* const kWhitelistedPluginBaseNames[] = {
