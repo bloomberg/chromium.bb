@@ -943,7 +943,7 @@ void FrameView::layout(bool allowSubtree)
     if (!inSubtreeLayout && !toRenderView(rootForThisLayout)->document().printing())
         adjustViewSize();
 
-    layer->updateLayerPositionsAfterLayout(renderView()->layer(), updateLayerPositionFlags(layer, inSubtreeLayout));
+    layer->updateLayerPositionsAfterLayout(updateLayerPositionFlags(layer, inSubtreeLayout));
 
     if (m_doFullPaintInvalidation)
         renderView()->compositor()->fullyInvalidatePaint();

@@ -246,7 +246,7 @@ void RenderLayer::setSubpixelAccumulation(const LayoutSize& size)
     m_subpixelAccumulation = size;
 }
 
-void RenderLayer::updateLayerPositionsAfterLayout(const RenderLayer* rootLayer, UpdateLayerPositionsFlags flags)
+void RenderLayer::updateLayerPositionsAfterLayout(UpdateLayerPositionsFlags flags)
 {
     TRACE_EVENT0("blink_rendering", "RenderLayer::updateLayerPositionsAfterLayout");
 

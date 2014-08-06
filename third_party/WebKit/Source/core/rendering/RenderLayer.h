@@ -158,7 +158,7 @@ public:
     };
     typedef unsigned UpdateLayerPositionsFlags;
 
-    void updateLayerPositionsAfterLayout(const RenderLayer* rootLayer, UpdateLayerPositionsFlags);
+    void updateLayerPositionsAfterLayout(UpdateLayerPositionsFlags);
     void updateLayerPositionsAfterOverflowScroll();
 
     // FIXME: Should updateLayerPositions be private?
