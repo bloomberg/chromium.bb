@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <limits>
 #include <vector>
 
 #include "cc/output/bsp_compare_result.h"
@@ -14,6 +15,9 @@ namespace {
 
 #define CREATE_NEW_DRAW_POLYGON(name, points_vector, normal, polygon_id) \
   DrawPolygon name(NULL, points_vector, normal, polygon_id)
+
+#define EXPECT_FLOAT_WITHIN_EPSILON_OF(a, b) \
+  EXPECT_TRUE(std::abs(a - b) < std::numeric_limits<float>::epsilon());
 
 #define EXPECT_POINT_EQ(point_a, point_b)    \
   EXPECT_FLOAT_EQ(point_a.x(), point_b.x()); \
@@ -173,9 +177,13 @@ TEST(DrawPolygonTransformTest, TransformNormal) {
   // using the inverse tranpose matrix gives us the right result.
   polygon_a.TransformToScreenSpace(transform);
 
-  EXPECT_FLOAT_EQ(polygon_a.normal().x(), 0);
-  EXPECT_FLOAT_EQ(polygon_a.normal().y(), 0);
-  EXPECT_FLOAT_EQ(polygon_a.normal().z(), -1);
+  // Note: We use EXPECT_FLOAT_WITHIN_EPSILON instead of EXPECT_FLOAT_EQUAL here
+  // because some architectures (e.g., Arm64) employ a fused multiply-add
+  // instruction which causes rounding asymmetry and reduces precision.
+  // http://crbug.com/401117.
+  EXPECT_FLOAT_WITHIN_EPSILON_OF(polygon_a.normal().x(), 0);
+  EXPECT_FLOAT_WITHIN_EPSILON_OF(polygon_a.normal().y(), 0);
+  EXPECT_FLOAT_WITHIN_EPSILON_OF(polygon_a.normal().z(), -1);
 }
 
 }  // namespace
