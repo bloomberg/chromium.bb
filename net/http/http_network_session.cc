@@ -94,7 +94,7 @@ HttpNetworkSession::Params::Params()
       quic_max_packet_length(kDefaultMaxPacketSize),
       enable_user_alternate_protocol_ports(false),
       quic_crypto_client_stream_factory(NULL) {
-  quic_supported_versions.push_back(QUIC_VERSION_19);
+  quic_supported_versions.push_back(QUIC_VERSION_21);
 }
 
 HttpNetworkSession::Params::~Params() {}
