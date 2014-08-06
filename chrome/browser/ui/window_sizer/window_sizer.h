@@ -163,6 +163,9 @@ class WindowSizer {
   // Ash specific logic for window placement. Returns true if |bounds| and
   // |show_state| have been fully determined, otherwise returns false (but
   // may still affect |show_state|).
+  // If the window is too big to fit in the display work area then the |bounds|
+  // are adjusted to default bounds and the |show_state| is adjusted to
+  // SHOW_STATE_MAXIMIZED.
   bool GetBrowserBoundsAsh(gfx::Rect* bounds,
                            ui::WindowShowState* show_state) const;
 

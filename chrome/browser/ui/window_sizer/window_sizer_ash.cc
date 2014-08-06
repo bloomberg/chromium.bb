@@ -19,40 +19,51 @@ bool WindowSizer::GetBrowserBoundsAsh(gfx::Rect* bounds,
       browser_->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH)
     return false;
 
+  bool determined = false;
   if (bounds->IsEmpty()) {
     if (browser_->is_type_tabbed()) {
       GetTabbedBrowserBoundsAsh(bounds, show_state);
-      return true;
-    }
-
-    if (browser_->is_trusted_source()) {
+      determined = true;
+    } else if (browser_->is_trusted_source()) {
       // For trusted popups (v1 apps and system windows), do not use the last
       // active window bounds, only use saved or default bounds.
       if (!GetSavedWindowBounds(bounds, show_state))
         GetDefaultWindowBounds(GetTargetDisplay(gfx::Rect()), bounds);
-      return true;
+      determined = true;
+    } else {
+      // In Ash, prioritize the last saved |show_state|. If you have questions
+      // or comments about this behavior please contact oshima@chromium.org.
+      if (state_provider_) {
+        gfx::Rect ignored_bounds, ignored_work_area;
+        state_provider_->GetPersistentState(&ignored_bounds,
+                                            &ignored_work_area,
+                                            show_state);
+      }
     }
-
-    // In Ash, prioritize the last saved |show_state|. If you have questions
-    // or comments about this behavior please contact oshima@chromium.org.
-    if (state_provider_) {
-      gfx::Rect ignored_bounds, ignored_work_area;
-      state_provider_->GetPersistentState(&ignored_bounds,
-                                          &ignored_work_area,
-                                          show_state);
-    }
-    return false;
-  }
-
-  // In case of a popup with an 'unspecified' location in ash, we are
-  // looking for a good screen location. We are interpreting (0,0) as an
-  // unspecified location.
-  if (browser_->is_type_popup() && bounds->origin().IsOrigin()) {
+  } else if (browser_->is_type_popup() && bounds->origin().IsOrigin()) {
+    // In case of a popup with an 'unspecified' location in ash, we are
+    // looking for a good screen location. We are interpreting (0,0) as an
+    // unspecified location.
     *bounds = ash::Shell::GetInstance()->window_positioner()->
         GetPopupPosition(*bounds);
-    return true;
+    determined = true;
   }
-  return false;
+
+  if (browser_->is_type_tabbed() && *show_state == ui::SHOW_STATE_DEFAULT) {
+    gfx::Display display = screen_->GetDisplayMatching(*bounds);
+    gfx::Rect work_area = display.work_area();
+    bounds->AdjustToFit(work_area);
+    if (*bounds == work_area) {
+      // A |browser_| that occupies the whole work area gets maximized.
+      // |bounds| returned here become the restore bounds once the window
+      // gets maximized after this method returns. Return a sensible default
+      // in order to make restored state visibly different from maximized.
+      *show_state = ui::SHOW_STATE_MAXIMIZED;
+      *bounds = ash::WindowPositioner::GetDefaultWindowBounds(display);
+      determined = true;
+    }
+  }
+  return determined;
 }
 
 void WindowSizer::GetTabbedBrowserBoundsAsh(

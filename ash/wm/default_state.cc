@@ -511,10 +511,22 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
     case WINDOW_STATE_TYPE_NORMAL: {
       gfx::Rect work_area_in_parent =
           ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_state->window());
-      if (window_state->HasRestoreBounds())
+      if (window_state->HasRestoreBounds()) {
         bounds_in_parent = window_state->GetRestoreBoundsInParent();
-      else
+        // Check if the |window|'s restored size is bigger than the working area
+        // This may happen if a window was resized to maximized bounds or if the
+        // display resolution changed while the window was maximized.
+        if (previous_state_type == WINDOW_STATE_TYPE_MAXIMIZED &&
+            bounds_in_parent.width() >= work_area_in_parent.width() &&
+            bounds_in_parent.height() >= work_area_in_parent.height()) {
+          // Inset the bounds slightly so that they are not exactly same as
+          // the work area bounds and it is easier to resize the window.
+          bounds_in_parent = work_area_in_parent;
+          bounds_in_parent.Inset(10, 10, 10, 10);
+        }
+      } else {
         bounds_in_parent = window->bounds();
+      }
       // Make sure that part of the window is always visible.
       AdjustBoundsToEnsureMinimumWindowVisibility(
           work_area_in_parent, &bounds_in_parent);

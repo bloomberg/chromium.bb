@@ -89,7 +89,7 @@ class TestStateProvider : public WindowSizer::StateProvider {
 
 enum Source { DEFAULT, LAST_ACTIVE, PERSISTED, BOTH };
 
-// Set up the window bounds, monitor bounds, show states and more to get the
+// Sets up the window bounds, monitor bounds, show states and more to get the
 // resulting |out_bounds| and |out_show_state| from the WindowSizer.
 // |source| specifies which type of data gets set for the test: Either the
 // last active window, the persisted value which was stored earlier, both or
@@ -108,7 +108,7 @@ void GetWindowBoundsAndShowState(const gfx::Rect& monitor1_bounds,
                                  gfx::Rect* out_bounds,
                                  ui::WindowShowState* out_show_state);
 
-// Set up the window bounds, monitor bounds, and work area to get the
+// Sets up the window bounds, monitor bounds, and work area to get the
 // resulting |out_bounds| from the WindowSizer.
 // |source| specifies which type of data gets set for the test: Either the
 // last active window, the persisted value which was stored earlier, both or
@@ -124,14 +124,16 @@ void GetWindowBounds(const gfx::Rect& monitor1_bounds,
                      const gfx::Rect& passed_in,
                      gfx::Rect* out_bounds);
 
-// Set up the various show states and get the resulting show state from
-// the WindowSizer.
-// The |display_config| is the primary display configuration used.
+// Sets up the window |bounds| and various system states which have an influence
+// on the WindowSizer and then determines the resulting show state from it.
+// |bounds| specifies the |browser| last or persistent bounds depending on
+// |source|. The |display_config| is the primary display configuration used.
 ui::WindowShowState GetWindowShowState(
     ui::WindowShowState show_state_persisted,
     ui::WindowShowState show_state_last,
     Source source,
     const Browser* browser,
+    const gfx::Rect& bounds,
     const gfx::Rect& display_config);
 
 #endif  // CHROME_BROWSER_UI_WINDOW_SIZER_WINDOW_SIZER_COMMON_UNITTEST_H_

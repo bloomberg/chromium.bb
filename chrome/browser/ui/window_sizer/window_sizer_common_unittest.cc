@@ -235,14 +235,13 @@ ui::WindowShowState GetWindowShowState(
     ui::WindowShowState show_state_last,
     Source source,
     const Browser* browser,
+    const gfx::Rect& bounds,
     const gfx::Rect& display_config) {
-  gfx::Rect bounds = display_config;
-  gfx::Rect work_area = display_config;
   TestScreen test_screen;
   test_screen.AddDisplay(display_config, display_config);
   scoped_ptr<TestStateProvider> sp(new TestStateProvider);
   if (source == PERSISTED || source == BOTH)
-    sp->SetPersistentState(bounds, work_area, show_state_persisted, true);
+    sp->SetPersistentState(bounds, display_config, show_state_persisted, true);
   if (source == LAST_ACTIVE || source == BOTH)
     sp->SetLastActiveState(bounds, show_state_last, true);
   scoped_ptr<WindowSizer::TargetDisplayProvider> tdp(

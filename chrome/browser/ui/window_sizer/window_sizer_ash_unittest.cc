@@ -469,8 +469,7 @@ TEST_F(WindowSizerAshTest, LastWindowOffscreenWithNonAggressiveRepositioning) {
 
 // Test the placement of newly created windows.
 TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindows) {
-  // Create a browser which we can use to pass into the GetWindowBounds
-  // function.
+  // Create a browser to pass into the GetWindowBounds function.
   scoped_ptr<TestingProfile> profile(new TestingProfile());
   // Creating a popup handler here to make sure it does not interfere with the
   // existing windows.
@@ -549,8 +548,7 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindows) {
 // This test supplements "PlaceNewWindows" by testing the creation of a newly
 // created browser window on an empty desktop.
 TEST_F(WindowSizerAshTest, MAYBE_PlaceNewBrowserWindowOnEmptyDesktop) {
-  // Create a browser which we can use to pass into the GetWindowBounds
-  // function.
+  // Create a browser to pass into the GetWindowBoundsAndShowState function.
   scoped_ptr<TestingProfile> profile(new TestingProfile());
   Browser::CreateParams native_params(profile.get(),
                                       chrome::HOST_DESKTOP_TYPE_ASH);
@@ -752,12 +750,23 @@ TEST_F(WindowSizerAshTest, MAYBE_TestShowState) {
                                ui::SHOW_STATE_NORMAL,
                                BOTH,
                                browser_window->browser(),
+                               p1600x1200,
                                p1600x1200));
+  // A window that is smaller than the whole work area is set to default state.
   EXPECT_EQ(ui::SHOW_STATE_DEFAULT,
             GetWindowShowState(ui::SHOW_STATE_DEFAULT,
                                ui::SHOW_STATE_NORMAL,
                                BOTH,
                                browser_window->browser(),
+                               p1280x1024,
+                               p1600x1200));
+  // A window that is sized to occupy the whole work area is maximized.
+  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED,
+            GetWindowShowState(ui::SHOW_STATE_DEFAULT,
+                               ui::SHOW_STATE_NORMAL,
+                               BOTH,
+                               browser_window->browser(),
+                               p1600x1200,
                                p1600x1200));
   // Non tabbed windows should always follow the window saved visibility state.
   EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED,
@@ -765,6 +774,7 @@ TEST_F(WindowSizerAshTest, MAYBE_TestShowState) {
                                ui::SHOW_STATE_NORMAL,
                                BOTH,
                                browser_popup->browser(),
+                               p1600x1200,
                                p1600x1200));
   // The non tabbed window will take the status of the last active of its kind.
   EXPECT_EQ(ui::SHOW_STATE_NORMAL,
@@ -772,6 +782,7 @@ TEST_F(WindowSizerAshTest, MAYBE_TestShowState) {
                                ui::SHOW_STATE_NORMAL,
                                BOTH,
                                browser_popup->browser(),
+                               p1600x1200,
                                p1600x1200));
 
   // Now create a top level window and check again for both. Only the tabbed
@@ -789,6 +800,7 @@ TEST_F(WindowSizerAshTest, MAYBE_TestShowState) {
                                ui::SHOW_STATE_DEFAULT,
                                BOTH,
                                browser_window->browser(),
+                               p1600x1200,
                                p1600x1200));
   // Non tabbed windows should always follow the window saved visibility state.
   EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED,
@@ -796,6 +808,7 @@ TEST_F(WindowSizerAshTest, MAYBE_TestShowState) {
                                ui::SHOW_STATE_MINIMIZED,
                                BOTH,
                                browser_popup->browser(),
+                               p1600x1200,
                                p1600x1200));
 
   // In smaller screen resolutions we default to maximized if there is no other
@@ -808,6 +821,7 @@ TEST_F(WindowSizerAshTest, MAYBE_TestShowState) {
                                  ui::SHOW_STATE_DEFAULT,
                                  BOTH,
                                  browser_window->browser(),
+                                 tiny_screen,
                                  tiny_screen));
     browser_window->Hide();
     EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED,
@@ -815,6 +829,7 @@ TEST_F(WindowSizerAshTest, MAYBE_TestShowState) {
                                  ui::SHOW_STATE_DEFAULT,
                                  BOTH,
                                  browser_window2->browser(),
+                                 tiny_screen,
                                  tiny_screen));
 
   }
@@ -846,6 +861,7 @@ TEST_F(WindowSizerAshTest, TestShowStateDefaults) {
                          ui::SHOW_STATE_MAXIMIZED,
                          DEFAULT,
                          browser_window->browser(),
+                         p1600x1200,
                          p1600x1200);
 #if defined(OS_WIN)
   EXPECT_EQ(window_show_state, ui::SHOW_STATE_MAXIMIZED);
@@ -858,18 +874,21 @@ TEST_F(WindowSizerAshTest, TestShowStateDefaults) {
                                ui::SHOW_STATE_MAXIMIZED,
                                BOTH,
                                browser_window->browser(),
+                               p1600x1200,
                                p1600x1200), ui::SHOW_STATE_MINIMIZED);
   browser_window->browser()->set_initial_show_state(ui::SHOW_STATE_NORMAL);
   EXPECT_EQ(GetWindowShowState(ui::SHOW_STATE_MAXIMIZED,
                                ui::SHOW_STATE_MAXIMIZED,
                                BOTH,
                                browser_window->browser(),
+                               p1600x1200,
                                p1600x1200), ui::SHOW_STATE_NORMAL);
   browser_window->browser()->set_initial_show_state(ui::SHOW_STATE_MAXIMIZED);
   EXPECT_EQ(GetWindowShowState(ui::SHOW_STATE_NORMAL,
                                ui::SHOW_STATE_NORMAL,
                                BOTH,
                                browser_window->browser(),
+                               p1600x1200,
                                p1600x1200), ui::SHOW_STATE_MAXIMIZED);
 
   // Check that setting the maximized command line option is forcing the
@@ -881,6 +900,7 @@ TEST_F(WindowSizerAshTest, TestShowStateDefaults) {
                                ui::SHOW_STATE_NORMAL,
                                BOTH,
                                browser_window->browser(),
+                               p1600x1200,
                                p1600x1200), ui::SHOW_STATE_MAXIMIZED);
 
   // The popup should favor the initial show state over the command line.
@@ -888,10 +908,44 @@ TEST_F(WindowSizerAshTest, TestShowStateDefaults) {
                                ui::SHOW_STATE_NORMAL,
                                BOTH,
                                browser_popup->browser(),
+                               p1600x1200,
                                p1600x1200), ui::SHOW_STATE_NORMAL);
 }
 
-// Test that the target root window is used as the destionation of
+TEST_F(WindowSizerAshTest, DefaultStateBecomesMaximized) {
+  // Create a browser to pass into the GetWindowBounds function.
+  scoped_ptr<TestingProfile> profile(new TestingProfile());
+  Browser::CreateParams native_params(profile.get(),
+                                      chrome::HOST_DESKTOP_TYPE_ASH);
+  scoped_ptr<Browser> browser(
+      chrome::CreateBrowserWithTestWindowForParams(&native_params));
+
+  gfx::Rect display_bounds = ash::Shell::GetInstance()->GetScreen()->
+      GetPrimaryDisplay().bounds();
+  gfx::Rect specified_bounds = display_bounds;
+
+  // Make a window bigger than the display work area.
+  specified_bounds.Inset(-20, -20);
+  ui::WindowShowState show_state = ui::SHOW_STATE_DEFAULT;
+  gfx::Rect bounds;
+  WindowSizer::GetBrowserWindowBoundsAndShowState(
+      std::string(), specified_bounds, browser.get(), &bounds, &show_state);
+  // The window should start maximized with its restore bounds shrunken.
+  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, show_state);
+  EXPECT_NE(display_bounds.ToString(), bounds.ToString());
+  EXPECT_TRUE(display_bounds.Contains(bounds));
+
+  // Make a window smaller than the display work area.
+  specified_bounds.Inset(100, 100);
+  show_state = ui::SHOW_STATE_DEFAULT;
+  WindowSizer::GetBrowserWindowBoundsAndShowState(
+      std::string(), specified_bounds, browser.get(), &bounds, &show_state);
+  // The window should start in default state.
+  EXPECT_EQ(ui::SHOW_STATE_DEFAULT, show_state);
+  EXPECT_EQ(specified_bounds.ToString(), bounds.ToString());
+}
+
+// Test that the target root window is used as the destination of
 // the non browser window. This differ from PersistedBoundsCase
 // in that this uses real ash shell implementations + StateProvider
 // TargetDisplayProvider, rather than mocks.
@@ -946,5 +1000,14 @@ TEST_F(WindowSizerAshTest, TrustedPopupBehavior) {
                                ui::SHOW_STATE_NORMAL,
                                BOTH,
                                trusted_popup->browser(),
+                               p1280x1024,
+                               p1600x1200));
+  // A popup that is sized to occupy the whole work area has default state.
+  EXPECT_EQ(ui::SHOW_STATE_DEFAULT,
+            GetWindowShowState(ui::SHOW_STATE_DEFAULT,
+                               ui::SHOW_STATE_NORMAL,
+                               BOTH,
+                               trusted_popup->browser(),
+                               p1600x1200,
                                p1600x1200));
 }
