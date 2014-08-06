@@ -571,7 +571,7 @@ void VariationsService::OnResourceRequestsAllowed() {
 void VariationsService::PerformSimulationWithVersion(
     scoped_ptr<variations::VariationsSeed> seed,
     const base::Version& version) {
-  if (version.IsValid())
+  if (!version.IsValid())
     return;
 
   const base::ElapsedTimer timer;
