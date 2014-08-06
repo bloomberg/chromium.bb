@@ -322,7 +322,10 @@ void HomeCardImpl::SetState(HomeCard::State state) {
   if (state_ == HIDDEN) {
     home_card_widget_->Hide();
   } else {
-    home_card_widget_->Show();
+    if (state_ == VISIBLE_CENTERED)
+      home_card_widget_->Show();
+    else
+      home_card_widget_->ShowInactive();
     home_card_view_->SetState(state);
     layout_manager_->Layout();
   }
