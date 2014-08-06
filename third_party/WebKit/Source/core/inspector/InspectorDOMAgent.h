@@ -128,7 +128,7 @@ public:
     virtual void setOuterHTML(ErrorString*, int nodeId, const String& outerHTML) OVERRIDE;
     virtual void setNodeValue(ErrorString*, int nodeId, const String& value) OVERRIDE;
     virtual void getEventListenersForNode(ErrorString*, int nodeId, const WTF::String* objectGroup, RefPtr<TypeBuilder::Array<TypeBuilder::DOM::EventListener> >& listenersArray) OVERRIDE;
-    virtual void performSearch(ErrorString*, const String& whitespaceTrimmedQuery, String* searchId, int* resultCount) OVERRIDE;
+    virtual void performSearch(ErrorString*, const String& whitespaceTrimmedQuery, const bool* includeUserAgentShadowDOM, String* searchId, int* resultCount) OVERRIDE;
     virtual void getSearchResults(ErrorString*, const String& searchId, int fromIndex, int toIndex, RefPtr<TypeBuilder::Array<int> >&) OVERRIDE;
     virtual void discardSearchResults(ErrorString*, const String& searchId) OVERRIDE;
     virtual void resolveNode(ErrorString*, int nodeId, const String* objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& result) OVERRIDE;

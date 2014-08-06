@@ -42,7 +42,6 @@
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
-#include "core/dom/NodeTraversal.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/Text.h"
@@ -961,12 +960,49 @@ void InspectorDOMAgent::getEventListeners(EventTarget* target, Vector<EventListe
     }
 }
 
-void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrimmedQuery, String* searchId, int* resultCount)
+static Node* nextNodeWithShadowDOMInMind(const Node& current, const Node* stayWithin, bool includeUserAgentShadowDOM)
+{
+    // At first traverse the subtree.
+    if (current.isElementNode()) {
+        const Element& element = toElement(current);
+        ElementShadow* elementShadow = element.shadow();
+        if (elementShadow) {
+            ShadowRoot* shadowRoot = elementShadow->youngestShadowRoot();
+            if (shadowRoot) {
+                if (shadowRoot->type() == ShadowRoot::AuthorShadowRoot || includeUserAgentShadowDOM)
+                    return shadowRoot;
+            }
+        }
+    }
+    if (current.hasChildren())
+        return current.firstChild();
+
+    // Then traverse siblings of the node itself and its ancestors.
+    const Node* node = &current;
+    do {
+        if (node == stayWithin)
+            return 0;
+        if (node->isShadowRoot()) {
+            const ShadowRoot* shadowRoot = toShadowRoot(node);
+            if (shadowRoot->olderShadowRoot())
+                return shadowRoot->olderShadowRoot();
+        }
+        if (node->nextSibling())
+            return node->nextSibling();
+        node = node->isShadowRoot() ? toShadowRoot(node)->host() : node->parentNode();
+    } while (node);
+
+    return 0;
+}
+
+void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrimmedQuery, const bool* optionalIncludeUserAgentShadowDOM, String* searchId, int* resultCount)
 {
     // FIXME: Few things are missing here:
     // 1) Search works with node granularity - number of matches within node is not calculated.
     // 2) There is no need to push all search results to the front-end at a time, pushing next / previous result
     //    is sufficient.
+
+    bool includeUserAgentShadowDOM = optionalIncludeUserAgentShadowDOM ? *optionalIncludeUserAgentShadowDOM : false;
 
     unsigned queryLength = whitespaceTrimmedQuery.length();
     bool startTagFound = !whitespaceTrimmedQuery.find('<');
@@ -991,12 +1027,13 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
 
     for (WillBeHeapVector<RawPtrWillBeMember<Document> >::iterator it = docs.begin(); it != docs.end(); ++it) {
         Document* document = *it;
-        Node* node = document->documentElement();
+        Node* documentElement = document->documentElement();
+        Node* node = documentElement;
         if (!node)
             continue;
 
         // Manual plain text search.
-        for (node = NodeTraversal::next(*node, document->documentElement()); node; node = NodeTraversal::next(*node, document->documentElement())) {
+        for (node = nextNodeWithShadowDOMInMind(*node, documentElement, includeUserAgentShadowDOM); node; node = nextNodeWithShadowDOMInMind(*node, documentElement, includeUserAgentShadowDOM)) {
             switch (node->nodeType()) {
             case Node::TEXT_NODE:
             case Node::COMMENT_NODE:

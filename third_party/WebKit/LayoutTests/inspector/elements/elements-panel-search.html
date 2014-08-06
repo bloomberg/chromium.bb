@@ -3,6 +3,15 @@
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script>
+function initializeShadowDOM()
+{
+    var shadow = document.querySelector('#shadow-host').createShadowRoot();
+    var template = document.querySelector('#shadow-dom-template');
+
+    // Avoid matching this function
+    shadow.appendChild(template.content.cloneNode(true));
+}
+
 function test()
 {
     WebInspector.inspectorView.showPanel("elements");
@@ -33,95 +42,122 @@ function test()
         }
     }
 
+    function setUp(next)
+    {
+        WebInspector.domModel.requestDocument(step2);
+
+        function step2()
+        {
+            InspectorTest.evaluateInPage("initializeShadowDOM()", next);
+        }
+    }
+
     InspectorTest.runTestSuite([
         function testSetUp(next)
         {
-            WebInspector.domModel.requestDocument(next);
+            setUp(next);
         },
 
         function testPlainText(next)
         {
-            WebInspector.domModel.performSearch("Fo" + "o" + "Bar", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("Fo" + "o" + "Bar", false, searchCallback.bind(this, next));
         },
 
         function testPartialText(next)
         {
-            WebInspector.domModel.performSearch("oo" + "Ba", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("oo" + "Ba", false, searchCallback.bind(this, next));
         },
 
         function testStartTag(next)
         {
-            WebInspector.domModel.performSearch("<inpu" + "t", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("<inpu" + "t", false, searchCallback.bind(this, next));
         },
 
         function testEndTag(next)
         {
-            WebInspector.domModel.performSearch("npu" + "t>", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("npu" + "t>", false, searchCallback.bind(this, next));
         },
 
         function testPartialTag(next)
         {
-            WebInspector.domModel.performSearch("npu" + "t", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("npu" + "t", false, searchCallback.bind(this, next));
         },
 
         function testPartialAbsentTagStart(next)
         {
-            WebInspector.domModel.performSearch("<npu" + "t", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("<npu" + "t", false, searchCallback.bind(this, next));
         },
 
         function testPartialAbsentTagEnd(next)
         {
-            WebInspector.domModel.performSearch("npu" + ">", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("npu" + ">", false, searchCallback.bind(this, next));
         },
 
         function testFullTag(next)
         {
-            WebInspector.domModel.performSearch("<inpu" + "t>", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("<inpu" + "t>", false, searchCallback.bind(this, next));
         },
 
         function testExactAttributeName(next)
         {
-            WebInspector.domModel.performSearch("valu" + "e", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("valu" + "e", false, searchCallback.bind(this, next));
         },
 
         function testExactAttributeVal_ue(next)
         {
-            WebInspector.domModel.performSearch("In" + "putVa" + "l", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("In" + "putVa" + "l", false, searchCallback.bind(this, next));
         },
 
         function testExactAttributeVal_ueWithQuotes(next)
         {
-            WebInspector.domModel.performSearch("\"fo" + "o\"", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("\"fo" + "o\"", false, searchCallback.bind(this, next));
         },
 
         function testPartialAttributeVal_ue(next)
         {
-            WebInspector.domModel.performSearch("n" + "putVa" + "l", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("n" + "putVa" + "l", false, searchCallback.bind(this, next));
         },
 
         function testXPathAttribute(next)
         {
-            WebInspector.domModel.performSearch("//html" + "//@attr", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("//html" + "//@attr", false, searchCallback.bind(this, next));
         },
 
         function testSelector(next)
         {
-            WebInspector.domModel.performSearch("d" + "iv.divclass span", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("d" + "iv.divclass span", false, searchCallback.bind(this, next));
         },
 
         function testCaseUpperFindsLower(next)
         {
-            WebInspector.domModel.performSearch("K" +"OO", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("K" +"OO", false, searchCallback.bind(this, next));
         },
 
         function testCaseLowerFindsUpper(next)
         {
-            WebInspector.domModel.performSearch("c" + "aseless", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("c" + "aseless", false, searchCallback.bind(this, next));
         },
 
         function testCaseAttribute(next)
         {
-            WebInspector.domModel.performSearch("C" + "AMEL", searchCallback.bind(this, next));
+            WebInspector.domModel.performSearch("C" + "AMEL", false, searchCallback.bind(this, next));
+        },
+
+        function testSearchShadowDOM(next)
+        {
+            WebInspector.domModel.performSearch("<c" + "ontent", false, searchCallback.bind(this, next));
+        },
+
+        function testSearchUAShadowDOM(next)
+        {
+            InspectorTest.addResult("Searching UA shadow DOM with setting disabled:")
+            WebInspector.domModel.performSearch("inne" + "r-editor", false, searchCallback.bind(this, step2));
+
+            function step2()
+            {
+                InspectorTest.addResult("Searching UA shadow DOM with setting enabled:")
+                WebInspector.domModel.performSearch("inne" + "r-editor", true, searchCallback.bind(this, next));
+            }
         }
     ]);
 
@@ -142,6 +178,16 @@ Tests that elements panel search is returning proper results.
 <span class="foo koo"></span>
 <span class="CASELESS"></span>
 <span data-camel="insenstive"></span>
+<div id="shadow-host">
+    <div id="shadow-root-content"></div>
+</div>
+<template id="shadow-dom-template">
+  <div id="shadow-dom-outer">
+      <content></content>
+  </div>
+</div>
+</template>
+<textarea></textarea>
 
 </body>
 </html>

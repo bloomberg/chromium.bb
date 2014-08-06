@@ -3,6 +3,7 @@ Tests that elements panel search is returning proper results.
 FooBar
 
 Found by selector
+ 
 
 Running: testSetUp
 
@@ -56,4 +57,14 @@ Running: testCaseLowerFindsUpper
 
 Running: testCaseAttribute
 < s p a n   d a t a - c a m e l = " i n s e n s t i v e " > < / s p a n >
+
+Running: testSearchShadowDOM
+< c o n t e n t > < / c o n t e n t >
+
+Running: testSearchUAShadowDOM
+Searching UA shadow DOM with setting disabled:
+Nothing found
+Searching UA shadow DOM with setting enabled:
+< d i v   i d = " i n n e r - e d i t o r " > I n p u t V a l < / d i v >
+< d i v   i d = " i n n e r - e d i t o r " > < / d i v >
 
