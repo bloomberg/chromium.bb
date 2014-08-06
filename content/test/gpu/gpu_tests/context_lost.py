@@ -4,6 +4,8 @@
 import os
 import time
 
+import context_lost_expectations
+
 from telemetry import benchmark as benchmark_module
 from telemetry.core import exceptions
 from telemetry.core import util
@@ -283,6 +285,10 @@ class WebGLContextLostFromSelectElementPage(page.Page):
 class ContextLost(benchmark_module.Benchmark):
   enabled = True
   test = _ContextLostValidator
+
+  def CreateExpectations(self, page_set):
+    return context_lost_expectations.ContextLostExpectations()
+
   # For the record, this would have been another way to get the pages
   # to repeat. pageset_repeat would be another option.
   # options = {'page_repeat': 5}
