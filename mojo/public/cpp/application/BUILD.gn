@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("application") {
+source_set("base") {
   sources = [
     "application_impl.h",
     "connect.h",
@@ -21,12 +21,28 @@ source_set("application") {
   ]
 }
 
+source_set("chromium") {
+  sources = [
+    "lib/application_impl_chromium.cc"
+  ]
+
+  deps = [ ":base" ]
+}
+
+source_set("standalone") {
+  sources = [
+    "lib/application_impl_standalone.cc"
+  ]
+
+  deps = [ ":base" ]
+}
+
 source_set("main_chromium") {
   sources = [
     "lib/mojo_main_chromium.cc"
   ]
 
-  deps = [ ":application" ]
+  deps = [ ":chromium" ]
 }
 
 source_set("main_standalone") {
@@ -34,5 +50,5 @@ source_set("main_standalone") {
     "lib/mojo_main_standalone.cc"
   ]
 
-  deps = [ ":application" ]
+  deps = [ ":standalone" ]
 }

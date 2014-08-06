@@ -135,7 +135,8 @@ TEST_F(ShellTestBaseTest, ConnectInvalidService) {
 
 // Tests that we can connect to a single service within a single app using
 // a network based loader instead of local files.
-// TODO(tim): Bug 394477. NetworkService doesn't currently terminate.
+// TODO(tim): Disabled because network service leaks NSS at exit, meaning
+// subsequent tests can't init properly.
 TEST_F(ShellTestBaseTest, DISABLED_ConnectBasicNetwork) {
   InterfacePtr<TestService> service;
   service.Bind(ConnectToServiceViaNetwork(
@@ -152,13 +153,17 @@ TEST_F(ShellTestBaseTest, DISABLED_ConnectBasicNetwork) {
   // magically exit when TestService is destroyed (unlike ConnectBasic).
   // Tearing down the shell context will kill connections. The shell loop will
   // exit as soon as no more apps are connected.
-  shell_context()->Shutdown();
-  message_loop()->Run();
+  // TODO(tim): crbug.com/392685.  Calling this explicitly shouldn't be
+  // necessary once the shell terminates if the primordial app exits, which
+  // we could enforce here by resetting |service|.
+  shell_context()->service_manager()->TerminateShellConnections();
+  message_loop()->Run();  // Waits for all connections to die.
 }
 
 // Tests that trying to connect to a service over network fails preoprly
 // if the service doesn't exist.
-// TODO(tim): Bug 394477. NetworkService doesn't currently terminate.
+// TODO(tim): Disabled because network service leaks NSS at exit, meaning
+// subsequent tests can't init properly.
 TEST_F(ShellTestBaseTest, DISABLED_ConnectInvalidServiceNetwork) {
   InterfacePtr<TestService> test_service;
   test_service.Bind(ConnectToServiceViaNetwork(
@@ -170,8 +175,11 @@ TEST_F(ShellTestBaseTest, DISABLED_ConnectInvalidServiceNetwork) {
   message_loop()->Run();
   EXPECT_TRUE(test_service.encountered_error());
 
-  shell_context()->Shutdown();
-  message_loop()->Run();
+  // TODO(tim): crbug.com/392685.  Calling this explicitly shouldn't be
+  // necessary once the shell terminates if the primordial app exits, which
+  // we could enforce here by resetting |service|.
+  shell_context()->service_manager()->TerminateShellConnections();
+  message_loop()->Run();  // Waits for all connections to die.
 }
 
 // Similar to ConnectBasic, but causes the app to instantiate multiple

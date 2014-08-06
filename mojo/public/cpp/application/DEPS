@@ -4,11 +4,13 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "mojo_main_chromium.cc": [
+  r"(mojo_main_chromium.cc|"
+  r"application_impl_chromium.cc)": [
     "+base",
     "+mojo/public/cpp"
   ],
-  "mojo_main_standalone.cc": [
+  r"(mojo_main_standalone.cc|"
+  r"application_impl_standalone.cc)": [
     "+mojo/public/cpp"
   ],
 }

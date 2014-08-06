@@ -12,7 +12,7 @@ component("native_viewport") {
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//mojo/public/cpp/application",
+    "//mojo/public/cpp/application:chromium",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/services/public/cpp/geometry",
