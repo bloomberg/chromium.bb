@@ -56,9 +56,9 @@ KeyboardHandler::~KeyboardHandler() {
 void KeyboardHandler::GetLocalizedValues(
     base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
+  RegisterTitle(localized_strings, "keyboardOverlay",
+                IDS_OPTIONS_KEYBOARD_OVERLAY_TITLE);
 
-  localized_strings->SetString("keyboardOverlayTitle",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_KEYBOARD_OVERLAY_TITLE));
   localized_strings->SetString("remapSearchKeyToContent",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_SEARCH_LABEL));
