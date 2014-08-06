@@ -64,9 +64,6 @@ class ConvertableToTraceFormat;
 
 const int kMaxRecursionDepth = 22;
 
-// A helper for throwing JavaScript TypeError.
-v8::Handle<v8::Value> throwTypeError(const String&, v8::Isolate*);
-
 // Helpers for throwing JavaScript TypeErrors for arity mismatches.
 void throwArityTypeErrorForMethod(const char* method, const char* type, const char* valid, unsigned provided, v8::Isolate*);
 void throwArityTypeErrorForConstructor(const char* type, const char* valid, unsigned provided, v8::Isolate*);
@@ -627,7 +624,7 @@ Vector<RefPtr<T> > toRefPtrNativeArrayUnchecked(v8::Local<v8::Value> v8Value, ui
         } else {
             if (success)
                 *success = false;
-            throwTypeError("Invalid Array element type", isolate);
+            V8ThrowException::throwTypeError("Invalid Array element type", isolate);
             return Vector<RefPtr<T> >();
         }
     }
@@ -645,7 +642,7 @@ Vector<RefPtr<T> > toRefPtrNativeArray(v8::Handle<v8::Value> value, int argument
     if (value->IsArray()) {
         length = v8::Local<v8::Array>::Cast(v8Value)->Length();
     } else if (toV8Sequence(value, length, isolate).IsEmpty()) {
-        throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex), isolate);
+        V8ThrowException::throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex), isolate);
         return Vector<RefPtr<T> >();
     }
     return toRefPtrNativeArrayUnchecked<T, V8T>(v8Value, length, isolate, success);
@@ -662,7 +659,7 @@ Vector<RefPtr<T> > toRefPtrNativeArray(v8::Handle<v8::Value> value, const String
     if (value->IsArray()) {
         length = v8::Local<v8::Array>::Cast(v8Value)->Length();
     } else if (toV8Sequence(value, length, isolate).IsEmpty()) {
-        throwTypeError(ExceptionMessages::notASequenceTypeProperty(propertyName), isolate);
+        V8ThrowException::throwTypeError(ExceptionMessages::notASequenceTypeProperty(propertyName), isolate);
         return Vector<RefPtr<T> >();
     }
     return toRefPtrNativeArrayUnchecked<T, V8T>(v8Value, length, isolate, success);
@@ -679,7 +676,7 @@ WillBeHeapVector<RefPtrWillBeMember<T> > toRefPtrWillBeMemberNativeArray(v8::Han
     if (value->IsArray()) {
         length = v8::Local<v8::Array>::Cast(v8Value)->Length();
     } else if (toV8Sequence(value, length, isolate).IsEmpty()) {
-        throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex), isolate);
+        V8ThrowException::throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex), isolate);
         return WillBeHeapVector<RefPtrWillBeMember<T> >();
     }
 
@@ -694,7 +691,7 @@ WillBeHeapVector<RefPtrWillBeMember<T> > toRefPtrWillBeMemberNativeArray(v8::Han
         } else {
             if (success)
                 *success = false;
-            throwTypeError("Invalid Array element type", isolate);
+            V8ThrowException::throwTypeError("Invalid Array element type", isolate);
             return WillBeHeapVector<RefPtrWillBeMember<T> >();
         }
     }
@@ -712,7 +709,7 @@ WillBeHeapVector<RefPtrWillBeMember<T> > toRefPtrWillBeMemberNativeArray(v8::Han
     if (value->IsArray()) {
         length = v8::Local<v8::Array>::Cast(v8Value)->Length();
     } else if (toV8Sequence(value, length, isolate).IsEmpty()) {
-        throwTypeError(ExceptionMessages::notASequenceTypeProperty(propertyName), isolate);
+        V8ThrowException::throwTypeError(ExceptionMessages::notASequenceTypeProperty(propertyName), isolate);
         return WillBeHeapVector<RefPtrWillBeMember<T> >();
     }
 
@@ -727,7 +724,7 @@ WillBeHeapVector<RefPtrWillBeMember<T> > toRefPtrWillBeMemberNativeArray(v8::Han
         } else {
             if (success)
                 *success = false;
-            throwTypeError("Invalid Array element type", isolate);
+            V8ThrowException::throwTypeError("Invalid Array element type", isolate);
             return WillBeHeapVector<RefPtrWillBeMember<T> >();
         }
     }
@@ -745,7 +742,7 @@ HeapVector<Member<T> > toMemberNativeArray(v8::Handle<v8::Value> value, int argu
     if (value->IsArray()) {
         length = v8::Local<v8::Array>::Cast(v8Value)->Length();
     } else if (toV8Sequence(value, length, isolate).IsEmpty()) {
-        throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex), isolate);
+        V8ThrowException::throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex), isolate);
         return HeapVector<Member<T> >();
     }
 
@@ -760,7 +757,7 @@ HeapVector<Member<T> > toMemberNativeArray(v8::Handle<v8::Value> value, int argu
         } else {
             if (success)
                 *success = false;
-            throwTypeError("Invalid Array element type", isolate);
+            V8ThrowException::throwTypeError("Invalid Array element type", isolate);
             return HeapVector<Member<T> >();
         }
     }
@@ -777,7 +774,7 @@ Vector<T> toNativeArray(v8::Handle<v8::Value> value, int argumentIndex, v8::Isol
     if (value->IsArray()) {
         length = v8::Local<v8::Array>::Cast(v8Value)->Length();
     } else if (toV8Sequence(value, length, isolate).IsEmpty()) {
-        throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex), isolate);
+        V8ThrowException::throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex), isolate);
         return Vector<T>();
     }
 

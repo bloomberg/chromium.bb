@@ -23,7 +23,7 @@ void verify1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
     SubtleCrypto* impl = V8SubtleCrypto::toNative(info.Holder());
     TONATIVE_VOID(Dictionary, algorithm, Dictionary(info[0], info.GetIsolate()));
     if (!algorithm.isUndefinedOrNull() && !algorithm.isObject()) {
-        throwTypeError(ExceptionMessages::failedToExecute("verify", "SubtleCrypto", "parameter 1 ('algorithm') is not an object."), info.GetIsolate());
+        V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("verify", "SubtleCrypto", "parameter 1 ('algorithm') is not an object."), info.GetIsolate());
         return;
     }
     TONATIVE_VOID(CryptoKey*, key, V8CryptoKey::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
@@ -38,7 +38,7 @@ void verify2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
     SubtleCrypto* impl = V8SubtleCrypto::toNative(info.Holder());
     TONATIVE_VOID(Dictionary, algorithm, Dictionary(info[0], info.GetIsolate()));
     if (!algorithm.isUndefinedOrNull() && !algorithm.isObject()) {
-        throwTypeError(ExceptionMessages::failedToExecute("verify", "SubtleCrypto", "parameter 1 ('algorithm') is not an object."), info.GetIsolate());
+        V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("verify", "SubtleCrypto", "parameter 1 ('algorithm') is not an object."), info.GetIsolate());
         return;
     }
     TONATIVE_VOID(CryptoKey*, key, V8CryptoKey::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
@@ -53,7 +53,7 @@ void verify3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
     SubtleCrypto* impl = V8SubtleCrypto::toNative(info.Holder());
     TONATIVE_VOID(Dictionary, algorithm, Dictionary(info[0], info.GetIsolate()));
     if (!algorithm.isUndefinedOrNull() && !algorithm.isObject()) {
-        throwTypeError(ExceptionMessages::failedToExecute("verify", "SubtleCrypto", "parameter 1 ('algorithm') is not an object."), info.GetIsolate());
+        V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("verify", "SubtleCrypto", "parameter 1 ('algorithm') is not an object."), info.GetIsolate());
         return;
     }
     TONATIVE_VOID(CryptoKey*, key, V8CryptoKey::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
@@ -68,7 +68,7 @@ void verify4Method(const v8::FunctionCallbackInfo<v8::Value>& info)
     SubtleCrypto* impl = V8SubtleCrypto::toNative(info.Holder());
     TONATIVE_VOID(Dictionary, algorithm, Dictionary(info[0], info.GetIsolate()));
     if (!algorithm.isUndefinedOrNull() && !algorithm.isObject()) {
-        throwTypeError(ExceptionMessages::failedToExecute("verify", "SubtleCrypto", "parameter 1 ('algorithm') is not an object."), info.GetIsolate());
+        V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("verify", "SubtleCrypto", "parameter 1 ('algorithm') is not an object."), info.GetIsolate());
         return;
     }
     TONATIVE_VOID(CryptoKey*, key, V8CryptoKey::toNativeWithTypeCheck(info.GetIsolate(), info[1]));

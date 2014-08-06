@@ -60,7 +60,7 @@ v8::Local<v8::Object> V8ObjectConstructor::newInstanceInDocument(v8::Isolate* is
 void V8ObjectConstructor::isValidConstructorMode(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::CreateNewObject) {
-        throwTypeError("Illegal constructor", info.GetIsolate());
+        V8ThrowException::throwTypeError("Illegal constructor", info.GetIsolate());
         return;
     }
     v8SetReturnValue(info, info.This());

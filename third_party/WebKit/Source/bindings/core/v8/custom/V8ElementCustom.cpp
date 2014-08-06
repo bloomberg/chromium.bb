@@ -118,7 +118,7 @@ void animate4Method(const v8::FunctionCallbackInfo<v8::Value>& info)
     TONATIVE_VOID(AnimationEffect*, effect, V8AnimationEffect::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     TONATIVE_VOID(Dictionary, timingInput, Dictionary(info[1], info.GetIsolate()));
     if (!timingInput.isUndefinedOrNull() && !timingInput.isObject()) {
-        throwTypeError(ExceptionMessages::failedToExecute("animate", "Element", "parameter 2 ('timingInput') is not an object."), info.GetIsolate());
+        V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("animate", "Element", "parameter 2 ('timingInput') is not an object."), info.GetIsolate());
         return;
     }
     v8SetReturnValueFast(info, WTF::getPtr(ElementAnimation::animate(*impl, effect, timingInput)), impl);

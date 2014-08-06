@@ -277,12 +277,12 @@ static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>& in
     v8::Isolate* isolate = info.GetIsolate();
 
     if (!info.IsConstructCall()) {
-        throwTypeError("DOM object constructor cannot be called as a function.", isolate);
+        V8ThrowException::throwTypeError("DOM object constructor cannot be called as a function.", isolate);
         return;
     }
 
     if (info.Length() > 0) {
-        throwTypeError("This constructor should be called without arguments.", isolate);
+        V8ThrowException::throwTypeError("This constructor should be called without arguments.", isolate);
         return;
     }
 

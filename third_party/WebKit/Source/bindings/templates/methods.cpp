@@ -318,9 +318,9 @@ v8SetReturnValueNull(info);
 exceptionState.throwTypeError({{error_message}});
 {{throw_from_exception_state(method)}};
 {% elif method.is_constructor %}
-throwTypeError(ExceptionMessages::failedToConstruct("{{interface_name}}", {{error_message}}), info.GetIsolate());
+V8ThrowException::throwTypeError(ExceptionMessages::failedToConstruct("{{interface_name}}", {{error_message}}), info.GetIsolate());
 {% else %}{# method.has_exception_state #}
-throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", {{error_message}}), info.GetIsolate());
+V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", {{error_message}}), info.GetIsolate());
 {% endif %}{# method.has_exception_state #}
 {% endmacro %}
 
@@ -559,7 +559,7 @@ static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     {% if constructor.is_named_constructor %}
     if (!info.IsConstructCall()) {
-        throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("{{constructor.name}}"), info.GetIsolate());
+        V8ThrowException::throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("{{constructor.name}}"), info.GetIsolate());
         return;
     }
 
