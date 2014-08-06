@@ -12,14 +12,12 @@
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
-#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner_util.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/version.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 #include "extensions/browser/computed_hashes.h"
 #include "extensions/browser/content_hash_tree.h"
@@ -367,26 +365,7 @@ bool ContentHashFetcherJob::CreateHashes(const base::FilePath& hashes_file) {
     // Iterate through taking the hash of each block of size (block_size_) of
     // the file.
     std::vector<std::string> hashes;
-    size_t offset = 0;
-    while (offset < contents.size()) {
-      if (IsCancelled())
-        return false;
-      const char* block_start = contents.data() + offset;
-      size_t bytes_to_read =
-          std::min(contents.size() - offset, static_cast<size_t>(block_size_));
-      DCHECK(bytes_to_read > 0);
-      scoped_ptr<crypto::SecureHash> hash(
-          crypto::SecureHash::Create(crypto::SecureHash::SHA256));
-      hash->Update(block_start, bytes_to_read);
-
-      hashes.push_back(std::string());
-      std::string* buffer = &hashes.back();
-      buffer->resize(crypto::kSHA256Length);
-      hash->Finish(string_as_array(buffer), buffer->size());
-
-      // Get ready for next iteration.
-      offset += bytes_to_read;
-    }
+    ComputedHashes::ComputeHashesForContent(contents, block_size_, &hashes);
     std::string root =
         ComputeTreeHashRoot(hashes, block_size_ / crypto::kSHA256Length);
     if (expected_root && *expected_root != root) {

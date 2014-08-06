@@ -9,17 +9,25 @@
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/stl_util.h"
+#include "base/values.h"
+#include "crypto/secure_hash.h"
+#include "crypto/sha2.h"
 
 namespace {
-const char kPathKey[] = "path";
-const char kBlockSizeKey[] = "block_size";
 const char kBlockHashesKey[] = "block_hashes";
-}
+const char kBlockSizeKey[] = "block_size";
+const char kFileHashesKey[] = "file_hashes";
+const char kPathKey[] = "path";
+const char kVersionKey[] = "version";
+const int kVersion = 2;
+}  // namespace
 
 namespace extensions {
 
 ComputedHashes::Reader::Reader() {
 }
+
 ComputedHashes::Reader::~Reader() {
 }
 
@@ -28,9 +36,19 @@ bool ComputedHashes::Reader::InitFromFile(const base::FilePath& path) {
   if (!base::ReadFileToString(path, &contents))
     return false;
 
-  base::ListValue* all_hashes = NULL;
+  base::DictionaryValue* top_dictionary = NULL;
   scoped_ptr<base::Value> value(base::JSONReader::Read(contents));
-  if (!value.get() || !value->GetAsList(&all_hashes))
+  if (!value.get() || !value->GetAsDictionary(&top_dictionary))
+    return false;
+
+  // For now we don't support forwards or backwards compatability in the
+  // format, so we return false on version mismatch.
+  int version = 0;
+  if (!top_dictionary->GetInteger(kVersionKey, &version) || version != kVersion)
+    return false;
+
+  base::ListValue* all_hashes = NULL;
+  if (!top_dictionary->GetList(kFileHashesKey, &all_hashes))
     return false;
 
   for (size_t i = 0; i < all_hashes->GetSize(); i++) {
@@ -91,8 +109,9 @@ bool ComputedHashes::Reader::GetHashes(const base::FilePath& relative_path,
   return true;
 }
 
-ComputedHashes::Writer::Writer() {
+ComputedHashes::Writer::Writer() : file_list_(new base::ListValue) {
 }
+
 ComputedHashes::Writer::~Writer() {
 }
 
@@ -101,7 +120,7 @@ void ComputedHashes::Writer::AddHashes(const base::FilePath& relative_path,
                                        const std::vector<std::string>& hashes) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   base::ListValue* block_hashes = new base::ListValue();
-  file_list_.Append(dict);
+  file_list_->Append(dict);
   dict->SetString(kPathKey,
                   relative_path.NormalizePathSeparatorsTo('/').AsUTF8Unsafe());
   dict->SetInteger(kBlockSizeKey, block_size);
@@ -118,15 +137,46 @@ void ComputedHashes::Writer::AddHashes(const base::FilePath& relative_path,
 
 bool ComputedHashes::Writer::WriteToFile(const base::FilePath& path) {
   std::string json;
-  if (!base::JSONWriter::Write(&file_list_, &json))
+  base::DictionaryValue top_dictionary;
+  top_dictionary.SetInteger(kVersionKey, kVersion);
+  top_dictionary.Set(kFileHashesKey, file_list_.release());
+
+  if (!base::JSONWriter::Write(&top_dictionary, &json))
     return false;
   int written = base::WriteFile(path, json.data(), json.size());
   if (static_cast<unsigned>(written) != json.size()) {
-    LOG(ERROR) << "Error writing " << path.MaybeAsASCII()
+    LOG(ERROR) << "Error writing " << path.AsUTF8Unsafe()
                << " ; write result:" << written << " expected:" << json.size();
     return false;
   }
   return true;
+}
+
+void ComputedHashes::ComputeHashesForContent(const std::string& contents,
+                                             size_t block_size,
+                                             std::vector<std::string>* hashes) {
+  size_t offset = 0;
+  // Even when the contents is empty, we want to output at least one hash
+  // block (the hash of the empty string).
+  do {
+    const char* block_start = contents.data() + offset;
+    DCHECK(offset <= contents.size());
+    size_t bytes_to_read = std::min(contents.size() - offset, block_size);
+    scoped_ptr<crypto::SecureHash> hash(
+        crypto::SecureHash::Create(crypto::SecureHash::SHA256));
+    hash->Update(block_start, bytes_to_read);
+
+    hashes->push_back(std::string());
+    std::string* buffer = &(hashes->back());
+    buffer->resize(crypto::kSHA256Length);
+    hash->Finish(string_as_array(buffer), buffer->size());
+
+    // If |contents| is empty, then we want to just exit here.
+    if (bytes_to_read == 0)
+      break;
+
+    offset += bytes_to_read;
+  } while (offset < contents.size());
 }
 
 }  // namespace extensions

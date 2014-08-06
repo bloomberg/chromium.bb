@@ -9,10 +9,11 @@
 #include <string>
 #include <vector>
 
-#include "base/values.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class FilePath;
+class ListValue;
 }
 
 namespace extensions {
@@ -54,9 +55,16 @@ class ComputedHashes {
     bool WriteToFile(const base::FilePath& path);
 
    private:
-    // The top-level object that will be serialized as JSON.
-    base::ListValue file_list_;
+    // Each element of this list contains the path and block hashes for one
+    // file.
+    scoped_ptr<base::ListValue> file_list_;
   };
+
+  // Computes the SHA256 hash of each |block_size| chunk in |contents|, placing
+  // the results into |hashes|.
+  static void ComputeHashesForContent(const std::string& contents,
+                                      size_t block_size,
+                                      std::vector<std::string>* hashes);
 };
 
 }  // namespace extensions
