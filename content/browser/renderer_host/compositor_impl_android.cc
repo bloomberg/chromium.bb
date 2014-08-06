@@ -314,6 +314,7 @@ void CompositorImpl::Composite(CompositingTrigger trigger) {
   // animation updates that will already be reflected in the current frame
   // we are about to draw.
   ignore_schedule_composite_ = true;
+  client_->Layout();
 
   const base::TimeTicks frame_time = gfx::FrameTime::Now();
   if (needs_animate_) {
@@ -421,6 +422,7 @@ void CompositorImpl::SetVisible(bool visible) {
   } else if (!host_) {
     DCHECK(!WillComposite());
     needs_composite_ = false;
+    needs_animate_ = false;
     pending_swapbuffers_ = 0;
     cc::LayerTreeSettings settings;
     settings.refresh_rate = 60.0;
@@ -435,8 +437,6 @@ void CompositorImpl::SetVisible(bool visible) {
         command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking));
     settings.initial_debug_state.show_fps_counter =
         command_line->HasSwitch(cc::switches::kUIShowFPSCounter);
-    // TODO(enne): Update this this compositor to use the scheduler.
-    settings.single_thread_proxy_scheduler = false;
 
     host_ = cc::LayerTreeHost::CreateSingleThreaded(
         this,
@@ -519,9 +519,10 @@ CreateGpuProcessViewContext(
 }
 
 void CompositorImpl::Layout() {
-  ignore_schedule_composite_ = true;
+  // TODO: If we get this callback from the SingleThreadProxy, we need
+  // to stop calling it ourselves in CompositorImpl::Composite().
+  NOTREACHED();
   client_->Layout();
-  ignore_schedule_composite_ = false;
 }
 
 scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface(
@@ -570,6 +571,7 @@ void CompositorImpl::ScheduleComposite() {
 }
 
 void CompositorImpl::ScheduleAnimation() {
+  DCHECK(!needs_animate_ || needs_composite_);
   DCHECK(!needs_composite_ || WillComposite());
   needs_animate_ = true;
 
@@ -599,7 +601,6 @@ void CompositorImpl::DidAbortSwapBuffers() {
   // This really gets called only once from
   // SingleThreadProxy::DidLoseOutputSurfaceOnImplThread() when the
   // context was lost.
-  ScheduleComposite();
   client_->OnSwapBuffersCompleted(0);
 }
 
