@@ -780,6 +780,57 @@ TEST_F(FileSystemTest, CreateDirectoryRecursively) {
   EXPECT_TRUE(entry->file_info().is_directory());
 }
 
+TEST_F(FileSystemTest, ReadDirectoryAfterUpdateWhileLoading) {
+  // Simulate the situation that full feed fetching takes very long time,
+  // to test the recursive "fast fetch" feature is properly working.
+  fake_drive_service_->set_never_return_all_file_list(true);
+
+  // On the fake server, create the test directory.
+  scoped_ptr<google_apis::FileResource> parent;
+  {
+    google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+    fake_drive_service_->AddNewDirectory(
+        fake_drive_service_->GetRootResourceId(),
+        "UpdateWhileLoadingTestDir",
+        DriveServiceInterface::AddNewDirectoryOptions(),
+        google_apis::test_util::CreateCopyResultCallback(&error, &parent));
+    base::RunLoop().RunUntilIdle();
+    ASSERT_EQ(google_apis::HTTP_CREATED, error);
+  }
+
+  // Fetch the directory. Currently it is empty.
+  scoped_ptr<ResourceEntryVector> before = ReadDirectorySync(base::FilePath(
+      FILE_PATH_LITERAL("drive/root/UpdateWhileLoadingTestDir")));
+  ASSERT_TRUE(before);
+  EXPECT_EQ(0u, before->size());
+
+  // Create a file in the test directory.
+  scoped_ptr<google_apis::FileResource> entry;
+  {
+    google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+    fake_drive_service_->AddNewFile(
+        "text/plain",
+        "(dummy data)",
+        parent->file_id(),
+        "TestFile",
+        false,  // shared_with_me
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+    base::RunLoop().RunUntilIdle();
+    ASSERT_EQ(google_apis::HTTP_CREATED, error);
+  }
+
+  // Notify the update to the file system.
+  file_system_->CheckForUpdates();
+
+  // Read the directory once again. Although the full feed fetching is not yet
+  // finished, the "fast fetch" of the directory works and the refreshed content
+  // is returned.
+  scoped_ptr<ResourceEntryVector> after = ReadDirectorySync(base::FilePath(
+      FILE_PATH_LITERAL("drive/root/UpdateWhileLoadingTestDir")));
+  ASSERT_TRUE(after);
+  EXPECT_EQ(1u, after->size());
+}
+
 TEST_F(FileSystemTest, PinAndUnpin) {
   ASSERT_TRUE(LoadFullResourceList());
 

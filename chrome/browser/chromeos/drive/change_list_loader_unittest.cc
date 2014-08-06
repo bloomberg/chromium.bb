@@ -248,6 +248,7 @@ TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Reset loader.
+  about_resource_loader_.reset(new AboutResourceLoader(scheduler_.get()));
   change_list_loader_.reset(
       new ChangeListLoader(logger_.get(),
                            base::MessageLoopProxy::current().get(),
@@ -390,7 +391,7 @@ TEST_F(ChangeListLoaderTest, Lock) {
   // Update is pending due to the lock.
   EXPECT_TRUE(observer.changed_files().empty());
 
-  // Unlock the loader, this should resume the pending udpate.
+  // Unlock the loader, this should resume the pending update.
   lock.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(

@@ -327,6 +327,17 @@ void ChangeListLoader::CheckForUpdates(const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  // We only start to check for updates iff the load is done.
+  // I.e., we ignore checking updates if not loaded to avoid starting the
+  // load without user's explicit interaction (such as opening Drive).
+  if (!loaded_ && !IsRefreshing())
+    return;
+
+  // For each CheckForUpdates() request, always refresh the changestamp info.
+  about_resource_loader_->UpdateAboutResource(
+      base::Bind(&ChangeListLoader::OnAboutResourceUpdated,
+                 weak_ptr_factory_.GetWeakPtr()));
+
   if (IsRefreshing()) {
     // There is in-flight loading. So keep the callback here, and check for
     // updates when the in-flight loading is completed.
@@ -334,13 +345,9 @@ void ChangeListLoader::CheckForUpdates(const FileOperationCallback& callback) {
     return;
   }
 
-  if (loaded_) {
-    // We only start to check for updates iff the load is done.
-    // I.e., we ignore checking updates if not loaded to avoid starting the
-    // load without user's explicit interaction (such as opening Drive).
-    logger_->Log(logging::LOG_INFO, "Checking for updates");
-    Load(callback);
-  }
+  DCHECK(loaded_);
+  logger_->Log(logging::LOG_INFO, "Checking for updates");
+  Load(callback);
 }
 
 void ChangeListLoader::LoadIfNeeded(const FileOperationCallback& callback) {
@@ -348,7 +355,7 @@ void ChangeListLoader::LoadIfNeeded(const FileOperationCallback& callback) {
   DCHECK(!callback.is_null());
 
   // If the metadata is not yet loaded, start loading.
-  if (!loaded_)
+  if (!loaded_ && !IsRefreshing())
     Load(callback);
 }
 
@@ -402,7 +409,7 @@ void ChangeListLoader::LoadAfterGetLargestChangestamp(
         base::Bind(&util::EmptyFileOperationCallback));
   }
 
-  about_resource_loader_->UpdateAboutResource(
+  about_resource_loader_->GetAboutResource(
       base::Bind(&ChangeListLoader::LoadAfterGetAboutResource,
                  weak_ptr_factory_.GetWeakPtr(),
                  *local_changestamp));
@@ -461,6 +468,22 @@ void ChangeListLoader::OnChangeListLoadComplete(FileError error) {
   if (!pending_update_check_callback_.is_null()) {
     Load(base::ResetAndReturn(&pending_update_check_callback_));
   }
+}
+
+void ChangeListLoader::OnAboutResourceUpdated(
+    google_apis::GDataErrorCode error,
+    scoped_ptr<google_apis::AboutResource> resource) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (drive::GDataToFileError(error) != drive::FILE_ERROR_OK) {
+    logger_->Log(logging::LOG_ERROR,
+                 "Failed to update the about resource: %s",
+                 google_apis::GDataErrorCodeToString(error).c_str());
+    return;
+  }
+  logger_->Log(logging::LOG_INFO,
+               "About resource updated to: %s",
+               base::Int64ToString(resource->largest_change_id()).c_str());
 }
 
 void ChangeListLoader::LoadChangeListFromServer(int64 start_changestamp) {

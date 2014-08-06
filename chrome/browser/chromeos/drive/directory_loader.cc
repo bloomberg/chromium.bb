@@ -396,9 +396,12 @@ void DirectoryLoader::ReadDirectoryAfterCheckLocalState(
   DirectoryFetchInfo directory_fetch_info(
       local_id, entry->resource_id(), remote_changestamp);
 
-  // If the directory's changestamp is new enough, just schedule to run the
-  // callback, as there is no need to fetch the directory.
-  if (directory_changestamp + kMinimumChangestampGap > remote_changestamp) {
+  // If the directory's changestamp is up-to-date or the global changestamp of
+  // the metadata DB is new enough (which means the normal changelist loading
+  // should finish very soon), just schedule to run the callback, as there is no
+  // need to fetch the directory.
+  if (directory_changestamp >= remote_changestamp ||
+      *local_changestamp + kMinimumChangestampGap > remote_changestamp) {
     OnDirectoryLoadComplete(local_id, FILE_ERROR_OK);
   } else {
     // Start fetching the directory content, and mark it with the changestamp

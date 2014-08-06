@@ -184,6 +184,11 @@ class ChangeListLoader {
   // Flushes the callbacks for change list loading and all directory loading.
   void OnChangeListLoadComplete(FileError error);
 
+  // Called when the loading about_resource_loader_->UpdateAboutResource is
+  // completed.
+  void OnAboutResourceUpdated(google_apis::GDataErrorCode error,
+                              scoped_ptr<google_apis::AboutResource> resource);
+
   // ================= Implementation for change list loading =================
 
   // Part of LoadFromServerIfNeeded().
