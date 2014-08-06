@@ -45,7 +45,7 @@ static int lerp(int x, int x1, int x2, int y1, int y2)
 {
   int dx = x2 - x1;
   int dy = y2 - y1;
-  assert (dx > 0 && dy > 0 && x1 <= x && x <= x2);
+  assert (dx > 0 && dy >= 0 && x1 <= x && x <= x2);
   return y1 + (dy*(x-x1) + dx/2) / dx;
 }
 
