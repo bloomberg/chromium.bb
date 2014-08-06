@@ -99,6 +99,7 @@ class GenerateDashBoard(object):
 
     def _add_individual_result_links(self, results_directories):
         archived_results_file_list = [(file + '/results.html') for file in results_directories]
+        archived_results_file_list.insert(0, 'results.html')
         self._current_result_json_dict['result_links'] = archived_results_file_list
 
     def _copy_dashboard_html(self):
@@ -119,10 +120,10 @@ class GenerateDashBoard(object):
             input_json_string = file.readline()
         input_json_string = input_json_string[12:-2]   # Remove preceeding string ADD_RESULTS( and ); at the end
         self._current_result_json_dict['tests'] = json.loads(input_json_string)['tests']
+        results_directories = results_directories[1:]
 
         # To add hyperlink to individual results.html
         self._add_individual_result_links(results_directories)
-        results_directories = results_directories[1:]
 
         # Load the remaining stale layout test results Json's to create the dashboard
         for json_file in results_directories:
