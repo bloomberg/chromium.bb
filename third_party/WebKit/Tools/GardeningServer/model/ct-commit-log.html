@@ -12,6 +12,7 @@ found in the LICENSE file.
 function CTCommitLog() {
   this.commits = {};
   this.firstRevision = {};
+  this.lastRevision = {};
   this._repositories = new CTRepositories();
 }
 
@@ -36,7 +37,13 @@ CTCommitLog.prototype._handleResponse = function(repositoryUrl, repository, json
     this.commits[repository][commit.revision] = commit;
   }.bind(this));
 
-  this.firstRevision[repository] = Object.keys(this.commits[repository]).sort()[0];
+  this._findFirstAndLastRevisions(repository);
+}
+
+CTCommitLog.prototype._findFirstAndLastRevisions = function(repository) {
+  var sortedCommits = Object.keys(this.commits[repository]).sort();
+  this.firstRevision[repository] = parseInt(sortedCommits.first());
+  this.lastRevision[repository] = parseInt(sortedCommits.last());
 }
 
 CTCommitLog.prototype.range = function(repository, first, last) {

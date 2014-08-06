@@ -1,0 +1,65 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<link href="../bower_components/polymer/polymer.html" rel="import">
+<link href="../bower_components/core-icon/core-icon.html" rel="import">
+
+<polymer-element name="ct-popup-menu" attributes="{{ icon }}">
+  <template>
+    <style>
+      :host {
+        display: inline-block;
+      }
+      #menu {
+        background-color: white;
+        border: 1px solid grey;
+        max-height: 300px;
+        overflow-y: scroll; /* FIXME: should be auto, but that triggers premature line wrapping */
+        padding: 1em;
+        position: absolute;
+        transition: transform 0.2s ease-in-out, opacity 0.2s ease-in;
+        z-index: 50;
+        -webkit-box-shadow: 3px 4px 20px 0px rgba(0,0,0,0.75);
+      }
+      .hidden {
+        opacity: 0;
+        visibility: hidden; /* Necessary to avoid eating clicks. */
+      }
+    </style>
+    <core-icon id="icon" src="{{ src }}" icon="{{ icon }}" on-click="{{ _toggleAction }}"></core-icon>
+    <div id="menu" class="hidden">
+      <content></content>
+    </div>
+  </template>
+  <script>
+  (function() {
+    Polymer({
+      attached: function() {
+        // FIXME: hitting escape should also hide the menu.
+        document.body.addEventListener('click', this._handleClick.bind(this), true)
+      },
+
+      detached: function() {
+        document.body.removeEventListener('click', this._handleClick.bind(this), true)
+      },
+
+      _toggleAction: function() {
+        this.$.menu.classList.toggle('hidden');
+      },
+
+      _handleClick: function(event) {
+        if (this.$.menu.classList.contains('hidden'))
+          return;
+        for (var i = event.path.length - 1; i >= 0; i--) {
+          if (event.path[i] === this)
+            return;
+        }
+        event.preventDefault();
+        this.$.menu.classList.add('hidden');
+      },
+    });
+  })();
+  </script>
+</polymer-element>

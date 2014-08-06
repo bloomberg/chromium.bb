@@ -1,0 +1,33 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel='import' href='ct-builder-revisions.html'>
+
+<script>
+(function () {
+
+var kExampleBuilderRevisions =
+    {
+      "Linux": {
+        "v8": "22785",
+        "chromium": "287303",
+        "nacl": "13580",
+        "blink": "158544"
+       },
+       "Android": {
+        "v8": "22785",
+        "chromium": "287303",
+        "nacl": "13580",
+        "blink": "158543"
+       }
+    }
+
+window.CTBuilderRevisionsMock = function() {
+  return new CTBuilderRevisions(kExampleBuilderRevisions);
+};
+
+})();
+</script>

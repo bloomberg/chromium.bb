@@ -1,0 +1,60 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<link href="../bower_components/core-icons/core-icons.html" rel="import">
+<link href="../bower_components/paper-item/paper-item.html" rel="import">
+<link href="../model/ct-builder-revisions.html" rel="import">
+<link href="ct-popup-menu.html" rel="import">
+
+<polymer-element name="ct-revision-details" attributes="builderLatestRevisions revisionLog tree">
+  <template>
+    <style>
+      :host {
+        padding-left: 2em;
+      }
+      ct-popup-menu > div {
+        display: flex;
+        justify-content: space-between;
+      }
+      .menuRevision {
+        padding-left: 2em;
+      }
+    </style>
+    <!-- FIXME: Stop special casing the blink tree. -->
+    <template if="{{ _sortedBuilders.length && tree == 'blink' }}">
+      Latest revision processed by every bot:
+      <a id="fullyProcessedRevision" href="{{ _fullyProcessedRevision.url }}">{{ _fullyProcessedRevision.revision }}</a>
+      <ct-popup-menu icon="arrow-drop-down">
+        <template repeat="{{builder in _sortedBuilders}}">
+          <div>
+            <div>
+              {{ builder }}
+            </div>
+            <div class="menuRevision">
+              <a href="{{ builderLatestRevisions[builder].url }}">{{ builderLatestRevisions[builder].revision }}</a>
+            </div>
+          </div>
+        </template>
+      </ct-popup-menu>
+      trunk is at <a id="trunkRevision" href="{{ revisionLog.commits.blink[revisionLog.lastRevision['blink']].url }}">{{ revisionLog.lastRevision['blink'] }}</a>
+    </template>
+  </template>
+  <script>
+    Polymer({
+      _sortedBuilders: [],
+      _fullyProcessedRevision: null,
+      builderLatestRevisions: null,
+
+      builderLatestRevisionsChanged: function() {
+        // Get the list of builders sorted with the most out-of-date one first.
+        var sortedBuilders = Object.keys(this.builderLatestRevisions);
+        sortedBuilders.sort(function (a, b) { return this.builderLatestRevisions[a].revision - this.builderLatestRevisions[b].revision;}.bind(this));
+
+        this._sortedBuilders = sortedBuilders;
+        this._fullyProcessedRevision = this.builderLatestRevisions[sortedBuilders[0]];
+      },
+    });
+  </script>
+</polymer-element>

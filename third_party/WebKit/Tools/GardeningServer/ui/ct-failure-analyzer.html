@@ -3,6 +3,7 @@ Copyright 2014 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
+<link href="../model/ct-builder-revisions.html" rel="import">
 
 <link rel="import" href="../model/ct-failure.html">
 
@@ -34,8 +35,7 @@ found in the LICENSE file.
       update: function() {
         net.json('http://auto-sheriff.appspot.com/data').then(function(data) {
           // FIXME: Don't special-case the blink master.
-          this.builderLatestRevisions = data.latest_revisions['chromium.webkit'];
-          // FIXME: Make this a model class intead of a dumb object.
+          this.builderLatestRevisions = new CTBuilderRevisions(data.latest_revisions['chromium.webkit']);
           this.failures = {};
           data.range_groups.forEach(function(group) {
             this._processFailuresForGroup(group, data.alerts);

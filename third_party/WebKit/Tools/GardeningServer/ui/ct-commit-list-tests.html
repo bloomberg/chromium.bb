@@ -18,6 +18,9 @@ asyncTest("basic", 1, function() {
 
   list.commits = new CTCommitLogMock();
 
+  // FIXME: This test shouldn't rely on firstRevision being empty to pass.
+  list.commits.firstRevision = {};
+
   var blinkCommits = list.commits.commits.blink;
   var revision;
   for (revision in blinkCommits)

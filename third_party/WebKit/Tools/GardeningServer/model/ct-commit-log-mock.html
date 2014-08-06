@@ -17,6 +17,7 @@ window.CTCommitLogMock = function() {
   var commit = new CTCommitMock();
   log.commits[repository] = {};
   log.commits[repository][commit.revision] = commit;
+  log._findFirstAndLastRevisions('blink')
   return log;
 };
 
