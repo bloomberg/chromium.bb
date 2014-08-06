@@ -341,13 +341,6 @@ struct NeedsTracing<std::pair<T, U> > {
     static const bool value = NeedsTracing<T>::value || NeedsTracing<U>::value || IsWeak<T>::value || IsWeak<U>::value;
 };
 
-template<typename T>class OwnPtr;
-
-template<typename T>
-struct NeedsTracing<OwnPtr<T> > {
-    static const bool value = NeedsTracing<T>::value;
-};
-
 } // namespace WTF
 
 #endif // TypeTraits_h

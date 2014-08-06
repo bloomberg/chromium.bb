@@ -672,7 +672,7 @@ class TraceTrait<OwnPtr<T> > {
 public:
     static void trace(Visitor* visitor, OwnPtr<T>* ptr)
     {
-        TraceTrait<T>::trace(visitor, ptr->get());
+        ASSERT_NOT_REACHED();
     }
 };
 

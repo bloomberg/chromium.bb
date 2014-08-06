@@ -2017,7 +2017,7 @@ public:
     static OffHeapContainer* create() { return new OffHeapContainer(); }
 
     static const int iterations = 300;
-    static const int deadWrappers = 1500;
+    static const int deadWrappers = 1200;
 
     OffHeapContainer()
     {
@@ -2026,14 +2026,12 @@ public:
             m_vector1.append(ShouldBeTraced(IntWrapper::create(i)));
             m_deque2.append(IntWrapper::create(i));
             m_vector2.append(IntWrapper::create(i));
-            m_ownedVector.append(adoptPtr(new ShouldBeTraced(IntWrapper::create(i))));
         }
 
         Deque<ShouldBeTraced>::iterator d1Iterator(m_deque1.begin());
         Vector<ShouldBeTraced>::iterator v1Iterator(m_vector1.begin());
         Deque<Member<IntWrapper> >::iterator d2Iterator(m_deque2.begin());
         Vector<Member<IntWrapper> >::iterator v2Iterator(m_vector2.begin());
-        Vector<OwnPtr<ShouldBeTraced> >::iterator ownedVectorIterator(m_ownedVector.begin());
 
         for (int i = 0; i < iterations; i++) {
             EXPECT_EQ(i, m_vector1[i].m_wrapper->value());
@@ -2042,18 +2040,15 @@ public:
             EXPECT_EQ(i, v1Iterator->m_wrapper->value());
             EXPECT_EQ(i, d2Iterator->get()->value());
             EXPECT_EQ(i, v2Iterator->get()->value());
-            EXPECT_EQ(i, ownedVectorIterator->get()->m_wrapper->value());
             ++d1Iterator;
             ++v1Iterator;
             ++d2Iterator;
             ++v2Iterator;
-            ++ownedVectorIterator;
         }
         EXPECT_EQ(d1Iterator, m_deque1.end());
         EXPECT_EQ(v1Iterator, m_vector1.end());
         EXPECT_EQ(d2Iterator, m_deque2.end());
         EXPECT_EQ(v2Iterator, m_vector2.end());
-        EXPECT_EQ(ownedVectorIterator, m_ownedVector.end());
     }
 
     void trace(Visitor* visitor)
@@ -2062,14 +2057,12 @@ public:
         visitor->trace(m_vector1);
         visitor->trace(m_deque2);
         visitor->trace(m_vector2);
-        visitor->trace(m_ownedVector);
     }
 
     Deque<ShouldBeTraced> m_deque1;
     Vector<ShouldBeTraced> m_vector1;
     Deque<Member<IntWrapper> > m_deque2;
     Vector<Member<IntWrapper> > m_vector2;
-    Vector<OwnPtr<ShouldBeTraced> > m_ownedVector;
 };
 
 const int OffHeapContainer::iterations;
