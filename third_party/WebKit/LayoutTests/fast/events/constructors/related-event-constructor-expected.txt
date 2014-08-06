@@ -1,0 +1,32 @@
+This tests the constructor for the RelatedEvent DOM class.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS new RelatedEvent('eventType').bubbles is false
+PASS new RelatedEvent('eventType').cancelable is false
+PASS new RelatedEvent('eventType').relatedTarget is null
+PASS new RelatedEvent('eventType', { bubbles: false }).bubbles is false
+PASS new RelatedEvent('eventType', { bubbles: true }).bubbles is true
+PASS new RelatedEvent('eventType', { cancelable: false }).cancelable is false
+PASS new RelatedEvent('eventType', { cancelable: true }).cancelable is true
+PASS new RelatedEvent('eventType', { relatedTarget: testDiv }).relatedTarget is testDiv
+PASS new RelatedEvent('eventType', { relatedTarget: document }).relatedTarget is document
+PASS new RelatedEvent('eventType', { relatedTarget: window }).relatedTarget is window
+PASS new RelatedEvent('eventType', { relatedTarget: testObject }).relatedTarget threw exception TypeError: Failed to construct 'RelatedEvent': The 'relatedTarget' property does not have a EventTarget type..
+PASS new RelatedEvent('eventType', { relatedTarget: false }).relatedTarget threw exception TypeError: Failed to construct 'RelatedEvent': The 'relatedTarget' property does not have a EventTarget type..
+PASS new RelatedEvent('eventType', { relatedTarget: true }).relatedTarget threw exception TypeError: Failed to construct 'RelatedEvent': The 'relatedTarget' property does not have a EventTarget type..
+PASS new RelatedEvent('eventType', { relatedTarget: '' }).relatedTarget threw exception TypeError: Failed to construct 'RelatedEvent': The 'relatedTarget' property does not have a EventTarget type..
+PASS new RelatedEvent('eventType', { relatedTarget: 'chocolate' }).relatedTarget threw exception TypeError: Failed to construct 'RelatedEvent': The 'relatedTarget' property does not have a EventTarget type..
+PASS new RelatedEvent('eventType', { relatedTarget: 12345 }).relatedTarget threw exception TypeError: Failed to construct 'RelatedEvent': The 'relatedTarget' property does not have a EventTarget type..
+PASS new RelatedEvent('eventType', { relatedTarget: 18446744073709551615 }).relatedTarget threw exception TypeError: Failed to construct 'RelatedEvent': The 'relatedTarget' property does not have a EventTarget type..
+PASS new RelatedEvent('eventType', { relatedTarget: NaN }).relatedTarget threw exception TypeError: Failed to construct 'RelatedEvent': The 'relatedTarget' property does not have a EventTarget type..
+PASS new RelatedEvent('eventType', { relatedTarget: {valueOf: function () { return testDiv; } } }).relatedTarget == testDiv threw exception TypeError: Failed to construct 'RelatedEvent': The 'relatedTarget' property does not have a EventTarget type..
+PASS new RelatedEvent('eventType', { get relatedTarget() { return testDiv; } }).relatedTarget == testDiv is true
+PASS new RelatedEvent('eventType', { get relatedTarget() { return 123; } }).relatedTarget threw exception TypeError: Failed to construct 'RelatedEvent': The 'relatedTarget' property does not have a EventTarget type..
+PASS new RelatedEvent('eventType', { get relatedTarget() { throw 'RelatedEvent Error'; } }) threw exception RelatedEvent Error.
+PASS new RelatedEvent('eventType', { bubbles: true, cancelable: true, relatedTarget: testDiv }).relatedTarget is testDiv
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

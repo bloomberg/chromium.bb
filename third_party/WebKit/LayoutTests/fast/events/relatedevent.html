@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<script>
+
+description("Tests to confirm behavior of updating IDL attributes of RelatedEvent.");
+
+var relatedEvent = document.createEvent("RelatedEvent");
+
+// We should not be able to update readonly attributes. 
+relatedEvent.bubbles = true;
+relatedEvent.cancelable = true;
+relatedEvent.relatedTarget = document;
+
+shouldBeFalse("relatedEvent.bubbles");
+shouldBeFalse("relatedEvent.cancelable");
+shouldBeNull("relatedEvent.relatedTarget");
+</script>
+</html>

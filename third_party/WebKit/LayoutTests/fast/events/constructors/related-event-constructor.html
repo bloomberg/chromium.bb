@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+
+description("This tests the constructor for the RelatedEvent DOM class.");
+
+var testObject = {nyannyan: 123};
+var testDiv = document.createElement("div");
+
+// No initializer is passed.
+shouldBeFalse("new RelatedEvent('eventType').bubbles");
+shouldBeFalse("new RelatedEvent('eventType').cancelable");
+shouldBeNull("new RelatedEvent('eventType').relatedTarget");
+
+// bubbles is passed.
+shouldBeFalse("new RelatedEvent('eventType', { bubbles: false }).bubbles");
+shouldBeTrue("new RelatedEvent('eventType', { bubbles: true }).bubbles");
+
+// cancelable is passed.
+shouldBeFalse("new RelatedEvent('eventType', { cancelable: false }).cancelable");
+shouldBeTrue("new RelatedEvent('eventType', { cancelable: true }).cancelable");
+
+// relatedTarget is passed.
+// Valid objects.
+shouldBe("new RelatedEvent('eventType', { relatedTarget: testDiv }).relatedTarget", "testDiv");
+shouldBe("new RelatedEvent('eventType', { relatedTarget: document }).relatedTarget", "document");
+shouldBe("new RelatedEvent('eventType', { relatedTarget: window }).relatedTarget", "window");
+
+// Invalid objects.
+shouldThrow("new RelatedEvent('eventType', { relatedTarget: testObject }).relatedTarget");
+shouldBeNull("new RelatedEvent('eventType', { relatedTarget: undefined }).relatedTarget", "null");
+shouldBeNull("new RelatedEvent('eventType', { relatedTarget: null }).relatedTarget", "null");
+shouldThrow("new RelatedEvent('eventType', { relatedTarget: false }).relatedTarget");
+shouldThrow("new RelatedEvent('eventType', { relatedTarget: true }).relatedTarget");
+shouldThrow("new RelatedEvent('eventType', { relatedTarget: '' }).relatedTarget");
+shouldThrow("new RelatedEvent('eventType', { relatedTarget: 'chocolate' }).relatedTarget");
+shouldThrow("new RelatedEvent('eventType', { relatedTarget: 12345 }).relatedTarget");
+shouldThrow("new RelatedEvent('eventType', { relatedTarget: 18446744073709551615 }).relatedTarget");
+shouldThrow("new RelatedEvent('eventType', { relatedTarget: NaN }).relatedTarget");
+// Note that valueOf() is not called, when the left hand side is evaluated.
+shouldThrow("new RelatedEvent('eventType', { relatedTarget: {valueOf: function () { return testDiv; } } }).relatedTarget == testDiv");
+shouldBeTrue("new RelatedEvent('eventType', { get relatedTarget() { return testDiv; } }).relatedTarget == testDiv");
+shouldThrow("new RelatedEvent('eventType', { get relatedTarget() { return 123; } }).relatedTarget");
+shouldThrow("new RelatedEvent('eventType', { get relatedTarget() { throw 'RelatedEvent Error'; } })");
+
+// All initializers are passed.
+shouldBeTrue("new RelatedEvent('eventType', { bubbles: true, cancelable: true, relatedTarget: testDiv }).bubbles", "true");
+shouldBeTrue("new RelatedEvent('eventType', { bubbles: true, cancelable: true, relatedTarget: testDiv }).cancelable", "true");
+shouldBe("new RelatedEvent('eventType', { bubbles: true, cancelable: true, relatedTarget: testDiv }).relatedTarget", "testDiv");
+</script>
+</body>
+</html>

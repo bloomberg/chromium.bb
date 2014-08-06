@@ -1,0 +1,12 @@
+Tests to confirm behavior of updating IDL attributes of RelatedEvent.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS relatedEvent.bubbles is false
+PASS relatedEvent.cancelable is false
+PASS relatedEvent.relatedTarget is null
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
