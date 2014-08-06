@@ -35,6 +35,7 @@
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileError.h"
 #include "core/html/VoidCallback.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
@@ -59,15 +60,20 @@ FileSystemCallbacksBase::FileSystemCallbacksBase(PassOwnPtr<ErrorCallback> error
     : m_errorCallback(errorCallback)
     , m_fileSystem(fileSystem)
     , m_executionContext(context)
+    , m_asyncOperationId(0)
 {
     if (m_fileSystem)
         m_fileSystem->addPendingCallbacks();
+    if (m_executionContext)
+        m_asyncOperationId = InspectorInstrumentation::traceAsyncOperationStarting(m_executionContext.get(), "FileSystem");
 }
 
 FileSystemCallbacksBase::~FileSystemCallbacksBase()
 {
     if (m_fileSystem)
         m_fileSystem->removePendingCallbacks();
+    if (m_asyncOperationId && m_executionContext)
+        InspectorInstrumentation::traceAsyncOperationCompleted(m_executionContext.get(), m_asyncOperationId);
 }
 
 void FileSystemCallbacksBase::didFail(int code)
@@ -85,33 +91,39 @@ template <typename CB, typename CBArg>
 void FileSystemCallbacksBase::handleEventOrScheduleCallback(PassOwnPtr<CB> callback, CBArg* arg)
 {
     ASSERT(callback.get());
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncOperationCompletedCallbackStarting(m_executionContext.get(), m_asyncOperationId);
     if (shouldScheduleCallback())
         DOMFileSystem::scheduleCallback(m_executionContext.get(), callback, arg);
     else if (callback)
         callback->handleEvent(arg);
     m_executionContext.clear();
+    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 
 template <typename CB, typename CBArg>
 void FileSystemCallbacksBase::handleEventOrScheduleCallback(PassOwnPtr<CB> callback, PassRefPtrWillBeRawPtr<CBArg> arg)
 {
     ASSERT(callback.get());
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncOperationCompletedCallbackStarting(m_executionContext.get(), m_asyncOperationId);
     if (shouldScheduleCallback())
         DOMFileSystem::scheduleCallback(m_executionContext.get(), callback, arg);
     else if (callback)
         callback->handleEvent(arg.get());
     m_executionContext.clear();
+    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 
 template <typename CB>
 void FileSystemCallbacksBase::handleEventOrScheduleCallback(PassOwnPtr<CB> callback)
 {
     ASSERT(callback.get());
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncOperationCompletedCallbackStarting(m_executionContext.get(), m_asyncOperationId);
     if (shouldScheduleCallback())
         DOMFileSystem::scheduleCallback(m_executionContext.get(), callback);
     else if (callback)
         callback->handleEvent();
     m_executionContext.clear();
+    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 
 // EntryCallbacks -------------------------------------------------------------
@@ -169,8 +181,12 @@ void EntriesCallbacks::didReadDirectoryEntries(bool hasMore)
     EntryHeapVector entries;
     entries.swap(m_entries);
     // FIXME: delay the callback iff shouldScheduleCallback() is true.
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(m_executionContext.get(), m_asyncOperationId);
     if (m_successCallback)
         m_successCallback->handleEvent(entries);
+    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
+    if (!hasMore)
+        InspectorInstrumentation::traceAsyncOperationCompleted(m_executionContext.get(), m_asyncOperationId);
 }
 
 // FileSystemCallbacks --------------------------------------------------------

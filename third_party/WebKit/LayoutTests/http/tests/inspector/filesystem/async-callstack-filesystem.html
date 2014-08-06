@@ -1,0 +1,111 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script>
+
+window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
+
+var fileSystem;
+var tmpFileName;
+var fileEntry;
+
+var errorHandler = function(e)
+{
+    var msg = "FAIL: Error: " + e;
+    console.error(msg);
+    if (testRunner)
+        testRunner.logToStderr(msg);
+    errorHandler = function() { debugger; };
+    deleteTmpFile();
+}
+
+function testFunction()
+{
+    setTimeout(timeout, 0);
+}
+
+function timeout()
+{
+    var wrongType = window.TEMPORARY + window.PERSISTENT + 1234567;
+    window.requestFileSystem(wrongType, 1024 /* bytes */, errorHandler, expectError);
+}
+
+function expectError()
+{
+    debugger;
+    window.requestFileSystem(window.TEMPORARY, 1024 /* bytes */, onInitFileSystem, errorHandler);
+}
+
+function onInitFileSystem(fs)
+{
+    fileSystem = fs;
+    debugger;
+    tmpFileName = "async-callstack-filesystem-tmp-" + Date.now() + ".txt"
+    fileSystem.root.getFile(tmpFileName, { create: true, exclusive: true }, onFileCreated, errorHandler);
+}
+
+function onFileCreated(fe)
+{
+    fileEntry = fe;
+    debugger;
+    fileEntry.createWriter(onFileWriterCreated, errorHandler);    
+}
+
+function onFileWriterCreated(fileWriter)
+{
+    debugger;
+    fileWriter.onwriteend = onFileWriteEnd;
+    fileWriter.onerror = errorHandler;
+    var blob = new Blob(["Lorem Ipsum"], { type: "text/plain" });
+    fileWriter.write(blob);
+}
+
+function onFileWriteEnd()
+{
+    debugger;
+    fileEntry.file(onFileEntryFile, errorHandler);
+}
+
+function onFileEntryFile(file)
+{
+    debugger;
+    var fileReader = new FileReader();
+    fileReader.onloadend = onFileReadEnd;
+    fileReader.onerror = errorHandler;
+    fileReader.readAsText(file);
+}
+
+function onFileReadEnd()
+{
+    var content = this.result;
+    debugger;
+    deleteTmpFile();
+}
+
+function deleteTmpFile()
+{
+    fileEntry.remove(onFileDeleted, errorHandler);
+}
+
+function onFileDeleted()
+{
+    debugger;
+}
+
+var test = function()
+{
+    var totalDebuggerStatements = 8;
+    var maxAsyncCallStackDepth = 4;
+    InspectorTest.runAsyncCallStacksTest(totalDebuggerStatements, maxAsyncCallStackDepth);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests asynchronous call stacks for FileSystem API.
+</p>
+</body>
+</html>

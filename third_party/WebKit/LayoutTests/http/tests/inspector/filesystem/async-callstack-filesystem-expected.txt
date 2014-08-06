@@ -1,0 +1,60 @@
+Tests asynchronous call stacks for FileSystem API.
+
+Set timer for test function.
+Captured call stacks in no particular order:
+Call stack:
+    0) expectError (async-callstack-filesystem.html:36)
+    [FileSystem]
+    0) timeout (async-callstack-filesystem.html:31)
+    [setTimeout]
+    0) testFunction (async-callstack-filesystem.html:25)
+
+Call stack:
+    0) onFileCreated (async-callstack-filesystem.html:51)
+    [FileSystem]
+    0) onInitFileSystem (async-callstack-filesystem.html:45)
+    [FileSystem]
+    0) expectError (async-callstack-filesystem.html:37)
+    [FileSystem]
+    0) timeout (async-callstack-filesystem.html:31)
+    [setTimeout]
+    0) testFunction (async-callstack-filesystem.html:25)
+
+Call stack:
+    0) onFileDeleted (async-callstack-filesystem.html:93)
+    [FileSystem]
+    0) deleteTmpFile (async-callstack-filesystem.html:88)
+    1) onFileReadEnd (async-callstack-filesystem.html:83)
+
+Call stack:
+    0) onFileEntryFile (async-callstack-filesystem.html:72)
+    [FileSystem]
+    0) onFileWriteEnd (async-callstack-filesystem.html:67)
+
+Call stack:
+    0) onFileReadEnd (async-callstack-filesystem.html:82)
+
+Call stack:
+    0) onFileWriteEnd (async-callstack-filesystem.html:66)
+
+Call stack:
+    0) onFileWriterCreated (async-callstack-filesystem.html:57)
+    [FileSystem]
+    0) onFileCreated (async-callstack-filesystem.html:52)
+    [FileSystem]
+    0) onInitFileSystem (async-callstack-filesystem.html:45)
+    [FileSystem]
+    0) expectError (async-callstack-filesystem.html:37)
+    [FileSystem]
+    0) timeout (async-callstack-filesystem.html:31)
+
+Call stack:
+    0) onInitFileSystem (async-callstack-filesystem.html:43)
+    [FileSystem]
+    0) expectError (async-callstack-filesystem.html:37)
+    [FileSystem]
+    0) timeout (async-callstack-filesystem.html:31)
+    [setTimeout]
+    0) testFunction (async-callstack-filesystem.html:25)
+
+
