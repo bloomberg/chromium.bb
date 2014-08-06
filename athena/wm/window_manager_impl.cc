@@ -16,6 +16,7 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/window_util.h"
+#include "ui/wm/core/wm_state.h"
 #include "ui/wm/public/window_types.h"
 
 namespace athena {
@@ -64,6 +65,7 @@ class WindowManagerImpl : public WindowManager,
   scoped_ptr<WindowOverviewMode> overview_;
   scoped_ptr<BezelController> bezel_controller_;
   scoped_ptr<SplitViewController> split_view_controller_;
+  scoped_ptr<wm::WMState> wm_state_;
   ObserverList<WindowManagerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerImpl);
@@ -100,6 +102,7 @@ WindowManagerImpl::WindowManagerImpl() {
   split_view_controller_.reset(new SplitViewController());
   bezel_controller_->set_left_right_delegate(split_view_controller_.get());
   container_->AddPreTargetHandler(bezel_controller_.get());
+  wm_state_.reset(new wm::WMState());
   instance = this;
   InstallAccelerators();
 }
