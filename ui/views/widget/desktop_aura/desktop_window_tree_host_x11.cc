@@ -1765,6 +1765,12 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
           SendEventToProcessor(&scrollev);
           break;
         }
+        case ui::ET_KEY_PRESSED:
+        case ui::ET_KEY_RELEASED: {
+          ui::KeyEvent key_event(xev);
+          SendEventToProcessor(&key_event);
+          break;
+        }
         case ui::ET_UNKNOWN:
           break;
         default:
