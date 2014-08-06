@@ -28,8 +28,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "PowerGadgetLib.h"
-#include <Windows.h>
-#include <string>
 #include <vector>
 
 using namespace std;

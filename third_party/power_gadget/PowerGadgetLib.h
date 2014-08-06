@@ -30,8 +30,6 @@
 #include <Windows.h>
 #include <string>
 
-using namespace std;
-
 typedef bool (*IPGInitialize) ();
 typedef bool (*IPGGetNumNodes) (int *nNodes);
 typedef bool (*IPGGetNumMsrs) (int *nMsr);
@@ -73,7 +71,7 @@ public:
 	bool GetPowerData(int iNode, int iMSR, double *results, int *nResult);
 	bool StartLog(wchar_t *szFilename);
 	bool StopLog();
-	string GetLastError();
+	std::string GetLastError();
 
 private:
 	IPGInitialize pInitialize;
