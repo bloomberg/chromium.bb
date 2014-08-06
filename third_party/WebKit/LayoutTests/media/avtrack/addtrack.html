@@ -30,6 +30,8 @@
                 async_test(function(t)
                 {
                     var e = document.createElement(tagName);
+                    // add to body to prevent GC pending http://crbug.com/400659
+                    document.body.appendChild(e);
                     e.src = src;
 
                     var expectedEvents = ["addtrack"];

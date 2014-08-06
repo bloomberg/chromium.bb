@@ -1389,7 +1389,6 @@ crbug.com/397321 virtual/softwarecompositing/repaint/repaint-into-ancestor-after
 crbug.com/399507 inspector/timeline/tracing/update-layer-tree.html [ Failure Pass ]
 crbug.com/399507 virtual/deferred/inspector/timeline/tracing/update-layer-tree.html [ Failure Pass ]
 crbug.com/399507 virtual/implsidepainting/inspector/timeline/tracing/update-layer-tree.html [ Failure Pass ]
-crbug.com/397324 media/avtrack/addtrack.html [ Pass Timeout ]
 
 crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-cross-none-block.html [ Failure Pass Timeout ]
 crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-cross-self-block.html [ Failure Pass Timeout ]
