@@ -167,7 +167,7 @@ public:
     void didKillAllExecutionContextTasks(ExecutionContext*);
     void willPerformExecutionContextTask(ExecutionContext*, ExecutionContextTask*);
     void didPerformExecutionContextTask();
-    int traceAsyncOperationStarting(ExecutionContext*, const String& operationName);
+    int traceAsyncOperationStarting(ExecutionContext*, const String& operationName, int prevOperationId = 0);
     void traceAsyncOperationCompleted(ExecutionContext*, int operationId);
     void traceAsyncOperationCompletedCallbackStarting(ExecutionContext*, int operationId);
     void traceAsyncCallbackStarting(ExecutionContext*, int operationId);

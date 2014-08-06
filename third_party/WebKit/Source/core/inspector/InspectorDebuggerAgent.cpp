@@ -846,11 +846,13 @@ void InspectorDebuggerAgent::didPerformExecutionContextTask()
         m_asyncCallStackTracker.didFireAsyncCall();
 }
 
-int InspectorDebuggerAgent::traceAsyncOperationStarting(ExecutionContext* context, const String& operationName)
+int InspectorDebuggerAgent::traceAsyncOperationStarting(ExecutionContext* context, const String& operationName, int prevOperationId)
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        return m_asyncCallStackTracker.traceAsyncOperationStarting(context, operationName, scriptDebugServer().currentCallFramesForAsyncStack());
-    return 0;
+    if (!m_asyncCallStackTracker.isEnabled())
+        return 0;
+    if (prevOperationId)
+        m_asyncCallStackTracker.traceAsyncOperationCompleted(context, prevOperationId);
+    return m_asyncCallStackTracker.traceAsyncOperationStarting(context, operationName, scriptDebugServer().currentCallFramesForAsyncStack());
 }
 
 void InspectorDebuggerAgent::traceAsyncOperationCompleted(ExecutionContext* context, int operationId)

@@ -25,17 +25,45 @@ Call stack:
     [FileSystem]
     0) deleteTmpFile (async-callstack-filesystem.html:88)
     1) onFileReadEnd (async-callstack-filesystem.html:83)
+    [FileReader]
+    0) onFileEntryFile (async-callstack-filesystem.html:76)
+    [FileSystem]
+    0) onFileWriteEnd (async-callstack-filesystem.html:67)
+    [FileWriter]
+    0) onFileWriterCreated (async-callstack-filesystem.html:61)
 
 Call stack:
     0) onFileEntryFile (async-callstack-filesystem.html:72)
     [FileSystem]
     0) onFileWriteEnd (async-callstack-filesystem.html:67)
+    [FileWriter]
+    0) onFileWriterCreated (async-callstack-filesystem.html:61)
+    [FileSystem]
+    0) onFileCreated (async-callstack-filesystem.html:52)
+    [FileSystem]
+    0) onInitFileSystem (async-callstack-filesystem.html:45)
 
 Call stack:
     0) onFileReadEnd (async-callstack-filesystem.html:82)
+    [FileReader]
+    0) onFileEntryFile (async-callstack-filesystem.html:76)
+    [FileSystem]
+    0) onFileWriteEnd (async-callstack-filesystem.html:67)
+    [FileWriter]
+    0) onFileWriterCreated (async-callstack-filesystem.html:61)
+    [FileSystem]
+    0) onFileCreated (async-callstack-filesystem.html:52)
 
 Call stack:
     0) onFileWriteEnd (async-callstack-filesystem.html:66)
+    [FileWriter]
+    0) onFileWriterCreated (async-callstack-filesystem.html:61)
+    [FileSystem]
+    0) onFileCreated (async-callstack-filesystem.html:52)
+    [FileSystem]
+    0) onInitFileSystem (async-callstack-filesystem.html:45)
+    [FileSystem]
+    0) expectError (async-callstack-filesystem.html:37)
 
 Call stack:
     0) onFileWriterCreated (async-callstack-filesystem.html:57)

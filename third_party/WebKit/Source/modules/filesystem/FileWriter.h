@@ -120,6 +120,7 @@ private:
     long long m_recursionDepth;
     double m_lastProgressNotificationTimeMS;
     RefPtrWillBeMember<Blob> m_blobBeingWritten;
+    int m_asyncOperationId;
 };
 
 } // namespace blink

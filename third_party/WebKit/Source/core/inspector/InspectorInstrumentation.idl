@@ -462,6 +462,9 @@ interface InspectorInstrumentation {
     int traceAsyncOperationStarting([Keep] ExecutionContext*, const String& operationName);
 
     [Debugger, Inline=FastReturn]
+    int traceAsyncOperationStarting([Keep] ExecutionContext*, const String& operationName, int prevOperationId);
+
+    [Debugger, Inline=FastReturn]
     void traceAsyncOperationCompleted([Keep] ExecutionContext*, int operationId);
 
     [Debugger, Inline=FastReturn]

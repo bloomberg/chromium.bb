@@ -106,7 +106,6 @@ private:
 
     void terminate();
     void readInternal(Blob*, FileReaderLoader::ReadType, ExceptionState&);
-    void fireErrorEvent(int httpStatusCode);
     void fireEvent(const AtomicString& type);
 
     void executePendingRead();
@@ -131,6 +130,7 @@ private:
     OwnPtr<FileReaderLoader> m_loader;
     RefPtrWillBeMember<FileError> m_error;
     double m_lastProgressNotificationTimeMS;
+    int m_asyncOperationId;
 };
 
 } // namespace blink
