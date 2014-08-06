@@ -1006,7 +1006,9 @@ void SchedulerStateMachine::DidDrawIfPossibleCompleted(DrawResult result) {
   }
 }
 
-void SchedulerStateMachine::SetNeedsCommit() { needs_commit_ = true; }
+void SchedulerStateMachine::SetNeedsCommit() {
+  needs_commit_ = true;
+}
 
 void SchedulerStateMachine::NotifyReadyToCommit() {
   DCHECK(commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED)
