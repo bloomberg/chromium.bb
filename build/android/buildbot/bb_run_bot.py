@@ -158,7 +158,7 @@ def GetBotStepMap():
         H(compile_step + std_host_tests, experimental, target_arch='x86')),
       B('fyi-builder-dbg',
         H(std_build_steps + std_host_tests, experimental,
-          extra_gyp='emma_coverage=1 android_lint=1')),
+          extra_gyp='emma_coverage=1')),
       B('x86-builder-dbg',
         H(compile_step + std_host_tests, target_arch='x86')),
       B('fyi-builder-rel', H(std_build_steps,  experimental)),
