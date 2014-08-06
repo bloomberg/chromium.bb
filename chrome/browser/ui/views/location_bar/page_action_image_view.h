@@ -49,10 +49,12 @@ class PageActionImageView : public views::ImageView,
   }
 
   // Overridden from views::View:
+  virtual const char* GetClassName() const OVERRIDE;
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Overridden from ExtensionContextMenuModel::Delegate
   virtual void InspectPopup() OVERRIDE;
@@ -81,6 +83,8 @@ class PageActionImageView : public views::ImageView,
   void ExecuteAction(ExtensionPopup::ShowAction show_action);
 
  private:
+  static const char kViewClassName[];
+
   // Overridden from View.
   virtual void PaintChildren(gfx::Canvas* canvas,
                              const views::CullSet& cull_set) OVERRIDE;

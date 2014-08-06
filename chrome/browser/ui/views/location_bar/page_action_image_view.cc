@@ -33,6 +33,9 @@ using content::WebContents;
 using extensions::LocationBarController;
 using extensions::Extension;
 
+// static
+const char PageActionImageView::kViewClassName[] = "PageActionImageView";
+
 PageActionImageView::PageActionImageView(LocationBarView* owner,
                                          ExtensionAction* page_action,
                                          Browser* browser)
@@ -113,6 +116,10 @@ void PageActionImageView::ExecuteAction(
   }
 }
 
+const char* PageActionImageView::GetClassName() const {
+  return kViewClassName;
+}
+
 void PageActionImageView::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_BUTTON;
   state->name = base::UTF8ToUTF16(tooltip_);
@@ -145,6 +152,13 @@ bool PageActionImageView::OnKeyPressed(const ui::KeyEvent& event) {
     return true;
   }
   return false;
+}
+
+void PageActionImageView::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP) {
+    ExecuteAction(ExtensionPopup::SHOW);
+    event->SetHandled();
+  }
 }
 
 void PageActionImageView::ShowContextMenuForView(
