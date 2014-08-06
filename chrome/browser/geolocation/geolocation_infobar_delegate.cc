@@ -45,7 +45,7 @@ enum GeolocationInfoBarDelegateEvent {
   GEOLOCATION_INFO_BAR_DELEGATE_EVENT_DISMISS = 3,
 
   // User clicked on link.
-  GEOLOCATION_INFO_BAR_DELEGATE_EVENT_LINK_CLICK = 4,
+  DEPRECATED_GEOLOCATION_INFO_BAR_DELEGATE_EVENT_LINK_CLICK = 4,
 
   // User ignored the bar.
   GEOLOCATION_INFO_BAR_DELEGATE_EVENT_IGNORED = 5,
@@ -162,29 +162,4 @@ bool GeolocationInfoBarDelegate::Cancel() {
   set_user_has_interacted();
   SetPermission(true, false);
   return true;
-}
-
-base::string16 GeolocationInfoBarDelegate::GetLinkText() const {
-  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
-}
-
-bool GeolocationInfoBarDelegate::LinkClicked(
-    WindowOpenDisposition disposition) {
-  RecordUmaEvent(GEOLOCATION_INFO_BAR_DELEGATE_EVENT_LINK_CLICK);
-  const char kGeolocationLearnMoreUrl[] =
-#if defined(OS_CHROMEOS)
-      "https://www.google.com/support/chromeos/bin/answer.py?answer=142065";
-#elif defined(OS_ANDROID)
-      "https://support.google.com/chrome/?p=mobile_location";
-#else
-      "https://www.google.com/support/chrome/bin/answer.py?answer=142065";
-#endif
-
-  InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
-      content::OpenURLParams(
-          GURL(kGeolocationLearnMoreUrl),
-          content::Referrer(),
-          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          content::PAGE_TRANSITION_LINK, false));
-  return false;  // Do not dismiss the info bar.
 }
