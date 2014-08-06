@@ -13,7 +13,6 @@
 #include "core/{{namespace|lower}}/{{tag.js_interface}}.h"
 {% endfor %}
 #include "core/{{namespace|lower}}/{{fallback_js_interface}}.h"
-#include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/frame/Settings.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -34,10 +33,6 @@ static v8::Handle<v8::Object> create{{namespace}}ElementWrapper({{namespace}}Ele
 {% filter enable_conditional(list[0].Conditional) %}
 static v8::Handle<v8::Object> create{{js_interface}}Wrapper({{namespace}}Element* element, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    {% if list[0].contextConditional %}
-    if (!ContextFeatures::{{list[0].contextConditional}}Enabled(&element->document()))
-        return createV8{{namespace}}FallbackWrapper(to{{fallback_js_interface}}(element), creationContext, isolate);
-    {% endif %}
     {% if list[0].runtimeEnabled %}
     if (!RuntimeEnabledFeatures::{{list[0].runtimeEnabled}}Enabled())
         return createV8{{namespace}}FallbackWrapper(to{{fallback_js_interface}}(element), creationContext, isolate);

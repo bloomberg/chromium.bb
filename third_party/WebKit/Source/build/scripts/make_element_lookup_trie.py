@@ -92,7 +92,6 @@ class ElementLookupTrieWriter(in_generator.Writer):
         'JSInterfaceName': None,
         'constructorNeedsCreatedByParser': None,
         'constructorNeedsFormElement': None,
-        'contextConditional': None,
         'interfaceName': None,
         'noConstructor': None,
         'runtimeEnabled': None,

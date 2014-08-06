@@ -38,7 +38,7 @@ del interfaceName=HTMLModElement
 details
 dfn interfaceName=HTMLElement
 dir interfaceName=HTMLDirectoryElement
-dialog contextConditional=dialogElement
+dialog
 div
 dl interfaceName=HTMLDListElement
 dt interfaceName=HTMLElement

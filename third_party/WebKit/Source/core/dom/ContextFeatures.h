@@ -46,8 +46,7 @@ public:
     typedef RefCountedSupplement<Page, ContextFeatures> SupplementType;
 #endif
     enum FeatureType {
-        DialogElement = 0,
-        PagePopup,
+        PagePopup = 0,
         MutationEvents,
         PushState,
         FeatureTypeSize // Should be the last entry.
@@ -57,7 +56,6 @@ public:
     static ContextFeatures* defaultSwitch();
     static PassRefPtrWillBeRawPtr<ContextFeatures> create(PassOwnPtr<ContextFeaturesClient>);
 
-    static bool dialogElementEnabled(Document*);
     static bool pagePopupEnabled(Document*);
     static bool mutationEventsEnabled(Document*);
     static bool pushStateEnabled(Document*);

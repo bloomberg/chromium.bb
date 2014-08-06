@@ -4,7 +4,6 @@
 #ifndef {{namespace}}ElementTypeHelpers_h
 #define {{namespace}}ElementTypeHelpers_h
 
-#include "core/dom/ContextFeatures.h"
 #include "core/dom/Element.h"
 #include "{{namespace}}Names.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -18,10 +17,6 @@ void is{{tag.interface}}(const {{tag.interface}}&); // Catch unnecessary runtime
 void is{{tag.interface}}(const {{tag.interface}}*); // Catch unnecessary runtime check of type known at compile time.
 
 inline bool is{{tag.interface}}(const {{namespace}}Element& element) {
-    {% if tag.contextConditional %}
-    if (!ContextFeatures::{{tag.contextConditional}}Enabled(&element.document()))
-        return false;
-    {% endif %}
     {% if tag.runtimeEnabled %}
     if (!RuntimeEnabledFeatures::{{tag.runtimeEnabled}}Enabled())
         return false;

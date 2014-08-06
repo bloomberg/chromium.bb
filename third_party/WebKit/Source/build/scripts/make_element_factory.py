@@ -43,7 +43,6 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
         'Conditional': None,
         'constructorNeedsCreatedByParser': None,
         'constructorNeedsFormElement': None,
-        'contextConditional': None,
         'interfaceName': None,
         'noConstructor': None,
         'noTypeHelpers': None,

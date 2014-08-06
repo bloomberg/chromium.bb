@@ -49,13 +49,6 @@ ContextFeatures* ContextFeatures::defaultSwitch()
     return instance;
 }
 
-bool ContextFeatures::dialogElementEnabled(Document* document)
-{
-    if (!document)
-        return RuntimeEnabledFeatures::dialogElementEnabled();
-    return document->contextFeatures().isEnabled(document, DialogElement, RuntimeEnabledFeatures::dialogElementEnabled());
-}
-
 bool ContextFeatures::pagePopupEnabled(Document* document)
 {
     if (!document)

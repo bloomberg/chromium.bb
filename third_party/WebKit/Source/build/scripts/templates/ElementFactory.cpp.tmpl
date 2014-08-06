@@ -11,7 +11,6 @@
 {% if fallback_interface %}
 #include "core/{{namespace|lower}}/{{fallback_interface}}.h"
 {% endif %}
-#include "core/dom/ContextFeatures.h"
 #include "core/dom/custom/CustomElement.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/dom/Document.h"
@@ -43,10 +42,6 @@ static PassRefPtrWillBeRawPtr<{{namespace}}Element> {{tag|symbol}}Constructor(
     {% endif %}
     bool createdByParser)
 {
-    {% if tag.contextConditional %}
-    if (!ContextFeatures::{{tag.contextConditional}}Enabled(&document))
-        return {{fallback_interface}}::create({{tag|symbol}}Tag, document);
-    {% endif %}
     {% if tag.runtimeEnabled %}
     if (!RuntimeEnabledFeatures::{{tag.runtimeEnabled}}Enabled())
         return {{fallback_interface}}::create({{tag|symbol}}Tag, document);
