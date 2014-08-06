@@ -14,4 +14,6 @@ potentially dangerous operations, helping you to produce JavaScript that is less
 buggy and easier to maintain.
 
 Local modifications:
-
+- The compiler is run via a custom mechanism (see: runner/) that sets the
+  compiler to "IDE mode" (single-file checks, doesn't stop on first error).
+- Chrome-specific coding conventions to understand cr.addSingletonGetter().
