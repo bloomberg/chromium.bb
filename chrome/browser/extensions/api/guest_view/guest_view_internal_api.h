@@ -24,6 +24,21 @@ class GuestViewInternalCreateGuestFunction : public AsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(GuestViewInternalCreateGuestFunction);
 };
 
+class GuestViewInternalSetAutoSizeFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("guestViewInternal.setAutoSize",
+                             GUESTVIEWINTERNAL_SETAUTOSIZE);
+
+  GuestViewInternalSetAutoSizeFunction();
+
+ protected:
+  virtual ~GuestViewInternalSetAutoSizeFunction();
+  virtual bool RunAsync() OVERRIDE FINAL;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GuestViewInternalSetAutoSizeFunction);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_GUEST_VIEW_GUEST_VIEW_INTERNAL_API_H_

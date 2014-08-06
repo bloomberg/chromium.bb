@@ -1469,6 +1469,8 @@ void RenderViewHostImpl::EnableAutoResize(const gfx::Size& min_size,
 void RenderViewHostImpl::DisableAutoResize(const gfx::Size& new_size) {
   SetShouldAutoResize(false);
   Send(new ViewMsg_DisableAutoResize(GetRoutingID(), new_size));
+  if (!new_size.IsEmpty())
+    GetView()->SetSize(new_size);
 }
 
 void RenderViewHostImpl::CopyImageAt(int x, int y) {
