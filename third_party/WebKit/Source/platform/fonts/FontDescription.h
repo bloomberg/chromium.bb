@@ -88,6 +88,21 @@ public:
     bool operator==(const FontDescription&) const;
     bool operator!=(const FontDescription& other) const { return !(*this == other); }
 
+    struct VariantLigatures {
+        VariantLigatures()
+            : common(NormalLigaturesState)
+            , discretionary(NormalLigaturesState)
+            , historical(NormalLigaturesState)
+            , contextual(NormalLigaturesState)
+        {
+        }
+
+        unsigned common : 2;
+        unsigned discretionary : 2;
+        unsigned historical : 2;
+        unsigned contextual : 2;
+    };
+
     const FontFamily& family() const { return m_familyList; }
     FontFamily& firstFamily() { return m_familyList; }
     float specifiedSize() const { return m_specifiedSize; }
@@ -110,6 +125,7 @@ public:
         return NonFixedPitchFont;
     }
     Kerning kerning() const { return static_cast<Kerning>(m_kerning); }
+    VariantLigatures variantLigatures() const;
     LigaturesState commonLigaturesState() const { return static_cast<LigaturesState>(m_commonLigaturesState); }
     LigaturesState discretionaryLigaturesState() const { return static_cast<LigaturesState>(m_discretionaryLigaturesState); }
     LigaturesState historicalLigaturesState() const { return static_cast<LigaturesState>(m_historicalLigaturesState); }
@@ -140,15 +156,12 @@ public:
     void setSpecifiedSize(float s) { m_specifiedSize = clampToFloat(s); }
     void setStyle(FontStyle i) { m_style = i; }
     void setVariant(FontVariant c) { m_variant = c; }
+    void setVariantLigatures(const VariantLigatures&);
     void setIsAbsoluteSize(bool s) { m_isAbsoluteSize = s; }
     void setWeight(FontWeight w) { m_weight = w; }
     void setStretch(FontStretch s) { m_stretch = s; }
     void setGenericFamily(GenericFamilyType genericFamily) { m_genericFamily = genericFamily; }
     void setKerning(Kerning kerning) { m_kerning = kerning; updateTypesettingFeatures(); }
-    void setCommonLigaturesState(LigaturesState commonLigaturesState) { m_commonLigaturesState = commonLigaturesState; updateTypesettingFeatures(); }
-    void setDiscretionaryLigaturesState(LigaturesState discretionaryLigaturesState) { m_discretionaryLigaturesState = discretionaryLigaturesState; updateTypesettingFeatures(); }
-    void setHistoricalLigaturesState(LigaturesState historicalLigaturesState) { m_historicalLigaturesState = historicalLigaturesState; updateTypesettingFeatures(); }
-    void setContextualLigaturesState(LigaturesState contextualLigaturesState) { m_contextualLigaturesState = contextualLigaturesState; updateTypesettingFeatures(); }
     void setKeywordSize(unsigned s) { m_keywordSize = s; }
     void setFontSmoothing(FontSmoothingMode smoothing) { m_fontSmoothing = smoothing; }
     void setTextRendering(TextRenderingMode rendering) { m_textRendering = rendering; updateTypesettingFeatures(); }

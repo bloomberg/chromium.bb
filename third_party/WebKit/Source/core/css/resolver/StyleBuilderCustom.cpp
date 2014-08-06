@@ -902,21 +902,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitFilter(StyleResolverState
         state.style()->setFilter(operations);
 }
 
-void StyleBuilderFunctions::applyInitialCSSPropertyFontVariantLigatures(StyleResolverState& state)
-{
-    state.fontBuilder().setFontVariantLigaturesInitial();
-}
-
-void StyleBuilderFunctions::applyInheritCSSPropertyFontVariantLigatures(StyleResolverState& state)
-{
-    state.fontBuilder().setFontVariantLigaturesInherit(state.parentFontDescription());
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyFontVariantLigatures(StyleResolverState& state, CSSValue* value)
-{
-    state.fontBuilder().setFontVariantLigaturesValue(value);
-}
-
 void StyleBuilderFunctions::applyValueCSSPropertyInternalMarqueeIncrement(StyleResolverState& state, CSSValue* value)
 {
     if (!value->isPrimitiveValue())

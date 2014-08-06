@@ -101,12 +101,34 @@ FontTraits FontDescription::traits() const
     return FontTraits(style(), variant(), weight(), stretch());
 }
 
+FontDescription::VariantLigatures FontDescription::variantLigatures() const
+{
+    VariantLigatures ligatures;
+
+    ligatures.common = commonLigaturesState();
+    ligatures.discretionary = discretionaryLigaturesState();
+    ligatures.historical = historicalLigaturesState();
+    ligatures.contextual = contextualLigaturesState();
+
+    return ligatures;
+}
+
 void FontDescription::setTraits(FontTraits traits)
 {
     setStyle(traits.style());
     setVariant(traits.variant());
     setWeight(traits.weight());
     setStretch(traits.stretch());
+}
+
+void FontDescription::setVariantLigatures(const VariantLigatures& ligatures)
+{
+    m_commonLigaturesState = ligatures.common;
+    m_discretionaryLigaturesState = ligatures.discretionary;
+    m_historicalLigaturesState = ligatures.historical;
+    m_contextualLigaturesState = ligatures.contextual;
+
+    updateTypesettingFeatures();
 }
 
 FontDescription FontDescription::makeNormalFeatureSettings() const

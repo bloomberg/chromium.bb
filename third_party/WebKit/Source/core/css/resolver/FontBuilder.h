@@ -66,16 +66,13 @@ public:
     void setWeightLighter();
     void setStretch(FontStretch);
 
-    void setFontVariantLigaturesInitial();
-    void setFontVariantLigaturesInherit(const FontDescription&);
-    void setFontVariantLigaturesValue(CSSValue*);
-
     void setFeatureSettingsNormal();
     void setFeatureSettingsValue(CSSValue*);
 
     void setScript(const String& locale);
     void setStyle(FontStyle);
     void setVariant(FontVariant);
+    void setVariantLigatures(const FontDescription::VariantLigatures&);
     void setTextRendering(TextRenderingMode);
     void setKerning(FontDescription::Kerning);
     void setFontSmoothing(FontSmoothingMode);
@@ -96,6 +93,7 @@ public:
     static FontDescription::GenericFamilyType initialGenericFamily() { return FontDescription::NoFamily; }
     static TextRenderingMode initialTextRendering() { return AutoTextRendering; }
     static FontVariant initialVariant() { return FontVariantNormal; }
+    static FontDescription::VariantLigatures initialVariantLigatures() { return FontDescription::VariantLigatures(); }
     static FontStyle initialStyle() { return FontStyleNormal; }
     static FontDescription::Kerning initialKerning() { return FontDescription::AutoKerning; }
     static FontSmoothingMode initialFontSmoothing() { return AutoSmoothing; }

@@ -35,6 +35,7 @@
 #include "core/rendering/style/StyleReflection.h"
 #include "core/svg/SVGLength.h"
 #include "platform/LengthSize.h"
+#include "platform/fonts/FontDescription.h"
 
 namespace blink {
 
@@ -47,6 +48,7 @@ public:
     static Color convertColor(StyleResolverState&, CSSValue*, bool forVisitedLink = false);
     template <typename T> static T convertComputedLength(StyleResolverState&, CSSValue*);
     template <typename T> static T convertFlags(StyleResolverState&, CSSValue*);
+    static FontDescription::VariantLigatures convertFontVariantLigatures(StyleResolverState&, CSSValue*);
     static EGlyphOrientation convertGlyphOrientation(StyleResolverState&, CSSValue*);
     static GridPosition convertGridPosition(StyleResolverState&, CSSValue*);
     static GridTrackSize convertGridTrackSize(StyleResolverState&, CSSValue*);
