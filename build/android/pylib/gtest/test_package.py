@@ -88,14 +88,11 @@ class TestPackage(object):
     for test in raw_list:
       if not test:
         continue
-      if test[0] != ' ' and not test.endswith('.'):
-        # Ignore any lines with unexpected format.
-        continue
-      if test[0] != ' ' and test.endswith('.'):
-        current = test
-        continue
-      if 'YOU HAVE' in test:
-        break
-      test_name = test.split(None, 1)[0]
-      ret += [current + test_name]
+      if test[0] != ' ':
+        test_case = test.split()[0]
+        if test_case.endswith('.'):
+          current = test_case
+      elif not 'YOU HAVE' in test:
+        test_name = test.split()[0]
+        ret += [current + test_name]
     return ret

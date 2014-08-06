@@ -30,29 +30,55 @@ class TestPackageTest(unittest.TestCase):
     ]
     self.assertEqual(expected, actual)
 
-  def testParseGTestListTests_parameterized_old(self):
+  def testParseGTestListTests_typeParameterized_old(self):
     raw_output = [
-      'PTestCase.',
+      'TPTestCase/WithTypeParam/0.',
+      '  testOne',
+      '  testTwo',
+    ]
+    actual = test_package.TestPackage._ParseGTestListTests(raw_output)
+    expected = [
+      'TPTestCase/WithTypeParam/0.testOne',
+      'TPTestCase/WithTypeParam/0.testTwo',
+    ]
+    self.assertEqual(expected, actual)
+
+  def testParseGTestListTests_typeParameterized_new(self):
+    raw_output = [
+      'TPTestCase/WithTypeParam/0.  # TypeParam = TypeParam0',
+      '  testOne',
+      '  testTwo',
+    ]
+    actual = test_package.TestPackage._ParseGTestListTests(raw_output)
+    expected = [
+      'TPTestCase/WithTypeParam/0.testOne',
+      'TPTestCase/WithTypeParam/0.testTwo',
+    ]
+    self.assertEqual(expected, actual)
+
+  def testParseGTestListTests_valueParameterized_old(self):
+    raw_output = [
+      'VPTestCase.',
       '  testWithValueParam/0',
       '  testWithValueParam/1',
     ]
     actual = test_package.TestPackage._ParseGTestListTests(raw_output)
     expected = [
-      'PTestCase.testWithValueParam/0',
-      'PTestCase.testWithValueParam/1',
+      'VPTestCase.testWithValueParam/0',
+      'VPTestCase.testWithValueParam/1',
     ]
     self.assertEqual(expected, actual)
 
-  def testParseGTestListTests_parameterized_new(self):
+  def testParseGTestListTests_valueParameterized_new(self):
     raw_output = [
-      'PTestCase.',
+      'VPTestCase.',
       '  testWithValueParam/0  # GetParam() = 0',
       '  testWithValueParam/1  # GetParam() = 1',
     ]
     actual = test_package.TestPackage._ParseGTestListTests(raw_output)
     expected = [
-      'PTestCase.testWithValueParam/0',
-      'PTestCase.testWithValueParam/1',
+      'VPTestCase.testWithValueParam/0',
+      'VPTestCase.testWithValueParam/1',
     ]
     self.assertEqual(expected, actual)
 
