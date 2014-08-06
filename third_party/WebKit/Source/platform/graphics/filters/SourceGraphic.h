@@ -22,6 +22,7 @@
 #ifndef SourceGraphic_h
 #define SourceGraphic_h
 
+#include "platform/graphics/DisplayList.h"
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
@@ -38,6 +39,10 @@ public:
     virtual FilterEffectType filterEffectType() const OVERRIDE { return FilterEffectTypeSourceInput; }
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const OVERRIDE;
+    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) OVERRIDE;
+
+    void setDisplayList(PassRefPtr<DisplayList>);
+
 
 private:
     SourceGraphic(Filter* filter)
@@ -47,6 +52,7 @@ private:
     }
 
     virtual void applySoftware() OVERRIDE;
+    RefPtr<DisplayList> m_displayList;
 };
 
 } //namespace blink

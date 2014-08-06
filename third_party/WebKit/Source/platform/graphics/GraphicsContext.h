@@ -101,16 +101,6 @@ public:
     bool paintingDisabled() const { return m_disabledState & PaintingDisabled; }
     bool contextDisabled() const { return m_disabledState; }
 
-    // This is just a heuristic that currently happens to work. We need either
-    // a more reliable way to know that we are recording, or (better) we need
-    // to obviate the need for this query, and address whatever the caller
-    // needed in some other way.
-    // See bug# 372110
-    bool isRecordingCanvas() const
-    {
-        return m_canvas->imageInfo().colorType() == kUnknown_SkColorType;
-    }
-
     // ---------- State management methods -----------------
     void save();
     void restore();

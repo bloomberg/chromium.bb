@@ -24,6 +24,8 @@
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/filters/Filter.h"
+#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/filters/SourceGraphic.h"
 #include "platform/text/TextStream.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
@@ -74,6 +76,7 @@ void SourceAlpha::applySoftware()
 
 PassRefPtr<SkImageFilter> SourceAlpha::createImageFilter(SkiaImageFilterBuilder* builder)
 {
+    RefPtr<SkImageFilter> sourceGraphic(builder->build(builder->sourceGraphic(), operatingColorSpace()));
     SkScalar matrix[20] = {
         0, 0, 0, 0, 0,
         0, 0, 0, 0, 0,
@@ -81,7 +84,7 @@ PassRefPtr<SkImageFilter> SourceAlpha::createImageFilter(SkiaImageFilterBuilder*
         0, 0, 0, SK_Scalar1, 0
     };
     RefPtr<SkColorFilter> colorFilter(adoptRef(SkColorMatrixFilter::Create(matrix)));
-    return adoptRef(SkColorFilterImageFilter::Create(colorFilter.get()));
+    return adoptRef(SkColorFilterImageFilter::Create(colorFilter.get(), sourceGraphic.get()));
 }
 
 TextStream& SourceAlpha::externalRepresentation(TextStream& ts, int indent) const

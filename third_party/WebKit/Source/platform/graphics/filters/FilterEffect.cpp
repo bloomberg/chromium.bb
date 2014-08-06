@@ -266,7 +266,6 @@ void FilterEffect::clearResult()
 
     m_absolutePaintRect = IntRect();
     for (int i = 0; i < 4; i++) {
-        filter()->removeFromCache(m_imageFilters[i].get());
         m_imageFilters[i] = nullptr;
     }
 }
@@ -596,7 +595,6 @@ SkImageFilter* FilterEffect::getImageFilter(ColorSpace colorSpace, bool requires
 void FilterEffect::setImageFilter(ColorSpace colorSpace, bool requiresPMColorValidation, PassRefPtr<SkImageFilter> imageFilter)
 {
     int index = getImageFilterIndex(colorSpace, requiresPMColorValidation);
-    filter()->removeFromCache(m_imageFilters[index].get());
     m_imageFilters[index] = imageFilter;
 }
 

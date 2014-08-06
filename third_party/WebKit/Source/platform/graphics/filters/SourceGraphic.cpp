@@ -24,6 +24,7 @@
 
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/text/TextStream.h"
+#include "third_party/skia/include/effects/SkPictureImageFilter.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/WTFString.h"
 
@@ -60,6 +61,19 @@ void SourceGraphic::applySoftware()
         resultImage->context()->drawImageBuffer(sourceImageBuffer,
             FloatRect(IntPoint(srcRect.location() - absolutePaintRect().location()), sourceImageBuffer->size()));
     }
+}
+
+void SourceGraphic::setDisplayList(PassRefPtr<DisplayList> displayList)
+{
+    m_displayList = displayList;
+}
+
+PassRefPtr<SkImageFilter> SourceGraphic::createImageFilter(SkiaImageFilterBuilder*)
+{
+    if (!m_displayList)
+        return nullptr;
+
+    return adoptRef(SkPictureImageFilter::Create(m_displayList->picture(), m_displayList->bounds()));
 }
 
 TextStream& SourceGraphic::externalRepresentation(TextStream& ts, int indent) const
