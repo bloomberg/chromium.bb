@@ -162,7 +162,7 @@ class AutocompleteProviderTest : public testing::Test,
   struct KeywordTestData {
     const base::string16 fill_into_edit;
     const base::string16 keyword;
-    const bool expected_keyword_result;
+    const base::string16 expected_associated_keyword;
   };
 
   struct AssistedQueryStatsTestData {
@@ -185,7 +185,13 @@ class AutocompleteProviderTest : public testing::Test,
   // properly collected.
   void RunTest();
 
-  void RunRedundantKeywordTest(const KeywordTestData* match_data, size_t size);
+  // Constructs an AutocompleteResult from |match_data|, sets the |controller_|
+  // to pretend it was running against input |input|, calls the |controller_|'s
+  // UpdateAssociatedKeywords, and checks that the matches have associated
+  // keywords as expected.
+  void RunKeywordTest(const base::string16& input,
+                      const KeywordTestData* match_data,
+                      size_t size);
 
   void RunAssistedQueryStatsTest(
       const AssistedQueryStatsTestData* aqs_test_data,
@@ -341,6 +347,15 @@ void AutocompleteProviderTest::ResetControllerWithKeywordProvider() {
   turl_model->Add(keyword_t_url);
   ASSERT_NE(0, keyword_t_url->id());
 
+  // Make a TemplateURL for KeywordProvider that a shorter version of the
+  // first.
+  data.short_name = base::ASCIIToUTF16("f");
+  data.SetKeyword(base::ASCIIToUTF16("f"));
+  data.SetURL("http://f.com/{searchTerms}");
+  keyword_t_url = new TemplateURL(data);
+  turl_model->Add(keyword_t_url);
+  ASSERT_NE(0, keyword_t_url->id());
+
   // Create another TemplateURL for KeywordProvider.
   data.short_name = base::ASCIIToUTF16("bar.com");
   data.SetKeyword(base::ASCIIToUTF16("bar.com"));
@@ -358,9 +373,9 @@ void AutocompleteProviderTest::RunTest() {
   RunQuery(base::ASCIIToUTF16("a"));
 }
 
-void AutocompleteProviderTest::RunRedundantKeywordTest(
-    const KeywordTestData* match_data,
-    size_t size) {
+void AutocompleteProviderTest::RunKeywordTest(const base::string16& input,
+                                              const KeywordTestData* match_data,
+                                              size_t size) {
   ACMatches matches;
   for (size_t i = 0; i < size; ++i) {
     AutocompleteMatch match;
@@ -374,11 +389,17 @@ void AutocompleteProviderTest::RunRedundantKeywordTest(
 
   AutocompleteResult result;
   result.AppendMatches(matches);
+  controller_->input_ = AutocompleteInput(
+      input, base::string16::npos, base::string16(), GURL(),
+      metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
+      false, true, true, true, ChromeAutocompleteSchemeClassifier(&profile_));
   controller_->UpdateAssociatedKeywords(&result);
 
   for (size_t j = 0; j < result.size(); ++j) {
-    EXPECT_EQ(match_data[j].expected_keyword_result,
-        result.match_at(j)->associated_keyword.get() != NULL);
+    EXPECT_EQ(match_data[j].expected_associated_keyword,
+              result.match_at(j)->associated_keyword.get() ?
+                  result.match_at(j)->associated_keyword->keyword :
+                  base::string16());
   }
 }
 
@@ -542,36 +563,74 @@ TEST_F(AutocompleteProviderTest, RedundantKeywordsIgnoredInResult) {
 
   {
     KeywordTestData duplicate_url[] = {
-      { base::ASCIIToUTF16("fo"), base::string16(), false },
-      { base::ASCIIToUTF16("foo.com"), base::string16(), true },
-      { base::ASCIIToUTF16("foo.com"), base::string16(), false }
+      { base::ASCIIToUTF16("fo"), base::string16(), base::string16() },
+      { base::ASCIIToUTF16("foo.com"), base::string16(),
+        base::ASCIIToUTF16("foo.com") },
+      { base::ASCIIToUTF16("foo.com"), base::string16(), base::string16() }
     };
 
     SCOPED_TRACE("Duplicate url");
-    RunRedundantKeywordTest(duplicate_url, ARRAYSIZE_UNSAFE(duplicate_url));
+    RunKeywordTest(base::ASCIIToUTF16("fo"), duplicate_url,
+                   ARRAYSIZE_UNSAFE(duplicate_url));
   }
 
   {
     KeywordTestData keyword_match[] = {
-      { base::ASCIIToUTF16("foo.com"), base::ASCIIToUTF16("foo.com"), false },
-      { base::ASCIIToUTF16("foo.com"), base::string16(), false }
+      { base::ASCIIToUTF16("foo.com"), base::ASCIIToUTF16("foo.com"),
+        base::string16() },
+      { base::ASCIIToUTF16("foo.com"), base::string16(), base::string16() }
     };
 
     SCOPED_TRACE("Duplicate url with keyword match");
-    RunRedundantKeywordTest(keyword_match, ARRAYSIZE_UNSAFE(keyword_match));
+    RunKeywordTest(base::ASCIIToUTF16("fo"), keyword_match,
+                   ARRAYSIZE_UNSAFE(keyword_match));
   }
 
   {
     KeywordTestData multiple_keyword[] = {
-      { base::ASCIIToUTF16("fo"), base::string16(), false },
-      { base::ASCIIToUTF16("foo.com"), base::string16(), true },
-      { base::ASCIIToUTF16("foo.com"), base::string16(), false },
-      { base::ASCIIToUTF16("bar.com"), base::string16(), true },
+      { base::ASCIIToUTF16("fo"), base::string16(), base::string16() },
+      { base::ASCIIToUTF16("foo.com"), base::string16(),
+        base::ASCIIToUTF16("foo.com") },
+      { base::ASCIIToUTF16("foo.com"), base::string16(), base::string16() },
+      { base::ASCIIToUTF16("bar.com"), base::string16(),
+        base::ASCIIToUTF16("bar.com") },
     };
 
     SCOPED_TRACE("Duplicate url with multiple keywords");
-    RunRedundantKeywordTest(multiple_keyword,
-        ARRAYSIZE_UNSAFE(multiple_keyword));
+    RunKeywordTest(base::ASCIIToUTF16("fo"), multiple_keyword,
+                   ARRAYSIZE_UNSAFE(multiple_keyword));
+  }
+}
+
+// Test that exact match keywords trump keywords associated with
+// the match.
+TEST_F(AutocompleteProviderTest, ExactMatchKeywords) {
+  ResetControllerWithKeywordProvider();
+
+  {
+    KeywordTestData keyword_match[] = {
+      { base::ASCIIToUTF16("foo.com"), base::string16(),
+        base::ASCIIToUTF16("foo.com") }
+    };
+
+    SCOPED_TRACE("keyword match as usual");
+    RunKeywordTest(base::ASCIIToUTF16("fo"), keyword_match,
+                   ARRAYSIZE_UNSAFE(keyword_match));
+  }
+
+  // The same result set with an input of "f" (versus "fo") should get
+  // a different associated keyword because "f" is an exact match for
+  // a keyword and that should trump the keyword normally associated with
+  // this match.
+  {
+    KeywordTestData keyword_match[] = {
+      { base::ASCIIToUTF16("foo.com"), base::string16(),
+        base::ASCIIToUTF16("f") }
+    };
+
+    SCOPED_TRACE("keyword exact match");
+    RunKeywordTest(base::ASCIIToUTF16("f"), keyword_match,
+                   ARRAYSIZE_UNSAFE(keyword_match));
   }
 }
 
