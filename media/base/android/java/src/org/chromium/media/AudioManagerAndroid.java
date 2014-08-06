@@ -664,6 +664,11 @@ class AudioManagerAndroid {
             btAdapter = BluetoothAdapter.getDefaultAdapter();
         }
 
+        if (btAdapter == null) {
+            // Bluetooth not supported on this platform.
+            return false;
+        }
+
         int profileConnectionState;
         profileConnectionState = btAdapter.getProfileConnectionState(
                 android.bluetooth.BluetoothProfile.HEADSET);
