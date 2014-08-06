@@ -367,6 +367,14 @@ cr.define('login', function() {
     },
 
     /**
+     * Gets action box menu.
+     * @type {!HTMLInputElement}
+     */
+    get actionBoxMenu() {
+      return this.querySelector('.action-box-menu');
+    },
+
+    /**
      * Gets action box menu title, user name item.
      * @type {!HTMLInputElement}
      */
@@ -575,6 +583,8 @@ cr.define('login', function() {
         this.actionBoxAreaElement.classList.add('active');
       } else {
         this.actionBoxAreaElement.classList.remove('active');
+        this.actionBoxAreaElement.classList.remove('menu-moved-up');
+        this.actionBoxMenu.classList.remove('menu-moved-up');
       }
     },
 
@@ -716,6 +726,17 @@ cr.define('login', function() {
           error,
           this.signinButtonElement.offsetWidth / 2,
           4);
+      // Move warning bubble up if it overlaps the shelf.
+      var maxHeight =
+          cr.ui.LoginUITools.getMaxHeightBeforeShelfOverlapping($('bubble'));
+      if (maxHeight < $('bubble').offsetHeight) {
+        $('bubble').showContentForElement(
+            this.signinButtonElement,
+            cr.ui.Bubble.Attachment.BOTTOM,
+            error,
+            this.signinButtonElement.offsetWidth / 2,
+            4);
+      }
     },
 
     /**
@@ -825,6 +846,16 @@ cr.define('login', function() {
       this.actionBoxMenuRemoveElement.hidden = true;
       this.actionBoxRemoveUserWarningElement.hidden = false;
       this.actionBoxRemoveUserWarningButtonElement.focus();
+
+      // Move up the menu if it overlaps shelf.
+      var maxHeight = cr.ui.LoginUITools.getMaxHeightBeforeShelfOverlapping(
+          this.actionBoxMenu);
+      var actualHeight = parseInt(
+          window.getComputedStyle(this.actionBoxMenu).height);
+      if (maxHeight < actualHeight) {
+        this.actionBoxMenu.classList.add('menu-moved-up');
+        this.actionBoxAreaElement.classList.add('menu-moved-up');
+      }
     },
 
     /**

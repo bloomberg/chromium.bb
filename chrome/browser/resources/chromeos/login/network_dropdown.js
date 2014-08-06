@@ -173,6 +173,11 @@ cr.define('cr.ui', function() {
         this.createItem_(this.container, item);
       }
       this.container.selectItem(this.container.firstItem, false);
+
+      var maxHeight = cr.ui.LoginUITools.getMaxHeightBeforeShelfOverlapping(
+          this.container);
+      if (maxHeight < this.container.offsetHeight)
+        this.container.style.maxHeight = maxHeight + 'px';
     },
 
     /**

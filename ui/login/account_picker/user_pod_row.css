@@ -326,8 +326,19 @@ html[dir=rtl] .user-type-icon-area {
   font-size: 13px;
   position: absolute;
   right: 5px;
-  top: 18px;
   width: 220px;
+}
+
+.action-box-area.active ~ .action-box-menu:not(.menu-moved-up) {
+  top: 18px;
+}
+
+.action-box-area.active ~ .action-box-menu.menu-moved-up {
+  bottom: 210px;
+}
+
+.action-box-area.menu-moved-up {
+  -webkit-transform: rotate(180deg);
 }
 
 html[dir=rtl] .action-box-area.active ~ .action-box-menu {

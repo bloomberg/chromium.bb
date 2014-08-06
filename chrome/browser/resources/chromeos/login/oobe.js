@@ -146,6 +146,15 @@ cr.define('cr.ui.Oobe', function() {
       $('accessibility-menu').showForElement(e.target,
                                              cr.ui.Bubble.Attachment.BOTTOM,
                                              BUBBLE_OFFSET, BUBBLE_PADDING);
+
+      var maxHeight = cr.ui.LoginUITools.getMaxHeightBeforeShelfOverlapping(
+          $('accessibility-menu'));
+      if (maxHeight < $('accessibility-menu').offsetHeight) {
+        $('accessibility-menu').showForElement(e.target,
+                                               cr.ui.Bubble.Attachment.TOP,
+                                               BUBBLE_OFFSET, BUBBLE_PADDING);
+      }
+
       $('accessibility-menu').firstBubbleElement = $('spoken-feedback');
       $('accessibility-menu').lastBubbleElement = $('close-accessibility-menu');
       if (Oobe.getInstance().currentScreen &&

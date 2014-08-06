@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 <include src="../../../../ui/login/screen.js">
 <include src="../../../../ui/login/bubble.js">
+<include src="../../../../ui/login/login_ui_tools.js">
 <include src="../../../../ui/login/display_manager.js">
 <include src="control_bar.js">
 <include src="../../../../ui/login/account_picker/screen_account_picker.js">

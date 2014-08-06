@@ -158,6 +158,15 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
                                           cr.ui.Bubble.Attachment.BOTTOM,
                                           error,
                                           BUBBLE_OFFSET, BUBBLE_PADDING);
+        // Move error bubble up if it overlaps the shelf.
+        var maxHeight =
+            cr.ui.LoginUITools.getMaxHeightBeforeShelfOverlapping($('bubble'));
+        if (maxHeight < $('bubble').offsetHeight) {
+          $('bubble').showContentForElement(activatedPod.mainInput,
+                                            cr.ui.Bubble.Attachment.TOP,
+                                            error,
+                                            BUBBLE_OFFSET, BUBBLE_PADDING);
+        }
       }
     },
 

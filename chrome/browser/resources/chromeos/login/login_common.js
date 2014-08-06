@@ -29,6 +29,7 @@
 <include src="screen_wrong_hwid.js">
 <include src="screen_confirm_password.js">
 <include src="screen_fatal_error.js">
+<include src="../../../../../ui/login/login_ui_tools.js">
 <include src="../../../../../ui/login/account_picker/user_pod_row.js">
 <include src="../../../../../ui/login/resource_loader.js">
 
