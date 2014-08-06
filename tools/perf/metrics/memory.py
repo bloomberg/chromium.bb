@@ -59,7 +59,10 @@ class MemoryMetric(Metric):
   def __init__(self, browser):
     super(MemoryMetric, self).__init__()
     self._browser = browser
-    self._start_commit_charge = self._browser.memory_stats['SystemCommitCharge']
+    start_memory_stats = self._browser.memory_stats
+    self._start_commit_charge = None
+    if 'SystemCommitCharge' in start_memory_stats:
+      self._start_commit_charge = start_memory_stats['SystemCommitCharge']
     self._memory_stats = None
     self._histogram_start = dict()
     self._histogram_delta = dict()
@@ -125,13 +128,14 @@ class MemoryMetric(Metric):
     AddResultsForProcesses(results, self._memory_stats,
                            metric_trace_name=trace_name)
 
-    end_commit_charge = self._memory_stats['SystemCommitCharge']
-    commit_charge_difference = end_commit_charge - self._start_commit_charge
-    results.AddValue(scalar.ScalarValue(
-        results.current_page,
-        'commit_charge.' + (trace_name or 'commit_charge'),
-        'kb', commit_charge_difference, important=False,
-        description='System commit charge (committed memory pages).'))
+    if self._start_commit_charge:
+      end_commit_charge = self._memory_stats['SystemCommitCharge']
+      commit_charge_difference = end_commit_charge - self._start_commit_charge
+      results.AddValue(scalar.ScalarValue(
+          results.current_page,
+          'commit_charge.' + (trace_name or 'commit_charge'),
+          'kb', commit_charge_difference, important=False,
+          description='System commit charge (committed memory pages).'))
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'processes.' + (trace_name or 'processes'),
         'count', self._memory_stats['ProcessCount'], important=False,
