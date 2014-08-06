@@ -538,7 +538,6 @@
         '../extensions/browser/extension_error_test_util.h',
         '../extensions/browser/extension_icon_image_unittest.cc',
         '../extensions/browser/extension_protocols_unittest.cc',
-        '../extensions/browser/image_loader_unittest.cc',
         '../extensions/browser/info_map_unittest.cc',
         '../extensions/common/extension_l10n_util_unittest.cc',
         '../extensions/common/extension_resource_unittest.cc',
@@ -925,6 +924,7 @@
         'browser/extensions/bookmark_app_helper_unittest.cc',
         'browser/extensions/browser_permissions_policy_delegate_unittest.cc',
         'browser/extensions/chrome_app_sorting_unittest.cc',
+        'browser/extensions/chrome_component_extension_resource_manager_unittest.cc',
         'browser/extensions/component_loader_unittest.cc',
         'browser/extensions/convert_user_script_unittest.cc',
         'browser/extensions/convert_web_app_unittest.cc',
@@ -2171,7 +2171,6 @@
         }],
         ['chromeos==0', {
           'sources!': [
-            'browser/extensions/image_loader_unittest.cc',
             # TODO(zturner): Enable this on Windows.  See
             # BrowserWithTestWindowTest::SetUp() for a comment explaining why
             # this is broken.
