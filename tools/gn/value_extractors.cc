@@ -9,8 +9,54 @@
 #include "tools/gn/label.h"
 #include "tools/gn/source_dir.h"
 #include "tools/gn/source_file.h"
+#include "tools/gn/target.h"
+#include "tools/gn/value.h"
 
 namespace {
+
+// Sets the error and returns false on failure.
+template<typename T, class Converter>
+bool ListValueExtractor(const Value& value,
+                        std::vector<T>* dest,
+                        Err* err,
+                        const Converter& converter) {
+  if (!value.VerifyTypeIs(Value::LIST, err))
+    return false;
+  const std::vector<Value>& input_list = value.list_value();
+  dest->resize(input_list.size());
+  for (size_t i = 0; i < input_list.size(); i++) {
+    if (!converter(input_list[i], &(*dest)[i], err))
+      return false;
+  }
+  return true;
+}
+
+// Like the above version but extracts to a UniqueVector and sets the error if
+// there are duplicates.
+template<typename T, class Converter>
+bool ListValueUniqueExtractor(const Value& value,
+                              UniqueVector<T>* dest,
+                              Err* err,
+                              const Converter& converter) {
+  if (!value.VerifyTypeIs(Value::LIST, err))
+    return false;
+  const std::vector<Value>& input_list = value.list_value();
+
+  for (size_t i = 0; i < input_list.size(); i++) {
+    T new_one;
+    if (!converter(input_list[i], &new_one, err))
+      return false;
+    if (!dest->push_back(new_one)) {
+      // Already in the list, throw error.
+      *err = Err(input_list[i], "Duplicate item in list");
+      size_t previous_index = dest->IndexOf(new_one);
+      err->AppendSubErr(Err(input_list[previous_index],
+                            "This was the previous definition."));
+      return false;
+    }
+  }
+  return true;
+}
 
 // This extractor rejects files with system-absolute file paths. If we need
 // that in the future, we'll have to add some flag to control this.
@@ -110,21 +156,31 @@ bool ExtractListOfRelativeDirs(const BuildSettings* build_settings,
 bool ExtractListOfLabels(const Value& value,
                          const SourceDir& current_dir,
                          const Label& current_toolchain,
-                         LabelConfigVector* dest,
-                         Err* err) {
-  return ListValueExtractor(value, dest, err,
-                            LabelResolver<Config>(current_dir,
-                                                  current_toolchain));
-}
-
-bool ExtractListOfLabels(const Value& value,
-                         const SourceDir& current_dir,
-                         const Label& current_toolchain,
                          LabelTargetVector* dest,
                          Err* err) {
   return ListValueExtractor(value, dest, err,
                             LabelResolver<Target>(current_dir,
                                                   current_toolchain));
+}
+
+bool ExtractListOfUniqueLabels(const Value& value,
+                               const SourceDir& current_dir,
+                               const Label& current_toolchain,
+                               UniqueVector<LabelConfigPair>* dest,
+                               Err* err) {
+  return ListValueUniqueExtractor(value, dest, err,
+                                  LabelResolver<Config>(current_dir,
+                                                        current_toolchain));
+}
+
+bool ExtractListOfUniqueLabels(const Value& value,
+                               const SourceDir& current_dir,
+                               const Label& current_toolchain,
+                               UniqueVector<LabelTargetPair>* dest,
+                               Err* err) {
+  return ListValueUniqueExtractor(value, dest, err,
+                                  LabelResolver<Target>(current_dir,
+                                                        current_toolchain));
 }
 
 bool ExtractRelativeFile(const BuildSettings* build_settings,

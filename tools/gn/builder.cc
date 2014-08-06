@@ -228,7 +228,7 @@ bool Builder::TargetDefined(BuilderRecord* record, Err* err) {
 
   if (!AddDeps(record, target->deps(), err) ||
       !AddDeps(record, target->datadeps(), err) ||
-      !AddDeps(record, target->configs(), err) ||
+      !AddDeps(record, target->configs().vector(), err) ||
       !AddDeps(record, target->all_dependent_configs(), err) ||
       !AddDeps(record, target->direct_dependent_configs(), err) ||
       !AddToolchainDep(record, target, err))
@@ -325,6 +325,19 @@ BuilderRecord* Builder::GetResolvedRecordOfType(const Label& label,
 
 bool Builder::AddDeps(BuilderRecord* record,
                       const LabelConfigVector& configs,
+                      Err* err) {
+  for (size_t i = 0; i < configs.size(); i++) {
+    BuilderRecord* dep_record = GetOrCreateRecordOfType(
+        configs[i].label, configs[i].origin, BuilderRecord::ITEM_CONFIG, err);
+    if (!dep_record)
+      return false;
+    record->AddDep(dep_record);
+  }
+  return true;
+}
+
+bool Builder::AddDeps(BuilderRecord* record,
+                      const UniqueVector<LabelConfigPair>& configs,
                       Err* err) {
   for (size_t i = 0; i < configs.size(); i++) {
     BuilderRecord* dep_record = GetOrCreateRecordOfType(
@@ -440,16 +453,16 @@ bool Builder::ResolveDeps(LabelTargetVector* deps, Err* err) {
   return true;
 }
 
-bool Builder::ResolveConfigs(LabelConfigVector* configs, Err* err) {
+bool Builder::ResolveConfigs(UniqueVector<LabelConfigPair>* configs, Err* err) {
   for (size_t i = 0; i < configs->size(); i++) {
-    LabelConfigPair& cur = (*configs)[i];
+    const LabelConfigPair& cur = (*configs)[i];
     DCHECK(!cur.ptr);
 
     BuilderRecord* record = GetResolvedRecordOfType(
         cur.label, cur.origin, BuilderRecord::ITEM_CONFIG, err);
     if (!record)
       return false;
-    cur.ptr = record->item()->AsConfig();
+    const_cast<LabelConfigPair&>(cur).ptr = record->item()->AsConfig();
   }
   return true;
 }
@@ -458,14 +471,18 @@ bool Builder::ResolveConfigs(LabelConfigVector* configs, Err* err) {
 // have their configs forwarded.
 bool Builder::ResolveForwardDependentConfigs(Target* target, Err* err) {
   const LabelTargetVector& deps = target->deps();
-  LabelTargetVector& configs = target->forward_dependent_configs();
+  const UniqueVector<LabelTargetPair>& configs =
+      target->forward_dependent_configs();
 
   // Assume that the lists are small so that brute-force n^2 is appropriate.
   for (size_t config_i = 0; config_i < configs.size(); config_i++) {
     for (size_t dep_i = 0; dep_i < deps.size(); dep_i++) {
       if (configs[config_i].label == deps[dep_i].label) {
         DCHECK(deps[dep_i].ptr);  // Should already be resolved.
-        configs[config_i].ptr = deps[dep_i].ptr;
+        // UniqueVector's contents are constant so uniqueness is preserved, but
+        // we want to update this pointer which doesn't change uniqueness
+        // (uniqueness in this vector is determined by the label only).
+        const_cast<LabelTargetPair&>(configs[config_i]).ptr = deps[dep_i].ptr;
         break;
       }
     }

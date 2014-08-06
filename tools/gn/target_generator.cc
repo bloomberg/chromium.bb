@@ -283,11 +283,11 @@ bool TargetGenerator::EnsureSubstitutionIsInOutputDir(
 }
 
 void TargetGenerator::FillGenericConfigs(const char* var_name,
-                                         LabelConfigVector* dest) {
+                                         UniqueVector<LabelConfigPair>* dest) {
   const Value* value = scope_->GetValue(var_name, true);
   if (value) {
-    ExtractListOfLabels(*value, scope_->GetSourceDir(),
-                        ToolchainLabelForScope(scope_), dest, err_);
+    ExtractListOfUniqueLabels(*value, scope_->GetSourceDir(),
+                              ToolchainLabelForScope(scope_), dest, err_);
   }
 }
 
@@ -304,8 +304,8 @@ void TargetGenerator::FillForwardDependentConfigs() {
   const Value* value = scope_->GetValue(
       variables::kForwardDependentConfigsFrom, true);
   if (value) {
-    ExtractListOfLabels(*value, scope_->GetSourceDir(),
-                        ToolchainLabelForScope(scope_),
-                        &target_->forward_dependent_configs(), err_);
+    ExtractListOfUniqueLabels(*value, scope_->GetSourceDir(),
+                              ToolchainLabelForScope(scope_),
+                              &target_->forward_dependent_configs(), err_);
   }
 }

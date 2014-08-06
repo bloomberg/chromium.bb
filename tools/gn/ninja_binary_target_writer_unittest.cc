@@ -29,8 +29,6 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
     NinjaBinaryTargetWriter writer(&target, setup.toolchain(), out);
     writer.Run();
 
-    // TODO(brettw) I think we'll need to worry about backslashes here
-    // depending if we're on actual Windows or Linux pretending to be Windows.
     const char expected_win[] =
         "defines =\n"
         "includes =\n"
@@ -66,8 +64,6 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
     NinjaBinaryTargetWriter writer(&shlib_target, setup.toolchain(), out);
     writer.Run();
 
-    // TODO(brettw) I think we'll need to worry about backslashes here
-    // depending if we're on actual Windows or Linux pretending to be Windows.
     const char expected_win[] =
         "defines =\n"
         "includes =\n"
@@ -85,11 +81,12 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
         "ldflags = /MANIFEST /ManifestFile:obj/foo/shlib.intermediate."
             "manifest\n"
         "libs =\n"
-        // Ordering of the obj files here is arbitrary. Currently they're put
-        // in a set and come out sorted.
-        "build shlib.dll shlib.dll.lib: solink ../../foo/input3.o "
-            "../../foo/input4.obj obj/foo/bar.input1.obj "
-            "obj/foo/bar.input2.obj\n"
+        // Ordering of the obj files here should come out in the order
+        // specified, with the target's first, followed by the source set's, in
+        // order.
+        "build shlib.dll shlib.dll.lib: solink obj/foo/bar.input1.obj "
+            "obj/foo/bar.input2.obj ../../foo/input3.o "
+            "../../foo/input4.obj\n"
         "  soname = shlib.dll\n"
         "  lib = shlib.dll\n"
         "  dll = shlib.dll\n"
@@ -112,8 +109,6 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
     NinjaBinaryTargetWriter writer(&stlib_target, setup.toolchain(), out);
     writer.Run();
 
-    // TODO(brettw) I think we'll need to worry about backslashes here
-    // depending if we're on actual Windows or Linux pretending to be Windows.
     const char expected_win[] =
         "defines =\n"
         "includes =\n"
@@ -158,8 +153,6 @@ TEST(NinjaBinaryTargetWriter, ProductExtension) {
   NinjaBinaryTargetWriter writer(&target, setup.toolchain(), out);
   writer.Run();
 
-  // TODO(brettw) I think we'll need to worry about backslashes here
-  // depending if we're on actual Windows or Linux pretending to be Windows.
   const char expected[] =
       "defines =\n"
       "includes =\n"
@@ -207,8 +200,6 @@ TEST(NinjaBinaryTargetWriter, EmptyProductExtension) {
   NinjaBinaryTargetWriter writer(&target, setup.toolchain(), out);
   writer.Run();
 
-  // TODO(brettw) I think we'll need to worry about backslashes here
-  // depending if we're on actual Windows or Linux pretending to be Windows.
   const char expected[] =
       "defines =\n"
       "includes =\n"

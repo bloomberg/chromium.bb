@@ -8,30 +8,15 @@
 #include <string>
 #include <vector>
 
-#include "tools/gn/target.h"
-#include "tools/gn/value.h"
+#include "tools/gn/label_ptr.h"
+#include "tools/gn/unique_vector.h"
 
 class BuildSettings;
 class Err;
 class Label;
 class SourceDir;
 class SourceFile;
-
-// Sets the error and returns false on failure.
-template<typename T, class Converter>
-bool ListValueExtractor(const Value& value, std::vector<T>* dest,
-                        Err* err,
-                        const Converter& converter) {
-  if (!value.VerifyTypeIs(Value::LIST, err))
-    return false;
-  const std::vector<Value>& input_list = value.list_value();
-  dest->resize(input_list.size());
-  for (size_t i = 0; i < input_list.size(); i++) {
-    if (!converter(input_list[i], &(*dest)[i], err))
-      return false;
-  }
-  return true;
-}
+class Value;
 
 // On failure, returns false and sets the error.
 bool ExtractListOfStringValues(const Value& value,
@@ -57,13 +42,22 @@ bool ExtractListOfRelativeDirs(const BuildSettings* build_settings,
 bool ExtractListOfLabels(const Value& value,
                          const SourceDir& current_dir,
                          const Label& current_toolchain,
-                         LabelConfigVector* dest,
-                         Err* err);
-bool ExtractListOfLabels(const Value& value,
-                         const SourceDir& current_dir,
-                         const Label& current_toolchain,
                          LabelTargetVector* dest,
                          Err* err);
+
+// Extracts the list of labels and their origins to the given vector. Only the
+// labels are filled in, the ptr for each pair in the vector will be null. Sets
+// an error and returns false if a label is maformed or there are duplicates.
+bool ExtractListOfUniqueLabels(const Value& value,
+                               const SourceDir& current_dir,
+                               const Label& current_toolchain,
+                               UniqueVector<LabelConfigPair>* dest,
+                               Err* err);
+bool ExtractListOfUniqueLabels(const Value& value,
+                               const SourceDir& current_dir,
+                               const Label& current_toolchain,
+                               UniqueVector<LabelTargetPair>* dest,
+                               Err* err);
 
 bool ExtractRelativeFile(const BuildSettings* build_settings,
                          const Value& value,

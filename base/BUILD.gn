@@ -825,12 +825,16 @@ component("base") {
   # Windows.
   if (is_win) {
     sources -= [
+      "event_recorder_stubs.cc",
       "message_loop/message_pump_libevent.cc",
       "strings/string16.cc",
       # Not using sha1_win.cc because it may have caused a
       # regression to page cycler moz.
       "sha1_win.cc",
     ]
+
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    #cflags = [ "/wd4267" ]
 
     libs = [
       "netapi32.lib",

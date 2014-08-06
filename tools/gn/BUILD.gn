@@ -152,6 +152,7 @@ static_library("gn_lib") {
     "toolchain.h",
     "trace.cc",
     "trace.h",
+    "unique_vector.h",
     "value.cc",
     "value.h",
     "value_extractors.cc",
@@ -222,6 +223,7 @@ test("gn_unittests") {
     "test_with_scope.cc",
     "test_with_scope.h",
     "tokenizer_unittest.cc",
+    "unique_vector_unittest.cc",
     "value_unittest.cc",
     "visibility_unittest.cc",
   ]

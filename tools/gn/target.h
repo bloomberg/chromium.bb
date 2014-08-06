@@ -20,6 +20,7 @@
 #include "tools/gn/label_ptr.h"
 #include "tools/gn/ordered_set.h"
 #include "tools/gn/source_file.h"
+#include "tools/gn/unique_vector.h"
 
 class InputFile;
 class Settings;
@@ -105,38 +106,38 @@ class Target : public Item {
 
   // List of configs that this class inherits settings from. Once a target is
   // resolved, this will also list all- and direct-dependent configs.
-  const LabelConfigVector& configs() const { return configs_; }
-  LabelConfigVector& configs() { return configs_; }
+  const UniqueVector<LabelConfigPair>& configs() const { return configs_; }
+  UniqueVector<LabelConfigPair>& configs() { return configs_; }
 
   // List of configs that all dependencies (direct and indirect) of this
   // target get. These configs are not added to this target. Note that due
   // to the way this is computed, there may be duplicates in this list.
-  const LabelConfigVector& all_dependent_configs() const {
+  const UniqueVector<LabelConfigPair>& all_dependent_configs() const {
     return all_dependent_configs_;
   }
-  LabelConfigVector& all_dependent_configs() {
+  UniqueVector<LabelConfigPair>& all_dependent_configs() {
     return all_dependent_configs_;
   }
 
   // List of configs that targets depending directly on this one get. These
   // configs are not added to this target.
-  const LabelConfigVector& direct_dependent_configs() const {
+  const UniqueVector<LabelConfigPair>& direct_dependent_configs() const {
     return direct_dependent_configs_;
   }
-  LabelConfigVector& direct_dependent_configs() {
+  UniqueVector<LabelConfigPair>& direct_dependent_configs() {
     return direct_dependent_configs_;
   }
 
   // A list of a subset of deps where we'll re-export direct_dependent_configs
   // as direct_dependent_configs of this target.
-  const LabelTargetVector& forward_dependent_configs() const {
+  const UniqueVector<LabelTargetPair>& forward_dependent_configs() const {
     return forward_dependent_configs_;
   }
-  LabelTargetVector& forward_dependent_configs() {
+  UniqueVector<LabelTargetPair>& forward_dependent_configs() {
     return forward_dependent_configs_;
   }
 
-  const std::set<const Target*>& inherited_libraries() const {
+  const UniqueVector<const Target*>& inherited_libraries() const {
     return inherited_libraries_;
   }
 
@@ -157,7 +158,7 @@ class Target : public Item {
  private:
   // Pulls necessary information from dependencies to this one when all
   // dependencies have been resolved.
-  void PullDependentTargetInfo(std::set<const Config*>* unique_configs);
+  void PullDependentTargetInfo();
 
   // These each pull specific things from dependencies to this one when all
   // deps have been resolved.
@@ -190,10 +191,10 @@ class Target : public Item {
   LabelTargetVector deps_;
   LabelTargetVector datadeps_;
 
-  LabelConfigVector configs_;
-  LabelConfigVector all_dependent_configs_;
-  LabelConfigVector direct_dependent_configs_;
-  LabelTargetVector forward_dependent_configs_;
+  UniqueVector<LabelConfigPair> configs_;
+  UniqueVector<LabelConfigPair> all_dependent_configs_;
+  UniqueVector<LabelConfigPair> direct_dependent_configs_;
+  UniqueVector<LabelTargetPair> forward_dependent_configs_;
 
   bool external_;
 
@@ -202,7 +203,7 @@ class Target : public Item {
   // sets do not get pushed beyond static library boundaries, and neither
   // source sets nor static libraries get pushed beyond sahred library
   // boundaries.
-  std::set<const Target*> inherited_libraries_;
+  UniqueVector<const Target*> inherited_libraries_;
 
   // These libs and dirs are inherited from statically linked deps and all
   // configs applying to this target.
@@ -218,5 +219,21 @@ class Target : public Item {
 
   DISALLOW_COPY_AND_ASSIGN(Target);
 };
+
+namespace BASE_HASH_NAMESPACE {
+
+#if defined(COMPILER_GCC)
+template<> struct hash<const Target*> {
+  std::size_t operator()(const Target* t) const {
+    return reinterpret_cast<std::size_t>(t);
+  }
+};
+#elif defined(COMPILER_MSVC)
+inline size_t hash_value(const Target* t) {
+  return reinterpret_cast<size_t>(t);
+}
+#endif  // COMPILER...
+
+}  // namespace BASE_HASH_NAMESPACE
 
 #endif  // TOOLS_GN_TARGET_H_

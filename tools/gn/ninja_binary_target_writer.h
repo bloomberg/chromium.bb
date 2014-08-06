@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "tools/gn/ninja_target_writer.h"
 #include "tools/gn/toolchain.h"
+#include "tools/gn/unique_vector.h"
 
 // Writes a .ninja file for a binary target type (an executable, a shared
 // library, or a static library).
@@ -40,18 +41,18 @@ class NinjaBinaryTargetWriter : public NinjaTargetWriter {
 
   // Gets all target dependencies and classifies them, as well as accumulates
   // object files from source sets we need to link.
-  void GetDeps(std::set<OutputFile>* extra_object_files,
-               std::vector<const Target*>* linkable_deps,
-               std::vector<const Target*>* non_linkable_deps) const;
+  void GetDeps(UniqueVector<OutputFile>* extra_object_files,
+               UniqueVector<const Target*>* linkable_deps,
+               UniqueVector<const Target*>* non_linkable_deps) const;
 
   // Classifies the dependency as linkable or nonlinkable with the current
   // target, adding it to the appropriate vector. If the dependency is a source
   // set we should link in, the source set's object files will be appended to
   // |extra_object_files|.
   void ClassifyDependency(const Target* dep,
-                          std::set<OutputFile>* extra_object_files,
-                          std::vector<const Target*>* linkable_deps,
-                          std::vector<const Target*>* non_linkable_deps) const;
+                          UniqueVector<OutputFile>* extra_object_files,
+                          UniqueVector<const Target*>* linkable_deps,
+                          UniqueVector<const Target*>* non_linkable_deps) const;
 
   // Writes the implicit dependencies for the link or stamp line. This is
   // the "||" and everything following it on the ninja line.
@@ -59,7 +60,7 @@ class NinjaBinaryTargetWriter : public NinjaTargetWriter {
   // The implicit dependencies are the non-linkable deps passed in as an
   // argument, plus the data file depdencies in the target.
   void WriteImplicitDependencies(
-      const std::vector<const Target*>& non_linkable_deps);
+      const UniqueVector<const Target*>& non_linkable_deps);
 
   Toolchain::ToolType tool_type_;
 

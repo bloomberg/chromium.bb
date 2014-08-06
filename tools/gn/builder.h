@@ -12,6 +12,7 @@
 #include "tools/gn/builder_record.h"
 #include "tools/gn/label.h"
 #include "tools/gn/label_ptr.h"
+#include "tools/gn/unique_vector.h"
 
 class Config;
 class Err;
@@ -84,6 +85,9 @@ class Builder : public base::RefCountedThreadSafe<Builder> {
                const LabelConfigVector& configs,
                Err* err);
   bool AddDeps(BuilderRecord* record,
+               const UniqueVector<LabelConfigPair>& configs,
+               Err* err);
+  bool AddDeps(BuilderRecord* record,
                const LabelTargetVector& targets,
                Err* err);
   bool AddToolchainDep(BuilderRecord* record,
@@ -112,7 +116,7 @@ class Builder : public base::RefCountedThreadSafe<Builder> {
   // that everything should be resolved by this point, so will return an error
   // if anything isn't found or if the type doesn't match.
   bool ResolveDeps(LabelTargetVector* deps, Err* err);
-  bool ResolveConfigs(LabelConfigVector* configs, Err* err);
+  bool ResolveConfigs(UniqueVector<LabelConfigPair>* configs, Err* err);
   bool ResolveForwardDependentConfigs(Target* target, Err* err);
 
   // Given a list of unresolved records, tries to find any circular

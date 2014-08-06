@@ -250,8 +250,27 @@ void PrintConfigsVector(const Target* target,
   }
 }
 
+void PrintConfigsVector(const Target* target,
+                        const UniqueVector<LabelConfigPair>& configs,
+                        const std::string& heading,
+                        bool display_header) {
+  if (configs.empty())
+    return;
+
+  // Don't sort since the order determines how things are processed.
+  if (display_header)
+    OutputString("\n" + heading + " (in order applying):\n");
+
+  Label toolchain_label = target->label().GetToolchainLabel();
+  for (size_t i = 0; i < configs.size(); i++) {
+    OutputString("  " +
+        configs[i].label.GetUserVisibleName(toolchain_label) + "\n");
+  }
+}
+
 void PrintConfigs(const Target* target, bool display_header) {
-  PrintConfigsVector(target, target->configs(), "configs", display_header);
+  PrintConfigsVector(target, target->configs().vector(), "configs",
+                     display_header);
 }
 
 void PrintDirectDependentConfigs(const Target* target, bool display_header) {

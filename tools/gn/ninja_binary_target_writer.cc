@@ -320,9 +320,9 @@ void NinjaBinaryTargetWriter::WriteLinkCommand(
        << helper_.GetRulePrefix(target_->settings())
        << Toolchain::ToolTypeToName(tool_type_);
 
-  std::set<OutputFile> extra_object_files;
-  std::vector<const Target*> linkable_deps;
-  std::vector<const Target*> non_linkable_deps;
+  UniqueVector<OutputFile> extra_object_files;
+  UniqueVector<const Target*> linkable_deps;
+  UniqueVector<const Target*> non_linkable_deps;
   GetDeps(&extra_object_files, &linkable_deps, &non_linkable_deps);
 
   // Object files.
@@ -330,10 +330,9 @@ void NinjaBinaryTargetWriter::WriteLinkCommand(
     out_ << " ";
     path_output_.WriteFile(out_, object_files[i]);
   }
-  for (std::set<OutputFile>::iterator i = extra_object_files.begin();
-       i != extra_object_files.end(); ++i) {
+  for (size_t i = 0; i < extra_object_files.size(); i++) {
     out_ << " ";
-    path_output_.WriteFile(out_, *i);
+    path_output_.WriteFile(out_, extra_object_files[i]);
   }
 
   // Libs.
@@ -360,9 +359,9 @@ void NinjaBinaryTargetWriter::WriteSourceSetStamp(
        << helper_.GetRulePrefix(target_->settings())
        << "stamp";
 
-  std::set<OutputFile> extra_object_files;
-  std::vector<const Target*> linkable_deps;
-  std::vector<const Target*> non_linkable_deps;
+  UniqueVector<OutputFile> extra_object_files;
+  UniqueVector<const Target*> linkable_deps;
+  UniqueVector<const Target*> non_linkable_deps;
   GetDeps(&extra_object_files, &linkable_deps, &non_linkable_deps);
 
   // The classifier should never put extra object files in a source set:
@@ -382,24 +381,22 @@ void NinjaBinaryTargetWriter::WriteSourceSetStamp(
 }
 
 void NinjaBinaryTargetWriter::GetDeps(
-    std::set<OutputFile>* extra_object_files,
-    std::vector<const Target*>* linkable_deps,
-    std::vector<const Target*>* non_linkable_deps) const {
+    UniqueVector<OutputFile>* extra_object_files,
+    UniqueVector<const Target*>* linkable_deps,
+    UniqueVector<const Target*>* non_linkable_deps) const {
   const LabelTargetVector& deps = target_->deps();
-  const std::set<const Target*>& inherited = target_->inherited_libraries();
+  const UniqueVector<const Target*>& inherited =
+      target_->inherited_libraries();
 
   // Normal deps.
   for (size_t i = 0; i < deps.size(); i++) {
-    if (inherited.find(deps[i].ptr) != inherited.end())
-      continue;  // Don't add dupes.
     ClassifyDependency(deps[i].ptr, extra_object_files,
                        linkable_deps, non_linkable_deps);
   }
 
   // Inherited libraries.
-  for (std::set<const Target*>::const_iterator i = inherited.begin();
-       i != inherited.end(); ++i) {
-    ClassifyDependency(*i, extra_object_files,
+  for (size_t i = 0; i < inherited.size(); i++) {
+    ClassifyDependency(inherited[i], extra_object_files,
                        linkable_deps, non_linkable_deps);
   }
 
@@ -411,9 +408,9 @@ void NinjaBinaryTargetWriter::GetDeps(
 
 void NinjaBinaryTargetWriter::ClassifyDependency(
     const Target* dep,
-    std::set<OutputFile>* extra_object_files,
-    std::vector<const Target*>* linkable_deps,
-    std::vector<const Target*>* non_linkable_deps) const {
+    UniqueVector<OutputFile>* extra_object_files,
+    UniqueVector<const Target*>* linkable_deps,
+    UniqueVector<const Target*>* non_linkable_deps) const {
   // Only these types of outputs have libraries linked into them. Child deps of
   // static libraries get pushed up the dependency tree until one of these is
   // reached, and source sets don't link at all.
@@ -441,7 +438,7 @@ void NinjaBinaryTargetWriter::ClassifyDependency(
             input_file_type != SOURCE_H) {
           // Note we need to specify the target as the source_set target
           // itself, since this is used to prefix the object file name.
-          extra_object_files->insert(helper_.GetOutputFileForSource(
+          extra_object_files->push_back(helper_.GetOutputFileForSource(
               dep, dep->sources()[i], input_file_type));
         }
       }
@@ -454,7 +451,7 @@ void NinjaBinaryTargetWriter::ClassifyDependency(
 }
 
 void NinjaBinaryTargetWriter::WriteImplicitDependencies(
-    const std::vector<const Target*>& non_linkable_deps) {
+    const UniqueVector<const Target*>& non_linkable_deps) {
   const std::vector<SourceFile>& data = target_->data();
   if (!non_linkable_deps.empty() || !data.empty()) {
     out_ << " ||";

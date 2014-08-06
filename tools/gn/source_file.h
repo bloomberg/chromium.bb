@@ -5,6 +5,7 @@
 #ifndef TOOLS_GN_SOURCE_FILE_H_
 #define TOOLS_GN_SOURCE_FILE_H_
 
+#include <algorithm>
 #include <string>
 
 #include "base/containers/hash_tables.h"
@@ -75,6 +76,10 @@ class SourceFile {
     return value_ < other.value_;
   }
 
+  void swap(SourceFile& other) {
+    value_.swap(other.value_);
+  }
+
  private:
   friend class SourceDir;
 
@@ -99,5 +104,9 @@ inline size_t hash_value(const SourceFile& v) {
 #endif  // COMPILER...
 
 }  // namespace BASE_HASH_NAMESPACE
+
+inline void swap(SourceFile& lhs, SourceFile& rhs) {
+  lhs.swap(rhs);
+}
 
 #endif  // TOOLS_GN_SOURCE_FILE_H_

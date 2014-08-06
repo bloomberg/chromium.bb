@@ -83,6 +83,13 @@ class Label {
     return toolchain_name_ < other.toolchain_name_;
   }
 
+  void swap(Label& other) {
+    dir_.swap(other.dir_);
+    name_.swap(other.name_);
+    toolchain_dir_.swap(other.toolchain_dir_);
+    toolchain_name_.swap(other.toolchain_name_);
+  }
+
   // Returns true if the toolchain dir/name of this object matches some
   // other object.
   bool ToolchainsEqual(const Label& other) const {
@@ -120,5 +127,9 @@ inline size_t hash_value(const Label& v) {
 #endif  // COMPILER...
 
 }  // namespace BASE_HASH_NAMESPACE
+
+inline void swap(Label& lhs, Label& rhs) {
+  lhs.swap(rhs);
+}
 
 #endif  // TOOLS_GN_LABEL_H_

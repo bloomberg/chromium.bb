@@ -64,7 +64,8 @@ bool ConfigHasCompilerSettings(const Config* config) {
 // Returns true if the given target has any direct dependent configs with
 // compiler settings in it.
 bool HasDirectDependentCompilerSettings(const Target* target) {
-  const LabelConfigVector& direct = target->direct_dependent_configs();
+  const UniqueVector<LabelConfigPair>& direct =
+      target->direct_dependent_configs();
   for (size_t i = 0; i < direct.size(); i++) {
     if (ConfigHasCompilerSettings(direct[i].ptr))
       return true;
@@ -431,7 +432,8 @@ bool HeaderChecker::DoDirectDependentConfigsApply(
 
     // The forward list on this target should have contained in it the target
     // at the next lower level.
-    const LabelTargetVector& forwarded = chain[i]->forward_dependent_configs();
+    const UniqueVector<LabelTargetPair>& forwarded =
+        chain[i]->forward_dependent_configs();
     if (std::find_if(forwarded.begin(), forwarded.end(),
                      LabelPtrPtrEquals<Target>(chain[i - 1])) ==
         forwarded.end()) {

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/containers/hash_tables.h"
 #include "tools/gn/build_settings.h"
 #include "tools/gn/source_file.h"
 
@@ -40,5 +41,26 @@ class OutputFile {
  private:
   std::string value_;
 };
+
+namespace BASE_HASH_NAMESPACE {
+
+#if defined(COMPILER_GCC)
+template<> struct hash<OutputFile> {
+  std::size_t operator()(const OutputFile& v) const {
+    hash<std::string> h;
+    return h(v.value());
+  }
+};
+#elif defined(COMPILER_MSVC)
+inline size_t hash_value(const OutputFile& v) {
+  return hash_value(v.value());
+}
+#endif  // COMPILER...
+
+}  // namespace BASE_HASH_NAMESPACE
+
+inline void swap(OutputFile& lhs, OutputFile& rhs) {
+  lhs.value().swap(rhs.value());
+}
 
 #endif  // TOOLS_GN_OUTPUT_FILE_H_

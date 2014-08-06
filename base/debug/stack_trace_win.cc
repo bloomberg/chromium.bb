@@ -263,7 +263,7 @@ void StackTrace::OutputToStream(std::ostream* os) const {
   if (error != ERROR_SUCCESS) {
     (*os) << "Error initializing symbols (" << error
           << ").  Dumping unresolved backtrace:\n";
-    for (int i = 0; (i < count_) && os->good(); ++i) {
+    for (size_t i = 0; (i < count_) && os->good(); ++i) {
       (*os) << "\t" << trace_[i] << "\n";
     }
   } else {
