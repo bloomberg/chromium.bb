@@ -175,6 +175,7 @@ void ReadableStream::trace(Visitor* visitor)
     visitor->trace(m_source);
     visitor->trace(m_wait);
     visitor->trace(m_closed);
+    visitor->trace(m_exception);
 }
 
 } // namespace blink
