@@ -17,21 +17,21 @@ TEST(BloomFilterTest, TinyFilter) {
   EXPECT_EQ(0x00, filter.bytes()[0]);
 
   // "Test" has a self-collision, and only sets 3 bits.
-  filter.AddString("Test");
+  filter.SetString("Test");
   EXPECT_EQ(0x2a, filter.bytes()[0]);
 
-  // Adding the same value shouldn't change anything.
-  filter.AddString("Test");
+  // Setting the same value shouldn't change anything.
+  filter.SetString("Test");
   EXPECT_EQ(0x2a, filter.bytes()[0]);
 
   BloomFilter filter2(1u, 4u, 0u);
   EXPECT_EQ(0x00, filter2.bytes()[0]);
-  filter2.AddString("Bar");
+  filter2.SetString("Bar");
   EXPECT_EQ(0xa8, filter2.bytes()[0]);
 
-  // Adding a colliding string should just set new bits.
-  filter.AddString("Bar");
-  EXPECT_EQ(0xaa, filter.bytes()[0]);
+  // The new string should replace the old one.
+  filter.SetString("Bar");
+  EXPECT_EQ(0xa8, filter.bytes()[0]);
 }
 
 TEST(BloomFilterTest, HugeFilter) {
@@ -43,11 +43,11 @@ TEST(BloomFilterTest, HugeFilter) {
   EXPECT_EQ(500u, filter.bytes().size());
   EXPECT_EQ(0, CountBits(filter.bytes()));
 
-  filter.AddString("Bar");
+  filter.SetString("Bar");
   EXPECT_EQ(1, CountBits(filter.bytes()));
 
   // Adding the same value shouldn't change anything.
-  filter.AddString("Bar");
+  filter.SetString("Bar");
   EXPECT_EQ(1, CountBits(filter.bytes()));
 }
 

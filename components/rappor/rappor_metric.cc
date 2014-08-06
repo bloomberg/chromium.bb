@@ -5,6 +5,7 @@
 #include "components/rappor/rappor_metric.h"
 
 #include "base/logging.h"
+#include "base/rand_util.h"
 
 namespace rappor {
 
@@ -13,6 +14,7 @@ RapporMetric::RapporMetric(const std::string& metric_name,
                            int32_t cohort_seed)
     : metric_name_(metric_name),
       parameters_(parameters),
+      sample_count_(0),
       bloom_filter_(parameters.bloom_filter_size_bytes,
                     parameters.bloom_filter_hash_function_count,
                     (cohort_seed % parameters.num_cohorts) *
@@ -24,7 +26,12 @@ RapporMetric::RapporMetric(const std::string& metric_name,
 RapporMetric::~RapporMetric() {}
 
 void RapporMetric::AddSample(const std::string& str) {
-  bloom_filter_.AddString(str);
+  ++sample_count_;
+  // Replace the previous sample with a 1 in sample_count_ chance so that each
+  // sample has equal probability of being reported.
+  if (base::RandGenerator(sample_count_) == 0) {
+    bloom_filter_.SetString(str);
+  }
 }
 
 ByteVector RapporMetric::GetReport(const std::string& secret) const {
@@ -57,6 +64,10 @@ ByteVector RapporMetric::GetReport(const std::string& secret) const {
   // the outcome of flipping a zero coin for the zero bits in that data, and of
   // flipping a one coin for the one bits in that data, as the final report.
   return *ByteVectorMerge(*fake_and_redacted_bits, zero_coins, &one_coins);
+}
+
+void RapporMetric::SetBytesForTesting(const ByteVector& bytes) {
+  bloom_filter_.SetBytesForTesting(bytes);
 }
 
 }  // namespace rappor

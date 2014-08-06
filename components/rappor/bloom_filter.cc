@@ -20,7 +20,10 @@ BloomFilter::BloomFilter(uint32_t bytes_size,
 
 BloomFilter::~BloomFilter() {}
 
-void BloomFilter::AddString(const std::string& str) {
+void BloomFilter::SetString(const std::string& str) {
+  for (size_t i = 0; i < bytes_.size(); ++i) {
+    bytes_[i] = 0;
+  }
   for (size_t i = 0; i < hash_function_count_; ++i) {
     // Using CityHash here because we have support for it in Dremel.  Many hash
     // functions, such as MD5, SHA1, or Murmur, would probably also work.
@@ -30,6 +33,13 @@ void BloomFilter::AddString(const std::string& str) {
     uint32_t byte_index = (index / 8) % bytes_.size();
     uint32_t bit_index = index % 8;
     bytes_[byte_index] |= 1 << bit_index;
+  }
+}
+
+void BloomFilter::SetBytesForTesting(const ByteVector& bytes) {
+  DCHECK_EQ(bytes_.size(), bytes.size());
+  for (size_t i = 0; i < bytes_.size(); ++i) {
+    bytes_[i] = bytes[i];
   }
 }
 

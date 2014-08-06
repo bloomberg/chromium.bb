@@ -33,7 +33,6 @@ const RapporParameters kTestStatsRapporParameters = {
 // Check for basic syntax and use.
 TEST(RapporMetricTest, BasicMetric) {
   RapporMetric testMetric("MyRappor", kTestRapporParameters, 0);
-  testMetric.AddSample("Foo");
   testMetric.AddSample("Bar");
   EXPECT_EQ(0x80, testMetric.bytes()[1]);
 }
@@ -49,10 +48,12 @@ TEST(RapporMetricTest, GetReport) {
 TEST(RapporMetricTest, GetReportStatistics) {
   RapporMetric metric("MyStatsRappor", kTestStatsRapporParameters, 0);
 
-  for (char i = 0; i < 50; i++) {
-    metric.AddSample(base::StringPrintf("%d", i));
+  ByteVector real_bits(kTestStatsRapporParameters.bloom_filter_size_bytes);
+  // Set 152 bits (19 bytes)
+  for (char i = 0; i < 19; i++) {
+    real_bits[i] = 0xff;
   }
-  const ByteVector real_bits = metric.bytes();
+  metric.SetBytesForTesting(real_bits);
   const int real_bit_count = CountBits(real_bits);
   EXPECT_EQ(real_bit_count, 152);
 

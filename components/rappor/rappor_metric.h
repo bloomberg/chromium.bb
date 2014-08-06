@@ -35,6 +35,8 @@ class RapporMetric {
   ~RapporMetric();
 
   // Records an additional sample in the Bloom filter.
+  // A random sample will be used when reporting this metric when more than one
+  // sample is collected in the same reporting interval.
   void AddSample(const std::string& str);
 
   // Retrieves the current Bloom filter bits.
@@ -48,9 +50,13 @@ class RapporMetric {
   // final report bits.
   ByteVector GetReport(const std::string& secret) const;
 
+  // Specify the bytes to generate a report from, for testing purposes.
+  void SetBytesForTesting(const ByteVector& bytes);
+
  private:
   const std::string metric_name_;
   const RapporParameters parameters_;
+  uint32_t sample_count_;
   BloomFilter bloom_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(RapporMetric);

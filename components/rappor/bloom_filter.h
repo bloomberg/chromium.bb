@@ -25,11 +25,14 @@ class BloomFilter {
               uint32_t hash_seed_offset);
   ~BloomFilter();
 
-  // Add a single string to the Bloom filter.
-  void AddString(const std::string& str);
+  // Sets the Bloom filter bits to contain a single string.
+  void SetString(const std::string& str);
 
   // Returns the current value of the Bloom filter's bit array.
   const ByteVector& bytes() const { return bytes_; };
+
+  // Sets bytes for testing purposes.
+  void SetBytesForTesting(const ByteVector& bytes);
 
  private:
   // Stores the byte array of the Bloom filter.
