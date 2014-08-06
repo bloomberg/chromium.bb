@@ -119,8 +119,8 @@ private:
     int m_ordinalIteration;
 };
 
-RenderDeprecatedFlexibleBox::RenderDeprecatedFlexibleBox(Element* element)
-    : RenderBlock(element)
+RenderDeprecatedFlexibleBox::RenderDeprecatedFlexibleBox(Element& element)
+    : RenderBlock(&element)
 {
     ASSERT(!childrenInline());
     m_stretchingChildren = false;
@@ -137,13 +137,6 @@ RenderDeprecatedFlexibleBox::RenderDeprecatedFlexibleBox(Element* element)
 
 RenderDeprecatedFlexibleBox::~RenderDeprecatedFlexibleBox()
 {
-}
-
-RenderDeprecatedFlexibleBox* RenderDeprecatedFlexibleBox::createAnonymous(Document* document)
-{
-    RenderDeprecatedFlexibleBox* renderer = new RenderDeprecatedFlexibleBox(0);
-    renderer->setDocumentForAnonymous(document);
-    return renderer;
 }
 
 static LayoutUnit marginWidthForChild(RenderBox* child)

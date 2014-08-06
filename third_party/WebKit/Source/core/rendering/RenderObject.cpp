@@ -195,7 +195,7 @@ RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
         return new RenderTableCaption(element);
     case BOX:
     case INLINE_BOX:
-        return new RenderDeprecatedFlexibleBox(element);
+        return new RenderDeprecatedFlexibleBox(*element);
     case FLEX:
     case INLINE_FLEX:
         return new RenderFlexibleBox(element);
