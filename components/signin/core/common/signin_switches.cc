@@ -16,13 +16,19 @@ const char kDisableAccountConsistency[] = "disable-account-consistency";
 // Disables new profile management system, including new profile chooser UI.
 const char kDisableNewProfileManagement[] = "disable-new-profile-management";
 
+// Disables the new avatar menu, forcing the top-corner avatar button.
+const char kDisableNewAvatarMenu[] = "disable-new-avatar-menu";
+
 // Disable sending signin scoped device id to LSO with refresh token request.
 const char kDisableSigninScopedDeviceId[] = "disable-signin-scoped-device-id";
 
 // Enables consistent identity features.
 const char kEnableAccountConsistency[] = "enable-account-consistency";
 
-// Enables new profile management system, including new profile chooser UI.
+// Enable the new avatar menu and the User Manager.
+const char kEnableNewAvatarMenu[] = "enable-new-avatar-menu";
+
+// Enables new profile management system, including lock mode.
 const char kEnableNewProfileManagement[] = "new-profile-management";
 
 // Enables the pure web-based flow for sign in on first run/NTP/wrench menu/
@@ -38,11 +44,5 @@ const char kFastUserSwitching[] = "fast-user-switching";
 
 // Enables using GAIA information to populate profile name and icon.
 const char kGoogleProfileInfo[] = "google-profile-info";
-
-// Use new avatar menu. When combined with new-profile-management, it simply
-// shows the new profile management avatar menu. Otherwise it shows a redesigned
-// avatar menu with the same functionality as the old one, plus a tutorial card
-// at the top prompting the user to try out the new profile management UI.
-const char kNewAvatarMenu[] = "new-avatar-menu";
 
 }  // namespace switches

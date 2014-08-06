@@ -1456,7 +1456,8 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_NEW_AVATAR_MENU_NAME,
     IDS_FLAGS_ENABLE_NEW_AVATAR_MENU_DESCRIPTION,
     kOsMac | kOsWin | kOsLinux,
-    SINGLE_VALUE_TYPE(switches::kNewAvatarMenu)
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableNewAvatarMenu,
+                              switches::kDisableNewAvatarMenu)
   },
   {
     "enable-web-based-signin",

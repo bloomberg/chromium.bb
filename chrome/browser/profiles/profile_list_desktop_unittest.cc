@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -86,6 +87,7 @@ class ProfileListDesktopTest : public testing::Test {
   TestingProfileManager manager_;
   scoped_ptr<MockObserver> mock_observer_;
   scoped_ptr<AvatarMenu> avatar_menu_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileListDesktopTest);
 };

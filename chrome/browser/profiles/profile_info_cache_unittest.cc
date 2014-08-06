@@ -531,7 +531,7 @@ TEST_F(ProfileInfoCacheTest, AddStubProfile) {
 }
 
 TEST_F(ProfileInfoCacheTest, DownloadHighResAvatarTest) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kNewAvatarMenu);
+  switches::EnableNewAvatarMenuForTesting(CommandLine::ForCurrentProcess());
 
   EXPECT_EQ(0U, GetCache()->GetNumberOfProfiles());
   base::FilePath path_1 = GetProfilePath("path_1");

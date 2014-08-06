@@ -53,6 +53,7 @@ class MessageCenterSettingsControllerTest : public testing::Test {
  private:
   TestingProfileManager testing_profile_manager_;
   scoped_ptr<MessageCenterSettingsController> controller_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterSettingsControllerTest);
 };

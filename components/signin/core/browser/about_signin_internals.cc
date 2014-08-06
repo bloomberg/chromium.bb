@@ -365,14 +365,10 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
   AddSectionEntry(basic_info, "Signin Status", signin_status_string);
   AddSectionEntry(basic_info, "Web Based Signin Enabled?",
       switches::IsEnableWebBasedSignin() == true ? "True" : "False");
-  AddSectionEntry(basic_info, "New Profile Management Enabled?",
-      switches::IsNewProfileManagement() == true ? "True" : "False");
   AddSectionEntry(basic_info, "New Avatar Menu Enabled?",
       switches::IsNewAvatarMenu() == true ? "True" : "False");
-  bool new_avatar_menu_flag =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewAvatarMenu);
-  AddSectionEntry(basic_info, "New Avatar Menu Flag Set?",
-      new_avatar_menu_flag ? "True" : "False");
+  AddSectionEntry(basic_info, "New Profile Management Enabled?",
+      switches::IsNewProfileManagement() == true ? "True" : "False");
   AddSectionEntry(basic_info, "Account Consistency Enabled?",
       switches::IsEnableAccountConsistency() == true ? "True" : "False");
 
