@@ -310,9 +310,9 @@ runTests([
           details: {
             url: getURLHttpComplex(),
             redirectUrl: getURLHttpSimple(),
-            statusLine: "",
-            statusCode: -1,
             fromCache: false,
+            statusLine: "HTTP/1.1 307 Internal Redirect",
+            statusCode: 307,
           }
         },
         { label: "onBeforeRequest-b",
@@ -371,8 +371,8 @@ runTests([
                 "AAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJ" +
                 "ggg==",
             fromCache: false,
-            statusCode: -1,
-            statusLine: "",
+            statusLine: "HTTP/1.1 307 Internal Redirect",
+            statusCode: 307,
             type: "image",
           }
         },
@@ -385,8 +385,8 @@ runTests([
                 "extensions/api_test/webrequest/declarative/frame.html"),
             redirectUrl: "data:text/html,",
             fromCache: false,
-            statusCode: -1,
-            statusLine: "",
+            statusLine: "HTTP/1.1 307 Internal Redirect",
+            statusCode: 307,
             type: "sub_frame",
           }
         },

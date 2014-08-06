@@ -2949,9 +2949,23 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequest) {
     GURL original_url(test_server_.GetURL("empty.html"));
     URLRequest r(original_url, DEFAULT_PRIORITY, &d, &context);
 
+    // Quit after hitting the redirect, so can check the headers.
+    d.set_quit_on_redirect(true);
     r.Start();
     base::RunLoop().Run();
 
+    // Check headers from URLRequestJob.
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+    EXPECT_EQ(307, r.GetResponseCode());
+    EXPECT_EQ(307, r.response_headers()->response_code());
+    std::string location;
+    ASSERT_TRUE(r.response_headers()->EnumerateHeader(NULL, "Location",
+                                                      &location));
+    EXPECT_EQ(redirect_url, GURL(location));
+
+    // Let the request finish.
+    r.FollowDeferredRedirect();
+    base::RunLoop().Run();
     EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
     EXPECT_TRUE(r.proxy_server().Equals(test_server_.host_port_pair()));
     EXPECT_EQ(
@@ -2988,7 +3002,22 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestSynchronously) {
     GURL original_url(test_server_.GetURL("empty.html"));
     URLRequest r(original_url, DEFAULT_PRIORITY, &d, &context);
 
+    // Quit after hitting the redirect, so can check the headers.
+    d.set_quit_on_redirect(true);
     r.Start();
+    base::RunLoop().Run();
+
+    // Check headers from URLRequestJob.
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+    EXPECT_EQ(307, r.GetResponseCode());
+    EXPECT_EQ(307, r.response_headers()->response_code());
+    std::string location;
+    ASSERT_TRUE(r.response_headers()->EnumerateHeader(NULL, "Location",
+                                                      &location));
+    EXPECT_EQ(redirect_url, GURL(location));
+
+    // Let the request finish.
+    r.FollowDeferredRedirect();
     base::RunLoop().Run();
 
     EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
@@ -3034,7 +3063,23 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestPost) {
     headers.SetHeader(HttpRequestHeaders::kContentLength,
                       base::UintToString(arraysize(kData) - 1));
     r.SetExtraRequestHeaders(headers);
+
+    // Quit after hitting the redirect, so can check the headers.
+    d.set_quit_on_redirect(true);
     r.Start();
+    base::RunLoop().Run();
+
+    // Check headers from URLRequestJob.
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+    EXPECT_EQ(307, r.GetResponseCode());
+    EXPECT_EQ(307, r.response_headers()->response_code());
+    std::string location;
+    ASSERT_TRUE(r.response_headers()->EnumerateHeader(NULL, "Location",
+                                                      &location));
+    EXPECT_EQ(redirect_url, GURL(location));
+
+    // Let the request finish.
+    r.FollowDeferredRedirect();
     base::RunLoop().Run();
 
     EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());

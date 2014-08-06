@@ -8,7 +8,9 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "net/base/net_export.h"
+#include "net/http/http_response_info.h"
 #include "net/url_request/url_request_job.h"
 
 class GURL;
@@ -24,7 +26,7 @@ class NET_EXPORT URLRequestRedirectJob : public URLRequestJob {
   // valid, but unused so far.  Both 302 and 307 are temporary redirects, with
   // the difference being that 302 converts POSTs to GETs and removes upload
   // data.
-  enum StatusCode {
+  enum ResponseCode {
     REDIRECT_302_FOUND = 302,
     REDIRECT_307_TEMPORARY_REDIRECT = 307,
   };
@@ -34,16 +36,16 @@ class NET_EXPORT URLRequestRedirectJob : public URLRequestJob {
   URLRequestRedirectJob(URLRequest* request,
                         NetworkDelegate* network_delegate,
                         const GURL& redirect_destination,
-                        StatusCode http_status_code,
+                        ResponseCode response_code,
                         const std::string& redirect_reason);
 
-  virtual void Start() OVERRIDE;
-  virtual bool IsRedirectResponse(GURL* location,
-                                  int* http_status_code) OVERRIDE;
-  virtual bool CopyFragmentOnRedirect(const GURL& location) const OVERRIDE;
-
+  // URLRequestJob implementation:
+  virtual void GetResponseInfo(HttpResponseInfo* info) OVERRIDE;
   virtual void GetLoadTimingInfo(
       LoadTimingInfo* load_timing_info) const OVERRIDE;
+  virtual void Start() OVERRIDE;
+  virtual bool CopyFragmentOnRedirect(const GURL& location) const OVERRIDE;
+  virtual int GetResponseCode() const OVERRIDE;
 
  private:
   virtual ~URLRequestRedirectJob();
@@ -51,9 +53,12 @@ class NET_EXPORT URLRequestRedirectJob : public URLRequestJob {
   void StartAsync();
 
   const GURL redirect_destination_;
-  const int http_status_code_;
+  const ResponseCode response_code_;
   base::TimeTicks receive_headers_end_;
+  base::Time response_time_;
   std::string redirect_reason_;
+
+  scoped_refptr<HttpResponseHeaders> fake_headers_;
 
   base::WeakPtrFactory<URLRequestRedirectJob> weak_factory_;
 };

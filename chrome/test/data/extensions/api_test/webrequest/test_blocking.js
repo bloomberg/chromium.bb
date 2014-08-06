@@ -280,9 +280,9 @@ runTests([
           details: {
             url: getURL("complexLoad/a.html"),
             redirectUrl: getURL("simpleLoad/a.html"),
-            statusLine: "",
-            statusCode: -1,
             fromCache: false,
+            statusLine: "HTTP/1.1 307 Internal Redirect",
+            statusCode: 307,
           }
         },
         { label: "onBeforeRequest-2",
