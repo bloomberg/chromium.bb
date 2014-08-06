@@ -230,6 +230,11 @@ class BASE_EXPORT Time {
   // this global header and put in the platform-specific ones when we remove the
   // migration code.
   static const int64 kWindowsEpochDeltaMicroseconds;
+#else
+  // To avoid overflow in QPC to Microseconds calculations, since we multiply
+  // by kMicrosecondsPerSecond, then the QPC value should not exceed
+  // (2^63 - 1) / 1E6. If it exceeds that threshold, we divide then multiply.
+  static const int64 kQPCOverflowThreshold = 0x8637BD05AF7;
 #endif
 
   // Represents an exploded time that can be formatted nicely. This is kind of

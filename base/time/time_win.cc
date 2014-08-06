@@ -393,11 +393,14 @@ class HighResNowSingleton {
   int64 QPCValueToMicroseconds(LONGLONG qpc_value) {
     if (!ticks_per_second_)
       return 0;
-
-    // Intentionally calculate microseconds in a round about manner to avoid
-    // overflow and precision issues. Think twice before simplifying!
+    // If the QPC Value is below the overflow threshold, we proceed with
+    // simple multiply and divide.
+    if (qpc_value < Time::kQPCOverflowThreshold)
+      return qpc_value * Time::kMicrosecondsPerSecond / ticks_per_second_;
+    // Otherwise, calculate microseconds in a round about manner to avoid
+    // overflow and precision issues.
     int64 whole_seconds = qpc_value / ticks_per_second_;
-    int64 leftover_ticks = qpc_value % ticks_per_second_;
+    int64 leftover_ticks = qpc_value - (whole_seconds * ticks_per_second_);
     int64 microseconds = (whole_seconds * Time::kMicrosecondsPerSecond) +
                          ((leftover_ticks * Time::kMicrosecondsPerSecond) /
                           ticks_per_second_);
@@ -447,7 +450,8 @@ NowFunction now_function = RolloverProtectedNow;
 
 bool CPUReliablySupportsHighResTime() {
   base::CPU cpu;
-  if (!cpu.has_non_stop_time_stamp_counter())
+  if (!cpu.has_non_stop_time_stamp_counter() ||
+      !GetHighResNowSingleton()->IsUsingHighResClock())
     return false;
 
   if (IsBuggyAthlon(cpu))
