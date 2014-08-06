@@ -898,6 +898,7 @@ struct weston_surface {
 	 */
 	void (*configure)(struct weston_surface *es, int32_t sx, int32_t sy);
 	void *configure_private;
+	int (*get_label)(struct weston_surface *surface, char *buf, size_t len);
 
 	/* Parent's list of its sub-surfaces, weston_subsurface:parent_link.
 	 * Contains also the parent itself as a dummy weston_subsurface,
@@ -1242,6 +1243,11 @@ weston_surface_set_role(struct weston_surface *surface,
 			const char *role_name,
 			struct wl_resource *error_resource,
 			uint32_t error_code);
+
+void
+weston_surface_set_label_func(struct weston_surface *surface,
+			      int (*desc)(struct weston_surface *,
+					  char *, size_t));
 
 struct weston_buffer *
 weston_buffer_from_resource(struct wl_resource *resource);

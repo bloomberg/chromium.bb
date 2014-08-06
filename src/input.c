@@ -431,6 +431,7 @@ pointer_unmap_sprite(struct weston_pointer *pointer)
 	wl_list_remove(&pointer->sprite_destroy_listener.link);
 	surface->configure = NULL;
 	surface->configure_private = NULL;
+	weston_surface_set_label_func(surface, NULL);
 	weston_view_destroy(pointer->sprite);
 	pointer->sprite = NULL;
 }
@@ -1582,6 +1583,13 @@ notify_touch_frame(struct weston_seat *seat)
 	grab->interface->frame(grab);
 }
 
+static int
+pointer_cursor_surface_get_label(struct weston_surface *surface,
+				 char *buf, size_t len)
+{
+	return snprintf(buf, len, "cursor");
+}
+
 static void
 pointer_cursor_surface_configure(struct weston_surface *es,
 				 int32_t dx, int32_t dy)
@@ -1653,6 +1661,8 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 
 	surface->configure = pointer_cursor_surface_configure;
 	surface->configure_private = pointer;
+	weston_surface_set_label_func(surface,
+				      pointer_cursor_surface_get_label);
 	pointer->sprite = weston_view_create(surface);
 	pointer->hotspot_x = x;
 	pointer->hotspot_y = y;

@@ -2724,6 +2724,12 @@ weston_subsurface_parent_commit(struct weston_subsurface *sub,
 		weston_subsurface_synchronized_commit(sub);
 }
 
+static int
+subsurface_get_label(struct weston_surface *surface, char *buf, size_t len)
+{
+	return snprintf(buf, len, "sub-surface");
+}
+
 static void
 subsurface_configure(struct weston_surface *surface, int32_t dx, int32_t dy)
 {
@@ -2805,6 +2811,14 @@ weston_surface_set_role(struct weston_surface *surface,
 			       wl_resource_get_id(surface->resource),
 			       surface->role_name);
 	return -1;
+}
+
+WL_EXPORT void
+weston_surface_set_label_func(struct weston_surface *surface,
+			      int (*desc)(struct weston_surface *,
+					  char *, size_t))
+{
+	surface->get_label = desc;
 }
 
 static void
@@ -3039,6 +3053,7 @@ weston_subsurface_destroy(struct weston_subsurface *sub)
 
 		sub->surface->configure = NULL;
 		sub->surface->configure_private = NULL;
+		weston_surface_set_label_func(sub->surface, NULL);
 	} else {
 		/* the dummy weston_subsurface for the parent itself */
 		assert(sub->parent_destroy_listener.notify == NULL);
@@ -3170,6 +3185,7 @@ subcompositor_get_subsurface(struct wl_client *client,
 
 	surface->configure = subsurface_configure;
 	surface->configure_private = sub;
+	weston_surface_set_label_func(surface, subsurface_get_label);
 }
 
 static void

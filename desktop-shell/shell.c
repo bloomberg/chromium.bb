@@ -274,6 +274,31 @@ static void
 shell_surface_set_parent(struct shell_surface *shsurf,
                          struct weston_surface *parent);
 
+static int
+shell_surface_get_label(struct weston_surface *surface, char *buf, size_t len)
+{
+	struct shell_surface *shsurf;
+	const char *typestr[] = {
+		[SHELL_SURFACE_NONE] = "unidentified",
+		[SHELL_SURFACE_TOPLEVEL] = "top-level",
+		[SHELL_SURFACE_POPUP] = "popup",
+		[SHELL_SURFACE_XWAYLAND] = "Xwayland",
+	};
+	const char *t, *c;
+
+	shsurf = get_shell_surface(surface);
+	if (!shsurf)
+		return snprintf(buf, len, "unidentified window");
+
+	t = shsurf->title;
+	c = shsurf->class;
+
+	return snprintf(buf, len, "%s window%s%s%s%s%s",
+		typestr[shsurf->type],
+		t ? " '" : "", t ?: "", t ? "'" : "",
+		c ? " of " : "", c ?: "");
+}
+
 static bool
 shell_surface_is_top_fullscreen(struct shell_surface *shsurf)
 {
@@ -634,6 +659,12 @@ get_default_output(struct weston_compositor *compositor)
 			    struct weston_output, link);
 }
 
+static int
+focus_surface_get_label(struct weston_surface *surface, char *buf, size_t len)
+{
+	return snprintf(buf, len, "focus highlight effect for output %s",
+			surface->output->name);
+}
 
 /* no-op func for checking focus surface */
 static void
@@ -683,6 +714,7 @@ create_focus_surface(struct weston_compositor *ec,
 	surface->configure = focus_surface_configure;
 	surface->output = output;
 	surface->configure_private = fsurf;
+	weston_surface_set_label_func(surface, focus_surface_get_label);
 
 	fsurf->view = weston_view_create(surface);
 	if (fsurf->view == NULL) {
@@ -2741,6 +2773,33 @@ shell_surface_get_shell(struct shell_surface *shsurf)
 	return shsurf->shell;
 }
 
+static int
+black_surface_get_label(struct weston_surface *surface, char *buf, size_t len)
+{
+	struct weston_surface *fs_surface = surface->configure_private;
+	int n;
+	int rem;
+	int ret;
+
+	n = snprintf(buf, len, "black background surface for ");
+	if (n < 0)
+		return n;
+
+	rem = (int)len - n;
+	if (rem < 0)
+		rem = 0;
+
+	if (fs_surface->get_label)
+		ret = fs_surface->get_label(fs_surface, buf + n, rem);
+	else
+		ret = snprintf(buf + n, rem, "<unknown>");
+
+	if (ret < 0)
+		return n;
+
+	return n + ret;
+}
+
 static void
 black_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy);
 
@@ -2766,6 +2825,7 @@ create_black_surface(struct weston_compositor *ec,
 
 	surface->configure = black_surface_configure;
 	surface->configure_private = fs_surface;
+	weston_surface_set_label_func(surface, black_surface_get_label);
 	weston_surface_set_color(surface, 0.0, 0.0, 0.0, 1);
 	pixman_region32_fini(&surface->opaque);
 	pixman_region32_init_rect(&surface->opaque, 0, 0, w, h);
@@ -3373,6 +3433,7 @@ destroy_shell_surface(struct shell_surface *shsurf)
 	 */
 	wl_list_remove(&shsurf->surface_destroy_listener.link);
 	shsurf->surface->configure = NULL;
+	weston_surface_set_label_func(shsurf->surface, NULL);
 	free(shsurf->title);
 
 	weston_view_destroy(shsurf->view);
@@ -3476,6 +3537,7 @@ create_common_surface(struct shell_client *owner, void *shell,
 
 	surface->configure = shell_surface_configure;
 	surface->configure_private = shsurf;
+	weston_surface_set_label_func(surface, shell_surface_get_label);
 
 	shsurf->resource_destroy_listener.notify = handle_resource_destroy;
 	wl_resource_add_destroy_listener(surface->resource,
@@ -4143,6 +4205,7 @@ configure_static_view(struct weston_view *ev, struct weston_layer *layer)
 		if (v->output == ev->output && v != ev) {
 			weston_view_unmap(v);
 			v->surface->configure = NULL;
+			weston_surface_set_label_func(v->surface, NULL);
 		}
 	}
 
@@ -4152,6 +4215,13 @@ configure_static_view(struct weston_view *ev, struct weston_layer *layer)
 		weston_layer_entry_insert(&layer->view_list, &ev->layer_link);
 		weston_compositor_schedule_repaint(ev->surface->compositor);
 	}
+}
+
+static int
+background_get_label(struct weston_surface *surface, char *buf, size_t len)
+{
+	return snprintf(buf, len, "background for output %s",
+			surface->output->name);
 }
 
 static void
@@ -4189,12 +4259,20 @@ desktop_shell_set_background(struct wl_client *client,
 
 	surface->configure = background_configure;
 	surface->configure_private = shell;
+	weston_surface_set_label_func(surface, background_get_label);
 	surface->output = wl_resource_get_user_data(output_resource);
 	view->output = surface->output;
 	desktop_shell_send_configure(resource, 0,
 				     surface_resource,
 				     surface->output->width,
 				     surface->output->height);
+}
+
+static int
+panel_get_label(struct weston_surface *surface, char *buf, size_t len)
+{
+	return snprintf(buf, len, "panel for output %s",
+			surface->output->name);
 }
 
 static void
@@ -4232,12 +4310,19 @@ desktop_shell_set_panel(struct wl_client *client,
 
 	surface->configure = panel_configure;
 	surface->configure_private = shell;
+	weston_surface_set_label_func(surface, panel_get_label);
 	surface->output = wl_resource_get_user_data(output_resource);
 	view->output = surface->output;
 	desktop_shell_send_configure(resource, 0,
 				     surface_resource,
 				     surface->output->width,
 				     surface->output->height);
+}
+
+static int
+lock_surface_get_label(struct weston_surface *surface, char *buf, size_t len)
+{
+	return snprintf(buf, len, "lock window");
 }
 
 static void
@@ -4294,6 +4379,7 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 	weston_view_create(surface);
 	surface->configure = lock_surface_configure;
 	surface->configure_private = shell;
+	weston_surface_set_label_func(surface, lock_surface_get_label);
 }
 
 static void
@@ -5657,6 +5743,13 @@ bind_desktop_shell(struct wl_client *client,
 			       "permission to bind desktop_shell denied");
 }
 
+static int
+screensaver_get_label(struct weston_surface *surface, char *buf, size_t len)
+{
+	return snprintf(buf, len, "screensaver for output %s",
+			surface->output->name);
+}
+
 static void
 screensaver_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 {
@@ -5704,6 +5797,7 @@ screensaver_set_surface(struct wl_client *client,
 
 	surface->configure = screensaver_configure;
 	surface->configure_private = shell;
+	weston_surface_set_label_func(surface, screensaver_get_label);
 	surface->output = output;
 }
 

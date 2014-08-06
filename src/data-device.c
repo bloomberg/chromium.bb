@@ -214,6 +214,13 @@ drag_surface_configure(struct weston_drag *drag,
 	weston_view_set_position(drag->icon, fx, fy);
 }
 
+static int
+pointer_drag_surface_get_label(struct weston_surface *surface,
+			       char *buf, size_t len)
+{
+	return snprintf(buf, len, "pointer drag icon");
+}
+
 static void
 pointer_drag_surface_configure(struct weston_surface *es,
 			       int32_t sx, int32_t sy)
@@ -224,6 +231,13 @@ pointer_drag_surface_configure(struct weston_surface *es,
 	assert(es->configure == pointer_drag_surface_configure);
 
 	drag_surface_configure(&drag->base, pointer, NULL, es, sx, sy);
+}
+
+static int
+touch_drag_surface_get_label(struct weston_surface *surface,
+			     char *buf, size_t len)
+{
+	return snprintf(buf, len, "touch drag icon");
 }
 
 static void
@@ -351,6 +365,7 @@ data_device_end_drag_grab(struct weston_drag *drag,
 			weston_view_unmap(drag->icon);
 
 		drag->icon->surface->configure = NULL;
+		weston_surface_set_label_func(drag->icon->surface, NULL);
 		pixman_region32_clear(&drag->icon->surface->pending.input);
 		wl_list_remove(&drag->icon_destroy_listener.link);
 		weston_view_destroy(drag->icon);
@@ -560,6 +575,8 @@ weston_pointer_start_drag(struct weston_pointer *pointer,
 
 		icon->configure = pointer_drag_surface_configure;
 		icon->configure_private = drag;
+		weston_surface_set_label_func(icon,
+					pointer_drag_surface_get_label);
 	} else {
 		drag->base.icon = NULL;
 	}
@@ -615,6 +632,8 @@ weston_touch_start_drag(struct weston_touch *touch,
 
 		icon->configure = touch_drag_surface_configure;
 		icon->configure_private = drag;
+		weston_surface_set_label_func(icon,
+					touch_drag_surface_get_label);
 	} else {
 		drag->base.icon = NULL;
 	}
