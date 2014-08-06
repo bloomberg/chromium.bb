@@ -89,7 +89,7 @@ function test()
                 bodyId = node.id;
                 CSSAgent.getComputedStyleForNode(node.id, computedCallback);
                 CSSAgent.getInlineStylesForNode(node.id, inlineCallback);
-                CSSAgent.getMatchedStylesForNode(node.id, true, true, matchedCallback);
+                CSSAgent.getMatchedStylesForNode(node.id, false, false, matchedCallback);
             }
             InspectorTest.selectNodeWithId("mainBody", nodeCallback);
         },
@@ -97,7 +97,7 @@ function test()
         function test_forcedState(next)
         {
             CSSAgent.forcePseudoState(bodyId, ["hover"]);
-            CSSAgent.getMatchedStylesForNode(bodyId, true, true, matchedCallback);
+            CSSAgent.getMatchedStylesForNode(bodyId, false, false, matchedCallback);
 
             function matchedCallback(error, matchedRules)
             {
@@ -254,7 +254,7 @@ function test()
 
             function didPatchStyleSheet(styleSheetId)
             {
-                CSSAgent.getMatchedStylesForNode(bodyId, false, false, onMatchedStylesForNode);
+                CSSAgent.getMatchedStylesForNode(bodyId, true, true, onMatchedStylesForNode);
             }
 
             function patchStyleSheet(styleSheetId)
@@ -295,7 +295,7 @@ function test()
                     InspectorTest.addResult("error: " + error);
                     return;
                 }
-                CSSAgent.getMatchedStylesForNode(bodyId, false, false, didGetStyles);
+                CSSAgent.getMatchedStylesForNode(bodyId, true, true, didGetStyles);
             }
 
             function ruleAdded(error, rule)
@@ -432,7 +432,7 @@ function test()
 
             function nodeCallback(node)
             {
-                CSSAgent.getMatchedStylesForNode(node.id, false, false, stylesCallback);
+                CSSAgent.getMatchedStylesForNode(node.id, true, true, stylesCallback);
             }
             InspectorTest.nodeWithId("toggle", nodeCallback);
         },

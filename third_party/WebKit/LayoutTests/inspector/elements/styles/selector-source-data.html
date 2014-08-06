@@ -22,7 +22,7 @@ function test()
 
     function nodeFound(node)
     {
-       CSSAgent.getMatchedStylesForNode(node.id, false, false, stylesLoaded); 
+       CSSAgent.getMatchedStylesForNode(node.id, true, true, stylesLoaded);
     }
 
     function stylesLoaded(error, rules)

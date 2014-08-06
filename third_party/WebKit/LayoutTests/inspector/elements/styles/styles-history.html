@@ -89,7 +89,7 @@ function test()
 
         function onNodeSelected(node)
         {
-            CSSAgent.getMatchedStylesForNode(node.id, false, false, onMatchedStylesForNode);
+            CSSAgent.getMatchedStylesForNode(node.id, true, true, onMatchedStylesForNode);
         }
 
         function onMatchedStylesForNode(error, matchedStyles)

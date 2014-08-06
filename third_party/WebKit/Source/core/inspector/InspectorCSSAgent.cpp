@@ -636,7 +636,7 @@ void InspectorCSSAgent::getMediaQueries(ErrorString* errorString, RefPtr<TypeBui
     }
 }
 
-void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int nodeId, const bool* includePseudo, const bool* includeInherited, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> >& matchedCSSRules, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PseudoIdMatches> >& pseudoIdMatches, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::InheritedStyleEntry> >& inheritedEntries)
+void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int nodeId, const bool* excludePseudo, const bool* excludeInherited, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> >& matchedCSSRules, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PseudoIdMatches> >& pseudoIdMatches, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::InheritedStyleEntry> >& inheritedEntries)
 {
     Element* element = elementForId(errorString, nodeId);
     if (!element) {
@@ -670,7 +670,7 @@ void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int no
     matchedCSSRules = buildArrayForMatchedRuleList(matchedRules.get(), originalElement);
 
     // Pseudo elements.
-    if (!elementPseudoId && (!includePseudo || *includePseudo)) {
+    if (!elementPseudoId && !asBool(excludePseudo)) {
         RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PseudoIdMatches> > pseudoElements = TypeBuilder::Array<TypeBuilder::CSS::PseudoIdMatches>::create();
         for (PseudoId pseudoId = FIRST_PUBLIC_PSEUDOID; pseudoId < AFTER_LAST_INTERNAL_PSEUDOID; pseudoId = static_cast<PseudoId>(pseudoId + 1)) {
             RefPtrWillBeRawPtr<CSSRuleList> matchedRules = styleResolver.pseudoCSSRulesForElement(element, pseudoId, StyleResolver::AllCSSRules);
@@ -686,7 +686,7 @@ void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int no
     }
 
     // Inherited styles.
-    if (!elementPseudoId && (!includeInherited || *includeInherited)) {
+    if (!elementPseudoId && !asBool(excludeInherited)) {
         RefPtr<TypeBuilder::Array<TypeBuilder::CSS::InheritedStyleEntry> > entries = TypeBuilder::Array<TypeBuilder::CSS::InheritedStyleEntry>::create();
         Element* parentElement = element->parentElement();
         while (parentElement) {
