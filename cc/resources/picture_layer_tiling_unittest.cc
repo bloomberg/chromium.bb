@@ -1042,7 +1042,7 @@ TEST(PictureLayerTilingTest, TilingEvictionTileIteratorStaticViewport) {
   scoped_ptr<TestablePictureLayerTiling> tiling;
 
   gfx::Rect viewport(50, 50, 100, 100);
-  gfx::Size layer_bounds(200, 200);
+  gfx::Size layer_bounds(2000, 2000);
 
   client.SetTileSize(gfx::Size(30, 30));
   client.set_tree(ACTIVE_TREE);
@@ -1056,38 +1056,58 @@ TEST(PictureLayerTilingTest, TilingEvictionTileIteratorStaticViewport) {
 
   std::vector<Tile*> all_tiles = tiling->AllTilesForTesting();
 
-  PictureLayerTiling::TilingEvictionTileIterator it(tiling.get(),
-                                                    SMOOTHNESS_TAKES_PRIORITY);
+  PictureLayerTiling::TilingEvictionTileIterator it(
+      tiling.get(), SMOOTHNESS_TAKES_PRIORITY, TilePriority::NOW, false);
 
   // Tiles don't have resources to evict.
   EXPECT_FALSE(it);
 
   // Sanity check.
-  EXPECT_EQ(64u, all_tiles.size());
+  EXPECT_EQ(5184u, all_tiles.size());
 
   client.tile_manager()->InitializeTilesWithResourcesForTesting(all_tiles);
 
   std::set<Tile*> all_tiles_set(all_tiles.begin(), all_tiles.end());
 
-  it = PictureLayerTiling::TilingEvictionTileIterator(
-      tiling.get(), SMOOTHNESS_TAKES_PRIORITY);
-  EXPECT_TRUE(it);
-
   std::set<Tile*> eviction_tiles;
-  Tile* last_tile = *it;
+
+  it = PictureLayerTiling::TilingEvictionTileIterator(
+      tiling.get(), SMOOTHNESS_TAKES_PRIORITY, TilePriority::EVENTUALLY, false);
+  EXPECT_TRUE(it);
   for (; it; ++it) {
     Tile* tile = *it;
     EXPECT_TRUE(tile);
-    EXPECT_LE(tile->priority(ACTIVE_TREE).priority_bin,
-              last_tile->priority(ACTIVE_TREE).priority_bin);
-    if (tile->priority(ACTIVE_TREE).priority_bin ==
-        last_tile->priority(ACTIVE_TREE).priority_bin) {
-      EXPECT_LE(tile->priority(ACTIVE_TREE).distance_to_visible,
-                last_tile->priority(ACTIVE_TREE).distance_to_visible);
-    }
-    last_tile = tile;
+    EXPECT_EQ(TilePriority::EVENTUALLY,
+              tile->priority(ACTIVE_TREE).priority_bin);
+    EXPECT_FALSE(tile->required_for_activation());
     eviction_tiles.insert(tile);
   }
+
+  it = PictureLayerTiling::TilingEvictionTileIterator(
+      tiling.get(), SMOOTHNESS_TAKES_PRIORITY, TilePriority::SOON, false);
+  EXPECT_TRUE(it);
+  for (; it; ++it) {
+    Tile* tile = *it;
+    EXPECT_TRUE(tile);
+    EXPECT_EQ(TilePriority::SOON, tile->priority(ACTIVE_TREE).priority_bin);
+    EXPECT_FALSE(tile->required_for_activation());
+    eviction_tiles.insert(tile);
+  }
+
+  it = PictureLayerTiling::TilingEvictionTileIterator(
+      tiling.get(), SMOOTHNESS_TAKES_PRIORITY, TilePriority::NOW, false);
+  EXPECT_TRUE(it);
+  for (; it; ++it) {
+    Tile* tile = *it;
+    EXPECT_TRUE(tile);
+    EXPECT_EQ(TilePriority::NOW, tile->priority(ACTIVE_TREE).priority_bin);
+    EXPECT_FALSE(tile->required_for_activation());
+    eviction_tiles.insert(tile);
+  }
+
+  it = PictureLayerTiling::TilingEvictionTileIterator(
+      tiling.get(), SMOOTHNESS_TAKES_PRIORITY, TilePriority::NOW, true);
+  EXPECT_FALSE(it);
 
   EXPECT_GT(all_tiles_set.size(), 0u);
   EXPECT_EQ(all_tiles_set, eviction_tiles);

@@ -845,17 +845,48 @@ void PictureLayerTiling::UpdateEvictionCacheIfNeeded(
       eviction_cache_tree_priority_ == tree_priority)
     return;
 
-  eviction_tiles_cache_.clear();
-  eviction_tiles_cache_.reserve(tiles_.size());
+  eventually_eviction_tiles_.clear();
+  soon_eviction_tiles_.clear();
+  now_required_for_activation_eviction_tiles_.clear();
+  now_not_required_for_activation_eviction_tiles_.clear();
+
   for (TileMap::iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
     // TODO(vmpstr): This should update the priority if UpdateTilePriorities
     // changes not to do this.
-    eviction_tiles_cache_.push_back(it->second);
+    Tile* tile = it->second;
+    const TilePriority& priority =
+        tile->priority_for_tree_priority(tree_priority);
+    switch (priority.priority_bin) {
+      case TilePriority::EVENTUALLY:
+        eventually_eviction_tiles_.push_back(tile);
+        break;
+      case TilePriority::SOON:
+        soon_eviction_tiles_.push_back(tile);
+        break;
+      case TilePriority::NOW:
+        if (tile->required_for_activation())
+          now_required_for_activation_eviction_tiles_.push_back(tile);
+        else
+          now_not_required_for_activation_eviction_tiles_.push_back(tile);
+        break;
+    }
   }
 
-  std::sort(eviction_tiles_cache_.begin(),
-            eviction_tiles_cache_.end(),
-            TileEvictionOrder(tree_priority));
+  // TODO(vmpstr): Do this lazily. One option is to have a "sorted" flag that
+  // can be updated for each of the queues.
+  TileEvictionOrder sort_order(tree_priority);
+  std::sort(eventually_eviction_tiles_.begin(),
+            eventually_eviction_tiles_.end(),
+            sort_order);
+  std::sort(
+      soon_eviction_tiles_.begin(), soon_eviction_tiles_.end(), sort_order);
+  std::sort(now_required_for_activation_eviction_tiles_.begin(),
+            now_required_for_activation_eviction_tiles_.end(),
+            sort_order);
+  std::sort(now_not_required_for_activation_eviction_tiles_.begin(),
+            now_not_required_for_activation_eviction_tiles_.end(),
+            sort_order);
+
   eviction_tiles_cache_valid_ = true;
   eviction_cache_tree_priority_ = tree_priority;
 }
@@ -985,16 +1016,37 @@ operator++() {
 }
 
 PictureLayerTiling::TilingEvictionTileIterator::TilingEvictionTileIterator()
-    : tiling_(NULL) {
+    : tiling_(NULL), eviction_tiles_(NULL) {
 }
 
 PictureLayerTiling::TilingEvictionTileIterator::TilingEvictionTileIterator(
     PictureLayerTiling* tiling,
-    TreePriority tree_priority)
-    : tiling_(tiling), tree_priority_(tree_priority) {
+    TreePriority tree_priority,
+    TilePriority::PriorityBin type,
+    bool required_for_activation)
+    : tiling_(tiling), tree_priority_(tree_priority), eviction_tiles_(NULL) {
+  if (required_for_activation && type != TilePriority::NOW)
+    return;
+
   tiling_->UpdateEvictionCacheIfNeeded(tree_priority_);
-  tile_iterator_ = tiling_->eviction_tiles_cache_.begin();
-  if (tile_iterator_ != tiling_->eviction_tiles_cache_.end() &&
+  switch (type) {
+    case TilePriority::EVENTUALLY:
+      eviction_tiles_ = &tiling_->eventually_eviction_tiles_;
+      break;
+    case TilePriority::SOON:
+      eviction_tiles_ = &tiling_->soon_eviction_tiles_;
+      break;
+    case TilePriority::NOW:
+      if (required_for_activation)
+        eviction_tiles_ = &tiling_->now_required_for_activation_eviction_tiles_;
+      else
+        eviction_tiles_ =
+            &tiling_->now_not_required_for_activation_eviction_tiles_;
+      break;
+  }
+  DCHECK(eviction_tiles_);
+  tile_iterator_ = eviction_tiles_->begin();
+  if (tile_iterator_ != eviction_tiles_->end() &&
       !(*tile_iterator_)->HasResources()) {
     ++(*this);
   }
@@ -1003,7 +1055,7 @@ PictureLayerTiling::TilingEvictionTileIterator::TilingEvictionTileIterator(
 PictureLayerTiling::TilingEvictionTileIterator::~TilingEvictionTileIterator() {}
 
 PictureLayerTiling::TilingEvictionTileIterator::operator bool() const {
-  return tiling_ && tile_iterator_ != tiling_->eviction_tiles_cache_.end();
+  return eviction_tiles_ && tile_iterator_ != eviction_tiles_->end();
 }
 
 Tile* PictureLayerTiling::TilingEvictionTileIterator::operator*() {
@@ -1022,7 +1074,7 @@ operator++() {
   DCHECK(*this);
   do {
     ++tile_iterator_;
-  } while (tile_iterator_ != tiling_->eviction_tiles_cache_.end() &&
+  } while (tile_iterator_ != eviction_tiles_->end() &&
            (!(*tile_iterator_)->HasResources()));
 
   return *this;

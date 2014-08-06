@@ -202,7 +202,10 @@ class PictureLayerTilingPerfTest : public testing::Test {
     int priority_count = 0;
     do {
       PictureLayerTiling::TilingEvictionTileIterator it(
-          picture_layer_tiling_.get(), priorities[priority_count]);
+          picture_layer_tiling_.get(),
+          priorities[priority_count],
+          TilePriority::NOW,
+          false);
       priority_count = (priority_count + 1) % arraysize(priorities);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
@@ -246,7 +249,10 @@ class PictureLayerTilingPerfTest : public testing::Test {
     do {
       int count = num_tiles;
       PictureLayerTiling::TilingEvictionTileIterator it(
-          picture_layer_tiling_.get(), priorities[priority_count]);
+          picture_layer_tiling_.get(),
+          priorities[priority_count],
+          TilePriority::EVENTUALLY,
+          false);
       while (count--) {
         ASSERT_TRUE(it) << "count: " << count;
         ASSERT_TRUE(*it != NULL) << "count: " << count;

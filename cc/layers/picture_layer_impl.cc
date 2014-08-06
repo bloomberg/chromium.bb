@@ -1550,135 +1550,200 @@ const Tile* PictureLayerImpl::LayerRasterTileIterator::operator*() const {
 }
 
 PictureLayerImpl::LayerEvictionTileIterator::LayerEvictionTileIterator()
-    : iterator_index_(0),
-      iteration_stage_(TilePriority::EVENTUALLY),
-      required_for_activation_(false),
-      layer_(NULL) {}
+    : current_range_offset_(0),
+      current_tiling_range_type_(PictureLayerTilingSet::HIGHER_THAN_HIGH_RES),
+      current_stage_(EVENTUALLY),
+      tree_priority_(SAME_PRIORITY_FOR_BOTH_TREES),
+      layer_(NULL) {
+}
 
 PictureLayerImpl::LayerEvictionTileIterator::LayerEvictionTileIterator(
     PictureLayerImpl* layer,
     TreePriority tree_priority)
-    : iterator_index_(0),
-      iteration_stage_(TilePriority::EVENTUALLY),
-      required_for_activation_(false),
+    : current_range_offset_(0),
+      current_tiling_range_type_(PictureLayerTilingSet::HIGHER_THAN_HIGH_RES),
+      current_stage_(EVENTUALLY),
+      tree_priority_(tree_priority),
       layer_(layer) {
-  // Early out if the layer has no tilings.
+  // Early out if the tilings_ object doesn't exist.
   // TODO(vmpstr): Once tile priorities are determined by the iterators, ensure
   // that layers that don't have valid tile priorities have lowest priorities so
   // they evict their tiles first (crbug.com/381704)
-  if (!layer_->tilings_ || !layer_->tilings_->num_tilings())
+  if (!layer_->tilings_)
     return;
 
-  size_t high_res_tiling_index = layer_->tilings_->num_tilings();
-  size_t low_res_tiling_index = layer_->tilings_->num_tilings();
-  for (size_t i = 0; i < layer_->tilings_->num_tilings(); ++i) {
-    PictureLayerTiling* tiling = layer_->tilings_->tiling_at(i);
-    if (tiling->resolution() == HIGH_RESOLUTION)
-      high_res_tiling_index = i;
-    else if (tiling->resolution() == LOW_RESOLUTION)
-      low_res_tiling_index = i;
-  }
+  if (!CurrentRange().IsIndexWithinRange(CurrentTilingIndex()))
+    AdvanceRange();
 
-  iterators_.reserve(layer_->tilings_->num_tilings());
+  iterator_ = PictureLayerTiling::TilingEvictionTileIterator(
+      layer_->tilings_->tiling_at(CurrentTilingIndex()),
+      tree_priority,
+      PriorityBinFromIterationStage(current_stage_),
+      RequiredForActivationFromIterationStage(current_stage_));
 
-  // Higher resolution non-ideal goes first.
-  for (size_t i = 0; i < high_res_tiling_index; ++i) {
-    iterators_.push_back(PictureLayerTiling::TilingEvictionTileIterator(
-        layer_->tilings_->tiling_at(i), tree_priority));
-  }
-
-  // Lower resolution non-ideal goes next.
-  for (size_t i = layer_->tilings_->num_tilings() - 1;
-       i > high_res_tiling_index;
-       --i) {
-    PictureLayerTiling* tiling = layer_->tilings_->tiling_at(i);
-    if (tiling->resolution() == LOW_RESOLUTION)
-      continue;
-
-    iterators_.push_back(
-        PictureLayerTiling::TilingEvictionTileIterator(tiling, tree_priority));
-  }
-
-  // Now, put the low res tiling if we have one.
-  if (low_res_tiling_index < layer_->tilings_->num_tilings()) {
-    iterators_.push_back(PictureLayerTiling::TilingEvictionTileIterator(
-        layer_->tilings_->tiling_at(low_res_tiling_index), tree_priority));
-  }
-
-  // Finally, put the high res tiling if we have one.
-  if (high_res_tiling_index < layer_->tilings_->num_tilings()) {
-    iterators_.push_back(PictureLayerTiling::TilingEvictionTileIterator(
-        layer_->tilings_->tiling_at(high_res_tiling_index), tree_priority));
-  }
-
-  DCHECK_GT(iterators_.size(), 0u);
-
-  if (!iterators_[iterator_index_] ||
-      !IsCorrectType(&iterators_[iterator_index_])) {
+  if (!iterator_)
     AdvanceToNextIterator();
-  }
 }
 
-PictureLayerImpl::LayerEvictionTileIterator::~LayerEvictionTileIterator() {}
+PictureLayerImpl::LayerEvictionTileIterator::~LayerEvictionTileIterator() {
+}
 
 Tile* PictureLayerImpl::LayerEvictionTileIterator::operator*() {
   DCHECK(*this);
-  return *iterators_[iterator_index_];
+  return *iterator_;
 }
 
 const Tile* PictureLayerImpl::LayerEvictionTileIterator::operator*() const {
   DCHECK(*this);
-  return *iterators_[iterator_index_];
+  return *iterator_;
 }
 
 PictureLayerImpl::LayerEvictionTileIterator&
 PictureLayerImpl::LayerEvictionTileIterator::
 operator++() {
   DCHECK(*this);
-  ++iterators_[iterator_index_];
-  if (!iterators_[iterator_index_] ||
-      !IsCorrectType(&iterators_[iterator_index_])) {
+  ++iterator_;
+
+  if (!iterator_)
     AdvanceToNextIterator();
-  }
   return *this;
 }
 
 void PictureLayerImpl::LayerEvictionTileIterator::AdvanceToNextIterator() {
-  ++iterator_index_;
-
-  while (true) {
-    while (iterator_index_ < iterators_.size()) {
-      if (iterators_[iterator_index_] &&
-          IsCorrectType(&iterators_[iterator_index_])) {
-        return;
-      }
-      ++iterator_index_;
-    }
-
-    // If we're NOW and required_for_activation, then this was the last pass
-    // through the iterators.
-    if (iteration_stage_ == TilePriority::NOW && required_for_activation_)
+  DCHECK(!iterator_);
+  while (!iterator_) {
+    bool success = AdvanceTiling();
+    if (!success)
+      success = AdvanceRange();
+    if (!success)
+      success = AdvanceStage();
+    if (!success)
       break;
 
-    if (!required_for_activation_) {
-      required_for_activation_ = true;
-    } else {
-      required_for_activation_ = false;
-      iteration_stage_ =
-          static_cast<TilePriority::PriorityBin>(iteration_stage_ - 1);
-    }
-    iterator_index_ = 0;
+    iterator_ = PictureLayerTiling::TilingEvictionTileIterator(
+        layer_->tilings_->tiling_at(CurrentTilingIndex()),
+        tree_priority_,
+        PriorityBinFromIterationStage(current_stage_),
+        RequiredForActivationFromIterationStage(current_stage_));
   }
 }
 
-PictureLayerImpl::LayerEvictionTileIterator::operator bool() const {
-  return iterator_index_ < iterators_.size();
+bool PictureLayerImpl::LayerEvictionTileIterator::AdvanceTiling() {
+  DCHECK(CurrentRange().IsIndexWithinRange(CurrentTilingIndex()));
+  ++current_range_offset_;
+  return CurrentRange().IsIndexWithinRange(CurrentTilingIndex());
 }
 
-bool PictureLayerImpl::LayerEvictionTileIterator::IsCorrectType(
-    PictureLayerTiling::TilingEvictionTileIterator* it) const {
-  return it->get_type() == iteration_stage_ &&
-         (**it)->required_for_activation() == required_for_activation_;
+bool PictureLayerImpl::LayerEvictionTileIterator::AdvanceRange() {
+  DCHECK(!CurrentRange().IsIndexWithinRange(CurrentTilingIndex()));
+  bool wrapped_around = false;
+  while (!CurrentRange().IsIndexWithinRange(CurrentTilingIndex())) {
+    switch (current_tiling_range_type_) {
+      case PictureLayerTilingSet::HIGHER_THAN_HIGH_RES:
+        current_tiling_range_type_ = PictureLayerTilingSet::LOWER_THAN_LOW_RES;
+        break;
+      case PictureLayerTilingSet::LOWER_THAN_LOW_RES:
+        current_tiling_range_type_ =
+            PictureLayerTilingSet::BETWEEN_HIGH_AND_LOW_RES;
+        break;
+      case PictureLayerTilingSet::BETWEEN_HIGH_AND_LOW_RES:
+        current_tiling_range_type_ = PictureLayerTilingSet::LOW_RES;
+        break;
+      case PictureLayerTilingSet::LOW_RES:
+        current_tiling_range_type_ = PictureLayerTilingSet::HIGH_RES;
+        break;
+      case PictureLayerTilingSet::HIGH_RES:
+        current_tiling_range_type_ =
+            PictureLayerTilingSet::HIGHER_THAN_HIGH_RES;
+        wrapped_around = true;
+        break;
+    }
+    current_range_offset_ = 0;
+  }
+  // If we wrapped around the ranges, we need to indicate that we should advance
+  // the stage.
+  return !wrapped_around;
+}
+
+TilePriority::PriorityBin
+PictureLayerImpl::LayerEvictionTileIterator::PriorityBinFromIterationStage(
+    IterationStage stage) {
+  switch (stage) {
+    case EVENTUALLY:
+    case EVENTUALLY_AND_REQUIRED_FOR_ACTIVATION:
+      return TilePriority::EVENTUALLY;
+    case SOON:
+    case SOON_AND_REQUIRED_FOR_ACTIVATION:
+      return TilePriority::SOON;
+    case NOW:
+    case NOW_AND_REQUIRED_FOR_ACTIVATION:
+      return TilePriority::NOW;
+  }
+  NOTREACHED();
+  return TilePriority::EVENTUALLY;
+}
+
+bool PictureLayerImpl::LayerEvictionTileIterator::
+    RequiredForActivationFromIterationStage(IterationStage stage) {
+  switch (stage) {
+    case EVENTUALLY:
+    case SOON:
+    case NOW:
+      return false;
+    case EVENTUALLY_AND_REQUIRED_FOR_ACTIVATION:
+    case SOON_AND_REQUIRED_FOR_ACTIVATION:
+    case NOW_AND_REQUIRED_FOR_ACTIVATION:
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+PictureLayerTilingSet::TilingRange
+PictureLayerImpl::LayerEvictionTileIterator::CurrentRange() {
+  return layer_->tilings_->GetTilingRange(current_tiling_range_type_);
+}
+
+int PictureLayerImpl::LayerEvictionTileIterator::CurrentTilingIndex() {
+  const PictureLayerTilingSet::TilingRange& range = CurrentRange();
+  switch (current_tiling_range_type_) {
+    case PictureLayerTilingSet::HIGHER_THAN_HIGH_RES:
+    case PictureLayerTilingSet::LOW_RES:
+    case PictureLayerTilingSet::HIGH_RES:
+      return range.start + current_range_offset_;
+    case PictureLayerTilingSet::BETWEEN_HIGH_AND_LOW_RES:
+    case PictureLayerTilingSet::LOWER_THAN_LOW_RES:
+      return static_cast<int>(range.end) - 1 - current_range_offset_;
+  }
+  NOTREACHED();
+  return 0;
+}
+
+bool PictureLayerImpl::LayerEvictionTileIterator::AdvanceStage() {
+  switch (current_stage_) {
+    case EVENTUALLY:
+      current_stage_ = EVENTUALLY_AND_REQUIRED_FOR_ACTIVATION;
+      break;
+    case EVENTUALLY_AND_REQUIRED_FOR_ACTIVATION:
+      current_stage_ = SOON;
+      break;
+    case SOON:
+      current_stage_ = SOON_AND_REQUIRED_FOR_ACTIVATION;
+      break;
+    case SOON_AND_REQUIRED_FOR_ACTIVATION:
+      current_stage_ = NOW;
+      break;
+    case NOW:
+      current_stage_ = NOW_AND_REQUIRED_FOR_ACTIVATION;
+      break;
+    case NOW_AND_REQUIRED_FOR_ACTIVATION:
+      return false;
+  }
+  return true;
+}
+
+PictureLayerImpl::LayerEvictionTileIterator::operator bool() const {
+  return !!iterator_;
 }
 
 }  // namespace cc
