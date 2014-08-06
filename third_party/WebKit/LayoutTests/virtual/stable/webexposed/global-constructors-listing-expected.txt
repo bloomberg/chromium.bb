@@ -203,6 +203,7 @@ Int32Array
 Int8Array
 KeyboardEvent
 Location
+Map
 MediaElementAudioSourceNode
 MediaError
 MediaKeyError
@@ -401,6 +402,7 @@ SVGZoomEvent
 Screen
 ScriptProcessorNode
 Selection
+Set
 ShadowRoot
 SharedWorker
 SpeechSynthesisEvent

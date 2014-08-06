@@ -37,6 +37,7 @@ Starting worker: resources/global-context-constructors-listing.js
 [Worker] Int16Array
 [Worker] Int32Array
 [Worker] Int8Array
+[Worker] Map
 [Worker] MessageChannel
 [Worker] MessageEvent
 [Worker] Number
@@ -45,6 +46,7 @@ Starting worker: resources/global-context-constructors-listing.js
 [Worker] RangeError
 [Worker] ReferenceError
 [Worker] RegExp
+[Worker] Set
 [Worker] SharedWorkerGlobalScope
 [Worker] String
 [Worker] Symbol

@@ -221,6 +221,7 @@ KeyboardEvent
 Location
 MIDIConnectionEvent
 MIDIMessageEvent
+Map
 MediaController
 MediaElementAudioSourceNode
 MediaError
@@ -433,6 +434,7 @@ Selection
 ServiceWorker
 ServiceWorkerContainer
 ServiceWorkerRegistration
+Set
 ShadowRoot
 SharedWorker
 SpeechSynthesisEvent
