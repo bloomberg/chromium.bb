@@ -145,7 +145,8 @@ class PolymerSampler(PolymerPage):
         'paper-checkbox',
         'paper-fab',
         'paper-icon-button',
-        'paper-radio-button',
+        # crbug.com/394756
+        # 'paper-radio-button',
         'paper-tab',
         'paper-toggle-button',
         'x-shadow',
@@ -161,7 +162,7 @@ class PolymerSampler(PolymerPage):
     # currently active as they typically don't produce animation frames.
     element_list_query = (self.iframe_js +
         ('.contentDocument.querySelectorAll("body %s:not([disabled]):'
-         'not([active]):not([checked])")' % widget_type))
+         'not([active])")' % widget_type))
     roles_count_query = element_list_query + '.length'
     for i in range(action_runner.EvaluateJavaScript(roles_count_query)):
       element_query = element_list_query + ("[%d]" % i)
@@ -205,7 +206,8 @@ class PolymerPageSet(page_set_module.PageSet):
         'paper-checkbox',
         'paper-fab',
         'paper-icon-button',
-        'paper-radio-button',
+        # crbug.com/394756
+        # 'paper-radio-button',
         'paper-shadow',
         'paper-tabs',
         'paper-toggle-button',
