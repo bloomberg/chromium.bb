@@ -439,8 +439,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
         setVisibilityState(m_client->visibilityState(), true);
     }
 
-    m_inspectorSettingsMap = adoptPtr(new SettingsMap);
-
     initializeLayerTreeView();
 }
 
@@ -3489,30 +3487,6 @@ void WebViewImpl::inspectElementAt(const WebPoint& point)
             node = m_page->deprecatedLocalMainFrame()->document()->documentElement();
         m_page->inspectorController().inspect(node);
     }
-}
-
-WebString WebViewImpl::inspectorSettings() const
-{
-    return m_inspectorSettings;
-}
-
-void WebViewImpl::setInspectorSettings(const WebString& settings)
-{
-    m_inspectorSettings = settings;
-}
-
-bool WebViewImpl::inspectorSetting(const WebString& key, WebString* value) const
-{
-    if (!m_inspectorSettingsMap->contains(key))
-        return false;
-    *value = m_inspectorSettingsMap->get(key);
-    return true;
-}
-
-void WebViewImpl::setInspectorSetting(const WebString& key,
-                                      const WebString& value)
-{
-    m_inspectorSettingsMap->set(key, value);
 }
 
 void WebViewImpl::setCompositorDeviceScaleFactorOverride(float deviceScaleFactor)

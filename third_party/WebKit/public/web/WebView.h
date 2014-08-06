@@ -371,13 +371,11 @@ public:
     // point.
     virtual void inspectElementAt(const WebPoint&) = 0;
 
-    // Settings used by the inspector.
-    virtual WebString inspectorSettings() const = 0;
-    virtual void setInspectorSettings(const WebString&) = 0;
-    virtual bool inspectorSetting(const WebString& key,
-                                  WebString* value) const = 0;
-    virtual void setInspectorSetting(const WebString& key,
-                                     const WebString& value) = 0;
+    // FIXME: These are deprecated. Remove them.
+    virtual WebString inspectorSettingsDeprecated() const { return WebString(); };
+    virtual void setInspectorSettings(const WebString&) { };
+    virtual bool inspectorSettingDeprecated(const WebString& key, WebString* value) const { return false; };
+    virtual void setInspectorSetting(const WebString& key, const WebString& value) { };
 
     // Set an override of device scale factor passed from WebView to
     // compositor. Pass zero to cancel override. This is used to implement
