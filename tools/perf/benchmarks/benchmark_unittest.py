@@ -40,6 +40,7 @@ def SmokeTestGenerator(benchmark):
     # Set the benchmark's default arguments.
     options = options_for_unittests.GetCopy()
     options.output_format = 'none'
+    options.suppress_gtest_report = True
     parser = options.CreateParser()
 
     benchmark.AddCommandLineArgs(parser)
