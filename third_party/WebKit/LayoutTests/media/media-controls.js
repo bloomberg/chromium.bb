@@ -1,9 +1,7 @@
 var captionsButtonElement;
 var captionsButtonCoordinates;
 
-// These reflect the values used to fade in/out the media controls. Should
-// mirror the values 'fadeInDuration'/'fadeOutDuration' in MediaControlElements.cpp.
-const controlsFadeInDurationMs = 100;
+// As specified in mediaControls.css, this is how long it takes to fade out controls
 const controlsFadeOutDurationMs = 300;
 
 // The timeout for the hide-after-no-mouse-movement behavior. Defined (and

@@ -18,16 +18,15 @@ video.addEventListener("playing", function()
         controls = mediaControlsButton(video, "panel");
 
         testExpected("getComputedStyle(controls).opacity", 0);
-
         video.focus();
 
-        setTimeout(function()
-        {
-            testExpected("getComputedStyle(controls).opacity", 1);
+        testExpected("getComputedStyle(controls).opacity", 1);
 
-            consoleWrite("");
-            endTest();
-        }, controlsFadeInDurationMs);
+        // We fade out when focus is lost, so the opacity is still 1
+        video.blur();
+        testExpected("getComputedStyle(controls).opacity", 1);
+
+        endTest();
     }, video);
 });
 </script>

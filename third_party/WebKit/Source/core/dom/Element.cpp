@@ -3157,14 +3157,6 @@ bool Element::setInlineStyleProperty(CSSPropertyID propertyID, CSSValueID identi
     return true;
 }
 
-bool Element::setInlineStyleProperty(CSSPropertyID propertyID, CSSPropertyID identifier, bool important)
-{
-    ASSERT(isStyledElement());
-    ensureMutableInlineStyle().setProperty(propertyID, cssValuePool().createIdentifierValue(identifier), important);
-    inlineStyleChanged();
-    return true;
-}
-
 bool Element::setInlineStyleProperty(CSSPropertyID propertyID, double value, CSSPrimitiveValue::UnitType unit, bool important)
 {
     ASSERT(isStyledElement());

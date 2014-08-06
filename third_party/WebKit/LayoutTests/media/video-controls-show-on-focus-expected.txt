@@ -2,6 +2,6 @@ Test that video controls re-appear when the media (<video>) element is focused.
 
 EXPECTED (getComputedStyle(controls).opacity == '0') OK
 EXPECTED (getComputedStyle(controls).opacity == '1') OK
-
+EXPECTED (getComputedStyle(controls).opacity == '1') OK
 END OF TEST
 

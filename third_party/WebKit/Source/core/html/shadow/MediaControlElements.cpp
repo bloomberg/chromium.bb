@@ -54,9 +54,7 @@ using namespace HTMLNames;
 static const AtomicString& getMediaControlCurrentTimeDisplayElementShadowPseudoId();
 static const AtomicString& getMediaControlTimeRemainingDisplayElementShadowPseudoId();
 
-// If you change any of the following fade durations, then also update the
-// corresponding values in LayoutTests/media/media-controls.js.
-static const double fadeInDuration = 0.1;
+// This is the duration from mediaControls.css
 static const double fadeOutDuration = 0.3;
 
 static bool isUserInteractionEvent(Event* event)
@@ -146,10 +144,7 @@ void MediaControlPanelElement::makeOpaque()
     if (m_opaque)
         return;
 
-    setInlineStyleProperty(CSSPropertyTransitionProperty, CSSPropertyOpacity);
-    setInlineStyleProperty(CSSPropertyTransitionDuration, fadeInDuration, CSSPrimitiveValue::CSS_S);
     setInlineStyleProperty(CSSPropertyOpacity, 1.0, CSSPrimitiveValue::CSS_NUMBER);
-
     m_opaque = true;
 
     if (m_isDisplayed)
@@ -161,8 +156,6 @@ void MediaControlPanelElement::makeTransparent()
     if (!m_opaque)
         return;
 
-    setInlineStyleProperty(CSSPropertyTransitionProperty, CSSPropertyOpacity);
-    setInlineStyleProperty(CSSPropertyTransitionDuration, fadeOutDuration, CSSPrimitiveValue::CSS_S);
     setInlineStyleProperty(CSSPropertyOpacity, 0.0, CSSPrimitiveValue::CSS_NUMBER);
 
     m_opaque = false;
