@@ -457,7 +457,6 @@ crbug.com/393157 [ Mac ] virtual/threaded/printing/print-document-without-docume
 # Switching to content shell failures
 crbug.com/231866 [ Lion ] fast/backgrounds/animated-gif-as-background.html [ Pass ImageOnlyFailure ]
 crbug.com/243599 [ Debug ] http/tests/plugins/interrupted-get-url.html [ Crash Pass ]
-crbug.com/243782 fullscreen/full-screen-remove-ancestor.html [ Pass Timeout ]
 crbug.com/246077 fullscreen/full-screen-render-inline.html [ ImageOnlyFailure ]
 crbug.com/246077 [ Linux ] virtual/android/fullscreen/full-screen-render-inline.html [ ImageOnlyFailure ]
 crbug.com/318210 svg/text/text-style-recalc-crash.html [ Pass Timeout ]
@@ -585,10 +584,6 @@ crbug.com/363280 [ Debug ] inspector-protocol/debugger/debugger-terminate-dedica
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 
 crbug.com/305345 fast/events/mouseover-mouseout.html [ Failure Pass ]
-
-# Android virtual suite shares the same expectation.
-crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed.html [ Failure Pass ]
-crbug.com/243782 virtual/android/fullscreen/full-screen-remove-ancestor.html [ Pass Timeout ]
 
 # On Linux RSA support in WebCrypto requires a very recent version of NSS (which fixes some bugs).
 crbug.com/382732 [ Linux ] crypto/rsa-oaep-generate-non-extractable-key.html [ Failure Pass ]
