@@ -61,6 +61,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
 
 namespace {
@@ -645,9 +646,13 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     backgroundColor:(NSColor*)backgroundColor {
   if ((self = [super initWithFrame:frameRect])) {
     backgroundColor_.reset([backgroundColor retain]);
-    hoverColor_.reset([gfx::SkColorToCalibratedNSColor(
-        ui::NativeTheme::instance()->GetSystemColor(
-            ui::NativeTheme::kColorId_ButtonHoverBackgroundColor)) retain]);
+    // Use a color from the common theme, since this button is not trying to
+    // look like a native control.
+    SkColor hoverColor;
+    bool found = ui::CommonThemeGetSystemColor(
+        ui::NativeTheme::kColorId_ButtonHoverBackgroundColor, &hoverColor);
+    DCHECK(found);
+    hoverColor_.reset([gfx::SkColorToSRGBNSColor(hoverColor) retain]);
 
     [self setBordered:NO];
     [self setFont:[NSFont labelFontOfSize:kTextFontSize]];
