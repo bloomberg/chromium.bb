@@ -119,8 +119,6 @@ public:
 
     void setLayerType(LayerType layerType) { m_layerType = layerType; }
 
-    bool cannotBlitToWindow() const;
-
     bool isTransparent() const { return renderer()->isTransparent() || renderer()->hasMask(); }
     RenderLayer* transparentPaintingAncestor();
     void beginTransparencyLayers(GraphicsContext*, const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, PaintBehavior);

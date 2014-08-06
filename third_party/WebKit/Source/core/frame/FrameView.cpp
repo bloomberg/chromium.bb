@@ -179,7 +179,6 @@ FrameView::~FrameView()
 
 void FrameView::reset()
 {
-    m_cannotBlitToWindow = false;
     m_isOverlapped = false;
     m_contentIsOpaque = false;
     m_hasPendingLayout = false;
@@ -1144,9 +1143,6 @@ bool FrameView::useSlowRepaints(bool considerOverlap) const
     if (m_isOverlapped && considerOverlap)
         return true;
 
-    if (m_cannotBlitToWindow)
-        return true;
-
     if (!m_contentIsOpaque)
         return true;
 
@@ -1176,11 +1172,6 @@ bool FrameView::contentsInCompositedLayer() const
     }
 
     return false;
-}
-
-void FrameView::setCannotBlitToWindow()
-{
-    m_cannotBlitToWindow = true;
 }
 
 void FrameView::addSlowRepaintObject()

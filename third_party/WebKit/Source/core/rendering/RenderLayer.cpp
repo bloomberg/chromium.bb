@@ -1110,15 +1110,6 @@ bool RenderLayer::hasAncestorWithFilterOutsets() const
     return false;
 }
 
-bool RenderLayer::cannotBlitToWindow() const
-{
-    if (isTransparent() || m_reflectionInfo || hasTransform())
-        return true;
-    if (!parent())
-        return false;
-    return parent()->cannotBlitToWindow();
-}
-
 RenderLayer* RenderLayer::transparentPaintingAncestor()
 {
     if (hasCompositedLayerMapping())

@@ -391,25 +391,6 @@ bool RenderView::rootFillsViewportBackground(RenderBox* rootBox) const
 
 void RenderView::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint&)
 {
-    // Check to see if we are enclosed by a layer that requires complex painting rules.  If so, we cannot blit
-    // when scrolling, and we need to use slow repaints.  Examples of layers that require this are transparent layers,
-    // layers with reflections, or transformed layers.
-    // FIXME: This needs to be dynamic.  We should be able to go back to blitting if we ever stop being inside
-    // a transform, transparency layer, etc.
-    Element* elt;
-    for (elt = document().ownerElement(); view() && elt && elt->renderer(); elt = elt->document().ownerElement()) {
-        RenderLayer* layer = elt->renderer()->enclosingLayer();
-        if (layer->cannotBlitToWindow()) {
-            frameView()->setCannotBlitToWindow();
-            break;
-        }
-
-        if (layer->enclosingLayerForPaintInvalidation()) {
-            frameView()->setCannotBlitToWindow();
-            break;
-        }
-    }
-
     if (document().ownerElement() || !view())
         return;
 
@@ -429,9 +410,7 @@ void RenderView::paintBoxDecorationBackground(PaintInfo& paintInfo, const Layout
     // if there is a transform on the <html>, or if there is a page scale factor less than 1.
     // Only fill with the base background color (typically white) if we're the root document,
     // since iframes/frames with no background in the child document should show the parent's background.
-    if (frameView()->isTransparent()) // FIXME: This needs to be dynamic.  We should be able to go back to blitting if we ever stop being transparent.
-        frameView()->setCannotBlitToWindow(); // The parent must show behind the child.
-    else {
+    if (!frameView()->isTransparent()) {
         Color baseColor = frameView()->baseBackgroundColor();
         if (baseColor.alpha()) {
             CompositeOperator previousOperator = paintInfo.context->compositeOperation();

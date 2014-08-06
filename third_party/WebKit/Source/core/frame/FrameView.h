@@ -164,7 +164,6 @@ public:
     void setMediaType(const AtomicString&);
     void adjustMediaTypeForPrinting(bool printing);
 
-    void setCannotBlitToWindow();
     void setIsOverlapped(bool);
     bool isOverlapped() const { return m_isOverlapped; }
     void setContentIsOpaque(bool);
@@ -430,7 +429,6 @@ private:
     bool m_doFullPaintInvalidation;
 
     bool m_canHaveScrollbars;
-    bool m_cannotBlitToWindow;
     bool m_isOverlapped;
     bool m_contentIsOpaque;
     unsigned m_slowRepaintObjectCount;
