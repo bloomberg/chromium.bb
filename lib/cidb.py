@@ -353,8 +353,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
   @minimum_schema(2)
   def InsertBuild(self, builder_name, waterfall, build_number,
-                  build_type, build_config, bot_hostname,
-                  start_time=None,
+                  build_config, bot_hostname, start_time=None,
                   master_build_id=None):
     """Insert a build row.
 
@@ -362,7 +361,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       builder_name: buildbot builder name.
       waterfall: buildbot waterfall name.
       build_number: buildbot build number.
-      build_type: One of 'paladin' or 'pre-cq'
       build_config: cbuildbot config of build
       bot_hostname: hostname of bot running the build
       start_time: (Optional) Unix timestamp of build start time. If None,
@@ -377,7 +375,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                                          constants.BUILDBOT_GENERATION,
                                        'waterfall': waterfall,
                                        'build_number': build_number,
-                                       'build_type' : build_type,
                                        'build_config' : build_config,
                                        'bot_hostname': bot_hostname,
                                        'start_time' : dt,
@@ -488,6 +485,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                          'full_version': versions.get('full'),
                          'sdk_version': d.get('sdk-versions'),
                          'toolchain_url': d.get('toolchain-url'),
+                         'build_type': d.get('build_type'),
                          'metadata_json': metadata.GetJSON()})
 
   @minimum_schema(2)

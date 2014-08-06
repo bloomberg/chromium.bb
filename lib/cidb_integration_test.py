@@ -166,6 +166,14 @@ class DataSeries0Test(CIDBIntegrationTest):
     self.assertEqual(max_fin_time, datetime.datetime(2014, 7, 7, 14, 51, 38))
     self.assertEqual(min_fin_time, datetime.datetime(2014, 7, 4, 16, 33, 10))
 
+    build_types = readonly_db._GetEngine().execute(
+        'select build_type from buildTable').fetchall()
+    self.assertTrue(all(x == ('paladin',) for x in build_types))
+
+    build_config_count = readonly_db._GetEngine().execute(
+        'select COUNT(distinct build_config) from buildTable').fetchall()[0][0]
+    self.assertEqual(build_config_count, 30)
+
     submitted_cl_count = readonly_db._GetEngine().execute(
         'select count(*) from clActionTable where action="submitted"'
         ).fetchall()[0][0]
@@ -250,15 +258,12 @@ def SimulateCQBuildStart(db, metadata, master_build_id=None):
   # build was on.
   waterfall = 'chromeos'
 
-  build_type = 'paladin'
-
   start_time = cros_build_lib.ParseUserDateTimeFormat(
       metadata_dict['time']['start'])
 
   build_id = db.InsertBuild(metadata_dict['builder-name'],
                             waterfall,
                             metadata_dict['build-number'],
-                            build_type,
                             metadata_dict['bot-config'],
                             metadata_dict['bot-hostname'],
                             start_time,

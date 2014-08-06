@@ -6,7 +6,6 @@ CREATE TABLE buildTable (
   waterfall ENUM('chromeos', 'chromiumos', 'chromiumos.tryserver') NOT NULL,
   build_number INT NOT NULL,
   build_config VARCHAR(80) NOT NULL,
-  build_type ENUM('paladin', 'pre-cq') NOT NULL,
   bot_hostname VARCHAR(80) NOT NULL,
   -- Specifying a DEFAULT value without an ON UPDATE clause allows
   -- UPDATE queries to other columns that do not automatically update
@@ -18,6 +17,7 @@ CREATE TABLE buildTable (
   status ENUM('fail', 'pass', 'inflight', 'missing', 'aborted')
     DEFAULT 'inflight' NOT NULL,
   status_pickle BLOB,
+  build_type VARCHAR(80),
   chrome_version VARCHAR(80),
   firmware_version VARCHAR(80),
   milestone_version VARCHAR(80),

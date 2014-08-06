@@ -102,6 +102,7 @@ class ReportBuildStartStage(generic_stages.BuilderStage,
         'time': {
             'start': start_time_stamp,
         },
+        'build_type': config['build_type'],
 
         # Data for the toolchain used.
         'sdk-version': sdk_verinfo.get('SDK_LATEST_VERSION', '<unknown>'),
