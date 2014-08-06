@@ -33,6 +33,10 @@ SharedRendererState::~SharedRendererState() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
 }
 
+bool SharedRendererState::CurrentlyOnUIThread() {
+  return ui_loop_->BelongsToCurrentThread();
+}
+
 void SharedRendererState::ClientRequestDrawGL() {
   if (ui_loop_->BelongsToCurrentThread()) {
     ClientRequestDrawGLOnUIThread();

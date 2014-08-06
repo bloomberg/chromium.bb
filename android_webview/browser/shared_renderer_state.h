@@ -45,6 +45,7 @@ class SharedRendererState {
                       BrowserViewRendererClient* client);
   ~SharedRendererState();
 
+  bool CurrentlyOnUIThread();
   void ClientRequestDrawGL();
 
   void SetDrawGLInput(scoped_ptr<DrawGLInput> input);
