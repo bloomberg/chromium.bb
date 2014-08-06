@@ -40,7 +40,7 @@ enum ServerConfigState {
   SERVER_CONFIG_INVALID = 1,
   SERVER_CONFIG_CORRUPTED = 2,
   SERVER_CONFIG_EXPIRED = 3,
-  SERVER_CONFIG_INVALID_EXPIRY_SECONDS = 4,
+  SERVER_CONFIG_INVALID_EXPIRY = 4,
 
   // NOTE: Add new server config states only immediately above this line. Make
   // sure to update the QuicServerConfigState enum in
@@ -89,13 +89,14 @@ bool QuicCryptoClientConfig::CachedState::IsComplete(QuicWallTime now) const {
 
   uint64 expiry_seconds;
   if (scfg->GetUint64(kEXPY, &expiry_seconds) != QUIC_NO_ERROR) {
-    RecordServerConfigState(SERVER_CONFIG_INVALID_EXPIRY_SECONDS);
+    RecordServerConfigState(SERVER_CONFIG_INVALID_EXPIRY);
     return false;
   }
   if (now.ToUNIXSeconds() >= expiry_seconds) {
-    UMA_HISTOGRAM_TIMES(
-        "Net.QuicClientHelloServerConfig.HowExpired",
-        base::TimeDelta::FromSeconds(now.ToUNIXSeconds() - expiry_seconds));
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Net.QuicClientHelloServerConfig.InvalidDuration",
+        base::TimeDelta::FromSeconds(now.ToUNIXSeconds() - expiry_seconds),
+        base::TimeDelta::FromMinutes(1), base::TimeDelta::FromDays(20), 50);
     RecordServerConfigState(SERVER_CONFIG_EXPIRED);
     return false;
   }

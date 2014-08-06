@@ -15216,9 +15216,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Net.QuicClientHelloServerConfig.HowExpired"
     units="milliseconds">
+  <obsolete>
+    Deprecated 08/2014, and replaced by
+    Net.QuicClientHelloServerConfig.InvalidDuration.
+  </obsolete>
   <owner>rtenneti@chromium.org</owner>
   <summary>
-    How expired server config is for sending InchoateClientHello to the server.
+    How expired server config is for sending inchoate ClientHello to the server.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicClientHelloServerConfig.InvalidDuration"
+    units="milliseconds">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    The time since expiration of server config when we sent inchoate ClientHello
+    to the server.
   </summary>
 </histogram>
 
@@ -15226,7 +15239,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     enum="QuicServerConfigState">
   <owner>rtenneti@chromium.org</owner>
   <summary>
-    The reason (the state of the server config) for sending InchoateClientHello
+    The reason (the state of the server config) for sending inchoate ClientHello
     to the server.
   </summary>
 </histogram>
@@ -46626,7 +46639,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="SERVER_CONFIG_INVALID"/>
   <int value="2" label="SERVER_CONFIG_CORRUPTED"/>
   <int value="3" label="SERVER_CONFIG_EXPIRED"/>
-  <int value="4" label="SERVER_CONFIG_INVALID_EXPIRY_SECONDS"/>
+  <int value="4" label="SERVER_CONFIG_INVALID_EXPIRY"/>
 </enum>
 
 <enum name="QuicSessionErrorCodes" type="int">
