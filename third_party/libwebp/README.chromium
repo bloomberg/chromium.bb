@@ -20,5 +20,8 @@ Local changes:
  * Removed examples/, documentation and build related files, keeping only
    the contents of src/ less mux/ which is unused.
  * Merged COPYING/PATENTS to LICENSE
+ * fcf7687 enc_mips32: workaround gcc-4.9 bug
+   (to be upstreamed if the problem persists in the final ndk r10 release)
 Cherry-picks:
   Revert patch f7fc4bc: dec/webp.c: don't wait for data before reporting w/h
+  0524d9e dsp: detect mips64 & disable mips32 code
