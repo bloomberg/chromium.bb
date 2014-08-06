@@ -72,12 +72,6 @@ Pipeline::~Pipeline() {
       media_log_->CreateEvent(MediaLogEvent::PIPELINE_DESTROYED));
 }
 
-// The base::Unretained(this) in these functions are safe because:
-// 1, No public methods (except for the dtor) should be called after Stop().
-// 2, |this| will not be destructed until the stop callback is fired.
-// 3, Stop() also posts StopTask(), hence all XxxTask() will be executed before
-//    StopTask(), and therefore before the dtor.
-
 void Pipeline::Start(scoped_ptr<FilterCollection> collection,
                      const base::Closure& ended_cb,
                      const PipelineStatusCB& error_cb,
@@ -104,14 +98,14 @@ void Pipeline::Start(scoped_ptr<FilterCollection> collection,
   duration_change_cb_ = duration_change_cb;
 
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Pipeline::StartTask, base::Unretained(this)));
+      FROM_HERE, base::Bind(&Pipeline::StartTask, weak_factory_.GetWeakPtr()));
 }
 
 void Pipeline::Stop(const base::Closure& stop_cb) {
   DVLOG(2) << __FUNCTION__;
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Pipeline::StopTask, base::Unretained(this), stop_cb));
+      base::Bind(&Pipeline::StopTask, weak_factory_.GetWeakPtr(), stop_cb));
 }
 
 void Pipeline::Seek(TimeDelta time, const PipelineStatusCB& seek_cb) {
@@ -123,7 +117,8 @@ void Pipeline::Seek(TimeDelta time, const PipelineStatusCB& seek_cb) {
 
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Pipeline::SeekTask, base::Unretained(this), time, seek_cb));
+      base::Bind(
+          &Pipeline::SeekTask, weak_factory_.GetWeakPtr(), time, seek_cb));
 }
 
 bool Pipeline::IsRunning() const {
@@ -145,7 +140,7 @@ void Pipeline::SetPlaybackRate(float playback_rate) {
   if (running_) {
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(&Pipeline::PlaybackRateChangedTask,
-                                      base::Unretained(this),
+                                      weak_factory_.GetWeakPtr(),
                                       playback_rate));
   }
 }
@@ -165,7 +160,7 @@ void Pipeline::SetVolume(float volume) {
     task_runner_->PostTask(
         FROM_HERE,
         base::Bind(
-            &Pipeline::VolumeChangedTask, base::Unretained(this), volume));
+            &Pipeline::VolumeChangedTask, weak_factory_.GetWeakPtr(), volume));
   }
 }
 
@@ -269,16 +264,10 @@ Pipeline::State Pipeline::GetNextState() const {
   return state_;
 }
 
-// The use of base::Unretained(this) in the following 3 functions is safe
-// because these functions are called by the Demuxer directly, before the stop
-// callback is posted by the Demuxer. So the posted tasks will always be
-// executed before the stop callback is executed, and hence before the Pipeline
-// is destructed.
-
 void Pipeline::OnDemuxerError(PipelineStatus error) {
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(&Pipeline::ErrorChangedTask,
-                                    base::Unretained(this),
+                                    weak_factory_.GetWeakPtr(),
                                     error));
 }
 
@@ -286,7 +275,7 @@ void Pipeline::AddTextStream(DemuxerStream* text_stream,
                              const TextTrackConfig& config) {
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(&Pipeline::AddTextStreamTask,
-                                    base::Unretained(this),
+                                    weak_factory_.GetWeakPtr(),
                                     text_stream,
                                     config));
 }
@@ -294,7 +283,7 @@ void Pipeline::AddTextStream(DemuxerStream* text_stream,
 void Pipeline::RemoveTextStream(DemuxerStream* text_stream) {
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(&Pipeline::RemoveTextStreamTask,
-                                    base::Unretained(this),
+                                    weak_factory_.GetWeakPtr(),
                                     text_stream));
 }
 
@@ -558,6 +547,11 @@ void Pipeline::OnStopCompleted(PipelineStatus status) {
   }
   if (!stop_cb_.is_null()) {
     error_cb_.Reset();
+
+    // Invalid all weak pointers so it's safe to destroy |this| on the render
+    // main thread.
+    weak_factory_.InvalidateWeakPtrs();
+
     base::ResetAndReturn(&stop_cb_).Run();
 
     // NOTE: pipeline may be deleted at this point in time as a result of
