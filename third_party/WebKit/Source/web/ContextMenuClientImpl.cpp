@@ -219,8 +219,10 @@ void ContextMenuClientImpl::showContextMenu(const blink::ContextMenu* defaultMen
         data.editFlags |= WebContextMenuData::CanPaste;
     if (toLocalFrame(m_webView->focusedWebCoreFrame())->editor().canDelete())
         data.editFlags |= WebContextMenuData::CanDelete;
-    // We can always select all...
-    data.editFlags |= WebContextMenuData::CanSelectAll;
+    if (isHTMLTextFormControlElement(r.innerNonSharedNode())) {
+        if (!toHTMLTextFormControlElement(r.innerNonSharedNode())->value().isEmpty())
+            data.editFlags |= WebContextMenuData::CanSelectAll;
+    }
     data.editFlags |= WebContextMenuData::CanTranslate;
 
     // Links, Images, Media tags, and Image/Media-Links take preference over
