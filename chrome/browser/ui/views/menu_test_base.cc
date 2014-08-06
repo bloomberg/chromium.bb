@@ -6,7 +6,6 @@
 #include "chrome/browser/ui/views/menu_test_base.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "ui/aura/window.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -33,7 +32,7 @@ void MenuTestBase::Click(views::View* view, const base::Closure& next) {
 void MenuTestBase::KeyPress(ui::KeyboardCode keycode,
                             const base::Closure& next) {
   ui_controls::SendKeyPressNotifyWhenDone(
-      GetWidget()->GetNativeView()->GetRootWindow(), keycode, false, false,
+      GetWidget()->GetNativeWindow(), keycode, false, false,
       false, false, next);
 }
 
