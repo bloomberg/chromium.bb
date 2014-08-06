@@ -53,7 +53,14 @@ int
 FcWeightFromOpenType (int ot_weight)
 {
 	int i;
-	if (ot_weight <= 0 || ot_weight > 1000)
+
+	/* Follow WPF Font Selection Model's advice. */
+	if (1 <= ot_weight && ot_weight <= 9)
+	    ot_weight *= 100;
+
+	/* WPF Font Selection Model rejects 1000, we allow it
+	 * because Pango uses that number. */
+	if (ot_weight < 1 || ot_weight > 1000)
 	    return -1;
 
 	for (i = 1; ot_weight > map[i].ot; i++)
