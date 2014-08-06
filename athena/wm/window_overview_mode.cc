@@ -14,8 +14,13 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_property.h"
 #include "ui/aura/window_targeter.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/compositor/compositor.h"
+#include "ui/compositor/compositor_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event_handler.h"
+#include "ui/events/gestures/fling_curve.h"
+#include "ui/gfx/frame_time.h"
 #include "ui/gfx/transform.h"
 #include "ui/wm/core/shadow.h"
 
@@ -93,7 +98,8 @@ class StaticWindowTargeter : public aura::WindowTargeter {
 };
 
 class WindowOverviewModeImpl : public WindowOverviewMode,
-                               public ui::EventHandler {
+                               public ui::EventHandler,
+                               public ui::CompositorAnimationObserver {
  public:
   WindowOverviewModeImpl(aura::Window* container,
                          WindowOverviewModeDelegate* delegate)
@@ -113,7 +119,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
 
   virtual ~WindowOverviewModeImpl() {
     container_->set_target_handler(container_->delegate());
-
+    RemoveAnimationObserver();
     const aura::Window::Windows& windows = container_->children();
     for (aura::Window::Windows::const_iterator iter = windows.begin();
          iter != windows.end();
@@ -287,6 +293,24 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
     return container_->bounds().height() * kScrollableFraction;
   }
 
+  void CreateFlingerFor(const ui::GestureEvent& event) {
+    gfx::Vector2dF velocity(event.details().velocity_x(),
+                            event.details().velocity_y());
+    fling_.reset(new ui::FlingCurve(velocity, gfx::FrameTime::Now()));
+  }
+
+  void AddAnimationObserver() {
+    ui::Compositor* compositor = container_->GetHost()->compositor();
+    if (!compositor->HasAnimationObserver(this))
+      compositor->AddAnimationObserver(this);
+  }
+
+  void RemoveAnimationObserver() {
+    ui::Compositor* compositor = container_->GetHost()->compositor();
+    if (compositor->HasAnimationObserver(this))
+      compositor->RemoveAnimationObserver(this);
+  }
+
   // ui::EventHandler:
   virtual void OnMouseEvent(ui::MouseEvent* mouse) OVERRIDE {
     if (mouse->type() == ui::ET_MOUSE_PRESSED) {
@@ -314,12 +338,36 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
       }
     } else if (gesture->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
       DoScroll(gesture->details().scroll_y());
+      gesture->SetHandled();
+    } else if (gesture->type() == ui::ET_SCROLL_FLING_START) {
+      CreateFlingerFor(*gesture);
+      AddAnimationObserver();
+      gesture->SetHandled();
+    } else if (gesture->type() == ui::ET_GESTURE_TAP_DOWN && fling_) {
+      fling_.reset();
+      RemoveAnimationObserver();
+      gesture->SetHandled();
+    }
+  }
+
+  // ui::CompositorAnimationObserver:
+  virtual void OnAnimationStep(base::TimeTicks timestamp) OVERRIDE {
+    CHECK(fling_);
+    if (fling_->start_timestamp() > timestamp)
+      return;
+    gfx::Vector2dF scroll = fling_->GetScrollAmountAtTime(timestamp);
+    if (scroll.IsZero()) {
+      fling_.reset();
+      RemoveAnimationObserver();
+    } else {
+      DoScroll(scroll.y());
     }
   }
 
   aura::Window* container_;
   WindowOverviewModeDelegate* delegate_;
   scoped_ptr<aura::ScopedWindowTargeter> scoped_targeter_;
+  scoped_ptr<ui::FlingCurve> fling_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowOverviewModeImpl);
 };
