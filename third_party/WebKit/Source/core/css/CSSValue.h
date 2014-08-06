@@ -41,27 +41,8 @@ enum CSSTextFormattingFlags { QuoteCSSStringIfNeeded, AlwaysQuoteCSSString };
 // The few subtypes that are actually exposed in CSSOM can be seen in the cloneForCSSOM() function.
 // They should be handled by separate wrapper classes.
 
-// VC++ 2013 doesn't support EBCO (Empty Base Class Optimization), and having
-// multiple empty base classes makes the size of CSSValue bloat (Note that both
-// of GarbageCollectedFinalized and ScriptWrappableBase are empty classes).
-// See the following article for details.
-// http://social.msdn.microsoft.com/forums/vstudio/en-US/504c6598-6076-4acf-96b6-e6acb475d302/vc-multiple-inheritance-empty-base-classes-bloats-object-size
-//
-// As a workaround, we define CSSValueBaseAsEBCO class so that CSSValue derives
-// a single empty base class, which doesn't bloat the size.
-#if COMPILER(MSVC)
-class CSSValueBaseAsEBCO : public RefCountedWillBeGarbageCollectedFinalized<CSSValueBaseAsEBCO>, public ScriptWrappableBase {
-public:
-    void finalizeGarbageCollectedObject();
-    void trace(Visitor*);
-};
-#define CSS_VALUE_BASES public CSSValueBaseAsEBCO
-#else
-#define CSS_VALUE_BASES public RefCountedWillBeGarbageCollectedFinalized<CSSValue>, public ScriptWrappableBase
-#endif
-
 // Please don't expose more CSSValue types to the web.
-class CSSValue : CSS_VALUE_BASES {
+class CSSValue : public RefCountedWillBeGarbageCollectedFinalized<CSSValue>, public ScriptWrappableBase {
 public:
     enum Type {
         CSS_INHERIT = 0,
