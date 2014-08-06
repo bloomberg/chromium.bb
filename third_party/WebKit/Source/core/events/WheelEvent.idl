@@ -37,8 +37,4 @@
     [InitializedByEventConstructor, MeasureAs=WheelEventWheelDeltaX] readonly attribute long wheelDeltaX;
     [InitializedByEventConstructor, MeasureAs=WheelEventWheelDeltaY] readonly attribute long wheelDeltaY;
     [MeasureAs=WheelEventWheelDelta] readonly attribute long wheelDelta;
-
-    // WebKit Extension
-    [MeasureAs=PrefixedWheelEventDirectionInvertedFromDevice]
-    readonly attribute boolean webkitDirectionInvertedFromDevice;
 };

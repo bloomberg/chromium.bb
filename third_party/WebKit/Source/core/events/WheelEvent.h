@@ -83,8 +83,6 @@ public:
     float ticksX() const { return static_cast<float>(m_wheelDelta.x()) / TickMultiplier; }
     float ticksY() const { return static_cast<float>(m_wheelDelta.y()) / TickMultiplier; }
 
-    bool webkitDirectionInvertedFromDevice() const { return false; }
-
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual bool isMouseEvent() const OVERRIDE;
     virtual bool isWheelEvent() const OVERRIDE;
