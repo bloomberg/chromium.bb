@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/android/build_info.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "media/base/android/media_drm_bridge.h"
@@ -74,8 +75,14 @@ TEST(MediaDrmBridgeTest, IsKeySystemSupported_Widevine) {
   EXPECT_TRUE_IF_AVAILABLE(
       IsKeySystemSupportedWithType(kWidevineKeySystem, kVideoMp4));
 
-  EXPECT_FALSE(IsKeySystemSupportedWithType(kWidevineKeySystem, kAudioWebM));
-  EXPECT_FALSE(IsKeySystemSupportedWithType(kWidevineKeySystem, kVideoWebM));
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <= 19) {
+    EXPECT_FALSE(IsKeySystemSupportedWithType(kWidevineKeySystem, kAudioWebM));
+    EXPECT_FALSE(IsKeySystemSupportedWithType(kWidevineKeySystem, kVideoWebM));
+  } else {
+    EXPECT_TRUE(IsKeySystemSupportedWithType(kWidevineKeySystem, kAudioWebM));
+    EXPECT_TRUE(IsKeySystemSupportedWithType(kWidevineKeySystem, kVideoWebM));
+  }
+
   EXPECT_FALSE(IsKeySystemSupportedWithType(kWidevineKeySystem, "unknown"));
   EXPECT_FALSE(IsKeySystemSupportedWithType(kWidevineKeySystem, "video/avi"));
   EXPECT_FALSE(IsKeySystemSupportedWithType(kWidevineKeySystem, "audio/mp3"));
