@@ -10,3 +10,5 @@ EXPORTS
   IsBlacklistInitialized
   SignalChromeElf
   SuccessfullyBlocked
+  GetBlacklistIndex
+  AddDllToBlacklist

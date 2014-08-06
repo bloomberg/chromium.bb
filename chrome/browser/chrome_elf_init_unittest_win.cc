@@ -5,13 +5,17 @@
 #include "chrome/browser/chrome_elf_init_win.h"
 
 #include "base/basictypes.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/path_service.h"
+#include "base/scoped_native_library.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome_elf/blacklist/blacklist.h"
 #include "chrome_elf/chrome_elf_constants.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
@@ -21,6 +25,7 @@
 namespace {
 
 const char kBrowserBlacklistTrialEnabledGroupName[] = "Enabled";
+const wchar_t kTestDllName[] = L"blacklist_test_dll_1.dll";
 
 class ChromeBlacklistTrialTest : public testing::Test {
  protected:
@@ -193,6 +198,35 @@ TEST_F(ChromeBlacklistTrialTest, AddFinchBlacklistToRegistry) {
     std::wstring name = base::UTF8ToWide(it->first);
     ASSERT_TRUE(finch_blacklist_registry_key.HasValue(name.c_str()));
   }
+}
+
+TEST_F(ChromeBlacklistTrialTest, TestBlacklistBypass) {
+  base::FilePath current_dir;
+  ASSERT_TRUE(PathService::Get(base::DIR_EXE, &current_dir));
+
+  // Load test dll.
+  base::ScopedNativeLibrary dll1(current_dir.Append(kTestDllName));
+
+  // No blacklisted dll should be found.
+  std::vector<base::string16> module_names;
+  EXPECT_TRUE(GetLoadedBlacklistedModules(&module_names));
+  EXPECT_TRUE(module_names.empty());
+  // For posterity, print any that are.
+  std::vector<base::string16>::const_iterator module_iter(module_names.begin());
+  for (; module_iter != module_names.end(); ++module_iter) {
+    LOG(ERROR) << "Found blacklisted module: " << *module_iter;
+  }
+
+  // Add test dll to blacklist
+  blacklist::AddDllToBlacklist(kTestDllName);
+
+  // Check that the test dll appears in list.
+  module_names.clear();
+  EXPECT_TRUE(GetLoadedBlacklistedModules(&module_names));
+  ASSERT_EQ(1, module_names.size());
+  EXPECT_STREQ(kTestDllName,
+               StringToLowerASCII(
+                   base::FilePath(module_names[0]).BaseName().value()).c_str());
 }
 
 }  // namespace

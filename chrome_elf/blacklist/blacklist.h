@@ -40,6 +40,10 @@ int BlacklistSize();
 // Returns if true if the blacklist has been initialized.
 extern "C" bool IsBlacklistInitialized();
 
+// Returns the index of the DLL named |dll_name| on the blacklist, or -1 if not
+// found.
+extern "C" int GetBlacklistIndex(const wchar_t* dll_name);
+
 // Adds the given dll name to the blacklist. Returns true if the dll name is in
 // the blacklist when this returns, false on error. Note that this will copy
 // |dll_name| and will leak it on exit if the string is not subsequently removed

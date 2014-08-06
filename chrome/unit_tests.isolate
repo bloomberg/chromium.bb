@@ -101,6 +101,7 @@
     ['OS=="win"', {
       'variables': {
         'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/blacklist_test_dll_1.dll',
           '<(PRODUCT_DIR)/chrome_elf.dll',
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
           '<(PRODUCT_DIR)/libexif.dll',

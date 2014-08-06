@@ -2458,6 +2458,7 @@
           'dependencies': [
             'chrome_version_resources',
             'installer_util_strings',
+            '../chrome_elf/chrome_elf.gyp:blacklist_test_dll_1',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
           ],
