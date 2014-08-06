@@ -125,13 +125,20 @@ void BookmarkBubbleView::WindowClosing() {
 
 bool BookmarkBubbleView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
-  if (accelerator.key_code() == ui::VKEY_RETURN) {
-     if (edit_button_->HasFocus())
-       HandleButtonPressed(edit_button_);
-     else
-       HandleButtonPressed(close_button_);
-     return true;
-  } else if (accelerator.key_code() == ui::VKEY_ESCAPE) {
+  ui::KeyboardCode key_code = accelerator.key_code();
+  if (key_code == ui::VKEY_RETURN) {
+    HandleButtonPressed(close_button_);
+    return true;
+  }
+  if (key_code == ui::VKEY_E && accelerator.IsAltDown()) {
+    HandleButtonPressed(edit_button_);
+    return true;
+  }
+  if (key_code == ui::VKEY_R && accelerator.IsAltDown()) {
+    HandleButtonPressed(remove_button_);
+    return true;
+  }
+  if (key_code == ui::VKEY_ESCAPE) {
     remove_bookmark_ = newly_bookmarked_;
     apply_edits_ = false;
   }
@@ -251,6 +258,8 @@ void BookmarkBubbleView::Init() {
   }
 
   AddAccelerator(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
+  AddAccelerator(ui::Accelerator(ui::VKEY_E, ui::EF_ALT_DOWN));
+  AddAccelerator(ui::Accelerator(ui::VKEY_R, ui::EF_ALT_DOWN));
 }
 
 BookmarkBubbleView::BookmarkBubbleView(
