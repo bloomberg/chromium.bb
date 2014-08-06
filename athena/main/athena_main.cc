@@ -11,7 +11,6 @@
 #include "athena/main/placeholder.h"
 #include "athena/main/url_search_provider.h"
 #include "athena/screen/public/screen_manager.h"
-#include "athena/virtual_keyboard/public/virtual_keyboard_bindings.h"
 #include "athena/virtual_keyboard/public/virtual_keyboard_manager.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -165,7 +164,6 @@ class AthenaRendererMainDelegate
   virtual void OnThreadStarted(content::RenderThread* thread) OVERRIDE {}
 
   virtual void OnViewCreated(content::RenderView* render_view) OVERRIDE {
-    athena::VirtualKeyboardBindings::Create(render_view);
   }
 
   DISALLOW_COPY_AND_ASSIGN(AthenaRendererMainDelegate);

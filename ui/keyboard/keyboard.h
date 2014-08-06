@@ -13,6 +13,7 @@ namespace keyboard {
 // for loading resources used in for the virtual keyboard. This becomes a no-op
 // after the first call.
 KEYBOARD_EXPORT void InitializeKeyboard();
+KEYBOARD_EXPORT void InitializeWebUIBindings();
 
 // Resets the keyboard to an uninitialized state. Required for
 // BrowserWithTestWindowTest tests as they tear down the controller factory

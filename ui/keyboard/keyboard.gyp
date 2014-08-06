@@ -5,11 +5,21 @@
 {
   'variables': {
     'chromium_code': 1,
+    'keyboard_mojom_gen_js': '<(SHARED_INTERMEDIATE_DIR)/ui/keyboard/webui/keyboard.mojom.js',
   },
   'targets': [
     {
+      'target_name': 'keyboard_mojom_bindings',
+      'type': 'none',
+      'sources': [
+        'webui/keyboard.mojom',
+      ],
+      'includes': [ '../../mojo/public/tools/bindings/mojom_bindings_generator.gypi' ],
+    },
+    {
       # GN version: //ui/keyboard:resources
       'target_name': 'keyboard_resources',
+      'dependencies': [ 'keyboard_mojom_bindings', ],
       'type': 'none',
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ui/keyboard',
@@ -19,6 +29,9 @@
           'action_name': 'keyboard_resources',
           'variables': {
             'grit_grd_file': 'keyboard_resources.grd',
+            'grit_additional_defines': [
+              '-E', 'keyboard_mojom_gen_js=<(keyboard_mojom_gen_js)',
+            ],
           },
           'includes': [ '../../build/grit_action.gypi' ],
         },
@@ -41,7 +54,12 @@
         '../../base/base.gyp:base',
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../content/content.gyp:content_browser',
+        '../../content/content_resources.gyp:content_resources',
         '../../ipc/ipc.gyp:ipc',
+        '../../mojo/mojo_base.gyp:mojo_cpp_bindings',
+        '../../mojo/mojo_base.gyp:mojo_environment_chromium',
+        '../../mojo/mojo_base.gyp:mojo_js_bindings',
+        '../../mojo/mojo_base.gyp:mojo_system_impl',
         '../../skia/skia.gyp:skia',
         '../../url/url.gyp:url_lib',
         '../aura/aura.gyp:aura',
@@ -51,6 +69,7 @@
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
         '../wm/wm.gyp:wm',
+        'keyboard_mojom_bindings',
         'keyboard_resources',
       ],
       'defines': [
@@ -73,6 +92,11 @@
         'keyboard_switches.h',
         'keyboard_util.cc',
         'keyboard_util.h',
+        'webui/vk_mojo_handler.cc',
+        'webui/vk_mojo_handler.h',
+        'webui/vk_webui_controller.cc',
+        'webui/vk_webui_controller.h',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/keyboard/webui/keyboard.mojom.cc',
       ]
     },
     {

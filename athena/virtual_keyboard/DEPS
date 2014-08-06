@@ -1,9 +1,6 @@
 include_rules = [
   "+athena/screen",
   "+content/public",
-  "+gin",
-  "+grit",
   "+ui/aura",
   "+ui/keyboard",
-  "+third_party/WebKit",
 ]

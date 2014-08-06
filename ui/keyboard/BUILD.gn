@@ -52,6 +52,16 @@ grit("resources_grit") {
     "keyboard_resources.pak",
     "keyboard_resources.rc",
   ]
+
+  keyboard_mojom_gen_js = "$root_gen_dir/ui/keyboard/webui/keyboard.mojom.js"
+  grit_flags = [
+    "-E", "keyboard_mojom_gen_js=" +
+          rebase_path(keyboard_mojom_gen_js, root_build_dir),
+  ]
+
+  deps = [
+    "webui:mojo_bindings"
+  ]
 }
 
 copy("resources") {

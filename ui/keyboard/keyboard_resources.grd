@@ -41,6 +41,8 @@
       <include name="IDR_KEYBOARD_IMAGES_VOLUME_DOWN" file="resources/images/volume-down.svg" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_VOLUME_UP" file="resources/images/volume-up.svg" type="BINDATA" />
       <include name="IDR_KEYBOARD_INDEX" file="resources/index.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_KEYBOARD_MOJO_JS" file="resources/keyboard_mojo.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_KEYBOARD_MOJO_GEN_JS" file="${keyboard_mojom_gen_js}" use_base_dir="false" type="BINDATA" />
       <include name="IDR_KEYBOARD_JS" file="resources/keyboard.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_KEYBOARD_LAYOUTS_NUMERIC" file="resources/layouts/numeric.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_LAYOUTS_QWERTY" file="resources/layouts/qwerty.html" type="BINDATA" />

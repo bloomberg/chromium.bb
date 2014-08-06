@@ -1,0 +1,14 @@
+[Client=KeyboardAPI]
+interface KeyboardUIHandlerMojo {
+  SendKeyEvent(string event_type,
+               int32 char_value,
+               int32 key_code,
+               string key_name,
+               int32 modifiers);
+
+  HideKeyboard();
+};
+
+interface KeyboardAPI {
+  OnTextInputTypeChanged(string input_type);
+};
