@@ -1317,7 +1317,6 @@
         'browser/prefs/pref_functional_browsertest.cc',
         'browser/prefs/pref_service_browsertest.cc',
         'browser/prefs/synced_pref_change_registrar_browsertest.cc',
-        'browser/prefs/tracked/pref_hash_browsertest.cc',
         'browser/prerender/prerender_browsertest.cc',
         'browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc',
         'browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc',

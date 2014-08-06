@@ -241,8 +241,7 @@ SettingsEnforcementGroup GetSettingsEnforcementGroup() {
 
   // Use the strongest enforcement setting in the absence of a field trial
   // config on Windows. Remember to update the OFFICIAL_BUILD section of
-  // extension_startup_browsertest.cc and pref_hash_browsertest.cc when updating
-  // the default value below.
+  // extension_startup_browsertest.cc when updating the default value below.
   // TODO(gab): Enforce this on all platforms.
   SettingsEnforcementGroup enforcement_group =
 #if defined(OS_WIN)
@@ -408,8 +407,6 @@ namespace chrome_prefs {
 
 namespace internals {
 
-// Group modifications should be reflected in first_run_browsertest.cc and
-// pref_hash_browsertest.cc.
 const char kSettingsEnforcementTrialName[] = "SettingsEnforcement";
 const char kSettingsEnforcementGroupNoEnforcement[] = "no_enforcement";
 const char kSettingsEnforcementGroupEnforceAlways[] = "enforce_always";
