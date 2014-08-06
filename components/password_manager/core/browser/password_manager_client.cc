@@ -33,4 +33,20 @@ bool PasswordManagerClient::IsLoggingActive() const {
   return false;
 }
 
+PasswordStore::AuthorizationPromptPolicy
+PasswordManagerClient::GetAuthorizationPromptPolicy(
+    const autofill::PasswordForm& form) {
+  // Password Autofill is supposed to be a convenience. If it creates a
+  // blocking dialog, it is no longer convenient. We should only prompt the
+  // user after a full username has been typed in. Until that behavior is
+  // implemented, never prompt the user for keychain access.
+  // Effectively, this means that passwords stored by Chrome still work,
+  // since Chrome can access those without a prompt, but passwords stored by
+  // Safari, Firefox, or Chrome Canary will not work. Note that the latest
+  // build of Safari and Firefox don't create keychain items with the
+  // relevant tags anyways (7/11/2014).
+  // http://crbug.com/178358
+  return PasswordStore::DISALLOW_PROMPT;
+}
+
 }  // namespace password_manager

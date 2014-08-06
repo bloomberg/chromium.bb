@@ -8,6 +8,7 @@
 #include "base/metrics/field_trial.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/password_manager/core/browser/password_store.h"
 
 class PrefService;
 
@@ -99,6 +100,11 @@ class PasswordManagerClient {
   // Returns true if logs recorded via LogSavePasswordProgress will be
   // displayed, and false otherwise.
   virtual bool IsLoggingActive() const;
+
+  // Returns the authorization prompt policy to be used with the given form.
+  // Only relevant on OSX.
+  virtual PasswordStore::AuthorizationPromptPolicy GetAuthorizationPromptPolicy(
+      const autofill::PasswordForm& form);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);
