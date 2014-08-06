@@ -233,7 +233,7 @@
       ],
     }],
     [ 'target_arch == "arm" or target_arch == "arm64" or \
-       target_arch == "mipsel"', {
+       target_arch == "mipsel" or target_arch == "mips64el"', {
       'sources!': [
         '../third_party/skia/src/opts/opts_check_x86.cpp'
       ],

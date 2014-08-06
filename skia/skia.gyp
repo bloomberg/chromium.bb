@@ -100,13 +100,13 @@
       'conditions': [
         [ 'os_posix == 1 and OS != "mac" and OS != "android" and \
             target_arch != "arm" and target_arch != "mipsel" and \
-            target_arch != "arm64"', {
+            target_arch != "arm64" and target_arch != "mips64el"', {
           'cflags': [
             '-msse2',
           ],
         }],
         [ 'target_arch != "arm" and target_arch != "mipsel" and \
-           target_arch != "arm64"', {
+           target_arch != "arm64" and target_arch != "mips64el"', {
           'sources': [
             'ext/convolver_SSE2.cc',
           ],
