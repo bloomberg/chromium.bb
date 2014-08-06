@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/sync/signin_histogram.h"
+#include "chrome/browser/ui/webui/options/options_handlers_helper.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -817,8 +818,8 @@ void SyncSetupHandler::HandleStopSyncing(const base::ListValue* args) {
 
   bool delete_profile = false;
   if (args->GetBoolean(0, &delete_profile) && delete_profile) {
-    web_ui()->CallJavascriptFunction(
-        "BrowserOptions.deleteCurrentProfile");
+    // Do as BrowserOptionsHandler::DeleteProfile().
+    options::helper::DeleteProfileAtPath(GetProfile()->GetPath(), web_ui());
   }
 }
 #endif
