@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<script>
+window.onload = function() {
+    if (window.testRunner)
+        window.testRunner.dumpAsText();
+
+    while (document.firstChild)
+        document.removeChild(document.firstChild);
+
+    // Zoom so that the window becomes scrollable.
+    if (window.eventSender)
+        window.eventSender.setPageScaleFactor(2.0, 0, 0);
+    window.scrollBy(0, 1);
+
+    document.open();
+    document.write('This test passes if it does not crash.');
+    document.close();
+}
+</script>
