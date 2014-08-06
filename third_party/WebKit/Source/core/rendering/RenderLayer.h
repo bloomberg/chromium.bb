@@ -154,8 +154,7 @@ public:
     void contentChanged(ContentChangeType);
 
     enum UpdateLayerPositionsFlag {
-        NeedsFullPaintInvalidationInBacking = 1 << 0,
-        UpdatePagination = 1 << 1,
+        UpdatePagination = 1 << 0,
     };
     typedef unsigned UpdateLayerPositionsFlags;
 

@@ -94,17 +94,12 @@ bool FrameView::s_inPaintContents = false;
 static const unsigned maxUpdateWidgetsIterations = 2;
 static const double resourcePriorityUpdateDelayAfterScroll = 0.250;
 
-static RenderLayer::UpdateLayerPositionsFlags updateLayerPositionFlags(RenderLayer* layer, bool isRelayoutingSubtree, bool didFullPaintInvalidation)
+static RenderLayer::UpdateLayerPositionsFlags updateLayerPositionFlags(RenderLayer* layer, bool isRelayoutingSubtree)
 {
-    RenderLayer::UpdateLayerPositionsFlags flags = 0;
-
-    if (didFullPaintInvalidation)
-        flags |= RenderLayer::NeedsFullPaintInvalidationInBacking;
-
     if (isRelayoutingSubtree && (layer->isPaginated() || layer->enclosingPaginationLayer()))
-        flags |= RenderLayer::UpdatePagination;
+        return RenderLayer::UpdatePagination;
 
-    return flags;
+    return 0;
 }
 
 FrameView::FrameView(LocalFrame* frame)
@@ -948,7 +943,10 @@ void FrameView::layout(bool allowSubtree)
     if (!inSubtreeLayout && !toRenderView(rootForThisLayout)->document().printing())
         adjustViewSize();
 
-    layer->updateLayerPositionsAfterLayout(renderView()->layer(), updateLayerPositionFlags(layer, inSubtreeLayout, m_doFullPaintInvalidation));
+    layer->updateLayerPositionsAfterLayout(renderView()->layer(), updateLayerPositionFlags(layer, inSubtreeLayout));
+
+    if (m_doFullPaintInvalidation)
+        renderView()->compositor()->fullyInvalidatePaint();
     renderView()->compositor()->didLayout();
 
     m_layoutCount++;
