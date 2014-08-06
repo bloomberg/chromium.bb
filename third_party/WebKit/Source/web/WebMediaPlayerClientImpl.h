@@ -110,9 +110,9 @@ private:
     // AudioClientImpl wraps an AudioSourceProviderClient.
     // When the audio format is known, Chromium calls setFormat() which then dispatches into WebCore.
 
-    class AudioClientImpl FINAL : public blink::WebAudioSourceProviderClient {
+    class AudioClientImpl FINAL : public NoBaseWillBeGarbageCollectedFinalized<AudioClientImpl>, public blink::WebAudioSourceProviderClient {
     public:
-        AudioClientImpl(blink::AudioSourceProviderClient* client)
+        explicit AudioClientImpl(blink::AudioSourceProviderClient* client)
             : m_client(client)
         {
         }
@@ -122,8 +122,10 @@ private:
         // WebAudioSourceProviderClient
         virtual void setFormat(size_t numberOfChannels, float sampleRate) OVERRIDE;
 
+        void trace(Visitor*);
+
     private:
-        blink::AudioSourceProviderClient* m_client;
+        RawPtrWillBeMember<blink::AudioSourceProviderClient> m_client;
     };
 
     // AudioSourceProviderImpl wraps a WebAudioSourceProvider.
@@ -147,7 +149,7 @@ private:
 
     private:
         WebAudioSourceProvider* m_webAudioSourceProvider;
-        OwnPtr<AudioClientImpl> m_client;
+        OwnPtrWillBePersistent<AudioClientImpl> m_client;
         Mutex provideInputLock;
     };
 

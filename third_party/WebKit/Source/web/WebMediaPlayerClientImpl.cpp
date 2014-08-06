@@ -271,7 +271,7 @@ void WebMediaPlayerClientImpl::AudioSourceProviderImpl::setClient(AudioSourcePro
     MutexLocker locker(provideInputLock);
 
     if (client)
-        m_client = adoptPtr(new WebMediaPlayerClientImpl::AudioClientImpl(client));
+        m_client = adoptPtrWillBeNoop(new WebMediaPlayerClientImpl::AudioClientImpl(client));
     else
         m_client.clear();
 
@@ -304,6 +304,11 @@ void WebMediaPlayerClientImpl::AudioClientImpl::setFormat(size_t numberOfChannel
 {
     if (m_client)
         m_client->setFormat(numberOfChannels, sampleRate);
+}
+
+void WebMediaPlayerClientImpl::AudioClientImpl::trace(Visitor* visitor)
+{
+    visitor->trace(m_client);
 }
 
 #endif
