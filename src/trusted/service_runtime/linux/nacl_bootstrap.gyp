@@ -157,6 +157,14 @@
               'variables': {
                 'compiler': '<!(/bin/echo -n <(android_toolchain)/*-g++)',
               }
+            }],
+            # When building for ARM default to arm-linux-gnueabihf-g++ rather
+            # than g++.  This is needed when building with clang (since in
+            # this case $CC and $CXX are not set in the environment).
+            ['OS!="android" and target_arch=="arm"', {
+              'variables': {
+                'compiler': '<!(echo ${CXX:=arm-linux-gnueabihf-g++})',
+              }
             }, {
               'variables': {
                 'compiler': '<!(echo ${CXX:=g++})',
