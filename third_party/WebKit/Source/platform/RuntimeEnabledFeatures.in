@@ -107,7 +107,7 @@ OverlayScrollbars
 RegionBasedColumns status=experimental
 
 RequestAutocomplete status=test
-ScreenOrientation status=experimental
+ScreenOrientation status=stable
 ScriptedSpeech status=stable
 
 // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left
