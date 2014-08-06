@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_VIEW_H_
 
 #include "base/basictypes.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble.h"
 #include "chrome/browser/ui/views/passwords/save_password_refusal_combobox_model.h"
 #include "ui/views/bubble/bubble_delegate.h"
@@ -174,6 +175,10 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
     return initially_focused_view_;
   }
 
+  bool IsTimerRunning() const {
+    return timer_.IsRunning();
+  }
+
  private:
   ManagePasswordsBubbleView(content::WebContents* web_contents,
                             ManagePasswordsIconView* anchor_view,
@@ -205,12 +210,21 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   // undo the action and refresh to PendingView.
   void NotifyUndoNeverForThisSite();
 
+  // Starts a timer which will close the bubble if it's inactive.
+  void StartTimerIfNecessary();
+
   // views::BubbleDelegateView:
   virtual void Init() OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
+  virtual void OnWidgetActivationChanged(views::Widget* widget,
+                                         bool active) OVERRIDE;
 
   // views::WidgetDelegate
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
+
+  // views::View methods.
+  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
 
   void set_initially_focused_view(views::View* view) {
     DCHECK(!initially_focused_view_);
@@ -229,6 +243,9 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   bool never_save_passwords_;
 
   views::View* initially_focused_view_;
+
+  // Timer used to close the bubble after timeout.
+  base::OneShotTimer<ManagePasswordsBubbleView> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleView);
 };

@@ -32,6 +32,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, BasicOpenAndClose) {
   EXPECT_TRUE(bubble->initially_focused_view());
   EXPECT_EQ(bubble->initially_focused_view(),
             bubble->GetFocusManager()->GetFocusedView());
+  EXPECT_FALSE(bubble->IsTimerRunning());
   ManagePasswordsBubbleView::CloseBubble();
   EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
 
@@ -99,6 +100,8 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
   // Bubble can be active if user clicks it.
   EXPECT_TRUE(ManagePasswordsBubbleView::manage_password_bubble()->
       CanActivate());
+  EXPECT_TRUE(ManagePasswordsBubbleView::manage_password_bubble()->
+      IsTimerRunning());
 
   scoped_ptr<base::HistogramSamples> samples(
       GetSamples(kDisplayDispositionMetric));

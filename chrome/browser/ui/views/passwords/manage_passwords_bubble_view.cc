@@ -34,6 +34,9 @@
 
 namespace {
 
+// The number of seconds the inactive bubble should stay alive.
+const int kBubbleCloseDelay = 15;
+
 const int kDesiredBubbleWidth = 370;
 
 enum ColumnSetType {
@@ -551,6 +554,7 @@ void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
     manage_passwords_bubble_->GetWidget()->ShowInactive();
   else
     manage_passwords_bubble_->GetWidget()->Show();
+  manage_passwords_bubble_->StartTimerIfNecessary();
 }
 
 // static
@@ -586,6 +590,7 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
       initially_focused_view_(NULL) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
+  set_notify_enter_exit_on_child(true);
   if (anchor_view)
     anchor_view->SetActive(true);
 }
@@ -627,8 +632,23 @@ void ManagePasswordsBubbleView::WindowClosing() {
     manage_passwords_bubble_ = NULL;
 }
 
+void ManagePasswordsBubbleView::OnWidgetActivationChanged(views::Widget* widget,
+                                                          bool active) {
+  if (active && widget == GetWidget())
+    timer_.Stop();
+  BubbleDelegateView::OnWidgetActivationChanged(widget, active);
+}
+
 views::View* ManagePasswordsBubbleView::GetInitiallyFocusedView() {
   return initially_focused_view_;
+}
+
+void ManagePasswordsBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
+  timer_.Stop();
+}
+
+void ManagePasswordsBubbleView::OnMouseExited(const ui::MouseEvent& event) {
+  StartTimerIfNecessary();
 }
 
 void ManagePasswordsBubbleView::Refresh() {
@@ -647,6 +667,9 @@ void ManagePasswordsBubbleView::Refresh() {
     AddChildView(new ManageView(this));
   }
   GetLayoutManager()->Layout(this);
+  // If we refresh the existing bubble we may want to restart the timer.
+  if (GetWidget())
+    StartTimerIfNecessary();
 }
 
 void ManagePasswordsBubbleView::NotifyNeverForThisSiteClicked() {
@@ -667,4 +690,14 @@ void ManagePasswordsBubbleView::NotifyConfirmedNeverForThisSite() {
 void ManagePasswordsBubbleView::NotifyUndoNeverForThisSite() {
   never_save_passwords_ = false;
   Refresh();
+}
+
+void ManagePasswordsBubbleView::StartTimerIfNecessary() {
+  // Active bubble will stay visible until it loses focus.
+  if (GetWidget()->IsActive())
+    return;
+  timer_.Start(FROM_HERE,
+               base::TimeDelta::FromSeconds(kBubbleCloseDelay),
+               this,
+               &ManagePasswordsBubbleView::Close);
 }
