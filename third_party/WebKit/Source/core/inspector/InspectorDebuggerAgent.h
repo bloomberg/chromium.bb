@@ -236,6 +236,7 @@ private:
 
     String sourceMapURLForScript(const Script&, CompileResult);
 
+    PassRefPtrWillBeRawPtr<JavaScriptCallFrame> topCallFrameSkipUnknownSources();
     String scriptURL(JavaScriptCallFrame*);
 
     typedef HashMap<String, Script> ScriptsMap;

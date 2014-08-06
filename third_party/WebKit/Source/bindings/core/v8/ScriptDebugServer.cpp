@@ -377,9 +377,20 @@ ScriptValue ScriptDebugServer::currentCallFramesForAsyncStack()
     return currentCallFramesInner(FastAsyncScopes);
 }
 
-PassRefPtrWillBeRawPtr<JavaScriptCallFrame> ScriptDebugServer::topCallFrameNoScopes()
+PassRefPtrWillBeRawPtr<JavaScriptCallFrame> ScriptDebugServer::callFrameNoScopes(int index)
 {
-    return wrapCallFrames(1, NoScopes);
+    v8::Handle<v8::Value> currentCallFrameV8;
+    if (m_executionState.IsEmpty()) {
+        v8::Handle<v8::Function> currentCallFrameFunction = v8::Local<v8::Function>::Cast(m_debuggerScript.newLocal(m_isolate)->Get(v8AtomicString(m_isolate, "currentCallFrameByIndex")));
+        currentCallFrameV8 = v8::Debug::Call(currentCallFrameFunction, v8::Integer::New(m_isolate, index));
+    } else {
+        v8::Handle<v8::Value> argv[] = { m_executionState, v8::Integer::New(m_isolate, index) };
+        currentCallFrameV8 = callDebuggerMethod("currentCallFrameByIndex", WTF_ARRAY_LENGTH(argv), argv);
+    }
+    ASSERT(!currentCallFrameV8.IsEmpty());
+    if (!currentCallFrameV8->IsObject())
+        return nullptr;
+    return JavaScriptCallFrame::create(v8::Debug::GetDebugContext(), v8::Handle<v8::Object>::Cast(currentCallFrameV8));
 }
 
 void ScriptDebugServer::interruptAndRun(PassOwnPtr<Task> task, v8::Isolate* isolate)

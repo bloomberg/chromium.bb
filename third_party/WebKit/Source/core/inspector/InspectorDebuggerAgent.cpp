@@ -466,6 +466,18 @@ void InspectorDebuggerAgent::getBacktrace(ErrorString* errorString, RefPtr<Array
     asyncStackTrace = currentAsyncStackTrace();
 }
 
+PassRefPtrWillBeRawPtr<JavaScriptCallFrame> InspectorDebuggerAgent::topCallFrameSkipUnknownSources()
+{
+    for (int index = 0; ; ++index) {
+        RefPtrWillBeRawPtr<JavaScriptCallFrame> frame = scriptDebugServer().callFrameNoScopes(index);
+        if (!frame)
+            return nullptr;
+        String scriptIdString = String::number(frame->sourceID());
+        if (m_scripts.contains(scriptIdString))
+            return frame.release();
+    }
+}
+
 String InspectorDebuggerAgent::scriptURL(JavaScriptCallFrame* frame)
 {
     String scriptIdString = String::number(frame->sourceID());
@@ -482,7 +494,7 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipExceptio
 
     // FIXME: Fast return: if (!m_cachedSkipStackRegExp && !has_any_anti_breakpoint) return ScriptDebugListener::NoSkip;
 
-    RefPtrWillBeRawPtr<JavaScriptCallFrame> topFrame = scriptDebugServer().topCallFrameNoScopes();
+    RefPtrWillBeRawPtr<JavaScriptCallFrame> topFrame = topCallFrameSkipUnknownSources();
     if (!topFrame)
         return ScriptDebugListener::NoSkip;
 
@@ -535,7 +547,7 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipStepPaus
     if (!m_cachedSkipStackRegExp || m_steppingFromFramework)
         return ScriptDebugListener::NoSkip;
 
-    RefPtrWillBeRawPtr<JavaScriptCallFrame> topFrame = scriptDebugServer().topCallFrameNoScopes();
+    RefPtrWillBeRawPtr<JavaScriptCallFrame> topFrame = topCallFrameSkipUnknownSources();
     String scriptUrl = scriptURL(topFrame.get());
     if (scriptUrl.isEmpty() || m_cachedSkipStackRegExp->match(scriptUrl) == -1)
         return ScriptDebugListener::NoSkip;
@@ -567,7 +579,7 @@ bool InspectorDebuggerAgent::isTopCallFrameInFramework()
     if (!m_cachedSkipStackRegExp)
         return false;
 
-    RefPtrWillBeRawPtr<JavaScriptCallFrame> topFrame = scriptDebugServer().topCallFrameNoScopes();
+    RefPtrWillBeRawPtr<JavaScriptCallFrame> topFrame = topCallFrameSkipUnknownSources();
     if (!topFrame)
         return false;
 

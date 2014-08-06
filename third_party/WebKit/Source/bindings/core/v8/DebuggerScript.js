@@ -228,6 +228,16 @@ DebuggerScript.currentCallFrame = function(execState, data)
     return topFrame;
 }
 
+DebuggerScript.currentCallFrameByIndex = function(execState, index)
+{
+    if (index < 0)
+        return undefined;
+    var frameCount = execState.frameCount();
+    if (index >= frameCount)
+        return undefined;
+    return DebuggerScript._frameMirrorToJSCallFrame(execState.frame(index), undefined, DebuggerScript.ScopeInfoDetails.NoScopes);
+}
+
 DebuggerScript.stepIntoStatement = function(execState)
 {
     execState.prepareStep(Debug.StepAction.StepIn, 1);

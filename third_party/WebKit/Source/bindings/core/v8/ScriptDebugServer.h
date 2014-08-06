@@ -80,7 +80,7 @@ public:
     bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, ScriptValue* newCallFrames, RefPtr<JSONObject>* result);
     ScriptValue currentCallFrames();
     ScriptValue currentCallFramesForAsyncStack();
-    PassRefPtrWillBeRawPtr<JavaScriptCallFrame> topCallFrameNoScopes();
+    PassRefPtrWillBeRawPtr<JavaScriptCallFrame> callFrameNoScopes(int index);
     int frameCount();
 
     static PassRefPtrWillBeRawPtr<JavaScriptCallFrame> toJavaScriptCallFrameUnsafe(const ScriptValue&);

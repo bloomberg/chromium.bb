@@ -110,3 +110,25 @@ Framework.bind = function(func, thisObject, var_args)
     };
     return Framework_bound;
 }
+
+Framework.throwInNative = function()
+{
+    var wrongJson = "})";
+    window["dummy"] = JSON.parse(wrongJson);
+}
+
+Framework.throwInNativeAndCatch = function()
+{
+    try {
+        Framework.throwInNative();
+    } catch(e) {
+    }
+}
+
+Framework.throwFrameworkExceptionAndCatch = function()
+{
+    try {
+        Framework.throwFrameworkException();
+    } catch(e) {
+    }
+}
