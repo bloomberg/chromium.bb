@@ -620,6 +620,9 @@ public:
         case blink::WebPlatformEventGamepad:
             setGamepadListener(static_cast<blink::WebGamepadListener*>(listener));
             break;
+        case blink::WebPlatformEventScreenOrientation:
+            // No backward-compatibility support here.
+            break;
         }
     }
 
@@ -644,6 +647,9 @@ public:
             break;
         case blink::WebPlatformEventGamepad:
             setGamepadListener(0);
+            break;
+        case blink::WebPlatformEventScreenOrientation:
+            // No backward-compatibility support here.
             break;
         }
     }

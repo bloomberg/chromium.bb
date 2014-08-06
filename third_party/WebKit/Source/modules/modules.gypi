@@ -648,6 +648,8 @@
       'screen_orientation/ScreenOrientation.h',
       'screen_orientation/ScreenOrientationController.cpp',
       'screen_orientation/ScreenOrientationController.h',
+      'screen_orientation/ScreenOrientationDispatcher.cpp',
+      'screen_orientation/ScreenOrientationDispatcher.h',
       'serviceworkers/CacheStorage.cpp',
       'serviceworkers/CacheStorage.h',
       'serviceworkers/Client.cpp',
