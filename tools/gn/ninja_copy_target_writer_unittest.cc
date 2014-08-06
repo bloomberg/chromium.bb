@@ -6,7 +6,6 @@
 #include <sstream>
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "tools/gn/file_template.h"
 #include "tools/gn/ninja_copy_target_writer.h"
 #include "tools/gn/test_with_scope.h"
 
@@ -21,8 +20,8 @@ TEST(NinjaCopyTargetWriter, Run) {
   target.sources().push_back(SourceFile("//foo/input1.txt"));
   target.sources().push_back(SourceFile("//foo/input2.txt"));
 
-  target.action_values().outputs().push_back(
-      "//out/Debug/{{source_name_part}}.out");
+  target.action_values().outputs() =
+      SubstitutionList::MakeForTest("//out/Debug/{{source_name_part}}.out");
 
   std::ostringstream out;
   NinjaCopyTargetWriter writer(&target, setup.toolchain(), out);
@@ -47,7 +46,8 @@ TEST(NinjaCopyTargetWriter, ToolchainDeps) {
 
   target.sources().push_back(SourceFile("//foo/input1.txt"));
 
-  target.action_values().outputs().push_back("//out/Debug/output.out");
+  target.action_values().outputs() =
+      SubstitutionList::MakeForTest("//out/Debug/output.out");
 
   std::ostringstream out;
   NinjaCopyTargetWriter writer(&target, setup.toolchain(), out);

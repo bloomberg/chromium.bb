@@ -18,10 +18,16 @@ class SourceDir;
 // ends in one.
 class SourceFile {
  public:
+  enum SwapIn { SWAP_IN };
+
   SourceFile();
 
   // Takes a known absolute source file. Always begins in a slash.
   explicit SourceFile(const base::StringPiece& p);
+
+  // Constructs from the given string by swapping in the contents of the given
+  // value. The value will be the empty string after this call.
+  SourceFile(SwapIn, std::string* value);
 
   ~SourceFile();
 

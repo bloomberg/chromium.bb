@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "tools/gn/file_template.h"
 #include "tools/gn/functions.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/scope.h"
 #include "tools/gn/settings.h"
+#include "tools/gn/substitution_list.h"
+#include "tools/gn/substitution_writer.h"
 #include "tools/gn/target.h"
 #include "tools/gn/value_extractors.h"
 
@@ -71,27 +72,26 @@ Value RunProcessFileTemplate(Scope* scope,
     return Value();
   }
 
-  FileTemplate file_template(scope->settings(), args[1],
-                             FileTemplate::OUTPUT_ABSOLUTE, SourceDir(), err);
-  if (err->has_error())
-    return Value();
-
+  // Source list.
   Target::FileList input_files;
   if (!ExtractListOfRelativeFiles(scope->settings()->build_settings(), args[0],
                                   scope->GetSourceDir(), &input_files, err))
     return Value();
 
+  // Template.
+  SubstitutionList subst;
+  if (!subst.Parse(args[1], err))
+    return Value();
+
+  std::vector<SourceFile> result_files;
+  SubstitutionWriter::ApplyListToSources(
+      scope->settings(), subst, input_files, &result_files);
+
   Value ret(function, Value::LIST);
+  ret.list_value().reserve(result_files.size());
+  for (size_t i = 0; i < result_files.size(); i++)
+    ret.list_value().push_back(Value(function, result_files[i].value()));
 
-  // Temporary holding place, allocate outside to re-use buffer.
-  std::vector<std::string> string_output;
-
-  for (size_t i = 0; i < input_files.size(); i++) {
-    string_output.clear();
-    file_template.Apply(input_files[i], &string_output);
-    for (size_t out_i = 0; out_i < string_output.size(); out_i++)
-      ret.list_value().push_back(Value(function, string_output[out_i]));
-  }
   return ret;
 }
 

@@ -10,12 +10,12 @@
 #include "tools/gn/commands.h"
 #include "tools/gn/config.h"
 #include "tools/gn/config_values_extractors.h"
-#include "tools/gn/file_template.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/item.h"
 #include "tools/gn/label.h"
 #include "tools/gn/setup.h"
 #include "tools/gn/standard_out.h"
+#include "tools/gn/substitution_writer.h"
 #include "tools/gn/target.h"
 
 namespace commands {
@@ -282,25 +282,6 @@ void PrintFileList(const Target::FileList& files,
     OutputString(indent + sorted[i].value() + "\n");
 }
 
-// This sorts the list.
-void PrintStringList(const std::vector<std::string>& strings,
-                     const std::string& header,
-                     bool indent_extra,
-                     bool display_header) {
-  if (strings.empty())
-    return;
-
-  if (display_header)
-    OutputString("\n" + header + ":\n");
-
-  std::string indent = indent_extra ? "    " : "  ";
-
-  std::vector<std::string> sorted = strings;
-  std::sort(sorted.begin(), sorted.end());
-  for (size_t i = 0; i < sorted.size(); i++)
-    OutputString(indent + sorted[i] + "\n");
-}
-
 void PrintSources(const Target* target, bool display_header) {
   PrintFileList(target->sources(), "sources", false, display_header);
 }
@@ -310,28 +291,35 @@ void PrintInputs(const Target* target, bool display_header) {
 }
 
 void PrintOutputs(const Target* target, bool display_header) {
+  if (display_header)
+    OutputString("\noutputs:\n");
+
   if (target->output_type() == Target::ACTION) {
-    // Just display the outputs directly.
-    PrintStringList(target->action_values().outputs(), "outputs", false,
-                    display_header);
-  } else if (target->output_type() == Target::ACTION_FOREACH ||
-             target->output_type() == Target::COPY_FILES) {
-    // Display both the output pattern and resolved list.
-    if (display_header)
-      OutputString("\noutputs:\n");
+    // Action, print out outputs, don't apply sources to it.
+    for (size_t i = 0; i < target->action_values().outputs().list().size();
+         i++) {
+      OutputString("  " +
+                   target->action_values().outputs().list()[i].AsString() +
+                   "\n");
+    }
+  } else {
+    const SubstitutionList& outputs = target->action_values().outputs();
+    if (!outputs.required_types().empty()) {
+      // Display the pattern and resolved pattern separately, since there are
+      // subtitutions used.
+      OutputString("  Output pattern:\n");
+      for (size_t i = 0; i < outputs.list().size(); i++)
+        OutputString("    " + outputs.list()[i].AsString() + "\n");
 
-    // Display the pattern.
-    OutputString("  Output pattern:\n");
-    PrintStringList(target->action_values().outputs(), "", true, false);
+      // Now display what that resolves to given the sources.
+      OutputString("\n  Resolved output file list:\n");
+    }
 
-    // Now display what that resolves to given the sources.
-    OutputString("\n  Resolved output file list:\n");
-
-    std::vector<std::string> output_strings;
-    FileTemplate file_template = FileTemplate::GetForTargetOutputs(target);
-    for (size_t i = 0; i < target->sources().size(); i++)
-      file_template.Apply(target->sources()[i], &output_strings);
-    PrintStringList(output_strings, "", true, false);
+    // Resolved output list.
+    std::vector<SourceFile> output_files;
+    SubstitutionWriter::ApplyListToSources(target->settings(), outputs,
+                                           target->sources(), &output_files);
+    PrintFileList(output_files, "", true, false);
   }
 }
 
@@ -344,16 +332,18 @@ void PrintScript(const Target* target, bool display_header) {
 void PrintArgs(const Target* target, bool display_header) {
   if (display_header)
     OutputString("\nargs:\n");
-  for (size_t i = 0; i < target->action_values().args().size(); i++)
-    OutputString("  " + target->action_values().args()[i] + "\n");
+  for (size_t i = 0; i < target->action_values().args().list().size(); i++) {
+    OutputString("  " +
+                 target->action_values().args().list()[i].AsString() + "\n");
+  }
 }
 
 void PrintDepfile(const Target* target, bool display_header) {
-  if (target->action_values().depfile().value().empty())
+  if (target->action_values().depfile().empty())
     return;
   if (display_header)
     OutputString("\ndepfile:\n");
-  OutputString("  " + target->action_values().depfile().value() + "\n");
+  OutputString("  " + target->action_values().depfile().AsString() + "\n");
 }
 
 // Attribute the origin for attributing from where a target came from. Does

@@ -8,12 +8,12 @@
 #include "tools/gn/args.h"
 #include "tools/gn/commands.h"
 #include "tools/gn/err.h"
-#include "tools/gn/file_template.h"
 #include "tools/gn/functions.h"
 #include "tools/gn/input_conversion.h"
 #include "tools/gn/pattern.h"
 #include "tools/gn/setup.h"
 #include "tools/gn/standard_out.h"
+#include "tools/gn/substitution_writer.h"
 #include "tools/gn/variables.h"
 
 namespace commands {

@@ -6,8 +6,8 @@
 
 #include "base/strings/string_util.h"
 #include "tools/gn/err.h"
-#include "tools/gn/file_template.h"
 #include "tools/gn/string_utils.h"
+#include "tools/gn/substitution_writer.h"
 #include "tools/gn/target.h"
 
 NinjaActionTargetWriter::NinjaActionTargetWriter(const Target* target,
@@ -23,12 +23,7 @@ NinjaActionTargetWriter::~NinjaActionTargetWriter() {
 }
 
 void NinjaActionTargetWriter::Run() {
-  FileTemplate args_template(
-      target_->settings(),
-      target_->action_values().args(),
-      FileTemplate::OUTPUT_RELATIVE,
-      target_->settings()->build_settings()->build_dir());
-  std::string custom_rule_name = WriteRuleDefinition(args_template);
+  std::string custom_rule_name = WriteRuleDefinition();
 
   // Collect our deps to pass as "extra hard dependencies" for input deps. This
   // will force all of the action's dependencies to be completed before the
@@ -53,23 +48,19 @@ void NinjaActionTargetWriter::Run() {
 
   if (target_->output_type() == Target::ACTION_FOREACH) {
     // Write separate build lines for each input source file.
-    WriteSourceRules(custom_rule_name, implicit_deps, args_template,
-                     &output_files);
+    WriteSourceRules(custom_rule_name, implicit_deps, &output_files);
   } else {
     DCHECK(target_->output_type() == Target::ACTION);
 
     // Write a rule that invokes the script once with the outputs as outputs,
     // and the data as inputs.
     out_ << "build";
-    const std::vector<std::string>& outputs =
-        target_->action_values().outputs();
-    for (size_t i = 0; i < outputs.size(); i++) {
-      OutputFile output_path(
-          RemovePrefix(outputs[i],
-                       settings_->build_settings()->build_dir().value()));
-      output_files.push_back(output_path);
+    SubstitutionWriter::ApplyListToSourcesAsOutputFile(
+        settings_, target_->action_values().outputs(), target_->sources(),
+        &output_files);
+    for (size_t i = 0; i < output_files.size(); i++) {
       out_ << " ";
-      path_output_.WriteFile(out_, output_path);
+      path_output_.WriteFile(out_, output_files[i]);
     }
 
     out_ << ": " << custom_rule_name << implicit_deps << std::endl;
@@ -84,8 +75,7 @@ void NinjaActionTargetWriter::Run() {
   WriteStamp(output_files);
 }
 
-std::string NinjaActionTargetWriter::WriteRuleDefinition(
-    const FileTemplate& args_template) {
+std::string NinjaActionTargetWriter::WriteRuleDefinition() {
   // Make a unique name for this rule.
   //
   // Use a unique name for the response file when there are multiple build
@@ -95,6 +85,10 @@ std::string NinjaActionTargetWriter::WriteRuleDefinition(
   std::string custom_rule_name(target_label);
   base::ReplaceChars(custom_rule_name, ":/()", "_", &custom_rule_name);
   custom_rule_name.append("_rule");
+
+  const SubstitutionList& args = target_->action_values().args();
+  EscapeOptions args_escape_options;
+  args_escape_options.mode = ESCAPE_NINJA_COMMAND;
 
   if (settings_->IsWin()) {
     // Send through gyp-win-tool and use a response file.
@@ -120,7 +114,11 @@ std::string NinjaActionTargetWriter::WriteRuleDefinition(
     path_output_.WriteFile(out_, settings_->build_settings()->python_path());
     out_ << " ";
     path_output_.WriteFile(out_, target_->action_values().script());
-    args_template.WriteWithNinjaExpansions(out_);
+    for (size_t i = 0; i < args.list().size(); i++) {
+      out_ << " ";
+      SubstitutionWriter::WriteWithNinjaVariables(
+          args.list()[i], args_escape_options, out_);
+    }
     out_ << std::endl;
   } else {
     // Posix can execute Python directly.
@@ -129,7 +127,11 @@ std::string NinjaActionTargetWriter::WriteRuleDefinition(
     path_output_.WriteFile(out_, settings_->build_settings()->python_path());
     out_ << " ";
     path_output_.WriteFile(out_, target_->action_values().script());
-    args_template.WriteWithNinjaExpansions(out_);
+    for (size_t i = 0; i < args.list().size(); i++) {
+      out_ << " ";
+      SubstitutionWriter::WriteWithNinjaVariables(
+          args.list()[i], args_escape_options, out_);
+    }
     out_ << std::endl;
     out_ << "  description = ACTION " << target_label << std::endl;
     out_ << "  restat = 1" << std::endl;
@@ -138,27 +140,23 @@ std::string NinjaActionTargetWriter::WriteRuleDefinition(
   return custom_rule_name;
 }
 
-void NinjaActionTargetWriter::WriteArgsSubstitutions(
-    const SourceFile& source,
-    const FileTemplate& args_template) {
-  EscapeOptions template_escape_options;
-  template_escape_options.mode = ESCAPE_NINJA_COMMAND;
-
-  args_template.WriteNinjaVariablesForSubstitution(
-      out_, source, template_escape_options);
-}
-
 void NinjaActionTargetWriter::WriteSourceRules(
     const std::string& custom_rule_name,
     const std::string& implicit_deps,
-    const FileTemplate& args_template,
     std::vector<OutputFile>* output_files) {
-  FileTemplate output_template = FileTemplate::GetForTargetOutputs(target_);
+  EscapeOptions args_escape_options;
+  args_escape_options.mode = ESCAPE_NINJA_COMMAND;
+  // We're writing the substitution values, these should not be quoted since
+  // they will get pasted into the real command line.
+  args_escape_options.inhibit_quoting = true;
+
+  const std::vector<SubstitutionType>& args_substitutions_used =
+      target_->action_values().args().required_types();
 
   const Target::FileList& sources = target_->sources();
   for (size_t i = 0; i < sources.size(); i++) {
     out_ << "build";
-    WriteOutputFilesForBuildLine(output_template, sources[i], output_files);
+    WriteOutputFilesForBuildLine(sources[i], output_files);
 
     out_ << ": " << custom_rule_name << " ";
     path_output_.WriteFile(out_, sources[i]);
@@ -168,8 +166,9 @@ void NinjaActionTargetWriter::WriteSourceRules(
     if (target_->settings()->IsWin())
       out_ << "  unique_name = " << i << std::endl;
 
-    if (args_template.has_substitutions())
-      WriteArgsSubstitutions(sources[i], args_template);
+    SubstitutionWriter::WriteNinjaVariablesForSource(
+        settings_, sources[i], args_substitutions_used,
+        args_escape_options, out_);
 
     if (target_->action_values().has_depfile()) {
       out_ << "  depfile = ";
@@ -206,35 +205,21 @@ void NinjaActionTargetWriter::WriteStamp(
 }
 
 void NinjaActionTargetWriter::WriteOutputFilesForBuildLine(
-    const FileTemplate& output_template,
     const SourceFile& source,
     std::vector<OutputFile>* output_files) {
-  std::vector<std::string> output_template_result;
-  output_template.Apply(source, &output_template_result);
-  for (size_t out_i = 0; out_i < output_template_result.size(); out_i++) {
-    // All output files should be in the build directory, so we can rebase
-    // them just by trimming the prefix.
-    OutputFile output_path(
-        RemovePrefix(output_template_result[out_i],
-                     settings_->build_settings()->build_dir().value()));
-    output_files->push_back(output_path);
+  size_t first_output_index = output_files->size();
+
+  SubstitutionWriter::ApplyListToSourceAsOutputFile(
+      settings_, target_->action_values().outputs(), source, output_files);
+
+  for (size_t i = first_output_index; i < output_files->size(); i++) {
     out_ << " ";
-    path_output_.WriteFile(out_, output_path);
+    path_output_.WriteFile(out_, (*output_files)[i]);
   }
 }
 
 void NinjaActionTargetWriter::WriteDepfile(const SourceFile& source) {
-  std::vector<std::string> result;
-  GetDepfileTemplate().Apply(source, &result);
-  path_output_.WriteFile(out_, OutputFile(result[0]));
-}
-
-FileTemplate NinjaActionTargetWriter::GetDepfileTemplate() const {
-  std::vector<std::string> template_args;
-  std::string depfile_relative_to_build_dir =
-      RemovePrefix(target_->action_values().depfile().value(),
-                   settings_->build_settings()->build_dir().value());
-  template_args.push_back(depfile_relative_to_build_dir);
-  return FileTemplate(settings_, template_args, FileTemplate::OUTPUT_ABSOLUTE,
-                      SourceDir());
+  path_output_.WriteFile(out_,
+      SubstitutionWriter::ApplyPatternToSourceAsOutputFile(
+          settings_, target_->action_values().depfile(), source));
 }

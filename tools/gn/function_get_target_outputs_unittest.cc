@@ -86,8 +86,8 @@ TEST_F(GetTargetOutputsTest, Copy) {
   Target* action = new Target(setup_.settings(), GetLabel("//foo/", "bar"));
   action->set_output_type(Target::COPY_FILES);
   action->sources().push_back(SourceFile("//file.txt"));
-  action->action_values().outputs().push_back(
-      "//out/Debug/{{source_file_part}}.one");
+  action->action_values().outputs() =
+      SubstitutionList::MakeForTest("//out/Debug/{{source_file_part}}.one");
 
   items_.push_back(new scoped_ptr<Item>(action));
 
@@ -100,8 +100,9 @@ TEST_F(GetTargetOutputsTest, Copy) {
 TEST_F(GetTargetOutputsTest, Action) {
   Target* action = new Target(setup_.settings(), GetLabel("//foo/", "bar"));
   action->set_output_type(Target::ACTION);
-  action->action_values().outputs().push_back("//output1.txt");
-  action->action_values().outputs().push_back("//output2.txt");
+  action->action_values().outputs() = SubstitutionList::MakeForTest(
+      "//output1.txt",
+      "//output2.txt");
 
   items_.push_back(new scoped_ptr<Item>(action));
 
@@ -115,9 +116,8 @@ TEST_F(GetTargetOutputsTest, ActionForeach) {
   Target* action = new Target(setup_.settings(), GetLabel("//foo/", "bar"));
   action->set_output_type(Target::ACTION_FOREACH);
   action->sources().push_back(SourceFile("//file.txt"));
-  action->action_values().outputs().push_back(
-      "//out/Debug/{{source_file_part}}.one");
-  action->action_values().outputs().push_back(
+  action->action_values().outputs() = SubstitutionList::MakeForTest(
+      "//out/Debug/{{source_file_part}}.one",
       "//out/Debug/{{source_file_part}}.two");
 
   items_.push_back(new scoped_ptr<Item>(action));

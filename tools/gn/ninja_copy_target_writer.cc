@@ -5,8 +5,9 @@
 #include "tools/gn/ninja_copy_target_writer.h"
 
 #include "base/strings/string_util.h"
-#include "tools/gn/file_template.h"
 #include "tools/gn/string_utils.h"
+#include "tools/gn/substitution_list.h"
+#include "tools/gn/substitution_writer.h"
 
 NinjaCopyTargetWriter::NinjaCopyTargetWriter(const Target* target,
                                              const Toolchain* toolchain,
@@ -18,8 +19,12 @@ NinjaCopyTargetWriter::~NinjaCopyTargetWriter() {
 }
 
 void NinjaCopyTargetWriter::Run() {
-  CHECK(target_->action_values().outputs().size() == 1);
-  FileTemplate output_template = FileTemplate::GetForTargetOutputs(target_);
+  CHECK(target_->action_values().outputs().list().size() == 1);
+  const SubstitutionList& output_subst_list =
+      target_->action_values().outputs();
+  CHECK_EQ(1u, output_subst_list.list().size())
+      << "Should have one entry exactly.";
+  const SubstitutionPattern& output_subst = output_subst_list.list()[0];
 
   std::vector<OutputFile> output_files;
 
@@ -49,16 +54,9 @@ void NinjaCopyTargetWriter::Run() {
   for (size_t i = 0; i < target_->sources().size(); i++) {
     const SourceFile& input_file = target_->sources()[i];
 
-    // Make the output file from the template.
-    std::vector<std::string> template_result;
-    output_template.Apply(input_file, &template_result);
-    CHECK(template_result.size() == 1);
-
-    // All output files should be in the build directory, so we can rebase
-    // them just by trimming the prefix.
-    OutputFile output_file(
-        RemovePrefix(template_result[0],
-                     settings_->build_settings()->build_dir().value()));
+    OutputFile output_file =
+        SubstitutionWriter::ApplyPatternToSourceAsOutputFile(
+            target_->settings(), output_subst, input_file);
     output_files.push_back(output_file);
 
     out_ << "build ";

@@ -46,8 +46,6 @@ void EscapeStringToString_Ninja(const base::StringPiece& str,
                                 bool* needed_quoting) {
   for (size_t i = 0; i < str.size(); i++)
     NinjaEscapeChar(str[i], dest);
-  if (needed_quoting)
-    *needed_quoting = false;
 }
 
 // Escape for CommandLineToArgvW and additionally escape Ninja characters.

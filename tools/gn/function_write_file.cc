@@ -60,7 +60,7 @@ Value RunWriteFile(Scope* scope,
   SourceFile source_file = cur_dir.ResolveRelativeFile(args[0].string_value());
   if (!EnsureStringIsInOutputDir(
           scope->settings()->build_settings()->build_dir(),
-          source_file.value(), args[0], false, err))
+          source_file.value(), args[0], err))
     return Value();
 
   // Compute output.

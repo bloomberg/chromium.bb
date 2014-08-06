@@ -9,7 +9,6 @@
 
 #include "base/file_util.h"
 #include "tools/gn/err.h"
-#include "tools/gn/file_template.h"
 #include "tools/gn/ninja_action_target_writer.h"
 #include "tools/gn/ninja_binary_target_writer.h"
 #include "tools/gn/ninja_copy_target_writer.h"

@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "tools/gn/build_settings.h"
-#include "tools/gn/file_template.h"
 #include "tools/gn/functions.h"
 #include "tools/gn/ninja_helper.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/settings.h"
+#include "tools/gn/substitution_writer.h"
 #include "tools/gn/target.h"
 #include "tools/gn/value.h"
 
@@ -17,27 +17,24 @@ namespace {
 
 void GetOutputsForTarget(const Settings* settings,
                          const Target* target,
-                         std::vector<std::string>* ret) {
+                         std::vector<SourceFile>* ret) {
   switch (target->output_type()) {
     case Target::ACTION: {
-      // Actions: return the outputs specified.
-      const std::vector<std::string>& outs = target->action_values().outputs();
-      ret->reserve(outs.size());
-      for (size_t i = 0; i < outs.size(); i++)
-        ret->push_back(outs[i]);
+      // Actions just use the output list with no substitution. To keep things
+      // simple, pass an empty "source file" in to use the same code path for
+      // computing substitution outputs.
+      std::vector<SourceFile> sources;
+      sources.push_back(SourceFile());
+      SubstitutionWriter::ApplyListToSources(
+          settings, target->action_values().outputs(), sources, ret);
       break;
     }
 
     case Target::COPY_FILES:
-    case Target::ACTION_FOREACH: {
-      // Copy/action_foreach: return the result of the template in the outputs.
-      FileTemplate file_template(settings, target->action_values().outputs(),
-                                 FileTemplate::OUTPUT_ABSOLUTE, SourceDir());
-      const std::vector<SourceFile>& sources = target->sources();
-      for (size_t i = 0; i < sources.size(); i++)
-        file_template.Apply(sources[i], ret);
+    case Target::ACTION_FOREACH:
+      SubstitutionWriter::ApplyListToSources(
+          settings, target->action_values().outputs(), target->sources(), ret);
       break;
-    }
 
     case Target::EXECUTABLE:
     case Target::SHARED_LIBRARY:
@@ -55,11 +52,9 @@ void GetOutputsForTarget(const Settings* settings,
       OutputFile output_file = helper.GetTargetOutputFile(target);
 
       // The output file is relative to the build dir.
-      std::string absolute_output_file =
-          settings->build_settings()->build_dir().value();
-      absolute_output_file.append(output_file.value());
-
-      ret->push_back(absolute_output_file);
+      ret->push_back(SourceFile(
+          settings->build_settings()->build_dir().value() +
+          output_file.value()));
       break;
     }
 
@@ -169,13 +164,13 @@ Value RunGetTargetOutputs(Scope* scope,
     return Value();
   }
 
-  std::vector<std::string> files;
+  std::vector<SourceFile> files;
   GetOutputsForTarget(scope->settings(), target, &files);
 
   Value ret(function, Value::LIST);
   ret.list_value().reserve(files.size());
   for (size_t i = 0; i < files.size(); i++)
-    ret.list_value().push_back(Value(function, files[i]));
+    ret.list_value().push_back(Value(function, files[i].value()));
 
   return ret;
 }

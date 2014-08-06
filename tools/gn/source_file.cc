@@ -19,6 +19,13 @@ SourceFile::SourceFile(const base::StringPiece& p)
   DCHECK(!EndsWithSlash(value_));
 }
 
+SourceFile::SourceFile(SwapIn, std::string* value) {
+  value_.swap(*value);
+  DCHECK(!value_.empty());
+  DCHECK(value_[0] == '/');
+  DCHECK(!EndsWithSlash(value_));
+}
+
 SourceFile::~SourceFile() {
 }
 

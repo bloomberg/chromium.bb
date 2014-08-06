@@ -171,7 +171,6 @@ component("base") {
     "environment.cc",
     "environment.h",
     "event_recorder.h",
-    "event_recorder_stubs.cc",
     "event_recorder_win.cc",
     "file_descriptor_posix.h",
     "file_util.cc",
