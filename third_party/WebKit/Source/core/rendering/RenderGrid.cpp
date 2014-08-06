@@ -653,15 +653,46 @@ LayoutUnit RenderGrid::maxContentForChild(RenderBox* child, GridTrackSizingDirec
     return logicalHeightForChild(child, columnTracks);
 }
 
+size_t RenderGrid::gridItemSpan(const RenderBox* child, GridTrackSizingDirection direction)
+{
+    GridCoordinate childCoordinate = cachedGridCoordinate(child);
+    GridSpan childSpan = (direction == ForRows) ? childCoordinate.rows : childCoordinate.columns;
+
+    return childSpan.resolvedFinalPosition.toInt() - childSpan.resolvedInitialPosition.toInt() + 1;
+}
+
+typedef std::pair<RenderBox*, size_t> GridItemWithSpan;
+
+// This function sorts by span (.second in the pair) but also places pointers (.first in the pair) to the same object in
+// consecutive positions so duplicates could be easily removed with std::unique() for example.
+static bool gridItemWithSpanSorter(const GridItemWithSpan& item1, const GridItemWithSpan& item2)
+{
+    if (item1.second != item2.second)
+        return item1.second < item2.second;
+
+    return item1.first < item2.first;
+}
+
+static bool uniquePointerInPair(const GridItemWithSpan& item1, const GridItemWithSpan& item2)
+{
+    return item1.first == item2.first;
+}
+
 void RenderGrid::resolveContentBasedTrackSizingFunctions(GridTrackSizingDirection direction, GridSizingData& sizingData, LayoutUnit& availableLogicalSpace)
 {
     // FIXME: Split the grid tracks into groups that doesn't overlap a <flex> grid track (crbug.com/235258).
 
-    // FIXME: Per step 2 of the specification, we should order the grid items by increasing span.
-
     for (size_t i = 0; i < sizingData.contentSizedTracksIndex.size(); ++i) {
         GridIterator iterator(m_grid, direction, sizingData.contentSizedTracksIndex[i]);
-        while (RenderBox* gridItem = iterator.nextGridItem()) {
+        Vector<GridItemWithSpan> itemsSortedByIncreasingSpan;
+
+        while (RenderBox* gridItem = iterator.nextGridItem())
+            itemsSortedByIncreasingSpan.append(std::make_pair(gridItem, gridItemSpan(gridItem, direction)));
+        std::stable_sort(itemsSortedByIncreasingSpan.begin(), itemsSortedByIncreasingSpan.end(), gridItemWithSpanSorter);
+        Vector<GridItemWithSpan>::iterator end = std::unique(itemsSortedByIncreasingSpan.begin(), itemsSortedByIncreasingSpan.end(), uniquePointerInPair);
+
+        for (Vector<GridItemWithSpan>::iterator it = itemsSortedByIncreasingSpan.begin(); it != end; ++it) {
+            RenderBox* gridItem = it->first;
             resolveContentBasedTrackSizingFunctionsForItems(direction, sizingData, gridItem, &GridTrackSize::hasMinOrMaxContentMinTrackBreadth, &RenderGrid::minContentForChild, &GridTrack::usedBreadth, &GridTrack::growUsedBreadth);
             resolveContentBasedTrackSizingFunctionsForItems(direction, sizingData, gridItem, &GridTrackSize::hasMaxContentMinTrackBreadth, &RenderGrid::maxContentForChild, &GridTrack::usedBreadth, &GridTrack::growUsedBreadth);
             resolveContentBasedTrackSizingFunctionsForItems(direction, sizingData, gridItem, &GridTrackSize::hasMinOrMaxContentMaxTrackBreadth, &RenderGrid::minContentForChild, &GridTrack::maxBreadthIfNotInfinite, &GridTrack::growMaxBreadth);

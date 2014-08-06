@@ -127,6 +127,8 @@ private:
     bool tracksAreWiderThanMinTrackBreadth(GridTrackSizingDirection, const Vector<GridTrack>&);
 #endif
 
+    size_t gridItemSpan(const RenderBox*, GridTrackSizingDirection);
+
     size_t gridColumnCount() const
     {
         ASSERT(!gridIsDirty());
