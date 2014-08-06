@@ -21,7 +21,7 @@ else
 var invalidUrl = "%S";
 var succeeded = false;
 try {
-    window.navigator.isProtocolHandlerRegistered(protocol, invalidUrl);
+    window.navigator.isProtocolHandlerRegistered(scheme, invalidUrl);
     succeeded = false;
 } catch (e) {
     succeeded = true;
@@ -48,12 +48,12 @@ invalid_schemes.forEach(function (scheme) {
 });
 
 debug("\nCheck if isProtocolHandlerRegistered() works correctly. If isProtocolHandlerRegistered() returns 'new' state, it works well.");
-debug("'bitcoin' protocol will be registered, and then checks if the 'bitcoin' protocol is registered by isProtocolHandlerRegistered().\n");
+debug("'bitcoin' scheme will be registered, and then checks if the 'bitcoin' scheme is registered by isProtocolHandlerRegistered().\n");
 try {
-    // Register 'bitcoin' protocol for testing.
+    // Register 'bitcoin' scheme for testing.
     window.navigator.registerProtocolHandler('bitcoin', 'invalid scheme uri=%s', 'title');
 
-    var state = window.navigator.isProtocolHandlerRegistered("bitcoin", "valid protocol %s");
+    var state = window.navigator.isProtocolHandlerRegistered("bitcoin", "valid scheme %s");
     if (state == "registered")
         debug("PASS window.navigator.isProtocolHandlerRegistered returns 'registered' state. isProtocolHandlerRegistered() works correctly.");
     else if (state == "new")

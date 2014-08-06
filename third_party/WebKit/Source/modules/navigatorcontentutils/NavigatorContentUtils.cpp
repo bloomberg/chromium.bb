@@ -38,12 +38,12 @@
 
 namespace blink {
 
-static HashSet<String>* protocolWhitelist;
+static HashSet<String>* schemeWhitelist;
 
-static void initProtocolHandlerWhitelist()
+static void initCustomSchemeHandlerWhitelist()
 {
-    protocolWhitelist = new HashSet<String>;
-    static const char* const protocols[] = {
+    schemeWhitelist = new HashSet<String>;
+    static const char* const schemes[] = {
         "bitcoin",
         "geo",
         "im",
@@ -64,8 +64,8 @@ static void initProtocolHandlerWhitelist()
         "wtai",
         "xmpp",
     };
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(protocols); ++i)
-        protocolWhitelist->add(protocols[i]);
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(schemes); ++i)
+        schemeWhitelist->add(schemes[i]);
 }
 
 static bool verifyCustomHandlerURL(const KURL& baseURL, const String& url, ExceptionState& exceptionState)
@@ -94,17 +94,17 @@ static bool verifyCustomHandlerURL(const KURL& baseURL, const String& url, Excep
     return true;
 }
 
-static bool isProtocolWhitelisted(const String& scheme)
+static bool isSchemeWhitelisted(const String& scheme)
 {
-    if (!protocolWhitelist)
-        initProtocolHandlerWhitelist();
+    if (!schemeWhitelist)
+        initCustomSchemeHandlerWhitelist();
 
     StringBuilder builder;
     unsigned length = scheme.length();
     for (unsigned i = 0; i < length; ++i)
         builder.append(toASCIILower(scheme[i]));
 
-    return protocolWhitelist->contains(builder.toString());
+    return schemeWhitelist->contains(builder.toString());
 }
 
 static bool verifyCustomHandlerScheme(const String& scheme, ExceptionState& exceptionState)
@@ -123,10 +123,10 @@ static bool verifyCustomHandlerScheme(const String& scheme, ExceptionState& exce
         return false;
     }
 
-    if (isProtocolWhitelisted(scheme))
+    if (isSchemeWhitelisted(scheme))
         return true;
 
-    exceptionState.throwSecurityError("The scheme '" + scheme + "' doesn't belong to the protocol whitelist. Please prefix non-whitelisted schemes with the string 'web+'.");
+    exceptionState.throwSecurityError("The scheme '" + scheme + "' doesn't belong to the scheme whitelist. Please prefix non-whitelisted schemes with the string 'web+'.");
     return false;
 }
 

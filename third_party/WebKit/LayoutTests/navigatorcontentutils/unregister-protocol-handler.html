@@ -17,36 +17,36 @@ if (window.navigator.unregisterProtocolHandler)
 else
     debug('FAIL window.navigator.unregisterProtocolHandler is not defined.');
 
-var invalid_protocols = ['http', 'https', 'file', 'web+'];
-invalid_protocols.forEach(function (protocol) {
+var invalid_schemes = ['http', 'https', 'file', 'web+'];
+invalid_schemes.forEach(function (scheme) {
     var succeeded = false;
     try {
-        window.navigator.unregisterProtocolHandler(protocol, "invalid protocol %s", "title");
+        window.navigator.unregisterProtocolHandler(scheme, "invalid scheme %s", "title");
     } catch (e) {
         succeeded = 'SecurityError' == e.name;
         errorMessage = e.message;
     }
 
     if (succeeded)
-        debug('PASS Invalid protocol "' + protocol + '" threw SecurityError exception: "' + errorMessage + '".');
+        debug('PASS Invalid scheme "' + scheme + '" threw SecurityError exception: "' + errorMessage + '".');
     else
-        debug('FAIL Invalid protocol "' + protocol + '" allowed.');
+        debug('FAIL Invalid scheme "' + scheme + '" allowed.');
 });
 
-var valid_protocols = ['bitcoin', 'BitcoIn', 'geo', 'im', 'irc', 'Irc', 'ircs', 'magnet', 'MagneT', 'mailto', 'mms', 'news', 'nntp', 'sip', 'sms', 'smsto', 'SmsTo', 'ssh', 'tel', 'urn', 'webcal', 'WebCAL', 'wtai', 'WTAI', 'xmpp'];
-valid_protocols.forEach(function (protocol) {
+var valid_schemes = ['bitcoin', 'BitcoIn', 'geo', 'im', 'irc', 'Irc', 'ircs', 'magnet', 'MagneT', 'mailto', 'mms', 'news', 'nntp', 'sip', 'sms', 'smsto', 'SmsTo', 'ssh', 'tel', 'urn', 'webcal', 'WebCAL', 'wtai', 'WTAI', 'xmpp'];
+valid_schemes.forEach(function (scheme) {
     var succeeded = false;
     try {
-        window.navigator.unregisterProtocolHandler(protocol, "valid protocol %s", "title");
+        window.navigator.unregisterProtocolHandler(scheme, "valid scheme %s", "title");
         succeeded = true;
     } catch (e) {
         succeeded = false;
     }
 
     if (succeeded)
-        debug('PASS Valid protocol "' + protocol + '" allowed.');
+        debug('PASS Valid scheme "' + scheme + '" allowed.');
     else
-        debug('FAIL Valid protocol "' + protocol + '" failed.');
+        debug('FAIL Valid scheme "' + scheme + '" failed.');
 });
 
 var invalid_schemes = ['mailto:', 'ssh:/', 'magnet:+', 'tel:sip'];
@@ -69,7 +69,7 @@ var invalid_urls = ["", "%S"];
 invalid_urls.forEach(function (url) {
    var succeeded = false;
    try {
-        window.navigator.unregisterProtocolHandler('web+myprotocol', url, 'title');
+        window.navigator.unregisterProtocolHandler('web+myscheme', url, 'title');
     } catch (e) {
         succeeded = 'SyntaxError' == e.name;
         errorMessage = e.message;
@@ -84,7 +84,7 @@ invalid_urls.forEach(function (url) {
 // Test that the API has default no-op implementation.
 var succeeded = true;
 try {
-    window.navigator.unregisterProtocolHandler('web+myprotocol', "%s", "title");
+    window.navigator.unregisterProtocolHandler('web+myscheme', "%s", "title");
 } catch (e) {
     succeeded = false;
 }
@@ -94,28 +94,28 @@ if (succeeded)
 else
     debug('FAIL Invalid call did not succeed.');
 
-// Check if unregisterProtocolHandler can unregister protocol.
-debug("\nCheck if unregisterProtocolHandler can unregister protocol correctly. If isProtocolHandlerRegistered() returns 'new' state, unregisterProtoclHandler() works well.");
-debug("'bitcoin' protocol will be registered and unregistered for testing.\n");
+// Check if unregisterProtocolHandler can unregister scheme.
+debug("\nCheck if unregisterProtocolHandler can unregister scheme correctly. If isProtocolHandlerRegistered() returns 'new' state, unregisterProtoclHandler() works well.");
+debug("'bitcoin' scheme will be registered and unregistered for testing.\n");
 try {
-    // Register 'bitcoin' protocol for testing.
+    // Register 'bitcoin' scheme for testing.
     window.navigator.registerProtocolHandler('bitcoin', 'invalid scheme uri=%s', 'title');
-    var state = window.navigator.isProtocolHandlerRegistered('bitcoin', 'valid protocol %s');
+    var state = window.navigator.isProtocolHandlerRegistered('bitcoin', 'valid scheme %s');
     if (state == "registered")
         debug("PASS window.navigator.isProtocolHandlerRegistered returns 'registered' state. 'bitcoin' is registered successfully.");
     else if (state == "new")
-        debug("FAIL window.navigator.isProtocolHandlerRegistered returns 'new' state. Fail to register 'bitcoin' protocol.");
+        debug("FAIL window.navigator.isProtocolHandlerRegistered returns 'new' state. Fail to register 'bitcoin' scheme.");
     else if (state == "declined")
-        debug("FAIL window.navigator.isProtocolHandlerRegistered returns 'declined' state. Fail to register 'bitcoin' protocol.");
+        debug("FAIL window.navigator.isProtocolHandlerRegistered returns 'declined' state. Fail to register 'bitcoin' scheme.");
 
     window.navigator.unregisterProtocolHandler('bitcoin', 'invalid scheme uri=%s');
-    var state = window.navigator.isProtocolHandlerRegistered('bitcoin', 'valid protocol %s');
+    var state = window.navigator.isProtocolHandlerRegistered('bitcoin', 'valid scheme %s');
     if (state == "new")
         debug("PASS window.navigator.isProtocolHandlerRegistered returns 'new' state. 'bitcoin' is unregistered successfully.");
     else if (state == "registered")
-        debug("FAIL window.navigator.isProtocolHandlerRegistered returns 'registered' state. Fail to unregister 'bitcoin' protocol.");
+        debug("FAIL window.navigator.isProtocolHandlerRegistered returns 'registered' state. Fail to unregister 'bitcoin' scheme.");
     else if (state == "declined")
-        debug("FAIL window.navigator.isProtocolHandlerRegistered returns 'declined' state. Fail to unregister 'bitcoin' protocol.");
+        debug("FAIL window.navigator.isProtocolHandlerRegistered returns 'declined' state. Fail to unregister 'bitcoin' scheme.");
 } catch (e) {
     debug('FAIL window.navigator.isProtocolHandlerRegistered call is failed: "' + e.message + '".');
 }

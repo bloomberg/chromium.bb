@@ -8,7 +8,7 @@ PASS Invalid scheme "magnet:+" falied.
 PASS Invalid scheme "tel:sip" falied.
 
 Check if isProtocolHandlerRegistered() works correctly. If isProtocolHandlerRegistered() returns 'new' state, it works well.
-'bitcoin' protocol will be registered, and then checks if the 'bitcoin' protocol is registered by isProtocolHandlerRegistered().
+'bitcoin' scheme will be registered, and then checks if the 'bitcoin' scheme is registered by isProtocolHandlerRegistered().
 
 PASS window.navigator.isProtocolHandlerRegistered returns 'registered' state. isProtocolHandlerRegistered() works correctly.
 

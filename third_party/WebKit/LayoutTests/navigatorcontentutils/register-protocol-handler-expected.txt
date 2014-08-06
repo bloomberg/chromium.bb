@@ -1,35 +1,35 @@
 This test makes sure that navigator.registerProtocolHandler throws the proper exceptions and has no-op default implementation.
 
 PASS window.navigator.registerProtocolHandler is defined.
-PASS Invalid protocol "http" threw SecurityError exception: "Failed to execute 'registerProtocolHandler' on 'Navigator': The scheme 'http' doesn't belong to the protocol whitelist. Please prefix non-whitelisted schemes with the string 'web+'.".
-PASS Invalid protocol "https" threw SecurityError exception: "Failed to execute 'registerProtocolHandler' on 'Navigator': The scheme 'https' doesn't belong to the protocol whitelist. Please prefix non-whitelisted schemes with the string 'web+'.".
-PASS Invalid protocol "file" threw SecurityError exception: "Failed to execute 'registerProtocolHandler' on 'Navigator': The scheme 'file' doesn't belong to the protocol whitelist. Please prefix non-whitelisted schemes with the string 'web+'.".
-PASS Invalid protocol "web+" threw SecurityError exception: "Failed to execute 'registerProtocolHandler' on 'Navigator': The scheme 'web+' is less than five characters long.".
-PASS Valid protocol "bitcoin" allowed.
-PASS Valid protocol "BitcoIn" allowed.
-PASS Valid protocol "geo" allowed.
-PASS Valid protocol "im" allowed.
-PASS Valid protocol "irc" allowed.
-PASS Valid protocol "Irc" allowed.
-PASS Valid protocol "ircs" allowed.
-PASS Valid protocol "magnet" allowed.
-PASS Valid protocol "MagneT" allowed.
-PASS Valid protocol "mailto" allowed.
-PASS Valid protocol "mms" allowed.
-PASS Valid protocol "news" allowed.
-PASS Valid protocol "nntp" allowed.
-PASS Valid protocol "sip" allowed.
-PASS Valid protocol "sms" allowed.
-PASS Valid protocol "smsto" allowed.
-PASS Valid protocol "SmsTo" allowed.
-PASS Valid protocol "ssh" allowed.
-PASS Valid protocol "tel" allowed.
-PASS Valid protocol "urn" allowed.
-PASS Valid protocol "webcal" allowed.
-PASS Valid protocol "WebCAL" allowed.
-PASS Valid protocol "wtai" allowed.
-PASS Valid protocol "WTAI" allowed.
-PASS Valid protocol "xmpp" allowed.
+PASS Invalid scheme "http" threw SecurityError exception: "Failed to execute 'registerProtocolHandler' on 'Navigator': The scheme 'http' doesn't belong to the scheme whitelist. Please prefix non-whitelisted schemes with the string 'web+'.".
+PASS Invalid scheme "https" threw SecurityError exception: "Failed to execute 'registerProtocolHandler' on 'Navigator': The scheme 'https' doesn't belong to the scheme whitelist. Please prefix non-whitelisted schemes with the string 'web+'.".
+PASS Invalid scheme "file" threw SecurityError exception: "Failed to execute 'registerProtocolHandler' on 'Navigator': The scheme 'file' doesn't belong to the scheme whitelist. Please prefix non-whitelisted schemes with the string 'web+'.".
+PASS Invalid scheme "web+" threw SecurityError exception: "Failed to execute 'registerProtocolHandler' on 'Navigator': The scheme 'web+' is less than five characters long.".
+PASS Valid scheme "bitcoin" allowed.
+PASS Valid scheme "BitcoIn" allowed.
+PASS Valid scheme "geo" allowed.
+PASS Valid scheme "im" allowed.
+PASS Valid scheme "irc" allowed.
+PASS Valid scheme "Irc" allowed.
+PASS Valid scheme "ircs" allowed.
+PASS Valid scheme "magnet" allowed.
+PASS Valid scheme "MagneT" allowed.
+PASS Valid scheme "mailto" allowed.
+PASS Valid scheme "mms" allowed.
+PASS Valid scheme "news" allowed.
+PASS Valid scheme "nntp" allowed.
+PASS Valid scheme "sip" allowed.
+PASS Valid scheme "sms" allowed.
+PASS Valid scheme "smsto" allowed.
+PASS Valid scheme "SmsTo" allowed.
+PASS Valid scheme "ssh" allowed.
+PASS Valid scheme "tel" allowed.
+PASS Valid scheme "urn" allowed.
+PASS Valid scheme "webcal" allowed.
+PASS Valid scheme "WebCAL" allowed.
+PASS Valid scheme "wtai" allowed.
+PASS Valid scheme "WTAI" allowed.
+PASS Valid scheme "xmpp" allowed.
 PASS Invalid scheme "mailto:" falied.
 PASS Invalid scheme "ssh:/" falied.
 PASS Invalid scheme "magnet:+" falied.
@@ -38,8 +38,8 @@ PASS Invalid url "" threw SyntaxError exception: "Failed to execute 'registerPro
 PASS Invalid url "%S" threw SyntaxError exception: "Failed to execute 'registerProtocolHandler' on 'Navigator': The url provided ('%S') does not contain '%s'.".
 PASS Valid call succeeded.
 
-Check if registerProtocolHandler can register protocol correctly. If isProtocolHandlerRegistered() returns 'registered' state, registerProtoclHandler() works well.
-'bitcoin' protocol will be registered for testing.
+Check if registerProtocolHandler can register scheme correctly. If isProtocolHandlerRegistered() returns 'registered' state, registerProtoclHandler() works well.
+'bitcoin' scheme will be registered for testing.
 
 PASS window.navigator.isProtocolHandlerRegistered returns 'registered' state. 'bitcoin' is registered successfully.
 
