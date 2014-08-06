@@ -6,7 +6,7 @@ import unittest
 
 from telemetry.core import browser_options
 from telemetry.page import page_runner
-from telemetry.results import page_measurement_results
+from telemetry.results import page_test_results
 from telemetry.unittest import simple_mock
 
 from measurements import page_cycler
@@ -142,7 +142,7 @@ class PageCyclerUnitTest(unittest.TestCase):
     tab = FakeTab()
 
     for i in range(5):
-      results = page_measurement_results.PageMeasurementResults()
+      results = page_test_results.PageTestResults()
       results.WillRunPage(page)
       cycler.WillNavigateToPage(page, tab)
       self.assertEqual(max(0, i - 2), tab.clear_cache_calls,
@@ -167,7 +167,7 @@ class PageCyclerUnitTest(unittest.TestCase):
     tab = FakeTab()
     for i in range(3):
       for page in pages:
-        results = page_measurement_results.PageMeasurementResults()
+        results = page_test_results.PageTestResults()
         results.WillRunPage(page)
         cycler.WillNavigateToPage(page, tab)
         cycler.MeasurePage(page, tab, results)
@@ -192,7 +192,7 @@ class PageCyclerUnitTest(unittest.TestCase):
 
     for i in range(2):
       for page in pages:
-        results = page_measurement_results.PageMeasurementResults()
+        results = page_test_results.PageTestResults()
         results.WillRunPage(page)
         cycler.WillNavigateToPage(page, tab)
         cycler.MeasurePage(page, tab, results)

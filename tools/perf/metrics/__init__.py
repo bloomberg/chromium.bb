@@ -35,7 +35,7 @@ class Metric(object):
     """Add the data collected into the results object for a measurement.
 
     Metrics may implement AddResults to provide a common way to add results
-    to the PageMeasurementResults in PageMeasurement.AddMeasurement --
+    to the PageTestResults in PageMeasurement.AddMeasurement --
     results should be added with results.AddValue(...).
     """
     raise NotImplementedError()

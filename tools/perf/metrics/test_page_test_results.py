@@ -3,14 +3,14 @@
 # found in the LICENSE file.
 
 from telemetry.page import page as page_module
-from telemetry.results import page_measurement_results
+from telemetry.results import page_test_results
 from telemetry.value import scalar
 
 
-class TestPageMeasurementResults(
-    page_measurement_results.PageMeasurementResults):
+class TestPageTestResults(
+    page_test_results.PageTestResults):
   def __init__(self, test):
-    super(TestPageMeasurementResults, self).__init__()
+    super(TestPageTestResults, self).__init__()
     self.test = test
     page = page_module.Page("http://www.google.com", {})
     self.WillRunPage(page)

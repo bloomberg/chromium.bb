@@ -6,7 +6,7 @@ import base64
 import unittest
 
 from integration_tests import network_metrics
-from metrics import test_page_measurement_results
+from metrics import test_page_test_results
 from telemetry.timeline import event
 
 
@@ -159,7 +159,7 @@ class NetworkMetricTest(unittest.TestCase):
     metric.compute_data_saving = True
 
     self.assertTrue(len(events), len(list(metric.IterResponses(None))))
-    results = test_page_measurement_results.TestPageMeasurementResults(self)
+    results = test_page_test_results.TestPageTestResults(self)
     metric.AddResults(None, results)
 
     cl = len(HTML_BODY) + GZIPPED_HTML_LEN + len(IMAGE_BODY)

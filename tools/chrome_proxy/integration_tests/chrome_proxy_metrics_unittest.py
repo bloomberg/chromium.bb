@@ -7,7 +7,7 @@ import unittest
 
 from integration_tests import chrome_proxy_metrics as metrics
 from integration_tests import network_metrics_unittest as network_unittest
-from metrics import test_page_measurement_results
+from metrics import test_page_test_results
 
 
 # Timeline events used in tests.
@@ -121,7 +121,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
     metric.SetEvents(events)
 
     self.assertTrue(len(events), len(list(metric.IterResponses(None))))
-    results = test_page_measurement_results.TestPageMeasurementResults(self)
+    results = test_page_test_results.TestPageTestResults(self)
 
     metric.AddResultsForDataSaving(None, results)
     results.AssertHasPageSpecificScalarValue('resources_via_proxy', 'count', 2)
@@ -136,7 +136,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
         EVENT_IMAGE_PROXY_CACHED,
         EVENT_IMAGE_DIRECT])
 
-    results = test_page_measurement_results.TestPageMeasurementResults(self)
+    results = test_page_test_results.TestPageTestResults(self)
 
     missing_via_exception = False
     try:
@@ -160,7 +160,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
         EVENT_HTML_PROXY_DEPRECATED_VIA,
         EVENT_IMAGE_PROXY_CACHED,
         EVENT_IMAGE_DIRECT])
-    results = test_page_measurement_results.TestPageMeasurementResults(self)
+    results = test_page_test_results.TestPageTestResults(self)
 
     bypass_exception = False
     try:
@@ -180,7 +180,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
     metric.SetEvents([
         EVENT_HTML_PROXY,
         EVENT_HTML_PROXY_DEPRECATED_VIA])
-    results = test_page_measurement_results.TestPageMeasurementResults(self)
+    results = test_page_test_results.TestPageTestResults(self)
 
     fallback_exception = False
     info = {}
@@ -216,13 +216,13 @@ class ChromeProxyMetricTest(unittest.TestCase):
   def testChromeProxyMetricForSafebrowsing(self):
     metric = metrics.ChromeProxyMetric()
     metric.SetEvents([EVENT_MALWARE_PROXY])
-    results = test_page_measurement_results.TestPageMeasurementResults(self)
+    results = test_page_test_results.TestPageTestResults(self)
 
     metric.AddResultsForSafebrowsing(None, results)
     results.AssertHasPageSpecificScalarValue('safebrowsing', 'boolean', True)
 
     # Clear results and metrics to test no response for safebrowsing
-    results = test_page_measurement_results.TestPageMeasurementResults(self)
+    results = test_page_test_results.TestPageTestResults(self)
     metric.SetEvents([])
     metric.AddResultsForSafebrowsing(None, results)
     results.AssertHasPageSpecificScalarValue('safebrowsing', 'boolean', True)

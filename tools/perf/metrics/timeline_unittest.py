@@ -4,7 +4,7 @@
 
 import unittest
 
-from metrics import test_page_measurement_results
+from metrics import test_page_test_results
 from metrics import timeline
 from telemetry.timeline import model as model_module
 from telemetry.web_perf import timeline_interaction_record as tir_module
@@ -15,7 +15,7 @@ def _GetInteractionRecord(start, end):
 
 class LoadTimesTimelineMetric(unittest.TestCase):
   def GetResults(self, metric, model, renderer_thread, interaction_records):
-    results = test_page_measurement_results.TestPageMeasurementResults(self)
+    results = test_page_test_results.TestPageTestResults(self)
     metric.AddResults(model, renderer_thread, interaction_records, results)
     return results
 
@@ -90,7 +90,7 @@ class LoadTimesTimelineMetric(unittest.TestCase):
 
 class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
   def GetResults(self, metric, model, renderer_thread, interaction_record):
-    results = test_page_measurement_results.TestPageMeasurementResults(self)
+    results = test_page_test_results.TestPageTestResults(self)
     metric.AddResults(model, renderer_thread, interaction_record,
                                 results)
     return results
