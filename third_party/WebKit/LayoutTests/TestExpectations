@@ -1297,7 +1297,7 @@ crbug.com/30536 [ Win ] http/tests/ssl/referer-301.html [ Timeout Pass ]
 
 crbug.com/399430 [ Mac ] fast/transforms/transformed-focused-text-input.html [ Pass ImageOnlyFailure ]
 
-crbug.com/400978 [ SnowLeopard Debug ] fast/transforms/shadows.html [ NeedsRebaseline ]
+crbug.com/400978 [ SnowLeopard Debug ] fast/transforms/shadows.html [ Pass ImageOnlyFailure ]
 
 crbug.com/390204 [ Release ] inspector/console/console-viewport-selection.html [ Pass Failure ]
 crbug.com/390204 [ Debug ] inspector/console/console-viewport-selection.html [ Pass Failure Slow ]
