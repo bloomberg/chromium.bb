@@ -21,9 +21,10 @@ These parameters will be passed through to the recipe's main method.
 import json
 import optparse
 import os
+import pipes
 import subprocess
 import sys
-import pipes
+import textwrap
 
 from distutils import spawn
 
@@ -197,20 +198,24 @@ def usage(msg=None):
   if msg:
     print 'Error:', msg
 
-  print (
-"""
-usage: %s [options] <recipe> [--property=value [--property2=value2 ...]]
+  print textwrap.dedent("""\
+    usage: %s [options] <recipe> [--property=value [--property2=value2 ...]]
 
-This script can be used to download the Chromium sources. See
-http://www.chromium.org/developers/how-tos/get-the-code
-for full usage instructions.
+    This script can be used to download the Chromium sources. See
+    http://www.chromium.org/developers/how-tos/get-the-code
+    for full usage instructions.
 
-Valid options:
-   -h, --help, help   Print this message.
-   --nohooks          Don't run hooks after checkout.
-   -n, --dry-run      Don't run commands, only print them.
-   --no-history       Perform shallow clones, don't fetch the full git history.
-""" % os.path.basename(sys.argv[0]))
+    Valid options:
+       -h, --help, help   Print this message.
+       --nohooks          Don't run hooks after checkout.
+       -n, --dry-run      Don't run commands, only print them.
+       --no-history       Perform shallow clones, don't fetch the full git history.
+
+    Valid fetch recipes:""") % os.path.basename(sys.argv[0])
+  for fname in os.listdir(os.path.join(SCRIPT_PATH, 'recipes')):
+    if fname.endswith('.py'):
+      print '  ' + fname[:-3]
+
   sys.exit(bool(msg))
 
 
