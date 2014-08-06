@@ -41,6 +41,7 @@ public:
     struct Result {
         unsigned numberOfLiveNodes;
         unsigned numberOfLiveDocuments;
+        unsigned numberOfLiveRenderObjects;
     };
 
     virtual void onLeakDetectionComplete(const Result&) = 0;

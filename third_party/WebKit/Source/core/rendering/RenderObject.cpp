@@ -208,6 +208,7 @@ RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
 }
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, renderObjectCounter, ("RenderObject"));
+unsigned RenderObject::s_instanceCount = 0;
 
 RenderObject::RenderObject(Node* node)
     : ImageResourceClient()
@@ -225,6 +226,7 @@ RenderObject::RenderObject(Node* node)
 #ifndef NDEBUG
     renderObjectCounter.increment();
 #endif
+    ++s_instanceCount;
 }
 
 RenderObject::~RenderObject()
@@ -234,6 +236,7 @@ RenderObject::~RenderObject()
 #ifndef NDEBUG
     renderObjectCounter.decrement();
 #endif
+    --s_instanceCount;
 }
 
 String RenderObject::debugName() const

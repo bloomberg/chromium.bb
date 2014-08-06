@@ -341,6 +341,7 @@ public:
 #endif
 
     static RenderObject* createObject(Element*, RenderStyle*);
+    static unsigned instanceCount() { return s_instanceCount; }
 
     // RenderObjects are allocated out of the rendering partition.
     void* operator new(size_t);
@@ -1335,6 +1336,8 @@ private:
     // This stores the position in the paint invalidation container's coordinate.
     // It is used to detect renderer shifts that forces a full invalidation.
     LayoutPoint m_previousPositionFromPaintInvalidationContainer;
+
+    static unsigned s_instanceCount;
 };
 
 // FIXME: remove this once the render object lifecycle ASSERTS are no longer hit.
