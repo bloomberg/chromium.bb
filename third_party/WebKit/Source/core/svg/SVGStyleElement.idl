@@ -28,6 +28,6 @@ interface SVGStyleElement : SVGElement {
     attribute boolean disabled;
     attribute DOMString type;
     attribute DOMString media;
-    attribute DOMString title;
+    [MeasureAs=SVGStyleElementTitle] attribute DOMString title;
 };
 
