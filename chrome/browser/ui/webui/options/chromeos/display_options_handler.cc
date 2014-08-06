@@ -54,12 +54,6 @@ int64 GetDisplayId(const base::ListValue* args) {
   return display_id;
 }
 
-bool CompareDisplayMode(ash::DisplayMode d1, ash::DisplayMode d2) {
-  if (d1.size.GetArea() == d2.size.GetArea())
-    return d1.refresh_rate < d2.refresh_rate;
-  return d1.size.GetArea() < d2.size.GetArea();
-}
-
 base::string16 GetColorProfileName(ui::ColorCalibrationProfile profile) {
   switch (profile) {
     case ui::COLOR_PROFILE_STANDARD:
@@ -80,6 +74,69 @@ base::string16 GetColorProfileName(ui::ColorCalibrationProfile profile) {
 
   NOTREACHED();
   return base::string16();
+}
+
+int GetIntOrDouble(const base::DictionaryValue* dict,
+                   const std::string& field) {
+  double double_result = 0;
+  if (dict->GetDouble(field, &double_result))
+    return static_cast<int>(double_result);
+
+  int result = 0;
+  dict->GetInteger(field, &result);
+  return result;
+}
+
+bool GetFloat(const base::DictionaryValue* dict,
+              const std::string& field,
+              float* result) {
+  double double_result = 0;
+  if (dict->GetDouble(field, &double_result)) {
+    *result = static_cast<float>(double_result);
+    return true;
+  }
+  return false;
+}
+
+bool ConvertValueToDisplayMode(const base::DictionaryValue* dict,
+                               ash::DisplayMode* mode) {
+  mode->size.set_width(GetIntOrDouble(dict, "originalWidth"));
+  mode->size.set_height(GetIntOrDouble(dict, "originalHeight"));
+  if (mode->size.IsEmpty()) {
+    LOG(ERROR) << "missing width or height.";
+    return false;
+  }
+  if (!GetFloat(dict, "refreshRate", &mode->refresh_rate)) {
+    LOG(ERROR) << "missing refreshRate.";
+    return false;
+  }
+  if (!GetFloat(dict, "scale", &mode->ui_scale)) {
+    LOG(ERROR) << "missing ui-scale.";
+    return false;
+  }
+  if (!GetFloat(dict, "deviceScaleFactor", &mode->device_scale_factor)) {
+    LOG(ERROR) << "missing deviceScaleFactor.";
+    return false;
+  }
+  return true;
+}
+
+base::DictionaryValue* ConvertDisplayModeToValue(int64 display_id,
+                                                 const ash::DisplayMode& mode) {
+  base::DictionaryValue* result = new base::DictionaryValue();
+  gfx::Size size_dip = mode.GetSizeInDIP();
+  result->SetInteger("width", size_dip.width());
+  result->SetInteger("height", size_dip.height());
+  result->SetInteger("originalWidth", mode.size.width());
+  result->SetInteger("originalHeight", mode.size.height());
+  result->SetDouble("deviceScaleFactor", mode.device_scale_factor);
+  result->SetDouble("scale", mode.ui_scale);
+  result->SetDouble("refreshRate", mode.refresh_rate);
+  result->SetBoolean("isBest", mode.native);
+  result->SetBoolean(
+      "selected", mode.IsEquivalent(
+          GetDisplayManager()->GetActiveModeForDisplayId(display_id)));
+  return result;
 }
 
 }  // namespace
@@ -159,12 +216,8 @@ void DisplayOptionsHandler::RegisterMessages() {
       base::Bind(&DisplayOptionsHandler::HandleDisplayLayout,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "setUIScale",
-      base::Bind(&DisplayOptionsHandler::HandleSetUIScale,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "setResolution",
-      base::Bind(&DisplayOptionsHandler::HandleSetResolution,
+      "setDisplayMode",
+      base::Bind(&DisplayOptionsHandler::HandleSetDisplayMode,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "setOrientation",
@@ -217,55 +270,13 @@ void DisplayOptionsHandler::SendDisplayInfo(
     js_display->SetBoolean("isInternal", display.IsInternal());
     js_display->SetInteger("orientation",
                            static_cast<int>(display_info.rotation()));
-    std::vector<ash::DisplayMode> display_modes;
-    std::vector<float> ui_scales;
-    if (display.IsInternal()) {
-      ui_scales = DisplayManager::GetScalesForDisplay(display_info);
-      gfx::SizeF base_size = display_info.bounds_in_native().size();
-      base_size.Scale(1.0f / display_info.device_scale_factor());
-      if (display_info.rotation() == gfx::Display::ROTATE_90 ||
-          display_info.rotation() == gfx::Display::ROTATE_270) {
-        float tmp = base_size.width();
-        base_size.set_width(base_size.height());
-        base_size.set_height(tmp);
-      }
-      for (size_t i = 0; i < ui_scales.size(); ++i) {
-        gfx::SizeF new_size = base_size;
-        new_size.Scale(ui_scales[i]);
-        display_modes.push_back(ash::DisplayMode(
-            gfx::ToFlooredSize(new_size), -1.0f, false, false));
-      }
-    } else {
-      for (size_t i = 0; i < display_info.display_modes().size(); ++i)
-        display_modes.push_back(display_info.display_modes()[i]);
-    }
-    std::sort(display_modes.begin(), display_modes.end(), CompareDisplayMode);
 
     base::ListValue* js_resolutions = new base::ListValue();
-    gfx::Size current_size = display_info.bounds_in_native().size();
+    const std::vector<ash::DisplayMode>& display_modes =
+        display_info.display_modes();
     for (size_t i = 0; i < display_modes.size(); ++i) {
-      base::DictionaryValue* resolution_info = new base::DictionaryValue();
-      gfx::Size resolution = display_modes[i].size;
-      if (!ui_scales.empty()) {
-        resolution_info->SetDouble("scale", ui_scales[i]);
-        if (ui_scales[i] == 1.0f)
-          resolution_info->SetBoolean("isBest", true);
-        resolution_info->SetBoolean(
-            "selected", display_info.configured_ui_scale() == ui_scales[i]);
-      } else {
-        // Picks the largest one as the "best", which is the last element
-        // because |display_modes| is sorted by its area.
-        if (i == display_modes.size() - 1)
-          resolution_info->SetBoolean("isBest", true);
-        resolution_info->SetBoolean("selected", (resolution == current_size));
-      }
-      resolution_info->SetInteger("width", resolution.width());
-      resolution_info->SetInteger("height", resolution.height());
-      if (display_modes[i].refresh_rate > 0.0f) {
-        resolution_info->SetDouble("refreshRate",
-                                   display_modes[i].refresh_rate);
-      }
-      js_resolutions->Append(resolution_info);
+      js_resolutions->Append(
+          ConvertDisplayModeToValue(display.id(), display_modes[i]));
     }
     js_display->Set("resolutions", js_resolutions);
 
@@ -359,69 +370,33 @@ void DisplayOptionsHandler::HandleDisplayLayout(const base::ListValue* args) {
           static_cast<int>(offset)));
 }
 
-void DisplayOptionsHandler::HandleSetUIScale(const base::ListValue* args) {
+void DisplayOptionsHandler::HandleSetDisplayMode(const base::ListValue* args) {
   DCHECK(!args->empty());
 
   int64 display_id = GetDisplayId(args);
   if (display_id == gfx::Display::kInvalidDisplayID)
     return;
 
-  double ui_scale = 0.0f;
-  if (!args->GetDouble(1, &ui_scale) || ui_scale == 0.0f) {
-    LOG(ERROR) << "Can't find new ui_scale";
+  const base::DictionaryValue* mode_data = NULL;
+  if (!args->GetDictionary(1, &mode_data)) {
+    LOG(ERROR) << "Failed to get mode data";
     return;
   }
 
-  GetDisplayManager()->SetDisplayUIScale(display_id, ui_scale);
-}
-
-void DisplayOptionsHandler::HandleSetResolution(const base::ListValue* args) {
-  DCHECK(!args->empty());
-  int64 display_id = GetDisplayId(args);
-  if (display_id == gfx::Display::kInvalidDisplayID)
+  ash::DisplayMode mode;
+  if (!ConvertValueToDisplayMode(mode_data, &mode))
     return;
 
   content::RecordAction(
       base::UserMetricsAction("Options_DisplaySetResolution"));
-  double width = 0.0f;
-  double height = 0.0f;
-  if (!args->GetDouble(1, &width) || width == 0.0f) {
-    LOG(ERROR) << "Can't find new width";
-    return;
+  ash::DisplayManager* display_manager = GetDisplayManager();
+  ash::DisplayMode current_mode =
+      display_manager->GetActiveModeForDisplayId(display_id);
+  if (display_manager->SetDisplayMode(display_id, mode)) {
+    ash::Shell::GetInstance()->resolution_notification_controller()->
+        PrepareNotification(
+            display_id, current_mode, mode, base::Bind(&StoreDisplayPrefs));
   }
-  if (!args->GetDouble(2, &height) || height == 0.0f) {
-    LOG(ERROR) << "Can't find new height";
-    return;
-  }
-
-  const ash::DisplayInfo& display_info =
-      GetDisplayManager()->GetDisplayInfo(display_id);
-  gfx::Size new_resolution = gfx::ToFlooredSize(gfx::SizeF(width, height));
-  gfx::Size old_resolution = display_info.bounds_in_native().size();
-  bool has_new_resolution = false;
-  bool has_old_resolution = false;
-  for (size_t i = 0; i < display_info.display_modes().size(); ++i) {
-    ash::DisplayMode display_mode = display_info.display_modes()[i];
-    if (display_mode.size == new_resolution)
-      has_new_resolution = true;
-    if (display_mode.size == old_resolution)
-      has_old_resolution = true;
-  }
-  if (!has_new_resolution) {
-    LOG(ERROR) << "No new resolution " << new_resolution.ToString()
-               << " is found in the display info " << display_info.ToString();
-    return;
-  }
-  if (!has_old_resolution) {
-    LOG(ERROR) << "No old resolution " << old_resolution.ToString()
-               << " is found in the display info " << display_info.ToString();
-    return;
-  }
-
-  ash::Shell::GetInstance()->resolution_notification_controller()->
-      SetDisplayResolutionAndNotify(
-          display_id, old_resolution, new_resolution,
-          base::Bind(&StoreDisplayPrefs));
 }
 
 void DisplayOptionsHandler::HandleSetOrientation(const base::ListValue* args) {

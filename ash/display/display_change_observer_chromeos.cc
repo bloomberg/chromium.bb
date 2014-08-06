@@ -46,25 +46,60 @@ const DeviceScaleFactorDPIThreshold kThresholdTable[] = {
 // 1 inch in mm.
 const float kInchInMm = 25.4f;
 
-// Display mode list is sorted by (in descending priority):
-//  * the area in pixels.
-//  * refresh rate.
+// The minimum pixel width whose monitor can be called as '4K'.
+const int kMinimumWidthFor4K = 3840;
+
+// The list of device scale factors (in addition to 1.0f) which is
+// available in extrenal large monitors.
+const float kAdditionalDeviceScaleFactorsFor4k[] = {1.25f, 2.0f};
+
+// Display mode list is sorted by:
+//  * the area in pixels in ascending order
+//  * refresh rate in descending order
 struct DisplayModeSorter {
   bool operator()(const DisplayMode& a, const DisplayMode& b) {
-    if (a.size.GetArea() == b.size.GetArea())
+    gfx::Size size_a_dip = a.GetSizeInDIP();
+    gfx::Size size_b_dip = b.GetSizeInDIP();
+    if (size_a_dip.GetArea() == size_b_dip.GetArea())
       return (a.refresh_rate > b.refresh_rate);
-    return (a.size.GetArea() > b.size.GetArea());
+    return (size_a_dip.GetArea() < size_b_dip.GetArea());
   }
 };
 
 }  // namespace
 
 // static
-std::vector<DisplayMode> DisplayChangeObserver::GetDisplayModeList(
+std::vector<DisplayMode> DisplayChangeObserver::GetInternalDisplayModeList(
+    const DisplayInfo& display_info,
+    const DisplayConfigurator::DisplayState& output) {
+  std::vector<DisplayMode> display_mode_list;
+  const ui::DisplayMode* ui_native_mode = output.display->native_mode();
+  DisplayMode native_mode(ui_native_mode->size(),
+                          ui_native_mode->refresh_rate(),
+                          ui_native_mode->is_interlaced(),
+                          true);
+  native_mode.device_scale_factor = display_info.device_scale_factor();
+  std::vector<float> ui_scales =
+      DisplayManager::GetScalesForDisplay(display_info);
+  for (size_t i = 0; i < ui_scales.size(); ++i) {
+    DisplayMode mode = native_mode;
+    mode.ui_scale = ui_scales[i];
+    mode.native = (ui_scales[i] == 1.0f);
+    display_mode_list.push_back(mode);
+  }
+
+  std::sort(
+      display_mode_list.begin(), display_mode_list.end(), DisplayModeSorter());
+  return display_mode_list;
+}
+
+// static
+std::vector<DisplayMode> DisplayChangeObserver::GetExternalDisplayModeList(
     const DisplayConfigurator::DisplayState& output) {
   typedef std::map<std::pair<int, int>, DisplayMode> DisplayModeMap;
   DisplayModeMap display_mode_map;
 
+  DisplayMode native_mode;
   for (std::vector<const ui::DisplayMode*>::const_iterator it =
            output.display->modes().begin();
        it != output.display->modes().end();
@@ -76,6 +111,8 @@ std::vector<DisplayMode> DisplayChangeObserver::GetDisplayModeList(
                                    mode_info.refresh_rate(),
                                    mode_info.is_interlaced(),
                                    output.display->native_mode() == *it);
+    if (display_mode.native)
+      native_mode = display_mode;
 
     // Add the display mode if it isn't already present and override interlaced
     // display modes with non-interlaced ones.
@@ -92,6 +129,17 @@ std::vector<DisplayMode> DisplayChangeObserver::GetDisplayModeList(
        ++iter) {
     display_mode_list.push_back(iter->second);
   }
+
+  if (native_mode.size.width() >= kMinimumWidthFor4K) {
+    for (size_t i = 0; i < arraysize(kAdditionalDeviceScaleFactorsFor4k);
+         ++i) {
+      DisplayMode mode = native_mode;
+      mode.device_scale_factor = kAdditionalDeviceScaleFactorsFor4k[i];
+      mode.native = false;
+      display_mode_list.push_back(mode);
+    }
+  }
+
   std::sort(
       display_mode_list.begin(), display_mode_list.end(), DisplayModeSorter());
   return display_mode_list;
@@ -150,8 +198,6 @@ void DisplayChangeObserver::OnDisplayModeChanged(
     }
     gfx::Rect display_bounds(state.display->origin(), mode_info->size());
 
-    std::vector<DisplayMode> display_modes = GetDisplayModeList(state);
-
     std::string name =
         state.display->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL ?
             l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME) :
@@ -168,13 +214,19 @@ void DisplayChangeObserver::OnDisplayModeChanged(
     new_info.set_device_scale_factor(device_scale_factor);
     new_info.SetBounds(display_bounds);
     new_info.set_native(true);
-    new_info.set_display_modes(display_modes);
     new_info.set_touch_support(state.touch_device_id == 0 ?
         gfx::Display::TOUCH_SUPPORT_UNAVAILABLE :
         gfx::Display::TOUCH_SUPPORT_AVAILABLE);
     new_info.set_touch_device_id(state.touch_device_id);
     new_info.set_is_aspect_preserving_scaling(
         state.display->is_aspect_preserving_scaling());
+
+    std::vector<DisplayMode> display_modes =
+        (state.display->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL) ?
+        GetInternalDisplayModeList(new_info, state) :
+        GetExternalDisplayModeList(state);
+    new_info.set_display_modes(display_modes);
+
     new_info.set_available_color_profiles(
         Shell::GetInstance()
             ->display_configurator()

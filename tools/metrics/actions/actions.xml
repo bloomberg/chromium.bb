@@ -8361,7 +8361,10 @@ should be able to be added at any place in this file.
 
 <action name="Options_DisplaySetResolution">
   <owner>stevenjb@chromium.org</owner>
-  <description>Settings: Device: Display settings: Resolution</description>
+  <description>
+    Settings: Device: Display settings: Display mode (i.e. resolution, UI-scale,
+    and device scale factor).
+  </description>
 </action>
 
 <action name="Options_DisplayToggleMirroring">

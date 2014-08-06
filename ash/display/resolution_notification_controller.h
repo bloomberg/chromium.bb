@@ -24,6 +24,8 @@ class Widget;
 
 namespace ash {
 
+struct DisplayMode;
+
 // A class which manages the notification of display resolution change and
 // also manages the timeout in case the new resolution is unusable.
 class ASH_EXPORT ResolutionNotificationController
@@ -33,17 +35,22 @@ class ASH_EXPORT ResolutionNotificationController
   ResolutionNotificationController();
   virtual ~ResolutionNotificationController();
 
-  // Updates the display resolution for |display_id| to |new_resolution| and
-  // creates a notification for this change which offers a button to revert the
+  // Prepare a resolution change notification for |display_id| from
+  // |old_resolution| to |new_resolution|, which offers a button to revert the
   // change in case something goes wrong. The notification times out if there's
   // only one display connected and the user is trying to modify its resolution.
   // In that case, the timeout has to be set since the user cannot make any
   // changes if something goes wrong.
-  void SetDisplayResolutionAndNotify(
-      int64 display_id,
-      const gfx::Size& old_resolution,
-      const gfx::Size& new_resolution,
-      const base::Closure& accept_callback);
+  //
+  // This method does not create a notification itself. The notification will be
+  // created the next OnDisplayConfigurationChanged(), which will be called
+  // asynchronously after the resolution change is requested. So typically this
+  // method will be combined with resolution change methods like
+  // DisplayManager::SetDisplayMode().
+  void PrepareNotification(int64 display_id,
+                           const DisplayMode& old_resolution,
+                           const DisplayMode& new_resolution,
+                           const base::Closure& accept_callback);
 
   // Returns true if the notification is visible or scheduled to be visible and
   // the notification times out.

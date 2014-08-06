@@ -4,6 +4,7 @@
 
 #include "ash/display/display_manager.h"
 
+#include <algorithm>
 #include <cmath>
 #include <set>
 #include <string>
@@ -82,9 +83,12 @@ struct DisplayInfoSortFunctor {
 };
 
 struct DisplayModeMatcher {
-  DisplayModeMatcher(const gfx::Size& size) : size(size) {}
-  bool operator()(const DisplayMode& mode) { return mode.size == size; }
-  gfx::Size size;
+  DisplayModeMatcher(const DisplayMode& target_mode)
+      : target_mode(target_mode) {}
+  bool operator()(const DisplayMode& mode) {
+    return target_mode.IsEquivalent(mode);
+  }
+  DisplayMode target_mode;
 };
 
 struct ScaleComparator {
@@ -429,6 +433,7 @@ void DisplayManager::SetDisplayUIScale(int64 display_id,
     return;
   }
 
+  // TODO(mukai): merge this implementation into SetDisplayMode().
   DisplayInfoList display_info_list;
   for (DisplayList::const_iterator iter = displays_.begin();
        iter != displays_.end(); ++iter) {
@@ -458,8 +463,10 @@ void DisplayManager::SetDisplayResolution(int64 display_id,
   const DisplayInfo& display_info = GetDisplayInfo(display_id);
   const std::vector<DisplayMode>& modes = display_info.display_modes();
   DCHECK_NE(0u, modes.size());
+  DisplayMode target_mode;
+  target_mode.size = resolution;
   std::vector<DisplayMode>::const_iterator iter =
-      std::find_if(modes.begin(), modes.end(), DisplayModeMatcher(resolution));
+      std::find_if(modes.begin(), modes.end(), DisplayModeMatcher(target_mode));
   if (iter == modes.end()) {
     LOG(WARNING) << "Unsupported resolution was requested:"
                  << resolution.ToString();
@@ -470,6 +477,51 @@ void DisplayManager::SetDisplayResolution(int64 display_id,
   if (base::SysInfo::IsRunningOnChromeOS())
     Shell::GetInstance()->display_configurator()->OnConfigurationChanged();
 #endif
+}
+
+bool DisplayManager::SetDisplayMode(int64 display_id,
+                                    const DisplayMode& display_mode) {
+  if (IsInternalDisplayId(display_id)) {
+    SetDisplayUIScale(display_id, display_mode.ui_scale);
+    return false;
+  }
+
+  DisplayInfoList display_info_list;
+  bool display_property_changed = false;
+  bool resolution_changed = false;
+  for (DisplayList::const_iterator iter = displays_.begin();
+       iter != displays_.end(); ++iter) {
+    DisplayInfo info = GetDisplayInfo(iter->id());
+    if (info.id() == display_id) {
+      const std::vector<DisplayMode>& modes = info.display_modes();
+      std::vector<DisplayMode>::const_iterator iter =
+          std::find_if(modes.begin(),
+                       modes.end(),
+                       DisplayModeMatcher(display_mode));
+      if (iter == modes.end()) {
+        LOG(WARNING) << "Unsupported resolution was requested:"
+                     << display_mode.size.ToString();
+        return false;
+      }
+      display_modes_[display_id] = *iter;
+      if (info.bounds_in_native().size() != display_mode.size)
+        resolution_changed = true;
+      if (info.device_scale_factor() != display_mode.device_scale_factor) {
+        info.set_device_scale_factor(display_mode.device_scale_factor);
+        display_property_changed = true;
+      }
+    }
+    display_info_list.push_back(info);
+  }
+  if (display_property_changed) {
+    AddMirrorDisplayInfoIfAny(&display_info_list);
+    UpdateDisplays(display_info_list);
+  }
+#if defined(OS_CHROMEOS)
+  if (resolution_changed && base::SysInfo::IsRunningOnChromeOS())
+    Shell::GetInstance()->display_configurator()->OnConfigurationChanged();
+#endif
+  return resolution_changed;
 }
 
 void DisplayManager::RegisterDisplayProperty(
@@ -485,6 +537,8 @@ void DisplayManager::RegisterDisplayProperty(
   display_info_[display_id].set_rotation(rotation);
   display_info_[display_id].SetColorProfile(color_profile);
   // Just in case the preference file was corrupted.
+  // TODO(mukai): register |display_modes_| here as well, so the lookup for the
+  // default mode in GetActiveModeForDisplayId() gets much simpler.
   if (0.5f <= ui_scale && ui_scale <= 2.0f)
     display_info_[display_id].set_configured_ui_scale(ui_scale);
   if (overscan_insets)
@@ -495,6 +549,33 @@ void DisplayManager::RegisterDisplayProperty(
     display_modes_[display_id] =
         DisplayMode(resolution_in_pixels, 60.0f, false, false);
   }
+}
+
+DisplayMode DisplayManager::GetActiveModeForDisplayId(int64 display_id) const {
+  DisplayMode selected_mode;
+  if (GetSelectedModeForDisplayId(display_id, &selected_mode))
+    return selected_mode;
+
+  // If 'selected' mode is empty, it should return the default mode. This means
+  // the native mode for the external display. Unfortunately this is not true
+  // for the internal display because restoring UI-scale doesn't register the
+  // restored mode to |display_mode_|, so it needs to look up the mode whose
+  // UI-scale value matches. See the TODO in RegisterDisplayProperty().
+  const DisplayInfo& info = GetDisplayInfo(display_id);
+  const std::vector<DisplayMode>& display_modes = info.display_modes();
+
+  if (IsInternalDisplayId(display_id)) {
+    for (size_t i = 0; i < display_modes.size(); ++i) {
+      if (info.configured_ui_scale() == display_modes[i].ui_scale)
+        return display_modes[i];
+    }
+  } else {
+    for (size_t i = 0; i < display_modes.size(); ++i) {
+      if (display_modes[i].native)
+        return display_modes[i];
+    }
+  }
+  return selected_mode;
 }
 
 bool DisplayManager::GetSelectedModeForDisplayId(int64 id,
@@ -597,7 +678,10 @@ void DisplayManager::OnNativeDisplaysChanged(
       new_display_info_list.push_back(*iter);
     }
 
-    const gfx::Size& resolution = iter->bounds_in_native().size();
+    DisplayMode new_mode;
+    new_mode.size = iter->bounds_in_native().size();
+    new_mode.device_scale_factor = iter->device_scale_factor();
+    new_mode.ui_scale = iter->configured_ui_scale();
     const std::vector<DisplayMode>& display_modes = iter->display_modes();
     // This is empty the displays are initialized from InitFromCommandLine.
     if (!display_modes.size())
@@ -605,7 +689,7 @@ void DisplayManager::OnNativeDisplaysChanged(
     std::vector<DisplayMode>::const_iterator display_modes_iter =
         std::find_if(display_modes.begin(),
                      display_modes.end(),
-                     DisplayModeMatcher(resolution));
+                     DisplayModeMatcher(new_mode));
     // Update the actual resolution selected as the resolution request may fail.
     if (display_modes_iter == display_modes.end())
       display_modes_.erase(iter->id());

@@ -162,10 +162,18 @@ class ASH_EXPORT DisplayManager
   void SetDisplayRotation(int64 display_id, gfx::Display::Rotation rotation);
 
   // Sets the display's ui scale.
+  // TODO(mukai): remove this and merge into SetDisplayMode.
   void SetDisplayUIScale(int64 display_id, float ui_scale);
 
   // Sets the display's resolution.
+  // TODO(mukai): remove this and merge into SetDisplayMode.
   void SetDisplayResolution(int64 display_id, const gfx::Size& resolution);
+
+  // Sets the external display's configuration, including resolution change,
+  // ui-scale change, and device scale factor change. Returns true if it changes
+  // the display resolution so that the caller needs to show a notification in
+  // case the new resolution actually doesn't work.
+  bool SetDisplayMode(int64 display_id, const DisplayMode& display_mode);
 
   // Register per display properties. |overscan_insets| is NULL if
   // the display has no custom overscan insets.
@@ -176,7 +184,11 @@ class ASH_EXPORT DisplayManager
                                const gfx::Size& resolution_in_pixels,
                                ui::ColorCalibrationProfile color_profile);
 
-  // Returns the display's selected mode.
+  // Returns the display mode of |display_id| which is currently used.
+  DisplayMode GetActiveModeForDisplayId(int64 display_id) const;
+
+  // Returns the display's selected mode. This returns false and doesn't
+  // set |mode_out| if the display mode is in default.
   bool GetSelectedModeForDisplayId(int64 display_id,
                                    DisplayMode* mode_out) const;
 

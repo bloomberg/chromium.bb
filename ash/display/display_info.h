@@ -24,10 +24,18 @@ struct ASH_EXPORT DisplayMode {
               bool interlaced,
               bool native);
 
+  // Returns the size in DIP which isvisible to the user.
+  gfx::Size GetSizeInDIP() const;
+
+  // Returns true if |other| has same size and scale factors.
+  bool IsEquivalent(const DisplayMode& other) const;
+
   gfx::Size size;      // Physical pixel size of the display.
   float refresh_rate;  // Refresh rate of the display, in Hz.
   bool interlaced;     // True if mode is interlaced.
   bool native;         // True if mode is native mode of the display.
+  float ui_scale;      // The UI scale factor of the mode.
+  float device_scale_factor;  // The device scale factor of the mode.
 };
 
 // DisplayInfo contains metadata for each display. This is used to

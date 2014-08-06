@@ -58,8 +58,7 @@ class DisplayOptionsHandler : public ::options::OptionsPageUIHandler,
   void HandleMirroring(const base::ListValue* args);
   void HandleSetPrimary(const base::ListValue* args);
   void HandleDisplayLayout(const base::ListValue* args);
-  void HandleSetUIScale(const base::ListValue* args);
-  void HandleSetResolution(const base::ListValue* args);
+  void HandleSetDisplayMode(const base::ListValue* args);
   void HandleSetOrientation(const base::ListValue* args);
   void HandleSetColorProfile(const base::ListValue* args);
 

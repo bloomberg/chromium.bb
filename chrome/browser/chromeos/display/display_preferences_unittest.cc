@@ -424,9 +424,15 @@ TEST_F(DisplayPreferencesTest, PreventStore) {
   int64 id = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
   // Set display's resolution in single display. It creates the notification and
   // display preferences should not stored meanwhile.
-  ash::Shell::GetInstance()->resolution_notification_controller()->
-      SetDisplayResolutionAndNotify(
-          id, gfx::Size(400, 300), gfx::Size(500, 400), base::Closure());
+  ash::Shell* shell = ash::Shell::GetInstance();
+  ash::DisplayMode old_mode;
+  ash::DisplayMode new_mode;
+  old_mode.size = gfx::Size(400, 300);
+  new_mode.size = gfx::Size(500, 400);
+  if (shell->display_manager()->SetDisplayMode(id, new_mode)) {
+    shell->resolution_notification_controller()->PrepareNotification(
+        id, old_mode, new_mode, base::Closure());
+  }
   UpdateDisplay("500x400#500x400|400x300|300x200");
 
   const base::DictionaryValue* properties =

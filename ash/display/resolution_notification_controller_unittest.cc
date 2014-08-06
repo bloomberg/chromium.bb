@@ -64,13 +64,23 @@ class ResolutionNotificationControllerTest : public ash::test::AshTestBase {
       const gfx::Size& new_resolution,
       const gfx::Size& actual_new_resolution) {
     DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+
     const DisplayInfo& info = display_manager->GetDisplayInfo(display.id());
-    controller()->SetDisplayResolutionAndNotify(
-        display.id(),
-        info.size_in_pixel(),
-        new_resolution,
-        base::Bind(&ResolutionNotificationControllerTest::OnAccepted,
-                   base::Unretained(this)));
+    DisplayMode old_mode(info.size_in_pixel(),
+                         60 /* refresh_rate */,
+                         false /* interlaced */,
+                         false /* native */);
+    DisplayMode new_mode = old_mode;
+    new_mode.size = new_resolution;
+
+    if (display_manager->SetDisplayMode(display.id(), new_mode)) {
+      controller()->PrepareNotification(
+          display.id(),
+          old_mode,
+          new_mode,
+          base::Bind(&ResolutionNotificationControllerTest::OnAccepted,
+                     base::Unretained(this)));
+    }
 
     // OnConfigurationChanged event won't be emitted in the test environment,
     // so invoke UpdateDisplay() to emit that event explicitly.

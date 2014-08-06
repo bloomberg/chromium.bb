@@ -12,6 +12,7 @@
 
 namespace ash {
 
+class DisplayInfo;
 struct DisplayMode;
 
 // An object that observes changes in display configuration and
@@ -20,8 +21,13 @@ class DisplayChangeObserver : public ui::DisplayConfigurator::StateController,
                               public ui::DisplayConfigurator::Observer,
                               public ShellObserver {
  public:
+  // Returns the mode list for internal display.
+  ASH_EXPORT static std::vector<DisplayMode> GetInternalDisplayModeList(
+      const DisplayInfo& display_info,
+      const ui::DisplayConfigurator::DisplayState& output);
+
   // Returns the resolution list.
-  ASH_EXPORT static std::vector<DisplayMode> GetDisplayModeList(
+  ASH_EXPORT static std::vector<DisplayMode> GetExternalDisplayModeList(
       const ui::DisplayConfigurator::DisplayState& output);
 
   DisplayChangeObserver();

@@ -149,10 +149,10 @@ cr.define('options', function() {
     initializePage: function() {
       Page.prototype.initializePage.call(this);
 
-      $('display-options-toggle-mirroring').onclick = function() {
+      $('display-options-toggle-mirroring').onclick = (function() {
         this.mirroring_ = !this.mirroring_;
         chrome.send('setMirroring', [this.mirroring_]);
-      }.bind(this);
+      }).bind(this);
 
       var container = $('display-options-displays-view-host');
       container.onmousemove = this.onMouseMove_.bind(this);
@@ -160,28 +160,23 @@ cr.define('options', function() {
       container.ontouchmove = this.onTouchMove_.bind(this);
       container.ontouchend = this.endDragging_.bind(this);
 
-      $('display-options-set-primary').onclick = function() {
+      $('display-options-set-primary').onclick = (function() {
         chrome.send('setPrimary', [this.displays_[this.focusedIndex_].id]);
-      }.bind(this);
-      $('display-options-resolution-selection').onchange = function(ev) {
+      }).bind(this);
+      $('display-options-resolution-selection').onchange = (function(ev) {
         var display = this.displays_[this.focusedIndex_];
         var resolution = display.resolutions[ev.target.value];
-        if (resolution.scale) {
-          chrome.send('setUIScale', [display.id, resolution.scale]);
-        } else {
-          chrome.send('setResolution',
-                      [display.id, resolution.width, resolution.height]);
-        }
-      }.bind(this);
-      $('display-options-orientation-selection').onchange = function(ev) {
+        chrome.send('setDisplayMode', [display.id, resolution]);
+      }).bind(this);
+      $('display-options-orientation-selection').onchange = (function(ev) {
         chrome.send('setOrientation', [this.displays_[this.focusedIndex_].id,
                                        ev.target.value]);
-      }.bind(this);
-      $('display-options-color-profile-selection').onchange = function(ev) {
+      }).bind(this);
+      $('display-options-color-profile-selection').onchange = (function(ev) {
         chrome.send('setColorProfile', [this.displays_[this.focusedIndex_].id,
                                         ev.target.value]);
-      }.bind(this);
-      $('selected-display-start-calibrating-overscan').onclick = function() {
+      }).bind(this);
+      $('selected-display-start-calibrating-overscan').onclick = (function() {
         // Passes the target display ID. Do not specify it through URL hash,
         // we do not care back/forward.
         var displayOverscan = options.DisplayOverscan.getInstance();
@@ -189,7 +184,7 @@ cr.define('options', function() {
         PageManager.showPageByName('displayOverscan');
         chrome.send('coreOptionsUserMetricsAction',
                     ['Options_DisplaySetOverscan']);
-      }.bind(this);
+      }).bind(this);
 
       chrome.send('getDisplayInfo');
     },
@@ -613,6 +608,7 @@ cr.define('options', function() {
         resolution.appendChild(option);
         resolution.disabled = true;
       } else {
+        var previousOption;
         for (var i = 0; i < display.resolutions.length; i++) {
           var option = document.createElement('option');
           option.value = i;
@@ -622,8 +618,14 @@ cr.define('options', function() {
             option.textContent += ' ' +
                 loadTimeData.getString('annotateBest');
           }
+          if (display.resolutions[i].deviceScaleFactor && previousOption &&
+              previousOption.textContent == option.textContent) {
+            option.textContent +=
+                ' (' + display.resolutions[i].deviceScaleFactor + 'x)';
+          }
           option.selected = display.resolutions[i].selected;
           resolution.appendChild(option);
+          previousOption = option;
         }
         resolution.disabled = (display.resolutions.length <= 1);
       }
