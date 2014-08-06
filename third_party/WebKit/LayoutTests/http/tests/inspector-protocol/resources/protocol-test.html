@@ -136,13 +136,13 @@ InspectorTest.sendRawCommand = function(command, handler)
 }
 
 /**
- * @param {string} message
+ * @param {string|!Object} messageOrObject
  */
-InspectorFrontendAPI.dispatchMessage = function(message)
+InspectorFrontendAPI.dispatchMessage = function(messageOrObject)
 {
     if (InspectorTest._dumpInspectorProtocolMessages)
-        testRunner.logToStderr("backend: " + message);
-    var messageObject = JSON.parse(message);
+        testRunner.logToStderr("backend: " + (typeof messageOrObject === "string" ? messageOrObject : JSON.stringify(messageOrObject)));
+    var messageObject = (typeof messageOrObject === "string" ? JSON.parse(messageOrObject) : messageOrObject);
     var messageId = messageObject["id"];
     try {
         if (typeof messageId === "number") {
