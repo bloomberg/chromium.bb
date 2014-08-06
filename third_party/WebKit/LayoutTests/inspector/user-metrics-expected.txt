@@ -4,6 +4,7 @@ recordActionTaken:
 {
     AuditsStarted : 7
     ConsoleEvaluated : 8
+    DeviceModeEnabled : 10
     FileSavedInWorkspace : 9
     ProfilesCPUProfileTaken : 5
     ProfilesHeapProfileTaken : 6
