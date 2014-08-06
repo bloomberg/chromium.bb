@@ -8,6 +8,7 @@
 #include "media/video/video_encode_accelerator.h"
 
 #include <list>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "media/base/bitstream_buffer.h"
@@ -23,7 +24,8 @@ namespace test {
 class FakeVideoEncodeAccelerator : public VideoEncodeAccelerator {
  public:
   explicit FakeVideoEncodeAccelerator(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      std::vector<uint32>* stored_bitrates);
   virtual ~FakeVideoEncodeAccelerator();
 
   virtual bool Initialize(media::VideoFrame::Format input_format,
@@ -52,8 +54,8 @@ class FakeVideoEncodeAccelerator : public VideoEncodeAccelerator {
                               size_t payload_size,
                               bool key_frame) const;
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  std::vector<uint32>* const stored_bitrates_;
   VideoEncodeAccelerator::Client* client_;
   bool first_;
 

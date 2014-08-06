@@ -92,6 +92,11 @@ class VideoSender : public FrameSender,
   // new frames shall halt.
   const int max_unacked_frames_;
 
+  // If this value is non zero then a fixed value is used for bitrate.
+  // If external video encoder is used then bitrate will be fixed to
+  // (min_bitrate + max_bitrate) / 2.
+  const size_t fixed_bitrate_;
+
   // Encodes media::VideoFrame images into EncodedFrames.  Per configuration,
   // this will point to either the internal software-based encoder or a proxy to
   // a hardware-based encoder.

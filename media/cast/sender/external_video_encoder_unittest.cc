@@ -113,7 +113,8 @@ class ExternalVideoEncoderTest : public ::testing::Test {
                             task_runner_,
                             task_runner_);
 
-    fake_vea_ = new test::FakeVideoEncodeAccelerator(task_runner_);
+    fake_vea_ = new test::FakeVideoEncodeAccelerator(task_runner_,
+                                                     &stored_bitrates_);
     scoped_ptr<VideoEncodeAccelerator> fake_vea(fake_vea_);
     video_encoder_.reset(
         new ExternalVideoEncoder(cast_environment_,
@@ -128,6 +129,7 @@ class ExternalVideoEncoderTest : public ::testing::Test {
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   test::FakeVideoEncodeAccelerator* fake_vea_;  // Owned by video_encoder_.
+  std::vector<uint32> stored_bitrates_;
   scoped_refptr<TestVideoEncoderCallback> test_video_encoder_callback_;
   VideoSenderConfig video_config_;
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
@@ -148,6 +150,7 @@ TEST_F(ExternalVideoEncoderTest, EncodePattern30fpsRunningOutOfAck) {
   base::TimeTicks capture_time;
   capture_time += base::TimeDelta::FromMilliseconds(33);
   test_video_encoder_callback_->SetExpectedResult(0, 0, capture_time);
+  video_encoder_->SetBitRate(2000);
   EXPECT_TRUE(video_encoder_->EncodeVideoFrame(
       video_frame_, capture_time, frame_encoded_callback));
   task_runner_->RunTasks();
@@ -162,6 +165,9 @@ TEST_F(ExternalVideoEncoderTest, EncodePattern30fpsRunningOutOfAck) {
   // We need to run the task to cleanup the GPU instance.
   video_encoder_.reset(NULL);
   task_runner_->RunTasks();
+
+  ASSERT_EQ(1u, stored_bitrates_.size());
+  EXPECT_EQ(2000u, stored_bitrates_[0]);
 }
 
 TEST_F(ExternalVideoEncoderTest, StreamHeader) {

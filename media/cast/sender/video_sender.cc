@@ -22,6 +22,20 @@ namespace cast {
 const int kNumAggressiveReportsSentAtStart = 100;
 const int kMinSchedulingDelayMs = 1;
 
+namespace {
+
+// Returns a fixed bitrate value when external video encoder is used.
+// Some hardware encoder shows bad behavior if we set the bitrate too
+// frequently, e.g. quality drop, not abiding by target bitrate, etc.
+// See details: crbug.com/392086.
+size_t GetFixedBitrate(const VideoSenderConfig& video_config) {
+  if (!video_config.use_external_encoder)
+    return 0;
+  return (video_config.min_bitrate + video_config.max_bitrate) / 2;
+}
+
+}  // namespace
+
 VideoSender::VideoSender(
     scoped_refptr<CastEnvironment> cast_environment,
     const VideoSenderConfig& video_config,
@@ -40,6 +54,7 @@ VideoSender::VideoSender(
                    1 + static_cast<int>(target_playout_delay_ *
                                         video_config.max_frame_rate /
                                         base::TimeDelta::FromSeconds(1)))),
+      fixed_bitrate_(GetFixedBitrate(video_config)),
       num_aggressive_rtcp_reports_sent_(0),
       frames_in_encoder_(0),
       last_sent_frame_id_(0),
@@ -117,10 +132,18 @@ void VideoSender::InsertRawVideoFrame(
     return;
   }
 
-  uint32 bitrate = congestion_control_.GetBitrate(
-      capture_time + target_playout_delay_, target_playout_delay_);
-
-  video_encoder_->SetBitRate(bitrate);
+  uint32 bitrate = fixed_bitrate_;
+  if (!bitrate) {
+    bitrate = congestion_control_.GetBitrate(
+        capture_time + target_playout_delay_, target_playout_delay_);
+    DCHECK(bitrate);
+    video_encoder_->SetBitRate(bitrate);
+  } else if (last_send_time_.is_null()) {
+    // Set the fixed bitrate value to codec until a frame is sent. We might
+    // set this value a couple times at the very beginning of the stream but
+    // it is not harmful.
+    video_encoder_->SetBitRate(bitrate);
+  }
 
   if (video_encoder_->EncodeVideoFrame(
           video_frame,

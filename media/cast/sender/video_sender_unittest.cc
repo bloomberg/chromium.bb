@@ -174,7 +174,8 @@ class VideoSenderTest : public ::testing::Test {
 
     if (external) {
       scoped_ptr<VideoEncodeAccelerator> fake_vea(
-          new test::FakeVideoEncodeAccelerator(task_runner_));
+          new test::FakeVideoEncodeAccelerator(task_runner_,
+                                               &stored_bitrates_));
       video_sender_.reset(
           new PeerVideoSender(cast_environment_,
                               video_config,
@@ -221,6 +222,7 @@ class VideoSenderTest : public ::testing::Test {
   scoped_ptr<CastTransportSenderImpl> transport_sender_;
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_ptr<PeerVideoSender> video_sender_;
+  std::vector<uint32> stored_bitrates_;
   scoped_refptr<CastEnvironment> cast_environment_;
   int last_pixel_value_;
 
@@ -247,8 +249,15 @@ TEST_F(VideoSenderTest, ExternalEncoder) {
 
   const base::TimeTicks capture_time = testing_clock_->NowTicks();
   video_sender_->InsertRawVideoFrame(video_frame, capture_time);
-
   task_runner_->RunTasks();
+  video_sender_->InsertRawVideoFrame(video_frame, capture_time);
+  task_runner_->RunTasks();
+  video_sender_->InsertRawVideoFrame(video_frame, capture_time);
+  task_runner_->RunTasks();
+
+  // Fixed bitrate is used for external encoder. Bitrate is only once
+  // to the encoder.
+  EXPECT_EQ(1u, stored_bitrates_.size());
 
   // We need to run the task to cleanup the GPU instance.
   video_sender_.reset(NULL);
