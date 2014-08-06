@@ -5,11 +5,26 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [607, 501, 24, 24],
-        [578, 501, 89, 24],
-        [578, 501, 24, 24],
-        [543, 498, 35, 30]
+      "children": [
+        {
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [700, 525]
+            },
+            {
+              "position": [8, 8],
+              "bounds": [700, 525],
+              "drawsContent": true,
+              "repaintRects": [
+                [599, 493, 24, 24],
+                [570, 493, 89, 24],
+                [570, 493, 24, 24],
+                [535, 490, 35, 30]
+              ]
+            }
+          ]
+        }
       ]
     }
   ]
