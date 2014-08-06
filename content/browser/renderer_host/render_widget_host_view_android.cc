@@ -1378,6 +1378,26 @@ void RenderWidgetHostViewAndroid::HideTextHandles() {
     selection_controller_->HideAndDisallowShowingAutomatically();
 }
 
+void RenderWidgetHostViewAndroid::OnShowingPastePopup(
+    const gfx::PointF& point) {
+  if (!selection_controller_)
+    return;
+
+  // As the paste popup may be triggered *before* the bounds and editability
+  // of the region have been updated, explicitly set the properties now.
+  // TODO(jdduke): Remove this workaround when auxiliary paste popup
+  // notifications are no longer required, crbug.com/398170.
+  gfx::RectF rect(point, gfx::SizeF());
+  TouchHandleOrientation orientation = TOUCH_HANDLE_CENTER;
+  const bool visible = true;
+  HideTextHandles();
+  ShowSelectionHandlesAutomatically();
+  selection_controller_->OnSelectionEditable(true);
+  selection_controller_->OnSelectionEmpty(true);
+  selection_controller_->OnSelectionBoundsChanged(
+      rect, orientation, visible, rect, orientation, visible);
+}
+
 SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {
   return cached_background_color_;
 }

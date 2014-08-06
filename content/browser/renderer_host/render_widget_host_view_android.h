@@ -233,6 +233,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void MoveCaret(const gfx::Point& point);
   void HideTextHandles();
+  void OnShowingPastePopup(const gfx::PointF& point);
 
   void SynchronousFrameMetadata(
       const cc::CompositorFrameMetadata& frame_metadata);

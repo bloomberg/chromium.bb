@@ -2467,6 +2467,7 @@ public class ContentViewCore
     @SuppressWarnings("unused")
     @CalledByNative
     private void showPastePopup(int xDip, int yDip) {
+        if (!mHasInsertion) return;
         final float contentOffsetYPix = mRenderCoordinates.getContentOffsetYPix();
         getPastePopup().showAt(
             (int) mRenderCoordinates.fromDipToPix(xDip),
