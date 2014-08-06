@@ -246,19 +246,23 @@ void RenderLayer::setSubpixelAccumulation(const LayoutSize& size)
     m_subpixelAccumulation = size;
 }
 
-void RenderLayer::updateLayerPositionsAfterLayout(UpdateLayerPositionsFlags flags)
+void RenderLayer::updateLayerPositionsAfterLayout()
 {
     TRACE_EVENT0("blink_rendering", "RenderLayer::updateLayerPositionsAfterLayout");
 
     m_clipper.clearClipRectsIncludingDescendants();
+    updateLayerPositionRecursive();
 
-    // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
-    // https://code.google.com/p/chromium/issues/detail?id=343756
-    DisableCompositingQueryAsserts disabler;
-    updateLayerPositionRecursive(flags);
+    {
+        // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
+        // https://code.google.com/p/chromium/issues/detail?id=343756
+        DisableCompositingQueryAsserts disabler;
+        bool needsPaginationUpdate = isPaginated() || enclosingPaginationLayer();
+        updatePaginationRecursive(needsPaginationUpdate);
+    }
 }
 
-void RenderLayer::updateLayerPositionRecursive(UpdateLayerPositionsFlags flags)
+void RenderLayer::updateLayerPositionRecursive()
 {
     updateLayerPosition();
 
@@ -267,32 +271,20 @@ void RenderLayer::updateLayerPositionRecursive(UpdateLayerPositionsFlags flags)
         // This call appears to be necessary to pass some layout test that use EventSender,
         // presumably because the normal time to position the controls is during paint. We
         // probably shouldn't position the overflow controls during paint either...
+        DisableCompositingQueryAsserts disabler;
         scrollableArea()->positionOverflowControls(IntSize());
     }
 
-    updateDescendantDependentFlags();
-
-    if (flags & UpdatePagination)
-        updatePagination();
-    else {
-        m_isPaginated = false;
-        m_enclosingPaginationLayer = 0;
-    }
-
-    // Go ahead and update the reflection's position and size.
     if (m_reflectionInfo)
         m_reflectionInfo->reflection()->layout();
 
-    if (useRegionBasedColumns() && renderer()->isRenderFlowThread()) {
-        updatePagination();
-        flags |= UpdatePagination;
-    }
-
-    if (renderer()->hasColumns())
-        flags |= UpdatePagination;
+    // FIXME: We should be able to remove this call because we don't care about
+    // any descendant-dependent flags, but code somewhere else is reading these
+    // flags and depending on us to update them.
+    updateDescendantDependentFlags();
 
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
-        child->updateLayerPositionRecursive(flags);
+        child->updateLayerPositionRecursive();
 }
 
 void RenderLayer::setAncestorChainHasSelfPaintingLayerDescendant()
@@ -476,11 +468,26 @@ bool RenderLayer::useRegionBasedColumns() const
     return renderer()->document().regionBasedColumnsEnabled();
 }
 
-void RenderLayer::updatePagination()
+void RenderLayer::updatePaginationRecursive(bool needsPaginationUpdate)
 {
     m_isPaginated = false;
     m_enclosingPaginationLayer = 0;
 
+    if (useRegionBasedColumns() && renderer()->isRenderFlowThread())
+        needsPaginationUpdate = true;
+
+    if (needsPaginationUpdate)
+        updatePagination();
+
+    if (renderer()->hasColumns())
+        needsPaginationUpdate = true;
+
+    for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
+        child->updatePaginationRecursive(needsPaginationUpdate);
+}
+
+void RenderLayer::updatePagination()
+{
     if (compositingState() != NotComposited || !parent())
         return; // FIXME: We will have to deal with paginated compositing layers someday.
                 // FIXME: For now the RenderView can't be paginated.  Eventually printing will move to a model where it is though.
@@ -506,8 +513,9 @@ void RenderLayer::updatePagination()
             m_enclosingPaginationLayer = parent()->enclosingPaginationLayer();
             if (m_enclosingPaginationLayer && m_enclosingPaginationLayer->hasTransform())
                 m_enclosingPaginationLayer = 0;
-        } else
+        } else {
             m_isPaginated = parent()->renderer()->hasColumns();
+        }
         return;
     }
 
@@ -1370,11 +1378,8 @@ void RenderLayer::removeOnlyThisLayer()
         m_parent->addChild(current, nextSib);
 
         current->renderer()->setShouldDoFullPaintInvalidation(true);
-
-        // Hits in compositing/overflow/automatically-opt-into-composited-scrolling-part-1.html
-        DisableCompositingQueryAsserts disabler;
-
-        current->updateLayerPositionRecursive();
+        // FIXME: We should call a specialized version of this function.
+        current->updateLayerPositionsAfterLayout();
         current = next;
     }
 
@@ -2363,8 +2368,9 @@ void RenderLayer::paintPaginatedChildLayer(RenderLayer* childLayer, GraphicsCont
     }
 
     // It is possible for paintLayer() to be called after the child layer ceases to be paginated but before
-    // updateLayerPositionRecursive() is called and resets the isPaginated() flag, see <rdar://problem/10098679>.
-    // If this is the case, just bail out, since the upcoming call to updateLayerPositionRecursive() will repaint the layer.
+    // updatePaginationRecusive() is called and resets the isPaginated() flag, see <rdar://problem/10098679>.
+    // If this is the case, just bail out, since the upcoming call to updatePaginationRecusive() will repaint the layer.
+    // FIXME: Is this true anymore? This seems very suspicious.
     if (!columnLayers.size())
         return;
 

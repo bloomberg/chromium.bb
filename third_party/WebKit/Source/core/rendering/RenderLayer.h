@@ -153,16 +153,8 @@ public:
     // Allows updates of layer content without invalidating paint.
     void contentChanged(ContentChangeType);
 
-    enum UpdateLayerPositionsFlag {
-        UpdatePagination = 1 << 0,
-    };
-    typedef unsigned UpdateLayerPositionsFlags;
-
-    void updateLayerPositionsAfterLayout(UpdateLayerPositionsFlags);
+    void updateLayerPositionsAfterLayout();
     void updateLayerPositionsAfterOverflowScroll();
-
-    // FIXME: Should updateLayerPositions be private?
-    void updateLayerPositionRecursive(UpdateLayerPositionsFlags = 0);
 
     bool isPaginated() const { return m_isPaginated; }
     RenderLayer* enclosingPaginationLayer() const { return m_enclosingPaginationLayer; }
@@ -565,6 +557,7 @@ private:
     // Returns true if the position changed.
     bool updateLayerPosition();
 
+    void updateLayerPositionRecursive();
     void updateLayerPositionsAfterScrollRecursive();
 
     void setNextSibling(RenderLayer* next) { m_next = next; }
@@ -659,6 +652,7 @@ private:
 
     LayoutRect paintingExtent(const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, PaintBehavior);
 
+    void updatePaginationRecursive(bool needsPaginationUpdate = false);
     void updatePagination();
 
     // FIXME: Temporary. Remove when new columns come online.

@@ -94,14 +94,6 @@ bool FrameView::s_inPaintContents = false;
 static const unsigned maxUpdateWidgetsIterations = 2;
 static const double resourcePriorityUpdateDelayAfterScroll = 0.250;
 
-static RenderLayer::UpdateLayerPositionsFlags updateLayerPositionFlags(RenderLayer* layer, bool isRelayoutingSubtree)
-{
-    if (isRelayoutingSubtree && (layer->isPaginated() || layer->enclosingPaginationLayer()))
-        return RenderLayer::UpdatePagination;
-
-    return 0;
-}
-
 FrameView::FrameView(LocalFrame* frame)
     : m_frame(frame)
     , m_canHaveScrollbars(true)
@@ -943,7 +935,7 @@ void FrameView::layout(bool allowSubtree)
     if (!inSubtreeLayout && !toRenderView(rootForThisLayout)->document().printing())
         adjustViewSize();
 
-    layer->updateLayerPositionsAfterLayout(updateLayerPositionFlags(layer, inSubtreeLayout));
+    layer->updateLayerPositionsAfterLayout();
 
     if (m_doFullPaintInvalidation)
         renderView()->compositor()->fullyInvalidatePaint();

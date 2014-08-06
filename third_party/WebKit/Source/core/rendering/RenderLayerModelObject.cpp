@@ -126,10 +126,8 @@ void RenderLayerModelObject::styleDidChange(StyleDifference diff, const RenderSt
                 // FIXME: This invalidation is overly broad. We should update to
                 // do the correct invalidation at RenderStyle::diff time. crbug.com/349061
                 layer()->renderer()->setShouldDoFullPaintInvalidation(true);
-                // Hit in animations/interpolation/perspective-interpolation.html
-                // FIXME: I suspect we can remove this assert disabler now.
-                DisableCompositingQueryAsserts disabler;
-                layer()->updateLayerPositionRecursive();
+                // FIXME: We should call a specialized version of this function.
+                layer()->updateLayerPositionsAfterLayout();
             }
         }
     } else if (layer() && layer()->parent()) {
