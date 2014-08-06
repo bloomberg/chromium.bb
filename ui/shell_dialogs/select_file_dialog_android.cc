@@ -16,6 +16,8 @@
 #include "ui/base/android/window_android.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
+using base::android::ConvertJavaStringToUTF8;
+
 namespace ui {
 
 // static
@@ -28,18 +30,50 @@ void SelectFileDialogImpl::OnFileSelected(JNIEnv* env,
                                           jobject java_object,
                                           jstring filepath,
                                           jstring display_name) {
-  if (listener_) {
-    std::string path = base::android::ConvertJavaStringToUTF8(env, filepath);
-    std::string file_name =
-        base::android::ConvertJavaStringToUTF8(env, display_name);
+  if (!listener_)
+    return;
+
+  std::string path = ConvertJavaStringToUTF8(env, filepath);
+  std::string file_name = ConvertJavaStringToUTF8(env, display_name);
+  base::FilePath file_path = base::FilePath(path);
+  ui::SelectedFileInfo file_info;
+  file_info.file_path = file_path;
+  file_info.local_path = file_path;
+  if (!file_name.empty())
+    file_info.display_name = file_name;
+
+  listener_->FileSelectedWithExtraInfo(file_info, 0, NULL);
+}
+
+void SelectFileDialogImpl::OnMultipleFilesSelected(JNIEnv* env,
+                                                   jobject java_object,
+                                                   jobjectArray filepaths,
+                                                   jobjectArray display_names) {
+  if (!listener_)
+    return;
+
+  std::vector<ui::SelectedFileInfo> selected_files;
+
+  jsize length = env->GetArrayLength(filepaths);
+  DCHECK(length == env->GetArrayLength(display_names));
+  for (int i = 0; i < length; ++i) {
+    std::string path = ConvertJavaStringToUTF8(
+        env, static_cast<jstring>(env->GetObjectArrayElement(filepaths, i)));
+    std::string display_name = ConvertJavaStringToUTF8(
+        env,
+        static_cast<jstring>(env->GetObjectArrayElement(display_names, i)));
+
     base::FilePath file_path = base::FilePath(path);
+
     ui::SelectedFileInfo file_info;
     file_info.file_path = file_path;
     file_info.local_path = file_path;
-    if (!file_name.empty())
-      file_info.display_name = file_name;
-    listener_->FileSelectedWithExtraInfo(file_info, 0, NULL);
+    file_info.display_name = display_name;
+
+    selected_files.push_back(file_info);
   }
+
+  listener_->MultiFilesSelectedWithExtraInfo(selected_files, NULL);
 }
 
 void SelectFileDialogImpl::OnFileNotSelected(
@@ -74,16 +108,18 @@ void SelectFileDialogImpl::SelectFileImpl(
   AcceptTypes accept_types = std::make_pair(std::vector<base::string16>(),
                                             false);
 
-  if (params) {
+  if (params)
     accept_types = *(reinterpret_cast<AcceptTypes*>(params));
-  }
 
   ScopedJavaLocalRef<jobjectArray> accept_types_java =
       base::android::ToJavaArrayOfStrings(env, accept_types.first);
 
+  bool accept_multiple_files = SelectFileDialog::SELECT_OPEN_MULTI_FILE == type;
+
   Java_SelectFileDialog_selectFile(env, java_object_.obj(),
                                    accept_types_java.obj(),
                                    accept_types.second,
+                                   accept_multiple_files,
                                    owning_window->GetJavaObject().obj());
 }
 

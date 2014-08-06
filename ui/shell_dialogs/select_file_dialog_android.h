@@ -22,6 +22,12 @@ class SelectFileDialogImpl : public SelectFileDialog {
                       jobject java_object,
                       jstring filepath,
                       jstring display_name);
+
+  void OnMultipleFilesSelected(JNIEnv* env,
+                               jobject java_object,
+                               jobjectArray filepaths,
+                               jobjectArray display_names);
+
   void OnFileNotSelected(JNIEnv* env, jobject java_object);
 
   // From SelectFileDialog

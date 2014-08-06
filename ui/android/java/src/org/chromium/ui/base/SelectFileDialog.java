@@ -5,10 +5,12 @@
 package org.chromium.ui.base;
 
 import android.app.Activity;
+import android.content.ClipData;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.TextUtils;
@@ -50,10 +52,12 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
      * Creates and starts an intent based on the passed fileTypes and capture value.
      * @param fileTypes MIME types requested (i.e. "image/*")
      * @param capture The capture value as described in http://www.w3.org/TR/html-media-capture/
+     * @param multiple Whether it should be possible to select multiple files.
      * @param window The WindowAndroid that can show intents
      */
     @CalledByNative
-    private void selectFile(String[] fileTypes, boolean capture, WindowAndroid window) {
+    private void selectFile(
+            String[] fileTypes, boolean capture, boolean multiple, WindowAndroid window) {
         mFileTypes = new ArrayList<String>(Arrays.asList(fileTypes));
         mCapture = capture;
 
@@ -78,6 +82,10 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
 
         Intent getContentIntent = new Intent(Intent.ACTION_GET_CONTENT);
         getContentIntent.addCategory(Intent.CATEGORY_OPENABLE);
+
+        if (multiple)
+            getContentIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+
         ArrayList<Intent> extraIntents = new ArrayList<Intent>();
         if (!noSpecificType()) {
             // Create a chooser based on the accept type that was specified in the webpage. Note
@@ -183,6 +191,35 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
             return;
         }
 
+        // Path for when EXTRA_ALLOW_MULTIPLE Intent extra has been defined. Each of the selected
+        // files will be shared as an entry on the Intent's ClipData. This functionality is only
+        // available in Android JellyBean MR2 and higher.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 &&
+                results.getData() == null &&
+                results.getClipData() != null) {
+            ClipData clipData = results.getClipData();
+
+            int itemCount = clipData.getItemCount();
+            if (itemCount == 0) {
+                onFileNotSelected();
+                return;
+            }
+
+            String[] filePathArray = new String[itemCount];
+            String[] displayNameArray = new String[itemCount];
+
+            for (int i = 0; i < itemCount; ++i) {
+                final Uri uri = clipData.getItemAt(i).getUri();
+
+                filePathArray[i] = uri.toString();
+                displayNameArray[i] = resolveFileName(uri, contentResolver);
+            }
+
+            nativeOnMultipleFilesSelected(mNativeSelectFileDialog,
+                    filePathArray, displayNameArray);
+            return;
+        }
+
         if (ContentResolver.SCHEME_FILE.equals(results.getData().getScheme())) {
             nativeOnFileSelected(mNativeSelectFileDialog,
                     results.getData().getSchemeSpecificPart(), "");
@@ -262,5 +299,7 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
 
     private native void nativeOnFileSelected(long nativeSelectFileDialogImpl,
             String filePath, String displayName);
+    private native void nativeOnMultipleFilesSelected(long nativeSelectFileDialogImpl,
+            String[] filePathArray, String[] displayNameArray);
     private native void nativeOnFileNotSelected(long nativeSelectFileDialogImpl);
 }
