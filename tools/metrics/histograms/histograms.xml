@@ -40437,6 +40437,42 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="474" label="KeyEventNotAllowedInFullScreen"/>
   <int value="475" label="DOMWindowOpen"/>
   <int value="476" label="DOMWindowOpenFeatures"/>
+  <int value="477" label="LegacyFullScreenErrorExemption"/>
+  <int value="478" label="MediaStreamTrackGetSources"/>
+  <int value="479" label="AspectRatioFlexItem"/>
+  <int value="480" label="DetailsElement"/>
+  <int value="481" label="DialogElement"/>
+  <int value="482" label="MapElement"/>
+  <int value="483" label="MeterElement"/>
+  <int value="484" label="ProgressElement"/>
+  <int value="485" label="VideoFullscreenAllowedExemption"/>
+  <int value="488" label="WebKitPoint"/>
+  <int value="489" label="HTMLPreElementWidth"/>
+  <int value="490" label="PrefixedHTMLElementDropzone"/>
+  <int value="491" label="WheelEventWheelDeltaX"/>
+  <int value="492" label="WheelEventWheelDeltaY"/>
+  <int value="493" label="WheelEventWheelDelta"/>
+  <int value="494" label="SendBeacon"/>
+  <int value="495" label="SendBeaconQuotaExceeded"/>
+  <int value="501" label="SVGSMILElementInDocument"/>
+  <int value="502" label="MouseEventOffsetX"/>
+  <int value="503" label="MouseEventOffsetY"/>
+  <int value="504" label="MouseEventX"/>
+  <int value="505" label="MouseEventY"/>
+  <int value="506" label="MouseEventFromElement"/>
+  <int value="507" label="MouseEventToElement"/>
+  <int value="508" label="RequestFileSystem"/>
+  <int value="509" label="RequestFileSystemWorker"/>
+  <int value="510" label="RequestFileSystemSyncWorker"/>
+  <int value="511" label="UIEventLayerX"/>
+  <int value="512" label="UIEventLayerY"/>
+  <int value="513" label="UIEventPageX"/>
+  <int value="514" label="UIEventPageY"/>
+  <int value="515" label="BgPropertiesFixed"/>
+  <int value="516" label="HTMLImageElementComposite"/>
+  <int value="517" label="DevToolsConsoleTimeline"/>
+  <int value="518" label="DevToolsConsoleProfile"/>
+  <int value="519" label="SVGStyleElementTitle"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
