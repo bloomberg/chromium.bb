@@ -1157,7 +1157,7 @@ class Host_6 {
   virtual void SetTimer(int64_t delay_ms, void* context) = 0;
 
   // Returns the current wall time in seconds.
-  virtual Time GetCurrentTime() = 0;
+  virtual Time GetCurrentWallTime() = 0;
 
   // Called by the CDM when a session is created or loaded and the value for the
   // MediaKeySession's sessionId attribute is available (|web_session_id|).
