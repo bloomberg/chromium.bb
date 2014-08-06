@@ -78,7 +78,6 @@ WebPreferences::WebPreferences()
       layer_squashing_enabled(true),
       asynchronous_spell_checking_enabled(true),
       unified_textchecker_enabled(false),
-      accelerated_compositing_for_video_enabled(true),
       accelerated_2d_canvas_enabled(false),
       minimum_accelerated_2d_canvas_size(257 * 256),
       antialiased_2d_canvas_disabled(false),

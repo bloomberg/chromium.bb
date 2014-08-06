@@ -1057,11 +1057,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   // Enable container culling if requested on the command line.
   settings->setContainerCullingEnabled(prefs.container_culling_enabled);
 
-  // Enabling accelerated layers from the command line enabled accelerated
-  // Video.
-  settings->setAcceleratedCompositingForVideoEnabled(
-      prefs.accelerated_compositing_for_video_enabled);
-
   // WebGL and accelerated 2D canvas are always gpu composited.
   settings->setAcceleratedCompositingForCanvasEnabled(
       prefs.experimental_webgl_enabled || prefs.accelerated_2d_canvas_enabled);

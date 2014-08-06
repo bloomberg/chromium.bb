@@ -338,7 +338,6 @@ void WebKitTestController::OverrideWebkitPrefs(WebPreferences* prefs) {
       CommandLine& command_line = *CommandLine::ForCurrentProcess();
       if (!command_line.HasSwitch(switches::kDisableGpu))
         prefs->accelerated_2d_canvas_enabled = true;
-      prefs->accelerated_compositing_for_video_enabled = true;
       prefs->mock_scrollbars_enabled = true;
     }
   }
