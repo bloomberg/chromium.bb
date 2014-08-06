@@ -80,8 +80,10 @@ BrowserPluginGuest::BrowserPluginGuest(
       guest_visible_(false),
       guest_opaque_(true),
       embedder_visible_(true),
+      auto_size_enabled_(false),
       copy_request_id_(0),
       has_render_view_(has_render_view),
+      last_seen_auto_size_enabled_(false),
       is_in_destruction_(false),
       last_text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       last_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
@@ -149,6 +151,7 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ReclaimCompositorResources,
                         OnReclaimCompositorResources)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ResizeGuest, OnResizeGuest)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetAutoSize, OnSetAutoSize)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent,
                         OnSetEditCommandsForNextKeyEvent)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetFocus, OnSetFocus)
@@ -171,6 +174,10 @@ void BrowserPluginGuest::Initialize(
   guest_opaque_ = params.opaque;
   guest_window_rect_ = gfx::Rect(params.origin,
                                  params.resize_guest_params.view_size);
+
+  auto_size_enabled_ = params.auto_size_params.enable;
+  max_auto_size_ = params.auto_size_params.max_size;
+  min_auto_size_ = params.auto_size_params.min_size;
 
   // Once a BrowserPluginGuest has an embedder WebContents, it's considered to
   // be attached.
@@ -204,7 +211,8 @@ void BrowserPluginGuest::Initialize(
 
   embedder_web_contents_observer_.reset(new EmbedderWebContentsObserver(this));
 
-  OnResizeGuest(instance_id_, params.resize_guest_params);
+  OnSetAutoSize(
+      instance_id_, params.auto_size_params, params.resize_guest_params);
 
   // Create a swapped out RenderView for the guest in the embedder render
   // process, so that the embedder can access the guest's window object.
@@ -321,6 +329,11 @@ gfx::Point BrowserPluginGuest::GetScreenCoordinates(
   return screen_pos;
 }
 
+bool BrowserPluginGuest::InAutoSizeBounds(const gfx::Size& size) const {
+  return size.width() <= max_auto_size_.width() &&
+      size.height() <= max_auto_size_.height();
+}
+
 void BrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {
   if (!attached()) {
     // Some pages such as data URLs, javascript URLs, and about:blank
@@ -371,6 +384,10 @@ void BrowserPluginGuest::RenderViewReady() {
   // here (see http://crbug.com/158151).
   Send(new InputMsg_SetFocus(routing_id(), focused_));
   UpdateVisibility();
+  if (auto_size_enabled_)
+    rvh->EnableAutoResize(min_auto_size_, max_auto_size_);
+  else
+    rvh->DisableAutoResize(full_size_);
 
   OnSetContentsOpaque(instance_id_, guest_opaque_);
 
@@ -412,6 +429,7 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
     case BrowserPluginHostMsg_PluginDestroyed::ID:
     case BrowserPluginHostMsg_ReclaimCompositorResources::ID:
     case BrowserPluginHostMsg_ResizeGuest::ID:
+    case BrowserPluginHostMsg_SetAutoSize::ID:
     case BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent::ID:
     case BrowserPluginHostMsg_SetFocus::ID:
     case BrowserPluginHostMsg_SetContentsOpaque::ID:
@@ -671,14 +689,15 @@ void BrowserPluginGuest::OnResizeGuest(
       render_widget_host->NotifyScreenInfoChanged();
     }
   }
-
-  if (last_seen_browser_plugin_size_ != params.view_size) {
-    delegate_->ElementSizeChanged(last_seen_browser_plugin_size_,
-                                  params.view_size);
-    last_seen_browser_plugin_size_ = params.view_size;
+  // When autosize is turned off and as a result there is a layout change, we
+  // send a sizechanged event.
+  if (!auto_size_enabled_ && last_seen_auto_size_enabled_ &&
+      !params.view_size.IsEmpty()) {
+    delegate_->SizeChanged(last_seen_view_size_, params.view_size);
+    last_seen_auto_size_enabled_ = false;
   }
-
   // Just resize the WebContents and repaint if needed.
+  full_size_ = params.view_size;
   if (!params.view_size.IsEmpty())
     GetWebContents()->GetView()->SizeContents(params.view_size);
   if (params.repaint)
@@ -701,6 +720,37 @@ void BrowserPluginGuest::OnSetFocus(int instance_id, bool focused) {
     params.can_compose_inline = last_can_compose_inline_;
     rwhv->TextInputStateChanged(params);
   }
+}
+
+void BrowserPluginGuest::OnSetAutoSize(
+    int instance_id,
+    const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
+    const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params) {
+  bool old_auto_size_enabled = auto_size_enabled_;
+  gfx::Size old_max_size = max_auto_size_;
+  gfx::Size old_min_size = min_auto_size_;
+  auto_size_enabled_ = auto_size_params.enable;
+  max_auto_size_ = auto_size_params.max_size;
+  min_auto_size_ = auto_size_params.min_size;
+  if (auto_size_enabled_ && (!old_auto_size_enabled ||
+                             (old_max_size != max_auto_size_) ||
+                             (old_min_size != min_auto_size_))) {
+    RecordAction(
+        base::UserMetricsAction("BrowserPlugin.Guest.EnableAutoResize"));
+    GetWebContents()->GetRenderViewHost()->EnableAutoResize(
+        min_auto_size_, max_auto_size_);
+    // TODO(fsamuel): If we're changing autosize parameters, then we force
+    // the guest to completely repaint itself.
+    // Ideally, we shouldn't need to do this unless |max_auto_size_| has
+    // changed.
+    // However, even in that case, layout may not change and so we may
+    // not get a full frame worth of pixels.
+    Send(new ViewMsg_Repaint(routing_id(), max_auto_size_));
+  } else if (!auto_size_enabled_ && old_auto_size_enabled) {
+    GetWebContents()->GetRenderViewHost()->DisableAutoResize(
+        resize_guest_params.view_size);
+  }
+  OnResizeGuest(instance_id_, resize_guest_params);
 }
 
 void BrowserPluginGuest::OnSetEditCommandsForNextKeyEvent(
@@ -805,10 +855,15 @@ void BrowserPluginGuest::OnUpdateRect(
   relay_params.is_resize_ack = ViewHostMsg_UpdateRect_Flags::is_resize_ack(
       params.flags);
 
-  if (last_seen_view_size_ != params.view_size) {
-    delegate_->GuestSizeChanged(last_seen_view_size_, params.view_size);
-    last_seen_view_size_ = params.view_size;
+  bool size_changed = last_seen_view_size_ != params.view_size;
+  gfx::Size old_size = last_seen_view_size_;
+  last_seen_view_size_ = params.view_size;
+
+  if ((auto_size_enabled_ || last_seen_auto_size_enabled_) &&
+      size_changed) {
+    delegate_->SizeChanged(old_size, last_seen_view_size_);
   }
+  last_seen_auto_size_enabled_ = auto_size_enabled_;
 
   SendMessageToEmbedder(
       new BrowserPluginMsg_UpdateRect(instance_id(), relay_params));

@@ -37,6 +37,12 @@
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebDragStatus, blink::WebDragStatusLast)
 
+IPC_STRUCT_BEGIN(BrowserPluginHostMsg_AutoSize_Params)
+  IPC_STRUCT_MEMBER(bool, enable)
+  IPC_STRUCT_MEMBER(gfx::Size, max_size)
+  IPC_STRUCT_MEMBER(gfx::Size, min_size)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(BrowserPluginHostMsg_ResizeGuest_Params)
   // Indicates whether the parameters have been populated or not.
   IPC_STRUCT_MEMBER(bool, size_changed)
@@ -54,6 +60,7 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_Attach_Params)
   IPC_STRUCT_MEMBER(bool, focused)
   IPC_STRUCT_MEMBER(bool, visible)
   IPC_STRUCT_MEMBER(bool, opaque)
+  IPC_STRUCT_MEMBER(BrowserPluginHostMsg_AutoSize_Params, auto_size_params)
   IPC_STRUCT_MEMBER(BrowserPluginHostMsg_ResizeGuest_Params,
                     resize_guest_params)
   IPC_STRUCT_MEMBER(gfx::Point, origin)
@@ -114,6 +121,14 @@ IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_ExtendSelectionAndDelete,
                     int /* instance_id */,
                     int /* before */,
                     int /* after */)
+
+// This message is sent to the browser process to enable or disable autosize
+// mode.
+IPC_MESSAGE_ROUTED3(
+    BrowserPluginHostMsg_SetAutoSize,
+    int /* instance_id */,
+    BrowserPluginHostMsg_AutoSize_Params /* auto_size_params */,
+    BrowserPluginHostMsg_ResizeGuest_Params /* resize_guest_params */)
 
 // This message is sent to the browser process to indicate that a BrowserPlugin
 // has taken ownership of the lifetime of the guest of the given |instance_id|.

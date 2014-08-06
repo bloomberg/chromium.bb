@@ -103,26 +103,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // This gives the derived class an opportunity to perform some cleanup.
   virtual void GuestDestroyed() {}
 
-  // This method is invoked when the guest RenderView is ready, e.g. because we
-  // recreated it after a crash.
-  //
-  // This gives the derived class an opportunity to perform some initialization
-  // work.
-  virtual void GuestReady() {}
-
-  // This method is invoked when the contents auto-resized to give the container
-  // an opportunity to match it if it wishes.
-  //
-  // This gives the derived class an opportunity to inform its container element
-  // or perform other actions.
-  virtual void GuestSizeChangedDueToAutoSize(const gfx::Size& old_size,
-                                             const gfx::Size& new_size) {}
-
-  // This method queries whether autosize is supported for this particular view.
-  // By default, autosize is not supported. Derived classes can override this
-  // behavior to support autosize.
-  virtual bool IsAutoSizeSupported() const;
-
   // This method queries whether drag-and-drop is enabled for this particular
   // view. By default, drag-and-drop is disabled. Derived classes can override
   // this behavior to enable drag-and-drop.
@@ -173,11 +153,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   bool IsViewType(const char* const view_type) const {
     return !strcmp(GetViewType(), view_type);
   }
-
-  // Toggles autosize mode for this GuestView.
-  void SetAutoSize(bool enabled,
-                   const gfx::Size& min_size,
-                   const gfx::Size& max_size);
 
   base::WeakPtr<GuestViewBase> AsWeakPtr();
 
@@ -233,11 +208,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // BrowserPluginGuestDelegate implementation.
   virtual void Destroy() OVERRIDE FINAL;
   virtual void DidAttach() OVERRIDE FINAL;
-  virtual void ElementSizeChanged(const gfx::Size& old_size,
-                                  const gfx::Size& new_size) OVERRIDE FINAL;
   virtual int GetGuestInstanceID() const OVERRIDE;
-  virtual void GuestSizeChanged(const gfx::Size& old_size,
-                                const gfx::Size& new_size) OVERRIDE FINAL;
   virtual void RegisterDestructionCallback(
       const DestructionCallback& callback) OVERRIDE FINAL;
   virtual void WillAttach(
@@ -268,7 +239,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // WebContentsObserver implementation.
   virtual void DidStopLoading(
       content::RenderViewHost* render_view_host) OVERRIDE FINAL;
-  virtual void RenderViewReady() OVERRIDE FINAL;
   virtual void WebContentsDestroyed() OVERRIDE FINAL;
 
   // WebContentsDelegate implementation.
@@ -306,22 +276,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   scoped_ptr<base::DictionaryValue> extra_params_;
 
   scoped_ptr<EmbedderWebContentsObserver> embedder_web_contents_observer_;
-
-  // The size of the container element.
-  gfx::Size element_size_;
-
-  // The size of the guest content. Note: In autosize mode, the container
-  // element may not match the size of the guest.
-  gfx::Size guest_size_;
-
-  // Indicates whether autosize mode is enabled or not.
-  bool auto_size_enabled_;
-
-  // The maximum size constraints of the container element in autosize mode.
-  gfx::Size max_auto_size_;
-
-  // The minimum size constraints of the container element in autosize mode.
-  gfx::Size min_auto_size_;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.

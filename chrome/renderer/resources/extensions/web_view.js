@@ -15,19 +15,10 @@ var IdGenerator = requireNative('id_generator');
 var WebView = require('webViewInternal').WebView;
 var WebViewEvents = require('webViewEvents').WebViewEvents;
 
-var WEB_VIEW_ATTRIBUTE_AUTOSIZE = 'autosize';
 var WEB_VIEW_ATTRIBUTE_MAXHEIGHT = 'maxheight';
 var WEB_VIEW_ATTRIBUTE_MAXWIDTH = 'maxwidth';
 var WEB_VIEW_ATTRIBUTE_MINHEIGHT = 'minheight';
 var WEB_VIEW_ATTRIBUTE_MINWIDTH = 'minwidth';
-var AUTO_SIZE_ATTRIBUTES = [
-  WEB_VIEW_ATTRIBUTE_AUTOSIZE,
-  WEB_VIEW_ATTRIBUTE_MAXHEIGHT,
-  WEB_VIEW_ATTRIBUTE_MAXWIDTH,
-  WEB_VIEW_ATTRIBUTE_MINHEIGHT,
-  WEB_VIEW_ATTRIBUTE_MINWIDTH
-];
-
 var WEB_VIEW_ATTRIBUTE_PARTITION = 'partition';
 
 var PLUGIN_METHOD_ATTACH = '-internal-attach';
@@ -39,6 +30,11 @@ var ERROR_MSG_INVALID_PARTITION_ATTRIBUTE = 'Invalid partition attribute.';
 /** @type {Array.<string>} */
 var WEB_VIEW_ATTRIBUTES = [
     'allowtransparency',
+    'autosize',
+    WEB_VIEW_ATTRIBUTE_MINHEIGHT,
+    WEB_VIEW_ATTRIBUTE_MINWIDTH,
+    WEB_VIEW_ATTRIBUTE_MAXHEIGHT,
+    WEB_VIEW_ATTRIBUTE_MAXWIDTH
 ];
 
 /** @class representing state of storage partition. */
@@ -319,22 +315,6 @@ WebViewInternal.prototype.insertCSS = function(var_args) {
   $Function.apply(WebView.insertCSS, null, args);
 };
 
-WebViewInternal.prototype.setupAutoSizeProperties = function() {
-  var self = this;
-  $Array.forEach(AUTO_SIZE_ATTRIBUTES, function(attributeName) {
-    this[attributeName] = this.webviewNode.getAttribute(attributeName);
-    Object.defineProperty(this.webviewNode, attributeName, {
-      get: function() {
-        return self[attributeName];
-      },
-      set: function(value) {
-        self.webviewNode.setAttribute(attributeName, value);
-      },
-      enumerable: true
-    });
-  }, this);
-};
-
 /**
  * @private
  */
@@ -343,7 +323,6 @@ WebViewInternal.prototype.setupWebviewNodeProperties = function() {
     'contentWindow is not available at this time. It will become available ' +
         'when the page has finished loading.';
 
-  this.setupAutoSizeProperties();
   var self = this;
   var browserPluginNode = this.browserPluginNode;
   // Expose getters and setters for the attributes.
@@ -467,26 +446,7 @@ WebViewInternal.prototype.handleWebviewAttributeMutation =
   // a BrowserPlugin property will update the corresponding BrowserPlugin
   // attribute, if necessary. See BrowserPlugin::UpdateDOMAttribute for more
   // details.
-  if (AUTO_SIZE_ATTRIBUTES.indexOf(name) > -1) {
-    this[name] = newValue;
-    if (!this.instanceId) {
-      return;
-    }
-    // Convert autosize attribute to boolean.
-    var autosize = this.webviewNode.hasAttribute(WEB_VIEW_ATTRIBUTE_AUTOSIZE);
-    GuestViewInternal.setAutoSize(this.instanceId, {
-      'enableAutoSize': autosize,
-      'min': {
-        'width': parseInt(this.minwidth || 0),
-        'height': parseInt(this.minheight || 0)
-      },
-      'max': {
-        'width': parseInt(this.maxwidth || 0),
-        'height': parseInt(this.maxheight || 0)
-      }
-    });
-    return;
-  } else if (name == 'name') {
+  if (name == 'name') {
     // We treat null attribute (attribute removed) and the empty string as
     // one case.
     oldValue = oldValue || '';
@@ -591,10 +551,7 @@ WebViewInternal.prototype.handleBrowserPluginAttributeMutation =
   }
 };
 
-WebViewInternal.prototype.onSizeChanged = function(webViewEvent) {
-  var newWidth = webViewEvent.newWidth;
-  var newHeight = webViewEvent.newHeight;
-
+WebViewInternal.prototype.onSizeChanged = function(newWidth, newHeight) {
   var node = this.webviewNode;
 
   var width = node.offsetWidth;
@@ -639,16 +596,12 @@ WebViewInternal.prototype.onSizeChanged = function(webViewEvent) {
     minHeight = maxHeight;
   }
 
-  if (!this.webviewNode.hasAttribute(WEB_VIEW_ATTRIBUTE_AUTOSIZE) ||
-      (newWidth >= minWidth &&
-       newWidth <= maxWidth &&
-       newHeight >= minHeight &&
-       newHeight <= maxHeight)) {
+  if (newWidth >= minWidth &&
+      newWidth <= maxWidth &&
+      newHeight >= minHeight &&
+      newHeight <= maxHeight) {
     node.style.width = newWidth + 'px';
     node.style.height = newHeight + 'px';
-    // Only fire the DOM event if the size of the <webview> has actually
-    // changed.
-    this.dispatchEvent(webViewEvent);
   }
 };
 
@@ -835,12 +788,8 @@ WebViewInternal.prototype.getZoom = function(callback) {
 
 WebViewInternal.prototype.buildAttachParams = function(isNewWindow) {
   var params = {
-    'autosize': this.webviewNode.hasAttribute(WEB_VIEW_ATTRIBUTE_AUTOSIZE),
+    'api': 'webview',
     'instanceId': this.viewInstanceId,
-    'maxheight': parseInt(this.maxheight || 0),
-    'maxwidth': parseInt(this.maxwidth || 0),
-    'minheight': parseInt(this.minheight || 0),
-    'minwidth': parseInt(this.minwidth || 0),
     'name': this.name,
     // We don't need to navigate new window from here.
     'src': isNewWindow ? undefined : this.src,

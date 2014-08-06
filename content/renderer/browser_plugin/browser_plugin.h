@@ -17,6 +17,7 @@
 #include "third_party/WebKit/public/web/WebDragStatus.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 
+struct BrowserPluginHostMsg_AutoSize_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct BrowserPluginMsg_UpdateRect_Params;
 struct FrameMsg_BuffersSwapped_Params;
@@ -57,6 +58,22 @@ class CONTENT_EXPORT BrowserPlugin :
   // Parse the allowtransparency attribute and adjust transparency of
   // BrowserPlugin accordingly.
   void ParseAllowTransparencyAttribute();
+  // Get the autosize attribute value.
+  bool GetAutoSizeAttribute() const;
+  // Parses the autosize attribute value.
+  void ParseAutoSizeAttribute();
+  // Get the maxheight attribute value.
+  int GetMaxHeightAttribute() const;
+  // Get the maxwidth attribute value.
+  int GetMaxWidthAttribute() const;
+  // Get the minheight attribute value.
+  int GetMinHeightAttribute() const;
+  // Get the minwidth attribute value.
+  int GetMinWidthAttribute() const;
+  // Parse the minwidth, maxwidth, minheight, and maxheight attribute values.
+  void ParseSizeContraintsChanged();
+
+  bool InAutoSizeBounds(const gfx::Size& size) const;
 
   // Get the guest's DOMWindow proxy.
   NPObject* GetContentWindow() const;
@@ -175,11 +192,24 @@ class CONTENT_EXPORT BrowserPlugin :
   int height() const { return plugin_rect_.height(); }
   gfx::Size plugin_size() const { return plugin_rect_.size(); }
   gfx::Rect plugin_rect() const { return plugin_rect_; }
+  // Gets the Max Height value used for auto size.
+  int GetAdjustedMaxHeight() const;
+  // Gets the Max Width value used for auto size.
+  int GetAdjustedMaxWidth() const;
+  // Gets the Min Height value used for auto size.
+  int GetAdjustedMinHeight() const;
+  // Gets the Min Width value used for auto size.
+  int GetAdjustedMinWidth() const;
 
   // Virtual to allow for mocking in tests.
   virtual float GetDeviceScaleFactor() const;
 
   void ShowSadGraphic();
+
+  // Triggers the event-listeners for |event_name|. Note that the function
+  // frees all the values in |props|.
+  void TriggerEvent(const std::string& event_name,
+                    std::map<std::string, base::Value*>* props);
 
   // Populates BrowserPluginHostMsg_ResizeGuest_Params with resize state.
   void PopulateResizeGuestParameters(
@@ -187,11 +217,20 @@ class CONTENT_EXPORT BrowserPlugin :
       const gfx::Size& view_size,
       bool needs_repaint);
 
-  // Populates ResizeGuest parameters based on the current
+  // Populates BrowserPluginHostMsg_AutoSize_Params object with autosize state.
+  void PopulateAutoSizeParameters(
+      BrowserPluginHostMsg_AutoSize_Params* params, bool auto_size_enabled);
+
+  // Populates both AutoSize and ResizeGuest parameters based on the current
   // autosize state.
   void GetSizeParams(
+      BrowserPluginHostMsg_AutoSize_Params* auto_size_params,
       BrowserPluginHostMsg_ResizeGuest_Params* resize_guest_params,
       bool needs_repaint);
+
+  // Informs the guest of an updated autosize state.
+  void UpdateGuestAutoSizeState(bool auto_size_enabled);
+
 
   // IPC message handlers.
   // Please keep in alphabetical order.
@@ -232,6 +271,9 @@ class CONTENT_EXPORT BrowserPlugin :
   // Bitmap for crashed plugin. Lazily initialized, non-owning pointer.
   SkBitmap* sad_guest_;
   bool guest_crashed_;
+  bool is_auto_size_state_dirty_;
+  // Maximum size constraint for autosize.
+  gfx::Size max_auto_size_;
   int content_window_routing_id_;
   bool plugin_focused_;
   // Tracks the visibility of the browser plugin regardless of the whole

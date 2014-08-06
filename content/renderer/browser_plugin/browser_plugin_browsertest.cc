@@ -31,6 +31,11 @@ const char kHTMLForBrowserPluginObject[] =
     " src='foo' type='%s'></object>"
     "<script>document.querySelector('object').nonExistentAttribute;</script>";
 
+const char kHTMLForBrowserPluginWithAllAttributes[] =
+    "<object id='browserplugin' width='640' height='480' type='%s'"
+    " autosize maxheight='600' maxwidth='800' minheight='240'"
+    " minwidth='320' name='Jim' partition='someid' src='foo'>";
+
 const char kHTMLForSourcelessPluginObject[] =
     "<object id='browserplugin' width='640px' height='480px' type='%s'>";
 
@@ -172,6 +177,32 @@ TEST_F(BrowserPluginTest, InitialResize) {
   ASSERT_TRUE(browser_plugin);
 }
 
+// This test verifies that all attributes (present at the time of writing) are
+// parsed on initialization. However, this test does minimal checking of
+// correct behavior.
+TEST_F(BrowserPluginTest, ParseAllAttributes) {
+  std::string html = base::StringPrintf(kHTMLForBrowserPluginWithAllAttributes,
+                                        kBrowserPluginMimeType);
+  LoadHTML(html.c_str());
+  bool result;
+  bool has_value = ExecuteScriptAndReturnBool(
+      "document.getElementById('browserplugin').autosize", &result);
+  EXPECT_TRUE(has_value);
+  EXPECT_TRUE(result);
+  int maxHeight = ExecuteScriptAndReturnInt(
+      "document.getElementById('browserplugin').maxheight");
+  EXPECT_EQ(600, maxHeight);
+  int maxWidth = ExecuteScriptAndReturnInt(
+      "document.getElementById('browserplugin').maxwidth");
+  EXPECT_EQ(800, maxWidth);
+  int minHeight = ExecuteScriptAndReturnInt(
+      "document.getElementById('browserplugin').minheight");
+  EXPECT_EQ(240, minHeight);
+  int minWidth = ExecuteScriptAndReturnInt(
+      "document.getElementById('browserplugin').minwidth");
+  EXPECT_EQ(320, minWidth);
+}
+
 TEST_F(BrowserPluginTest, ResizeFlowControl) {
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
   MockBrowserPlugin* browser_plugin = GetCurrentPlugin();
@@ -275,6 +306,79 @@ TEST_F(BrowserPluginTest, RemovePluginBeforeNavigation) {
   ProcessPendingMessages();
   EXPECT_FALSE(browser_plugin_manager()->sink().GetUniqueMessageMatching(
       BrowserPluginHostMsg_PluginDestroyed::ID));
+}
+
+// Verify that the 'partition' attribute on the browser plugin is parsed
+// correctly.
+TEST_F(BrowserPluginTest, AutoSizeAttributes) {
+  std::string html = base::StringPrintf(kHTMLForSourcelessPluginObject,
+                                        kBrowserPluginMimeType);
+  LoadHTML(html.c_str());
+  const char* kSetAutoSizeParametersAndNavigate =
+    "var browserplugin = document.getElementById('browserplugin');"
+    "browserplugin.autosize = true;"
+    "browserplugin.minwidth = 42;"
+    "browserplugin.minheight = 43;"
+    "browserplugin.maxwidth = 1337;"
+    "browserplugin.maxheight = 1338;"
+    "browserplugin.src = 'foobar';";
+  const char* kDisableAutoSize =
+    "document.getElementById('browserplugin').removeAttribute('autosize');";
+
+  int instance_id = 0;
+  // Set some autosize parameters before navigating then navigate.
+  // Verify that the BrowserPluginHostMsg_Attach message contains
+  // the correct autosize parameters.
+  ExecuteJavaScript(kSetAutoSizeParametersAndNavigate);
+  ProcessPendingMessages();
+
+  BrowserPluginHostMsg_Attach_Params params;
+  MockBrowserPlugin* browser_plugin = GetCurrentPluginWithAttachParams(&params);
+  ASSERT_TRUE(browser_plugin);
+
+  EXPECT_TRUE(params.auto_size_params.enable);
+  EXPECT_EQ(42, params.auto_size_params.min_size.width());
+  EXPECT_EQ(43, params.auto_size_params.min_size.height());
+  EXPECT_EQ(1337, params.auto_size_params.max_size.width());
+  EXPECT_EQ(1338, params.auto_size_params.max_size.height());
+
+  // Disable autosize. AutoSize state will not be sent to the guest until
+  // the guest has responded to the last resize request.
+  ExecuteJavaScript(kDisableAutoSize);
+  ProcessPendingMessages();
+
+  const IPC::Message* auto_size_msg =
+  browser_plugin_manager()->sink().GetUniqueMessageMatching(
+      BrowserPluginHostMsg_SetAutoSize::ID);
+  EXPECT_FALSE(auto_size_msg);
+
+  // Send the BrowserPlugin an UpdateRect equal to its |max_size|.
+  BrowserPluginMsg_UpdateRect_Params update_rect_params;
+  update_rect_params.view_size = gfx::Size(1337, 1338);
+  update_rect_params.scale_factor = 1.0f;
+  update_rect_params.is_resize_ack = true;
+  BrowserPluginMsg_UpdateRect msg(instance_id, update_rect_params);
+  browser_plugin->OnMessageReceived(msg);
+
+  // Verify that the autosize state has been updated.
+  {
+    const IPC::Message* auto_size_msg =
+        browser_plugin_manager()->sink().GetUniqueMessageMatching(
+            BrowserPluginHostMsg_SetAutoSize::ID);
+    ASSERT_TRUE(auto_size_msg);
+
+    BrowserPluginHostMsg_SetAutoSize::Param param;
+    BrowserPluginHostMsg_SetAutoSize::Read(auto_size_msg, &param);
+    BrowserPluginHostMsg_AutoSize_Params auto_size_params = param.b;
+    BrowserPluginHostMsg_ResizeGuest_Params resize_params = param.c;
+    EXPECT_FALSE(auto_size_params.enable);
+    // These value are not populated (as an optimization) if autosize is
+    // disabled.
+    EXPECT_EQ(0, auto_size_params.min_size.width());
+    EXPECT_EQ(0, auto_size_params.min_size.height());
+    EXPECT_EQ(0, auto_size_params.max_size.width());
+    EXPECT_EQ(0, auto_size_params.max_size.height());
+  }
 }
 
 }  // namespace content

@@ -597,7 +597,9 @@ WebViewEvents.prototype.handlePermissionEvent =
 
 WebViewEvents.prototype.handleSizeChangedEvent = function(
     event, webViewEvent) {
-  this.webViewInternal.onSizeChanged(webViewEvent);
+  this.webViewInternal.onSizeChanged(webViewEvent.newWidth,
+                                     webViewEvent.newHeight);
+  this.webViewInternal.dispatchEvent(webViewEvent);
 };
 
 exports.WebViewEvents = WebViewEvents;

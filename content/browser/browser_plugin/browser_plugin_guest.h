@@ -254,6 +254,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   // access it.
   void OnSetName(int instance_id, const std::string& name);
   // Updates the size state of the guest.
+  void OnSetAutoSize(
+      int instance_id,
+      const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
+      const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
   void OnSetEditCommandsForNextKeyEvent(
       int instance_id,
       const std::vector<EditCommand>& edit_commands);
@@ -337,6 +341,11 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   bool guest_visible_;
   bool guest_opaque_;
   bool embedder_visible_;
+  std::string name_;
+  bool auto_size_enabled_;
+  gfx::Size max_auto_size_;
+  gfx::Size min_auto_size_;
+  gfx::Size full_size_;
 
   // Each copy-request is identified by a unique number. The unique number is
   // used to keep track of the right callback.
@@ -354,8 +363,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
 
   // Last seen size of guest contents (by OnUpdateRect).
   gfx::Size last_seen_view_size_;
-  // Last seen size of BrowserPlugin (by OnResizeGuest).
-  gfx::Size last_seen_browser_plugin_size_;
+  // Last seen autosize attribute state (by OnUpdateRect).
+  bool last_seen_auto_size_enabled_;
 
   bool is_in_destruction_;
 

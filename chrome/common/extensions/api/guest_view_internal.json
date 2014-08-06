@@ -9,36 +9,6 @@
       "implemented_in": "chrome/browser/extensions/api/guest_view/guest_view_internal_api.h"
     },
     "description": "none",
-    "types": [
-      {
-        "id": "Size",
-        "type": "object",
-        "properties": {
-          "width": {
-            "type": "integer"
-          },
-          "height": {
-            "type": "integer"
-          }
-        }
-      },
-      {
-        "id": "AutoSizeParams",
-        "type": "object",
-        "description": "Autosize parameters.",
-        "properties": {
-          "enableAutoSize": {
-            "type": "boolean"
-          },
-          "min": {
-            "$ref": "Size"
-          },
-          "max": {
-            "$ref": "Size"
-          }
-        }
-      }
-    ],
     "functions": [
       {
         "name": "createGuest",
@@ -63,21 +33,6 @@
                 "name": "instanceId"
               }
             ]
-          }
-        ]
-      },
-      {
-        "name": "setAutoSize",
-        "type": "function",
-        "parameters": [
-          {
-            "type": "integer",
-            "name": "instanceId",
-            "description": "The instance ID of the guest &lt;webview&gt; process. This not exposed to developers through the API."
-          },
-          {
-            "$ref": "AutoSizeParams",
-            "name": "params"
           }
         ]
       }
