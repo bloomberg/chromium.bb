@@ -13,10 +13,6 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebNotification.h"
 
-namespace blink {
-class WebNotificationPermissionCallback;
-}
-
 namespace content {
 
 // This class manages the set of active Notification objects in either
@@ -33,22 +29,15 @@ class CONTENT_EXPORT ActiveNotificationTracker {
   bool GetId(const blink::WebNotification& notification, int& id);
   bool GetNotification(int id, blink::WebNotification* notification);
 
-  // Methods for tracking active permission requests.
-  int RegisterPermissionRequest(
-      blink::WebNotificationPermissionCallback* callback);
-  void OnPermissionRequestComplete(int id);
-  blink::WebNotificationPermissionCallback* GetCallback(int id);
-
   // Clears out all active notifications.  Useful on page navigation.
   void Clear();
 
  private:
   typedef std::map<blink::WebNotification, int> ReverseTable;
 
-  // Tracking maps for active notifications and permission requests.
+  // Tracking maps for active notifications.
   IDMap<blink::WebNotification> notification_table_;
   ReverseTable reverse_notification_table_;
-  IDMap<blink::WebNotificationPermissionCallback> callback_table_;
 
   DISALLOW_COPY_AND_ASSIGN(ActiveNotificationTracker);
 };

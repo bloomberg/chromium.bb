@@ -347,8 +347,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnBeginNavigation)
     IPC_MESSAGE_HANDLER(PlatformNotificationHostMsg_RequestPermission,
                         OnRequestPlatformNotificationPermission)
-    IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_RequestPermission,
-                        OnRequestDesktopNotificationPermission)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_Show,
                         OnShowDesktopNotification)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_Cancel,
@@ -815,19 +813,6 @@ void RenderFrameHostImpl::OnRequestPlatformNotificationPermission(
       origin, this, done_callback);
 }
 
-// TODO(peter): Remove this call and the associated IPC messages when Blink
-// has switched to the new Web Notification permission code-path.
-void RenderFrameHostImpl::OnRequestDesktopNotificationPermission(
-    const GURL& source_origin, int callback_context) {
-  base::Callback<void(blink::WebNotificationPermission)> done_callback =
-      base::Bind(&RenderFrameHostImpl::DesktopNotificationPermissionRequestDone,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback_context);
-
-  GetContentClient()->browser()->RequestDesktopNotificationPermission(
-      source_origin, this, done_callback);
-}
-
 void RenderFrameHostImpl::OnShowDesktopNotification(
     int notification_id,
     const ShowDesktopNotificationHostMsgParams& params) {
@@ -1137,13 +1122,6 @@ void RenderFrameHostImpl::PlatformNotificationPermissionRequestDone(
     int request_id, blink::WebNotificationPermission permission) {
   Send(new PlatformNotificationMsg_PermissionRequestComplete(
       routing_id_, request_id, permission));
-}
-
-// TODO(peter): Remove this method when Blink uses the new code-path.
-void RenderFrameHostImpl::DesktopNotificationPermissionRequestDone(
-    int callback_context, blink::WebNotificationPermission permission) {
-  Send(new DesktopNotificationMsg_PermissionRequestDone(
-      routing_id_, callback_context));
 }
 
 void RenderFrameHostImpl::SetAccessibilityMode(AccessibilityMode mode) {

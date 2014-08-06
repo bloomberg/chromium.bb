@@ -40,10 +40,6 @@ IPC_MESSAGE_ROUTED2(DesktopNotificationMsg_PostClose,
 IPC_MESSAGE_ROUTED1(DesktopNotificationMsg_PostClick,
                     int /* notification_id */)
 
-// Informs the renderer that the one if its notifications has closed.
-IPC_MESSAGE_ROUTED1(DesktopNotificationMsg_PermissionRequestDone,
-                    int /* request_id */)
-
 // Messages sent from the renderer to the browser.
 
 IPC_MESSAGE_ROUTED2(DesktopNotificationHostMsg_Show,
@@ -52,10 +48,6 @@ IPC_MESSAGE_ROUTED2(DesktopNotificationHostMsg_Show,
 
 IPC_MESSAGE_ROUTED1(DesktopNotificationHostMsg_Cancel,
                     int /* notification_id */)
-
-IPC_MESSAGE_ROUTED2(DesktopNotificationHostMsg_RequestPermission,
-                    GURL /* origin */,
-                    int /* callback_context */)
 
 IPC_SYNC_MESSAGE_ROUTED1_1(DesktopNotificationHostMsg_CheckPermission,
                            GURL /* origin */,

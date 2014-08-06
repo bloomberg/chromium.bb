@@ -130,10 +130,4 @@ WebNotificationPresenter::Permission NotificationPresenter::checkPermission(
       GURL(security_origin.toString()));
 }
 
-void NotificationPresenter::requestPermission(
-    const WebSecurityOrigin& security_origin,
-    WebNotificationPermissionCallback* callback) {
-  NOTREACHED();
-}
-
 }  // namespace content

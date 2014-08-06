@@ -10,10 +10,6 @@
 #include "third_party/WebKit/public/web/WebNotification.h"
 #include "third_party/WebKit/public/web/WebNotificationPresenter.h"
 
-namespace blink {
-class WebNotificationPermissionCallback;
-}
-
 namespace content {
 
 // NotificationProvider class is owned by the RenderFrame.  Only to be used on
@@ -34,15 +30,12 @@ class NotificationProvider : public RenderFrameObserver,
   virtual void objectDestroyed(const blink::WebNotification& proxy);
   virtual blink::WebNotificationPresenter::Permission checkPermission(
       const blink::WebSecurityOrigin& origin);
-  virtual void requestPermission(const blink::WebSecurityOrigin& origin,
-      blink::WebNotificationPermissionCallback* callback);
 
   // IPC handlers.
   void OnDisplay(int id);
   void OnError(int id);
   void OnClose(int id, bool by_user);
   void OnClick(int id);
-  void OnPermissionRequestComplete(int id);
   void OnNavigate();
 
   // A tracker object which manages the active notifications and the IDs

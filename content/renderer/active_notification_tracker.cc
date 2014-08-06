@@ -7,10 +7,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "third_party/WebKit/public/web/WebNotification.h"
-#include "third_party/WebKit/public/web/WebNotificationPermissionCallback.h"
 
 using blink::WebNotification;
-using blink::WebNotificationPermissionCallback;
 
 namespace content {
 
@@ -64,20 +62,6 @@ void ActiveNotificationTracker::Clear() {
     ReverseTable::iterator iter = reverse_notification_table_.begin();
     UnregisterNotification((*iter).second);
   }
-}
-
-WebNotificationPermissionCallback* ActiveNotificationTracker::GetCallback(
-    int id) {
-  return callback_table_.Lookup(id);
-}
-
-int ActiveNotificationTracker::RegisterPermissionRequest(
-    WebNotificationPermissionCallback* callback) {
-  return callback_table_.Add(callback);
-}
-
-void ActiveNotificationTracker::OnPermissionRequestComplete(int id) {
-  callback_table_.Remove(id);
 }
 
 }  // namespace content

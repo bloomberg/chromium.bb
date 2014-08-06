@@ -36,9 +36,6 @@ class NotificationPresenter : public blink::WebNotificationPresenter {
   virtual void objectDestroyed(const blink::WebNotification& notification);
   virtual Permission checkPermission(
       const blink::WebSecurityOrigin& security_origin);
-  virtual void requestPermission(
-      const blink::WebSecurityOrigin& security_origin,
-      blink::WebNotificationPermissionCallback* callback);
 
  private:
   WebTestDelegate* delegate_;

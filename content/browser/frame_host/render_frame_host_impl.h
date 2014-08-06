@@ -298,8 +298,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                 IPC::Message* reply_msg);
   void OnRequestPlatformNotificationPermission(const GURL& origin,
                                                int request_id);
-  void OnRequestDesktopNotificationPermission(const GURL& origin,
-                                              int callback_id);
   void OnShowDesktopNotification(
       int notification_id,
       const ShowDesktopNotificationHostMsgParams& params);
@@ -327,8 +325,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void PlatformNotificationPermissionRequestDone(
       int request_id, blink::WebNotificationPermission permission);
-  void DesktopNotificationPermissionRequestDone(
-      int callback_context, blink::WebNotificationPermission permission);
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
