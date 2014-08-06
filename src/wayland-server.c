@@ -1035,24 +1035,20 @@ wl_socket_lock(struct wl_socket *socket)
 	if (socket->fd_lock < 0) {
 		wl_log("unable to open lockfile %s check permissions\n",
 			socket->lock_addr);
-		return -1;
+		goto err;
 	}
 
 	if (flock(socket->fd_lock, LOCK_EX | LOCK_NB) < 0) {
 		wl_log("unable to lock lockfile %s, maybe another compositor is running\n",
 			socket->lock_addr);
-		close(socket->fd_lock);
-		socket->fd_lock = -1;
-		return -1;
+		goto err_fd;
 	}
 
 	if (stat(socket->addr.sun_path, &socket_stat) < 0 ) {
 		if (errno != ENOENT) {
 			wl_log("did not manage to stat file %s\n",
 				socket->addr.sun_path);
-			close(socket->fd_lock);
-			socket->fd_lock = -1;
-			return -1;
+			goto err_fd;
 		}
 	} else if (socket_stat.st_mode & S_IWUSR ||
 		   socket_stat.st_mode & S_IWGRP) {
@@ -1060,6 +1056,18 @@ wl_socket_lock(struct wl_socket *socket)
 	}
 
 	return 0;
+err_fd:
+	close(socket->fd_lock);
+	socket->fd_lock = -1;
+err:
+	*socket->lock_addr = 0;
+	/* we did not set this value here, but without lock the
+	 * socket won't be created anyway. This prevents the
+	 * wl_socket_destroy from unlinking already existing socket
+	 * created by other compositor */
+	*socket->addr.sun_path = 0;
+
+	return -1;
 }
 
 static int
@@ -1088,6 +1096,7 @@ wl_socket_init_for_display_name(struct wl_socket *s, const char *name)
 	if (name_size > (int)sizeof s->addr.sun_path) {
 		wl_log("error: socket path \"%s/%s\" plus null terminator"
 		       " exceeds 108 bytes\n", runtime_dir, name);
+		*s->addr.sun_path = 0;
 		/* to prevent programs reporting
 		 * "failed to add socket: Success" */
 		errno = ENAMETOOLONG;
