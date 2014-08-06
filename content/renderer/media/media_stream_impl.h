@@ -146,7 +146,7 @@ class CONTENT_EXPORT MediaStreamImpl
     bool IsSourceUsed(const blink::WebMediaStreamSource& source) const;
     void RemoveSource(const blink::WebMediaStreamSource& source);
 
-    bool AreAllSourcesRemoved() const { return sources_.empty(); }
+    bool HasPendingSources() const;
 
    private:
     void OnTrackStarted(MediaStreamSource* source, bool success);
@@ -191,10 +191,15 @@ class CONTENT_EXPORT MediaStreamImpl
       UserMediaRequestInfo* request,
       content::MediaStreamRequestResult result);
 
+  void OnStreamGeneratedForCancelledRequest(
+      const StreamDeviceInfoArray& audio_array,
+      const StreamDeviceInfoArray& video_array);
+
   UserMediaRequestInfo* FindUserMediaRequestInfo(int request_id);
   UserMediaRequestInfo* FindUserMediaRequestInfo(
       const blink::WebUserMediaRequest& request);
   void DeleteUserMediaRequestInfo(UserMediaRequestInfo* request);
+  void DeleteAllUserMediaRequests();
 
   MediaDevicesRequestInfo* FindMediaDevicesRequestInfo(int request_id);
   MediaDevicesRequestInfo* FindMediaDevicesRequestInfo(

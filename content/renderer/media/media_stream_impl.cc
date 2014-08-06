@@ -199,6 +199,7 @@ void MediaStreamImpl::cancelUserMediaRequest(
     // We can't abort the stream generation process.
     // Instead, erase the request. Once the stream is generated we will stop the
     // stream if the request does not exist.
+    LogUserMediaRequestWithNoResult(MEDIA_STREAM_REQUEST_EXPLICITLY_CANCELLED);
     DeleteUserMediaRequestInfo(request);
   }
 }
@@ -275,20 +276,8 @@ void MediaStreamImpl::OnStreamGenerated(
   if (!request_info) {
     // This can happen if the request is canceled or the frame reloads while
     // MediaStreamDispatcher is processing the request.
-    // Only stop the device if the device is not used in another MediaStream.
-    for (StreamDeviceInfoArray::const_iterator device_it = audio_array.begin();
-         device_it != audio_array.end(); ++device_it) {
-      if (!FindLocalSource(*device_it))
-        media_stream_dispatcher_->StopStreamDevice(*device_it);
-    }
-
-    for (StreamDeviceInfoArray::const_iterator device_it = video_array.begin();
-         device_it != video_array.end(); ++device_it) {
-      if (!FindLocalSource(*device_it))
-        media_stream_dispatcher_->StopStreamDevice(*device_it);
-    }
-
     DVLOG(1) << "Request ID not found";
+    OnStreamGeneratedForCancelledRequest(audio_array, video_array);
     return;
   }
   request_info->generated = true;
@@ -330,6 +319,23 @@ void MediaStreamImpl::OnStreamGenerated(
   request_info->CallbackOnTracksStarted(
       base::Bind(&MediaStreamImpl::OnCreateNativeTracksCompleted,
                  weak_factory_.GetWeakPtr()));
+}
+
+void MediaStreamImpl::OnStreamGeneratedForCancelledRequest(
+    const StreamDeviceInfoArray& audio_array,
+    const StreamDeviceInfoArray& video_array) {
+  // Only stop the device if the device is not used in another MediaStream.
+  for (StreamDeviceInfoArray::const_iterator device_it = audio_array.begin();
+       device_it != audio_array.end(); ++device_it) {
+    if (!FindLocalSource(*device_it))
+      media_stream_dispatcher_->StopStreamDevice(*device_it);
+  }
+
+  for (StreamDeviceInfoArray::const_iterator device_it = video_array.begin();
+       device_it != video_array.end(); ++device_it) {
+    if (!FindLocalSource(*device_it))
+      media_stream_dispatcher_->StopStreamDevice(*device_it);
+  }
 }
 
 // Callback from MediaStreamDispatcher.
@@ -701,6 +707,29 @@ void MediaStreamImpl::DeleteUserMediaRequestInfo(
   NOTREACHED();
 }
 
+void MediaStreamImpl::DeleteAllUserMediaRequests() {
+  UserMediaRequests::iterator request_it = user_media_requests_.begin();
+  while (request_it != user_media_requests_.end()) {
+    DVLOG(1) << "MediaStreamImpl@" << this << "::DeleteAllUserMediaRequests: "
+             << "Cancel user media request " << (*request_it)->request_id;
+    // If the request is not generated, it means that a request
+    // has been sent to the MediaStreamDispatcher to generate a stream
+    // but MediaStreamDispatcher has not yet responded and we need to cancel
+    // the request.
+    if (!(*request_it)->generated) {
+      DCHECK(!(*request_it)->HasPendingSources());
+      media_stream_dispatcher_->CancelGenerateStream(
+          (*request_it)->request_id, weak_factory_.GetWeakPtr());
+      LogUserMediaRequestWithNoResult(MEDIA_STREAM_REQUEST_NOT_GENERATED);
+    } else {
+      DCHECK((*request_it)->HasPendingSources());
+      LogUserMediaRequestWithNoResult(
+          MEDIA_STREAM_REQUEST_PENDING_MEDIA_TRACKS);
+    }
+    request_it = user_media_requests_.erase(request_it);
+  }
+}
+
 MediaStreamImpl::MediaDevicesRequestInfo*
 MediaStreamImpl::FindMediaDevicesRequestInfo(
     int request_id) {
@@ -748,20 +777,7 @@ void MediaStreamImpl::CancelAndDeleteMediaDevicesRequest(
 
 void MediaStreamImpl::FrameWillClose() {
   // Cancel all outstanding UserMediaRequests.
-  UserMediaRequests::iterator request_it = user_media_requests_.begin();
-  while (request_it != user_media_requests_.end()) {
-    DVLOG(1) << "MediaStreamImpl@" << this << "::FrameWillClose: "
-             << "Cancel user media request " << (*request_it)->request_id;
-    // If the request is not generated, it means that a request
-    // has been sent to the MediaStreamDispatcher to generate a stream
-    // but MediaStreamDispatcher has not yet responded and we need to cancel
-    // the request.
-    if (!(*request_it)->generated) {
-      media_stream_dispatcher_->CancelGenerateStream(
-          (*request_it)->request_id, weak_factory_.GetWeakPtr());
-    }
-    request_it = user_media_requests_.erase(request_it);
-  }
+  DeleteAllUserMediaRequests();
 
   // Loop through all current local sources and stop the sources.
   LocalStreamSources::iterator sources_it = local_sources_.begin();
@@ -908,6 +924,10 @@ void MediaStreamImpl::UserMediaRequestInfo::RemoveSource(
       return;
     }
   }
+}
+
+bool MediaStreamImpl::UserMediaRequestInfo::HasPendingSources() const {
+  return !sources_waiting_for_callback_.empty();
 }
 
 }  // namespace content

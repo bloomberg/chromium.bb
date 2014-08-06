@@ -12,6 +12,21 @@
 
 namespace content {
 
+// Used to investigate where UserMediaRequests end up.
+// Only UserMediaRequests that do not log with LogUserMediaRequestResult
+// should call LogUserMediaRequestWithNoResult.
+//
+// Elements in this enum should not be deleted or rearranged; the only
+// permitted operation is to add new elements before
+// NUM_MEDIA_STREAM_REQUEST_WITH_NO_RESULT.
+enum MediaStreamRequestState {
+  MEDIA_STREAM_REQUEST_EXPLICITLY_CANCELLED = 0,
+  MEDIA_STREAM_REQUEST_NOT_GENERATED = 1,
+  MEDIA_STREAM_REQUEST_PENDING_MEDIA_TRACKS = 2,
+  NUM_MEDIA_STREAM_REQUEST_WITH_NO_RESULT
+};
+
+void LogUserMediaRequestWithNoResult(MediaStreamRequestState state);
 void LogUserMediaRequestResult(MediaStreamRequestResult result);
 
 // Helper enum used for histogramming calls to WebRTC APIs from JavaScript.

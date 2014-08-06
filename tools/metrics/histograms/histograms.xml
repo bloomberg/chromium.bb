@@ -35798,6 +35798,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.UserMediaRequest.NoResultState"
+    enum="MediaStreamRequestState">
+  <owner>andresp@chromium.org</owner>
+  <summary>
+    The state of a UserMediaRequest when it gets destroyed before having a
+    result.
+
+    Note: &quot;Explicitly Cancelled&quot; means
+    MediaStreamImpl::cancelUserMediaRequest was called and not necessarily that
+    the user cancelled. Those are likely tracked as UserMediaRequest with a
+    result of permission denied.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.UserMediaRequest.Result"
     enum="MediaStreamRequestResult">
   <owner>andresp@chromium.org</owner>
@@ -43330,6 +43344,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="6" label="Tab Capture Failure"/>
   <int value="7" label="Capture Failure"/>
   <int value="8" label="Track Start Failure"/>
+</enum>
+
+<enum name="MediaStreamRequestState" type="int">
+  <int value="0" label="Explicitly Cancelled"/>
+  <int value="1" label="Stream Not Generated"/>
+  <int value="2" label="Pending Media Tracks"/>
 </enum>
 
 <enum name="MetaTagTypeEnum" type="int">

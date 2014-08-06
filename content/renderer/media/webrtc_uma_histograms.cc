@@ -8,6 +8,12 @@
 
 namespace content {
 
+void LogUserMediaRequestWithNoResult(MediaStreamRequestState state) {
+  UMA_HISTOGRAM_ENUMERATION("WebRTC.UserMediaRequest.NoResultState",
+                            state,
+                            NUM_MEDIA_STREAM_REQUEST_WITH_NO_RESULT);
+}
+
 void LogUserMediaRequestResult(MediaStreamRequestResult result) {
   UMA_HISTOGRAM_ENUMERATION(
       "WebRTC.UserMediaRequest.Result", result, NUM_MEDIA_REQUEST_RESULTS);
