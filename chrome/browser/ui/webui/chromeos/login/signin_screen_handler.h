@@ -94,6 +94,10 @@ class LoginDisplayWebUIHandler {
                          bool show_guest) = 0;
   virtual void SetPublicSessionDisplayName(const std::string& user_id,
                                            const std::string& display_name) = 0;
+  virtual void SetPublicSessionLocales(const std::string& user_id,
+                                       scoped_ptr<base::ListValue> locales,
+                                       const std::string& default_locale,
+                                       bool multipleRecommendedLocales) = 0;
 
  protected:
   virtual ~LoginDisplayWebUIHandler() {}
@@ -296,6 +300,11 @@ class SigninScreenHandler
   virtual void SetPublicSessionDisplayName(
       const std::string& user_id,
       const std::string& display_name) OVERRIDE;
+  virtual void SetPublicSessionLocales(
+      const std::string& user_id,
+      scoped_ptr<base::ListValue> locales,
+      const std::string& default_locale,
+      bool multipleRecommendedLocales) OVERRIDE;
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
@@ -366,10 +375,11 @@ class SigninScreenHandler
                                              const std::string& locale);
   void HandleCancelConsumerManagementEnrollment();
 
-  // Sends the list of keyboard layouts available for the currently selected
-  // public session locale.
+  // Sends the list of |keyboard_layouts| available for the |locale| that is
+  // currently selected for the public session identified by |user_id|.
   void SendPublicSessionKeyboardLayouts(
       const std::string& user_id,
+      const std::string& locale,
       scoped_ptr<base::ListValue> keyboard_layouts);
 
   // Returns true iff

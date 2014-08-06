@@ -28,6 +28,10 @@
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
 
+namespace base {
+class ListValue;
+}
+
 namespace chromeos {
 
 class CrosSettings;
@@ -219,6 +223,17 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // Sends an accessibility alert event to extension listeners.
   void SendAccessibilityAlert(const std::string& alert_text);
+
+  // Callback invoked when the keyboard layouts available for a public session
+  // have been retrieved. Selects the first layout from the list and continues
+  // login.
+  void SetPublicSessionKeyboardLayoutAndLogin(
+      const UserContext& user_context,
+      scoped_ptr<base::ListValue> keyboard_layouts);
+
+  // Starts the actual login process for a public session. Invoked when all
+  // preconditions have been verified.
+  void LoginAsPublicSessionInternal(const UserContext& user_context);
 
   // Public session auto-login timer.
   scoped_ptr<base::OneShotTimer<ExistingUserController> > auto_login_timer_;

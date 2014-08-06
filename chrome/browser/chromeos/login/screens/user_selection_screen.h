@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/timer/timer.h"
@@ -55,6 +56,7 @@ class UserSelectionScreen : public wm::UserActivityObserver {
       bool is_owner,
       bool is_signin_to_add,
       ScreenlockBridge::LockHandler::AuthType auth_type,
+      const std::vector<std::string>* public_session_recommended_locales,
       base::DictionaryValue* user_dict);
 
   // Determines if user auth status requires online sign in.
@@ -65,6 +67,11 @@ class UserSelectionScreen : public wm::UserActivityObserver {
 
   // Set of Users that are visible.
   user_manager::UserList users_;
+
+  // Map from public session user IDs to recommended locales set by policy.
+  typedef std::map<std::string, std::vector<std::string> >
+      PublicSessionRecommendedLocaleMap;
+  PublicSessionRecommendedLocaleMap public_session_recommended_locales_;
 
  private:
   // Whether to show guest login.

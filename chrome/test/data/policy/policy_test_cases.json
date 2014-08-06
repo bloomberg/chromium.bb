@@ -2155,6 +2155,11 @@
     ]
   },
 
+  "SessionLocales": {
+    "os": ["chromeos"],
+    "can_be_recommended": true
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

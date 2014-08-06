@@ -31,6 +31,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       'setAuthType',
       'showEasyUnlockBubble',
       'setPublicSessionDisplayName',
+      'setPublicSessionLocales',
       'setPublicSessionKeyboardLayouts',
     ],
 
@@ -314,12 +315,32 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
     },
 
     /**
+     * Updates the list of locales available for a public session.
+     * @param {string} userID The user ID of the public session
+     * @param {!Object} locales The list of available locales
+     * @param {string} defaultLocale The locale to select by default
+     * @param {boolean} multipleRecommendedLocales Whether |locales| contains
+     *     two or more recommended locales
+     */
+    setPublicSessionLocales: function(userID,
+                                      locales,
+                                      defaultLocale,
+                                      multipleRecommendedLocales) {
+      $('pod-row').setPublicSessionLocales(userID,
+                                           locales,
+                                           defaultLocale,
+                                           multipleRecommendedLocales);
+    },
+
+    /**
      * Updates the list of available keyboard layouts for a public session pod.
      * @param {string} userID The user ID of the public session
+     * @param {string} locale The locale to which this list of keyboard layouts
+     *     applies
      * @param {!Object} list List of available keyboard layouts
      */
-    setPublicSessionKeyboardLayouts: function(userID, list) {
-      $('pod-row').setPublicSessionKeyboardLayouts(userID, list);
+    setPublicSessionKeyboardLayouts: function(userID, locale, list) {
+      $('pod-row').setPublicSessionKeyboardLayouts(userID, locale, list);
     }
   };
 });
