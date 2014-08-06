@@ -109,7 +109,7 @@ static void installV8TestExceptionTemplate(v8::Handle<v8::FunctionTemplate> func
     static const V8DOMConfiguration::MethodConfiguration toStringMethodConfiguration = {
         "toString", TestExceptionV8Internal::toStringMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
-    V8DOMConfiguration::installMethodCustomSignature(prototypeTemplate, defaultSignature, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::DontEnum), toStringMethodConfiguration, isolate);
+    V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::DontEnum), toStringMethodConfiguration, isolate);
 
     // Custom toString template
     functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::from(isolate)->toStringTemplate());

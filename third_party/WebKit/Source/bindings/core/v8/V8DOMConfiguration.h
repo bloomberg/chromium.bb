@@ -143,14 +143,25 @@ public:
 
     static void installMethods(v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::Signature>, v8::PropertyAttribute, const MethodConfiguration*, size_t callbackCount, v8::Isolate*);
 
-    template<class ObjectOrTemplate>
-    static void installMethodCustomSignature(v8::Handle<ObjectOrTemplate> instanceTemplate, v8::Handle<v8::Signature> signature, v8::PropertyAttribute attribute, const MethodConfiguration& configuration, v8::Isolate* isolate)
+    template <class Template>
+    static void installMethod(v8::Handle<Template> prototype, v8::Handle<v8::Signature> signature, v8::PropertyAttribute attribute, const MethodConfiguration& callback, v8::Isolate* isolate)
     {
-        v8::FunctionCallback callback = configuration.callback;
-        if (DOMWrapperWorld::current(isolate).isMainWorld() && configuration.callbackForMainWorld)
-            callback = configuration.callbackForMainWorld;
-        v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate, callback, v8Undefined(), signature, configuration.length);
-        instanceTemplate->Set(v8AtomicString(isolate, configuration.name), functionTemplate, attribute);
+        DOMWrapperWorld& world = DOMWrapperWorld::current(isolate);
+        if (callback.exposeConfiguration == OnlyExposedToPrivateScript && !world.isPrivateScriptIsolatedWorld())
+            return;
+
+        v8::Local<v8::FunctionTemplate> functionTemplate = functionTemplateForMethod(signature, callback, isolate);
+        prototype->Set(v8AtomicString(isolate, callback.name), functionTemplate, attribute);
+    }
+
+    static void installMethod(v8::Handle<v8::Object> object, v8::Handle<v8::Signature> signature, v8::PropertyAttribute, const MethodConfiguration& callback, v8::Isolate* isolate)
+    {
+        DOMWrapperWorld& world = DOMWrapperWorld::current(isolate);
+        if (callback.exposeConfiguration == OnlyExposedToPrivateScript && !world.isPrivateScriptIsolatedWorld())
+            return;
+
+        v8::Local<v8::FunctionTemplate> functionTemplate = functionTemplateForMethod(signature, callback, isolate);
+        object->Set(v8AtomicString(isolate, callback.name), functionTemplate->GetFunction());
     }
 
     static void installAccessors(v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::Signature>, const AccessorConfiguration*, size_t accessorCount, v8::Isolate*);
@@ -162,6 +173,9 @@ public:
         v8::Isolate*);
 
     static v8::Handle<v8::FunctionTemplate> domClassTemplate(v8::Isolate*, WrapperTypeInfo*, void (*)(v8::Handle<v8::FunctionTemplate>, v8::Isolate*));
+
+private:
+    static v8::Handle<v8::FunctionTemplate> functionTemplateForMethod(v8::Handle<v8::Signature>, const MethodConfiguration&, v8::Isolate*);
 };
 
 } // namespace blink

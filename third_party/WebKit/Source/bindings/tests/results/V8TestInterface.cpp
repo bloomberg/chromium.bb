@@ -1416,23 +1416,23 @@ static void installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> func
     static const V8DOMConfiguration::MethodConfiguration implementsStaticVoidMethodMethodConfiguration = {
         "implementsStaticVoidMethod", TestInterfaceImplementationV8Internal::implementsStaticVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
-    V8DOMConfiguration::installMethodCustomSignature(functionTemplate, v8::Local<v8::Signature>(), v8::None, implementsStaticVoidMethodMethodConfiguration, isolate);
+    V8DOMConfiguration::installMethod(functionTemplate, v8::Local<v8::Signature>(), v8::None, implementsStaticVoidMethodMethodConfiguration, isolate);
     if (RuntimeEnabledFeatures::implements2FeatureNameEnabled()) {
         static const V8DOMConfiguration::MethodConfiguration implements2VoidMethodMethodConfiguration = {
             "implements2VoidMethod", TestInterfaceImplementationV8Internal::implements2VoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
         };
-        V8DOMConfiguration::installMethodCustomSignature(prototypeTemplate, defaultSignature, v8::None, implements2VoidMethodMethodConfiguration, isolate);
+        V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, implements2VoidMethodMethodConfiguration, isolate);
     }
     static const V8DOMConfiguration::MethodConfiguration implements3StaticVoidMethodMethodConfiguration = {
         "implements3StaticVoidMethod", TestInterfaceImplementationV8Internal::implements3StaticVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
-    V8DOMConfiguration::installMethodCustomSignature(functionTemplate, v8::Local<v8::Signature>(), v8::None, implements3StaticVoidMethodMethodConfiguration, isolate);
+    V8DOMConfiguration::installMethod(functionTemplate, v8::Local<v8::Signature>(), v8::None, implements3StaticVoidMethodMethodConfiguration, isolate);
 #if ENABLE(PARTIAL_CONDITION)
     if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
         static const V8DOMConfiguration::MethodConfiguration partialVoidMethodMethodConfiguration = {
             "partialVoidMethod", TestInterfaceImplementationV8Internal::partialVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
         };
-        V8DOMConfiguration::installMethodCustomSignature(prototypeTemplate, defaultSignature, v8::None, partialVoidMethodMethodConfiguration, isolate);
+        V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, partialVoidMethodMethodConfiguration, isolate);
     }
 #endif // ENABLE(PARTIAL_CONDITION)
 #if ENABLE(PARTIAL_CONDITION)
@@ -1440,7 +1440,7 @@ static void installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> func
         static const V8DOMConfiguration::MethodConfiguration partialStaticVoidMethodMethodConfiguration = {
             "partialStaticVoidMethod", TestInterfaceImplementationV8Internal::partialStaticVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
         };
-        V8DOMConfiguration::installMethodCustomSignature(functionTemplate, v8::Local<v8::Signature>(), v8::None, partialStaticVoidMethodMethodConfiguration, isolate);
+        V8DOMConfiguration::installMethod(functionTemplate, v8::Local<v8::Signature>(), v8::None, partialStaticVoidMethodMethodConfiguration, isolate);
     }
 #endif // ENABLE(PARTIAL_CONDITION)
 #if ENABLE(PARTIAL_CONDITION)
@@ -1448,7 +1448,7 @@ static void installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> func
         static const V8DOMConfiguration::MethodConfiguration partialVoidMethodLongArgMethodConfiguration = {
             "partialVoidMethodLongArg", TestInterfaceImplementationV8Internal::partialVoidMethodLongArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts,
         };
-        V8DOMConfiguration::installMethodCustomSignature(prototypeTemplate, defaultSignature, v8::None, partialVoidMethodLongArgMethodConfiguration, isolate);
+        V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, partialVoidMethodLongArgMethodConfiguration, isolate);
     }
 #endif // ENABLE(PARTIAL_CONDITION)
 #if ENABLE(PARTIAL_CONDITION)
@@ -1456,7 +1456,7 @@ static void installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> func
         static const V8DOMConfiguration::MethodConfiguration partialCallWithExecutionContextRaisesExceptionVoidMethodMethodConfiguration = {
             "partialCallWithExecutionContextRaisesExceptionVoidMethod", TestInterfaceImplementationV8Internal::partialCallWithExecutionContextRaisesExceptionVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
         };
-        V8DOMConfiguration::installMethodCustomSignature(prototypeTemplate, defaultSignature, v8::None, partialCallWithExecutionContextRaisesExceptionVoidMethodMethodConfiguration, isolate);
+        V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, partialCallWithExecutionContextRaisesExceptionVoidMethodMethodConfiguration, isolate);
     }
 #endif // ENABLE(PARTIAL_CONDITION)
 #if ENABLE(PARTIAL_CONDITION)
@@ -1464,13 +1464,13 @@ static void installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> func
         static const V8DOMConfiguration::MethodConfiguration partialVoidMethodPartialCallbackTypeArgMethodConfiguration = {
             "partialVoidMethodPartialCallbackTypeArg", TestInterfaceImplementationV8Internal::partialVoidMethodPartialCallbackTypeArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts,
         };
-        V8DOMConfiguration::installMethodCustomSignature(prototypeTemplate, defaultSignature, v8::None, partialVoidMethodPartialCallbackTypeArgMethodConfiguration, isolate);
+        V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, partialVoidMethodPartialCallbackTypeArgMethodConfiguration, isolate);
     }
 #endif // ENABLE(PARTIAL_CONDITION)
     static const V8DOMConfiguration::MethodConfiguration toStringMethodConfiguration = {
         "toString", TestInterfaceImplementationV8Internal::toStringMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
-    V8DOMConfiguration::installMethodCustomSignature(prototypeTemplate, defaultSignature, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::DontEnum), toStringMethodConfiguration, isolate);
+    V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::DontEnum), toStringMethodConfiguration, isolate);
     functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "staticStringAttribute"), TestInterfaceImplementationV8Internal::staticStringAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::staticStringAttributeAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
     functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "implementsStaticReadOnlyLongAttribute"), TestInterfaceImplementationV8Internal::implementsStaticReadOnlyLongAttributeAttributeGetterCallback, 0, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
     functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "implementsStaticStringAttribute"), TestInterfaceImplementationV8Internal::implementsStaticStringAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::implementsStaticStringAttributeAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
@@ -1505,35 +1505,40 @@ TestInterfaceImplementation* V8TestInterface::toNativeWithTypeCheck(v8::Isolate*
     return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
 }
 
-void V8TestInterface::installPerContextEnabledProperties(v8::Handle<v8::Object> instanceTemplate, TestInterfaceImplementation* impl, v8::Isolate* isolate)
+void V8TestInterface::installPerContextEnabledProperties(v8::Handle<v8::Object> instanceObject, TestInterfaceImplementation* impl, v8::Isolate* isolate)
 {
-    v8::Local<v8::Object> prototypeTemplate = v8::Local<v8::Object>::Cast(instanceTemplate->GetPrototype());
+    v8::Local<v8::Object> prototypeObject = v8::Local<v8::Object>::Cast(instanceObject->GetPrototype());
     if (ContextFeatures::implementsContextNameEnabled(impl->document())) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
         {"implementsPerContextEnabledNodeAttribute", TestInterfaceImplementationV8Internal::implementsPerContextEnabledNodeAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::implementsPerContextEnabledNodeAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance};
-        V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate);
+        V8DOMConfiguration::installAttribute(instanceObject, prototypeObject, attributeConfiguration, isolate);
     }
     if (ContextFeatures::partialContextNameEnabled(impl->document())) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
         {"partial2LongAttribute", TestInterfaceImplementationV8Internal::partial2LongAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partial2LongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance};
-        V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate);
+        V8DOMConfiguration::installAttribute(instanceObject, prototypeObject, attributeConfiguration, isolate);
     }
     if (ContextFeatures::partialContextNameEnabled(impl->document())) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
         {"partial2StaticLongAttribute", TestInterfaceImplementationV8Internal::partial2StaticLongAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partial2StaticLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance};
-        V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate);
+        V8DOMConfiguration::installAttribute(instanceObject, prototypeObject, attributeConfiguration, isolate);
     }
 }
 
-void V8TestInterface::installPerContextEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate)
+void V8TestInterface::installPerContextEnabledMethods(v8::Handle<v8::Object> prototypeObject, v8::Isolate* isolate)
 {
     v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate));
 
-    ExecutionContext* context = toExecutionContext(prototypeTemplate->CreationContext());
-    if (context && context->isDocument() && ContextFeatures::partialContextNameEnabled(toDocument(context)))
-        prototypeTemplate->Set(v8AtomicString(isolate, "partial2VoidMethod"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::partial2VoidMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
-    if (context && context->isDocument() && ContextFeatures::partialContextNameEnabled(toDocument(context)))
-        prototypeTemplate->Set(v8AtomicString(isolate, "partial2StaticVoidMethod"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::partial2StaticVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
+    ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
+    ASSERT(context);
+    if (context->isDocument() && ContextFeatures::partialContextNameEnabled(toDocument(context))) {
+        static const V8DOMConfiguration::MethodConfiguration methodConfiguration = {"partial2VoidMethod", TestInterfaceImplementationV8Internal::partial2VoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts};
+        V8DOMConfiguration::installMethod(prototypeObject, defaultSignature, v8::None, methodConfiguration, isolate);
+    }
+    if (context->isDocument() && ContextFeatures::partialContextNameEnabled(toDocument(context))) {
+        static const V8DOMConfiguration::MethodConfiguration methodConfiguration = {"partial2StaticVoidMethod", TestInterfaceImplementationV8Internal::partial2StaticVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts};
+        V8DOMConfiguration::installMethod(prototypeObject, defaultSignature, v8::None, methodConfiguration, isolate);
+    }
 }
 
 ActiveDOMObject* V8TestInterface::toActiveDOMObject(v8::Handle<v8::Object> wrapper)

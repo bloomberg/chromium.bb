@@ -1071,7 +1071,7 @@ V8DOMConfiguration::installAttribute({{method.function_template}}, v8::Handle<v8
 static const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration = {
     "{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method.length}}, {{only_exposed_to_private_script}},
 };
-V8DOMConfiguration::installMethodCustomSignature({{method.function_template}}, {{method.signature}}, {{property_attribute}}, {{method.name}}MethodConfiguration, isolate);
+V8DOMConfiguration::installMethod({{method.function_template}}, {{method.signature}}, {{property_attribute}}, {{method.name}}MethodConfiguration, isolate);
 {%- endmacro %}
 
 
@@ -1157,14 +1157,14 @@ v8::Handle<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Handle<v8:
 {##############################################################################}
 {% block install_per_context_attributes %}
 {% if has_per_context_enabled_attributes %}
-void {{v8_class}}::installPerContextEnabledProperties(v8::Handle<v8::Object> instanceTemplate, {{cpp_class}}* impl, v8::Isolate* isolate)
+void {{v8_class}}::installPerContextEnabledProperties(v8::Handle<v8::Object> instanceObject, {{cpp_class}}* impl, v8::Isolate* isolate)
 {
-    v8::Local<v8::Object> prototypeTemplate = v8::Local<v8::Object>::Cast(instanceTemplate->GetPrototype());
+    v8::Local<v8::Object> prototypeObject = v8::Local<v8::Object>::Cast(instanceObject->GetPrototype());
     {% for attribute in attributes if attribute.per_context_enabled_function %}
     if ({{attribute.per_context_enabled_function}}(impl->document())) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
         {{attribute_configuration(attribute)}};
-        V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate);
+        V8DOMConfiguration::installAttribute(instanceObject, prototypeObject, attributeConfiguration, isolate);
     }
     {% endfor %}
 }
@@ -1176,15 +1176,18 @@ void {{v8_class}}::installPerContextEnabledProperties(v8::Handle<v8::Object> ins
 {##############################################################################}
 {% block install_per_context_methods %}
 {% if per_context_enabled_methods %}
-void {{v8_class}}::installPerContextEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate)
+void {{v8_class}}::installPerContextEnabledMethods(v8::Handle<v8::Object> prototypeObject, v8::Isolate* isolate)
 {
     {# Define per-context enabled operations #}
     v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate));
 
-    ExecutionContext* context = toExecutionContext(prototypeTemplate->CreationContext());
+    ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
+    ASSERT(context);
     {% for method in per_context_enabled_methods %}
-    if (context && context->isDocument() && {{method.per_context_enabled_function}}(toDocument(context)))
-        prototypeTemplate->Set(v8AtomicString(isolate, "{{method.name}}"), v8::FunctionTemplate::New(isolate, {{cpp_class}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), defaultSignature, {{method.number_of_required_arguments}})->GetFunction());
+    if (context->isDocument() && {{method.per_context_enabled_function}}(toDocument(context))) {
+        static const V8DOMConfiguration::MethodConfiguration methodConfiguration = {{method_configuration(method)}};
+        V8DOMConfiguration::installMethod(prototypeObject, defaultSignature, v8::None, methodConfiguration, isolate);
+    }
     {% endfor %}
 }
 
