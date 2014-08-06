@@ -1,0 +1,85 @@
+<script src="test-helpers.js?pipe=sub"></script>
+<script>
+var path = base_path() + 'fetch-access-control.php';
+var host_info = get_host_info();
+
+function create_success_test_promise(url, with_credentials) {
+  return new Promise(function(resolve, reject) {
+      var xhr = new XMLHttpRequest();
+      xhr.onload = resolve;
+      xhr.onerror = function() {
+        reject('XHR to ' + url + ' should succeed.');
+      }
+      xhr.responseType = 'text';
+      xhr.withCredentials = with_credentials;
+      xhr.open('GET', url, true);
+      xhr.send();
+    });
+}
+
+function create_failure_test_promise(url, with_credentials) {
+  return new Promise(function(resolve, reject) {
+      var xhr = new XMLHttpRequest();
+      xhr.onload = function() {
+        reject('XHR to ' + url + ' should fail.');
+      }
+      xhr.onerror = function() {
+        resolve();
+      }
+      xhr.responseType = 'text';
+      xhr.withCredentials = with_credentials;
+      xhr.open('GET', url, true);
+      xhr.send();
+    });
+}
+
+window.addEventListener('message', function(evt) {
+    var port = evt.ports[0];
+    create_success_test_promise(host_info['HTTP_ORIGIN'] + path, false)
+      .then(function() {
+          return create_failure_test_promise(
+            host_info['HTTP_REMOTE_ORIGIN'] + path,
+            false);
+        })
+      .then(function() {
+          return create_success_test_promise(
+            './dummy?url=' +
+             encodeURIComponent(host_info['HTTP_ORIGIN'] + path),
+            false);
+        })
+      .then(function() {
+          return create_failure_test_promise(
+            './dummy?mode=no-cors&url=' +
+            encodeURIComponent(host_info['HTTP_REMOTE_ORIGIN'] + path),
+            false);
+        })
+      .then(function() {
+          return create_success_test_promise(
+            './dummy?url=' +
+            encodeURIComponent(host_info['HTTP_REMOTE_ORIGIN'] + path +
+                               '?ACAOrigin=' + host_info['HTTP_ORIGIN']),
+            false);
+        })
+      .then(function() {
+          return create_failure_test_promise(
+            './dummy?url=' +
+            encodeURIComponent(host_info['HTTP_REMOTE_ORIGIN'] + path +
+                               '?ACAOrigin=' + host_info['HTTP_ORIGIN']),
+            true);
+        })
+      .then(function() {
+          return create_success_test_promise(
+            './dummy?url=' +
+            encodeURIComponent(
+              host_info['HTTP_REMOTE_ORIGIN'] + path +
+              '?ACACredentials=true&ACAOrigin=' + host_info['HTTP_ORIGIN']),
+            true);
+        })
+      .then(function() {
+          port.postMessage({results: 'finish'});
+        })
+      .catch(function(e) {
+          port.postMessage({results: 'failure:' + e});
+        });
+  }, false);
+</script>

@@ -1,0 +1,13 @@
+CONSOLE ERROR: [blocked] The page at 'https://127.0.0.1:8443/serviceworker/resources/fetch-mixed-content-iframe-inscope.html' was loaded over HTTPS, but displayed insecure content from 'http://127.0.0.1:8000/serviceworker/resources/fetch-access-control.php?PNGIMAGE': this content should also be loaded over HTTPS.
+
+CONSOLE ERROR: [blocked] The page at 'https://127.0.0.1:8443/serviceworker/resources/fetch-mixed-content-iframe-inscope.html' was loaded over HTTPS, but displayed insecure content from 'http://localhost:8000/serviceworker/resources/fetch-access-control.php?PNGIMAGE': this content should also be loaded over HTTPS.
+
+CONSOLE ERROR: [blocked] The page at 'https://127.0.0.1:8443/serviceworker/resources/fetch-mixed-content-iframe-inscope.html' was loaded over HTTPS, but displayed insecure content from 'http://127.0.0.1:8000/serviceworker/resources/fetch-access-control.php?PNGIMAGE': this content should also be loaded over HTTPS.
+
+CONSOLE ERROR: [blocked] The page at 'https://127.0.0.1:8443/serviceworker/resources/fetch-mixed-content-iframe-inscope.html' was loaded over HTTPS, but displayed insecure content from 'http://localhost:8000/serviceworker/resources/fetch-access-control.php?PNGIMAGE': this content should also be loaded over HTTPS.
+
+
+This is a testharness.js-based test.
+PASS Verify Mixed content of fetch() in a Service Worker 
+Harness: the test ran to completion.
+

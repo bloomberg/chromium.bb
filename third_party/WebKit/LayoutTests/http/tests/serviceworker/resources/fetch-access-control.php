@@ -22,6 +22,15 @@ if ((isset($_GET['Auth']) and !isset($_SERVER['PHP_AUTH_USER'])) || isset($_GET[
     exit;
 }
 
+if (isset($_GET['PNGIMAGE'])) {
+  header('Content-Type: image/png');
+  echo base64_decode(
+    'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1B' .
+    'AACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAhSURBVDhPY3wro/KfgQLABKXJBqMG' .
+    'jBoAAqMGDLwBDAwAEsoCTFWunmQAAAAASUVORK5CYII=');
+  exit;
+}
+
 $username = 'undefined';
 $password = 'undefined';
 $cookie = 'undefined';

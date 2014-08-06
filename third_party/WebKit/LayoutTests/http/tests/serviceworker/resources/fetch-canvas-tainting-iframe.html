@@ -1,0 +1,83 @@
+<script src="test-helpers.js?pipe=sub"></script>
+<script>
+var image_path = base_path() + 'fetch-access-control.php?PNGIMAGE';
+var host_info = get_host_info();
+
+function create_test_case_promise(url, cross_origin) {
+  return new Promise(function(resolve, reject) {
+      var img = new Image();
+      if (cross_origin) {
+        img.crossOrigin = 'anonymous';
+      }
+      img.onload = function() {
+        try {
+          var canvas = document.createElement('canvas');
+          canvas.width = 100;
+          canvas.height = 100;
+          var context = canvas.getContext('2d');
+          context.drawImage(img, 0, 0);
+          context.getImageData(0, 0, 100, 100);
+          resolve();
+        } catch (e) {
+          reject();
+        }
+      };
+      img.src = url;
+    });
+}
+
+function create_success_test_promise(url, cross_origin) {
+  return new Promise(function(resolve, reject) {
+      create_test_case_promise(url, cross_origin)
+        .then(function() { resolve(); })
+        .catch(function() {
+            reject('Image of ' + url + ' must not taint the canvas.');
+          });
+    });
+}
+
+function create_failure_test_promise(url, cross_origin) {
+  return new Promise(function(resolve, reject) {
+      create_test_case_promise(url, cross_origin)
+        .then(function() {
+            reject('Image of ' + url + ' must taint the canvas.');
+          })
+        .catch(function() { resolve(); });
+    });
+}
+
+window.addEventListener('message', function(evt) {
+    var port = evt.ports[0];
+    create_success_test_promise(host_info['HTTP_ORIGIN'] + image_path, false)
+      .then(function() {
+          return create_failure_test_promise(
+            host_info['HTTP_REMOTE_ORIGIN'] + image_path,
+            false);
+        })
+      .then(function() {
+          return create_success_test_promise(
+            './dummy?url=' +
+            encodeURIComponent(host_info['HTTP_ORIGIN'] + image_path),
+            false);
+        })
+      .then(function() {
+          return create_failure_test_promise(
+            './dummy?mode=no-cors&url=' +
+            encodeURIComponent(host_info['HTTP_REMOTE_ORIGIN'] + image_path),
+            false);
+        })
+      .then(function() {
+          return create_success_test_promise(
+            './dummy?mode=no-cors&url=' +
+            encodeURIComponent(host_info['HTTP_REMOTE_ORIGIN'] + image_path +
+                               '&ACAOrigin=' + host_info['HTTP_ORIGIN']),
+            true);
+        })
+      .then(function() {
+          port.postMessage({results: 'finish'});
+        })
+      .catch(function(e) {
+          port.postMessage({results: 'failure:' + e});
+        });
+  }, false);
+</script>

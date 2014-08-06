@@ -1,0 +1,8 @@
+CONSOLE ERROR: XMLHttpRequest cannot load http://localhost:8000/serviceworker/resources/fetch-access-control.php. No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
+CONSOLE ERROR: XMLHttpRequest cannot load http://localhost:8000/serviceworker/resources/fetch-access-control.php. No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
+CONSOLE ERROR: XMLHttpRequest cannot load http://localhost:8000/serviceworker/resources/fetch-access-control.php?ACAOrigin=http://127.0.0.1:8000. Credentials flag is 'true', but the 'Access-Control-Allow-Credentials' header is ''. It must be 'true' to allow credentials.
+
+This is a testharness.js-based test.
+PASS Verify CORS XHR of fetch() in a Service Worker 
+Harness: the test ran to completion.
+

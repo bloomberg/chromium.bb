@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<script src="test-helpers.js?pipe=sub"></script>
+<script>
+var SCOPE = 'fetch-mixed-content-iframe-inscope.html';
+var URL = 'fetch-rewrite-worker.js';
+var host_info = get_host_info();
+
+window.addEventListener('message', on_message, false);
+
+navigator.serviceWorker.unregister(SCOPE)
+  .then(function() {
+      return navigator.serviceWorker.register(URL, {scope: SCOPE});
+    })
+  .then(function(worker) {
+      worker.addEventListener('statechange', on_state_change);
+    });
+
+function on_state_change(event) {
+  if (event.target.state != 'activated')
+    return;
+  var frame = document.createElement('iframe');
+  frame.src = SCOPE;
+  document.body.appendChild(frame);
+}
+
+function on_message(e) {
+  navigator.serviceWorker.unregister(SCOPE)
+  .then(function() {
+      window.parent.postMessage(e.data, host_info['HTTP_ORIGIN']);
+    });
+}
+</script>
