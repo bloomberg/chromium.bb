@@ -43,25 +43,27 @@ scoped_ptr<ServiceWorkerHandle> ServiceWorkerHandle::Create(
     base::WeakPtr<ServiceWorkerContextCore> context,
     IPC::Sender* sender,
     int thread_id,
+    int provider_id,
     ServiceWorkerVersion* version) {
   if (!context || !version)
     return scoped_ptr<ServiceWorkerHandle>();
   ServiceWorkerRegistration* registration =
       context->GetLiveRegistration(version->registration_id());
-  return make_scoped_ptr(
-      new ServiceWorkerHandle(context, sender, thread_id,
-                              registration, version));
+  return make_scoped_ptr(new ServiceWorkerHandle(
+      context, sender, thread_id, provider_id, registration, version));
 }
 
 ServiceWorkerHandle::ServiceWorkerHandle(
     base::WeakPtr<ServiceWorkerContextCore> context,
     IPC::Sender* sender,
     int thread_id,
+    int provider_id,
     ServiceWorkerRegistration* registration,
     ServiceWorkerVersion* version)
     : context_(context),
       sender_(sender),
       thread_id_(thread_id),
+      provider_id_(provider_id),
       handle_id_(context.get() ? context->GetNewServiceWorkerHandleId() : -1),
       ref_count_(1),
       registration_(registration),

@@ -208,6 +208,7 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
       base::Bind(&ServiceWorkerDispatcherHost::RegistrationComplete,
                  this,
                  thread_id,
+                 provider_id,
                  request_id));
 }
 
@@ -315,22 +316,24 @@ void ServiceWorkerDispatcherHost::OnSetHostedVersionId(
     BadMessageReceived();
 }
 
-ServiceWorkerHandle* ServiceWorkerDispatcherHost::FindHandle(int thread_id,
+ServiceWorkerHandle* ServiceWorkerDispatcherHost::FindHandle(int provider_id,
                                                              int64 version_id) {
   for (IDMap<ServiceWorkerHandle, IDMapOwnPointer>::iterator iter(&handles_);
        !iter.IsAtEnd();
        iter.Advance()) {
     ServiceWorkerHandle* handle = iter.GetCurrentValue();
     DCHECK(handle);
-    if (handle->thread_id() == thread_id && handle->version() &&
-        handle->version()->version_id() == version_id)
+    if (handle->provider_id() == provider_id && handle->version() &&
+        handle->version()->version_id() == version_id) {
       return handle;
+    }
   }
   return NULL;
 }
 
 void ServiceWorkerDispatcherHost::RegistrationComplete(
     int thread_id,
+    int provider_id,
     int request_id,
     ServiceWorkerStatusCode status,
     int64 registration_id,
@@ -347,13 +350,14 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
   DCHECK(version);
   DCHECK_EQ(registration_id, version->registration_id());
   ServiceWorkerObjectInfo info;
-  ServiceWorkerHandle* handle = FindHandle(thread_id, version_id);
+  ServiceWorkerHandle* handle = FindHandle(provider_id, version_id);
   if (handle) {
+    DCHECK_EQ(thread_id, handle->thread_id());
     info = handle->GetObjectInfo();
     handle->IncrementRefCount();
   } else {
     scoped_ptr<ServiceWorkerHandle> new_handle = ServiceWorkerHandle::Create(
-        GetContext()->AsWeakPtr(), this, thread_id, version);
+        GetContext()->AsWeakPtr(), this, thread_id, provider_id, version);
     info = new_handle->GetObjectInfo();
     RegisterServiceWorkerHandle(new_handle.Pass());
   }

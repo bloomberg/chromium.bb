@@ -225,8 +225,11 @@ ServiceWorkerObjectInfo ServiceWorkerProviderHost::CreateHandleAndPass(
   ServiceWorkerObjectInfo info;
   if (context_ && version) {
     scoped_ptr<ServiceWorkerHandle> handle =
-        ServiceWorkerHandle::Create(context_, dispatcher_host_,
-                                    kDocumentMainThreadId, version);
+        ServiceWorkerHandle::Create(context_,
+                                    dispatcher_host_,
+                                    kDocumentMainThreadId,
+                                    provider_id_,
+                                    version);
     info = handle->GetObjectInfo();
     dispatcher_host_->RegisterServiceWorkerHandle(handle.Pass());
   }
