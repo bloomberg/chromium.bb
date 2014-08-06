@@ -288,6 +288,7 @@
             'plugins/PluginArray.idl',
             'storage/Storage.idl',
             'storage/StorageEvent.idl',
+            'streams/ReadableStream.idl',
             'streams/Stream.idl',
             'svg/SVGAElement.idl',
             'svg/SVGAltGlyphDefElement.idl',

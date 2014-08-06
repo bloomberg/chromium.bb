@@ -6,18 +6,24 @@
 #define ReadableStream_h
 
 #include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
+class DOMException;
 class ExceptionState;
 class UnderlyingSource;
 
-class ReadableStream FINAL : public GarbageCollectedFinalized<ReadableStream> {
+class ReadableStream FINAL : public GarbageCollectedFinalized<ReadableStream>, public ScriptWrappable, public ContextLifecycleObserver {
 public:
     enum State {
         Readable,
@@ -31,40 +37,41 @@ public:
     ReadableStream(ScriptState*, UnderlyingSource*, ExceptionState*);
     virtual ~ReadableStream();
 
-    template <typename T>
-    bool enqueue(const T& chunk)
-    {
-        ScriptState::Scope scope(m_scriptState.get());
-        return enqueueInternal(ScriptValue(m_scriptState.get(), V8ValueTraits<T>::toV8Value(chunk)));
-    }
-
     bool isStarted() const { return m_isStarted; }
     bool isDraining() const { return m_isDraining; }
     bool isPulling() const { return m_isPulling; }
     State state() const { return m_state; }
 
-    // FIXME: Implement these APIs.
-    // bool read();
-    // ScriptPromise wait();
-    // void close();
+    // FIXME: Implement bool read();
+    ScriptPromise wait(ScriptState*);
+    // FIXME: Implement void close();
 
-    void error(ScriptValue error);
+    // FIXME: enqueue must accept any type.
+    bool enqueue(const String& chunk);
+    void close();
+    void error(PassRefPtrWillBeRawPtr<DOMException>);
 
     void trace(Visitor*);
 
 private:
     class OnStarted;
     class OnStartFailed;
+    typedef ScriptPromiseProperty<Member<ReadableStream>, V8UndefinedType, RefPtrWillBeMember<DOMException> > WaitPromise;
 
     void onStarted(void);
-    bool enqueueInternal(ScriptValue chunk);
+    void enqueueValueWithSize(const String& chunk);
 
-    RefPtr<ScriptState> m_scriptState;
+    void callOrSchedulePull();
+
     Member<UnderlyingSource> m_source;
     bool m_isStarted;
     bool m_isDraining;
     bool m_isPulling;
+    bool m_isSchedulingPull;
     State m_state;
+
+    Member<WaitPromise> m_wait;
+    RefPtrWillBeMember<DOMException> m_exception;
 };
 
 } // namespace blink

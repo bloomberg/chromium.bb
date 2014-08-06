@@ -15,8 +15,8 @@ class UnderlyingSource : public GarbageCollectedFinalized<UnderlyingSource> {
 public:
     virtual ~UnderlyingSource() { }
     virtual ScriptPromise startSource(ExceptionState*) = 0;
-    virtual void pullSource(ExceptionState*) = 0;
-    virtual void cancelSource(ExceptionState*) = 0;
+    virtual void pullSource() = 0;
+    virtual void cancelSource() = 0;
     virtual void trace(Visitor*) { }
 };
 

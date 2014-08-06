@@ -281,6 +281,7 @@ RTCIceCandidate
 RTCSessionDescription
 Range
 RangeError
+ReadableStream
 Rect
 ReferenceError
 RegExp
