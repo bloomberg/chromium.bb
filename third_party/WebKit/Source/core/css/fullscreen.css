@@ -27,8 +27,12 @@ video:-webkit-full-screen, audio:-webkit-full-screen {
     left: 0 !important;
     top: 0 ! important;
     margin: 0 !important;
-    height: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    max-height: none !important;
     width: 100% !important;
+    height: 100% !important;
     flex: 1 !important;
     display: block !important;
     -webkit-transform: none !important;
@@ -45,8 +49,12 @@ iframe:-webkit-full-screen {
     padding: 0 !important;
     border: 0 !important;
     position: fixed !important;
-    height: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    max-height: none !important;
     width: 100% !important;
+    height: 100% !important;
     left: 0 !important;
     top: 0 !important;
 }
