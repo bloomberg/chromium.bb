@@ -5,6 +5,33 @@
 // TODO(jhawkins): Use hidden instead of showInline* and display:none.
 
 /**
+ * The type of the download object. The definition is based on
+ * chrome/browser/ui/webui/downloads_dom_handler.cc:CreateDownloadItemValue()
+ * @typedef {{by_ext_id: (string|undefined),
+ *            by_ext_name: (string|undefined),
+ *            danger_type: (string|undefined),
+ *            date_string: string,
+ *            file_externally_removed: boolean,
+ *            file_name: string,
+ *            file_path: string,
+ *            file_url: string,
+ *            id: string,
+ *            last_reason_text: (string|undefined),
+ *            otr: boolean,
+ *            percent: (number|undefined),
+ *            progress_status_text: (string|undefined),
+ *            received: (number|undefined),
+ *            resume: boolean,
+ *            retry: boolean,
+ *            since_string: string,
+ *            started: number,
+ *            state: string,
+ *            total: number,
+ *            url: string}}
+ */
+var BackendDownloadObject;
+
+/**
  * Sets the display style of a node.
  * @param {!Element} node The target element to show or hide.
  * @param {boolean} isShow Should the target element be visible.
@@ -26,7 +53,7 @@ function showInlineBlock(node, isShow) {
  * Creates a link with a specified onclick handler and content.
  * @param {function()} onclick The onclick handler.
  * @param {string} value The link text.
- * @return {Element} The created link element.
+ * @return {!Element} The created link element.
  */
 function createLink(onclick, value) {
   var link = document.createElement('a');
@@ -58,6 +85,10 @@ function createButton(onclick, value) {
  * @constructor
  */
 function Downloads() {
+  /**
+   * @type {!Object.<string, Download>}
+   * @private
+   */
   this.downloads_ = {};
   this.node_ = $('downloads-display');
   this.summary_ = $('downloads-summary-text');
@@ -74,7 +105,7 @@ function Downloads() {
 
 /**
  * Called when a download has been updated or added.
- * @param {Object} download A backend download object (see downloads_ui.cc)
+ * @param {BackendDownloadObject} download A backend download object
  */
 Downloads.prototype.updated = function(download) {
   var id = download.id;
@@ -129,7 +160,7 @@ Downloads.prototype.updateSummary = function() {
 
 /**
  * Returns the number of downloads in the model. Used by tests.
- * @return {integer} Returns the number of downloads shown on the page.
+ * @return {number} Returns the number of downloads shown on the page.
  */
 Downloads.prototype.size = function() {
   return Object.keys(this.downloads_).length;
@@ -156,7 +187,7 @@ Downloads.prototype.updateDateDisplay_ = function() {
 
 /**
  * Remove a download.
- * @param {number} id The id of the download to remove.
+ * @param {string} id The id of the download to remove.
  */
 Downloads.prototype.remove = function(id) {
   this.node_.removeChild(this.downloads_[id].node);
@@ -233,7 +264,7 @@ Downloads.prototype.isUpdateNeeded = function(downloads) {
 // Download
 /**
  * A download and the DOM representation for that download.
- * @param {Object} download A backend download object (see downloads_ui.cc)
+ * @param {BackendDownloadObject} download A backend download object
  * @constructor
  */
 function Download(download) {
@@ -387,6 +418,7 @@ function Download(download) {
 /**
  * The states a download can be in. These correspond to states defined in
  * DownloadsDOMHandler::CreateDownloadItemValue
+ * @enum {string}
  */
 Download.States = {
   IN_PROGRESS: 'IN_PROGRESS',
@@ -399,6 +431,7 @@ Download.States = {
 
 /**
  * Explains why a download is in DANGEROUS state.
+ * @enum {string}
  */
 Download.DangerType = {
   NOT_DANGEROUS: 'NOT_DANGEROUS',
@@ -413,7 +446,7 @@ Download.DangerType = {
 /**
  * @param {number} a Some float.
  * @param {number} b Some float.
- * @param {number} opt_pct Percent of min(a,b).
+ * @param {number=} opt_pct Percent of min(a,b).
  * @return {boolean} true if a is within opt_pct percent of b.
  */
 function floatEq(a, b, opt_pct) {
@@ -449,10 +482,8 @@ computeDownloadProgress();
 // Listens for when device-pixel-ratio changes between any zoom level.
 [0.3, 0.4, 0.6, 0.7, 0.8, 0.95, 1.05, 1.2, 1.4, 1.6, 1.9, 2.2, 2.7, 3.5, 4.5
 ].forEach(function(scale) {
-  matchMedia('(-webkit-min-device-pixel-ratio:' + scale + ')').addListener(
-    function() {
-      computeDownloadProgress();
-  });
+  var media = '(-webkit-min-device-pixel-ratio:' + scale + ')';
+  window.matchMedia(media).addListener(computeDownloadProgress);
 });
 
 var ImageCache = {};
@@ -466,7 +497,7 @@ function getCachedImage(src) {
 
 /**
  * Updates the download to reflect new data.
- * @param {Object} download A backend download object (see downloads_ui.cc)
+ * @param {BackendDownloadObject} download A backend download object
  */
 Download.prototype.update = function(download) {
   this.id_ = download.id;
@@ -715,6 +746,8 @@ Download.prototype.getStatusText_ = function() {
       return this.fileExternallyRemoved_ ?
           loadTimeData.getString('status_removed') : '';
   }
+  assertNotReached();
+  return '';
 };
 
 /**
@@ -866,7 +899,7 @@ function load() {
   };
 
   $('term').onsearch = function(e) {
-    setSearch(this.value);
+    setSearch($('term').value);
   };
 }
 
