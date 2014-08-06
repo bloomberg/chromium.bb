@@ -56,6 +56,10 @@ void SafeAudioVideoChecker::OnProcessStarted() {
   IPC::PlatformFileForTransit file_for_transit =
       IPC::TakeFileHandleForProcess(file_.Pass(),
                                     utility_process_host_->GetData().handle);
+  if (file_for_transit == IPC::InvalidPlatformFileForTransit()) {
+    OnCheckingFinished(false /* valid? */);
+    return;
+  }
   const int64 kFileDecodeTimeInMS = 250;
   utility_process_host_->Send(new ChromeUtilityMsg_CheckMediaFile(
       kFileDecodeTimeInMS, file_for_transit));
