@@ -145,6 +145,144 @@ template("dex") {
   }
 }
 
+# Packages resources, assets, dex, and native libraries into an apk. Signs and
+# zipaligns the apk.
+template("create_apk") {
+  _android_manifest = invoker.android_manifest
+  _base_path = invoker.base_path
+  _final_apk_path = invoker.apk_path
+  _resources_zip = invoker.resources_zip
+  _dex_path = invoker.dex_path
+  _keystore_path = invoker.keystore_path
+  _keystore_name = invoker.keystore_name
+  _keystore_password = invoker.keystore_password
+
+  _deps = []
+  if (defined(invoker.deps)) {
+    _deps = invoker.deps
+  }
+
+  _native_libs_dir = "//build/android/empty/res"
+  if (defined(invoker.native_libs_dir)) {
+      _native_libs_dir = invoker.native_libs_dir
+  }
+
+  _asset_location = "//build/android/empty/res"
+  if (defined(invoker.asset_location)) {
+    _asset_location = invoker.asset_location
+  }
+
+  _version_code = "0"
+  _version_name = "Developer Build"
+
+  _base_apk_path = _base_path + ".apk_intermediates"
+
+  _resource_packaged_apk_path = _base_apk_path + ".ap_"
+  _packaged_apk_path = _base_apk_path + ".unfinished.apk"
+
+
+  _configuration_name = "Release"
+  if (is_debug) {
+    _configuration_name = "Debug"
+  }
+
+  action("${target_name}__package_resources") {
+    deps = _deps
+
+    script = "//build/android/gyp/package_resources.py"
+    depfile = "${target_gen_dir}/${target_name}.d"
+    source_prereqs = [
+      _android_manifest,
+      _resources_zip,
+    ]
+    outputs = [depfile, _resource_packaged_apk_path]
+
+    _rebased_resources_zips = [rebase_path(_resources_zip, root_build_dir)]
+    args = [
+        "--depfile", rebase_path(depfile, root_build_dir),
+        "--android-sdk", rebased_android_sdk,
+        "--android-sdk-tools", rebased_android_sdk_build_tools,
+
+        "--configuration-name=$_configuration_name",
+
+        "--android-manifest", rebase_path(_android_manifest, root_build_dir),
+        "--version-code", _version_code,
+        "--version-name", _version_name,
+
+        "--asset-dir", rebase_path(_asset_location, root_build_dir),
+        "--resource-zips=$_rebased_resources_zips",
+
+        "--apk-path", rebase_path(_resource_packaged_apk_path, root_build_dir),
+      ]
+  }
+
+  action("${target_name}__package") {
+    script = "//build/android/gyp/ant.py"
+    _ant_script = "//build/android/ant/apk-package.xml"
+
+    depfile = "$target_gen_dir/$target_name.d"
+
+    source_prereqs = [
+      _dex_path,
+      _resource_packaged_apk_path,
+      _ant_script
+    ]
+
+    outputs = [
+      depfile,
+      _packaged_apk_path,
+    ]
+
+    _rebased_emma_jar = ""
+    _rebased_resource_packaged_apk_path = rebase_path(
+        _resource_packaged_apk_path, root_build_dir)
+    _rebased_packaged_apk_path = rebase_path(_packaged_apk_path, root_build_dir)
+    _rebased_native_libs_dir = rebase_path(_native_libs_dir, root_build_dir)
+    _rebased_dex_path = rebase_path(_dex_path, root_build_dir)
+    args = [
+      "--depfile", rebase_path(depfile, root_build_dir),
+      "--",
+      "-quiet",
+      "-DANDROID_SDK_ROOT=$rebased_android_sdk_root",
+      "-DANDROID_SDK_TOOLS=$rebased_android_sdk_build_tools",
+      "-DRESOURCE_PACKAGED_APK_NAME=$_rebased_resource_packaged_apk_path",
+      "-DCONFIGURATION_NAME=$_configuration_name",
+      "-DNATIVE_LIBS_DIR=$_rebased_native_libs_dir",
+      "-DOUT_DIR=",
+      "-DUNSIGNED_APK_PATH=$_rebased_packaged_apk_path",
+      "-DEMMA_INSTRUMENT=0",
+      "-DEMMA_DEVICE_JAR=$_rebased_emma_jar",
+      "-DDEX_FILE_PATH=$_rebased_dex_path",
+
+      "-Dbasedir=.",
+      "-buildfile", rebase_path(_ant_script, root_build_dir)
+    ]
+  }
+
+  action("${target_name}__finalize") {
+    script = "//build/android/gyp/finalize_apk.py"
+    depfile = "$target_gen_dir/$target_name.d"
+
+    sources = [_packaged_apk_path]
+    source_prereqs = [_keystore_path]
+    outputs = [depfile, _final_apk_path]
+
+    args = [
+      "--depfile", rebase_path(depfile, root_build_dir),
+      "--zipalign-path", rebase_path(zipalign_path, root_build_dir),
+      "--unsigned-apk-path", rebase_path(_packaged_apk_path, root_build_dir),
+      "--final-apk-path", rebase_path(_final_apk_path, root_build_dir),
+      "--key-path", rebase_path(_keystore_path, root_build_dir),
+      "--key-name", _keystore_name,
+      "--key-passwd", _keystore_password,
+    ]
+  }
+
+  group(target_name) {
+    deps = [":${target_name}__finalize"]
+  }
+}
+
 # Compiles and jars a set of java files.
 #
 # Outputs:

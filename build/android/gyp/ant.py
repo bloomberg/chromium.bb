@@ -15,6 +15,7 @@ Also, when a command fails, this script will re-run that ant command with the
 '-verbose' argument so that the failure is easier to debug.
 """
 
+import optparse
 import sys
 import traceback
 
@@ -22,14 +23,17 @@ from util import build_utils
 
 
 def main(argv):
+  option_parser = optparse.OptionParser()
+  build_utils.AddDepfileOption(option_parser)
+  options, args = option_parser.parse_args(argv[1:])
+
   try:
-    args = argv[1:]
     stdout = build_utils.CheckOutput(['ant'] + args)
   except build_utils.CalledProcessError:
     # It is very difficult to diagnose ant failures without the '-verbose'
     # argument. So, when an ant command fails, re-run it with '-verbose' so that
     # the cause of the failure is easier to identify.
-    verbose_args = ['-verbose'] + [a for a in argv[1:] if a != '-quiet']
+    verbose_args = ['-verbose'] + [a for a in args if a != '-quiet']
     try:
       stdout = build_utils.CheckOutput(['ant'] + verbose_args)
     except build_utils.CalledProcessError:
@@ -47,6 +51,14 @@ def main(argv):
     if line.strip() == 'BUILD SUCCESSFUL':
       break
     print line
+
+  if options.depfile:
+    assert '-buildfile' in args
+    ant_buildfile = args[args.index('-buildfile') + 1]
+
+    build_utils.WriteDepfile(
+        options.depfile,
+        [ant_buildfile] + build_utils.GetPythonDependencies())
 
 
 if __name__ == '__main__':

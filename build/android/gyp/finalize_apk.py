@@ -70,6 +70,7 @@ def DropDataDescriptorsInApk(rezip_path, in_zip_file, out_zip_file):
 
 def main():
   parser = optparse.OptionParser()
+  build_utils.AddDepfileOption(parser)
 
   parser.add_option('--zipalign-path', help='Path to the zipalign tool.')
   parser.add_option('--rezip-path', help='Path to the rezip executable.')
@@ -124,6 +125,10 @@ def main():
       # Uncompress the library and make sure that it is page aligned.
       UncompressLibAndPageAlignInApk(
           options.rezip_path, aligned_apk, options.final_apk_path)
+
+  if options.depfile:
+    build_utils.WriteDepfile(
+        options.depfile, build_utils.GetPythonDependencies())
 
   if options.stamp:
     build_utils.Touch(options.stamp)

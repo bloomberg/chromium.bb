@@ -888,7 +888,9 @@
       ],
       'action': [
         'python', '<(DEPTH)/build/android/gyp/ant.py',
+        '--',
         '-quiet',
+        '-DDEX_FILE_PATH=<(intermediate_dir)/classes.dex',
         '-DANDROID_SDK_ROOT=<(android_sdk_root)',
         '-DANDROID_SDK_TOOLS=<(android_sdk_tools)',
         '-DRESOURCE_PACKAGED_APK_NAME=<(resource_packaged_apk_name)',

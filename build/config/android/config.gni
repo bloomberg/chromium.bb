@@ -16,12 +16,17 @@ if (is_android) {
     # system, using the 'android' gyp backend. The WebView code is still built
     # when this is unset, but builds using the normal chromium build system.
     is_android_webview_build = false
+
+    android_default_keystore_path = "//build/android/ant/chromium-debug.keystore"
+    android_default_keystore_name = "chromiumdebugkey"
+    android_default_keystore_password = "chromium"
   }
 
   if (is_android_webview_build) {
     assert(android_src != "",
            "You must specify android_src for an Android WebView build.")
   }
+
 
   # Host stuff -----------------------------------------------------------------
 
@@ -61,6 +66,8 @@ if (is_android) {
 
   # Path to the SDK's android.jar
   android_sdk_jar = "$android_sdk/android.jar"
+
+  zipalign_path = "$android_sdk_build_tools/zipalign"
 
   # Subdirectories inside android_ndk_root that contain the sysroot for the
   # associated platform.

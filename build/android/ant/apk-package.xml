@@ -53,8 +53,7 @@
   <!-- Intermediate files -->
   <property name="resource.package.file.name" value="${RESOURCE_PACKAGED_APK_NAME}" />
 
-  <property name="dex.file.name" value="classes.dex" />
-  <property name="intermediate.dex.file" location="${out.absolute.dir}/${dex.file.name}" />
+  <property name="intermediate.dex.file" location="${DEX_FILE_PATH}" />
 
   <!-- Macro that enables passing a variable list of external jar files
        to ApkBuilder. -->

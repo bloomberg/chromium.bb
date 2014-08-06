@@ -506,9 +506,16 @@ template("android_apk") {
   # Just mark these as used for now.
   assert(!defined(invoker.native_libs)
       || invoker.native_libs == [] || true)
-  assert(!defined(invoker.final_apk_path)
-      || invoker.final_apk_path == "" || true)
 
+  _keystore_path = android_default_keystore_path
+  _keystore_name = android_default_keystore_name
+  _keystore_password = android_default_keystore_password
+
+  if (defined(invoker.keystore_path)) {
+    _keystore_path = invoker.keystore_path
+    _keystore_name = invoker.keystore_name
+    _keystore_password = invoker.keystore_password
+  }
 
   # TODO(cjhopman): Remove this once we correctly generate the real
   # NativeLibraries.java
@@ -556,6 +563,20 @@ template("android_apk") {
     output = final_dex_path
     dex_arg_key = "${rebased_build_config}:apk_dex:dependency_dex_files"
     args = ["--inputs=@FileArg($dex_arg_key)"]
+  }
+
+  final_deps += [":${target_name}__create"]
+  create_apk("${target_name}__create") {
+    apk_path = invoker.final_apk_path
+    android_manifest = invoker.android_manifest
+    resources_zip = all_resources_zip_path
+    dex_path = final_dex_path
+
+    keystore_name = _keystore_name
+    keystore_path = _keystore_path
+    keystore_password = _keystore_password
+
+    # TODO: native libs
   }
 
   group(target_name) {

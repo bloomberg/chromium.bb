@@ -26,6 +26,7 @@ def ParseArgs():
     An options object as from optparse.OptionsParser.parse_args()
   """
   parser = optparse.OptionParser()
+  build_utils.AddDepfileOption(parser)
   parser.add_option('--android-sdk', help='path to the Android SDK folder')
   parser.add_option('--android-sdk-tools',
                     help='path to the Android SDK build tools folder')
@@ -127,6 +128,11 @@ def main():
 
     build_utils.CheckOutput(
         package_command, print_stdout=False, print_stderr=False)
+
+    if options.depfile:
+      build_utils.WriteDepfile(
+          options.depfile,
+          build_utils.GetPythonDependencies())
 
 
 if __name__ == '__main__':
