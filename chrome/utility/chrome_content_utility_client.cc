@@ -232,7 +232,8 @@ void ChromeContentUtilityClient::OnCreateZipFile(
 void ChromeContentUtilityClient::OnRobustJPEGDecodeImage(
     const std::vector<unsigned char>& encoded_data) {
   // Our robust jpeg decoding is using IJG libjpeg.
-  if (gfx::JPEGCodec::JpegLibraryVariant() == gfx::JPEGCodec::IJG_LIBJPEG) {
+  if (gfx::JPEGCodec::JpegLibraryVariant() == gfx::JPEGCodec::IJG_LIBJPEG &&
+      !encoded_data.empty()) {
     scoped_ptr<SkBitmap> decoded_image(gfx::JPEGCodec::Decode(
         &encoded_data[0], encoded_data.size()));
     if (!decoded_image.get() || decoded_image->empty()) {
