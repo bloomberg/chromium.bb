@@ -23,6 +23,7 @@
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
+#include "url/gurl.h"
 
 // Helper macros to log with the syncer thread name; useful when there
 // are multiple syncers involved.
@@ -431,9 +432,7 @@ void SyncBackendHostCore::DoInitialize(
   sync_manager_->AddObserver(this);
   sync_manager_->Init(sync_data_folder_path_,
                       options->event_handler,
-                      options->service_url.host() + options->service_url.path(),
-                      options->service_url.EffectiveIntPort(),
-                      options->service_url.SchemeIsSecure(),
+                      options->service_url,
                       options->http_bridge_factory.Pass(),
                       options->workers,
                       options->extensions_activity,
@@ -752,4 +751,3 @@ void SyncBackendHostCore::SaveChanges() {
 }
 
 }  // namespace browser_sync
-

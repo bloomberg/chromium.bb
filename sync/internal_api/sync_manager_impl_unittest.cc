@@ -73,6 +73,7 @@
 #include "sync/util/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using base::ExpectDictStringValue;
 using testing::_;
@@ -818,9 +819,7 @@ class SyncManagerTest : public testing::Test,
     sync_manager_.Init(
         temp_dir_.path(),
         WeakHandle<JsEventHandler>(),
-        "bogus",
-        0,
-        false,
+        GURL("https://example.com/"),
         scoped_ptr<HttpPostProviderFactory>(new TestHttpPostProviderFactory()),
         workers,
         extensions_activity_.get(),
@@ -831,8 +830,8 @@ class SyncManagerTest : public testing::Test,
         std::string(),  // bootstrap tokens
         scoped_ptr<InternalComponentsFactory>(GetFactory()).get(),
         &encryptor_,
-        scoped_ptr<UnrecoverableErrorHandler>(
-            new TestUnrecoverableErrorHandler).Pass(),
+        scoped_ptr<UnrecoverableErrorHandler>(new TestUnrecoverableErrorHandler)
+            .Pass(),
         NULL,
         &cancelation_signal_);
 

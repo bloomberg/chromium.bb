@@ -33,6 +33,8 @@
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/protocol/sync_protocol_error.h"
 
+class GURL;
+
 namespace sync_pb {
 class EncryptedData;
 }  // namespace sync_pb
@@ -227,9 +229,7 @@ class SYNC_EXPORT SyncManager {
   // does not already exist. Returns false on failure.
   // |event_handler| is the JsEventHandler used to propagate events to
   // chrome://sync-internals.  |event_handler| may be uninitialized.
-  // |sync_server_and_path| and |sync_server_port| represent the Chrome sync
-  // server to use, and |use_ssl| specifies whether to communicate securely;
-  // the default is false.
+  // |service_url| is the URL of the Chrome Sync Server.
   // |post_factory| will be owned internally and used to create
   // instances of an HttpPostProvider.
   // |model_safe_worker| ownership is given to the SyncManager.
@@ -252,9 +252,7 @@ class SYNC_EXPORT SyncManager {
   virtual void Init(
       const base::FilePath& database_location,
       const WeakHandle<JsEventHandler>& event_handler,
-      const std::string& sync_server_and_path,
-      int sync_server_port,
-      bool use_ssl,
+      const GURL& service_url,
       scoped_ptr<HttpPostProviderFactory> post_factory,
       const std::vector<scoped_refptr<ModelSafeWorker> >& workers,
       ExtensionsActivity* extensions_activity,

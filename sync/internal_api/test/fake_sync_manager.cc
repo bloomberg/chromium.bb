@@ -20,6 +20,8 @@
 #include "sync/syncable/directory.h"
 #include "sync/test/fake_sync_encryption_handler.h"
 
+class GURL;
+
 namespace syncer {
 
 FakeSyncManager::FakeSyncManager(ModelTypeSet initial_sync_ended_types,
@@ -73,9 +75,7 @@ void FakeSyncManager::WaitForSyncThread() {
 void FakeSyncManager::Init(
     const base::FilePath& database_location,
     const WeakHandle<JsEventHandler>& event_handler,
-    const std::string& sync_server_and_path,
-    int sync_server_port,
-    bool use_ssl,
+    const GURL& service_url,
     scoped_ptr<HttpPostProviderFactory> post_factory,
     const std::vector<scoped_refptr<ModelSafeWorker> >& workers,
     ExtensionsActivity* extensions_activity,

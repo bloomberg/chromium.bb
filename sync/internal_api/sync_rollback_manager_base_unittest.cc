@@ -9,6 +9,7 @@
 #include "sync/internal_api/public/read_transaction.h"
 #include "sync/internal_api/public/test/test_internal_components_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace syncer {
 
@@ -23,9 +24,7 @@ class SyncTestRollbackManager : public SyncRollbackManagerBase {
   virtual void Init(
       const base::FilePath& database_location,
       const WeakHandle<JsEventHandler>& event_handler,
-      const std::string& sync_server_and_path,
-      int sync_server_port,
-      bool use_ssl,
+      const GURL& service_url,
       scoped_ptr<HttpPostProviderFactory> post_factory,
       const std::vector<scoped_refptr<ModelSafeWorker> >& workers,
       ExtensionsActivity* extensions_activity,
@@ -53,11 +52,20 @@ class SyncRollbackManagerBaseTest : public testing::Test {
                                           STORAGE_IN_MEMORY);
     manager_.Init(base::FilePath(base::FilePath::kCurrentDirectory),
                   MakeWeakHandle(base::WeakPtr<JsEventHandler>()),
-                  "", 0, true, scoped_ptr<HttpPostProviderFactory>().Pass(),
+                  GURL("https://example.com/"),
+                  scoped_ptr<HttpPostProviderFactory>().Pass(),
                   std::vector<scoped_refptr<ModelSafeWorker> >(),
-                  NULL, NULL, SyncCredentials(), "", "", "", &factory,
-                  NULL, scoped_ptr<UnrecoverableErrorHandler>().Pass(),
-                  NULL, NULL);
+                  NULL,
+                  NULL,
+                  SyncCredentials(),
+                  "",
+                  "",
+                  "",
+                  &factory,
+                  NULL,
+                  scoped_ptr<UnrecoverableErrorHandler>().Pass(),
+                  NULL,
+                  NULL);
   }
 
   SyncTestRollbackManager manager_;

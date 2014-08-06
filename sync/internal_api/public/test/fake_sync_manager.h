@@ -13,6 +13,8 @@
 #include "sync/internal_api/public/test/null_sync_context_proxy.h"
 #include "sync/internal_api/public/test/test_user_share.h"
 
+class GURL;
+
 namespace base {
 class SequencedTaskRunner;
 }
@@ -78,9 +80,7 @@ class FakeSyncManager : public SyncManager {
   virtual void Init(
       const base::FilePath& database_location,
       const WeakHandle<JsEventHandler>& event_handler,
-      const std::string& sync_server_and_path,
-      int sync_server_port,
-      bool use_ssl,
+      const GURL& service_url,
       scoped_ptr<HttpPostProviderFactory> post_factory,
       const std::vector<scoped_refptr<ModelSafeWorker> >& workers,
       ExtensionsActivity* extensions_activity,

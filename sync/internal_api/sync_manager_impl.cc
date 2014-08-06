@@ -50,6 +50,8 @@
 using base::TimeDelta;
 using sync_pb::GetUpdatesCallerInfo;
 
+class GURL;
+
 namespace syncer {
 
 using sessions::SyncSessionContext;
@@ -304,9 +306,7 @@ void SyncManagerImpl::ConfigureSyncer(
 void SyncManagerImpl::Init(
     const base::FilePath& database_location,
     const WeakHandle<JsEventHandler>& event_handler,
-    const std::string& sync_server_and_path,
-    int port,
-    bool use_ssl,
+    const GURL& service_url,
     scoped_ptr<HttpPostProviderFactory> post_factory,
     const std::vector<scoped_refptr<ModelSafeWorker> >& workers,
     ExtensionsActivity* extensions_activity,
@@ -384,8 +384,11 @@ void SyncManagerImpl::Init(
   }
 
   connection_manager_.reset(new SyncAPIServerConnectionManager(
-      sync_server_and_path, port, use_ssl,
-      post_factory.release(), cancelation_signal));
+      service_url.host() + service_url.path(),
+      service_url.EffectiveIntPort(),
+      service_url.SchemeIsSecure(),
+      post_factory.release(),
+      cancelation_signal));
   connection_manager_->set_client_id(directory()->cache_guid());
   connection_manager_->AddListener(this);
 
