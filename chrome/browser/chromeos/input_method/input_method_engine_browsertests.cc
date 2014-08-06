@@ -14,6 +14,7 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
@@ -160,7 +161,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
   // onActivate event should be fired if Enable function is called.
   ExtensionTestMessageListener activated_listener("onActivate", false);
-  engine_handler->Enable();
+  engine_handler->Enable("IdentityIME");
   ASSERT_TRUE(activated_listener.WaitUntilSatisfied());
   ASSERT_TRUE(activated_listener.was_satisfied());
 
@@ -238,12 +239,13 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
       IMEBridge::Get()->GetCurrentEngineHandler();
   ASSERT_TRUE(engine_handler);
 
-  extensions::ExtensionHost* host = FindHostWithPath(
-      extensions::ExtensionSystem::Get(profile())->process_manager(),
-      extensions::BackgroundInfo::GetBackgroundURL(extension_).path(),
-      1);
+  extensions::ExtensionHost* host =
+      extensions::ExtensionSystem::Get(profile())
+          ->process_manager()
+          ->GetBackgroundHostForExtension(extension_->id());
+  ASSERT_TRUE(host);
 
-  engine_handler->Enable();
+  engine_handler->Enable("APIArgumentIME");
   IMEEngineHandlerInterface::InputContext context(ui::TEXT_INPUT_TYPE_TEXT,
                                                   ui::TEXT_INPUT_MODE_DEFAULT);
   engine_handler->FocusIn(context);

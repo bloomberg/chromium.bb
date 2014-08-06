@@ -18,7 +18,7 @@ class UI_BASE_EXPORT MockIMEEngineHandler : public IMEEngineHandlerInterface {
 
   virtual void FocusIn(const InputContext& input_context) OVERRIDE;
   virtual void FocusOut() OVERRIDE;
-  virtual void Enable() OVERRIDE;
+  virtual void Enable(const std::string& component_id) OVERRIDE;
   virtual void Disable() OVERRIDE;
   virtual void PropertyActivate(const std::string& property_name) OVERRIDE;
   virtual void Reset() OVERRIDE;

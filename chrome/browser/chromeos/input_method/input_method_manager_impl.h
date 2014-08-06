@@ -65,11 +65,11 @@ class InputMethodManagerImpl : public InputMethodManager,
   virtual void ChangeInputMethod(const std::string& input_method_id) OVERRIDE;
   virtual void ActivateInputMethodMenuItem(const std::string& key) OVERRIDE;
   virtual void AddInputMethodExtension(
-      Profile* profile,
-      const std::string& id,
+      const std::string& extension_id,
+      const InputMethodDescriptors& descriptors,
       InputMethodEngineInterface* instance) OVERRIDE;
-  virtual void RemoveInputMethodExtension(Profile* profile,
-                                          const std::string& id) OVERRIDE;
+  virtual void RemoveInputMethodExtension(
+      const std::string& extension_id) OVERRIDE;
   virtual void GetInputMethodExtensions(
       InputMethodDescriptors* result) OVERRIDE;
   virtual void SetEnabledExtensionImes(std::vector<std::string>* ids) OVERRIDE;
@@ -156,12 +156,6 @@ class InputMethodManagerImpl : public InputMethodManager,
   // (after list of enabled input methods has been updated)
   void ReconfigureIMFramework();
 
-  // Gets the current active user profile.
-  // Note: this method is deprecated as ActiveUserProfile might change
-  // during asynchronous operations that leads to strange crashes.
-  // Use with caution!
-  Profile* GetProfile() const;
-
   scoped_ptr<InputMethodDelegate> delegate_;
 
   // The current browser status.
@@ -210,12 +204,8 @@ class InputMethodManagerImpl : public InputMethodManager,
 
   base::WeakPtrFactory<InputMethodManagerImpl> weak_ptr_factory_;
 
-  // The engine map:
-  //   { Profile : { input_method_id : Engine } }.
-  typedef std::map<std::string, InputMethodEngineInterface*>
-      EngineMap;
-  typedef std::map<Profile*, EngineMap, ProfileCompare> ProfileEngineMap;
-  ProfileEngineMap profile_engine_map_;
+  // The engine map from extension_id to an engine.
+  std::map<std::string, InputMethodEngineInterface*> engine_map_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodManagerImpl);
 };

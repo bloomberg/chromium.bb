@@ -100,13 +100,13 @@ void MockInputMethodManager::ActivateInputMethodMenuItem(
 }
 
 void MockInputMethodManager::AddInputMethodExtension(
-    Profile* profile,
-    const std::string& id,
+    const std::string& extension_id,
+    const InputMethodDescriptors& descriptors,
     InputMethodEngineInterface* instance) {
 }
 
-void MockInputMethodManager::RemoveInputMethodExtension(Profile* profile,
-                                                        const std::string& id) {
+void MockInputMethodManager::RemoveInputMethodExtension(
+    const std::string& extension_id) {
 }
 
 void MockInputMethodManager::GetInputMethodExtensions(

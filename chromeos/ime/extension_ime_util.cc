@@ -54,6 +54,16 @@ std::string GetExtensionIDFromInputMethodID(
   return "";
 }
 
+std::string GetComponentIDByInputMethodID(const std::string& input_method_id) {
+  if (IsComponentExtensionIME(input_method_id))
+    return input_method_id.substr(kComponentExtensionIMEPrefixLength +
+                                  kExtensionIdLength);
+  if (IsExtensionIME(input_method_id))
+    return input_method_id.substr(kExtensionIMEPrefixLength +
+                                  kExtensionIdLength);
+  return input_method_id;
+}
+
 std::string GetInputMethodIDByEngineID(const std::string& engine_id) {
   if (StartsWithASCII(engine_id, kComponentExtensionIMEPrefix, true) ||
       StartsWithASCII(engine_id, kExtensionIMEPrefix, true)) {
@@ -111,11 +121,8 @@ bool IsKeyboardLayoutExtension(const std::string& input_method_id) {
 }
 
 std::string MaybeGetLegacyXkbId(const std::string& input_method_id) {
-  if (IsKeyboardLayoutExtension(input_method_id)) {
-    size_t pos = input_method_id.find("xkb:");
-    if (pos != std::string::npos)
-      return input_method_id.substr(pos);
-  }
+  if (IsKeyboardLayoutExtension(input_method_id))
+    return GetComponentIDByInputMethodID(input_method_id);
   return input_method_id;
 }
 

@@ -72,7 +72,7 @@ class UI_BASE_EXPORT IMEEngineHandlerInterface {
   virtual void FocusOut() = 0;
 
   // Called when the IME is enabled.
-  virtual void Enable() = 0;
+  virtual void Enable(const std::string& component_id) = 0;
 
   // Called when the IME is disabled.
   virtual void Disable() = 0;

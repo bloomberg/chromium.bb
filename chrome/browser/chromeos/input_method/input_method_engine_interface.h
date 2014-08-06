@@ -172,11 +172,6 @@ class InputMethodEngineInterface : public IMEEngineHandlerInterface {
 
   virtual ~InputMethodEngineInterface() {}
 
-  virtual const input_method::InputMethodDescriptor& GetDescriptor() const = 0;
-
-  // Called when the input metho initialization is done.
-  virtual void NotifyImeReady() = 0;
-
   // Set the current composition and associated properties.
   virtual bool SetComposition(int context_id,
                               const char* text,
@@ -230,6 +225,9 @@ class InputMethodEngineInterface : public IMEEngineHandlerInterface {
 
   // Returns true if this IME is active, false if not.
   virtual bool IsActive() const = 0;
+
+  // Returns the current active input_component id.
+  virtual const std::string& GetActiveComponentId() const = 0;
 
   // Deletes |number_of_chars| unicode characters as the basis of |offset| from
   // the surrounding text. The |offset| is relative position based on current

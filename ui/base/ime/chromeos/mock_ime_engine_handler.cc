@@ -33,7 +33,7 @@ void MockIMEEngineHandler::FocusOut() {
   last_text_input_context_.type = ui::TEXT_INPUT_TYPE_NONE;
 }
 
-void MockIMEEngineHandler::Enable() {
+void MockIMEEngineHandler::Enable(const std::string& component_id) {
 }
 
 void MockIMEEngineHandler::Disable() {

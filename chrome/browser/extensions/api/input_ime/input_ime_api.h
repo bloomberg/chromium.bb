@@ -36,13 +36,14 @@ class InputImeEventRouter {
  public:
   static InputImeEventRouter* GetInstance();
 
-  bool RegisterIme(Profile*,
-                   const std::string& extension_id,
-                   const extensions::InputComponentInfo& component);
+  bool RegisterImeExtension(
+      const std::string& extension_id,
+      const std::vector<extensions::InputComponentInfo>& input_components);
   void UnregisterAllImes(const std::string& extension_id);
+
   chromeos::InputMethodEngineInterface* GetEngine(
       const std::string& extension_id,
-      const std::string& engine_id);
+      const std::string& component_id);
   chromeos::InputMethodEngineInterface* GetActiveEngine(
       const std::string& extension_id);
 
@@ -52,7 +53,7 @@ class InputImeEventRouter {
                          const std::string& request_id,
                          bool handled);
 
-  std::string AddRequest(const std::string& engine_id,
+  std::string AddRequest(const std::string& component_id,
                          chromeos::input_method::KeyEventHandle* key_data);
 
  private:
@@ -63,15 +64,8 @@ class InputImeEventRouter {
   InputImeEventRouter();
   ~InputImeEventRouter();
 
-  // The engine map for event routing.
-  //   { Profile : { extension_id : { engine_id : Engine } } }.
-  // TODO(shuchen): reuse the engine map in InputMethodManagerImpl.
-  typedef std::map<std::string, chromeos::InputMethodEngineInterface*>
-      EngineMap;
-  typedef std::map<std::string, EngineMap> ExtensionMap;
-  typedef std::map<Profile*, ExtensionMap, ProfileCompare>
-      ProfileEngineMap;
-  ProfileEngineMap profile_engine_map_;
+  // The engine map from extension_id to an engine.
+  std::map<std::string, chromeos::InputMethodEngineInterface*> engine_map_;
 
   unsigned int next_request_id_;
   RequestMap request_map_;

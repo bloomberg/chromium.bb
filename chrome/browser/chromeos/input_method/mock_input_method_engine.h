@@ -32,14 +32,11 @@ struct KeyEventHandle;
 
 class MockInputMethodEngine : public InputMethodEngineInterface {
  public:
-  explicit MockInputMethodEngine(
-      const input_method::InputMethodDescriptor& descriptor);
+  explicit MockInputMethodEngine();
   virtual ~MockInputMethodEngine();
 
   // InputMethodEngineInterface overrides.
-  virtual const input_method::InputMethodDescriptor& GetDescriptor()
-      const OVERRIDE;
-  virtual void NotifyImeReady() OVERRIDE;
+  virtual const std::string& GetActiveComponentId() const OVERRIDE;
   virtual bool SetComposition(int context_id,
                               const char* text,
                               int selection_start,
@@ -75,7 +72,7 @@ class MockInputMethodEngine : public InputMethodEngineInterface {
   virtual void FocusIn(
       const IMEEngineHandlerInterface::InputContext& input_context) OVERRIDE;
   virtual void FocusOut() OVERRIDE;
-  virtual void Enable() OVERRIDE;
+  virtual void Enable(const std::string& component_id) OVERRIDE;
   virtual void Disable() OVERRIDE;
   virtual void PropertyActivate(const std::string& property_name) OVERRIDE;
   virtual void Reset() OVERRIDE;
@@ -91,8 +88,7 @@ class MockInputMethodEngine : public InputMethodEngineInterface {
   }
 
  private:
-  // Descriptor of this input method.
-  input_method::InputMethodDescriptor descriptor_;
+  std::string active_component_id_;
 
   // The current candidate window property.
   CandidateWindowProperty candidate_window_property_;

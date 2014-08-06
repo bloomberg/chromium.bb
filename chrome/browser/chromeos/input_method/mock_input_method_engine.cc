@@ -8,18 +8,12 @@
 
 namespace chromeos {
 
-MockInputMethodEngine::MockInputMethodEngine(
-    const input_method::InputMethodDescriptor& descriptor)
-    : descriptor_(descriptor) {}
+MockInputMethodEngine::MockInputMethodEngine() {}
 
 MockInputMethodEngine::~MockInputMethodEngine() {}
 
-const input_method::InputMethodDescriptor&
-MockInputMethodEngine::GetDescriptor() const {
-  return descriptor_;
-}
-
-void MockInputMethodEngine::NotifyImeReady() {
+const std::string& MockInputMethodEngine::GetActiveComponentId() const {
+  return active_component_id_;
 }
 
 bool MockInputMethodEngine::SetComposition(
@@ -107,10 +101,12 @@ void MockInputMethodEngine::FocusIn(
 void MockInputMethodEngine::FocusOut() {
 }
 
-void MockInputMethodEngine::Enable() {
+void MockInputMethodEngine::Enable(const std::string& component_id) {
+  active_component_id_ = component_id;
 }
 
 void MockInputMethodEngine::Disable() {
+  active_component_id_.clear();
 }
 
 void MockInputMethodEngine::PropertyActivate(const std::string& property_name) {

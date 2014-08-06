@@ -81,6 +81,12 @@ bool CHROMEOS_EXPORT IsMemberOfExtension(const std::string& input_method_id,
 bool CHROMEOS_EXPORT IsKeyboardLayoutExtension(
     const std::string& input_method_id);
 
+// Returns input method component id from the extension-based InputMethodID
+// for component IME extensions. This function does not check that
+// |input_method_id| is installed.
+std::string CHROMEOS_EXPORT
+    GetComponentIDByInputMethodID(const std::string& input_method_id);
+
 // Gets legacy xkb id (e.g. xkb:us::eng) from the new extension based xkb id
 // (e.g. _comp_ime_...xkb:us::eng). If the given id is not prefixed with
 // 'xkb:', just return the same as the given id.
