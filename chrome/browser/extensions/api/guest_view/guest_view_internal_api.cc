@@ -12,6 +12,8 @@
 #include "content/public/browser/render_view_host.h"
 #include "extensions/common/permissions/permissions_data.h"
 
+namespace guest_view_internal = extensions::api::guest_view_internal;
+
 namespace extensions {
 
 GuestViewInternalCreateGuestFunction::
@@ -49,6 +51,31 @@ void GuestViewInternalCreateGuestFunction::CreateGuestCallback(
   }
   SetResult(new base::FundamentalValue(guest_instance_id));
   SendResponse(true);
+}
+
+GuestViewInternalSetAutoSizeFunction::
+    GuestViewInternalSetAutoSizeFunction() {
+}
+
+GuestViewInternalSetAutoSizeFunction::
+    ~GuestViewInternalSetAutoSizeFunction() {
+}
+
+bool GuestViewInternalSetAutoSizeFunction::RunAsync() {
+  scoped_ptr<guest_view_internal::SetAutoSize::Params> params(
+      guest_view_internal::SetAutoSize::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  GuestViewBase* guest = GuestViewBase::From(
+      render_view_host()->GetProcess()->GetID(), params->instance_id);
+  if (!guest)
+    return false;
+  guest->SetAutoSize(params->params.enable_auto_size,
+                     gfx::Size(params->params.min.width,
+                               params->params.min.height),
+                     gfx::Size(params->params.max.width,
+                               params->params.max.height));
+  SendResponse(true);
+  return true;
 }
 
 }  // namespace extensions

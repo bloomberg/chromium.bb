@@ -54,7 +54,6 @@ BrowserPlugin::BrowserPlugin(RenderViewImpl* render_view,
       last_device_scale_factor_(GetDeviceScaleFactor()),
       sad_guest_(NULL),
       guest_crashed_(false),
-      is_auto_size_state_dirty_(false),
       content_window_routing_id_(MSG_ROUTING_NONE),
       plugin_focused_(false),
       visible_(true),
@@ -144,66 +143,6 @@ bool BrowserPlugin::GetAllowTransparencyAttribute() const {
   return HasDOMAttribute(browser_plugin::kAttributeAllowTransparency);
 }
 
-bool BrowserPlugin::GetAutoSizeAttribute() const {
-  return HasDOMAttribute(browser_plugin::kAttributeAutoSize);
-}
-
-int BrowserPlugin::GetMaxHeightAttribute() const {
-  int max_height;
-  base::StringToInt(GetDOMAttributeValue(browser_plugin::kAttributeMaxHeight),
-                    &max_height);
-  return max_height;
-}
-
-int BrowserPlugin::GetMaxWidthAttribute() const {
-  int max_width;
-  base::StringToInt(GetDOMAttributeValue(browser_plugin::kAttributeMaxWidth),
-                    &max_width);
-  return max_width;
-}
-
-int BrowserPlugin::GetMinHeightAttribute() const {
-  int min_height;
-  base::StringToInt(GetDOMAttributeValue(browser_plugin::kAttributeMinHeight),
-                    &min_height);
-  return min_height;
-}
-
-int BrowserPlugin::GetMinWidthAttribute() const {
-  int min_width;
-  base::StringToInt(GetDOMAttributeValue(browser_plugin::kAttributeMinWidth),
-                    &min_width);
-  return min_width;
-}
-
-int BrowserPlugin::GetAdjustedMaxHeight() const {
-  int max_height = GetMaxHeightAttribute();
-  return max_height ? max_height : height();
-}
-
-int BrowserPlugin::GetAdjustedMaxWidth() const {
-  int max_width = GetMaxWidthAttribute();
-  return max_width ? max_width : width();
-}
-
-int BrowserPlugin::GetAdjustedMinHeight() const {
-  int min_height = GetMinHeightAttribute();
-  // FrameView.cpp does not allow this value to be <= 0, so when the value is
-  // unset (or set to 0), we set it to the container size.
-  min_height = min_height ? min_height : height();
-  // For autosize, minHeight should not be bigger than maxHeight.
-  return std::min(min_height, GetAdjustedMaxHeight());
-}
-
-int BrowserPlugin::GetAdjustedMinWidth() const {
-  int min_width = GetMinWidthAttribute();
-  // FrameView.cpp does not allow this value to be <= 0, so when the value is
-  // unset (or set to 0), we set it to the container size.
-  min_width = min_width ? min_width : width();
-  // For autosize, minWidth should not be bigger than maxWidth.
-  return std::min(min_width, GetAdjustedMaxWidth());
-}
-
 void BrowserPlugin::ParseAllowTransparencyAttribute() {
   if (!HasGuestInstanceID())
     return;
@@ -217,51 +156,6 @@ void BrowserPlugin::ParseAllowTransparencyAttribute() {
         render_view_routing_id_,
         guest_instance_id_,
         opaque));
-}
-
-void BrowserPlugin::ParseAutoSizeAttribute() {
-  last_view_size_ = plugin_size();
-  is_auto_size_state_dirty_ = true;
-  UpdateGuestAutoSizeState(GetAutoSizeAttribute());
-}
-
-void BrowserPlugin::PopulateAutoSizeParameters(
-    BrowserPluginHostMsg_AutoSize_Params* params, bool auto_size_enabled) {
-  params->enable = auto_size_enabled;
-  // No need to populate the params if autosize is off.
-  if (auto_size_enabled) {
-    params->max_size = gfx::Size(GetAdjustedMaxWidth(), GetAdjustedMaxHeight());
-    params->min_size = gfx::Size(GetAdjustedMinWidth(), GetAdjustedMinHeight());
-
-    if (max_auto_size_ != params->max_size)
-      is_auto_size_state_dirty_ = true;
-
-    max_auto_size_ = params->max_size;
-  } else {
-    max_auto_size_ = gfx::Size();
-  }
-}
-
-void BrowserPlugin::UpdateGuestAutoSizeState(bool auto_size_enabled) {
-  // If we haven't yet heard back from the guest about the last resize request,
-  // then we don't issue another request until we do in
-  // BrowserPlugin::OnUpdateRect.
-  if (!HasGuestInstanceID() || !paint_ack_received_)
-    return;
-
-  BrowserPluginHostMsg_AutoSize_Params auto_size_params;
-  BrowserPluginHostMsg_ResizeGuest_Params resize_guest_params;
-  if (auto_size_enabled) {
-    GetSizeParams(&auto_size_params, &resize_guest_params, true);
-  } else {
-    GetSizeParams(NULL, &resize_guest_params, true);
-  }
-  paint_ack_received_ = false;
-  browser_plugin_manager()->Send(
-      new BrowserPluginHostMsg_SetAutoSize(render_view_routing_id_,
-                                           guest_instance_id_,
-                                           auto_size_params,
-                                           resize_guest_params));
 }
 
 void BrowserPlugin::Attach(int guest_instance_id,
@@ -293,9 +187,7 @@ void BrowserPlugin::Attach(int guest_instance_id,
   attach_params.visible = visible_;
   attach_params.opaque = !GetAllowTransparencyAttribute();
   attach_params.origin = plugin_rect().origin();
-  GetSizeParams(&attach_params.auto_size_params,
-                &attach_params.resize_guest_params,
-                false);
+  GetSizeParams(&attach_params.resize_guest_params, false);
 
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Attach(render_view_routing_id_,
@@ -420,53 +312,24 @@ void BrowserPlugin::OnUpdateRect(
   // If the guest has updated pixels then it is no longer crashed.
   guest_crashed_ = false;
 
-  bool auto_size = GetAutoSizeAttribute();
   // We receive a resize ACK in regular mode, but not in autosize.
   // In Compositing mode, we need to do it here so we can continue sending
   // resize messages when needed.
-  if (params.is_resize_ack || (auto_size || is_auto_size_state_dirty_))
+  if (params.is_resize_ack)
     paint_ack_received_ = true;
 
-  bool was_auto_size_state_dirty = auto_size && is_auto_size_state_dirty_;
-  is_auto_size_state_dirty_ = false;
-
-  if ((!auto_size && (width() != params.view_size.width() ||
-                      height() != params.view_size.height())) ||
-      (auto_size && was_auto_size_state_dirty) ||
-      GetDeviceScaleFactor() != params.scale_factor) {
-    UpdateGuestAutoSizeState(auto_size);
+  if (params.view_size.width() == width() &&
+      params.view_size.height() == height()) {
     return;
   }
 
-  if (auto_size && (params.view_size != last_view_size_))
-    last_view_size_ = params.view_size;
-
-  BrowserPluginHostMsg_AutoSize_Params auto_size_params;
-  BrowserPluginHostMsg_ResizeGuest_Params resize_guest_params;
-
-  // BrowserPluginHostMsg_UpdateRect_ACK is used by both the compositing and
-  // software paths to piggyback updated autosize parameters.
-  if (auto_size)
-    PopulateAutoSizeParameters(&auto_size_params, auto_size);
-
-  browser_plugin_manager()->Send(
-      new BrowserPluginHostMsg_SetAutoSize(render_view_routing_id_,
-                                           guest_instance_id_,
-                                           auto_size_params,
-                                           resize_guest_params));
-}
-
-void BrowserPlugin::ParseSizeContraintsChanged() {
-  bool auto_size = GetAutoSizeAttribute();
-  if (auto_size) {
-    is_auto_size_state_dirty_ = true;
-    UpdateGuestAutoSizeState(true);
-  }
-}
-
-bool BrowserPlugin::InAutoSizeBounds(const gfx::Size& size) const {
-  return size.width() <= GetAdjustedMaxWidth() &&
-      size.height() <= GetAdjustedMaxHeight();
+  BrowserPluginHostMsg_ResizeGuest_Params resize_params;
+  PopulateResizeGuestParameters(&resize_params, plugin_size(), false);
+  paint_ack_received_ = false;
+  browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
+      render_view_routing_id_,
+      guest_instance_id_,
+      resize_params));
 }
 
 NPObject* BrowserPlugin::GetContentWindow() const {
@@ -684,8 +547,7 @@ void BrowserPlugin::updateGeometry(
   // TODO(mthiesse): Assess the performance of calling GetAutoSizeAttribute() on
   // resize.
   if (!paint_ack_received_ ||
-      (old_width == window_rect.width && old_height == window_rect.height) ||
-      GetAutoSizeAttribute()) {
+      (old_width == window_rect.width && old_height == window_rect.height)) {
     // Let the browser know about the updated view rect.
     browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateGeometry(
         render_view_routing_id_, guest_instance_id_, plugin_rect_));
@@ -709,23 +571,16 @@ void BrowserPlugin::PopulateResizeGuestParameters(
   params->view_size = view_size;
   params->repaint = needs_repaint;
   params->scale_factor = GetDeviceScaleFactor();
-  if (last_device_scale_factor_ != params->scale_factor){
+  if (last_device_scale_factor_ != params->scale_factor) {
     DCHECK(params->repaint);
     last_device_scale_factor_ = params->scale_factor;
   }
 }
 
 void BrowserPlugin::GetSizeParams(
-    BrowserPluginHostMsg_AutoSize_Params* auto_size_params,
     BrowserPluginHostMsg_ResizeGuest_Params* resize_guest_params,
     bool needs_repaint) {
-  if (auto_size_params) {
-    PopulateAutoSizeParameters(auto_size_params, GetAutoSizeAttribute());
-  } else {
-    max_auto_size_ = gfx::Size();
-  }
-  gfx::Size view_size = (auto_size_params && auto_size_params->enable) ?
-      auto_size_params->max_size : gfx::Size(width(), height());
+  gfx::Size view_size(width(), height());
   if (view_size.IsEmpty())
     return;
   paint_ack_received_ = false;

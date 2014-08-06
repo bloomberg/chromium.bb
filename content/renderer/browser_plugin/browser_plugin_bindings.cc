@@ -320,39 +320,6 @@ class BrowserPluginPropertyBindingAllowTransparency
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingAllowTransparency);
 };
 
-class BrowserPluginPropertyBindingAutoSize
-    : public BrowserPluginPropertyBinding {
- public:
-  BrowserPluginPropertyBindingAutoSize()
-      : BrowserPluginPropertyBinding(browser_plugin::kAttributeAutoSize) {
-  }
-  virtual bool GetProperty(BrowserPluginBindings* bindings,
-                           NPVariant* result) OVERRIDE {
-    bool auto_size = bindings->instance()->GetAutoSizeAttribute();
-    BOOLEAN_TO_NPVARIANT(auto_size, *result);
-    return true;
-  }
-  virtual bool SetProperty(BrowserPluginBindings* bindings,
-                           NPObject* np_obj,
-                           const NPVariant* variant) OVERRIDE {
-    std::string value = StringFromNPVariant(*variant);
-    if (!bindings->instance()->HasDOMAttribute(name())) {
-      UpdateDOMAttribute(bindings, value);
-      bindings->instance()->ParseAutoSizeAttribute();
-    } else {
-      UpdateDOMAttribute(bindings, value);
-    }
-    return true;
-  }
-  virtual void RemoveProperty(BrowserPluginBindings* bindings,
-                              NPObject* np_obj) OVERRIDE {
-    bindings->instance()->RemoveDOMAttribute(name());
-    bindings->instance()->ParseAutoSizeAttribute();
-  }
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingAutoSize);
-};
-
 class BrowserPluginPropertyBindingContentWindow
     : public BrowserPluginPropertyBinding {
  public:
@@ -379,130 +346,6 @@ class BrowserPluginPropertyBindingContentWindow
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingContentWindow);
 };
 
-class BrowserPluginPropertyBindingMaxHeight
-    : public BrowserPluginPropertyBinding {
- public:
-  BrowserPluginPropertyBindingMaxHeight()
-      : BrowserPluginPropertyBinding(browser_plugin::kAttributeMaxHeight) {
-  }
-  virtual bool GetProperty(BrowserPluginBindings* bindings,
-                           NPVariant* result) OVERRIDE {
-    int max_height = bindings->instance()->GetMaxHeightAttribute();
-    INT32_TO_NPVARIANT(max_height, *result);
-    return true;
-  }
-  virtual bool SetProperty(BrowserPluginBindings* bindings,
-                           NPObject* np_obj,
-                           const NPVariant* variant) OVERRIDE {
-    int new_value = IntFromNPVariant(*variant);
-    if (bindings->instance()->GetMaxHeightAttribute() != new_value) {
-      UpdateDOMAttribute(bindings, base::IntToString(new_value));
-      bindings->instance()->ParseSizeContraintsChanged();
-    }
-    return true;
-  }
-  virtual void RemoveProperty(BrowserPluginBindings* bindings,
-                              NPObject* np_obj) OVERRIDE {
-    bindings->instance()->RemoveDOMAttribute(name());
-    bindings->instance()->ParseSizeContraintsChanged();
-  }
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingMaxHeight);
-};
-
-class BrowserPluginPropertyBindingMaxWidth
-    : public BrowserPluginPropertyBinding {
- public:
-  BrowserPluginPropertyBindingMaxWidth()
-      : BrowserPluginPropertyBinding(browser_plugin::kAttributeMaxWidth) {
-  }
-  virtual bool GetProperty(BrowserPluginBindings* bindings,
-                           NPVariant* result) OVERRIDE {
-    int max_width = bindings->instance()->GetMaxWidthAttribute();
-    INT32_TO_NPVARIANT(max_width, *result);
-    return true;
-  }
-  virtual bool SetProperty(BrowserPluginBindings* bindings,
-                           NPObject* np_obj,
-                           const NPVariant* variant) OVERRIDE {
-    int new_value = IntFromNPVariant(*variant);
-    if (bindings->instance()->GetMaxWidthAttribute() != new_value) {
-      UpdateDOMAttribute(bindings, base::IntToString(new_value));
-      bindings->instance()->ParseSizeContraintsChanged();
-    }
-    return true;
-  }
-  virtual void RemoveProperty(BrowserPluginBindings* bindings,
-                              NPObject* np_obj) OVERRIDE {
-    bindings->instance()->RemoveDOMAttribute(name());
-    bindings->instance()->ParseSizeContraintsChanged();
-  }
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingMaxWidth);
-};
-
-class BrowserPluginPropertyBindingMinHeight
-    : public BrowserPluginPropertyBinding {
- public:
-  BrowserPluginPropertyBindingMinHeight()
-      : BrowserPluginPropertyBinding(browser_plugin::kAttributeMinHeight) {
-  }
-  virtual bool GetProperty(BrowserPluginBindings* bindings,
-                           NPVariant* result) OVERRIDE {
-    int min_height = bindings->instance()->GetMinHeightAttribute();
-    INT32_TO_NPVARIANT(min_height, *result);
-    return true;
-  }
-  virtual bool SetProperty(BrowserPluginBindings* bindings,
-                           NPObject* np_obj,
-                           const NPVariant* variant) OVERRIDE {
-    int new_value = IntFromNPVariant(*variant);
-    if (bindings->instance()->GetMinHeightAttribute() != new_value) {
-      UpdateDOMAttribute(bindings, base::IntToString(new_value));
-      bindings->instance()->ParseSizeContraintsChanged();
-    }
-    return true;
-  }
-  virtual void RemoveProperty(BrowserPluginBindings* bindings,
-                              NPObject* np_obj) OVERRIDE {
-    bindings->instance()->RemoveDOMAttribute(name());
-    bindings->instance()->ParseSizeContraintsChanged();
-  }
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingMinHeight);
-};
-
-class BrowserPluginPropertyBindingMinWidth
-    : public BrowserPluginPropertyBinding {
- public:
-  BrowserPluginPropertyBindingMinWidth()
-      : BrowserPluginPropertyBinding(browser_plugin::kAttributeMinWidth) {
-  }
-  virtual bool GetProperty(BrowserPluginBindings* bindings,
-                           NPVariant* result) OVERRIDE {
-    int min_width = bindings->instance()->GetMinWidthAttribute();
-    INT32_TO_NPVARIANT(min_width, *result);
-    return true;
-  }
-  virtual bool SetProperty(BrowserPluginBindings* bindings,
-                           NPObject* np_obj,
-                           const NPVariant* variant) OVERRIDE {
-    int new_value = IntFromNPVariant(*variant);
-    if (bindings->instance()->GetMinWidthAttribute() != new_value) {
-      UpdateDOMAttribute(bindings, base::IntToString(new_value));
-      bindings->instance()->ParseSizeContraintsChanged();
-    }
-    return true;
-  }
-  virtual void RemoveProperty(BrowserPluginBindings* bindings,
-                              NPObject* np_obj) OVERRIDE {
-    bindings->instance()->RemoveDOMAttribute(name());
-    bindings->instance()->ParseSizeContraintsChanged();
-  }
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingMinWidth);
-};
-
 
 // BrowserPluginBindings ------------------------------------------------------
 
@@ -526,12 +369,7 @@ BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
 
   property_bindings_.push_back(
       new BrowserPluginPropertyBindingAllowTransparency);
-  property_bindings_.push_back(new BrowserPluginPropertyBindingAutoSize);
   property_bindings_.push_back(new BrowserPluginPropertyBindingContentWindow);
-  property_bindings_.push_back(new BrowserPluginPropertyBindingMaxHeight);
-  property_bindings_.push_back(new BrowserPluginPropertyBindingMaxWidth);
-  property_bindings_.push_back(new BrowserPluginPropertyBindingMinHeight);
-  property_bindings_.push_back(new BrowserPluginPropertyBindingMinWidth);
 }
 
 BrowserPluginBindings::~BrowserPluginBindings() {

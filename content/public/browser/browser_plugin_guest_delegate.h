@@ -40,9 +40,15 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // Requests the instance ID associated with the delegate.
   virtual int GetGuestInstanceID() const;
 
-  // Notifies that the content size of the guest has changed in autosize mode.
-  virtual void SizeChanged(const gfx::Size& old_size,
-                           const gfx::Size& new_size) {}
+  // Notification that the BrowserPlugin has resized.
+  virtual void ElementSizeChanged(const gfx::Size& old_size,
+                                  const gfx::Size& new_size) {}
+
+  // Notifies that the content size of the guest has changed.
+  // Note: In autosize mode, it si possible that the guest size may not match
+  // the element size.
+  virtual void GuestSizeChanged(const gfx::Size& old_size,
+                                const gfx::Size& new_size) {}
 
   // Asks the delegate if the given guest can lock the pointer.
   // Invoking the |callback| synchronously is OK.

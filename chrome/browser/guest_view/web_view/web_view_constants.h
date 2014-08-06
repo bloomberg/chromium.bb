@@ -9,6 +9,13 @@
 
 namespace webview {
 
+// Attributes.
+extern const char kAttributeAutoSize[];
+extern const char kAttributeMaxHeight[];
+extern const char kAttributeMaxWidth[];
+extern const char kAttributeMinHeight[];
+extern const char kAttributeMinWidth[];
+
 // Events.
 extern const char kEventClose[];
 extern const char kEventConsoleMessage[];
