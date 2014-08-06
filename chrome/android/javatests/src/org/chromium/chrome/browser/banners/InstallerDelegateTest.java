@@ -158,7 +158,7 @@ public class InstallerDelegateTest extends ChromeShellTestBase
     /**
      * Makes sure that the runnable isn't called until returning from start().
      */
-    @SmallTest
+    @DisabledTest
     public void testRunnableRaceCondition() throws InterruptedException {
         mPackageManager.isInstalled = true;
         mTestDelegate.setTimingForTests(1, 5000);
