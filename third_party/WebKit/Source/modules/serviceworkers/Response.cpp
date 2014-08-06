@@ -89,11 +89,7 @@ PassRefPtrWillBeRawPtr<Response> Response::create(Blob* body, const ResponseInit
     // FIXME: "8. Set |r|'s FetchBodyStream object's MIME type to the result of
     //        extracting a MIME type from |r|'s response's header list."
 
-    // FIXME: "9. Set |r|'s FetchBodyStream object's codings to the result of
-    //        parsing `Content-Encoding` in |r|'s response's header list if that
-    //        result is not failure."
-
-    // "10. Return r."
+    // "9. Return |r|."
     return r.release();
 }
 
