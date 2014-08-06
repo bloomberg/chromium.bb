@@ -89,3 +89,11 @@ symatics should exist.  This is an exact match.
  */
 
 [foo=1.2e-3] interface Foo {};
+
+/* TREE
+ *Interface(Foo)
+ *  ExtAttributes()
+ *    ExtAttribute(foo)
+ */
+
+[foo=(bar, baz)] interface Foo {};

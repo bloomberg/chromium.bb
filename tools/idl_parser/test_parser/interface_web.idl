@@ -162,3 +162,22 @@ interface MyIFaceStringifiers {
   stringifier DOMString namedStringifier();
   stringifier attribute DOMString stringValue;
 };
+
+/* TREE
+ *Interface(MyExtendedAttributeInterface)
+ *  Operation(method)
+ *    Arguments()
+ *    Type()
+ *      PrimitiveType(void)
+ *    ExtAttributes()
+ *      ExtAttribute(Attr)
+ *      ExtAttribute(MethodIdentList)
+ *  ExtAttributes()
+ *    ExtAttribute(MyExtendedAttribute)
+ *    ExtAttribute(MyExtendedIdentListAttribute)
+ */
+[MyExtendedAttribute,
+ MyExtendedIdentListAttribute=(Foo, Bar, Baz)]
+interface MyExtendedAttributeInterface {
+  [Attr, MethodIdentList=(Foo, Bar)] void method();
+};

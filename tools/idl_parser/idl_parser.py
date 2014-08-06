@@ -654,15 +654,17 @@ class IDLParser(object):
 
   # We only support:
   #    [ identifier ]
+  #    [ identifier ( ArgumentList ) ]
   #    [ identifier = identifier ]
-  #    [ identifier ( ArgumentList )]
-  #    [ identifier = identifier ( ArgumentList )]
+  #    [ identifier = ( IdentifierList ) ]
+  #    [ identifier = identifier ( ArgumentList ) ]
   # [66] map directly to [91-93, 95]
   # [67-69, 71] are unsupported
   def p_ExtendedAttribute(self, p):
     """ExtendedAttribute : ExtendedAttributeNoArgs
                          | ExtendedAttributeArgList
                          | ExtendedAttributeIdent
+                         | ExtendedAttributeIdentList
                          | ExtendedAttributeNamedArgList"""
     p[0] = p[1]
 
@@ -855,7 +857,17 @@ class IDLParser(object):
     else:
       p[0] = p[1]
 
-  # [89-90] NOT IMPLEMENTED (IdentifierList)
+  # [89]
+  def p_IdentifierList(self, p):
+    """IdentifierList : identifier Identifiers"""
+    p[0] = ListFromConcat(p[1], p[2])
+
+  # [90]
+  def p_Identifiers(self, p):
+    """Identifiers : ',' identifier Identifiers
+                   |"""
+    if len(p) > 1:
+      p[0] = ListFromConcat(p[2], p[3])
 
   # [91]
   def p_ExtendedAttributeNoArgs(self, p):
@@ -874,7 +886,11 @@ class IDLParser(object):
     value = self.BuildAttribute('VALUE', p[3])
     p[0] = self.BuildNamed('ExtAttribute', p, 1, value)
 
-  # [94] NOT IMPLEMENTED (ExtendedAttributeIdentList)
+  # [94]
+  def p_ExtendedAttributeIdentList(self, p):
+    """ExtendedAttributeIdentList : identifier '=' '(' IdentifierList ')'"""
+    value = self.BuildAttribute('VALUE', p[4])
+    p[0] = self.BuildNamed('ExtAttribute', p, 1, value)
 
   # [95]
   def p_ExtendedAttributeNamedArgList(self, p):

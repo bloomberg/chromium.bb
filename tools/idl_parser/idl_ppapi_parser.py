@@ -239,9 +239,11 @@ class IDLPPAPIParser(IDLParser):
 
   # We only support:
   #    [ identifier ]
-  #    [ identifier = identifier ]
   #    [ identifier ( ArgumentList )]
   #    [ identifier ( ValueList )]
+  #    [ identifier = identifier ]
+  #    [ identifier = ( IdentifierList )]
+  #    [ identifier = ConstValue ]
   #    [ identifier = identifier ( ArgumentList )]
   # [51] map directly to 74-77
   # [52-54, 56] are unsupported
@@ -250,6 +252,7 @@ class IDLPPAPIParser(IDLParser):
                          | ExtendedAttributeArgList
                          | ExtendedAttributeValList
                          | ExtendedAttributeIdent
+                         | ExtendedAttributeIdentList
                          | ExtendedAttributeIdentConst
                          | ExtendedAttributeNamedArgList"""
     p[0] = p[1]
