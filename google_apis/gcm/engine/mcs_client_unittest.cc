@@ -363,12 +363,24 @@ TEST_F(MCSClientTest, SendMessageRMQWhileDisconnected) {
   mcs_client()->SendMessage(message);
   PumpLoop();         // Wait for the queuing to happen.
   EXPECT_EQ(MCSClient::QUEUED, message_send_status());
+  EXPECT_EQ("X", sent_message_id());
   EXPECT_FALSE(GetFakeHandler()->AllOutgoingMessagesReceived());
   GetFakeHandler()->set_fail_send(false);
   clock()->Advance(base::TimeDelta::FromSeconds(kTTLValue - 1));
   connection_factory()->Connect();
   WaitForMCSEvent();  // Wait for the login to finish.
   PumpLoop();         // Wait for the send to happen.
+
+  // Receive the ack.
+  scoped_ptr<mcs_proto::IqStanza> ack = BuildStreamAck();
+  ack->set_last_stream_id_received(2);
+  GetFakeHandler()->ReceiveMessage(
+      MCSMessage(kIqStanzaTag,
+                 ack.PassAs<const google::protobuf::MessageLite>()));
+  WaitForMCSEvent();
+
+  EXPECT_EQ(MCSClient::SENT, message_send_status());
+  EXPECT_EQ("X", sent_message_id());
   EXPECT_TRUE(GetFakeHandler()->AllOutgoingMessagesReceived());
 }
 

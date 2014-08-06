@@ -857,15 +857,15 @@ void GCMClientImpl::OnMessageSentToMCS(int64 user_serial_number,
   // All other errors will be raised immediately, through asynchronous callback.
   // It is expected that TTL_EXCEEDED will be issued for a message that was
   // previously issued |OnSendFinished| with status SUCCESS.
-  // For now, we do not report that the message has been sent and acked
-  // successfully.
   // TODO(jianli): Consider adding UMA for this status.
   if (status == MCSClient::TTL_EXCEEDED) {
     SendErrorDetails send_error_details;
     send_error_details.message_id = message_id;
     send_error_details.result = GCMClient::TTL_EXCEEDED;
     delegate_->OnMessageSendError(app_id, send_error_details);
-  } else if (status != MCSClient::SENT) {
+  } else if (status == MCSClient::SENT) {
+    delegate_->OnSendAcknowledged(app_id, message_id);
+  } else {
     delegate_->OnSendFinished(app_id, message_id, ToGCMClientResult(status));
   }
 }

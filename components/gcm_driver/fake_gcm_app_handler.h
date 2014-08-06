@@ -29,6 +29,7 @@ class FakeGCMAppHandler : public GCMAppHandler {
 
   const Event& received_event() const { return received_event_; }
   const std::string& app_id() const { return app_id_; }
+  const std::string& acked_message_id() const { return acked_message_id_; }
   const GCMClient::IncomingMessage& message() const { return message_; }
   const GCMClient::SendErrorDetails& send_error_details() const {
     return send_error_details_;
@@ -45,6 +46,8 @@ class FakeGCMAppHandler : public GCMAppHandler {
   virtual void OnSendError(
       const std::string& app_id,
       const GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
+  virtual void OnSendAcknowledged(const std::string& app_id,
+                                  const std::string& message_id) OVERRIDE;
   virtual void OnConnected(const net::IPEndPoint& ip_endpoint) OVERRIDE;
   virtual void OnDisconnected() OVERRIDE;
 
@@ -55,6 +58,7 @@ class FakeGCMAppHandler : public GCMAppHandler {
 
   Event received_event_;
   std::string app_id_;
+  std::string acked_message_id_;
   GCMClient::IncomingMessage message_;
   GCMClient::SendErrorDetails send_error_details_;
   bool connected_;

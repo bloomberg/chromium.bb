@@ -108,6 +108,8 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
   virtual void OnMessageSendError(
       const std::string& app_id,
       const GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
+  virtual void OnSendAcknowledged(const std::string& app_id,
+                                  const std::string& message_id) OVERRIDE;
   virtual void OnGCMReady() OVERRIDE;
   virtual void OnActivityRecorded() OVERRIDE;
   virtual void OnConnected(const net::IPEndPoint& ip_endpoint) OVERRIDE;
@@ -244,6 +246,17 @@ void GCMDriverDesktop::IOWorker::OnMessageSendError(
       FROM_HERE,
       base::Bind(&GCMDriverDesktop::MessageSendError, service_, app_id,
                  send_error_details));
+}
+
+void GCMDriverDesktop::IOWorker::OnSendAcknowledged(
+    const std::string& app_id,
+    const std::string& message_id) {
+  DCHECK(io_thread_->RunsTasksOnCurrentThread());
+
+  ui_thread_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &GCMDriverDesktop::SendAcknowledged, service_, app_id, message_id));
 }
 
 void GCMDriverDesktop::IOWorker::OnGCMReady() {
@@ -678,6 +691,17 @@ void GCMDriverDesktop::MessageSendError(
     return;
 
   GetAppHandler(app_id)->OnSendError(app_id, send_error_details);
+}
+
+void GCMDriverDesktop::SendAcknowledged(const std::string& app_id,
+                                        const std::string& message_id) {
+  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
+
+  // Drop the event if the service has been stopped.
+  if (!gcm_started_)
+    return;
+
+  GetAppHandler(app_id)->OnSendAcknowledged(app_id, message_id);
 }
 
 void GCMDriverDesktop::GCMClientReady() {

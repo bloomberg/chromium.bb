@@ -35,6 +35,7 @@ enum LastEvent {
   REGISTRATION_COMPLETED,
   UNREGISTRATION_COMPLETED,
   MESSAGE_SEND_ERROR,
+  MESSAGE_SEND_ACK,
   MESSAGE_RECEIVED,
   MESSAGES_DELETED,
 };
@@ -223,6 +224,10 @@ class GCMClientImplTest : public testing::Test,
   void InitializeGCMClient();
   void StartGCMClient();
   void ReceiveMessageFromMCS(const MCSMessage& message);
+  void ReceiveOnMessageSentToMCS(
+      const std::string& app_id,
+      const std::string& message_id,
+      const MCSClient::MessageSendStatus status);
   void CompleteCheckin(uint64 android_id,
                        uint64 security_token,
                        const std::string& digest,
@@ -251,6 +256,8 @@ class GCMClientImplTest : public testing::Test,
   virtual void OnMessageSendError(
       const std::string& app_id,
       const gcm::GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
+  virtual void OnSendAcknowledged(const std::string& app_id,
+                                  const std::string& message_id) OVERRIDE;
   virtual void OnGCMReady() OVERRIDE;
   virtual void OnActivityRecorded() OVERRIDE {}
   virtual void OnConnected(const net::IPEndPoint& ip_endpoint) OVERRIDE {}
@@ -476,6 +483,13 @@ void GCMClientImplTest::ReceiveMessageFromMCS(const MCSMessage& message) {
   gcm_client_->OnMessageReceivedFromMCS(message);
 }
 
+void GCMClientImplTest::ReceiveOnMessageSentToMCS(
+      const std::string& app_id,
+      const std::string& message_id,
+      const MCSClient::MessageSendStatus status) {
+  gcm_client_->OnMessageSentToMCS(0LL, app_id, message_id, status);
+}
+
 void GCMClientImplTest::OnGCMReady() {
   last_event_ = LOADING_COMPLETED;
   QuitLoop();
@@ -517,6 +531,13 @@ void GCMClientImplTest::OnMessageSendError(
   last_event_ = MESSAGE_SEND_ERROR;
   last_app_id_ = app_id;
   last_error_details_ = send_error_details;
+}
+
+void GCMClientImplTest::OnSendAcknowledged(const std::string& app_id,
+                                           const std::string& message_id) {
+  last_event_ = MESSAGE_SEND_ACK;
+  last_app_id_ = app_id;
+  last_message_id_ = message_id;
 }
 
 int64 GCMClientImplTest::CurrentTime() {
@@ -680,9 +701,6 @@ TEST_F(GCMClientImplTest, DispatchDownstreamMessgaesDeleted) {
 }
 
 TEST_F(GCMClientImplTest, SendMessage) {
-  mcs_proto::DataMessageStanza stanza;
-  stanza.set_ttl(500);
-
   GCMClient::OutgoingMessage message;
   message.id = "007";
   message.time_to_live = 500;
@@ -700,6 +718,13 @@ TEST_F(GCMClientImplTest, SendMessage) {
   EXPECT_EQ("key", mcs_client()->last_data_message_stanza().app_data(0).key());
   EXPECT_EQ("value",
             mcs_client()->last_data_message_stanza().app_data(0).value());
+}
+
+TEST_F(GCMClientImplTest, SendMessageAcknowledged) {
+  ReceiveOnMessageSentToMCS(kAppId, "007", MCSClient::SENT);
+  EXPECT_EQ(MESSAGE_SEND_ACK, last_event());
+  EXPECT_EQ(kAppId, last_app_id());
+  EXPECT_EQ("007", last_message_id());
 }
 
 class GCMClientImplCheckinTest : public GCMClientImplTest {

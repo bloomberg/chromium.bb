@@ -36,6 +36,10 @@ class GCMAppHandler {
       const std::string& app_id,
       const GCMClient::SendErrorDetails& send_error_details) = 0;
 
+  // Called when a GCM message was received by GCM server.
+  virtual void OnSendAcknowledged(const std::string& app_id,
+                                  const std::string& message_id) = 0;
+
   // Called when a new connection is established and a successful handshake
   // has been performed. Note that |ip_endpoint| is only set if available for
   // the current platform.

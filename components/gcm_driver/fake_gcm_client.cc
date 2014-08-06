@@ -203,6 +203,15 @@ void FakeGCMClient::SendFinished(const std::string& app_id,
                    app_id,
                    send_error_details),
         base::TimeDelta::FromMilliseconds(200));
+  } else if(message.id.find("ack") != std::string::npos) {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&FakeGCMClient::SendAcknowledgement,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   app_id,
+                   message.id),
+        base::TimeDelta::FromMilliseconds(200));
+
   }
 }
 
@@ -222,6 +231,12 @@ void FakeGCMClient::MessageSendError(
     const GCMClient::SendErrorDetails& send_error_details) {
   if (delegate_)
     delegate_->OnMessageSendError(app_id, send_error_details);
+}
+
+void FakeGCMClient::SendAcknowledgement(const std::string& app_id,
+                                        const std::string& message_id) {
+  if (delegate_)
+    delegate_->OnSendAcknowledged(app_id, message_id);
 }
 
 }  // namespace gcm

@@ -229,9 +229,9 @@ void GCMDriverTest::Register(const std::string& app_id,
   base::RunLoop run_loop;
   async_operation_completed_callback_ = run_loop.QuitClosure();
   driver_->Register(app_id,
-                     sender_ids,
-                     base::Bind(&GCMDriverTest::RegisterCompleted,
-                                base::Unretained(this)));
+                    sender_ids,
+                    base::Bind(&GCMDriverTest::RegisterCompleted,
+                               base::Unretained(this)));
   if (wait_to_finish == WAIT)
     run_loop.Run();
 }
@@ -243,10 +243,10 @@ void GCMDriverTest::Send(const std::string& app_id,
   base::RunLoop run_loop;
   async_operation_completed_callback_ = run_loop.QuitClosure();
   driver_->Send(app_id,
-                 receiver_id,
-                 message,
-                 base::Bind(&GCMDriverTest::SendCompleted,
-                            base::Unretained(this)));
+                receiver_id,
+                message,
+                base::Bind(&GCMDriverTest::SendCompleted,
+                           base::Unretained(this)));
   if (wait_to_finish == WAIT)
     run_loop.Run();
 }
@@ -797,13 +797,17 @@ TEST_F(GCMDriverFunctionalTest, RegisterWhenAsyncOperationPending) {
 
 TEST_F(GCMDriverFunctionalTest, Send) {
   GCMClient::OutgoingMessage message;
-  message.id = "1";
+  message.id = "1@ack";
   message.data["key1"] = "value1";
   message.data["key2"] = "value2";
   Send(kTestAppID1, kUserID1, message, GCMDriverTest::WAIT);
 
   EXPECT_EQ(message.id, send_message_id());
   EXPECT_EQ(GCMClient::SUCCESS, send_result());
+
+  gcm_app_handler()->WaitForNotification();
+  EXPECT_EQ(message.id, gcm_app_handler()->acked_message_id());
+  EXPECT_EQ(kTestAppID1, gcm_app_handler()->app_id());
 }
 
 TEST_F(GCMDriverFunctionalTest, SendAfterSignOut) {

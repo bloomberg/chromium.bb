@@ -54,6 +54,8 @@ class ExtensionGCMAppHandler : public gcm::GCMAppHandler,
   virtual void OnSendError(
       const std::string& app_id,
       const gcm::GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
+  virtual void OnSendAcknowledged(const std::string& app_id,
+                                  const std::string& message_id) OVERRIDE;
 
  protected:
   // Could be overridden by testing purpose.

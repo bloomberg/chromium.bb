@@ -332,6 +332,13 @@ void GCMInvalidationBridge::OnSendError(
   NOTREACHED();
 }
 
+void GCMInvalidationBridge::OnSendAcknowledged(
+    const std::string& app_id,
+    const std::string& message_id) {
+  // cacheinvalidation doesn't send messages over GCM.
+  NOTREACHED();
+}
+
 void GCMInvalidationBridge::OnConnected(const net::IPEndPoint& ip_endpoint) {
   core_thread_task_runner_->PostTask(
       FROM_HERE,

@@ -22,19 +22,24 @@ void DefaultGCMAppHandler::ShutdownHandler() {
 void DefaultGCMAppHandler::OnMessage(
     const std::string& app_id,
     const GCMClient::IncomingMessage& message) {
-  LOG(ERROR) << "No app handler is found to route message for " << app_id;
+  DVLOG(1) << "No app handler is found to route message for " << app_id;
 }
 
 void DefaultGCMAppHandler::OnMessagesDeleted(const std::string& app_id) {
-  LOG(ERROR) << "No app handler is found to route deleted message for "
-             << app_id;
+  DVLOG(1) << "No app handler is found to route deleted message for " << app_id;
 }
 
 void DefaultGCMAppHandler::OnSendError(
     const std::string& app_id,
     const GCMClient::SendErrorDetails& send_error_details) {
-  LOG(ERROR) << "No app handler is found to route send error message for "
-             << app_id;
+  DVLOG(1) << "No app handler is found to route send error message for "
+           << app_id;
+}
+
+void DefaultGCMAppHandler::OnSendAcknowledged(const std::string& app_id,
+                                              const std::string& message_id) {
+  DVLOG(1) << "No app handler is found to route send acknoledgement for "
+           << app_id;
 }
 
 void DefaultGCMAppHandler::OnConnected(const net::IPEndPoint& ip_endpoint) {
