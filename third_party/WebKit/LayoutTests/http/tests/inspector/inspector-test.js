@@ -559,7 +559,7 @@ InspectorTest.TempFileMock.prototype = {
 InspectorTest.dumpLoadedModules = function(next)
 {
     InspectorTest.addResult("Loaded modules:");
-    var modules = WebInspector.moduleManager._modules;
+    var modules = self.runtime._modules;
     for (var i = 0; i < modules.length; ++i) {
         if (modules[i]._loaded) {
             InspectorTest.addResult("    " + modules[i]._descriptor.name);

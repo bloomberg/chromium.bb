@@ -1,10 +1,10 @@
 function initialize_LayerTreeTests()
 {
     // FIXME: remove once out of experimental.
-    WebInspector.moduleManager.registerModule("layers");
-    var extensions = WebInspector.moduleManager.extensions(WebInspector.Panel).forEach(function(extension) {
+    runtime.registerModule("layers");
+    var extensions = runtime.extensions(WebInspector.Panel).forEach(function(extension) {
         if (extension.module().name() === "layers")
-            WebInspector.inspectorView.addPanel(new WebInspector.ModuleManagerExtensionPanelDescriptor(extension));
+            WebInspector.inspectorView.addPanel(new WebInspector.RuntimeExtensionPanelDescriptor(extension));
     });
     InspectorTest.layerTreeModel = WebInspector.inspectorView.panel("layers")._model;
     InspectorTest.layers3DView = WebInspector.inspectorView.panel("layers")._layers3DView;
