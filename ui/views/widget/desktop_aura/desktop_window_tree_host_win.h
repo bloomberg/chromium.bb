@@ -191,9 +191,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   virtual bool HandleTooltipNotify(int w_param,
                                    NMHDR* l_param,
                                    LRESULT* l_result) OVERRIDE;
-  virtual void HandleTooltipMouseMove(UINT message,
-                                      WPARAM w_param,
-                                      LPARAM l_param) OVERRIDE;
   virtual void HandleMenuLoop(bool in_menu_loop) OVERRIDE;
   virtual bool PreHandleMSG(UINT message,
                             WPARAM w_param,

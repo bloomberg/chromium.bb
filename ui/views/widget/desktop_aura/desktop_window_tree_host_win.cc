@@ -863,13 +863,6 @@ bool DesktopWindowTreeHostWin::HandleTooltipNotify(int w_param,
   return tooltip_ && tooltip_->HandleNotify(w_param, l_param, l_result);
 }
 
-void DesktopWindowTreeHostWin::HandleTooltipMouseMove(UINT message,
-                                                      WPARAM w_param,
-                                                      LPARAM l_param) {
-  // TooltipWin implementation doesn't need this.
-  // TODO(sky): remove from HWNDMessageHandler once non-aura path nuked.
-}
-
 void DesktopWindowTreeHostWin::HandleMenuLoop(bool in_menu_loop) {
   if (in_menu_loop) {
     tooltip_disabler_.reset(

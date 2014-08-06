@@ -204,11 +204,6 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
                                    NMHDR* l_param,
                                    LRESULT* l_result) = 0;
 
-  // Called to forward mouse events to the tooltip manager.
-  virtual void HandleTooltipMouseMove(UINT message,
-                                      WPARAM w_param,
-                                      LPARAM l_param) = 0;
-
   // Invoked on entering/exiting a menu loop.
   virtual void HandleMenuLoop(bool in_menu_loop) = 0;
 
