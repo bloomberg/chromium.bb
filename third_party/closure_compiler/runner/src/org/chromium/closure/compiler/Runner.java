@@ -12,6 +12,8 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
+import org.chromium.closure.compiler.ChromeCodingConvention;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -187,6 +189,13 @@ public class Runner {
             options.setIdeMode(true);
             options.setExtraAnnotationNames(Collections.singletonList("suppressReceiverCheck"));
             return options;
+        }
+
+        @Override
+        protected void setRunOptions(CompilerOptions options)
+                throws FlagUsageException, IOException {
+            super.setRunOptions(options);
+            options.setCodingConvention(new ChromeCodingConvention());
         }
 
         int execute() {

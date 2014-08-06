@@ -6,6 +6,8 @@
 import argparse
 from checker import Checker as Checker
 import os
+import sys
+
 try:
   import json
 except:
@@ -45,7 +47,7 @@ class ModuleParser(object):
 
   def parse(self, file_path):
     if file_path in self._cache:
-      print "(INFO) Found module file %s in the cache" % file_path 
+      print "(INFO) Found module file %s in the cache" % file_path
       return self._cache[file_path]
 
     file = open(file_path, "r")
@@ -97,7 +99,10 @@ class ModuleCompiler(object):
       for s in m.sources:
         depends = [rel_path(d) for d in m.depends]
         externs = [rel_path(e) for e in m.externs]
-        self._checker.check(rel_path(s), depends=depends, externs=externs)
+        exit_code, _ = self._checker.check(rel_path(s), depends=depends,
+                                           externs=externs)
+        if exit_code:
+          sys.exit(exit_code)
 
         if s != m.sources[-1]:
           self._debug(os.linesep, prefix="")

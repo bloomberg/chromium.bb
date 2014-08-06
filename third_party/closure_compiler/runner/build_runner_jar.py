@@ -27,6 +27,7 @@ src_path = rel_to_abs(src_dir)
 
 
 def run_and_communicate(command, error_template):
+  print >> sys.stderr, command
   proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
   proc.communicate()
   if proc.returncode:

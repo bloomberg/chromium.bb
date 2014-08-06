@@ -19,7 +19,7 @@ class LineNumber(object):
 
 class FileCache(object):
   _cache = defaultdict(str)
-    
+
   def _read(self, file):
     file = os.path.abspath(file)
     self._cache[file] = self._cache[file] or open(file, "r").read()
@@ -128,10 +128,9 @@ class Checker(object):
     if self._verbose:
       print "(INFO) " + msg
 
-  def _fatal(self, msg):
-    print >> sys.stderr, "(FATAL) " + msg
+  def _error(self, msg):
+    print >> sys.stderr, "(ERROR) " + msg
     self._clean_up()
-    sys.exit(1)
 
   def _run_command(self, cmd):
     cmd_str = " ".join(cmd)
@@ -142,15 +141,15 @@ class Checker(object):
         cmd_str, stdout=devnull, stderr=subprocess.PIPE, shell=True)
 
   def _check_java_path(self):
-    if self._found_java:
-      return
+    if not self._found_java:
+      proc = self._run_command(["which", "java"])
+      proc.communicate()
+      if proc.returncode == 0:
+        self._found_java = True
+      else:
+        self._error("Cannot find java (`which java` => %s)" % proc.returncode)
 
-    proc = self._run_command(["which", "java"])
-    proc.communicate()
-    if proc.returncode == 0:
-      self._found_java = True
-    else:
-      self._fatal("Cannot find java (`which java` => %s)" % proc.returncode)
+    return self._found_java
 
   def _run_jar(self, jar, args=[]):
     self._check_java_path()
@@ -181,6 +180,9 @@ class Checker(object):
     return tmp_file.name
 
   def check(self, file, depends=[], externs=[]):
+    if not self._check_java_path():
+      return 1, ""
+
     self._debug("FILE: " + file)
 
     if file.endswith("_externs.js"):
@@ -216,10 +218,10 @@ class Checker(object):
 
     output = self._format_errors(map(self._fix_up_error, errors))
     if runner_cmd.returncode:
-      self._fatal("Error in: " + file + ("\n" + output if output else ""))
+      self._error("Error in: " + file + ("\n" + output if output else ""))
     elif output:
       self._debug("Output: " + output)
-   
+
     self._clean_up()
 
-    return runner_cmd.returncode == 0
+    return runner_cmd.returncode, output
