@@ -282,7 +282,7 @@ CompositingReasons RenderVideo::additionalCompositingReasons(CompositingTriggerF
             return CompositingReasonVideo;
     }
 
-    if ((triggers & VideoTrigger) && shouldDisplayVideo() && supportsAcceleratedRendering())
+    if (shouldDisplayVideo() && supportsAcceleratedRendering())
         return CompositingReasonVideo;
 
     return CompositingReasonNone;

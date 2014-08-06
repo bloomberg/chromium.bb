@@ -444,11 +444,6 @@ void WebSettingsImpl::setAcceleratedCompositingForFiltersEnabled(bool enabled)
     m_settings->setAcceleratedCompositingForFiltersEnabled(enabled);
 }
 
-void WebSettingsImpl::setAcceleratedCompositingForVideoEnabled(bool enabled)
-{
-    m_settings->setAcceleratedCompositingForVideoEnabled(enabled);
-}
-
 void WebSettingsImpl::setAcceleratedCompositingForOverflowScrollEnabled(bool enabled)
 {
     m_settings->setAcceleratedCompositingForOverflowScrollEnabled(enabled);
