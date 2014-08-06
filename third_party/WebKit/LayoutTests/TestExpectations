@@ -1295,8 +1295,6 @@ crbug.com/30536 [ Win ] http/tests/encoding/meta-switch-mid-parse-with-title.htm
 crbug.com/30536 [ Win ] http/tests/htmlimports/csp-import-block-but-domain-nested.html [ Timeout Pass ]
 crbug.com/30536 [ Win ] http/tests/ssl/referer-301.html [ Timeout Pass ]
 
-crbug.com/400445 svg/filters/big-sized-filter.svg [ NeedsRebaseline ]
-
 crbug.com/399430 [ Mac ] fast/transforms/transformed-focused-text-input.html [ Pass ImageOnlyFailure ]
 
 crbug.com/400978 [ SnowLeopard Debug ] fast/transforms/shadows.html [ NeedsRebaseline ]
