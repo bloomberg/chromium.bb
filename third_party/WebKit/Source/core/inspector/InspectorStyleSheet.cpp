@@ -637,7 +637,7 @@ void InspectorStyle::populateAllProperties(WillBeHeapVector<InspectorStyleProper
     HashSet<String> sourcePropertyNames;
 
     RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = extractSourceData();
-    if (sourceData) {
+    if (sourceData && sourceData->styleSourceData) {
         String styleDeclaration;
         bool isStyleTextKnown = styleText(&styleDeclaration);
         ASSERT_UNUSED(isStyleTextKnown, isStyleTextKnown);
