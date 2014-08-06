@@ -6,7 +6,6 @@
 Each example demonstrates one or two key Native Client programming concepts.
 After you&#8217;ve <a class="reference internal" href="/native-client/sdk/download.html"><em>downloaded the SDK</em></a>, follow the instructions
 on this page to build and run the examples.</p>
-<section id="configure-the-google-chrome-browser">
 <h2 id="configure-the-google-chrome-browser">Configure the Google Chrome Browser</h2>
 <ol class="arabic">
 <li><p class="first">Your version of Chrome must be equal to or greater than the version of
@@ -52,7 +51,6 @@ Chrome window.</p>
 </ul>
 </li>
 </ol>
-</section><section id="build-the-sdk-examples">
 <h2 id="build-the-sdk-examples">Build the SDK examples</h2>
 <p>Starting with the <code>pepper_24</code> bundle, the Makefile scripts for the SDK
 examples build multiple versions of the examples using all three SDK
@@ -154,8 +152,7 @@ For information about Native Client manifest files, see the <a class="reference 
 Overview</em></a>.</p>
 <p>For details on how to use <code>make</code>, see the <a class="reference external" href="http://www.gnu.org/software/make/manual/make.html">GNU &#8216;make&#8217; Manual</a>. For details on how to
 use the SDK toolchain itself, see <a class="reference internal" href="/native-client/devguide/devcycle/building.html"><em>Building Native Client Modules</em></a>.</p>
-</section><section id="run-the-sdk-examples">
-<span id="id1"></span><h2 id="run-the-sdk-examples"><span id="id1"></span>Run the SDK examples</h2>
+<h2 id="run-the-sdk-examples"><span id="id1"></span>Run the SDK examples</h2>
 <p>To run the SDK examples, you can use the <code>make run</code> command:</p>
 <pre class="prettyprint">
 $ cd pepper_31/examples/api/core
@@ -207,8 +204,7 @@ $ export CHROME_PATH=&lt;Path to Google Chrome&gt;
 <pre class="prettyprint">
 $ make run TOOLCHAIN=pnacl CONFIG=Debug
 </pre>
-</section><section id="run-the-sdk-examples-as-packaged-apps">
-<span id="run-sdk-examples-as-packaged"></span><h2 id="run-the-sdk-examples-as-packaged-apps"><span id="run-sdk-examples-as-packaged"></span>Run the SDK examples as packaged apps</h2>
+<h2 id="run-the-sdk-examples-as-packaged-apps"><span id="run-sdk-examples-as-packaged"></span>Run the SDK examples as packaged apps</h2>
 <p>Each example can also be launched as a packaged app. For more information about
 using Native Client for packaged apps, see <a class="reference internal" href="/native-client/devguide/distributing.html#distributing-packaged"><em>Packaged application</em></a>.  For general information about packaged apps, see the
 <a class="reference external" href="/apps/about_apps">Chrome apps documentation</a>.</p>
@@ -220,8 +216,7 @@ $ make run_package
 </pre>
 <p>You can use <code>TOOLCHAIN</code> and <code>CONFIG</code> parameters as above to run with a
 different toolchain or configuration.</p>
-</section><section id="debugging-the-sdk-examples">
-<span id="id2"></span><h2 id="debugging-the-sdk-examples"><span id="id2"></span>Debugging the SDK examples</h2>
+<h2 id="debugging-the-sdk-examples"><span id="id2"></span>Debugging the SDK examples</h2>
 <p>The NaCl SDK uses <a class="reference external" href="https://www.gnu.org/software/gdb/">GDB</a> to debug Native
 Client code. The SDK includes a prebuilt version of GDB that is compatible with
 NaCl code. To use it, run the <code>make debug</code> command from an example directory:</p>
@@ -246,6 +241,6 @@ Remote debugging using :4014
 The most common commands you will use to debug are <code>continue</code>, <code>step</code>,
 <code>next</code>, <code>break</code> and <code>backtrace</code>. See <a class="reference internal" href="/native-client/devguide/devcycle/debugging.html"><em>Debugging</em></a> for more information about debugging a Native Client
 application.</p>
-</section></section>
+</section>
 
 {{/partials.standard_nacl_article}}

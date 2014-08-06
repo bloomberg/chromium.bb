@@ -15,8 +15,7 @@
 <li><a class="reference internal" href="#reference-information" id="id6">Reference information</a></li>
 </ul>
 
-</div><section id="introduction">
-<h2 id="introduction">Introduction</h2>
+</div><h2 id="introduction">Introduction</h2>
 <p><code>nacl_io</code> is a utility library that provides implementations of standard
 C APIs such as POSIX I/O (<code>stdio.h</code>) and BSD sockets (<code>sys/socket.h</code>).
 Its primary function is to allow code that uses these standard APIs to be
@@ -58,7 +57,6 @@ types which are described in the table below:</p>
 </tr>
 </tbody>
 </table>
-</section><section id="using-nacl-io">
 <h2 id="using-nacl-io">Using nacl_io</h2>
 <p>Using nacl_io is mostly just a matter of using the standard POSIX C library
 functions. However, there are some steps required to initialize the library
@@ -79,9 +77,7 @@ options are explained in the <a class="reference internal" href="/native-client/
 thread. This is because the main Pepper thread does not support the blocking
 behavior needed by the POSIX I/O operations.</li>
 </ol>
-</section><section id="the-nacl-io-demo">
 <h2 id="the-nacl-io-demo">The nacl_io demo</h2>
-<section id="building-and-running-the-demo">
 <h3 id="building-and-running-the-demo">Building and running the demo</h3>
 <p>The demo application launches a Native Client module that mounts three file
 systems and displays a set of controls that let you work with them:</p>
@@ -116,10 +112,8 @@ in the menu, and press the fclose button</li>
 <li>select the fread command, be sure the file /persistent/test is selected in
 the menu, enter a byte count, and press the fread button</li>
 </ol>
-</section><section id="a-look-at-the-code">
 <h3 id="a-look-at-the-code">A look at the code</h3>
 <p>The demo is written C and comprises three files.</p>
-<section id="nacl-io-demo-c">
 <h4 id="nacl-io-demo-c">nacl_io_demo.c</h4>
 <p>This is the demo&#8217;s main file. The code here creates and initializes the Native
 Client module instance. The Pepper function <code>Instance_DidCreate</code> initializes
@@ -164,14 +158,12 @@ function domContentLoaded(name, tc, config, width, height) {
 messages sent from the html page and performs the specified file system
 operations. The logic for the worker thread is encoded in the other two files,
 described below.</p>
-</section><section id="queue-c">
 <h4 id="queue-c">queue.c</h4>
 <p>This file implements a circular queue that is used to receive messages from the
 browser UI to the Native Client module. The file system commands in the
 enqueued messages are executed on the worker thread. This keeps blocking calls
 (like fread) off the main Native Client thread, which is a good thing. The
 queue is initialized in nacl_io_demo.c <code>Instance_DidCreate</code>.</p>
-</section><section id="handlers-c">
 <h4 id="handlers-c">handlers.c</h4>
 <p>This file implements the stdio calls associated with the commands sent from the
 browser. There is a separate <code>Handle*</code> function for each command: fopen,
@@ -211,7 +203,6 @@ int HandleFwrite(int num_params, char** params, char** output) {
   return 0;
 }
 </pre>
-</section></section></section><section id="reference-information">
 <h2 id="reference-information">Reference information</h2>
 <p>The example discussed here is included in the SDK in the directory
 <code>examples/demo/nacl_io_demo</code>.</p>
@@ -220,6 +211,6 @@ Pepper API. For reference information related to the nacl_io interface see
 its header file in the SDK directory, located at
 <code>include/nacl_io/nacl_io.h</code>.</p>
 <p>For more about the HTML5 file system read the <a class="reference external" href="http://dev.w3.org/2009/dap/file-system/pub/FileSystem/">specification</a>.</p>
-</section></section>
+</section>
 
 {{/partials.standard_nacl_article}}

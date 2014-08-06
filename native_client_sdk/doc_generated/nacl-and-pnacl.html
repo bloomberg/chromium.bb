@@ -12,8 +12,7 @@
 <li><a class="reference internal" href="#when-to-use-nacl" id="id6">When to use NaCl</a></li>
 </ul>
 
-</div><section id="native-client-nacl">
-<h2 id="native-client-nacl">Native Client (NaCl)</h2>
+</div><h2 id="native-client-nacl">Native Client (NaCl)</h2>
 <p>Native Client enables the execution of native code securely inside web
 applications through the use of advanced <a class="reference external" href="/native-client/community/talks#research">Software Fault Isolation (SFI)
 techniques</a>.  Since its launch in
@@ -34,7 +33,6 @@ Architecture-specific executables are clearly not a good fit for distribution
 on the web. As a consequence, Native Client has been restricted to
 applications and browser extensions that are installed through the
 Chrome Web Store.</p>
-</section><section id="portable-native-client-pnacl">
 <h2 id="portable-native-client-pnacl">Portable Native Client (PNaCl)</h2>
 <p>PNaCl solves the portability problem by splitting the compilation process
 into two parts:</p>
@@ -67,7 +65,6 @@ application&#8212;it does not have to be distributed through the Chrome Web
 Store.</p>
 <p>PNaCl is a new technology, and as such it still has a few limitations
 as compared to NaCl. These limitations are described below.</p>
-</section><section id="when-to-use-pnacl">
 <h2 id="when-to-use-pnacl">When to use PNaCl</h2>
 <p>PNaCl is the preferred toolchain for Native Client, and the only way to deploy
 Native Client modules on the open web. Unless your project is subject to one
@@ -85,8 +82,7 @@ you can still use the PNaCl toolchain and distribute your application
 through the Chrome Web Store, and thereby take advantage of the
 conveniences of PNaCl, such as not having to explicitly compile your application
 for all supported architectures.</p>
-</section><section id="when-to-use-nacl">
-<span id="id2"></span><h2 id="when-to-use-nacl"><span id="id2"></span>When to use NaCl</h2>
+<h2 id="when-to-use-nacl"><span id="id2"></span>When to use NaCl</h2>
 <p>The limitations below apply to the current release of PNaCl. If any of
 these limitations are critical for your application, you should use
 non-portable NaCl:</p>
@@ -103,6 +99,6 @@ Work is under way to enable dynamic linking in future versions of PNaCl.</li>
 like taking the address of a label for computed <code>goto</code>, or nested
 functions.</li>
 </ul>
-</section></section>
+</section>
 
 {{/partials.standard_nacl_article}}

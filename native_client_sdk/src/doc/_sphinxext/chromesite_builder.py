@@ -103,11 +103,13 @@ class ChromesiteHTMLTranslator(HTMLTranslator):
   def visit_section(self, node):
     # chromesite needs <section> instead of <div class='section'>
     self.section_level += 1
-    self.body.append(self.starttag(node, 'section'))
+    if self.section_level == 1:
+      self.body.append(self.starttag(node, 'section'))
 
   def depart_section(self, node):
+    if self.section_level == 1:
+      self.body.append('</section>')
     self.section_level -= 1
-    self.body.append('</section>')
 
   def visit_image(self, node):
     # Paths to images in .rst sources should be absolute. This visitor does the

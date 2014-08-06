@@ -22,14 +22,12 @@
 <li><a class="reference internal" href="#next-steps" id="id13">Next steps</a></li>
 </ul>
 
-</div><section id="overview">
-<h2 id="overview">Overview</h2>
+</div><h2 id="overview">Overview</h2>
 <p>This tutorial shows how to build and run a web application using Portable Native
 Client (PNaCl). This is a client-side application that uses HTML, JavaScript and
 a Native Client module written in C++. The PNaCl toolchain is used to enable
 running the Native Client module directly from a web page.</p>
 <p>It&#8217;s recommended to read the <a class="reference internal" href="/native-client/overview.html"><em>Native Client Technical Overview</em></a> prior to going through this tutorial.</p>
-<section id="what-the-application-in-this-tutorial-does">
 <h3 id="what-the-application-in-this-tutorial-does">What the application in this tutorial does</h3>
 <p>The application in this tutorial shows how to load a Native Client module in a
 web page, and how to send messages between JavaScript and the C++ code in the
@@ -39,7 +37,6 @@ Client module receives a message, it checks whether the message is equal to the
 string <code>'hello'</code>. If it is, the Native Client module returns a message saying
 <code>'hello from NaCl'</code>. A JavaScript alert panel displays the message received
 from the Native Client module.</p>
-</section><section id="communication-between-javascript-and-native-client-modules">
 <h3 id="communication-between-javascript-and-native-client-modules">Communication between JavaScript and Native Client modules</h3>
 <p>The Native Client programming model supports bidirectional communication between
 JavaScript and the Native Client module (C/C++ code). Both sides can initiate
@@ -52,12 +49,10 @@ system is part of the Pepper API, and is described in detail in
 <a class="reference internal" href="/native-client/devguide/coding/message-system.html"><em>Developer&#8217;s Guide: Messaging System</em></a>.
 It is also similar to the way <a class="reference external" href="http://en.wikipedia.org/wiki/Web_worker">web workers</a> interact with the main document in
 JavaScript.</p>
-</section></section><section id="step-1-download-and-install-the-native-client-sdk">
 <h2 id="step-1-download-and-install-the-native-client-sdk">Step 1: Download and install the Native Client SDK</h2>
 <p>Follow the instructions on the <a class="reference internal" href="/native-client/sdk/download.html"><em>Download</em></a> page to
 download and install the Native Client SDK.</p>
-</section><section id="step-2-start-a-local-server">
-<span id="tutorial-step-2"></span><h2 id="step-2-start-a-local-server"><span id="tutorial-step-2"></span>Step 2: Start a local server</h2>
+<h2 id="step-2-start-a-local-server"><span id="tutorial-step-2"></span>Step 2: Start a local server</h2>
 <p>To simulate a production environment, the SDK provides a simple web server that
 can be used to serve the application on <code>localhost</code>. A convenience Makefile
 rule called <code>serve</code> is the easiest way to invoke it:</p>
@@ -77,8 +72,7 @@ Client SDK</em></a> for more details.
 accessed at <code>http://localhost:5103</code>.</p>
 <p>Any server can be used for the purpose of development. The one provided with the
 SDK is just a convenience, not a requirement.</p>
-</section><section id="step-3-set-up-the-chrome-browser">
-<span id="tutorial-step-3"></span><h2 id="step-3-set-up-the-chrome-browser"><span id="tutorial-step-3"></span>Step 3: Set up the Chrome browser</h2>
+<h2 id="step-3-set-up-the-chrome-browser"><span id="tutorial-step-3"></span>Step 3: Set up the Chrome browser</h2>
 <p>PNaCl is enabled by default in Chrome version 31 and later. Please make sure
 that you have a suitable version to work through this tutorial. It&#8217;s also
 important to use a Chrome version that&#8217;s the same or newer than the SDK bundle
@@ -100,7 +94,6 @@ DevTools is open)&#8221;.</li>
 <li>Keep the Developer Tools pane open while developing Native Client
 applications.</li>
 </ul>
-</section><section id="step-4-stub-code-for-the-tutorial">
 <h2 id="step-4-stub-code-for-the-tutorial">Step 4: Stub code for the tutorial</h2>
 <p>The stub code for the tutorial is avalable in the SDK, in
 <code>pepper_$(VERSION)/getting_started/part1</code>. It contains the following files:</p>
@@ -124,8 +117,7 @@ on the structure of a typical Native Client application, see
 <p>The stub code is intentionally very minimal. The C++ code does not do anything
 except correctly initialize itself. The JavaScript code waits for the Native
 Client module to load and changes the status text on the web page accordingly.</p>
-</section><section id="step-5-compile-the-native-client-module-and-run-the-stub-application">
-<span id="tutorial-step-5"></span><h2 id="step-5-compile-the-native-client-module-and-run-the-stub-application"><span id="tutorial-step-5"></span>Step 5: Compile the Native Client module and run the stub application</h2>
+<h2 id="step-5-compile-the-native-client-module-and-run-the-stub-application"><span id="tutorial-step-5"></span>Step 5: Compile the Native Client module and run the stub application</h2>
 <p>To compile the Native Client module, run <code>make</code>:</p>
 <pre>
 $ cd pepper_$(VERSION)/getting_started/part1
@@ -141,7 +133,6 @@ Modules</em></a> for more details.</p>
 to <code>http://localhost:5103/part1</code>. Chrome should load the Native Client module
 successfully and the Status text should change from &#8220;LOADING...&#8221; to &#8220;SUCCESS&#8221;.
 If you run into problems, check out the <a class="reference internal" href="#tutorial-troubleshooting"><em>Troubleshooting section</em></a> below.</p>
-</section><section id="step-6-modify-the-javascript-code-to-send-a-message-to-the-native-client-module">
 <h2 id="step-6-modify-the-javascript-code-to-send-a-message-to-the-native-client-module">Step 6: Modify the JavaScript code to send a message to the Native Client module</h2>
 <p>In this step, you&#8217;ll modify the web page (<code>index.html</code>) to send a message to
 the Native Client module after the page loads the module.</p>
@@ -155,7 +146,6 @@ function moduleDidLoad() {
   HelloTutorialModule.postMessage('hello');
 }
 </pre>
-</section><section id="step-7-implement-a-message-handler-in-the-native-client-module">
 <h2 id="step-7-implement-a-message-handler-in-the-native-client-module">Step 7: Implement a message handler in the Native Client module</h2>
 <p>In this step, you&#8217;ll modify the Native Client module (<code>hello_tutorial.cc</code>) to
 respond to the message received from the JavaScript code in the application.
@@ -200,14 +190,12 @@ virtual void HandleMessage(const pp::Var&amp; var_message) {
 <a class="reference external" href="/native-client/pepper_stable/cpp/classpp_1_1_instance.html#a5dce8c8b36b1df7cfcc12e42397a35e8">pp::Instance.HandleMessage</a>
 and <a class="reference external" href="/native-client/pepper_stable/cpp/classpp_1_1_instance.html#a67e888a4e4e23effe7a09625e73ecae9">pp::Instance.PostMessage</a>
 member functions.</p>
-</section><section id="step-8-compile-the-native-client-module-and-run-the-application-again">
 <h2 id="step-8-compile-the-native-client-module-and-run-the-application-again">Step 8: Compile the Native Client module and run the application again</h2>
 <p>Compile the Native Client module by running the <code>make</code> command again.</p>
 <p>Re-run the application by reloading <code>http://localhost:5103/part1</code> in Chrome.</p>
 <p>After Chrome loads the Native Client module, you should see an alert panel
 appear with the message sent from the module.</p>
-</section><section id="troubleshooting">
-<span id="tutorial-troubleshooting"></span><h2 id="troubleshooting"><span id="tutorial-troubleshooting"></span>Troubleshooting</h2>
+<h2 id="troubleshooting"><span id="tutorial-troubleshooting"></span>Troubleshooting</h2>
 <p>If your application doesn&#8217;t run, see <a class="reference internal" href="#tutorial-step-3"><em>Step 3</em></a> above to
 verify that you&#8217;ve set up your environment correctly, including both the Chrome
 browser and the local server. Make sure that you&#8217;re running a correct version of
@@ -223,7 +211,6 @@ possibility that the Native Client module has a bug; <a class="reference interna
 <li>The <a class="reference internal" href="/native-client/devguide/coding/progress-events.html"><em>Progress Events</em></a> document
 contains some useful information about handling error events.</li>
 </ul>
-</section><section id="next-steps">
 <h2 id="next-steps">Next steps</h2>
 <ul class="small-gap">
 <li>See the <a class="reference internal" href="/native-client/devguide/coding/application-structure.html"><em>Application Structure</em></a>
@@ -241,6 +228,6 @@ what libraries have been ported for use with Native Client. If you port an
 open-source library for your own use, we recommend adding it to naclports
 (see <a class="reference external" href="http://code.google.com/p/naclports/wiki/HowTo_Checkin">How to check code into naclports</a>).</li>
 </ul>
-</section></section>
+</section>
 
 {{/partials.standard_nacl_article}}

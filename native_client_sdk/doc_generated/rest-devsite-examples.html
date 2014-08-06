@@ -2,12 +2,10 @@
 
 <section id="examples-of-rest-markup-for-chromesite-document-title">
 <h1 id="examples-of-rest-markup-for-chromesite-document-title">Examples of ReST markup for chromesite (Document title)</h1>
-<section id="document-structure">
 <h2 id="document-structure">Document structure</h2>
 <p>A document starts with a Sphinx target which serves as the document name
 throughout the tree. It can serve as a link target in other documents that want
 to link to this one (see the Links section below).</p>
-</section><section id="basic-markup">
 <h2 id="basic-markup">Basic markup</h2>
 <p>In general, follow the rules from <a class="reference external" href="http://sphinx-doc.org/rest.html">http://sphinx-doc.org/rest.html</a></p>
 <p>Some <strong>bold text</strong> and <em>italic text</em> and <code>fixed-font text</code>. Non marked-up text
@@ -20,23 +18,18 @@ wrap at 80 columns, no tabs, etc.</p>
 get adulation by the public, but because it is fun to program.
 &#8211; Linus Torvalds</div></blockquote>
 <p>Here&#8217;s an en-dash &#8211; and an m-dash &#8212; too.</p>
-<section id="unicode-samples">
 <h3 id="unicode-samples">Unicode samples</h3>
 <p>Copyright sign ©, and uacute Ú.</p>
-</section></section><section id="images">
 <h2 id="images">Images</h2>
 <p>Please use absolute paths (starting with <code>/</code>) for images:</p>
 <img alt="/native-client/images/NaclBlock.png" src="/native-client/images/NaclBlock.png" />
-</section><section id="links">
 <h2 id="links">Links</h2>
-<section id="to-other-documents-within-the-tree">
 <h3 id="to-other-documents-within-the-tree">To other documents within the tree</h3>
 <p>Internal links to other documents are created <a class="reference internal" href="/native-client/overview.html"><em>like this</em></a>. The
 document name within the angle brackets is relative to the root dir of the doc
 tree and does not have an extension.</p>
 <p>Here&#8217;s a link to a document in a subdirectory: <a class="reference internal" href="/native-client/devguide/tutorial/tutorial-part1.html"><em>the tutorial</em></a>. And a link to a subdirectory index page
 <a class="reference internal" href="/native-client/devguide/index.html"><em>devguide index</em></a>.</p>
-</section><section id="to-sections-inside-documents">
 <h3 id="to-sections-inside-documents">To sections inside documents</h3>
 <p>To internal locations within documents, labels are used. For example, this link
 goes to the label explicitly placed in this document -
@@ -44,10 +37,8 @@ goes to the label explicitly placed in this document -
 names must be unique in the tree, and can refer to anything (like images).</p>
 <p>It&#8217;s also possible to give such cross-references custom names: <a class="reference internal" href="#link-for-section-heading"><em>Same
 Section Heading</em></a>.</p>
-</section><section id="to-external-locations">
 <h3 id="to-external-locations">To external locations</h3>
 <p>Plain links can be placed like this: <a class="reference external" href="http://google.com">http://google.com</a> and also <a class="reference external" href="http://google.com">like this</a>.</p>
-</section></section><section id="definition-lists">
 <h2 id="definition-lists">Definition lists</h2>
 <p>Can be used to define a group of related terms. Internal formatting is supported
 within the definition. No special formatting needs to be done for the definition
@@ -64,7 +55,6 @@ anjeer (Iran, Pakistan), and dumur (Bengali).</dd>
 <dd>The pear is any of several tree and shrub species of genus Pyrus, in the
 family Rosaceae.</dd>
 </dl>
-</section><section id="notes-and-admonitions">
 <h2 id="notes-and-admonitions">Notes and Admonitions</h2>
 <p>The documentation server supports special &#8220;notes&#8221; that are indented and have a
 background color. We&#8217;ll generate them with the <code>Note</code> directive, providing
@@ -79,7 +69,6 @@ the class explicitly. The class is one of  <code>note</code>, <code>caution</cod
 <aside class="caution">
 Caution &#8211; you have been warned.
 </aside>
-</section><section id="source-code">
 <h2 id="source-code">Source code</h2>
 <p>Here&#8217;s source code that will be pretty-printed. It&#8217;s just a plain <code>&lt;pre&gt;</code>
 that presents pre-formatted code with coloring:</p>
@@ -100,21 +89,16 @@ $ echo &quot;hello world&quot;
 <p>By default <code>:prettyprint:</code> is <code>1</code>.</p>
 <p>For short inline code, use fixed-formatting like <code>int x = 2;</code>. Note that this
 won&#8217;t get syntax-highlighted and may be line-wrapped, so keep it very short.</p>
-</section><section id="section-heading">
-<span id="link-for-section-heading"></span><h2 id="section-heading"><span id="link-for-section-heading"></span>Section heading</h2>
+<h2 id="section-heading"><span id="link-for-section-heading"></span>Section heading</h2>
 <p>Here&#8217;s a demonstration of heading nesting levels. This is a top-level section in
 the document. The document title is the first header and it&#8217;s delimited by hash
 signes (<code>#</code>) from above and below.</p>
-<section id="subsection-heading">
 <h3 id="subsection-heading">Subsection heading</h3>
 <p>Subsection.</p>
-<section id="sub-subsection-heading">
 <h4 id="sub-subsection-heading">Sub-subsection heading</h4>
 <p>That&#8217;s pretty deep...</p>
-<section id="sub-sub-subsection-heading">
 <h5 id="sub-sub-subsection-heading">Sub-sub-subsection heading</h5>
 <p>It&#8217;s probably not the best idea to go this far (renders to <code>&lt;h5&gt;</code>).</p>
-</section></section></section></section><section id="lists">
 <h2 id="lists">Lists</h2>
 <p>Auto-numbered ordered lists:</p>
 <ol class="arabic simple">
@@ -144,7 +128,6 @@ signes (<code>#</code>) from above and below.</p>
 </li>
 <li>Back to top level</li>
 </ul>
-</section><section id="tables">
 <h2 id="tables">Tables</h2>
 <p>The full scoop on tables is <a class="reference external" href="http://sphinx-doc.org/rest.html#tables">http://sphinx-doc.org/rest.html#tables</a> and the
 Docutils pages linked from it.</p>
@@ -202,6 +185,6 @@ Docutils pages linked from it.</p>
 </tr>
 </tbody>
 </table>
-</section></section>
+</section>
 
 {{/partials.standard_nacl_article}}

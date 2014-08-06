@@ -38,7 +38,6 @@ starts playing the audio samples as soon as it is loaded into the browser. For a
 slightly more sophisticated example, see the <code>audio</code> example (source code in
 the SDK directory <code>examples/api/audio</code>), which lets users specify a frequency
 for the sine wave and click buttons to start and stop audio playback.</p>
-<section id="reference-information">
 <h2 id="reference-information">Reference information</h2>
 <p>For reference information related to the Pepper audio API, see the following
 documentation:</p>
@@ -49,7 +48,6 @@ documentation:</p>
 <li><a class="reference external" href="/native-client/pepper_stable/cpp/audio_8h">audio.h</a></li>
 <li><a class="reference external" href="/native-client/pepper_stable/c/group___enums#gaee750c350655f2fb0fe04c04029e0ff8">PP_AudioSampleRate</a></li>
 </ul>
-</section><section id="about-the-pepper-audio-api">
 <h2 id="about-the-pepper-audio-api">About the Pepper audio API</h2>
 <p>The Pepper audio API lets Native Client modules play audio streams in a
 browser. To play an audio stream, a module generates audio samples and writes
@@ -81,7 +79,6 @@ audio buffer.</li>
 <p>This basic interaction is illustrated below, and described in detail in the
 sections that follow.</p>
 <img alt="/native-client/images/pepper-audio-api.png" src="/native-client/images/pepper-audio-api.png" />
-</section><section id="digital-audio-concepts">
 <h2 id="digital-audio-concepts">Digital audio concepts</h2>
 <p>Before you use the Pepper audio API, it&#8217;s helpful to understand a few concepts
 that are fundamental to how digital audio is recorded and played back:</p>
@@ -110,7 +107,6 @@ with the following configurations:</p>
 <li><strong>bit depth</strong>: 16</li>
 <li><strong>channels</strong>: 2 (stereo)</li>
 </ul>
-</section><section id="setting-up-the-module">
 <h2 id="setting-up-the-module">Setting up the module</h2>
 <p>The code examples below describe a simple Native Client module that generates
 audio samples using a sine wave with a frequency of 440 Hz. The module starts
@@ -153,9 +149,7 @@ class SineSynthModule : public pp::Module {
   }
 };
 </pre>
-</section><section id="creating-an-audio-configuration-resource">
 <h2 id="creating-an-audio-configuration-resource">Creating an audio configuration resource</h2>
-<section id="resources">
 <h3 id="resources">Resources</h3>
 <p>Before the module can play an audio stream, it must create two resources: an
 audio configuration resource and an audio resource. Resources are handles to
@@ -166,7 +160,6 @@ when the samples in the stream&#8217;s buffer run out. An audio configuration re
 is an object that stores configuration data for an audio resource, including the
 sampling frequency of the audio samples, and the number of samples that the
 callback function must provide when the browser invokes it.</p>
-</section><section id="sample-frame-count">
 <h3 id="sample-frame-count">Sample frame count</h3>
 <p>Prior to creating an audio configuration resource, the module should call
 <code>RecommendSampleFrameCount</code> to obtain a <em>sample frame count</em> from the
@@ -192,7 +185,6 @@ the browser must invoke the callback function frequently to refill the audio
 buffer. Conversely, a large sample frame count results in higher latency but
 lower CPU usage. You should request a large sample frame count if your module
 will play long, uninterrupted audio segments.</p>
-</section><section id="supported-audio-configurations">
 <h3 id="supported-audio-configurations">Supported audio configurations</h3>
 <p>After the module obtains a sample frame count, it can create an audio
 configuration resource. Currently the Pepper audio API supports audio streams
@@ -225,14 +217,12 @@ bool SineSynthInstance::Init(uint32_t argc,
   return audio_.StartPlayback();
 }
 </pre>
-</section></section><section id="creating-an-audio-resource">
 <h2 id="creating-an-audio-resource">Creating an audio resource</h2>
 <p>Once the module has created an audio configuration resource, it can create an
 audio resource. To do so, it instantiates a <code>pp::Audio</code> object, passing in a
 pointer to the module instance, the audio configuration resource, a callback
 function, and a pointer to user data (data that is used in the callback
 function).  See the example above.</p>
-</section><section id="implementing-a-callback-function">
 <h2 id="implementing-a-callback-function">Implementing a callback function</h2>
 <p>The browser calls the callback function associated with an audio resource every
 time it needs more samples to play. The callback function can generate new
@@ -293,7 +283,6 @@ class SineSynthInstance : public pp::Instance {
   ...
 };
 </pre>
-<section id="application-threads-and-real-time-requirements">
 <h3 id="application-threads-and-real-time-requirements">Application threads and real-time requirements</h3>
 <p>The callback function runs in a background application thread. This allows audio
 processing to continue even when the application is busy doing something
@@ -325,7 +314,6 @@ callback function may not be called immediately after the call to
 another thread so that the audio stream starts playing simultaneously with
 another action in your application, you must handle such synchronization
 manually.</p>
-</section></section><section id="starting-and-stopping-playback">
 <h2 id="starting-and-stopping-playback">Starting and stopping playback</h2>
 <p>To start and stop audio playback, the module simply reacts to JavaScript
 messages.</p>
@@ -347,6 +335,6 @@ void SineSynthInstance::HandleMessage(const pp::Var&amp; var_message) {
   }
 }
 </pre>
-</section></section>
+</section>
 
 {{/partials.standard_nacl_article}}

@@ -25,14 +25,12 @@
 <li><a class="reference internal" href="#technique-4-chrome-web-store-application-with-trusted-testers" id="id17">Technique 4: Chrome Web Store application with trusted testers</a></li>
 </ul>
 
-</div><section id="introduction">
-<h2 id="introduction">Introduction</h2>
+</div><h2 id="introduction">Introduction</h2>
 <p>This document describes how to run Native Client applications during
 development.</p>
 <p>The workflow for PNaCl applications is straightfoward and will only be discussed
 briefly. For NaCl applications distributed through the web-store, there is a
 number of options and these will be discussed more in-depth.</p>
-</section><section id="portable-native-client-pnacl-applications">
 <h2 id="portable-native-client-pnacl-applications">Portable Native Client (PNaCl) applications</h2>
 <p>Running PNaCl applications from the open web is enabled in Chrome version 31 and
 above; therefore, no special provisions are required to run and test such
@@ -43,7 +41,6 @@ JavaScript.</p>
 web server to serve the application&#8217;s files. The NaCl SDK comes with a simple
 local server built in, and the process of using it to run PNaCl applications is
 described in <a class="reference internal" href="/native-client/devguide/tutorial/tutorial-part1.html#tutorial-step-2"><em>the tutorial</em></a>.</p>
-</section><section id="native-client-applications-and-the-chrome-web-store">
 <h2 id="native-client-applications-and-the-chrome-web-store">Native Client applications and the Chrome Web Store</h2>
 <p>Before reading about how to run Native Client applications, it&#8217;s important to
 understand a little bit about how Native Client applications are distributed.
@@ -136,9 +133,7 @@ running applications during development, and explain the three requirements
 listed in the table above (NaCl flag, web server, and CWS metadata). The
 subsequent sections of the document provide instructions for how to use each of
 the four techniques.</p>
-</section><section id="prerequisites">
 <h2 id="prerequisites">Prerequisites</h2>
-<section id="browser-and-pepper-versions">
 <h3 id="browser-and-pepper-versions">Browser and Pepper versions</h3>
 <p>Before you run a new build of your application, make sure that you&#8217;re using the
 correct version of Chrome. Each version of Chrome supports a corresponding
@@ -148,16 +143,13 @@ application uses. For example, if you compiled your application using the
 <code>pepper_31</code> bundle, your application uses the Pepper 31 API, and you must run
 the application in Chrome 31 or higher. To check which version of Chrome you&#8217;re
 using, type <code>about:version</code> in the Chrome address bar.</p>
-</section><section id="chrome-cache">
-<span id="cache"></span><h3 id="chrome-cache"><span id="cache"></span>Chrome Cache</h3>
+<h3 id="chrome-cache"><span id="cache"></span>Chrome Cache</h3>
 <p>Chrome caches resources aggressively. You should disable Chrome&#8217;s cache whenever
 you are developing a Native Client application in order to make sure Chrome
 loads new versions of your application. Follow the instructions <a class="reference internal" href="/native-client/devguide/tutorial/tutorial-part1.html#tutorial-step-3"><em>in the
 tutorial</em></a>.</p>
-</section></section><section id="requirements">
-<span id="id1"></span><h2 id="requirements"><span id="id1"></span>Requirements</h2>
-<section id="native-client-flag">
-<span id="flag"></span><h3 id="native-client-flag"><span id="flag"></span>Native Client flag</h3>
+<h2 id="requirements"><span id="id1"></span>Requirements</h2>
+<h3 id="native-client-flag"><span id="flag"></span>Native Client flag</h3>
 <p>Native Client is automatically enabled for applications that are installed from
 the Chrome Web Store. To enable Native Client for applications that are not
 installed from the Chrome Web Store, you must explicitly turn on the Native
@@ -184,8 +176,7 @@ outside the Chrome Web Store, you may need to enable the Native Client plugin:</
 the Native Client plugin. You do not need to relaunch Chrome after enabling
 the Native Client plugin.</li>
 </ol>
-</section><section id="web-server">
-<span id="id2"></span><h3 id="web-server"><span id="id2"></span>Web server</h3>
+<h3 id="web-server"><span id="id2"></span>Web server</h3>
 <p>For security reasons, Native Client applications must come from a server (you
 can&#8217;t simply drag HTML files into your browser). The Native Client SDK comes
 with a lightweight Python web server that you can run to serve your application
@@ -201,8 +192,7 @@ server. For example, to run the <code>flock</code> example in the SDK, start the
 and point your browser to <code>http://localhost:5103/demo/flock/</code>.</p>
 <p>Some of the applications need special flags to Chrome, and must be run with the
 <code>make run</code> command. See <a class="reference internal" href="/native-client/sdk/examples.html#id1"><em>Run the SDK examples</em></a> for more details.</p>
-<section id="chrome-web-store-metadata">
-<span id="metadata"></span><h4 id="chrome-web-store-metadata"><span id="metadata"></span>Chrome Web Store metadata</h4>
+<h4 id="chrome-web-store-metadata"><span id="metadata"></span>Chrome Web Store metadata</h4>
 <p>Applications published in the Chrome Web Store must be accompanied by CWS
 metadata; specifically, a Chrome Web Store manifest file named
 <code>manifest.json</code>, and at least one icon.</p>
@@ -255,7 +245,6 @@ information about CWS manifest files and application icons, see:</p>
 <li><a class="reference external" href="/webstore/get_started_simple">Chrome Web Store Tutorial: Getting Started</a></li>
 <li><a class="reference external" href="/extensions/manifest">Chrome Web Store Formats: Manifest Files</a></li>
 </ul>
-</section></section></section><section id="technique-1-local-server">
 <h2 id="technique-1-local-server">Technique 1: Local server</h2>
 <p>To run your application from a local server:</p>
 <ul class="small-gap">
@@ -272,7 +261,6 @@ HTML file in Chrome, e.g.:
 server if you already have one running. You must still enable the Native
 Client flag in order to run your application from the server.
 </aside>
-</section><section id="technique-2-packaged-application-loaded-as-an-unpacked-extension">
 <h2 id="technique-2-packaged-application-loaded-as-an-unpacked-extension">Technique 2: Packaged application loaded as an unpacked extension</h2>
 <p>For development purposes, Chrome lets you load a packaged application as an
 unpacked extension. To load and run your packaged application as an unpacked
@@ -308,7 +296,6 @@ Click the icon to launch the app.</li>
 application into Chrome (including troubleshooting information), see the
 <a class="reference external" href="/webstore/get_started_simple">Chrome Web Store Tutorial: Getting Started</a>.</p>
 <p>See also <a class="reference internal" href="/native-client/sdk/examples.html#run-sdk-examples-as-packaged"><em>Run the SDK examples as packaged apps</em></a>.</p>
-</section><section id="technique-3-hosted-application-loaded-as-an-unpacked-extension">
 <h2 id="technique-3-hosted-application-loaded-as-an-unpacked-extension">Technique 3: Hosted application loaded as an unpacked extension</h2>
 <p>For development purposes, Chrome lets you load a hosted application as an
 unpacked extension. To load and run your hosted application as an unpacked
@@ -357,7 +344,6 @@ Click the icon to launch the app.</li>
 <p>For additional information about how to create CWS metadata and load your
 application into Chrome (including troubleshooting information), see the
 <a class="reference external" href="/webstore/get_started_simple">Chrome Web Store Tutorial: Getting Started</a>.</p>
-</section><section id="technique-4-chrome-web-store-application-with-trusted-testers">
 <h2 id="technique-4-chrome-web-store-application-with-trusted-testers">Technique 4: Chrome Web Store application with trusted testers</h2>
 <p>When you&#8217;re ready to test your application more broadly, you can upload the
 application to the Chrome Web Store and let some trusted testers run it. Here
@@ -436,6 +422,6 @@ be able to find the application by searching in the CWS.</li>
 you must first unpublish the application. For additional information see
 <a class="reference external" href="/webstore/docs/publish">Publishing Your App</a>, and in particular <a class="reference external" href="/webstore/publish#testaccounts">Publishing
 to test accounts</a>.</p>
-</section></section>
+</section>
 
 {{/partials.standard_nacl_api}}

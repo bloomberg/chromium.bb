@@ -52,7 +52,6 @@ The Native Client add-in requires Visual Studio 2010 with Service Pack 1. No
 other versions of Visual Studio are currently supported. Visual Studio
 Express is also not supported.
 </aside>
-<section id="introduction">
 <h2 id="introduction">Introduction</h2>
 <p>The Native Client add-in for Visual Studio helps you develop your application
 more efficiently in many ways:</p>
@@ -80,7 +79,6 @@ properties of your project so it can be built and run as either a Pepper plugin
 or a Native Client module. The platforms also define the behavior associated
 with the debug command so you can test your code while running in Visual
 Studio.</p>
-</section><section id="platforms">
 <h2 id="platforms">Platforms</h2>
 <p>It is helpful to consider the Visual Studio add-in platforms in two groups. One
 contains the PPAPI platform only. The other group, which we&#8217;ll call the Native
@@ -97,7 +95,6 @@ your Native Client module, and also attaches an appropriate debugger.</p>
 code.</p>
 <p>When you run your project, Visual Studio launches the PPAPI and Native Client
 platforms in different ways, as explained in the next sections.</p>
-<section id="the-ppapi-platform">
 <h3 id="the-ppapi-platform">The PPAPI platform</h3>
 <p>The PPAPI platform builds your module as a dynamic library and launches a
 version of Chrome that’s configured to run the library as a plugin when it
@@ -109,7 +106,6 @@ existing code incrementally, rewriting functions using the PPAPI interfaces one
 piece at a time. Since the module is built with Visual Studio’s native compiler
 (MSBuild) you can use the Visual Studio debugger to control and inspect your
 code.</p>
-</section><section id="the-native-client-platforms">
 <h3 id="the-native-client-platforms">The Native Client platforms</h3>
 <p>There are four Native Client platforms. All of them can be used to build Native
 Client modules. When you run one of the Native Client platforms Visual Studio
@@ -118,7 +114,6 @@ builds the corresponding type of Native Client module (either a .nexe or
 fetches the module from the server and runs it. Visual Studio will also open a
 terminal window, launch an instance of nacl-gdb, and attach it to your module&#8217;s
 process so you can use gdb commands to debug.</p>
-<section id="nacl32-and-nacl64">
 <h4 id="nacl32-and-nacl64">NaCl32 and NaCl64</h4>
 <p>The platforms named NaCl32 and NaCl64 are targeted at x86 32-bit and 64-bit
 systems respectively. You need both platforms to build a full set of .nexe
@@ -126,7 +121,6 @@ files when you are ready to distribute your application. Note, however, that
 when you are testing in Visual Studio you must select the NaCl64 platform
 (because Chrome for Windows runs Native Client in a 64-bit process). If you try
 to run from the NaCl32 platform you will get an error message.</p>
-</section><section id="naclarm">
 <h4 id="naclarm">NaClARM</h4>
 <p>The NaClARM platform is targeted at ARM-based processors. You can build .nexe
 files with the NaClARM platform in Visual Studio but you cannot run them from
@@ -138,7 +132,6 @@ testing your module in Chrome.</p>
 <aside class="note">
 Note: The NaClARM platform currently supports the newlib toolchain only.
 </aside>
-</section><section id="pnacl">
 <h4 id="pnacl">PNaCl</h4>
 <p>The PNaCl (portable NaCl) platform is included in the Visual Studio Native
 Client add-in versions 1.1 and higher. It supports the .pexe file format. A
@@ -153,7 +146,6 @@ it as if you were working with a NaCl64 platform.</p>
 <aside class="note">
 Note: The PNaCl platform currently supports the newlib toolchain only.
 </aside>
-</section></section></section><section id="installing-the-add-in">
 <h2 id="installing-the-add-in">Installing the add-in</h2>
 <p>In order to use the Native Client Visual Studio add-in, your development
 environment should include:</p>
@@ -168,7 +160,6 @@ your regular version of Chrome.</li>
 bundle or greater. The version of Chrome that you use must be equal or
 greater than the version of the SDK bundle.</li>
 </ul>
-<section id="set-environment-variables">
 <h3 id="set-environment-variables">Set environment variables</h3>
 <p>Before you run the installer you must define two Windows environment variables.
 They point to the bundle in the Native Client SDK that you use to build your
@@ -200,7 +191,6 @@ SxS\Application\chrome.exe</code></td>
 </tr>
 </tbody>
 </table>
-</section><section id="download-the-add-in">
 <h3 id="download-the-add-in">Download the add-in</h3>
 <p>The Native Client Visual Studio add-in is a separate bundle in the SDK named
 <code>vs_addin</code>. Open a command prompt window, go to the top-level SDK directory,
@@ -214,7 +204,6 @@ installer files, and a directory of examples.</p>
 Note: The vs_addin bundle is only visible when you run <code>naclsdk</code> on a
 Windows system.
 </aside>
-</section><section id="run-the-installer">
 <h3 id="run-the-installer">Run the installer</h3>
 <p>The installer script is located inside the <code>vs_addin</code> folder in the SDK.
 Right click on the file <code>install.bat</code> and run it as administrator.</p>
@@ -245,12 +234,10 @@ administrator.</p>
 selecting Add-in Manager in the Visual Studio Tools menu. If the add-in has
 been installed it will appear in the list of available add-ins. Select it and
 read its description.</p>
-</section></section><section id="try-the-hello-world-gles-sample-project">
 <h2 id="try-the-hello-world-gles-sample-project">Try the <code>hello_world_gles</code> sample project</h2>
 <p>The add-in comes with an examples directory. Open the sample project
 <code>examples\hello_world_gles\hello_world_gles.sln</code>. This project is an
 application that displays a spinning cube.</p>
-<section id="select-the-nacl64-platform">
 <h3 id="select-the-nacl64-platform">Select the NaCl64 platform</h3>
 <p>Open the sample project in Visual Studio, select the <code>Configuration Manager</code>,
 and confirm that the active solution configuration is <code>Debug</code> and the active
@@ -259,7 +246,6 @@ project platform is <code>NaCl64</code>. Note that the platform for the
 <code>Configuration Manager</code> from the <code>Build</code> menu or the project’s
 <code>Properties</code> window.)</p>
 <img alt="/native-client/images/visualstudio1.png" src="/native-client/images/visualstudio1.png" />
-</section><section id="build-and-run-the-project">
 <h3 id="build-and-run-the-project">Build and run the project</h3>
 <p>Use the debugging command (F5) to build and run the project. As the wheels
 start to turn, you may be presented with one or more alerts. They are benign;
@@ -287,7 +273,6 @@ Stop the debugging session by closing the Chrome window, or select the stop
 debugging command from the debug menu. The nacl-gdb window will close when
 you stop running the program.</li>
 </ol>
-</section><section id="test-the-nacl-gdb-debugger">
 <h3 id="test-the-nacl-gdb-debugger">Test the nacl-gdb debugger</h3>
 <p>Add a breakpoint at the SwapBuffers call in the function MainLoop, which is in
 hello_world.cc.</p>
@@ -297,25 +282,21 @@ nacl-gcb and the program will pause there. Type c to continue running. You can
 use gdb commands to set more breakpoints and step through the application. For
 details, see <a class="reference internal" href="/native-client/devguide/devcycle/debugging.html#using-gdb"><em>Debugging with nacl-gdb</em></a> (scroll down to the end
 of the section to see some commonly used gdb commands).</p>
-</section><section id="test-the-visual-studio-debugger">
 <h3 id="test-the-visual-studio-debugger">Test the Visual Studio debugger</h3>
 <p>If you’ve installed the <code>PPAPI</code> platform, go back to the <code>Configuration
 Manager</code> and select the <code>PPAPI</code> platform. This time when Chrome launches the
 <code>nacl-gdb</code> window will not appear; the Visual Studio debugger is fully
 engaged and on the job.</p>
-</section><section id="inspect-the-platform-properties">
 <h3 id="inspect-the-platform-properties">Inspect the platform properties</h3>
 <p>At this point, it may be helpful to take a look at the properties that are
 associated with the PPAPI and Native Client platforms&#8212;see the settings in the
 sample project as an example.</p>
-</section></section><section id="developing-for-native-client-in-visual-studio">
 <h2 id="developing-for-native-client-in-visual-studio">Developing for Native Client in Visual Studio</h2>
 <p>After you’ve installed the add-in and tried the sample project, you’re ready to
 start working with your own code. You can reuse the sample project and the
 PPAPI and Native Client platforms it already has by replacing the source code
 with your own. More likely, you will add the platforms to an existing project,
 or to a new project that you create from scratch.</p>
-<section id="adding-platforms-to-a-project">
 <h3 id="adding-platforms-to-a-project">Adding platforms to a project</h3>
 <p>Follow these steps to add the Native Client and PPAPI platforms to a project:</p>
 <ol class="arabic simple">
@@ -345,7 +326,6 @@ Configuration type is correct:<ul class="small-gap">
 </ul>
 </li>
 </ol>
-</section><section id="selecting-a-toolchain">
 <h3 id="selecting-a-toolchain">Selecting a toolchain</h3>
 <p>When you build a Native Client module directly from the SDK you can use two
 different toolchains, newlib or glibc. See <a class="reference internal" href="/native-client/devguide/devcycle/dynamic-loading.html"><em>Dynamic Linking and Loading
@@ -359,7 +339,6 @@ Currently, the NaClARM and PNaCl platforms only support the newlib toolchain.
 </aside>
 <p>There is no toolchain property for the PPAPI platform. The PPAPI platform uses
 the toolchain and libraries that come with Visual Studio.</p>
-</section><section id="adding-libraries-to-a-project">
 <h3 id="adding-libraries-to-a-project">Adding libraries to a project</h3>
 <p>If your Native Client application requires libraries that are not included in
 the SDK you must add them to the project properties (under <code>Configuration
@@ -368,11 +347,9 @@ Visual Studio project. This list of dependencies is a semi-colon delimited
 list. On the PPAPI platform the library names include the .lib extension (e.g.,
 <code>ppapi_cpp.lib;ppapi.lib</code>). On the Native Client platforms the extension is
 excluded (e.g., <code>ppapi_cpp;ppapi</code>).</p>
-</section><section id="running-a-web-server">
 <h3 id="running-a-web-server">Running a web server</h3>
 <p>In order for the Visual Studio add-in to test your Native Client module, you
 must serve the module from a web server. There are two options:</p>
-<section id="running-your-own-server">
 <h4 id="running-your-own-server">Running your own server</h4>
 <p>When you start a debug run Visual Studio launches Chrome and tries to connect
 to the web server at the address found in the Chrome command arguments (see the
@@ -382,7 +359,6 @@ specify its address in the command arguments property, and confirm that your
 server is running before starting a debug session. Also be certain that the
 server has all the files it needs to deliver a Native Client module (see
 “Keeping track of all the pieces”, below).</p>
-</section><section id="running-the-sdk-server">
 <h4 id="running-the-sdk-server">Running the SDK server</h4>
 <p>If there is no web server running at the specified port, Visual Studio will try
 to launch the simple Python web server that comes with the Native Client SDK.
@@ -392,7 +368,6 @@ It looks for a copy of the server in the SDK itself (at
 Visual Studio launches the server. The server output appears in Visual Studio’s
 Output window, in the pane named “Native Client Web Server Output”. A server
 launched in this way is terminated when the debugging session ends.</p>
-</section></section><section id="keeping-track-of-all-the-pieces">
 <h3 id="keeping-track-of-all-the-pieces">Keeping track of all the pieces</h3>
 <p>No matter where the web server lives or how it’s launched you must make sure
 that it has all the files that your application needs:</p>
@@ -433,7 +408,6 @@ contains html files built with both toolchains (<code>index_glibc.html</code> an
 <code>index_newlib.html</code>). The .nexe and .nmf files are found in the newlib and
 glibc subfolders. For additional information about the parts of a Native Client
 application, see <a class="reference internal" href="/native-client/devguide/coding/application-structure.html"><em>Application Structure</em></a>.</p>
-</section><section id="using-the-debuggers">
 <h3 id="using-the-debuggers">Using the debuggers</h3>
 <p>PPAPI plugins are built natively by Visual Studio’s compiler (MSBuild), and
 work with Visual Studio’s debugger in the usual way. You can set breakpoints in
@@ -464,12 +438,10 @@ debugger to attach. If you use the Start Without Debugging command, no debugger
 attaches and Chrome just waits patiently. To use Start Without Debugging,
 switch to the Release configuration, or manually remove the offending argument
 from the <code>Command Arguments</code> property.</p>
-</section><section id="disable-chrome-caching">
 <h3 id="disable-chrome-caching">Disable Chrome caching</h3>
 <p>When you debug with a Native Client platform you might want to <a class="reference internal" href="/native-client/devguide/devcycle/running.html#cache"><em>disable
 Chrome&#8217;s cache</em></a> to be sure you are testing your latest and greatest
 code.</p>
-</section><section id="a-warning-about-postmessage">
 <h3 id="a-warning-about-postmessage">A warning about PostMessage</h3>
 <p>Some Windows libraries define the symbol <code>PostMessage</code> as <code>PostMessageW</code>.
 This can cause havoc if you are working with the PPAPI platform and you use the
@@ -482,7 +454,6 @@ testing on the PPAPI platform. Here it is:</p>
 #undef PostMessage
 #endif
 </pre>
-</section><section id="porting-windows-applications-to-native-client-in-visual-studio">
 <h3 id="porting-windows-applications-to-native-client-in-visual-studio">Porting Windows applications to Native Client in Visual Studio</h3>
 <p>At Google I/O 2012 we demonstrated how to port a Windows desktop application to
 Native Client in 60 minutes. The <a class="reference external" href="http://www.youtube.com/watch?v=1zvhs5FR0X8&amp;feature=plcp">video</a> is available to
@@ -503,13 +474,11 @@ can run in either the <code>PPAPI</code> or the <code>NaCl64</code> platform.</p
 progressively defining the symbols STEP1 through STEP6 in the source. Inline
 comments explain how each successive step changes the code. View the example
 code to see how it&#8217;s actually done. Here is a summary of the process:</p>
-<section id="win32-platform">
 <h4 id="win32-platform">Win32 Platform</h4>
 <dl class="docutils">
 <dt>STEP1 Run the desktop application</dt>
 <dd>Begin by running the original Windows application in the Win32 platform.</dd>
 </dl>
-</section><section id="ppapi-platform">
 <h4 id="ppapi-platform">PPAPI Platform</h4>
 <dl class="docutils">
 <dt>STEP2 Launch Chrome with an empty Native Client module</dt>
@@ -536,13 +505,12 @@ porting pieces of the application one feature at a time.</dd>
 <dd>All the Windows code is def&#8217;d out, proving we are PPAPI-compliant. The
 functional code that is running is the same as STEP5.</dd>
 </dl>
-</section><section id="nacl64-platform">
 <h4 id="nacl64-platform">NaCl64 Platform</h4>
 <dl class="docutils">
 <dt>Run the Native Client Module in the NaCl64 platform</dt>
 <dd>You are still running the STEP6 code, but as a Native Client module rather
 than a Pepper plugin.</dd>
 </dl>
-</section></section></section></section>
+</section>
 
 {{/partials.standard_nacl_api}}

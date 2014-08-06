@@ -18,7 +18,6 @@
 </div><p>This document describes how to distribute Portable Native Client applications
 on the web, and Native Client applications through the
 <a class="reference external" href="/webstore">Chrome Web Store</a> (CWS).</p>
-<section id="portable-native-client">
 <h2 id="portable-native-client">Portable Native Client</h2>
 <p>Portable Native Client is enabled by default for web pages, so no separate
 distribution step is requred. Making PNaCl a part of your web application is as
@@ -30,7 +29,6 @@ abiding by the <a class="reference external" href="http://en.wikipedia.org/wiki/
 <strong>pexe</strong> must either be served from the same domain with the HTML, or the <a class="reference external" href="http://en.wikipedia.org/wiki/Cross-origin_resource_sharing">CORS
 mechanism</a> should
 be used to safely host them on a different domain.</p>
-</section><section id="non-portable-native-client">
 <h2 id="non-portable-native-client">Non-portable Native Client</h2>
 <p>NaCl modules are only allowed for applications distributed through the <a class="reference external" href="https://chrome.google.com/webstore/category/apps">Chrome
 Web Store (CWS)</a>
@@ -49,15 +47,13 @@ well. Here are a few pointers to relevant documentation:</p>
 </ul>
 <p>In this document, we&#8217;ll focus only on distribution issues specific to
 applications that contain NaCl modules.</p>
-<section id="packaged-application">
-<span id="distributing-packaged"></span><h3 id="packaged-application"><span id="distributing-packaged"></span>Packaged application</h3>
+<h3 id="packaged-application"><span id="distributing-packaged"></span>Packaged application</h3>
 <p>A packaged application is a special zip file (with a .crx extension) hosted in
 the Chrome Web Store. This file contains all of the application parts: A Chrome
 Web Store manifest file (manifest.json), an icon, and all of the regular Native
 Client application files. Refer to
 <a class="reference external" href="/apps/about_apps">Packaged Apps</a>
 for more information about creating a packaged application.</p>
-<section id="reducing-the-size-of-the-user-download-package">
 <h4 id="reducing-the-size-of-the-user-download-package">Reducing the size of the user download package</h4>
 <aside class="note">
 <strong>Tip:</strong>
@@ -236,8 +232,7 @@ function getPath(name) {
 <li><p class="first">Test your app, create a zip file, and upload the app to the CWS as before.</p>
 </li>
 </ol>
-</section><section id="additional-considerations-for-a-packaged-application">
-<span id="additional-considerations-packaged"></span><h4 id="additional-considerations-for-a-packaged-application"><span id="additional-considerations-packaged"></span>Additional considerations for a packaged application</h4>
+<h4 id="additional-considerations-for-a-packaged-application"><span id="additional-considerations-packaged"></span>Additional considerations for a packaged application</h4>
 <ul class="small-gap">
 <li>In the description of your application in the CWS, make sure to mention that
 your application is a Native Client application that only works with the
@@ -262,18 +257,15 @@ uses the HTML5 File API.</li>
 <li>You can place your application in the Google Web Store with access only to
 certain people for testing. See <a class="reference external" href="/webstore/publish">Publishing to test accounts</a> for more information.</li>
 </ul>
-</section></section><section id="extension">
 <h3 id="extension">Extension</h3>
 <p>The NaCl-specific notes for a <a class="reference internal" href="#distributing-packaged"><em>package application</em></a>
 apply to extensions as well.</p>
-</section><section id="hosted-application">
 <h3 id="hosted-application">Hosted application</h3>
 <p>The .html file, .nmf file (Native Client manifest file), and .nexe files must
 be served from the same domain, and the Chrome Web Store manifest file must
 specify the correct, verified domain. Other files can be served from the same
 or another domain.</p>
 <p>In addition, see <a class="reference internal" href="#additional-considerations-packaged"><em>Additional considerations for a packaged application</em></a>.</p>
-</section><section id="registering-native-client-modules-to-handle-mime-types">
 <h3 id="registering-native-client-modules-to-handle-mime-types">Registering Native Client modules to handle MIME types</h3>
 <p>If you want Chrome to use a Native Client module to display a particular type
 of content, you can associate the MIME type of that content with the Native
@@ -322,6 +314,6 @@ example shows an extension with two .nmf files that handle three MIME types.</p>
 <p>The <code>nacl_modules</code> attribute is optional&#8212;specify this attribute only if
 you want Chrome to use a Native Client module to display a particular type of
 content.</p>
-</section></section></section>
+</section>
 
 {{/partials.standard_nacl_article}}

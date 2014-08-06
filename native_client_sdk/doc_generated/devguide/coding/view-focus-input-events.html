@@ -34,7 +34,6 @@ ppapi_simple library that can be used to to implement most of the
 boiler plate.  The <code>pi_generator</code> example in
 <code>/examples/demo/pi_generator</code> uses ppapi_simple to manage view
 change events and 2D graphics.</p>
-<section id="overview">
 <h2 id="overview">Overview</h2>
 <p>When a user interacts with the web page using a keyboard, mouse or some other
 input device, the browser generates input events.  In a traditional web
@@ -156,9 +155,7 @@ branches accordingly.</td>
 </table>
 <p>These interfaces are found in the <a class="reference external" href="/native-client/pepper_stable/cpp/classpp_1_1_instance">pp::Instance class</a>.  The sections below
 provide examples of how to handle these events.</p>
-</section><section id="handling-browser-events">
 <h2 id="handling-browser-events">Handling browser events</h2>
-<section id="didchangeview">
 <h3 id="didchangeview">DidChangeView()</h3>
 <p>In the <code>mouse_lock</code> example, <code>DidChangeView()</code> checks the previous size
 of instance&#8217;s rectangle versus the new size.  It also compares
@@ -195,7 +192,6 @@ void MouseLockInstance::DidChangeView(const pp::View&amp; view) {
 <li><a class="reference external" href="/native-client/pepper_stable/cpp/classpp_1_1_image_data">pp::ImageData class</a></li>
 <li><a class="reference external" href="/native-client/pepper_stable/cpp/classpp_1_1_graphics2_d">pp::Graphics2D class</a></li>
 </ul>
-</section><section id="didchangefocus">
 <h3 id="didchangefocus">DidChangeFocus()</h3>
 <p><code>DidChangeFocus()</code> is called when you click inside or outside of a
 module&#8217;s instance in the web page. When the instance goes out
@@ -208,13 +204,11 @@ void DidChangeFocus(bool focus) {
   // the instance.
 }
 </pre>
-</section></section><section id="handling-input-events">
 <h2 id="handling-input-events">Handling input events</h2>
 <p>Input events are events that occur when the user interacts with a
 module instance using the mouse, keyboard, or other input device
 (e.g., touch screen). This section describes how the <code>input_events</code>
 example handles input events.</p>
-<section id="registering-a-module-to-accept-input-events">
 <h3 id="registering-a-module-to-accept-input-events">Registering a module to accept input events</h3>
 <p>Before your module can handle these events, you must register your
 module to accept input events using <code>RequestInputEvents()</code> for mouse
@@ -238,7 +232,6 @@ combination of flags that identify the class of events that the instance is
 requesting to receive. Input event classes are defined in the
 <a class="reference external" href="/native-client/pepper_stable/c/group___enums.html#gafe68e3c1031daa4a6496845ff47649cd">PP_InputEvent_Class</a>
 enumeration in <a class="reference external" href="/native-client/pepper_stable/c/ppb__input__event_8h">ppb_input_event.h</a>.</p>
-</section><section id="determining-and-branching-on-event-types">
 <h3 id="determining-and-branching-on-event-types">Determining and branching on event types</h3>
 <p>In a typical implementation, the <code>HandleInputEvent()</code> function determines the
 type of each event using the <code>GetType()</code> function found in the <code>InputEvent</code>
@@ -330,7 +323,6 @@ following documentation:</p>
 <li><a class="reference external" href="/native-client/pepper_stable/c/classpp_1_1_wheel_input_event">pp::WheelInputEvent class</a></li>
 <li><a class="reference external" href="/native-client/pepper_stable/c/classpp_1_1_keyboard_input_event">pp::KeyboardInputEvent class</a></li>
 </ul>
-</section><section id="threading-and-blocking">
 <h3 id="threading-and-blocking">Threading and blocking</h3>
 <p><code>HandleInputEvent()</code> in this example runs on the main module thread.
 However, the bulk of the work happens on a separate worker thread (see
@@ -338,6 +330,6 @@ However, the bulk of the work happens on a separate worker thread (see
 the <code>event_queue_</code> and the worker thread takes events from the
 <code>event_queue_</code>. This processing happens independently of the main
 thread, so as not to slow down the browser.</p>
-</section></section></section>
+</section>
 
 {{/partials.standard_nacl_api}}

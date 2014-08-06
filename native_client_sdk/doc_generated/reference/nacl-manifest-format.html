@@ -23,13 +23,11 @@
 </li>
 </ul>
 
-</div><section id="overview">
-<h2 id="overview">Overview</h2>
+</div><h2 id="overview">Overview</h2>
 <p>Every Native Client application has a <a class="reference external" href="http://www.json.org/">JSON-formatted</a>
 NaCl Manifest File (<code>nmf</code>). The <code>nmf</code> tells the browser where to
 download and load your Native Client application files and libraries.
 The file can also contain configuration options.</p>
-</section><section id="field-summary">
 <h2 id="field-summary">Field summary</h2>
 <p>The following shows the supported top-level manifest fields. There is one
 section that discusses each field in detail.  The only field that is required
@@ -43,9 +41,7 @@ is the <code>program</code> field.</p>
   &quot;files&quot;: { ... }
 }
 </pre>
-</section><section id="field-details">
 <h2 id="field-details">Field details</h2>
-<section id="program">
 <h3 id="program">program</h3>
 <p>The <code>program</code> field specifies the main program that will be loaded
 in the Native Client runtime environment. For a Portable Native Client
@@ -56,7 +52,6 @@ are &#8220;arm&#8221;, &#8220;x86-32&#8221;, and &#8220;x86-64&#8221;). For a dy
 <code>program</code> is the dynamic loader used to load the dynamic executable
 and its dynamic libraries.  See the <a class="reference internal" href="#nmf-url-resolution"><em>semantics</em></a>
 section for the rules on URL resolution.</p>
-<section id="example-of-a-program-for-portable-native-client">
 <h4 id="example-of-a-program-for-portable-native-client">Example of a <code>program</code> for Portable Native Client:</h4>
 <pre class="prettyprint">
 {
@@ -97,7 +92,6 @@ an <code>optlevel</code> to best balance load time and application performance.<
 for debugging. The <code>url</code> provided in this section will be used when Native
 Client debugging is enabled with either the <code>--enable-nacl-debug</code> Chrome
 command line switch, or via <code>about://flags</code>.</p>
-</section><section id="example-of-a-program-for-statically-linked-native-client-executables">
 <h4 id="example-of-a-program-for-statically-linked-native-client-executables">Example of a <code>program</code> for statically linked Native Client executables</h4>
 <pre class="prettyprint">
 {
@@ -110,7 +104,6 @@ command line switch, or via <code>about://flags</code>.</p>
   }
 }
 </pre>
-</section><section id="example-of-a-program-for-dynamically-linked-native-client-executables">
 <h4 id="example-of-a-program-for-dynamically-linked-native-client-executables">Example of a <code>program</code> for dynamically linked Native Client executables</h4>
 <pre class="prettyprint">
 {
@@ -130,7 +123,6 @@ command line switch, or via <code>about://flags</code>.</p>
   }
 }
 </pre>
-</section></section><section id="files">
 <h3 id="files">files</h3>
 <p>The <code>files</code> field specifies a dictionary of file resources to be used by a
 Native Client application. This is not supported and not needed by Portable
@@ -193,9 +185,7 @@ file systems and memory-based file systems. The Native Client SDK includes
 helpful tools for determining library dependencies and generating NaCl manifest
 files for programs that that use dynamic linking. See
 <a class="reference internal" href="/native-client/devguide/devcycle/dynamic-loading.html#dynamic-loading-manifest"><em>Generating a Native Client manifest file for a dynamically linked application</em></a>.</p>
-</section></section><section id="semantics">
 <h2 id="semantics">Semantics</h2>
-<section id="schema-validation">
 <h3 id="schema-validation">Schema validation</h3>
 <p>Manifests are validated before the program files are downloaded.
 Schema validation checks the following properties:</p>
@@ -209,7 +199,6 @@ in &#8220;program&#8221; and in every entry within &#8220;files&#8221;.</li>
 <p>If the manifest contains a field that is not in the official
 set of supported fields, it is ignored. This allows the grammar to be
 extended without breaking compatibility with older browsers.</p>
-</section><section id="nexe-matching">
 <h3 id="nexe-matching">Nexe matching</h3>
 <p>For Portable Native Client, there are no architecture variations, so
 matching is simple.</p>
@@ -217,7 +206,6 @@ matching is simple.</p>
 looking up the browser&#8217;s current architecture in the <code>&quot;program&quot;</code>
 dictionary. Failure to provide an entry for the browser&#8217;s architecture
 will result in a load error.</p>
-</section><section id="file-matching">
 <h3 id="file-matching">File matching</h3>
 <p>All files (shared objects and other assets, typically) are looked up
 by a UTF8 string that is the file name. To load a library with a certain
@@ -231,7 +219,6 @@ non-architecture-specific asset files. Note that <code>&quot;files&quot;</code> 
 useful for files that must be loaded early in application startup
 (before PPAPI interfaces are initialized to provide the standard
 file loading mechanisms).</p>
-</section><section id="url-of-the-nmf-file-from-embed-src-and-data-uri">
 <h3 id="url-of-the-nmf-file-from-embed-src-and-data-uri">URL of the nmf file, from <code>&lt;embed&gt;</code> src, and data URI</h3>
 <p>The URL for the manifest file should be specified by the <code>src</code> attribute
 of the <code>&lt;embed&gt;</code> tag for a Native Client module instance. The URL for
@@ -240,11 +227,10 @@ a manifest file can refer to an actual file, or it can be a
 representing the contents of the file. Specifying the <code>nmf</code> contents
 inline with a data URI can help reduce the amount of network traffic
 required to load the Native Client application.</p>
-</section><section id="url-resolution">
-<span id="nmf-url-resolution"></span><h3 id="url-resolution"><span id="nmf-url-resolution"></span>URL resolution</h3>
+<h3 id="url-resolution"><span id="nmf-url-resolution"></span>URL resolution</h3>
 <p>All URLs contained in a manifest are resolved relative to the URL of
 the manifest. If the manifest was specified as a data URI, the URLs must
 all be absolute.</p>
-</section></section></section>
+</section>
 
 {{/partials.standard_nacl_article}}

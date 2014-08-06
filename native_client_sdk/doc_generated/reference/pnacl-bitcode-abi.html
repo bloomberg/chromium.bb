@@ -54,8 +54,7 @@
 </li>
 </ul>
 
-</div><section id="introduction">
-<h2 id="introduction">Introduction</h2>
+</div><h2 id="introduction">Introduction</h2>
 <p>This document is a reference manual for the PNaCl bitcode format. It describes
 the bitcode on a <em>semantic</em> level; the physical encoding level will be described
 elsewhere. For the purpose of this document, the textual form of LLVM IR is
@@ -65,10 +64,8 @@ version 3.3, many sections in this document point to a relevant section
 of the LLVM language reference manual. Only the changes, restrictions
 and variations specific to PNaCl are described&#8212;full semantic
 descriptions are not duplicated from the LLVM reference manual.</p>
-</section><section id="high-level-structure">
 <h2 id="high-level-structure">High Level Structure</h2>
 <p>A PNaCl portable executable (<strong>pexe</strong> in short) is a single LLVM IR module.</p>
-<section id="data-model">
 <h3 id="data-model">Data Model</h3>
 <p>The data model for PNaCl bitcode is fixed at little-endian ILP32: pointers are
 32 bits in size. 64-bit integer types are also supported natively via the i64
@@ -76,24 +73,20 @@ type (for example, a front-end can generate these from the C/C++ type
 <code>long long</code>).</p>
 <p>Floating point support is fixed at IEEE 754 32-bit and 64-bit values (f32 and
 f64, respectively).</p>
-</section><section id="linkage-types">
-<span id="bitcode-linkagetypes"></span><h3 id="linkage-types"><span id="bitcode-linkagetypes"></span>Linkage Types</h3>
+<h3 id="linkage-types"><span id="bitcode-linkagetypes"></span>Linkage Types</h3>
 <p><a class="reference external" href="http://llvm.org/releases/3.3/docs/LangRef.html#linkage">LLVM LangRef: Linkage Types</a></p>
 <p>The linkage types supported by PNaCl bitcode are <code>internal</code> and <code>external</code>.
 A single function in the pexe, named <code>_start</code>, has the linkage type
 <code>external</code>. All the other functions and globals have the linkage type
 <code>internal</code>.</p>
-</section><section id="calling-conventions">
 <h3 id="calling-conventions">Calling Conventions</h3>
 <p><a class="reference external" href="http://llvm.org/releases/3.3/docs/LangRef.html#callingconv">LLVM LangRef: Calling Conventions</a></p>
 <p>The only calling convention supported by PNaCl bitcode is <code>ccc</code> - the C
 calling convention.</p>
-</section><section id="visibility-styles">
 <h3 id="visibility-styles">Visibility Styles</h3>
 <p><a class="reference external" href="http://llvm.org/releases/3.3/docs/LangRef.html#visibility-styles">LLVM LangRef: Visibility Styles</a></p>
 <p>PNaCl bitcode does not support visibility styles.</p>
-</section><section id="global-variables">
-<span id="bitcode-globalvariables"></span><h3 id="global-variables"><span id="bitcode-globalvariables"></span>Global Variables</h3>
+<h3 id="global-variables"><span id="bitcode-globalvariables"></span>Global Variables</h3>
 <p><a class="reference external" href="http://llvm.org/releases/3.3/docs/LangRef.html#globalvars">LLVM LangRef: Global Variables</a></p>
 <p>Restrictions on global variables:</p>
 <ul class="small-gap">
@@ -124,7 +117,6 @@ negative):</li>
 </pre>
 <p>A <em>CompoundElement</em> is a unnamed, packed struct containing more than one
 <em>SimpleElement</em>.</p>
-</section><section id="functions">
 <h3 id="functions">Functions</h3>
 <p><a class="reference external" href="http://llvm.org/releases/3.3/docs/LangRef.html#functionstructure">LLVM LangRef: Functions</a></p>
 <p>The restrictions on <a class="reference internal" href="#bitcode-linkagetypes"><em>linkage types</em></a>, calling
@@ -137,41 +129,33 @@ return type).</li>
 <li>Functions with a variable number of arguments (<em>vararg</em>).</li>
 <li>Alignment (<code>align</code>).</li>
 </ul>
-</section><section id="aliases">
 <h3 id="aliases">Aliases</h3>
 <p><a class="reference external" href="http://llvm.org/releases/3.3/docs/LangRef.html#aliases">LLVM LangRef: Aliases</a></p>
 <p>PNaCl bitcode does not support aliases.</p>
-</section><section id="named-metadata">
 <h3 id="named-metadata">Named Metadata</h3>
 <p><a class="reference external" href="http://llvm.org/releases/3.3/docs/LangRef.html#namedmetadatastructure">LLVM LangRef: Named Metadata</a></p>
 <p>While PNaCl bitcode has provisions for debugging metadata, it is not considered
 part of the stable ABI. It exists for tool support and should not appear in
 distributed pexes.</p>
 <p>Other kinds of LLVM metadata are not supported.</p>
-</section><section id="module-level-inline-assembly">
 <h3 id="module-level-inline-assembly">Module-Level Inline Assembly</h3>
 <p><a class="reference external" href="http://llvm.org/releases/3.3/docs/LangRef.html#moduleasm">LLVM LangRef: Module-Level Inline Assembly</a></p>
 <p>PNaCl bitcode does not support inline assembly.</p>
-</section><section id="volatile-memory-accesses">
 <h3 id="volatile-memory-accesses">Volatile Memory Accesses</h3>
 <p><a class="reference external" href="http://llvm.org/releases/3.3/docs/LangRef.html#volatile">LLVM LangRef: Volatile Memory Accesses</a></p>
 <p>PNaCl bitcode does not support volatile memory accesses. The
 <code>volatile</code> attribute on loads and stores is not supported. See the
 <a class="reference internal" href="/native-client/reference/pnacl-c-cpp-language-support.html"><em>PNaCl C/C++ Language Support</em></a> for more details.</p>
-</section><section id="memory-model-for-concurrent-operations">
 <h3 id="memory-model-for-concurrent-operations">Memory Model for Concurrent Operations</h3>
 <p><a class="reference external" href="http://llvm.org/releases/3.3/docs/LangRef.html#memmodel">LLVM LangRef: Memory Model for Concurrent Operations</a></p>
 <p>See the <a class="reference external" href="PNaClDeveloperGuide.html">PNaCl Developer&#8217;s Guide</a> for more
 details.</p>
-</section><section id="fast-math-flags">
 <h3 id="fast-math-flags">Fast-Math Flags</h3>
 <p><a class="reference external" href="http://llvm.org/releases/3.3/docs/LangRef.html#fastmath">LLVM LangRef: Fast-Math Flags</a></p>
 <p>Fast-math mode is not currently supported by the PNaCl bitcode.</p>
-</section></section><section id="type-system">
 <h2 id="type-system">Type System</h2>
 <p><a class="reference external" href="http://llvm.org/releases/3.3/docs/LangRef.html#typesystem">LLVM LangRef: Type System</a></p>
 <p>The LLVM types allowed in PNaCl bitcode are restricted, as follows:</p>
-<section id="scalar-types">
 <h3 id="scalar-types">Scalar types</h3>
 <ul class="small-gap">
 <li><p class="first">The only scalar types allowed are integer, float (32-bit floating point),
@@ -183,7 +167,6 @@ values are i32 and i64.</li>
 </ul>
 </li>
 </ul>
-</section><section id="vector-types">
 <h3 id="vector-types">Vector types</h3>
 <p>The only vector types allowed are:</p>
 <ul class="small-gap">
@@ -193,12 +176,10 @@ values are i32 and i64.</li>
 element counts listed previously (their width is therefore not
 128-bits).</li>
 </ul>
-</section><section id="array-and-struct-types">
 <h3 id="array-and-struct-types">Array and struct types</h3>
 <p>Array and struct types are only allowed in
 <a class="reference internal" href="#bitcode-globalvariables"><em>global variable initializers</em></a>.</p>
-</section><section id="pointer-types">
-<span id="bitcode-pointertypes"></span><h3 id="pointer-types"><span id="bitcode-pointertypes"></span>Pointer types</h3>
+<h3 id="pointer-types"><span id="bitcode-pointertypes"></span>Pointer types</h3>
 <p>Only the following pointer types are allowed:</p>
 <ul class="small-gap">
 <li>Pointers to valid PNaCl bitcode scalar types, as specified above, except for
@@ -216,38 +197,30 @@ instruction, or is an address of a global value.</p>
 <li>Is the return value of a <code>bitcast</code> instruction.</li>
 <li>Is the return value of a <code>inttoptr</code> instruction.</li>
 </ul>
-</section><section id="undefined-values">
 <h3 id="undefined-values">Undefined Values</h3>
 <p><a class="reference external" href="http://llvm.org/releases/3.3/docs/LangRef.html#undefvalues">LLVM LangRef: Undefined Values</a></p>
 <p><code>undef</code> is only allowed within functions, not in global variable initializers.</p>
-</section><section id="constant-expressions">
 <h3 id="constant-expressions">Constant Expressions</h3>
 <p><a class="reference external" href="http://llvm.org/releases/3.3/docs/LangRef.html#constant-expressions">LLVM LangRef: Constant Expressions</a></p>
 <p>Constant expressions are only allowed in
 <a class="reference internal" href="#bitcode-globalvariables"><em>global variable initializers</em></a>.</p>
-</section></section><section id="other-values">
 <h2 id="other-values">Other Values</h2>
-<section id="metadata-nodes-and-metadata-strings">
 <h3 id="metadata-nodes-and-metadata-strings">Metadata Nodes and Metadata Strings</h3>
 <p><a class="reference external" href="http://llvm.org/releases/3.3/docs/LangRef.html#metadata">LLVM LangRef: Metadata Nodes and Metadata Strings</a></p>
 <p>While PNaCl bitcode has provisions for debugging metadata, it is not considered
 part of the stable ABI. It exists for tool support and should not appear in
 distributed pexes.</p>
 <p>Other kinds of LLVM metadata are not supported.</p>
-</section></section><section id="intrinsic-global-variables">
 <h2 id="intrinsic-global-variables">Intrinsic Global Variables</h2>
 <p><a class="reference external" href="http://llvm.org/releases/3.3/docs/LangRef.html#intrinsic-global-variables">LLVM LangRef: Intrinsic Global Variables</a></p>
 <p>PNaCl bitcode does not support intrinsic global variables.</p>
-</section><section id="errno-and-errors-in-arithmetic-instructions">
-<span id="ir-and-errno"></span><h2 id="errno-and-errors-in-arithmetic-instructions"><span id="ir-and-errno"></span>Errno and errors in arithmetic instructions</h2>
+<h2 id="errno-and-errors-in-arithmetic-instructions"><span id="ir-and-errno"></span>Errno and errors in arithmetic instructions</h2>
 <p>Some arithmetic instructions and intrinsics have the similar semantics to
 libc math functions, but differ in the treatment of <code>errno</code>. While the
 libc functions may set <code>errno</code> for domain errors, the instructions and
 intrinsics do not. This is because the variable <code>errno</code> is not special
 and is not required to be part of the program.</p>
-</section><section id="instruction-reference">
 <h2 id="instruction-reference">Instruction Reference</h2>
-<section id="list-of-allowed-instructions">
 <h3 id="list-of-allowed-instructions">List of allowed instructions</h3>
 <p>This is a list of LLVM instructions supported by PNaCl bitcode. Where
 applicable, PNaCl-specific restrictions are provided.</p>
@@ -331,17 +304,14 @@ argument must be an i32.</p>
 <li><code>insertelement</code></li>
 <li><code>extractelement</code></li>
 </ul>
-</section><section id="alloca">
-<span id="bitcode-allocainst"></span><h3 id="alloca"><span id="bitcode-allocainst"></span><code>alloca</code></h3>
+<h3 id="alloca"><span id="bitcode-allocainst"></span><code>alloca</code></h3>
 <p>The only allowed type for <code>alloca</code> instructions in PNaCl bitcode is i8. The
 size argument must be an i32. For example:</p>
 <pre>
   %buf = alloca i8, i32 8, align 4
 </pre>
-</section></section><section id="intrinsic-functions">
 <h2 id="intrinsic-functions">Intrinsic Functions</h2>
 <p><a class="reference external" href="http://llvm.org/releases/3.3/docs/LangRef.html#intrinsics">LLVM LangRef: Intrinsic Functions</a></p>
-<section id="list-of-allowed-intrinsics">
 <h3 id="list-of-allowed-intrinsics">List of allowed intrinsics</h3>
 <p>The only intrinsics supported by PNaCl bitcode are the following.</p>
 <ul class="small-gap">
@@ -397,15 +367,13 @@ execution.</p>
 <p>See <a class="reference internal" href="#bitcode-atomicintrinsics"><em>atomic intrinsics</em></a>.</p>
 </li>
 </ul>
-</section><section id="thread-pointer-related-intrinsics">
-<span id="bitcode-threadpointerintrinsics"></span><h3 id="thread-pointer-related-intrinsics"><span id="bitcode-threadpointerintrinsics"></span>Thread pointer related intrinsics</h3>
+<h3 id="thread-pointer-related-intrinsics"><span id="bitcode-threadpointerintrinsics"></span>Thread pointer related intrinsics</h3>
 <pre>
   declare i8* &#64;llvm.nacl.read.tp()
 </pre>
 <p>Returns a read-only thread pointer. The value is controlled by the embedding
 sandbox&#8217;s runtime.</p>
-</section><section id="setjmp-and-longjmp">
-<span id="bitcode-setjmplongjmp"></span><h3 id="setjmp-and-longjmp"><span id="bitcode-setjmplongjmp"></span>Setjmp and Longjmp</h3>
+<h3 id="setjmp-and-longjmp"><span id="bitcode-setjmplongjmp"></span>Setjmp and Longjmp</h3>
 <pre>
   declare void &#64;llvm.nacl.longjmp(i8* %jmpbuf, i32)
   declare i32 &#64;llvm.nacl.setjmp(i8* %jmpbuf)
@@ -413,8 +381,7 @@ sandbox&#8217;s runtime.</p>
 <p>These intrinsics implement the semantics of C11 <code>setjmp</code> and <code>longjmp</code>. The
 <code>jmpbuf</code> pointer must be 64-bit aligned and point to at least 1024 bytes of
 allocated memory.</p>
-</section><section id="atomic-intrinsics">
-<span id="bitcode-atomicintrinsics"></span><h3 id="atomic-intrinsics"><span id="bitcode-atomicintrinsics"></span>Atomic intrinsics</h3>
+<h3 id="atomic-intrinsics"><span id="bitcode-atomicintrinsics"></span>Atomic intrinsics</h3>
 <pre>
   declare iN &#64;llvm.nacl.atomic.load.&lt;size&gt;(
           iN* &lt;source&gt;, i32 &lt;memory_order&gt;)
@@ -473,6 +440,6 @@ are lock-free or not. This reflects the C11 <code>atomic_is_lock_free</code>
 function from header <code>&lt;stdatomic.h&gt;</code> and the C++11 <code>is_lock_free</code>
 member function in header <code>&lt;atomic&gt;</code>. It can be used through the
 <code>__nacl_atomic_is_lock_free</code> builtin.</p>
-</section></section></section>
+</section>
 
 {{/partials.standard_nacl_article}}

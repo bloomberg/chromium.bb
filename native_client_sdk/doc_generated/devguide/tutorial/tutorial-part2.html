@@ -28,8 +28,7 @@
 <li><a class="reference internal" href="#example-specific-behavior-with-example-js" id="id13">Example-specific behavior with example.js</a></li>
 </ul>
 
-</div><section id="overview">
-<h2 id="overview">Overview</h2>
+</div><h2 id="overview">Overview</h2>
 <p>This tutorial shows how to convert the finished PNaCl web application from
 <a class="reference internal" href="/native-client/devguide/tutorial/tutorial-part1.html"><em>Part 1</em></a> to use the Native Client SDK build system and
 common JavaScript files. It also demonstrates some techniques to make your web
@@ -42,13 +41,11 @@ your application.</p>
 <p>The finished code for this example can be found in the
 <code>pepper_$(VERSION)/getting_started/part2</code> directory in the Native Client SDK
 download.</p>
-</section><section id="using-the-native-client-sdk-build-system">
 <h2 id="using-the-native-client-sdk-build-system">Using the Native Client SDK build system</h2>
 <p>This section describes how to use the SDK build system. To do so, we&#8217;ll make
 changes in the makefile. Because the makefile in part1 and part2 are so
 different, it is easier to start from scratch. Here is the contents of the new
 makefile. The following sections will describe it in more detail.</p>
-<section id="simplifying-the-makefile">
 <h3 id="simplifying-the-makefile">Simplifying the Makefile</h3>
 <p>The makefile from part1 only supports one toolchain (PNaCl) and one
 configuration (Release). It also only supports one source file. It&#8217;s relatively
@@ -85,7 +82,6 @@ endif
 
 $(eval $(call NMF_RULE,$(TARGET),))
 </pre>
-</section><section id="choosing-valid-toolchains-and-including-common-mk">
 <h3 id="choosing-valid-toolchains-and-including-common-mk">Choosing valid toolchains, and including common.mk</h3>
 <p>The makefile begins by specifying the toolchains that are valid for this
 project. The Native Client SDK build system supports multi-toolchain projects
@@ -116,7 +112,6 @@ to compile and link a project, which we&#8217;ll use below.</p>
 <pre class="prettyprint">
 include $(NACL_SDK_ROOT)/tools/common.mk
 </pre>
-</section><section id="configuring-your-project">
 <h3 id="configuring-your-project">Configuring your project</h3>
 <p>After including <code>tools/common.mk</code>, we configure the project by specifying its
 name, the sources and libraries it uses:</p>
@@ -161,7 +156,6 @@ SOURCES = foo.cc \
           baz.cc \
           quux.cc
 </pre>
-</section><section id="build-macros">
 <h3 id="build-macros">Build macros</h3>
 <p>For many projects, the following build macros do not need to be changed; they
 will use the variables we&#8217;ve defined above.</p>
@@ -205,12 +199,10 @@ each executable generated in the previous step:</p>
 <pre class="prettyprint">
 $(eval $(call NMF_RULE,$(TARGET),))
 </pre>
-</section></section><section id="making-index-html-work-for-chrome-apps">
 <h2 id="making-index-html-work-for-chrome-apps">Making index.html work for Chrome Apps</h2>
 <p>This section describes the changes necessary to make the HTML and JavaScript in
 part1 CSP-compliant. This is required if you want to build a <a class="reference external" href="/apps/about_apps">Chrome App</a>, but is not necessary if you want to use PNaCl on the open
 web.</p>
-<section id="csp-rules">
 <h3 id="csp-rules">CSP rules</h3>
 <p><a class="reference external" href="/apps/contentSecurityPolicy#what">Chrome Apps CSP</a> restricts you from doing
 the following:</p>
@@ -223,7 +215,6 @@ iframe.</li>
 <li>You can’t use string-to-JavaScript methods like <code>eval()</code> and <code>new
 Function()</code>.</li>
 </ul>
-</section><section id="making-index-html-csp-compliant">
 <h3 id="making-index-html-csp-compliant">Making index.html CSP-compliant</h3>
 <p>To make our application CSP-compliant, we have to remove inline scripting. As
 described above, we can&#8217;t use inline <code>&lt;script&gt;</code> blocks or event handlers. This
@@ -245,7 +236,6 @@ this example.</p>
 ...
 </pre>
 <p>This logic is now handled by <code>common.js</code>.</p>
-</section><section id="making-index-html-support-different-toolchains-and-configurations">
 <h3 id="making-index-html-support-different-toolchains-and-configurations">Making index.html support different toolchains and configurations</h3>
 <p>Finally, there are a few changes to <code>index.html</code> that are not necessary for
 CSP-compliance, but help make the SDK examples more generic.</p>
@@ -275,14 +265,12 @@ here the common.js module creates a new &lt;embed&gt; element and adds it to the
 --&gt;
 &lt;div id=&quot;listener&quot;&gt;&lt;/div&gt;
 </pre>
-</section></section><section id="sharing-common-code-with-common-js">
 <h2 id="sharing-common-code-with-common-js">Sharing common code with common.js</h2>
 <p><code>common.js</code> contains JavaScript code that each example uses to create a
 NaCl module, handle messages from that module and other common tasks like
 displaying the module load status and logging messages. Explaining all of
 <code>common.js</code> is outside the scope of this document, but please look at the
 documentation in that file for more information.</p>
-<section id="loading-the-page-and-creating-the-module">
 <h3 id="loading-the-page-and-creating-the-module">Loading the page and creating the module</h3>
 <p>Since we&#8217;ve added <code>&lt;script&gt;</code> tags for <code>common.js</code> and <code>example.js</code> to the
 <code>head</code> element, they will be loaded and executed before the rest of the
@@ -409,7 +397,6 @@ function moduleDidLoad() {
   }
 }
 </pre>
-</section></section><section id="example-specific-behavior-with-example-js">
 <h2 id="example-specific-behavior-with-example-js">Example-specific behavior with example.js</h2>
 <p>As described in the previous section, <code>common.js</code> will call certain functions
 during the module loading process. This example only needs to respond to two:
@@ -436,6 +423,6 @@ function handleMessage(message) {
   logEl.textContent += message.data;
 }
 </pre>
-</section></section>
+</section>
 
 {{/partials.standard_nacl_article}}

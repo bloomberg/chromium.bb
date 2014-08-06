@@ -35,8 +35,7 @@
 </li>
 </ul>
 
-</div><section id="introduction">
-<h2 id="introduction">Introduction</h2>
+</div><h2 id="introduction">Introduction</h2>
 <p>This chapter describes how to use the <a class="reference external" href="/native-client/pepper_stable/cpp/classpp_1_1_file_i_o">FileIO API</a> to read and write
 files using a local secure data store.</p>
 <p>You might use the File IO API with the URL Loading APIs to create an overall
@@ -53,7 +52,6 @@ application.</li>
 </ol>
 <p>The example discussed in this chapter is included in the SDK in the directory
 <code>examples/api/file_io</code>.</p>
-</section><section id="reference-information">
 <h2 id="reference-information">Reference information</h2>
 <p>For reference information related to FileIO, see the following documentation:</p>
 <ul class="small-gap">
@@ -64,7 +62,6 @@ a file reference or &#8220;weak pointer&#8221; to a file in a file system</li>
 <li><a class="reference external" href="/native-client/pepper_stable/cpp/file__system_8h">file_system.h</a> - API to
 create a file system associated with a file</li>
 </ul>
-</section><section id="local-file-i-o">
 <h2 id="local-file-i-o">Local file I/O</h2>
 <p>Chrome provides an obfuscated, restricted area on disk to which a web app can
 safely <a class="reference external" href="https://developers.google.com/chrome/whitepapers/storage#persistent">read and write files</a>. The
@@ -74,8 +71,7 @@ files and manage caching yourself. The data is persistent between launches of
 Chrome, and is not removed unless your application deletes it or the user
 manually deletes it. There is no limit to the amount of local data you can
 use, other than the actual space available on the local drive.</p>
-<section id="enabling-local-file-i-o">
-<span id="enabling-file-access"></span><span id="quota-management"></span><h3 id="enabling-local-file-i-o"><span id="enabling-file-access"></span><span id="quota-management"></span>Enabling local file I/O</h3>
+<h3 id="enabling-local-file-i-o"><span id="enabling-file-access"></span><span id="quota-management"></span>Enabling local file I/O</h3>
 <p>The easiest way to enable the writing of persistent local data is to include
 the <a class="reference external" href="/extensions/declare_permissions#unlimitedStorage">unlimitedStorage permission</a> in your Chrome Web Store
 manifest file. With this permission you can use the Pepper FileIO API without
@@ -86,7 +82,6 @@ JavaScript code that calls the <a class="reference external" href="http://update
 explicitly request local disk space before using the FileIO API. In this case
 Chrome will prompt the user to accept a requestQuota call every time one is
 made.</p>
-</section><section id="testing-local-file-i-o">
 <h3 id="testing-local-file-i-o">Testing local file I/O</h3>
 <p>You should be aware that using the <code>unlimitedStorage</code> manifest permission
 constrains the way you can test your app. Three of the four techniques
@@ -97,7 +92,6 @@ If you want to test the file IO portion of your app with a simple local server,
 you need to include JavaScript code that calls the HTML5 Quota Management API.
 When you deliver your application you can replace this code with the
 <code>unlimitedStorage</code> manifest permission.</p>
-</section></section><section id="the-file-io-example">
 <h2 id="the-file-io-example">The <code>file_io</code> example</h2>
 <p>The Native Client SDK includes an example, <code>file_io</code>, that demonstrates how
 to read and write a local disk file. Since you will probably run the example
@@ -115,7 +109,6 @@ Native Client module.</li>
 </ul>
 <p>The remainder of this section covers the code in the <code>file_io.cc</code> file for
 reading and writing files.</p>
-<section id="file-i-o-overview">
 <h3 id="file-i-o-overview">File I/O overview</h3>
 <p>Like many Pepper APIs, the File IO API includes a set of methods that execute
 asynchronously and that invoke callback functions in your Native Client module.
@@ -129,7 +122,6 @@ your worker thread, so you can use the stack and standard control flow
 structures normally.</p>
 <p>The high-level flow for the <code>file_io</code> example is described below.  Note that
 methods in the namespace <code>pp</code> are part of the Pepper C++ API.</p>
-</section><section id="creating-and-writing-a-file">
 <h3 id="creating-and-writing-a-file">Creating and writing a file</h3>
 <p>Following are the high-level steps involved in creating and writing to a
 file:</p>
@@ -142,7 +134,6 @@ blocked until the call to <code>Write</code> completes. If there is more data to
 write, <code>Write</code> is called again.</li>
 <li>When there is no more data to write, call <code>pp::FileIO::Flush</code>.</li>
 </ol>
-</section><section id="opening-and-reading-a-file">
 <h3 id="opening-and-reading-a-file">Opening and reading a file</h3>
 <p>Following are the high-level steps involved in opening and reading a file:</p>
 <ol class="arabic simple">
@@ -155,15 +146,12 @@ its file size. The thread is blocked until <code>Query</code> completes.</li>
 until <code>Read</code> completes. If there is more data to read, <code>Read</code> is called
 again.</li>
 </ol>
-</section><section id="deleting-a-file">
 <h3 id="deleting-a-file">Deleting a file</h3>
 <p>Deleting a file is straightforward: call <code>pp::FileRef::Delete</code>. The thread is
 blocked until <code>Delete</code> completes.</p>
-</section><section id="making-a-directory">
 <h3 id="making-a-directory">Making a directory</h3>
 <p>Making a directory is also straightforward: call <code>pp::File::MakeDirectory</code>.
 The thread is blocked until <code>MakeDirectory</code> completes.</p>
-</section><section id="listing-the-contents-of-a-directory">
 <h3 id="listing-the-contents-of-a-directory">Listing the contents of a directory</h3>
 <p>Following are the high-level steps involved in listing a directory:</p>
 <ol class="arabic simple">
@@ -175,7 +163,6 @@ its callback, so it must be specified.</li>
 <code>ListCallback</code> which packages up the results into a string message, and
 sends it to JavaScript.</li>
 </ol>
-</section></section><section id="file-io-deep-dive">
 <h2 id="file-io-deep-dive"><code>file_io</code> deep dive</h2>
 <p>The <code>file_io</code> example displays a user interface with a couple of fields and
 several buttons. Following is a screenshot of the <code>file_io</code> example:</p>
@@ -185,7 +172,6 @@ default values for filenames. Try typing a message in the large input box and
 clicking <code>Save</code>, then switching to the <code>Load File</code> operation, and
 clicking <code>Load</code>.</p>
 <p>Let&#8217;s take a look at what is going on under the hood.</p>
-<section id="opening-a-file-system-and-preparing-for-file-i-o">
 <h3 id="opening-a-file-system-and-preparing-for-file-i-o">Opening a file system and preparing for file I/O</h3>
 <p><code>pp::Instance::Init</code> is called when an instance of a module is created. In
 this example, <code>Init</code> starts a new thread (via the <code>pp::SimpleThread</code>
@@ -226,7 +212,6 @@ void OpenFileSystem(int32_t /*result*/) {
   }
 }
 </pre>
-</section><section id="handling-messages-from-javascript">
 <h3 id="handling-messages-from-javascript">Handling messages from JavaScript</h3>
 <p>When you click the <code>Save</code> button, JavaScript posts a message to the NaCl
 module with the file operation to perform sent as a string (See <a class="reference internal" href="/native-client/devguide/coding/message-system.html"><em>Messaging
@@ -260,7 +245,6 @@ virtual void HandleMessage(const pp::Var&amp; var_message) {
   }
 }
 </pre>
-</section><section id="saving-a-file">
 <h3 id="saving-a-file">Saving a file</h3>
 <p><code>FileIoInstance::Save</code> is called when the <code>Save</code> button is pressed. First,
 it checks to see that the FileSystem has been successfully opened:</p>
@@ -324,7 +308,6 @@ if (flush_result != PP_OK) {
   return;
 }
 </pre>
-</section><section id="loading-a-file">
 <h3 id="loading-a-file">Loading a file</h3>
 <p><code>FileIoInstance::Load</code> is called when the <code>Load</code> button is pressed. Like
 the <code>Save</code> function, <code>Load</code> first checks to see if the FileSystem has been
@@ -394,7 +377,6 @@ std::string string_data(data.begin(), data.end());
 PostMessage(&quot;DISP|&quot; + string_data);
 ShowStatusMessage(&quot;Load success&quot;);
 </pre>
-</section><section id="id1">
 <h3 id="id1">Deleting a file</h3>
 <p><code>FileIoInstance::Delete</code> is called when the <code>Delete</code> button is pressed.
 First, it checks whether the FileSystem has been opened, and creates a new
@@ -420,7 +402,6 @@ if (result == PP_ERROR_FILENOTFOUND) {
   return;
 }
 </pre>
-</section><section id="listing-files-in-a-directory">
 <h3 id="listing-files-in-a-directory">Listing files in a directory</h3>
 <p><code>FileIoInstance::List</code> is called when the <code>List Directory</code> button is
 pressed. Like all other operations, it checks whether the FileSystem has been
@@ -470,7 +451,6 @@ void ListCallback(int32_t result,
   ShowStatusMessage(&quot;List success&quot;);
 }
 </pre>
-</section><section id="making-a-new-directory">
 <h3 id="making-a-new-directory">Making a new directory</h3>
 <p><code>FileIoInstance::MakeDir</code> is called when the <code>Make Directory</code> button is
 pressed. Like all other operations, it checks whether the FileSystem has been
@@ -492,6 +472,6 @@ if (result != PP_OK) {
 }
 ShowStatusMessage(&quot;Make directory success&quot;);
 </pre>
-</section></section></section>
+</section>
 
 {{/partials.standard_nacl_article}}

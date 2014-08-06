@@ -11,8 +11,7 @@
 <li><a class="reference internal" href="#list-of-pseudo-instructions" id="id9">List of Pseudo-instructions</a></li>
 </ul>
 
-</div><section id="summary">
-<h2 id="summary">Summary</h2>
+</div><h2 id="summary">Summary</h2>
 <p>This document addresses the details of the Software Fault Isolation
 (SFI) model for executable code that can be run in Native Client on an
 x86-64 system. An overview of this model can be found in the paper:
@@ -25,7 +24,6 @@ dependencies when possible.</p>
 <p>Please note: throughout this document we use the AT&amp;T notation for
 assembler syntax, in which the target operand appears last, e.g. <code>mov
 src, dst</code>.</p>
-</section><section id="binary-format">
 <h2 id="binary-format">Binary Format</h2>
 <p>The format of Native Client executable binaries is identical to the
 x86-64 ELF binary format (<a class="reference external" href="http://en.wikipedia.org/wiki/Executable_and_Linkable_Format">[0]</a>, <a class="reference external" href="http://www.sco.com/developers/devspecs/gabi41.pdf">[1]</a>, <a class="reference external" href="http://www.sco.com/developers/gabi/latest/contents.html">[2]</a>, <a class="reference external" href="http://downloads.openwatcom.org/ftp/devel/docs/elf-64-gen.pdf">[3]</a>) for
@@ -43,7 +41,6 @@ segment must follow <a class="reference internal" href="#x86-64-text-segment-rul
 <li>There can be at most one PT_GNU_STACK segment. It must be marked RW.</li>
 <li>All segments must end before limit address (4 GiB).</li>
 </ul>
-</section><section id="runtime-invariants">
 <h2 id="runtime-invariants">Runtime Invariants</h2>
 <p>To ensure fault isolation at runtime, the system must maintain a
 number of runtime <em>invariants</em> across the lifetime of the running
@@ -86,8 +83,7 @@ aligned and fits within a single <em>bundle</em>.</li>
 <li>The OS must not put any internal structures/code into the untrusted
 region at any time (not using OS dynamic linker, etc)</li>
 </ul>
-</section><section id="text-segment-rules">
-<span id="x86-64-text-segment-rules"></span><h2 id="text-segment-rules"><span id="x86-64-text-segment-rules"></span>Text Segment Rules</h2>
+<h2 id="text-segment-rules"><span id="x86-64-text-segment-rules"></span>Text Segment Rules</h2>
 <ul class="small-gap">
 <li>The validation process must ensure that the text segment complies
 with the following rules. The validation process must complete
@@ -194,7 +190,6 @@ which must not cross <em>bundle</em> boundaries:</li>
  popq ...  ; except pop %RSP, pop %RBP
 </pre>
 </div></blockquote>
-</section><section id="list-of-pseudo-instructions">
 <h2 id="list-of-pseudo-instructions">List of Pseudo-instructions</h2>
 <p>Pseudo-instructions were introduced to let the compiler maintain the
 invariants without needing to know the code alignment rules. The
@@ -322,6 +317,6 @@ lea (%rZP,%rdi,1),%rdi<br/>
 </td>
 </tr>
 </tbody>
-</table></section></section>
+</table></section>
 
 {{/partials.standard_nacl_article}}

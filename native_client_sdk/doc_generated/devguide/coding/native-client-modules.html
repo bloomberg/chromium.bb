@@ -13,14 +13,12 @@ but depend on whether the module is written in C or C++.</p>
 <li><a class="reference internal" href="#id1" id="id4">Writing modules in C++</a></li>
 </ul>
 
-</div><section id="introduction">
-<h2 id="introduction">Introduction</h2>
+</div><h2 id="introduction">Introduction</h2>
 <p>Native Client modules do not have a <code>main()</code> function. When a module loads,
 the Native Client runtime calls the code in the module to create an instance and
 initialize the interfaces for the APIs the module uses. This initialization
 sequence depends on whether the module is written in C or C++ and requires that
 you implement specific functions in each case.</p>
-</section><section id="writing-modules-in-c">
 <h2 id="writing-modules-in-c">Writing modules in C</h2>
 <p>The C API uses a prefix convention to show whether an interface is implemented
 in the browser or in a module. Interfaces starting with <code>PPB_</code> (which can be
@@ -111,7 +109,6 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module a_module_id, PPB_GetInterface g
         return PP_OK;
 }
 </pre>
-</section><section id="id1">
 <h2 id="id1">Writing modules in C++</h2>
 <p>When you implement a Native Client module in C++ you must include these components:</p>
 <ul class="small-gap">
@@ -173,6 +170,6 @@ how to send messages between JavaScript code and Native Client modules.</p>
 samples shown above don&#8217;t actually do anything. Subsequent documents in the
 Developer&#8217;s Guide build on these code samples and add more interesting
 functionality.</p>
-</section></section>
+</section>
 
 {{/partials.standard_nacl_article}}

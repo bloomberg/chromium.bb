@@ -19,7 +19,6 @@ The &#8220;Hello, World&#8221; example is used here to illustrate basic
 Native Client programming techniques. You can find this code in the
 <em>/getting_started/part1</em> directory in the Native Client SDK download.
 </aside>
-<section id="application-components">
 <h2 id="application-components">Application components</h2>
 <p>A Native Client application typically contains the following components:</p>
 <ul class="small-gap">
@@ -37,8 +36,7 @@ architecture-specific executable files (with .nexe extensions).</li>
 <p>Applications that are published in the <a class="reference external" href="https://chrome.google.com/webstore/search?q=%22Native+Client%22+OR+NativeClient+OR+NaCl">Chrome Web Store</a>
 also include a Chrome
 Web Store manifest file <code>(manifest.json)</code> and one or more icon files.</p>
-</section><section id="html-file-and-the-embed-element">
-<span id="html-file"></span><h2 id="html-file-and-the-embed-element"><span id="html-file"></span>HTML file and the &lt;embed&gt; element</h2>
+<h2 id="html-file-and-the-embed-element"><span id="html-file"></span>HTML file and the &lt;embed&gt; element</h2>
 <p>The <code>&lt;embed&gt;</code> element in an HTML file triggers the loading of a Native Client
 module and specifies the rectangle on the web page that is managed by the
 module. Here is the &lt;embed&gt; element from the &#8220;Hello, World&#8221; application:</p>
@@ -68,8 +66,7 @@ user&#8217;s computer (see the following section for more information)</dd>
 modules the type must be &#8220;application/x-pnacl&#8221;. For architecture-specific
 Native Client modules the type must be &#8220;application/x-nacl&#8221;</dd>
 </dl>
-</section><section id="manifest-files">
-<span id="manifest-file"></span><h2 id="manifest-files"><span id="manifest-file"></span>Manifest Files</h2>
+<h2 id="manifest-files"><span id="manifest-file"></span>Manifest Files</h2>
 <p>Native Client applications have two types of manifest files: a Chrome Web Store
 manifest file and a Native Client manifest file.</p>
 <p>A <strong>Chrome Web Store manifest file</strong> is a file with information about a web
@@ -132,7 +129,6 @@ manifest files.</p>
 compilation step (see the Makefile in any of the SDK examples for an
 illustration of how to do so). The manifest file format is also
 <a class="reference internal" href="/native-client/reference/nacl-manifest-format.html"><em>documented</em></a>.</p>
-</section><section id="modules-and-instances">
 <h2 id="modules-and-instances">Modules and instances</h2>
 <p>A Native Client <strong>module</strong> is C or C++ code compiled into a PNaCl .pexe file or
 a NaCl .nexe file.</p>
@@ -146,7 +142,6 @@ module may be included in a web page multiple times by using multiple
 <code>&lt;embed&gt;</code> elements that refer to the module; in this case the Native Client
 runtime system loads the module once and creates multiple instances that are
 managed by the module.</p>
-</section><section id="native-client-modules-a-closer-look">
 <h2 id="native-client-modules-a-closer-look">Native Client modules: A closer look</h2>
 <p>A Native Client module must include three components:</p>
 <ul class="small-gap">
@@ -212,6 +207,6 @@ issue a <code>crash</code> event
 samples shown above don&#8217;t actually do anything. Subsequent chapters in the
 Developer&#8217;s Guide build on these code samples and add more interesting
 functionality.</p>
-</section></section>
+</section>
 
 {{/partials.standard_nacl_article}}

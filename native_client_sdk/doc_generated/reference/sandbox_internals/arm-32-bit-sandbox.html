@@ -56,11 +56,9 @@ assembly languages in general.</p>
 </li>
 </ul>
 
-</div><section id="an-introduction-to-the-arm-architecture">
-<h2 id="an-introduction-to-the-arm-architecture">An Introduction to the ARM Architecture</h2>
+</div><h2 id="an-introduction-to-the-arm-architecture">An Introduction to the ARM Architecture</h2>
 <p>In this section, we summarize the relevant parts of the ARM processor
 architecture.</p>
-<section id="about-arm-and-armv7-a">
 <h3 id="about-arm-and-armv7-a">About ARM and ARMv7-A</h3>
 <p>ARM is one of the older commercial &#8220;RISC&#8221; processor designs, dating back
 to the early 1980s. Today, it is used primarily in embedded systems:
@@ -81,7 +79,6 @@ also enhancing the 32-bit A32 ISA. For Native Client&#8217;s purposes the A32
 ISA is equivalent to the ARMv7 ARM ISA, albeit with a few new
 instructions. This document only discussed the 32-bit A32 instruction
 set: A64 would require a different sandboxing model.</p>
-</section><section id="arm-programmer-s-model">
 <h3 id="arm-programmer-s-model">ARM Programmer&#8217;s Model</h3>
 <p>While modern ARM chips support several instruction encodings, 32-bit
 Native Client on ARM focuses on a single one: a fixed-width encoding
@@ -129,7 +126,6 @@ pools&#8221;, just past the final return of a function.</li>
 </ol>
 <p>We&#8217;ll introduce more details of the ARM instruction set later, as we
 walk through the system.</p>
-</section></section><section id="the-native-client-approach">
 <h2 id="the-native-client-approach">The Native Client Approach</h2>
 <p>Native Client runs an untrusted program, potentially from an unknown or
 malicious source, inside a sandbox created by a trusted runtime. The
@@ -175,7 +171,6 @@ system&#8217;s security.</p>
 For the computationally-inclined, all our validators scale linearly in
 the size of the program.
 </aside>
-<section id="nacl-arm-pure-software-fault-isolation">
 <h3 id="nacl-arm-pure-software-fault-isolation">NaCl/ARM: Pure Software Fault Isolation</h3>
 <p>In the original Native Client system for the x86, we used unusual
 hardware features of that processor (the segment registers) to isolate
@@ -203,7 +198,6 @@ side effect, it helps to prevent programs from exploiting buggy
 operating system APIs.</p>
 <p>Let&#8217;s walk through the details, starting with the simplest part: <em>load</em>
 and <em>store</em>.</p>
-<section id="load-and-store">
 <h4 id="load-and-store"><em>Load</em> and <em>Store</em></h4>
 <p>All access to memory must be through <em>load</em> and <em>store</em>
 pseudo-instructions. These are simply a native <em>load</em> or <em>store</em>
@@ -235,7 +229,6 @@ code.</p>
 program could set up carefully-crafted values in <code>rA</code>, and then jump
 straight to the <code>ldr</code>. This is why we validate that programs never
 split pseudo-instructions.</p>
-<section id="alternative-sandboxing">
 <h5 id="alternative-sandboxing">Alternative Sandboxing</h5>
 <pre>
 tst    rA,  #0xC0000000
@@ -269,7 +262,6 @@ be used for regular Native Client <strong>nexe</strong> files, but can be used w
 Portable Native Client because the target processor is known at
 translation time from <strong>pexe</strong> to <strong>nexe</strong>.
 </aside>
-</section><section id="addressing-modes">
 <h5 id="addressing-modes">Addressing Modes</h5>
 <p>ARM has an unusually rich set of addressing modes. We allow all but one:
 register-indexed, where two registers are added to determine the
@@ -291,7 +283,6 @@ the largest immediate displacement is ±4095 bytes, while our guard pages
 are 8192 bytes wide.</p>
 <p>We also allow ARM&#8217;s more unusual <em>load</em> and <em>store</em> instructions, such
 as <em>load-multiple</em> and <em>store-multiple</em>, etc.</p>
-</section><section id="conditional-load-and-store">
 <h5 id="conditional-load-and-store">Conditional <em>Load</em> and <em>Store</em></h5>
 <p>There&#8217;s one problem with the pseudo-instructions shown above: they are
 unconditional (assuming <code>rA</code> is valid). ARM compilers regularly use
@@ -303,9 +294,7 @@ pseudo-instructions. Here is a conditional <em>store</em>
 bicgt  rA,  #0xC0000000
 strgt  rX,  [rA, #123]
 </pre>
-</section></section><section id="the-stack-pointer-thread-pointer-and-program-counter">
 <h4 id="the-stack-pointer-thread-pointer-and-program-counter">The Stack Pointer, Thread Pointer, and Program Counter</h4>
-<section id="stack-pointer">
 <h5 id="stack-pointer">Stack Pointer</h5>
 <p>In C-like languages, the stack is used to store return addresses during
 function calls, as well as any local variables that won&#8217;t fit in
@@ -344,7 +333,6 @@ loop instead of using <code>sp</code> as a stack pointer it can be temporarily
 used as an index pointer (e.g. to traverse an array). This avoids the
 extra <code>bic</code> whenever the pointer is updated in the loop.
 </aside>
-</section><section id="thread-pointer-loads">
 <h5 id="thread-pointer-loads">Thread Pointer Loads</h5>
 <p>The thread pointer and IRT thread pointer are stored in the trusted
 address space. All uses and definitions of <code>r9</code> from untrusted code
@@ -353,7 +341,6 @@ are forbidden except as follows:</p>
 ldr Rn, [r9]     ; Load user thread pointer.
 ldr Rn, [r9, #4] ; Load IRT thread pointer.
 </pre>
-</section><section id="pc-relative-loads">
 <h5 id="pc-relative-loads"><code>pc</code>-relative Loads</h5>
 <p>By extension, we also allow <em>load</em> through the <code>pc</code> without a
 mask. The explanation is quite similar:</p>
@@ -366,7 +353,6 @@ point into the sandbox.</li>
 <p>We do not allow <code>pc</code>-relative stores, because they look suspiciously
 like self-modifying code, or any addressing mode that would alter the
 <code>pc</code> as a side effect of the <em>load</em>.</p>
-</section></section><section id="indirect-branch">
 <h4 id="indirect-branch"><em>Indirect Branch</em></h4>
 <p>There are two types of control flow on ARM: direct and indirect. Direct
 control flow instructions have an embedded target address or
@@ -384,7 +370,6 @@ exclusively through <code>bx</code> and <code>blx</code>. Because all of ARM&#82
 flow instructions are called <em>branch</em> instructions, we&#8217;ll use the term
 <em>indirect branch</em> from here on, even though this includes things like
 <em>virtual call</em>, <em>return</em>, and the like.</p>
-<section id="the-trouble-with-indirection">
 <h5 id="the-trouble-with-indirection">The Trouble with Indirection</h5>
 <p><em>Indirect branch</em> present two problems for Native Client:</p>
 <ul class="small-gap">
@@ -400,7 +385,6 @@ instructions are 32-bit wide.
 <p>Checking both of these for <em>direct branch</em> is easy: the validator just
 pulls the (fixed) target address out of the instruction and checks what
 it points to.</p>
-</section><section id="the-native-client-solution-bundles">
 <h5 id="the-native-client-solution-bundles">The Native Client Solution: &#8220;Bundles&#8221;</h5>
 <p>For <em>indirect branch</em>, we can address the first problem by simply
 masking some high-order bits off the address, like we did for <em>load</em> and
@@ -472,7 +456,6 @@ impossible: by masking off the bottom 4 bits of the destination the
 interworking nature of ARM&#8217;s <em>indirect branch</em> is completely avoided.</p>
 
 </aside>
-</section><section id="call-and-return">
 <h5 id="call-and-return"><em>Call</em> and <em>Return</em></h5>
 <p>On ARM, there is no <em>call</em> or <em>return</em> instruction. A <em>call</em> is simply a
 <em>branch</em> that just happen to load a return address into <code>lr</code>, the link
@@ -517,7 +500,6 @@ perform much better by allowing it to speculatively execute the return
 address&#8217; code. For more information on ARM&#8217;s <em>call</em>/<em>return</em> stack see
 ARM&#8217;s technical reference manual.
 </aside>
-</section></section><section id="literal-pools-and-data-bundles">
 <h4 id="literal-pools-and-data-bundles">Literal Pools and Data Bundles</h4>
 <p>In the section where we described the ARM architecture, we mentioned
 ARM&#8217;s unusual immediate forms. To restate:</p>
@@ -568,7 +550,6 @@ opposite problem: what if the program needs to contain a certain
 constant that just happens to encode a malicious instruction?  We want
 to allow this, but we have to be certain it will never be executed as
 code!</p>
-<section id="data-bundles-to-the-rescue">
 <h5 id="data-bundles-to-the-rescue">Data Bundles to the Rescue</h5>
 <p>As we discussed in the last section, ARM code in Native Client is
 structured in 16-byte bundles. We allow literal pools by putting them in
@@ -608,7 +589,6 @@ therefore doubles as a roadblock in T32, if anything were to go so
 awry that we tried to execute it as a T32 instruction! Much defense,
 such depth, wow!
 </aside>
-</section></section></section><section id="trampolines-and-memory-layout">
 <h3 id="trampolines-and-memory-layout">Trampolines and Memory Layout</h3>
 <p>So far, the rules we&#8217;ve described make for boring programs: they can&#8217;t
 communicate with the outside world!</p>
@@ -633,7 +613,6 @@ address.</p>
 <p>The validator can detect attempts to use the trampolines because they&#8217;re
 loaded at a fixed location in memory. Let&#8217;s look at the memory map of
 the Native Client sandbox.</p>
-<section id="memory-map">
 <h4 id="memory-map">Memory Map</h4>
 <p>The ARM sandbox is always at virtual address <code>0</code>, and is exactly 1GiB
 in size. This includes the untrusted program&#8217;s code and data, the
@@ -690,7 +669,6 @@ possibility of optional 32-byte bundles, to enable certain compiler
 improvements. While this option isn&#8217;t available to untrusted programs
 today, we&#8217;re trying to keep the system &#8220;32-byte clean&#8221;.
 </aside>
-</section><section id="inside-a-trampoline">
 <h4 id="inside-a-trampoline">Inside a Trampoline</h4>
 <p>When we introduced trampolines, we mentioned that they can do things
 that untrusted programs can&#8217;t. To be more specific, trampolines can jump
@@ -714,9 +692,7 @@ because, in practice, all trampolines jump to the same routine in the
 trusted runtime, called the syscall hook. It uses the return address
 produced by the final <code>blx</code> instruction to determine which trampoline
 was called.</p>
-</section></section><section id="loose-ends">
 <h3 id="loose-ends">Loose Ends</h3>
-<section id="forbidden-instructions">
 <h4 id="forbidden-instructions">Forbidden Instructions</h4>
 <p>To complete the sandbox, the validator ensures that the program does not
 try to use certain forbidden instructions.</p>
@@ -772,7 +748,6 @@ treated as suspicious.</li>
 <p>More details are available in the <a class="reference external" href="http://src.chromium.org/viewvc/native_client/trunk/src/native_client/src/trusted/validator_arm/armv7.table">ARMv7 instruction table definition</a>.</p>
 
 </aside>
-</section><section id="coprocessors">
 <h4 id="coprocessors">Coprocessors</h4>
 <p>ARM has traditionally added new instruction set features through
 coprocessors. Coprocessors are accessed through a small set of
@@ -800,7 +775,6 @@ ability to model the operations on these coprocessors, given that
 vendors often leave them poorly-specified. Unfortunately this eliminates
 some legacy floating point and vector implementations, but these are
 superceded on ARMv7-A parts anyway.</p>
-</section><section id="validator-code">
 <h4 id="validator-code">Validator Code</h4>
 <p>By now you&#8217;re itching to see the sandbox validator&#8217;s code and dissect
 it. You&#8217;ll have a disapointing read: at less that 500 lines of code
@@ -808,6 +782,6 @@ it. You&#8217;ll have a disapointing read: at less that 500 lines of code
 is quite simple to understand and much shorter than this document. It&#8217;s
 of course dependent on the <a class="reference external" href="http://src.chromium.org/viewvc/native_client/trunk/src/native_client/src/trusted/validator_arm/armv7.table">ARMv7 instruction table definition</a>,
 which teaches it about the ARMv7 instruction set.</p>
-</section></section></section></section>
+</section>
 
 {{/partials.standard_nacl_article}}

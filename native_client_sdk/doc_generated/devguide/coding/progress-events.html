@@ -23,7 +23,6 @@ The load_progress example illustrates progress event handling. You can find
 this code in the <code>/examples/tutorial/load_progress/</code> directory in the Native
 Client SDK download.
 </aside>
-<section id="module-loading-and-progress-events">
 <h2 id="module-loading-and-progress-events">Module loading and progress events</h2>
 <p>The Native Client runtime reports a set of state changes during the module
 loading process by means of DOM progress events. This set of events is a direct
@@ -257,7 +256,6 @@ illegal.</td>
 </table>
 <p>Errors that occur during loading are logged to the JavaScript console in Google
 Chrome (select the menu icon <img alt="menu-icon" src="/native-client/images/menu-icon.png" /> &gt; Tools &gt; JavaScript console).</p>
-</section><section id="handling-progress-events">
 <h2 id="handling-progress-events">Handling progress events</h2>
 <p>You should add event listeners in a <code>&lt;script&gt;</code> element to listen for these
 events before the <code>&lt;embed&gt;</code> element is parsed. For example, the following code
@@ -299,7 +297,6 @@ listeners on outer elements (including the <code>&lt;body&gt;</code> element) to
 from inner elements. For more information, see the W3 specifications for <a class="reference external" href="http://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-flow-capture">event
 flow capture</a> and
 <a class="reference external" href="http://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-registration">event listener registration</a>.</p>
-</section><section id="displaying-load-status">
 <h2 id="displaying-load-status">Displaying load status</h2>
 <p>One common response to progress events is to display the percentage of the
 module that has been loaded. In the load_progress example, when the <code>progress</code>
@@ -323,7 +320,6 @@ function moduleLoadProgress(event) {
   }
 }
 </pre>
-</section><section id="the-lasterror-attribute">
 <h2 id="the-lasterror-attribute">The <code>lastError</code> attribute</h2>
 <p>The <code>&lt;embed&gt;</code> element has a <code>lastError</code> attribute that is set to an
 informative string whenever a load failure (an <code>error</code> or <code>abort</code> event)
@@ -346,7 +342,6 @@ function moduleLoadError() {
   common.logMessage('error: ' + common.naclModule.lastError);
 }
 </pre>
-</section><section id="the-readystate-attribute">
 <h2 id="the-readystate-attribute">The <code>readyState</code> attribute</h2>
 <p>You can use the <code>readyState</code> attribute to monitor the loading process. This
 attribute is particularly useful if you don&#8217;t care about the details of
@@ -413,7 +408,6 @@ the progress events are generated.</p>
   &lt;/body&gt;
 &lt;/html&gt;
 </pre>
-</section><section id="the-exitstatus-attribute">
 <h2 id="the-exitstatus-attribute">The <code>exitStatus</code> attribute</h2>
 <p>This read-only attribute is set if the application calls <code>exit(n)</code>,
 <code>abort()</code>, or crashes. Since NaCl modules are event handlers, there is no
@@ -429,6 +423,6 @@ target architecture, and may change in the future. Applications should not
 rely on the <code>exitStatus</code> value being stable in these cases, but the value
 may nevertheless be useful for temporary debugging.</li>
 </ul>
-</section></section>
+</section>
 
 {{/partials.standard_nacl_api}}

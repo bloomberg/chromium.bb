@@ -21,8 +21,7 @@
 </li>
 </ul>
 
-</div><section id="overview">
-<span id="undefined-behavior"></span><h2 id="overview"><span id="undefined-behavior"></span>Overview</h2>
+</div><h2 id="overview"><span id="undefined-behavior"></span>Overview</h2>
 <p>C and C++ undefined behavior allows efficient mapping of the source
 language onto hardware, but leads to different behavior on different
 platforms.</p>
@@ -57,7 +56,6 @@ randomizations.</li>
 </ul>
 </li>
 </ul>
-</section><section id="specification">
 <h2 id="specification">Specification</h2>
 <p>PNaCl&#8217;s goal is that a single <em>pexe</em> should work reliably in the same
 manner on all architectures, irrespective of runtime parameters and
@@ -72,9 +70,7 @@ and diverging behavior would be rare.</p>
 <p>Note that none of these issues are vulnerabilities in PNaCl and Chrome:
 the NaCl sandboxing still constrains the code through Software Fault
 Isolation.</p>
-</section><section id="behavior-in-pnacl-bitcode">
 <h2 id="behavior-in-pnacl-bitcode">Behavior in PNaCl Bitcode</h2>
-<section id="well-defined">
 <h3 id="well-defined">Well-Defined</h3>
 <p>The following are traditionally undefined behavior in C/C++ but are well
 defined at the <em>pexe</em> level:</p>
@@ -103,12 +99,10 @@ Atomics</em></a>).</li>
 x86, and through integer divide emulation routine or explicit checks
 on ARM).</li>
 </ul>
-</section><section id="not-well-defined">
 <h3 id="not-well-defined">Not Well-Defined</h3>
 <p>The following are traditionally undefined behavior in C/C++ which also
 exhibit undefined behavior at the <em>pexe</em> level. Some are easier to fix
 than others.</p>
-<section id="potentially-fixable">
 <h4 id="potentially-fixable">Potentially Fixable</h4>
 <ul class="small-gap">
 <li><p class="first">Shift by greater-than-or-equal to left-hand-side&#8217;s bit-width or
@@ -155,8 +149,7 @@ will be undefined.  PNaCl could change this to always trap, as the
 defined behavior. PNaCl&#8217;s frontend or the translator could insert
 checks with <code>-fsanitize=vla-bound</code>.</li>
 </ul>
-</section><section id="floating-point">
-<span id="undefined-behavior-fp"></span><h4 id="floating-point"><span id="undefined-behavior-fp"></span>Floating-Point</h4>
+<h4 id="floating-point"><span id="undefined-behavior-fp"></span>Floating-Point</h4>
 <p>PNaCl offers a IEEE-754 implementation which is as correct as the
 underlying hardware allows, with a few limitations. These are a few
 sources of undefined behavior which are believed to be fixable:</p>
@@ -175,7 +168,6 @@ SIMD operations.</li>
 function implementation isn&#8217;t, e.g. <code>std::min</code> and <code>std::max</code>), is
 well-defined in the <em>pexe</em>.</li>
 </ul>
-</section><section id="simd-vectors">
 <h4 id="simd-vectors">SIMD Vectors</h4>
 <p>SIMD vector instructions aren&#8217;t part of the C/C++ standards and as such
 their behavior isn&#8217;t specified at all in C/C++; it is usually left up to
@@ -185,7 +177,6 @@ offers the same guarantees on these vectors as the guarantees offered by
 the contained elements. Of notable interest amongst these guarantees are
 those of alignment for load/store instructions on vectors: they have the
 same alignment restriction as the contained elements.</p>
-</section><section id="hard-to-fix">
 <h4 id="hard-to-fix">Hard to Fix</h4>
 <ul class="small-gap">
 <li><p class="first">Null pointer/reference has behavior determined by the NaCl sandbox:</p>
@@ -231,6 +222,6 @@ and at least one of which is not atomic: this will be very dependent
 on processor and execution sequence, see <a class="reference internal" href="/native-client/reference/pnacl-c-cpp-language-support.html#memory-model-and-atomics"><em>Memory Model and
 Atomics</em></a>.</li>
 </ul>
-</section></section></section></section>
+</section>
 
 {{/partials.standard_nacl_article}}

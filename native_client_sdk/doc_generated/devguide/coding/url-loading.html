@@ -21,13 +21,11 @@
 </li>
 </ul>
 
-</div><section id="introduction">
-<h2 id="introduction">Introduction</h2>
+</div><h2 id="introduction">Introduction</h2>
 <p>This chapter describes how to use the <a class="reference external" href="/native-client/pepper_stable/cpp/classpp_1_1_u_r_l_loader">URLLoader API</a> to load resources
 such as images and sound files from a server into your application.</p>
 <p>The example discussed in this chapter is included in the SDK in the directory
 <code>examples/api/url_loader</code>.</p>
-</section><section id="reference-information">
 <h2 id="reference-information">Reference information</h2>
 <p>For reference information related to loading data from URLs, see the
 following documentation:</p>
@@ -39,7 +37,6 @@ following documentation:</p>
 <li><a class="reference external" href="/native-client/pepper_stable/cpp/url__response__info_8h">url_response_info.h</a> - Contains
 <code>URLResponse</code> class for examaning URL responses</li>
 </ul>
-</section><section id="background">
 <h2 id="background">Background</h2>
 <p>When a user launches your Native Client web application, Chrome downloads and
 caches your application&#8217;s HTML file, manifest file (.nmf), and Native Client
@@ -51,7 +48,6 @@ application.</p>
 assets. To avoid being at the whim of the Chrome cache, however, you may want
 to use the <a class="reference external" href="/native-client/pepper_stable/cpp/classpp_1_1_file_i_o">Pepper FileIO API</a> to write those assets
 to a persistent, sandboxed location on the user&#8217;s file system.</p>
-</section><section id="the-url-loader-example">
 <h2 id="the-url-loader-example">The <code>url_loader</code> example</h2>
 <p>The SDK includes an example called <code>url_loader</code> demonstrating downloading
 files from a server. This example has these primary files:</p>
@@ -70,7 +66,6 @@ bulk of the work is done).</li>
 </ul>
 <p>The remainder of this document covers the code in the <code>url_loader.cc</code> and
 <code>url_loader_handler.cc</code> files.</p>
-<section id="url-loading-overview">
 <h3 id="url-loading-overview">URL loading overview</h3>
 <p>Like many Pepper APIs, the <code>URLLoader</code> API includes a set of methods that
 execute asynchronously and that invoke callback functions in your Native Client
@@ -96,9 +91,7 @@ files and fast connections).</li>
 </ol>
 <p>The remainder of this document demonstrates how the previous steps are
 implemented in the <code>url_loader</code> example.</p>
-</section></section><section id="url-loader-deep-dive">
 <h2 id="url-loader-deep-dive"><code>url_loader</code> deep dive</h2>
-<section id="setting-up-the-request">
 <h3 id="setting-up-the-request">Setting up the request</h3>
 <p><code>HandleMessage</code> in <code>url_loader.cc</code> creates a <code>URLLoaderHandler</code> instance
 and passes it the URL of the asset to be retrieved. Then <code>HandleMessage</code>
@@ -146,7 +139,6 @@ URLLoaderHandler::URLLoaderHandler(pp::Instance* instance,
   url_request_.SetRecordDownloadProgress(true);
 }
 </pre>
-</section><section id="downloading-the-data">
 <h3 id="downloading-the-data">Downloading the data</h3>
 <p><code>Start</code> in <code>url_loader_handler.cc</code> creates a callback (<code>cc</code>) using a
 <code>CompletionCallbackFactory</code>. The callback is passed to <code>Open</code> to be called
@@ -219,12 +211,11 @@ in <code>PP_OK</code> or 0), all the bytes have been read for what has been
 downloaded, but more is to be downloaded (<code>PP_OK_COMPLETIONPENDING</code> or -1),
 or there is an error (less than -1). <code>OnRead</code> is called in the event of an
 error or <code>PP_OK</code>.</p>
-</section><section id="displaying-a-result">
 <h3 id="displaying-a-result">Displaying a result</h3>
 <p>OnRead calls <code>ReportResultAndDie</code> when either an error or <code>PP_OK</code> is
 returned to indicate streaming of file is complete. <code>ReportResultAndDie</code> then
 calls <code>ReportResult,</code> which calls <code>PostMessage</code> to send the result back to
 the HTML page.</p>
-</section></section></section>
+</section>
 
 {{/partials.standard_nacl_article}}

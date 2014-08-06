@@ -38,8 +38,7 @@
 </li>
 </ul>
 
-</div><section id="source-language-support">
-<h2 id="source-language-support">Source language support</h2>
+</div><h2 id="source-language-support">Source language support</h2>
 <p>The currently supported languages are C and C++. The PNaCl toolchain is
 based on recent Clang, which fully supports C++11 and most of C11. A
 detailed status of the language support is available <a class="reference external" href="http://clang.llvm.org/cxx_status.html">here</a>.</p>
@@ -49,7 +48,6 @@ section on other languages</em></a>.</p>
 <code>libc++</code>, and the <code>newlib</code> standard C library. <code>libstdc++</code> is also
 supported but its use is discouraged; see <a class="reference internal" href="/native-client/devguide/devcycle/building.html#building-cpp-libraries"><em>C++ standard libraries</em></a>
 for more details.</p>
-<section id="versions">
 <h3 id="versions">Versions</h3>
 <p>Version information can be obtained:</p>
 <ul class="small-gap">
@@ -58,14 +56,11 @@ for more details.</p>
 <li><code>libc++</code>: use the <code>_LIBCPP_VERSION</code> macro.</li>
 <li><code>libstdc++</code>: use the <code>_GLIBCXX_VERSION</code> macro.</li>
 </ul>
-</section><section id="preprocessor-definitions">
 <h3 id="preprocessor-definitions">Preprocessor definitions</h3>
 <p>When compiling C/C++ code, the PNaCl toolchain defines the <code>__pnacl__</code>
 macro. In addition, <code>__native_client__</code> is defined for compatibility
 with other NaCl toolchains.</p>
-</section></section><section id="memory-model-and-atomics">
-<span id="id1"></span><h2 id="memory-model-and-atomics"><span id="id1"></span>Memory Model and Atomics</h2>
-<section id="memory-model-for-concurrent-operations">
+<h2 id="memory-model-and-atomics"><span id="id1"></span>Memory Model and Atomics</h2>
 <h3 id="memory-model-for-concurrent-operations">Memory Model for Concurrent Operations</h3>
 <p>The memory model offered by PNaCl relies on the same coding guidelines
 as the C11/C++11 one: concurrent accesses must always occur through
@@ -112,7 +107,6 @@ to indirectly access devices.</li>
 <p>Setting up the above mechanisms requires assistance from the embedding
 sandbox&#8217;s runtime (e.g. NaCl&#8217;s Pepper APIs), but using them once setup
 can be done through regular C/C++ code.</p>
-</section><section id="atomic-memory-ordering-constraints">
 <h3 id="atomic-memory-ordering-constraints">Atomic Memory Ordering Constraints</h3>
 <p>Atomics follow the same ordering constraints as in regular C11/C++11,
 but all accesses are promoted to sequential consistency (the strongest
@@ -128,7 +122,6 @@ primitives, and these primitives must always be of the same bit size
 for that location.</li>
 <li>Not all memory orderings are valid for all atomic operations.</li>
 </ul>
-</section><section id="volatile-memory-accesses">
 <h3 id="volatile-memory-accesses">Volatile Memory Accesses</h3>
 <p>The C11/C++11 standards mandate that <code>volatile</code> accesses execute in
 program order (but are not fences, so other memory operations can
@@ -153,18 +146,15 @@ naturally aligned, and tries to guarantee this alignment.</p>
 code, and combined with builtin fences these programs can do meaningful
 cross-thread communication without changing code. They also better
 reflect the original code&#8217;s intent and guarantee better portability.</p>
-</section></section><section id="threading">
-<span id="language-support-threading"></span><h2 id="threading"><span id="language-support-threading"></span>Threading</h2>
+<h2 id="threading"><span id="language-support-threading"></span>Threading</h2>
 <p>Threading is explicitly supported through C11/C++11&#8217;s threading
 libraries as well as POSIX threads.</p>
 <p>Communication between threads should use atomic primitives as described
 in <a class="reference internal" href="#id1">Memory Model and Atomics</a>.</p>
-</section><section id="setjmp-and-longjmp">
 <h2 id="setjmp-and-longjmp"><code>setjmp</code> and <code>longjmp</code></h2>
 <p>PNaCl and NaCl support <code>setjmp</code> and <code>longjmp</code> without any
 restrictions beyond C&#8217;s.</p>
-</section><section id="c-exception-handling">
-<span id="exception-handling"></span><h2 id="c-exception-handling"><span id="exception-handling"></span>C++ Exception Handling</h2>
+<h2 id="c-exception-handling"><span id="exception-handling"></span>C++ Exception Handling</h2>
 <p>PNaCl currently supports C++ exception handling through <code>setjmp()</code> and
 <code>longjmp()</code>, which can be enabled with the <code>--pnacl-exceptions=sjlj</code>
 linker flag. Exceptions are disabled by default so that faster and
@@ -173,7 +163,6 @@ calls to <code>abort()</code>. The usual <code>-fno-exceptions</code> flag is al
 supported. PNaCl will support full zero-cost exception handling in the
 future.</p>
 <p>NaCl supports full zero-cost C++ exception handling.</p>
-</section><section id="inline-assembly">
 <h2 id="inline-assembly">Inline Assembly</h2>
 <p>Inline assembly isn&#8217;t supported by PNaCl because it isn&#8217;t portable. The
 one current exception is the common compiler barrier idiom
@@ -188,8 +177,7 @@ inline assembly.</p>
 <p>NaCl supports a fairly wide subset of inline assembly through GCC&#8217;s
 inline assembly syntax, with the restriction that the sandboxing model
 for the target architecture has to be respected.</p>
-</section><section id="portable-simd-vectors">
-<span id="id2"></span><h2 id="portable-simd-vectors"><span id="id2"></span>Portable SIMD Vectors</h2>
+<h2 id="portable-simd-vectors"><span id="id2"></span>Portable SIMD Vectors</h2>
 <p>SIMD vectors aren&#8217;t part of the C/C++ standards and are traditionally
 very hardware-specific. Portable Native Client offers a portable version
 of SIMD vector datatypes and operations which map well to modern
@@ -199,7 +187,6 @@ hardware-specific uses.</p>
 and more features, including performance enhancements, have been added in
 subsequent releases, see the <a class="reference internal" href="/native-client/sdk/release-notes.html#sdk-release-notes"><em>Release Notes</em></a> for more
 details.</p>
-<section id="hand-coding-vector-extensions">
 <h3 id="hand-coding-vector-extensions">Hand-Coding Vector Extensions</h3>
 <p>The initial vector support in Portable Native Client adds <a class="reference external" href="http://clang.llvm.org/docs/LanguageExtensions.html#vectors-and-extended-vectors">LLVM vectors</a>
 and <a class="reference external" href="http://gcc.gnu.org/onlinedocs/gcc/Vector-Extensions.html">GCC vectors</a> since these
@@ -375,15 +362,12 @@ v4s shift_right_by(v4s shift_me, int shift_amount) {
   return shift_me &gt;&gt; __builtin_shuffle_vector(tmp, tmp, 0, 0, 0, 0);
 }
 </pre>
-</section><section id="auto-vectorization">
 <h3 id="auto-vectorization">Auto-Vectorization</h3>
 <p>Auto-vectorization is currently not enabled for Portable Native Client,
 but will be in a future release.</p>
-</section></section><section id="undefined-behavior">
 <h2 id="undefined-behavior">Undefined Behavior</h2>
 <p>The C and C++ languages expose some undefined behavior which is
 discussed in <a class="reference internal" href="/native-client/reference/pnacl-undefined-behavior.html#undefined-behavior"><em>PNaCl Undefined Behavior</em></a>.</p>
-</section><section id="floating-point">
 <h2 id="floating-point">Floating-Point</h2>
 <p>PNaCl exposes 32-bit and 64-bit floating point operations which are
 mostly IEEE-754 compliant. There are a few caveats:</p>
@@ -413,7 +397,6 @@ in the <em>pexe</em>.</li>
 </ul>
 </li>
 </ul>
-</section><section id="computed-goto">
 <h2 id="computed-goto">Computed <code>goto</code></h2>
 <p>PNaCl supports computed <code>goto</code>, a non-standard GCC extension to C used
 by some interpreters, by lowering them to <code>switch</code> statements. The
@@ -423,16 +406,13 @@ compile-time option for using computed <code>goto</code>, it&#8217;s possible th
 program will run faster with the option turned off (e.g., if the program
 does extra work to take advantage of computed <code>goto</code>).</p>
 <p>NaCl supports computed <code>goto</code> without any transformation.</p>
-</section><section id="future-directions">
 <h2 id="future-directions">Future Directions</h2>
-<section id="inter-process-communication">
 <h3 id="inter-process-communication">Inter-Process Communication</h3>
 <p>Inter-process communication through shared memory is currently not
 supported by PNaCl/NaCl. When implemented, it may be limited to
 operations which are lock-free on the current platform (<code>is_lock_free</code>
 methods). It will rely on the address-free properly discussed in <a class="reference internal" href="#memory-model-for-concurrent-operations">Memory
 Model for Concurrent Operations</a>.</p>
-</section><section id="posix-style-signal-handling">
 <h3 id="posix-style-signal-handling">POSIX-style Signal Handling</h3>
 <p>POSIX-style signal handling really consists of two different features:</p>
 <ul class="small-gap">
@@ -456,6 +436,6 @@ or suspension of threads.</p>
 <p>If PNaCl were to support either of these, the interaction of
 <code>volatile</code> and atomics with same-thread signal handling would need
 to be carefully detailed.</p>
-</section></section></section>
+</section>
 
 {{/partials.standard_nacl_article}}

@@ -43,7 +43,6 @@ The &#8220;Hello, World&#8221; example for getting started with NaCl is used her
 illustrate basic programming techniques. You can find this code in
 the <code>/getting_started/part2</code> directory in the Native Client SDK download.
 </aside>
-<section id="reference-information">
 <h2 id="reference-information">Reference information</h2>
 <p>For reference information related to the Pepper messaging API, see the
 following documentation:</p>
@@ -53,7 +52,6 @@ HandleMessage(), PostMessage())</li>
 <li><a class="reference external" href="/native-client/pepper_stable/cpp/classpp_1_1_module">pp::Module class</a></li>
 <li><a class="reference external" href="/native-client/pepper_stable/cpp/classpp_1_1_var">pp::Var class</a></li>
 </ul>
-</section><section id="introduction-to-the-messaging-system">
 <h2 id="introduction-to-the-messaging-system">Introduction to the messaging system</h2>
 <p>Native Client modules and JavaScript communicate by sending messages to each
 other. The most basic form of a message is a string.  Messages support many
@@ -81,7 +79,6 @@ messages are:</p>
 </ul>
 <p>If you want to receive messages from JavaScript, you need to implement the
 <code>pp::Instance::HandleMessage()</code> function in your Native Client module.</p>
-<section id="design-of-the-messaging-system">
 <h3 id="design-of-the-messaging-system">Design of the messaging system</h3>
 <p>The Native Client messaging system is analogous to the system used by
 the browser to allow web workers to communicate (see the <a class="reference external" href="http://www.w3.org/TR/workers">W3 web
@@ -103,12 +100,10 @@ avoiding the following problems:</p>
 than a few moments.</li>
 <li>The application hangs while waiting for an unresponsive Native Client module.</li>
 </ul>
-</section></section><section id="communication-tasks-in-the-hello-world-example">
 <h2 id="communication-tasks-in-the-hello-world-example">Communication tasks in the &#8220;Hello, World&#8221; example</h2>
 <p>The following sections describe how the &#8220;Hello, World&#8221; example posts
 and handles messages on both the JavaScript side and the Native Client
 side of the application.</p>
-<section id="javascript-code">
 <h3 id="javascript-code">JavaScript code</h3>
 <p>The JavaScript code and HTML in the &#8220;Hello, World&#8221; example can be
 found in the <code>example.js</code>, <code>common.js</code>, and <code>index.html</code> files.
@@ -121,7 +116,6 @@ incoming <code>message</code> events.</li>
 <li>Calls <code>postMessage()</code> to communicate with the NaCl module,
 after the page loads.</li>
 </ol>
-<section id="step-1-from-common-js">
 <h4 id="step-1-from-common-js">Step 1: From common.js</h4>
 <pre class="prettyprint">
 function attachDefaultListeners() {
@@ -134,7 +128,6 @@ function attachDefaultListeners() {
   // ...
 }
 </pre>
-</section><section id="step-2-from-example-js">
 <h4 id="step-2-from-example-js">Step 2: From example.js</h4>
 <pre class="prettyprint">
 // This function is called by common.js when a message is received from the
@@ -152,7 +145,6 @@ function handleMessage(message) {
   &lt;div id=&quot;log&quot;&gt;&lt;/div&gt;
 &lt;/body&gt;
 </pre>
-</section><section id="step-3-from-example-js">
 <h4 id="step-3-from-example-js">Step 3: From example.js</h4>
 <pre class="prettyprint">
 // From example.js, Step 3:
@@ -164,7 +156,6 @@ function moduleDidLoad() {
   common.naclModule.postMessage('hello');
 }
 </pre>
-</section></section><section id="native-client-module">
 <h3 id="native-client-module">Native Client module</h3>
 <p>The C++ code in the Native Client module of the &#8220;Hello, World&#8221; example:</p>
 <ol class="arabic simple">
@@ -201,16 +192,13 @@ class HelloTutorialInstance : public pp::Instance {
   }
 };
 </pre>
-</section></section><section id="messaging-in-javascript-code-more-details">
 <h2 id="messaging-in-javascript-code-more-details">Messaging in JavaScript code: More details.</h2>
 <p>This section describes in more detail the messaging system code in the
 JavaScript portion of the &#8220;Hello, World&#8221; example.</p>
-<section id="setting-up-an-event-listener-and-handler">
 <h3 id="setting-up-an-event-listener-and-handler">Setting up an event listener and handler</h3>
 <p>The following JavaScript code sets up an event listener for messages
 posted by the Native Client module. It then defines a message handler
 that simply logs the content of messages received from the module.</p>
-<section id="setting-up-the-message-handler-on-load">
 <h4 id="setting-up-the-message-handler-on-load">Setting up the &#8216;message&#8217; handler on load</h4>
 <pre class="prettyprint">
 // From common.js
@@ -244,7 +232,6 @@ function attachDefaultListeners() {
   // ...
 }
 </pre>
-</section><section id="implementing-the-handler">
 <h4 id="implementing-the-handler">Implementing the handler</h4>
 <pre class="prettyprint">
 // From example.js
@@ -256,11 +243,9 @@ function handleMessage(message) {
 <p>Note that the <code>handleMessage()</code> function is handed a message_event
 containing <code>data</code> that you can display or manipulate in JavaScript. The
 &#8220;Hello, World&#8221; application simply logs this data to the <code>log</code> div.</p>
-</section></section></section><section id="messaging-in-the-native-client-module-more-details">
 <h2 id="messaging-in-the-native-client-module-more-details">Messaging in the Native Client module: More details.</h2>
 <p>This section describes in more detail the messaging system code in
 the Native Client module portion of the &#8220;Hello, World&#8221; example.</p>
-<section id="implementing-handlemessage">
 <h3 id="implementing-handlemessage">Implementing HandleMessage()</h3>
 <p>If you want the Native Client module to receive and handle messages
 from JavaScript, you need to implement a <code>HandleMessage()</code> function
@@ -301,7 +286,6 @@ class HelloTutorialInstance : public pp::Instance {
   }
 };
 </pre>
-</section><section id="implementing-application-specific-functions">
 <h3 id="implementing-application-specific-functions">Implementing application-specific functions</h3>
 <p>While the &#8220;Hello, World&#8221; example is very simple, your Native Client
 module will likely include application-specific functions to perform
@@ -316,7 +300,6 @@ character to determine which command to execute.  If the command is
 command is &#8220;uncompress&#8221;, then data to process is an already-compressed
 string. After processing the data asynchronously, the application then
 returns the result to JavaScript.</p>
-</section><section id="sending-messages-back-to-the-javascript-code">
 <h3 id="sending-messages-back-to-the-javascript-code">Sending messages back to the JavaScript code</h3>
 <p>The Native Client module sends messages back to the JavaScript code
 using <code>PostMessage()</code>. The Native Client module always returns
@@ -326,7 +309,6 @@ end of the Native Client module&#8217;s <code>HandleMessage()</code> function:</
 <pre class="prettyprint">
 PostMessage(var_reply);
 </pre>
-</section><section id="sending-and-receiving-other-pp-var-types">
 <h3 id="sending-and-receiving-other-pp-var-types">Sending and receiving other <code>pp::Var</code> types</h3>
 <p>Besides strings, <code>pp::Var</code> can represent other types of JavaScript
 objects. For example, messages can be JavaScript objects. These
@@ -370,6 +352,6 @@ virtual void HandleMessage(const pp::Var&amp; var) {
   }
 }
 </pre>
-</section></section></section>
+</section>
 
 {{/partials.standard_nacl_article}}

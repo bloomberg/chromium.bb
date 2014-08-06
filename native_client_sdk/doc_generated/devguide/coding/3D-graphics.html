@@ -13,7 +13,6 @@ with issues directly related to programming in the Native Client
 environment. To learn more about OpenGL ES 2.0 itself, see the <a class="reference external" href="http://opengles-book.com/">OpenGL ES 2.0
 Programming Guide</a>.
 </aside>
-<section id="validating-the-client-graphics-platform">
 <h2 id="validating-the-client-graphics-platform">Validating the client graphics platform</h2>
 <p>Native Client is a software technology that lets you code an application once
 and run it on multiple platforms without worrying about the implementation
@@ -25,7 +24,6 @@ to have vulnerabilities that can be exploited.</p>
 <p>Even if the GPU driver is safe to use, your program should perform a validation
 check before you launch your application to ensure that the driver supports all
 the features you need.</p>
-<section id="vetting-the-driver-in-javascript">
 <h3 id="vetting-the-driver-in-javascript">Vetting the driver in JavaScript</h3>
 <p>At startup, the application should perform a few additional tests that can be
 implemented in JavaScript on its hosting web page. The script that performs
@@ -36,9 +34,7 @@ can, use the context to confirm the existence of any required OpenGL ES 2.0
 extensions.  You may want to refer to the <a class="reference external" href="http://www.khronos.org/registry/webgl/extensions/">extension registry</a> and include <a class="reference external" href="https://developer.mozilla.org/en-US/docs/WebGL/Using_Extensions">vendor
 prefixes</a>
 when checking for extensions.</p>
-</section><section id="vetting-the-driver-in-native-client">
 <h3 id="vetting-the-driver-in-native-client">Vetting the driver in Native Client</h3>
-<section id="create-a-context">
 <h4 id="create-a-context">Create a context</h4>
 <p>Once you&#8217;ve passed the JavaScript validation tests, it&#8217;s safe to add a Native
 Client embed tag to the hosting web page and load the module. As part of the
@@ -50,7 +46,6 @@ the context, try creating a simpler version to see if you&#8217;re asking for an
 unsupported feature or exceeding a driver resource limit. Your production code
 should always check that the context was created and fail gracefully if that&#8217;s
 not the case.</p>
-</section><section id="check-for-extensions-and-capabilities">
 <h4 id="check-for-extensions-and-capabilities">Check for extensions and capabilities</h4>
 <p>Not every GPU supports every extension or has the same amount of texture units,
 vertex attributes, etc. On startup, call <code>glGetString(GL_EXTENSIONS)</code> and
@@ -92,7 +87,6 @@ as well as texture and vertex data accordingly:</p>
 <code>glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, ...)</code> returns a value greater
 than or equal to the number of simultaneous textures you need.</li>
 </ul>
-</section></section><section id="vetting-the-driver-in-the-chrome-web-store">
 <h3 id="vetting-the-driver-in-the-chrome-web-store">Vetting the driver in the Chrome Web Store</h3>
 <p>If you choose to place your application in the <a class="reference external" href="/webstore">Chrome Web Store</a>,
 its Web Store <a class="reference external" href="/extensions/manifest">manifest file</a> can include the <code>webgl</code>
@@ -120,7 +114,6 @@ been disabled.&#8221;</p>
 <p>The manifest-based check applies only to downloads directly from the Chrome Web
 Store. It is not performed when an application is loaded via <a class="reference external" href="/webstore/inline_installation">inline
 installation</a>.</p>
-</section><section id="what-to-do-when-there-are-problems">
 <h3 id="what-to-do-when-there-are-problems">What to do when there are problems</h3>
 <p>Using the vetting procedure described above, you should be able to detect the
 most common problems before your application runs. If there are problems, your
@@ -131,7 +124,6 @@ might want to linke to the Chrome page that describes <a class="reference extern
 <p>If a user can&#8217;t update the driver, or their problem persists, be sure to gather
 information about their graphics environment. Ask for the contents of the Chrome
 <code>about:gpu</code> page.</p>
-</section><section id="document-unreliable-drivers">
 <h3 id="document-unreliable-drivers">Document unreliable drivers</h3>
 <p>It can be helpful to include information about known dubious drivers in your
 user documentation. This might help identify if a rogue driver is the cause of a
@@ -140,7 +132,6 @@ found at the <a class="reference external" href="http://src.chromium.org/viewvc/
 and <a class="reference external" href="http://www.khronos.org/webgl/wiki/BlacklistsAndWhitelists">Khronos</a>. You
 can use these lists to include information in your documentation that warns
 users about dangerous drivers.</p>
-</section><section id="test-your-defenses">
 <h3 id="test-your-defenses">Test your defenses</h3>
 <p>You can test your driver validation code by running Chrome with the following
 flags (all at once) and watching how your application responds:</p>
@@ -151,10 +142,8 @@ flags (all at once) and watching how your application responds:</p>
 <li><code>--disable-accelerated-compositing</code></li>
 <li><code>--disable-accelerated-2d-canvas</code></li>
 </ul>
-</section></section><section id="calling-opengl-es-2-0-commands">
 <h2 id="calling-opengl-es-2-0-commands">Calling OpenGL ES 2.0 commands</h2>
 <p>There are three ways to write OpenGL ES 2.0 calls in Native Client.</p>
-<section id="use-pure-opengl-es-2-0-function-calls">
 <h3 id="use-pure-opengl-es-2-0-function-calls">Use &#8220;pure&#8221; OpenGL ES 2.0 function calls</h3>
 <p>You can make OpenGL ES 2.0 calls through a Pepper extension library.  The SDK
 example <code>examples/api/graphics_3d</code> works this way.  In the file
@@ -200,7 +189,6 @@ bool InitGL(int32_t new_width, int32_t new_height) {
 necessary: upon application launch (when the graphics context is NULL) and
 whenever the module&#8217;s View changes size.</li>
 </ul>
-</section><section id="use-regal">
 <h3 id="use-regal">Use Regal</h3>
 <p>If you are porting an OpenGL ES 2.0 application, or are comfortable writing in
 OpenGL ES 2.0, you should stick with the Pepper APIs or pure OpenGL ES 2.0 calls
@@ -211,7 +199,6 @@ Client. Regal forwards most OpenGL calls directly to the underlying graphics
 library, but it can also emulate other calls that are not included (when
 hardware support exists). See <a class="reference external" href="http://www.altdevblogaday.com/2012/09/04/bringing-regal-opengl-to-native-client/">libregal</a>
 for more info.</p>
-</section><section id="use-the-pepper-api">
 <h3 id="use-the-pepper-api">Use the Pepper API</h3>
 <p>Your code can call the Pepper PPB_OpenGLES2 API directly, as with any Pepper
 interface. When you write in this way, each invocation of an OpenGL ES 2.0
@@ -224,13 +211,11 @@ ppb_g3d_interface-&gt;CompileShader(graphicsContext, shader);
 <p>This approach specifically targets the Pepper APIs. Each call corresponds to a
 OpenGL ES 2.0 function, but the syntax is unique to Native Client, so the source
 file is not portable.</p>
-</section></section><section id="implementing-a-rendering-loop">
 <h2 id="implementing-a-rendering-loop">Implementing a rendering loop</h2>
 <p>Graphics applications require a continuous frame render-and-redraw cycle that
 runs at a high frequency. To achieve the best frame rate, is important to
 understand how the OpenGL ES 2.0 code in a Native Client module interacts with
 Chrome.</p>
-<section id="the-chrome-and-native-client-processes">
 <h3 id="the-chrome-and-native-client-processes">The Chrome and Native Client processes</h3>
 <p>Chrome is a multi-process browser. Each Chrome tab is a separate process that is
 running an application with its own main thread (we&#8217;ll call it the Chrome main
@@ -246,7 +231,6 @@ a standstill.</p>
 <p>Native Client uses callback functions to synchronize the main threads of the
 two processes. Only certain Pepper functions use callbacks; <a class="reference external" href="/native-client/pepper_stable/c/struct_p_p_b___graphics3_d__1__0#a293c6941c0da084267ffba3954793497">SwapBuffers</a>
 is one.</p>
-</section><section id="swapbuffers-and-its-callback-function">
 <h3 id="swapbuffers-and-its-callback-function"><code>SwapBuffers</code> and its callback function</h3>
 <p><code>SwapBuffers</code> is non-blocking; it is called from the Native Client thread and
 returns immediately. When <code>SwapBuffers</code> is called, it runs asynchronously on
@@ -271,7 +255,6 @@ from the main thread to Native Client, green up-arrows are non-blocking
 <code>SwapBuffers</code> calls from Native Client to the main thread. All OpenGL ES 2.0
 calls are made from <code>Draw</code> in the Native Client thread.</p>
 <img alt="/native-client/images/3d-graphics-render-loop.png" src="/native-client/images/3d-graphics-render-loop.png" />
-</section><section id="sdk-example-graphics-3d">
 <h3 id="sdk-example-graphics-3d">SDK example <code>graphics_3d</code></h3>
 <p>The SDK example <code>graphics_3d</code> uses the function <code>MainLoop</code> (in
 <code>hello_world.cc</code>) to create a rendering loop as described above. <code>MainLoop</code>
@@ -293,7 +276,6 @@ void MainLoop(void* foo, int bar) {
   }
 }
 </pre>
-</section></section><section id="managing-the-opengl-es-2-0-pipeline">
 <h2 id="managing-the-opengl-es-2-0-pipeline">Managing the OpenGL ES 2.0 pipeline</h2>
 <p>OpenGL ES 2.0 commands do not run in the Chrome or Native Client processes. They
 are passed into a FIFO queue in shared memory which is best understood as a <a class="reference external" href="http://www.chromium.org/developers/design-documents/gpu-command-buffer">GPU
@@ -324,7 +306,6 @@ commands. For example, issue a flush before you begin any multithreaded particle
 work, so that the command buffer will be clear when you start doing OpenGL ES
 2.0 calls again. Determining where and how often to call <code>glFlush</code> can be
 tricky, you will need to experiment to find the sweet spot.</p>
-</section><section id="rendering-and-inactive-tabs">
 <h2 id="rendering-and-inactive-tabs">Rendering and inactive tabs</h2>
 <p>Users will often switch between tabs in a multi-tab browser. A well-behaved
 application that&#8217;s performing 3D rendering should pause any real-time processing
@@ -347,7 +328,6 @@ main thread every 30 msec or so. This provides time to update features that
 should still run in the background, like audio. It may also be helpful to call
 <code>sched_yield</code> or <code>usleep</code> on any worker threads to release resources and
 cede cycles to the OS.</p>
-<section id="handling-tab-activation-from-the-main-thread">
 <h3 id="handling-tab-activation-from-the-main-thread">Handling tab activation from the main thread</h3>
 <p>You can detect and respond to the activation or deactivation of a tab with
 JavaScript on your hosting page. Add an EventListener for <code>visibilitychange</code>
@@ -364,7 +344,6 @@ document.addEventListener('visibilitychange', function(){
 
 }, false);
 </pre>
-</section><section id="handling-tab-activation-from-the-native-client-thread">
 <h3 id="handling-tab-activation-from-the-native-client-thread">Handling tab activation from the Native Client thread</h3>
 <p>You can also detect and respond to the activation or deactivation of a tab
 directly from your Native Client module by including code in the function
@@ -372,11 +351,9 @@ directly from your Native Client module by including code in the function
 module&#8217;s view occurs. The code can call <code>ppb::View::IsPageVisible</code> to
 determine if the page is visible or not. The most common cause of invisible
 pages is that the page is in a background tab.</p>
-</section></section><section id="tips-and-best-practices">
 <h2 id="tips-and-best-practices">Tips and best practices</h2>
 <p>Here are some suggestions for writing safe code and getting the maximum
 performance with the Pepper 3D API.</p>
-<section id="do-s">
 <h3 id="do-s">Do&#8217;s</h3>
 <ul class="small-gap">
 <li><p class="first"><strong>Make sure to enable attrib 0.</strong> OpenGL requires that you enable attrib 0,
@@ -408,7 +385,6 @@ transforms, avoid matrix-to-matrix conversions. For instance, upres a vec3 to
 a vec4 before transforming it by a mat4, rather than converting the mat4 to a
 mat3.</li>
 </ul>
-</section><section id="don-ts">
 <h3 id="don-ts">Don&#8217;ts</h3>
 <ul class="small-gap">
 <li><strong>Don&#8217;t use client side buffers.</strong> OpenGL ES 2.0 can use client side data with
@@ -436,6 +412,6 @@ avoid this problem, keep static and dynamic data in different buffers.</li>
 error. Each time it is called, an error messages will appear in Chrome&#8217;s
 <code>about:gpu</code> tab.</li>
 </ul>
-</section></section></section>
+</section>
 
 {{/partials.standard_nacl_article}}

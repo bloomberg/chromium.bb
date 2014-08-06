@@ -23,8 +23,7 @@
 <li><a class="reference internal" href="#where-to-start" id="id12">Where to start</a></li>
 </ul>
 
-</div><section id="introduction">
-<h2 id="introduction">Introduction</h2>
+</div><h2 id="introduction">Introduction</h2>
 <p><strong>Native Client</strong> (NaCl) is an open-source technology for running native
 compiled code in the browser, with the goal of maintaining the portability
 and safety that users expect from web applications. Native Client expands web
@@ -40,7 +39,6 @@ by the SDK. The NaCl SDK currently supports C and C++; as compilers for
 additional languages are developed, the SDK will be updated to support those
 languages as well.</p>
 <img alt="/native-client/images/web-app-with-nacl.png" src="/native-client/images/web-app-with-nacl.png" />
-</section><section id="why-use-native-client">
 <h2 id="why-use-native-client">Why use Native Client?</h2>
 <p>Native Client open-source technology is designed to run compiled code
 securely inside a browser at near-native speeds. Native Client puts web
@@ -73,7 +71,6 @@ Native Client also allows applications to harness all available CPU cores via
 a threading API; this enables demanding applications such as console-quality
 games to run inside the browser.</li>
 </ul>
-</section><section id="common-use-cases">
 <h2 id="common-use-cases">Common use cases</h2>
 <p>Typical use cases for Native Client include the following:</p>
 <ul class="small-gap">
@@ -108,8 +105,7 @@ into web applications&#8212;it&#8217;s up to you to decide to what extent to use
 Use of Native Client covers the full spectrum from complete applications to
 small optimized routines that accelerate vital parts of web apps.</li>
 </ul>
-</section><section id="how-native-client-works">
-<span id="link-how-nacl-works"></span><h2 id="how-native-client-works"><span id="link-how-nacl-works"></span>How Native Client works</h2>
+<h2 id="how-native-client-works"><span id="link-how-nacl-works"></span>How Native Client works</h2>
 <p>Native Client is an umbrella name for a set of interrelated software components
 that work together to provide a way to develop C/C++ applications and run them
 securely on the web.</p>
@@ -133,7 +129,6 @@ Native Client. Developers use a nacl-gcc based toolchain to produce multiple
 architecture-dependent (<strong>nexe</strong>) modules, which are packaged into an
 application. At runtime, the browser decides which nexe to load based
 on the architecture of the client machine.</p>
-<section id="security">
 <h3 id="security">Security</h3>
 <p>Since Native Client permits the execution of native code on client machines,
 special security measures have to be implemented:</p>
@@ -150,7 +145,6 @@ restricted permissions. The only interaction between this process and the
 outside world is through sanctioned browser interfaces. Because of the
 combination of the NaCl sandbox and the Chrome sandbox, we say that
 Native Client employs a double sandbox design.</p>
-</section><section id="portability">
 <h3 id="portability">Portability</h3>
 <p>Portable Native Client (PNaCl, prounounced &#8220;pinnacle&#8221;) employs state-of-the-art
 compiler technology to compile C/C++ source code to a portable bitcode
@@ -170,8 +164,7 @@ used as part of applications and extensions that are installed from the
 Chrome Web Store.</p>
 <p>For more details on the difference between NaCl and PNaCl, see
 <a class="reference internal" href="/native-client/nacl-and-pnacl.html"><em>NaCl and PNaCl</em></a>.</p>
-</section><section id="toolchains">
-<span id="id1"></span><h3 id="toolchains"><span id="id1"></span>Toolchains</h3>
+<h3 id="toolchains"><span id="id1"></span>Toolchains</h3>
 <p>A toolchain is a set of tools used to create an application from a set of
 source files. In the case of Native Client, a toolchain consists of a compiler,
 linker, assembler and other tools that are used to convert an
@@ -185,8 +178,7 @@ application written in C/C++ into a module that is loadable by the browser.</p>
 <p>The PNaCl toolchain is recommended for most applications. The nacl-gcc
 toolchain should only be used for applications that will not be distributed
 on the open web.</p>
-</section></section><section id="native-client-in-a-web-application">
-<span id="link-nacl-in-web-apps"></span><h2 id="native-client-in-a-web-application"><span id="link-nacl-in-web-apps"></span>Native Client in a web application</h2>
+<h2 id="native-client-in-a-web-application"><span id="link-nacl-in-web-apps"></span>Native Client in a web application</h2>
 <p id="application-files">A Native Client application consists of a set of files:</p>
 <ul class="small-gap">
 <li><strong>HTML</strong>, <strong>CSS</strong>, and <strong>JavaScript</strong> files, as in any modern web
@@ -200,8 +192,7 @@ through an <code>&lt;embed&gt;</code> tag, as shown in the figure below.</li>
 </ul>
 <img alt="/native-client/images/nacl-in-a-web-app.png" src="/native-client/images/nacl-in-a-web-app.png" />
 <p>For more details, see <a class="reference internal" href="/native-client/devguide/coding/application-structure.html"><em>Application Structure</em></a>.</p>
-<section id="pepper-plugin-api">
-<span id="link-pepper"></span><h3 id="pepper-plugin-api"><span id="link-pepper"></span>Pepper Plugin API</h3>
+<h3 id="pepper-plugin-api"><span id="link-pepper"></span>Pepper Plugin API</h3>
 <p>The Pepper Plugin API (PPAPI), called <strong>Pepper</strong> for convenience, is an
 open-source, cross-platform C/C++ API for web browser plugins. From the point
 of view of Native Client, Pepper allows a C/C++ module to communicate with
@@ -220,7 +211,6 @@ capabilities, including:</p>
 <p>Pepper includes both a C API and a C++ API. The C++ API is a set of bindings
 written on top of the C API. For additional information about Pepper, see
 <a class="reference external" href="http://code.google.com/p/ppapi/wiki/Concepts">Pepper Concepts</a>.</p>
-</section></section><section id="versioning">
 <h2 id="versioning">Versioning</h2>
 <p>Chrome is released on a six week cycle, and developer versions of Chrome are
 pushed to the public beta channel three weeks before each release. As with any
@@ -230,11 +220,10 @@ However, modules compiled for one version of Pepper/Chrome should work with
 subsequent versions of Pepper/Chrome. The SDK includes multiple versions of the
 Pepper APIs to help developers make adjustments to API changes and take
 advantage of new features: <a class="reference external" href="/native-client/pepper_stable">stable</a>, <a class="reference external" href="/native-client/pepper_beta">beta</a> and <a class="reference external" href="/native-client/pepper_dev">dev</a>.</p>
-</section><section id="where-to-start">
 <h2 id="where-to-start">Where to start</h2>
 <p>The <a class="reference internal" href="/native-client/quick-start.html"><em>Quick Start</em></a> document provides links to downloads and
 documentation that should help you get started with developing and distributing
 Native Client applications.</p>
-</section></section>
+</section>
 
 {{/partials.standard_nacl_article}}

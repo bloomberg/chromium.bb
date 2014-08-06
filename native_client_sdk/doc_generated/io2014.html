@@ -2,7 +2,6 @@
 
 <section id="building-a-nacl-app">
 <span id="io2014"></span><h1 id="building-a-nacl-app"><span id="io2014"></span>Building a NaCl App</h1>
-<section id="in-the-browser">
 <h2 id="in-the-browser">In the browser!</h2>
 <p>Follow along with Brad Nelson&#8217;s Google I/O 2014 talk.
 Explore our new in-browser development environment and debugger.</p>
@@ -10,8 +9,7 @@ Explore our new in-browser development environment and debugger.</p>
 all in your desktop web browser or on a Chromebook.
 Work either on-line or off-line!</p>
 <iframe class="video" width="500" height="281"
-src="//www.youtube.com/embed/OzNuzBDEWzk?rel=0" frameborder="0"></iframe><section id="work-in-progress">
-<h3 id="work-in-progress">Work in Progress</h3>
+src="//www.youtube.com/embed/OzNuzBDEWzk?rel=0" frameborder="0"></iframe><h3 id="work-in-progress">Work in Progress</h3>
 <p>These development tools are a work in progress, see <a class="reference internal" href="#feature-status">Feature Status</a>.
 At this point, they are a learning tool and demonstration of NaCl&#8217;s
 flexibility, but are not the recommended tools for a production application.
@@ -23,8 +21,7 @@ we currently recommend you use the
 NOTE: The NaCl Development Environment is not yet stable.
 Ideally user data is preserved, but currently it can be lost during updates
 or sporadically. We're working to resolve this.
-</font></b></section><section id="installation">
-<h3 id="installation">Installation</h3>
+</font></b><h3 id="installation">Installation</h3>
 <p>The setup process currently requires several steps.
 We&#8217;re working to reduce the number of steps in future releases.
 As the process gets easier, we&#8217;ll update this page.</p>
@@ -61,7 +58,6 @@ Once you&#8217;re ready to apply the debugger, follow these steps:</p>
 temporarily and try again.</li>
 </ul>
 </div></blockquote>
-</section><section id="editor">
 <h3 id="editor">Editor</h3>
 <p>To follow along in this tutorial, you&#8217;ll need to use a text editor to modify
 various files in our development environment.
@@ -83,7 +79,6 @@ $ vim &lt;filename&gt;
 <p>Here&#8217;s an online <a class="reference external" href="http://www.openvim.com/tutorial.html">vim tutorial</a>.</p>
 </li>
 </ul>
-</section><section id="git-setup">
 <h3 id="git-setup">Git Setup</h3>
 <p>This tutorial also uses a revision control program called
 <a class="reference external" href="http://en.wikipedia.org/wiki/Git_(software)">git</a>.
@@ -99,7 +94,6 @@ git config --global user.email johndoe&#64;example.com
 <pre class="prettyprint">
 source ~/.bashrc
 </pre>
-</section><section id="tour-follow-the-video">
 <h3 id="tour-follow-the-video">Tour (follow the video)</h3>
 <p>Create a working directory and go into it:</p>
 <pre class="prettyprint">
@@ -172,7 +166,6 @@ $ make serve
 <p>Then, navigate to <a class="reference external" href="http://localhost:5103/">http://localhost:5103/</a> to test the demo.</p>
 <p>If you follow along with the demo video, you will discover the sample crashes
 when you change the thread count.</p>
-</section><section id="debugging">
 <h3 id="debugging">Debugging</h3>
 <p>If you haven&#8217;t installed the debugger at this point, skip to the next section.</p>
 <p>At this point, if you have the debugger installed, you should be able to open
@@ -195,7 +188,6 @@ add-symbol-file irt
 remote get nexe nexe
 add-symbol-file nexe
 </pre>
-</section><section id="fix-it-up">
 <h3 id="fix-it-up">Fix it up</h3>
 <p>Return to the development environment and stop the test server,
 by pressing Ctrl-C.</p>
@@ -217,13 +209,11 @@ $ git log
 <pre class="prettyprint">
 $ make serve
 </pre>
-</section><section id="thanks">
 <h3 id="thanks">Thanks</h3>
 <p>Thanks for checking out our environment.
 Things are rapidly changing and in the coming months you can expect to see
 further improvements and filling out of our platform and library support.</p>
 <p>Check back at this page for the latest status.</p>
-</section><section id="feature-status">
 <h3 id="feature-status">Feature Status</h3>
 <p>Here is a summary of feature status. We hope to overcome these limitations
 in the near future:</p>
@@ -275,6 +265,6 @@ in the near future:</p>
 </li>
 </ul>
 </div></blockquote>
-</section></section></section>
+</section>
 
 {{/partials.standard_nacl_article}}

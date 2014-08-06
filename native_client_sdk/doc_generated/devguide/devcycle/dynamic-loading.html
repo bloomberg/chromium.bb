@@ -18,8 +18,7 @@
 <li><a class="reference internal" href="#troubleshooting" id="id9">Troubleshooting</a></li>
 </ul>
 
-</div><section id="introduction">
-<h2 id="introduction">Introduction</h2>
+</div><h2 id="introduction">Introduction</h2>
 <aside class="caution">
 Portable Native Client currently only supports static linking, and the
 only C library available for it is newlib. This page is only valid for
@@ -29,8 +28,7 @@ dynamic linking.
 <p>This document describes how to create and deploy dynamically linked and loaded
 applications with the glibc library in the Native Client SDK. Before reading
 this document, we recommend reading <a class="reference internal" href="/native-client/devguide/devcycle/building.html"><em>Building Native Client Modules</em></a></p>
-<section id="c-standard-libraries-glibc-and-newlib">
-<span id="c-libraries"></span><h3 id="c-standard-libraries-glibc-and-newlib"><span id="c-libraries"></span>C standard libraries: glibc and newlib</h3>
+<h3 id="c-standard-libraries-glibc-and-newlib"><span id="c-libraries"></span>C standard libraries: glibc and newlib</h3>
 <p>The Native Client SDK comes with two C standard libraries &#8212; glibc and
 newlib. These libraries are described in the table below.</p>
 <table border="1" class="docutils">
@@ -123,7 +121,6 @@ uses, even if the rest of an application is dynamically linked.</li>
 </ul>
 
 </aside>
-</section><section id="sdk-toolchains">
 <h3 id="sdk-toolchains">SDK toolchains</h3>
 <p>The Native Client SDK contains multiple toolchains, which are differentiated by
 <a class="reference internal" href="/native-client/devguide/devcycle/building.html#target-architectures"><em>target architecture</em></a> and C library:</p>
@@ -165,7 +162,6 @@ toolchain that uses glibc is in <code>toolchain/win_x86_glibc</code>.</p>
 use a glibc toolchain. (Currently the only glibc toolchain is
 <code>&lt;platform&gt;_x86_glibc</code>.) Note that you must build all code in your application
 with one toolchain. Code from multiple toolchains cannot be mixed.</p>
-</section><section id="specifying-and-delivering-shared-libraries">
 <h3 id="specifying-and-delivering-shared-libraries">Specifying and delivering shared libraries</h3>
 <p>One significant difference between newlib and glibc applications is that glibc
 applications must explicitly list and deploy the shared libraries that they
@@ -186,7 +182,6 @@ those libraries in a Native Client <a class="reference internal" href="/native-c
 deploy the libraries along with the application. Instructions for how to build
 a dynamically linked Native Client application, generate a Native Client
 manifest (.nmf) file, and deploy an application are provided below.</p>
-</section></section><section id="building-a-dynamically-linked-application">
 <h2 id="building-a-dynamically-linked-application">Building a dynamically linked application</h2>
 <p>Applications built with the glibc toolchain will by dynamically linked by
 default. Application that load shared libraries at runtime using <code>dlopen()</code>
@@ -234,8 +229,7 @@ as that is currently the only toolchain that supports glibc and thus dynamic
 linking and loading. Take a look at the example Makefiles and the generated
 .nmf files for details on how to build dynamically linked applications.
 </aside>
-</section><section id="generating-a-native-client-manifest-file-for-a-dynamically-linked-application">
-<span id="dynamic-loading-manifest"></span><h2 id="generating-a-native-client-manifest-file-for-a-dynamically-linked-application"><span id="dynamic-loading-manifest"></span>Generating a Native Client manifest file for a dynamically linked application</h2>
+<h2 id="generating-a-native-client-manifest-file-for-a-dynamically-linked-application"><span id="dynamic-loading-manifest"></span>Generating a Native Client manifest file for a dynamically linked application</h2>
 <p>The Native Client manifest file specifies the name of the executable to run
 and must also specify any shared libraries that the application directly
 depends on. For indirect dependencies (such as libraries opened via
@@ -312,7 +306,6 @@ intend to dlopen() at runtime you must explcitly list them in your call to
 </aside>
 <p>As an alternative to using <code>create_nmf</code>, it is possible to manually calculate
 the list of shared library dependencies using tools such as <code>objdump_</code>.</p>
-</section><section id="deploying-a-dynamically-linked-application">
 <h2 id="deploying-a-dynamically-linked-application">Deploying a dynamically linked application</h2>
 <p>As described above, an application&#8217;s manifest file must explicitly list all the
 executable code modules that the application directly depends on, including
@@ -344,7 +337,6 @@ rename modules, it may be easier to re-run <code>create_nmf.py</code> to generat
 manifest file rather than edit the original manifest file. For hosted
 applications, you can check for name mismatches during testing by watching the
 request log of the web server hosting your test deployment.</p>
-</section><section id="opening-a-shared-library-at-runtime">
 <h2 id="opening-a-shared-library-at-runtime">Opening a shared library at runtime</h2>
 <p>Native Client supports a version of the POSIX standard <code>dlopen()</code> interface
 for opening libraries explicitly, after an application is already running.
@@ -382,7 +374,6 @@ functions using <code>dlsym()</code>. When a user types in a query and clicks th
 button, the module calls <code>Magic8Ball()</code> to generate an answer, and returns
 the result to the user. Likewise when the user clicks the &#8216;Reverse&#8217; button
 it calls the <code>Reverse()</code> function to reverse the string.</p>
-</section><section id="troubleshooting">
 <h2 id="troubleshooting">Troubleshooting</h2>
 <p>If your .nexe isn&#8217;t loading, the best place to look for information that can
 help you troubleshoot the JavaScript console and standard output from Chrome.
@@ -419,6 +410,6 @@ expected library is missing.</dd>
 of command line flags when linking. Reconfigure your command line string to
 list libraries after the -o flag.</dd>
 </dl>
-</section></section>
+</section>
 
 {{/partials.standard_nacl_article}}

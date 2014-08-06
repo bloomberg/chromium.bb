@@ -40,9 +40,7 @@ and measure your application&#8217;s performance.</p>
 </li>
 </ul>
 
-</div><section id="diagnostic-information">
-<h2 id="diagnostic-information">Diagnostic information</h2>
-<section id="viewing-process-statistics-with-the-task-manager">
+</div><h2 id="diagnostic-information">Diagnostic information</h2>
 <h3 id="viewing-process-statistics-with-the-task-manager">Viewing process statistics with the task manager</h3>
 <p>You can use Chrome&#8217;s Task Manager to display information about a Native Client
 application:</p>
@@ -68,7 +66,6 @@ memory footprint. You can also see the rendering rate displayed as frames per
 second (FPS). Note that the computation of render frames can be performed in
 any process, but the rendering itself is always done in the top level
 application process, so look for the rendering rate there.</p>
-</section><section id="controlling-the-level-of-native-client-error-and-warning-messages">
 <h3 id="controlling-the-level-of-native-client-error-and-warning-messages">Controlling the level of Native Client error and warning messages</h3>
 <p>Native Client prints warning and error messages to stdout and stderr. You can
 increase the amount of Native Client&#8217;s diagnostic output by setting the
@@ -78,9 +75,7 @@ following <a class="reference external" href="http://en.wikipedia.org/wiki/Envir
 <li>NACL_SRPC_DEBUG=[1-255] (use a higher number for more verbose debug output)</li>
 <li>NACLVERBOSITY=[1-255]</li>
 </ul>
-</section></section><section id="basic-debugging">
 <h2 id="basic-debugging">Basic debugging</h2>
-<section id="writing-messages-to-the-javascript-console">
 <h3 id="writing-messages-to-the-javascript-console">Writing messages to the JavaScript console</h3>
 <p>You can send messages from your C/C++ code to JavaScript using the PostMessage
 call in the <a class="reference internal" href="/native-client/devguide/coding/message-system.html"><em>Pepper messaging system</em></a>. When the
@@ -88,7 +83,6 @@ JavaScript code receives a message, its message event handler can call
 <a class="reference external" href="https://developer.mozilla.org/en/DOM/console.log">console.log()</a> to write
 the message to the JavaScript <a class="reference external" href="/devtools/docs/console-api">console</a> in
 Chrome&#8217;s Developer Tools.</p>
-</section><section id="debugging-with-printf">
 <h3 id="debugging-with-printf">Debugging with printf</h3>
 <p>Your C/C++ code can perform inline printf debugging to stdout and stderr by
 calling fprintf() directly, or by using cover functions like these:</p>
@@ -103,7 +97,6 @@ void errormsg(const char* pMsg){
 </pre>
 <p>By default stdout and stderr will appear in Chrome&#8217;s stdout and stderr stream
 but they can also be redirected as described below.</p>
-<section id="redirecting-output-to-log-files">
 <h4 id="redirecting-output-to-log-files">Redirecting output to log files</h4>
 <p>You can redirect stdout and stderr to output files by setting these environment variables:</p>
 <ul class="small-gap">
@@ -123,7 +116,6 @@ variables to redirect output to a file, you must run Chrome with the
 <code>--no-sandbox</code> flag.  You must also be careful that each variable points to
 a different file.
 </aside>
-</section><section id="redirecting-output-to-the-javascript-console">
 <h4 id="redirecting-output-to-the-javascript-console">Redirecting output to the JavaScript console</h4>
 <p>You can also cause output from printf statements in your C/C++ code to be
 relayed to the JavaScript side of your application through the Pepper messaging
@@ -176,7 +168,6 @@ if your module prints and flushes frequently, or if it makes frequent Pepper
 calls to begin with (e.g., to render).</p>
 </li>
 </ol>
-</section></section><section id="logging-calls-to-pepper-interfaces">
 <h3 id="logging-calls-to-pepper-interfaces">Logging calls to Pepper interfaces</h3>
 <p>You can log all Pepper calls your module makes by passing the following flags
 to Chrome on startup:</p>
@@ -187,8 +178,7 @@ to Chrome on startup:</p>
 begin with &#8220;ppb&#8221; (that is, the interfaces that are implemented by the browser
 and that your module calls). The <code>enable-logging</code> flag tells Chrome to log
 the calls to stderr.</p>
-</section><section id="debugging-with-visual-studio">
-<span id="visual-studio"></span><h3 id="debugging-with-visual-studio"><span id="visual-studio"></span>Debugging with Visual Studio</h3>
+<h3 id="debugging-with-visual-studio"><span id="visual-studio"></span>Debugging with Visual Studio</h3>
 <p>If you develop on a Windows platform you can use the <a class="reference internal" href="/native-client/devguide/devcycle/vs-addin.html"><em>Native Client Visual
 Studio add-in</em></a> to write and debug your code. The add-in defines new
 project platforms that let you run your module in two different modes: As a
@@ -196,8 +186,7 @@ Pepper plugin and as a Native Client module. When running as a Pepper plugin
 you can use the built-in Visual Studio debugger. When running as a Native
 Client module Visual Studio will launch an instance of nacl-gdb for you and
 link it to the running code.</p>
-</section><section id="debugging-with-nacl-gdb">
-<span id="using-gdb"></span><h3 id="debugging-with-nacl-gdb"><span id="using-gdb"></span>Debugging with nacl-gdb</h3>
+<h3 id="debugging-with-nacl-gdb"><span id="using-gdb"></span>Debugging with nacl-gdb</h3>
 <p>The Native Client SDK includes a command-line debugger that you can use to
 debug Native Client modules. The debugger is based on the GNU debugger <a class="reference external" href="http://www.gnu.org/software/gdb/">gdb</a>, and is located at
 <code>toolchain/&lt;platform&gt;_x86_newlib/bin/x86_64-nacl-gdb</code> (where <em>&lt;platform&gt;</em>
@@ -207,8 +196,7 @@ is the platform of your development machine: <code>win</code>, <code>mac</code>,
 whether built using newlib or glibc for x86-32, x86-64 or ARM.  In the SDK,
 <code>i686-nacl-gdb</code> is an alias for <code>x86_64-nacl-gdb</code>, and the <code>newlib</code>
 and <code>glibc</code> toolchains both contain the same version of GDB.</p>
-<section id="debugging-pnacl-pexes-with-pepper-35">
-<span id="debugging-pnacl-pexes"></span><h4 id="debugging-pnacl-pexes-with-pepper-35"><span id="debugging-pnacl-pexes"></span>Debugging PNaCl pexes (with Pepper 35+)</h4>
+<h4 id="debugging-pnacl-pexes-with-pepper-35"><span id="debugging-pnacl-pexes"></span>Debugging PNaCl pexes (with Pepper 35+)</h4>
 <p>If you want to use GDB to debug a program that is compiled with the PNaCl
 toolchain, you must have a copy of the pexe from <strong>before</strong> running
 <code>pnacl-finalize</code>. The <code>pnacl-finalize</code> tool converts LLVM bitcode
@@ -257,7 +245,6 @@ is that it is only guaranteed to work for the Chrome version that matches
 the SDK version. Developers who may have left the <code>--enable-nacl-debug</code>
 flag turned on may end up loading the debug copy of your application
 (which may or may not work, depending on their version of Chrome).</p>
-</section><section id="debugging-pnacl-pexes-with-older-pepper-toolchains">
 <h4 id="debugging-pnacl-pexes-with-older-pepper-toolchains">Debugging PNaCl pexes (with older Pepper toolchains)</h4>
 <p>If you want to use GDB to debug a program that is compiled with the PNaCl
 toolchain, you must convert the <code>pexe</code> file to a <code>nexe</code>.  (You can skip
@@ -306,8 +293,7 @@ version of the NaCl sandbox on your system, you can translate the
 might find it easier to translate the <code>pexe</code> to both <code>nexe</code>
 formats as described above.
 </aside>
-</section><section id="running-nacl-gdb">
-<span id="id1"></span><h4 id="running-nacl-gdb"><span id="id1"></span>Running nacl-gdb</h4>
+<h4 id="running-nacl-gdb"><span id="id1"></span>Running nacl-gdb</h4>
 <p>Before you start using nacl-gdb, make sure you can <a class="reference internal" href="/native-client/devguide/devcycle/building.html"><em>build</em></a> your
 module and <a class="reference internal" href="/native-client/devguide/devcycle/running.html"><em>run</em></a> your application normally. This will verify
 that you have created all the required <a class="reference internal" href="/native-client/devguide/coding/application-structure.html"><em>application parts</em></a> (.html, .nmf, and .nexe files, shared
@@ -527,7 +513,6 @@ comprehensive list of gdb commands. Note that you can abbreviate most commands
 to just their first letter (<code>b</code> for break, <code>c</code> for continue, and so on).</p>
 <p>To interrupt execution of your module, press &lt;Ctrl-c&gt;. When you&#8217;re done
 debugging, close the Chrome window and type <code>q</code> to quit gdb.</p>
-</section></section></section><section id="debugging-with-other-tools">
 <h2 id="debugging-with-other-tools">Debugging with other tools</h2>
 <p>If you cannot use the <a class="reference internal" href="#visual-studio"><em>Visual Studio add-in</em></a>, or you want
 to use a debugger other than nacl-gdb, you must manually build your module as a
@@ -544,12 +529,11 @@ Plugin</a>.
 Note that starting with the <code>pepper_22</code> bundle, the NaCl SDK for Windows
 includes pre-built libraries and library source code, making it much easier to
 build a module into a .DLL.</p>
-<section id="open-source-profiling-tools">
 <h3 id="open-source-profiling-tools">Open source profiling tools</h3>
 <p>For the brave-hearted there are open source tools at <a class="reference external" href="http://www.chromium.org/nativeclient">Chromium.org</a> that describe how to do profiling on
 <a class="reference external" href="https://sites.google.com/a/chromium.org/dev/nativeclient/how-tos/profiling-nacl-apps-on-64-bit-windows">64-bit Windows</a>
 and <a class="reference external" href="http://www.chromium.org/nativeclient/how-tos/limited-profiling-with-oprofile-on-x86-64">Linux</a>
 machines.</p>
-</section></section></section>
+</section>
 
 {{/partials.standard_nacl_article}}
