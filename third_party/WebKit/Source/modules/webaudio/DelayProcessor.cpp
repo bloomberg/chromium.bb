@@ -51,9 +51,9 @@ void DelayProcessor::trace(Visitor* visitor)
     AudioDSPKernelProcessor::trace(visitor);
 }
 
-PassOwnPtr<AudioDSPKernel> DelayProcessor::createKernel()
+PassOwnPtrWillBeRawPtr<AudioDSPKernel> DelayProcessor::createKernel()
 {
-    return adoptPtr(new DelayDSPKernel(this));
+    return adoptPtrWillBeNoop(new DelayDSPKernel(this));
 }
 
 } // namespace blink

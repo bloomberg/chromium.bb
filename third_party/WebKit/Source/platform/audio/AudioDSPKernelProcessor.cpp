@@ -156,6 +156,12 @@ double AudioDSPKernelProcessor::latencyTime() const
     return std::numeric_limits<double>::infinity();
 }
 
+void AudioDSPKernelProcessor::trace(Visitor* visitor)
+{
+    visitor->trace(m_kernels);
+    AudioProcessor::trace(visitor);
+}
+
 } // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

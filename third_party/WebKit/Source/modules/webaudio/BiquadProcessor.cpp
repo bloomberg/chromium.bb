@@ -67,9 +67,9 @@ void BiquadProcessor::trace(Visitor* visitor)
     AudioDSPKernelProcessor::trace(visitor);
 }
 
-PassOwnPtr<AudioDSPKernel> BiquadProcessor::createKernel()
+PassOwnPtrWillBeRawPtr<AudioDSPKernel> BiquadProcessor::createKernel()
 {
-    return adoptPtr(new BiquadDSPKernel(this));
+    return adoptPtrWillBeNoop(new BiquadDSPKernel(this));
 }
 
 void BiquadProcessor::checkForDirtyCoefficients()

@@ -95,8 +95,8 @@ private:
     FFTConvolver m_convolverL2;
     FFTConvolver m_convolverR2;
 
-    AudioDelayDSPKernel m_delayLineL;
-    AudioDelayDSPKernel m_delayLineR;
+    OwnPtrWillBePersistent<AudioDelayDSPKernel> m_delayLineL;
+    OwnPtrWillBePersistent<AudioDelayDSPKernel> m_delayLineR;
 
     AudioFloatArray m_tempL1;
     AudioFloatArray m_tempR1;

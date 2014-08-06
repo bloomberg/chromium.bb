@@ -37,16 +37,16 @@ namespace blink {
 
 // AudioDSPKernel does the processing for one channel of an AudioDSPKernelProcessor.
 
-class PLATFORM_EXPORT AudioDSPKernel {
+class PLATFORM_EXPORT AudioDSPKernel : public NoBaseWillBeGarbageCollectedFinalized<AudioDSPKernel> {
 public:
-    AudioDSPKernel(AudioDSPKernelProcessor* kernelProcessor)
+    explicit AudioDSPKernel(AudioDSPKernelProcessor* kernelProcessor)
         : m_kernelProcessor(kernelProcessor)
         , m_sampleRate(kernelProcessor->sampleRate())
     {
     }
 
-    AudioDSPKernel(float sampleRate)
-        : m_kernelProcessor(0)
+    explicit AudioDSPKernel(float sampleRate)
+        : m_kernelProcessor(nullptr)
         , m_sampleRate(sampleRate)
     {
     }
@@ -66,8 +66,10 @@ public:
     virtual double tailTime() const = 0;
     virtual double latencyTime() const = 0;
 
+    virtual void trace(Visitor*);
+
 protected:
-    AudioDSPKernelProcessor* m_kernelProcessor;
+    const RawPtrWillBeMember<AudioDSPKernelProcessor> m_kernelProcessor;
     float m_sampleRate;
 };
 

@@ -40,7 +40,7 @@ public:
     virtual ~DelayProcessor();
     virtual void trace(Visitor*) OVERRIDE;
 
-    virtual PassOwnPtr<AudioDSPKernel> createKernel() OVERRIDE;
+    virtual PassOwnPtrWillBeRawPtr<AudioDSPKernel> createKernel() OVERRIDE;
 
     AudioParam* delayTime() const { return m_delayTime.get(); }
 
