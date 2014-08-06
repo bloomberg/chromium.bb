@@ -396,7 +396,7 @@ class AndroidDevices(object):
 
     def _is_device_screen_on(self, commands):
         power_status = commands.run(['shell', 'dumpsys', 'power'])
-        return 'mScreenOn=true' in power_status or 'mScreenOn=SCREEN_ON_BIT' in power_status
+        return 'mScreenOn=true' in power_status or 'mScreenOn=SCREEN_ON_BIT' in power_status or 'Display Power: state=ON' in power_status
 
 
 class AndroidPort(base.Port):
