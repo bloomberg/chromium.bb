@@ -72,7 +72,7 @@ aura::WindowTreeHost* AshWindowTreeHostOzone::AsWindowTreeHost() {
 }
 
 void AshWindowTreeHostOzone::SetRootTransform(const gfx::Transform& transform) {
-  transformer_helper_.GetTransform();
+  transformer_helper_.SetTransform(transform);
 }
 
 gfx::Transform AshWindowTreeHostOzone::GetRootTransform() const {
