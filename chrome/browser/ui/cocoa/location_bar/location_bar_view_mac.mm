@@ -339,6 +339,9 @@ bool LocationBarViewMac::IsEditable() {
 }
 
 void LocationBarViewMac::SetStarred(bool starred) {
+  if (star_decoration_->starred() == starred)
+    return;
+
   star_decoration_->SetStarred(starred);
   UpdateStarDecorationVisibility();
   OnDecorationsChanged();
