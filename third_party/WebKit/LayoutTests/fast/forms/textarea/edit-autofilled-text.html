@@ -1,0 +1,67 @@
+<head>
+<script src="../../../resources/js-test.js"></script>
+<script>
+function test() {
+    if (!window.internals) {
+        testFailed('This test requires the test harness to run.');
+        return;
+    }
+
+    var textarea = document.querySelector('textarea');
+    textarea.value = 'autofilled is true';
+
+    var computedStyleTextarea = document.defaultView.getComputedStyle(textarea);
+    var originalForeground = computedStyleTextarea.color;
+    var originalBackground = computedStyleTextarea.backgroundColor;
+
+    if (window.internals)
+        window.internals.setAutofilled(textarea, true);
+    
+    // Both the foreground and background colors should change.
+    computedStyleTextarea = document.defaultView.getComputedStyle(textarea);
+    if (computedStyleTextarea.color == originalForeground) {
+        testFailed('Foreground color for <textarea> element did not change when autofilled.');
+        return;
+    }
+    if (computedStyleTextarea.backgroundColor == originalBackground) {
+        testFailed('Background color for <textarea> element did not change when autofilled.');
+        return;
+    }
+
+    // Edit the autofilled text.
+    textarea.focus();
+    document.execCommand('Delete', false, null);
+    document.execCommand('Delete', false, null);
+    document.execCommand('Delete', false, null);
+    document.execCommand('Delete', false, null);
+    document.execCommand('InsertText', false, 'false');
+
+    // Colors should be restored.
+    computedStyleTextarea = document.defaultView.getComputedStyle(textarea);
+    if (computedStyleTextarea.color != originalForeground) {
+        testFailed('Foreground color for <textarea> element did not revert when un-autofilled.');
+        return;
+    }
+    if (computedStyleTextarea.backgroundColor != originalBackground) {
+        testFailed('Background color for <textarea> element did not revert when un-autofilled.');
+        return;
+    }
+
+    testPassed('');
+}
+</script>
+
+<style>
+    textarea {
+        color: #FFFFFF;
+        background: transparent;
+    }
+</style>
+</head>
+<body onload="test()">
+    This tests that background and foreground colors for autofilled textarea should be restored to original colors when editing the text.<br>
+    <form name="fm">
+        <textarea id="textarea"></textarea>
+    </form>
+    <div id="console"></div>
+</body>

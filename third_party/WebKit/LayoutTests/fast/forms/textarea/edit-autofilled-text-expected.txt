@@ -1,0 +1,7 @@
+This tests that background and foreground colors for autofilled textarea should be restored to original colors when editing the text.
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS 
+

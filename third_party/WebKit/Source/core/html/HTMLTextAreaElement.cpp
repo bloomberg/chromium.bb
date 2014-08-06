@@ -270,6 +270,7 @@ void HTMLTextAreaElement::subtreeHasChanged()
     setChangedSinceLastFormControlChangeEvent(true);
     m_valueIsUpToDate = false;
     setNeedsValidityCheck();
+    setAutofilled(false);
 
     if (!focused())
         return;
