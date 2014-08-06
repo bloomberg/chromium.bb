@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "modules/imagebitmap/ImageBitmapFactories.h"
+#include "core/imagebitmap/ImageBitmapFactories.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
