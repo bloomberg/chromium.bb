@@ -1322,15 +1322,6 @@ crbug.com/399459 http/tests/misc/link-rel-prefetch-and-subresource.html [ Pass F
 # V8 3.28.19
 crbug.com/392762 fast/js/nested-object-gc.html [ Pass Crash ]
 
-# After the V8 roll containing https://code.google.com/p/v8/source/detail?r=22889 lands,
-# these should start passing and these expectations can be removed.
-crbug.com/400507 virtual/stable/webexposed/global-constructors-listing-dedicated-worker.html [ Failure ]
-crbug.com/400507 virtual/stable/webexposed/global-constructors-listing-shared-worker.html [ Failure ]
-crbug.com/400507 virtual/stable/webexposed/global-constructors-listing.html [ Failure ]
-crbug.com/400507 webexposed/global-constructors-listing-dedicated-worker.html [ Failure ]
-crbug.com/400507 webexposed/global-constructors-listing-shared-worker.html [ Failure ]
-crbug.com/400507 webexposed/global-constructors-listing.html [ Failure ]
-
 # Flaky
 crbug.com/395127 http/tests/w3c/webperf/approved/UserTiming/test_user_timing_measure_navigation_timing.htm [ Failure Pass ]
 
