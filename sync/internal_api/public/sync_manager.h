@@ -25,6 +25,7 @@
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/engine/sync_status.h"
 #include "sync/internal_api/public/events/protocol_event.h"
+#include "sync/internal_api/public/shutdown_reason.h"
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
@@ -336,7 +337,7 @@ class SYNC_EXPORT SyncManager {
   virtual void SaveChanges() = 0;
 
   // Issue a final SaveChanges, and close sqlite handles.
-  virtual void ShutdownOnSyncThread() = 0;
+  virtual void ShutdownOnSyncThread(ShutdownReason reason) = 0;
 
   // May be called from any thread.
   virtual UserShare* GetUserShare() = 0;

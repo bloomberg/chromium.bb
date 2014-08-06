@@ -151,7 +151,7 @@ void SyncBackendHostCore::OnInitializationComplete(
   DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
 
   if (!success) {
-    DoDestroySyncManager();
+    DoDestroySyncManager(syncer::STOP_SYNC);
     host_.Call(FROM_HERE,
                &SyncBackendHostImpl::HandleInitializationFailureOnFrontendLoop);
     return;
@@ -566,31 +566,31 @@ void SyncBackendHostCore::ShutdownOnUIThread() {
   release_request_context_signal_.Signal();
 }
 
-void SyncBackendHostCore::DoShutdown(bool sync_disabled) {
+void SyncBackendHostCore::DoShutdown(syncer::ShutdownReason reason) {
   DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
 
   // It's safe to do this even if the type was never activated.
   registrar_->DeactivateDataType(syncer::DEVICE_INFO);
   synced_device_tracker_.reset();
 
-  DoDestroySyncManager();
+  DoDestroySyncManager(reason);
 
   registrar_ = NULL;
 
-  if (sync_disabled)
+  if (reason == syncer::DISABLE_SYNC)
     DeleteSyncDataFolder();
 
   host_.Reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-void SyncBackendHostCore::DoDestroySyncManager() {
+void SyncBackendHostCore::DoDestroySyncManager(syncer::ShutdownReason reason) {
   DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   if (sync_manager_) {
     DisableDirectoryTypeDebugInfoForwarding();
     save_changes_timer_.reset();
     sync_manager_->RemoveObserver(this);
-    sync_manager_->ShutdownOnSyncThread();
+    sync_manager_->ShutdownOnSyncThread(reason);
     sync_manager_.reset();
   }
 }

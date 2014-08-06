@@ -12,6 +12,7 @@
 #include "components/sync_driver/system_encryptor.h"
 #include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/sessions/type_debug_info_observer.h"
+#include "sync/internal_api/public/shutdown_reason.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 #include "url/gurl.h"
 
@@ -194,8 +195,8 @@ class SyncBackendHostCore
   // 2) Post DoShutdown() to sync loop to clean up backend state, save
   //    directory and destroy sync manager.
   void ShutdownOnUIThread();
-  void DoShutdown(bool sync_disabled);
-  void DoDestroySyncManager();
+  void DoShutdown(syncer::ShutdownReason reason);
+  void DoDestroySyncManager(syncer::ShutdownReason reason);
 
   // Configuration methods that must execute on sync loop.
   void DoConfigureSyncer(

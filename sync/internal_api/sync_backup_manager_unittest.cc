@@ -97,7 +97,7 @@ class SyncBackupManagerTest : public syncer::SyncManager::Observer,
                      base::Bind(&SyncBackupManagerTest::ConfigureSyncer,
                                 base::Unretained(this)));
     } else {
-      manager_->ShutdownOnSyncThread();
+      manager_->ShutdownOnSyncThread(STOP_SYNC);
     }
   }
 
@@ -133,7 +133,7 @@ TEST_F(SyncBackupManagerTest, NormalizeAndPersist) {
     EXPECT_TRUE(pref.GetEntry()->GetId().ServerKnows());
     EXPECT_FALSE(pref.GetEntry()->GetIsUnsynced());
   }
-  manager->ShutdownOnSyncThread();
+  manager->ShutdownOnSyncThread(STOP_SYNC);
 
   // Reopen db to verify entry is persisted.
   manager.reset(new SyncBackupManager);

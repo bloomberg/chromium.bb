@@ -133,7 +133,7 @@ class SyncRollbackManagerTest : public testing::Test,
     InitManager(&backup_manager, ModelTypeSet(type), &delegate,
                 STORAGE_ON_DISK);
     CreateEntry(backup_manager.GetUserShare(), type, client_tag);
-    backup_manager.ShutdownOnSyncThread();
+    backup_manager.ShutdownOnSyncThread(STOP_SYNC);
   }
 
   // Verify entry with |client_tag| exists in sync directory.
@@ -163,7 +163,7 @@ class SyncRollbackManagerTest : public testing::Test,
                      base::Bind(&SyncRollbackManagerTest::ConfigureSyncer,
                                 base::Unretained(this)));
     } else {
-      manager_->ShutdownOnSyncThread();
+      manager_->ShutdownOnSyncThread(STOP_SYNC);
     }
   }
 
@@ -242,7 +242,7 @@ TEST_F(SyncRollbackManagerTest, BackupDbNotChangedOnAbort) {
   CreateEntry(rollback_manager->GetUserShare(), PREFERENCES, "pref2");
 
   // Manager was shut down before sync starts.
-  rollback_manager->ShutdownOnSyncThread();
+  rollback_manager->ShutdownOnSyncThread(STOP_SYNC);
 
   // Verify new entry was not persisted.
   rollback_manager.reset(new SyncRollbackManager);

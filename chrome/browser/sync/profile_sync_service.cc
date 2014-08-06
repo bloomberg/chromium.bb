@@ -89,6 +89,7 @@
 #include "sync/internal_api/public/http_bridge_network_resources.h"
 #include "sync/internal_api/public/network_resources.h"
 #include "sync/internal_api/public/sessions/type_debug_info_observer.h"
+#include "sync/internal_api/public/shutdown_reason.h"
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/internal_api/public/util/experiments.h"
@@ -645,8 +646,12 @@ void ProfileSyncService::StartUpSlowBackendComponents(
 
   DVLOG(1) << "Start backend mode: " << mode;
 
-  if (backend_)
-    ShutdownImpl(browser_sync::SyncBackendHost::STOP_AND_CLAIM_THREAD);
+  if (backend_) {
+    if (mode == SYNC)
+      ShutdownImpl(syncer::SWITCH_MODE_SYNC);
+    else
+      ShutdownImpl(syncer::STOP_SYNC);
+  }
 
   backend_mode_ = mode;
 
@@ -783,7 +788,7 @@ void ProfileSyncService::OnRefreshTokensLoaded() {
 void ProfileSyncService::Shutdown() {
   UnregisterAuthNotifications();
 
-  ShutdownImpl(browser_sync::SyncBackendHost::STOP);
+  ShutdownImpl(syncer::BROWSER_SHUTDOWN);
   if (sync_error_controller_) {
     // Destroy the SyncErrorController when the service shuts down for good.
     RemoveObserver(sync_error_controller_.get());
@@ -794,8 +799,7 @@ void ProfileSyncService::Shutdown() {
     sync_thread_->Stop();
 }
 
-void ProfileSyncService::ShutdownImpl(
-    browser_sync::SyncBackendHost::ShutdownOption option) {
+void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
   if (!backend_)
     return;
 
@@ -830,7 +834,7 @@ void ProfileSyncService::ShutdownImpl(
   // shutting it down.
   scoped_ptr<SyncBackendHost> doomed_backend(backend_.release());
   if (doomed_backend) {
-    sync_thread_ = doomed_backend->Shutdown(option);
+    sync_thread_ = doomed_backend->Shutdown(reason);
     doomed_backend.reset();
   }
   base::TimeDelta shutdown_time = base::Time::Now() - shutdown_start_time;
@@ -865,7 +869,7 @@ void ProfileSyncService::DisableForUser() {
   // PSS clients don't think we're set up while we're shutting down.
   sync_prefs_.ClearPreferences();
   ClearUnrecoverableError();
-  ShutdownImpl(browser_sync::SyncBackendHost::DISABLE_AND_CLAIM_THREAD);
+  ShutdownImpl(syncer::DISABLE_SYNC);
 }
 
 bool ProfileSyncService::HasSyncSetupCompleted() const {
@@ -944,8 +948,7 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
       base::Bind(&ProfileSyncService::ShutdownImpl,
                  weak_factory_.GetWeakPtr(),
                  delete_sync_database ?
-                     browser_sync::SyncBackendHost::DISABLE_AND_CLAIM_THREAD :
-                     browser_sync::SyncBackendHost::STOP_AND_CLAIM_THREAD));
+                     syncer::DISABLE_SYNC : syncer::STOP_SYNC));
 }
 
 // TODO(zea): Move this logic into the DataTypeController/DataTypeManager.
@@ -1448,7 +1451,7 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
       // Sync disabled by domain admin. we should stop syncing until next
       // restart.
       sync_disabled_by_admin_ = true;
-      ShutdownImpl(browser_sync::SyncBackendHost::DISABLE_AND_CLAIM_THREAD);
+      ShutdownImpl(syncer::DISABLE_SYNC);
       break;
     default:
       NOTREACHED();
@@ -1472,7 +1475,7 @@ void ProfileSyncService::OnConfigureDone(
       StartSyncingWithServer();
     } else if (!expect_sync_configuration_aborted_) {
       DVLOG(1) << "Backup/rollback backend failed to configure.";
-      ShutdownImpl(browser_sync::SyncBackendHost::STOP_AND_CLAIM_THREAD);
+      ShutdownImpl(syncer::STOP_SYNC);
     }
 
     return;
@@ -2433,7 +2436,7 @@ void ProfileSyncService::StopAndSuppress() {
   if (HasSyncingBackend()) {
     backend_->UnregisterInvalidationIds();
   }
-  ShutdownImpl(browser_sync::SyncBackendHost::STOP_AND_CLAIM_THREAD);
+  ShutdownImpl(syncer::STOP_SYNC);
 }
 
 bool ProfileSyncService::IsStartSuppressed() const {
@@ -2616,7 +2619,7 @@ GURL ProfileSyncService::GetSyncServiceURL(
 
 void ProfileSyncService::StartStopBackupForTesting() {
   if (backend_mode_ == BACKUP)
-    ShutdownImpl(browser_sync::SyncBackendHost::STOP_AND_CLAIM_THREAD);
+    ShutdownImpl(syncer::STOP_SYNC);
   else
     backup_rollback_controller_.Start(base::TimeDelta());
 }

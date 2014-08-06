@@ -192,7 +192,7 @@ class SyncBackendHostTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     if (backend_) {
       backend_->StopSyncingForShutdown();
-      backend_->Shutdown(SyncBackendHost::STOP);
+      backend_->Shutdown(syncer::STOP_SYNC);
     }
     backend_.reset();
     sync_prefs_.reset();
@@ -714,7 +714,7 @@ TEST_F(SyncBackendHostTest, AttemptForwardLocalRefreshRequestLate) {
   fake_manager_->WaitForSyncThread();
   EXPECT_FALSE(types.Equals(fake_manager_->GetLastRefreshRequestTypes()));
 
-  backend_->Shutdown(SyncBackendHost::STOP);
+  backend_->Shutdown(syncer::STOP_SYNC);
   backend_.reset();
 }
 

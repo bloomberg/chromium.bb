@@ -275,18 +275,17 @@ void SyncBackendHostImpl::StopSyncingForShutdown() {
   core_->ShutdownOnUIThread();
 }
 
-scoped_ptr<base::Thread> SyncBackendHostImpl::Shutdown(ShutdownOption option) {
+scoped_ptr<base::Thread> SyncBackendHostImpl::Shutdown(
+    syncer::ShutdownReason reason) {
   // StopSyncingForShutdown() (which nulls out |frontend_|) should be
   // called first.
   DCHECK(!frontend_);
   DCHECK(registrar_->sync_thread()->IsRunning());
 
-  bool sync_disabled = (option == DISABLE_AND_CLAIM_THREAD);
-  bool sync_thread_claimed =
-      (option == DISABLE_AND_CLAIM_THREAD || option == STOP_AND_CLAIM_THREAD);
+  bool sync_thread_claimed = (reason != syncer::BROWSER_SHUTDOWN);
 
   if (invalidation_handler_registered_) {
-    if (sync_disabled) {
+    if (reason == syncer::DISABLE_SYNC) {
       UnregisterInvalidationIds();
     }
     invalidator_->UnregisterInvalidationHandler(this);
@@ -298,7 +297,7 @@ scoped_ptr<base::Thread> SyncBackendHostImpl::Shutdown(ShutdownOption option) {
   registrar_->sync_thread()->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&SyncBackendHostCore::DoShutdown,
-                 core_.get(), sync_disabled));
+                 core_.get(), reason));
   core_ = NULL;
 
   // Worker cleanup.

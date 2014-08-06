@@ -52,7 +52,8 @@ class SyncBackendHostMock : public SyncBackendHost {
 
   virtual void StopSyncingForShutdown() OVERRIDE;
 
-  virtual scoped_ptr<base::Thread> Shutdown(ShutdownOption option) OVERRIDE;
+  virtual scoped_ptr<base::Thread> Shutdown(syncer::ShutdownReason reason)
+      OVERRIDE;
 
   virtual void UnregisterInvalidationIds() OVERRIDE;
 

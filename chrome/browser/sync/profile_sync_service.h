@@ -45,6 +45,7 @@
 #include "net/base/backoff_entry.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/internal_api/public/shutdown_reason.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
@@ -789,9 +790,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   void ConfigureDataTypeManager();
 
   // Shuts down the backend sync components.
-  // |option| indicates if syncing is being disabled or not, and whether
+  // |reason| dictates if syncing is being disabled or not, and whether
   // to claim ownership of sync thread from backend.
-  void ShutdownImpl(browser_sync::SyncBackendHost::ShutdownOption option);
+  void ShutdownImpl(syncer::ShutdownReason reason);
 
   // Return SyncCredentials from the OAuth2TokenService.
   syncer::SyncCredentials GetCredentials();

@@ -101,7 +101,8 @@ class SyncBackendHostImpl
   virtual bool SetDecryptionPassphrase(const std::string& passphrase)
       OVERRIDE WARN_UNUSED_RESULT;
   virtual void StopSyncingForShutdown() OVERRIDE;
-  virtual scoped_ptr<base::Thread> Shutdown(ShutdownOption option) OVERRIDE;
+  virtual scoped_ptr<base::Thread> Shutdown(syncer::ShutdownReason reason)
+      OVERRIDE;
   virtual void UnregisterInvalidationIds() OVERRIDE;
   virtual void ConfigureDataTypes(
       syncer::ConfigureReason reason,

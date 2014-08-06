@@ -262,6 +262,7 @@
         'internal_api/public/non_blocking_sync_common.h',
         'internal_api/public/read_node.h',
         'internal_api/public/read_transaction.h',
+        'internal_api/public/shutdown_reason.h',
         'internal_api/public/sessions/commit_counters.cc',
         'internal_api/public/sessions/commit_counters.h',
         'internal_api/public/sessions/model_neutral_state.cc',

@@ -853,7 +853,7 @@ class SyncManagerTest : public testing::Test,
 
   void TearDown() {
     sync_manager_.RemoveObserver(&manager_observer_);
-    sync_manager_.ShutdownOnSyncThread();
+    sync_manager_.ShutdownOnSyncThread(STOP_SYNC);
     PumpLoop();
   }
 

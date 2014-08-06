@@ -605,7 +605,7 @@ void SyncManagerImpl::RemoveObserver(SyncManager::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void SyncManagerImpl::ShutdownOnSyncThread() {
+void SyncManagerImpl::ShutdownOnSyncThread(ShutdownReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Prevent any in-flight method calls from running.  Also

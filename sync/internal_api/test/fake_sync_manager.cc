@@ -202,7 +202,7 @@ void FakeSyncManager::SaveChanges() {
   // Do nothing.
 }
 
-void FakeSyncManager::ShutdownOnSyncThread() {
+void FakeSyncManager::ShutdownOnSyncThread(ShutdownReason reason) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
   test_user_share_.TearDown();
 }

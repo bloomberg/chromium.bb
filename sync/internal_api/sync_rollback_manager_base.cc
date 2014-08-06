@@ -138,7 +138,7 @@ SyncStatus SyncRollbackManagerBase::GetDetailedStatus() const {
 void SyncRollbackManagerBase::SaveChanges() {
 }
 
-void SyncRollbackManagerBase::ShutdownOnSyncThread() {
+void SyncRollbackManagerBase::ShutdownOnSyncThread(ShutdownReason reason) {
   if (initialized_) {
     SaveChanges();
     share_.directory->Close();

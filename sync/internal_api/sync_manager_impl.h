@@ -110,7 +110,7 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl
   virtual void RemoveObserver(SyncManager::Observer* observer) OVERRIDE;
   virtual SyncStatus GetDetailedStatus() const OVERRIDE;
   virtual void SaveChanges() OVERRIDE;
-  virtual void ShutdownOnSyncThread() OVERRIDE;
+  virtual void ShutdownOnSyncThread(ShutdownReason reason) OVERRIDE;
   virtual UserShare* GetUserShare() OVERRIDE;
   virtual syncer::SyncContextProxy* GetSyncContextProxy() OVERRIDE;
   virtual const std::string cache_guid() OVERRIDE;

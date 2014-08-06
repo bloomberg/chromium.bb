@@ -48,7 +48,8 @@ bool SyncBackendHostMock::SetDecryptionPassphrase(
 
 void SyncBackendHostMock::StopSyncingForShutdown() {}
 
-scoped_ptr<base::Thread> SyncBackendHostMock::Shutdown(ShutdownOption option) {
+scoped_ptr<base::Thread> SyncBackendHostMock::Shutdown(
+    syncer::ShutdownReason reason) {
   return scoped_ptr<base::Thread>();
 }
 

@@ -16,6 +16,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
+#include "sync/internal_api/public/shutdown_reason.h"
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
@@ -115,18 +116,16 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
 
   // Called on |frontend_loop_| to kick off shutdown.
   // See the implementation and Core::DoShutdown for details.
-  // Must be called *after* StopSyncingForShutdown. Caller should claim sync
-  // thread using STOP_AND_CLAIM_THREAD or DISABLE_AND_CLAIM_THREAD if sync
-  // backend might be recreated later because otherwise:
-  // * sync loop may be stopped on main loop and cause it to be blocked.
-  // * new/old backend may interfere with each other if new backend is created
-  //   before old one finishes cleanup.
-  enum ShutdownOption {
-    STOP,                      // Stop syncing and let backend stop sync thread.
-    STOP_AND_CLAIM_THREAD,     // Stop syncing and return sync thread.
-    DISABLE_AND_CLAIM_THREAD,  // Disable sync and return sync thread.
-  };
-  virtual scoped_ptr<base::Thread> Shutdown(ShutdownOption option) = 0;
+  // Must be called *after* StopSyncingForShutdown.
+  // For any reason other than BROWSER_SHUTDOWN, caller should claim sync
+  // thread because:
+  // * during browser shutdown sync thread is not claimed to avoid blocking
+  //   browser shutdown on sync shutdown.
+  // * otherwise sync thread is claimed so that if sync backend is recreated
+  //   later, initialization of new backend is serialized on previous sync
+  //   thread after cleanup of previous backend to avoid old/new backends
+  //   interfere with each other.
+  virtual scoped_ptr<base::Thread> Shutdown(syncer::ShutdownReason reason) = 0;
 
   // Removes all current registrations from the backend on the
   // InvalidationService.
