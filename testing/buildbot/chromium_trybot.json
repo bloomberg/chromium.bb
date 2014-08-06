@@ -214,5 +214,9 @@
   ],
 
   "non_filter_builders": [
+  ],
+
+  "filter_tests_builders": [
+    "linux_chromium_rel_swarming"
   ]
 }
