@@ -50,7 +50,7 @@ class CC_EXPORT RasterTilePriorityQueue {
   // TODO(vmpstr): This is potentially unnecessary if it becomes the case that
   // PairedPictureLayerQueue is fast enough to copy. In that case, we can use
   // objects directly (ie std::vector<PairedPictureLayerQueue>.
-  ScopedPtrVector<PairedPictureLayerQueue> paired_queues_heap_;
+  ScopedPtrVector<PairedPictureLayerQueue> paired_queues_;
   TreePriority tree_priority_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterTilePriorityQueue);

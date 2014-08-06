@@ -83,33 +83,33 @@ void RasterTilePriorityQueue::Build(
            paired_layers.begin();
        it != paired_layers.end();
        ++it) {
-    paired_queues_heap_.push_back(
+    paired_queues_.push_back(
         make_scoped_ptr(new PairedPictureLayerQueue(*it, tree_priority_)));
   }
 
-  paired_queues_heap_.make_heap(RasterOrderComparator(tree_priority_));
+  paired_queues_.make_heap(RasterOrderComparator(tree_priority_));
 }
 
 void RasterTilePriorityQueue::Reset() {
-  paired_queues_heap_.clear();
+  paired_queues_.clear();
 }
 
 bool RasterTilePriorityQueue::IsEmpty() const {
-  return paired_queues_heap_.empty() || paired_queues_heap_.front()->IsEmpty();
+  return paired_queues_.empty() || paired_queues_.front()->IsEmpty();
 }
 
 Tile* RasterTilePriorityQueue::Top() {
   DCHECK(!IsEmpty());
-  return paired_queues_heap_.front()->Top(tree_priority_);
+  return paired_queues_.front()->Top(tree_priority_);
 }
 
 void RasterTilePriorityQueue::Pop() {
   DCHECK(!IsEmpty());
 
-  paired_queues_heap_.pop_heap(RasterOrderComparator(tree_priority_));
-  PairedPictureLayerQueue* paired_queue = paired_queues_heap_.back();
+  paired_queues_.pop_heap(RasterOrderComparator(tree_priority_));
+  PairedPictureLayerQueue* paired_queue = paired_queues_.back();
   paired_queue->Pop(tree_priority_);
-  paired_queues_heap_.push_heap(RasterOrderComparator(tree_priority_));
+  paired_queues_.push_heap(RasterOrderComparator(tree_priority_));
 }
 
 RasterTilePriorityQueue::PairedPictureLayerQueue::PairedPictureLayerQueue() {
