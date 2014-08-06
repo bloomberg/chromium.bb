@@ -78,6 +78,8 @@ CustomEvent
 DOMError
 DOMException
 DOMImplementation
+DOMMatrix
+DOMMatrixReadOnly
 DOMParser
 DOMPoint
 DOMPointReadOnly

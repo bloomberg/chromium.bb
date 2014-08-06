@@ -1,0 +1,37 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+    Constructor,
+    Constructor(DOMMatrixReadOnly other),
+    // FIXME: Should implement more constructors (See: crbug.com/388780)
+    RuntimeEnabled=GeometryInterfaces,
+] interface DOMMatrix : DOMMatrixReadOnly {
+    // These attributes are simple aliases for certain elements of the 4x4 matrix
+    attribute unrestricted double a;
+    attribute unrestricted double b;
+    attribute unrestricted double c;
+    attribute unrestricted double d;
+    attribute unrestricted double e;
+    attribute unrestricted double f;
+
+    attribute unrestricted double m11;
+    attribute unrestricted double m12;
+    attribute unrestricted double m13;
+    attribute unrestricted double m14;
+    attribute unrestricted double m21;
+    attribute unrestricted double m22;
+    attribute unrestricted double m23;
+    attribute unrestricted double m24;
+    attribute unrestricted double m31;
+    attribute unrestricted double m32;
+    attribute unrestricted double m33;
+    attribute unrestricted double m34;
+    attribute unrestricted double m41;
+    attribute unrestricted double m42;
+    attribute unrestricted double m43;
+    attribute unrestricted double m44;
+
+    // FIXME: Should implement some methods (See: crbug.com/388780)
+};

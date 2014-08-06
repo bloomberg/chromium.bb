@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Geometry Interfaces: DOMMatrix</title>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+
+debug("# DOMMatrix()");
+var matrix = new DOMMatrix();
+shouldBe("matrix.a", "matrix.m11");
+shouldBe("matrix.b", "matrix.m12");
+shouldBe("matrix.c", "matrix.m21");
+shouldBe("matrix.d", "matrix.m22");
+shouldBe("matrix.e", "matrix.m41");
+shouldBe("matrix.f", "matrix.m42");
+shouldBe("matrix.m11", "1");
+shouldBe("matrix.m12", "0");
+shouldBe("matrix.m13", "0");
+shouldBe("matrix.m14", "0");
+shouldBe("matrix.m21", "0");
+shouldBe("matrix.m22", "1");
+shouldBe("matrix.m23", "0");
+shouldBe("matrix.m24", "0");
+shouldBe("matrix.m31", "0");
+shouldBe("matrix.m32", "0");
+shouldBe("matrix.m33", "1");
+shouldBe("matrix.m34", "0");
+shouldBe("matrix.m41", "0");
+shouldBe("matrix.m42", "0");
+shouldBe("matrix.m43", "0");
+shouldBe("matrix.m44", "1");
+shouldBeTrue("matrix.is2D");
+shouldBeTrue("matrix.isIdentity");
+debug("");
+
+debug("# DOMMatrix set attributes");
+matrix.a = 10;
+matrix.b = 20;
+matrix.m24 = 2;
+matrix.m33 = 3;
+matrix.m42 = 3;
+matrix.m44 = 9;
+shouldBe("matrix.a", "matrix.m11");
+shouldBe("matrix.b", "matrix.m12");
+shouldBe("matrix.c", "matrix.m21");
+shouldBe("matrix.d", "matrix.m22");
+shouldBe("matrix.e", "matrix.m41");
+shouldBe("matrix.f", "matrix.m42");
+shouldBe("matrix.m11", "10");
+shouldBe("matrix.m12", "20");
+shouldBe("matrix.m13", "0");
+shouldBe("matrix.m14", "0");
+shouldBe("matrix.m21", "0");
+shouldBe("matrix.m22", "1");
+shouldBe("matrix.m23", "0");
+shouldBe("matrix.m24", "2");
+shouldBe("matrix.m31", "0");
+shouldBe("matrix.m32", "0");
+shouldBe("matrix.m33", "3");
+shouldBe("matrix.m34", "0");
+shouldBe("matrix.m41", "0");
+shouldBe("matrix.m42", "3");
+shouldBe("matrix.m43", "0");
+shouldBe("matrix.m44", "9");
+shouldBeFalse("matrix.is2D");
+shouldBeFalse("matrix.isIdentity");
+debug("");
+
+debug("# DOMMatrix(other)");
+var other = matrix;
+matrix = new DOMMatrix(other);
+shouldBe("matrix.a", "matrix.m11");
+shouldBe("matrix.b", "matrix.m12");
+shouldBe("matrix.c", "matrix.m21");
+shouldBe("matrix.d", "matrix.m22");
+shouldBe("matrix.e", "matrix.m41");
+shouldBe("matrix.f", "matrix.m42");
+shouldBe("matrix.m11", "10");
+shouldBe("matrix.m12", "20");
+shouldBe("matrix.m13", "0");
+shouldBe("matrix.m14", "0");
+shouldBe("matrix.m21", "0");
+shouldBe("matrix.m22", "1");
+shouldBe("matrix.m23", "0");
+shouldBe("matrix.m24", "2");
+shouldBe("matrix.m31", "0");
+shouldBe("matrix.m32", "0");
+shouldBe("matrix.m33", "3");
+shouldBe("matrix.m34", "0");
+shouldBe("matrix.m41", "0");
+shouldBe("matrix.m42", "3");
+shouldBe("matrix.m43", "0");
+shouldBe("matrix.m44", "9");
+shouldBeFalse("matrix.is2D");
+shouldBeFalse("matrix.isIdentity");
+debug("");
+
+debug("# DOMMatrix.is2D can never be set to 'true' when it was set to 'false' before calling setMatrixValue().");
+matrix = new DOMMatrix();
+shouldBeTrue("matrix.is2D");
+shouldBeTrue("matrix.isIdentity");
+matrix.m31 = 1;
+matrix.m33 = 0;
+shouldBeFalse("matrix.is2D");
+shouldBeFalse("matrix.isIdentity");
+matrix.m31 = 0;
+matrix.m33 = 1;
+shouldBeFalse("matrix.is2D");
+shouldBeTrue("matrix.isIdentity");
+debug("");
+
+</script>
+</body>
+</html>
