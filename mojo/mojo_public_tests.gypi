@@ -101,7 +101,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
-        'mojo_application',
+        'mojo_application_standalone',
         'mojo_utility',
         'mojo_environment_standalone',
         'mojo_run_all_unittests',

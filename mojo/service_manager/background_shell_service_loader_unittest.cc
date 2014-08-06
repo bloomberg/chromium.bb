@@ -52,19 +52,4 @@ TEST(BackgroundShellServiceLoaderTest, Load) {
   loader.LoadService(NULL, GURL(), dummy.handle0.Pass());
 }
 
-// Test that an app that doesn't quit itself can still be handled.
-// TODO(tim): Remove this.
-TEST(BackgroundShellServiceLoaderTest, LoadMisbehavedService) {
-  scoped_ptr<DummyLoader> real_loader(new DummyLoader());
-  real_loader->DontSimulateAppQuit();
-  BackgroundShellServiceLoader loader(
-      real_loader.PassAs<ServiceLoader>(), "test",
-      base::MessageLoop::TYPE_DEFAULT);
-  // Because this app is mis-behaved (doesn't quit itself), we need to
-  // explicitly kill the thread.
-  loader.set_quit_on_shutdown();
-  MessagePipe dummy;
-  loader.LoadService(NULL, GURL(), dummy.handle0.Pass());
-}
-
 }  // namespace mojo

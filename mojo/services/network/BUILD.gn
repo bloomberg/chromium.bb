@@ -7,7 +7,7 @@ source_set("network") {
     "//base",
     "//mojo/common",
     "//mojo/environment:chromium",
-    "//mojo/public/cpp/application",
+    "//mojo/public/cpp/application:chromium",
     "//mojo/services/public/interfaces/network",
     "//net",
     "//url",

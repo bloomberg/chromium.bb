@@ -32,12 +32,6 @@ class MOJO_SERVICE_MANAGER_EXPORT BackgroundShellServiceLoader :
   virtual void OnServiceError(ServiceManager* manager,
                               const GURL& url) OVERRIDE;
 
-  // Post a task to quit the MessageLoop we are running for the app when we
-  // are destroyed. Most apps should quit themselves and not need this.
-  // TODO(tim): Remove this method once applications are smart enough
-  // to quit themselves. Bug 394477.
-  void set_quit_on_shutdown() { quit_on_shutdown_ = true; }
-
  private:
   class BackgroundLoader;
 
