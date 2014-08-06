@@ -1141,9 +1141,10 @@ wl_display_add_socket_auto(struct wl_display *display)
 	const int MAX_DISPLAYNO = 32;
 
 	s = malloc(sizeof *s);
-	memset(s, 0, sizeof *s);
 	if (s == NULL)
 		return NULL;
+
+	memset(s, 0, sizeof *s);
 
 	do {
 		snprintf(display_name, sizeof display_name, "wayland-%d", displayno);
