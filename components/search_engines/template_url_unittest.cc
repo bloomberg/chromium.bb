@@ -1507,11 +1507,11 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
   TemplateURLRef::SearchTermsArgs search_terms_args(ASCIIToUTF16("foo"));
   std::string result = url.url_ref().ReplaceSearchTerms(search_terms_args,
                                                         search_terms_data_);
-  EXPECT_EQ("http://bar/_/contextualsearch?", result);
+  EXPECT_EQ("http://bar/_/contextualsearch?ctxsl_resolve=1", result);
 
   TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(
       1, 6, 11, "allen", "woody+allen+movies", "www.wikipedia.org",
-      "utf-8");
+      "utf-8", true);
   search_terms_args.contextual_search_params = params;
   result = url.url_ref().ReplaceSearchTerms(search_terms_args,
                                             search_terms_data_);
@@ -1521,8 +1521,10 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
                 "ctxs_end=11&"
                 "q=allen&"
                 "ctxs_content=woody+allen+movies&"
-                "ctxs_url=www.wikipedia.org&"
-            "ctxs_encoding=utf-8&", result);
+                "ctxsl_url=www.wikipedia.org&"
+                "ctxs_encoding=utf-8&"
+                "ctxsl_resolve=1",
+            result);
 }
 
 TEST_F(TemplateURLTest, GenerateKeyword) {
