@@ -277,6 +277,8 @@ private:
     RefPtrWillBeMember<AudioListener> m_listener;
 
     // Only accessed in the audio thread.
+    // Oilpan: Since items are added to the vector by the audio thread (not registered to Oilpan),
+    // we cannot use a HeapVector.
     Vector<AudioNode*> m_finishedNodes;
 
     // List of source nodes. This is either accessed when the graph lock is
@@ -318,9 +320,13 @@ private:
     // This is copied to m_nodesToDelete at the end of a render cycle in handlePostRenderTasks(), where we're assured of a stable graph
     // state which will have no references to any of the nodes in m_nodesToDelete once the context lock is released
     // (when handlePostRenderTasks() has completed).
+    // Oilpan: Since items are added to the vector by the audio thread (not registered to Oilpan),
+    // we cannot use a HeapVector.
     Vector<AudioNode*> m_nodesMarkedForDeletion;
 
     // They will be scheduled for deletion (on the main thread) at the end of a render cycle (in realtime thread).
+    // Oilpan: Since items are added to the vector by the audio thread (not registered to Oilpan),
+    // we cannot use a HeapVector.
     Vector<AudioNode*> m_nodesToDelete;
     bool m_isDeletionScheduled;
 #endif
@@ -328,6 +334,8 @@ private:
     // These two HashSet must be accessed only when the graph lock is held.
     // Oilpan: These HashSet should be HeapHashSet<WeakMember<AudioNodeOutput>>
     // ideally. But it's difficult to lock them correctly during GC.
+    // Oilpan: Since items are added to these hash sets by the audio thread (not registered to Oilpan),
+    // we cannot use HeapHashSets.
     HashSet<AudioSummingJunction*> m_dirtySummingJunctions;
     HashSet<AudioNodeOutput*> m_dirtyAudioNodeOutputs;
     void handleDirtyAudioSummingJunctions();
@@ -335,6 +343,8 @@ private:
 
     // For the sake of thread safety, we maintain a seperate Vector of automatic pull nodes for rendering in m_renderingAutomaticPullNodes.
     // It will be copied from m_automaticPullNodes by updateAutomaticPullNodes() at the very start or end of the rendering quantum.
+    // Oilpan: Since items are added to the vector/hash set by the audio thread (not registered to Oilpan),
+    // we cannot use a HeapVector/HeapHashSet.
     HashSet<AudioNode*> m_automaticPullNodes;
     Vector<AudioNode*> m_renderingAutomaticPullNodes;
     // m_automaticPullNodesNeedUpdating keeps track if m_automaticPullNodes is modified.
@@ -349,6 +359,8 @@ private:
     volatile ThreadIdentifier m_graphOwnerThread; // if the lock is held then this is the thread which owns it, otherwise == UndefinedThreadIdentifier
 
     // Only accessed in the audio thread.
+    // Oilpan: Since items are added to these vectors by the audio thread (not registered to Oilpan),
+    // we cannot use HeapVectors.
     Vector<AudioNode*> m_deferredBreakConnectionList;
     Vector<AudioNode*> m_deferredFinishDerefList;
 
