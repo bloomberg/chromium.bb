@@ -9,88 +9,56 @@ from auto_bisect import source_control as source_control_module
 # Special import necessary because filename contains dash characters.
 bisect_perf_module = __import__('bisect-perf-regression')
 
-# Sample output for a performance test used in the results parsing tests below.
-RESULTS_OUTPUT = """RESULT write_operations: write_operations= 23089 count
-RESULT read_bytes_gpu: read_bytes_gpu= 35201 kb
-RESULT write_bytes_gpu: write_bytes_gpu= 542 kb
-RESULT telemetry_page_measurement_results: num_failed= 0 count
-RESULT telemetry_page_measurement_results: num_errored= 0 count
-*RESULT Total: Total_ref= %(value)s
-"""
 
-
-# Some private methods of the bisect-perf-regression module are tested below.
-# pylint: disable=W0212
 class BisectPerfRegressionTest(unittest.TestCase):
-  """Test case for top-level functions in the bisect-perf-regrssion module."""
+  """Test case for other functions and classes in bisect-perf-regression.py."""
 
-  def setUp(self):
-    """Sets up the test environment before each test method."""
-    pass
+  def _AssertConfidence(self, score, bad_values, good_values):
+    """Checks whether the given sets of values have a given confidence score.
 
-  def tearDown(self):
-    """Cleans up the test environment after each test method."""
-    pass
+    The score represents our confidence that the two sets of values wouldn't
+    be as different as they are just by chance; that is, that some real change
+    occurred between the two sets of values.
 
-  def testConfidenceScoreHigh(self):
-    """Tests the confidence calculation."""
-    bad_values = [[0, 1, 1], [1, 2, 2]]
-    good_values = [[1, 2, 2], [3, 3, 4]]
-    confidence = bisect_perf_module.ConfidenceScore(bad_values, good_values)
-    self.assertEqual(95.0, confidence)
+    Args:
+      score: Expected confidence score.
+      bad_values: First list of numbers.
+      good_values: Second list of numbers.
+    """
+    # ConfidenceScore takes a list of lists but these lists are flattened.
+    confidence = bisect_perf_module.ConfidenceScore([bad_values], [good_values])
+    self.assertEqual(score, confidence)
 
-  def testConfidenceScoreNotSoHigh(self):
-    """Tests the confidence calculation."""
-    bad_values = [[0, 1, 1], [1, 2, 2]]
-    good_values = [[1, 1, 1], [3, 3, 4]]
-    # The good and bad groups are closer together than in the above test,
-    # so the confidence that they're different is a little lower.
-    confidence = bisect_perf_module.ConfidenceScore(bad_values, good_values)
-    self.assertEqual(80.0, confidence)
-
-  def testConfidenceScoreZero(self):
-    """Tests the confidence calculation when it's expected to be 0."""
-    bad_values = [[4, 5], [7, 6], [8, 7]]
-    good_values = [[8, 7], [6, 7], [5, 4]]
+  def testConfidenceScore_ZeroConfidence(self):
     # The good and bad sets contain the same values, so the confidence that
     # they're different should be zero.
-    confidence = bisect_perf_module.ConfidenceScore(bad_values, good_values)
-    self.assertEqual(0.0, confidence)
+    self._AssertConfidence(0.0, [4, 5, 7, 6, 8, 7], [8, 7, 6, 7, 5, 4])
 
-  def testConfidenceScoreVeryHigh(self):
-    """Tests the confidence calculation when it's expected to be high."""
-    bad_values = [[1, 1], [1, 1]]
-    good_values = [[1.2, 1.2], [1.2, 1.2]]
-    confidence = bisect_perf_module.ConfidenceScore(bad_values, good_values)
-    self.assertEqual(99.9, confidence)
+  def testConfidenceScore_MediumConfidence(self):
+    self._AssertConfidence(80.0, [0, 1, 1, 1, 2, 2], [1, 1, 1, 3, 3, 4])
 
-  def testConfidenceScoreImbalance(self):
-    """Tests the confidence calculation one set of numbers is small."""
-    bad_values = [[1.1, 1.2], [1.1, 1.2], [1.0, 1.3], [1.2, 1.3]]
-    good_values = [[1.4]]
-    confidence = bisect_perf_module.ConfidenceScore(bad_values, good_values)
-    self.assertEqual(80.0, confidence)
+  def testConfidenceScore_HighConfidence(self):
+    self._AssertConfidence(95.0, [0, 1, 1, 1, 2, 2], [1, 2, 2, 3, 3, 4])
 
-  def testConfidenceScoreImbalance(self):
-    """Tests the confidence calculation one set of numbers is empty."""
-    bad_values = [[1.1, 1.2], [1.1, 1.2], [1.0, 1.3], [1.2, 1.3]]
-    good_values = []
-    confidence = bisect_perf_module.ConfidenceScore(bad_values, good_values)
-    self.assertEqual(0.0, confidence)
+  def testConfidenceScore_VeryHighConfidence(self):
+    # Confidence is high if the two sets of values have no internal variance.
+    self._AssertConfidence(99.9, [1, 1, 1, 1], [1.2, 1.2, 1.2, 1.2])
+    self._AssertConfidence(99.9, [1, 1, 1, 1], [1.01, 1.01, 1.01, 1.01])
 
-  def testConfidenceScoreFunctionalTestResultsInconsistent(self):
-    """Tests the confidence calculation when the numbers are just 0 and 1."""
-    bad_values = [[1], [1], [0], [1], [1], [1], [0], [1]]
-    good_values = [[0], [0], [1], [0], [1], [0]]
-    confidence = bisect_perf_module.ConfidenceScore(bad_values, good_values)
-    self.assertEqual(80.0, confidence)
+  def testConfidenceScore_ImbalancedSampleSize(self):
+    # The second set of numbers only contains one number, so confidence is low.
+    self._AssertConfidence(
+        80.0, [1.1, 1.2, 1.1, 1.2, 1.0, 1.3, 1.2, 1.3],[1.4])
 
-  def testConfidenceScoreFunctionalTestResultsConsistent(self):
-    """Tests the confidence calculation when the numbers are 0 and 1."""
-    bad_values = [[1], [1], [1], [1], [1], [1], [1], [1]]
-    good_values = [[0], [0], [0], [0], [0], [0]]
-    confidence = bisect_perf_module.ConfidenceScore(bad_values, good_values)
-    self.assertEqual(99.9, confidence)
+  def testConfidenceScore_EmptySample(self):
+    # Confidence is zero if either or both samples are empty.
+    self._AssertConfidence(0.0, [], [])
+    self._AssertConfidence(0.0, [], [1.1, 1.2, 1.1, 1.2, 1.0, 1.3, 1.2, 1.3])
+    self._AssertConfidence(0.0, [1.1, 1.2, 1.1, 1.2, 1.0, 1.3, 1.2, 1.3], [])
+
+  def testConfidenceScore_FunctionalTestResults(self):
+    self._AssertConfidence(80.0, [1, 1, 0, 1, 1, 1, 0, 1], [0, 0, 1, 0, 1, 0])
+    self._AssertConfidence(99.9, [1, 1, 1, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0])
 
   def testParseDEPSStringManually(self):
     """Tests DEPS parsing."""
@@ -108,171 +76,154 @@ class BisectPerfRegressionTest(unittest.TestCase):
              '74697cf2064c0a2c0d7e1b1b28db439286766a05'
     }"""
 
-    # Should only expect svn/git revisions to come through, and urls should be
+    # Should only expect SVN/git revisions to come through, and URLs should be
     # filtered out.
     expected_vars_dict = {
         'ffmpeg_hash': '@ac4a9f31fe2610bd146857bbd55d7a260003a888',
         'webkit_rev': '@e01ac0a267d1017288bc67fa3c366b10469d8a24',
         'angle_revision': '74697cf2064c0a2c0d7e1b1b28db439286766a05'
     }
+    # Testing private function.
+    # pylint: disable=W0212
     vars_dict = bisect_perf_module._ParseRevisionsFromDEPSFileManually(
         deps_file_contents)
     self.assertEqual(vars_dict, expected_vars_dict)
 
-  def testTryParseResultValuesFromOutputWithSingleValue(self):
-    """Tests result pattern <*>RESULT <graph>: <trace>= <value>"""
-    metrics = ['Total', 'Total_ref']
-    self.assertEqual(
-        [66.88], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '66.88 kb'}))
-    self.assertEqual(
-        [66.88], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '66.88kb'}))
-    self.assertEqual(
-        [66.88], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': ' 66.88 '}))
-    self.assertEqual(
-        [-66.88], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': ' -66.88 kb'}))
-    self.assertEqual(
-        [66], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '66 kb'}))
-    self.assertEqual(
-        [.66], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '.66 kb'}))
-    self.assertEqual(
-        [], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '. kb'}))
-    self.assertEqual(
-        [], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': 'aaa kb'}))
+  def _AssertParseResult(self, expected_values, result_string):
+    """Asserts some values are parsed from a RESULT line."""
+    results_template = ('RESULT other_chart: other_trace= 123 count\n'
+                        'RESULT my_chart: my_trace= %(value)s\n')
+    results = results_template % {'value': result_string}
+    metric = ['my_chart', 'my_trace']
+    # Testing private function.
+    # pylint: disable=W0212
+    values = bisect_perf_module._TryParseResultValuesFromOutput(metric, results)
+    self.assertEqual(expected_values, values)
 
-  def testTryParseResultValuesFromOutputWithMulitValue(self):
+  def testTryParseResultValuesFromOutput_WithSingleValue(self):
+    """Tests result pattern <*>RESULT <graph>: <trace>= <value>"""
+    self._AssertParseResult([66.88], '66.88 kb')
+    self._AssertParseResult([66.88], '66.88 ')
+    self._AssertParseResult([-66.88], '-66.88 kb')
+    self._AssertParseResult([66], '66 kb')
+    self._AssertParseResult([0.66], '.66 kb')
+    self._AssertParseResult([], '. kb')
+    self._AssertParseResult([], 'aaa kb')
+
+  def testTryParseResultValuesFromOutput_WithMultiValue(self):
     """Tests result pattern <*>RESULT <graph>: <trace>= [<value>,<value>, ..]"""
-    metrics = ['Total', 'Total_ref']
-    self.assertEqual(
-        [66.88], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '[66.88] kb'}))
-    self.assertEqual(
-        [66.88, 99.44], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '[66.88, 99.44]kb'}))
-    self.assertEqual(
-        [66.88, 99.44], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '[ 66.88, 99.44 ]'}))
-    self.assertEqual(
-        [-66.88, 99.44], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '[-66.88,99.44] kb'}))
-    self.assertEqual(
-        [-66, 99], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '[-66,99] kb'}))
-    self.assertEqual(
-        [-66, 99], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '[-66,99,] kb'}))
-    self.assertEqual(
-        [.66, .99], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '[.66,.99] kb'}))
-    self.assertEqual(
-        [], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '[] kb'}))
-    self.assertEqual(
-        [], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '[-66,abc] kb'}))
+    self._AssertParseResult([66.88], '[66.88] kb')
+    self._AssertParseResult([66.88, 99.44], '[66.88, 99.44]kb')
+    self._AssertParseResult([66.88, 99.44], '[ 66.88, 99.44 ]')
+    self._AssertParseResult([-66.88, 99.44], '[-66.88, 99.44] kb')
+    self._AssertParseResult([-66, 99], '[-66,99] kb')
+    self._AssertParseResult([-66, 99], '[-66,99,] kb')
+    self._AssertParseResult([-66, 0.99], '[-66,.99] kb')
+    self._AssertParseResult([], '[] kb')
+    self._AssertParseResult([], '[-66,abc] kb')
 
   def testTryParseResultValuesFromOutputWithMeanStd(self):
     """Tests result pattern <*>RESULT <graph>: <trace>= {<mean, std}"""
-    metrics = ['Total', 'Total_ref']
-    self.assertEqual(
-        [33.22], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '{33.22, 3.6} kb'}))
-    self.assertEqual(
-        [33.22], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '{33.22,3.6}kb'}))
-    self.assertEqual(
-        [33.22], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '{33.22,3.6} kb'}))
-    self.assertEqual(
-        [33.22], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '{ 33.22,3.6 }kb'}))
-    self.assertEqual(
-        [-33.22], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '{-33.22,3.6}kb'}))
-    self.assertEqual(
-        [22], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '{22,6}kb'}))
-    self.assertEqual(
-        [.22], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '{.22,6}kb'}))
-    self.assertEqual(
-        [], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '{.22,6, 44}kb'}))
-    self.assertEqual(
-        [], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '{}kb'}))
-    self.assertEqual(
-        [], bisect_perf_module._TryParseResultValuesFromOutput(
-            metrics, RESULTS_OUTPUT % {'value': '{XYZ}kb'}))
+    self._AssertParseResult([33.22], '{33.22, 3.6} kb')
+    self._AssertParseResult([33.22], '{33.22, 3.6} kb')
+    self._AssertParseResult([33.22], '{33.22,3.6}kb')
+    self._AssertParseResult([33.22], '{33.22,3.6} kb')
+    self._AssertParseResult([33.22], '{ 33.22,3.6 }kb')
+    self._AssertParseResult([-33.22], '{-33.22,3.6}kb')
+    self._AssertParseResult([22], '{22,6}kb')
+    self._AssertParseResult([.22], '{.22,6}kb')
+    self._AssertParseResult([], '{.22,6, 44}kb')
+    self._AssertParseResult([], '{}kb')
+    self._AssertParseResult([], '{XYZ}kb')
 
-  def testGetCompatibleCommand(self):
+  def _AssertCompatibleCommand(
+      self, expected_command, original_command, revision, target_platform):
+    """Tests the modification of the command that might be done.
+
+    This modification to the command is done in order to get a Telemetry
+    command that works; before some revisions, the browser name that Telemetry
+    expects is different in some cases, but we want it to work anyway.
+
+    Specifically, only for android:
+      After r276628, only android-chrome-shell works.
+      Prior to r274857, only android-chromium-testshell works.
+      In the range [274857, 276628], both work.
+    """
     bisect_options = bisect_perf_module.BisectOptions()
     bisect_options.output_buildbot_annotations = None
     source_control = source_control_module.DetermineAndCreateSourceControl(
         bisect_options)
     bisect_instance = bisect_perf_module.BisectPerformanceMetrics(
         source_control, bisect_options)
-    bisect_instance.opts.target_platform = 'android'
+    bisect_instance.opts.target_platform = target_platform
+    git_revision = bisect_instance.source_control.ResolveToRevision(
+        revision, 'chromium', bisect_perf_module.DEPOT_DEPS_NAME, 100)
     depot = 'chromium'
-    # android-chrome-shell -> android-chromium-testshell
-    revision = 274857
-    git_revision = bisect_instance.source_control.ResolveToRevision(
-        revision, 'chromium', bisect_perf_module.DEPOT_DEPS_NAME, 100)
-    command = ('tools/perf/run_benchmark -v '
-               '--browser=android-chrome-shell page_cycler.intl_ja_zh')
-    expected_command = ('tools/perf/run_benchmark -v --browser='
-                        'android-chromium-testshell page_cycler.intl_ja_zh')
-    self.assertEqual(
-        bisect_instance.GetCompatibleCommand(command, git_revision, depot),
-        expected_command)
+    command = bisect_instance.GetCompatibleCommand(
+        original_command, git_revision, depot)
+    self.assertEqual(expected_command, command)
 
-    # android-chromium-testshell -> android-chromium-testshell
-    revision = 274858
-    git_revision = bisect_instance.source_control.ResolveToRevision(
-        revision, 'chromium', bisect_perf_module.DEPOT_DEPS_NAME, 100)
-    command = ('tools/perf/run_benchmark -v '
-               '--browser=android-chromium-testshell page_cycler.intl_ja_zh')
-    expected_command = ('tools/perf/run_benchmark -v --browser='
-                        'android-chromium-testshell page_cycler.intl_ja_zh')
-    self.assertEqual(
-        bisect_instance.GetCompatibleCommand(command, git_revision, depot),
-        expected_command)
+  def testGetCompatibleCommand_ChangeToTestShell(self):
+    # For revisions <= r274857, only android-chromium-testshell is used.
+    self._AssertCompatibleCommand(
+        'tools/perf/run_benchmark -v --browser=android-chromium-testshell foo',
+        'tools/perf/run_benchmark -v --browser=android-chrome-shell foo',
+        274857, 'android')
 
-    # android-chromium-testshell -> android-chrome-shell
-    revision = 276628
-    git_revision = bisect_instance.source_control.ResolveToRevision(
-        revision, 'chromium', bisect_perf_module.DEPOT_DEPS_NAME, 100)
-    command = ('tools/perf/run_benchmark -v '
-               '--browser=android-chromium-testshell page_cycler.intl_ja_zh')
-    expected_command = ('tools/perf/run_benchmark -v --browser='
-                        'android-chrome-shell page_cycler.intl_ja_zh')
-    self.assertEqual(
-        bisect_instance.GetCompatibleCommand(command, git_revision, depot),
-        expected_command)
-    # android-chrome-shell -> android-chrome-shell
-    command = ('tools/perf/run_benchmark -v '
-               '--browser=android-chrome-shell page_cycler.intl_ja_zh')
-    expected_command = ('tools/perf/run_benchmark -v --browser='
-                        'android-chrome-shell page_cycler.intl_ja_zh')
-    self.assertEqual(
-        bisect_instance.GetCompatibleCommand(command, git_revision, depot),
-        expected_command)
-    # Not android platform
-    bisect_instance.opts.target_platform = 'chromium'
-    command = ('tools/perf/run_benchmark -v '
-               '--browser=release page_cycler.intl_ja_zh')
-    expected_command = ('tools/perf/run_benchmark -v --browser='
-                        'release page_cycler.intl_ja_zh')
-    self.assertEqual(
-        bisect_instance.GetCompatibleCommand(command, git_revision, depot),
-        expected_command)
+  def testGetCompatibleCommand_ChangeToShell(self):
+    # For revisions >= r276728, only android-chrome-shell can be used.
+    self._AssertCompatibleCommand(
+        'tools/perf/run_benchmark -v --browser=android-chrome-shell foo',
+        'tools/perf/run_benchmark -v --browser=android-chromium-testshell foo',
+        276628, 'android')
+
+  def testGetCompatibleCommand_NoChange(self):
+    # For revisions < r276728, android-chromium-testshell can be used.
+    self._AssertCompatibleCommand(
+        'tools/perf/run_benchmark -v --browser=android-chromium-testshell foo',
+        'tools/perf/run_benchmark -v --browser=android-chromium-testshell foo',
+        274858, 'android')
+    # For revisions > r274857, android-chrome-shell can be used.
+    self._AssertCompatibleCommand(
+        'tools/perf/run_benchmark -v --browser=android-chrome-shell foo',
+        'tools/perf/run_benchmark -v --browser=android-chrome-shell foo',
+        274858, 'android')
+
+  def testGetCompatibleCommand_NonAndroidPlatform(self):
+    # In most cases, there's no need to change Telemetry command.
+    # For revisions >= r276728, only android-chrome-shell can be used.
+    self._AssertCompatibleCommand(
+        'tools/perf/run_benchmark -v --browser=release foo',
+        'tools/perf/run_benchmark -v --browser=release foo',
+        276628, 'chromium')
+
+  # This method doesn't reference self; it fails if an error is thrown.
+  # pylint: disable=R0201
+  def testDryRun(self):
+    """Does a dry run of the bisect script.
+
+    This serves as a smoke test to catch errors in the basic execution of the
+    script.
+    """
+    options_dict = {
+      'debug_ignore_build': True,
+      'debug_ignore_sync': True,
+      'debug_ignore_perf_test': True,
+      'command': 'fake_command',
+      'metric': 'fake/metric',
+      'good_revision': 280000,
+      'bad_revision': 280005,
+    }
+    bisect_options = bisect_perf_module.BisectOptions.FromDict(options_dict)
+    source_control = source_control_module.DetermineAndCreateSourceControl(
+        bisect_options)
+    bisect_instance = bisect_perf_module.BisectPerformanceMetrics(
+        source_control, bisect_options)
+    results = bisect_instance.Run(bisect_options.command,
+                                  bisect_options.bad_revision,
+                                  bisect_options.good_revision,
+                                  bisect_options.metric)
+    bisect_instance.FormatAndPrintResults(results)
 
 
 if __name__ == '__main__':

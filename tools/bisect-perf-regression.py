@@ -286,6 +286,8 @@ def ConfidenceScore(good_results_lists, bad_results_lists):
   # Flatten the lists of results lists.
   sample1 = sum(good_results_lists, [])
   sample2 = sum(bad_results_lists, [])
+  if not sample1 or not sample2:
+    return 0.0
 
   # The p-value is approximately the probability of obtaining the given set
   # of good and bad values just by chance.
@@ -3053,6 +3055,12 @@ class BisectPerformanceMetrics(object):
     first_working_revision_index = -1
     last_broken_revision = None
     last_broken_revision_index = -1
+
+    culprit_revisions = []
+    other_regressions = []
+    regression_size = 0.0
+    regression_std_err = 0.0
+    confidence = 0.0
 
     for i in xrange(len(revision_data_sorted)):
       k, v = revision_data_sorted[i]
