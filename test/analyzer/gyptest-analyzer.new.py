@@ -42,8 +42,14 @@ def run_analyzer(*args, **kw):
            '-Ganalyzer_output_path=analyzer_output')
   test.run_gyp('test.gyp', *args, **kw)
 
+def run_analyzer2(*args, **kw):
+  """Runs the test specifying a particular config and output path."""
+  args += ('-Gconfig_path=test_file',
+           '-Ganalyzer_output_path=analyzer_output')
+  test.run_gyp('test2.gyp', *args, **kw)
+
 def EnsureContains(targets=set(), matched=False):
-  """Verifies output contains |targets| and |direct_targets|."""
+  """Verifies output contains |targets|."""
   result = _ReadOutputFileContents()
   if result.get('error', None):
     print 'unexpected error', result.get('error')
@@ -195,5 +201,29 @@ EnsureContains(matched=True)
 _CreateTestFile(['exe2.c'], [])
 run_analyzer()
 EnsureContains(matched=True)
+
+# Assertions when modifying build (gyp/gypi) files, especially when said files
+# are included.
+_CreateTestFile(['subdir2/d.cc'], ['exe', 'exe2', 'foo', 'exe3'])
+run_analyzer2()
+EnsureContains(matched=True, targets={'exe', 'foo'})
+
+_CreateTestFile(['subdir2/subdir.includes.gypi'],
+                ['exe', 'exe2', 'foo', 'exe3'])
+run_analyzer2()
+EnsureContains(matched=True, targets={'exe', 'foo'})
+
+_CreateTestFile(['subdir2/subdir.gyp'], ['exe', 'exe2', 'foo', 'exe3'])
+run_analyzer2()
+EnsureContains(matched=True, targets={'exe', 'foo'})
+
+_CreateTestFile(['test2.includes.gypi'], ['exe', 'exe2', 'foo', 'exe3'])
+run_analyzer2()
+EnsureContains(matched=True, targets={'exe', 'exe2', 'exe3'})
+
+# Verify modifying a file included makes all targets dirty.
+_CreateTestFile(['common.gypi'], ['exe', 'exe2', 'foo', 'exe3'])
+run_analyzer2('-Icommon.gypi')
+EnsureContains(matched=True, targets={'exe', 'foo', 'exe2', 'exe3'})
 
 test.pass_test()

@@ -64,6 +64,12 @@ for unused in ['RULE_INPUT_PATH', 'RULE_INPUT_ROOT', 'RULE_INPUT_NAME',
                'CONFIGURATION_NAME']:
   generator_default_variables[unused] = ''
 
+def _ToGypPath(path):
+  """Converts a path to the format used by gyp."""
+  if os.sep == '\\' and os.altsep == '/':
+    return path.replace('\\', '/')
+  return path
+
 def __ExtractBasePath(target):
   """Extracts the path components of the specified gyp target path."""
   last_index = target.rfind('/')
@@ -120,10 +126,7 @@ def __ExtractSources(target, target_dict, toplevel_dir):
   # |target| is either absolute or relative and in the format of the OS. Gyp
   # source paths are always posix. Convert |target| to a posix path relative to
   # |toplevel_dir_|. This is done to make it easy to build source paths.
-  if os.sep == '\\' and os.altsep == '/':
-    base_path = target.replace('\\', '/')
-  else:
-    base_path = target
+  base_path = _ToGypPath(target)
   if base_path == toplevel_dir:
     base_path = ''
   elif base_path.startswith(toplevel_dir + '/'):
@@ -216,7 +219,30 @@ class Config(object):
     except IOError:
       raise Exception('Unable to open file', file_path)
 
-def __GenerateTargets(target_list, target_dicts, toplevel_dir, files):
+def _WasBuildFileModified(build_file, data, files):
+  """Returns true if the build file |build_file| is either in |files| or
+  one of the files included by |build_file| is in |files|."""
+  if _ToGypPath(build_file) in files:
+    if debug:
+      print 'gyp file modified', build_file
+    return True
+
+  # First element of included_files is the file itself.
+  if len(data[build_file]['included_files']) <= 1:
+    return False
+
+  for include_file in data[build_file]['included_files'][1:]:
+    # |included_files| are relative to the directory of the |build_file|.
+    rel_include_file = \
+        _ToGypPath(gyp.common.UnrelativePath(include_file, build_file))
+    if rel_include_file in files:
+      if debug:
+        print 'included gyp file modified, gyp_file=', build_file, \
+            'included file=', rel_include_file
+      return True
+  return False
+
+def __GenerateTargets(data, target_list, target_dicts, toplevel_dir, files):
   """Generates a dictionary with the key the name of a target and the value a
   Target. |toplevel_dir| is the root of the source tree. If the sources of
   a target match that of |files|, then |target.matched| is set to True.
@@ -229,6 +255,10 @@ def __GenerateTargets(target_list, target_dicts, toplevel_dir, files):
 
   matched = False
 
+  # Maps from build file to a boolean indicating whether the build file is in
+  # |files|.
+  build_file_in_files = {}
+
   while len(targets_to_visit) > 0:
     target_name = targets_to_visit.pop()
     if target_name in targets:
@@ -236,13 +266,25 @@ def __GenerateTargets(target_list, target_dicts, toplevel_dir, files):
 
     target = Target()
     targets[target_name] = target
-    sources = __ExtractSources(target_name, target_dicts[target_name],
-                               toplevel_dir)
-    for source in sources:
-      if source in files:
-        target.match_status = MATCH_STATUS_MATCHES
-        matched = True
-        break
+
+    build_file = gyp.common.ParseQualifiedTarget(target_name)[0]
+    if not build_file in build_file_in_files:
+      build_file_in_files[build_file] = \
+          _WasBuildFileModified(build_file, data, files)
+
+    # If a build file (or any of its included files) is modified we assume all
+    # targets in the file are modified.
+    if build_file_in_files[build_file]:
+      target.match_status = MATCH_STATUS_MATCHES
+      matched = True
+    else:
+      sources = __ExtractSources(target_name, target_dicts[target_name],
+                                 toplevel_dir)
+      for source in sources:
+        if source in files:
+          target.match_status = MATCH_STATUS_MATCHES
+          matched = True
+          break
 
     for dep in target_dicts[target_name].get('dependencies', []):
       targets[target_name].deps.add(dep)
@@ -345,15 +387,28 @@ def GenerateOutput(target_list, target_dicts, data, params):
       raise Exception('Must specify files to analyze via config_path generator '
                       'flag')
 
-    toplevel_dir = os.path.abspath(params['options'].toplevel_dir)
-    if os.sep == '\\' and os.altsep == '/':
-      toplevel_dir = toplevel_dir.replace('\\', '/')
+    toplevel_dir = _ToGypPath(os.path.abspath(params['options'].toplevel_dir))
     if debug:
       print 'toplevel_dir', toplevel_dir
 
-    all_targets, matched = __GenerateTargets(target_list, target_dicts,
-                                             toplevel_dir,
-                                             frozenset(config.files))
+    matched = False
+    matched_include = False
+
+    # If one of the modified files is an include file then everything is
+    # affected.
+    if params['options'].includes:
+      for include in params['options'].includes:
+        if _ToGypPath(include) in config.files:
+          if debug:
+            print 'include path modified', include
+          matched_include = True
+          matched = True
+          break
+
+    if not matched:
+      all_targets, matched = __GenerateTargets(data, target_list, target_dicts,
+                                               toplevel_dir,
+                                               frozenset(config.files))
 
     # Set of targets that refer to one of the files.
     if config.look_for_dependency_only:
@@ -361,7 +416,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
       return
 
     warning = None
-    if matched:
+    if matched_include:
+      output_targets = config.targets
+    elif matched:
       unqualified_mapping = _GetUnqualifiedToQualifiedMapping(
           all_targets, config.targets)
       if len(unqualified_mapping) != len(config.targets):
