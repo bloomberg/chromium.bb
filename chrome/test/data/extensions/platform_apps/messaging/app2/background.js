@@ -4,8 +4,6 @@
 
 var otherId = 'ljhhihhmjomkjokmknellgbidphmahkh';
 
-chrome.test.sendMessage('Launched');
-
 chrome.runtime.onConnectExternal.addListener(function(port) {
   port.onMessage.addListener(function(msg) {
     if (msg == 'ok_to_disconnect') {
@@ -23,3 +21,7 @@ chrome.runtime.onMessageExternal.addListener(function(msg, sender, callback) {
   else
     callback();
 });
+
+// Must ensure that the listeners are active before sending the "Ready"
+// message (which will cause app1 to be launched).
+chrome.test.sendMessage('Ready');
