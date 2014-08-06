@@ -775,7 +775,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, AccountListChange) {
       .Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_StartSession) {
   // Specify startup pages.
   device_local_account_policy_.payload().mutable_restoreonstartup()->set_value(
       SessionStartupPref::kPrefValueURLs);
@@ -815,7 +815,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
       prefs::kGoogleServicesUsername));
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, FullscreenDisallowed) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_FullscreenDisallowed) {
   UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
 
@@ -838,7 +838,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, FullscreenDisallowed) {
   EXPECT_FALSE(browser_window->IsFullscreen());
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsUncached) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_ExtensionsUncached) {
   // Make it possible to force-install a hosted app and an extension.
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   TestingUpdateManifestProvider testing_update_manifest_provider(
@@ -918,7 +918,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsUncached) {
   EXPECT_FALSE(cache->GetExtension(kGoodExtensionID, NULL, NULL));
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_ExtensionsCached) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Pre-populate the device local account's extension cache with a hosted app
@@ -992,7 +992,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
   EXPECT_FALSE(cache->GetExtension(kGoodExtensionID, NULL, NULL));
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_ExternalData) {
   // chromeos::UserManager requests an external data fetch whenever
   // the key::kUserAvatarImage policy is set. Since this test wants to
   // verify that the underlying policy subsystem will start a fetch
@@ -1167,7 +1167,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
   EXPECT_EQ(policy_image->height(), saved_image->height());
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest,
+                       DISABLED_LastWindowClosedLogoutReminder) {
   UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
 
@@ -1321,7 +1322,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
   app_window_registry->RemoveObserver(this);
 };
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DoNotSelectLanguageAndKeyboard) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest,
+                       DISABLED_DoNotSelectLanguageAndKeyboard) {
   chromeos::input_method::InputMethodManager* input_method_manager =
       chromeos::input_method::InputMethodManager::Get();
   const std::string initial_locale = g_browser_process->GetApplicationLocale();
@@ -1341,7 +1343,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DoNotSelectLanguageAndKeyboard) {
             input_method_manager->GetCurrentInputMethod().id());
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, SelectLanguageAndKeyboard) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest,
+                       DISABLED_SelectLanguageAndKeyboard) {
   // Specify startup pages.
   device_local_account_policy_.payload().mutable_restoreonstartup()->set_value(
       SessionStartupPref::kPrefValueURLs);
@@ -1368,7 +1371,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, SelectLanguageAndKeyboard) {
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest,
-                       SelectLanguageAndKeyboardWithTermsOfService) {
+                       DISABLED_SelectLanguageAndKeyboardWithTermsOfService) {
   // Specify Terms of Service URL.
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   device_local_account_policy_.payload().mutable_termsofserviceurl()->set_value(
@@ -1450,7 +1453,8 @@ class TermsOfServiceDownloadTest : public DeviceLocalAccountTest,
                                    public testing::WithParamInterface<bool> {
 };
 
-IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
+IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest,
+                       DISABLED_TermsOfServiceScreen) {
   // Specify Terms of Service URL.
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   device_local_account_policy_.payload().mutable_termsofserviceurl()->set_value(
