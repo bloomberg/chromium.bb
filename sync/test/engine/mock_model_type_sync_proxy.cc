@@ -29,11 +29,13 @@ void MockModelTypeSyncProxy::OnCommitCompleted(
 
 void MockModelTypeSyncProxy::OnUpdateReceived(
     const DataTypeState& type_state,
-    const UpdateResponseDataList& response_list) {
+    const UpdateResponseDataList& response_list,
+    const UpdateResponseDataList& pending_updates) {
   base::Closure task = base::Bind(&MockModelTypeSyncProxy::OnUpdateReceivedImpl,
                                   base::Unretained(this),
                                   type_state,
-                                  response_list);
+                                  response_list,
+                                  pending_updates);
   pending_tasks_.push_back(task);
   if (is_synchronous_)
     RunQueuedTasks();
@@ -111,6 +113,12 @@ UpdateResponseDataList MockModelTypeSyncProxy::GetNthUpdateResponse(
   return received_update_responses_[n];
 }
 
+UpdateResponseDataList MockModelTypeSyncProxy::GetNthPendingUpdates(
+    size_t n) const {
+  DCHECK_LT(n, GetNumUpdateResponses());
+  return received_pending_updates_[n];
+}
+
 DataTypeState MockModelTypeSyncProxy::GetNthTypeStateReceivedInUpdateResponse(
     size_t n) const {
   DCHECK_LT(n, GetNumUpdateResponses());
@@ -181,8 +189,10 @@ void MockModelTypeSyncProxy::OnCommitCompletedImpl(
 
 void MockModelTypeSyncProxy::OnUpdateReceivedImpl(
     const DataTypeState& type_state,
-    const UpdateResponseDataList& response_list) {
+    const UpdateResponseDataList& response_list,
+    const UpdateResponseDataList& pending_updates) {
   received_update_responses_.push_back(response_list);
+  received_pending_updates_.push_back(pending_updates);
   type_states_received_on_update_.push_back(type_state);
   for (UpdateResponseDataList::const_iterator it = response_list.begin();
        it != response_list.end();

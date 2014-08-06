@@ -94,6 +94,8 @@ UpdateResponseData MockModelTypeSyncWorker::UpdateFromServer(
   data.mtime = data.ctime + base::TimeDelta::FromSeconds(version);
   data.non_unique_name = specifics.preference().name();
 
+  data.encryption_key_name = server_encryption_key_name_;
+
   return data;
 }
 
@@ -117,6 +119,8 @@ UpdateResponseData MockModelTypeSyncWorker::TombstoneFromServer(
   data.ctime = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
   data.mtime = data.ctime + base::TimeDelta::FromSeconds(version);
   data.non_unique_name = "Name Non Unique";
+
+  data.encryption_key_name = server_encryption_key_name_;
 
   return data;
 }
@@ -147,6 +151,11 @@ CommitResponseData MockModelTypeSyncWorker::SuccessfulCommitResponse(
   response_data.response_version = version;
 
   return response_data;
+}
+
+void MockModelTypeSyncWorker::SetServerEncryptionKey(
+    const std::string& key_name) {
+  server_encryption_key_name_ = key_name;
 }
 
 std::string MockModelTypeSyncWorker::GenerateId(const std::string& tag_hash) {

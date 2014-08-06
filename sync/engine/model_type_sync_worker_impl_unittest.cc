@@ -4,6 +4,7 @@
 
 #include "sync/engine/model_type_sync_worker_impl.h"
 
+#include "base/strings/stringprintf.h"
 #include "sync/engine/commit_contribution.h"
 #include "sync/engine/model_type_sync_proxy.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -13,12 +14,17 @@
 #include "sync/syncable/syncable_util.h"
 #include "sync/test/engine/mock_model_type_sync_proxy.h"
 #include "sync/test/engine/mock_nudge_handler.h"
+#include "sync/test/engine/simple_cryptographer_provider.h"
 #include "sync/test/engine/single_type_mock_server.h"
+#include "sync/test/fake_encryptor.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 static const std::string kTypeParentId = "PrefsRootNodeID";
 static const syncer::ModelType kModelType = syncer::PREFERENCES;
+
+// Special constant value taken from cryptographer.cc.
+const char kNigoriKeyName[] = "nigori-key";
 
 namespace syncer {
 
@@ -65,8 +71,23 @@ class ModelTypeSyncWorkerImplTest : public ::testing::Test {
   // committing items right away.
   void NormalInitialize();
 
-  // Initialize with a custom initial DataTypeState.
-  void InitializeWithState(const DataTypeState& state);
+  // Initialize with some saved pending updates from the model thread.
+  void InitializeWithPendingUpdates(
+      const UpdateResponseDataList& initial_pending_updates);
+
+  // Initialize with a custom initial DataTypeState and pending updates.
+  void InitializeWithState(const DataTypeState& state,
+                           const UpdateResponseDataList& pending_updates);
+
+  // Introduce a new key that the local cryptographer can't decrypt.
+  void NewForeignEncryptionKey();
+
+  // Update the local cryptographer with all relevant keys.
+  void UpdateLocalCryptographer();
+
+  // Use the Nth nigori instance to encrypt incoming updates.
+  // The default value, zero, indicates no encryption.
+  void SetUpdateEncryptionFilter(int n);
 
   // Modifications on the model thread that get sent to the worker under test.
   void CommitRequest(const std::string& tag, const std::string& value);
@@ -78,6 +99,13 @@ class ModelTypeSyncWorkerImplTest : public ::testing::Test {
                                const std::string& tag,
                                const std::string& value);
   void TriggerTombstoneFromServer(int64 version_offset, const std::string& tag);
+
+  // Delivers specified protos as updates.
+  //
+  // Does not update mock server state.  Should be used as a last resort when
+  // writing test cases that require entities that don't fit the normal sync
+  // protocol.  Try to use the other, higher level methods if possible.
+  void DeliverRawUpdates(const SyncEntityList& update_list);
 
   // By default, this harness behaves as if all tasks posted to the model
   // thread are executed immediately.  However, this is not necessarily true.
@@ -110,6 +138,7 @@ class ModelTypeSyncWorkerImplTest : public ::testing::Test {
   // be updated until the response is actually processed by the model thread.
   size_t GetNumModelThreadUpdateResponses() const;
   UpdateResponseDataList GetNthModelThreadUpdateResponse(size_t n) const;
+  UpdateResponseDataList GetNthModelThreadPendingUpdates(size_t n) const;
   DataTypeState GetNthModelThreadUpdateState(size_t n) const;
 
   // Reads the latest update response datas on the model thread.
@@ -144,7 +173,39 @@ class ModelTypeSyncWorkerImplTest : public ::testing::Test {
   static sync_pb::EntitySpecifics GenerateSpecifics(const std::string& tag,
                                                     const std::string& value);
 
+  // Returns a set of KeyParams for the cryptographer.  Each input 'n' value
+  // results in a different set of parameters.
+  static KeyParams GetNthKeyParams(int n);
+
+  // Returns the name for the given Nigori.
+  //
+  // Uses some 'white-box' knowledge to mimic the names that a real sync client
+  // would generate.  It's probably not necessary to do so, but it can't hurt.
+  static std::string GetNigoriName(const Nigori& nigori);
+
+  // Modifies the input/output parameter |specifics| by encrypting it with
+  // a Nigori intialized with the specified KeyParams.
+  static void EncryptUpdate(const KeyParams& params,
+                            sync_pb::EntitySpecifics* specifics);
+
  private:
+  // An encryptor for our cryptographer.
+  FakeEncryptor fake_encryptor_;
+
+  // The cryptographer itself.
+  Cryptographer cryptographer_;
+
+  // A CryptographerProvider for the ModelTypeSyncWorkerImpl.
+  SimpleCryptographerProvider cryptographer_provider_;
+
+  // The number of the most recent foreign encryption key known to our
+  // cryptographer.  Note that not all of these will be decryptable.
+  int foreign_encryption_key_index_;
+
+  // The number of the encryption key used to encrypt incoming updates.  A zero
+  // value implies no encryption.
+  int update_encryption_filter_index_;
+
   // The ModelTypeSyncWorkerImpl being tested.
   scoped_ptr<ModelTypeSyncWorkerImpl> worker_;
 
@@ -163,7 +224,12 @@ class ModelTypeSyncWorkerImplTest : public ::testing::Test {
 };
 
 ModelTypeSyncWorkerImplTest::ModelTypeSyncWorkerImplTest()
-    : mock_type_sync_proxy_(NULL), mock_server_(kModelType) {
+    : cryptographer_(&fake_encryptor_),
+      cryptographer_provider_(&cryptographer_),
+      foreign_encryption_key_index_(0),
+      update_encryption_filter_index_(0),
+      mock_type_sync_proxy_(NULL),
+      mock_server_(kModelType) {
 }
 
 ModelTypeSyncWorkerImplTest::~ModelTypeSyncWorkerImplTest() {
@@ -175,10 +241,15 @@ void ModelTypeSyncWorkerImplTest::FirstInitialize() {
       GetSpecificsFieldNumberFromModelType(kModelType));
   initial_state.next_client_id = 0;
 
-  InitializeWithState(initial_state);
+  InitializeWithState(initial_state, UpdateResponseDataList());
 }
 
 void ModelTypeSyncWorkerImplTest::NormalInitialize() {
+  InitializeWithPendingUpdates(UpdateResponseDataList());
+}
+
+void ModelTypeSyncWorkerImplTest::InitializeWithPendingUpdates(
+    const UpdateResponseDataList& initial_pending_updates) {
   DataTypeState initial_state;
   initial_state.progress_marker.set_data_type_id(
       GetSpecificsFieldNumberFromModelType(kModelType));
@@ -188,21 +259,79 @@ void ModelTypeSyncWorkerImplTest::NormalInitialize() {
   initial_state.type_root_id = kTypeParentId;
   initial_state.initial_sync_done = true;
 
-  InitializeWithState(initial_state);
+  InitializeWithState(initial_state, initial_pending_updates);
 
   mock_nudge_handler_.ClearCounters();
 }
 
 void ModelTypeSyncWorkerImplTest::InitializeWithState(
-    const DataTypeState& state) {
+    const DataTypeState& state,
+    const UpdateResponseDataList& initial_pending_updates) {
   DCHECK(!worker_);
 
   // We don't get to own this object.  The |worker_| keeps a scoped_ptr to it.
   mock_type_sync_proxy_ = new MockModelTypeSyncProxy();
   scoped_ptr<ModelTypeSyncProxy> proxy(mock_type_sync_proxy_);
 
-  worker_.reset(new ModelTypeSyncWorkerImpl(
-      kModelType, state, &mock_nudge_handler_, proxy.Pass()));
+  worker_.reset(new ModelTypeSyncWorkerImpl(kModelType,
+                                            state,
+                                            initial_pending_updates,
+                                            &cryptographer_provider_,
+                                            &mock_nudge_handler_,
+                                            proxy.Pass()));
+}
+
+void ModelTypeSyncWorkerImplTest::NewForeignEncryptionKey() {
+  foreign_encryption_key_index_++;
+
+  sync_pb::NigoriKeyBag bag;
+
+  for (int i = 0; i <= foreign_encryption_key_index_; ++i) {
+    Nigori nigori;
+    KeyParams params = GetNthKeyParams(i);
+    nigori.InitByDerivation(params.hostname, params.username, params.password);
+
+    sync_pb::NigoriKey* key = bag.add_key();
+
+    key->set_name(GetNigoriName(nigori));
+    nigori.ExportKeys(key->mutable_user_key(),
+                      key->mutable_encryption_key(),
+                      key->mutable_mac_key());
+  }
+
+  // Re-create the last nigori from that loop.
+  Nigori last_nigori;
+  KeyParams params = GetNthKeyParams(foreign_encryption_key_index_);
+  last_nigori.InitByDerivation(
+      params.hostname, params.username, params.password);
+
+  // Serialize and encrypt the bag with the last nigori.
+  std::string serialized_bag;
+  bag.SerializeToString(&serialized_bag);
+
+  sync_pb::EncryptedData encrypted;
+  encrypted.set_key_name(GetNigoriName(last_nigori));
+  last_nigori.Encrypt(serialized_bag, encrypted.mutable_blob());
+
+  // Update the cryptographer with new pending keys.
+  cryptographer_.SetPendingKeys(encrypted);
+
+  // Update the worker with the latest encryption key name.
+  if (worker_)
+    worker_->SetEncryptionKeyName(encrypted.key_name());
+}
+
+void ModelTypeSyncWorkerImplTest::UpdateLocalCryptographer() {
+  KeyParams params = GetNthKeyParams(foreign_encryption_key_index_);
+  bool success = cryptographer_.DecryptPendingKeys(params);
+  DCHECK(success);
+
+  if (worker_)
+    worker_->OnCryptographerStateChanged();
+}
+
+void ModelTypeSyncWorkerImplTest::SetUpdateEncryptionFilter(int n) {
+  update_encryption_filter_index_ = n;
 }
 
 void ModelTypeSyncWorkerImplTest::CommitRequest(const std::string& name,
@@ -243,6 +372,12 @@ void ModelTypeSyncWorkerImplTest::TriggerUpdateFromServer(
     const std::string& value) {
   sync_pb::SyncEntity entity = mock_server_.UpdateFromServer(
       version_offset, GenerateTagHash(tag), GenerateSpecifics(tag, value));
+
+  if (update_encryption_filter_index_ != 0) {
+    EncryptUpdate(GetNthKeyParams(update_encryption_filter_index_),
+                  entity.mutable_specifics());
+  }
+
   SyncEntityList entity_list;
   entity_list.push_back(&entity);
 
@@ -255,11 +390,27 @@ void ModelTypeSyncWorkerImplTest::TriggerUpdateFromServer(
   worker_->ApplyUpdates(&dummy_status);
 }
 
+void ModelTypeSyncWorkerImplTest::DeliverRawUpdates(
+    const SyncEntityList& list) {
+  sessions::StatusController dummy_status;
+  worker_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
+                                     mock_server_.GetContext(),
+                                     list,
+                                     &dummy_status);
+  worker_->ApplyUpdates(&dummy_status);
+}
+
 void ModelTypeSyncWorkerImplTest::TriggerTombstoneFromServer(
     int64 version_offset,
     const std::string& tag) {
   sync_pb::SyncEntity entity =
       mock_server_.TombstoneFromServer(version_offset, GenerateTagHash(tag));
+
+  if (update_encryption_filter_index_ != 0) {
+    EncryptUpdate(GetNthKeyParams(update_encryption_filter_index_),
+                  entity.mutable_specifics());
+  }
+
   SyncEntityList entity_list;
   entity_list.push_back(&entity);
 
@@ -346,6 +497,12 @@ ModelTypeSyncWorkerImplTest::GetNthModelThreadUpdateResponse(size_t n) const {
   return mock_type_sync_proxy_->GetNthUpdateResponse(n);
 }
 
+UpdateResponseDataList
+ModelTypeSyncWorkerImplTest::GetNthModelThreadPendingUpdates(size_t n) const {
+  DCHECK_LT(n, GetNumModelThreadUpdateResponses());
+  return mock_type_sync_proxy_->GetNthPendingUpdates(n);
+}
+
 DataTypeState ModelTypeSyncWorkerImplTest::GetNthModelThreadUpdateState(
     size_t n) const {
   DCHECK_LT(n, GetNumModelThreadUpdateResponses());
@@ -401,6 +558,7 @@ int ModelTypeSyncWorkerImplTest::GetNumInitialDownloadNudges() const {
   return mock_nudge_handler_.GetNumInitialDownloadNudges();
 }
 
+// static.
 std::string ModelTypeSyncWorkerImplTest::GenerateTagHash(
     const std::string& tag) {
   const std::string& client_tag_hash =
@@ -408,6 +566,7 @@ std::string ModelTypeSyncWorkerImplTest::GenerateTagHash(
   return client_tag_hash;
 }
 
+// static.
 sync_pb::EntitySpecifics ModelTypeSyncWorkerImplTest::GenerateSpecifics(
     const std::string& tag,
     const std::string& value) {
@@ -415,6 +574,46 @@ sync_pb::EntitySpecifics ModelTypeSyncWorkerImplTest::GenerateSpecifics(
   specifics.mutable_preference()->set_name(tag);
   specifics.mutable_preference()->set_value(value);
   return specifics;
+}
+
+// static.
+std::string ModelTypeSyncWorkerImplTest::GetNigoriName(const Nigori& nigori) {
+  std::string name;
+  if (!nigori.Permute(Nigori::Password, kNigoriKeyName, &name)) {
+    NOTREACHED();
+    return std::string();
+  }
+
+  return name;
+}
+
+// static.
+KeyParams ModelTypeSyncWorkerImplTest::GetNthKeyParams(int n) {
+  KeyParams params;
+  params.hostname = std::string("localhost");
+  params.username = std::string("userX");
+  params.password = base::StringPrintf("pw%02d", n);
+  return params;
+}
+
+// static.
+void ModelTypeSyncWorkerImplTest::EncryptUpdate(
+    const KeyParams& params,
+    sync_pb::EntitySpecifics* specifics) {
+  Nigori nigori;
+  nigori.InitByDerivation(params.hostname, params.username, params.password);
+
+  sync_pb::EntitySpecifics original_specifics = *specifics;
+  std::string plaintext;
+  original_specifics.SerializeToString(&plaintext);
+
+  std::string encrypted;
+  nigori.Encrypt(plaintext, &encrypted);
+
+  specifics->Clear();
+  AddDefaultFieldValue(kModelType, specifics);
+  specifics->mutable_encrypted()->set_key_name(GetNigoriName(nigori));
+  specifics->mutable_encrypted()->set_blob(encrypted);
 }
 
 // Requests a commit and verifies the messages sent to the client and server as
@@ -600,6 +799,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, TwoNewItemsCommittedSeparately) {
   EXPECT_EQ(2U, GetNumModelThreadCommitResponses());
 }
 
+// Test normal update receipt code path.
 TEST_F(ModelTypeSyncWorkerImplTest, ReceiveUpdates) {
   NormalInitialize();
 
@@ -623,6 +823,283 @@ TEST_F(ModelTypeSyncWorkerImplTest, ReceiveUpdates) {
   EXPECT_FALSE(update.deleted);
   EXPECT_EQ("tag1", update.specifics.preference().name());
   EXPECT_EQ("value1", update.specifics.preference().value());
+}
+
+// Test commit of encrypted updates.
+TEST_F(ModelTypeSyncWorkerImplTest, EncryptedCommit) {
+  NormalInitialize();
+
+  NewForeignEncryptionKey();
+  UpdateLocalCryptographer();
+
+  // Normal commit request stuff.
+  CommitRequest("tag1", "value1");
+  DoSuccessfulCommit();
+  ASSERT_EQ(1U, GetNumCommitMessagesOnServer());
+  EXPECT_EQ(1, GetNthCommitMessageOnServer(0).commit().entries_size());
+  ASSERT_TRUE(HasCommitEntityOnServer("tag1"));
+  const sync_pb::SyncEntity& tag1_entity =
+      GetLatestCommitEntityOnServer("tag1");
+
+  EXPECT_TRUE(tag1_entity.specifics().has_encrypted());
+
+  // The title should be overwritten.
+  EXPECT_EQ(tag1_entity.name(), "encrypted");
+
+  // The type should be set, but there should be no non-encrypted contents.
+  EXPECT_TRUE(tag1_entity.specifics().has_preference());
+  EXPECT_FALSE(tag1_entity.specifics().preference().has_name());
+  EXPECT_FALSE(tag1_entity.specifics().preference().has_value());
+}
+
+// Test items are not committed when encryption is required but unavailable.
+TEST_F(ModelTypeSyncWorkerImplTest, EncryptionBlocksCommits) {
+  NormalInitialize();
+
+  CommitRequest("tag1", "value1");
+  EXPECT_TRUE(WillCommit());
+
+  // We know encryption is in use on this account, but don't have the necessary
+  // encryption keys.  The worker should refuse to commit.
+  NewForeignEncryptionKey();
+  EXPECT_FALSE(WillCommit());
+
+  // Once the cryptographer is returned to a normal state, we should be able to
+  // commit again.
+  EXPECT_EQ(1, GetNumCommitNudges());
+  UpdateLocalCryptographer();
+  EXPECT_EQ(2, GetNumCommitNudges());
+  EXPECT_TRUE(WillCommit());
+
+  // Verify the committed entity was properly encrypted.
+  DoSuccessfulCommit();
+  ASSERT_EQ(1U, GetNumCommitMessagesOnServer());
+  EXPECT_EQ(1, GetNthCommitMessageOnServer(0).commit().entries_size());
+  ASSERT_TRUE(HasCommitEntityOnServer("tag1"));
+  const sync_pb::SyncEntity& tag1_entity =
+      GetLatestCommitEntityOnServer("tag1");
+  EXPECT_TRUE(tag1_entity.specifics().has_encrypted());
+  EXPECT_EQ(tag1_entity.name(), "encrypted");
+  EXPECT_TRUE(tag1_entity.specifics().has_preference());
+  EXPECT_FALSE(tag1_entity.specifics().preference().has_name());
+  EXPECT_FALSE(tag1_entity.specifics().preference().has_value());
+}
+
+// Test the receipt of decryptable entities.
+TEST_F(ModelTypeSyncWorkerImplTest, ReceiveDecryptableEntities) {
+  NormalInitialize();
+
+  // Create a new Nigori and allow the cryptographer to decrypt it.
+  NewForeignEncryptionKey();
+  UpdateLocalCryptographer();
+
+  // First, receive an unencrypted entry.
+  TriggerUpdateFromServer(10, "tag1", "value1");
+
+  // Test some basic properties regarding the update.
+  ASSERT_TRUE(HasUpdateResponseOnModelThread("tag1"));
+  UpdateResponseData update1 = GetUpdateResponseOnModelThread("tag1");
+  EXPECT_EQ("tag1", update1.specifics.preference().name());
+  EXPECT_EQ("value1", update1.specifics.preference().value());
+  EXPECT_TRUE(update1.encryption_key_name.empty());
+
+  // Set received updates to be encrypted using the new nigori.
+  SetUpdateEncryptionFilter(1);
+
+  // This next update will be encrypted.
+  TriggerUpdateFromServer(10, "tag2", "value2");
+
+  // Test its basic features and the value of encryption_key_name.
+  ASSERT_TRUE(HasUpdateResponseOnModelThread("tag2"));
+  UpdateResponseData update2 = GetUpdateResponseOnModelThread("tag2");
+  EXPECT_EQ("tag2", update2.specifics.preference().name());
+  EXPECT_EQ("value2", update2.specifics.preference().value());
+  EXPECT_FALSE(update2.encryption_key_name.empty());
+}
+
+// Receive updates that are initially undecryptable, then ensure they get
+// delivered to the model thread when decryption becomes possible.
+TEST_F(ModelTypeSyncWorkerImplTest, ReceiveUndecryptableEntries) {
+  NormalInitialize();
+
+  // Set a new encryption key.  The model thread will be notified of the new
+  // encryption key through a faked update response.
+  NewForeignEncryptionKey();
+  EXPECT_EQ(1U, GetNumModelThreadUpdateResponses());
+
+  // Send an update using that new key.
+  SetUpdateEncryptionFilter(1);
+  TriggerUpdateFromServer(10, "tag1", "value1");
+
+  // At this point, the cryptographer does not have access to the key, so the
+  // updates will be undecryptable.  They'll be transfered to the model thread
+  // for safe-keeping as pending updates.
+  ASSERT_EQ(2U, GetNumModelThreadUpdateResponses());
+  UpdateResponseDataList updates_list = GetNthModelThreadUpdateResponse(1);
+  EXPECT_EQ(0U, updates_list.size());
+  UpdateResponseDataList pending_updates = GetNthModelThreadPendingUpdates(1);
+  EXPECT_EQ(1U, pending_updates.size());
+
+  // The update will be delivered as soon as decryption becomes possible.
+  UpdateLocalCryptographer();
+  ASSERT_TRUE(HasUpdateResponseOnModelThread("tag1"));
+  UpdateResponseData update = GetUpdateResponseOnModelThread("tag1");
+  EXPECT_EQ("tag1", update.specifics.preference().name());
+  EXPECT_EQ("value1", update.specifics.preference().value());
+  EXPECT_FALSE(update.encryption_key_name.empty());
+}
+
+// Ensure that even encrypted updates can cause conflicts.
+TEST_F(ModelTypeSyncWorkerImplTest, EncryptedUpdateOverridesPendingCommit) {
+  NormalInitialize();
+
+  // Prepeare to commit an item.
+  CommitRequest("tag1", "value1");
+  EXPECT_TRUE(WillCommit());
+
+  // Receive an encrypted update for that item.
+  SetUpdateEncryptionFilter(1);
+  TriggerUpdateFromServer(10, "tag1", "value1");
+
+  // The pending commit state should be cleared.
+  EXPECT_FALSE(WillCommit());
+
+  // The encrypted update will be delivered to the model thread.
+  ASSERT_EQ(1U, GetNumModelThreadUpdateResponses());
+  UpdateResponseDataList updates_list = GetNthModelThreadUpdateResponse(0);
+  EXPECT_EQ(0U, updates_list.size());
+  UpdateResponseDataList pending_updates = GetNthModelThreadPendingUpdates(0);
+  EXPECT_EQ(1U, pending_updates.size());
+}
+
+// Test decryption of pending updates saved across a restart.
+TEST_F(ModelTypeSyncWorkerImplTest, RestorePendingEntries) {
+  // Create a fake pending update.
+  UpdateResponseData update;
+
+  update.client_tag_hash = GenerateTagHash("tag1");
+  update.id = "SomeID";
+  update.response_version = 100;
+  update.ctime = base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(10);
+  update.mtime = base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(11);
+  update.non_unique_name = "encrypted";
+  update.deleted = false;
+
+  update.specifics = GenerateSpecifics("tag1", "value1");
+  EncryptUpdate(GetNthKeyParams(1), &(update.specifics));
+
+  // Inject the update during ModelTypeSyncWorker initialization.
+  UpdateResponseDataList saved_pending_updates;
+  saved_pending_updates.push_back(update);
+  InitializeWithPendingUpdates(saved_pending_updates);
+
+  // Update will be undecryptable at first.
+  EXPECT_EQ(0U, GetNumModelThreadUpdateResponses());
+  ASSERT_FALSE(HasUpdateResponseOnModelThread("tag1"));
+
+  // Update the cryptographer so it can decrypt that update.
+  NewForeignEncryptionKey();
+  UpdateLocalCryptographer();
+
+  // Verify the item gets decrypted and sent back to the model thread.
+  ASSERT_TRUE(HasUpdateResponseOnModelThread("tag1"));
+}
+
+// Test decryption of pending updates saved across a restart.  This test
+// differs from the previous one in that the restored updates can be decrypted
+// immediately after the ModelTypeSyncWorker is constructed.
+TEST_F(ModelTypeSyncWorkerImplTest, RestoreApplicableEntries) {
+  // Update the cryptographer so it can decrypt that update.
+  NewForeignEncryptionKey();
+  UpdateLocalCryptographer();
+
+  // Create a fake pending update.
+  UpdateResponseData update;
+  update.client_tag_hash = GenerateTagHash("tag1");
+  update.id = "SomeID";
+  update.response_version = 100;
+  update.ctime = base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(10);
+  update.mtime = base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(11);
+  update.non_unique_name = "encrypted";
+  update.deleted = false;
+
+  update.specifics = GenerateSpecifics("tag1", "value1");
+  EncryptUpdate(GetNthKeyParams(1), &(update.specifics));
+
+  // Inject the update during ModelTypeSyncWorker initialization.
+  UpdateResponseDataList saved_pending_updates;
+  saved_pending_updates.push_back(update);
+  InitializeWithPendingUpdates(saved_pending_updates);
+
+  // Verify the item gets decrypted and sent back to the model thread.
+  ASSERT_TRUE(HasUpdateResponseOnModelThread("tag1"));
+}
+
+// Test that undecryptable updates provide sufficient reason to not commit.
+//
+// This should be rare in practice.  Usually the cryptographer will be in an
+// unusable state when we receive undecryptable updates, and that alone will be
+// enough to prevent all commits.
+TEST_F(ModelTypeSyncWorkerImplTest, CommitBlockedByPending) {
+  NormalInitialize();
+
+  // Prepeare to commit an item.
+  CommitRequest("tag1", "value1");
+  EXPECT_TRUE(WillCommit());
+
+  // Receive an encrypted update for that item.
+  SetUpdateEncryptionFilter(1);
+  TriggerUpdateFromServer(10, "tag1", "value1");
+
+  // The pending commit state should be cleared.
+  EXPECT_FALSE(WillCommit());
+
+  // The pending update will be delivered to the model thread.
+  HasUpdateResponseOnModelThread("tag1");
+
+  // Pretend the update arrived too late to prevent another commit request.
+  CommitRequest("tag1", "value2");
+
+  EXPECT_FALSE(WillCommit());
+}
+
+// Verify that corrupted encrypted updates don't cause crashes.
+TEST_F(ModelTypeSyncWorkerImplTest, ReceiveCorruptEncryption) {
+  // Initialize the worker with basic encryption state.
+  NormalInitialize();
+  NewForeignEncryptionKey();
+  UpdateLocalCryptographer();
+
+  // Manually create an update.
+  sync_pb::SyncEntity entity;
+  entity.set_client_defined_unique_tag(GenerateTagHash("tag1"));
+  entity.set_id_string("SomeID");
+  entity.set_version(1);
+  entity.set_ctime(1000);
+  entity.set_mtime(1001);
+  entity.set_name("encrypted");
+  entity.set_deleted(false);
+
+  // Encrypt it.
+  entity.mutable_specifics()->CopyFrom(GenerateSpecifics("tag1", "value1"));
+  EncryptUpdate(GetNthKeyParams(1), entity.mutable_specifics());
+
+  // Replace a few bytes to corrupt it.
+  entity.mutable_specifics()->mutable_encrypted()->mutable_blob()->replace(
+      0, 4, "xyz!");
+
+  SyncEntityList entity_list;
+  entity_list.push_back(&entity);
+
+  // If a corrupt update could trigger a crash, this is where it would happen.
+  DeliverRawUpdates(entity_list);
+
+  EXPECT_FALSE(HasUpdateResponseOnModelThread("tag1"));
+
+  // Deliver a non-corrupt update to see if the everything still works.
+  SetUpdateEncryptionFilter(1);
+  TriggerUpdateFromServer(10, "tag1", "value1");
+  EXPECT_TRUE(HasUpdateResponseOnModelThread("tag1"));
 }
 
 }  // namespace syncer

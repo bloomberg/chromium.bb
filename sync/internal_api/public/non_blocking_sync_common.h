@@ -38,6 +38,11 @@ struct SYNC_EXPORT_PRIVATE DataTypeState {
   // until the first download cycle has completed.
   std::string type_root_id;
 
+  // This value is set if this type's data should be encrypted on the server.
+  // If this key changes, the client will need to re-commit all of its local
+  // data to the server using the new encryption key.
+  std::string encryption_key_name;
+
   // A strictly increasing counter used to generate unique values for the
   // client-assigned IDs.  The incrementing and ID assignment happens on the
   // sync thread, but we store the value here so we can pass it back to the
@@ -51,7 +56,6 @@ struct SYNC_EXPORT_PRIVATE DataTypeState {
   // flag is set.
   bool initial_sync_done;
 };
-
 struct SYNC_EXPORT_PRIVATE CommitRequestData {
   CommitRequestData();
   ~CommitRequestData();
@@ -94,6 +98,7 @@ struct SYNC_EXPORT_PRIVATE UpdateResponseData {
   std::string non_unique_name;
   bool deleted;
   sync_pb::EntitySpecifics specifics;
+  std::string encryption_key_name;
 };
 
 typedef std::vector<CommitRequestData> CommitRequestDataList;

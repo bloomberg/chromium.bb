@@ -40,6 +40,7 @@ class SYNC_EXPORT_PRIVATE SyncContextProxyImpl : public SyncContextProxy {
   virtual void ConnectTypeToSync(
       syncer::ModelType type,
       const DataTypeState& data_type_state,
+      const UpdateResponseDataList& pending_updates,
       const base::WeakPtr<ModelTypeSyncProxyImpl>& sync_proxy_impl) OVERRIDE;
 
   // Disables syncing for the given type on the sync thread.

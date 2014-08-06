@@ -8,8 +8,10 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "sync/base/sync_export.h"
+#include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace syncer {
@@ -81,6 +83,20 @@ class SYNC_EXPORT EntityTracker {
   // Handles receipt of an update from the server.
   void ReceiveUpdate(int64 version);
 
+  // Handles the receipt of an pending update from the server.
+  //
+  // Returns true if the tracker decides this item is worth keeping.  Returns
+  // false if the item is discarded, which could happen if the version number
+  // is out of date.
+  bool ReceivePendingUpdate(const UpdateResponseData& data);
+
+  // Functions to fetch the latest pending update.
+  bool HasPendingUpdate() const;
+  UpdateResponseData GetPendingUpdate() const;
+
+  // Clears the pending update.  Allows us to resume regular commit behavior.
+  void ClearPendingUpdate();
+
  private:
   // Initializes received update state.  Does not initialize state related to
   // pending commits and sets |is_commit_pending_| to false.
@@ -145,6 +161,11 @@ class SYNC_EXPORT EntityTracker {
   std::string non_unique_name_;
   bool deleted_;
   sync_pb::EntitySpecifics specifics_;
+
+  // An update for this item which can't be applied right now.  The presence of
+  // an pending update prevents commits.  As of this writing, the only source
+  // of pending updates is updates we can't decrypt right now.
+  scoped_ptr<UpdateResponseData> pending_update_;
 
   DISALLOW_COPY_AND_ASSIGN(EntityTracker);
 };
