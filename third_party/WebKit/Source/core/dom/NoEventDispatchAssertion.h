@@ -36,14 +36,16 @@ public:
         return s_count;
     }
 
-    class AllowUserAgentEvents {
+    // It's safe to dispatch events in SVGImage since there can't be any script
+    // listeners.
+    class AllowSVGImageEvents {
     public:
-        AllowUserAgentEvents()
+        AllowSVGImageEvents()
             : m_change(s_count, 0)
         {
         }
 
-        ~AllowUserAgentEvents()
+        ~AllowSVGImageEvents()
         {
             ASSERT(!s_count);
         }
