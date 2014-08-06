@@ -183,7 +183,7 @@ Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
 
   // TODO(eroman): This should really be a DataError, however for compatibility
   //               with NSS it is an OperationError.
-  if (1 != RSA_check_key(rsa.get()))
+  if (!RSA_check_key(rsa.get()))
     return Status::OperationError();
 
   // Create a corresponding EVP_PKEY.
@@ -359,7 +359,7 @@ Status RsaHashedAlgorithm::ImportKeyPkcs8(
   crypto::ScopedRSA rsa(EVP_PKEY_get1_RSA(private_key.get()));
   if (!rsa.get())
     return Status::ErrorUnexpected();
-  if (1 != RSA_check_key(rsa.get()))
+  if (!RSA_check_key(rsa.get()))
     return Status::DataError();
 
   // TODO(eroman): Validate the algorithm OID against the webcrypto provided

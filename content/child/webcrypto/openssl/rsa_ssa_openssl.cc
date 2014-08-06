@@ -105,11 +105,10 @@ class RsaSsaImplementation : public RsaHashedAlgorithm {
     if (status.IsError())
       return status;
 
-    if (1 != EVP_DigestVerifyInit(ctx.get(), NULL, digest, NULL, public_key))
+    if (!EVP_DigestVerifyInit(ctx.get(), NULL, digest, NULL, public_key))
       return Status::OperationError();
 
-    if (1 !=
-        EVP_DigestVerifyUpdate(ctx.get(), data.bytes(), data.byte_length())) {
+    if (!EVP_DigestVerifyUpdate(ctx.get(), data.bytes(), data.byte_length())) {
       return Status::OperationError();
     }
 
@@ -117,9 +116,8 @@ class RsaSsaImplementation : public RsaHashedAlgorithm {
     //   1 --> Success
     //   0 --> Verification failed
     //  <0 --> Operation error
-    int rv = EVP_DigestVerifyFinal(ctx.get(),
-                                   signature.bytes(),
-                                   signature.byte_length());
+    int rv = EVP_DigestVerifyFinal(
+        ctx.get(), signature.bytes(), signature.byte_length());
     *signature_match = rv == 1;
     return rv >= 0 ? Status::Success() : Status::OperationError();
   }

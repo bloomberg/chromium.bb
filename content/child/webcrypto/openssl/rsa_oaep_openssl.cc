@@ -51,7 +51,7 @@ Status CommonEncryptDecrypt(InitFunc init_func,
 
   crypto::ScopedEVP_PKEY_CTX ctx(EVP_PKEY_CTX_new(pkey, NULL));
 
-  if (1 != init_func(ctx.get()) ||
+  if (!init_func(ctx.get()) ||
       1 != EVP_PKEY_CTX_set_rsa_padding(ctx.get(), RSA_PKCS1_OAEP_PADDING) ||
       1 != EVP_PKEY_CTX_set_rsa_oaep_md(ctx.get(), digest) ||
       1 != EVP_PKEY_CTX_set_rsa_mgf1_md(ctx.get(), digest)) {
@@ -76,18 +76,18 @@ Status CommonEncryptDecrypt(InitFunc init_func,
 
   // Determine the maximum length of the output.
   size_t outlen = 0;
-  if (1 != encrypt_decrypt_func(
-               ctx.get(), NULL, &outlen, data.bytes(), data.byte_length())) {
+  if (!encrypt_decrypt_func(
+          ctx.get(), NULL, &outlen, data.bytes(), data.byte_length())) {
     return Status::OperationError();
   }
   buffer->resize(outlen);
 
   // Do the actual encryption/decryption.
-  if (1 != encrypt_decrypt_func(ctx.get(),
-                                vector_as_array(buffer),
-                                &outlen,
-                                data.bytes(),
-                                data.byte_length())) {
+  if (!encrypt_decrypt_func(ctx.get(),
+                            vector_as_array(buffer),
+                            &outlen,
+                            data.bytes(),
+                            data.byte_length())) {
     return Status::OperationError();
   }
   buffer->resize(outlen);
