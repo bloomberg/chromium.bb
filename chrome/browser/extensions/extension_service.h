@@ -427,6 +427,9 @@ class ExtensionService
   void AddProviderForTesting(
       extensions::ExternalProviderInterface* test_provider);
 
+  // Simulate an extension being blacklisted for tests.
+  void BlacklistExtensionForTest(const std::string& extension_id);
+
 #if defined(UNIT_TEST)
   void TrackTerminatedExtensionForTest(const extensions::Extension* extension) {
     TrackTerminatedExtension(extension);

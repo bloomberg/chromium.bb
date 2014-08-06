@@ -21,11 +21,14 @@ class EphemeralAppTestBase : public extensions::PlatformAppBrowserTest {
   static const char kMessagingReceiverApp[];
   static const char kMessagingReceiverAppV2[];
   static const char kDispatchEventTestApp[];
+  static const char kNotificationsTestApp[];
+  static const char kFileSystemTestApp[];
 
   EphemeralAppTestBase();
   virtual ~EphemeralAppTestBase();
 
   virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
+  virtual void SetUpOnMainThread() OVERRIDE;
 
  protected:
   base::FilePath GetTestPath(const char* test_path);
@@ -40,7 +43,10 @@ class EphemeralAppTestBase : public extensions::PlatformAppBrowserTest {
       const base::FilePath& test_dir,
       const base::FilePath& pem_path);
   void PromoteEphemeralApp(const extensions::Extension* app);
+  void DisableEphemeralApp(const extensions::Extension* app,
+                           extensions::Extension::DisableReason disable_reason);
 
+  void CloseAppWaitForUnload(const std::string& app_id);
   void CloseApp(const std::string& app_id);
   void EvictApp(const std::string& app_id);
 };

@@ -4,6 +4,7 @@
 
 #include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/apps/ephemeral_app_launcher.h"
+#include "chrome/browser/apps/ephemeral_app_service.h"
 #include "chrome/browser/extensions/extension_install_checker.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
@@ -20,6 +21,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/common/switches.h"
 
 using extensions::Extension;
 using extensions::ExtensionPrefs;
@@ -195,8 +197,21 @@ class EphemeralAppLauncherTest : public WebstoreInstallerTest {
   virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
     WebstoreInstallerTest::SetUpCommandLine(command_line);
 
+    // Make event pages get suspended immediately.
+    command_line->AppendSwitchASCII(extensions::switches::kEventPageIdleTime,
+                                    "10");
+    command_line->AppendSwitchASCII(
+        extensions::switches::kEventPageSuspendingTime, "10");
+
     // Enable ephemeral apps flag.
     command_line->AppendSwitch(switches::kEnableEphemeralApps);
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    WebstoreInstallerTest::SetUpOnMainThread();
+
+    // Disable ephemeral apps immediately after they stop running in tests.
+    EphemeralAppService::Get(profile())->set_disable_delay_for_test(0);
   }
 
   base::FilePath GetTestPath(const char* test_name) {
@@ -270,11 +285,6 @@ class EphemeralAppLauncherTest : public WebstoreInstallerTest {
     if (!app)
       return NULL;
 
-    if (disable_reason == Extension::DISABLE_GREYLIST) {
-      ExtensionPrefs::Get(profile())->SetExtensionBlacklistState(
-          app->id(), extensions::BLACKLISTED_MALWARE);
-    }
-
     ExtensionService* service =
         ExtensionSystem::Get(profile())->extension_service();
     service->DisableExtension(app->id(), disable_reason);
@@ -286,8 +296,8 @@ class EphemeralAppLauncherTest : public WebstoreInstallerTest {
           ->SetDidExtensionEscalatePermissions(app, true);
     }
 
-    EXPECT_FALSE(
-        ExtensionRegistry::Get(profile())->enabled_extensions().Contains(
+    EXPECT_TRUE(
+        ExtensionRegistry::Get(profile())->disabled_extensions().Contains(
             app->id()));
     return app;
   }
@@ -313,6 +323,10 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTestDisabled, FeatureDisabled) {
 // ephemerally and launched without prompting the user.
 IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTest,
                        LaunchAppWithNoPermissionWarnings) {
+  content::WindowedNotificationObserver unloaded_signal(
+      extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+      content::Source<Profile>(profile()));
+
   scoped_refptr<EphemeralAppLauncherForTest> launcher(
       new EphemeralAppLauncherForTest(kDefaultAppId, profile()));
   StartLauncherAndCheckResult(launcher.get(), webstore_install::SUCCESS, true);
@@ -320,6 +334,9 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTest,
 
   // Apps with no permission warnings should not result in a prompt.
   EXPECT_FALSE(launcher->install_prompt_created());
+
+  // Ephemeral apps are unloaded after they stop running.
+  unloaded_signal.Wait();
 
   // After an app has been installed ephemerally, it can be launched again
   // without installing from the web store.
@@ -511,9 +528,15 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTest, LaunchAppBlockedByPolicy) {
 
 // Verifies that an installed blacklisted app cannot be launched.
 IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTest, LaunchBlacklistedApp) {
-  const Extension* app =
-      InstallAndDisableApp(kDefaultAppTestPath, Extension::DISABLE_GREYLIST);
+  const Extension* app = InstallExtension(GetTestPath(kDefaultAppTestPath), 1);
   ASSERT_TRUE(app);
+
+  ExtensionService* service =
+      ExtensionSystem::Get(profile())->extension_service();
+  service->BlacklistExtensionForTest(app->id());
+  ASSERT_TRUE(
+      ExtensionRegistry::Get(profile())->blacklisted_extensions().Contains(
+          app->id()));
 
   RunLaunchTest(app->id(), webstore_install::BLACKLISTED, false);
 }

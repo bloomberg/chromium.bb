@@ -31,19 +31,18 @@ class AppLifetimeMonitor : public KeyedService,
   class Observer {
    public:
     // Called when the app starts running.
-    virtual void OnAppStart(Profile* profile, const std::string& app_id) = 0;
+    virtual void OnAppStart(Profile* profile, const std::string& app_id) {}
     // Called when the app becomes active to the user, i.e. it opens a window.
-    virtual void OnAppActivated(Profile* profile,
-                                const std::string& app_id) = 0;
+    virtual void OnAppActivated(Profile* profile, const std::string& app_id) {}
     // Called when the app becomes inactive to the user.
-    virtual void OnAppDeactivated(Profile* profile,
-                                  const std::string& app_id) = 0;
+    virtual void OnAppDeactivated(Profile* profile, const std::string& app_id) {
+    }
     // Called when the app stops running.
-    virtual void OnAppStop(Profile* profile, const std::string& app_id) = 0;
+    virtual void OnAppStop(Profile* profile, const std::string& app_id) {}
     // Called when chrome is about to terminate. This gives observers a chance
     // to do something before the apps shut down. This is a system-wide event
     // so there is no associated profile and app id.
-    virtual void OnChromeTerminating() = 0;
+    virtual void OnChromeTerminating() {}
 
    protected:
     virtual ~Observer() {}

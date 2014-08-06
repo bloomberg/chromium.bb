@@ -4,7 +4,9 @@
 
 #include "chrome/browser/apps/ephemeral_app_service.h"
 
+#include "apps/app_lifetime_monitor_factory.h"
 #include "base/command_line.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/apps/ephemeral_app_service_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -44,6 +46,13 @@ const int kGarbageCollectAppsInstallDelay = 15;
 // kMaxEphemeralAppsCount.
 const int kGarbageCollectAppsTriggerCount = 35;
 
+// The number of seconds after an app has stopped running before it will be
+// disabled.
+const int kDefaultDisableAppDelay = 1;
+
+// The number of seconds after startup before disabling inactive ephemeral apps.
+const int kDisableAppsOnStartupDelay = 5;
+
 }  // namespace
 
 const int EphemeralAppService::kAppInactiveThreshold = 10;
@@ -58,16 +67,12 @@ EphemeralAppService* EphemeralAppService::Get(Profile* profile) {
 EphemeralAppService::EphemeralAppService(Profile* profile)
     : profile_(profile),
       extension_registry_observer_(this),
-      ephemeral_app_count_(-1) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableEphemeralApps))
-    return;
-
-  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
+      app_lifetime_monitor_observer_(this),
+      ephemeral_app_count_(-1),
+      disable_idle_app_delay_(kDefaultDisableAppDelay),
+      weak_ptr_factory_(this) {
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::Source<Profile>(profile_));
 }
 
@@ -119,11 +124,6 @@ void EphemeralAppService::Observe(
       Init();
       break;
     }
-    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      // Ideally we need to know when the extension system is shutting down.
-      garbage_collect_apps_timer_.Stop();
-      break;
-    }
     default:
       NOTREACHED();
   }
@@ -139,8 +139,10 @@ void EphemeralAppService::OnExtensionWillBeInstalled(
     // An ephemeral app was just promoted to a regular installed app.
     --ephemeral_app_count_;
     DCHECK_GE(ephemeral_app_count_, 0);
+    HandleEphemeralAppPromoted(extension);
   } else if (!is_update &&
              extensions::util::IsEphemeralApp(extension->id(), profile_)) {
+    // A new ephemeral app was launched.
     ++ephemeral_app_count_;
     if (ephemeral_app_count_ >= kGarbageCollectAppsTriggerCount) {
       TriggerGarbageCollect(
@@ -159,10 +161,46 @@ void EphemeralAppService::OnExtensionUninstalled(
   }
 }
 
+void EphemeralAppService::OnAppStop(Profile* profile,
+                                    const std::string& app_id) {
+  if (!extensions::util::IsEphemeralApp(app_id, profile_))
+    return;
+
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&EphemeralAppService::DisableEphemeralApp,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 app_id),
+      base::TimeDelta::FromSeconds(disable_idle_app_delay_));
+}
+
+void EphemeralAppService::OnChromeTerminating() {
+  garbage_collect_apps_timer_.Stop();
+
+  extension_registry_observer_.RemoveAll();
+  app_lifetime_monitor_observer_.RemoveAll();
+}
+
 void EphemeralAppService::Init() {
   InitEphemeralAppCount();
+
+  // Start observing.
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
+  app_lifetime_monitor_observer_.Add(
+      apps::AppLifetimeMonitorFactory::GetForProfile(profile_));
+
+  // Execute startup clean up tasks (except during tests).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
+    return;
+
   TriggerGarbageCollect(
       base::TimeDelta::FromSeconds(kGarbageCollectAppsStartupDelay));
+
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&EphemeralAppService::DisableEphemeralAppsOnStartup,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::TimeDelta::FromSeconds(kDisableAppsOnStartupDelay));
 }
 
 void EphemeralAppService::InitEphemeralAppCount() {
@@ -177,6 +215,76 @@ void EphemeralAppService::InitEphemeralAppCount() {
     const Extension* extension = *it;
     if (prefs->IsEphemeralApp(extension->id()))
       ++ephemeral_app_count_;
+  }
+}
+
+void EphemeralAppService::DisableEphemeralApp(const std::string& app_id) {
+  if (!extensions::util::IsEphemeralApp(app_id, profile_) ||
+      !extensions::util::IsExtensionIdle(app_id, profile_)) {
+    return;
+  }
+
+  // After an ephemeral app has stopped running, unload it from extension
+  // system and disable it to prevent all background activity.
+  ExtensionService* service =
+      ExtensionSystem::Get(profile_)->extension_service();
+  DCHECK(service);
+  service->DisableExtension(app_id, Extension::DISABLE_INACTIVE_EPHEMERAL_APP);
+}
+
+void EphemeralAppService::DisableEphemeralAppsOnStartup() {
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
+  DCHECK(prefs);
+  ExtensionService* service =
+      ExtensionSystem::Get(profile_)->extension_service();
+  DCHECK(service);
+
+  // Ensure that all inactive ephemeral apps are disabled to prevent all
+  // background activity. This is done on startup to catch any apps that escaped
+  // being disabled on shutdown.
+  scoped_ptr<ExtensionSet> extensions =
+      ExtensionRegistry::Get(profile_)->GenerateInstalledExtensionsSet();
+  for (ExtensionSet::const_iterator it = extensions->begin();
+       it != extensions->end();
+       ++it) {
+    const Extension* extension = *it;
+    if (!prefs->IsEphemeralApp(extension->id()))
+      continue;
+
+    // Only V2 apps are installed ephemerally. Remove other ephemeral app types
+    // that were cached before this policy was introduced.
+    if (!extension->is_platform_app()) {
+      service->UninstallExtension(
+          extension->id(),
+          extensions::UNINSTALL_REASON_ORPHANED_EPHEMERAL_EXTENSION,
+          base::Bind(&base::DoNothing),
+          NULL);
+      continue;
+    }
+
+    if (!prefs->HasDisableReason(extension->id(),
+                                 Extension::DISABLE_INACTIVE_EPHEMERAL_APP) &&
+        !prefs->IsExtensionRunning(extension->id()) &&
+        extensions::util::IsExtensionIdle(extension->id(), profile_)) {
+      service->DisableExtension(extension->id(),
+                                Extension::DISABLE_INACTIVE_EPHEMERAL_APP);
+    }
+  }
+}
+
+void EphemeralAppService::HandleEphemeralAppPromoted(const Extension* app) {
+  // When ephemeral apps are promoted to regular install apps, remove the
+  // DISABLE_INACTIVE_EPHEMERAL_APP reason and enable the app if there are no
+  // other reasons.
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
+  DCHECK(prefs);
+
+  int disable_reasons = prefs->GetDisableReasons(app->id());
+  if (disable_reasons & Extension::DISABLE_INACTIVE_EPHEMERAL_APP) {
+    prefs->RemoveDisableReason(app->id(),
+                               Extension::DISABLE_INACTIVE_EPHEMERAL_APP);
+    if (disable_reasons == Extension::DISABLE_INACTIVE_EPHEMERAL_APP)
+      prefs->SetExtensionState(app->id(), Extension::ENABLED);
   }
 }
 

@@ -32,7 +32,6 @@ void DispatchOnEmbedRequestedEventImpl(
   scoped_ptr<Event> event(
       new Event(app_runtime::OnEmbedRequested::kEventName, args.Pass()));
   event->restrict_to_browser_context = context;
-  event->can_load_ephemeral_apps = true;
   system->event_router()->DispatchEventWithLazyListener(extension_id,
                                                         event.Pass());
 
@@ -52,7 +51,6 @@ void DispatchOnLaunchedEventImpl(const std::string& extension_id,
   scoped_ptr<Event> event(
       new Event(app_runtime::OnLaunched::kEventName, args.Pass()));
   event->restrict_to_browser_context = context;
-  event->can_load_ephemeral_apps = true;
   EventRouter::Get(context)
       ->DispatchEventWithLazyListener(extension_id, event.Pass());
   ExtensionPrefs::Get(context)
@@ -86,7 +84,6 @@ void AppRuntimeEventRouter::DispatchOnRestartedEvent(
   scoped_ptr<Event> event(
       new Event(app_runtime::OnRestarted::kEventName, arguments.Pass()));
   event->restrict_to_browser_context = context;
-  event->can_load_ephemeral_apps = true;
   EventRouter::Get(context)
       ->DispatchEventToExtension(extension->id(), event.Pass());
 }

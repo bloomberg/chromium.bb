@@ -163,6 +163,14 @@ void ExtensionService::AddProviderForTesting(
       linked_ptr<extensions::ExternalProviderInterface>(test_provider));
 }
 
+void ExtensionService::BlacklistExtensionForTest(
+    const std::string& extension_id) {
+  ExtensionIdSet blocked;
+  ExtensionIdSet unchanged;
+  blocked.insert(extension_id);
+  UpdateBlockedExtensions(blocked, unchanged);
+}
+
 bool ExtensionService::OnExternalExtensionUpdateUrlFound(
     const std::string& id,
     const std::string& install_parameter,
@@ -845,9 +853,11 @@ void ExtensionService::DisableExtension(
     Extension::DisableReason disable_reason) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // The extension may have been disabled already.
-  if (!IsExtensionEnabled(extension_id))
+  // The extension may have been disabled already. Just add a disable reason.
+  if (!IsExtensionEnabled(extension_id)) {
+    extension_prefs_->AddDisableReason(extension_id, disable_reason);
     return;
+  }
 
   const Extension* extension = GetInstalledExtension(extension_id);
   // |extension| can be NULL if sync disables an extension that is not
@@ -1658,6 +1668,12 @@ void ExtensionService::OnExtensionInstalled(
                               extension->GetType(), 100);
     UMA_HISTOGRAM_ENUMERATION("Extensions.UpdateSource",
                               extension->location(), Manifest::NUM_LOCATIONS);
+
+    // A fully installed app cannot be demoted to an ephemeral app.
+    if ((install_flags & extensions::kInstallFlagIsEphemeral) &&
+        !extension_prefs_->IsEphemeralApp(id)) {
+      install_flags &= ~static_cast<int>(extensions::kInstallFlagIsEphemeral);
+    }
   }
 
   const Extension::State initial_state =
@@ -1837,13 +1853,6 @@ void ExtensionService::PromoteEphemeralApp(
         extension->id(), syncer::StringOrdinal());
   }
 
-  if (!is_from_sync) {
-    // Cached ephemeral apps may be updated and disabled due to permissions
-    // increase. The app can be enabled as the install was user-acknowledged.
-    if (extension_prefs_->DidExtensionEscalatePermissions(extension->id()))
-      GrantPermissionsAndEnableExtension(extension);
-  }
-
   // Remove the ephemeral flags from the preferences.
   extension_prefs_->OnEphemeralAppPromoted(extension->id());
 
@@ -1866,12 +1875,30 @@ void ExtensionService::PromoteEphemeralApp(
       extension->name() /* old name */);
 
   if (registry_->enabled_extensions().Contains(extension->id())) {
+    // If the app is already enabled and loaded, fire the load events to allow
+    // observers to handle the promotion of the ephemeral app.
     content::NotificationService::current()->Notify(
         extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
         content::Source<Profile>(profile_),
         content::Details<const Extension>(extension));
 
     registry_->TriggerOnLoaded(extension);
+  } else {
+    // Cached ephemeral apps may be updated and disabled due to permissions
+    // increase. The app can be enabled (as long as no other disable reasons
+    // exist) as the install was user-acknowledged.
+    int disable_mask = Extension::DISABLE_NONE;
+    if (!is_from_sync)
+      disable_mask |= Extension::DISABLE_PERMISSIONS_INCREASE;
+
+    int other_disable_reasons =
+        extension_prefs_->GetDisableReasons(extension->id()) & ~disable_mask;
+    if (!other_disable_reasons) {
+      if (extension_prefs_->DidExtensionEscalatePermissions(extension->id()))
+        GrantPermissionsAndEnableExtension(extension);
+      else
+        EnableExtension(extension->id());
+    }
   }
 
   registry_->TriggerOnInstalled(extension, true);

@@ -19,7 +19,6 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/notification_types.h"
@@ -625,15 +624,6 @@ bool EventRouter::MaybeLoadLazyBackgroundPageToDispatchEvent(
     BrowserContext* context,
     const Extension* extension,
     const linked_ptr<Event>& event) {
-  if (util::IsEphemeralApp(extension->id(), context) &&
-      !event->can_load_ephemeral_apps) {
-    // Most events can only be dispatched to ephemeral apps that are already
-    // running.
-    ProcessManager* pm = ExtensionSystem::Get(context)->process_manager();
-    if (!pm->GetBackgroundHostForExtension(extension->id()))
-      return false;
-  }
-
   if (!CanDispatchEventToBrowserContext(context, extension, event))
     return false;
 
@@ -774,8 +764,7 @@ Event::Event(const std::string& event_name,
     : event_name(event_name),
       event_args(event_args.Pass()),
       restrict_to_browser_context(NULL),
-      user_gesture(EventRouter::USER_GESTURE_UNKNOWN),
-      can_load_ephemeral_apps(false) {
+      user_gesture(EventRouter::USER_GESTURE_UNKNOWN) {
   DCHECK(this->event_args.get());
 }
 
@@ -785,8 +774,7 @@ Event::Event(const std::string& event_name,
     : event_name(event_name),
       event_args(event_args.Pass()),
       restrict_to_browser_context(restrict_to_browser_context),
-      user_gesture(EventRouter::USER_GESTURE_UNKNOWN),
-      can_load_ephemeral_apps(false) {
+      user_gesture(EventRouter::USER_GESTURE_UNKNOWN) {
   DCHECK(this->event_args.get());
 }
 
@@ -801,8 +789,7 @@ Event::Event(const std::string& event_name,
       restrict_to_browser_context(restrict_to_browser_context),
       event_url(event_url),
       user_gesture(user_gesture),
-      filter_info(filter_info),
-      can_load_ephemeral_apps(false) {
+      filter_info(filter_info) {
   DCHECK(this->event_args.get());
 }
 

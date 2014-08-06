@@ -6,11 +6,13 @@
 
 #include <vector>
 
+#include "apps/app_restore_service.h"
 #include "apps/saved_files_service.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/apps/ephemeral_app_service.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/app_sync_data.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -54,9 +56,6 @@ using extensions::Manifest;
 namespace {
 
 namespace alarms = extensions::api::alarms;
-
-const char kNotificationsTestApp[] = "ephemeral_apps/notification_settings";
-const char kFileSystemTestApp[] = "ephemeral_apps/filesystem_retain_entries";
 
 typedef std::vector<message_center::Notifier*> NotifierList;
 
@@ -126,6 +125,10 @@ const char EphemeralAppTestBase::kMessagingReceiverAppV2[] =
     "ephemeral_apps/messaging_receiver2";
 const char EphemeralAppTestBase::kDispatchEventTestApp[] =
     "ephemeral_apps/dispatch_event";
+const char EphemeralAppTestBase::kNotificationsTestApp[] =
+    "ephemeral_apps/notification_settings";
+const char EphemeralAppTestBase::kFileSystemTestApp[] =
+    "ephemeral_apps/filesystem_retain_entries";
 
 EphemeralAppTestBase::EphemeralAppTestBase() {}
 
@@ -144,6 +147,13 @@ void EphemeralAppTestBase::SetUpCommandLine(base::CommandLine* command_line) {
 
   // Enable ephemeral apps flag.
   command_line->AppendSwitch(switches::kEnableEphemeralApps);
+}
+
+void EphemeralAppTestBase::SetUpOnMainThread() {
+  PlatformAppBrowserTest::SetUpOnMainThread();
+
+  // Disable ephemeral apps immediately after they stop running in tests.
+  EphemeralAppService::Get(profile())->set_disable_delay_for_test(0);
 }
 
 base::FilePath EphemeralAppTestBase::GetTestPath(const char* test_path) {
@@ -211,7 +221,8 @@ const Extension* EphemeralAppTestBase::UpdateEphemeralApp(
                                        &crx_installer));
   windowed_observer.Wait();
 
-  return service->GetExtensionById(app_id, false);
+  return ExtensionRegistry::Get(profile())
+      ->GetExtensionById(app_id, ExtensionRegistry::EVERYTHING);
 }
 
 void EphemeralAppTestBase::PromoteEphemeralApp(
@@ -222,17 +233,37 @@ void EphemeralAppTestBase::PromoteEphemeralApp(
   extension_service->PromoteEphemeralApp(app, false);
 }
 
-void EphemeralAppTestBase::CloseApp(const std::string& app_id) {
-  content::WindowedNotificationObserver event_page_destroyed_signal(
-      extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-      content::Source<Profile>(profile()));
+void EphemeralAppTestBase::DisableEphemeralApp(
+    const Extension* app,
+    Extension::DisableReason disable_reason) {
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
 
+  // Disabling due to a permissions increase also involves setting the
+  // DidExtensionEscalatePermissions flag.
+  if (disable_reason == Extension::DISABLE_PERMISSIONS_INCREASE)
+    prefs->SetDidExtensionEscalatePermissions(app, true);
+
+  ExtensionSystem::Get(profile())->extension_service()->DisableExtension(
+      app->id(), disable_reason);
+
+  ASSERT_TRUE(ExtensionRegistry::Get(profile())->disabled_extensions().Contains(
+      app->id()));
+}
+
+void EphemeralAppTestBase::CloseApp(const std::string& app_id) {
   EXPECT_EQ(1U, GetAppWindowCountForApp(app_id));
   apps::AppWindow* app_window = GetFirstAppWindowForApp(app_id);
   ASSERT_TRUE(app_window);
   CloseAppWindow(app_window);
+}
 
-  event_page_destroyed_signal.Wait();
+void EphemeralAppTestBase::CloseAppWaitForUnload(const std::string& app_id) {
+  // Ephemeral apps are unloaded from extension system after they stop running.
+  content::WindowedNotificationObserver unloaded_signal(
+      extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+      content::Source<Profile>(profile()));
+  CloseApp(app_id);
+  unloaded_signal.Wait();
 }
 
 void EphemeralAppTestBase::EvictApp(const std::string& app_id) {
@@ -259,6 +290,12 @@ void EphemeralAppTestBase::EvictApp(const std::string& app_id) {
 class EphemeralAppBrowserTest : public EphemeralAppTestBase {
  protected:
   bool LaunchAppAndRunTest(const Extension* app, const char* test_name) {
+    // Ephemeral apps are unloaded after they are closed. Ensure they are
+    // enabled before launch.
+    ExtensionService* service =
+        ExtensionSystem::Get(profile())->extension_service();
+    service->EnableExtension(app->id());
+
     ExtensionTestMessageListener launched_listener("launched", true);
     LaunchPlatformApp(app);
     if (!launched_listener.WaitUntilSatisfied()) {
@@ -272,10 +309,11 @@ class EphemeralAppBrowserTest : public EphemeralAppTestBase {
     bool result = catcher.GetNextResult();
     message_ = catcher.message();
 
-    CloseApp(app->id());
+    CloseAppWaitForUnload(app->id());
     return result;
   }
 
+  // Verify that the event page of the app has not been loaded.
   void VerifyAppNotLoaded(const std::string& app_id) {
     EXPECT_FALSE(ExtensionSystem::Get(profile())->
         process_manager()->GetBackgroundHostForExtension(app_id));
@@ -296,6 +334,42 @@ class EphemeralAppBrowserTest : public EphemeralAppTestBase {
     EXPECT_FALSE(app_sorting->GetPageOrdinal(app_id).IsValid());
   }
 
+  // Verify that after ephemeral apps stop running, they reside in extension
+  // system in a disabled and unloaded state.
+  void VerifyInactiveEphemeralApp(const std::string& app_id) {
+    EXPECT_TRUE(
+        ExtensionRegistry::Get(profile())->disabled_extensions().Contains(
+            app_id));
+
+    ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+    EXPECT_TRUE(prefs->IsExtensionDisabled(app_id));
+    EXPECT_NE(0,
+              prefs->GetDisableReasons(app_id) &
+                  Extension::DISABLE_INACTIVE_EPHEMERAL_APP);
+  }
+
+  // Verify the state of an app that has been promoted from an ephemeral to a
+  // fully installed app.
+  void VerifyPromotedApp(const std::string& app_id,
+                         ExtensionRegistry::IncludeFlag expected_set) {
+    const Extension* app = ExtensionRegistry::Get(profile())
+                               ->GetExtensionById(app_id, expected_set);
+    ASSERT_TRUE(app) << "App not found in expected set: " << expected_set;
+
+    // The app should not be ephemeral.
+    ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+    ASSERT_TRUE(prefs);
+    EXPECT_FALSE(prefs->IsEphemeralApp(app_id));
+    EXPECT_EQ(0,
+              prefs->GetDisableReasons(app_id) &
+                  Extension::DISABLE_INACTIVE_EPHEMERAL_APP);
+
+    // Check sort ordinals.
+    extensions::AppSorting* app_sorting = prefs->app_sorting();
+    EXPECT_TRUE(app_sorting->GetAppLaunchOrdinal(app_id).IsValid());
+    EXPECT_TRUE(app_sorting->GetPageOrdinal(app_id).IsValid());
+  }
+
   // Dispatch a fake alarm event to the app.
   void DispatchAlarmEvent(EventRouter* event_router,
                           const std::string& app_id) {
@@ -310,26 +384,75 @@ class EphemeralAppBrowserTest : public EphemeralAppTestBase {
     event_router->DispatchEventToExtension(app_id, event.Pass());
   }
 
+  // Simulates the scenario where an app is installed, via the normal
+  // installation route, on top of an ephemeral app. This can occur due to race
+  // conditions.
   const Extension* ReplaceEphemeralApp(const std::string& app_id,
-                                       const char* test_path) {
-    return UpdateExtensionWaitForIdle(app_id, GetTestPath(test_path), 0);
+                                       const char* test_path,
+                                       int expected_enabled_change) {
+    return UpdateExtensionWaitForIdle(
+        app_id, GetTestPath(test_path), expected_enabled_change);
   }
 
-  void VerifyPromotedApp(const std::string& app_id,
-                         ExtensionRegistry::IncludeFlag expected_set) {
-    const Extension* app = ExtensionRegistry::Get(profile())->GetExtensionById(
-        app_id, expected_set);
+  void PromoteEphemeralAppAndVerify(
+      const Extension* app,
+      ExtensionRegistry::IncludeFlag expected_set) {
     ASSERT_TRUE(app);
 
-    // The app should not be ephemeral.
-    ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
-    ASSERT_TRUE(prefs);
-    EXPECT_FALSE(prefs->IsEphemeralApp(app_id));
+    // Ephemeral apps should not be synced.
+    scoped_ptr<AppSyncData> sync_change = GetLastSyncChangeForApp(app->id());
+    EXPECT_FALSE(sync_change.get());
 
-    // Check sort ordinals.
+    // Promote the app to a regular installed app.
+    InstallObserver installed_observer(profile());
+    PromoteEphemeralApp(app);
+    VerifyPromotedApp(app->id(), expected_set);
+
+    // Check the notification parameters.
+    const InstallObserver::InstallParameters& params =
+        installed_observer.Last();
+    EXPECT_EQ(app->id(), params.id);
+    EXPECT_TRUE(params.is_update);
+    EXPECT_TRUE(params.from_ephemeral);
+
+    // The installation should now be synced.
+    sync_change = GetLastSyncChangeForApp(app->id());
+    VerifySyncChange(sync_change.get(),
+                     expected_set == ExtensionRegistry::ENABLED);
+  }
+
+  void PromoteEphemeralAppFromSyncAndVerify(
+      const Extension* app,
+      bool enable_from_sync,
+      ExtensionRegistry::IncludeFlag expected_set) {
+    ASSERT_TRUE(app);
+
+    // Simulate an install from sync.
+    const syncer::StringOrdinal kAppLaunchOrdinal("x");
+    const syncer::StringOrdinal kPageOrdinal("y");
+    AppSyncData app_sync_data(*app,
+                              enable_from_sync,
+                              false /* incognito enabled */,
+                              false /* remote install */,
+                              kAppLaunchOrdinal,
+                              kPageOrdinal,
+                              extensions::LAUNCH_TYPE_REGULAR);
+
+    std::string app_id = app->id();
+    app = NULL;
+
+    ExtensionSyncService* sync_service = ExtensionSyncService::Get(profile());
+    sync_service->ProcessAppSyncData(app_sync_data);
+
+    // Verify the installation.
+    VerifyPromotedApp(app_id, expected_set);
+
+    // The sort ordinals from sync should not be overridden.
+    ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
     extensions::AppSorting* app_sorting = prefs->app_sorting();
-    EXPECT_TRUE(app_sorting->GetAppLaunchOrdinal(app_id).IsValid());
-    EXPECT_TRUE(app_sorting->GetPageOrdinal(app_id).IsValid());
+    EXPECT_TRUE(
+        app_sorting->GetAppLaunchOrdinal(app_id).Equals(kAppLaunchOrdinal));
+    EXPECT_TRUE(app_sorting->GetPageOrdinal(app_id).Equals(kPageOrdinal));
   }
 
   void InitSyncService() {
@@ -365,6 +488,27 @@ class EphemeralAppBrowserTest : public EphemeralAppTestBase {
     EXPECT_EQ(expect_enabled, sync_change->extension_sync_data().enabled());
   }
 
+  void TestInstallEvent(bool close_app) {
+    ExtensionTestMessageListener first_msg_listener(false);
+    const Extension* app = InstallAndLaunchEphemeralApp(kDispatchEventTestApp);
+    ASSERT_TRUE(app);
+
+    // When an ephemeral app is first added, it should not receive the
+    // onInstalled event, hence the first message received from the test should
+    // be "launched" and not "installed".
+    ASSERT_TRUE(first_msg_listener.WaitUntilSatisfied());
+    EXPECT_EQ(std::string("launched"), first_msg_listener.message());
+
+    if (close_app)
+      CloseAppWaitForUnload(app->id());
+
+    // When installed permanently, the app should receive the onInstalled event.
+    ExtensionTestMessageListener install_listener("installed", false);
+    PromoteEphemeralApp(app);
+    ASSERT_TRUE(install_listener.WaitUntilSatisfied());
+  }
+
+ private:
   syncer::FakeSyncChangeProcessor mock_sync_processor_;
 };
 
@@ -385,12 +529,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, EventDispatchWhenLaunched) {
   DispatchAlarmEvent(event_router, extension->id());
   ASSERT_TRUE(alarm_received_listener.WaitUntilSatisfied());
 
-  CloseApp(extension->id());
-
-  // The app needs to be launched once in order to have the onAlarm() event
-  // registered.
-  ASSERT_TRUE(event_router->ExtensionHasEventListener(
-      extension->id(), alarms::OnAlarm::kEventName));
+  CloseAppWaitForUnload(extension->id());
 
   // Dispatch the alarm event again and verify that the event page did not get
   // loaded for the app.
@@ -412,11 +551,43 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
                            "Launched");
   EXPECT_TRUE(result_catcher.GetNextResult());
 
-  CloseApp(receiver->id());
+  CloseAppWaitForUnload(receiver->id());
 
   // Verify that messages are not received while the app is inactive.
   LoadAndLaunchPlatformApp("ephemeral_apps/messaging_sender_fail", "Launched");
   EXPECT_TRUE(result_catcher.GetNextResult());
+}
+
+// Verifies that the chrome.runtime.onInstalled() event is received by a running
+// ephemeral app only when it is promoted.
+IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
+                       InstallEventReceivedWhileRunning) {
+  TestInstallEvent(false /* close app */);
+}
+
+// Verifies that when an idle ephemeral app is promoted, it will be loaded to
+// receive the chrome.runtime.onInstalled() event.
+IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, InstallEventReceivedWhileIdle) {
+  TestInstallEvent(true /* close app */);
+}
+
+// Verifies that the chrome.runtime.onRestarted() event is received by an
+// ephemeral app.
+IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, RestartEventReceived) {
+  const Extension* app = InstallAndLaunchEphemeralApp(kDispatchEventTestApp);
+  ASSERT_TRUE(app);
+  CloseAppWaitForUnload(app->id());
+
+  // Fake ephemeral app running before restart.
+  ExtensionSystem::Get(profile())->extension_service()->EnableExtension(
+      app->id());
+  ASSERT_TRUE(ExtensionRegistry::Get(profile())->enabled_extensions().Contains(
+      app->id()));
+  ExtensionPrefs::Get(profile())->SetExtensionRunning(app->id(), true);
+
+  ExtensionTestMessageListener restart_listener("restarted", false);
+  apps::AppRestoreService::Get(profile())->HandleStartup(true);
+  EXPECT_TRUE(restart_listener.WaitUntilSatisfied());
 }
 
 // Verify that an updated ephemeral app will still have its ephemeral flag
@@ -426,19 +597,21 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, UpdateEphemeralApp) {
 
   const Extension* app_v1 = InstallAndLaunchEphemeralApp(kMessagingReceiverApp);
   ASSERT_TRUE(app_v1);
+  VerifyEphemeralApp(app_v1->id());
+  CloseAppWaitForUnload(app_v1->id());
+  VerifyInactiveEphemeralApp(app_v1->id());
+
   std::string app_id = app_v1->id();
   base::Version app_original_version = *app_v1->version();
-
-  VerifyEphemeralApp(app_id);
-  CloseApp(app_id);
 
   // Update to version 2 of the app.
   app_v1 = NULL;  // The extension object will be destroyed during update.
   InstallObserver installed_observer(profile());
-  const Extension* app_v2 = UpdateEphemeralApp(
-      app_id, GetTestPath(kMessagingReceiverAppV2),
-      GetTestPath(kMessagingReceiverApp).ReplaceExtension(
-          FILE_PATH_LITERAL(".pem")));
+  const Extension* app_v2 =
+      UpdateEphemeralApp(app_id,
+                         GetTestPath(kMessagingReceiverAppV2),
+                         GetTestPath(kMessagingReceiverApp)
+                             .ReplaceExtension(FILE_PATH_LITERAL(".pem")));
 
   // Check the notification parameters.
   const InstallObserver::InstallParameters& params = installed_observer.Last();
@@ -446,16 +619,19 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, UpdateEphemeralApp) {
   EXPECT_TRUE(params.is_update);
   EXPECT_FALSE(params.from_ephemeral);
 
-  // The ephemeral flag should still be enabled.
+  // The ephemeral flag should still be set.
   ASSERT_TRUE(app_v2);
   EXPECT_GT(app_v2->version()->CompareTo(app_original_version), 0);
   VerifyEphemeralApp(app_id);
+
+  // The app should still be disabled in extension system.
+  VerifyInactiveEphemeralApp(app_id);
 }
 
 // Verify that if notifications have been disabled for an ephemeral app, it will
 // remain disabled even after being evicted from the cache.
 IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, StickyNotificationSettings) {
-  const Extension* app = InstallEphemeralApp(kNotificationsTestApp);
+  const Extension* app = InstallAndLaunchEphemeralApp(kNotificationsTestApp);
   ASSERT_TRUE(app);
 
   // Disable notifications for this app.
@@ -470,6 +646,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, StickyNotificationSettings) {
   EXPECT_FALSE(notification_service->IsNotifierEnabled(notifier_id));
 
   // Remove the app.
+  CloseAppWaitForUnload(app->id());
   EvictApp(app->id());
 
   // Reinstall the ephemeral app and verify that notifications remain disabled.
@@ -487,10 +664,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
                        IncludeRunningEphemeralAppsInNotifiers) {
   message_center::NotifierSettingsProvider* settings_provider =
       message_center::MessageCenter::Get()->GetNotifierSettingsProvider();
-  // TODO(tmdiep): Remove once notifications settings are supported across
-  // all platforms. This test will fail for Linux GTK.
-  if (!settings_provider)
-    return;
+  DCHECK(settings_provider);
 
   const Extension* app = InstallAndLaunchEphemeralApp(kNotificationsTestApp);
   ASSERT_TRUE(app);
@@ -507,7 +681,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
   STLDeleteElements(&notifiers);
 
   // Close the ephemeral app.
-  CloseApp(app->id());
+  CloseAppWaitForUnload(app->id());
 
   // Inactive ephemeral apps should not be included in the list of notifiers to
   // show in the UI.
@@ -550,57 +724,47 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
   ASSERT_TRUE(LaunchAppAndRunTest(app, "RestoreRetainedFile")) << message_;
 }
 
-// Checks the process of installing and then promoting an ephemeral app.
-IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, PromoteEphemeralApp) {
+// Checks the process of launching an ephemeral app and then promoting the app
+// while it is running.
+IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, PromoteAppWhileRunning) {
   InitSyncService();
 
-  const Extension* app = InstallEphemeralApp(kNotificationsTestApp);
+  const Extension* app = InstallAndLaunchEphemeralApp(kNotificationsTestApp);
   ASSERT_TRUE(app);
 
-  // Ephemeral apps should not be synced.
-  scoped_ptr<AppSyncData> sync_change = GetLastSyncChangeForApp(app->id());
-  EXPECT_FALSE(sync_change.get());
+  PromoteEphemeralAppAndVerify(app, ExtensionRegistry::ENABLED);
 
-  // Promote the app to a regular installed app.
-  InstallObserver installed_observer(profile());
-  PromoteEphemeralApp(app);
+  // Ensure that the app is not unloaded and disabled after it is closed.
+  CloseApp(app->id());
   VerifyPromotedApp(app->id(), ExtensionRegistry::ENABLED);
-
-  // Check the notification parameters.
-  const InstallObserver::InstallParameters& params = installed_observer.Last();
-  EXPECT_EQ(app->id(), params.id);
-  EXPECT_TRUE(params.is_update);
-  EXPECT_TRUE(params.from_ephemeral);
-
-  // The installation should now be synced.
-  sync_change = GetLastSyncChangeForApp(app->id());
-  VerifySyncChange(sync_change.get(), true);
 }
 
-// Verifies that promoting an ephemeral app will enable it.
-IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, PromoteEphemeralAppAndEnable) {
+// Checks the process of launching an ephemeral app and then promoting the app
+// while it is idle.
+IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, PromoteAppWhileIdle) {
   InitSyncService();
 
-  const Extension* app = InstallEphemeralApp(kNotificationsTestApp);
+  const Extension* app = InstallAndLaunchEphemeralApp(kNotificationsTestApp);
   ASSERT_TRUE(app);
+  CloseAppWaitForUnload(app->id());
+  VerifyInactiveEphemeralApp(app->id());
 
-  // Disable the ephemeral app due to a permissions increase. This also involves
-  // setting the DidExtensionEscalatePermissions flag.
-  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
-  prefs->SetDidExtensionEscalatePermissions(app, true);
-  ExtensionService* service =
-      ExtensionSystem::Get(profile())->extension_service();
-  service->DisableExtension(app->id(), Extension::DISABLE_PERMISSIONS_INCREASE);
-  ASSERT_TRUE(ExtensionRegistry::Get(profile())->
-      GetExtensionById(app->id(), ExtensionRegistry::DISABLED));
+  PromoteEphemeralAppAndVerify(app, ExtensionRegistry::ENABLED);
+}
 
-  // Promote to a regular installed app. It should be enabled.
-  PromoteEphemeralApp(app);
-  VerifyPromotedApp(app->id(), ExtensionRegistry::ENABLED);
-  EXPECT_FALSE(prefs->DidExtensionEscalatePermissions(app->id()));
+// Verifies that promoting an ephemeral app that was disabled due to a
+// permissions increase will enable it.
+IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, PromoteAppAndGrantPermissions) {
+  InitSyncService();
 
-  scoped_ptr<AppSyncData> sync_change = GetLastSyncChangeForApp(app->id());
-  VerifySyncChange(sync_change.get(), true);
+  const Extension* app = InstallAndLaunchEphemeralApp(kNotificationsTestApp);
+  ASSERT_TRUE(app);
+  CloseAppWaitForUnload(app->id());
+  DisableEphemeralApp(app, Extension::DISABLE_PERMISSIONS_INCREASE);
+
+  PromoteEphemeralAppAndVerify(app, ExtensionRegistry::ENABLED);
+  EXPECT_FALSE(ExtensionPrefs::Get(profile())
+                   ->DidExtensionEscalatePermissions(app->id()));
 }
 
 // Verifies that promoting an ephemeral app that has unsupported requirements
@@ -609,57 +773,93 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
                        PromoteUnsupportedEphemeralApp) {
   InitSyncService();
 
-  const Extension* app = InstallEphemeralApp(kNotificationsTestApp);
+  const Extension* app = InstallAndLaunchEphemeralApp(kNotificationsTestApp);
   ASSERT_TRUE(app);
+  CloseAppWaitForUnload(app->id());
+  DisableEphemeralApp(app, Extension::DISABLE_UNSUPPORTED_REQUIREMENT);
 
-  // Disable the ephemeral app.
+  // When promoted to a regular installed app, it should remain disabled.
+  PromoteEphemeralAppAndVerify(app, ExtensionRegistry::DISABLED);
+}
+
+// Verifies that promoting an ephemeral app that is blacklisted will not enable
+// it.
+IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
+                       PromoteBlacklistedEphemeralApp) {
+  InitSyncService();
+
+  const Extension* app = InstallAndLaunchEphemeralApp(kNotificationsTestApp);
+  ASSERT_TRUE(app);
+  CloseAppWaitForUnload(app->id());
+
   ExtensionService* service =
       ExtensionSystem::Get(profile())->extension_service();
-  service->DisableExtension(
-      app->id(), Extension::DISABLE_UNSUPPORTED_REQUIREMENT);
-  ASSERT_TRUE(ExtensionRegistry::Get(profile())->
-      GetExtensionById(app->id(), ExtensionRegistry::DISABLED));
+  service->BlacklistExtensionForTest(app->id());
+  ASSERT_TRUE(
+      ExtensionRegistry::Get(profile())->blacklisted_extensions().Contains(
+          app->id()));
 
-  // Promote to a regular installed app. It should remain disabled.
-  PromoteEphemeralApp(app);
-  VerifyPromotedApp(app->id(), ExtensionRegistry::DISABLED);
+  // When promoted to a regular installed app, it should remain blacklisted.
+  PromoteEphemeralAppAndVerify(app, ExtensionRegistry::BLACKLISTED);
 
+  // The app should be synced, but disabled.
   scoped_ptr<AppSyncData> sync_change = GetLastSyncChangeForApp(app->id());
   VerifySyncChange(sync_change.get(), false);
 }
 
-// Checks the process of promoting an ephemeral app from sync.
-IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, PromoteEphemeralAppFromSync) {
+// Checks the process of promoting an ephemeral app from sync while the app is
+// running.
+IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
+                       PromoteAppFromSyncWhileRunning) {
   InitSyncService();
 
-  const Extension* app = InstallEphemeralApp(kNotificationsTestApp);
+  const Extension* app = InstallAndLaunchEphemeralApp(kNotificationsTestApp);
   ASSERT_TRUE(app);
-  std::string app_id = app->id();
 
-  // Simulate an install from sync.
-  const syncer::StringOrdinal kAppLaunchOrdinal("x");
-  const syncer::StringOrdinal kPageOrdinal("y");
-  AppSyncData app_sync_data(
-      *app,
-      true /* enabled */,
-      false /* incognito enabled */,
-      false /* remote install */,
-      kAppLaunchOrdinal,
-      kPageOrdinal,
-      extensions::LAUNCH_TYPE_REGULAR);
+  PromoteEphemeralAppFromSyncAndVerify(app, true, ExtensionRegistry::ENABLED);
 
-  ExtensionSyncService* sync_service = ExtensionSyncService::Get(profile());
-  sync_service->ProcessAppSyncData(app_sync_data);
+  // Ensure that the app is not unloaded and disabled after it is closed.
+  CloseApp(app->id());
+  VerifyPromotedApp(app->id(), ExtensionRegistry::ENABLED);
+}
 
-  // Verify the installation.
-  VerifyPromotedApp(app_id, ExtensionRegistry::ENABLED);
+// Checks the process of promoting an ephemeral app from sync while the app is
+// idle.
+IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, PromoteAppFromSyncWhileIdle) {
+  InitSyncService();
 
-  // The sort ordinals from sync should not be overridden.
-  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
-  extensions::AppSorting* app_sorting = prefs->app_sorting();
-  EXPECT_TRUE(app_sorting->GetAppLaunchOrdinal(app_id).Equals(
-      kAppLaunchOrdinal));
-  EXPECT_TRUE(app_sorting->GetPageOrdinal(app_id).Equals(kPageOrdinal));
+  const Extension* app = InstallAndLaunchEphemeralApp(kNotificationsTestApp);
+  ASSERT_TRUE(app);
+  CloseAppWaitForUnload(app->id());
+  VerifyInactiveEphemeralApp(app->id());
+
+  PromoteEphemeralAppFromSyncAndVerify(app, true, ExtensionRegistry::ENABLED);
+}
+
+// Checks the process of promoting an ephemeral app from sync, where the app
+// from sync is disabled, and the ephemeral app is running.
+IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
+                       PromoteDisabledAppFromSyncWhileRunning) {
+  InitSyncService();
+
+  const Extension* app = InstallAndLaunchEphemeralApp(kNotificationsTestApp);
+  ASSERT_TRUE(app);
+
+  PromoteEphemeralAppFromSyncAndVerify(app, false, ExtensionRegistry::DISABLED);
+}
+
+// Checks the process of promoting an ephemeral app from sync, where the app
+// from sync is disabled, and the ephemeral app is idle.
+IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
+                       PromoteDisabledAppFromSyncWhileIdle) {
+  InitSyncService();
+
+  const Extension* app = InstallAndLaunchEphemeralApp(kNotificationsTestApp);
+  ASSERT_TRUE(app);
+  CloseAppWaitForUnload(app->id());
+  VerifyInactiveEphemeralApp(app->id());
+
+  PromoteEphemeralAppFromSyncAndVerify(app, false, ExtensionRegistry::DISABLED);
 }
 
 // In most cases, ExtensionService::PromoteEphemeralApp() will be called to
@@ -668,13 +868,16 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, PromoteEphemeralAppFromSync) {
 // to race conditions). Ensure that the app is still installed correctly.
 IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
                        ReplaceEphemeralAppWithInstalledApp) {
-  const Extension* app = InstallEphemeralApp(kNotificationsTestApp);
+  InitSyncService();
+
+  const Extension* app = InstallAndLaunchEphemeralApp(kNotificationsTestApp);
   ASSERT_TRUE(app);
+  CloseAppWaitForUnload(app->id());
   std::string app_id = app->id();
   app = NULL;
 
   InstallObserver installed_observer(profile());
-  ReplaceEphemeralApp(app_id, kNotificationsTestApp);
+  ReplaceEphemeralApp(app_id, kNotificationsTestApp, 1);
   VerifyPromotedApp(app_id, ExtensionRegistry::ENABLED);
 
   // Check the notification parameters.
@@ -688,20 +891,22 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
 // be delayed until the app is idle.
 IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
                        ReplaceEphemeralAppWithDelayedInstalledApp) {
+  InitSyncService();
+
   const Extension* app = InstallAndLaunchEphemeralApp(kNotificationsTestApp);
   ASSERT_TRUE(app);
   std::string app_id = app->id();
   app = NULL;
 
   // Initiate install.
-  ReplaceEphemeralApp(app_id, kNotificationsTestApp);
+  ReplaceEphemeralApp(app_id, kNotificationsTestApp, 0);
 
   // The delayed installation will occur when the ephemeral app is closed.
   content::WindowedNotificationObserver installed_signal(
       extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
       content::Source<Profile>(profile()));
   InstallObserver installed_observer(profile());
-  CloseApp(app_id);
+  CloseAppWaitForUnload(app_id);
   installed_signal.Wait();
   VerifyPromotedApp(app_id, ExtensionRegistry::ENABLED);
 
@@ -710,6 +915,25 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
   EXPECT_EQ(app_id, params.id);
   EXPECT_TRUE(params.is_update);
   EXPECT_TRUE(params.from_ephemeral);
+}
+
+// Verifies that an installed app cannot turn into an ephemeral app as result of
+// race conditions, i.e. an ephemeral app can be promoted to an installed app,
+// but not vice versa.
+IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
+                       ReplaceInstalledAppWithEphemeralApp) {
+  const Extension* app = InstallPlatformApp(kNotificationsTestApp);
+  ASSERT_TRUE(app);
+  std::string app_id = app->id();
+  app = NULL;
+
+  EXPECT_FALSE(extensions::util::IsEphemeralApp(app_id, profile()));
+  app =
+      InstallEphemeralAppWithSourceAndFlags(GetTestPath(kNotificationsTestApp),
+                                            0,
+                                            Manifest::INTERNAL,
+                                            Extension::NO_FLAGS);
+  EXPECT_FALSE(extensions::util::IsEphemeralApp(app_id, profile()));
 }
 
 // Ephemerality was previously encoded by the Extension::IS_EPHEMERAL creation

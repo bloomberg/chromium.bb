@@ -31,7 +31,6 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/process_manager.h"
@@ -211,15 +210,6 @@ void MessageService::OpenChannelToExtension(
   const Extension* target_extension = extension_system->extension_service()->
       extensions()->GetByID(target_extension_id);
   if (!target_extension) {
-    DispatchOnDisconnect(
-        source, receiver_port_id, kReceivingEndDoesntExistError);
-    return;
-  }
-
-  // Only running ephemeral apps can receive messages. Idle cached ephemeral
-  // apps are invisible and should not be connectable.
-  if (util::IsEphemeralApp(target_extension_id, context) &&
-      util::IsExtensionIdle(target_extension_id, context)) {
     DispatchOnDisconnect(
         source, receiver_port_id, kReceivingEndDoesntExistError);
     return;

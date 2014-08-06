@@ -50,6 +50,13 @@ class EphemeralAppServiceBrowserTest : public EphemeralAppTestBase {
     ephemeral_service->InitEphemeralAppCount();
   }
 
+  void DisableEphemeralAppsOnStartup() {
+    EphemeralAppService* ephemeral_service =
+        EphemeralAppService::Get(browser()->profile());
+    ASSERT_TRUE(ephemeral_service);
+    ephemeral_service->DisableEphemeralAppsOnStartup();
+  }
+
   std::vector<std::string> app_ids_;
 };
 
@@ -139,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppServiceBrowserTest, ClearCachedApps) {
       InstallAndLaunchEphemeralApp(kDispatchEventTestApp);
   std::string inactive_app_id = inactive_app->id();
   std::string running_app_id = running_app->id();
-  CloseApp(inactive_app_id);
+  CloseAppWaitForUnload(inactive_app_id);
 
   EphemeralAppService* ephemeral_service =
       EphemeralAppService::Get(browser()->profile());
@@ -156,4 +163,47 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppServiceBrowserTest, ClearCachedApps) {
                                          ExtensionRegistry::EVERYTHING));
 
   EXPECT_EQ(1, ephemeral_service->ephemeral_app_count());
+}
+
+// Verify that the service will unload and disable ephemeral apps on startup.
+IN_PROC_BROWSER_TEST_F(EphemeralAppServiceBrowserTest,
+                       DisableEphemeralAppsOnStartup) {
+  const Extension* installed_app = InstallPlatformApp(kNotificationsTestApp);
+  const Extension* running_app =
+      InstallAndLaunchEphemeralApp(kMessagingReceiverApp);
+  const Extension* inactive_app = InstallEphemeralApp(kDispatchEventTestApp);
+  const Extension* disabled_app = InstallEphemeralApp(kFileSystemTestApp);
+  ASSERT_TRUE(installed_app);
+  ASSERT_TRUE(running_app);
+  ASSERT_TRUE(inactive_app);
+  ASSERT_TRUE(disabled_app);
+  DisableEphemeralApp(disabled_app, Extension::DISABLE_PERMISSIONS_INCREASE);
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
+  ASSERT_TRUE(registry);
+  EXPECT_TRUE(registry->enabled_extensions().Contains(installed_app->id()));
+  EXPECT_TRUE(registry->enabled_extensions().Contains(running_app->id()));
+  EXPECT_TRUE(registry->enabled_extensions().Contains(inactive_app->id()));
+  EXPECT_TRUE(registry->disabled_extensions().Contains(disabled_app->id()));
+
+  DisableEphemeralAppsOnStartup();
+
+  // Verify that the inactive app is disabled.
+  EXPECT_TRUE(registry->enabled_extensions().Contains(installed_app->id()));
+  EXPECT_TRUE(registry->enabled_extensions().Contains(running_app->id()));
+  EXPECT_TRUE(registry->disabled_extensions().Contains(inactive_app->id()));
+  EXPECT_TRUE(registry->disabled_extensions().Contains(disabled_app->id()));
+
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  ASSERT_TRUE(prefs);
+  EXPECT_FALSE(prefs->HasDisableReason(
+      installed_app->id(), Extension::DISABLE_INACTIVE_EPHEMERAL_APP));
+  EXPECT_FALSE(prefs->HasDisableReason(
+      running_app->id(), Extension::DISABLE_INACTIVE_EPHEMERAL_APP));
+  EXPECT_TRUE(prefs->HasDisableReason(
+      inactive_app->id(), Extension::DISABLE_INACTIVE_EPHEMERAL_APP));
+  EXPECT_TRUE(prefs->HasDisableReason(
+      disabled_app->id(), Extension::DISABLE_INACTIVE_EPHEMERAL_APP));
+  EXPECT_TRUE(prefs->HasDisableReason(
+      disabled_app->id(), Extension::DISABLE_PERMISSIONS_INCREASE));
 }
