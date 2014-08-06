@@ -7,6 +7,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -25,6 +26,8 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/views/profiles/user_manager_view.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/mutable_profile_oauth2_token_service.h"
@@ -65,12 +68,14 @@ namespace {
 
 const int kFixedMenuWidth = 250;
 const int kButtonHeight = 32;
-const int kProfileAvatarTutorialShowMax = 1;
 const int kFixedGaiaViewHeight = 400;
 const int kFixedGaiaViewWidth = 360;
 const int kFixedAccountRemovalViewWidth = 280;
-const int kFixedEndPreviewViewWidth = 280;
+const int kFixedSwitchUserViewWidth = 280;
 const int kLargeImageSide = 88;
+
+// The maximum number of times to show the welcome tutorial for an upgrade user.
+const int kUpgradeWelcomeTutorialShowMax = 1;
 
 // Creates a GridLayout with a single column. This ensures that all the child
 // views added get auto-expanded to fill the full width of the bubble.
@@ -369,8 +374,8 @@ class EditableProfileName : public RightAlignedIconLabelButton,
 // A title card with one back button right aligned and one label center aligned.
 class TitleCard : public views::View {
  public:
-  TitleCard(int message_id, views::ButtonListener* listener,
-             views::ImageButton** back_button) {
+  TitleCard(const base::string16& message, views::ButtonListener* listener,
+            views::ImageButton** back_button) {
     back_button_ = new views::ImageButton(listener);
     back_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
                                     views::ImageButton::ALIGN_MIDDLE);
@@ -385,7 +390,7 @@ class TitleCard : public views::View {
                            rb->GetImageSkiaNamed(IDR_BACK_D));
     *back_button = back_button_;
 
-    title_label_ = new views::Label(l10n_util::GetStringUTF16(message_id));
+    title_label_ = new views::Label(message);
     title_label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     const gfx::FontList& medium_font_list =
         rb->GetFontList(ui::ResourceBundle::MediumFont);
@@ -523,14 +528,8 @@ void ProfileChooserView::ResetView() {
   open_other_profile_indexes_map_.clear();
   delete_account_button_map_.clear();
   reauth_account_button_map_.clear();
-  tutorial_learn_more_link_ = NULL;
-  tutorial_ok_button_ = NULL;
-  tutorial_enable_new_profile_management_button_ = NULL;
-  tutorial_end_preview_link_ = NULL;
-  tutorial_send_feedback_button_ = NULL;
   manage_accounts_link_ = NULL;
   signin_current_profile_link_ = NULL;
-  question_mark_button_ = NULL;
   auth_error_email_button_ = NULL;
   current_profile_photo_ = NULL;
   current_profile_name_ = NULL;
@@ -541,8 +540,13 @@ void ProfileChooserView::ResetView() {
   gaia_signin_cancel_button_ = NULL;
   remove_account_button_ = NULL;
   account_removal_cancel_button_ = NULL;
-  end_preview_and_relaunch_button_ = NULL;
-  end_preview_cancel_button_ = NULL;
+  add_person_button_ = NULL;
+  disconnect_button_ = NULL;
+  switch_user_cancel_button_ = NULL;
+  tutorial_sync_settings_ok_button_ = NULL;
+  tutorial_sync_settings_link_ = NULL;
+  tutorial_see_whats_new_button_ = NULL;
+  tutorial_not_you_link_ = NULL;
   tutorial_mode_ = profiles::TUTORIAL_MODE_NONE;
 }
 
@@ -562,6 +566,13 @@ void ProfileChooserView::Init() {
 
 void ProfileChooserView::OnAvatarMenuChanged(
     AvatarMenu* avatar_menu) {
+  // Do not refresh the avatar menu if the user is on a signin related view.
+  if (view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
+      view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
+      view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH) {
+    return;
+  }
+
   // Refresh the view with the new menu. We can't just update the local copy
   // as this may have been triggered by a sign out action, in which case
   // the view is being destroyed.
@@ -570,12 +581,12 @@ void ProfileChooserView::OnAvatarMenuChanged(
 
 void ProfileChooserView::OnRefreshTokenAvailable(
     const std::string& account_id) {
-  // Refresh the account management view when a new account is added to the
-  // profile.
   if (view_mode_ == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT ||
       view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
       view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
       view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH) {
+    if (view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN)
+      tutorial_mode_ = profiles::TUTORIAL_MODE_CONFIRM_SIGNIN;
     // The account management UI is only available through the
     // --enable-account-consistency flag.
     ShowView(switches::IsEnableAccountConsistency() ?
@@ -595,10 +606,10 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
                                   AvatarMenu* avatar_menu) {
   // The account management view should only be displayed if the active profile
   // is signed in.
+  const AvatarMenu::Item& active_item = avatar_menu->GetItemAt(
+      avatar_menu->GetActiveProfileIndex());
   if (view_to_display == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT) {
     DCHECK(switches::IsEnableAccountConsistency());
-    const AvatarMenu::Item& active_item = avatar_menu->GetItemAt(
-        avatar_menu->GetActiveProfileIndex());
     DCHECK(active_item.signed_in);
   }
 
@@ -628,9 +639,9 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
       layout = CreateSingleColumnLayout(this, kFixedAccountRemovalViewWidth);
       sub_view = CreateAccountRemovalView();
       break;
-    case profiles::BUBBLE_VIEW_MODE_END_PREVIEW:
-      layout = CreateSingleColumnLayout(this, kFixedEndPreviewViewWidth);
-      sub_view = CreateEndPreviewView();
+    case profiles::BUBBLE_VIEW_MODE_SWITCH_USER:
+      layout = CreateSingleColumnLayout(this, kFixedSwitchUserViewWidth);
+      sub_view = CreateSwitchUserView(active_item);
       break;
     default:
       layout = CreateSingleColumnLayout(this, kFixedMenuWidth);
@@ -646,6 +657,11 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
 void ProfileChooserView::WindowClosing() {
   DCHECK_EQ(profile_bubble_, this);
   profile_bubble_ = NULL;
+
+  if (tutorial_mode_ == profiles::TUTORIAL_MODE_CONFIRM_SIGNIN) {
+    LoginUIServiceFactory::GetForProfile(browser_->profile())->
+        SyncConfirmationUIClosed(false /* configure_sync_first */);
+  }
 }
 
 void ProfileChooserView::ButtonPressed(views::Button* sender,
@@ -669,21 +685,14 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_LOCK);
   } else if (sender == auth_error_email_button_) {
     ShowView(profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH, avatar_menu_.get());
-  } else if (sender == tutorial_ok_button_) {
-    // If the user manually dismissed the tutorial, never show it again by
-    // setting the number of times shown to the maximum plus 1, so that later we
-    // could distinguish between the dismiss case and the case when the tutorial
-    // is indeed shown for the maximum number of times.
-    browser_->profile()->GetPrefs()->SetInteger(
-        prefs::kProfileAvatarTutorialShown, kProfileAvatarTutorialShowMax + 1);
-
-    ProfileMetrics::LogProfileUpgradeEnrollment(
-        ProfileMetrics::PROFILE_ENROLLMENT_CLOSE_WELCOME_CARD);
+  } else if (sender == tutorial_sync_settings_ok_button_) {
+    LoginUIServiceFactory::GetForProfile(browser_->profile())->
+        SyncConfirmationUIClosed(false /* configure_sync_first */);
+    tutorial_mode_ = profiles::TUTORIAL_MODE_NONE;
     ShowView(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
-  } else if (sender == tutorial_enable_new_profile_management_button_) {
-    ProfileMetrics::LogProfileUpgradeEnrollment(
-        ProfileMetrics::PROFILE_ENROLLMENT_ACCEPT_NEW_PROFILE_MGMT);
-    profiles::EnableNewProfileManagementPreview(browser_->profile());
+  } else if (sender == tutorial_see_whats_new_button_) {
+    chrome::ShowUserManagerWithTutorial(
+        profiles::USER_MANAGER_TUTORIAL_OVERVIEW);
   } else if (sender == remove_account_button_) {
     RemoveAccount();
   } else if (sender == account_removal_cancel_button_) {
@@ -700,26 +709,18 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     ShowView(account_management_available ?
         profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT :
         profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
-  } else if (sender == question_mark_button_) {
-    tutorial_mode_ = profiles::TUTORIAL_MODE_SEND_FEEDBACK;
-    ShowView(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
-  } else if (sender == tutorial_send_feedback_button_) {
-    ProfileMetrics::LogProfileUpgradeEnrollment(
-        ProfileMetrics::PROFILE_ENROLLMENT_SEND_FEEDBACK);
-    chrome::OpenFeedbackDialog(browser_);
-  } else if (sender == end_preview_and_relaunch_button_) {
-    ProfileMetrics::LogProfileUpgradeEnrollment(
-        ProfileMetrics::PROFILE_ENROLLMENT_DISABLE_NEW_PROFILE_MGMT);
-    profiles::DisableNewProfileManagementPreview(browser_->profile());
-  } else if (sender == end_preview_cancel_button_) {
-    tutorial_mode_ = profiles::TUTORIAL_MODE_SEND_FEEDBACK;
-    ShowView(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
   } else if (current_profile_photo_ &&
              sender == current_profile_photo_->change_photo_button()) {
     avatar_menu_->EditProfile(avatar_menu_->GetActiveProfileIndex());
     PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_IMAGE);
   } else if (sender == signin_current_profile_link_) {
     ShowView(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, avatar_menu_.get());
+  } else if (sender == add_person_button_) {
+    profiles::ShowUserManagerMaybeWithTutorial(browser_->profile());
+  } else if (sender == disconnect_button_) {
+    chrome::ShowSettings(browser_);
+  } else if (sender == switch_user_cancel_button_) {
+    ShowView(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
   } else {
     // Either one of the "other profiles", or one of the profile accounts
     // buttons was pressed.
@@ -774,20 +775,13 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
   } else if (sender == add_account_link_) {
     ShowView(profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT, avatar_menu_.get());
     PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_ADD_ACCT);
-  } else if (sender == tutorial_learn_more_link_) {
-    ProfileMetrics::LogProfileUpgradeEnrollment(
-        ProfileMetrics::PROFILE_ENROLLMENT_LAUNCH_LEARN_MORE);
-    // TODO(guohui): update |learn_more_url| once it is decided.
-    const GURL lear_more_url("https://support.google.com/chrome/?hl=en#to");
-    chrome::NavigateParams params(
-        browser_->profile(),
-        lear_more_url,
-        content::PAGE_TRANSITION_LINK);
-    params.disposition = NEW_FOREGROUND_TAB;
-    chrome::Navigate(&params);
+  } else if (sender == tutorial_sync_settings_link_) {
+    LoginUIServiceFactory::GetForProfile(browser_->profile())->
+        SyncConfirmationUIClosed(true /* configure_sync_first */);
+    tutorial_mode_ = profiles::TUTORIAL_MODE_NONE;
   } else {
-    DCHECK(sender == tutorial_end_preview_link_);
-    ShowView(profiles::BUBBLE_VIEW_MODE_END_PREVIEW, avatar_menu_.get());
+    DCHECK(sender == tutorial_not_you_link_);
+    ShowView(profiles::BUBBLE_VIEW_MODE_SWITCH_USER, avatar_menu_.get());
   }
 }
 
@@ -840,7 +834,6 @@ views::View* ProfileChooserView::CreateProfileChooserView(
   views::View* current_profile_view = NULL;
   views::View* current_profile_accounts = NULL;
   views::View* option_buttons_view = NULL;
-  bool is_enable_account_consistency = switches::IsEnableAccountConsistency();
   for (size_t i = 0; i < avatar_menu->GetNumberOfItems(); ++i) {
     const AvatarMenu::Item& item = avatar_menu->GetItemAt(i);
     if (item.active) {
@@ -848,12 +841,19 @@ views::View* ProfileChooserView::CreateProfileChooserView(
           switches::IsNewProfileManagement() && item.signed_in);
       current_profile_view = CreateCurrentProfileView(item, false);
       if (view_mode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
-        if (is_enable_account_consistency) {
-          tutorial_view =
-              last_tutorial_mode == profiles::TUTORIAL_MODE_SEND_FEEDBACK ?
-              CreateSendPreviewFeedbackView() :
-              CreatePreviewEnabledTutorialView(
-                  item, last_tutorial_mode == profiles::TUTORIAL_MODE_WELCOME);
+        switch (last_tutorial_mode) {
+          case profiles::TUTORIAL_MODE_NONE:
+          case profiles::TUTORIAL_MODE_WELCOME_UPGRADE:
+            tutorial_view = CreateWelcomeUpgradeTutorialViewIfNeeded(
+                last_tutorial_mode == profiles::TUTORIAL_MODE_WELCOME_UPGRADE,
+                item);
+            break;
+          case profiles::TUTORIAL_MODE_CONFIRM_SIGNIN:
+            tutorial_view = CreateSigninConfirmationView();
+            break;
+          case profiles::TUTORIAL_MODE_SHOW_ERROR:
+            // TODO(guohui): not implemented yet.
+            NOTREACHED();
         }
       } else {
         current_profile_accounts = CreateCurrentProfileAccountsView(item);
@@ -864,13 +864,7 @@ views::View* ProfileChooserView::CreateProfileChooserView(
   }
 
   if (tutorial_view) {
-    // Be sure not to track the tutorial display on View refresh, and only count
-    // the preview-promo view, shown when New Profile Management is off.
-    if (tutorial_mode_ != last_tutorial_mode &&
-        !is_enable_account_consistency) {
-      ProfileMetrics::LogProfileUpgradeEnrollment(
-          ProfileMetrics::PROFILE_ENROLLMENT_SHOW_PREVIEW_PROMO);
-    }
+    // TODO(mlerman): update UMA stats for the new tutorial.
     layout->StartRow(1, 0);
     layout->AddView(tutorial_view);
   }
@@ -916,49 +910,6 @@ views::View* ProfileChooserView::CreateProfileChooserView(
   return view;
 }
 
-views::View* ProfileChooserView::CreatePreviewEnabledTutorialView(
-    const AvatarMenu::Item& current_avatar_item,
-    bool tutorial_shown) {
-  if (!switches::IsNewProfileManagementPreviewEnabled())
-    return NULL;
-
-  Profile* profile = browser_->profile();
-  const int show_count = profile->GetPrefs()->GetInteger(
-      prefs::kProfileAvatarTutorialShown);
-  // Do not show the tutorial if user has dismissed it.
-  if (show_count > kProfileAvatarTutorialShowMax)
-    return NULL;
-
-  if (!tutorial_shown) {
-    if (show_count == kProfileAvatarTutorialShowMax)
-      return NULL;
-    profile->GetPrefs()->SetInteger(
-        prefs::kProfileAvatarTutorialShown, show_count + 1);
-  }
-
-  return CreateTutorialView(
-      profiles::TUTORIAL_MODE_WELCOME,
-      l10n_util::GetStringUTF16(IDS_PROFILES_PREVIEW_ENABLED_TUTORIAL_TITLE),
-      l10n_util::GetStringUTF16(
-          IDS_PROFILES_PREVIEW_ENABLED_TUTORIAL_CONTENT_TEXT),
-      l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE),
-      l10n_util::GetStringUTF16(IDS_PROFILES_TUTORIAL_OK_BUTTON),
-      &tutorial_learn_more_link_,
-      &tutorial_ok_button_);
-}
-
-views::View* ProfileChooserView::CreateSendPreviewFeedbackView() {
-  return CreateTutorialView(
-      profiles::TUTORIAL_MODE_SEND_FEEDBACK,
-      l10n_util::GetStringUTF16(IDS_PROFILES_FEEDBACK_TUTORIAL_TITLE),
-      l10n_util::GetStringUTF16(
-          IDS_PROFILES_FEEDBACK_TUTORIAL_CONTENT_TEXT),
-      l10n_util::GetStringUTF16(IDS_PROFILES_END_PREVIEW),
-      l10n_util::GetStringUTF16(IDS_PROFILES_SEND_FEEDBACK_BUTTON),
-      &tutorial_end_preview_link_,
-      &tutorial_send_feedback_button_);
-}
-
 views::View* ProfileChooserView::CreateTutorialView(
     profiles::TutorialMode tutorial_mode,
     const base::string16& title_text,
@@ -999,58 +950,27 @@ views::View* ProfileChooserView::CreateTutorialView(
   layout->AddView(content_label);
 
   // Adds links and buttons.
-  views::View* button_row = new views::View();
-  views::GridLayout* button_layout = new views::GridLayout(button_row);
-  views::ColumnSet* button_columns = button_layout->AddColumnSet(0);
+  views::ColumnSet* button_columns = layout->AddColumnSet(1);
   button_columns->AddColumn(views::GridLayout::LEADING,
       views::GridLayout::CENTER, 0, views::GridLayout::USE_PREF, 0, 0);
   button_columns->AddPaddingColumn(
       1, views::kUnrelatedControlHorizontalSpacing);
   button_columns->AddColumn(views::GridLayout::TRAILING,
       views::GridLayout::CENTER, 0, views::GridLayout::USE_PREF, 0, 0);
-  button_row->SetLayoutManager(button_layout);
 
   *link = CreateLink(link_text, this);
   (*link)->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   (*link)->SetAutoColorReadabilityEnabled(false);
   (*link)->SetEnabledColor(SK_ColorWHITE);
-  button_layout->StartRow(1, 0);
-  button_layout->AddView(*link);
+  layout->StartRowWithPadding(1, 1, 0, views::kUnrelatedControlVerticalSpacing);
+  layout->AddView(*link);
 
   *button = new views::LabelButton(this, button_text);
   (*button)->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   (*button)->SetStyle(views::Button::STYLE_BUTTON);
-  button_layout->AddView(*button);
+  layout->AddView(*button);
 
-  layout->StartRowWithPadding(1, 0, 0, views::kUnrelatedControlVerticalSpacing);
-  layout->AddView(button_row);
-
-  // Adds a padded caret image at the bottom.
-  views::View* padded_caret_view = new views::View();
-  views::GridLayout* padded_caret_layout =
-      new views::GridLayout(padded_caret_view);
-  views::ColumnSet* padded_columns = padded_caret_layout->AddColumnSet(0);
-  padded_columns->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
-  padded_columns->AddColumn(views::GridLayout::LEADING,
-      views::GridLayout::CENTER, 0, views::GridLayout::USE_PREF, 0, 0);
-  padded_caret_view->SetLayoutManager(padded_caret_layout);
-
-  views::ImageView* caret_image_view = new views::ImageView();
-  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-  caret_image_view->SetImage(
-      *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_CARET));
-
-  padded_caret_layout->StartRow(1, 0);
-  padded_caret_layout->AddView(caret_image_view);
-
-  views::View* view_with_caret = new views::View();
-  views::GridLayout* layout_with_caret =
-      CreateSingleColumnLayout(view_with_caret, kFixedMenuWidth);
-  layout_with_caret->StartRow(1, 0);
-  layout_with_caret->AddView(view);
-  layout_with_caret->StartRow(1, 0);
-  layout_with_caret->AddView(padded_caret_view);
-  return view_with_caret;
+  return view;
 }
 
 views::View* ProfileChooserView::CreateCurrentProfileView(
@@ -1074,22 +994,6 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
   profile_icon_container->AddChildView(current_profile_photo_);
 
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-  if (switches::IsNewProfileManagementPreviewEnabled()) {
-    question_mark_button_ = new views::ImageButton(this);
-    question_mark_button_->SetImageAlignment(
-        views::ImageButton::ALIGN_LEFT, views::ImageButton::ALIGN_MIDDLE);
-    question_mark_button_->SetImage(views::ImageButton::STATE_NORMAL,
-        rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_QUESTION_STABLE));
-    question_mark_button_->SetImage(views::ImageButton::STATE_HOVERED,
-        rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_QUESTION_HOVER));
-    question_mark_button_->SetImage(views::ImageButton::STATE_PRESSED,
-        rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_QUESTION_SELECT));
-    gfx::Size preferred_size = question_mark_button_->GetPreferredSize();
-    question_mark_button_->SetBounds(
-        0, 0, preferred_size.width(), preferred_size.height());
-    profile_icon_container->AddChildView(question_mark_button_);
-  }
-
   if (browser_->profile()->IsSupervised()) {
     views::ImageView* supervised_icon = new views::ImageView();
     supervised_icon->SetImage(
@@ -1154,9 +1058,8 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
       }
     }
   } else {
-    SigninManagerBase* signin_manager =
-        SigninManagerFactory::GetForProfile(
-            browser_->profile()->GetOriginalProfile());
+    SigninManagerBase* signin_manager = SigninManagerFactory::GetForProfile(
+        browser_->profile()->GetOriginalProfile());
     if (signin_manager->IsSigninAllowed()) {
       views::Label* promo = new views::Label(
           l10n_util::GetStringUTF16(IDS_PROFILES_SIGNIN_PROMO));
@@ -1415,7 +1318,8 @@ views::View* ProfileChooserView::CreateGaiaSigninView() {
   web_view->SetPreferredSize(
       gfx::Size(kFixedGaiaViewWidth, kFixedGaiaViewHeight));
 
-  TitleCard* title_card = new TitleCard(message_id, this,
+  TitleCard* title_card = new TitleCard(l10n_util::GetStringUTF16(message_id),
+                                        this,
                                         &gaia_signin_cancel_button_);
   return TitleCard::AddPaddedTitleCard(
       web_view, title_card, kFixedGaiaViewWidth);
@@ -1476,57 +1380,116 @@ views::View* ProfileChooserView::CreateAccountRemovalView() {
     layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
   }
 
-  TitleCard* title_card = new TitleCard(IDS_PROFILES_ACCOUNT_REMOVAL_TITLE,
+  TitleCard* title_card = new TitleCard(
+      l10n_util::GetStringUTF16(IDS_PROFILES_ACCOUNT_REMOVAL_TITLE),
       this, &account_removal_cancel_button_);
   return TitleCard::AddPaddedTitleCard(view, title_card,
       kFixedAccountRemovalViewWidth);
 }
 
-views::View* ProfileChooserView::CreateNewProfileManagementPreviewView() {
+views::View* ProfileChooserView::CreateWelcomeUpgradeTutorialViewIfNeeded(
+    bool tutorial_shown, const AvatarMenu::Item& avatar_item){
+  if (first_run::IsChromeFirstRun())
+    return NULL;
+
+  Profile* profile = browser_->profile();
+  if (!avatar_item.signed_in) {
+    profile->GetPrefs()->SetInteger(
+        prefs::kProfileAvatarTutorialShown, kUpgradeWelcomeTutorialShowMax + 1);
+    return NULL;
+  }
+
+  const int show_count = profile->GetPrefs()->GetInteger(
+      prefs::kProfileAvatarTutorialShown);
+  // Do not show the tutorial if user has dismissed it.
+  if (show_count > kUpgradeWelcomeTutorialShowMax)
+    return NULL;
+
+  if (!tutorial_shown) {
+    if (show_count == kUpgradeWelcomeTutorialShowMax)
+      return NULL;
+    profile->GetPrefs()->SetInteger(
+        prefs::kProfileAvatarTutorialShown, show_count + 1);
+  }
+
   return CreateTutorialView(
-      profiles::TUTORIAL_MODE_ENABLE_PREVIEW,
-      l10n_util::GetStringUTF16(IDS_PROFILES_PREVIEW_TUTORIAL_TITLE),
-      l10n_util::GetStringUTF16(IDS_PROFILES_PREVIEW_TUTORIAL_CONTENT_TEXT),
-      l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE),
-      l10n_util::GetStringUTF16(IDS_PROFILES_TUTORIAL_TRY_BUTTON),
-      &tutorial_learn_more_link_,
-      &tutorial_enable_new_profile_management_button_);
+      profiles::TUTORIAL_MODE_WELCOME_UPGRADE,
+      l10n_util::GetStringFUTF16(
+          IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_TITLE, avatar_item.name),
+      l10n_util::GetStringUTF16(
+          IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_CONTENT_TEXT),
+      l10n_util::GetStringFUTF16(
+          IDS_PROFILES_NOT_YOU, avatar_item.name),
+      l10n_util::GetStringUTF16(IDS_PROFILES_TUTORIAL_WHATS_NEW_BUTTON),
+      &tutorial_not_you_link_,
+      &tutorial_see_whats_new_button_);
 }
 
-views::View* ProfileChooserView::CreateEndPreviewView() {
+views::View* ProfileChooserView::CreateSigninConfirmationView(){
+  return CreateTutorialView(
+      profiles::TUTORIAL_MODE_CONFIRM_SIGNIN,
+      l10n_util::GetStringUTF16(IDS_PROFILES_CONFIRM_SIGNIN_TUTORIAL_TITLE),
+      l10n_util::GetStringUTF16(
+          IDS_PROFILES_CONFIRM_SIGNIN_TUTORIAL_CONTENT_TEXT),
+      l10n_util::GetStringUTF16(IDS_PROFILES_SYNC_SETTINGS_LINK),
+      l10n_util::GetStringUTF16(IDS_PROFILES_TUTORIAL_OK_BUTTON),
+      &tutorial_sync_settings_link_,
+      &tutorial_sync_settings_ok_button_);
+}
+
+views::View* ProfileChooserView::CreateSwitchUserView(
+    const AvatarMenu::Item& avatar_item) {
   views::View* view = new views::View();
   views::GridLayout* layout = CreateSingleColumnLayout(
-      view, kFixedAccountRemovalViewWidth - 2 * views::kButtonHEdgeMarginNew);
-  layout->SetInsets(0,
-                    views::kButtonHEdgeMarginNew,
-                    views::kButtonVEdgeMarginNew,
-                    views::kButtonHEdgeMarginNew);
+      view, kFixedSwitchUserViewWidth);
+  views::ColumnSet* columns = layout->AddColumnSet(1);
+  columns->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
+  int label_width =
+      kFixedSwitchUserViewWidth - 2 * views::kButtonHEdgeMarginNew;
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
+                     views::GridLayout::FIXED, label_width, label_width);
+  columns->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
 
   // Adds main text.
-  views::Label* content_label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_PROFILES_END_PREVIEW_TEXT));
-  content_label->SetMultiLine(true);
-  content_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  layout->StartRowWithPadding(1, 1, 0, views::kUnrelatedControlVerticalSpacing);
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   const gfx::FontList& small_font_list =
       rb->GetFontList(ui::ResourceBundle::SmallFont);
+  views::Label* content_label = new views::Label(
+      l10n_util::GetStringFUTF16(
+          IDS_PROFILES_NOT_YOU_CONTENT_TEXT, avatar_item.name));
+  content_label->SetMultiLine(true);
+  content_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   content_label->SetFontList(small_font_list);
-  layout->StartRowWithPadding(1, 0, 0, views::kUnrelatedControlVerticalSpacing);
   layout->AddView(content_label);
 
-  // Adds button.
-  end_preview_and_relaunch_button_ = new views::BlueButton(
-      this, l10n_util::GetStringUTF16(IDS_PROFILES_END_PREVIEW_AND_RELAUNCH));
-  end_preview_and_relaunch_button_->SetHorizontalAlignment(
-      gfx::ALIGN_CENTER);
-  layout->StartRowWithPadding(
-      1, 0, 0, views::kUnrelatedControlVerticalSpacing);
-  layout->AddView(end_preview_and_relaunch_button_);
+  // Adds "Add person" button.
+  layout->StartRowWithPadding(1, 0, 0, views::kUnrelatedControlVerticalSpacing);
+  layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+
+  add_person_button_ = new BackgroundColorHoverButton(
+      this,
+      l10n_util::GetStringUTF16(IDS_PROFILES_ADD_PERSON_BUTTON),
+      *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_AVATAR));
+  layout->StartRow(1, 0);
+  layout->AddView(add_person_button_);
+
+  // Adds "Disconnect your Google Account" button.
+  layout->StartRow(1, 0);
+  layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+
+  disconnect_button_ = new BackgroundColorHoverButton(
+      this,
+      l10n_util::GetStringUTF16(IDS_PROFILES_DISCONNECT_BUTTON),
+      *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_AVATAR));
+  layout->StartRow(1, 0);
+  layout->AddView(disconnect_button_);
 
   TitleCard* title_card = new TitleCard(
-      IDS_PROFILES_END_PREVIEW, this, &end_preview_cancel_button_);
-  return TitleCard::AddPaddedTitleCard(
-      view, title_card, kFixedAccountRemovalViewWidth);
+      l10n_util::GetStringFUTF16(IDS_PROFILES_NOT_YOU, avatar_item.name),
+      this, &switch_user_cancel_button_);
+  return TitleCard::AddPaddedTitleCard(view, title_card,
+      kFixedSwitchUserViewWidth);
 }
 
 bool ProfileChooserView::ShouldShowGoIncognito() const {

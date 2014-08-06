@@ -75,6 +75,9 @@ class WebContents;
 // Returns the view currently displayed by the bubble.
 - (profiles::BubbleViewMode)viewMode;
 
+// Sets the tutorial mode of the bubble.
+- (void)setTutorialMode:(profiles::TutorialMode)tutorialMode;
+
 // Switches to a given profile. |sender| is an ProfileChooserItemController.
 - (IBAction)switchToProfile:(id)sender;
 

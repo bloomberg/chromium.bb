@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "components/signin/core/browser/signin_tracker.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -30,12 +31,20 @@ class WebContents;
 // the job is done.
 class OneClickSigninSyncStarter : public SigninTracker::Observer,
                                   public chrome::BrowserListObserver,
-                                  public content::WebContentsObserver {
+                                  public content::WebContentsObserver,
+                                  public LoginUIService::Observer {
  public:
   enum StartSyncMode {
     // Starts the process of signing the user in with the SigninManager, and
     // once completed automatically starts sync with all data types enabled.
     SYNC_WITH_DEFAULT_SETTINGS,
+
+    // Starts the process of signing the user in with the SigninManager, and
+    // once completed shows an inline confirmation UI for sync settings. If the
+    // user dismisses the confirmation UI, sync will start immediately. If the
+    // user clicks the settings link, Chrome will reidrect to the sync settings
+    // page.
+    CONFIRM_SYNC_SETTINGS_FIRST,
 
     // Starts the process of signing the user in with the SigninManager, and
     // once completed redirects the user to the settings page to allow them
@@ -121,6 +130,9 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   virtual void SigninSuccess() OVERRIDE;
   virtual void MergeSessionComplete(
       const GoogleServiceAuthError& error) OVERRIDE;
+
+  // LoginUIService::Observer override.
+  virtual void OnSyncConfirmationUIClosed(bool configure_sync_first) OVERRIDE;
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   // User input handler for the signin confirmation dialog.

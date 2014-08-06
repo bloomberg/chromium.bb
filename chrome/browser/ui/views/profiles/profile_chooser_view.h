@@ -118,8 +118,8 @@ class ProfileChooserView : public views::BubbleDelegateView,
   void ShowView(profiles::BubbleViewMode view_to_display,
                 AvatarMenu* avatar_menu);
 
-  // Creates the profile chooser view. |tutorial_shown| indicates if the "mirror
-  // enabled" tutorial was shown or not in the last active view.
+  // Creates the profile chooser view. |tutorial_shown| indicates if a tutorial
+  // was shown in the last active view.
   views::View* CreateProfileChooserView(AvatarMenu* avatar_menu,
       profiles::TutorialMode last_tutorial_mode);
 
@@ -152,27 +152,27 @@ class ProfileChooserView : public views::BubbleDelegateView,
   // Removes the currently selected account and attempts to restart Chrome.
   void RemoveAccount();
 
-  // Creates a a tutorial card at the top prompting the user to try out the new
-  // profile management UI.
-  views::View* CreateNewProfileManagementPreviewView();
+  // Creates a tutorial card to introduce an upgrade user to the new avatar
+  // menu if needed. |tutorial_shown| indicates if the tutorial has already been
+  // shown in the previous active view. |avatar_item| refers to the current
+  // profile.
+  views::View* CreateWelcomeUpgradeTutorialViewIfNeeded(
+      bool tutorial_shown, const AvatarMenu::Item& avatar_item);
 
-  // Creates a tutorial card shown when new profile management preview is
-  // enabled. |current_avatar_item| indicates the current profile.
-  // |tutorial_shown| indicates if the tutorial card is already shown in the
-  // last active view.
-  views::View* CreatePreviewEnabledTutorialView(
-      const AvatarMenu::Item& current_avatar_item, bool tutorial_shown);
+  // Creates a tutorial card to have the user confirm the last Chrome signin,
+  // Chrome sync will be delayed until the user either dismisses the tutorial,
+  // or configures sync through the "Settings" link.
+  views::View* CreateSigninConfirmationView();
 
-  // Creates a a tutorial card at the top prompting the user to send feedback
-  // about the new profile management preview and/or to end preview.
-  views::View* CreateSendPreviewFeedbackView();
+  // Creates a a tutorial card to show the errors in the last Chrome signin.
+  views::View* CreateSigninErrorView();
 
   // Creates a tutorial card with the specified |title_text|, |context_text|,
   // and a bottom row with a right-aligned link using the specified |link_text|,
   // and a left aligned button using the specified |button_text|. The method
   // sets |link| to point to the newly created link, |button| to the newly
   // created button, and |tutorial_mode_| to the given |tutorial_mode|.
-  views::View* CreateTutorialView(
+  views::View*  CreateTutorialView(
       profiles::TutorialMode tutorial_mode,
       const base::string16& title_text,
       const base::string16& content_text,
@@ -181,7 +181,9 @@ class ProfileChooserView : public views::BubbleDelegateView,
       views::Link** link,
       views::LabelButton** button);
 
-  views::View* CreateEndPreviewView();
+  // Create a view that shows various options for an upgrade user who is not
+  // the same person as the currently signed in user |avatar_item|.
+  views::View* CreateSwitchUserView(const AvatarMenu::Item& avatar_item);
 
   bool ShouldShowGoIncognito() const;
 
@@ -199,16 +201,14 @@ class ProfileChooserView : public views::BubbleDelegateView,
   AccountButtonIndexes reauth_account_button_map_;
 
   // Links and buttons displayed in the tutorial card.
-  views::Link* tutorial_learn_more_link_;
-  views::LabelButton* tutorial_ok_button_;
-  views::LabelButton* tutorial_enable_new_profile_management_button_;
-  views::Link* tutorial_end_preview_link_;
-  views::LabelButton* tutorial_send_feedback_button_;
+  views::LabelButton* tutorial_sync_settings_ok_button_;
+  views::Link* tutorial_sync_settings_link_;
+  views::LabelButton* tutorial_see_whats_new_button_;
+  views::Link* tutorial_not_you_link_;
 
   // Links and buttons displayed in the active profile card.
   views::Link* manage_accounts_link_;
   views::LabelButton* signin_current_profile_link_;
-  views::ImageButton* question_mark_button_;
   views::LabelButton* auth_error_email_button_;
 
   // The profile name and photo in the active profile card. Owned by the
@@ -229,9 +229,10 @@ class ProfileChooserView : public views::BubbleDelegateView,
   views::LabelButton* remove_account_button_;
   views::ImageButton* account_removal_cancel_button_;
 
-  // Links and buttons displayed in the end-preview view.
-  views::LabelButton* end_preview_and_relaunch_button_;
-  views::ImageButton* end_preview_cancel_button_;
+  // Buttons in the switch user view.
+  views::LabelButton* add_person_button_;
+  views::LabelButton* disconnect_button_;
+  views::ImageButton* switch_user_cancel_button_;
 
   // Records the account id to remove.
   std::string account_id_to_remove_;

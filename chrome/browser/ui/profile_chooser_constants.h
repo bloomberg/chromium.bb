@@ -21,16 +21,20 @@ enum BubbleViewMode {
   BUBBLE_VIEW_MODE_GAIA_REAUTH,
   // Shows a view for confirming account removal.
   BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL,
-  // Shows a view for ending new profile management preview.
-  BUBBLE_VIEW_MODE_END_PREVIEW,
+  // Shows a view for switching user.
+  BUBBLE_VIEW_MODE_SWITCH_USER,
 };
 
 // Tutorial modes that can be displayed in the profile chooser bubble.
 enum TutorialMode {
-  TUTORIAL_MODE_NONE,             // No tutorial card shown.
-  TUTORIAL_MODE_ENABLE_PREVIEW,   // The enable-mirror-preview tutorial shown.
-  TUTORIAL_MODE_WELCOME,          // The welcome-to-mirror tutorial shown.
-  TUTORIAL_MODE_SEND_FEEDBACK,    // The send-feedback tutorial shown.
+  // No tutorial card shown.
+  TUTORIAL_MODE_NONE,
+  // A tutorial card shown to confirm Chrome signin.
+  TUTORIAL_MODE_CONFIRM_SIGNIN,
+  // A tutorial card shown to introduce an upgrade user to the new avatar menu.
+  TUTORIAL_MODE_WELCOME_UPGRADE,
+  // A tutorial card shown to display the signin errors.
+  TUTORIAL_MODE_SHOW_ERROR,
 };
 
 };  // namespace profiles

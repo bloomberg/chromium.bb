@@ -835,17 +835,11 @@ For Chromium, processes used to display diagnostics information (such as this "a
       </message>
 
       <!-- Tutorial card in the avatar menu bubble -->
-      <message name="IDS_PROFILES_PREVIEW_ENABLED_TUTORIAL_CONTENT_TEXT" desc="The main content of the tutorial card in the avatar menu bubble view shown when user enables the new profile management preview.">
-        You can add your other Google Accounts and lock your Chromium below.
+      <message name="IDS_PROFILES_CONFIRM_SIGNIN_TUTORIAL_TITLE" desc="The title of the tutorial card in the avatar menu bubble view shown when a user signs in to Chromium.">
+        You're now signed in to Chromium
       </message>
-      <message name="IDS_PROFILES_PREVIEW_TUTORIAL_TITLE" desc="The title of the tutorial card in the avatar menu bubble view that asks the user to preview the new profile management UI.">
-        Preview the new Chromium
-      </message>
-      <message name="IDS_PROFILES_PREVIEW_TUTORIAL_CONTENT_TEXT" desc="The main content of the tutorial card in the avatar menu bubble view that asks the user to preview the new profile management UI.">
-       Try the new way to use Chromium with your Google Account and on shared computers.
-      </message>
-      <message name="IDS_PROFILES_FEEDBACK_TUTORIAL_CONTENT_TEXT" desc="The main content of the tutorial card in the avatar menu bubble view that asks the user to send feedback about the new profile management UI.">
-       You're previewing the new Chromium.
+      <message name="IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_CONTENT_TEXT" desc="The main content of the tutorial card in the avatar menu bubble view that introduces an upgrade user to the new profile management UI.">
+       Share a computer? Now you can set up Chromium just the way you like it.
       </message>
 
       <!-- Account removal view in the avatar menu bubble -->
@@ -856,9 +850,9 @@ For Chromium, processes used to display diagnostics information (such as this "a
         You're using <ph name="PROFILE_EMAIL">$1<ex>jessica@gmail.com</ex></ph> to sync your Chromium stuff. To update your sync preference or to use Chromium without a Google account, visit <ph name="SETTINGS_LINK">$2<ex>settings</ex></ph>.
       </message>
 
-      <!-- End-preview view in the avatar menu bubble -->
-      <message name="IDS_PROFILES_END_PREVIEW_TEXT" desc="Main text of the end-preview view.">
-        Thanks for trying out the new Chromium. Chromium needs to restart to make sure you've saved any open work before continuing.
+      <!-- Switch user view in the avatar menu bubble -->
+      <message name="IDS_PROFILES_NOT_YOU_CONTENT_TEXT" desc="Main text of the switch user view. for an upgrade user">
+        If you share this computer with <ph name="PROFILE_NAME">$1<ex>Claire</ex></ph>, add yourself to Chromium to browser separately. Otherwise disconnect your Google Account.
       </message>
 
       <!-- One click sign-in infobar -->

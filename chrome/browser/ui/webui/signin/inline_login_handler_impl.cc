@@ -28,6 +28,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_oauth_helper.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
@@ -130,20 +131,34 @@ void InlineSigninHelper::OnSigninOAuthInformationAvailable(
     SigninErrorController* error_controller =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
             signin_error_controller();
-    OneClickSigninSyncStarter::StartSyncMode start_mode =
-        source == signin::SOURCE_SETTINGS || choose_what_to_sync_ ?
-            (error_controller->HasError() &&
-              sync_service && sync_service->HasSyncSetupCompleted()) ?
-                OneClickSigninSyncStarter::SHOW_SETTINGS_WITHOUT_CONFIGURE :
-                OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST :
-                OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS;
+
+    std::string is_constrained;
+    net::GetValueForKeyInQuery(current_url_, "constrained", &is_constrained);
+    bool show_inline_confirmation_for_sync =
+        switches::IsNewAvatarMenu() && is_constrained == "1";
+
+    OneClickSigninSyncStarter::StartSyncMode start_mode;
+    if (source == signin::SOURCE_SETTINGS || choose_what_to_sync_) {
+      bool show_settings_without_configure =
+          error_controller->HasError() &&
+          sync_service &&
+          sync_service->HasSyncSetupCompleted();
+      start_mode = show_settings_without_configure ?
+          OneClickSigninSyncStarter::SHOW_SETTINGS_WITHOUT_CONFIGURE :
+          OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST;
+    } else {
+      start_mode = show_inline_confirmation_for_sync ?
+          OneClickSigninSyncStarter::CONFIRM_SYNC_SETTINGS_FIRST :
+          OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS;
+    }
+
     OneClickSigninSyncStarter::ConfirmationRequired confirmation_required =
         source == signin::SOURCE_SETTINGS ||
         source == signin::SOURCE_WEBSTORE_INSTALL ||
-        choose_what_to_sync_ ?
+        choose_what_to_sync_ ||
+        show_inline_confirmation_for_sync ?
             OneClickSigninSyncStarter::NO_CONFIRMATION :
             OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN;
-
     bool start_signin =
         !OneClickSigninHelper::HandleCrossAccountError(
             contents, "",

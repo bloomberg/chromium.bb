@@ -1117,8 +1117,8 @@ const char kProfileGAIAInfoUpdateTime[] = "profile.gaia_info_update_time";
 // prevent the same picture from being downloaded multiple times.
 const char kProfileGAIAInfoPictureURL[] = "profile.gaia_info_picture_url";
 
-// Integer that specifies the number of times that we have shown the tutorial
-// card in the profile avatar bubble.
+// Integer that specifies the number of times that we have shown the upgrade
+// tutorial card in the avatar menu bubble.
 const char kProfileAvatarTutorialShown[] =
     "profile.avatar_bubble_tutorial_shown";
 

@@ -47,6 +47,13 @@ void LoginUIService::LoginUIClosed(LoginUI* ui) {
   FOR_EACH_OBSERVER(Observer, observer_list_, OnLoginUIClosed(ui));
 }
 
+void LoginUIService::SyncConfirmationUIClosed(bool configure_sync_first) {
+  FOR_EACH_OBSERVER(
+      Observer,
+      observer_list_,
+      OnSyncConfirmationUIClosed(configure_sync_first));
+}
+
 void LoginUIService::ShowLoginPopup() {
 #if defined(OS_CHROMEOS)
   if (chrome::IsRunningInForcedAppMode())

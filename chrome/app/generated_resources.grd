@@ -11311,29 +11311,32 @@ Chrome ran out of memory.
       <message name="IDS_PROFILES_SETTINGS_LINK" desc="The link text to the Chrome settings page in the account removal view.">
         settings
       </message>
+      <message name="IDS_PROFILES_SYNC_SETTINGS_LINK" desc="The link text to the Chrome sync settings page in the avatar menu tutorial card.">
+        Settings
+      </message>
       <message name="IDS_PROFILES_ACCOUNT_REMOVAL_BUTTON" desc="Text of the ok button on the account removal view in the avatar menu bubble.">
         Remove account
       </message>
-      <message name="IDS_PROFILES_PREVIEW_ENABLED_TUTORIAL_TITLE" desc="Title of the tutorial card in the avatar menu bubble view shown when new profile management preview is enabled.">
-        You're all set
+      <message name="IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_TITLE" desc="Title of the tutorial card in the avatar menu bubble view that introduces an upgrade user to the new profile management UI.">
+        Hi, <ph name="PROFILE_NAME">$1<ex>Claire</ex></ph>
       </message>
-      <message name="IDS_PROFILES_TUTORIAL_OK_BUTTON" desc="Text of the ok button on the tutorial card in the avatar menu bubble view">
-        Ok, Got it!
+      <message name="IDS_PROFILES_CONFIRM_SIGNIN_TUTORIAL_CONTENT_TEXT" desc="Content of the tutorial card in the avatar menu bubble view shown when a user successfully signs in to Chrome.">
+        Your tabs, bookmarks, history, and other settings will be synced to your Google Account and available across all your devices.
       </message>
-      <message name="IDS_PROFILES_TUTORIAL_TRY_BUTTON" desc="Text of the try button on the tutorial card in the avatar menu bubble view">
-        Try it out
+      <message name="IDS_PROFILES_TUTORIAL_OK_BUTTON" desc="Button in the avatar menu tutorial card for dismissing the signin confirmation bubble">
+        Ok, got it!
       </message>
-      <message name="IDS_PROFILES_FEEDBACK_TUTORIAL_TITLE" desc="Title of the tutorial card in the avatar menu bubble view that asks the user to send feedback about the new profile management UI.">
-        Thanks for your help.
+      <message name="IDS_PROFILES_NOT_YOU" desc="Title or link text in the avatar menu bubble for switching user">
+        Not <ph name="PROFILE_NAME">$1<ex>Claire</ex></ph>?
       </message>
-      <message name="IDS_PROFILES_SEND_FEEDBACK_BUTTON" desc="Text of the send feedback button on the tutorial card in the avatar menu bubble view">
-        Send feedback
+      <message name="IDS_PROFILES_DISCONNECT_BUTTON" desc="Button in the avatar menu bubble for disconnecting the current profile">
+        Disconnect your Google Account
       </message>
-      <message name="IDS_PROFILES_END_PREVIEW" desc="The link/label text to end new profile management preview">
-        End preview
+      <message name="IDS_PROFILES_ADD_PERSON_BUTTON" desc="Button in the avatar menu bubble for adding a new profile">
+        Add person
       </message>
-      <message name="IDS_PROFILES_END_PREVIEW_AND_RELAUNCH" desc="The button text to end new profile management preview and relaunch Chrome">
-        End preview and relaunch
+      <message name="IDS_PROFILES_TUTORIAL_WHATS_NEW_BUTTON" desc="Button in the avatar menu tutorial card for seeing what is new with the new profile management UI">
+        See what's new
       </message>
       <message name="IDS_PROFILES_SWITCH_USERS_BUTTON" desc="Button in the avatar menu bubble view for launching the user manager.">
         Switch person

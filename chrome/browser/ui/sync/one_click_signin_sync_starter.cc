@@ -34,7 +34,6 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/profile_signin_confirmation_dialog.h"
 #include "chrome/common/url_constants.h"
@@ -95,7 +94,7 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
   DCHECK(profile);
   DCHECK(web_contents || continue_url.is_empty());
   BrowserList::AddObserver(this);
-
+  LoginUIServiceFactory::GetForProfile(profile)->AddObserver(this);
   Initialize(profile, browser);
 
   // Policy is enabled, so pass in a callback to do extra policy-related UI
@@ -114,6 +113,7 @@ void OneClickSigninSyncStarter::OnBrowserRemoved(Browser* browser) {
 
 OneClickSigninSyncStarter::~OneClickSigninSyncStarter() {
   BrowserList::RemoveObserver(this);
+  LoginUIServiceFactory::GetForProfile(profile_)->RemoveObserver(this);
 }
 
 void OneClickSigninSyncStarter::Initialize(Profile* profile, Browser* browser) {
@@ -376,6 +376,20 @@ void OneClickSigninSyncStarter::UntrustedSigninConfirmed(
   }
 }
 
+void OneClickSigninSyncStarter::OnSyncConfirmationUIClosed(
+    bool configure_sync_first) {
+  if (configure_sync_first) {
+    chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
+  } else {
+    ProfileSyncService* profile_sync_service = GetProfileSyncService();
+    if (profile_sync_service)
+      profile_sync_service->SetSyncSetupCompleted();
+    FinishProfileSyncServiceSetup();
+  }
+
+  delete this;
+}
+
 void OneClickSigninSyncStarter::SigninFailed(
     const GoogleServiceAuthError& error) {
   if (!sync_setup_completed_callback_.is_null())
@@ -431,6 +445,9 @@ void OneClickSigninSyncStarter::MergeSessionComplete(
       }
       break;
     }
+    case CONFIRM_SYNC_SETTINGS_FIRST:
+      // Blocks sync until the sync settings confirmation UI is closed.
+      return;
     case CONFIGURE_SYNC_FIRST:
       ShowSettingsPage(true);  // Show sync config UI.
       break;
