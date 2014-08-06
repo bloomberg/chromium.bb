@@ -354,7 +354,7 @@ void SelectFileDialogImplKDE::FileSelected(const base::FilePath& path,
     *last_saved_path_ = path.DirName();
   else if (type_ == SELECT_OPEN_FILE)
     *last_opened_path_ = path.DirName();
-  else if (type_ == SELECT_FOLDER)
+  else if (type_ == SELECT_FOLDER || type_ == SELECT_UPLOAD_FOLDER)
     *last_opened_path_ = path;
   else
     NOTREACHED();
