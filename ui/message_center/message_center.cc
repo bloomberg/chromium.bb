@@ -12,7 +12,7 @@ namespace message_center {
 //------------------------------------------------------------------------------
 
 namespace {
-static MessageCenter* g_message_center;
+static MessageCenter* g_message_center = NULL;
 }
 
 // static
