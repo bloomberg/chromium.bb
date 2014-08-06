@@ -850,7 +850,6 @@ crbug.com/392626 [ XP ] http/tests/misc/object-embedding-svg-delayed-size-negoti
 crbug.com/357075 [ Win Release ] http/tests/security/contentSecurityPolicy/report-cross-origin-no-cookies.html [ Failure Pass ]
 crbug.com/357075 [ Win Debug ] http/tests/security/contentSecurityPolicy/report-cross-origin-no-cookies.html [ Pass Timeout ]
 crbug.com/357079 inspector/audits/audits-panel-functional.html [ Failure Pass ]
-crbug.com/357080 media/autoplay.html [ Failure Pass ]
 crbug.com/357082 [ Win Debug ] virtual/threaded/animations/animation-hit-test.html [ Failure Pass ]
 crbug.com/357084 [ Linux Win Debug ] virtual/threaded/animations/keyframe-timing-functions2.html [ Pass Timeout ]
 crbug.com/357085 [ Win Debug ] virtual/threaded/animations/unanimated-style.html [ Pass Timeout ]
