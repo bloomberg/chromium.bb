@@ -1198,7 +1198,6 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   // Reset some fields in preparation for recovering from a crash.
   ResetSizeAndRepaintPendingFlags();
   current_size_.SetSize(0, 0);
-  is_hidden_ = false;
 
   // Reset this to ensure the hung renderer mechanism is working properly.
   in_flight_event_count_ = 0;
