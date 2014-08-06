@@ -37,10 +37,6 @@
 
 namespace blink {
 
-ScriptValue::~ScriptValue()
-{
-}
-
 v8::Handle<v8::Value> ScriptValue::v8Value() const
 {
     if (isEmpty())

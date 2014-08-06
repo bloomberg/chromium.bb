@@ -42,27 +42,19 @@ namespace blink {
 
 class JSONValue;
 
-class ScriptValue {
+class ScriptValue FINAL {
 public:
-    ScriptValue()
-        : m_isolate(0)
-        , m_scriptState(nullptr)
-    {
-    }
-
-    virtual ~ScriptValue();
+    ScriptValue() { }
 
     ScriptValue(ScriptState* scriptState, v8::Handle<v8::Value> value)
-        : m_isolate(scriptState->isolate())
-        , m_scriptState(scriptState)
+        : m_scriptState(scriptState)
         , m_value(value.IsEmpty() ? nullptr : SharedPersistent<v8::Value>::create(value, scriptState->isolate()))
     {
         ASSERT(isEmpty() || m_scriptState);
     }
 
     ScriptValue(const ScriptValue& value)
-        : m_isolate(value.m_isolate)
-        , m_scriptState(value.m_scriptState)
+        : m_scriptState(value.m_scriptState)
         , m_value(value.m_value)
     {
         ASSERT(isEmpty() || m_scriptState);
@@ -75,15 +67,12 @@ public:
 
     v8::Isolate* isolate() const
     {
-        if (!m_isolate)
-            m_isolate = v8::Isolate::GetCurrent();
-        return m_isolate;
+        return m_scriptState ? m_scriptState->isolate() : v8::Isolate::GetCurrent();
     }
 
     ScriptValue& operator=(const ScriptValue& value)
     {
         if (this != &value) {
-            m_isolate = value.m_isolate;
             m_scriptState = value.m_scriptState;
             m_value = value.m_value;
         }
@@ -153,8 +142,7 @@ public:
     PassRefPtr<JSONValue> toJSONValue(ScriptState*) const;
 
 private:
-    mutable v8::Isolate* m_isolate;
-    mutable RefPtr<ScriptState> m_scriptState;
+    RefPtr<ScriptState> m_scriptState;
     RefPtr<SharedPersistent<v8::Value> > m_value;
 };
 
