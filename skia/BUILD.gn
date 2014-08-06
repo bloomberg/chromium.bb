@@ -324,9 +324,9 @@ component("skia") {
 
   # Remove unused util files include in utils.gypi
   sources -= [
-  "//third_party/skia/include/utils/SkCondVar.h",
-  "//third_party/skia/include/utils/SkRunnable.h",
-  "//third_party/skia/include/utils/SkThreadPool.h",
+  "//third_party/skia/src/utils/SkCondVar.h",
+  "//third_party/skia/src/utils/SkRunnable.h",
+  "//third_party/skia/src/utils/SkThreadPool.h",
   "//third_party/skia/src/utils/SkCondVar.cpp",
 
   "//third_party/skia/include/utils/SkBoundaryPatch.h",
