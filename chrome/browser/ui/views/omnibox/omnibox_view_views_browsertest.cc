@@ -18,8 +18,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "grit/generated_resources.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_tree_host.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/ime/text_input_focus_manager.h"
@@ -73,35 +71,22 @@ class OmniboxViewViewsTest : public InProcessBrowserTest {
   void TapBrowserWindowCenter() {
     gfx::Point center = BrowserView::GetBrowserViewForBrowser(
         browser())->GetBoundsInScreen().CenterPoint();
-    ui::test::EventGenerator generator(
-        browser()->window()->GetNativeWindow()->GetRootWindow());
+    ui::test::EventGenerator generator(browser()->window()->GetNativeWindow());
     generator.GestureTapAt(center);
   }
 
   // Touch down and release at the specified locations.
   void Tap(const gfx::Point& press_location,
            const gfx::Point& release_location) {
-    ui::EventProcessor* dispatcher =
-        browser()->window()->GetNativeWindow()->GetHost()->event_processor();
-
-    base::TimeDelta timestamp = ui::EventTimeForNow();
-    ui::TouchEvent press(
-        ui::ET_TOUCH_PRESSED, press_location, 5, timestamp);
-    ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&press);
-    ASSERT_FALSE(details.dispatcher_destroyed);
-
-    if (press_location != release_location) {
-      timestamp += base::TimeDelta::FromMilliseconds(10);
-      ui::TouchEvent move(
-          ui::ET_TOUCH_MOVED, release_location, 5, timestamp);
-      details = dispatcher->OnEventFromSource(&move);
+    ui::test::EventGenerator generator(browser()->window()->GetNativeWindow());
+    if (press_location == release_location) {
+      generator.GestureTapAt(press_location);
+    } else {
+      generator.GestureScrollSequence(press_location,
+                                      release_location,
+                                      base::TimeDelta::FromMilliseconds(10),
+                                      1);
     }
-
-    timestamp += base::TimeDelta::FromMilliseconds(50);
-    ui::TouchEvent release(
-        ui::ET_TOUCH_RELEASED, release_location, 5, timestamp);
-    details = dispatcher->OnEventFromSource(&release);
-    ASSERT_FALSE(details.dispatcher_destroyed);
   }
 
  private:
