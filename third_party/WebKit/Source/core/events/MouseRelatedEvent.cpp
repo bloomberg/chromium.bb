@@ -161,6 +161,7 @@ void MouseRelatedEvent::computeRelativePosition()
         n = n->parentNode();
 
     if (n) {
+        // FIXME: This logic is a wrong implementation of convertToLayerCoords.
         for (RenderLayer* layer = n->renderer()->enclosingLayer(); layer; layer = layer->parent())
             m_layerLocation -= toLayoutSize(layer->location());
     }

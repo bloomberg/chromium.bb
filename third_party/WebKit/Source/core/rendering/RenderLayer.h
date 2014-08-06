@@ -227,7 +227,7 @@ public:
         return !renderer()->hasColumns() && !renderer()->hasTransform() && !renderer()->isSVGRoot();
     }
 
-    void convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutPoint& location) const;
+    void convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutPoint&) const;
     void convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutRect&) const;
 
     // The two main functions that use the layer system.  The paint method

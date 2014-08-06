@@ -842,7 +842,7 @@ bool RenderLayer::updateLayerPosition()
             localPoint -= offset;
         }
 
-        if (renderer()->isOutOfFlowPositioned() && positionedParent->renderer()->isRelPositioned() && positionedParent->renderer()->isRenderInline()) {
+        if (positionedParent->renderer()->isRelPositioned() && positionedParent->renderer()->isRenderInline()) {
             LayoutSize offset = toRenderInline(positionedParent->renderer())->offsetForInFlowPositionedInline(*toRenderBox(renderer()));
             localPoint += offset;
         }
