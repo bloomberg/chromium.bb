@@ -35,16 +35,6 @@
 
 namespace blink {
 
-void WebHeap::attachThread()
-{
-    blink::ThreadState::attach();
-}
-
-void WebHeap::detachThread()
-{
-    blink::ThreadState::detach();
-}
-
 WebHeap::SafePointScope::SafePointScope()
 {
     blink::ThreadState::current()->enterSafePointWithPointers(this);
