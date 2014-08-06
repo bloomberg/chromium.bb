@@ -178,6 +178,8 @@ deps_os = {
             Var('git_url') + '/chromium/src/third_party/freetype.git@a2b9955b49034a51dfbc8bf9f4e9d312149cecac',
         'src/third_party/guava/src':
             Var('git_url') + '/external/guava-libraries.git@c523556ab7d0f05afadebd20e7768d4c16af8771',
+        'src/third_party/httpcomponents-client':
+            Var('git_url') + '/chromium/deps/httpcomponents-client.git@285c4dafc5de0e853fa845dce5773e223219601c',
         'src/third_party/httpcomponents-core':
             Var('git_url') + '/chromium/deps/httpcomponents-core.git@9f7180a96f8fa5cab23f793c14b413356d419e62',
         'src/third_party/jarjar':
@@ -324,6 +326,8 @@ deps_os = {
             Var('git_url') + '/chromium/deps/bison.git@083c9a45e4affdd5464ee2b224c2df649c6e26c3',
         'src/third_party/cygwin':
             Var('git_url') + '/chromium/deps/cygwin.git@c89e446b273697fadf3a10ff1007a97c0b7de6df',
+        'src/third_party/gnu_binutils':
+            Var('git_url') + '/native_client/deps/third_party/gnu_binutils.git@f4003433b61b25666565690caf3d7a7a1a4ec436',
         'src/third_party/gperf':
             Var('git_url') + '/chromium/deps/gperf.git@d892d79f64f9449770443fb06da49b5a1e5d33c1',
         'src/third_party/lighttpd':
