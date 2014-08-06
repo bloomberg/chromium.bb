@@ -52,6 +52,12 @@ public:
         EditingBehaviorAndroid
     };
 
+    enum V8CacheOptions {
+        V8CacheOptionsOff,
+        V8CacheOptionsParse,
+        V8CacheOptionsCode
+    };
+
     virtual bool mainFrameResizesAreOrientationChanges() const = 0;
     virtual bool shrinksViewportContentToFit() const = 0;
     virtual bool viewportEnabled() const = 0;
@@ -188,6 +194,7 @@ public:
     virtual void setUseSolidColorScrollbars(bool) = 0;
     virtual void setUseWideViewport(bool) = 0;
     virtual void setUsesEncodingDetector(bool) = 0;
+    virtual void setV8CacheOptions(V8CacheOptions) = 0;
     virtual void setValidationMessageTimerMagnification(int) = 0;
     virtual void setViewportEnabled(bool) = 0;
     virtual void setViewportMetaEnabled(bool) = 0;

@@ -613,6 +613,10 @@ COMPILE_ASSERT_MATCHING_ENUM(WebTouchActionPanX, TouchActionPanX);
 COMPILE_ASSERT_MATCHING_ENUM(WebTouchActionPanY, TouchActionPanY);
 COMPILE_ASSERT_MATCHING_ENUM(WebTouchActionPinchZoom, TouchActionPinchZoom);
 
+COMPILE_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsOff, V8CacheOptionsOff);
+COMPILE_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsParse, V8CacheOptionsParse);
+COMPILE_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsCode, V8CacheOptionsCode);
+
 COMPILE_ASSERT_MATCHING_UINT64(kSerializedScriptValueVersion, SerializedScriptValue::wireFormatVersion);
 
 } // namespace blink

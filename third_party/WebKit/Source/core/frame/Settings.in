@@ -283,3 +283,7 @@ fullscreenSupported initial=true
 # for non-media elements. When set to true all the requests to enter fullscreen
 # on non-media elements will return an error.
 disallowFullscreenForNonMediaElements initial=false
+
+# V8 supports different types of caching. Used by V8 bindings.
+v8CacheOptions type=V8CacheOptions, initial=V8CacheOptionsOff
+

@@ -26,6 +26,7 @@
 #ifndef V8ScriptRunner_h
 #define V8ScriptRunner_h
 
+#include "bindings/core/v8/V8CacheOptions.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/TextPosition.h"
@@ -42,8 +43,8 @@ class V8ScriptRunner {
 public:
     // For the following methods, the caller sites have to hold
     // a HandleScope and a ContextScope.
-    static v8::Local<v8::Script> compileScript(const ScriptSourceCode&, v8::Isolate*, AccessControlStatus = SharableCrossOrigin);
-    static v8::Local<v8::Script> compileScript(v8::Handle<v8::String>, const String& fileName, const TextPosition&, ScriptResource*, v8::Isolate*, AccessControlStatus = SharableCrossOrigin);
+    static v8::Local<v8::Script> compileScript(const ScriptSourceCode&, v8::Isolate*, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsOff);
+    static v8::Local<v8::Script> compileScript(v8::Handle<v8::String>, const String& fileName, const TextPosition&, ScriptResource*, v8::Isolate*, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsOff);
     static v8::Local<v8::Value> runCompiledScript(v8::Handle<v8::Script>, ExecutionContext*, v8::Isolate*);
     static v8::Local<v8::Value> compileAndRunInternalScript(v8::Handle<v8::String>, v8::Isolate*, const String& = String(), const TextPosition& = TextPosition());
     static v8::Local<v8::Value> callInternalFunction(v8::Handle<v8::Function>, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> info[], v8::Isolate*);

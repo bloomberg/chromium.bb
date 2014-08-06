@@ -62,22 +62,50 @@ v8::Local<v8::Value> throwStackOverflowExceptionIfNeeded(v8::Isolate* isolate)
     return result;
 }
 
-} // namespace
-
-v8::Local<v8::Script> V8ScriptRunner::compileScript(const ScriptSourceCode& source, v8::Isolate* isolate, AccessControlStatus corsStatus)
+// Make a decision on whether we want to use V8 caching and how.
+// dataType, produceOption, consumeOption are out parameters.
+bool CacheDecider(
+    const v8::Handle<v8::String> code,
+    const ScriptResource* resource,
+    V8CacheOptions cacheOptions,
+    unsigned* dataType,
+    v8::ScriptCompiler::CompileOptions* compileOption,
+    bool* produce)
 {
-    return compileScript(v8String(isolate, source.source()), source.url(), source.startPosition(), source.resource(), isolate, corsStatus);
+    if (!resource || !resource->url().protocolIsInHTTPFamily() || code->Length() < 1024)
+        cacheOptions = V8CacheOptionsOff;
+
+    bool useCache = false;
+    switch (cacheOptions) {
+    case V8CacheOptionsOff:
+        *compileOption = v8::ScriptCompiler::kNoCompileOptions;
+        useCache = false;
+        break;
+    case V8CacheOptionsParse:
+        *dataType = StringHash::hash(v8::V8::GetVersion()) * 2;
+        *produce = !resource->cachedMetadata(*dataType);
+        *compileOption = *produce ? v8::ScriptCompiler::kProduceParserCache : v8::ScriptCompiler::kConsumeParserCache;
+        useCache = true;
+        break;
+    case V8CacheOptionsCode:
+        *dataType = StringHash::hash(v8::V8::GetVersion()) * 2 + 1;
+        *produce = !resource->cachedMetadata(*dataType);
+        *compileOption = *produce ? v8::ScriptCompiler::kProduceCodeCache : v8::ScriptCompiler::kConsumeCodeCache;
+        useCache = true;
+        break;
+    }
+    return useCache;
 }
 
-v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code, const String& fileName, const TextPosition& scriptStartPosition, ScriptResource* resource, v8::Isolate* isolate, AccessControlStatus corsStatus)
+} // namespace
+
+v8::Local<v8::Script> V8ScriptRunner::compileScript(const ScriptSourceCode& source, v8::Isolate* isolate, AccessControlStatus corsStatus, V8CacheOptions cacheOptions)
 {
-    // A pseudo-randomly chosen ID used to store and retrieve V8 ScriptData from
-    // the ScriptResource. If the format changes, this ID should be changed too.
-    static const unsigned dataTypeID = 0xECC13BD7;
+    return compileScript(v8String(isolate, source.source()), source.url(), source.startPosition(), source.resource(), isolate, corsStatus, cacheOptions);
+}
 
-    // Very small scripts are not worth the effort to store cached data.
-    static const int minLengthForCachedData = 1024;
-
+v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code, const String& fileName, const TextPosition& scriptStartPosition, ScriptResource* resource, v8::Isolate* isolate, AccessControlStatus corsStatus, V8CacheOptions cacheOptions)
+{
     TRACE_EVENT1("v8", "v8.compile", "fileName", fileName.utf8());
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Compile");
 
@@ -89,26 +117,40 @@ v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code,
     v8::Handle<v8::Boolean> isSharedCrossOrigin = corsStatus == SharableCrossOrigin ? v8::True(isolate) : v8::False(isolate);
     v8::ScriptOrigin origin(name, line, column, isSharedCrossOrigin);
 
-    v8::ScriptCompiler::CompileOptions options = v8::ScriptCompiler::kNoCompileOptions;
-    OwnPtr<v8::ScriptCompiler::CachedData> cachedData;
-    if (resource) {
-        CachedMetadata* cachedMetadata = resource->cachedMetadata(dataTypeID);
-        if (cachedMetadata) {
-            // Ownership of the buffer is not transferred to CachedData.
-            cachedData = adoptPtr(new v8::ScriptCompiler::CachedData(reinterpret_cast<const uint8_t*>(cachedMetadata->data()), cachedMetadata->size()));
-        } else if (code->Length() >= minLengthForCachedData) {
-            options = v8::ScriptCompiler::kProduceDataToCache;
+    // V8 supports several forms of caching. Decide on the cache mode and call
+    // ScriptCompiler::Compile with suitable options.
+    unsigned dataTypeID = 0;
+    v8::ScriptCompiler::CompileOptions compileOption = v8::ScriptCompiler::kNoCompileOptions;
+    bool produce;
+    v8::Local<v8::Script> script;
+    if (CacheDecider(code, resource, cacheOptions, &dataTypeID, &compileOption, &produce)) {
+        if (produce) {
+            // Produce new cache data:
+            v8::ScriptCompiler::Source source(code, origin);
+            script = v8::ScriptCompiler::Compile(isolate, &source, compileOption);
+            const v8::ScriptCompiler::CachedData* cachedData = source.GetCachedData();
+            if (cachedData) {
+                resource->clearCachedMetadata();
+                resource->setCachedMetadata(
+                    dataTypeID,
+                    reinterpret_cast<const char*>(cachedData->data),
+                    cachedData->length);
+            }
+        } else {
+            // Consume existing cache data:
+            CachedMetadata* cachedMetadata = resource->cachedMetadata(dataTypeID);
+            v8::ScriptCompiler::CachedData* cachedData = new v8::ScriptCompiler::CachedData(
+                reinterpret_cast<const uint8_t*>(cachedMetadata->data()),
+                cachedMetadata->size(),
+                v8::ScriptCompiler::CachedData::BufferNotOwned);
+            v8::ScriptCompiler::Source source(code, origin, cachedData);
+            script = v8::ScriptCompiler::Compile(isolate, &source, compileOption);
         }
-    }
-    // source takes ownership of cachedData.
-    v8::ScriptCompiler::Source source(code, origin, cachedData.leakPtr());
-    v8::Local<v8::Script> script = v8::ScriptCompiler::Compile(isolate, &source, options);
-    if (options == v8::ScriptCompiler::kProduceDataToCache) {
-        const v8::ScriptCompiler::CachedData* newCachedData = source.GetCachedData();
-        if (newCachedData) {
-            // Ownership of the buffer is not transferred; source's cachedData continues to own it.
-            resource->setCachedMetadata(dataTypeID, reinterpret_cast<const char*>(newCachedData->data), newCachedData->length);
-        }
+    } else {
+        // No caching:
+        v8::ScriptCompiler::Source source(code, origin);
+        script = v8::ScriptCompiler::Compile(
+            isolate, &source, v8::ScriptCompiler::kNoCompileOptions);
     }
     return script;
 }

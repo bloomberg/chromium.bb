@@ -422,6 +422,11 @@ void Resource::setCachedMetadata(unsigned dataTypeID, const char* data, size_t s
     blink::Platform::current()->cacheMetadata(m_response.url(), m_response.responseTime(), serializedData.data(), serializedData.size());
 }
 
+void Resource::clearCachedMetadata()
+{
+    m_cachedMetadata.clear();
+}
+
 bool Resource::canDelete() const
 {
     return !hasClients() && !m_loader && !m_preloadCount && hasRightHandleCountApartFromCache(0)

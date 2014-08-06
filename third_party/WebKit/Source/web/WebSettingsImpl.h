@@ -158,6 +158,7 @@ public:
     virtual void setUseLegacyBackgroundSizeShorthandBehavior(bool) OVERRIDE;
     virtual void setUseSolidColorScrollbars(bool) OVERRIDE;
     virtual void setUseWideViewport(bool) OVERRIDE;
+    virtual void setV8CacheOptions(V8CacheOptions) OVERRIDE;
     virtual void setValidationMessageTimerMagnification(int) OVERRIDE;
     virtual void setViewportEnabled(bool) OVERRIDE;
     virtual void setViewportMetaEnabled(bool) OVERRIDE;
