@@ -16,7 +16,7 @@
 ManagePasswordsIconView::ManagePasswordsIconView(CommandUpdater* updater)
     : BubbleIconView(updater, IDC_MANAGE_PASSWORDS_FOR_PAGE) {
   set_id(VIEW_ID_MANAGE_PASSWORDS_ICON_BUTTON);
-  SetAccessibilityFocusable(true);
+  SetFocusable(true);
   UpdateVisibleUI();
 }
 
@@ -55,4 +55,24 @@ bool ManagePasswordsIconView::OnMousePressed(const ui::MouseEvent& event) {
   if (IsBubbleShowing())
     ManagePasswordsBubbleView::CloseBubble();
   return result;
+}
+
+bool ManagePasswordsIconView::OnKeyPressed(const ui::KeyEvent& event) {
+  // Space is always ignored because otherwise the bubble appears with the
+  // default button down. Releasing the space is equivalent to clicking this
+  // button.
+  if (event.key_code() == ui::VKEY_SPACE)
+    return true;
+  if (event.key_code() == ui::VKEY_RETURN && active()) {
+    // If the icon is active, it should transfer its focus to the bubble.
+    // If it still somehow got this key event, the bubble shouldn't be reopened.
+    return true;
+  }
+  return BubbleIconView::OnKeyPressed(event);
+}
+
+void ManagePasswordsIconView::AboutToRequestFocusFromTabTraversal(
+    bool reverse) {
+  if (active())
+    ManagePasswordsBubbleView::ActivateBubble();
 }

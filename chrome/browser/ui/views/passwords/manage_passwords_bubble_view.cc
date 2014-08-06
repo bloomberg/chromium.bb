@@ -560,6 +560,13 @@ void ManagePasswordsBubbleView::CloseBubble() {
 }
 
 // static
+void ManagePasswordsBubbleView::ActivateBubble() {
+  if (!IsShowing())
+    return;
+  manage_passwords_bubble_->GetWidget()->Activate();
+}
+
+// static
 bool ManagePasswordsBubbleView::IsShowing() {
   // The bubble may be in the process of closing.
   return (manage_passwords_bubble_ != NULL) &&

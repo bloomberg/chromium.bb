@@ -25,6 +25,10 @@ class ManagePasswordsIconView : public ManagePasswordsIcon,
   virtual bool IsBubbleShowing() const OVERRIDE;
   virtual void OnExecuting(BubbleIconView::ExecuteSource source) OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
+
+  // views::View:
+  virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
 
 #if defined(UNIT_TEST)
   int icon_id() const { return icon_id_; }

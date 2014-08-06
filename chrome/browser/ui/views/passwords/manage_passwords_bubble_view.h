@@ -159,6 +159,9 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   // Closes any existing bubble.
   static void CloseBubble();
 
+  // Makes the bubble the foreground window.
+  static void ActivateBubble();
+
   // Whether the bubble is currently showing.
   static bool IsShowing();
 
