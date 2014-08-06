@@ -35,7 +35,7 @@ source_set("lib") {
     "//base:base_static",
     "//mojo/common",
     "//mojo/gles2",
-    "//mojo/public/cpp/application:chromium",
+    "//mojo/public/cpp/application",
     "//mojo/public/interfaces/application",
     "//mojo/service_manager",
     "//mojo/services/native_viewport",

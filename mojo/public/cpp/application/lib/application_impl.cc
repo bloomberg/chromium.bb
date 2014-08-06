@@ -10,43 +10,28 @@
 
 namespace mojo {
 
-ApplicationImpl::ShellPtrWatcher::ShellPtrWatcher(ApplicationImpl* impl)
-    : impl_(impl) {}
-
-ApplicationImpl::ShellPtrWatcher::~ShellPtrWatcher() {}
-
-void ApplicationImpl::ShellPtrWatcher::OnConnectionError() {
-  impl_->OnShellError();
-}
-
 ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate)
-    : delegate_(delegate), shell_watch_(this) {}
+    : delegate_(delegate) {}
 
 ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
                                  ScopedMessagePipeHandle shell_handle)
-    : delegate_(delegate), shell_watch_(this) {
+    : delegate_(delegate) {
   BindShell(shell_handle.Pass());
 }
 
 ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
                                  MojoHandle shell_handle)
-    : delegate_(delegate), shell_watch_(this) {
+    : delegate_(delegate) {
   BindShell(shell_handle);
 }
 
-void ApplicationImpl::ClearConnections() {
+ApplicationImpl::~ApplicationImpl() {
   for (ServiceRegistryList::iterator i(incoming_service_registries_.begin());
       i != incoming_service_registries_.end(); ++i)
     delete *i;
   for (ServiceRegistryList::iterator i(outgoing_service_registries_.begin());
       i != outgoing_service_registries_.end(); ++i)
     delete *i;
-  incoming_service_registries_.clear();
-  outgoing_service_registries_.clear();
-}
-
-ApplicationImpl::~ApplicationImpl() {
-  ClearConnections();
 }
 
 ApplicationConnection* ApplicationImpl::ConnectToApplication(
@@ -68,7 +53,6 @@ ApplicationConnection* ApplicationImpl::ConnectToApplication(
 void ApplicationImpl::BindShell(ScopedMessagePipeHandle shell_handle) {
   shell_.Bind(shell_handle.Pass());
   shell_.set_client(this);
-  shell_.set_error_handler(&shell_watch_);
   delegate_->Initialize(this);
 }
 

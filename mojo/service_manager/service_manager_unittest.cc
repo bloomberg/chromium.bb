@@ -618,7 +618,14 @@ TEST_F(ServiceManagerTest, ANoLoadB) {
 }
 
 TEST_F(ServiceManagerTest, NoServiceNoLoad) {
-  AddLoaderForURL(GURL(kTestAURLString), std::string());
+  // Because we'll never successfully connect to anything here and apps are not
+  // capable of noticing zero incoming connections and quitting, we need to use
+  // a quittable loader.
+  scoped_ptr<BackgroundShellServiceLoader> loader(MakeLoader(std::string()));
+  loader->set_quit_on_shutdown();
+  service_manager_->SetLoaderForURL(loader.PassAs<ServiceLoader>(),
+                                    GURL(kTestAURLString));
+
 
   // There is no TestC service implementation registered with ServiceManager,
   // so this cannot succeed (but also shouldn't crash).

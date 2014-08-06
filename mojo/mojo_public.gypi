@@ -182,7 +182,7 @@
     },
     {
       # GN version: //mojo/public/cpp/application
-      'target_name': 'mojo_application_base',
+      'target_name': 'mojo_application',
       'type': 'static_library',
       'sources': [
         'public/cpp/application/application_connection.h',
@@ -204,19 +204,6 @@
       ],
       'export_dependent_settings': [
         'mojo_application_bindings',
-      ],
-    },
-    {
-      'target_name': 'mojo_application_standalone',
-      'type': 'static_library',
-      'sources': [
-        'public/cpp/application/lib/application_impl_standalone.cc',
-      ],
-      'dependencies': [
-        'mojo_application_base',
-      ],
-      'export_dependent_settings': [
-        'mojo_application_base',
       ],
     },
   ],

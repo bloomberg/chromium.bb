@@ -35,7 +35,8 @@ BackgroundShellServiceLoader::BackgroundShellServiceLoader(
     scoped_ptr<ServiceLoader> real_loader,
     const std::string& thread_name,
     base::MessageLoop::Type message_loop_type)
-    : loader_(real_loader.Pass()),
+    : quit_on_shutdown_(false),
+      loader_(real_loader.Pass()),
       message_loop_type_(message_loop_type),
       thread_name_(thread_name),
       message_loop_created_(true, false),
@@ -43,8 +44,11 @@ BackgroundShellServiceLoader::BackgroundShellServiceLoader(
 }
 
 BackgroundShellServiceLoader::~BackgroundShellServiceLoader() {
-  if (thread_)
+  if (thread_) {
+    if (quit_on_shutdown_)
+      task_runner_->PostTask(FROM_HERE, quit_closure_);
     thread_->Join();
+  }
 }
 
 void BackgroundShellServiceLoader::LoadService(

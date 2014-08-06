@@ -122,6 +122,8 @@ void Context::Init() {
             scoped_ptr<ServiceLoader>(new NativeViewportServiceLoader()),
             "native_viewport",
              base::MessageLoop::TYPE_UI));
+    // TODO(tim): NativeViewportService doesn't quit itself yet.
+    loader->set_quit_on_shutdown();
     service_manager_.SetLoaderForURL(
         loader.PassAs<ServiceLoader>(),
         GURL("mojo:mojo_native_viewport_service"));
@@ -154,14 +156,30 @@ void Context::Init() {
             scoped_ptr<ServiceLoader>(new NetworkServiceLoader()),
             "network_service",
              base::MessageLoop::TYPE_IO));
+    // TODO(tim): NetworkService doesn't quit itself yet.
+    loader->set_quit_on_shutdown();
     service_manager_.SetLoaderForURL(loader.PassAs<ServiceLoader>(),
                                      GURL("mojo:mojo_network_service"));
   }
 #endif
 }
 
+void Context::Shutdown() {
+  // mojo_view_manager uses native_viewport. Destroy mojo_view_manager first so
+  // that there aren't shutdown ordering issues. Once native viewport service is
+  // moved into its own process this can likely be nuked.
+#if defined(USE_AURA)
+  service_manager_.SetLoaderForURL(
+      scoped_ptr<ServiceLoader>(),
+      GURL("mojo:mojo_view_manager"));
+#endif
+  service_manager_.set_default_loader(scoped_ptr<ServiceLoader>());
+  service_manager_.TerminateShellConnections();
+}
+
 Context::~Context() {
   DCHECK(!base::MessageLoop::current());
+  Shutdown();
 }
 
 }  // namespace shell

@@ -31,6 +31,9 @@ class Context {
   ~Context();
 
   void Init();
+  // Tear down context in safe order prior to deleting. Shutdown() is also
+  // called by the destructor.
+  void Shutdown();
 
   TaskRunners* task_runners() { return task_runners_.get(); }
   ServiceManager* service_manager() { return &service_manager_; }

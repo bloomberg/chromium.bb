@@ -59,7 +59,7 @@ class ApplicationDelegate;
 //   BarImpl(ApplicationContext* app_context, BarContext* service_context)
 //          : app_context_(app_context), servicecontext_(context) {}
 //
-// Create an ApplicationImpl instance that collects any service implementations.
+// Create an ApplicationDele instance that collects any service implementations.
 //
 // ApplicationImpl app(service_provider_handle);
 // app.AddService<FooImpl>();
@@ -89,25 +89,10 @@ class ApplicationImpl : public InterfaceImpl<Application> {
   }
 
  private:
-  class ShellPtrWatcher : public ErrorHandler {
-   public:
-    explicit ShellPtrWatcher(ApplicationImpl* impl);
-    virtual ~ShellPtrWatcher();
-    virtual void OnConnectionError() MOJO_OVERRIDE;
-   private:
-    ApplicationImpl* impl_;
-    MOJO_DISALLOW_COPY_AND_ASSIGN(ShellPtrWatcher);
-  };
-
   friend MojoResult (::MojoMain)(MojoHandle);
 
   void BindShell(ScopedMessagePipeHandle shell_handle);
   void BindShell(MojoHandle shell_handle);
-  void ClearConnections();
-  void OnShellError() { ClearConnections(); Terminate(); };
-
-  // Quits the main run loop for this application.
-  void Terminate();
 
   // Application implementation.
   virtual void AcceptConnection(const String& requestor_url,
@@ -118,7 +103,6 @@ class ApplicationImpl : public InterfaceImpl<Application> {
   ServiceRegistryList outgoing_service_registries_;
   ApplicationDelegate* delegate_;
   ShellPtr shell_;
-  ShellPtrWatcher shell_watch_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ApplicationImpl);
 };

@@ -6,7 +6,7 @@ source_set("view_manager") {
   deps = [
     ":common",
     "//base",
-    "//mojo/public/cpp/application:chromium",
+    "//mojo/public/cpp/application",
     "//mojo/public/interfaces/application",
     "//mojo/services/public/cpp/geometry",
     "//mojo/services/public/interfaces/geometry",
