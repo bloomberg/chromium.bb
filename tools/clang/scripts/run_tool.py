@@ -214,7 +214,7 @@ def _ApplyEdits(edits, clang_format_diff_path):
       f.truncate()
       f.write(contents)
     if clang_format_diff_path:
-      if subprocess.call('git diff -U0 %s | python %s -style=Chromium' % (
+      if subprocess.call('git diff -U0 %s | python %s -i -p1 -style=file ' % (
           k, clang_format_diff_path), shell=True) != 0:
         print 'clang-format failed for %s' % k
   print 'Applied %d edits to %d files' % (edit_count, len(edits))

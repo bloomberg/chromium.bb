@@ -7,14 +7,14 @@
 #include <string>
 
 // Tests for std::string declarations.
-void TestDeclarations() { std::string a, b("abc"), c; }
+void TestDeclarations() {
+  std::string a, b("abc"), c;
+}
 
 // Tests for std::string allocated with new.
 void TestNew() {
-  std::string* a = new std::string,
-               *b = new std::string("abc"),
-                *c = new std::string,
-                 *d = new std::string();
+  std::string* a = new std::string, *b = new std::string("abc"),
+               *c = new std::string, *d = new std::string();
 }
 
 // Tests for std::string construction in initializer lists.
@@ -43,3 +43,4 @@ void TestWideTemporaries(const std::wstring& reference_argument,
   TestWideTemporaries(std::wstring(), std::wstring());
   TestWideTemporaries(std::wstring(), std::wstring());
 }
+

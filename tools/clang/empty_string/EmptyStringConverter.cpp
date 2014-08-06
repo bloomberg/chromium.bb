@@ -7,6 +7,7 @@
 // take a copy of an empty string) and generates fewer instructions as well. It
 // should be run using the tools/clang/scripts/run_tool.py helper.
 
+#include <memory>
 #include "clang/ASTMatchers/ASTMatchers.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/Basic/SourceManager.h"
@@ -48,7 +49,7 @@ class ConstructorCallback : public MatchFinder::MatchCallback {
   ConstructorCallback(Replacements* replacements)
       : replacements_(replacements) {}
 
-  virtual void run(const MatchFinder::MatchResult& result) LLVM_OVERRIDE;
+  virtual void run(const MatchFinder::MatchResult& result) override;
 
  private:
   Replacements* const replacements_;
@@ -61,7 +62,7 @@ class InitializerCallback : public MatchFinder::MatchCallback {
   InitializerCallback(Replacements* replacements)
       : replacements_(replacements) {}
 
-  virtual void run(const MatchFinder::MatchResult& result) LLVM_OVERRIDE;
+  virtual void run(const MatchFinder::MatchResult& result) override;
 
  private:
   Replacements* const replacements_;
@@ -74,7 +75,7 @@ class TemporaryCallback : public MatchFinder::MatchCallback {
  public:
   TemporaryCallback(Replacements* replacements) : replacements_(replacements) {}
 
-  virtual void run(const MatchFinder::MatchResult& result) LLVM_OVERRIDE;
+  virtual void run(const MatchFinder::MatchResult& result) override;
 
  private:
   Replacements* const replacements_;
@@ -127,7 +128,7 @@ void ConstructorCallback::run(const MatchFinder::MatchResult& result) {
   const clang::CXXConstructExpr* call =
       result.Nodes.getNodeAs<clang::CXXConstructExpr>("call");
   clang::CharSourceRange range =
-      clang::CharSourceRange::getTokenRange(call->getParenRange());
+      clang::CharSourceRange::getTokenRange(call->getParenOrBraceRange());
   replacements_->insert(Replacement(*result.SourceManager, range, ""));
 }
 
@@ -154,7 +155,7 @@ void TemporaryCallback::run(const MatchFinder::MatchResult& result) {
   // constructor. An implicitly generated constructor won't have a valid
   // source range for the parenthesis. We do this because the matched expression
   // for |call| in the explicit case doesn't include the closing parenthesis.
-  clang::SourceRange range = call->getParenRange();
+  clang::SourceRange range = call->getParenOrBraceRange();
   if (range.isValid()) {
     replacements_->insert(Replacement(*result.SourceManager, literal, ""));
   } else {
@@ -170,7 +171,8 @@ void TemporaryCallback::run(const MatchFinder::MatchResult& result) {
 static llvm::cl::extrahelp common_help(CommonOptionsParser::HelpMessage);
 
 int main(int argc, const char* argv[]) {
-  CommonOptionsParser options(argc, argv);
+  llvm::cl::OptionCategory category("EmptyString Tool");
+  CommonOptionsParser options(argc, argv, category);
   clang::tooling::ClangTool tool(options.getCompilations(),
                                  options.getSourcePathList());
 
@@ -179,20 +181,23 @@ int main(int argc, const char* argv[]) {
   MatchFinder match_finder;
   converter.SetupMatchers(&match_finder);
 
-  int result =
-      tool.run(clang::tooling::newFrontendActionFactory(&match_finder));
+  std::unique_ptr<clang::tooling::FrontendActionFactory> frontend_factory =
+      clang::tooling::newFrontendActionFactory(&match_finder);
+  int result = tool.run(frontend_factory.get());
   if (result != 0)
     return result;
 
   // Each replacement line should have the following format:
   // r:<file path>:<offset>:<length>:<replacement text>
   // Only the <replacement text> field can contain embedded ":" characters.
-  // TODO(dcheng): Use a more clever serialization.
+  // TODO(dcheng): Use a more clever serialization. Ideally we'd use the YAML
+  // serialization and then use clang-apply-replacements, but that would require
+  // copying and pasting a larger amount of boilerplate for all Chrome clang
+  // tools.
   llvm::outs() << "==== BEGIN EDITS ====\n";
-  for (Replacements::const_iterator it = replacements.begin();
-       it != replacements.end(); ++it) {
-    llvm::outs() << "r:" << it->getFilePath() << ":" << it->getOffset() << ":"
-                 << it->getLength() << ":" << it->getReplacementText() << "\n";
+  for (const auto& r : replacements) {
+    llvm::outs() << "r:" << r.getFilePath() << ":" << r.getOffset() << ":"
+                 << r.getLength() << ":" << r.getReplacementText() << "\n";
   }
   llvm::outs() << "==== END EDITS ====\n";
 

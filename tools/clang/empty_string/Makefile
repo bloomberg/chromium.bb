@@ -13,11 +13,13 @@ NO_INSTALL = 1
 
 include $(CLANG_LEVEL)/../../Makefile.config
 
-LINK_COMPONENTS := $(TARGETS_TO_BUILD) asmparser bitreader support mc
-USEDLIBS = clangTooling.a clangFrontend.a clangSerialization.a clangDriver.a \
-           clangRewriteFrontend.a clangRewriteCore.a clangParse.a clangSema.a \
-           clangAnalysis.a clangAST.a clangASTMatchers.a clangEdit.a \
-           clangLex.a clangBasic.a
+LINK_COMPONENTS := $(TARGETS_TO_BUILD) asmparser bitreader support mc option
+USEDLIBS = clangFrontend.a clangSerialization.a clangDriver.a \
+           clangTooling.a clangParse.a clangSema.a \
+           clangStaticAnalyzerFrontend.a clangStaticAnalyzerCheckers.a \
+           clangStaticAnalyzerCore.a clangAnalysis.a clangRewriteFrontend.a \
+           clangRewrite.a clangEdit.a clangAST.a clangLex.a clangBasic.a \
+           clangASTMatchers.a
 
 include $(CLANG_LEVEL)/Makefile
 
