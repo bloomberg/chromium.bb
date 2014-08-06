@@ -256,7 +256,7 @@ template("grit") {
     script = "//tools/grit/grit.py"
     inputs = grit_inputs
     outputs = grit_outputs
-    depfile = "$target_out_dir/${target_name}.d"
+    depfile = "$output_dir/${target_name}.d"
 
     args = [
       "-i", source_path, "build",
