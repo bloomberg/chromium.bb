@@ -1179,6 +1179,47 @@ class GClientSmokeGITMutates(GClientSmokeBase):
     # files.
     self.assertEquals(0, len(out))
 
+  def testSyncNoHistory(self):
+    if not self.enabled:
+      return
+    # Create an extra commit in repo_2 and point DEPS to its hash.
+    cur_deps = self.FAKE_REPOS.git_hashes['repo_1'][-1][1]['DEPS']
+    repo_2_hash_old = self.FAKE_REPOS.git_hashes['repo_2'][1][0][:7]
+    self.FAKE_REPOS._commit_git('repo_2', {  # pylint: disable=W0212
+      'last_file': 'file created in last commit',
+    })
+    repo_2_hash_new = self.FAKE_REPOS.git_hashes['repo_2'][-1][0]
+    new_deps = cur_deps.replace(repo_2_hash_old, repo_2_hash_new)
+    self.assertNotEqual(new_deps, cur_deps)
+    self.FAKE_REPOS._commit_git('repo_1', {  # pylint: disable=W0212
+      'DEPS': new_deps,
+      'origin': 'git/repo_1@4\n',
+    })
+
+    config_template = (
+"""solutions = [{
+"name"        : "src",
+"url"         : "%(git_base)srepo_1",
+"deps_file"   : "DEPS",
+"managed"     : True,
+}]""")
+
+    self.gclient(['config', '--spec', config_template % {
+      'git_base': self.git_base
+    }])
+
+    self.gclient(['sync', '--no-history', '--deps', 'mac'])
+    repo2_root = join(self.root_dir, 'src', 'repo2')
+
+    # Check that repo_2 is actually shallow and its log has only one entry.
+    rev_lists = subprocess2.check_output(['git', 'rev-list', 'HEAD'],
+                                         cwd=repo2_root)
+    self.assertEquals(repo_2_hash_new, rev_lists.strip('\r\n'))
+
+    # Check that we have actually checked out the right commit.
+    self.assertTrue(os.path.exists(join(repo2_root, 'last_file')))
+
+
 class GClientSmokeBoth(GClientSmokeBase):
   def setUp(self):
     super(GClientSmokeBoth, self).setUp()

@@ -114,6 +114,8 @@ class GclientGitCheckout(GclientCheckout, GitCheckout):
     sync_cmd = ['sync']
     if self.options.nohooks:
       sync_cmd.append('--nohooks')
+    if self.options.no_history:
+      sync_cmd.append('--no-history')
     if self.spec.get('with_branch_heads', False):
       sync_cmd.append('--with_branch_heads')
     self.run_gclient(*sync_cmd)
@@ -207,6 +209,7 @@ Valid options:
    -h, --help, help   Print this message.
    --nohooks          Don't run hooks after checkout.
    -n, --dry-run      Don't run commands, only print them.
+   --no-history       Perform shallow clones, don't fetch the full git history.
 """ % os.path.basename(sys.argv[0]))
   sys.exit(bool(msg))
 
@@ -220,6 +223,7 @@ def handle_args(argv):
 
   dry_run = False
   nohooks = False
+  no_history = False
   while len(argv) >= 2:
     arg = argv[1]
     if not arg.startswith('-'):
@@ -229,6 +233,8 @@ def handle_args(argv):
       dry_run = True
     elif arg == '--nohooks':
       nohooks = True
+    elif arg == '--no-history':
+      no_history = True
     else:
       usage('Invalid option %s.' % arg)
 
@@ -241,7 +247,11 @@ def handle_args(argv):
 
   recipe = argv[1]
   props = argv[2:]
-  return optparse.Values({'dry_run':dry_run, 'nohooks':nohooks }), recipe, props
+  return (
+      optparse.Values(
+          {'dry_run':dry_run, 'nohooks':nohooks, 'no_history': no_history }),
+      recipe,
+      props)
 
 
 def run_recipe_fetch(recipe, props, aliased=False):

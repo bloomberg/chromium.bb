@@ -704,10 +704,10 @@ class SVNWrapperTestCase(BaseTestCase):
            '--ignore-externals'],
           cwd=self.root_dir,
           file_list=[])
-  
+
       gclient_scm.scm.SVN._CaptureInfo([], self.base_path+'/.'
           ).AndReturn({'Revision': 100})
-  
+
       self.mox.ReplayAll()
       scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                               relpath=self.relpath)
@@ -784,6 +784,7 @@ class BaseGitWrapperTestCase(GCBaseTestCase, StdoutCheck, TestCaseUtils,
       self.force = False
       self.reset = False
       self.nohooks = False
+      self.no_history = False
       self.upstream = False
       self.cache_dir = None
       self.merge = False
@@ -1205,7 +1206,7 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
 
   def checkstdout(self, expected):
     value = sys.stdout.getvalue()
-    sys.stdout.close() 
+    sys.stdout.close()
     # pylint: disable=E1101
     self.assertEquals(expected, strip_timestamps(value))
 
