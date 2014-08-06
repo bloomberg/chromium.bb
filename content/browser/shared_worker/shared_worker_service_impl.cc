@@ -635,18 +635,10 @@ SharedWorkerServiceImpl::GetRenderersWithWorkerDependency() {
 void SharedWorkerServiceImpl::CheckWorkerDependency() {
   const std::set<int> current_worker_depended_renderers =
       GetRenderersWithWorkerDependency();
-  std::vector<int> added_items;
-  std::vector<int> removed_items;
-  std::set_difference(current_worker_depended_renderers.begin(),
-                      current_worker_depended_renderers.end(),
-                      last_worker_depended_renderers_.begin(),
-                      last_worker_depended_renderers_.end(),
-                      std::back_inserter(added_items));
-  std::set_difference(last_worker_depended_renderers_.begin(),
-                      last_worker_depended_renderers_.end(),
-                      current_worker_depended_renderers.begin(),
-                      current_worker_depended_renderers.end(),
-                      std::back_inserter(removed_items));
+  std::vector<int> added_items = base::STLSetDifference<std::vector<int> >(
+      current_worker_depended_renderers, last_worker_depended_renderers_);
+  std::vector<int> removed_items = base::STLSetDifference<std::vector<int> >(
+      last_worker_depended_renderers_, current_worker_depended_renderers);
   if (!added_items.empty() || !removed_items.empty()) {
     last_worker_depended_renderers_ = current_worker_depended_renderers;
     update_worker_dependency_(added_items, removed_items);
