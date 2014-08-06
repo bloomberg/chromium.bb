@@ -120,7 +120,8 @@ class RtcpReceiverTest : public ::testing::Test {
  protected:
   RtcpReceiverTest()
       : testing_clock_(new base::SimpleTestTickClock()),
-        task_runner_(new test::FakeSingleThreadTaskRunner(testing_clock_)),
+        task_runner_(new test::FakeSingleThreadTaskRunner(
+            testing_clock_.get())),
         rtcp_receiver_(new RtcpReceiver(&mock_receiver_feedback_,
                                         kSourceSsrc)) {
     EXPECT_CALL(mock_receiver_feedback_, OnReceivedSenderReport(_)).Times(0);
@@ -157,7 +158,7 @@ class RtcpReceiverTest : public ::testing::Test {
     rtcp_receiver_->IncomingRtcpPacket(&rtcp_parser);
   }
 
-  base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
+  scoped_ptr<base::SimpleTestTickClock> testing_clock_;
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   MockRtcpReceiverFeedback mock_receiver_feedback_;
   scoped_ptr<RtcpReceiver> rtcp_receiver_;
