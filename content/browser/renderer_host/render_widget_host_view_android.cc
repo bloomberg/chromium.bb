@@ -97,6 +97,8 @@ void CopyFromCompositingSurfaceFinished(
     const base::TimeTicks& start_time,
     scoped_ptr<SkAutoLockPixels> bitmap_pixels_lock,
     bool result) {
+  TRACE_EVENT0(
+      "cc", "RenderWidgetHostViewAndroid::CopyFromCompositingSurfaceFinished");
   bitmap_pixels_lock.reset();
   release_callback->Run(0, false);
   UMA_HISTOGRAM_TIMES(kAsyncReadBackString,
@@ -731,6 +733,7 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
     const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     const SkColorType color_type) {
+  TRACE_EVENT0("cc", "RenderWidgetHostViewAndroid::CopyFromCompositingSurface");
   if ((!host_ || host_->is_hidden()) ||
       !IsReadbackConfigSupported(color_type)) {
     callback.Run(false, SkBitmap());
@@ -1543,6 +1546,8 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
     scoped_ptr<cc::CopyOutputResult> result) {
   base::ScopedClosureRunner scoped_callback_runner(
       base::Bind(callback, false, SkBitmap()));
+  TRACE_EVENT0("cc",
+               "RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult");
 
   if (!result->HasTexture() || result->IsEmpty() || result->size().IsEmpty())
     return;

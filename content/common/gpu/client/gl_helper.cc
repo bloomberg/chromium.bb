@@ -413,6 +413,7 @@ void GLHelper::CopyTextureToImpl::ReadbackAsync(
     GLenum type,
     size_t bytes_per_pixel,
     const base::Callback<void(bool)>& callback) {
+  TRACE_EVENT0("mirror", "GLHelper::CopyTextureToImpl::ReadbackAsync");
   Request* request =
       new Request(dst_size, bytes_per_row, row_stride_bytes, out, callback);
   request_queue_.push(request);
