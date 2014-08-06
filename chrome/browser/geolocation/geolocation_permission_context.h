@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,6 @@ class GeolocationPermissionContext
                                 const GURL& requesting_frame,
                                 bool user_gesture,
                                 const GURL& embedder,
-                                const std::string& accept_button_label,
                                 base::Callback<void(bool)> callback);
 
   // Called when permission is granted without interactively asking
@@ -103,7 +102,6 @@ class GeolocationPermissionContext
   void CreateInfoBarRequest(const PermissionRequestID& id,
                             const GURL& requesting_frame,
                             const GURL& embedder,
-                            const std::string accept_button_label,
                             base::Callback<void(bool)> callback);
 
   // Notify the context that a particular request object is no longer needed.

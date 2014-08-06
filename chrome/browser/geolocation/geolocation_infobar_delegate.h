@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,20 +25,27 @@ class GeolocationInfoBarDelegate : public ConfirmInfoBarDelegate {
                                    PermissionQueueController* controller,
                                    const PermissionRequestID& id,
                                    const GURL& requesting_frame,
-                                   const std::string& display_languages,
-                                   const std::string& accept_button_label);
+                                   const std::string& display_languages);
 
- protected:
+ private:
   GeolocationInfoBarDelegate(PermissionQueueController* controller,
                              const PermissionRequestID& id,
                              const GURL& requesting_frame,
                              int contents_unique_id,
-                             const std::string& display_languages,
-                             const std::string& accept_button_label);
+                             const std::string& display_languages);
   virtual ~GeolocationInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
   virtual bool Accept() OVERRIDE;
+  virtual void InfoBarDismissed() OVERRIDE;
+  virtual int GetIconID() const OVERRIDE;
+  virtual Type GetInfoBarType() const OVERRIDE;
+  virtual bool ShouldExpireInternal(
+      const NavigationDetails& details) const OVERRIDE;
+  virtual base::string16 GetMessageText() const OVERRIDE;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
+
 
   // Call back to the controller, to inform of the user's decision.
   void SetPermission(bool update_content_setting, bool allowed);
@@ -49,17 +56,6 @@ class GeolocationInfoBarDelegate : public ConfirmInfoBarDelegate {
   void set_user_has_interacted() {
     user_has_interacted_ = true;
   }
-
- private:
-  // ConfirmInfoBarDelegate:
-  virtual void InfoBarDismissed() OVERRIDE;
-  virtual int GetIconID() const OVERRIDE;
-  virtual Type GetInfoBarType() const OVERRIDE;
-  virtual bool ShouldExpireInternal(
-      const NavigationDetails& details) const OVERRIDE;
-  virtual base::string16 GetMessageText() const OVERRIDE;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
 
   PermissionQueueController* controller_;
   const PermissionRequestID id_;

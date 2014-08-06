@@ -18,23 +18,6 @@ ChromeShellGoogleLocationSettingsHelper::
     ~ChromeShellGoogleLocationSettingsHelper() {
 }
 
-std::string ChromeShellGoogleLocationSettingsHelper::GetAcceptButtonLabel(
-    bool allow) {
-  return "Allow";
-}
-
-void ChromeShellGoogleLocationSettingsHelper::ShowGoogleLocationSettings() {
-}
-
-bool ChromeShellGoogleLocationSettingsHelper::
-    IsGoogleAppsLocationSettingEnabled() {
-  return true;
-}
-
-bool ChromeShellGoogleLocationSettingsHelper::IsMasterLocationSettingEnabled() {
-  return true;
-}
-
-bool ChromeShellGoogleLocationSettingsHelper::IsAllowLabel() {
+bool ChromeShellGoogleLocationSettingsHelper::IsSystemLocationEnabled() {
   return true;
 }

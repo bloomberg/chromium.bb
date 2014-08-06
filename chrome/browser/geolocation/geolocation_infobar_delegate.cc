@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,12 +18,6 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/geolocation/geolocation_infobar_delegate_android.h"
-typedef GeolocationInfoBarDelegateAndroid DelegateType;
-#else
-typedef GeolocationInfoBarDelegate DelegateType;
-#endif
 
 namespace {
 
@@ -67,15 +61,14 @@ infobars::InfoBar* GeolocationInfoBarDelegate::Create(
     PermissionQueueController* controller,
     const PermissionRequestID& id,
     const GURL& requesting_frame,
-    const std::string& display_languages,
-    const std::string& accept_button_label) {
+    const std::string& display_languages) {
   RecordUmaEvent(GEOLOCATION_INFO_BAR_DELEGATE_EVENT_CREATE);
   const content::NavigationEntry* committed_entry =
       infobar_service->web_contents()->GetController().GetLastCommittedEntry();
-  GeolocationInfoBarDelegate* const delegate = new DelegateType(
+  GeolocationInfoBarDelegate* const delegate = new GeolocationInfoBarDelegate(
           controller, id, requesting_frame,
           committed_entry ? committed_entry->GetUniqueID() : 0,
-          display_languages, accept_button_label);
+          display_languages);
 
   infobars::InfoBar* infobar = ConfirmInfoBarDelegate::CreateInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(delegate)).release();
@@ -87,8 +80,7 @@ GeolocationInfoBarDelegate::GeolocationInfoBarDelegate(
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     int contents_unique_id,
-    const std::string& display_languages,
-    const std::string& accept_button_label)
+    const std::string& display_languages)
     : ConfirmInfoBarDelegate(),
       controller_(controller),
       id_(id),

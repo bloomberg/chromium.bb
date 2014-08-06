@@ -304,18 +304,6 @@ TEST_F(GeolocationPermissionContextTests, GeolocationEnabledDisabled) {
   MockGoogleLocationSettingsHelper::SetLocationStatus(true, false);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
   RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
-  EXPECT_EQ(1U, infobar_service()->infobar_count());
-  ConfirmInfoBarDelegate* infobar_delegate_1 =
-      infobar_service()->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
-  ASSERT_TRUE(infobar_delegate_1);
-  base::string16 text_1 = infobar_delegate_1->GetButtonLabel(
-      ConfirmInfoBarDelegate::BUTTON_OK);
-  EXPECT_NE(text_0, text_1);
-
-  Reload();
-  MockGoogleLocationSettingsHelper::SetLocationStatus(false, false);
-  EXPECT_EQ(0U, infobar_service()->infobar_count());
-  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
 }
 
@@ -340,13 +328,7 @@ TEST_F(GeolocationPermissionContextTests, MasterEnabledGoogleAppsDisabled) {
   MockGoogleLocationSettingsHelper::SetLocationStatus(true, false);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
   RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
-  EXPECT_EQ(1U, infobar_service()->infobar_count());
-  ConfirmInfoBarDelegate* infobar_delegate =
-      infobar_service()->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
-  ASSERT_TRUE(infobar_delegate);
-  infobar_delegate->Accept();
-  EXPECT_TRUE(
-      MockGoogleLocationSettingsHelper::WasGoogleLocationSettingsCalled());
+  EXPECT_EQ(0U, infobar_service()->infobar_count());
 }
 #endif
 

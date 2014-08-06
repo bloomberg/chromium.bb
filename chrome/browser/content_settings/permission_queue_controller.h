@@ -35,7 +35,6 @@ class PermissionQueueController : public content::NotificationObserver {
   void CreateInfoBarRequest(const PermissionRequestID& id,
                             const GURL& requesting_frame,
                             const GURL& embedder,
-                            const std::string& accept_button_label,
                             PermissionDecidedCallback callback);
 
   // Cancels a specific infobar request.

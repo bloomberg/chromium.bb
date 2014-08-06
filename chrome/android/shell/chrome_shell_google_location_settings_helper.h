@@ -12,11 +12,7 @@ class ChromeShellGoogleLocationSettingsHelper
     : public GoogleLocationSettingsHelper {
  public:
   // GoogleLocationSettingsHelper implementation:
-  virtual std::string GetAcceptButtonLabel(bool allow) OVERRIDE;
-  virtual void ShowGoogleLocationSettings() OVERRIDE;
-  virtual bool IsMasterLocationSettingEnabled() OVERRIDE;
-  virtual bool IsGoogleAppsLocationSettingEnabled() OVERRIDE;
-  virtual bool IsAllowLabel() OVERRIDE;
+  virtual bool IsSystemLocationEnabled() OVERRIDE;
 
  protected:
   ChromeShellGoogleLocationSettingsHelper();

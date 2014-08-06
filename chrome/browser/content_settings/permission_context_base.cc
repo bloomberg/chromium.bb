@@ -110,7 +110,6 @@ void PermissionContextBase::DecidePermission(
       id,
       requesting_origin,
       embedder_origin,
-      std::string(),
       base::Bind(&PermissionContextBase::PermissionDecided,
                  weak_factory_.GetWeakPtr(),
                  id,

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -182,7 +182,7 @@ void GeolocationPermissionContext::RequestGeolocationPermission(
   }
 
   DecidePermission(web_contents, id, requesting_frame_origin, user_gesture,
-                   embedder, "", result_callback);
+                   embedder, result_callback);
 }
 
 void GeolocationPermissionContext::CancelGeolocationPermissionRequest(
@@ -204,7 +204,6 @@ void GeolocationPermissionContext::DecidePermission(
     const GURL& requesting_frame,
     bool user_gesture,
     const GURL& embedder,
-    const std::string& accept_button_label,
     base::Callback<void(bool)> callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -238,7 +237,7 @@ void GeolocationPermissionContext::DecidePermission(
       } else {
         // setting == ask. Prompt the user.
         QueueController()->CreateInfoBarRequest(
-            id, requesting_frame, embedder, accept_button_label,
+            id, requesting_frame, embedder,
                 base::Bind(
                     &GeolocationPermissionContext::NotifyPermissionSet,
                 base::Unretained(this), id, requesting_frame, callback));
@@ -250,10 +249,9 @@ void GeolocationPermissionContext::CreateInfoBarRequest(
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
-    const std::string accept_button_label,
     base::Callback<void(bool)> callback) {
     QueueController()->CreateInfoBarRequest(
-        id, requesting_frame, embedder, accept_button_label, base::Bind(
+        id, requesting_frame, embedder, base::Bind(
             &GeolocationPermissionContext::NotifyPermissionSet,
             base::Unretained(this), id, requesting_frame, callback));
 }

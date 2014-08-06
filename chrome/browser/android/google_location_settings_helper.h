@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,16 +17,21 @@ class GoogleLocationSettingsHelper {
 
   static GoogleLocationSettingsHelper* Create();
 
-  virtual std::string GetAcceptButtonLabel(bool allow) = 0;
-  virtual void ShowGoogleLocationSettings() = 0;
-  // Checks both Master and Google Apps location setting to see
-  // if we should use "Allow" in the accept button.
-  virtual bool IsAllowLabel() = 0;
-  virtual bool IsMasterLocationSettingEnabled() = 0;
-  virtual bool IsGoogleAppsLocationSettingEnabled() = 0;
+  virtual bool IsSystemLocationEnabled();
 
  protected:
   GoogleLocationSettingsHelper() {}
+
+  // TODO(miguelg) Remove these three methods once the downstream
+  // dependencies get updated.
+  virtual std::string GetAcceptButtonLabel(bool allow);
+  virtual bool IsAllowLabel();
+  virtual void ShowGoogleLocationSettings();
+
+  // Checks both Master and Google Apps location setting to see
+  // if we should allow geolocation.
+  virtual bool IsMasterLocationSettingEnabled();
+  virtual bool IsGoogleAppsLocationSettingEnabled();
 
  private:
 

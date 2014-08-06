@@ -11,14 +11,10 @@
 class MockGoogleLocationSettingsHelper : public GoogleLocationSettingsHelper {
  public:
   static void SetLocationStatus(bool master, bool google_apps);
-  static bool WasGoogleLocationSettingsCalled();
 
   // GoogleLocationSettingsHelper implementation:
-  virtual std::string GetAcceptButtonLabel(bool allow) OVERRIDE;
-  virtual void ShowGoogleLocationSettings() OVERRIDE;
   virtual bool IsMasterLocationSettingEnabled() OVERRIDE;
   virtual bool IsGoogleAppsLocationSettingEnabled() OVERRIDE;
-  virtual bool IsAllowLabel() OVERRIDE;
 
  protected:
   MockGoogleLocationSettingsHelper();
@@ -29,7 +25,6 @@ class MockGoogleLocationSettingsHelper : public GoogleLocationSettingsHelper {
 
   static bool master_location_enabled;
   static bool google_apps_location_enabled;
-  static bool was_google_location_settings_called;
 
   DISALLOW_COPY_AND_ASSIGN(MockGoogleLocationSettingsHelper);
 };
