@@ -196,7 +196,9 @@
 
   "gtest_tests_filter_exclusions": [
     ".*gyp[i]?",
+    "build/android/pylib",
     "build/compiler_version.py",
+    "build/get_landmines.py",
     "build/gyp_chromium",
     "build/linux/sysroot_ld_path.sh",
     "chrome/test/data/.*",
@@ -211,8 +213,6 @@
     "tools/whitespace.txt"
   ],
 
-  "filter_builders": [
-    "linux_chromium_clang_dbg",
-    "mac_chromium_rel"
+  "non_filter_builders": [
   ]
 }
