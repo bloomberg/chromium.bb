@@ -2276,7 +2276,7 @@ public class ContentViewCore
             float viewportWidth, float viewportHeight,
             float controlsOffsetYCss, float contentOffsetYCss,
             float overdrawBottomHeightCss) {
-        TraceEvent.instant("ContentViewCore:updateFrameInfo");
+        TraceEvent.begin("ContentViewCore:updateFrameInfo");
         // Adjust contentWidth/Height to be always at least as big as
         // the actual viewport (as set by onSizeChanged).
         final float deviceScale = mRenderCoordinates.getDeviceScaleFactor();
@@ -2341,6 +2341,7 @@ public class ContentViewCore
         if (mBrowserAccessibilityManager != null) {
             mBrowserAccessibilityManager.notifyFrameInfoInitialized();
         }
+        TraceEvent.end("ContentViewCore:updateFrameInfo");
     }
 
     @CalledByNative
