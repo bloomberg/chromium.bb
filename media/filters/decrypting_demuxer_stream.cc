@@ -360,8 +360,8 @@ void DecryptingDemuxerStream::InitializeDecoderConfig() {
                                input_audio_config.extra_data_size(),
                                false,  // Output audio is not encrypted.
                                false,
-                               base::TimeDelta(),
-                               0);
+                               input_audio_config.seek_preroll(),
+                               input_audio_config.codec_delay());
       break;
     }
 
