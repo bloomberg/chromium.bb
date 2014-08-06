@@ -583,6 +583,20 @@
                 'invalidation/unacked_invalidation_set_unittest.cc',
               ],
             }],
+            ['OS != "ios" and OS != "android"', {
+              'sources': [
+                'copresence/handlers/audio/audio_directive_handler_unittest.cc',
+                'copresence/handlers/audio/audio_directive_list_unittest.cc',
+                'copresence/mediums/audio/audio_player_unittest.cc',
+                'copresence/mediums/audio/audio_recorder_unittest.cc',
+                'copresence/timed_map_unittest.cc',
+              ],
+              'dependencies': [
+                # Dependencies for copresence.
+                'components.gyp:copresence',
+                'components.gyp:copresence_test_support',
+              ],
+            }],
             ['chromeos==1', {
               'sources!': [
                 'storage_monitor/storage_monitor_linux_unittest.cc',

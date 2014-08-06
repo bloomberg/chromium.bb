@@ -5,16 +5,31 @@
 static_library("copresence") {
   sources = [
     "copresence_client.cc",
+    "copresence_constants.cc",
+    "handlers/audio/audio_directive_handler.cc",
+    "handlers/audio/audio_directive_handler.h",
+    "handlers/audio/audio_directive_list.cc",
+    "handlers/audio/audio_directive_list.h",
+    "handlers/directive_handler.cc",
+    "handlers/directive_handler.h",
+    "mediums/audio/audio_player.cc",
+    "mediums/audio/audio_player.h",
+    "mediums/audio/audio_recorder.cc",
+    "mediums/audio/audio_recorder.h",
     "public/copresence_client_delegate.h",
     "public/copresence_client.h",
+    "public/copresence_constants.h",
     "public/whispernet_client.h",
     "rpc/rpc_handler.cc",
     "rpc/rpc_handler.h",
+    "timed_map.h",
   ]
 
   deps = [
     "//base",
     "//components/copresence/proto",
+    "//content",
+    "//media",
     "//net",
   ]
 }

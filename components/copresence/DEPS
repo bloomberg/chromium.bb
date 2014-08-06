@@ -1,3 +1,6 @@
 include_rules = [
   "+base",
+  "+content/public/browser",
+  "+content/public/test",
+  "+media",
 ]
