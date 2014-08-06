@@ -262,7 +262,7 @@
   <project name="platform/frameworks/support" path="frameworks/support" revision="1e3d0c89282627f8b0d66d2bdae4efc2287ab043"/>
   <project name="platform/frameworks/testing" path="frameworks/testing" revision="5c8e0271db889518f5969b142a37faa01a4ee54d"/>
   <project name="platform/frameworks/volley" path="frameworks/volley" revision="a53cb80bea6fc83edfa73e7a850e83f4020fcf07"/>
-  <project name="platform/frameworks/webview" path="frameworks/webview" revision="2b4719f12bac2f9f71d99567f09f46916903edf8"/>
+  <project name="platform/frameworks/webview" path="frameworks/webview" revision="707d93ceba55f52771e749b223fbfc010c9a025e"/>
   <project name="platform/frameworks/wilhelm" path="frameworks/wilhelm" revision="a62c3572e60ae0446632de15418a65089cccf551"/>
   <project name="platform/hardware/akm" path="hardware/akm" revision="32838ef838d1341aa8b77022869b801fb0bbb26c"/>
   <project groups="pdk" name="platform/hardware/broadcom/libbt" path="hardware/broadcom/libbt" revision="55ddd0cce019e88829f92b2fe4e17d5869daa9b9"/>

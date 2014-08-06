@@ -86,8 +86,11 @@ typedef void* AwGetNativeBufferFunction(long buffer_id);
 // Called to get the stride of the buffer
 typedef unsigned int AwGetStrideFunction(long buffer_id);
 
+static const int kAwDrawGLFunctionTableVersion = 1;
+
 // Set of functions used in rendering in hardware mode
 struct AwDrawGLFunctionTable {
+  int version;
   AwCreateGraphicBufferFunction* create_graphic_buffer;
   AwReleaseGraphicBufferFunction* release_graphic_buffer;
   AwMapFunction* map;

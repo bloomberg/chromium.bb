@@ -43,9 +43,12 @@ typedef void (SkiaVersionFunction)(int* major, int* minor, int* patch);
 // Called to verify if the Skia versions are compatible.
 typedef bool (AwIsSkiaVersionCompatibleFunction)(SkiaVersionFunction function);
 
+static const int kAwDrawSWFunctionTableVersion = 1;
+
 // "vtable" for the functions declared in this file. An instance must be set via
 // AwContents.setAwDrawSWFunctionTable
 struct AwDrawSWFunctionTable {
+  int version;
   AwAccessPixelsFunction* access_pixels;
   AwReleasePixelsFunction* release_pixels;
 };
