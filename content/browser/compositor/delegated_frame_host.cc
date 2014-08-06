@@ -223,6 +223,9 @@ bool DelegatedFrameHost::ShouldSkipFrame(gfx::Size size_in_dip) const {
 }
 
 void DelegatedFrameHost::WasResized() {
+  if (client_->DesiredFrameSize() != current_frame_size_in_dip_ &&
+      client_->GetHost()->is_hidden())
+    EvictDelegatedFrame();
   MaybeCreateResizeLock();
 }
 
