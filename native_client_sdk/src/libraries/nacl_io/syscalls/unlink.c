@@ -5,6 +5,8 @@
 #include "nacl_io/kernel_intercept.h"
 #include "nacl_io/kernel_wrap.h"
 
+#ifndef __GLIBC__
 int unlink(const char* path) {
   return ki_unlink(path);
 }
+#endif

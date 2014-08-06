@@ -68,6 +68,10 @@ ACTION_P(SetErrno, value) {
   errno = value;
 }
 
+ACTION_P2(SetString, target, source) {
+  strcpy(target, source);
+}
+
 ACTION_P(SetStat, statbuf) {
   memset(arg1, 0, sizeof(struct stat));
   arg1->st_dev = statbuf->st_dev;
@@ -296,10 +300,13 @@ TEST_F(KernelWrapTest, fsync) {
 }
 
 TEST_F(KernelWrapTest, getcwd) {
-  char result[] = "getcwd_result";
-  char buffer[] = "getcwd";
-  EXPECT_CALL(mock, getcwd(buffer, kDummySizeT)).WillOnce(Return(result));
-  EXPECT_EQ(result, getcwd(buffer, kDummySizeT));
+  char buffer[PATH_MAX];
+  char result[PATH_MAX];
+  memset(buffer, 0, PATH_MAX);
+  strcpy(result, "getcwd_result");
+  EXPECT_CALL(mock, getcwd(buffer, kDummySizeT))
+       .WillOnce(DoAll(SetString(buffer, result), Return(buffer)));
+  EXPECT_STREQ(result, getcwd(buffer, kDummySizeT));
 }
 
 TEST_F(KernelWrapTest, getdents) {
@@ -381,8 +388,9 @@ TEST_F(KernelWrapTest, mkdir) {
   EXPECT_EQ(kDummyInt2, mkdir(kDummyConstChar));
 #else
   EXPECT_CALL(mock, mkdir(kDummyConstChar, kDummyMode))
-      .WillOnce(Return(kDummyInt2));
-  EXPECT_EQ(kDummyInt2, mkdir(kDummyConstChar, kDummyMode));
+      .WillOnce(DoAll(SetErrno(kDummyErrno), Return(-1)));
+  EXPECT_EQ(-1, mkdir(kDummyConstChar, kDummyMode));
+  ASSERT_EQ(kDummyErrno, errno);
 #endif
 }
 
@@ -492,8 +500,10 @@ TEST_F(KernelWrapTest, rename) {
 }
 
 TEST_F(KernelWrapTest, rmdir) {
-  EXPECT_CALL(mock, rmdir(kDummyConstChar)).WillOnce(Return(kDummyInt));
-  EXPECT_EQ(kDummyInt, rmdir(kDummyConstChar));
+  EXPECT_CALL(mock, rmdir(kDummyConstChar))
+      .WillOnce(DoAll(SetErrno(kDummyErrno), Return(-1)));
+  EXPECT_EQ(-1, rmdir(kDummyConstChar));
+  ASSERT_EQ(kDummyErrno, errno);
 }
 
 static void new_handler(int) {}
@@ -594,8 +604,10 @@ TEST_F(KernelWrapTest, lstat) {
 }
 
 TEST_F(KernelWrapTest, unlink) {
-  EXPECT_CALL(mock, unlink(kDummyConstChar)).WillOnce(Return(kDummyInt));
-  EXPECT_EQ(kDummyInt, unlink(kDummyConstChar));
+  EXPECT_CALL(mock, unlink(kDummyConstChar))
+      .WillOnce(DoAll(SetErrno(kDummyErrno), Return(-1)));
+  EXPECT_EQ(-1, unlink(kDummyConstChar));
+  ASSERT_EQ(kDummyErrno, errno);
 }
 
 TEST_F(KernelWrapTest, utime) {

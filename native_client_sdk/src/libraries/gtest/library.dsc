@@ -19,7 +19,6 @@
         'gtest-printers.cc',
         'gtest-test-part.cc',
         'gtest-typed-test.cc',
-        'nacl_gtest_dummy_sys.cc',
       ],
       'INCLUDES': [
         # See comment below about gtest-internal-inl.h

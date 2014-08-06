@@ -311,7 +311,8 @@ int _real_lseek(int fd, off_t offset, int whence, off_t* new_offset) {
 }
 
 int _real_mkdir(const char* pathname, mode_t mode) {
-  return ENOSYS;
+  CHECK_REAL(mkdir);
+  return REAL(mkdir)(pathname, mode);
 }
 
 int _real_mmap(void** addr,
@@ -344,7 +345,8 @@ int _real_read(int fd, void* buf, size_t count, size_t* nread) {
 }
 
 int _real_rmdir(const char* pathname) {
-  return ENOSYS;
+  CHECK_REAL(rmdir);
+  return REAL(rmdir)(pathname);
 }
 
 int _real_write(int fd, const void* buf, size_t count, size_t* nwrote) {
