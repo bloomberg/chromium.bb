@@ -47,7 +47,7 @@ enum EventDispatchBehavior {
     StayInsideShadowDOM
 };
 
-class EventPath : public NoBaseWillBeGarbageCollectedFinalized<EventPath> {
+class EventPath FINAL : public NoBaseWillBeGarbageCollected<EventPath> {
 public:
     explicit EventPath(Event*);
     explicit EventPath(Node*);
