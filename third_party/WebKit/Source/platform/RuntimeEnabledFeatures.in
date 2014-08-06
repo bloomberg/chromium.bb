@@ -33,6 +33,7 @@ BleedingEdgeFastPaths
 ThemeColor status=stable
 
 ClientHintsDpr status=experimental
+ContextMenu status=experimental
 Crypto status=stable
 CSSAnimationUnprefixed status=experimental
 CSSAttributeCaseSensitivity status=experimental
