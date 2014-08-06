@@ -209,7 +209,6 @@
     void registerURLSchemeAsBypassingContentSecurityPolicy(DOMString scheme);
     void removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(DOMString scheme);
 
-    MallocStatistics mallocStatistics();
     TypeConversions typeConversions();
 
     // This is enabled only in Debug builds.

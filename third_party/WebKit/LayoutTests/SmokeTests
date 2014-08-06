@@ -65,7 +65,6 @@ fast/encoding/GBK/csgb231280.html
 fast/eventsource/eventsource-attribute-listeners.html
 fast/flexbox/assert-generated-new-flexbox.html
 fast/harness/check-layout-error-no-attributes.html
-fast/harness/fastmallocstatistics-object.html
 fast/harness/internals-profilers-heap.html
 fast/harness/override-preferences-2.html
 fast/harness/override-preferences.html

@@ -544,7 +544,6 @@ crbug.com/307777 [ Android ] editing/style/query-typing-style.html [ Timeout Pas
 crbug.com/307777 [ Android ] fast/borders/negative-border-width.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] fast/doctypes/005-case-preserving.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] fast/harness/check-layout-error-no-attributes.html [ Timeout Pass ]
-crbug.com/307777 [ Android ] fast/harness/fastmallocstatistics-object.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] fast/harness/internals-profilers-heap.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] fast/harness/override-preferences-2.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] fast/history/forward-during-load.html [ Timeout Pass ]

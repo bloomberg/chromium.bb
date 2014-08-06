@@ -56,12 +56,6 @@ char* fastStrDup(const char* src)
     return dup;
 }
 
-FastMallocStatistics fastMallocStatistics()
-{
-    FastMallocStatistics statistics = { 0, 0, 0 };
-    return statistics;
-}
-
 void fastMallocShutdown()
 {
     gPartition.shutdown();

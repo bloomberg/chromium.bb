@@ -36,13 +36,6 @@ WTF_EXPORT char* fastStrDup(const char*);
 
 WTF_EXPORT void fastFree(void*);
 
-struct FastMallocStatistics {
-    size_t reservedVMBytes;
-    size_t committedVMBytes;
-    size_t freeListBytes;
-};
-WTF_EXPORT FastMallocStatistics fastMallocStatistics();
-
 } // namespace WTF
 
 using WTF::fastFree;

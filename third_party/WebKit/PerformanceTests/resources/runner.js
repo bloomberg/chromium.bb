@@ -12,7 +12,6 @@ if (window.testRunner) {
     var currentTest = null;
     var results = [];
     var jsHeapResults = [];
-    var mallocHeapResults = [];
     var iterationCount = undefined;
 
     var PerfTestRunner = {};
@@ -94,11 +93,6 @@ if (window.testRunner) {
         this.log("stdev " + statistics.stdev + " " + statistics.unit);
         this.log("min " + statistics.min + " " + statistics.unit);
         this.log("max " + statistics.max + " " + statistics.unit);
-    }
-
-    function getUsedMallocHeap() {
-        var stats = window.internals.mallocStatistics();
-        return stats.committedVMBytes - stats.freeListBytes;
     }
 
     function getUsedJSHeap() {
@@ -197,7 +191,6 @@ if (window.testRunner) {
             results.push(measuredValue);
             if (window.internals && !currentTest.doNotMeasureMemoryUsage) {
                 jsHeapResults.push(getUsedJSHeap());
-                mallocHeapResults.push(getUsedMallocHeap());
             }
             PerfTestRunner.log(labeledResult);
         }
@@ -210,7 +203,6 @@ if (window.testRunner) {
             PerfTestRunner.logStatistics(results, PerfTestRunner.unit, "Time:");
             if (jsHeapResults.length) {
                 PerfTestRunner.logStatistics(jsHeapResults, "bytes", "JS Heap:");
-                PerfTestRunner.logStatistics(mallocHeapResults, "bytes", "Malloc:");
             }
             if (logLines)
                 logLines.forEach(logInDocument);

@@ -114,7 +114,6 @@
 #include "core/testing/InternalSettings.h"
 #include "core/testing/LayerRect.h"
 #include "core/testing/LayerRectList.h"
-#include "core/testing/MallocStatistics.h"
 #include "core/testing/MockPagePopupDriver.h"
 #include "core/testing/PrivateScriptTest.h"
 #include "core/testing/TypeConversions.h"
@@ -1910,11 +1909,6 @@ void Internals::registerURLSchemeAsBypassingContentSecurityPolicy(const String& 
 void Internals::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(const String& scheme)
 {
     SchemeRegistry::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(scheme);
-}
-
-PassRefPtrWillBeRawPtr<MallocStatistics> Internals::mallocStatistics() const
-{
-    return MallocStatistics::create();
 }
 
 PassRefPtrWillBeRawPtr<TypeConversions> Internals::typeConversions() const

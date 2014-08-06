@@ -60,7 +60,6 @@ class InternalRuntimeFlags;
 class InternalSettings;
 class LayerRectList;
 class LocalFrame;
-class MallocStatistics;
 class Node;
 class Page;
 class PagePopupController;
@@ -258,7 +257,6 @@ public:
     void registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme);
     void removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(const String& scheme);
 
-    PassRefPtrWillBeRawPtr<MallocStatistics> mallocStatistics() const;
     PassRefPtrWillBeRawPtr<TypeConversions> typeConversions() const;
     PrivateScriptTest* privateScriptTest() const;
 
