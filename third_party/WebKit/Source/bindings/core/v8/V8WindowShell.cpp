@@ -284,8 +284,6 @@ bool V8WindowShell::installDOMWindow()
     if (windowWrapper.IsEmpty())
         return false;
 
-    V8Window::installPerContextEnabledProperties(windowWrapper, window, m_isolate);
-
     V8DOMWrapper::setNativeInfoForHiddenWrapper(v8::Handle<v8::Object>::Cast(windowWrapper->GetPrototype()), &V8Window::wrapperTypeInfo, window);
 
     // Install the windowWrapper as the prototype of the innerGlobalObject.
@@ -312,6 +310,7 @@ bool V8WindowShell::installDOMWindow()
     V8DOMWrapper::setNativeInfoForHiddenWrapper(innerGlobalObject, &V8Window::wrapperTypeInfo, window);
     innerGlobalObject->SetPrototype(windowWrapper);
     V8DOMWrapper::associateObjectWithWrapper<V8Window>(PassRefPtrWillBeRawPtr<LocalDOMWindow>(window), &V8Window::wrapperTypeInfo, windowWrapper, m_isolate, WrapperConfiguration::Dependent);
+    V8Window::installPerContextEnabledProperties(windowWrapper, window, m_isolate);
     return true;
 }
 
