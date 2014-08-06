@@ -208,7 +208,7 @@ public class BookmarksBridge {
     }
 
     /**
-     * @return All bookmark IDs ordered by creation date.
+     * @return All bookmark IDs ordered by descending creation date.
      */
     public List<BookmarkId> getAllBookmarkIDsOrderedByCreationDate() {
         assert mIsNativeBookmarkModelLoaded;
