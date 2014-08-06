@@ -94,7 +94,7 @@ struct VideoSenderConfig {
   int start_bitrate;
   int max_qp;
   int min_qp;
-  int max_frame_rate;
+  int max_frame_rate;  // TODO(miu): Should be double, not int.
   int max_number_of_video_buffers_used;  // Max value depend on codec.
   Codec codec;
   int number_of_encode_threads;

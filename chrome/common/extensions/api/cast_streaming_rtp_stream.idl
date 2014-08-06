@@ -42,6 +42,9 @@ namespace cast.streaming.rtpStream {
     // The number of channels.
     long? channels;
 
+    // The maximum frame rate.
+    double? maxFrameRate;
+
     // Video width in pixels.
     long? width;
 

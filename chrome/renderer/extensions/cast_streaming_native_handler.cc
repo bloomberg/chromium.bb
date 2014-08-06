@@ -80,6 +80,8 @@ bool ToCastRtpPayloadParamsOrThrow(v8::Isolate* isolate,
   cast_params->max_bitrate =
       ext_params.max_bitrate ? *ext_params.max_bitrate : 0;
   cast_params->channels = ext_params.channels ? *ext_params.channels : 0;
+  cast_params->max_frame_rate =
+      ext_params.max_frame_rate ? *ext_params.max_frame_rate : 0.0;
   cast_params->width = ext_params.width ? *ext_params.width : 0;
   cast_params->height = ext_params.height ? *ext_params.height : 0;
   if (ext_params.aes_key &&
@@ -118,6 +120,8 @@ void FromCastRtpPayloadParams(const CastRtpPayloadParams& cast_params,
     ext_params->max_bitrate.reset(new int(cast_params.max_bitrate));
   if (cast_params.channels)
     ext_params->channels.reset(new int(cast_params.channels));
+  if (cast_params.max_frame_rate > 0.0)
+    ext_params->max_frame_rate.reset(new double(cast_params.max_frame_rate));
   if (cast_params.width)
     ext_params->width.reset(new int(cast_params.width));
   if (cast_params.height)

@@ -50,31 +50,34 @@ const int kBufferAudioData = 2;
 
 CastRtpPayloadParams DefaultOpusPayload() {
   CastRtpPayloadParams payload;
-  payload.ssrc = 1;
-  payload.feedback_ssrc = 2;
   payload.payload_type = 127;
   payload.max_latency_ms = media::cast::kDefaultRtpMaxDelayMs;
-  payload.codec_name = kCodecNameOpus;
-  payload.clock_rate = 48000;
-  payload.channels = 2;
+  payload.ssrc = 1;
+  payload.feedback_ssrc = 2;
+  payload.clock_rate = media::cast::kDefaultAudioSamplingRate;
   // The value is 0 which means VBR.
   payload.min_bitrate = payload.max_bitrate =
       media::cast::kDefaultAudioEncoderBitrate;
+  payload.channels = 2;
+  payload.max_frame_rate = 100;  // 10 ms audio frames
+  payload.codec_name = kCodecNameOpus;
   return payload;
 }
 
 CastRtpPayloadParams DefaultVp8Payload() {
   CastRtpPayloadParams payload;
-  payload.ssrc = 11;
-  payload.feedback_ssrc = 12;
   payload.payload_type = 96;
   payload.max_latency_ms = media::cast::kDefaultRtpMaxDelayMs;
-  payload.codec_name = kCodecNameVp8;
-  payload.clock_rate = 90000;
+  payload.ssrc = 11;
+  payload.feedback_ssrc = 12;
+  payload.clock_rate = media::cast::kVideoFrequency;
+  payload.max_bitrate = 2000;
+  payload.min_bitrate = 50;
+  payload.channels = 1;
+  payload.max_frame_rate = media::cast::kDefaultMaxFrameRate;
   payload.width = 1280;
   payload.height = 720;
-  payload.min_bitrate = 50;
-  payload.max_bitrate = 2000;
+  payload.codec_name = kCodecNameVp8;
   return payload;
 }
 
@@ -82,16 +85,18 @@ CastRtpPayloadParams DefaultH264Payload() {
   CastRtpPayloadParams payload;
   // TODO(hshi): set different ssrc/rtpPayloadType values for H264 and VP8
   // once b/13696137 is fixed.
-  payload.ssrc = 11;
-  payload.feedback_ssrc = 12;
   payload.payload_type = 96;
   payload.max_latency_ms = media::cast::kDefaultRtpMaxDelayMs;
-  payload.codec_name = kCodecNameH264;
-  payload.clock_rate = 90000;
+  payload.ssrc = 11;
+  payload.feedback_ssrc = 12;
+  payload.clock_rate = media::cast::kVideoFrequency;
+  payload.max_bitrate = 2000;
+  payload.min_bitrate = 50;
+  payload.channels = 1;
+  payload.max_frame_rate = media::cast::kDefaultMaxFrameRate;
   payload.width = 1280;
   payload.height = 720;
-  payload.min_bitrate = 50;
-  payload.max_bitrate = 2000;
+  payload.codec_name = kCodecNameH264;
   return payload;
 }
 
@@ -192,14 +197,16 @@ bool ToVideoSenderConfig(const CastRtpParams& params,
   config->height = params.payload.height;
   if (config->width < 2 || config->height < 2)
     return false;
-  // TODO(miu): Should the frame rate be parsed from the |params|?
-  config->max_frame_rate = 30;
   config->min_bitrate = config->start_bitrate =
       params.payload.min_bitrate * kBitrateMultiplier;
   config->max_bitrate = params.payload.max_bitrate * kBitrateMultiplier;
   if (config->min_bitrate > config->max_bitrate)
     return false;
   config->start_bitrate = config->min_bitrate;
+  config->max_frame_rate = static_cast<int>(
+      std::max(1.0, params.payload.max_frame_rate) + 0.5);
+  if (config->max_frame_rate > 120)
+    return false;
   if (params.payload.codec_name == kCodecNameVp8) {
     config->use_external_encoder = IsHardwareVP8EncodingSupported();
     config->codec = media::cast::CODEC_VIDEO_VP8;
@@ -463,6 +470,7 @@ CastRtpPayloadParams::CastRtpPayloadParams()
       max_bitrate(0),
       min_bitrate(0),
       channels(0),
+      max_frame_rate(0.0),
       width(0),
       height(0) {}
 

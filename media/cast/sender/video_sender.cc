@@ -66,7 +66,10 @@ VideoSender::VideoSender(
                           max_unacked_frames_),
       cast_initialization_status_(STATUS_VIDEO_UNINITIALIZED),
       weak_factory_(this) {
-  VLOG(1) << "max_unacked_frames " << max_unacked_frames_;
+  VLOG(1) << "max_unacked_frames is " << max_unacked_frames_
+          << " for target_playout_delay="
+          << target_playout_delay_.InMilliseconds() << " ms"
+          << " and max_frame_rate=" << video_config.max_frame_rate;
   DCHECK_GT(max_unacked_frames_, 0);
 
   if (video_config.use_external_encoder) {
