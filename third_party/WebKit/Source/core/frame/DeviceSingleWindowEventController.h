@@ -6,7 +6,7 @@
 #define DeviceSingleWindowEventController_h
 
 #include "core/frame/DOMWindowLifecycleObserver.h"
-#include "core/frame/DeviceEventControllerBase.h"
+#include "core/frame/PlatformEventController.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -14,7 +14,7 @@ namespace blink {
 class Document;
 class Event;
 
-class DeviceSingleWindowEventController : public NoBaseWillBeGarbageCollectedFinalized<DeviceSingleWindowEventController>, public DeviceEventControllerBase, public DOMWindowLifecycleObserver {
+class DeviceSingleWindowEventController : public NoBaseWillBeGarbageCollectedFinalized<DeviceSingleWindowEventController>, public PlatformEventController, public DOMWindowLifecycleObserver {
 public:
     virtual ~DeviceSingleWindowEventController();
 

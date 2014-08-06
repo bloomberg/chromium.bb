@@ -5,9 +5,11 @@
 #ifndef WebDeviceLightListener_h
 #define WebDeviceLightListener_h
 
+#include "WebPlatformEventListener.h"
+
 namespace blink {
 
-class WebDeviceLightListener {
+class WebDeviceLightListener : public WebPlatformEventListener {
 public:
     // This method is called every time new device light data is available.
     virtual void didChangeDeviceLight(double) = 0;

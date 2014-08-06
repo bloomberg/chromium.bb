@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/frame/DeviceEventControllerBase.h"
+#include "core/frame/PlatformEventController.h"
 #include "modules/EventTargetModules.h"
 #include "platform/heap/Handle.h"
 
@@ -16,7 +16,7 @@ namespace blink {
 
 class BatteryStatus;
 
-class BatteryManager FINAL : public RefCountedWillBeRefCountedGarbageCollected<BatteryManager>, public ActiveDOMObject, public DeviceEventControllerBase, public EventTargetWithInlineData {
+class BatteryManager FINAL : public RefCountedWillBeRefCountedGarbageCollected<BatteryManager>, public ActiveDOMObject, public PlatformEventController, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(BatteryManager);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(BatteryManager);
 public:
@@ -40,7 +40,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(dischargingtimechange);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(levelchange);
 
-    // Inherited from DeviceEventControllerBase.
+    // Inherited from PlatformEventController.
     virtual void didUpdateData() OVERRIDE;
     virtual void registerWithDispatcher() OVERRIDE;
     virtual void unregisterWithDispatcher() OVERRIDE;

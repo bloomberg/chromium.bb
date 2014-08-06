@@ -31,11 +31,13 @@
 #ifndef WebDeviceMotionListener_h
 #define WebDeviceMotionListener_h
 
+#include "WebPlatformEventListener.h"
+
 namespace blink {
 
 class WebDeviceMotionData;
 
-class WebDeviceMotionListener {
+class WebDeviceMotionListener : public WebPlatformEventListener {
 public:
     // This method is called every time new device motion data is available.
     virtual void didChangeDeviceMotion(const WebDeviceMotionData&) = 0;

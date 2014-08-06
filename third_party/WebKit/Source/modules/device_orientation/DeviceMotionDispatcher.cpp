@@ -53,12 +53,12 @@ DeviceMotionDispatcher::~DeviceMotionDispatcher()
 
 void DeviceMotionDispatcher::startListening()
 {
-    blink::Platform::current()->setDeviceMotionListener(this);
+    blink::Platform::current()->startListening(WebPlatformEventDeviceMotion, this);
 }
 
 void DeviceMotionDispatcher::stopListening()
 {
-    blink::Platform::current()->setDeviceMotionListener(0);
+    blink::Platform::current()->stopListening(WebPlatformEventDeviceMotion);
     m_lastDeviceMotionData.clear();
 }
 

@@ -36,14 +36,18 @@
 #endif
 
 #include "WebAudioDevice.h"
+#include "WebBatteryStatusListener.h"
 #include "WebCommon.h"
 #include "WebData.h"
+#include "WebDeviceLightListener.h"
+#include "WebDeviceMotionListener.h"
+#include "WebDeviceOrientationListener.h"
 #include "WebGamepadListener.h"
 #include "WebGamepads.h"
 #include "WebGestureDevice.h"
 #include "WebGraphicsContext3D.h"
 #include "WebLocalizedString.h"
-#include "WebLockOrientationCallback.h"
+#include "WebPlatformEventType.h"
 #include "WebSpeechSynthesizer.h"
 #include "WebStorageQuotaCallbacks.h"
 #include "WebStorageQuotaType.h"
@@ -56,7 +60,6 @@ class GrContext;
 namespace blink {
 
 class WebAudioBus;
-class WebBatteryStatusListener;
 class WebBlobRegistry;
 class WebContentDecryptionModule;
 class WebClipboard;
@@ -65,10 +68,8 @@ class WebConvertableToTraceFormat;
 class WebCookieJar;
 class WebCrypto;
 class WebDatabaseObserver;
-class WebDeviceLightListener;
-class WebDeviceMotionListener;
-class WebDeviceOrientationListener;
 class WebDiscardableMemory;
+class WebPlatformEventListener;
 class WebFallbackThemeEngine;
 class WebFileSystem;
 class WebFileUtilities;
@@ -163,12 +164,6 @@ public:
     virtual WebMIDIAccessor* createMIDIAccessor(WebMIDIAccessorClient*) { return 0; }
 
 
-    // Battery -------------------------------------------------------------
-
-    // Sets the listener for watching battery status updates.
-    virtual void setBatteryStatusListener(blink::WebBatteryStatusListener*) { }
-
-
     // Blob ----------------------------------------------------------------
 
     // Must return non-null.
@@ -220,8 +215,6 @@ public:
     // Gamepad -------------------------------------------------------------
 
     virtual void sampleGamepads(WebGamepads& into) { into.length = 0; }
-
-    virtual void setGamepadListener(WebGamepadListener*) { }
 
 
     // History -------------------------------------------------------------
@@ -602,19 +595,65 @@ public:
     virtual WebCrypto* crypto() { return 0; }
 
 
-    // Device Motion / Orientation / Light ----------------------------------------
+    // Platform events -----------------------------------------------------
+    // Device Orientation, Device Motion, Device Light, Battery, Gamepad.
 
-    // Sets a Listener to listen for device motion data updates.
-    // If null, the platform stops providing device motion data to the current listener.
+    // Request the platform to start listening to the events of the specified
+    // type and notify the given listener (if not null) when there is an update.
+    virtual void startListening(blink::WebPlatformEventType type, blink::WebPlatformEventListener* listener)
+    {
+        // FIXME: this implementation is only there for backward compatibility.
+        // It should be removed when the content layer will implement this method.
+        switch (type) {
+        case blink::WebPlatformEventDeviceMotion:
+            setDeviceMotionListener(static_cast<blink::WebDeviceMotionListener*>(listener));
+            break;
+        case blink::WebPlatformEventDeviceOrientation:
+            setDeviceOrientationListener(static_cast<blink::WebDeviceOrientationListener*>(listener));
+            break;
+        case blink::WebPlatformEventDeviceLight:
+            setDeviceLightListener(static_cast<blink::WebDeviceLightListener*>(listener));
+            break;
+        case blink::WebPlatformEventBattery:
+            setBatteryStatusListener(static_cast<blink::WebBatteryStatusListener*>(listener));
+            break;
+        case blink::WebPlatformEventGamepad:
+            setGamepadListener(static_cast<blink::WebGamepadListener*>(listener));
+            break;
+        }
+    }
+
+    // Request the platform to stop listening to the specified event and no
+    // longer notify the listener, if any.
+    virtual void stopListening(blink::WebPlatformEventType type)
+    {
+        // FIXME: this implementation is only there for backward compatibility.
+        // It should be removed when the content layer will implement this method.
+        switch (type) {
+        case blink::WebPlatformEventDeviceMotion:
+            setDeviceMotionListener(0);
+            break;
+        case blink::WebPlatformEventDeviceOrientation:
+            setDeviceOrientationListener(0);
+            break;
+        case blink::WebPlatformEventDeviceLight:
+            setDeviceLightListener(0);
+            break;
+        case blink::WebPlatformEventBattery:
+            setBatteryStatusListener(0);
+            break;
+        case blink::WebPlatformEventGamepad:
+            setGamepadListener(0);
+            break;
+        }
+    }
+
+    // Deprecated: remove when content/ is updated.
     virtual void setDeviceMotionListener(blink::WebDeviceMotionListener*) { }
-
-    // Sets a Listener to listen for device orientation data updates.
-    // If null, the platform stops providing device orientation data to the current listener.
     virtual void setDeviceOrientationListener(blink::WebDeviceOrientationListener*) { }
-
-    // Sets a Listener to listen for device light data updates.
-    // If null, the platform stops providing device light data to the current listener.
     virtual void setDeviceLightListener(blink::WebDeviceLightListener*) { }
+    virtual void setBatteryStatusListener(blink::WebBatteryStatusListener*) { }
+    virtual void setGamepadListener(blink::WebGamepadListener*) { }
 
 
     // Quota -----------------------------------------------------------

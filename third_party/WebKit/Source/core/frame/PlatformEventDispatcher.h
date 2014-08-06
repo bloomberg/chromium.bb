@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DeviceEventDispatcherBase_h
-#define DeviceEventDispatcherBase_h
+#ifndef PlatformEventDispatcher_h
+#define PlatformEventDispatcher_h
 
 #include "wtf/Vector.h"
 
 namespace blink {
-class DeviceEventControllerBase;
+class PlatformEventController;
 
-class DeviceEventDispatcherBase {
+class PlatformEventDispatcher {
 public:
-    void addController(DeviceEventControllerBase*);
-    void removeController(DeviceEventControllerBase*);
+    void addController(PlatformEventController*);
+    void removeController(PlatformEventController*);
 
 protected:
-    DeviceEventDispatcherBase();
-    virtual ~DeviceEventDispatcherBase();
+    PlatformEventDispatcher();
+    virtual ~PlatformEventDispatcher();
 
     void notifyControllers();
 
@@ -27,11 +27,11 @@ protected:
 private:
     void purgeControllers();
 
-    Vector<DeviceEventControllerBase*> m_controllers;
+    Vector<PlatformEventController*> m_controllers;
     bool m_needsPurge;
     bool m_isDispatching;
 };
 
 } // namespace blink
 
-#endif // DeviceEventDispatcherBase_h
+#endif // PlatformEventDispatcher_h

@@ -31,7 +31,7 @@
 #ifndef DeviceMotionDispatcher_h
 #define DeviceMotionDispatcher_h
 
-#include "core/frame/DeviceEventDispatcherBase.h"
+#include "core/frame/PlatformEventDispatcher.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebDeviceMotionListener.h"
 #include "wtf/RefPtr.h"
@@ -46,7 +46,7 @@ class DeviceMotionController;
 class DeviceMotionData;
 
 // This class listens to device motion data and notifies all registered controllers.
-class DeviceMotionDispatcher FINAL : public DeviceEventDispatcherBase, public blink::WebDeviceMotionListener {
+class DeviceMotionDispatcher FINAL : public PlatformEventDispatcher, public blink::WebDeviceMotionListener {
 public:
     static DeviceMotionDispatcher& instance();
 
@@ -61,7 +61,7 @@ private:
     DeviceMotionDispatcher();
     virtual ~DeviceMotionDispatcher();
 
-    // Inherited from DeviceEventDispatcherBase.
+    // Inherited from PlatformEventDispatcher.
     virtual void startListening() OVERRIDE;
     virtual void stopListening() OVERRIDE;
 

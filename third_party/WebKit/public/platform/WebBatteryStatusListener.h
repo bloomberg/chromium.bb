@@ -6,12 +6,13 @@
 #define WebBatteryStatusListener_h
 
 #include "WebBatteryStatus.h"
+#include "WebPlatformEventListener.h"
 
 namespace blink {
 
 class WebBatteryStatus;
 
-class WebBatteryStatusListener {
+class WebBatteryStatusListener : public WebPlatformEventListener {
 public:
     // This method is called when a new battery status is available.
     virtual void updateBatteryStatus(const WebBatteryStatus&) = 0;

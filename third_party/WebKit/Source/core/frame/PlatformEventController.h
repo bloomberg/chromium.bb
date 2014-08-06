@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DeviceEventControllerBase_h
-#define DeviceEventControllerBase_h
+#ifndef PlatformEventController_h
+#define PlatformEventController_h
 
 #include "core/page/PageLifecycleObserver.h"
 #include "platform/Timer.h"
@@ -15,7 +15,7 @@ namespace blink {
 // It watches page visibility and calls stopUpdating when page is not visible.
 // It provides a didUpdateData() callback method which is called when new data
 // it available.
-class DeviceEventControllerBase : public PageLifecycleObserver {
+class PlatformEventController : public PageLifecycleObserver {
 public:
     void startUpdating();
     void stopUpdating();
@@ -24,8 +24,8 @@ public:
     virtual void didUpdateData() = 0;
 
 protected:
-    explicit DeviceEventControllerBase(Page*);
-    virtual ~DeviceEventControllerBase();
+    explicit PlatformEventController(Page*);
+    virtual ~PlatformEventController();
 
     virtual void registerWithDispatcher() = 0;
     virtual void unregisterWithDispatcher() = 0;
@@ -39,12 +39,12 @@ private:
     // Inherited from PageLifecycleObserver.
     virtual void pageVisibilityChanged() OVERRIDE;
 
-    void oneShotCallback(Timer<DeviceEventControllerBase>*);
+    void oneShotCallback(Timer<PlatformEventController>*);
 
     bool m_isActive;
-    Timer<DeviceEventControllerBase> m_timer;
+    Timer<PlatformEventController> m_timer;
 };
 
 } // namespace blink
 
-#endif // DeviceEventControllerBase_h
+#endif // PlatformEventController_h

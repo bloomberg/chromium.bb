@@ -5,7 +5,7 @@
 #ifndef GamepadDispatcher_h
 #define GamepadDispatcher_h
 
-#include "core/frame/DeviceEventDispatcherBase.h"
+#include "core/frame/PlatformEventDispatcher.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebGamepad.h"
 #include "public/platform/WebGamepadListener.h"
@@ -18,7 +18,7 @@ namespace blink {
 
 class NavigatorGamepad;
 
-class GamepadDispatcher : public DeviceEventDispatcherBase, public blink::WebGamepadListener {
+class GamepadDispatcher : public PlatformEventDispatcher, public blink::WebGamepadListener {
 public:
     static GamepadDispatcher& instance();
 
@@ -39,7 +39,7 @@ private:
     virtual void didConnectGamepad(unsigned index, const blink::WebGamepad&) OVERRIDE;
     virtual void didDisconnectGamepad(unsigned index, const blink::WebGamepad&) OVERRIDE;
 
-    // DeviceEventDispatcherBase
+    // PlatformEventDispatcher
     virtual void startListening() OVERRIDE;
     virtual void stopListening() OVERRIDE;
 

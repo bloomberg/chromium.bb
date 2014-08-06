@@ -3,24 +3,24 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/frame/DeviceEventDispatcherBase.h"
+#include "core/frame/PlatformEventDispatcher.h"
 
-#include "core/frame/DeviceEventControllerBase.h"
+#include "core/frame/PlatformEventController.h"
 #include "wtf/TemporaryChange.h"
 
 namespace blink {
 
-DeviceEventDispatcherBase::DeviceEventDispatcherBase()
+PlatformEventDispatcher::PlatformEventDispatcher()
     : m_needsPurge(false)
     , m_isDispatching(false)
 {
 }
 
-DeviceEventDispatcherBase::~DeviceEventDispatcherBase()
+PlatformEventDispatcher::~PlatformEventDispatcher()
 {
 }
 
-void DeviceEventDispatcherBase::addController(DeviceEventControllerBase* controller)
+void PlatformEventDispatcher::addController(PlatformEventController* controller)
 {
     bool wasEmpty = m_controllers.isEmpty();
     if (!m_controllers.contains(controller))
@@ -29,7 +29,7 @@ void DeviceEventDispatcherBase::addController(DeviceEventControllerBase* control
         startListening();
 }
 
-void DeviceEventDispatcherBase::removeController(DeviceEventControllerBase* controller)
+void PlatformEventDispatcher::removeController(PlatformEventController* controller)
 {
     // Do not actually remove the controller from the vector, instead zero them out.
     // The zeros are removed in these two cases:
@@ -48,7 +48,7 @@ void DeviceEventDispatcherBase::removeController(DeviceEventControllerBase* cont
         purgeControllers();
 }
 
-void DeviceEventDispatcherBase::purgeControllers()
+void PlatformEventDispatcher::purgeControllers()
 {
     ASSERT(m_needsPurge);
 
@@ -68,7 +68,7 @@ void DeviceEventDispatcherBase::purgeControllers()
         stopListening();
 }
 
-void DeviceEventDispatcherBase::notifyControllers()
+void PlatformEventDispatcher::notifyControllers()
 {
     {
         TemporaryChange<bool> changeIsDispatching(m_isDispatching, true);

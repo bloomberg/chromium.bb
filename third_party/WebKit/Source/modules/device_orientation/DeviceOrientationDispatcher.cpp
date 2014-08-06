@@ -53,12 +53,12 @@ DeviceOrientationDispatcher::~DeviceOrientationDispatcher()
 
 void DeviceOrientationDispatcher::startListening()
 {
-    blink::Platform::current()->setDeviceOrientationListener(this);
+    blink::Platform::current()->startListening(WebPlatformEventDeviceOrientation, this);
 }
 
 void DeviceOrientationDispatcher::stopListening()
 {
-    blink::Platform::current()->setDeviceOrientationListener(0);
+    blink::Platform::current()->stopListening(WebPlatformEventDeviceOrientation);
     m_lastDeviceOrientationData.clear();
 }
 

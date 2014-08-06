@@ -38,12 +38,12 @@ BatteryStatus* BatteryDispatcher::latestData()
 
 void BatteryDispatcher::startListening()
 {
-    blink::Platform::current()->setBatteryStatusListener(this);
+    blink::Platform::current()->startListening(WebPlatformEventBattery, this);
 }
 
 void BatteryDispatcher::stopListening()
 {
-    blink::Platform::current()->setBatteryStatusListener(0);
+    blink::Platform::current()->stopListening(WebPlatformEventBattery);
     m_batteryStatus.clear();
 }
 

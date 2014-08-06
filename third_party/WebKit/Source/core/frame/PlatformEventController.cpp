@@ -3,25 +3,25 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/frame/DeviceEventControllerBase.h"
+#include "core/frame/PlatformEventController.h"
 
 #include "core/page/Page.h"
 
 namespace blink {
 
-DeviceEventControllerBase::DeviceEventControllerBase(Page* page)
+PlatformEventController::PlatformEventController(Page* page)
     : PageLifecycleObserver(page)
     , m_hasEventListener(false)
     , m_isActive(false)
-    , m_timer(this, &DeviceEventControllerBase::oneShotCallback)
+    , m_timer(this, &PlatformEventController::oneShotCallback)
 {
 }
 
-DeviceEventControllerBase::~DeviceEventControllerBase()
+PlatformEventController::~PlatformEventController()
 {
 }
 
-void DeviceEventControllerBase::oneShotCallback(Timer<DeviceEventControllerBase>* timer)
+void PlatformEventController::oneShotCallback(Timer<PlatformEventController>* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_timer);
     ASSERT(hasLastData());
@@ -30,7 +30,7 @@ void DeviceEventControllerBase::oneShotCallback(Timer<DeviceEventControllerBase>
     didUpdateData();
 }
 
-void DeviceEventControllerBase::startUpdating()
+void PlatformEventController::startUpdating()
 {
     if (m_isActive)
         return;
@@ -44,7 +44,7 @@ void DeviceEventControllerBase::startUpdating()
     m_isActive = true;
 }
 
-void DeviceEventControllerBase::stopUpdating()
+void PlatformEventController::stopUpdating()
 {
     if (!m_isActive)
         return;
@@ -56,7 +56,7 @@ void DeviceEventControllerBase::stopUpdating()
     m_isActive = false;
 }
 
-void DeviceEventControllerBase::pageVisibilityChanged()
+void PlatformEventController::pageVisibilityChanged()
 {
     if (!m_hasEventListener)
         return;

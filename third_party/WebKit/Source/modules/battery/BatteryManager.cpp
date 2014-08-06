@@ -27,7 +27,7 @@ BatteryManager::~BatteryManager()
 
 BatteryManager::BatteryManager(ExecutionContext* context)
     : ActiveDOMObject(context)
-    , DeviceEventControllerBase(toDocument(context)->page())
+    , PlatformEventController(toDocument(context)->page())
     , m_batteryStatus(BatteryStatus::create())
     , m_state(NotStarted)
 {

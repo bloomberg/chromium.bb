@@ -5,7 +5,7 @@
 #ifndef BatteryDispatcher_h
 #define BatteryDispatcher_h
 
-#include "core/frame/DeviceEventDispatcherBase.h"
+#include "core/frame/PlatformEventDispatcher.h"
 #include "modules/battery/BatteryManager.h"
 #include "modules/battery/BatteryStatus.h"
 #include "public/platform/WebBatteryStatusListener.h"
@@ -16,7 +16,7 @@ class WebBatteryStatus;
 
 namespace blink {
 
-class BatteryDispatcher FINAL : public DeviceEventDispatcherBase, public blink::WebBatteryStatusListener {
+class BatteryDispatcher FINAL : public PlatformEventDispatcher, public blink::WebBatteryStatusListener {
 public:
     static BatteryDispatcher& instance();
     virtual ~BatteryDispatcher();
@@ -29,7 +29,7 @@ public:
 private:
     BatteryDispatcher();
 
-    // Inherited from DeviceEventDispatcherBase.
+    // Inherited from PlatformEventDispatcher.
     virtual void startListening() OVERRIDE;
     virtual void stopListening() OVERRIDE;
 

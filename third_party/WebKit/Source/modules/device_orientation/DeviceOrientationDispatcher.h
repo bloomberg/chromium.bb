@@ -31,7 +31,7 @@
 #ifndef DeviceOrientationDispatcher_h
 #define DeviceOrientationDispatcher_h
 
-#include "core/frame/DeviceEventDispatcherBase.h"
+#include "core/frame/PlatformEventDispatcher.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebDeviceOrientationListener.h"
 #include "wtf/RefPtr.h"
@@ -46,7 +46,7 @@ class DeviceOrientationController;
 class DeviceOrientationData;
 
 // This class listens to device orientation data and notifies all registered controllers.
-class DeviceOrientationDispatcher : public DeviceEventDispatcherBase, public blink::WebDeviceOrientationListener {
+class DeviceOrientationDispatcher : public PlatformEventDispatcher, public blink::WebDeviceOrientationListener {
 public:
     static DeviceOrientationDispatcher& instance();
 
@@ -61,7 +61,7 @@ private:
     DeviceOrientationDispatcher();
     ~DeviceOrientationDispatcher();
 
-    // Inherited from DeviceEventDispatcherBase.
+    // Inherited from PlatformEventDispatcher.
     virtual void startListening() OVERRIDE;
     virtual void stopListening() OVERRIDE;
 
