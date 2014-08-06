@@ -45,6 +45,12 @@ TEST(FirefoxImporterTest, MAYBE_NSS(Firefox3NSS3Decryptor)) {
   EXPECT_EQ(base::WideToUTF16(L"\x4E2D"),
       decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAEwFAYIKoZIhvcNAwcECLW"
                               "qqiccfQHWBAie74hxnULxlw=="));
+
+  // Test empty string edge case.
+  EXPECT_EQ(base::string16(), decryptor_proxy.Decrypt(std::string()));
+
+  // Test invalid base64.
+  EXPECT_EQ(base::string16(), decryptor_proxy.Decrypt("Not! Valid! Base64!"));
 }
 
 // The following test verifies proper detection of authentication scheme in

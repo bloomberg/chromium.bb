@@ -66,12 +66,16 @@ base::string16 NSSDecryptor::Decrypt(const std::string& crypt) const {
   if (!is_nss_initialized_)
     return base::string16();
 
+  if (crypt.empty())
+    return base::string16();
+
   // The old style password is encoded in base64. They are identified
   // by a leading '~'. Otherwise, we should decrypt the text.
   std::string plain;
   if (crypt[0] != '~') {
     std::string decoded_data;
-    base::Base64Decode(crypt, &decoded_data);
+    if (!base::Base64Decode(crypt, &decoded_data))
+      return base::string16();
     PK11SlotInfo* slot = GetKeySlotForDB();
     SECStatus result = PK11_Authenticate(slot, PR_TRUE, NULL);
     if (result != SECSuccess) {
@@ -98,7 +102,8 @@ base::string16 NSSDecryptor::Decrypt(const std::string& crypt) const {
     FreeSlot(slot);
   } else {
     // Deletes the leading '~' before decoding.
-    base::Base64Decode(crypt.substr(1), &plain);
+    if (!base::Base64Decode(crypt.substr(1), &plain))
+      return base::string16();
   }
 
   return base::UTF8ToUTF16(plain);
