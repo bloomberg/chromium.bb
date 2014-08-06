@@ -51,16 +51,11 @@ CHROME_EBUILD_AFDO_REPL = r'\g<bef>%s\g<aft>'
 # How old can the AFDO data be? (in days).
 AFDO_ALLOWED_STALE = 7
 
-# TODO(llozano): Figure out exact list of boards/architectures that
-# can generate 'perf' suitable for AFDO (with LBR events).
+# TODO(llozano): Currently using sandybridge boards. We should move to
+# a more modern platform.
 # Set of boards that can generate the AFDO profile (can generate 'perf'
 # data with LBR events).
-AFDO_DATA_GENERATORS = ('lumpy',)
-# Set of boards that are allowed to update the Chrome ebuild with the
-# appropriate AFDO file name.
-# TODO(llozano): is it possible that the canary build for "falco" be
-# executed before the PFQ for lumpy?. Is there a problem with this?
-AFDO_EBUILD_UPDATERS = ('lumpy', 'daisy', 'x86-alex')
+AFDO_DATA_GENERATORS = ('butterfly', 'lumpy', 'parrot', 'stumpy')
 
 # For a given architecture, which architecture is used to generate
 # the AFDO profile. Some architectures are not able to generate their
@@ -484,11 +479,6 @@ def CanGenerateAFDOData(board):
   return board in AFDO_DATA_GENERATORS
 
 
-def CanUpdateEbuildAFDOData(board):
-  """Is this board one of the designated to update the chrome ebuild?."""
-  return board in AFDO_EBUILD_UPDATERS
-
-
 def GenerateOrFindAFDOData(cpv, arch, board, buildroot):
   """Generate or find the appropriate AFDO profile for the given architecture.
 
@@ -508,9 +498,6 @@ def GenerateOrFindAFDOData(cpv, arch, board, buildroot):
     board: board we are building for.
     buildroot: buildroot where AFDO data should be stored.
   """
-  if not CanUpdateEbuildAFDOData(board):
-    return
-
   gs_context = gs.GSContext()
   afdo_file = None
   if CanGenerateAFDOData(board):

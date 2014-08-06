@@ -1661,10 +1661,13 @@ internal_incremental = internal.derive(
   description='Incremental Builds (internal)',
 )
 
-internal_pfq_branch.add_config('x86-alex-pre-flight-branch',
+internal_pfq_branch.add_config('lumpy-pre-flight-branch',
   master=True,
   push_overlays=constants.BOTH_OVERLAYS,
-  boards=['x86-alex'],
+  boards=['lumpy'],
+  afdo_generate=True,
+  afdo_update_ebuild=True,
+  hw_tests=[AFDORecordTest()],
 )
 
 # A test-ap image is just a test image with a special profile enabled.
@@ -2234,7 +2237,7 @@ _release.add_config('swanky-release',
   useflags=_release['useflags'] + ['highdpi'],
 )
 
-# Add specific release configs for these sandybrige/ivybridge boards to
+# Add specific release configs for these sandybridge/ivybridge boards to
 # enable AFDO. We should remove these once AFDO is enabled everywhere.
 # parrot is added in parrot-release-group above.
 _release.add_config('stumpy-release',
