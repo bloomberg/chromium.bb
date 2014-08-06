@@ -31,6 +31,7 @@ void MockMediaStreamVideoSink::DeliverVideoFrame(
     const scoped_refptr<media::VideoFrame>& frame,
     const media::VideoCaptureFormat& format,
     const base::TimeTicks& estimated_capture_time) {
+  last_frame_ = frame;
   ++number_of_frames_;
   format_ = frame->format();
   frame_size_ = frame->natural_size();

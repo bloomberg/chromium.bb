@@ -81,12 +81,6 @@ void RTCVideoRenderer::OnReadyStateChanged(
     RenderSignalingFrame();
 }
 
-void RTCVideoRenderer::OnEnabledChanged(bool enabled) {
-  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
-  if (!enabled)
-    RenderSignalingFrame();
-}
-
 void RTCVideoRenderer::OnVideoFrame(
     const scoped_refptr<media::VideoFrame>& frame,
     const media::VideoCaptureFormat& format,
@@ -108,7 +102,7 @@ void RTCVideoRenderer::OnVideoFrame(
 
 void RTCVideoRenderer::RenderSignalingFrame() {
   // This is necessary to make sure audio can play if the video tag src is
-  // a MediaStream video track that has been rejected, ended or disabled.
+  // a MediaStream video track that has been rejected or ended.
   // It also ensure that the renderer don't hold a reference to a real video
   // frame if no more frames are provided. This is since there might be a
   // finite number of available buffers. E.g, video that

@@ -19,7 +19,9 @@ void ResetCallback(scoped_ptr<VideoCaptureDeliverFrameCB> callback) {
 // MediaStreamVideoTrack::FrameDeliverer is a helper class used for registering
 // VideoCaptureDeliverFrameCB on the main render thread to receive video frames
 // on the IO-thread.
-// Frames are only delivered to the sinks if the track is enabled.
+// Frames are only delivered to the sinks if the track is enabled. If the track
+// is disabled, a black frame is instead forwarded to the sinks at the same
+// frame rate.
 class MediaStreamVideoTrack::FrameDeliverer
     : public base::RefCountedThreadSafe<FrameDeliverer> {
  public:
@@ -53,6 +55,10 @@ class MediaStreamVideoTrack::FrameDeliverer
       void* id, const scoped_refptr<base::MessageLoopProxy>& message_loop);
 
   void SetEnabledOnIO(bool enabled);
+  // Returns |black_frame_| where the size and time stamp is set to the same as
+  // as in |reference_frame|.
+  const scoped_refptr<media::VideoFrame>& GetBlackFrame(
+      const scoped_refptr<media::VideoFrame>& reference_frame);
 
   // Used to DCHECK that AddCallback and RemoveCallback are called on the main
   // render thread.
@@ -60,6 +66,7 @@ class MediaStreamVideoTrack::FrameDeliverer
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
 
   bool enabled_;
+  scoped_refptr<media::VideoFrame> black_frame_;
 
   typedef std::pair<void*, VideoCaptureDeliverFrameCB> VideoIdCallbackPair;
   std::vector<VideoIdCallbackPair> callbacks_;
@@ -131,6 +138,8 @@ void MediaStreamVideoTrack::FrameDeliverer::SetEnabled(bool enabled) {
 void MediaStreamVideoTrack::FrameDeliverer::SetEnabledOnIO(bool enabled) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   enabled_ = enabled;
+  if (enabled_)
+    black_frame_ = NULL;
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO(
@@ -138,12 +147,26 @@ void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO(
     const media::VideoCaptureFormat& format,
     const base::TimeTicks& estimated_capture_time) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
-  if (!enabled_)
-    return;
+  const scoped_refptr<media::VideoFrame>& video_frame =
+      enabled_ ? frame : GetBlackFrame(frame);
+
   for (std::vector<VideoIdCallbackPair>::iterator it = callbacks_.begin();
        it != callbacks_.end(); ++it) {
-    it->second.Run(frame, format, estimated_capture_time);
+    it->second.Run(video_frame, format, estimated_capture_time);
   }
+}
+
+const scoped_refptr<media::VideoFrame>&
+MediaStreamVideoTrack::FrameDeliverer::GetBlackFrame(
+    const scoped_refptr<media::VideoFrame>& reference_frame) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  if (!black_frame_ ||
+      black_frame_->natural_size() != reference_frame->natural_size())
+    black_frame_ =
+        media::VideoFrame::CreateBlackFrame(reference_frame->natural_size());
+
+  black_frame_->set_timestamp(reference_frame->timestamp());
+  return black_frame_;
 }
 
 // static

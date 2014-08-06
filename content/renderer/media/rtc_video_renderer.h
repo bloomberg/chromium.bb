@@ -61,7 +61,6 @@ class CONTENT_EXPORT RTCVideoRenderer
   // VideoTrackSink implementation. Called on the main thread.
   virtual void OnReadyStateChanged(
       blink::WebMediaStreamSource::ReadyState state) OVERRIDE;
-  virtual void OnEnabledChanged(bool enabled) OVERRIDE;
 
   void RenderSignalingFrame();
 
