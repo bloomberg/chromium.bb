@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//third_party/protobuf/proto_library.gni")
+
 source_set("pairing") {
   sources = [
     "pairing/fake_controller_pairing_controller.cc",
@@ -18,4 +20,12 @@ source_set("pairing") {
     "//base",
     "//device/bluetooth",
   ]
+}
+
+proto_library("proto") {
+  sources = [
+    "pairing_api.proto",
+  ]
+  'proto_in_dir' = 'pairing'
+  'proto_out_dir' = 'components/pairing'
 }
