@@ -1,4 +1,8 @@
 # Test Expectations
 # These two tests have the same problem where the image that is being rendered is incomplete when printing to PDF.
 crbug.com/399756 [ Win Release ] source_html/colors/color-gradient.html [ ImageOnlyFailure ]
-crbug.com/399756 [ Win Release ] source_html/shapes/lines.html [ ImageOnlyFailure ]
+# The previous one is flaky due to seemingly random output.
+# However, this one passes because it consistently produces output that we don't want it to.
+crbug.com/399756 [ Win Release ] source_html/shapes/lines.html [ Pass Failure ]
+# This tests passes because its consistently wrong
+crbug.com/326834 source_html/css/repeating-item.html [ Pass Failure ]
