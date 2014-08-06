@@ -1088,7 +1088,7 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
     if (isRenderedAsNonInlineTableImageOrHR(startNode))
         return VisiblePosition(positionBeforeNode(startNode));
 
-    Node* startBlock = enclosingBlock(startNode);
+    Element* startBlock = enclosingBlock(startNode);
 
     Node* node = startNode;
     ContainerNode* highestRoot = highestEditableRoot(p);
@@ -1165,8 +1165,8 @@ VisiblePosition endOfParagraph(const VisiblePosition &c, EditingBoundaryCrossing
     if (isRenderedAsNonInlineTableImageOrHR(startNode))
         return VisiblePosition(positionAfterNode(startNode));
 
-    Node* startBlock = enclosingBlock(startNode);
-    Node* stayInsideBlock = startBlock;
+    Element* startBlock = enclosingBlock(startNode);
+    Element* stayInsideBlock = startBlock;
 
     Node* node = startNode;
     ContainerNode* highestRoot = highestEditableRoot(p);
@@ -1286,14 +1286,14 @@ VisiblePosition nextParagraphPosition(const VisiblePosition& p, int x)
 VisiblePosition startOfBlock(const VisiblePosition& visiblePosition, EditingBoundaryCrossingRule rule)
 {
     Position position = visiblePosition.deepEquivalent();
-    Node* startBlock = position.containerNode() ? enclosingBlock(position.containerNode(), rule) : 0;
+    Element* startBlock = position.containerNode() ? enclosingBlock(position.containerNode(), rule) : 0;
     return startBlock ? VisiblePosition(firstPositionInNode(startBlock)) : VisiblePosition();
 }
 
 VisiblePosition endOfBlock(const VisiblePosition& visiblePosition, EditingBoundaryCrossingRule rule)
 {
     Position position = visiblePosition.deepEquivalent();
-    Node* endBlock = position.containerNode() ? enclosingBlock(position.containerNode(), rule) : 0;
+    Element* endBlock = position.containerNode() ? enclosingBlock(position.containerNode(), rule) : 0;
     return endBlock ? VisiblePosition(lastPositionInNode(endBlock)) : VisiblePosition();
 }
 
