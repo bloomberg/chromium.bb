@@ -487,12 +487,8 @@ QuicStreamFactory::QuicStreamFactory(
   crypto_config_.AddCanonicalSuffix(".googlevideo.com");
   crypto_config_.SetProofVerifier(
       new ProofVerifierChromium(cert_verifier, transport_security_state));
-  // TODO(wtc): a temporary change to investigate the performance degradation
-  // caused by Channel ID lookup.
-#if 0
   crypto_config_.SetChannelIDSource(
       new ChannelIDSourceChromium(channel_id_service));
-#endif
   base::CPU cpu;
   if (cpu.has_aesni() && cpu.has_avx())
     crypto_config_.PreferAesGcm();

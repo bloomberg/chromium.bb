@@ -245,9 +245,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           CloseConnectionWithDetails(error, error_details);
           return;
         }
-        // TODO(wtc): a temporary change to measure the performance penalty of
-        // pooling connections less often if channel ID is used.
-        // channel_id_sent_ = (channel_id_key_.get() != NULL);
+        channel_id_sent_ = (channel_id_key_.get() != NULL);
         if (cached->proof_verify_details()) {
           client_session()->OnProofVerifyDetailsAvailable(
               *cached->proof_verify_details());
