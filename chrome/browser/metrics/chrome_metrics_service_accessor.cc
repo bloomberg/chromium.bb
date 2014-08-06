@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_service.h"
+#include "components/variations/metrics_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -49,9 +50,18 @@ bool ChromeMetricsServiceAccessor::IsCrashReportingEnabled() {
 
 // static
 bool ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-    const std::string& trial, const std::string& group) {
+    const std::string& trial_name,
+    const std::string& group_name) {
+  return RegisterSyntheticFieldTrialWithNameHash(metrics::HashName(trial_name),
+                                                 group_name);
+}
+
+// static
+bool ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrialWithNameHash(
+    uint32_t trial_name_hash,
+    const std::string& group_name) {
   return MetricsServiceAccessor::RegisterSyntheticFieldTrial(
       g_browser_process->metrics_service(),
-      trial,
-      group);
+      trial_name_hash,
+      metrics::HashName(group_name));
 }

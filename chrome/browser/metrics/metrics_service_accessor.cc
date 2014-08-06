@@ -7,7 +7,6 @@
 #include "chrome/browser/browser_process.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_service_observer.h"
-#include "components/variations/metrics_util.h"
 
 // static
 void MetricsServiceAccessor::AddMetricsServiceObserver(
@@ -27,13 +26,12 @@ void MetricsServiceAccessor::RemoveMetricsServiceObserver(
 // static
 bool MetricsServiceAccessor::RegisterSyntheticFieldTrial(
     MetricsService* metrics_service,
-    const std::string& trial,
-    const std::string& group) {
+    uint32_t trial_name_hash,
+    uint32_t group_name_hash) {
   if (!metrics_service)
     return false;
 
-  SyntheticTrialGroup trial_group(metrics::HashName(trial),
-                                  metrics::HashName(group));
+  SyntheticTrialGroup trial_group(trial_name_hash, group_name_hash);
   metrics_service->RegisterSyntheticFieldTrial(trial_group);
   return true;
 }

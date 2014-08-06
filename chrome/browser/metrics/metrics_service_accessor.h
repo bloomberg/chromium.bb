@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_METRICS_METRICS_SERVICE_ACCESSOR_H_
 #define CHROME_BROWSER_METRICS_METRICS_SERVICE_ACCESSOR_H_
 
+#include <stdint.h>
 #include <string>
 
 #include "base/macros.h"
@@ -26,16 +27,13 @@ class MetricsServiceAccessor {
   static void AddMetricsServiceObserver(MetricsServiceObserver* observer);
   static void RemoveMetricsServiceObserver(MetricsServiceObserver* observer);
 
-  // Registers a field trial name and group to be used to annotate a UMA report
-  // with a particular Chrome configuration state. A UMA report will be
-  // annotated with this trial group if and only if all events in the report
-  // were created after the trial is registered. Only one group name may be
-  // registered at a time for a given trial name. Only the last group name that
-  // is registered for a given trial name will be recorded. The values passed
-  // in must not correspond to any real field trial in the code.
+  // Registers the specified synthetic field trial (identified by a hash of the
+  // trial name and group name) with |metrics_service|, if the service is not
+  // NULL, returning true on success.
+  // See the comment on MetricsService::RegisterSyntheticFieldTrial for details.
   static bool RegisterSyntheticFieldTrial(MetricsService* metrics_service,
-                                          const std::string& trial,
-                                          const std::string& group);
+                                          uint32_t trial_name_hash,
+                                          uint32_t group_name_hash);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MetricsServiceAccessor);
