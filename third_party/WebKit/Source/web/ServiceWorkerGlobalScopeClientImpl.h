@@ -48,6 +48,7 @@ public:
 
     virtual void getClients(WebServiceWorkerClientsCallbacks*);
     virtual WebURL scope() const OVERRIDE;
+    virtual WebServiceWorkerCacheStorage* cacheStorage() const OVERRIDE;
 
     virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult) OVERRIDE;
     virtual void didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult) OVERRIDE;

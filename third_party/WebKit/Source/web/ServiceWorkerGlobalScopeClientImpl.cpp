@@ -61,6 +61,11 @@ WebURL ServiceWorkerGlobalScopeClientImpl::scope() const
     return m_client.scope();
 }
 
+WebServiceWorkerCacheStorage* ServiceWorkerGlobalScopeClientImpl::cacheStorage() const
+{
+    return m_client.cacheStorage();
+}
+
 void ServiceWorkerGlobalScopeClientImpl::didHandleActivateEvent(int eventID, WebServiceWorkerEventResult result)
 {
     m_client.didHandleActivateEvent(eventID, result);

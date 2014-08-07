@@ -41,6 +41,14 @@ public:
     virtual void onError(T*) { };
 };
 
+template<typename T>
+class WebCallbacks<void, T> {
+public:
+    virtual ~WebCallbacks() { };
+    virtual void onSuccess() { };
+    virtual void onError(T*) { };
+};
+
 } // namespace blink
 
 #endif

@@ -40,6 +40,7 @@
 namespace blink {
 
 class WebDataSource;
+class WebServiceWorkerCacheStorage;
 class WebServiceWorkerContextProxy;
 class WebServiceWorkerNetworkProvider;
 class WebServiceWorkerResponse;
@@ -56,6 +57,9 @@ class WebString;
 class WebServiceWorkerContextClient {
 public:
     virtual ~WebServiceWorkerContextClient() { }
+
+    // ServiceWorker specific method.
+    virtual WebServiceWorkerCacheStorage* cacheStorage() { return 0; }
 
     // ServiceWorker specific method. Called when script accesses the
     // the |scope| attribute of the ServiceWorkerGlobalScope. Immutable per spec.
@@ -132,4 +136,4 @@ public:
 
 } // namespace blink
 
-#endif // WebWorkerContextClient_h
+#endif // WebServiceWorkerContextClient_h

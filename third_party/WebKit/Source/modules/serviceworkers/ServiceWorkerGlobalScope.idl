@@ -37,8 +37,7 @@
 
   readonly attribute ServiceWorkerClients clients;
   [CallWith=ExecutionContext, Unforgeable] readonly attribute ScalarValueString scope;
-
-  // FIXME: Rename to "caches" once native Cache API implementation is available.
+  // FIXME: Rename this once it's ready for testing.
   [CallWith=ExecutionContext, Unforgeable, ImplementedAs=caches] readonly attribute CacheStorage nativeCaches;
 
   [CallWith=ScriptState] Promise fetch(DOMString request, optional Dictionary requestInitDict);

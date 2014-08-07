@@ -8,11 +8,12 @@
     Exposed=ServiceWorker,
     RuntimeEnabled=ServiceWorker,
 ] interface CacheStorage {
-  [CallWith=ScriptState, ImplementedAs=createFunction] Promise create(ScalarValueString key);
-  [CallWith=ScriptState] Promise rename(ScalarValueString oldKey, ScalarValueString newKey);
-  [CallWith=ScriptState] Promise get(ScalarValueString key);
-  [CallWith=ScriptState, ImplementedAs=deleteFunction] Promise delete(ScalarValueString key);
+  [CallWith=ScriptState] Promise get(ScalarValueString cacheName);
+  [CallWith=ScriptState] Promise has(ScalarValueString cacheName);
+  [CallWith=ScriptState, ImplementedAs=createFunction] Promise create(ScalarValueString cacheName);
+  [CallWith=ScriptState, ImplementedAs=deleteFunction] Promise delete(ScalarValueString cacheName);
   [CallWith=ScriptState] Promise keys();
-  // FIXME: There are a number of other missing methods here and an active discussion ongoing on https://github.com/slightlyoff/ServiceWorker/issue/314
-  // and https://github.com/slightlyoff/ServiceWorker/issues/315 about which should stay in. Once that discussion resolves, add the rest of the methods.
+  // FIXME: From https://github.com/slightlyoff/ServiceWorker/issues/372 and the updated
+  // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#cache-storage ,
+  // we have yet to implement match().
 };

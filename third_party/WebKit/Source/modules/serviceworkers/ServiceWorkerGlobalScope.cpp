@@ -89,9 +89,9 @@ String ServiceWorkerGlobalScope::scope(ExecutionContext* context)
 
 PassRefPtrWillBeRawPtr<CacheStorage> ServiceWorkerGlobalScope::caches(ExecutionContext* context)
 {
-    if (!m_cacheStorage)
-        m_cacheStorage = CacheStorage::create();
-    return m_cacheStorage;
+    if (!m_caches)
+        m_caches = CacheStorage::create(ServiceWorkerGlobalScopeClient::from(context)->cacheStorage());
+    return m_caches;
 }
 
 ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, Request* request)
@@ -173,7 +173,7 @@ const AtomicString& ServiceWorkerGlobalScope::interfaceName() const
 void ServiceWorkerGlobalScope::trace(Visitor* visitor)
 {
     visitor->trace(m_clients);
-    visitor->trace(m_cacheStorage);
+    visitor->trace(m_caches);
     WorkerGlobalScope::trace(visitor);
 }
 

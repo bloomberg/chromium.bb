@@ -84,7 +84,7 @@ private:
 
     RefPtrWillBeMember<ServiceWorkerClients> m_clients;
     OwnPtr<FetchManager> m_fetchManager;
-    RefPtrWillBeMember<CacheStorage> m_cacheStorage;
+    RefPtrWillBeMember<CacheStorage> m_caches;
 };
 
 } // namespace blink

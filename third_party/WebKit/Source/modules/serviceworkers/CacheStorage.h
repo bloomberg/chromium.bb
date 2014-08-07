@@ -14,23 +14,26 @@
 
 namespace blink {
 
-// See https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#cache-storage
+class WebServiceWorkerCacheStorage;
 
+// See https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#cache-storage
 class CacheStorage FINAL : public RefCountedWillBeGarbageCollected<CacheStorage>, public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(CacheStorage);
 public:
-    static PassRefPtrWillBeRawPtr<CacheStorage> create();
+    static PassRefPtrWillBeRawPtr<CacheStorage> create(blink::WebServiceWorkerCacheStorage*);
 
-    ScriptPromise createFunction(ScriptState*, const String& key);
-    ScriptPromise rename(ScriptState*, const String& oldKey, const String& newKey);
-    ScriptPromise get(ScriptState*, const String& key);
-    ScriptPromise deleteFunction(ScriptState*, const String& key);
+    ScriptPromise get(ScriptState*, const String& cacheName);
+    ScriptPromise has(ScriptState*, const String& cacheName);
+    ScriptPromise createFunction(ScriptState*, const String& cacheName);
+    ScriptPromise deleteFunction(ScriptState*, const String& cacheName);
     ScriptPromise keys(ScriptState*);
 
     void trace(Visitor*) { }
 
 private:
-    CacheStorage();
+    explicit CacheStorage(blink::WebServiceWorkerCacheStorage*);
+
+    blink::WebServiceWorkerCacheStorage* m_webCacheStorage;
 };
 
 } // namespace blink
