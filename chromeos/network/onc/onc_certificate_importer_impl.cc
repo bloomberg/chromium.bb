@@ -278,9 +278,10 @@ bool CertificateImporterImpl::ParseServerOrCaCertificate(
       success = target_nssdb_->ImportCACerts(cert_list, trust, &failures);
 
     if (!failures.empty()) {
+      std::string error_string = net::ErrorToString(failures[0].net_error);
       ONC_LOG_ERROR(
           base::StringPrintf("Error ( %s ) importing %s certificate",
-                             net::ErrorToString(failures[0].net_error),
+                             error_string.c_str(),
                              cert_type.c_str()));
       return false;
     }
@@ -329,9 +330,10 @@ bool CertificateImporterImpl::ParseClientCertificate(
   int import_result = target_nssdb_->ImportFromPKCS12(
       module.get(), decoded_pkcs12, base::string16(), false, &imported_certs);
   if (import_result != net::OK) {
+    std::string error_string = net::ErrorToString(import_result);
     ONC_LOG_ERROR(
         base::StringPrintf("Unable to import client certificate (error %s)",
-                           net::ErrorToString(import_result)));
+                           error_string.c_str()));
     return false;
   }
 

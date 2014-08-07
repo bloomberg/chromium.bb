@@ -5,6 +5,7 @@
 #ifndef NET_BASE_NET_ERRORS_H__
 #define NET_BASE_NET_ERRORS_H__
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -30,17 +31,13 @@ enum Error {
 };
 
 // Returns a textual representation of the error code for logging purposes.
-NET_EXPORT const char* ErrorToString(int error);
+NET_EXPORT std::string ErrorToString(int error);
+
+// Same as above, but leaves off the leading "net::".
+NET_EXPORT std::string ErrorToShortString(int error);
 
 // Returns true if |error| is a certificate error code.
-inline bool IsCertificateError(int error) {
-  // Certificate errors are negative integers from net::ERR_CERT_BEGIN
-  // (inclusive) to net::ERR_CERT_END (exclusive) in *decreasing* order.
-  // ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN is currently an exception to this
-  // rule.
-  return (error <= ERR_CERT_BEGIN && error > ERR_CERT_END) ||
-         (error == ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN);
-}
+NET_EXPORT bool IsCertificateError(int error);
 
 // Map system error code to Error.
 NET_EXPORT Error MapSystemError(int os_error);

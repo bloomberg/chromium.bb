@@ -579,11 +579,7 @@ void LocalizedError::GetStrings(int error_code,
   base::string16 error_string;
   if (error_domain == net::kErrorDomain) {
     // Non-internationalized error string, for debugging Chrome itself.
-    std::string ascii_error_string = net::ErrorToString(error_code);
-    // Remove the leading "net::" from the returned string.
-    DCHECK(StartsWithASCII(ascii_error_string, "net::", true));
-    ascii_error_string.erase(0, 5);
-    error_string = base::ASCIIToUTF16(ascii_error_string);
+    error_string = base::ASCIIToUTF16(net::ErrorToShortString(error_code));
   } else if (error_domain == chrome_common_net::kDnsProbeErrorDomain) {
     std::string ascii_error_string =
         chrome_common_net::DnsProbeStatusToString(error_code);

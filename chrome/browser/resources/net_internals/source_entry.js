@@ -45,7 +45,7 @@ var SourceEntry = (function() {
         if (netErrorCode) {
           // Ignore error code caused by not finding an entry in the cache.
           if (logEntry.type != EventType.HTTP_CACHE_OPEN_ENTRY ||
-              netErrorCode != NetError.FAILED) {
+              netErrorCode != NetError.ERR_FAILED) {
             this.isError_ = true;
           }
         }

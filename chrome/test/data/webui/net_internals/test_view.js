@@ -173,9 +173,9 @@ TEST_F('NetInternalsTest', 'netInternalsTestViewPassTwice', function() {
  */
 TEST_F('NetInternalsTest', 'netInternalsTestViewFailTwice', function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
-  taskQueue.addTask(new RunTestSuiteTask(NetError.UNSAFE_PORT,
+  taskQueue.addTask(new RunTestSuiteTask(NetError.ERR_UNSAFE_PORT,
                                          'http://127.0.0.1:7/'));
-  taskQueue.addTask(new RunTestSuiteTask(NetError.UNSAFE_PORT,
+  taskQueue.addTask(new RunTestSuiteTask(NetError.ERR_UNSAFE_PORT,
                                          'http://127.0.0.1:7/'));
   taskQueue.run();
 });

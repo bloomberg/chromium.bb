@@ -252,10 +252,11 @@ static jstring GetErrorString(JNIEnv* env,
   URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
   int error_code = request->error_code();
   char buffer[200];
+  std::string error_string = net::ErrorToString(error_code);
   snprintf(buffer,
            sizeof(buffer),
            "System error: %s(%d)",
-           net::ErrorToString(error_code),
+           error_string.c_str(),
            error_code);
   return ConvertUTF8ToJavaString(env, buffer).Release();
 }

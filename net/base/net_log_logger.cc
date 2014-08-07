@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "net/base/address_family.h"
 #include "net/base/load_states.h"
+#include "net/base/net_errors.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
 
@@ -120,7 +121,7 @@ base::DictionaryValue* NetLogLogger::GetConstants() {
     base::DictionaryValue* dict = new base::DictionaryValue();
 
 #define NET_ERROR(label, value) \
-    dict->SetInteger(# label, static_cast<int>(value));
+    dict->SetInteger(ErrorToShortString(value), static_cast<int>(value));
 #include "net/base/net_error_list.h"
 #undef NET_ERROR
 

@@ -215,7 +215,7 @@ TEST_F('NetInternalsTest', 'netInternalsDnsViewSuccess', function() {
   NetInternalsTest.switchToView('dns');
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(new AddCacheEntryTask(
-                        'somewhere.com', '1.2.3.4', 0, false));
+      'somewhere.com', '1.2.3.4', 0, false));
   taskQueue.addTask(new ClearCacheTask());
   taskQueue.addTask(new WaitForEntryDestructionTask('somewhere.com'));
   taskQueue.run(true);
@@ -228,7 +228,7 @@ TEST_F('NetInternalsTest', 'netInternalsDnsViewFail', function() {
   NetInternalsTest.switchToView('dns');
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(new AddCacheEntryTask(
-                        'nowhere.com', '', NetError.NAME_NOT_RESOLVED, false));
+      'nowhere.com', '', NetError.ERR_NAME_NOT_RESOLVED, false));
   taskQueue.addTask(new ClearCacheTask());
   taskQueue.addTask(new WaitForEntryDestructionTask('nowhere.com'));
   taskQueue.run(true);
@@ -241,7 +241,7 @@ TEST_F('NetInternalsTest', 'netInternalsDnsViewExpired', function() {
   NetInternalsTest.switchToView('dns');
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(new AddCacheEntryTask(
-                        'somewhere.com', '1.2.3.4', 0, true));
+      'somewhere.com', '1.2.3.4', 0, true));
   taskQueue.addTask(new ClearCacheTask());
   taskQueue.addTask(new WaitForEntryDestructionTask('somewhere.com'));
   taskQueue.run(true);
@@ -255,9 +255,9 @@ TEST_F('NetInternalsTest', 'netInternalsDnsViewAddTwoTwice', function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   for (var i = 0; i < 2; ++i) {
     taskQueue.addTask(new AddCacheEntryTask(
-                          'somewhere.com', '1.2.3.4', 0, false));
+        'somewhere.com', '1.2.3.4', 0, false));
     taskQueue.addTask(new AddCacheEntryTask(
-                          'nowhere.com', '', NetError.NAME_NOT_RESOLVED, true));
+        'nowhere.com', '', NetError.ERR_NAME_NOT_RESOLVED, true));
     taskQueue.addTask(new ClearCacheTask());
     taskQueue.addTask(new WaitForEntryDestructionTask('somewhere.com'));
     taskQueue.addTask(new WaitForEntryDestructionTask('nowhere.com'));
@@ -275,7 +275,7 @@ TEST_F('NetInternalsTest', 'netInternalsDnsViewIncognitoClears', function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(new NetInternalsTest.CreateIncognitoBrowserTask());
   taskQueue.addTask(new AddCacheEntryTask(
-                        'somewhere.com', '1.2.3.4', 0, true));
+      'somewhere.com', '1.2.3.4', 0, true));
   taskQueue.addTask(NetInternalsTest.getCloseIncognitoBrowserTask());
   taskQueue.addTask(new WaitForEntryDestructionTask('somewhere.com'));
   taskQueue.run(true);

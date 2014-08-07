@@ -762,11 +762,8 @@ void WebViewGuest::DidFailProvisionalLoad(
     const GURL& validated_url,
     int error_code,
     const base::string16& error_description) {
-  // Translate the |error_code| into an error string.
-  std::string error_type(net::ErrorToString(error_code));
-  DCHECK(StartsWithASCII(error_type, "net::", true));
-  error_type.erase(0, 5);
-  LoadAbort(!render_frame_host->GetParent(), validated_url, error_type);
+  LoadAbort(!render_frame_host->GetParent(), validated_url,
+            net::ErrorToShortString(error_code));
 }
 
 void WebViewGuest::DidStartProvisionalLoadForFrame(
@@ -969,10 +966,8 @@ void WebViewGuest::NavigateGuest(const std::string& src) {
        !url.SchemeIs(url::kAboutScheme)) ||
       url.SchemeIs(url::kJavaScriptScheme);
   if (scheme_is_blocked || !url.is_valid()) {
-    std::string error_type(net::ErrorToString(net::ERR_ABORTED));
-    DCHECK(StartsWithASCII(error_type, "net::", true));
-    error_type.erase(0, 5);
-    LoadAbort(true /* is_top_level */, url, error_type);
+    LoadAbort(true /* is_top_level */, url,
+              net::ErrorToShortString(net::ERR_ABORTED));
     return;
   }
 

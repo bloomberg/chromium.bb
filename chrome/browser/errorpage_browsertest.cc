@@ -87,13 +87,7 @@ void ToggleHelpBox(Browser* browser) {
 // |error_code| on the current page.
 bool WARN_UNUSED_RESULT IsDisplayingNetError(Browser* browser,
                                              net::Error error_code) {
-  // Get the error as a string, and remove the leading "net::", which is not
-  // included on error pages.
-  std::string error_string(net::ErrorToString(error_code));
-  DCHECK(StartsWithASCII(error_string, "net::", true));
-  error_string.erase(0, 5);
-
-  return IsDisplayingText(browser, error_string);
+  return IsDisplayingText(browser, net::ErrorToShortString(error_code));
 }
 
 // Checks that the local error page is being displayed, without remotely

@@ -487,7 +487,8 @@ void GDig::OnResolveComplete(unsigned entry_index,
          static_cast<int>(resolve_time.InMilliseconds()),
          replay_log_[entry_index].domain_name.c_str(), val);
   if (val != OK) {
-    printf("%s", ErrorToString(val));
+    std::string error_string = ErrorToString(val);
+    printf("%s", error_string.c_str());
   } else {
     for (size_t i = 0; i < address_list->size(); ++i) {
       if (i != 0)

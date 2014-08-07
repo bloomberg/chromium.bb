@@ -290,8 +290,9 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
 #endif
 
   if (result != OK) {
+    std::string error_string = ErrorToString(result);
     error_details_ = StringPrintf("Failed to verify certificate chain: %s",
-                                  ErrorToString(result));
+                                  error_string.c_str());
     DLOG(WARNING) << error_details_;
   }
 
@@ -301,8 +302,8 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
 }
 
 bool ProofVerifierChromium::Job::VerifySignature(const string& signed_data,
-                                            const string& signature,
-                                            const string& cert) {
+                                                 const string& signature,
+                                                 const string& cert) {
   StringPiece spki;
   if (!asn1::ExtractSPKIFromDERCert(cert, &spki)) {
     DLOG(WARNING) << "ExtractSPKIFromDERCert failed";

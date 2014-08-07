@@ -221,7 +221,7 @@ void BluetoothSocketWin::DoConnect(
       scoped_socket->AdoptConnectedSocket(socket_fd, net::IPEndPoint());
   if (net_result != net::OK) {
     error_callback.Run("Error connecting to socket: " +
-                       std::string(net::ErrorToString(net_result)));
+                       net::ErrorToString(net_result));
     closesocket(socket_fd);
     return;
   }

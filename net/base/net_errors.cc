@@ -24,19 +24,36 @@ namespace net {
 
 const char kErrorDomain[] = "net";
 
-const char* ErrorToString(int error) {
-  if (error == 0)
-    return "net::OK";
+std::string ErrorToString(int error) {
+  return "net::" + ErrorToShortString(error);
+}
 
+std::string ErrorToShortString(int error) {
+  if (error == 0)
+    return "OK";
+
+  const char* error_string;
   switch (error) {
 #define NET_ERROR(label, value) \
   case ERR_ ## label: \
-    return "net::" STRINGIZE_NO_EXPANSION(ERR_ ## label);
+    error_string = # label; \
+    break;
 #include "net/base/net_error_list.h"
 #undef NET_ERROR
   default:
-    return "net::<unknown>";
+    NOTREACHED();
+    error_string = "<unknown>";
   }
+  return std::string("ERR_") + error_string;
+}
+
+bool IsCertificateError(int error) {
+  // Certificate errors are negative integers from net::ERR_CERT_BEGIN
+  // (inclusive) to net::ERR_CERT_END (exclusive) in *decreasing* order.
+  // ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN is currently an exception to this
+  // rule.
+  return (error <= ERR_CERT_BEGIN && error > ERR_CERT_END) ||
+         (error == ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN);
 }
 
 std::vector<int> GetAllErrorCodesForUma() {

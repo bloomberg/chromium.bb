@@ -4,6 +4,7 @@
 
 #include "content/child/socket_stream_dispatcher.h"
 
+#include <string>
 #include <vector>
 
 #include "base/bind.h"
@@ -46,7 +47,7 @@ class IPCWebSocketStreamHandleBridge : public WebSocketStreamHandleBridge {
   void OnSentData(int amount_sent);
   void OnReceivedData(const std::vector<char>& data);
   void OnClosed();
-  void OnFailed(int error_code, const char* error_msg);
+  void OnFailed(int error_code, const std::string& error_msg);
 
  private:
   virtual ~IPCWebSocketStreamHandleBridge();
@@ -163,7 +164,7 @@ void IPCWebSocketStreamHandleBridge::OnClosed() {
 }
 
 void IPCWebSocketStreamHandleBridge::OnFailed(int error_code,
-                                              const char* error_msg) {
+                                              const std::string& error_msg) {
   DVLOG(1) << "Bridge #" << socket_id_ << " OnFailed (error_code=" << error_code
            << ")";
   if (delegate_)

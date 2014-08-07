@@ -348,10 +348,7 @@ function areValidConstants(receivedConstants) {
  * @return {string} The name of the given error.
  */
 function netErrorToString(netError) {
-  var str = getKeyWithValue(NetError, netError);
-  if (str == '?')
-    return str;
-  return 'ERR_' + str;
+  return getKeyWithValue(NetError, netError);
 }
 
 /**
