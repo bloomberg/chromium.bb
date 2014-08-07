@@ -1157,7 +1157,6 @@ Bug(gardener) [ Release SnowLeopard ] inspector/elements/styles/multiple-imports
 Bug(gardener) [ Release Mavericks ] inspector/elements/styles/multiple-imports-edit-crash.html [ Failure Pass ]
 Bug(gardener) [ Release SnowLeopard ] inspector/elements/styles/styles-should-not-force-sync-style-recalc.html [ Failure Pass ]
 Bug(gardener) [ Release MountainLion ] inspector/elements/styles/styles-should-not-force-sync-style-recalc.html [ Failure Pass ]
-Bug(gardener) [ Release XP ] inspector/elements/styles/styles-should-not-force-sync-style-recalc.html [ Failure Pass ]
 Bug(gardener) [ Release MountainLion ] inspector/elements/styles/undo-add-property.html [ Failure Pass ]
 Bug(gardener) [ Release Linux ] inspector/elements/undo-set-outer-html-2.html [ Pass Timeout ]
 webkit.org/b/90488 [ Debug Linux ] inspector/extensions/extensions-audits-content-script.html [ Crash Pass ]
