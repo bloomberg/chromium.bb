@@ -25,7 +25,7 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
 
     # Fails on all platforms
-    self.Fail('conformance/glsl/misc/shaders-with-mis-matching-uniforms.html',
+    self.Fail('conformance/glsl/misc/shaders-with-uniform-structs.html',
         bug=351396)
 
     # Flaky on Win
@@ -35,6 +35,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # Win failures
     self.Fail('conformance/glsl/misc/struct-equals.html',
         ['win'], bug=391957)
+    self.Fail('conformance/rendering/negative-one-index.html',
+        ['win'], bug=396058)
 
     # Win7 / Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
@@ -64,7 +66,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     self.Skip('conformance/ogles/GL/control_flow/control_flow_009_to_010.html',
         ['mac', ('intel', 0x116)], bug=322795)
     # Radar 13499677
-    self.Fail('conformance/glsl/functions/glsl-function-smoothstep-gentype.html',
+    self.Fail('conformance/glsl/functions/' +
+        'glsl-function-smoothstep-gentype.html',
         ['mac', ('intel', 0x116)], bug=225642)
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
         ['mac', ('intel', 0x116)], bug=369349)
@@ -82,7 +85,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
 
     # Mac 10.8 / ATI failures
     self.Fail(
-        'conformance/rendering/point-with-gl-pointcoord-in-fragment-shader.html',
+        'conformance/rendering/' +
+        'point-with-gl-pointcoord-in-fragment-shader.html',
         ['mountainlion', 'amd'])
 
     # Mac 10.7 / Intel failures
@@ -141,6 +145,11 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['linux', 'nvidia'], bug=391960)
     self.Fail('conformance/glsl/constructors/glsl-construct-vec4.html',
         ['linux', 'nvidia'], bug=391960)
+    self.Fail(
+        'conformance/glsl/constructors/' +
+        'glsl-construct-vec-mat-corner-cases.html',
+        ['linux', 'nvidia'], bug=391960)
+
 
     # Android failures
     # The following test is very slow and therefore times out on Android bot.
@@ -156,11 +165,14 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # The following tests are disabled due to security issues.
     self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-video.html',
         ['android'], bug=334204)
-    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-video-rgb565.html',
+    self.Fail('conformance/textures/' +
+        'tex-image-and-sub-image-2d-with-video-rgb565.html',
         ['android'], bug=334204)
-    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-video-rgba4444.html',
+    self.Fail('conformance/textures/' +
+        'tex-image-and-sub-image-2d-with-video-rgba4444.html',
         ['android'], bug=334204)
-    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-video-rgba5551.html',
+    self.Fail('conformance/textures/' +
+        'tex-image-and-sub-image-2d-with-video-rgba5551.html',
         ['android'], bug=334204)
     self.Fail('conformance/textures/texture-npot-video.html',
         ['android'], bug=334204)
