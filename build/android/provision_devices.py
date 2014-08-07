@@ -21,6 +21,7 @@ import time
 from pylib import android_commands
 from pylib import constants
 from pylib import device_settings
+from pylib.device import device_blacklist
 from pylib.device import device_errors
 from pylib.device import device_utils
 
@@ -154,6 +155,46 @@ def WipeDevicesIfPossible(devices):
       device.WaitUntilFullyBooted(timeout=90)
 
 
+def ProvisionDevice(device_serial, is_perf, disable_location):
+  device = device_utils.DeviceUtils(device_serial)
+  device.old_interface.EnableAdbRoot()
+  _ConfigureLocalProperties(device, is_perf)
+  device_settings_map = device_settings.DETERMINISTIC_DEVICE_SETTINGS
+  if disable_location:
+    device_settings_map.update(device_settings.DISABLE_LOCATION_SETTING)
+  else:
+    device_settings_map.update(device_settings.ENABLE_LOCATION_SETTING)
+  device_settings.ConfigureContentSettingsDict(device, device_settings_map)
+  device_settings.SetLockScreenSettings(device)
+  if is_perf:
+    # TODO(tonyg): We eventually want network on. However, currently radios
+    # can cause perfbots to drain faster than they charge.
+    device_settings.ConfigureContentSettingsDict(
+      device, device_settings.NETWORK_DISABLED_SETTINGS)
+    # Some perf bots run benchmarks with USB charging disabled which leads
+    # to gradual draining of the battery. We must wait for a full charge
+    # before starting a run in order to keep the devices online.
+    try:
+      battery_info = device.old_interface.GetBatteryInfo()
+    except Exception as e:
+      battery_info = {}
+      logging.error('Unable to obtain battery info for %s, %s',
+                    device_serial, e)
+
+    while int(battery_info.get('level', 100)) < 95:
+      if not device.old_interface.IsDeviceCharging():
+        if device.old_interface.CanControlUsbCharging():
+          device.old_interface.EnableUsbCharging()
+        else:
+          logging.error('Device is not charging')
+          break
+      logging.info('Waiting for device to charge. Current level=%s',
+                     battery_info.get('level', 0))
+      time.sleep(60)
+      battery_info = device.old_interface.GetBatteryInfo()
+  device.RunShellCommand('date -u %f' % time.time(), as_root=True)
+
+
 def ProvisionDevices(options):
   is_perf = 'perf' in os.environ.get('BUILDBOT_BUILDERNAME', '').lower()
   # TODO(jbudorick): Parallelize provisioning of all attached devices after
@@ -167,55 +208,48 @@ def ProvisionDevices(options):
   if not options.skip_wipe:
     WipeDevicesIfPossible(devices)
 
+  bad_devices = []
   # Provision devices
   for device_serial in devices:
-    device = device_utils.DeviceUtils(device_serial)
-    device.old_interface.EnableAdbRoot()
-    _ConfigureLocalProperties(device, is_perf)
-    device_settings_map = device_settings.DETERMINISTIC_DEVICE_SETTINGS
-    if options.disable_location:
-      device_settings_map.update(device_settings.DISABLE_LOCATION_SETTING)
-    else:
-      device_settings_map.update(device_settings.ENABLE_LOCATION_SETTING)
-    device_settings.ConfigureContentSettingsDict(device, device_settings_map)
-    device_settings.SetLockScreenSettings(device)
-    if is_perf:
-      # TODO(tonyg): We eventually want network on. However, currently radios
-      # can cause perfbots to drain faster than they charge.
-      device_settings.ConfigureContentSettingsDict(
-          device, device_settings.NETWORK_DISABLED_SETTINGS)
-      # Some perf bots run benchmarks with USB charging disabled which leads
-      # to gradual draining of the battery. We must wait for a full charge
-      # before starting a run in order to keep the devices online.
-      try:
-        battery_info = device.old_interface.GetBatteryInfo()
-      except Exception as e:
-        battery_info = {}
-        logging.error('Unable to obtain battery info for %s, %s',
-                      device_serial, e)
+    try:
+      ProvisionDevice(device_serial, is_perf, options.disable_location)
+    except errors.WaitForResponseTimedOutError:
+      logging.info('Timed out waiting for device %s. Adding to blacklist.',
+                   device_serial)
+      bad_devices.append(device_serial)
+      # Device black list is reset by bb_device_status_check.py per build.
+      device_blacklist.ExtendBlacklist([device_serial])
+  devices = [device for device in devices if device not in bad_devices]
 
-      while int(battery_info.get('level', 100)) < 95:
-        if not device.old_interface.IsDeviceCharging():
-          if device.old_interface.CanControlUsbCharging():
-            device.old_interface.EnableUsbCharging()
-          else:
-            logging.error('Device is not charging')
-            break
-        logging.info('Waiting for device to charge. Current level=%s',
-                     battery_info.get('level', 0))
-        time.sleep(60)
-        battery_info = device.old_interface.GetBatteryInfo()
-    device.RunShellCommand('date -u %f' % time.time(), as_root=True)
+  # If there are no good devices
+  if not devices:
+    raise device_errors.NoDevicesError
+
   try:
     device_utils.DeviceUtils.parallel(devices).Reboot(True)
   except errors.DeviceUnresponsiveError:
     pass
+
+  bad_devices = []
   for device_serial in devices:
     device = device_utils.DeviceUtils(device_serial)
-    device.WaitUntilFullyBooted(timeout=90)
-    (_, props) = device.old_interface.GetShellCommandStatusAndOutput('getprop')
-    for prop in props:
-      print prop
+    try:
+      device.WaitUntilFullyBooted(timeout=90)
+      (_, prop) = device.old_interface.GetShellCommandStatusAndOutput('getprop')
+      for p in prop:
+        print p
+    except errors.WaitForResponseTimedOutError:
+      logging.info('Timed out waiting for device %s. Adding to blacklist.',
+                   device_serial)
+      bad_devices.append(device_serial)
+      # Device black list is reset by bb_device_status_check.py per build.
+      device_blacklist.ExtendBlacklist([device_serial])
+  devices = [device for device in devices if device not in bad_devices]
+
+  # If there are no good devices
+  if not devices:
+    raise device_errors.NoDevicesError
+
   if options.auto_reconnect:
     PushAndLaunchAdbReboot(devices, options.target)
 
