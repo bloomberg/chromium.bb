@@ -384,6 +384,11 @@ crbug.com/378610 [ Win7 ] svg/transforms/transformed-text-fill-gradient.html [ I
 crbug.com/378610 [ Win7 ] svg/custom/focus-ring-text.svg [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] svg/text/tspan-outline.html [ ImageOnlyFailure ]
 
+crbug.com/396225 fast/repaint/outline-continuations.html [ NeedsRebaseline ]
+crbug.com/396225 fast/repaint/focus-continuations.html [ NeedsRebaseline ]
+crbug.com/396225 fast/repaint/outline-change-continuations.html [ NeedsRebaseline ]
+crbug.com/396225 fast/repaint/focus-enable-continuations.html [ NeedsRebaseline ]
+
 # Text tests that needs investigation or test changes (mostly due to precision).
 crbug.com/378610 [ Win7 ] fast/forms/cursor-at-editable-content-boundary.html [ Failure ]
 crbug.com/378610 [ Win7 ] fast/replaced/table-percent-height-text-controls.html [ Failure ]
