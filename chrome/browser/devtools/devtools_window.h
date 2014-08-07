@@ -272,8 +272,6 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   virtual void ActivateWindow() OVERRIDE;
   virtual void CloseWindow() OVERRIDE;
   virtual void SetInspectedPageBounds(const gfx::Rect& rect) OVERRIDE;
-  virtual void SetContentsResizingStrategy(
-      const gfx::Insets& insets, const gfx::Size& min_size) OVERRIDE;
   virtual void InspectElementCompleted() OVERRIDE;
   virtual void MoveWindow(int x, int y) OVERRIDE;
   virtual void SetIsDocked(bool is_docked) OVERRIDE;

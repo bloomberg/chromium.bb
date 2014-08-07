@@ -47,8 +47,6 @@ class DevToolsUIBindings : public content::NotificationObserver,
     virtual void ActivateWindow() = 0;
     virtual void CloseWindow() = 0;
     virtual void SetInspectedPageBounds(const gfx::Rect& rect) = 0;
-    virtual void SetContentsResizingStrategy(
-        const gfx::Insets& insets, const gfx::Size& min_size) = 0;
     virtual void InspectElementCompleted() = 0;
     virtual void MoveWindow(int x, int y) = 0;
     virtual void SetIsDocked(bool is_docked) = 0;
@@ -94,8 +92,6 @@ class DevToolsUIBindings : public content::NotificationObserver,
   virtual void ActivateWindow() OVERRIDE;
   virtual void CloseWindow() OVERRIDE;
   virtual void SetInspectedPageBounds(const gfx::Rect& rect) OVERRIDE;
-  virtual void SetContentsResizingStrategy(
-      const gfx::Insets& insets, const gfx::Size& min_size) OVERRIDE;
   virtual void InspectElementCompleted() OVERRIDE;
   virtual void InspectedURLChanged(const std::string& url) OVERRIDE;
   virtual void MoveWindow(int x, int y) OVERRIDE;

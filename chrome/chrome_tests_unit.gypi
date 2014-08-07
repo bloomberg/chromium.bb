@@ -817,7 +817,6 @@
         'browser/custom_handlers/protocol_handler_registry_unittest.cc',
         'browser/diagnostics/diagnostics_model_unittest.cc',
         'browser/diagnostics/diagnostics_controller_unittest.cc',
-        'browser/devtools/devtools_contents_resizing_strategy_unittest.cc',
         'browser/devtools/devtools_network_controller_unittest.cc',
         'browser/download/all_download_item_notifier_unittest.cc',
         'browser/download/chrome_download_manager_delegate_unittest.cc',
@@ -2536,7 +2535,6 @@
             'browser/sync/sync_ui_util_unittest.cc',
 
             'browser/browser_commands_unittest.cc',
-            'browser/devtools/devtools_contents_resizing_strategy_unittest.cc',
             'browser/download/download_shelf_unittest.cc',
             'browser/extensions/extension_message_bubble_controller_unittest.cc',
             'browser/extensions/extension_test_message_listener_unittest.cc',

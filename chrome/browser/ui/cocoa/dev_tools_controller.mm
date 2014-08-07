@@ -43,13 +43,16 @@ using content::WebContents;
 - (void)setDevToolsView:(NSView*)devToolsView
            withStrategy:(const DevToolsContentsResizingStrategy&)strategy {
   strategy_.CopyFrom(strategy);
-
-  if (devToolsView == devToolsView_)
+  if (devToolsView == devToolsView_) {
+    if (contentsView_)
+      [contentsView_ setHidden:strategy.hide_inspected_contents()];
     return;
+  }
 
   if (devToolsView_) {
     DCHECK_EQ(2u, [[self subviews] count]);
     [devToolsView_ removeFromSuperview];
+    [contentsView_ setHidden:NO];
     contentsView_ = nil;
     devToolsView_ = nil;
   }
@@ -61,6 +64,8 @@ using content::WebContents;
     devToolsView_ = devToolsView;
     // Place DevTools under contents.
     [self addSubview:devToolsView positioned:NSWindowBelow relativeTo:nil];
+
+    [contentsView_ setHidden:strategy.hide_inspected_contents()];
   }
 }
 
@@ -89,8 +94,6 @@ using content::WebContents;
   gfx::Rect new_contents_bounds;
   ApplyDevToolsContentsResizingStrategy(
       strategy_, gfx::Size(NSSizeToCGSize([self bounds].size)),
-      [self flipNSRectToRect:[devToolsView_ bounds]],
-      [self flipNSRectToRect:[contentsView_ bounds]],
       &new_devtools_bounds, &new_contents_bounds);
   [devToolsView_ setFrame:[self flipRectToNSRect:new_devtools_bounds]];
   [contentsView_ setFrame:[self flipRectToNSRect:new_contents_bounds]];

@@ -21,36 +21,6 @@ bool GetValue(const base::ListValue& list, int pos, bool& value) {
   return list.GetBoolean(pos, &value);
 }
 
-bool GetValue(const base::ListValue& list, int pos, gfx::Insets& insets) {
-  const base::DictionaryValue* dict;
-  if (!list.GetDictionary(pos, &dict))
-    return false;
-  int top = 0;
-  int left = 0;
-  int bottom = 0;
-  int right = 0;
-  if (!dict->GetInteger("top", &top) ||
-      !dict->GetInteger("left", &left) ||
-      !dict->GetInteger("bottom", &bottom) ||
-      !dict->GetInteger("right", &right))
-    return false;
-  insets.Set(top, left, bottom, right);
-  return true;
-}
-
-bool GetValue(const base::ListValue& list, int pos, gfx::Size& size) {
-  const base::DictionaryValue* dict;
-  if (!list.GetDictionary(pos, &dict))
-    return false;
-  int width = 0;
-  int height = 0;
-  if (!dict->GetInteger("width", &width) ||
-      !dict->GetInteger("height", &height))
-    return false;
-  size.SetSize(width, height);
-  return true;
-}
-
 bool GetValue(const base::ListValue& list, int pos, gfx::Rect& rect) {
   const base::DictionaryValue* dict;
   if (!list.GetDictionary(pos, &dict))
@@ -258,8 +228,6 @@ DevToolsEmbedderMessageDispatcher*
   d->RegisterHandler("closeWindow", &Delegate::CloseWindow, delegate);
   d->RegisterHandler("setInspectedPageBounds",
                      &Delegate::SetInspectedPageBounds, delegate);
-  d->RegisterHandler("setContentsResizingStrategy",
-                     &Delegate::SetContentsResizingStrategy, delegate);
   d->RegisterHandler("inspectElementCompleted",
                      &Delegate::InspectElementCompleted, delegate);
   d->RegisterHandler("inspectedURLChanged",

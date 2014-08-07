@@ -1015,16 +1015,6 @@ void DevToolsWindow::SetInspectedPageBounds(const gfx::Rect& rect) {
   UpdateBrowserWindow();
 }
 
-void DevToolsWindow::SetContentsResizingStrategy(
-    const gfx::Insets& insets, const gfx::Size& min_size) {
-  DevToolsContentsResizingStrategy strategy(insets, min_size);
-  if (contents_resizing_strategy_.Equals(strategy))
-    return;
-
-  contents_resizing_strategy_.CopyFrom(strategy);
-  UpdateBrowserWindow();
-}
-
 void DevToolsWindow::InspectElementCompleted() {
   if (!inspect_element_start_time_.is_null()) {
     UMA_HISTOGRAM_TIMES("DevTools.InspectElement",

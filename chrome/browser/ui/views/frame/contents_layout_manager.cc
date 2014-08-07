@@ -45,15 +45,10 @@ void ContentsLayoutManager::Layout(views::View* contents_container) {
   int width = contents_container->width();
 
   gfx::Size container_size(width, height);
-  gfx::Rect old_devtools_bounds(devtools_view_->bounds());
-  gfx::Rect old_contents_bounds(contents_view_->bounds());
   gfx::Rect new_devtools_bounds;
   gfx::Rect new_contents_bounds;
 
-  old_devtools_bounds.Offset(0, -top);
-  old_contents_bounds.Offset(0, -top);
   ApplyDevToolsContentsResizingStrategy(strategy_, container_size,
-      old_devtools_bounds, old_contents_bounds,
       &new_devtools_bounds, &new_contents_bounds);
   new_devtools_bounds.Offset(0, top);
   new_contents_bounds.Offset(0, top);
