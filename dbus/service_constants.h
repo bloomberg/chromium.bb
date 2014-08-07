@@ -796,6 +796,7 @@ const char kServiceCompleteListProperty[] = "ServiceCompleteList";
 const char kShortDNSTimeoutTechnologiesProperty[] =
     "ShortDNSTimeoutTechnologies";
 const char kUninitializedTechnologiesProperty[] = "UninitializedTechnologies";
+const char kWakeOnLanEnabledProperty[] = "WakeOnLanEnabled";
 
 // Service property names.
 const char kActivateOverNonCellularNetworkProperty[] =
