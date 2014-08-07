@@ -128,7 +128,12 @@
     "extension_types": "all",
     // Everything except web pages and WebUI. WebUI is declared in a separate
     // rule to keep the "matches" property isolated.
-    "contexts": ["blessed_extension", "content_script", "unblessed_extension"]
+    "contexts": [
+      "blessed_extension",
+      "blessed_web_page",
+      "content_script",
+      "unblessed_extension"
+    ]
   }, {
     "internal": true,
     "channel": "stable",

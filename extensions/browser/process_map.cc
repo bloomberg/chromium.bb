@@ -4,7 +4,11 @@
 
 #include "extensions/browser/process_map.h"
 
+#include "content/public/browser/child_process_security_policy.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_map_factory.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/features/feature.h"
 
 namespace extensions {
 
@@ -117,6 +121,35 @@ std::set<std::string> ProcessMap::GetExtensionsInProcess(int process_id) const {
       result.insert(iter->extension_id);
   }
   return result;
+}
+
+Feature::Context ProcessMap::GuessContextType(const Extension* extension,
+                                              int process_id) const {
+  // WARNING: This logic must match Dispatcher::ClassifyJavaScriptContext, as
+  // much as possible.
+
+  if (content::ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
+          process_id)) {
+    return Feature::WEBUI_CONTEXT;
+  }
+
+  if (!extension) {
+    return Feature::WEB_PAGE_CONTEXT;
+  }
+
+  if (!Contains(extension->id(), process_id)) {
+    // This could equally be UNBLESSED_EXTENSION_CONTEXT, but we don't record
+    // which processes have extension frames in them.
+    // TODO(kalman): Investigate this.
+    return Feature::CONTENT_SCRIPT_CONTEXT;
+  }
+
+  if (extension->is_hosted_app() &&
+      extension->location() != Manifest::COMPONENT) {
+    return Feature::BLESSED_WEB_PAGE_CONTEXT;
+  }
+
+  return Feature::BLESSED_EXTENSION_CONTEXT;
 }
 
 }  // namespace extensions

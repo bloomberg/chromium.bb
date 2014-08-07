@@ -20,6 +20,7 @@
 #include "extensions/browser/extension_function_histogram_value.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/features/feature.h"
 #include "ipc/ipc_message.h"
 
 class ExtensionFunction;
@@ -246,6 +247,13 @@ class ExtensionFunction
   void set_source_tab_id(int source_tab_id) { source_tab_id_ = source_tab_id; }
   int source_tab_id() const { return source_tab_id_; }
 
+  void set_source_context_type(extensions::Feature::Context type) {
+    source_context_type_ = type;
+  }
+  extensions::Feature::Context source_context_type() const {
+    return source_context_type_;
+  }
+
  protected:
   friend struct ExtensionFunctionDeleteTraits;
 
@@ -371,6 +379,9 @@ class ExtensionFunction
 
   // The ID of the tab triggered this function call, or -1 if there is no tab.
   int source_tab_id_;
+
+  // The type of the JavaScript context where this call originated.
+  extensions::Feature::Context source_context_type_;
 
  private:
   void OnRespondingLater(ResponseValue response);

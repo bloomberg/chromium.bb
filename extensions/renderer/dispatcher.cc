@@ -1174,6 +1174,9 @@ Feature::Context Dispatcher::ClassifyJavaScriptContext(
     int extension_group,
     const GURL& url,
     const blink::WebSecurityOrigin& origin) {
+  // WARNING: This logic must match ProcessMap::GuessContextType, as much as
+  // possible.
+
   DCHECK_GE(extension_group, 0);
   if (extension_group == EXTENSION_GROUP_CONTENT_SCRIPTS) {
     return extension ?  // TODO(kalman): when does this happen?

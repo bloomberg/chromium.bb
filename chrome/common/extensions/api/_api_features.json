@@ -777,6 +777,9 @@
   },
   "webstorePrivate": {
     "dependencies": ["permission:webstorePrivate"],
+    // NOTE: even though this is only used by the webstore hosted app, which
+    // normally would mean blessed_web_page, component hosted apps are actually
+    // given the blessed_extension denomination. Confusing.
     "contexts": ["blessed_extension"]
   },
   "webViewInternal": [{

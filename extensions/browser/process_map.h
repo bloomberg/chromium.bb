@@ -10,12 +10,14 @@
 
 #include "base/basictypes.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "extensions/common/features/feature.h"
 
 namespace content {
 class BrowserContext;
 }
 
 namespace extensions {
+class Extension;
 
 // Contains information about which extensions are assigned to which processes.
 //
@@ -66,6 +68,10 @@ namespace extensions {
 //    RenderProcessHost::FromID() and check the profile of the resulting object.
 //
 // TODO(aa): The above warnings suggest this class could use improvement :).
+//
+// TODO(kalman): This class is not threadsafe, but is used on both the UI and
+//               IO threads. Somebody should fix that, either make it
+//               threadsafe or enforce single thread. Investigation required.
 class ProcessMap : public KeyedService {
  public:
   ProcessMap();
@@ -88,6 +94,25 @@ class ProcessMap : public KeyedService {
   bool Contains(int process_id) const;
 
   std::set<std::string> GetExtensionsInProcess(int process_id) const;
+
+  // Guesses the most permissive context type for the process with ID
+  // |process_id|. Context types are renderer (JavaScript) concepts but the
+  // browser can do a decent job in guessing what the process hosts.
+  //
+  //   - For hosted app processes, this will be blessed_web_page.
+  //   - For other extension processes, this will be blessed_extension.
+  //   - For WebUI processes, this will be a webui.
+  //   - For anything else we have the choice of unblessed_extension or
+  //     content_script. Since content scripts are more common, guess that.
+  //     We *could* in theory track which web processes have extension frames
+  //     in them, and those would be unblessed_extension, but we don't at the
+  //     moment, and once OOP iframes exist then there won't even be such a
+  //     thing as an unblessed_extension context.
+  //
+  // |extension| isn't used to upgrade the process trust level, but rather used
+  // as a tiebreaker if a process is found to contain multiple extensions.
+  Feature::Context GuessContextType(const Extension* extension,
+                                    int process_id) const;
 
  private:
   struct Item;

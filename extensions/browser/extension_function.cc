@@ -171,7 +171,8 @@ ExtensionFunction::ExtensionFunction()
       user_gesture_(false),
       bad_message_(false),
       histogram_value_(extensions::functions::UNKNOWN),
-      source_tab_id_(-1) {
+      source_tab_id_(-1),
+      source_context_type_(Feature::UNSPECIFIED_CONTEXT) {
 }
 
 ExtensionFunction::~ExtensionFunction() {
@@ -188,7 +189,7 @@ IOThreadExtensionFunction* ExtensionFunction::AsIOThreadExtensionFunction() {
 bool ExtensionFunction::HasPermission() {
   Feature::Availability availability =
       ExtensionAPI::GetSharedInstance()->IsAvailable(
-          name_, extension_, Feature::BLESSED_EXTENSION_CONTEXT, source_url());
+          name_, extension_, source_context_type_, source_url());
   return availability.is_available();
 }
 

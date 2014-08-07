@@ -14,7 +14,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -429,36 +428,6 @@ bool ExtensionFunctionDispatcher::CheckPermissions(
   return true;
 }
 
-namespace {
-
-// Only COMPONENT hosted apps may call extension APIs, and they are limited
-// to just the permissions they explicitly request. They should not have access
-// to extension APIs like eg chrome.runtime, chrome.windows, etc. that normally
-// are available without permission.
-// TODO(mpcomplete): move this to ExtensionFunction::HasPermission (or remove
-// it altogether).
-bool AllowHostedAppAPICall(const Extension& extension,
-                           const GURL& source_url,
-                           const std::string& function_name) {
-  if (extension.location() != Manifest::COMPONENT)
-    return false;
-
-  if (!extension.web_extent().MatchesURL(source_url))
-    return false;
-
-  // Note: Not BLESSED_WEB_PAGE_CONTEXT here because these component hosted app
-  // entities have traditionally been treated as blessed extensions, for better
-  // or worse.
-  Feature::Availability availability =
-      ExtensionAPI::GetSharedInstance()->IsAvailable(
-          function_name, &extension, Feature::BLESSED_EXTENSION_CONTEXT,
-          source_url);
-  return availability.is_available();
-}
-
-}  // namespace
-
-
 // static
 ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
     const ExtensionHostMsg_Request_Params& params,
@@ -468,44 +437,6 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
     ExtensionAPI* api,
     void* profile_id,
     const ExtensionFunction::ResponseCallback& callback) {
-  const char* disallowed_reason = NULL;
-
-  if (extension) {
-    // Extension is calling this API.
-    if (extension->is_hosted_app() &&
-        !AllowHostedAppAPICall(*extension, params.source_url, params.name)) {
-      // Most hosted apps can't call APIs.
-      disallowed_reason = "Hosted apps cannot call privileged APIs";
-    } else if (!process_map.Contains(extension->id(), requesting_process_id) &&
-               !api->IsAvailableInUntrustedContext(params.name, extension)) {
-      // Privileged APIs can only be called from the process the extension
-      // is running in.
-      disallowed_reason =
-          "Privileged APIs cannot be called from untrusted processes";
-    }
-  } else if (content::ChildProcessSecurityPolicy::GetInstance()
-                 ->HasWebUIBindings(requesting_process_id)) {
-    // WebUI is calling this API.
-    if (!api->IsAvailableToWebUI(params.name, params.source_url)) {
-      disallowed_reason = "WebUI can only call webui-enabled APIs";
-    }
-  } else {
-    // Web page is calling this API. However, the APIs that are available to
-    // web pages (e.g. messaging) don't go through ExtensionFunctionDispatcher,
-    // so this should be impossible.
-    NOTREACHED();
-    disallowed_reason = "Specified extension does not exist.";
-  }
-
-  if (disallowed_reason != NULL) {
-    LOG(ERROR) << "Extension API call disallowed - name:" << params.name
-               << ", pid:" << requesting_process_id
-               << ", from URL: " << params.source_url.spec()
-               << ", reason: " << disallowed_reason;
-    SendAccessDenied(callback);
-    return NULL;
-  }
-
   ExtensionFunction* function =
       ExtensionFunctionRegistry::GetInstance()->NewFunction(params.name);
   if (!function) {
@@ -523,6 +454,8 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
   function->set_profile_id(profile_id);
   function->set_response_callback(callback);
   function->set_source_tab_id(params.source_tab_id);
+  function->set_source_context_type(
+      process_map.GuessContextType(extension, requesting_process_id));
 
   return function;
 }

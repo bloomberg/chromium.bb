@@ -539,6 +539,8 @@ void EventRouter::DispatchEventToProcess(const std::string& extension_id,
   BrowserContext* listener_context = process->GetBrowserContext();
   ProcessMap* process_map = ProcessMap::Get(listener_context);
 
+  // TODO(kalman): Convert this method to use ProcessMap::GuessContextType.
+
   const Extension* extension =
       ExtensionRegistry::Get(browser_context_)->enabled_extensions().GetByID(
           extension_id);
