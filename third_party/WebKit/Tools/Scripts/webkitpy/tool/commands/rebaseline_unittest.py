@@ -1203,19 +1203,19 @@ class TestRebaselineOMatic(_BaseTestCase):
         super(TestRebaselineOMatic, self).setUp()
         self._logs = []
 
-    def _mock_log_to_server(self, log='', is_new_entry=False):
-        self._logs.append({'log': log, 'newentry': is_new_entry})
+    def _mock_log_to_server(self, log=''):
+        self._logs.append(log)
 
     def test_run_logged_command(self):
         self.command._verbose = False
-        self.command._log_to_server = self._mock_log_to_server
+        self.command._post_log_to_server = self._mock_log_to_server
         self.command._run_logged_command(['echo', 'foo'])
         self.assertEqual(self.tool.executive.calls, [['echo', 'foo']])
-        self.assertEqual(self._logs, [{'log': 'MOCK STDOUT', 'newentry': False}])
+        self.assertEqual(self._logs, ['MOCK STDOUT'])
 
     def test_do_one_rebaseline(self):
         self.command._verbose = False
-        self.command._log_to_server = self._mock_log_to_server
+        self.command._post_log_to_server = self._mock_log_to_server
 
         oc = OutputCapture()
         oc.capture_output()
@@ -1227,14 +1227,11 @@ class TestRebaselineOMatic(_BaseTestCase):
             ['git', 'pull'],
             ['/mock-checkout/third_party/WebKit/Tools/Scripts/webkit-patch', 'auto-rebaseline'],
         ])
-        self.assertEqual(self._logs, [
-            {'log': '', 'newentry': True},
-            {'log': 'MOCK STDOUT', 'newentry': False},
-        ])
+        self.assertEqual(self._logs, ['MOCK STDOUT'])
 
     def test_do_one_rebaseline_verbose(self):
         self.command._verbose = True
-        self.command._log_to_server = self._mock_log_to_server
+        self.command._post_log_to_server = self._mock_log_to_server
 
         oc = OutputCapture()
         oc.capture_output()
@@ -1246,7 +1243,4 @@ class TestRebaselineOMatic(_BaseTestCase):
             ['git', 'pull'],
             ['/mock-checkout/third_party/WebKit/Tools/Scripts/webkit-patch', 'auto-rebaseline', '--verbose'],
         ])
-        self.assertEqual(self._logs, [
-            {'log': '', 'newentry': True},
-            {'log': 'MOCK STDOUT', 'newentry': False},
-        ])
+        self.assertEqual(self._logs, ['MOCK STDOUT'])

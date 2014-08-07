@@ -26,11 +26,13 @@
 # (INCLUDING NEGLIGENCE OR/ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import Queue
 import json
 import logging
 import optparse
 import re
 import sys
+import threading
 import time
 import traceback
 import urllib
@@ -862,6 +864,7 @@ class RebaselineOMatic(AbstractDeclarativeCommand):
 
     SLEEP_TIME_IN_SECONDS = 30
     LOG_SERVER = 'blinkrebaseline.appspot.com'
+    QUIT_LOG = '##QUIT##'
 
     # Uploaded log entries append to the existing entry unless the
     # newentry flag is set. In that case it starts a new entry to
@@ -872,14 +875,31 @@ class RebaselineOMatic(AbstractDeclarativeCommand):
         }
         if is_new_entry:
             query['newentry'] = 'on'
-        urllib2.urlopen("http://" + self.LOG_SERVER + "/updatelog", data=urllib.urlencode(query))
+        try:
+            urllib2.urlopen("http://" + self.LOG_SERVER + "/updatelog", data=urllib.urlencode(query))
+        except:
+            traceback.print_exc(file=sys.stderr)
+
+    def _log_to_server_thread(self):
+        is_new_entry = True
+        while True:
+            messages = [self._log_queue.get()]
+            while not self._log_queue.empty():
+                messages.append(self._log_queue.get())
+            self._log_to_server('\n'.join(messages), is_new_entry=is_new_entry)
+            is_new_entry = False
+            if self.QUIT_LOG in messages:
+                return
+
+    def _post_log_to_server(self, log):
+        self._log_queue.put(log)
 
     def _log_line(self, handle):
         out = handle.readline().rstrip('\n')
         if out:
             if self._verbose:
                 print out
-            self._log_to_server(out)
+            self._post_log_to_server(out)
         return out
 
     def _run_logged_command(self, command):
@@ -891,9 +911,11 @@ class RebaselineOMatic(AbstractDeclarativeCommand):
             out = self._log_line(process.stdout)
 
     def _do_one_rebaseline(self):
+        self._log_queue = Queue.Queue(256)
+        log_thread = threading.Thread(name='LogToServer', target=self._log_to_server_thread)
+        log_thread.start()
         try:
             old_branch_name = self._tool.scm().current_branch()
-            self._log_to_server(is_new_entry=True)
             self._run_logged_command(['git', 'pull'])
             rebaseline_command = [self._tool.filesystem.join(self._tool.scm().checkout_root, 'Tools', 'Scripts', 'webkit-patch'), 'auto-rebaseline']
             if self._verbose:
@@ -903,6 +925,8 @@ class RebaselineOMatic(AbstractDeclarativeCommand):
             traceback.print_exc(file=sys.stderr)
             # Sometimes git crashes and leaves us on a detached head.
             self._tool.scm().checkout_branch(old_branch_name)
+        self._log_queue.put(self.QUIT_LOG)
+        log_thread.join()
 
     def execute(self, options, args, tool):
         self._verbose = options.verbose
