@@ -162,7 +162,7 @@ class GCMStoreImpl::Backend
       const std::map<std::string, std::string>& settings,
       const std::string& digest,
       const UpdateCallback& callback);
-  void AddAccountMapping(const AccountInfo& account_info,
+  void AddAccountMapping(const AccountMapping& account_mapping,
                          const UpdateCallback& callback);
   void RemoveAccountMapping(const std::string& account_id,
                             const UpdateCallback& callback);
@@ -179,7 +179,7 @@ class GCMStoreImpl::Backend
                            std::set<std::string>* accounts);
   bool LoadGServicesSettings(std::map<std::string, std::string>* settings,
                              std::string* digest);
-  bool LoadAccountMappingInfo(AccountInfoMap* account_infos);
+  bool LoadAccountMappingInfo(AccountMappingMap* account_mappings);
 
   const base::FilePath path_;
   scoped_refptr<base::SequencedTaskRunner> foreground_task_runner_;
@@ -234,7 +234,7 @@ void GCMStoreImpl::Backend::Load(const LoadCallback& callback) {
                            &result->last_checkin_accounts) ||
       !LoadGServicesSettings(&result->gservices_settings,
                              &result->gservices_digest) ||
-      !LoadAccountMappingInfo(&result->account_infos)) {
+      !LoadAccountMappingInfo(&result->account_mappings)) {
     result->Reset();
     foreground_task_runner_->PostTask(FROM_HERE,
                                       base::Bind(callback,
@@ -574,10 +574,11 @@ void GCMStoreImpl::Backend::SetGServicesSettings(
   foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, s.ok()));
 }
 
-void GCMStoreImpl::Backend::AddAccountMapping(const AccountInfo& account_info,
-                                              const UpdateCallback& callback) {
+void GCMStoreImpl::Backend::AddAccountMapping(
+    const AccountMapping& account_mapping,
+    const UpdateCallback& callback) {
   DVLOG(1) << "Saving account info for account with email: "
-           << account_info.email;
+           << account_mapping.email;
   if (!db_.get()) {
     LOG(ERROR) << "GCMStore db doesn't exist.";
     foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
@@ -587,8 +588,8 @@ void GCMStoreImpl::Backend::AddAccountMapping(const AccountInfo& account_info,
   leveldb::WriteOptions write_options;
   write_options.sync = true;
 
-  std::string data = account_info.SerializeAsString();
-  std::string key = MakeAccountKey(account_info.account_id);
+  std::string data = account_mapping.SerializeAsString();
+  std::string key = MakeAccountKey(account_mapping.account_id);
   const leveldb::Status s =
       db_->Put(write_options, MakeSlice(key), MakeSlice(data));
   if (!s.ok())
@@ -790,7 +791,7 @@ bool GCMStoreImpl::Backend::LoadGServicesSettings(
 }
 
 bool GCMStoreImpl::Backend::LoadAccountMappingInfo(
-    AccountInfoMap* account_infos) {
+    AccountMappingMap* account_mappings) {
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
 
@@ -798,15 +799,15 @@ bool GCMStoreImpl::Backend::LoadAccountMappingInfo(
   for (iter->Seek(MakeSlice(kAccountKeyStart));
        iter->Valid() && iter->key().ToString() < kAccountKeyEnd;
        iter->Next()) {
-    AccountInfo account_info;
-    account_info.account_id = ParseAccountKey(iter->key().ToString());
-    if (!account_info.ParseFromString(iter->value().ToString())) {
+    AccountMapping account_mapping;
+    account_mapping.account_id = ParseAccountKey(iter->key().ToString());
+    if (!account_mapping.ParseFromString(iter->value().ToString())) {
       DVLOG(1) << "Failed to parse account info with ID: "
-               << account_info.account_id;
+               << account_mapping.account_id;
       return false;
     }
-    DVLOG(1) << "Found account mapping with ID: " << account_info.account_id;
-    (*account_infos)[account_info.account_id] = account_info;
+    DVLOG(1) << "Found account mapping with ID: " << account_mapping.account_id;
+    (*account_mappings)[account_mapping.account_id] = account_mapping;
   }
 
   return true;
@@ -1011,13 +1012,13 @@ void GCMStoreImpl::SetGServicesSettings(
                  callback));
 }
 
-void GCMStoreImpl::AddAccountMapping(const AccountInfo& account_info,
+void GCMStoreImpl::AddAccountMapping(const AccountMapping& account_mapping,
                                      const UpdateCallback& callback) {
   blocking_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&GCMStoreImpl::Backend::AddAccountMapping,
                  backend_,
-                 account_info,
+                 account_mapping,
                  callback));
 }
 

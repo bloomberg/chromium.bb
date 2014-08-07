@@ -19,7 +19,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "google_apis/gcm/base/gcm_export.h"
-#include "google_apis/gcm/engine/account_info.h"
+#include "google_apis/gcm/engine/account_mapping.h"
 #include "google_apis/gcm/engine/registration_info.h"
 
 namespace gcm {
@@ -35,7 +35,7 @@ class GCM_EXPORT GCMStore {
       OutgoingMessageMap;
 
   // Map of account id to account info for account mappings.
-  typedef std::map<std::string, AccountInfo> AccountInfoMap;
+  typedef std::map<std::string, AccountMapping> AccountMappingMap;
 
   // Container for Load(..) results.
   struct GCM_EXPORT LoadResult {
@@ -54,7 +54,7 @@ class GCM_EXPORT GCMStore {
     std::string gservices_digest;
     base::Time last_checkin_time;
     std::set<std::string> last_checkin_accounts;
-    AccountInfoMap account_infos;
+    AccountMappingMap account_mappings;
   };
 
   typedef std::vector<std::string> PersistentIdList;
@@ -123,7 +123,7 @@ class GCM_EXPORT GCMStore {
       const UpdateCallback& callback) = 0;
 
   // Sets the account information related to device to account mapping.
-  virtual void AddAccountMapping(const AccountInfo& account_info,
+  virtual void AddAccountMapping(const AccountMapping& account_mapping,
                                  const UpdateCallback& callback) = 0;
   virtual void RemoveAccountMapping(const std::string& account_id,
                                     const UpdateCallback& callback) = 0;

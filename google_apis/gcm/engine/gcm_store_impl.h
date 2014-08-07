@@ -88,7 +88,7 @@ class GCM_EXPORT GCMStoreImpl : public GCMStore {
       const UpdateCallback& callback) OVERRIDE;
 
   // Sets the account information related to device to account mapping.
-  virtual void AddAccountMapping(const AccountInfo& account_info,
+  virtual void AddAccountMapping(const AccountMapping& account_mapping,
                                  const UpdateCallback& callback) OVERRIDE;
   virtual void RemoveAccountMapping(const std::string& account_id,
                                     const UpdateCallback& callback) OVERRIDE;
