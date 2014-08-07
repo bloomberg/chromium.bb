@@ -5,10 +5,13 @@
 from api_categorizer import APICategorizer
 from api_models import APIModels
 from availability_finder import AvailabilityFinder
+from empty_dir_file_system import EmptyDirFileSystem
+from environment import IsDevServer
 from features_bundle import FeaturesBundle
 from future import All
 from platform_util import GetPlatforms, PlatformToExtensionType
 from reference_resolver import ReferenceResolver
+from samples_model import SamplesModel
 
 
 class _PlatformData(object):
@@ -18,6 +21,7 @@ class _PlatformData(object):
     self.reference_resolver = None
     self.availability_finder = None
     self.api_categorizer = None
+    self.samples_model = None
 
 
 class PlatformBundle(object):
@@ -28,13 +32,37 @@ class PlatformBundle(object):
                compiled_fs_factory,
                host_fs_at_trunk,
                host_file_system_iterator,
-               object_store_creator):
+               object_store_creator,
+               base_path):
     self._branch_utility = branch_utility
     self._compiled_fs_factory = compiled_fs_factory
     self._host_fs_at_trunk = host_fs_at_trunk
     self._host_file_system_iterator = host_file_system_iterator
     self._object_store_creator = object_store_creator
+    self._base_path = base_path
     self._platform_data = dict((p, _PlatformData()) for p in GetPlatforms())
+
+  def GetSamplesModel(self, platform):
+    if self._platform_data[platform].samples_model is None:
+      # Note: samples are super slow in the dev server because it doesn't
+      # support async fetch, so disable them.
+      if IsDevServer():
+        extension_samples_fs = EmptyDirFileSystem()
+        app_samples_fs = EmptyDirFileSystem()
+      else:
+        extension_samples_fs = self._host_fs_at_trunk
+        # TODO(kalman): Re-enable the apps samples, see http://crbug.com/344097.
+        app_samples_fs = EmptyDirFileSystem()
+        #app_samples_fs = github_file_system_provider.Create(
+        #    'GoogleChrome', 'chrome-app-samples')
+      self._platform_data[platform].samples_model = SamplesModel(
+          extension_samples_fs,
+          app_samples_fs,
+          self._compiled_fs_factory,
+          self.GetReferenceResolver(platform),
+          self._base_path,
+          platform)
+    return self._platform_data[platform].samples_model
 
   def GetFeaturesBundle(self, platform):
     if self._platform_data[platform].features_bundle is None:

@@ -6,6 +6,7 @@ from compiled_file_system import CompiledFileSystem
 from docs_server_utils import StringIdentity
 from file_system import FileNotFoundError
 from future import Future
+from path_util import ToDirectory
 
 
 class ChainedCompiledFileSystem(object):
@@ -52,8 +53,7 @@ class ChainedCompiledFileSystem(object):
         lambda compiled_fs: compiled_fs.GetFileVersion(path))
 
   def GetFromFileListing(self, path):
-    if not path.endswith('/'):
-      path += '/'
+    path = ToDirectory(path)
     return self._GetImpl(
         path,
         lambda compiled_fs: compiled_fs.GetFromFileListing(path),

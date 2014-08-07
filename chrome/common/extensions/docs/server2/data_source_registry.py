@@ -7,6 +7,7 @@ from api_list_data_source import APIListDataSource
 from data_source import DataSource
 from manifest_data_source import ManifestDataSource
 from permissions_data_source import PermissionsDataSource
+from samples_data_source import SamplesDataSource
 from sidenav_data_source import SidenavDataSource
 from strings_data_source import StringsDataSource
 from template_data_source import (
@@ -22,6 +23,7 @@ _all_data_sources = {
   'manifest_source': ManifestDataSource,
   'partials': PartialDataSource,
   'permissions': PermissionsDataSource,
+  'samples': SamplesDataSource,
   'sidenavs': SidenavDataSource,
   'strings': StringsDataSource,
   'whatsNew' : WhatsNewDataSource

@@ -8,7 +8,7 @@ import schema_util
 from docs_server_utils import ToUnicode
 from file_system import FileNotFoundError
 from future import Future
-from path_util import AssertIsDirectory, AssertIsFile
+from path_util import AssertIsDirectory, AssertIsFile, ToDirectory
 from third_party.handlebar import Handlebar
 from third_party.json_schema_compiler import json_parse
 from third_party.json_schema_compiler.memoize import memoize
@@ -236,8 +236,7 @@ class CompiledFileSystem(object):
     return self._file_system.Stat(path).version
 
   def GetFileListingVersion(self, path):
-    if not path.endswith('/'):
-      path += '/'
+    path = ToDirectory(path)
     cache_entry = self._list_object_store.Get(path).Get()
     if cache_entry is not None:
       return cache_entry.version

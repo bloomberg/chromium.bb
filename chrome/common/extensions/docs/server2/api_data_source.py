@@ -9,19 +9,7 @@ from file_system import FileNotFoundError
 from future import Future, All
 from jsc_view import JSCView, GetEventByNameFromEvents
 from platform_util import GetPlatforms
-
-
-class _LazySamplesGetter(object):
-  '''This class is needed so that an extensions API page does not have to fetch
-  the apps samples page and vice versa.
-  '''
-
-  def __init__(self, api_name, samples):
-    self._api_name = api_name
-    self._samples = samples
-
-  def get(self, key):
-    return self._samples.FilterSamples(key, self._api_name)
+from samples_data_source import CreateSamplesView
 
 
 class APIDataSource(DataSource):
@@ -43,7 +31,7 @@ class APIDataSource(DataSource):
 
     # This caches the result of _LoadEventByName.
     self._event_byname_futures = {}
-    self._samples = server_instance.samples_data_source_factory.Create(request)
+    self._request = request
 
   def _LoadEventByName(self, platform):
     '''All events have some members in common. We source their description
@@ -84,9 +72,12 @@ class APIDataSource(DataSource):
       # Parsing samples on the preview server takes seconds and doesn't add
       # anything. Don't do it.
       if not IsPreviewServer():
-        jsc_view['samples'] = _LazySamplesGetter(
-            jsc_view['name'],
-            self._samples)
+        samples_model = self._platform_bundle.GetSamplesModel(platform)
+        # Creates an object that lazily gets samples.
+        jsc_view['samples'] = type('getter', (object,), {
+          'get': lambda _, platform: CreateSamplesView(
+              samples_model.FilterSamples(jsc_view['name']), self._request)
+          })()
       return jsc_view
     return Future(callback=resolve)
 

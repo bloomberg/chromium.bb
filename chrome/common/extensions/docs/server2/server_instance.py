@@ -73,25 +73,8 @@ class ServerInstance(object):
         self.compiled_fs_factory,
         host_fs_at_trunk,
         self.host_file_system_iterator,
-        self.object_store_creator)
-
-    # Note: samples are super slow in the dev server because it doesn't support
-    # async fetch, so disable them.
-    if IsDevServer():
-      extension_samples_fs = EmptyDirFileSystem()
-      app_samples_fs = EmptyDirFileSystem()
-    else:
-      extension_samples_fs = host_fs_at_trunk
-      # TODO(kalman): Re-enable the apps samples, see http://crbug.com/344097.
-      app_samples_fs = EmptyDirFileSystem()
-      #app_samples_fs = github_file_system_provider.Create(
-      #    'GoogleChrome', 'chrome-app-samples')
-    self.samples_data_source_factory = SamplesDataSource.Factory(
-        extension_samples_fs,
-        app_samples_fs,
-        CompiledFileSystem.Factory(object_store_creator),
-        self.platform_bundle,
-        base_path)
+        self.object_store_creator,
+        self.base_path)
 
     self.content_providers = ContentProviders(
         object_store_creator,

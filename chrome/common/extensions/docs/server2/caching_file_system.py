@@ -7,7 +7,7 @@ import sys
 
 from file_system import FileSystem, StatInfo, FileNotFoundError
 from future import Future
-from path_util import IsDirectory
+from path_util import IsDirectory, ToDirectory
 from third_party.json_schema_compiler.memoize import memoize
 
 
@@ -43,8 +43,7 @@ class CachingFileSystem(FileSystem):
     # Always stat the parent directory, since it will have the stat of the child
     # anyway, and this gives us an entire directory's stat info at once.
     dir_path, file_path = posixpath.split(path)
-    if dir_path and not dir_path.endswith('/'):
-      dir_path += '/'
+    dir_path = ToDirectory(dir_path)
 
     def make_stat_info(dir_stat):
       '''Converts a dir stat into the correct resulting StatInfo; if the Stat
