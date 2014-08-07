@@ -245,7 +245,7 @@ class GoogleUpdateSettings {
 
   // Returns true if the app indicated by |app_guid| should be updated
   // automatically by Google Update based on current autoupdate settings. This
-  // is distinct from GetApUpdatePolicy which checks only a subset of things
+  // is distinct from GetAppUpdatePolicy which checks only a subset of things
   // that can cause an app not to update.
   static bool AreAutoupdatesEnabled(const base::string16& app_guid);
 
