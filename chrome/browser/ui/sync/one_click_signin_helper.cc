@@ -1162,7 +1162,7 @@ void OneClickSigninHelper::ShowSigninErrorBubble(Browser* browser,
 
 // static
 bool OneClickSigninHelper::HandleCrossAccountError(
-    content::WebContents* contents,
+    Profile* profile,
     const std::string& session_index,
     const std::string& email,
     const std::string& password,
@@ -1171,20 +1171,22 @@ bool OneClickSigninHelper::HandleCrossAccountError(
     signin::Source source,
     OneClickSigninSyncStarter::StartSyncMode start_mode,
     OneClickSigninSyncStarter::Callback sync_callback) {
-  Profile* profile =
-      Profile::FromBrowserContext(contents->GetBrowserContext());
   std::string last_email =
       profile->GetPrefs()->GetString(prefs::kGoogleServicesLastUsername);
 
   if (!last_email.empty() && !gaia::AreEmailsSame(last_email, email)) {
     // If the new email address is different from the email address that
-    // just signed in, show a confirmation dialog.
+    // just signed in, show a confirmation dialog on top of the current active
+    // tab.
 
     // No need to display a second confirmation so pass false below.
     // TODO(atwilson): Move this into OneClickSigninSyncStarter.
     // The tab modal dialog always executes its callback before |contents|
     // is deleted.
-    Browser* browser = chrome::FindBrowserWithWebContents(contents);
+    Browser* browser = chrome::FindLastActiveWithProfile(
+        profile, chrome::GetActiveDesktop());
+    content::WebContents* contents =
+        browser->tab_strip_model()->GetActiveWebContents();
     ConfirmEmailDialogDelegate::AskForConfirmation(
         contents,
         last_email,
@@ -1550,7 +1552,7 @@ void OneClickSigninHelper::DidStopLoading(
                   OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST :
               OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS;
 
-      if (!HandleCrossAccountError(contents, session_index_, email_, password_,
+      if (!HandleCrossAccountError(profile, session_index_, email_, password_,
               "", auto_accept_, source_, start_mode,
               CreateSyncStarterCallback())) {
         if (!do_not_start_sync_for_testing_) {

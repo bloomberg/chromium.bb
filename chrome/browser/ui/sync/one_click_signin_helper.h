@@ -214,7 +214,7 @@ class OneClickSigninHelper
   // confirmation dialog before starting sync. It returns true if there is a
   // cross account error, and false otherwise.
   static bool HandleCrossAccountError(
-      content::WebContents* contents,
+      Profile* profile,
       const std::string& session_index,
       const std::string& email,
       const std::string& password,

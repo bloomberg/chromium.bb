@@ -161,7 +161,7 @@ void InlineSigninHelper::OnSigninOAuthInformationAvailable(
             OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN;
     bool start_signin =
         !OneClickSigninHelper::HandleCrossAccountError(
-            contents, "",
+            profile_, "",
             email, password_, refresh_token,
             OneClickSigninHelper::AUTO_ACCEPT_EXPLICIT,
             source, start_mode,
