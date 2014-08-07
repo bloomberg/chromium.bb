@@ -9,6 +9,8 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
@@ -132,6 +134,19 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
         window);
   }
 
+  // Create a maximize mode window manager.
+  ash::MaximizeModeWindowManager* CreateMaximizeModeWindowManager() {
+    EXPECT_FALSE(maximize_mode_window_manager());
+    Shell::GetInstance()->maximize_mode_controller()->
+        EnableMaximizeModeWindowManager(true);
+    return maximize_mode_window_manager();
+  }
+
+  ash::MaximizeModeWindowManager* maximize_mode_window_manager() {
+    return Shell::GetInstance()->maximize_mode_controller()->
+        maximize_mode_window_manager_.get();
+  }
+
  private:
   // These get created for each session.
   std::vector<aura::Window*> window_;
@@ -141,6 +156,9 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
 
   // The session state delegate.
   ash::test::TestSessionStateDelegate* session_state_delegate_;
+
+  // The maximized window manager (if enabled).
+  scoped_ptr<MaximizeModeWindowManager> maximize_mode_window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerChromeOSTest);
 };
@@ -638,6 +656,30 @@ TEST_F(MultiUserWindowManagerChromeOSTest, PreserveInitialVisibility) {
   EXPECT_EQ("S[A,B], H[A,B], H[B,A], H[B,A]", GetStatus());
   multi_user_window_manager()->ActiveUserChanged("A");
   EXPECT_EQ("H[A,B], H[A,B], S[B,A], H[B,A]", GetStatus());
+}
+
+// Test that in case of an activated maximize mode, windows from other users get
+// maximized after a user switch.
+TEST_F(MultiUserWindowManagerChromeOSTest, MaximizeModeInteraction) {
+  SetUpForThisManyWindows(2);
+
+  multi_user_window_manager()->SetWindowOwner(window(0), "A");
+  multi_user_window_manager()->SetWindowOwner(window(1), "B");
+
+  EXPECT_FALSE(wm::GetWindowState(window(0))->IsMaximized());
+  EXPECT_FALSE(wm::GetWindowState(window(1))->IsMaximized());
+
+  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  ASSERT_TRUE(manager);
+
+  EXPECT_TRUE(wm::GetWindowState(window(0))->IsMaximized());
+  EXPECT_FALSE(wm::GetWindowState(window(1))->IsMaximized());
+
+  // After we start switching to B, the windows of user B should maximize.
+  StartUserTransitionAnimation("B");
+
+  EXPECT_TRUE(wm::GetWindowState(window(0))->IsMaximized());
+  EXPECT_TRUE(wm::GetWindowState(window(1))->IsMaximized());
 }
 
 // Test that a system modal dialog will switch to the desktop of the owning

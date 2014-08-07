@@ -15,6 +15,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "base/message_loop/message_loop.h"
@@ -692,6 +693,13 @@ void MultiUserWindowManagerChromeOS::SetWindowVisible(
     aura::Window* window,
     bool visible,
     int animation_time_in_ms) {
+  // The MaximizeModeWindowManager will not handle invisible windows since they
+  // are not user activatable. Since invisible windows are not being tracked,
+  // we tell it to maximize / track this window now before it gets shown, to
+  // reduce animation jank from multiple resizes.
+  if (visible)
+    ash::Shell::GetInstance()->maximize_mode_controller()->AddWindow(window);
+
   AnimationSetter animation_setter(
       window,
       GetAdjustedAnimationTimeInMS(animation_time_in_ms));

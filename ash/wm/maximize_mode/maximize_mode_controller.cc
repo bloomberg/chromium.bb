@@ -220,6 +220,11 @@ bool MaximizeModeController::IsMaximizeModeWindowManagerEnabled() const {
   return maximize_mode_window_manager_.get() != NULL;
 }
 
+void MaximizeModeController::AddWindow(aura::Window* window) {
+  if (IsMaximizeModeWindowManagerEnabled())
+    maximize_mode_window_manager_->AddWindow(window);
+}
+
 void MaximizeModeController::Shutdown() {
   maximize_mode_window_manager_.reset();
   Shell::GetInstance()->OnMaximizeModeEnded();

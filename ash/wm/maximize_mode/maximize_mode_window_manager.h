@@ -42,6 +42,12 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   // Returns the number of maximized & tracked windows by this manager.
   int GetNumberOfManagedWindows();
 
+  // Adds a window which needs to be maximized. This is used by other window
+  // managers for windows which needs to get tracked due to (upcoming) state
+  // changes.
+  // The call gets ignored if the window was already or should not be handled.
+  void AddWindow(aura::Window* window);
+
   // Called from a window state object when it gets destroyed.
   void WindowStateDestroyed(aura::Window* window);
 

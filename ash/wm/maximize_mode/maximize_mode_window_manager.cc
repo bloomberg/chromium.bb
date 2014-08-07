@@ -54,6 +54,18 @@ int MaximizeModeWindowManager::GetNumberOfManagedWindows() {
   return window_state_map_.size();
 }
 
+void MaximizeModeWindowManager::AddWindow(aura::Window* window) {
+  // Only add the window if it is a direct dependent of a container window
+  // and not yet tracked.
+  if (!ShouldHandleWindow(window) ||
+      window_state_map_.find(window) != window_state_map_.end() ||
+      !IsContainerWindow(window->parent())) {
+    return;
+  }
+
+  MaximizeAndTrackWindow(window);
+}
+
 void MaximizeModeWindowManager::WindowStateDestroyed(aura::Window* window) {
   // At this time ForgetWindow() should already have been called. If not,
   // someone else must have replaced the "window manager's state object".

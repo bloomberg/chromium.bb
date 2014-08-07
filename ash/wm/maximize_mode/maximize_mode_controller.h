@@ -33,6 +33,9 @@ class MaximizeModeControllerTest;
 class ScopedDisableInternalMouseAndKeyboard;
 class MaximizeModeWindowManager;
 class MaximizeModeWindowManagerTest;
+namespace test {
+class MultiUserWindowManagerChromeOSTest;
+}
 
 // MaximizeModeController listens to accelerometer events and automatically
 // enters and exits maximize mode when the lid is opened beyond the triggering
@@ -92,6 +95,12 @@ class ASH_EXPORT MaximizeModeController
   // Test if the MaximizeModeWindowManager is enabled or not.
   bool IsMaximizeModeWindowManagerEnabled() const;
 
+  // Add a special window to the MaximizeModeWindowManager for tracking. This is
+  // only required for special windows which are handled by other window
+  // managers like the |MultiUserWindowManager|.
+  // If the maximize mode is not enabled no action will be performed.
+  void AddWindow(aura::Window* window);
+
   // TODO(jonross): move this into the destructor. Currently separated as
   // ShellOberver notifies of maximize mode ending, and the observers end up
   // attempting to access MaximizeModeController via the Shell. If done in
@@ -122,6 +131,7 @@ class ASH_EXPORT MaximizeModeController
  private:
   friend class MaximizeModeControllerTest;
   friend class MaximizeModeWindowManagerTest;
+  friend class test::MultiUserWindowManagerChromeOSTest;
 
   // Set the TickClock. This is only to be used by tests that need to
   // artificially and deterministically control the current time.
