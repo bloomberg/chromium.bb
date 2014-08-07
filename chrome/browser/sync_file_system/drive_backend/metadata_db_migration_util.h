@@ -58,6 +58,9 @@ SyncStatusCode MigrateDatabaseFromV0ToV1(leveldb::DB* db);
 // Migrate |db| schema from version 1 to version 2.
 SyncStatusCode MigrateDatabaseFromV1ToV2(leveldb::DB* db);
 
+// Rollback |db| schema from version 4 to version 3.
+SyncStatusCode MigrateDatabaseFromV4ToV3(leveldb::DB* db);
+
 }  // namespace drive_backend
 }  // namespace sync_file_system
 
