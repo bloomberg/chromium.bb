@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_FOCUS_FOCUS_MANAGER_TEST_H_
-#define UI_VIEWS_FOCUS_FOCUS_MANAGER_TEST_H_
+#ifndef UI_VIEWS_TEST_FOCUS_MANAGER_TEST_H_
+#define UI_VIEWS_TEST_FOCUS_MANAGER_TEST_H_
 
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/widget_focus_manager.h"
@@ -103,4 +103,4 @@ class TestWidgetFocusChangeListener : public WidgetFocusChangeListener {
 
 }  // namespace views
 
-#endif  // UI_VIEWS_FOCUS_FOCUS_MANAGER_TEST_H_
+#endif  // UI_VIEWS_TEST_FOCUS_MANAGER_TEST_H_

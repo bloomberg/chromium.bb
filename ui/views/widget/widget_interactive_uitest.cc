@@ -9,10 +9,6 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/aura/client/focus_client.h"
-#include "ui/aura/env.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_tree_host.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -22,17 +18,18 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
+#include "ui/views/focus/focus_manager.h"
+#include "ui/views/test/focus_manager_test.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/touchui/touch_selection_controller_impl.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/wm/public/activation_client.h"
 
-#if !defined(OS_CHROMEOS)
-#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
-#endif
-
 #if defined(OS_WIN)
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/win/hwnd_util.h"
 #endif
 
@@ -175,7 +172,10 @@ class WidgetTestInteractive : public WidgetTest {
     DCHECK(controller);
     if (controller->context_menu_timer_.IsRunning()) {
       controller->context_menu_timer_.Stop();
+// TODO(tapted): Enable this when porting ui/views/touchui to Mac.
+#if !defined(OS_MACOSX)
       controller->ContextMenuTimerFired();
+#endif
     }
   }
 
@@ -249,7 +249,7 @@ TEST_F(WidgetTestInteractive, DesktopNativeWidgetAuraActivationAndFocusTest) {
             reinterpret_cast<aura::Window*>(NULL));
   EXPECT_EQ(activation_client1->GetActiveWindow(), widget1.GetNativeView());
 }
-#endif
+#endif  // defined(OS_WIN)
 
 TEST_F(WidgetTestInteractive, CaptureAutoReset) {
   Widget* toplevel = CreateTopLevelFramelessPlatformWidget();
@@ -632,7 +632,7 @@ TEST_F(WidgetTestInteractive, WidgetNotActivatedOnFakeActivationMessages) {
   EXPECT_EQ(true, widget1.active());
   EXPECT_EQ(false, widget2.active());
 }
-#endif
+#endif  // defined(OS_WIN)
 
 #if !defined(OS_CHROMEOS)
 // Provides functionality to create a window modal dialog.
@@ -655,6 +655,11 @@ class ModalDialogDelegate : public DialogDelegateView {
 // Tests whether the focused window is set correctly when a modal window is
 // created and destroyed. When it is destroyed it should focus the owner window.
 TEST_F(WidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
+  TestWidgetFocusChangeListener focus_listener;
+  WidgetFocusManager::GetInstance()->AddFocusChangeListener(&focus_listener);
+  const std::vector<NativeViewPair>& focus_changes =
+      focus_listener.focus_changes();
+
   // Create a top level widget.
   Widget top_level_widget;
   Widget::InitParams init_params =
@@ -663,13 +668,14 @@ TEST_F(WidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
   gfx::Rect initial_bounds(0, 0, 500, 500);
   init_params.bounds = initial_bounds;
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  init_params.native_widget = new DesktopNativeWidgetAura(&top_level_widget);
+  init_params.native_widget =
+      new PlatformDesktopNativeWidget(&top_level_widget);
   top_level_widget.Init(init_params);
   top_level_widget.Show();
 
-  aura::Window* top_level_window = top_level_widget.GetNativeWindow();
-  EXPECT_EQ(top_level_window, aura::client::GetFocusClient(
-                top_level_window)->GetFocusedWindow());
+  gfx::NativeView top_level_native_view = top_level_widget.GetNativeView();
+  EXPECT_EQ(1u, focus_changes.size());
+  EXPECT_EQ(NativeViewPair(NULL, top_level_native_view), focus_changes[0]);
 
   // Create a modal dialog.
   // This instance will be destroyed when the dialog is destroyed.
@@ -677,21 +683,34 @@ TEST_F(WidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
       new ModalDialogDelegate(ui::MODAL_TYPE_WINDOW);
 
   Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
-      dialog_delegate, NULL, top_level_widget.GetNativeWindow());
+      dialog_delegate, NULL, top_level_widget.GetNativeView());
   modal_dialog_widget->SetBounds(gfx::Rect(100, 100, 200, 200));
   modal_dialog_widget->Show();
-  aura::Window* dialog_window = modal_dialog_widget->GetNativeWindow();
-  EXPECT_EQ(dialog_window, aura::client::GetFocusClient(
-                top_level_window)->GetFocusedWindow());
+
+  gfx::NativeView modal_native_view = modal_dialog_widget->GetNativeView();
+  EXPECT_EQ(3u, focus_changes.size());
+  EXPECT_EQ(NativeViewPair(top_level_native_view, modal_native_view),
+            focus_changes[1]);
+  EXPECT_EQ(NativeViewPair(top_level_native_view, modal_native_view),
+            focus_changes[2]);
 
   modal_dialog_widget->CloseNow();
-  EXPECT_EQ(top_level_window, aura::client::GetFocusClient(
-                top_level_window)->GetFocusedWindow());
+
+  EXPECT_EQ(5u, focus_changes.size());
+  EXPECT_EQ(NativeViewPair(modal_native_view, top_level_native_view),
+            focus_changes[3]);
+  EXPECT_EQ(NativeViewPair(modal_native_view, top_level_native_view),
+            focus_changes[4]);
+
   top_level_widget.CloseNow();
+  WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(&focus_listener);
 }
 
 // Test that when opening a system-modal window, capture is released.
 TEST_F(WidgetTestInteractive, SystemModalWindowReleasesCapture) {
+  TestWidgetFocusChangeListener focus_listener;
+  WidgetFocusManager::GetInstance()->AddFocusChangeListener(&focus_listener);
+
   // Create a top level widget.
   Widget top_level_widget;
   Widget::InitParams init_params =
@@ -700,34 +719,35 @@ TEST_F(WidgetTestInteractive, SystemModalWindowReleasesCapture) {
   gfx::Rect initial_bounds(0, 0, 500, 500);
   init_params.bounds = initial_bounds;
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  init_params.native_widget = new DesktopNativeWidgetAura(&top_level_widget);
+  init_params.native_widget =
+      new PlatformDesktopNativeWidget(&top_level_widget);
   top_level_widget.Init(init_params);
   top_level_widget.Show();
 
-  aura::Window* top_level_window = top_level_widget.GetNativeWindow();
-  EXPECT_EQ(top_level_window, aura::client::GetFocusClient(
-                top_level_window)->GetFocusedWindow());
+  EXPECT_EQ(top_level_widget.GetNativeView(),
+            focus_listener.focus_changes().back().second);;
 
-  EXPECT_FALSE(top_level_window->HasCapture());
-  top_level_window->SetCapture();
-  EXPECT_TRUE(top_level_window->HasCapture());
+  EXPECT_FALSE(top_level_widget.HasCapture());
+  top_level_widget.SetCapture(NULL);
+  EXPECT_TRUE(top_level_widget.HasCapture());
 
   // Create a modal dialog.
   ModalDialogDelegate* dialog_delegate =
       new ModalDialogDelegate(ui::MODAL_TYPE_SYSTEM);
 
   Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
-      dialog_delegate, NULL, top_level_widget.GetNativeWindow());
+      dialog_delegate, NULL, top_level_widget.GetNativeView());
   modal_dialog_widget->SetBounds(gfx::Rect(100, 100, 200, 200));
   modal_dialog_widget->Show();
 
-  EXPECT_FALSE(top_level_window->HasCapture());
+  EXPECT_FALSE(top_level_widget.HasCapture());
 
   modal_dialog_widget->CloseNow();
   top_level_widget.CloseNow();
+  WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(&focus_listener);
 }
 
-#endif
+#endif  // !defined(OS_CHROMEOS)
 
 TEST_F(WidgetTestInteractive, CanActivateFlagIsHonored) {
   Widget widget;
@@ -737,7 +757,7 @@ TEST_F(WidgetTestInteractive, CanActivateFlagIsHonored) {
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   init_params.activatable = Widget::InitParams::ACTIVATABLE_NO;
 #if !defined(OS_CHROMEOS)
-  init_params.native_widget = new DesktopNativeWidgetAura(&widget);
+  init_params.native_widget = new PlatformDesktopNativeWidget(&widget);
 #endif  // !defined(OS_CHROMEOS)
   widget.Init(init_params);
 
@@ -771,7 +791,7 @@ TEST_F(WidgetTestInteractive, TouchSelectionQuickMenuIsNotActivated) {
 
   RunPendingMessages();
 
-  ui::test::EventGenerator generator(widget.GetNativeView()->GetRootWindow());
+  ui::test::EventGenerator generator(widget.GetNativeWindow());
   generator.GestureTapAt(gfx::Point(10, 10));
   ShowQuickMenuImmediately(static_cast<TouchSelectionControllerImpl*>(
       textfield_test_api.touch_selection_controller()));
@@ -874,7 +894,7 @@ class WidgetCaptureTest : public ViewsTestBase {
                                    Widget* widget) {
 #if !defined(OS_CHROMEOS)
     if (create_desktop_native_widget)
-      return new DesktopNativeWidgetAura(widget);
+      return new PlatformDesktopNativeWidget(widget);
 #endif
     return NULL;
   }
@@ -919,11 +939,10 @@ TEST_F(WidgetCaptureTest, FailedCaptureRequestIsNoop) {
   EXPECT_FALSE(widget.HasCapture());
 
   widget.Show();
-  ui::MouseEvent mouse_press_event(ui::ET_MOUSE_PRESSED, gfx::Point(300, 10),
-      gfx::Point(300, 10), ui::EF_NONE, ui::EF_NONE);
-  ui::EventDispatchDetails details = widget.GetNativeWindow()->GetHost()->
-      event_processor()->OnEventFromSource(&mouse_press_event);
-  ASSERT_FALSE(details.dispatcher_destroyed);
+  ui::test::EventGenerator generator(GetContext(), widget.GetNativeWindow());
+  generator.set_current_location(gfx::Point(300, 10));
+  generator.PressLeftButton();
+
   EXPECT_FALSE(mouse_view1->pressed());
   EXPECT_TRUE(mouse_view2->pressed());
 }
@@ -953,11 +972,10 @@ TEST_F(WidgetCaptureTest, MouseExitOnCaptureGrab) {
   widget2.Show();
   widget2.SetBounds(gfx::Rect(400, 0, 300, 300));
 
-  ui::MouseEvent mouse_move_event(ui::ET_MOUSE_MOVED, gfx::Point(100, 100),
-      gfx::Point(100, 100), ui::EF_NONE, ui::EF_NONE);
-  ui::EventDispatchDetails details = widget1.GetNativeWindow()->GetHost()->
-      event_processor()->OnEventFromSource(&mouse_move_event);
-  ASSERT_FALSE(details.dispatcher_destroyed);
+  ui::test::EventGenerator generator(widget1.GetNativeWindow());
+  generator.set_current_location(gfx::Point(100, 100));
+  generator.MoveMouseBy(0, 0);
+
   EXPECT_EQ(1, mouse_view1->EnteredCalls());
   EXPECT_EQ(0, mouse_view1->ExitedCalls());
 
@@ -967,7 +985,7 @@ TEST_F(WidgetCaptureTest, MouseExitOnCaptureGrab) {
   // in addition to the one generated by Chrome.
   EXPECT_LT(0, mouse_view1->ExitedCalls());
 }
-#endif
+#endif  // !defined(OS_CHROMEOS)
 
 namespace {
 
@@ -1006,7 +1024,7 @@ TEST_F(WidgetCaptureTest, SetCaptureToNonToplevel) {
   Widget::InitParams child_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   child_params.parent = toplevel.GetNativeView();
-  child_params.context = toplevel.GetNativeView();
+  child_params.context = toplevel.GetNativeWindow();
   child->Init(child_params);
 
   CaptureOnActivationObserver observer;
@@ -1083,7 +1101,7 @@ TEST_F(WidgetCaptureTest, MouseEventDispatchedToRightWindow) {
   EXPECT_TRUE(widget1.GetAndClearGotMouseEvent());
   EXPECT_FALSE(widget2.GetAndClearGotMouseEvent());
 }
-#endif
+#endif  // defined(OS_WIN)
 
 }  // namespace test
 }  // namespace views
