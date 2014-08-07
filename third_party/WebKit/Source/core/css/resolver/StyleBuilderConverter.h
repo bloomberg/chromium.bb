@@ -48,6 +48,7 @@ public:
     static Color convertColor(StyleResolverState&, CSSValue*, bool forVisitedLink = false);
     template <typename T> static T convertComputedLength(StyleResolverState&, CSSValue*);
     template <typename T> static T convertFlags(StyleResolverState&, CSSValue*);
+    static FontWeight convertFontWeight(StyleResolverState&, CSSValue*);
     static FontDescription::VariantLigatures convertFontVariantLigatures(StyleResolverState&, CSSValue*);
     static EGlyphOrientation convertGlyphOrientation(StyleResolverState&, CSSValue*);
     static GridPosition convertGridPosition(StyleResolverState&, CSSValue*);

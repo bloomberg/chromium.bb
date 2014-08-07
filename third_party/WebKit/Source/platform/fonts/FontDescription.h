@@ -113,8 +113,8 @@ public:
     bool isAbsoluteSize() const { return m_isAbsoluteSize; }
     FontWeight weight() const { return static_cast<FontWeight>(m_weight); }
     FontStretch stretch() const { return static_cast<FontStretch>(m_stretch); }
-    FontWeight lighterWeight() const;
-    FontWeight bolderWeight() const;
+    static FontWeight lighterWeight(FontWeight);
+    static FontWeight bolderWeight(FontWeight);
     GenericFamilyType genericFamily() const { return static_cast<GenericFamilyType>(m_genericFamily); }
 
     // only use fixed default size when there is only one font family, and that family is "monospace"

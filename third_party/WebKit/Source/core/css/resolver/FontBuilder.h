@@ -62,8 +62,6 @@ public:
     void setFontSizeValue(CSSValue*, RenderStyle* parentStyle, const RenderStyle* rootElementStyle);
 
     void setWeight(FontWeight);
-    void setWeightBolder();
-    void setWeightLighter();
     void setStretch(FontStretch);
 
     void setFeatureSettingsNormal();
@@ -98,6 +96,7 @@ public:
     static FontDescription::Kerning initialKerning() { return FontDescription::AutoKerning; }
     static FontSmoothingMode initialFontSmoothing() { return AutoSmoothing; }
     static FontStretch initialStretch() { return FontStretchNormal; }
+    static FontWeight initialWeight() { return FontWeightNormal; }
 
     friend class FontDescriptionChangeScope;
 

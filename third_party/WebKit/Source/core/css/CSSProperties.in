@@ -68,7 +68,7 @@ font-stretch font, type_name=FontStretch, name_for_methods=Stretch
 font-style font, type_name=FontStyle, name_for_methods=Style
 font-variant font, type_name=FontVariant, name_for_methods=Variant
 font-variant-ligatures font, name_for_methods=VariantLigatures, converter=convertFontVariantLigatures
-font-weight custom_all
+font-weight font, type_name=FontWeight, name_for_methods=Weight, converter=convertFontWeight
 grid-auto-flow custom_value
 grid-auto-columns converter=convertGridTrackSize
 grid-auto-rows converter=convertGridTrackSize

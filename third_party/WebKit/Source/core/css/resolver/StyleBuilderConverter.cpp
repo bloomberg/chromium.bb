@@ -90,6 +90,19 @@ AtomicString StyleBuilderConverter::convertFragmentIdentifier(StyleResolverState
     return nullAtom;
 }
 
+FontWeight StyleBuilderConverter::convertFontWeight(StyleResolverState& state, CSSValue* value)
+{
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    switch (primitiveValue->getValueID()) {
+    case CSSValueBolder:
+        return FontDescription::bolderWeight(state.parentStyle()->fontDescription().weight());
+    case CSSValueLighter:
+        return FontDescription::lighterWeight(state.parentStyle()->fontDescription().weight());
+    default:
+        return *primitiveValue;
+    }
+}
+
 FontDescription::VariantLigatures StyleBuilderConverter::convertFontVariantLigatures(StyleResolverState&, CSSValue* value)
 {
     if (value->isValueList()) {

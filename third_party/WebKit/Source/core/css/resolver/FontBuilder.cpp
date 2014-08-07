@@ -360,20 +360,6 @@ void FontBuilder::setWeight(FontWeight fontWeight)
     scope.fontDescription().setWeight(fontWeight);
 }
 
-void FontBuilder::setWeightBolder()
-{
-    FontDescriptionChangeScope scope(this);
-
-    scope.fontDescription().setWeight(scope.fontDescription().bolderWeight());
-}
-
-void FontBuilder::setWeightLighter()
-{
-    FontDescriptionChangeScope scope(this);
-
-    scope.fontDescription().setWeight(scope.fontDescription().lighterWeight());
-}
-
 void FontBuilder::setStretch(FontStretch fontStretch)
 {
     FontDescriptionChangeScope scope(this);

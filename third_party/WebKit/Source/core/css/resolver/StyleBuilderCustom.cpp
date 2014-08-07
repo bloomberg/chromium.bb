@@ -307,36 +307,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyFontSize(StyleResolverState& st
     state.fontBuilder().setFontSizeValue(value, state.parentStyle(), state.rootElementStyle());
 }
 
-void StyleBuilderFunctions::applyInitialCSSPropertyFontWeight(StyleResolverState& state)
-{
-    state.fontBuilder().setWeight(FontWeightNormal);
-}
-
-void StyleBuilderFunctions::applyInheritCSSPropertyFontWeight(StyleResolverState& state)
-{
-    state.fontBuilder().setWeight(state.parentFontDescription().weight());
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyFontWeight(StyleResolverState& state, CSSValue* value)
-{
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    switch (primitiveValue->getValueID()) {
-    case CSSValueInvalid:
-        ASSERT_NOT_REACHED();
-        break;
-    case CSSValueBolder:
-        state.fontBuilder().setWeight(state.parentStyle()->fontDescription().weight());
-        state.fontBuilder().setWeightBolder();
-        break;
-    case CSSValueLighter:
-        state.fontBuilder().setWeight(state.parentStyle()->fontDescription().weight());
-        state.fontBuilder().setWeightLighter();
-        break;
-    default:
-        state.fontBuilder().setWeight(*primitiveValue);
-    }
-}
-
 void StyleBuilderFunctions::applyValueCSSPropertyGlyphOrientationVertical(StyleResolverState& state, CSSValue* value)
 {
     if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueAuto)
