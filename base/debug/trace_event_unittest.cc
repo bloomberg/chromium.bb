@@ -2602,6 +2602,15 @@ TEST_F(TraceEventTestFixture, TraceBufferRingBufferFullIteration) {
   TraceLog::GetInstance()->SetDisabled();
 }
 
+TEST_F(TraceEventTestFixture, TraceRecordAsMuchAsPossibleMode) {
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
+                                      TraceLog::RECORDING_MODE,
+                                      TraceOptions(RECORD_AS_MUCH_AS_POSSIBLE));
+  TraceBuffer* buffer = TraceLog::GetInstance()->trace_buffer();
+  EXPECT_EQ(512000000UL, buffer->Capacity());
+  TraceLog::GetInstance()->SetDisabled();
+}
+
 // Test the category filter.
 TEST_F(TraceEventTestFixture, CategoryFilter) {
   // Using the default filter.
@@ -3005,6 +3014,11 @@ TEST(TraceOptionsTest, DISABLED_TraceOptionsFromString) {
   EXPECT_FALSE(options.enable_sampling);
   EXPECT_FALSE(options.enable_systrace);
 
+  options = TraceOptions("record-as-much-as-possible");
+  EXPECT_EQ(RECORD_AS_MUCH_AS_POSSIBLE, options.record_mode);
+  EXPECT_FALSE(options.enable_sampling);
+  EXPECT_FALSE(options.enable_systrace);
+
   options = TraceOptions("record-until-full, enable-sampling");
   EXPECT_EQ(RECORD_UNTIL_FULL, options.record_mode);
   EXPECT_TRUE(options.enable_sampling);
@@ -3039,12 +3053,14 @@ TEST(TraceOptionsTest, DISABLED_TraceOptionsFromString) {
 TEST(TraceOptionsTest, TraceOptionsToString) {
   // Test that we can intialize TraceOptions from a string got from
   // TraceOptions.ToString() method to get a same TraceOptions.
-  TraceRecordMode modes[] = {
-      RECORD_UNTIL_FULL, RECORD_CONTINUOUSLY, ECHO_TO_CONSOLE};
+  TraceRecordMode modes[] = {RECORD_UNTIL_FULL,
+                             RECORD_CONTINUOUSLY,
+                             ECHO_TO_CONSOLE,
+                             RECORD_AS_MUCH_AS_POSSIBLE};
   bool enable_sampling_options[] = {true, false};
   bool enable_systrace_options[] = {true, false};
 
-  for (int i = 0; i < 3; ++i) {
+  for (int i = 0; i < 4; ++i) {
     for (int j = 0; j < 2; ++j) {
       for (int k = 0; k < 2; ++k) {
         TraceOptions original_option = TraceOptions(modes[i]);

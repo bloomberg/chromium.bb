@@ -384,6 +384,9 @@ enum TraceRecordMode {
 
   // Echo to console. Events are discarded.
   ECHO_TO_CONSOLE,
+
+  // Record until the trace buffer is full, but with a huge buffer size.
+  RECORD_AS_MUCH_AS_POSSIBLE
 };
 
 struct BASE_EXPORT TraceOptions {
@@ -649,7 +652,8 @@ class BASE_EXPORT TraceLog {
                            TraceBufferVectorReportFull);
   FRIEND_TEST_ALL_PREFIXES(TraceEventTestFixture,
                            ConvertTraceOptionsToInternalOptions);
-
+  FRIEND_TEST_ALL_PREFIXES(TraceEventTestFixture,
+                           TraceRecordAsMuchAsPossibleMode);
 
   // This allows constructor and destructor to be private and usable only
   // by the Singleton class.
@@ -729,6 +733,7 @@ class BASE_EXPORT TraceLog {
   static const InternalTraceOptions kInternalRecordContinuously;
   static const InternalTraceOptions kInternalEchoToConsole;
   static const InternalTraceOptions kInternalEnableSampling;
+  static const InternalTraceOptions kInternalRecordAsMuchAsPossible;
 
   // This lock protects TraceLog member accesses (except for members protected
   // by thread_info_lock_) from arbitrary threads.

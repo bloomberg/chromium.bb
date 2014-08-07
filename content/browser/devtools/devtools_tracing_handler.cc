@@ -30,6 +30,7 @@ namespace {
 
 const char kRecordUntilFull[]   = "record-until-full";
 const char kRecordContinuously[] = "record-continuously";
+const char kRecordAsMuchAsPossible[] = "record-as-much-as-possible";
 const char kEnableSampling[] = "enable-sampling";
 
 void ReadFile(
@@ -141,6 +142,8 @@ base::debug::TraceOptions DevToolsTracingHandler::TraceOptionsFromString(
       ret.record_mode = base::debug::RECORD_UNTIL_FULL;
     } else if (*iter == kRecordContinuously) {
       ret.record_mode = base::debug::RECORD_CONTINUOUSLY;
+    } else if (*iter == kRecordAsMuchAsPossible) {
+      ret.record_mode = base::debug::RECORD_AS_MUCH_AS_POSSIBLE;
     } else if (*iter == kEnableSampling) {
       ret.enable_sampling = true;
     }

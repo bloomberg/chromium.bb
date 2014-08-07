@@ -61,6 +61,7 @@ const int kOverheadReportThresholdInMicroseconds = 50;
 // String options that can be used to initialize TraceOptions.
 const char kRecordUntilFull[] = "record-until-full";
 const char kRecordContinuously[] = "record-continuously";
+const char kRecordAsMuchAsPossible[] = "record-as-much-as-possible";
 const char kTraceToConsole[] = "trace-to-console";
 const char kEnableSampling[] = "enable-sampling";
 const char kEnableSystrace[] = "enable-systrace";
@@ -68,6 +69,8 @@ const char kEnableSystrace[] = "enable-systrace";
 // Controls the number of trace events we will buffer in-memory
 // before throwing them away.
 const size_t kTraceBufferChunkSize = TraceBufferChunk::kTraceBufferChunkSize;
+const size_t kTraceEventVectorBigBufferChunks =
+    512000000 / kTraceBufferChunkSize;
 const size_t kTraceEventVectorBufferChunks = 256000 / kTraceBufferChunkSize;
 const size_t kTraceEventRingBufferChunks = kTraceEventVectorBufferChunks / 4;
 const size_t kTraceEventBatchChunks = 1000 / kTraceBufferChunkSize;
@@ -996,6 +999,8 @@ TraceOptions::TraceOptions(const std::string& options_string)
       record_mode = RECORD_CONTINUOUSLY;
     } else if (*iter == kTraceToConsole) {
       record_mode = ECHO_TO_CONSOLE;
+    } else if (*iter == kRecordAsMuchAsPossible) {
+      record_mode = RECORD_AS_MUCH_AS_POSSIBLE;
     } else if (*iter == kEnableSampling) {
       enable_sampling = true;
     } else if (*iter == kEnableSystrace) {
@@ -1017,6 +1022,9 @@ std::string TraceOptions::ToString() const {
       break;
     case ECHO_TO_CONSOLE:
       ret = kTraceToConsole;
+      break;
+    case RECORD_AS_MUCH_AS_POSSIBLE:
+      ret = kRecordAsMuchAsPossible;
       break;
     default:
       NOTREACHED();
@@ -1478,6 +1486,8 @@ TraceLog::InternalTraceOptions TraceLog::GetInternalOptionsFromTraceOptions(
       return ret | kInternalRecordContinuously;
     case ECHO_TO_CONSOLE:
       return ret | kInternalEchoToConsole;
+    case RECORD_AS_MUCH_AS_POSSIBLE:
+      return ret | kInternalRecordAsMuchAsPossible;
   }
   NOTREACHED();
   return kInternalNone;
@@ -1498,6 +1508,8 @@ TraceOptions TraceLog::GetCurrentTraceOptions() const {
     ret.record_mode = RECORD_CONTINUOUSLY;
   else if (option & kInternalEchoToConsole)
     ret.record_mode = ECHO_TO_CONSOLE;
+  else if (option & kInternalRecordAsMuchAsPossible)
+    ret.record_mode = RECORD_AS_MUCH_AS_POSSIBLE;
   else
     NOTREACHED();
   return ret;
@@ -1599,6 +1611,8 @@ TraceBuffer* TraceLog::CreateTraceBuffer() {
     return new TraceBufferRingBuffer(kMonitorTraceEventBufferChunks);
   else if (options & kInternalEchoToConsole)
     return new TraceBufferRingBuffer(kEchoToConsoleTraceEventBufferChunks);
+  else if (options & kInternalRecordAsMuchAsPossible)
+    return CreateTraceBufferVectorOfSize(kTraceEventVectorBigBufferChunks);
   return CreateTraceBufferVectorOfSize(kTraceEventVectorBufferChunks);
 }
 

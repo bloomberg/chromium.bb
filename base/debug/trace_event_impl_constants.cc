@@ -11,15 +11,18 @@ namespace debug {
 const char* CategoryFilter::kDefaultCategoryFilterString = "-*Debug,-*Test";
 
 // Constant used by TraceLog's internal implementation of trace_option.
-const TraceLog::InternalTraceOptions TraceLog::kInternalNone = 0;
-const TraceLog::InternalTraceOptions TraceLog::kInternalRecordUntilFull =
-    1 << 0;
-const TraceLog::InternalTraceOptions TraceLog::kInternalRecordContinuously =
-    1 << 1;
-const TraceLog::InternalTraceOptions TraceLog::kInternalEnableSampling = 1
-                                                                          << 2;
-const TraceLog::InternalTraceOptions TraceLog::kInternalEchoToConsole = 1
-                                                                          << 3;
+const TraceLog::InternalTraceOptions
+    TraceLog::kInternalNone = 0;
+const TraceLog::InternalTraceOptions
+    TraceLog::kInternalRecordUntilFull = 1 << 0;
+const TraceLog::InternalTraceOptions
+    TraceLog::kInternalRecordContinuously = 1 << 1;
+const TraceLog::InternalTraceOptions
+    TraceLog::kInternalEnableSampling = 1 << 2;
+const TraceLog::InternalTraceOptions
+    TraceLog::kInternalEchoToConsole = 1 << 3;
+const TraceLog::InternalTraceOptions
+    TraceLog::kInternalRecordAsMuchAsPossible = 1 << 4;
 
 }  // namespace debug
 }  // namespace base
