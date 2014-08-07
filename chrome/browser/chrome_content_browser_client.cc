@@ -1106,6 +1106,11 @@ std::string ChromeContentBrowserClient::GetCanonicalEncodingNameByAliasName(
 namespace {
 
 bool IsAutoReloadEnabled() {
+  // Fetch the field trial, even though we don't use it. Calling FindFullName()
+  // causes the field-trial mechanism to report which group we're in, which
+  // might reflect a hard disable or hard enable via flag, both of which have
+  // their own field trial groups. This lets us know what percentage of users
+  // manually enable or disable auto-reload.
   std::string group = base::FieldTrialList::FindFullName(
       "AutoReloadExperiment");
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
@@ -1113,17 +1118,11 @@ bool IsAutoReloadEnabled() {
     return true;
   if (browser_command_line.HasSwitch(switches::kDisableOfflineAutoReload))
     return false;
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  chrome::VersionInfo::Channel kForceChannel =
-      chrome::VersionInfo::CHANNEL_CANARY;
-  return (channel <= kForceChannel || group == "Enabled");
-#else
-  return group == "Enabled";
-#endif
+  return true;
 }
 
 bool IsAutoReloadVisibleOnlyEnabled() {
+  // See the block comment in IsAutoReloadEnabled().
   std::string group = base::FieldTrialList::FindFullName(
       "AutoReloadVisibleOnlyExperiment");
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
@@ -1135,7 +1134,7 @@ bool IsAutoReloadVisibleOnlyEnabled() {
       switches::kDisableOfflineAutoReloadVisibleOnly)) {
     return false;
   }
-  return group == "Enabled";
+  return true;
 }
 
 }  // namespace
