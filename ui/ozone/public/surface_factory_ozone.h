@@ -119,24 +119,6 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
       gfx::Size size,
       BufferFormat format);
 
-  // Sets the overlay plane to switch to at the next page flip.
-  // |w| specifies the screen to display this overlay plane on.
-  // |plane_z_order| specifies the stacking order of the plane relative to the
-  // main framebuffer located at index 0.
-  // |plane_transform| specifies how the buffer is to be transformed during.
-  // composition.
-  // |buffer| to be presented by the overlay.
-  // |display_bounds| specify where it is supposed to be on the screen.
-  // |crop_rect| specifies the region within the buffer to be placed
-  // inside |display_bounds|. This is specified in texture coordinates, in the
-  // range of [0,1].
-  virtual bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
-                                    int plane_z_order,
-                                    gfx::OverlayTransform plane_transform,
-                                    scoped_refptr<NativePixmap> buffer,
-                                    const gfx::Rect& display_bounds,
-                                    const gfx::RectF& crop_rect);
-
   // Returns true if overlays can be shown at z-index 0, replacing the main
   // surface. Combined with surfaceless extensions, it allows for an
   // overlay-only mode.

@@ -120,8 +120,6 @@ class HardwareDisplayController
   // Disables the CRTC.
   void Disable();
 
-  void QueueOverlayPlane(const OverlayPlane& plane);
-
   // Schedules the |overlays|' framebuffers to be displayed on the next vsync
   // event. The event will be posted on the graphics card file descriptor |fd_|
   // and it can be read and processed by |drmHandleEvent|. That function can
@@ -138,7 +136,7 @@ class HardwareDisplayController
   // called again before the page flip occurrs.
   //
   // Returns true if the page flip was successfully registered, false otherwise.
-  bool SchedulePageFlip();
+  bool SchedulePageFlip(const OverlayPlaneList& overlays);
 
   // TODO(dnicoara) This should be on the MessageLoop when Ozone can have
   // BeginFrame can be triggered explicitly by Ozone.

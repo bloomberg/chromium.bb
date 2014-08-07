@@ -123,30 +123,6 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
   return scoped_refptr<GbmPixmap>(new GbmPixmap(buffer));
 }
 
-bool GbmSurfaceFactory::ScheduleOverlayPlane(
-    gfx::AcceleratedWidget widget,
-    int plane_z_order,
-    gfx::OverlayTransform plane_transform,
-    scoped_refptr<NativePixmap> buffer,
-    const gfx::Rect& display_bounds,
-    const gfx::RectF& crop_rect) {
-  scoped_refptr<GbmPixmap> pixmap = static_cast<GbmPixmap*>(buffer.get());
-  if (!pixmap) {
-    LOG(ERROR) << "ScheduleOverlayPlane passed NULL buffer.";
-    return false;
-  }
-  base::WeakPtr<HardwareDisplayController> hdc =
-      screen_manager_->GetDisplayController(widget);
-  if (!hdc)
-    return true;
-  hdc->QueueOverlayPlane(OverlayPlane(pixmap->buffer(),
-                                      plane_z_order,
-                                      plane_transform,
-                                      display_bounds,
-                                      crop_rect));
-  return true;
-}
-
 bool GbmSurfaceFactory::CanShowPrimaryPlaneAsOverlay() {
   return allow_surfaceless_;
 }

@@ -32,12 +32,6 @@ class GbmSurfaceFactory : public DriSurfaceFactory {
   virtual scoped_refptr<ui::NativePixmap> CreateNativePixmap(
       gfx::Size size,
       BufferFormat format) OVERRIDE;
-  virtual bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
-                                    int plane_z_order,
-                                    gfx::OverlayTransform plane_transform,
-                                    scoped_refptr<NativePixmap> buffer,
-                                    const gfx::Rect& display_bounds,
-                                    const gfx::RectF& crop_rect) OVERRIDE;
   virtual bool CanShowPrimaryPlaneAsOverlay() OVERRIDE;
 
  private:

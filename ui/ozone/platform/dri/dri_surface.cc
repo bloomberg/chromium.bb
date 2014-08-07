@@ -71,10 +71,11 @@ void DriSurface::PresentCanvas(const gfx::Rect& damage) {
   if (!controller_)
     return;
 
-  controller_->QueueOverlayPlane(OverlayPlane(buffers_[front_buffer_ ^ 1]));
+  std::vector<OverlayPlane> planes(
+      1, OverlayPlane(buffers_[front_buffer_ ^ 1]));
 
   UpdateNativeSurface(damage);
-  controller_->SchedulePageFlip();
+  controller_->SchedulePageFlip(planes);
   controller_->WaitForPageFlipEvent();
 
   // Update our front buffer pointer.

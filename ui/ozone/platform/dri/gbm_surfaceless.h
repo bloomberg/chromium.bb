@@ -30,8 +30,15 @@ class GbmSurfaceless : public SurfaceOzoneEGL {
   virtual bool ResizeNativeWindow(const gfx::Size& viewport_size) OVERRIDE;
   virtual bool OnSwapBuffers() OVERRIDE;
   virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() OVERRIDE;
+  virtual bool ScheduleOverlayPlane(int plane_z_order,
+                                    gfx::OverlayTransform plane_transform,
+                                    scoped_refptr<ui::NativePixmap> buffer,
+                                    const gfx::Rect& display_bounds,
+                                    const gfx::RectF& crop_rect) OVERRIDE;
+
  protected:
   base::WeakPtr<HardwareDisplayController> controller_;
+  OverlayPlaneList queued_planes_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmSurfaceless);
 };
