@@ -41,13 +41,14 @@ class UserImage;
 namespace chromeos {
 
 struct WallpaperInfo {
-  // Online wallpaper URL or file name of migrated wallpaper.
-  std::string file;
+  // Either file name of migrated wallpaper including first directory level
+  // (corresponding to user id hash) or online wallpaper URL.
+  std::string location;
   ash::WallpaperLayout layout;
   user_manager::User::WallpaperType type;
   base::Time date;
   bool operator==(const WallpaperInfo& other) {
-    return (file == other.file) && (layout == other.layout) &&
+    return (location == other.location) && (layout == other.layout) &&
         (type == other.type);
   }
 };

@@ -273,7 +273,7 @@ bool WallpaperPrivateGetStringsFunction::RunSync() {
   chromeos::WallpaperInfo info;
 
   if (wallpaper_manager->GetLoggedInUserWallpaperInfo(&info))
-    dict->SetString("currentWallpaper", info.file);
+    dict->SetString("currentWallpaper", info.location);
 
 #if defined(GOOGLE_CHROME_BUILD)
   dict->SetString("manifestBaseURL", kWallpaperManifestBaseURL);
