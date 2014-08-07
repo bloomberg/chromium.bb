@@ -44587,6 +44587,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="7" label="new tab page with omnibox as starting focus"/>
   <int value="8" label="new tab page with fakebox as starting focus"/>
   <int value="9" label="search results page without search term replacement"/>
+  <int value="10" label="home screen"/>
+  <int value="11" label="search app"/>
+  <int value="12" label="maps app"/>
 </enum>
 
 <enum name="OmniboxProviderAndResultType" type="int">
@@ -44617,6 +44620,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1106" label="NAVSUGGEST via ZeroSuggest"/>
   <int value="1109" label="SEARCH_SUGGEST via ZeroSuggest"/>
   <int value="1116" label="SEARCH_SUGGEST_PERSONALIZED via ZeroSuggest"/>
+  <int value="1202" label="HISTORY_URL from on-device service"/>
+  <int value="1212" label="CONTACT from on-device service"/>
+  <int value="1218" label="APP_RESULT from on-device service"/>
+  <int value="1219" label="APP from on-device service"/>
+  <int value="1220" label="LEGACY_ON_DEVICE from on-device service"/>
 </enum>
 
 <enum name="OmniboxProviderType" type="int">
@@ -44632,6 +44640,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="10" label="BookmarkProvider"/>
   <int value="11" label="ZeroSuggest"/>
   <int value="12" label="on device (only used by Android GSA)"/>
+  <int value="13" label="on device chrome (chrome content provider)"/>
 </enum>
 
 <enum name="OmniboxSearchEngine" type="int">
