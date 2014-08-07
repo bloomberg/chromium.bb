@@ -125,6 +125,7 @@
         '../ui/wm/wm.gyp:wm',
         '../url/url.gyp:url_lib',
         'athena_lib',
+        'resources/athena_resources.gyp:athena_resources',
       ],
       'sources': [
         'main/athena_launcher.cc',

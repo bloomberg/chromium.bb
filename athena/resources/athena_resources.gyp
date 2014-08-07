@@ -8,6 +8,23 @@
   },
   'targets': [
     {
+      'target_name': 'athena_resources',
+      'type': 'none',
+      'variables': {
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/athena/resources',
+      },
+      'actions': [
+        {
+          'action_name': 'athena_resources',
+          'variables': {
+            'grit_grd_file': 'athena_resources.grd',
+          },
+          'includes': [ '../../build/grit_action.gypi' ],
+        },
+      ],
+      'includes': [ '../../build/grit_target.gypi' ],
+    },
+    {
       'target_name': 'athena_pak',
       'type': 'none',
       'dependencies': [
@@ -17,6 +34,7 @@
         '../../ui/chromeos/ui_chromeos.gyp:ui_chromeos_strings',
         '../../webkit/webkit_resources.gyp:webkit_resources',
         '../../webkit/webkit_resources.gyp:webkit_strings',
+        'athena_resources',
       ],
       'actions': [{
         'action_name': 'repack_athena_pack',
@@ -24,6 +42,7 @@
           'pak_inputs': [
             '<(PRODUCT_DIR)/extensions_shell_and_test.pak',
             '<(SHARED_INTERMEDIATE_DIR)/ash/resources/ash_resources_100_percent.pak',
+            '<(SHARED_INTERMEDIATE_DIR)/athena/resources/athena_resources_100_percent.pak',
             '<(SHARED_INTERMEDIATE_DIR)/ui/chromeos/resources/ui_chromeos_resources_100_percent.pak',
             '<(SHARED_INTERMEDIATE_DIR)/ui/chromeos/strings/ui_chromeos_strings_en-US.pak',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_100_percent.pak',

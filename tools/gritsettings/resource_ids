@@ -54,6 +54,9 @@
     "includes": [6100],
     "structures": [6150],
   },
+  "athena/resources/athena_resources.grd": {
+    "structures": [6400],
+  },
   "chrome/app/theme/theme_resources.grd": {
     "structures": [6500],
   },

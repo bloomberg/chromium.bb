@@ -12,6 +12,7 @@ include_rules = [
   "+components/metrics/proto",
   "+components/search_engines",
   "+content/public",
+  "+grit",
   "+net",
   "+ui/aura",
   "+ui/app_list",
