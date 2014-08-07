@@ -29,7 +29,7 @@ const ui::PlatformCursor WebCursor::GetPlatformCursor() {
   memcpy(bitmap.getAddr32(0, 0), custom_data_.data(), custom_data_.size());
   gfx::Point hotspot = hotspot_;
   ui::ScaleAndRotateCursorBitmapAndHotpoint(
-      device_scale_factor_, rotation_, &bitmap, &hotspot);
+      device_scale_factor_, gfx::Display::ROTATE_0, &bitmap, &hotspot);
 
   XcursorImage* image = ui::SkBitmapToXcursorImage(&bitmap, hotspot);
   platform_cursor_ = ui::CreateReffedCustomXCursor(image);
@@ -37,12 +37,10 @@ const ui::PlatformCursor WebCursor::GetPlatformCursor() {
 }
 
 void WebCursor::SetDisplayInfo(const gfx::Display& display) {
-  if (rotation_ == display.rotation() &&
-      device_scale_factor_ == display.device_scale_factor())
+  if (device_scale_factor_ == display.device_scale_factor())
     return;
 
   device_scale_factor_ = display.device_scale_factor();
-  rotation_ = display.rotation();
   if (platform_cursor_)
     ui::UnrefCustomXCursor(platform_cursor_);
   platform_cursor_ = 0;
@@ -53,7 +51,6 @@ void WebCursor::SetDisplayInfo(const gfx::Display& display) {
 void WebCursor::InitPlatformData() {
   platform_cursor_ = 0;
   device_scale_factor_ = 1.f;
-  rotation_ = gfx::Display::ROTATE_0;
 }
 
 bool WebCursor::SerializePlatformData(Pickle* pickle) const {

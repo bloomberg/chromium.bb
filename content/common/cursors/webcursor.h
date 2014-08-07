@@ -172,10 +172,13 @@ class CONTENT_EXPORT WebCursor {
   // Only used for custom cursors.
   ui::PlatformCursor platform_cursor_;
   float device_scale_factor_;
-  gfx::Display::Rotation rotation_;
 #elif defined(OS_WIN)
   // A custom cursor created from custom bitmap data by Webkit.
   HCURSOR custom_cursor_;
+#endif
+
+#if defined(USE_OZONE)
+  gfx::Display::Rotation rotation_;
 #endif
 };
 
