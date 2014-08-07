@@ -177,7 +177,10 @@ bool Value::VerifyTypeIs(Type t, Err* err) const {
   if (type_ == t)
     return true;
 
-  *err = Err(origin(), std::string("This is not a ") + DescribeType(t) + ".");
+  *err = Err(origin(),
+             std::string("This is not a ") + DescribeType(t) + ".",
+             std::string("Instead I see a ") + DescribeType(type_) + " = " +
+             ToString(true));
   return false;
 }
 

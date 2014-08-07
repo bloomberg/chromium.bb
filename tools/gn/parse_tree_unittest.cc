@@ -76,4 +76,28 @@ TEST(ParseTree, BlockUnusedVars) {
 
   input_unused.parsed()->Execute(setup.scope(), &err);
   EXPECT_TRUE(err.has_error());
+
+  // Also verify that the unused variable has the correct origin set. The
+  // origin will point to the value assigned to the variable (in this case, the
+  // "13" assigned to "b".
+  EXPECT_EQ(3, err.location().line_number());
+  EXPECT_EQ(7, err.location().char_offset());
+
+}
+
+TEST(ParseTree, OriginForDereference) {
+  TestWithScope setup;
+  TestParseInput input(
+      "a = 6\n"
+      "get_target_outputs(a)");
+  EXPECT_FALSE(input.has_error());
+
+  Err err;
+  input.parsed()->Execute(setup.scope(), &err);
+  EXPECT_TRUE(err.has_error());
+
+  // The origin for the "not a string" error message should be where the value
+  // was dereferenced (the "a" on the second line).
+  EXPECT_EQ(2, err.location().line_number());
+  EXPECT_EQ(20, err.location().char_offset());
 }

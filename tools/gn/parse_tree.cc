@@ -373,12 +373,16 @@ const IdentifierNode* IdentifierNode::AsIdentifier() const {
 }
 
 Value IdentifierNode::Execute(Scope* scope, Err* err) const {
-  const Value* result = scope->GetValue(value_.value(), true);
-  if (!result) {
+  const Value* value = scope->GetValue(value_.value(), true);
+  Value result;
+  if (!value) {
     *err = MakeErrorDescribing("Undefined identifier");
-    return Value();
+    return result;
   }
-  return *result;
+
+  result = *value;
+  result.set_origin(this);
+  return result;
 }
 
 LocationRange IdentifierNode::GetRange() const {
