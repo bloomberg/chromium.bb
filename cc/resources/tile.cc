@@ -87,6 +87,8 @@ void Tile::AsValueInto(base::debug::TracedValue* res) const {
   res->EndDictionary();
 
   res->SetBoolean("use_picture_analysis", use_picture_analysis());
+
+  res->SetInteger("gpu_memory_usage", GPUMemoryUsageInBytes());
 }
 
 size_t Tile::GPUMemoryUsageInBytes() const {
