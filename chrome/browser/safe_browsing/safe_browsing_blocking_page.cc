@@ -687,41 +687,6 @@ void SafeBrowsingBlockingPage::RecordUserAction(BlockingPageEvent event) {
       }
     }
   }
-
-  // TODO(felt): Get rid of the old interstitial histogram.
-  std::string action = "SBInterstitial";
-  switch (interstitial_type_) {
-    case TYPE_MALWARE_AND_PHISHING:
-      action.append("Multiple");
-      break;
-    case TYPE_MALWARE:
-      action.append("Malware");
-      break;
-    case TYPE_PHISHING:
-      action.append("Phishing");
-      break;
-  }
-
-  switch (event) {
-    case SHOW:
-      action.append("Show");
-      break;
-    case PROCEED:
-      action.append("Proceed");
-      break;
-    case DONT_PROCEED:
-      if (IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled))
-        action.append("ForcedDontProceed");
-      else
-        action.append("DontProceed");
-      break;
-    case SHOW_ADVANCED:
-      break;
-    default:
-      NOTREACHED() << "Unexpected event: " << event;
-  }
-
-  content::RecordComputedAction(action);
 }
 
 void SafeBrowsingBlockingPage::RecordUserReactionTime(

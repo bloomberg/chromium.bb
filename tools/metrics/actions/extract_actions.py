@@ -53,7 +53,6 @@ KNOWN_COMPUTED_USERS = (
   'user_metrics.cc',  # method definition
   'new_tab_ui.cc',  # most visited clicks 1-9
   'extension_metrics_module.cc', # extensions hook for user metrics
-  'safe_browsing_blocking_page.cc', # various interstitial types and actions
   'language_options_handler_common.cc', # languages and input methods in CrOS
   'cros_language_options_handler.cc', # languages and input methods in CrOS
   'about_flags.cc', # do not generate a warning; see AddAboutFlagsActions()
@@ -151,11 +150,6 @@ def AddComputedActions(actions):
   # Actions for new_tab_ui.cc.
   for i in range(1, 10):
     actions.add('MostVisited%d' % i)
-
-  # Actions for safe_browsing_blocking_page.cc.
-  for interstitial in ('Phishing', 'Malware', 'Multiple'):
-    for action in ('Show', 'Proceed', 'DontProceed', 'ForcedDontProceed'):
-      actions.add('SBInterstitial%s%s' % (interstitial, action))
 
   # Actions for language_options_handler.cc (Chrome OS specific).
   for input_method_id in INPUT_METHOD_IDS:

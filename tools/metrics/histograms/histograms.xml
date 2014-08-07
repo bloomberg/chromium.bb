@@ -52788,8 +52788,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram_suffixes>
 
 <histogram_suffixes name="SBInterstitial">
-  <suffix name="V1" label="original interstitial"/>
-  <suffix name="V2" label="version 2 (new interstitial)"/>
+  <obsolete>
+    deprecated November 10 2012 crrev.com/167056
+  </obsolete>
+  <suffix name="V1" label="version 1 interstitial"/>
+  <suffix name="V2" label="version 2 interstitial"/>
   <affected-histogram name="SB2.InterstitialAction"/>
   <affected-histogram name="SB2.MalwareInterstitialTimeClosed"/>
   <affected-histogram name="SB2.MalwareInterstitialTimeDiagnostic"/>
