@@ -2721,9 +2721,6 @@ TEST_F(SSLClientSocketTest, HandshakeCallbackIsRun_WithSuccess) {
   sock->SetHandshakeCompletionCallback(base::Bind(
       &SSLClientSocketTest::RecordCompletedHandshake, base::Unretained(this)));
 
-  if (sock->IsConnected())
-    LOG(ERROR) << "SSL Socket prematurely connected";
-
   rv = callback.GetResult(sock->Connect(callback.callback()));
 
   EXPECT_EQ(OK, rv);
@@ -2731,6 +2728,42 @@ TEST_F(SSLClientSocketTest, HandshakeCallbackIsRun_WithSuccess) {
   EXPECT_TRUE(ran_handshake_completion_callback_);
 }
 
+// Tests that the completion callback is run with connections
+// that do not cache their session.
+TEST_F(SSLClientSocketTest, HandshakeCallbackIsRun_WithDisabledSessionCache) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.disable_session_cache = true;
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTPS, ssl_options, base::FilePath());
+  ASSERT_TRUE(test_server.Start());
+
+  AddressList addr;
+  ASSERT_TRUE(test_server.GetAddressList(&addr));
+
+  scoped_ptr<StreamSocket> transport(
+      new TCPClientSocket(addr, NULL, NetLog::Source()));
+
+  TestCompletionCallback callback;
+  int rv = transport->Connect(callback.callback());
+  if (rv == ERR_IO_PENDING)
+    rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  SSLConfig ssl_config = kDefaultSSLConfig;
+  ssl_config.false_start_enabled = false;
+
+  scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
+      transport.Pass(), test_server.host_port_pair(), ssl_config));
+
+  sock->SetHandshakeCompletionCallback(base::Bind(
+      &SSLClientSocketTest::RecordCompletedHandshake, base::Unretained(this)));
+
+  rv = callback.GetResult(sock->Connect(callback.callback()));
+
+  EXPECT_EQ(OK, rv);
+  EXPECT_TRUE(sock->IsConnected());
+  EXPECT_TRUE(ran_handshake_completion_callback_);
+}
 #endif  // defined(USE_OPENSSL)
 
 TEST_F(SSLClientSocketFalseStartTest, FalseStartEnabled) {

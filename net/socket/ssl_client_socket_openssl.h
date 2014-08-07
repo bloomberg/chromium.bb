@@ -106,6 +106,10 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   friend class SSLClientSocket;
   friend class SSLContext;
 
+  // Callback that is run by OpenSSL to obtain information about the
+  // state of the SSL handshake.
+  static void InfoCallback(const SSL* ssl, int result, int unused);
+
   int Init();
   void DoReadCallback(int result);
   void DoWriteCallback(int result);
@@ -167,6 +171,8 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
                           int cmd,
                           const char *argp, int argi, long argl,
                           long retvalue);
+
+  void CheckIfHandshakeFinished();
 
   bool transport_send_busy_;
   bool transport_recv_busy_;
@@ -268,6 +274,11 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   std::string channel_id_cert_;
   // True if channel ID extension was negotiated.
   bool channel_id_xtn_negotiated_;
+  // True if InfoCallback has been run with result = SSL_CB_HANDSHAKE_DONE.
+  bool ran_handshake_finished_callback_;
+  // True if MarkSSLSessionAsGood has been called for this socket's
+  // connection's SSL session.
+  bool marked_session_as_good_;
   // The request handle for |channel_id_service_|.
   ChannelIDService::RequestHandle channel_id_request_handle_;
   BoundNetLog net_log_;

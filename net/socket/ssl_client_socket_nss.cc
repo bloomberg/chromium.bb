@@ -2843,6 +2843,7 @@ void SSLClientSocketNSS::SetHandshakeCompletionCallback(
     const base::Closure& callback) {
   NOTIMPLEMENTED();
 }
+
 void SSLClientSocketNSS::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) {
   EnterFunction("");

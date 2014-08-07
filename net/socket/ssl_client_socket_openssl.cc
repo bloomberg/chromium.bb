@@ -363,6 +363,8 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       next_handshake_state_(STATE_NONE),
       npn_status_(kNextProtoUnsupported),
       channel_id_xtn_negotiated_(false),
+      ran_handshake_finished_callback_(false),
+      marked_session_as_good_(false),
       net_log_(transport_->socket()->NetLog()) {
 }
 
@@ -435,14 +437,6 @@ int SSLClientSocketOpenSSL::Connect(const CompletionCallback& callback) {
     return rv;
   }
 
-  if (!handshake_completion_callback_.is_null()) {
-    SSLContext* context = SSLContext::GetInstance();
-    context->session_cache()->SetSessionAddedCallback(
-        ssl_,
-        base::Bind(&SSLClientSocketOpenSSL::OnHandshakeCompletion,
-                   base::Unretained(this)));
-  }
-
   // Set SSL to client mode. Handshake happens in the loop below.
   SSL_set_connect_state(ssl_);
 
@@ -465,8 +459,6 @@ void SSLClientSocketOpenSSL::Disconnect() {
   // completed, this is a no-op.
   OnHandshakeCompletion();
   if (ssl_) {
-    SSLContext* context = SSLContext::GetInstance();
-    context->session_cache()->RemoveSessionAddedCallback(ssl_);
     // Calling SSL_shutdown prevents the session from being marked as
     // unresumable.
     SSL_shutdown(ssl_);
@@ -687,6 +679,18 @@ int SSLClientSocketOpenSSL::SetSendBufferSize(int32 size) {
   return transport_->socket()->SetSendBufferSize(size);
 }
 
+// static
+void SSLClientSocketOpenSSL::InfoCallback(const SSL* ssl,
+                                          int result,
+                                          int /*unused*/) {
+  SSLClientSocketOpenSSL* ssl_socket =
+      SSLContext::GetInstance()->GetClientSocketFromSSL(ssl);
+  if (result == SSL_CB_HANDSHAKE_DONE) {
+    ssl_socket->ran_handshake_finished_callback_ = true;
+    ssl_socket->CheckIfHandshakeFinished();
+  }
+}
+
 int SSLClientSocketOpenSSL::Init() {
   DCHECK(!ssl_);
   DCHECK(!transport_bio_);
@@ -700,6 +704,9 @@ int SSLClientSocketOpenSSL::Init() {
 
   if (!SSL_set_tlsext_host_name(ssl_, host_and_port_.host().c_str()))
     return ERR_UNEXPECTED;
+
+  // Set an OpenSSL callback to monitor this SSL*'s connection.
+  SSL_set_info_callback(ssl_, &InfoCallback);
 
   trying_cached_session_ = context->session_cache()->SetSSLSessionWithKey(
       ssl_, GetSessionCacheKey());
@@ -1032,6 +1039,8 @@ int SSLClientSocketOpenSSL::DoVerifyCertComplete(int result) {
     // TODO(joth): Work out if we need to remember the intermediate CA certs
     // when the server sends them to us, and do so here.
     SSLContext::GetInstance()->session_cache()->MarkSSLSessionAsGood(ssl_);
+    marked_session_as_good_ = true;
+    CheckIfHandshakeFinished();
   } else {
     DVLOG(1) << "DoVerifyCertComplete error " << ErrorToString(result)
              << " (" << result << ")";
@@ -1575,6 +1584,19 @@ long SSLClientSocketOpenSSL::MaybeReplayTransportError(
     }
   }
   return retvalue;
+}
+
+// Determines if the session for |ssl_| is in the cache, and calls the
+// handshake completion callback if that is the case.
+//
+// CheckIfHandshakeFinished is called twice per connection: once after
+// MarkSSLSessionAsGood, when the certificate has been verified, and
+// once via an OpenSSL callback when the handshake has completed. On the
+// second call, when the certificate has been verified and the handshake
+// has completed, the connection's handshake completion callback is run.
+void SSLClientSocketOpenSSL::CheckIfHandshakeFinished() {
+  if (ran_handshake_finished_callback_ && marked_session_as_good_)
+    OnHandshakeCompletion();
 }
 
 // static
