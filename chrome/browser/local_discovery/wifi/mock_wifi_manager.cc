@@ -85,7 +85,13 @@ MockWifiManagerFactory::~MockWifiManagerFactory() {
 scoped_ptr<WifiManager> MockWifiManagerFactory::CreateWifiManager() {
   last_created_manager_ = new MockWifiManager();
 
+  WifiManagerCreated();
+
   return scoped_ptr<WifiManager>(last_created_manager_);
+}
+
+MockWifiManager* MockWifiManagerFactory::GetLastCreatedWifiManager() {
+  return last_created_manager_;
 }
 
 }  // namespace wifi

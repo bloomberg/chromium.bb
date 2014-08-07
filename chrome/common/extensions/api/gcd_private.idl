@@ -96,6 +96,9 @@ namespace gcdPrivate {
   // |success| Denotes whether the password fetch has succeeded or failed.
   callback SuccessCallback = void(boolean success);
 
+  // Called as a response to |getPrefetchedWifiNameList|
+  // |list| the list of ssids for which wifi passwords were prefetched.
+  callback SSIDListCallback = void(DOMString[] networks);
 
   interface Functions {
     // Returns the list of cloud devices visible locally or available in the
@@ -112,6 +115,9 @@ namespace gcdPrivate {
     // not be done while connected to the device's network. Callback is called
     // with true if wifi password was cached and false if it was unavailable.
     static void prefetchWifiPassword(DOMString ssid, SuccessCallback callback);
+
+    // Get the list of ssids with prefetched callbacks.
+    static void getPrefetchedWifiNameList(SSIDListCallback callback);
 
     // Establish the session.
     static void establishSession(DOMString ipAddress,

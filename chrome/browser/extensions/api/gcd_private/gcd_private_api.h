@@ -108,6 +108,21 @@ class GcdPrivatePrefetchWifiPasswordFunction
   void OnResponse(bool response);
 };
 
+class GcdPrivateGetPrefetchedWifiNameListFunction
+    : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("gcdPrivate.getPrefetchedWifiNameList",
+                             GCDPRIVATE_GETPREFETCHEDWIFINAMELIST);
+
+  GcdPrivateGetPrefetchedWifiNameListFunction();
+
+ protected:
+  virtual ~GcdPrivateGetPrefetchedWifiNameListFunction();
+
+  // SyncExtensionFunction overrides.
+  virtual bool RunSync() OVERRIDE;
+};
+
 class GcdPrivateEstablishSessionFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("gcdPrivate.establishSession",

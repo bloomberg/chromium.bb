@@ -136,6 +136,8 @@ class GcdPrivateAPIImpl : public EventRouter::Observer,
 
   void RemoveSession(int session_id);
 
+  scoped_ptr<base::ListValue> GetPrefetchedSSIDList();
+
  private:
   typedef std::map<std::string /* id_string */,
                    linked_ptr<api::gcd_private::GCDDevice> > GCDDeviceMap;
@@ -391,10 +393,7 @@ void GcdPrivateAPIImpl::SendMessage(int session_id,
   if (api == kPrivatAPISetup) {
     const base::DictionaryValue* wifi = NULL;
 
-    if (input.GetDictionary(kPrivetKeyWifi, &wifi) &&
-        !wifi->HasKey(kPrivetKeyPassphrase)) {
-      // If the message is a setup message, has a wifi section, try sending the
-      // passphrase.
+    if (input.GetDictionary(kPrivetKeyWifi, &wifi)) {
       std::string ssid;
 
       if (!wifi->GetString(kPrivetKeySSID, &ssid)) {
@@ -403,16 +402,21 @@ void GcdPrivateAPIImpl::SendMessage(int session_id,
         return;
       }
 
-      PasswordMap::iterator found = wifi_passwords_.find(ssid);
-      if (found == wifi_passwords_.end()) {
-        callback.Run(gcd_private::STATUS_WIFIPASSWORDERROR,
-                     base::DictionaryValue());
-        return;
-      }
+      if (!wifi->HasKey(kPrivetKeyPassphrase)) {
+        // If the message is a setup message, has a wifi section, try sending
+        // the passphrase.
 
-      input_cloned.reset(input.DeepCopy());
-      input_cloned->SetString(kPrivetKeyPassphraseDotted, found->second);
-      input_actual = input_cloned.get();
+        PasswordMap::iterator found = wifi_passwords_.find(ssid);
+        if (found == wifi_passwords_.end()) {
+          callback.Run(gcd_private::STATUS_WIFIPASSWORDERROR,
+                       base::DictionaryValue());
+          return;
+        }
+
+        input_cloned.reset(input.DeepCopy());
+        input_cloned->SetString(kPrivetKeyPassphraseDotted, found->second);
+        input_actual = input_cloned.get();
+      }
     }
   }
 #endif
@@ -465,6 +469,20 @@ void GcdPrivateAPIImpl::StartWifiIfNotStarted() {
 
 void GcdPrivateAPIImpl::RemoveSession(int session_id) {
   sessions_.erase(session_id);
+}
+
+scoped_ptr<base::ListValue> GcdPrivateAPIImpl::GetPrefetchedSSIDList() {
+  scoped_ptr<base::ListValue> retval(new base::ListValue);
+
+#if defined(ENABLE_WIFI_BOOTSTRAPPING)
+  for (PasswordMap::iterator i = wifi_passwords_.begin();
+       i != wifi_passwords_.end();
+       i++) {
+    retval->AppendString(i->first);
+  }
+#endif
+
+  return retval.Pass();
 }
 
 GcdPrivateRequest::GcdPrivateRequest(
@@ -686,9 +704,6 @@ GcdPrivateQueryForNewLocalDevicesFunction::
 bool GcdPrivateQueryForNewLocalDevicesFunction::RunSync() {
   GcdPrivateAPIImpl* gcd_api = GcdPrivateAPIImpl::Get(GetProfile());
 
-  if (!gcd_api)
-    return false;
-
   if (!gcd_api->QueryForDevices()) {
     error_ =
         "You must first subscribe to onDeviceStateChanged or onDeviceRemoved "
@@ -715,9 +730,6 @@ bool GcdPrivatePrefetchWifiPasswordFunction::RunAsync() {
     return false;
 
   GcdPrivateAPIImpl* gcd_api = GcdPrivateAPIImpl::Get(GetProfile());
-
-  if (!gcd_api)
-    return false;
 
   gcd_api->RequestWifiPassword(
       params->ssid,
@@ -747,9 +759,6 @@ bool GcdPrivateEstablishSessionFunction::RunAsync() {
     return false;
 
   GcdPrivateAPIImpl* gcd_api = GcdPrivateAPIImpl::Get(GetProfile());
-
-  if (!gcd_api)
-    return false;
 
   gcd_api->EstablishSession(
       params->ip_address,
@@ -785,9 +794,6 @@ bool GcdPrivateConfirmCodeFunction::RunAsync() {
 
   GcdPrivateAPIImpl* gcd_api = GcdPrivateAPIImpl::Get(GetProfile());
 
-  if (!gcd_api)
-    return false;
-
   gcd_api->ConfirmCode(
       params->session_id,
       base::Bind(&GcdPrivateConfirmCodeFunction::OnSessionEstablishedCallback,
@@ -817,8 +823,6 @@ bool GcdPrivateSendMessageFunction::RunAsync() {
 
   GcdPrivateAPIImpl* gcd_api = GcdPrivateAPIImpl::Get(GetProfile());
 
-  if (!gcd_api)
-    return false;
 
   gcd_api->SendMessage(
       params->session_id,
@@ -854,9 +858,6 @@ bool GcdPrivateTerminateSessionFunction::RunAsync() {
 
   GcdPrivateAPIImpl* gcd_api = GcdPrivateAPIImpl::Get(GetProfile());
 
-  if (!gcd_api)
-    return false;
-
   gcd_api->RemoveSession(params->session_id);
 
   SendResponse(true);
@@ -869,6 +870,24 @@ GcdPrivateGetCommandDefinitionsFunction::
 
 GcdPrivateGetCommandDefinitionsFunction::
     ~GcdPrivateGetCommandDefinitionsFunction() {
+}
+
+GcdPrivateGetPrefetchedWifiNameListFunction::
+    GcdPrivateGetPrefetchedWifiNameListFunction() {
+}
+
+GcdPrivateGetPrefetchedWifiNameListFunction::
+    ~GcdPrivateGetPrefetchedWifiNameListFunction() {
+}
+
+bool GcdPrivateGetPrefetchedWifiNameListFunction::RunSync() {
+  GcdPrivateAPIImpl* gcd_api = GcdPrivateAPIImpl::Get(GetProfile());
+
+  scoped_ptr<base::ListValue> ssid_list = gcd_api->GetPrefetchedSSIDList();
+
+  SetResult(ssid_list.release());
+
+  return true;
 }
 
 bool GcdPrivateGetCommandDefinitionsFunction::RunAsync() {
