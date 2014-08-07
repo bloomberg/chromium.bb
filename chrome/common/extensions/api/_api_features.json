@@ -53,9 +53,8 @@
       "web_page",
       "blessed_web_page"
     ],
-    "matches": [
-      "http://*/*", "https://*/*", "chrome-extension://*/*", "file://*/*"
-    ]
+    // Any webpage can use the app API.
+    "matches": ["<all_urls>"]
   },
   "appViewInternal": {
     "internal": true,
@@ -763,12 +762,14 @@
   "webstore": {
     // Hosted apps can use the webstore API from within a blessed context.
     "channel": "stable",
-    // Do not specify extension_types to prevent webstore from being filtered.
+    // Set extension_types to 'all' to prevent webstore from being filtered.
     // Technically, webstore is not in apps or extensions, but it is currently
-    // displayed on /extensions/webstore and /apps/webstore.
+    // displayed on /extensions/webstore and /apps/webstore. The "contexts"
+    // restriction effectively restricts this to hosted apps and webpages.
+    "extension_types": "all",
     "contexts": ["blessed_web_page", "web_page"],
     // Any webpage can use the webstore API.
-    "matches": ["http://*/*", "https://*/*"]
+    "matches": ["<all_urls>"]
   },
   "webstorePrivate": {
     "dependencies": ["permission:webstorePrivate"],

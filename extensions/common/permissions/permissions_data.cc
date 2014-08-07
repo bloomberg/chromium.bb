@@ -77,7 +77,7 @@ bool PermissionsData::IsRestrictedUrl(const GURL& document_url,
                                       const GURL& top_frame_url,
                                       const Extension* extension,
                                       std::string* error) {
-  if (CanExecuteScriptEverywhere(extension))
+  if (extension && CanExecuteScriptEverywhere(extension))
     return false;
 
   // Check if the scheme is valid for extensions. If not, return.
@@ -103,9 +103,8 @@ bool PermissionsData::IsRestrictedUrl(const GURL& document_url,
     return true;
   }
 
-  if (top_frame_url.SchemeIs(kExtensionScheme) &&
-      top_frame_url.host() != extension->id() &&
-      !allow_on_chrome_urls) {
+  if (extension && top_frame_url.SchemeIs(kExtensionScheme) &&
+      top_frame_url.host() != extension->id() && !allow_on_chrome_urls) {
     if (error)
       *error = manifest_errors::kCannotAccessExtensionUrl;
     return true;

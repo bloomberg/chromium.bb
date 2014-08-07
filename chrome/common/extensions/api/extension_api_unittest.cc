@@ -673,9 +673,9 @@ TEST(ExtensionAPITest, URLMatching) {
   EXPECT_TRUE(MatchesURL(api.get(), "app", "https://blah.net"));
   EXPECT_TRUE(MatchesURL(api.get(), "app", "file://somefile.html"));
 
-  // But not internal URLs.
-  EXPECT_FALSE(MatchesURL(api.get(), "app", "about:flags"));
-  EXPECT_FALSE(MatchesURL(api.get(), "app", "chrome://flags"));
+  // Also to internal URLs.
+  EXPECT_TRUE(MatchesURL(api.get(), "app", "about:flags"));
+  EXPECT_TRUE(MatchesURL(api.get(), "app", "chrome://flags"));
 
   // "app" should be available to chrome-extension URLs.
   EXPECT_TRUE(MatchesURL(api.get(), "app",

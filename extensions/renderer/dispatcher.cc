@@ -1003,8 +1003,11 @@ void Dispatcher::UpdateBindingsForContext(ScriptContext* context) {
     case Feature::BLESSED_WEB_PAGE_CONTEXT: {
       // Web page context; it's too expensive to run the full bindings code.
       // Hard-code that the app and webstore APIs are available...
-      RegisterBinding("app", context);
-      RegisterBinding("webstore", context);
+      if (context->GetAvailability("app").is_available())
+        RegisterBinding("app", context);
+
+      if (context->GetAvailability("webstore").is_available())
+        RegisterBinding("webstore", context);
 
       // ... and that the runtime API might be available if any extension can
       // connect to it.
