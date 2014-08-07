@@ -140,7 +140,7 @@ void ScrollbarThemeMacCommon::paintOverhangBackground(GraphicsContext* context, 
     if (!m_overhangPattern) {
         // Lazily load the linen pattern image used for overhang drawing.
         RefPtr<Image> patternImage = Image::loadPlatformResource("overhangPattern");
-        m_overhangPattern = Pattern::create(patternImage, true, true);
+        m_overhangPattern = Pattern::createBitmapPattern(patternImage);
     }
     context->setFillPattern(m_overhangPattern);
     if (hasHorizontalOverhang)

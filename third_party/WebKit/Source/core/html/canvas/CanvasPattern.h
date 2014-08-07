@@ -39,11 +39,12 @@ class Image;
 
 class CanvasPattern FINAL : public RefCountedWillBeGarbageCollectedFinalized<CanvasPattern>, public ScriptWrappable {
 public:
-    static void parseRepetitionType(const String&, bool& repeatX, bool& repeatY, ExceptionState&);
+    static Pattern::RepeatMode parseRepetitionType(const String&, ExceptionState&);
 
-    static PassRefPtrWillBeRawPtr<CanvasPattern> create(PassRefPtr<Image> image, bool repeatX, bool repeatY, bool originClean)
+    static PassRefPtrWillBeRawPtr<CanvasPattern> create(PassRefPtr<Image> image,
+        Pattern::RepeatMode repeat, bool originClean)
     {
-        return adoptRefWillBeNoop(new CanvasPattern(image, repeatX, repeatY, originClean));
+        return adoptRefWillBeNoop(new CanvasPattern(image, repeat, originClean));
     }
 
     Pattern* pattern() const { return m_pattern.get(); }
@@ -53,7 +54,7 @@ public:
     void trace(Visitor*) { }
 
 private:
-    CanvasPattern(PassRefPtr<Image>, bool repeatX, bool repeatY, bool originClean);
+    CanvasPattern(PassRefPtr<Image>, Pattern::RepeatMode, bool originClean);
 
     RefPtr<Pattern> m_pattern;
     bool m_originClean;

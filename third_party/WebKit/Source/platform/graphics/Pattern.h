@@ -40,30 +40,29 @@
 
 namespace blink {
 
-class AffineTransform;
-
 class PLATFORM_EXPORT Pattern : public RefCounted<Pattern> {
 public:
-    static PassRefPtr<Pattern> create(PassRefPtr<Image> tileImage, bool repeatX, bool repeatY)
-    {
-        return adoptRef(new Pattern(tileImage, repeatX, repeatY));
-    }
+    enum RepeatMode {
+        RepeatModeX    = 1 << 0,
+        RepeatModeY    = 1 << 1,
+
+        RepeatModeNone = 0,
+        RepeatModeXY   = RepeatModeX | RepeatModeY
+    };
+
+    static PassRefPtr<Pattern> createBitmapPattern(PassRefPtr<Image> tileImage,
+        RepeatMode = RepeatModeXY);
     ~Pattern();
 
     SkShader* shader();
 
     void setPatternSpaceTransform(const AffineTransform& patternSpaceTransformation);
-    const AffineTransform& getPatternSpaceTransform() { return m_patternSpaceTransformation; };
-
-    bool repeatX() const { return m_repeatX; }
-    bool repeatY() const { return m_repeatY; }
 
 private:
-    Pattern(PassRefPtr<Image>, bool repeatX, bool repeatY);
+    Pattern(PassRefPtr<Image>, RepeatMode);
 
     RefPtr<NativeImageSkia> m_tileImage;
-    bool m_repeatX;
-    bool m_repeatY;
+    RepeatMode m_repeatMode;
     AffineTransform m_patternSpaceTransformation;
     RefPtr<SkShader> m_pattern;
     int m_externalMemoryAllocated;

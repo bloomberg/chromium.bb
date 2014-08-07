@@ -32,33 +32,27 @@
 
 namespace blink {
 
-void CanvasPattern::parseRepetitionType(const String& type, bool& repeatX, bool& repeatY, ExceptionState& exceptionState)
+Pattern::RepeatMode CanvasPattern::parseRepetitionType(const String& type,
+    ExceptionState& exceptionState)
 {
-    if (type.isEmpty() || type == "repeat") {
-        repeatX = true;
-        repeatY = true;
-        return;
-    }
-    if (type == "no-repeat") {
-        repeatX = false;
-        repeatY = false;
-        return;
-    }
-    if (type == "repeat-x") {
-        repeatX = true;
-        repeatY = false;
-        return;
-    }
-    if (type == "repeat-y") {
-        repeatX = false;
-        repeatY = true;
-        return;
-    }
+    if (type.isEmpty() || type == "repeat")
+        return Pattern::RepeatModeXY;
+
+    if (type == "no-repeat")
+        return Pattern::RepeatModeNone;
+
+    if (type == "repeat-x")
+        return Pattern::RepeatModeX;
+
+    if (type == "repeat-y")
+        return Pattern::RepeatModeY;
+
     exceptionState.throwDOMException(SyntaxError, "The provided type ('" + type + "') is not one of 'repeat', 'no-repeat', 'repeat-x', or 'repeat-y'.");
+    return Pattern::RepeatModeNone;
 }
 
-CanvasPattern::CanvasPattern(PassRefPtr<Image> image, bool repeatX, bool repeatY, bool originClean)
-    : m_pattern(Pattern::create(image, repeatX, repeatY))
+CanvasPattern::CanvasPattern(PassRefPtr<Image> image, Pattern::RepeatMode repeat, bool originClean)
+    : m_pattern(Pattern::createBitmapPattern(image, repeat))
     , m_originClean(originClean)
 {
     ScriptWrappable::init(this);

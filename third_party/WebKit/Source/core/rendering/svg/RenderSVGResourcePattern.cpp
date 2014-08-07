@@ -107,7 +107,7 @@ PatternData* RenderSVGResourcePattern::buildPattern(RenderObject* object, unsign
 
     // Build pattern.
     OwnPtr<PatternData> patternData = adoptPtr(new PatternData);
-    patternData->pattern = Pattern::create(copiedImage, true, true);
+    patternData->pattern = Pattern::createBitmapPattern(copiedImage);
 
     // Compute pattern space transformation.
     const IntSize tileImageSize = tileImage->size();

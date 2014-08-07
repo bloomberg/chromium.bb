@@ -36,9 +36,13 @@
 
 namespace blink {
 
-Pattern::Pattern(PassRefPtr<Image> image, bool repeatX, bool repeatY)
-    : m_repeatX(repeatX)
-    , m_repeatY(repeatY)
+PassRefPtr<Pattern> Pattern::createBitmapPattern(PassRefPtr<Image> tileImage, RepeatMode repeatMode)
+{
+    return adoptRef(new Pattern(tileImage, repeatMode));
+}
+
+Pattern::Pattern(PassRefPtr<Image> image, RepeatMode repeatMode)
+    : m_repeatMode(repeatMode)
     , m_externalMemoryAllocated(0)
 {
     if (image) {
@@ -60,20 +64,25 @@ SkShader* Pattern::shader()
     SkMatrix localMatrix = affineTransformToSkMatrix(m_patternSpaceTransformation);
 
     // If we don't have a bitmap, return a transparent shader.
-    if (!m_tileImage)
+    if (!m_tileImage) {
         m_pattern = adoptRef(new SkColorShader(SK_ColorTRANSPARENT));
-    else if (m_repeatX && m_repeatY)
-        m_pattern = adoptRef(SkShader::CreateBitmapShader(m_tileImage->bitmap(), SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix));
-    else {
+    } else if (m_repeatMode == RepeatModeXY) {
+        m_pattern = adoptRef(SkShader::CreateBitmapShader(m_tileImage->bitmap(),
+            SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix));
+    } else {
         // Skia does not have a "draw the tile only once" option. Clamp_TileMode
         // repeats the last line of the image after drawing one tile. To avoid
         // filling the space with arbitrary pixels, this workaround forces the
         // image to have a line of transparent pixels on the "repeated" edge(s),
         // thus causing extra space to be transparent filled.
-        SkShader::TileMode tileModeX = m_repeatX ? SkShader::kRepeat_TileMode : SkShader::kClamp_TileMode;
-        SkShader::TileMode tileModeY = m_repeatY ? SkShader::kRepeat_TileMode : SkShader::kClamp_TileMode;
-        int expandW = m_repeatX ? 0 : 1;
-        int expandH = m_repeatY ? 0 : 1;
+        SkShader::TileMode tileModeX = (m_repeatMode & RepeatModeX)
+            ? SkShader::kRepeat_TileMode
+            : SkShader::kClamp_TileMode;
+        SkShader::TileMode tileModeY = (m_repeatMode & RepeatModeY)
+            ? SkShader::kRepeat_TileMode
+            : SkShader::kClamp_TileMode;
+        int expandW = (m_repeatMode & RepeatModeX) ? 0 : 1;
+        int expandH = (m_repeatMode & RepeatModeY) ? 0 : 1;
 
         // Create a transparent bitmap 1 pixel wider and/or taller than the
         // original, then copy the orignal into it.
@@ -101,9 +110,11 @@ SkShader* Pattern::shader()
 
 void Pattern::setPatternSpaceTransform(const AffineTransform& patternSpaceTransformation)
 {
+    if (patternSpaceTransformation == m_patternSpaceTransformation)
+        return;
+
     m_patternSpaceTransformation = patternSpaceTransformation;
-    if (m_pattern)
-        m_pattern.clear();
+    m_pattern.clear();
 }
 
 }

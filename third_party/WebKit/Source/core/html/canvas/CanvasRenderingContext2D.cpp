@@ -1684,8 +1684,7 @@ PassRefPtrWillBeRawPtr<CanvasGradient> CanvasRenderingContext2D::createRadialGra
 PassRefPtrWillBeRawPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(CanvasImageSource* imageSource,
     const String& repetitionType, ExceptionState& exceptionState)
 {
-    bool repeatX, repeatY;
-    CanvasPattern::parseRepetitionType(repetitionType, repeatX, repeatY, exceptionState);
+    Pattern::RepeatMode repeatMode = CanvasPattern::parseRepetitionType(repetitionType, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
 
@@ -1715,7 +1714,7 @@ PassRefPtrWillBeRawPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(Ca
 
     bool originClean = !wouldTaintOrigin(imageSource);
 
-    return CanvasPattern::create(imageForRendering.release(), repeatX, repeatY, originClean);
+    return CanvasPattern::create(imageForRendering.release(), repeatMode, originClean);
 }
 
 bool CanvasRenderingContext2D::computeDirtyRect(const FloatRect& localRect, FloatRect* dirtyRect)

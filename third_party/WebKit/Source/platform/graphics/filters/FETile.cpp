@@ -84,7 +84,7 @@ void FETile::applySoftware()
     if (ImageBuffer* tileImageBuffer = in->asImageBuffer())
         tileImageContext->drawImageBuffer(tileImageBuffer, IntRect(in->absolutePaintRect().location(), tileImageBuffer->size()));
 
-    RefPtr<Pattern> pattern = Pattern::create(tileImage->copyImage(CopyBackingStore), true, true);
+    RefPtr<Pattern> pattern = Pattern::createBitmapPattern(tileImage->copyImage(CopyBackingStore));
 
     AffineTransform patternTransform;
     patternTransform.translate(inMaxEffectLocation.x() - maxEffectLocation.x(), inMaxEffectLocation.y() - maxEffectLocation.y());
