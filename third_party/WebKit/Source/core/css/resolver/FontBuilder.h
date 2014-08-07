@@ -63,10 +63,7 @@ public:
 
     void setWeight(FontWeight);
     void setStretch(FontStretch);
-
-    void setFeatureSettingsNormal();
-    void setFeatureSettingsValue(CSSValue*);
-
+    void setFeatureSettings(PassRefPtr<FontFeatureSettings>);
     void setScript(const String& locale);
     void setStyle(FontStyle);
     void setVariant(FontVariant);
@@ -88,6 +85,7 @@ public:
     // FIXME: This is only used by an ASSERT in StyleResolver. Remove?
     bool fontDirty() const { return m_fontDirty; }
 
+    static FontFeatureSettings* initialFeatureSettings() { return nullptr; }
     static FontDescription::GenericFamilyType initialGenericFamily() { return FontDescription::NoFamily; }
     static TextRenderingMode initialTextRendering() { return AutoTextRendering; }
     static FontVariant initialVariant() { return FontVariantNormal; }

@@ -209,7 +209,7 @@ column-fill type_name=ColumnFill
 -webkit-column-span type_name=ColumnSpan
 -webkit-column-width type_name=float, custom_all
 -webkit-filter custom_value
--webkit-font-feature-settings custom_all
+-webkit-font-feature-settings font, name_for_methods=FeatureSettings, converter=convertFontFeatureSettings
 -webkit-font-smoothing font, type_name=FontSmoothingMode
 -webkit-highlight converter=convertString<CSSValueNone>
 -webkit-hyphenate-character name_for_methods=HyphenationString, converter=convertString<CSSValueAuto>

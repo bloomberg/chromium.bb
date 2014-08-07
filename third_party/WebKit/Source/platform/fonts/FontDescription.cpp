@@ -131,13 +131,6 @@ void FontDescription::setVariantLigatures(const VariantLigatures& ligatures)
     updateTypesettingFeatures();
 }
 
-FontDescription FontDescription::makeNormalFeatureSettings() const
-{
-    FontDescription normalDescription(*this);
-    normalDescription.setFeatureSettings(nullptr);
-    return normalDescription;
-}
-
 float FontDescription::effectiveFontSize() const
 {
     float size = (RuntimeEnabledFeatures::subpixelFontScalingEnabled())

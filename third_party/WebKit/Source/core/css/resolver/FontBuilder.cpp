@@ -24,7 +24,6 @@
 #include "core/css/resolver/FontBuilder.h"
 
 #include "core/css/CSSCalculationValue.h"
-#include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/FontSize.h"
 #include "core/frame/LocalFrame.h"
@@ -417,29 +416,11 @@ void FontBuilder::setFontSmoothing(FontSmoothingMode foontSmoothingMode)
     scope.fontDescription().setFontSmoothing(foontSmoothingMode);
 }
 
-void FontBuilder::setFeatureSettingsNormal()
+void FontBuilder::setFeatureSettings(PassRefPtr<FontFeatureSettings> settings)
 {
     FontDescriptionChangeScope scope(this);
 
-    // FIXME: Eliminate FontDescription::makeNormalFeatureSettings. It's useless.
-    scope.set(scope.fontDescription().makeNormalFeatureSettings());
-}
-
-void FontBuilder::setFeatureSettingsValue(CSSValue* value)
-{
-    FontDescriptionChangeScope scope(this);
-
-    CSSValueList* list = toCSSValueList(value);
-    RefPtr<FontFeatureSettings> settings = FontFeatureSettings::create();
-    int len = list->length();
-    for (int i = 0; i < len; ++i) {
-        CSSValue* item = list->item(i);
-        if (!item->isFontFeatureValue())
-            continue;
-        CSSFontFeatureValue* feature = toCSSFontFeatureValue(item);
-        settings->append(FontFeature(feature->tag(), feature->value()));
-    }
-    scope.fontDescription().setFeatureSettings(settings.release());
+    scope.fontDescription().setFeatureSettings(settings);
 }
 
 void FontBuilder::setSize(FontDescription& fontDescription, float effectiveZoom, float size)

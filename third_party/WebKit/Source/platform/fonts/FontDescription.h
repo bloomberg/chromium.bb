@@ -146,7 +146,6 @@ public:
     NonCJKGlyphOrientation nonCJKGlyphOrientation() const { return static_cast<NonCJKGlyphOrientation>(m_nonCJKGlyphOrientation); }
     FontWidthVariant widthVariant() const { return static_cast<FontWidthVariant>(m_widthVariant); }
     FontFeatureSettings* featureSettings() const { return m_featureSettings.get(); }
-    FontDescription makeNormalFeatureSettings() const;
 
     float effectiveFontSize() const; // Returns either the computedSize or the computedPixelSize
     FontCacheKey cacheKey(const FontFaceCreationParams&, FontTraits desiredTraits = FontTraits(0)) const;

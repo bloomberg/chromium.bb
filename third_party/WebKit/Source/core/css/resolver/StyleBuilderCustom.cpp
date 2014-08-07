@@ -1235,26 +1235,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextOrientation(StyleReso
         state.setTextOrientation(*toCSSPrimitiveValue(value));
 }
 
-// FIXME: We should handle initial and inherit for font-feature-settings
-void StyleBuilderFunctions::applyInitialCSSPropertyWebkitFontFeatureSettings(StyleResolverState& state)
-{
-}
-
-void StyleBuilderFunctions::applyInheritCSSPropertyWebkitFontFeatureSettings(StyleResolverState& state)
-{
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyWebkitFontFeatureSettings(StyleResolverState& state, CSSValue* value)
-{
-    if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueNormal) {
-        state.fontBuilder().setFeatureSettingsNormal();
-        return;
-    }
-
-    if (value->isValueList())
-        state.fontBuilder().setFeatureSettingsValue(value);
-}
-
 void StyleBuilderFunctions::applyInheritCSSPropertyBaselineShift(StyleResolverState& state)
 {
     const SVGRenderStyle& parentSvgStyle = state.parentStyle()->svgStyle();
