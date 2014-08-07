@@ -3838,8 +3838,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs() {
 
 int WebContentsImpl::CreateSwappedOutRenderView(
     SiteInstance* instance) {
-  return GetRenderManager()->CreateRenderFrame(instance, MSG_ROUTING_NONE,
-                                               true, true);
+  return GetRenderManager()->CreateRenderFrame(
+      instance, MSG_ROUTING_NONE, true, true, true);
 }
 
 void WebContentsImpl::OnUserGesture() {
@@ -4009,8 +4009,8 @@ int WebContentsImpl::CreateOpenerRenderViews(SiteInstance* instance) {
 
   // Create a swapped out RenderView in the given SiteInstance if none exists,
   // setting its opener to the given route_id.  Return the new view's route_id.
-  return GetRenderManager()->CreateRenderFrame(instance, opener_route_id,
-                                               true, true);
+  return GetRenderManager()->CreateRenderFrame(
+      instance, opener_route_id, true, true, true);
 }
 
 NavigationControllerImpl& WebContentsImpl::GetControllerForRenderManager() {
@@ -4030,7 +4030,7 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host,
     int opener_route_id,
     int proxy_routing_id,
-    bool for_main_frame) {
+    bool for_main_frame_navigation) {
   TRACE_EVENT0("browser", "WebContentsImpl::CreateRenderViewForRenderManager");
   // Can be NULL during tests.
   RenderWidgetHostViewBase* rwh_view;
@@ -4038,7 +4038,7 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
   // until RenderWidgetHost is attached to RenderFrameHost. We need to special
   // case this because RWH is still a base class of RenderViewHost, and child
   // frame RWHVs are unique in that they do not have their own WebContents.
-  if (!for_main_frame) {
+  if (!for_main_frame_navigation) {
     RenderWidgetHostViewChildFrame* rwh_view_child =
         new RenderWidgetHostViewChildFrame(render_view_host);
     rwh_view = rwh_view_child;
@@ -4072,6 +4072,23 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
       render_widget_host->WasResized();
   }
 #endif
+
+  return true;
+}
+
+bool WebContentsImpl::CreateRenderFrameForRenderManager(
+    RenderFrameHost* render_frame_host,
+    int parent_routing_id) {
+  TRACE_EVENT0("browser", "WebContentsImpl::CreateRenderFrameForRenderManager");
+
+  RenderFrameHostImpl* rfh =
+      static_cast<RenderFrameHostImpl*>(render_frame_host);
+  if (!rfh->CreateRenderFrame(parent_routing_id))
+    return false;
+
+  // TODO(nasko): When RenderWidgetHost is owned by RenderFrameHost, the passed
+  // RenderFrameHost will have to be associated with the appropriate
+  // RenderWidgetHostView or a new one should be created here.
 
   return true;
 }

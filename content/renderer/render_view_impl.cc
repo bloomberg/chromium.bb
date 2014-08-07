@@ -754,13 +754,6 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   WebLocalFrame* web_frame = WebLocalFrame::create(main_render_frame_.get());
   main_render_frame_->SetWebFrame(web_frame);
 
-  if (params->proxy_routing_id != MSG_ROUTING_NONE) {
-    CHECK(params->swapped_out);
-    RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyToReplaceFrame(
-        main_render_frame_.get(), params->proxy_routing_id);
-    main_render_frame_->set_render_frame_proxy(proxy);
-  }
-
   webwidget_ = WebView::create(this);
   webwidget_mouse_lock_target_.reset(new WebWidgetLockTarget(webwidget_));
 
@@ -818,7 +811,21 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   webview()->settings()->setAllowConnectingInsecureWebSocket(
       command_line.HasSwitch(switches::kAllowInsecureWebSocketFromHttpsOrigin));
 
-  webview()->setMainFrame(main_render_frame_->GetWebFrame());
+  RenderFrameProxy* proxy = NULL;
+  if (params->proxy_routing_id != MSG_ROUTING_NONE) {
+    CHECK(params->swapped_out);
+    proxy = RenderFrameProxy::CreateProxyToReplaceFrame(
+        main_render_frame_.get(), params->proxy_routing_id);
+    main_render_frame_->set_render_frame_proxy(proxy);
+  }
+
+  // In --site-per-process, just use the WebRemoteFrame as the main frame.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess) &&
+      proxy) {
+    webview()->setMainFrame(proxy->web_frame());
+  } else {
+    webview()->setMainFrame(main_render_frame_->GetWebFrame());
+  }
   main_render_frame_->Initialize();
 
   if (switches::IsTouchDragDropEnabled())
@@ -872,7 +879,7 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
 
   // If we are initially swapped out, navigate to kSwappedOutURL.
   // This ensures we are in a unique origin that others cannot script.
-  if (is_swapped_out_)
+  if (is_swapped_out_ && webview()->mainFrame()->isWebLocalFrame())
     NavigateToSwappedOutURL(webview()->mainFrame());
 }
 
@@ -1317,7 +1324,7 @@ bool RenderViewImpl::HasIMETextFocus() {
 
 bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
   WebFrame* main_frame = webview() ? webview()->mainFrame() : NULL;
-  if (main_frame)
+  if (main_frame && main_frame->isWebLocalFrame())
     GetContentClient()->SetActiveURL(main_frame->document().url());
 
   ObserverListBase<RenderViewObserver>::Iterator it(observers_);
@@ -2263,6 +2270,7 @@ void RenderViewImpl::didCreateDataSource(WebLocalFrame* frame,
 
   // Carry over the user agent override flag, if it exists.
   if (content_initiated && webview() && webview()->mainFrame() &&
+      webview()->mainFrame()->isWebLocalFrame() &&
       webview()->mainFrame()->dataSource()) {
     DocumentState* old_document_state =
         DocumentState::FromDataSource(webview()->mainFrame()->dataSource());
@@ -2298,9 +2306,9 @@ void RenderViewImpl::didCreateDataSource(WebLocalFrame* frame,
       const WebURLRequest& original_request = ds->originalRequest();
       const GURL referrer(
           original_request.httpHeaderField(WebString::fromUTF8("Referer")));
-      if (!referrer.is_empty() &&
-          DocumentState::FromDataSource(
-              old_frame->dataSource())->was_prefetcher()) {
+      if (!referrer.is_empty() && old_frame->isWebLocalFrame() &&
+          DocumentState::FromDataSource(old_frame->dataSource())
+              ->was_prefetcher()) {
         for (; old_frame; old_frame = old_frame->traverseNext(false)) {
           WebDataSource* old_frame_ds = old_frame->dataSource();
           if (old_frame_ds && referrer == GURL(old_frame_ds->request().url())) {
@@ -2648,7 +2656,8 @@ blink::WebPlugin* RenderViewImpl::GetWebPluginForFind() {
     return NULL;
 
   WebFrame* main_frame = webview()->mainFrame();
-  if (main_frame->document().isPluginDocument())
+  if (main_frame->isWebLocalFrame() &&
+      main_frame->document().isPluginDocument())
     return webview()->mainFrame()->document().to<WebPluginDocument>().plugin();
 
 #if defined(ENABLE_PLUGINS)
@@ -3169,7 +3178,8 @@ void RenderViewImpl::OnSetRendererPrefs(
 
   // If the zoom level for this page matches the old zoom default, and this
   // is not a plugin, update the zoom level to match the new default.
-  if (webview() && !webview()->mainFrame()->document().isPluginDocument() &&
+  if (webview() && webview()->mainFrame()->isWebLocalFrame() &&
+      !webview()->mainFrame()->document().isPluginDocument() &&
       !ZoomValuesEqual(old_zoom_level,
                        renderer_preferences_.default_zoom_level) &&
       ZoomValuesEqual(webview()->zoomLevel(), old_zoom_level)) {
@@ -3281,7 +3291,8 @@ void RenderViewImpl::NavigateToSwappedOutURL(blink::WebFrame* frame) {
   CHECK(is_swapped_out_ || rf->is_swapped_out());
   GURL swappedOutURL(kSwappedOutURL);
   WebURLRequest request(swappedOutURL);
-  frame->loadRequest(request);
+  if (frame->isWebLocalFrame())
+    frame->loadRequest(request);
 }
 
 void RenderViewImpl::OnClosePage() {
@@ -3384,6 +3395,11 @@ void RenderViewImpl::DidFlushPaint() {
     return;
 
   WebFrame* main_frame = webview()->mainFrame();
+  for (WebFrame* frame = main_frame; frame;
+       frame = frame->traverseNext(false)) {
+    if (frame->isWebLocalFrame())
+      main_frame = frame;
+  }
 
   // If we have a provisional frame we are between the start and commit stages
   // of loading and we don't want to save stats.
@@ -3405,7 +3421,19 @@ void RenderViewImpl::DidFlushPaint() {
 }
 
 gfx::Vector2d RenderViewImpl::GetScrollOffset() {
-  WebSize scroll_offset = webview()->mainFrame()->scrollOffset();
+  WebFrame* main_frame = webview()->mainFrame();
+  for (WebFrame* frame = main_frame; frame;
+       frame = frame->traverseNext(false)) {
+    // TODO(nasko): This is a hack for the case in which the top-level
+    // frame is being rendered in another process. It will not
+    // behave correctly for out of process iframes.
+    if (frame->isWebLocalFrame()) {
+      main_frame = frame;
+      break;
+    }
+  }
+
+  WebSize scroll_offset = main_frame->scrollOffset();
   return gfx::Vector2d(scroll_offset.width, scroll_offset.height);
 }
 
@@ -3592,7 +3620,7 @@ void RenderViewImpl::OnWasShown(bool needs_repainting) {
 
 GURL RenderViewImpl::GetURLForGraphicsContext3D() {
   DCHECK(webview());
-  if (webview()->mainFrame())
+  if (webview()->mainFrame()->isWebLocalFrame())
     return GURL(webview()->mainFrame()->document().url());
   else
     return GURL("chrome://gpu/RenderViewImpl::CreateGraphicsContext3D");

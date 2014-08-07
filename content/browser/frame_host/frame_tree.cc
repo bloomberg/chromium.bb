@@ -54,6 +54,17 @@ bool ResetNodesForNewProcess(RenderViewHost* render_view_host,
   return true;
 }
 
+bool CreateProxyForSiteInstance(FrameTreeNode* source_node,
+                                const scoped_refptr<SiteInstance>& instance,
+                                FrameTreeNode* node) {
+  // Skip the node that initiated the creation.
+  if (source_node == node)
+    return true;
+
+  node->render_manager()->CreateRenderFrameProxy(instance);
+  return true;
+}
+
 }  // namespace
 
 FrameTree::FrameTree(Navigator* navigator,
@@ -135,6 +146,28 @@ void FrameTree::RemoveFrame(FrameTreeNode* child) {
   parent->RemoveChild(child);
 }
 
+void FrameTree::CreateProxiesForSiteInstance(
+    FrameTreeNode* source,
+    SiteInstance* site_instance) {
+  // Create the swapped out RVH for the new SiteInstance. This will create
+  // a top-level swapped out RFH as well, which will then be wrapped by a
+  // RenderFrameProxyHost.
+  if (!source->IsMainFrame()) {
+    RenderViewHostImpl* render_view_host =
+        source->frame_tree()->GetRenderViewHost(site_instance);
+    if (!render_view_host) {
+      root()->render_manager()->CreateRenderFrame(site_instance,
+                                                  MSG_ROUTING_NONE,
+                                                  true,
+                                                  false,
+                                                  true);
+    }
+  }
+
+  scoped_refptr<SiteInstance> instance(site_instance);
+  ForEach(base::Bind(&CreateProxyForSiteInstance, source, instance));
+}
+
 void FrameTree::ResetForMainFrameSwap() {
   root_->ResetForNewProcess();
   focused_frame_tree_node_id_ = -1;
@@ -167,25 +200,27 @@ void FrameTree::SetFrameRemoveListener(
   on_frame_removed_ = on_frame_removed;
 }
 
-RenderViewHostImpl* FrameTree::CreateRenderViewHostForMainFrame(
-    SiteInstance* site_instance,
-    int routing_id,
-    int main_frame_routing_id,
-    bool swapped_out,
-    bool hidden) {
+RenderViewHostImpl* FrameTree::CreateRenderViewHost(SiteInstance* site_instance,
+                                                    int routing_id,
+                                                    int main_frame_routing_id,
+                                                    bool swapped_out,
+                                                    bool hidden) {
   DCHECK(main_frame_routing_id != MSG_ROUTING_NONE);
   RenderViewHostMap::iterator iter =
       render_view_host_map_.find(site_instance->GetId());
   if (iter != render_view_host_map_.end()) {
     // If a RenderViewHost is pending shutdown for this |site_instance|, put it
-    // in the map of RenderViewHosts pending shutdown. Otherwise there should
-    // not be a RenderViewHost for the SiteInstance.
-    CHECK_EQ(RenderViewHostImpl::STATE_PENDING_SHUTDOWN,
-             iter->second->rvh_state());
-    render_view_host_pending_shutdown_map_.insert(
-        std::pair<int, RenderViewHostImpl*>(site_instance->GetId(),
-                                            iter->second));
-    render_view_host_map_.erase(iter);
+    // in the map of RenderViewHosts pending shutdown. Otherwise return the
+    // existing RenderViewHost for the SiteInstance.
+    if (iter->second->rvh_state() ==
+        RenderViewHostImpl::STATE_PENDING_SHUTDOWN) {
+      render_view_host_pending_shutdown_map_.insert(
+          std::pair<int, RenderViewHostImpl*>(site_instance->GetId(),
+                                              iter->second));
+      render_view_host_map_.erase(iter);
+    } else {
+      return iter->second;
+    }
   }
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       RenderViewHostFactory::Create(site_instance,
@@ -200,8 +235,7 @@ RenderViewHostImpl* FrameTree::CreateRenderViewHostForMainFrame(
   return rvh;
 }
 
-RenderViewHostImpl* FrameTree::GetRenderViewHostForSubFrame(
-    SiteInstance* site_instance) {
+RenderViewHostImpl* FrameTree::GetRenderViewHost(SiteInstance* site_instance) {
   RenderViewHostMap::iterator iter =
       render_view_host_map_.find(site_instance->GetId());
   // TODO(creis): Mirror the frame tree so this check can't fail.

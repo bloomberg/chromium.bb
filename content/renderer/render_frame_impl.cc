@@ -78,6 +78,7 @@
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
 #include "content/renderer/push_messaging_dispatcher.h"
+#include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -376,10 +377,34 @@ RenderFrameImpl* RenderFrameImpl::FromRoutingID(int32 routing_id) {
 }
 
 // static
+void RenderFrameImpl::CreateFrame(int routing_id, int parent_routing_id) {
+  // TODO(nasko): For now, this message is only sent for subframes, as the
+  // top level frame is created when the RenderView is created through the
+  // ViewMsg_New IPC.
+  CHECK_NE(MSG_ROUTING_NONE, parent_routing_id);
+
+  RenderFrameProxy* proxy = RenderFrameProxy::FromRoutingID(parent_routing_id);
+
+  // If the browser is sending a valid parent routing id, it should already be
+  // created and registered.
+  CHECK(proxy);
+  blink::WebRemoteFrame* parent_web_frame = proxy->web_frame();
+
+  // Create the RenderFrame and WebLocalFrame, linking the two.
+  RenderFrameImpl* render_frame =
+      RenderFrameImpl::Create(proxy->render_view(), routing_id);
+  blink::WebLocalFrame* web_frame =
+      parent_web_frame->createLocalChild("", render_frame);
+  render_frame->SetWebFrame(web_frame);
+  render_frame->Initialize();
+}
+
+// static
 RenderFrame* RenderFrame::FromWebFrame(blink::WebFrame* web_frame) {
   return RenderFrameImpl::FromWebFrame(web_frame);
 }
 
+// static
 RenderFrameImpl* RenderFrameImpl::FromWebFrame(blink::WebFrame* web_frame) {
   FrameMap::iterator iter = g_frame_map.Get().find(web_frame);
   if (iter != g_frame_map.Get().end())
@@ -677,11 +702,13 @@ bool RenderFrameImpl::Send(IPC::Message* message) {
     delete message;
     return false;
   }
-  if (is_swapped_out_ || render_view_->is_swapped_out()) {
+  if (frame_->parent() == NULL &&
+      (is_swapped_out_ || render_view_->is_swapped_out())) {
     if (!SwappedOutMessages::CanSendWhileSwappedOut(message)) {
       delete message;
       return false;
     }
+
     // In most cases, send IPCs through the proxy when swapped out. In some
     // calls the associated RenderViewImpl routing id is used to send
     // messages, so don't use the proxy.
@@ -693,7 +720,13 @@ bool RenderFrameImpl::Send(IPC::Message* message) {
 }
 
 bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
-  GetContentClient()->SetActiveURL(frame_->document().url());
+  // TODO(kenrb): document() should not be null, but as a transitional step
+  // we have RenderFrameProxy 'wrapping' a RenderFrameImpl, passing messages
+  // to this method. This happens for a top-level remote frame, where a
+  // document-less RenderFrame is replaced by a RenderFrameProxy but kept
+  // around and is still able to receive messages.
+  if (!frame_->document().isNull())
+    GetContentClient()->SetActiveURL(frame_->document().url());
 
   ObserverListBase<RenderFrameObserver>::Iterator it(observers_);
   RenderFrameObserver* observer;
@@ -764,7 +797,8 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
     return;
 
   // Swap this renderer back in if necessary.
-  if (render_view_->is_swapped_out_) {
+  if (render_view_->is_swapped_out_ &&
+      GetWebFrame() == render_view_->webview()->mainFrame()) {
     // We marked the view as hidden when swapping the view out, so be sure to
     // reset the visibility state before navigating to the new URL.
     render_view_->webview()->setVisibilityState(
@@ -957,6 +991,8 @@ void RenderFrameImpl::OnBeforeUnload() {
 
 void RenderFrameImpl::OnSwapOut(int proxy_routing_id) {
   RenderFrameProxy* proxy = NULL;
+  bool is_site_per_process =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess);
 
   // Only run unload if we're not swapped out yet, but send the ack either way.
   if (!is_swapped_out_ || !render_view_->is_swapped_out_) {
@@ -979,6 +1015,7 @@ void RenderFrameImpl::OnSwapOut(int proxy_routing_id) {
       frame_->dispatchUnloadEvent();
 
     // Swap out and stop sending any IPC messages that are not ACKs.
+    // TODO(nasko): Do we need RenderFrameImpl::is_swapped_out_ anymore?
     if (!frame_->parent())
       render_view_->SetSwappedOut(true);
     is_swapped_out_ = true;
@@ -1003,7 +1040,8 @@ void RenderFrameImpl::OnSwapOut(int proxy_routing_id) {
     // run a second time, thanks to a check in FrameLoader::stopLoading.
     // TODO(creis): Need to add a better way to do this that avoids running the
     // beforeunload handler. For now, we just run it a second time silently.
-    render_view_->NavigateToSwappedOutURL(frame_);
+    if (!is_site_per_process || frame_->parent() == NULL)
+      render_view_->NavigateToSwappedOutURL(frame_);
 
     // Let WebKit know that this view is hidden so it can drop resources and
     // stop compositing.
@@ -1023,8 +1061,17 @@ void RenderFrameImpl::OnSwapOut(int proxy_routing_id) {
 
   // Now that all of the cleanup is complete and the browser side is notified,
   // start using the RenderFrameProxy, if one is created.
-  if (proxy)
-    set_render_frame_proxy(proxy);
+  if (proxy) {
+    if (frame_->parent()) {
+      frame_->swap(proxy->web_frame());
+      if (is_site_per_process) {
+        // TODO(nasko): delete the frame here, since we've replaced it with a
+        // proxy.
+      }
+    } else {
+      set_render_frame_proxy(proxy);
+    }
+  }
 }
 
 void RenderFrameImpl::OnContextMenuClosed(
@@ -1829,7 +1876,7 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidStartProvisionalLoad());
 
   Send(new FrameHostMsg_DidStartProvisionalLoadForFrame(
-      routing_id_, ds->request().url(), is_transition_navigation));
+       routing_id_, ds->request().url(), is_transition_navigation));
 }
 
 void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(
@@ -2409,13 +2456,21 @@ void RenderFrameImpl::willSendRequest(
     if (request.frameType() == blink::WebURLRequest::FrameTypeTopLevel) {
       request.setFirstPartyForCookies(request.url());
     } else {
-      request.setFirstPartyForCookies(
-          frame->top()->document().firstPartyForCookies());
+      // TODO(nasko): When the top-level frame is remote, there is no document.
+      // This is broken and should be fixed to propagate the first party.
+      WebFrame* top = frame->top();
+      if (top->isWebLocalFrame()) {
+        request.setFirstPartyForCookies(
+            frame->top()->document().firstPartyForCookies());
+      }
     }
   }
 
   WebFrame* top_frame = frame->top();
-  if (!top_frame)
+  // TODO(nasko): Hack around asking about top-frame data source. This means
+  // for out-of-process iframes we are treating the current frame as the
+  // top-level frame, which is wrong.
+  if (!top_frame || top_frame->isWebRemoteFrame())
     top_frame = frame;
   WebDataSource* provisional_data_source = top_frame->provisionalDataSource();
   WebDataSource* top_data_source = top_frame->dataSource();
@@ -2509,8 +2564,16 @@ void RenderFrameImpl::willSendRequest(
     provider_id = provider->provider_id();
   }
 
-  int parent_routing_id = frame->parent() ?
-      FromWebFrame(frame->parent())->GetRoutingID() : -1;
+  WebFrame* parent = frame->parent();
+  int parent_routing_id = MSG_ROUTING_NONE;
+  if (!parent) {
+    parent_routing_id = -1;
+  } else if (parent->isWebLocalFrame()) {
+    parent_routing_id = FromWebFrame(parent)->GetRoutingID();
+  } else {
+    parent_routing_id = RenderFrameProxy::FromWebFrame(parent)->routing_id();
+  }
+
   RequestExtraData* extra_data = new RequestExtraData();
   extra_data->set_visibility_state(render_view_->visibilityState());
   extra_data->set_custom_user_agent(custom_user_agent);
@@ -3217,29 +3280,37 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
 
   Referrer referrer(RenderViewImpl::GetReferrerFromRequest(info.frame,
                                                            info.urlRequest));
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  if (is_swapped_out_ || render_view_->is_swapped_out()) {
-    if (info.urlRequest.url() != GURL(kSwappedOutURL)) {
-      // Targeted links may try to navigate a swapped out frame.  Allow the
-      // browser process to navigate the tab instead.  Note that it is also
-      // possible for non-targeted navigations (from this view) to arrive
-      // here just after we are swapped out.  It's ok to send them to the
-      // browser, as long as they're for the top level frame.
-      // TODO(creis): Ensure this supports targeted form submissions when
-      // fixing http://crbug.com/101395.
-      if (info.frame->parent() == NULL) {
-        OpenURL(info.frame, info.urlRequest.url(), referrer,
-                info.defaultPolicy);
-        return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
+  bool is_subframe = !!info.frame->parent();
+
+  if (command_line.HasSwitch(switches::kSitePerProcess) && is_subframe) {
+    // There's no reason to ignore navigations on subframes, since the swap out
+    // logic no longer applies.
+  } else {
+    if (is_swapped_out_ || render_view_->is_swapped_out()) {
+      if (info.urlRequest.url() != GURL(kSwappedOutURL)) {
+        // Targeted links may try to navigate a swapped out frame.  Allow the
+        // browser process to navigate the tab instead.  Note that it is also
+        // possible for non-targeted navigations (from this view) to arrive
+        // here just after we are swapped out.  It's ok to send them to the
+        // browser, as long as they're for the top level frame.
+        // TODO(creis): Ensure this supports targeted form submissions when
+        // fixing http://crbug.com/101395.
+        if (info.frame->parent() == NULL) {
+          OpenURL(info.frame, info.urlRequest.url(), referrer,
+                  info.defaultPolicy);
+          return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
+        }
+
+        // We should otherwise ignore in-process iframe navigations, if they
+        // arrive just after we are swapped out.
+        return blink::WebNavigationPolicyIgnore;
       }
 
-      // We should otherwise ignore in-process iframe navigations, if they
-      // arrive just after we are swapped out.
-      return blink::WebNavigationPolicyIgnore;
+      // Allow kSwappedOutURL to complete.
+      return info.defaultPolicy;
     }
-
-    // Allow kSwappedOutURL to complete.
-    return info.defaultPolicy;
   }
 
   // Webkit is asking whether to navigate to a new URL.
@@ -3257,7 +3328,6 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   // all top-level navigations to the browser to let it swap processes when
   // crossing site boundaries.  This is currently expected to break some script
   // calls and navigations, such as form submissions.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   bool force_swap_due_to_flag =
       command_line.HasSwitch(switches::kEnableStrictSiteIsolation) ||
       command_line.HasSwitch(switches::kSitePerProcess);

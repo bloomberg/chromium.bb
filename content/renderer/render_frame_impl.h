@@ -87,8 +87,19 @@ class CONTENT_EXPORT RenderFrameImpl
   // Creates a new RenderFrame. |render_view| is the RenderView object that this
   // frame belongs to.
   // Callers *must* call |SetWebFrame| immediately after creation.
+  // Note: This is called only when RenderFrame is created by Blink through
+  // createChildFrame.
   // TODO(creis): We should structure this so that |SetWebFrame| isn't needed.
   static RenderFrameImpl* Create(RenderViewImpl* render_view, int32 routing_id);
+
+  // Creates a new RenderFrame with |routing_id| as a child of the RenderFrame
+  // identified by |parent_routing_id| or as the top-level frame if the latter
+  // is MSG_ROUTING_NONE. It creates the Blink WebLocalFrame and inserts it in
+  // the proper place in the frame tree.
+  // Note: This is called only when RenderFrame is being created in response to
+  // IPC message from the browser process. All other frame creation is driven
+  // through Blink and Create.
+  static void CreateFrame(int routing_id, int parent_routing_id);
 
   // Returns the RenderFrameImpl for the given routing ID.
   static RenderFrameImpl* FromRoutingID(int routing_id);

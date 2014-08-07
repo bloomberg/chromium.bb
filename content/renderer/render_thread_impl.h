@@ -430,6 +430,10 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   void Init();
 
+  void OnCreateNewFrame(int routing_id, int parent_routing_id);
+  void OnCreateNewFrameProxy(int routing_id,
+                             int parent_routing_id,
+                             int render_view_routing_id);
   void OnSetZoomLevelForCurrentURL(const std::string& scheme,
                                    const std::string& host,
                                    double zoom_level);
