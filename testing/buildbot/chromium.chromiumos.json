@@ -52,6 +52,7 @@
   "Linux ChromiumOS Ozone Tests (1)": {
     "gtest_tests": [
       "accessibility_unittests",
+      "ash_unittests",
       "base_unittests",
       "cacheinvalidation_unittests",
       "chromeos_unittests",
