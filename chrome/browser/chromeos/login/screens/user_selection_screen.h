@@ -65,9 +65,6 @@ class UserSelectionScreen : public wm::UserActivityObserver {
  protected:
   LoginDisplayWebUIHandler* handler_;
 
-  // Set of Users that are visible.
-  user_manager::UserList users_;
-
   // Map from public session user IDs to recommended locales set by policy.
   typedef std::map<std::string, std::vector<std::string> >
       PublicSessionRecommendedLocaleMap;
@@ -76,6 +73,9 @@ class UserSelectionScreen : public wm::UserActivityObserver {
  private:
   // Whether to show guest login.
   bool show_guest_;
+
+  // Set of Users that are visible.
+  user_manager::UserList users_;
 
   // Map of usernames to their current authentication type. If a user is not
   // contained in the map, it is using the default authentication type.

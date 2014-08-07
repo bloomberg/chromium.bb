@@ -43,9 +43,9 @@ void ChromeUserSelectionScreen::Init(const user_manager::UserList& users,
                                      bool show_guest) {
   UserSelectionScreen::Init(users, show_guest);
 
-  // Retrieve the current policy for |users_|.
-  for (user_manager::UserList::const_iterator it = users_.begin();
-       it != users_.end(); ++it) {
+  // Retrieve the current policy for all users.
+  for (user_manager::UserList::const_iterator it = users.begin();
+       it != users.end(); ++it) {
     if ((*it)->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT)
       OnPolicyUpdated((*it)->GetUserID());
   }
