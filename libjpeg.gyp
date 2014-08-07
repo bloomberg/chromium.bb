@@ -220,7 +220,7 @@
             ],
           },
         }],
-        [ 'OS=="mac"', {
+        [ 'OS=="mac" or OS=="ios"', {
           'dependencies': [
             '../yasm/yasm.gyp:yasm#host',
           ],
