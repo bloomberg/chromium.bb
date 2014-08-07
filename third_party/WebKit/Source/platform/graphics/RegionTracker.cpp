@@ -173,8 +173,10 @@ static inline bool paintIsOpaque(const SkPaint& paint, RegionTracker::DrawType d
 static inline bool getDeviceClipAsRect(const GraphicsContext* context, SkRect& deviceClipRect)
 {
     // Get the current clip in device coordinate space.
-    if (!context->canvas()->isClipRect())
+    if (!context->canvas()->isClipRect()) {
+        deviceClipRect.setEmpty();
         return false;
+    }
 
     SkIRect deviceClipIRect;
     if (context->canvas()->getClipDeviceBounds(&deviceClipIRect))
@@ -353,7 +355,7 @@ void RegionTracker::applyOpaqueRegionFromLayer(const GraphicsContext* context, c
     SkRect deviceClipRect;
     bool deviceClipIsARect = getDeviceClipAsRect(context, deviceClipRect);
 
-    if (deviceClipRect.isEmpty())
+    if (deviceClipIsARect && deviceClipRect.isEmpty())
         return;
 
     SkRect sourceOpaqueRect = layerOpaqueRect;
@@ -361,8 +363,13 @@ void RegionTracker::applyOpaqueRegionFromLayer(const GraphicsContext* context, c
     SkRect destinationOpaqueRect = currentTrackingOpaqueRect();
 
     bool outsideSourceOpaqueRectPreservesOpaque = xfermodePreservesOpaque(paint, false);
-    if (!outsideSourceOpaqueRectPreservesOpaque)
+    if (!outsideSourceOpaqueRectPreservesOpaque) {
+        if (!deviceClipIsARect) {
+            markAllAsNonOpaque();
+            return;
+        }
         markRectAsNonOpaque(deviceClipRect);
+    }
 
     if (!deviceClipIsARect)
         return;
