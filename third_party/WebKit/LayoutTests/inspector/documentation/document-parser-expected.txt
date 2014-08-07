@@ -1,0 +1,78 @@
+"{{A|B={{C|D=blablabla}}}}" is parsed
+{
+    A : {
+        B : {
+            C : {
+                D : "blablabla"
+            }
+        }
+    }
+}
+"{{CS|Init=black|Values={{CSS Property Value
+|Data Type=color
+|Description=[[css/color|CSS color value]]}}
+}}" is parsed
+{
+    CS : {
+        Init : "black"
+        Values : {
+            CSS Property Value : {
+                Data Type : "color"
+                Description : "[[css/color|CSS color value]]"
+            }
+        }
+    }
+}
+"{{A}}" is parsed
+{
+    A : {
+    }
+}
+"{{A|B=bla<a=c>bla}}" is parsed
+{
+    A : {
+        B : "bla<a=c>bla"
+    }
+}
+"{{A}}" is parsed
+{
+    A : {
+    }
+}
+"{{AbC|xyz 
+ 	 \r}}" is parsed
+{
+    AbC : "xyz"
+}
+{
+    pageTitle : {
+    }
+    remarks : {
+        Remarks : "The optional number1, number2, ..., numberN arguments are numeric expressions to be evaluated.
+If no arguments are provided, the return value is equal to [[javascript/Number/constants|Number.NEGATIVE_INFINITY]]. If any argument is '''NaN''' , the return value is also '''NaN'''."
+    }
+    summary : "Returns the larger of a set of supplied numeric expressions."
+}
+{
+    CSSproperties : {
+        Animatable : "Yes"
+        Applies to : "All elements"
+        CSS object model property : "color"
+        CSS percentages : "NA"
+        Computed value : "For a non-translucent color, an hexadecimal equivalent is used. Otherwise it is the RGBa equivalent"
+        Inherited : "Yes"
+        Initial value : "black, except in a few cases (see notes)"
+        Media : "visual"
+        Values : {
+            CSS Property Value : {
+                Data Type : "color"
+                Description : "[[css/color|CSS color value]]"
+            }
+        }
+    }
+    pageTitle : {
+    }
+    standardizationStatus : "W3C Recommendation"
+    summary : "The color property sets the color of an element's foreground content (usually text), accepting any standard CSS color from keywords and hex values to RGB(a) and HSL(a)."
+}
+
