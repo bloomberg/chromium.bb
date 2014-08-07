@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from fnmatch import filter
+import fnmatch
 from os import walk
 from os.path import join
 import sys
@@ -13,7 +13,7 @@ def FindFiles(top, pattern, **kwargs):
   list of paths."""
   matches = []
   for dirpath, _, filenames in walk(top, **kwargs):
-    for filename in filter(filenames, pattern):
+    for filename in fnmatch.filter(filenames, pattern):
       matches.append(join(dirpath, filename))
   return matches
 

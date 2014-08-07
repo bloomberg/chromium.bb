@@ -39,7 +39,7 @@ def ApplyTemplate(mojo_generator, base_dir, path_to_template, params,
   final_kwargs.update(kwargs)
   jinja_env = jinja2.Environment(loader=loader, keep_trailing_newline=True,
                                  **final_kwargs)
-  jinja_env.globals.update(mojo_generator.GetGlobals());
+  jinja_env.globals.update(mojo_generator.GetGlobals())
   if filters:
     jinja_env.filters.update(filters)
   template = jinja_env.get_template(template_name)

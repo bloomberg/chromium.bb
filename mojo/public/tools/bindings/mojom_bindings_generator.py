@@ -76,12 +76,12 @@ def MakeImportStackMessage(imported_filename_stack):
                     zip(imported_filename_stack[1:], imported_filename_stack)]))
 
 
-def FindImportFile(dir, file, search_dirs):
-  for search_dir in [dir] + search_dirs:
-    path = os.path.join(search_dir, file)
+def FindImportFile(dir_name, file_name, search_dirs):
+  for search_dir in [dir_name] + search_dirs:
+    path = os.path.join(search_dir, file_name)
     if os.path.isfile(path):
       return path
-  return os.path.join(dir, file);
+  return os.path.join(dir_name, file_name)
 
 
 # Disable check for dangerous default arguments (they're "private" keyword
@@ -127,7 +127,7 @@ def ProcessFile(args, remaining_args, generator_modules, filename,
   for import_data in mojom['imports']:
     import_filename = FindImportFile(dirname,
                                      import_data['filename'],
-                                     args.import_directories);
+                                     args.import_directories)
     import_data['module'] = ProcessFile(
         args, remaining_args, generator_modules, import_filename,
         _processed_files=_processed_files,

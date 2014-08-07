@@ -38,9 +38,9 @@ def istr(index, string):
     def __lt__(self, other):
       return self.__index__ < other.__index__
 
-  istr = IndexedString(string)
-  istr.__index__ = index
-  return istr
+  rv = IndexedString(string)
+  rv.__index__ = index
+  return rv
 
 def LookupKind(kinds, spec, scope):
   """Tries to find which Kind a spec refers to, given the scope in which its
@@ -350,7 +350,6 @@ def ModuleFromData(data):
 
 def OrderedModuleFromData(data):
   module = ModuleFromData(data)
-  next_interface_ordinal = 0
   for interface in module.interfaces:
     next_ordinal = 0
     for method in interface.methods:

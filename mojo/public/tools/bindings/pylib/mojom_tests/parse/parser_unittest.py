@@ -7,9 +7,6 @@ import os.path
 import sys
 import unittest
 
-# Disable lint check for finding modules:
-# pylint: disable=F0401
-
 def _GetDirAbove(dirname):
   """Returns the directory "above" this file containing |dirname| (which must
   also be "above" this file)."""

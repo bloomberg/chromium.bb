@@ -8,9 +8,6 @@ import imp
 import os.path
 import sys
 
-# Disable lint check for finding modules:
-# pylint: disable=F0401
-
 def _GetDirAbove(dirname):
   """Returns the directory "above" this file containing |dirname| (which must
   also be "above" this file)."""
@@ -29,16 +26,14 @@ from ply import lex
 from ply import yacc
 
 from ..error import Error
-import ast
-from lexer import Lexer
+from . import ast
+from .lexer import Lexer
 
 
 _MAX_ORDINAL_VALUE = 0xffffffff
 _MAX_ARRAY_SIZE = 0xffffffff
 
 
-# Disable lint check for exceptions deriving from Exception:
-# pylint: disable=W0710
 class ParseError(Error):
   """Class for errors from the parser."""
 

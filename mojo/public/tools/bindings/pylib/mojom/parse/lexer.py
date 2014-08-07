@@ -6,9 +6,6 @@ import imp
 import os.path
 import sys
 
-# Disable lint check for finding modules:
-# pylint: disable=F0401
-
 def _GetDirAbove(dirname):
   """Returns the directory "above" this file containing |dirname| (which must
   also be "above" this file)."""
@@ -28,8 +25,6 @@ from ply.lex import TOKEN
 from ..error import Error
 
 
-# Disable lint check for exceptions deriving from Exception:
-# pylint: disable=W0710
 class LexError(Error):
   """Class for errors from the lexer."""
 

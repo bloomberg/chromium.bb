@@ -220,8 +220,7 @@ class Module(object):
     self.interfaces = []
 
   def AddInterface(self, name):
-    interface=Interface(name, module=self);
-    self.interfaces.append(interface)
+    self.interfaces.append(Interface(name, module=self))
     return interface
 
   def AddStruct(self, name):

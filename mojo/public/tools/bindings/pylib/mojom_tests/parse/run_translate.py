@@ -12,9 +12,6 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                 os.path.pardir, os.path.pardir))
 
-# Disable lint check for finding modules:
-# pylint: disable=F0401
-
 from mojom.parse.parser import Parse
 from mojom.parse.translate import Translate
 

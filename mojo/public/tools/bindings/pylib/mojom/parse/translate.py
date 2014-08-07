@@ -5,8 +5,9 @@
 """Translates parse tree to Mojom IR."""
 
 
-import ast
 import re
+
+from . import ast
 
 
 def _MapTreeForType(func, tree, type_to_map):
