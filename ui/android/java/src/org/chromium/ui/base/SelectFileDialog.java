@@ -4,6 +4,7 @@
 
 package org.chromium.ui.base;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ContentResolver;
@@ -170,6 +171,7 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
      * @param contentResolver The content resolver used to extract the path of the selected file.
      * @param results The results of the requested intent.
      */
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
     public void onIntentCompleted(WindowAndroid window, int resultCode,
             ContentResolver contentResolver, Intent results) {
