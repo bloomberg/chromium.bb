@@ -1005,8 +1005,10 @@ void AboutUIHTMLSource::StartDataRequest(
     int idr = IDR_CREDITS_HTML;
     if (path == kCreditsJsPath)
       idr = IDR_CREDITS_JS;
+#if defined(OS_CHROMEOS)
     else if (path == kKeyboardUtilsPath)
       idr = IDR_KEYBOARD_UTILS_JS;
+#endif
 
     response = ResourceBundle::GetSharedInstance().GetRawDataResource(
         idr).as_string();
