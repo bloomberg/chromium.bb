@@ -1057,10 +1057,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   // Enable container culling if requested on the command line.
   settings->setContainerCullingEnabled(prefs.container_culling_enabled);
 
-  // WebGL and accelerated 2D canvas are always gpu composited.
-  settings->setAcceleratedCompositingForCanvasEnabled(
-      prefs.experimental_webgl_enabled || prefs.accelerated_2d_canvas_enabled);
-
   settings->setAsynchronousSpellCheckingEnabled(
       prefs.asynchronous_spell_checking_enabled);
   settings->setUnifiedTextCheckerEnabled(prefs.unified_textchecker_enabled);
