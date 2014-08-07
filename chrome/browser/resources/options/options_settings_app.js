@@ -9,7 +9,7 @@
   OptionsPage.setIsSettingsApp(true);
 
   // Override the offset in the options page.
-  PageManager.horizentalOffset = 38;
+  PageManager.horizontalOffset = 38;
 
   document.addEventListener('DOMContentLoaded', function() {
     // Hide everything by default.
