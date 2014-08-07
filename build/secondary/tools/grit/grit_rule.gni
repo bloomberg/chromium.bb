@@ -41,6 +41,9 @@
 #   output_dir (optional)
 #     Directory for generated files.
 #
+#   use_qualified_include (optional)
+#     If set, output_dir is not added to include_dirs.
+#
 #   deps  (optional)
 #   visibility  (optional)
 #       Normal meaning.
@@ -247,7 +250,10 @@ template("grit") {
   # (like "mycomponent/foo.h"). This config sets up the include path.
   grit_config = target_name + "_grit_config"
   config(grit_config) {
-    include_dirs = [ output_dir ]
+    if (!defined(invoker.use_qualified_include) ||
+        !invoker.use_qualified_include) {
+      include_dirs = [ output_dir ]
+    }
     visibility = target_visibility
   }
 
