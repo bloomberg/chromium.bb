@@ -87,10 +87,34 @@ var FileManagerUI = function(element, dialogType) {
   this.conflictDialog = null;
 
   /**
+   * Volume icon of location information on the toolbar.
+   * @type {HTMLElement}
+   */
+  this.locationVolumeIcon = null;
+
+  /**
+   * Breadcrumbs of location information on the toolbar.
+   * @type {BreadcrumbsController}
+   */
+  this.locationBreadcrumbs = null;
+
+  /**
+   * Search button.
+   * @type {HTMLElement}
+   */
+  this.searchButton = null;
+
+  /**
    * Search box.
    * @type {SearchBox}
    */
   this.searchBox = null;
+
+  /**
+   * Toggle-view button.
+   * @type {HTMLElement}
+   */
+  this.toggleViewButton = null;
 
   /**
    * File type selector in the footer.
@@ -197,11 +221,19 @@ FileManagerUI.prototype.initDialogs = function() {
 };
 
 /**
- * Initialize here elements, which are expensive
+ * Initializes here elements, which are expensive
  * or hidden in the beginning.
  */
 FileManagerUI.prototype.initAdditionalUI = function() {
+  this.locationVolumeIcon =
+      this.element_.querySelector('#location-volume-icon');
+
+  this.searchButton = this.element_.querySelector('#search-button');
+  this.searchButton.addEventListener('click',
+      this.onSearchButtonClick_.bind(this));
   this.searchBox = new SearchBox(this.element_.querySelector('#search-box'));
+
+  this.toggleViewButton = this.element_.querySelector('#view-button');
 };
 
 /**
@@ -236,3 +268,13 @@ FileManagerUI.prototype.updateProfileBadge = function() {
     }
   }.bind(this));
 };
+
+/**
+ * Handles click event on the search button.
+ * @param {Event} event Click event.
+ * @private
+ */
+FileManagerUI.prototype.onSearchButtonClick_ = function(event) {
+  this.searchBox.inputElement.focus();
+};
+

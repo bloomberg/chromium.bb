@@ -21,10 +21,10 @@ function showGridView(rootPath, expectedSet) {
   var setupPromise = setupAndWaitUntilReady(null, rootPath);
   return setupPromise.then(function(windowId) {
     // Click the grid view button.
-    var clickedPromise = waitForElement(windowId, '#thumbnail-view').then(
+    var clickedPromise = waitForElement(windowId, '#view-button').then(
         function() {
           return callRemoteTestUtil(
-              'fakeEvent', windowId, ['#thumbnail-view', 'activate']);
+              'fakeEvent', windowId, ['#view-button', 'click']);
         });
 
     // Compare the grid labels of the entries.

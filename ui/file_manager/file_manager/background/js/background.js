@@ -615,7 +615,6 @@ var FILE_MANAGER_WINDOW_CREATE_OPTIONS = Object.freeze({
   }),
   minWidth: 480,
   minHeight: 240,
-  frame: 'none',
   hidden: true
 });
 

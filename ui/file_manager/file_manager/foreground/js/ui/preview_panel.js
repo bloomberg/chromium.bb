@@ -47,14 +47,6 @@ var PreviewPanel = function(element,
   this.element_ = element;
 
   /**
-   * @type {BreadcrumbsController}
-   */
-  this.breadcrumbs = new BreadcrumbsController(
-      element.querySelector('#search-breadcrumbs'),
-      metadataCache,
-      volumeManager);
-
-  /**
    * @type {PreviewPanel.Thumbnails}
    */
   this.thumbnails = new PreviewPanel.Thumbnails(
@@ -215,12 +207,7 @@ PreviewPanel.prototype.updateVisibility_ = function() {
       newVisible = true;
       break;
     case PreviewPanel.VisibilityType.AUTO:
-      newVisible =
-          this.selection_.entries.length !== 0 ||
-          (this.currentEntry_ &&
-           this.volumeManager_.getLocationInfo(this.currentEntry_) &&
-           !this.volumeManager_.getLocationInfo(
-               this.currentEntry_).isRootEntry);
+      newVisible = this.selection_.entries.length !== 0;
       break;
     case PreviewPanel.VisibilityType.ALWAYS_HIDDEN:
       newVisible = false;
@@ -246,12 +233,9 @@ PreviewPanel.prototype.updateVisibility_ = function() {
 
 /**
  * Update the text in the preview panel.
- *
- * @param {boolean} breadCrumbsVisible Whether the bread crumbs is visible or
- *     not.
  * @private
  */
-PreviewPanel.prototype.updatePreviewArea_ = function(breadCrumbsVisible) {
+PreviewPanel.prototype.updatePreviewArea_ = function() {
   // If the preview panel is hiding, does not update the current view.
   if (!this.visible)
     return;
@@ -265,16 +249,14 @@ PreviewPanel.prototype.updatePreviewArea_ = function(breadCrumbsVisible) {
   var entry;
   if (this.selection_.totalCount == 1)
     entry = this.selection_.entries[0];
-  else if (this.selection_.totalCount == 0)
-    entry = this.currentEntry_;
+  if (this.selection_.totalCount <= 1)
+    this.calculatingSizeLabel_.hidden = true;
 
   if (entry) {
-    this.breadcrumbs.show(entry);
-    this.calculatingSizeLabel_.hidden = true;
-    this.previewText_.textContent = '';
+    this.previewText_.textContent = util.getEntryLabel(
+        this.volumeManager_, entry);
     return;
   }
-  this.breadcrumbs.hide();
 
   // Obtains the preview text.
   var text;

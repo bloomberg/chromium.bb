@@ -35,13 +35,6 @@ function SearchBox(element) {
    */
   this.clearButton = element.querySelector('.clear');
 
-  /**
-   * Text measure.
-   * @type {TextMeasure}
-   * @private
-   */
-  this.textMeasure_ = new TextMeasure(this.inputElement);
-
   Object.freeze(this);
 
   // Register events.
@@ -55,8 +48,6 @@ function SearchBox(element) {
   this.inputElement.ownerDocument.addEventListener('dragend',
                                                    this.onDragEnd_.bind(this),
                                                    true);
-  element.querySelector('.icon').addEventListener(
-      'click', this.onIconClick_.bind(this));
   element.parentNode.appendChild(this.autocompleteList);
 }
 
@@ -178,14 +169,6 @@ SearchBox.prototype.onKeyDown_ = function() {
 };
 
 /**
- * Handles a click event of the search icon.
- * @private
- */
-SearchBox.prototype.onIconClick_ = function() {
-  this.inputElement.focus();
-};
-
-/**
  * Handles a dragenter event and refuses a drag source of files.
  * @param {DragEvent} event The dragenter event.
  * @private
@@ -213,7 +196,4 @@ SearchBox.prototype.onDragEnd_ = function() {
 SearchBox.prototype.updateStyles_ = function() {
   this.element.classList.toggle('has-text',
                                  !!this.inputElement.value);
-  var width = this.textMeasure_.getWidth(this.inputElement.value) +
-      16 /* Extra space to allow leeway. */;
-  this.inputElement.style.width = width + 'px';
 };

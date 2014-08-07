@@ -402,38 +402,24 @@ div.splitter {
   transition: all 180ms ease;
 }
 
+.dialog-header .volume-icon {
+  -webkit-margin-start: 10px;
+  background-position: center 3px;
+  background-repeat: no-repeat;
+  flex: none;
+  height: 24px;
+  width: 24px;
+}
+
+.dialog-header > .spacer {
+  flex: auto;
+}
+
 /* Search box */
 
 #search-box {
   display: flex;
-  flex: auto;
-}
-
-#search-box .icon {
-  -webkit-app-region: no-drag;
-  -webkit-padding-end: 0;
-  -webkit-padding-start: 10px;
-  background: transparent -webkit-image-set(
-      url(../images/files/ui/search_icon_inactive.png) 1x,
-      url(../images/files/ui/2x/search_icon_inactive.png) 2x)
-      no-repeat center;
   flex: none;
-  height: 32px;
-  padding-bottom: 8px;
-  padding-top: 8px;
-  width: 32px;
-}
-
-#search-box .icon:hover,
-#search-box.has-cursor .icon,
-#search-box.has-text .icon {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/search_icon_active.png) 1x,
-      url(../images/files/ui/2x/search_icon_active.png) 2x);
-}
-
-#search-box .full-size {
-  flex: 1 0 0;
 }
 
 #search-box input {
@@ -449,6 +435,8 @@ div.splitter {
   max-width: 100%;
   outline: none;
   padding: 0;
+  transition: width 0.2s ease;
+  width: 0;
 }
 
 #search-box input::-webkit-search-cancel-button {
@@ -457,7 +445,7 @@ div.splitter {
 
 #search-box.has-cursor input,
 #search-box.has-text input {
-  cursor: text;
+  width: 130px;
 }
 
 #search-box .clear {
@@ -476,11 +464,17 @@ div.splitter {
   min-width: 0;
   outline: none;
   padding: 0;
+  visibility: hidden;
   width: 12px;
 }
 
+#search-box.has-cursor .clear,
 #search-box.has-text .clear {
   display: block;
+}
+
+#search-box.has-text .clear {
+  visibility: visible;
 }
 
 #search-box .clear:hover {
@@ -497,6 +491,24 @@ div.splitter {
 
 .topbutton-bar {
   flex: none;
+}
+
+.topbutton-bar .search-button {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/search_icon_active.png) 1x,
+      url(../images/files/ui/2x/search_icon_active.png) 2x);
+}
+
+.topbutton-bar .view-button.table {
+  background-image: -webkit-image-set(
+      url('../images/files/ui/button_list_view.png') 1x,
+      url('../images/files/ui/2x/button_list_view.png') 2x);
+}
+
+.topbutton-bar .view-button.grid {
+  background-image: -webkit-image-set(
+      url('../images/files/ui/button_mosaic_view.png') 1x,
+      url('../images/files/ui/2x/button_mosaic_view.png') 2x);
 }
 
 /* Container for the detail and thumbnail list views. */
@@ -575,7 +587,7 @@ div.splitter {
 
 /* A single directory name in the list of path breadcrumbs. */
 .breadcrumb-path {
-  color: #969696;
+  color: #141414;
   cursor: pointer;
   flex: none;
   overflow: hidden;
@@ -984,6 +996,10 @@ li[renaming=''] .filename-label {
 
 .preview-panel .progress-bar {
   flex: auto;
+}
+
+.preview-panel .preview-text {
+  color: #333;
 }
 
 .preview-thumbnails {
@@ -1588,34 +1604,6 @@ list.autocomplete-suggestions > [lead] > div.detail-text em {
 
 #gear-menu > menuitem:not(.menuitem-button) {
   -webkit-margin-end: 50px;
-}
-
-/* View buttons in the gear menu. */
-
-menuitem#detail-view {
-  background-image: -webkit-image-set(
-    url('../images/files/ui/button_list_view.png') 1x,
-    url('../images/files/ui/2x/button_list_view.png') 2x);
-}
-
-menuitem#detail-view[selected]:not([disabled]),
-menuitem#detail-view[lead]:not([disabled]) {
-  background-image: -webkit-image-set(
-    url('../images/files/ui/button_list_view_white.png') 1x,
-    url('../images/files/ui/2x/button_list_view_white.png') 2x);
-}
-
-menuitem#thumbnail-view {
-  background-image: -webkit-image-set(
-    url('../images/files/ui/button_mosaic_view.png') 1x,
-    url('../images/files/ui/2x/button_mosaic_view.png') 2x);
-}
-
-menuitem#thumbnail-view[selected]:not([disabled]),
-menuitem#thumbnail-view[lead]:not([disabled]) {
-  background-image: -webkit-image-set(
-    url('../images/files/ui/button_mosaic_view_white.png') 1x,
-    url('../images/files/ui/2x/button_mosaic_view_white.png') 2x);
 }
 
 #iframe-drag-area {

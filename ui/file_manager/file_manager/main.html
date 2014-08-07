@@ -115,7 +115,6 @@
       <script src="foreground/js/share_client.js"></script>
       <script src="foreground/js/share_dialog.js"></script>
       <script src="foreground/js/suggest_apps_dialog.js"></script>
-      <script src="foreground/js/text_measure.js"></script>
       <script src="foreground/js/tree.css.js"></script>
       <script src="foreground/js/ui/breadcrumbs_controller.js"></script>
       <script src="foreground/js/ui/conflict_dialog.js"></script>
@@ -248,14 +247,6 @@
                 command="#drive-sync-settings"></menuitem>
       <menuitem id="gear-menu-drive-hosted-settings"
                 command="#drive-hosted-settings"></menuitem>
-      <hr>
-      <div i18n-content="VIEW_TYPE_LABEL"></div>
-      <menuitem class="menuitem-button left" id="detail-view"
-              i18n-values="aria-label:DETAIL_VIEW_TOOLTIP">
-      </menuitem>
-      <menuitem class="menuitem-button right" id="thumbnail-view"
-              i18n-values="aria-label:THUMBNAIL_VIEW_TOOLTIP">
-      </menuitem>
       <hr id="help-separator">
       <menuitem id="gear-menu-drive-buy-more-space"
                 command="#drive-buy-more-space"></menuitem>
@@ -315,28 +306,21 @@
       <div class="splitter" id="navigation-list-splitter"></div>
       <div class="dialog-main">
         <div class="dialog-header">
-          <div id="search-box">
-            <div class="icon"></div>
-            <div class="full-size">
-              <input type="search" tabindex="-1"
-                     i18n-values="aria-label:SEARCH_TEXT_LABEL">
-            </div>
-            <button class="clear"></button>
-          </div>
+          <span id="location-volume-icon" class="icon volume-icon"></span>
+          <div id="location-breadcrumbs" class="breadcrumbs"></div>
+          <div class="spacer"></div>
           <div class="topbutton-bar">
-            <button class="menubutton gear-button" id="gear-button" tabindex="7"
+            <button class="menubutton icon search-button" id="search-button" tabindex="7"></button>
+            <div id="search-box">
+              <input type="search" tabindex="99"
+                     i18n-values="aria-label:SEARCH_TEXT_LABEL;placeholder:SEARCH_TEXT_LABEL">
+              <button class="clear"></button>
+            </div>
+            <button class="menubutton view-button" id="view-button" tabindex="8"></button>
+            <button class="menubutton gear-button" id="gear-button" tabindex="9"
                     menu="#gear-menu"
                     i18n-values="aria-label:GEAR_BUTTON_TOOLTIP"
                     aria-activedescendant="gear-menu">
-            </button>
-            <button class="minimize-button" id="minimize-button"
-                    visibleif="full-page" tabindex="-1">
-            </button>
-            <button class="maximize-button" id="maximize-button"
-                    visibleif="full-page" tabindex="-1">
-            </button>
-            <button class="close-button" id="close-button"
-                    visibleif="full-page" tabindex="-1">
             </button>
           </div>
         </div>
@@ -370,15 +354,14 @@
                   <span class="preview-text"></span>
                   <span class="calculating-size"></span>
                 </div>
-                <div id="search-breadcrumbs" class="breadcrumbs"></div>
               </div>
             </div>
             <div class="right buttonbar" visibleif="full-page">
-              <button id="share-button" command="#share" tabindex="8"
+              <button id="share-button" command="#share" tabindex="10"
                       i18n-values="aria-label:SHARE_BUTTON_LABEL"></button>
               <button id="tasks" class="combobutton" menu="#tasks-menu"
-                      tabindex="9"></button>
-              <button id="delete-button" command="#delete" tabindex="10"
+                      tabindex="11"></button>
+              <button id="delete-button" command="#delete" tabindex="12"
                       i18n-values="aria-label:DELETE_BUTTON_LABEL"></button>
             </div>
             <div class="preparing-label" i18n-content="PREPARING_LABEL"></div>
@@ -389,9 +372,9 @@
                  visibleif="open-file open-multi-file folder upload-folder">
               <select class="file-type" hidden></select>
               <button i18n-content="NEW_FOLDER_BUTTON_LABEL"
-                      visibleif="folder" command="#new-folder" tabindex="11"></button>
-              <button class="ok" disabled tabindex="12"></button>
-              <button class="cancel" i18n-content="CANCEL_LABEL" tabindex="13"></button>
+                      visibleif="folder" command="#new-folder" tabindex="13"></button>
+              <button class="ok" disabled tabindex="14"></button>
+              <button class="cancel" i18n-content="CANCEL_LABEL" tabindex="15"></button>
             </div>
           </div>
           <div id="unmounted-panel"></div>

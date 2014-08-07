@@ -100,8 +100,8 @@ function waitForWindowGeometry(windowId, width, height) {
     return callRemoteTestUtil('getWindows', null, []).then(function(windows) {
       if (!windows[windowId])
         return pending('Window %s is not found.', windowId);
-      if (windows[windowId].innerWidth !== width ||
-          windows[windowId].innerHeight !== height) {
+      if (windows[windowId].outerWidth !== width ||
+          windows[windowId].outerHeight !== height) {
         return pending('Expected window size is %j, but it is %j',
                        {width: width, height: height},
                        windows[windowId]);

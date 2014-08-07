@@ -85,18 +85,11 @@ testcase.restoreCurrentView = function() {
       appId = inAppId;
       waitForElement(appId, '.thumbnail-grid[hidden]').then(this.next);
     },
-    // Opens the gear menu.
-    function() {
-      callRemoteTestUtil('fakeMouseClick',
-                         appId,
-                         ['#gear-button'],
-                         this.next);
-    },
     // Change the current view.
     function() {
       callRemoteTestUtil('fakeMouseClick',
                          appId,
-                         ['#thumbnail-view'],
+                         ['#view-button'],
                          this.next);
     },
     // Check the new current view.

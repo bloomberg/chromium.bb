@@ -490,29 +490,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         'menuitem, hr';
     cr.ui.decorate(this.gearButton_, cr.ui.MenuButton);
 
-    if (this.dialogType == DialogType.FULL_PAGE) {
-      // This is to prevent the buttons from stealing focus on mouse down.
-      var preventFocus = function(event) {
-        event.preventDefault();
-      };
-
-      var minimizeButton = this.dialogDom_.querySelector('#minimize-button');
-      minimizeButton.addEventListener('click', this.onMinimize.bind(this));
-      minimizeButton.addEventListener('mousedown', preventFocus);
-
-      var maximizeButton = this.dialogDom_.querySelector('#maximize-button');
-      maximizeButton.addEventListener('click', this.onMaximize.bind(this));
-      maximizeButton.addEventListener('mousedown', preventFocus);
-
-      var closeButton = this.dialogDom_.querySelector('#close-button');
-      closeButton.addEventListener('click', this.onClose.bind(this));
-      closeButton.addEventListener('mousedown', preventFocus);
-    }
-
     this.syncButton.checkable = true;
     this.hostedButton.checkable = true;
-    this.detailViewButton_.checkable = true;
-    this.thumbnailViewButton_.checkable = true;
 
     if (util.platform.runningInBrowser()) {
       // Suppresses the default context menu.
@@ -521,22 +500,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         e.stopPropagation();
       });
     }
-  };
-
-  FileManager.prototype.onMinimize = function() {
-    chrome.app.window.current().minimize();
-  };
-
-  FileManager.prototype.onMaximize = function() {
-    var appWindow = chrome.app.window.current();
-    if (appWindow.isMaximized())
-      appWindow.restore();
-    else
-      appWindow.maximize();
-  };
-
-  FileManager.prototype.onClose = function() {
-    window.close();
   };
 
   FileManager.prototype.onShowGearMenu_ = function() {
@@ -815,6 +778,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.table_, this.metadataCache_, this.volumeManager_, fullPage);
     FileGrid.decorate(this.grid_, this.metadataCache_, this.volumeManager_);
 
+    this.ui_.locationBreadcrumbs = new BreadcrumbsController(
+        dom.querySelector('#location-breadcrumbs'),
+        this.metadataCache_,
+        this.volumeManager_);
+    this.ui_.locationBreadcrumbs.addEventListener(
+        'pathclick', this.onBreadcrumbClick_.bind(this));
+
     this.previewPanel_ = new PreviewPanel(
         dom.querySelector('.preview-panel'),
         DialogType.isOpenDialog(this.dialogType) ?
@@ -826,9 +796,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         PreviewPanel.Event.VISIBILITY_CHANGE,
         this.onPreviewPanelVisibilityChange_.bind(this));
     this.previewPanel_.initialize();
-
-    this.previewPanel_.breadcrumbs.addEventListener(
-         'pathclick', this.onBreadcrumbClick_.bind(this));
 
     // Initialize progress center panel.
     this.progressCenterPanel_ = new ProgressCenterPanel(
@@ -877,15 +844,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.hostedButton = this.dialogDom_.querySelector(
         '#gear-menu-drive-hosted-settings');
 
-    this.detailViewButton_ =
-        this.dialogDom_.querySelector('#detail-view');
-    this.detailViewButton_.addEventListener('activate',
-        this.onDetailViewButtonClick_.bind(this));
-
-    this.thumbnailViewButton_ =
-        this.dialogDom_.querySelector('#thumbnail-view');
-    this.thumbnailViewButton_.addEventListener('activate',
-        this.onThumbnailViewButtonClick_.bind(this));
+    this.ui_.toggleViewButton.addEventListener('click',
+        this.onToggleViewButtonClick_.bind(this));
 
     cr.ui.ComboButton.decorate(this.taskItems_);
     this.taskItems_.showMenu = function(shouldSetFocus) {
@@ -1179,10 +1139,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.table_.hidden = false;
       /** @type {cr.ui.List} */
       this.currentList_ = this.table_.list;
-      this.detailViewButton_.setAttribute('checked', '');
-      this.thumbnailViewButton_.removeAttribute('checked');
-      this.detailViewButton_.setAttribute('disabled', '');
-      this.thumbnailViewButton_.removeAttribute('disabled');
+      this.ui_.toggleViewButton.classList.remove('table');
+      this.ui_.toggleViewButton.classList.add('grid');
     } else if (type == FileManager.ListType.THUMBNAIL) {
       this.grid_.dataModel = this.directoryModel_.getFileList();
       this.grid_.selectionModel = this.directoryModel_.getFileListSelection();
@@ -1193,10 +1151,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.grid_.hidden = false;
       /** @type {cr.ui.List} */
       this.currentList_ = this.grid_;
-      this.thumbnailViewButton_.setAttribute('checked', '');
-      this.detailViewButton_.removeAttribute('checked');
-      this.thumbnailViewButton_.setAttribute('disabled', '');
-      this.detailViewButton_.removeAttribute('disabled');
+      this.ui_.toggleViewButton.classList.remove('grid');
+      this.ui_.toggleViewButton.classList.add('table');
     } else {
       throw new Error('Unknown list type: ' + type);
     }
@@ -1377,7 +1333,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (this.directoryTree_)
       this.directoryTree_.relayout();
 
-    this.previewPanel_.breadcrumbs.truncate();
+    this.ui_.locationBreadcrumbs.truncate();
   };
 
   /**
@@ -2232,6 +2188,30 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
+   * Updates the location information displayed on the toolbar.
+   * @param {DirectoryEntry=} opt_entry Directory entry to be displayed as
+   *     current location. Default entry is the current directory.
+   * @private
+   */
+  FileManager.prototype.updateLocationLine_ = function(opt_entry) {
+    var entry = opt_entry || this.getCurrentDirectoryEntry();
+    // Updates volume icon.
+    var location = this.volumeManager_.getLocationInfo(entry);
+    if (location && location.rootType && location.isRootEntry) {
+      this.ui_.locationVolumeIcon.setAttribute(
+          'volume-type-icon', location.rootType);
+      this.ui_.locationVolumeIcon.removeAttribute('volume-subtype');
+    } else {
+      this.ui_.locationVolumeIcon.setAttribute(
+          'volume-type-icon', location.volumeInfo.volumeType);
+      this.ui_.locationVolumeIcon.setAttribute(
+          'volume-subtype', location.volumeInfo.deviceType);
+    }
+    // Updates breadcrumbs.
+    this.ui_.locationBreadcrumbs.show(entry);
+  };
+
+  /**
    * Update the gear menu.
    * @private
    */
@@ -2384,6 +2364,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.updateUnformattedVolumeStatus_();
     this.updateTitle_();
+    this.updateLocationLine_();
 
     var currentEntry = this.getCurrentDirectoryEntry();
     this.previewPanel_.currentEntry = util.isFakeEntry(currentEntry) ?
@@ -2908,29 +2889,17 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
+   * Handles click event on the toggle-view button.
    * @param {Event} event Click event.
    * @private
    */
-  FileManager.prototype.onDetailViewButtonClick_ = function(event) {
-    // Stop propagate and hide the menu manually, in order to prevent the focus
-    // from being back to the button. (cf. http://crbug.com/248479)
-    event.stopPropagation();
-    this.gearButton_.hideMenu();
-    this.gearButton_.blur();
-    this.setListType(FileManager.ListType.DETAIL);
-  };
+  FileManager.prototype.onToggleViewButtonClick_ = function(event) {
+    if (this.listType_ === FileManager.ListType.DETAIL)
+      this.setListType(FileManager.ListType.THUMBNAIL);
+    else
+      this.setListType(FileManager.ListType.DETAIL);
 
-  /**
-   * @param {Event} event Click event.
-   * @private
-   */
-  FileManager.prototype.onThumbnailViewButtonClick_ = function(event) {
-    // Stop propagate and hide the menu manually, in order to prevent the focus
-    // from being back to the button. (cf. http://crbug.com/248479)
-    event.stopPropagation();
-    this.gearButton_.hideMenu();
-    this.gearButton_.blur();
-    this.setListType(FileManager.ListType.THUMBNAIL);
+    event.target.blur();
   };
 
   /**
@@ -3509,10 +3478,23 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       } else {
         noResultsDiv.removeAttribute('show');
       }
+
+      // If the current location is somewhere in Drive, all files in Drive can
+      // be listed as search results regardless of current location.
+      // In this case, showing current location is confusing, so use the Drive
+      // root "My Drive" as the current location.
+      var entry = this.getCurrentDirectoryEntry();
+      var locationInfo = this.volumeManager_.getLocationInfo(entry);
+      if (locationInfo && locationInfo.isDriveBased) {
+        var rootEntry = locationInfo.volumeInfo.displayRoot;
+        if (rootEntry)
+          this.updateLocationLine_(rootEntry);
+      }
     };
 
     var hideNoResultsDiv = function() {
       noResultsDiv.removeAttribute('show');
+      this.updateLocationLine_();
     };
 
     this.doSearch(searchString,

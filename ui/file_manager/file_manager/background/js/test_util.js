@@ -61,14 +61,14 @@ test.util.sync.getWindows = function() {
   for (var id in background.appWindows) {
     var windowWrapper = background.appWindows[id];
     windows[id] = {
-      innerWidth: windowWrapper.contentWindow.innerWidth,
-      innerHeight: windowWrapper.contentWindow.innerHeight
+      outerWidth: windowWrapper.contentWindow.outerWidth,
+      outerHeight: windowWrapper.contentWindow.outerHeight
     };
   }
   for (var id in background.dialogs) {
     windows[id] = {
-      innerWidth: background.dialogs[id].innerWidth,
-      innerHeight: background.dialogs[id].innerHeight
+      outerWidth: background.dialogs[id].outerWidth,
+      outerHeight: background.dialogs[id].outerHeight
     };
   }
   return windows;
