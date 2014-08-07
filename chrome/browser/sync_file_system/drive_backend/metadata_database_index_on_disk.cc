@@ -1008,8 +1008,8 @@ TrackerIDSet MetadataDatabaseIndexOnDisk::GetTrackerIDSetByPrefix(
   std::string value;
   leveldb::Status status = db_->Get(active_tracker_key, &value);
   int64 active_tracker;
-  if (status.ok() && base::StringToInt64(value, &active_tracker) &&
-      active_tracker != kInvalidTrackerID) {
+  if (status.ok() && base::StringToInt64(value, &active_tracker)) {
+    DCHECK_NE(kInvalidTrackerID, active_tracker);
     trackers.Activate(active_tracker);
   }
 
@@ -1038,30 +1038,10 @@ bool MetadataDatabaseIndexOnDisk::EraseInTrackerIDSetWithPrefix(
 
   db_->Delete(del_key);
 
-  size_t count = 0;
-  scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
-  for (itr->Seek(key_prefix); itr->Valid(); itr->Next()) {
-    const std::string key = itr->key().ToString();
-    if (!StartsWithASCII(key, key_prefix, true))
-      break;
-    // Entry for |del_key| is not deleted yet.
-    if (key == del_key)
-      continue;
-    ++count;
-    break;
-  }
-
-  if (count > 0) {
-    // TrackerIDSet is still alive.  Deactivate if the tracker is active.
-    leveldb::Status status =
-        db_->Get(active_tracker_key, &value);
-    int64 active_tracker_id;
-    if (status.ok() && base::StringToInt64(value, &active_tracker_id) &&
-        active_tracker_id == tracker_id) {
-      db_->Put(active_tracker_key, base::Int64ToString(kInvalidTrackerID));
-    }
-  } else {
-    // TrackerIDSet is no longer alive.  Erase active tracker entry.
+  status = db_->Get(active_tracker_key, &value);
+  int64 active_tracker_id;
+  if (status.ok() && base::StringToInt64(value, &active_tracker_id) &&
+      active_tracker_id == tracker_id) {
     db_->Delete(active_tracker_key);
   }
 
@@ -1093,7 +1073,7 @@ void MetadataDatabaseIndexOnDisk::DeactivateInTrackerIDSetWithPrefix(
   int64 active_tracker_id;
   if (status.ok() && base::StringToInt64(value, &active_tracker_id)) {
     DCHECK(active_tracker_id == tracker_id);
-    db_->Put(active_tracker_key, base::Int64ToString(kInvalidTrackerID));
+    db_->Delete(active_tracker_key);
   }
 }
 
