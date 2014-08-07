@@ -1312,3 +1312,5 @@ crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/f
 crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-star-allow-crossorigin.html [ Failure Pass Timeout ]
 
 crbug.com/369942 [ Mac Win ] svg/text/text-rescale.html [ NeedsRebaseline ]
+
+crbug.com/401408 fast/js/kde/StringObject.html [ NeedsManualRebaseline ]
