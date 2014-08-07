@@ -2,12 +2,6 @@
 # Copyright (c) 2014 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-#
-# IMPORTANT NOTE: If you make local mods to this file, you must run:
-#   %  pnacl/build.sh driver
-# in order for them to take effect in the scons build.  This command
-# updates the copy in the toolchain/ tree.
-#
 # Uses llvm tool pnacl-bccompress to add abbreviations into the input file.
 # It runs pnacl-bccompress multiple times, using a hill-climbing solution
 # to try and find a good local minima for file size.
