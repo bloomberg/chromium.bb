@@ -19,9 +19,7 @@ class RenderSVGModelObject;
 class PaintInvalidationState {
     WTF_MAKE_NONCOPYABLE(PaintInvalidationState);
 public:
-    PaintInvalidationState(const PaintInvalidationState& next, RenderInline& renderer, const RenderLayerModelObject& paintInvalidationContainer);
-    PaintInvalidationState(const PaintInvalidationState& next, RenderBox& renderer, const RenderLayerModelObject& paintInvalidationContainer);
-    PaintInvalidationState(const PaintInvalidationState& next, RenderSVGModelObject& renderer, const RenderLayerModelObject& paintInvalidationContainer);
+    PaintInvalidationState(const PaintInvalidationState& next, RenderLayerModelObject& renderer, const RenderLayerModelObject& paintInvalidationContainer);
 
     explicit PaintInvalidationState(RenderObject&);
 

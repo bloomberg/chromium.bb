@@ -991,7 +991,7 @@ LayoutRect RenderInline::linesVisualOverflowBoundingBox() const
 
 LayoutRect RenderInline::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
-    if (!firstLineBoxIncludingCulling() && !continuation())
+    if ((!firstLineBoxIncludingCulling() && !continuation()) || style()->visibility() != VISIBLE)
         return LayoutRect();
 
     LayoutRect repaintRect(linesVisualOverflowBoundingBox());
@@ -1558,22 +1558,6 @@ void RenderInline::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
     region.bounds.setY(absPos.y() + region.bounds.y());
 
     regions.append(region);
-}
-
-void RenderInline::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
-{
-    bool establishesNewPaintInvalidationContainer = isPaintInvalidationContainer();
-    const RenderLayerModelObject& newPaintInvalidationContainer = *adjustCompositedContainerForSpecialAncestors(establishesNewPaintInvalidationContainer ? this : &paintInvalidationState.paintInvalidationContainer());
-    PaintInvalidationState childPaintInvalidationState(paintInvalidationState, *this, newPaintInvalidationContainer);
-
-    if (isRelPositioned()) {
-        const LayoutPoint oldPosition = previousPositionFromPaintInvalidationContainer();
-        const LayoutPoint newPosition = RenderLayer::positionFromPaintInvalidationContainer(this, &newPaintInvalidationContainer, &paintInvalidationState);
-        if (oldPosition != newPosition)
-            childPaintInvalidationState.setForceCheckForPaintInvalidation();
-    }
-
-    RenderObject::invalidateTreeIfNeeded(childPaintInvalidationState);
 }
 
 } // namespace blink

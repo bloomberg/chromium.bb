@@ -623,8 +623,6 @@ public:
             removeFloatingOrPositionedChildFromBlockLists();
     }
 
-    virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) OVERRIDE;
-
 protected:
     virtual void willBeDestroyed() OVERRIDE;
 
@@ -735,7 +733,7 @@ private:
     void savePreviousBorderBoxSizeIfNeeded();
     bool logicalHeightComputesAsNone(SizeType) const;
 
-    InvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const RenderLayerModelObject& newPaintInvalidationContainer);
+    virtual InvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const RenderLayerModelObject& newPaintInvalidationContainer) OVERRIDE FINAL;
 
     bool isBox() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
 

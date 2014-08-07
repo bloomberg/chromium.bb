@@ -1543,34 +1543,6 @@ bool RenderBox::repaintLayerRectsForImage(WrappedImagePtr image, const FillLayer
     return false;
 }
 
-void RenderBox::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
-{
-    // FIXME: Currently only using this logic for RenderBox and its ilk. Ideally, RenderBlockFlows with
-    // inline children should track a dirty rect in local coordinates for dirty lines instead of invalidating
-    // the world.
-    // FIXME: We should still be recursing through inline's children, as they can have boxes, but we don't
-    // appear to have tests for this?
-    // FIXME: SVG should probably also go through this unified paint invalidation system.
-    ASSERT(!needsLayout());
-
-    if (!shouldCheckForPaintInvalidation(paintInvalidationState))
-        return;
-
-    bool establishesNewPaintInvalidationContainer = isPaintInvalidationContainer();
-    const RenderLayerModelObject& newPaintInvalidationContainer = *adjustCompositedContainerForSpecialAncestors(establishesNewPaintInvalidationContainer ? this : &paintInvalidationState.paintInvalidationContainer());
-    ASSERT(&newPaintInvalidationContainer == containerForPaintInvalidation());
-
-    InvalidationReason reason = invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
-
-    // This is for the next invalidatePaintIfNeeded so must be after invalidatePaintIfNeeded.
-    savePreviousBorderBoxSizeIfNeeded();
-
-    PaintInvalidationState childTreeWalkState(paintInvalidationState, *this, newPaintInvalidationContainer);
-    if (reason == InvalidationLocationChange || reason == InvalidationFull)
-        childTreeWalkState.setForceCheckForPaintInvalidation();
-    RenderObject::invalidateTreeIfNeeded(childTreeWalkState);
-}
-
 InvalidationReason RenderBox::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const RenderLayerModelObject& newPaintInvalidationContainer)
 {
     const LayoutRect oldPaintInvalidationRect = previousPaintInvalidationRect();
@@ -1578,30 +1550,34 @@ InvalidationReason RenderBox::invalidatePaintIfNeeded(const PaintInvalidationSta
     setPreviousPaintInvalidationRect(boundsRectForPaintInvalidation(&newPaintInvalidationContainer, &paintInvalidationState));
     setPreviousPositionFromPaintInvalidationContainer(RenderLayer::positionFromPaintInvalidationContainer(this, &newPaintInvalidationContainer, &paintInvalidationState));
 
+    InvalidationReason reason = InvalidationNone;
+
     // If we are set to do a full paint invalidation that means the RenderView will be
     // issue paint invalidations. We can then skip issuing of paint invalidations for the child
     // renderers as they'll be covered by the RenderView.
-    if (view()->doingFullPaintInvalidation())
-        return InvalidationNone;
+    if (!view()->doingFullPaintInvalidation()) {
+        if ((onlyNeededPositionedMovementLayout() && compositingState() != PaintsIntoOwnBacking)
+            || (shouldDoFullPaintInvalidationIfSelfPaintingLayer()
+                && hasLayer()
+                && layer()->isSelfPaintingLayer())) {
+            setShouldDoFullPaintInvalidation(true, MarkOnlyThis);
+        }
 
-    if ((onlyNeededPositionedMovementLayout() && compositingState() != PaintsIntoOwnBacking)
-        || (shouldDoFullPaintInvalidationIfSelfPaintingLayer()
-            && hasLayer()
-            && layer()->isSelfPaintingLayer())) {
-        setShouldDoFullPaintInvalidation(true, MarkOnlyThis);
+        reason = RenderObject::invalidatePaintIfNeeded(newPaintInvalidationContainer, oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer, paintInvalidationState);
+        if (reason == InvalidationNone || reason == InvalidationIncremental)
+            invalidatePaintForOverflowIfNeeded();
+
+        // Issue paint invalidations for any scrollbars if there is a scrollable area for this renderer.
+        if (ScrollableArea* area = scrollableArea()) {
+            if (area->hasVerticalBarDamage())
+                invalidatePaintRectangle(area->verticalBarDamage());
+            if (area->hasHorizontalBarDamage())
+                invalidatePaintRectangle(area->horizontalBarDamage());
+        }
     }
 
-    InvalidationReason reason = RenderObject::invalidatePaintIfNeeded(newPaintInvalidationContainer, oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer, paintInvalidationState);
-    if (reason == InvalidationNone || reason == InvalidationIncremental)
-        invalidatePaintForOverflowIfNeeded();
-
-    // Issue paint invalidations for any scrollbars if there is a scrollable area for this renderer.
-    if (ScrollableArea* area = scrollableArea()) {
-        if (area->hasVerticalBarDamage())
-            invalidatePaintRectangle(area->verticalBarDamage());
-        if (area->hasHorizontalBarDamage())
-            invalidatePaintRectangle(area->horizontalBarDamage());
-    }
+    // This is for the next invalidatePaintIfNeeded so must be at the end.
+    savePreviousBorderBoxSizeIfNeeded();
     return reason;
 }
 
