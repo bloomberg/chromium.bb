@@ -6,6 +6,7 @@
 
 """Module that contains unittests for validation_pool module."""
 
+import ConfigParser
 import contextlib
 import copy
 import functools
@@ -174,28 +175,29 @@ class MoxBase(Base, cros_test_lib.MoxTestCase):
 class IgnoredStagesTest(Base):
   """Tests for functions that calculate what stages to ignore."""
 
+  def GetOption(self, path, section='GENERAL', option='ignored-stages'):
+    return validation_pool._GetOptionFromConfigFile(path, section, option)
+
   def testBadConfigFile(self):
     """Test if we can handle an incorrectly formatted config file."""
     with osutils.TempDir(set_global=True) as tempdir:
       path = os.path.join(tempdir, 'foo.ini')
       osutils.WriteFile(path, 'foobar')
-      ignored = validation_pool.GetStagesToIgnoreFromConfigFile(path)
-      self.assertEqual([], ignored)
+      self.assertRaises(ConfigParser.Error, self.GetOption, path)
 
   def testMissingConfigFile(self):
     """Test if we can handle a missing config file."""
     with osutils.TempDir(set_global=True) as tempdir:
       path = os.path.join(tempdir, 'foo.ini')
-      ignored = validation_pool.GetStagesToIgnoreFromConfigFile(path)
-      self.assertEqual([], ignored)
+      self.assertEqual(None, self.GetOption(path))
 
   def testGoodConfigFile(self):
     """Test if we can handle a good config file."""
     with osutils.TempDir(set_global=True) as tempdir:
       path = os.path.join(tempdir, 'foo.ini')
       osutils.WriteFile(path, '[GENERAL]\nignored-stages: bar baz\n')
-      ignored = validation_pool.GetStagesToIgnoreFromConfigFile(path)
-      self.assertEqual(['bar', 'baz'], ignored)
+      ignored = self.GetOption(path)
+      self.assertEqual('bar baz', ignored)
 
 
 class TestPatchSeries(MoxBase):

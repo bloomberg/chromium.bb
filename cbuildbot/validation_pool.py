@@ -199,26 +199,41 @@ def _RunCommand(cmd, dryrun):
     cros_build_lib.Error('Command failed', exc_info=True)
 
 
-def GetStagesToIgnoreFromConfigFile(config_path):
-  """Get a list of stage name prefixes to ignore from |config_path|.
-
-  This function reads the specified config file and returns the list
-  of stage name prefixes to ignore in the CQ. See GetStagesToIgnoreForChange
-  for more details.
+def _GetOptionFromConfigFile(config_path, section, option):
+  """Get |option| from |section| in |config_path|.
 
   Args:
-    config_path: The path to the config file to read.
-  """
-  ignored_stages = []
-  parser = ConfigParser.SafeConfigParser()
-  try:
-    parser.read(config_path)
-    if parser.has_option('GENERAL', 'ignored-stages'):
-      ignored_stages = parser.get('GENERAL', 'ignored-stages').split()
-  except ConfigParser.Error:
-    cros_build_lib.Error('Error parsing %r', config_path, exc_info=True)
+    config_path: Filename to look at.
+    section: Section header name.
+    option: Option name.
 
-  return ignored_stages
+  Returns:
+    The value of the option.
+  """
+  parser = ConfigParser.SafeConfigParser()
+  parser.read(config_path)
+  if parser.has_option(section, option):
+    return parser.get(section, option)
+
+
+def _GetOptionForChange(build_root, change, section, option):
+  """Get |option| from |section| in the config file for |change|.
+
+  Args:
+    build_root: The root of the checkout.
+    change: Change to examine, as a PatchQuery object.
+    section: Section header name.
+    option: Option name.
+
+  Returns:
+    The value of the option.
+  """
+  manifest = git.ManifestCheckout.Cached(build_root)
+  checkout = change.GetCheckout(manifest)
+  if checkout:
+    dirname = checkout.GetPath(absolute=True)
+    config_path = os.path.join(dirname, 'COMMIT-QUEUE.ini')
+    return _GetOptionFromConfigFile(config_path, section, option)
 
 
 def GetStagesToIgnoreForChange(build_root, change):
@@ -237,19 +252,19 @@ def GetStagesToIgnoreForChange(build_root, change):
 
   Args:
     build_root: The root of the checkout.
-    change: Change to examine.
+    change: Change to examine, as a PatchQuery object.
 
   Returns:
     A list of stages to ignore for the given |change|.
   """
-  manifest = git.ManifestCheckout.Cached(build_root)
-  checkout = change.GetCheckout(manifest)
-  if checkout:
-    dirname = checkout.GetPath(absolute=True)
-    path = os.path.join(dirname, 'COMMIT-QUEUE.ini')
-    return GetStagesToIgnoreFromConfigFile(path)
+  result = None
+  try:
+    result = _GetOptionForChange(build_root, change, 'GENERAL',
+                                 'ignored-stages')
+  except ConfigParser.Error:
+    cros_build_lib.Error('%s has malformed config file', change, exc_info=True)
+  return result.split() if result else []
 
-  return []
 
 class GerritHelperNotAvailable(gerrit.GerritException):
   """Exception thrown when a specific helper is requested but unavailable."""
