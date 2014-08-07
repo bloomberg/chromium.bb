@@ -27,6 +27,12 @@ enum PushMessagingStatus {
   // Registration failed in the push service implemented by the embedder.
   PUSH_MESSAGING_STATUS_REGISTRATION_FAILED_SERVICE_ERROR,
 
+  // The message could not be delivered because no service worker was found.
+  PUSH_MESSAGING_STATUS_MESSAGE_DELIVERY_FAILED_NO_SERVICE_WORKER,
+
+  // The message could not be delivered because of a service worker error.
+  PUSH_MESSAGING_STATUS_MESSAGE_DELIVERY_FAILED_SERVICE_WORKER_ERROR,
+
   // Generic error (a more specific error should be used whenever possible).
   PUSH_MESSAGING_STATUS_ERROR,
 

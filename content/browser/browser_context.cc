@@ -9,6 +9,7 @@
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/push_messaging_router.h"
 #include "content/browser/storage_partition_impl_map.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/blob_handle.h"
@@ -210,6 +211,18 @@ void BrowserContext::CreateMemoryBackedBlob(BrowserContext* browser_context,
       base::Bind(&ChromeBlobStorageContext::CreateMemoryBackedBlob,
                  make_scoped_refptr(blob_context), data, length),
       callback);
+}
+
+// static
+void BrowserContext::DeliverPushMessage(
+    BrowserContext* browser_context,
+    const GURL& origin,
+    int64 service_worker_registration_id,
+    const std::string& data,
+    const base::Callback<void(PushMessagingStatus)>& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  PushMessagingRouter::DeliverMessage(
+      browser_context, origin, service_worker_registration_id, data, callback);
 }
 
 void BrowserContext::EnsureResourceContextInitialized(BrowserContext* context) {

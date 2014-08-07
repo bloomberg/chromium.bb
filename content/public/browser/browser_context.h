@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
+#include "content/public/common/push_messaging_status.h"
 
 class GURL;
 
@@ -85,6 +86,15 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   static void CreateMemoryBackedBlob(BrowserContext* browser_context,
                                      const char* data, size_t length,
                                      const BlobCallback& callback);
+
+  // Delivers a push message with |data| to the Service Worker identified by
+  // |origin| and |service_worker_registration_id|.
+  static void DeliverPushMessage(
+      BrowserContext* browser_context,
+      const GURL& origin,
+      int64 service_worker_registration_id,
+      const std::string& data,
+      const base::Callback<void(PushMessagingStatus)>& callback);
 
   // Ensures that the corresponding ResourceContext is initialized. Normally the
   // BrowserContext initializs the corresponding getters when its objects are

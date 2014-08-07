@@ -28,6 +28,12 @@ const char* PushMessagingStatusToString(PushMessagingStatus status) {
     case PUSH_MESSAGING_STATUS_REGISTRATION_FAILED_SERVICE_ERROR:
       return "Registration failed - push service error";
 
+    case PUSH_MESSAGING_STATUS_MESSAGE_DELIVERY_FAILED_NO_SERVICE_WORKER:
+      return "Message delivery failed - no Service Worker";
+
+    case PUSH_MESSAGING_STATUS_MESSAGE_DELIVERY_FAILED_SERVICE_WORKER_ERROR:
+      return "Message delivery failed - Service Worker error";
+
     case PUSH_MESSAGING_STATUS_ERROR:
       return "Operation has failed (unspecified reason)";
   }

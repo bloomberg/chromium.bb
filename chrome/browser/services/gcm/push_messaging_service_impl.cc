@@ -21,6 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
@@ -109,9 +110,16 @@ void PushMessagingServiceImpl::OnMessage(
   DCHECK(application_id.IsValid());
   GCMClient::MessageData::const_iterator it = message.data.find("data");
   if (application_id.IsValid() && it != message.data.end()) {
-    const std::string& data ALLOW_UNUSED = it->second;
-    // TODO(mvanouwerkerk): Fire push event with data on the Service Worker
-    // corresponding to app_id (and remove ALLOW_UNUSED above).
+    const std::string& data = it->second;
+    content::BrowserContext::DeliverPushMessage(
+        profile_,
+        application_id.origin,
+        application_id.service_worker_registration_id,
+        data,
+        base::Bind(&PushMessagingServiceImpl::DeliverMessageCallback,
+                   weak_factory_.GetWeakPtr(),
+                   application_id,
+                   message));
   } else {
     // Drop the message, as it is invalid.
     // TODO(mvanouwerkerk): Show a warning in the developer console of the
@@ -119,6 +127,14 @@ void PushMessagingServiceImpl::OnMessage(
     // TODO(johnme): Add diagnostic observers (e.g. UMA and an internals page)
     // to know when bad things happen.
   }
+}
+
+void PushMessagingServiceImpl::DeliverMessageCallback(
+    const PushMessagingApplicationId& application_id,
+    const GCMClient::IncomingMessage& message,
+    content::PushMessagingStatus status) {
+  // TODO(mvanouwerkerk): UMA logging.
+  // TODO(mvanouwerkerk): Is there a way to recover from failure?
 }
 
 void PushMessagingServiceImpl::OnMessagesDeleted(const std::string& app_id) {

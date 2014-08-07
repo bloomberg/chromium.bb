@@ -886,6 +886,8 @@
       'browser/profiler_message_filter.h',
       'browser/push_messaging_message_filter.cc',
       'browser/push_messaging_message_filter.h',
+      'browser/push_messaging_router.cc',
+      'browser/push_messaging_router.h',
       'browser/quota_dispatcher_host.cc',
       'browser/quota_dispatcher_host.h',
       'browser/renderer_data_memoizing_store.h',
