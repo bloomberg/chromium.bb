@@ -156,3 +156,5 @@ WOFF2 status=stable
 XSLT status=stable
 
 PseudoClassesInMatchingCriteriaInAuthorShadowTrees status=test
+
+CredentialManager status=test
