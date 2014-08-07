@@ -1316,7 +1316,6 @@ crbug.com/396851 [ Lion ] inspector/console/console-stack-overflow.html [ Timeou
 crbug.com/396936 [ Lion ] fast/writing-mode/broken-ideograph-small-caps.html [ Crash ]
 crbug.com/396936 [ Lion ] fast/writing-mode/broken-ideographic-font.html [ Crash ]
 crbug.com/396936 [ Lion ] fast/writing-mode/japanese-rl-text-with-broken-font.html [ Crash ]
-Bug(gardener) [ SnowLeopard ] media/track/track-cue-rendering-horizontal.html [ NeedsRebaseline ]
 crbug.com/397244 [ Snowleopard Debug ] inspector/elements/edit-dom-actions.html [ Crash ]
 
 crbug.com/397321 compositing/repaint/should-not-repaint-composited-opacity.html [ Crash Pass ]
