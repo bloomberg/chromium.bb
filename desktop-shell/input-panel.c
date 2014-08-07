@@ -356,7 +356,6 @@ bind_input_panel(struct wl_client *client,
 
 	wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
 			       "interface object already bound");
-	wl_resource_destroy(resource);
 }
 
 void

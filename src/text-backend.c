@@ -790,14 +790,12 @@ bind_input_method(struct wl_client *client,
 	if (input_method->input_method_binding != NULL) {
 		wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
 				       "interface object already bound");
-		wl_resource_destroy(resource);
 		return;
 	}
 
 	if (text_backend->input_method.client != client) {
 		wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
 				       "permission to bind input_method denied");
-		wl_resource_destroy(resource);
 		return;
 	}
 

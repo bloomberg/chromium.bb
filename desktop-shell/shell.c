@@ -5347,7 +5347,6 @@ bind_desktop_shell(struct wl_client *client,
 
 	wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
 			       "permission to bind desktop_shell denied");
-	wl_resource_destroy(resource);
 }
 
 static void
@@ -5431,7 +5430,6 @@ bind_screensaver(struct wl_client *client,
 
 	wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
 			       "interface object already bound");
-	wl_resource_destroy(resource);
 }
 
 struct switcher {
