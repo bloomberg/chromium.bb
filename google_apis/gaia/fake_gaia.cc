@@ -385,6 +385,7 @@ void FakeGaia::HandleServiceLoginAuth(const HttpRequest& request,
     url = net::AppendQueryParameter(url, "SAMLRequest", "fake_request");
     url = net::AppendQueryParameter(url, "RelayState", continue_url);
     redirect_url = url.spec();
+    http_response->AddCustomHeader("Google-Accounts-SAML", "Start");
   } else if (!merge_session_params_.auth_sid_cookie.empty() &&
              !merge_session_params_.auth_lsid_cookie.empty()) {
     SetCookies(http_response,
@@ -409,6 +410,7 @@ void FakeGaia::HandleSSO(const HttpRequest& request,
   std::string redirect_url = relay_state;
   http_response->set_code(net::HTTP_TEMPORARY_REDIRECT);
   http_response->AddCustomHeader("Location", redirect_url);
+  http_response->AddCustomHeader("Google-Accounts-SAML", "End");
 }
 
 void FakeGaia::HandleAuthToken(const HttpRequest& request,

@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/time/time.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/cookies/canonical_cookie.h"
@@ -33,15 +34,8 @@ namespace chromeos {
 
 namespace {
 
-// Given a |cookie| set during login, returns true if the cookie may have been
-// set by GAIA. While GAIA can set cookies for many different domains, the
-// domain names it sets cookies for during Chrome OS login will always contain
-// the strings "google" or "youtube".
-bool IsGAIACookie(const net::CanonicalCookie& cookie) {
-  const std::string& domain = cookie.Domain();
-  return domain.find("google") != std::string::npos ||
-         domain.find("youtube") != std::string::npos;
-}
+const char kSAMLStartCookie[] = "google-accounts-saml-start";
+const char kSAMLEndCookie[] = "google-accounts-saml-end";
 
 class ProfileAuthDataTransferer {
  public:
@@ -86,6 +80,17 @@ class ProfileAuthDataTransferer {
   void OnChannelIDsToTransferRetrieved(
       const net::ChannelIDStore::ChannelIDList& channel_ids_to_transfer);
 
+  // Given a |cookie| set during login, returns true if the cookie may have been
+  // set by GAIA. The main criterion is the |cookie|'s creation date. The points
+  // in time at which redirects from GAIA to SAML IdP and back occur are stored
+  // in |saml_start_time_| and |saml_end_time_|. If the cookie was set between
+  // these two times, it was created by the SAML IdP. Otherwise, it was created
+  // by GAIA.
+  // As an additional precaution, the cookie's domain is checked. If the domain
+  // contains "google" or "youtube", the cookie is considered to have been set
+  // by GAIA as well.
+  bool IsGAIACookie(const net::CanonicalCookie& cookie);
+
   // If all data to be transferred has been retrieved already, transfer it to
   // |to_context_| and call Finish().
   void MaybeTransferCookiesAndChannelIDs();
@@ -102,6 +107,11 @@ class ProfileAuthDataTransferer {
 
   net::CookieList cookies_to_transfer_;
   net::ChannelIDStore::ChannelIDList channel_ids_to_transfer_;
+
+  // The time at which a redirect from GAIA to a SAML IdP occurred.
+  base::Time saml_start_time_;
+  // The time at which a redirect from a SAML IdP back to GAIA occurred.
+  base::Time saml_end_time_;
 
   bool first_login_;
   bool waiting_for_auth_cookies_;
@@ -214,6 +224,25 @@ void ProfileAuthDataTransferer::OnCookiesToTransferRetrieved(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   waiting_for_auth_cookies_ = false;
   cookies_to_transfer_ = cookies_to_transfer;
+
+  // Look for cookies indicating the points in time at which redirects from GAIA
+  // to SAML IdP and back occurred. These cookies are synthesized by
+  // chrome/browser/resources/gaia_auth/background.js. If the cookies are found,
+  // their creation times are stored in |saml_start_time_| and
+  // |cookies_to_transfer_| and the cookies are deleted.
+  for (net::CookieList::iterator it = cookies_to_transfer_.begin();
+       it != cookies_to_transfer_.end(); ) {
+    if (it->Name() == kSAMLStartCookie) {
+      saml_start_time_ = it->CreationDate();
+      it = cookies_to_transfer_.erase(it);
+    } else if (it->Name() == kSAMLEndCookie) {
+      saml_end_time_ = it->CreationDate();
+      it = cookies_to_transfer_.erase(it);
+    } else {
+      ++it;
+    }
+  }
+
   MaybeTransferCookiesAndChannelIDs();
 }
 
@@ -233,6 +262,19 @@ void ProfileAuthDataTransferer::OnChannelIDsToTransferRetrieved(
   channel_ids_to_transfer_ = channel_ids_to_transfer;
   waiting_for_channel_ids_ = false;
   MaybeTransferCookiesAndChannelIDs();
+}
+
+bool ProfileAuthDataTransferer::IsGAIACookie(
+    const net::CanonicalCookie& cookie) {
+  const base::Time& creation_date = cookie.CreationDate();
+  if (creation_date < saml_start_time_)
+    return true;
+  if (!saml_end_time_.is_null() && creation_date > saml_end_time_)
+    return true;
+
+  const std::string& domain = cookie.Domain();
+  return domain.find("google") != std::string::npos ||
+         domain.find("youtube") != std::string::npos;
 }
 
 void ProfileAuthDataTransferer::MaybeTransferCookiesAndChannelIDs() {

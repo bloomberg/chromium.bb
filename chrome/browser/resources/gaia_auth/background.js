@@ -58,10 +58,10 @@ BackgroundBridgeManager.prototype = {
     chrome.webRequest.onHeadersReceived.addListener(
         function(details) {
           if (this.bridges_[details.tabId])
-            this.bridges_[details.tabId].onHeadersReceived(details);
+            return this.bridges_[details.tabId].onHeadersReceived(details);
         }.bind(this),
         {urls: ['*://*/*'], types: ['sub_frame']},
-        ['responseHeaders']);
+        ['blocking', 'responseHeaders']);
 
     chrome.webRequest.onCompleted.addListener(
         function(details) {
@@ -260,31 +260,86 @@ BackgroundBridge.prototype = {
   /**
    * Handler or webRequest.onHeadersReceived. It reads the authenticated user
    * email from google-accounts-signin-header.
+   * @return {!Object} Modified request headers.
    */
   onHeadersReceived: function(details) {
-    if (!this.isDesktopFlow_ ||
-        !this.gaiaUrl_ ||
-        details.url.lastIndexOf(this.gaiaUrl_) != 0) {
+    var headers = details.responseHeaders;
+
+    if (this.isDesktopFlow_ &&
+        this.gaiaUrl_ &&
+        details.url.lastIndexOf(this.gaiaUrl_) == 0) {
       // TODO(xiyuan, guohui): CrOS should reuse the logic below for reading the
       // email for SAML users and cut off the /ListAccount call.
-      return;
-    }
-
-    var headers = details.responseHeaders;
-    for (var i = 0; headers && i < headers.length; ++i) {
-      if (headers[i].name.toLowerCase() == 'google-accounts-signin') {
-        var headerValues = headers[i].value.toLowerCase().split(',');
-        var signinDetails = {};
-        headerValues.forEach(function(e) {
-          var pair = e.split('=');
-          signinDetails[pair[0].trim()] = pair[1].trim();
-        });
-        // Remove "" around.
-        this.email_ = signinDetails['email'].slice(1, -1);
-        this.sessionIndex_ = signinDetails['sessionindex'];
-        return;
+      for (var i = 0; headers && i < headers.length; ++i) {
+        if (headers[i].name.toLowerCase() == 'google-accounts-signin') {
+          var headerValues = headers[i].value.toLowerCase().split(',');
+          var signinDetails = {};
+          headerValues.forEach(function(e) {
+            var pair = e.split('=');
+            signinDetails[pair[0].trim()] = pair[1].trim();
+          });
+          // Remove "" around.
+          this.email_ = signinDetails['email'].slice(1, -1);
+          this.sessionIndex_ = signinDetails['sessionindex'];
+          break;
+        }
       }
     }
+
+    if (!this.isDesktopFlow_) {
+      // Check whether GAIA headers indicating the start or end of a SAML
+      // redirect are present. If so, synthesize cookies to mark these points.
+      for (var i = 0; headers && i < headers.length; ++i) {
+        if (headers[i].name.toLowerCase() == 'google-accounts-saml') {
+          var action = headers[i].value.toLowerCase();
+          if (action == 'start') {
+            // GAIA is redirecting to a SAML IdP. Any cookies contained in the
+            // current |headers| were set by GAIA. Any cookies set in future
+            // requests will be coming from the IdP. Append a cookie to the
+            // current |headers| that marks the point at which the redirect
+            // occurred.
+            headers.push({name: 'Set-Cookie',
+                          value: 'google-accounts-saml-start=now'});
+            return {responseHeaders: headers};
+          } else if (action == 'end') {
+            // The SAML IdP has redirected back to GAIA. Add a cookie that marks
+            // the point at which the redirect occurred occurred. It is
+            // important that this cookie be prepended to the current |headers|
+            // because any cookies contained in the |headers| were already set
+            // by GAIA, not the IdP. Due to limitations in the webRequest API,
+            // it is not trivial to prepend a cookie:
+            //
+            // The webRequest API only allows for deleting and appending
+            // headers. To prepend a cookie (C), three steps are needed:
+            // 1) Delete any headers that set cookies (e.g., A, B).
+            // 2) Append a header which sets the cookie (C).
+            // 3) Append the original headers (A, B).
+            //
+            // Due to a further limitation of the webRequest API, it is not
+            // possible to delete a header in step 1) and append an identical
+            // header in step 3). To work around this, a trailing semicolon is
+            // added to each header before appending it. Trailing semicolons are
+            // ignored by Chrome in cookie headers, causing the modified headers
+            // to actually set the original cookies.
+            var otherHeaders = [];
+            var cookies = [{name: 'Set-Cookie',
+                            value: 'google-accounts-saml-end=now'}];
+            for (var j = 0; j < headers.length; ++j) {
+              if (headers[j].name.toLowerCase().indexOf('set-cookie') == 0) {
+                var header = headers[j];
+                header.value += ';';
+                cookies.push(header);
+              } else {
+                otherHeaders.push(headers[j]);
+              }
+            }
+            return {responseHeaders: otherHeaders.concat(cookies)};
+          }
+        }
+      }
+    }
+
+    return {};
   },
 
   /**
