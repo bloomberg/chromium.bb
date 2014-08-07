@@ -11,9 +11,9 @@ class CpuMetric(Metric):
 
   def __init__(self, browser):
     super(CpuMetric, self).__init__()
-    self._results = None
     self._browser = browser
     self._start_cpu = None
+    self._stop_cpu = None
 
   def DidStartBrowser(self, browser):
     # Save the browser object so that cpu_stats can be accessed later.
@@ -24,16 +24,17 @@ class CpuMetric(Metric):
 
   def Stop(self, page, tab):
     assert self._start_cpu, 'Must call Start() first'
-    self._results = _SubtractCpuStats(self._browser.cpu_stats, self._start_cpu)
+    self._stop_cpu = self._browser.cpu_stats
 
   # Optional argument trace_name is not in base class Metric.
   # pylint: disable=W0221
   def AddResults(self, tab, results, trace_name='cpu_utilization'):
-    assert self._results, 'Must call Stop() first'
+    assert self._stop_cpu, 'Must call Stop() first'
+    cpu_stats = _SubtractCpuStats(self._stop_cpu, self._start_cpu)
     # Add a result for each process type.
-    for process_type in self._results:
+    for process_type in cpu_stats:
       trace_name_for_process = '%s_%s' % (trace_name, process_type.lower())
-      cpu_percent = 100 * self._results[process_type]
+      cpu_percent = 100 * cpu_stats[process_type]
       results.AddValue(scalar.ScalarValue(
           results.current_page, 'cpu_utilization.%s' % trace_name_for_process,
           '%', cpu_percent, important=False))
