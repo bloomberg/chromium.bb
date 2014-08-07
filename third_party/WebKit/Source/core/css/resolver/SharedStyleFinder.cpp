@@ -116,7 +116,7 @@ static inline const AtomicString& typeAttributeValue(const Element& element)
 
 bool SharedStyleFinder::sharingCandidateHasIdenticalStyleAffectingAttributes(Element& candidate) const
 {
-    if (element().elementData() == candidate.elementData())
+    if (element().sharesSameElementData(candidate))
         return true;
     if (element().fastGetAttribute(XMLNames::langAttr) != candidate.fastGetAttribute(XMLNames::langAttr))
         return false;

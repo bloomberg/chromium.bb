@@ -70,7 +70,7 @@ const SpaceSplitString& ClassList::classNames() const
             m_classNamesForQuirksMode = adoptPtr(new SpaceSplitString(value(), false));
         return *m_classNamesForQuirksMode.get();
     }
-    return m_element->elementData()->classNames();
+    return m_element->classNames();
 }
 
 void ClassList::trace(Visitor* visitor)

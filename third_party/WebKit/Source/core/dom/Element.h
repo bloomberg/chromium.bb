@@ -298,8 +298,7 @@ public:
     // Remove attributes that might introduce scripting from the vector leaving the element unchanged.
     void stripScriptingAttributes(Vector<Attribute>&) const;
 
-    const ElementData* elementData() const { return m_elementData.get(); }
-    UniqueElementData& ensureUniqueElementData();
+    bool sharesSameElementData(const Element& other) const { return elementData() == other.elementData(); }
 
     void synchronizeAllAttributes() const;
 
@@ -512,6 +511,9 @@ public:
 
 protected:
     Element(const QualifiedName& tagName, Document*, ConstructionType);
+
+    const ElementData* elementData() const { return m_elementData.get(); }
+    UniqueElementData& ensureUniqueElementData();
 
     void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, CSSValueID identifier);
     void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, double value, CSSPrimitiveValue::UnitType);
