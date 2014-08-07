@@ -1228,59 +1228,6 @@ TEST_F(FakeDriveServiceTest, UpdateResource_Offline) {
   EXPECT_FALSE(entry);
 }
 
-TEST_F(FakeDriveServiceTest, RenameResource_ExistingFile) {
-  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
-
-  int64 old_largest_change_id = GetLargestChangeByAboutResource();
-
-  const std::string kResourceId = "2_file_resource_id";
-
-  GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.RenameResource(kResourceId,
-                               "new title",
-                               test_util::CreateCopyResultCallback(&error));
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(HTTP_SUCCESS, error);
-
-  scoped_ptr<FileResource> entry = FindEntry(kResourceId);
-  ASSERT_TRUE(entry);
-  EXPECT_EQ("new title", entry->title());
-  // Should be incremented as a file was renamed.
-  EXPECT_EQ(old_largest_change_id + 1,
-            fake_service_.about_resource().largest_change_id());
-  EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
-}
-
-TEST_F(FakeDriveServiceTest, RenameResource_NonexistingFile) {
-  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
-
-  const std::string kResourceId = "nonexisting_file";
-
-  GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.RenameResource(kResourceId,
-                               "new title",
-                               test_util::CreateCopyResultCallback(&error));
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(HTTP_NOT_FOUND, error);
-}
-
-TEST_F(FakeDriveServiceTest, RenameResource_Offline) {
-  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
-  fake_service_.set_offline(true);
-
-  const std::string kResourceId = "2_file_resource_id";
-
-  GDataErrorCode error = GDATA_OTHER_ERROR;
-  fake_service_.RenameResource(kResourceId,
-                               "new title",
-                               test_util::CreateCopyResultCallback(&error));
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(GDATA_NO_CONNECTION, error);
-}
-
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInRootDirectory) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 

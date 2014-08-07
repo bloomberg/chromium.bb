@@ -115,12 +115,6 @@ void ScheduleUploadRangeCallback(const UploadRangeCallback& callback,
                  base::Passed(&entry)));
 }
 
-void EntryActionCallbackAdapter(
-    const EntryActionCallback& callback,
-    GDataErrorCode error, scoped_ptr<FileResource> file) {
-  callback.Run(error);
-}
-
 void FileListCallbackAdapter(const FileListCallback& callback,
                              GDataErrorCode error,
                              scoped_ptr<ChangeList> change_list) {
@@ -858,18 +852,6 @@ CancelCallback FakeDriveService::UpdateResource(
       base::Bind(callback, HTTP_NOT_FOUND,
                  base::Passed(scoped_ptr<FileResource>())));
   return CancelCallback();
-}
-
-CancelCallback FakeDriveService::RenameResource(
-    const std::string& resource_id,
-    const std::string& new_title,
-    const EntryActionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  return UpdateResource(
-      resource_id, std::string(), new_title, base::Time(), base::Time(),
-      base::Bind(&EntryActionCallbackAdapter, callback));
 }
 
 CancelCallback FakeDriveService::AddResourceToDirectory(

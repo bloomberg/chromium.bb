@@ -290,15 +290,6 @@ class DriveServiceInterface {
       const base::Time& last_viewed_by_me,
       const google_apis::FileResourceCallback& callback) = 0;
 
-  // Renames a document or collection identified by its |resource_id|
-  // to the UTF-8 encoded |new_title|. Upon completion,
-  // invokes |callback| with results on the calling thread.
-  // |callback| must not be null.
-  virtual google_apis::CancelCallback RenameResource(
-      const std::string& resource_id,
-      const std::string& new_title,
-      const google_apis::EntryActionCallback& callback) = 0;
-
   // Adds a resource (document, file, or collection) identified by its
   // |resource_id| to a collection represented by the |parent_resource_id|.
   // Upon completion, invokes |callback| with results on the calling thread.

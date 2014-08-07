@@ -514,22 +514,6 @@ CancelCallback DriveAPIService::UpdateResource(
   return sender_->StartRequestWithRetry(request);
 }
 
-CancelCallback DriveAPIService::RenameResource(
-    const std::string& resource_id,
-    const std::string& new_title,
-    const EntryActionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  FilesPatchRequest* request = new FilesPatchRequest(
-      sender_.get(), url_generator_,
-      base::Bind(&EntryActionCallbackAdapter, callback));
-  request->set_file_id(resource_id);
-  request->set_title(new_title);
-  request->set_fields(kFileResourceFields);
-  return sender_->StartRequestWithRetry(request);
-}
-
 CancelCallback DriveAPIService::AddResourceToDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,

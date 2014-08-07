@@ -144,11 +144,6 @@ class JobScheduler
                       const ClientContext& context,
                       const google_apis::FileResourceCallback& callback);
 
-  // Adds a RenameResource operation to the queue.
-  void RenameResource(const std::string& resource_id,
-                      const std::string& new_title,
-                      const google_apis::EntryActionCallback& callback);
-
   // Adds a AddResourceToDirectory operation to the queue.
   void AddResourceToDirectory(const std::string& parent_resource_id,
                               const std::string& resource_id,

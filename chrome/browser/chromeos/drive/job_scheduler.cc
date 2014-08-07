@@ -497,27 +497,6 @@ void JobScheduler::UpdateResource(
   StartJob(new_job);
 }
 
-void JobScheduler::RenameResource(
-    const std::string& resource_id,
-    const std::string& new_title,
-    const google_apis::EntryActionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  JobEntry* new_job = CreateNewJob(TYPE_RENAME_RESOURCE);
-  new_job->task = base::Bind(
-      &DriveServiceInterface::RenameResource,
-      base::Unretained(drive_service_),
-      resource_id,
-      new_title,
-      base::Bind(&JobScheduler::OnEntryActionJobDone,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 new_job->job_info.job_id,
-                 callback));
-  new_job->abort_callback = callback;
-  StartJob(new_job);
-}
-
 void JobScheduler::AddResourceToDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,
@@ -1087,7 +1066,6 @@ JobScheduler::QueueType JobScheduler::GetJobQueueType(JobType type) {
     case TYPE_TRASH_RESOURCE:
     case TYPE_COPY_RESOURCE:
     case TYPE_UPDATE_RESOURCE:
-    case TYPE_RENAME_RESOURCE:
     case TYPE_ADD_RESOURCE_TO_DIRECTORY:
     case TYPE_REMOVE_RESOURCE_FROM_DIRECTORY:
     case TYPE_ADD_NEW_DIRECTORY:

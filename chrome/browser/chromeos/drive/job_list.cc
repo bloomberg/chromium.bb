@@ -38,8 +38,6 @@ std::string JobTypeToString(JobType type) {
       return "TYPE_COPY_RESOURCE";
     case TYPE_UPDATE_RESOURCE:
       return "TYPE_UPDATE_RESOURCE";
-    case TYPE_RENAME_RESOURCE:
-      return "TYPE_RENAME_RESOURCE";
     case TYPE_ADD_RESOURCE_TO_DIRECTORY:
       return "TYPE_ADD_RESOURCE_TO_DIRECTORY";
     case TYPE_REMOVE_RESOURCE_FROM_DIRECTORY:
@@ -124,7 +122,6 @@ bool IsActiveFileTransferJobInfo(const JobInfo& job_info) {
     case TYPE_TRASH_RESOURCE:
     case TYPE_COPY_RESOURCE:
     case TYPE_UPDATE_RESOURCE:
-    case TYPE_RENAME_RESOURCE:
     case TYPE_ADD_RESOURCE_TO_DIRECTORY:
     case TYPE_REMOVE_RESOURCE_FROM_DIRECTORY:
     case TYPE_ADD_NEW_DIRECTORY:

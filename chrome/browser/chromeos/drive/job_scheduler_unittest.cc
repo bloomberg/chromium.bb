@@ -437,20 +437,6 @@ TEST_F(JobSchedulerTest, UpdateResource) {
   ASSERT_TRUE(entry);
 }
 
-TEST_F(JobSchedulerTest, RenameResource) {
-  ConnectToWifi();
-
-  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-
-  scheduler_->RenameResource(
-      "2_file_resource_id",
-      "New Title",
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  base::RunLoop().RunUntilIdle();
-
-  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
-}
-
 TEST_F(JobSchedulerTest, AddResourceToDirectory) {
   ConnectToWifi();
 
@@ -819,11 +805,15 @@ TEST_F(JobSchedulerTest, JobInfo) {
   scheduler_->GetAboutResource(
       google_apis::test_util::CreateCopyResultCallback(
           &error, &about_resource));
-  expected_types.insert(TYPE_RENAME_RESOURCE);
-  scheduler_->RenameResource(
+  expected_types.insert(TYPE_UPDATE_RESOURCE);
+  scheduler_->UpdateResource(
       "2_file_resource_id",
+      std::string(),
       "New Title",
-      google_apis::test_util::CreateCopyResultCallback(&error));
+      base::Time(),
+      base::Time(),
+      ClientContext(USER_INITIATED),
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   expected_types.insert(TYPE_DOWNLOAD_FILE);
   scheduler_->DownloadFile(
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
@@ -838,11 +828,11 @@ TEST_F(JobSchedulerTest, JobInfo) {
   EXPECT_EQ(4U, scheduler_->GetJobInfoList().size());
   EXPECT_TRUE(logger.Has(JobListLogger::ADDED, TYPE_ADD_NEW_DIRECTORY));
   EXPECT_TRUE(logger.Has(JobListLogger::ADDED, TYPE_GET_ABOUT_RESOURCE));
-  EXPECT_TRUE(logger.Has(JobListLogger::ADDED, TYPE_RENAME_RESOURCE));
+  EXPECT_TRUE(logger.Has(JobListLogger::ADDED, TYPE_UPDATE_RESOURCE));
   EXPECT_TRUE(logger.Has(JobListLogger::ADDED, TYPE_DOWNLOAD_FILE));
   EXPECT_FALSE(logger.Has(JobListLogger::DONE, TYPE_ADD_NEW_DIRECTORY));
   EXPECT_FALSE(logger.Has(JobListLogger::DONE, TYPE_GET_ABOUT_RESOURCE));
-  EXPECT_FALSE(logger.Has(JobListLogger::DONE, TYPE_RENAME_RESOURCE));
+  EXPECT_FALSE(logger.Has(JobListLogger::DONE, TYPE_UPDATE_RESOURCE));
   EXPECT_FALSE(logger.Has(JobListLogger::DONE, TYPE_DOWNLOAD_FILE));
 
   // Add more jobs.
@@ -886,7 +876,7 @@ TEST_F(JobSchedulerTest, JobInfo) {
 
   EXPECT_TRUE(logger.Has(JobListLogger::UPDATED, TYPE_ADD_NEW_DIRECTORY));
   EXPECT_TRUE(logger.Has(JobListLogger::UPDATED, TYPE_GET_ABOUT_RESOURCE));
-  EXPECT_TRUE(logger.Has(JobListLogger::UPDATED, TYPE_RENAME_RESOURCE));
+  EXPECT_TRUE(logger.Has(JobListLogger::UPDATED, TYPE_UPDATE_RESOURCE));
   EXPECT_TRUE(logger.Has(JobListLogger::UPDATED,
                          TYPE_ADD_RESOURCE_TO_DIRECTORY));
   EXPECT_TRUE(logger.Has(JobListLogger::UPDATED, TYPE_COPY_RESOURCE));
@@ -894,7 +884,7 @@ TEST_F(JobSchedulerTest, JobInfo) {
 
   EXPECT_TRUE(logger.Has(JobListLogger::DONE, TYPE_ADD_NEW_DIRECTORY));
   EXPECT_TRUE(logger.Has(JobListLogger::DONE, TYPE_GET_ABOUT_RESOURCE));
-  EXPECT_TRUE(logger.Has(JobListLogger::DONE, TYPE_RENAME_RESOURCE));
+  EXPECT_TRUE(logger.Has(JobListLogger::DONE, TYPE_UPDATE_RESOURCE));
   EXPECT_TRUE(logger.Has(JobListLogger::DONE, TYPE_ADD_RESOURCE_TO_DIRECTORY));
   EXPECT_TRUE(logger.Has(JobListLogger::DONE, TYPE_COPY_RESOURCE));
   EXPECT_FALSE(logger.Has(JobListLogger::DONE, TYPE_DOWNLOAD_FILE));

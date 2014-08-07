@@ -179,9 +179,10 @@ GDataErrorCode FakeDriveServiceHelper::RenameResource(
     const std::string& file_id,
     const std::string& new_title) {
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  fake_drive_service_->RenameResource(
-      file_id, new_title,
-      CreateResultReceiver(&error));
+  scoped_ptr<FileResource> entry;
+  fake_drive_service_->UpdateResource(
+      file_id, std::string(), new_title, base::Time(), base::Time(),
+      CreateResultReceiver(&error, &entry));
   base::RunLoop().RunUntilIdle();
   return error;
 }

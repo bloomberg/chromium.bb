@@ -350,14 +350,6 @@ google_apis::CancelCallback DriveServiceOnWorker::UpdateResource(
   return google_apis::CancelCallback();
 }
 
-google_apis::CancelCallback DriveServiceOnWorker::RenameResource(
-    const std::string& resource_id,
-    const std::string& new_title,
-    const google_apis::EntryActionCallback& callback) {
-  NOTREACHED();
-  return google_apis::CancelCallback();
-}
-
 google_apis::CancelCallback DriveServiceOnWorker::AddResourceToDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,
