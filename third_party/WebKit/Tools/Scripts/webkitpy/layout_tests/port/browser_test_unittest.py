@@ -28,10 +28,11 @@
 
 import webkitpy.thirdparty.unittest2 as unittest
 
-from webkitpy.common.system import executive_mock
+from webkitpy.common.system.executive_mock import MockExecutive2
 from webkitpy.common.system.systemhost_mock import MockSystemHost
 from webkitpy.tool.mocktool import MockOptions
 
+from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port import browser_test
 from webkitpy.layout_tests.port import port_testcase
 from webkitpy.layout_tests.port import browser_test_driver
@@ -50,6 +51,15 @@ class BrowserTestLinuxTest(port_testcase.PortTestCase):
     def test_driver_type(self):
         self.assertTrue(isinstance(self.make_port(options=MockOptions(driver_name='browser_tests')).create_driver(1), browser_test_driver.BrowserTestDriver))
 
+    def test_check_sys_deps(self):
+        port = self.make_port()
+        port._executive = MockExecutive2(exit_code=0)
+        self.assertEqual(port.check_sys_deps(needs_http=False), test_run_results.OK_EXIT_STATUS)
+
+    def test_default_timeout_ms(self):
+        self.assertEqual(self.make_port(options=MockOptions(configuration='Release')).default_timeout_ms(), 10000)
+        self.assertEqual(self.make_port(options=MockOptions(configuration='Debug')).default_timeout_ms(), 30000)
+
 
 class BrowserTestWinTest(port_testcase.PortTestCase):
     port_name = 'win'
@@ -65,6 +75,15 @@ class BrowserTestWinTest(port_testcase.PortTestCase):
 
     def test_driver_type(self):
         self.assertTrue(isinstance(self.make_port(options=MockOptions(driver_name='browser_tests')).create_driver(1), browser_test_driver.BrowserTestDriver))
+
+    def test_check_sys_deps(self):
+        port = self.make_port()
+        port._executive = MockExecutive2(exit_code=0)
+        self.assertEqual(port.check_sys_deps(needs_http=False), test_run_results.OK_EXIT_STATUS)
+
+    def test_default_timeout_ms(self):
+        self.assertEqual(self.make_port(options=MockOptions(configuration='Release')).default_timeout_ms(), 20000)
+        self.assertEqual(self.make_port(options=MockOptions(configuration='Debug')).default_timeout_ms(), 60000)
 
 
 class BrowserTestMacTest(port_testcase.PortTestCase):
@@ -85,3 +104,12 @@ class BrowserTestMacTest(port_testcase.PortTestCase):
     def test_driver_path(self):
         test_port = self.make_port(options=MockOptions(driver_name='browser_tests'))
         self.assertFalse('.app/Contents/MacOS' in test_port._path_to_driver())
+
+    def test_check_sys_deps(self):
+        port = self.make_port()
+        port._executive = MockExecutive2(exit_code=0)
+        self.assertEqual(port.check_sys_deps(needs_http=False), test_run_results.OK_EXIT_STATUS)
+
+    def test_default_timeout_ms(self):
+        self.assertEqual(self.make_port(options=MockOptions(configuration='Release')).default_timeout_ms(), 10000)
+        self.assertEqual(self.make_port(options=MockOptions(configuration='Debug')).default_timeout_ms(), 30000)
