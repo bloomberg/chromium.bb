@@ -504,7 +504,7 @@ bool IsPowerOfTwo(const T& val) {
 // files.  Returns false in case of errors reading the data.
 bool ReadDbStateHelper(const base::FilePath& filename,
                        StateInternal* db_state) {
-  file_util::ScopedFILE file(base::OpenFile(filename, "rb"));
+  base::ScopedFILE file(base::OpenFile(filename, "rb"));
   if (file.get() == NULL)
     return false;
 

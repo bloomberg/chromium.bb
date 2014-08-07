@@ -410,28 +410,8 @@ BASE_EXPORT bool GetFileSystemType(const FilePath& path, FileSystemType* type);
 BASE_EXPORT bool GetShmemTempDir(bool executable, FilePath* path);
 #endif
 
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
-// Functor for |ScopedFILE| (below).
-struct ScopedFILEClose {
-  inline void operator()(FILE* x) const {
-    if (x)
-      fclose(x);
-  }
-};
-
-// Automatically closes |FILE*|s.
-typedef scoped_ptr<FILE, ScopedFILEClose> ScopedFILE;
-
-}  // namespace file_util
-
 // Internal --------------------------------------------------------------------
 
-namespace base {
 namespace internal {
 
 // Same as Move but allows paths with traversal components.
