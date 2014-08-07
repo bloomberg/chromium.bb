@@ -9,6 +9,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.PersonalDataManagerObserver;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
@@ -28,6 +29,15 @@ public class AutofillTestHelper {
             @Override
             public AutofillProfile call() {
                 return PersonalDataManager.getInstance().getProfile(guid);
+            }
+        });
+    }
+
+    List<AutofillProfile> getProfiles() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<List<AutofillProfile> >() {
+            @Override
+            public List<AutofillProfile> call() {
+                return PersonalDataManager.getInstance().getProfiles();
             }
         });
     }

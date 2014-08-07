@@ -446,6 +446,12 @@ TEST(AutofillProfileTest, CreateInferredLabels) {
                                         NAME_FULL, 1, "en-US", &labels);
   EXPECT_EQ(base::string16(ASCIIToUTF16("666 Erebus St.")), labels[0]);
   EXPECT_EQ(base::string16(ASCIIToUTF16("123 Letha Shore.")), labels[1]);
+
+  // No suggested fields, but non-unknown excluded field.
+  AutofillProfile::CreateInferredLabels(profiles.get(), NULL,
+                                        NAME_FULL, 1, "en-US", &labels);
+  EXPECT_EQ(base::string16(ASCIIToUTF16("666 Erebus St.")), labels[0]);
+  EXPECT_EQ(base::string16(ASCIIToUTF16("123 Letha Shore.")), labels[1]);
 }
 
 // Test that we fall back to using the full name if there are no other

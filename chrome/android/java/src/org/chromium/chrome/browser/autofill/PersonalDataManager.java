@@ -50,6 +50,7 @@ public class PersonalDataManager {
         private String mCountry;
         private String mPhoneNumber;
         private String mEmailAddress;
+        private String mLabel;
         private String mLanguageCode;
 
         @CalledByNative("AutofillProfile")
@@ -126,6 +127,10 @@ public class PersonalDataManager {
             return mDependentLocality;
         }
 
+        public String getLabel() {
+            return mLabel;
+        }
+
         @CalledByNative("AutofillProfile")
         public String getPostalCode() {
             return mPostalCode;
@@ -162,6 +167,10 @@ public class PersonalDataManager {
 
         public void setGUID(String guid) {
             mGUID = guid;
+        }
+
+        public void setLabel(String label) {
+            mLabel = label;
         }
 
         public void setOrigin(String origin) {
@@ -363,11 +372,17 @@ public class PersonalDataManager {
 
     public List<AutofillProfile> getProfiles() {
         ThreadUtils.assertOnUiThread();
+
+        String[] profileLabels = nativeGetProfileLabels(mPersonalDataManagerAndroid);
+
         int profileCount = nativeGetProfileCount(mPersonalDataManagerAndroid);
         List<AutofillProfile> profiles = new ArrayList<AutofillProfile>(profileCount);
         for (int i = 0; i < profileCount; i++) {
-            profiles.add(nativeGetProfileByIndex(mPersonalDataManagerAndroid, i));
+            AutofillProfile profile = nativeGetProfileByIndex(mPersonalDataManagerAndroid, i);
+            profile.setLabel(profileLabels[i]);
+            profiles.add(profile);
         }
+
         return profiles;
     }
 
@@ -435,6 +450,7 @@ public class PersonalDataManager {
 
     private native long nativeInit();
     private native int nativeGetProfileCount(long nativePersonalDataManagerAndroid);
+    private native String[] nativeGetProfileLabels(long nativePersonalDataManagerAndroid);
     private native AutofillProfile nativeGetProfileByIndex(long nativePersonalDataManagerAndroid,
             int index);
     private native AutofillProfile nativeGetProfileByGUID(long nativePersonalDataManagerAndroid,

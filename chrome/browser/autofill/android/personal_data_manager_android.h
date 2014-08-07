@@ -75,6 +75,12 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
       jobject unused_obj,
       jobject jcard);
 
+  // Gets the labels for all known profiles. These labels are useful for
+  // distinguishing the profiles from one another.
+  base::android::ScopedJavaLocalRef<jobjectArray> GetProfileLabels(
+      JNIEnv* env,
+      jobject unused_obj);
+
   // Removes the profile or credit card represented by |jguid|.
   void RemoveByGUID(JNIEnv* env, jobject unused_obj, jstring jguid);
 

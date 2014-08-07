@@ -4,6 +4,7 @@
 
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/format_macros.h"
 #include "base/prefs/pref_service.h"
@@ -284,6 +285,21 @@ ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetCreditCard(
     personal_data_manager_->UpdateCreditCard(card);
   }
   return ConvertUTF8ToJavaString(env, card.guid());
+}
+
+ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
+    JNIEnv* env,
+    jobject unused_obj) {
+  std::vector<base::string16> labels;
+  AutofillProfile::CreateInferredLabels(
+      personal_data_manager_->GetProfiles(),
+      NULL,
+      NAME_FULL,
+      2,
+      g_browser_process->GetApplicationLocale(),
+      &labels);
+
+  return base::android::ToJavaArrayOfStrings(env, labels);
 }
 
 void PersonalDataManagerAndroid::RemoveByGUID(JNIEnv* env,

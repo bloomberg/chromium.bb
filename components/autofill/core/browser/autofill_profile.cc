@@ -71,12 +71,16 @@ void GetFieldsForDistinguishingProfiles(
     COMPANY_NAME,
   };
 
+  std::vector<ServerFieldType> default_fields;
   if (!suggested_fields) {
-    DCHECK_EQ(excluded_field, UNKNOWN_TYPE);
-    distinguishing_fields->assign(
+    default_fields.assign(
         kDefaultDistinguishingFields,
         kDefaultDistinguishingFields + arraysize(kDefaultDistinguishingFields));
-    return;
+    if (excluded_field == UNKNOWN_TYPE) {
+      distinguishing_fields->swap(default_fields);
+      return;
+    }
+    suggested_fields = &default_fields;
   }
 
   // Keep track of which fields we've seen so that we avoid duplicate entries.
