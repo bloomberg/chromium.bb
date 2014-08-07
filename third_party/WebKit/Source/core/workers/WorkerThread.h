@@ -113,7 +113,6 @@ namespace blink {
         void postDelayedTask(PassOwnPtr<ExecutionContextTask>, long long delayMs);
 
         bool m_terminated;
-        OwnPtr<blink::WebThread> m_thread;
         OwnPtr<WorkerSharedTimer> m_sharedTimer;
         MessageQueue<WorkerThreadTask> m_debuggerMessageQueue;
         OwnPtr<PendingGCRunner> m_pendingGCRunner;
@@ -131,6 +130,13 @@ namespace blink {
 
         // Used to signal thread shutdown.
         OwnPtr<blink::WebWaitableEvent> m_shutdownEvent;
+
+        // FIXME: This has to be last because of crbug.com/401397 - the
+        // WorkerThread might get deleted before it had a chance to properly
+        // shut down. By deleting the WebThread first, we can guarantee that
+        // no pending tasks on the thread might want to access any of the other
+        // members during the WorkerThread's destruction.
+        OwnPtr<blink::WebThread> m_thread;
     };
 
 } // namespace blink
