@@ -127,8 +127,8 @@ static void makePresentationAttributeCacheKey(Element& element, PresentationAttr
     if (isHTMLInputElement(element))
         return;
     AttributeCollection attributes = element.attributesWithoutUpdate();
-    AttributeCollection::const_iterator end = attributes.end();
-    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
+    AttributeCollection::iterator end = attributes.end();
+    for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
         if (!element.isPresentationAttribute(it->name()))
             continue;
         if (!it->namespaceURI().isNull())
@@ -182,8 +182,8 @@ PassRefPtrWillBeRawPtr<StylePropertySet> computePresentationAttributeStyle(Eleme
     } else {
         style = MutableStylePropertySet::create(element.isSVGElement() ? SVGAttributeMode : HTMLAttributeMode);
         AttributeCollection attributes = element.attributesWithoutUpdate();
-        AttributeCollection::const_iterator end = attributes.end();
-        for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it)
+        AttributeCollection::iterator end = attributes.end();
+        for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it)
             element.collectStyleForPresentationAttribute(it->name(), it->value(), toMutableStylePropertySet(style));
     }
 

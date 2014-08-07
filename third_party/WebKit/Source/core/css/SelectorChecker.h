@@ -166,8 +166,8 @@ inline bool SelectorChecker::tagMatches(const Element& element, const QualifiedN
 inline bool SelectorChecker::checkExactAttribute(const Element& element, const QualifiedName& selectorAttributeName, const StringImpl* value)
 {
     AttributeCollection attributes = element.attributesWithoutUpdate();
-    AttributeCollection::const_iterator end = attributes.end();
-    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
+    AttributeCollection::iterator end = attributes.end();
+    for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
         if (it->matches(selectorAttributeName) && (!value || it->value().impl() == value))
             return true;
     }

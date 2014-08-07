@@ -386,8 +386,8 @@ void MarkupAccumulator::appendElement(StringBuilder& result, Element& element, N
     appendOpenTag(result, element, namespaces);
 
     AttributeCollection attributes = element.attributes();
-    AttributeCollection::const_iterator end = attributes.end();
-    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it)
+    AttributeCollection::iterator end = attributes.end();
+    for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it)
         appendAttribute(result, element, *it, namespaces);
 
     // Give an opportunity to subclasses to add their own attributes.

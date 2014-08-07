@@ -114,8 +114,8 @@ bool ElementData::isEquivalent(const ElementData* other) const
     if (attributes.size() != otherAttributes.size())
         return false;
 
-    AttributeCollection::const_iterator end = attributes.end();
-    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
+    AttributeCollection::iterator end = attributes.end();
+    for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
         const Attribute* otherAttr = otherAttributes.find(it->name());
         if (!otherAttr || it->value() != otherAttr->value())
             return false;

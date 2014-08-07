@@ -93,8 +93,6 @@ private:
 
 class AttributeCollection : public AttributeCollectionGeneric<const AttributeArray> {
 public:
-    typedef iterator const_iterator;
-
     AttributeCollection()
         : AttributeCollectionGeneric<const AttributeArray>(AttributeArray(nullptr, 0))
     { }

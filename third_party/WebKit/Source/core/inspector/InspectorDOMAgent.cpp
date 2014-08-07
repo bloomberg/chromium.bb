@@ -760,8 +760,8 @@ void InspectorDOMAgent::setAttributesAsText(ErrorString* errorString, int elemen
     }
 
     bool foundOriginalAttribute = false;
-    AttributeCollection::const_iterator end = attributes.end();
-    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
+    AttributeCollection::iterator end = attributes.end();
+    for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
         // Add attribute pair
         String attributeName = it->name().toString();
         if (shouldIgnoreCase)
@@ -1054,8 +1054,8 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
                 // Go through all attributes and serialize them.
                 const Element* element = toElement(node);
                 AttributeCollection attributes = element->attributes();
-                AttributeCollection::const_iterator end = attributes.end();
-                for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
+                AttributeCollection::iterator end = attributes.end();
+                for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
                     // Add attribute pair
                     if (it->localName().find(whitespaceTrimmedQuery, 0, false) != kNotFound) {
                         resultCollector.add(node);
@@ -1679,8 +1679,8 @@ PassRefPtr<TypeBuilder::Array<String> > InspectorDOMAgent::buildArrayForElementA
     RefPtr<TypeBuilder::Array<String> > attributesValue = TypeBuilder::Array<String>::create();
     // Go through all attributes and serialize them.
     AttributeCollection attributes = element->attributes();
-    AttributeCollection::const_iterator end = attributes.end();
-    for (AttributeCollection::const_iterator it = attributes.begin(); it != end; ++it) {
+    AttributeCollection::iterator end = attributes.end();
+    for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
         // Add attribute pair
         attributesValue->addItem(it->name().toString());
         attributesValue->addItem(it->value());
