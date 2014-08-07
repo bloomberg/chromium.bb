@@ -95,6 +95,11 @@ void WorkerThreadableLoader::loadResourceSynchronously(WorkerGlobalScope& worker
     clientBridgePtr->run();
 }
 
+void WorkerThreadableLoader::overrideTimeout(unsigned long timeoutMilliseconds)
+{
+    m_bridge.overrideTimeout(timeoutMilliseconds);
+}
+
 void WorkerThreadableLoader::cancel()
 {
     m_bridge.cancel();
@@ -152,6 +157,23 @@ void WorkerThreadableLoader::MainThreadBridge::destroy()
     // "delete this" and m_mainThreadLoader::deref() on the worker object's thread.
     m_loaderProxy.postTaskToLoader(
         createCrossThreadTask(&MainThreadBridge::mainThreadDestroy, AllowCrossThreadAccess(this)));
+}
+
+void WorkerThreadableLoader::MainThreadBridge::mainThreadOverrideTimeout(ExecutionContext* context, MainThreadBridge* thisPtr, unsigned long timeoutMilliseconds)
+{
+    ASSERT(isMainThread());
+    ASSERT_UNUSED(context, context->isDocument());
+
+    if (!thisPtr->m_mainThreadLoader)
+        return;
+    thisPtr->m_mainThreadLoader->overrideTimeout(timeoutMilliseconds);
+}
+
+void WorkerThreadableLoader::MainThreadBridge::overrideTimeout(unsigned long timeoutMilliseconds)
+{
+    m_loaderProxy.postTaskToLoader(
+        createCrossThreadTask(&MainThreadBridge::mainThreadOverrideTimeout, AllowCrossThreadAccess(this),
+            timeoutMilliseconds));
 }
 
 void WorkerThreadableLoader::MainThreadBridge::mainThreadCancel(ExecutionContext* context, MainThreadBridge* thisPtr)

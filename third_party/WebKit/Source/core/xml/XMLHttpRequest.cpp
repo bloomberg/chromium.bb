@@ -298,7 +298,16 @@ void XMLHttpRequest::setTimeout(unsigned long timeout, ExceptionState& exception
         exceptionState.throwDOMException(InvalidAccessError, "Timeouts cannot be set for synchronous requests made from a document.");
         return;
     }
+
     m_timeoutMilliseconds = timeout;
+
+    // From http://www.w3.org/TR/XMLHttpRequest/#the-timeout-attribute:
+    // Note: This implies that the timeout attribute can be set while fetching is in progress. If
+    // that occurs it will still be measured relative to the start of fetching.
+    //
+    // The timeout may be overridden after send.
+    if (m_loader)
+        m_loader->overrideTimeout(timeout);
 }
 
 void XMLHttpRequest::setResponseType(const String& responseType, ExceptionState& exceptionState)

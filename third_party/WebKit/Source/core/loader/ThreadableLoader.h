@@ -128,6 +128,13 @@ namespace blink {
         static void loadResourceSynchronously(ExecutionContext&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
         static PassRefPtr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
 
+        // A ThreadableLoader may have a timeout specified. It is possible, in some cases, for
+        // the timeout to be overridden after the request is sent (for example, XMLHttpRequests
+        // may override their timeout setting after sending).
+        //
+        // Set a new timeout relative to the time the request started, in milliseconds.
+        virtual void overrideTimeout(unsigned long timeoutMilliseconds) = 0;
+
         virtual void cancel() = 0;
 
         virtual ~ThreadableLoader() { }

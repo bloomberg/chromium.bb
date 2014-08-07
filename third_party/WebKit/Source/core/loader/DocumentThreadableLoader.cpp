@@ -81,10 +81,13 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     , m_simpleRequest(true)
     , m_async(blockingBehavior == LoadAsynchronously)
     , m_timeoutTimer(this, &DocumentThreadableLoader::didTimeout)
+    , m_requestStartedSeconds(0.0)
 {
     ASSERT(client);
     // Setting an outgoing referer is only supported in the async code path.
     ASSERT(m_async || request.httpReferrer().isEmpty());
+
+    m_requestStartedSeconds = monotonicallyIncreasingTime();
 
     // Save any CORS simple headers on the request here. If this request redirects cross-origin, we cancel the old request
     // create a new one, and copy these headers.
@@ -152,6 +155,26 @@ DocumentThreadableLoader::~DocumentThreadableLoader()
 {
 }
 
+void DocumentThreadableLoader::overrideTimeout(unsigned long timeoutMilliseconds)
+{
+    ASSERT(m_async);
+    ASSERT(m_requestStartedSeconds > 0.0);
+    m_timeoutTimer.stop();
+    // At the time of this method's implementation, it is only ever called by
+    // XMLHttpRequest, when the timeout attribute is set after sending the
+    // request.
+    //
+    // The XHR request says to resolve the time relative to when the request
+    // was initially sent, however other uses of this method may need to
+    // behave differently, in which case this should be re-arranged somehow.
+    if (timeoutMilliseconds) {
+        double elapsedTime = monotonicallyIncreasingTime() - m_requestStartedSeconds;
+        double nextFire = timeoutMilliseconds / 1000.0;
+        double resolvedTime = std::max(nextFire - elapsedTime, 0.0);
+        m_timeoutTimer.startOneShot(resolvedTime, FROM_HERE);
+    }
+}
+
 void DocumentThreadableLoader::cancel()
 {
     cancelWithError(ResourceError());
@@ -173,6 +196,7 @@ void DocumentThreadableLoader::cancelWithError(const ResourceError& error)
     }
     clearResource();
     m_client = 0;
+    m_requestStartedSeconds = 0.0;
 }
 
 void DocumentThreadableLoader::setDefersLoading(bool value)
@@ -198,6 +222,7 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
     if (!isAllowedByPolicy(request.url())) {
         m_client->didFailRedirectCheck();
         request = ResourceRequest();
+        m_requestStartedSeconds = 0.0;
         return;
     }
 
@@ -264,6 +289,7 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
         m_client->didFailRedirectCheck();
     }
     request = ResourceRequest();
+    m_requestStartedSeconds = 0.0;
 }
 
 void DocumentThreadableLoader::dataSent(Resource* resource, unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
@@ -396,6 +422,8 @@ void DocumentThreadableLoader::handleSuccessfulFinish(unsigned long identifier, 
         ASSERT(m_options.crossOriginRequestPolicy == UseAccessControl);
         loadActualRequest();
     } else {
+        // FIXME: Should prevent timeout from being overridden after finished loading, without
+        // resetting m_requestStartedSeconds to 0.0
         m_client->didFinishLoading(identifier, finishTime);
     }
 }
@@ -433,6 +461,8 @@ void DocumentThreadableLoader::handlePreflightFailure(const String& url, const S
     // Prevent handleSuccessfulFinish() from bypassing access check.
     m_actualRequest = nullptr;
 
+    // FIXME: Should prevent timeout from being overridden after preflight failure, without
+    // resetting m_requestStartedSeconds to 0.0
     m_client->didFailAccessControlCheck(error);
 }
 

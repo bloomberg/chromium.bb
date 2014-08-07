@@ -58,6 +58,8 @@ class DocumentThreadableLoader FINAL : public ThreadableLoader, private Resource
         static PassRefPtr<DocumentThreadableLoader> create(Document&, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
         virtual ~DocumentThreadableLoader();
 
+        virtual void overrideTimeout(unsigned long timeout) OVERRIDE;
+
         virtual void cancel() OVERRIDE;
         void setDefersLoading(bool);
 
@@ -129,6 +131,7 @@ class DocumentThreadableLoader FINAL : public ThreadableLoader, private Resource
 
         HTTPHeaderMap m_simpleRequestHeaders; // stores simple request headers in case of a cross-origin redirect.
         Timer<DocumentThreadableLoader> m_timeoutTimer;
+        double m_requestStartedSeconds; // Time an asynchronous fetch request is started
     };
 
 } // namespace blink
