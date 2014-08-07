@@ -20,7 +20,6 @@
 #include "content/renderer/compositor_bindings/web_nine_patch_layer_impl.h"
 #include "content/renderer/compositor_bindings/web_scroll_offset_animation_curve_impl.h"
 #include "content/renderer/compositor_bindings/web_scrollbar_layer_impl.h"
-#include "content/renderer/compositor_bindings/web_solid_color_layer_impl.h"
 #include "content/renderer/compositor_bindings/web_transform_animation_curve_impl.h"
 #include "content/renderer/compositor_bindings/web_transform_operations_impl.h"
 
@@ -41,7 +40,6 @@ using blink::WebScrollbarLayer;
 using blink::WebScrollbarThemeGeometry;
 using blink::WebScrollbarThemePainter;
 using blink::WebScrollOffsetAnimationCurve;
-using blink::WebSolidColorLayer;
 using blink::WebTransformAnimationCurve;
 using blink::WebTransformOperations;
 
@@ -73,10 +71,6 @@ blink::WebImageLayer* WebCompositorSupportImpl::createImageLayer() {
 
 blink::WebNinePatchLayer* WebCompositorSupportImpl::createNinePatchLayer() {
   return new WebNinePatchLayerImpl();
-}
-
-WebSolidColorLayer* WebCompositorSupportImpl::createSolidColorLayer() {
-  return new WebSolidColorLayerImpl();
 }
 
 WebScrollbarLayer* WebCompositorSupportImpl::createScrollbarLayer(

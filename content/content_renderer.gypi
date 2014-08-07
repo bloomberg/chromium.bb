@@ -145,8 +145,6 @@
       'renderer/compositor_bindings/web_scroll_offset_animation_curve_impl.h',
       'renderer/compositor_bindings/web_scrollbar_layer_impl.cc',
       'renderer/compositor_bindings/web_scrollbar_layer_impl.h',
-      'renderer/compositor_bindings/web_solid_color_layer_impl.cc',
-      'renderer/compositor_bindings/web_solid_color_layer_impl.h',
       'renderer/compositor_bindings/web_to_cc_animation_delegate_adapter.cc',
       'renderer/compositor_bindings/web_to_cc_animation_delegate_adapter.h',
       'renderer/compositor_bindings/web_transform_animation_curve_impl.cc',
