@@ -107,6 +107,7 @@ def write_ninja(path, options):
   cxx = os.environ.get('CXX', '')
   cflags = os.environ.get('CFLAGS', '').split()
   cflags_cc = os.environ.get('CXXFLAGS', '').split()
+  ld = os.environ.get('LD', cxx)
   ldflags = os.environ.get('LDFLAGS', '').split()
   include_dirs = [SRC_ROOT]
   libs = []
@@ -117,7 +118,7 @@ def write_ninja(path, options):
     else:
       cflags.extend(['-O2', '-g0'])
 
-    cflags.extend(['-D_FILE_OFFSET_BITS=64 -pthread', '-pipe'])
+    cflags.extend(['-D_FILE_OFFSET_BITS=64', '-pthread', '-pipe'])
     cflags_cc.extend(['-std=gnu++11', '-Wno-c++11-narrowing'])
 
   static_libraries = {
@@ -131,7 +132,7 @@ def write_ninja(path, options):
       continue
     if name.endswith('_unittest.cc'):
       continue
-    if name in ['generate_test_gn_data.cc']:
+    if name in ['generate_test_gn_data.cc', 'run_all_unittests.cc']:
       continue
     full_path = os.path.join(GN_ROOT, name)
     static_libraries['gn']['sources'].append(
@@ -377,11 +378,15 @@ def write_ninja(path, options):
   ninja_lines.extend([
       'build gn: link %s' % (
           ' '.join(['%s.a' % library for library in static_libraries])),
-      '  ld = $ldxx',
       '  ldflags = %s' % ' '.join(ldflags),
       '  libs = %s' % ' '.join(libs),
-      '',  # Make sure the file ends with a newline.
   ])
+  if ld:
+    ninja_lines.append('  ld = %s' % ld)
+  else:
+    ninja_lines.append('  ld = $ldxx')
+
+  ninja_lines.append('')  # Make sure the file ends with a newline.
 
   with open(path, 'w') as f:
     f.write(ninja_template + '\n'.join(ninja_lines))
