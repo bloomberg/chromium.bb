@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SEARCH_CONTEXTUAL_SEARCH_PROMO_SOURCE_H_
-#define CHROME_BROWSER_SEARCH_CONTEXTUAL_SEARCH_PROMO_SOURCE_H_
+#ifndef CHROME_BROWSER_SEARCH_CONTEXTUAL_SEARCH_PROMO_SOURCE_ANDROID_H_
+#define CHROME_BROWSER_SEARCH_CONTEXTUAL_SEARCH_PROMO_SOURCE_ANDROID_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "content/public/browser/url_data_source.h"
 
 // Serves HTML for displaying the contextual search first-run promo.
-class ContextualSearchPromoSource : public content::URLDataSource {
+class ContextualSearchPromoSourceAndroid : public content::URLDataSource {
  public:
-  ContextualSearchPromoSource();
-  virtual ~ContextualSearchPromoSource();
+  ContextualSearchPromoSourceAndroid();
+  virtual ~ContextualSearchPromoSourceAndroid();
 
  protected:
   // Overridden from content::URLDataSource:
@@ -38,7 +38,7 @@ class ContextualSearchPromoSource : public content::URLDataSource {
     const content::URLDataSource::GotDataCallback& callback);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ContextualSearchPromoSource);
+  DISALLOW_COPY_AND_ASSIGN(ContextualSearchPromoSourceAndroid);
 };
 
-#endif  // CHROME_BROWSER_SEARCH_CONTEXTUAL_SEARCH_PROMO_SOURCE_H_
+#endif  // CHROME_BROWSER_SEARCH_CONTEXTUAL_SEARCH_PROMO_SOURCE_ANDROID_H_

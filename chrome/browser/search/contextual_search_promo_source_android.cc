@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search/contextual_search_promo_source.h"
+#include "chrome/browser/search/contextual_search_promo_source_android.h"
 
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_util.h"
@@ -26,11 +26,11 @@ const char kPromoRobotoPath[] = "/roboto.woff";
 
 }  // namespace
 
-ContextualSearchPromoSource::ContextualSearchPromoSource() {}
+ContextualSearchPromoSourceAndroid::ContextualSearchPromoSourceAndroid() {}
 
-ContextualSearchPromoSource::~ContextualSearchPromoSource() {}
+ContextualSearchPromoSourceAndroid::~ContextualSearchPromoSourceAndroid() {}
 
-void ContextualSearchPromoSource::StartDataRequest(
+void ContextualSearchPromoSourceAndroid::StartDataRequest(
     const std::string& path_and_query, int render_process_id,
     int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
@@ -50,11 +50,11 @@ void ContextualSearchPromoSource::StartDataRequest(
   }
 }
 
-std::string ContextualSearchPromoSource::GetSource() const {
+std::string ContextualSearchPromoSourceAndroid::GetSource() const {
   return chrome::kChromeUIContextualSearchPromoHost;
 }
 
-std::string ContextualSearchPromoSource::GetMimeType(
+std::string ContextualSearchPromoSourceAndroid::GetMimeType(
     const std::string& path_and_query) const {
   std::string path(GURL("chrome://host/" + path_and_query).path());
   if (EndsWith(path, ".js", false)) return "application/javascript";
@@ -65,22 +65,23 @@ std::string ContextualSearchPromoSource::GetMimeType(
   return "";
 }
 
-bool ContextualSearchPromoSource::ShouldDenyXFrameOptions() const {
+bool ContextualSearchPromoSourceAndroid::ShouldDenyXFrameOptions() const {
   return false;
 }
 
-bool ContextualSearchPromoSource::ShouldAddContentSecurityPolicy() const {
+bool
+ContextualSearchPromoSourceAndroid::ShouldAddContentSecurityPolicy() const {
   return false;
 }
 
-void ContextualSearchPromoSource::SendResource(
+void ContextualSearchPromoSourceAndroid::SendResource(
     int resource_id, const content::URLDataSource::GotDataCallback& callback) {
   scoped_refptr<base::RefCountedStaticMemory> response(
       ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id));
   callback.Run(response.get());
 }
 
-void ContextualSearchPromoSource::SendHtmlWithStrings(
+void ContextualSearchPromoSourceAndroid::SendHtmlWithStrings(
     const content::URLDataSource::GotDataCallback& callback) {
   base::DictionaryValue strings_data;
   strings_data.SetString(
