@@ -6,11 +6,8 @@
 
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
-#include "base/threading/worker_pool.h"
-#include "cc/layers/image_layer.h"
+#include "cc/layers/layer.h"
 #include "content/browser/android/edge_effect.h"
-#include "skia/ext/image_operations.h"
-#include "ui/gfx/android/java_bitmap.h"
 
 using std::max;
 using std::min;
@@ -20,56 +17,8 @@ namespace content {
 namespace {
 
 const float kEpsilon = 1e-3f;
-const int kScaledEdgeHeight = 12;
-const int kScaledGlowHeight = 64;
 const float kEdgeHeightAtMdpi = 12.f;
 const float kGlowHeightAtMdpi = 128.f;
-
-SkBitmap CreateSkBitmapFromAndroidResource(const char* name, gfx::Size size) {
-  base::android::ScopedJavaLocalRef<jobject> jobj =
-      gfx::CreateJavaBitmapFromAndroidResource(name, size);
-  if (jobj.is_null())
-    return SkBitmap();
-
-  SkBitmap bitmap = CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(jobj.obj()));
-  if (bitmap.isNull())
-    return bitmap;
-
-  return skia::ImageOperations::Resize(
-      bitmap, skia::ImageOperations::RESIZE_BOX, size.width(), size.height());
-}
-
-class OverscrollResources {
- public:
-  OverscrollResources() {
-    TRACE_EVENT0("browser", "OverscrollResources::Create");
-    edge_bitmap_ =
-        CreateSkBitmapFromAndroidResource("android:drawable/overscroll_edge",
-                                          gfx::Size(128, kScaledEdgeHeight));
-    glow_bitmap_ =
-        CreateSkBitmapFromAndroidResource("android:drawable/overscroll_glow",
-                                          gfx::Size(128, kScaledGlowHeight));
-  }
-
-  const SkBitmap& edge_bitmap() const { return edge_bitmap_; }
-  const SkBitmap& glow_bitmap() const { return glow_bitmap_; }
-
- private:
-  SkBitmap edge_bitmap_;
-  SkBitmap glow_bitmap_;
-
-  DISALLOW_COPY_AND_ASSIGN(OverscrollResources);
-};
-
-// Leaky to allow access from a worker thread.
-base::LazyInstance<OverscrollResources>::Leaky g_overscroll_resources =
-    LAZY_INSTANCE_INITIALIZER;
-
-scoped_refptr<cc::Layer> CreateImageLayer(const SkBitmap& bitmap) {
-  scoped_refptr<cc::ImageLayer> layer = cc::ImageLayer::Create();
-  layer->SetBitmap(bitmap);
-  return layer;
-}
 
 bool IsApproxZero(float value) {
   return std::abs(value) < kEpsilon;
@@ -83,25 +32,18 @@ gfx::Vector2dF ZeroSmallComponents(gfx::Vector2dF vector) {
   return vector;
 }
 
-// Force loading of any necessary resources.  This function is thread-safe.
-void EnsureResources() {
-  g_overscroll_resources.Get();
+}  // namespace
+
+scoped_ptr<OverscrollGlow> OverscrollGlow::Create(
+    ui::SystemUIResourceManager* resource_manager) {
+  return make_scoped_ptr(new OverscrollGlow(resource_manager));
 }
 
-} // namespace
-
-scoped_ptr<OverscrollGlow> OverscrollGlow::Create(bool enabled) {
-  // Don't block the main thread with effect resource loading during creation.
-  // Effect instantiation is deferred until the effect overscrolls, in which
-  // case the main thread may block until the resource has loaded.
-  if (enabled && g_overscroll_resources == NULL)
-    base::WorkerPool::PostTask(FROM_HERE, base::Bind(EnsureResources), true);
-
-  return make_scoped_ptr(new OverscrollGlow(enabled));
+OverscrollGlow::OverscrollGlow(ui::SystemUIResourceManager* resource_manager)
+    : enabled_(true), initialized_(false), resource_manager_(resource_manager) {
+  DCHECK(resource_manager_);
+  EdgeEffect::PreloadResources(resource_manager_);
 }
-
-OverscrollGlow::OverscrollGlow(bool enabled)
-    : enabled_(enabled), initialized_(false) {}
 
 OverscrollGlow::~OverscrollGlow() {
   Detach();
@@ -222,6 +164,9 @@ void OverscrollGlow::UpdateLayerAttachment(cc::Layer* parent) {
 
   if (root_layer_->parent() != parent)
     parent->AddChild(root_layer_);
+
+  for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i)
+    edge_effects_[i]->SetParent(root_layer_);
 }
 
 void OverscrollGlow::Detach() {
@@ -234,22 +179,10 @@ bool OverscrollGlow::InitializeIfNecessary() {
   if (initialized_)
     return true;
 
-  const SkBitmap& edge = g_overscroll_resources.Get().edge_bitmap();
-  const SkBitmap& glow = g_overscroll_resources.Get().glow_bitmap();
-  if (edge.isNull() || glow.isNull()) {
-    Disable();
-    return false;
-  }
-
   DCHECK(!root_layer_);
   root_layer_ = cc::Layer::Create();
-  for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i) {
-    scoped_refptr<cc::Layer> edge_layer = CreateImageLayer(edge);
-    scoped_refptr<cc::Layer> glow_layer = CreateImageLayer(glow);
-    root_layer_->AddChild(edge_layer);
-    root_layer_->AddChild(glow_layer);
-    edge_effects_[i] = make_scoped_ptr(new EdgeEffect(edge_layer, glow_layer));
-  }
+  for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i)
+    edge_effects_[i] = make_scoped_ptr(new EdgeEffect(resource_manager_));
 
   initialized_ = true;
   return true;
