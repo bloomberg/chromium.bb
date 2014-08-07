@@ -109,8 +109,7 @@ static jlong CreateRequestPeer(JNIEnv* env,
 
   const char* url_utf8 = env->GetStringUTFChars(url_string, NULL);
 
-  DVLOG(context->logging_level())
-      << "New chromium network request. URL:" << url_utf8;
+  VLOG(1) << "New chromium network request. URL:" << url_utf8;
 
   GURL url(url_utf8);
 

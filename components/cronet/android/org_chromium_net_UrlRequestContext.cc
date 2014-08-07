@@ -9,6 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/json/json_reader.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/values.h"
@@ -86,13 +87,13 @@ static jlong CreateRequestContextPeer(JNIEnv* env,
   base::android::ScopedJavaLocalRef<jobject> scoped_context(env, context);
   base::android::InitApplicationContext(env, scoped_context);
 
-  int logging_level = log_level;
+  // TODO(mef): MinLogLevel is global, shared by all URLRequestContexts.
+  // Revisit this if each URLRequestContext would need an individual log level.
+  logging::SetMinLogLevel(static_cast<int>(log_level));
 
   // TODO(dplotnikov): set application context.
   URLRequestContextPeer* peer = new URLRequestContextPeer(
-      new JniURLRequestContextPeerDelegate(env, object),
-      user_agent_string,
-      logging_level);
+      new JniURLRequestContextPeerDelegate(env, object), user_agent_string);
   peer->AddRef();  // Hold onto this ref-counted object.
   peer->Initialize(context_config.Pass());
   return reinterpret_cast<jlong>(peer);

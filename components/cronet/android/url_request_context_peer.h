@@ -28,15 +28,13 @@ struct URLRequestContextConfig;
 // Implementation of the Chromium NetLog observer interface.
 class NetLogObserver : public net::NetLog::ThreadSafeObserver {
  public:
-  explicit NetLogObserver(int log_level) { log_level_ = log_level; }
+  explicit NetLogObserver() {}
 
   virtual ~NetLogObserver() {}
 
   virtual void OnAddEntry(const net::NetLog::Entry& entry) OVERRIDE;
 
  private:
-  int log_level_;
-
   DISALLOW_COPY_AND_ASSIGN(NetLogObserver);
 };
 
@@ -55,13 +53,10 @@ class URLRequestContextPeer : public net::URLRequestContextGetter {
   };
 
   URLRequestContextPeer(URLRequestContextPeerDelegate* delegate,
-                        std::string user_agent,
-                        int log_level);
+                        std::string user_agent);
   void Initialize(scoped_ptr<URLRequestContextConfig> config);
 
   const std::string& GetUserAgent(const GURL& url) const;
-
-  int logging_level() const { return logging_level_; }
 
   // net::URLRequestContextGetter implementation:
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
@@ -74,7 +69,6 @@ class URLRequestContextPeer : public net::URLRequestContextGetter {
  private:
   scoped_refptr<URLRequestContextPeerDelegate> delegate_;
   scoped_ptr<net::URLRequestContext> context_;
-  int logging_level_;
   std::string user_agent_;
   base::Thread* network_thread_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;

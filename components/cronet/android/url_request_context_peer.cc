@@ -114,11 +114,9 @@ namespace cronet {
 
 URLRequestContextPeer::URLRequestContextPeer(
     URLRequestContextPeerDelegate* delegate,
-    std::string user_agent,
-    int logging_level) {
+    std::string user_agent) {
   delegate_ = delegate;
   user_agent_ = user_agent;
-  logging_level_ = logging_level;
 }
 
 void URLRequestContextPeer::Initialize(
@@ -147,7 +145,7 @@ void URLRequestContextPeer::InitializeURLRequestContext(
   context_.reset(context_builder.Build());
 
   if (VLOG_IS_ON(2)) {
-    net_log_observer_.reset(new NetLogObserver(logging_level_));
+    net_log_observer_.reset(new NetLogObserver());
     context_->net_log()->AddThreadSafeObserver(net_log_observer_.get(),
                                                net::NetLog::LOG_ALL_BUT_BYTES);
   }
@@ -203,11 +201,9 @@ void URLRequestContextPeer::StopNetLog() {
 }
 
 void NetLogObserver::OnAddEntry(const net::NetLog::Entry& entry) {
-  if (VLOG_IS_ON(2)) {
-    VLOG(2) << "Net log entry: type=" << entry.type()
-            << ", source=" << entry.source().type
-            << ", phase=" << entry.phase();
-  }
+  VLOG(2) << "Net log entry: type=" << entry.type()
+          << ", source=" << entry.source().type
+          << ", phase=" << entry.phase();
 }
 
 }  // namespace cronet

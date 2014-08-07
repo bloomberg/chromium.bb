@@ -17,9 +17,9 @@ import org.chromium.base.JNINamespace;
  */
 @JNINamespace("cronet")
 public class UrlRequestContext {
-    private static final int LOG_NONE = 0;
-    private static final int LOG_DEBUG = 1;
-    private static final int LOG_VERBOSE = 2;
+    private static final int LOG_NONE = 3;  // LOG(FATAL), no VLOG.
+    private static final int LOG_DEBUG = -1;  // LOG(FATAL...INFO), VLOG(1)
+    private static final int LOG_VERBOSE = -2;  // LOG(FATAL...INFO), VLOG(2)
     private static final String LOG_TAG = "ChromiumNetwork";
 
     /**

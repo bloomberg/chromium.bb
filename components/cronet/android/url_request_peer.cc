@@ -86,9 +86,9 @@ void URLRequestPeer::OnInitiateConnection() {
     return;
   }
 
-  VLOG(context_->logging_level())
-      << "Starting chromium request: " << url_.possibly_invalid_spec().c_str()
-      << " priority: " << RequestPriorityToString(priority_);
+  VLOG(1) << "Starting chromium request: "
+          << url_.possibly_invalid_spec().c_str()
+          << " priority: " << RequestPriorityToString(priority_);
   url_request_ = new net::URLRequest(
       url_, net::DEFAULT_PRIORITY, this, context_->GetURLRequestContext());
   url_request_->SetLoadFlags(net::LOAD_DISABLE_CACHE |
@@ -124,8 +124,7 @@ void URLRequestPeer::Cancel() {
 }
 
 void URLRequestPeer::OnCancelRequest() {
-  VLOG(context_->logging_level())
-      << "Canceling chromium request: " << url_.possibly_invalid_spec();
+  VLOG(1) << "Canceling chromium request: " << url_.possibly_invalid_spec();
 
   if (url_request_ != NULL) {
     url_request_->Cancel();
@@ -141,8 +140,8 @@ void URLRequestPeer::Destroy() {
 
 // static
 void URLRequestPeer::OnDestroyRequest(URLRequestPeer* self) {
-  VLOG(self->context_->logging_level())
-      << "Destroying chromium request: " << self->url_.possibly_invalid_spec();
+  VLOG(1) << "Destroying chromium request: "
+          << self->url_.possibly_invalid_spec();
   delete self;
 }
 
@@ -153,8 +152,7 @@ void URLRequestPeer::OnResponseStarted(net::URLRequest* request) {
   }
 
   http_status_code_ = request->GetResponseCode();
-  VLOG(context_->logging_level())
-      << "Response started with status: " << http_status_code_;
+  VLOG(1) << "Response started with status: " << http_status_code_;
 
   request->GetResponseHeaderByName("Content-Type", &content_type_);
   expected_size_ = request->GetExpectedContentSize();
@@ -179,20 +177,18 @@ void URLRequestPeer::Read() {
         break;
       }
 
-      VLOG(context_->logging_level()) << "Synchronously read: " << bytes_read
-                                      << " bytes";
+      VLOG(1) << "Synchronously read: " << bytes_read << " bytes";
       OnBytesRead(bytes_read);
     } else if (url_request_->status().status() ==
                net::URLRequestStatus::IO_PENDING) {
       if (bytes_read_ != 0) {
-        VLOG(context_->logging_level()) << "Flushing buffer: " << bytes_read_
-                                        << " bytes";
+        VLOG(1) << "Flushing buffer: " << bytes_read_ << " bytes";
 
         delegate_->OnBytesRead(this);
         read_buffer_->set_offset(0);
         bytes_read_ = 0;
       }
-      VLOG(context_->logging_level()) << "Started async read";
+      VLOG(1) << "Started async read";
       break;
     } else {
       OnRequestFailed();
@@ -202,8 +198,7 @@ void URLRequestPeer::Read() {
 }
 
 void URLRequestPeer::OnReadCompleted(net::URLRequest* request, int bytes_read) {
-  VLOG(context_->logging_level()) << "Asynchronously read: " << bytes_read
-                                  << " bytes";
+  VLOG(1) << "Asynchronously read: " << bytes_read << " bytes";
   if (bytes_read < 0) {
     OnRequestFailed();
     return;
@@ -227,9 +222,8 @@ void URLRequestPeer::OnRequestSucceeded() {
     return;
   }
 
-  VLOG(context_->logging_level())
-      << "Request completed with HTTP status: " << http_status_code_
-      << ". Total bytes read: " << total_bytes_read_;
+  VLOG(1) << "Request completed with HTTP status: " << http_status_code_
+          << ". Total bytes read: " << total_bytes_read_;
 
   OnRequestCompleted();
 }
@@ -240,17 +234,15 @@ void URLRequestPeer::OnRequestFailed() {
   }
 
   error_code_ = url_request_->status().error();
-  VLOG(context_->logging_level())
-      << "Request failed with status: " << url_request_->status().status()
-      << " and error: " << net::ErrorToString(error_code_);
+  VLOG(1) << "Request failed with status: " << url_request_->status().status()
+          << " and error: " << net::ErrorToString(error_code_);
   OnRequestCompleted();
 }
 
 void URLRequestPeer::OnRequestCanceled() { OnRequestCompleted(); }
 
 void URLRequestPeer::OnRequestCompleted() {
-  VLOG(context_->logging_level())
-      << "Completed: " << url_.possibly_invalid_spec();
+  VLOG(1) << "Completed: " << url_.possibly_invalid_spec();
   if (url_request_ != NULL) {
     delete url_request_;
     url_request_ = NULL;
