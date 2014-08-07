@@ -82,7 +82,8 @@ void LegacyRenderWidgetHostHWND::Hide() {
 void LegacyRenderWidgetHostHWND::SetBounds(const gfx::Rect& bounds) {
   gfx::Rect bounds_in_pixel = gfx::win::DIPToScreenRect(bounds);
   ::SetWindowPos(hwnd(), NULL, bounds_in_pixel.x(), bounds_in_pixel.y(),
-                 bounds_in_pixel.width(), bounds_in_pixel.height(), 0);
+                 bounds_in_pixel.width(), bounds_in_pixel.height(),
+                 SWP_NOREDRAW);
 }
 
 void LegacyRenderWidgetHostHWND::OnFinalMessage(HWND hwnd) {

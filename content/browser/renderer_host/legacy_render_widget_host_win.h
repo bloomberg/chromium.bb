@@ -135,7 +135,6 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   LRESULT OnSetCursor(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnNCCalcSize(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnSize(UINT message, WPARAM w_param, LPARAM l_param);
-  LRESULT OnSysCommand(UINT message, WPARAM w_param, LPARAM l_param);
 
   base::win::ScopedComPtr<IAccessible> window_accessible_;
 

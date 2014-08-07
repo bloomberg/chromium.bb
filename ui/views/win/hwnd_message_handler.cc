@@ -815,9 +815,6 @@ void HWNDMessageHandler::FrameTypeChanged() {
     UINT flags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER;
     SetWindowPos(hwnd(), NULL, 0, 0, 0, 0, flags | SWP_HIDEWINDOW);
     SetWindowPos(hwnd(), NULL, 0, 0, 0, 0, flags | SWP_SHOWWINDOW);
-    // Invalidate the window to force a paint. There may be child windows which
-    // could resize in this context. Don't paint right away.
-    ::InvalidateRect(hwnd(), NULL, FALSE);
   }
 
   // WM_DWMCOMPOSITIONCHANGED is only sent to top level windows, however we want
