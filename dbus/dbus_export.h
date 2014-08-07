@@ -10,24 +10,17 @@
 // NOTE: We haven't used DBUS_EXPORT because it would conflict with the version
 // from /usr/include/dbus-1.0/dbus/dbus-macros.h.
 
-#if defined(COMPONENT_BUILD)
 #if defined(WIN32)
+#error dbus support is not currently expected to work on windows
+#endif  // defined(WIN32)
 
-#if defined(DBUS_IMPLEMENTATION)
-#define CHROME_DBUS_EXPORT __declspec(dllexport)
-#else
-#define CHROME_DBUS_EXPORT __declspec(dllimport)
-#endif  // defined(DBUS_IMPLEMENTATION)
-
-#else  // !defined(WIN32)
+#if defined(COMPONENT_BUILD)
 
 #if defined(DBUS_IMPLEMENTATION)
 #define CHROME_DBUS_EXPORT __attribute__((visibility("default")))
 #else
 #define CHROME_DBUS_EXPORT
 #endif
-
-#endif  // defined(WIN32)
 
 #else  // !defined(COMPONENT_BUILD)
 
