@@ -74,6 +74,11 @@ void WebSettingsImpl::setFixedFontFamily(const WebString& font, UScriptCode scri
         m_settings->notifyGenericFontFamilyChange();
 }
 
+void WebSettingsImpl::setForceZeroLayoutHeight(bool enabled)
+{
+    m_settings->setForceZeroLayoutHeight(enabled);
+}
+
 void WebSettingsImpl::setFullscreenSupported(bool enabled)
 {
     m_settings->setFullscreenSupported(enabled);

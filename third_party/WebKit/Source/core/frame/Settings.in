@@ -202,6 +202,10 @@ viewportMetaMergeContentQuirk initial=false
 # See http://crbug.com/288037.
 wideViewportQuirkEnabled initial=false
 
+# Used by the android_webview to support a horizontal height auto-sizing
+# mode.
+forceZeroLayoutHeight initial=false, invalidate=ViewportDescription
+
 # Touch based text selection and editing on desktop.
 # crbug.com/304873 tracks removal once it's been enabled on all platforms.
 touchEditingEnabled initial=false
