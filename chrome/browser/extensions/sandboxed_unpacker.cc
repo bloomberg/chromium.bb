@@ -694,9 +694,8 @@ bool SandboxedUnpacker::RewriteImageFiles(SkBitmap* install_icon) {
     }
   }
 
-  std::string install_icon_path = IconsInfo::GetIcons(extension_).Get(
-      extension_misc::EXTENSION_ICON_LARGE,
-      ExtensionIconSet::MATCH_BIGGER);
+  const std::string& install_icon_path = IconsInfo::GetIcons(extension_).Get(
+      extension_misc::EXTENSION_ICON_LARGE, ExtensionIconSet::MATCH_BIGGER);
 
   // Write our parsed images back to disk as well.
   for (size_t i = 0; i < images.size(); ++i) {

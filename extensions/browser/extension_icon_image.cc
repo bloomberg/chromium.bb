@@ -47,11 +47,9 @@ extensions::ExtensionResource GetExtensionIconResource(
     const ExtensionIconSet& icons,
     int size,
     ExtensionIconSet::MatchType match_type) {
-  std::string path = icons.Get(size, match_type);
-  if (path.empty())
-    return extensions::ExtensionResource();
-
-  return extension->GetResource(path);
+  const std::string& path = icons.Get(size, match_type);
+  return path.empty() ? extensions::ExtensionResource()
+                      : extension->GetResource(path);
 }
 
 class BlankImageSource : public gfx::CanvasImageSource {

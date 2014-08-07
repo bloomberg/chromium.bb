@@ -5,6 +5,7 @@
 #include "extensions/common/extension_icon_set.h"
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 
 ExtensionIconSet::ExtensionIconSet() {}
 
@@ -19,12 +20,12 @@ void ExtensionIconSet::Add(int size, const std::string& path) {
   map_[size] = path;
 }
 
-std::string ExtensionIconSet::Get(int size, MatchType match_type) const {
+const std::string& ExtensionIconSet::Get(int size, MatchType match_type) const {
   // The searches for MATCH_BIGGER and MATCH_SMALLER below rely on the fact that
   // std::map is sorted. This is per the spec, so it should be safe to rely on.
   if (match_type == MATCH_EXACTLY) {
     IconMap::const_iterator result = map_.find(size);
-    return result == map_.end() ? std::string() : result->second;
+    return result == map_.end() ? base::EmptyString() : result->second;
   } else if (match_type == MATCH_SMALLER) {
     IconMap::const_reverse_iterator result = map_.rend();
     for (IconMap::const_reverse_iterator iter = map_.rbegin();
@@ -34,7 +35,7 @@ std::string ExtensionIconSet::Get(int size, MatchType match_type) const {
         break;
       }
     }
-    return result == map_.rend() ? std::string() : result->second;
+    return result == map_.rend() ? base::EmptyString() : result->second;
   } else {
     DCHECK(match_type == MATCH_BIGGER);
     IconMap::const_iterator result = map_.end();
@@ -45,7 +46,7 @@ std::string ExtensionIconSet::Get(int size, MatchType match_type) const {
         break;
       }
     }
-    return result == map_.end() ? std::string() : result->second;
+    return result == map_.end() ? base::EmptyString() : result->second;
   }
 }
 

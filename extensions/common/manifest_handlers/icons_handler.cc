@@ -37,7 +37,7 @@ ExtensionResource IconsInfo::GetIconResource(
     const Extension* extension,
     int size,
     ExtensionIconSet::MatchType match_type) {
-  std::string path = GetIcons(extension).Get(size, match_type);
+  const std::string& path = GetIcons(extension).Get(size, match_type);
   return path.empty() ? ExtensionResource() : extension->GetResource(path);
 }
 
@@ -45,7 +45,7 @@ ExtensionResource IconsInfo::GetIconResource(
 GURL IconsInfo::GetIconURL(const Extension* extension,
                            int size,
                            ExtensionIconSet::MatchType match_type) {
-  std::string path = GetIcons(extension).Get(size, match_type);
+  const std::string& path = GetIcons(extension).Get(size, match_type);
   return path.empty() ? GURL() : extension->GetResourceURL(path);
 }
 
