@@ -248,9 +248,6 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
     info_loader_->Start(frame_);
   }
 
-  if (player_manager_->ShouldEnterFullscreen(frame_))
-    player_manager_->EnterFullscreen(player_id_, frame_);
-
   UpdateNetworkState(WebMediaPlayer::NetworkStateLoading);
   UpdateReadyState(WebMediaPlayer::ReadyStateHaveNothing);
 }
@@ -945,6 +942,8 @@ void WebMediaPlayerAndroid::InitializePlayer(
   player_manager_->Initialize(
       player_type_, player_id_, url_, first_party_url, demuxer_client_id,
       frame_->document().url());
+  if (player_manager_->ShouldEnterFullscreen(frame_))
+    player_manager_->EnterFullscreen(player_id_, frame_);
 }
 
 void WebMediaPlayerAndroid::Pause(bool is_media_related_action) {
