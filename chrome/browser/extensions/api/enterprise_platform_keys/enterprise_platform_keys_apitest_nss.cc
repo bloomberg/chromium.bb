@@ -34,7 +34,7 @@ namespace {
 // be stored in the user's token in the test setup.
 //
 // openssl genrsa > privkey.pem
-// openssl pkcs8 -inform pem -in privkey.pem -topk8 \
+// openssl pkcs8 -inform pem -in privkey.pem -topk8
 //   -outform der -out privkey8.der -nocrypt
 // xxd -i privkey8.der
 const unsigned char privateKeyPkcs8User[] = {
