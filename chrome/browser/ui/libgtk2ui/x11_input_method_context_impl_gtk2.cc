@@ -19,7 +19,6 @@
 #include "ui/base/ime/composition_text_util_pango.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
-#include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace libgtk2ui {
@@ -192,16 +191,8 @@ void X11InputMethodContextImplGtk2::ResetXModifierKeycodesCache() {
 
 GdkEvent* X11InputMethodContextImplGtk2::GdkEventFromNativeEvent(
     const base::NativeEvent& native_event) {
-  XEvent xkeyevent;
-  if (native_event->type == GenericEvent) {
-    // If this is an XI2 key event, build a matching core X event, to avoid
-    // having two cases for every use.
-    ui::InitXKeyEventFromXIDeviceEvent(*native_event, &xkeyevent);
-  } else {
-    DCHECK(native_event->type == KeyPress || native_event->type == KeyRelease);
-    xkeyevent.xkey = native_event->xkey;
-  }
-  XKeyEvent& xkey = xkeyevent.xkey;
+  const XKeyEvent& xkey = native_event->xkey;
+  DCHECK(xkey.type == KeyPress || xkey.type == KeyRelease);
 
   // Get a GdkDisplay.
   GdkDisplay* display = gdk_x11_lookup_xdisplay(xkey.display);
@@ -216,7 +207,7 @@ GdkEvent* X11InputMethodContextImplGtk2::GdkEventFromNativeEvent(
   // Get a keysym and group.
   KeySym keysym = NoSymbol;
   guint8 keyboard_group = 0;
-  XLookupString(&xkey, NULL, 0, &keysym, NULL);
+  XLookupString(&native_event->xkey, NULL, 0, &keysym, NULL);
   GdkKeymap* keymap = gdk_keymap_get_for_display(display);
   GdkKeymapKey* keys = NULL;
   guint* keyvals = NULL;
