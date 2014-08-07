@@ -1162,6 +1162,13 @@ const Experiment kExperiments[] = {
         switches::kScrollEndEffect, "0")
   },
   {
+    "enable-renderer-mojo-channel",
+    IDS_FLAGS_ENABLE_RENDERER_MOJO_CHANNEL_NAME,
+    IDS_FLAGS_ENABLE_RENDERER_MOJO_CHANNEL_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableRendererMojoChannel)
+  },
+  {
     "enable-touch-drag-drop",
     IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_NAME,
     IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_DESCRIPTION,
