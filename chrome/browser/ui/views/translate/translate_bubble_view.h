@@ -51,6 +51,9 @@ class TranslateBubbleView : public views::BubbleDelegateView,
                          translate::TranslateErrors::Type error_type,
                          bool is_user_gesture);
 
+  // Closes the current bubble if existing.
+  static void CloseBubble();
+
   // If true, the Translate bubble is being shown.
   static bool IsShowing();
 

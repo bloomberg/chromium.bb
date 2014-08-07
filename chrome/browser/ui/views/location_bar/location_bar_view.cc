@@ -58,6 +58,7 @@
 #include "chrome/browser/ui/views/location_bar/zoom_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
+#include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -1040,6 +1041,7 @@ void LocationBarView::Update(const WebContents* contents) {
   RefreshContentSettingViews();
   generated_credit_card_view_->Update();
   ZoomBubbleView::CloseBubble();
+  TranslateBubbleView::CloseBubble();
   RefreshZoomView();
   RefreshPageActionViews();
   RefreshTranslateIcon();

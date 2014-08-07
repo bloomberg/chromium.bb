@@ -126,7 +126,18 @@ void TranslateBubbleView::ShowBubble(
                                                       model.Pass(),
                                                       error_type,
                                                       web_contents);
-  views::BubbleDelegateView::CreateBubble(view)->Show();
+  if (is_user_gesture)
+    views::BubbleDelegateView::CreateBubble(view)->Show();
+  else
+    views::BubbleDelegateView::CreateBubble(view)->ShowInactive();
+}
+
+// static
+void TranslateBubbleView::CloseBubble() {
+  if (!IsShowing())
+    return;
+
+  translate_bubble_view_->GetWidget()->Close();
 }
 
 // static
