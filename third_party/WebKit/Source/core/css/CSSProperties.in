@@ -222,7 +222,7 @@ column-fill type_name=ColumnFill
 -webkit-margin-bottom-collapse type_name=EMarginCollapse, name_for_methods=MarginAfterCollapse
 -webkit-margin-top-collapse type_name=EMarginCollapse, name_for_methods=MarginBeforeCollapse
 -internal-marquee-direction name_for_methods=MarqueeDirection
--internal-marquee-increment custom_value, name_for_methods=MarqueeIncrement
+-internal-marquee-increment name_for_methods=MarqueeIncrement, converter=convertLength
 -internal-marquee-repetition type_name=int, name_for_methods=MarqueeLoopCount, custom_value
 -internal-marquee-speed custom_value, name_for_methods=MarqueeSpeed
 -internal-marquee-style name_for_methods=MarqueeBehavior

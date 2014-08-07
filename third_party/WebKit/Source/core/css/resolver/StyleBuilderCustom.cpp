@@ -902,32 +902,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitFilter(StyleResolverState
         state.style()->setFilter(operations);
 }
 
-void StyleBuilderFunctions::applyValueCSSPropertyInternalMarqueeIncrement(StyleResolverState& state, CSSValue* value)
-{
-    if (!value->isPrimitiveValue())
-        return;
-
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->getValueID()) {
-        switch (primitiveValue->getValueID()) {
-        case CSSValueSmall:
-            state.style()->setMarqueeIncrement(Length(1, Fixed)); // 1px.
-            break;
-        case CSSValueNormal:
-            state.style()->setMarqueeIncrement(Length(6, Fixed)); // 6px. The WinIE default.
-            break;
-        case CSSValueLarge:
-            state.style()->setMarqueeIncrement(Length(36, Fixed)); // 36px.
-            break;
-        default:
-            break;
-        }
-    } else {
-        Length marqueeLength = primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
-        state.style()->setMarqueeIncrement(marqueeLength);
-    }
-}
-
 void StyleBuilderFunctions::applyValueCSSPropertyInternalMarqueeSpeed(StyleResolverState& state, CSSValue* value)
 {
     if (!value->isPrimitiveValue())

@@ -1115,10 +1115,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         validPrimitive = validUnit(value, FInteger, HTMLStandardMode);
         break;
     case CSSPropertyInternalMarqueeIncrement:
-        if (id == CSSValueSmall || id == CSSValueLarge || id == CSSValueMedium)
-            validPrimitive = true;
-        else
-            validPrimitive = validUnit(value, FLength | FPercent);
+        validPrimitive = validUnit(value, FLength | FPercent);
         break;
     case CSSPropertyInternalMarqueeRepetition:
         if (id == CSSValueInfinite)
