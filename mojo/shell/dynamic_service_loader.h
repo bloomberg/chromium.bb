@@ -8,7 +8,6 @@
 #include <map>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/service_manager/service_loader.h"
 #include "mojo/services/public/interfaces/network/network_service.mojom.h"
@@ -31,36 +30,17 @@ class DynamicServiceLoader : public ServiceLoader {
                        scoped_ptr<DynamicServiceRunnerFactory> runner_factory);
   virtual ~DynamicServiceLoader();
 
-  void RegisterContentHandler(const std::string& mime_type,
-                              const GURL& content_handler_url);
-
   // ServiceLoader methods:
-  virtual void Load(ServiceManager* manager,
-                    const GURL& url,
-                    scoped_refptr<LoadCallbacks> callbacks) OVERRIDE;
+  virtual void LoadService(ServiceManager* manager,
+                           const GURL& url,
+                           ScopedMessagePipeHandle service_handle) OVERRIDE;
   virtual void OnServiceError(ServiceManager* manager, const GURL& url)
       OVERRIDE;
 
  private:
-  typedef std::map<std::string, GURL> MimeTypeToURLMap;
-
-  void LoadLocalService(const GURL& resolved_url,
-                        scoped_refptr<LoadCallbacks> callbacks);
-  void LoadNetworkService(const GURL& resolved_url,
-                          scoped_refptr<LoadCallbacks> callbacks);
-  void OnLoadNetworkServiceComplete(scoped_refptr<LoadCallbacks> callbacks,
-                                    URLResponsePtr url_response);
-  void RunLibrary(const base::FilePath& response_file,
-                  scoped_refptr<LoadCallbacks> callbacks,
-                  bool delete_file_after,
-                  bool response_path_exists);
-
   Context* const context_;
   scoped_ptr<DynamicServiceRunnerFactory> runner_factory_;
   NetworkServicePtr network_service_;
-  URLLoaderPtr url_loader_;
-  MimeTypeToURLMap mime_type_to_url_;
-  base::WeakPtrFactory<DynamicServiceLoader> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DynamicServiceLoader);
 };

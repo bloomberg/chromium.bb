@@ -150,15 +150,9 @@ DBusServiceLoader::~DBusServiceLoader() {
   DCHECK(url_to_load_context_.empty());
 }
 
-void DBusServiceLoader::Load(ServiceManager* manager,
-                             const GURL& url,
-                             scoped_refptr<LoadCallbacks> callbacks) {
-  // TODO(aa): This could be delayed until later, when we know that loading is
-  // going to succeed.
-  ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
-  if (!shell_handle.is_valid())
-    return;
-
+void DBusServiceLoader::LoadService(ServiceManager* manager,
+                                    const GURL& url,
+                                    ScopedMessagePipeHandle shell_handle) {
   DCHECK(url.SchemeIs("dbus"));
   DCHECK(url_to_load_context_.find(url) == url_to_load_context_.end());
   url_to_load_context_[url] =

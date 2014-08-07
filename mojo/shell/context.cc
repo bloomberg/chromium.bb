@@ -4,13 +4,10 @@
 
 #include "mojo/shell/context.h"
 
-#include <vector>
-
 #include "build/build_config.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_vector.h"
-#include "base/strings/string_split.h"
 #include "mojo/embedder/embedder.h"
 #include "mojo/gles2/gles2_support_impl.h"
 #include "mojo/public/cpp/application/application_impl.h"
@@ -64,32 +61,6 @@ class Setup {
 
 static base::LazyInstance<Setup>::Leaky setup = LAZY_INSTANCE_INITIALIZER;
 
-void InitContentHandlers(DynamicServiceLoader* loader,
-                         base::CommandLine* command_line) {
-  std::string handlers_spec = command_line->GetSwitchValueASCII(
-      switches::kContentHandlers);
-  if (handlers_spec.empty())
-    return;
-
-  std::vector<std::string> parts;
-  base::SplitString(handlers_spec, ',', &parts);
-  if (parts.size() % 2 != 0) {
-    LOG(ERROR) << "Invalid value for switch " << switches::kContentHandlers
-               << ": must be a comma-separated list of mimetype/url pairs.";
-    return;
-  }
-
-  for (size_t i = 0; i < parts.size(); i += 2) {
-    GURL url(parts[i + 1]);
-    if (!url.is_valid()) {
-      LOG(ERROR) << "Invalid value for switch " << switches::kContentHandlers
-                 << ": '" << parts[i + 1] << "' is not a valid URL.";
-      return;
-    }
-    loader->RegisterContentHandler(parts[i], url);
-  }
-}
-
 }  // namespace
 
 class Context::NativeViewportServiceLoader : public ServiceLoader {
@@ -98,12 +69,10 @@ class Context::NativeViewportServiceLoader : public ServiceLoader {
   virtual ~NativeViewportServiceLoader() {}
 
  private:
-  virtual void Load(ServiceManager* manager,
-                    const GURL& url,
-                    scoped_refptr<LoadCallbacks> callbacks) OVERRIDE {
-    ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
-    if (shell_handle.is_valid())
-      app_.reset(services::CreateNativeViewportService(shell_handle.Pass()));
+  virtual void LoadService(ServiceManager* manager,
+                           const GURL& url,
+                           ScopedMessagePipeHandle shell_handle) OVERRIDE {
+    app_.reset(services::CreateNativeViewportService(shell_handle.Pass()));
   }
 
   virtual void OnServiceError(ServiceManager* manager,
@@ -126,19 +95,16 @@ void Context::Init() {
   for (size_t i = 0; i < arraysize(kLocalMojoURLs); ++i)
     mojo_url_resolver_.AddLocalFileMapping(GURL(kLocalMojoURLs[i]));
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   scoped_ptr<DynamicServiceRunnerFactory> runner_factory;
-  if (command_line->HasSwitch(switches::kEnableMultiprocess))
+  if (cmdline->HasSwitch(switches::kEnableMultiprocess))
     runner_factory.reset(new OutOfProcessDynamicServiceRunnerFactory());
   else
     runner_factory.reset(new InProcessDynamicServiceRunnerFactory());
 
-  DynamicServiceLoader* dynamic_service_loader =
-      new DynamicServiceLoader(this, runner_factory.Pass());
-  InitContentHandlers(dynamic_service_loader, command_line);
   service_manager_.set_default_loader(
-      scoped_ptr<ServiceLoader>(dynamic_service_loader));
-
+      scoped_ptr<ServiceLoader>(
+          new DynamicServiceLoader(this, runner_factory.Pass())));
   // The native viewport service synchronously waits for certain messages. If we
   // don't run it on its own thread we can easily deadlock. Long term native
   // viewport should run its own process so that this isn't an issue.
@@ -174,9 +140,9 @@ void Context::Init() {
       "dbus");
 #endif  // defined(OS_LINUX)
 
-  if (command_line->HasSwitch(switches::kSpy)) {
-    spy_.reset(new mojo::Spy(
-        &service_manager_, command_line->GetSwitchValueASCII(switches::kSpy)));
+  if (cmdline->HasSwitch(switches::kSpy)) {
+    spy_.reset(new mojo::Spy(&service_manager_,
+                             cmdline->GetSwitchValueASCII(switches::kSpy)));
   }
 
 #if defined(OS_ANDROID)

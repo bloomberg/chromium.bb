@@ -2,21 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/service_manager/service_manager.h"
-
 #include <stdio.h>
 
-#include "base/bind.h"
+#include "mojo/service_manager/service_manager.h"
+
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/interfaces/application/application.mojom.h"
 #include "mojo/public/interfaces/application/shell.mojom.h"
 #include "mojo/service_manager/service_loader.h"
-#include "mojo/services/public/interfaces/content_handler/content_handler.mojom.h"
 
 namespace mojo {
 
@@ -36,52 +33,7 @@ class StubServiceProvider : public InterfaceImpl<ServiceProvider> {
       ScopedMessagePipeHandle client_handle) MOJO_OVERRIDE {}
 };
 
-}  // namespace
-
-class ServiceManager::LoadCallbacksImpl : public ServiceLoader::LoadCallbacks {
- public:
-  LoadCallbacksImpl(base::WeakPtr<ServiceManager> manager,
-                    const GURL& requested_url,
-                    const GURL& requestor_url,
-                    ServiceProviderPtr service_provider)
-      : manager_(manager),
-        requested_url_(requested_url),
-        requestor_url_(requestor_url),
-        service_provider_(service_provider.Pass()) {
-  }
-
- private:
-  virtual ~LoadCallbacksImpl() {
-  }
-
-  // LoadCallbacks implementation
-  virtual ScopedMessagePipeHandle RegisterApplication() OVERRIDE {
-    ScopedMessagePipeHandle shell_handle;
-    if (manager_) {
-      manager_->RegisterLoadedApplication(requested_url_,
-                                          requestor_url_,
-                                          service_provider_.Pass(),
-                                          &shell_handle);
-    }
-    return shell_handle.Pass();
-  }
-
-  virtual void LoadWithContentHandler(const GURL& content_handler_url,
-                                      URLResponsePtr content) OVERRIDE {
-    if (manager_) {
-      manager_->LoadWithContentHandler(requested_url_,
-                                       requestor_url_,
-                                       content_handler_url,
-                                       content.Pass(),
-                                       service_provider_.Pass());
-    }
-  }
-
-  base::WeakPtr<ServiceManager> manager_;
-  GURL requested_url_;
-  GURL requestor_url_;
-  ServiceProviderPtr service_provider_;
-};
+}
 
 class ServiceManager::ShellImpl : public InterfaceImpl<Shell> {
  public:
@@ -124,21 +76,6 @@ class ServiceManager::ShellImpl : public InterfaceImpl<Shell> {
   DISALLOW_COPY_AND_ASSIGN(ShellImpl);
 };
 
-struct ServiceManager::ContentHandlerConnection {
-  ContentHandlerConnection(ServiceManager* manager,
-                           const GURL& content_handler_url) {
-    ServiceProviderPtr service_provider;
-    BindToProxy(&service_provider_impl, &service_provider);
-    manager->ConnectToApplication(content_handler_url,
-                                  GURL(),
-                                  service_provider.Pass());
-    mojo::ConnectToService(service_provider_impl.client(), &content_handler);
-  }
-
-  StubServiceProvider service_provider_impl;
-  ContentHandlerPtr content_handler;
-};
-
 // static
 ServiceManager::TestAPI::TestAPI(ServiceManager* manager) : manager_(manager) {
 }
@@ -155,13 +92,10 @@ bool ServiceManager::TestAPI::HasFactoryForURL(const GURL& url) const {
          manager_->url_to_shell_impl_.end();
 }
 
-ServiceManager::ServiceManager()
-    : interceptor_(NULL),
-      weak_ptr_factory_(this) {
+ServiceManager::ServiceManager() : interceptor_(NULL) {
 }
 
 ServiceManager::~ServiceManager() {
-  STLDeleteValues(&url_to_content_handler_);
   TerminateShellConnections();
   STLDeleteValues(&url_to_loader_);
   STLDeleteValues(&scheme_to_loader_);
@@ -183,24 +117,15 @@ void ServiceManager::ConnectToApplication(const GURL& url,
                                           const GURL& requestor_url,
                                           ServiceProviderPtr service_provider) {
   URLToShellImplMap::const_iterator shell_it = url_to_shell_impl_.find(url);
+  ShellImpl* shell_impl;
   if (shell_it != url_to_shell_impl_.end()) {
-    ConnectToClient(shell_it->second, url, requestor_url,
-                    service_provider.Pass());
-    return;
+    shell_impl = shell_it->second;
+  } else {
+    MessagePipe pipe;
+    GetLoaderForURL(url)->LoadService(this, url, pipe.handle0.Pass());
+    shell_impl = WeakBindToPipe(new ShellImpl(this, url), pipe.handle1.Pass());
+    url_to_shell_impl_[url] = shell_impl;
   }
-
-  scoped_refptr<LoadCallbacksImpl> callbacks(
-      new LoadCallbacksImpl(weak_ptr_factory_.GetWeakPtr(),
-                            url,
-                            requestor_url,
-                            service_provider.Pass()));
-  GetLoaderForURL(url)->Load(this, url, callbacks);
-}
-
-void ServiceManager::ConnectToClient(ShellImpl* shell_impl,
-                                     const GURL& url,
-                                     const GURL& requestor_url,
-                                     ServiceProviderPtr service_provider) {
   if (interceptor_) {
     shell_impl->ConnectToClient(
         requestor_url,
@@ -208,48 +133,6 @@ void ServiceManager::ConnectToClient(ShellImpl* shell_impl,
   } else {
     shell_impl->ConnectToClient(requestor_url, service_provider.Pass());
   }
-}
-
-void ServiceManager::RegisterLoadedApplication(
-    const GURL& url,
-    const GURL& requestor_url,
-    ServiceProviderPtr service_provider,
-    ScopedMessagePipeHandle* shell_handle) {
-  ShellImpl* shell_impl = NULL;
-  URLToShellImplMap::iterator iter = url_to_shell_impl_.find(url);
-  if (iter != url_to_shell_impl_.end()) {
-    // This can happen because services are loaded asynchronously. So if we get
-    // two requests for the same service close to each other, we might get here
-    // and find that we already have it.
-    shell_impl = iter->second;
-  } else {
-    MessagePipe pipe;
-    shell_impl = WeakBindToPipe(new ShellImpl(this, url), pipe.handle1.Pass());
-    url_to_shell_impl_[url] = shell_impl;
-    *shell_handle = pipe.handle0.Pass();
-  }
-
-  ConnectToClient(shell_impl, url, requestor_url, service_provider.Pass());
-}
-
-void ServiceManager::LoadWithContentHandler(
-    const GURL& content_url,
-    const GURL& requestor_url,
-    const GURL& content_handler_url,
-    URLResponsePtr content,
-    ServiceProviderPtr service_provider) {
-  ContentHandlerConnection* connection = NULL;
-  URLToContentHandlerMap::iterator iter =
-      url_to_content_handler_.find(content_handler_url);
-  if (iter != url_to_content_handler_.end()) {
-    connection = iter->second;
-  } else {
-    connection = new ContentHandlerConnection(this, content_handler_url);
-    url_to_content_handler_[content_handler_url] = connection;
-  }
-  connection->content_handler->OnConnect(content_url.spec(),
-                                         content.Pass(),
-                                         service_provider.Pass());
 }
 
 void ServiceManager::SetLoaderForURL(scoped_ptr<ServiceLoader> loader,

@@ -73,9 +73,7 @@ TEST_F(DynamicServiceLoaderTest, DoesNotExist) {
   base::FilePath nonexistent_file(FILE_PATH_LITERAL("nonexistent.txt"));
   GURL url(net::FilePathToFileURL(temp_dir.path().Append(nonexistent_file)));
   MessagePipe pipe;
-  scoped_refptr<ServiceLoader::SimpleLoadCallbacks> callbacks(
-      new ServiceLoader::SimpleLoadCallbacks(pipe.handle0.Pass()));
-  loader_->Load(context_.service_manager(), url, callbacks);
+  loader_->LoadService(context_.service_manager(), url, pipe.handle0.Pass());
   loop_.Run();
   EXPECT_FALSE(state_.runner_was_started);
   EXPECT_TRUE(state_.runner_was_destroyed);

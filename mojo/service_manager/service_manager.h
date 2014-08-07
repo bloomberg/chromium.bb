@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/service_manager/service_loader.h"
 #include "mojo/service_manager/service_manager_export.h"
@@ -88,30 +87,10 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
   void TerminateShellConnections();
 
  private:
-  struct ContentHandlerConnection;
-  class LoadCallbacksImpl;
   class ShellImpl;
-
   typedef std::map<std::string, ServiceLoader*> SchemeToLoaderMap;
   typedef std::map<GURL, ServiceLoader*> URLToLoaderMap;
   typedef std::map<GURL, ShellImpl*> URLToShellImplMap;
-  typedef std::map<GURL, ContentHandlerConnection*> URLToContentHandlerMap;
-
-  void ConnectToClient(ShellImpl* shell_impl,
-                       const GURL& url,
-                       const GURL& requestor_url,
-                       ServiceProviderPtr service_provider);
-
-  void RegisterLoadedApplication(const GURL& service_url,
-                                 const GURL& requestor_url,
-                                 ServiceProviderPtr service_provider,
-                                 ScopedMessagePipeHandle* shell_handle);
-
-  void LoadWithContentHandler(const GURL& content_url,
-                              const GURL& requestor_url,
-                              const GURL& content_handler_url,
-                              URLResponsePtr content,
-                              ServiceProviderPtr service_provider);
 
   // Returns the Loader to use for a url (using default if not overridden.)
   // The preference is to use a loader that's been specified for an url first,
@@ -128,9 +107,6 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
   Interceptor* interceptor_;
 
   URLToShellImplMap url_to_shell_impl_;
-  URLToContentHandlerMap url_to_content_handler_;
-
-  base::WeakPtrFactory<ServiceManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceManager);
 };

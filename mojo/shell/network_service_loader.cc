@@ -29,13 +29,10 @@ NetworkServiceLoader::NetworkServiceLoader() {
 NetworkServiceLoader::~NetworkServiceLoader() {
 }
 
-void NetworkServiceLoader::Load(ServiceManager* manager,
-                                const GURL& url,
-                                scoped_refptr<LoadCallbacks> callbacks) {
-  ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
-  if (!shell_handle.is_valid())
-    return;
-
+void NetworkServiceLoader::LoadService(
+    ServiceManager* manager,
+    const GURL& url,
+    ScopedMessagePipeHandle shell_handle) {
   uintptr_t key = reinterpret_cast<uintptr_t>(manager);
   if (apps_.find(key) == apps_.end()) {
     scoped_ptr<ApplicationImpl> app(

@@ -128,12 +128,9 @@ class TestServiceLoader : public ServiceLoader,
 
  private:
   // Overridden from ServiceLoader:
-  virtual void Load(ServiceManager* service_manager,
-                    const GURL& url,
-                    scoped_refptr<LoadCallbacks> callbacks) MOJO_OVERRIDE {
-    ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
-    if (!shell_handle.is_valid())
-      return;
+  virtual void LoadService(ServiceManager* service_manager,
+                           const GURL& url,
+                           ScopedMessagePipeHandle shell_handle) MOJO_OVERRIDE {
     scoped_ptr<ApplicationImpl> app(
         new ApplicationImpl(this, shell_handle.Pass()));
     apps_.push_back(app.release());

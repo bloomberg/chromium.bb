@@ -25,9 +25,9 @@ class UIServiceLoader : public ServiceLoader {
   virtual ~UIServiceLoader();
 
   // ServiceLoader overrides:
-  virtual void Load(ServiceManager* manager,
-                    const GURL& url,
-                    scoped_refptr<LoadCallbacks> callbacks) OVERRIDE;
+  virtual void LoadService(ServiceManager* manager,
+                           const GURL& url,
+                           ScopedMessagePipeHandle shell_handle) OVERRIDE;
   virtual void OnServiceError(ServiceManager* manager,
                               const GURL& url) OVERRIDE;
 
@@ -38,9 +38,9 @@ class UIServiceLoader : public ServiceLoader {
   // to |background_loader_| to do the actual loading.
   // TODO: having this code take a |manager| is fragile (as ServiceManager isn't
   // thread safe).
-  void LoadOnUIThread(ServiceManager* manager,
-                      const GURL& url,
-                      ScopedMessagePipeHandle* shell_handle);
+  void LoadServiceOnUIThread(ServiceManager* manager,
+                             const GURL& url,
+                             ScopedMessagePipeHandle* shell_handle);
   void OnServiceErrorOnUIThread(ServiceManager* manager, const GURL& url);
   void ShutdownOnUIThread();
 

@@ -15,12 +15,10 @@ class UIServiceLoader::UILoader {
   explicit UILoader(ServiceLoader* loader) : loader_(loader) {}
   ~UILoader() {}
 
-  void Load(ServiceManager* manager,
-            const GURL& url,
-            ScopedMessagePipeHandle shell_handle) {
-    scoped_refptr<LoadCallbacks> callbacks(
-        new ServiceLoader::SimpleLoadCallbacks(shell_handle.Pass()));
-    loader_->Load(manager, url, callbacks);
+  void LoadService(ServiceManager* manager,
+                   const GURL& url,
+                   ScopedMessagePipeHandle shell_handle) {
+    loader_->LoadService(manager, url, shell_handle.Pass());
   }
 
   void OnServiceError(ServiceManager* manager, const GURL& url) {
@@ -44,20 +42,17 @@ UIServiceLoader::~UIServiceLoader() {
       base::Bind(&UIServiceLoader::ShutdownOnUIThread, base::Unretained(this)));
 }
 
-void UIServiceLoader::Load(ServiceManager* manager,
-                           const GURL& url,
-                           scoped_refptr<LoadCallbacks> callbacks) {
-  ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
-  if (!shell_handle.is_valid())
-    return;
+void UIServiceLoader::LoadService(ServiceManager* manager,
+                                  const GURL& url,
+                                  ScopedMessagePipeHandle shell_handle) {
   context_->ui_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&UIServiceLoader::LoadOnUIThread,
-                 base::Unretained(this),
-                 manager,
-                 url,
-                 base::Owned(
-                     new ScopedMessagePipeHandle(shell_handle.Pass()))));
+      base::Bind(
+          &UIServiceLoader::LoadServiceOnUIThread,
+          base::Unretained(this),
+          manager,
+          url,
+          base::Owned(new ScopedMessagePipeHandle(shell_handle.Pass()))));
 }
 
 void UIServiceLoader::OnServiceError(ServiceManager* manager, const GURL& url) {
@@ -69,12 +64,13 @@ void UIServiceLoader::OnServiceError(ServiceManager* manager, const GURL& url) {
                  url));
 }
 
-void UIServiceLoader::LoadOnUIThread(ServiceManager* manager,
-                                     const GURL& url,
-                                     ScopedMessagePipeHandle* shell_handle) {
+void UIServiceLoader::LoadServiceOnUIThread(
+    ServiceManager* manager,
+    const GURL& url,
+    ScopedMessagePipeHandle* shell_handle) {
   if (!ui_loader_)
     ui_loader_ = new UILoader(loader_.get());
-  ui_loader_->Load(manager, url, shell_handle->Pass());
+  ui_loader_->LoadService(manager, url, shell_handle->Pass());
 }
 
 void UIServiceLoader::OnServiceErrorOnUIThread(ServiceManager* manager,

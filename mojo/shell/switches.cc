@@ -10,10 +10,6 @@ namespace switches {
 // |ChildProcess::Type|).
 const char kChildProcessType[] = "child-process-type";
 
-// Comma separated list like:
-// text/html,mojo://mojo_html_viewer,application/bravo,https://abarth.com/bravo
-const char kContentHandlers[] = "content-handlers";
-
 // Force dynamically loaded apps / services to be loaded irrespective of cache
 // instructions.
 const char kDisableCache[] = "disable-cache";
