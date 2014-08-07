@@ -168,6 +168,10 @@ class HIDDetectionScreenHandler
   // power BT adapter.
   void SetPoweredError();
 
+  // Called by device::BluetoothAdapter in response to a failure to
+  // power off BT adapter.
+  void SetPoweredOffError();
+
   // Called for revision of active devices. If current-placement is available
   // for mouse or keyboard device, sets one of active devices as current or
   // tries to connect some BT device if no appropriate devices are connected.
@@ -209,6 +213,9 @@ class HIDDetectionScreenHandler
   InputDeviceInfo::Type keyboard_device_connect_type_;
 
   bool switch_on_adapter_when_ready_;
+
+  // State of BT adapter before screen-initiated changes.
+  scoped_ptr<bool> adapter_initially_powered_;
 
   base::WeakPtrFactory<HIDDetectionScreenHandler> weak_ptr_factory_;
 
