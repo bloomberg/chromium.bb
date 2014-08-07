@@ -28,13 +28,38 @@ bool OverlayStrategySingleOnTop::Attempt(
   DCHECK(root_render_pass);
 
   QuadList& quad_list = root_render_pass->quad_list;
-  const DrawQuad* candidate_quad = quad_list.front();
-  if (candidate_quad->material != DrawQuad::TEXTURE_CONTENT)
+  QuadList::iterator candidate_iterator = quad_list.end();
+  for (QuadList::iterator it = quad_list.begin(); it != quad_list.end(); ++it) {
+    const DrawQuad* draw_quad = *it;
+    if (draw_quad->material == DrawQuad::TEXTURE_CONTENT) {
+      const TextureDrawQuad& quad = *TextureDrawQuad::MaterialCast(draw_quad);
+      if (!resource_provider_->AllowOverlay(quad.resource_id)) {
+        continue;
+      }
+      // Check that no prior quads overlap it.
+      bool intersects = false;
+      gfx::RectF rect = draw_quad->rect;
+      draw_quad->quadTransform().TransformRect(&rect);
+      for (QuadList::iterator overlap_iter = quad_list.begin();
+           overlap_iter != it;
+           ++overlap_iter) {
+        gfx::RectF overlap_rect = (*overlap_iter)->rect;
+        (*overlap_iter)->quadTransform().TransformRect(&overlap_rect);
+        if (rect.Intersects(overlap_rect)) {
+          intersects = true;
+          break;
+        }
+      }
+      if (intersects)
+        continue;
+      candidate_iterator = it;
+      break;
+    }
+  }
+  if (candidate_iterator == quad_list.end())
     return false;
-
-  const TextureDrawQuad& quad = *TextureDrawQuad::MaterialCast(candidate_quad);
-  if (!resource_provider_->AllowOverlay(quad.resource_id))
-    return false;
+  const TextureDrawQuad& quad =
+      *TextureDrawQuad::MaterialCast(*candidate_iterator);
 
   // Simple quads only.
   gfx::OverlayTransform overlay_transform =
@@ -69,8 +94,7 @@ bool OverlayStrategySingleOnTop::Attempt(
 
   // If the candidate can be handled by an overlay, create a pass for it.
   if (candidates[1].overlay_handled) {
-    scoped_ptr<DrawQuad> overlay_quad = quad_list.take(quad_list.begin());
-    quad_list.erase(quad_list.begin());
+    quad_list.erase(candidate_iterator);
     candidate_list->swap(candidates);
     return true;
   }
