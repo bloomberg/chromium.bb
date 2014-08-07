@@ -37,4 +37,8 @@ AudioProcessor::~AudioProcessor()
 {
 }
 
+void AudioProcessor::trace(Visitor*)
+{
+}
+
 }

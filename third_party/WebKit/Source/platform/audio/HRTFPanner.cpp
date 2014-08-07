@@ -60,8 +60,8 @@ HRTFPanner::HRTFPanner(float sampleRate, HRTFDatabaseLoader* databaseLoader)
     , m_convolverR1(fftSizeForSampleRate(sampleRate))
     , m_convolverL2(fftSizeForSampleRate(sampleRate))
     , m_convolverR2(fftSizeForSampleRate(sampleRate))
-    , m_delayLineL(AudioDelayDSPKernel::create(MaxDelayTimeSeconds, sampleRate))
-    , m_delayLineR(AudioDelayDSPKernel::create(MaxDelayTimeSeconds, sampleRate))
+    , m_delayLineL(MaxDelayTimeSeconds, sampleRate)
+    , m_delayLineR(MaxDelayTimeSeconds, sampleRate)
     , m_tempL1(RenderingQuantum)
     , m_tempR1(RenderingQuantum)
     , m_tempL2(RenderingQuantum)
@@ -89,8 +89,8 @@ void HRTFPanner::reset()
     m_convolverR1.reset();
     m_convolverL2.reset();
     m_convolverR2.reset();
-    m_delayLineL->reset();
-    m_delayLineR->reset();
+    m_delayLineL.reset();
+    m_delayLineR.reset();
 }
 
 int HRTFPanner::calculateDesiredAzimuthIndexAndBlend(double azimuth, double& azimuthBlend)
@@ -240,10 +240,10 @@ void HRTFPanner::pan(double desiredAzimuth, double elevation, const AudioBus* in
         float* segmentDestinationR = destinationR + offset;
 
         // First run through delay lines for inter-aural time difference.
-        m_delayLineL->setDelayFrames(frameDelayL);
-        m_delayLineR->setDelayFrames(frameDelayR);
-        m_delayLineL->process(segmentSourceL, segmentDestinationL, framesPerSegment);
-        m_delayLineR->process(segmentSourceR, segmentDestinationR, framesPerSegment);
+        m_delayLineL.setDelayFrames(frameDelayL);
+        m_delayLineR.setDelayFrames(frameDelayR);
+        m_delayLineL.process(segmentSourceL, segmentDestinationL, framesPerSegment);
+        m_delayLineR.process(segmentSourceR, segmentDestinationR, framesPerSegment);
 
         bool needsCrossfading = m_crossfadeIncr;
 

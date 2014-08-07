@@ -32,10 +32,7 @@ namespace blink {
 
 class PLATFORM_EXPORT AudioDelayDSPKernel : public AudioDSPKernel {
 public:
-    static PassOwnPtrWillBeRawPtr<AudioDelayDSPKernel> create(double maxDelayTime, float sampleRate)
-    {
-        return adoptPtrWillBeNoop(new AudioDelayDSPKernel(maxDelayTime, sampleRate));
-    }
+    AudioDelayDSPKernel(double maxDelayTime, float sampleRate);
 
     virtual void process(const float* source, float* destination, size_t framesToProcess) OVERRIDE;
     virtual void reset() OVERRIDE;
@@ -47,13 +44,7 @@ public:
     virtual double tailTime() const OVERRIDE;
     virtual double latencyTime() const OVERRIDE;
 
-    virtual void trace(Visitor* visitor) OVERRIDE
-    {
-        AudioDSPKernel::trace(visitor);
-    }
-
 protected:
-    AudioDelayDSPKernel(double maxDelayTime, float sampleRate);
     AudioDelayDSPKernel(AudioDSPKernelProcessor*, size_t processingSizeInFrames);
 
     virtual bool hasSampleAccurateValues();

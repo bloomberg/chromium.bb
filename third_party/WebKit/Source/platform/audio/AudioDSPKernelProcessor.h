@@ -56,7 +56,7 @@ public:
 
     // Subclasses create the appropriate type of processing kernel here.
     // We'll call this to create a kernel for each channel.
-    virtual PassOwnPtrWillBeRawPtr<AudioDSPKernel> createKernel() = 0;
+    virtual PassOwnPtr<AudioDSPKernel> createKernel() = 0;
 
     // AudioProcessor methods
     virtual void initialize() OVERRIDE;
@@ -69,10 +69,8 @@ public:
     virtual double tailTime() const OVERRIDE;
     virtual double latencyTime() const OVERRIDE;
 
-    virtual void trace(Visitor*) OVERRIDE;
-
 protected:
-    WillBeHeapVector<OwnPtrWillBeMember<AudioDSPKernel> > m_kernels;
+    Vector<OwnPtr<AudioDSPKernel> > m_kernels;
     mutable Mutex m_processLock;
     bool m_hasJustReset;
 };

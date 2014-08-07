@@ -48,7 +48,7 @@ public:
 
     virtual ~WaveShaperProcessor();
 
-    virtual PassOwnPtrWillBeRawPtr<AudioDSPKernel> createKernel() OVERRIDE;
+    virtual PassOwnPtr<AudioDSPKernel> createKernel() OVERRIDE;
 
     virtual void process(const AudioBus* source, AudioBus* destination, size_t framesToProcess) OVERRIDE;
 

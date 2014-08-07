@@ -38,7 +38,7 @@ class BiquadProcessor;
 class BiquadDSPKernel FINAL : public AudioDSPKernel {
 public:
     explicit BiquadDSPKernel(BiquadProcessor* processor)
-        : AudioDSPKernel(processor)
+    : AudioDSPKernel(processor)
     {
     }
 
@@ -55,11 +55,6 @@ public:
 
     virtual double tailTime() const OVERRIDE;
     virtual double latencyTime() const OVERRIDE;
-
-    virtual void trace(Visitor* visitor) OVERRIDE
-    {
-        AudioDSPKernel::trace(visitor);
-    }
 
 protected:
     Biquad m_biquad;

@@ -37,9 +37,4 @@ AudioDSPKernel::~AudioDSPKernel()
 {
 }
 
-void AudioDSPKernel::trace(Visitor* visitor)
-{
-    visitor->trace(m_kernelProcessor);
-}
-
 }
