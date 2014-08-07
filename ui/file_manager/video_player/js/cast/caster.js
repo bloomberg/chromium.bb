@@ -15,10 +15,12 @@ window.__defineGetter__('localStorage', function() { return {}; });
 var APPLICATION_ID = '214CC863';
 
 util.addPageLoadHandler(function() {
-  // TODO(yoshiki): Check if the Google Cast extension is installed or not.
-  // If not installed, we should skip all cast-related functionality.
-
-  loadCastAPI(initializeApi);
+  CastExtensionDiscoverer.findInstalledExtension(function(foundId) {
+    if (foundId)
+      loadCastAPI(initializeApi);
+    else
+      console.info('No Google Cast extension is installed.');
+  });
 });
 
 /**
