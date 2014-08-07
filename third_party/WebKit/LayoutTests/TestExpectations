@@ -992,33 +992,6 @@ crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/unsplitta
 # Fails on Mac in region based multicol implementation.
 crbug.com/391223 [ Mac ] virtual/regionbasedmulticol/fast/multicol/multicol-with-child-renderLayer-for-input.html [ ImageOnlyFailure ]
 
-crbug.com/394050 compositing/repaint/should-not-repaint-composited-descendants.html [ NeedsRebaseline ]
-crbug.com/394050 compositing/squashing/invalidate-when-leaving-squashed-layer.html [ NeedsRebaseline ]
-crbug.com/394050 compositing/squashing/squashed-layer-loses-graphicslayer.html [ NeedsRebaseline ]
-crbug.com/394050 css3/flexbox/repaint-opacity-change.html [ NeedsRebaseline ]
-crbug.com/394050 fast/css-grid-layout/grid-item-z-index-change-repaint.html [ NeedsRebaseline ]
-crbug.com/394050 fast/repaint/change-transform.html [ NeedsRebaseline ]
-crbug.com/394050 fast/repaint/fixed-after-scroll.html [ NeedsRebaseline ]
-crbug.com/394050 fast/repaint/fixed-position-transparency-with-overflow.html [ NeedsRebaseline ]
-crbug.com/394050 fast/repaint/fixed-scale.html [ NeedsRebaseline ]
-crbug.com/394050 fast/repaint/fixed-to-relative-position-with-absolute-child.html [ NeedsRebaseline ]
-crbug.com/394050 fast/repaint/mix-blend-mode-separate-stacking-context.html [ NeedsRebaseline ]
-crbug.com/394050 fast/repaint/opacity-change-on-overflow-float.html [ NeedsRebaseline ]
-crbug.com/394050 fast/repaint/outline-clip-change.html [ NeedsRebaseline ]
-crbug.com/394050 fast/repaint/scroll-fixed-reflected-layer.html [ NeedsRebaseline ]
-crbug.com/394050 fast/repaint/scroll-in-transformed-layer.html [ NeedsRebaseline ]
-crbug.com/394050 fast/repaint/transform-absolute-child.html [ NeedsRebaseline ]
-crbug.com/394050 fast/repaint/transform-absolute-in-positioned-container.html [ NeedsRebaseline ]
-crbug.com/394050 fast/repaint/transform-inline-layered-child.html [ NeedsRebaseline ]
-crbug.com/394050 fast/repaint/transform-relative-position.html [ NeedsRebaseline ]
-crbug.com/394050 fast/repaint/transform-repaint-descendants.html [ NeedsRebaseline ]
-crbug.com/394050 fast/repaint/transform-replaced-shadows.html [ NeedsRebaseline ]
-crbug.com/394050 fast/repaint/transform-rotate-and-remove.html [ NeedsRebaseline ]
-crbug.com/394050 fast/repaint/transform-translate.html [ NeedsRebaseline ]
-crbug.com/394050 virtual/softwarecompositing/repaint/should-not-repaint-composited-descendants.html [ NeedsRebaseline ]
-crbug.com/394050 virtual/softwarecompositing/squashing/invalidate-when-leaving-squashed-layer.html [ NeedsRebaseline ]
-crbug.com/394050 virtual/softwarecompositing/squashing/squashed-layer-loses-graphicslayer.html [ NeedsRebaseline ]
-
 # New multicol tests which should currently only run in virtual/regionbasedmulticol, because
 # the baseline is based on the region based multicol implementation.
 crbug.com/350853 fast/multicol/balance-short-trailing-empty-block.html [ Skip ]
