@@ -434,13 +434,24 @@ TEST(SharedMemoryTest, ShareReadOnly) {
   HANDLE temp_handle;
   BOOL rv = ::DuplicateHandle(GetCurrentProcess(),
                               handle,
-                              GetCurrentProcess,
+                              GetCurrentProcess(),
                               &temp_handle,
                               FILE_MAP_ALL_ACCESS,
                               false,
                               0);
   EXPECT_EQ(FALSE, rv)
       << "Shouldn't be able to duplicate the handle into a writable one.";
+  if (rv)
+    base::win::ScopedHandle writable_handle(temp_handle);
+  rv = ::DuplicateHandle(GetCurrentProcess(),
+                         handle,
+                         GetCurrentProcess(),
+                         &temp_handle,
+                         FILE_MAP_READ,
+                         false,
+                         0);
+  EXPECT_EQ(TRUE, rv)
+      << "Should be able to duplicate the handle into a readable one.";
   if (rv)
     base::win::ScopedHandle writable_handle(temp_handle);
 #else
