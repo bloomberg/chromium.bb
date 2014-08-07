@@ -10,8 +10,7 @@
   </outputs>
   <release seq="1">
     <includes>
-      <!-- TODO(akalin): rename back to index.html once bug 69633 is fixed. -->
-      <include name="IDR_SYNC_INTERNALS_INDEX_HTML" file="sync_internals/sync_index.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_SYNC_INTERNALS_INDEX_HTML" file="sync_internals/index.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_SYNC_INTERNALS_INDEX_JS" file="sync_internals/sync_index.js" type="BINDATA" />
       <include name="IDR_SYNC_INTERNALS_CHROME_SYNC_JS" file="sync_internals/chrome_sync.js" type="BINDATA" />
       <include name="IDR_SYNC_INTERNALS_TYPES_JS"  file="sync_internals/types.js" type="BINDATA" />
