@@ -135,7 +135,7 @@ bool GbmSurface::OnSwapBuffers() {
   }
 
   // The primary buffer is a special case.
-  queued_planes_.push_back(OverlayPlane(primary));
+  controller_->QueueOverlayPlane(OverlayPlane(primary));
 
   if (!GbmSurfaceless::OnSwapBuffers())
     return false;

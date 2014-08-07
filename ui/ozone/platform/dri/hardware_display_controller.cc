@@ -111,6 +111,7 @@ bool HardwareDisplayController::Modeset(const OverlayPlane& primary,
 
 bool HardwareDisplayController::Enable() {
   TRACE_EVENT0("dri", "HDC::Enable");
+  DCHECK(!current_planes_.empty());
   OverlayPlane primary = GetPrimaryPlane(current_planes_);
   DCHECK(primary.buffer);
   pending_page_flips_ = 0;
@@ -130,18 +131,20 @@ void HardwareDisplayController::Disable() {
   }
 }
 
-bool HardwareDisplayController::SchedulePageFlip(
-    const OverlayPlaneList& overlays) {
-  DCHECK_LE(1u, overlays.size());
+void HardwareDisplayController::QueueOverlayPlane(const OverlayPlane& plane) {
+  pending_planes_.push_back(plane);
+}
+
+bool HardwareDisplayController::SchedulePageFlip() {
+  DCHECK(!pending_planes_.empty());
   DCHECK_EQ(0u, pending_page_flips_);
 
-  pending_planes_ = overlays;
   bool status = true;
   for (size_t i = 0; i < crtc_states_.size(); ++i) {
     if (crtc_states_[i]->is_disabled())
       continue;
 
-    status &= SchedulePageFlipOnCrtc(overlays, crtc_states_[i]);
+    status &= SchedulePageFlipOnCrtc(pending_planes_, crtc_states_[i]);
   }
 
   return status;
