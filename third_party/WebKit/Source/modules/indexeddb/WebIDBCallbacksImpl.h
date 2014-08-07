@@ -73,6 +73,7 @@ private:
     explicit WebIDBCallbacksImpl(IDBRequest*);
 
     Persistent<IDBRequest> m_request;
+    int m_asyncOperationId;
 };
 
 } // namespace blink

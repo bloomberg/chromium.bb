@@ -30,6 +30,7 @@
 #include "modules/indexeddb/WebIDBCallbacksImpl.h"
 
 #include "core/dom/DOMError.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/IDBRequest.h"
 #include "platform/SharedBuffer.h"
@@ -62,10 +63,12 @@ PassOwnPtr<WebIDBCallbacksImpl> WebIDBCallbacksImpl::create(IDBRequest* request)
 WebIDBCallbacksImpl::WebIDBCallbacksImpl(IDBRequest* request)
     : m_request(request)
 {
+    m_asyncOperationId = InspectorInstrumentation::traceAsyncOperationStarting(m_request->executionContext(), "IndexedDB");
 }
 
 WebIDBCallbacksImpl::~WebIDBCallbacksImpl()
 {
+    InspectorInstrumentation::traceAsyncOperationCompleted(m_request->executionContext(), m_asyncOperationId);
 }
 
 static PassOwnPtr<Vector<WebBlobInfo> > ConvertBlobInfo(const WebVector<WebBlobInfo>& webBlobInfo)
@@ -78,7 +81,9 @@ static PassOwnPtr<Vector<WebBlobInfo> > ConvertBlobInfo(const WebVector<WebBlobI
 
 void WebIDBCallbacksImpl::onError(const WebIDBDatabaseError& error)
 {
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(m_request->executionContext(), m_asyncOperationId);
     m_request->onError(error);
+    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 
 void WebIDBCallbacksImpl::onSuccess(const WebVector<blink::WebString>& webStringList)
@@ -86,57 +91,79 @@ void WebIDBCallbacksImpl::onSuccess(const WebVector<blink::WebString>& webString
     Vector<String> stringList;
     for (size_t i = 0; i < webStringList.size(); ++i)
         stringList.append(webStringList[i]);
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(m_request->executionContext(), m_asyncOperationId);
     m_request->onSuccess(stringList);
+    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 
 void WebIDBCallbacksImpl::onSuccess(WebIDBCursor* cursor, const WebIDBKey& key, const WebIDBKey& primaryKey, const WebData& value, const WebVector<WebBlobInfo>& webBlobInfo)
 {
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(m_request->executionContext(), m_asyncOperationId);
     m_request->onSuccess(adoptPtr(cursor), key, primaryKey, value, ConvertBlobInfo(webBlobInfo));
+    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 
 void WebIDBCallbacksImpl::onSuccess(WebIDBDatabase* backend, const WebIDBMetadata& metadata)
 {
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(m_request->executionContext(), m_asyncOperationId);
     m_request->onSuccess(adoptPtr(backend), metadata);
+    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 
 void WebIDBCallbacksImpl::onSuccess(const WebIDBKey& key)
 {
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(m_request->executionContext(), m_asyncOperationId);
     m_request->onSuccess(key);
+    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 
 void WebIDBCallbacksImpl::onSuccess(const WebData& value, const WebVector<WebBlobInfo>& webBlobInfo)
 {
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(m_request->executionContext(), m_asyncOperationId);
     m_request->onSuccess(value, ConvertBlobInfo(webBlobInfo));
+    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 
 void WebIDBCallbacksImpl::onSuccess(const WebData& value, const WebVector<WebBlobInfo>& webBlobInfo, const WebIDBKey& key, const WebIDBKeyPath& keyPath)
 {
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(m_request->executionContext(), m_asyncOperationId);
     m_request->onSuccess(value, ConvertBlobInfo(webBlobInfo), key, keyPath);
+    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 
 void WebIDBCallbacksImpl::onSuccess(long long value)
 {
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(m_request->executionContext(), m_asyncOperationId);
     m_request->onSuccess(value);
+    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 
 void WebIDBCallbacksImpl::onSuccess()
 {
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(m_request->executionContext(), m_asyncOperationId);
     m_request->onSuccess();
+    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 
 void WebIDBCallbacksImpl::onSuccess(const WebIDBKey& key, const WebIDBKey& primaryKey, const WebData& value, const WebVector<WebBlobInfo>& webBlobInfo)
 {
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(m_request->executionContext(), m_asyncOperationId);
     m_request->onSuccess(key, primaryKey, value, ConvertBlobInfo(webBlobInfo));
+    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 
 void WebIDBCallbacksImpl::onBlocked(long long oldVersion)
 {
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(m_request->executionContext(), m_asyncOperationId);
     m_request->onBlocked(oldVersion);
+    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 
 void WebIDBCallbacksImpl::onUpgradeNeeded(long long oldVersion, WebIDBDatabase* database, const WebIDBMetadata& metadata, unsigned short dataLoss, blink::WebString dataLossMessage)
 {
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(m_request->executionContext(), m_asyncOperationId);
     m_request->onUpgradeNeeded(oldVersion, adoptPtr(database), metadata, static_cast<blink::WebIDBDataLoss>(dataLoss), dataLossMessage);
+    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 
 } // namespace blink
