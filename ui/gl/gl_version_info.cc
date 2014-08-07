@@ -19,7 +19,7 @@ GLVersionInfo::GLVersionInfo(const char* version_str, const char* renderer_str)
       is_gl4(false),
       is_angle(false) {
   if (version_str) {
-    std::string lstr(StringToLowerASCII(std::string(version_str)));
+    std::string lstr(base::StringToLowerASCII(std::string(version_str)));
     is_es = (lstr.substr(0, 9) == "opengl es");
     if (is_es) {
       is_es1 = (lstr.substr(9, 2) == "-c" && lstr.substr(13, 2) == "1.");

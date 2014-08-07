@@ -481,7 +481,7 @@ std::string WebKitTestRunner::pathToLocalResource(const std::string& resource) {
   // Some layout tests use file://// which we resolve as a UNC path. Normalize
   // them to just file:///.
   std::string result = resource;
-  while (StringToLowerASCII(result).find("file:////") == 0) {
+  while (base::StringToLowerASCII(result).find("file:////") == 0) {
     result = result.substr(0, strlen("file:///")) +
              result.substr(strlen("file:////"));
   }

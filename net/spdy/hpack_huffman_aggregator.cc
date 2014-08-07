@@ -94,7 +94,7 @@ void HpackHuffmanAggregator::CreateSpdyHeadersFromHttpResponse(
   std::string name, value;
   void* it = NULL;
   while (headers.EnumerateHeaderLines(&it, &name, &value)) {
-    StringToLowerASCII(&name);
+    base::StringToLowerASCII(&name);
     if (headers_out->find(name) == headers_out->end()) {
       (*headers_out)[name] = value;
     } else {

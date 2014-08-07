@@ -195,7 +195,7 @@ FileBrowserHandler* LoadFileBrowserHandler(
             errors::kInvalidFileFilterValue, base::IntToString(i));
         return NULL;
       }
-      StringToLowerASCII(&filter);
+      base::StringToLowerASCII(&filter);
       if (!StartsWithASCII(filter,
                            std::string(url::kFileSystemScheme) + ':',
                            true)) {

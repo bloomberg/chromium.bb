@@ -547,7 +547,7 @@ WebPluginImpl::WebPluginImpl(
       weak_factory_(this),
       loader_client_(this) {
   DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
-  StringToLowerASCII(&mime_type_);
+  base::StringToLowerASCII(&mime_type_);
 
   for (size_t i = 0; i < params.attributeNames.size(); ++i) {
     arg_names_.push_back(params.attributeNames[i].utf8());

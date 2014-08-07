@@ -24,7 +24,7 @@ std::string GetHMACForMediaDeviceID(const ResourceContext::SaltCallback& sc,
   bool result = hmac.Init(security_origin.spec()) &&
       hmac.Sign(raw_unique_id + salt, &digest[0], digest.size());
   DCHECK(result);
-  return StringToLowerASCII(base::HexEncode(&digest[0], digest.size()));
+  return base::StringToLowerASCII(base::HexEncode(&digest[0], digest.size()));
 }
 
 bool DoesMediaDeviceIDMatchHMAC(const ResourceContext::SaltCallback& sc,

@@ -249,6 +249,20 @@ BASE_EXPORT bool IsStringUTF8(const std::string& str);
 BASE_EXPORT bool IsStringASCII(const StringPiece& str);
 BASE_EXPORT bool IsStringASCII(const string16& str);
 
+// Converts the elements of the given string.  This version uses a pointer to
+// clearly differentiate it from the non-pointer variant.
+template <class str> inline void StringToLowerASCII(str* s) {
+  for (typename str::iterator i = s->begin(); i != s->end(); ++i)
+    *i = ToLowerASCII(*i);
+}
+
+template <class str> inline str StringToLowerASCII(const str& s) {
+  // for std::string and std::wstring
+  str output(s);
+  StringToLowerASCII(&output);
+  return output;
+}
+
 }  // namespace base
 
 #if defined(OS_WIN)
@@ -258,20 +272,6 @@ BASE_EXPORT bool IsStringASCII(const string16& str);
 #else
 #error Define string operations appropriately for your platform
 #endif
-
-// Converts the elements of the given string.  This version uses a pointer to
-// clearly differentiate it from the non-pointer variant.
-template <class str> inline void StringToLowerASCII(str* s) {
-  for (typename str::iterator i = s->begin(); i != s->end(); ++i)
-    *i = base::ToLowerASCII(*i);
-}
-
-template <class str> inline str StringToLowerASCII(const str& s) {
-  // for std::string and std::wstring
-  str output(s);
-  StringToLowerASCII(&output);
-  return output;
-}
 
 // Converts the elements of the given string.  This version uses a pointer to
 // clearly differentiate it from the non-pointer variant.

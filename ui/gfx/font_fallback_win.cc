@@ -28,7 +28,7 @@ void QueryFontsFromRegistry(std::map<std::string, std::string>* map) {
   base::win::RegistryValueIterator it(HKEY_LOCAL_MACHINE, kFonts);
   for (; it.Valid(); ++it) {
     const std::string filename =
-        StringToLowerASCII(base::WideToUTF8(it.Value()));
+        base::StringToLowerASCII(base::WideToUTF8(it.Value()));
     (*map)[filename] = base::WideToUTF8(it.Name());
   }
 }
@@ -43,7 +43,7 @@ void GetFontNamesFromFilename(const std::string& filename,
     QueryFontsFromRegistry(font_map);
 
   std::map<std::string, std::string>::const_iterator it =
-      font_map->find(StringToLowerASCII(filename));
+      font_map->find(base::StringToLowerASCII(filename));
   if (it == font_map->end())
     return;
 

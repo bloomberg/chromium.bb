@@ -262,7 +262,7 @@ bool LanguageSelector::SelectIf(const std::vector<std::wstring>& candidates,
   for (std::vector<std::wstring>::const_iterator scan = candidates.begin(),
           end = candidates.end(); scan != end; ++scan) {
     candidate.assign(*scan);
-    StringToLowerASCII(&candidate);
+    base::StringToLowerASCII(&candidate);
     if (select_predicate(candidate, matched_offset)) {
       matched_name->assign(*scan);
       return true;

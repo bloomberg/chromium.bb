@@ -145,7 +145,7 @@ bool HasDeprecatedArguments(const std::wstring& command_line) {
   const wchar_t kChromeHtml[] = L"chromehtml:";
   std::wstring command_line_lower = command_line;
   // We are only searching for ASCII characters so this is OK.
-  StringToLowerASCII(&command_line_lower);
+  base::StringToLowerASCII(&command_line_lower);
   std::wstring::size_type pos = command_line_lower.find(kChromeHtml);
   return (pos != std::wstring::npos);
 }

@@ -269,7 +269,7 @@ void SdchManager::EnableSecureSchemeSupport(bool enabled) {
 void SdchManager::BlacklistDomain(const GURL& url) {
   SetAllowLatencyExperiment(url, false);
 
-  std::string domain(StringToLowerASCII(url.host()));
+  std::string domain(base::StringToLowerASCII(url.host()));
   int count = blacklisted_domains_[domain];
   if (count > 0)
     return;  // Domain is already blacklisted.
@@ -286,7 +286,7 @@ void SdchManager::BlacklistDomain(const GURL& url) {
 void SdchManager::BlacklistDomainForever(const GURL& url) {
   SetAllowLatencyExperiment(url, false);
 
-  std::string domain(StringToLowerASCII(url.host()));
+  std::string domain(base::StringToLowerASCII(url.host()));
   exponential_blacklist_count_[domain] = INT_MAX;
   blacklisted_domains_[domain] = INT_MAX;
 }
@@ -297,20 +297,20 @@ void SdchManager::ClearBlacklistings() {
 }
 
 void SdchManager::ClearDomainBlacklisting(const std::string& domain) {
-  blacklisted_domains_.erase(StringToLowerASCII(domain));
+  blacklisted_domains_.erase(base::StringToLowerASCII(domain));
 }
 
 int SdchManager::BlackListDomainCount(const std::string& domain) {
   if (blacklisted_domains_.end() == blacklisted_domains_.find(domain))
     return 0;
-  return blacklisted_domains_[StringToLowerASCII(domain)];
+  return blacklisted_domains_[base::StringToLowerASCII(domain)];
 }
 
 int SdchManager::BlacklistDomainExponential(const std::string& domain) {
   if (exponential_blacklist_count_.end() ==
       exponential_blacklist_count_.find(domain))
     return 0;
-  return exponential_blacklist_count_[StringToLowerASCII(domain)];
+  return exponential_blacklist_count_[base::StringToLowerASCII(domain)];
 }
 
 bool SdchManager::IsInSupportedDomain(const GURL& url) {
@@ -324,7 +324,7 @@ bool SdchManager::IsInSupportedDomain(const GURL& url) {
   if (blacklisted_domains_.empty())
     return true;
 
-  std::string domain(StringToLowerASCII(url.host()));
+  std::string domain(base::StringToLowerASCII(url.host()));
   DomainCounter::iterator it = blacklisted_domains_.find(domain);
   if (blacklisted_domains_.end() == it)
     return true;
@@ -427,7 +427,7 @@ bool SdchManager::AddSdchDictionary(const std::string& dictionary_text,
         break;
       std::string name(dictionary_text, line_start, colon_index - line_start);
       std::string value(dictionary_text, value_start, line_end - value_start);
-      name = StringToLowerASCII(name);
+      name = base::StringToLowerASCII(name);
       if (name == "domain") {
         domain = value;
       } else if (name == "path") {

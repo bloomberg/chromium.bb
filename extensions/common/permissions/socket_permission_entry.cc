@@ -75,7 +75,7 @@ bool SocketPermissionEntry::Check(
   if (pattern_.type != request.type)
     return false;
 
-  std::string lhost = StringToLowerASCII(request.host);
+  std::string lhost = base::StringToLowerASCII(request.host);
   if (pattern_.host != lhost) {
     if (!match_subdomains_)
       return false;
@@ -165,7 +165,7 @@ bool SocketPermissionEntry::ParseHostPattern(
   if (!result.pattern_.host.empty()) {
     if (StartsOrEndsWithWhitespace(result.pattern_.host))
       return false;
-    result.pattern_.host = StringToLowerASCII(result.pattern_.host);
+    result.pattern_.host = base::StringToLowerASCII(result.pattern_.host);
 
     // The first component can optionally be '*' to match all subdomains.
     std::vector<std::string> host_components;

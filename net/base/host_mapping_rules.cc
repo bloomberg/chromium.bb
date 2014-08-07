@@ -74,7 +74,7 @@ bool HostMappingRules::AddRuleFromString(const std::string& rule_string) {
   // Test for EXCLUSION rule.
   if (parts.size() == 2 && LowerCaseEqualsASCII(parts[0], "exclude")) {
     ExclusionRule rule;
-    rule.hostname_pattern = StringToLowerASCII(parts[1]);
+    rule.hostname_pattern = base::StringToLowerASCII(parts[1]);
     exclusion_rules_.push_back(rule);
     return true;
   }
@@ -82,7 +82,7 @@ bool HostMappingRules::AddRuleFromString(const std::string& rule_string) {
   // Test for MAP rule.
   if (parts.size() == 3 && LowerCaseEqualsASCII(parts[0], "map")) {
     MapRule rule;
-    rule.hostname_pattern = StringToLowerASCII(parts[1]);
+    rule.hostname_pattern = base::StringToLowerASCII(parts[1]);
 
     if (!ParseHostAndPort(parts[2], &rule.replacement_hostname,
                           &rule.replacement_port)) {

@@ -423,7 +423,7 @@ TEST(FilenameUtilTest, GenerateFileName) {
   // string conversions fail. This is OK (we have the default value) but they
   // don't match our expectations.
   std::string locale = setlocale(LC_CTYPE, NULL);
-  StringToLowerASCII(&locale);
+  base::StringToLowerASCII(&locale);
   EXPECT_TRUE(locale.find("utf-8") != std::string::npos ||
               locale.find("utf8") != std::string::npos)
       << "Your locale (" << locale << ") must be set to UTF-8 "

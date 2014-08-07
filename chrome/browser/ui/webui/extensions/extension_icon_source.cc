@@ -275,7 +275,7 @@ bool ExtensionIconSource::ParseData(
     int request_id,
     const content::URLDataSource::GotDataCallback& callback) {
   // Extract the parameters from the path by lower casing and splitting.
-  std::string path_lower = StringToLowerASCII(path);
+  std::string path_lower = base::StringToLowerASCII(path);
   std::vector<std::string> path_parts;
 
   base::SplitString(path_lower, '/', &path_parts);

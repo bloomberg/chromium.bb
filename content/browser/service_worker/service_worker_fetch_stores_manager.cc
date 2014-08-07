@@ -22,7 +22,7 @@ namespace {
 base::FilePath ConstructOriginPath(const base::FilePath& root_path,
                                    const GURL& origin) {
   std::string origin_hash = base::SHA1HashString(origin.spec());
-  std::string origin_hash_hex = StringToLowerASCII(
+  std::string origin_hash_hex = base::StringToLowerASCII(
       base::HexEncode(origin_hash.c_str(), origin_hash.length()));
   return root_path.AppendASCII(origin_hash_hex);
 }

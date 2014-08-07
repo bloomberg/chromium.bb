@@ -185,7 +185,7 @@ Status ParseProxy(const base::Value& option, Capabilities* capabilities) {
   std::string proxy_type;
   if (!proxy_dict->GetString("proxyType", &proxy_type))
     return Status(kUnknownError, "'proxyType' must be a string");
-  proxy_type = StringToLowerASCII(proxy_type);
+  proxy_type = base::StringToLowerASCII(proxy_type);
   if (proxy_type == "direct") {
     capabilities->switches.SetSwitch("no-proxy-server");
   } else if (proxy_type == "system") {

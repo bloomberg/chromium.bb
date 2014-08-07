@@ -384,9 +384,9 @@ bool PluginList::ShouldLoadPluginUsingPluginList(
   if (should_check_version) {
     for (size_t j = 0; j < plugins->size(); ++j) {
       base::FilePath::StringType plugin1 =
-          StringToLowerASCII((*plugins)[j].path.BaseName().value());
+          base::StringToLowerASCII((*plugins)[j].path.BaseName().value());
       base::FilePath::StringType plugin2 =
-          StringToLowerASCII(info.path.BaseName().value());
+          base::StringToLowerASCII(info.path.BaseName().value());
       if ((plugin1 == plugin2 && HaveSharedMimeType((*plugins)[j], info)) ||
           (plugin1 == kJavaDeploy1 && plugin2 == kJavaDeploy2) ||
           (plugin1 == kJavaDeploy2 && plugin2 == kJavaDeploy1)) {
@@ -413,7 +413,7 @@ bool PluginList::ShouldLoadPluginUsingPluginList(
 
   // Troublemakers.
   base::FilePath::StringType filename =
-      StringToLowerASCII(info.path.BaseName().value());
+      base::StringToLowerASCII(info.path.BaseName().value());
   // Depends on XPCOM.
   if (filename == kMozillaActiveXPlugin)
     return false;

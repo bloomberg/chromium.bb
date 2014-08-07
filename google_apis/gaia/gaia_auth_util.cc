@@ -35,7 +35,7 @@ std::string CanonicalizeEmailImpl(const std::string& email_address,
       base::RemoveChars(parts[0], ".", &parts[0]);
   }
 
-  std::string new_email = StringToLowerASCII(JoinString(parts, at));
+  std::string new_email = base::StringToLowerASCII(JoinString(parts, at));
   VLOG(1) << "Canonicalized " << email_address << " to " << new_email;
   return new_email;
 }
@@ -53,7 +53,7 @@ std::string CanonicalizeEmail(const std::string& email_address) {
 std::string CanonicalizeDomain(const std::string& domain) {
   // Canonicalization of domain names means lower-casing them. Make sure to
   // update this function in sync with Canonicalize if this ever changes.
-  return StringToLowerASCII(domain);
+  return base::StringToLowerASCII(domain);
 }
 
 std::string SanitizeEmail(const std::string& email_address) {

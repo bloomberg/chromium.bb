@@ -96,7 +96,8 @@ base::string16 BuildSnippet(const std::string& document,
   // |document|. We need to add more test cases and change this function
   // to be more generic depending on how we deal with 'folding for match'
   // in history.
-  const std::string document_folded = StringToLowerASCII(std::string(document));
+  const std::string document_folded =
+      base::StringToLowerASCII(std::string(document));
 
   std::vector<std::string> query_words;
   base::SplitString(query, ' ', &query_words);

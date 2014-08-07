@@ -105,7 +105,7 @@ void CreateSpdyHeadersFromHttpRequest(const HttpRequestInfo& info,
 
   HttpRequestHeaders::Iterator it(request_headers);
   while (it.GetNext()) {
-    std::string name = StringToLowerASCII(it.name());
+    std::string name = base::StringToLowerASCII(it.name());
     if (name == "connection" || name == "proxy-connection" ||
         name == "transfer-encoding" || name == "host") {
       continue;
@@ -155,7 +155,7 @@ void CreateSpdyHeadersFromHttpResponse(
   void* iter = NULL;
   std::string raw_name, value;
   while (response_headers.EnumerateHeaderLines(&iter, &raw_name, &value)) {
-    std::string name = StringToLowerASCII(raw_name);
+    std::string name = base::StringToLowerASCII(raw_name);
     AddSpdyHeader(name, value, headers);
   }
 }

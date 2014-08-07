@@ -342,7 +342,7 @@ EventResponseDelta* CalculateOnHeadersReceivedDelta(
     std::string value;
     while (old_response_headers->EnumerateHeaderLines(&iter, &name, &value)) {
       std::string name_lowercase(name);
-      StringToLowerASCII(&name_lowercase);
+      base::StringToLowerASCII(&name_lowercase);
 
       bool header_found = false;
       for (ResponseHeaders::const_iterator i = new_response_headers->begin();
@@ -1017,7 +1017,7 @@ void MergeCookiesInOnHeadersReceivedResponses(
 // Converts the key of the (key, value) pair to lower case.
 static ResponseHeader ToLowerCase(const ResponseHeader& header) {
   std::string lower_key(header.first);
-  StringToLowerASCII(&lower_key);
+  base::StringToLowerASCII(&lower_key);
   return ResponseHeader(lower_key, header.second);
 }
 
@@ -1026,13 +1026,13 @@ static ResponseHeader ToLowerCase(const ResponseHeader& header) {
 static std::string FindRemoveResponseHeader(
     const EventResponseDeltas& deltas,
     const std::string& key) {
-  std::string lower_key = StringToLowerASCII(key);
+  std::string lower_key = base::StringToLowerASCII(key);
   EventResponseDeltas::const_iterator delta;
   for (delta = deltas.begin(); delta != deltas.end(); ++delta) {
     ResponseHeaders::const_iterator i;
     for (i = (*delta)->deleted_response_headers.begin();
          i != (*delta)->deleted_response_headers.end(); ++i) {
-      if (StringToLowerASCII(i->first) == lower_key)
+      if (base::StringToLowerASCII(i->first) == lower_key)
         return (*delta)->extension_id;
     }
   }

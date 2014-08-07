@@ -235,7 +235,7 @@ struct CaseInsensitiveStringEquals {
 
   bool operator()(const base::string16& x) const {
     return x.size() == other_.size() &&
-        StringToLowerASCII(x) == StringToLowerASCII(other_);
+        base::StringToLowerASCII(x) == base::StringToLowerASCII(other_);
   }
 
  private:
@@ -560,8 +560,8 @@ bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile,
             app_locale)) {
         return false;
       }
-    } else if (StringToLowerASCII(GetRawInfo(*it)) !=
-                   StringToLowerASCII(profile.GetRawInfo(*it))) {
+    } else if (base::StringToLowerASCII(GetRawInfo(*it)) !=
+                   base::StringToLowerASCII(profile.GetRawInfo(*it))) {
       return false;
     }
   }
@@ -593,8 +593,8 @@ void AutofillProfile::OverwriteOrAppendNames(
 
       AutofillType type = AutofillType(NAME_FULL);
       base::string16 full_name = current_name.GetInfo(type, app_locale);
-      if (StringToLowerASCII(full_name) ==
-          StringToLowerASCII(imported_name.GetInfo(type, app_locale))) {
+      if (base::StringToLowerASCII(full_name) ==
+          base::StringToLowerASCII(imported_name.GetInfo(type, app_locale))) {
         // The imported name has the same full name string as one of the
         // existing names for this profile.  Because full names are
         // _heuristically_ parsed into {first, middle, last} name components,
@@ -658,8 +658,8 @@ void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile,
     // Single value field --- overwrite.
     if (!AutofillProfile::SupportsMultiValue(*iter)) {
       base::string16 new_value = profile.GetRawInfo(*iter);
-      if (StringToLowerASCII(GetRawInfo(*iter)) !=
-              StringToLowerASCII(new_value)) {
+      if (base::StringToLowerASCII(GetRawInfo(*iter)) !=
+              base::StringToLowerASCII(new_value)) {
         SetRawInfo(*iter, new_value);
       }
       continue;

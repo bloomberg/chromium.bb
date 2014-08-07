@@ -51,7 +51,7 @@ bool IsValidYouTubeVideo(const std::string& path) {
   if (path.length() <= len)
     return false;
 
-  std::string str = StringToLowerASCII(path);
+  std::string str = base::StringToLowerASCII(path);
   // Youtube flash url can start with /v/ or /e/.
   if (strncmp(str.data(), kSlashVSlash, len) != 0 &&
       strncmp(str.data(), kSlashESlash, len) != 0)

@@ -43,7 +43,7 @@ int LanguageUsageMetrics::ToLanguageCode(const std::string& locale) {
     return 0;
 
   std::string language_part = parts.token();
-  StringToLowerASCII(&language_part);
+  base::StringToLowerASCII(&language_part);
 
   int language_code = 0;
   for (std::string::iterator it = language_part.begin();

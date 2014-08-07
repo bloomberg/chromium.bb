@@ -304,9 +304,9 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     // a WebElement method that returns the original lower cased tagName.
     dst->AddStringAttribute(
         ui::AX_ATTR_HTML_TAG,
-        StringToLowerASCII(UTF16ToUTF8(element.tagName())));
+        base::StringToLowerASCII(UTF16ToUTF8(element.tagName())));
     for (unsigned i = 0; i < element.attributeCount(); ++i) {
-      std::string name = StringToLowerASCII(UTF16ToUTF8(
+      std::string name = base::StringToLowerASCII(UTF16ToUTF8(
           element.attributeLocalName(i)));
       std::string value = UTF16ToUTF8(element.attributeValue(i));
       dst->html_attributes.push_back(std::make_pair(name, value));

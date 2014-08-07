@@ -610,7 +610,7 @@ bool X509Certificate::VerifyHostname(
       DVLOG(1) << "Bad name in cert: " << *it;
       continue;
     }
-    std::string presented_name(StringToLowerASCII(*it));
+    std::string presented_name(base::StringToLowerASCII(*it));
 
     // Remove trailing dot, if any.
     if (*presented_name.rbegin() == '.')

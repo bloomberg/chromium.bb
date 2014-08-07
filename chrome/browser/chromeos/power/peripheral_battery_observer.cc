@@ -59,7 +59,7 @@ std::string ExtractBluetoothAddress(const std::string& path) {
   if (key_len <= 0)
     return std::string();
   std::string reverse_address = path.substr(header_size, key_len);
-  StringToLowerASCII(&reverse_address);
+  base::StringToLowerASCII(&reverse_address);
   std::vector<std::string> result;
   base::SplitString(reverse_address, ':', &result);
   std::reverse(result.begin(), result.end());
@@ -187,7 +187,7 @@ void PeripheralBatteryObserver::InitializeOnBluetoothReady(
 void PeripheralBatteryObserver::RemoveBattery(const std::string& address) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   std::string address_lowercase = address;
-  StringToLowerASCII(&address_lowercase);
+  base::StringToLowerASCII(&address_lowercase);
   std::map<std::string, BatteryInfo>::iterator it =
       batteries_.find(address_lowercase);
   if (it != batteries_.end()) {

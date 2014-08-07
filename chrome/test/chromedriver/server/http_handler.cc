@@ -694,7 +694,7 @@ namespace internal {
 const char kNewSessionPathPattern[] = "session";
 
 bool MatchesMethod(HttpMethod command_method, const std::string& method) {
-  std::string lower_method = StringToLowerASCII(method);
+  std::string lower_method = base::StringToLowerASCII(method);
   switch (command_method) {
   case kGet:
     return lower_method == "get";

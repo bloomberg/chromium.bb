@@ -2564,7 +2564,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_computedStyleForProperties(
 
   for (unsigned short i = 0; i < num_style_properties; ++i) {
     base::string16 name = (LPCWSTR)style_properties[i];
-    StringToLowerASCII(&name);
+    base::StringToLowerASCII(&name);
     if (name == L"display") {
       base::string16 display = GetString16Attribute(
           ui::AX_ATTR_DISPLAY);

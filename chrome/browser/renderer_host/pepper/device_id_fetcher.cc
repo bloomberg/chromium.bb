@@ -162,13 +162,13 @@ void DeviceIDFetcher::ComputeOnUIThread(const std::string& salt,
   input.append(kDRMIdentifierFile);
   input.append(salt_bytes.begin(), salt_bytes.end());
   crypto::SHA256HashString(input, &id_buf, sizeof(id_buf));
-  std::string id = StringToLowerASCII(
+  std::string id = base::StringToLowerASCII(
       base::HexEncode(reinterpret_cast<const void*>(id_buf), sizeof(id_buf)));
   input = machine_id;
   input.append(kDRMIdentifierFile);
   input.append(id);
   crypto::SHA256HashString(input, &id_buf, sizeof(id_buf));
-  id = StringToLowerASCII(
+  id = base::StringToLowerASCII(
       base::HexEncode(reinterpret_cast<const void*>(id_buf), sizeof(id_buf)));
 
   RunCallbackOnIOThread(id, PP_OK);

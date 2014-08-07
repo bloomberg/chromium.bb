@@ -90,7 +90,7 @@ void ExternalRegistryLoader::LoadOnFileThread() {
     }
 
     std::string id = base::UTF16ToASCII(*it);
-    StringToLowerASCII(&id);
+    base::StringToLowerASCII(&id);
     if (!Extension::IdIsValid(id)) {
       LOG(ERROR) << "Invalid id value " << id
                  << " for key " << key_path << ".";

@@ -85,7 +85,7 @@ class SignatureValidatorTest : public testing::Test {
     crypto::SHA256HashString(key_bytes, hash, crypto::kSHA256Length);
 
     std::string public_key_hash =
-        StringToLowerASCII(base::HexEncode(hash, arraysize(hash)));
+        base::StringToLowerASCII(base::HexEncode(hash, arraysize(hash)));
     expected_hashes_.push_back(public_key_hash);
   }
 

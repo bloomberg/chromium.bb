@@ -160,9 +160,12 @@ NameInfo& NameInfo::operator=(const NameInfo& info) {
 }
 
 bool NameInfo::ParsedNamesAreEqual(const NameInfo& info) {
-  return (StringToLowerASCII(given_) == StringToLowerASCII(info.given_) &&
-          StringToLowerASCII(middle_) == StringToLowerASCII(info.middle_) &&
-          StringToLowerASCII(family_) == StringToLowerASCII(info.family_));
+  return (base::StringToLowerASCII(given_) ==
+              base::StringToLowerASCII(info.given_) &&
+          base::StringToLowerASCII(middle_) ==
+              base::StringToLowerASCII(info.middle_) &&
+          base::StringToLowerASCII(family_) ==
+              base::StringToLowerASCII(info.family_));
 }
 
 void NameInfo::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {

@@ -1002,7 +1002,7 @@ bool FakeShillManagerClient::ParseOption(const std::string& arg0,
 bool FakeShillManagerClient::SetInitialNetworkState(std::string type_arg,
                                                     std::string state_arg) {
   std::string state;
-  state_arg = StringToLowerASCII(state_arg);
+  state_arg = base::StringToLowerASCII(state_arg);
   if (state_arg.empty() || state_arg == "1" || state_arg == "on" ||
       state_arg == "enabled" || state_arg == "connected" ||
       state_arg == "online") {
@@ -1029,7 +1029,7 @@ bool FakeShillManagerClient::SetInitialNetworkState(std::string type_arg,
     return false;
   }
 
-  type_arg = StringToLowerASCII(type_arg);
+  type_arg = base::StringToLowerASCII(type_arg);
   // Special cases
   if (type_arg == "wireless") {
     shill_initial_state_map_[shill::kTypeWifi] = state;

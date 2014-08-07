@@ -239,7 +239,7 @@ void FeatureInfo::InitializeFeatures() {
   const char* version_str =
       reinterpret_cast<const char*>(glGetString(GL_VERSION));
   if (version_str) {
-    std::string lstr(StringToLowerASCII(std::string(version_str)));
+    std::string lstr(base::StringToLowerASCII(std::string(version_str)));
     is_es3 = (lstr.substr(0, 12) == "opengl es 3.");
   }
 

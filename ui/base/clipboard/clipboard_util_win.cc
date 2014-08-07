@@ -472,7 +472,7 @@ void ClipboardUtil::CFHtmlExtractMetadata(const std::string& cf_html,
   // If the comments cannot be found, like copying from OpenOffice Writer,
   // we simply fall back to using StartFragment/EndFragment bytecount values
   // to determine the fragment indexes.
-  std::string cf_html_lower = StringToLowerASCII(cf_html);
+  std::string cf_html_lower = base::StringToLowerASCII(cf_html);
   size_t markup_start = cf_html_lower.find("<html", 0);
   if (html_start) {
     *html_start = markup_start;

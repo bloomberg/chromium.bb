@@ -94,7 +94,7 @@ SystemSaltGetter* SystemSaltGetter::Get() {
 // static
 std::string SystemSaltGetter::ConvertRawSaltToHexString(
     const std::vector<uint8>& salt) {
-  return StringToLowerASCII(base::HexEncode(
+  return base::StringToLowerASCII(base::HexEncode(
       reinterpret_cast<const void*>(salt.data()), salt.size()));
 }
 

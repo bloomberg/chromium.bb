@@ -270,14 +270,14 @@ bool WebSocketHandshakeRequestHandler::GetRequestHeaderBlock(
       // SPDY. We should omit them from a Sec-WebSocket-Extension header.
       std::string name;
       if (spdy_protocol_version <= 2)
-        name = StringToLowerASCII(iter.name());
+        name = base::StringToLowerASCII(iter.name());
       else
-        name = ":" + StringToLowerASCII(iter.name());
+        name = ":" + base::StringToLowerASCII(iter.name());
       (*headers)[name] = iter.values();
       continue;
     }
     // Others should be sent out to |headers|.
-    std::string name = StringToLowerASCII(iter.name());
+    std::string name = base::StringToLowerASCII(iter.name());
     SpdyHeaderBlock::iterator found = headers->find(name);
     if (found == headers->end()) {
       (*headers)[name] = iter.values();

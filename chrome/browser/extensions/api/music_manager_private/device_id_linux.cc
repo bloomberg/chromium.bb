@@ -124,7 +124,7 @@ class MacAddressProcessor {
 
     // Got one!
     found_mac_address_ =
-        StringToLowerASCII(base::HexEncode(mac_address, MAC_LENGTH));
+        base::StringToLowerASCII(base::HexEncode(mac_address, MAC_LENGTH));
     return false;
   }
 

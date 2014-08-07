@@ -42,7 +42,7 @@ bool HasOnlySecureTokens(base::StringTokenizer& tokenizer,
                          Manifest::Type type) {
   while (tokenizer.GetNext()) {
     std::string source = tokenizer.token();
-    StringToLowerASCII(&source);
+    base::StringToLowerASCII(&source);
 
     // Don't alow whitelisting of all hosts. This boils down to:
     //   1. Maximum of 2 '*' characters.
@@ -136,7 +136,7 @@ bool ContentSecurityPolicyIsSecure(const std::string& policy,
       continue;
 
     std::string directive_name = tokenizer.token();
-    StringToLowerASCII(&directive_name);
+    base::StringToLowerASCII(&directive_name);
 
     if (UpdateStatus(directive_name, tokenizer, &default_src_status, type))
       continue;
@@ -176,7 +176,7 @@ bool ContentSecurityPolicyIsSandboxed(
       continue;
 
     std::string directive_name = tokenizer.token();
-    StringToLowerASCII(&directive_name);
+    base::StringToLowerASCII(&directive_name);
 
     if (directive_name != kSandboxDirectiveName)
       continue;
@@ -185,7 +185,7 @@ bool ContentSecurityPolicyIsSandboxed(
 
     while (tokenizer.GetNext()) {
       std::string token = tokenizer.token();
-      StringToLowerASCII(&token);
+      base::StringToLowerASCII(&token);
 
       // The same origin token negates the sandboxing.
       if (token == kAllowSameOriginToken)

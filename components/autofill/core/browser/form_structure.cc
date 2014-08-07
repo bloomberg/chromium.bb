@@ -1017,7 +1017,7 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes(
     // non-space characters (e.g. tab) to spaces, and converting to lowercase.
     std::string autocomplete_attribute =
         base::CollapseWhitespaceASCII(field->autocomplete_attribute, false);
-    autocomplete_attribute = StringToLowerASCII(autocomplete_attribute);
+    autocomplete_attribute = base::StringToLowerASCII(autocomplete_attribute);
 
     // The autocomplete attribute is overloaded: it can specify either a field
     // type hint or whether autocomplete should be enabled at all.  Ignore the

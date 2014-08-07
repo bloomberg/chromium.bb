@@ -93,7 +93,7 @@ void FileChooserResource::PopulateAcceptTypes(
       continue;
     if (type.find_first_of('/') == std::string::npos && type[0] != '.')
       continue;
-    StringToLowerASCII(&type);
+    base::StringToLowerASCII(&type);
     output->push_back(type);
   }
 }

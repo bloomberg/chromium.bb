@@ -62,7 +62,7 @@ bool PluginStream::Open(const std::string& mime_type,
 
   bool seekable_stream = false;
   if (request_is_seekable) {
-    std::string headers_lc = StringToLowerASCII(headers);
+    std::string headers_lc = base::StringToLowerASCII(headers);
     if (headers_lc.find("accept-ranges: bytes") != std::string::npos) {
       seekable_stream = true;
     }

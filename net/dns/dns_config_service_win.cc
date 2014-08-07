@@ -240,7 +240,7 @@ HostsParseWinResult AddLocalhostEntries(DnsHosts* hosts) {
       !ParseDomainASCII(buffer, &localname)) {
     return HOSTS_PARSE_WIN_COMPUTER_NAME_FAILED;
   }
-  StringToLowerASCII(&localname);
+  base::StringToLowerASCII(&localname);
 
   bool have_ipv4 =
       hosts->count(DnsHostsKey(localname, ADDRESS_FAMILY_IPV4)) > 0;

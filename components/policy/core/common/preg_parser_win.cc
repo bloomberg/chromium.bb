@@ -183,7 +183,7 @@ void HandleRecord(const base::string16& key_name,
     return;
   }
 
-  std::string action_trigger(StringToLowerASCII(value_name.substr(
+  std::string action_trigger(base::StringToLowerASCII(value_name.substr(
       arraysize(kActionTriggerPrefix) - 1)));
   if (action_trigger == kActionTriggerDeleteValues) {
     std::vector<std::string> values;

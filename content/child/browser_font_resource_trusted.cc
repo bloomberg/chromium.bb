@@ -201,9 +201,9 @@ WebFontDescription PPFontDescToWebFontDesc(
     // we should use the fixed or regular font size. It's difficult at this
     // level to detect if the requested font is fixed width, so we only apply
     // the alternate font size to the default fixed font family.
-    if (StringToLowerASCII(resolved_family) ==
-        StringToLowerASCII(GetFontFromMap(prefs.fixed_font_family_map,
-                                          kCommonScript)))
+    if (base::StringToLowerASCII(resolved_family) ==
+        base::StringToLowerASCII(GetFontFromMap(prefs.fixed_font_family_map,
+                                                kCommonScript)))
       result.size = static_cast<float>(prefs.default_fixed_font_size);
     else
       result.size = static_cast<float>(prefs.default_font_size);

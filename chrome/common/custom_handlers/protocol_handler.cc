@@ -18,7 +18,7 @@ ProtocolHandler::ProtocolHandler(const std::string& protocol,
 ProtocolHandler ProtocolHandler::CreateProtocolHandler(
     const std::string& protocol,
     const GURL& url) {
-  std::string lower_protocol = StringToLowerASCII(protocol);
+  std::string lower_protocol = base::StringToLowerASCII(protocol);
   return ProtocolHandler(lower_protocol, url);
 }
 

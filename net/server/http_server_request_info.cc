@@ -14,7 +14,7 @@ HttpServerRequestInfo::~HttpServerRequestInfo() {}
 
 std::string HttpServerRequestInfo::GetHeaderValue(
     const std::string& header_name) const {
-  DCHECK_EQ(StringToLowerASCII(header_name), header_name);
+  DCHECK_EQ(base::StringToLowerASCII(header_name), header_name);
   HttpServerRequestInfo::HeadersMap::const_iterator it =
       headers.find(header_name);
   if (it != headers.end())
@@ -25,9 +25,9 @@ std::string HttpServerRequestInfo::GetHeaderValue(
 bool HttpServerRequestInfo::HasHeaderValue(
     const std::string& header_name,
     const std::string& header_value) const {
-  DCHECK_EQ(StringToLowerASCII(header_value), header_value);
+  DCHECK_EQ(base::StringToLowerASCII(header_value), header_value);
   std::string complete_value = GetHeaderValue(header_name);
-  StringToLowerASCII(&complete_value);
+  base::StringToLowerASCII(&complete_value);
   std::vector<std::string> value_items;
   Tokenize(complete_value, ",", &value_items);
   for (std::vector<std::string>::iterator it = value_items.begin();

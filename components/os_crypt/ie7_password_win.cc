@@ -89,7 +89,7 @@ bool GetUserPassFromData(const std::vector<unsigned char>& data,
 }
 
 std::wstring GetUrlHash(const std::wstring& url) {
-  std::wstring lower_case_url = StringToLowerASCII(url);
+  std::wstring lower_case_url = base::StringToLowerASCII(url);
   // Get a data buffer out of our std::wstring to pass to SHA1HashString.
   std::string url_buffer(
       reinterpret_cast<const char*>(lower_case_url.c_str()),
@@ -115,7 +115,7 @@ std::wstring GetUrlHash(const std::wstring& url) {
 bool DecryptPasswords(const std::wstring& url,
                       const std::vector<unsigned char>& data,
                       std::vector<DecryptedCredentials>* credentials) {
-  std::wstring lower_case_url = StringToLowerASCII(url);
+  std::wstring lower_case_url = base::StringToLowerASCII(url);
   DATA_BLOB input = {0};
   DATA_BLOB output = {0};
   DATA_BLOB url_key = {0};

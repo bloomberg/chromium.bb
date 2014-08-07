@@ -288,7 +288,7 @@ bool HttpServer::ParseHeaders(HttpConnection* connection,
           buffer.clear();
           break;
         case ST_NAME:
-          header_name = StringToLowerASCII(buffer);
+          header_name = base::StringToLowerASCII(buffer);
           buffer.clear();
           break;
         case ST_VALUE:

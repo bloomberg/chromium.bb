@@ -100,7 +100,7 @@ TEST_P(SymmetricKeyDeriveKeyFromPasswordTest, DeriveKeyFromPassword) {
   key->GetRawKey(&raw_key);
   EXPECT_EQ(test_data.key_size_in_bits / 8, raw_key.size());
   EXPECT_EQ(test_data.expected,
-            StringToLowerASCII(base::HexEncode(raw_key.data(),
+            base::StringToLowerASCII(base::HexEncode(raw_key.data(),
                                                raw_key.size())));
 }
 

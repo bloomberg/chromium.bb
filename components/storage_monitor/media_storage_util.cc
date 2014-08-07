@@ -99,7 +99,7 @@ bool MediaStorageUtil::HasDcim(const base::FilePath& mount_point) {
   if (!base::DirectoryExists(mount_point.Append(dcim_dir))) {
     // Check for lowercase 'dcim' as well.
     base::FilePath dcim_path_lower(
-        mount_point.Append(StringToLowerASCII(dcim_dir)));
+        mount_point.Append(base::StringToLowerASCII(dcim_dir)));
     if (!base::DirectoryExists(dcim_path_lower))
       return false;
   }

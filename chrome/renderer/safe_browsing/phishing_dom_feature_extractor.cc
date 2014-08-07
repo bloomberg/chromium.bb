@@ -323,7 +323,7 @@ void PhishingDOMFeatureExtractor::HandleInput(
   // WebFormControlElement::formControlType() for consistency with the
   // way the phishing classification model is created.
   std::string type = element.getAttribute("type").utf8();
-  StringToLowerASCII(&type);
+  base::StringToLowerASCII(&type);
   if (type == "password") {
     ++page_feature_state_->num_pswd_inputs;
   } else if (type == "radio") {

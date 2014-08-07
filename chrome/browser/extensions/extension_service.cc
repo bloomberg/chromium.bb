@@ -1925,7 +1925,7 @@ void ExtensionService::TerminateExtension(const std::string& extension_id) {
 }
 
 void ExtensionService::UntrackTerminatedExtension(const std::string& id) {
-  std::string lowercase_id = StringToLowerASCII(id);
+  std::string lowercase_id = base::StringToLowerASCII(id);
   const Extension* extension =
       registry_->terminated_extensions().GetByID(lowercase_id);
   registry_->RemoveTerminated(lowercase_id);

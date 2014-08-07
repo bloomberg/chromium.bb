@@ -264,11 +264,11 @@ GpuControlList::OsType GpuControlList::OsInfo::StringToOsType(
 GpuControlList::StringInfo::StringInfo(const std::string& string_op,
                                      const std::string& string_value) {
   op_ = StringToOp(string_op);
-  value_ = StringToLowerASCII(string_value);
+  value_ = base::StringToLowerASCII(string_value);
 }
 
 bool GpuControlList::StringInfo::Contains(const std::string& value) const {
-  std::string my_value = StringToLowerASCII(value);
+  std::string my_value = base::StringToLowerASCII(value);
   switch (op_) {
     case kContains:
       return strstr(my_value.c_str(), value_.c_str()) != NULL;

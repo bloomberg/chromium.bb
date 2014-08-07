@@ -33,7 +33,7 @@ std::string GetLocaleString(const icu::Locale& locale) {
 
   if (variant != NULL && *variant != '\0') {
     std::string variant_str(variant);
-    StringToLowerASCII(&variant_str);
+    base::StringToLowerASCII(&variant_str);
     result += '@' + variant_str;
   }
 

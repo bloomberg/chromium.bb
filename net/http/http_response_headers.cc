@@ -208,7 +208,7 @@ void HttpResponseHeaders::Persist(Pickle* pickle, PersistOptions options) {
     --k;
 
     std::string header_name(parsed_[i].name_begin, parsed_[i].name_end);
-    StringToLowerASCII(&header_name);
+    base::StringToLowerASCII(&header_name);
 
     if (filter_headers.find(header_name) == filter_headers.end()) {
       // Make sure there is a null after the value.
@@ -251,7 +251,7 @@ void HttpResponseHeaders::Update(const HttpResponseHeaders& new_headers) {
     const std::string::const_iterator& name_end = new_parsed[i].name_end;
     if (ShouldUpdateHeader(name_begin, name_end)) {
       std::string name(name_begin, name_end);
-      StringToLowerASCII(&name);
+      base::StringToLowerASCII(&name);
       updated_headers.insert(name);
 
       // Preserve this header line in the merged result, making sure there is
@@ -279,7 +279,7 @@ void HttpResponseHeaders::MergeWithHeaders(const std::string& raw_headers,
     --k;
 
     std::string name(parsed_[i].name_begin, parsed_[i].name_end);
-    StringToLowerASCII(&name);
+    base::StringToLowerASCII(&name);
     if (headers_to_remove.find(name) == headers_to_remove.end()) {
       // It's ok to preserve this header in the final result.
       new_raw_headers.append(parsed_[i].name_begin, parsed_[k].value_end);
@@ -302,7 +302,7 @@ void HttpResponseHeaders::RemoveHeader(const std::string& name) {
   new_raw_headers.push_back('\0');
 
   std::string lowercase_name(name);
-  StringToLowerASCII(&lowercase_name);
+  base::StringToLowerASCII(&lowercase_name);
   HeaderSet to_remove;
   to_remove.insert(lowercase_name);
   MergeWithHeaders(new_raw_headers, to_remove);
@@ -311,7 +311,7 @@ void HttpResponseHeaders::RemoveHeader(const std::string& name) {
 void HttpResponseHeaders::RemoveHeaderLine(const std::string& name,
                                            const std::string& value) {
   std::string name_lowercase(name);
-  StringToLowerASCII(&name_lowercase);
+  base::StringToLowerASCII(&name_lowercase);
 
   std::string new_raw_headers(GetStatusLine());
   new_raw_headers.push_back('\0');
@@ -323,7 +323,7 @@ void HttpResponseHeaders::RemoveHeaderLine(const std::string& name,
   std::string old_header_value;
   while (EnumerateHeaderLines(&iter, &old_header_name, &old_header_value)) {
     std::string old_header_name_lowercase(name);
-    StringToLowerASCII(&old_header_name_lowercase);
+    base::StringToLowerASCII(&old_header_name_lowercase);
 
     if (name_lowercase == old_header_name_lowercase &&
         value == old_header_value)
@@ -474,7 +474,7 @@ void HttpResponseHeaders::GetNormalizedHeaders(std::string* output) const {
     DCHECK(!parsed_[i].is_continuation());
 
     std::string name(parsed_[i].name_begin, parsed_[i].name_end);
-    std::string lower_name = StringToLowerASCII(name);
+    std::string lower_name = base::StringToLowerASCII(name);
 
     iter = headers_map.find(lower_name);
     if (iter == headers_map.end()) {
@@ -850,7 +850,7 @@ void HttpResponseHeaders::AddNonCacheableHeaders(HeaderSet* result) const {
       // assuming the header is not empty, lowercase and insert into set
       if (item_end > item) {
         std::string name(&*item, item_end - item);
-        StringToLowerASCII(&name);
+        base::StringToLowerASCII(&name);
         result->insert(name);
       }
 

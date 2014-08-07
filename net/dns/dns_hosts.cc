@@ -155,7 +155,7 @@ void ParseHostsWithCommaMode(const std::string& contents,
       }
     } else {
       DnsHostsKey key(parser.token().as_string(), family);
-      StringToLowerASCII(&key.first);
+      base::StringToLowerASCII(&key.first);
       IPAddressNumber& mapped_ip = hosts[key];
       if (mapped_ip.empty())
         mapped_ip = ip;

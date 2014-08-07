@@ -13,7 +13,7 @@
 #include "chrome/browser/install_verification/win/module_list.h"
 
 std::string CalculateModuleNameDigest(const base::string16& module_name) {
-  return base::MD5String(StringToLowerASCII(base::UTF16ToUTF8(
+  return base::MD5String(base::StringToLowerASCII(base::UTF16ToUTF8(
       base::FilePath(module_name).BaseName().value())));
 }
 

@@ -305,7 +305,7 @@ void LocalExtensionCache::BackendCheckCacheContentsInternal(
     }
 
     // Enforce a lower-case id.
-    id = StringToLowerASCII(id);
+    id = base::StringToLowerASCII(id);
     if (!extensions::Extension::IdIsValid(id)) {
       LOG(ERROR) << "Bad extension id in cache: " << id;
       id.clear();

@@ -141,7 +141,7 @@ bool Extension::IdIsValid(const std::string& id) {
 
   // We only support lowercase IDs, because IDs can be used as URL components
   // (where GURL will lowercase it).
-  std::string temp = StringToLowerASCII(id);
+  std::string temp = base::StringToLowerASCII(id);
   for (size_t i = 0; i < temp.size(); i++)
     if (temp[i] < 'a' || temp[i] > 'p')
       return false;

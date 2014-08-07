@@ -84,7 +84,7 @@ void Key::Transform(KeyType target_key_type, const std::string& salt) {
       // Keep only the first half of the hash for 'weak' hashing so that the
       // plain text secret cannot be reconstructed even if the hashing is
       // reversed.
-      secret_ = StringToLowerASCII(base::HexEncode(
+      secret_ = base::StringToLowerASCII(base::HexEncode(
           reinterpret_cast<const void*>(hash), sizeof(hash) / 2));
       break;
     }

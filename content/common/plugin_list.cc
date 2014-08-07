@@ -143,7 +143,7 @@ bool PluginList::ParseMimeTypes(
 
   for (size_t i = 0; i < mime_types.size(); ++i) {
     WebPluginMimeType mime_type;
-    mime_type.mime_type = StringToLowerASCII(mime_types[i]);
+    mime_type.mime_type = base::StringToLowerASCII(mime_types[i]);
     if (file_extensions.size() > i)
       base::SplitString(file_extensions[i], ',', &mime_type.file_extensions);
 
@@ -313,7 +313,7 @@ void PluginList::GetPluginInfoArray(
     bool include_npapi,
     std::vector<WebPluginInfo>* info,
     std::vector<std::string>* actual_mime_types) {
-  DCHECK(mime_type == StringToLowerASCII(mime_type));
+  DCHECK(mime_type == base::StringToLowerASCII(mime_type));
   DCHECK(info);
 
   if (!use_stale)
@@ -348,7 +348,8 @@ void PluginList::GetPluginInfoArray(
   std::string path = url.path();
   std::string::size_type last_dot = path.rfind('.');
   if (last_dot != std::string::npos && mime_type.empty()) {
-    std::string extension = StringToLowerASCII(std::string(path, last_dot+1));
+    std::string extension =
+        base::StringToLowerASCII(std::string(path, last_dot+1));
     std::string actual_mime_type;
     for (size_t i = 0; i < plugins_list_.size(); ++i) {
       if (SupportsExtension(plugins_list_[i], extension, &actual_mime_type)) {

@@ -86,7 +86,7 @@ std::string GenerateDeviceIdLikePrefMetricsServiceDid(
     const std::string& original_device_id) {
   if (original_device_id.empty())
     return std::string();
-  return StringToLowerASCII(
+  return base::StringToLowerASCII(
       GetDigestString(original_device_id, "PrefMetricsService"));
 }
 

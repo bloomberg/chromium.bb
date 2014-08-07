@@ -23,7 +23,8 @@ TEST(AttachmentIdProtoTest, UniqueIdFormat) {
               testing::MatchesRegex(
                   "\\w\\w\\w\\w\\w\\w\\w\\w-\\w\\w\\w\\w-\\w\\w\\w\\w-"
                   "\\w\\w\\w\\w-\\w\\w\\w\\w\\w\\w\\w\\w\\w\\w\\w\\w"));
-  EXPECT_EQ(StringToLowerASCII(id_proto.unique_id()), id_proto.unique_id());
+  EXPECT_EQ(base::StringToLowerASCII(id_proto.unique_id()),
+            id_proto.unique_id());
 }
 
 TEST(AttachmentIdProtoTest, CreateAttachmentMetadata_Empty) {

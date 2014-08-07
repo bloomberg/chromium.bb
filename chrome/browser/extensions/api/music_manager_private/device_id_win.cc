@@ -76,7 +76,7 @@ class MacAddressProcessor {
     if (!is_valid_mac_address_.Run(bytes, size))
       return;
 
-    found_mac_address_ = StringToLowerASCII(base::HexEncode(bytes, size));
+    found_mac_address_ = base::StringToLowerASCII(base::HexEncode(bytes, size));
     found_index_ = index;
   }
 

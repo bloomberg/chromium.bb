@@ -173,7 +173,7 @@ const char kHotwordUnusablePrefName[] = "hotword.search_enabled";
 bool HotwordService::DoesHotwordSupportLanguage(Profile* profile) {
   std::string normalized_locale =
       l10n_util::NormalizeLocale(GetCurrentLocale(profile));
-  StringToLowerASCII(&normalized_locale);
+  base::StringToLowerASCII(&normalized_locale);
 
   for (size_t i = 0; i < arraysize(kSupportedLocales); i++) {
     if (normalized_locale.compare(0, 2, kSupportedLocales[i]) == 0)

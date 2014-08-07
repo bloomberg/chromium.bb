@@ -35,7 +35,7 @@ bool ActionAppliesToWalletItems(RequiredAction action) {
 
 RequiredAction ParseRequiredActionFromString(const std::string& str) {
   std::string str_lower;
-  base::TrimWhitespaceASCII(StringToLowerASCII(str), base::TRIM_ALL,
+  base::TrimWhitespaceASCII(base::StringToLowerASCII(str), base::TRIM_ALL,
                             &str_lower);
 
   if (str_lower == "setup_wallet")

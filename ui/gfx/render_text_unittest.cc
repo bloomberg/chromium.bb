@@ -1345,10 +1345,11 @@ TEST_F(RenderTextTest, StringSizeRespectsFontListMetrics) {
   // Check that Arial and Symbol have different font metrics.
   Font arial_font("Arial", 16);
   ASSERT_EQ("arial",
-            StringToLowerASCII(arial_font.GetActualFontNameForTesting()));
+            base::StringToLowerASCII(arial_font.GetActualFontNameForTesting()));
   Font symbol_font("Symbol", 16);
   ASSERT_EQ("symbol",
-            StringToLowerASCII(symbol_font.GetActualFontNameForTesting()));
+            base::StringToLowerASCII(
+                symbol_font.GetActualFontNameForTesting()));
   EXPECT_NE(arial_font.GetHeight(), symbol_font.GetHeight());
   EXPECT_NE(arial_font.GetBaseline(), symbol_font.GetBaseline());
   // "a" should be rendered with Arial, not with Symbol.

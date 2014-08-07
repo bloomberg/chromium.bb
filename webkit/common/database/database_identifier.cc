@@ -116,7 +116,7 @@ DatabaseIdentifier::DatabaseIdentifier(const std::string& scheme,
                                        bool is_unique,
                                        bool is_file)
     : scheme_(scheme),
-      hostname_(StringToLowerASCII(hostname)),
+      hostname_(base::StringToLowerASCII(hostname)),
       port_(port),
       is_unique_(is_unique),
       is_file_(is_file) {

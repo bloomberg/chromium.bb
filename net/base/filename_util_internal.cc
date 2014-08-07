@@ -89,7 +89,8 @@ std::string GetFileNameFromURL(const GURL& url,
 // Returns whether the specified extension is automatically integrated into the
 // windows shell.
 bool IsShellIntegratedExtension(const base::FilePath::StringType& extension) {
-  base::FilePath::StringType extension_lower = StringToLowerASCII(extension);
+  base::FilePath::StringType extension_lower =
+      base::StringToLowerASCII(extension);
 
   // http://msdn.microsoft.com/en-us/library/ms811694.aspx
   // Right-clicking on shortcuts can be magical.
@@ -119,9 +120,10 @@ bool IsReservedName(const base::FilePath::StringType& filename) {
       "com5", "com6", "com7", "com8", "com9", "lpt1", "lpt2",  "lpt3",
       "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9", "clock$"};
 #if defined(OS_WIN)
-  std::string filename_lower = StringToLowerASCII(base::WideToUTF8(filename));
+  std::string filename_lower =
+      base::StringToLowerASCII(base::WideToUTF8(filename));
 #elif defined(OS_POSIX)
-  std::string filename_lower = StringToLowerASCII(filename);
+  std::string filename_lower = base::StringToLowerASCII(filename);
 #endif
 
   for (size_t i = 0; i < arraysize(known_devices); ++i) {

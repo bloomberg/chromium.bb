@@ -767,8 +767,8 @@ bool MatchesMimeTypeParameters(const std::string& mime_type_pattern,
 bool MimeUtil::MatchesMimeType(const std::string& mime_type_pattern,
                                const std::string& mime_type) const {
   // Verify caller is passing lowercase strings.
-  DCHECK_EQ(StringToLowerASCII(mime_type_pattern), mime_type_pattern);
-  DCHECK_EQ(StringToLowerASCII(mime_type), mime_type);
+  DCHECK_EQ(base::StringToLowerASCII(mime_type_pattern), mime_type_pattern);
+  DCHECK_EQ(base::StringToLowerASCII(mime_type), mime_type);
 
   if (mime_type_pattern.empty())
     return false;
@@ -838,7 +838,7 @@ bool MimeUtil::ParseMimeTypeWithoutParameter(
 }
 
 bool MimeUtil::IsValidTopLevelMimeType(const std::string& type_string) const {
-  std::string lower_type = StringToLowerASCII(type_string);
+  std::string lower_type = base::StringToLowerASCII(type_string);
   for (size_t i = 0; i < arraysize(legal_top_level_types); ++i) {
     if (lower_type.compare(legal_top_level_types[i]) == 0)
       return true;
@@ -1270,7 +1270,7 @@ void GetExtensionsForMimeType(
   if (unsafe_mime_type == "*/*" || unsafe_mime_type == "*")
     return;
 
-  const std::string mime_type = StringToLowerASCII(unsafe_mime_type);
+  const std::string mime_type = base::StringToLowerASCII(unsafe_mime_type);
   base::hash_set<base::FilePath::StringType> unique_extensions;
 
   if (EndsWith(mime_type, "/*", true)) {

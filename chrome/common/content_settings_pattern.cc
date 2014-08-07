@@ -176,7 +176,7 @@ ContentSettingsPattern ContentSettingsPattern::Builder::Build() {
 // static
 bool ContentSettingsPattern::Builder::Canonicalize(PatternParts* parts) {
   // Canonicalize the scheme part.
-  const std::string scheme(StringToLowerASCII(parts->scheme));
+  const std::string scheme(base::StringToLowerASCII(parts->scheme));
   parts->scheme = scheme;
 
   if (parts->scheme == std::string(url::kFileScheme) &&

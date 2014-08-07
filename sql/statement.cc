@@ -182,7 +182,7 @@ ColType Statement::ColumnType(int col) const {
 
 ColType Statement::DeclaredColumnType(int col) const {
   std::string column_type(sqlite3_column_decltype(ref_->stmt(), col));
-  StringToLowerASCII(&column_type);
+  base::StringToLowerASCII(&column_type);
 
   if (column_type == "integer")
     return COLUMN_TYPE_INTEGER;

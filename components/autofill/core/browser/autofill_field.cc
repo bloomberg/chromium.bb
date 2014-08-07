@@ -43,7 +43,7 @@ const char* const kMonthsFull[] = {
 // the list of select options in |field|.
 bool SetSelectControlValue(const base::string16& value,
                            FormFieldData* field) {
-  base::string16 value_lowercase = StringToLowerASCII(value);
+  base::string16 value_lowercase = base::StringToLowerASCII(value);
 
   DCHECK_EQ(field->option_values.size(), field->option_contents.size());
   base::string16 best_match;
@@ -55,8 +55,9 @@ bool SetSelectControlValue(const base::string16& value,
       break;
     }
 
-    if (value_lowercase == StringToLowerASCII(field->option_values[i]) ||
-        value_lowercase == StringToLowerASCII(field->option_contents[i])) {
+    if (value_lowercase == base::StringToLowerASCII(field->option_values[i]) ||
+        value_lowercase ==
+            base::StringToLowerASCII(field->option_contents[i])) {
       // A match, but not in the same case. Save it in case an exact match is
       // not found.
       best_match = field->option_values[i];
@@ -74,15 +75,15 @@ bool SetSelectControlValue(const base::string16& value,
 // for |value|. For example, "NC - North Carolina" would match "north carolina".
 bool SetSelectControlValueSubstringMatch(const base::string16& value,
                                          FormFieldData* field) {
-  base::string16 value_lowercase = StringToLowerASCII(value);
+  base::string16 value_lowercase = base::StringToLowerASCII(value);
   DCHECK_EQ(field->option_values.size(), field->option_contents.size());
   int best_match = -1;
 
   for (size_t i = 0; i < field->option_values.size(); ++i) {
-    if (StringToLowerASCII(field->option_values[i]).find(value_lowercase) !=
+    if (base::StringToLowerASCII(field->option_values[i]).find(value_lowercase) !=
             std::string::npos ||
-        StringToLowerASCII(field->option_contents[i]).find(value_lowercase) !=
-            std::string::npos) {
+        base::StringToLowerASCII(field->option_contents[i]).find(
+            value_lowercase) != std::string::npos) {
       // The best match is the shortest one.
       if (best_match == -1 ||
           field->option_values[best_match].size() >
@@ -105,13 +106,13 @@ bool SetSelectControlValueSubstringMatch(const base::string16& value,
 // tokens. For example, "NC - North Carolina" would match "nc" but not "ca".
 bool SetSelectControlValueTokenMatch(const base::string16& value,
                                      FormFieldData* field) {
-  base::string16 value_lowercase = StringToLowerASCII(value);
+  base::string16 value_lowercase = base::StringToLowerASCII(value);
   std::vector<base::string16> tokenized;
   DCHECK_EQ(field->option_values.size(), field->option_contents.size());
 
   for (size_t i = 0; i < field->option_values.size(); ++i) {
     base::SplitStringAlongWhitespace(
-        StringToLowerASCII(field->option_values[i]), &tokenized);
+        base::StringToLowerASCII(field->option_values[i]), &tokenized);
     if (std::find(tokenized.begin(), tokenized.end(), value_lowercase) !=
         tokenized.end()) {
       field->value = field->option_values[i];
@@ -119,7 +120,7 @@ bool SetSelectControlValueTokenMatch(const base::string16& value,
     }
 
     base::SplitStringAlongWhitespace(
-        StringToLowerASCII(field->option_contents[i]), &tokenized);
+        base::StringToLowerASCII(field->option_contents[i]), &tokenized);
     if (std::find(tokenized.begin(), tokenized.end(), value_lowercase) !=
         tokenized.end()) {
       field->value = field->option_values[i];
@@ -246,15 +247,15 @@ bool FillCreditCardTypeSelectControl(const base::string16& value,
                                      FormFieldData* field) {
   // Try stripping off spaces.
   base::string16 value_stripped;
-  base::RemoveChars(StringToLowerASCII(value), base::kWhitespaceUTF16,
+  base::RemoveChars(base::StringToLowerASCII(value), base::kWhitespaceUTF16,
                     &value_stripped);
 
   for (size_t i = 0; i < field->option_values.size(); ++i) {
     base::string16 option_value_lowercase;
-    base::RemoveChars(StringToLowerASCII(field->option_values[i]),
+    base::RemoveChars(base::StringToLowerASCII(field->option_values[i]),
                       base::kWhitespaceUTF16, &option_value_lowercase);
     base::string16 option_contents_lowercase;
-    base::RemoveChars(StringToLowerASCII(field->option_contents[i]),
+    base::RemoveChars(base::StringToLowerASCII(field->option_contents[i]),
                       base::kWhitespaceUTF16, &option_contents_lowercase);
 
     // Perform a case-insensitive comparison; but fill the form with the

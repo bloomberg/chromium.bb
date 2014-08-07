@@ -39,7 +39,8 @@ bool ExtractPublicKeyHash(const CERT_CONTEXT* cert_context,
       crypt_blob.pbData), crypt_blob.cbData);
   crypto::SHA256HashString(key_bytes, hash, crypto::kSHA256Length);
 
-  *public_key_hash = StringToLowerASCII(base::HexEncode(hash, arraysize(hash)));
+  *public_key_hash =
+      base::StringToLowerASCII(base::HexEncode(hash, arraysize(hash)));
   return true;
 }
 

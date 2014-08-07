@@ -196,7 +196,7 @@ std::string GServicesSettings::CalculateDigest(const SettingsMap& settings) {
       reinterpret_cast<const unsigned char*>(&data[0]), data.size(), hash);
   std::string digest =
       kDigestVersionPrefix + base::HexEncode(hash, base::kSHA1Length);
-  digest = StringToLowerASCII(digest);
+  digest = base::StringToLowerASCII(digest);
   return digest;
 }
 

@@ -107,7 +107,7 @@ void PluginUMAReporter::ExtractFileExtension(const GURL& src,
     extension->clear();
   }
 
-  StringToLowerASCII(extension);
+  base::StringToLowerASCII(extension);
 }
 
 PluginUMAReporter::PluginType PluginUMAReporter::GetPluginType(
@@ -116,7 +116,7 @@ PluginUMAReporter::PluginType PluginUMAReporter::GetPluginType(
   // If we know plugin's mime type, we use it to determine plugin's type. Else,
   // we try to determine plugin type using plugin source's extension.
   if (!plugin_mime_type.empty())
-    return MimeTypeToPluginType(StringToLowerASCII(plugin_mime_type));
+    return MimeTypeToPluginType(base::StringToLowerASCII(plugin_mime_type));
 
   return SrcToPluginType(plugin_src);
 }

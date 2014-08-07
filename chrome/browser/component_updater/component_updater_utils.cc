@@ -186,7 +186,7 @@ std::string HexStringToID(const std::string& hexstr) {
 }
 
 std::string GetCrxComponentID(const CrxComponent& component) {
-  return HexStringToID(StringToLowerASCII(
+  return HexStringToID(base::StringToLowerASCII(
       base::HexEncode(&component.pk_hash[0], component.pk_hash.size() / 2)));
 }
 

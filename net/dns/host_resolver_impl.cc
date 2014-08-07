@@ -2077,7 +2077,7 @@ bool HostResolverImpl::ServeFromHosts(const Key& key,
   addresses->clear();
 
   // HOSTS lookups are case-insensitive.
-  std::string hostname = StringToLowerASCII(key.hostname);
+  std::string hostname = base::StringToLowerASCII(key.hostname);
 
   const DnsHosts& hosts = dns_client_->GetConfig()->hosts;
 

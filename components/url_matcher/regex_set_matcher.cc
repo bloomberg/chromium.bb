@@ -48,7 +48,7 @@ bool RegexSetMatcher::Match(const std::string& text,
   // FilteredRE2 expects lowercase for prefiltering, but we still
   // match case-sensitively.
   std::vector<RE2ID> atoms(FindSubstringMatches(
-      StringToLowerASCII(text)));
+      base::StringToLowerASCII(text)));
 
   std::vector<RE2ID> re2_ids;
   filtered_re2_->AllMatches(text, atoms, &re2_ids);

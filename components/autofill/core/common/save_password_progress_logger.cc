@@ -188,7 +188,7 @@ bool IsUnwantedInElementID(char c) {
 std::string ScrubElementID(std::string element_id) {
   std::replace_if(
       element_id.begin(), element_id.end(), IsUnwantedInElementID, ' ');
-  return StringToLowerASCII(element_id);
+  return base::StringToLowerASCII(element_id);
 }
 
 std::string ScrubElementID(const base::string16& element_id) {

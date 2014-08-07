@@ -384,7 +384,8 @@ bool ShellIntegration::IsFirefoxDefaultBrowser() {
     base::win::RegKey key(HKEY_CLASSES_ROOT, key_path.c_str(), KEY_READ);
     base::string16 app_cmd;
     if (key.Valid() && (key.ReadValue(L"", &app_cmd) == ERROR_SUCCESS) &&
-        base::string16::npos != StringToLowerASCII(app_cmd).find(L"firefox"))
+        base::string16::npos !=
+        base::StringToLowerASCII(app_cmd).find(L"firefox"))
       ff_default = true;
   }
   return ff_default;

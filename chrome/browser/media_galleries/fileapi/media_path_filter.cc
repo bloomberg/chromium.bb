@@ -154,7 +154,8 @@ bool MediaPathFilter::Match(const base::FilePath& path) {
 MediaGalleryScanFileType MediaPathFilter::GetType(const base::FilePath& path) {
   EnsureInitialized();
   MediaFileExtensionMap::const_iterator it =
-      media_file_extensions_map_.find(StringToLowerASCII(path.Extension()));
+      media_file_extensions_map_.find(
+          base::StringToLowerASCII(path.Extension()));
   if (it == media_file_extensions_map_.end())
     return MEDIA_GALLERY_SCAN_FILE_TYPE_UNKNOWN;
   return static_cast<MediaGalleryScanFileType>(it->second);

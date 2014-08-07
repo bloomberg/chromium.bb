@@ -12,7 +12,7 @@ namespace syncer {
 
 sync_pb::AttachmentIdProto CreateAttachmentIdProto() {
   sync_pb::AttachmentIdProto proto;
-  std::string guid = StringToLowerASCII(base::GenerateGUID());
+  std::string guid = base::StringToLowerASCII(base::GenerateGUID());
   DCHECK(!guid.empty());
   // Requirements are that this id must be a unique RFC4122 UUID, formatted in
   // lower case.

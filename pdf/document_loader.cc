@@ -357,7 +357,7 @@ std::string DocumentLoader::GetMultiPartBoundary(const std::string& headers) {
   net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\n");
   while (it.GetNext()) {
     if (LowerCaseEqualsASCII(it.name(), "content-type")) {
-      std::string type = StringToLowerASCII(it.values());
+      std::string type = base::StringToLowerASCII(it.values());
       if (StartsWithASCII(type, "multipart/", true)) {
         const char* boundary = strstr(type.c_str(), "boundary=");
         if (!boundary) {

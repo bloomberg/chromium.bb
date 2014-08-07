@@ -68,7 +68,7 @@ std::string GetTruncatedHash(const std::string& str) {
   const int kTruncateSize = kTruncateTokenStringLength / 2;
   char hash_val[kTruncateSize];
   crypto::SHA256HashString(str, &hash_val[0], kTruncateSize);
-  return StringToLowerASCII(base::HexEncode(&hash_val[0], kTruncateSize));
+  return base::StringToLowerASCII(base::HexEncode(&hash_val[0], kTruncateSize));
 }
 
 } //  namespace signin_internals_util
