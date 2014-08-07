@@ -141,6 +141,8 @@ class WebMediaPlayerMS
 
   blink::WebTimeRanges buffered_;
 
+  float volume_;
+
   // Used for DCHECKs to ensure methods calls executed in the correct thread.
   base::ThreadChecker thread_checker_;
 

@@ -171,6 +171,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     : frame_(frame),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
+      preload_(AUTO),
       main_loop_(base::MessageLoopProxy::current()),
       media_loop_(
           RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy()),
@@ -289,10 +290,6 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
 
   load_type_ = load_type;
 
-  // Handle any volume/preload changes that occurred before load().
-  setVolume(client_->volume());
-  setPreload(client_->preload());
-
   SetNetworkState(WebMediaPlayer::NetworkStateLoading);
   SetReadyState(WebMediaPlayer::ReadyStateHaveNothing);
   media_log_->AddEvent(media_log_->CreateLoadEvent(url.spec()));
@@ -315,6 +312,7 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
       base::Bind(&WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
   data_source_->Initialize(
       base::Bind(&WebMediaPlayerImpl::DataSourceInitialized, AsWeakPtr()));
+  data_source_->SetPreload(preload_);
 }
 
 void WebMediaPlayerImpl::play() {
@@ -432,8 +430,9 @@ void WebMediaPlayerImpl::setPreload(WebMediaPlayer::Preload preload) {
   DVLOG(1) << __FUNCTION__ << "(" << preload << ")";
   DCHECK(main_loop_->BelongsToCurrentThread());
 
+  preload_ = static_cast<content::Preload>(preload);
   if (data_source_)
-    data_source_->SetPreload(static_cast<content::Preload>(preload));
+    data_source_->SetPreload(preload_);
 }
 
 bool WebMediaPlayerImpl::hasVideo() const {

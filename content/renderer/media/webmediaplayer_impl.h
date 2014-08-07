@@ -239,6 +239,9 @@ class WebMediaPlayerImpl
   blink::WebMediaPlayer::NetworkState network_state_;
   blink::WebMediaPlayer::ReadyState ready_state_;
 
+  // Preload state for when |data_source_| is created after setPreload().
+  content::Preload preload_;
+
   // Message loops for posting tasks on Chrome's main thread. Also used
   // for DCHECKs so methods calls won't execute in the wrong thread.
   const scoped_refptr<base::MessageLoopProxy> main_loop_;

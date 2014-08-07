@@ -87,6 +87,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       buffered_(static_cast<size_t>(1)),
+      volume_(1.0f),
       client_(client),
       delegate_(delegate),
       paused_(true),
@@ -135,7 +136,6 @@ void WebMediaPlayerMS::load(LoadType load_type,
 
   GURL gurl(url);
 
-  setVolume(GetClient()->volume());
   SetNetworkState(WebMediaPlayer::NetworkStateLoading);
   SetReadyState(WebMediaPlayer::ReadyStateHaveNothing);
   media_log_->AddEvent(media_log_->CreateLoadEvent(url.spec()));
@@ -152,8 +152,10 @@ void WebMediaPlayerMS::load(LoadType load_type,
     frame->GetRoutingID());
 
   if (video_frame_provider_.get() || audio_renderer_.get()) {
-    if (audio_renderer_.get())
+    if (audio_renderer_.get()) {
+      audio_renderer_->SetVolume(volume_);
       audio_renderer_->Start();
+    }
 
     if (video_frame_provider_.get()) {
       video_frame_provider_->Start();
@@ -234,10 +236,10 @@ void WebMediaPlayerMS::setRate(double rate) {
 
 void WebMediaPlayerMS::setVolume(double volume) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!audio_renderer_.get())
-    return;
   DVLOG(1) << "WebMediaPlayerMS::setVolume(volume=" << volume << ")";
-  audio_renderer_->SetVolume(volume);
+  volume_ = volume;
+  if (audio_renderer_.get())
+    audio_renderer_->SetVolume(volume_);
 }
 
 void WebMediaPlayerMS::setPreload(WebMediaPlayer::Preload preload) {
