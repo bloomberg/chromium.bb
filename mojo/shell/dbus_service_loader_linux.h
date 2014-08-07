@@ -61,9 +61,9 @@ class DBusServiceLoader : public ServiceLoader {
   // the name "org.chromium.EchoService" and invoke the method
   // "org.chromium.Mojo.ConnectChannel" on the object exported at
   // "/org/chromium/MojoImpl".
-  virtual void LoadService(ServiceManager* manager,
-                           const GURL& url,
-                           ScopedMessagePipeHandle shell_handle) OVERRIDE;
+  virtual void Load(ServiceManager* manager,
+                    const GURL& url,
+                    scoped_refptr<LoadCallbacks> callbacks) OVERRIDE;
 
   virtual void OnServiceError(ServiceManager* manager, const GURL& url)
       OVERRIDE;

@@ -20,10 +20,13 @@ ViewManagerLoader::ViewManagerLoader() {
 ViewManagerLoader::~ViewManagerLoader() {
 }
 
-void ViewManagerLoader::LoadService(
-    ServiceManager* manager,
-    const GURL& url,
-    ScopedMessagePipeHandle shell_handle) {
+void ViewManagerLoader::Load(ServiceManager* manager,
+                             const GURL& url,
+                             scoped_refptr<LoadCallbacks> callbacks) {
+  ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
+  if (!shell_handle.is_valid())
+    return;
+
   // TODO(sky): this needs some sort of authentication as well as making sure
   // we only ever have one active at a time.
   scoped_ptr<ApplicationImpl> app(

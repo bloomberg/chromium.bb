@@ -16,9 +16,9 @@ class DummyLoader : public ServiceLoader {
   virtual ~DummyLoader() {}
 
   // ServiceLoader overrides:
-  virtual void LoadService(ServiceManager* manager,
-                           const GURL& url,
-                           ScopedMessagePipeHandle shell_handle) OVERRIDE {
+  virtual void Load(ServiceManager* manager,
+                    const GURL& url,
+                    scoped_refptr<LoadCallbacks> callbacks) OVERRIDE {
     if (simulate_app_quit_)
       base::MessageLoop::current()->Quit();
   }
@@ -49,7 +49,9 @@ TEST(BackgroundShellServiceLoaderTest, Load) {
   BackgroundShellServiceLoader loader(real_loader.Pass(), "test",
                                       base::MessageLoop::TYPE_DEFAULT);
   MessagePipe dummy;
-  loader.LoadService(NULL, GURL(), dummy.handle0.Pass());
+  scoped_refptr<ServiceLoader::SimpleLoadCallbacks> callbacks(
+      new ServiceLoader::SimpleLoadCallbacks(dummy.handle0.Pass()));
+  loader.Load(NULL, GURL(), callbacks);
 }
 
 }  // namespace mojo

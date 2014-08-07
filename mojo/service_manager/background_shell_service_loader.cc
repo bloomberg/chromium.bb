@@ -15,10 +15,12 @@ class BackgroundShellServiceLoader::BackgroundLoader {
   explicit BackgroundLoader(ServiceLoader* loader) : loader_(loader) {}
   ~BackgroundLoader() {}
 
-  void LoadService(ServiceManager* manager,
-                   const GURL& url,
-                   ScopedMessagePipeHandle shell_handle) {
-    loader_->LoadService(manager, url, shell_handle.Pass());
+  void Load(ServiceManager* manager,
+            const GURL& url,
+            ScopedMessagePipeHandle shell_handle) {
+    scoped_refptr<LoadCallbacks> callbacks(
+        new ServiceLoader::SimpleLoadCallbacks(shell_handle.Pass()));
+    loader_->Load(manager, url, callbacks);
   }
 
   void OnServiceError(ServiceManager* manager, const GURL& url) {
@@ -47,17 +49,21 @@ BackgroundShellServiceLoader::~BackgroundShellServiceLoader() {
     thread_->Join();
 }
 
-void BackgroundShellServiceLoader::LoadService(
+void BackgroundShellServiceLoader::Load(
     ServiceManager* manager,
     const GURL& url,
-    ScopedMessagePipeHandle shell_handle) {
+    scoped_refptr<LoadCallbacks> callbacks) {
+  ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
+  if (!shell_handle.is_valid())
+    return;
+
   if (!thread_) {
-    // TODO(tim): It'd be nice if we could just have each LoadService call
+    // TODO(tim): It'd be nice if we could just have each Load call
     // result in a new thread like DynamicService{Loader, Runner}. But some
     // loaders are creating multiple ApplicationImpls (NetworkServiceLoader)
     // sharing a delegate (etc). So we have to keep it single threaded, wait
     // for the thread to initialize, and post to the TaskRunner for subsequent
-    // LoadService calls for now.
+    // Load calls for now.
     thread_.reset(new base::DelegateSimpleThread(this, thread_name_));
     thread_->Start();
     message_loop_created_.Wait();
@@ -65,7 +71,7 @@ void BackgroundShellServiceLoader::LoadService(
   }
 
   task_runner_->PostTask(FROM_HERE,
-      base::Bind(&BackgroundShellServiceLoader::LoadServiceOnBackgroundThread,
+      base::Bind(&BackgroundShellServiceLoader::LoadOnBackgroundThread,
                  base::Unretained(this), manager, url,
                  base::Owned(
                     new ScopedMessagePipeHandle(shell_handle.Pass()))));
@@ -93,14 +99,14 @@ void BackgroundShellServiceLoader::Run() {
   loader_.reset();
 }
 
-void BackgroundShellServiceLoader::LoadServiceOnBackgroundThread(
+void BackgroundShellServiceLoader::LoadOnBackgroundThread(
       ServiceManager* manager,
       const GURL& url,
       ScopedMessagePipeHandle* shell_handle) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   if (!background_loader_)
     background_loader_ = new BackgroundLoader(loader_.get());
-  background_loader_->LoadService(manager, url, shell_handle->Pass());
+  background_loader_->Load(manager, url, shell_handle->Pass());
 }
 
 void BackgroundShellServiceLoader::OnServiceErrorOnBackgroundThread(

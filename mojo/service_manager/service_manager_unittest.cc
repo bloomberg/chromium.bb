@@ -118,12 +118,12 @@ class TestServiceLoader : public ServiceLoader,
 
  private:
   // ServiceLoader implementation.
-  virtual void LoadService(
-      ServiceManager* manager,
-      const GURL& url,
-      ScopedMessagePipeHandle service_provider_handle) OVERRIDE {
+  virtual void Load(ServiceManager* manager,
+                    const GURL& url,
+                    scoped_refptr<LoadCallbacks> callbacks) OVERRIDE {
     ++num_loads_;
-    test_app_.reset(new ApplicationImpl(this, service_provider_handle.Pass()));
+    test_app_.reset(
+        new ApplicationImpl(this, callbacks->RegisterApplication().Pass()));
   }
 
   virtual void OnServiceError(ServiceManager* manager,
@@ -332,11 +332,11 @@ class Tester : public ApplicationDelegate,
   virtual ~Tester() {}
 
  private:
-  virtual void LoadService(
-      ServiceManager* manager,
-      const GURL& url,
-      ScopedMessagePipeHandle shell_handle) OVERRIDE {
-    app_.reset(new ApplicationImpl(this, shell_handle.Pass()));
+  virtual void Load(ServiceManager* manager,
+                    const GURL& url,
+                    scoped_refptr<LoadCallbacks> callbacks) OVERRIDE {
+    app_.reset(
+        new ApplicationImpl(this, callbacks->RegisterApplication().Pass()));
   }
 
   virtual void OnServiceError(ServiceManager* manager,

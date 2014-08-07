@@ -365,6 +365,22 @@
       ],
     },
     {
+      # GN version: //mojo/services/public/interfaces/content_handler
+      'target_name': 'mojo_content_handler_bindings',
+      'type': 'static_library',
+      'sources': [
+        'services/public/interfaces/content_handler/content_handler.mojom',
+      ],
+      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
+      'export_dependent_settings': [
+        'mojo_base.gyp:mojo_cpp_bindings',
+      ],
+      'dependencies': [
+        'mojo_base.gyp:mojo_cpp_bindings',
+        'mojo_network_bindings',
+      ],
+    },
+    {
       # GN version: //mojo/services/public/interfaces/network
       'target_name': 'mojo_network_bindings',
       'type': 'static_library',
