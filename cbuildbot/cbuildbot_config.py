@@ -2074,6 +2074,7 @@ _release.add_config('master-release',
   master=True,
   sync_chrome=False,
   chrome_sdk=False,
+  health_alert_recipients=['chromeos-build-alerts@google.com'],
 )
 
 ### Release config groups.

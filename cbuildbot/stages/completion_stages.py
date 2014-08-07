@@ -343,6 +343,92 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     """
     return self._slave_statuses
 
+  def _GetFailedMessages(self, failing):
+    """Gathers the BuildFailureMessages from the |failing| builders.
+
+    Args:
+      failing: Names of the builders that failed.
+
+    Returns:
+      A list of BuildFailureMessage or NoneType objects.
+    """
+    return [self._slave_statuses[x].message for x in failing]
+
+  def ShouldDisableAlerts(self):
+    """Return whether alerts should be disabled due to debug mode.
+
+    This method only exists so that it can be overridden by tests.
+    """
+    return self._run.debug
+
+  def _GetBuildersWithNoneMessages(self, failing):
+    """Returns a list of failed builders with NoneType failure message.
+
+    Args:
+      failing: Names of the builders that failed.
+
+    Returns:
+      A list of builder names.
+    """
+    return [x for x in failing if self._slave_statuses[x].message is None]
+
+
+class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
+  """Collect build slave statuses and handle the failures."""
+
+  def HandleFailure(self, failing, inflight, no_stat):
+    """Handle a build failure or timeout in the Canary builders.
+
+    Args:
+      failing: Names of the builders that failed.
+      inflight: Names of the builders that timed out.
+      no_stat: Set of builder names of slave builders that had status None.
+    """
+    # Print out the status about what builds failed or not.
+    MasterSlaveSyncCompletionStage.HandleFailure(
+        self, failing, inflight, no_stat)
+
+    if self._run.config.master:
+      self.CanaryMasterHandleFailure(failing, inflight, no_stat)
+
+  def SendCanaryFailureAlert(self, failing, inflight, no_stat):
+    """Send an alert email to summarize canary failures.
+
+    Args:
+      failing: The names of the failing builders.
+      inflight: The names of the builders that are still running.
+      no_stat: The names of the builders that had status None.
+    """
+    msgs = [str(x) for x in self._GetFailedMessages(failing)]
+    slaves = self._GetBuildersWithNoneMessages(failing)
+    msgs += ['%s failed with unknown reason.' % x for x in slaves]
+    msgs += ['%s timed out' % x for x in inflight]
+    msgs += ['%s did not start' % x for x in no_stat]
+    builder_name = self._run.config.name
+    title = '%s has encountered failures:' % (builder_name,)
+    msgs.insert(0, title)
+    msgs.append('See %s' % self.ConstructDashboardURL())
+    msg = '\n\n'.join(msgs)
+    if not self.ShouldDisableAlerts():
+      # TODO(yjhong): The alert should be addressed to the tree
+      # sheriffs. For now, we send it to the build team instead to
+      # test the content and make improvements.
+      alerts.SendEmail('%s failures' % (builder_name,),
+                       self._run.config.health_alert_recipients,
+                       message=msg,
+                       smtp_server=constants.GOLO_SMTP_SERVER,
+                       extra_fields={'X-cbuildbot-alert': 'canary-fail-alert'})
+
+  def CanaryMasterHandleFailure(self, failing, inflight, no_stat):
+    """Handles the failure by sending out an alert email.
+
+    Args:
+      failing: Names of the builders that failed.
+      inflight: Names of the builders that timed out.
+      no_stat: Set of builder names of slave builders that had status None.
+    """
+    self.SendCanaryFailureAlert(failing, inflight, no_stat)
+
 
 class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
   """Commits or reports errors to CL's that failed to be validated."""
@@ -431,17 +517,6 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     if self._run.config.master:
       self.CQMasterHandleFailure(failing, inflight, no_stat)
 
-  def _GetFailedMessages(self, failing):
-    """Gathers the BuildFailureMessages from the |failing| builders.
-
-    Args:
-      failing: Names of the builders that failed.
-
-    Returns:
-      A list of BuildFailureMessage or NoneType objects.
-    """
-    return [self._slave_statuses[x].message for x in failing]
-
   def CQMasterHandleFailure(self, failing, inflight, no_stat):
     """Handle changes in the validation pool upon build failure or timeout.
 
@@ -489,13 +564,6 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     self.sync_stage.pool.HandleValidationFailure(
         messages, sanity=tot_sanity, changes=changes, no_stat=no_stat)
 
-  def ShouldDisableAlerts(self):
-    """Return whether alerts should be disabled due to debug mode.
-
-    This method only exists so that it can be overridden by tests.
-    """
-    return self._run.debug
-
   def _GetInfraFailMessages(self, failing):
     """Returns a list of messages containing infra failures.
 
@@ -509,17 +577,6 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     # Filter out None messages because we cannot analyze them.
     return [x for x in msgs if x and
             x.HasFailureType(failures_lib.InfrastructureFailure)]
-
-  def _GetBuildersWithNoneMessages(self, failing):
-    """Returns a list of failed builders with NoneType failure message.
-
-    Args:
-      failing: Names of the builders that failed.
-
-    Returns:
-      A list of builder names.
-    """
-    return [x for x in failing if self._slave_statuses[x].message is None]
 
   def SendInfraAlertIfNeeded(self, failing, inflight, no_stat):
     """Send infra alerts if needed.

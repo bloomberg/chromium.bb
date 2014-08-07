@@ -749,7 +749,7 @@ class DistributedBuilder(SimpleBuilder):
       sync_stage = self._GetStageInstance(
           sync_stages.ManifestVersionedSyncStage)
       self.completion_stage_class = (
-          completion_stages.MasterSlaveSyncCompletionStage)
+          completion_stages.CanaryCompletionStage)
     else:
       sync_stage = self._GetStageInstance(
           sync_stages.ManifestVersionedSyncStage)

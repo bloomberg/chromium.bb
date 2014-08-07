@@ -36592,7 +36592,9 @@
         "git_sync": false,
         "grouped": false,
         "gs_path": "default",
-        "health_alert_recipients": [],
+        "health_alert_recipients": [
+            "chromeos-build-alerts@google.com"
+        ],
         "health_threshold": 0,
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
