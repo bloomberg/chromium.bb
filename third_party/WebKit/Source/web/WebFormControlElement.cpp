@@ -31,6 +31,7 @@
 #include "config.h"
 #include "public/web/WebFormControlElement.h"
 
+#include "core/dom/NodeRenderStyle.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -171,11 +172,9 @@ int WebFormControlElement::selectionEnd() const
 
 WebString WebFormControlElement::directionForFormData() const
 {
-    if (isHTMLInputElement(*m_private))
-        return constUnwrap<HTMLInputElement>()->directionForFormData();
-    if (isHTMLTextAreaElement(*m_private))
-        return constUnwrap<HTMLTextAreaElement>()->directionForFormData();
-    return WebString();
+    if (RenderStyle* style = constUnwrap<HTMLFormControlElement>()->renderStyle())
+        return style->isLeftToRightDirection() ? WebString::fromUTF8("ltr") : WebString::fromUTF8("rtl");
+    return WebString::fromUTF8("ltr");
 }
 
 bool WebFormControlElement::isActivatedSubmit() const
