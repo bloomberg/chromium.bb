@@ -38,6 +38,19 @@ enum DBInitStatus {
   DB_INIT_MAX_VALUE,
 };
 
+// Enum to describe DB validity check failure reason.
+enum CheckValidityFailureReason {
+  CHECK_VALIDITY_FAILURE_INVALID_HEADER,
+  CHECK_VALIDITY_FAILURE_BROKEN_ID_ENTRY,
+  CHECK_VALIDITY_FAILURE_BROKEN_ENTRY,
+  CHECK_VALIDITY_FAILURE_INVALID_LOCAL_ID,
+  CHECK_VALIDITY_FAILURE_INVALID_PARENT_ID,
+  CHECK_VALIDITY_FAILURE_BROKEN_CHILD_MAP,
+  CHECK_VALIDITY_FAILURE_CHILD_ENTRY_COUNT_MISMATCH,
+  CHECK_VALIDITY_FAILURE_ITERATOR_ERROR,
+  CHECK_VALIDITY_FAILURE_MAX_VALUE,
+};
+
 // The name of the DB which stores the metadata.
 const base::FilePath::CharType kResourceMapDBName[] =
     FILE_PATH_LITERAL("resource_metadata_resource_map.db");
@@ -161,6 +174,12 @@ ResourceMetadataHeader GetDefaultHeaderEntry() {
 
 bool MoveIfPossible(const base::FilePath& from, const base::FilePath& to) {
   return !base::PathExists(from) || base::Move(from, to);
+}
+
+void RecordCheckValidityFailure(CheckValidityFailureReason reason) {
+  UMA_HISTOGRAM_ENUMERATION("Drive.MetadataDBValidityCheckFailureReason",
+                            reason,
+                            CHECK_VALIDITY_FAILURE_MAX_VALUE);
 }
 
 }  // namespace
@@ -932,6 +951,7 @@ bool ResourceMetadataStorage::CheckValidity() {
       !header.ParseFromArray(it->value().data(), it->value().size()) ||
       header.version() != kDBVersion) {
     DLOG(ERROR) << "Invalid header detected. version = " << header.version();
+    RecordCheckValidityFailure(CHECK_VALIDITY_FAILURE_INVALID_HEADER);
     return false;
   }
 
@@ -962,6 +982,7 @@ bool ResourceMetadataStorage::CheckValidity() {
           leveldb::Slice(GetIdEntryKey(entry.resource_id())) == it->key();
       if (!ok) {
         DLOG(ERROR) << "Broken ID entry. status = " << status.ToString();
+        RecordCheckValidityFailure(CHECK_VALIDITY_FAILURE_BROKEN_ID_ENTRY);
         return false;
       }
       continue;
@@ -970,11 +991,13 @@ bool ResourceMetadataStorage::CheckValidity() {
     // Check if stored data is broken.
     if (!entry.ParseFromArray(it->value().data(), it->value().size())) {
       DLOG(ERROR) << "Broken entry detected";
+      RecordCheckValidityFailure(CHECK_VALIDITY_FAILURE_BROKEN_ENTRY);
       return false;
     }
 
     if (leveldb::Slice(entry.local_id()) != it->key()) {
       DLOG(ERROR) << "Wrong local ID.";
+      RecordCheckValidityFailure(CHECK_VALIDITY_FAILURE_INVALID_LOCAL_ID);
       return false;
     }
 
@@ -986,6 +1009,7 @@ bool ResourceMetadataStorage::CheckValidity() {
           &serialized_entry);
       if (!status.ok()) {
         DLOG(ERROR) << "Can't get parent entry. status = " << status.ToString();
+        RecordCheckValidityFailure(CHECK_VALIDITY_FAILURE_INVALID_PARENT_ID);
         return false;
       }
 
@@ -997,14 +1021,22 @@ bool ResourceMetadataStorage::CheckValidity() {
           &child_id);
       if (!status.ok() || leveldb::Slice(child_id) != it->key()) {
         DLOG(ERROR) << "Child map is broken. status = " << status.ToString();
+        RecordCheckValidityFailure(CHECK_VALIDITY_FAILURE_BROKEN_CHILD_MAP);
         return false;
       }
       ++num_entries_with_parent;
     }
   }
-  if (!it->status().ok() || num_child_entries != num_entries_with_parent) {
+  if (!it->status().ok()) {
     DLOG(ERROR) << "Error during checking resource map. status = "
                 << it->status().ToString();
+    RecordCheckValidityFailure(CHECK_VALIDITY_FAILURE_ITERATOR_ERROR);
+    return false;
+  }
+  if (num_child_entries != num_entries_with_parent) {
+    DLOG(ERROR) << "Child entry count mismatch";
+    RecordCheckValidityFailure(
+        CHECK_VALIDITY_FAILURE_CHILD_ENTRY_COUNT_MISMATCH);
     return false;
   }
   return true;

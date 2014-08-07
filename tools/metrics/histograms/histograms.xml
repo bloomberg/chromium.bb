@@ -5490,6 +5490,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Drive.MetadataDBValidityCheckFailureReason"
+    enum="DriveMetadataDBValidityCheckFailureReason">
+  <owner>bengold@chromium.org</owner>
+  <owner>hashimoto@chromium.org</owner>
+  <summary>
+    Reason of drive resource metadata database validity check failure. Recorded
+    when the validity check fails during Drive metadata initialization triggered
+    by profile initialization.
+  </summary>
+</histogram>
+
 <histogram name="Drive.MetadataDBVersionBeforeUpgradeCheck">
   <owner>joshwoodward@google.com</owner>
   <summary>
@@ -38209,6 +38220,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="7" label="Opened existing DB."/>
   <int value="8" label="No existing DB was found. Created new DB."/>
   <int value="9" label="Cannot open existing DB. Created new DB."/>
+</enum>
+
+<enum name="DriveMetadataDBValidityCheckFailureReason" type="int">
+  <int value="0" label="Invalid header"/>
+  <int value="1" label="Broken ID entry"/>
+  <int value="2" label="Broken entry"/>
+  <int value="3" label="Invalid local ID"/>
+  <int value="4" label="Invalid parent ID"/>
+  <int value="5" label="Broken child map"/>
+  <int value="6" label="Child entry count mismatch"/>
+  <int value="7" label="Iterator error"/>
 </enum>
 
 <enum name="EAPInnerProtocol" type="int">
