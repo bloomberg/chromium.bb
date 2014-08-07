@@ -33,6 +33,11 @@ import org.chromium.ui.UiUtils;
 public class HelpActivity extends Activity {
     private static final String PLAY_STORE_URL = "market://details?id=";
 
+    private static final String FEEDBACK_PACKAGE = "com.google.android.gms";
+
+    private static final String FEEDBACK_CLASS =
+            "com.google.android.gms.feedback.LegacyBugReportService";
+
     /**
      * Maximum dimension for the screenshot to be sent to the Send Feedback handler.  This size
      * ensures the size of bitmap < 1MB, which is a requirement of the handler.
@@ -62,6 +67,12 @@ public class HelpActivity extends Activity {
 
     private void sendFeedback() {
         Intent intent = new Intent(Intent.ACTION_BUG_REPORT);
+        intent.setComponent(new ComponentName(FEEDBACK_PACKAGE, FEEDBACK_CLASS));
+        if (getPackageManager().resolveService(intent, 0) == null) {
+            Log.e("help", "Unable to resolve Feedback service.");
+            return;
+        }
+
         ServiceConnection conn = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
