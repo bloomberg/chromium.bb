@@ -35,10 +35,10 @@ public class UrlRequest {
     private final Map<String, String> mHeaders;
     private final WritableByteChannel mSink;
     private Map<String, String> mAdditionalHeaders;
-    private String mPostBodyContentType;
+    private String mUploadContentType;
     private String mMethod;
-    private byte[] mPostBody;
-    private ReadableByteChannel mPostBodyChannel;
+    private byte[] mUploadData;
+    private ReadableByteChannel mUploadChannel;
     private WritableByteChannel mOutputChannel;
     private IOException mSinkException;
     private volatile boolean mStarted;
@@ -107,9 +107,9 @@ public class UrlRequest {
     public void setUploadData(String contentType, byte[] data) {
         synchronized (mLock) {
             validateNotStarted();
-            mPostBodyContentType = contentType;
-            mPostBody = data;
-            mPostBodyChannel = null;
+            mUploadContentType = contentType;
+            mUploadData = data;
+            mUploadChannel = null;
         }
     }
 
@@ -126,10 +126,10 @@ public class UrlRequest {
             ReadableByteChannel channel, long contentLength) {
         synchronized (mLock) {
             validateNotStarted();
-            mPostBodyContentType = contentType;
-            mPostBodyChannel = channel;
+            mUploadContentType = contentType;
+            mUploadChannel = channel;
             mUploadContentLength = contentLength;
-            mPostBody = null;
+            mUploadData = null;
         }
     }
 
@@ -158,8 +158,8 @@ public class UrlRequest {
 
             String method = mMethod;
             if (method == null &&
-                    ((mPostBody != null && mPostBody.length > 0) ||
-                      mPostBodyChannel != null)) {
+                    ((mUploadData != null && mUploadData.length > 0) ||
+                      mUploadChannel != null)) {
                 // Default to POST if there is data to upload but no method was
                 // specified.
                 method = "POST";
@@ -184,12 +184,12 @@ public class UrlRequest {
               }
             }
 
-            if (mPostBody != null && mPostBody.length > 0) {
-                nativeSetUploadData(mUrlRequestPeer, mPostBodyContentType,
-                                    mPostBody);
-            } else if (mPostBodyChannel != null) {
-                nativeSetUploadChannel(mUrlRequestPeer, mPostBodyContentType,
-                                       mPostBodyChannel, mUploadContentLength);
+            if (mUploadData != null && mUploadData.length > 0) {
+                nativeSetUploadData(mUrlRequestPeer, mUploadContentType,
+                                    mUploadData);
+            } else if (mUploadChannel != null) {
+                nativeSetUploadChannel(mUrlRequestPeer, mUploadContentType,
+                                       mUploadContentLength);
             }
 
             nativeStart(mUrlRequestPeer);
@@ -358,6 +358,36 @@ public class UrlRequest {
         headersMap.get(name).add(value);
     }
 
+    /**
+     * Reads a sequence of bytes from upload channel into the given buffer.
+     * @param dest The buffer into which bytes are to be transferred.
+     * @return Returns number of bytes read (could be 0) or -1 and closes
+     * the channel if error occured.
+     */
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private int readFromUploadChannel(ByteBuffer dest) {
+        if (mUploadChannel == null || !mUploadChannel.isOpen())
+            return -1;
+        try {
+            int result = mUploadChannel.read(dest);
+            if (result < 0) {
+                mUploadChannel.close();
+                return 0;
+            }
+            return result;
+        } catch (IOException e) {
+            mSinkException = e;
+            try {
+                mUploadChannel.close();
+            } catch (IOException ignored) {
+                // Ignore this exception.
+            }
+            cancel();
+            return -1;
+        }
+    }
+
     private void validateNotRecycled() {
         if (mRecycled) {
             throw new IllegalStateException("Accessing recycled request");
@@ -392,8 +422,7 @@ public class UrlRequest {
             String contentType, byte[] content);
 
     private native void nativeSetUploadChannel(long urlRequestPeer,
-            String contentType, ReadableByteChannel content,
-            long contentLength);
+            String contentType, long contentLength);
 
     private native void nativeStart(long urlRequestPeer);
 

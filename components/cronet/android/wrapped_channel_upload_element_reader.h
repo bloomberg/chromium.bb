@@ -5,10 +5,9 @@
 #ifndef COMPONENTS_CRONET_ANDROID_WRAPPED_CHANNEL_UPLOAD_ELEMENT_READER_H_
 #define COMPONENTS_CRONET_ANDROID_WRAPPED_CHANNEL_UPLOAD_ELEMENT_READER_H_
 
-#include <jni.h>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "components/cronet/android/url_request_peer.h"
 #include "net/base/completion_callback.h"
 #include "net/base/upload_element_reader.h"
 
@@ -18,15 +17,15 @@ class IOBuffer;
 
 namespace cronet {
 
-bool WrappedChannelRegisterJni(JNIEnv* env);
-
 // An UploadElementReader implementation for
 // java.nio.channels.ReadableByteChannel.
 // |channel_| should outlive this class because this class does not take the
 // ownership of the data.
 class WrappedChannelElementReader : public net::UploadElementReader {
  public:
-  WrappedChannelElementReader(JNIEnv* env, jobject channel, uint64 length);
+  WrappedChannelElementReader(
+      scoped_refptr<URLRequestPeer::URLRequestPeerDelegate> delegate,
+      uint64 length);
   virtual ~WrappedChannelElementReader();
 
   // UploadElementReader overrides:
@@ -41,7 +40,7 @@ class WrappedChannelElementReader : public net::UploadElementReader {
  private:
   const uint64 length_;
   uint64 offset_;
-  jobject channel_;
+  scoped_refptr<URLRequestPeer::URLRequestPeerDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WrappedChannelElementReader);
 };

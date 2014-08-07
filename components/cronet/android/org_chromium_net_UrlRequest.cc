@@ -70,15 +70,25 @@ class JniURLRequestPeerDelegate
     int bytes_read = request->bytes_read();
     if (bytes_read != 0) {
       JNIEnv* env = base::android::AttachCurrentThread();
-      jobject bytebuf = env->NewDirectByteBuffer(request->Data(), bytes_read);
-      cronet::Java_UrlRequest_onBytesRead(env, owner_, bytebuf);
-      env->DeleteLocalRef(bytebuf);
+      base::android::ScopedJavaLocalRef<jobject> java_buffer(
+          env, env->NewDirectByteBuffer(request->Data(), bytes_read));
+      cronet::Java_UrlRequest_onBytesRead(env, owner_, java_buffer.obj());
     }
   }
 
   virtual void OnRequestFinished(URLRequestPeer* request) OVERRIDE {
     JNIEnv* env = base::android::AttachCurrentThread();
     cronet::Java_UrlRequest_finish(env, owner_);
+  }
+
+  virtual int ReadFromUploadChannel(net::IOBuffer* buf,
+                                    int buf_length) OVERRIDE {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    base::android::ScopedJavaLocalRef<jobject> java_buffer(
+        env, env->NewDirectByteBuffer(buf->data(), buf_length));
+    jint bytes_read = cronet::Java_UrlRequest_readFromUploadChannel(
+        env, owner_, java_buffer.obj());
+    return bytes_read;
   }
 
  protected:
@@ -175,12 +185,11 @@ static void SetUploadChannel(JNIEnv* env,
                              jobject object,
                              jlong urlRequestPeer,
                              jstring content_type,
-                             jobject content,
                              jlong content_length) {
   URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
   SetPostContentType(env, request, content_type);
 
-  request->SetUploadChannel(env, content, content_length);
+  request->SetUploadChannel(env, content_length);
 }
 
 

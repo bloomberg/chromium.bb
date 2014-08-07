@@ -37,6 +37,7 @@ class URLRequestPeer : public net::URLRequest::Delegate {
     virtual void OnResponseStarted(URLRequestPeer* request) = 0;
     virtual void OnBytesRead(URLRequestPeer* request) = 0;
     virtual void OnRequestFinished(URLRequestPeer* request) = 0;
+    virtual int ReadFromUploadChannel(net::IOBuffer* buf, int buf_length) = 0;
 
    protected:
     friend class base::RefCountedThreadSafe<URLRequestPeerDelegate>;
@@ -59,7 +60,7 @@ class URLRequestPeer : public net::URLRequest::Delegate {
   void SetUploadContent(const char* bytes, int bytes_len);
 
   // Sets the request to streaming upload.
-  void SetUploadChannel(JNIEnv* env, jobject content, int64 content_length);
+  void SetUploadChannel(JNIEnv* env, int64 content_length);
 
   // Starts the request.
   void Start();

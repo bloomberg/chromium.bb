@@ -51,10 +51,9 @@ void URLRequestPeer::SetUploadContent(const char* bytes, int bytes_len) {
       reader.Pass(), 0));
 }
 
-void URLRequestPeer::SetUploadChannel(
-    JNIEnv* env, jobject channel, int64 content_length) {
+void URLRequestPeer::SetUploadChannel(JNIEnv* env, int64 content_length) {
   scoped_ptr<net::UploadElementReader> reader(
-      new WrappedChannelElementReader(env, channel, content_length));
+      new WrappedChannelElementReader(delegate_, content_length));
   upload_data_stream_.reset(net::UploadDataStream::CreateWithReader(
       reader.Pass(), 0));
 }
