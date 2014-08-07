@@ -478,14 +478,7 @@ HistoryURLProvider::HistoryURLProvider(AutocompleteProviderListener* listener,
                                        Profile* profile)
     : HistoryProvider(profile, AutocompleteProvider::TYPE_HISTORY_URL),
       listener_(listener),
-      params_(NULL),
-      cull_redirects_(
-          !OmniboxFieldTrial::InHUPCullRedirectsFieldTrial() ||
-          !OmniboxFieldTrial::InHUPCullRedirectsFieldTrialExperimentGroup()),
-      create_shorter_match_(
-          !OmniboxFieldTrial::InHUPCreateShorterMatchFieldTrial() ||
-          !OmniboxFieldTrial::
-              InHUPCreateShorterMatchFieldTrialExperimentGroup()) {
+      params_(NULL) {
   // Initialize HUP scoring params based on the current experiment.
   OmniboxFieldTrial::GetExperimentalHUPScoringParams(&scoring_params_);
 }
@@ -823,7 +816,7 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
 
   const size_t max_results =
       kMaxMatches + (params->exact_suggestion_is_in_history ? 1 : 0);
-  if (backend && cull_redirects_) {
+  if (backend) {
     // Remove redirects and trim list to size.  We want to provide up to
     // kMaxMatches results plus the What You Typed result, if it was added to
     // params->matches above.
@@ -1055,8 +1048,7 @@ bool HistoryURLProvider::PromoteOrCreateShorterSuggestion(
   const bool ensure_can_inline =
       promote && CanPromoteMatchForInlineAutocomplete(match);
   return CreateOrPromoteMatch(info, match.input_location, match.match_in_scheme,
-                              &params->matches, create_shorter_match_,
-                              promote) &&
+                              &params->matches, true, promote) &&
       ensure_can_inline;
 }
 

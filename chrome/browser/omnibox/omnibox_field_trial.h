@@ -90,16 +90,12 @@ class OmniboxFieldTrial {
   // given number.  Omitted types are assumed to have multipliers of 1.0.
   typedef std::map<AutocompleteMatchType::Type, float> DemotionMultipliers;
 
-  // Creates the static field trial groups.
-  // *** MUST NOT BE CALLED MORE THAN ONCE. ***
-  static void ActivateStaticTrials();
-
   // Activates all dynamic field trials.  The main difference between
   // the autocomplete dynamic and static field trials is that the former
   // don't require any code changes on the Chrome side as they are controlled
   // on the server side.  Chrome binary simply propagates all necessary
   // information through the X-Client-Data header.
-  // This method, unlike ActivateStaticTrials(), may be called multiple times.
+  // This method may be called multiple times.
   static void ActivateDynamicTrials();
 
   // Returns a bitmap containing AutocompleteProvider::Type values
@@ -121,29 +117,6 @@ class OmniboxFieldTrial {
   // names, if any.
   static void GetActiveSuggestFieldTrialHashes(
       std::vector<uint32>* field_trial_hash);
-
-  // ---------------------------------------------------------
-  // For the HistoryURL provider disable culling redirects field trial.
-
-  // Returns whether the user is in any group for this field trial.
-  // (Should always be true unless initialization went wrong.)
-  static bool InHUPCullRedirectsFieldTrial();
-
-  // Returns whether we should disable culling of redirects in
-  // HistoryURL provider.
-  static bool InHUPCullRedirectsFieldTrialExperimentGroup();
-
-  // ---------------------------------------------------------
-  // For the HistoryURL provider disable creating a shorter match
-  // field trial.
-
-  // Returns whether the user is in any group for this field trial.
-  // (Should always be true unless initialization went wrong.)
-  static bool InHUPCreateShorterMatchFieldTrial();
-
-  // Returns whether we should disable creating a shorter match in
-  // HistoryURL provider.
-  static bool InHUPCreateShorterMatchFieldTrialExperimentGroup();
 
   // ---------------------------------------------------------
   // For the AutocompleteController "stop timer" field trial.

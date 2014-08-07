@@ -13,7 +13,6 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/auto_launch_trial.h"
 #include "chrome/browser/google/google_brand.h"
-#include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
@@ -121,7 +120,6 @@ void SetupDesktopFieldTrials(const CommandLine& parsed_command_line,
                              PrefService* local_state) {
   prerender::ConfigurePrerender(parsed_command_line);
   AutoLaunchChromeFieldTrial();
-  OmniboxFieldTrial::ActivateStaticTrials();
   SetupInfiniteCacheFieldTrial();
   DisableShowProfileSwitcherTrialIfNecessary();
   SetupShowAppLauncherPromoFieldTrial(local_state);
