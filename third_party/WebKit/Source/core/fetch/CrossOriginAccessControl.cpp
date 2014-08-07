@@ -40,45 +40,6 @@
 
 namespace blink {
 
-bool isOnAccessControlSimpleRequestMethodWhitelist(const String& method)
-{
-    return method == "GET" || method == "HEAD" || method == "POST";
-}
-
-bool isOnAccessControlSimpleRequestHeaderWhitelist(const AtomicString& name, const AtomicString& value)
-{
-    if (equalIgnoringCase(name, "accept")
-        || equalIgnoringCase(name, "accept-language")
-        || equalIgnoringCase(name, "content-language")
-        || equalIgnoringCase(name, "origin")
-        || equalIgnoringCase(name, "referer"))
-        return true;
-
-    // Preflight is required for MIME types that can not be sent via form submission.
-    if (equalIgnoringCase(name, "content-type")) {
-        AtomicString mimeType = extractMIMETypeFromMediaType(value);
-        return equalIgnoringCase(mimeType, "application/x-www-form-urlencoded")
-            || equalIgnoringCase(mimeType, "multipart/form-data")
-            || equalIgnoringCase(mimeType, "text/plain");
-    }
-
-    return false;
-}
-
-bool isSimpleCrossOriginAccessRequest(const String& method, const HTTPHeaderMap& headerMap)
-{
-    if (!isOnAccessControlSimpleRequestMethodWhitelist(method))
-        return false;
-
-    HTTPHeaderMap::const_iterator end = headerMap.end();
-    for (HTTPHeaderMap::const_iterator it = headerMap.begin(); it != end; ++it) {
-        if (!isOnAccessControlSimpleRequestHeaderWhitelist(it->key, it->value))
-            return false;
-    }
-
-    return true;
-}
-
 static PassOwnPtr<HTTPHeaderSet> createAllowedCrossOriginResponseHeadersSet()
 {
     OwnPtr<HTTPHeaderSet> headerSet = adoptPtr(new HashSet<String, CaseFoldingHash>);

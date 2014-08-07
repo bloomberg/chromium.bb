@@ -35,6 +35,7 @@
 #include "core/dom/Document.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchRequest.h"
+#include "core/fetch/FetchUtils.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/LocalFrame.h"
@@ -90,7 +91,7 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     const HTTPHeaderMap& headerMap = request.httpHeaderFields();
     HTTPHeaderMap::const_iterator end = headerMap.end();
     for (HTTPHeaderMap::const_iterator it = headerMap.begin(); it != end; ++it) {
-        if (isOnAccessControlSimpleRequestHeaderWhitelist(it->key, it->value))
+        if (FetchUtils::isSimpleHeader(it->key, it->value))
             m_simpleRequestHeaders.add(it->key, it->value);
     }
 
@@ -120,7 +121,7 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
         return;
     }
 
-    if ((m_options.preflightPolicy == ConsiderPreflight && isSimpleCrossOriginAccessRequest(request.httpMethod(), request.httpHeaderFields())) || m_options.preflightPolicy == PreventPreflight) {
+    if ((m_options.preflightPolicy == ConsiderPreflight && FetchUtils::isSimpleOrForbiddenRequest(request.httpMethod(), request.httpHeaderFields())) || m_options.preflightPolicy == PreventPreflight) {
         ResourceRequest crossOriginRequest(request);
         ResourceLoaderOptions crossOriginOptions(m_resourceLoaderOptions);
         updateRequestForAccessControl(crossOriginRequest, securityOrigin(), effectiveAllowCredentials());
@@ -394,8 +395,9 @@ void DocumentThreadableLoader::handleSuccessfulFinish(unsigned long identifier, 
         ASSERT(!m_sameOriginRequest);
         ASSERT(m_options.crossOriginRequestPolicy == UseAccessControl);
         loadActualRequest();
-    } else
+    } else {
         m_client->didFinishLoading(identifier, finishTime);
+    }
 }
 
 void DocumentThreadableLoader::didTimeout(Timer<DocumentThreadableLoader>* timer)

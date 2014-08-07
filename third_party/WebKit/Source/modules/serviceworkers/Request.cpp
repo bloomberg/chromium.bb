@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/fetch/CrossOriginAccessControl.h"
+#include "core/fetch/FetchUtils.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/xml/XMLHttpRequest.h"
@@ -60,7 +60,7 @@ PassRefPtrWillBeRawPtr<Request> createRequestWithRequestData(PassRefPtrWillBeRaw
     // these substeps:"
     if (!init.method.isEmpty()) {
         // "1. If |method| is not a useful method, throw a TypeError."
-        if (!FetchManager::isUsefulMethod(init.method)) {
+        if (!FetchUtils::isUsefulMethod(init.method)) {
             exceptionState.throwTypeError("'" + init.method + "' HTTP method is unsupported.");
             return nullptr;
         }
@@ -92,7 +92,7 @@ PassRefPtrWillBeRawPtr<Request> createRequestWithRequestData(PassRefPtrWillBeRaw
     if (r->request()->mode() == FetchRequestData::NoCORSMode) {
         // "1. If |r|'s request's method is not a simple method, throw a
         // TypeError."
-        if (!FetchManager::isSimpleMethod(r->request()->method())) {
+        if (!FetchUtils::isSimpleMethod(r->request()->method())) {
             exceptionState.throwTypeError("'" + r->request()->method() + "' is unsupported in no-cors mode.");
             return nullptr;
         }

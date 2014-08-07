@@ -1092,6 +1092,8 @@
             'fetch/FetchInitiatorInfo.h',
             'fetch/FetchRequest.cpp',
             'fetch/FetchRequest.h',
+            'fetch/FetchUtils.cpp',
+            'fetch/FetchUtils.h',
             'fetch/FontResource.cpp',
             'fetch/FontResource.h',
             'fetch/ImageResource.cpp',

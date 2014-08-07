@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/fetch/CrossOriginAccessControl.h"
+#include "core/fetch/FetchUtils.h"
 #include "core/xml/XMLHttpRequest.h"
 #include "modules/serviceworkers/HeadersForEachCallback.h"
 #include "wtf/NotFound.h"
@@ -90,15 +90,15 @@ void Headers::append(const String& name, const String& value, ExceptionState& ex
     }
     // "3. Otherwise, if guard is |request| and |name| is a forbidden header
     //     name, return."
-    if (m_guard == RequestGuard && FetchHeaderList::isForbiddenHeaderName(name))
+    if (m_guard == RequestGuard && FetchUtils::isForbiddenHeaderName(name))
         return;
     // "4. Otherwise, if guard is |request-no-CORS| and |name|/|value| is not a
     //     simple header, return."
-    if (m_guard == RequestNoCORSGuard && !FetchHeaderList::isSimpleHeader(name, value))
+    if (m_guard == RequestNoCORSGuard && !FetchUtils::isSimpleHeader(AtomicString(name), AtomicString(value)))
         return;
     // "5. Otherwise, if guard is |response| and |name| is a forbidden response
     //     header name, return."
-    if (m_guard == ResponseGuard && FetchHeaderList::isForbiddenResponseHeaderName(name))
+    if (m_guard == ResponseGuard && FetchUtils::isForbiddenResponseHeaderName(name))
         return;
     // "6. Append |name|/|value| to header list."
     m_headerList->append(name, value);
@@ -119,15 +119,15 @@ void Headers::remove(const String& name, ExceptionState& exceptionState)
     }
     // "3. Otherwise, if guard is |request| and |name| is a forbidden header
     //     name, return."
-    if (m_guard == RequestGuard && FetchHeaderList::isForbiddenHeaderName(name))
+    if (m_guard == RequestGuard && FetchUtils::isForbiddenHeaderName(name))
         return;
     // "4. Otherwise, if guard is |request-no-CORS| and |name|/`invalid` is not
     //     a simple header, return."
-    if (m_guard == RequestNoCORSGuard && !FetchHeaderList::isSimpleHeader(name, "invalid"))
+    if (m_guard == RequestNoCORSGuard && !FetchUtils::isSimpleHeader(AtomicString(name), "invalid"))
         return;
     // "5. Otherwise, if guard is |response| and |name| is a forbidden response
     //     header name, return."
-    if (m_guard == ResponseGuard && FetchHeaderList::isForbiddenResponseHeaderName(name))
+    if (m_guard == ResponseGuard && FetchUtils::isForbiddenResponseHeaderName(name))
         return;
     // "6. Delete |name| from header list."
     m_headerList->remove(name);
@@ -196,15 +196,15 @@ void Headers::set(const String& name, const String& value, ExceptionState& excep
     }
     // "3. Otherwise, if guard is |request| and |name| is a forbidden header
     //     name, return."
-    if (m_guard == RequestGuard && FetchHeaderList::isForbiddenHeaderName(name))
+    if (m_guard == RequestGuard && FetchUtils::isForbiddenHeaderName(name))
         return;
     // "4. Otherwise, if guard is |request-no-CORS| and |name|/|value| is not a
     //     simple header, return."
-    if (m_guard == RequestNoCORSGuard && !FetchHeaderList::isSimpleHeader(name, value))
+    if (m_guard == RequestNoCORSGuard && !FetchUtils::isSimpleHeader(AtomicString(name), AtomicString(value)))
         return;
     // "5. Otherwise, if guard is |response| and |name| is a forbidden response
     //     header name, return."
-    if (m_guard == ResponseGuard && FetchHeaderList::isForbiddenResponseHeaderName(name))
+    if (m_guard == ResponseGuard && FetchUtils::isForbiddenResponseHeaderName(name))
         return;
     // "6. Set |name|/|value| in header list."
     m_headerList->set(name, value);

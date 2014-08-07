@@ -5,8 +5,7 @@
 #include "config.h"
 #include "FetchHeaderList.h"
 
-#include "core/fetch/CrossOriginAccessControl.h"
-#include "core/xml/XMLHttpRequest.h"
+#include "core/fetch/FetchUtils.h"
 #include "platform/network/HTTPParsers.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -124,7 +123,7 @@ void FetchHeaderList::clearList()
 bool FetchHeaderList::containsNonSimpleHeader() const
 {
     for (size_t i = 0; i < m_headerList.size(); ++i) {
-        if (!isSimpleHeader(m_headerList[i]->first, m_headerList[i]->second))
+        if (!FetchUtils::isSimpleHeader(AtomicString(m_headerList[i]->first), AtomicString(m_headerList[i]->second)))
             return true;
     }
     return false;
@@ -142,48 +141,6 @@ bool FetchHeaderList::isValidHeaderValue(const String& value)
     // "A value is a byte sequence that matches the field-value token production
     // and contains no 0x0A or 0x0D bytes."
     return isValidHTTPHeaderValue(value);
-}
-
-bool FetchHeaderList::isSimpleHeader(const String& name, const String& value)
-{
-    // "A simple header is a header whose name is either one of `Accept`,
-    // `Accept-Language`, and `Content-Language`, or whose name is
-    // `Content-Type` and value, once parsed, is one of
-    // `application/x-www-form-urlencoded`, `multipart/form-data`, and
-    // `text/plain`."
-    if (equalIgnoringCase(name, "accept")
-        || equalIgnoringCase(name, "accept-language")
-        || equalIgnoringCase(name, "content-language"))
-        return true;
-
-    if (equalIgnoringCase(name, "content-type")) {
-        AtomicString mimeType = extractMIMETypeFromMediaType(AtomicString(value));
-        return equalIgnoringCase(mimeType, "application/x-www-form-urlencoded")
-            || equalIgnoringCase(mimeType, "multipart/form-data")
-            || equalIgnoringCase(mimeType, "text/plain");
-    }
-
-    return false;
-}
-
-bool FetchHeaderList::isForbiddenHeaderName(const String& name)
-{
-    // "A forbidden header name is a header names that is one of:
-    //   `Accept-Charset`, `Accept-Encoding`, `Access-Control-Request-Headers`,
-    //   `Access-Control-Request-Method`, `Connection`,
-    //   `Content-Length, Cookie`, `Cookie2`, `Date`, `DNT`, `Expect`, `Host`,
-    //   `Keep-Alive`, `Origin`, `Referer`, `TE`, `Trailer`,
-    //   `Transfer-Encoding`, `Upgrade`, `User-Agent`, `Via`
-    // or starts with `Proxy-` or `Sec-` (including when it is just `Proxy-` or
-    // `Sec-`)."
-    return !XMLHttpRequest::isAllowedHTTPHeader(name) || equalIgnoringCase(name, "DNT");
-}
-
-bool FetchHeaderList::isForbiddenResponseHeaderName(const String& name)
-{
-    // "A forbidden response header name is a header name that is one of:
-    // `Set-Cookie`, `Set-Cookie2`"
-    return equalIgnoringCase(name, "set-cookie") || equalIgnoringCase(name, "set-cookie2");
 }
 
 } // namespace blink

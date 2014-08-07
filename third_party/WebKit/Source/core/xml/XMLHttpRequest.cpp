@@ -31,7 +31,7 @@
 #include "core/dom/XMLDocument.h"
 #include "core/editing/markup.h"
 #include "core/events/Event.h"
-#include "core/fetch/CrossOriginAccessControl.h"
+#include "core/fetch/FetchUtils.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
 #include "core/frame/Settings.h"
@@ -77,42 +77,6 @@ const double readyStateChangeFireInterval = 0.05;
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, xmlHttpRequestCounter, ("XMLHttpRequest"));
 
-struct XMLHttpRequestStaticData {
-    WTF_MAKE_NONCOPYABLE(XMLHttpRequestStaticData); WTF_MAKE_FAST_ALLOCATED;
-public:
-    XMLHttpRequestStaticData();
-    String m_proxyHeaderPrefix;
-    String m_secHeaderPrefix;
-    HashSet<String, CaseFoldingHash> m_forbiddenRequestHeaders;
-};
-
-XMLHttpRequestStaticData::XMLHttpRequestStaticData()
-    : m_proxyHeaderPrefix("proxy-")
-    , m_secHeaderPrefix("sec-")
-{
-    m_forbiddenRequestHeaders.add("accept-charset");
-    m_forbiddenRequestHeaders.add("accept-encoding");
-    m_forbiddenRequestHeaders.add("access-control-request-headers");
-    m_forbiddenRequestHeaders.add("access-control-request-method");
-    m_forbiddenRequestHeaders.add("connection");
-    m_forbiddenRequestHeaders.add("content-length");
-    m_forbiddenRequestHeaders.add("cookie");
-    m_forbiddenRequestHeaders.add("cookie2");
-    m_forbiddenRequestHeaders.add("date");
-    m_forbiddenRequestHeaders.add("dnt");
-    m_forbiddenRequestHeaders.add("expect");
-    m_forbiddenRequestHeaders.add("host");
-    m_forbiddenRequestHeaders.add("keep-alive");
-    m_forbiddenRequestHeaders.add("origin");
-    m_forbiddenRequestHeaders.add("referer");
-    m_forbiddenRequestHeaders.add("te");
-    m_forbiddenRequestHeaders.add("trailer");
-    m_forbiddenRequestHeaders.add("transfer-encoding");
-    m_forbiddenRequestHeaders.add("upgrade");
-    m_forbiddenRequestHeaders.add("user-agent");
-    m_forbiddenRequestHeaders.add("via");
-}
-
 static bool isSetCookieHeader(const AtomicString& name)
 {
     return equalIgnoringCase(name, "set-cookie") || equalIgnoringCase(name, "set-cookie2");
@@ -135,21 +99,6 @@ static void replaceCharsetInMediaType(String& mediaType, const String& charsetVa
         unsigned start = pos + charsetValue.length();
         findCharsetInMediaType(mediaType, pos, len, start);
     }
-}
-
-static const XMLHttpRequestStaticData* staticData = 0;
-
-static const XMLHttpRequestStaticData* createXMLHttpRequestStaticData()
-{
-    staticData = new XMLHttpRequestStaticData;
-    return staticData;
-}
-
-static const XMLHttpRequestStaticData* initializeXMLHttpRequestStaticData()
-{
-    // Uses dummy to avoid warnings about an unused variable.
-    AtomicallyInitializedStatic(const XMLHttpRequestStaticData*, dummy = createXMLHttpRequestStaticData());
-    return dummy;
 }
 
 static void logConsoleError(ExecutionContext* context, const String& message)
@@ -189,7 +138,6 @@ XMLHttpRequest::XMLHttpRequest(ExecutionContext* context, PassRefPtr<SecurityOri
     , m_uploadComplete(false)
     , m_sameOriginRequest(true)
 {
-    initializeXMLHttpRequestStaticData();
 #ifndef NDEBUG
     xmlHttpRequestCounter.increment();
 #endif
@@ -502,13 +450,6 @@ void XMLHttpRequest::setWithCredentials(bool value, ExceptionState& exceptionSta
     m_includeCredentials = value;
 }
 
-bool XMLHttpRequest::isAllowedHTTPMethod(const String& method)
-{
-    return !equalIgnoringCase(method, "TRACE")
-        && !equalIgnoringCase(method, "TRACK")
-        && !equalIgnoringCase(method, "CONNECT");
-}
-
 AtomicString XMLHttpRequest::uppercaseKnownHTTPMethod(const AtomicString& method)
 {
     // Valid methods per step-5 of http://xhr.spec.whatwg.org/#the-open()-method.
@@ -529,13 +470,6 @@ AtomicString XMLHttpRequest::uppercaseKnownHTTPMethod(const AtomicString& method
         }
     }
     return method;
-}
-
-bool XMLHttpRequest::isAllowedHTTPHeader(const String& name)
-{
-    initializeXMLHttpRequestStaticData();
-    return !staticData->m_forbiddenRequestHeaders.contains(name) && !name.startsWith(staticData->m_proxyHeaderPrefix, false)
-        && !name.startsWith(staticData->m_secHeaderPrefix, false);
 }
 
 void XMLHttpRequest::open(const AtomicString& method, const KURL& url, ExceptionState& exceptionState)
@@ -566,7 +500,7 @@ void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool asyn
         return;
     }
 
-    if (!isAllowedHTTPMethod(method)) {
+    if (FetchUtils::isForbiddenMethod(method)) {
         exceptionState.throwSecurityError("'" + method + "' HTTP method is unsupported.");
         return;
     }
@@ -830,7 +764,7 @@ void XMLHttpRequest::createRequest(PassRefPtr<FormData> httpBody, ExceptionState
 
     // We also remember whether upload events should be allowed for this request in case the upload listeners are
     // added after the request is started.
-    m_uploadEventsAllowed = m_sameOriginRequest || uploadEvents || !isSimpleCrossOriginAccessRequest(m_method, m_requestHeaders);
+    m_uploadEventsAllowed = m_sameOriginRequest || uploadEvents || !FetchUtils::isSimpleRequest(m_method, m_requestHeaders);
 
     ASSERT(executionContext());
     ExecutionContext& executionContext = *this->executionContext();
@@ -1096,7 +1030,7 @@ void XMLHttpRequest::setRequestHeader(const AtomicString& name, const AtomicStri
     }
 
     // No script (privileged or not) can set unsafe headers.
-    if (!isAllowedHTTPHeader(name)) {
+    if (FetchUtils::isForbiddenHeaderName(name)) {
         logConsoleError(executionContext(), "Refused to set unsafe header \"" + name + "\"");
         return;
     }

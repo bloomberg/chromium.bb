@@ -32,6 +32,7 @@
 #include "web/AssociatedURLLoader.h"
 
 #include "core/fetch/CrossOriginAccessControl.h"
+#include "core/fetch/FetchUtils.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/DocumentThreadableLoaderClient.h"
 #include "core/xml/XMLHttpRequest.h"
@@ -71,7 +72,7 @@ private:
 
 void HTTPRequestHeaderValidator::visitHeader(const WebString& name, const WebString& value)
 {
-    m_isSafe = m_isSafe && isValidHTTPToken(name) && XMLHttpRequest::isAllowedHTTPHeader(name) && isValidHTTPHeaderValue(value);
+    m_isSafe = m_isSafe && isValidHTTPToken(name) && !FetchUtils::isForbiddenHeaderName(name) && isValidHTTPHeaderValue(value);
 }
 
 // FIXME: Remove this and use WebCore code that does the same thing.
@@ -326,7 +327,7 @@ void AssociatedURLLoader::loadAsynchronously(const WebURLRequest& request, WebUR
     WebURLRequest newRequest(request);
     if (m_options.untrustedHTTP) {
         WebString method = newRequest.httpMethod();
-        allowLoad = isValidHTTPToken(method) && XMLHttpRequest::isAllowedHTTPMethod(method);
+        allowLoad = isValidHTTPToken(method) && FetchUtils::isUsefulMethod(method);
         if (allowLoad) {
             newRequest.setHTTPMethod(XMLHttpRequest::uppercaseKnownHTTPMethod(method));
             HTTPRequestHeaderValidator validator;

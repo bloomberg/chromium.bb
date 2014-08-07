@@ -43,9 +43,6 @@ public:
 
     static bool isValidHeaderName(const String&);
     static bool isValidHeaderValue(const String&);
-    static bool isSimpleHeader(const String&, const String&);
-    static bool isForbiddenHeaderName(const String&);
-    static bool isForbiddenResponseHeaderName(const String&);
 
     void trace(Visitor*) { }
 

@@ -54,9 +54,6 @@ public:
     static bool handleRedirect(Resource*, SecurityOrigin*, ResourceRequest&, const ResourceResponse&, ResourceLoaderOptions&, String&);
 };
 
-bool isSimpleCrossOriginAccessRequest(const String& method, const HTTPHeaderMap&);
-bool isOnAccessControlSimpleRequestMethodWhitelist(const String&);
-bool isOnAccessControlSimpleRequestHeaderWhitelist(const AtomicString& name, const AtomicString& value);
 bool isOnAccessControlResponseHeaderWhitelist(const String&);
 
 void updateRequestForAccessControl(ResourceRequest&, SecurityOrigin*, StoredCredentials);

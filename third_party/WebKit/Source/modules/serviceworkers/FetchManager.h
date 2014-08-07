@@ -22,9 +22,6 @@ public:
     ~FetchManager();
     ScriptPromise fetch(ScriptState*, PassRefPtrWillBeRawPtr<FetchRequestData>);
 
-    static bool isSimpleMethod(const String&);
-    static bool isForbiddenMethod(const String&);
-    static bool isUsefulMethod(const String&);
 private:
     class Loader;
 
