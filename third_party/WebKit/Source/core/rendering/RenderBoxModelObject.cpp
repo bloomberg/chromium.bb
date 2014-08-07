@@ -576,10 +576,10 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
                         isOpaqueRoot = !document().hasSVGRootNode();
                     }
                 }
-            } else
+            } else {
                 isOpaqueRoot = !view()->frameView()->isTransparent();
+            }
         }
-        view()->frameView()->setContentIsOpaque(isOpaqueRoot);
     }
 
     // Paint the color first underneath all images, culled if background image occludes it.

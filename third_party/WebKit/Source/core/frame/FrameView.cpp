@@ -179,7 +179,6 @@ FrameView::~FrameView()
 
 void FrameView::reset()
 {
-    m_contentIsOpaque = false;
     m_hasPendingLayout = false;
     m_layoutSubtreeRoot = 0;
     m_doFullPaintInvalidation = false;
@@ -1371,11 +1370,6 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
     }
 
     ScrollView::scrollContentsSlowPath(updateRect);
-}
-
-void FrameView::setContentIsOpaque(bool contentIsOpaque)
-{
-    m_contentIsOpaque = contentIsOpaque;
 }
 
 void FrameView::restoreScrollbar()

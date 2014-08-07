@@ -164,8 +164,6 @@ public:
     void setMediaType(const AtomicString&);
     void adjustMediaTypeForPrinting(bool printing);
 
-    void setContentIsOpaque(bool);
-
     void addSlowRepaintObject();
     void removeSlowRepaintObject();
     bool hasSlowRepaintObjects() const { return m_slowRepaintObjectCount; }
@@ -424,7 +422,6 @@ private:
     bool m_doFullPaintInvalidation;
 
     bool m_canHaveScrollbars;
-    bool m_contentIsOpaque;
     unsigned m_slowRepaintObjectCount;
 
     bool m_hasPendingLayout;
