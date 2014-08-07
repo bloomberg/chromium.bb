@@ -28,13 +28,14 @@ from chromite.lib import cros_test_lib
 class ManifestVersionedSyncCompletionStageTest(
     sync_stages_unittest.ManifestVersionedSyncStageTest):
   """Tests the ManifestVersionedSyncCompletion stage."""
-    # pylint: disable=W0223
+  # pylint: disable=W0223
+  BOT_ID = 'x86-mario-release'
 
   def testManifestVersionedSyncCompletedSuccess(self):
     """Tests basic ManifestVersionedSyncStageCompleted on success"""
     self.mox.StubOutWithMock(manifest_version.BuildSpecsManager, 'UpdateStatus')
 
-    board_runattrs = self._run.GetBoardRunAttrs('x86-generic')
+    board_runattrs = self._run.GetBoardRunAttrs('x86-mario')
     board_runattrs.SetParallel('success', True)
     self.manager.UpdateStatus(message=None, success_map={self.BOT_ID: True},
                               dashboard_url=mox.IgnoreArg())

@@ -114,9 +114,13 @@ class ManifestVersionedSyncCompletionStage(
     if not self.success:
       self.message = self.GetBuildFailureMessage()
 
-    self._run.attrs.manifest_manager.UpdateStatus(
-        success_map=self._GetBuilderSuccessMap(), message=self.message,
-        dashboard_url=self.ConstructDashboardURL())
+    if not cbuildbot_config.IsPFQType(self._run.config.build_type):
+      # Update the pass/fail status in the manifest-versions
+      # repo. Suite scheduler checks the build status to schedule
+      # suites.
+      self._run.attrs.manifest_manager.UpdateStatus(
+          success_map=self._GetBuilderSuccessMap(), message=self.message,
+          dashboard_url=self.ConstructDashboardURL())
 
 
 class ImportantBuilderFailedException(failures_lib.StepFailure):
@@ -257,8 +261,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
           'Please check the logs of these builders for details.']))
 
   def PerformStage(self):
-    if not self.success:
-      self.message = self.GetBuildFailureMessage()
+    super(MasterSlaveSyncCompletionStage, self).PerformStage()
 
     # Upload our pass/fail status to Google Storage.
     self._run.attrs.manifest_manager.UploadStatus(
@@ -560,13 +563,6 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     sanity_check_slaves = sanity_check_slaves or []
     return not any([x in slave_statuses and slave_statuses[x].Failed() for
                     x in sanity_check_slaves])
-
-  def PerformStage(self):
-    super(CommitQueueCompletionStage, self).PerformStage()
-
-    self._run.attrs.manifest_manager.UpdateStatus(
-        success_map=self._GetBuilderSuccessMap(), message=self.message,
-        dashboard_url=self.ConstructDashboardURL())
 
 
 class PreCQCompletionStage(generic_stages.BuilderStage):
