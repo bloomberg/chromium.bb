@@ -50,7 +50,7 @@ public:
 
     ChunkType read(ExceptionState*);
     ScriptPromise wait(ScriptState*);
-    // FIXME: Implement ScriptPromise cancel();
+    ScriptPromise cancel(ScriptState*, ScriptValue reason);
     ScriptPromise closed(ScriptState*);
 
     bool enqueue(const ChunkType&);

@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptFunction.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
@@ -128,6 +129,34 @@ ScriptPromise ReadableStream::wait(ScriptState* scriptState)
     if (m_state == Waiting)
         callOrSchedulePull();
     return m_wait->promise(scriptState->world());
+}
+
+ScriptPromise ReadableStream::cancel(ScriptState* scriptState, ScriptValue reason)
+{
+    if (m_state == Errored) {
+        RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+        ScriptPromise promise = resolver->promise();
+        resolver->reject(m_exception);
+        return promise;
+    }
+    if (m_state == Closed)
+        return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
+
+    if (m_state == Waiting) {
+        if (m_wait->state() == m_wait->Pending)
+            m_wait->resolve(V8UndefinedType());
+    } else {
+        ASSERT(m_state == Readable);
+        // FIXME: Use reset here.
+        // m_wait->reset();
+        if (m_wait->state() == m_wait->Pending)
+            m_wait->resolve(V8UndefinedType());
+    }
+
+    m_queue.clear();
+    m_state = Closed;
+    m_closed->resolve(V8UndefinedType());
+    return m_source->cancelSource(scriptState, reason);
 }
 
 ScriptPromise ReadableStream::closed(ScriptState* scriptState)
