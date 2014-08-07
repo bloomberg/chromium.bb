@@ -305,8 +305,6 @@ void WorkerThread::cleanup()
 
     // Clean up PlatformThreadData before WTF::WTFThreadData goes away!
     PlatformThreadData::current().destroy();
-
-    deref();
 }
 
 class WorkerThreadShutdownFinishTask : public ExecutionContextTask {
@@ -380,10 +378,6 @@ void WorkerThread::stop()
     m_debuggerMessageQueue.kill();
     postTask(WorkerThreadShutdownStartTask::create());
     m_terminated = true;
-
-    // This manual ref() protects |this| object until we complete all the shutdown tasks.
-    // The corresponding deref() is at the very end of WorkerThread::cleanup().
-    ref();
 }
 
 bool WorkerThread::isCurrentThread() const
