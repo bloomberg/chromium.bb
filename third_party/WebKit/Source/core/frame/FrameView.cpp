@@ -1626,7 +1626,7 @@ HostWindow* FrameView::hostWindow() const
 void FrameView::contentRectangleForPaintInvalidation(const IntRect& r)
 {
     ASSERT(paintInvalidationIsAllowed());
-    ASSERT(!m_frame->owner());
+    ASSERT(!m_frame->ownerRenderer());
 
     if (m_isTrackingPaintInvalidations) {
         IntRect paintInvalidationRect = r;
