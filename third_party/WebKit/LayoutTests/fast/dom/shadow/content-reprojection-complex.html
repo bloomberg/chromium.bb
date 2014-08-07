@@ -13,10 +13,10 @@
 
 <script>
 var shadowRoot1 = host1.createShadowRoot();
-shadowRoot1.innerHTML = '<div id="host2"><content select=".A"></content><shadow><content></content></shadow><div class="A">A</div></div>';
+shadowRoot1.innerHTML = '<div id="host2"><content select=".A"></content><shadow></shadow><div class="A">A</div></div>';
 
 var shadowRoot2 = shadowRoot1.getElementById('host2').createShadowRoot();
-shadowRoot2.innerHTML = '<div><h2>A</h2><content select=".A"></content><h2>B</h2><shadow><content></content></shadow></div>'
+shadowRoot2.innerHTML = '<div><h2>A</h2><content select=".A"></content><h2>B</h2><shadow></shadow></div>'
 </script>
 
 </html>

@@ -13,19 +13,19 @@
 jsTestIsAsync = true;
 
 var shadowRoot11 = host1.createShadowRoot();
-shadowRoot11.innerHTML = '<div></div><shadow><content></content></shadow>';
+shadowRoot11.innerHTML = '<div></div><shadow></shadow>';
 var div1 = shadowRoot11.firstChild;
 var shadow1 = shadowRoot11.lastChild;
 
 var shadowRoot12 = host1.createShadowRoot();
-shadowRoot12.innerHTML = '<div><shadow><content></content></shadow></div>';
+shadowRoot12.innerHTML = '<div><shadow></shadow></div>';
 var host2 = shadowRoot12.firstChild;
 
 var shadowRoot21 = host2.createShadowRoot();
 shadowRoot21.innerHTML = '<content></content>';
 
 var shadowRoot22 = host2.createShadowRoot();
-shadowRoot22.innerHTML = '<div><shadow><content></content></shadow></div>';
+shadowRoot22.innerHTML = '<div><shadow></shadow></div>';
 var host3 = shadowRoot22.firstChild;
 
 var shadowRoot31 = host3.createShadowRoot();

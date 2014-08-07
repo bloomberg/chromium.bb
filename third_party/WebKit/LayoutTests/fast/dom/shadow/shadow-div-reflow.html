@@ -19,10 +19,10 @@ if (window.internals)
 
 var host = document.getElementById("host");
 var shadow1 = host.createShadowRoot();
-shadow1.innerHTML = "<div><shadow><content></content></shadow><div></div></div>";
+shadow1.innerHTML = "<div><shadow></shadow><div></div></div>";
 var shadow2 = host.createShadowRoot();
 shadow2.innerHTML = "<section>"
-                 +   "<shadow><content></content></shadow>"
+                 +   "<shadow></shadow>"
                  +   "<div>second line follows.</div>"
                  + "</section>";
 host.focus();

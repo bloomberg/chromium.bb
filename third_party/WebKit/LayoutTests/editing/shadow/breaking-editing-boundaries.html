@@ -14,11 +14,11 @@ This is because the start position of Selection comes after the end position of 
 
 <script>
 var shadowRoot = host.createShadowRoot();
-shadowRoot.innerHTML = "<span id='shadow-host'>before shadow<shadow id='shadow'><content></content></shadow>after shadow</span>"
+shadowRoot.innerHTML = "<span id='shadow-host'>before shadow<shadow id='shadow'></shadow>after shadow</span>"
 
 var nestedShadowHost = shadowRoot.getElementById('shadow-host');
 var nestedShadowRoot = nestedShadowHost.createShadowRoot();
-nestedShadowRoot.innerHTML = "<span contenteditable>before nested<shadow><content></content></shadow>after nested</span>"
+nestedShadowRoot.innerHTML = "<span contenteditable>before nested<shadow></shadow>after nested</span>"
 
 // This should not cause a crash.
 eventSender.mouseMoveTo(target.offsetLeft - 10, target.offsetTop + target.offsetHeight / 2);

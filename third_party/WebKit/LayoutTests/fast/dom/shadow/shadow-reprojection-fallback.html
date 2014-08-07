@@ -11,7 +11,7 @@ var shadowRoot2 = host1.createShadowRoot();
 shadowRoot2.innerHTML = '<shadow></shadow><content></content><shadow><div>Should not be selected</div></shadow>';
 
 var shadowRoot3 = host1.createShadowRoot();
-shadowRoot3.innerHTML = '<div id="host4"><shadow><content></content></shadow><shadow><div>Should not be selected</div></shadow><span>Not rendered (1)</span><shadow><span>Not rendered (2)</span></shadow></div>';
+shadowRoot3.innerHTML = '<div id="host4"><shadow></shadow><shadow><div>Should not be selected</div></shadow><span>Not rendered (1)</span><shadow><span>Not rendered (2)</span></shadow></div>';
 
 var host4 = shadowRoot3.getElementById('host4');
 var shadowRoot4 = host4.createShadowRoot();

@@ -18,7 +18,7 @@ if (window.testRunner)
     testRunner.waitUntilDone();
 
 var shadowRoot1 = host1.createShadowRoot();
-shadowRoot1.innerHTML = '<div id="host2"><shadow><content></content></shadow></div>';
+shadowRoot1.innerHTML = '<div id="host2"><shadow></shadow></div>';
 
 var host2 = shadowRoot1.getElementById('host2');
 var shadowRoot2 = host2.createShadowRoot();

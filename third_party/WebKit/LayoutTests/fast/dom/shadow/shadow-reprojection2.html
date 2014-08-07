@@ -5,10 +5,10 @@
 
 <script>
 var shadowRoot1 = host1.createShadowRoot();
-shadowRoot1.innerHTML = '<shadow><content></content></shadow>';
+shadowRoot1.innerHTML = '<shadow></shadow>';
 
 var shadowRoot2 = host1.createShadowRoot();
-shadowRoot2.innerHTML = '<div id="host3"><shadow><content></content></shadow></div>';
+shadowRoot2.innerHTML = '<div id="host3"><shadow></shadow></div>';
 
 var host3 = shadowRoot2.getElementById('host3');
 var shadowRoot3 = host3.createShadowRoot();
