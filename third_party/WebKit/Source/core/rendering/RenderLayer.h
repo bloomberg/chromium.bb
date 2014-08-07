@@ -376,23 +376,6 @@ public:
 
     bool isInTopLayer() const;
 
-    enum ViewportConstrainedNotCompositedReason {
-        NoNotCompositedReason = 0,
-        NotCompositedForBoundsOutOfView,
-        NotCompositedForNonViewContainer,
-        NotCompositedForNoVisibleContent,
-        NotCompositedForUnscrollableAncestors,
-        NumNotCompositedReasons,
-
-        // This is the number of bits used to store the viewport constrained not composited
-        // reasons. We define this constant since sizeof won't return the number of bits, and we
-        // shouldn't duplicate the constant.
-        ViewportConstrainedNotCompositedReasonBits = 3
-    };
-
-    void setViewportConstrainedNotCompositedReason(ViewportConstrainedNotCompositedReason reason) { m_viewportConstrainedNotCompositedReason = reason; }
-    ViewportConstrainedNotCompositedReason viewportConstrainedNotCompositedReason() const { ASSERT(isAllowedToQueryCompositingState()); return static_cast<ViewportConstrainedNotCompositedReason>(m_viewportConstrainedNotCompositedReason); }
-
     bool scrollsWithViewport() const;
     bool scrollsWithRespectTo(const RenderLayer*) const;
 
@@ -712,9 +695,6 @@ private:
     // True if this render layer just lost its grouped mapping due to the CompositedLayerMapping being destroyed,
     // and we don't yet know to what graphics layer this RenderLayer will be assigned.
     unsigned m_lostGroupedMapping : 1;
-
-    // The reason, if any exists, that a fixed-position layer is chosen not to be composited.
-    unsigned m_viewportConstrainedNotCompositedReason : ViewportConstrainedNotCompositedReasonBits;
 
     RenderLayerModelObject* m_renderer;
 

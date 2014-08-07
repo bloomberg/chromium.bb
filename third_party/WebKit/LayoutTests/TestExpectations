@@ -481,10 +481,6 @@ crbug.com/293932 [ Android ] svg/canvas/canvas-pattern-svg.html [ ImageOnlyFailu
 crbug.com/293932 [ Android ] css3/images/optimize-contrast-image.html [ ImageOnlyFailure Timeout Pass ]
 crbug.com/293932 [ Android ] svg/as-background-image/svg-width-100p-as-background.html [ ImageOnlyFailure Pass ]
 
-# Needs triaging.
-crbug.com/307781 [ Android ] compositing/layer-creation/fixed-position-out-of-view.html [ Failure ]
-crbug.com/307781 [ Android ] svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.xhtml [ Failure ]
-
 # Flaky timeouts on android
 crbug.com/307777 [ Android ] accessibility/aria-labelledby-on-input.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] compositing/backing/no-backing-foreground-layer.html [ Timeout Pass ]
@@ -1263,6 +1259,23 @@ crbug.com/392046 [ Win ] fast/text/whitespace/018.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/ruby/select-ruby.html [ Pass Failure ]
 crbug.com/392046 [ Win ] scrollbars/rtl/overflow-scroll-rtl.html [ Pass ImageOnlyFailure ]
 crbug.com/392046 [ Win ] fast/parser/fonts.html [ Pass Failure ]
+
+Bug(abarth) compositing/layer-creation/fixed-position-change-out-of-view-in-view.html [ NeedsRebaseline ]
+Bug(abarth) compositing/layer-creation/fixed-position-no-content.html [ NeedsRebaseline ]
+Bug(abarth) compositing/layer-creation/fixed-position-nonscrollable-body-mismatch-containers.html [ NeedsRebaseline ]
+Bug(abarth) compositing/layer-creation/fixed-position-out-of-view-scaled-scroll.html [ NeedsRebaseline ]
+Bug(abarth) compositing/layer-creation/fixed-position-out-of-view-scaled.html [ NeedsRebaseline ]
+Bug(abarth) compositing/layer-creation/fixed-position-out-of-view.html [ NeedsRebaseline ]
+Bug(abarth) compositing/repaint/scroll-fixed-layer-no-content.html [ NeedsRebaseline ]
+Bug(abarth) compositing/repaint/scroll-fixed-layer-out-of-view.html [ NeedsRebaseline ]
+Bug(abarth) virtual/softwarecompositing/layer-creation/fixed-position-change-out-of-view-in-view.html [ NeedsRebaseline ]
+Bug(abarth) virtual/softwarecompositing/layer-creation/fixed-position-no-content.html [ NeedsRebaseline ]
+Bug(abarth) virtual/softwarecompositing/layer-creation/fixed-position-nonscrollable-body-mismatch-containers.html [ NeedsRebaseline ]
+Bug(abarth) virtual/softwarecompositing/layer-creation/fixed-position-out-of-view-scaled-scroll.html [ NeedsRebaseline ]
+Bug(abarth) virtual/softwarecompositing/layer-creation/fixed-position-out-of-view-scaled.html [ NeedsRebaseline ]
+Bug(abarth) virtual/softwarecompositing/layer-creation/fixed-position-out-of-view.html [ NeedsRebaseline ]
+Bug(abarth) virtual/softwarecompositing/repaint/scroll-fixed-layer-no-content.html [ NeedsRebaseline ]
+Bug(abarth) virtual/softwarecompositing/repaint/scroll-fixed-layer-out-of-view.html [ NeedsRebaseline ]
 
 crbug.com/392095 webaudio/realtimeanalyser-fft-scaling.html [ Pass Failure ]
 

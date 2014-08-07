@@ -179,10 +179,6 @@ private:
     void assertNoUnresolvedDirtyBits();
 #endif
 
-    // Make updates to the layer based on viewport-constrained properties such as position:fixed. This can in turn affect
-    // compositing.
-    bool updateLayerIfViewportConstrained(RenderLayer*);
-
     // GraphicsLayerClient implementation
     virtual void notifyAnimationStarted(const GraphicsLayer*, double) OVERRIDE { }
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect&) OVERRIDE;

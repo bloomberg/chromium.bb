@@ -373,7 +373,6 @@ void RenderLayerCompositor::updateIfNeeded()
 bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* layer, const CompositingStateTransitionType compositedLayerUpdate)
 {
     bool compositedLayerMappingChanged = false;
-    bool nonCompositedReasonChanged = updateLayerIfViewportConstrained(layer);
 
     // FIXME: It would be nice to directly use the layer's compositing reason,
     // but allocateOrClearCompositedLayerMapping also gets called without having updated compositing
@@ -443,25 +442,12 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
 
     // If a fixed position layer gained/lost a compositedLayerMapping or the reason not compositing it changed,
     // the scrolling coordinator needs to recalculate whether it can do fast scrolling.
-    if (compositedLayerMappingChanged || nonCompositedReasonChanged) {
+    if (compositedLayerMappingChanged) {
         if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
             scrollingCoordinator->frameViewFixedObjectsDidChange(m_renderView.frameView());
     }
 
-    return compositedLayerMappingChanged || nonCompositedReasonChanged;
-}
-
-bool RenderLayerCompositor::updateLayerIfViewportConstrained(RenderLayer* layer)
-{
-    RenderLayer::ViewportConstrainedNotCompositedReason viewportConstrainedNotCompositedReason = RenderLayer::NoNotCompositedReason;
-    m_compositingReasonFinder.requiresCompositingForPositionFixed(layer->renderer(), layer, &viewportConstrainedNotCompositedReason);
-
-    if (layer->viewportConstrainedNotCompositedReason() != viewportConstrainedNotCompositedReason) {
-        ASSERT(viewportConstrainedNotCompositedReason == RenderLayer::NoNotCompositedReason || layer->renderer()->style()->position() == FixedPosition);
-        layer->setViewportConstrainedNotCompositedReason(viewportConstrainedNotCompositedReason);
-        return true;
-    }
-    return false;
+    return compositedLayerMappingChanged;
 }
 
 void RenderLayerCompositor::repaintOnCompositingChange(RenderLayer* layer)

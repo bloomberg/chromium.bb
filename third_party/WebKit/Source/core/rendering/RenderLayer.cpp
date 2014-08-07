@@ -128,7 +128,6 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
     , m_hasNonCompositedChild(false)
     , m_shouldIsolateCompositedDescendants(false)
     , m_lostGroupedMapping(false)
-    , m_viewportConstrainedNotCompositedReason(NoNotCompositedReason)
     , m_renderer(renderer)
     , m_parent(0)
     , m_previous(0)
@@ -1669,10 +1668,6 @@ void RenderLayer::paintLayer(GraphicsContext* context, const LayerPaintingInfo& 
             // FIXME: why isn't the code here global, as opposed to being set on each paintLayer() call?
             paintFlags |= PaintLayerUncachedClipRects;
         }
-    } else if (viewportConstrainedNotCompositedReason() == NotCompositedForBoundsOutOfView) {
-        // Don't paint out-of-view viewport constrained layers (when doing prepainting) because they will never be visible
-        // unless their position or viewport size is changed.
-        return;
     }
 
     // Non self-painting leaf layers don't need to be painted as their renderer() should properly paint itself.
@@ -3741,8 +3736,6 @@ void RenderLayer::computeSelfHitTestRects(LayerHitTestRects& rects) const
 
 DisableCompositingQueryAsserts::DisableCompositingQueryAsserts()
     : m_disabler(gCompositingQueryMode, CompositingQueriesAreAllowed) { }
-
-COMPILE_ASSERT(1 << RenderLayer::ViewportConstrainedNotCompositedReasonBits >= RenderLayer::NumNotCompositedReasons, too_many_viewport_constrained_not_compositing_reasons);
 
 } // namespace blink
 

@@ -25,9 +25,7 @@ public:
     void updateTriggers();
 
     bool hasOverflowScrollTrigger() const;
-
     bool requiresCompositingForScrollableFrame() const;
-    bool requiresCompositingForPositionFixed(RenderObject*, const RenderLayer*, RenderLayer::ViewportConstrainedNotCompositedReason*) const;
 
 private:
     bool isMainFrame() const;
@@ -36,6 +34,7 @@ private:
 
     bool requiresCompositingForTransform(RenderObject*) const;
     bool requiresCompositingForAnimation(RenderStyle*) const;
+    bool requiresCompositingForPositionFixed(RenderObject*) const;
 
     RenderView& m_renderView;
     CompositingTriggerFlags m_compositingTriggers;

@@ -1279,12 +1279,6 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
         if (layer->compositingState() == PaintsIntoOwnBacking)
             continue;
 
-        if (layer->viewportConstrainedNotCompositedReason() == RenderLayer::NotCompositedForBoundsOutOfView
-            || layer->viewportConstrainedNotCompositedReason() == RenderLayer::NotCompositedForNoVisibleContent) {
-            // Don't invalidate for invisible fixed layers.
-            continue;
-        }
-
         if (layer->hasAncestorWithFilterOutsets()) {
             // If the fixed layer has a blur/drop-shadow filter applied on at least one of its parents, we cannot
             // scroll using the fast path, otherwise the outsets of the filter will be moved around the page.
@@ -1585,11 +1579,6 @@ void FrameView::updateFixedElementPaintInvalidationRectsAfterScroll()
 
         // Don't need to do this for composited fixed items.
         if (layer->compositingState() == PaintsIntoOwnBacking)
-            continue;
-
-        // Also don't need to do this for invisible items.
-        if (layer->viewportConstrainedNotCompositedReason() == RenderLayer::NotCompositedForBoundsOutOfView
-            || layer->viewportConstrainedNotCompositedReason() == RenderLayer::NotCompositedForNoVisibleContent)
             continue;
 
         layer->repainter().computeRepaintRectsIncludingNonCompositingDescendants();
