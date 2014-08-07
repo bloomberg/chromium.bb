@@ -72,12 +72,21 @@ class BASE_EXPORT WaitableEvent {
   // is not a manual reset event, then this test will cause a reset.
   bool IsSignaled();
 
-  // Wait indefinitely for the event to be signaled.
+  // Wait indefinitely for the event to be signaled. Wait's return "happens
+  // after" |Signal| has completed. This means that it's safe for a
+  // WaitableEvent to synchronise its own destruction, like this:
+  //
+  //   WaitableEvent *e = new WaitableEvent;
+  //   SendToOtherThread(e);
+  //   e->Wait();
+  //   delete e;
   void Wait();
 
   // Wait up until max_time has passed for the event to be signaled.  Returns
   // true if the event was signaled.  If this method returns false, then it
   // does not necessarily mean that max_time was exceeded.
+  //
+  // TimedWait can synchronise its own destruction like |Wait|.
   bool TimedWait(const TimeDelta& max_time);
 
 #if defined(OS_WIN)
@@ -91,7 +100,8 @@ class BASE_EXPORT WaitableEvent {
   // returns: the index of a WaitableEvent which has been signaled.
   //
   // You MUST NOT delete any of the WaitableEvent objects while this wait is
-  // happening.
+  // happening, however WaitMany's return "happens after" the |Signal| call
+  // that caused it has completed, like |Wait|.
   static size_t WaitMany(WaitableEvent** waitables, size_t count);
 
   // For asynchronous waiting, see WaitableEventWatcher

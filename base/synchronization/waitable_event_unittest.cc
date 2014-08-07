@@ -79,7 +79,7 @@ class WaitableEventSignaler : public PlatformThread::Delegate {
   }
 
   virtual void ThreadMain() OVERRIDE {
-    PlatformThread::Sleep(TimeDelta::FromSeconds(static_cast<int>(seconds_)));
+    PlatformThread::Sleep(TimeDelta::FromSecondsD(seconds_));
     ev_->Signal();
   }
 
@@ -88,21 +88,43 @@ class WaitableEventSignaler : public PlatformThread::Delegate {
   WaitableEvent *const ev_;
 };
 
+TEST(WaitableEventTest, WaitAndDelete) {
+  // This test tests that if a WaitableEvent can be safely deleted
+  // when |Wait| is done without additional synchrnization.
+  // If this test crashes, it is a bug.
+
+  WaitableEvent* ev = new WaitableEvent(false, false);
+
+  WaitableEventSignaler signaler(0.01, ev);
+  PlatformThreadHandle thread;
+  PlatformThread::Create(0, &signaler, &thread);
+
+  ev->Wait();
+  delete ev;
+
+  PlatformThread::Join(thread);
+}
+
 TEST(WaitableEventTest, WaitMany) {
+  // This test tests that if a WaitableEvent can be safely deleted
+  // when |WaitMany| is done without additional synchrnization.
+  // If this test crashes, it is a bug.
+
   WaitableEvent* ev[5];
   for (unsigned i = 0; i < 5; ++i)
     ev[i] = new WaitableEvent(false, false);
 
-  WaitableEventSignaler signaler(0.1, ev[2]);
+  WaitableEventSignaler signaler(0.01, ev[2]);
   PlatformThreadHandle thread;
   PlatformThread::Create(0, &signaler, &thread);
 
-  EXPECT_EQ(WaitableEvent::WaitMany(ev, 5), 2u);
-
-  PlatformThread::Join(thread);
+  size_t index = WaitableEvent::WaitMany(ev, 5);
 
   for (unsigned i = 0; i < 5; ++i)
     delete ev[i];
+
+  PlatformThread::Join(thread);
+  EXPECT_EQ(2u, index);
 }
 
 }  // namespace base
