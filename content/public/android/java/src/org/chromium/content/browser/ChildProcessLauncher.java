@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
+import android.os.RemoteException;
 import android.util.Log;
 import android.util.Pair;
 import android.view.Surface;
@@ -529,6 +530,23 @@ public class ChildProcessLauncher {
     @VisibleForTesting
     static int connectedServicesCountForTesting() {
         return sServiceMap.size();
+    }
+
+    /**
+     * Kills the child process for testing.
+     * @return true iff the process was killed as expected
+     */
+    @VisibleForTesting
+    public static boolean crashProcessForTesting(int pid) {
+        if (sServiceMap.get(pid) == null) return false;
+
+        try {
+            ((ChildProcessConnectionImpl) sServiceMap.get(pid)).crashServiceForTesting();
+        } catch (RemoteException ex) {
+            return false;
+        }
+
+        return true;
     }
 
     private static native void nativeOnChildProcessStarted(long clientContext, int pid);
