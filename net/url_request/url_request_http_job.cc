@@ -428,8 +428,6 @@ void URLRequestHttpJob::StartTransactionInternal() {
         priority_, &transaction_);
 
     if (rv == OK && request_info_.url.SchemeIsWSOrWSS()) {
-      // TODO(ricea): Implement WebSocket throttling semantics as defined in
-      // RFC6455 Section 4.1.
       base::SupportsUserData::Data* data = request_->GetUserData(
           WebSocketHandshakeStreamBase::CreateHelper::DataKey());
       if (data) {
