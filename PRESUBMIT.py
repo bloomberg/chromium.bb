@@ -915,16 +915,17 @@ def _CheckSpamLogging(input_api, output_api):
                 input_api.DEFAULT_BLACK_LIST +
                 (r"^base[\\\/]logging\.h$",
                  r"^base[\\\/]logging\.cc$",
-                 r"^cloud_print[\\\/]",
-                 r"^chrome_elf[\\\/]dll_hash[\\\/]dll_hash_main\.cc$",
                  r"^chrome[\\\/]app[\\\/]chrome_main_delegate\.cc$",
                  r"^chrome[\\\/]browser[\\\/]chrome_browser_main\.cc$",
                  r"^chrome[\\\/]browser[\\\/]ui[\\\/]startup[\\\/]"
                      r"startup_browser_creator\.cc$",
                  r"^chrome[\\\/]installer[\\\/]setup[\\\/].*",
-                 r"^extensions[\\\/]renderer[\\\/]logging_native_handler\.cc$",
+                 r"^chrome_elf[\\\/]dll_hash[\\\/]dll_hash_main\.cc$",
+                 r"^chromecast[\\\/]",
+                 r"^cloud_print[\\\/]",
                  r"^content[\\\/]common[\\\/]gpu[\\\/]client[\\\/]"
                      r"gl_helper_benchmark\.cc$",
+                 r"^extensions[\\\/]renderer[\\\/]logging_native_handler\.cc$",
                  r"^native_client_sdk[\\\/]",
                  r"^remoting[\\\/]base[\\\/]logging\.h$",
                  r"^remoting[\\\/]host[\\\/].*",
