@@ -1572,7 +1572,7 @@ def GetPreferredTryMasters(project, change):
   if all(re.search('\.(m|mm)$|(^|[/_])mac[/_.]', f) for f in files):
     return GetDefaultTryConfigs([
         'mac_chromium_compile_dbg',
-        'mac_chromium_rel',
+        'mac_chromium_rel_swarming',
     ])
   if all(re.search('(^|[/_])win[/_.]', f) for f in files):
     return GetDefaultTryConfigs(['win_chromium_dbg', 'win_chromium_rel'])
@@ -1591,13 +1591,13 @@ def GetPreferredTryMasters(project, change):
       'android_dbg',
       'ios_dbg_simulator',
       'ios_rel_device',
-      'linux_chromium_chromeos_rel',
+      'linux_chromium_chromeos_rel_swarming',
       'linux_chromium_clang_dbg',
       'linux_chromium_gn_rel',
       'linux_chromium_rel_swarming',
       'linux_gpu',
       'mac_chromium_compile_dbg',
-      'mac_chromium_rel',
+      'mac_chromium_rel_swarming',
       'mac_gpu',
       'win_chromium_compile_dbg',
       'win_chromium_rel',
