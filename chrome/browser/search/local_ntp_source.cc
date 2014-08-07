@@ -35,8 +35,8 @@ namespace {
 const char kMaterialDesignNTPFieldTrialName[] = "MaterialDesignNTP";
 const char kMaterialDesignNTPFieldTrialEnabledPrefix[] = "Enabled";
 
-// Class name to be used for the new design in local resources.
-const char kMaterialDesignNTPClassName[] = "md";
+// Name to be used for the new design in local resources.
+const char kMaterialDesignNTPName[] = "md";
 
 // Signifies a locally constructed resource, i.e. not from grit/.
 const int kLocalResource = -1;
@@ -127,6 +127,11 @@ std::string GetConfigData(Profile* profile) {
   config_data.SetBoolean("isGooglePage",
                          DefaultSearchProviderIsGoogle(profile) &&
                          chrome::ShouldShowGoogleLocalNTP());
+  if (IsMaterialDesignEnabled()) {
+    scoped_ptr<base::Value> design_value(
+        new base::StringValue(kMaterialDesignNTPName));
+    config_data.Set("ntpDesignName", design_value.release());
+  }
 
   // Serialize the dictionary.
   std::string js_text;
@@ -171,7 +176,7 @@ void LocalNtpSource::StartDataRequest(
   if (stripped_path == kLocalNTPFilename) {
     SendResourceWithClass(
         IDR_LOCAL_NTP_HTML,
-        IsMaterialDesignEnabled() ? kMaterialDesignNTPClassName : "",
+        IsMaterialDesignEnabled() ? kMaterialDesignNTPName : "",
         callback);
     return;
   }
