@@ -1162,8 +1162,12 @@ want to set 'managed': False in .gclient.
     else:
       self._enforced_os = tuple(set(self._enforced_os).union(target_os))
 
-    gclient_scm.GitWrapper.cache_dir = config_dict.get('cache_dir')
-    git_cache.Mirror.SetCachePath(config_dict.get('cache_dir'))
+    cache_dir = config_dict.get('cache_dir')
+    if cache_dir:
+      cache_dir = os.path.join(self.root_dir, cache_dir)
+      cache_dir = os.path.abspath(cache_dir)
+    gclient_scm.GitWrapper.cache_dir = cache_dir
+    git_cache.Mirror.SetCachePath(cache_dir)
 
     if not target_os and config_dict.get('target_os_only', False):
       raise gclient_utils.Error('Can\'t use target_os_only if target_os is '
