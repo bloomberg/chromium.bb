@@ -74,13 +74,11 @@ typedef unsigned PaintLayerFlags;
 struct LayerPaintingInfo {
     LayerPaintingInfo(RenderLayer* inRootLayer, const LayoutRect& inDirtyRect,
         PaintBehavior inPaintBehavior, const LayoutSize& inSubPixelAccumulation,
-        RenderObject* inPaintingRoot = 0,
-        OverlapTestRequestMap* inOverlapTestRequests = 0)
+        RenderObject* inPaintingRoot = 0)
         : rootLayer(inRootLayer)
         , paintingRoot(inPaintingRoot)
         , paintDirtyRect(inDirtyRect)
         , subPixelAccumulation(inSubPixelAccumulation)
-        , overlapTestRequests(inOverlapTestRequests)
         , paintBehavior(inPaintBehavior)
         , clipToDirtyRect(true)
     { }
@@ -88,7 +86,6 @@ struct LayerPaintingInfo {
     RenderObject* paintingRoot; // only paint descendants of this object
     LayoutRect paintDirtyRect; // relative to rootLayer;
     LayoutSize subPixelAccumulation;
-    OverlapTestRequestMap* overlapTestRequests; // May be null.
     PaintBehavior paintBehavior;
     bool clipToDirtyRect;
 };

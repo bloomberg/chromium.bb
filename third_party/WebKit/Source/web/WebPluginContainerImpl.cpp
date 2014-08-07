@@ -397,18 +397,6 @@ void WebPluginContainerImpl::invalidateRect(const WebRect& rect)
 
 void WebPluginContainerImpl::scrollRect(const WebRect& rect)
 {
-    Widget* parentWidget = parent();
-    if (parentWidget->isFrameView()) {
-        FrameView* parentFrameView = toFrameView(parentWidget);
-        if (!parentFrameView->isOverlapped()) {
-            // FIXME: parameter is unused. Remove once popups scroll like everything else.
-            static const IntRect dummy;
-            parent()->hostWindow()->scroll(dummy);
-            return;
-        }
-    }
-
-    // Use slow scrolling instead.
     invalidateRect(rect);
 }
 

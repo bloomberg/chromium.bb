@@ -162,11 +162,6 @@ void ScrollView::setCanHaveScrollbars(bool canScroll)
     setScrollbarModes(newHorizontalMode, newVerticalMode);
 }
 
-bool ScrollView::shouldAttemptToScrollUsingFastPath() const
-{
-    return true;
-}
-
 void ScrollView::setPaintsEntireContents(bool paintsEntireContents)
 {
     m_paintsEntireContents = paintsEntireContents;
@@ -558,7 +553,7 @@ void ScrollView::scrollContents(const IntSize& scrollDelta)
         window->invalidateContentsAndRootView(panScrollIconDirtyRect);
     }
 
-    if (!shouldAttemptToScrollUsingFastPath() || !scrollContentsFastPath(-scrollDelta, scrollViewRect, clipRect))
+    if (!scrollContentsFastPath(-scrollDelta, scrollViewRect, clipRect))
         scrollContentsSlowPath(updateRect);
 
     // Invalidate the overhang areas if they are visible.

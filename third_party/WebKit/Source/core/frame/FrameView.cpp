@@ -179,7 +179,6 @@ FrameView::~FrameView()
 
 void FrameView::reset()
 {
-    m_isOverlapped = false;
     m_contentIsOpaque = false;
     m_hasPendingLayout = false;
     m_layoutSubtreeRoot = 0;
@@ -1123,45 +1122,6 @@ void FrameView::adjustMediaTypeForPrinting(bool printing)
     }
 }
 
-bool FrameView::useSlowRepaints(bool considerOverlap) const
-{
-    // FIXME: It is incorrect to determine blit-scrolling eligibility using dirty compositing state.
-    // https://code.google.com/p/chromium/issues/detail?id=357345
-    DisableCompositingQueryAsserts disabler;
-
-    if (m_slowRepaintObjectCount > 0)
-        return true;
-
-    if (contentsInCompositedLayer())
-        return false;
-
-    // The chromium compositor does not support scrolling a non-composited frame within a composited page through
-    // the fast scrolling path, so force slow scrolling in that case.
-    if (m_frame->owner() && !hasCompositedContent() && m_frame->page() && m_frame->localFrameRoot()->view()->hasCompositedContent())
-        return true;
-
-    if (m_isOverlapped && considerOverlap)
-        return true;
-
-    if (!m_contentIsOpaque)
-        return true;
-
-    if (FrameView* parentView = parentFrameView())
-        return parentView->useSlowRepaints(considerOverlap);
-
-    return false;
-}
-
-bool FrameView::useSlowRepaintsIfNotOverlapped() const
-{
-    return useSlowRepaints(false);
-}
-
-bool FrameView::shouldAttemptToScrollUsingFastPath() const
-{
-    return !useSlowRepaints();
-}
-
 bool FrameView::contentsInCompositedLayer() const
 {
     RenderView* renderView = this->renderView();
@@ -1411,12 +1371,6 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
     }
 
     ScrollView::scrollContentsSlowPath(updateRect);
-}
-
-// Note that this gets called at painting time.
-void FrameView::setIsOverlapped(bool isOverlapped)
-{
-    m_isOverlapped = isOverlapped;
 }
 
 void FrameView::setContentIsOpaque(bool contentIsOpaque)

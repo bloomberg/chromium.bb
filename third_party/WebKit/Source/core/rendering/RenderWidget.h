@@ -37,8 +37,6 @@ public:
     void updateWidgetPosition();
     void widgetPositionsUpdated();
 
-    void setIsOverlapped(bool);
-
     void ref() { ++m_refCount; }
     void deref();
 

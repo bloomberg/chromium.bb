@@ -893,9 +893,7 @@ void RenderBoxModelObject::calculateBackgroundImageGeometry(const RenderLayerMod
     // FIXME: transforms spec says that fixed backgrounds behave like scroll inside transforms.
     bool fixedAttachment = fillLayer.attachment() == FixedBackgroundAttachment;
 
-    if (RuntimeEnabledFeatures::fastMobileScrollingEnabled()
-        && view()->frameView()
-        && view()->frameView()->shouldAttemptToScrollUsingFastPath()) {
+    if (RuntimeEnabledFeatures::fastMobileScrollingEnabled()) {
         // As a side effect of an optimization to blit on scroll, we do not honor the CSS
         // property "background-attachment: fixed" because it may result in rendering
         // artifacts. Note, these artifacts only appear if we are blitting on scroll of
