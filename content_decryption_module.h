@@ -160,9 +160,10 @@ struct SubsampleEntry {
 };
 
 // Represents an input buffer to be decrypted (and possibly decoded). It does
-// own any pointers in this struct.
-struct InputBuffer {
-  InputBuffer()
+// not own any pointers in this struct.
+// Deprecated: New CDM implementations should use InputBuffer.
+struct InputBuffer_1 {
+  InputBuffer_1()
       : data(NULL),
         data_size(0),
         data_offset(0),
@@ -190,6 +191,37 @@ struct InputBuffer {
 
   int64_t timestamp;  // Presentation timestamp in microseconds.
 };
+
+// Represents an input buffer to be decrypted (and possibly decoded). It does
+// not own any pointers in this struct.
+struct InputBuffer_2 {
+  InputBuffer_2()
+      : data(NULL),
+        data_size(0),
+        key_id(NULL),
+        key_id_size(0),
+        iv(NULL),
+        iv_size(0),
+        subsamples(NULL),
+        num_subsamples(0),
+        timestamp(0) {}
+
+  const uint8_t* data;  // Pointer to the beginning of the input data.
+  uint32_t data_size;  // Size (in bytes) of |data|.
+
+  const uint8_t* key_id;  // Key ID to identify the decryption key.
+  uint32_t key_id_size;  // Size (in bytes) of |key_id|.
+
+  const uint8_t* iv;  // Initialization vector.
+  uint32_t iv_size;  // Size (in bytes) of |iv|.
+
+  const struct SubsampleEntry* subsamples;
+  uint32_t num_subsamples;  // Number of subsamples in |subsamples|.
+
+  int64_t timestamp;  // Presentation timestamp in microseconds.
+};
+
+typedef InputBuffer_2 InputBuffer;
 
 struct AudioDecoderConfig {
   enum AudioCodec {
@@ -466,7 +498,7 @@ class ContentDecryptionModule_4 {
   // Returns kDecryptError if any other error happened.
   // If the return value is not kSuccess, |decrypted_buffer| should be ignored
   // by the caller.
-  virtual Status Decrypt(const InputBuffer& encrypted_buffer,
+  virtual Status Decrypt(const InputBuffer_1& encrypted_buffer,
                          DecryptedBlock* decrypted_buffer) = 0;
 
   // Initializes the CDM audio decoder with |audio_decoder_config|. This
@@ -521,7 +553,7 @@ class ContentDecryptionModule_4 {
   // Returns kDecodeError if any decoding error happened.
   // If the return value is not kSuccess, |video_frame| should be ignored by
   // the caller.
-  virtual Status DecryptAndDecodeFrame(const InputBuffer& encrypted_buffer,
+  virtual Status DecryptAndDecodeFrame(const InputBuffer_1& encrypted_buffer,
                                        VideoFrame* video_frame) = 0;
 
   // Decrypts the |encrypted_buffer| and decodes the decrypted buffer into
@@ -540,7 +572,7 @@ class ContentDecryptionModule_4 {
   // Returns kDecodeError if any decoding error happened.
   // If the return value is not kSuccess, |audio_frames| should be ignored by
   // the caller.
-  virtual Status DecryptAndDecodeSamples(const InputBuffer& encrypted_buffer,
+  virtual Status DecryptAndDecodeSamples(const InputBuffer_1& encrypted_buffer,
                                          AudioFrames* audio_frames) = 0;
 
   // Called by the host after a platform challenge was initiated via
@@ -630,7 +662,7 @@ class ContentDecryptionModule_5 {
   // Returns kDecryptError if any other error happened.
   // If the return value is not kSuccess, |decrypted_buffer| should be ignored
   // by the caller.
-  virtual Status Decrypt(const InputBuffer& encrypted_buffer,
+  virtual Status Decrypt(const InputBuffer_1& encrypted_buffer,
                          DecryptedBlock* decrypted_buffer) = 0;
 
   // Initializes the CDM audio decoder with |audio_decoder_config|. This
@@ -685,7 +717,7 @@ class ContentDecryptionModule_5 {
   // Returns kDecodeError if any decoding error happened.
   // If the return value is not kSuccess, |video_frame| should be ignored by
   // the caller.
-  virtual Status DecryptAndDecodeFrame(const InputBuffer& encrypted_buffer,
+  virtual Status DecryptAndDecodeFrame(const InputBuffer_1& encrypted_buffer,
                                        VideoFrame* video_frame) = 0;
 
   // Decrypts the |encrypted_buffer| and decodes the decrypted buffer into
@@ -704,7 +736,7 @@ class ContentDecryptionModule_5 {
   // Returns kDecodeError if any decoding error happened.
   // If the return value is not kSuccess, |audio_frames| should be ignored by
   // the caller.
-  virtual Status DecryptAndDecodeSamples(const InputBuffer& encrypted_buffer,
+  virtual Status DecryptAndDecodeSamples(const InputBuffer_1& encrypted_buffer,
                                          AudioFrames* audio_frames) = 0;
 
   // Called by the host after a platform challenge was initiated via
