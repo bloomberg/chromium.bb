@@ -267,13 +267,6 @@ using base::DenyFilePermission;
 using base::GetPermissionInfo;
 using base::RestorePermissionInfo;
 
-std::wstring FilePathAsWString(const base::FilePath& path) {
-  return path.value();
-}
-base::FilePath WStringAsFilePath(const std::wstring& path) {
-  return base::FilePath(path);
-}
-
 bool MakeFileUnreadable(const base::FilePath& path) {
   return DenyFilePermission(path, GENERIC_READ);
 }

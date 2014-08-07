@@ -32,14 +32,29 @@ struct GenerateFilenameCase {
   const wchar_t* expected_filename;
 };
 
+// The expected filenames are coded as wchar_t for convenience.
+std::wstring FilePathAsWString(const base::FilePath& path) {
+#if defined(OS_WIN)
+  return path.value();
+#else
+  return base::UTF8ToWide(path.value());
+#endif
+}
+base::FilePath WStringAsFilePath(const std::wstring& str) {
+#if defined(OS_WIN)
+  return base::FilePath(str);
+#else
+  return base::FilePath(base::WideToUTF8(str));
+#endif
+}
+
 void RunGenerateFileNameTestCase(const GenerateFilenameCase* test_case) {
   std::string default_filename(base::WideToUTF8(test_case->default_filename));
   base::FilePath file_path = GenerateFileName(
       GURL(test_case->url), test_case->content_disp_header,
       test_case->referrer_charset, test_case->suggested_filename,
       test_case->mime_type, default_filename);
-  EXPECT_EQ(test_case->expected_filename,
-            file_util::FilePathAsWString(file_path))
+  EXPECT_EQ(test_case->expected_filename, FilePathAsWString(file_path))
       << "test case at line number: " << test_case->lineno;
 }
 
@@ -171,12 +186,12 @@ TEST(FilenameUtilTest, FileURLConversion) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(round_trip_cases); i++) {
     // convert to the file URL
     GURL file_url(FilePathToFileURL(
-                      file_util::WStringAsFilePath(round_trip_cases[i].file)));
+                      WStringAsFilePath(round_trip_cases[i].file)));
     EXPECT_EQ(round_trip_cases[i].url, file_url.spec());
 
     // Back to the filename.
     EXPECT_TRUE(FileURLToFilePath(file_url, &output));
-    EXPECT_EQ(round_trip_cases[i].file, file_util::FilePathAsWString(output));
+    EXPECT_EQ(round_trip_cases[i].file, FilePathAsWString(output));
   }
 
   // Test that various file: URLs get decoded into the correct file type
@@ -215,7 +230,7 @@ TEST(FilenameUtilTest, FileURLConversion) {
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(url_cases); i++) {
     FileURLToFilePath(GURL(url_cases[i].url), &output);
-    EXPECT_EQ(url_cases[i].file, file_util::FilePathAsWString(output));
+    EXPECT_EQ(url_cases[i].file, FilePathAsWString(output));
   }
 
   // Unfortunately, UTF8ToWide discards invalid UTF8 input.

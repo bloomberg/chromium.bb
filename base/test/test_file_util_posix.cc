@@ -17,8 +17,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 
-using base::MakeAbsoluteFilePath;
-
 namespace base {
 
 namespace {
@@ -94,13 +92,6 @@ namespace file_util {
 using base::DenyFilePermission;
 using base::GetPermissionInfo;
 using base::RestorePermissionInfo;
-
-std::wstring FilePathAsWString(const base::FilePath& path) {
-  return base::UTF8ToWide(path.value());
-}
-base::FilePath WStringAsFilePath(const std::wstring& path) {
-  return base::FilePath(base::WideToUTF8(path));
-}
 
 bool MakeFileUnreadable(const base::FilePath& path) {
   return DenyFilePermission(path, S_IRUSR | S_IRGRP | S_IROTH);

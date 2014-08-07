@@ -52,12 +52,6 @@ bool HasInternetZoneIdentifier(const FilePath& full_path);
 // TODO(brettw) move all of this to the base namespace.
 namespace file_util {
 
-// In general it's not reliable to convert a FilePath to a wstring and we use
-// string16 elsewhere for Unicode strings, but in tests it is frequently
-// convenient to be able to compare paths to literals like L"foobar".
-std::wstring FilePathAsWString(const base::FilePath& path);
-base::FilePath WStringAsFilePath(const std::wstring& path);
-
 // For testing, make the file unreadable or unwritable.
 // In POSIX, this does not apply to the root user.
 bool MakeFileUnreadable(const base::FilePath& path) WARN_UNUSED_RESULT;
