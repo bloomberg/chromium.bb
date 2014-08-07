@@ -2147,25 +2147,8 @@ class ValidationPool(object):
     # If change is 'SUBMITTED' give gerrit some time to resolve that
     # to 'MERGED' or fail outright.
     if updated_change.status == 'SUBMITTED':
-
       def _Query():
-        # Check if it's submitted yet.
-        value = helper.QuerySingleRecord(change.gerrit_number)
-
-        # Sometimes Gerrit forgets to submit a change. See b/12111600 and
-        # http://crbug.com/386357. Poke Gerrit to make sure it didn't forget.
-        # TODO(davidjames): Remove this when the Gerrit bug is fixed.
-        if value and value.status == 'SUBMITTED':
-          try:
-            helper.SubmitChange(change, dryrun=self.dryrun)
-          except (gob_util.GOBError, gerrit.GerritException) as e:
-            # Gerrit reports CONFLICT when you hit the submit button multiple
-            # times for the same change. This is expected.
-            if getattr(e, 'http_status', None) != httplib.CONFLICT:
-              raise
-
-        return value
-
+        return helper.QuerySingleRecord(change.gerrit_number)
       def _Retry(value):
         return value and value.status == 'SUBMITTED'
 
@@ -2184,8 +2167,16 @@ class ValidationPool(object):
           'Change %s was submitted to gerrit without errors, but gerrit is'
           ' reporting it with status "%s" (expected "MERGED").',
           change.gerrit_number_str, updated_change.status)
-      logging.error('Most likely gerrit was unable to merge change %s.',
-                    change.gerrit_number_str)
+      if updated_change.status == 'SUBMITTED':
+        # So far we have never seen a SUBMITTED CL that did not eventually
+        # transition to MERGED.  If it is stuck on SUBMITTED treat as MERGED.
+        was_change_submitted = True
+        logging.info('Proceeding now with the assumption that change %s'
+                     ' will eventually transition to "MERGED".',
+                     change.gerrit_number_str)
+      else:
+        logging.error('Most likely gerrit was unable to merge change %s.',
+                      change.gerrit_number_str)
 
     if self._metadata:
       if was_change_submitted:
