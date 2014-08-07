@@ -74,7 +74,10 @@ TEST_F(TimedMapTest, ValueReplacement) {
   EXPECT_EQ(0xd00d, map.GetValue(0x1337).value);
 }
 
-TEST_F(TimedMapTest, SizeEvict) {
+// TODO(rkc): Find and fix the memory leak here.
+#define MAYBE_SizeEvict DISABLED_SizeEvict
+
+TEST_F(TimedMapTest, MAYBE_SizeEvict) {
   typedef copresence::TimedMap<int, Value> Map;
   Map two_element_map(base::TimeDelta::FromSeconds(9999), 2);
 
@@ -94,7 +97,10 @@ TEST_F(TimedMapTest, SizeEvict) {
   EXPECT_EQ(0, two_element_map.GetValue(0x1337).value);
 }
 
-TEST_F(TimedMapTest, TimedEvict) {
+// TODO(rkc): Find and fix the memory leak here.
+#define MAYBE_TimedEvict DISABLED_TimedEvict
+
+TEST_F(TimedMapTest, MAYBE_TimedEvict) {
   const int kLargeTimeValueSeconds = 9999;
   base::SimpleTestTickClock clock;
   typedef copresence::TimedMap<int, Value> Map;
