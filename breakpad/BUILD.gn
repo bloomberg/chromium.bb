@@ -31,6 +31,11 @@ config("client_config") {
   }
 }
 
+config("handler_config") {
+  include_dirs = [
+    "src",
+  ]
+}
 
 # minidump_stackwalk and minidump_dump are tool-type executables that do
 # not build on iOS.
@@ -656,5 +661,31 @@ if (is_ios) {
 if (is_win) {
   group("client") {
     direct_dependent_configs = [ ":client_config" ]
+  }
+
+  source_set("breakpad_handler") {
+    configs += [ ":handler_config" ]
+    if (is_win) {
+      direct_dependent_configs = [ ":handler_config" ]
+    }
+
+    defines = [ "BREAKPAD_NO_TERMINATE_THREAD" ]
+
+    sources = [
+      "src/client/windows/crash_generation/client_info.cc",
+      "src/client/windows/crash_generation/client_info.h",
+      "src/client/windows/crash_generation/crash_generation_client.cc",
+      "src/client/windows/crash_generation/crash_generation_client.h",
+      "src/client/windows/crash_generation/crash_generation_server.cc",
+      "src/client/windows/crash_generation/crash_generation_server.h",
+      "src/client/windows/handler/exception_handler.cc",
+      "src/client/windows/handler/exception_handler.h",
+      "src/common/windows/guid_string.cc",
+      "src/common/windows/guid_string.h",
+      "src/google_breakpad/common/minidump_format.h",
+      "src/client/windows/crash_generation/minidump_generator.cc",
+      "src/client/windows/crash_generation/minidump_generator.h",
+      "src/common/windows/string_utils-inl.h",
+    ]
   }
 }
