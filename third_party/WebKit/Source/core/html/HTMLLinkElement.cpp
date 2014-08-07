@@ -691,14 +691,12 @@ void LinkStyle::process()
         m_loading = true;
 
         bool mediaQueryMatches = true;
-        if (!m_owner->media().isEmpty()) {
-            LocalFrame* frame = loadingFrame();
-            if (Document* document = loadingFrame()->document()) {
-                RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(*document);
-                RefPtrWillBeRawPtr<MediaQuerySet> media = MediaQuerySet::create(m_owner->media());
-                MediaQueryEvaluator evaluator(frame);
-                mediaQueryMatches = evaluator.eval(media.get());
-            }
+        LocalFrame* frame = loadingFrame();
+        if (!m_owner->media().isEmpty() && frame && frame->document()) {
+            RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(*frame->document());
+            RefPtrWillBeRawPtr<MediaQuerySet> media = MediaQuerySet::create(m_owner->media());
+            MediaQueryEvaluator evaluator(frame);
+            mediaQueryMatches = evaluator.eval(media.get());
         }
 
         // Don't hold up render tree construction and script execution on stylesheets
