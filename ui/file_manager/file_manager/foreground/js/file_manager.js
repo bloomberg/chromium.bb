@@ -74,8 +74,8 @@ FileManager.prototype = {
   get directoryModel() {
     return this.directoryModel_;
   },
-  get navigationList() {
-    return this.navigationList_;
+  get directoryTree() {
+    return this.directoryTree_;
   },
   get document() {
     return this.document_;
@@ -419,7 +419,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     controller.attachDragSource(this.grid_);
     controller.attachFileListDropTarget(this.grid_);
     controller.attachTreeDropTarget(this.directoryTree_);
-    controller.attachNavigationListDropTarget(this.navigationList_, true);
     controller.attachCopyPasteHandlers();
     controller.addEventListener('selection-copied',
         this.blinkSelection.bind(this));
@@ -465,7 +464,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.rootsContextMenu_ =
         this.dialogDom_.querySelector('#roots-context-menu');
     cr.ui.Menu.decorate(this.rootsContextMenu_);
-    this.navigationList_.setContextMenu(this.rootsContextMenu_);
+    this.directoryTree_.contextMenuForRootItems = this.rootsContextMenu_;
 
     this.directoryTreeContextMenu_ =
         this.dialogDom_.querySelector('#directory-tree-context-menu');
@@ -870,8 +869,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.decorateSplitter(
         this.dialogDom_.querySelector('#navigation-list-splitter'));
-    this.decorateSplitter(
-        this.dialogDom_.querySelector('#middlebar-splitter'));
 
     this.dialogContainer_ = this.dialogDom_.querySelector('.dialog-container');
 
@@ -1038,7 +1035,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     // TODO(mtomasz, yoshiki): Create navigation list earlier, and here just
     // attach the directory model.
-    this.initNavigationList_();
+    this.initDirectoryTree_();
 
     this.table_.addEventListener('column-resize-end',
                                  this.updateStartupPrefs_.bind(this));
@@ -1077,40 +1074,17 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   /**
    * @private
    */
-  FileManager.prototype.initNavigationList_ = function() {
+  FileManager.prototype.initDirectoryTree_ = function() {
     var fakeEntriesVisible =
-        this.dialogType != DialogType.SELECT_SAVEAS_FILE;
+        this.dialogType !== DialogType.SELECT_SAVEAS_FILE;
     this.directoryTree_ = this.dialogDom_.querySelector('#directory-tree');
     DirectoryTree.decorate(this.directoryTree_,
                            this.directoryModel_,
                            this.volumeManager_,
                            this.metadataCache_,
                            fakeEntriesVisible);
-
-    this.navigationList_ = this.dialogDom_.querySelector('#navigation-list');
-    NavigationList.decorate(this.navigationList_,
-                            this.volumeManager_,
-                            this.directoryModel_);
-    this.navigationList_.fileManager = this;
-    this.navigationList_.dataModel = new NavigationListModel(
+    this.directoryTree_.dataModel = new NavigationListModel(
         this.volumeManager_, this.folderShortcutsModel_);
-  };
-
-  /**
-   * @private
-   */
-  FileManager.prototype.updateMiddleBarVisibility_ = function() {
-    var entry = this.directoryModel_.getCurrentDirEntry();
-    if (!entry)
-      return;
-
-    var driveVolume = this.volumeManager_.getVolumeInfo(entry);
-    var visible = driveVolume && !driveVolume.error &&
-        driveVolume.volumeType === VolumeManagerCommon.VolumeType.DRIVE;
-    this.dialogDom_.
-        querySelector('.dialog-middlebar-contents').hidden = !visible;
-    this.dialogDom_.querySelector('#middlebar-splitter').hidden = !visible;
-    this.onResize_();
   };
 
   /**
@@ -1403,11 +1377,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (this.directoryTree_)
       this.directoryTree_.relayout();
 
-    // TODO(mtomasz, yoshiki): Initialize navigation list earlier, before
-    // file system is available.
-    if (this.navigationList_)
-      this.navigationList_.redraw();
-
     this.previewPanel_.breadcrumbs.truncate();
   };
 
@@ -1435,11 +1404,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.grid_.setBottomMarginForPanel(panelHeight);
     if (this.table_)
       this.table_.setBottomMarginForPanel(panelHeight);
-
-    if (this.directoryTree_) {
-      this.directoryTree_.setBottomMarginForPanel(panelHeight);
-      this.ensureDirectoryTreeItemNotBehindPreviewPanel_();
-    }
   };
 
   /**
@@ -2761,7 +2725,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       // Check if batch updates are already finished by onScanUpdated_().
       if (!this.scanUpdatedAtLeastOnceOrCompleted_) {
         this.scanUpdatedAtLeastOnceOrCompleted_ = true;
-        this.updateMiddleBarVisibility_();
       }
 
       this.scanInProgress_ = false;
@@ -2790,7 +2753,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       if (!this.scanUpdatedAtLeastOnceOrCompleted_) {
         this.scanUpdatedAtLeastOnceOrCompleted_ = true;
         this.hideSpinnerLater_();
-        this.updateMiddleBarVisibility_();
       }
 
       // Update the UI.
@@ -2827,7 +2789,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // Finish unfinished batch updates.
     if (!this.scanUpdatedAtLeastOnceOrCompleted_) {
       this.scanUpdatedAtLeastOnceOrCompleted_ = true;
-      this.updateMiddleBarVisibility_();
     }
 
     this.scanInProgress_ = false;

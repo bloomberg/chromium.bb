@@ -20,7 +20,6 @@
       "file_manager/grid_view.js",
       "file_manager/keyboard_operations.js",
       "file_manager/multi_profile.js",
-      "file_manager/navigation_list.js",
       "file_manager/open_audio_files.js",
       "file_manager/open_video_files.js",
       "file_manager/open_zip_files.js",

@@ -147,7 +147,7 @@ a:focus {
   min-width: 100px;
   overflow: hidden;
   position: relative;
-  width: 150px;
+  width: 190px;
 }
 
 .dialog-navigation-list-header {
@@ -269,7 +269,6 @@ div.splitter {
 }
 
 #directory-tree {
-  -webkit-border-end: 1px solid rgba(20, 20, 22, 0.1);
   bottom: 0;
   flex: none;
   left: 0;
@@ -278,7 +277,7 @@ div.splitter {
   padding-bottom: 0;  /* For the preview panel. Will be overridden by JS. */
   position: absolute;
   right: 0;
-  top: 47px;
+  top: 0;
 }
 
 #directory-tree .tree-row {
@@ -357,7 +356,16 @@ div.splitter {
   color: white;
 }
 
-#navigation-list .root-item > div.root-eject {
+/* Make top-level items thicker and their expand-icno invisible */
+#directory-tree > .tree-item > .tree-row {
+  line-height: 40px;
+}
+
+#directory-tree > .tree-item > .tree-row > .expand-icon {
+  visibility: hidden;
+}
+
+#directory-tree .tree-row > div.root-eject {
   background: -webkit-image-set(
       url('../images/files/ui/eject.png') 1x,
       url('../images/files/ui/2x/eject.png') 2x) no-repeat center;
@@ -370,7 +378,7 @@ div.splitter {
   width: 20px;
 }
 
-#navigation-list:focus .root-item[selected] > div.root-eject {
+#directory-tree:focus .tree-row[selected] > div.root-eject {
   background: -webkit-image-set(
       url('../images/files/ui/eject_white.png') 1x,
       url('../images/files/ui/2x/eject_white.png') 2x) no-repeat center;

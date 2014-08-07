@@ -121,7 +121,6 @@
       <script src="foreground/js/ui/conflict_dialog.js"></script>
       <script src="foreground/js/ui/file_manager_ui.js"></script>
       <script src="foreground/js/ui/multi_profile_share_dialog.js"></script>
-      <script src="foreground/js/ui/navigation_list.js"></script>
       <script src="foreground/js/ui/preview_panel.js"></script>
       <script src="foreground/js/ui/progress_center_panel.js"></script>
       <script src="foreground/js/ui/search_box.js"></script>
@@ -291,7 +290,7 @@
           <span id="profile-badge" hidden></span><span id="app-name"></span>
         </div>
         <div class="dialog-navigation-list-contents">
-          <list id="navigation-list" tabindex="15"></list>
+          <tree id="directory-tree" tabindex="15"></tree>
         </div>
         <div class="dialog-navigation-list-footer">
           <div id="progress-center" hidden>
@@ -343,13 +342,6 @@
         </div>
         <div class="dialog-body">
           <div class="main-panel">
-            <!-- The middle bar and spilitter are hidden by default, and will be shown by script if necessary. -->
-            <div class="dialog-middlebar-contents" hidden>
-              <div id="middlebar-header"
-                   i18n-content="DRIVE_DIRECTORY_LABEL"></div>
-              <tree id="directory-tree" tabindex="16"></tree>
-            </div>
-            <div class="splitter" id="middlebar-splitter" hidden></div>
             <div class="filelist-panel">
               <div class="drive-welcome header"></div>
               <div class="volume-warning" id="volume-space-warning" hidden></div>

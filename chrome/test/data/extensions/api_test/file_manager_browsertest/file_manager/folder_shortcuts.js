@@ -7,7 +7,8 @@
 /**
  * Constants for selectors.
  */
-var TREEITEM_DRIVE = '#directory-tree > div:nth-child(1) ';
+var TREEITEM_DRIVE = '#directory-tree > div:nth-child(1) > .tree-children ' +
+    '> div:nth-child(1) ';
 var TREEITEM_A = TREEITEM_DRIVE + '> .tree-children > div:nth-child(1) ';
 var TREEITEM_B = TREEITEM_A + '> .tree-children > div:nth-child(1) ';
 var TREEITEM_C = TREEITEM_B + '> .tree-children > div:nth-child(1) ';
@@ -41,13 +42,13 @@ var DIRECTORY = {
     contents: [ENTRIES.directoryA.getExpectedRow(),
                ENTRIES.directoryD.getExpectedRow()],
     name: 'Drive',
-    navItem: '#navigation-list-1',
+    navItem: '#tree-item-autogen-id-1',
     treeItem: TREEITEM_DRIVE
   },
   A: {
     contents: [ENTRIES.directoryB.getExpectedRow()],
     name: 'A',
-    navItem: '#navigation-list-4',
+    navItem: '#tree-item-autogen-id-13',
     treeItem: TREEITEM_A
   },
   B: {
@@ -58,13 +59,13 @@ var DIRECTORY = {
   C: {
     contents: [],
     name: 'C',
-    navItem: '#navigation-list-4',
+    navItem: '#tree-item-autogen-id-13',
     treeItem: TREEITEM_C
   },
   D: {
     contents: [ENTRIES.directoryE.getExpectedRow()],
     name: 'D',
-    navItem: '#navigation-list-3',
+    navItem: '#tree-item-autogen-id-12',
     treeItem: TREEITEM_D
   },
   E: {
@@ -259,16 +260,6 @@ testcase.traverseFolderShortcuts = function() {
       createShortcut(windowId, DIRECTORY.C).then(this.next);
     },
 
-    // Navigate to E.
-    // Current directory should be E.
-    // Shortcut to D should be selected.
-    function() {
-      navigateToDirectory(windowId, DIRECTORY.E).then(this.next);
-    },
-    function() {
-      expectSelection(windowId, DIRECTORY.E, DIRECTORY.D).then(this.next);
-    },
-
     // Click shortcut to drive.
     // Current directory should be Drive root.
     // Shortcut to Drive root should be selected.
@@ -297,7 +288,7 @@ testcase.traverseFolderShortcuts = function() {
     // Shortcut to C should be selected.
     function() {
       callRemoteTestUtil('fakeKeyDown', windowId,
-          ['#navigation-list', 'Up', false], this.next);
+          ['#directory-tree', 'Up', false], this.next);
     },
     function(result) {
       chrome.test.assertTrue(result);
@@ -332,6 +323,9 @@ testcase.addRemoveFolderShortcuts = function() {
       expandDirectoryTree(windowId1).then(this.next);
     },
     function() {
+      expandDirectoryTree(windowId2).then(this.next);
+    },
+    function() {
       waitForFiles(windowId1, DIRECTORY.Drive.contents).then(this.next);
     },
     function() {
@@ -343,14 +337,14 @@ testcase.addRemoveFolderShortcuts = function() {
       createShortcut(windowId1, DIRECTORY.D).then(this.next);
     },
 
-    // Navigate to E.
-    // Current directory should be E.
-    // Shortcut to E should be selected.
+    // Click D.
+    // Current directory should be D.
+    // Shortcut to D should be selected.
     function() {
-      navigateToDirectory(windowId1, DIRECTORY.E).then(this.next);
+      clickShortcut(windowId1, DIRECTORY.D).then(this.next);
     },
     function() {
-      expectSelection(windowId1, DIRECTORY.E, DIRECTORY.D).then(this.next);
+      expectSelection(windowId1, DIRECTORY.D, DIRECTORY.D).then(this.next);
     },
 
     // Create shortcut to A in another window.
@@ -359,10 +353,10 @@ testcase.addRemoveFolderShortcuts = function() {
     },
 
     // The index of shortcut to D is changed.
-    // Current directory should remain E.
+    // Current directory should remain D.
     // Shortcut to D should keep selected.
     function() {
-      expectSelection(windowId1, DIRECTORY.E, DIRECTORY.D).then(this.next);
+      expectSelection(windowId1, DIRECTORY.D, DIRECTORY.D).then(this.next);
     },
 
     // Remove shortcut to D in another window.
@@ -370,10 +364,9 @@ testcase.addRemoveFolderShortcuts = function() {
       removeShortcut(windowId2, DIRECTORY.D).then(this.next);
     },
 
-    // Current directory should remain E.
-    // Shortcut to Drive root should be selected.
+    // Directory D in the directory tree should be selected.
     function() {
-      expectSelection(windowId1, DIRECTORY.E, DIRECTORY.Drive).then(this.next);
+      waitForElement(windowId1, TREEITEM_D + '[selected]').then(this.next);
     },
 
     function() {

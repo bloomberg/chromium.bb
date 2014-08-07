@@ -55,7 +55,7 @@ function copyBetweenWindows(windowId1, windowId2, file) {
   });
 };
 
-var REMOVABLE_VOLUME_QUERY = '#navigation-list > .root-item > ' +
+var REMOVABLE_VOLUME_QUERY = '#directory-tree > .tree-item > .tree-row ' +
     '.volume-icon[volume-type-icon="removable"]';
 
 testcase.copyBetweenWindowsDriveToLocal = function() {

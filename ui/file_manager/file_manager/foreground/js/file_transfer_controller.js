@@ -614,7 +614,7 @@ FileTransferController.prototype = {
     event.preventDefault();  // Required to prevent the cursor flicker.
     this.lastEnteredTarget_ = event.target;
     var item = event.target;
-    while (item && !(item instanceof DirectoryItem)) {
+    while (item && !(item instanceof cr.ui.TreeItem)) {
       item = item.parentNode;
     }
 

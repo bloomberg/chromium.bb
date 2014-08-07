@@ -992,18 +992,6 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 #if !defined(NDEBUG)
-#define MAYBE_NavigationList DISABLED_NavigationList
-#else
-#define MAYBE_NavigationList NavigationList
-#endif
-WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_NavigationList,
-    FileManagerBrowserTest,
-    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
-                                    "traverseNavigationList")));
-
-// Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG)
 #define MAYBE_FolderShortcuts DISABLED_FolderShortcuts
 #else
 #define MAYBE_FolderShortcuts FolderShortcuts
