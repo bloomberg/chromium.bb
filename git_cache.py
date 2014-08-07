@@ -564,6 +564,54 @@ def CMDpopulate(parser, args):
   mirror.populate(**kwargs)
 
 
+@subcommand.usage('Fetch new commits into cache and current checkout')
+def CMDfetch(parser, args):
+  """Update mirror, and fetch in cwd."""
+  parser.add_option('--all', action='store_true', help='Fetch all remotes')
+  options, args = parser.parse_args(args)
+
+  # Figure out which remotes to fetch.  This mimics the behavior of regular
+  # 'git fetch'.  Note that in the case of "stacked" or "pipelined" branches,
+  # this will NOT try to traverse up the branching structure to find the
+  # ultimate remote to update.
+  remotes = []
+  if options.all:
+    assert not args, 'fatal: fetch --all does not take a repository argument'
+    remotes = subprocess.check_output([Mirror.git_exe, 'remote']).splitlines()
+  elif args:
+    remotes = args
+  else:
+    current_branch = subprocess.check_output(
+        [Mirror.git_exe, 'rev-parse', '--abbrev-ref', 'HEAD']).strip()
+    if current_branch != 'HEAD':
+      upstream = subprocess.check_output(
+          [Mirror.git_exe, 'config', 'branch.%s.remote' % current_branch]
+      ).strip()
+      if upstream and upstream != '.':
+        remotes = [upstream]
+  if not remotes:
+    remotes = ['origin']
+
+  cachepath = Mirror.GetCachePath()
+  git_dir = os.path.abspath(subprocess.check_output(
+      [Mirror.git_exe, 'rev-parse', '--git-dir']))
+  git_dir = os.path.abspath(git_dir)
+  if git_dir.startswith(cachepath):
+    mirror = Mirror.FromPath(git_dir)
+    mirror.populate()
+    return 0
+  for remote in remotes:
+    remote_url = subprocess.check_output(
+        [Mirror.git_exe, 'config', 'remote.%s.url' % remote]).strip()
+    if remote_url.startswith(cachepath):
+      mirror = Mirror.FromPath(remote_url)
+      mirror.print = lambda *args: None
+      print('Updating git cache...')
+      mirror.populate()
+    subprocess.check_call([Mirror.git_exe, 'fetch', remote])
+  return 0
+
+
 @subcommand.usage('[url of repo to unlock, or -a|--all]')
 def CMDunlock(parser, args):
   """Unlock one or all repos if their lock files are still around."""
