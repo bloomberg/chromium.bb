@@ -144,6 +144,9 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, WindowOrientationChange) {
   TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
   shell()->LoadURL(test_url);
   navigation_observer.Wait();
+#if USE_AURA
+  WaitForResizeComplete(shell()->web_contents());
+#endif // USE_AURA
 
   if (!WindowOrientationSupported())
     return;
@@ -158,6 +161,28 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, WindowOrientationChange) {
     navigation_observer.Wait();
     EXPECT_EQ(angle == 270 ? -90 : angle, GetWindowOrientationAngle());
   }
+}
+
+// Chromium Android does not support fullscreen
+IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, LockSmoke) {
+  GURL test_url = GetTestUrl("screen_orientation",
+                             "screen_orientation_lock_smoke.html");
+
+  TestNavigationObserver navigation_observer(shell()->web_contents(), 2);
+  shell()->LoadURL(test_url);
+  navigation_observer.Wait();
+#if USE_AURA
+  WaitForResizeComplete(shell()->web_contents());
+#endif // USE_AURA
+
+  std::string expected =
+#if defined(OS_ANDROID)
+      "SecurityError"; // WebContents need to be fullscreen.
+#else
+      "NotSupportedError"; // Locking isn't supported.
+#endif
+
+  EXPECT_EQ(expected, shell()->web_contents()->GetLastCommittedURL().ref());
 }
 
 } // namespace content

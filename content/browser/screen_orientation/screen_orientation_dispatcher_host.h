@@ -31,7 +31,14 @@ class CONTENT_EXPORT ScreenOrientationDispatcherHost
   virtual bool OnMessageReceived(const IPC::Message&,
                                  RenderFrameHost* render_frame_host) OVERRIDE;
 
+  // Notifies that the lock with the given |request_id| has succeeded.
+  // The renderer process will be notified that the lock succeeded only if
+  // |request_id| matches the |current_lock_|.
   void NotifyLockSuccess(int request_id);
+
+  // Notifies that the lock with the given |request_id| has failed.
+  // The renderer process will be notified that the lock succeeded only if
+  // |request_id| matches the |current_lock_|.
   void NotifyLockError(int request_id, blink::WebLockOrientationError error);
 
   void OnOrientationChange();
@@ -47,6 +54,9 @@ class CONTENT_EXPORT ScreenOrientationDispatcherHost
   RenderFrameHost* GetRenderFrameHostForRequestID(int request_id);
 
   void ResetCurrentLock();
+  void NotifyLockError(int request_id,
+                       RenderFrameHost* render_frame_host,
+                       blink::WebLockOrientationError error);
 
   scoped_ptr<ScreenOrientationProvider> provider_;
 

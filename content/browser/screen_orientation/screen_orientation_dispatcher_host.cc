@@ -83,6 +83,13 @@ void ScreenOrientationDispatcherHost::NotifyLockError(
   if (!render_frame_host)
     return;
 
+  NotifyLockError(request_id, render_frame_host, error);
+}
+
+void ScreenOrientationDispatcherHost::NotifyLockError(
+    int request_id,
+    RenderFrameHost* render_frame_host,
+    blink::WebLockOrientationError error) {
   render_frame_host->Send(new ScreenOrientationMsg_LockError(
       render_frame_host->GetRoutingID(), request_id, error));
   ResetCurrentLock();
@@ -98,12 +105,12 @@ void ScreenOrientationDispatcherHost::OnLockRequest(
     blink::WebScreenOrientationLockType orientation,
     int request_id) {
   if (current_lock_) {
-    NotifyLockError(current_lock_->request_id,
+    NotifyLockError(current_lock_->request_id, render_frame_host,
                     blink::WebLockOrientationErrorCanceled);
   }
 
   if (!provider_) {
-    NotifyLockError(request_id,
+    NotifyLockError(request_id, render_frame_host,
                     blink::WebLockOrientationErrorNotAvailable);
     return;
   }
@@ -118,7 +125,7 @@ void ScreenOrientationDispatcherHost::OnLockRequest(
 void ScreenOrientationDispatcherHost::OnUnlockRequest(
     RenderFrameHost* render_frame_host) {
   if (current_lock_) {
-    NotifyLockError(current_lock_->request_id,
+    NotifyLockError(current_lock_->request_id, render_frame_host,
                     blink::WebLockOrientationErrorCanceled);
   }
 
