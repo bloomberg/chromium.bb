@@ -22,6 +22,7 @@
 #include "ipc/ipc_message_macros.h"
 
 using content::WebContents;
+using namespace extensions::api;
 
 // static
 const char ExtensionOptionsGuest::Type[] = "extensionoptions";
@@ -100,6 +101,7 @@ void ExtensionOptionsGuest::CreateWebContents(
 }
 
 void ExtensionOptionsGuest::DidAttachToEmbedder() {
+  SetUpAutoSize();
   guest_web_contents()->GetController().LoadURL(options_page_,
                                                 content::Referrer(),
                                                 content::PAGE_TRANSITION_LINK,
@@ -137,4 +139,42 @@ void ExtensionOptionsGuest::OnRequest(
     const ExtensionHostMsg_Request_Params& params) {
   extension_function_dispatcher_->Dispatch(
       params, guest_web_contents()->GetRenderViewHost());
+}
+
+void ExtensionOptionsGuest::GuestSizeChangedDueToAutoSize(
+    const gfx::Size& old_size,
+    const gfx::Size& new_size) {
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  args->SetInteger(extensionoptions::kWidth, new_size.width());
+  args->SetInteger(extensionoptions::kHeight, new_size.height());
+  DispatchEventToEmbedder(new GuestViewBase::Event(
+      extension_options_internal::OnSizeChanged::kEventName, args.Pass()));
+}
+
+bool ExtensionOptionsGuest::IsAutoSizeSupported() const {
+  return true;
+}
+
+void ExtensionOptionsGuest::SetUpAutoSize() {
+  // Read the autosize parameters passed in from the embedder.
+  bool auto_size_enabled;
+  extra_params()->GetBoolean(extensionoptions::kAttributeAutoSize,
+                             &auto_size_enabled);
+
+  int max_height = 0;
+  int max_width = 0;
+  extra_params()->GetInteger(extensionoptions::kAttributeMaxHeight,
+                             &max_height);
+  extra_params()->GetInteger(extensionoptions::kAttributeMaxWidth, &max_width);
+
+  int min_height = 0;
+  int min_width = 0;
+  extra_params()->GetInteger(extensionoptions::kAttributeMinHeight,
+                             &min_height);
+  extra_params()->GetInteger(extensionoptions::kAttributeMinWidth, &min_width);
+
+  // Call SetAutoSize to apply all the appropriate validation and clipping of
+  // values.
+  SetAutoSize(
+      true, gfx::Size(min_width, min_height), gfx::Size(max_width, max_height));
 }

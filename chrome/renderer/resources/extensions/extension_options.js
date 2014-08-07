@@ -8,6 +8,16 @@ var ExtensionOptionsEvents =
 var GuestViewInternal =
     require('binding').Binding.create('guestViewInternal').generate();
 var IdGenerator = requireNative('id_generator');
+var utils = require('utils');
+
+// Mapping of the autosize attribute names to default values
+var AUTO_SIZE_ATTRIBUTES = {
+  'autosize': 'on',
+  'maxheight': 600,
+  'maxwidth': 800,
+  'minheight': 32,
+  'minwidth': 80
+};
 
 function ExtensionOptionsInternal(extensionoptionsNode) {
   privates(extensionoptionsNode).internal = this;
@@ -27,7 +37,12 @@ function ExtensionOptionsInternal(extensionoptionsNode) {
 ExtensionOptionsInternal.prototype.attachWindow = function(instanceId) {
   this.instanceId = instanceId;
   var params = {
+    'autosize': this.autosize,
     'instanceId': this.viewInstanceId,
+    'maxheight': parseInt(this.maxheight || 0),
+    'maxwidth': parseInt(this.maxwidth || 0),
+    'minheight': parseInt(this.minheight || 0),
+    'minwidth': parseInt(this.minwidth || 0)
   }
   return this.browserPluginNode['-internal-attach'](instanceId, params);
 };
@@ -42,17 +57,28 @@ ExtensionOptionsInternal.prototype.createGuest = function() {
   var params = {
     'extensionId': this.extensionId,
   };
-  var self = this;
   GuestViewInternal.createGuest(
       'extensionoptions',
       params,
       function(instanceId) {
         if (instanceId == 0) {
-          self.initCalled = false;
+          this.initCalled = false;
         } else {
-          self.attachWindow(instanceId);
+          this.attachWindow(instanceId);
+          GuestViewInternal.setAutoSize(this.instanceId, {
+            'enableAutoSize':
+                this.extensionoptionsNode.hasAttribute('autosize'),
+            'min': {
+            'width': parseInt(this.minwidth || 0),
+            'height': parseInt(this.minheight || 0)
+          },
+            'max': {
+              'width': parseInt(this.maxwidth || 0),
+              'height': parseInt(this.maxheight || 0)
+            }
+          });
         }
-      });
+      }.bind(this));
 };
 
 ExtensionOptionsInternal.prototype.dispatchEvent =
@@ -62,8 +88,6 @@ ExtensionOptionsInternal.prototype.dispatchEvent =
 
 ExtensionOptionsInternal.prototype.handleExtensionOptionsAttributeMutation =
     function(name, oldValue, newValue) {
-  if (name != 'extension')
-    return;
   // We treat null attribute (attribute removed) and the empty string as
   // one case.
   oldValue = oldValue || '';
@@ -71,13 +95,33 @@ ExtensionOptionsInternal.prototype.handleExtensionOptionsAttributeMutation =
 
   if (oldValue === newValue)
     return;
-  this.extensionId = newValue;
 
-  // Create new guest view if one hasn't been created for this element.
-  if (!this.instanceId && this.parseExtensionAttribute())
-    this.init();
-  // TODO(ericzeng): Implement navigation to another guest view if we want
-  // that functionality.
+  if (name == 'extension') {
+    this.extensionId = newValue;
+    // Create new guest view if one hasn't been created for this element.
+    if (!this.instanceId && this.parseExtensionAttribute())
+      this.init();
+    // TODO(ericzeng): Implement navigation to another guest view if we want
+    // that functionality.
+  } else if (AUTO_SIZE_ATTRIBUTES.hasOwnProperty(name) > -1) {
+    this[name] = newValue;
+    this.resetSizeConstraintsIfInvalid();
+
+    if (!this.instanceId)
+      return;
+
+    GuestViewInternal.setAutoSize(this.instanceId, {
+      'enableAutoSize': this.extensionoptionsNode.hasAttribute('autosize'),
+      'min': {
+        'width': parseInt(this.minwidth || 0),
+        'height': parseInt(this.minheight || 0)
+      },
+      'max': {
+        'width': parseInt(this.maxwidth || 0),
+        'height': parseInt(this.maxheight || 0)
+      }
+    });
+  }
 };
 
 ExtensionOptionsInternal.prototype.init = function() {
@@ -89,6 +133,11 @@ ExtensionOptionsInternal.prototype.init = function() {
   var shadowRoot = this.extensionoptionsNode.createShadowRoot();
   shadowRoot.appendChild(this.browserPluginNode);
   this.createGuest();
+};
+
+ExtensionOptionsInternal.prototype.onSizeChanged = function(width, height) {
+  this.browserPluginNode.style.width = width + 'px';
+  this.browserPluginNode.style.height = height + 'px';
 };
 
 ExtensionOptionsInternal.prototype.parseExtensionAttribute = function() {
@@ -127,18 +176,50 @@ ExtensionOptionsInternal.prototype.setupEventProperty = function(eventName) {
 };
 
 ExtensionOptionsInternal.prototype.setupNodeProperties = function() {
-  var self = this;
-  this.extensionId = this.extensionoptionsNode.getAttribute('extension');
+  utils.forEach(AUTO_SIZE_ATTRIBUTES, function(attributeName) {
+    // Get the size constraints from the <extensionoptions> tag, or use the
+    // defaults if not specified
+    if (this.extensionoptionsNode.hasAttribute(attributeName)) {
+      this[attributeName] =
+          this.extensionoptionsNode.getAttribute(attributeName);
+    } else {
+      this[attributeName] = AUTO_SIZE_ATTRIBUTES[attributeName];
+    }
+
+    Object.defineProperty(this.extensionoptionsNode, attributeName, {
+      get: function() {
+        return this[attributeName];
+      }.bind(this),
+      set: function(value) {
+        this.extensionoptionsNode.setAttribute(attributeName, value);
+      }.bind(this),
+      enumerable: true
+    });
+  }, this);
+
+  this.resetSizeConstraintsIfInvalid();
+
   Object.defineProperty(this.extensionoptionsNode, 'extension', {
     get: function() {
-      return self.extensionId;
-    },
+      return this.extensionId;
+    }.bind(this),
     set: function(value) {
-      self.extensionoptionsNode.setAttribute('extension', value);
-    },
+      this.extensionoptionsNode.setAttribute('extension', value);
+    }.bind(this),
     enumerable: true
   });
 };
+
+ExtensionOptionsInternal.prototype.resetSizeConstraintsIfInvalid = function () {
+  if (this.minheight > this.maxheight || this.minheight < 0) {
+    this.minheight = AUTO_SIZE_ATTRIBUTES.minheight;
+    this.maxheight = AUTO_SIZE_ATTRIBUTES.maxheight;
+  }
+  if (this.minwidth > this.maxwidth || this.minwidth < 0) {
+    this.minwidth = AUTO_SIZE_ATTRIBUTES.minwidth;
+    this.maxwidth = AUTO_SIZE_ATTRIBUTES.maxwidth;
+  }
+}
 
 function registerBrowserPluginElement() {
   var proto = Object.create(HTMLObjectElement.prototype);

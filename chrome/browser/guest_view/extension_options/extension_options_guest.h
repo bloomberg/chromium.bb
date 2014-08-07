@@ -33,6 +33,10 @@ class ExtensionOptionsGuest
   virtual void DidAttachToEmbedder() OVERRIDE;
   virtual void DidInitialize() OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
+  virtual void GuestSizeChangedDueToAutoSize(
+      const gfx::Size& old_size,
+      const gfx::Size& new_size) OVERRIDE;
+  virtual bool IsAutoSizeSupported() const OVERRIDE;
 
   // ExtensionFunctionDispatcher::Delegate implementation.
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
@@ -44,6 +48,7 @@ class ExtensionOptionsGuest
   ExtensionOptionsGuest(content::BrowserContext* browser_context,
                         int guest_instance_id);
   virtual ~ExtensionOptionsGuest();
+  void SetUpAutoSize();
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
   scoped_ptr<extensions::ExtensionFunctionDispatcher>

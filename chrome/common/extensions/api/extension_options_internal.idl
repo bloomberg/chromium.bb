@@ -6,5 +6,6 @@
 namespace extensionOptionsInternal {
   interface Events {
     static void onLoad();
+    static void onSizeChanged(long width, long height);
   };
 };
