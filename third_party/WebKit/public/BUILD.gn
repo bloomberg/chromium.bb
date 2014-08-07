@@ -79,9 +79,7 @@ group("blink_generate_devtools_grd") {
 # GYP version: WebKit/public/blink_resources.gyp:blink_resources
 grit("resources") {
   output_dir = "$root_gen_dir/blink/public/resources"
-  # TODO(thakis): Add this once https://codereview.chromium.org/430083002 has
-  # landed.
-  # use_qualified_include = true
+  use_qualified_include = true
   source = "blink_resources.grd"
   outputs = [
     "grit/blink_resources.h",
