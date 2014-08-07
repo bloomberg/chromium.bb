@@ -227,6 +227,7 @@ SPECIAL_CASES = {
         "License": "Freely Distributable",
         # Absolute path here is resolved as relative to the source root.
         "License File" : "/v8/third_party/fdlibm/LICENSE",
+        "License Android Compatible" : "yes",
     },
 }
 
