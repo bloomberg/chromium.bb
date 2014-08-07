@@ -1050,7 +1050,13 @@ public:
     // layoutDidGetCalled indicates whether this render object was re-laid-out
     // since the last call to setLayoutDidGetCalled(false) on this object.
     bool layoutDidGetCalled() const { return m_bitfields.layoutDidGetCalled(); }
-    void setLayoutDidGetCalled(bool b) { m_bitfields.setLayoutDidGetCalled(b); }
+    void setLayoutDidGetCalled(bool b)
+    {
+        m_bitfields.setLayoutDidGetCalled(b);
+
+        if (b)
+            markContainingBlockChainForPaintInvalidation();
+    }
 
     bool mayNeedPaintInvalidation() const { return m_bitfields.mayNeedPaintInvalidation(); }
     void setMayNeedPaintInvalidation(bool b)

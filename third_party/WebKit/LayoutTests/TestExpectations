@@ -1269,6 +1269,10 @@ crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-ste
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-with-async-callstack.html [ Crash ]
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/async-callstack-get-as-string.html [ Crash ]
 
+crbug.com/399206 fast/repaint/table-section-repaint.html [ NeedsRebaseline ]
+crbug.com/399206 fast/repaint/table-shrink-row-repaint.html [ NeedsRebaseline ]
+crbug.com/399206 fast/repaint/table-cell-move.html [ NeedsRebaseline ]
+
 # Ahem font is sometimes not loaded on Windows.
 crbug.com/392046 [ Win ] fast/inline/justify-emphasis-inline-box.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/text/whitespace/002.html [ Pass Failure ]
