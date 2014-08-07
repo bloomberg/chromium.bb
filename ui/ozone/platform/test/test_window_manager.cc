@@ -21,6 +21,7 @@ namespace ui {
 namespace {
 
 void WriteDataToFile(const base::FilePath& location, const SkBitmap& bitmap) {
+  DCHECK(!location.empty());
   std::vector<unsigned char> png_data;
   gfx::PNGCodec::FastEncodeBGRASkBitmap(bitmap, true, &png_data);
   base::WriteFile(location,
@@ -42,6 +43,8 @@ class FileSurface : public SurfaceOzoneCanvas {
     return skia::SharePtr(surface_->getCanvas());
   }
   virtual void PresentCanvas(const gfx::Rect& damage) OVERRIDE {
+    if (location_.empty())
+      return;
     SkBitmap bitmap;
     bitmap.setInfo(surface_->getCanvas()->imageInfo());
 
@@ -71,6 +74,8 @@ TestWindowManager::~TestWindowManager() {
 }
 
 void TestWindowManager::Initialize() {
+  if (location_.empty())
+    return;
   if (!DirectoryExists(location_) && !base::CreateDirectory(location_) &&
       location_ != base::FilePath("/dev/null"))
     PLOG(FATAL) << "unable to create output directory";

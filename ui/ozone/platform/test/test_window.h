@@ -6,7 +6,6 @@
 #define UI_OZONE_PLATFORM_TEST_TEST_WINDOW_H_
 
 #include "base/files/file_path.h"
-#include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/platform_window/platform_window.h"
@@ -16,7 +15,7 @@ namespace ui {
 class PlatformWindowDelegate;
 class TestWindowManager;
 
-class TestWindow : public PlatformWindow, public PlatformEventDispatcher {
+class TestWindow : public PlatformWindow {
  public:
   TestWindow(PlatformWindowDelegate* delegate,
              TestWindowManager* manager,
@@ -40,10 +39,6 @@ class TestWindow : public PlatformWindow, public PlatformEventDispatcher {
   virtual void Restore() OVERRIDE;
   virtual void SetCursor(PlatformCursor cursor) OVERRIDE;
   virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
-
-  // PlatformEventDispatcher:
-  virtual bool CanDispatchEvent(const PlatformEvent& event) OVERRIDE;
-  virtual uint32_t DispatchEvent(const PlatformEvent& event) OVERRIDE;
 
  private:
   PlatformWindowDelegate* delegate_;

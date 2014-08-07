@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "ui/events/ozone/device/device_manager.h"
 #include "ui/ozone/platform/test/test_cursor_factory.h"
 #include "ui/ozone/platform/test/test_event_factory.h"
 #include "ui/ozone/platform/test/test_window.h"
@@ -70,7 +69,6 @@ class OzonePlatformTest : public OzonePlatform {
 #endif
 
   virtual void InitializeUI() OVERRIDE {
-    device_manager_ = CreateDeviceManager();
     window_manager_.reset(new TestWindowManager(file_path_));
     window_manager_->Initialize();
     event_factory_ozone_.reset(new TestEventFactory());
@@ -83,7 +81,6 @@ class OzonePlatformTest : public OzonePlatform {
   }
 
  private:
-  scoped_ptr<DeviceManager> device_manager_;
   scoped_ptr<TestWindowManager> window_manager_;
   scoped_ptr<TestEventFactory> event_factory_ozone_;
   scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
@@ -98,7 +95,7 @@ class OzonePlatformTest : public OzonePlatform {
 
 OzonePlatform* CreateOzonePlatformTest() {
   CommandLine* cmd = CommandLine::ForCurrentProcess();
-  base::FilePath location = base::FilePath("/dev/null");
+  base::FilePath location;
   if (cmd->HasSwitch(switches::kOzoneDumpFile))
     location = cmd->GetSwitchValuePath(switches::kOzoneDumpFile);
   return new OzonePlatformTest(location);

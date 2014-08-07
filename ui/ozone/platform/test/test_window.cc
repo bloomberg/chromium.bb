@@ -19,19 +19,16 @@ TestWindow::TestWindow(PlatformWindowDelegate* delegate,
                        const gfx::Rect& bounds)
     : delegate_(delegate), manager_(manager), bounds_(bounds) {
   widget_ = manager_->AddWindow(this);
-  ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
   delegate_->OnAcceleratedWidgetAvailable(widget_);
 }
 
 TestWindow::~TestWindow() {
-  ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
   manager_->RemoveWindow(widget_, this);
 }
 
 base::FilePath TestWindow::path() {
   base::FilePath base_path = manager_->base_path();
-
-  if (base_path == base::FilePath("/dev/null"))
+  if (base_path.empty() || base_path == base::FilePath("/dev/null"))
     return base_path;
 
   // Disambiguate multiple window output files with the window id.
@@ -78,16 +75,6 @@ void TestWindow::SetCursor(PlatformCursor cursor) {
 }
 
 void TestWindow::MoveCursorTo(const gfx::Point& location) {
-}
-
-bool TestWindow::CanDispatchEvent(const ui::PlatformEvent& ne) {
-  return true;
-}
-
-uint32_t TestWindow::DispatchEvent(const ui::PlatformEvent& ne) {
-  ui::Event* event = static_cast<ui::Event*>(ne);
-  delegate_->DispatchEvent(event);
-  return ui::POST_DISPATCH_STOP_PROPAGATION;
 }
 
 }  // namespace ui
