@@ -8,6 +8,7 @@ found in the LICENSE file.
 <link rel="import" href="../model/ct-commit-log.html">
 <link rel="import" href="ct-failure-analyzer.html">
 <link rel="import" href="ct-failure-stream.html">
+<link rel="import" href="ct-party-time.html">
 <link rel="import" href="ct-revision-details.html">
 <link rel="import" href="ct-tree-status.html">
 
@@ -31,6 +32,7 @@ found in the LICENSE file.
     <ct-tree-status project="chromium"></ct-tree-status>
     <ct-tree-status project="blink"></ct-tree-status>
     <ct-revision-details id="revisionDetails" builderLatestRevisions="{{ builderLatestRevisions }}" revisionLog="{{ revisionLog }}" tree="{{ tree }}"></ct-revision-details>
+    <ct-party-time failures="{{ failures }}" tree="{{ tree }}"></ct-party-time>
     <ct-failure-stream groups="{{ failures[tree] }}" commits="{{ revisionLog }}" tree="{{ tree }}"></ct-failure-stream>
   </template>
   <script>

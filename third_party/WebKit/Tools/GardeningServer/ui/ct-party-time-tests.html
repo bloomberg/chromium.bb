@@ -1,0 +1,46 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="ct-party-time.html">
+
+<script>
+(function() {
+
+module("ct-party-time");
+
+asyncTest("partyTime", 1, function() {
+  var partyTime = document.createElement('ct-party-time');
+
+  var tree = 'blink';
+
+  partyTime.failures = { blink: [ ] };
+  partyTime.tree = tree;
+
+  requestAnimationFrame(function() {
+      equal(partyTime._partytime, true);
+      start();
+  });
+});
+
+asyncTest("noPartyTime", 1, function() {
+  var noPartyTime = document.createElement('ct-party-time');
+
+  var resultsByBuilder = {};
+  var failure1 = new CTFailure("step1", "reason1", resultsByBuilder, 123, 123);
+
+  var tree = 'blink';
+
+  noPartyTime.failures = { blink: [ failure1 ] };
+  noPartyTime.tree = tree;
+
+  requestAnimationFrame(function() {
+      equal(noPartyTime._partytime, false);
+      start();
+  });
+});
+
+})()
+</script>
