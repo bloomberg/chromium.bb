@@ -12,6 +12,7 @@
 import datetime
 import multiprocessing
 import os
+import re
 import subprocess
 import sys
 import optparse
@@ -76,17 +77,36 @@ def _EraseTombstone(device, tombstone_file):
       'rm /data/tombstones/' + tombstone_file, as_root=True)
 
 
-def _ResolveSymbols(tombstone_data, include_stack, arch):
+def _DeviceAbiToArch(device_abi):
+  # The order of this list is significant to find the more specific match (e.g.,
+  # arm64) before the less specific (e.g., arm).
+  arches = ['arm64', 'arm', 'x86_64', 'x86_64', 'x86', 'mips']
+  for arch in arches:
+    if arch in device_abi:
+      return arch
+  raise RuntimeError('Unknown device ABI: %s' % device_abi)
+
+def _ResolveSymbols(tombstone_data, include_stack, device_abi):
   """Run the stack tool for given tombstone input.
 
   Args:
     tombstone_data: a list of strings of tombstone data.
     include_stack: boolean whether to include stack data in output.
-    arch: the device architecture of tombstone data.
+    device_abi: the default ABI of the device which generated the tombstone.
 
   Yields:
     A string for each line of resolved stack output.
   """
+  # Check if the tombstone data has an ABI listed, if so use this in preference
+  # to the device's default ABI.
+  for line in tombstone_data:
+    found_abi = re.search('ABI: \'(.+?)\'', line)
+    if found_abi:
+      device_abi = found_abi.group(1)
+  arch = _DeviceAbiToArch(device_abi)
+  if not arch:
+    return
+
   stack_tool = os.path.join(os.path.dirname(__file__), '..', '..',
                             'third_party', 'android_platform', 'development',
                             'scripts', 'stack')
@@ -108,7 +128,7 @@ def _ResolveTombstone(tombstone):
   print '\n'.join(lines)
   print 'Resolving...'
   lines += _ResolveSymbols(tombstone['data'], tombstone['stack'],
-                           tombstone['arch'])
+                           tombstone['device_abi'])
   return lines
 
 
@@ -153,7 +173,7 @@ def _GetTombstonesForDevice(device, options):
   device_now = _GetDeviceDateTime(device)
   for tombstone_file, tombstone_time in tombstones:
     ret += [{'serial': str(device),
-             'arch': device.GetProp('ro.product.cpu.abi'),
+             'device_abi': device.GetProp('ro.product.cpu.abi'),
              'device_now': device_now,
              'time': tombstone_time,
              'file': tombstone_file,
