@@ -49,6 +49,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['win7', 'intel'], bug=372511)
     self.Fail('conformance/glsl/misc/shader-with-array-of-structs-uniform.html',
         ['win7', 'intel', 'nvidia'], bug=373972)
+    self.Fail('conformance/extensions/angle-instanced-arrays.html',
+        ['win7', 'intel'], bug=398337)
 
     # Mac failures
     self.Fail('conformance/glsl/misc/shader-struct-scope.html',
