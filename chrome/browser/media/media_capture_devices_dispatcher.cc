@@ -274,19 +274,6 @@ MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
   notifications_registrar_.Add(
       this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::NotificationService::AllSources());
-
-  // AVFoundation is used for video/audio device monitoring and video capture in
-  // Mac. Experimentally, connect it in Canary and Unknown (developer builds).
-#if defined(OS_MACOSX)
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceQTKit)) {
-    if (channel == chrome::VersionInfo::CHANNEL_CANARY ||
-        channel == chrome::VersionInfo::CHANNEL_UNKNOWN) {
-      CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kEnableAVFoundation);
-    }
-  }
-#endif
 }
 
 MediaCaptureDevicesDispatcher::~MediaCaptureDevicesDispatcher() {}
