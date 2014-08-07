@@ -108,8 +108,6 @@ public:
     bool isInvertible() const;
     AffineTransform inverse() const;
 
-    void blend(const AffineTransform& from, double progress);
-
     TransformationMatrix toTransformationMatrix() const;
 
     bool isIdentityOrTranslation() const

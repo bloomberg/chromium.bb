@@ -1505,34 +1505,6 @@ void TransformationMatrix::toColumnMajorFloatArray(FloatMatrix4& result) const
     result[15] = m44();
 }
 
-bool TransformationMatrix::isBackFaceVisible() const
-{
-    // Back-face visibility is determined by transforming the normal vector (0, 0, 1) and
-    // checking the sign of the resulting z component. However, normals cannot be
-    // transformed by the original matrix, they require being transformed by the
-    // inverse-transpose.
-    //
-    // Since we know we will be using (0, 0, 1), and we only care about the z-component of
-    // the transformed normal, then we only need the m33() element of the
-    // inverse-transpose. Therefore we do not need the transpose.
-    //
-    // Additionally, if we only need the m33() element, we do not need to compute a full
-    // inverse. Instead, knowing the inverse of a matrix is adjoint(matrix) / determinant,
-    // we can simply compute the m33() of the adjoint (adjugate) matrix, without computing
-    // the full adjoint.
-
-    double determinant = blink::determinant4x4(m_matrix);
-
-    // If the matrix is not invertible, then we assume its backface is not visible.
-    if (fabs(determinant) < SMALL_NUMBER)
-        return false;
-
-    double cofactor33 = determinant3x3(m11(), m12(), m14(), m21(), m22(), m24(), m41(), m42(), m44());
-    double zComponentOfTransformedNormal = cofactor33 / determinant;
-
-    return zComponentOfTransformedNormal < 0;
-}
-
 SkMatrix44 TransformationMatrix::toSkMatrix44(const TransformationMatrix& matrix)
 {
     SkMatrix44 ret(SkMatrix44::kUninitialized_Constructor);
