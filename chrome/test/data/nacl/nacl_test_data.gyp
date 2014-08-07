@@ -1180,7 +1180,6 @@
             '-fstack-protector-all',
             '-fprofile-generate',
             '-finstrument-functions',
-            '-O2',
             # ARM GCC emits symbols like __aeabi_unwind_cpp_pr0 in
             # .exidx sections with this flag.
             '-funwind-tables',
@@ -1199,6 +1198,7 @@
           # Do not use any sanitizers tools, which require a few symbols.
           'cflags/': [
             ['exclude', '-fsanitize'],
+            ['exclude', '^-O'],  # Strip -O2, -Os etc.
           ],
           'ldflags/': [
             ['exclude', '-fsanitize'],
