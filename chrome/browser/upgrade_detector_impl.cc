@@ -244,6 +244,14 @@ UpgradeDetectorImpl::UpgradeDetectorImpl()
     return;
   }
 
+  // Register for experiment notifications. Note that since this class is a
+  // singleton, it does not need to unregister for notifications when destroyed,
+  // since it outlives the VariationsService.
+  chrome_variations::VariationsService* variations_service =
+      g_browser_process->variations_service();
+  if (variations_service)
+    variations_service->AddObserver(this);
+
   base::Closure start_upgrade_check_timer_task =
       base::Bind(&UpgradeDetectorImpl::StartTimerForUpgradeCheck,
                  weak_factory_.GetWeakPtr());
@@ -346,6 +354,24 @@ void UpgradeDetectorImpl::StartTimerForUpgradeCheck() {
       this, &UpgradeDetectorImpl::CheckForUpgrade);
 }
 
+void UpgradeDetectorImpl::StartUpgradeNotificationTimer() {
+  // The timer may already be running (e.g. due to both a software upgrade and
+  // experiment updates being available).
+  if (upgrade_notification_timer_.IsRunning())
+    return;
+
+  upgrade_detected_time_ = base::Time::Now();
+
+  // Start the repeating timer for notifying the user after a certain period.
+  // The called function will eventually figure out that enough time has passed
+  // and stop the timer.
+  const int cycle_time_ms = IsTesting() ?
+      kNotifyCycleTimeForTestingMs : kNotifyCycleTimeMs;
+  upgrade_notification_timer_.Start(FROM_HERE,
+      base::TimeDelta::FromMilliseconds(cycle_time_ms),
+      this, &UpgradeDetectorImpl::NotifyOnUpgrade);
+}
+
 void UpgradeDetectorImpl::CheckForUpgrade() {
   // Interrupt any (unlikely) unfinished execution of DetectUpgradeTask, or at
   // least prevent the callback from being executed, because we will potentially
@@ -414,30 +440,28 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
   return simulate_outdated;
 }
 
+void UpgradeDetectorImpl::OnExperimentChangesDetected(Severity severity) {
+  set_best_effort_experiment_updates_available(severity == BEST_EFFORT);
+  set_critical_experiment_updates_available(severity == CRITICAL);
+  StartUpgradeNotificationTimer();
+}
+
 void UpgradeDetectorImpl::UpgradeDetected(UpgradeAvailable upgrade_available) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  upgrade_available_ = upgrade_available;
+  set_upgrade_available(upgrade_available);
 
   // Stop the recurring timer (that is checking for changes).
   detect_upgrade_timer_.Stop();
+  set_critical_update_acknowledged(false);
 
-  NotifyUpgradeDetected();
-
-  // Start the repeating timer for notifying the user after a certain period.
-  // The called function will eventually figure out that enough time has passed
-  // and stop the timer.
-  int cycle_time = IsTesting() ?
-      kNotifyCycleTimeForTestingMs : kNotifyCycleTimeMs;
-  upgrade_notification_timer_.Start(FROM_HERE,
-      base::TimeDelta::FromMilliseconds(cycle_time),
-      this, &UpgradeDetectorImpl::NotifyOnUpgrade);
+  StartUpgradeNotificationTimer();
 }
 
-void UpgradeDetectorImpl::NotifyOnUpgrade() {
-  const base::TimeDelta time_passed =
-      base::Time::Now() - upgrade_detected_time();
-
-  bool is_critical_or_outdated = upgrade_available_ > UPGRADE_AVAILABLE_REGULAR;
+void UpgradeDetectorImpl::NotifyOnUpgradeWithTimePassed(
+    base::TimeDelta time_passed) {
+  const bool is_critical_or_outdated =
+      upgrade_available() > UPGRADE_AVAILABLE_REGULAR ||
+      critical_experiment_updates_available();
   if (is_unstable_channel_) {
     // There's only one threat level for unstable channels like dev and
     // canary, and it hits after one hour. During testing, it hits after one
@@ -485,6 +509,12 @@ void UpgradeDetectorImpl::NotifyOnUpgrade() {
   }
 
   NotifyUpgradeRecommended();
+}
+
+void UpgradeDetectorImpl::NotifyOnUpgrade() {
+  const base::TimeDelta time_passed =
+      base::Time::Now() - upgrade_detected_time_;
+  NotifyOnUpgradeWithTimePassed(time_passed);
 }
 
 // static

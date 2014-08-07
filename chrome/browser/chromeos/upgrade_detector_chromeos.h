@@ -45,6 +45,9 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
   // has passed and we should start notifying the user.
   base::RepeatingTimer<UpgradeDetectorChromeos> upgrade_notification_timer_;
   bool initialized_;
+  base::Time upgrade_detected_time_;
+
+  DISALLOW_COPY_AND_ASSIGN(UpgradeDetectorChromeos);
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_UPGRADE_DETECTOR_CHROMEOS_H_

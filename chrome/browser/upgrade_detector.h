@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UPGRADE_DETECTOR_H_
 
 #include "base/timer/timer.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/idle.h"
 #include "ui/gfx/image/image.h"
 
@@ -65,11 +66,6 @@ class UpgradeDetector {
     return critical_update_acknowledged_;
   }
 
-  // When the last upgrade was detected.
-  const base::Time& upgrade_detected_time() const {
-    return upgrade_detected_time_;
-  }
-
   // Retrieves the right icon ID based on the degree of severity (see
   // UpgradeNotificationAnnoyanceLevel, each level has an an accompanying icon
   // to go with it) to display within the wrench menu.
@@ -80,18 +76,6 @@ class UpgradeDetector {
   }
 
  protected:
-  UpgradeDetector();
-
-  // Sends out UPGRADE_DETECTED notification and record upgrade_detected_time_.
-  void NotifyUpgradeDetected();
-
-  // Sends out UPGRADE_RECOMMENDED notification and set notify_upgrade_.
-  void NotifyUpgradeRecommended();
-
-  void set_upgrade_notification_stage(UpgradeNotificationAnnoyanceLevel stage) {
-    upgrade_notification_stage_ = stage;
-  }
-
   enum UpgradeAvailable {
     // If no update is available and current install is recent enough.
     UPGRADE_AVAILABLE_NONE,
@@ -106,10 +90,40 @@ class UpgradeDetector {
     // If no update to Chrome has been installed for more than the recommended
     // time AND auto-update is turned off.
     UPGRADE_NEEDED_OUTDATED_INSTALL_NO_AU,
-  } upgrade_available_;
+  };
 
-  // Whether the user has acknowledged the critical update.
-  bool critical_update_acknowledged_;
+  UpgradeDetector();
+
+  // Sends out UPGRADE_RECOMMENDED notification and set notify_upgrade_.
+  void NotifyUpgradeRecommended();
+
+  // Triggers a critical update, which starts a timer that checks the machine
+  // idle state. Protected and virtual so that it could be overridden by tests.
+  virtual void TriggerCriticalUpdate();
+
+  UpgradeAvailable upgrade_available() const { return upgrade_available_; }
+  void set_upgrade_available(UpgradeAvailable available) {
+    upgrade_available_ = available;
+  }
+
+  void set_best_effort_experiment_updates_available(bool available) {
+    best_effort_experiment_updates_available_ = available;
+  }
+
+  bool critical_experiment_updates_available() const {
+    return critical_experiment_updates_available_;
+  }
+  void set_critical_experiment_updates_available(bool available) {
+    critical_experiment_updates_available_ = available;
+  }
+
+  void set_critical_update_acknowledged(bool acknowledged) {
+    critical_update_acknowledged_ = acknowledged;
+  }
+
+  void set_upgrade_notification_stage(UpgradeNotificationAnnoyanceLevel stage) {
+    upgrade_notification_stage_ = stage;
+  }
 
  private:
   // Initiates an Idle check. See IdleCallback below.
@@ -119,8 +133,21 @@ class UpgradeDetector {
   // input events since the specified time.
   void IdleCallback(IdleState state);
 
-  // When the upgrade was detected.
-  base::Time upgrade_detected_time_;
+  // Triggers a global notification of the specified |type|.
+  void TriggerNotification(chrome::NotificationType type);
+
+  // Whether any software updates are available (experiment updates are tracked
+  // separately via additional member variables below).
+  UpgradeAvailable upgrade_available_;
+
+  // Whether "best effort" experiment updates are available.
+  bool best_effort_experiment_updates_available_;
+
+  // Whether "critical" experiment updates are available.
+  bool critical_experiment_updates_available_;
+
+  // Whether the user has acknowledged the critical update.
+  bool critical_update_acknowledged_;
 
   // A timer to check to see if we've been idle for long enough to show the
   // critical warning. Should only be set if |upgrade_available_| is

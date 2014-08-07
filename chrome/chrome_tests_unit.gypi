@@ -1783,6 +1783,7 @@
         'browser/ui/zoom/zoom_controller_unittest.cc',
         'browser/undo/bookmark_undo_service_test.cc',
         'browser/undo/undo_manager_test.cc',
+        'browser/upgrade_detector_impl_unittest.cc',
         'browser/upload_list_unittest.cc',
         'browser/web_applications/web_app_mac_unittest.mm',
         'browser/web_applications/web_app_unittest.cc',
@@ -2316,6 +2317,7 @@
             'browser/ui/sync/one_click_signin_helper_unittest.cc',
             'browser/ui/sync/one_click_signin_sync_starter_unittest.cc',
             'browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc',
+            'browser/upgrade_detector_impl_unittest.cc',
           ],
           'sources': [
             'browser/extensions/updater/local_extension_cache_unittest.cc',
@@ -2573,6 +2575,7 @@
             'browser/ui/webui/web_dialog_web_contents_delegate_unittest.cc',
             'browser/ui/window_sizer/window_sizer_common_unittest.cc',
             'browser/ui/window_sizer/window_sizer_unittest.cc',
+            'browser/upgrade_detector_impl_unittest.cc',
             'common/net/x509_certificate_model_unittest.cc',
             'test/base/browser_with_test_window_test.cc',
             'test/base/browser_with_test_window_test.h',

@@ -59,6 +59,8 @@ int UpgradeDetector::GetIconResourceID() {
 
 UpgradeDetector::UpgradeDetector()
     : upgrade_available_(UPGRADE_AVAILABLE_NONE),
+      best_effort_experiment_updates_available_(false),
+      critical_experiment_updates_available_(false),
       critical_update_acknowledged_(false),
       upgrade_notification_stage_(UPGRADE_ANNOYANCE_NONE),
       notify_upgrade_(false) {
@@ -67,46 +69,26 @@ UpgradeDetector::UpgradeDetector()
 UpgradeDetector::~UpgradeDetector() {
 }
 
-void UpgradeDetector::NotifyUpgradeDetected() {
-  upgrade_detected_time_ = base::Time::Now();
-  critical_update_acknowledged_ = false;
-}
-
 void UpgradeDetector::NotifyUpgradeRecommended() {
   notify_upgrade_ = true;
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
-      content::Source<UpgradeDetector>(this),
-      content::NotificationService::NoDetails());
-
-  switch (upgrade_available_) {
-    case UPGRADE_NEEDED_OUTDATED_INSTALL: {
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_OUTDATED_INSTALL,
-          content::Source<UpgradeDetector>(this),
-          content::NotificationService::NoDetails());
-      break;
-    }
-    case UPGRADE_NEEDED_OUTDATED_INSTALL_NO_AU: {
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_OUTDATED_INSTALL_NO_AU,
-          content::Source<UpgradeDetector>(this),
-          content::NotificationService::NoDetails());
-      break;
-    }
-    case UPGRADE_AVAILABLE_CRITICAL: {
-      int idle_timer = UseTestingIntervals() ?
-          kIdleRepeatingTimerWait :
-          kIdleRepeatingTimerWait * 60;  // To minutes.
-      idle_check_timer_.Start(FROM_HERE,
-          base::TimeDelta::FromSeconds(idle_timer),
-          this, &UpgradeDetector::CheckIdle);
-      break;
-    }
-    default:
-      break;
+  TriggerNotification(chrome::NOTIFICATION_UPGRADE_RECOMMENDED);
+  if (upgrade_available_ == UPGRADE_NEEDED_OUTDATED_INSTALL) {
+    TriggerNotification(chrome::NOTIFICATION_OUTDATED_INSTALL);
+  } else if (upgrade_available_ == UPGRADE_NEEDED_OUTDATED_INSTALL_NO_AU) {
+    TriggerNotification(chrome::NOTIFICATION_OUTDATED_INSTALL_NO_AU);
+  } else if (upgrade_available_ == UPGRADE_AVAILABLE_CRITICAL ||
+             critical_experiment_updates_available_) {
+    TriggerCriticalUpdate();
   }
+}
+
+void UpgradeDetector::TriggerCriticalUpdate() {
+  const base::TimeDelta idle_timer = UseTestingIntervals() ?
+      base::TimeDelta::FromSeconds(kIdleRepeatingTimerWait) :
+      base::TimeDelta::FromMinutes(kIdleRepeatingTimerWait);
+  idle_check_timer_.Start(FROM_HERE, idle_timer, this,
+                          &UpgradeDetector::CheckIdle);
 }
 
 void UpgradeDetector::CheckIdle() {
@@ -117,6 +99,13 @@ void UpgradeDetector::CheckIdle() {
   CalculateIdleState(
       idle_time_allowed, base::Bind(&UpgradeDetector::IdleCallback,
                                     base::Unretained(this)));
+}
+
+void UpgradeDetector::TriggerNotification(chrome::NotificationType type) {
+  content::NotificationService::current()->Notify(
+      type,
+      content::Source<UpgradeDetector>(this),
+      content::NotificationService::NoDetails());
 }
 
 void UpgradeDetector::IdleCallback(IdleState state) {
@@ -134,10 +123,7 @@ void UpgradeDetector::IdleCallback(IdleState state) {
     case IDLE_STATE_IDLE:
       // Computer has been idle for long enough, show warning.
       idle_check_timer_.Stop();
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_CRITICAL_UPGRADE_INSTALLED,
-          content::Source<UpgradeDetector>(this),
-          content::NotificationService::NoDetails());
+      TriggerNotification(chrome::NOTIFICATION_CRITICAL_UPGRADE_INSTALLED);
       break;
     case IDLE_STATE_ACTIVE:
     case IDLE_STATE_UNKNOWN:

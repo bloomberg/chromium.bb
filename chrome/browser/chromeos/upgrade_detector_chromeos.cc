@@ -41,7 +41,7 @@ void UpgradeDetectorChromeos::UpdateStatusChanged(
   if (status.status != UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT)
     return;
 
-  NotifyUpgradeDetected();
+  upgrade_detected_time_ = base::Time::Now();
 
   // ChromeOS shows upgrade arrow once the upgrade becomes available.
   NotifyOnUpgrade();
@@ -53,7 +53,7 @@ void UpgradeDetectorChromeos::UpdateStatusChanged(
 }
 
 void UpgradeDetectorChromeos::NotifyOnUpgrade() {
-  base::TimeDelta delta = base::Time::Now() - upgrade_detected_time();
+  base::TimeDelta delta = base::Time::Now() - upgrade_detected_time_;
   int64 time_passed = delta.InDays();
 
   const int kSevereThreshold = 7;
