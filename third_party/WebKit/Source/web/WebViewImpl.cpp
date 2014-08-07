@@ -3705,6 +3705,17 @@ void WebViewImpl::willInsertBody(WebLocalFrameImpl* webframe)
         resumeTreeViewCommits();
 }
 
+void WebViewImpl::didRemoveAllPendingStylesheet(WebLocalFrameImpl* webframe)
+{
+    if (webframe != mainFrameImpl())
+        return;
+
+    // If we have no more stylesheets to load and we're past the body tag,
+    // we should have something to paint and should start as soon as possible.
+    if (m_page->deprecatedLocalMainFrame()->document()->body())
+        resumeTreeViewCommits();
+}
+
 void WebViewImpl::resumeTreeViewCommits()
 {
     if (m_layerTreeViewCommitsDeferred) {

@@ -130,6 +130,7 @@ public:
         const blink::KURL&, const WTF::String& mimeType, bool shouldPreferPlugInsForImages) OVERRIDE;
     virtual void didChangeScrollOffset() OVERRIDE;
     virtual void didUpdateCurrentHistoryItem() OVERRIDE;
+    virtual void didRemoveAllPendingStylesheet() OVERRIDE;
     virtual bool allowScript(bool enabledPerSettings) OVERRIDE;
     virtual bool allowScriptFromSource(bool enabledPerSettings, const blink::KURL& scriptURL) OVERRIDE;
     virtual bool allowPlugins(bool enabledPerSettings) OVERRIDE;

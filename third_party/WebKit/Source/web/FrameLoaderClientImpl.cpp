@@ -171,6 +171,13 @@ void FrameLoaderClientImpl::didUpdateCurrentHistoryItem()
         m_webFrame->client()->didUpdateCurrentHistoryItem(m_webFrame);
 }
 
+void FrameLoaderClientImpl::didRemoveAllPendingStylesheet()
+{
+    WebViewImpl* webview = m_webFrame->viewImpl();
+    if (webview)
+        webview->didRemoveAllPendingStylesheet(m_webFrame);
+}
+
 bool FrameLoaderClientImpl::allowScript(bool enabledPerSettings)
 {
     if (m_webFrame->permissionClient())

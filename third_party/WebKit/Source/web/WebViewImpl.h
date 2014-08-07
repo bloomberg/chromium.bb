@@ -353,6 +353,7 @@ public:
     void layoutUpdated(WebLocalFrameImpl*);
 
     void willInsertBody(WebLocalFrameImpl*);
+    void didRemoveAllPendingStylesheet(WebLocalFrameImpl*);
     void didChangeContentsSize();
     void deviceOrPageScaleFactorChanged();
 
