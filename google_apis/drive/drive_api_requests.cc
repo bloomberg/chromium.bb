@@ -11,7 +11,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
-#include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/request_sender.h"
 #include "google_apis/drive/request_util.h"
 #include "google_apis/drive/time_util.h"
@@ -22,70 +21,6 @@ namespace {
 
 const char kContentTypeApplicationJson[] = "application/json";
 const char kParentLinkKind[] = "drive#fileLink";
-
-// Parses the JSON value to a resource typed |T| and runs |callback| on the UI
-// thread once parsing is done.
-template<typename T>
-void ParseJsonAndRun(
-    const base::Callback<void(GDataErrorCode, scoped_ptr<T>)>& callback,
-    GDataErrorCode error,
-    scoped_ptr<base::Value> value) {
-  DCHECK(!callback.is_null());
-
-  scoped_ptr<T> resource;
-  if (value) {
-    resource = T::CreateFrom(*value);
-    if (!resource) {
-      // Failed to parse the JSON value, although the JSON value is available,
-      // so let the callback know the parsing error.
-      error = GDATA_PARSE_ERROR;
-    }
-  }
-
-  callback.Run(error, resource.Pass());
-}
-
-// Thin adapter of T::CreateFrom.
-template<typename T>
-scoped_ptr<T> ParseJsonOnBlockingPool(scoped_ptr<base::Value> value) {
-  return T::CreateFrom(*value);
-}
-
-// Runs |callback| with given |error| and |value|. If |value| is null,
-// overwrites |error| to GDATA_PARSE_ERROR.
-template<typename T>
-void ParseJsonOnBlockingPoolAndRunAfterBlockingPoolTask(
-    const base::Callback<void(GDataErrorCode, scoped_ptr<T>)>& callback,
-    GDataErrorCode error, scoped_ptr<T> value) {
-  if (!value)
-    error = GDATA_PARSE_ERROR;
-  callback.Run(error, value.Pass());
-}
-
-// Parses the JSON value to a resource typed |T| and runs |callback| on
-// blocking pool, and then run on the current thread.
-// TODO(hidehiko): Move this and ParseJsonAndRun defined above into base with
-// merging the tasks running on blocking pool into one.
-template<typename T>
-void ParseJsonOnBlockingPoolAndRun(
-    scoped_refptr<base::TaskRunner> blocking_task_runner,
-    const base::Callback<void(GDataErrorCode, scoped_ptr<T>)>& callback,
-    GDataErrorCode error,
-    scoped_ptr<base::Value> value) {
-  DCHECK(!callback.is_null());
-
-  if (!value) {
-    callback.Run(error, scoped_ptr<T>());
-    return;
-  }
-
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner,
-      FROM_HERE,
-      base::Bind(&ParseJsonOnBlockingPool<T>, base::Passed(&value)),
-      base::Bind(&ParseJsonOnBlockingPoolAndRunAfterBlockingPoolTask<T>,
-                 callback, error));
-}
 
 // Parses the JSON value to FileResource instance and runs |callback| on the
 // UI thread once parsing is done.
@@ -126,17 +61,16 @@ scoped_ptr<base::DictionaryValue> CreateParentValue(
 
 namespace drive {
 
-//============================ DriveApiDataRequest ===========================
+//============================ DriveApiPartialFieldRequest ====================
 
-DriveApiDataRequest::DriveApiDataRequest(RequestSender* sender,
-                                         const GetDataCallback& callback)
-    : GetDataRequest(sender, callback) {
+DriveApiPartialFieldRequest::DriveApiPartialFieldRequest(
+    RequestSender* sender) : UrlFetchRequestBase(sender) {
 }
 
-DriveApiDataRequest::~DriveApiDataRequest() {
+DriveApiPartialFieldRequest::~DriveApiPartialFieldRequest() {
 }
 
-GURL DriveApiDataRequest::GetURL() const {
+GURL DriveApiPartialFieldRequest::GetURL() const {
   GURL url = GetURLInternal();
   if (!fields_.empty())
     url = net::AppendOrReplaceQueryParameter(url, "fields", fields_);
@@ -149,9 +83,7 @@ FilesGetRequest::FilesGetRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
     const FileResourceCallback& callback)
-    : DriveApiDataRequest(
-          sender,
-          base::Bind(&ParseJsonAndRun<FileResource>, callback)),
+    : DriveApiDataRequest<FileResource>(sender, callback),
       url_generator_(url_generator) {
   DCHECK(!callback.is_null());
 }
@@ -168,9 +100,7 @@ FilesAuthorizeRequest::FilesAuthorizeRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
     const FileResourceCallback& callback)
-    : DriveApiDataRequest(
-          sender,
-          base::Bind(&ParseJsonAndRun<FileResource>, callback)),
+    : DriveApiDataRequest<FileResource>(sender, callback),
       url_generator_(url_generator) {
   DCHECK(!callback.is_null());
 }
@@ -191,9 +121,7 @@ FilesInsertRequest::FilesInsertRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
     const FileResourceCallback& callback)
-    : DriveApiDataRequest(
-          sender,
-          base::Bind(&ParseJsonAndRun<FileResource>, callback)),
+    : DriveApiDataRequest<FileResource>(sender, callback),
       url_generator_(url_generator) {
   DCHECK(!callback.is_null());
 }
@@ -250,9 +178,7 @@ FilesPatchRequest::FilesPatchRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
     const FileResourceCallback& callback)
-    : DriveApiDataRequest(
-          sender,
-          base::Bind(&ParseJsonAndRun<FileResource>, callback)),
+    : DriveApiDataRequest<FileResource>(sender, callback),
       url_generator_(url_generator),
       set_modified_date_(false),
       update_viewed_date_(true) {
@@ -320,9 +246,7 @@ FilesCopyRequest::FilesCopyRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
     const FileResourceCallback& callback)
-    : DriveApiDataRequest(
-          sender,
-          base::Bind(&ParseJsonAndRun<FileResource>, callback)),
+    : DriveApiDataRequest<FileResource>(sender, callback),
       url_generator_(url_generator) {
   DCHECK(!callback.is_null());
 }
@@ -375,11 +299,7 @@ FilesListRequest::FilesListRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
     const FileListCallback& callback)
-    : DriveApiDataRequest(
-          sender,
-          base::Bind(&ParseJsonOnBlockingPoolAndRun<FileList>,
-                     make_scoped_refptr(sender->blocking_task_runner()),
-                     callback)),
+    : DriveApiDataRequest<FileList>(sender, callback),
       url_generator_(url_generator),
       max_results_(100) {
   DCHECK(!callback.is_null());
@@ -396,11 +316,7 @@ GURL FilesListRequest::GetURLInternal() const {
 FilesListNextPageRequest::FilesListNextPageRequest(
     RequestSender* sender,
     const FileListCallback& callback)
-    : DriveApiDataRequest(
-          sender,
-          base::Bind(&ParseJsonOnBlockingPoolAndRun<FileList>,
-                     make_scoped_refptr(sender->blocking_task_runner()),
-                     callback)) {
+    : DriveApiDataRequest<FileList>(sender, callback) {
   DCHECK(!callback.is_null());
 }
 
@@ -445,9 +361,7 @@ FilesTrashRequest::FilesTrashRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
     const FileResourceCallback& callback)
-    : DriveApiDataRequest(
-          sender,
-          base::Bind(&ParseJsonAndRun<FileResource>, callback)),
+    : DriveApiDataRequest<FileResource>(sender, callback),
       url_generator_(url_generator) {
   DCHECK(!callback.is_null());
 }
@@ -468,9 +382,7 @@ AboutGetRequest::AboutGetRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
     const AboutResourceCallback& callback)
-    : DriveApiDataRequest(
-          sender,
-          base::Bind(&ParseJsonAndRun<AboutResource>, callback)),
+    : DriveApiDataRequest<AboutResource>(sender, callback),
       url_generator_(url_generator) {
   DCHECK(!callback.is_null());
 }
@@ -487,11 +399,7 @@ ChangesListRequest::ChangesListRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
     const ChangeListCallback& callback)
-    : DriveApiDataRequest(
-          sender,
-          base::Bind(&ParseJsonOnBlockingPoolAndRun<ChangeList>,
-                     make_scoped_refptr(sender->blocking_task_runner()),
-                     callback)),
+    : DriveApiDataRequest<ChangeList>(sender, callback),
       url_generator_(url_generator),
       include_deleted_(true),
       max_results_(100),
@@ -511,11 +419,7 @@ GURL ChangesListRequest::GetURLInternal() const {
 ChangesListNextPageRequest::ChangesListNextPageRequest(
     RequestSender* sender,
     const ChangeListCallback& callback)
-    : DriveApiDataRequest(
-          sender,
-          base::Bind(&ParseJsonOnBlockingPoolAndRun<ChangeList>,
-                     make_scoped_refptr(sender->blocking_task_runner()),
-                     callback)) {
+    : DriveApiDataRequest<ChangeList>(sender, callback) {
   DCHECK(!callback.is_null());
 }
 
@@ -533,9 +437,7 @@ AppsListRequest::AppsListRequest(
     const DriveApiUrlGenerator& url_generator,
     bool use_internal_endpoint,
     const AppListCallback& callback)
-    : DriveApiDataRequest(
-          sender,
-          base::Bind(&ParseJsonAndRun<AppList>, callback)),
+    : DriveApiDataRequest<AppList>(sender, callback),
       url_generator_(url_generator),
       use_internal_endpoint_(use_internal_endpoint) {
   DCHECK(!callback.is_null());

@@ -77,12 +77,6 @@ std::string CanonicalizeResourceId(const std::string& resource_id);
 extern const char kDocsListScope[];
 extern const char kDriveAppsScope[];
 
-// Extracts an url to the sharing dialog and returns it via |callback|. If
-// the share url doesn't exist, then an empty url is returned.
-void ParseShareUrlAndRun(const google_apis::GetShareUrlCallback& callback,
-                         google_apis::GDataErrorCode error,
-                         scoped_ptr<base::Value> value);
-
 // Converts FileResource to ResourceEntry.
 scoped_ptr<google_apis::ResourceEntry>
 ConvertFileResourceToResourceEntry(
