@@ -61,12 +61,12 @@ static bool fullscreenIsSupported(const Document& document)
 {
     // Fullscreen is supported if there is no previously-established user preference,
     // security risk, or platform limitation.
-    return document.settings()->fullscreenSupported();
+    return !document.settings() || document.settings()->fullscreenSupported();
 }
 
 static bool fullscreenIsSupported(const Document& document, const Element& element)
 {
-    if (document.settings()->disallowFullscreenForNonMediaElements() && !isHTMLMediaElement(element))
+    if (!document.settings() || (document.settings()->disallowFullscreenForNonMediaElements() && !isHTMLMediaElement(element)))
         return false;
     return fullscreenIsSupported(document);
 }
