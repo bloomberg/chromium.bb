@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/time_format.h"
 #include "ui/base/text/bytes_formatting.h"
 
 namespace {
@@ -159,6 +160,11 @@ void WebsiteSettingsHandler::UpdateOrigins() {
     base::DictionaryValue* origin_entry = new base::DictionaryValue();
     origin_entry->SetDoubleWithoutPathExpansion("usage",
                                                 last_usage.ToDoubleT());
+    origin_entry->SetStringWithoutPathExpansion(
+        "usageString",
+        ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_ELAPSED,
+                               ui::TimeFormat::LENGTH_SHORT,
+                               base::Time::Now() - last_usage));
     origins.SetWithoutPathExpansion(origin, origin_entry);
   }
 

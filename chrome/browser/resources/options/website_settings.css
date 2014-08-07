@@ -37,6 +37,8 @@
 /* Styles for the origin list elements in the website settings page. */
 #origin-list {
   border: 1px solid #d9d9d9;
+  font-family: Noto Sans;
+  font-size: 13px;
   margin: 5px 0 0;
   min-height: 287px;
 }
@@ -45,9 +47,12 @@
   height: 30px;
 }
 
+.local-storage-usage {
+  color: #7f7f7f;
+  margin: auto 0;
+}
+
 list.origin-list .favicon-cell {
   -webkit-margin-start: 6px;
   -webkit-padding-start: 21px;
-  font-family: Noto Sans;
-  font-size: 13px;
 }
