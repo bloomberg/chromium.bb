@@ -22,7 +22,6 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/upgrade_util.h"
-#include "chrome/browser/jankometer.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/service_process/service_process_control.h"
@@ -192,8 +191,6 @@ bool ShutdownPreThreadsStop() {
 }
 
 void ShutdownPostThreadsStop(bool restart_last_session) {
-  // The jank'o'meter requires that the browser process has been destroyed
-  // before calling UninstallJankometer().
   delete g_browser_process;
   g_browser_process = NULL;
 
@@ -205,9 +202,6 @@ void ShutdownPostThreadsStop(bool restart_last_session) {
   chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker("BrowserDeleted",
                                                         true);
 #endif
-
-  // Uninstall Jank-O-Meter here after the IO thread is no longer running.
-  UninstallJankometer();
 
 #if defined(OS_WIN)
   if (!browser_util::IsBrowserAlreadyRunning() &&

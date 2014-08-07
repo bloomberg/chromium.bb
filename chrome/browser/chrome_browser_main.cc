@@ -57,7 +57,6 @@
 #include "chrome/browser/google/google_search_counter.h"
 #include "chrome/browser/gpu/gl_string_manager.h"
 #include "chrome/browser/gpu/three_d_api_observer.h"
-#include "chrome/browser/jankometer.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/metrics/field_trial_synchronizer.h"
 #include "chrome/browser/metrics/thread_watcher.h"
@@ -1375,9 +1374,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       net::SdchManager::EnableSdchSupport(false);
     }
   }
-
-  if (parsed_command_line().HasSwitch(switches::kEnableWatchdog))
-    InstallJankometer(parsed_command_line());
 
 #if defined(ENABLE_FULL_PRINTING) && !defined(OFFICIAL_BUILD)
   if (parsed_command_line().HasSwitch(switches::kDebugPrint)) {

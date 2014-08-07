@@ -642,8 +642,6 @@
       'browser/invalidation/profile_invalidation_provider_factory.h',
       'browser/io_thread.cc',
       'browser/io_thread.h',
-      'browser/jankometer.h',
-      'browser/jankometer_win.cc',
       'browser/jumplist_updater_win.cc',
       'browser/jumplist_updater_win.h',
       'browser/jumplist_win.cc',
@@ -2283,7 +2281,6 @@
       'browser/renderer_context_menu/spellchecker_submenu_observer_hunspell.cc',
     ],
     'chrome_browser_non_win_sources': [
-      'browser/jankometer_stub.cc',
       'browser/profiles/profile_shortcut_manager_stub.cc',
     ],
     # Desktop Linux and ChromeOS.

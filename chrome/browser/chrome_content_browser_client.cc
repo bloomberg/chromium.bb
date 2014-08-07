@@ -1321,7 +1321,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableNetBenchmarking,
       switches::kEnableShowModalDialog,
       switches::kEnableStreamlinedHostedApps,
-      switches::kEnableWatchdog,
       switches::kEnableWebBasedSignin,
       switches::kMessageLoopHistogrammer,
       switches::kOutOfProcessPdf,

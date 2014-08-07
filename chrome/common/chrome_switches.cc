@@ -632,14 +632,6 @@ const char kEnableTranslateNewUX[]         = "enable-translate-new-ux";
 const char kEnableUserAlternateProtocolPorts[] =
     "enable-user-controlled-alternate-protocol-ports";
 
-// Spawns threads to watch for excessive delays in specified message loops.
-// User should set breakpoints on Alarm() to examine problematic thread.
-//
-// Usage:   -enable-watchdog=[ui][io]
-//
-// Order of the listed sub-arguments does not matter.
-const char kEnableWatchdog[]                = "enable-watchdog";
-
 // Uses WebSocket over SPDY.
 const char kEnableWebSocketOverSpdy[]       = "enable-websocket-over-spdy";
 

@@ -254,9 +254,6 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
       pending_cache_max_dead_capacity_(0),
       pending_cache_capacity_(kUnitializedCacheCapacity) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableWatchdog)) {
-    // TODO(JAR): Need to implement renderer IO msgloop watchdog.
-  }
 
 #if defined(ENABLE_AUTOFILL_DIALOG)
   WebRuntimeFeatures::enableRequestAutocomplete(true);

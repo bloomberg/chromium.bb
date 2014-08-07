@@ -184,7 +184,6 @@ extern const char kEnableSyncSyncedNotifications[];
 extern const char kEnableThumbnailRetargeting[];
 extern const char kEnableTranslateNewUX[];
 extern const char kEnableUserAlternateProtocolPorts[];
-extern const char kEnableWatchdog[];
 extern const char kEnableWebSocketOverSpdy[];
 extern const char kEnableWebsiteSettingsManager[];
 extern const char kEnhancedBookmarksExperiment[];
