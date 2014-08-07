@@ -72,7 +72,7 @@ std::pair<aura::Window*, gfx::Point> GetRootWindowRelativeToWindow(
   gfx::Point location_in_root(location);
   aura::Window::ConvertPointToTarget(window, root_window, &location_in_root);
 
-#if defined(USE_X11)
+#if defined(USE_X11) || defined(USE_OZONE)
   if (!root_window->ContainsPointInRoot(location_in_root)) {
     // This conversion is necessary to deal with X's passive input
     // grab while dragging window. For example, if we have two
@@ -89,6 +89,10 @@ std::pair<aura::Window*, gfx::Point> GetRootWindowRelativeToWindow(
     // layout in Ash). We need to figure out that (0, 1123) in the
     // primary root window's coordinates is actually (0, 123) in the
     // extended root window's coordinates.
+    //
+    // For now Ozone works in a similar manner as X11. Transitioning from one
+    // display's coordinate system to anothers may cause events in the
+    // primary's coordinate system which fall in the extended display.
 
     gfx::Point location_in_native(location_in_root);
     root_window->GetHost()->ConvertPointToNativeScreen(&location_in_native);
@@ -107,6 +111,7 @@ std::pair<aura::Window*, gfx::Point> GetRootWindowRelativeToWindow(
   }
 #else
   // TODO(yusukes): Support non-X11 platforms if necessary.
+  NOTIMPLEMENTED();
 #endif
 
   return std::make_pair(root_window, location_in_root);
