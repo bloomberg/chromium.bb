@@ -32,3 +32,8 @@ bool MockGoogleLocationSettingsHelper::IsGoogleAppsLocationSettingEnabled() {
 bool MockGoogleLocationSettingsHelper::IsMasterLocationSettingEnabled() {
   return master_location_enabled;
 }
+
+bool MockGoogleLocationSettingsHelper::IsSystemLocationEnabled() {
+  return IsMasterLocationSettingEnabled() &&
+      IsGoogleAppsLocationSettingEnabled();
+}

@@ -57,7 +57,6 @@
       'browser/android/new_tab_page_prefs.h',
       'browser/android/new_tab_page_url_handler.cc',
       'browser/android/new_tab_page_url_handler.h',
-      'browser/android/google_location_settings_helper.cc',
       'browser/android/google_location_settings_helper.h',
       'browser/android/intent_helper.cc',
       'browser/android/intent_helper.h',

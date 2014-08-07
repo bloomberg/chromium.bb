@@ -17,21 +17,11 @@ class GoogleLocationSettingsHelper {
 
   static GoogleLocationSettingsHelper* Create();
 
-  virtual bool IsSystemLocationEnabled();
+  virtual bool IsSystemLocationEnabled() = 0;
 
  protected:
   GoogleLocationSettingsHelper() {}
 
-  // TODO(miguelg) Remove these three methods once the downstream
-  // dependencies get updated.
-  virtual std::string GetAcceptButtonLabel(bool allow);
-  virtual bool IsAllowLabel();
-  virtual void ShowGoogleLocationSettings();
-
-  // Checks both Master and Google Apps location setting to see
-  // if we should allow geolocation.
-  virtual bool IsMasterLocationSettingEnabled();
-  virtual bool IsGoogleAppsLocationSettingEnabled();
 
  private:
 
