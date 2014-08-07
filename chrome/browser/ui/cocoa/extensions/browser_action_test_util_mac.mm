@@ -36,6 +36,15 @@ int BrowserActionTestUtil::NumberOfBrowserActions() {
   return [GetController(browser_) buttonCount];
 }
 
+ExtensionAction* BrowserActionTestUtil::GetExtensionAction(int index) {
+  NOTREACHED();
+  return NULL;
+}
+
+void BrowserActionTestUtil::InspectPopup(int index) {
+  NOTREACHED();
+}
+
 bool BrowserActionTestUtil::HasIcon(int index) {
   return [GetButton(browser_, index) image] != nil;
 }

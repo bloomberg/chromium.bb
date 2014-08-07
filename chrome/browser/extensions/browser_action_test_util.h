@@ -29,13 +29,11 @@ class BrowserActionTestUtil {
   // Returns the number of browser action currently visible.
   int VisibleBrowserActions();
 
-#if defined(TOOLKIT_VIEWS)
   // Returns the ExtensionAction for the given index.
   ExtensionAction* GetExtensionAction(int index);
 
   // Inspects the extension popup for the action at the given index.
   void InspectPopup(int index);
-#endif
 
   // Returns whether the browser action at |index| has a non-null icon. Note
   // that the icon is loaded asynchronously, in which case you can wait for it
