@@ -19,6 +19,7 @@
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/password_manager/core/common/password_manager_switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
 using autofill::PasswordForm;
@@ -51,6 +52,21 @@ void ReportMetrics(bool password_manager_enabled) {
   ran_once = true;
 
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.Enabled", password_manager_enabled);
+}
+
+bool ShouldDropSyncCredential() {
+  std::string group_name =
+      base::FieldTrialList::FindFullName("PasswordManagerDropSyncCredential");
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableDropSyncCredential))
+    return true;
+
+  if (command_line->HasSwitch(switches::kDisableDropSyncCredential))
+    return false;
+
+  // Default to not saving.
+  return group_name != "Disabled";
 }
 
 }  // namespace
@@ -218,7 +234,8 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
 
   // Don't save credentials for the syncing account. See crbug.com/365832 for
   // background.
-  if (client_->IsSyncAccountCredential(
+  if (ShouldDropSyncCredential() &&
+      client_->IsSyncAccountCredential(
           base::UTF16ToUTF8(form.username_value), form.signon_realm)) {
     RecordFailure(SYNC_CREDENTIAL, form.origin.host(), logger.get());
     return;

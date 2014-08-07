@@ -8,9 +8,17 @@ namespace password_manager {
 
 namespace switches {
 
+// Disable dropping the credential used to sync passwords.
+const char kDisableDropSyncCredential[] =
+    "disable-drop-sync-credential";
+
 // Disable both saving and filling for the sync signin form.
 const char kDisableManagerForSyncSignin[] =
     "disable-manager-for-sync-signin";
+
+// Enable dropping the credential used to sync passwords.
+const char kEnableDropSyncCredential[] =
+    "enable-drop-sync-credential";
 
 // Enable saving and filling for the sync signin form. Currently the default
 // behavior.

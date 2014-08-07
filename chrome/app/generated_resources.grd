@@ -6192,6 +6192,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DEBUG_PACKED_APP_DESCRIPTION" desc="Description of the flag to enable debugging context menu options for packed apps.">
         Enables debugging context menu options such as Inspect Element for packed applications.
       </message>
+      <message name="IDS_FLAGS_ENABLE_DROP_SYNC_CREDENTIAL_NAME" desc="Name of the flag to enable drop sync credential">
+        Drop sync credentials from password manager.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_DROP_SYNC_CREDENTIAL_DESCRIPTION" desc="Description of the flag to enable drop sync credential">
+        If enabled, the password manager will not offer to save the credential used to sync.
+      </message>
       <message name="IDS_FLAGS_ENABLE_PASSWORD_GENERATION_NAME" desc="Name of the flag to enable password generation.">
         Enable password generation.
       </message>

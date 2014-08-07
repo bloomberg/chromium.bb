@@ -46625,6 +46625,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="4" label="FORM_BLACKLISTED"/>
   <int value="5" label="INVALID_FORM"/>
   <int value="6" label="AUTOCOMPLETE_OFF"/>
+  <int value="7" label="SYNC_CREDENTIALS"/>
 </enum>
 
 <enum name="ProxyStatus" type="int">

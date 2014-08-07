@@ -499,6 +499,14 @@ const Experiment::Choice kRememberCertificateErrorDecisionsChoices[] = {
     "7776000" },
 };
 
+const Experiment::Choice kEnableDropSyncCredentialChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    password_manager::switches::kEnableDropSyncCredential, "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    password_manager::switches::kDisableDropSyncCredential, "" },
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -1924,6 +1932,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     MULTI_VALUE_TYPE(kRememberCertificateErrorDecisionsChoices)
   },
+  {
+    "enable-drop-sync-credential",
+    IDS_FLAGS_ENABLE_DROP_SYNC_CREDENTIAL_NAME,
+    IDS_FLAGS_ENABLE_DROP_SYNC_CREDENTIAL_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kEnableDropSyncCredentialChoices)
+  }
 };
 
 const Experiment* experiments = kExperiments;
