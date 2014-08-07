@@ -356,7 +356,7 @@ scoped_ptr<ProfilePrefStoreManager> CreateProfilePrefStoreManager(
   std::string seed;
 #if defined(GOOGLE_CHROME_BUILD)
   seed = ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_PREF_HASH_SEED_BIN).as_string(),
+      IDR_PREF_HASH_SEED_BIN).as_string();
 #endif
   return make_scoped_ptr(new ProfilePrefStoreManager(
       profile_path,
