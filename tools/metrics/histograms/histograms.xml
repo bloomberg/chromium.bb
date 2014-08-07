@@ -2956,6 +2956,111 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Number of times a given permission was requested.</summary>
 </histogram>
 
+<histogram name="Cookie.BackingStoreUpdateResults" enum="BackingStoreResults">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Whether or not updates to the backing store succeeded or failed, recorded
+    every update.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.BetweenAccessIntervalMinutes" units="minutes">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>Intervals between access time updates for each cookie.</summary>
+</histogram>
+
+<histogram name="Cookie.CorruptMetaTable">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Records the detection of a corrupted meta table. See http://crbug.com/111376
+    .
+  </summary>
+</histogram>
+
+<histogram name="Cookie.CorruptMetaTableRecoveryFailed">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Records a failure to recover a corrupted meta table. See
+    http://crbug.com/111376 .
+  </summary>
+</histogram>
+
+<histogram name="Cookie.Count">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Number of cookies in the store (recorded every 10 minutes of active browsing
+    time)
+  </summary>
+</histogram>
+
+<histogram name="Cookie.DBSizeInKB" units="KB">
+  <owner>dmikurube@chromium.org</owner>
+  <summary>
+    The size, on disk, of the cookie database as it is being loaded.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.DeletionCause" enum="CookieDeletionCause">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For each cookie removed from the store, the reason it was removed.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.DomainCount">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For each domain, number of cookies in that domain (recorded every 10 minutes
+    of active browsing time).
+  </summary>
+</histogram>
+
+<histogram name="Cookie.DomainPerEtldp1Count">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For every top level domain, number of subdomains in that top level domain
+    (recorded every 10 minutes of active browsing time).
+  </summary>
+</histogram>
+
+<histogram name="Cookie.Etldp1Count">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For every top level domain, number of cookies in that domain (recorded every
+    10 minutes of active browsing time).
+  </summary>
+</histogram>
+
+<histogram name="Cookie.EvictedLastAccessMinutes" units="minutes">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For each evicted (not expired) cookie, the amount of time since it was last
+    used
+  </summary>
+</histogram>
+
+<histogram name="Cookie.ExpirationDurationMinutes" units="minutes">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>Number of minutes until cookie expires when set.</summary>
+</histogram>
+
+<histogram name="Cookie.KillDatabaseResult" enum="BooleanSuccess">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Whether killing the database because it was corrupted beyond repair
+    succeeded.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.NumberOfLoadedCookies">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    This histogram records the total number of cookies loaded from disk,
+    including any cookies that are discarded during loading (for whatever
+    reason).
+  </summary>
+</histogram>
+
 <histogram name="Cookie.ParsedCookieStatus" enum="ParsedCookieStatus">
   <obsolete>
     Deprecated as of 9/2013. Experiment to measure control characters in cookies
@@ -2970,6 +3075,25 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     must have no separators (i.e. no characters from the following string,
     ignoring the starting and ending single quote: '()&lt;&gt;@,;:\&quot;/[]?={}
     \t') and no control characters.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.PriorityBlockingTime" units="ms">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    This histogram records the total duration of time during which at least one
+    web request was blocked waiting for the cookie store to load. If no requests
+    were affected, the value is 0. If two requests are simultaneously blocked
+    for 1 second, the value is 1 second. If two requests are consecutively
+    blocked for 1 second each, the value is two seconds.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.PriorityLoadCount">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The number of distinct Effective Top-Level Domains Plus One (ETLD+1, i.e.,
+    google.com, bbc.co.uk) for which a priority cookie load occurred.
   </summary>
 </histogram>
 
@@ -3023,6 +3147,83 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Indicates whether a cookie value was valid or invalid when there was an
     attempt to set it, where a valid value is defined in RFC 6265 as ASCII
     characters excluding controls, whitspace, comma, semicolon, and backslash.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.TimeBlockedOnLoad" units="ms">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The amount of time (ms) between the cookie store load starting and
+    completing.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.TimeDatabaseMigrationToV5" units="ms">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>The amount of time (ms) to migrate a v4 database to v5.</summary>
+</histogram>
+
+<histogram name="Cookie.TimeDatabaseMigrationToV6" units="ms">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>The amount of time (ms) to migrate a v5 database to v6.</summary>
+</histogram>
+
+<histogram name="Cookie.TimeGet" units="ms">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The amount of time (ms) to get cookies for each URL request.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.TimeInitializeDB" units="ms">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>The amount of time (ms) to initialize the cookies database.</summary>
+</histogram>
+
+<histogram name="Cookie.TimeInitializeDomainMap" units="ms">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The amount of time (ms) to read and parse the domain map from the cookies
+    database.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.TimeKeyLoadDBQueueWait" units="ms">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    This histogram records the wall-clock delay between a priority load task
+    being posted to the DB-thread and its execution.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.TimeLoad" units="ms">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    This histogram records the sum of the durations of all initial tasks loading
+    cookies from the database.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.TimeLoadDBQueueWait" units="ms">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    This histogram records the wall-clock delay between the Load task being
+    posted to the DB-thread and its execution.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.TimeLoadDomains" units="ms">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The amount of time (ms) to read the domain map from the cookies database.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.TimeParseDomains" units="ms">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The amount of time (ms) to parse the domains already loaded from the cookies
+    database and put them in the domain map.
   </summary>
 </histogram>
 
