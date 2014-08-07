@@ -5,7 +5,7 @@
 #ifndef CircularRegion_h
 #define CircularRegion_h
 
-#include "modules/geolocation/GeofencingRegion.h"
+#include "modules/geofencing/GeofencingRegion.h"
 
 namespace blink {
 

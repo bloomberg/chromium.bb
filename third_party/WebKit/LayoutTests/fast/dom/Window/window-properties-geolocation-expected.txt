@@ -3,8 +3,5 @@ This test dumps all of the properties that are reachable from the window.clientI
 window.clientInformation.geolocation [object Geolocation]
 window.clientInformation.geolocation.clearWatch [function]
 window.clientInformation.geolocation.getCurrentPosition [function]
-window.clientInformation.geolocation.getRegisteredRegions [function]
-window.clientInformation.geolocation.registerRegion [function]
-window.clientInformation.geolocation.unregisterRegion [function]
 window.clientInformation.geolocation.watchPosition [function]
 

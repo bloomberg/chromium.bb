@@ -27,7 +27,6 @@
 #ifndef Geolocation_h
 #define Geolocation_h
 
-#include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/geolocation/GeoNotifier.h"
@@ -45,7 +44,6 @@ namespace blink {
 class Dictionary;
 class Document;
 class LocalFrame;
-class GeofencingRegion;
 class GeolocationController;
 class GeolocationError;
 class GeolocationPosition;
@@ -96,10 +94,6 @@ public:
 
     // Discards the notifier if it is a oneshot because it timed it.
     void requestTimedOut(GeoNotifier*);
-
-    ScriptPromise registerRegion(ScriptState*, GeofencingRegion*);
-    ScriptPromise unregisterRegion(ScriptState*, const String& regionId);
-    ScriptPromise getRegisteredRegions(ScriptState*) const;
 
 private:
     // Returns the last known position, if any. May return null.

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "modules/geolocation/CircularRegion.h"
+#include "modules/geofencing/CircularRegion.h"
 
 #include "bindings/core/v8/Dictionary.h"
 

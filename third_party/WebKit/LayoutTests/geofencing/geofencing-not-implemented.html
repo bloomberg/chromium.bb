@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../../../resources/js-test.js"></script>
+<script src="../resources/js-test.js"></script>
 </head>
 <body>
 <script>
@@ -14,9 +14,9 @@ function shouldReject(promise)
         function() { testPassed("Promise rejected as expected."); });
 }
 
-shouldReject(navigator.geolocation.registerRegion(new CircularRegion({latitude: 37.421999, longitude: -122.084015})));
-shouldReject(navigator.geolocation.unregisterRegion(""));
-shouldReject(navigator.geolocation.getRegisteredRegions());
+shouldReject(navigator.geofencing.registerRegion(new CircularRegion({latitude: 37.421999, longitude: -122.084015})));
+shouldReject(navigator.geofencing.unregisterRegion(""));
+shouldReject(navigator.geofencing.getRegisteredRegions());
 </script>
 </body>
 </html>

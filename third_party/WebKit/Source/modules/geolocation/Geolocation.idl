@@ -39,8 +39,4 @@
                                 optional Dictionary options);
 
     void clearWatch(long watchID);
-
-    [RuntimeEnabled=Geofencing, CallWith=ScriptState] Promise registerRegion(GeofencingRegion region);
-    [RuntimeEnabled=Geofencing, CallWith=ScriptState] Promise unregisterRegion(DOMString regionId);
-    [RuntimeEnabled=Geofencing, CallWith=ScriptState] Promise getRegisteredRegions();
 };
