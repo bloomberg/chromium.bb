@@ -848,14 +848,30 @@ wl_socket_destroy(struct wl_socket *s)
 		wl_event_source_remove(s->source);
 	if (s->addr.sun_path[0])
 		unlink(s->addr.sun_path);
-	if (s->fd)
+	if (s->fd >= 0)
 		close(s->fd);
 	if (s->lock_addr[0])
 		unlink(s->lock_addr);
-	if (s->fd_lock)
+	if (s->fd_lock >= 0)
 		close(s->fd_lock);
 
 	free(s);
+}
+
+static struct wl_socket *
+wl_socket_alloc(void)
+{
+	struct wl_socket *s;
+
+	s = malloc(sizeof *s);
+	if (!s)
+		return NULL;
+
+	memset(s, 0, sizeof *s);
+	s->fd = -1;
+	s->fd_lock = -1;
+
+	return s;
 }
 
 WL_EXPORT void
@@ -1149,11 +1165,9 @@ wl_display_add_socket_auto(struct wl_display *display)
 	 * you need more than this, use the explicit add_socket API. */
 	const int MAX_DISPLAYNO = 32;
 
-	s = malloc(sizeof *s);
+	s = wl_socket_alloc();
 	if (s == NULL)
 		return NULL;
-
-	memset(s, 0, sizeof *s);
 
 	do {
 		snprintf(display_name, sizeof display_name, "wayland-%d", displayno);
@@ -1184,8 +1198,7 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 {
 	struct wl_socket *s;
 
-	s = malloc(sizeof *s);
-	memset(s, 0, sizeof *s);
+	s = wl_socket_alloc();
 	if (s == NULL)
 		return -1;
 
