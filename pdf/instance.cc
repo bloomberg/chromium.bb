@@ -307,6 +307,9 @@ Instance::Instance(PP_Instance instance)
 }
 
 Instance::~Instance() {
+  // The engine may try to access this instance during its destruction.
+  // Make sure this happens early while the instance is still intact.
+  engine_.reset();
   RemovePerInstanceObject(kPPPPdfInterface, this);
 }
 
