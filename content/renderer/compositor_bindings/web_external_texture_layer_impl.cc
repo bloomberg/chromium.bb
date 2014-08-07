@@ -113,11 +113,7 @@ void WebExternalTextureLayerImpl::DidReleaseMailbox(
     WebExternalBitmapImpl* bitmap,
     unsigned sync_point,
     bool lost_resource) {
-  if (!layer) {
-    delete bitmap;
-    return;
-  }
-
+  DCHECK(layer);
   blink::WebExternalTextureMailbox available_mailbox;
   memcpy(available_mailbox.name, mailbox.name, sizeof(available_mailbox.name));
   available_mailbox.syncPoint = sync_point;
