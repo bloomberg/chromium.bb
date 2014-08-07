@@ -9,14 +9,11 @@ cr.define('options', function() {
   /**
    * AlertOverlay class
    * Encapsulated handling of a generic alert.
-   * @class
+   * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function AlertOverlay() {
     Page.call(this, 'alertOverlay', '', 'alertOverlay');
-    // AlertOverlay is special in that it is not tied to one page or overlay.
-    // Set the nesting level arbitrarily high so as to always be recognized as
-    // the top-most visible page.
-    this.nestingLevelOverride = 99;
   }
 
   cr.addSingletonGetter(AlertOverlay);
@@ -35,6 +32,9 @@ cr.define('options', function() {
     /** @override */
     initializePage: function() {
       Page.prototype.initializePage.call(this);
+
+      // AlertOverlay is special in that it is not tied to one page or overlay.
+      this.alwaysOnTop = true;
 
       var self = this;
       $('alertOverlayOk').onclick = function(event) {

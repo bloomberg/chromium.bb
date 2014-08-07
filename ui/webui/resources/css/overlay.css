@@ -179,3 +179,19 @@ html[dir='rtl'] .overlay .page .action-area {
   display: -webkit-box;
   padding: 14px 17px;
 }
+
+/* Prevent the page underneath the overlay from scrolling. */
+.frozen {
+  position: fixed;
+}
+
+#overlay-container-1 {
+  z-index: 11;
+}
+#overlay-container-2 {
+  z-index: 12;
+}
+
+.transparent {
+  opacity: 0;
+}

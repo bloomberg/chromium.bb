@@ -3,15 +3,20 @@
 // found in the LICENSE file.
 
 cr.define('help', function() {
+  var Page = cr.ui.pageManager.Page;
+  var PageManager = cr.ui.pageManager.PageManager;
+
   /**
    * Encapsulated handling of the channel change overlay.
    */
-  function ChannelChangePage() {}
+  function ChannelChangePage() {
+    Page.call(this, 'channel-change-page', '', 'channel-change-page');
+  }
 
   cr.addSingletonGetter(ChannelChangePage);
 
   ChannelChangePage.prototype = {
-    __proto__: help.HelpBasePage.prototype,
+    __proto__: Page.prototype,
 
     /**
      * Name of the channel the device is currently on.
@@ -46,18 +51,14 @@ cr.define('help', function() {
                     'selected-channel-good',
                     'selected-channel-unstable'],
 
-    /**
-     * Perform initial setup.
-     */
-    initialize: function() {
-      help.HelpBasePage.prototype.initialize.call(this, 'channel-change-page');
+    /** override */
+    initializePage: function() {
+      Page.prototype.initializePage.call(this);
+
+      $('channel-change-page-cancel-button').onclick =
+        PageManager.closeOverlay.bind(PageManager);
 
       var self = this;
-
-      $('channel-change-page-cancel-button').onclick = function() {
-        help.HelpPage.cancelOverlay();
-      };
-
       var options = this.getAllChannelOptions_();
       for (var i = 0; i < options.length; i++) {
         var option = options[i];
@@ -68,17 +69,17 @@ cr.define('help', function() {
 
       $('channel-change-page-powerwash-button').onclick = function() {
         self.setChannel_(self.getSelectedOption_(), true);
-        help.HelpPage.cancelOverlay();
+        PageManager.closeOverlay();
       };
 
       $('channel-change-page-change-button').onclick = function() {
         self.setChannel_(self.getSelectedOption_(), false);
-        help.HelpPage.cancelOverlay();
+        PageManager.closeOverlay();
       };
     },
 
-    onBeforeShow: function() {
-      help.HelpBasePage.prototype.onBeforeShow.call(this);
+    /** @override */
+    didShowPage: function() {
       if (this.targetChannel_ != null)
         this.selectOption_(this.targetChannel_);
       else if (this.currentChannel_ != null)
@@ -97,7 +98,7 @@ cr.define('help', function() {
      * @private
      */
     getAllChannelOptions_: function() {
-      return $('channel-change-page').querySelectorAll('input[type="radio"]');
+      return this.pageDiv.querySelectorAll('input[type="radio"]');
     },
 
     /**
@@ -168,10 +169,10 @@ cr.define('help', function() {
 
       // Switch to the new UI state.
       for (var i = 0; i < this.uiClassTable_.length; i++)
-          $('channel-change-page').classList.remove(this.uiClassTable_[i]);
+        this.pageDiv.classList.remove(this.uiClassTable_[i]);
 
       if (newOverlayClass)
-        $('channel-change-page').classList.add(newOverlayClass);
+        this.pageDiv.classList.add(newOverlayClass);
     },
 
     /**

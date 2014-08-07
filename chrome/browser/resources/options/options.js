@@ -226,12 +226,15 @@ function load() {
   Preferences.getInstance().initialize();
   AutomaticSettingsResetBanner.getInstance().initialize();
   OptionsPage.initialize();
+  PageManager.initialize(BrowserOptions.getInstance());
+  PageManager.addObserver(new uber.PageManagerObserver());
 
   var pageName = PageManager.getPageNameFromPath();
   // Still update history so that chrome://settings/nonexistant redirects
   // appropriately to chrome://settings/. If the URL matches, updateHistory_
   // will avoid the extra replaceState.
-  PageManager.showPageByName(pageName, true, {replaceState: true});
+  var updateHistory = true;
+  PageManager.showPageByName(pageName, updateHistory, {replaceState: true});
 
   var subpagesNavTabs = document.querySelectorAll('.subpages-nav-tabs');
   for (var i = 0; i < subpagesNavTabs.length; i++) {
@@ -239,6 +242,8 @@ function load() {
       OptionsPage.showTab(event.srcElement);
     };
   }
+
+  uber.onContentFrameLoaded();
 
   window.setTimeout(function() {
     document.documentElement.classList.remove('loading');

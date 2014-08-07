@@ -2,9 +2,13 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+body {
+  -webkit-margin-start: 23px;
+  color: rgb(48, 57, 66);
+}
+
 body.uber-frame {
   -webkit-margin-start: 155px;
-  color: rgb(48, 57, 66);
 }
 
 html[dir='rtl'] body.uber-frame {
@@ -15,21 +19,21 @@ html[dir='rtl'] body.uber-frame {
 
 /* TODO(dbeam): Remove .page class from overlays in settings so the junk below
  * isn't necessary. */
-body.uber-frame #extension-settings.page,
-body.uber-frame #mainview-content .page,
-body.uber-frame .subpage-sheet-container .page,
-body.uber-frame > .page {
+body #extension-settings.page,
+body #mainview-content .page,
+body .subpage-sheet-container .page,
+body > .page {
   -webkit-margin-end: 24px;
   min-width: 576px;
   padding-bottom: 20px;
   padding-top: 55px;
 }
 
-body.uber-frame header {
+body header {
   background-image: -webkit-linear-gradient(white,
                                             white 40%,
                                             rgba(255, 255, 255, 0.92));
-  left: 155px;
+  left: 23px;
   /* <section>s in options currently amount to 638px total, broken up into
    * 600px max-width + 18px -webkit-padding-start + 20px -webkit-margin-end
    * so we mirror this value here so the headers match width and horizontal
@@ -46,40 +50,48 @@ body.uber-frame header {
   z-index: 3;
 }
 
-html[dir='rtl'] body.uber-frame header {
+body.uber-frame header {
+  left: 155px;
+}
+
+html[dir='rtl'] body header {
   left: 0;
+  right: 23px;
+}
+
+html[dir='rtl'] body.uber-frame header {
   right: 155px;
 }
 
-body.uber-frame header > .search-field-container,
-body.uber-frame header > .header-extras,
-body.uber-frame header > button {
+body header > .search-field-container,
+body header > .header-extras,
+body header > button {
   position: absolute;
   right: 20px;
   top: 21px;
 }
 
-html[dir='rtl'] body.uber-frame header > .search-field-container,
-html[dir='rtl'] body.uber-frame header > .header-extras,
-html[dir='rtl'] body.uber-frame header > button {
+html[dir='rtl'] body header > .search-field-container,
+html[dir='rtl'] body header > .header-extras,
+html[dir='rtl'] body header > button {
   left: 20px;
   right: auto;
 }
 
-body.uber-frame header input[type='search'],
-body.uber-frame header input[type='text'],
-body.uber-frame header button {
+body header input[type='search'],
+body header input[type='text'],
+body header button {
   margin: 0;
 }
 
-body.uber-frame header > h1 {
+body header > h1 {
   margin: 0;
   padding: 21px 0 13px;
 }
 
 /* Create a border under the h1 (but before anything that gets appended
  * to the end of the header). */
-body.uber-frame header > h1::after {
+body header > h1::after {
   -webkit-margin-end: 20px;
   background-color: #eee;
   content: ' ';
@@ -89,7 +101,7 @@ body.uber-frame header > h1::after {
   top: 13px;
 }
 
-body.uber-frame footer {
+body footer {
   border-top: 1px solid #eee;
   margin-top: 16px;
   /* min-width and max-width should match the header */
@@ -100,32 +112,32 @@ body.uber-frame footer {
 
 /* Sections are used in options pages, help page and history page. This defines
  * the section metrics to match the header metrics above. */
-body.uber-frame section {
+body section {
   -webkit-padding-start: 18px;
   margin-bottom: 24px;
   margin-top: 8px;
   max-width: 600px;
 }
 
-body.uber-frame section:last-of-type {
+body section:last-of-type {
   margin-bottom: 0;
 }
 
-body.uber-frame section > h3 {
+body section > h3 {
   -webkit-margin-start: -18px;
 }
 
-body.uber-frame section > div:only-of-type {
+body section > div:only-of-type {
   -webkit-box-flex: 1;
 }
 
-body.uber-frame .section-header {
+body .section-header {
   -webkit-margin-start: -18px;
   margin-bottom: 0.8em;
   margin-top: 1.2em;
 }
 
-body.uber-frame .section-header > h3 {
+body .section-header > h3 {
   display: inline;
 }
 

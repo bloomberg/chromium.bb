@@ -21,13 +21,12 @@ cr.define('cr.ui.pageManager', function() {
     isDialog: false,
 
     /**
-     * Offset of page container in pixels, to allow room for side menu.
-     * Simplified settings pages can override this if they don't use the menu.
-     * The default (155) comes from -webkit-margin-start in uber_shared.css
-     * TODO(michaelpg): Remove dependency on uber menu (crbug.com/313244).
+     * Offset of page container in pixels. Uber pages that use the side menu
+     * can override this with the setter.
+     * The default (23) comes from -webkit-margin-start in uber_shared.css.
      * @type {number}
      */
-    horizontalOffset: 155,
+    horizontalOffset_: 23,
 
     /**
      * Root pages. Maps lower-case page names to the respective page object.
@@ -44,6 +43,12 @@ cr.define('cr.ui.pageManager', function() {
     registeredOverlayPages: {},
 
     /**
+     * Observers will be notified when opening and closing overlays.
+     * @type {!Array.<!PageManager.Observer>}
+     */
+    observers_: [],
+
+    /**
      * Initializes the complete page.
      * @param {cr.ui.pageManager.Page} defaultPage The page to be shown when no
      *     page is specified in the path.
@@ -58,7 +63,7 @@ cr.define('cr.ui.pageManager', function() {
       this.handleScroll_();
 
       // Shake the dialog if the user clicks outside the dialog bounds.
-      var containers = [$('overlay-container-1'), $('overlay-container-2')];
+      var containers = document.querySelectorAll('body > .overlay');
       for (var i = 0; i < containers.length; i++) {
         var overlay = containers[i];
         cr.ui.overlay.setupOverlay(overlay);
@@ -248,14 +253,11 @@ cr.define('cr.ui.pageManager', function() {
     },
 
     /**
-     * Gets the level of the page. The root page (e.g., BrowserOptions) has
+     * Gets the level of the page. Root pages (e.g., BrowserOptions) are at
      * level 0.
      * @return {number} How far down this page is from the root page.
      */
     getNestingLevel: function(page) {
-      if (typeof page.nestingLevelOverride == "number")
-        return page.nestingLevelOverride;
-
       var level = 0;
       var parent = page.parentPage;
       while (parent) {
@@ -284,6 +286,17 @@ cr.define('cr.ui.pageManager', function() {
     },
 
     /**
+     * Returns true if the page is a direct descendent of a root page, or if
+     * the page is considered always on top. Doesn't consider visibility.
+     * @param {cr.ui.pageManager.Page} page Page to check.
+     * @return {boolean} True if |page| is a top-level overlay.
+     */
+    isTopLevelOverlay: function(page) {
+      return page.isOverlay &&
+            (page.alwaysOnTop || this.getNestingLevel(page) == 1);
+    },
+
+    /**
      * Called when an page is shown or hidden to update the root page
      * based on the page's new visibility.
      * @param {cr.ui.pageManager.Page} page The page being made visible or
@@ -292,7 +305,10 @@ cr.define('cr.ui.pageManager', function() {
     onPageVisibilityChanged: function(page) {
       this.updateRootPageFreezeState();
 
-      if (page.isOverlay && !page.visible)
+      for (var i = 0; i < this.observers_.length; ++i)
+        this.observers_[i].onPageVisibilityChanged(page);
+
+      if (!page.visible && this.isTopLevelOverlay(page))
         this.updateScrollPosition_();
     },
 
@@ -442,8 +458,15 @@ cr.define('cr.ui.pageManager', function() {
      * Change the horizontal offset used to reposition elements while showing an
      * overlay from the default.
      */
-    setHorizontalOffset: function(value) {
-      this.horizontalOffset = value;
+    set horizontalOffset(value) {
+      this.horizontalOffset_ = value;
+    },
+
+    /**
+     * @param {PageManager.Observer} observer The observer to register.
+     */
+    addObserver: function(observer) {
+      this.observers_.push(observer);
     },
 
     /**
@@ -514,39 +537,12 @@ cr.define('cr.ui.pageManager', function() {
       for (var name in this.registeredOverlayPages) {
         var page = this.registeredOverlayPages[name];
         if (page.visible &&
-            (!topmostPage || this.getNestingLevel(page) >
-                             this.getNestingLevel(topmostPage))) {
+            (!topmostPage || page.alwaysOnTop ||
+             this.getNestingLevel(page) > this.getNestingLevel(topmostPage))) {
           topmostPage = page;
         }
       }
       return topmostPage;
-    },
-
-    /**
-     * Hides the visible overlay. Does not affect the history state.
-     * @private
-     */
-    hideOverlay_: function() {
-      var overlay = this.getVisibleOverlay_();
-      if (overlay)
-        overlay.visible = false;
-    },
-
-    /**
-     * Returns the pages which are currently visible, ordered by nesting level
-     * (ascending).
-     * @return {Array.Page} The pages which are currently visible, ordered
-     * by nesting level (ascending).
-     * @private
-     */
-    getVisiblePages_: function() {
-      var visiblePages = [];
-      for (var name in this.registeredPages) {
-        var page = this.registeredPages[name];
-        if (page.visible)
-          visiblePages[this.getNestingLevel(page)] = page;
-      }
-      return visiblePages;
     },
 
     /**
@@ -556,17 +552,13 @@ cr.define('cr.ui.pageManager', function() {
      * @private
      */
     getTopmostVisibleNonOverlayPage_: function() {
-      var topPage = null;
       for (var name in this.registeredPages) {
         var page = this.registeredPages[name];
-        if (page.visible &&
-            (!topPage || this.getNestingLevel(page) >
-                         this.getNestingLevel(topPage))) {
-          topPage = page;
-        }
+        if (page.visible)
+          return page;
       }
 
-      return topPage;
+      return null;
     },
 
     /**
@@ -589,10 +581,11 @@ cr.define('cr.ui.pageManager', function() {
      */
     updateTitle_: function() {
       var page = this.getTopmostVisiblePage();
-      // TODO(michaelpg): Remove dependency on uber (crbug.com/313244).
       while (page) {
         if (page.title) {
-          uber.setTitle(page.title);
+          for (var i = 0; i < this.observers_.length; ++i) {
+            this.observers_[i].updateTitle(page.title);
+          }
           return;
         }
         page = page.parentPage;
@@ -600,9 +593,10 @@ cr.define('cr.ui.pageManager', function() {
     },
 
     /**
-     * Pushes the current page onto the history stack, replacing the current
-     * entry if appropriate.
-     * @param {boolean} replace If true, allow no history events to be created.
+     * Constructs a new path to push onto the history stack, using observers
+     * to update the history.
+     * @param {boolean} replace If true, handlers should replace the current
+     *     history event rather than create new ones.
      * @param {object=} opt_params A bag of optional params, including:
      *     {boolean} ignoreHash Whether to include the hash or not.
      * @private
@@ -626,9 +620,9 @@ cr.define('cr.ui.pageManager', function() {
       if (path == newPath)
         return;
 
-      // TODO(michaelpg): Remove dependency on uber (crbug.com/313244).
-      var historyFunction = replace ? uber.replaceState : uber.pushState;
-      historyFunction.call(uber, {}, newPath);
+      for (var i = 0; i < this.observers_.length; ++i) {
+        this.observers_[i].updateHistory(newPath, replace);
+      }
     },
 
     /**
@@ -715,6 +709,33 @@ cr.define('cr.ui.pageManager', function() {
         e.style.left = this.horizontalOffset - scrollLeft + 'px';
       }
     },
+  };
+
+  /**
+   * An observer of PageManager.
+   * @interface
+   */
+  PageManager.Observer = function() {}
+
+  PageManager.Observer.prototype = {
+    /**
+     * Called when a page is being shown or has been hidden.
+     * @param {cr.ui.pageManager.Page} page The page being shown or hidden.
+     */
+    onPageVisibilityChanged: function(page) {},
+
+    /**
+     * Called when a new title should be set.
+     * @param {string} title The title to set.
+     */
+    updateTitle: function(title) {},
+
+    /**
+     * Called when a page is navigated to.
+     * @param {string} path The path of the page being visited.
+     * @param {boolean} replace If true, allow no history events to be created.
+     */
+    updateHistory: function(path, replace) {},
   };
 
   // Export

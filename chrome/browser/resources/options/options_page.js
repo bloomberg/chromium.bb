@@ -20,8 +20,6 @@ cr.define('options', function() {
      */
     initialize: function() {
       chrome.send('coreOptionsInitialize');
-      uber.onContentFrameLoaded();
-      PageManager.initialize(BrowserOptions.getInstance());
     },
 
     /**

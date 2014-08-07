@@ -79,6 +79,12 @@ cr.define('options', function() {
       Page.prototype.initializePage.call(this);
       var self = this;
 
+      if (window.top != window) {
+        // The options page is not in its own window.
+        document.body.classList.add('uber-frame');
+        PageManager.horizontalOffset = 155;
+      }
+
       // Ensure that navigation events are unblocked on uber page. A reload of
       // the settings page while an overlay is open would otherwise leave uber
       // page in a blocked state, where tab switching is not possible.

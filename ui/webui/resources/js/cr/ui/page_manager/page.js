@@ -54,11 +54,11 @@ cr.define('cr.ui.pageManager', function() {
     associatedControls: null,
 
     /**
-     * A number specifying how far down this page should be from the root page.
-     * If null, the PageManager calculates the nesting level on demand.
-     * @type {number}
+     * If true, this page should always be considered the top-most page when
+     * visible.
+     * @type {boolean}
      */
-    nestingLevelOverride_: null,
+    alwaysOnTop_: false,
 
     /**
      * Initializes page content.
@@ -174,19 +174,20 @@ cr.define('cr.ui.pageManager', function() {
     },
 
     /**
-     * Gets nesting level override.
-     * @type {number}
+     * @type {boolean} True if this page should always be considered the
+     *     top-most page when visible.
      */
-    get nestingLevelOverride() {
-      return this.nestingLevelOverride_;
+    get alwaysOnTop() {
+      return this.alwaysOnTop_;
     },
 
     /**
-     * Sets nesting level override.
-     * @type {number}
+     * @type {boolean} True if this page should always be considered the
+     *     top-most page when visible. Only overlays can be always on top.
      */
-    set nestingLevelOverride(nestingLevel) {
-      this.nestingLevelOverride_ = nestingLevel;
+    set alwaysOnTop(value) {
+      assert(this.isOverlay);
+      this.alwaysOnTop_ = value;
     },
 
     /**
@@ -198,11 +199,6 @@ cr.define('cr.ui.pageManager', function() {
       assert(this.isOverlay);
       var pageDiv = this.pageDiv;
       var container = this.container;
-
-      if (visible) {
-        // TODO(michaelpg): Remove dependency on uber (crbug.com/313244).
-        uber.invokeMethodOnParent('beginInterceptingEvents');
-      }
 
       if (container.hidden != visible) {
         if (visible) {
@@ -278,11 +274,6 @@ cr.define('cr.ui.pageManager', function() {
 
         if (this.parentPage)
           this.parentPage.pageDiv.parentElement.removeAttribute('aria-hidden');
-
-        if (PageManager.getNestingLevel(this) == 1) {
-          // TODO(michaelpg): Remove dependency on uber (crbug.com/313244).
-          uber.invokeMethodOnParent('stopInterceptingEvents');
-        }
 
         PageManager.onPageVisibilityChanged(this);
       }

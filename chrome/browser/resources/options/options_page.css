@@ -37,7 +37,7 @@ body {
   min-width: 600px;
 }
 
-body.uber-frame #searchBox {
+body #searchBox {
   position: fixed;
   z-index: 4;
 }
@@ -67,20 +67,6 @@ div.disabled {
 
 .stretch {
   -webkit-box-flex: 1;
-}
-
-.frozen {
-  position: fixed;
-}
-
-#overlay-container-1 {
-  z-index: 11;
-}
-#overlay-container-2 {
-  z-index: 12;
-}
-#overlay-container-3 {
-  z-index: 13;
 }
 
 .raw-button,
@@ -116,10 +102,6 @@ div.disabled {
 
 .option {
   margin-top: 0;
-}
-
-.transparent {
-  opacity: 0;
 }
 
 .touch-slider {
