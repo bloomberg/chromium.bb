@@ -275,6 +275,7 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
 
   const TargetVector& targets = found->second;
   std::vector<const Target*> chain;  // Prevent reallocating in the loop.
+  bool direct_dependent_configs_apply = false;
 
   // For all targets containing this file, we require that at least one be
   // a dependency of the current target, and all targets that are dependencies
@@ -287,7 +288,13 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
     if (to_target == from_target)
       return true;
 
-    if (IsDependencyOf(to_target, from_target, &chain)) {
+    bool has_direct_dependent_compiler_settings =
+        HasDirectDependentCompilerSettings(to_target);
+    if (IsDependencyOf(to_target,
+                       from_target,
+                       has_direct_dependent_compiler_settings,
+                       &chain,
+                       &direct_dependent_configs_apply)) {
       DCHECK(chain.size() >= 2);
       DCHECK(chain[0] == to_target);
       DCHECK(chain[chain.size() - 1] == from_target);
@@ -319,14 +326,13 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
 
       // If the to_target has direct_dependent_configs, they must apply to the
       // from_target.
-      if (HasDirectDependentCompilerSettings(to_target)) {
-        size_t problematic_index;
-        if (!DoDirectDependentConfigsApply(chain, &problematic_index)) {
-          *err = Err(CreatePersistentRange(source_file, range),
-                     "Can't include this header from here.",
-                     GetDependentConfigChainError(chain, problematic_index));
-          return false;
-        }
+      if (has_direct_dependent_compiler_settings &&
+          !direct_dependent_configs_apply) {
+        size_t problematic_index = GetDependentConfigChainProblemIndex(chain);
+        *err = Err(CreatePersistentRange(source_file, range),
+                   "Can't include this header from here.",
+                   GetDependentConfigChainError(chain, problematic_index));
+        return false;
       }
 
       found_dependency = true;
@@ -374,33 +380,81 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
 
 bool HeaderChecker::IsDependencyOf(const Target* search_for,
                                    const Target* search_from,
-                                   std::vector<const Target*>* chain) const {
-  std::set<const Target*> checked;
-  return IsDependencyOf(search_for, search_from, chain, &checked);
+                                   bool prefer_direct_dependent_configs,
+                                   std::vector<const Target*>* chain,
+                                   bool* direct_dependent_configs_apply) const {
+  if (search_for == search_from)
+    return false;
+
+  // Find the shortest chain that forwards dependent configs, if one exists.
+  if (prefer_direct_dependent_configs &&
+      IsDependencyOf(search_for, search_from, true, chain)) {
+    if (direct_dependent_configs_apply)
+      *direct_dependent_configs_apply = true;
+    return true;
+  }
+
+  // If not, try to find any dependency chain at all.
+  if (IsDependencyOf(search_for, search_from, false, chain)) {
+    if (direct_dependent_configs_apply)
+      *direct_dependent_configs_apply = false;
+    return true;
+  }
+
+  return false;
 }
 
 bool HeaderChecker::IsDependencyOf(const Target* search_for,
                                    const Target* search_from,
-                                   std::vector<const Target*>* chain,
-                                   std::set<const Target*>* checked) const {
-  if (checked->find(search_for) != checked->end())
-    return false;  // Already checked this subtree.
+                                   bool requires_dependent_configs,
+                                   std::vector<const Target*>* chain) const {
+  // This method conducts a breadth-first search through the dependency graph
+  // to find a shortest chain from search_from to search_for.
+  //
+  // work_queue maintains a queue of targets which need to be considered as
+  // part of this chain, in the order they were first traversed.
+  //
+  // Each time a new transitive dependency of search_from is discovered for
+  // the first time, it is added to work_queue and a "breadcrumb" is added,
+  // indicating which target it was reached from when first discovered.
+  //
+  // Once this search finds search_for, the breadcrumbs are used to reconstruct
+  // a shortest dependency chain (in reverse order) from search_from to
+  // search_for.
 
-  const LabelTargetVector& deps = search_from->deps();
-  for (size_t i = 0; i < deps.size(); i++) {
-    if (deps[i].ptr == search_for) {
-      // Found it.
+  std::map<const Target*, const Target*> breadcrumbs;
+  std::queue<const Target*> work_queue;
+  work_queue.push(search_from);
+
+  while (!work_queue.empty()) {
+    const Target* target = work_queue.front();
+    work_queue.pop();
+
+    if (target == search_for) {
+      // Found it! Reconstruct the chain.
       chain->clear();
-      chain->push_back(deps[i].ptr);
+      while (target != search_from) {
+        chain->push_back(target);
+        target = breadcrumbs[target];
+      }
       chain->push_back(search_from);
       return true;
     }
 
-    // Recursive search.
-    checked->insert(deps[i].ptr);
-    if (IsDependencyOf(search_for, deps[i].ptr, chain, checked)) {
-      chain->push_back(search_from);
-      return true;
+    // If the callee requires direct-dependent configs be forwarded, then
+    // only targets for which they will be forwarded should be explored.
+    // Groups implicitly forward direct-dependent configs of all of their deps.
+    bool uses_all_deps = !requires_dependent_configs || target == search_from ||
+                         target->output_type() == Target::GROUP;
+
+    const LabelTargetVector& deps =
+        uses_all_deps ? target->deps()
+                      : target->forward_dependent_configs().vector();
+    for (size_t i = 0; i < deps.size(); i++) {
+      bool seeing_for_first_time =
+          breadcrumbs.insert(std::make_pair(deps[i].ptr, target)).second;
+      if (seeing_for_first_time)
+        work_queue.push(deps[i].ptr);
     }
   }
 
@@ -408,24 +462,17 @@ bool HeaderChecker::IsDependencyOf(const Target* search_for,
 }
 
 // static
-bool HeaderChecker::DoDirectDependentConfigsApply(
-    const std::vector<const Target*>& chain,
-    size_t* problematic_index) {
+size_t HeaderChecker::GetDependentConfigChainProblemIndex(
+    const std::vector<const Target*>& chain) {
   // Direct dependent configs go up the chain one level with the following
   // exceptions:
   // - Skip over groups
   // - Skip anything that explicitly forwards it
 
-  // All chains should be at least two (or it wouldn't be a chain).
-  DCHECK(chain.size() >= 2);
+  // Chains of length less than three have no problems.
+  // These should have been filtered out earlier.
+  DCHECK(chain.size() >= 3);
 
-  // A chain of length 2 is always OK as far as direct dependent configs are
-  // concerned since the targets are direct dependents.
-  if (chain.size() == 2)
-    return true;
-
-  // Check the middle configs to make sure they're either groups or configs
-  // are forwarded.
   for (size_t i = 1; i < chain.size() - 1; i++) {
     if (chain[i]->output_type() == Target::GROUP)
       continue;  // This one is OK, skip to next one.
@@ -436,11 +483,10 @@ bool HeaderChecker::DoDirectDependentConfigsApply(
         chain[i]->forward_dependent_configs();
     if (std::find_if(forwarded.begin(), forwarded.end(),
                      LabelPtrPtrEquals<Target>(chain[i - 1])) ==
-        forwarded.end()) {
-      *problematic_index = i;
-      return false;
-    }
+        forwarded.end())
+      return i;
   }
 
-  return true;
+  CHECK(false) << "Unable to diagnose dependent config chain problem.";
+  return 0;
 }
