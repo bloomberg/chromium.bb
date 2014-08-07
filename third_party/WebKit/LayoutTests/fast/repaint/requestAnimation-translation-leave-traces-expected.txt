@@ -1,0 +1,20 @@
+This test checks that changing the transform on an element triggers a correct invalidation.
+The paint invalidations below should match the transformed element's coordinates.
+Tested locations: 1200,1500
+{
+  "bounds": [1600, 585],
+  "children": [
+    {
+      "bounds": [1600, 585],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [1500, 0, 100, 100],
+        [1200, 0, 100, 100],
+        [1200, 0, 100, 100],
+        [900, 0, 100, 100]
+      ]
+    }
+  ]
+}
+

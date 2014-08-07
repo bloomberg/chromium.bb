@@ -90,16 +90,8 @@ void RenderLayerModelObject::styleWillChange(StyleDifference diff, const RenderS
 {
     s_wasFloating = isFloating();
 
-    // If our z-index changes value or our visibility changes,
-    // we need to dirty our stacking context's z-order list.
-    RenderStyle* oldStyle = style();
-    if (oldStyle) {
-        // Do a repaint with the old style first through RenderLayerRepainter.
-        // RenderObject::styleWillChange takes care of repainting objects without RenderLayers.
+    if (RenderStyle* oldStyle = style()) {
         if (parent() && diff.needsRepaintLayer()) {
-            // This is currently need to make non-layout-requiring updates work that impact descendant layers,
-            // such as changes to opacity or transform.
-            layer()->repainter().repaintIncludingNonCompositingDescendants();
             if (oldStyle->hasClip() != newStyle.hasClip()
                 || oldStyle->clip() != newStyle.clip())
                 layer()->clipper().clearClipRectsIncludingDescendants();
