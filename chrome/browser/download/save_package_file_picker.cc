@@ -255,7 +255,7 @@ void SavePackageFilePicker::FileSelected(
   }
 
   base::FilePath path_copy(path);
-  file_util::NormalizeFileNameEncoding(&path_copy);
+  base::i18n::NormalizeFileNameEncoding(&path_copy);
 
   download_prefs_->SetSaveFilePath(path_copy.DirName());
 

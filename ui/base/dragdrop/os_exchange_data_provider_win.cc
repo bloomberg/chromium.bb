@@ -917,7 +917,7 @@ static void CreateValidFileNameFromTitle(const GURL& url,
     }
   } else {
     *validated = title;
-    file_util::ReplaceIllegalCharactersInPath(validated, '-');
+    base::i18n::ReplaceIllegalCharactersInPath(validated, '-');
   }
   static const wchar_t extension[] = L".url";
   static const size_t max_length = MAX_PATH - arraysize(extension);

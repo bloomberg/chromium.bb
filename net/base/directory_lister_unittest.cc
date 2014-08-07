@@ -50,7 +50,7 @@ class ListerDelegate : public DirectoryLister::DirectoryListerDelegate {
       for (size_t previous = 0, current = 1;
            current < file_list_.size();
            previous++, current++) {
-        EXPECT_TRUE(file_util::LocaleAwareCompareFilenames(
+        EXPECT_TRUE(base::i18n::LocaleAwareCompareFilenames(
             paths_[previous], paths_[current]));
       }
     }
@@ -71,7 +71,7 @@ class ListerDelegate : public DirectoryLister::DirectoryListerDelegate {
                   file_list_[current].GetName().BaseName().value());
         EXPECT_EQ(file_list_[previous].IsDirectory(),
                   file_list_[current].IsDirectory());
-        EXPECT_TRUE(file_util::LocaleAwareCompareFilenames(
+        EXPECT_TRUE(base::i18n::LocaleAwareCompareFilenames(
             file_list_[previous].GetName(),
             file_list_[current].GetName()));
       }

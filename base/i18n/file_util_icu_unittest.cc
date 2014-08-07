@@ -9,6 +9,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+namespace base {
+namespace i18n {
+
 // file_util winds up using autoreleased objects on the Mac, so this needs
 // to be a PlatformTest
 class FileUtilICUTest : public PlatformTest {
@@ -29,7 +32,7 @@ static const struct goodbad_pair {
 TEST_F(FileUtilICUTest, ReplaceIllegalCharacersInPathLinuxTest) {
   for (size_t i = 0; i < arraysize(kIllegalCharacterCases); ++i) {
     std::string bad_name(kIllegalCharacterCases[i].bad_name);
-    file_util::ReplaceIllegalCharactersInPath(&bad_name, '-');
+    ReplaceIllegalCharactersInPath(&bad_name, '-');
     EXPECT_EQ(kIllegalCharacterCases[i].good_name, bad_name);
   }
 }
@@ -70,12 +73,12 @@ TEST_F(FileUtilICUTest, ReplaceIllegalCharactersInPathTest) {
   for (size_t i = 0; i < arraysize(kIllegalCharacterCases); ++i) {
 #if defined(OS_WIN)
     std::wstring bad_name(kIllegalCharacterCases[i].bad_name);
-    file_util::ReplaceIllegalCharactersInPath(&bad_name, '-');
+    ReplaceIllegalCharactersInPath(&bad_name, '-');
     EXPECT_EQ(kIllegalCharacterCases[i].good_name, bad_name);
 #elif defined(OS_MACOSX)
-    std::string bad_name(base::WideToUTF8(kIllegalCharacterCases[i].bad_name));
-    file_util::ReplaceIllegalCharactersInPath(&bad_name, '-');
-    EXPECT_EQ(base::WideToUTF8(kIllegalCharacterCases[i].good_name), bad_name);
+    std::string bad_name(WideToUTF8(kIllegalCharacterCases[i].bad_name));
+    ReplaceIllegalCharactersInPath(&bad_name, '-');
+    EXPECT_EQ(WideToUTF8(kIllegalCharacterCases[i].good_name), bad_name);
 #endif
   }
 }
@@ -96,12 +99,14 @@ static const struct normalize_name_encoding_test_cases {
 
 TEST_F(FileUtilICUTest, NormalizeFileNameEncoding) {
   for (size_t i = 0; i < arraysize(kNormalizeFileNameEncodingTestCases); i++) {
-    base::FilePath path(kNormalizeFileNameEncodingTestCases[i].original_path);
-    file_util::NormalizeFileNameEncoding(&path);
-    EXPECT_EQ(
-        base::FilePath(kNormalizeFileNameEncodingTestCases[i].normalized_path),
-        path);
+    FilePath path(kNormalizeFileNameEncodingTestCases[i].original_path);
+    NormalizeFileNameEncoding(&path);
+    EXPECT_EQ(FilePath(kNormalizeFileNameEncodingTestCases[i].normalized_path),
+              path);
   }
 }
 
 #endif
+
+}  // namespace i18n
+}  // namespace base

@@ -141,7 +141,7 @@ base::FilePath GetSanitizedFileName(const base::string16& name) {
 #else
   std::string file_name = base::UTF16ToUTF8(name);
 #endif
-  file_util::ReplaceIllegalCharactersInPath(&file_name, '_');
+  base::i18n::ReplaceIllegalCharactersInPath(&file_name, '_');
   return base::FilePath(file_name);
 }
 
@@ -426,7 +426,7 @@ void GetIconsInfo(const WebApplicationInfo& app_info,
 
 #if defined(OS_LINUX)
 std::string GetWMClassFromAppName(std::string app_name) {
-  file_util::ReplaceIllegalCharactersInPath(&app_name, '_');
+  base::i18n::ReplaceIllegalCharactersInPath(&app_name, '_');
   base::TrimString(app_name, "_", &app_name);
   return app_name;
 }

@@ -24,7 +24,7 @@ bool IsSafePortablePathComponent(const base::FilePath& component) {
   return !component.empty() && (component == component.BaseName()) &&
          (component == component.StripTrailingSeparators()) &&
          FilePathToString16(component, &component16) &&
-         file_util::IsFilenameLegal(component16) &&
+         base::i18n::IsFilenameLegal(component16) &&
          !IsShellIntegratedExtension(extension) &&
          (sanitized == component.value()) && !IsReservedName(component.value());
 }
@@ -56,7 +56,7 @@ base::string16 GetSuggestedFilename(const GURL& url,
       suggested_name,
       mime_type,
       default_name,
-      base::Bind(&file_util::ReplaceIllegalCharactersInPath));
+      base::Bind(&base::i18n::ReplaceIllegalCharactersInPath));
 }
 
 base::FilePath GenerateFileName(const GURL& url,
@@ -72,14 +72,14 @@ base::FilePath GenerateFileName(const GURL& url,
       suggested_name,
       mime_type,
       default_file_name,
-      base::Bind(&file_util::ReplaceIllegalCharactersInPath)));
+      base::Bind(&base::i18n::ReplaceIllegalCharactersInPath)));
 
 #if defined(OS_CHROMEOS)
   // When doing file manager operations on ChromeOS, the file paths get
   // normalized in WebKit layer, so let's ensure downloaded files have
   // normalized names. Otherwise, we won't be able to handle files with NFD
   // utf8 encoded characters in name.
-  file_util::NormalizeFileNameEncoding(&generated_name);
+  base::i18n::NormalizeFileNameEncoding(&generated_name);
 #endif
 
   DCHECK(!generated_name.empty());

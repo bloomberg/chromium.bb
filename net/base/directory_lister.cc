@@ -41,8 +41,8 @@ bool CompareAlphaDirsFirst(const DirectoryLister::DirectoryListerData& a,
   if (a_is_directory != b_is_directory)
     return a_is_directory;
 
-  return file_util::LocaleAwareCompareFilenames(a.info.GetName(),
-                                                b.info.GetName());
+  return base::i18n::LocaleAwareCompareFilenames(a.info.GetName(),
+                                                 b.info.GetName());
 }
 
 bool CompareDate(const DirectoryLister::DirectoryListerData& a,
@@ -66,7 +66,7 @@ bool CompareDate(const DirectoryLister::DirectoryListerData& a,
 // Static.
 bool CompareFullPath(const DirectoryLister::DirectoryListerData& a,
                      const DirectoryLister::DirectoryListerData& b) {
-  return file_util::LocaleAwareCompareFilenames(a.path, b.path);
+  return base::i18n::LocaleAwareCompareFilenames(a.path, b.path);
 }
 
 void SortData(std::vector<DirectoryLister::DirectoryListerData>* data,

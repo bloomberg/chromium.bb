@@ -85,7 +85,7 @@ base::FilePath GetDefaultFilepathForBookmarkExport() {
                                  base::TimeFormatShortDateNumeric(time));
 #endif
 
-  file_util::ReplaceIllegalCharactersInPath(&filename, '_');
+  base::i18n::ReplaceIllegalCharactersInPath(&filename, '_');
 
   base::FilePath default_path;
   PathService::Get(chrome::DIR_USER_DOCUMENTS, &default_path);

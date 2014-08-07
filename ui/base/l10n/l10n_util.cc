@@ -225,7 +225,7 @@ bool IsLocalePartiallyPopulated(const std::string& locale_name) {
 bool IsLocaleAvailable(const std::string& locale) {
   // If locale has any illegal characters in it, we don't want to try to
   // load it because it may be pointing outside the locale data file directory.
-  if (!file_util::IsFilenameLegal(base::ASCIIToUTF16(locale)))
+  if (!base::i18n::IsFilenameLegal(base::ASCIIToUTF16(locale)))
     return false;
 
   // IsLocalePartiallyPopulated() can be called here for an early return w/o

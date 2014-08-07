@@ -19,7 +19,8 @@
 #include "third_party/icu/source/common/unicode/uniset.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 
-using base::string16;
+namespace base {
+namespace i18n {
 
 namespace {
 
@@ -84,20 +85,18 @@ IllegalCharacters::IllegalCharacters() {
 
 }  // namespace
 
-namespace file_util {
-
 bool IsFilenameLegal(const string16& file_name) {
   return IllegalCharacters::GetInstance()->containsNone(file_name);
 }
 
-void ReplaceIllegalCharactersInPath(base::FilePath::StringType* file_name,
+void ReplaceIllegalCharactersInPath(FilePath::StringType* file_name,
                                     char replace_char) {
   DCHECK(file_name);
 
   DCHECK(!(IllegalCharacters::GetInstance()->contains(replace_char)));
 
   // Remove leading and trailing whitespace.
-  base::TrimWhitespace(*file_name, base::TRIM_ALL, file_name);
+  TrimWhitespace(*file_name, TRIM_ALL, file_name);
 
   IllegalCharacters* illegal = IllegalCharacters::GetInstance();
   int cursor = 0;  // The ICU macros expect an int.
@@ -133,8 +132,7 @@ void ReplaceIllegalCharactersInPath(base::FilePath::StringType* file_name,
   }
 }
 
-bool LocaleAwareCompareFilenames(const base::FilePath& a,
-                                 const base::FilePath& b) {
+bool LocaleAwareCompareFilenames(const FilePath& a, const FilePath& b) {
   UErrorCode error_code = U_ZERO_ERROR;
   // Use the default collator. The default locale should have been properly
   // set by the time this constructor is called.
@@ -144,31 +142,31 @@ bool LocaleAwareCompareFilenames(const base::FilePath& a,
   collator->setStrength(icu::Collator::TERTIARY);
 
 #if defined(OS_WIN)
-  return base::i18n::CompareString16WithCollator(collator.get(),
-      base::WideToUTF16(a.value()), base::WideToUTF16(b.value())) == UCOL_LESS;
+  return CompareString16WithCollator(collator.get(),
+      WideToUTF16(a.value()), WideToUTF16(b.value())) == UCOL_LESS;
 
 #elif defined(OS_POSIX)
   // On linux, the file system encoding is not defined. We assume
   // SysNativeMBToWide takes care of it.
-  return base::i18n::CompareString16WithCollator(
+  return CompareString16WithCollator(
       collator.get(),
-      base::WideToUTF16(base::SysNativeMBToWide(a.value().c_str())),
-      base::WideToUTF16(base::SysNativeMBToWide(b.value().c_str()))
-      ) == UCOL_LESS;
+      WideToUTF16(SysNativeMBToWide(a.value().c_str())),
+      WideToUTF16(SysNativeMBToWide(b.value().c_str()))) == UCOL_LESS;
 #else
   #error Not implemented on your system
 #endif
 }
 
-void NormalizeFileNameEncoding(base::FilePath* file_name) {
+void NormalizeFileNameEncoding(FilePath* file_name) {
 #if defined(OS_CHROMEOS)
   std::string normalized_str;
-  if (base::ConvertToUtf8AndNormalize(file_name->BaseName().value(),
-                                      base::kCodepageUTF8,
-                                      &normalized_str)) {
-    *file_name = file_name->DirName().Append(base::FilePath(normalized_str));
+  if (ConvertToUtf8AndNormalize(file_name->BaseName().value(),
+                                kCodepageUTF8,
+                                &normalized_str)) {
+    *file_name = file_name->DirName().Append(FilePath(normalized_str));
   }
 #endif
 }
 
-}  // namespace
+}  // namespace i18n
+}  // namespace base

@@ -695,7 +695,7 @@ base::FilePath GetWebShortcutFilename(const GURL& url) {
   // Use a prefix, because xdg-desktop-menu requires it.
   std::string filename =
       std::string(chrome::kBrowserProcessExecutableName) + "-" + url.spec();
-  file_util::ReplaceIllegalCharactersInPath(&filename, '_');
+  base::i18n::ReplaceIllegalCharactersInPath(&filename, '_');
 
   base::FilePath desktop_path;
   if (!PathService::Get(base::DIR_USER_DESKTOP, &desktop_path))
@@ -725,7 +725,7 @@ base::FilePath GetExtensionShortcutFilename(const base::FilePath& profile_path,
       .append(extension_id)
       .append("-")
       .append(profile_path.BaseName().value());
-  file_util::ReplaceIllegalCharactersInPath(&filename, '_');
+  base::i18n::ReplaceIllegalCharactersInPath(&filename, '_');
   // Spaces in filenames break xdg-desktop-menu
   // (see https://bugs.freedesktop.org/show_bug.cgi?id=66605).
   base::ReplaceChars(filename, " ", "_", &filename);
@@ -741,7 +741,7 @@ std::vector<base::FilePath> GetExistingProfileShortcutFilenames(
   prefix.append("-");
   std::string suffix("-");
   suffix.append(profile_path.BaseName().value());
-  file_util::ReplaceIllegalCharactersInPath(&suffix, '_');
+  base::i18n::ReplaceIllegalCharactersInPath(&suffix, '_');
   // Spaces in filenames break xdg-desktop-menu
   // (see https://bugs.freedesktop.org/show_bug.cgi?id=66605).
   base::ReplaceChars(suffix, " ", "_", &suffix);

@@ -887,7 +887,7 @@ void PrintPreviewHandler::PrintToPdf() {
         base::UTF16ToUTF8(print_job_title_utf16);
 #endif
 
-    file_util::ReplaceIllegalCharactersInPath(&print_job_title, '_');
+    base::i18n::ReplaceIllegalCharactersInPath(&print_job_title, '_');
     base::FilePath default_filename(print_job_title);
     default_filename =
         default_filename.ReplaceExtension(FILE_PATH_LITERAL("pdf"));

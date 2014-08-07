@@ -242,7 +242,7 @@ base::FilePath PrintedDocument::CreateDebugDumpPath(
 #else   // OS_WIN
   system_filename = base::UTF16ToUTF8(filename);
 #endif  // OS_WIN
-  file_util::ReplaceIllegalCharactersInPath(&system_filename, '_');
+  base::i18n::ReplaceIllegalCharactersInPath(&system_filename, '_');
   return g_debug_dump_info.Get().Append(system_filename).AddExtension(
       extension);
 }
