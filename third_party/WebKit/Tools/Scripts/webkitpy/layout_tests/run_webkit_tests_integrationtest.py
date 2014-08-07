@@ -866,6 +866,13 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
                                 tests_included=True, host=host)
         self.assertTrue('OUT:' in err.getvalue())
 
+    def test_write_full_results_to(self):
+        host = MockHost()
+        details, _, _ = logging_run(['--write-full-results-to', '/tmp/full_results.json'], host=host)
+        self.assertEqual(details.exit_code, 0)
+        self.assertTrue(host.filesystem.exists('/tmp/full_results.json'))
+
+
 class EndToEndTest(unittest.TestCase):
     def test_reftest_with_two_notrefs(self):
         # Test that we update expectations in place. If the expectation

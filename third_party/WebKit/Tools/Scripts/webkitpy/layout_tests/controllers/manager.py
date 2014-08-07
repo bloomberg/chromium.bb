@@ -281,6 +281,11 @@ class Manager(object):
 
         if not self._options.dry_run:
             self._write_json_files(summarized_full_results, summarized_failing_results, initial_results)
+
+            if self._options.write_full_results_to:
+                self._filesystem.copyfile(self._filesystem.join(self._results_directory, "full_results.json"),
+                                          self._options.write_full_results_to)
+
             self._upload_json_files()
 
             results_path = self._filesystem.join(self._results_directory, "results.html")

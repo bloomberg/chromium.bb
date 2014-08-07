@@ -288,6 +288,9 @@ def parse_args(args):
         optparse.make_option("--test-results-server", default="",
             help=("If specified, upload results json files to this appengine "
                   "server.")),
+        optparse.make_option("--write-full-results-to",
+            help=("If specified, copy full_results.json from the results dir "
+                  "to the specified path.")),
     ]))
 
     option_parser = optparse.OptionParser()
