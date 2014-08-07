@@ -120,7 +120,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
 
   virtual blink::WebBlobRegistry* blobRegistry();
   virtual void sampleGamepads(blink::WebGamepads&);
-  virtual void setGamepadListener(blink::WebGamepadListener*);
   virtual blink::WebRTCPeerConnectionHandler* createRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client);
   virtual blink::WebMediaStreamCenter* createMediaStreamCenter(
@@ -137,19 +136,15 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual blink::WebCompositorSupport* compositorSupport();
   virtual blink::WebString convertIDNToUnicode(
       const blink::WebString& host, const blink::WebString& languages);
-  virtual void setDeviceLightListener(blink::WebDeviceLightListener* listener);
-  virtual void setDeviceMotionListener(
-      blink::WebDeviceMotionListener* listener);
-  virtual void setDeviceOrientationListener(
-      blink::WebDeviceOrientationListener* listener);
+  virtual void startListening(blink::WebPlatformEventType,
+                              blink::WebPlatformEventListener*);
+  virtual void stopListening(blink::WebPlatformEventType);
   virtual void queryStorageUsageAndQuota(
       const blink::WebURL& storage_partition,
       blink::WebStorageQuotaType,
       blink::WebStorageQuotaCallbacks);
   virtual void vibrate(unsigned int milliseconds);
   virtual void cancelVibration();
-  virtual void setBatteryStatusListener(
-      blink::WebBatteryStatusListener* listener);
 
   void set_gamepad_provider(RendererGamepadProvider* provider) {
     gamepad_provider_ = provider;
@@ -184,6 +179,15 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
 
  private:
   bool CheckPreparsedJsCachingEnabled() const;
+
+  // Implement those methods internally so startListening() and stopListening()
+  // are being used and Blink can change its interface.
+  void SetDeviceMotionListener(blink::WebDeviceMotionListener*);
+  void SetDeviceOrientationListener(blink::WebDeviceOrientationListener*);
+  void SetDeviceLightListener(blink::WebDeviceLightListener*);
+  void SetBatteryStatusListener(blink::WebBatteryStatusListener*);
+  void SetGamepadListener(blink::WebGamepadListener*);
+
 
   scoped_ptr<RendererClipboardClient> clipboard_client_;
   scoped_ptr<WebClipboardImpl> clipboard_;
