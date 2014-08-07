@@ -10,9 +10,11 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/proto/system_profile.pb.h"
+#include "content/public/browser/child_process_data.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -36,9 +38,27 @@ content::WebPluginInfo CreateFakePluginInfo(
   return plugin;
 }
 
+class PluginMetricsProviderTest : public ::testing::Test {
+ protected:
+  PluginMetricsProviderTest()
+    : prefs_(new TestingPrefServiceSimple) {
+      PluginMetricsProvider::RegisterPrefs(prefs()->registry());
+    }
+
+  TestingPrefServiceSimple* prefs() {
+    return prefs_.get();
+  }
+
+ private:
+  scoped_ptr<TestingPrefServiceSimple> prefs_;
+
+  DISALLOW_COPY_AND_ASSIGN(PluginMetricsProviderTest);
+
+};
+
 }  // namespace
 
-TEST(PluginMetricsProviderTest, IsPluginProcess) {
+TEST_F(PluginMetricsProviderTest, IsPluginProcess) {
   EXPECT_TRUE(PluginMetricsProvider::IsPluginProcess(
       content::PROCESS_TYPE_PLUGIN));
   EXPECT_TRUE(PluginMetricsProvider::IsPluginProcess(
@@ -47,12 +67,10 @@ TEST(PluginMetricsProviderTest, IsPluginProcess) {
       content::PROCESS_TYPE_GPU));
 }
 
-TEST(PluginMetricsProviderTest, Plugins) {
+TEST_F(PluginMetricsProviderTest, Plugins) {
   content::TestBrowserThreadBundle thread_bundle;
 
-  TestingPrefServiceSimple prefs;
-  PluginMetricsProvider::RegisterPrefs(prefs.registry());
-  PluginMetricsProvider provider(&prefs);
+  PluginMetricsProvider provider(prefs());
 
   std::vector<content::WebPluginInfo> plugins;
   plugins.push_back(CreateFakePluginInfo("p1", FILE_PATH_LITERAL("p1.plugin"),
@@ -82,7 +100,7 @@ TEST(PluginMetricsProviderTest, Plugins) {
   plugin_dict->SetInteger(prefs::kStabilityPluginInstances, 3);
   plugin_dict->SetInteger(prefs::kStabilityPluginLoadingErrors, 4);
   {
-    ListPrefUpdate update(&prefs, prefs::kStabilityPluginStats);
+    ListPrefUpdate update(prefs(), prefs::kStabilityPluginStats);
     update.Get()->Append(plugin_dict.release());
   }
 
@@ -99,4 +117,67 @@ TEST(PluginMetricsProviderTest, Plugins) {
   EXPECT_EQ(2, stability.plugin_stability(0).crash_count());
   EXPECT_EQ(3, stability.plugin_stability(0).instance_count());
   EXPECT_EQ(4, stability.plugin_stability(0).loading_error_count());
+}
+
+TEST_F(PluginMetricsProviderTest, RecordCurrentStateWithDelay) {
+  content::TestBrowserThreadBundle thread_bundle;
+
+  PluginMetricsProvider provider(prefs());
+
+  int delay_ms = 10;
+  EXPECT_TRUE(provider.RecordCurrentStateWithDelay(delay_ms));
+  EXPECT_FALSE(provider.RecordCurrentStateWithDelay(delay_ms));
+
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(delay_ms));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(provider.RecordCurrentStateWithDelay(delay_ms));
+}
+
+TEST_F(PluginMetricsProviderTest, RecordCurrentStateIfPending) {
+  content::TestBrowserThreadBundle thread_bundle;
+
+  PluginMetricsProvider provider(prefs());
+
+  // First there should be no need to force RecordCurrentState.
+  EXPECT_FALSE(provider.RecordCurrentStateIfPending());
+
+  // After delayed task is posted RecordCurrentStateIfPending should return
+  // true.
+  int delay_ms = 100000;
+  EXPECT_TRUE(provider.RecordCurrentStateWithDelay(delay_ms));
+  EXPECT_TRUE(provider.RecordCurrentStateIfPending());
+
+  // If RecordCurrentStateIfPending was successful then we should be able to
+  // post a new delayed task.
+  EXPECT_TRUE(provider.RecordCurrentStateWithDelay(delay_ms));
+}
+
+TEST_F(PluginMetricsProviderTest, ProvideStabilityMetricsWhenPendingTask) {
+  content::TestBrowserThreadBundle thread_bundle;
+
+  PluginMetricsProvider provider(prefs());
+
+  // Create plugin information for testing.
+  std::vector<content::WebPluginInfo> plugins;
+  plugins.push_back(CreateFakePluginInfo("p1", FILE_PATH_LITERAL("p1.plugin"),
+                                         "1.5", true));
+  provider.SetPluginsForTesting(plugins);
+  metrics::SystemProfileProto system_profile;
+  provider.ProvideSystemProfileMetrics(&system_profile);
+
+  // Increase number of created instances which should also start a delayed
+  // task.
+  content::ChildProcessData child_process_data(content::PROCESS_TYPE_PLUGIN);
+  child_process_data.name = base::UTF8ToUTF16("p1");
+  provider.BrowserChildProcessInstanceCreated(child_process_data);
+
+  // Call ProvideStabilityMetrics to check that it will force pending tasks to
+  // be executed immediately.
+  provider.ProvideStabilityMetrics(&system_profile);
+
+  // Check current number of instances created.
+  const metrics::SystemProfileProto_Stability& stability =
+      system_profile.stability();
+  EXPECT_EQ(1, stability.plugin_stability(0).instance_count());
 }

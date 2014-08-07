@@ -1194,7 +1194,4 @@ void MetricsService::RecordBooleanPrefValue(const char* path, bool value) {
 void MetricsService::RecordCurrentState(PrefService* pref) {
   pref->SetInt64(metrics::prefs::kStabilityLastTimestampSec,
                  Time::Now().ToTimeT());
-
-  for (size_t i = 0; i < metrics_providers_.size(); ++i)
-    metrics_providers_[i]->RecordCurrentState();
 }

@@ -11,6 +11,7 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -22,6 +23,9 @@
 #include "content/public/common/webplugininfo.h"
 
 namespace {
+
+// Delay for RecordCurrentState execution.
+const int kRecordStateDelayMs = 15 * base::Time::kMillisecondsPerSecond;
 
 // Returns the plugin preferences corresponding for this user, if available.
 // If multiple user profiles are loaded, returns the preferences corresponding
@@ -126,6 +130,7 @@ void PluginMetricsProvider::ProvideSystemProfileMetrics(
 
 void PluginMetricsProvider::ProvideStabilityMetrics(
     metrics::SystemProfileProto* system_profile_proto) {
+  RecordCurrentStateIfPending();
   const base::ListValue* plugin_stats_list = local_state_->GetList(
       prefs::kStabilityPluginStats);
   if (!plugin_stats_list)
@@ -299,6 +304,7 @@ void PluginMetricsProvider::LogPluginLoadingError(
     DCHECK(IsPluginProcess(stats.process_type));
   }
   stats.loading_errors++;
+  RecordCurrentStateWithDelay(kRecordStateDelayMs);
 }
 
 void PluginMetricsProvider::SetPluginsForTesting(
@@ -339,14 +345,38 @@ PluginMetricsProvider::GetChildProcessStats(
 void PluginMetricsProvider::BrowserChildProcessHostConnected(
     const content::ChildProcessData& data) {
   GetChildProcessStats(data).process_launches++;
+  RecordCurrentStateWithDelay(kRecordStateDelayMs);
 }
 
 void PluginMetricsProvider::BrowserChildProcessCrashed(
     const content::ChildProcessData& data) {
   GetChildProcessStats(data).process_crashes++;
+  RecordCurrentStateWithDelay(kRecordStateDelayMs);
 }
 
 void PluginMetricsProvider::BrowserChildProcessInstanceCreated(
     const content::ChildProcessData& data) {
   GetChildProcessStats(data).instances++;
+  RecordCurrentStateWithDelay(kRecordStateDelayMs);
+}
+
+bool PluginMetricsProvider::RecordCurrentStateWithDelay(int delay_sec) {
+  if (weak_ptr_factory_.HasWeakPtrs())
+    return false;
+
+  base::MessageLoopProxy::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&PluginMetricsProvider::RecordCurrentState,
+                weak_ptr_factory_.GetWeakPtr()),
+                base::TimeDelta::FromMilliseconds(delay_sec));
+  return true;
+}
+
+bool PluginMetricsProvider::RecordCurrentStateIfPending() {
+  if (!weak_ptr_factory_.HasWeakPtrs())
+    return false;
+
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  RecordCurrentState();
+  return true;
 }

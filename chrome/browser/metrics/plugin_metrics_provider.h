@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "components/metrics/metrics_provider.h"
@@ -42,7 +43,6 @@ class PluginMetricsProvider : public metrics::MetricsProvider,
       metrics::SystemProfileProto* system_profile_proto) OVERRIDE;
   virtual void ProvideStabilityMetrics(
       metrics::SystemProfileProto* system_profile_proto) OVERRIDE;
-  virtual void RecordCurrentState() OVERRIDE;
 
   // Notifies the provider about an error loading the plugin at |plugin_path|.
   void LogPluginLoadingError(const base::FilePath& plugin_path);
@@ -58,6 +58,12 @@ class PluginMetricsProvider : public metrics::MetricsProvider,
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(PluginMetricsProviderTest,
+                           RecordCurrentStateWithDelay);
+  FRIEND_TEST_ALL_PREFIXES(PluginMetricsProviderTest,
+                           RecordCurrentStateIfPending);
+  FRIEND_TEST_ALL_PREFIXES(PluginMetricsProviderTest,
+                           ProvideStabilityMetricsWhenPendingTask);
   struct ChildProcessStats;
 
   // Receives the plugin list from the PluginService and calls |done_callback|.
@@ -67,6 +73,18 @@ class PluginMetricsProvider : public metrics::MetricsProvider,
   // Returns reference to ChildProcessStats corresponding to |data|.
   ChildProcessStats& GetChildProcessStats(
       const content::ChildProcessData& data);
+
+  // Saves plugin information to local state.
+  void RecordCurrentState();
+
+  // Posts a delayed task for RecordCurrentState. Returns true if new task is
+  // posted and false if there was one already waiting for execution.
+  // The param delay_sec is for unit tests.
+  bool RecordCurrentStateWithDelay(int delay_ms);
+
+  // If a delayed RecordCurrnetState task exists then cancels it, calls
+  // RecordCurrentState immediately and returns true. Otherwise returns false.
+  bool RecordCurrentStateIfPending();
 
   // content::BrowserChildProcessObserver:
   virtual void BrowserChildProcessHostConnected(
