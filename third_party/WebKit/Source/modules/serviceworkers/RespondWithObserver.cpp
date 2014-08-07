@@ -62,8 +62,6 @@ PassRefPtr<RespondWithObserver> RespondWithObserver::create(ExecutionContext* co
 
 RespondWithObserver::~RespondWithObserver()
 {
-    if (m_state == Pending)
-        sendResponse(nullptr);
 }
 
 void RespondWithObserver::contextDestroyed()

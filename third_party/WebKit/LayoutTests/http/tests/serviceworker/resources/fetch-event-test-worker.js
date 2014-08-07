@@ -20,10 +20,6 @@ function handleReject(event) {
     }));
 }
 
-function handleUnresolved(event) {
-    event.respondWith(new Promise(function(resolve, reject) { }));
-}
-
 function handleFetch(event) {
     event.respondWith(fetch('other.html'));
 }
@@ -37,7 +33,6 @@ self.addEventListener('fetch', function(event) {
         { pattern: '?ignore', fn: function() {} },
         { pattern: '?null', fn: handleNullBody },
         { pattern: '?reject', fn: handleReject },
-        { pattern: '?unresolved', fn: handleUnresolved },
         { pattern: '?fetch', fn: handleFetch }
     ];
 
