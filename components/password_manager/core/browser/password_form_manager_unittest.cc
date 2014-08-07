@@ -1004,4 +1004,71 @@ TEST_F(PasswordFormManagerTest,
                 PasswordFormManager::RESULT_MANDATORY_ATTRIBUTES_MATCH);
 }
 
+TEST_F(PasswordFormManagerTest, CorrectlyUpdatePasswordsWithSameUsername) {
+  // Need a MessageLoop for callbacks.
+  base::MessageLoop message_loop;
+  scoped_refptr<TestPasswordStore> password_store = new TestPasswordStore;
+  CHECK(password_store->Init(syncer::SyncableService::StartSyncFlare(), ""));
+
+  TestPasswordManagerClient client_with_store(password_store.get());
+  TestPasswordManager password_manager(&client_with_store);
+  EXPECT_CALL(*client_with_store.GetMockDriver(),
+              AllowPasswordGenerationForForm(_)).Times(2);
+  EXPECT_CALL(*client_with_store.GetMockDriver(), IsOffTheRecord())
+      .WillRepeatedly(Return(false));
+
+  // Add two credentials with the same username. Both should score the same
+  // and be seen as candidates to autofill.
+  PasswordForm first(*saved_match());
+  first.action = observed_form()->action;
+  first.password_value = ASCIIToUTF16("first");
+  password_store->AddLogin(first);
+
+  PasswordForm second(first);
+  second.origin = GURL("http://accounts.google.com/a/AddLogin");
+  second.password_value = ASCIIToUTF16("second");
+  second.preferred = false;
+  password_store->AddLogin(second);
+
+  PasswordFormManager storing_manager(&password_manager,
+                                      &client_with_store,
+                                      client_with_store.GetDriver(),
+                                      *observed_form(),
+                                      false);
+  storing_manager.FetchMatchingLoginsFromPasswordStore(
+      PasswordStore::ALLOW_PROMPT);
+  RunAllPendingTasks();
+
+  // We always take the last credential with a particular username, regardless
+  // of which ones are labeled preferred.
+  EXPECT_EQ(ASCIIToUTF16("second"),
+            storing_manager.preferred_match()->password_value);
+
+  PasswordForm login(*observed_form());
+  login.username_value = saved_match()->username_value;
+  login.password_value = ASCIIToUTF16("third");
+  login.preferred = true;
+  storing_manager.ProvisionallySave(
+      login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  EXPECT_FALSE(storing_manager.IsNewLogin());
+  storing_manager.Save();
+  RunAllPendingTasks();
+
+  PasswordFormManager retrieving_manager(&password_manager,
+                                         &client_with_store,
+                                         client_with_store.GetDriver(),
+                                         *observed_form(),
+                                         false);
+
+  retrieving_manager.FetchMatchingLoginsFromPasswordStore(
+      PasswordStore::ALLOW_PROMPT);
+  RunAllPendingTasks();
+
+  // Make sure that the preferred match is updated appropriately.
+  EXPECT_EQ(ASCIIToUTF16("third"),
+            retrieving_manager.preferred_match()->password_value);
+  password_store->Shutdown();
+}
+
 }  // namespace password_manager

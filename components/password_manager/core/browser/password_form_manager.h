@@ -161,6 +161,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
     return best_matches_;
   }
 
+  const autofill::PasswordForm* preferred_match() const {
+    return preferred_match_;
+  }
+
   // Returns the realm URL for the form managed my this manager.
   const std::string& realm() const {
     return pending_credentials_.signon_realm;
