@@ -36,16 +36,25 @@ def _MapKind(kind):
                  'handle<data_pipe_producer>': 'h:d:p',
                  'handle<message_pipe>': 'h:m',
                  'handle<shared_buffer>': 'h:s'}
+  if kind.endswith('?'):
+    base_kind = _MapKind(kind[0:-1])
+    # NOTE: This doesn't rule out enum types. Those will be detected later, when
+    # cross-reference is established.
+    reference_kinds = ('s', 'h', 'a', 'r', 'x')
+    if base_kind[0] not in reference_kinds:
+      raise Exception(
+          'A type (spec "%s") cannot be made nullable' % base_kind)
+    return '?' + base_kind
   if kind.endswith('[]'):
     typename = kind[0:-2]
     if _FIXED_ARRAY_REGEXP.search(typename):
-      raise Exception("Arrays of fixed sized arrays not supported")
+      raise Exception('Arrays of fixed sized arrays not supported')
     return 'a:' + _MapKind(typename)
   if kind.endswith(']'):
     lbracket = kind.rfind('[')
     typename = kind[0:lbracket]
     if typename.find('[') != -1:
-      raise Exception("Fixed sized arrays of arrays not supported")
+      raise Exception('Fixed sized arrays of arrays not supported')
     return 'a' + kind[lbracket+1:-1] + ':' + _MapKind(typename)
   if kind.endswith('&'):
     return 'r:' + _MapKind(kind[0:-1])

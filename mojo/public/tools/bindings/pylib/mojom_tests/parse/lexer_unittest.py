@@ -132,6 +132,8 @@ class LexerTest(unittest.TestCase):
                       _MakeLexToken("MINUS", "-"))
     self.assertEquals(self._SingleTokenForInput("&"),
                       _MakeLexToken("AMP", "&"))
+    self.assertEquals(self._SingleTokenForInput("?"),
+                      _MakeLexToken("QSTN", "?"))
     self.assertEquals(self._SingleTokenForInput("="),
                       _MakeLexToken("EQUALS", "="))
     self.assertEquals(self._SingleTokenForInput("=>"),

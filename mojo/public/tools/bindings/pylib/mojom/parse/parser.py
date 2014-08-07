@@ -226,10 +226,18 @@ class Parser(object):
                          filename=self.filename, lineno=p.lineno(2))
 
   def p_typename(self, p):
-    """typename : basictypename
-                | array
-                | fixed_array
-                | interfacerequest"""
+    """typename : nonnullable_typename QSTN
+                | nonnullable_typename"""
+    if len(p) == 2:
+      p[0] = p[1]
+    else:
+      p[0] = p[1] + "?"
+
+  def p_nonnullable_typename(self, p):
+    """nonnullable_typename : basictypename
+                            | array
+                            | fixed_array
+                            | interfacerequest"""
     p[0] = p[1]
 
   def p_basictypename(self, p):

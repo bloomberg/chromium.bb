@@ -99,20 +99,20 @@ def KindFromData(kinds, data, scope):
   kind = LookupKind(kinds, data, scope)
   if kind:
     return kind
-  if data.startswith('a:'):
-    kind = mojom.Array()
-    kind.kind = KindFromData(kinds, data[2:], scope)
+
+  if data.startswith('?'):
+    kind = KindFromData(kinds, data[1:], scope).MakeNullableKind()
+  elif data.startswith('a:'):
+    kind = mojom.Array(KindFromData(kinds, data[2:], scope))
   elif data.startswith('r:'):
-    kind = mojom.InterfaceRequest()
-    kind.kind = KindFromData(kinds, data[2:], scope)
+    kind = mojom.InterfaceRequest(KindFromData(kinds, data[2:], scope))
   elif data.startswith('a'):
     colon = data.find(':')
     length = int(data[1:colon])
-    kind = mojom.FixedArray(length)
-    kind.kind = KindFromData(kinds, data[colon+1:], scope)
+    kind = mojom.FixedArray(length, KindFromData(kinds, data[colon+1:], scope))
   else:
-    kind = mojom.Kind()
-  kind.spec = data
+    kind = mojom.Kind(data)
+
   kinds[data] = kind
   return kind
 

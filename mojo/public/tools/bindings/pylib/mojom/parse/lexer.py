@@ -87,6 +87,7 @@ class Lexer(object):
     'MINUS',
     'PLUS',
     'AMP',
+    'QSTN',
 
     # Assignment
     'EQUALS',
@@ -167,6 +168,7 @@ class Lexer(object):
   t_MINUS             = r'-'
   t_PLUS              = r'\+'
   t_AMP               = r'&'
+  t_QSTN              = r'\?'
 
   # =
   t_EQUALS            = r'='

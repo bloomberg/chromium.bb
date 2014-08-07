@@ -372,8 +372,9 @@ class ParserTest(unittest.TestCase):
         }  // my_module
         """
     with self.assertRaisesRegexp(
-        lexer.LexError,
-        r"^my_file\.mojom:4: Error: Illegal character '\?'$"):
+        parser.ParseError,
+        r"^my_file\.mojom:4: Error: Unexpected '\?':\n"
+            r" *MY_ENUM_1 = 1 \? 2 : 3$"):
       parser.Parse(source, "my_file.mojom")
 
   def testSimpleOrdinals(self):
@@ -971,6 +972,87 @@ class ParserTest(unittest.TestCase):
             r" *module {}$"):
       parser.Parse(source2, "my_file.mojom")
 
+  def testValidNullableTypes(self):
+    """Tests parsing nullable types."""
+
+    source = """\
+        struct MyStruct {
+          int32? a;  // This is actually invalid, but handled at a different
+                     // level.
+          string? b;
+          int32[] ? c;
+          string ? [] ? d;
+          int32[]?[]? e;
+          int32[1]? f;
+          string?[1]? g;
+          some_struct? h;
+          handle? i;
+          handle<data_pipe_consumer>? j;
+          handle<data_pipe_producer>? k;
+          handle<message_pipe>? l;
+          handle<shared_buffer>? m;
+          some_interface&? n;
+        };
+        """
+    expected = ast.Mojom(
+        None,
+        ast.ImportList(),
+        [ast.Struct(
+            'MyStruct',
+            None,
+            ast.StructBody(
+                [ast.StructField('a', None, 'int32?', None),
+                 ast.StructField('b', None, 'string?', None),
+                 ast.StructField('c', None, 'int32[]?', None),
+                 ast.StructField('d', None, 'string?[]?', None),
+                 ast.StructField('e', None, 'int32[]?[]?', None),
+                 ast.StructField('f', None, 'int32[1]?', None),
+                 ast.StructField('g', None, 'string?[1]?', None),
+                 ast.StructField('h', None, 'some_struct?', None),
+                 ast.StructField('i', None, 'handle?', None),
+                 ast.StructField('j', None, 'handle<data_pipe_consumer>?',
+                                 None),
+                 ast.StructField('k', None, 'handle<data_pipe_producer>?',
+                                 None),
+                 ast.StructField('l', None, 'handle<message_pipe>?', None),
+                 ast.StructField('m', None, 'handle<shared_buffer>?', None),
+                 ast.StructField('n', None, 'some_interface&?', None)]))])
+    self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
+
+  def testInvalidNullableTypes(self):
+    """Tests that invalid nullable types are correctly detected."""
+    source1 = """\
+        struct MyStruct {
+          string?? a;
+        };
+        """
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:2: Error: Unexpected '\?':\n"
+            r" *string\?\? a;$"):
+      parser.Parse(source1, "my_file.mojom")
+
+    source2 = """\
+        struct MyStruct {
+          handle?<data_pipe_consumer> a;
+        };
+        """
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:2: Error: Unexpected '<':\n"
+            r" *handle\?<data_pipe_consumer> a;$"):
+      parser.Parse(source2, "my_file.mojom")
+
+    source3 = """\
+        struct MyStruct {
+          some_interface?& a;
+        };
+        """
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:2: Error: Unexpected '&':\n"
+            r" *some_interface\?& a;$"):
+      parser.Parse(source3, "my_file.mojom")
 
 if __name__ == "__main__":
   unittest.main()

@@ -88,17 +88,33 @@ def TestPaddingPackedOverflow():
   return TestSequence(kinds, fields, offsets)
 
 
+def TestNullableTypes():
+  kinds = (mojom.STRING.MakeNullableKind(),
+           mojom.HANDLE.MakeNullableKind(),
+           mojom.Struct('test_struct').MakeNullableKind(),
+           mojom.DCPIPE.MakeNullableKind(),
+           mojom.Array().MakeNullableKind(),
+           mojom.DPPIPE.MakeNullableKind(),
+           mojom.FixedArray(5).MakeNullableKind(),
+           mojom.MSGPIPE.MakeNullableKind(),
+           mojom.Interface('test_inteface').MakeNullableKind(),
+           mojom.SHAREDBUFFER.MakeNullableKind(),
+           mojom.InterfaceRequest().MakeNullableKind())
+  fields = (1, 2, 4, 3, 5, 6, 8, 7, 9, 10, 11)
+  offsets = (0, 8, 12, 16, 24, 32, 36, 40, 48, 52, 56)
+  return TestSequence(kinds, fields, offsets)
+
+
 def TestAllTypes():
-  struct = mojom.Struct('test')
-  array = mojom.Array()
   return TestSequence(
       (mojom.BOOL, mojom.INT8, mojom.STRING, mojom.UINT8,
        mojom.INT16, mojom.DOUBLE, mojom.UINT16,
        mojom.INT32, mojom.UINT32, mojom.INT64,
        mojom.FLOAT, mojom.STRING, mojom.HANDLE,
-       mojom.UINT64, mojom.Struct('test'), mojom.Array()),
-      (1, 2, 4, 5, 7, 3, 6,  8,  9,  10, 11, 13, 12, 14, 15, 16, 17),
-      (0, 1, 2, 4, 6, 8, 16, 24, 28, 32, 40, 44, 48, 56, 64, 72, 80))
+       mojom.UINT64, mojom.Struct('test'), mojom.Array(),
+       mojom.STRING.MakeNullableKind()),
+      (1, 2, 4, 5, 7, 3, 6,  8,  9,  10, 11, 13, 12, 14, 15, 16, 17, 18),
+      (0, 1, 2, 4, 6, 8, 16, 24, 28, 32, 40, 44, 48, 56, 64, 72, 80, 88))
 
 
 def TestPaddingPackedOutOfOrderByOrdinal():
@@ -165,6 +181,7 @@ def Main(args):
   errors += RunTest(TestPaddingPackedInOrder)
   errors += RunTest(TestPaddingPackedOutOfOrder)
   errors += RunTest(TestPaddingPackedOverflow)
+  errors += RunTest(TestNullableTypes)
   errors += RunTest(TestAllTypes)
   errors += RunTest(TestPaddingPackedOutOfOrderByOrdinal)
   errors += RunTest(TestBools)

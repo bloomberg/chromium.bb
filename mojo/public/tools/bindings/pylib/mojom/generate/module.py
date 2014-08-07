@@ -11,31 +11,95 @@
 # interface = module.AddInterface('Bar')
 # method = interface.AddMethod('Tat', 0)
 # method.AddParameter('baz', 0, mojom.INT32)
-#
+
 
 class Kind(object):
   def __init__(self, spec=None):
     self.spec = spec
     self.parent_kind = None
 
+
+class ReferenceKind(Kind):
+  """ReferenceKind represents pointer types and handle types.
+     A type is nullable means that NULL (for pointer types) or invalid handle
+     (for handle types) is a legal value for the type.
+  """
+
+  def __init__(self, spec=None, is_nullable=False):
+    assert spec is None or is_nullable == spec.startswith('?')
+    Kind.__init__(self, spec)
+    self.is_nullable = is_nullable
+    self.shared_definition = {}
+
+  def MakeNullableKind(self):
+    assert not self.is_nullable
+
+    if self == STRING:
+      return NULLABLE_STRING
+    if self == HANDLE:
+      return NULLABLE_HANDLE
+    if self == DCPIPE:
+      return NULLABLE_DCPIPE
+    if self == DPPIPE:
+      return NULLABLE_DPPIPE
+    if self == MSGPIPE:
+      return NULLABLE_MSGPIPE
+    if self == SHAREDBUFFER:
+      return NULLABLE_SHAREDBUFFER
+
+    nullable_kind = type(self)()
+    nullable_kind.shared_definition = self.shared_definition
+    if self.spec is not None:
+      nullable_kind.spec = '?' + self.spec
+    nullable_kind.is_nullable = True
+
+    return nullable_kind
+
+  @classmethod
+  def AddSharedProperty(cls, name):
+    """Adds a property |name| to |cls|, which accesses the corresponding item in
+       |shared_definition|.
+
+       The reason of adding such indirection is to enable sharing definition
+       between a reference kind and its nullable variation. For example:
+         a = Struct('test_struct_1')
+         b = a.MakeNullableKind()
+         a.name = 'test_struct_2'
+         print b.name  # Outputs 'test_struct_2'.
+    """
+    def Get(self):
+      return self.shared_definition[name]
+
+    def Set(self, value):
+      self.shared_definition[name] = value
+
+    setattr(cls, name, property(Get, Set))
+
+
 # Initialize the set of primitive types. These can be accessed by clients.
-BOOL         = Kind('b')
-INT8         = Kind('i8')
-INT16        = Kind('i16')
-INT32        = Kind('i32')
-INT64        = Kind('i64')
-UINT8        = Kind('u8')
-UINT16       = Kind('u16')
-UINT32       = Kind('u32')
-UINT64       = Kind('u64')
-FLOAT        = Kind('f')
-DOUBLE       = Kind('d')
-STRING       = Kind('s')
-HANDLE       = Kind('h')
-DCPIPE       = Kind('h:d:c')
-DPPIPE       = Kind('h:d:p')
-MSGPIPE      = Kind('h:m')
-SHAREDBUFFER = Kind('h:s')
+BOOL                  = Kind('b')
+INT8                  = Kind('i8')
+INT16                 = Kind('i16')
+INT32                 = Kind('i32')
+INT64                 = Kind('i64')
+UINT8                 = Kind('u8')
+UINT16                = Kind('u16')
+UINT32                = Kind('u32')
+UINT64                = Kind('u64')
+FLOAT                 = Kind('f')
+DOUBLE                = Kind('d')
+STRING                = ReferenceKind('s')
+HANDLE                = ReferenceKind('h')
+DCPIPE                = ReferenceKind('h:d:c')
+DPPIPE                = ReferenceKind('h:d:p')
+MSGPIPE               = ReferenceKind('h:m')
+SHAREDBUFFER          = ReferenceKind('h:s')
+NULLABLE_STRING       = ReferenceKind('?s', True)
+NULLABLE_HANDLE       = ReferenceKind('?h', True)
+NULLABLE_DCPIPE       = ReferenceKind('?h:d:c', True)
+NULLABLE_DPPIPE       = ReferenceKind('?h:d:p', True)
+NULLABLE_MSGPIPE      = ReferenceKind('?h:m', True)
+NULLABLE_SHAREDBUFFER = ReferenceKind('?h:s', True)
 
 
 # Collection of all Primitive types
@@ -56,7 +120,13 @@ PRIMITIVES = (
   DCPIPE,
   DPPIPE,
   MSGPIPE,
-  SHAREDBUFFER
+  SHAREDBUFFER,
+  NULLABLE_STRING,
+  NULLABLE_HANDLE,
+  NULLABLE_DCPIPE,
+  NULLABLE_DPPIPE,
+  NULLABLE_MSGPIPE,
+  NULLABLE_SHAREDBUFFER
 )
 
 
@@ -100,16 +170,21 @@ class Field(object):
     self.default = default
 
 
-class Struct(Kind):
+class Struct(ReferenceKind):
+  ReferenceKind.AddSharedProperty('name')
+  ReferenceKind.AddSharedProperty('module')
+  ReferenceKind.AddSharedProperty('imported_from')
+  ReferenceKind.AddSharedProperty('fields')
+
   def __init__(self, name=None, module=None):
-    self.name = name
-    self.module = module
-    self.imported_from = None
     if name is not None:
       spec = 'x:' + name
     else:
       spec = None
-    Kind.__init__(self, spec)
+    ReferenceKind.__init__(self, spec)
+    self.name = name
+    self.module = module
+    self.imported_from = None
     self.fields = []
 
   def AddField(self, name, kind, ordinal=None, default=None):
@@ -118,30 +193,39 @@ class Struct(Kind):
     return field
 
 
-class Array(Kind):
-  def __init__(self, kind=None):
-    self.kind = kind
-    if kind is not None:
-      Kind.__init__(self, 'a:' + kind.spec)
-    else:
-      Kind.__init__(self)
+class Array(ReferenceKind):
+  ReferenceKind.AddSharedProperty('kind')
 
-class FixedArray(Kind):
-  def __init__(self, length, kind=None):
+  def __init__(self, kind=None):
+    if kind is not None:
+      ReferenceKind.__init__(self, 'a:' + kind.spec)
+    else:
+      ReferenceKind.__init__(self)
+    self.kind = kind
+
+
+class FixedArray(ReferenceKind):
+  ReferenceKind.AddSharedProperty('kind')
+  ReferenceKind.AddSharedProperty('length')
+
+  def __init__(self, length=-1, kind=None):
+    if kind is not None:
+      ReferenceKind.__init__(self, 'a%d:%s' % (length, kind.spec))
+    else:
+      ReferenceKind.__init__(self)
     self.kind = kind
     self.length = length
-    if kind is not None:
-      Kind.__init__(self, 'a' + length + ':' + kind.spec)
-    else:
-      Kind.__init__(self)
 
-class InterfaceRequest(Kind):
+
+class InterfaceRequest(ReferenceKind):
+  ReferenceKind.AddSharedProperty('kind')
+
   def __init__(self, kind=None):
-    self.kind = kind
     if kind is not None:
-      Kind.__init__(self, 'r:' + kind.spec)
+      ReferenceKind.__init__(self, 'r:' + kind.spec)
     else:
-      Kind.__init__(self)
+      ReferenceKind.__init__(self)
+    self.kind = kind
 
 
 class Parameter(object):
@@ -173,16 +257,22 @@ class Method(object):
     return parameter
 
 
-class Interface(Kind):
+class Interface(ReferenceKind):
+  ReferenceKind.AddSharedProperty('module')
+  ReferenceKind.AddSharedProperty('name')
+  ReferenceKind.AddSharedProperty('imported_from')
+  ReferenceKind.AddSharedProperty('client')
+  ReferenceKind.AddSharedProperty('methods')
+
   def __init__(self, name=None, client=None, module=None):
-    self.module = module
-    self.name = name
-    self.imported_from = None
     if name is not None:
       spec = 'x:' + name
     else:
       spec = None
-    Kind.__init__(self, spec)
+    ReferenceKind.__init__(self, spec)
+    self.module = module
+    self.name = name
+    self.imported_from = None
     self.client = client
     self.methods = []
 
