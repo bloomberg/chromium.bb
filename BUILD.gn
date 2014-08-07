@@ -58,6 +58,7 @@ group("root") {
     "//sdch",
     "//skia",
     "//sql",
+    "//sync",
     "//third_party/WebKit/public:all_blink",
     "//third_party/angle:translator",
     "//third_party/brotli",

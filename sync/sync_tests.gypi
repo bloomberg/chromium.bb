@@ -5,6 +5,7 @@
 {
   'targets': [
     # Test support files for the 'sync_core' target.
+    # GN version: //sync:test_support_sync_core
     {
       'target_name': 'test_support_sync_core',
       'type': 'static_library',
@@ -86,6 +87,7 @@
     },
 
     # Test support files for the python sync test server.
+    # GN version: //sync:test_support_sync_testserver
     {
       'target_name': 'test_support_sync_testserver',
       'type': 'static_library',
@@ -111,6 +113,7 @@
     },
 
     # Test support files for the fake sync server.
+    # GN version: //sync:test_support_sync_fake_server
     {
       'target_name': 'test_support_sync_fake_server',
       'type': 'static_library',
@@ -157,6 +160,7 @@
     },
 
     # Test support files for the 'sync_internal_api' target.
+    # GN version: //sync:test_support_sync_internal_api
     {
       'target_name': 'test_support_sync_internal_api',
       'type': 'static_library',
@@ -197,6 +201,7 @@
     },
 
     # Test support files for the 'sync_api' target.
+    # GN version: //sync:test_support_sync_api
     {
       'target_name': 'test_support_sync_api',
       'type': 'static_library',
@@ -227,6 +232,7 @@
     },
 
     # The unit test executable for sync tests.
+    # GN version: //sync:sync_unit_tests
     {
       'target_name': 'sync_unit_tests',
       'type': '<(gtest_target_type)',
@@ -357,6 +363,7 @@
     },
 
     # Test support files for using the Test Accounts service.
+    # GN version: //sync:test_support_accounts_client
     {
       'target_name': 'test_support_accounts_client',
       'type': 'static_library',
@@ -378,6 +385,7 @@
     },
 
     # The Sync end-to-end (and associated infrastructure) tests.
+    # GN version: //sync:sync_endtoend_tests
     {
       'target_name': 'sync_endtoend_tests',
       'type': '<(gtest_target_type)',

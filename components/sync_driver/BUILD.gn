@@ -84,7 +84,7 @@ static_library("test_support") {
     ":sync_driver",
     "//base",
     "//sync",
-    #'../sync/sync.gyp:test_support_sync_internal_api',  TODO(GYP)
+    "//sync:test_support_sync_internal_api",
     "//testing/gmock",
     "//testing/gtest",
   ]

@@ -19,6 +19,6 @@ static_library("webui") {
     "//components/strings",
     "//content/public/browser",
     "//skia",
-    #'../sync/sync.gyp:sync',  TODO(GYP)
+    "//sync",
   ]
 }

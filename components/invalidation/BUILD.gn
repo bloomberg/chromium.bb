@@ -132,7 +132,6 @@ static_library("test_support") {
     "//sync",
     "//testing/gmock",
     "//third_party/cacheinvalidation",
-    #'../sync/sync.gyp:test_support_sync_notifier',  TODO(GYP)
     #'gcm_driver_test_support',  TODO(GYP)
   ]
 }
