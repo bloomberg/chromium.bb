@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//tools/grit/grit_rule.gni")
+import("//tools/grit/repack.gni")
 
 # GYP version: extensions/extensions_resources.gyp:extensions_resources
 group("extensions_resources") {
@@ -66,6 +67,7 @@ source_set("test_support") {
     "//extensions/common",
     "//extensions/common/api",
     "//net:test_support",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 
@@ -74,4 +76,111 @@ source_set("test_support") {
       "/wd4267", # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     ]
   }
+}
+
+
+# GYP version: //extensions/extensions.gyp:extensions_shell_and_test_pak
+repack("shell_and_test_pak") {
+  sources = [
+    "$root_gen_dir/chrome/common/common_resources.pak",
+    "$root_gen_dir/chrome/common/extensions_api_resources.pak",
+    # TODO(jamescook): Extract the extension/app related resources
+    # from generated_resources_en-US.pak. http://crbug.com/397250
+    "$root_gen_dir/chrome/app/generated_resources_en-US.pak",
+    "$root_gen_dir/chrome/renderer/renderer_resources_100_percent.pak",
+    "$root_gen_dir/content/content_resources.pak",
+    "$root_gen_dir/content/shell/shell_resources.pak",
+    "$root_gen_dir/extensions/extensions_renderer_resources.pak",
+    "$root_gen_dir/extensions/extensions_resources.pak",
+    "$root_gen_dir/extensions/shell/app_shell_resources.pak",
+    "$root_gen_dir/extensions/strings/extensions_strings_en-US.pak",
+    "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
+    "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
+    "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
+    "$root_gen_dir/webkit/devtools_resources.pak",
+  ]
+
+  output = "$root_out_dir/extensions_shell_and_test.pak"
+
+  deps = [
+    ":extensions_resources",
+    # Need extension related resources in common_resources.pak and
+    # renderer_resources_100_percent.pak
+    "//chrome:resources",
+    # Need dev-tools related resources in shell_resources.pak and
+    # devtools_resources.pak.
+    "//content/browser/devtools:resources",
+    "//content/shell:resources",
+    "//content:resources",
+    "//extensions/shell:resources",
+    "//extensions/strings",
+    "//ui/resources",
+    "//ui/strings",
+  ]
+}
+
+# TODO(GYP): Enable this link errors are fixed.
+if (false) {
+# TODO(tfarina): Many extension unit tests run as part of Chrome"s
+# unit_tests target. They should be moved here, which may require some
+# refactoring (ExtensionsBrowserClient, TestingProfile, etc.).
+# http://crbug.com/348066
+test("unittests") {
+  output_name = "extensions_unittests"
+
+  sources = [
+    "browser/process_manager_unittest.cc",
+    "common/api/sockets/sockets_manifest_permission_unittest.cc",
+    "common/csp_validator_unittest.cc",
+    "common/event_filter_unittest.cc",
+    "common/id_util_unittest.cc",
+    "common/one_shot_event_unittest.cc",
+    "common/permissions/manifest_permission_set_unittest.cc",
+    "common/user_script_unittest.cc",
+    "renderer/api/serial/serial_api_unittest.cc",
+    "renderer/api_test_base.cc",
+    "renderer/api_test_base.h",
+    "renderer/api_test_base_unittest.cc",
+    "renderer/event_unittest.cc",
+    "renderer/json_schema_unittest.cc",
+    "renderer/messaging_utils_unittest.cc",
+    "renderer/module_system_test.cc",
+    "renderer/module_system_test.h",
+    "renderer/module_system_unittest.cc",
+    "renderer/safe_builtins_unittest.cc",
+    "renderer/utils_unittest.cc",
+    "test/extensions_unittests_main.cc",
+    "test/test_extensions_client.cc",
+    "test/test_extensions_client.h",
+    "test/test_permission_message_provider.cc",
+    "test/test_permission_message_provider.h",
+    "test/test_permissions_provider.cc",
+    "test/test_permissions_provider.h",
+  ]
+
+  deps = [
+    ":extensions_resources",
+    ":shell_and_test_pak",
+    ":test_support",
+    "//base",
+    "//base/test:test_support",
+    "//content/test:test_support",
+    "//device/serial",
+    "//extensions/common",
+    "//extensions/renderer",
+    "//extensions/strings",
+    "//mojo/environment:chromium",
+    "//mojo/public/cpp/bindings",
+    "//mojo/bindings/js",
+    "//mojo/system",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  if (is_win) {
+    deps += [
+      "//base/allocator",
+    ]
+  }
+}
 }

@@ -10,7 +10,7 @@
     <includes>
       <!-- Features specific to app_shell. -->
       <include name="IDR_SHELL_EXTENSION_API_FEATURES" file="common\api\_api_features.json" type="BINDATA" />
-      
+
       <!-- Custom bindings for extension APIs. -->
       <include name="IDR_SHELL_CUSTOM_BINDINGS_JS" file="renderer\shell_custom_bindings.js" type="BINDATA" />
     </includes>

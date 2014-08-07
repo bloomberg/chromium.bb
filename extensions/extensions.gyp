@@ -884,7 +884,7 @@
     },
     {
       # Protobuf compiler / generator for chrome.cast.channel-related protocol buffers.
-      # GN version: //extensions/browser/api/cast_channel/BUILD.gn
+      # GN version: //extensions/browser/api/cast_channel:cast_channel_proto
       'target_name': 'cast_channel_proto',
       'type': 'static_library',
       'sources': [ 'browser/api/cast_channel/cast_channel.proto' ],

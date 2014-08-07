@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 
 # GYP version: extensions/extensions.gyp:extensions_browser
@@ -172,12 +173,25 @@ source_set("browser") {
       "api/app_view/app_view_internal_api.h",
       "api/async_api_function.cc",
       "api/async_api_function.h",
+      "api/cast_channel/cast_auth_util.h",
+      "api/cast_channel/cast_channel_api.cc",
+      "api/cast_channel/cast_channel_api.h",
+      "api/cast_channel/cast_message_util.cc",
+      "api/cast_channel/cast_message_util.h",
+      "api/cast_channel/cast_socket.cc",
+      "api/cast_channel/cast_socket.h",
       "api/dns/dns_api.cc",
       "api/dns/dns_api.h",
       "api/dns/host_resolver_wrapper.cc",
       "api/dns/host_resolver_wrapper.h",
       "api/extensions_api_client.cc",
       "api/extensions_api_client.h",
+      "api/hid/hid_api.cc",
+      "api/hid/hid_api.h",
+      "api/hid/hid_connection_resource.cc",
+      "api/hid/hid_connection_resource.h",
+      "api/hid/hid_device_manager.cc",
+      "api/hid/hid_device_manager.h",
       "api/power/power_api.cc",
       "api/power/power_api.h",
       "api/power/power_api_manager.cc",
@@ -198,6 +212,8 @@ source_set("browser") {
       "api/socket/socket_api.h",
       "api/socket/tcp_socket.cc",
       "api/socket/tcp_socket.h",
+      "api/socket/tls_socket.cc",
+      "api/socket/tls_socket.h",
       "api/socket/udp_socket.cc",
       "api/socket/udp_socket.h",
       "api/sockets_tcp/sockets_tcp_api.cc",
@@ -242,8 +258,21 @@ source_set("browser") {
 
     deps += [
       "//components/usb_service",
+      "//crypto:platform",
+      "//device/hid",
       "//device/serial",
+      "//extensions/browser/api/cast_channel:cast_channel_proto",
     ]
+
+    if (use_openssl) {
+      sources += [
+        "api/cast_channel/cast_auth_util_openssl.cc",
+      ]
+    } else {
+      sources += [
+        "api/cast_channel/cast_auth_util_nss.cc",
+      ]
+    }
   }
 
   if (is_win) {

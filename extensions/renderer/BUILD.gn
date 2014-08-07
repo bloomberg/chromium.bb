@@ -126,6 +126,8 @@ source_set("renderer") {
     "user_script_injector.h",
     "user_script_set.cc",
     "user_script_set.h",
+    "user_script_set_manager.cc",
+    "user_script_set_manager.h",
     "utils_native_handler.cc",
     "utils_native_handler.h",
     "v8_context_native_handler.cc",
