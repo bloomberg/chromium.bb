@@ -34,6 +34,7 @@
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/chrome_content_browser_client_extensions_part.h"
+#include "chrome/browser/font_family_cache.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_factory.h"
@@ -424,23 +425,7 @@ bool CertMatchesFilter(const net::X509Certificate& cert,
   return false;
 }
 
-#if !defined(OS_ANDROID)
-// Fills |map| with the per-script font prefs under path |map_name|.
-void FillFontFamilyMap(const PrefService* prefs,
-                       const char* map_name,
-                       content::ScriptFontFamilyMap* map) {
-  // TODO(falken): Get rid of the brute-force scan over possible
-  // (font family / script) combinations - see http://crbug.com/308095.
-  for (size_t i = 0; i < prefs::kWebKitScriptsForFontFamilyMapsLength; ++i) {
-    const char* script = prefs::kWebKitScriptsForFontFamilyMaps[i];
-    std::string pref_name = base::StringPrintf("%s.%s", map_name, script);
-    std::string font_family = prefs->GetString(pref_name.c_str());
-    if (!font_family.empty())
-      (*map)[script] = base::UTF8ToUTF16(font_family);
-  }
-}
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
 breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
     const std::string& process_type) {
   base::FilePath dumps_path;
@@ -497,8 +482,7 @@ int GetCrashSignalFD(const CommandLine& command_line) {
 
   return -1;
 }
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
-#endif  // !defined(OS_ANDROID)
+#endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
 
 #if !defined(OS_CHROMEOS)
 GURL GetEffectiveURLForSignin(const GURL& url) {
@@ -2094,20 +2078,27 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   // Fill per-script font preferences. These are not registered on Android
   // - http://crbug.com/308033.
 #if !defined(OS_ANDROID)
-  FillFontFamilyMap(prefs, prefs::kWebKitStandardFontFamilyMap,
-                    &web_prefs->standard_font_family_map);
-  FillFontFamilyMap(prefs, prefs::kWebKitFixedFontFamilyMap,
-                    &web_prefs->fixed_font_family_map);
-  FillFontFamilyMap(prefs, prefs::kWebKitSerifFontFamilyMap,
-                    &web_prefs->serif_font_family_map);
-  FillFontFamilyMap(prefs, prefs::kWebKitSansSerifFontFamilyMap,
-                    &web_prefs->sans_serif_font_family_map);
-  FillFontFamilyMap(prefs, prefs::kWebKitCursiveFontFamilyMap,
-                    &web_prefs->cursive_font_family_map);
-  FillFontFamilyMap(prefs, prefs::kWebKitFantasyFontFamilyMap,
-                    &web_prefs->fantasy_font_family_map);
-  FillFontFamilyMap(prefs, prefs::kWebKitPictographFontFamilyMap,
-                    &web_prefs->pictograph_font_family_map);
+  FontFamilyCache::FillFontFamilyMap(profile,
+                                     prefs::kWebKitStandardFontFamilyMap,
+                                     &web_prefs->standard_font_family_map);
+  FontFamilyCache::FillFontFamilyMap(profile,
+                                     prefs::kWebKitFixedFontFamilyMap,
+                                     &web_prefs->fixed_font_family_map);
+  FontFamilyCache::FillFontFamilyMap(profile,
+                                     prefs::kWebKitSerifFontFamilyMap,
+                                     &web_prefs->serif_font_family_map);
+  FontFamilyCache::FillFontFamilyMap(profile,
+                                     prefs::kWebKitSansSerifFontFamilyMap,
+                                     &web_prefs->sans_serif_font_family_map);
+  FontFamilyCache::FillFontFamilyMap(profile,
+                                     prefs::kWebKitCursiveFontFamilyMap,
+                                     &web_prefs->cursive_font_family_map);
+  FontFamilyCache::FillFontFamilyMap(profile,
+                                     prefs::kWebKitFantasyFontFamilyMap,
+                                     &web_prefs->fantasy_font_family_map);
+  FontFamilyCache::FillFontFamilyMap(profile,
+                                     prefs::kWebKitPictographFontFamilyMap,
+                                     &web_prefs->pictograph_font_family_map);
 #endif
 
   web_prefs->default_font_size =

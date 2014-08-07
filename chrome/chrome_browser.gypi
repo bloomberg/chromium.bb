@@ -2066,6 +2066,8 @@
       'browser/first_run/upgrade_util_mac.cc',
       'browser/first_run/upgrade_util_win.cc',
       'browser/first_run/upgrade_util_win.h',
+      'browser/font_family_cache.cc',
+      'browser/font_family_cache.h',
       'browser/idle.cc',
       'browser/importer/external_process_importer_client.cc',
       'browser/importer/external_process_importer_client.h',
