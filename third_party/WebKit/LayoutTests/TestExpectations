@@ -1270,8 +1270,6 @@ crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ 
 
 crbug.com/399459 http/tests/misc/link-rel-prefetch-and-subresource.html [ Pass Failure ]
 
-Bug(abarth) fast/repaint/repaint-during-scroll-with-zoom.html [ NeedsRebaseline ]
-
 # V8 3.28.19
 crbug.com/392762 fast/js/nested-object-gc.html [ Pass Crash ]
 
