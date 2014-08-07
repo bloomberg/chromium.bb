@@ -67,6 +67,7 @@ class FontRenderParamsTest : public testing::Test {
     CHECK(temp_dir_.CreateUniqueTempDir());
     original_font_delegate_ = LinuxFontDelegate::instance();
     LinuxFontDelegate::SetInstance(&test_font_delegate_);
+    ClearFontRenderParamsCacheForTest();
   }
 
   virtual ~FontRenderParamsTest() {

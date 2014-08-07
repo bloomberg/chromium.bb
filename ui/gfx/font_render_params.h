@@ -91,6 +91,13 @@ GFX_EXPORT FontRenderParams GetFontRenderParams(
     const FontRenderParamsQuery& query,
     std::string* family_out);
 
+// Clears GetFontRenderParams()'s cache. Intended to be called by tests that are
+// changing Fontconfig's configuration.
+// TODO(derat): This is only defined for Linux, but OS_LINUX doesn't seem to be
+// set when font_render_params_linux_unittest.cc includes this header. Figure
+// out what's going on here.
+GFX_EXPORT void ClearFontRenderParamsCacheForTest();
+
 }  // namespace gfx
 
 #endif  // UI_GFX_FONT_RENDER_PARAMS_H_

@@ -5,7 +5,12 @@
 #include "ui/gfx/font_render_params.h"
 
 #include "base/command_line.h"
+#include "base/containers/mru_cache.h"
+#include "base/hash.h"
 #include "base/logging.h"
+#include "base/macros.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/linux_font_delegate.h"
 #include "ui/gfx/switches.h"
@@ -15,6 +20,13 @@
 namespace gfx {
 
 namespace {
+
+// Should cache entries by dropped by the next call to GetFontRenderParams()?
+// Used for tests.
+bool g_clear_cache_for_test = false;
+
+// Number of recent GetFontRenderParams() results to cache.
+const size_t kCacheSize = 10;
 
 // Converts Fontconfig FC_HINT_STYLE to FontRenderParams::Hinting.
 FontRenderParams::Hinting ConvertFontconfigHintStyle(int hint_style) {
@@ -114,12 +126,40 @@ bool QueryFontconfig(const FontRenderParamsQuery& query,
   return true;
 }
 
+// Serialize |query| into a string and hash it to a value suitable for use as a
+// cache key.
+uint32 HashFontRenderParamsQuery(const FontRenderParamsQuery& query) {
+  return base::Hash(base::StringPrintf("%d|%d|%d|%d|%s",
+      query.for_web_contents, query.pixel_size, query.point_size, query.style,
+      JoinString(query.families, ',').c_str()));
+}
+
 }  // namespace
 
 FontRenderParams GetFontRenderParams(const FontRenderParamsQuery& query,
                                      std::string* family_out) {
-  if (family_out)
+  typedef base::MRUCache<uint32, FontRenderParams> Cache;
+  CR_DEFINE_STATIC_LOCAL(Cache, cache, (kCacheSize));
+
+  if (g_clear_cache_for_test) {
+    cache.Clear();
+    g_clear_cache_for_test = false;
+  }
+
+  const uint32 hash = HashFontRenderParamsQuery(query);
+  if (!family_out) {
+    // The family returned by Fontconfig isn't part of FontRenderParams, so we
+    // can only return a value from the cache if it wasn't requested.
+    Cache::const_iterator it = cache.Get(hash);
+    if (it != cache.end()) {
+      DVLOG(1) << "Returning cached params for " << hash;
+      return it->second;
+    }
+  } else {
     family_out->clear();
+  }
+  DVLOG(1) << "Computing params for " << hash
+           << (family_out ? " (family requested)" : "");
 
   // Start with the delegate's settings, but let Fontconfig have the final say.
   FontRenderParams params;
@@ -152,7 +192,12 @@ FontRenderParams GetFontRenderParams(const FontRenderParamsQuery& query,
   if (family_out && family_out->empty() && !query.families.empty())
     *family_out = query.families[0];
 
+  cache.Put(hash, params);
   return params;
+}
+
+void ClearFontRenderParamsCacheForTest() {
+  g_clear_cache_for_test = true;
 }
 
 }  // namespace gfx
