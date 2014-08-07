@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
@@ -461,6 +462,12 @@ class PrintWebViewHelper
   bool is_loading_;
   bool is_scripted_preview_delayed_;
   base::WeakPtrFactory<PrintWebViewHelper> weak_ptr_factory_;
+
+  // Used to fix a race condition where the source is a PDF and print preview
+  // hangs because RequestPrintPreview is called before DidStopLoading() is
+  // called. This is a store for the RequestPrintPreview() call and its
+  // parameters so that it can be invoked after DidStopLoading.
+  base::Closure on_stop_loading_closure_;
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelper);
 };
 
