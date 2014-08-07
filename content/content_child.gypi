@@ -139,8 +139,6 @@
       'child/plugin_messages.h',
       'child/plugin_param_traits.cc',
       'child/plugin_param_traits.h',
-      'child/process_background_message_filter.cc',
-      'child/process_background_message_filter.h',
       'child/power_monitor_broadcast_source.cc',
       'child/power_monitor_broadcast_source.h',
       'child/quota_dispatcher.cc',
