@@ -62,19 +62,31 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
   // TODO(isherman): Set an appropriate device name for non-ChromeOS devices.
   const base::string16 device_type = base::ASCIIToUTF16("Chromeschnozzle");
 #endif  // defined(OS_CHROMEOS)
-  strings->SetString(
-      "notificationTitle",
-      l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_NOTIFICATION_TITLE,
-                                 device_type));
-  strings->SetString(
-      "notificationMessage",
-      l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_NOTIFICATION_MESSAGE,
-                                 device_type));
-  strings->SetString(
-      "notificationButtonTitle",
-      l10n_util::GetStringUTF16(IDS_EASY_UNLOCK_NOTIFICATION_BUTTON_TITLE));
 
-  // Set-up dialog strings.
+  // Setup notification strings.
+  strings->SetString(
+      "setupNotificationTitle",
+      l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_SETUP_NOTIFICATION_TITLE,
+                                 device_type));
+  strings->SetString(
+      "setupNotificationMessage",
+      l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_SETUP_NOTIFICATION_MESSAGE,
+                                 device_type));
+  strings->SetString(
+      "setupNotificationButtonTitle",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_SETUP_NOTIFICATION_BUTTON_TITLE));
+
+  // Success notification strings.
+  strings->SetString(
+      "successNotificationTitle",
+      l10n_util::GetStringUTF16(IDS_EASY_UNLOCK_SUCCESS_NOTIFICATION_TITLE));
+  strings->SetString(
+      "successNotificationMessage",
+      l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_SUCCESS_NOTIFICATION_MESSAGE,
+                                 device_type));
+
+  // Setup dialog strings.
   // Step 1: Intro.
   strings->SetString(
       "setupIntroHeaderTitle",
@@ -152,6 +164,20 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
       "setupErrorConnectingToPhone",
       l10n_util::GetStringFUTF16(
           IDS_EASY_UNLOCK_SETUP_ERROR_CONNECTING_TO_PHONE, device_type));
+
+  // TODO(isherman): Remove these strings once the app has been updated.
+  strings->SetString(
+      "notificationTitle",
+      l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_SETUP_NOTIFICATION_TITLE,
+                                 device_type));
+  strings->SetString(
+      "notificationMessage",
+      l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_SETUP_NOTIFICATION_MESSAGE,
+                                 device_type));
+  strings->SetString(
+      "notificationButtonTitle",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_SETUP_NOTIFICATION_BUTTON_TITLE));
 
   SetResult(strings.release());
   return true;

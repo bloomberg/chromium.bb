@@ -14583,14 +14583,21 @@ Do you accept?
 
     <!-- Easy Unlock strings -->
     <!-- Strings for the Easy Unlock promo notification -->
-    <message name="IDS_EASY_UNLOCK_NOTIFICATION_TITLE" desc="Title for the notification inviting the user to use the Easy Unlock feature.">
+    <message name="IDS_EASY_UNLOCK_SETUP_NOTIFICATION_TITLE" desc="Title for the notification inviting the user to use the Easy Unlock feature.">
       Easily unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
     </message>
-    <message name="IDS_EASY_UNLOCK_NOTIFICATION_MESSAGE" desc="The body text for the notification inviting the user to use the Easy Unlock feature.">
+    <message name="IDS_EASY_UNLOCK_SETUP_NOTIFICATION_MESSAGE" desc="The body text for the notification inviting the user to use the Easy Unlock feature.">
       No need to type your password again. Use your Android phone to unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> easily and securely.
     </message>
-    <message name="IDS_EASY_UNLOCK_NOTIFICATION_BUTTON_TITLE" desc="The text to show on the button in the notification inviting the user to use the Easy Unlock feature.">
+    <message name="IDS_EASY_UNLOCK_SETUP_NOTIFICATION_BUTTON_TITLE" desc="The text to show on the button in the notification inviting the user to use the Easy Unlock feature.">
       1-minute setup
+    </message>
+    <!-- Strings for the Easy Unlock success notification -->
+    <message name="IDS_EASY_UNLOCK_SUCCESS_NOTIFICATION_TITLE" desc="Title for the notification informing the user that Easy Unlock has been successfully set up.">
+      All set!
+    </message>
+    <message name="IDS_EASY_UNLOCK_SUCCESS_NOTIFICATION_MESSAGE" desc="The body text for the notification informing the user that Easy Unlock has been successfully set up.">
+      You can unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> when you and your phone are nearby.
     </message>
     <!-- Strings for the Easy Unlock setup dialog -->
     <!-- Step 1: Intro -->
