@@ -59,8 +59,8 @@ ITEMS_PER_CONTAINS_QUERIES = [20, 20, 50, 50, 50, 100]
 # A list of already compressed extension types that should not receive any
 # compression before being uploaded.
 ALREADY_COMPRESSED_TYPES = [
-    '7z', 'avi', 'cur', 'gif', 'h264', 'jar', 'jpeg', 'jpg', 'pdf', 'png',
-    'wav', 'zip'
+    '7z', 'avi', 'cur', 'gif', 'h264', 'jar', 'jpeg', 'jpg', 'mp4', 'pdf',
+    'png', 'wav', 'zip',
 ]
 
 
