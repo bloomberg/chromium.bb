@@ -380,9 +380,8 @@ wl_client_get_display(struct wl_client *client)
 	return client->display;
 }
 
-static void
-bind_display(struct wl_client *client,
-	     void *data, uint32_t version, uint32_t id);
+static int
+bind_display(struct wl_client *client, struct wl_display *display);
 
 /** Create a client for the given file descriptor
  *
@@ -440,9 +439,7 @@ wl_client_create(struct wl_display *display, int fd)
 		goto err_map;
 
 	wl_signal_init(&client->destroy_signal);
-	bind_display(client, display, 1, 1);
-
-	if (!client->display_resource)
+	if (bind_display(client, display) < 0)
 		goto err_map;
 
 	wl_list_insert(display->client_list.prev, &client->link);
@@ -772,22 +769,20 @@ destroy_client_display_resource(struct wl_resource *resource)
 	resource->client->display_resource = NULL;
 }
 
-static void
-bind_display(struct wl_client *client,
-	     void *data, uint32_t version, uint32_t id)
+static int
+bind_display(struct wl_client *client, struct wl_display *display)
 {
-	struct wl_display *display = data;
-
 	client->display_resource =
-		wl_resource_create(client, &wl_display_interface, 1, id);
+		wl_resource_create(client, &wl_display_interface, 1, 1);
 	if (client->display_resource == NULL) {
 		wl_client_post_no_memory(client);
-		return;
+		return -1;
 	}
 
 	wl_resource_set_implementation(client->display_resource,
 				       &display_interface, display,
 				       destroy_client_display_resource);
+	return 0;
 }
 
 /** Create Wayland display object.
@@ -830,13 +825,6 @@ wl_display_create(void)
 	display->serial = 0;
 
 	wl_array_init(&display->additional_shm_formats);
-
-	if (!wl_global_create(display, &wl_display_interface, 1,
-			      display, bind_display)) {
-		wl_event_loop_destroy(display->loop);
-		free(display);
-		return NULL;
-	}
 
 	return display;
 }
