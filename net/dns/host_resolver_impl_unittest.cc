@@ -1236,6 +1236,33 @@ TEST_F(HostResolverImplTest, SetDefaultAddressFamily_IPv6) {
   EXPECT_TRUE(requests_[2]->HasOneAddress("1.0.0.1", 80));
 }
 
+// Make sure that the address family parameter is respected when raw IPs are
+// passed in.
+TEST_F(HostResolverImplTest, AddressFamilyWithRawIPs) {
+  Request* request =
+      CreateRequest("127.0.0.1", 80,  MEDIUM, ADDRESS_FAMILY_IPV4);
+  EXPECT_EQ(OK, request->Resolve());
+  EXPECT_TRUE(request->HasOneAddress("127.0.0.1", 80));
+
+  request = CreateRequest("127.0.0.1", 80,  MEDIUM, ADDRESS_FAMILY_IPV6);
+  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, request->Resolve());
+
+  request = CreateRequest("127.0.0.1", 80,  MEDIUM, ADDRESS_FAMILY_UNSPECIFIED);
+  EXPECT_EQ(OK, request->Resolve());
+  EXPECT_TRUE(request->HasOneAddress("127.0.0.1", 80));
+
+  request = CreateRequest("::1", 80,  MEDIUM, ADDRESS_FAMILY_IPV4);
+  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, request->Resolve());
+
+  request = CreateRequest("::1", 80,  MEDIUM, ADDRESS_FAMILY_IPV6);
+  EXPECT_EQ(OK, request->Resolve());
+  EXPECT_TRUE(request->HasOneAddress("::1", 80));
+
+  request = CreateRequest("::1", 80,  MEDIUM, ADDRESS_FAMILY_UNSPECIFIED);
+  EXPECT_EQ(OK, request->Resolve());
+  EXPECT_TRUE(request->HasOneAddress("::1", 80));
+}
+
 TEST_F(HostResolverImplTest, ResolveFromCache) {
   proc_->AddRuleForAllFamilies("just.testing", "192.168.1.42");
   proc_->SignalMultiple(1u);  // Need only one.

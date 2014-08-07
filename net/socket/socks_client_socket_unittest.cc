@@ -10,6 +10,7 @@
 #include "net/base/net_log_unittest.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/winsock_init.h"
+#include "net/dns/host_resolver.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/socket_test_util.h"
@@ -412,6 +413,38 @@ TEST_F(SOCKSClientSocketTest, DisconnectWhileHostResolveInProgress) {
 
   EXPECT_FALSE(user_sock_->IsConnected());
   EXPECT_FALSE(user_sock_->IsConnectedAndIdle());
+}
+
+// Tries to connect to an IPv6 IP.  Should fail, as SOCKS4 does not support
+// IPv6.
+TEST_F(SOCKSClientSocketTest, NoIPv6) {
+  const char kHostName[] = "::1";
+
+  user_sock_ = BuildMockSocket(NULL, 0,
+                               NULL, 0,
+                               host_resolver_.get(),
+                               kHostName, 80,
+                               NULL);
+
+  EXPECT_EQ(ERR_NAME_NOT_RESOLVED,
+            callback_.GetResult(user_sock_->Connect(callback_.callback())));
+}
+
+// Same as above, but with a real resolver, to protect against regressions.
+TEST_F(SOCKSClientSocketTest, NoIPv6RealResolver) {
+  const char kHostName[] = "::1";
+
+  scoped_ptr<HostResolver> host_resolver(
+      HostResolver::CreateSystemResolver(HostResolver::Options(), NULL));
+
+  user_sock_ = BuildMockSocket(NULL, 0,
+                               NULL, 0,
+                               host_resolver.get(),
+                               kHostName, 80,
+                               NULL);
+
+  EXPECT_EQ(ERR_NAME_NOT_RESOLVED,
+            callback_.GetResult(user_sock_->Connect(callback_.callback())));
 }
 
 }  // namespace net

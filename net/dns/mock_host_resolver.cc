@@ -14,6 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/test_completion_callback.h"
@@ -154,6 +155,12 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(const RequestInfo& info,
                                                       AddressList* addresses) {
   IPAddressNumber ip;
   if (ParseIPLiteralToNumber(info.hostname(), &ip)) {
+    // This matches the behavior HostResolverImpl.
+    if (info.address_family() != ADDRESS_FAMILY_UNSPECIFIED &&
+        info.address_family() != GetAddressFamily(ip)) {
+      return ERR_NAME_NOT_RESOLVED;
+    }
+
     *addresses = AddressList::CreateFromIPAddress(ip, info.port());
     if (info.host_resolver_flags() & HOST_RESOLVER_CANONNAME)
       addresses->SetDefaultCanonicalName();
