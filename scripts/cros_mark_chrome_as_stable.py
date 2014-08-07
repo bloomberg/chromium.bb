@@ -534,7 +534,8 @@ def main(_argv):
       stable_candidate, unstable_ebuild, chrome_rev, version_to_uprev,
       commit_to_use, overlay_dir)
   # Explicit print to communicate to caller.
-  if chrome_version_atom and options.boards:
-    cros_mark_as_stable.CleanStalePackages(options.boards.split(':'),
-                                           [chrome_version_atom])
+  if chrome_version_atom:
+    if options.boards:
+      cros_mark_as_stable.CleanStalePackages(options.boards.split(':'),
+                                             [chrome_version_atom])
     print 'CHROME_VERSION_ATOM=%s' % chrome_version_atom
