@@ -2110,7 +2110,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(
   // new navigation.
   navigation_state->set_request_committed(true);
 
-  UpdateURL(frame);
+  SendDidCommitProvisionalLoad(frame);
 
   // Check whether we have new encoding name.
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
@@ -3051,7 +3051,7 @@ bool RenderFrameImpl::IsHidden() {
 }
 
 // Tell the embedding application that the URL of the active page has changed.
-void RenderFrameImpl::UpdateURL(blink::WebFrame* frame) {
+void RenderFrameImpl::SendDidCommitProvisionalLoad(blink::WebFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
   WebDataSource* ds = frame->dataSource();
   DCHECK(ds);
@@ -3201,8 +3201,9 @@ void RenderFrameImpl::UpdateURL(blink::WebFrame* frame) {
     // Subframe navigation: the type depends on whether this navigation
     // generated a new session history entry. When they do generate a session
     // history entry, it means the user initiated the navigation and we should
-    // mark it as such. This test checks if this is the first time UpdateURL
-    // has been called since WillNavigateToURL was called to initiate the load.
+    // mark it as such. This test checks if this is the first time
+    // SendDidCommitProvisionalLoad has been called since WillNavigateToURL was
+    // called to initiate the load.
     if (render_view_->page_id_ > render_view_->last_page_id_sent_to_browser_)
       params.transition = PAGE_TRANSITION_MANUAL_SUBFRAME;
     else

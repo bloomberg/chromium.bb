@@ -467,7 +467,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void AddObserver(RenderFrameObserver* observer);
   void RemoveObserver(RenderFrameObserver* observer);
 
-  void UpdateURL(blink::WebFrame* frame);
+  // Builds and sends DidCommitProvisionalLoad to the host.
+  void SendDidCommitProvisionalLoad(blink::WebFrame* frame);
 
   // Gets the focused element. If no such element exists then the element will
   // be NULL.
