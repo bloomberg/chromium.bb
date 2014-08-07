@@ -3145,7 +3145,7 @@ bind_output(struct wl_client *client,
 				output->subpixel,
 				output->make, output->model,
 				output->transform);
-	if (version >= 2)
+	if (version >= WL_OUTPUT_SCALE_SINCE_VERSION)
 		wl_output_send_scale(resource,
 				     output->current_scale);
 
@@ -3157,7 +3157,7 @@ bind_output(struct wl_client *client,
 				    mode->refresh);
 	}
 
-	if (version >= 2)
+	if (version >= WL_OUTPUT_DONE_SINCE_VERSION)
 		wl_output_send_done(resource);
 }
 
