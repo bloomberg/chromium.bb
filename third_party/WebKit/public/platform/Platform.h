@@ -91,6 +91,7 @@ class WebPublicSuffixList;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
 class WebSandboxSupport;
+class WebSecurityOrigin;
 class WebScrollbarBehavior;
 class WebSocketHandle;
 class WebSocketStreamHandle;
@@ -323,6 +324,8 @@ public:
 
     virtual WebURLError cancelledError(const WebURL&) const { return WebURLError(); }
 
+    virtual bool isReservedIPAddress(const WebURL&) const { return false; }
+    virtual bool isReservedIPAddress(const WebSecurityOrigin&) const { return false; }
 
     // Plugins -------------------------------------------------------------
 
