@@ -26,7 +26,8 @@ interface PPP_PexeStreamHandler {
    * Provides the expected length of the pexe, as read from HTTP headers.
    */
   void DidCacheMiss([inout] mem_t user_data,
-                    [in] int64_t expected_total_length);
+                    [in] int64_t expected_total_length,
+                    [in] PP_FileHandle temp_nexe_file);
 
   /**
    * Invoked when a block of data has been downloaded.

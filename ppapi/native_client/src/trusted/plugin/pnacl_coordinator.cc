@@ -63,9 +63,11 @@ void DidCacheHit(void* user_data, PP_FileHandle nexe_file_handle) {
   coordinator->BitcodeStreamCacheHit(nexe_file_handle);
 }
 
-void DidCacheMiss(void* user_data, int64_t expected_pexe_size) {
+void DidCacheMiss(void* user_data, int64_t expected_pexe_size,
+                  PP_FileHandle temp_nexe_file) {
   PnaclCoordinator* coordinator = static_cast<PnaclCoordinator*>(user_data);
-  coordinator->BitcodeStreamCacheMiss(expected_pexe_size);
+  coordinator->BitcodeStreamCacheMiss(expected_pexe_size,
+                                      temp_nexe_file);
 }
 
 void DidStreamData(void* user_data, const void* stream_data, int32_t length) {
@@ -329,7 +331,8 @@ void PnaclCoordinator::BitcodeStreamCacheHit(PP_FileHandle handle) {
   NexeReadDidOpen(temp_nexe_file_->Open(false));
 }
 
-void PnaclCoordinator::BitcodeStreamCacheMiss(int64_t expected_pexe_size) {
+void PnaclCoordinator::BitcodeStreamCacheMiss(int64_t expected_pexe_size,
+                                              PP_FileHandle nexe_handle) {
   expected_pexe_size_ = expected_pexe_size;
 
   for (int i = 0; i < split_module_count_; i++) {
@@ -348,8 +351,6 @@ void PnaclCoordinator::BitcodeStreamCacheMiss(int64_t expected_pexe_size) {
   }
   invalid_desc_wrapper_.reset(plugin_->wrapper_factory()->MakeInvalid());
 
-  PP_FileHandle nexe_handle =
-      plugin_->nacl_interface()->CreateTemporaryFile(plugin_->pp_instance());
   temp_nexe_file_.reset(new TempFile(plugin_, nexe_handle));
   // Open the nexe file for connecting ld and sel_ldr.
   // Start translation when done with this last step of setup!

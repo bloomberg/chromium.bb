@@ -88,7 +88,8 @@ class PnaclCoordinator {
 
 
   void BitcodeStreamCacheHit(PP_FileHandle handle);
-  void BitcodeStreamCacheMiss(int64_t expected_pexe_size);
+  void BitcodeStreamCacheMiss(int64_t expected_pexe_size,
+                              PP_FileHandle handle);
 
   // Invoked when a pexe data chunk arrives (when using streaming translation)
   void BitcodeStreamGotData(const void* data, int32_t length);

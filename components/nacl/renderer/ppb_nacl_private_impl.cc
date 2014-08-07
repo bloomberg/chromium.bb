@@ -1619,7 +1619,8 @@ class PexeDownloader : public blink::WebURLLoaderClient {
       return;
     }
     stream_handler_->DidCacheMiss(stream_handler_user_data_,
-                                  expected_content_length_);
+                                  expected_content_length_,
+                                  file_handle);
 
     // No translated nexe was found in the cache, so we should download the
     // file to start streaming it.

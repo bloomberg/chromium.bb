@@ -4,7 +4,7 @@
  */
 
 /* From private/ppp_pexe_stream_handler.idl,
- *   modified Thu Jul 10 11:05:31 2014.
+ *   modified Wed Aug  6 13:11:06 2014.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPP_PEXE_STREAM_HANDLER_H_
@@ -37,7 +37,9 @@ struct PPP_PexeStreamHandler_1_0 {
    * Invoked as a result of a cache miss for a translated pexe.
    * Provides the expected length of the pexe, as read from HTTP headers.
    */
-  void (*DidCacheMiss)(void* user_data, int64_t expected_total_length);
+  void (*DidCacheMiss)(void* user_data,
+                       int64_t expected_total_length,
+                       PP_FileHandle temp_nexe_file);
   /**
    * Invoked when a block of data has been downloaded.
    * Only invoked after DidCacheMiss().
