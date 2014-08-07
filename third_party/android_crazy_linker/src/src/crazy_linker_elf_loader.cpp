@@ -181,7 +181,9 @@ bool ElfLoader::ReadProgramHeader(Error* error) {
 // segments of a program header table. This is done by creating a
 // private anonymous mmap() with PROT_NONE.
 //
-// This will use the wanted_load_address_ value,
+// This will use the wanted_load_address_ value. Fails if the requested
+// address range cannot be reserved. Typically this would be because
+// it overlaps an existing, possibly system, mapping.
 bool ElfLoader::ReserveAddressSpace(Error* error) {
   ELF::Addr min_vaddr;
   load_size_ =
@@ -197,13 +199,17 @@ bool ElfLoader::ReserveAddressSpace(Error* error) {
   // Support loading at a fixed address.
   if (wanted_load_address_) {
     addr = static_cast<uint8_t*>(wanted_load_address_);
-    mmap_flags |= MAP_FIXED;
   }
 
   LOG("%s: address=%p size=%p\n", __FUNCTION__, addr, load_size_);
   void* start = mmap(addr, load_size_, PROT_NONE, mmap_flags, -1, 0);
   if (start == MAP_FAILED) {
     error->Format("Could not reserve %d bytes of address space", load_size_);
+    return false;
+  }
+  if (wanted_load_address_ && start != addr) {
+    error->Format("Could not map at %p requested, backing out", addr);
+    munmap(start, load_size_);
     return false;
   }
 

@@ -129,7 +129,7 @@ public class ChildProcessService extends Service {
             public void run()  {
                 try {
                     boolean useLinker = Linker.isUsed();
-
+                    boolean requestedSharedRelro = false;
                     if (useLinker) {
                         synchronized (mMainThread) {
                             while (!mIsBound) {
@@ -137,18 +137,37 @@ public class ChildProcessService extends Service {
                             }
                         }
                         if (mLinkerParams != null) {
-                            if (mLinkerParams.mWaitForSharedRelro)
+                            if (mLinkerParams.mWaitForSharedRelro) {
+                                requestedSharedRelro = true;
                                 Linker.initServiceProcess(mLinkerParams.mBaseLoadAddress);
-                            else
+                            } else {
                                 Linker.disableSharedRelros();
-
+                            }
                             Linker.setTestRunnerClassName(mLinkerParams.mTestRunnerClassName);
                         }
                     }
+                    boolean isLoaded = false;
                     try {
                         LibraryLoader.loadNow(getApplicationContext(), false);
+                        isLoaded = true;
                     } catch (ProcessInitException e) {
-                        Log.e(TAG, "Failed to load native library, exiting child process", e);
+                        if (requestedSharedRelro) {
+                            Log.w(TAG, "Failed to load native library with shared RELRO, " +
+                                  "retrying without");
+                        } else {
+                            Log.e(TAG, "Failed to load native library", e);
+                        }
+                    }
+                    if (!isLoaded && requestedSharedRelro) {
+                        Linker.disableSharedRelros();
+                        try {
+                            LibraryLoader.loadNow(getApplicationContext(), false);
+                            isLoaded = true;
+                        } catch (ProcessInitException e) {
+                            Log.e(TAG, "Failed to load native library on retry", e);
+                        }
+                    }
+                    if (!isLoaded) {
                         System.exit(-1);
                     }
                     synchronized (mMainThread) {

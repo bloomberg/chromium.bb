@@ -35,3 +35,5 @@ Local Modifications:
 - Move packed relocation dynamic tags from DT_LOPROC range to DT_LOOS range.
 
 - Add support for x86_64.
+
+- Speculative fix for crbug/397634.
