@@ -34,7 +34,21 @@ public:
         ModeMultiply = 2,
         ModeScreen = 3,
         ModeDarken = 4,
-        ModeLighten = 5
+        ModeLighten = 5,
+
+        // The following modes do not map to IDL constants on
+        // SVGFEBlendElement.
+        ModeOverlay,
+        ModeColorDodge,
+        ModeColorBurn,
+        ModeHardLight,
+        ModeSoftLight,
+        ModeDifference,
+        ModeExclusion,
+        ModeHue,
+        ModeSaturation,
+        ModeColor,
+        ModeLuminosity,
     };
 
     DECLARE_NODE_FACTORY(SVGFEBlendElement);
@@ -57,6 +71,7 @@ private:
 };
 
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGFEBlendElement::Mode>();
+template<> unsigned short getMaxExposedEnumValue<SVGFEBlendElement::Mode>();
 
 } // namespace blink
 

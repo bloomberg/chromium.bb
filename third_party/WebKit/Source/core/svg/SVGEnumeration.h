@@ -46,11 +46,8 @@ public:
 
     virtual ~SVGEnumerationBase();
 
-    unsigned short value() const { return m_value; }
+    unsigned short value() const { return m_value <= maxExposedEnumValue() ? m_value : 0; }
     void setValue(unsigned short, ExceptionState&);
-
-    // This assumes that |m_entries| are sorted.
-    unsigned short maxEnumValue() const { return m_entries.last().first; }
 
     // SVGPropertyBase:
     virtual PassRefPtr<SVGEnumerationBase> clone() const = 0;
@@ -68,23 +65,38 @@ public:
     // Ensure that |SVGAnimatedEnumerationBase::setBaseVal| is used instead of |SVGAnimatedProperty<SVGEnumerationBase>::setBaseVal|.
     void setValue(unsigned short) { ASSERT_NOT_REACHED(); }
 
+    static unsigned short valueOfLastEnum(const StringEntries& entries) { return entries.last().first; }
+
 protected:
-    SVGEnumerationBase(unsigned short value, const StringEntries& entries)
+    SVGEnumerationBase(unsigned short value, const StringEntries& entries, unsigned short maxExposed)
         : SVGPropertyBase(classType())
         , m_value(value)
+        , m_maxExposed(maxExposed)
         , m_entries(entries)
     {
     }
+
+    // This is the maximum value of all the internal enumeration values.
+    // This assumes that |m_entries| are sorted.
+    unsigned short maxInternalEnumValue() const { return valueOfLastEnum(m_entries); }
+
+    // This is the maximum value that is exposed as an IDL constant on the relevant interface.
+    unsigned short maxExposedEnumValue() const { return m_maxExposed; }
 
     // Used by SVGMarkerOrientEnumeration.
     virtual void notifyChange() { }
 
     unsigned short m_value;
+    const unsigned short m_maxExposed;
     const StringEntries& m_entries;
 };
 typedef SVGEnumerationBase::StringEntries SVGEnumerationStringEntries;
 
 template<typename Enum> const SVGEnumerationStringEntries& getStaticStringEntries();
+template<typename Enum> unsigned short getMaxExposedEnumValue()
+{
+    return SVGEnumerationBase::valueOfLastEnum(getStaticStringEntries<Enum>());
+}
 
 template<typename Enum>
 class SVGEnumeration : public SVGEnumerationBase {
@@ -105,7 +117,7 @@ public:
 
     Enum enumValue() const
     {
-        ASSERT(m_value <= maxEnumValue());
+        ASSERT(m_value <= maxInternalEnumValue());
         return static_cast<Enum>(m_value);
     }
 
@@ -117,7 +129,7 @@ public:
 
 protected:
     explicit SVGEnumeration(Enum newValue)
-        : SVGEnumerationBase(newValue, getStaticStringEntries<Enum>())
+        : SVGEnumerationBase(newValue, getStaticStringEntries<Enum>(), getMaxExposedEnumValue<Enum>())
     {
     }
 };

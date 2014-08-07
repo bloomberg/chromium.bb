@@ -53,4 +53,11 @@ shouldBe("feBlendElement.mode.baseVal = SVGFEBlendElement.SVG_FEBLEND_MODE_NORMA
 shouldBe("feBlendElement.mode.baseVal", "SVGFEBlendElement.SVG_FEBLEND_MODE_NORMAL");
 shouldBeEqualToString("feBlendElement.getAttribute('mode')", "normal");
 
+debug("");
+debug("baseVal access when mode is set to a value not in SVGFEBlendElement.SVG_FEBLEND_MODE_*.");
+feBlendElement.setAttribute("mode", "color-dodge");
+shouldBe("feBlendElement.mode.baseVal", "SVGFEBlendElement.SVG_FEBLEND_MODE_UNKNOWN");
+shouldThrow("feBlendElement.mode.baseVal = 13");
+shouldBeEqualToString("feBlendElement.getAttribute('mode')", "color-dodge");
+
 successfullyParsed = true;
