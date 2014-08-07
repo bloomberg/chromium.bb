@@ -2,9 +2,12 @@
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="resources/link-highlight-style.css">
+<script src="resources/link-highlight-helper.js"></script>
 <script src="../../resources/js-test.js"></script>
 <script>
 function runTest() {
+    useMockHighlight();
+
     var clientRect = document.getElementById('targetLink').getBoundingClientRect();
     x = (clientRect.left + clientRect.right) / 2;
     y = (clientRect.top + clientRect.bottom) / 2;
@@ -24,10 +27,10 @@ function runTest() {
 </head>
 <body onload="runTest();">
 <div style="-webkit-transform: translateZ(0); position: relative; left: 10; top: 40">
-<a class="opaqueHighlight needsFix" href="" id="targetLink">Target Link.</a>
+<a class="opaqueHighlight" href="" id="targetLink">Target Link.</a>
 </div>
 <div style="position: relative; left: 10; top: 70">
-This test is successful if "Target Link" above is covered in a green rectangle with rounded corners.
+This test is successful if "Target Link" above is covered in a green rectangle with square corners.
 </div>
 </body>
 </html>

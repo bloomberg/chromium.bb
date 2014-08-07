@@ -1,6 +1,5 @@
 /*Used for applying style to a <span> so it looks like a highlight*/
 .fauxHighlight {
-  -webkit-border-radius: 3px;
   background-color: rgb(0, 255, 0);
   color: rgb(0, 255, 0);
 }
@@ -36,7 +35,6 @@ a.needsFix:active {
 
 /*Used for a floating DIV simulating a highlight*/
 .highlightDiv {
-  -webkit-border-radius: 3px;
   background-color: rgb(0, 255, 0);
   z-index: 1;
   position: absolute;

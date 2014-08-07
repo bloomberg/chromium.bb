@@ -2,13 +2,9 @@
 <html>
 <head>
 <script src="../../resources/js-test.js"></script>
+<script src="resources/link-highlight-helper.js"></script>
+<link rel="stylesheet" type="text/css" href="resources/link-highlight-style.css">
 <style>
-.mySpan {
-    -webkit-tap-highlight-color: rgb(0, 255, 0);
-    position:relative;
-    z-index:1;
-}
-
 .myDiv {
     -webkit-transform:translateZ(0);
     position:relative;
@@ -19,10 +15,13 @@
 </style>
 </head>
 <body onload="runTest();" style="overflow: hidden">
-<span style="cursor: pointer" class="mySpan"><span id="targetLink" style="visibility: hidden" class="mySpan">TEST</span></span>
+<span style="cursor: pointer;position:relative;z-index:1" class="opaqueHighlight">
+  <span id="targetLink" style="visibility: hidden" class="mySpan">TEST</span>
+</span>
 <div class="myDiv">Div to overlap to ensure compositing</div>
 <script>
 function runTest() {
+    useMockHighlight();
     if (window.internals)
         internals.settings.setLayerSquashingEnabled(true);
 

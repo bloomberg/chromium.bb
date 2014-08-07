@@ -182,6 +182,9 @@ public:
     bool viewportMetaNonUserScalableQuirk() const { return m_viewportMetaNonUserScalableQuirk; }
     bool clobberUserAgentInitialScaleQuirk() const { return m_clobberUserAgentInitialScaleQuirk; }
 
+    void setMockGestureTapHighlightsEnabled(bool);
+    bool mockGestureTapHighlightsEnabled() const;
+
 private:
     blink::Settings* m_settings;
     blink::InspectorController* m_inspectorController;

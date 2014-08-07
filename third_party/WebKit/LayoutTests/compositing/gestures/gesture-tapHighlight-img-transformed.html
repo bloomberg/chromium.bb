@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script src="resources/link-highlight-helper.js"></script>
+<link rel="stylesheet" type="text/css" href="resources/link-highlight-style.css">
 </head>
 <body onload="runTest();" style="overflow: hidden">
   <div style="-webkit-transform: translatez(0) translatey(100px) translatex(300px);">
-    <a href="" style="-webkit-tap-highlight-color: rgb(0, 255, 0)">
+    <a href="" class="opaqueHighlight">
       <img width="320" height="240" id="targetLink" src="resources/dice.png">
     </a>
 </div>
 <script>
 function runTest() {
+    useMockHighlight();
     var clientRect = document.getElementById('targetLink').getBoundingClientRect();
     x = (clientRect.left + clientRect.right) / 2;
     y = (clientRect.top + clientRect.bottom) / 2;

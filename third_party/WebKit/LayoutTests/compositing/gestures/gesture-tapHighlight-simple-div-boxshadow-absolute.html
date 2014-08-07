@@ -2,6 +2,7 @@
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="resources/link-highlight-style.css">
+<script src="resources/link-highlight-helper.js"></script>
 </head>
 <body onload="runTest();">
 <div style="top: 10px; left: 10px; -webkit-transform: translateZ(0);">
@@ -14,6 +15,7 @@ This test is successful if the box labelled "Target" has a green rectangle cente
 </div>
 <script>
 function runTest() {
+    useMockHighlight();
     var clientRect = document.getElementById('targetDiv').getBoundingClientRect();
     x = (clientRect.left + clientRect.right) / 2;
     y = (clientRect.top +  clientRect.bottom) / 2;

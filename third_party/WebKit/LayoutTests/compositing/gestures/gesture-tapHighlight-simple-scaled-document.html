@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script src="resources/link-highlight-helper.js"></script>
 <link rel="stylesheet" type="text/css" href="resources/link-highlight-style.css">
 <style>
 ::-webkit-scrollbar {
@@ -14,10 +15,12 @@
 <a href="" id="targetLink" class="opaqueHighlight">Target Link.</a>
 </div>
 <div style="-webkit-transform: translateZ(0); position: relative; left: 10; top: 70">
-This test is successful if "Target Link" above is covered in a green rectangle with rounded corners.
+This test is successful if "Target Link" above is covered in a green rectangle with square corners.
 </div>
 <script>
 function runTest() {
+    useMockHighlight();
+
     if (window.eventSender) {
         window.eventSender.setPageScaleFactor(2, 0, 0);
     }

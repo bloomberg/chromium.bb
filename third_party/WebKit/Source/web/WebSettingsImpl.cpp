@@ -439,6 +439,11 @@ void WebSettingsImpl::setMockScrollbarsEnabled(bool enabled)
     m_settings->setMockScrollbarsEnabled(enabled);
 }
 
+void WebSettingsImpl::setMockGestureTapHighlightsEnabled(bool enabled)
+{
+    m_settings->setMockGestureTapHighlightsEnabled(enabled);
+}
+
 void WebSettingsImpl::setAcceleratedCompositingForOverflowScrollEnabled(bool enabled)
 {
     m_settings->setAcceleratedCompositingForOverflowScrollEnabled(enabled);
@@ -583,6 +588,11 @@ void WebSettingsImpl::setEnableTouchAdjustment(bool enabled)
 bool WebSettingsImpl::viewportEnabled() const
 {
     return m_settings->viewportEnabled();
+}
+
+bool WebSettingsImpl::mockGestureTapHighlightsEnabled() const
+{
+    return m_settings->mockGestureTapHighlightsEnabled();
 }
 
 bool WebSettingsImpl::mainFrameResizesAreOrientationChanges() const

@@ -27,3 +27,9 @@ function _createHighlight(node, classes) {
 
   return div;
 }
+
+function useMockHighlight() {
+  if (window.internals)
+    internals.settings.setMockGestureTapHighlightsEnabled(true);
+}
+

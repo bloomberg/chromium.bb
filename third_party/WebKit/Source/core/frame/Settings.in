@@ -123,6 +123,10 @@ mediaPlaybackRequiresUserGesture initial=false
 
 scrollAnimatorEnabled initial=true
 
+# Used in layout tests for gesture tap highlights. Makes the highlights square
+# (rather than rounded) to make it possible to reftest the results.
+mockGestureTapHighlightsEnabled initial=false
+
 shouldRespectImageOrientation initial=false
 
 # Limited use by features which behave differently depending on the input

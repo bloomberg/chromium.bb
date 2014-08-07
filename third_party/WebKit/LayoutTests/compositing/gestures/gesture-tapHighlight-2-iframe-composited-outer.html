@@ -2,14 +2,16 @@
 <html>
 <head>
 <script src="../../resources/js-test.js"></script>
+<script src="resources/link-highlight-helper.js"></script>
 </head>
 <body onLoad="runTest();">
 <iframe id="nestingFrame" src="resources/1-nested-frame-noncomposited.html" style="position: relative; left: 10px; top: 10px; width: 450px; height: 150px; -webkit-transform: translateZ(0);"></iframe>
 <div style="position: relative; left: 10px; top: 20px;">
-This test is successful if "Target Link" is covered by a green box with rounded rectangles.
+This test is successful if "Target Link" is covered by a green box with square corners.
 </div>
 <script>
 function runTest() {
+    useMockHighlight();
     var nestingFrame = document.getElementById('nestingFrame');
     var targetFrame = nestingFrame.contentDocument.getElementById('targetFrame');
     var clientRect = targetFrame.contentDocument.getElementById('targetLink').getBoundingClientRect();
