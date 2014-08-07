@@ -6,6 +6,11 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/login_manager_test.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
+#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
@@ -21,8 +26,30 @@
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using chromeos::ProfileHelper;
+using chromeos::LoginManagerTest;
+using chromeos::StartupUtils;
+using chromeos::UserAddingScreen;
+using chromeos::UserManager;
 using testing::_;
 using testing::Return;
+
+namespace {
+
+const char kTestUser1[] = "primary.user@example.com";
+const char kTestUser2[] = "secondary.user@example.com";
+
+#if defined(GOOGLE_CHROME_BUILD)
+bool HasEasyUnlockAppForProfile(Profile* profile) {
+  extensions::ExtensionSystem* extension_system =
+      extensions::ExtensionSystem::Get(profile);
+  ExtensionService* extension_service = extension_system->extension_service();
+  return !!extension_service->GetExtensionById(
+      extension_misc::kEasyUnlockAppId, false);
+}
+#endif
+
+} //namespace
 
 class EasyUnlockServiceTest : public InProcessBrowserTest {
  public:
@@ -42,11 +69,7 @@ class EasyUnlockServiceTest : public InProcessBrowserTest {
 
 #if defined(GOOGLE_CHROME_BUILD)
   bool HasEasyUnlockApp() const {
-    extensions::ExtensionSystem* extension_system =
-        extensions::ExtensionSystem::Get(profile());
-    ExtensionService* extension_service = extension_system->extension_service();
-    return !!extension_service->GetExtensionById(
-        extension_misc::kEasyUnlockAppId, false);
+    return HasEasyUnlockAppForProfile(profile());
   }
 #endif
 
@@ -141,5 +164,45 @@ IN_PROC_BROWSER_TEST_F(EasyUnlockServiceFinchDisabledTest, StayDisabled) {
   EXPECT_FALSE(service()->IsAllowed());
 #if defined(GOOGLE_CHROME_BUILD)
   EXPECT_FALSE(HasEasyUnlockApp());
+#endif
+}
+
+class EasyUnlockServiceMultiProfileTest : public LoginManagerTest {
+ public:
+  EasyUnlockServiceMultiProfileTest() : LoginManagerTest(false) {}
+  virtual ~EasyUnlockServiceMultiProfileTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockServiceMultiProfileTest);
+};
+
+IN_PROC_BROWSER_TEST_F(EasyUnlockServiceMultiProfileTest,
+                       PRE_DisallowedOnSecondaryProfile) {
+  RegisterUser(kTestUser1);
+  RegisterUser(kTestUser2);
+  StartupUtils::MarkOobeCompleted();
+}
+
+IN_PROC_BROWSER_TEST_F(EasyUnlockServiceMultiProfileTest,
+                       DisallowedOnSecondaryProfile) {
+  LoginUser(kTestUser1);
+  chromeos::UserAddingScreen::Get()->Start();
+  base::RunLoop().RunUntilIdle();
+  AddUser(kTestUser2);
+  const user_manager::User* primary_user =
+      UserManager::Get()->FindUser(kTestUser1);
+  const user_manager::User* secondary_user =
+      UserManager::Get()->FindUser(kTestUser2);
+
+  Profile* primary_profile = ProfileHelper::Get()->GetProfileByUserIdHash(
+      primary_user->username_hash());
+  Profile* secondary_profile = ProfileHelper::Get()->GetProfileByUserIdHash(
+      secondary_user->username_hash());
+
+  EXPECT_TRUE(EasyUnlockService::Get(primary_profile)->IsAllowed());
+  EXPECT_FALSE(EasyUnlockService::Get(secondary_profile)->IsAllowed());
+#if defined(GOOGLE_CHROME_BUILD)
+  EXPECT_TRUE(HasEasyUnlockAppForProfile(primary_profile));
+  EXPECT_FALSE(HasEasyUnlockAppForProfile(secondary_profile));
 #endif
 }

@@ -85,6 +85,10 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
   // Returns true when |profile| corresponds to owner's profile.
   static bool IsOwnerProfile(Profile* profile);
 
+  // Returns true when |profile| corresponds to the primary user profile
+  // of the current session.
+  static bool IsPrimaryProfile(Profile* profile);
+
   // Initialize a bunch of services that are tied to a browser profile.
   // TODO(dzhioev): Investigate whether or not this method is needed.
   void ProfileStartup(Profile* profile, bool process_startup);

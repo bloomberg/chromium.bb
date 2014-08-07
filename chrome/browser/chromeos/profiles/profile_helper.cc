@@ -177,6 +177,16 @@ bool ProfileHelper::IsOwnerProfile(Profile* profile) {
   return user->email() == chromeos::UserManager::Get()->GetOwnerEmail();
 }
 
+//static
+bool ProfileHelper::IsPrimaryProfile(Profile* profile) {
+  if (!profile)
+    return false;
+  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  if (!user)
+    return false;
+  return user == chromeos::UserManager::Get()->GetPrimaryUser();
+}
+
 void ProfileHelper::ProfileStartup(Profile* profile, bool process_startup) {
   // Initialize Chrome OS preferences like touch pad sensitivity. For the
   // preferences to work in the guest mode, the initialization has to be

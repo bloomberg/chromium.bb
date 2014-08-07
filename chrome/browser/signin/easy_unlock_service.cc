@@ -24,6 +24,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #endif
 
 namespace {
@@ -88,6 +89,9 @@ void EasyUnlockService::LaunchSetup() {
 bool EasyUnlockService::IsAllowed() {
 #if defined(OS_CHROMEOS)
   if (chromeos::UserManager::Get()->IsLoggedInAsGuest())
+    return false;
+
+  if (!chromeos::ProfileHelper::IsPrimaryProfile(profile_))
     return false;
 
   if (!profile_->GetPrefs()->GetBoolean(prefs::kEasyUnlockAllowed))
