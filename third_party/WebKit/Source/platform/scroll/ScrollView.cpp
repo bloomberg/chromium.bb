@@ -553,7 +553,7 @@ void ScrollView::scrollContents(const IntSize& scrollDelta)
         window->invalidateContentsAndRootView(panScrollIconDirtyRect);
     }
 
-    if (!scrollContentsFastPath(-scrollDelta, scrollViewRect, clipRect))
+    if (!scrollContentsFastPath(-scrollDelta, scrollViewRect))
         scrollContentsSlowPath(updateRect);
 
     // Invalidate the overhang areas if they are visible.
@@ -563,9 +563,9 @@ void ScrollView::scrollContents(const IntSize& scrollDelta)
     frameRectsChanged();
 }
 
-bool ScrollView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect)
+bool ScrollView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll)
 {
-    hostWindow()->scroll(clipRect);
+    hostWindow()->scroll();
     return true;
 }
 

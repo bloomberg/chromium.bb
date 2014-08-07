@@ -64,7 +64,7 @@ public:
     // HostWindow methods.
     virtual void invalidateContentsAndRootView(const IntRect&) OVERRIDE;
     virtual void invalidateContentsForSlowScroll(const IntRect&) OVERRIDE;
-    virtual void scroll(const IntRect&) OVERRIDE;
+    virtual void scroll() OVERRIDE;
     virtual IntRect rootViewToScreen(const IntRect&) const OVERRIDE;
     virtual blink::WebScreenInfo screenInfo() const OVERRIDE;
 

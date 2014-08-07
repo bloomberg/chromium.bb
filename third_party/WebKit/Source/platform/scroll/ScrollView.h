@@ -274,7 +274,7 @@ protected:
 
     virtual void scrollContentsIfNeeded();
     // Scroll the content by blitting the pixels.
-    virtual bool scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect);
+    virtual bool scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll);
     // Scroll the content by invalidating everything.
     virtual void scrollContentsSlowPath(const IntRect& updateRect);
 

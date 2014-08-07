@@ -324,7 +324,7 @@ public:
 
 protected:
     virtual void scrollContentsIfNeeded();
-    virtual bool scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect) OVERRIDE;
+    virtual bool scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll) OVERRIDE;
     virtual void scrollContentsSlowPath(const IntRect& updateRect) OVERRIDE;
 
     virtual bool isVerticalDocument() const OVERRIDE;

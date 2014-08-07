@@ -120,7 +120,7 @@ public:
     virtual void invalidateContentsAndRootView(const blink::IntRect&) OVERRIDE FINAL;
     virtual void invalidateContentsForSlowScroll(const blink::IntRect&) OVERRIDE FINAL;
     virtual void scheduleAnimation() OVERRIDE FINAL;
-    virtual void scroll(const blink::IntRect& clipRect) OVERRIDE FINAL;
+    virtual void scroll() OVERRIDE FINAL;
     virtual blink::IntRect rootViewToScreen(const blink::IntRect&) const OVERRIDE FINAL;
     virtual WebScreenInfo screenInfo() const OVERRIDE FINAL;
 

@@ -388,10 +388,10 @@ void WebPopupMenuImpl::scheduleAnimation()
 {
 }
 
-void WebPopupMenuImpl::scroll(const IntRect& clipRect)
+void WebPopupMenuImpl::scroll()
 {
     if (m_rootLayer)
-        m_rootLayer->layer()->invalidateRect(FloatRect(clipRect));
+        m_rootLayer->layer()->invalidate();
 }
 
 IntRect WebPopupMenuImpl::rootViewToScreen(const IntRect& rect) const

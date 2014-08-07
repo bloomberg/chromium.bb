@@ -1260,15 +1260,10 @@ void FrameView::scrollContentsIfNeeded()
         updateFixedElementPaintInvalidationRectsAfterScroll();
 }
 
-bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& unusedClipRect)
+bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll)
 {
-    // FIXME: once we can switch plugins to a unified scrolling scheme, then
-    // we can do away with this parameter. Leaving as an empty rect for now to
-    // document the uselessness of the parameter to hostWindow.
-    static const IntRect dummyScrollRect;
-
     if (!m_viewportConstrainedObjects || m_viewportConstrainedObjects->isEmpty()) {
-        hostWindow()->scroll(dummyScrollRect);
+        hostWindow()->scroll();
         return true;
     }
 
@@ -1328,7 +1323,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
     }
 
     // 1) scroll
-    hostWindow()->scroll(dummyScrollRect);
+    hostWindow()->scroll();
 
     // 2) update the area of fixed objects that has been invalidated
     Vector<IntRect> subRectsToUpdate = regionToUpdate.rects();
