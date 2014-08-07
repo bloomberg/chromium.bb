@@ -27,7 +27,7 @@
 
 [
     EventConstructor,
-    Exposed=Window&Worker,
+    Exposed=(Window,Worker),
     RaisesException=Constructor,
     Custom=Wrap,
 ] interface MessageEvent : Event {

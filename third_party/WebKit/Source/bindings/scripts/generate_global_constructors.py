@@ -86,9 +86,7 @@ def record_global_constructors(idl_filename):
     # member the extended attribute applies to will be exposed only on objects
     # associated with ECMAScript global environments whose global object
     # implements an interface that has a matching global name.
-    # FIXME: In spec names are comma-separated, but that makes parsing very
-    # difficult (https://www.w3.org/Bugs/Public/show_bug.cgi?id=24959).
-    exposed_global_names = extended_attributes.get('Exposed', 'Window').split('&')
+    exposed_global_names = extended_attributes.get('Exposed', 'Window').strip('()').split(',')
     new_constructors_list = generate_global_constructors_list(interface_name, extended_attributes)
     for exposed_global_name in exposed_global_names:
         global_name_to_constructors[exposed_global_name].extend(new_constructors_list)

@@ -333,23 +333,17 @@ class BlinkIDLParser(IDLParser):
         elif len(p) == 3:
             p[0] = ListFromConcat(self.BuildTrue('NULLABLE'), p[2])
 
-    # [b76.1] Add support for compound Extended Attribute values (A&B and A|B)
+    # [b94] Add support for OR Extended Attribute values "A|B"
     def p_ExtendedAttributeIdentList(self, p):
-        """ExtendedAttributeIdentList : identifier '=' identifier '&' IdentAndList
+        """ExtendedAttributeIdentList : identifier '=' '(' IdentifierList ')'
                                       | identifier '=' identifier '|' IdentOrList"""
-        value = self.BuildAttribute('VALUE', p[3] + p[4] + p[5])
+        if type(p[4]) is list:
+            value = self.BuildAttribute('VALUE', ','.join(p[4]))
+        else:
+            value = self.BuildAttribute('VALUE', p[3] + p[4] + p[5])
         p[0] = self.BuildNamed('ExtAttribute', p, 1, value)
 
-    # [b76.2] A&B&C
-    def p_IdentAndList(self, p):
-        """IdentAndList : identifier '&' IdentAndList
-                        | identifier"""
-        if len(p) > 3:
-            p[0] = p[1] + p[2] + p[3]
-        else:
-            p[0] = p[1]
-
-    # [b76.3] A|B|C
+    # [b94.1] A|B|C
     def p_IdentOrList(self, p):
         """IdentOrList : identifier '|' IdentOrList
                        | identifier"""

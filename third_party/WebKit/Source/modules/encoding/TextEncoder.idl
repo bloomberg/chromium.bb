@@ -30,7 +30,7 @@
 
 [
     RuntimeEnabled=EncodingAPI,
-    Exposed=Window&Worker,
+    Exposed=(Window,Worker),
     Constructor(optional DOMString utfLabel = "utf-8"),
     RaisesException=Constructor,
     GarbageCollected,

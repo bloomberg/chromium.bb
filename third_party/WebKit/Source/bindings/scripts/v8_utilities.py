@@ -60,7 +60,7 @@ ACRONYMS = [
 
 def extended_attribute_value_contains(extended_attribute_value, value):
     return (extended_attribute_value and
-            value in re.split('[|&]', extended_attribute_value))
+            value in re.split('[|,]', extended_attribute_value))
 
 
 def has_extended_attribute(definition_or_member, extended_attribute_list):
@@ -203,15 +203,21 @@ def call_with_arguments(call_with_values):
 
 
 # [Conditional]
+DELIMITER_TO_OPERATOR = {
+    '|': '||',
+    ',': '&&',
+}
+
+
 def conditional_string(definition_or_member):
     extended_attributes = definition_or_member.extended_attributes
     if 'Conditional' not in extended_attributes:
         return None
     conditional = extended_attributes['Conditional']
-    for operator in '&|':
-        if operator in conditional:
-            conditions = conditional.split(operator)
-            operator_separator = ' %s%s ' % (operator, operator)
+    for delimiter in ',|':
+        if delimiter in conditional:
+            conditions = conditional.split(delimiter)
+            operator_separator = ' %s ' % DELIMITER_TO_OPERATOR[delimiter]
             return operator_separator.join('ENABLE(%s)' % expression for expression in sorted(conditions))
     return 'ENABLE(%s)' % conditional
 

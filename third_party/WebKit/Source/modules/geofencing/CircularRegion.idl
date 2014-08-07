@@ -4,7 +4,7 @@
 
 [
     RuntimeEnabled=Geofencing,
-    Exposed=Window&Worker,
+    Exposed=(Window,Worker),
     GarbageCollected,
     Constructor(Dictionary init)
 ] interface CircularRegion : GeofencingRegion {

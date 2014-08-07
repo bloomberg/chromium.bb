@@ -73,9 +73,7 @@ def idl_file_to_global_names(idl_filename):
 
     global_value = extended_attributes[global_key]
     if global_value:
-        # FIXME: In spec names are comma-separated, which makes parsing very
-        # difficult (https://www.w3.org/Bugs/Public/show_bug.cgi?id=24959).
-        return global_value.split('&')
+        return global_value.strip('()').split(',')
     return [interface_name]
 
 

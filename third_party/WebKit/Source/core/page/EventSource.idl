@@ -34,7 +34,7 @@
     ActiveDOMObject,
     Constructor(DOMString url, optional Dictionary eventSourceInit),
     ConstructorCallWith=ExecutionContext,
-    Exposed=Window&Worker,
+    Exposed=(Window,Worker),
     RaisesException=Constructor,
 ] interface EventSource : EventTarget {
 

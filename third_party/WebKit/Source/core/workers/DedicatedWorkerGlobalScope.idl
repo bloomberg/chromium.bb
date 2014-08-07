@@ -30,7 +30,7 @@
 
 [
     Exposed=DedicatedWorker,
-    Global=Worker&DedicatedWorker
+    Global=(Worker,DedicatedWorker)
 ] interface DedicatedWorkerGlobalScope : WorkerGlobalScope {
     [Custom, RaisesException] void postMessage(any message, optional sequence<Transferable> transfer);
     attribute EventHandler onmessage;

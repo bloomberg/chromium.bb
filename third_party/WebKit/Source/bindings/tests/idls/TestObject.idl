@@ -167,7 +167,7 @@ interface TestObject {
     [CallWith=ExecutionContext|ScriptState] attribute any callWithExecutionContextAndScriptStateAnyAttribute;
     [CheckSecurity=Node] readonly attribute Document checkSecurityForNodeReadonlyDocumentAttribute; // All uses are read only
     [Conditional=CONDITION] attribute long conditionalLongAttribute;
-    [Conditional=CONDITION_1&CONDITION_2] attribute long conditionalAndLongAttribute;
+    [Conditional=(CONDITION_1,CONDITION_2)] attribute long conditionalAndLongAttribute;
     [Conditional=CONDITION_1|CONDITION_2] attribute long conditionalOrLongAttribute;
     // Constructors: FIXME: replace suffix with [ConstructorAttribute]
     attribute TestInterfaceEmptyConstructor testInterfaceEmptyConstructorAttribute;
@@ -236,7 +236,7 @@ interface TestObject {
     [RuntimeEnabled=FeatureName] attribute long runtimeEnabledLongAttribute;
     [PerContextEnabled=FeatureName, RuntimeEnabled=FeatureName] attribute long perContextEnabledRuntimeEnabledLongAttribute;
     [Conditional=CONDITION, RuntimeEnabled=FeatureName] attribute long conditionalRuntimeEnabledLongAttribute;
-    [SetterCallWith=ActiveWindow&FirstWindow] attribute DOMString setterCallWithActiveWindowAndFirstWindowStringAttribute;
+    [SetterCallWith=(ActiveWindow,FirstWindow)] attribute DOMString setterCallWithActiveWindowAndFirstWindowStringAttribute;
     [SetterCallWith=ExecutionContext] attribute DOMString setterCallWithExecutionContextStringAttribute;
     [TreatNullAs=EmptyString] attribute DOMString treatNullAsEmptyStringStringAttribute;
     [TreatNullAs=NullString] attribute DOMString treatNullAsNullStringStringAttribute;
@@ -460,14 +460,14 @@ interface TestObject {
     [CallWith=ExecutionContext] void callWithExecutionContextVoidMethod();
     [CallWith=ScriptState] void callWithScriptStateVoidMethod();
     [CallWith=ScriptState] long callWithScriptStateLongMethod();
-    [CallWith=ScriptState&ExecutionContext] void callWithScriptStateExecutionContextVoidMethod();
-    [CallWith=ScriptState&ScriptArguments] void callWithScriptStateScriptArgumentsVoidMethod();
-    [CallWith=ScriptState&ScriptArguments] void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(optional boolean optionalBooleanArg);
+    [CallWith=(ScriptState,ExecutionContext)] void callWithScriptStateExecutionContextVoidMethod();
+    [CallWith=(ScriptState,ScriptArguments)] void callWithScriptStateScriptArgumentsVoidMethod();
+    [CallWith=(ScriptState,ScriptArguments)] void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(optional boolean optionalBooleanArg);
     [CallWith=ActiveWindow] void callWithActiveWindow();
-    [CallWith=ActiveWindow&FirstWindow] void callWithActiveWindowScriptWindow();
+    [CallWith=(ActiveWindow,FirstWindow)] void callWithActiveWindowScriptWindow();
     [CheckSecurity=Node] void checkSecurityForNodeVoidMethod();
     [Conditional=CONDITION] void conditionalConditionVoidMethod();
-    [Conditional=CONDITION_1&CONDITION_2] void conditionalCondition1AndCondition2VoidMethod();
+    [Conditional=(CONDITION_1,CONDITION_2)] void conditionalCondition1AndCondition2VoidMethod();
     [Conditional=CONDITION] static void conditionalConditionStaticVoidMethod();
     [Custom] void customVoidMethod();
     [Conditional=CONDITION, Custom] void conditionalConditionCustomVoidMethod();

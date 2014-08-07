@@ -25,7 +25,7 @@
 
 [
     CustomConstructor(sequence<any> blobParts, DOMString fileName, optional BlobPropertyBag options),
-    Exposed=Window&Worker,
+    Exposed=(Window,Worker),
 ] interface File : Blob {
     readonly attribute DOMString name;
     [Custom=Getter, MeasureAs=FileGetLastModifiedDate] readonly attribute Date lastModifiedDate;

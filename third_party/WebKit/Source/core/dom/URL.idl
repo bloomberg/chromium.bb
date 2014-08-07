@@ -30,7 +30,7 @@
     Constructor(ScalarValueString url),
     Constructor(ScalarValueString url, ScalarValueString base),
     Constructor(ScalarValueString url, URL base),
-    Exposed=Window&Worker,
+    Exposed=(Window,Worker),
     ImplementedAs=DOMURL,
     RaisesException=Constructor,
     WillBeGarbageCollected,

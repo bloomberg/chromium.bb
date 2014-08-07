@@ -41,7 +41,7 @@ enum BinaryType { "blob", "arraybuffer" };
     Constructor(DOMString url, optional DOMString protocol),
     Constructor(DOMString url, sequence<DOMString> protocols),
     ConstructorCallWith=ExecutionContext,
-    Exposed=Window&Worker,
+    Exposed=(Window,Worker),
     RaisesException=Constructor,
     GarbageCollected,
     ImplementedAs=DOMWebSocket,

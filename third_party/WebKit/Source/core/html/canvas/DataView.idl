@@ -26,7 +26,7 @@
 [
     Custom=Wrap,
     CustomConstructor(ArrayBuffer buffer, optional unsigned long byteOffset, optional unsigned long byteLength),
-    Exposed=Window&Worker,
+    Exposed=(Window,Worker),
     TypeChecking=Interface,
 ] interface DataView : ArrayBufferView {
     // All these methods raise an exception if they would read or write beyond the end of the view.

@@ -153,10 +153,10 @@ def get_interface_extended_attributes_from_idl(file_contents):
 
     extended_attributes_string = match.group(1)
     extended_attributes = {}
-    # FIXME: this splitting is WRONG: it fails on ExtendedAttributeArgList like
-    # 'NamedConstructor=Foo(a, b)'
+    # FIXME: this splitting is WRONG: it fails on extended attributes where lists of
+    # multiple values are used, which are seperated by a comma and a space.
     parts = [extended_attribute.strip()
-             for extended_attribute in extended_attributes_string.split(',')
+             for extended_attribute in re.split(',\s+', extended_attributes_string)
              # Discard empty parts, which may exist due to trailing comma
              if extended_attribute.strip()]
     for part in parts:

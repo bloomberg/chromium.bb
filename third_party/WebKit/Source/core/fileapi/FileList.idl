@@ -24,7 +24,7 @@
  */
 
 [
-    Exposed=Window&Worker,
+    Exposed=(Window,Worker),
     WillBeGarbageCollected
 ] interface FileList {
     readonly attribute unsigned long length;

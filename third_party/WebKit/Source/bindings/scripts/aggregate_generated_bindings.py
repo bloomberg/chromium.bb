@@ -120,7 +120,7 @@ def extract_conditional(idl_file_path):
     if not match:
         return None
     conditional = match.group(1)
-    return re.split('([|&])', conditional)
+    return re.split('([|,])', conditional)
 
 
 def extract_meta_data(file_paths):

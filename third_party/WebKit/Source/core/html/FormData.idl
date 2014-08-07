@@ -32,7 +32,7 @@
 
 [
     Constructor(optional HTMLFormElement form),
-    Exposed=Window&Worker,
+    Exposed=(Window,Worker),
     ImplementedAs=DOMFormData,
     WillBeGarbageCollected,
 ] interface FormData {
