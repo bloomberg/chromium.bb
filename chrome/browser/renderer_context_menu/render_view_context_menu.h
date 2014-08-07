@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "components/renderer_context_menu/context_menu_content_type.h"
+#include "components/renderer_context_menu/render_view_context_menu_base.h"
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 #include "components/renderer_context_menu/render_view_context_menu_proxy.h"
 #include "content/public/common/context_menu_params.h"
@@ -46,99 +47,20 @@ struct WebMediaPlayerAction;
 struct WebPluginAction;
 }
 
-class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
-                              public RenderViewContextMenuProxy {
+class RenderViewContextMenu : public RenderViewContextMenuBase {
  public:
-  // A delegate interface to communicate with the toolkit used by
-  // the embedder.
-  class ToolkitDelegate {
-   public:
-    virtual ~ToolkitDelegate() {}
-    // Initialize the toolkit's menu.
-    virtual void Init(ui::SimpleMenuModel* menu_model) = 0;
-
-    virtual void Cancel() = 0;
-
-    // Updates the actual menu items controlled by the toolkit.
-    virtual void UpdateMenuItem(int command_id,
-                                bool enabled,
-                                bool hidden,
-                                const base::string16& title) = 0;
-  };
-
-  static const size_t kMaxSelectionTextLength;
-
-  // Convert a command ID so that it fits within the range for
-  // content context menu.
-  static int ConvertToContentCustomCommandId(int id);
-
-  // True if the given id is the one generated for content context menu.
-  static bool IsContentCustomCommandId(int id);
-
   RenderViewContextMenu(content::RenderFrameHost* render_frame_host,
                         const content::ContextMenuParams& params);
 
   virtual ~RenderViewContextMenu();
 
-  // Initializes the context menu.
-  void Init();
-
-  // Programmatically closes the context menu.
-  void Cancel();
-
-  const ui::SimpleMenuModel& menu_model() const { return menu_model_; }
-  const content::ContextMenuParams& params() const { return params_; }
-
-  // SimpleMenuModel::Delegate implementation.
+  // SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
-  virtual void MenuWillShow(ui::SimpleMenuModel* source) OVERRIDE;
-  virtual void MenuClosed(ui::SimpleMenuModel* source) OVERRIDE;
-
-  // RenderViewContextMenuProxy implementation.
-  virtual void AddMenuItem(int command_id,
-                           const base::string16& title) OVERRIDE;
-  virtual void AddCheckItem(int command_id,
-                            const base::string16& title) OVERRIDE;
-  virtual void AddSeparator() OVERRIDE;
-  virtual void AddSubMenu(int command_id,
-                          const base::string16& label,
-                          ui::MenuModel* model) OVERRIDE;
-  virtual void UpdateMenuItem(int command_id,
-                              bool enabled,
-                              bool hidden,
-                              const base::string16& title) OVERRIDE;
-  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE;
-  virtual content::WebContents* GetWebContents() const OVERRIDE;
-  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
 
  protected:
-  void set_toolkit_delegate(scoped_ptr<ToolkitDelegate> delegate) {
-    toolkit_delegate_ = delegate.Pass();
-  }
-
-  ToolkitDelegate* toolkit_delegate() {
-    return toolkit_delegate_.get();
-  }
-
-  void InitMenu();
   Profile* GetProfile();
-
-  // Platform specific functions.
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) = 0;
-  virtual void AppendPlatformEditableItems();
-
-  content::ContextMenuParams params_;
-  content::WebContents* source_web_contents_;
-  // The RenderFrameHost's IDs.
-  int render_process_id_;
-  int render_frame_id_;
-  content::BrowserContext* browser_context_;
-
-  ui::SimpleMenuModel menu_model_;
   extensions::ContextMenuMatcher extension_items_;
 
  private:
@@ -154,9 +76,19 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   static bool MenuItemMatchesParams(const content::ContextMenuParams& params,
                                     const extensions::MenuItem* item);
 
+  // RenderViewContextMenuBase:
+  virtual void InitMenu() OVERRIDE;
+  virtual void RecordShownItem(int id) OVERRIDE;
+  virtual void RecordUsedItem(int id) OVERRIDE;
+#if defined(ENABLE_PLUGINS)
+  virtual void HandleAuthorizeAllPlugins() OVERRIDE;
+#endif
+  virtual void NotifyMenuShown() OVERRIDE;
+  virtual void NotifyURLOpened(const GURL& url,
+                               content::WebContents* new_contents) OVERRIDE;
+
   // Gets the extension (if any) associated with the WebContents that we're in.
   const extensions::Extension* GetExtension() const;
-  bool AppendCustomItems();
 
   void AppendDeveloperItems();
   void AppendDevtoolsForUnpackedExtensions();
@@ -180,11 +112,6 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   void AppendSpellingSuggestionsSubMenu();
   void AppendSpellcheckOptionsSubMenu();
   void AppendProtocolHandlerSubMenu();
-
-  // Opens the specified URL string in a new tab.
-  void OpenURL(const GURL& url, const GURL& referrer,
-               WindowOpenDisposition disposition,
-               content::PageTransition transition);
 
   // Copy to the clipboard an image located at a point in the RenderView
   void CopyImageAt(int x, int y);
@@ -230,17 +157,6 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   // An observer that disables menu items when print preview is active.
   scoped_ptr<PrintPreviewContextMenuObserver> print_preview_menu_observer_;
 #endif
-
-  // Our observers.
-  mutable ObserverList<RenderViewContextMenuObserver> observers_;
-
-  // Whether a command has been executed. Used to track whether menu observers
-  // should be notified of menu closing without execution.
-  bool command_executed_;
-
-  scoped_ptr<ContextMenuContentType> content_type_;
-
-  scoped_ptr<ToolkitDelegate> toolkit_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenu);
 };

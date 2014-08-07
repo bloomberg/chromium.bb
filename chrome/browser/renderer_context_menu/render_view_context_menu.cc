@@ -142,11 +142,6 @@ const int kImageSearchThumbnailMinSize = 300 * 300;
 const int kImageSearchThumbnailMaxWidth = 600;
 const int kImageSearchThumbnailMaxHeight = 600;
 
-// The range of command IDs reserved for content's custom menus.
-// TODO(oshima): These values will be injected by embedders.
-const int content_context_custom_first = IDC_CONTENT_CONTEXT_CUSTOM_FIRST;
-const int content_context_custom_last = IDC_CONTENT_CONTEXT_CUSTOM_LAST;
-
 // Maps UMA enumeration to IDC. IDC could be changed so we can't use
 // just them and |UMA_HISTOGRAM_CUSTOM_ENUMERATION|.
 // Never change mapping or reuse |enum_id|. Always push back new items.
@@ -262,32 +257,6 @@ int FindUMAEnumValueForCommand(int id) {
   return -1;
 }
 
-// Increments histogram value for used items specified by |id|.
-void RecordUsedItem(int id) {
-  int enum_id = FindUMAEnumValueForCommand(id);
-  if (enum_id != -1) {
-    const size_t kMappingSize = arraysize(kUmaEnumToControlId);
-    UMA_HISTOGRAM_ENUMERATION("RenderViewContextMenu.Used", enum_id,
-                              kUmaEnumToControlId[kMappingSize - 1].enum_id);
-  } else {
-    NOTREACHED() << "Update kUmaEnumToControlId. Unhanded IDC: " << id;
-  }
-}
-
-// Increments histogram value for visible context menu item specified by |id|.
-void RecordShownItem(int id) {
-  int enum_id = FindUMAEnumValueForCommand(id);
-  if (enum_id != -1) {
-    const size_t kMappingSize = arraysize(kUmaEnumToControlId);
-    UMA_HISTOGRAM_ENUMERATION("RenderViewContextMenu.Shown", enum_id,
-                              kUmaEnumToControlId[kMappingSize - 1].enum_id);
-  } else {
-    // Just warning here. It's harder to maintain list of all possibly
-    // visible items than executable items.
-    DLOG(ERROR) << "Update kUmaEnumToControlId. Unhanded IDC: " << id;
-  }
-}
-
 // Usually a new tab is expected where this function is used,
 // however users should be able to open a tab in background
 // or in a new window.
@@ -296,98 +265,6 @@ WindowOpenDisposition ForceNewTabDispositionFromEventFlags(
   WindowOpenDisposition disposition =
       ui::DispositionFromEventFlags(event_flags);
   return disposition == CURRENT_TAB ? NEW_FOREGROUND_TAB : disposition;
-}
-
-bool IsCustomItemEnabled(const std::vector<content::MenuItem>& items, int id) {
-  DCHECK(RenderViewContextMenu::IsContentCustomCommandId(id));
-  for (size_t i = 0; i < items.size(); ++i) {
-    int action_id =
-        RenderViewContextMenu::ConvertToContentCustomCommandId(items[i].action);
-    if (action_id == id)
-      return items[i].enabled;
-    if (items[i].type == content::MenuItem::SUBMENU) {
-      if (IsCustomItemEnabled(items[i].submenu, id))
-        return true;
-    }
-  }
-  return false;
-}
-
-bool IsCustomItemChecked(const std::vector<content::MenuItem>& items, int id) {
-  DCHECK(RenderViewContextMenu::IsContentCustomCommandId(id));
-  for (size_t i = 0; i < items.size(); ++i) {
-    int action_id =
-        RenderViewContextMenu::ConvertToContentCustomCommandId(items[i].action);
-    if (action_id == id)
-      return items[i].checked;
-    if (items[i].type == content::MenuItem::SUBMENU) {
-      if (IsCustomItemChecked(items[i].submenu, id))
-        return true;
-    }
-  }
-  return false;
-}
-
-const size_t kMaxCustomMenuDepth = 5;
-const size_t kMaxCustomMenuTotalItems = 1000;
-
-void AddCustomItemsToMenu(const std::vector<content::MenuItem>& items,
-                          size_t depth,
-                          size_t* total_items,
-                          ui::SimpleMenuModel::Delegate* delegate,
-                          ui::SimpleMenuModel* menu_model) {
-  if (depth > kMaxCustomMenuDepth) {
-    LOG(ERROR) << "Custom menu too deeply nested.";
-    return;
-  }
-  for (size_t i = 0; i < items.size(); ++i) {
-    int command_id =
-        RenderViewContextMenu::ConvertToContentCustomCommandId(items[i].action);
-    if (!RenderViewContextMenu::IsContentCustomCommandId(command_id)) {
-      LOG(ERROR) << "Custom menu action value out of range.";
-      return;
-    }
-    if (*total_items >= kMaxCustomMenuTotalItems) {
-      LOG(ERROR) << "Custom menu too large (too many items).";
-      return;
-    }
-    (*total_items)++;
-    switch (items[i].type) {
-      case content::MenuItem::OPTION:
-        menu_model->AddItem(
-            RenderViewContextMenu::ConvertToContentCustomCommandId(
-                items[i].action),
-            items[i].label);
-        break;
-      case content::MenuItem::CHECKABLE_OPTION:
-        menu_model->AddCheckItem(
-            RenderViewContextMenu::ConvertToContentCustomCommandId(
-                items[i].action),
-            items[i].label);
-        break;
-      case content::MenuItem::GROUP:
-        // TODO(viettrungluu): I don't know what this is supposed to do.
-        NOTREACHED();
-        break;
-      case content::MenuItem::SEPARATOR:
-        menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
-        break;
-      case content::MenuItem::SUBMENU: {
-        ui::SimpleMenuModel* submenu = new ui::SimpleMenuModel(delegate);
-        AddCustomItemsToMenu(items[i].submenu, depth + 1, total_items, delegate,
-                             submenu);
-        menu_model->AddSubMenu(
-            RenderViewContextMenu::ConvertToContentCustomCommandId(
-                items[i].action),
-            items[i].label,
-            submenu);
-        break;
-      }
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
 }
 
 // Helper function to escape "&" as "&&".
@@ -401,21 +278,9 @@ PrefService* GetPrefs(content::BrowserContext* context) {
   return user_prefs::UserPrefs::Get(context);
 }
 
+bool custom_id_ranges_initialized = false;
+
 }  // namespace
-
-// static
-const size_t RenderViewContextMenu::kMaxSelectionTextLength = 50;
-
-// static
-int RenderViewContextMenu::ConvertToContentCustomCommandId(int id) {
-  return content_context_custom_first + id;
-}
-
-// static
-bool RenderViewContextMenu::IsContentCustomCommandId(int id) {
-  return id >= content_context_custom_first &&
-         id <= content_context_custom_last;
-}
 
 // static
 bool RenderViewContextMenu::IsDevToolsURL(const GURL& url) {
@@ -434,39 +299,27 @@ static const int kSpellcheckRadioGroup = 1;
 RenderViewContextMenu::RenderViewContextMenu(
     content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params)
-    : params_(params),
-      source_web_contents_(WebContents::FromRenderFrameHost(render_frame_host)),
-      render_process_id_(render_frame_host->GetProcess()->GetID()),
-      render_frame_id_(render_frame_host->GetRoutingID()),
-      browser_context_(source_web_contents_->GetBrowserContext()),
-      menu_model_(this),
+    : RenderViewContextMenuBase(render_frame_host, params),
       extension_items_(browser_context_,
                        this,
                        &menu_model_,
                        base::Bind(MenuItemMatchesParams, params_)),
       protocol_handler_submenu_model_(this),
       protocol_handler_registry_(
-          ProtocolHandlerRegistryFactory::GetForBrowserContext(GetProfile())),
-      command_executed_(false) {
-  content_type_.reset(ContextMenuContentTypeFactory::Create(
-                          source_web_contents_, params));
+          ProtocolHandlerRegistryFactory::GetForBrowserContext(GetProfile())) {
+  if (!custom_id_ranges_initialized) {
+    custom_id_ranges_initialized = true;
+    SetContentCustomCommandIdRange(IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
+                                   IDC_CONTENT_CONTEXT_CUSTOM_LAST);
+  }
+  set_content_type(ContextMenuContentTypeFactory::Create(
+      source_web_contents_, params));
 }
 
 RenderViewContextMenu::~RenderViewContextMenu() {
 }
 
 // Menu construction functions -------------------------------------------------
-
-void RenderViewContextMenu::Init() {
-  InitMenu();
-  if (toolkit_delegate_)
-    toolkit_delegate_->Init(&menu_model_);
-}
-
-void RenderViewContextMenu::Cancel() {
-  if (toolkit_delegate_)
-    toolkit_delegate_->Cancel();
-}
 
 static bool ExtensionPatternMatch(const extensions::URLPatternSet& patterns,
                                   const GURL& url) {
@@ -615,16 +468,7 @@ void RenderViewContextMenu::AppendCurrentExtensionItems() {
 }
 
 void RenderViewContextMenu::InitMenu() {
-  if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_CUSTOM)) {
-    AppendCustomItems();
-
-    const bool has_selection = !params_.selection_text.empty();
-    if (has_selection) {
-      // We will add more items if there's a selection, so add a separator.
-      // TODO(lazyboy): Clean up separator logic.
-      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-    }
-  }
+  RenderViewContextMenuBase::InitMenu();
 
   if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PAGE))
     AppendPageItems();
@@ -725,6 +569,37 @@ Profile* RenderViewContextMenu::GetProfile() {
   return Profile::FromBrowserContext(browser_context_);
 }
 
+void RenderViewContextMenu::RecordUsedItem(int id) {
+  int enum_id = FindUMAEnumValueForCommand(id);
+  if (enum_id != -1) {
+    const size_t kMappingSize = arraysize(kUmaEnumToControlId);
+    UMA_HISTOGRAM_ENUMERATION("RenderViewContextMenu.Used", enum_id,
+                              kUmaEnumToControlId[kMappingSize - 1].enum_id);
+  } else {
+    NOTREACHED() << "Update kUmaEnumToControlId. Unhanded IDC: " << id;
+  }
+}
+
+void RenderViewContextMenu::RecordShownItem(int id) {
+  int enum_id = FindUMAEnumValueForCommand(id);
+  if (enum_id != -1) {
+    const size_t kMappingSize = arraysize(kUmaEnumToControlId);
+    UMA_HISTOGRAM_ENUMERATION("RenderViewContextMenu.Shown", enum_id,
+                              kUmaEnumToControlId[kMappingSize - 1].enum_id);
+  } else {
+    // Just warning here. It's harder to maintain list of all possibly
+    // visible items than executable items.
+    DLOG(ERROR) << "Update kUmaEnumToControlId. Unhanded IDC: " << id;
+  }
+}
+
+#if defined(ENABLE_PLUGINS)
+void RenderViewContextMenu::HandleAuthorizeAllPlugins() {
+  ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
+      source_web_contents_, false, std::string());
+}
+#endif
+
 void RenderViewContextMenu::AppendPrintPreviewItems() {
 #if defined(ENABLE_FULL_PRINTING)
   if (!print_preview_menu_observer_.get()) {
@@ -745,57 +620,6 @@ const Extension* RenderViewContextMenu::GetExtension() const {
 
   return system->process_manager()->GetExtensionForRenderViewHost(
       source_web_contents_->GetRenderViewHost());
-}
-
-void RenderViewContextMenu::AddMenuItem(int command_id,
-                                        const base::string16& title) {
-  menu_model_.AddItem(command_id, title);
-}
-
-void RenderViewContextMenu::AddCheckItem(int command_id,
-                                         const base::string16& title) {
-  menu_model_.AddCheckItem(command_id, title);
-}
-
-void RenderViewContextMenu::AddSeparator() {
-  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-}
-
-void RenderViewContextMenu::AddSubMenu(int command_id,
-                                       const base::string16& label,
-                                       ui::MenuModel* model) {
-  menu_model_.AddSubMenu(command_id, label, model);
-}
-
-void RenderViewContextMenu::UpdateMenuItem(int command_id,
-                                           bool enabled,
-                                           bool hidden,
-                                           const base::string16& label) {
-  if (toolkit_delegate_) {
-    toolkit_delegate_->UpdateMenuItem(command_id,
-                                      enabled,
-                                      hidden,
-                                      label);
-  }
-}
-
-RenderViewHost* RenderViewContextMenu::GetRenderViewHost() const {
-  return source_web_contents_->GetRenderViewHost();
-}
-
-WebContents* RenderViewContextMenu::GetWebContents() const {
-  return source_web_contents_;
-}
-
-BrowserContext* RenderViewContextMenu::GetBrowserContext() const {
-  return browser_context_;
-}
-
-bool RenderViewContextMenu::AppendCustomItems() {
-  size_t total_items = 0;
-  AddCustomItemsToMenu(params_.custom_items, 0, &total_items, this,
-                       &menu_model_);
-  return total_items > 0;
 }
 
 void RenderViewContextMenu::AppendDeveloperItems() {
@@ -1126,20 +950,11 @@ void RenderViewContextMenu::AppendProtocolHandlerSubMenu() {
       &protocol_handler_submenu_model_);
 }
 
-void RenderViewContextMenu::AppendPlatformEditableItems() {
-}
-
 // Menu delegate functions -----------------------------------------------------
 
 bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
-  // If this command is is added by one of our observers, we dispatch it to the
-  // observer.
-  ObserverListBase<RenderViewContextMenuObserver>::Iterator it(observers_);
-  RenderViewContextMenuObserver* observer;
-  while ((observer = it.GetNext()) != NULL) {
-    if (observer->IsCommandIdSupported(id))
-      return observer->IsCommandIdEnabled(id);
-  }
+  if (RenderViewContextMenuBase::IsCommandIdEnabled(id))
+    return true;
 
   CoreTabHelper* core_tab_helper =
       CoreTabHelper::FromWebContents(source_web_contents_);
@@ -1161,10 +976,6 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       (id < IDC_SPELLCHECK_LANGUAGES_LAST)) {
     return prefs->GetBoolean(prefs::kEnableContinuousSpellcheck);
   }
-
-  // Custom items.
-  if (IsContentCustomCommandId(id))
-    return IsCustomItemEnabled(params_.custom_items, id);
 
   // Extension items.
   if (ContextMenuMatcher::IsExtensionsCustomCommandId(id))
@@ -1428,14 +1239,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 }
 
 bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
-  // If this command is is added by one of our observers, we dispatch it to the
-  // observer.
-  ObserverListBase<RenderViewContextMenuObserver>::Iterator it(observers_);
-  RenderViewContextMenuObserver* observer;
-  while ((observer = it.GetNext()) != NULL) {
-    if (observer->IsCommandIdSupported(id))
-      return observer->IsCommandIdChecked(id);
-  }
+  if (RenderViewContextMenuBase::IsCommandIdChecked(id))
+    return true;
 
   // See if the video is set to looping.
   if (id == IDC_CONTENT_CONTEXT_LOOP) {
@@ -1448,10 +1253,6 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
             WebContextMenuData::MediaControls) != 0;
   }
 
-  // Custom items.
-  if (IsContentCustomCommandId(id))
-    return IsCustomItemChecked(params_.custom_items, id);
-
   // Extension items.
   if (ContextMenuMatcher::IsExtensionsCustomCommandId(id))
     return extension_items_.IsCommandIdChecked(id);
@@ -1460,34 +1261,12 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
 }
 
 void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
-  command_executed_ = true;
-  RecordUsedItem(id);
-
-  // If this command is is added by one of our observers, we dispatch it to the
-  // observer.
-  ObserverListBase<RenderViewContextMenuObserver>::Iterator it(observers_);
-  RenderViewContextMenuObserver* observer;
-  while ((observer = it.GetNext()) != NULL) {
-    if (observer->IsCommandIdSupported(id))
-      return observer->ExecuteCommand(id);
-  }
-
-  RenderFrameHost* render_frame_host =
-      RenderFrameHost::FromID(render_process_id_, render_frame_id_);
-
-  // Process custom actions range.
-  if (IsContentCustomCommandId(id)) {
-    unsigned action = id - content_context_custom_first;
-    const content::CustomContextMenuContext& context = params_.custom_context;
-#if defined(ENABLE_PLUGINS)
-    if (context.request_id && !context.is_pepper_menu) {
-      ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
-        source_web_contents_, false, std::string());
-    }
-#endif
-    source_web_contents_->ExecuteCustomContextMenuCommand(action, context);
+  RenderViewContextMenuBase::ExecuteCommand(id, event_flags);
+  if (command_executed_)
     return;
-  }
+  command_executed_ = true;
+
+  RenderFrameHost* render_frame_host = GetRenderFrameHost();
 
   // Process extension menu items.
   if (ContextMenuMatcher::IsExtensionsCustomCommandId(id)) {
@@ -1915,45 +1694,27 @@ ProtocolHandlerRegistry::ProtocolHandlerList
   return handlers;
 }
 
-void RenderViewContextMenu::MenuWillShow(ui::SimpleMenuModel* source) {
-  for (int i = 0; i < source->GetItemCount(); ++i) {
-    if (source->IsVisibleAt(i) &&
-        source->GetTypeAt(i) != ui::MenuModel::TYPE_SEPARATOR) {
-      RecordShownItem(source->GetCommandIdAt(i));
-    }
-  }
-
-  // Ignore notifications from submenus.
-  if (source != &menu_model_)
-    return;
-
-  content::RenderWidgetHostView* view =
-      source_web_contents_->GetRenderWidgetHostView();
-  if (view)
-    view->SetShowingContextMenu(true);
-
+void RenderViewContextMenu::NotifyMenuShown() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_SHOWN,
       content::Source<RenderViewContextMenu>(this),
       content::NotificationService::NoDetails());
 }
 
-void RenderViewContextMenu::MenuClosed(ui::SimpleMenuModel* source) {
-  // Ignore notifications from submenus.
-  if (source != &menu_model_)
-    return;
+void RenderViewContextMenu::NotifyURLOpened(
+    const GURL& url,
+    content::WebContents* new_contents) {
+  RetargetingDetails details;
+  details.source_web_contents = source_web_contents_;
+  details.source_render_frame_id = GetRenderFrameHost()->GetRoutingID();
+  details.target_url = url;
+  details.target_web_contents = new_contents;
+  details.not_yet_in_tabstrip = false;
 
-  content::RenderWidgetHostView* view =
-      source_web_contents_->GetRenderWidgetHostView();
-  if (view)
-    view->SetShowingContextMenu(false);
-  source_web_contents_->NotifyContextMenuClosed(params_.custom_context);
-
-  if (!command_executed_) {
-    FOR_EACH_OBSERVER(RenderViewContextMenuObserver,
-                      observers_,
-                      OnMenuCancel());
-  }
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_RETARGETING,
+      content::Source<Profile>(GetProfile()),
+      content::Details<RetargetingDetails>(&details));
 }
 
 bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
@@ -1982,42 +1743,12 @@ base::string16 RenderViewContextMenu::PrintableSelectionText() {
 
 // Controller functions --------------------------------------------------------
 
-void RenderViewContextMenu::OpenURL(
-    const GURL& url, const GURL& referring_url,
-    WindowOpenDisposition disposition,
-    content::PageTransition transition) {
-  content::Referrer referrer = content::Referrer::SanitizeForRequest(
-      url,
-      content::Referrer(referring_url.GetAsReferrer(),
-                        params_.referrer_policy));
-
-  if (params_.link_url == url && disposition != OFF_THE_RECORD)
-    params_.custom_context.link_followed = url;
-
-  WebContents* new_contents = source_web_contents_->OpenURL(OpenURLParams(
-      url, referrer, disposition, transition, false));
-  if (!new_contents)
-    return;
-
-  RetargetingDetails details;
-  details.source_web_contents = source_web_contents_;
-  details.source_render_frame_id = render_frame_id_;
-  details.target_url = url;
-  details.target_web_contents = new_contents;
-  details.not_yet_in_tabstrip = false;
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_RETARGETING,
-      content::Source<Profile>(GetProfile()),
-      content::Details<RetargetingDetails>(&details));
-}
-
 void RenderViewContextMenu::CopyImageAt(int x, int y) {
   source_web_contents_->GetRenderViewHost()->CopyImageAt(x, y);
 }
 
 void RenderViewContextMenu::GetImageThumbnailForSearch() {
-  RenderFrameHost* render_frame_host =
-      RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+  RenderFrameHost* render_frame_host = GetRenderFrameHost();
   if (!render_frame_host)
     return;
   render_frame_host->Send(new ChromeViewMsg_RequestThumbnailForContextNode(
@@ -2029,8 +1760,7 @@ void RenderViewContextMenu::GetImageThumbnailForSearch() {
 
 void RenderViewContextMenu::Inspect(int x, int y) {
   content::RecordAction(UserMetricsAction("DevTools_InspectElement"));
-  RenderFrameHost* render_frame_host =
-      RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+  RenderFrameHost* render_frame_host = GetRenderFrameHost();
   if (!render_frame_host)
     return;
   DevToolsWindow::InspectElement(render_frame_host->GetRenderViewHost(), x, y);
