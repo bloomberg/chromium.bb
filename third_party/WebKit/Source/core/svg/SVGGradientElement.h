@@ -66,6 +66,9 @@ protected:
 private:
     virtual bool needsPendingResourceHandling() const OVERRIDE FINAL { return false; }
 
+    virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
+    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
+
     virtual void childrenChanged(const ChildrenChange&) OVERRIDE FINAL;
 
     RefPtr<SVGAnimatedTransformList> m_gradientTransform;

@@ -78,6 +78,8 @@ protected:
     virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
 
     RefPtr<SVGAnimatedTransformList> m_transform;
+    virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
+    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
 
 private:
     virtual bool isSVGGraphicsElement() const OVERRIDE FINAL { return true; }

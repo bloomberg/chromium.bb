@@ -43,6 +43,21 @@ SVGGraphicsElement::~SVGGraphicsElement()
 {
 }
 
+bool SVGGraphicsElement::isPresentationAttribute(const QualifiedName& name) const
+{
+    if (name == SVGNames::transformAttr)
+        return true;
+    return SVGElement::isPresentationAttribute(name);
+}
+
+void SVGGraphicsElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
+{
+    if (name == SVGNames::transformAttr)
+        addPropertyToPresentationAttributeStyle(style, CSSPropertyTransform, value);
+    else
+        SVGElement::collectStyleForPresentationAttribute(name, value, style);
+}
+
 PassRefPtr<SVGMatrixTearOff> SVGGraphicsElement::getTransformToElement(SVGElement* target, ExceptionState& exceptionState)
 {
     AffineTransform ctm = getCTM(AllowStyleUpdate);
@@ -124,36 +139,9 @@ PassRefPtr<SVGMatrixTearOff> SVGGraphicsElement::getScreenCTMFromJavascript()
 AffineTransform SVGGraphicsElement::animatedLocalTransform() const
 {
     AffineTransform matrix;
-    RenderStyle* style = renderer() ? renderer()->style() : 0;
-
     // If CSS property was set, use that, otherwise fallback to attribute (if set).
-    if (style && style->hasTransform()) {
-        TransformationMatrix transform;
-        float zoom = style->effectiveZoom();
-
-        // CSS transforms operate with pre-scaled lengths. To make this work with SVG
-        // (which applies the zoom factor globally, at the root level) we
-        //
-        //   * pre-scale the bounding box (to bring it into the same space as the other CSS values)
-        //   * invert the zoom factor (to effectively compute the CSS transform under a 1.0 zoom)
-        //
-        // Note: objectBoundingBox is an emptyRect for elements like pattern or clipPath.
-        // See the "Object bounding box units" section of http://dev.w3.org/csswg/css3-transforms/
-        if (zoom != 1) {
-            FloatRect scaledBBox = renderer()->objectBoundingBox();
-            scaledBBox.scale(zoom);
-            transform.scale(1 / zoom);
-            style->applyTransform(transform, scaledBBox);
-            transform.scale(zoom);
-        } else {
-            style->applyTransform(transform, renderer()->objectBoundingBox());
-        }
-
-        // Flatten any 3D transform.
-        matrix = transform.toAffineTransform();
-    } else {
+    if (!getStyleTransform(matrix))
         m_transform->currentValue()->concatenate(matrix);
-    }
 
     if (m_supplementalTransform)
         return *m_supplementalTransform * matrix;
@@ -202,6 +190,8 @@ void SVGGraphicsElement::svgAttributeChanged(const QualifiedName& attrName)
         return;
 
     if (attrName == SVGNames::transformAttr) {
+        invalidateSVGPresentationAttributeStyle();
+        setNeedsStyleRecalc(LocalStyleChange);
         object->setNeedsTransformUpdate();
         RenderSVGResource::markForLayoutAndParentResourceInvalidation(object);
         return;

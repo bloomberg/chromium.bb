@@ -52,6 +52,21 @@ struct GradientAttributes {
         m_gradientUnitsSet = true;
     }
 
+    void setGradientTransformFromStyle(SVGGradientElement* element)
+    {
+        AffineTransform transform;
+        bool hasTransform = element->getStyleTransform(transform);
+
+        // If CSS property was set, use that, otherwise fallback to attribute (if set).
+        if (!hasTransform && element->gradientTransform()->isSpecified()) {
+            element->gradientTransform()->currentValue()->concatenate(transform);
+            hasTransform = true;
+        }
+
+        if (hasTransform)
+            setGradientTransform(transform);
+    }
+
     void setGradientTransform(const AffineTransform& value)
     {
         m_gradientTransform = value;
