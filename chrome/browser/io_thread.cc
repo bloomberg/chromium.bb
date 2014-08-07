@@ -34,6 +34,7 @@
 #include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/net/proxy_service_factory.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -654,7 +655,10 @@ void IOThread::InitAsync() {
       new DataReductionProxyParams(drp_flags);
   globals_->data_reduction_proxy_params.reset(proxy_params);
   globals_->data_reduction_proxy_auth_request_handler.reset(
-      new DataReductionProxyAuthRequestHandler(proxy_params));
+      new DataReductionProxyAuthRequestHandler(
+          DataReductionProxyChromeSettings::GetClient(),
+          DataReductionProxyChromeSettings::GetBuildAndPatchNumber(),
+          proxy_params));
   globals_->on_resolve_proxy_handler =
       ChromeNetworkDelegate::OnResolveProxyHandler(
           base::Bind(data_reduction_proxy::OnResolveProxyHandler));

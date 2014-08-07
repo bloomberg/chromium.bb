@@ -32,6 +32,14 @@ class DataReductionProxyChromeSettings
   // get the appropriate pref service.
   virtual void InitDataReductionProxySettings(Profile* profile);
 
+  // Using the chrome::VersionInfo version, returns the build and patch portion
+  // of the string delimited by a period. If the chrome::VersionInfo version
+  // isn't of the form xx.xx.xx.xx returns an empty string.
+  static std::string GetBuildAndPatchNumber();
+
+  // Gets the client type for the data reduction proxy.
+  static std::string GetClient();
+
  private:
   // Registers the DataReductionProxyEnabled synthetic field trial with
   // the group |data_reduction_proxy_enabled|.

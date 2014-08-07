@@ -20,7 +20,9 @@ class URLRequest;
 
 namespace data_reduction_proxy {
 
-extern const char kProtocolVersion[];
+#if defined(OS_ANDROID)
+extern const char kAndroidWebViewProtocolVersion[];
+#endif
 
 extern const char kClientAndroidWebview[];
 extern const char kClientChromeAndroid[];
@@ -32,8 +34,14 @@ class DataReductionProxyAuthRequestHandler {
  public:
   static bool IsKeySetOnCommandLine();
 
-  // Constructs an authentication request handler.
-  explicit DataReductionProxyAuthRequestHandler(
+  // Constructs an authentication request handler. Client is the canonical name
+  // for the client. Client names should be defined in this file as one of
+  // |kClient...|. Version is the authentication protocol version that the
+  // client uses, which should be |kProtocolVersion| unless the client expects
+  // to be handled differently from the standard behavior.
+  DataReductionProxyAuthRequestHandler(
+      const std::string& client,
+      const std::string& version,
       DataReductionProxyParams* params);
 
   virtual ~DataReductionProxyAuthRequestHandler();
@@ -47,14 +55,8 @@ class DataReductionProxyAuthRequestHandler {
 
   // Sets a new authentication key. This must be called for platforms that do
   // not have a default key defined. See the constructor implementation for
-  // those platforms. Client is the canonical name for the client. Client names
-  // should be defined in this file as one of |kClient...|. Version is the
-  // authentication protocol version that the client uses, which should be
-  // |kProtocolVersion| unless the client expects to be handled differently from
-  // the standard behavior.
-  void SetKey(const std::string& key,
-              const std::string& client,
-              const std::string& version);
+  // those platforms.
+  void SetKey(const std::string& key);
 
  protected:
   void Init();

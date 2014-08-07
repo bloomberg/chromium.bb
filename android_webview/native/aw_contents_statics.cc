@@ -58,9 +58,7 @@ void SetDataReductionProxyKey(JNIEnv* env, jclass, jstring key) {
       browser_context->GetDataReductionProxyAuthRequestHandler();
   if (drp_auth_request_handler)
     drp_auth_request_handler->SetKey(
-        ConvertJavaStringToUTF8(env, key),
-        data_reduction_proxy::kClientAndroidWebview,
-        data_reduction_proxy::kProtocolVersion);
+        ConvertJavaStringToUTF8(env, key));
 }
 
 // static

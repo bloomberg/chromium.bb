@@ -20,8 +20,11 @@
 
 namespace data_reduction_proxy {
 
-// The version of the authentication protocol.
-const char kProtocolVersion[] = "0";
+// The empty version for the authentication protocol. Currently used by
+// Android webview.
+#if defined(OS_ANDROID)
+const char kAndroidWebViewProtocolVersion[] = "0";
+#endif
 
 // The clients supported by the data reduction proxy.
 const char kClientAndroidWebview[] = "webview";
@@ -36,14 +39,12 @@ bool DataReductionProxyAuthRequestHandler::IsKeySetOnCommandLine() {
 }
 
 DataReductionProxyAuthRequestHandler::DataReductionProxyAuthRequestHandler(
+    const std::string& client,
+    const std::string& version,
     DataReductionProxyParams* params)
     : data_reduction_proxy_params_(params) {
-  version_ = kProtocolVersion;
-#if defined(OS_ANDROID)
-  client_ = kClientChromeAndroid;
-#elif defined(OS_IOS)
-  client_ = kClientChromeIOS;
-#endif
+  client_ = client;
+  version_ = version;
   Init();
 }
 
@@ -126,11 +127,7 @@ void DataReductionProxyAuthRequestHandler::InitAuthentication(
            << "password: [" << credentials_  << "]";
 }
 
-void DataReductionProxyAuthRequestHandler::SetKey(const std::string& key,
-                                                  const std::string& client,
-                                                  const std::string& version) {
-  client_ = client;
-  version_ = version;
+void DataReductionProxyAuthRequestHandler::SetKey(const std::string& key) {
   if (!key.empty())
     InitAuthentication(key);
 }

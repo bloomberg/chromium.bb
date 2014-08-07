@@ -4,11 +4,14 @@
 
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 
+#include "base/strings/string_split.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_version_info.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
@@ -48,4 +51,25 @@ void DataReductionProxyChromeSettings::RegisterSyntheticFieldTrial(
   ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
       "DataReductionProxyEnabled",
       data_reduction_proxy_enabled ? "true" : "false");
+}
+
+// static
+std::string DataReductionProxyChromeSettings::GetBuildAndPatchNumber() {
+  chrome::VersionInfo version_info;
+  std::vector<std::string> version_parts;
+  base::SplitString(version_info.Version(), '.', &version_parts);
+  if (version_parts.size() != 4)
+    return "";
+  return version_parts[2] + version_parts[3];
+}
+
+// static
+std::string DataReductionProxyChromeSettings::GetClient() {
+#if defined(OS_ANDROID)
+  return data_reduction_proxy::kClientChromeAndroid;
+#elif defined(OS_IOS)
+  return data_reduction_proxy::kClientChromeIOS;
+#else
+  return "";
+#endif
 }

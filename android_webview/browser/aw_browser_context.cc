@@ -105,6 +105,8 @@ void AwBrowserContext::PreMainMessageLoopRun() {
               data_reduction_proxy::DataReductionProxyParams::kAllowed)));
   data_reduction_proxy_auth_request_handler_.reset(
       new DataReductionProxyAuthRequestHandler(
+          data_reduction_proxy::kClientAndroidWebview,
+          data_reduction_proxy::kAndroidWebViewProtocolVersion,
           data_reduction_proxy_settings_->params()));
 #endif
 
