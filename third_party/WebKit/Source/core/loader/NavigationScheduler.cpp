@@ -84,8 +84,6 @@ public:
         return adoptPtr(new UserGestureIndicator(DefinitelyNotProcessingUserGesture));
     }
 
-    virtual bool isForm() const { return false; }
-
 protected:
     void clearUserGesture() { m_wasUserGesture = false; }
 
@@ -229,9 +227,6 @@ public:
         frameRequest.setFormState(m_submission->state());
         frame->loader().load(frameRequest);
     }
-
-    virtual bool isForm() const OVERRIDE { return true; }
-    FormSubmission* submission() const { return m_submission.get(); }
 
 private:
     RefPtrWillBePersistent<FormSubmission> m_submission;

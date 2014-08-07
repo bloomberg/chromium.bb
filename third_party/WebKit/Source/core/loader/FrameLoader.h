@@ -223,7 +223,6 @@ private:
     void loadInSameDocument(const KURL&, PassRefPtr<SerializedScriptValue> stateObject, FrameLoadType, ClientRedirectPolicy);
 
     void scheduleCheckCompleted();
-    void startCheckCompleteTimer();
 
     LocalFrame* m_frame;
 
@@ -273,7 +272,6 @@ private:
     bool m_isComplete;
 
     Timer<FrameLoader> m_checkTimer;
-    bool m_shouldCallCheckCompleted;
 
     bool m_didAccessInitialDocument;
     Timer<FrameLoader> m_didAccessInitialDocumentTimer;

@@ -120,7 +120,6 @@ FrameLoader::FrameLoader(LocalFrame* frame)
     , m_inStopAllLoaders(false)
     , m_isComplete(false)
     , m_checkTimer(this, &FrameLoader::checkTimerFired)
-    , m_shouldCallCheckCompleted(false)
     , m_didAccessInitialDocument(false)
     , m_didAccessInitialDocumentTimer(this, &FrameLoader::didAccessInitialDocumentTimerFired)
     , m_forcedSandboxFlags(SandboxNone)
@@ -163,7 +162,7 @@ void FrameLoader::setDefersLoading(bool defers)
             m_deferredHistoryLoad = DeferredHistoryLoad();
         }
         m_frame->navigationScheduler().startTimer();
-        startCheckCompleteTimer();
+        scheduleCheckCompleted();
     }
 }
 
@@ -266,7 +265,6 @@ void FrameLoader::clear()
     m_frame->navigationScheduler().cancel();
 
     m_checkTimer.stop();
-    m_shouldCallCheckCompleted = false;
 
     if (m_stateMachine.isDisplayingInitialEmptyDocument())
         m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
@@ -440,7 +438,6 @@ bool FrameLoader::allAncestorsAreComplete() const
 void FrameLoader::checkCompleted()
 {
     RefPtr<LocalFrame> protect(m_frame);
-    m_shouldCallCheckCompleted = false;
 
     if (m_frame->view())
         m_frame->view()->handleLoadCompleted();
@@ -487,29 +484,17 @@ void FrameLoader::checkCompleted()
 
 void FrameLoader::checkTimerFired(Timer<FrameLoader>*)
 {
-    RefPtr<LocalFrame> protect(m_frame);
-
     if (Page* page = m_frame->page()) {
         if (page->defersLoading())
             return;
     }
-    if (m_shouldCallCheckCompleted)
-        checkCompleted();
-}
-
-void FrameLoader::startCheckCompleteTimer()
-{
-    if (!m_shouldCallCheckCompleted)
-        return;
-    if (m_checkTimer.isActive())
-        return;
-    m_checkTimer.startOneShot(0, FROM_HERE);
+    checkCompleted();
 }
 
 void FrameLoader::scheduleCheckCompleted()
 {
-    m_shouldCallCheckCompleted = true;
-    startCheckCompleteTimer();
+    if (!m_checkTimer.isActive())
+        m_checkTimer.startOneShot(0, FROM_HERE);
 }
 
 LocalFrame* FrameLoader::opener()
