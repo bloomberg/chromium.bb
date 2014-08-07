@@ -17,15 +17,8 @@ if (window.internals) {
     var shadow = internals.shadowRoot(keygen);
     shouldBe('shadow.nodeName', '"#document-fragment"');
 
-    // Shadow roots aren't elements, so accessing their shadow should
-    // raise
-    var exceptionCode;
-    try {
-        internals.shadowRoot(shadow);
-    } catch (e) {
-        exceptionCode = e.code;
-    }
-    shouldBe('exceptionCode', 'DOMException.INVALID_ACCESS_ERR');
+    // Shadow roots aren't elements, so accessing their shadow should throw.
+    shouldThrow("internals.shadowRoot(shadow)");
 
     // Ordinary element should not have shadow
     var p = document.getElementById('peas');

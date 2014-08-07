@@ -92,39 +92,39 @@ public:
     String styleResolverStatsReport(ExceptionState&) const;
     String styleResolverStatsTotalsReport(ExceptionState&) const;
 
-    bool isSharingStyle(Element*, Element*, ExceptionState&) const;
+    bool isSharingStyle(Element*, Element*) const;
 
-    PassRefPtrWillBeRawPtr<CSSComputedStyleDeclaration> computedStyleIncludingVisitedInfo(Node*, ExceptionState&) const;
+    PassRefPtrWillBeRawPtr<CSSStyleDeclaration> computedStyleIncludingVisitedInfo(Node*) const;
 
-    ShadowRoot* shadowRoot(Element* host, ExceptionState&);
-    ShadowRoot* youngestShadowRoot(Element* host, ExceptionState&);
-    ShadowRoot* oldestShadowRoot(Element* host, ExceptionState&);
+    ShadowRoot* shadowRoot(Element* host);
+    ShadowRoot* youngestShadowRoot(Element* host);
+    ShadowRoot* oldestShadowRoot(Element* host);
     ShadowRoot* youngerShadowRoot(Node* shadow, ExceptionState&);
     String shadowRootType(const Node*, ExceptionState&) const;
     bool hasShadowInsertionPoint(const Node*, ExceptionState&) const;
     bool hasContentElement(const Node*, ExceptionState&) const;
     size_t countElementShadow(const Node*, ExceptionState&) const;
-    const AtomicString& shadowPseudoId(Element*, ExceptionState&);
-    void setShadowPseudoId(Element*, const AtomicString&, ExceptionState&);
+    const AtomicString& shadowPseudoId(Element*);
+    void setShadowPseudoId(Element*, const AtomicString&);
 
     // CSS Animation / Transition testing.
     void pauseAnimations(double pauseTime, ExceptionState&);
 
     bool isValidContentSelect(Element* insertionPoint, ExceptionState&);
-    Node* treeScopeRootNode(Node*, ExceptionState&);
-    Node* parentTreeScope(Node*, ExceptionState&);
+    Node* treeScopeRootNode(Node*);
+    Node* parentTreeScope(Node*);
     bool hasSelectorForIdInShadow(Element* host, const AtomicString& idValue, ExceptionState&);
     bool hasSelectorForClassInShadow(Element* host, const AtomicString& className, ExceptionState&);
     bool hasSelectorForAttributeInShadow(Element* host, const AtomicString& attributeName, ExceptionState&);
     bool hasSelectorForPseudoClassInShadow(Element* host, const String& pseudoClass, ExceptionState&);
     unsigned short compareTreeScopePosition(const Node*, const Node*, ExceptionState&) const;
 
-    // FIXME: Rename these functions if walker is prefered.
-    Node* nextSiblingByWalker(Node*, ExceptionState&);
-    Node* firstChildByWalker(Node*, ExceptionState&);
-    Node* lastChildByWalker(Node*, ExceptionState&);
-    Node* nextNodeByWalker(Node*, ExceptionState&);
-    Node* previousNodeByWalker(Node*, ExceptionState&);
+    // FIXME: Rename these functions if walker is preferred.
+    Node* nextSiblingByWalker(Node*);
+    Node* firstChildByWalker(Node*);
+    Node* lastChildByWalker(Node*);
+    Node* nextNodeByWalker(Node*);
+    Node* previousNodeByWalker(Node*);
 
     unsigned updateStyleAndReturnAffectedElementCount(ExceptionState&) const;
     unsigned needsLayoutCount(ExceptionState&) const;
@@ -143,15 +143,15 @@ public:
 
     PassRefPtrWillBeRawPtr<ClientRect> absoluteCaretBounds(ExceptionState&);
 
-    PassRefPtrWillBeRawPtr<ClientRect> boundingBox(Element*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<ClientRect> boundingBox(Element*);
 
     unsigned markerCountForNode(Node*, const String&, ExceptionState&);
-    unsigned activeMarkerCountForNode(Node*, ExceptionState&);
+    unsigned activeMarkerCountForNode(Node*);
     PassRefPtrWillBeRawPtr<Range> markerRangeForNode(Node*, const String& markerType, unsigned index, ExceptionState&);
     String markerDescriptionForNode(Node*, const String& markerType, unsigned index, ExceptionState&);
     void addTextMatchMarker(const Range*, bool isActive);
-    void setMarkersActive(Node*, unsigned startOffset, unsigned endOffset, bool, ExceptionState&);
-    void setMarkedTextMatchesAreHighlighted(Document*, bool, ExceptionState&);
+    void setMarkersActive(Node*, unsigned startOffset, unsigned endOffset, bool);
+    void setMarkedTextMatchesAreHighlighted(Document*, bool);
 
     void setScrollViewPosition(Document*, long x, long y, ExceptionState&);
     String viewportAsText(Document*, float devicePixelRatio, int availableWidth, int availableHeight, ExceptionState&);
@@ -164,10 +164,10 @@ public:
     void setAutofilled(Element*, bool enabled, ExceptionState&);
     void scrollElementToRect(Element*, long x, long y, long w, long h, ExceptionState&);
 
-    PassRefPtrWillBeRawPtr<Range> rangeFromLocationAndLength(Element* scope, int rangeLocation, int rangeLength, ExceptionState&);
-    unsigned locationFromRange(Element* scope, const Range*, ExceptionState&);
-    unsigned lengthFromRange(Element* scope, const Range*, ExceptionState&);
-    String rangeAsText(const Range*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<Range> rangeFromLocationAndLength(Element* scope, int rangeLocation, int rangeLength);
+    unsigned locationFromRange(Element* scope, const Range*);
+    unsigned lengthFromRange(Element* scope, const Range*);
+    String rangeAsText(const Range*);
 
     PassRefPtrWillBeRawPtr<WebKitPoint> touchPositionAdjustedToBestClickableNode(long x, long y, long width, long height, Document*, ExceptionState&);
     Node* touchNodeAdjustedToBestClickableNode(long x, long y, long width, long height, Document*, ExceptionState&);
@@ -181,10 +181,10 @@ public:
     Vector<AtomicString> userPreferredLanguages() const;
     void setUserPreferredLanguages(const Vector<String>&);
 
-    unsigned activeDOMObjectCount(Document*, ExceptionState&);
-    unsigned wheelEventHandlerCount(Document*, ExceptionState&);
-    unsigned scrollEventHandlerCount(Document*, ExceptionState&);
-    unsigned touchEventHandlerCount(Document*, ExceptionState&);
+    unsigned activeDOMObjectCount(Document*);
+    unsigned wheelEventHandlerCount(Document*);
+    unsigned scrollEventHandlerCount(Document*);
+    unsigned touchEventHandlerCount(Document*);
     PassRefPtrWillBeRawPtr<LayerRectList> touchEventTargetLayerRects(Document*, ExceptionState&);
 
     // This is used to test rect based hit testing like what's done on touch screens.
@@ -194,16 +194,16 @@ public:
     void emitInspectorDidBeginFrame(int frameId = 0);
     void emitInspectorDidCancelFrame();
 
-    bool hasSpellingMarker(Document*, int from, int length, ExceptionState&);
-    bool hasGrammarMarker(Document*, int from, int length, ExceptionState&);
-    void setContinuousSpellCheckingEnabled(bool enabled, ExceptionState&);
+    bool hasSpellingMarker(Document*, int from, int length);
+    bool hasGrammarMarker(Document*, int from, int length);
+    void setContinuousSpellCheckingEnabled(bool);
 
-    bool isOverwriteModeEnabled(Document*, ExceptionState&);
-    void toggleOverwriteModeEnabled(Document*, ExceptionState&);
+    bool isOverwriteModeEnabled(Document*);
+    void toggleOverwriteModeEnabled(Document*);
 
-    unsigned numberOfScrollableAreas(Document*, ExceptionState&);
+    unsigned numberOfScrollableAreas(Document*);
 
-    bool isPageBoxVisible(Document*, int pageNumber, ExceptionState&);
+    bool isPageBoxVisible(Document*, int pageNumber);
 
     static const char* internalsId;
 
@@ -222,11 +222,11 @@ public:
     bool scrollsWithRespectTo(Element*, Element*, ExceptionState&);
     bool isUnclippedDescendant(Element*, ExceptionState&);
 
-    String scrollingStateTreeAsText(Document*, ExceptionState&) const;
+    String scrollingStateTreeAsText(Document*) const;
     String mainThreadScrollingReasons(Document*, ExceptionState&) const;
     PassRefPtrWillBeRawPtr<ClientRectList> nonFastScrollableRects(Document*, ExceptionState&) const;
 
-    void garbageCollectDocumentResources(Document*, ExceptionState&) const;
+    void garbageCollectDocumentResources(Document*) const;
     void evictAllResources() const;
 
     unsigned numberOfLiveNodes() const;
@@ -276,18 +276,18 @@ public:
 
     String getCurrentCursorInfo(Document*, ExceptionState&);
 
-    String markerTextForListItem(Element*, ExceptionState&);
+    String markerTextForListItem(Element*);
 
     void forceReload(bool endToEnd);
 
-    String getImageSourceURL(Element*, ExceptionState&);
+    String getImageSourceURL(Element*);
 
     bool isSelectPopupVisible(Node*);
     bool selectPopupItemStyleIsRtl(Node*, int);
     int selectPopupItemStyleFontHeight(Node*, int);
 
     PassRefPtrWillBeRawPtr<ClientRect> selectionBounds(ExceptionState&);
-    String baseURL(Document*, ExceptionState&);
+    String baseURL(Document*);
 
     bool loseSharedGraphicsContext3D();
 
@@ -309,7 +309,7 @@ public:
 
     void setFocused(bool);
 
-    bool ignoreLayoutWithPendingStylesheets(Document*, ExceptionState&);
+    bool ignoreLayoutWithPendingStylesheets(Document*);
 
     void setNetworkStateNotifierTestOnly(bool);
     // Test must call setNetworkStateNotifierTestOnly(true) before calling setNetworkConnectionInfo.
