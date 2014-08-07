@@ -253,6 +253,7 @@ public:
     void setIsCursorVisible(Document*, bool, ExceptionState&);
 
     void mediaPlayerRequestFullscreen(HTMLMediaElement*);
+    double effectiveMediaVolume(HTMLMediaElement*);
 
     void registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme);
     void removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(const String& scheme);

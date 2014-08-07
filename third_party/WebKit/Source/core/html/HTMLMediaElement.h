@@ -287,9 +287,8 @@ public:
 
     void scheduleEvent(PassRefPtrWillBeRawPtr<Event>);
 
-    // Current volume that should be used by the webMediaPlayer(). This method takes muted state
-    // and m_mediaController multipliers into account.
-    double playerVolume() const;
+    // Returns the "effective media volume" value as specified in the HTML5 spec.
+    double effectiveMediaVolume() const;
 
 #if ENABLE(OILPAN)
     bool isFinalizing() const { return m_isFinalizing; }

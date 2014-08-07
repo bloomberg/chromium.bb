@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<title>effective media volume</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<div id="log"></div>
+<script>
+[0, 0.5, 1].forEach(function(volume)
+{
+    [false, true].forEach(function(muted)
+    {
+        test(function()
+        {
+            var audio = new Audio();
+            audio.volume = volume;
+            audio.muted = muted;
+            assert_equals(internals.effectiveMediaVolume(audio),
+                          volume * (muted ? 0 : 1));
+        }, "volume: " + volume + ", muted: " + muted);
+
+        [0, 0.5, 1].forEach(function(controllerVolume)
+        {
+            [false, true].forEach(function(controllerMuted)
+            {
+                test(function()
+                {
+                    var audio = new Audio();
+                    audio.volume = volume;
+                    audio.muted = muted;
+                    var controller = new MediaController();
+                    controller.volume = controllerVolume;
+                    controller.muted = controllerMuted;
+                    audio.controller = controller;
+                    assert_equals(internals.effectiveMediaVolume(audio),
+                                  volume * (muted ? 0 : 1) * controllerVolume * (controllerMuted ? 0 : 1));
+                }, "volume: " + volume + ", muted: " + muted + ", controller volume: " + controllerVolume + ", controller muted: " + controllerMuted);
+            });
+        });
+    });
+});
+</script>

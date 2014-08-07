@@ -108,7 +108,7 @@ void WebMediaPlayerClientImpl::sizeChanged()
 
 double WebMediaPlayerClientImpl::volume() const
 {
-    return mediaElement().playerVolume();
+    return mediaElement().effectiveMediaVolume();
 }
 
 void WebMediaPlayerClientImpl::playbackStateChanged()
@@ -212,7 +212,7 @@ void WebMediaPlayerClientImpl::load(WebMediaPlayer::LoadType loadType, const WTF
     m_audioSourceProvider.wrap(m_webMediaPlayer->audioSourceProvider());
 #endif
 
-    m_webMediaPlayer->setVolume(mediaElement().playerVolume());
+    m_webMediaPlayer->setVolume(mediaElement().effectiveMediaVolume());
 
     m_webMediaPlayer->setPoster(poster);
 

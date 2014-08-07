@@ -1797,6 +1797,11 @@ void Internals::mediaPlayerRequestFullscreen(HTMLMediaElement* mediaElement)
     mediaElement->mediaPlayerRequestFullscreen();
 }
 
+double Internals::effectiveMediaVolume(HTMLMediaElement* mediaElement)
+{
+    return mediaElement->effectiveMediaVolume();
+}
+
 void Internals::registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme)
 {
     SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(scheme);
