@@ -35,8 +35,8 @@
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFaceCreationParams.h"
-
-#include "SkTypeface_android.h"
+#include "third_party/skia/include/core/SkTypeface.h"
+#include "third_party/skia/include/ports/SkFontMgr.h"
 
 namespace blink {
 
@@ -63,10 +63,13 @@ static AtomicString getFamilyNameForCharacter(UChar32 c, UScriptCode script)
         break;
     }
 
-    SkString skiaFamilyName;
-    if (!SkGetFallbackFamilyNameForChar(c, locale, &skiaFamilyName) || skiaFamilyName.isEmpty())
+    RefPtr<SkFontMgr> fm = adoptRef(SkFontMgr::RefDefault());
+    RefPtr<SkTypeface> typeface = adoptRef(fm->matchFamilyStyleCharacter(0, SkFontStyle(), locale, c));
+    if (!typeface)
         return emptyAtom;
 
+    SkString skiaFamilyName;
+    typeface->getFamilyName(&skiaFamilyName);
     return skiaFamilyName.c_str();
 }
 
