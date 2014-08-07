@@ -62,7 +62,7 @@ class MetadataDatabaseIndex : public MetadataDatabaseIndexInterface {
 
   static scoped_ptr<MetadataDatabaseIndex> Create(LevelDBWrapper* db);
   static scoped_ptr<MetadataDatabaseIndex> CreateForTesting(
-      DatabaseContents* contents);
+      DatabaseContents* contents, LevelDBWrapper* db);
 
   // MetadataDatabaseIndexInterface overrides.
   virtual bool GetFileMetadata(

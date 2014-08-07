@@ -22,14 +22,13 @@ namespace sync_file_system {
 namespace drive_backend {
 
 void PutVersionToDB(int64 version, LevelDBWrapper* db) {
-  if (db)
-    db->Put(kDatabaseVersionKey, base::Int64ToString(version));
+  DCHECK(db);
+  db->Put(kDatabaseVersionKey, base::Int64ToString(version));
 }
 
 void PutServiceMetadataToDB(const ServiceMetadata& service_metadata,
                             LevelDBWrapper* db) {
-  if (!db)
-    return;
+  DCHECK(db);
 
   std::string value;
   bool success = service_metadata.SerializeToString(&value);
@@ -38,8 +37,7 @@ void PutServiceMetadataToDB(const ServiceMetadata& service_metadata,
 }
 
 void PutFileMetadataToDB(const FileMetadata& file, LevelDBWrapper* db) {
-  if (!db)
-    return;
+  DCHECK(db);
 
   std::string value;
   bool success = file.SerializeToString(&value);
@@ -48,8 +46,7 @@ void PutFileMetadataToDB(const FileMetadata& file, LevelDBWrapper* db) {
 }
 
 void PutFileTrackerToDB(const FileTracker& tracker, LevelDBWrapper* db) {
-  if (!db)
-    return;
+  DCHECK(db);
 
   std::string value;
   bool success = tracker.SerializeToString(&value);
@@ -60,13 +57,13 @@ void PutFileTrackerToDB(const FileTracker& tracker, LevelDBWrapper* db) {
 
 void PutFileMetadataDeletionToDB(const std::string& file_id,
                                  LevelDBWrapper* db) {
-  if (db)
-    db->Delete(kFileMetadataKeyPrefix + file_id);
+  DCHECK(db);
+  db->Delete(kFileMetadataKeyPrefix + file_id);
 }
 
 void PutFileTrackerDeletionToDB(int64 tracker_id, LevelDBWrapper* db) {
-  if (db)
-    db->Delete(kFileTrackerKeyPrefix + base::Int64ToString(tracker_id));
+  DCHECK(db);
+  db->Delete(kFileTrackerKeyPrefix + base::Int64ToString(tracker_id));
 }
 
 bool HasFileAsParent(const FileDetails& details, const std::string& file_id) {

@@ -219,8 +219,9 @@ MetadataDatabaseIndex::Create(LevelDBWrapper* db) {
 
 // static
 scoped_ptr<MetadataDatabaseIndex>
-MetadataDatabaseIndex::CreateForTesting(DatabaseContents* contents) {
-  scoped_ptr<MetadataDatabaseIndex> index(new MetadataDatabaseIndex(NULL));
+MetadataDatabaseIndex::CreateForTesting(DatabaseContents* contents,
+                                        LevelDBWrapper* db) {
+  scoped_ptr<MetadataDatabaseIndex> index(new MetadataDatabaseIndex(db));
   index->Initialize(make_scoped_ptr(new ServiceMetadata), contents);
   return index.Pass();
 }
