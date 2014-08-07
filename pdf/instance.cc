@@ -954,11 +954,6 @@ void Instance::PaintIfWidgetIntersects(
   DCHECK(!image_data_.is_null());
   widget->Paint(location_dip, &image_data_);
 
-  // Re-scale the rectangle from DIPs to device pixels, so we ensure that we
-  // don't miss any pixels due to rounding outwards in ScaleRect.
-  location = location_dip;
-  ScaleRect(device_scale_, &location);
-
   ready->push_back(PaintManager::ReadyRect(location, image_data_, true));
 }
 
