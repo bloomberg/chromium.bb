@@ -1377,64 +1377,6 @@ TEST_F(WebFrameTest, WideViewportInitialScaleDoesNotExpandFixedLayoutWidth)
     EXPECT_EQ(0.5f, webViewHelper.webView()->pageScaleFactor());
 }
 
-TEST_F(WebFrameTest, SetForceZeroLayoutHeight)
-{
-    UseMockScrollbarSettings mockScrollbarSettings;
-    registerMockedHttpURLLoad("200-by-300.html");
-
-    FixedLayoutTestWebViewClient client;
-    client.m_screenInfo.deviceScaleFactor = 1;
-    int viewportWidth = 640;
-    int viewportHeight = 480;
-
-    FrameTestHelpers::WebViewHelper webViewHelper;
-
-    webViewHelper.initializeAndLoad(m_baseURL + "200-by-300.html", true, 0, &client, enableViewportSettings);
-    webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
-    webViewHelper.webView()->layout();
-
-    EXPECT_EQ(viewportHeight, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().height());
-    webViewHelper.webView()->settings()->setForceZeroLayoutHeight(true);
-    EXPECT_TRUE(webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->needsLayout());
-
-    EXPECT_EQ(0, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().height());
-
-    webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight * 2));
-    EXPECT_FALSE(webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->needsLayout());
-    EXPECT_EQ(0, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().height());
-
-    webViewHelper.webView()->resize(WebSize(viewportWidth * 2, viewportHeight));
-    webViewHelper.webView()->layout();
-    EXPECT_EQ(0, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().height());
-
-    webViewHelper.webView()->settings()->setForceZeroLayoutHeight(false);
-    EXPECT_EQ(viewportHeight, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().height());
-}
-
-TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksAcrossNavigations)
-{
-    UseMockScrollbarSettings mockScrollbarSettings;
-    registerMockedHttpURLLoad("200-by-300.html");
-    registerMockedHttpURLLoad("large-div.html");
-
-    FixedLayoutTestWebViewClient client;
-    client.m_screenInfo.deviceScaleFactor = 1;
-    int viewportWidth = 640;
-    int viewportHeight = 480;
-
-    FrameTestHelpers::WebViewHelper webViewHelper;
-
-    webViewHelper.initializeAndLoad(m_baseURL + "200-by-300.html", true, 0, &client, enableViewportSettings);
-    webViewHelper.webView()->settings()->setForceZeroLayoutHeight(true);
-    webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
-    webViewHelper.webView()->layout();
-
-    FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), m_baseURL + "large-div.html");
-    webViewHelper.webView()->layout();
-
-    EXPECT_EQ(0, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().height());
-}
-
 TEST_F(WebFrameTest, WideViewportAndWideContentWithInitialScale)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
