@@ -179,8 +179,9 @@ void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontendToBackend(
 
 void ShellDevToolsFrontend::DispatchOnInspectorFrontend(
     const std::string& message) {
-  if (frontend_host_)
-    frontend_host_->DispatchOnDevToolsFrontend(message);
+  std::string code = "InspectorFrontendAPI.dispatchMessage(" + message + ");";
+  base::string16 javascript = base::UTF8ToUTF16(code);
+  web_contents()->GetMainFrame()->ExecuteJavaScript(javascript);
 }
 
 void ShellDevToolsFrontend::InspectedContentsClosing() {

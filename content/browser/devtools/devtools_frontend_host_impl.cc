@@ -30,16 +30,6 @@ DevToolsFrontendHostImpl::DevToolsFrontendHostImpl(
 DevToolsFrontendHostImpl::~DevToolsFrontendHostImpl() {
 }
 
-void DevToolsFrontendHostImpl::DispatchOnDevToolsFrontend(
-    const std::string& message) {
-  if (!web_contents())
-    return;
-  RenderViewHost* target_host = web_contents()->GetRenderViewHost();
-  target_host->Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
-      target_host->GetRoutingID(),
-      message));
-}
-
 bool DevToolsFrontendHostImpl::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
