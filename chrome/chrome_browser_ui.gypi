@@ -2912,6 +2912,7 @@
               'sources': [ '<@(chrome_browser_ui_x11_sources)' ],
               'dependencies': [
                 '../build/linux/system.gyp:x11',
+                '../build/linux/system.gyp:gio',
               ],
             }],
           ],
