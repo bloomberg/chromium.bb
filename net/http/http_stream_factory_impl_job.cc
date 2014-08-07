@@ -1122,13 +1122,14 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
   // HttpStreamFactoryImpl will be creating all the SpdyHttpStreams, since it
   // will know when SpdySessions become available.
 
-  if (stream_factory_->for_websockets_) {
-    // TODO(ricea): Restore this code when WebSockets over SPDY is implemented.
-    NOTREACHED();
-  } else {
-    bool use_relative_url = direct || request_info_.url.SchemeIs("https");
-    stream_.reset(new SpdyHttpStream(spdy_session, use_relative_url));
-  }
+  // TODO(ricea): Restore the code for WebSockets over SPDY once it's
+  // implemented.
+  if (stream_factory_->for_websockets_)
+    return ERR_NOT_IMPLEMENTED;
+
+  bool use_relative_url = direct || request_info_.url.SchemeIs("https");
+  stream_.reset(new SpdyHttpStream(spdy_session, use_relative_url));
+
   return OK;
 }
 
