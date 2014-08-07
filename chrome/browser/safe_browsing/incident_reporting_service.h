@@ -19,6 +19,8 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/safe_browsing/add_incident_callback.h"
+#include "chrome/browser/safe_browsing/delayed_analysis_callback.h"
+#include "chrome/browser/safe_browsing/delayed_callback_runner.h"
 #include "chrome/browser/safe_browsing/incident_report_uploader.h"
 #include "chrome/browser/safe_browsing/last_download_finder.h"
 #include "content/public/browser/notification_observer.h"
@@ -54,11 +56,13 @@ class ClientIncidentReport_IncidentData;
 // begins operation when an incident is reported via the AddIncident method.
 // Incidents reported from a profile that is loading are held until the profile
 // is fully created. Incidents originating from profiles that do not participate
-// in safe browsing are dropped. Following the addition of an incident that is
-// not dropped, the service collects environmental data, finds the most recent
-// binary download, and waits a bit. Additional incidents that arrive during
-// this time are collated with the initial incident. Finally, already-reported
-// incidents are pruned and any remaining are uploaded in an incident report.
+// in safe browsing are dropped. Process-wide incidents are affiliated with a
+// profile that participates in safe browsing when one becomes available.
+// Following the addition of an incident that is not dropped, the service
+// collects environmental data, finds the most recent binary download, and waits
+// a bit. Additional incidents that arrive during this time are collated with
+// the initial incident. Finally, already-reported incidents are pruned and any
+// remaining are uploaded in an incident report.
 class IncidentReportingService : public content::NotificationObserver {
  public:
   IncidentReportingService(SafeBrowsingService* safe_browsing_service,
@@ -83,10 +87,21 @@ class IncidentReportingService : public content::NotificationObserver {
   scoped_ptr<TrackedPreferenceValidationDelegate>
       CreatePreferenceValidationDelegate(Profile* profile);
 
+  // Registers |callback| to be run after some delay following process launch.
+  void RegisterDelayedAnalysisCallback(const DelayedAnalysisCallback& callback);
+
  protected:
   // A pointer to a function that populates a protobuf with environment data.
   typedef void (*CollectEnvironmentDataFn)(
       ClientIncidentReport_EnvironmentData*);
+
+  // For testing so that the TaskRunner used for delayed analysis callbacks can
+  // be specified.
+  IncidentReportingService(
+      SafeBrowsingService* safe_browsing_service,
+      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
+      base::TimeDelta delayed_task_interval,
+      const scoped_refptr<base::TaskRunner>& delayed_task_runner);
 
   // Sets the function called by the service to collect environment data and the
   // task runner on which it is called. Used by unit tests to provide a fake
@@ -131,10 +146,22 @@ class IncidentReportingService : public content::NotificationObserver {
   // but not yet uploaded are dropped.
   void OnProfileDestroyed(Profile* profile);
 
+  // Returns an initialized profile that participates in safe browsing. Profiles
+  // participating in extended safe browsing are preferred.
+  Profile* FindEligibleProfile() const;
+
   // Adds |incident_data| to the service. The incident_time_msec field is
   // populated with the current time if the caller has not already done so.
   void AddIncident(Profile* profile,
                    scoped_ptr<ClientIncidentReport_IncidentData> incident_data);
+
+  // Begins processing a report. If processing is already underway, ensures that
+  // collection tasks have completed or are running.
+  void BeginReportProcessing();
+
+  // Begins the process of collating incidents by waiting for incidents to
+  // arrive. This function is idempotent.
+  void BeginIncidentCollation();
 
   // Starts a task to collect environment data in the blocking pool.
   void BeginEnvironmentCollection();
@@ -159,10 +186,11 @@ class IncidentReportingService : public content::NotificationObserver {
   // Cancels the collection timeout.
   void CancelIncidentCollection();
 
-  // A callback invoked on the UI thread after which incident collection has
+  // A callback invoked on the UI thread after which incident collation has
   // completed. Incident report processing continues, either by waiting for
-  // environment data to arrive or by sending an incident report.
-  void OnCollectionTimeout();
+  // environment data or the most recent download to arrive or by sending an
+  // incident report.
+  void OnCollationTimeout();
 
   // Starts the asynchronous process of finding the most recent executable
   // download if one is not currently being search for and/or has not already
@@ -234,12 +262,12 @@ class IncidentReportingService : public content::NotificationObserver {
   bool environment_collection_pending_;
 
   // True when an incident has been received and the service is waiting for the
-  // upload_timer_ to fire.
-  bool collection_timeout_pending_;
+  // collation_timer_ to fire.
+  bool collation_timeout_pending_;
 
   // A timer upon the firing of which the service will report received
   // incidents.
-  base::DelayTimer<IncidentReportingService> upload_timer_;
+  base::DelayTimer<IncidentReportingService> collation_timer_;
 
   // The report currently being assembled. This becomes non-NULL when an initial
   // incident is reported, and returns to NULL when the report is sent for
@@ -258,8 +286,12 @@ class IncidentReportingService : public content::NotificationObserver {
   // The time at which download collection was initiated.
   base::TimeTicks last_download_begin_;
 
-  // Context data for all on-the-record profiles.
+  // Context data for all on-the-record profiles plus the process-wide (NULL)
+  // context.
   ProfileContextCollection profiles_;
+
+  // Callbacks registered for performing delayed analysis.
+  DelayedCallbackRunner delayed_analysis_callbacks_;
 
   // The collection of uploads in progress.
   ScopedVector<UploadContext> uploads_;

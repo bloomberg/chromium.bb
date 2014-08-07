@@ -1205,6 +1205,7 @@
         'browser/safe_browsing/chunk_range_unittest.cc',
         'browser/safe_browsing/client_side_detection_host_unittest.cc',
         'browser/safe_browsing/client_side_detection_service_unittest.cc',
+        'browser/safe_browsing/delayed_callback_runner_unittest.cc',
         'browser/safe_browsing/database_manager_unittest.cc',
         'browser/safe_browsing/download_feedback_service_unittest.cc',
         'browser/safe_browsing/download_feedback_unittest.cc',

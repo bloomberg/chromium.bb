@@ -332,6 +332,14 @@ SafeBrowsingService::CreatePreferenceValidationDelegate(
   return scoped_ptr<TrackedPreferenceValidationDelegate>();
 }
 
+void SafeBrowsingService::RegisterDelayedAnalysisCallback(
+    const safe_browsing::DelayedAnalysisCallback& callback) {
+#if defined(FULL_SAFE_BROWSING)
+  if (incident_service_)
+    incident_service_->RegisterDelayedAnalysisCallback(callback);
+#endif
+}
+
 SafeBrowsingUIManager* SafeBrowsingService::CreateUIManager() {
   return new SafeBrowsingUIManager(this);
 }

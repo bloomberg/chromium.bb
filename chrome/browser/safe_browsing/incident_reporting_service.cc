@@ -13,8 +13,10 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/process/process_info.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -69,6 +71,9 @@ struct PersistentIncidentState {
 
 // The amount of time the service will wait to collate incidents.
 const int64 kDefaultUploadDelayMs = 1000 * 60;  // one minute
+
+// The amount of time between running delayed analysis callbacks.
+const int64 kDefaultCallbackIntervalMs = 1000 * 20;
 
 // Returns the number of incidents contained in |incident|. The result is
 // expected to be 1. Used in DCHECKs.
@@ -157,6 +162,19 @@ void MarkIncidentsAsReported(const std::vector<PersistentIncidentState>& states,
   }
 }
 
+// Runs |callback| on the thread to which |thread_runner| belongs. The callback
+// is run immediately if this function is called on |thread_runner|'s thread.
+void AddIncidentOnOriginThread(
+    const AddIncidentCallback& callback,
+    scoped_refptr<base::SingleThreadTaskRunner> thread_runner,
+    scoped_ptr<ClientIncidentReport_IncidentData> incident) {
+  if (thread_runner->BelongsToCurrentThread())
+    callback.Run(incident.Pass());
+  else
+    thread_runner->PostTask(FROM_HERE,
+                            base::Bind(callback, base::Passed(&incident)));
+}
+
 }  // namespace
 
 struct IncidentReportingService::ProfileContext {
@@ -220,11 +238,16 @@ IncidentReportingService::IncidentReportingService(
               ->GetTaskRunnerWithShutdownBehavior(
                   base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
       environment_collection_pending_(),
-      collection_timeout_pending_(),
-      upload_timer_(FROM_HERE,
-                    base::TimeDelta::FromMilliseconds(kDefaultUploadDelayMs),
-                    this,
-                    &IncidentReportingService::OnCollectionTimeout),
+      collation_timeout_pending_(),
+      collation_timer_(FROM_HERE,
+                       base::TimeDelta::FromMilliseconds(kDefaultUploadDelayMs),
+                       this,
+                       &IncidentReportingService::OnCollationTimeout),
+      delayed_analysis_callbacks_(
+          base::TimeDelta::FromMilliseconds(kDefaultCallbackIntervalMs),
+          content::BrowserThread::GetBlockingPool()
+              ->GetTaskRunnerWithShutdownBehavior(
+                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
       receiver_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
   notification_registrar_.Add(this,
@@ -270,6 +293,56 @@ IncidentReportingService::CreatePreferenceValidationDelegate(Profile* profile) {
       new PreferenceValidationDelegate(GetAddIncidentCallback(profile)));
 }
 
+void IncidentReportingService::RegisterDelayedAnalysisCallback(
+    const DelayedAnalysisCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // |callback| will be run on the blocking pool, so it will likely run the
+  // AddIncidentCallback there as well. Bounce the run of that callback back to
+  // the current thread via AddIncidentOnOriginThread.
+  delayed_analysis_callbacks_.RegisterCallback(
+      base::Bind(callback,
+                 base::Bind(&AddIncidentOnOriginThread,
+                            GetAddIncidentCallback(NULL),
+                            base::ThreadTaskRunnerHandle::Get())));
+
+  // Start running the callbacks if any profiles are participating in safe
+  // browsing. If none are now, running will commence if/when a participaing
+  // profile is added.
+  if (FindEligibleProfile())
+    delayed_analysis_callbacks_.Start();
+}
+
+IncidentReportingService::IncidentReportingService(
+    SafeBrowsingService* safe_browsing_service,
+    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
+    base::TimeDelta delayed_task_interval,
+    const scoped_refptr<base::TaskRunner>& delayed_task_runner)
+    : database_manager_(safe_browsing_service ?
+                        safe_browsing_service->database_manager() : NULL),
+      url_request_context_getter_(request_context_getter),
+      collect_environment_data_fn_(&CollectEnvironmentData),
+      environment_collection_task_runner_(
+          content::BrowserThread::GetBlockingPool()
+              ->GetTaskRunnerWithShutdownBehavior(
+                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
+      environment_collection_pending_(),
+      collation_timeout_pending_(),
+      collation_timer_(FROM_HERE,
+                       base::TimeDelta::FromMilliseconds(kDefaultUploadDelayMs),
+                       this,
+                       &IncidentReportingService::OnCollationTimeout),
+      delayed_analysis_callbacks_(delayed_task_interval, delayed_task_runner),
+      receiver_weak_ptr_factory_(this),
+      weak_ptr_factory_(this) {
+  notification_registrar_.Add(this,
+                              chrome::NOTIFICATION_PROFILE_ADDED,
+                              content::NotificationService::AllSources());
+  notification_registrar_.Add(this,
+                              chrome::NOTIFICATION_PROFILE_DESTROYED,
+                              content::NotificationService::AllSources());
+}
+
 void IncidentReportingService::SetCollectEnvironmentHook(
     CollectEnvironmentDataFn collect_environment_data_hook,
     const scoped_refptr<base::TaskRunner>& task_runner) {
@@ -294,17 +367,33 @@ void IncidentReportingService::OnProfileAdded(Profile* profile) {
   ProfileContext* context = GetOrCreateProfileContext(profile);
   context->added = true;
 
+  const bool safe_browsing_enabled =
+      profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled);
+
+  // Start processing delayed analysis callbacks if this new profile
+  // participates in safe browsing. Start is idempotent, so this is safe even if
+  // they're already running.
+  if (safe_browsing_enabled)
+    delayed_analysis_callbacks_.Start();
+
+  // Start a new report if this profile participates in safe browsing and there
+  // are process-wide incidents.
+  if (safe_browsing_enabled && GetProfileContext(NULL))
+    BeginReportProcessing();
+
+  // TODO(grt): register for pref change notifications to start delayed analysis
+  // and/or report processing if sb is currently disabled but subsequently
+  // enabled.
+
   // Nothing else to do if a report is not being assembled.
   if (!report_)
     return;
 
-  // Drop all incidents received prior to creation if the profile is not
-  // participating in safe browsing.
-  if (!context->incidents.empty() &&
-      !profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)) {
-    for (size_t i = 0; i < context->incidents.size(); ++i) {
+  // Drop all incidents associated with this profile that were received prior to
+  // its addition if the profile is not participating in safe browsing.
+  if (!context->incidents.empty() && !safe_browsing_enabled) {
+    for (size_t i = 0; i < context->incidents.size(); ++i)
       LogIncidentDataType(DROPPED, *context->incidents[i]);
-    }
     context->incidents.clear();
   }
 
@@ -362,33 +451,49 @@ void IncidentReportingService::OnProfileDestroyed(Profile* profile) {
     uploads_[i]->profiles_to_state.erase(profile);
 }
 
+Profile* IncidentReportingService::FindEligibleProfile() const {
+  Profile* candidate = NULL;
+  for (ProfileContextCollection::const_iterator scan = profiles_.begin();
+       scan != profiles_.end();
+       ++scan) {
+    // Skip over profiles that have yet to be added to the profile manager.
+    // This will also skip over the NULL-profile context used to hold
+    // process-wide incidents.
+    if (!scan->second->added)
+      continue;
+    PrefService* prefs = scan->first->GetPrefs();
+    if (prefs->GetBoolean(prefs::kSafeBrowsingEnabled)) {
+      if (!candidate)
+        candidate = scan->first;
+      if (prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled)) {
+        candidate = scan->first;
+        break;
+      }
+    }
+  }
+  return candidate;
+}
+
 void IncidentReportingService::AddIncident(
     Profile* profile,
     scoped_ptr<ClientIncidentReport_IncidentData> incident_data) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // Incidents outside the context of a profile are not supported at the moment.
-  DCHECK(profile);
   DCHECK_EQ(1U, CountIncidents(*incident_data));
 
   ProfileContext* context = GetProfileContext(profile);
   // It is forbidden to call this function with a destroyed profile.
   DCHECK(context);
+  // If this is a process-wide incident, the context must not indicate that the
+  // profile (which is NULL) has been added to the profile manager.
+  DCHECK(profile || !context->added);
 
-  // Drop the incident immediately if profile creation has completed and the
-  // profile is not participating in safe browsing. Preference evaluation is
-  // deferred until OnProfileAdded() if profile creation has not yet
-  // completed.
+  // Drop the incident immediately if the profile has already been added to the
+  // manager and is not participating in safe browsing. Preference evaluation is
+  // deferred until OnProfileAdded() otherwise.
   if (context->added &&
       !profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)) {
     LogIncidentDataType(DROPPED, *incident_data);
     return;
-  }
-
-  // Start assembling a new report if this is the first incident ever or the
-  // first since the last upload.
-  if (!report_) {
-    report_.reset(new ClientIncidentReport());
-    first_incident_time_ = base::Time::Now();
   }
 
   // Provide time to the new incident if the caller didn't do so.
@@ -398,6 +503,10 @@ void IncidentReportingService::AddIncident(
   // Take ownership of the incident.
   context->incidents.push_back(incident_data.release());
 
+  // Remember when the first incident for this report arrived.
+  if (first_incident_time_.is_null())
+    first_incident_time_ = base::Time::Now();
+  // Log the time between the previous incident and this one.
   if (!last_incident_time_.is_null()) {
     UMA_HISTOGRAM_TIMES("SBIRS.InterIncidentTime",
                         base::TimeTicks::Now() - last_incident_time_);
@@ -406,12 +515,28 @@ void IncidentReportingService::AddIncident(
 
   // Persist the incident data.
 
-  // Restart the delay timer to send the report upon expiration.
-  collection_timeout_pending_ = true;
-  upload_timer_.Reset();
+  // Start assembling a new report if this is the first incident ever or the
+  // first since the last upload.
+  BeginReportProcessing();
+}
 
+void IncidentReportingService::BeginReportProcessing() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Creates a new report if needed.
+  if (!report_)
+    report_.reset(new ClientIncidentReport());
+
+  // Ensure that collection tasks are running (calls are idempotent).
+  BeginIncidentCollation();
   BeginEnvironmentCollection();
   BeginDownloadCollection();
+}
+
+void IncidentReportingService::BeginIncidentCollation() {
+  // Restart the delay timer to send the report upon expiration.
+  collation_timeout_pending_ = true;
+  collation_timer_.Reset();
 }
 
 void IncidentReportingService::BeginEnvironmentCollection() {
@@ -462,7 +587,6 @@ void IncidentReportingService::OnEnvironmentDataCollected(
       first_incident_time_ - base::CurrentProcessInfo::CreationTime();
   environment_data->mutable_process()->set_uptime_msec(uptime.InMilliseconds());
 #endif
-  first_incident_time_ = base::Time();
 
   report_->set_allocated_environment(environment_data.release());
 
@@ -474,34 +598,35 @@ void IncidentReportingService::OnEnvironmentDataCollected(
 }
 
 bool IncidentReportingService::WaitingToCollateIncidents() {
-  return collection_timeout_pending_;
+  return collation_timeout_pending_;
 }
 
 void IncidentReportingService::CancelIncidentCollection() {
-  collection_timeout_pending_ = false;
+  collation_timeout_pending_ = false;
   last_incident_time_ = base::TimeTicks();
   report_.reset();
 }
 
-void IncidentReportingService::OnCollectionTimeout() {
+void IncidentReportingService::OnCollationTimeout() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Exit early if collection was cancelled.
-  if (!collection_timeout_pending_)
+  if (!collation_timeout_pending_)
     return;
 
-  // Wait another round if incidents have come in from a profile that has yet to
-  // complete creation.
+  // Wait another round if profile-bound incidents have come in from a profile
+  // that has yet to complete creation.
   for (ProfileContextCollection::iterator scan = profiles_.begin();
        scan != profiles_.end();
        ++scan) {
-    if (!scan->second->added && !scan->second->incidents.empty()) {
-      upload_timer_.Reset();
+    if (scan->first && !scan->second->added &&
+        !scan->second->incidents.empty()) {
+      collation_timer_.Reset();
       return;
     }
   }
 
-  collection_timeout_pending_ = false;
+  collation_timeout_pending_ = false;
 
   UploadIfCollectionComplete();
 }
@@ -581,6 +706,7 @@ void IncidentReportingService::UploadIfCollectionComplete() {
 
   // Take ownership of the report and clear things for future reports.
   scoped_ptr<ClientIncidentReport> report(report_.Pass());
+  first_incident_time_ = base::Time();
   last_incident_time_ = base::TimeTicks();
 
   // Drop the report if no executable download was found.
@@ -601,8 +727,25 @@ void IncidentReportingService::UploadIfCollectionComplete() {
         prefs::kMetricsReportingEnabled));
   }
 
-  // Check for extended consent in any profile while collecting incidents.
-  process->set_extended_consent(false);
+  // Find the profile that benefits from the strongest protections.
+  Profile* eligible_profile = FindEligibleProfile();
+  process->set_extended_consent(
+      eligible_profile ? eligible_profile->GetPrefs()->GetBoolean(
+                             prefs::kSafeBrowsingExtendedReportingEnabled) :
+                       false);
+
+  // Associate process-wide incidents with the profile that benefits from the
+  // strongest safe browsing protections.
+  ProfileContext* null_context = GetProfileContext(NULL);
+  if (null_context && !null_context->incidents.empty() && eligible_profile) {
+    ProfileContext* eligible_context = GetProfileContext(eligible_profile);
+    // Move the incidents to the target context.
+    eligible_context->incidents.insert(eligible_context->incidents.end(),
+                                       null_context->incidents.begin(),
+                                       null_context->incidents.end());
+    null_context->incidents.weak_clear();
+  }
+
   // Collect incidents across all profiles participating in safe browsing. Drop
   // incidents if the profile stopped participating before collection completed.
   // Prune previously submitted incidents.
@@ -612,12 +755,11 @@ void IncidentReportingService::UploadIfCollectionComplete() {
   for (ProfileContextCollection::iterator scan = profiles_.begin();
        scan != profiles_.end();
        ++scan) {
+    // Bypass process-wide incidents that have not yet been associated with a
+    // profile.
+    if (!scan->first)
+      continue;
     PrefService* prefs = scan->first->GetPrefs();
-    if (process &&
-        prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled)) {
-      process->set_extended_consent(true);
-      process = NULL;  // Don't check any more once one is found.
-    }
     ProfileContext* context = scan->second;
     if (context->incidents.empty())
       continue;
