@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import "mojo/public/interfaces/application/service_provider.mojom"
 import "mojo/services/public/interfaces/geometry/geometry.mojom"
 import "mojo/services/public/interfaces/input_events/input_events.mojom"
 import "mojo/services/public/interfaces/view_manager/view_manager_constants.mojom"
@@ -33,7 +34,8 @@ interface ViewManagerInitService {
   // application embedded at the service root Node. This application is
   // typically referred to as the "window manager", and will have a specific
   // definition of where within its Node hierarchy to embed an unparented URL.
-  Embed(string url) => (bool success);
+  // See ViewManagerService below for more details about |service_provider|.
+  Embed(string url, ServiceProvider service_provider) => (bool success);
 };
 
 // Nodes and Views are identified by a uint32. The upper 16 bits are the
@@ -142,7 +144,16 @@ interface ViewManagerService {
   // If |node_id| is 0, the View Manager delegates determination of what node to
   // embed |url| at to the app embedded at the service root node (i.e. the
   // window manager).
-  Embed(string url, uint32 node_id) => (bool success);
+  // 
+  // |service_provider| encapsulates services offered by the embedder to the
+  // embedded app alongside this Embed() call. It also provides a means for
+  // the embedder to connect to services symmetrically exposed by the embedded
+  // app. Note that if a different app is subsequently embedded at |node_id|
+  // the |service_provider|'s connection to its client in the embedded app and
+  // any services it provided are not broken and continue to be valid.
+  Embed(string url,
+        uint32 node_id,
+        ServiceProvider service_provider) => (bool success);
 
   // TODO(sky): move these to a separate interface when FIFO works.
 
@@ -156,7 +167,11 @@ interface ViewManagerService {
 [Client=ViewManagerService]
 interface ViewManagerClient {
   // Invoked when the client application has been embedded at |root|.
-  OnEmbed(uint16 connection_id, string embedder_url, NodeData root);
+  // See Embed() on ViewManagerService for more details.
+  OnEmbed(uint16 connection_id,
+          string embedder_url,
+          NodeData root,
+          ServiceProvider& service_provider);
 
   // Invoked when a node's bounds have changed.
   OnNodeBoundsChanged(uint32 node, mojo.Rect old_bounds, mojo.Rect new_bounds);
@@ -206,7 +221,7 @@ interface ViewManagerClient {
   //            once support for derived FIFOs is landed.
 
   // Requests the window manager create a "top level" node embedding |url|.
-  Embed(string url);
+  Embed(string url, ServiceProvider& service_provider);
 
   // Requests the view manager dispatch the event targeted at |view|.
   DispatchOnViewInputEvent(uint32 view, mojo.Event event);

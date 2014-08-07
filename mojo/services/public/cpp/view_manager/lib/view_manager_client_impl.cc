@@ -9,6 +9,8 @@
 #include "base/stl_util.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/connect.h"
+#include "mojo/public/cpp/application/service_provider_impl.h"
+#include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/services/public/cpp/view_manager/lib/node_private.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_private.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
@@ -38,10 +40,10 @@ Node* AddNodeToViewManager(ViewManagerClientImpl* client,
   NodePrivate private_node(node);
   private_node.set_view_manager(client);
   private_node.set_id(node_id);
+  client->AddNode(node);
   private_node.LocalSetBounds(gfx::Rect(), bounds);
   if (parent)
     NodePrivate(parent).LocalAddChild(node);
-  client->AddNode(node);
 
   // View.
   if (view_id != 0) {
@@ -50,10 +52,10 @@ Node* AddNodeToViewManager(ViewManagerClientImpl* client,
     private_view.set_view_manager(client);
     private_view.set_id(view_id);
     private_view.set_node(node);
+    client->AddView(view);
     // TODO(beng): this broadcasts notifications locally... do we want this? I
     //             don't think so. same story for LocalAddChild above!
     private_node.LocalSetActiveView(view);
-    client->AddView(view);
   }
   return node;
 }
@@ -261,8 +263,18 @@ void ViewManagerClientImpl::SetVisible(Id node_id, bool visible) {
 }
 
 void ViewManagerClientImpl::Embed(const String& url, Id node_id) {
+  ServiceProviderPtr sp;
+  BindToProxy(new ServiceProviderImpl, &sp);
+  Embed(url, node_id, sp.Pass());
+}
+
+void ViewManagerClientImpl::Embed(
+    const String& url,
+    Id node_id,
+    ServiceProviderPtr service_provider) {
   DCHECK(connected_);
-  service_->Embed(url, node_id, ActionCompletedCallback());
+  service_->Embed(url, node_id, service_provider.Pass(),
+                  ActionCompletedCallback());
 }
 
 void ViewManagerClientImpl::AddNode(Node* node) {
@@ -329,9 +341,11 @@ void ViewManagerClientImpl::OnConnectionEstablished() {
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerClientImpl, ViewManagerClient implementation:
 
-void ViewManagerClientImpl::OnEmbed(ConnectionSpecificId connection_id,
-                                    const String& creator_url,
-                                    NodeDataPtr root) {
+void ViewManagerClientImpl::OnEmbed(
+    ConnectionSpecificId connection_id,
+    const String& creator_url,
+    NodeDataPtr root_data,
+    InterfaceRequest<ServiceProvider> service_provider) {
   if (!connected_) {
     connected_ = true;
     connection_id_ = connection_id;
@@ -340,8 +354,21 @@ void ViewManagerClientImpl::OnEmbed(ConnectionSpecificId connection_id,
     DCHECK_EQ(connection_id_, connection_id);
     DCHECK_EQ(creator_url_, creator_url);
   }
-  AddRoot(AddNodeToViewManager(this, NULL, root->node_id, root->view_id,
-                               root->bounds.To<gfx::Rect>()));
+
+  // A new root must not already exist as a root or be contained by an existing
+  // hierarchy visible to this view manager.
+  Node* root = AddNodeToViewManager(this, NULL, root_data->node_id,
+                                    root_data->view_id,
+                                    root_data->bounds.To<gfx::Rect>());
+  roots_.push_back(root);
+  root->AddObserver(new RootObserver(root));
+
+  // BindToRequest() binds the lifetime of |exported_services| to the pipe.
+  ServiceProviderImpl* exported_services = new ServiceProviderImpl;
+  BindToRequest(exported_services, &service_provider);
+  scoped_ptr<ServiceProvider> remote(
+      exported_services->CreateRemoteServiceProvider());
+  delegate_->OnEmbed(this, root, exported_services, remote.Pass());
 }
 
 void ViewManagerClientImpl::OnNodeBoundsChanged(Id node_id,
@@ -440,8 +467,10 @@ void ViewManagerClientImpl::OnFocusChanged(Id gained_focus_id,
   }
 }
 
-void ViewManagerClientImpl::Embed(const String& url) {
-  window_manager_delegate_->Embed(url);
+void ViewManagerClientImpl::Embed(
+    const String& url,
+    InterfaceRequest<ServiceProvider> service_provider) {
+  window_manager_delegate_->Embed(url, service_provider.Pass());
 }
 
 void ViewManagerClientImpl::DispatchOnViewInputEvent(Id view_id,
@@ -451,19 +480,6 @@ void ViewManagerClientImpl::DispatchOnViewInputEvent(Id view_id,
 
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerClientImpl, private:
-
-void ViewManagerClientImpl::AddRoot(Node* root) {
-  // A new root must not already exist as a root or be contained by an existing
-  // hierarchy visible to this view manager.
-  std::vector<Node*>::const_iterator it = roots_.begin();
-  for (; it != roots_.end(); ++it) {
-    if (*it == root || (*it)->Contains(root))
-      return;
-  }
-  roots_.push_back(root);
-  root->AddObserver(new RootObserver(root));
-  delegate_->OnEmbed(this, root);
-}
 
 void ViewManagerClientImpl::RemoveRoot(Node* root) {
   std::vector<Node*>::iterator it =

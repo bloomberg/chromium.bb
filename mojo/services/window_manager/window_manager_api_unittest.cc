@@ -6,6 +6,8 @@
 #include "base/memory/scoped_vector.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/service_provider_impl.h"
+#include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/service_manager/service_manager.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
@@ -37,7 +39,9 @@ bool InitEmbed(ViewManagerInitService* view_manager_init,
                const std::string& url) {
   bool result = false;
   base::RunLoop run_loop;
-  view_manager_init->Embed(url,
+  ServiceProviderPtr sp;
+  BindToProxy(new ServiceProviderImpl, &sp);
+  view_manager_init->Embed(url, sp.Pass(),
                            base::Bind(&ResultCallback, &result, &run_loop));
   run_loop.Run();
   return result;
@@ -147,7 +151,11 @@ class TestServiceLoader : public ServiceLoader,
   }
 
   // Overridden from ViewManagerDelegate:
-  virtual void OnEmbed(ViewManager* view_manager, Node* root) MOJO_OVERRIDE {
+  virtual void OnEmbed(
+      ViewManager* view_manager,
+      Node* root,
+      ServiceProviderImpl* exported_services,
+      scoped_ptr<ServiceProvider> imported_services) MOJO_OVERRIDE {
     root_added_callback_.Run(root);
   }
   virtual void OnViewManagerDisconnected(

@@ -337,7 +337,10 @@ class WindowManager
   }
 
   // Overridden from ViewManagerDelegate:
-  virtual void OnEmbed(ViewManager* view_manager, Node* root) OVERRIDE {
+  virtual void OnEmbed(ViewManager* view_manager,
+                       Node* root,
+                       ServiceProviderImpl* exported_services,
+                       scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
     DCHECK(!view_manager_);
     view_manager_ = view_manager;
     view_manager_->SetWindowManagerDelegate(this);
@@ -368,7 +371,9 @@ class WindowManager
   }
 
   // Overridden from WindowManagerDelegate:
-  virtual void Embed(const String& url) OVERRIDE {
+  virtual void Embed(
+      const String& url,
+      InterfaceRequest<ServiceProvider> service_provider) OVERRIDE {
     CreateWindow(url,
                  NavigationDetailsPtr().Pass(),
                  ResponseDetailsPtr().Pass());

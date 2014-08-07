@@ -688,6 +688,34 @@
           ],
         },
         {
+          'target_name': 'mojo_wm_flow_embedder_bindings',
+          'type': 'static_library',
+          'sources': [
+            'examples/wm_flow/app/embedder.mojom',
+          ],
+          'dependencies': [
+            'mojo_base.gyp:mojo_cpp_bindings',
+          ],
+          'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
+          'export_dependent_settings': [
+            'mojo_base.gyp:mojo_cpp_bindings',
+          ],
+        },
+        {
+          'target_name': 'mojo_wm_flow_embeddee_bindings',
+          'type': 'static_library',
+          'sources': [
+            'examples/wm_flow/embedded/embeddee.mojom',
+          ],
+          'dependencies': [
+            'mojo_base.gyp:mojo_cpp_bindings',
+          ],
+          'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
+          'export_dependent_settings': [
+            'mojo_base.gyp:mojo_cpp_bindings',
+          ],
+        },
+        {
           'target_name': 'mojo_wm_flow_app',
           'type': 'loadable_module',
           'dependencies': [
@@ -696,10 +724,30 @@
             'mojo_base.gyp:mojo_environment_chromium',
             'mojo_core_window_manager_bindings',
             'mojo_view_manager_lib',
+            'mojo_wm_flow_embeddee_bindings',
+            'mojo_wm_flow_embedder_bindings',
             '<(mojo_system_for_loadable_module)',
           ],
           'sources': [
             'examples/wm_flow/app/app.cc',
+            'public/cpp/application/lib/mojo_main_chromium.cc',
+          ],
+        },
+        {
+          'target_name': 'mojo_wm_flow_embedded',
+          'type': 'loadable_module',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'mojo_base.gyp:mojo_application_chromium',
+            'mojo_base.gyp:mojo_environment_chromium',
+            'mojo_core_window_manager_bindings',
+            'mojo_view_manager_lib',
+            'mojo_wm_flow_embeddee_bindings',
+            'mojo_wm_flow_embedder_bindings',
+            '<(mojo_system_for_loadable_module)',
+          ],
+          'sources': [
+            'examples/wm_flow/embedded/embedded.cc',
             'public/cpp/application/lib/mojo_main_chromium.cc',
           ],
         },

@@ -91,7 +91,10 @@ class Keyboard : public ApplicationDelegate,
   }
 
   // ViewManagerDelegate:
-  virtual void OnEmbed(ViewManager* view_manager, Node* root) OVERRIDE {
+  virtual void OnEmbed(ViewManager* view_manager,
+                       Node* root,
+                       ServiceProviderImpl* exported_services,
+                       scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
     // TODO: deal with OnEmbed() being invoked multiple times.
     view_manager_ = view_manager;
     root->SetActiveView(View::Create(view_manager));

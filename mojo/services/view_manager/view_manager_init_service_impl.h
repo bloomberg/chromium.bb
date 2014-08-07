@@ -49,6 +49,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerInitServiceImpl
     ~ConnectParams();
 
     std::string url;
+    InterfaceRequest<ServiceProvider> service_provider;
     Callback<void(bool)> callback;
   };
 
@@ -56,6 +57,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerInitServiceImpl
 
   // ViewManagerInitService overrides:
   virtual void Embed(const String& url,
+                     ServiceProviderPtr service_provider,
                      const Callback<void(bool)>& callback) OVERRIDE;
 
   ViewManagerInitServiceContext* context_;

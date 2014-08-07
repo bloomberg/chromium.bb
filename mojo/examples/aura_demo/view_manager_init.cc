@@ -6,6 +6,7 @@
 #include "base/bind.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 
 namespace mojo {
@@ -20,7 +21,8 @@ class ViewManagerInit : public ApplicationDelegate {
 
   virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
     app->ConnectToService("mojo:mojo_view_manager", &view_manager_init_);
-    view_manager_init_->Embed("mojo:mojo_aura_demo",
+    ServiceProviderPtr sp;
+    view_manager_init_->Embed("mojo:mojo_aura_demo", sp.Pass(),
                               base::Bind(&ViewManagerInit::DidConnect,
                                          base::Unretained(this)));
   }

@@ -70,13 +70,18 @@ class WindowManagerApp
   typedef std::map<Id, aura::Window*> NodeIdToWindowMap;
 
   // Overridden from ViewManagerDelegate:
-  virtual void OnEmbed(ViewManager* view_manager, Node* root) MOJO_OVERRIDE;
+  virtual void OnEmbed(
+      ViewManager* view_manager,
+      Node* root,
+      ServiceProviderImpl* exported_services,
+      scoped_ptr<ServiceProvider> imported_services) MOJO_OVERRIDE;
   virtual void OnViewManagerDisconnected(
       ViewManager* view_manager) MOJO_OVERRIDE;
 
   // Overridden from NodeObserver:
   virtual void OnTreeChanged(
       const NodeObserver::TreeChangeParams& params) MOJO_OVERRIDE;
+  virtual void OnNodeDestroyed(Node* node) MOJO_OVERRIDE;
 
   // Overridden from WindowTreeHostMojoDelegate:
   virtual void CompositorContentsChanged(const SkBitmap& bitmap) MOJO_OVERRIDE;

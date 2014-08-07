@@ -70,6 +70,7 @@
             'mojo_nesting_app',
             'mojo_window_manager',
             'mojo_wm_flow_app',
+            'mojo_wm_flow_embedded',
             'mojo_wm_flow_init',
             'mojo_wm_flow_wm',
             'mojo_view_manager',

@@ -150,7 +150,10 @@ bool WindowManagerApp::ConfigureIncomingConnection(
 ////////////////////////////////////////////////////////////////////////////////
 // WindowManagerApp, ViewManagerDelegate implementation:
 
-void WindowManagerApp::OnEmbed(ViewManager* view_manager, Node* root) {
+void WindowManagerApp::OnEmbed(ViewManager* view_manager,
+                               Node* root,
+                               ServiceProviderImpl* exported_services,
+                               scoped_ptr<ServiceProvider> imported_services) {
   DCHECK(!view_manager_ && !root_);
   view_manager_ = view_manager;
   root_ = root;
@@ -170,8 +173,10 @@ void WindowManagerApp::OnEmbed(ViewManager* view_manager, Node* root) {
   focus_client_->AddObserver(this);
   activation_client_->AddObserver(this);
 
-  if (wrapped_delegate_)
-    wrapped_delegate_->OnEmbed(view_manager, root);
+  if (wrapped_delegate_) {
+    wrapped_delegate_->OnEmbed(view_manager, root, exported_services,
+                               imported_services.Pass());
+  }
 
   for (Connections::const_iterator it = connections_.begin();
        it != connections_.end(); ++it) {
@@ -184,8 +189,6 @@ void WindowManagerApp::OnViewManagerDisconnected(
   DCHECK_EQ(view_manager_, view_manager);
   if (wrapped_delegate_)
     wrapped_delegate_->OnViewManagerDisconnected(view_manager);
-  root_->RemoveObserver(this);
-  root_ = NULL;
   view_manager_ = NULL;
   base::MessageLoop::current()->Quit();
 }
@@ -211,6 +214,11 @@ void WindowManagerApp::OnTreeChanged(
   } else if (params.old_parent) {
     UnregisterSubtree(params.target->id());
   }
+}
+
+void WindowManagerApp::OnNodeDestroyed(Node* node) {
+  root_ = NULL;
+  window_tree_host_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

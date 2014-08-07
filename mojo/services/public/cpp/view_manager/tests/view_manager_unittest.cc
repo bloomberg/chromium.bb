@@ -10,6 +10,8 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/service_provider_impl.h"
+#include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/service_manager/service_manager.h"
 #include "mojo/services/public/cpp/view_manager/lib/node_private.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_client_impl.h"
@@ -72,7 +74,10 @@ class ConnectServiceLoader : public ServiceLoader,
   }
 
   // Overridden from ViewManagerDelegate:
-  virtual void OnEmbed(ViewManager* view_manager, Node* root) OVERRIDE {
+  virtual void OnEmbed(ViewManager* view_manager,
+                       Node* root,
+                       ServiceProviderImpl* exported_services,
+                       scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
     callback_.Run(view_manager, root);
   }
   virtual void OnViewManagerDisconnected(ViewManager* view_manager) OVERRIDE {}
@@ -327,11 +332,6 @@ class ViewManagerTest : public testing::Test {
     return GetLoadedViewManager();
   }
 
-  // TODO(beng): remove these methods once all the tests are migrated.
-  void DestroyViewManager1() {}
-  ViewManager* view_manager_1() { return NULL; }
-  ViewManager* view_manager_2() { return NULL; }
-
   ViewManager* GetLoadedViewManager() {
     ViewManager* view_manager = loaded_view_manager_;
     loaded_view_manager_ = NULL;
@@ -368,8 +368,10 @@ class ViewManagerTest : public testing::Test {
   bool EmbedRoot(ViewManagerInitService* view_manager_init,
                  const std::string& url) {
     bool result = false;
+    ServiceProviderPtr sp;
+    BindToProxy(new ServiceProviderImpl, &sp);
     view_manager_init->Embed(
-        url,
+        url, sp.Pass(),
         base::Bind(&ViewManagerTest::EmbedRootCallback, base::Unretained(this),
                    &result));
     RunRunLoop();

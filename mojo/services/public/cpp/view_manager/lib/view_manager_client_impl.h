@@ -60,6 +60,9 @@ class ViewManagerClientImpl : public ViewManager,
   void SetVisible(Id node_id, bool visible);
 
   void Embed(const String& url, Id node_id);
+  void Embed(const String& url,
+             Id node_id,
+             ServiceProviderPtr service_provider);
 
   void set_change_acked_callback(const base::Callback<void(void)>& callback) {
     change_acked_callback_ = callback;
@@ -97,7 +100,8 @@ class ViewManagerClientImpl : public ViewManager,
   // Overridden from ViewManagerClient:
   virtual void OnEmbed(ConnectionSpecificId connection_id,
                        const String& creator_url,
-                       NodeDataPtr root) OVERRIDE;
+                       NodeDataPtr root,
+                       InterfaceRequest<ServiceProvider> services) OVERRIDE;
   virtual void OnNodeBoundsChanged(Id node_id,
                                    RectPtr old_bounds,
                                    RectPtr new_bounds) OVERRIDE;
@@ -117,10 +121,11 @@ class ViewManagerClientImpl : public ViewManager,
                                 EventPtr event,
                                 const Callback<void()>& callback) OVERRIDE;
   virtual void OnFocusChanged(Id gained_focus_id, Id lost_focus_id) OVERRIDE;
-  virtual void Embed(const String& url) OVERRIDE;
+  virtual void Embed(
+      const String& url,
+      InterfaceRequest<ServiceProvider> service_provider) OVERRIDE;
   virtual void DispatchOnViewInputEvent(Id view_id, EventPtr event) OVERRIDE;
 
-  void AddRoot(Node* root);
   void RemoveRoot(Node* root);
 
   void OnActionCompleted(bool success);

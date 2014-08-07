@@ -87,7 +87,10 @@ class NestingApp
   }
 
   // Overridden from ViewManagerDelegate:
-  virtual void OnEmbed(ViewManager* view_manager, Node* root) OVERRIDE {
+  virtual void OnEmbed(ViewManager* view_manager,
+                       Node* root,
+                       ServiceProviderImpl* exported_services,
+                       scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
     root->AddObserver(this);
 
     View* view = View::Create(view_manager);

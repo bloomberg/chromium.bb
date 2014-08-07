@@ -10,12 +10,14 @@
 #include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager_constants.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace mojo {
 
+class ServiceProviderImpl;
 class View;
 class ViewManager;
 class NodeObserver;
@@ -73,6 +75,9 @@ class Node {
 
   // Embedding.
   void Embed(const String& url);
+  scoped_ptr<ServiceProvider> Embed(
+      const String& url,
+      scoped_ptr<ServiceProviderImpl> exported_services);
 
  protected:
   // This class is subclassed only by test classes that provide a public ctor.

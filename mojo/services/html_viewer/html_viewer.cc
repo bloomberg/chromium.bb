@@ -72,7 +72,10 @@ class HTMLViewer : public ApplicationDelegate, public ViewManagerDelegate {
   }
 
   // Overridden from ViewManagerDelegate:
-  virtual void OnEmbed(ViewManager* view_manager, Node* root) OVERRIDE {
+  virtual void OnEmbed(ViewManager* view_manager,
+                       Node* root,
+                       ServiceProviderImpl* exported_services,
+                       scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
     document_view_ = new HTMLDocumentView(
         application_impl_->ConnectToApplication("mojo://mojo_window_manager/")->
             GetServiceProvider(),

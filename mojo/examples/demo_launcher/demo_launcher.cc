@@ -8,6 +8,8 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/service_provider_impl.h"
+#include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 
 namespace mojo {
@@ -25,7 +27,9 @@ class DemoLauncher : public ApplicationDelegate {
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       MOJO_OVERRIDE {
-    view_manager_init_->Embed("mojo:mojo_window_manager",
+    ServiceProviderPtr sp;
+    BindToProxy(new ServiceProviderImpl, &sp);
+    view_manager_init_->Embed("mojo:mojo_window_manager", sp.Pass(),
                               base::Bind(&DemoLauncher::OnConnect,
                                          base::Unretained(this)));
     return true;

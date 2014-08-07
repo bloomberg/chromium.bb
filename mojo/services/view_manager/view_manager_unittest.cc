@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/cpp/bindings/lib/router.h"
+#include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/service_manager/service_manager.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
@@ -180,7 +181,8 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
     changes_.clear();
     base::AutoReset<bool> auto_reset(&in_embed_, true);
     bool result = false;
-    view_manager_->Embed(url, node_id,
+    ServiceProviderPtr services;
+    view_manager_->Embed(url, node_id, services.Pass(),
                          base::Bind(&ViewManagerProxy::GotResult,
                                     base::Unretained(this), &result));
     RunMainLoop();
@@ -317,9 +319,11 @@ class TestViewManagerClientConnection
   }
 
   // ViewManagerClient:
-  virtual void OnEmbed(ConnectionSpecificId connection_id,
-                       const String& creator_url,
-                       NodeDataPtr root) OVERRIDE {
+  virtual void OnEmbed(
+      ConnectionSpecificId connection_id,
+      const String& creator_url,
+      NodeDataPtr root,
+      InterfaceRequest<ServiceProvider> services) OVERRIDE {
     tracker_.OnEmbed(connection_id, creator_url, root.Pass());
   }
   virtual void OnNodeBoundsChanged(Id node_id,
@@ -356,7 +360,9 @@ class TestViewManagerClientConnection
   }
   virtual void OnFocusChanged(Id gained_focus_id,
                               Id lost_focus_id) OVERRIDE {}
-  virtual void Embed(const String& url) OVERRIDE {
+  virtual void Embed(
+      const String& url,
+      InterfaceRequest<ServiceProvider> service_provider) OVERRIDE {
     tracker_.DelegateEmbed(url);
   }
   virtual void DispatchOnViewInputEvent(Id view_id,
@@ -437,8 +443,9 @@ bool InitEmbed(ViewManagerInitService* view_manager_init,
   bool result = false;
   base::RunLoop run_loop;
   for (size_t i = 0; i < number_of_calls; ++i) {
-    view_manager_init->Embed(url, base::Bind(&EmbedCallback,
-                                             &result, &run_loop));
+    ServiceProviderPtr sp;
+    view_manager_init->Embed(url, sp.Pass(),
+                             base::Bind(&EmbedCallback, &result, &run_loop));
   }
   run_loop.Run();
   return result;

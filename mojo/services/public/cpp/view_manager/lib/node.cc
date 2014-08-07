@@ -4,6 +4,7 @@
 
 #include "mojo/services/public/cpp/view_manager/node.h"
 
+#include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/services/public/cpp/view_manager/lib/node_private.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_client_impl.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_private.h"
@@ -334,6 +335,21 @@ void Node::SetFocus() {
 
 void Node::Embed(const String& url) {
   static_cast<ViewManagerClientImpl*>(manager_)->Embed(url, id_);
+}
+
+scoped_ptr<ServiceProvider>
+    Node::Embed(const String& url,
+                scoped_ptr<ServiceProviderImpl> exported_services) {
+  scoped_ptr<ServiceProvider> imported_services;
+  // BindToProxy() takes ownership of |exported_services|.
+  ServiceProviderImpl* registry = exported_services.release();
+  ServiceProviderPtr sp;
+  if (registry) {
+    BindToProxy(registry, &sp);
+    imported_services.reset(exported_services->CreateRemoteServiceProvider());
+  }
+  static_cast<ViewManagerClientImpl*>(manager_)->Embed(url, id_, sp.Pass());
+  return imported_services.Pass();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

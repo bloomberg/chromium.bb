@@ -5,6 +5,7 @@
 #ifndef MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_WINDOW_MANAGER_DELEGATE_H_
 #define MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_WINDOW_MANAGER_DELEGATE_H_
 
+#include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/services/public/interfaces/input_events/input_events.mojom.h"
 
 namespace mojo {
@@ -16,7 +17,8 @@ class View;
 class WindowManagerDelegate {
  public:
   // Create an appropriate node to embed |url|.
-  virtual void Embed(const String& url) = 0;
+  virtual void Embed(const String& url,
+                     InterfaceRequest<ServiceProvider> service_provider) {}
 
   // Dispatch the supplied input event to the appropriate view (taking into
   // account focus, activation, modality, etc.).

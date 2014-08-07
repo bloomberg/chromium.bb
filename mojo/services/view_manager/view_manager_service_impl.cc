@@ -24,13 +24,15 @@ ViewManagerServiceImpl::ViewManagerServiceImpl(
     ConnectionSpecificId creator_id,
     const std::string& creator_url,
     const std::string& url,
-    const NodeId& root_id)
+    const NodeId& root_id,
+    InterfaceRequest<ServiceProvider> service_provider)
     : root_node_manager_(root_node_manager),
       id_(root_node_manager_->GetAndAdvanceNextConnectionId()),
       url_(url),
       creator_id_(creator_id),
       creator_url_(creator_url),
-      delete_on_connection_error_(false) {
+      delete_on_connection_error_(false),
+      service_provider_(service_provider.Pass()) {
   CHECK(GetNode(root_id));
   roots_.insert(NodeIdToTransportId(root_id));
   if (root_id == RootNodeId())
@@ -289,7 +291,9 @@ void ViewManagerServiceImpl::RemoveFromKnown(const Node* node,
     RemoveFromKnown(children[i], local_nodes);
 }
 
-void ViewManagerServiceImpl::AddRoot(const NodeId& node_id) {
+void ViewManagerServiceImpl::AddRoot(
+    const NodeId& node_id,
+    InterfaceRequest<ServiceProvider> service_provider) {
   const Id transport_node_id(NodeIdToTransportId(node_id));
   CHECK(roots_.count(transport_node_id) == 0);
 
@@ -306,7 +310,8 @@ void ViewManagerServiceImpl::AddRoot(const NodeId& node_id) {
     to_send.push_back(node);
   }
 
-  client()->OnEmbed(id_, creator_url_, NodeToNodeData(to_send.front()));
+  client()->OnEmbed(id_, creator_url_, NodeToNodeData(to_send.front()),
+                    service_provider.Pass());
   root_node_manager_->OnConnectionMessagedClient(id_);
 }
 
@@ -571,11 +576,16 @@ void ViewManagerServiceImpl::SetNodeVisibility(
   callback.Run(success);
 }
 
-void ViewManagerServiceImpl::Embed(const String& url,
-                                   Id transport_node_id,
-                                   const Callback<void(bool)>& callback) {
+void ViewManagerServiceImpl::Embed(
+    const String& url,
+    Id transport_node_id,
+    ServiceProviderPtr service_provider,
+    const Callback<void(bool)>& callback) {
+  InterfaceRequest<ServiceProvider> spir;
+  spir.Bind(service_provider.PassMessagePipe());
+
   if (NodeIdFromTransportId(transport_node_id) == InvalidNodeId()) {
-    root_node_manager_->EmbedRoot(url);
+    root_node_manager_->EmbedRoot(url, spir.Pass());
     callback.Run(true);
     return;
   }
@@ -597,10 +607,12 @@ void ViewManagerServiceImpl::Embed(const String& url,
       root_node_manager_->OnConnectionMessagedClient(id_);
       if (connection_with_node_as_root)
         connection_with_node_as_root->RemoveRoot(node_id);
-      if (connection_by_url)
-        connection_by_url->AddRoot(node_id);
-      else
-        root_node_manager_->Embed(id_, url, transport_node_id);
+      if (connection_by_url) {
+        connection_by_url->AddRoot(node_id, spir.Pass());
+      } else {
+        root_node_manager_->Embed(id_, url, transport_node_id,
+                                  spir.Pass());
+      }
     } else {
       success = false;
     }
@@ -633,7 +645,8 @@ void ViewManagerServiceImpl::OnConnectionEstablished() {
   for (NodeIdSet::const_iterator i = roots_.begin(); i != roots_.end(); ++i)
     GetUnknownNodesFrom(GetNode(NodeIdFromTransportId(*i)), &to_send);
 
-  client()->OnEmbed(id_, creator_url_, NodeToNodeData(to_send.front()));
+  client()->OnEmbed(id_, creator_url_, NodeToNodeData(to_send.front()),
+                    service_provider_.Pass());
 }
 
 const base::hash_set<Id>&

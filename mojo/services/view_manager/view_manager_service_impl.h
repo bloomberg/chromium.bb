@@ -46,7 +46,8 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
                          ConnectionSpecificId creator_id,
                          const std::string& creator_url,
                          const std::string& url,
-                         const NodeId& root_id);
+                         const NodeId& root_id,
+                         InterfaceRequest<ServiceProvider> service_provider);
   virtual ~ViewManagerServiceImpl();
 
   // Used to mark this connection as originating from a call to
@@ -142,7 +143,8 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
 
   // Adds |node_id| to the set of roots this connection knows about. The caller
   // should have verified |node_id| is not among the roots of this connection.
-  void AddRoot(const NodeId& node_id);
+  void AddRoot(const NodeId& node_id,
+               InterfaceRequest<ServiceProvider> service_provider);
 
   // Removes |node_id| from the set of roots this connection knows about.
   void RemoveRoot(const NodeId& node_id);
@@ -198,6 +200,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
                                  const Callback<void(bool)>& callback) OVERRIDE;
   virtual void Embed(const String& url,
                      Id transport_node_id,
+                     ServiceProviderPtr service_provider,
                      const Callback<void(bool)>& callback) OVERRIDE;
   virtual void DispatchOnViewInputEvent(Id transport_view_id,
                                         EventPtr event) OVERRIDE;
@@ -246,6 +249,8 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
 
   // See description above setter.
   bool delete_on_connection_error_;
+
+  InterfaceRequest<ServiceProvider> service_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerServiceImpl);
 };

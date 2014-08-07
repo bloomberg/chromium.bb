@@ -42,7 +42,8 @@ void ViewManagerInitServiceImpl::MaybeEmbed() {
 
   ScopedVector<ConnectParams>::const_iterator it = connect_params_.begin();
   for (; it != connect_params_.end(); ++it) {
-    context_->root_node_manager()->EmbedRoot((*it)->url);
+    context_->root_node_manager()->EmbedRoot((*it)->url,
+                                             (*it)->service_provider.Pass());
     (*it)->callback.Run(true);
   }
   connect_params_.clear();
@@ -50,10 +51,12 @@ void ViewManagerInitServiceImpl::MaybeEmbed() {
 
 void ViewManagerInitServiceImpl::Embed(
     const String& url,
+    ServiceProviderPtr service_provider,
     const Callback<void(bool)>& callback) {
   ConnectParams* params = new ConnectParams;
   params->url = url.To<std::string>();
   params->callback = callback;
+  params->service_provider.Bind(service_provider.PassMessagePipe());
   connect_params_.push_back(params);
   MaybeEmbed();
 }

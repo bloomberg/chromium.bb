@@ -86,20 +86,27 @@ void RootNodeManager::RemoveConnection(ViewManagerServiceImpl* connection) {
   }
 }
 
-void RootNodeManager::EmbedRoot(const std::string& url) {
+void RootNodeManager::EmbedRoot(
+    const std::string& url,
+    InterfaceRequest<ServiceProvider> service_provider) {
   if (connection_map_.empty()) {
-    EmbedImpl(kInvalidConnectionId, String::From(url), RootNodeId());
+    EmbedImpl(kInvalidConnectionId, String::From(url), RootNodeId(),
+              service_provider.Pass());
     return;
   }
   ViewManagerServiceImpl* connection = GetConnection(kWindowManagerConnection);
-  connection->client()->Embed(url);
+  connection->client()->Embed(url, service_provider.Pass());
 }
 
-void RootNodeManager::Embed(ConnectionSpecificId creator_id,
-                            const String& url,
-                            Id transport_node_id) {
-  EmbedImpl(creator_id, url, NodeIdFromTransportId(transport_node_id))->
-      set_delete_on_connection_error();
+void RootNodeManager::Embed(
+    ConnectionSpecificId creator_id,
+    const String& url,
+    Id transport_node_id,
+    InterfaceRequest<ServiceProvider> service_provider) {
+  EmbedImpl(creator_id,
+            url,
+            NodeIdFromTransportId(transport_node_id),
+            service_provider.Pass())->set_delete_on_connection_error();
 }
 
 ViewManagerServiceImpl* RootNodeManager::GetConnection(
@@ -244,12 +251,13 @@ void RootNodeManager::FinishChange() {
 ViewManagerServiceImpl* RootNodeManager::EmbedImpl(
     const ConnectionSpecificId creator_id,
     const String& url,
-    const NodeId& root_id) {
+    const NodeId& root_id,
+    InterfaceRequest<ServiceProvider> service_provider) {
   MessagePipe pipe;
 
-  ServiceProvider* service_provider =
+  ServiceProvider* view_manager_service_provider =
       app_connection_->ConnectToApplication(url)->GetServiceProvider();
-  service_provider->ConnectToService(
+  view_manager_service_provider->ConnectToService(
       ViewManagerServiceImpl::Client::Name_,
       pipe.handle1.Pass());
 
@@ -263,7 +271,8 @@ ViewManagerServiceImpl* RootNodeManager::EmbedImpl(
                                  creator_id,
                                  creator_url,
                                  url.To<std::string>(),
-                                 root_id);
+                                 root_id,
+                                 service_provider.Pass());
   WeakBindToPipe(connection, pipe.handle0.Pass());
   connections_created_by_connect_.insert(connection);
   OnConnectionMessagedClient(connection->id());
