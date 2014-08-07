@@ -117,7 +117,6 @@ public:
 
     void recalcOverflowAfterStyleChange();
 
-    bool hasCompositedContent() const;
     bool isEnclosedInCompositingLayer() const;
 
     void resetScrollbars();

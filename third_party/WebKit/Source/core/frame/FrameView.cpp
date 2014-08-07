@@ -657,14 +657,6 @@ GraphicsLayer* FrameView::layerForScrollCorner() const
     return renderView->compositor()->layerForScrollCorner();
 }
 
-bool FrameView::hasCompositedContent() const
-{
-    // FIXME: change to inCompositingMode. Fails fast/repaint/iframe-scroll-repaint.html.
-    if (RenderView* renderView = this->renderView())
-        return renderView->compositor()->staleInCompositingMode();
-    return false;
-}
-
 bool FrameView::isEnclosedInCompositingLayer() const
 {
     // FIXME: It's a bug that compositing state isn't always up to date when this is called. crbug.com/366314
