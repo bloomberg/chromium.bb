@@ -311,11 +311,13 @@ SSLBlockingPage::SSLBlockingPage(
           &request_tracker_);
     }
   }
-  if (SSLErrorInfo::NetErrorToErrorType(cert_error_) ==
-      SSLErrorInfo::CERT_DATE_INVALID) {
-    SSLErrorClassification::RecordUMAStatistics(overridable_ &&
-                                                !strict_enforcement_);
-  }
+
+  SSLErrorClassification ssl_error_classification(
+      base::Time::NowFromSystemTime(),
+      request_url_,
+      *ssl_info_.cert.get());
+  ssl_error_classification.RecordUMAStatistics(
+      overridable_ && !strict_enforcement_, cert_error_);
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalService* captive_portal_service =

@@ -2,15 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "chrome/browser/ssl/ssl_error_classification.h"
 
 #include "base/build_time.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_split.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/browser_process.h"
-#include "components/network_time/network_time_tracker.h"
+#include "chrome/browser/ssl/ssl_error_info.h"
+#include "net/base/net_util.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
+#include "url/gurl.h"
 
 using base::Time;
 using base::TimeTicks;
@@ -26,8 +33,17 @@ namespace {
 enum SSLInterstitialCause {
   CLOCK_PAST,
   CLOCK_FUTURE,
+  WWW_SUBDOMAIN_MATCH,
+  SUBDOMAIN_MATCH,
+  SUBDOMAIN_INVERSE_MATCH,
+  SUBDOMAIN_OUTSIDE_WILDCARD,
+  HOST_NAME_NOT_KNOWN_TLD,
   UNUSED_INTERSTITIAL_CAUSE_ENTRY,
 };
+
+// Scores/weights which will be constant through all the SSL error types.
+static const float kServerWeight = 0.5f;
+static const float kClientWeight = 0.5f;
 
 void RecordSSLInterstitialCause(bool overridable, SSLInterstitialCause event) {
   if (overridable) {
@@ -42,33 +58,38 @@ void RecordSSLInterstitialCause(bool overridable, SSLInterstitialCause event) {
 } // namespace
 
 SSLErrorClassification::SSLErrorClassification(
-    base::Time current_time,
+    const base::Time& current_time,
+    const GURL& url,
     const net::X509Certificate& cert)
   : current_time_(current_time),
+    request_url_(url),
     cert_(cert) { }
 
 SSLErrorClassification::~SSLErrorClassification() { }
 
-float SSLErrorClassification::InvalidDateSeverityScore() const {
-  // Client-side characterisitics. Check whether the system's clock is wrong or
-  // not and whether the user has encountered this error before or not.
+float SSLErrorClassification::InvalidDateSeverityScore(
+    int cert_error) const {
+  SSLErrorInfo::ErrorType type =
+      SSLErrorInfo::NetErrorToErrorType(cert_error);
+  DCHECK(type == SSLErrorInfo::CERT_DATE_INVALID);
+  // Client-side characteristics. Check whether or not the system's clock is
+  // wrong and whether or not the user has already encountered this error
+  // before.
   float severity_date_score = 0.0f;
 
-  static const float kClientWeight = 0.5f;
+  static const float kCertificateExpiredWeight = 0.3f;
+  static const float kNotYetValidWeight = 0.2f;
+
   static const float kSystemClockWeight = 0.75f;
   static const float kSystemClockWrongWeight = 0.1f;
   static const float kSystemClockRightWeight = 1.0f;
 
-  static const float kServerWeight = 0.5f;
-  static const float kCertificateExpiredWeight = 0.3f;
-  static const float kNotYetValidWeight = 0.2f;
-
   if (IsUserClockInThePast(current_time_)  ||
       IsUserClockInTheFuture(current_time_)) {
-    severity_date_score = kClientWeight * kSystemClockWeight *
+    severity_date_score += kClientWeight * kSystemClockWeight *
         kSystemClockWrongWeight;
   } else {
-    severity_date_score = kClientWeight * kSystemClockWeight *
+    severity_date_score += kClientWeight * kSystemClockWeight *
         kSystemClockRightWeight;
   }
   // TODO(radhikabhar): (crbug.com/393262) Check website settings.
@@ -83,6 +104,75 @@ float SSLErrorClassification::InvalidDateSeverityScore() const {
   if (current_time_ < cert_.valid_start())
     severity_date_score += kServerWeight * kNotYetValidWeight;
   return severity_date_score;
+}
+
+float SSLErrorClassification::InvalidCommonNameSeverityScore(
+    int cert_error) const {
+  SSLErrorInfo::ErrorType type =
+      SSLErrorInfo::NetErrorToErrorType(cert_error);
+  DCHECK(type == SSLErrorInfo::CERT_COMMON_NAME_INVALID);
+  float severity_name_score = 0.0f;
+
+  static const float kWWWDifferenceWeight = 0.3f;
+  static const float kSubDomainWeight = 0.2f;
+  static const float kSubDomainInverseWeight = 1.0f;
+
+  std::string host_name = request_url_.host();
+  if (IsHostNameKnownTLD(host_name)) {
+    Tokens host_name_tokens = Tokenize(host_name);
+    if (IsWWWSubDomainMatch())
+      severity_name_score += kServerWeight * kWWWDifferenceWeight;
+    if (IsSubDomainOutsideWildcard(host_name_tokens))
+      severity_name_score += kServerWeight * kWWWDifferenceWeight;
+
+    std::vector<std::string> dns_names;
+    cert_.GetDNSNames(&dns_names);
+    std::vector<Tokens> dns_name_tokens = GetTokenizedDNSNames(dns_names);
+    if (NameUnderAnyNames(host_name_tokens, dns_name_tokens))
+      severity_name_score += kServerWeight * kSubDomainWeight;
+    // Inverse case is more likely to be a MITM attack.
+    if (AnyNamesUnderName(dns_name_tokens, host_name_tokens))
+      severity_name_score += kServerWeight * kSubDomainInverseWeight;
+  }
+  return severity_name_score;
+}
+
+void SSLErrorClassification::RecordUMAStatistics(bool overridable,
+                                                 int cert_error) {
+  SSLErrorInfo::ErrorType type =
+      SSLErrorInfo::NetErrorToErrorType(cert_error);
+  switch (type) {
+    case SSLErrorInfo::CERT_DATE_INVALID: {
+      if (IsUserClockInThePast(base::Time::NowFromSystemTime()))
+        RecordSSLInterstitialCause(overridable, CLOCK_PAST);
+      if (IsUserClockInTheFuture(base::Time::NowFromSystemTime()))
+        RecordSSLInterstitialCause(overridable, CLOCK_FUTURE);
+      break;
+    }
+    case SSLErrorInfo::CERT_COMMON_NAME_INVALID: {
+      std::string host_name = request_url_.host();
+      if (IsHostNameKnownTLD(host_name)) {
+        Tokens host_name_tokens = Tokenize(host_name);
+        if (IsWWWSubDomainMatch())
+          RecordSSLInterstitialCause(overridable, WWW_SUBDOMAIN_MATCH);
+        if (IsSubDomainOutsideWildcard(host_name_tokens))
+          RecordSSLInterstitialCause(overridable, SUBDOMAIN_OUTSIDE_WILDCARD);
+        std::vector<std::string> dns_names;
+        cert_.GetDNSNames(&dns_names);
+        std::vector<Tokens> dns_name_tokens = GetTokenizedDNSNames(dns_names);
+        if (NameUnderAnyNames(host_name_tokens, dns_name_tokens))
+          RecordSSLInterstitialCause(overridable, SUBDOMAIN_MATCH);
+        if (AnyNamesUnderName(dns_name_tokens, host_name_tokens))
+          RecordSSLInterstitialCause(overridable, SUBDOMAIN_INVERSE_MATCH);
+      } else {
+         RecordSSLInterstitialCause(overridable, HOST_NAME_NOT_KNOWN_TLD);
+      }
+      break;
+    }
+    default: {
+      break;
+    }
+  }
 }
 
 base::TimeDelta SSLErrorClassification::TimePassedSinceExpiry() const {
@@ -106,14 +196,15 @@ float SSLErrorClassification::CalculateScoreTimePassedSinceExpiry() const {
     return kLowThresholdWeight;
 }
 
-bool SSLErrorClassification::IsUserClockInThePast(base::Time time_now) {
+bool SSLErrorClassification::IsUserClockInThePast(const base::Time& time_now) {
   base::Time build_time = base::GetBuildTime();
   if (time_now < build_time - base::TimeDelta::FromDays(2))
     return true;
   return false;
 }
 
-bool SSLErrorClassification::IsUserClockInTheFuture(base::Time time_now) {
+bool SSLErrorClassification::IsUserClockInTheFuture(
+    const base::Time& time_now) {
   base::Time build_time = base::GetBuildTime();
   if (time_now > build_time + base::TimeDelta::FromDays(365))
     return true;
@@ -130,9 +221,148 @@ bool SSLErrorClassification::IsWindowsVersionSP3OrLower() {
   return false;
 }
 
-void SSLErrorClassification::RecordUMAStatistics(bool overridable) {
-  if (IsUserClockInThePast(base::Time::NowFromSystemTime()))
-    RecordSSLInterstitialCause(overridable, CLOCK_PAST);
-  if (IsUserClockInTheFuture(base::Time::NowFromSystemTime()))
-    RecordSSLInterstitialCause(overridable, CLOCK_FUTURE);
+bool SSLErrorClassification::IsHostNameKnownTLD(const std::string& host_name) {
+  size_t tld_length =
+      net::registry_controlled_domains::GetRegistryLength(
+          host_name,
+          net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  if (tld_length == 0 || tld_length == std::string::npos)
+    return false;
+  return true;
+}
+
+std::vector<SSLErrorClassification::Tokens> SSLErrorClassification::
+GetTokenizedDNSNames(const std::vector<std::string>& dns_names) {
+  std::vector<std::vector<std::string>> dns_name_tokens;
+  for (size_t i = 0; i < dns_names.size(); ++i) {
+    std::vector<std::string> dns_name_token_single;
+    if (dns_names[i].empty() || dns_names[i].find('\0') != std::string::npos
+        || !(IsHostNameKnownTLD(dns_names[i]))) {
+      dns_name_token_single.push_back(std::string());
+    } else {
+      dns_name_token_single = Tokenize(dns_names[i]);
+    }
+    dns_name_tokens.push_back(dns_name_token_single);
+  }
+  return dns_name_tokens;
+}
+
+size_t SSLErrorClassification::FindSubDomainDifference(
+    const Tokens& potential_subdomain, const Tokens& parent) const {
+  // A check to ensure that the number of tokens in the tokenized_parent is
+  // less than the tokenized_potential_subdomain.
+  if (parent.size() >= potential_subdomain.size())
+    return 0;
+
+  size_t tokens_match = 0;
+  size_t diff_size = potential_subdomain.size() - parent.size();
+  for (size_t i = 0; i < parent.size(); ++i) {
+    if (parent[i] == potential_subdomain[i + diff_size])
+      tokens_match++;
+  }
+  if (tokens_match == parent.size())
+    return diff_size;
+  return 0;
+}
+
+SSLErrorClassification::Tokens SSLErrorClassification::
+Tokenize(const std::string& name) {
+  Tokens name_tokens;
+  base::SplitStringDontTrim(name, '.', &name_tokens);
+  return name_tokens;
+}
+
+// We accept the inverse case for www for historical reasons.
+bool SSLErrorClassification::IsWWWSubDomainMatch() const {
+  std::string host_name = request_url_.host();
+  if (IsHostNameKnownTLD(host_name)) {
+    std::vector<std::string> dns_names;
+    cert_.GetDNSNames(&dns_names);
+    bool result = false;
+    // Need to account for all possible domains given in the SSL certificate.
+    for (size_t i = 0; i < dns_names.size(); ++i) {
+      if (dns_names[i].empty() || dns_names[i].find('\0') != std::string::npos
+          || dns_names[i].length() == host_name.length()
+          || !(IsHostNameKnownTLD(dns_names[i]))) {
+        result = result || false;
+      } else if (dns_names[i].length() > host_name.length()) {
+        result = result ||
+            net::StripWWW(base::ASCIIToUTF16(dns_names[i])) ==
+            base::ASCIIToUTF16(host_name);
+      } else {
+        result = result ||
+            net::StripWWW(base::ASCIIToUTF16(host_name)) ==
+            base::ASCIIToUTF16(dns_names[i]);
+      }
+    }
+    return result;
+  }
+  return false;
+}
+
+bool SSLErrorClassification::NameUnderAnyNames(
+    const Tokens& child,
+    const std::vector<Tokens>& potential_parents) const {
+  bool result = false;
+  // Need to account for all the possible domains given in the SSL certificate.
+  for (size_t i = 0; i < potential_parents.size(); ++i) {
+    if (potential_parents[i].empty() ||
+        potential_parents[i].size() >= child.size()) {
+      result = result || false;
+    } else {
+      size_t domain_diff = FindSubDomainDifference(child,
+                                                   potential_parents[i]);
+      if (domain_diff == 1 &&  child[0] != "www")
+        result = result || true;
+    }
+  }
+  return result;
+}
+
+bool SSLErrorClassification::AnyNamesUnderName(
+    const std::vector<Tokens>& potential_children,
+    const Tokens& parent) const {
+  bool result = false;
+  // Need to account for all the possible domains given in the SSL certificate.
+  for (size_t i = 0; i < potential_children.size(); ++i) {
+    if (potential_children[i].empty() ||
+        potential_children[i].size() <= parent.size()) {
+      result = result || false;
+    } else {
+      size_t domain_diff = FindSubDomainDifference(potential_children[i],
+                                                   parent);
+      if (domain_diff == 1 &&  potential_children[i][0] != "www")
+        result = result || true;
+    }
+  }
+  return result;
+}
+
+bool SSLErrorClassification::IsSubDomainOutsideWildcard(
+    const Tokens& host_name_tokens) const {
+  std::string host_name = request_url_.host();
+  std::vector<std::string> dns_names;
+  cert_.GetDNSNames(&dns_names);
+  bool result = false;
+
+  // This method requires that the host name be longer than the dns name on
+  // the certificate.
+  for (size_t i = 0; i < dns_names.size(); ++i) {
+    const std::string& name = dns_names[i];
+    if (name.length() < 2 || name.length() >= host_name.length() ||
+        name.find('\0') != std::string::npos ||
+        !IsHostNameKnownTLD(name)
+        || name[0] != '*' || name[1] != '.') {
+      continue;
+    }
+
+    // Move past the "*.".
+    std::string extracted_dns_name = name.substr(2);
+    if (FindSubDomainDifference(
+        host_name_tokens, Tokenize(extracted_dns_name)) == 2) {
+      return true;
+    }
+  }
+  return result;
 }

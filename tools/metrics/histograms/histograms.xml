@@ -9946,14 +9946,30 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     enum="SSLNonAttackCauses">
   <owner>felt@chromium.org</owner>
   <summary>
-    Possible non-attack causes of the non-overridable SSL interstitial.
+    Possible non-attack causes of the non-overridable SSL interstitial. Many
+    errors are not reported in this histogram and new errors may be added over
+    time, therefore one should not look at the breakdown of this histogram (one
+    bucket divided by the sum) because that will be inaccurate. Instead, one
+    should look at each bucket count divided by the count of the ssl errors of
+    that type. E.g. WWW mismatch is recorded only when the ssl error is
+    CERT_COMMON_NAME_INVALID, so one should look at the bucket count of WWW
+    mismatch divided by the bucket count of CERT_COMMON_NAME_INVALID in the
+    histogram interstitial.ssl_error_type.
   </summary>
 </histogram>
 
 <histogram name="interstitial.ssl.cause.overridable" enum="SSLNonAttackCauses">
   <owner>felt@chromium.org</owner>
   <summary>
-    Possible non-attack causes of the overridable SSL interstitial.
+    Possible non-attack causes of the overridable SSL interstitial. Many errors
+    are not reported in this histogram and new errors may be added over time,
+    therefore one should not look at the breakdown of this histogram (one bucket
+    divided by the sum) because that will be inaccurate. Instead, one should
+    look at each bucket count divided by the count of the ssl errors of that
+    type. E.g. WWW mismatch is recorded only when the ssl error is
+    CERT_COMMON_NAME_INVALID, so one should look at the bucket count of WWW
+    mismatch divided by the bucket count of CERT_COMMON_NAME_INVALID in the
+    histogram interstitial.ssl_error_type.
   </summary>
 </histogram>
 
@@ -48564,6 +48580,37 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="SSLNonAttackCauses" type="int">
   <int value="0" label="CLOCK_PAST: System clock set early"/>
   <int value="1" label="CLOCK_FUTURE: System clock set late"/>
+  <int value="2"
+      label="WWW_SUBDOMAIN_MATCH: Difference between the URL and the DNS is
+             www">
+    This cause is recorded if the ssl error is CERT_COMMON_NAME_INVALID and the
+    hostname differs from one of the DNS names in the certificate (CN or SANs)
+    only by the presence or absence of the single-label prefix &quot;www&quot;.
+    This case is not recored if the host name is not a known TLD.
+  </int>
+  <int value="3" label="SUBDOMAIN_MATCH: The URL is a subdomain of the DNS">
+    This cause is recorded if the ssl error is CERT_COMMON_NAME_INVALID and the
+    difference between the URL and the DNS name is not &quot;www&quot;. This
+    case is not recorded if the host name is not a known TLD.
+  </int>
+  <int value="4"
+      label="SUBDOMAIN_INVERSE_MATCH: The DNS is a subdomian of the URL">
+    This cause is recorded if the ssl error is CERT_COMMON_NAME_INVALID and the
+    difference between the DNS name and the URL is not &quot;www&quot;. This
+    case is not recorded if the host name is not a known TLD.
+  </int>
+  <int value="5"
+      label="SUBDOMAIN_OUTSIDE_WILDCARD: The URL is outside the scope of the
+             wildcard certificate">
+    This cause is recorded only if the ssl error is CERT_COMMON_NAME_INVALID, we
+    have received a wildcard certificate and the scope of a wildcard certificate
+    is too narrow for the hostname. This case is not recorded if the host name
+    is not a known TLD.
+  </int>
+  <int value="6"
+      label="HOST_NAME_NOT_KNOWN_TLD: The host name is not a known TLD">
+    This cause is recorded only for CERT_COMMON_NAME_INVALID errors.
+  </int>
 </enum>
 
 <enum name="SSLResponseTypesV2" type="int">
