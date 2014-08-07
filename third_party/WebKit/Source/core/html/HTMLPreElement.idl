@@ -19,5 +19,5 @@
  */
 
 interface HTMLPreElement : HTMLElement {
-    [Reflect, MeasureAs=HTMLPreElementWidth] attribute long width;
+    [Reflect] attribute long width;
 };

@@ -463,7 +463,6 @@ public:
         ProgressElement = 484,
         VideoFullscreenAllowedExemption = 485,
         WebKitPoint = 488,
-        HTMLPreElementWidth = 489,
         PrefixedHTMLElementDropzone = 490,
         WheelEventWheelDeltaX = 491,
         WheelEventWheelDeltaY = 492,
