@@ -32,6 +32,13 @@ METADATA_URL_GLOB = os.path.join(ARCHIVE_ROOT,
                                  'R%(milestone)s**//metadata.json')
 LATEST_URL = os.path.join(ARCHIVE_ROOT, 'LATEST-master')
 
+class _DummyLock(object):
+  """A Dummy clone of RLock that does nothing."""
+  def acquire(self, blocking=1):
+    pass
+
+  def release(self):
+    pass
 
 class CBuildbotMetadata(object):
   """Class for recording metadata about a run."""
@@ -57,7 +64,9 @@ class CBuildbotMetadata(object):
       self._metadata_dict = {}
       self._cl_action_list = []
       self._per_board_dict = {}
-      self._subdict_update_lock = multiprocessing.RLock()
+      # If we are not using a manager, then metadata is not expected to be
+      # multiprocess safe. Use a dummy RLock.
+      self._subdict_update_lock = _DummyLock()
 
     if metadata_dict:
       self.UpdateWithDict(metadata_dict)
