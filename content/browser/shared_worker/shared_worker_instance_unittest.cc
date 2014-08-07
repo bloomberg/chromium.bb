@@ -9,6 +9,7 @@
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/worker_storage_partition.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -37,6 +38,7 @@ class SharedWorkerInstanceTest : public testing::Test {
                             browser_context_->GetResourceContext());
   }
 
+  TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestBrowserContext> browser_context_;
   scoped_ptr<WorkerStoragePartition> partition_;
   const WorkerStoragePartitionId partition_id_;
