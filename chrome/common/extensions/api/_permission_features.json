@@ -313,6 +313,14 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
   },
+  "copresencePrivate": {
+    "channel": "stable",
+    "extension_types": ["extension"],
+    "location": "component",
+    "whitelist": [
+      "AFA728615D3A82D4017BDECEE86978543194D198"  // Whispernet Proxy
+    ]
+  },
   "diagnostics": [
     {
       "channel": "dev",

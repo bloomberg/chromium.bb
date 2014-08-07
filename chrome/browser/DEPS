@@ -20,6 +20,7 @@ include_rules = [
   "+components/cdm/browser",
   "+components/cloud_devices/common",
   "+components/content_settings",
+  "+components/copresence",
   "+components/data_reduction_proxy",
   "+components/dom_distiller",
   "+components/domain_reliability",

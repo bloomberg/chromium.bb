@@ -1,0 +1,49 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Use the <code>chrome.copresencePrivate</code> API to interface with Chrome
+// from the whispernet_proxy extension.
+namespace copresencePrivate {
+
+  dictionary PlayParameters {
+    double sampleRate;
+    long bitsPerSample;
+    double carrierFrequency;
+    long repetitions;
+  };
+
+  dictionary RecordParameters {
+    double sampleRate;
+    long bitsPerSample;
+    long channels;
+    double carrierFrequency;
+  };
+
+  dictionary AudioParameters {
+    PlayParameters play;
+    RecordParameters record;
+  };
+
+  interface Functions {
+    // Send a boolean indicating whether our initialization was successful.
+    static void sendInitialized(boolean success);
+    // Sends an array of found tokens to Chrome.
+    static void sendFound(DOMString[] tokens);
+    // Send an array buffer of samples encoded for the specified token.
+    static void sendSamples(DOMString token, ArrayBuffer samples);
+    // Send a boolean indicating whether we detected a broadcast or not.
+    static void sendDetect(boolean detected);
+  };
+
+  interface Events {
+    // Fired to request initialization of the whisper.net library.
+    static void onInitialize(AudioParameters audioParams);
+    // Fired to request encoding of the given token.
+    static void onEncodeTokenRequest(DOMString base64Token);
+    // Fired when we have new samples to decode.
+    static void onDecodeSamplesRequest(ArrayBuffer audioSamples);
+    // Fired to request a DetectBroadcast.
+    static void onDetectBroadcastRequest();
+  };
+};

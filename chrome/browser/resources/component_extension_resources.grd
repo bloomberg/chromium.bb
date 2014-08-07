@@ -172,6 +172,17 @@
         <include name="IDR_LEDGER_LEDGER_PROXY_NMF" file="../extensions/api/ledger/ledger_proxy/ledger_proxy.nmf.js" type="BINDATA" />
         <include name="IDR_LEDGER_LEDGER_PROXY_PEXE" file="../extensions/api/ledger/ledger_proxy/ledger_proxy_pnacl.pexe.js" type="BINDATA" />
       </if>
+      <include name="IDR_WHISPERNET_PROXY_BACKGROUND_HTML" file="whispernet_proxy/background.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_WHISPERNET_PROXY_INIT_JS" file="whispernet_proxy/js/init.js" type="BINDATA" />
+      <include name="IDR_WHISPERNET_PROXY_NACL_JS" file="whispernet_proxy/js/nacl.js" type="BINDATA" />
+      <include name="IDR_WHISPERNET_PROXY_WRAPPER_JS" file="whispernet_proxy/js/wrapper.js" type="BINDATA" />
+      <!-- The next two files have a .png extension since grit for some reason
+           won't compile these files in if they are named .nmf/.pexe or
+           anything remotely similar to their actual extension. Naming these
+           .js or .html breaks all kinds of presubmit checks, hence .png seems
+           to be the only viable option at the moment. -->
+      <include name="IDR_WHISPERNET_PROXY_WHISPERNET_PROXY_PROXY_NMF" file="whispernet_proxy/whispernet_proxy.nmf.png" type="BINDATA" />
+      <include name="IDR_WHISPERNET_PROXY_WHISPERNET_PROXY_PROXY_PEXE" file="whispernet_proxy/whispernet_proxy_pnacl.pexe.png" type="BINDATA" />
     </includes>
   </release>
 </grit>

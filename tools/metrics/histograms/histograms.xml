@@ -39950,6 +39950,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="861" label="NOTIFICATIONPROVIDER_GETALLNOTIFIERS"/>
   <int value="862" label="GCDPRIVATE_GETPREFETCHEDWIFINAMELIST"/>
   <int value="863" label="GUESTVIEWINTERNAL_SETAUTOSIZE"/>
+  <int value="864" label="COPRESENCEPRIVATE_SENDFOUND"/>
+  <int value="865" label="COPRESENCEPRIVATE_SENDSAMPLES"/>
+  <int value="866" label="COPRESENCEPRIVATE_SENDDETECT"/>
+  <int value="867" label="COPRESENCEPRIVATE_SENDINITIALIZED"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
