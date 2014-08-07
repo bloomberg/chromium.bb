@@ -130,11 +130,8 @@ template<typename U> class ThreadingTrait<const U> : public ThreadingTrait<U> { 
 //
 // To create a new typed heap add a H(<ClassName>) to the
 // FOR_EACH_TYPED_HEAP macro below.
-// FIXME: When the Node hierarchy has been moved use Node in our
-// tests instead of TestTypedHeapClass.
 #define FOR_EACH_TYPED_HEAP(H)  \
-    H(TestTypedHeapClass)
-//    H(Node)
+    H(Node)
 
 #define TypedHeapEnumName(Type) Type##Heap,
 

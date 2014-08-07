@@ -636,17 +636,17 @@ private:
 
 int SimpleFinalizedObject::s_destructorCalls = 0;
 
-class TestTypedHeapClass : public GarbageCollected<TestTypedHeapClass> {
+class Node : public GarbageCollected<Node> {
 public:
-    static TestTypedHeapClass* create()
+    static Node* create()
     {
-        return new TestTypedHeapClass();
+        return new Node();
     }
 
     void trace(Visitor*) { }
 
 private:
-    TestTypedHeapClass() { }
+    Node() { }
 };
 
 class Bar : public GarbageCollectedFinalized<Bar> {
@@ -1696,7 +1696,7 @@ TEST(HeapTest, TypedHeapSanity)
 {
     // We use TraceCounter for allocating an object on the general heap.
     Persistent<TraceCounter> generalHeapObject = TraceCounter::create();
-    Persistent<TestTypedHeapClass> typedHeapObject = TestTypedHeapClass::create();
+    Persistent<Node> typedHeapObject = Node::create();
     EXPECT_NE(pageHeaderFromObject(generalHeapObject.get()),
         pageHeaderFromObject(typedHeapObject.get()));
 }
