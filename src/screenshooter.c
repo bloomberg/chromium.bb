@@ -265,6 +265,7 @@ bind_shooter(struct wl_client *client,
 	if (client != shooter->client) {
 		wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
 				       "screenshooter failed: permission denied");
+		return;
 	}
 
 	wl_resource_set_implementation(resource, &screenshooter_implementation,
