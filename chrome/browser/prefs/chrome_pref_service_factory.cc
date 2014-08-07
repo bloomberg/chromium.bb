@@ -353,13 +353,16 @@ scoped_ptr<ProfilePrefStoreManager> CreateProfilePrefStoreManager(
   // ways to defer preference loading until the device ID can be used.
   rlz_lib::GetMachineId(&device_id);
 #endif
+  std::string seed;
+#if defined(GOOGLE_CHROME_BUILD)
+  seed = ResourceBundle::GetSharedInstance().GetRawDataResource(
+      IDR_PREF_HASH_SEED_BIN).as_string(),
+#endif
   return make_scoped_ptr(new ProfilePrefStoreManager(
       profile_path,
       GetTrackingConfiguration(),
       kTrackedPrefsReportingIDsCount,
-      ResourceBundle::GetSharedInstance()
-          .GetRawDataResource(IDR_PREF_HASH_SEED_BIN)
-          .as_string(),
+      seed,
       device_id,
       g_browser_process->local_state()));
 }
