@@ -1239,7 +1239,6 @@ Bug(gardener) [ Release Linux ] media/track/track-cue-nothing-to-render.html [ F
 Bug(gardener) [ Debug Linux ] media/track/track-cue-nothing-to-render.html [ Failure Pass ]
 Bug(gardener) [ Release Win7 ] media/track/track-cue-nothing-to-render.html [ Failure Pass ]
 Bug(gardener) [ Release XP ] media/track/track-cue-nothing-to-render.html [ Failure Pass ]
-Bug(gardener) [ Release SnowLeopard ] media/track/track-cue-rendering-horizontal.html [ Failure Pass ]
 Bug(gardener) [ Release SnowLeopard ] media/track/track-cue-rendering-rtl.html [ Failure Pass ]
 Bug(gardener) [ Debug Win7 ] media/track/track-cue-rendering-rtl.html [ Failure Pass ]
 Bug(gardener) [ Release XP ] media/track/track-cue-rendering-rtl.html [ Failure Pass ]
