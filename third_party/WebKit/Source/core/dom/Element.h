@@ -300,8 +300,6 @@ public:
 
     bool sharesSameElementData(const Element& other) const { return elementData() == other.elementData(); }
 
-    void synchronizeAllAttributes() const;
-
     // Clones attributes only.
     void cloneAttributesFromElement(const Element&);
 
@@ -592,6 +590,7 @@ private:
     void didModifyAttribute(const QualifiedName&, const AtomicString&);
     void didRemoveAttribute(const QualifiedName&);
 
+    void synchronizeAllAttributes() const;
     void synchronizeAttribute(const QualifiedName&) const;
 
     void updateId(const AtomicString& oldId, const AtomicString& newId);
