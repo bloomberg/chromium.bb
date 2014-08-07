@@ -35,10 +35,18 @@ const char kRapporRolloutFieldTrialName[] = "RapporRollout";
 // Constant for the finch parameter name for the server URL
 const char kRapporRolloutServerUrlParam[] = "ServerUrl";
 
+// Constant for the finch parameter name for the server URL
+const char kRapporRolloutRequireUmaParam[] = "RequireUma";
+
 // The rappor server's URL.
 const char kDefaultServerUrl[] = "https://clients4.google.com/rappor";
 
-GURL GetServerUrl() {
+GURL GetServerUrl(bool metrics_enabled) {
+  bool require_uma = variations::GetVariationParamValue(
+      kRapporRolloutFieldTrialName,
+      kRapporRolloutRequireUmaParam) != "False";
+  if (!metrics_enabled && require_uma)
+    return GURL();  // Invalid URL disables Rappor.
   std::string server_url = variations::GetVariationParamValue(
       kRapporRolloutFieldTrialName,
       kRapporRolloutServerUrlParam);
@@ -68,11 +76,12 @@ RapporService::~RapporService() {
 }
 
 void RapporService::Start(PrefService* pref_service,
-                          net::URLRequestContextGetter* request_context) {
-  const GURL server_url = GetServerUrl();
+                          net::URLRequestContextGetter* request_context,
+                          bool metrics_enabled) {
+  const GURL server_url = GetServerUrl(metrics_enabled);
   if (!server_url.is_valid()) {
-    DVLOG(1) << "RapporService not started: "
-             << server_url.spec() << " is invalid.";
+    DVLOG(1) << server_url.spec() << " is invalid. "
+             << "RapporService not started.";
     return;
   }
   DVLOG(1) << "RapporService started. Reporting to " << server_url.spec();

@@ -636,13 +636,12 @@ void ChromeBrowserMainParts::StartMetricsRecording() {
   metrics->CheckForClonedInstall(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   const bool metrics_enabled = metrics->StartIfMetricsReportingEnabled();
-  if (metrics_enabled) {
-    // TODO(asvitkine): Since this function is not run on Android, RAPPOR is
-    // currently disabled there. http://crbug.com/370041
-    browser_process_->rappor_service()->Start(
-        browser_process_->local_state(),
-        browser_process_->system_request_context());
-  }
+  // TODO(asvitkine): Since this function is not run on Android, RAPPOR is
+  // currently disabled there. http://crbug.com/370041
+  browser_process_->rappor_service()->Start(
+      browser_process_->local_state(),
+      browser_process_->system_request_context(),
+      metrics_enabled);
 }
 
 void ChromeBrowserMainParts::RecordBrowserStartupTime() {

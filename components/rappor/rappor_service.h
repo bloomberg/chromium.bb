@@ -42,7 +42,9 @@ class RapporService {
   virtual ~RapporService();
 
   // Starts the periodic generation of reports and upload attempts.
-  void Start(PrefService* pref_service, net::URLRequestContextGetter* context);
+  void Start(PrefService* pref_service,
+             net::URLRequestContextGetter* context,
+             bool metrics_enabled);
 
   // Records a sample of the rappor metric specified by |metric_name|.
   // Creates and initializes the metric, if it doesn't yet exist.
