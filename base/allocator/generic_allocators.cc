@@ -24,11 +24,11 @@ inline void* generic_cpp_alloc(size_t size, bool nothrow) {
 
 extern "C++" {
 
-void* __cdecl operator new(size_t size) {
+void* operator new(size_t size) {
   return generic_cpp_alloc(size, false);
 }
 
-void operator delete(void* p) throw() {
+void operator delete(void* p) {
   free(p);
 }
 
@@ -36,16 +36,24 @@ void* operator new[](size_t size) {
   return generic_cpp_alloc(size, false);
 }
 
-void operator delete[](void* p) throw() {
+void operator delete[](void* p) {
   free(p);
 }
 
-void* operator new(size_t size, const std::nothrow_t& nt) throw() {
+void* operator new(size_t size, const std::nothrow_t& nt) {
   return generic_cpp_alloc(size, true);
 }
 
-void* operator new[](size_t size, const std::nothrow_t& nt) throw() {
+void operator delete(void* p, const std::nothrow_t& nt) {
+  free(p);
+}
+
+void* operator new[](size_t size, const std::nothrow_t& nt) {
   return generic_cpp_alloc(size, true);
+}
+
+void operator delete[](void* p, const std::nothrow_t& nt) {
+  free(p);
 }
 
 // This function behaves similarly to MSVC's _set_new_mode.
