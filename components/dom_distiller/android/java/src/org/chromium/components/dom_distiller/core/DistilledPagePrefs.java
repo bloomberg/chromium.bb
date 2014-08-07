@@ -65,19 +65,29 @@ public final class DistilledPagePrefs {
         mObserverMap = new HashMap<Observer, DistilledPagePrefsObserverWrapper>();
     }
 
-    public void addObserver(Observer obs) {
+    /*
+     * Adds the observer to listen to changes in DistilledPagePrefs.
+     * @return whether the observerMap was changed as a result of the call.
+     */
+    public boolean addObserver(Observer obs) {
+        if (mObserverMap.containsKey(obs)) return false;
         DistilledPagePrefsObserverWrapper wrappedObserver =
                 new DistilledPagePrefsObserverWrapper(obs);
         nativeAddObserver(mDistilledPagePrefsAndroid, wrappedObserver.getNativePtr());
         mObserverMap.put(obs, wrappedObserver);
+        return true;
     }
 
-    public void removeObserver(Observer obs) {
+    /*
+     * Removes the observer and unregisters it from DistilledPagePrefs changes.
+     * @return whether the observer was removed as a result of the call.
+     */
+    public boolean removeObserver(Observer obs) {
         DistilledPagePrefsObserverWrapper wrappedObserver = mObserverMap.remove(obs);
-        if (wrappedObserver != null) {
-            nativeRemoveObserver(mDistilledPagePrefsAndroid, wrappedObserver.getNativePtr());
-            wrappedObserver.destroy();
-        }
+        if (wrappedObserver == null) return false;
+        nativeRemoveObserver(mDistilledPagePrefsAndroid, wrappedObserver.getNativePtr());
+        wrappedObserver.destroy();
+        return true;
     }
 
     public void setTheme(Theme theme) {

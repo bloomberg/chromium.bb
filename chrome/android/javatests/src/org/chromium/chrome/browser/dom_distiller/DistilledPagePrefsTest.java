@@ -92,6 +92,22 @@ public class DistilledPagePrefsTest extends ChromeShellTestBase {
         mDistilledPagePrefs.removeObserver(testObserverTwo);
     }
 
+    @SmallTest
+    @Feature({"DomDistiller"})
+    public void testRepeatedAddAndDeleteObserver() throws InterruptedException {
+        TestingObserver test = new TestingObserver();
+
+        // Should successfully add the observer the first time.
+        assertTrue(mDistilledPagePrefs.addObserver(test));
+        // Observer cannot be added again, should return false.
+        assertFalse(mDistilledPagePrefs.addObserver(test));
+
+        // Delete the observer the first time.
+        assertTrue(mDistilledPagePrefs.removeObserver(test));
+        // Observer cannot be deleted again, should return false.
+        assertFalse(mDistilledPagePrefs.removeObserver(test));
+    }
+
     private static class TestingObserver implements DistilledPagePrefs.Observer {
         private Theme mTheme;
 
