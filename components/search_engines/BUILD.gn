@@ -44,6 +44,7 @@ static_library("search_engines") {
   deps = [
     ":prepopulated_engines",
     "//base",
+    "//components/google/core/browser",
     "//components/keyed_service/core",
     "//components/metrics/proto",
     "//components/pref_registry",
@@ -58,7 +59,6 @@ static_library("search_engines") {
     "//third_party/libxml",
     "//ui/gfx",
     "//url",
-    #'google_core_browser',  TODO(GYP)
   ]
 
   if (enable_configuration_policy) {

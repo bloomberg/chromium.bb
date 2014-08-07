@@ -20,13 +20,13 @@ source_set("browser") {
     "//base",
     "//base:prefs",
     "//base/third_party/dynamic_annotations",
+    "//components/bookmarks/browser",
     "//components/keyed_service/core",
     "//components/pref_registry",
     "//components/strings",
     "//components/url_matcher",
     "//net",
     "//ui/base",
-    #'bookmarks_browser',  TODO(GYP)
   ]
 
   if (enable_configuration_policy) {

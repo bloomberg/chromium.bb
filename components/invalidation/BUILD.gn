@@ -81,12 +81,11 @@ static_library("invalidation") {
 
   deps = [
     "//base",
-    #"//components/gcm_driver",  TODO(GYP)
-    "//google_apis",
+    "//components/gcm_driver",
     "//components/keyed_service/core",
-    "//components/signin/core/browser:browser",
     "//components/pref_registry",
-    #"//components/signin/core/browser",  TODO(GYP)
+    "//components/signin/core/browser",
+    "//google_apis",
     "//jingle:notifier",
     "//sync",
     "//third_party/cacheinvalidation",
@@ -124,6 +123,7 @@ static_library("test_support") {
 
   deps = [
     "//base",
+    "//components/gcm_driver:test_support",
     "//components/keyed_service/core",
     "//google_apis",
     "//jingle:notifier",
@@ -132,6 +132,5 @@ static_library("test_support") {
     "//sync",
     "//testing/gmock",
     "//third_party/cacheinvalidation",
-    #'gcm_driver_test_support',  TODO(GYP)
   ]
 }
