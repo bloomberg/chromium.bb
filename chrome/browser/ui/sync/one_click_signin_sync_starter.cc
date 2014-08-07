@@ -185,14 +185,41 @@ void OneClickSigninSyncStarter::SigninDialogDelegate::OnCancelSignin() {
 
 void OneClickSigninSyncStarter::SigninDialogDelegate::OnContinueSignin() {
   SetUserChoiceHistogram(SIGNIN_CHOICE_CONTINUE);
-  if (sync_starter_ != NULL)
+
+  if (sync_starter_ != NULL) {
+    // If the user signs in from the new avatar bubble, the enterprise
+    // confirmation dialog would dismiss the avatar bubble, thus it won't show
+    // any confirmation upon sign in completes. This cofirmation dialog already
+    // mentions that user data would be synced, thus we just start sync
+    // immediately.
+
+    // TODO(guohui): add a sync settings link to allow user to configure sync
+    // settings before sync starts.
+    if (sync_starter_->GetStartSyncMode() == CONFIRM_SYNC_SETTINGS_FIRST)
+      sync_starter_->SetStartSyncMode(SYNC_WITH_DEFAULT_SETTINGS);
     sync_starter_->LoadPolicyWithCachedCredentials();
+  }
 }
 
 void OneClickSigninSyncStarter::SigninDialogDelegate::OnSigninWithNewProfile() {
   SetUserChoiceHistogram(SIGNIN_CHOICE_NEW_PROFILE);
-  if (sync_starter_ != NULL)
+
+  if (sync_starter_ != NULL) {
+    // TODO(guohui): add a sync settings link to allow user to configure sync
+    // settings before sync starts.
+    if (sync_starter_->GetStartSyncMode() == CONFIRM_SYNC_SETTINGS_FIRST)
+      sync_starter_->SetStartSyncMode(SYNC_WITH_DEFAULT_SETTINGS);
     sync_starter_->CreateNewSignedInProfile();
+  }
+}
+
+void OneClickSigninSyncStarter::SetStartSyncMode(StartSyncMode start_mode) {
+  start_mode_ = start_mode;
+}
+
+OneClickSigninSyncStarter::StartSyncMode
+    OneClickSigninSyncStarter::GetStartSyncMode() {
+  return start_mode_;
 }
 
 void OneClickSigninSyncStarter::OnRegisteredForPolicy(
@@ -369,8 +396,17 @@ void OneClickSigninSyncStarter::UntrustedSigninConfirmed(
   } else {
     // If the user clicked the "Advanced" link in the confirmation dialog, then
     // override the current start_mode_ to bring up the advanced sync settings.
+
+    // If the user signs in from the new avatar bubble, the untrusted dialog
+    // would dismiss the avatar bubble, thus it won't show any confirmation upon
+    // sign in completes. This dialog already has a settings link, thus we just
+    // start sync immediately .
+
     if (response == CONFIGURE_SYNC_FIRST)
       start_mode_ = response;
+    else if (start_mode_ == CONFIRM_SYNC_SETTINGS_FIRST)
+      start_mode_ = SYNC_WITH_DEFAULT_SETTINGS;
+
     SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
     signin->CompletePendingSignin();
   }
