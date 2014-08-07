@@ -37,7 +37,8 @@ found in the LICENSE file.
   </template>
   <script>
   (function() {
-    var kUpdateFrequency = 1000 * 30;
+    // FIXME: Make the update frequency 30 seconds again once we fix crbug.com/401358.
+    var kUpdateFrequency = 1000 * 30 * 10;
 
     Polymer({
       revisionLog: new CTCommitLog(),
