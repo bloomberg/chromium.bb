@@ -19,6 +19,10 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(Proxy* proxy,
   // Explicitly clear all debug settings.
   SetDebugState(LayerTreeDebugState());
   SetViewportSize(gfx::Size(100, 100));
+
+  // Avoid using Now() as the frame time in unit tests.
+  base::TimeTicks time_ticks = base::TimeTicks::FromInternalValue(1);
+  SetCurrentFrameTimeTicks(time_ticks);
 }
 
 FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(const LayerTreeSettings& settings,
@@ -32,6 +36,10 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(const LayerTreeSettings& settings,
                         0) {
   // Explicitly clear all debug settings.
   SetDebugState(LayerTreeDebugState());
+
+  // Avoid using Now() as the frame time in unit tests.
+  base::TimeTicks time_ticks = base::TimeTicks::FromInternalValue(1);
+  SetCurrentFrameTimeTicks(time_ticks);
 }
 
 FakeLayerTreeHostImpl::~FakeLayerTreeHostImpl() {}
