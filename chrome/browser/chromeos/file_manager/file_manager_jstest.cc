@@ -55,3 +55,8 @@ IN_PROC_BROWSER_TEST_F(
     FileManagerJsTest, MetadataCacheTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("metadata_cache_unittest.html")));
 }
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileOperationManagerTest) {
+  RunTest(base::FilePath(
+      FILE_PATH_LITERAL("file_operation_manager_unittest.html")));
+}

@@ -283,40 +283,6 @@ util.getFiles = function(dirEntry, params, paths, successCallback,
 };
 
 /**
- * Resolve a path to either a DirectoryEntry or a FileEntry, regardless of
- * whether the path is a directory or file.
- *
- * @param {DirectoryEntry} root The root of the filesystem to search.
- * @param {string} path The path to be resolved.
- * @param {function(Entry)} resultCallback Called back when a path is
- *     successfully resolved. Entry will be either a DirectoryEntry or
- *     a FileEntry.
- * @param {function(FileError)} errorCallback Called back if an unexpected
- *     error occurs while resolving the path.
- */
-util.resolvePath = function(root, path, resultCallback, errorCallback) {
-  if (path == '' || path == '/') {
-    resultCallback(root);
-    return;
-  }
-
-  root.getFile(
-      path, {create: false},
-      resultCallback,
-      function(err) {
-        if (err.name == util.FileError.TYPE_MISMATCH_ERR) {
-          // Bah.  It's a directory, ask again.
-          root.getDirectory(
-              path, {create: false},
-              resultCallback,
-              errorCallback);
-        } else {
-          errorCallback(err);
-        }
-      });
-};
-
-/**
  * Renames the entry to newName.
  * @param {Entry} entry The entry to be renamed.
  * @param {string} newName The new name.
@@ -363,68 +329,6 @@ util.removeFileOrDirectory = function(entry, onSuccess, onError) {
     entry.removeRecursively(onSuccess, onError);
   else
     entry.remove(onSuccess, onError);
-};
-
-/**
- * Checks if an entry exists at |relativePath| in |dirEntry|.
- * If exists, tries to deduplicate the path by inserting parenthesized number,
- * such as " (1)", before the extension. If it still exists, tries the
- * deduplication again by increasing the number up to 10 times.
- * For example, suppose "file.txt" is given, "file.txt", "file (1).txt",
- * "file (2).txt", ..., "file (9).txt" will be tried.
- *
- * @param {DirectoryEntry} dirEntry The target directory entry.
- * @param {string} relativePath The path to be deduplicated.
- * @param {function(string)} onSuccess Called with the deduplicated path on
- *     success.
- * @param {function(FileError)} onError Called on error.
- */
-util.deduplicatePath = function(dirEntry, relativePath, onSuccess, onError) {
-  // The trial is up to 10.
-  var MAX_RETRY = 10;
-
-  // Crack the path into three part. The parenthesized number (if exists) will
-  // be replaced by incremented number for retry. For example, suppose
-  // |relativePath| is "file (10).txt", the second check path will be
-  // "file (11).txt".
-  var match = /^(.*?)(?: \((\d+)\))?(\.[^.]*?)?$/.exec(relativePath);
-  var prefix = match[1];
-  var copyNumber = match[2] ? parseInt(match[2], 10) : 0;
-  var ext = match[3] ? match[3] : '';
-
-  // The path currently checking the existence.
-  var trialPath = relativePath;
-
-  var onNotResolved = function(err) {
-    // We expect to be unable to resolve the target file, since we're going
-    // to create it during the copy.  However, if the resolve fails with
-    // anything other than NOT_FOUND, that's trouble.
-    if (err.name != util.FileError.NOT_FOUND_ERR) {
-      onError(err);
-      return;
-    }
-
-    // Found a path that doesn't exist.
-    onSuccess(trialPath);
-  };
-
-  var numRetry = MAX_RETRY;
-  var onResolved = function(entry) {
-    if (--numRetry == 0) {
-      // Hit the limit of the number of retrial.
-      // Note that we cannot create FileError object directly, so here we use
-      // Object.create instead.
-      onError(util.createDOMError(util.FileError.PATH_EXISTS_ERR));
-      return;
-    }
-
-    ++copyNumber;
-    trialPath = prefix + ' (' + copyNumber + ')' + ext;
-    util.resolvePath(dirEntry, trialPath, onResolved, onNotResolved);
-  };
-
-  // Check to see if the target exists.
-  util.resolvePath(dirEntry, trialPath, onResolved, onNotResolved);
 };
 
 /**

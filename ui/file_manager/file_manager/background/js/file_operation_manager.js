@@ -10,40 +10,102 @@
 var fileOperationUtil = {};
 
 /**
- * Simple wrapper for util.deduplicatePath. On error, this method translates
- * the FileError to FileOperationManager.Error object.
+ * Resolves a path to either a DirectoryEntry or a FileEntry, regardless of
+ * whether the path is a directory or file.
+ *
+ * @param {DirectoryEntry} root The root of the filesystem to search.
+ * @param {string} path The path to be resolved.
+ * @return {Promise} Promise fulfilled with the resolved entry, or rejected with
+ *     FileError.
+ */
+fileOperationUtil.resolvePath = function(root, path) {
+  if (path === '' || path === '/')
+    return Promise.resolve(root);
+  return new Promise(root.getFile.bind(root, path, {create: false})).
+      catch(function(error) {
+        if (error.name === util.FileError.TYPE_MISMATCH_ERR) {
+          // Bah.  It's a directory, ask again.
+          return new Promise(
+              root.getDirectory.bind(root, path, {create: false}));
+        } else {
+          return Promise.reject(error);
+        }
+      });
+};
+
+/**
+ * Checks if an entry exists at |relativePath| in |dirEntry|.
+ * If exists, tries to deduplicate the path by inserting parenthesized number,
+ * such as " (1)", before the extension. If it still exists, tries the
+ * deduplication again by increasing the number up to 10 times.
+ * For example, suppose "file.txt" is given, "file.txt", "file (1).txt",
+ * "file (2).txt", ..., "file (9).txt" will be tried.
  *
  * @param {DirectoryEntry} dirEntry The target directory entry.
  * @param {string} relativePath The path to be deduplicated.
- * @param {function(string)} successCallback Callback run with the deduplicated
- *     path on success.
- * @param {function(FileOperationManager.Error)} errorCallback Callback run on
- *     error.
+ * @param {function(string)=} opt_successCallback Callback run with the
+ *     deduplicated path on success.
+ * @param {function(FileOperationManager.Error)=} opt_errorCallback Callback run
+ *     on error.
  */
 fileOperationUtil.deduplicatePath = function(
-    dirEntry, relativePath, successCallback, errorCallback) {
-  util.deduplicatePath(
-      dirEntry, relativePath, successCallback,
-      function(err) {
-        var onFileSystemError = function(error) {
-          errorCallback(new FileOperationManager.Error(
-              util.FileOperationErrorType.FILESYSTEM_ERROR, error));
-        };
+    dirEntry, relativePath, opt_successCallback, opt_errorCallback) {
+  // The trial is up to 10.
+  var MAX_RETRY = 10;
 
-        if (err.name == util.FileError.PATH_EXISTS_ERR) {
-          // Failed to uniquify the file path. There should be an existing
-          // entry, so return the error with it.
-          util.resolvePath(
-              dirEntry, relativePath,
-              function(entry) {
-                errorCallback(new FileOperationManager.Error(
-                    util.FileOperationErrorType.TARGET_EXISTS, entry));
-              },
-              onFileSystemError);
-          return;
-        }
-        onFileSystemError(err);
-      });
+  // Crack the path into three part. The parenthesized number (if exists) will
+  // be replaced by incremented number for retry. For example, suppose
+  // |relativePath| is "file (10).txt", the second check path will be
+  // "file (11).txt".
+  var match = /^(.*?)(?: \((\d+)\))?(\.[^.]*?)?$/.exec(relativePath);
+  var prefix = match[1];
+  var ext = match[3] || '';
+
+  // Check to see if the target exists.
+  var resolvePath = function(trialPath, numRetry, copyNumber) {
+    return fileOperationUtil.resolvePath(dirEntry, trialPath).then(function() {
+      if (numRetry <= 1) {
+        // Hit the limit of the number of retrial.
+        // Note that we cannot create FileError object directly, so here we
+        // use Object.create instead.
+        return Promise.reject(
+            util.createDOMError(util.FileError.PATH_EXISTS_ERR));
+      }
+      var newTrialPath = prefix + ' (' + copyNumber + ')' + ext;
+      return resolvePath(newTrialPath, numRetry - 1, copyNumber + 1);
+    }, function(error) {
+      // We expect to be unable to resolve the target file, since we're
+      // going to create it during the copy.  However, if the resolve fails
+      // with anything other than NOT_FOUND, that's trouble.
+      if (error.name === util.FileError.NOT_FOUND_ERR)
+        return trialPath;
+      else
+        return Promise.reject(error);
+    });
+  };
+
+  var promise = resolvePath(relativePath, MAX_RETRY, 1).catch(function(error) {
+    var targetPromise;
+    if (error.name === util.FileError.PATH_EXISTS_ERR) {
+      // Failed to uniquify the file path. There should be an existing
+      // entry, so return the error with it.
+      targetPromise = fileOperationUtil.resolvePath(dirEntry, relativePath);
+    } else {
+      targetPromise = Promise.reject(error);
+    }
+    return targetPromise.then(function(entry) {
+      return Promise.reject(new FileOperationManager.Error(
+          util.FileOperationErrorType.TARGET_EXISTS, entry));
+    }, function(inError) {
+      if (inError instanceof Error)
+        return Promise.reject(inError);
+      return Promise.reject(new FileOperationManager.Error(
+          util.FileOperationErrorType.FILESYSTEM_ERROR, inError));
+    });
+  });
+  if (opt_successCallback)
+    promise.then(opt_successCallback, opt_errorCallback);
+  return promise;
 };
 
 /**
@@ -530,13 +592,13 @@ FileOperationManager.CopyTask = function(sourceEntries,
       targetDirEntry);
   this.deleteAfterCopy = deleteAfterCopy;
 
-  /*
+  /**
    * Rate limiter which is used to avoid sending update request for progress bar
    * too frequently.
    * @type {AsyncUtil.RateLimiter}
    * @private
    */
-  this.updateProgressRateLimiter_ = null
+  this.updateProgressRateLimiter_ = null;
 };
 
 /**
