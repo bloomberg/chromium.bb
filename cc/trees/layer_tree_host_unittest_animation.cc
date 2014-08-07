@@ -726,7 +726,9 @@ class LayerTreeHostAnimationTestContinuousAnimate
     : public LayerTreeHostAnimationTest {
  public:
   LayerTreeHostAnimationTestContinuousAnimate()
-      : num_commit_complete_(0), num_draw_layers_(0), have_animated_(false) {}
+      : num_commit_complete_(0),
+        num_draw_layers_(0) {
+  }
 
   virtual void SetupTree() OVERRIDE {
     LayerTreeHostAnimationTest::SetupTree();
@@ -745,7 +747,6 @@ class LayerTreeHostAnimationTestContinuousAnimate
     if (num_draw_layers_ == 2)
       return;
     layer_tree_host()->SetNeedsAnimate();
-    have_animated_ = true;
   }
 
   virtual void Layout() OVERRIDE {
@@ -766,18 +767,16 @@ class LayerTreeHostAnimationTestContinuousAnimate
   virtual void AfterTest() OVERRIDE {
     // Check that we didn't commit twice between first and second draw.
     EXPECT_EQ(1, num_commit_complete_);
-    EXPECT_TRUE(have_animated_);
   }
 
  private:
   int num_commit_complete_;
   int num_draw_layers_;
-  bool have_animated_;
   FakeContentLayerClient client_;
   scoped_refptr<FakeContentLayer> content_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestContinuousAnimate);
+MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestContinuousAnimate);
 
 class LayerTreeHostAnimationTestCancelAnimateCommit
     : public LayerTreeHostAnimationTest {

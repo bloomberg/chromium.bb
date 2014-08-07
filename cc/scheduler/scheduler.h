@@ -57,9 +57,9 @@ class CC_EXPORT Scheduler {
       SchedulerClient* client,
       const SchedulerSettings& scheduler_settings,
       int layer_tree_host_id,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+      const scoped_refptr<base::SingleThreadTaskRunner>& impl_task_runner) {
     return make_scoped_ptr(new Scheduler(
-        client, scheduler_settings, layer_tree_host_id, task_runner));
+        client, scheduler_settings, layer_tree_host_id, impl_task_runner));
   }
 
   virtual ~Scheduler();
@@ -173,15 +173,16 @@ class CC_EXPORT Scheduler {
     scoped_refptr<DelayBasedTimeSource> time_source_;
   };
 
-  Scheduler(SchedulerClient* client,
-            const SchedulerSettings& scheduler_settings,
-            int layer_tree_host_id,
-            const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+  Scheduler(
+      SchedulerClient* client,
+      const SchedulerSettings& scheduler_settings,
+      int layer_tree_host_id,
+      const scoped_refptr<base::SingleThreadTaskRunner>& impl_task_runner);
 
   const SchedulerSettings settings_;
   SchedulerClient* client_;
   int layer_tree_host_id_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner_;
 
   base::TimeDelta vsync_interval_;
   base::TimeDelta estimated_parent_draw_time_;

@@ -30,6 +30,8 @@ class TestCompositorHostX11 : public TestCompositorHost {
   virtual void Show() OVERRIDE;
   virtual ui::Compositor* GetCompositor() OVERRIDE;
 
+  void Draw();
+
   gfx::Rect bounds_;
 
   ui::ContextFactory* context_factory_;
@@ -81,6 +83,11 @@ void TestCompositorHostX11::Show() {
 
 ui::Compositor* TestCompositorHostX11::GetCompositor() {
   return compositor_.get();
+}
+
+void TestCompositorHostX11::Draw() {
+  if (compositor_.get())
+    compositor_->Draw();
 }
 
 // static

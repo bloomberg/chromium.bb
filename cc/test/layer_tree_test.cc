@@ -312,6 +312,14 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
     test_hooks_->DidCompleteSwapBuffers();
   }
 
+  virtual void ScheduleComposite() OVERRIDE {
+    test_hooks_->ScheduleComposite();
+  }
+
+  virtual void ScheduleAnimation() OVERRIDE {
+    test_hooks_->ScheduleAnimation();
+  }
+
   virtual void DidPostSwapBuffers() OVERRIDE {}
   virtual void DidAbortSwapBuffers() OVERRIDE {}
 
@@ -386,6 +394,7 @@ LayerTreeTest::LayerTreeTest()
       end_when_begin_returns_(false),
       timed_out_(false),
       scheduled_(false),
+      schedule_when_set_visible_true_(false),
       started_(false),
       ended_(false),
       delegating_renderer_(false),
@@ -549,6 +558,15 @@ void LayerTreeTest::Timeout() {
   EndTest();
 }
 
+void LayerTreeTest::ScheduleComposite() {
+  if (!started_ || scheduled_)
+    return;
+  scheduled_ = true;
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&LayerTreeTest::DispatchComposite, main_thread_weak_ptr_));
+}
+
 void LayerTreeTest::RealEndTest() {
   if (layer_tree_host_ && proxy()->CommitPendingForTesting()) {
     main_task_runner_->PostTask(
@@ -600,8 +618,16 @@ void LayerTreeTest::DispatchSetNeedsRedrawRect(const gfx::Rect& damage_rect) {
 
 void LayerTreeTest::DispatchSetVisible(bool visible) {
   DCHECK(!proxy() || proxy()->IsMainThread());
-  if (layer_tree_host_)
-    layer_tree_host_->SetVisible(visible);
+
+  if (!layer_tree_host_)
+    return;
+
+  layer_tree_host_->SetVisible(visible);
+
+  // If the LTH is being made visible and a previous ScheduleComposite() was
+  // deferred because the LTH was not visible, re-schedule the composite now.
+  if (layer_tree_host_->visible() && schedule_when_set_visible_true_)
+    ScheduleComposite();
 }
 
 void LayerTreeTest::DispatchSetNextCommitForcesRedraw() {
@@ -609,6 +635,24 @@ void LayerTreeTest::DispatchSetNextCommitForcesRedraw() {
 
   if (layer_tree_host_)
     layer_tree_host_->SetNextCommitForcesRedraw();
+}
+
+void LayerTreeTest::DispatchComposite() {
+  scheduled_ = false;
+
+  if (!layer_tree_host_)
+    return;
+
+  // If the LTH is not visible, defer the composite until the LTH is made
+  // visible.
+  if (!layer_tree_host_->visible()) {
+    schedule_when_set_visible_true_ = true;
+    return;
+  }
+
+  schedule_when_set_visible_true_ = false;
+  base::TimeTicks now = gfx::FrameTime::Now();
+  layer_tree_host_->Composite(now);
 }
 
 void LayerTreeTest::RunTest(bool threaded,

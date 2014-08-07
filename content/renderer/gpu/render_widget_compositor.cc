@@ -277,8 +277,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       cmd->HasSwitch(cc::switches::kEnablePinchVirtualViewport);
   settings.allow_antialiasing &=
       !cmd->HasSwitch(cc::switches::kDisableCompositedAntialiasing);
-  settings.single_thread_proxy_scheduler =
-      !cmd->HasSwitch(switches::kDisableSingleThreadProxyScheduler);
 
   // These flags should be mirrored by UI versions in ui/compositor/.
   settings.initial_debug_state.show_debug_borders =
@@ -411,6 +409,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
 RenderWidgetCompositor::RenderWidgetCompositor(RenderWidget* widget,
                                                bool threaded)
     : threaded_(threaded),
+      suppress_schedule_composite_(false),
       widget_(widget) {
 }
 
@@ -421,8 +420,25 @@ RenderWidgetCompositor::GetInputHandler() {
   return layer_tree_host_->GetInputHandler();
 }
 
+void RenderWidgetCompositor::SetSuppressScheduleComposite(bool suppress) {
+  if (suppress_schedule_composite_ == suppress)
+    return;
+
+  if (suppress)
+    TRACE_EVENT_ASYNC_BEGIN0("gpu",
+        "RenderWidgetCompositor::SetSuppressScheduleComposite", this);
+  else
+    TRACE_EVENT_ASYNC_END0("gpu",
+        "RenderWidgetCompositor::SetSuppressScheduleComposite", this);
+  suppress_schedule_composite_ = suppress;
+}
+
 bool RenderWidgetCompositor::BeginMainFrameRequested() const {
   return layer_tree_host_->BeginMainFrameRequested();
+}
+
+void RenderWidgetCompositor::UpdateAnimations(base::TimeTicks time) {
+  layer_tree_host_->UpdateClientAnimations(time);
 }
 
 void RenderWidgetCompositor::SetNeedsDisplayOnAllLayers() {
@@ -533,10 +549,7 @@ void RenderWidgetCompositor::Initialize(cc::LayerTreeSettings settings) {
 }
 
 void RenderWidgetCompositor::setSurfaceReady() {
-  // In tests without a RenderThreadImpl, don't set ready as this kicks
-  // off creating output surfaces that the test can't create.
-  if (RenderThreadImpl::current())
-    layer_tree_host_->SetLayerTreeHostClientReady();
+  layer_tree_host_->SetLayerTreeHostClientReady();
 }
 
 void RenderWidgetCompositor::setRootLayer(const blink::WebLayer& layer) {
@@ -689,9 +702,9 @@ void RenderWidgetCompositor::compositeAndReadbackAsync(
       cc::CopyOutputRequest::CreateBitmapRequest(
           base::Bind(&CompositeAndReadbackAsyncCallback, callback));
   layer_tree_host_->root_layer()->RequestCopyOfOutput(request.Pass());
-
-  if (!threaded_ &&
-      !layer_tree_host_->settings().single_thread_proxy_scheduler) {
+  if (!threaded_) {
+    widget_->webwidget()->animate(0.0);
+    widget_->webwidget()->layout();
     layer_tree_host_->Composite(gfx::FrameTime::Now());
   }
 }
@@ -785,6 +798,11 @@ void RenderWidgetCompositor::DidCompleteSwapBuffers() {
   widget_->didCompleteSwapBuffers();
   if (!threaded_)
     widget_->OnSwapBuffersComplete();
+}
+
+void RenderWidgetCompositor::ScheduleComposite() {
+  if (!suppress_schedule_composite_)
+    widget_->scheduleComposite();
 }
 
 void RenderWidgetCompositor::ScheduleAnimation() {

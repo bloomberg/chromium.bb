@@ -228,8 +228,6 @@ class ScrollingLayerTreePerfTest : public LayerTreeHostPerfTestJsonReader {
   }
 
   virtual void Layout() OVERRIDE {
-    if (TestEnded())
-      return;
     static const gfx::Vector2d delta = gfx::Vector2d(0, 10);
     scrollable_->SetScrollOffset(scrollable_->scroll_offset() + delta);
   }

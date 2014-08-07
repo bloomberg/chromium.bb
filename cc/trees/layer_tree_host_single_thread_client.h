@@ -10,10 +10,10 @@ namespace cc {
 class LayerTreeHostSingleThreadClient {
  public:
   // Request that the client schedule a composite.
-  virtual void ScheduleComposite() {}
+  virtual void ScheduleComposite() = 0;
   // Request that the client schedule a composite now, and calculate appropriate
   // delay for potential future frame.
-  virtual void ScheduleAnimation() {}
+  virtual void ScheduleAnimation() = 0;
 
   // Called whenever the compositor posts a SwapBuffers (either full or
   // partial). After DidPostSwapBuffers(), exactly one of
