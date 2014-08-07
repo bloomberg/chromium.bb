@@ -947,10 +947,10 @@ TEST_F(WidgetCaptureTest, FailedCaptureRequestIsNoop) {
   EXPECT_TRUE(mouse_view2->pressed());
 }
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_WIN)
 // Test that a synthetic mouse exit is sent to the widget which was handling
 // mouse events when a different widget grabs capture.
-// TODO(pkotwicz): Make test pass on CrOS.
+// TODO(pkotwicz): Make test pass on CrOS and Windows.
 TEST_F(WidgetCaptureTest, MouseExitOnCaptureGrab) {
   Widget widget1;
   Widget::InitParams params1 =

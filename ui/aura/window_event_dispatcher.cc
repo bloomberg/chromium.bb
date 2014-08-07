@@ -388,6 +388,9 @@ void WindowEventDispatcher::UpdateCapture(Window* old_capture,
 }
 
 void WindowEventDispatcher::OnOtherRootGotCapture() {
+  // Sending the mouse exit causes bugs on Windows (e.g. crbug.com/394672).
+  // TODO(pkotwicz): Fix the bugs and send mouse exit on Windows too.
+#if !defined(OS_WIN)
   if (mouse_moved_handler_) {
     // Dispatch a mouse exit to reset any state associated with hover. This is
     // important when going from no window having capture to a window having
@@ -397,6 +400,7 @@ void WindowEventDispatcher::OnOtherRootGotCapture() {
     if (details.dispatcher_destroyed)
       return;
   }
+#endif
 
   mouse_moved_handler_ = NULL;
   mouse_pressed_handler_ = NULL;
