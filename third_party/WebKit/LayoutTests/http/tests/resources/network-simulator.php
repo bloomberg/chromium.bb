@@ -151,8 +151,7 @@ function handleLogResourceRequest($path)
     $resourceLogFile = sys_get_temp_dir() . "/resource-log";
     
     $newData = "\n".$path;
-    // Documentation says that appends are atomic.
-    file_put_contents($resourceLogFile, $newData, FILE_APPEND);
+    file_put_contents($resourceLogFile, $newData, FILE_APPEND | LOCK_EX);
 }
 
 $stateFile = sys_get_temp_dir() . "/network-simulator-state";
