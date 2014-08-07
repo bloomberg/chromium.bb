@@ -426,7 +426,9 @@ void RundownTaskCounter::Post(base::SequencedTaskRunner* task_runner) {
 
   base::AtomicRefCountInc(&count_);
 
-  task_runner->PostTask(FROM_HERE,
+  // The task must be non-nestable to guarantee that it runs after all tasks
+  // currently scheduled on |task_runner| have completed.
+  task_runner->PostNonNestableTask(FROM_HERE,
       base::Bind(&RundownTaskCounter::Decrement, this));
 }
 
