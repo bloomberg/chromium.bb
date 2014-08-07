@@ -845,7 +845,7 @@ TEST_F(FileStreamTest, ContentUriRead) {
 
   // Insert the image into MediaStore. MediaStore will do some conversions, and
   // return the content URI.
-  base::FilePath path = file_util::InsertImageIntoMediaStore(image_file);
+  base::FilePath path = base::InsertImageIntoMediaStore(image_file);
   EXPECT_TRUE(path.IsContentUri());
   EXPECT_TRUE(base::PathExists(path));
   int64 file_size;

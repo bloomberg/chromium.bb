@@ -8150,7 +8150,7 @@ TEST_P(HttpNetworkTransactionTest, UploadUnreadableFile) {
   std::string temp_file_content("Unreadable file.");
   ASSERT_TRUE(base::WriteFile(temp_file, temp_file_content.c_str(),
                                    temp_file_content.length()));
-  ASSERT_TRUE(file_util::MakeFileUnreadable(temp_file));
+  ASSERT_TRUE(base::MakeFileUnreadable(temp_file));
 
   ScopedVector<UploadElementReader> element_readers;
   element_readers.push_back(

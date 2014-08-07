@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
 #if defined(OS_ANDROID)
   const base::android::RegistrationMethod kNetTestRegisteredMethods[] = {
     {"NetAndroid", net::android::RegisterJni},
-    {"TestFileUtil", file_util::RegisterContentUriTestUtils},
+    {"TestFileUtil", base::RegisterContentUriTestUtils},
     {"UrlAndroid", url::android::RegisterJni},
   };
 

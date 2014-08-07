@@ -467,8 +467,8 @@ TEST_F(BaseFileTest, RenameWithError) {
   EXPECT_FALSE(base::PathExists(new_path));
 
   {
-    file_util::PermissionRestorer restore_permissions_for(test_dir);
-    ASSERT_TRUE(file_util::MakeFileUnwritable(test_dir));
+    base::FilePermissionRestorer restore_permissions_for(test_dir);
+    ASSERT_TRUE(base::MakeFileUnwritable(test_dir));
     EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED,
               base_file_->Rename(new_path));
   }
@@ -558,10 +558,10 @@ TEST_F(BaseFileTest, ReadonlyBaseFile) {
   base::FilePath readonly_file_name = CreateTestFile();
 
   // Restore permissions to the file when we are done with this test.
-  file_util::PermissionRestorer restore_permissions(readonly_file_name);
+  base::FilePermissionRestorer restore_permissions(readonly_file_name);
 
   // Make it read-only.
-  EXPECT_TRUE(file_util::MakeFileUnwritable(readonly_file_name));
+  EXPECT_TRUE(base::MakeFileUnwritable(readonly_file_name));
 
   // Try to overwrite it.
   base_file_.reset(new BaseFile(readonly_file_name,

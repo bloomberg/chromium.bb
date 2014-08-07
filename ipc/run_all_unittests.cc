@@ -30,7 +30,7 @@ int RunTestSuite(int argc, char** argv) {
 int main(int argc, char** argv) {
 #if defined(OS_ANDROID)
   JNIEnv* env = base::android::AttachCurrentThread();
-  file_util::RegisterContentUriTestUtils(env);
+  base::RegisterContentUriTestUtils(env);
 #else
   base::AtExitManager at_exit;
 #endif

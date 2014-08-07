@@ -470,8 +470,8 @@ TEST_F(DownloadFileTest, RenameError) {
 
   // Make the directory unwritable and try to rename within it.
   {
-    file_util::PermissionRestorer restorer(tempdir);
-    ASSERT_TRUE(file_util::MakeFileUnwritable(tempdir));
+    base::FilePermissionRestorer restorer(tempdir);
+    ASSERT_TRUE(base::MakeFileUnwritable(tempdir));
 
     // Expect nulling out of further processing.
     EXPECT_CALL(*input_stream_, RegisterCallback(IsNullCallback()));

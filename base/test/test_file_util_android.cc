@@ -9,13 +9,13 @@
 #include "base/files/file_path.h"
 #include "jni/ContentUriTestUtils_jni.h"
 
-namespace file_util {
+namespace base {
 
 bool RegisterContentUriTestUtils(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-base::FilePath InsertImageIntoMediaStore(const base::FilePath& path) {
+FilePath InsertImageIntoMediaStore(const FilePath& path) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_path =
       base::android::ConvertUTF8ToJavaString(env, path.value());
@@ -23,7 +23,7 @@ base::FilePath InsertImageIntoMediaStore(const base::FilePath& path) {
       Java_ContentUriTestUtils_insertImageIntoMediaStore(
           env, base::android::GetApplicationContext(), j_path.obj());
   std::string uri = base::android::ConvertJavaStringToUTF8(j_uri);
-  return base::FilePath(uri);
+  return FilePath(uri);
 }
 
-}  // namespace file_util
+}  // namespace base

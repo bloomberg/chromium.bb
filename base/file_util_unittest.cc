@@ -528,8 +528,8 @@ TEST_F(FileUtilTest, CreateTemporaryFileInDirLongPathTest) {
   // network file systems. E.g. AFS).
   FilePath access_test_dir = long_test_dir.Append(kTestSubDirName);
   ASSERT_TRUE(CreateDirectory(access_test_dir));
-  file_util::PermissionRestorer long_test_dir_restorer(long_test_dir);
-  ASSERT_TRUE(file_util::MakeFileUnreadable(long_test_dir));
+  base::FilePermissionRestorer long_test_dir_restorer(long_test_dir);
+  ASSERT_TRUE(base::MakeFileUnreadable(long_test_dir));
 
   // Use the short form of the directory to create a temporary filename.
   ASSERT_TRUE(CreateTemporaryFileInDir(
@@ -2521,7 +2521,7 @@ TEST_F(FileUtilTest, ValidContentUriTest) {
 
   // Insert the image into MediaStore. MediaStore will do some conversions, and
   // return the content URI.
-  FilePath path = file_util::InsertImageIntoMediaStore(image_file);
+  FilePath path = base::InsertImageIntoMediaStore(image_file);
   EXPECT_TRUE(path.IsContentUri());
   EXPECT_TRUE(PathExists(path));
   // The file size may not equal to the input image as MediaStore may convert

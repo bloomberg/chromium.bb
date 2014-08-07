@@ -85,32 +85,24 @@ bool EvictFileFromSystemCache(const FilePath& file) {
 }
 #endif
 
-}  // namespace base
-
-namespace file_util {
-
-using base::DenyFilePermission;
-using base::GetPermissionInfo;
-using base::RestorePermissionInfo;
-
-bool MakeFileUnreadable(const base::FilePath& path) {
+bool MakeFileUnreadable(const FilePath& path) {
   return DenyFilePermission(path, S_IRUSR | S_IRGRP | S_IROTH);
 }
 
-bool MakeFileUnwritable(const base::FilePath& path) {
+bool MakeFileUnwritable(const FilePath& path) {
   return DenyFilePermission(path, S_IWUSR | S_IWGRP | S_IWOTH);
 }
 
-PermissionRestorer::PermissionRestorer(const base::FilePath& path)
+FilePermissionRestorer::FilePermissionRestorer(const FilePath& path)
     : path_(path), info_(NULL), length_(0) {
   info_ = GetPermissionInfo(path_, &length_);
   DCHECK(info_ != NULL);
   DCHECK_NE(0u, length_);
 }
 
-PermissionRestorer::~PermissionRestorer() {
+FilePermissionRestorer::~FilePermissionRestorer() {
   if (!RestorePermissionInfo(path_, info_, length_))
     NOTREACHED();
 }
 
-}  // namespace file_util
+}  // namespace base

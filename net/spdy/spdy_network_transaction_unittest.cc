@@ -499,7 +499,7 @@ class SpdyNetworkTransactionTest
     CHECK(base::CreateTemporaryFileInDir(temp_dir_.path(), &file_path));
     CHECK_EQ(static_cast<int>(kUploadDataSize),
              base::WriteFile(file_path, kUploadData, kUploadDataSize));
-    CHECK(file_util::MakeFileUnreadable(file_path));
+    CHECK(base::MakeFileUnreadable(file_path));
 
     ScopedVector<UploadElementReader> element_readers;
     element_readers.push_back(

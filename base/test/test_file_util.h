@@ -47,15 +47,24 @@ bool VolumeSupportsADS(const FilePath& path);
 bool HasInternetZoneIdentifier(const FilePath& full_path);
 #endif  // defined(OS_WIN)
 
-}  // namespace base
-
-// TODO(brettw) move all of this to the base namespace.
-namespace file_util {
-
 // For testing, make the file unreadable or unwritable.
 // In POSIX, this does not apply to the root user.
-bool MakeFileUnreadable(const base::FilePath& path) WARN_UNUSED_RESULT;
-bool MakeFileUnwritable(const base::FilePath& path) WARN_UNUSED_RESULT;
+bool MakeFileUnreadable(const FilePath& path) WARN_UNUSED_RESULT;
+bool MakeFileUnwritable(const FilePath& path) WARN_UNUSED_RESULT;
+
+// Saves the current permissions for a path, and restores it on destruction.
+class FilePermissionRestorer {
+ public:
+  explicit FilePermissionRestorer(const FilePath& path);
+  ~FilePermissionRestorer();
+
+ private:
+  const FilePath path_;
+  void* info_;  // The opaque stored permission information.
+  size_t length_;  // The length of the stored permission information.
+
+  DISALLOW_COPY_AND_ASSIGN(FilePermissionRestorer);
+};
 
 #if defined(OS_ANDROID)
 // Register the ContentUriTestUrils JNI bindings.
@@ -63,23 +72,9 @@ bool RegisterContentUriTestUtils(JNIEnv* env);
 
 // Insert an image file into the MediaStore, and retrieve the content URI for
 // testing purpose.
-base::FilePath InsertImageIntoMediaStore(const base::FilePath& path);
+FilePath InsertImageIntoMediaStore(const FilePath& path);
 #endif  // defined(OS_ANDROID)
 
-// Saves the current permissions for a path, and restores it on destruction.
-class PermissionRestorer {
- public:
-  explicit PermissionRestorer(const base::FilePath& path);
-  ~PermissionRestorer();
-
- private:
-  const base::FilePath path_;
-  void* info_;  // The opaque stored permission information.
-  size_t length_;  // The length of the stored permission information.
-
-  DISALLOW_COPY_AND_ASSIGN(PermissionRestorer);
-};
-
-}  // namespace file_util
+}  // namespace base
 
 #endif  // BASE_TEST_TEST_FILE_UTIL_H_

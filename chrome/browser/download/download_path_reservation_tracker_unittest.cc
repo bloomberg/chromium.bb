@@ -446,9 +446,9 @@ TEST_F(DownloadPathReservationTrackerTest, UnwriteableDirectory) {
   ASSERT_FALSE(IsPathInUse(path));
 
   {
-    // Scope for PermissionRestorer
-    file_util::PermissionRestorer restorer(dir);
-    EXPECT_TRUE(file_util::MakeFileUnwritable(dir));
+    // Scope for FilePermissionRestorer
+    base::FilePermissionRestorer restorer(dir);
+    EXPECT_TRUE(base::MakeFileUnwritable(dir));
     base::FilePath reserved_path;
     bool verified = true;
     DownloadPathReservationTracker::FilenameConflictAction conflict_action =
