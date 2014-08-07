@@ -3741,6 +3741,7 @@ xdg_get_xdg_popup(struct wl_client *client,
 		wl_resource_post_error(surface_resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
 				       "xdg_shell::get_xdg_popup requires a parent shell surface");
+		return;
 	}
 
 	parent = wl_resource_get_user_data(parent_resource);
