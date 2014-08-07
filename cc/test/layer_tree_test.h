@@ -71,8 +71,6 @@ class TestHooks : public AnimationDelegate {
   virtual void DidCommit() {}
   virtual void DidCommitAndDrawFrame() {}
   virtual void DidCompleteSwapBuffers() {}
-  virtual void ScheduleComposite() {}
-  virtual void ScheduleAnimation() {}
   virtual void DidDeferCommit() {}
   virtual void DidSetVisibleOnImplTree(LayerTreeHostImpl* host_impl,
                                        bool visible) {}
@@ -139,8 +137,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   virtual void InitializeSettings(LayerTreeSettings* settings) {}
 
-  virtual void ScheduleComposite() OVERRIDE;
-
   void RealEndTest();
 
   virtual void DispatchAddAnimation(Layer* layer_to_receive_animation,
@@ -151,7 +147,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void DispatchSetNeedsRedrawRect(const gfx::Rect& damage_rect);
   void DispatchSetVisible(bool visible);
   void DispatchSetNextCommitForcesRedraw();
-  void DispatchComposite();
   void DispatchDidAddAnimation();
 
   virtual void AfterTest() = 0;
@@ -204,7 +199,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   bool end_when_begin_returns_;
   bool timed_out_;
   bool scheduled_;
-  bool schedule_when_set_visible_true_;
   bool started_;
   bool ended_;
   bool delegating_renderer_;

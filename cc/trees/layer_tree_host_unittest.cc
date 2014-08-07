@@ -91,8 +91,8 @@ class LayerTreeHostTestSetNeedsCommit1 : public LayerTreeHostTest {
   }
 
   virtual void AfterTest() OVERRIDE {
-    EXPECT_GE(1, num_commits_);
-    EXPECT_GE(1, num_draws_);
+    EXPECT_LE(1, num_commits_);
+    EXPECT_LE(1, num_draws_);
   }
 
  private:
@@ -1967,7 +1967,7 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
   int num_complete_commits_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestDeferCommits);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeferCommits);
 
 class LayerTreeHostWithProxy : public LayerTreeHost {
  public:
@@ -2040,6 +2040,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithGLRenderer) {
 
   LayerTreeSettings settings;
   settings.max_partial_texture_updates = 4;
+  settings.single_thread_proxy_scheduler = false;
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
@@ -2059,6 +2060,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithSoftwareRenderer) {
 
   LayerTreeSettings settings;
   settings.max_partial_texture_updates = 4;
+  settings.single_thread_proxy_scheduler = false;
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
@@ -2078,6 +2080,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndGLContent) {
 
   LayerTreeSettings settings;
   settings.max_partial_texture_updates = 4;
+  settings.single_thread_proxy_scheduler = false;
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
@@ -2098,6 +2101,7 @@ TEST(LayerTreeHostTest,
 
   LayerTreeSettings settings;
   settings.max_partial_texture_updates = 4;
+  settings.single_thread_proxy_scheduler = false;
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());

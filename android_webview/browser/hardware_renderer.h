@@ -54,8 +54,6 @@ class HardwareRenderer : public cc::LayerTreeHostClient,
   virtual void DidCompleteSwapBuffers() OVERRIDE {}
 
   // cc::LayerTreeHostSingleThreadClient overrides.
-  virtual void ScheduleComposite() OVERRIDE {}
-  virtual void ScheduleAnimation() OVERRIDE {}
   virtual void DidPostSwapBuffers() OVERRIDE {}
   virtual void DidAbortSwapBuffers() OVERRIDE {}
 

@@ -466,9 +466,10 @@ void ThreadProxy::SetNextCommitWaitsForActivation() {
 
 void ThreadProxy::SetDeferCommits(bool defer_commits) {
   DCHECK(IsMainThread());
-  DCHECK_NE(main().defer_commits, defer_commits);
-  main().defer_commits = defer_commits;
+  if (main().defer_commits == defer_commits)
+    return;
 
+  main().defer_commits = defer_commits;
   if (main().defer_commits)
     TRACE_EVENT_ASYNC_BEGIN0("cc", "ThreadProxy::SetDeferCommits", this);
   else
