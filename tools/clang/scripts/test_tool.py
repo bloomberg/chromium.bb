@@ -87,12 +87,12 @@ def main(argv):
       with open(actual, 'r') as f:
         actual_output = f.readlines()
       if actual_output != expected_output:
-        print '[  FAILED  ] %s' % os.path.relpath(actual)
         failed += 1
         for line in difflib.unified_diff(expected_output, actual_output,
                                          fromfile=os.path.relpath(expected),
                                          tofile=os.path.relpath(actual)):
           sys.stdout.write(line)
+        print '[  FAILED  ] %s' % os.path.relpath(actual)
         # Don't clean up the file on failure, so the results can be referenced
         # more easily.
         continue

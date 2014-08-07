@@ -81,6 +81,7 @@ def _ExtractEditsFromStdout(build_directory, stdout):
   for line in lines[start_index + 1:end_index]:
     try:
       edit_type, path, offset, length, replacement = line.split(':', 4)
+      replacement = replacement.replace("\0", "\n");
       # Normalize the file path emitted by the clang tool to be relative to the
       # current working directory.
       path = os.path.relpath(os.path.join(build_directory, path))
