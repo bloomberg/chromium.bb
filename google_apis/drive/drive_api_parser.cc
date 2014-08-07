@@ -4,10 +4,7 @@
 
 #include "google_apis/drive/drive_api_parser.h"
 
-#include <algorithm>
-
 #include "base/basictypes.h"
-#include "base/files/file_path.h"
 #include "base/json/json_value_converter.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -15,10 +12,6 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "google_apis/drive/time_util.h"
-
-using base::Value;
-using base::DictionaryValue;
-using base::ListValue;
 
 namespace google_apis {
 
@@ -75,7 +68,7 @@ bool GetOpenWithLinksFromDictionaryValue(
     return false;
 
   result->reserve(dictionary_value->size());
-  for (DictionaryValue::Iterator iter(*dictionary_value);
+  for (base::DictionaryValue::Iterator iter(*dictionary_value);
        !iter.IsAtEnd(); iter.Advance()) {
     std::string string_value;
     if (!iter.value().GetAsString(&string_value))

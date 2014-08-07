@@ -6,7 +6,6 @@
 
 #include "base/time/time.h"
 #include "base/values.h"
-#include "google_apis/drive/gdata_wapi_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "google_apis/drive/time_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

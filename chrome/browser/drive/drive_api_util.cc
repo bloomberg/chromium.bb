@@ -136,9 +136,6 @@ std::string CanonicalizeResourceId(const std::string& resource_id) {
   return resource_id;
 }
 
-const char kDocsListScope[] = "https://docs.google.com/feeds/";
-const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
-
 scoped_ptr<google_apis::ResourceEntry>
 ConvertFileResourceToResourceEntry(
     const google_apis::FileResource& file_resource) {

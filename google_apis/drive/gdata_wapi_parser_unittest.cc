@@ -6,9 +6,7 @@
 
 #include <string>
 
-#include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/logging.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "google_apis/drive/test_util.h"

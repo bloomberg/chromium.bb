@@ -78,6 +78,8 @@ namespace {
 const char kDriveScope[] = "https://www.googleapis.com/auth/drive";
 const char kDriveAppsReadonlyScope[] =
     "https://www.googleapis.com/auth/drive.apps.readonly";
+const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
+const char kDocsListScope[] = "https://docs.google.com/feeds/";
 
 // Mime type to create a directory.
 const char kFolderMimeType[] = "application/vnd.google-apps.folder";
@@ -196,10 +198,12 @@ void DriveAPIService::Initialize(const std::string& account_id) {
   std::vector<std::string> scopes;
   scopes.push_back(kDriveScope);
   scopes.push_back(kDriveAppsReadonlyScope);
-  scopes.push_back(util::kDriveAppsScope);
+  scopes.push_back(kDriveAppsScope);
 
-  // GData WAPI token for GetShareUrl().
-  scopes.push_back(util::kDocsListScope);
+  // Note: The following scope is used to support GetShareUrl on Drive API v2.
+  // Unfortunately, there is no support on Drive API v2, so we need to fall back
+  // to GData WAPI for the GetShareUrl.
+  scopes.push_back(kDocsListScope);
 
   sender_.reset(new RequestSender(
       new google_apis::AuthService(oauth2_token_service_,
@@ -262,7 +266,7 @@ CancelCallback DriveAPIService::GetFileListInDirectory(
   request->set_max_results(kMaxNumFilesResourcePerRequest);
   request->set_q(base::StringPrintf(
       "'%s' in parents and trashed = false",
-      drive::util::EscapeQueryStringValue(directory_resource_id).c_str()));
+      util::EscapeQueryStringValue(directory_resource_id).c_str()));
   request->set_fields(kFileListFields);
   return sender_->StartRequestWithRetry(request);
 }
@@ -277,7 +281,7 @@ CancelCallback DriveAPIService::Search(
   FilesListRequest* request = new FilesListRequest(
       sender_.get(), url_generator_, callback);
   request->set_max_results(kMaxNumFilesResourcePerRequestForSearch);
-  request->set_q(drive::util::TranslateQuery(search_query));
+  request->set_q(util::TranslateQuery(search_query));
   request->set_fields(kFileListFields);
   return sender_->StartRequestWithRetry(request);
 }
@@ -292,11 +296,11 @@ CancelCallback DriveAPIService::SearchByTitle(
 
   std::string query;
   base::StringAppendF(&query, "title = '%s'",
-                      drive::util::EscapeQueryStringValue(title).c_str());
+                      util::EscapeQueryStringValue(title).c_str());
   if (!directory_resource_id.empty()) {
     base::StringAppendF(
         &query, " and '%s' in parents",
-        drive::util::EscapeQueryStringValue(directory_resource_id).c_str());
+        util::EscapeQueryStringValue(directory_resource_id).c_str());
   }
   query += " and trashed = false";
 

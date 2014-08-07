@@ -59,8 +59,7 @@ void ParseJsonOnBlockingPool(
 
 // Returns response headers as a string. Returns a warning message if
 // |url_fetcher| does not contain a valid response. Used only for debugging.
-std::string GetResponseHeadersAsString(
-    const URLFetcher* url_fetcher) {
+std::string GetResponseHeadersAsString(const URLFetcher* url_fetcher) {
   // net::HttpResponseHeaders::raw_headers(), as the name implies, stores
   // all headers in their raw format, i.e each header is null-terminated.
   // So logging raw_headers() only shows the first header, which is probably
@@ -190,6 +189,7 @@ void ResponseWriter::DidWrite(scoped_refptr<net::IOBuffer> buffer,
 
 UrlFetchRequestBase::UrlFetchRequestBase(RequestSender* sender)
     : re_authenticate_count_(0),
+      response_writer_(NULL),
       sender_(sender),
       error_code_(GDATA_OTHER_ERROR),
       weak_ptr_factory_(this) {
@@ -218,8 +218,7 @@ void UrlFetchRequestBase::Start(const std::string& access_token,
   DVLOG(1) << "URL: " << url.spec();
 
   URLFetcher::RequestType request_type = GetRequestType();
-  url_fetcher_.reset(
-      URLFetcher::Create(url, request_type, this));
+  url_fetcher_.reset(URLFetcher::Create(url, request_type, this));
   url_fetcher_->SetRequestContext(sender_->url_request_context_getter());
   // Always set flags to neither send nor save cookies.
   url_fetcher_->SetLoadFlags(

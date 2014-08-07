@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "google_apis/drive/auth_service_observer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -26,6 +26,12 @@ const int kSuccessRatioHistogramSuccess = 1;
 const int kSuccessRatioHistogramNoConnection = 2;
 const int kSuccessRatioHistogramTemporaryFailure = 3;
 const int kSuccessRatioHistogramMaxValue = 4;  // The max value is exclusive.
+
+void RecordAuthResultHistogram(int value) {
+  UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess",
+                            value,
+                            kSuccessRatioHistogramMaxValue);
+}
 
 // OAuth2 authorization token retrieval request.
 class AuthRequest : public OAuth2TokenService::Consumer {
@@ -78,10 +84,7 @@ void AuthRequest::OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                     const base::Time& expiration_time) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess",
-                            kSuccessRatioHistogramSuccess,
-                            kSuccessRatioHistogramMaxValue);
-
+  RecordAuthResultHistogram(kSuccessRatioHistogramSuccess);
   callback_.Run(HTTP_SUCCESS, access_token);
   delete this;
 }
@@ -98,21 +101,14 @@ void AuthRequest::OnGetTokenFailure(const OAuth2TokenService::Request* request,
   // it's likely that the device is off-line. We treat the error differently
   // so that the file manager works while off-line.
   if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED) {
-    UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess",
-                              kSuccessRatioHistogramNoConnection,
-                              kSuccessRatioHistogramMaxValue);
+    RecordAuthResultHistogram(kSuccessRatioHistogramNoConnection);
     callback_.Run(GDATA_NO_CONNECTION, std::string());
   } else if (error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
-    // Temporary auth error.
-    UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess",
-                              kSuccessRatioHistogramTemporaryFailure,
-                              kSuccessRatioHistogramMaxValue);
+    RecordAuthResultHistogram(kSuccessRatioHistogramTemporaryFailure);
     callback_.Run(HTTP_FORBIDDEN, std::string());
   } else {
     // Permanent auth error.
-    UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess",
-                              kSuccessRatioHistogramFailure,
-                              kSuccessRatioHistogramMaxValue);
+    RecordAuthResultHistogram(kSuccessRatioHistogramFailure);
     callback_.Run(HTTP_UNAUTHORIZED, std::string());
   }
   delete this;
@@ -144,13 +140,11 @@ AuthService::~AuthService() {
 
 void AuthService::StartAuthentication(const AuthStatusCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  scoped_refptr<base::MessageLoopProxy> relay_proxy(
-      base::MessageLoopProxy::current());
 
   if (HasAccessToken()) {
     // We already have access token. Give it back to the caller asynchronously.
-    relay_proxy->PostTask(FROM_HERE,
-                          base::Bind(callback, HTTP_SUCCESS, access_token_));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, HTTP_SUCCESS, access_token_));
   } else if (HasRefreshToken()) {
     // We have refresh token, let's get an access token.
     new AuthRequest(oauth2_token_service_,
@@ -161,8 +155,8 @@ void AuthService::StartAuthentication(const AuthStatusCallback& callback) {
                                callback),
                     scopes_);
   } else {
-    relay_proxy->PostTask(FROM_HERE,
-                          base::Bind(callback, GDATA_NOT_READY, std::string()));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, GDATA_NOT_READY, std::string()));
   }
 }
 
@@ -183,11 +177,7 @@ void AuthService::ClearAccessToken() {
 }
 
 void AuthService::ClearRefreshToken() {
-  has_refresh_token_ = false;
-
-  FOR_EACH_OBSERVER(AuthServiceObserver,
-                    observers_,
-                    OnOAuth2RefreshTokenChanged());
+  OnHandleRefreshToken(false);
 }
 
 void AuthService::OnAuthCompleted(const AuthStatusCallback& callback,
@@ -221,11 +211,13 @@ void AuthService::RemoveObserver(AuthServiceObserver* observer) {
 }
 
 void AuthService::OnRefreshTokenAvailable(const std::string& account_id) {
-  OnHandleRefreshToken(true);
+  if (account_id == account_id_)
+    OnHandleRefreshToken(true);
 }
 
 void AuthService::OnRefreshTokenRevoked(const std::string& account_id) {
-  OnHandleRefreshToken(false);
+  if (account_id == account_id_)
+    OnHandleRefreshToken(false);
 }
 
 void AuthService::OnHandleRefreshToken(bool has_refresh_token) {
