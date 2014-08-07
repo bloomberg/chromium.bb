@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_PROVIDER_H_
-#define COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_PROVIDER_H_
+#ifndef COMPONENTS_OMNIBOX_AUTOCOMPLETE_PROVIDER_H_
+#define COMPONENTS_OMNIBOX_AUTOCOMPLETE_PROVIDER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
-#include "components/autocomplete/autocomplete_match.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/omnibox/autocomplete_match.h"
 
 class AutocompleteInput;
 
@@ -245,4 +245,4 @@ class AutocompleteProvider
   DISALLOW_COPY_AND_ASSIGN(AutocompleteProvider);
 };
 
-#endif  // COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_PROVIDER_H_
+#endif  // COMPONENTS_OMNIBOX_AUTOCOMPLETE_PROVIDER_H_

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_AUTOCOMPLETE_CHROME_AUTOCOMPLETE_SCHEME_CLASSIFIER_H_
 
 #include "base/macros.h"
-#include "components/autocomplete/autocomplete_scheme_classifier.h"
+#include "components/omnibox/autocomplete_scheme_classifier.h"
 
 class Profile;
 

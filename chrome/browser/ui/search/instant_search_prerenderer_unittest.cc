@@ -24,7 +24,7 @@
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/render_messages.h"
-#include "components/autocomplete/autocomplete_match.h"
+#include "components/omnibox/autocomplete_match.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"

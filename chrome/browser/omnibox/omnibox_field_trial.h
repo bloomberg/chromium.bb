@@ -11,8 +11,8 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "components/autocomplete/autocomplete_match_type.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/omnibox/autocomplete_match_type.h"
 
 namespace base {
 class TimeDelta;

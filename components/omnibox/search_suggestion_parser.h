@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOCOMPLETE_SEARCH_SUGGESTION_PARSER_H_
-#define COMPONENTS_AUTOCOMPLETE_SEARCH_SUGGESTION_PARSER_H_
+#ifndef COMPONENTS_OMNIBOX_SEARCH_SUGGESTION_PARSER_H_
+#define COMPONENTS_OMNIBOX_SEARCH_SUGGESTION_PARSER_H_
 
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "components/autocomplete/autocomplete_match.h"
-#include "components/autocomplete/autocomplete_match_type.h"
+#include "components/omnibox/autocomplete_match.h"
+#include "components/omnibox/autocomplete_match_type.h"
 #include "url/gurl.h"
 
 class AutocompleteInput;
@@ -288,4 +288,4 @@ class SearchSuggestionParser {
   DISALLOW_COPY_AND_ASSIGN(SearchSuggestionParser);
 };
 
-#endif  // COMPONENTS_AUTOCOMPLETE_SEARCH_SUGGESTION_PARSER_H_
+#endif  // COMPONENTS_OMNIBOX_SEARCH_SUGGESTION_PARSER_H_

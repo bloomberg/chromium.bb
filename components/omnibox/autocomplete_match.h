@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_MATCH_H_
-#define COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_MATCH_H_
+#ifndef COMPONENTS_OMNIBOX_AUTOCOMPLETE_MATCH_H_
+#define COMPONENTS_OMNIBOX_AUTOCOMPLETE_MATCH_H_
 
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "components/autocomplete/autocomplete_match_type.h"
+#include "components/omnibox/autocomplete_match_type.h"
 #include "components/search_engines/template_url.h"
 #include "content/public/common/page_transition_types.h"
 #include "url/gurl.h"
@@ -386,4 +386,4 @@ typedef AutocompleteMatch::ACMatchClassification ACMatchClassification;
 typedef std::vector<ACMatchClassification> ACMatchClassifications;
 typedef std::vector<AutocompleteMatch> ACMatches;
 
-#endif  // COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_MATCH_H_
+#endif  // COMPONENTS_OMNIBOX_AUTOCOMPLETE_MATCH_H_

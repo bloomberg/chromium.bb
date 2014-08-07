@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autocomplete/test_scheme_classifier.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
+#include "components/omnibox/test_scheme_classifier.h"
 #include "net/url_request/url_request.h"
 #include "url/url_constants.h"
 

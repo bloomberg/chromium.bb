@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/history/in_memory_url_index_types.h"
-#include "components/autocomplete/autocomplete_provider.h"
+#include "components/omnibox/autocomplete_provider.h"
 
 class AutocompleteInput;
 class Profile;

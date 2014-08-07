@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_INPUT_H_
-#define COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_INPUT_H_
+#ifndef COMPONENTS_OMNIBOX_AUTOCOMPLETE_INPUT_H_
+#define COMPONENTS_OMNIBOX_AUTOCOMPLETE_INPUT_H_
 
 #include <string>
 
@@ -206,4 +206,4 @@ class AutocompleteInput {
   bool want_asynchronous_matches_;
 };
 
-#endif  // COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_INPUT_H_
+#endif  // COMPONENTS_OMNIBOX_AUTOCOMPLETE_INPUT_H_

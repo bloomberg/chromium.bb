@@ -18,9 +18,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
-#include "components/autocomplete/url_prefix.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/history/core/browser/history_client.h"
+#include "components/omnibox/url_prefix.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace history {

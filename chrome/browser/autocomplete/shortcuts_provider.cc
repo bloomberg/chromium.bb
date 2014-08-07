@@ -29,10 +29,10 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/autocomplete/autocomplete_input.h"
-#include "components/autocomplete/autocomplete_match.h"
-#include "components/autocomplete/url_prefix.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
+#include "components/omnibox/autocomplete_input.h"
+#include "components/omnibox/autocomplete_match.h"
+#include "components/omnibox/url_prefix.h"
 #include "components/url_fixer/url_fixer.h"
 #include "url/url_parse.h"
 

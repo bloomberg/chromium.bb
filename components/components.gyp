@@ -100,8 +100,8 @@
       # Android WebView fails to build if a dependency on these targets is
       # introduced.
       'includes': [
-        'autocomplete.gypi',
         'gcm_driver.gypi',
+        'omnibox.gypi',
         'renderer_context_menu.gypi',
         'search_engines.gypi',
         'sync_driver.gypi',

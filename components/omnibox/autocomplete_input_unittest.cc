@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autocomplete/autocomplete_input.h"
+#include "components/omnibox/autocomplete_input.h"
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "components/autocomplete/test_scheme_classifier.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
+#include "components/omnibox/test_scheme_classifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_parse.h"
 #include "url/url_util.h"

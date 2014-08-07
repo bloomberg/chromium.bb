@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_popup_matrix.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
-#include "components/autocomplete/autocomplete_match.h"
+#include "components/omnibox/autocomplete_match.h"
 #include "ui/gfx/font.h"
 
 class AutocompleteResult;

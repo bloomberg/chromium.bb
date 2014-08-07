@@ -12,8 +12,8 @@
 #include "chrome/browser/autocomplete/history_provider.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_url_index.h"
-#include "components/autocomplete/autocomplete_input.h"
-#include "components/autocomplete/autocomplete_match.h"
+#include "components/omnibox/autocomplete_input.h"
+#include "components/omnibox/autocomplete_match.h"
 
 class Profile;
 

@@ -1,9 +1,6 @@
 blundell@chromium.org
 jochen@chromium.org
 
-per-file autocomplete.gypi=pkasting@chromium.org
-per-file autocomplete.gypi=mpearson@chromium.org
-
 per-file autofill*=dhollowa@chromium.org
 per-file autofill*=isherman@chromium.org
 per-file autofill*=kaiwang@chromium.org
@@ -99,6 +96,9 @@ per-file navigation_interception.gypi=mkosiba@chromium.org
 
 per-file network_time.gypi=zea@chromium.org
 per-file network_time.gypi=haitaol@chromium.org
+
+per-file omnibox.gypi=pkasting@chromium.org
+per-file omnibox.gypi=mpearson@chromium.org
 
 per-file onc.gypi=armansito@chromium.org
 per-file onc.gypi=gauravsh@chromium.org

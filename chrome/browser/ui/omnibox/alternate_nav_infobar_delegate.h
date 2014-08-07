@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_OMNIBOX_ALTERNATE_NAV_INFOBAR_DELEGATE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/autocomplete/autocomplete_match.h"
 #include "components/infobars/core/infobar_delegate.h"
+#include "components/omnibox/autocomplete_match.h"
 
 class Profile;
 

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "components/autocomplete/autocomplete_match.h"
+#include "components/omnibox/autocomplete_match.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"

@@ -50,7 +50,7 @@
 #include "chrome/browser/ui/webui/sync_setup_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/url_constants.h"
-#include "components/autocomplete/autocomplete_match.h"
+#include "components/omnibox/autocomplete_match.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/url_data_source.h"

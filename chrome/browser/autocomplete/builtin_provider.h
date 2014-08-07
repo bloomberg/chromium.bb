@@ -10,8 +10,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
-#include "components/autocomplete/autocomplete_match.h"
-#include "components/autocomplete/autocomplete_provider.h"
+#include "components/omnibox/autocomplete_match.h"
+#include "components/omnibox/autocomplete_provider.h"
 
 // This is the provider for built-in URLs, such as about:settings and
 // chrome://version.

@@ -16,11 +16,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/autocomplete/autocomplete_provider.h"
 #include "components/bookmarks/browser/bookmark_match.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/omnibox/autocomplete_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using bookmarks::BookmarkMatch;

@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
-#include "components/autocomplete/autocomplete_match.h"
+#include "components/omnibox/autocomplete_match.h"
 #include "components/search/search.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/navigation_controller.h"

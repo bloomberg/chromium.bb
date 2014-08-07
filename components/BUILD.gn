@@ -9,7 +9,6 @@ group("all_components") {
 
   deps = [
     "//components/auto_login_parser",
-    "//components/autocomplete",
     "//components/autofill/content/browser",
     "//components/autofill/content/common",
     "//components/autofill/content/renderer",
@@ -49,6 +48,7 @@ group("all_components") {
     "//components/navigation_metrics",
     "//components/network_time",
     "//components/omaha_query_params",
+    "//components/omnibox",
     "//components/onc",
     "//components/os_crypt",
     "//components/pairing",
@@ -104,7 +104,6 @@ group("all_components") {
 
   if (is_android) {
     deps -= [
-      "//components/autocomplete",  # Should work, needs checking.
       "//components/autofill/content/browser",  # Blocked on content/blink.
       "//components/autofill/content/common",  # Blocked on content.
       "//components/autofill/content/renderer",  # Blocked on content/blink.
@@ -133,6 +132,7 @@ group("all_components") {
       "//components/json_schema",  # Should work, needs checking.
       "//components/keyed_service/content",  # Blocked on content.
       "//components/navigation_interception",  # Blocked on content.
+      "//components/omnibox",  # Should work, needs checking.
       "//components/password_manager/content/browser",  # Blocked on content.
       "//components/password_manager/core/browser",  # Should work, needs checking.
       "//components/password_manager/core/common",  # Should work, needs checking.
@@ -182,7 +182,6 @@ test("components_unittests") {
   # test source set and not here.
   deps = [
     "//components/auto_login_parser:unit_tests",
-    "//components/autocomplete:unit_tests",
     "//components/autofill/content/browser:unit_tests",
     "//components/autofill/core/browser:unit_tests",
     "//components/autofill/core/common:unit_tests",
@@ -193,6 +192,7 @@ test("components_unittests") {
     "//components/data_reduction_proxy/common:unit_tests",
     "//components/dom_distiller/core:unit_tests",
     "//components/domain_reliability:unit_tests",
+    "//components/omnibox:unit_tests",
   ]
 
   # TODO(GYP) need this target.

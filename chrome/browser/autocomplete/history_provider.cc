@@ -14,9 +14,9 @@
 #include "chrome/browser/history/in_memory_url_index_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
-#include "components/autocomplete/autocomplete_input.h"
-#include "components/autocomplete/autocomplete_match.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/omnibox/autocomplete_input.h"
+#include "components/omnibox/autocomplete_match.h"
 #include "url/url_util.h"
 
 void HistoryProvider::DeleteMatch(const AutocompleteMatch& match) {

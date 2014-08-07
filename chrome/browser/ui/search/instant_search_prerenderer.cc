@@ -13,7 +13,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
-#include "components/autocomplete/autocomplete_match.h"
+#include "components/omnibox/autocomplete_match.h"
 
 namespace {
 

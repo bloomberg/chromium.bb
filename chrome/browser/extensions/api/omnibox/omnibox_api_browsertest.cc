@@ -14,9 +14,9 @@
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/autocomplete/autocomplete_input.h"
-#include "components/autocomplete/autocomplete_match.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/omnibox/autocomplete_input.h"
+#include "components/omnibox/autocomplete_match.h"
 #include "ui/base/window_open_disposition.h"
 
 using base::ASCIIToUTF16;

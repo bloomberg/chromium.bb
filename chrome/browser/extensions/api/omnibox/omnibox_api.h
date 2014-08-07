@@ -14,7 +14,7 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/common/extensions/api/omnibox.h"
-#include "components/autocomplete/autocomplete_match.h"
+#include "components/omnibox/autocomplete_match.h"
 #include "components/search_engines/template_url_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry_observer.h"

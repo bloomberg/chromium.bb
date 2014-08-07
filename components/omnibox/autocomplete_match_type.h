@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_MATCH_TYPE_H_
-#define COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_MATCH_TYPE_H_
+#ifndef COMPONENTS_OMNIBOX_AUTOCOMPLETE_MATCH_TYPE_H_
+#define COMPONENTS_OMNIBOX_AUTOCOMPLETE_MATCH_TYPE_H_
 
 #include <string>
 
@@ -50,4 +50,4 @@ struct AutocompleteMatchType {
   static std::string ToString(AutocompleteMatchType::Type type);
 };
 
-#endif  // COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_MATCH_TYPE_H_
+#endif  // COMPONENTS_OMNIBOX_AUTOCOMPLETE_MATCH_TYPE_H_

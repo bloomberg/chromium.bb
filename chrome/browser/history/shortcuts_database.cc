@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "components/autocomplete/autocomplete_match_type.h"
+#include "components/omnibox/autocomplete_match_type.h"
 #include "content/public/common/page_transition_types.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"

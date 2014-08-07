@@ -11,10 +11,10 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "components/autocomplete/autocomplete_input.h"
-#include "components/autocomplete/autocomplete_match.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/omnibox/autocomplete_input.h"
+#include "components/omnibox/autocomplete_match.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 

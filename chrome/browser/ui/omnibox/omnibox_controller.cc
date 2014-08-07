@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "chrome/common/instant_types.h"
-#include "components/autocomplete/autocomplete_match.h"
+#include "components/omnibox/autocomplete_match.h"
 #include "components/search/search.h"
 #include "extensions/common/constants.h"
 #include "ui/gfx/rect.h"

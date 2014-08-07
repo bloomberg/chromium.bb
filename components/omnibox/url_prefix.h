@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOCOMPLETE_URL_PREFIX_H_
-#define COMPONENTS_AUTOCOMPLETE_URL_PREFIX_H_
+#ifndef COMPONENTS_OMNIBOX_URL_PREFIX_H_
+#define COMPONENTS_OMNIBOX_URL_PREFIX_H_
 
 #include <vector>
 
@@ -60,4 +60,4 @@ struct URLPrefix {
   size_t num_components;
 };
 
-#endif  // COMPONENTS_AUTOCOMPLETE_URL_PREFIX_H_
+#endif  // COMPONENTS_OMNIBOX_URL_PREFIX_H_

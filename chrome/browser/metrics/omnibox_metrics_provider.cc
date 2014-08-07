@@ -13,11 +13,11 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/ui/browser_otr_state.h"
-#include "components/autocomplete/autocomplete_match.h"
-#include "components/autocomplete/autocomplete_provider.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
+#include "components/omnibox/autocomplete_match.h"
+#include "components/omnibox/autocomplete_provider.h"
 #include "content/public/browser/notification_service.h"
 
 using metrics::OmniboxEventProto;

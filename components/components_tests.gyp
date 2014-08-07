@@ -22,8 +22,6 @@
             # each component has its own unit tests target defined in its
             # directory that are then linked into the final content_unittests.
             'auto_login_parser/auto_login_parser_unittest.cc',
-            'autocomplete/autocomplete_input_unittest.cc',
-            'autocomplete/autocomplete_match_unittest.cc',
             'autofill/content/browser/content_autofill_driver_unittest.cc',
             'autofill/content/browser/request_autocomplete_manager_unittest.cc',
             'autofill/content/browser/wallet/full_wallet_unittest.cc',
@@ -138,6 +136,8 @@
             'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
             'network_time/network_time_tracker_unittest.cc',
             'omaha_query_params/omaha_query_params_unittest.cc',
+            'omnibox/autocomplete_input_unittest.cc',
+            'omnibox/autocomplete_match_unittest.cc',
             'os_crypt/ie7_password_win_unittest.cc',
             'os_crypt/keychain_password_mac_unittest.mm',
             'os_crypt/os_crypt_unittest.cc',
@@ -251,10 +251,6 @@
             # Dependencies of auto_login_parser
             'components.gyp:auto_login_parser',
 
-            # Dependencies of autocomplete
-            'components.gyp:autocomplete',
-            'components.gyp:autocomplete_test_support',
-
             # Dependencies of autofill
             'components.gyp:autofill_core_browser',
             'components.gyp:autofill_core_common',
@@ -337,6 +333,10 @@
 
             # Dependencies of omaha_query_params
             'components.gyp:omaha_query_params',
+
+            # Dependencies of omnibox
+            'components.gyp:omnibox',
+            'components.gyp:omnibox_test_support',
 
             # Dependencies of os_crypt
             'components.gyp:os_crypt',

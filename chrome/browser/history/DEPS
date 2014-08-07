@@ -45,10 +45,10 @@ include_rules = [
   "!chrome/browser/ui/profile_error_dialog.h",
   "!chrome/browser/ui/webui/ntp/most_visited_handler.h",
   "!chrome/browser/ui/webui/ntp/new_tab_ui.h",
-  "!components/autocomplete/autocomplete_match.h",
-  "!components/autocomplete/url_prefix.h",
   "!components/bookmarks/browser/bookmark_model.h",
   "!components/bookmarks/browser/bookmark_utils.h",
+  "!components/omnibox/autocomplete_match.h",
+  "!components/omnibox/url_prefix.h",
 ]
 
 specific_include_rules = {

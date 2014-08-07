@@ -9,9 +9,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "components/autocomplete/autocomplete_scheme_classifier.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/omnibox/autocomplete_scheme_classifier.h"
 
 class AutocompleteController;
 struct AutocompleteMatch;

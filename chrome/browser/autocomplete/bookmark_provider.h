@@ -7,9 +7,9 @@
 
 #include <string>
 
-#include "components/autocomplete/autocomplete_input.h"
-#include "components/autocomplete/autocomplete_match.h"
-#include "components/autocomplete/autocomplete_provider.h"
+#include "components/omnibox/autocomplete_input.h"
+#include "components/omnibox/autocomplete_match.h"
+#include "components/omnibox/autocomplete_provider.h"
 #include "components/query_parser/snippet.h"
 
 class BookmarkModel;

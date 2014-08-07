@@ -30,7 +30,7 @@ public class OmniboxSuggestion {
 
     /**
      * This should be kept in sync with AutocompleteMatch::Type
-     * (see components/autocomplete/autocomplete_match_type.h).
+     * (see components/omnibox/autocomplete_match_type.h).
      * Negative types are specific to Chrome on Android front-end.
      */
     public static enum Type {

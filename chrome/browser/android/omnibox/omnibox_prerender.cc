@@ -13,7 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/ui/search/instant_search_prerenderer.h"
-#include "components/autocomplete/autocomplete_match.h"
+#include "components/omnibox/autocomplete_match.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/OmniboxPrerender_jni.h"
 #include "url/gurl.h"

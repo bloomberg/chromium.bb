@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("autocomplete") {
+static_library("omnibox") {
   sources = [
     "autocomplete_input.cc",
     "autocomplete_input.h",
@@ -39,7 +39,7 @@ static_library("test_support") {
   ]
 
   deps = [
-    ":autocomplete",
+    ":omnibox",
     "//base",
     "//components/metrics/proto",
   ]
@@ -52,7 +52,7 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    ":autocomplete",
+    ":omnibox",
     ":test_support",
     "//testing/gtest",
   ]

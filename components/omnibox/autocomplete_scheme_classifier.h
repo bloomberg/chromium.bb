@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_SCHEME_CLASSIFIER_H_
-#define COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_SCHEME_CLASSIFIER_H_
+#ifndef COMPONENTS_OMNIBOX_AUTOCOMPLETE_SCHEME_CLASSIFIER_H_
+#define COMPONENTS_OMNIBOX_AUTOCOMPLETE_SCHEME_CLASSIFIER_H_
 
 #include <string>
 
@@ -27,4 +27,4 @@ class AutocompleteSchemeClassifier {
       const std::string& scheme) const = 0;
 };
 
-#endif  // COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_SCHEME_CLASSIFIER_H_
+#endif  // COMPONENTS_OMNIBOX_AUTOCOMPLETE_SCHEME_CLASSIFIER_H_

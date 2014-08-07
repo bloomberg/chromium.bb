@@ -6,7 +6,7 @@
 #define ATHENA_MAIN_URL_SEARCH_PROVIDER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/autocomplete/autocomplete_input.h"
+#include "components/omnibox/autocomplete_input.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "ui/app_list/search_provider.h"
 

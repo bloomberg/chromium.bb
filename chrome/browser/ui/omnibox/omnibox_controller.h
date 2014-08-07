@@ -11,7 +11,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
-#include "components/autocomplete/autocomplete_match.h"
+#include "components/omnibox/autocomplete_match.h"
 
 class AUtocompleteInput;
 struct AutocompleteMatch;

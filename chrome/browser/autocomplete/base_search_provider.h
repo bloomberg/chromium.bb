@@ -16,11 +16,11 @@
 
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
-#include "components/autocomplete/autocomplete_input.h"
-#include "components/autocomplete/autocomplete_match.h"
-#include "components/autocomplete/autocomplete_provider.h"
-#include "components/autocomplete/search_suggestion_parser.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/omnibox/autocomplete_input.h"
+#include "components/omnibox/autocomplete_match.h"
+#include "components/omnibox/autocomplete_provider.h"
+#include "components/omnibox/search_suggestion_parser.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class AutocompleteProviderListener;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_PROVIDER_LISTENER_H_
-#define COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_PROVIDER_LISTENER_H_
+#ifndef COMPONENTS_OMNIBOX_AUTOCOMPLETE_PROVIDER_LISTENER_H_
+#define COMPONENTS_OMNIBOX_AUTOCOMPLETE_PROVIDER_LISTENER_H_
 
 class AutocompleteProviderListener {
  public:
@@ -27,4 +27,4 @@ class AutocompleteProviderListener {
   virtual ~AutocompleteProviderListener() {}
 };
 
-#endif  // COMPONENTS_AUTOCOMPLETE_AUTOCOMPLETE_PROVIDER_LISTENER_H_
+#endif  // COMPONENTS_OMNIBOX_AUTOCOMPLETE_PROVIDER_LISTENER_H_

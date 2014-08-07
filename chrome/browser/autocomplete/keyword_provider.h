@@ -16,9 +16,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/autocomplete/autocomplete_input.h"
-#include "components/autocomplete/autocomplete_provider.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
+#include "components/omnibox/autocomplete_input.h"
+#include "components/omnibox/autocomplete_provider.h"
 
 class AutocompleteProviderListener;
 class KeywordExtensionsDelegate;

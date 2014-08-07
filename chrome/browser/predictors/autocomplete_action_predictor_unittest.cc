@@ -17,9 +17,9 @@
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/autocomplete/autocomplete_match.h"
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/url_database.h"
+#include "components/omnibox/autocomplete_match.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autocomplete/autocomplete_provider.h"
+#include "components/omnibox/autocomplete_provider.h"
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autocomplete/autocomplete_input.h"
-#include "components/autocomplete/autocomplete_match.h"
+#include "components/omnibox/autocomplete_input.h"
+#include "components/omnibox/autocomplete_match.h"
 #include "components/url_fixer/url_fixer.h"
 #include "net/base/net_util.h"
 #include "url/gurl.h"

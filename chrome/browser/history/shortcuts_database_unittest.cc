@@ -12,7 +12,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/autocomplete/autocomplete_match_type.h"
+#include "components/omnibox/autocomplete_match_type.h"
 #include "content/public/common/page_transition_types.h"
 #include "sql/statement.h"
 #include "sql/test/test_helpers.h"

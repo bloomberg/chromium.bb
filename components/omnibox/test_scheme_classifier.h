@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOCOMPLETE_TEST_SCHEME_CLASSIFIER_
-#define COMPONENTS_AUTOCOMPLETE_TEST_SCHEME_CLASSIFIER_
+#ifndef COMPONENTS_OMNIBOX_TEST_SCHEME_CLASSIFIER_H_
+#define COMPONENTS_OMNIBOX_TEST_SCHEME_CLASSIFIER_H_
 
 #include "base/macros.h"
-#include "components/autocomplete/autocomplete_scheme_classifier.h"
+#include "components/omnibox/autocomplete_scheme_classifier.h"
 
 // The subclass of AutocompleteSchemeClassifier for testing.
 class TestSchemeClassifier : public AutocompleteSchemeClassifier {
@@ -22,4 +22,4 @@ class TestSchemeClassifier : public AutocompleteSchemeClassifier {
   DISALLOW_COPY_AND_ASSIGN(TestSchemeClassifier);
 };
 
-#endif  // COMPONENTS_AUTOCOMPLETE_TEST_SCHEME_CLASSIFIER_
+#endif  // COMPONENTS_OMNIBOX_TEST_SCHEME_CLASSIFIER_H_

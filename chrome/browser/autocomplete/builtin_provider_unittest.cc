@@ -9,10 +9,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/common/url_constants.h"
-#include "components/autocomplete/autocomplete_input.h"
-#include "components/autocomplete/autocomplete_match.h"
-#include "components/autocomplete/autocomplete_provider.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/omnibox/autocomplete_input.h"
+#include "components/omnibox/autocomplete_match.h"
+#include "components/omnibox/autocomplete_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

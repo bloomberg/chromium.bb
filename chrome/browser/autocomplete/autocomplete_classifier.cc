@@ -6,10 +6,10 @@
 
 #include "base/auto_reset.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
-#include "components/autocomplete/autocomplete_input.h"
-#include "components/autocomplete/autocomplete_match.h"
-#include "components/autocomplete/autocomplete_provider.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/omnibox/autocomplete_input.h"
+#include "components/omnibox/autocomplete_match.h"
+#include "components/omnibox/autocomplete_provider.h"
 #include "url/gurl.h"
 
 // static

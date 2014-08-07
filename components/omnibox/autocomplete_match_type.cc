@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autocomplete/autocomplete_match_type.h"
+#include "components/omnibox/autocomplete_match_type.h"
 
 #include "base/basictypes.h"
 

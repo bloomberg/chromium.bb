@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autocomplete/autocomplete_match.h"
+#include "components/omnibox/autocomplete_match.h"
 
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
@@ -11,7 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "components/autocomplete/autocomplete_provider.h"
+#include "components/omnibox/autocomplete_provider.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "grit/component_scaled_resources.h"

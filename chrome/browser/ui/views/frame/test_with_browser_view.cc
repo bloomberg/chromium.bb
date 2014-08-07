@@ -18,7 +18,7 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_io_thread_state.h"
-#include "components/autocomplete/test_scheme_classifier.h"
+#include "components/omnibox/test_scheme_classifier.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/test/test_utils.h"
