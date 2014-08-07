@@ -27,48 +27,26 @@ struct TrackInfo {
   std::string album;
 };
 
-// Walk through a dictionary filling in |result| with track information. Return
-// true if at least the id and location where found (artist and album may be
-// empty).  In either case, the cursor is advanced out of the dictionary.
-bool GetTrackInfoFromDict(XmlReader* reader, TrackInfo* result) {
-  DCHECK(result);
-  if (reader->NodeName() != "dict")
-    return false;
+class TrackInfoXmlDictReader : public iapps::XmlDictReader {
+ public:
+  TrackInfoXmlDictReader(XmlReader* reader, TrackInfo* track_info) :
+    iapps::XmlDictReader(reader), track_info_(track_info) {}
 
-  int dict_content_depth = reader->Depth() + 1;
-  // Advance past the dict node and into the body of the dictionary.
-  if (!reader->Read())
-    return false;
+  virtual bool ShouldLoop() OVERRIDE {
+    return !(Found("Track ID") && Found("Location") &&
+             Found("Album Artist") && Found("Album"));
+  }
 
-  bool found_id = false;
-  bool found_location = false;
-  bool found_artist = false;
-  bool found_album_artist = false;
-  bool found_album = false;
-  while (reader->Depth() >= dict_content_depth &&
-         !(found_id && found_location && found_album_artist && found_album)) {
-    if (!iapps::SeekToNodeAtCurrentDepth(reader, "key"))
-      break;
-    std::string found_key;
-    if (!reader->ReadElementContent(&found_key))
-      break;
-    DCHECK_EQ(dict_content_depth, reader->Depth());
-
-    if (found_key == "Track ID") {
-      if (found_id)
-        break;
-      if (!iapps::ReadInteger(reader, &result->id))
-        break;
-      found_id = true;
-    } else if (found_key == "Location") {
-      if (found_location)
-        break;
+  virtual bool HandleKeyImpl(const std::string& key) OVERRIDE {
+    if (key == "Track ID") {
+      return iapps::ReadInteger(reader_, &track_info_->id);
+    } else if (key == "Location") {
       std::string value;
-      if (!iapps::ReadString(reader, &value))
-        break;
+      if (!iapps::ReadString(reader_, &value))
+        return false;
       GURL url(value);
       if (!url.SchemeIsFile())
-        break;
+        return false;
       url::RawCanonOutputW<1024> decoded_location;
       url::DecodeURLEscapeSequences(url.path().c_str() + 1,  // Strip /.
                                     url.path().length() - 1,
@@ -81,40 +59,37 @@ bool GetTrackInfoFromDict(XmlReader* reader, TrackInfo* result) {
                                 decoded_location.length());
       std::string location = "/" + base::UTF16ToUTF8(location16);
 #endif
-      result->location = base::FilePath(location);
-      found_location = true;
-    } else if (found_key == "Artist") {
-      if (found_artist || found_album_artist)
-        break;
-      if (!iapps::ReadString(reader, &result->artist))
-        break;
-      found_artist = true;
-    } else if (found_key == "Album Artist") {
-      if (found_album_artist)
-        break;
-      result->artist.clear();
-      if (!iapps::ReadString(reader, &result->artist))
-        break;
-      found_album_artist = true;
-    } else if (found_key == "Album") {
-      if (found_album)
-        break;
-      if (!iapps::ReadString(reader, &result->album))
-        break;
-      found_album = true;
-    } else {
-      if (!iapps::SkipToNextElement(reader))
-        break;
-      if (!reader->Next())
-        break;
+      track_info_->location = base::FilePath(location);
+    } else if (key == "Artist") {
+      if (Found("Album Artist"))
+        return false;
+      return iapps::ReadString(reader_, &track_info_->artist);
+    } else if (key == "Album Artist") {
+      track_info_->artist.clear();
+      return iapps::ReadString(reader_, &track_info_->artist);
+    } else if (key == "Album") {
+      return iapps::ReadString(reader_, &track_info_->album);
+    } else if (!SkipToNext()) {
+      return false;
     }
+    return true;
   }
 
-  // Seek to the end of the dictionary
-  while (reader->Depth() >= dict_content_depth)
-    reader->Next();
+  virtual bool FinishedOk() OVERRIDE {
+    return Found("Track ID") && Found("Location");
+  }
 
-  return found_id && found_location;
+ private:
+  TrackInfo* track_info_;
+};
+
+// Walk through a dictionary filling in |result| with track information. Return
+// true if at least the id and location where found (artist and album may be
+// empty).  In either case, the cursor is advanced out of the dictionary.
+bool GetTrackInfoFromDict(XmlReader* reader, TrackInfo* result) {
+  DCHECK(result);
+  TrackInfoXmlDictReader dict_reader(reader, result);
+  return dict_reader.Read();
 }
 
 }  // namespace

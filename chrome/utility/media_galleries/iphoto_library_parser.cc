@@ -29,55 +29,35 @@ struct AlbumInfo {
   uint64 id;
 };
 
-// Walk through a dictionary filling in |result| with photo information. Return
-// true if at least the id and location were found.
-// In either case, the cursor is advanced out of the dictionary.
-bool GetPhotoInfoFromDict(XmlReader* reader, PhotoInfo* result) {
-  DCHECK(result);
-  if (reader->NodeName() != "dict")
-    return false;
+class PhotosXmlDictReader : public iapps::XmlDictReader {
+ public:
+  PhotosXmlDictReader(XmlReader* reader, PhotoInfo* photo_info)
+    : iapps::XmlDictReader(reader), photo_info_(photo_info) {}
 
-  int dict_content_depth = reader->Depth() + 1;
-  // Advance past the dict node and into the body of the dictionary.
-  if (!reader->Read())
-    return false;
-
-  bool found_location = false;
-  while (reader->Depth() >= dict_content_depth) {
-    if (!iapps::SeekToNodeAtCurrentDepth(reader, "key"))
-      break;
-    std::string found_key;
-    if (!reader->ReadElementContent(&found_key))
-      break;
-    DCHECK_EQ(dict_content_depth, reader->Depth());
-
-    if (found_key == "ImagePath") {
-      if (found_location)
-        break;
+  virtual bool HandleKeyImpl(const std::string& key) OVERRIDE {
+    if (key == "ImagePath") {
       std::string value;
-      if (!iapps::ReadString(reader, &value))
-        break;
-      result->location = base::FilePath(value);
-      found_location = true;
-    } else if (found_key == "OriginalPath") {
+      if (!iapps::ReadString(reader_, &value))
+        return false;
+      photo_info_->location = base::FilePath(value);
+    } else if (key == "OriginalPath") {
       std::string value;
-      if (!iapps::ReadString(reader, &value))
-        break;
-      result->original_location = base::FilePath(value);
-    } else {
-      if (!iapps::SkipToNextElement(reader))
-        break;
-      if (!reader->Next())
-        break;
+      if (!iapps::ReadString(reader_, &value))
+        return false;
+      photo_info_->original_location = base::FilePath(value);
+    } else if (!SkipToNext()) {
+      return false;
     }
+    return true;
   }
 
-  // Seek to the end of the dictionary
-  while (reader->Depth() >= dict_content_depth)
-    reader->Next();
+  virtual bool FinishedOk() OVERRIDE {
+    return Found("ImagePath");
+  }
 
-  return found_location;
-}
+ private:
+  PhotoInfo* photo_info_;
+};
 
 // Contents of the album 'KeyList' key are
 // <array>
@@ -110,62 +90,40 @@ bool ReadStringArray(XmlReader* reader, std::set<uint64>* photo_ids) {
   return true;
 }
 
-bool GetAlbumInfoFromDict(XmlReader* reader, AlbumInfo* result) {
-  DCHECK(result);
-  if (reader->NodeName() != "dict")
-    return false;
+class AlbumXmlDictReader : public iapps::XmlDictReader {
+ public:
+  AlbumXmlDictReader(XmlReader* reader, AlbumInfo* album_info)
+    : iapps::XmlDictReader(reader), album_info_(album_info) {}
 
-  int dict_content_depth = reader->Depth() + 1;
-  // Advance past the dict node and into the body of the dictionary.
-  if (!reader->Read())
-    return false;
-
-  bool found_id = false;
-  bool found_name = false;
-  bool found_contents = false;
-  while (reader->Depth() >= dict_content_depth &&
-         !(found_id && found_name && found_contents)) {
-    if (!iapps::SeekToNodeAtCurrentDepth(reader, "key"))
-      break;
-    std::string found_key;
-    if (!reader->ReadElementContent(&found_key))
-      break;
-    DCHECK_EQ(dict_content_depth, reader->Depth());
-
-    if (found_key == "AlbumId") {
-      if (found_id)
-        break;
-      if (!iapps::ReadInteger(reader, &result->id))
-        break;
-      found_id = true;
-    } else if (found_key == "AlbumName") {
-      if (found_name)
-        break;
-      if (!iapps::ReadString(reader, &result->name))
-        break;
-      found_name = true;
-    } else if (found_key == "KeyList") {
-      if (found_contents)
-        break;
-      if (!iapps::SeekToNodeAtCurrentDepth(reader, "array"))
-        break;
-      if (!ReadStringArray(reader, &result->photo_ids))
-        break;
-      found_contents = true;
-    } else {
-      if (!iapps::SkipToNextElement(reader))
-        break;
-      if (!reader->Next())
-        break;
-    }
+  virtual bool ShouldLoop() OVERRIDE {
+    return !(Found("AlbumId") && Found("AlbumName") && Found("KeyList"));
   }
 
-  // Seek to the end of the dictionary
-  while (reader->Depth() >= dict_content_depth)
-    reader->Next();
+  virtual bool HandleKeyImpl(const std::string& key) OVERRIDE {
+    if (key == "AlbumId") {
+      if (!iapps::ReadInteger(reader_, &album_info_->id))
+        return false;
+    } else if (key == "AlbumName") {
+      if (!iapps::ReadString(reader_, &album_info_->name))
+        return false;
+    } else if (key == "KeyList") {
+      if (!iapps::SeekToNodeAtCurrentDepth(reader_, "array"))
+        return false;
+      if (!ReadStringArray(reader_, &album_info_->photo_ids))
+        return false;
+    } else if (!SkipToNext()) {
+      return false;
+    }
+    return true;
+  }
 
-  return found_id && found_name && found_contents;
-}
+  virtual bool FinishedOk() OVERRIDE {
+    return !ShouldLoop();
+  }
+
+ private:
+  AlbumInfo* album_info_;
+};
 
 // Inside the master image list, we expect photos to be arranged as
 //  <dict>
@@ -213,7 +171,11 @@ bool ParseAllPhotos(XmlReader* reader,
 
     PhotoInfo photo_info;
     photo_info.id = id;
-    if (!GetPhotoInfoFromDict(reader, &photo_info)) {
+    // Walk through a dictionary filling in |result| with photo information.
+    // Return true if at least the location was found.
+    // In either case, the cursor is advanced out of the dictionary.
+    PhotosXmlDictReader dict_reader(reader, &photo_info);
+    if (!dict_reader.Read()) {
       errors = true;
       break;
     }
@@ -231,6 +193,63 @@ bool ParseAllPhotos(XmlReader* reader,
 IPhotoLibraryParser::IPhotoLibraryParser() {}
 IPhotoLibraryParser::~IPhotoLibraryParser() {}
 
+class IPhotoLibraryXmlDictReader : public iapps::XmlDictReader {
+ public:
+  IPhotoLibraryXmlDictReader(XmlReader* reader, parser::Library* library)
+    : iapps::XmlDictReader(reader), library_(library), ok_(true) {}
+
+  virtual bool ShouldLoop() OVERRIDE {
+    return !(Found("List of Albums") && Found("Master Image List"));
+  }
+
+  virtual bool HandleKeyImpl(const std::string& key) OVERRIDE {
+    if (key == "List of Albums") {
+      if (!iapps::SeekToNodeAtCurrentDepth(reader_, "array") ||
+          !reader_->Read()) {
+        return true;
+      }
+      while (iapps::SeekToNodeAtCurrentDepth(reader_, "dict")) {
+        AlbumInfo album_info;
+        AlbumXmlDictReader dict_reader(reader_, &album_info);
+        if (dict_reader.Read()) {
+          parser::Album album;
+          album = album_info.photo_ids;
+          // Strip / from album name and dedupe any collisions.
+          std::string name;
+          base::ReplaceChars(album_info.name, "//", " ", &name);
+          if (ContainsKey(library_->albums, name))
+            name = name + "("+base::Uint64ToString(album_info.id)+")";
+          library_->albums[name] = album;
+        }
+      }
+    } else if (key == "Master Image List") {
+      if (!ParseAllPhotos(reader_, &library_->all_photos)) {
+        ok_ = false;
+        return false;
+      }
+    }
+    return true;
+  }
+
+  virtual bool FinishedOk() OVERRIDE {
+    return ok_;
+  }
+
+  // The IPhotoLibrary allows duplicate "List of Albums" and
+  // "Master Image List" keys (although that seems odd.)
+  virtual bool AllowRepeats() OVERRIDE {
+    return true;
+  }
+
+ private:
+  parser::Library* library_;
+
+  // The base class bails when we request, and then calls |FinishedOk()|
+  // to decide what to return. We need to remember that we bailed because
+  // of an error. That's what |ok_| does.
+  bool ok_;
+};
+
 bool IPhotoLibraryParser::Parse(const std::string& library_xml) {
   XmlReader reader;
   if (!reader.Load(library_xml))
@@ -245,58 +264,8 @@ bool IPhotoLibraryParser::Parse(const std::string& library_xml) {
   if (!iapps::SeekToNodeAtCurrentDepth(&reader, "dict"))
     return false;
 
-  int dict_content_depth = reader.Depth() + 1;
-  // Advance past the dict node and into the body of the dictionary.
-  if (!reader.Read())
-    return false;
-
-  bool found_photos = false;
-  bool found_albums = false;
-  while (reader.Depth() >= dict_content_depth &&
-         !(found_photos && found_albums)) {
-    if (!iapps::SeekToNodeAtCurrentDepth(&reader, "key"))
-      break;
-    std::string found_key;
-    if (!reader.ReadElementContent(&found_key))
-      break;
-    DCHECK_EQ(dict_content_depth, reader.Depth());
-
-    if (found_key == "List of Albums") {
-      if (found_albums)
-        continue;
-      found_albums = true;
-
-      if (!iapps::SeekToNodeAtCurrentDepth(&reader, "array") ||
-          !reader.Read()) {
-        continue;
-      }
-
-      while (iapps::SeekToNodeAtCurrentDepth(&reader, "dict")) {
-        AlbumInfo album_info;
-        if (GetAlbumInfoFromDict(&reader, &album_info)) {
-          parser::Album album;
-          album = album_info.photo_ids;
-          // Strip / from album name and dedupe any collisions.
-          std::string name;
-          base::ReplaceChars(album_info.name, "//", " ", &name);
-          if (!ContainsKey(library_.albums, name)) {
-            library_.albums[name] = album;
-          } else {
-            library_.albums[name+"("+base::Uint64ToString(album_info.id)+")"] =
-                album;
-          }
-        }
-      }
-    } else if (found_key == "Master Image List") {
-      if (found_photos)
-        continue;
-      found_photos = true;
-      if (!ParseAllPhotos(&reader, &library_.all_photos))
-        return false;
-    }
-  }
-
-  return true;
+  IPhotoLibraryXmlDictReader dict_reader(&reader, &library_);
+  return dict_reader.Read();
 }
 
 }  // namespace iphoto
