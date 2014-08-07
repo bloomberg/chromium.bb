@@ -19,6 +19,13 @@
           'includes': [ '../../../build/grit_action.gypi' ],
         },
       ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(SHARED_INTERMEDIATE_DIR)',
+        ],
+      },
+      # TODO(thakis): Remove this once https://codereview.chromium.org/430083002
+      # has landed.
       'includes': [ '../../../build/grit_target.gypi' ],
     },
   ],
