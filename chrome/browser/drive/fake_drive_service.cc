@@ -50,6 +50,7 @@ using google_apis::GetContentCallback;
 using google_apis::GetShareUrlCallback;
 using google_apis::HTTP_BAD_REQUEST;
 using google_apis::HTTP_CREATED;
+using google_apis::HTTP_FORBIDDEN;
 using google_apis::HTTP_NOT_FOUND;
 using google_apis::HTTP_NO_CONTENT;
 using google_apis::HTTP_PRECONDITION;
@@ -131,12 +132,30 @@ void FileListCallbackAdapter(const FileListCallback& callback,
   callback.Run(error, file_list.Pass());
 }
 
+bool UserHasWriteAccess(google_apis::drive::PermissionRole user_permission) {
+  switch (user_permission) {
+    case google_apis::drive::PERMISSION_ROLE_OWNER:
+    case google_apis::drive::PERMISSION_ROLE_WRITER:
+      return true;
+    case google_apis::drive::PERMISSION_ROLE_READER:
+    case google_apis::drive::PERMISSION_ROLE_COMMENTER:
+      break;
+  }
+  return false;
+}
+
 }  // namespace
 
 struct FakeDriveService::EntryInfo {
+  EntryInfo() : user_permission(google_apis::drive::PERMISSION_ROLE_OWNER) {}
+
   google_apis::ChangeResource change_resource;
   GURL share_url;
   std::string content_data;
+
+  // Behaves in the same way as "userPermission" described in
+  // https://developers.google.com/drive/v2/reference/files
+  google_apis::drive::PermissionRole user_permission;
 };
 
 struct FakeDriveService::UploadSession {
@@ -609,6 +628,12 @@ CancelCallback FakeDriveService::DeleteResource(
       return CancelCallback();
     }
 
+    if (entry->user_permission != google_apis::drive::PERMISSION_ROLE_OWNER) {
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE, base::Bind(callback, HTTP_FORBIDDEN));
+      return CancelCallback();
+    }
+
     change->set_deleted(true);
     AddNewChangestamp(change);
     change->set_file(scoped_ptr<FileResource>());
@@ -641,6 +666,9 @@ CancelCallback FakeDriveService::TrashResource(
     GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
     if (change->is_deleted() || file->labels().is_trashed()) {
       error = HTTP_NOT_FOUND;
+    } else if (entry->user_permission !=
+               google_apis::drive::PERMISSION_ROLE_OWNER) {
+      error = HTTP_FORBIDDEN;
     } else {
       file->mutable_labels()->set_trashed(true);
       AddNewChangestamp(change);
@@ -814,6 +842,14 @@ CancelCallback FakeDriveService::UpdateResource(
 
   EntryInfo* entry = FindEntryByResourceId(resource_id);
   if (entry) {
+    if (!UserHasWriteAccess(entry->user_permission)) {
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(callback, HTTP_FORBIDDEN,
+                     base::Passed(scoped_ptr<FileResource>())));
+      return CancelCallback();
+    }
+
     ChangeResource* change = &entry->change_resource;
     FileResource* file = change->mutable_file();
 
@@ -997,6 +1033,13 @@ CancelCallback FakeDriveService::InitiateUploadExistingFile(
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, HTTP_NOT_FOUND, GURL()));
+    return CancelCallback();
+  }
+
+  if (!UserHasWriteAccess(entry->user_permission)) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, HTTP_FORBIDDEN, GURL()));
     return CancelCallback();
   }
 
@@ -1314,6 +1357,19 @@ void FakeDriveService::SetLastModifiedTime(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS,
                  base::Passed(make_scoped_ptr(new FileResource(*file)))));
+}
+
+google_apis::GDataErrorCode FakeDriveService::SetUserPermission(
+    const std::string& resource_id,
+    google_apis::drive::PermissionRole user_permission) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  EntryInfo* entry = FindEntryByResourceId(resource_id);
+  if (!entry)
+    return HTTP_NOT_FOUND;
+
+  entry->user_permission = user_permission;
+  return HTTP_SUCCESS;
 }
 
 FakeDriveService::EntryInfo* FakeDriveService::FindEntryByResourceId(

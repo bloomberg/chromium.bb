@@ -31,6 +31,7 @@ using google_apis::GDATA_OTHER_ERROR;
 using google_apis::GDataErrorCode;
 using google_apis::GetContentCallback;
 using google_apis::HTTP_CREATED;
+using google_apis::HTTP_FORBIDDEN;
 using google_apis::HTTP_NOT_FOUND;
 using google_apis::HTTP_NO_CONTENT;
 using google_apis::HTTP_PRECONDITION;
@@ -901,6 +902,21 @@ TEST_F(FakeDriveServiceTest, DeleteResource_Offline) {
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
 }
 
+TEST_F(FakeDriveServiceTest, DeleteResource_Forbidden) {
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
+
+  EXPECT_EQ(HTTP_SUCCESS, fake_service_.SetUserPermission(
+      "2_file_resource_id", google_apis::drive::PERMISSION_ROLE_READER));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  fake_service_.DeleteResource("2_file_resource_id",
+                               std::string(),  // etag
+                               test_util::CreateCopyResultCallback(&error));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(HTTP_FORBIDDEN, error);
+}
+
 TEST_F(FakeDriveServiceTest, TrashResource_ExistingFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
@@ -945,6 +961,20 @@ TEST_F(FakeDriveServiceTest, TrashResource_Offline) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
+}
+
+TEST_F(FakeDriveServiceTest, TrashResource_Forbidden) {
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
+
+  EXPECT_EQ(HTTP_SUCCESS, fake_service_.SetUserPermission(
+      "2_file_resource_id", google_apis::drive::PERMISSION_ROLE_READER));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  fake_service_.TrashResource("2_file_resource_id",
+                              test_util::CreateCopyResultCallback(&error));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(HTTP_FORBIDDEN, error);
 }
 
 TEST_F(FakeDriveServiceTest, DownloadFile_ExistingFile) {
@@ -1225,6 +1255,28 @@ TEST_F(FakeDriveServiceTest, UpdateResource_Offline) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_FALSE(entry);
+}
+
+TEST_F(FakeDriveServiceTest, UpdateResource_Forbidden) {
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
+
+  const std::string kResourceId = "2_file_resource_id";
+  EXPECT_EQ(HTTP_SUCCESS, fake_service_.SetUserPermission(
+      kResourceId, google_apis::drive::PERMISSION_ROLE_READER));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<FileResource> entry;
+  fake_service_.UpdateResource(
+      kResourceId,
+      std::string(),
+      "new title",
+      base::Time(),
+      base::Time(),
+      test_util::CreateCopyResultCallback(&error, &entry));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(HTTP_FORBIDDEN, error);
   EXPECT_FALSE(entry);
 }
 
@@ -1645,6 +1697,26 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_Offline) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_TRUE(upload_location.is_empty());
+}
+
+TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_Forbidden) {
+  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
+
+  EXPECT_EQ(HTTP_SUCCESS, fake_service_.SetUserPermission(
+      "2_file_resource_id", google_apis::drive::PERMISSION_ROLE_READER));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  GURL upload_location;
+  fake_service_.InitiateUploadExistingFile(
+      "test/foo",
+      13,
+      "2_file_resource_id",
+      FakeDriveService::InitiateUploadExistingFileOptions(),
+      test_util::CreateCopyResultCallback(&error, &upload_location));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(HTTP_FORBIDDEN, error);
   EXPECT_TRUE(upload_location.is_empty());
 }
 

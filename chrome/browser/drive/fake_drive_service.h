@@ -284,6 +284,11 @@ class FakeDriveService : public DriveServiceInterface {
       const base::Time& last_modified_time,
       const google_apis::FileResourceCallback& callback);
 
+  // Sets the user's permission for an entry specified by |resource_id|.
+  google_apis::GDataErrorCode SetUserPermission(
+      const std::string& resource_id,
+      google_apis::drive::PermissionRole user_permission);
+
  private:
   struct EntryInfo;
   struct UploadSession;
