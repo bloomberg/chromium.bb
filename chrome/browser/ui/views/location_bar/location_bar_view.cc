@@ -17,7 +17,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
-#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -67,7 +67,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "grit/component_scaled_resources.h"
@@ -167,20 +167,19 @@ int GetEditLeadingInternalSpace() {
 // stable_partition.
 class IsPageActionViewRightAligned {
  public:
-  explicit IsPageActionViewRightAligned(ExtensionService* extension_service)
-      : extension_service_(extension_service) {}
+  explicit IsPageActionViewRightAligned(
+      extensions::ExtensionRegistry* extension_registry)
+      : extension_registry_(extension_registry) {}
 
   bool operator()(PageActionWithBadgeView* page_action_view) {
-    return extension_service_
-        ->GetExtensionById(
-              page_action_view->image_view()->page_action()->extension_id(),
-              false)
-        ->permissions_data()
-        ->HasAPIPermission(extensions::APIPermission::kBookmarkManagerPrivate);
+    return extension_registry_->enabled_extensions().GetByID(
+        page_action_view->image_view()->extension_action()->extension_id())->
+        permissions_data()->
+        HasAPIPermission(extensions::APIPermission::kBookmarkManagerPrivate);
   }
 
  private:
-  ExtensionService* extension_service_;
+  extensions::ExtensionRegistry* extension_registry_;
 
   // NOTE: Can't DISALLOW_COPY_AND_ASSIGN as we pass this object by value to
   // std::stable_partition().
@@ -509,7 +508,7 @@ void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction* page_action,
     return;
 
   page_action_view->image_view()->set_preview_enabled(preview_enabled);
-  page_action_view->UpdateVisibility(web_contents, GetToolbarModel()->GetURL());
+  page_action_view->UpdateVisibility(web_contents);
   Layout();
   SchedulePaint();
 }
@@ -519,7 +518,7 @@ PageActionWithBadgeView* LocationBarView::GetPageActionView(
   DCHECK(page_action);
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
-    if ((*i)->image_view()->page_action() == page_action)
+    if ((*i)->image_view()->extension_action() == page_action)
       return *i;
   }
   return NULL;
@@ -1151,7 +1150,7 @@ bool LocationBarView::RefreshPageActionViews() {
   std::map<ExtensionAction*, bool> old_visibility;
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
-    old_visibility[(*i)->image_view()->page_action()] = (*i)->visible();
+    old_visibility[(*i)->image_view()->extension_action()] = (*i)->visible();
   }
 
   PageActions new_page_actions;
@@ -1187,7 +1186,7 @@ bool LocationBarView::RefreshPageActionViews() {
         page_action_views_.begin(),
         page_action_views_.end(),
         IsPageActionViewRightAligned(
-            extensions::ExtensionSystem::Get(profile())->extension_service()));
+            extensions::ExtensionRegistry::Get(profile())));
 
     View* right_anchor = open_pdf_in_reader_view_;
     if (!right_anchor)
@@ -1203,16 +1202,13 @@ bool LocationBarView::RefreshPageActionViews() {
   }
 
   if (!page_action_views_.empty() && web_contents) {
-    Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-    GURL url = browser->tab_strip_model()->GetActiveWebContents()->GetURL();
-
     for (PageActionViews::const_iterator i(page_action_views_.begin());
          i != page_action_views_.end(); ++i) {
       (*i)->UpdateVisibility(
-          GetToolbarModel()->input_in_progress() ? NULL : web_contents, url);
+          GetToolbarModel()->input_in_progress() ? NULL : web_contents);
 
       // Check if the visibility of the action changed and notify if it did.
-      ExtensionAction* action = (*i)->image_view()->page_action();
+      ExtensionAction* action = (*i)->image_view()->extension_action();
       if (old_visibility.find(action) == old_visibility.end() ||
           old_visibility[action] != (*i)->visible()) {
         changed = true;
@@ -1454,7 +1450,7 @@ int LocationBarView::PageActionVisibleCount() {
 
 ExtensionAction* LocationBarView::GetPageAction(size_t index) {
   if (index < page_action_views_.size())
-    return page_action_views_[index]->image_view()->page_action();
+    return page_action_views_[index]->image_view()->extension_action();
 
   NOTREACHED();
   return NULL;
@@ -1465,7 +1461,7 @@ ExtensionAction* LocationBarView::GetVisiblePageAction(size_t index) {
   for (size_t i = 0; i < page_action_views_.size(); ++i) {
     if (page_action_views_[i]->visible()) {
       if (current == index)
-        return page_action_views_[i]->image_view()->page_action();
+        return page_action_views_[i]->image_view()->extension_action();
 
       ++current;
     }
@@ -1480,8 +1476,8 @@ void LocationBarView::TestPageActionPressed(size_t index) {
   for (size_t i = 0; i < page_action_views_.size(); ++i) {
     if (page_action_views_[i]->visible()) {
       if (current == index) {
-        page_action_views_[i]->image_view()->ExecuteAction(
-            ExtensionPopup::SHOW);
+        page_action_views_[i]->image_view()->view_controller()->
+            ExecuteAction(ExtensionPopup::SHOW, true);
         return;
       }
       ++current;

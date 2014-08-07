@@ -9,7 +9,6 @@
 #include "ui/gfx/size.h"
 #include "ui/views/view.h"
 
-class GURL;
 class PageActionImageView;
 
 namespace content {
@@ -27,7 +26,7 @@ class PageActionWithBadgeView : public views::View {
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
-  void UpdateVisibility(content::WebContents* contents, const GURL& url);
+  void UpdateVisibility(content::WebContents* contents);
 
  private:
   virtual void Layout() OVERRIDE;

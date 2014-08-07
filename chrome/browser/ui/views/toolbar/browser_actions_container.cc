@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -214,7 +213,7 @@ BrowserActionView* BrowserActionsContainer::GetBrowserActionView(
     ExtensionAction* action) {
   for (BrowserActionViews::iterator i(browser_action_views_.begin());
        i != browser_action_views_.end(); ++i) {
-    if ((*i)->button()->browser_action() == action)
+    if ((*i)->button()->extension_action() == action)
       return *i;
   }
   return NULL;
@@ -303,11 +302,7 @@ void BrowserActionsContainer::SetPopupOwner(BrowserActionButton* popup_owner) {
 
 void BrowserActionsContainer::HideActivePopup() {
   if (popup_owner_)
-    popup_owner_->HidePopup();
-}
-
-extensions::ExtensionToolbarModel* BrowserActionsContainer::GetModel() {
-  return model_;
+    popup_owner_->view_controller()->HidePopup();
 }
 
 void BrowserActionsContainer::AddObserver(
@@ -658,13 +653,8 @@ void BrowserActionsContainer::NotifyMenuDeleted(
   overflow_menu_ = NULL;
 }
 
-int BrowserActionsContainer::GetCurrentTabId() const {
-  content::WebContents* active_tab =
-      browser_->tab_strip_model()->GetActiveWebContents();
-  if (!active_tab)
-    return -1;
-
-  return SessionTabHelper::FromWebContents(active_tab)->session_id().id();
+content::WebContents* BrowserActionsContainer::GetCurrentWebContents() {
+  return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
 void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
@@ -698,7 +688,7 @@ size_t BrowserActionsContainer::GetFirstVisibleIconIndex() const {
 }
 
 ExtensionPopup* BrowserActionsContainer::TestGetPopup() {
-  return popup_owner_ ? popup_owner_->popup() : NULL;
+  return popup_owner_ ? popup_owner_->view_controller()->popup() : NULL;
 }
 
 void BrowserActionsContainer::TestSetIconVisibilityCount(size_t icons) {
@@ -1057,7 +1047,8 @@ bool BrowserActionsContainer::ShowPopupForExtension(
        iter != browser_action_views_.end(); ++iter) {
     BrowserActionButton* button = (*iter)->button();
     if (button->extension() == extension)
-      return button->ShowPopup(ExtensionPopup::SHOW, grant_tab_permissions);
+      return button->view_controller()->ExecuteAction(
+          ExtensionPopup::SHOW, grant_tab_permissions);
   }
   return false;
 }

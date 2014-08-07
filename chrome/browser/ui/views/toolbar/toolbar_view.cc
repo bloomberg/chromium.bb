@@ -332,7 +332,7 @@ void ToolbarView::ShowPageActionPopup(const extensions::Extension* extension) {
       extension_manager->GetPageAction(*extension);
   if (extension_action) {
     location_bar_->GetPageActionView(extension_action)->image_view()->
-        ExecuteAction(ExtensionPopup::SHOW);
+        view_controller()->ExecuteAction(ExtensionPopup::SHOW, false);
   }
 }
 

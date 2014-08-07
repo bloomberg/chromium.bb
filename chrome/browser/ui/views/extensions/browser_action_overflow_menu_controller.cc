@@ -87,9 +87,8 @@ BrowserActionOverflowMenuController::BrowserActionOverflowMenuController(
 
     // Set the tooltip for this item.
     base::string16 tooltip = base::UTF8ToUTF16(
-        extensions::ExtensionActionManager::Get(owner_->profile())->
-        GetBrowserAction(*view->button()->extension())->
-        GetTitle(owner_->GetCurrentTabId()));
+        view->button()->extension_action()->GetTitle(
+            view->button()->view_controller()->GetCurrentTabId()));
     menu_->SetTooltip(tooltip, command_id);
 
     icon_updaters_.push_back(new IconUpdater(menu_item, view->button()));
@@ -131,13 +130,13 @@ void BrowserActionOverflowMenuController::NotifyBrowserActionViewsDeleting() {
 }
 
 bool BrowserActionOverflowMenuController::IsCommandEnabled(int id) const {
-  BrowserActionView* view = (*views_)[start_index_ + id - 1];
-  return view->button()->IsEnabled(owner_->GetCurrentTabId());
+  BrowserActionButton* button = (*views_)[start_index_ + id - 1]->button();
+  return button->IsEnabled(button->view_controller()->GetCurrentTabId());
 }
 
 void BrowserActionOverflowMenuController::ExecuteCommand(int id) {
   BrowserActionView* view = (*views_)[start_index_ + id - 1];
-  view->button()->ExecuteBrowserAction();
+  view->button()->view_controller()->ExecuteActionByUser();
 }
 
 bool BrowserActionOverflowMenuController::ShowContextMenu(
@@ -150,7 +149,8 @@ bool BrowserActionOverflowMenuController::ShowContextMenu(
     return false;
 
   scoped_refptr<ExtensionContextMenuModel> context_menu_contents =
-      new ExtensionContextMenuModel(button->extension(), browser_, button);
+      new ExtensionContextMenuModel(
+          button->extension(), browser_, button->view_controller());
   views::MenuRunner context_menu_runner(context_menu_contents.get(),
                                         views::MenuRunner::HAS_MNEMONICS |
                                             views::MenuRunner::IS_NESTED |

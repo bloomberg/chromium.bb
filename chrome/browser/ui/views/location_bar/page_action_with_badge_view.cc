@@ -8,11 +8,8 @@
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "ui/accessibility/ax_view_state.h"
 
-using content::WebContents;
-
 PageActionWithBadgeView::PageActionWithBadgeView(
-    PageActionImageView* image_view) {
-  image_view_ = image_view;
+    PageActionImageView* image_view) : image_view_(image_view) {
   AddChildView(image_view_);
 }
 
@@ -36,8 +33,7 @@ void PageActionWithBadgeView::Layout() {
   image_view_->SetBounds(0, y, width(), height());
 }
 
-void PageActionWithBadgeView::UpdateVisibility(WebContents* contents,
-                                               const GURL& url) {
-  image_view_->UpdateVisibility(contents, url);
+void PageActionWithBadgeView::UpdateVisibility(content::WebContents* contents) {
+  image_view_->UpdateVisibility(contents);
   SetVisible(image_view_->visible());
 }

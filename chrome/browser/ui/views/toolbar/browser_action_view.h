@@ -5,17 +5,14 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_BROWSER_ACTION_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_BROWSER_ACTION_VIEW_H_
 
-#include "chrome/browser/extensions/extension_action_icon_factory.h"
-#include "chrome/browser/extensions/extension_context_menu_model.h"
-#include "chrome/browser/ui/views/extensions/extension_popup.h"
+#include "chrome/browser/ui/views/extensions/extension_action_view_controller.h"
+#include "chrome/browser/ui/views/extensions/extension_action_view_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/view.h"
-#include "ui/views/widget/widget_observer.h"
 
 class Browser;
 class BrowserActionButton;
@@ -23,16 +20,10 @@ class ExtensionAction;
 
 namespace extensions {
 class Extension;
-class ExtensionToolbarModel;
 }
 
 namespace gfx {
 class Image;
-}
-
-namespace views {
-class MenuItemView;
-class MenuRunner;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -45,8 +36,8 @@ class BrowserActionView : public views::View {
   // dragged/dropped.
   class Delegate : public views::DragController {
    public:
-    // Returns the current tab's ID, or -1 if there is no current tab.
-    virtual int GetCurrentTabId() const = 0;
+    // Returns the current web contents.
+    virtual content::WebContents* GetCurrentWebContents() = 0;
 
     // Called when a browser action becomes visible/hidden.
     virtual void OnBrowserActionVisibilityChanged() = 0;
@@ -70,9 +61,6 @@ class BrowserActionView : public views::View {
     // Hides the active popup of the delegate, if one exists.
     virtual void HideActivePopup() = 0;
 
-    // Returns the Model backing the browser actions.
-    virtual extensions::ExtensionToolbarModel* GetModel() = 0;
-
    protected:
     virtual ~Delegate() {}
   };
@@ -82,7 +70,7 @@ class BrowserActionView : public views::View {
                     Delegate* delegate);
   virtual ~BrowserActionView();
 
-  BrowserActionButton* button() { return button_; }
+  BrowserActionButton* button() { return button_.get(); }
 
   // Gets browser action button icon with the badge.
   gfx::ImageSkia GetIconWithBadge();
@@ -98,17 +86,11 @@ class BrowserActionView : public views::View {
                              const views::CullSet& cull_set) OVERRIDE;
 
  private:
-  // The Browser object this view is associated with.
-  Browser* browser_;
-
   // Usually a container for this view.
   Delegate* delegate_;
 
   // The button this view contains.
-  BrowserActionButton* button_;
-
-  // Extension this view associated with.
-  const extensions::Extension* extension_;
+  scoped_ptr<BrowserActionButton> button_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionView);
 };
@@ -117,15 +99,12 @@ class BrowserActionView : public views::View {
 // BrowserActionButton
 
 // The BrowserActionButton is a specialization of the MenuButton class.
-// It acts on a ExtensionAction, in this case a BrowserAction and handles
-// loading the image for the button asynchronously on the file thread.
+// This wraps an ExtensionActionView, and has knowledge of how to render itself
+// and when to trigger the extension action.
 class BrowserActionButton : public views::MenuButton,
+                            public ExtensionActionViewDelegate,
                             public views::ButtonListener,
-                            public views::ContextMenuController,
-                            public content::NotificationObserver,
-                            public ExtensionActionIconFactory::Observer,
-                            public views::WidgetObserver,
-                            public ExtensionContextMenuModel::PopupDelegate {
+                            public content::NotificationObserver {
  public:
   // The IconObserver will receive a notification when the button's icon has
   // been updated.
@@ -138,15 +117,19 @@ class BrowserActionButton : public views::MenuButton,
   };
 
   BrowserActionButton(const extensions::Extension* extension,
-                      Browser* browser_,
+                      Browser* browser,
                       BrowserActionView::Delegate* delegate);
+  virtual ~BrowserActionButton();
 
-  // Call this instead of delete.
-  void Destroy();
-
-  ExtensionAction* browser_action() const { return browser_action_; }
-  const extensions::Extension* extension() { return extension_; }
-
+  const extensions::Extension* extension() const {
+    return view_controller_->extension();
+  }
+  ExtensionAction* extension_action() {
+    return view_controller_->extension_action();
+  }
+  ExtensionActionViewController* view_controller() {
+    return view_controller_.get();
+  }
   void set_icon_observer(IconObserver* icon_observer) {
     icon_observer_ = icon_observer;
   }
@@ -155,41 +138,19 @@ class BrowserActionButton : public views::MenuButton,
   void UpdateState();
 
   // Does this button's action have a popup?
-  virtual bool IsPopup();
-  virtual GURL GetPopupUrl();
-
-  // Show this extension's popup. If |grant_tab_permissions| is true, this will
-  // grant the extension active tab permissions. Only do this if this was done
-  // through a user action (and not e.g. an API).
-  bool ShowPopup(ExtensionPopup::ShowAction show_action,
-                 bool grant_tab_permissions);
-
-  // Hides the popup, if one is open.
-  void HidePopup();
-
-  // Executes the browser action (and also shows the popup, if one exists).
-  void ExecuteBrowserAction();
+  bool IsPopup();
 
   // Overridden from views::View:
-  virtual bool CanHandleAccelerators() const OVERRIDE;
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
-  // Overridden from views::ContextMenuController.
-  virtual void ShowContextMenuForView(View* source,
-                                      const gfx::Point& point,
-                                      ui::MenuSourceType source_type) OVERRIDE;
-
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // Overriden from ExtensionActionIconFactory::Observer.
-  virtual void OnIconUpdated() OVERRIDE;
 
   // MenuButton behavior overrides.  These methods all default to LabelButton
   // behavior unless this button is a popup.  In that case, it uses MenuButton
@@ -205,12 +166,6 @@ class BrowserActionButton : public views::MenuButton,
   virtual scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const
       OVERRIDE;
 
-  // Overridden from ui::AcceleratorTarget.
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
-
-  // ExtensionContextMenuModel::PopupDelegate:
-  virtual void InspectPopup() OVERRIDE;
-
   // Notifications when to set button state to pushed/not pushed (for when the
   // popup/context menu is hidden or shown by the container).
   void SetButtonPushed();
@@ -220,10 +175,6 @@ class BrowserActionButton : public views::MenuButton,
   // the built-in views enabled/SetEnabled because disabled views do not
   // receive drag events.
   bool IsEnabled(int tab_id) const;
-
-  // Accessors.
-  ExtensionActionIconFactory& icon_factory() { return icon_factory_; }
-  ExtensionPopup* popup() { return popup_; }
 
   // Gets the icon of this button and its badge.
   gfx::ImageSkia GetIconWithBadge();
@@ -238,63 +189,34 @@ class BrowserActionButton : public views::MenuButton,
   virtual void OnDragDone() OVERRIDE;
 
  private:
-  virtual ~BrowserActionButton();
+  // ExtensionActionViewDelegate:
+  virtual views::View* GetAsView() OVERRIDE;
+  virtual bool IsShownInMenu() OVERRIDE;
+  virtual views::FocusManager* GetFocusManagerForAccelerator() OVERRIDE;
+  virtual views::Widget* GetParentForContextMenu() OVERRIDE;
+  virtual views::View* GetReferenceViewForPopup() OVERRIDE;
+  virtual content::WebContents* GetCurrentWebContents() OVERRIDE;
+  virtual void HideActivePopup() OVERRIDE;
+  virtual void OnIconUpdated() OVERRIDE;
+  virtual void OnPopupShown(bool grant_tab_permissions) OVERRIDE;
+  virtual void CleanupPopup() OVERRIDE;
+  virtual void OnWillShowContextMenus() OVERRIDE;
+  virtual void OnContextMenuDone() OVERRIDE;
 
-  // views::WidgetObserver:
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
-
-  // Register an extension command if the extension has an active one.
-  void MaybeRegisterExtensionCommand();
-
-  // Unregisters an extension command, if the extension has registered one and
-  // it is active.
-  void MaybeUnregisterExtensionCommand(bool only_if_active);
-
-  // Cleans up after the popup. If |close_widget| is true, this will call
-  // Widget::Close() on the popup's widget; otherwise it assumes the popup is
-  // already closing.
-  void CleanupPopup(bool close_widget);
-
-  // The Browser object this button is associated with.
-  Browser* browser_;
-
-  // The browser action this view represents. The ExtensionAction is not owned
-  // by this class.
-  ExtensionAction* browser_action_;
-
-  // The extension associated with the browser action we're displaying.
-  const extensions::Extension* extension_;
-
-  // The object that will be used to get the browser action icon for us.
-  // It may load the icon asynchronously (in which case the initial icon
-  // returned by the factory will be transparent), so we have to observe it for
-  // updates to the icon.
-  ExtensionActionIconFactory icon_factory_;
+  // The controller for this ExtensionAction view.
+  scoped_ptr<ExtensionActionViewController> view_controller_;
 
   // Delegate that usually represents a container for BrowserActionView.
   BrowserActionView::Delegate* delegate_;
 
-  // Used to make sure MaybeRegisterExtensionCommand() is called only once
-  // from ViewHierarchyChanged().
+  // Used to make sure we only register the command once.
   bool called_registered_extension_command_;
 
   content::NotificationRegistrar registrar_;
 
-  // The extension key binding accelerator this browser action is listening for
-  // (to show the popup).
-  scoped_ptr<ui::Accelerator> keybinding_;
-
-  // Responsible for running the menu.
-  scoped_ptr<views::MenuRunner> menu_runner_;
-
-  // The browser action's popup, if it is visible; NULL otherwise.
-  ExtensionPopup* popup_;
-
   // The observer that we need to notify when the icon of the button has been
   // updated.
   IconObserver* icon_observer_;
-
-  friend class base::DeleteHelper<BrowserActionButton>;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionButton);
 };

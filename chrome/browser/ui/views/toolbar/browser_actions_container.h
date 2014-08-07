@@ -230,14 +230,13 @@ class BrowserActionsContainer
       BrowserActionOverflowMenuController* controller) OVERRIDE;
 
   // Overridden from BrowserActionView::Delegate:
-  virtual int GetCurrentTabId() const OVERRIDE;
+  virtual content::WebContents* GetCurrentWebContents() OVERRIDE;
   virtual void OnBrowserActionVisibilityChanged() OVERRIDE;
   virtual bool ShownInsideMenu() const OVERRIDE;
   virtual void OnBrowserActionViewDragDone() OVERRIDE;
   virtual views::View* GetOverflowReferenceView() OVERRIDE;
   virtual void SetPopupOwner(BrowserActionButton* popup_owner) OVERRIDE;
   virtual void HideActivePopup() OVERRIDE;
-  virtual extensions::ExtensionToolbarModel* GetModel() OVERRIDE;
 
   // Overridden from extension::ExtensionKeybindingRegistry::Delegate:
   virtual extensions::ActiveTabPermissionGranter*
