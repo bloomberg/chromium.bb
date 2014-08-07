@@ -1433,6 +1433,7 @@ void ResourceProvider::ReceiveFromChild(
     // Don't allocate a texture for a child.
     resource.allocated = true;
     resource.imported_count = 1;
+    resource.allow_overlay = it->allow_overlay;
     child_info.parent_to_child_map[local_id] = it->id;
     child_info.child_to_parent_map[it->id] = local_id;
   }
@@ -1593,6 +1594,7 @@ void ResourceProvider::TransferResource(GLES2Interface* gl,
   resource->filter = source->filter;
   resource->size = source->size;
   resource->is_repeated = (source->wrap_mode == GL_REPEAT);
+  resource->allow_overlay = source->allow_overlay;
 
   if (source->type == Bitmap) {
     resource->mailbox_holder.mailbox = source->shared_bitmap_id;

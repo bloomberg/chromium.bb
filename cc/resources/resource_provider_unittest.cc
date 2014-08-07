@@ -877,6 +877,57 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
   resource_provider_->DestroyChild(child_id);
 }
 
+TEST_P(ResourceProviderTest, AllowOverlayTransfersToParent) {
+  // Overlays only supported on the GL path.
+  if (GetParam() != ResourceProvider::GLTexture)
+    return;
+
+  uint32 sync_point = 0;
+  TextureMailbox mailbox(gpu::Mailbox::Generate(), GL_TEXTURE_2D, sync_point);
+  mailbox.set_allow_overlay(true);
+  scoped_ptr<SingleReleaseCallback> release_callback =
+      SingleReleaseCallback::Create(base::Bind(&EmptyReleaseCallback));
+  ResourceProvider::ResourceId id1 =
+      child_resource_provider_->CreateResourceFromTextureMailbox(
+          mailbox, release_callback.Pass());
+
+  TextureMailbox mailbox2(gpu::Mailbox::Generate(), GL_TEXTURE_2D, sync_point);
+  mailbox2.set_allow_overlay(false);
+  scoped_ptr<SingleReleaseCallback> release_callback2 =
+      SingleReleaseCallback::Create(base::Bind(&EmptyReleaseCallback));
+  ResourceProvider::ResourceId id2 =
+      child_resource_provider_->CreateResourceFromTextureMailbox(
+          mailbox2, release_callback2.Pass());
+
+  ReturnedResourceArray returned_to_child;
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
+
+  // Transfer some resources to the parent.
+  ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+  resource_ids_to_transfer.push_back(id1);
+  resource_ids_to_transfer.push_back(id2);
+  TransferableResourceArray list;
+  child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
+                                                &list);
+  ASSERT_EQ(2u, list.size());
+  resource_provider_->ReceiveFromChild(child_id, list);
+  EXPECT_TRUE(resource_provider_->AllowOverlay(list[0].id));
+  EXPECT_FALSE(resource_provider_->AllowOverlay(list[1].id));
+
+  resource_provider_->DeclareUsedResourcesFromChild(
+      child_id, ResourceProvider::ResourceIdArray());
+
+  EXPECT_EQ(2u, returned_to_child.size());
+  child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
+
+  child_resource_provider_->DeleteResource(id1);
+  child_resource_provider_->DeleteResource(id2);
+  EXPECT_EQ(0u, child_resource_provider_->num_resources());
+
+  resource_provider_->DestroyChild(child_id);
+}
+
 TEST_P(ResourceProviderTest, TransferSoftwareResources) {
   if (GetParam() != ResourceProvider::Bitmap)
     return;

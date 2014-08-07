@@ -252,6 +252,7 @@ IPC_STRUCT_TRAITS_BEGIN(cc::TransferableResource)
   IPC_STRUCT_TRAITS_MEMBER(mailbox_holder)
   IPC_STRUCT_TRAITS_MEMBER(is_repeated)
   IPC_STRUCT_TRAITS_MEMBER(is_software)
+  IPC_STRUCT_TRAITS_MEMBER(allow_overlay)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::ReturnedResource)

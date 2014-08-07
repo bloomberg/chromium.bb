@@ -35,6 +35,7 @@ struct CC_EXPORT TransferableResource {
   gpu::MailboxHolder mailbox_holder;
   bool is_repeated;
   bool is_software;
+  bool allow_overlay;
 };
 
 }  // namespace cc
