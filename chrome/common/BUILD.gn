@@ -135,10 +135,6 @@ static_library("common") {
     deps += [
       #'<(DEPTH)/components/nacl.gyp:nacl_common',  TODO(GYP)
     ]
-    sources += [
-      "extensions/manifest_handlers/nacl_modules_handler.cc",
-      "extensions/manifest_handlers/nacl_modules_handler.h",
-    ]
   }
 
   # Printing.

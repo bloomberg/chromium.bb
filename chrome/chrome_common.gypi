@@ -420,10 +420,6 @@
             '<(DEPTH)/components/nacl.gyp:nacl_common',
             '<(DEPTH)/ppapi/native_client/src/trusted/plugin/plugin.gyp:nacl_trusted_plugin',
           ],
-          'sources': [
-            'common/extensions/manifest_handlers/nacl_modules_handler.cc',
-            'common/extensions/manifest_handlers/nacl_modules_handler.h',
-          ],
         }],
         ['enable_printing==0', {
           'sources!': [

@@ -224,6 +224,13 @@ source_set("common") {
     ]
   }
 
+  if (enable_nacl) {
+    sources += [
+      "manifest_handlers/nacl_modules_handler.cc",
+      "manifest_handlers/nacl_modules_handler.h",
+    ]
+  }
+
   if (is_win) {
     cflags = [
       "/wd4267", # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

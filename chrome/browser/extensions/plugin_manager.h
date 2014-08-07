@@ -9,9 +9,9 @@
 #include <string>
 
 #include "base/scoped_observer.h"
-#include "chrome/common/extensions/manifest_handlers/nacl_modules_handler.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/common/manifest_handlers/nacl_modules_handler.h"
 
 class GURL;
 class Profile;

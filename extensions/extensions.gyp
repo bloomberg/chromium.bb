@@ -19,6 +19,8 @@
         '../components/components.gyp:url_matcher',
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',
+        # For Mojo generated headers for generated_api.cc.
+        '../device/serial/serial.gyp:device_serial_mojo',
         '../ipc/ipc.gyp:ipc',
         '../net/net.gyp:net',
         '../third_party/re2/re2.gyp:re2',
@@ -229,6 +231,14 @@
             'common/extension_api.cc',
             'common/manifest_handlers/externally_connectable.cc',
             'common/manifest_handlers/externally_connectable.h',
+          ],
+        }],
+        ['disable_nacl==0', {
+          # NaClModulesHandler does not use any code in NaCl, so no dependency
+          # on nacl_common.
+          'sources': [
+            'common/manifest_handlers/nacl_modules_handler.cc',
+            'common/manifest_handlers/nacl_modules_handler.h',
           ],
         }],
       ],
