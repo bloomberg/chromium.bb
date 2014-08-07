@@ -79,7 +79,7 @@ class URLRequestContextFactory {
   // instance of URLRequestContext only.
   bool system_dependencies_initialized_;
   scoped_ptr<net::HostResolver> host_resolver_;
-  scoped_ptr<net::ServerBoundCertService> server_bound_cert_service_;
+  scoped_ptr<net::ChannelIDService> channel_id_service_;
   scoped_ptr<net::CertVerifier> cert_verifier_;
   scoped_refptr<net::SSLConfigService> ssl_config_service_;
   scoped_ptr<net::TransportSecurityState> transport_security_state_;

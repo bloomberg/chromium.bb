@@ -27,10 +27,6 @@ using testing::SaveArg;
 using testing::WithArgs;
 using base::StringPiece;
 
-namespace net {
-class ServerBoundCertService;
-}
-
 namespace extensions {
 
 class MockSSLClientSocket : public net::SSLClientSocket {
@@ -69,7 +65,6 @@ class MockSSLClientSocket : public net::SSLClientSocket {
   MOCK_METHOD1(GetSSLCertRequestInfo, void(net::SSLCertRequestInfo*));
   MOCK_METHOD1(GetNextProto,
                net::SSLClientSocket::NextProtoStatus(std::string*));
-  MOCK_CONST_METHOD0(GetServerBoundCertService, net::ServerBoundCertService*());
   MOCK_CONST_METHOD0(GetUnverifiedServerCertificateChain,
                      scoped_refptr<net::X509Certificate>());
   MOCK_CONST_METHOD0(GetChannelIDService, net::ChannelIDService*());

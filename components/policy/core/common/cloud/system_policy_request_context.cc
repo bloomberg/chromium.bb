@@ -57,7 +57,7 @@ SystemPolicyRequestContext::GetURLRequestContext() {
     context_->set_http_transaction_factory(http_transaction_factory_.get());
 
     // No cookies, please. We also don't track channel IDs (no
-    // ServerBoundCertService).
+    // ChannelIDService).
     context_->set_cookie_store(new net::CookieMonster(NULL, NULL));
   }
 

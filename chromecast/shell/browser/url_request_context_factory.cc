@@ -26,8 +26,8 @@
 #include "net/ocsp/nss_ocsp.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/next_proto.h"
-#include "net/ssl/default_server_bound_cert_store.h"
-#include "net/ssl/server_bound_cert_service.h"
+#include "net/ssl/channel_id_service.h"
+#include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/url_request_context.h"
@@ -184,11 +184,11 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
   host_resolver_ = net::HostResolver::CreateDefaultResolver(NULL);
 
   // TODO(lcwu): http://crbug.com/392352. For performance and security reasons,
-  // a persistent (on-disk) HttpServerProperties and ServerBoundCertService
-  // might be desirable in the future.
-  server_bound_cert_service_.reset(new net::ServerBoundCertService(
-      new net::DefaultServerBoundCertStore(NULL),
-      base::WorkerPool::GetTaskRunner(true)));
+  // a persistent (on-disk) HttpServerProperties and ChannelIDService might be
+  // desirable in the future.
+  channel_id_service_.reset(
+      new net::ChannelIDService(new net::DefaultChannelIDStore(NULL),
+                                base::WorkerPool::GetTaskRunner(true)));
 
   cert_verifier_.reset(net::CertVerifier::CreateDefault());
 
@@ -267,7 +267,7 @@ void URLRequestContextFactory::PopulateNetworkSessionParams(
     net::HttpNetworkSession::Params* params) {
   params->host_resolver = host_resolver_.get();
   params->cert_verifier = cert_verifier_.get();
-  params->server_bound_cert_service = server_bound_cert_service_.get();
+  params->channel_id_service = channel_id_service_.get();
   params->ssl_config_service = ssl_config_service_.get();
   params->transport_security_state = transport_security_state_.get();
   params->http_auth_handler_factory = http_auth_handler_factory_.get();
@@ -291,8 +291,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateSystemRequestContext() {
 
   net::URLRequestContext* system_context = new net::URLRequestContext();
   system_context->set_host_resolver(host_resolver_.get());
-  system_context->set_server_bound_cert_service(
-      server_bound_cert_service_.get());
+  system_context->set_channel_id_service(channel_id_service_.get());
   system_context->set_cert_verifier(cert_verifier_.get());
   system_context->set_proxy_service(proxy_service_.get());
   system_context->set_ssl_config_service(ssl_config_service_.get());
@@ -364,8 +363,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateMainRequestContext(
 
   net::URLRequestContext* main_context = new net::URLRequestContext();
   main_context->set_host_resolver(host_resolver_.get());
-  main_context->set_server_bound_cert_service(
-      server_bound_cert_service_.get());
+  main_context->set_channel_id_service(channel_id_service_.get());
   main_context->set_cert_verifier(cert_verifier_.get());
   main_context->set_proxy_service(proxy_service_.get());
   main_context->set_ssl_config_service(ssl_config_service_.get());
