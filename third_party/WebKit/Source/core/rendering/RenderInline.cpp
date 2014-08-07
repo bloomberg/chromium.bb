@@ -44,9 +44,16 @@
 
 namespace blink {
 
+struct SameSizeAsRenderInline : public RenderBoxModelObject {
+    virtual ~SameSizeAsRenderInline() { }
+    RenderObjectChildList m_children;
+    RenderLineBoxList m_lineBoxes;
+};
+
+COMPILE_ASSERT(sizeof(RenderInline) == sizeof(SameSizeAsRenderInline), RenderInline_should_stay_small);
+
 RenderInline::RenderInline(Element* element)
     : RenderBoxModelObject(element)
-    , m_alwaysCreateLineBoxes(false)
 {
     setChildrenInline(true);
 }
@@ -188,13 +195,13 @@ void RenderInline::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
         updateStyleOfAnonymousBlockContinuations(block, newStyle, oldStyle);
     }
 
-    if (!m_alwaysCreateLineBoxes) {
-        bool alwaysCreateLineBoxes = hasSelfPaintingLayer() || hasBoxDecorationBackground() || newStyle->hasPadding() || newStyle->hasMargin() || hasOutline();
-        if (oldStyle && alwaysCreateLineBoxes) {
+    if (!alwaysCreateLineBoxes()) {
+        bool alwaysCreateLineBoxesNew = hasSelfPaintingLayer() || hasBoxDecorationBackground() || newStyle->hasPadding() || newStyle->hasMargin() || hasOutline();
+        if (oldStyle && alwaysCreateLineBoxesNew) {
             dirtyLineBoxes(false);
             setNeedsLayoutAndFullPaintInvalidation();
         }
-        m_alwaysCreateLineBoxes = alwaysCreateLineBoxes;
+        setAlwaysCreateLineBoxes(alwaysCreateLineBoxesNew);
     }
 }
 
@@ -202,32 +209,32 @@ void RenderInline::updateAlwaysCreateLineBoxes(bool fullLayout)
 {
     // Once we have been tainted once, just assume it will happen again. This way effects like hover highlighting that change the
     // background color will only cause a layout on the first rollover.
-    if (m_alwaysCreateLineBoxes)
+    if (alwaysCreateLineBoxes())
         return;
 
     RenderStyle* parentStyle = parent()->style();
     RenderInline* parentRenderInline = parent()->isRenderInline() ? toRenderInline(parent()) : 0;
     bool checkFonts = document().inNoQuirksMode();
-    bool alwaysCreateLineBoxes = (parentRenderInline && parentRenderInline->alwaysCreateLineBoxes())
+    bool alwaysCreateLineBoxesNew = (parentRenderInline && parentRenderInline->alwaysCreateLineBoxes())
         || (parentRenderInline && parentStyle->verticalAlign() != BASELINE)
         || style()->verticalAlign() != BASELINE
         || style()->textEmphasisMark() != TextEmphasisMarkNone
         || (checkFonts && (!parentStyle->font().fontMetrics().hasIdenticalAscentDescentAndLineGap(style()->font().fontMetrics())
         || parentStyle->lineHeight() != style()->lineHeight()));
 
-    if (!alwaysCreateLineBoxes && checkFonts && document().styleEngine()->usesFirstLineRules()) {
+    if (!alwaysCreateLineBoxesNew && checkFonts && document().styleEngine()->usesFirstLineRules()) {
         // Have to check the first line style as well.
         parentStyle = parent()->style(true);
         RenderStyle* childStyle = style(true);
-        alwaysCreateLineBoxes = !parentStyle->font().fontMetrics().hasIdenticalAscentDescentAndLineGap(childStyle->font().fontMetrics())
+        alwaysCreateLineBoxesNew = !parentStyle->font().fontMetrics().hasIdenticalAscentDescentAndLineGap(childStyle->font().fontMetrics())
         || childStyle->verticalAlign() != BASELINE
         || parentStyle->lineHeight() != childStyle->lineHeight();
     }
 
-    if (alwaysCreateLineBoxes) {
+    if (alwaysCreateLineBoxesNew) {
         if (!fullLayout)
             dirtyLineBoxes(false);
-        m_alwaysCreateLineBoxes = true;
+        setAlwaysCreateLineBoxes();
     }
 }
 

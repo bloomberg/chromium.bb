@@ -428,6 +428,17 @@ public:
     bool hasColumns() const { return m_bitfields.hasColumns(); }
     void setHasColumns(bool b = true) { m_bitfields.setHasColumns(b); }
 
+    bool alwaysCreateLineBoxesForRenderInline() const
+    {
+        ASSERT(isRenderInline());
+        return m_bitfields.alwaysCreateLineBoxesForRenderInline();
+    }
+    void setAlwaysCreateLineBoxesForRenderInline(bool alwaysCreateLineBoxes)
+    {
+        ASSERT(isRenderInline());
+        m_bitfields.setAlwaysCreateLineBoxesForRenderInline(alwaysCreateLineBoxes);
+    }
+
     bool ancestorLineBoxDirty() const { return m_bitfields.ancestorLineBoxDirty(); }
     void setAncestorLineBoxDirty(bool value = true)
     {
@@ -1229,18 +1240,19 @@ private:
             , m_hasCounterNodeMap(false)
             , m_everHadLayout(false)
             , m_ancestorLineBoxDirty(false)
+            , m_layoutDidGetCalled(false)
+            , m_hasPendingResourceUpdate(false)
             , m_childrenInline(false)
             , m_hasColumns(false)
-            , m_layoutDidGetCalled(false)
+            , m_alwaysCreateLineBoxesForRenderInline(false)
             , m_positionedState(IsStaticallyPositioned)
             , m_selectionState(SelectionNone)
             , m_flowThreadState(NotInsideFlowThread)
             , m_boxDecorationBackgroundState(NoBoxDecorationBackground)
-            , m_hasPendingResourceUpdate(false)
         {
         }
 
-        // 32 bits have been used in the first word, and 6 in the second.
+        // 32 bits have been used in the first word, and 11 in the second.
         ADD_BOOLEAN_BITFIELD(selfNeedsLayout, SelfNeedsLayout);
         ADD_BOOLEAN_BITFIELD(shouldDoFullPaintInvalidation, ShouldDoFullPaintInvalidation);
         ADD_BOOLEAN_BITFIELD(shouldInvalidateOverflowForPaint, ShouldInvalidateOverflowForPaint);
@@ -1274,11 +1286,16 @@ private:
         ADD_BOOLEAN_BITFIELD(everHadLayout, EverHadLayout);
         ADD_BOOLEAN_BITFIELD(ancestorLineBoxDirty, AncestorLineBoxDirty);
 
+        ADD_BOOLEAN_BITFIELD(layoutDidGetCalled, LayoutDidGetCalled);
+
+        ADD_BOOLEAN_BITFIELD(hasPendingResourceUpdate, HasPendingResourceUpdate);
+
         // from RenderBlock
         ADD_BOOLEAN_BITFIELD(childrenInline, ChildrenInline);
         ADD_BOOLEAN_BITFIELD(hasColumns, HasColumns);
 
-        ADD_BOOLEAN_BITFIELD(layoutDidGetCalled, LayoutDidGetCalled);
+        // from RenderInline
+        ADD_BOOLEAN_BITFIELD(alwaysCreateLineBoxesForRenderInline, AlwaysCreateLineBoxesForRenderInline);
 
     private:
         unsigned m_positionedState : 2; // PositionedState
@@ -1287,9 +1304,6 @@ private:
         unsigned m_boxDecorationBackgroundState : 2; // BoxDecorationBackgroundState
 
     public:
-
-        ADD_BOOLEAN_BITFIELD(hasPendingResourceUpdate, HasPendingResourceUpdate);
-
         bool isOutOfFlowPositioned() const { return m_positionedState == IsOutOfFlowPositioned; }
         bool isRelPositioned() const { return m_positionedState == IsRelativelyPositioned; }
         bool isPositioned() const { return m_positionedState != IsStaticallyPositioned; }
