@@ -54,7 +54,7 @@ def GetPreferredTryMasters(project, change):
       'linux_chromium_rel_swarming': set(['defaulttests']),
     },
     'tryserver.chromium.mac': {
-      'mac_chromium_rel': set(['defaulttests']),
+      'mac_chromium_rel_swarming': set(['defaulttests']),
     },
     'tryserver.chromium.win': {
       'win_chromium_rel': set(['defaulttests']),

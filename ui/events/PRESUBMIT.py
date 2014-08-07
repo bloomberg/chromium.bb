@@ -18,7 +18,7 @@ def GetPreferredTryMasters(project, change):
   return {
     'tryserver.chromium.linux': {
       'linux_chromium_rel_swarming': tests,
-      'linux_chromium_chromeos_rel': tests,
+      'linux_chromium_chromeos_rel_swarming': tests,
       'linux_chromeos_asan': tests,
     },
     'tryserver.chromium.win': {
