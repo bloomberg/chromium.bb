@@ -83,7 +83,7 @@ PASS 'abc'[-1] is undefined.
 PASS 'abc'[-4] is undefined.
 PASS 'abc'[10] is undefined.
 PASS 'abc'[10] is 'x'
-PASS bar is html
+FAIL bar should be <a href="javascript:foo( 'This ', 'is ', 'a test' )">This is a test.</a>. Was <a href="javascript:foo( &#039;This &#039;, &#039;is &#039;, &#039;a test&#039; )">This is a test.</a>.
 PASS successfullyParsed is true
 
 TEST COMPLETE
