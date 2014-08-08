@@ -79,8 +79,10 @@ class DocumentRenderer(object):
                                   path=path)
 
         new_document.append(document[cursor_index:start_ref_index])
-        new_document.append('<a href=%s>%s</a>' % (ref_dict['href'],
-                                                   ref_dict['text']))
+        new_document.append('<a href=%s/%s>%s</a>' % (
+            self._platform_bundle._base_path + platform,
+            ref_dict['href'],
+            ref_dict['text']))
 
       cursor_index = end_ref_index + 1
       start_ref_index = document.find(START_REF, cursor_index)
@@ -90,6 +92,10 @@ class DocumentRenderer(object):
     return ''.join(new_document)
 
   def Render(self, document, path, render_title=False):
+    ''' |document|: document to be rendered.
+            |path|: request path to the document.
+    |render_title|: boolean representing whether or not to render a title.
+    '''
     # Render links first so that parsing and later replacements aren't
     # affected by $(ref...) substitutions
     document = self._RenderLinks(document, path)

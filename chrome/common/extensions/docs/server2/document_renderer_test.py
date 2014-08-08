@@ -15,28 +15,32 @@ class DocumentRendererUnittest(unittest.TestCase):
   def setUp(self):
     self._renderer = ServerInstance.ForTest(
         TestFileSystem(CANNED_TEST_FILE_SYSTEM_DATA)).document_renderer
+    self._path = 'apps/some/path/to/document.html'
+
+  def _Render(self, document, render_title=False):
+    return self._renderer.Render(document,
+                                 self._path,
+                                 render_title=render_title)
 
   def testNothingToSubstitute(self):
     document = 'hello world'
-    path = 'apps/some/path/to/document.html'
 
-    text, warnings = self._renderer.Render(document, path)
+    text, warnings = self._Render(document)
     self.assertEqual(document, text)
     self.assertEqual([], warnings)
 
-    text, warnings = self._renderer.Render(document, path, render_title=True)
+    text, warnings = self._Render(document, render_title=True)
     self.assertEqual(document, text)
     self.assertEqual(['Expected a title'], warnings)
 
   def testTitles(self):
     document = '<h1>title</h1> then $(title) then another $(title)'
-    path = 'apps/some/path/to/document.html'
 
-    text, warnings = self._renderer.Render(document, path)
+    text, warnings = self._Render(document)
     self.assertEqual(document, text)
     self.assertEqual(['Found unexpected title "title"'], warnings)
 
-    text, warnings = self._renderer.Render(document, path, render_title=True)
+    text, warnings = self._Render(document, render_title=True)
     self.assertEqual('<h1>title</h1> then title then another $(title)', text)
     self.assertEqual([], warnings)
 
@@ -45,73 +49,74 @@ class DocumentRendererUnittest(unittest.TestCase):
                 'and another $(table_of_contents)')
     expected_document = ('here is a toc <table-of-contents> and another '
                          '$(table_of_contents)')
-    path = 'apps/some/path/to/document.html'
 
-    text, warnings = self._renderer.Render(document, path)
+    text, warnings = self._Render(document)
     self.assertEqual(expected_document, text)
     self.assertEqual([], warnings)
 
-    text, warnings = self._renderer.Render(document, path, render_title=True)
+    text, warnings = self._Render(document, render_title=True)
     self.assertEqual(expected_document, text)
     self.assertEqual(['Expected a title'], warnings)
 
   def testRefs(self):
     # The references in this and subsequent tests won't actually be resolved
     document = 'A ref $(ref:baz.baz_e1) here, $(ref:foo.foo_t3 ref title) there'
-    expected_document = ('A ref <a href=#type-baz_e1>baz.baz_e1</a> '
-                         'here, <a href=#type-foo_t3>ref title</a> '
-                         'there')
-    path = 'apps/some/path/to/document.html'
+    expected_document = ''.join([
+      'A ref <a href=/apps/#type-baz_e1>baz.baz_e1</a> here, ',
+      '<a href=/apps/#type-foo_t3>ref title</a> there'
+    ])
 
-    text, warnings = self._renderer.Render(document, path)
+    text, warnings = self._Render(document)
     self.assertEqual(expected_document, text)
     self.assertEqual([], warnings)
 
-    text, warnings = self._renderer.Render(document, path, render_title=True)
+    text, warnings = self._Render(document, render_title=True)
     self.assertEqual(expected_document, text)
     self.assertEqual(['Expected a title'], warnings)
 
   def testTitleAndToc(self):
     document = '<h1>title</h1> $(title) and $(table_of_contents)'
-    path = 'apps/some/path/to/document.html'
 
-    text, warnings = self._renderer.Render(document, path)
+    text, warnings = self._Render(document)
     self.assertEqual('<h1>title</h1> $(title) and <table-of-contents>', text)
     self.assertEqual(['Found unexpected title "title"'], warnings)
 
-    text, warnings = self._renderer.Render(document, path, render_title=True)
+    text, warnings = self._Render(document, render_title=True)
     self.assertEqual('<h1>title</h1> title and <table-of-contents>', text)
     self.assertEqual([], warnings)
 
   def testRefInTitle(self):
     document = '<h1>$(ref:baz.baz_e1 title)</h1> A $(title) was here'
-    expected_document_no_title = ('<h1><a href=#type-baz_e1>'
-                                  'title</a></h1> A $(title) was here')
+    href = '/apps/#type-baz_e1'
+    expected_document_no_title = ''.join([
+      '<h1><a href=%s>title</a></h1> A $(title) was here' % href
+    ])
 
-    expected_document = ('<h1><a href=#type-baz_e1>title</a></h1>'
-                         ' A title was here')
-    path = 'apps/some/path/to/document.html'
+    expected_document = ''.join([
+      '<h1><a href=%s>title</a></h1> A title was here' % href
+    ])
 
-    text, warnings = self._renderer.Render(document, path)
+    text, warnings = self._Render(document)
     self.assertEqual(expected_document_no_title, text)
     self.assertEqual([('Found unexpected title "title"')], warnings)
 
-    text, warnings = self._renderer.Render(document, path, render_title=True)
+    text, warnings = self._Render(document, render_title=True)
     self.assertEqual(expected_document, text)
     self.assertEqual([], warnings)
 
   def testRefSplitAcrossLines(self):
     document = 'Hello, $(ref:baz.baz_e1 world). A $(ref:foo.foo_t3\n link)'
-    expected_document = ('Hello, <a href=#type-baz_e1>world</a>. A <a href='
-                         '#type-foo_t3>link</a>')
+    expected_document = ''.join([
+      'Hello, <a href=/apps/#type-baz_e1>world</a>. ',
+      'A <a href=/apps/#type-foo_t3>link</a>'
+    ])
 
-    path = 'apps/some/path/to/document.html'
 
-    text, warnings = self._renderer.Render(document, path)
+    text, warnings = self._Render(document)
     self.assertEqual(expected_document, text)
     self.assertEqual([], warnings)
 
-    text, warnings = self._renderer.Render(document, path, render_title=True)
+    text, warnings = self._Render(document, render_title=True)
     self.assertEqual(expected_document, text)
     self.assertEqual(['Expected a title'], warnings)
 
@@ -126,17 +131,22 @@ class DocumentRendererUnittest(unittest.TestCase):
         'reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla '
         'pariatur. Excepteur sint occaecat cupidatat non proident, sunt in '
         'culpa qui officia deserunt mollit anim id est laborum.')
-    document = ('An invalid $(ref:foo.foo_t3 a title ' + _LOREM_IPSUM +
-                '$(ref:baz.baz_e1) here')
-    expected_document = ('An invalid $(ref:foo.foo_t3 a title ' + _LOREM_IPSUM +
-                         '<a href=#type-baz_e1>baz.baz_e1</a> here')
-    path = 'apps/some/path/to/document_api.html'
+    document = ''.join([
+      'An invalid $(ref:foo.foo_t3 a title ',
+      _LOREM_IPSUM,
+     '$(ref:baz.baz_e1) here'
+    ])
+    expected_document = ''.join([
+      'An invalid $(ref:foo.foo_t3 a title ',
+      _LOREM_IPSUM,
+      '<a href=/apps/#type-baz_e1>baz.baz_e1</a> here'
+    ])
 
-    text, warnings = self._renderer.Render(document, path)
+    text, warnings = self._Render(document)
     self.assertEqual(expected_document, text)
     self.assertEqual([], warnings)
 
-    text, warnings = self._renderer.Render(document, path, render_title=True)
+    text, warnings = self._Render(document, render_title=True)
     self.assertEqual(expected_document, text)
     self.assertEqual(['Expected a title'], warnings)
 
