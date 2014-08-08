@@ -4,6 +4,7 @@
 
 #include "athena/content/public/content_activity_factory.h"
 #include "athena/content/public/content_app_model_builder.h"
+#include "athena/content/public/web_contents_view_delegate_creator.h"
 #include "athena/home/public/home_card.h"
 #include "athena/main/athena_app_window_controller.h"
 #include "athena/main/athena_launcher.h"
@@ -145,8 +146,7 @@ class AthenaContentBrowserClient
   // content::ContentBrowserClient:
   virtual content::WebContentsViewDelegate* GetWebContentsViewDelegate(
       content::WebContents* web_contents) OVERRIDE {
-    // TODO(oshima): Implement athena's WebContentsViewDelegate.
-    return NULL;
+    return athena::CreateWebContentsViewDelegate(web_contents);
   }
 
  private:
