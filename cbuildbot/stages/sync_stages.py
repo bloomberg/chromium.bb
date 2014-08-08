@@ -698,7 +698,7 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
     changes_to_test = []
     for change in changes:
       status = pool.GetCLStatus(PRE_CQ, change)
-      if status == manifest_version.BuilderStatus.STATUS_PASSED:
+      if status == validation_pool.ValidationPool.STATUS_PASSED:
         changes_to_test.append(change)
 
     # If we only see changes that weren't verified by Pre-CQ, try all of the
@@ -818,11 +818,23 @@ class PreCQSyncStage(SyncStage):
 class PreCQLauncherStage(SyncStage):
   """Scans for CLs and automatically launches Pre-CQ jobs to test them."""
 
+  # The CL is currently being tested by a Pre-CQ builder.
   STATUS_INFLIGHT = validation_pool.ValidationPool.STATUS_INFLIGHT
+
+  # The CL has passed the Pre-CQ.
   STATUS_PASSED = validation_pool.ValidationPool.STATUS_PASSED
+
+  # The CL has failed the Pre-CQ.
   STATUS_FAILED = validation_pool.ValidationPool.STATUS_FAILED
+
+  # We have requested a Pre-CQ trybot but it has not started yet.
   STATUS_LAUNCHING = validation_pool.ValidationPool.STATUS_LAUNCHING
+
+  # The CL is ready to be retried.
   STATUS_WAITING = validation_pool.ValidationPool.STATUS_WAITING
+
+  # The CL has passed the Pre-CQ and is ready to be submitted.
+  STATUS_READY_TO_SUBMIT = validation_pool.ValidationPool.STATUS_READY_TO_SUBMIT
 
   # The number of minutes we allow before considering a launch attempt failed.
   # If this window isn't hit in a given launcher run, the window will start
@@ -882,7 +894,7 @@ class PreCQLauncherStage(SyncStage):
     )
     cros_build_lib.PrintBuildbotLink(' | '.join(items), patch.url)
 
-  def GetPreCQStatus(self, pool, changes):
+  def GetPreCQStatus(self, pool, changes, status_map):
     """Get the Pre-CQ status of a list of changes.
 
     Side effect: reject or retry changes that have timed out.
@@ -890,6 +902,7 @@ class PreCQLauncherStage(SyncStage):
     Args:
       pool: The validation pool.
       changes: Changes to examine.
+      status_map: Dict mapping changes to their CL status.
 
     Returns:
       busy: The set of CLs that are currently being tested.
@@ -898,7 +911,7 @@ class PreCQLauncherStage(SyncStage):
     busy, passed = set(), set()
 
     for change in changes:
-      status = pool.GetCLStatus(PRE_CQ, change)
+      status = status_map[change]
 
       if status != self.STATUS_LAUNCHING:
         # The trybot is not launching, so we should remove it from our
@@ -964,10 +977,13 @@ class PreCQLauncherStage(SyncStage):
         busy.add(change)
         pool.UpdateCLStatus(PRE_CQ, change, self.STATUS_WAITING,
                             self._run.options.debug)
-        self._PrintPatchStatus(change, 'failed')
+        self._PrintPatchStatus(change, status)
       elif status == self.STATUS_PASSED:
         passed.add(change)
-        self._PrintPatchStatus(change, 'passed')
+        self._PrintPatchStatus(change, status)
+      elif status == self.STATUS_READY_TO_SUBMIT:
+        passed.add(change)
+        self._PrintPatchStatus(change, 'submitting')
 
     return busy, passed
 
@@ -990,16 +1006,21 @@ class PreCQLauncherStage(SyncStage):
         pool.UpdateCLStatus(PRE_CQ, patch, self.STATUS_LAUNCHING,
                             self._run.options.debug)
 
-  def GetDisjointTransactionsToTest(self, pool, changes):
+  def GetDisjointTransactionsToTest(self, pool, changes, status_map):
     """Get the list of disjoint transactions to test.
 
     Side effect: reject or retry changes that have timed out.
+
+    Args:
+      pool: The validation pool.
+      changes: Changes to examine.
+      status_map: Dict mapping changes to their CL status.
 
     Returns:
       A list of disjoint transactions to test. Each transaction should be sent
       to a different Pre-CQ trybot.
     """
-    busy, passed = self.GetPreCQStatus(pool, changes)
+    busy, passed = self.GetPreCQStatus(pool, changes, status_map)
 
     # Create a list of disjoint transactions to test.
     manifest = git.ManifestCheckout.Cached(self._build_root)
@@ -1034,13 +1055,22 @@ class PreCQLauncherStage(SyncStage):
     Non-manifest changes are just submitted here because they don't need to be
     verified by either the Pre-CQ or CQ.
     """
-    # Submit non-manifest changes if we can.
-    if tree_status.IsTreeOpen():
-      pool.SubmitNonManifestChanges(check_tree_open=False)
+    # Get change status.
+    status_map = {}
+    for change in changes:
+      status = pool.GetCLStatus(PRE_CQ, change)
+      status_map[change] = status
 
     # Launch trybots for manifest changes.
-    for plan in self.GetDisjointTransactionsToTest(pool, changes):
+    for plan in self.GetDisjointTransactionsToTest(pool, changes, status_map):
       self.LaunchTrybot(pool, plan)
+
+    # Submit changes that don't need a CQ run if we can.
+    if tree_status.IsTreeOpen():
+      pool.SubmitNonManifestChanges(check_tree_open=False)
+      submitting = [change for (change, status) in status_map.items()
+                    if status == self.STATUS_READY_TO_SUBMIT]
+      pool.SubmitChanges(submitting, check_tree_open=False)
 
     # Tell ValidationPool to keep waiting for more changes until we hit
     # its internal timeout.

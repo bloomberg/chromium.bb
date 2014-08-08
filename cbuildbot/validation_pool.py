@@ -266,6 +266,31 @@ def GetStagesToIgnoreForChange(build_root, change):
   return result.split() if result else []
 
 
+def ShouldSubmitChangeInPreCQ(build_root, change):
+  """Look up whether |change| is configured to be submitted in the pre-CQ.
+
+  This looks up the "submit-in-pre-cq" setting inside the project in
+  COMMIT-QUEUE.ini and checks whether it is set to "yes".
+
+  [GENERAL]
+    submit-in-pre-cq: yes
+
+  Args:
+    build_root: The root of the checkout.
+    change: Change to examine.
+
+  Returns:
+    A list of stages to ignore for the given |change|.
+  """
+  result = None
+  try:
+    result = _GetOptionForChange(build_root, change, 'GENERAL',
+                                 'submit-in-pre-cq')
+  except ConfigParser.Error:
+    cros_build_lib.Error('%s has malformed config file', change, exc_info=True)
+  return result and result.lower() == 'yes'
+
+
 class GerritHelperNotAvailable(gerrit.GerritException):
   """Exception thrown when a specific helper is requested but unavailable."""
 
@@ -1308,6 +1333,7 @@ class ValidationPool(object):
   STATUS_PASSED = manifest_version.BuilderStatus.STATUS_PASSED
   STATUS_LAUNCHING = 'launching'
   STATUS_WAITING = 'waiting'
+  STATUS_READY_TO_SUBMIT = 'ready-to-submit'
   INCONSISTENT_SUBMIT_MSG = ('Gerrit thinks that the change was not submitted, '
                              'even though we hit the submit button.')
 
@@ -2064,11 +2090,6 @@ class ValidationPool(object):
     assert self.is_master, 'Non-master builder calling SubmitPool'
     assert not self.pre_cq, 'Trybot calling SubmitPool'
 
-    # Mark all changes as successful.
-    inputs = [[self.bot, change, self.STATUS_PASSED, self.dryrun]
-              for change in changes]
-    parallel.RunTasksInProcessPool(self.UpdateCLStatus, inputs)
-
     if (check_tree_open and not self.dryrun and not
        tree_status.IsTreeOpen(period=self.SLEEP_TIMEOUT,
                               timeout=self.MAX_TIMEOUT,
@@ -2238,6 +2259,11 @@ class ValidationPool(object):
       FailedToSubmitAllChangesNonFatalException: if we can't submit a change
         due to non-fatal errors.
     """
+    # Mark all changes as successful.
+    inputs = [[self.bot, change, self.STATUS_PASSED, self.dryrun]
+              for change in self.changes]
+    parallel.RunTasksInProcessPool(self.UpdateCLStatus, inputs)
+
     # Note that SubmitChanges can throw an exception if it can't
     # submit all changes; in that particular case, don't mark the inflight
     # failures patches as failed in gerrit- some may apply next time we do
@@ -2394,11 +2420,19 @@ class ValidationPool(object):
   def HandlePreCQSuccess(self):
     """Handler that is called when the Pre-CQ successfully verifies a change."""
     msg = '%(queue)s successfully verified your change in %(build_log)s .'
-    for change in self.changes:
-      if self.GetCLStatus(self.bot, change) != self.STATUS_PASSED:
+    submit = all(ShouldSubmitChangeInPreCQ(self.build_root, change)
+                 for change in self.changes)
+    new_status = self.STATUS_READY_TO_SUBMIT if submit else self.STATUS_PASSED
+    ok_statuses = (self.STATUS_PASSED, self.STATUS_READY_TO_SUBMIT)
+
+    def ProcessChange(change):
+      if self.GetCLStatus(self.bot, change) not in ok_statuses:
         self.SendNotification(change, msg)
-        self.UpdateCLStatus(self.bot, change, self.STATUS_PASSED,
-                            dry_run=self.dryrun)
+        self.UpdateCLStatus(PRE_CQ, change, new_status, self.dryrun)
+
+    # Set the new statuses in parallel.
+    inputs = [[change] for change in self.changes]
+    parallel.RunTasksInProcessPool(ProcessChange, inputs)
 
   def _HandleCouldNotSubmit(self, change, error=''):
     """Handler that is called when Paladin can't submit a change.

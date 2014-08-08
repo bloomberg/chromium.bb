@@ -334,6 +334,7 @@ class PreCQLauncherStageTest(MasterCQSyncTest):
   STATUS_LAUNCHING = validation_pool.ValidationPool.STATUS_LAUNCHING
   STATUS_WAITING = validation_pool.ValidationPool.STATUS_WAITING
   STATUS_FAILED = validation_pool.ValidationPool.STATUS_FAILED
+  STATUS_READY_TO_SUBMIT = validation_pool.ValidationPool.STATUS_READY_TO_SUBMIT
 
   def setUp(self):
     self.PatchObject(time, 'sleep', autospec=True)
@@ -360,7 +361,7 @@ class PreCQLauncherStageTest(MasterCQSyncTest):
     self.assertEqual(self.pre_cq.status.values(), [self.STATUS_LAUNCHING])
     self.assertEqual(self.pre_cq.calls.keys(), [self.STATUS_LAUNCHING])
 
-  def runTrybotTest(self, launching, waiting, failed, runs):
+  def runTrybotTest(self, launching=0, waiting=0, failed=0, runs=0):
     """Helper function for testing PreCQLauncher.
 
     Create a mock patch to be picked up by the PreCQ. Allow up to
@@ -372,6 +373,8 @@ class PreCQLauncherStageTest(MasterCQSyncTest):
     self.assertEqual(self.pre_cq.calls.get(self.STATUS_LAUNCHING, 0), launching)
     self.assertEqual(self.pre_cq.calls.get(self.STATUS_WAITING, 0), waiting)
     self.assertEqual(self.pre_cq.calls.get(self.STATUS_FAILED, 0), failed)
+    self.assertEqual(sum(self.pre_cq.calls.values()),
+                     launching + waiting + failed)
 
   def testLaunchTrybotTimesOutOnce(self):
     """Test what happens when a trybot launch times out."""
@@ -395,6 +398,15 @@ class PreCQLauncherStageTest(MasterCQSyncTest):
     self.PatchObject(sync_stages.PreCQLauncherStage, '_HasInflightTimedOut',
                      side_effect=it)
     self.runTrybotTest(launching=1, waiting=0, failed=1, runs=1)
+
+  def testSubmit(self):
+    """Test submission of patches."""
+    self._PrepareValidationPoolMock()
+    self.PatchObject(validation_pool.ValidationPool, 'GetCLStatus',
+                     return_value=self.STATUS_READY_TO_SUBMIT)
+    m = self.PatchObject(validation_pool.ValidationPool, 'SubmitChanges')
+    self.runTrybotTest(runs=1)
+    m.assert_called_with([mock.ANY], check_tree_open=False)
 
 
 if __name__ == '__main__':
