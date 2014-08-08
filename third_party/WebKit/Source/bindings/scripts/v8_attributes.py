@@ -52,12 +52,6 @@ def attribute_context(interface, attribute):
     is_check_security_for_node = 'CheckSecurity' in extended_attributes
     if is_check_security_for_node:
         includes.add('bindings/core/v8/BindingSecurity.h')
-    # [Custom]
-    has_custom_getter = ('Custom' in extended_attributes and
-                         extended_attributes['Custom'] in [None, 'Getter'])
-    has_custom_setter = (not attribute.is_read_only and
-                         'Custom' in extended_attributes and
-                         extended_attributes['Custom'] in [None, 'Setter'])
     # [CustomElementCallbacks], [Reflect]
     is_custom_element_callbacks = 'CustomElementCallbacks' in extended_attributes
     is_reflect = 'Reflect' in extended_attributes
@@ -102,8 +96,8 @@ def attribute_context(interface, attribute):
         'cpp_type_initializer': idl_type.cpp_type_initializer,
         'deprecate_as': v8_utilities.deprecate_as(attribute),  # [DeprecateAs]
         'enum_validation_expression': idl_type.enum_validation_expression,
-        'has_custom_getter': has_custom_getter,
-        'has_custom_setter': has_custom_setter,
+        'has_custom_getter': has_custom_getter(attribute),
+        'has_custom_setter': has_custom_setter(attribute),
         'has_type_checking_unrestricted': has_type_checking_unrestricted,
         'idl_type': str(idl_type),  # need trailing [] on array for Dictionary::ConversionContext::setConversionType
         'is_call_with_execution_context': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ExecutionContext'),
@@ -154,9 +148,9 @@ def attribute_context(interface, attribute):
     if is_constructor_attribute(attribute):
         constructor_getter_context(interface, attribute, context)
         return context
-    if not has_custom_getter:
+    if not has_custom_getter(attribute):
         getter_context(interface, attribute, context)
-    if (not has_custom_setter and
+    if (not has_custom_setter(attribute) and
         (not attribute.is_read_only or 'PutForwards' in extended_attributes)):
         setter_context(interface, attribute, context)
 
@@ -473,6 +467,21 @@ def property_attributes(attribute):
     if 'Unforgeable' in extended_attributes:
         property_attributes_list.append('v8::DontDelete')
     return property_attributes_list or ['v8::None']
+
+
+# [Custom], [Custom=Getter]
+def has_custom_getter(attribute):
+    extended_attributes = attribute.extended_attributes
+    return ('Custom' in extended_attributes and
+            extended_attributes['Custom'] in [None, 'Getter'])
+
+
+# [Custom], [Custom=Setter]
+def has_custom_setter(attribute):
+    extended_attributes = attribute.extended_attributes
+    return (not attribute.is_read_only and
+            'Custom' in extended_attributes and
+            extended_attributes['Custom'] in [None, 'Setter'])
 
 
 ################################################################################
