@@ -29,5 +29,8 @@ interface SVGStyleElement : SVGElement {
     attribute DOMString type;
     attribute DOMString media;
     [MeasureAs=SVGStyleElementTitle] attribute DOMString title;
+
+    // DOM Level 2 Style
+    readonly attribute StyleSheet sheet;
 };
 
