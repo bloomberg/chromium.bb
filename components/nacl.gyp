@@ -283,6 +283,8 @@
                 'nacl/loader/nonsfi/irt_resource_open.cc',
                 'nacl/loader/nonsfi/irt_thread.cc',
                 'nacl/loader/nonsfi/irt_util.h',
+                'nacl/loader/nonsfi/nonsfi_listener.cc',
+                'nacl/loader/nonsfi/nonsfi_listener.h',
                 'nacl/loader/nonsfi/nonsfi_main.cc',
                 'nacl/loader/nonsfi/nonsfi_main.h',
                 'nacl/loader/nonsfi/nonsfi_sandbox.cc',

@@ -20,9 +20,7 @@ class NaClTrustedListener : public base::RefCounted<NaClTrustedListener>,
   NaClTrustedListener(const IPC::ChannelHandle& handle,
                       base::SingleThreadTaskRunner* ipc_task_runner);
 
-#if defined(OS_POSIX)
-  int TakeClientFileDescriptor();
-#endif
+  IPC::ChannelHandle TakeClientChannelHandle();
 
   // Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -33,6 +31,7 @@ class NaClTrustedListener : public base::RefCounted<NaClTrustedListener>,
  private:
   friend class base::RefCounted<NaClTrustedListener>;
   virtual ~NaClTrustedListener();
+  IPC::ChannelHandle channel_handle_;
   scoped_ptr<IPC::ChannelProxy> channel_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClTrustedListener);

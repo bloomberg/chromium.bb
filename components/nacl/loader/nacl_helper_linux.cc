@@ -35,6 +35,7 @@
 #include "components/nacl/common/nacl_switches.h"
 #include "components/nacl/loader/nacl_listener.h"
 #include "components/nacl/loader/nonsfi/irt_exception_handling.h"
+#include "components/nacl/loader/nonsfi/nonsfi_listener.h"
 #include "components/nacl/loader/sandbox_linux/nacl_sandbox_linux.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
 #include "content/public/common/content_descriptors.h"
@@ -106,11 +107,15 @@ void BecomeNaClLoader(base::ScopedFD browser_fd,
                                               browser_fd.release());
 
   base::MessageLoopForIO main_message_loop;
-  NaClListener listener;
-  listener.set_uses_nonsfi_mode(uses_nonsfi_mode);
-  listener.set_prereserved_sandbox_size(system_info.prereserved_sandbox_size);
-  listener.set_number_of_cores(system_info.number_of_cores);
-  listener.Listen();
+  if (uses_nonsfi_mode) {
+    nacl::nonsfi::NonSfiListener listener;
+    listener.Listen();
+  } else {
+    NaClListener listener;
+    listener.set_prereserved_sandbox_size(system_info.prereserved_sandbox_size);
+    listener.set_number_of_cores(system_info.number_of_cores);
+    listener.Listen();
+  }
   _exit(0);
 }
 

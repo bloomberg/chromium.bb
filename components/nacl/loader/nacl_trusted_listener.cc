@@ -8,22 +8,23 @@
 
 NaClTrustedListener::NaClTrustedListener(
     const IPC::ChannelHandle& handle,
-    base::SingleThreadTaskRunner* ipc_task_runner) {
-  channel_proxy_ = IPC::ChannelProxy::Create(
-      handle,
-      IPC::Channel::MODE_SERVER,
-      this,
-      ipc_task_runner).Pass();
+    base::SingleThreadTaskRunner* ipc_task_runner)
+    : channel_handle_(handle),
+      channel_proxy_(IPC::ChannelProxy::Create(
+          handle, IPC::Channel::MODE_SERVER, this, ipc_task_runner)) {
 }
 
 NaClTrustedListener::~NaClTrustedListener() {
 }
 
+IPC::ChannelHandle NaClTrustedListener::TakeClientChannelHandle() {
+  IPC::ChannelHandle handle = channel_handle_;
 #if defined(OS_POSIX)
-int NaClTrustedListener::TakeClientFileDescriptor() {
-  return channel_proxy_->TakeClientFileDescriptor();
-}
+  handle.socket =
+      base::FileDescriptor(channel_proxy_->TakeClientFileDescriptor(), true);
 #endif
+  return handle;
+}
 
 bool NaClTrustedListener::OnMessageReceived(const IPC::Message& msg) {
   return false;
