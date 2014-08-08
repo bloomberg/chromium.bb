@@ -1,0 +1,20 @@
+{
+  "exclusions": [
+    ".*gyp[i]?",
+    "build/android/pylib",
+    "build/compiler_version.py",
+    "build/get_landmines.py",
+    "build/gyp_chromium",
+    "build/linux/sysroot_ld_path.sh",
+    "chrome/test/data/.*",
+    "content/test/data/.*",
+    "DEPS",
+    "testing/buildbot/.*",
+    "tools/clang/scripts/plugin_flags.sh",
+    "tools/clang/scripts/update.py",
+    "tools/clang/scripts/update.sh",
+    "tools/perf/.*",
+    "tools/telemetry/.*",
+    "tools/whitespace.txt"
+  ]
+}
