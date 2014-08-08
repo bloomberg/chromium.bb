@@ -21,10 +21,14 @@ namespace {
 
 const char kSocketFilename[] = "socket_for_testing";
 
-bool UserCanConnectCallback(bool allow_user, uid_t uid, gid_t gid) {
+bool UserCanConnectCallback(
+    bool allow_user, const UnixDomainServerSocket::Credentials& credentials) {
   // Here peers are running in same process.
-  EXPECT_EQ(getuid(), uid);
-  EXPECT_EQ(getgid(), gid);
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  EXPECT_EQ(getpid(), credentials.process_id);
+#endif
+  EXPECT_EQ(getuid(), credentials.user_id);
+  EXPECT_EQ(getgid(), credentials.group_id);
   return allow_user;
 }
 

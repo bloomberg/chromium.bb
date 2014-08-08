@@ -25,20 +25,30 @@ class SocketLibevent;
 // Linux and Android.
 class NET_EXPORT UnixDomainServerSocket : public ServerSocket {
  public:
+  // Credentials of a peer process connected to the socket.
+  struct NET_EXPORT Credentials {
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+    // Linux/Android API provides more information about the connected peer
+    // than Windows/OS X. It's useful for permission-based authorization on
+    // Android.
+    pid_t process_id;
+#endif
+    uid_t user_id;
+    gid_t group_id;
+  };
+
   // Callback that returns whether the already connected client, identified by
-  // its process |user_id| and |group_id|, is allowed to keep the connection
-  // open. Note that the socket is closed immediately in case the callback
-  // returns false.
-  typedef base::Callback<bool (uid_t user_id, gid_t group_id)> AuthCallback;
+  // its credentials, is allowed to keep the connection open. Note that
+  // the socket is closed immediately in case the callback returns false.
+  typedef base::Callback<bool (const Credentials&)> AuthCallback;
 
   UnixDomainServerSocket(const AuthCallback& auth_callack,
                          bool use_abstract_namespace);
   virtual ~UnixDomainServerSocket();
 
-  // Gets UID and GID of peer to check permissions.
-  static bool GetPeerIds(SocketDescriptor socket_fd,
-                         uid_t* user_id,
-                         gid_t* group_id);
+  // Gets credentials of peer to check permissions.
+  static bool GetPeerCredentials(SocketDescriptor socket_fd,
+                                 Credentials* credentials);
 
   // ServerSocket implementation.
   virtual int Listen(const IPEndPoint& address, int backlog) OVERRIDE;

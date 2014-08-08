@@ -16,14 +16,11 @@ class DevToolsHttpHandler;
 // This class controls Developer Tools remote debugging server.
 class DevToolsServer {
  public:
-  // TODO(mnaganov): Remove the prefixless constructor after having its
-  // usage removed in the Chrome for Android code.
-  DevToolsServer();
   explicit DevToolsServer(const std::string& socket_name_prefix);
   ~DevToolsServer();
 
   // Opens linux abstract socket to be ready for remote debugging.
-  void Start();
+  void Start(bool allow_debug_permission);
 
   // Closes debugging socket, stops debugging.
   void Stop();

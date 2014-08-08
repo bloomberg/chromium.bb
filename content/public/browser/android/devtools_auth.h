@@ -6,14 +6,14 @@
 #define CONTENT_PUBLIC_BROWSER_DEVTOOLS_AUTH_ANDROID_H_
 
 #include "content/common/content_export.h"
-
-#include <pwd.h>
+#include "net/socket/unix_domain_server_socket_posix.h"
 
 namespace content {
 
-// Returns true if the given user/group pair is authorized to connect to the
-// devtools server, false if not.
-CONTENT_EXPORT bool CanUserConnectToDevTools(uid_t uid, gid_t gid);
+// Returns true if the given peer identified by the credentials is authorized
+// to connect to the devtools server, false if not.
+CONTENT_EXPORT bool CanUserConnectToDevTools(
+    const net::UnixDomainServerSocket::Credentials& credentials);
 
 }  // namespace content
 

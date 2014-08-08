@@ -53,10 +53,10 @@ class CompareSocket {
 
 // Socket authentication function that only allows connections from callers with
 // the current uid.
-bool MatchUid(uid_t user_id, gid_t) {
-  bool allowed = user_id == getuid();
+bool MatchUid(const net::UnixDomainServerSocket::Credentials& credentials) {
+  bool allowed = credentials.user_id == getuid();
   if (!allowed)
-    HOST_LOG << "Refused socket connection from uid " << user_id;
+    HOST_LOG << "Refused socket connection from uid " << credentials.user_id;
   return allowed;
 }
 

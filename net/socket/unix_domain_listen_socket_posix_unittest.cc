@@ -138,7 +138,7 @@ class TestListenSocketDelegate : public StreamListenSocket::Delegate {
 
 bool UserCanConnectCallback(
     bool allow_user, const scoped_refptr<EventManager>& event_manager,
-    uid_t, gid_t) {
+    const UnixDomainServerSocket::Credentials&) {
   event_manager->Notify(
       allow_user ? EVENT_AUTH_GRANTED : EVENT_AUTH_DENIED);
   return allow_user;

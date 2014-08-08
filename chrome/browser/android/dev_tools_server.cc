@@ -63,7 +63,6 @@ const char kDevToolsChannelNameFormat[] = "%s_devtools_remote";
 
 const char kFrontEndURL[] =
     "http://chrome-devtools-frontend.appspot.com/serve_rev/%s/devtools.html";
-const char kDefaultSocketNamePrefix[] = "chrome";
 const char kTetheringSocketName[] = "chrome_devtools_tethering_%d_%d";
 
 const char kTargetTypePage[] = "page";
@@ -75,6 +74,15 @@ static GURL GetFaviconURLForContents(WebContents* web_contents) {
   if (entry != NULL && entry->GetURL().is_valid())
     return entry->GetFavicon().url;
   return GURL();
+}
+
+bool AuthorizeSocketAccessWithDebugPermission(
+    const net::UnixDomainServerSocket::Credentials& credentials) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_DevToolsServer_checkDebugPermission(
+      env, base::android::GetApplicationContext(),
+      credentials.process_id, credentials.user_id) ||
+      content::CanUserConnectToDevTools(credentials);
 }
 
 class TargetBase : public content::DevToolsTarget {
@@ -268,8 +276,10 @@ class NonTabTarget : public TargetBase {
 // instance of this gets created each time devtools is enabled.
 class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
  public:
-  DevToolsServerDelegate()
-      : last_tethering_socket_(0) {
+  explicit DevToolsServerDelegate(
+      const net::UnixDomainServerSocket::AuthCallback& auth_callback)
+      : last_tethering_socket_(0),
+        auth_callback_(auth_callback) {
   }
 
   virtual std::string GetDiscoveryPageHTML() OVERRIDE {
@@ -371,7 +381,7 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
             *name,
             "",
             delegate,
-            base::Bind(&content::CanUserConnectToDevTools))
+            auth_callback_)
         .PassAs<net::StreamListenSocket>();
   }
 
@@ -385,23 +395,12 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
   }
 
   int last_tethering_socket_;
+  const net::UnixDomainServerSocket::AuthCallback auth_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsServerDelegate);
 };
 
 }  // namespace
-
-DevToolsServer::DevToolsServer()
-    : socket_name_(base::StringPrintf(kDevToolsChannelNameFormat,
-                                      kDefaultSocketNamePrefix)),
-      protocol_handler_(NULL) {
-  // Override the default socket name if one is specified on the command line.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kRemoteDebuggingSocketName)) {
-    socket_name_ = command_line.GetSwitchValueASCII(
-        switches::kRemoteDebuggingSocketName);
-  }
-}
 
 DevToolsServer::DevToolsServer(const std::string& socket_name_prefix)
     : socket_name_(base::StringPrintf(kDevToolsChannelNameFormat,
@@ -419,17 +418,22 @@ DevToolsServer::~DevToolsServer() {
   Stop();
 }
 
-void DevToolsServer::Start() {
+void DevToolsServer::Start(bool allow_debug_permission) {
   if (protocol_handler_)
     return;
+
+  net::UnixDomainServerSocket::AuthCallback auth_callback =
+      allow_debug_permission ?
+          base::Bind(&AuthorizeSocketAccessWithDebugPermission) :
+          base::Bind(&content::CanUserConnectToDevTools);
 
   protocol_handler_ = content::DevToolsHttpHandler::Start(
       new net::deprecated::UnixDomainListenSocketWithAbstractNamespaceFactory(
           socket_name_,
           base::StringPrintf("%s_%d", socket_name_.c_str(), getpid()),
-          base::Bind(&content::CanUserConnectToDevTools)),
+          auth_callback),
       base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str()),
-      new DevToolsServerDelegate(),
+      new DevToolsServerDelegate(auth_callback),
       base::FilePath());
 }
 
@@ -471,10 +475,11 @@ static jboolean IsRemoteDebuggingEnabled(JNIEnv* env,
 static void SetRemoteDebuggingEnabled(JNIEnv* env,
                                       jobject obj,
                                       jlong server,
-                                      jboolean enabled) {
+                                      jboolean enabled,
+                                      jboolean allow_debug_permission) {
   DevToolsServer* devtools_server = reinterpret_cast<DevToolsServer*>(server);
   if (enabled) {
-    devtools_server->Start();
+    devtools_server->Start(allow_debug_permission);
   } else {
     devtools_server->Stop();
   }

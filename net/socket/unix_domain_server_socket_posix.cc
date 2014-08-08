@@ -28,19 +28,20 @@ UnixDomainServerSocket::~UnixDomainServerSocket() {
 }
 
 // static
-bool UnixDomainServerSocket::GetPeerIds(SocketDescriptor socket,
-                                        uid_t* user_id,
-                                        gid_t* group_id) {
+bool UnixDomainServerSocket::GetPeerCredentials(SocketDescriptor socket,
+                                                Credentials* credentials) {
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   struct ucred user_cred;
   socklen_t len = sizeof(user_cred);
   if (getsockopt(socket, SOL_SOCKET, SO_PEERCRED, &user_cred, &len) < 0)
     return false;
-  *user_id = user_cred.uid;
-  *group_id = user_cred.gid;
+  credentials->process_id = user_cred.pid;
+  credentials->user_id = user_cred.uid;
+  credentials->group_id = user_cred.gid;
   return true;
 #else
-  return getpeereid(socket, user_id, group_id) == 0;
+  return getpeereid(
+      socket, &credentials->user_id, &credentials->group_id) == 0;
 #endif
 }
 
@@ -130,10 +131,9 @@ bool UnixDomainServerSocket::AuthenticateAndGetStreamSocket(
     scoped_ptr<StreamSocket>* socket) {
   DCHECK(accept_socket_);
 
-  uid_t user_id;
-  gid_t group_id;
-  if (!GetPeerIds(accept_socket_->socket_fd(), &user_id, &group_id) ||
-      !auth_callback_.Run(user_id, group_id)) {
+  Credentials credentials;
+  if (!GetPeerCredentials(accept_socket_->socket_fd(), &credentials) ||
+      !auth_callback_.Run(credentials)) {
     accept_socket_.reset();
     return false;
   }

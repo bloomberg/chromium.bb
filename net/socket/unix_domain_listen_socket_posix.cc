@@ -113,10 +113,9 @@ void UnixDomainListenSocket::Accept() {
   SocketDescriptor conn = StreamListenSocket::AcceptSocket();
   if (conn == kInvalidSocket)
     return;
-  uid_t user_id;
-  gid_t group_id;
-  if (!UnixDomainServerSocket::GetPeerIds(conn, &user_id, &group_id) ||
-      !auth_callback_.Run(user_id, group_id)) {
+  UnixDomainServerSocket::Credentials credentials;
+  if (!UnixDomainServerSocket::GetPeerCredentials(conn, &credentials) ||
+      !auth_callback_.Run(credentials)) {
     if (IGNORE_EINTR(close(conn)) < 0)
       LOG(ERROR) << "close() error";
     return;
