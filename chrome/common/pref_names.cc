@@ -82,11 +82,6 @@ const char kURLsToRestoreOnStartup[] = "session.startup_urls";
 // Old startup url pref name for kURLsToRestoreOnStartup.
 const char kURLsToRestoreOnStartupOld[] = "session.urls_to_restore_on_startup";
 
-// Maps host names to whether the host is manually allowed or blocked.
-const char kSupervisedUserManualHosts[] = "profile.managed.manual_hosts";
-// Maps URLs to whether the URL is manually allowed or blocked.
-const char kSupervisedUserManualURLs[] = "profile.managed.manual_urls";
-
 // Stores the email address associated with the google account of the custodian
 // of the supervised user, set when the supervised user is created.
 const char kSupervisedUserCustodianEmail[] = "profile.managed.custodian_email";
@@ -95,6 +90,33 @@ const char kSupervisedUserCustodianEmail[] = "profile.managed.custodian_email";
 // of the supervised user, updated (if possible) each time the supervised user
 // starts a session.
 const char kSupervisedUserCustodianName[] = "profile.managed.custodian_name";
+
+// Stores the URL of the profile image associated with the google account of the
+// custodian of the supervised user.
+const char kSupervisedUserCustodianProfileImageURL[] =
+    "profile.managed.custodian_profile_image_url";
+
+// Maps host names to whether the host is manually allowed or blocked.
+const char kSupervisedUserManualHosts[] = "profile.managed.manual_hosts";
+
+// Maps URLs to whether the URL is manually allowed or blocked.
+const char kSupervisedUserManualURLs[] = "profile.managed.manual_urls";
+
+// Stores the email address associated with the google account of the secondary
+// custodian of the supervised user, set when the supervised user is created.
+const char kSupervisedUserSecondCustodianEmail[] =
+    "profile.managed.second_custodian_email";
+
+// Stores the display name associated with the google account of the secondary
+// custodian of the supervised user, updated (if possible) each time the
+// supervised user starts a session.
+const char kSupervisedUserSecondCustodianName[] =
+    "profile.managed.second_custodian_name";
+
+// Stores the URL of the profile image associated with the google account of the
+// secondary custodian of the supervised user.
+const char kSupervisedUserSecondCustodianProfileImageURL[] =
+    "profile.managed.second_custodian_profile_image_url";
 
 // Stores settings that can be modified both by a supervised user and their
 // manager. See SupervisedUserSharedSettingsService for a description of
