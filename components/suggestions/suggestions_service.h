@@ -44,6 +44,7 @@ extern const char kSuggestionsFieldTrialBlacklistUrlParam[];
 extern const char kSuggestionsFieldTrialStateParam[];
 extern const char kSuggestionsFieldTrialControlParam[];
 extern const char kSuggestionsFieldTrialStateEnabled[];
+extern const int64 kDefaultExpiryUsec;
 
 // An interface to fetch server suggestions asynchronously.
 class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
@@ -92,6 +93,9 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // Register SuggestionsService related prefs in the Profile prefs.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Sets default timestamp for suggestions which do not have expiry timestamp.
+  void SetDefaultExpiryTimestamp(SuggestionsProfile* suggestions,
+                                 int64 timestamp_usec);
  private:
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, BlacklistURLFails);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, FetchSuggestionsData);

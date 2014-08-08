@@ -100,6 +100,9 @@ const char kSuggestionsFieldTrialControlParam[] = "control";
 const char kSuggestionsFieldTrialStateEnabled[] = "enabled";
 const char kSuggestionsFieldTrialTimeoutMs[] = "timeout_ms";
 
+// The default expiry timeout is 72 hours.
+const int64 kDefaultExpiryUsec = 72 * base::Time::kMicrosecondsPerHour;
+
 namespace {
 
 std::string GetBlacklistUrlPrefix() {
@@ -303,7 +306,7 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
   bool success = request->GetResponseAsString(&suggestions_data);
   DCHECK(success);
 
-  // Compute suggestions, and dispatch then to requestors. On error still
+  // Compute suggestions, and dispatch them to requestors. On error still
   // dispatch empty suggestions.
   SuggestionsProfile suggestions;
   if (suggestions_data.empty()) {
@@ -312,6 +315,10 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
   } else if (suggestions.ParseFromString(suggestions_data)) {
     LogResponseState(RESPONSE_VALID);
     thumbnail_manager_->Initialize(suggestions);
+
+    int64 now_usec = (base::Time::NowFromSystemTime() - base::Time::UnixEpoch())
+        .ToInternalValue();
+    SetDefaultExpiryTimestamp(&suggestions, now_usec + kDefaultExpiryUsec);
     suggestions_store_->StoreSuggestions(suggestions);
   } else {
     LogResponseState(RESPONSE_INVALID);
@@ -320,6 +327,18 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
 
   FilterAndServe(&suggestions);
   ScheduleBlacklistUpload(true);
+}
+
+void SuggestionsService::SetDefaultExpiryTimestamp(
+    SuggestionsProfile* suggestions, int64 default_timestamp_usec) {
+  for (int i = 0; i < suggestions->suggestions_size(); ++i) {
+    ChromeSuggestion* suggestion = suggestions->mutable_suggestions(i);
+    // Do not set expiry if the server has already provided a more specific
+    // expiry time for this suggestion.
+    if (!suggestion->has_expiry_ts()) {
+      suggestion->set_expiry_ts(default_timestamp_usec);
+    }
+  }
 }
 
 void SuggestionsService::Shutdown() {

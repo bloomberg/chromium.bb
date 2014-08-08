@@ -48,6 +48,9 @@ class SuggestionsStore {
   PrefService* pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsStore);
+
+  // Filters expired suggestions.
+  void FilterExpiredSuggestions(SuggestionsProfile* suggestions);
 };
 
 }  // namespace suggestions

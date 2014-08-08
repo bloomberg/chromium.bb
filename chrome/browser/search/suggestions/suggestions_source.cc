@@ -11,13 +11,18 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/suggestions/suggestions_service.h"
 #include "net/base/escape.h"
+#include "ui/base/l10n/time_format.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
@@ -42,9 +47,17 @@ void RenderOutputHtml(const SuggestionsProfile& profile,
   out.push_back(kHtmlBody);
   out.push_back("<h1>Suggestions</h1>\n<ul>");
 
+  int64 now = (base::Time::NowFromSystemTime() - base::Time::UnixEpoch())
+      .ToInternalValue();
   size_t size = profile.suggestions_size();
   for (size_t i = 0; i < size; ++i) {
     const ChromeSuggestion& suggestion = profile.suggestions(i);
+    base::TimeDelta remaining_time = base::TimeDelta::FromMicroseconds(
+        suggestion.expiry_ts() - now);
+    base::string16 remaining_time_formatted = ui::TimeFormat::Detailed(
+        ui::TimeFormat::Format::FORMAT_DURATION,
+        ui::TimeFormat::Length::LENGTH_LONG,
+        -1, remaining_time);
     std::string line;
     line += "<li><a href=\"";
     line += net::EscapeForHTML(suggestion.url());
@@ -57,7 +70,9 @@ void RenderOutputHtml(const SuggestionsProfile& profile,
       line += it->second;
       line += "'>";
     }
-    line += "</a></li>\n";
+    line += "</a> Expires in ";
+    line += base::UTF16ToUTF8(remaining_time_formatted);
+    line += "</li>\n";
     out.push_back(line);
   }
   out.push_back("</ul>");

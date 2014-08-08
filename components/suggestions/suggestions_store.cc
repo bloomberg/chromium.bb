@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/prefs/pref_service.h"
+#include "base/time/time.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/suggestions/suggestions_pref_names.h"
 
@@ -40,7 +41,36 @@ bool SuggestionsStore::LoadSuggestions(SuggestionsProfile* suggestions) {
     return false;
   }
 
+  // Filter expired suggestions and update the stored suggestions if at least
+  // one was filtered. Return false if all suggestions are filtered.
+  int unfiltered_size = suggestions->suggestions_size();
+  FilterExpiredSuggestions(suggestions);
+  if (suggestions->suggestions_size() != unfiltered_size) {
+    if (!suggestions->suggestions_size()) {
+      suggestions->Clear();
+      ClearSuggestions();
+      return false;
+    } else {
+      StoreSuggestions(*suggestions);
+    }
+  }
+
   return true;
+}
+
+void SuggestionsStore::FilterExpiredSuggestions(
+    SuggestionsProfile* suggestions) {
+  SuggestionsProfile filtered_suggestions;
+  int64 now_usec = (base::Time::NowFromSystemTime() - base::Time::UnixEpoch())
+      .ToInternalValue();
+
+  for (int i = 0; i < suggestions->suggestions_size(); ++i) {
+    ChromeSuggestion* suggestion = suggestions->mutable_suggestions(i);
+    if (!suggestion->has_expiry_ts() || suggestion->expiry_ts() > now_usec) {
+      filtered_suggestions.add_suggestions()->Swap(suggestion);
+    }
+  }
+  suggestions->Swap(&filtered_suggestions);
 }
 
 bool SuggestionsStore::StoreSuggestions(const SuggestionsProfile& suggestions) {

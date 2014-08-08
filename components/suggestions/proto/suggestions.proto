@@ -42,6 +42,9 @@ message ChromeSuggestion {
 
   // The provider(s) responsible for this suggestion.
   repeated ProviderId providers = 5;
+
+  // The timestamp (usec) at which this suggestion ceases to be valid.
+  optional int64 expiry_ts = 7;
 }
 
 // A list of URLs that should be filtered from the SuggestionsProfile.

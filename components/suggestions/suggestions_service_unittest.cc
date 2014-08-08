@@ -46,6 +46,8 @@ const char kFakeBlacklistUrlParam[] = "baz";
 const char kTestTitle[] = "a title";
 const char kTestUrl[] = "http://go.com";
 const char kBlacklistUrl[] = "http://blacklist.com";
+const int64 kTestDefaultExpiry = 1402200000000000;
+const int64 kTestSetExpiry = 1404792000000000;
 
 scoped_ptr<net::FakeURLFetcher> CreateURLFetcher(
     const GURL& url, net::URLFetcherDelegate* delegate,
@@ -91,7 +93,23 @@ scoped_ptr<SuggestionsProfile> CreateSuggestionsProfile() {
   ChromeSuggestion* suggestion = profile->add_suggestions();
   suggestion->set_title(kTestTitle);
   suggestion->set_url(kTestUrl);
+  suggestion->set_expiry_ts(kTestSetExpiry);
   return profile.Pass();
+}
+
+// Creates one suggestion with expiry timestamp and one without.
+SuggestionsProfile CreateSuggestionsProfileWithExpiryTimestamps() {
+  SuggestionsProfile profile;
+  ChromeSuggestion* suggestion = profile.add_suggestions();
+  suggestion->set_title(kTestTitle);
+  suggestion->set_url(kTestUrl);
+  suggestion->set_expiry_ts(kTestSetExpiry);
+
+  suggestion = profile.add_suggestions();
+  suggestion->set_title(kTestTitle);
+  suggestion->set_url(kTestUrl);
+
+  return profile;
 }
 
 class MockSuggestionsStore : public suggestions::SuggestionsStore {
@@ -202,14 +220,12 @@ class SuggestionsServiceTest : public testing::Test {
     EXPECT_TRUE(suggestions_service != NULL);
     scoped_ptr<SuggestionsProfile> suggestions_profile(
         CreateSuggestionsProfile());
-
     // Set up net::FakeURLFetcherFactory.
     std::string expected_url =
         (std::string(kFakeSuggestionsURL) + "?") + kFakeSuggestionsCommonParams;
     factory_.SetFakeResponse(GURL(expected_url),
                              suggestions_profile->SerializeAsString(),
                              net::HTTP_OK, net::URLRequestStatus::SUCCESS);
-
     // Set up expectations on the SuggestionsStore. The number depends on
     // whether the second request is issued (it won't be issued if the second
     // fetch occurs before the first request has completed).
@@ -497,4 +513,14 @@ TEST_F(SuggestionsServiceTest, UpdateBlacklistDelay) {
   EXPECT_EQ(initial_delay, suggestions_service->blacklist_delay());
 }
 
+TEST_F(SuggestionsServiceTest, CheckDefaultTimeStamps) {
+  scoped_ptr<SuggestionsService> suggestions_service(
+      CreateSuggestionsServiceWithMocks());
+  SuggestionsProfile suggestions =
+      CreateSuggestionsProfileWithExpiryTimestamps();
+  suggestions_service->SetDefaultExpiryTimestamp(&suggestions,
+                                                 kTestDefaultExpiry);
+  EXPECT_EQ(kTestSetExpiry, suggestions.suggestions(0).expiry_ts());
+  EXPECT_EQ(kTestDefaultExpiry, suggestions.suggestions(1).expiry_ts());
+}
 }  // namespace suggestions
