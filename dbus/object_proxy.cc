@@ -24,6 +24,7 @@ namespace dbus {
 namespace {
 
 const char kErrorServiceUnknown[] = "org.freedesktop.DBus.Error.ServiceUnknown";
+const char kErrorObjectUnknown[] = "org.freedesktop.DBus.Error.UnknownObject";
 
 // Used for success ratio histograms. 1 for success, 0 for failure.
 const int kSuccessRatioHistogramMaxValue = 2;
@@ -561,12 +562,20 @@ void ObjectProxy::LogMethodCallFailure(
     const base::StringPiece& method_name,
     const base::StringPiece& error_name,
     const base::StringPiece& error_message) const {
-  if (ignore_service_unknown_errors_ && error_name == kErrorServiceUnknown)
+  if (ignore_service_unknown_errors_ &&
+      (error_name == kErrorServiceUnknown || error_name == kErrorObjectUnknown))
     return;
-  LOG(ERROR) << "Failed to call method: "
-             << interface_name << "." << method_name
-             << ": object_path= " << object_path_.value()
-             << ": " << error_name << ": " << error_message;
+  logging::LogSeverity severity = logging::LOG_ERROR;
+  // "UnknownObject" indicates that an object or service is no longer available,
+  // e.g. a Shill network service has gone out of range. Treat these as warnings
+  // not errors.
+  if (error_name == kErrorObjectUnknown)
+    severity = logging::LOG_WARNING;
+  std::ostringstream msg;
+  msg << "Failed to call method: " << interface_name << "." << method_name
+      << ": object_path= " << object_path_.value()
+      << ": " << error_name << ": " << error_message;
+  logging::LogAtLevel(severity, msg.str());
 }
 
 void ObjectProxy::OnCallMethodError(const std::string& interface_name,

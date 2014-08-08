@@ -46,7 +46,8 @@ class CHROME_DBUS_EXPORT ObjectProxy
 
   // Options to be OR-ed together when calling Bus::GetObjectProxyWithOptions().
   // Set the IGNORE_SERVICE_UNKNOWN_ERRORS option to silence logging of
-  // org.freedesktop.DBus.Error.ServiceUnknown errors.
+  // org.freedesktop.DBus.Error.ServiceUnknown errors and
+  // org.freedesktop.DBus.Error.ObjectUnknown errors.
   enum Options {
     DEFAULT_OPTIONS = 0,
     IGNORE_SERVICE_UNKNOWN_ERRORS = 1 << 0
