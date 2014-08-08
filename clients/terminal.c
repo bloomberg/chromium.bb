@@ -3042,6 +3042,7 @@ terminal_run(struct terminal *terminal, const char *path)
 static const struct weston_option terminal_options[] = {
 	{ WESTON_OPTION_BOOLEAN, "fullscreen", 'f', &option_fullscreen },
 	{ WESTON_OPTION_STRING, "font", 0, &option_font },
+	{ WESTON_OPTION_INTEGER, "font-size", 0, &option_font_size },
 	{ WESTON_OPTION_STRING, "shell", 0, &option_shell },
 };
 
@@ -3066,6 +3067,16 @@ int main(int argc, char *argv[])
 	weston_config_section_get_int(s, "font-size", &option_font_size, 14);
 	weston_config_section_get_string(s, "term", &option_term, "xterm");
 	weston_config_destroy(config);
+
+	if (parse_options(terminal_options,
+			  ARRAY_LENGTH(terminal_options), &argc, argv) > 1) {
+		printf("Usage: %s [OPTIONS]\n"
+		       "  --fullscreen or -f\n"
+		       "  --font=NAME\n"
+		       "  --font-size=SIZE\n"
+		       "  --shell=NAME\n", argv[0]);
+		return 1;
+	}
 
 	d = display_create(&argc, argv);
 	if (d == NULL) {
