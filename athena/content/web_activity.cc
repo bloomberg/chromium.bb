@@ -120,6 +120,9 @@ class WebActivityController : public AcceleratorHandler {
   DISALLOW_COPY_AND_ASSIGN(WebActivityController);
 };
 
+const SkColor kDefaultTitleColor = SK_ColorGRAY;
+const SkColor kDefaultUnavailableColor = SkColorSetRGB(0xbb, 0x77, 0x77);
+
 }  // namespace
 
 // A web view for athena's web activity. Note that AthenaWebView will create its
@@ -261,6 +264,7 @@ WebActivity::WebActivity(content::BrowserContext* browser_context,
     : browser_context_(browser_context),
       url_(url),
       web_view_(NULL),
+      title_color_(kDefaultTitleColor),
       current_state_(ACTIVITY_UNLOADED) {
 }
 
@@ -349,7 +353,7 @@ void WebActivity::Init() {
 
 SkColor WebActivity::GetRepresentativeColor() const {
   // TODO(sad): Compute the color from the favicon.
-  return web_view_ ? SK_ColorGRAY : SkColorSetRGB(0xbb, 0x77, 0x77);
+  return web_view_ ? title_color_ : kDefaultUnavailableColor;
 }
 
 base::string16 WebActivity::GetTitle() const {
@@ -387,6 +391,10 @@ void WebActivity::TitleWasSet(content::NavigationEntry* entry,
 void WebActivity::DidUpdateFaviconURL(
     const std::vector<content::FaviconURL>& candidates) {
   ActivityManager::Get()->UpdateActivity(this);
+}
+
+void WebActivity::DidChangeThemeColor(SkColor theme_color) {
+  title_color_ = theme_color;
 }
 
 }  // namespace athena

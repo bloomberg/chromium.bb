@@ -96,7 +96,8 @@ void ActivityFrameView::Layout() {
 // ActivityFrameView, private:
 
 int ActivityFrameView::NonClientTopBorderHeight() const {
-  return frame_->IsFullscreen() ? 0 : title_->GetPreferredSize().height();
+  const int kDefaultTitleHeight = 25;
+  return frame_->IsFullscreen() ? 0 : kDefaultTitleHeight;
 }
 
 }  // namespace ash

@@ -54,11 +54,13 @@ class WebActivity : public Activity,
                            bool explicit_set) OVERRIDE;
   virtual void DidUpdateFaviconURL(
       const std::vector<content::FaviconURL>& candidates) OVERRIDE;
+  virtual void DidChangeThemeColor(SkColor theme_color) OVERRIDE;
 
  private:
   content::BrowserContext* browser_context_;
   const GURL url_;
   AthenaWebView* web_view_;
+  SkColor title_color_;
 
   // The current state for this activity.
   ActivityState current_state_;
