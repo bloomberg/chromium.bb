@@ -60,12 +60,16 @@ class USER_MANAGER_EXPORT User : public UserInfo {
     USER_IMAGE_EXTERNAL = -1,
   } UserImageType;
 
+  // This enum is used to define the buckets for an enumerated UMA histogram.
+  // Hence,
+  //   (a) existing enumerated constants should never be deleted or reordered,
+  //   (b) new constants should only be appended at the end of the enumeration.
   enum WallpaperType {
-    /* DAILY = 0 */    // Removed.  Do not re-use the id!
+    /* DAILY = 0 */    // Removed.
     CUSTOMIZED = 1,    // Selected by user.
     DEFAULT = 2,       // Default.
-    /* UNKNOWN = 3 */  // Removed.  Do not re-use the id!
-    ONLINE = 4,        // WallpaperInfo.file denotes an URL.
+    /* UNKNOWN = 3 */  // Removed.
+    ONLINE = 4,        // WallpaperInfo.location denotes an URL.
     POLICY = 5,        // Controlled by policy, can't be changed by the user.
     WALLPAPER_TYPE_COUNT = 6
   };

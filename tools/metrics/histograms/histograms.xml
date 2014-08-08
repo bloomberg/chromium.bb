@@ -723,6 +723,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Ash.Wallpaper.DefaultIndex">
+  <obsolete>
+    Deprecated as of 11/2012. Use of indices has been removed.
+  </obsolete>
+  <owner>kuscher@google.com</owner>
+  <summary>
+    The wallpaper index if one of the default wallpapers has been selected.
+    Recorded at user login. Currently only for the old wallpaper picker UI.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Wallpaper.Type" enum="WallpaperType">
+  <owner>kuscher@google.com</owner>
+  <summary>The wallpaper type. Recorded at user login.</summary>
+</histogram>
+
 <histogram name="Ash.WindowCycleController.CycleTime" units="milliseconds">
   <owner>flackr@chromium.org</owner>
   <owner>kuscher@google.com</owner>
@@ -2250,7 +2266,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>jam@chromium.org</owner>
   <summary>
     Count of child processes killed because they sent an IPC that couldn't be
-    deserialized..
+    deserialized.
   </summary>
 </histogram>
 
@@ -49625,6 +49641,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="9" label="Verify CVV"/>
   <int value="10" label="Invalid form field"/>
   <int value="11" label="Require phone number"/>
+</enum>
+
+<enum name="WallpaperType" type="int">
+  <int value="0" label="Daily (unused)"/>
+  <int value="1" label="Customized"/>
+  <int value="2" label="Default"/>
+  <int value="3" label="Unknown (unused)"/>
+  <int value="4" label="Online"/>
+  <int value="5" label="Policy"/>
 </enum>
 
 <enum name="WebFontCacheHit" type="int">

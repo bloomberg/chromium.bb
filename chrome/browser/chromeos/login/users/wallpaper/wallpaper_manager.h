@@ -363,9 +363,6 @@ class WallpaperManager: public content::NotificationObserver {
   typedef std::map<std::string, gfx::ImageSkia> CustomWallpaperMap;
 
 
-  // Record data for User Metrics Analysis.
-  static void RecordUma(user_manager::User::WallpaperType type, int index);
-
   // Saves original custom wallpaper to |path| (absolute path) on filesystem
   // and starts resizing operation of the custom wallpaper if necessary.
   static void SaveCustomWallpaper(const std::string& user_id_hash,

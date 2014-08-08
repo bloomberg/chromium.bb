@@ -531,8 +531,8 @@ void WallpaperManager::EnsureLoggedInUserWallpaperLoaded() {
 
   WallpaperInfo info;
   if (GetLoggedInUserWallpaperInfo(&info)) {
-    // TODO(sschmitz): We need an index for default wallpapers for the new UI.
-    RecordUma(info.type, -1);
+    UMA_HISTOGRAM_ENUMERATION("Ash.Wallpaper.Type", info.type,
+                              user_manager::User::WALLPAPER_TYPE_COUNT);
     if (info == current_user_wallpaper_info_)
       return;
   }
@@ -1005,13 +1005,6 @@ void WallpaperManager::DoSetDefaultWallpaper(
 
   ash::Shell::GetInstance()->desktop_background_controller()->SetWallpaperImage(
       default_wallpaper_image_->image(), layout);
-}
-
-// static
-void WallpaperManager::RecordUma(user_manager::User::WallpaperType type,
-                                 int index) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Ash.Wallpaper.Type", type, user_manager::User::WALLPAPER_TYPE_COUNT);
 }
 
 // static
