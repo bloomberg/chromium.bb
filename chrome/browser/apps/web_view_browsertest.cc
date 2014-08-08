@@ -853,7 +853,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeRemoveAttributes) {
 }
 
 // This test is disabled due to being flaky. http://crbug.com/282116
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_Shim_TestAutosizeWithPartialAttributes \
     DISABLED_Shim_TestAutosizeWithPartialAttributes
 #else
