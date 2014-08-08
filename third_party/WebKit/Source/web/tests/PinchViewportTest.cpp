@@ -766,7 +766,7 @@ TEST_F(PinchViewportTest, TestContextMenuShownInCorrectLocation)
 
 // Test that the scrollIntoView correctly scrolls the main frame
 // and pinch viewports such that the given rect is centered in the viewport.
-TEST_F(PinchViewportTest, TestScrollingDocumentRegionIntoView)
+TEST_F(PinchViewportTest, DISABLED_TestScrollingDocumentRegionIntoView)
 {
     initializeWithDesktopSettings();
     webViewImpl()->resize(IntSize(100, 150));
