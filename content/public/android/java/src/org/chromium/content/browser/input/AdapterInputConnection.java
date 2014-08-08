@@ -243,7 +243,7 @@ public class AdapterInputConnection extends BaseInputConnection {
             // Send TAB key event
             long timeStampMs = SystemClock.uptimeMillis();
             mImeAdapter.sendSyntheticKeyEvent(
-                    ImeAdapter.sEventTypeRawKeyDown, timeStampMs, KeyEvent.KEYCODE_TAB, 0);
+                    ImeAdapter.sEventTypeRawKeyDown, timeStampMs, KeyEvent.KEYCODE_TAB, 0, 0);
         } else {
             mImeAdapter.sendKeyEventWithKeyCode(KeyEvent.KEYCODE_ENTER,
                     KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE
@@ -339,10 +339,10 @@ public class AdapterInputConnection extends BaseInputConnection {
         boolean result = true;
         if (keyCode == KeyEvent.KEYCODE_UNKNOWN) {
             result = mImeAdapter.sendSyntheticKeyEvent(
-                    ImeAdapter.sEventTypeRawKeyDown, SystemClock.uptimeMillis(), keyCode, 0);
+                    ImeAdapter.sEventTypeRawKeyDown, SystemClock.uptimeMillis(), keyCode, 0, 0);
             result &= mImeAdapter.deleteSurroundingText(beforeLength, afterLength);
             result &= mImeAdapter.sendSyntheticKeyEvent(
-                    ImeAdapter.sEventTypeKeyUp, SystemClock.uptimeMillis(), keyCode, 0);
+                    ImeAdapter.sEventTypeKeyUp, SystemClock.uptimeMillis(), keyCode, 0, 0);
         } else {
             mImeAdapter.sendKeyEventWithKeyCode(
                     keyCode, KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE);

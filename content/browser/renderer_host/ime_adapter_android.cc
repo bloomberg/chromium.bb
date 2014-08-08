@@ -148,9 +148,10 @@ bool ImeAdapterAndroid::SendSyntheticKeyEvent(JNIEnv*,
                                               int type,
                                               long time_ms,
                                               int key_code,
+                                              int modifiers,
                                               int text) {
   NativeWebKeyboardEvent event(static_cast<blink::WebInputEvent::Type>(type),
-                               0 /* modifiers */, time_ms / 1000.0, key_code,
+                               modifiers, time_ms / 1000.0, key_code,
                                text, false /* is_system_key */);
   rwhva_->SendKeyEvent(event);
   return true;

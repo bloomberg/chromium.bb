@@ -41,6 +41,7 @@ class ImeAdapterAndroid {
                              int event_type,
                              long timestamp_ms,
                              int native_key_code,
+                             int modifiers,
                              int unicode_char);
   void SetComposingText(JNIEnv*,
                         jobject obj,
