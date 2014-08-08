@@ -55,7 +55,7 @@ remoting.onVisibilityChanged = function() {
     remoting.clientSession.pauseVideo(
       ('hidden' in document) ? document.hidden : document.webkitHidden);
   }
-}
+};
 
 /**
  * Disconnect the remoting client.
@@ -89,6 +89,9 @@ function onClientStateChange_(state) {
       if (remoting.clientSession.getMode() ==
           remoting.ClientSession.Mode.IT2ME) {
         remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_IT2ME);
+        remoting.hangoutSessionEvents.raiseEvent(
+            remoting.hangoutSessionEvents.sessionStateChanged,
+            remoting.ClientSession.State.CLOSED);
       } else {
         remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_ME2ME);
       }
@@ -133,6 +136,10 @@ function showConnectError_(errorTag) {
                                     : remoting.connector.getConnectionMode();
   if (mode == remoting.ClientSession.Mode.IT2ME) {
     remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME);
+    remoting.hangoutSessionEvents.raiseEvent(
+      remoting.hangoutSessionEvents.sessionStateChanged,
+      remoting.ClientSession.State.FAILED
+    );
   } else {
     remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_ME2ME);
   }
@@ -317,6 +324,10 @@ remoting.onConnected = function(clientSession) {
   remoting.toolbar.preview();
   remoting.clipboard.startSession();
   updateStatistics_();
+  remoting.hangoutSessionEvents.raiseEvent(
+    remoting.hangoutSessionEvents.sessionStateChanged,
+    remoting.ClientSession.State.CONNECTED
+  );
   if (remoting.connector.pairingRequested) {
     /**
      * @param {string} clientId

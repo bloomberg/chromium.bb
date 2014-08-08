@@ -46,6 +46,7 @@
       'webapp/client_screen.js',
       'webapp/client_session.js',
       'webapp/clipboard.js',
+      'webapp/hangout_session.js',
       'webapp/media_source_renderer.js',
       'webapp/session_connector.js',
       'webapp/smart_reconnector.js',

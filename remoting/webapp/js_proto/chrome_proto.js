@@ -52,6 +52,12 @@ chrome.runtime = {
 chrome.runtime.connectNative = function(name) {};
 
 /**
+ * @param {{name:string}} connectInfo
+ * @return {chrome.extension.Port}
+ */
+chrome.runtime.connect = function(connectInfo) {};
+
+/**
  * @param {string} extensionId
  * @param {*} message
  * @param {Object=} opt_options

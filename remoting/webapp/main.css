@@ -782,4 +782,8 @@ html.apps-v2.scrollable {
 .mouse-cursor-overlay {
   position: absolute;
   pointer-events: none;
-};
+}
+
+body.hangout-remote-desktop .home-screen {
+  display: none;
+}
