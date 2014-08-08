@@ -443,6 +443,8 @@
       'browser/devtools/forwarding_agent_host.h',
       'browser/devtools/ipc_devtools_agent_host.cc',
       'browser/devtools/ipc_devtools_agent_host.h',
+      'browser/devtools/embedded_worker_devtools_agent_host.cc',
+      'browser/devtools/embedded_worker_devtools_agent_host.h',
       'browser/devtools/embedded_worker_devtools_manager.cc',
       'browser/devtools/embedded_worker_devtools_manager.h',
       'browser/devtools/render_view_devtools_agent_host.cc',
