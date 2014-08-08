@@ -28,14 +28,25 @@
 #include "libavutil/pixdesc.h"
 #include "config.h"
 #include "avcodec.h"
+#include "fdctdsp.h"
 #include "internal.h"
+#include "me_cmp.h"
+#include "pixblockdsp.h"
 #include "put_bits.h"
 #include "dv.h"
 #include "dv_tablegen.h"
+#include "dv_profile_internal.h"
 
 static av_cold int dvvideo_encode_init(AVCodecContext *avctx)
 {
-    if (!avpriv_dv_codec_profile(avctx)) {
+    DVVideoContext *s = avctx->priv_data;
+    FDCTDSPContext fdsp;
+    MECmpContext mecc;
+    PixblockDSPContext pdsp;
+    int ret;
+
+    s->sys = avpriv_dv_codec_profile(avctx);
+    if (!s->sys) {
         av_log(avctx, AV_LOG_ERROR, "Found no DV profile for %ix%i %s video. "
                "Valid DV profiles are:\n",
                avctx->width, avctx->height, av_get_pix_fmt_name(avctx->pix_fmt));
@@ -46,12 +57,31 @@ static av_cold int dvvideo_encode_init(AVCodecContext *avctx)
         av_log(avctx, AV_LOG_ERROR, "DVCPRO HD encoding is not supported.\n");
         return AVERROR_PATCHWELCOME;
     }
+    ret = ff_dv_init_dynamic_tables(s, s->sys);
+    if (ret < 0) {
+        av_log(avctx, AV_LOG_ERROR, "Error initializing work tables.\n");
+        return ret;
+    }
 
     avctx->coded_frame = av_frame_alloc();
     if (!avctx->coded_frame)
         return AVERROR(ENOMEM);
 
     dv_vlc_map_tableinit();
+
+    memset(&fdsp,0, sizeof(fdsp));
+    memset(&mecc,0, sizeof(mecc));
+    memset(&pdsp,0, sizeof(pdsp));
+    ff_fdctdsp_init(&fdsp, avctx);
+    ff_me_cmp_init(&mecc, avctx);
+    ff_pixblockdsp_init(&pdsp, avctx);
+    ff_set_cmp(&mecc, mecc.ildct_cmp, avctx->ildct_cmp);
+
+    s->get_pixels = pdsp.get_pixels;
+    s->ildct_cmp  = mecc.ildct_cmp[5];
+
+    s->fdct[0]    = fdsp.fdct;
+    s->fdct[1]    = fdsp.fdct248;
 
     return ff_dvvideo_init(avctx);
 }
@@ -665,9 +695,6 @@ static int dvvideo_encode_frame(AVCodecContext *c, AVPacket *pkt,
     DVVideoContext *s = c->priv_data;
     int ret;
 
-    s->sys = avpriv_dv_codec_profile(c);
-    if (!s->sys || ff_dv_init_dynamic_tables(s->sys))
-        return -1;
     if ((ret = ff_alloc_packet2(c, pkt, s->sys->frame_size)) < 0)
         return ret;
 
@@ -677,7 +704,7 @@ static int dvvideo_encode_frame(AVCodecContext *c, AVPacket *pkt,
     c->coded_frame->pict_type = AV_PICTURE_TYPE_I;
 
     s->buf = pkt->data;
-    c->execute(c, dv_encode_video_segment, s->sys->work_chunks, NULL,
+    c->execute(c, dv_encode_video_segment, s->work_chunks, NULL,
                dv_work_pool_size(s->sys), sizeof(DVwork_chunk));
 
     emms_c();

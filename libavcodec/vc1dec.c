@@ -29,10 +29,12 @@
 #include "internal.h"
 #include "avcodec.h"
 #include "error_resilience.h"
+#include "mpeg_er.h"
 #include "mpegutils.h"
 #include "mpegvideo.h"
 #include "h263.h"
 #include "h264chroma.h"
+#include "qpeldsp.h"
 #include "vc1.h"
 #include "vc1data.h"
 #include "vc1acdata.h"
@@ -95,24 +97,24 @@ static void vc1_put_signed_blocks_clamped(VC1Context *v)
                 fieldtx = v->fieldtx_plane[topleft_mb_pos];
             stride_y       = s->linesize << fieldtx;
             v_dist         = (16 - fieldtx) >> (fieldtx == 0);
-            s->dsp.put_signed_pixels_clamped(v->block[v->topleft_blk_idx][0],
-                                             s->dest[0] - 16 * s->linesize - 16,
-                                             stride_y);
-            s->dsp.put_signed_pixels_clamped(v->block[v->topleft_blk_idx][1],
-                                             s->dest[0] - 16 * s->linesize - 8,
-                                             stride_y);
-            s->dsp.put_signed_pixels_clamped(v->block[v->topleft_blk_idx][2],
-                                             s->dest[0] - v_dist * s->linesize - 16,
-                                             stride_y);
-            s->dsp.put_signed_pixels_clamped(v->block[v->topleft_blk_idx][3],
-                                             s->dest[0] - v_dist * s->linesize - 8,
-                                             stride_y);
-            s->dsp.put_signed_pixels_clamped(v->block[v->topleft_blk_idx][4],
-                                             s->dest[1] - 8 * s->uvlinesize - 8,
-                                             s->uvlinesize);
-            s->dsp.put_signed_pixels_clamped(v->block[v->topleft_blk_idx][5],
-                                             s->dest[2] - 8 * s->uvlinesize - 8,
-                                             s->uvlinesize);
+            s->idsp.put_signed_pixels_clamped(v->block[v->topleft_blk_idx][0],
+                                              s->dest[0] - 16 * s->linesize - 16,
+                                              stride_y);
+            s->idsp.put_signed_pixels_clamped(v->block[v->topleft_blk_idx][1],
+                                              s->dest[0] - 16 * s->linesize - 8,
+                                              stride_y);
+            s->idsp.put_signed_pixels_clamped(v->block[v->topleft_blk_idx][2],
+                                              s->dest[0] - v_dist * s->linesize - 16,
+                                              stride_y);
+            s->idsp.put_signed_pixels_clamped(v->block[v->topleft_blk_idx][3],
+                                              s->dest[0] - v_dist * s->linesize - 8,
+                                              stride_y);
+            s->idsp.put_signed_pixels_clamped(v->block[v->topleft_blk_idx][4],
+                                              s->dest[1] - 8 * s->uvlinesize - 8,
+                                              s->uvlinesize);
+            s->idsp.put_signed_pixels_clamped(v->block[v->topleft_blk_idx][5],
+                                              s->dest[2] - 8 * s->uvlinesize - 8,
+                                              s->uvlinesize);
         }
         if (s->mb_x == s->mb_width - 1) {
             top_mb_pos = (s->mb_y - 1) * s->mb_stride + s->mb_x;
@@ -120,24 +122,24 @@ static void vc1_put_signed_blocks_clamped(VC1Context *v)
                 fieldtx = v->fieldtx_plane[top_mb_pos];
             stride_y   = s->linesize << fieldtx;
             v_dist     = fieldtx ? 15 : 8;
-            s->dsp.put_signed_pixels_clamped(v->block[v->top_blk_idx][0],
-                                             s->dest[0] - 16 * s->linesize,
-                                             stride_y);
-            s->dsp.put_signed_pixels_clamped(v->block[v->top_blk_idx][1],
-                                             s->dest[0] - 16 * s->linesize + 8,
-                                             stride_y);
-            s->dsp.put_signed_pixels_clamped(v->block[v->top_blk_idx][2],
-                                             s->dest[0] - v_dist * s->linesize,
-                                             stride_y);
-            s->dsp.put_signed_pixels_clamped(v->block[v->top_blk_idx][3],
-                                             s->dest[0] - v_dist * s->linesize + 8,
-                                             stride_y);
-            s->dsp.put_signed_pixels_clamped(v->block[v->top_blk_idx][4],
-                                             s->dest[1] - 8 * s->uvlinesize,
-                                             s->uvlinesize);
-            s->dsp.put_signed_pixels_clamped(v->block[v->top_blk_idx][5],
-                                             s->dest[2] - 8 * s->uvlinesize,
-                                             s->uvlinesize);
+            s->idsp.put_signed_pixels_clamped(v->block[v->top_blk_idx][0],
+                                              s->dest[0] - 16 * s->linesize,
+                                              stride_y);
+            s->idsp.put_signed_pixels_clamped(v->block[v->top_blk_idx][1],
+                                              s->dest[0] - 16 * s->linesize + 8,
+                                              stride_y);
+            s->idsp.put_signed_pixels_clamped(v->block[v->top_blk_idx][2],
+                                              s->dest[0] - v_dist * s->linesize,
+                                              stride_y);
+            s->idsp.put_signed_pixels_clamped(v->block[v->top_blk_idx][3],
+                                              s->dest[0] - v_dist * s->linesize + 8,
+                                              stride_y);
+            s->idsp.put_signed_pixels_clamped(v->block[v->top_blk_idx][4],
+                                              s->dest[1] - 8 * s->uvlinesize,
+                                              s->uvlinesize);
+            s->idsp.put_signed_pixels_clamped(v->block[v->top_blk_idx][5],
+                                              s->dest[2] - 8 * s->uvlinesize,
+                                              s->uvlinesize);
         }
     }
 
@@ -438,7 +440,8 @@ static void vc1_mc_1mv(VC1Context *v, int dir)
         || s->h_edge_pos < 22 || v_edge_pos < 22
         || (unsigned)(src_x - s->mspel) > s->h_edge_pos - (mx&3) - 16 - s->mspel * 3
         || (unsigned)(src_y - 1)        > v_edge_pos    - (my&3) - 16 - 3) {
-        uint8_t *uvbuf = s->edge_emu_buffer + 19 * s->linesize;
+        uint8_t *ubuf = s->edge_emu_buffer + 19 * s->linesize;
+        uint8_t *vbuf = ubuf + 9 * s->uvlinesize;
 
         srcY -= s->mspel * (1 + s->linesize);
         s->vdsp.emulated_edge_mc(s->edge_emu_buffer, srcY,
@@ -447,18 +450,18 @@ static void vc1_mc_1mv(VC1Context *v, int dir)
                                  src_x - s->mspel, src_y - s->mspel,
                                  s->h_edge_pos, v_edge_pos);
         srcY = s->edge_emu_buffer;
-        s->vdsp.emulated_edge_mc(uvbuf, srcU,
+        s->vdsp.emulated_edge_mc(ubuf, srcU,
                                  s->uvlinesize, s->uvlinesize,
                                  8 + 1, 8 + 1,
                                  uvsrc_x, uvsrc_y,
                                  s->h_edge_pos >> 1, v_edge_pos >> 1);
-        s->vdsp.emulated_edge_mc(uvbuf + 16, srcV,
+        s->vdsp.emulated_edge_mc(vbuf, srcV,
                                  s->uvlinesize, s->uvlinesize,
                                  8 + 1, 8 + 1,
                                  uvsrc_x, uvsrc_y,
                                  s->h_edge_pos >> 1, v_edge_pos >> 1);
-        srcU = uvbuf;
-        srcV = uvbuf + 16;
+        srcU = ubuf;
+        srcV = vbuf;
         /* if we deal with range reduction we need to scale source blocks */
         if (v->rangeredfrm) {
             int i, j;
@@ -1958,7 +1961,8 @@ static void vc1_interp_mc(VC1Context *v)
     if (v->rangeredfrm || s->h_edge_pos < 22 || v_edge_pos < 22 || use_ic
         || (unsigned)(src_x - 1) > s->h_edge_pos - (mx & 3) - 16 - 3
         || (unsigned)(src_y - 1) > v_edge_pos    - (my & 3) - 16 - 3) {
-        uint8_t *uvbuf = s->edge_emu_buffer + 19 * s->linesize;
+        uint8_t *ubuf = s->edge_emu_buffer + 19 * s->linesize;
+        uint8_t *vbuf = ubuf + 9 * s->uvlinesize;
 
         srcY -= s->mspel * (1 + s->linesize);
         s->vdsp.emulated_edge_mc(s->edge_emu_buffer, srcY,
@@ -1967,18 +1971,18 @@ static void vc1_interp_mc(VC1Context *v)
                                  src_x - s->mspel, src_y - s->mspel,
                                  s->h_edge_pos, v_edge_pos);
         srcY = s->edge_emu_buffer;
-        s->vdsp.emulated_edge_mc(uvbuf, srcU,
+        s->vdsp.emulated_edge_mc(ubuf, srcU,
                                  s->uvlinesize, s->uvlinesize,
                                  8 + 1, 8 + 1,
                                  uvsrc_x, uvsrc_y,
                                  s->h_edge_pos >> 1, v_edge_pos >> 1);
-        s->vdsp.emulated_edge_mc(uvbuf + 16, srcV,
+        s->vdsp.emulated_edge_mc(vbuf, srcV,
                                  s->uvlinesize, s->uvlinesize,
                                  8 + 1, 8 + 1,
                                  uvsrc_x, uvsrc_y,
                                  s->h_edge_pos >> 1, v_edge_pos >> 1);
-        srcU = uvbuf;
-        srcV = uvbuf + 16;
+        srcU = ubuf;
+        srcV = vbuf;
         /* if we deal with range reduction we need to scale source blocks */
         if (v->rangeredfrm) {
             int i, j;
@@ -3013,7 +3017,7 @@ static int vc1_decode_intra_block(VC1Context *v, int16_t block[64], int n,
     int scale;
     int q1, q2 = 0;
 
-    s->dsp.clear_block(block);
+    s->bdsp.clear_block(block);
 
     /* XXX: Guard against dumb values of mquant */
     mquant = (mquant < 1) ? 0 : ((mquant > 31) ? 31 : mquant);
@@ -3220,7 +3224,7 @@ static int vc1_decode_p_block(VC1Context *v, int16_t block[64], int n,
     int ttblk = ttmb & 7;
     int pat = 0;
 
-    s->dsp.clear_block(block);
+    s->bdsp.clear_block(block);
 
     if (ttmb == -1) {
         ttblk = ff_vc1_ttblk_to_tt[v->tt_index][get_vlc2(gb, ff_vc1_ttblk_vlc[v->tt_index].table, VC1_TTBLK_VLC_BITS, 1)];
@@ -3273,7 +3277,7 @@ static int vc1_decode_p_block(VC1Context *v, int16_t block[64], int n,
                 v->vc1dsp.vc1_inv_trans_8x8_dc(dst, linesize, block);
             else {
                 v->vc1dsp.vc1_inv_trans_8x8(block);
-                s->dsp.add_pixels_clamped(block, dst, linesize);
+                s->idsp.add_pixels_clamped(block, dst, linesize);
             }
         }
         break;
@@ -3604,7 +3608,10 @@ static int vc1_decode_p_mb(VC1Context *v)
                     if (v->rangeredfrm)
                         for (j = 0; j < 64; j++)
                             s->block[i][j] <<= 1;
-                    s->dsp.put_signed_pixels_clamped(s->block[i], s->dest[dst_idx] + off, i & 4 ? s->uvlinesize : s->linesize);
+                    s->idsp.put_signed_pixels_clamped(s->block[i],
+                                                      s->dest[dst_idx] + off,
+                                                      i & 4 ? s->uvlinesize
+                                                            : s->linesize);
                     if (v->pq >= 9 && v->overlap) {
                         if (v->c_avail)
                             v->vc1dsp.vc1_h_overlap(s->dest[dst_idx] + off, i & 4 ? s->uvlinesize : s->linesize);
@@ -3712,8 +3719,10 @@ static int vc1_decode_p_mb(VC1Context *v)
                     if (v->rangeredfrm)
                         for (j = 0; j < 64; j++)
                             s->block[i][j] <<= 1;
-                    s->dsp.put_signed_pixels_clamped(s->block[i], s->dest[dst_idx] + off,
-                                                     (i & 4) ? s->uvlinesize : s->linesize);
+                    s->idsp.put_signed_pixels_clamped(s->block[i],
+                                                      s->dest[dst_idx] + off,
+                                                      (i & 4) ? s->uvlinesize
+                                                              : s->linesize);
                     if (v->pq >= 9 && v->overlap) {
                         if (v->c_avail)
                             v->vc1dsp.vc1_h_overlap(s->dest[dst_idx] + off, i & 4 ? s->uvlinesize : s->linesize);
@@ -3862,7 +3871,9 @@ static int vc1_decode_p_mb_intfr(VC1Context *v)
                     stride_y = s->uvlinesize;
                     off = 0;
                 }
-                s->dsp.put_signed_pixels_clamped(s->block[i], s->dest[dst_idx] + off, stride_y);
+                s->idsp.put_signed_pixels_clamped(s->block[i],
+                                                  s->dest[dst_idx] + off,
+                                                  stride_y);
                 //TODO: loop filter
             }
 
@@ -4024,7 +4035,10 @@ static int vc1_decode_p_mb_intfi(VC1Context *v)
                 continue;
             v->vc1dsp.vc1_inv_trans_8x8(s->block[i]);
             off  = (i & 4) ? 0 : ((i & 1) * 8 + (i & 2) * 4 * s->linesize);
-            s->dsp.put_signed_pixels_clamped(s->block[i], s->dest[dst_idx] + off, (i & 4) ? s->uvlinesize : s->linesize);
+            s->idsp.put_signed_pixels_clamped(s->block[i],
+                                              s->dest[dst_idx] + off,
+                                              (i & 4) ? s->uvlinesize
+                                                      : s->linesize);
             // TODO: loop filter
         }
     } else {
@@ -4226,7 +4240,10 @@ static void vc1_decode_b_mb(VC1Context *v)
             if (v->rangeredfrm)
                 for (j = 0; j < 64; j++)
                     s->block[i][j] <<= 1;
-            s->dsp.put_signed_pixels_clamped(s->block[i], s->dest[dst_idx] + off, i & 4 ? s->uvlinesize : s->linesize);
+            s->idsp.put_signed_pixels_clamped(s->block[i],
+                                              s->dest[dst_idx] + off,
+                                              i & 4 ? s->uvlinesize
+                                                    : s->linesize);
         } else if (val) {
             vc1_decode_p_block(v, s->block[i], i, mquant, ttmb,
                                first_block, s->dest[dst_idx] + off,
@@ -4298,7 +4315,10 @@ static void vc1_decode_b_mb_intfi(VC1Context *v)
                 for (j = 0; j < 64; j++)
                     s->block[i][j] <<= 1;
             off  = (i & 4) ? 0 : ((i & 1) * 8 + (i & 2) * 4 * s->linesize);
-            s->dsp.put_signed_pixels_clamped(s->block[i], s->dest[dst_idx] + off, (i & 4) ? s->uvlinesize : s->linesize);
+            s->idsp.put_signed_pixels_clamped(s->block[i],
+                                              s->dest[dst_idx] + off,
+                                              (i & 4) ? s->uvlinesize
+                                                      : s->linesize);
             // TODO: yet to perform loop filter
         }
     } else {
@@ -4524,7 +4544,9 @@ static int vc1_decode_b_mb_intfr(VC1Context *v)
                 stride_y = s->uvlinesize;
                 off = 0;
             }
-            s->dsp.put_signed_pixels_clamped(s->block[i], s->dest[dst_idx] + off, stride_y);
+            s->idsp.put_signed_pixels_clamped(s->block[i],
+                                              s->dest[dst_idx] + off,
+                                              stride_y);
         }
     } else {
         s->mb_intra = v->is_intra[s->mb_x] = 0;
@@ -4798,7 +4820,7 @@ static void vc1_decode_i_blocks(VC1Context *v)
             dst[3] = dst[2] + 8;
             dst[4] = s->dest[1];
             dst[5] = s->dest[2];
-            s->dsp.clear_blocks(s->block[0]);
+            s->bdsp.clear_blocks(s->block[0]);
             mb_pos = s->mb_x + s->mb_y * s->mb_width;
             s->current_picture.mb_type[mb_pos]                     = MB_TYPE_INTRA;
             s->current_picture.qscale_table[mb_pos]                = v->pq;
@@ -4828,12 +4850,16 @@ static void vc1_decode_i_blocks(VC1Context *v)
                     if (v->rangeredfrm)
                         for (j = 0; j < 64; j++)
                             s->block[k][j] <<= 1;
-                    s->dsp.put_signed_pixels_clamped(s->block[k], dst[k], k & 4 ? s->uvlinesize : s->linesize);
+                    s->idsp.put_signed_pixels_clamped(s->block[k], dst[k],
+                                                      k & 4 ? s->uvlinesize
+                                                            : s->linesize);
                 } else {
                     if (v->rangeredfrm)
                         for (j = 0; j < 64; j++)
                             s->block[k][j] = (s->block[k][j] - 64) << 1;
-                    s->dsp.put_pixels_clamped(s->block[k], dst[k], k & 4 ? s->uvlinesize : s->linesize);
+                    s->idsp.put_pixels_clamped(s->block[k], dst[k],
+                                               k & 4 ? s->uvlinesize
+                                                     : s->linesize);
                 }
             }
 
@@ -4938,7 +4964,7 @@ static void vc1_decode_i_blocks_adv(VC1Context *v)
         for (;s->mb_x < s->mb_width; s->mb_x++) {
             int16_t (*block)[64] = v->block[v->cur_blk_idx];
             ff_update_block_index(s);
-            s->dsp.clear_blocks(block[0]);
+            s->bdsp.clear_blocks(block[0]);
             mb_pos = s->mb_x + s->mb_y * s->mb_stride;
             s->current_picture.mb_type[mb_pos + v->mb_off]                         = MB_TYPE_INTRA;
             s->current_picture.motion_val[1][s->block_index[0] + v->blocks_off][0] = 0;
@@ -5577,7 +5603,7 @@ av_cold void ff_vc1_init_transposed_scantables(VC1Context *v)
 {
     int i;
     for (i = 0; i < 64; i++) {
-#define transpose(x) ((x >> 3) | ((x & 7) << 3))
+#define transpose(x) (((x) >> 3) | (((x) & 7) << 3))
         v->zz_8x8[0][i] = transpose(ff_wmv1_scantable[0][i]);
         v->zz_8x8[1][i] = transpose(ff_wmv1_scantable[1][i]);
         v->zz_8x8[2][i] = transpose(ff_wmv1_scantable[2][i]);
@@ -5623,7 +5649,9 @@ static av_cold int vc1_decode_init(AVCodecContext *avctx)
     // That this is necessary might indicate a bug.
     ff_vc1_decode_end(avctx);
 
+    ff_blockdsp_init(&s->bdsp, avctx);
     ff_h264chroma_init(&v->h264chroma, 8);
+    ff_qpeldsp_init(&s->qdsp);
 
     if (avctx->codec_id == AV_CODEC_ID_WMV3 || avctx->codec_id == AV_CODEC_ID_WMV3IMAGE) {
         int count = 0;
@@ -6032,8 +6060,8 @@ static int vc1_decode_frame(AVCodecContext *avctx, void *data,
         s->current_picture_ptr->f->repeat_pict = v->rptfrm * 2;
     }
 
-    s->me.qpel_put = s->dsp.put_qpel_pixels_tab;
-    s->me.qpel_avg = s->dsp.avg_qpel_pixels_tab;
+    s->me.qpel_put = s->qdsp.put_qpel_pixels_tab;
+    s->me.qpel_avg = s->qdsp.avg_qpel_pixels_tab;
 
     if ((CONFIG_VC1_VDPAU_DECODER)
         &&s->avctx->codec->capabilities&CODEC_CAP_HWACCEL_VDPAU) {

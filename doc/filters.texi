@@ -697,6 +697,11 @@ ffmpeg -i input.mkv -filter_complex "[0:1][0:2][0:3][0:4][0:5][0:6] amerge=input
 
 Mixes multiple audio inputs into a single output.
 
+Note that this filter only supports float samples (the @var{amerge}
+and @var{pan} audio filters support many formats). If the @var{amix}
+input has integer samples then @ref{aresample} will be automatically
+inserted to perform the conversion to float samples.
+
 For example
 @example
 ffmpeg -i INPUT1 -i INPUT2 -i INPUT3 -filter_complex amix=inputs=3:duration=first:dropout_transition=3 OUTPUT
@@ -1433,6 +1438,42 @@ Apply 2 dB gain at 1000 Hz with Q 1 and attenuate 5 dB at 100 Hz with Q 2:
 equalizer=f=1000:width_type=q:width=1:g=2,equalizer=f=100:width_type=q:width=2:g=-5
 @end example
 @end itemize
+
+@section flanger
+Apply a flanging effect to the audio.
+
+The filter accepts the following options:
+
+@table @option
+@item delay
+Set base delay in milliseconds. Range from 0 to 30. Default value is 0.
+
+@item depth
+Set added swep delay in milliseconds. Range from 0 to 10. Default value is 2.
+
+@item regen
+Set percentage regeneneration (delayed signal feedback). Range from -95 to 95.
+Default value is 0.
+
+@item width
+Set percentage of delayed signal mixed with original. Range from 0 to 100.
+Default valu is 71.
+
+@item speed
+Set sweeps per second (Hz). Range from 0.1 to 10. Default value is 0.5.
+
+@item shape
+Set swept wave shape, can be @var{triangular} or @var{sinusoidal}.
+Default value is @var{sinusoidal}.
+
+@item phase
+Set swept wave percentage-shift for multi channel. Range from 0 to 100.
+Default value is 25.
+
+@item interp
+Set delay-line interpolation, @var{linear} or @var{quadratic}.
+Default is @var{linear}.
+@end table
 
 @section highpass
 
@@ -3283,7 +3324,7 @@ The option available in this filter is:
 @item cycle
 Specify the length of the window over which the judder repeats.
 
-Accepts any interger greater than 1. Useful values are:
+Accepts any integer greater than 1. Useful values are:
 @table @samp
 
 @item 4
@@ -3612,6 +3653,8 @@ To enable compilation of this filter, you need to configure FFmpeg with
 @code{--enable-libfreetype}.
 To enable default font fallback and the @var{font} option you need to
 configure FFmpeg with @code{--enable-libfontconfig}.
+To enable the @var{text_shaping} option, you need to configure FFmpeg with
+@code{--enable-libfribidi}.
 
 @subsection Syntax
 
@@ -3655,6 +3698,11 @@ the "Color" section in the ffmpeg-utils manual.
 
 The default value of @var{fontcolor} is "black".
 
+@item fontcolor_expr
+String which is expanded the same way as @var{text} to obtain dynamic
+@var{fontcolor} value. By default this option has empty value and is not
+processed. When this option is set, it overrides @var{fontcolor} option.
+
 @item font
 The font family to be used for drawing text. By default Sans.
 
@@ -3665,6 +3713,12 @@ This parameter is mandatory if the fontconfig support is disabled.
 @item fontsize
 The font size to be used for drawing text.
 The default value of @var{fontsize} is 16.
+
+@item text_shaping
+If set to 1, attempt to shape the text (for example, reverse the order of
+right-to-left text and join Arabic characters) before drawing it.
+Otherwise, just draw the text exactly as given.
+By default 1 (if supported).
 
 @item ft_load_flags
 The flags to be used for loading the fonts.
@@ -3862,6 +3916,15 @@ example the text size is not known when evaluating the expression, so
 the constants @var{text_w} and @var{text_h} will have an undefined
 value.
 
+@item expr_int_format, eif
+Evaluate the expression's value and output as formatted integer.
+
+First argument is expression to be evaluated, same as for @var{expr} function.
+Second argument specifies output format. Allowed values are 'x', 'X', 'd' and
+'u', they are treated exactly as in printf function.
+Third parameter is optional and sets the number of positions taken by output.
+Effectively this allows to add padding with zeros from the left.
+
 @item gmtime
 The time at which the filter is running, expressed in UTC.
 It can accept an argument: a strftime() format string.
@@ -3961,6 +4024,17 @@ Print the date of a real-time encoding (see strftime(3)):
 drawtext='fontfile=FreeSans.ttf:text=%@{localtime:%a %b %d %Y@}'
 @end example
 
+@item
+Shwo text fading in and out (appearing/disappearing):
+@example
+#!/bin/sh
+DS=1.0 # display start
+DE=10.0 # display end
+FID=1.5 # fade in duration
+FOD=5 # fade out duration
+ffplay -f lavfi "color,drawtext=text=TEST:fontsize=50:fontfile=FreeSerif.ttf:fontcolor_expr=ff0000%@{eif\\\\: clip(255*(1*between(t\\, $DS + $FID\\, $DE - $FOD) + ((t - $DS)/$FID)*between(t\\, $DS\\, $DS + $FID) + (-(t - $DE)/$FOD)*between(t\\, $DE - $FOD\\, $DE) )\\, 0\\, 255) \\\\: x\\\\: 2 @}"
+@end example
+
 @end itemize
 
 For more information about libfreetype, check:
@@ -3968,6 +4042,9 @@ For more information about libfreetype, check:
 
 For more information about fontconfig, check:
 @url{http://freedesktop.org/software/fontconfig/fontconfig-user.html}.
+
+For more information about libfribidi, check:
+@url{http://fribidi.org/}.
 
 @section edgedetect
 
@@ -5198,6 +5275,20 @@ A floating point number which specifies chroma temporal strength. It defaults to
 @var{luma_tmp}*@var{chroma_spatial}/@var{luma_spatial}.
 @end table
 
+@section hqx
+
+Apply a high-quality magnification filter designed for pixel art. This filter
+was originally created by Maxim Stepin.
+
+It accepts the following option:
+
+@table @option
+@item n
+Set the scaling dimension: @code{2} for @code{hq2x}, @code{3} for
+@code{hq3x} and @code{4} for @code{hq4x}.
+Default is @code{3}.
+@end table
+
 @section hue
 
 Modify the hue and/or the saturation of the input.
@@ -5363,8 +5454,7 @@ Swap luma/chroma/alpha fields. Exchange even & odd lines. Default value is @code
 
 Simple interlacing filter from progressive contents. This interleaves upper (or
 lower) lines from odd frames with lower (or upper) lines from even frames,
-halving the frame rate and preserving image height. A vertical lowpass filter
-is always applied in order to avoid twitter effects and reduce moiré patterns.
+halving the frame rate and preserving image height.
 
 @example
    Original        Original             New Frame
@@ -5384,6 +5474,10 @@ It accepts the following optional parameters:
 @item scan
 This determines whether the interlaced frame is taken from the even
 (tff - default) or odd (bff) lines of the progressive frame.
+
+@item lowpass
+Enable (default) or disable the vertical lowpass filter to avoid twitter
+interlacing and reduce moire patterns.
 @end table
 
 @section kerndeint
@@ -7527,6 +7621,188 @@ Swap the second and third planes of the input:
 ffmpeg -i INPUT -vf shuffleplanes=0:2:1:3 OUTPUT
 @end example
 
+@section signalstats
+Evaluate various visual metrics that assist in determining issues associated
+with the digitization of analog video media.
+
+By default the filter will log these metadata values:
+
+@table @option
+@item YMIN
+Display the minimal Y value contained within the input frame. Expressed in
+range of [0-255].
+
+@item YLOW
+Display the Y value at the 10% percentile within the input frame. Expressed in
+range of [0-255].
+
+@item YAVG
+Display the average Y value within the input frame. Expressed in range of
+[0-255].
+
+@item YHIGH
+Display the Y value at the 90% percentile within the input frame. Expressed in
+range of [0-255].
+
+@item YMAX
+Display the maximum Y value contained within the input frame. Expressed in
+range of [0-255].
+
+@item UMIN
+Display the minimal U value contained within the input frame. Expressed in
+range of [0-255].
+
+@item ULOW
+Display the U value at the 10% percentile within the input frame. Expressed in
+range of [0-255].
+
+@item UAVG
+Display the average U value within the input frame. Expressed in range of
+[0-255].
+
+@item UHIGH
+Display the U value at the 90% percentile within the input frame. Expressed in
+range of [0-255].
+
+@item UMAX
+Display the maximum U value contained within the input frame. Expressed in
+range of [0-255].
+
+@item VMIN
+Display the minimal V value contained within the input frame. Expressed in
+range of [0-255].
+
+@item VLOW
+Display the V value at the 10% percentile within the input frame. Expressed in
+range of [0-255].
+
+@item VAVG
+Display the average V value within the input frame. Expressed in range of
+[0-255].
+
+@item VHIGH
+Display the V value at the 90% percentile within the input frame. Expressed in
+range of [0-255].
+
+@item VMAX
+Display the maximum V value contained within the input frame. Expressed in
+range of [0-255].
+
+@item SATMIN
+Display the minimal saturation value contained within the input frame.
+Expressed in range of [0-~181.02].
+
+@item SATLOW
+Display the saturation value at the 10% percentile within the input frame.
+Expressed in range of [0-~181.02].
+
+@item SATAVG
+Display the average saturation value within the input frame. Expressed in range
+of [0-~181.02].
+
+@item SATHIGH
+Display the saturation value at the 90% percentile within the input frame.
+Expressed in range of [0-~181.02].
+
+@item SATMAX
+Display the maximum saturation value contained within the input frame.
+Expressed in range of [0-~181.02].
+
+@item HUEMED
+Display the median value for hue within the input frame. Expressed in range of
+[0-360].
+
+@item HUEAVG
+Display the average value for hue within the input frame. Expressed in range of
+[0-360].
+
+@item YDIF
+Display the average of sample value difference between all values of the Y
+plane in the current frame and corresponding values of the previous input frame.
+Expressed in range of [0-255].
+
+@item UDIF
+Display the average of sample value difference between all values of the U
+plane in the current frame and corresponding values of the previous input frame.
+Expressed in range of [0-255].
+
+@item VDIF
+Display the average of sample value difference between all values of the V
+plane in the current frame and corresponding values of the previous input frame.
+Expressed in range of [0-255].
+@end table
+
+The filter accepts the following options:
+
+@table @option
+@item stat
+@item out
+
+@option{stat} specify an additional form of image analysis.
+@option{out} output video with the specified type of pixel highlighted.
+
+Both options accept the following values:
+
+@table @samp
+@item tout
+Identify @var{temporal outliers} pixels. A @var{temporal outlier} is a pixel
+unlike the neighboring pixels of the same field. Examples of temporal outliers
+include the results of video dropouts, head clogs, or tape tracking issues.
+
+@item vrep
+Identify @var{vertical line repetition}. Vertical line repetition includes
+similar rows of pixels within a frame. In born-digital video vertical line
+repetition is common, but this pattern is uncommon in video digitized from an
+analog source. When it occurs in video that results from the digitization of an
+analog source it can indicate concealment from a dropout compensator.
+
+@item brng
+Identify pixels that fall outside of legal broadcast range.
+@end table
+
+@item color, c
+Set the highlight color for the @option{out} option. The default color is
+yellow.
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+Output data of various video metrics:
+@example
+ffprobe -f lavfi movie=example.mov,signalstats="stat=tout+vrep+brng" -show_frames
+@end example
+
+@item
+Output specific data about the minimum and maximum values of the Y plane per frame:
+@example
+ffprobe -f lavfi movie=example.mov,signalstats -show_entries frame_tags=lavfi.signalstats.YMAX,lavfi.signalstats.YMIN
+@end example
+
+@item
+Playback video while highlighting pixels that are outside of broadcast range in red.
+@example
+ffplay example.mov -vf signalstats="out=brng:color=red"
+@end example
+
+@item
+Playback video with signalstats metadata drawn over the frame.
+@example
+ffplay example.mov -vf signalstats=stat=brng+vrep+tout,drawtext=fontfile=FreeSerif.ttf:textfile=signalstat_drawtext.txt
+@end example
+
+The contents of signalstat_drawtext.txt used in the command are:
+@example
+time %@{pts:hms@}
+Y (%@{metadata:lavfi.signalstats.YMIN@}-%@{metadata:lavfi.signalstats.YMAX@})
+U (%@{metadata:lavfi.signalstats.UMIN@}-%@{metadata:lavfi.signalstats.UMAX@})
+V (%@{metadata:lavfi.signalstats.VMIN@}-%@{metadata:lavfi.signalstats.VMAX@})
+saturation maximum: %@{metadata:lavfi.signalstats.SATMAX@}
+
+@end example
+@end itemize
+
 @anchor{smartblur}
 @section smartblur
 
@@ -8675,6 +8951,94 @@ Only deinterlace frames marked as interlaced.
 The default value is @code{all}.
 @end table
 
+@section zoompan
+
+Apply Zoom & Pan effect.
+
+This filter accepts the following options:
+
+@table @option
+@item zoom, z
+Set the zoom expression. Default is 1.
+
+@item x
+@item y
+Set the x and y expression. Default is 0.
+
+@item d
+Set the duration expression in number of frames.
+This sets for how many number of frames effect will last for
+single input image.
+
+@item s
+Set the output image size, default is 'hd720'.
+@end table
+
+Each expression can contain the following constants:
+
+@table @option
+@item in_w, iw
+Input width.
+
+@item in_h, ih
+Input height.
+
+@item out_w, ow
+Output width.
+
+@item out_h, oh
+Output height.
+
+@item in
+Input frame count.
+
+@item on
+Output frame count.
+
+@item x
+@item y
+Last calculated 'x' and 'y' position from 'x' and 'y' expression
+for current input frame.
+
+@item px
+@item py
+'x' and 'y' of last output frame of previous input frame or 0 when there was
+not yet such frame (first input frame).
+
+@item zoom
+Last calculated zoom from 'z' expression for current input frame.
+
+@item pzoom
+Last calculated zoom of last output frame of previous input frame.
+
+@item duration
+Number of output frames for current input frame. Calculated from 'd' expression
+for each input frame.
+
+@item pduration
+number of output frames created for previous input frame
+
+@item a
+Rational number: input width / input height
+
+@item sar
+sample aspect ratio
+
+@item dar
+display aspect ratio
+
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+Zoom-in up to 1.5 and pan at same time to some spot near center of picture:
+@example
+zoompan=z='min(zoom+0.0015,1.5)':d=700:x='if(gte(zoom,1.5),x,x+1/a)':y='if(gte(zoom,1.5),y,y+1)':s=640x360
+@end example
+@end itemize
+
 @c man end VIDEO FILTERS
 
 @chapter Video Sources
@@ -9384,7 +9748,7 @@ Set the number of output video streams, that is also the number of video
 streams in each segment. Default is 1.
 
 @item a
-Set the number of output audio streams, that is also the number of video
+Set the number of output audio streams, that is also the number of audio
 streams in each segment. Default is 0.
 
 @item unsafe
@@ -10126,6 +10490,89 @@ Set the default timebase value:
 @example
 settb=AVTB
 @end example
+@end itemize
+
+@section showcqt
+Convert input audio to a video output representing
+frequency spectrum logarithmically (using constant Q transform with
+Brown-Puckette algorithm), with musical tone scale, from E0 to D#10 (10 octaves).
+
+The filter accepts the following options:
+
+@table @option
+@item volume
+Specify the transform volume (multiplier). Acceptable value is [1.0, 100.0].
+Default value is @code{16.0}.
+
+@item timeclamp
+Specify the transform timeclamp. At low frequency, there is trade-off between
+accuracy in time domain and frequency domain. If timeclamp is lower,
+event in time domain is represented more accurately (such as fast bass drum),
+otherwise event in frequency domain is represented more accurately
+(such as bass guitar). Acceptable value is [0.1, 1.0]. Default value is @code{0.17}.
+
+@item coeffclamp
+Specify the transform coeffclamp. If coeffclamp is lower, transform is
+more accurate, otherwise transform is faster. Acceptable value is [0.1, 10.0].
+Default value is @code{1.0}.
+
+@item gamma
+Specify gamma. Lower gamma makes the spectrum more contrast, higher gamma
+makes the spectrum having more range. Acceptable value is [1.0, 7.0].
+Default value is @code{3.0}.
+
+@item fontfile
+Specify font file for use with freetype. If not specified, use embedded font.
+
+@item fullhd
+If set to 1 (the default), the video size is 1920x1080 (full HD),
+if set to 0, the video size is 960x540. Use this option to make CPU usage lower.
+
+@item fps
+Specify video fps. Default value is @code{25}.
+
+@item count
+Specify number of transform per frame, so there are fps*count transforms
+per second. Note that audio data rate must be divisible by fps*count.
+Default value is @code{6}.
+
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+Playing audio while showing the spectrum:
+@example
+ffplay -f lavfi 'amovie=a.mp3, asplit [a][out1]; [a] showcqt [out0]'
+@end example
+
+@item
+Same as above, but with frame rate 30 fps:
+@example
+ffplay -f lavfi 'amovie=a.mp3, asplit [a][out1]; [a] showcqt=fps=30:count=5 [out0]'
+@end example
+
+@item
+Playing at 960x540 and lower CPU usage:
+@example
+ffplay -f lavfi 'amovie=a.mp3, asplit [a][out1]; [a] showcqt=fullhd=0:count=3 [out0]'
+@end example
+
+@item
+A1 and its harmonics: A1, A2, (near)E3, A3:
+@example
+ffplay -f lavfi 'aevalsrc=0.1*sin(2*PI*55*t)+0.1*sin(4*PI*55*t)+0.1*sin(6*PI*55*t)+0.1*sin(8*PI*55*t),
+                 asplit[a][out1]; [a] showcqt [out0]'
+@end example
+
+@item
+Same as above, but with more accuracy in frequency domain (and slower):
+@example
+ffplay -f lavfi 'aevalsrc=0.1*sin(2*PI*55*t)+0.1*sin(4*PI*55*t)+0.1*sin(6*PI*55*t)+0.1*sin(8*PI*55*t),
+                 asplit[a][out1]; [a] showcqt=timeclamp=0.5 [out0]'
+@end example
+
 @end itemize
 
 @section showspectrum

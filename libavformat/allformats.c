@@ -123,6 +123,7 @@ void av_register_all(void)
     REGISTER_MUXDEMUX(FLAC,             flac);
     REGISTER_DEMUXER (FLIC,             flic);
     REGISTER_MUXDEMUX(FLV,              flv);
+    REGISTER_DEMUXER (LIVE_FLV,         live_flv);
     REGISTER_DEMUXER (FOURXM,           fourxm);
     REGISTER_MUXER   (FRAMECRC,         framecrc);
     REGISTER_MUXER   (FRAMEMD5,         framemd5);
@@ -162,6 +163,7 @@ void av_register_all(void)
     REGISTER_MUXDEMUX(LATM,             latm);
     REGISTER_DEMUXER (LMLM4,            lmlm4);
     REGISTER_DEMUXER (LOAS,             loas);
+    REGISTER_MUXDEMUX(LRC,              lrc);
     REGISTER_DEMUXER (LVF,              lvf);
     REGISTER_DEMUXER (LXF,              lxf);
     REGISTER_MUXDEMUX(M4V,              m4v);
@@ -265,6 +267,7 @@ void av_register_all(void)
     REGISTER_MUXER   (SEGMENT,          stream_segment);
     REGISTER_DEMUXER (SHORTEN,          shorten);
     REGISTER_DEMUXER (SIFF,             siff);
+    REGISTER_DEMUXER (SLN,              sln);
     REGISTER_DEMUXER (SMACKER,          smacker);
     REGISTER_MUXDEMUX(SMJPEG,           smjpeg);
     REGISTER_MUXER   (SMOOTHSTREAMING,  smoothstreaming);
@@ -304,6 +307,7 @@ void av_register_all(void)
     REGISTER_MUXDEMUX(WAV,              wav);
     REGISTER_DEMUXER (WC3,              wc3);
     REGISTER_MUXER   (WEBM,             webm);
+    REGISTER_MUXDEMUX(WEBM_DASH_MANIFEST, webm_dash_manifest);
     REGISTER_MUXDEMUX(WEBVTT,           webvtt);
     REGISTER_DEMUXER (WSAUD,            wsaud);
     REGISTER_DEMUXER (WSVQA,            wsvqa);
@@ -315,6 +319,18 @@ void av_register_all(void)
     REGISTER_DEMUXER (XWMA,             xwma);
     REGISTER_DEMUXER (YOP,              yop);
     REGISTER_MUXDEMUX(YUV4MPEGPIPE,     yuv4mpegpipe);
+
+    /* image demuxers */
+    REGISTER_DEMUXER (IMAGE_BMP_PIPE,        image_bmp_pipe);
+    REGISTER_DEMUXER (IMAGE_DPX_PIPE,        image_dpx_pipe);
+    REGISTER_DEMUXER (IMAGE_EXR_PIPE,        image_exr_pipe);
+    REGISTER_DEMUXER (IMAGE_J2K_PIPE,        image_j2k_pipe);
+    REGISTER_DEMUXER (IMAGE_PICTOR_PIPE,     image_pictor_pipe);
+    REGISTER_DEMUXER (IMAGE_PNG_PIPE,        image_png_pipe);
+    REGISTER_DEMUXER (IMAGE_SGI_PIPE,        image_sgi_pipe);
+    REGISTER_DEMUXER (IMAGE_SUNRAST_PIPE,    image_sunrast_pipe);
+    REGISTER_DEMUXER (IMAGE_TIFF_PIPE,       image_tiff_pipe);
+
 
     /* protocols */
     REGISTER_PROTOCOL(BLURAY,           bluray);
@@ -361,4 +377,5 @@ void av_register_all(void)
     REGISTER_PROTOCOL(LIBRTMPT,         librtmpt);
     REGISTER_PROTOCOL(LIBRTMPTE,        librtmpte);
     REGISTER_PROTOCOL(LIBSSH,           libssh);
+    REGISTER_PROTOCOL(LIBSMBCLIENT,     libsmbclient);
 }

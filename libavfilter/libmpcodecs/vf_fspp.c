@@ -24,7 +24,7 @@
  * "Aria Nosratinia Embedded Post-Processing for
  * Enhancement of Compressed Images (1999)"
  * (http://citeseer.nj.nec.com/nosratinia99embedded.html)
- * Futher, with splitting (i)dct into hor/ver passes, one of them can be
+ * Further, with splitting (i)dct into hor/ver passes, one of them can be
  * performed once per block, not pixel. This allows for much better speed.
  */
 
@@ -53,7 +53,6 @@
 #include "libavutil/mem.h"
 #include "libavutil/x86/asm.h"
 #include "libavcodec/avcodec.h"
-#include "libavcodec/dsputil.h"
 
 #undef free
 #undef malloc

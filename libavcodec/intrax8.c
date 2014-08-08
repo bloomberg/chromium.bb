@@ -25,6 +25,7 @@
 #include "avcodec.h"
 #include "error_resilience.h"
 #include "get_bits.h"
+#include "idctdsp.h"
 #include "mpegvideo.h"
 #include "msmpeg4data.h"
 #include "intrax8huf.h"
@@ -535,7 +536,7 @@ static int x8_decode_intra_mb(IntraX8Context* const w, const int chroma){
     int sign;
 
     av_assert2(w->orient<12);
-    s->dsp.clear_block(s->block[0]);
+    s->bdsp.clear_block(s->block[0]);
 
     if(chroma){
         dc_mode=2;
@@ -643,9 +644,9 @@ static int x8_decode_intra_mb(IntraX8Context* const w, const int chroma){
                                             s->current_picture.f->linesize[!!chroma] );
     }
     if(!zeros_only)
-        w->wdsp.idct_add (s->dest[chroma],
-                          s->current_picture.f->linesize[!!chroma],
-                          s->block[0] );
+        w->wdsp.idct_add(s->dest[chroma],
+                         s->current_picture.f->linesize[!!chroma],
+                         s->block[0]);
 
 block_placed:
 

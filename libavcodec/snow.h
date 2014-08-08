@@ -22,8 +22,9 @@
 #ifndef AVCODEC_SNOW_H
 #define AVCODEC_SNOW_H
 
-#include "dsputil.h"
 #include "hpeldsp.h"
+#include "me_cmp.h"
+#include "qpeldsp.h"
 #include "snow_dwt.h"
 
 #include "rangecoder.h"
@@ -109,10 +110,12 @@ typedef struct SnowContext{
     AVClass *class;
     AVCodecContext *avctx;
     RangeCoder c;
-    DSPContext dsp;
+    MECmpContext mecc;
     HpelDSPContext hdsp;
+    QpelDSPContext qdsp;
     VideoDSPContext vdsp;
     H264QpelContext h264qpel;
+    MpegvideoEncDSPContext mpvencdsp;
     SnowDWTContext dwt;
     AVFrame *new_picture;
     AVFrame *input_picture;              ///< new_picture with the internal linesizes
@@ -230,6 +233,7 @@ int ff_snow_frame_start(SnowContext *s);
 void ff_snow_pred_block(SnowContext *s, uint8_t *dst, uint8_t *tmp, ptrdiff_t stride,
                      int sx, int sy, int b_w, int b_h, BlockNode *block,
                      int plane_index, int w, int h);
+int ff_snow_get_buffer(SnowContext *s, AVFrame *frame);
 /* common inline functions */
 //XXX doublecheck all of them should stay inlined
 

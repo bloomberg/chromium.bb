@@ -614,7 +614,7 @@ def WriteGn(fd, build_dir, disjoint_sets):
 
   # Generate conditional stanza for each disjoint source set.
   for s in reversed(disjoint_sets):
-    fd.Write(s.GenerateGnStanza())
+    fd.write(s.GenerateGnStanza())
 
 
 def main():

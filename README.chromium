@@ -3,7 +3,7 @@ URL: http://ffmpeg.org/
 License: LGPL 2.1
 License File: LICENSE
 Upstream Git: git://source.ffmpeg.org/ffmpeg.git
-Last Upstream Merge: bebce653e5601ceafa004db0eb6b2c7d4d16f0c0, May 20 2014
+Last Upstream Merge: afd62b3f184569492230e7f34ad55581c6b2d2c3, Aug 1 2014
 
 This file documents the layout of the Chromium copy of FFmpeg git, some common
 tasks, how to produce the FFmpeg include directory, and how to create the
@@ -251,26 +251,25 @@ Here is a list of gotchas that have shown up.
 Short Directions:
 =================
   1) Create config.h and config.asm as needed.
-     On Linux run
-       ./chromium/scripts/build_ffmpeg.sh linux ia32 <absolute path to .>
-       ./chromium/scripts/build_ffmpeg.sh linux x64 <absolute path to .>
+     On Linux (with Chromium's yasm build output in $PATH) run
+       ./chromium/scripts/build_ffmpeg.py linux ia32
+       ./chromium/scripts/build_ffmpeg.py linux x64
+       ./chromium/scripts/build_ffmpeg.py linux-noasm x64
 
      On Linux with MIPS cross-toolchain in $PATH
-       ./chromium/scripts/build_ffmpeg.sh linux mipsel <absolute path to .>
+       ./chromium/scripts/build_ffmpeg.py linux mipsel
 
      On Linux chroot run
-       ./chromium/scripts/build_ffmpeg.sh linux arm <absolute path to .>
-       ./chromium/scripts/build_ffmpeg.sh linux arm-neon <absolute path to .>
+       ./chromium/scripts/build_ffmpeg.py linux arm
+       ./chromium/scripts/build_ffmpeg.py linux arm-neon
 
      On Mac run
-       ./chromium/scripts/build_ffmpeg.sh mac ia32 <absolute path to .>
-       ./chromium/scripts/build_ffmpeg.sh mac x64 <absolute path to .>
+       ./chromium/scripts/build_ffmpeg.py mac ia32
+       ./chromium/scripts/build_ffmpeg.py mac x64
 
      On Windows run
-       ./chromium/scripts/build_ffmpeg.sh win ia32 <absolute path to .>
-       ./chromium/scripts/build_ffmpeg.sh win x64 <absolute path to .>
-       ./chromium/scripts/build_ffmpeg.sh win-vs2013 ia32 <absolute path to .>
-       ./chromium/scripts/build_ffmpeg.sh win-vs2013 x64 <absolute path to .>
+       ./chromium/scripts/build_ffmpeg.py win ia32
+       ./chromium/scripts/build_ffmpeg.py win x64
 
   2) Finally, collect all these directories and copy all config files
      into the source tree using

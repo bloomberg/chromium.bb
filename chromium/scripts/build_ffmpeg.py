@@ -32,7 +32,7 @@ BRANDINGS = [
 USAGE = """Usage: %prog TARGET_OS TARGET_ARCH [options] -- [configure_args]
 
 Valid combinations are linux       [ia32|x64|mipsel|arm|arm-neon]
-                       linux-noasm [ia32|x64]
+                       linux-noasm [x64]
                        mac         [ia32|x64]
                        win         [ia32|x64]
 
@@ -186,7 +186,7 @@ def main(argv):
   target_arch = args[1]
   configure_args = args[2:]
 
-  if target_os not in ('linux', 'linux-noasm', 'win', 'win-vs2013', 'mac'):
+  if target_os not in ('linux', 'linux-noasm', 'win', 'mac'):
     parser.print_help()
     return 1
 

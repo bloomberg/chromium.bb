@@ -27,17 +27,18 @@
  */
 
 #include "avcodec.h"
-#include "dsputil.h"
 #include "get_bits.h"
 #include "bytestream.h"
 #include "internal.h"
 #include "golomb.h"
 #include "dirac_arith.h"
 #include "mpeg12data.h"
+#include "libavcodec/mpegvideo.h"
+#include "mpegvideoencdsp.h"
 #include "dirac_dwt.h"
 #include "dirac.h"
 #include "diracdsp.h"
-#include "videodsp.h" // for ff_emulated_edge_mc_8
+#include "videodsp.h"
 
 /**
  * The spec limits the number of wavelet decompositions to 4 for both
@@ -71,8 +72,6 @@
  * is held for delayed output.
  */
 #define DELAYED_PIC_REF 4
-
-#define ff_emulated_edge_mc ff_emulated_edge_mc_8 /* Fix: change the calls to this function regarding bit depth */
 
 #define CALC_PADDING(size, depth)                       \
     (((size + (1 << depth) - 1) >> depth) << depth)
@@ -136,7 +135,8 @@ typedef struct Plane {
 
 typedef struct DiracContext {
     AVCodecContext *avctx;
-    DSPContext dsp;
+    MpegvideoEncDSPContext mpvencdsp;
+    VideoDSPContext vdsp;
     DiracDSPContext diracdsp;
     GetBitContext gb;
     dirac_source_params source;
@@ -199,8 +199,9 @@ typedef struct DiracContext {
     uint8_t *edge_emu_buffer[4];
     uint8_t *edge_emu_buffer_base;
 
-    uint16_t *mctmp;            /* buffer holding the MC data multipled by OBMC weights */
+    uint16_t *mctmp;            /* buffer holding the MC data multiplied by OBMC weights */
     uint8_t *mcscratch;
+    int buffer_stride;
 
     DECLARE_ALIGNED(16, uint8_t, obmc_weight)[3][MAX_BLOCKSIZE*MAX_BLOCKSIZE];
 
@@ -343,19 +344,41 @@ static int alloc_sequence_buffers(DiracContext *s)
             return AVERROR(ENOMEM);
     }
 
-    w = s->source.width;
-    h = s->source.height;
-
     /* fixme: allocate using real stride here */
     s->sbsplit  = av_malloc_array(sbwidth, sbheight);
     s->blmotion = av_malloc_array(sbwidth, sbheight * 16 * sizeof(*s->blmotion));
-    s->edge_emu_buffer_base = av_malloc_array((w+64), MAX_BLOCKSIZE);
 
-    s->mctmp     = av_malloc_array((w+64+MAX_BLOCKSIZE), (h+MAX_BLOCKSIZE) * sizeof(*s->mctmp));
-    s->mcscratch = av_malloc_array((w+64), MAX_BLOCKSIZE);
-
-    if (!s->sbsplit || !s->blmotion || !s->mctmp || !s->mcscratch)
+    if (!s->sbsplit || !s->blmotion)
         return AVERROR(ENOMEM);
+    return 0;
+}
+
+static int alloc_buffers(DiracContext *s, int stride)
+{
+    int w = s->source.width;
+    int h = s->source.height;
+
+    av_assert0(stride >= w);
+    stride += 64;
+
+    if (s->buffer_stride >= stride)
+        return 0;
+    s->buffer_stride = 0;
+
+    av_freep(&s->edge_emu_buffer_base);
+    memset(s->edge_emu_buffer, 0, sizeof(s->edge_emu_buffer));
+    av_freep(&s->mctmp);
+    av_freep(&s->mcscratch);
+
+    s->edge_emu_buffer_base = av_malloc_array(stride, MAX_BLOCKSIZE);
+
+    s->mctmp     = av_malloc_array((stride+MAX_BLOCKSIZE), (h+MAX_BLOCKSIZE) * sizeof(*s->mctmp));
+    s->mcscratch = av_malloc_array(stride, MAX_BLOCKSIZE);
+
+    if (!s->edge_emu_buffer_base || !s->mctmp || !s->mcscratch)
+        return AVERROR(ENOMEM);
+
+    s->buffer_stride = stride;
     return 0;
 }
 
@@ -382,6 +405,7 @@ static void free_sequence_buffers(DiracContext *s)
         av_freep(&s->plane[i].idwt_tmp);
     }
 
+    s->buffer_stride = 0;
     av_freep(&s->sbsplit);
     av_freep(&s->blmotion);
     av_freep(&s->edge_emu_buffer_base);
@@ -398,8 +422,9 @@ static av_cold int dirac_decode_init(AVCodecContext *avctx)
     s->avctx = avctx;
     s->frame_number = -1;
 
-    ff_dsputil_init(&s->dsp, avctx);
     ff_diracdsp_init(&s->diracdsp);
+    ff_mpegvideoencdsp_init(&s->mpvencdsp, avctx);
+    ff_videodsp_init(&s->vdsp, 8);
 
     for (i = 0; i < MAX_FRAMES; i++) {
         s->all_frames[i].avframe = av_frame_alloc();
@@ -670,7 +695,7 @@ static void lowdelay_subband(DiracContext *s, GetBitContext *gb, int quant,
     IDWTELEM *buf1 =      b1->ibuf + top * b1->stride;
     IDWTELEM *buf2 = b2 ? b2->ibuf + top * b2->stride : NULL;
     int x, y;
-    /* we have to constantly check for overread since the spec explictly
+    /* we have to constantly check for overread since the spec explicitly
        requires this, with the meaning that all remaining coeffs are set to 0 */
     if (get_bits_count(gb) >= bits_end)
         return;
@@ -1426,10 +1451,10 @@ static int mc_subpel(DiracContext *s, DiracBlock *block, const uint8_t *src[5],
         y + p->yblen > p->height+EDGE_WIDTH/2 ||
         x < 0 || y < 0) {
         for (i = 0; i < nplanes; i++) {
-            ff_emulated_edge_mc(s->edge_emu_buffer[i], src[i],
-                                p->stride, p->stride,
-                                p->xblen, p->yblen, x, y,
-                                p->width+EDGE_WIDTH/2, p->height+EDGE_WIDTH/2);
+            s->vdsp.emulated_edge_mc(s->edge_emu_buffer[i], src[i],
+                                     p->stride, p->stride,
+                                     p->xblen, p->yblen, x, y,
+                                     p->width+EDGE_WIDTH/2, p->height+EDGE_WIDTH/2);
             src[i] = s->edge_emu_buffer[i];
         }
     }
@@ -1532,7 +1557,7 @@ static void interpolate_refplane(DiracContext *s, DiracFrame *ref, int plane, in
     int i, edge = EDGE_WIDTH/2;
 
     ref->hpel[plane][0] = ref->avframe->data[plane];
-    s->dsp.draw_edges(ref->hpel[plane][0], ref->avframe->linesize[plane], width, height, edge, edge, EDGE_TOP | EDGE_BOTTOM); /* EDGE_TOP | EDGE_BOTTOM values just copied to make it build, this needs to be ensured */
+    s->mpvencdsp.draw_edges(ref->hpel[plane][0], ref->avframe->linesize[plane], width, height, edge, edge, EDGE_TOP | EDGE_BOTTOM); /* EDGE_TOP | EDGE_BOTTOM values just copied to make it build, this needs to be ensured */
 
     /* no need for hpel if we only have fpel vectors */
     if (!s->mv_precision)
@@ -1549,9 +1574,9 @@ static void interpolate_refplane(DiracContext *s, DiracFrame *ref, int plane, in
         s->diracdsp.dirac_hpel_filter(ref->hpel[plane][1], ref->hpel[plane][2],
                                       ref->hpel[plane][3], ref->hpel[plane][0],
                                       ref->avframe->linesize[plane], width, height);
-        s->dsp.draw_edges(ref->hpel[plane][1], ref->avframe->linesize[plane], width, height, edge, edge, EDGE_TOP | EDGE_BOTTOM);
-        s->dsp.draw_edges(ref->hpel[plane][2], ref->avframe->linesize[plane], width, height, edge, edge, EDGE_TOP | EDGE_BOTTOM);
-        s->dsp.draw_edges(ref->hpel[plane][3], ref->avframe->linesize[plane], width, height, edge, edge, EDGE_TOP | EDGE_BOTTOM);
+        s->mpvencdsp.draw_edges(ref->hpel[plane][1], ref->avframe->linesize[plane], width, height, edge, edge, EDGE_TOP | EDGE_BOTTOM);
+        s->mpvencdsp.draw_edges(ref->hpel[plane][2], ref->avframe->linesize[plane], width, height, edge, edge, EDGE_TOP | EDGE_BOTTOM);
+        s->mpvencdsp.draw_edges(ref->hpel[plane][3], ref->avframe->linesize[plane], width, height, edge, edge, EDGE_TOP | EDGE_BOTTOM);
     }
     ref->interpolated[plane] = 1;
 }
@@ -1854,6 +1879,9 @@ static int dirac_decode_data_unit(AVCodecContext *avctx, const uint8_t *buf, int
         s->plane[1].stride = pic->avframe->linesize[1];
         s->plane[2].stride = pic->avframe->linesize[2];
 
+        if (alloc_buffers(s, FFMAX3(FFABS(s->plane[0].stride), FFABS(s->plane[1].stride), FFABS(s->plane[2].stride))) < 0)
+            return AVERROR(ENOMEM);
+
         /* [DIRAC_STD] 11.1 Picture parse. picture_parse() */
         if (dirac_decode_picture_header(s))
             return -1;
@@ -1931,7 +1959,6 @@ static int dirac_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
             int min_num = s->delay_frames[0]->avframe->display_picture_number;
             /* Too many delayed frames, so we display the frame with the lowest pts */
             av_log(avctx, AV_LOG_ERROR, "Delay frame overflow\n");
-            delayed_frame = s->delay_frames[0];
 
             for (i = 1; s->delay_frames[i]; i++)
                 if (s->delay_frames[i]->avframe->display_picture_number < min_num)

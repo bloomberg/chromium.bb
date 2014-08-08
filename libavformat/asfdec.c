@@ -69,6 +69,7 @@ typedef struct {
     unsigned int packet_frag_offset;
     unsigned int packet_frag_size;
     int64_t packet_frag_timestamp;
+    int ts_is_pts;
     int packet_multi_size;
     int packet_time_delta;
     int packet_time_start;
@@ -372,7 +373,8 @@ static int asf_read_stream_properties(AVFormatContext *s, int64_t size)
 
     if (!(asf->hdr.flags & 0x01)) { // if we aren't streaming...
         int64_t fsize = avio_size(pb);
-        if (fsize <= 0 || (int64_t)asf->hdr.file_size <= 0 || FFABS(fsize - (int64_t)asf->hdr.file_size) < 10000)
+        if (fsize <= 0 || (int64_t)asf->hdr.file_size <= 0 ||
+            FFABS(fsize - (int64_t)asf->hdr.file_size) / (float)FFMIN(fsize, asf->hdr.file_size) < 0.05)
             st->duration = asf->hdr.play_time /
                        (10000000 / 1000) - start_time;
     }
@@ -500,6 +502,8 @@ static int asf_read_stream_properties(AVFormatContext *s, int64_t size)
             st->codec->extradata_size = 0;
         }
         if (st->codec->codec_id == AV_CODEC_ID_H264)
+            st->need_parsing = AVSTREAM_PARSE_FULL_ONCE;
+        if (st->codec->codec_id == AV_CODEC_ID_MPEG4)
             st->need_parsing = AVSTREAM_PARSE_FULL_ONCE;
     }
     pos2 = avio_tell(pb);
@@ -1050,6 +1054,7 @@ static int asf_read_frame_header(AVFormatContext *s, AVIOContext *pb)
                 ts1 = avio_rl64(pb);
                 if (ts0!= -1) asf->packet_frag_timestamp = ts0/10000;
                 else          asf->packet_frag_timestamp = AV_NOPTS_VALUE;
+                asf->ts_is_pts = 1;
                 break;
             case 0x5B:
             case 0xB7:
@@ -1123,8 +1128,8 @@ static int asf_parse_packet(AVFormatContext *s, AVIOContext *pb, AVPacket *pkt)
         int ret;
         if (url_feof(pb))
             return AVERROR_EOF;
-
-        if (asf->packet_size_left < FRAME_HEADER_SIZE) {
+        if (asf->packet_size_left < FRAME_HEADER_SIZE ||
+            asf->packet_segments < 1 && asf->packet_time_start == 0) {
             int ret = asf->packet_size_left + asf->packet_padsize;
 
             assert(ret >= 0);
@@ -1200,7 +1205,10 @@ static int asf_parse_packet(AVFormatContext *s, AVIOContext *pb, AVPacket *pkt)
             /* new packet */
             av_new_packet(&asf_st->pkt, asf_st->packet_obj_size);
             asf_st->seq              = asf->packet_seq;
-            asf_st->pkt.dts          = asf->packet_frag_timestamp - asf->hdr.preroll;
+            if (asf->ts_is_pts) {
+                asf_st->pkt.pts          = asf->packet_frag_timestamp - asf->hdr.preroll;
+            } else
+                asf_st->pkt.dts          = asf->packet_frag_timestamp - asf->hdr.preroll;
             asf_st->pkt.stream_index = asf->stream_index;
             asf_st->pkt.pos          = asf_st->packet_pos = asf->packet_pos;
             asf_st->pkt_clean        = 0;

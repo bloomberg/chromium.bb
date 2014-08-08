@@ -2,6 +2,9 @@ Entries are sorted chronologically from oldest to youngest within each release,
 releases are sorted from youngest to oldest.
 
 version <next>:
+
+
+version 2.3:
 - AC3 fixed-point decoding
 - shuffleplanes filter
 - subfile protocol
@@ -9,10 +12,10 @@ version <next>:
 - replaygain data export
 - VP7 video decoder
 - Alias PIX image encoder and decoder
-- Improvments to the BRender PIX image decoder
-- Improvments to the XBM decoder
+- Improvements to the BRender PIX image decoder
+- Improvements to the XBM decoder
 - QTKit input device
-- improvments to OpenEXR image decoder
+- improvements to OpenEXR image decoder
 - support decoding 16-bit RLE SGI images
 - GDI screen grabbing for Windows
 - alternative rendition support for HTTP Live Streaming
@@ -24,6 +27,18 @@ version <next>:
 - libbs2b-based stereo-to-binaural audio filter
 - libx264 reference frames count limiting depending on level
 - native Opus decoder
+- display matrix export and rotation api
+- WebVTT encoder
+- showcqt multimedia filter
+- zoompan filter
+- signalstats filter
+- hqx filter (hq2x, hq3x, hq4x)
+- flanger filter
+- Image format auto-detection
+- LRC demuxer and muxer
+- Samba protocol (via libsmbclient)
+- WebM DASH Manifest muxer
+- libfribidi support in drawtext
 
 
 version 2.2:

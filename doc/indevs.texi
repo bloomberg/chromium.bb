@@ -13,8 +13,8 @@ You can disable all the input devices using the configure option
 option "--enable-indev=@var{INDEV}", or you can disable a particular
 input device using the option "--disable-indev=@var{INDEV}".
 
-The option "-formats" of the ff* tools will display the list of
-supported input devices (amongst the demuxers).
+The option "-devices" of the ff* tools will display the list of
+supported input devices.
 
 A description of the currently available input devices follows.
 
@@ -64,6 +64,11 @@ A given device index will override any given device name.
 If the desired device consists of numbers only, use -video_device_index to identify it.
 The default device will be chosen if an empty string  or the device name "default" is given.
 The available devices can be enumerated by using -list_devices.
+The pixel format can be set using -pixel_format.
+Available formats:
+ monob, rgb555be, rgb555le, rgb565be, rgb565le, rgb24, bgr24, 0rgb, bgr0, 0bgr, rgb0,
+ bgr48be, uyvy422, yuva444p, yuva444p16le, yuv444p, yuv422p16, yuv422p10, yuv444p10,
+ yuv420p, nv12, yuyv422, gray
 
 @example
 ffmpeg -f avfoundation -i "0" out.mpg
@@ -74,7 +79,7 @@ ffmpeg -f avfoundation -video_device_index 0 -i "" out.mpg
 @end example
 
 @example
-ffmpeg -f avfoundation -i "default" out.mpg
+ffmpeg -f avfoundation -pixel_format bgr0 -i "default" out.mpg
 @end example
 
 @example
@@ -478,9 +483,27 @@ ffplay -f lavfi "movie=test.avi[out0];amovie=test.wav[out1]"
 
 @end itemize
 
+@section libcdio
+
+Audio-CD input device based on cdio.
+
+To enable this input device during configuration you need libcdio
+installed on your system. Requires the configure option
+@code{--enable-libcdio}.
+
+This device allows playing and grabbing from an Audio-CD.
+
+For example to copy with @command{ffmpeg} the entire Audio-CD in /dev/sr0,
+you may run the command:
+@example
+ffmpeg -f libcdio -i /dev/sr0 cd.wav
+@end example
+
 @section libdc1394
 
 IIDC1394 input device, based on libdc1394 and libraw1394.
+
+Requires the configure option @code{--enable-libdc1394}.
 
 @section openal
 
@@ -810,6 +833,9 @@ other filename will be interpreted as device number 0.
 
 X11 video input device.
 
+Depends on X11, Xext, and Xfixes. Requires the configure option
+@code{--enable-x11grab}.
+
 This device allows one to capture a region of an X11 display.
 
 The filename passed as input has the syntax:
@@ -890,6 +916,10 @@ ffmpeg -f x11grab -follow_mouse centered -show_region 1 -framerate 25 -video_siz
 
 @item video_size
 Set the video frame size. Default value is @code{vga}.
+
+@item use_shm
+Use the MIT-SHM extension for shared memory. Default value is @code{1}.
+It may be necessary to disable it for remote displays.
 @end table
 
 @c man end INPUT DEVICES

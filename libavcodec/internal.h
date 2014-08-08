@@ -35,7 +35,9 @@
 
 #define FF_SANE_NB_CHANNELS 63U
 
-#if HAVE_NEON || ARCH_PPC || HAVE_MMX
+#if HAVE_AVX
+#   define STRIDE_ALIGN 32
+#elif HAVE_SIMD_ALIGN_16
 #   define STRIDE_ALIGN 16
 #else
 #   define STRIDE_ALIGN 8
@@ -224,11 +226,6 @@ int avpriv_h264_has_num_reorder_frames(AVCodecContext *avctx);
 int ff_codec_open2_recursive(AVCodecContext *avctx, const AVCodec *codec, AVDictionary **options);
 
 /**
- * Call avcodec_close recursively, counterpart to avcodec_open2_recursive.
- */
-int ff_codec_close_recursive(AVCodecContext *avctx);
-
-/**
  * Finalize buf into extradata and set its size appropriately.
  */
 int avpriv_bprint_to_extradata(AVCodecContext *avctx, struct AVBPrint *buf);
@@ -242,6 +239,12 @@ const uint8_t *avpriv_find_start_code(const uint8_t *p,
  * context.
  */
 int ff_set_dimensions(AVCodecContext *s, int width, int height);
+
+/**
+ * Check that the provided sample aspect ratio is valid and set it on the codec
+ * context.
+ */
+int ff_set_sar(AVCodecContext *avctx, AVRational sar);
 
 /**
  * Add or update AV_FRAME_DATA_MATRIXENCODING side data.
