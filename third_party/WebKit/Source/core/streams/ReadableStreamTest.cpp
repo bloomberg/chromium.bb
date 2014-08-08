@@ -11,6 +11,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/streams/ReadableStreamImpl.h"
 #include "core/streams/UnderlyingSource.h"
 #include "core/testing/DummyPageHolder.h"
 #include <gmock/gmock.h>
@@ -26,6 +27,7 @@ using ::testing::Return;
 namespace {
 
 typedef ::testing::StrictMock<::testing::MockFunction<void(int)> > Checkpoint;
+typedef ReadableStreamImpl<ReadableStreamChunkTypeTraits<String> > StringStream;
 
 class StringCapturingFunction : public ScriptFunction {
 public:
@@ -95,14 +97,14 @@ public:
     }
 
     // Note: This function calls RunMicrotasks.
-    ReadableStream* construct()
+    StringStream* construct()
     {
         RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState());
         ScriptPromise promise = resolver->promise();
         resolver->resolve();
         EXPECT_CALL(*m_underlyingSource, startSource(&m_exceptionState)).WillOnce(Return(promise));
 
-        ReadableStream* stream = new ReadableStream(scriptState(), m_underlyingSource, &m_exceptionState);
+        StringStream* stream = new StringStream(scriptState(), m_underlyingSource, &m_exceptionState);
         isolate()->RunMicrotasks();
         return stream;
     }
@@ -121,7 +123,7 @@ TEST_F(ReadableStreamTest, Construct)
         InSequence s;
         EXPECT_CALL(*m_underlyingSource, startSource(&m_exceptionState)).WillOnce(Return(promise));
     }
-    ReadableStream* stream = new ReadableStream(scriptState(), m_underlyingSource, &m_exceptionState);
+    StringStream* stream = new StringStream(scriptState(), m_underlyingSource, &m_exceptionState);
     EXPECT_FALSE(m_exceptionState.hadException());
     EXPECT_FALSE(stream->isStarted());
     EXPECT_FALSE(stream->isDraining());
@@ -148,7 +150,7 @@ TEST_F(ReadableStreamTest, ConstructError)
         EXPECT_CALL(*m_underlyingSource, startSource(&m_exceptionState))
             .WillOnce(DoAll(Invoke(ThrowError("hello")), Return(ScriptPromise())));
     }
-    new ReadableStream(scriptState(), m_underlyingSource, &m_exceptionState);
+    new StringStream(scriptState(), m_underlyingSource, &m_exceptionState);
     EXPECT_TRUE(m_exceptionState.hadException());
 }
 
@@ -160,7 +162,7 @@ TEST_F(ReadableStreamTest, StartFailAsynchronously)
         InSequence s;
         EXPECT_CALL(*m_underlyingSource, startSource(&m_exceptionState)).WillOnce(Return(promise));
     }
-    ReadableStream* stream = new ReadableStream(scriptState(), m_underlyingSource, &m_exceptionState);
+    StringStream* stream = new StringStream(scriptState(), m_underlyingSource, &m_exceptionState);
     EXPECT_FALSE(m_exceptionState.hadException());
     EXPECT_FALSE(stream->isStarted());
     EXPECT_FALSE(stream->isDraining());
@@ -186,7 +188,7 @@ TEST_F(ReadableStreamTest, StartFailAsynchronously)
 
 TEST_F(ReadableStreamTest, WaitOnWaiting)
 {
-    ReadableStream* stream = construct();
+    StringStream* stream = construct();
     Checkpoint checkpoint;
 
     EXPECT_EQ(ReadableStream::Waiting, stream->state());
@@ -218,7 +220,7 @@ TEST_F(ReadableStreamTest, WaitDuringStarting)
         InSequence s;
         EXPECT_CALL(*m_underlyingSource, startSource(&m_exceptionState)).WillOnce(Return(promise));
     }
-    ReadableStream* stream = new ReadableStream(scriptState(), m_underlyingSource, &m_exceptionState);
+    StringStream* stream = new StringStream(scriptState(), m_underlyingSource, &m_exceptionState);
     Checkpoint checkpoint;
 
     EXPECT_EQ(ReadableStream::Waiting, stream->state());
@@ -247,7 +249,7 @@ TEST_F(ReadableStreamTest, WaitDuringStarting)
 
 TEST_F(ReadableStreamTest, WaitAndError)
 {
-    ReadableStream* stream = construct();
+    StringStream* stream = construct();
     String onFulfilled, onRejected;
 
     {
@@ -273,7 +275,7 @@ TEST_F(ReadableStreamTest, WaitAndError)
 
 TEST_F(ReadableStreamTest, ErrorAndEnqueue)
 {
-    ReadableStream* stream = construct();
+    StringStream* stream = construct();
 
     stream->error(DOMException::create(NotFoundError, "error"));
     EXPECT_EQ(ReadableStream::Errored, stream->state());
@@ -285,7 +287,7 @@ TEST_F(ReadableStreamTest, ErrorAndEnqueue)
 
 TEST_F(ReadableStreamTest, CloseAndEnqueue)
 {
-    ReadableStream* stream = construct();
+    StringStream* stream = construct();
 
     stream->close();
     EXPECT_EQ(ReadableStream::Closed, stream->state());
@@ -297,7 +299,7 @@ TEST_F(ReadableStreamTest, CloseAndEnqueue)
 
 TEST_F(ReadableStreamTest, EnqueueAndWait)
 {
-    ReadableStream* stream = construct();
+    StringStream* stream = construct();
     String onFulfilled, onRejected;
     EXPECT_EQ(ReadableStream::Waiting, stream->state());
 
@@ -320,7 +322,7 @@ TEST_F(ReadableStreamTest, EnqueueAndWait)
 
 TEST_F(ReadableStreamTest, WaitAndEnqueue)
 {
-    ReadableStream* stream = construct();
+    StringStream* stream = construct();
     String onFulfilled, onRejected;
     EXPECT_EQ(ReadableStream::Waiting, stream->state());
 
@@ -351,7 +353,7 @@ TEST_F(ReadableStreamTest, WaitAndEnqueue)
 
 TEST_F(ReadableStreamTest, WaitAndEnqueueAndError)
 {
-    ReadableStream* stream = construct();
+    StringStream* stream = construct();
     String onFulfilled, onRejected;
     EXPECT_EQ(ReadableStream::Waiting, stream->state());
 
@@ -393,7 +395,7 @@ TEST_F(ReadableStreamTest, CloseWhenWaiting)
     String onWaitFulfilled, onWaitRejected;
     String onClosedFulfilled, onClosedRejected;
 
-    ReadableStream* stream = construct();
+    StringStream* stream = construct();
 
     {
         InSequence s;
@@ -422,7 +424,7 @@ TEST_F(ReadableStreamTest, CloseWhenWaiting)
 TEST_F(ReadableStreamTest, CloseWhenErrored)
 {
     String onFulfilled, onRejected;
-    ReadableStream* stream = construct();
+    StringStream* stream = construct();
     EXPECT_EQ(ReadableStream::Waiting, stream->state());
     stream->closed(scriptState()).then(createCaptor(&onFulfilled), createCaptor(&onRejected));
 
@@ -438,11 +440,11 @@ TEST_F(ReadableStreamTest, CloseWhenErrored)
 
 TEST_F(ReadableStreamTest, ReadWhenWaiting)
 {
-    ReadableStream* stream = construct();
+    StringStream* stream = construct();
     EXPECT_EQ(ReadableStream::Waiting, stream->state());
     EXPECT_FALSE(m_exceptionState.hadException());
 
-    stream->read(&m_exceptionState);
+    stream->read(scriptState(), &m_exceptionState);
     EXPECT_EQ(ReadableStream::Waiting, stream->state());
     EXPECT_TRUE(m_exceptionState.hadException());
     EXPECT_EQ(V8TypeError, m_exceptionState.code());
@@ -451,13 +453,13 @@ TEST_F(ReadableStreamTest, ReadWhenWaiting)
 
 TEST_F(ReadableStreamTest, ReadWhenClosed)
 {
-    ReadableStream* stream = construct();
+    StringStream* stream = construct();
     stream->close();
 
     EXPECT_EQ(ReadableStream::Closed, stream->state());
     EXPECT_FALSE(m_exceptionState.hadException());
 
-    stream->read(&m_exceptionState);
+    stream->read(scriptState(), &m_exceptionState);
     EXPECT_EQ(ReadableStream::Closed, stream->state());
     EXPECT_TRUE(m_exceptionState.hadException());
     EXPECT_EQ(V8TypeError, m_exceptionState.code());
@@ -469,13 +471,13 @@ TEST_F(ReadableStreamTest, ReadWhenErrored)
     // DOMException values specified in the spec are different from enum values
     // defined in ExceptionCode.h.
     const int notFoundExceptionCode = 8;
-    ReadableStream* stream = construct();
+    StringStream* stream = construct();
     stream->error(DOMException::create(NotFoundError, "error"));
 
     EXPECT_EQ(ReadableStream::Errored, stream->state());
     EXPECT_FALSE(m_exceptionState.hadException());
 
-    stream->read(&m_exceptionState);
+    stream->read(scriptState(), &m_exceptionState);
     EXPECT_EQ(ReadableStream::Errored, stream->state());
     EXPECT_TRUE(m_exceptionState.hadException());
     EXPECT_EQ(notFoundExceptionCode, m_exceptionState.code());
@@ -484,7 +486,7 @@ TEST_F(ReadableStreamTest, ReadWhenErrored)
 
 TEST_F(ReadableStreamTest, EnqueuedAndRead)
 {
-    ReadableStream* stream = construct();
+    StringStream* stream = construct();
     String onFulfilled, onRejected;
     Checkpoint checkpoint;
 
@@ -501,7 +503,8 @@ TEST_F(ReadableStreamTest, EnqueuedAndRead)
     EXPECT_FALSE(stream->isPulling());
 
     checkpoint.Call(0);
-    String chunk = stream->read(&m_exceptionState);
+    String chunk;
+    EXPECT_TRUE(stream->read(scriptState(), &m_exceptionState).toString(chunk));
     checkpoint.Call(1);
     EXPECT_FALSE(m_exceptionState.hadException());
     EXPECT_EQ("hello", chunk);
@@ -521,7 +524,7 @@ TEST_F(ReadableStreamTest, EnqueuedAndRead)
 
 TEST_F(ReadableStreamTest, EnqueTwiceAndRead)
 {
-    ReadableStream* stream = construct();
+    StringStream* stream = construct();
     Checkpoint checkpoint;
 
     {
@@ -537,7 +540,8 @@ TEST_F(ReadableStreamTest, EnqueTwiceAndRead)
     EXPECT_FALSE(stream->isPulling());
 
     checkpoint.Call(0);
-    String chunk = stream->read(&m_exceptionState);
+    String chunk;
+    EXPECT_TRUE(stream->read(scriptState(), &m_exceptionState).toString(chunk));
     checkpoint.Call(1);
     EXPECT_FALSE(m_exceptionState.hadException());
     EXPECT_EQ("hello", chunk);
@@ -551,7 +555,7 @@ TEST_F(ReadableStreamTest, EnqueTwiceAndRead)
 
 TEST_F(ReadableStreamTest, CloseWhenReadable)
 {
-    ReadableStream* stream = construct();
+    StringStream* stream = construct();
     String onWaitFulfilled, onWaitRejected;
     String onClosedFulfilled, onClosedRejected;
 
@@ -566,7 +570,8 @@ TEST_F(ReadableStreamTest, CloseWhenReadable)
     EXPECT_FALSE(stream->isPulling());
     EXPECT_TRUE(stream->isDraining());
 
-    String chunk = stream->read(&m_exceptionState);
+    String chunk;
+    EXPECT_TRUE(stream->read(scriptState(), &m_exceptionState).toString(chunk));
     EXPECT_EQ("hello", chunk);
     EXPECT_EQ(promise, stream->wait(scriptState()));
 
@@ -576,7 +581,7 @@ TEST_F(ReadableStreamTest, CloseWhenReadable)
     EXPECT_FALSE(stream->isPulling());
     EXPECT_TRUE(stream->isDraining());
 
-    chunk = stream->read(&m_exceptionState);
+    EXPECT_TRUE(stream->read(scriptState(), &m_exceptionState).toString(chunk));
     EXPECT_EQ("bye", chunk);
     EXPECT_FALSE(m_exceptionState.hadException());
 
@@ -603,7 +608,7 @@ TEST_F(ReadableStreamTest, CloseWhenReadable)
 
 TEST_F(ReadableStreamTest, CancelWhenClosed)
 {
-    ReadableStream* stream = construct();
+    StringStream* stream = construct();
     String onFulfilled, onRejected;
     stream->close();
     EXPECT_EQ(ReadableStream::Closed, stream->state());
@@ -622,7 +627,7 @@ TEST_F(ReadableStreamTest, CancelWhenClosed)
 
 TEST_F(ReadableStreamTest, CancelWhenErrored)
 {
-    ReadableStream* stream = construct();
+    StringStream* stream = construct();
     String onFulfilled, onRejected;
     stream->error(DOMException::create(NotFoundError, "error"));
     EXPECT_EQ(ReadableStream::Errored, stream->state());
@@ -641,7 +646,7 @@ TEST_F(ReadableStreamTest, CancelWhenErrored)
 
 TEST_F(ReadableStreamTest, CancelWhenWaiting)
 {
-    ReadableStream* stream = construct();
+    StringStream* stream = construct();
     String onFulfilled, onRejected;
     ScriptValue reason(scriptState(), v8String(scriptState()->isolate(), "reason"));
     ScriptPromise promise = ScriptPromise::cast(scriptState(), v8String(scriptState()->isolate(), "hello"));
@@ -669,7 +674,7 @@ TEST_F(ReadableStreamTest, CancelWhenWaiting)
 
 TEST_F(ReadableStreamTest, CancelWhenReadable)
 {
-    ReadableStream* stream = construct();
+    StringStream* stream = construct();
     String onFulfilled, onRejected;
     ScriptValue reason(scriptState(), v8String(scriptState()->isolate(), "reason"));
     ScriptPromise promise = ScriptPromise::cast(scriptState(), v8String(scriptState()->isolate(), "hello"));
@@ -696,6 +701,17 @@ TEST_F(ReadableStreamTest, CancelWhenReadable)
     isolate()->RunMicrotasks();
     EXPECT_EQ("undefined", onFulfilled);
     EXPECT_TRUE(onRejected.isNull());
+}
+
+TEST_F(ReadableStreamTest, ReadableArrayBufferCompileTest)
+{
+    // This test tests if ReadableStreamImpl<ArrayBuffer> can be instantiated.
+    {
+        InSequence s;
+        EXPECT_CALL(*m_underlyingSource, startSource(&m_exceptionState)).WillOnce(Return(ScriptPromise()));
+    }
+
+    new ReadableStreamImpl<ReadableStreamChunkTypeTraits<ArrayBuffer> >(scriptState(), m_underlyingSource, &m_exceptionState);
 }
 
 } // namespace blink

@@ -53,14 +53,17 @@ ReadableStream::~ReadableStream()
 {
 }
 
-bool ReadableStream::enqueue(const ChunkType& chunk)
+bool ReadableStream::enqueuePreliminaryCheck(size_t chunkSize)
 {
     if (m_state == Errored || m_state == Closed || m_isDraining)
         return false;
 
     // FIXME: Query strategy.
+    return true;
+}
 
-    m_queue.append(chunk);
+bool ReadableStream::enqueuePostAction(size_t totalQueueSize)
+{
     m_isPulling = false;
 
     // FIXME: Set needsMore correctly.
@@ -87,26 +90,26 @@ void ReadableStream::close()
     }
 }
 
-ReadableStream::ChunkType ReadableStream::read(ExceptionState* exceptionState)
+void ReadableStream::readPreliminaryCheck(ExceptionState* exceptionState)
 {
     if (m_state == Waiting) {
         exceptionState->throwTypeError("read is called while state is waiting");
-        return ChunkType();
+        return;
     }
     if (m_state == Closed) {
         exceptionState->throwTypeError("read is called while state is closed");
-        return ChunkType();
+        return;
     }
     if (m_state == Errored) {
         exceptionState->throwDOMException(m_exception->code(), m_exception->message());
-        return ChunkType();
+        return;
     }
+}
 
+void ReadableStream::readPostAction()
+{
     ASSERT(m_state == Readable);
-    ASSERT(!m_queue.isEmpty());
-
-    ChunkType chunk = m_queue.takeFirst();
-    if (m_queue.isEmpty()) {
+    if (isQueueEmpty()) {
         if (m_isDraining) {
             m_state = Closed;
             // FIXME: Use reset.
@@ -121,7 +124,6 @@ ReadableStream::ChunkType ReadableStream::read(ExceptionState* exceptionState)
             callOrSchedulePull();
         }
     }
-    return chunk;
 }
 
 ScriptPromise ReadableStream::wait(ScriptState* scriptState)
@@ -153,7 +155,7 @@ ScriptPromise ReadableStream::cancel(ScriptState* scriptState, ScriptValue reaso
             m_wait->resolve(V8UndefinedType());
     }
 
-    m_queue.clear();
+    clearQueue();
     m_state = Closed;
     m_closed->resolve(V8UndefinedType());
     return m_source->cancelSource(scriptState, reason);
@@ -167,7 +169,7 @@ ScriptPromise ReadableStream::closed(ScriptState* scriptState)
 void ReadableStream::error(PassRefPtrWillBeRawPtr<DOMException> exception)
 {
     if (m_state == Readable) {
-        m_queue.clear();
+        clearQueue();
         // FIXME: Use reset here.
         // m_wait->reset();
     }

@@ -13,11 +13,9 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Deque.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -25,12 +23,8 @@ class DOMException;
 class ExceptionState;
 class UnderlyingSource;
 
-class ReadableStream FINAL : public GarbageCollectedFinalized<ReadableStream>, public ScriptWrappable, public ContextLifecycleObserver {
+class ReadableStream : public GarbageCollectedFinalized<ReadableStream>, public ScriptWrappable, public ContextLifecycleObserver {
 public:
-    // We use String as ChunkType for now.
-    // Make this class templated.
-    typedef String ChunkType;
-
     enum State {
         Readable,
         Waiting,
@@ -48,25 +42,31 @@ public:
     bool isPulling() const { return m_isPulling; }
     State state() const { return m_state; }
 
-    ChunkType read(ExceptionState*);
+    virtual ScriptValue read(ScriptState*, ExceptionState*) = 0;
     ScriptPromise wait(ScriptState*);
     ScriptPromise cancel(ScriptState*, ScriptValue reason);
     ScriptPromise closed(ScriptState*);
 
-    bool enqueue(const ChunkType&);
     void close();
     void error(PassRefPtrWillBeRawPtr<DOMException>);
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*);
+
+protected:
+    bool enqueuePreliminaryCheck(size_t chunkSize);
+    bool enqueuePostAction(size_t totalQueueSize);
+    void readPreliminaryCheck(ExceptionState*);
+    void readPostAction();
 
 private:
     class OnStarted;
-    class OnStartFailed;
     typedef ScriptPromiseProperty<Member<ReadableStream>, V8UndefinedType, RefPtrWillBeMember<DOMException> > WaitPromise;
     typedef ScriptPromiseProperty<Member<ReadableStream>, V8UndefinedType, RefPtrWillBeMember<DOMException> > ClosedPromise;
 
-    void onStarted(void);
+    virtual bool isQueueEmpty() const = 0;
+    virtual void clearQueue() = 0;
 
+    void onStarted(void);
     void callOrSchedulePull();
 
     Member<UnderlyingSource> m_source;
@@ -76,7 +76,6 @@ private:
     bool m_isSchedulingPull;
     State m_state;
 
-    Deque<ChunkType> m_queue;
     Member<WaitPromise> m_wait;
     Member<ClosedPromise> m_closed;
     RefPtrWillBeMember<DOMException> m_exception;
