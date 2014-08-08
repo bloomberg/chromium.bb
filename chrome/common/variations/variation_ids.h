@@ -335,10 +335,16 @@ enum ReservedVariationID {
   IOS_PHONE_NTP_MODAL_DIALOG_CONTROL_1 = 3312376,
   IOS_PHONE_NTP_MODAL_DIALOG_CONTROL_2 = 3312377,
 
+  // Field trials can be queried directly from webrtc via webrtc::field_trial.
+  // Thus new trials are added without explicit CLs in chromium repository.
+  // This is the range of ids reserved for those trials.
+  WEBRTC_FIELD_TRIAL_RANGE_ID_MIN = 3312378,
+  WEBRTC_FIELD_TRIAL_RANGE_ID_MAX = 3312477,
+
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
   // range) + 1.
-  NEXT_ID = 3312378,
+  NEXT_ID = 3312478,
 
   // USABLE IDs END HERE.
   //
