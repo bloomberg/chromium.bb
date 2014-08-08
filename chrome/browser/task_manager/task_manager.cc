@@ -700,15 +700,6 @@ bool TaskManagerModel::CanActivate(int index) const {
   return GetResourceWebContents(index) != NULL;
 }
 
-bool TaskManagerModel::CanInspect(int index) const {
-  return GetResource(index)->CanInspect();
-}
-
-void TaskManagerModel::Inspect(int index) const {
-  CHECK_LT(index, ResourceCount());
-  GetResource(index)->Inspect();
-}
-
 int TaskManagerModel::GetGoatsTeleported(int index) const {
   PerResourceValues& values(GetPerResourceValues(index));
   if (!values.is_goats_teleported_valid) {

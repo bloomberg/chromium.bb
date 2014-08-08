@@ -631,11 +631,11 @@ void ExtensionService::ReloadExtensionImpl(
     extensions::ProcessManager* manager = system_->process_manager();
     extensions::ExtensionHost* host =
         manager->GetBackgroundHostForExtension(extension_id);
-    if (host && DevToolsAgentHost::HasFor(host->render_view_host())) {
+    if (host && DevToolsAgentHost::HasFor(host->host_contents())) {
       // Look for an open inspector for the background page.
       scoped_refptr<DevToolsAgentHost> agent_host =
-          DevToolsAgentHost::GetOrCreateFor(host->render_view_host());
-      agent_host->DisconnectRenderViewHost();
+          DevToolsAgentHost::GetOrCreateFor(host->host_contents());
+      agent_host->DisconnectWebContents();
       orphaned_dev_tools_[extension_id] = agent_host;
     }
 
@@ -2041,7 +2041,7 @@ void ExtensionService::DidCreateRenderViewForBackgroundPage(
   if (iter == orphaned_dev_tools_.end())
     return;
 
-  iter->second->ConnectRenderViewHost(host->render_view_host());
+  iter->second->ConnectWebContents(host->host_contents());
   orphaned_dev_tools_.erase(iter);
 }
 

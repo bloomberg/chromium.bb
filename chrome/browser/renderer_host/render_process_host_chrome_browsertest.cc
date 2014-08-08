@@ -41,7 +41,7 @@ int RenderProcessHostCount() {
   return count;
 }
 
-RenderViewHost* FindFirstDevToolsHost() {
+WebContents* FindFirstDevToolsContents() {
   scoped_ptr<content::RenderWidgetHostIterator> widgets(
       RenderWidgetHost::GetRenderWidgetHosts());
   while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
@@ -53,7 +53,7 @@ RenderViewHost* FindFirstDevToolsHost() {
     WebContents* contents = WebContents::FromRenderViewHost(host);
     GURL url = contents->GetURL();
     if (url.SchemeIs(content::kChromeDevToolsScheme))
-      return host;
+      return contents;
   }
   return NULL;
 }
@@ -368,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
 
-  RenderViewHost* devtools = FindFirstDevToolsHost();
+  WebContents* devtools = FindFirstDevToolsContents();
   DCHECK(devtools);
 
   // DevTools start in a separate process.
@@ -380,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   // close docked devtools
   content::WindowedNotificationObserver close_observer(
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-      content::Source<WebContents>(WebContents::FromRenderViewHost(devtools)));
+      content::Source<WebContents>(devtools));
 
   chrome::ToggleDevToolsWindow(browser(), DevToolsToggleAction::Toggle());
   close_observer.Wait();
@@ -415,7 +415,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
 
-  RenderViewHost* devtools = FindFirstDevToolsHost();
+  WebContents* devtools = FindFirstDevToolsContents();
   DCHECK(devtools);
 
   // DevTools start in a separate process.
@@ -427,8 +427,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   // close docked devtools
   content::WindowedNotificationObserver close_observer(
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-      content::Source<content::WebContents>(
-          WebContents::FromRenderViewHost(devtools)));
+      content::Source<content::WebContents>(devtools));
   chrome::ToggleDevToolsWindow(browser(), DevToolsToggleAction::Toggle());
   close_observer.Wait();
 }

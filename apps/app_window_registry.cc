@@ -280,13 +280,13 @@ void AppWindowRegistry::CloseAllAppWindows() {
 void AppWindowRegistry::OnDevToolsStateChanged(
     content::DevToolsAgentHost* agent_host,
     bool attached) {
-  content::RenderViewHost* rvh = agent_host->GetRenderViewHost();
+  content::WebContents* web_contents = agent_host->GetWebContents();
   // Ignore unrelated notifications.
-  if (!rvh ||
-      rvh->GetSiteInstance()->GetProcess()->GetBrowserContext() != context_)
+  if (!web_contents || web_contents->GetBrowserContext() != context_)
     return;
 
-  std::string key = GetWindowKeyForRenderViewHost(this, rvh);
+  std::string key =
+      GetWindowKeyForRenderViewHost(this, web_contents->GetRenderViewHost());
   if (key.empty())
     return;
 

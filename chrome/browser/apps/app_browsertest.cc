@@ -823,13 +823,13 @@ void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(
   AppWindow* window = GetFirstAppWindow();
   ASSERT_TRUE(window);
   ASSERT_EQ(window->window_key().empty(), (test_flags & HAS_ID) == 0);
-  content::RenderViewHost* rvh = window->web_contents()->GetRenderViewHost();
-  ASSERT_TRUE(rvh);
+  content::WebContents* web_contents = window->web_contents();
+  ASSERT_TRUE(web_contents);
 
   // Ensure no DevTools open for the AppWindow, then open one.
-  ASSERT_FALSE(DevToolsAgentHost::HasFor(rvh));
-  DevToolsWindow::OpenDevToolsWindow(rvh);
-  ASSERT_TRUE(DevToolsAgentHost::HasFor(rvh));
+  ASSERT_FALSE(DevToolsAgentHost::HasFor(web_contents));
+  DevToolsWindow::OpenDevToolsWindow(web_contents);
+  ASSERT_TRUE(DevToolsAgentHost::HasFor(web_contents));
 
   if (test_flags & RELAUNCH) {
     // Close the AppWindow, and ensure it is gone.
@@ -847,9 +847,9 @@ void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(
     ASSERT_TRUE(window);
 
     // DevTools should have reopened with the relaunch.
-    rvh = window->web_contents()->GetRenderViewHost();
-    ASSERT_TRUE(rvh);
-    ASSERT_TRUE(DevToolsAgentHost::HasFor(rvh));
+    web_contents = window->web_contents();
+    ASSERT_TRUE(web_contents);
+    ASSERT_TRUE(DevToolsAgentHost::HasFor(web_contents));
   }
 }
 

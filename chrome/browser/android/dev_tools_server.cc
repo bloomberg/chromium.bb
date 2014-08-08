@@ -167,8 +167,7 @@ class TabTarget : public TargetBase {
       if (!web_contents)
         return NULL;
     }
-    RenderViewHost* rvh = web_contents->GetRenderViewHost();
-    return rvh ? DevToolsAgentHost::GetOrCreateFor(rvh) : NULL;
+    return DevToolsAgentHost::GetOrCreateFor(web_contents);
   }
 
   virtual bool Activate() const OVERRIDE {
@@ -223,8 +222,7 @@ class NonTabTarget : public TargetBase {
  public:
   explicit NonTabTarget(WebContents* web_contents)
       : TargetBase(web_contents),
-        agent_host_(DevToolsAgentHost::GetOrCreateFor(
-            web_contents->GetRenderViewHost())) {
+        agent_host_(DevToolsAgentHost::GetOrCreateFor(web_contents)) {
   }
 
   // content::DevToolsTarget implementation:
@@ -250,10 +248,7 @@ class NonTabTarget : public TargetBase {
   }
 
   virtual bool Activate() const OVERRIDE {
-    RenderViewHost* rvh = agent_host_->GetRenderViewHost();
-    if (!rvh)
-      return false;
-    WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
+    WebContents* web_contents = agent_host_->GetWebContents();
     if (!web_contents)
       return false;
     web_contents->GetDelegate()->ActivateContents(web_contents);
@@ -261,10 +256,10 @@ class NonTabTarget : public TargetBase {
   }
 
   virtual bool Close() const OVERRIDE {
-    RenderViewHost* rvh = agent_host_->GetRenderViewHost();
-    if (!rvh)
+    WebContents* web_contents = agent_host_->GetWebContents();
+    if (!web_contents)
       return false;
-    rvh->ClosePage();
+    web_contents->GetRenderViewHost()->ClosePage();
     return true;
   }
 
@@ -356,16 +351,14 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
     }
 
     // Add targets for WebContents not associated with any tabs.
-    std::vector<RenderViewHost*> rvh_list =
-        DevToolsAgentHost::GetValidRenderViewHosts();
-    for (std::vector<RenderViewHost*>::iterator it = rvh_list.begin();
-         it != rvh_list.end(); ++it) {
-      WebContents* web_contents = WebContents::FromRenderViewHost(*it);
-      if (!web_contents)
+    std::vector<WebContents*> wc_list =
+        DevToolsAgentHost::GetInspectableWebContents();
+    for (std::vector<WebContents*>::iterator it = wc_list.begin();
+         it != wc_list.end();
+         ++it) {
+      if (tab_web_contents.find(*it) != tab_web_contents.end())
         continue;
-      if (tab_web_contents.find(web_contents) != tab_web_contents.end())
-        continue;
-      targets.push_back(new NonTabTarget(web_contents));
+      targets.push_back(new NonTabTarget(*it));
     }
 
     callback.Run(targets);

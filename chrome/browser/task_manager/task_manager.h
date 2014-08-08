@@ -230,13 +230,6 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // Returns true if resource for the given row can be activated.
   bool CanActivate(int index) const;
 
-  // Returns true if resource for the given row can be inspected using developer
-  // tools.
-  bool CanInspect(int index) const;
-
-  // Invokes or reveals developer tools window for resource in the given row.
-  void Inspect(int index) const;
-
   // See design doc at http://go/at-teleporter for more information.
   int GetGoatsTeleported(int index) const;
 

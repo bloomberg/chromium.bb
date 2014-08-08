@@ -101,7 +101,7 @@ TEST_F(DevToolsManagerTest, OpenAndManuallyCloseDevToolsClientHost) {
   DevToolsManager* manager = DevToolsManager::GetInstance();
 
   scoped_refptr<DevToolsAgentHost> agent(
-      DevToolsAgentHost::GetOrCreateFor(rvh()));
+      DevToolsAgentHost::GetOrCreateFor(web_contents()));
   EXPECT_FALSE(agent->IsAttached());
 
   TestDevToolsClientHost client_host;
@@ -121,12 +121,12 @@ TEST_F(DevToolsManagerTest, ForwardMessageToClient) {
 
   TestDevToolsClientHost client_host;
   scoped_refptr<DevToolsAgentHost> agent_host(
-      DevToolsAgentHost::GetOrCreateFor(rvh()));
+      DevToolsAgentHost::GetOrCreateFor(web_contents()));
   manager->RegisterDevToolsClientHostFor(agent_host.get(), &client_host);
   EXPECT_EQ(0, TestDevToolsClientHost::close_counter);
 
   std::string m = "test message";
-  agent_host = DevToolsAgentHost::GetOrCreateFor(rvh());
+  agent_host = DevToolsAgentHost::GetOrCreateFor(web_contents());
   manager->DispatchOnInspectorFrontend(agent_host.get(), m);
   EXPECT_TRUE(&m == client_host.last_sent_message);
 
@@ -142,8 +142,8 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedContents) {
   contents()->SetDelegate(&delegate);
 
   TestDevToolsClientHost client_host;
-  scoped_refptr<DevToolsAgentHost> agent_host(
-      DevToolsAgentHost::GetOrCreateFor(inspected_rvh));
+  scoped_refptr<DevToolsAgentHost> agent_host(DevToolsAgentHost::GetOrCreateFor(
+      WebContents::FromRenderViewHost(inspected_rvh)));
   DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
       agent_host.get(), &client_host);
 
@@ -183,7 +183,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   TestDevToolsClientHost client_host;
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
   devtools_manager->RegisterDevToolsClientHostFor(
-      DevToolsAgentHost::GetOrCreateFor(rvh()).get(), &client_host);
+      DevToolsAgentHost::GetOrCreateFor(web_contents()).get(), &client_host);
 
   // Navigate to new site which should get a new RenderViewHost.
   const GURL url2("http://www.yahoo.com");
@@ -191,7 +191,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
       url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(contents()->cross_navigation_pending());
   EXPECT_EQ(devtools_manager->GetDevToolsAgentHostFor(&client_host),
-      DevToolsAgentHost::GetOrCreateFor(pending_rvh()));
+            DevToolsAgentHost::GetOrCreateFor(web_contents()));
 
   // Interrupt pending navigation and navigate back to the original site.
   controller().LoadURL(
@@ -199,7 +199,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   contents()->TestDidNavigate(rvh(), 1, url, PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(devtools_manager->GetDevToolsAgentHostFor(&client_host),
-      DevToolsAgentHost::GetOrCreateFor(rvh()));
+            DevToolsAgentHost::GetOrCreateFor(web_contents()));
   client_host.Close(DevToolsManager::GetInstance());
 }
 

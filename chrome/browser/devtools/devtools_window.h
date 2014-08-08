@@ -65,12 +65,12 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
 
   // Open or reveal DevTools window, and perform the specified action.
   static DevToolsWindow* OpenDevToolsWindow(
-      content::RenderViewHost* inspected_rvh,
+      content::WebContents* inspected_web_contents,
       const DevToolsToggleAction& action);
 
   // Open or reveal DevTools window, with no special action.
   static DevToolsWindow* OpenDevToolsWindow(
-      content::RenderViewHost* inspected_rvh);
+      content::WebContents* inspected_web_contents);
 
   // Perform specified action for current WebContents inside a |browser|.
   // This may close currently open DevTools window.
@@ -89,8 +89,9 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
       Profile* profile,
       content::DevToolsAgentHost* worker_agent);
 
-  static void InspectElement(
-      content::RenderViewHost* inspected_rvh, int x, int y);
+  static void InspectElement(content::WebContents* inspected_web_contents,
+                             int x,
+                             int y);
 
   // Sets closure to be called after load is done. If already loaded, calls
   // closure immediately.
@@ -199,12 +200,12 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
 
   DevToolsWindow(Profile* profile,
                  const GURL& frontend_url,
-                 content::RenderViewHost* inspected_rvh,
+                 content::WebContents* inspected_web_contents,
                  bool can_dock);
 
   static DevToolsWindow* Create(Profile* profile,
                                 const GURL& frontend_url,
-                                content::RenderViewHost* inspected_rvh,
+                                content::WebContents* inspected_web_contents,
                                 bool shared_worker_frontend,
                                 bool external_frontend,
                                 bool can_dock,
@@ -219,7 +220,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   static DevToolsWindow* AsDevToolsWindow(content::WebContents*);
   static DevToolsWindow* CreateDevToolsWindowForWorker(Profile* profile);
   static DevToolsWindow* ToggleDevToolsWindow(
-      content::RenderViewHost* inspected_rvh,
+      content::WebContents* web_contents,
       bool force_open,
       const DevToolsToggleAction& action,
       const std::string& settings);

@@ -69,7 +69,7 @@ class Target : public content::DevToolsTarget {
 
 Target::Target(WebContents* web_contents) {
   agent_host_ =
-      DevToolsAgentHost::GetOrCreateFor(web_contents->GetRenderViewHost());
+      DevToolsAgentHost::GetOrCreateFor(web_contents);
   id_ = agent_host_->GetId();
   description_ = GetViewDescription(web_contents);
   title_ = base::UTF16ToUTF8(web_contents->GetTitle());
@@ -106,13 +106,11 @@ class AwDevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
 
   virtual void EnumerateTargets(TargetCallback callback) OVERRIDE {
     TargetList targets;
-    std::vector<RenderViewHost*> rvh_list =
-        DevToolsAgentHost::GetValidRenderViewHosts();
-    for (std::vector<RenderViewHost*>::iterator it = rvh_list.begin();
-         it != rvh_list.end(); ++it) {
-      WebContents* web_contents = WebContents::FromRenderViewHost(*it);
-      if (web_contents)
-        targets.push_back(new Target(web_contents));
+    std::vector<WebContents*> wc_list =
+        DevToolsAgentHost::GetInspectableWebContents();
+    for (std::vector<WebContents*>::iterator it = wc_list.begin();
+         it != wc_list.end(); ++it) {
+      targets.push_back(new Target(*it));
     }
     callback.Run(targets);
   }

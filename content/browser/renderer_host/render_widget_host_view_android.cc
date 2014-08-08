@@ -1007,10 +1007,10 @@ void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
   ComputeContentsSize(frame_metadata);
 
   // DevTools ScreenCast support for Android WebView.
-  if (DevToolsAgentHost::HasFor(RenderViewHost::From(GetRenderWidgetHost()))) {
+  WebContents* web_contents = content_view_core_->GetWebContents();
+  if (DevToolsAgentHost::HasFor(web_contents)) {
     scoped_refptr<DevToolsAgentHost> dtah =
-        DevToolsAgentHost::GetOrCreateFor(
-            RenderViewHost::From(GetRenderWidgetHost()));
+        DevToolsAgentHost::GetOrCreateFor(web_contents);
     // Unblock the compositor.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

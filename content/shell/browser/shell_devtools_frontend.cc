@@ -66,8 +66,7 @@ ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
     const std::string& settings,
     const std::string& frontend_url) {
   scoped_refptr<DevToolsAgentHost> agent(
-      DevToolsAgentHost::GetOrCreateFor(
-          inspected_contents->GetRenderViewHost()));
+      DevToolsAgentHost::GetOrCreateFor(inspected_contents));
   Shell* shell = Shell::CreateNewWindow(inspected_contents->GetBrowserContext(),
                                         GURL(),
                                         NULL,

@@ -759,16 +759,14 @@ void ProcessManager::Observe(int type,
 void ProcessManager::OnDevToolsStateChanged(
     content::DevToolsAgentHost* agent_host,
     bool attached) {
-  RenderViewHost* rvh = agent_host->GetRenderViewHost();
+  WebContents* web_contents = agent_host->GetWebContents();
   // Ignore unrelated notifications.
-  if (!rvh ||
-      rvh->GetSiteInstance()->GetProcess()->GetBrowserContext() !=
-          GetBrowserContext())
+  if (!web_contents || web_contents->GetBrowserContext() != GetBrowserContext())
     return;
-  if (GetViewType(WebContents::FromRenderViewHost(rvh)) !=
-      VIEW_TYPE_EXTENSION_BACKGROUND_PAGE)
+  if (GetViewType(web_contents) != VIEW_TYPE_EXTENSION_BACKGROUND_PAGE)
     return;
-  const Extension* extension = GetExtensionForRenderViewHost(rvh);
+  const Extension* extension =
+      GetExtensionForRenderViewHost(web_contents->GetRenderViewHost());
   if (!extension)
     return;
   if (attached) {

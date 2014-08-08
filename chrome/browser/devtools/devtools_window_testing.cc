@@ -101,13 +101,13 @@ void DevToolsWindowTesting::WaitForDevToolsWindowLoad(DevToolsWindow* window) {
 
 // static
 DevToolsWindow* DevToolsWindowTesting::OpenDevToolsWindowSync(
-    content::RenderViewHost* inspected_rvh,
+    content::WebContents* inspected_web_contents,
     bool is_docked) {
   std::string settings = is_docked ?
       "{\"currentDockState\":\"\\\"bottom\\\"\"}" :
       "{\"currentDockState\":\"\\\"undocked\\\"\"}";
   DevToolsWindow* window = DevToolsWindow::ToggleDevToolsWindow(
-      inspected_rvh, true, DevToolsToggleAction::Show(), settings);
+      inspected_web_contents, true, DevToolsToggleAction::Show(), settings);
   WaitForDevToolsWindowLoad(window);
   return window;
 }
@@ -117,8 +117,7 @@ DevToolsWindow* DevToolsWindowTesting::OpenDevToolsWindowSync(
     Browser* browser,
     bool is_docked) {
   return OpenDevToolsWindowSync(
-      browser->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
-      is_docked);
+      browser->tab_strip_model()->GetActiveWebContents(), is_docked);
 }
 
 // static

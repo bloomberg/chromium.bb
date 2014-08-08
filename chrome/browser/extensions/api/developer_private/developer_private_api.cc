@@ -897,12 +897,13 @@ bool DeveloperPrivateInspectFunction::RunSync() {
   content::RenderViewHost* host = content::RenderViewHost::FromID(
       render_process_id, render_view_id);
 
-  if (!host) {
+  if (!host || !content::WebContents::FromRenderViewHost(host)) {
     // This can happen if the host has gone away since the page was displayed.
     return false;
   }
 
-  DevToolsWindow::OpenDevToolsWindow(host);
+  DevToolsWindow::OpenDevToolsWindow(
+      content::WebContents::FromRenderViewHost(host));
   return true;
 }
 

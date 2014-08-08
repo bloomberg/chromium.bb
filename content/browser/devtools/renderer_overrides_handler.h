@@ -25,6 +25,7 @@ namespace content {
 
 class DevToolsAgentHost;
 class DevToolsTracingHandler;
+class RenderViewHostImpl;
 
 // Overrides Inspector commands before they are sent to the renderer.
 // May override the implementation completely, ignore it, or handle
@@ -100,6 +101,8 @@ class CONTENT_EXPORT RendererOverridesHandler
   // Input domain.
   scoped_refptr<DevToolsProtocol::Response> InputEmulateTouchFromMouseEvent(
       scoped_refptr<DevToolsProtocol::Command> command);
+
+  RenderViewHostImpl* GetRenderViewHostImpl();
 
   DevToolsAgentHost* agent_;
   scoped_refptr<DevToolsProtocol::Command> screencast_command_;

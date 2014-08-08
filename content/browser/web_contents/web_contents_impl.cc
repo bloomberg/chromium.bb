@@ -532,17 +532,10 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
   // Message handlers should be aware of which
   // RenderViewHost/RenderFrameHost sent the message, which is temporarily
   // stored in render_(view|frame)_message_source_.
-  if (render_frame_host) {
-    if (RenderViewDevToolsAgentHost::DispatchIPCMessage(
-        render_frame_host->GetRenderViewHost(), message))
-        return true;
+  if (render_frame_host)
     render_frame_message_source_ = render_frame_host;
-  } else {
-    if (RenderViewDevToolsAgentHost::DispatchIPCMessage(
-        render_view_host, message))
-        return true;
+  else
     render_view_message_source_ = render_view_host;
-  }
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebContentsImpl, message)

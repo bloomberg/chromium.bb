@@ -99,14 +99,6 @@ bool RendererResource::ReportsV8MemoryStats() const {
   return true;
 }
 
-bool RendererResource::CanInspect() const {
-  return true;
-}
-
-void RendererResource::Inspect() const {
-  DevToolsWindow::OpenDevToolsWindow(render_view_host_);
-}
-
 bool RendererResource::SupportNetworkUsage() const {
   return true;
 }

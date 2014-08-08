@@ -39,25 +39,19 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   static void OnCancelPendingNavigation(RenderViewHost* pending,
                                         RenderViewHost* current);
 
-  static bool DispatchIPCMessage(RenderViewHost* source,
-                                 const IPC::Message& message);
-
   RenderViewDevToolsAgentHost(RenderViewHost*);
-
-  RenderViewHost* render_view_host() { return render_view_host_; }
 
   void SynchronousSwapCompositorFrame(
       const cc::CompositorFrameMetadata& frame_metadata);
 
+  // DevTooolsAgentHost overrides.
+  virtual void DisconnectWebContents() OVERRIDE;
+  virtual void ConnectWebContents(WebContents* web_contents) OVERRIDE;
+  virtual WebContents* GetWebContents() OVERRIDE;
+
  private:
   friend class DevToolsAgentHost;
-
   virtual ~RenderViewDevToolsAgentHost();
-
-  // DevTooolsAgentHost overrides.
-  virtual void DisconnectRenderViewHost() OVERRIDE;
-  virtual void ConnectRenderViewHost(RenderViewHost* rvh) OVERRIDE;
-  virtual RenderViewHost* GetRenderViewHost() OVERRIDE;
 
   // IPCDevToolsAgentHost overrides.
   virtual void DispatchOnInspectorBackend(const std::string& message) OVERRIDE;
@@ -71,6 +65,9 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
                                      RenderViewHost* new_host) OVERRIDE;
   virtual void RenderViewDeleted(RenderViewHost* rvh) OVERRIDE;
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message,
+                                 RenderFrameHost* render_frame_host) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidAttachInterstitialPage() OVERRIDE;
 
   // NotificationObserver overrides:
@@ -78,6 +75,8 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
+  void DisconnectRenderViewHost();
+  void ConnectRenderViewHost(RenderViewHost* rvh);
   void ReattachToRenderViewHost(RenderViewHost* rvh);
 
   bool DispatchIPCMessage(const IPC::Message& message);

@@ -138,7 +138,7 @@ void RenderViewHostTargetsUIHandler::UpdateTargets() {
   std::map<std::string, base::DictionaryValue*> id_to_descriptor;
 
   DevToolsTargetImpl::List targets =
-      DevToolsTargetImpl::EnumerateRenderViewHostTargets();
+      DevToolsTargetImpl::EnumerateWebContentsTargets();
 
   STLDeleteValues(&targets_);
   for (DevToolsTargetImpl::List::iterator it = targets.begin();

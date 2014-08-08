@@ -151,8 +151,7 @@ RendererOverridesHandler::RendererOverridesHandler(DevToolsAgentHost* agent)
 RendererOverridesHandler::~RendererOverridesHandler() {}
 
 void RendererOverridesHandler::OnClientDetached() {
-  RenderViewHostImpl* host = static_cast<RenderViewHostImpl*>(
-      agent_->GetRenderViewHost());
+  RenderViewHostImpl* host = GetRenderViewHostImpl();
   if (screencast_command_ && host)
     host->SetTouchEventEmulationEnabled(false, false);
   screencast_command_ = NULL;
@@ -174,8 +173,7 @@ void RendererOverridesHandler::OnVisibilityChanged(bool visible) {
 }
 
 void RendererOverridesHandler::OnRenderViewHostChanged() {
-  RenderViewHostImpl* host = static_cast<RenderViewHostImpl*>(
-      agent_->GetRenderViewHost());
+  RenderViewHostImpl* host = GetRenderViewHostImpl();
   if (screencast_command_ && host)
     host->SetTouchEventEmulationEnabled(true, true);
 }
@@ -190,7 +188,7 @@ void RendererOverridesHandler::InnerSwapCompositorFrame() {
     return;
   }
 
-  RenderViewHost* host = agent_->GetRenderViewHost();
+  RenderViewHost* host = GetRenderViewHostImpl();
   if (!host->GetView())
     return;
 
@@ -272,7 +270,7 @@ RendererOverridesHandler::GrantPermissionsForSetFileInputFiles(
       devtools::DOM::setFileInputFiles::kParamFiles;
   if (!params || !params->GetList(param, &file_list))
     return command->InvalidParamResponse(param);
-  RenderViewHost* host = agent_->GetRenderViewHost();
+  RenderViewHost* host = GetRenderViewHostImpl();
   if (!host)
     return NULL;
 
@@ -292,14 +290,14 @@ RendererOverridesHandler::GrantPermissionsForSetFileInputFiles(
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::ClearBrowserCache(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  GetContentClient()->browser()->ClearCache(agent_->GetRenderViewHost());
+  GetContentClient()->browser()->ClearCache(GetRenderViewHostImpl());
   return command->SuccessResponse(NULL);
 }
 
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::ClearBrowserCookies(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  GetContentClient()->browser()->ClearCookies(agent_->GetRenderViewHost());
+  GetContentClient()->browser()->ClearCookies(GetRenderViewHostImpl());
   return command->SuccessResponse(NULL);
 }
 
@@ -309,8 +307,7 @@ RendererOverridesHandler::ClearBrowserCookies(
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageDisable(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  RenderViewHostImpl* host = static_cast<RenderViewHostImpl*>(
-      agent_->GetRenderViewHost());
+  RenderViewHostImpl* host = GetRenderViewHostImpl();
   if (screencast_command_ && host)
     host->SetTouchEventEmulationEnabled(false, false);
   screencast_command_ = NULL;
@@ -334,16 +331,13 @@ RendererOverridesHandler::PageHandleJavaScriptDialog(
     prompt_override_ptr = NULL;
   }
 
-  RenderViewHost* host = agent_->GetRenderViewHost();
-  if (host) {
-    WebContents* web_contents = host->GetDelegate()->GetAsWebContents();
-    if (web_contents) {
-      JavaScriptDialogManager* manager =
-          web_contents->GetDelegate()->GetJavaScriptDialogManager();
-      if (manager && manager->HandleJavaScriptDialog(
-              web_contents, accept, prompt_override_ptr)) {
-        return command->SuccessResponse(new base::DictionaryValue());
-      }
+  WebContents* web_contents = agent_->GetWebContents();
+  if (web_contents) {
+    JavaScriptDialogManager* manager =
+        web_contents->GetDelegate()->GetJavaScriptDialogManager();
+    if (manager && manager->HandleJavaScriptDialog(
+            web_contents, accept, prompt_override_ptr)) {
+      return command->SuccessResponse(new base::DictionaryValue());
     }
   }
   return command->InternalErrorResponse("No JavaScript dialog to handle");
@@ -357,37 +351,33 @@ RendererOverridesHandler::PageNavigate(
   const char* param = devtools::Page::navigate::kParamUrl;
   if (!params || !params->GetString(param, &url))
     return command->InvalidParamResponse(param);
+
   GURL gurl(url);
-  if (!gurl.is_valid()) {
+  if (!gurl.is_valid())
     return command->InternalErrorResponse("Cannot navigate to invalid URL");
+
+  WebContents* web_contents = agent_->GetWebContents();
+  if (web_contents) {
+    web_contents->GetController()
+        .LoadURL(gurl, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+    // Fall through into the renderer.
+    return NULL;
   }
-  RenderViewHost* host = agent_->GetRenderViewHost();
-  if (host) {
-    WebContents* web_contents = host->GetDelegate()->GetAsWebContents();
-    if (web_contents) {
-      web_contents->GetController()
-          .LoadURL(gurl, Referrer(), PAGE_TRANSITION_TYPED, std::string());
-      // Fall through into the renderer.
-      return NULL;
-    }
-  }
+
   return command->InternalErrorResponse("No WebContents to navigate");
 }
 
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageReload(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  RenderViewHost* host = agent_->GetRenderViewHost();
-  if (host) {
-    WebContents* web_contents = host->GetDelegate()->GetAsWebContents();
-    if (web_contents) {
-      // Override only if it is crashed.
-      if (!web_contents->IsCrashed())
-        return NULL;
+  WebContents* web_contents = agent_->GetWebContents();
+  if (web_contents) {
+    // Override only if it is crashed.
+    if (!web_contents->IsCrashed())
+      return NULL;
 
-      web_contents->GetController().Reload(false);
-      return command->SuccessResponse(NULL);
-    }
+    web_contents->GetController().Reload(false);
+    return command->SuccessResponse(NULL);
   }
   return command->InternalErrorResponse("No WebContents to reload");
 }
@@ -395,35 +385,32 @@ RendererOverridesHandler::PageReload(
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageGetNavigationHistory(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  RenderViewHost* host = agent_->GetRenderViewHost();
-  if (host) {
-    WebContents* web_contents = host->GetDelegate()->GetAsWebContents();
-    if (web_contents) {
-      base::DictionaryValue* result = new base::DictionaryValue();
-      NavigationController& controller = web_contents->GetController();
-      result->SetInteger(
-          devtools::Page::getNavigationHistory::kResponseCurrentIndex,
-          controller.GetCurrentEntryIndex());
-      base::ListValue* entries = new base::ListValue();
-      for (int i = 0; i != controller.GetEntryCount(); ++i) {
-        const NavigationEntry* entry = controller.GetEntryAtIndex(i);
-        base::DictionaryValue* entry_value = new base::DictionaryValue();
-        entry_value->SetInteger(
-            devtools::Page::NavigationEntry::kParamId,
-            entry->GetUniqueID());
-        entry_value->SetString(
-            devtools::Page::NavigationEntry::kParamUrl,
-            entry->GetURL().spec());
-        entry_value->SetString(
-            devtools::Page::NavigationEntry::kParamTitle,
-            entry->GetTitle());
-        entries->Append(entry_value);
-      }
-      result->Set(
-          devtools::Page::getNavigationHistory::kResponseEntries,
-          entries);
-      return command->SuccessResponse(result);
+  WebContents* web_contents = agent_->GetWebContents();
+  if (web_contents) {
+    base::DictionaryValue* result = new base::DictionaryValue();
+    NavigationController& controller = web_contents->GetController();
+    result->SetInteger(
+        devtools::Page::getNavigationHistory::kResponseCurrentIndex,
+        controller.GetCurrentEntryIndex());
+    base::ListValue* entries = new base::ListValue();
+    for (int i = 0; i != controller.GetEntryCount(); ++i) {
+      const NavigationEntry* entry = controller.GetEntryAtIndex(i);
+      base::DictionaryValue* entry_value = new base::DictionaryValue();
+      entry_value->SetInteger(
+          devtools::Page::NavigationEntry::kParamId,
+          entry->GetUniqueID());
+      entry_value->SetString(
+          devtools::Page::NavigationEntry::kParamUrl,
+          entry->GetURL().spec());
+      entry_value->SetString(
+          devtools::Page::NavigationEntry::kParamTitle,
+          entry->GetTitle());
+      entries->Append(entry_value);
     }
+    result->Set(
+        devtools::Page::getNavigationHistory::kResponseEntries,
+        entries);
+    return command->SuccessResponse(result);
   }
   return command->InternalErrorResponse("No WebContents to navigate");
 }
@@ -438,19 +425,16 @@ RendererOverridesHandler::PageNavigateToHistoryEntry(
     return command->InvalidParamResponse(param);
   }
 
-  RenderViewHost* host = agent_->GetRenderViewHost();
-  if (host) {
-    WebContents* web_contents = host->GetDelegate()->GetAsWebContents();
-    if (web_contents) {
-      NavigationController& controller = web_contents->GetController();
-      for (int i = 0; i != controller.GetEntryCount(); ++i) {
-        if (controller.GetEntryAtIndex(i)->GetUniqueID() == entry_id) {
-          controller.GoToIndex(i);
-          return command->SuccessResponse(new base::DictionaryValue());
-        }
+  WebContents* web_contents = agent_->GetWebContents();
+  if (web_contents) {
+    NavigationController& controller = web_contents->GetController();
+    for (int i = 0; i != controller.GetEntryCount(); ++i) {
+      if (controller.GetEntryAtIndex(i)->GetUniqueID() == entry_id) {
+        controller.GoToIndex(i);
+        return command->SuccessResponse(new base::DictionaryValue());
       }
-      return command->InvalidParamResponse(param);
     }
+    return command->InvalidParamResponse(param);
   }
   return command->InternalErrorResponse("No WebContents to navigate");
 }
@@ -458,8 +442,7 @@ RendererOverridesHandler::PageNavigateToHistoryEntry(
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageCaptureScreenshot(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  RenderViewHostImpl* host = static_cast<RenderViewHostImpl*>(
-      agent_->GetRenderViewHost());
+  RenderViewHostImpl* host = GetRenderViewHostImpl();
   if (!host->GetView())
     return command->InternalErrorResponse("Unable to access the view");
 
@@ -507,8 +490,7 @@ scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageStartScreencast(
     scoped_refptr<DevToolsProtocol::Command> command) {
   screencast_command_ = command;
-  RenderViewHostImpl* host = static_cast<RenderViewHostImpl*>(
-      agent_->GetRenderViewHost());
+  RenderViewHostImpl* host = GetRenderViewHostImpl();
   host->SetTouchEventEmulationEnabled(true, true);
   bool visible = !host->is_hidden();
   NotifyScreencastVisibility(visible);
@@ -526,8 +508,7 @@ RendererOverridesHandler::PageStopScreencast(
     scoped_refptr<DevToolsProtocol::Command> command) {
   last_frame_time_ = base::TimeTicks();
   screencast_command_ = NULL;
-  RenderViewHostImpl* host = static_cast<RenderViewHostImpl*>(
-      agent_->GetRenderViewHost());
+  RenderViewHostImpl* host = GetRenderViewHostImpl();
   if (host)
     host->SetTouchEventEmulationEnabled(false, false);
   return command->SuccessResponse(NULL);
@@ -820,9 +801,10 @@ RendererOverridesHandler::PageQueryUsageAndQuota(
       weak_factory_.GetWeakPtr(),
       command);
 
-  scoped_refptr<quota::QuotaManager> quota_manager =
-      agent_->GetRenderViewHost()->GetProcess()->
-          GetStoragePartition()->GetQuotaManager();
+  scoped_refptr<quota::QuotaManager> quota_manager = GetRenderViewHostImpl()
+                                                         ->GetProcess()
+                                                         ->GetStoragePartition()
+                                                         ->GetQuotaManager();
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -862,8 +844,6 @@ RendererOverridesHandler::InputEmulateTouchFromMouseEvent(
   base::DictionaryValue* params = command->params();
   if (!params)
     return command->NoSuchMethodErrorResponse();
-
-  RenderViewHost* host = agent_->GetRenderViewHost();
 
   std::string type;
   if (!params->GetString(
@@ -974,11 +954,17 @@ RendererOverridesHandler::InputEmulateTouchFromMouseEvent(
         devtools::Input::emulateTouchFromMouseEvent::kParamButton);
   }
 
+  RenderViewHost* host = GetRenderViewHostImpl();
   if (event->type == WebInputEvent::MouseWheel)
     host->ForwardWheelEvent(wheel_event);
   else
     host->ForwardMouseEvent(mouse_event);
   return command->SuccessResponse(NULL);
+}
+
+RenderViewHostImpl* RendererOverridesHandler::GetRenderViewHostImpl() {
+  return static_cast<RenderViewHostImpl*>(
+      agent_->GetWebContents()->GetRenderViewHost());
 }
 
 }  // namespace content

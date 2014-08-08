@@ -108,11 +108,8 @@ BrowserListTabContentsProvider::CreateNewTarget(const GURL& url) {
   chrome::Navigate(&params);
   if (!params.target_contents)
     return scoped_ptr<DevToolsTarget>();
-  content::RenderViewHost* rvh = params.target_contents->GetRenderViewHost();
-  if (!rvh)
-    return scoped_ptr<DevToolsTarget>();
   return scoped_ptr<DevToolsTarget>(
-      DevToolsTargetImpl::CreateForRenderViewHost(rvh, true));
+      DevToolsTargetImpl::CreateForWebContents(params.target_contents, true));
 }
 
 void BrowserListTabContentsProvider::EnumerateTargets(TargetCallback callback) {

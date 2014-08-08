@@ -386,9 +386,9 @@ void CloudPrintFlowHandler::HandleShowDebugger(const base::ListValue* args) {
 
 void CloudPrintFlowHandler::ShowDebugger() {
   if (web_ui()) {
-    RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
-    if (rvh)
-      DevToolsWindow::OpenDevToolsWindow(rvh);
+    WebContents* web_contents = web_ui()->GetWebContents();
+    if (web_contents)
+      DevToolsWindow::OpenDevToolsWindow(web_contents);
   }
 }
 

@@ -74,12 +74,6 @@ class Resource {
   virtual size_t GetV8MemoryAllocated() const;
   virtual size_t GetV8MemoryUsed() const;
 
-  // Returns true if this resource can be inspected using developer tools.
-  virtual bool CanInspect() const;
-
-  // Invokes or reveals developer tools window for this resource.
-  virtual void Inspect() const {}
-
   // A helper function for ActivateProcess when selected resource refers
   // to a Tab or other window containing web contents.  Returns NULL by
   // default because not all resources have an associated web contents.

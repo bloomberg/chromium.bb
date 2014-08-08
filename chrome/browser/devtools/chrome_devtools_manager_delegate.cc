@@ -17,6 +17,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/web_contents.h"
 
 ChromeDevToolsManagerDelegate::ChromeDevToolsManagerDelegate() {
 }
@@ -58,11 +59,10 @@ base::DictionaryValue* ChromeDevToolsManagerDelegate::HandleCommand(
 
 Profile* ChromeDevToolsManagerDelegate::GetProfile(
     content::DevToolsAgentHost* agent_host) {
-  content::RenderViewHost* host = agent_host->GetRenderViewHost();
-  if (!host)
+  content::WebContents* web_contents = agent_host->GetWebContents();
+  if (!web_contents)
     return NULL;
-  return Profile::FromBrowserContext(host->GetSiteInstance()->GetProcess()->
-      GetBrowserContext());
+  return Profile::FromBrowserContext(web_contents->GetBrowserContext());
 }
 
 scoped_ptr<DevToolsProtocol::Response>

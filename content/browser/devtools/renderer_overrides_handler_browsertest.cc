@@ -59,9 +59,7 @@ class RendererOverridesHandlerTest : public ContentBrowserTest,
  private:
   virtual void SetUpOnMainThread() OVERRIDE {
     DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
-        DevToolsAgentHost::GetOrCreateFor(
-            shell()->web_contents()->GetRenderViewHost()).get(),
-        this);
+        DevToolsAgentHost::GetOrCreateFor(shell()->web_contents()).get(), this);
   }
 
   virtual void TearDownOnMainThread() OVERRIDE {

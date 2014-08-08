@@ -935,12 +935,12 @@ void ExtensionSettingsHandler::HandleInspectMessage(
 
   RenderViewHost* host = RenderViewHost::FromID(render_process_id,
                                                 render_view_id);
-  if (!host) {
+  if (!host || !WebContents::FromRenderViewHost(host)) {
     // This can happen if the host has gone away since the page was displayed.
     return;
   }
 
-  DevToolsWindow::OpenDevToolsWindow(host);
+  DevToolsWindow::OpenDevToolsWindow(WebContents::FromRenderViewHost(host));
 }
 
 void ExtensionSettingsHandler::HandleLaunchMessage(

@@ -68,13 +68,12 @@ namespace {
 class DevToolsRestorer : public base::RefCounted<DevToolsRestorer> {
  public:
   DevToolsRestorer(AppWindowCreateFunction* delayed_create_function,
-                   content::RenderViewHost* created_view)
+                   content::WebContents* web_contents)
       : delayed_create_function_(delayed_create_function) {
     AddRef();  // Balanced in LoadCompleted.
-    DevToolsWindow* devtools_window =
-        DevToolsWindow::OpenDevToolsWindow(
-            created_view,
-            DevToolsToggleAction::ShowConsole());
+    DevToolsWindow* devtools_window = DevToolsWindow::OpenDevToolsWindow(
+        web_contents,
+        DevToolsToggleAction::ShowConsole());
     devtools_window->SetLoadCompletedCallback(
         base::Bind(&DevToolsRestorer::LoadCompleted, this));
   }
@@ -307,7 +306,7 @@ bool AppWindowCreateFunction::RunAsync() {
 
   if (apps::AppWindowRegistry::Get(browser_context())
           ->HadDevToolsAttached(created_view)) {
-    new DevToolsRestorer(this, created_view);
+    new DevToolsRestorer(this, app_window->web_contents());
     return true;
   }
 

@@ -16,6 +16,7 @@ class Profile;
 namespace content {
 class DevToolsAgentHost;
 class RenderViewHost;
+class WebContents;
 }
 
 class DevToolsTargetImpl : public content::DevToolsTarget {
@@ -39,9 +40,9 @@ class DevToolsTargetImpl : public content::DevToolsTarget {
   virtual bool Activate() const OVERRIDE;
   virtual bool Close() const OVERRIDE;
 
-  // Returns the RenderViewHost associated with the target on NULL if there is
+  // Returns the WebContents associated with the target on NULL if there is
   // not any.
-  virtual content::RenderViewHost* GetRenderViewHost() const;
+  virtual content::WebContents* GetWebContents() const;
 
   // Returns the tab id if the target is associated with a tab, -1 otherwise.
   virtual int GetTabId() const;
@@ -56,9 +57,10 @@ class DevToolsTargetImpl : public content::DevToolsTarget {
   // Reload the target page.
   virtual void Reload() const;
 
-  // Creates a new target associated with RenderViewHost.
-  static scoped_ptr<DevToolsTargetImpl> CreateForRenderViewHost(
-      content::RenderViewHost*, bool is_tab);
+  // Creates a new target associated with WebContents.
+  static scoped_ptr<DevToolsTargetImpl> CreateForWebContents(
+      content::WebContents* web_contents,
+      bool is_tab);
 
   void set_parent_id(const std::string& parent_id) { parent_id_ = parent_id; }
   void set_type(const std::string& type) { type_ = type; }
@@ -73,7 +75,7 @@ class DevToolsTargetImpl : public content::DevToolsTarget {
   typedef std::vector<DevToolsTargetImpl*> List;
   typedef base::Callback<void(const List&)> Callback;
 
-  static List EnumerateRenderViewHostTargets();
+  static List EnumerateWebContentsTargets();
   static void EnumerateWorkerTargets(Callback callback);
   static void EnumerateAllTargets(Callback callback);
 

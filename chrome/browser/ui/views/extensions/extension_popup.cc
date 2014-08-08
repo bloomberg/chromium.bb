@@ -107,7 +107,7 @@ void ExtensionPopup::OnDevToolsStateChanged(
     content::DevToolsAgentHost* agent_host,
     bool attached) {
   // First check that the devtools are being opened on this popup.
-  if (host()->render_view_host() != agent_host->GetRenderViewHost())
+  if (host()->host_contents() != agent_host->GetWebContents())
     return;
 
   if (attached) {
@@ -225,7 +225,7 @@ void ExtensionPopup::ShowBubble() {
   host()->host_contents()->Focus();
 
   if (inspect_with_devtools_) {
-    DevToolsWindow::OpenDevToolsWindow(host()->render_view_host(),
-        DevToolsToggleAction::ShowConsole());
+    DevToolsWindow::OpenDevToolsWindow(host()->host_contents(),
+                                       DevToolsToggleAction::ShowConsole());
   }
 }

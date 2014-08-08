@@ -47,11 +47,11 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
 
   virtual std::string GetId() OVERRIDE;
 
-  virtual RenderViewHost* GetRenderViewHost() OVERRIDE;
+  virtual WebContents* GetWebContents() OVERRIDE;
 
-  virtual void DisconnectRenderViewHost() OVERRIDE;
+  virtual void DisconnectWebContents() OVERRIDE;
 
-  virtual void ConnectRenderViewHost(RenderViewHost* rvh) OVERRIDE;
+  virtual void ConnectWebContents(WebContents* rvh) OVERRIDE;
 
   virtual bool IsWorker() const OVERRIDE;
 

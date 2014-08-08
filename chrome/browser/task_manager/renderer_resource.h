@@ -36,10 +36,6 @@ class RendererResource : public Resource {
   virtual size_t GetV8MemoryAllocated() const OVERRIDE;
   virtual size_t GetV8MemoryUsed() const OVERRIDE;
 
-  // RenderResources are always inspectable.
-  virtual bool CanInspect() const OVERRIDE;
-  virtual void Inspect() const OVERRIDE;
-
   // RenderResources always provide the network usage.
   virtual bool SupportNetworkUsage() const OVERRIDE;
   virtual void SetSupportNetworkUsage() OVERRIDE { }

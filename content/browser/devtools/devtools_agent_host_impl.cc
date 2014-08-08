@@ -60,13 +60,15 @@ std::string DevToolsAgentHostImpl::GetId() {
   return id_;
 }
 
-RenderViewHost* DevToolsAgentHostImpl::GetRenderViewHost() {
+WebContents* DevToolsAgentHostImpl::GetWebContents() {
   return NULL;
 }
 
-void DevToolsAgentHostImpl::DisconnectRenderViewHost() {}
+void DevToolsAgentHostImpl::DisconnectWebContents() {
+}
 
-void DevToolsAgentHostImpl::ConnectRenderViewHost(RenderViewHost* rvh) {}
+void DevToolsAgentHostImpl::ConnectWebContents(WebContents* wc) {
+}
 
 bool DevToolsAgentHostImpl::IsWorker() const {
   return false;

@@ -109,9 +109,7 @@ void RunTestFunction(DevToolsWindow* window, const char* test_name) {
 
 class DevToolsSanityTest : public InProcessBrowserTest {
  public:
-  DevToolsSanityTest()
-      : window_(NULL),
-        inspected_rvh_(NULL) {}
+  DevToolsSanityTest() : window_(NULL) {}
 
  protected:
   void RunTest(const std::string& test_name, const std::string& test_page) {
@@ -129,9 +127,8 @@ class DevToolsSanityTest : public InProcessBrowserTest {
     ASSERT_TRUE(test_server()->Start());
     LoadTestPage(test_page);
 
-    inspected_rvh_ = GetInspectedTab()->GetRenderViewHost();
-    window_ = DevToolsWindowTesting::OpenDevToolsWindowSync(
-        inspected_rvh_, is_docked);
+    window_ = DevToolsWindowTesting::OpenDevToolsWindowSync(GetInspectedTab(),
+                                                            is_docked);
   }
 
   WebContents* GetInspectedTab() {
@@ -151,7 +148,6 @@ class DevToolsSanityTest : public InProcessBrowserTest {
   }
 
   DevToolsWindow* window_;
-  RenderViewHost* inspected_rvh_;
 };
 
 // Used to block until a dev tools window gets beforeunload event.
@@ -246,8 +242,8 @@ class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
 
   DevToolsWindow* OpenDevToolWindowOnWebContents(
       content::WebContents* contents, bool is_docked) {
-    DevToolsWindow* window = DevToolsWindowTesting::OpenDevToolsWindowSync(
-        contents->GetRenderViewHost(), is_docked);
+    DevToolsWindow* window =
+        DevToolsWindowTesting::OpenDevToolsWindowSync(contents, is_docked);
     return window;
   }
 
@@ -818,8 +814,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDevToolsExternalNavigation) {
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestToolboxLoadedUndocked) {
   OpenDevToolsWindow(kDebuggerTestPage, false);
   ASSERT_TRUE(toolbox_web_contents());
-  DevToolsWindow* on_self = DevToolsWindowTesting::OpenDevToolsWindowSync(
-      main_web_contents()->GetRenderViewHost(), false);
+  DevToolsWindow* on_self =
+      DevToolsWindowTesting::OpenDevToolsWindowSync(main_web_contents(), false);
   ASSERT_FALSE(DevToolsWindowTesting::Get(on_self)->toolbox_web_contents());
   DevToolsWindowTesting::CloseDevToolsWindowSync(on_self);
   CloseDevToolsWindow();
@@ -829,8 +825,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestToolboxLoadedUndocked) {
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestToolboxNotLoadedDocked) {
   OpenDevToolsWindow(kDebuggerTestPage, true);
   ASSERT_FALSE(toolbox_web_contents());
-  DevToolsWindow* on_self = DevToolsWindowTesting::OpenDevToolsWindowSync(
-      main_web_contents()->GetRenderViewHost(), false);
+  DevToolsWindow* on_self =
+      DevToolsWindowTesting::OpenDevToolsWindowSync(main_web_contents(), false);
   ASSERT_FALSE(DevToolsWindowTesting::Get(on_self)->toolbox_web_contents());
   DevToolsWindowTesting::CloseDevToolsWindowSync(on_self);
   CloseDevToolsWindow();
@@ -896,9 +892,9 @@ class DevToolsAgentHostTest : public InProcessBrowserTest {};
 // Tests DevToolsAgentHost retention by its target.
 IN_PROC_BROWSER_TEST_F(DevToolsAgentHostTest, TestAgentHostReleased) {
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  RenderViewHost* rvh = browser()->tab_strip_model()->GetWebContentsAt(0)->
-      GetRenderViewHost();
-  DevToolsAgentHost* agent_raw = DevToolsAgentHost::GetOrCreateFor(rvh).get();
+  WebContents* web_contents = browser()->tab_strip_model()->GetWebContentsAt(0);
+  DevToolsAgentHost* agent_raw =
+      DevToolsAgentHost::GetOrCreateFor(web_contents).get();
   const std::string agent_id = agent_raw->GetId();
   ASSERT_EQ(agent_raw, DevToolsAgentHost::GetForId(agent_id)) <<
       "DevToolsAgentHost cannot be found by id";

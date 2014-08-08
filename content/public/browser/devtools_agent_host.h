@@ -15,7 +15,6 @@
 namespace content {
 
 class DevToolsExternalAgentProxyDelegate;
-class RenderViewHost;
 class WebContents;
 
 // Describes interface for managing devtools agents from browser process.
@@ -30,13 +29,9 @@ class CONTENT_EXPORT DevToolsAgentHost
   static scoped_refptr<DevToolsAgentHost> GetOrCreateFor(
       WebContents* web_contents);
 
-  // Returns DevToolsAgentHost that can be used for inspecting |rvh|.
-  // New DevToolsAgentHost will be created if it does not exist.
-  static scoped_refptr<DevToolsAgentHost> GetOrCreateFor(RenderViewHost* rvh);
-
-  // Returns true iff an instance of DevToolsAgentHost for the |rvh|
+  // Returns true iff an instance of DevToolsAgentHost for the |web_contents|
   // does exist.
-  static bool HasFor(RenderViewHost* rvh);
+  static bool HasFor(WebContents* web_contents);
 
   // Returns DevToolsAgentHost that can be used for inspecting shared worker
   // with given worker process host id and routing id.
@@ -51,8 +46,8 @@ class CONTENT_EXPORT DevToolsAgentHost
 
   static bool IsDebuggerAttached(WebContents* web_contents);
 
-  // Returns a list of all existing RenderViewHost's that can be debugged.
-  static std::vector<RenderViewHost*> GetValidRenderViewHosts();
+  // Returns a list of all existing WebContents that can be debugged.
+  static std::vector<WebContents*> GetInspectableWebContents();
 
   // Returns true if there is a client attached.
   virtual bool IsAttached() = 0;
@@ -63,15 +58,15 @@ class CONTENT_EXPORT DevToolsAgentHost
   // Returns the unique id of the agent.
   virtual std::string GetId() = 0;
 
-  // Returns render view host instance for this host if any.
-  virtual RenderViewHost* GetRenderViewHost() = 0;
+  // Returns web contents instance for this host if any.
+  virtual WebContents* GetWebContents() = 0;
 
   // Temporarily detaches render view host from this host. Must be followed by
-  // a call to ConnectRenderViewHost (may leak the host instance otherwise).
-  virtual void DisconnectRenderViewHost() = 0;
+  // a call to ConnectWebContents (may leak the host instance otherwise).
+  virtual void DisconnectWebContents() = 0;
 
   // Attaches render view host to this host.
-  virtual void ConnectRenderViewHost(RenderViewHost* rvh) = 0;
+  virtual void ConnectWebContents(WebContents* web_contents) = 0;
 
   // Returns true if DevToolsAgentHost is for worker.
   virtual bool IsWorker() const = 0;

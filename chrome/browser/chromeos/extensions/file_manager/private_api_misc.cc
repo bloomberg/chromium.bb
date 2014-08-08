@@ -457,17 +457,20 @@ bool FileBrowserPrivateOpenInspectorFunction::RunSync() {
   switch (params->type) {
     case extensions::api::file_browser_private::INSPECTION_TYPE_NORMAL:
       // Open inspector for foreground page.
-      DevToolsWindow::OpenDevToolsWindow(render_view_host());
+      DevToolsWindow::OpenDevToolsWindow(
+          content::WebContents::FromRenderViewHost(render_view_host()));
       break;
     case extensions::api::file_browser_private::INSPECTION_TYPE_CONSOLE:
       // Open inspector for foreground page and bring focus to the console.
-      DevToolsWindow::OpenDevToolsWindow(render_view_host(),
-                                         DevToolsToggleAction::ShowConsole());
+      DevToolsWindow::OpenDevToolsWindow(
+          content::WebContents::FromRenderViewHost(render_view_host()),
+          DevToolsToggleAction::ShowConsole());
       break;
     case extensions::api::file_browser_private::INSPECTION_TYPE_ELEMENT:
       // Open inspector for foreground page in inspect element mode.
-      DevToolsWindow::OpenDevToolsWindow(render_view_host(),
-                                         DevToolsToggleAction::Inspect());
+      DevToolsWindow::OpenDevToolsWindow(
+          content::WebContents::FromRenderViewHost(render_view_host()),
+          DevToolsToggleAction::Inspect());
       break;
     case extensions::api::file_browser_private::INSPECTION_TYPE_BACKGROUND:
       // Open inspector for background page.

@@ -157,6 +157,11 @@ void HandleOpenDevTools(const base::DictionaryValue* args) {
   if (!rvh)
     return;
 
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderViewHost(rvh);
+  if (!web_contents)
+    return;
+
   // If we include a url, we should inspect it specifically (and not just the
   // render view).
   base::string16 url;
@@ -170,15 +175,13 @@ void HandleOpenDevTools(const base::DictionaryValue* args) {
     // Line/column numbers are reported in display-friendly 1-based numbers,
     // but are inspected in zero-based numbers.
     DevToolsWindow::OpenDevToolsWindow(
-        rvh,
+        web_contents,
         DevToolsToggleAction::Reveal(url, line_number - 1, column_number - 1));
   } else {
-    DevToolsWindow::OpenDevToolsWindow(rvh);
+    DevToolsWindow::OpenDevToolsWindow(web_contents);
   }
 
   // Once we open the inspector, we focus on the appropriate tab...
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderViewHost(rvh);
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
 
   // ... but some pages (popups and apps) don't have tabs, and some (background
