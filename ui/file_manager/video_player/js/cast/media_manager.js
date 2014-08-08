@@ -51,6 +51,10 @@ MediaManager.prototype.getToken = function(refresh) {
     // TODO(yoshiki): Creates the method to get a token and use it.
     chrome.fileBrowserPrivate.getDownloadUrl(this.entry_.toURL(), fulfill);
   }.bind(this)).then(function(url) {
+    if (chrome.runtime.lastError) {
+      return Promise.reject(
+          'Token fetch failed: ' + chrome.runtime.lastError.message);
+    }
     if (!url)
       return Promise.reject('Token fetch failed.');
     var token = url.substring(url.indexOf('access_token=') + 13);
@@ -76,6 +80,10 @@ MediaManager.prototype.getUrl = function() {
     // TODO(yoshiki): Creates the method to get a url and use it.
     chrome.fileBrowserPrivate.getDownloadUrl(this.entry_.toURL(), fulfill);
   }.bind(this)).then(function(url) {
+    if (chrome.runtime.lastError) {
+      return Promise.reject(
+          'URL fetch failed: ' + chrome.runtime.lastError.message);
+    }
     if (!url)
       return Promise.reject('URL fetch failed.');
     var access_token_index = url.indexOf('access_token=');

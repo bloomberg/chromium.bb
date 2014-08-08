@@ -918,7 +918,11 @@ bool FileBrowserPrivateGetDownloadUrlFunction::RunAsync() {
 
   const base::FilePath path = file_manager::util::GetLocalPathFromURL(
       render_view_host(), GetProfile(), GURL(params->url));
-  DCHECK(drive::util::IsUnderDriveMountPoint(path));
+  if (!drive::util::IsUnderDriveMountPoint(path)) {
+    SetError("The given file is not in Drive.");
+    SetResult(new base::StringValue(""));  // Intentionally returns a blank.
+    return false;
+  }
   base::FilePath file_path = drive::util::ExtractDrivePath(path);
 
   file_system->GetResourceEntry(
