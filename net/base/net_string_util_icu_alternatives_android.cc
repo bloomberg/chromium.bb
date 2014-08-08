@@ -20,12 +20,13 @@ namespace {
 ScopedJavaLocalRef<jstring> ConvertToJstring(const std::string& text,
                                              const char* charset) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  jobject java_byte_buffer =
-      env->NewDirectByteBuffer(const_cast<char*>(text.data()), text.length());
+  ScopedJavaLocalRef<jobject> java_byte_buffer(
+      env,
+      env->NewDirectByteBuffer(const_cast<char*>(text.data()), text.length()));
   base::android::ScopedJavaLocalRef<jstring> java_charset =
       base::android::ConvertUTF8ToJavaString(env, base::StringPiece(charset));
   ScopedJavaLocalRef<jstring> java_result =
-      android::Java_NetStringUtil_convertToUnicode(env, java_byte_buffer,
+      android::Java_NetStringUtil_convertToUnicode(env, java_byte_buffer.obj(),
                                                    java_charset.obj());
   return java_result;
 }
@@ -36,13 +37,14 @@ ScopedJavaLocalRef<jstring> ConvertToJstring(const std::string& text,
 ScopedJavaLocalRef<jstring> ConvertToNormalizedJstring(
     const std::string& text, const char* charset) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  jobject java_byte_buffer =
-      env->NewDirectByteBuffer(const_cast<char*>(text.data()), text.length());
+  ScopedJavaLocalRef<jobject> java_byte_buffer(
+      env,
+      env->NewDirectByteBuffer(const_cast<char*>(text.data()), text.length()));
   base::android::ScopedJavaLocalRef<jstring> java_charset =
       base::android::ConvertUTF8ToJavaString(env, base::StringPiece(charset));
   ScopedJavaLocalRef<jstring> java_result =
       android::Java_NetStringUtil_convertToUnicodeAndNormalize(
-          env, java_byte_buffer, java_charset.obj());
+          env, java_byte_buffer.obj(), java_charset.obj());
   return java_result;
 }
 
@@ -51,13 +53,14 @@ ScopedJavaLocalRef<jstring> ConvertToNormalizedJstring(
 ScopedJavaLocalRef<jstring> ConvertToJstringWithSubstitutions(
     const std::string& text, const char* charset) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  jobject java_byte_buffer =
-      env->NewDirectByteBuffer(const_cast<char*>(text.data()), text.length());
+  ScopedJavaLocalRef<jobject> java_byte_buffer(
+      env,
+      env->NewDirectByteBuffer(const_cast<char*>(text.data()), text.length()));
   base::android::ScopedJavaLocalRef<jstring> java_charset =
       base::android::ConvertUTF8ToJavaString(env, base::StringPiece(charset));
   ScopedJavaLocalRef<jstring> java_result =
       android::Java_NetStringUtil_convertToUnicodeWithSubstitutions(
-          env, java_byte_buffer, java_charset.obj());
+          env, java_byte_buffer.obj(), java_charset.obj());
   return java_result;
 }
 
