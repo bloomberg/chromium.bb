@@ -81,9 +81,9 @@ State GetProcessState() {
   } else if (is_new_avatar_menu) {
     return STATE_NEW_AVATAR_MENU;
   } else if (not_new_profile_management) {
-    return STATE_NEW_AVATAR_MENU;
+    return STATE_OLD_AVATAR_MENU;
   } else if (not_consistent_identity) {
-    return STATE_NEW_AVATAR_MENU;
+    return STATE_OLD_AVATAR_MENU;
   }
 
   // Set the default state
@@ -98,6 +98,8 @@ State GetProcessState() {
       state = STATE_NEW_PROFILE_MANAGEMENT;
     } else if (trial_type == "AccountConsistency") {
       state = STATE_ACCOUNT_CONSISTENCY;
+    } else if (trial_type == "NewAvatarMenu") {
+      state = STATE_NEW_AVATAR_MENU;
     } else {
       state = STATE_OLD_AVATAR_MENU;
     }
