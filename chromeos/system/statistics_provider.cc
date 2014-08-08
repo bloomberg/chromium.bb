@@ -267,7 +267,6 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
     } else if (base::SysInfo::IsRunningOnChromeOS()) {
       LoadOemManifestFromFile(base::FilePath(kOemManifestFilePath));
     }
-    oem_manifest_loaded_ = true;
   }
 
   if (!base::SysInfo::IsRunningOnChromeOS() &&
@@ -306,6 +305,7 @@ void StatisticsProviderImpl::LoadOemManifestFromFile(
   machine_flags_[kOemKeyboardDrivenOobeKey] =
       oem_manifest.keyboard_driven_oobe;
 
+  oem_manifest_loaded_ = true;
   VLOG(1) << "Loaded OEM Manifest statistics from " << file.value();
 }
 
