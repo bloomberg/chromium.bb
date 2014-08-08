@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/chrome_net_log.h"
+#include "content/public/browser/power_save_blocker.h"
 #include "media/cast/net/cast_transport_sender.h"
 
 namespace {
@@ -83,6 +84,14 @@ void CastTransportHostFilter::SendCastMessage(
 void CastTransportHostFilter::OnNew(
     int32 channel_id,
     const net::IPEndPoint& remote_end_point) {
+  if (!power_save_blocker_) {
+    DVLOG(1) << ("Preventing the application from being suspended while one or "
+                 "more transports are active for Cast Streaming.");
+    power_save_blocker_ = content::PowerSaveBlocker::Create(
+        content::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+        "Cast is streaming content to a remote receiver.").Pass();
+  }
+
   if (id_map_.Lookup(channel_id)) {
     id_map_.Remove(channel_id);
   }
@@ -111,6 +120,13 @@ void CastTransportHostFilter::OnDelete(int32 channel_id) {
   } else {
     DVLOG(1) << "CastTransportHostFilter::Delete called "
              << "on non-existing channel";
+  }
+
+  if (id_map_.IsEmpty()) {
+    DVLOG_IF(1, power_save_blocker_) <<
+        ("Releasing the block on application suspension since no transports "
+         "are active anymore for Cast Streaming.");
+    power_save_blocker_.reset();
   }
 }
 

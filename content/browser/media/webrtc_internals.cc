@@ -12,6 +12,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/power_save_blocker.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 
@@ -82,6 +83,7 @@ void WebRTCInternals::OnAddPeerConnection(int render_process_id,
   dict->SetString("constraints", constraints);
   dict->SetString("url", url);
   peer_connection_data_.Append(dict);
+  CreateOrReleasePowerSaveBlocker();
 
   if (observers_.might_have_observers())
     SendUpdate("addPeerConnection", dict);
@@ -102,6 +104,7 @@ void WebRTCInternals::OnRemovePeerConnection(ProcessId pid, int lid) {
       continue;
 
     peer_connection_data_.Remove(i, NULL);
+    CreateOrReleasePowerSaveBlocker();
 
     if (observers_.might_have_observers()) {
       base::DictionaryValue id;
@@ -263,6 +266,7 @@ void WebRTCInternals::ResetForTesting() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.Clear();
   peer_connection_data_.Clear();
+  CreateOrReleasePowerSaveBlocker();
   get_user_media_requests_.Clear();
   aec_dump_enabled_ = false;
 }
@@ -299,6 +303,8 @@ void WebRTCInternals::FileSelectionCanceled(void* params) {
 }
 
 void WebRTCInternals::OnRendererExit(int render_process_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   // Iterates from the end of the list to remove the PeerConnections created
   // by the exitting renderer.
   for (int i = peer_connection_data_.GetSize() - 1; i >= 0; --i) {
@@ -322,6 +328,7 @@ void WebRTCInternals::OnRendererExit(int render_process_id) {
       peer_connection_data_.Remove(i, NULL);
     }
   }
+  CreateOrReleasePowerSaveBlocker();
 
   bool found_any = false;
   // Iterates from the end of the list to remove the getUserMedia requests
@@ -356,5 +363,21 @@ void WebRTCInternals::EnableAecDumpOnAllRenderProcessHosts() {
   }
 }
 #endif
+
+void WebRTCInternals::CreateOrReleasePowerSaveBlocker() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (peer_connection_data_.empty() && power_save_blocker_) {
+    DVLOG(1) << ("Releasing the block on application suspension since no "
+                 "PeerConnections are active anymore.");
+    power_save_blocker_.reset();
+  } else if (!peer_connection_data_.empty() && !power_save_blocker_) {
+    DVLOG(1) << ("Preventing the application from being suspended while one or "
+                 "more PeerConnections are active.");
+    power_save_blocker_ = content::PowerSaveBlocker::Create(
+        content::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+        "WebRTC has active PeerConnections.").Pass();
+  }
+}
 
 }  // namespace content
