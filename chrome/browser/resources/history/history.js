@@ -171,8 +171,9 @@ Visit.prototype.getResultDOM = function(propertyBag) {
     entryBox.setAttribute('for', checkbox.id);
     entryBox.addEventListener('mousedown', entryBoxMousedown);
     entryBox.addEventListener('click', entryBoxClick);
-    entryBox.addEventListener('keydown', this.handleKeydown_.bind(this));
   }
+
+  entryBox.addEventListener('keydown', this.handleKeydown_.bind(this));
 
   // Keep track of the drop down that triggered the menu, so we know
   // which element to apply the command to.

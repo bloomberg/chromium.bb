@@ -778,7 +778,7 @@ TEST_F('HistoryWebUIRealBackendTest', 'basic', function() {
 });
 
 TEST_F('HistoryWebUIRealBackendTest', 'atLeastOneFocusable', function() {
-  assertEquals(1, document.querySelectorAll('[tabindex="0"]').length);
+  expectEquals(1, document.querySelectorAll('[tabindex="0"]').length);
   testDone();
 });
 
@@ -827,6 +827,27 @@ TEST_F('HistoryWebUIRealBackendTest', 'singleDeletion', function() {
   });
 });
 
+TEST_F('HistoryWebUIRealBackendTest', 'leftRightChangeFocus', function() {
+  var visit = document.querySelector('.entry').visit;
+  visit.titleLink.focus();
+  assertEquals(visit.titleLink, document.activeElement);
+
+  var right = document.createEvent('KeyboardEvent');
+  right.initKeyboardEvent('keydown', true, true, window, 'Right');
+  assertEquals('Right', right.keyIdentifier);
+  expectFalse(visit.titleLink.dispatchEvent(right));
+
+  assertEquals(visit.dropDown, document.activeElement);
+
+  var left = document.createEvent('KeyboardEvent');
+  left.initKeyboardEvent('keydown', true, true, window, 'Left');
+  assertEquals('Left', left.keyIdentifier);
+  expectFalse(visit.dropDown.dispatchEvent(left));
+
+  expectEquals(visit.titleLink, document.activeElement);
+  testDone();
+});
+
 /**
  * Fixture for History WebUI testing when deletions are prohibited.
  * @extends {HistoryWebUIRealBackendTest}
@@ -868,7 +889,28 @@ TEST_F('HistoryWebUIDeleteProhibitedTest', 'deleteProhibited', function() {
 });
 
 TEST_F('HistoryWebUIDeleteProhibitedTest', 'atLeastOneFocusable', function() {
-  assertEquals(1, document.querySelectorAll('[tabindex="0"]').length);
+  expectEquals(1, document.querySelectorAll('[tabindex="0"]').length);
+  testDone();
+});
+
+TEST_F('HistoryWebUIDeleteProhibitedTest', 'leftRightChangeFocus', function() {
+  var visit = document.querySelector('.entry').visit;
+  visit.titleLink.focus();
+  assertEquals(visit.titleLink, document.activeElement);
+
+  var right = document.createEvent('KeyboardEvent');
+  right.initKeyboardEvent('keydown', true, true, window, 'Right');
+  assertEquals('Right', right.keyIdentifier);
+  expectFalse(visit.titleLink.dispatchEvent(right));
+
+  assertEquals(visit.dropDown, document.activeElement);
+
+  var left = document.createEvent('KeyboardEvent');
+  left.initKeyboardEvent('keydown', true, true, window, 'Left');
+  assertEquals('Left', left.keyIdentifier);
+  expectFalse(visit.dropDown.dispatchEvent(left));
+
+  expectEquals(visit.titleLink, document.activeElement);
   testDone();
 });
 
