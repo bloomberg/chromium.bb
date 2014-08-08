@@ -646,6 +646,22 @@ void RenderLayer::updateScrollingStateAfterCompositingChange()
     }
 }
 
+// The descendant-dependent flags system is badly broken because we clean dirty
+// bits in upward tree walks, which means we need to call updateDescendantDependentFlags
+// at every node in the tree to fully clean all the dirty bits. While we'll in
+// the process of fixing this issue, updateDescendantDependentFlagsForEntireSubtree
+// provides a big hammer for actually cleaning all the dirty bits in a subtree.
+//
+// FIXME: Remove this function once the descendant-dependent flags system keeps
+// its dirty bits scoped to subtrees.
+void RenderLayer::updateDescendantDependentFlagsForEntireSubtree()
+{
+    updateDescendantDependentFlags();
+
+    for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
+        child->updateDescendantDependentFlagsForEntireSubtree();
+}
+
 void RenderLayer::updateDescendantDependentFlags()
 {
     if (m_visibleDescendantStatusDirty || m_hasSelfPaintingLayerDescendantDirty) {

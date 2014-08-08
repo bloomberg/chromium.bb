@@ -200,7 +200,8 @@ void RenderLayerCompositor::updateIfNeededRecursive()
     // FIXME: enableCompositingModeIfNeeded can trigger a CompositingUpdateRebuildTree,
     // which asserts that it's not InCompositingUpdate.
     enableCompositingModeIfNeeded();
-    rootRenderLayer()->updateDescendantDependentFlags();
+
+    rootRenderLayer()->updateDescendantDependentFlagsForEntireSubtree();
 
     lifecycle().advanceTo(DocumentLifecycle::InCompositingUpdate);
     updateIfNeeded();

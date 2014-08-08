@@ -1963,8 +1963,12 @@ void RenderBox::deleteLineBoxWrapper()
 
 LayoutRect RenderBox::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
-    if (style()->visibility() != VISIBLE && enclosingLayer()->subtreeIsInvisible())
-        return LayoutRect();
+    if (style()->visibility() != VISIBLE) {
+        RenderLayer* layer = enclosingLayer();
+        layer->updateDescendantDependentFlags();
+        if (layer->subtreeIsInvisible())
+            return LayoutRect();
+    }
 
     LayoutRect r = visualOverflowRect();
     mapRectToPaintInvalidationBacking(paintInvalidationContainer, r, false /*fixed*/, paintInvalidationState);
