@@ -34,25 +34,25 @@
     WillBeGarbageCollected,
     NoInterfaceObject
 ] interface InjectedScriptHost {
-    void clearConsoleMessages();
+    [NotEnumerable, Unforgeable] void clearConsoleMessages();
 
-    [Custom] void inspect(any objectId, any hints);
-    [Custom] any inspectedObject(long num);
-    [Custom] any internalConstructorName(any obj);
-    [Custom] boolean isHTMLAllCollection(any obj);
-    [Custom] DOMString type(any obj);
-    [Custom] any functionDetails(any obj);
-    [Custom] any[] getInternalProperties(any obj);
-    [Custom] EventListener[] getEventListeners(EventTarget target);
-    [Custom] any eval(DOMString text);
-    [Custom] any evaluateWithExceptionDetails(DOMString text);
-    [Custom] void debugFunction(any fn);
-    [Custom] void undebugFunction(any fn);
-    [Custom] void monitorFunction(any fn);
-    [Custom] void unmonitorFunction(any fn);
-    [Custom] any callFunction(any fn, any receiver, any[] argv);
-    [Custom] any suppressWarningsAndCallFunction(any fn, any receiver, any[] argv);
+    [NotEnumerable, Unforgeable, Custom] void inspect(any objectId, any hints);
+    [NotEnumerable, Unforgeable, Custom] any inspectedObject(long num);
+    [NotEnumerable, Unforgeable, Custom] any internalConstructorName(any obj);
+    [NotEnumerable, Unforgeable, Custom] boolean isHTMLAllCollection(any obj);
+    [NotEnumerable, Unforgeable, Custom] DOMString type(any obj);
+    [NotEnumerable, Unforgeable, Custom] any functionDetails(any obj);
+    [NotEnumerable, Unforgeable, Custom] any[] getInternalProperties(any obj);
+    [NotEnumerable, Unforgeable, Custom] EventListener[] getEventListeners(EventTarget target);
+    [NotEnumerable, Unforgeable, Custom] any eval(DOMString text);
+    [NotEnumerable, Unforgeable, Custom] any evaluateWithExceptionDetails(DOMString text);
+    [NotEnumerable, Unforgeable, Custom] void debugFunction(any fn);
+    [NotEnumerable, Unforgeable, Custom] void undebugFunction(any fn);
+    [NotEnumerable, Unforgeable, Custom] void monitorFunction(any fn);
+    [NotEnumerable, Unforgeable, Custom] void unmonitorFunction(any fn);
+    [NotEnumerable, Unforgeable, Custom] any callFunction(any fn, any receiver, any[] argv);
+    [NotEnumerable, Unforgeable, Custom] any suppressWarningsAndCallFunction(any fn, any receiver, any[] argv);
 
     // Only declarative scope (local, with and catch) is accepted. Returns undefined.
-    [Custom] any setFunctionVariableValue(any functionObject, long scopeIndex, DOMString variableName, any newValue);
+    [NotEnumerable, Unforgeable, Custom] any setFunctionVariableValue(any functionObject, long scopeIndex, DOMString variableName, any newValue);
 };
