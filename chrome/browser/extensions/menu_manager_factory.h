@@ -22,9 +22,6 @@ class MenuManagerFactory : public BrowserContextKeyedServiceFactory {
 
   static MenuManagerFactory* GetInstance();
 
-  static KeyedService* BuildServiceInstanceForTesting(
-      content::BrowserContext* context);
-
  private:
   friend struct DefaultSingletonTraits<MenuManagerFactory>;
 

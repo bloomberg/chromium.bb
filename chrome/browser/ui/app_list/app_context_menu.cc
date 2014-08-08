@@ -152,10 +152,7 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
     // Assign unique IDs to commands added by the app itself.
     int index = USE_LAUNCH_TYPE_COMMAND_END;
     extension_menu_items_->AppendExtensionItems(
-        extensions::MenuItem::ExtensionKey(app_id_),
-        base::string16(),
-        &index,
-        false);  // is_action_menu
+        extensions::MenuItem::ExtensionKey(app_id_), base::string16(), &index);
 
     // If at least 1 item was added, add another separator after the list.
     if (index > USE_LAUNCH_TYPE_COMMAND_END)

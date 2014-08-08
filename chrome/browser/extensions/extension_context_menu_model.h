@@ -17,8 +17,6 @@ class Profile;
 
 namespace extensions {
 class Extension;
-class ContextMenuMatcher;
-class ExtensionContextMenuModelTest;
 }
 
 // The context menu model for extension icons.
@@ -36,9 +34,6 @@ class ExtensionContextMenuModel
     MANAGE,
     INSPECT_POPUP
   };
-
-  // Type of action the extension icon represents.
-  enum ActionType { NO_ACTION = 0, BROWSER_ACTION, PAGE_ACTION };
 
   // Delegate to handle showing an ExtensionAction popup.
   class PopupDelegate {
@@ -79,8 +74,6 @@ class ExtensionContextMenuModel
 
  private:
   friend class base::RefCounted<ExtensionContextMenuModel>;
-  friend class extensions::ExtensionContextMenuModelTest;
-
   virtual ~ExtensionContextMenuModel();
 
   void InitMenu(const extensions::Extension* extension);
@@ -88,9 +81,6 @@ class ExtensionContextMenuModel
   // Gets the extension we are displaying the menu for. Returns NULL if the
   // extension has been uninstalled and no longer exists.
   const extensions::Extension* GetExtension() const;
-
-  // Appends the extension's context menu items.
-  void AppendExtensionItems();
 
   // A copy of the extension's id.
   std::string extension_id_;
@@ -106,17 +96,8 @@ class ExtensionContextMenuModel
   // The delegate which handles the 'inspect popup' menu command (or NULL).
   PopupDelegate* delegate_;
 
-  // The type of extension action to which this context menu is attached.
-  ActionType action_type_;
-
   // Keeps track of the extension uninstall dialog.
   scoped_ptr<extensions::ExtensionUninstallDialog> extension_uninstall_dialog_;
-
-  // Menu matcher for context menu items specified by the extension.
-  scoped_ptr<extensions::ContextMenuMatcher> extension_items_;
-
-  // Number of extension items in this menu. Used for testing.
-  int extension_items_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionContextMenuModel);
 };

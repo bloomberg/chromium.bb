@@ -25,12 +25,6 @@ MenuManagerFactory* MenuManagerFactory::GetInstance() {
   return Singleton<MenuManagerFactory>::get();
 }
 
-// static
-KeyedService* MenuManagerFactory::BuildServiceInstanceForTesting(
-      content::BrowserContext* context) {
-  return GetInstance()->BuildServiceInstanceFor(context);
-}
-
 MenuManagerFactory::MenuManagerFactory()
     : BrowserContextKeyedServiceFactory(
         "MenuManager",
@@ -43,7 +37,9 @@ MenuManagerFactory::~MenuManagerFactory() {}
 KeyedService* MenuManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  return new MenuManager(profile, ExtensionSystem::Get(profile)->state_store());
+  return new MenuManager(
+      profile,
+      ExtensionSystem::Get(profile)->state_store());
 }
 
 content::BrowserContext* MenuManagerFactory::GetBrowserContextToUse(

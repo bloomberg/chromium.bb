@@ -161,10 +161,8 @@ void LauncherContextMenu::Init() {
           controller_->GetAppIDForShelfID(item_.id));
       if (!app_key.empty()) {
         int index = 0;
-        extension_items_->AppendExtensionItems(app_key,
-                                               base::string16(),
-                                               &index,
-                                               false);  // is_action_menu
+        extension_items_->AppendExtensionItems(
+            app_key, base::string16(), &index);
         AddSeparator(ui::NORMAL_SEPARATOR);
       }
     }

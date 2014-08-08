@@ -43,13 +43,10 @@ class ContextMenuMatcher {
 
   // This is a helper function to append items for one particular extension.
   // The |index| parameter is used for assigning id's, and is incremented for
-  // each item actually added. |is_action_menu| is used for browser and page
-  // action context menus, in which menu items are not placed in submenus
-  // and the extension's icon is not shown.
+  // each item actually added.
   void AppendExtensionItems(const MenuItem::ExtensionKey& extension_key,
                             const base::string16& selection_text,
-                            int* index,
-                            bool is_action_menu);
+                            int* index);
 
   void Clear();
 
@@ -83,8 +80,7 @@ class ContextMenuMatcher {
                                        bool can_cross_incognito,
                                        const base::string16& selection_text,
                                        ui::SimpleMenuModel* menu_model,
-                                       int* index,
-                                       bool is_action_menu_top_level);
+                                       int* index);
 
   // Attempts to get an MenuItem given the id of a context menu item.
   extensions::MenuItem* GetExtensionMenuItem(int id) const;
