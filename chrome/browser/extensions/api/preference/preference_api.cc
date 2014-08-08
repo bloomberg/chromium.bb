@@ -76,6 +76,8 @@ PrefMappingEntry kPrefMapping[] = {
      APIPermission::kPrivacy, APIPermission::kPrivacy},
     {"networkPredictionEnabled", prefs::kNetworkPredictionEnabled,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
+    {"networkPredictionOptions", prefs::kNetworkPredictionOptions,
+     APIPermission::kPrivacy, APIPermission::kPrivacy},
     {"passwordSavingEnabled",
      password_manager::prefs::kPasswordManagerSavingEnabled,
      APIPermission::kPrivacy, APIPermission::kPrivacy},

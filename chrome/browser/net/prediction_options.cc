@@ -46,6 +46,27 @@ void RegisterPredictionOptionsProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
+void MigrateNetworkPredictionUserPrefs(PrefService* pref_service) {
+  // Nothing to do if the user or this migration code has already set the new
+  // preference.
+  if (pref_service->GetUserPrefValue(prefs::kNetworkPredictionOptions))
+    return;
+
+  // Nothing to do if the user has not set the old preference.
+  const base::Value* network_prediction_enabled =
+      pref_service->GetUserPrefValue(prefs::kNetworkPredictionEnabled);
+  if (!network_prediction_enabled)
+    return;
+
+  bool value = false;
+  if (network_prediction_enabled->GetAsBoolean(&value)) {
+    pref_service->SetInteger(
+        prefs::kNetworkPredictionOptions,
+        value ? chrome_browser_net::NETWORK_PREDICTION_WIFI_ONLY
+              : chrome_browser_net::NETWORK_PREDICTION_NEVER);
+  }
+}
+
 bool CanPredictNetworkActionsIO(ProfileIOData* profile_io_data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   DCHECK(profile_io_data);

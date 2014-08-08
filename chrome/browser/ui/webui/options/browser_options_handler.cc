@@ -32,6 +32,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/gpu/gpu_mode_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
@@ -844,6 +845,10 @@ void BrowserOptionsHandler::InitializeHandler() {
                  base::Unretained(this)));
   profile_pref_registrar_.Init(prefs);
   profile_pref_registrar_.Add(
+      prefs::kNetworkPredictionOptions,
+      base::Bind(&BrowserOptionsHandler::SetupNetworkPredictionControl,
+                 base::Unretained(this)));
+  profile_pref_registrar_.Add(
       prefs::kWebKitDefaultFontSize,
       base::Bind(&BrowserOptionsHandler::SetupFontSizeSelector,
                  base::Unretained(this)));
@@ -908,6 +913,7 @@ void BrowserOptionsHandler::InitializePage() {
   UpdateDefaultBrowserState();
 
   SetupMetricsReportingSettingVisibility();
+  SetupNetworkPredictionControl();
   SetupFontSizeSelector();
   SetupPageZoomSelector();
   SetupAutoOpenFileTypes();
@@ -1662,6 +1668,20 @@ void BrowserOptionsHandler::SetupMetricsReportingSettingVisibility() {
         "BrowserOptions.setMetricsReportingSettingVisibility", visible);
   }
 #endif
+}
+
+void BrowserOptionsHandler::SetupNetworkPredictionControl() {
+  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
+
+  base::DictionaryValue dict;
+  dict.SetInteger("value",
+                  pref_service->GetInteger(prefs::kNetworkPredictionOptions));
+  dict.SetBoolean("disabled",
+                  !pref_service->IsUserModifiablePreference(
+                      prefs::kNetworkPredictionOptions));
+
+  web_ui()->CallJavascriptFunction("BrowserOptions.setNetworkPredictionValue",
+                                   dict);
 }
 
 void BrowserOptionsHandler::SetupFontSizeSelector() {

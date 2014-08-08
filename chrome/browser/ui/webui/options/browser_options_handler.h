@@ -298,6 +298,9 @@ class BrowserOptionsHandler
   // Setup the visibility for the metrics reporting setting.
   void SetupMetricsReportingSettingVisibility();
 
+  // Update value of predictive network actions UI element.
+  void SetupNetworkPredictionControl();
+
   // Setup the font size selector control.
   void SetupFontSizeSelector();
 

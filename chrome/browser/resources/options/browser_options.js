@@ -9,6 +9,13 @@ cr.define('options', function() {
   var ArrayDataModel = cr.ui.ArrayDataModel;
   var RepeatingButton = cr.ui.RepeatingButton;
   var HotwordSearchSettingIndicator = options.HotwordSearchSettingIndicator;
+  var NetworkPredictionOptions = {
+    ALWAYS: 0,
+    WIFI_ONLY: 1,
+    NEVER: 2,
+    UNSET: 3,
+    DEFAULT: 1
+  };
 
   //
   // BrowserOptions class
@@ -383,6 +390,17 @@ cr.define('options', function() {
             updateMetricsRestartButton);
         updateMetricsRestartButton();
       }
+      $('networkPredictionOptions').onchange = function(event) {
+        var value = (event.target.checked ?
+            NetworkPredictionOptions.WIFI_ONLY :
+            NetworkPredictionOptions.NEVER);
+        var metric = event.target.metric;
+        Preferences.setIntegerPref(
+            'net.network_prediction_options',
+            value,
+            true,
+            metric);
+      };
 
       // Bluetooth (CrOS only).
       if (cr.isChromeOS) {
@@ -1493,6 +1511,25 @@ cr.define('options', function() {
     },
 
     /**
+     * Set network prediction checkbox value.
+     *
+     * @param {Object} pref Information about network prediction options.
+     * @param {number} pref.value The value of network prediction options.
+     * @param {boolean} pref.disabled If the pref is not user modifiable.
+     * @private
+     */
+    setNetworkPredictionValue_: function(pref) {
+      var checkbox = $('networkPredictionOptions');
+      checkbox.disabled = pref.disabled;
+      if (pref.value == NetworkPredictionOptions.UNSET) {
+        checkbox.checked = (NetworkPredictionOptions.DEFAULT !=
+            NetworkPredictionOptions.NEVER);
+      } else {
+        checkbox.checked = (pref.value != NetworkPredictionOptions.NEVER);
+      }
+    },
+
+    /**
      * Set the font size selected item. This item actually reflects two
      * preferences: the default font size and the default fixed font size.
      *
@@ -1875,6 +1912,7 @@ cr.define('options', function() {
     'setCanSetTime',
     'setFontSize',
     'setNativeThemeButtonEnabled',
+    'setNetworkPredictionValue',
     'setHighContrastCheckboxState',
     'setMetricsReportingCheckboxState',
     'setMetricsReportingSettingVisibility',

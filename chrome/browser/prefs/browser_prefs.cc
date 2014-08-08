@@ -532,6 +532,7 @@ void MigrateUserPrefs(Profile* profile) {
 
   PromoResourceService::MigrateUserPrefs(prefs);
   translate::TranslatePrefs::MigrateUserPrefs(prefs, prefs::kAcceptLanguages);
+  chrome_browser_net::MigrateNetworkPredictionUserPrefs(prefs);
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   autofill::AutofillManager::MigrateUserPrefs(prefs);
