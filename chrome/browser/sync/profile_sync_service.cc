@@ -1470,8 +1470,7 @@ void ProfileSyncService::OnConfigureDone(
   configure_status_ = result.status;
 
   if (backend_mode_ != SYNC) {
-    if (configure_status_ == DataTypeManager::OK ||
-        configure_status_ == DataTypeManager::PARTIAL_SUCCESS) {
+    if (configure_status_ == DataTypeManager::OK) {
       StartSyncingWithServer();
     } else if (!expect_sync_configuration_aborted_) {
       DVLOG(1) << "Backup/rollback backend failed to configure.";
@@ -1482,8 +1481,7 @@ void ProfileSyncService::OnConfigureDone(
   }
 
   if (!sync_configure_start_time_.is_null()) {
-    if (result.status == DataTypeManager::OK ||
-        result.status == DataTypeManager::PARTIAL_SUCCESS) {
+    if (result.status == DataTypeManager::OK) {
       base::Time sync_configure_stop_time = base::Time::Now();
       base::TimeDelta delta = sync_configure_stop_time -
           sync_configure_start_time_;
@@ -1507,8 +1505,7 @@ void ProfileSyncService::OnConfigureDone(
   // The possible status values:
   //    ABORT - Configuration was aborted. This is not an error, if
   //            initiated by user.
-  //    OK - Everything succeeded.
-  //    PARTIAL_SUCCESS - Some datatypes failed to start.
+  //    OK - Some or all types succeeded.
   //    Everything else is an UnrecoverableError. So treat it as such.
 
   // First handle the abort case.
@@ -1520,18 +1517,18 @@ void ProfileSyncService::OnConfigureDone(
   }
 
   // Handle unrecoverable error.
-  if (configure_status_ != DataTypeManager::OK &&
-      configure_status_ != DataTypeManager::PARTIAL_SUCCESS) {
+  if (configure_status_ != DataTypeManager::OK) {
     // Something catastrophic had happened. We should only have one
     // error representing it.
-    DCHECK_EQ(result.failed_data_types.size(),
-              static_cast<unsigned int>(1));
-    syncer::SyncError error = result.failed_data_types.begin()->second;
+    syncer::SyncError error =
+        failed_data_types_handler_.GetUnrecoverableError();
     DCHECK(error.IsSet());
     std::string message =
         "Sync configuration failed with status " +
         DataTypeManager::ConfigureStatusToString(configure_status_) +
-        " during " + syncer::ModelTypeToString(error.model_type()) +
+        " caused by " +
+        syncer::ModelTypeSetToString(
+            failed_data_types_handler_.GetUnrecoverableErrorTypes()) +
         ": " + error.message();
     LOG(ERROR) << "ProfileSyncService error: " << message;
     OnInternalUnrecoverableError(error.location(),

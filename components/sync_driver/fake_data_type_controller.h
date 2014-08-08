@@ -25,34 +25,28 @@ class FakeDataTypeController : public DataTypeController {
 
   virtual void LoadModels(
       const ModelLoadCallback& model_load_callback) OVERRIDE;
-
   virtual void OnModelLoaded() OVERRIDE;
-
   virtual void StartAssociating(const StartCallback& start_callback) OVERRIDE;
-
-  void FinishStart(StartResult result);
-
   virtual void Stop() OVERRIDE;
-
   virtual syncer::ModelType type() const OVERRIDE;
-
   virtual std::string name() const OVERRIDE;
-
   virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE;
-
   virtual ChangeProcessor* GetChangeProcessor() const OVERRIDE;
-
   virtual State state() const OVERRIDE;
-
   virtual void OnSingleDatatypeUnrecoverableError(
       const tracked_objects::Location& from_here,
       const std::string& message) OVERRIDE;
+  virtual bool ReadyForStart() const OVERRIDE;
 
-  virtual void SetDelayModelLoad();
+  void FinishStart(ConfigureResult result);
+
+  void SetDelayModelLoad();
 
   void SetModelLoadError(syncer::SyncError error);
 
-  virtual void SimulateModelLoadFinishing();
+  void SimulateModelLoadFinishing();
+
+  void SetReadyForStart(bool ready);
 
  protected:
   virtual ~FakeDataTypeController();
@@ -64,6 +58,7 @@ class FakeDataTypeController : public DataTypeController {
   StartCallback last_start_callback_;
   ModelLoadCallback model_load_callback_;
   syncer::SyncError load_error_;
+  bool ready_for_start_;
 };
 
 }  // namespace sync_driver

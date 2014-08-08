@@ -159,7 +159,7 @@ class NonUIDataTypeControllerFake
   virtual void RecordAssociationTime(base::TimeDelta time) OVERRIDE {
     mock_->RecordAssociationTime(time);
   }
-  virtual void RecordStartFailure(DataTypeController::StartResult result)
+  virtual void RecordStartFailure(DataTypeController::ConfigureResult result)
       OVERRIDE {
     mock_->RecordStartFailure(result);
   }
@@ -243,7 +243,7 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(*dtc_mock_.get(), RecordAssociationTime(_));
   }
 
-  void SetActivateExpectations(DataTypeController::StartResult result) {
+  void SetActivateExpectations(DataTypeController::ConfigureResult result) {
     EXPECT_CALL(start_callback_, Run(result,_,_));
   }
 
@@ -252,7 +252,7 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(*change_processor_.get(), Disconnect()).WillOnce(Return(true));
   }
 
-  void SetStartFailExpectations(DataTypeController::StartResult result) {
+  void SetStartFailExpectations(DataTypeController::ConfigureResult result) {
     EXPECT_CALL(*dtc_mock_.get(), StopModels()).Times(AtLeast(1));
     EXPECT_CALL(*dtc_mock_.get(), RecordStartFailure(result));
     EXPECT_CALL(start_callback_, Run(result, _, _));
@@ -496,17 +496,17 @@ TEST_F(SyncNonUIDataTypeControllerTest, StopStart) {
   EXPECT_EQ(DataTypeController::RUNNING, non_ui_dtc_->state());
 }
 
-TEST_F(SyncNonUIDataTypeControllerTest,
-       OnSingleDatatypeUnrecoverableError) {
+TEST_F(SyncNonUIDataTypeControllerTest, OnSingleDatatypeUnrecoverableError) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations(DataTypeController::OK);
-  SetStopExpectations();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
   Start();
   WaitForDTC();
   EXPECT_EQ(DataTypeController::RUNNING, non_ui_dtc_->state());
-  // This should cause non_ui_dtc_->Stop() to be called.
+
+  testing::Mock::VerifyAndClearExpectations(&start_callback_);
+  EXPECT_CALL(start_callback_, Run(DataTypeController::RUNTIME_ERROR, _, _));
   backend_thread_.message_loop_proxy()->PostTask(FROM_HERE, base::Bind(
       &NonUIDataTypeControllerFake::
           OnSingleDatatypeUnrecoverableError,
@@ -514,8 +514,6 @@ TEST_F(SyncNonUIDataTypeControllerTest,
       FROM_HERE,
       std::string("Test")));
   WaitForDTC();
-  EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
-  EXPECT_TRUE(disable_callback_invoked_);
 }
 
 }  // namespace

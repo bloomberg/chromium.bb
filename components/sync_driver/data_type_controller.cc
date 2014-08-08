@@ -23,11 +23,11 @@ DataTypeController::DataTypeController(
 DataTypeController::~DataTypeController() {
 }
 
-bool DataTypeController::IsUnrecoverableResult(StartResult result) {
+bool DataTypeController::IsUnrecoverableResult(ConfigureResult result) {
   return (result == UNRECOVERABLE_ERROR);
 }
 
-bool DataTypeController::IsSuccessfulResult(StartResult result) {
+bool DataTypeController::IsSuccessfulResult(ConfigureResult result) {
   return (result == OK || result == OK_FIRST_RUN);
 }
 

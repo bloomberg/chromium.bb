@@ -75,7 +75,7 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
     mock_->RecordAssociationTime(time);
   }
   virtual void RecordStartFailure(
-      DataTypeController::StartResult result) OVERRIDE {
+      DataTypeController::ConfigureResult result) OVERRIDE {
     mock_->RecordStartFailure(result);
   }
  private:
@@ -120,7 +120,7 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(*dtc_mock_.get(), RecordAssociationTime(_));
   }
 
-  void SetActivateExpectations(DataTypeController::StartResult result) {
+  void SetActivateExpectations(DataTypeController::ConfigureResult result) {
     EXPECT_CALL(start_callback_, Run(result, _, _));
   }
 
@@ -131,7 +131,7 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
                 WillOnce(Return(syncer::SyncError()));
   }
 
-  void SetStartFailExpectations(DataTypeController::StartResult result) {
+  void SetStartFailExpectations(DataTypeController::ConfigureResult result) {
     if (DataTypeController::IsUnrecoverableResult(result))
       EXPECT_CALL(*dtc_mock_.get(), RecordUnrecoverableError(_, _));
     EXPECT_CALL(*dtc_mock_.get(), CleanUpState());

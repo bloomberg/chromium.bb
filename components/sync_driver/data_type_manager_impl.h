@@ -68,7 +68,9 @@ class DataTypeManagerImpl : public DataTypeManager,
       const syncer::DataTypeAssociationStats& association_stats) OVERRIDE;
   virtual void OnModelAssociationDone(
       const DataTypeManager::ConfigureResult& result) OVERRIDE;
-  virtual void OnSingleDataTypeWillStop(syncer::ModelType type) OVERRIDE;
+  virtual void OnSingleDataTypeWillStop(
+      syncer::ModelType type,
+      const syncer::SyncError& error) OVERRIDE;
 
   // Used by unit tests. TODO(sync) : This would go away if we made
   // this class be able to do Dependency injection. crbug.com/129212.
@@ -80,8 +82,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   friend class TestDataTypeManager;
 
   // Abort configuration and stop all data types due to configuration errors.
-  void Abort(ConfigureStatus status,
-             const syncer::SyncError& error);
+  void Abort(ConfigureStatus status);
 
   // Returns the priority types (control + priority user types).
   // Virtual for overriding during tests.
