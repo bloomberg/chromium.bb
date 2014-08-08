@@ -1254,12 +1254,13 @@ void FrameView::scrollContentsIfNeeded()
 
 bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll)
 {
+    if (!contentsInCompositedLayer())
+        return false;
+
     if (!m_viewportConstrainedObjects || m_viewportConstrainedObjects->isEmpty()) {
         hostWindow()->scroll();
         return true;
     }
-
-    const bool isCompositedContentLayer = contentsInCompositedLayer();
 
     // Get the rects of the fixed objects visible in the rectToScroll
     Region regionToUpdate;
@@ -1289,29 +1290,24 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
 
         const RenderLayerModelObject* repaintContainer = layer->renderer()->containerForPaintInvalidation();
         if (repaintContainer && !repaintContainer->isRenderView()) {
-            // If the fixed-position layer is contained by a composited layer that is not its containing block,
-            // then we have to invalidate that enclosing layer, not the RenderView.
-            // FIXME: Why do we need to issue this invalidation? Won't the fixed position element just scroll
-            //        with the enclosing layer.
+            // Invalidate the old and new locations of fixed position elements that are not drawn into the RenderView.
             updateRect.moveBy(scrollPosition());
             IntRect previousRect = updateRect;
             previousRect.move(scrollDelta);
+            // FIXME: Rather than uniting the rects, we should just issue both invalidations.
             updateRect.unite(previousRect);
             layer->renderer()->invalidatePaintUsingContainer(repaintContainer, updateRect, InvalidationScroll);
         } else {
             // Coalesce the paint invalidations that will be issued to the renderView.
             updateRect = contentsToRootView(updateRect);
-            if (!isCompositedContentLayer && clipsPaintInvalidations())
-                updateRect.intersect(rectToScroll);
             if (!updateRect.isEmpty())
                 regionToUpdate.unite(updateRect);
         }
     }
 
-    // 1) scroll
     hostWindow()->scroll();
 
-    // 2) update the area of fixed objects that has been invalidated
+    // Invalidate the old and new locations of fixed position elements that are drawn into the RenderView.
     Vector<IntRect> subRectsToUpdate = regionToUpdate.rects();
     size_t viewportConstrainedObjectsCount = subRectsToUpdate.size();
     for (size_t i = 0; i < viewportConstrainedObjectsCount; ++i) {
@@ -1319,15 +1315,8 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
         IntRect scrolledRect = updateRect;
         scrolledRect.move(-scrollDelta);
         updateRect.unite(scrolledRect);
-        if (isCompositedContentLayer) {
-            updateRect = rootViewToContents(updateRect);
-            ASSERT(renderView());
-            renderView()->layer()->repainter().setBackingNeedsRepaintInRect(updateRect);
-            continue;
-        }
-        if (clipsPaintInvalidations())
-            updateRect.intersect(rectToScroll);
-        hostWindow()->invalidateContentsAndRootView(updateRect);
+        // FIXME: We should be able to issue these invalidations separately and before we actually scroll.
+        renderView()->layer()->repainter().setBackingNeedsRepaintInRect(rootViewToContents(updateRect));
     }
 
     return true;
