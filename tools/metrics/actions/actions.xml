@@ -11427,18 +11427,24 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="webapps.AddShortcut.AppShortcut">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>dfalcantara@chromium.org</owner>
+  <description>
+    Shortcut added to the homescreen for a page containing the
+    mobile-webapp-capable meta tag.
+  </description>
 </action>
 
 <action name="webapps.AddShortcut.AppShortcutApple">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>dfalcantara@chromium.org</owner>
+  <description>
+    Shortcut added to the homescreen for a page containing only the
+    apple-mobile-webapp-capable meta tag.
+  </description>
 </action>
 
 <action name="webapps.AddShortcut.Bookmark">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>dfalcantara@chromium.org</owner>
+  <description>Shortcut added to the homescreen for a bookmark.</description>
 </action>
 
 </actions>
