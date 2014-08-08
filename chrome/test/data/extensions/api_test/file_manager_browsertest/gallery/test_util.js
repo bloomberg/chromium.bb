@@ -145,3 +145,13 @@ function sendKeyDown(appWindow, query, keyIdentifier) {
           'keydown',
           {bubbles: true, keyIdentifier: keyIdentifier}));
 }
+
+/**
+ * Observes window errors that should fail the browser tests.
+ * @param {DOMWindow} window Windows to be obserbed.
+ */
+function observeWindowError(window) {
+  window.onerror = function(error) {
+    chrome.test.fail('window.onerror: ' + error);
+  };
+}

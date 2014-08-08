@@ -28,12 +28,14 @@ function waitForPressEnterMessage(appWindow) {
  */
 function setupPhotoEditor(testVolumeName, volumeType) {
   // Lauch the gallery.
+  observeWindowError(window);
   var launchedPromise = launchWithTestEntries(
       testVolumeName,
       volumeType,
       [ENTRIES.desktop]);
   return launchedPromise.then(function(args) {
     var appWindow = args.appWindow;
+    observeWindowError(appWindow.contentWindow);
 
     // Show the slide image.
     var slideImagePromise = waitForSlideImage(
@@ -90,7 +92,7 @@ function rotateImage(testVolumeName, volumeType) {
 }
 
 /**
- * Tests to crop an image.
+ * Tests to crop an image and undoes it.
  *
  * @param {string} testVolumeName Test volume name passed to the addEntries
  *     function. Either 'drive' or 'local'.
@@ -122,6 +124,17 @@ function cropImage(testVolumeName, volumeType) {
               appWindow.contentWindow.document,
               533,
               400,
+              'My Desktop Background');
+        }).
+        then(function() {
+          return waitAndClickElement(
+              appWindow, '.gallery:not([locked]) button.undo');
+        }).
+        then(function() {
+          return waitForSlideImage(
+              appWindow.contentWindow.document,
+              800,
+              600,
               'My Desktop Background');
         });
   });

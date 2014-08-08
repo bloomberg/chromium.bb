@@ -643,7 +643,7 @@ ImageView.prototype.animateAndReplace = function(canvas, imageCropRect) {
       imageCropRect);
 
   // Animate to the transformed state.
-  this.setTransform_(oldScreenImage, this,viewport_, effect);
+  this.setTransform_(oldScreenImage, this.viewport_, effect);
   setTimeout(setFade.bind(null, false), 0);
   setTimeout(function() {
     if (oldScreenImage.parentNode)
