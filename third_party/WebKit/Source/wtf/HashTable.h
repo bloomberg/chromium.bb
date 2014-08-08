@@ -491,7 +491,14 @@ namespace WTF {
 
         bool shouldExpand() const { return (m_keyCount + m_deletedCount) * m_maxLoad >= m_tableSize; }
         bool mustRehashInPlace() const { return m_keyCount * m_minLoad < m_tableSize * 2; }
-        bool shouldShrink() const { return m_keyCount * m_minLoad < m_tableSize && m_tableSize > KeyTraits::minimumTableSize; }
+        bool shouldShrink() const
+        {
+            // isAllocationAllowed check should be at the last because it's
+            // expensive.
+            return m_keyCount * m_minLoad < m_tableSize
+                && m_tableSize > KeyTraits::minimumTableSize
+                && Allocator::isAllocationAllowed();
+        }
         ValueType* expand(ValueType* entry = 0);
         void shrink() { rehash(m_tableSize / 2, 0); }
 

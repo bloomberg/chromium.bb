@@ -1176,6 +1176,7 @@ void HeapPage<Header>::sweep()
     Address startOfGap = payload();
     for (Address headerAddress = startOfGap; headerAddress < end(); ) {
         BasicObjectHeader* basicHeader = reinterpret_cast<BasicObjectHeader*>(headerAddress);
+        ASSERT(basicHeader->size() > 0);
         ASSERT(basicHeader->size() < blinkPagePayloadSize());
 
         if (basicHeader->isFree()) {

@@ -1502,6 +1502,11 @@ public:
         ASSERT_NOT_REACHED();
     }
 
+    static bool isAllocationAllowed()
+    {
+        return ThreadState::current()->isAllocationAllowed();
+    }
+
     static void markUsingGCInfo(Visitor* visitor, const void* buffer)
     {
         visitor->mark(buffer, FinalizedHeapObjectHeader::fromPayload(buffer)->traceCallback());
