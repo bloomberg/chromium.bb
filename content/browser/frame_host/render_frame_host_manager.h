@@ -459,6 +459,10 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // schedule new navigations in its swapped out RenderFrameHosts after this.
   void RendererProcessClosing(RenderProcessHost* render_process_host);
 
+  // Helper method to delete a RenderFrameProxyHost from the list, if one exists
+  // for the given |instance|.
+  void DeleteRenderFrameProxyHost(SiteInstance* instance);
+
   // For use in creating RenderFrameHosts.
   FrameTreeNode* frame_tree_node_;
 

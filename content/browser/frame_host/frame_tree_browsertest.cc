@@ -187,6 +187,10 @@ IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()->root();
 
+  // There should not be a proxy for the root's own SiteInstance.
+  SiteInstance* root_instance = root->current_frame_host()->GetSiteInstance();
+  EXPECT_FALSE(root->render_manager()->GetRenderFrameProxyHost(root_instance));
+
   // Load same-site page into iframe.
   GURL http_url(test_server()->GetURL("files/title1.html"));
   NavigateFrameToURL(root->child_at(0), http_url);
@@ -204,20 +208,24 @@ IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
   // Ensure that we have created a new process for the subframe.
   ASSERT_EQ(1U, root->child_count());
   FrameTreeNode* child = root->child_at(0);
-  SiteInstance* site_instance = child->current_frame_host()->GetSiteInstance();
+  SiteInstance* child_instance = child->current_frame_host()->GetSiteInstance();
   RenderViewHost* rvh = child->current_frame_host()->render_view_host();
   RenderProcessHost* rph = child->current_frame_host()->GetProcess();
 
   EXPECT_NE(shell()->web_contents()->GetRenderViewHost(), rvh);
-  EXPECT_NE(shell()->web_contents()->GetSiteInstance(), site_instance);
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(), child_instance);
   EXPECT_NE(shell()->web_contents()->GetRenderProcessHost(), rph);
 
   // Ensure that the root node has a proxy for the child node's SiteInstance.
-  EXPECT_TRUE(root->render_manager()->proxy_hosts_[site_instance->GetId()]);
+  EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(child_instance));
 
   // Also ensure that the child has a proxy for the root node's SiteInstance.
-  EXPECT_TRUE(child->render_manager()->proxy_hosts_[
-              root->current_frame_host()->GetSiteInstance()->GetId()]);
+  EXPECT_TRUE(child->render_manager()->GetRenderFrameProxyHost(root_instance));
+
+  // The nodes should not have proxies for their own SiteInstance.
+  EXPECT_FALSE(root->render_manager()->GetRenderFrameProxyHost(root_instance));
+  EXPECT_FALSE(
+      child->render_manager()->GetRenderFrameProxyHost(child_instance));
 }
 
 }  // namespace content

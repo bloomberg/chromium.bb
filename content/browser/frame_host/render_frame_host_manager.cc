@@ -529,12 +529,7 @@ void RenderFrameHostManager::SwapOutOldPage() {
   // Create the RenderFrameProxyHost that will replace the
   // RenderFrameHost which is swapping out. If one exists, ensure it is deleted
   // from the map and not leaked.
-  RenderFrameProxyHostMap::iterator iter = proxy_hosts_.find(
-      render_frame_host_->GetSiteInstance()->GetId());
-  if (iter != proxy_hosts_.end()) {
-    delete iter->second;
-    proxy_hosts_.erase(iter);
-  }
+  DeleteRenderFrameProxyHost(render_frame_host_->GetSiteInstance());
 
   RenderFrameProxyHost* proxy = new RenderFrameProxyHost(
       render_frame_host_->GetSiteInstance(), frame_tree_node_);
@@ -1457,6 +1452,14 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
 
   // Otherwise the same SiteInstance can be used.  Navigate render_frame_host_.
   DCHECK(!cross_navigation_pending_);
+
+  // It's possible to swap out the current RFH and then decide to navigate in it
+  // anyway (e.g., a cross-process navigation that redirects back to the
+  // original site).  In that case, we have a proxy for the current RFH but
+  // haven't deleted it yet.  The new navigation will swap it back in, so we can
+  // delete the proxy.
+  DeleteRenderFrameProxyHost(new_instance);
+
   if (ShouldReuseWebUI(current_entry, &entry)) {
     pending_web_ui_.reset();
     pending_and_current_web_ui_ = web_ui_->AsWeakPtr();
@@ -1589,6 +1592,15 @@ RenderFrameProxyHost* RenderFrameHostManager::GetRenderFrameProxyHost(
     return iter->second;
 
   return NULL;
+}
+
+void RenderFrameHostManager::DeleteRenderFrameProxyHost(
+    SiteInstance* instance) {
+  RenderFrameProxyHostMap::iterator iter = proxy_hosts_.find(instance->GetId());
+  if (iter != proxy_hosts_.end()) {
+    delete iter->second;
+    proxy_hosts_.erase(iter);
+  }
 }
 
 }  // namespace content
