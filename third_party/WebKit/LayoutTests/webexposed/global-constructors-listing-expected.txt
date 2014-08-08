@@ -75,6 +75,7 @@ CompositionEvent
 ConvolverNode
 Counter
 Credential
+CredentialsContainer
 CustomEvent
 DOMError
 DOMException
