@@ -213,7 +213,7 @@ def main():
       'target_name': '%s',
       'type': 'executable',
       'dependencies': [
-        'boringssl',
+        'boringssl.gyp:boringssl',
       ],
       'sources': [
         '%s',
