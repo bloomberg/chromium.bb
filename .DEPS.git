@@ -110,7 +110,7 @@ deps = {
     'src/third_party/ots':
         Var('git_url') + '/external/ots.git@98897009f3ea8a5fa3e20a4a74977da7aaa8e61a',
     'src/third_party/pdfium':
-        'https://pdfium.googlesource.com/pdfium.git@465c2a84ba709d932040c9e80db508e93c138da6',
+        'https://pdfium.googlesource.com/pdfium.git@df449c0eb4b1fb5583da71265faf50a9a520be3c',
     'src/third_party/pyftpdlib/src':
         Var('git_url') + '/external/pyftpdlib.git@2be6d65e31c7ee6320d059f581f05ae8d89d7e45',
     'src/third_party/pywebsocket/src':
