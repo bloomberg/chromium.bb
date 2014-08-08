@@ -33,7 +33,7 @@
 #include "platform/PODIntervalTree.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
-#include "platform/graphics/WindRule.h"
+#include "platform/graphics/GraphicsTypes.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"

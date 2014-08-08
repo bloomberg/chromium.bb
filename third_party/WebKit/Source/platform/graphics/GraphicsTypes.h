@@ -29,6 +29,7 @@
 #include "platform/PlatformExport.h"
 #include "public/platform/WebBlendMode.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -106,6 +107,11 @@ enum ColorFilter {
     ColorFilterLuminanceToAlpha,
     ColorFilterSRGBToLinearRGB,
     ColorFilterLinearRGBToSRGB
+};
+
+enum WindRule {
+    RULE_NONZERO = SkPath::kWinding_FillType,
+    RULE_EVENODD = SkPath::kEvenOdd_FillType
 };
 
 PLATFORM_EXPORT String compositeOperatorName(CompositeOperator, blink::WebBlendMode);

@@ -31,7 +31,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/RoundedRect.h"
-#include "platform/graphics/WindRule.h"
+#include "platform/graphics/GraphicsTypes.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPathMeasure.h"
 #include "wtf/FastAllocBase.h"

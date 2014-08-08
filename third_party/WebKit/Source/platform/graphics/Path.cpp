@@ -68,7 +68,7 @@ bool Path::operator==(const Path& other) const
 
 bool Path::contains(const FloatPoint& point, WindRule rule) const
 {
-    return SkPathContainsPoint(m_path, point, rule == RULE_NONZERO ? SkPath::kWinding_FillType : SkPath::kEvenOdd_FillType);
+    return SkPathContainsPoint(m_path, point, static_cast<SkPath::FillType>(rule));
 }
 
 bool Path::strokeContains(const FloatPoint& point, const StrokeData& strokeData) const
@@ -277,9 +277,7 @@ WindRule Path::windRule() const
 
 void Path::setWindRule(const WindRule rule)
 {
-    m_path.setFillType(rule == RULE_EVENODD
-        ? SkPath::kEvenOdd_FillType
-        : SkPath::kWinding_FillType);
+    m_path.setFillType(static_cast<SkPath::FillType>(rule));
 }
 
 void Path::moveTo(const FloatPoint& point)

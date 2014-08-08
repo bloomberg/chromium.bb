@@ -1271,8 +1271,7 @@ void GraphicsContext::fillPath(const Path& pathToFill)
     SkPath& path = const_cast<SkPath&>(pathToFill.skPath());
     SkPath::FillType previousFillType = path.getFillType();
 
-    SkPath::FillType temporaryFillType =
-        immutableState()->fillRule() == RULE_EVENODD ? SkPath::kEvenOdd_FillType : SkPath::kWinding_FillType;
+    SkPath::FillType temporaryFillType = static_cast<SkPath::FillType>(immutableState()->fillRule());
     path.setFillType(temporaryFillType);
 
     drawPath(path, immutableState()->fillPaint());
@@ -1463,7 +1462,7 @@ void GraphicsContext::clipPath(const Path& pathToClip, WindRule clipRule)
     SkPath& path = const_cast<SkPath&>(pathToClip.skPath());
     SkPath::FillType previousFillType = path.getFillType();
 
-    SkPath::FillType temporaryFillType = clipRule == RULE_EVENODD ? SkPath::kEvenOdd_FillType : SkPath::kWinding_FillType;
+    SkPath::FillType temporaryFillType = static_cast<SkPath::FillType>(clipRule);
     path.setFillType(temporaryFillType);
     clipPath(path, AntiAliased);
 
@@ -1500,7 +1499,7 @@ void GraphicsContext::canvasClip(const Path& pathToClip, WindRule clipRule)
     SkPath& path = const_cast<SkPath&>(pathToClip.skPath());
     SkPath::FillType previousFillType = path.getFillType();
 
-    SkPath::FillType temporaryFillType = clipRule == RULE_EVENODD ? SkPath::kEvenOdd_FillType : SkPath::kWinding_FillType;
+    SkPath::FillType temporaryFillType = static_cast<SkPath::FillType>(clipRule);
     path.setFillType(temporaryFillType);
     clipPath(path);
 

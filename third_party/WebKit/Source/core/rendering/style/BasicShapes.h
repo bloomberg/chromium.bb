@@ -33,7 +33,7 @@
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "platform/Length.h"
 #include "platform/LengthSize.h"
-#include "platform/graphics/WindRule.h"
+#include "platform/graphics/GraphicsTypes.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"

@@ -31,7 +31,7 @@
 #define CSSBasicShapes_h
 
 #include "core/css/CSSPrimitiveValue.h"
-#include "platform/graphics/WindRule.h"
+#include "platform/graphics/GraphicsTypes.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"

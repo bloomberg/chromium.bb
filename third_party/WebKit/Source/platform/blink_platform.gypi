@@ -640,7 +640,6 @@
       'graphics/ThreadSafeDataTransport.h',
       'graphics/UnacceleratedImageBufferSurface.cpp',
       'graphics/UnacceleratedImageBufferSurface.h',
-      'graphics/WindRule.h',
       'image-decoders/ImageDecoder.cpp',
       'image-decoders/ImageDecoder.h',
       'image-decoders/ImageFrame.cpp',
