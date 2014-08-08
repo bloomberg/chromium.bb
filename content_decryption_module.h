@@ -193,7 +193,8 @@ struct InputBuffer_1 {
 };
 
 // Represents an input buffer to be decrypted (and possibly decoded). It does
-// not own any pointers in this struct.
+// not own any pointers in this struct. If |iv_size| = 0, the data is
+// unencrypted.
 struct InputBuffer_2 {
   InputBuffer_2()
       : data(NULL),
