@@ -866,8 +866,16 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
 // permanently install an ephemeral app. However, there may be cases where an
 // install occurs through the usual route of installing from the Web Store (due
 // to race conditions). Ensure that the app is still installed correctly.
+#if defined(OS_WIN)
+// Disabled on Windows due to failures. See crbug.com/401028
+#define MAYBE_ReplaceEphemeralAppWithInstalledApp \
+    DISABLED_ReplaceEphemeralAppWithInstalledApp
+#else
+#define MAYBE_ReplaceEphemeralAppWithInstalledApp \
+    ReplaceEphemeralAppWithInstalledApp
+#endif
 IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
-                       ReplaceEphemeralAppWithInstalledApp) {
+                       MAYBE_ReplaceEphemeralAppWithInstalledApp) {
   InitSyncService();
 
   const Extension* app = InstallAndLaunchEphemeralApp(kNotificationsTestApp);
