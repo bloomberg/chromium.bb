@@ -397,13 +397,14 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
   for (size_t i = 0; i < delegated_render_pass->quad_list.size(); ++i) {
     const DrawQuad* delegated_quad = delegated_render_pass->quad_list[i];
 
+    bool is_root_delegated_render_pass =
+        delegated_render_pass == render_passes_in_draw_order_.back();
+
     if (delegated_quad->shared_quad_state != delegated_shared_quad_state) {
       delegated_shared_quad_state = delegated_quad->shared_quad_state;
       output_shared_quad_state = render_pass->CreateAndAppendSharedQuadState();
       output_shared_quad_state->CopyFrom(delegated_shared_quad_state);
 
-      bool is_root_delegated_render_pass =
-          delegated_render_pass == render_passes_in_draw_order_.back();
       if (is_root_delegated_render_pass) {
         gfx::Transform delegated_frame_to_target_transform = draw_transform();
         delegated_frame_to_target_transform.Scale(inverse_device_scale_factor_,
@@ -436,9 +437,17 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
     }
     DCHECK(output_shared_quad_state);
 
+    gfx::Transform quad_content_to_delegated_target_space =
+        output_shared_quad_state->content_to_target_transform;
+    if (!is_root_delegated_render_pass) {
+      quad_content_to_delegated_target_space.ConcatTransform(
+          render_pass->transform_to_root_target);
+      quad_content_to_delegated_target_space.ConcatTransform(draw_transform());
+    }
+
     gfx::Rect quad_visible_rect = occlusion_tracker.UnoccludedContentRect(
-        delegated_quad->visible_rect,
-        output_shared_quad_state->content_to_target_transform);
+        delegated_quad->visible_rect, quad_content_to_delegated_target_space);
+
     if (quad_visible_rect.IsEmpty())
       continue;
 
