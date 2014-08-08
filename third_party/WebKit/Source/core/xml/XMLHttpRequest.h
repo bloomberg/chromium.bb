@@ -79,7 +79,7 @@ public:
         ResponseTypeDocument,
         ResponseTypeBlob,
         ResponseTypeArrayBuffer,
-        ResponseTypeStream
+        ResponseTypeLegacyStream
     };
 
     virtual void contextDestroyed() OVERRIDE;

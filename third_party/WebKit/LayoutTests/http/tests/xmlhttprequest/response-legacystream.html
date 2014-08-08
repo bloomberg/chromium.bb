@@ -4,14 +4,14 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script type="text/javascript">
-var test = async_test("Test response of XMLHttpRequest with responseType set to 'stream' for various readyState.");
+var test = async_test("Test response of XMLHttpRequest with responseType set to 'legacystream' for various readyState.");
 
 test.step(function()
 {
     var xhr = new XMLHttpRequest;
 
-    xhr.responseType = "stream";
-    assert_equals(xhr.responseType, "stream", "xhr.responseType");
+    xhr.responseType = "legacystream";
+    assert_equals(xhr.responseType, "legacystream", "xhr.responseType");
 
     assert_equals(xhr.readyState, xhr.UNSENT, "xhr.readyState");
     assert_equals(xhr.response, null, "xhr.response during UNSENT");

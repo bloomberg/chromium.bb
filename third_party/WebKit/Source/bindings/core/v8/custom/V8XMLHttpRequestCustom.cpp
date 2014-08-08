@@ -130,7 +130,7 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(const v8::PropertyCallbackI
             return;
         }
 
-    case XMLHttpRequest::ResponseTypeStream:
+    case XMLHttpRequest::ResponseTypeLegacyStream:
         {
             Stream* stream = xmlHttpRequest->responseStream();
             v8SetReturnValueFast(info, stream, xmlHttpRequest);

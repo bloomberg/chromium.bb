@@ -13,9 +13,9 @@
               var mediaURL = MediaSourceUtil.SEGMENT_INFO.url;
               var xhr = new XMLHttpRequest();
               xhr.open('GET', mediaURL, true);
-              xhr.responseType = 'stream';
+              xhr.responseType = 'legacystream';
 
-              assert_equals(xhr.responseType, "stream", "Verify response type was set.");
+              assert_equals(xhr.responseType, "legacystream", "Verify response type was set.");
 
               return xhr;
           }

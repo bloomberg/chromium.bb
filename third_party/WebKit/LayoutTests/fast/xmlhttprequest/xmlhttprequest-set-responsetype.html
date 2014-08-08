@@ -10,7 +10,7 @@ var xhr = new XMLHttpRequest();
 xhr.open('GET', 'resources/plist.app', true);
 
 // Setting valid type does change the responseType value.
-["", "arraybuffer", "blob", "document", "json", "text", "stream"].forEach(function(type) {
+["", "arraybuffer", "blob", "document", "json", "text", "legacystream"].forEach(function(type) {
     xhr.responseType = type;
     shouldBeEqualToString('xhr.responseType', type);
 });

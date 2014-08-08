@@ -282,7 +282,7 @@ ArrayBuffer* XMLHttpRequest::responseArrayBuffer()
 
 Stream* XMLHttpRequest::responseStream()
 {
-    ASSERT(m_responseTypeCode == ResponseTypeStream);
+    ASSERT(m_responseTypeCode == ResponseTypeLegacyStream);
 
     if (m_error || (m_state != LOADING && m_state != DONE))
         return 0;
@@ -336,9 +336,9 @@ void XMLHttpRequest::setResponseType(const String& responseType, ExceptionState&
         m_responseTypeCode = ResponseTypeBlob;
     } else if (responseType == "arraybuffer") {
         m_responseTypeCode = ResponseTypeArrayBuffer;
-    } else if (responseType == "stream") {
+    } else if (responseType == "legacystream") {
         if (RuntimeEnabledFeatures::streamEnabled())
-            m_responseTypeCode = ResponseTypeStream;
+            m_responseTypeCode = ResponseTypeLegacyStream;
         else
             return;
     } else {
@@ -361,8 +361,8 @@ String XMLHttpRequest::responseType()
         return "blob";
     case ResponseTypeArrayBuffer:
         return "arraybuffer";
-    case ResponseTypeStream:
-        return "stream";
+    case ResponseTypeLegacyStream:
+        return "legacystream";
     }
     return "";
 }
@@ -1289,7 +1289,7 @@ void XMLHttpRequest::didReceiveData(const char* data, int len)
         if (!m_binaryResponseBuilder)
             m_binaryResponseBuilder = SharedBuffer::create();
         m_binaryResponseBuilder->append(data, len);
-    } else if (m_responseTypeCode == ResponseTypeStream) {
+    } else if (m_responseTypeCode == ResponseTypeLegacyStream) {
         if (!m_responseStream)
             m_responseStream = Stream::create(executionContext(), responseMIMEType());
         m_responseStream->addData(data, len);
