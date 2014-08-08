@@ -106,6 +106,7 @@
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
           '<(PRODUCT_DIR)/libexif.dll',
           '<(PRODUCT_DIR)/osmesa.dll',
+          '<(PRODUCT_DIR)/verifier_test_dll.dll',
         ],
         'isolate_dependency_untracked': [
           '../ppapi/lib/gl/include/KHR/',
