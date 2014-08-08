@@ -36,8 +36,8 @@ class ExecutionContext;
 // you should keep the wrapper alive as long as a promise may be
 // settled.
 //
-// ScriptPromiseProperty only supports the main world.
-// FIXME: Implement support for isolated worlds.
+// To avoid clobbering hidden values, a holder should only have one
+// ScriptPromiseProperty object for a given name at a time. See reset.
 template<typename HolderType, typename ResolvedType, typename RejectedType>
 class ScriptPromiseProperty : public ScriptPromisePropertyBase {
     WTF_MAKE_NONCOPYABLE(ScriptPromiseProperty);
@@ -61,6 +61,12 @@ public:
 
     template<typename PassRejectedType>
     void reject(PassRejectedType);
+
+    // Resets this property by unregistering the Promise property from the
+    // holder wrapper. Resets the internal state to Pending and clears the
+    // resolved and the rejected values.
+    // This method keeps the holder object and the property name.
+    void reset();
 
     virtual void trace(Visitor*) OVERRIDE;
 
@@ -129,6 +135,14 @@ v8::Handle<v8::Value> ScriptPromiseProperty<HolderType, ResolvedType, RejectedTy
 {
     ASSERT(state() == Rejected);
     return V8ValueTraits<RejectedType>::toV8Value(m_rejected, creationContext, isolate);
+}
+
+template<typename HolderType, typename ResolvedType, typename RejectedType>
+void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::reset()
+{
+    resetBase();
+    m_resolved = ResolvedType();
+    m_rejected = RejectedType();
 }
 
 template<typename HolderType, typename ResolvedType, typename RejectedType>

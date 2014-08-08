@@ -56,11 +56,14 @@ protected:
     virtual v8::Handle<v8::Value> resolvedValue(v8::Handle<v8::Object> creationContext, v8::Isolate*) = 0;
     virtual v8::Handle<v8::Value> rejectedValue(v8::Handle<v8::Object> creationContext, v8::Isolate*) = 0;
 
+    void resetBase();
+
 private:
     typedef Vector<OwnPtr<ScopedPersistent<v8::Object> > > WeakPersistentSet;
 
     void resolveOrRejectInternal(v8::Handle<v8::Promise::Resolver>);
     v8::Local<v8::Object> ensureHolderWrapper(ScriptState*);
+    void clearWrappers();
 
     v8::Handle<v8::String> promiseName();
     v8::Handle<v8::String> resolverName();

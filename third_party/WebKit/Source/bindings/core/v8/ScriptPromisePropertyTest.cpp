@@ -76,7 +76,9 @@ private:
 
 class RefCountedHolder : public RefCountedScriptWrappable {
 public:
-    typedef ScriptPromiseProperty<RefCountedScriptWrappable*, RefCountedScriptWrappable*, RefCountedScriptWrappable*> Property;
+    // Do not resolve or reject the property with the holder itself. It leads
+    // to a leak.
+    typedef ScriptPromiseProperty<RefCountedScriptWrappable*, RefPtr<RefCountedScriptWrappable>, RefPtr<RefCountedScriptWrappable> > Property;
     static PassRefPtr<RefCountedHolder> create(ExecutionContext* executionContext)
     {
         return adoptRef(new RefCountedHolder(executionContext));
@@ -373,6 +375,43 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Resolve_DeadContext)
     v8::Isolate::GetCurrent()->RunMicrotasks();
 }
 
+TEST_F(ScriptPromisePropertyGarbageCollectedTest, Reset)
+{
+    ScriptPromise oldPromise, newPromise;
+    ScriptValue oldActual, newActual;
+    GarbageCollectedScriptWrappable* oldValue = new GarbageCollectedScriptWrappable("old");
+    GarbageCollectedScriptWrappable* newValue = new GarbageCollectedScriptWrappable("new");
+    size_t nOldResolveCalls = 0;
+    size_t nNewRejectCalls = 0;
+
+    {
+        ScriptState::Scope scope(mainScriptState());
+        property()->resolve(oldValue);
+        oldPromise = property()->promise(mainWorld());
+        oldPromise.then(stub(oldActual, nOldResolveCalls), notReached());
+    }
+
+    property()->reset();
+
+    {
+        ScriptState::Scope scope(mainScriptState());
+        newPromise = property()->promise(mainWorld());
+        newPromise.then(notReached(), stub(newActual, nNewRejectCalls));
+        property()->reject(newValue);
+    }
+
+    EXPECT_EQ(0u, nOldResolveCalls);
+    EXPECT_EQ(0u, nNewRejectCalls);
+
+    isolate()->RunMicrotasks();
+    EXPECT_EQ(1u, nOldResolveCalls);
+    EXPECT_EQ(1u, nNewRejectCalls);
+    EXPECT_NE(oldPromise, newPromise);
+    EXPECT_EQ(wrap(mainWorld(), oldValue), oldActual);
+    EXPECT_EQ(wrap(mainWorld(), newValue), newActual);
+    EXPECT_NE(oldActual, newActual);
+}
+
 // Tests that ScriptPromiseProperty works with a ref-counted holder.
 class ScriptPromisePropertyRefCountedTest : public ScriptPromisePropertyTestBase, public ::testing::Test {
 public:
@@ -420,12 +459,40 @@ TEST_F(ScriptPromisePropertyRefCountedTest, Reject)
     }
 
     RefPtr<RefCountedScriptWrappable> reason = RefCountedScriptWrappable::create("reason");
-    property()->reject(reason.get());
+    property()->reject(reason);
     EXPECT_EQ(Property::Rejected, property()->state());
 
     isolate()->RunMicrotasks();
     EXPECT_EQ(1u, nRejectCalls);
     EXPECT_EQ(wrap(mainWorld(), reason), actual);
+}
+
+TEST_F(ScriptPromisePropertyRefCountedTest, ReSolveAndReset)
+{
+    RefPtr<RefCountedScriptWrappable> value = RefCountedScriptWrappable::create("value");
+
+    {
+        ScriptState::Scope scope(mainScriptState());
+        property()->resolve(value);
+    }
+
+    EXPECT_EQ(2, value->refCount());
+    property()->reset();
+    EXPECT_EQ(1, value->refCount());
+}
+
+TEST_F(ScriptPromisePropertyRefCountedTest, RejectAndReset)
+{
+    RefPtr<RefCountedScriptWrappable> value = RefCountedScriptWrappable::create("value");
+
+    {
+        ScriptState::Scope scope(mainScriptState());
+        property()->reject(value.get());
+    }
+
+    EXPECT_EQ(2, value->refCount());
+    property()->reset();
+    EXPECT_EQ(1, value->refCount());
 }
 
 // Tests that ScriptPromiseProperty works with a non ScriptWrappable resolution

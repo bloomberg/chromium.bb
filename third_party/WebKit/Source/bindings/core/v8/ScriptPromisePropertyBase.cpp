@@ -23,14 +23,7 @@ ScriptPromisePropertyBase::ScriptPromisePropertyBase(ExecutionContext* execution
 
 ScriptPromisePropertyBase::~ScriptPromisePropertyBase()
 {
-    v8::HandleScope handleScope(m_isolate);
-    for (WeakPersistentSet::iterator i = m_wrappers.begin(); i != m_wrappers.end(); ++i) {
-        v8::Local<v8::Object> wrapper = (*i)->newLocal(m_isolate);
-        if (!wrapper.IsEmpty()) {
-            wrapper->DeleteHiddenValue(resolverName());
-            wrapper->DeleteHiddenValue(promiseName());
-        }
-    }
+    clearWrappers();
 }
 
 static void clearHandle(const v8::WeakCallbackData<v8::Object, ScopedPersistent<v8::Object> >& data)
@@ -106,6 +99,12 @@ void ScriptPromisePropertyBase::resolveOrReject(State targetState)
     }
 }
 
+void ScriptPromisePropertyBase::resetBase()
+{
+    clearWrappers();
+    m_state = Pending;
+}
+
 void ScriptPromisePropertyBase::resolveOrRejectInternal(v8::Handle<v8::Promise::Resolver> resolver)
 {
     switch (m_state) {
@@ -146,6 +145,19 @@ v8::Local<v8::Object> ScriptPromisePropertyBase::ensureHolderWrapper(ScriptState
     weakPersistent->setWeak(weakPersistent.get(), &clearHandle);
     m_wrappers.append(weakPersistent.release());
     return wrapper;
+}
+
+void ScriptPromisePropertyBase::clearWrappers()
+{
+    v8::HandleScope handleScope(m_isolate);
+    for (WeakPersistentSet::iterator i = m_wrappers.begin(); i != m_wrappers.end(); ++i) {
+        v8::Local<v8::Object> wrapper = (*i)->newLocal(m_isolate);
+        if (!wrapper.IsEmpty()) {
+            wrapper->DeleteHiddenValue(resolverName());
+            wrapper->DeleteHiddenValue(promiseName());
+        }
+    }
+    m_wrappers.clear();
 }
 
 v8::Handle<v8::String> ScriptPromisePropertyBase::promiseName()
