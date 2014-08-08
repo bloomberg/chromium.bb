@@ -1129,7 +1129,6 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
                 ],
                 [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', 'txt', 'fast/dom/prototype-taco.html']],
                 ['git', 'cl', 'upload', '-f'],
-                ['git', 'cl', 'set_close'],
             ])
         finally:
             builders._exact_matches = old_exact_matches
