@@ -84,7 +84,12 @@ bool AddHash(const char* sha1_hash,
 }  // namespace
 
 TransportSecurityState::TransportSecurityState()
-  : delegate_(NULL) {
+    : delegate_(NULL), enable_static_pins_(true) {
+// Static pinning is only enabled for official builds to make sure that
+// others don't end up with pins that cannot be easily updated.
+#if !defined(OFFICIAL_BUILD) || defined(OS_ANDROID) || defined(OS_IOS)
+  enable_static_pins_ = false;
+#endif
   DCHECK(CalledOnValidThread());
 }
 
@@ -118,21 +123,36 @@ bool TransportSecurityState::ShouldUpgradeToSSL(const std::string& host,
   return false;
 }
 
-bool TransportSecurityState::CheckPublicKeyPins(const std::string& host,
-                                                bool sni_enabled,
-                                                const HashValueVector& hashes,
-                                                std::string* failure_log) {
-  DomainState dynamic_state;
-  if (GetDynamicDomainState(host, &dynamic_state))
-    return dynamic_state.CheckPublicKeyPins(hashes, failure_log);
-
-  DomainState static_state;
-  if (GetStaticDomainState(host, sni_enabled, &static_state) &&
-      static_state.CheckPublicKeyPins(hashes, failure_log)) {
-      return true;
+bool TransportSecurityState::CheckPublicKeyPins(
+    const std::string& host,
+    bool sni_available,
+    bool is_issued_by_known_root,
+    const HashValueVector& public_key_hashes,
+    std::string* pinning_failure_log) {
+  // Perform pin validation if, and only if, all these conditions obtain:
+  //
+  // * the server's certificate chain chains up to a known root (i.e. not a
+  //   user-installed trust anchor); and
+  // * the build is recent (very old builds should fail open so that users
+  //   have some chance to recover).
+  // * the server actually has public key pins.
+  //
+  // TODO(rsleevi): http://crbug.com/391032 - Only disable static HPKP if the
+  // build is not timely.
+  if (!is_issued_by_known_root || !IsBuildTimely() ||
+      !HasPublicKeyPins(host, sni_available)) {
+    return true;
   }
 
-  return false;
+  bool pins_are_valid = CheckPublicKeyPinsImpl(
+      host, sni_available, public_key_hashes, pinning_failure_log);
+  if (!pins_are_valid) {
+    LOG(ERROR) << *pinning_failure_log;
+    ReportUMAOnPinFailure(host);
+  }
+
+  UMA_HISTOGRAM_BOOLEAN("Net.PublicKeyPinSuccess", pins_are_valid);
+  return pins_are_valid;
 }
 
 bool TransportSecurityState::HasPublicKeyPins(const std::string& host,
@@ -549,9 +569,13 @@ struct HSTSPreload {
   SecondLevelDomainName second_level_domain_name;
 };
 
-static bool HasPreload(const struct HSTSPreload* entries, size_t num_entries,
-                       const std::string& canonicalized_host, size_t i,
-                       TransportSecurityState::DomainState* out, bool* ret) {
+static bool HasPreload(const struct HSTSPreload* entries,
+                       size_t num_entries,
+                       const std::string& canonicalized_host,
+                       size_t i,
+                       bool enable_static_pins,
+                       TransportSecurityState::DomainState* out,
+                       bool* ret) {
   for (size_t j = 0; j < num_entries; j++) {
     if (entries[j].length == canonicalized_host.size() - i &&
         memcmp(entries[j].dns_name, &canonicalized_host[i],
@@ -561,26 +585,29 @@ static bool HasPreload(const struct HSTSPreload* entries, size_t num_entries,
       } else {
         out->sts.include_subdomains = entries[j].include_subdomains;
         out->sts.last_observed = base::GetBuildTime();
-        out->pkp.include_subdomains = entries[j].include_subdomains;
-        out->pkp.last_observed = base::GetBuildTime();
         *ret = true;
         out->sts.upgrade_mode =
             TransportSecurityState::DomainState::MODE_FORCE_HTTPS;
         if (!entries[j].https_required)
           out->sts.upgrade_mode =
               TransportSecurityState::DomainState::MODE_DEFAULT;
-        if (entries[j].pins.required_hashes) {
-          const char* const* sha1_hash = entries[j].pins.required_hashes;
-          while (*sha1_hash) {
-            AddHash(*sha1_hash, &out->pkp.spki_hashes);
-            sha1_hash++;
+
+        if (enable_static_pins) {
+          out->pkp.include_subdomains = entries[j].include_subdomains;
+          out->pkp.last_observed = base::GetBuildTime();
+          if (entries[j].pins.required_hashes) {
+            const char* const* sha1_hash = entries[j].pins.required_hashes;
+            while (*sha1_hash) {
+              AddHash(*sha1_hash, &out->pkp.spki_hashes);
+              sha1_hash++;
+            }
           }
-        }
-        if (entries[j].pins.excluded_hashes) {
-          const char* const* sha1_hash = entries[j].pins.excluded_hashes;
-          while (*sha1_hash) {
-            AddHash(*sha1_hash, &out->pkp.bad_spki_hashes);
-            sha1_hash++;
+          if (entries[j].pins.excluded_hashes) {
+            const char* const* sha1_hash = entries[j].pins.excluded_hashes;
+            while (*sha1_hash) {
+              AddHash(*sha1_hash, &out->pkp.bad_spki_hashes);
+              sha1_hash++;
+            }
           }
         }
       }
@@ -763,6 +790,24 @@ bool TransportSecurityState::IsBuildTimely() {
   return (base::Time::Now() - build_time).InDays() < 70 /* 10 weeks */;
 }
 
+bool TransportSecurityState::CheckPublicKeyPinsImpl(
+    const std::string& host,
+    bool sni_enabled,
+    const HashValueVector& hashes,
+    std::string* failure_log) {
+  DomainState dynamic_state;
+  if (GetDynamicDomainState(host, &dynamic_state))
+    return dynamic_state.CheckPublicKeyPins(hashes, failure_log);
+
+  DomainState static_state;
+  if (GetStaticDomainState(host, sni_enabled, &static_state))
+    return static_state.CheckPublicKeyPins(hashes, failure_log);
+
+  // HasPublicKeyPins should have returned true in order for this method
+  // to have been called, so if we fall through to here, it's an error.
+  return false;
+}
+
 bool TransportSecurityState::GetStaticDomainState(const std::string& host,
                                                   bool sni_enabled,
                                                   DomainState* out) const {
@@ -781,15 +826,22 @@ bool TransportSecurityState::GetStaticDomainState(const std::string& host,
                                canonicalized_host.size() - i);
     out->domain = DNSDomainToString(host_sub_chunk);
     bool ret;
-    if (is_build_timely &&
-        HasPreload(kPreloadedSTS, kNumPreloadedSTS, canonicalized_host, i, out,
-                   &ret)) {
+    if (is_build_timely && HasPreload(kPreloadedSTS,
+                                      kNumPreloadedSTS,
+                                      canonicalized_host,
+                                      i,
+                                      enable_static_pins_,
+                                      out,
+                                      &ret)) {
       return ret;
     }
-    if (sni_enabled &&
-        is_build_timely &&
-        HasPreload(kPreloadedSNISTS, kNumPreloadedSNISTS, canonicalized_host, i,
-                   out, &ret)) {
+    if (sni_enabled && is_build_timely && HasPreload(kPreloadedSNISTS,
+                                                     kNumPreloadedSNISTS,
+                                                     canonicalized_host,
+                                                     i,
+                                                     enable_static_pins_,
+                                                     out,
+                                                     &ret)) {
       return ret;
     }
   }

@@ -506,6 +506,7 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPOnly) {
   // docs.google.com has preloaded pins.
   const bool sni_enabled = true;
   std::string domain = "docs.google.com";
+  state.enable_static_pins_ = true;
   EXPECT_TRUE(
       state.GetStaticDomainState(domain, sni_enabled, &static_domain_state));
   EXPECT_GT(static_domain_state.pkp.spki_hashes.size(), 1UL);
@@ -554,8 +555,9 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPOnly) {
   HashValueVector hashes;
   hashes.push_back(good_hash);
   std::string failure_log;
-  EXPECT_TRUE(
-      state.CheckPublicKeyPins(domain, sni_enabled, hashes, &failure_log));
+  const bool is_issued_by_known_root = true;
+  EXPECT_TRUE(state.CheckPublicKeyPins(
+      domain, sni_enabled, is_issued_by_known_root, hashes, &failure_log));
 
   TransportSecurityState::DomainState new_dynamic_domain_state;
   EXPECT_TRUE(state.GetDynamicDomainState(domain, &new_dynamic_domain_state));
@@ -585,6 +587,7 @@ TEST_F(HttpSecurityHeadersTest, MAYBE_UpdateDynamicPKPMaxAge0) {
   // docs.google.com has preloaded pins.
   const bool sni_enabled = true;
   std::string domain = "docs.google.com";
+  state.enable_static_pins_ = true;
   ASSERT_TRUE(
       state.GetStaticDomainState(domain, sni_enabled, &static_domain_state));
   EXPECT_GT(static_domain_state.pkp.spki_hashes.size(), 1UL);
@@ -648,8 +651,13 @@ TEST_F(HttpSecurityHeadersTest, MAYBE_UpdateDynamicPKPMaxAge0) {
   // Damage the hashes to cause a pin validation failure.
   new_static_domain_state2.pkp.spki_hashes[0].data()[0] ^= 0x80;
   new_static_domain_state2.pkp.spki_hashes[1].data()[0] ^= 0x80;
-  EXPECT_FALSE(state.CheckPublicKeyPins(
-      domain, true, new_static_domain_state2.pkp.spki_hashes, &failure_log));
+  const bool is_issued_by_known_root = true;
+  EXPECT_FALSE(
+      state.CheckPublicKeyPins(domain,
+                               true,
+                               is_issued_by_known_root,
+                               new_static_domain_state2.pkp.spki_hashes,
+                               &failure_log));
   EXPECT_NE(0UL, failure_log.length());
 }
 #undef MAYBE_UpdateDynamicPKPMaxAge0
@@ -663,6 +671,7 @@ TEST_F(HttpSecurityHeadersTest, NoClobberPins) {
 
   // accounts.google.com has preloaded pins.
   std::string domain = "accounts.google.com";
+  state.enable_static_pins_ = true;
 
   // Retrieve the DomainState as it is by default, including its known good
   // pins.
@@ -680,8 +689,12 @@ TEST_F(HttpSecurityHeadersTest, NoClobberPins) {
   EXPECT_TRUE(state.AddHSTSHeader(domain, "includesubdomains; max-age=10000"));
   EXPECT_TRUE(state.ShouldUpgradeToSSL(domain, sni_enabled));
   std::string failure_log;
-  EXPECT_TRUE(state.CheckPublicKeyPins(
-      domain, sni_enabled, saved_hashes, &failure_log));
+  const bool is_issued_by_known_root = true;
+  EXPECT_TRUE(state.CheckPublicKeyPins(domain,
+                                       sni_enabled,
+                                       is_issued_by_known_root,
+                                       saved_hashes,
+                                       &failure_log));
 
   // Add an HPKP header, which should only update the dynamic state.
   HashValue good_hash = GetTestHashValue(1, HASH_VALUE_SHA1);
@@ -701,8 +714,11 @@ TEST_F(HttpSecurityHeadersTest, NoClobberPins) {
   EXPECT_TRUE(state.ShouldUpgradeToSSL(domain, sni_enabled));
   // The dynamic pins, which do not match |saved_hashes|, should take
   // precedence over the static pins and cause the check to fail.
-  EXPECT_FALSE(state.CheckPublicKeyPins(
-      domain, sni_enabled, saved_hashes, &failure_log));
+  EXPECT_FALSE(state.CheckPublicKeyPins(domain,
+                                        sni_enabled,
+                                        is_issued_by_known_root,
+                                        saved_hashes,
+                                        &failure_log));
 }
 
 };    // namespace net

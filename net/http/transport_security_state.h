@@ -163,6 +163,7 @@ class NET_EXPORT TransportSecurityState
   bool ShouldUpgradeToSSL(const std::string& host, bool sni_enabled);
   bool CheckPublicKeyPins(const std::string& host,
                           bool sni_enabled,
+                          bool is_issued_by_known_root,
                           const HashValueVector& hashes,
                           std::string* failure_log);
   bool HasPublicKeyPins(const std::string& host, bool sni_enabled);
@@ -267,6 +268,14 @@ class NET_EXPORT TransportSecurityState
   // The maximum number of seconds for which we'll cache an HSTS request.
   static const long int kMaxHSTSAgeSecs;
 
+ private:
+  friend class TransportSecurityStateTest;
+  FRIEND_TEST_ALL_PREFIXES(HttpSecurityHeadersTest, UpdateDynamicPKPOnly);
+  FRIEND_TEST_ALL_PREFIXES(HttpSecurityHeadersTest, UpdateDynamicPKPMaxAge0);
+  FRIEND_TEST_ALL_PREFIXES(HttpSecurityHeadersTest, NoClobberPins);
+
+  typedef std::map<std::string, DomainState> DomainStateMap;
+
   // Send an UMA report on pin validation failure, if the host is in a
   // statically-defined list of domains.
   //
@@ -282,12 +291,11 @@ class NET_EXPORT TransportSecurityState
   // information) is timely.
   static bool IsBuildTimely();
 
- private:
-  friend class TransportSecurityStateTest;
-  FRIEND_TEST_ALL_PREFIXES(HttpSecurityHeadersTest,
-                           UpdateDynamicPKPOnly);
-
-  typedef std::map<std::string, DomainState> DomainStateMap;
+  // Helper method for actually checking pins.
+  bool CheckPublicKeyPinsImpl(const std::string& host,
+                              bool sni_enabled,
+                              const HashValueVector& hashes,
+                              std::string* failure_log);
 
   // If a Delegate is present, notify it that the internal state has
   // changed.
@@ -308,6 +316,9 @@ class NET_EXPORT TransportSecurityState
   DomainStateMap enabled_hosts_;
 
   Delegate* delegate_;
+
+  // True if static pins should be used.
+  bool enable_static_pins_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportSecurityState);
 };

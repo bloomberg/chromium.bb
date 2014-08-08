@@ -37,12 +37,21 @@
 namespace net {
 
 class TransportSecurityStateTest : public testing::Test {
+ public:
   virtual void SetUp() {
 #if defined(USE_OPENSSL)
     crypto::EnsureOpenSSLInit();
 #else
     crypto::EnsureNSSInit();
 #endif
+  }
+
+  static void DisableStaticPins(TransportSecurityState* state) {
+    state->enable_static_pins_ = false;
+  }
+
+  static void EnableStaticPins(TransportSecurityState* state) {
+    state->enable_static_pins_ = true;
   }
 
  protected:
@@ -162,6 +171,27 @@ TEST_F(TransportSecurityStateTest, DeleteDynamicDataForHost) {
   EXPECT_FALSE(state.GetDynamicDomainState("yahoo.com", &domain_state));
 }
 
+TEST_F(TransportSecurityStateTest, EnableStaticPins) {
+  TransportSecurityState state;
+  TransportSecurityState::DomainState domain_state;
+
+  EnableStaticPins(&state);
+
+  EXPECT_TRUE(
+      state.GetStaticDomainState("chrome.google.com", true, &domain_state));
+  EXPECT_FALSE(domain_state.pkp.spki_hashes.empty());
+}
+
+TEST_F(TransportSecurityStateTest, DisableStaticPins) {
+  TransportSecurityState state;
+  TransportSecurityState::DomainState domain_state;
+
+  DisableStaticPins(&state);
+  EXPECT_TRUE(
+      state.GetStaticDomainState("chrome.google.com", true, &domain_state));
+  EXPECT_TRUE(domain_state.pkp.spki_hashes.empty());
+}
+
 TEST_F(TransportSecurityStateTest, IsPreloaded) {
   const std::string paypal = "paypal.com";
   const std::string www_paypal = "www.paypal.com";
@@ -177,7 +207,6 @@ TEST_F(TransportSecurityStateTest, IsPreloaded) {
   EXPECT_TRUE(GetStaticDomainState(&state, paypal, true, &domain_state));
   EXPECT_TRUE(GetStaticDomainState(&state, www_paypal, true, &domain_state));
   EXPECT_FALSE(domain_state.sts.include_subdomains);
-  EXPECT_FALSE(domain_state.pkp.include_subdomains);
   EXPECT_FALSE(GetStaticDomainState(&state, a_www_paypal, true, &domain_state));
   EXPECT_FALSE(GetStaticDomainState(&state, abc_paypal, true, &domain_state));
   EXPECT_FALSE(GetStaticDomainState(&state, example, true, &domain_state));
@@ -214,6 +243,7 @@ static bool HasStaticState(const char* hostname) {
 
 static bool HasStaticPublicKeyPins(const char* hostname, bool sni_enabled) {
   TransportSecurityState state;
+  TransportSecurityStateTest::EnableStaticPins(&state);
   TransportSecurityState::DomainState domain_state;
   if (!state.GetStaticDomainState(hostname, sni_enabled, &domain_state))
     return false;
@@ -227,6 +257,7 @@ static bool HasStaticPublicKeyPins(const char* hostname) {
 
 static bool OnlyPinningInStaticState(const char* hostname) {
   TransportSecurityState state;
+  TransportSecurityStateTest::EnableStaticPins(&state);
   TransportSecurityState::DomainState domain_state;
   if (!state.GetStaticDomainState(hostname, true /* SNI ok */, &domain_state))
     return false;
@@ -284,24 +315,6 @@ TEST_F(TransportSecurityStateTest, Preloaded) {
   EXPECT_TRUE(StaticShouldRedirect("www.googleplex.com"));
   EXPECT_FALSE(HasStaticState("m.gmail.com"));
   EXPECT_FALSE(HasStaticState("m.googlemail.com"));
-
-  EXPECT_TRUE(OnlyPinningInStaticState("www.google.com"));
-  EXPECT_TRUE(OnlyPinningInStaticState("foo.google.com"));
-  EXPECT_TRUE(OnlyPinningInStaticState("google.com"));
-  EXPECT_TRUE(OnlyPinningInStaticState("www.youtube.com"));
-  EXPECT_TRUE(OnlyPinningInStaticState("youtube.com"));
-  EXPECT_TRUE(OnlyPinningInStaticState("i.ytimg.com"));
-  EXPECT_TRUE(OnlyPinningInStaticState("ytimg.com"));
-  EXPECT_TRUE(OnlyPinningInStaticState("googleusercontent.com"));
-  EXPECT_TRUE(OnlyPinningInStaticState("www.googleusercontent.com"));
-  EXPECT_TRUE(OnlyPinningInStaticState("www.google-analytics.com"));
-  EXPECT_TRUE(OnlyPinningInStaticState("googleapis.com"));
-  EXPECT_TRUE(OnlyPinningInStaticState("googleadservices.com"));
-  EXPECT_TRUE(OnlyPinningInStaticState("googlecode.com"));
-  EXPECT_TRUE(OnlyPinningInStaticState("appspot.com"));
-  EXPECT_TRUE(OnlyPinningInStaticState("googlesyndication.com"));
-  EXPECT_TRUE(OnlyPinningInStaticState("doubleclick.net"));
-  EXPECT_TRUE(OnlyPinningInStaticState("googlegroups.com"));
 
   // Tests for domains that don't work without SNI.
   EXPECT_FALSE(state.GetStaticDomainState("gmail.com", false, &domain_state));
@@ -407,28 +420,12 @@ TEST_F(TransportSecurityStateTest, Preloaded) {
   EXPECT_TRUE(StaticShouldRedirect("www.dropcam.com"));
   EXPECT_FALSE(HasStaticState("foo.dropcam.com"));
 
-  EXPECT_TRUE(
-      state.GetStaticDomainState("torproject.org", false, &domain_state));
-  EXPECT_FALSE(domain_state.pkp.spki_hashes.empty());
-  EXPECT_TRUE(
-      state.GetStaticDomainState("www.torproject.org", false, &domain_state));
-  EXPECT_FALSE(domain_state.pkp.spki_hashes.empty());
-  EXPECT_TRUE(
-      state.GetStaticDomainState("check.torproject.org", false, &domain_state));
-  EXPECT_FALSE(domain_state.pkp.spki_hashes.empty());
-  EXPECT_TRUE(
-      state.GetStaticDomainState("blog.torproject.org", false, &domain_state));
-  EXPECT_FALSE(domain_state.pkp.spki_hashes.empty());
   EXPECT_TRUE(StaticShouldRedirect("ebanking.indovinabank.com.vn"));
   EXPECT_TRUE(StaticShouldRedirect("foo.ebanking.indovinabank.com.vn"));
 
   EXPECT_TRUE(StaticShouldRedirect("epoxate.com"));
   EXPECT_FALSE(HasStaticState("foo.epoxate.com"));
 
-  EXPECT_TRUE(HasStaticPublicKeyPins("torproject.org"));
-  EXPECT_TRUE(HasStaticPublicKeyPins("www.torproject.org"));
-  EXPECT_TRUE(HasStaticPublicKeyPins("check.torproject.org"));
-  EXPECT_TRUE(HasStaticPublicKeyPins("blog.torproject.org"));
   EXPECT_FALSE(HasStaticState("foo.torproject.org"));
 
   EXPECT_TRUE(StaticShouldRedirect("www.moneybookers.com"));
@@ -478,6 +475,57 @@ TEST_F(TransportSecurityStateTest, Preloaded) {
 
   EXPECT_TRUE(StaticShouldRedirect("crate.io"));
   EXPECT_TRUE(StaticShouldRedirect("foo.crate.io"));
+}
+
+TEST_F(TransportSecurityStateTest, PreloadedPins) {
+  TransportSecurityState state;
+  EnableStaticPins(&state);
+  TransportSecurityState::DomainState domain_state;
+
+  // We do more extensive checks for the first domain.
+  EXPECT_TRUE(
+      state.GetStaticDomainState("www.paypal.com", true, &domain_state));
+  EXPECT_EQ(domain_state.sts.upgrade_mode,
+            TransportSecurityState::DomainState::MODE_FORCE_HTTPS);
+  EXPECT_FALSE(domain_state.sts.include_subdomains);
+  EXPECT_FALSE(domain_state.pkp.include_subdomains);
+
+  EXPECT_TRUE(OnlyPinningInStaticState("www.google.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("foo.google.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("google.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("www.youtube.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("youtube.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("i.ytimg.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("ytimg.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("googleusercontent.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("www.googleusercontent.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("www.google-analytics.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("googleapis.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("googleadservices.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("googlecode.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("appspot.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("googlesyndication.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("doubleclick.net"));
+  EXPECT_TRUE(OnlyPinningInStaticState("googlegroups.com"));
+
+  EXPECT_TRUE(HasStaticPublicKeyPins("torproject.org"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("www.torproject.org"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("check.torproject.org"));
+  EXPECT_TRUE(HasStaticPublicKeyPins("blog.torproject.org"));
+  EXPECT_FALSE(HasStaticState("foo.torproject.org"));
+
+  EXPECT_TRUE(
+      state.GetStaticDomainState("torproject.org", false, &domain_state));
+  EXPECT_FALSE(domain_state.pkp.spki_hashes.empty());
+  EXPECT_TRUE(
+      state.GetStaticDomainState("www.torproject.org", false, &domain_state));
+  EXPECT_FALSE(domain_state.pkp.spki_hashes.empty());
+  EXPECT_TRUE(
+      state.GetStaticDomainState("check.torproject.org", false, &domain_state));
+  EXPECT_FALSE(domain_state.pkp.spki_hashes.empty());
+  EXPECT_TRUE(
+      state.GetStaticDomainState("blog.torproject.org", false, &domain_state));
+  EXPECT_FALSE(domain_state.pkp.spki_hashes.empty());
 
   EXPECT_TRUE(HasStaticPublicKeyPins("www.twitter.com"));
 }
@@ -495,6 +543,7 @@ TEST_F(TransportSecurityStateTest, LongNames) {
 
 TEST_F(TransportSecurityStateTest, BuiltinCertPins) {
   TransportSecurityState state;
+  EnableStaticPins(&state);
   TransportSecurityState::DomainState domain_state;
 
   EXPECT_TRUE(
@@ -534,7 +583,6 @@ TEST_F(TransportSecurityStateTest, BuiltinCertPins) {
   EXPECT_TRUE(HasStaticPublicKeyPins("ssl.google-analytics.com"));
   EXPECT_TRUE(HasStaticPublicKeyPins("www.googleplex.com"));
 
-  // Disabled in order to help track down pinning failures --agl
   EXPECT_TRUE(HasStaticPublicKeyPins("twitter.com"));
   EXPECT_FALSE(HasStaticPublicKeyPins("foo.twitter.com"));
   EXPECT_TRUE(HasStaticPublicKeyPins("www.twitter.com"));
@@ -585,6 +633,8 @@ TEST_F(TransportSecurityStateTest, PinValidationWithoutRejectedCerts) {
   }
 
   TransportSecurityState state;
+  EnableStaticPins(&state);
+
   TransportSecurityState::DomainState domain_state;
   EXPECT_TRUE(
       state.GetStaticDomainState("blog.torproject.org", true, &domain_state));
@@ -597,6 +647,7 @@ TEST_F(TransportSecurityStateTest, PinValidationWithoutRejectedCerts) {
 
 TEST_F(TransportSecurityStateTest, OptionalHSTSCertPins) {
   TransportSecurityState state;
+  EnableStaticPins(&state);
   TransportSecurityState::DomainState domain_state;
 
   EXPECT_FALSE(StaticShouldRedirect("www.google-analytics.com"));

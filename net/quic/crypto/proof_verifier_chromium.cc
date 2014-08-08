@@ -236,58 +236,20 @@ int ProofVerifierChromium::Job::DoVerifyCert(int result) {
 int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
   verifier_.reset();
 
-#if defined(OFFICIAL_BUILD) && !defined(OS_ANDROID) && !defined(OS_IOS)
-  // TODO(wtc): The following code was copied from ssl_client_socket_nss.cc.
-  // Convert it to a new function that can be called by both files. These
-  // variables simulate the arguments to the new function.
   const CertVerifyResult& cert_verify_result =
       verify_details_->cert_verify_result;
-  bool sni_available = true;
-  const std::string& host = hostname_;
-  TransportSecurityState* transport_security_state = transport_security_state_;
-  std::string* pinning_failure_log = &verify_details_->pinning_failure_log;
-
-  // Take care of any mandates for public key pinning.
-  //
-  // Pinning is only enabled for official builds to make sure that others don't
-  // end up with pins that cannot be easily updated.
-  //
-  // TODO(agl): We might have an issue here where a request for foo.example.com
-  // merges into a SPDY connection to www.example.com, and gets a different
-  // certificate.
-
-  // Perform pin validation if, and only if, all these conditions obtain:
-  //
-  // * a TransportSecurityState object is available;
-  // * the server's certificate chain is valid (or suffers from only a minor
-  //   error);
-  // * the server's certificate chain chains up to a known root (i.e. not a
-  //   user-installed trust anchor); and
-  // * the build is recent (very old builds should fail open so that users
-  //   have some chance to recover).
-  //
   const CertStatus cert_status = cert_verify_result.cert_status;
-  if (transport_security_state &&
+  if (transport_security_state_ &&
       (result == OK ||
        (IsCertificateError(result) && IsCertStatusMinorError(cert_status))) &&
-      cert_verify_result.is_issued_by_known_root &&
-      TransportSecurityState::IsBuildTimely()) {
-    if (transport_security_state->HasPublicKeyPins(host, sni_available)) {
-      if (!transport_security_state->CheckPublicKeyPins(
-              host,
-              sni_available,
-              cert_verify_result.public_key_hashes,
-              pinning_failure_log)) {
-        LOG(ERROR) << *pinning_failure_log;
-        result = ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN;
-        UMA_HISTOGRAM_BOOLEAN("Net.PublicKeyPinSuccess", false);
-        TransportSecurityState::ReportUMAOnPinFailure(host);
-      } else {
-        UMA_HISTOGRAM_BOOLEAN("Net.PublicKeyPinSuccess", true);
-      }
-    }
+      !transport_security_state_->CheckPublicKeyPins(
+          hostname_,
+          true, /* sni_available */
+          cert_verify_result.is_issued_by_known_root,
+          cert_verify_result.public_key_hashes,
+          &verify_details_->pinning_failure_log)) {
+    result = ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN;
   }
-#endif
 
   if (result != OK) {
     std::string error_string = ErrorToString(result);
