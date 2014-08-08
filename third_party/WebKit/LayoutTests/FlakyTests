@@ -939,7 +939,6 @@ Bug(gardener) [ Release Mavericks ] http/tests/security/script-onerror-crossorig
 Bug(gardener) [ Release XP ] http/tests/security/shape-image-cors.html [ Pass Timeout ]
 Bug(gardener) [ Release Win7 ] http/tests/security/srcdoc-in-sandbox-cannot-access-parent.html [ Pass Timeout ]
 crbug.com/30536 [ Release XP ] http/tests/security/video-cross-origin-readback.html [ Pass Timeout ]
-Bug(gardener) [ Debug Linux ] http/tests/security/webgl-remote-read-remote-image-allowed-with-credentials.html [ Pass Timeout ]
 Bug(gardener) [ Debug Linux ] http/tests/security/webgl-remote-read-remote-image-allowed.html [ Pass Timeout ]
 Bug(gardener) [ Debug Lion ] http/tests/security/webgl-remote-read-remote-image-allowed.html [ Pass Timeout ]
 Bug(gardener) [ Debug Win7 ] http/tests/security/webgl-remote-read-remote-image-allowed.html [ Pass Timeout ]
