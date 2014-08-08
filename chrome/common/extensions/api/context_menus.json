@@ -6,6 +6,12 @@
   {
     "namespace": "contextMenus",
     "description": "Use the <code>chrome.contextMenus</code> API to add items to Google Chrome's context menu. You can choose what types of objects your context menu additions apply to, such as images, hyperlinks, and pages.",
+    "properties": {
+      "ACTION_MENU_TOP_LEVEL_LIMIT": {
+        "value": 6,
+        "description": "The maximum number of top level extension items that can be added to an extension action context menu. Any items beyond this limit will be ignored."
+      }
+    },
     "functions": [
       {
         "name": "create",
@@ -48,7 +54,7 @@
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio", "launcher"]
+                  "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio", "launcher", "browser_action", "page_action"]
                 },
                 "minItems": 1,
                 "optional": true,
@@ -143,7 +149,7 @@
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio", "launcher"]
+                  "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio", "launcher", "browser_action", "page_action"]
                 },
                 "minItems": 1,
                 "optional": true

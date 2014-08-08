@@ -9,6 +9,8 @@
 namespace extensions {
 namespace context_menus_api_helpers {
 
+const char kActionNotAllowedError[] =
+    "Only extensions are allowed to use action contexts";
 const char kCannotFindItemError[] = "Cannot find menu item with id *";
 const char kCheckedError[] =
     "Only items with type \"radio\" or \"checkbox\" can be checked";

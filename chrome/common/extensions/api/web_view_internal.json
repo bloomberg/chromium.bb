@@ -124,7 +124,7 @@
                 "items": {
                   "type": "string",
                   // |launcher| isn't actually supported, this is listed here so that we can build |contexts| using the same code from chrome.contextMenus API.
-                  "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio", "launcher"]
+                  "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio", "launcher", "browser_action", "page_action"]
                 },
                 "minItems": 1,
                 "optional": true,
@@ -218,7 +218,7 @@
                 "items": {
                   "type": "string",
                   // |launcher| isn't actually supported, this is listed here so that we can build |contexts| using the same code from chrome.contextMenus API.
-                  "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio", "launcher"]
+                  "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio", "launcher", "browser_action", "page_action"]
                 },
                 "minItems": 1,
                 "optional": true,
