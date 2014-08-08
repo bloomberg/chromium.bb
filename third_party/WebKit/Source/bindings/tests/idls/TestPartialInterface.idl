@@ -53,4 +53,7 @@ callback PartialCallbackType = void (PartialString value);
 
     attribute PartialEnumType partialPartialEnumTypeAttribute;
     void partialVoidMethodPartialCallbackTypeArg(PartialCallbackType partialCallbackTypeArg);
+
+    [ImplementedInPrivateScript] short shortMethodWithShortArgumentImplementedInPrivateScript(short value);
+    [ImplementedInPrivateScript] attribute DOMString stringAttribute;
 };

@@ -32,6 +32,9 @@ public:
     static void visitDOMWrapper(void*, const v8::Persistent<v8::Object>&, v8::Isolate*);
     static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);
     static void implementsCustomVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
+    static bool shortMethodWithShortArgumentImplementedInPrivateScriptMethodImplementedInPrivateScript(LocalFrame* frame, TestInterface* holderImpl, int value, int* result);
+    static bool stringAttributeAttributeGetterImplementedInPrivateScript(LocalFrame* frame, TestInterfaceImplementation* holderImpl, String* result);
+    static bool stringAttributeAttributeSetterImplementedInPrivateScript(LocalFrame* frame, TestInterfaceImplementation* holderImpl, String cppValue);
     static void legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
     static inline void* toInternalPointer(TestInterfaceImplementation* impl)

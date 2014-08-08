@@ -117,6 +117,8 @@ IdlType.enum_validation_expression = property(enum_validation_expression)
 
 
 def scoped_name(interface, definition, base_name):
+    if 'ImplementedInPrivateScript' in definition.extended_attributes:
+        return '%s::%s' % (v8_class_name(interface), base_name)
     # partial interfaces are implemented as separate classes, with their members
     # implemented as static member functions
     partial_interface_implemented_as = definition.extended_attributes.get('PartialInterfaceImplementedAs')
@@ -125,8 +127,6 @@ def scoped_name(interface, definition, base_name):
     if (definition.is_static or
         definition.name in ('Constructor', 'NamedConstructor')):
         return '%s::%s' % (cpp_name(interface), base_name)
-    if 'ImplementedInPrivateScript' in definition.extended_attributes:
-        return '%s::%s' % (v8_class_name(interface), base_name)
     return 'impl->%s' % base_name
 
 

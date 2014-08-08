@@ -290,6 +290,7 @@ def cpp_value(interface, method, number_of_arguments):
     # static member functions, which for instance members (non-static members)
     # take *impl as their first argument
     if ('PartialInterfaceImplementedAs' in method.extended_attributes and
+        not 'ImplementedInPrivateScript' in method.extended_attributes and
         not method.is_static):
         cpp_arguments.append('*impl')
     cpp_arguments.extend(cpp_argument(argument) for argument in arguments)

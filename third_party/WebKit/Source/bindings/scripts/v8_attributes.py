@@ -233,6 +233,7 @@ def getter_expression(interface, attribute, context):
     # static member functions, which for instance members (non-static members)
     # take *impl as their first argument
     if ('PartialInterfaceImplementedAs' in attribute.extended_attributes and
+        not 'ImplementedInPrivateScript' in attribute.extended_attributes and
         not attribute.is_static):
         arguments.append('*impl')
     if attribute.idl_type.is_explicit_nullable:
@@ -361,6 +362,7 @@ def setter_expression(interface, attribute, context):
     # static member functions, which for instance members (non-static members)
     # take *impl as their first argument
     if ('PartialInterfaceImplementedAs' in extended_attributes and
+        not 'ImplementedInPrivateScript' in extended_attributes and
         not attribute.is_static):
         arguments.append('*impl')
     idl_type = attribute.idl_type

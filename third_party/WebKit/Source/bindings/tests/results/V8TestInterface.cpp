@@ -9,6 +9,7 @@
 #include "V8TestInterface.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/PrivateScriptRunner.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
@@ -24,7 +25,9 @@
 #include "bindings/tests/v8/V8TestInterfaceEmpty.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
+#include "core/frame/LocalFrame.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"
@@ -716,6 +719,46 @@ static void partialPartialEnumTypeAttributeAttributeSetterCallback(v8::Local<v8:
 }
 #endif // ENABLE(PARTIAL_CONDITION)
 
+#if ENABLE(PARTIAL_CONDITION)
+static void stringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
+    String result;
+    if (!V8TestInterface::stringAttributeAttributeGetterImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, &result))
+        return;
+    v8SetReturnValueString(info, result, info.GetIsolate());
+}
+#endif // ENABLE(PARTIAL_CONDITION)
+
+#if ENABLE(PARTIAL_CONDITION)
+static void stringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    TestInterfaceImplementationV8Internal::stringAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+#endif // ENABLE(PARTIAL_CONDITION)
+
+#if ENABLE(PARTIAL_CONDITION)
+static void stringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
+    TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
+    V8TestInterface::stringAttributeAttributeSetterImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, cppValue);
+}
+#endif // ENABLE(PARTIAL_CONDITION)
+
+#if ENABLE(PARTIAL_CONDITION)
+static void stringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    TestInterfaceImplementationV8Internal::stringAttributeAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+#endif // ENABLE(PARTIAL_CONDITION)
+
 static void partial2LongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
@@ -1122,6 +1165,37 @@ static void partialVoidMethodPartialCallbackTypeArgMethodCallback(const v8::Func
 }
 #endif // ENABLE(PARTIAL_CONDITION)
 
+#if ENABLE(PARTIAL_CONDITION)
+static void shortMethodWithShortArgumentImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethodWithShortArgumentImplementedInPrivateScript", "TestInterface", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwMinimumArityTypeError(exceptionState, 1, info.Length());
+        return;
+    }
+    TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
+    int value;
+    {
+        v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(value, toInt16(info[0], exceptionState), exceptionState);
+    }
+    int result = 0;
+    if (!V8TestInterface::shortMethodWithShortArgumentImplementedInPrivateScriptMethodImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, value, &result))
+        return;
+    v8SetReturnValueInt(info, result);
+}
+#endif // ENABLE(PARTIAL_CONDITION)
+
+#if ENABLE(PARTIAL_CONDITION)
+static void shortMethodWithShortArgumentImplementedInPrivateScriptMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestInterfaceImplementationV8Internal::shortMethodWithShortArgumentImplementedInPrivateScriptMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+#endif // ENABLE(PARTIAL_CONDITION)
+
 static void partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
@@ -1398,6 +1472,13 @@ static void installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> func
         V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate);
     }
 #endif // ENABLE(PARTIAL_CONDITION)
+#if ENABLE(PARTIAL_CONDITION)
+    if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
+        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
+        {"stringAttribute", TestInterfaceImplementationV8Internal::stringAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::stringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance};
+        V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate);
+    }
+#endif // ENABLE(PARTIAL_CONDITION)
     static const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
         {"UNSIGNED_LONG", 0, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedLong},
         {"CONST_JAVASCRIPT", 1, 0, 0, V8DOMConfiguration::ConstantTypeShort},
@@ -1465,6 +1546,14 @@ static void installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> func
             "partialVoidMethodPartialCallbackTypeArg", TestInterfaceImplementationV8Internal::partialVoidMethodPartialCallbackTypeArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts,
         };
         V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, partialVoidMethodPartialCallbackTypeArgMethodConfiguration, isolate);
+    }
+#endif // ENABLE(PARTIAL_CONDITION)
+#if ENABLE(PARTIAL_CONDITION)
+    if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
+        static const V8DOMConfiguration::MethodConfiguration shortMethodWithShortArgumentImplementedInPrivateScriptMethodConfiguration = {
+            "shortMethodWithShortArgumentImplementedInPrivateScript", TestInterfaceImplementationV8Internal::shortMethodWithShortArgumentImplementedInPrivateScriptMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts,
+        };
+        V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, shortMethodWithShortArgumentImplementedInPrivateScriptMethodConfiguration, isolate);
     }
 #endif // ENABLE(PARTIAL_CONDITION)
     static const V8DOMConfiguration::MethodConfiguration toStringMethodConfiguration = {
@@ -1555,6 +1644,104 @@ template<>
 v8::Handle<v8::Value> toV8NoInline(TestInterfaceImplementation* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8(impl, creationContext, isolate);
+}
+
+bool V8TestInterface::shortMethodWithShortArgumentImplementedInPrivateScriptMethodImplementedInPrivateScript(LocalFrame* frame, TestInterface* holderImpl, int value, int* result)
+{
+    if (!frame)
+        return false;
+    v8::HandleScope handleScope(toIsolate(frame));
+    ScriptForbiddenScope::AllowUserAgentScript script;
+    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (context.IsEmpty())
+        return false;
+    ScriptState* scriptState = ScriptState::from(context);
+    if (!scriptState->executionContext())
+        return false;
+
+    ScriptState::Scope scope(scriptState);
+    v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
+
+    v8::Handle<v8::Value> valueHandle = v8::Integer::New(scriptState->isolate(), value);
+    v8::Handle<v8::Value> argv[] = { valueHandle };
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethodWithShortArgumentImplementedInPrivateScript", "TestInterfaceImplementation", scriptState->context()->Global(), scriptState->isolate());
+    v8::TryCatch block;
+    V8RethrowTryCatchScope rethrow(block);
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestInterfaceImplementation", "shortMethodWithShortArgumentImplementedInPrivateScript", holder, 1, argv);
+    if (block.HasCaught()) {
+        if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
+            // FIXME: We should support exceptions other than DOM exceptions.
+            RELEASE_ASSERT_NOT_REACHED();
+        }
+        return false;
+    }
+    TONATIVE_DEFAULT_EXCEPTIONSTATE(int, cppValue, toInt16(v8Value, exceptionState), exceptionState, false);
+    RELEASE_ASSERT(!exceptionState.hadException());
+    *result = cppValue;
+    return true;
+}
+
+bool V8TestInterface::stringAttributeAttributeGetterImplementedInPrivateScript(LocalFrame* frame, TestInterfaceImplementation* holderImpl, String* result)
+{
+    if (!frame)
+        return false;
+    v8::HandleScope handleScope(toIsolate(frame));
+    ScriptForbiddenScope::AllowUserAgentScript script;
+    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (context.IsEmpty())
+        return false;
+    ScriptState* scriptState = ScriptState::from(context);
+    if (!scriptState->executionContext())
+        return false;
+
+    ScriptState::Scope scope(scriptState);
+    v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
+
+    ExceptionState exceptionState(ExceptionState::GetterContext, "stringAttribute", "TestInterfaceImplementation", scriptState->context()->Global(), scriptState->isolate());
+    v8::TryCatch block;
+    V8RethrowTryCatchScope rethrow(block);
+    v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestInterfaceImplementation", "stringAttribute", holder);
+    if (block.HasCaught()) {
+        if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
+            // FIXME: We should support exceptions other than DOM exceptions.
+            RELEASE_ASSERT_NOT_REACHED();
+        }
+        return false;
+    }
+    TOSTRING_DEFAULT(V8StringResource<>, cppValue, v8Value, false);
+    RELEASE_ASSERT(!exceptionState.hadException());
+    *result = cppValue;
+    return true;
+}
+
+bool V8TestInterface::stringAttributeAttributeSetterImplementedInPrivateScript(LocalFrame* frame, TestInterfaceImplementation* holderImpl, String cppValue)
+{
+    if (!frame)
+        return false;
+    v8::HandleScope handleScope(toIsolate(frame));
+    ScriptForbiddenScope::AllowUserAgentScript script;
+    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (context.IsEmpty())
+        return false;
+    ScriptState* scriptState = ScriptState::from(context);
+    if (!scriptState->executionContext())
+        return false;
+
+    ScriptState::Scope scope(scriptState);
+    v8::Handle<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
+
+    ExceptionState exceptionState(ExceptionState::SetterContext, "stringAttribute", "TestInterfaceImplementation", scriptState->context()->Global(), scriptState->isolate());
+    v8::TryCatch block;
+    V8RethrowTryCatchScope rethrow(block);
+    PrivateScriptRunner::runDOMAttributeSetter(scriptState, "TestInterfaceImplementation", "stringAttribute", holder, v8String(scriptState->isolate(), cppValue));
+    if (block.HasCaught()) {
+        if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
+            // FIXME: We should support exceptions other than DOM exceptions.
+            RELEASE_ASSERT_NOT_REACHED();
+        }
+        return false;
+    }
+    return true;
 }
 
 } // namespace blink
