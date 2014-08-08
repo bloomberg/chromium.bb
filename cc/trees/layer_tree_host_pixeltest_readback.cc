@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #include "build/build_config.h"
-#include "cc/layers/content_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
+#include "cc/test/fake_picture_layer.h"
+#include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/layer_tree_pixel_test.h"
 #include "cc/test/paths.h"
 #include "cc/test/solid_color_content_layer_client.h"
@@ -932,17 +933,20 @@ class LayerTreeHostReadbackDeviceScalePixelTest
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     LayerImpl* root_impl = host_impl->active_tree()->root_layer();
 
-    LayerImpl* background_impl = root_impl->children()[0];
-    EXPECT_EQ(device_scale_factor_, background_impl->contents_scale_x());
-    EXPECT_EQ(device_scale_factor_, background_impl->contents_scale_y());
+    FakePictureLayerImpl* background_impl =
+        static_cast<FakePictureLayerImpl*>(root_impl->children()[0]);
+    EXPECT_EQ(device_scale_factor_,
+              background_impl->HighResTiling()->contents_scale());
 
-    LayerImpl* green_impl = background_impl->children()[0];
-    EXPECT_EQ(device_scale_factor_, green_impl->contents_scale_x());
-    EXPECT_EQ(device_scale_factor_, green_impl->contents_scale_y());
+    FakePictureLayerImpl* green_impl =
+        static_cast<FakePictureLayerImpl*>(background_impl->children()[0]);
+    EXPECT_EQ(device_scale_factor_,
+              green_impl->HighResTiling()->contents_scale());
 
-    LayerImpl* blue_impl = green_impl->children()[0];
-    EXPECT_EQ(device_scale_factor_, blue_impl->contents_scale_x());
-    EXPECT_EQ(device_scale_factor_, blue_impl->contents_scale_y());
+    FakePictureLayerImpl* blue_impl =
+        static_cast<FakePictureLayerImpl*>(green_impl->children()[0]);
+    EXPECT_EQ(device_scale_factor_,
+              blue_impl->HighResTiling()->contents_scale());
   }
 
   float device_scale_factor_;
@@ -953,16 +957,19 @@ class LayerTreeHostReadbackDeviceScalePixelTest
 
 TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
        ReadbackSubrect_Software) {
-  scoped_refptr<ContentLayer> background = ContentLayer::Create(&white_client_);
+  scoped_refptr<FakePictureLayer> background =
+      FakePictureLayer::Create(&white_client_);
   background->SetBounds(gfx::Size(100, 100));
   background->SetIsDrawable(true);
 
-  scoped_refptr<ContentLayer> green = ContentLayer::Create(&green_client_);
+  scoped_refptr<FakePictureLayer> green =
+      FakePictureLayer::Create(&green_client_);
   green->SetBounds(gfx::Size(100, 100));
   green->SetIsDrawable(true);
   background->AddChild(green);
 
-  scoped_refptr<ContentLayer> blue = ContentLayer::Create(&blue_client_);
+  scoped_refptr<FakePictureLayer> blue =
+      FakePictureLayer::Create(&blue_client_);
   blue->SetPosition(gfx::Point(50, 50));
   blue->SetBounds(gfx::Size(25, 25));
   blue->SetIsDrawable(true);
@@ -971,8 +978,6 @@ TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
   // Grab the middle of the root layer.
   copy_subrect_ = gfx::Rect(25, 25, 50, 50);
   device_scale_factor_ = 2.f;
-
-  this->impl_side_painting_ = false;
   RunPixelTest(SOFTWARE_WITH_DEFAULT,
                background,
                base::FilePath(FILE_PATH_LITERAL(
@@ -981,16 +986,19 @@ TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
 
 TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
        ReadbackSubrect_GL) {
-  scoped_refptr<ContentLayer> background = ContentLayer::Create(&white_client_);
+  scoped_refptr<FakePictureLayer> background =
+      FakePictureLayer::Create(&white_client_);
   background->SetBounds(gfx::Size(100, 100));
   background->SetIsDrawable(true);
 
-  scoped_refptr<ContentLayer> green = ContentLayer::Create(&green_client_);
+  scoped_refptr<FakePictureLayer> green =
+      FakePictureLayer::Create(&green_client_);
   green->SetBounds(gfx::Size(100, 100));
   green->SetIsDrawable(true);
   background->AddChild(green);
 
-  scoped_refptr<ContentLayer> blue = ContentLayer::Create(&blue_client_);
+  scoped_refptr<FakePictureLayer> blue =
+      FakePictureLayer::Create(&blue_client_);
   blue->SetPosition(gfx::Point(50, 50));
   blue->SetBounds(gfx::Size(25, 25));
   blue->SetIsDrawable(true);
@@ -999,8 +1007,6 @@ TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
   // Grab the middle of the root layer.
   copy_subrect_ = gfx::Rect(25, 25, 50, 50);
   device_scale_factor_ = 2.f;
-
-  this->impl_side_painting_ = false;
   RunPixelTest(GL_WITH_DEFAULT,
                background,
                base::FilePath(FILE_PATH_LITERAL(
@@ -1009,17 +1015,20 @@ TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
 
 TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
        ReadbackNonRootLayerSubrect_Software) {
-  scoped_refptr<ContentLayer> background = ContentLayer::Create(&white_client_);
+  scoped_refptr<FakePictureLayer> background =
+      FakePictureLayer::Create(&white_client_);
   background->SetBounds(gfx::Size(100, 100));
   background->SetIsDrawable(true);
 
-  scoped_refptr<ContentLayer> green = ContentLayer::Create(&green_client_);
+  scoped_refptr<FakePictureLayer> green =
+      FakePictureLayer::Create(&green_client_);
   green->SetPosition(gfx::Point(10, 20));
   green->SetBounds(gfx::Size(90, 80));
   green->SetIsDrawable(true);
   background->AddChild(green);
 
-  scoped_refptr<ContentLayer> blue = ContentLayer::Create(&blue_client_);
+  scoped_refptr<FakePictureLayer> blue =
+      FakePictureLayer::Create(&blue_client_);
   blue->SetPosition(gfx::Point(50, 50));
   blue->SetBounds(gfx::Size(25, 25));
   blue->SetIsDrawable(true);
@@ -1028,8 +1037,6 @@ TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
   // Grab the green layer's content with blue in the bottom right.
   copy_subrect_ = gfx::Rect(25, 25, 50, 50);
   device_scale_factor_ = 2.f;
-
-  this->impl_side_painting_ = false;
   RunPixelTestWithReadbackTarget(SOFTWARE_WITH_DEFAULT,
                                  background,
                                  green.get(),
@@ -1039,17 +1046,20 @@ TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
 
 TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
        ReadbackNonRootLayerSubrect_GL) {
-  scoped_refptr<ContentLayer> background = ContentLayer::Create(&white_client_);
+  scoped_refptr<FakePictureLayer> background =
+      FakePictureLayer::Create(&white_client_);
   background->SetBounds(gfx::Size(100, 100));
   background->SetIsDrawable(true);
 
-  scoped_refptr<ContentLayer> green = ContentLayer::Create(&green_client_);
+  scoped_refptr<FakePictureLayer> green =
+      FakePictureLayer::Create(&green_client_);
   green->SetPosition(gfx::Point(10, 20));
   green->SetBounds(gfx::Size(90, 80));
   green->SetIsDrawable(true);
   background->AddChild(green);
 
-  scoped_refptr<ContentLayer> blue = ContentLayer::Create(&blue_client_);
+  scoped_refptr<FakePictureLayer> blue =
+      FakePictureLayer::Create(&blue_client_);
   blue->SetPosition(gfx::Point(50, 50));
   blue->SetBounds(gfx::Size(25, 25));
   blue->SetIsDrawable(true);
@@ -1058,8 +1068,6 @@ TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
   // Grab the green layer's content with blue in the bottom right.
   copy_subrect_ = gfx::Rect(25, 25, 50, 50);
   device_scale_factor_ = 2.f;
-
-  this->impl_side_painting_ = false;
   RunPixelTestWithReadbackTarget(GL_WITH_DEFAULT,
                                  background,
                                  green.get(),
