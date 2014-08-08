@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRONET_ANDROID_URL_REQUEST_PEER_H_
-#define COMPONENTS_CRONET_ANDROID_URL_REQUEST_PEER_H_
+#ifndef COMPONENTS_CRONET_ANDROID_URL_REQUEST_ADAPTER_H_
+#define COMPONENTS_CRONET_ANDROID_URL_REQUEST_ADAPTER_H_
 
 #include <jni.h>
 
@@ -24,31 +24,31 @@ class UploadDataStream;
 
 namespace cronet {
 
-class URLRequestContextPeer;
+class URLRequestContextAdapter;
 
 // An adapter from the JNI |UrlRequest| object and the Chromium |URLRequest|
 // object.
-class URLRequestPeer : public net::URLRequest::Delegate {
+class URLRequestAdapter : public net::URLRequest::Delegate {
  public:
   // The delegate which is called when the request finishes.
-  class URLRequestPeerDelegate
-      : public base::RefCountedThreadSafe<URLRequestPeerDelegate> {
+  class URLRequestAdapterDelegate
+      : public base::RefCountedThreadSafe<URLRequestAdapterDelegate> {
    public:
-    virtual void OnResponseStarted(URLRequestPeer* request) = 0;
-    virtual void OnBytesRead(URLRequestPeer* request) = 0;
-    virtual void OnRequestFinished(URLRequestPeer* request) = 0;
+    virtual void OnResponseStarted(URLRequestAdapter* request) = 0;
+    virtual void OnBytesRead(URLRequestAdapter* request) = 0;
+    virtual void OnRequestFinished(URLRequestAdapter* request) = 0;
     virtual int ReadFromUploadChannel(net::IOBuffer* buf, int buf_length) = 0;
 
    protected:
-    friend class base::RefCountedThreadSafe<URLRequestPeerDelegate>;
-    virtual ~URLRequestPeerDelegate() {}
+    friend class base::RefCountedThreadSafe<URLRequestAdapterDelegate>;
+    virtual ~URLRequestAdapterDelegate() {}
   };
 
-  URLRequestPeer(URLRequestContextPeer* context,
-                 URLRequestPeerDelegate* delegate,
-                 GURL url,
-                 net::RequestPriority priority);
-  virtual ~URLRequestPeer();
+  URLRequestAdapter(URLRequestContextAdapter* context,
+                    URLRequestAdapterDelegate* delegate,
+                    GURL url,
+                    net::RequestPriority priority);
+  virtual ~URLRequestAdapter();
 
   // Sets the request method GET, POST etc
   void SetMethod(const std::string& method);
@@ -107,7 +107,7 @@ class URLRequestPeer : public net::URLRequest::Delegate {
                                int bytes_read) OVERRIDE;
 
  private:
-  static void OnDestroyRequest(URLRequestPeer* self);
+  static void OnDestroyRequest(URLRequestAdapter* self);
 
   void OnInitiateConnection();
   void OnCancelRequest();
@@ -120,8 +120,8 @@ class URLRequestPeer : public net::URLRequest::Delegate {
 
   void Read();
 
-  URLRequestContextPeer* context_;
-  scoped_refptr<URLRequestPeerDelegate> delegate_;
+  URLRequestContextAdapter* context_;
+  scoped_refptr<URLRequestAdapterDelegate> delegate_;
   GURL url_;
   net::RequestPriority priority_;
   std::string method_;
@@ -137,9 +137,9 @@ class URLRequestPeer : public net::URLRequest::Delegate {
   bool canceled_;
   int64 expected_size_;
 
-  DISALLOW_COPY_AND_ASSIGN(URLRequestPeer);
+  DISALLOW_COPY_AND_ASSIGN(URLRequestAdapter);
 };
 
 }  // namespace cronet
 
-#endif  // COMPONENTS_CRONET_ANDROID_URL_REQUEST_PEER_H_
+#endif  // COMPONENTS_CRONET_ANDROID_URL_REQUEST_ADAPTER_H_

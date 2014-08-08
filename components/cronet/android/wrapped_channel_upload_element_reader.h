@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "components/cronet/android/url_request_peer.h"
+#include "components/cronet/android/url_request_adapter.h"
 #include "net/base/completion_callback.h"
 #include "net/base/upload_element_reader.h"
 
@@ -24,7 +24,7 @@ namespace cronet {
 class WrappedChannelElementReader : public net::UploadElementReader {
  public:
   WrappedChannelElementReader(
-      scoped_refptr<URLRequestPeer::URLRequestPeerDelegate> delegate,
+      scoped_refptr<URLRequestAdapter::URLRequestAdapterDelegate> delegate,
       uint64 length);
   virtual ~WrappedChannelElementReader();
 
@@ -40,7 +40,7 @@ class WrappedChannelElementReader : public net::UploadElementReader {
  private:
   const uint64 length_;
   uint64 offset_;
-  scoped_refptr<URLRequestPeer::URLRequestPeerDelegate> delegate_;
+  scoped_refptr<URLRequestAdapter::URLRequestAdapterDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WrappedChannelElementReader);
 };

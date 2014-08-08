@@ -7,8 +7,8 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/macros.h"
-#include "components/cronet/android/url_request_context_peer.h"
-#include "components/cronet/android/url_request_peer.h"
+#include "components/cronet/android/url_request_adapter.h"
+#include "components/cronet/android/url_request_context_adapter.h"
 #include "jni/UrlRequest_jni.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
@@ -37,7 +37,7 @@ net::RequestPriority ConvertRequestPriority(jint request_priority) {
 }
 
 void SetPostContentType(JNIEnv* env,
-                        URLRequestPeer* request,
+                        URLRequestAdapter* request,
                         jstring content_type) {
   DCHECK(request != NULL);
 
@@ -53,20 +53,20 @@ void SetPostContentType(JNIEnv* env,
   request->AddHeader(content_type_header, content_type_string);
 }
 
-// A delegate of URLRequestPeer that delivers callbacks to the Java layer.
-class JniURLRequestPeerDelegate
-    : public URLRequestPeer::URLRequestPeerDelegate {
+// A delegate of URLRequestAdapter that delivers callbacks to the Java layer.
+class JniURLRequestAdapterDelegate
+    : public URLRequestAdapter::URLRequestAdapterDelegate {
  public:
-  JniURLRequestPeerDelegate(JNIEnv* env, jobject owner) {
+  JniURLRequestAdapterDelegate(JNIEnv* env, jobject owner) {
     owner_ = env->NewGlobalRef(owner);
   }
 
-  virtual void OnResponseStarted(URLRequestPeer* request) OVERRIDE {
+  virtual void OnResponseStarted(URLRequestAdapter* request) OVERRIDE {
     JNIEnv* env = base::android::AttachCurrentThread();
     cronet::Java_UrlRequest_onResponseStarted(env, owner_);
   }
 
-  virtual void OnBytesRead(URLRequestPeer* request) OVERRIDE {
+  virtual void OnBytesRead(URLRequestAdapter* request) OVERRIDE {
     int bytes_read = request->bytes_read();
     if (bytes_read != 0) {
       JNIEnv* env = base::android::AttachCurrentThread();
@@ -76,7 +76,7 @@ class JniURLRequestPeerDelegate
     }
   }
 
-  virtual void OnRequestFinished(URLRequestPeer* request) OVERRIDE {
+  virtual void OnRequestFinished(URLRequestAdapter* request) OVERRIDE {
     JNIEnv* env = base::android::AttachCurrentThread();
     cronet::Java_UrlRequest_finish(env, owner_);
   }
@@ -92,7 +92,7 @@ class JniURLRequestPeerDelegate
   }
 
  protected:
-  virtual ~JniURLRequestPeerDelegate() {
+  virtual ~JniURLRequestAdapterDelegate() {
     JNIEnv* env = base::android::AttachCurrentThread();
     env->DeleteGlobalRef(owner_);
   }
@@ -100,7 +100,7 @@ class JniURLRequestPeerDelegate
  private:
   jobject owner_;
 
-  DISALLOW_COPY_AND_ASSIGN(JniURLRequestPeerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(JniURLRequestAdapterDelegate);
 };
 
 }  // namespace
@@ -108,13 +108,13 @@ class JniURLRequestPeerDelegate
 // Explicitly register static JNI functions.
 bool UrlRequestRegisterJni(JNIEnv* env) { return RegisterNativesImpl(env); }
 
-static jlong CreateRequestPeer(JNIEnv* env,
-                               jobject object,
-                               jlong urlRequestContextPeer,
-                               jstring url_string,
-                               jint priority) {
-  URLRequestContextPeer* context =
-      reinterpret_cast<URLRequestContextPeer*>(urlRequestContextPeer);
+static jlong CreateRequestAdapter(JNIEnv* env,
+                                  jobject object,
+                                  jlong urlRequestContextAdapter,
+                                  jstring url_string,
+                                  jint priority) {
+  URLRequestContextAdapter* context =
+      reinterpret_cast<URLRequestContextAdapter*>(urlRequestContextAdapter);
   DCHECK(context != NULL);
 
   const char* url_utf8 = env->GetStringUTFChars(url_string, NULL);
@@ -125,22 +125,23 @@ static jlong CreateRequestPeer(JNIEnv* env,
 
   env->ReleaseStringUTFChars(url_string, url_utf8);
 
-  URLRequestPeer* peer =
-      new URLRequestPeer(context,
-                         new JniURLRequestPeerDelegate(env, object),
-                         url,
-                         ConvertRequestPriority(priority));
+  URLRequestAdapter* adapter =
+      new URLRequestAdapter(context,
+                            new JniURLRequestAdapterDelegate(env, object),
+                            url,
+                            ConvertRequestPriority(priority));
 
-  return reinterpret_cast<jlong>(peer);
+  return reinterpret_cast<jlong>(adapter);
 }
 
 // synchronized
 static void AddHeader(JNIEnv* env,
                       jobject object,
-                      jlong urlRequestPeer,
+                      jlong urlRequestAdapter,
                       jstring name,
                       jstring value) {
-  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
+  URLRequestAdapter* request =
+      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
   DCHECK(request);
 
   std::string name_string(base::android::ConvertJavaStringToUTF8(env, name));
@@ -151,9 +152,10 @@ static void AddHeader(JNIEnv* env,
 
 static void SetMethod(JNIEnv* env,
                       jobject object,
-                      jlong urlRequestPeer,
+                      jlong urlRequestAdapter,
                       jstring method) {
-  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
+  URLRequestAdapter* request =
+      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
   DCHECK(request);
 
   std::string method_string(
@@ -164,10 +166,11 @@ static void SetMethod(JNIEnv* env,
 
 static void SetUploadData(JNIEnv* env,
                           jobject object,
-                          jlong urlRequestPeer,
+                          jlong urlRequestAdapter,
                           jstring content_type,
                           jbyteArray content) {
-  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
+  URLRequestAdapter* request =
+      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
   SetPostContentType(env, request, content_type);
 
   if (content != NULL) {
@@ -183,10 +186,11 @@ static void SetUploadData(JNIEnv* env,
 
 static void SetUploadChannel(JNIEnv* env,
                              jobject object,
-                             jlong urlRequestPeer,
+                             jlong urlRequestAdapter,
                              jstring content_type,
                              jlong content_length) {
-  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
+  URLRequestAdapter* request =
+      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
   SetPostContentType(env, request, content_type);
 
   request->SetUploadChannel(env, content_length);
@@ -194,33 +198,37 @@ static void SetUploadChannel(JNIEnv* env,
 
 
 /* synchronized */
-static void Start(JNIEnv* env, jobject object, jlong urlRequestPeer) {
-  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
+static void Start(JNIEnv* env, jobject object, jlong urlRequestAdapter) {
+  URLRequestAdapter* request =
+      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
   if (request != NULL) {
     request->Start();
   }
 }
 
 /* synchronized */
-static void DestroyRequestPeer(JNIEnv* env,
-                               jobject object,
-                               jlong urlRequestPeer) {
-  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
+static void DestroyRequestAdapter(JNIEnv* env,
+                                  jobject object,
+                                  jlong urlRequestAdapter) {
+  URLRequestAdapter* request =
+      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
   if (request != NULL) {
     request->Destroy();
   }
 }
 
 /* synchronized */
-static void Cancel(JNIEnv* env, jobject object, jlong urlRequestPeer) {
-  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
+static void Cancel(JNIEnv* env, jobject object, jlong urlRequestAdapter) {
+  URLRequestAdapter* request =
+      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
   if (request != NULL) {
     request->Cancel();
   }
 }
 
-static jint GetErrorCode(JNIEnv* env, jobject object, jlong urlRequestPeer) {
-  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
+static jint GetErrorCode(JNIEnv* env, jobject object, jlong urlRequestAdapter) {
+  URLRequestAdapter* request =
+      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
   int error_code = request->error_code();
   switch (error_code) {
     // TODO(mef): Investigate returning success on positive values, too, as
@@ -256,8 +264,9 @@ static jint GetErrorCode(JNIEnv* env, jobject object, jlong urlRequestPeer) {
 
 static jstring GetErrorString(JNIEnv* env,
                               jobject object,
-                              jlong urlRequestPeer) {
-  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
+                              jlong urlRequestAdapter) {
+  URLRequestAdapter* request =
+      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
   int error_code = request->error_code();
   char buffer[200];
   std::string error_string = net::ErrorToString(error_code);
@@ -271,15 +280,17 @@ static jstring GetErrorString(JNIEnv* env,
 
 static jint GetHttpStatusCode(JNIEnv* env,
                               jobject object,
-                              jlong urlRequestPeer) {
-  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
+                              jlong urlRequestAdapter) {
+  URLRequestAdapter* request =
+      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
   return request->http_status_code();
 }
 
 static jstring GetContentType(JNIEnv* env,
                               jobject object,
-                              jlong urlRequestPeer) {
-  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
+                              jlong urlRequestAdapter) {
+  URLRequestAdapter* request =
+      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
   if (request == NULL) {
     return NULL;
   }
@@ -293,17 +304,21 @@ static jstring GetContentType(JNIEnv* env,
 
 static jlong GetContentLength(JNIEnv* env,
                               jobject object,
-                              jlong urlRequestPeer) {
-  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
+                              jlong urlRequestAdapter) {
+  URLRequestAdapter* request =
+      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
   if (request == NULL) {
     return 0;
   }
   return request->content_length();
 }
 
-static jstring GetHeader(
-    JNIEnv* env, jobject object, jlong urlRequestPeer, jstring name) {
-  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
+static jstring GetHeader(JNIEnv* env,
+                         jobject object,
+                         jlong urlRequestAdapter,
+                         jstring name) {
+  URLRequestAdapter* request =
+      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
   if (request == NULL) {
     return NULL;
   }
@@ -319,9 +334,10 @@ static jstring GetHeader(
 
 static void GetAllHeaders(JNIEnv* env,
                           jobject object,
-                          jlong urlRequestPeer,
+                          jlong urlRequestAdapter,
                           jobject headersMap) {
-  URLRequestPeer* request = reinterpret_cast<URLRequestPeer*>(urlRequestPeer);
+  URLRequestAdapter* request =
+      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
   if (request == NULL)
     return;
 

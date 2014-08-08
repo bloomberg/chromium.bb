@@ -23,9 +23,9 @@ public class UrlRequestContext {
     private static final String LOG_TAG = "ChromiumNetwork";
 
     /**
-     * Native peer object, owned by UrlRequestContext.
+     * Native adapter object, owned by UrlRequestContext.
      */
-    private long mUrlRequestContextPeer;
+    private long mUrlRequestContextAdapter;
 
     private final ConditionVariable mStarted = new ConditionVariable();
 
@@ -35,10 +35,10 @@ public class UrlRequestContext {
      */
     protected UrlRequestContext(Context context, String userAgent,
             String config) {
-        mUrlRequestContextPeer = nativeCreateRequestContextPeer(context,
+        mUrlRequestContextAdapter = nativeCreateRequestContextAdapter(context,
                 userAgent, getLoggingLevel(), config);
-        if (mUrlRequestContextPeer == 0)
-            throw new NullPointerException("Context Peer creation failed");
+        if (mUrlRequestContextAdapter == 0)
+            throw new NullPointerException("Context Adapter creation failed");
 
         // TODO(mef): Revisit the need of block here.
         mStarted.block(2000);
@@ -75,7 +75,7 @@ public class UrlRequestContext {
      * If actively logging the call is ignored.
      */
     public void startNetLogToFile(String fileName) {
-        nativeStartNetLogToFile(mUrlRequestContextPeer, fileName);
+        nativeStartNetLogToFile(mUrlRequestContextAdapter, fileName);
     }
 
     /**
@@ -83,7 +83,7 @@ public class UrlRequestContext {
      * not in progress this call is ignored.
      */
     public void stopNetLog() {
-        nativeStopNetLog(mUrlRequestContextPeer);
+        nativeStopNetLog(mUrlRequestContextAdapter);
     }
 
     @CalledByNative
@@ -95,12 +95,12 @@ public class UrlRequestContext {
 
     @Override
     protected void finalize() throws Throwable {
-        nativeReleaseRequestContextPeer(mUrlRequestContextPeer);
+        nativeReleaseRequestContextAdapter(mUrlRequestContextAdapter);
         super.finalize();
     }
 
-    protected long getUrlRequestContextPeer() {
-        return mUrlRequestContextPeer;
+    protected long getUrlRequestContextAdapter() {
+        return mUrlRequestContextAdapter;
     }
 
     /**
@@ -119,20 +119,20 @@ public class UrlRequestContext {
         return loggingLevel;
     }
 
-    // Returns an instance URLRequestContextPeer to be stored in
-    // mUrlRequestContextPeer.
-    private native long nativeCreateRequestContextPeer(Context context,
+    // Returns an instance URLRequestContextAdapter to be stored in
+    // mUrlRequestContextAdapter.
+    private native long nativeCreateRequestContextAdapter(Context context,
             String userAgent, int loggingLevel, String config);
 
-    private native void nativeReleaseRequestContextPeer(
-            long urlRequestContextPeer);
+    private native void nativeReleaseRequestContextAdapter(
+            long urlRequestContextAdapter);
 
     private native void nativeInitializeStatistics();
 
     private native String nativeGetStatisticsJSON(String filter);
 
-    private native void nativeStartNetLogToFile(long urlRequestContextPeer,
+    private native void nativeStartNetLogToFile(long urlRequestContextAdapter,
             String fileName);
 
-    private native void nativeStopNetLog(long urlRequestContextPeer);
+    private native void nativeStopNetLog(long urlRequestContextAdapter);
 }

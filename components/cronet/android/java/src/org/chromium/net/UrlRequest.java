@@ -52,9 +52,9 @@ public class UrlRequest {
     private final ContextLock mLock;
 
     /**
-     * Native peer object, owned by UrlRequest.
+     * Native adapter object, owned by UrlRequest.
      */
-    private long mUrlRequestPeer;
+    private long mUrlRequestAdapter;
 
     /**
      * Constructor.
@@ -81,8 +81,8 @@ public class UrlRequest {
         mHeaders = headers;
         mSink = sink;
         mLock = new ContextLock();
-        mUrlRequestPeer = nativeCreateRequestPeer(
-                mRequestContext.getUrlRequestContextPeer(), mUrl, mPriority);
+        mUrlRequestAdapter = nativeCreateRequestAdapter(
+                mRequestContext.getUrlRequestContextAdapter(), mUrl, mPriority);
     }
 
     /**
@@ -136,7 +136,7 @@ public class UrlRequest {
     public void setHttpMethod(String method) {
         validateNotStarted();
         if (!("PUT".equals(method) || "POST".equals(method))) {
-            throw new IllegalArgumentException("Only PUT and POST are allowed.");
+            throw new IllegalArgumentException("Only PUT or POST are allowed.");
         }
         mMethod = method;
     }
@@ -166,12 +166,12 @@ public class UrlRequest {
             }
 
             if (method != null) {
-                nativeSetMethod(mUrlRequestPeer, method);
+                nativeSetMethod(mUrlRequestAdapter, method);
             }
 
             if (mHeaders != null && !mHeaders.isEmpty()) {
                 for (Entry<String, String> entry : mHeaders.entrySet()) {
-                    nativeAddHeader(mUrlRequestPeer, entry.getKey(),
+                    nativeAddHeader(mUrlRequestAdapter, entry.getKey(),
                                     entry.getValue());
               }
             }
@@ -179,20 +179,20 @@ public class UrlRequest {
             if (mAdditionalHeaders != null) {
                 for (Entry<String, String> entry :
                      mAdditionalHeaders.entrySet()) {
-                    nativeAddHeader(mUrlRequestPeer, entry.getKey(),
+                    nativeAddHeader(mUrlRequestAdapter, entry.getKey(),
                                     entry.getValue());
               }
             }
 
             if (mUploadData != null && mUploadData.length > 0) {
-                nativeSetUploadData(mUrlRequestPeer, mUploadContentType,
+                nativeSetUploadData(mUrlRequestAdapter, mUploadContentType,
                                     mUploadData);
             } else if (mUploadChannel != null) {
-                nativeSetUploadChannel(mUrlRequestPeer, mUploadContentType,
+                nativeSetUploadChannel(mUrlRequestAdapter, mUploadContentType,
                                        mUploadContentLength);
             }
 
-            nativeStart(mUrlRequestPeer);
+            nativeStart(mUrlRequestAdapter);
           }
     }
 
@@ -205,7 +205,7 @@ public class UrlRequest {
             mCanceled = true;
 
             if (!mRecycled) {
-                nativeCancel(mUrlRequestPeer);
+                nativeCancel(mUrlRequestAdapter);
             }
         }
     }
@@ -233,12 +233,13 @@ public class UrlRequest {
 
         validateNotRecycled();
 
-        int errorCode = nativeGetErrorCode(mUrlRequestPeer);
+        int errorCode = nativeGetErrorCode(mUrlRequestAdapter);
         switch (errorCode) {
             case UrlRequestError.SUCCESS:
                 return null;
             case UrlRequestError.UNKNOWN:
-                return new IOException(nativeGetErrorString(mUrlRequestPeer));
+                return new IOException(
+                        nativeGetErrorString(mUrlRequestAdapter));
             case UrlRequestError.MALFORMED_URL:
                 return new MalformedURLException("Malformed URL: " + mUrl);
             case UrlRequestError.CONNECTION_TIMED_OUT:
@@ -258,7 +259,7 @@ public class UrlRequest {
     }
 
     public int getHttpStatusCode() {
-        return nativeGetHttpStatusCode(mUrlRequestPeer);
+        return nativeGetHttpStatusCode(mUrlRequestAdapter);
     }
 
     /**
@@ -275,14 +276,14 @@ public class UrlRequest {
 
     public String getHeader(String name) {
         validateHeadersAvailable();
-        return nativeGetHeader(mUrlRequestPeer, name);
+        return nativeGetHeader(mUrlRequestAdapter, name);
     }
 
     // All response headers.
     public Map<String, List<String>> getAllHeaders() {
         validateHeadersAvailable();
         ResponseHeadersMap result = new ResponseHeadersMap();
-        nativeGetAllHeaders(mUrlRequestPeer, result);
+        nativeGetAllHeaders(mUrlRequestAdapter, result);
         return result;
     }
 
@@ -291,8 +292,8 @@ public class UrlRequest {
      */
     @CalledByNative
     protected void onResponseStarted() {
-        mContentType = nativeGetContentType(mUrlRequestPeer);
-        mContentLength = nativeGetContentLength(mUrlRequestPeer);
+        mContentType = nativeGetContentType(mUrlRequestAdapter);
+        mContentLength = nativeGetContentLength(mUrlRequestAdapter);
         mHeadersAvailable = true;
     }
 
@@ -339,8 +340,8 @@ public class UrlRequest {
                 // Ignore
             }
             onRequestComplete();
-            nativeDestroyRequestPeer(mUrlRequestPeer);
-            mUrlRequestPeer = 0;
+            nativeDestroyRequestAdapter(mUrlRequestAdapter);
+            mUrlRequestAdapter = 0;
             mRecycled = true;
         }
     }
@@ -410,39 +411,39 @@ public class UrlRequest {
         return mUrl;
     }
 
-    private native long nativeCreateRequestPeer(long urlRequestContextPeer,
-            String url, int priority);
+    private native long nativeCreateRequestAdapter(
+            long urlRequestContextAdapter, String url, int priority);
 
-    private native void nativeAddHeader(long urlRequestPeer, String name,
+    private native void nativeAddHeader(long urlRequestAdapter, String name,
             String value);
 
-    private native void nativeSetMethod(long urlRequestPeer, String method);
+    private native void nativeSetMethod(long urlRequestAdapter, String method);
 
-    private native void nativeSetUploadData(long urlRequestPeer,
+    private native void nativeSetUploadData(long urlRequestAdapter,
             String contentType, byte[] content);
 
-    private native void nativeSetUploadChannel(long urlRequestPeer,
+    private native void nativeSetUploadChannel(long urlRequestAdapter,
             String contentType, long contentLength);
 
-    private native void nativeStart(long urlRequestPeer);
+    private native void nativeStart(long urlRequestAdapter);
 
-    private native void nativeCancel(long urlRequestPeer);
+    private native void nativeCancel(long urlRequestAdapter);
 
-    private native void nativeDestroyRequestPeer(long urlRequestPeer);
+    private native void nativeDestroyRequestAdapter(long urlRequestAdapter);
 
-    private native int nativeGetErrorCode(long urlRequestPeer);
+    private native int nativeGetErrorCode(long urlRequestAdapter);
 
-    private native int nativeGetHttpStatusCode(long urlRequestPeer);
+    private native int nativeGetHttpStatusCode(long urlRequestAdapter);
 
-    private native String nativeGetErrorString(long urlRequestPeer);
+    private native String nativeGetErrorString(long urlRequestAdapter);
 
-    private native String nativeGetContentType(long urlRequestPeer);
+    private native String nativeGetContentType(long urlRequestAdapter);
 
-    private native long nativeGetContentLength(long urlRequestPeer);
+    private native long nativeGetContentLength(long urlRequestAdapter);
 
-    private native String nativeGetHeader(long urlRequestPeer, String name);
+    private native String nativeGetHeader(long urlRequestAdapter, String name);
 
-    private native void nativeGetAllHeaders(long urlRequestPeer,
+    private native void nativeGetAllHeaders(long urlRequestAdapter,
             ResponseHeadersMap headers);
 
     // Explicit class to work around JNI-generator generics confusion.

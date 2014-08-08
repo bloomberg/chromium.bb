@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRONET_ANDROID_URL_REQUEST_CONTEXT_PEER_H_
-#define COMPONENTS_CRONET_ANDROID_URL_REQUEST_CONTEXT_PEER_H_
+#ifndef COMPONENTS_CRONET_ANDROID_URL_REQUEST_CONTEXT_ADAPTER_H_
+#define COMPONENTS_CRONET_ANDROID_URL_REQUEST_CONTEXT_ADAPTER_H_
 
 #include <string>
 
@@ -39,21 +39,21 @@ class NetLogObserver : public net::NetLog::ThreadSafeObserver {
 };
 
 // Fully configured |URLRequestContext|.
-class URLRequestContextPeer : public net::URLRequestContextGetter {
+class URLRequestContextAdapter : public net::URLRequestContextGetter {
  public:
-  class URLRequestContextPeerDelegate
-      : public base::RefCountedThreadSafe<URLRequestContextPeerDelegate> {
+  class URLRequestContextAdapterDelegate
+      : public base::RefCountedThreadSafe<URLRequestContextAdapterDelegate> {
    public:
-    virtual void OnContextInitialized(URLRequestContextPeer* context) = 0;
+    virtual void OnContextInitialized(URLRequestContextAdapter* context) = 0;
 
    protected:
-    friend class base::RefCountedThreadSafe<URLRequestContextPeerDelegate>;
+    friend class base::RefCountedThreadSafe<URLRequestContextAdapterDelegate>;
 
-    virtual ~URLRequestContextPeerDelegate() {}
+    virtual ~URLRequestContextAdapterDelegate() {}
   };
 
-  URLRequestContextPeer(URLRequestContextPeerDelegate* delegate,
-                        std::string user_agent);
+  URLRequestContextAdapter(URLRequestContextAdapterDelegate* delegate,
+                           std::string user_agent);
   void Initialize(scoped_ptr<URLRequestContextConfig> config);
 
   const std::string& GetUserAgent(const GURL& url) const;
@@ -67,7 +67,7 @@ class URLRequestContextPeer : public net::URLRequestContextGetter {
   void StopNetLog();
 
  private:
-  scoped_refptr<URLRequestContextPeerDelegate> delegate_;
+  scoped_refptr<URLRequestContextAdapterDelegate> delegate_;
   scoped_ptr<net::URLRequestContext> context_;
   std::string user_agent_;
   base::Thread* network_thread_;
@@ -75,14 +75,14 @@ class URLRequestContextPeer : public net::URLRequestContextGetter {
   scoped_ptr<NetLogObserver> net_log_observer_;
   scoped_ptr<net::NetLogLogger> net_log_logger_;
 
-  virtual ~URLRequestContextPeer();
+  virtual ~URLRequestContextAdapter();
 
   // Initializes |context_| on the IO thread.
   void InitializeURLRequestContext(scoped_ptr<URLRequestContextConfig> config);
 
-  DISALLOW_COPY_AND_ASSIGN(URLRequestContextPeer);
+  DISALLOW_COPY_AND_ASSIGN(URLRequestContextAdapter);
 };
 
 }  // namespace cronet
 
-#endif  // COMPONENTS_CRONET_ANDROID_URL_REQUEST_CONTEXT_PEER_H_
+#endif  // COMPONENTS_CRONET_ANDROID_URL_REQUEST_CONTEXT_ADAPTER_H_

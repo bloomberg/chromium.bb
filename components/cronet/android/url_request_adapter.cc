@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "url_request_peer.h"
+#include "url_request_adapter.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "components/cronet/android/url_request_context_peer.h"
+#include "components/cronet/android/url_request_context_adapter.h"
 #include "components/cronet/android/wrapped_channel_upload_element_reader.h"
 #include "net/base/load_flags.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -15,10 +15,10 @@ namespace cronet {
 
 static const size_t kBufferSizeIncrement = 8192;
 
-URLRequestPeer::URLRequestPeer(URLRequestContextPeer* context,
-                               URLRequestPeerDelegate* delegate,
-                               GURL url,
-                               net::RequestPriority priority)
+URLRequestAdapter::URLRequestAdapter(URLRequestContextAdapter* context,
+                                     URLRequestAdapterDelegate* delegate,
+                                     GURL url,
+                                     net::RequestPriority priority)
     : method_("GET"),
       url_request_(NULL),
       read_buffer_(new net::GrowableIOBuffer()),
@@ -27,38 +27,42 @@ URLRequestPeer::URLRequestPeer(URLRequestContextPeer* context,
       error_code_(0),
       http_status_code_(0),
       canceled_(false),
-      expected_size_(0)  {
+      expected_size_(0) {
   context_ = context;
   delegate_ = delegate;
   url_ = url;
   priority_ = priority;
 }
 
-URLRequestPeer::~URLRequestPeer() { CHECK(url_request_ == NULL); }
+URLRequestAdapter::~URLRequestAdapter() {
+  CHECK(url_request_ == NULL);
+}
 
-void URLRequestPeer::SetMethod(const std::string& method) { method_ = method; }
+void URLRequestAdapter::SetMethod(const std::string& method) {
+  method_ = method;
+}
 
-void URLRequestPeer::AddHeader(const std::string& name,
-                               const std::string& value) {
+void URLRequestAdapter::AddHeader(const std::string& name,
+                                  const std::string& value) {
   headers_.SetHeader(name, value);
 }
 
-void URLRequestPeer::SetUploadContent(const char* bytes, int bytes_len) {
+void URLRequestAdapter::SetUploadContent(const char* bytes, int bytes_len) {
   std::vector<char> data(bytes, bytes + bytes_len);
   scoped_ptr<net::UploadElementReader> reader(
       new net::UploadOwnedBytesElementReader(&data));
-  upload_data_stream_.reset(net::UploadDataStream::CreateWithReader(
-      reader.Pass(), 0));
+  upload_data_stream_.reset(
+      net::UploadDataStream::CreateWithReader(reader.Pass(), 0));
 }
 
-void URLRequestPeer::SetUploadChannel(JNIEnv* env, int64 content_length) {
+void URLRequestAdapter::SetUploadChannel(JNIEnv* env, int64 content_length) {
   scoped_ptr<net::UploadElementReader> reader(
       new WrappedChannelElementReader(delegate_, content_length));
-  upload_data_stream_.reset(net::UploadDataStream::CreateWithReader(
-      reader.Pass(), 0));
+  upload_data_stream_.reset(
+      net::UploadDataStream::CreateWithReader(reader.Pass(), 0));
 }
 
-std::string URLRequestPeer::GetHeader(const std::string &name) const {
+std::string URLRequestAdapter::GetHeader(const std::string& name) const {
   std::string value;
   if (url_request_ != NULL) {
     url_request_->GetResponseHeaderByName(name, &value);
@@ -66,21 +70,21 @@ std::string URLRequestPeer::GetHeader(const std::string &name) const {
   return value;
 }
 
-net::HttpResponseHeaders* URLRequestPeer::GetResponseHeaders() const {
+net::HttpResponseHeaders* URLRequestAdapter::GetResponseHeaders() const {
   if (url_request_ == NULL) {
     return NULL;
   }
   return url_request_->response_headers();
 }
 
-void URLRequestPeer::Start() {
+void URLRequestAdapter::Start() {
   context_->GetNetworkTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&URLRequestPeer::OnInitiateConnection,
+      base::Bind(&URLRequestAdapter::OnInitiateConnection,
                  base::Unretained(this)));
 }
 
-void URLRequestPeer::OnInitiateConnection() {
+void URLRequestAdapter::OnInitiateConnection() {
   if (canceled_) {
     return;
   }
@@ -99,7 +103,7 @@ void URLRequestPeer::OnInitiateConnection() {
     std::string user_agent;
     user_agent = context_->GetUserAgent(url_);
     url_request_->SetExtraRequestHeaderByName(
-      net::HttpRequestHeaders::kUserAgent, user_agent, true /* override */);
+        net::HttpRequestHeaders::kUserAgent, user_agent, true /* override */);
   }
 
   if (upload_data_stream_)
@@ -110,7 +114,7 @@ void URLRequestPeer::OnInitiateConnection() {
   url_request_->Start();
 }
 
-void URLRequestPeer::Cancel() {
+void URLRequestAdapter::Cancel() {
   if (canceled_) {
     return;
   }
@@ -119,10 +123,10 @@ void URLRequestPeer::Cancel() {
 
   context_->GetNetworkTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&URLRequestPeer::OnCancelRequest, base::Unretained(this)));
+      base::Bind(&URLRequestAdapter::OnCancelRequest, base::Unretained(this)));
 }
 
-void URLRequestPeer::OnCancelRequest() {
+void URLRequestAdapter::OnCancelRequest() {
   VLOG(1) << "Canceling chromium request: " << url_.possibly_invalid_spec();
 
   if (url_request_ != NULL) {
@@ -132,19 +136,19 @@ void URLRequestPeer::OnCancelRequest() {
   OnRequestCanceled();
 }
 
-void URLRequestPeer::Destroy() {
+void URLRequestAdapter::Destroy() {
   context_->GetNetworkTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&URLRequestPeer::OnDestroyRequest, this));
+      FROM_HERE, base::Bind(&URLRequestAdapter::OnDestroyRequest, this));
 }
 
 // static
-void URLRequestPeer::OnDestroyRequest(URLRequestPeer* self) {
+void URLRequestAdapter::OnDestroyRequest(URLRequestAdapter* self) {
   VLOG(1) << "Destroying chromium request: "
           << self->url_.possibly_invalid_spec();
   delete self;
 }
 
-void URLRequestPeer::OnResponseStarted(net::URLRequest* request) {
+void URLRequestAdapter::OnResponseStarted(net::URLRequest* request) {
   if (request->status().status() != net::URLRequestStatus::SUCCESS) {
     OnRequestFailed();
     return;
@@ -161,7 +165,7 @@ void URLRequestPeer::OnResponseStarted(net::URLRequest* request) {
 }
 
 // Reads all available data or starts an asynchronous read.
-void URLRequestPeer::Read() {
+void URLRequestAdapter::Read() {
   while (true) {
     if (read_buffer_->RemainingCapacity() == 0) {
       int new_capacity = read_buffer_->capacity() + kBufferSizeIncrement;
@@ -196,7 +200,8 @@ void URLRequestPeer::Read() {
   }
 }
 
-void URLRequestPeer::OnReadCompleted(net::URLRequest* request, int bytes_read) {
+void URLRequestAdapter::OnReadCompleted(net::URLRequest* request,
+                                        int bytes_read) {
   VLOG(1) << "Asynchronously read: " << bytes_read << " bytes";
   if (bytes_read < 0) {
     OnRequestFailed();
@@ -210,13 +215,13 @@ void URLRequestPeer::OnReadCompleted(net::URLRequest* request, int bytes_read) {
   Read();
 }
 
-void URLRequestPeer::OnBytesRead(int bytes_read) {
+void URLRequestAdapter::OnBytesRead(int bytes_read) {
   read_buffer_->set_offset(read_buffer_->offset() + bytes_read);
   bytes_read_ += bytes_read;
   total_bytes_read_ += bytes_read;
 }
 
-void URLRequestPeer::OnRequestSucceeded() {
+void URLRequestAdapter::OnRequestSucceeded() {
   if (canceled_) {
     return;
   }
@@ -227,7 +232,7 @@ void URLRequestPeer::OnRequestSucceeded() {
   OnRequestCompleted();
 }
 
-void URLRequestPeer::OnRequestFailed() {
+void URLRequestAdapter::OnRequestFailed() {
   if (canceled_) {
     return;
   }
@@ -238,9 +243,11 @@ void URLRequestPeer::OnRequestFailed() {
   OnRequestCompleted();
 }
 
-void URLRequestPeer::OnRequestCanceled() { OnRequestCompleted(); }
+void URLRequestAdapter::OnRequestCanceled() {
+  OnRequestCompleted();
+}
 
-void URLRequestPeer::OnRequestCompleted() {
+void URLRequestAdapter::OnRequestCompleted() {
   VLOG(1) << "Completed: " << url_.possibly_invalid_spec();
   if (url_request_ != NULL) {
     delete url_request_;
@@ -251,7 +258,7 @@ void URLRequestPeer::OnRequestCompleted() {
   delegate_->OnRequestFinished(this);
 }
 
-unsigned char* URLRequestPeer::Data() const {
+unsigned char* URLRequestAdapter::Data() const {
   return reinterpret_cast<unsigned char*>(read_buffer_->StartOfBuffer());
 }
 

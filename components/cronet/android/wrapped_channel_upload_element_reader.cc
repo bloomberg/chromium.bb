@@ -12,7 +12,7 @@
 namespace cronet {
 
 WrappedChannelElementReader::WrappedChannelElementReader(
-    scoped_refptr<URLRequestPeer::URLRequestPeerDelegate> delegate,
+    scoped_refptr<URLRequestAdapter::URLRequestAdapterDelegate> delegate,
     uint64 length)
     : length_(length), offset_(0), delegate_(delegate) {
 }
