@@ -72,6 +72,8 @@ HTMLFormElement::HTMLFormElement(Document& document)
     , m_hasElementsAssociatedByParser(false)
     , m_didFinishParsingChildren(false)
     , m_wasUserSubmitted(false)
+    , m_isSubmittingOrInUserJSSubmitEvent(false)
+    , m_shouldSubmit(false)
     , m_isInResetFunction(false)
     , m_wasDemoted(false)
     , m_pendingAutocompleteEventsQueue(GenericEventQueue::create(this))
@@ -319,16 +321,24 @@ void HTMLFormElement::prepareForSubmission(Event* event)
 {
     RefPtrWillBeRawPtr<HTMLFormElement> protector(this);
     LocalFrame* frame = document().frame();
-    if (!frame)
+    if (!frame || m_isSubmittingOrInUserJSSubmitEvent)
         return;
 
     // Interactive validation must be done before dispatching the submit event.
     if (!validateInteractively(event))
         return;
 
+    m_isSubmittingOrInUserJSSubmitEvent = true;
+    m_shouldSubmit = false;
+
     frame->loader().client()->dispatchWillSendSubmitEvent(this);
 
     if (dispatchEvent(Event::createCancelableBubble(EventTypeNames::submit)))
+        m_shouldSubmit = true;
+
+    m_isSubmittingOrInUserJSSubmitEvent = false;
+
+    if (m_shouldSubmit)
         submit(event, true, true, NotSubmittedByJavaScript);
 }
 
@@ -359,6 +369,12 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool proce
     if (!view || !frame || !frame->page())
         return;
 
+    if (m_isSubmittingOrInUserJSSubmitEvent) {
+        m_shouldSubmit = true;
+        return;
+    }
+
+    m_isSubmittingOrInUserJSSubmitEvent = true;
     m_wasUserSubmitted = processingUserGesture;
 
     RefPtrWillBeRawPtr<HTMLFormControlElement> firstSuccessfulSubmitButton = nullptr;
@@ -390,6 +406,9 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool proce
 
     if (needButtonActivation && firstSuccessfulSubmitButton)
         firstSuccessfulSubmitButton->setActivatedSubmit(false);
+
+    m_shouldSubmit = false;
+    m_isSubmittingOrInUserJSSubmitEvent = false;
 }
 
 void HTMLFormElement::scheduleFormSubmission(PassRefPtrWillBeRawPtr<FormSubmission> submission)
