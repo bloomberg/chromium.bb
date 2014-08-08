@@ -11,10 +11,10 @@
 #include "base/containers/hash_tables.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer_impl.h"
-#include "ui/gfx/point3_f.h"
-#include "ui/gfx/quad_f.h"
-#include "ui/gfx/rect_f.h"
-#include "ui/gfx/vector3d_f.h"
+#include "ui/gfx/geometry/point3_f.h"
+#include "ui/gfx/geometry/quad_f.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/vector3d_f.h"
 
 #if defined(COMPILER_GCC)
 namespace cc { struct GraphEdge; }

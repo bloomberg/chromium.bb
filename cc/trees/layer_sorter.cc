@@ -23,11 +23,6 @@ namespace cc {
 // the test scene went away.
 const float k_layer_epsilon = 1e-4f;
 
-inline static float PerpProduct(const gfx::Vector2dF& u,
-                                const gfx::Vector2dF& v) {
-  return u.x() * v.y() - u.y() * v.x();
-}
-
 // Tests if two edges defined by their endpoints (a,b) and (c,d) intersect.
 // Returns true and the point of intersection if they do and false otherwise.
 static bool EdgeEdgeTest(const gfx::PointF& a,
@@ -39,7 +34,7 @@ static bool EdgeEdgeTest(const gfx::PointF& a,
   gfx::Vector2dF v = d - c;
   gfx::Vector2dF w = a - c;
 
-  float denom = PerpProduct(u, v);
+  float denom = static_cast<float>(gfx::CrossProduct(u, v));
 
   // If denom == 0 then the edges are parallel. While they could be overlapping
   // we don't bother to check here as the we'll find their intersections from
@@ -47,11 +42,11 @@ static bool EdgeEdgeTest(const gfx::PointF& a,
   if (!denom)
     return false;
 
-  float s = PerpProduct(v, w) / denom;
+  float s = static_cast<float>(gfx::CrossProduct(v, w)) / denom;
   if (s < 0.f || s > 1.f)
     return false;
 
-  float t = PerpProduct(u, w) / denom;
+  float t = static_cast<float>(gfx::CrossProduct(u, w)) / denom;
   if (t < 0.f || t > 1.f)
     return false;
 
