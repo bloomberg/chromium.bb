@@ -14,7 +14,6 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 
-class AppViewGuest;
 class GuestViewBase;
 class GuestViewManagerFactory;
 class GURL;
@@ -22,10 +21,6 @@ class GURL;
 namespace content {
 class BrowserContext;
 }  // namespace content
-
-namespace guestview {
-class TestGuestViewManager;
-}  // namespace guestview
 
 class GuestViewManager : public content::BrowserPluginGuestManager,
                          public base::SupportsUserData::Data {
@@ -78,9 +73,7 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
                             const GuestCallback& callback) OVERRIDE;
 
  protected:
-  friend class AppViewGuest;
   friend class GuestViewBase;
-  friend class guestview::TestGuestViewManager;
   FRIEND_TEST_ALL_PREFIXES(GuestViewManagerTest, AddRemove);
 
   // Can be overriden in tests.
