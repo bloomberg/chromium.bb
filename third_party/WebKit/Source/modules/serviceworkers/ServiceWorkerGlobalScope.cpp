@@ -33,6 +33,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ThrowException.h"
+#include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/ThreadableLoader.h"
@@ -175,6 +176,16 @@ void ServiceWorkerGlobalScope::trace(Visitor* visitor)
     visitor->trace(m_clients);
     visitor->trace(m_caches);
     WorkerGlobalScope::trace(visitor);
+}
+
+void ServiceWorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState& exceptionState)
+{
+    // Bust the MemoryCache to ensure script requests reach the browser-side
+    // and get added to and retrieved from the ServiceWorker's script cache.
+    // FIXME: Revisit in light of the solution to crbug/388375.
+    for (Vector<String>::const_iterator it = urls.begin(); it != urls.end(); ++it)
+        MemoryCache::removeURLFromCache(this->executionContext(), completeURL(*it));
+    WorkerGlobalScope::importScripts(urls, exceptionState);
 }
 
 void ServiceWorkerGlobalScope::logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
