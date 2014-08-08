@@ -922,6 +922,8 @@
       'browser/extensions/extension_tab_util_android.cc',
     ],
     'chrome_browser_extensions_networking_private_sources': [
+      'browser/extensions/api/networking_private/crypto_verify_impl.cc',
+      'browser/extensions/api/networking_private/crypto_verify_impl.h',
       'browser/extensions/api/networking_private/networking_private_api.h',
       'browser/extensions/api/networking_private/networking_private_credentials_getter.h',
       'browser/extensions/api/networking_private/networking_private_credentials_getter_mac.cc',

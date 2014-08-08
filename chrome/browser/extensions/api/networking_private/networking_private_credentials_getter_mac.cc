@@ -56,10 +56,10 @@ void NetworkingPrivateCredentialsGetterMac::Start(
     return;
   }
 
-  NetworkingPrivateCrypto crypto;
   std::vector<uint8> public_key_data(public_key.begin(), public_key.end());
   std::vector<uint8> ciphertext;
-  if (!crypto.EncryptByteString(public_key_data, key_data, &ciphertext)) {
+  if (!networking_private_crypto::EncryptByteString(
+          public_key_data, key_data, &ciphertext)) {
     callback.Run("", kErrorEncryption);
     return;
   }

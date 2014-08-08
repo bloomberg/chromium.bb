@@ -278,8 +278,8 @@ void ExtensionsHandler::OnGetAndEncryptWiFiCredentials(
   std::vector<uint8> ciphertext;
   bool success = error.empty() && !key_data.empty();
   if (success) {
-    NetworkingPrivateCrypto crypto;
-    success = crypto.EncryptByteString(public_key, key_data, &ciphertext);
+    success = networking_private_crypto::EncryptByteString(
+        public_key, key_data, &ciphertext);
   }
 
   Send(new ChromeUtilityHostMsg_GotEncryptedWiFiCredentials(ciphertext,

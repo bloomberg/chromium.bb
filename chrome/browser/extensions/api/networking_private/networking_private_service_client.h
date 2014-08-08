@@ -64,9 +64,11 @@ class NetworkingPrivateServiceClient
       std::string public_key;
     };
 
-    CryptoVerify() {}
-    virtual ~CryptoVerify() {}
+    CryptoVerify();
+    virtual ~CryptoVerify();
 
+    // Must be provided by the implementation. May return NULL if certificate
+    // verification is unavailable, see NetworkingPrivateServiceClient().
     static CryptoVerify* Create();
 
     virtual void VerifyDestination(const Credentials& credentials,
@@ -104,7 +106,8 @@ class NetworkingPrivateServiceClient
 
   // Takes ownership of |wifi_service| and |crypto_verify|. They are accessed
   // and deleted on the worker thread. The deletion task is posted during the
-  // NetworkingPrivateServiceClient shutdown.
+  // NetworkingPrivateServiceClient shutdown. |crypto_verify| may be NULL in
+  // which case Verify* will return a 'not implemented' error.
   NetworkingPrivateServiceClient(wifi::WiFiService* wifi_service,
                                  CryptoVerify* crypto_verify);
 
@@ -254,6 +257,7 @@ class NetworkingPrivateServiceClient
   // Observers to Network Events.
   ObserverList<Observer> network_events_observers_;
   // Interface for Verify* methods. Used and deleted on the worker thread.
+  // May be NULL.
   scoped_ptr<CryptoVerify> crypto_verify_;
   // Interface to WiFiService. Used and deleted on the worker thread.
   scoped_ptr<wifi::WiFiService> wifi_service_;

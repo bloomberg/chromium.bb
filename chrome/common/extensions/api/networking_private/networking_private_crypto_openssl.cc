@@ -39,11 +39,12 @@ bool GetDERFromPEM(const std::string& pem_data,
 
 }  // namespace
 
-bool NetworkingPrivateCrypto::VerifyCredentials(
-    const std::string& certificate,
-    const std::string& signature,
-    const std::string& data,
-    const std::string& connected_mac) {
+namespace networking_private_crypto {
+
+bool VerifyCredentials(const std::string& certificate,
+                       const std::string& signature,
+                       const std::string& data,
+                       const std::string& connected_mac) {
   crypto::EnsureOpenSSLInit();
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
@@ -140,10 +141,9 @@ bool NetworkingPrivateCrypto::VerifyCredentials(
   return true;
 }
 
-bool NetworkingPrivateCrypto::EncryptByteString(
-    const std::vector<uint8_t>& pub_key_der,
-    const std::string& data,
-    std::vector<uint8_t>* encrypted_output) {
+bool EncryptByteString(const std::vector<uint8_t>& pub_key_der,
+                       const std::string& data,
+                       std::vector<uint8_t>* encrypted_output) {
   crypto::EnsureOpenSSLInit();
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
@@ -171,10 +171,9 @@ bool NetworkingPrivateCrypto::EncryptByteString(
   return true;
 }
 
-bool NetworkingPrivateCrypto::DecryptByteString(
-    const std::string& private_key_pem,
-    const std::vector<uint8_t>& encrypted_data,
-    std::string* decrypted_output) {
+bool DecryptByteString(const std::string& private_key_pem,
+                       const std::vector<uint8_t>& encrypted_data,
+                       std::string* decrypted_output) {
   crypto::EnsureOpenSSLInit();
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
@@ -210,3 +209,5 @@ bool NetworkingPrivateCrypto::DecryptByteString(
                            output_length);
   return true;
 }
+
+}  // namespace networking_private_crypto

@@ -12,11 +12,8 @@
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_api.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_credentials_getter.h"
 #include "chrome/common/extensions/api/networking_private.h"
-#include "chrome/common/extensions/api/networking_private/networking_private_crypto.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/utility_process_host.h"
 
 using content::BrowserThread;
 
@@ -49,66 +46,6 @@ bool GetVerificationCredentials(
   return true;
 }
 
-// Implementation of Verify* methods using NetworkingPrivateCrypto.
-// TODO(mef): Move this into NetworkingPrivateCrypto class.
-class CryptoVerifyImpl : public NetworkingPrivateServiceClient::CryptoVerify {
-  bool VerifyCredentials(const Credentials& credentials) {
-    NetworkingPrivateCrypto crypto;
-    return crypto.VerifyCredentials(credentials.certificate,
-                                    credentials.signed_data,
-                                    credentials.unsigned_data,
-                                    credentials.device_bssid);
-  }
-
-  // NetworkingPrivateServiceClient::CryptoVerify
-
-  virtual void VerifyDestination(const Credentials& credentials,
-                                 bool* verified,
-                                 std::string* error) OVERRIDE {
-    *verified = VerifyCredentials(credentials);
-  }
-
-  virtual void VerifyAndEncryptCredentials(
-      const std::string& network_guid,
-      const Credentials& credentials,
-      const VerifyAndEncryptCredentialsCallback& callback) OVERRIDE {
-    if (!VerifyCredentials(credentials)) {
-      callback.Run("", "VerifyError");
-      return;
-    }
-
-    scoped_ptr<NetworkingPrivateCredentialsGetter> credentials_getter(
-        NetworkingPrivateCredentialsGetter::Create());
-
-    // Start getting credentials. On Windows |callback| will be called
-    // asynchronously on a different thread after |credentials_getter|
-    // is deleted.
-    credentials_getter->Start(network_guid, credentials.public_key, callback);
-  }
-
-  virtual void VerifyAndEncryptData(const Credentials& credentials,
-                                    const std::string& data,
-                                    std::string* base64_encoded_ciphertext,
-                                    std::string* error) OVERRIDE {
-    if (!VerifyCredentials(credentials)) {
-      *error = "VerifyError";
-      return;
-    }
-
-    NetworkingPrivateCrypto crypto;
-    std::vector<uint8> public_key_data(
-      credentials.public_key.begin(), credentials.public_key.end());
-    std::vector<uint8> ciphertext;
-    if (!crypto.EncryptByteString(public_key_data, data, &ciphertext)) {
-      *error = "EncryptError";
-      return;
-    }
-
-    base::Base64Encode(std::string(ciphertext.begin(), ciphertext.end()),
-                       base64_encoded_ciphertext);
-  }
-};
-
 // Deletes WiFiService and CryptoVerify objects on worker thread.
 void ShutdownServicesOnWorkerThread(
     scoped_ptr<wifi::WiFiService> wifi_service,
@@ -130,6 +67,9 @@ void AfterVerifyAndEncryptCredentialsRelay(
 }
 
 }  // namespace
+
+NetworkingPrivateServiceClient::CryptoVerify::CryptoVerify() {}
+NetworkingPrivateServiceClient::CryptoVerify::~CryptoVerify() {}
 
 NetworkingPrivateServiceClient::CryptoVerify::Credentials::Credentials() {}
 NetworkingPrivateServiceClient::CryptoVerify::Credentials::~Credentials() {}
@@ -173,11 +113,6 @@ NetworkingPrivateServiceClient::~NetworkingPrivateServiceClient() {
   // be deleted after completion of all posted tasks.
   DCHECK(!wifi_service_.get());
   DCHECK(!crypto_verify_.get());
-}
-
-NetworkingPrivateServiceClient::CryptoVerify*
-    NetworkingPrivateServiceClient::CryptoVerify::Create() {
-  return new CryptoVerifyImpl();
 }
 
 NetworkingPrivateServiceClient::ServiceCallbacks::ServiceCallbacks() {}
@@ -433,6 +368,11 @@ void NetworkingPrivateServiceClient::VerifyDestination(
     const VerificationProperties& verification_properties,
     const BoolCallback& success_callback,
     const FailureCallback& failure_callback) {
+  if (!crypto_verify_) {
+    failure_callback.Run(networking_private::kErrorNotSupported);
+    return;
+  }
+
   ServiceCallbacks* service_callbacks = AddServiceCallbacks();
   service_callbacks->failure_callback = failure_callback;
   service_callbacks->verify_destination_callback = success_callback;
@@ -465,6 +405,11 @@ void NetworkingPrivateServiceClient::VerifyAndEncryptCredentials(
     const VerificationProperties& verification_properties,
     const StringCallback& success_callback,
     const FailureCallback& failure_callback) {
+  if (!crypto_verify_) {
+    failure_callback.Run(networking_private::kErrorNotSupported);
+    return;
+  }
+
   ServiceCallbacks* service_callbacks = AddServiceCallbacks();
   service_callbacks->failure_callback = failure_callback;
   service_callbacks->verify_and_encrypt_credentials_callback = success_callback;
@@ -496,6 +441,11 @@ void NetworkingPrivateServiceClient::VerifyAndEncryptData(
     const std::string& data,
     const StringCallback& success_callback,
     const FailureCallback& failure_callback) {
+  if (!crypto_verify_) {
+    failure_callback.Run(networking_private::kErrorNotSupported);
+    return;
+  }
+
   ServiceCallbacks* service_callbacks = AddServiceCallbacks();
   service_callbacks->failure_callback = failure_callback;
   service_callbacks->verify_and_encrypt_data_callback = success_callback;

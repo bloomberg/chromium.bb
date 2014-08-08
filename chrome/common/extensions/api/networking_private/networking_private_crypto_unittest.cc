@@ -8,7 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Tests of NetworkingPrivateCrypto support for Networking Private API.
+// Tests of networking_private_crypto support for Networking Private API.
 class NetworkingPrivateCryptoTest : public testing::Test {
  protected:
   // Verify that decryption of |encrypted| data using |private_key_pem| matches
@@ -16,15 +16,15 @@ class NetworkingPrivateCryptoTest : public testing::Test {
   bool VerifyByteString(const std::string& private_key_pem,
                         const std::string& plain,
                         const std::vector<uint8>& encrypted) {
-    NetworkingPrivateCrypto crypto;
     std::string decrypted;
-    if (crypto.DecryptByteString(private_key_pem, encrypted, &decrypted))
+    if (networking_private_crypto::DecryptByteString(
+            private_key_pem, encrypted, &decrypted))
       return decrypted == plain;
     return false;
   }
 };
 
-// Test that NetworkingPrivateCrypto::VerifyCredentials behaves as expected.
+// Test that networking_private_crypto::VerifyCredentials behaves as expected.
 TEST_F(NetworkingPrivateCryptoTest, VerifyCredentials) {
   static const char kCertData[] =
       "-----BEGIN CERTIFICATE-----"
@@ -89,34 +89,32 @@ TEST_F(NetworkingPrivateCryptoTest, VerifyCredentials) {
   std::string signed_data;
   base::Base64Decode(kSignedData, &signed_data);
 
-  NetworkingPrivateCrypto crypto;
   // Checking basic verification operation.
-  EXPECT_TRUE(crypto.VerifyCredentials(
+  EXPECT_TRUE(networking_private_crypto::VerifyCredentials(
       kCertData, signed_data, unsigned_data, kHotspotBssid));
 
   // Checking that verification fails when the certificate is signed, but
   // subject is malformed.
-  EXPECT_FALSE(crypto.VerifyCredentials(
+  EXPECT_FALSE(networking_private_crypto::VerifyCredentials(
       kBadSubjectCertData, signed_data, unsigned_data, kHotspotBssid));
 
   // Checking that verification fails when certificate has invalid format.
-  EXPECT_FALSE(crypto.VerifyCredentials(
+  EXPECT_FALSE(networking_private_crypto::VerifyCredentials(
       kBadCertData, signed_data, unsigned_data, kHotspotBssid));
 
   // Checking that verification fails when Hotspot Bssid is invalid.
-  EXPECT_FALSE(crypto.VerifyCredentials(
+  EXPECT_FALSE(networking_private_crypto::VerifyCredentials(
       kCertData, signed_data, unsigned_data, kBadHotspotBssid));
 
   // Checking that verification fails when there is bad nonce in unsigned_data.
   unsigned_data = base::StringPrintf(
       "%s,%s,%s,%s,%s", kName, kSsdpUdn, kHotspotBssid, kPublicKey, kBadNonce);
-  EXPECT_FALSE(crypto.VerifyCredentials(
+  EXPECT_FALSE(networking_private_crypto::VerifyCredentials(
       kCertData, signed_data, unsigned_data, kHotspotBssid));
 }
 
-// Test that NetworkingPrivateCrypto::EncryptByteString behaves as expected.
+// Test that networking_private_crypto::EncryptByteString behaves as expected.
 TEST_F(NetworkingPrivateCryptoTest, EncryptByteString) {
-  NetworkingPrivateCrypto crypto;
   static const char kPublicKey[] =
       "MIGJAoGBANTjeoILNkSKHVkd3my/rSwNi+9t473vPJU0lkM8nn9C7+gmaPvEWg4ZNkMd12aI"
       "XDXVHrjgjcS80bPE0ykhN9J7EYkJ+43oulJMrEnyDy5KQo7U3MKBdjaKFTS+OPyohHpI8GqH"
@@ -151,18 +149,20 @@ TEST_F(NetworkingPrivateCryptoTest, EncryptByteString) {
 
   // Checking basic encryption operation.
   plain = kTestData;
-  EXPECT_TRUE(crypto.EncryptByteString(public_key, plain, &encrypted_output));
+  EXPECT_TRUE(networking_private_crypto::EncryptByteString(
+      public_key, plain, &encrypted_output));
   EXPECT_TRUE(VerifyByteString(kPrivateKey, plain, encrypted_output));
 
   // Checking that we can encrypt the empty string.
   plain = kEmptyData;
-  EXPECT_TRUE(crypto.EncryptByteString(public_key, plain, &encrypted_output));
+  EXPECT_TRUE(networking_private_crypto::EncryptByteString(
+      public_key, plain, &encrypted_output));
 
   // Checking graceful fail for too much data to encrypt.
-  EXPECT_FALSE(crypto.EncryptByteString(
+  EXPECT_FALSE(networking_private_crypto::EncryptByteString(
       public_key, std::string(500, 'x'), &encrypted_output));
 
   // Checking graceful fail for a bad key format.
-  EXPECT_FALSE(
-      crypto.EncryptByteString(kBadKeyData, kTestData, &encrypted_output));
+  EXPECT_FALSE(networking_private_crypto::EncryptByteString(
+      kBadKeyData, kTestData, &encrypted_output));
 }
