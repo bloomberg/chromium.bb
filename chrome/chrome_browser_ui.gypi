@@ -1330,10 +1330,6 @@
       'browser/ui/views/select_file_dialog_extension_factory.cc',
       'browser/ui/views/select_file_dialog_extension_factory.h',
     ],
-    # Files shared between CrOS and Android.
-    'chrome_browser_ui_android_chromeos_sources': [
-      'browser/ui/screen_capture_notification_ui_stub.cc',
-    ],
     # Used everwhere but ChromeOS.
     'chrome_browser_ui_non_chromeos_sources': [
       'browser/ui/external_protocol_dialog_delegate.cc',
@@ -1348,6 +1344,7 @@
     'chrome_browser_ui_android_sources': [
       'browser/ui/auto_login_infobar_delegate.cc',
       'browser/ui/auto_login_infobar_delegate.h',
+      'browser/ui/screen_capture_notification_ui_stub.cc',
     ],
     'chrome_browser_ui_non_android_sources': [
       'browser/ui/apps/chrome_app_delegate.cc',
@@ -2739,9 +2736,6 @@
         }],
         ['OS=="win" or OS=="mac" or desktop_linux==1', {
           'sources': [ '<@(chrome_browser_ui_desktop_sources)' ],
-        }],
-        ['chromeos==1 or OS=="android"', {
-          'sources': [ '<@(chrome_browser_ui_android_chromeos_sources)' ],
         }],
         ['use_aura==1', {
           'sources': [ '<@(chrome_browser_ui_aura_sources)'] ,

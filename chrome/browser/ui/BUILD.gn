@@ -227,11 +227,6 @@ static_library("ui") {
     sources += rebase_path(gypi_values.chrome_browser_ui_desktop_sources,
                            ".", "//chrome")
   }
-  if (is_chromeos || is_android) {
-    sources += rebase_path(
-        gypi_values.chrome_browser_ui_android_chromeos_sources,
-        ".", "//chrome")
-  }
   if (use_aura) {
     sources += rebase_path(gypi_values.chrome_browser_ui_aura_sources,
                            ".", "//chrome")
