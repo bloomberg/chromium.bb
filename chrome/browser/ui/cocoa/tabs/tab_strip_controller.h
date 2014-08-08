@@ -258,4 +258,8 @@ class WebContents;
 // Returns the parent view to use when showing a sheet for a given web contents.
 NSView* GetSheetParentViewForWebContents(content::WebContents* web_contents);
 
+// Returns the bounds to use when showing a sheet for a given parent view. This
+// returns a rect in window coordinates.
+NSRect GetSheetParentBoundsForParentView(NSView* view);
+
 #endif  // CHROME_BROWSER_UI_COCOA_TABS_TAB_STRIP_CONTROLLER_H_

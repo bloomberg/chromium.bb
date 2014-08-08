@@ -19,7 +19,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
-#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -2222,9 +2221,18 @@ NSView* GetSheetParentViewForWebContents(WebContents* web_contents) {
   // View hierarchy of the contents view:
   // NSView  -- switchView, same for all tabs
   // +- NSView  -- TabContentsController's view
-  //    +- TabContentsViewCocoa
+  //    +- WebContentsViewCocoa
   //
   // Changing it? Do not forget to modify
   // -[TabStripController swapInTabAtIndex:] too.
   return [web_contents->GetNativeView() superview];
+}
+
+NSRect GetSheetParentBoundsForParentView(NSView* view) {
+  // If the devtools view is open, it shrinks the size of the WebContents, so go
+  // up the hierarchy to the devtools container view to avoid that. Note that
+  // the devtools view is always in the hierarchy even if it is not open or it
+  // is detached.
+  NSView* devtools_view = [[[view superview] superview] superview];
+  return [devtools_view convertRect:[devtools_view bounds] toView:nil];
 }

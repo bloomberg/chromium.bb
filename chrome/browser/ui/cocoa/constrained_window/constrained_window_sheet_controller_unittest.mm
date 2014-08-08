@@ -75,21 +75,31 @@ class ConstrainedWindowSheetControllerTest : public CocoaTest {
     // Center the window so that the sheet doesn't go offscreen.
     [test_window() center];
 
+    // The real view setup is quite a few levels deep; recreate something
+    // similar.
+    NSRect dummy_rect = NSMakeRect(0, 0, 50, 50);
+    tab_view_parent_ = [test_window() contentView];
+    for (int i = 0; i < 3; ++i) {
+      base::scoped_nsobject<NSView> new_view(
+          [[NSView alloc] initWithFrame:dummy_rect]);
+      [tab_view_parent_ addSubview:new_view.get()];
+      tab_view_parent_ = new_view.get();
+    }
+
     // Create two dummy tabs and make the first one active.
-    NSRect dummyRect = NSMakeRect(0, 0, 50, 50);
     tab_views_.reset([[NSMutableArray alloc] init]);
     for (int i = 0; i < 2; ++i) {
       base::scoped_nsobject<NSView> view(
-          [[NSView alloc] initWithFrame:dummyRect]);
+          [[NSView alloc] initWithFrame:dummy_rect]);
       [tab_views_ addObject:view];
     }
-    tab0_.reset([[tab_views_ objectAtIndex:0] retain]);
-    tab1_.reset([[tab_views_ objectAtIndex:1] retain]);
+    tab0_ = [tab_views_ objectAtIndex:0];
+    tab1_ = [tab_views_ objectAtIndex:1];
     ActivateTabView(tab0_);
 
     // Create a test sheet.
     sheet_window_.reset([[NSWindow alloc]
-        initWithContentRect:dummyRect
+        initWithContentRect:dummy_rect
                   styleMask:NSTitledWindowMask
                     backing:NSBackingStoreBuffered
                       defer:NO]);
@@ -110,11 +120,10 @@ class ConstrainedWindowSheetControllerTest : public CocoaTest {
   }
 
   void ActivateTabView(NSView* tab_view) {
-    for (NSView* view in tab_views_.get()) {
+    for (NSView* view in tab_views_.get())
       [view removeFromSuperview];
-    }
-    [[test_window() contentView] addSubview:tab_view];
-    active_tab_view_.reset([tab_view retain]);
+    [tab_view_parent_ addSubview:tab_view];
+    active_tab_view_ = tab_view;
 
     ConstrainedWindowSheetController* controller =
         [ConstrainedWindowSheetController
@@ -145,9 +154,10 @@ class ConstrainedWindowSheetControllerTest : public CocoaTest {
   base::scoped_nsobject<CustomConstrainedWindowSheet> sheet_;
   base::scoped_nsobject<ConstrainedWindowSheetController> controller_;
   base::scoped_nsobject<NSMutableArray> tab_views_;
-  base::scoped_nsobject<NSView> active_tab_view_;
-  base::scoped_nsobject<NSView> tab0_;
-  base::scoped_nsobject<NSView> tab1_;
+  NSView* tab_view_parent_;
+  NSView* active_tab_view_;
+  NSView* tab0_;
+  NSView* tab1_;
 };
 
 // Test showing then hiding the sheet.
@@ -209,18 +219,6 @@ TEST_F(ConstrainedWindowSheetControllerTest, TwoParentWindows) {
   [parent_window2 close];
 }
 
-// Test that using a top level parent view works.
-TEST_F(ConstrainedWindowSheetControllerTest, TopLevelView) {
-  NSView* parentView = [[test_window() contentView] superview];
-  [controller_ parentViewDidBecomeActive:parentView];
-
-  EXPECT_FALSE([sheet_window_ isVisible]);
-  [controller_ showSheet:sheet_ forParentView:parentView];
-  EXPECT_TRUE([ConstrainedWindowSheetController controllerForSheet:sheet_]);
-  EXPECT_TRUE([sheet_window_ isVisible]);
-  VerifySheetXPosition([sheet_window_ frame], parentView);
-}
-
 // Test that resizing sheet works.
 TEST_F(ConstrainedWindowSheetControllerTest, Resize) {
   [controller_ showSheet:sheet_ forParentView:active_tab_view_];
@@ -269,8 +267,8 @@ TEST_F(ConstrainedWindowSheetControllerTest, ResizeParentWindow) {
   CGFloat insets[] = {-10, 0, 10};
   NSRect old_frame = [test_window() frame];
 
-  for (size_t x = 0; x < sizeof(insets) / sizeof(CGFloat); x++) {
-    for (size_t y = 0; y < sizeof(insets) / sizeof(CGFloat); y++) {
+  for (size_t x = 0; x < arraysize(insets); x++) {
+    for (size_t y = 0; y < arraysize(insets); y++) {
       NSRect resized_frame = NSInsetRect(old_frame, insets[x], insets[y]);
       [test_window() setFrame:resized_frame display:YES];
       NSRect sheet_frame = [sheet_window_ frame];
@@ -292,8 +290,7 @@ TEST_F(ConstrainedWindowSheetControllerTest, SystemSheet) {
   [system_sheet setAlert:alert];
 
   EXPECT_FALSE([[alert window] isVisible]);
-  [controller_ showSheet:system_sheet
-                 forParentView:active_tab_view_];
+  [controller_ showSheet:system_sheet forParentView:active_tab_view_];
   EXPECT_TRUE([[alert window] isVisible]);
 
   [controller_ closeSheet:system_sheet];
@@ -309,8 +306,7 @@ TEST_F(ConstrainedWindowSheetControllerTest, SystemSheetAddToInactiveTab) {
   [system_sheet setAlert:alert];
 
   EXPECT_FALSE([[alert window] isVisible]);
-  [controller_ showSheet:system_sheet
-                 forParentView:tab1_];
+  [controller_ showSheet:system_sheet forParentView:tab1_];
   EXPECT_FALSE([[alert window] isVisible]);
 
   ActivateTabView(tab1_);

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_info.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 
 namespace {
 
@@ -243,7 +244,7 @@ NSValue* GetKeyForParentWindow(NSWindow* parent_window) {
 }
 
 - (NSRect)overlayWindowFrameForParentView:(NSView*)parentView {
-  NSRect viewFrame = [parentView convertRect:[parentView bounds] toView:nil];
+  NSRect viewFrame = GetSheetParentBoundsForParentView(parentView);
 
   id<NSWindowDelegate> delegate = [[parentView window] delegate];
   if ([delegate respondsToSelector:@selector(window:
