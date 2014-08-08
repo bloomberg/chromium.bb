@@ -127,5 +127,10 @@ content::PushMessagingService* CastBrowserContext::GetPushMessagingService() {
   return NULL;
 }
 
+content::SSLHostStateDelegate* CastBrowserContext::GetSSLHostStateDelegate() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 }  // namespace shell
 }  // namespace chromecast

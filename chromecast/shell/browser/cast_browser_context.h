@@ -43,6 +43,7 @@ class CastBrowserContext : public content::BrowserContext {
   virtual content::BrowserPluginGuestManager* GetGuestManager() OVERRIDE;
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
   virtual content::PushMessagingService* GetPushMessagingService() OVERRIDE;
+  virtual content::SSLHostStateDelegate* GetSSLHostStateDelegate() OVERRIDE;
 
  private:
   class CastResourceContext;
