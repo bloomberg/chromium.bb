@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 /**
- * Mock class for FileEntry.
+ * Base class of mock entries.
  *
- * @param {string} volumeId Id of the volume containing the entry.
- * @param {string} fullPath Full path for the entry.
+ * @param {string} volumeId ID of the volume that contains the entry.
+ * @param {string} fullpath Full path of the entry.
  * @constructor
  */
-function MockFileEntry(volumeId, fullPath) {
+function MockEntry(volumeId, fullPath) {
   this.volumeId = volumeId;
   this.fullPath = fullPath;
 }
@@ -19,8 +19,38 @@ function MockFileEntry(volumeId, fullPath) {
  *
  * @return {string} Fake URL.
  */
-MockFileEntry.prototype.toURL = function() {
+MockEntry.prototype.toURL = function() {
   return 'filesystem:' + this.volumeId + this.fullPath;
+};
+
+/**
+ * Mock class for FileEntry.
+ *
+ * @param {string} volumeId Id of the volume containing the entry.
+ * @param {string} fullPath Full path for the entry.
+ * @extends {MockEntry}
+ * @constructor
+ */
+function MockFileEntry(volumeId, fullPath, metadata) {
+  MockEntry.call(this, volumeId, fullPath);
+  this.volumeId = volumeId;
+  this.fullPath = fullPath;
+  this.metadata_ = metadata;
+}
+
+MockFileEntry.prototype = {
+  __proto__: MockEntry.prototype
+};
+
+/**
+ * Obtains metadata of the entry.
+ * @param {function(Object)} callback Function to take the metadata.
+ */
+MockFileEntry.prototype.getMetadata = function(callback) {
+  Promise.resolve(this.metadata_).then(callback).catch(function(error) {
+    console.error(error.stack || error);
+    window.onerror();
+  });
 };
 
 /**
@@ -30,11 +60,17 @@ MockFileEntry.prototype.toURL = function() {
  * @param {string} fullPath Full path for the entry.
  * @param {Object.<String, MockFileEntry|MockDirectoryEntry>} contents Map of
  *     path and MockEntry contained in the directory.
+ * @extends {MockEntry}
  * @constructor
  */
 function MockDirectoryEntry(volumeId, fullPath, contents) {
+  MockEntry.call(this, volumeId, fullPath);
   this.contents_ = contents;
 }
+
+MockDirectoryEntry.prototype = {
+  __proto__: MockEntry.prototype
+};
 
 /**
  * Returns a file under the directory.

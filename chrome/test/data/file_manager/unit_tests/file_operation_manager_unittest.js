@@ -4,6 +4,74 @@
 'use strict';
 
 /**
+ * Mock of chrome.runtime.
+ * @type {Object}
+ * @const
+ */
+chrome.runtime = {
+  lastError: null
+};
+
+/**
+ * Mock of chrome.power.
+ * @type {Object}
+ * @const
+ */
+chrome.power = {
+  requestKeepAwake: function() {
+    chrome.power.keepAwakeRequested = true;
+  },
+  releaseKeepAwake: function() {
+    chrome.power.keepAwakeRequested = false;
+  },
+  keepAwakeRequested: false
+};
+
+/**
+ * Mock of chrome.fileBrowserPrivate.
+ * @type {Object}
+ * @const
+ */
+chrome.fileBrowserPrivate = {
+  onCopyProgress: {
+    addListener: function(callback) {
+      chrome.fileBrowserPrivate.onCopyProgress.listener_ = callback;
+    },
+    removeListener: function() {
+      chrome.fileBrowserPrivate.onCopyProgress.listener_ = null;
+    },
+    listener_: null
+  },
+  startCopy: function(source, destination, newName, callback) {
+    var id = 1;
+    var events = [
+      'begin_copy_entry',
+      'progress',
+      'end_copy_entry',
+      'success'
+    ].map(function(type) {
+      return [id, {type: type, sourceUrl: source, destinationUrl: destination}];
+    });
+    var sendEvent = function(index) {
+      // Call the function asynchronously.
+      return Promise.resolve().then(function() {
+        chrome.fileBrowserPrivate.onCopyProgress.listener_.apply(
+            null, events[index]);
+        if (index + 1 < events.length)
+          return sendEvent(index + 1);
+        else
+          return null;
+      }.bind(this));
+    }.bind(this);
+    callback(id);
+    sendEvent(0).catch(function(error) {
+      console.log(error.stack || error);
+      window.onerror();
+    });
+  }
+};
+
+/**
  * Reports the result of promise to the test system.
  * @param {Promise} promise Promise to be fulfilled or rejected.
  * @param {function(boolean:hasError)} callback Callback to be passed true on
@@ -20,6 +88,19 @@ function reportPromise(promise, callback) {
         }
         callback(true);
       });
+}
+
+/**
+ * Test target.
+ * @type {FileOperationManager}
+ */
+var fileOperationManager;
+
+/**
+ * Initializes the test environment.
+ */
+function setUp() {
+  fileOperationManager = new FileOperationManager();
 }
 
 /**
@@ -111,4 +192,57 @@ function testDeduplicatePath(callback) {
     failedPromise
   ]);
   reportPromise(testPromise, callback);
+}
+
+/**
+ * Tests the fileOperationUtil.paste.
+ */
+function testCopy(callback) {
+  // Prepare entries and their resolver.
+  var sourceEntries =
+      [new MockFileEntry('testVolume', '/test.txt', {size: 10})];
+  var targetEntry = new MockDirectoryEntry('testVolume', '/', {});
+  window.webkitResolveLocalFileSystemURL = function(url, success, failure) {
+    if (url === sourceEntries[0].toURL())
+      success(sourceEntries[0]);
+    else if (url === targetEntry.toURL())
+      success(targetEntry);
+    else
+      failure();
+  };
+
+  // Observing manager's events.
+  var eventsPromise = new Promise(function(fulfill) {
+    var events = [];
+    fileOperationManager.addEventListener('copy-progress', function(event) {
+      events.push(event);
+      if (event.reason === 'SUCCESS')
+        fulfill(events);
+    });
+    fileOperationManager.addEventListener('entry-changed', function(event) {
+      events.push(event);
+    });
+  });
+
+  // Verify the events.
+  reportPromise(eventsPromise.then(function(events) {
+    var firstEvent = events[0];
+    assertEquals('BEGIN', firstEvent.reason);
+    assertEquals(1, firstEvent.status.numRemainingItems);
+    assertEquals(0, firstEvent.status.processedBytes);
+    assertEquals(1, firstEvent.status.totalBytes);
+
+    var lastEvent = events[events.length - 1];
+    assertEquals('SUCCESS', lastEvent.reason);
+    assertEquals(0, lastEvent.status.numRemainingItems);
+    assertEquals(10, lastEvent.status.processedBytes);
+    assertEquals(10, lastEvent.status.totalBytes);
+
+    assertTrue(events.some(function(event) {
+      return event.type === 'entry-changed' &&
+          event.entry === targetEntry;
+    }));
+  }), callback);
+
+  fileOperationManager.paste(sourceEntries, targetEntry, false);
 }
