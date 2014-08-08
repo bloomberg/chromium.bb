@@ -55,7 +55,7 @@ const int kMaxContentsWidth = 500;
 const int kMinMultiLineContentsWidth = 250;
 
 // The minimum width of the media menu buttons.
-const int kMinMediaMenuButtonWidth = 100;
+const int kMinMediaMenuButtonWidth = 150;
 
 }  // namespace
 
