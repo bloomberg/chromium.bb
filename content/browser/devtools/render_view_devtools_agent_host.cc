@@ -208,6 +208,11 @@ void RenderViewDevToolsAgentHost::OnClientDetached() {
   tracing_handler_->OnClientDetached();
   power_handler_->OnClientDetached();
   ClientDetachedFromRenderer();
+
+  // TODO(kaznacheev): Move this call back to DevToolsManagerImpl when
+  // extensions::ProcessManager no longer relies on this notification.
+  if (!reattaching_)
+    DevToolsManagerImpl::GetInstance()->NotifyObservers(this, false);
 }
 
 void RenderViewDevToolsAgentHost::ClientDetachedFromRenderer() {
@@ -215,11 +220,6 @@ void RenderViewDevToolsAgentHost::ClientDetachedFromRenderer() {
     return;
 
   InnerClientDetachedFromRenderer();
-
-  // TODO(kaznacheev): Move this call back to DevToolsManagerImpl when
-  // extensions::ProcessManager no longer relies on this notification.
-  if (!reattaching_)
-    DevToolsManagerImpl::GetInstance()->NotifyObservers(this, false);
 }
 
 void RenderViewDevToolsAgentHost::InnerClientDetachedFromRenderer() {
