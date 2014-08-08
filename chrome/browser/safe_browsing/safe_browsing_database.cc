@@ -1013,9 +1013,12 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
     return false;
   }
 
-  // Cached fullhash results must be cleared on every database update (whether
-  // successful or not.)
-  browse_gethash_cache_.clear();
+  {
+    base::AutoLock locked(lookup_lock_);
+    // Cached fullhash results must be cleared on every database update (whether
+    // successful or not.)
+    browse_gethash_cache_.clear();
+  }
 
   UpdateChunkRangesForLists(browse_store_.get(),
                             safe_browsing_util::kMalwareList,
