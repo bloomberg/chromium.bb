@@ -53,6 +53,12 @@ class InterstitialPage;
 class WebContents;
 }
 
+#if defined(ENABLE_EXTENSIONS)
+namespace extensions {
+class ExperienceSamplingEvent;
+}
+#endif
+
 class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
  public:
   typedef SafeBrowsingUIManager::UnsafeResource UnsafeResource;
@@ -232,6 +238,11 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   // How many times is this same URL in history? Used for histogramming.
   int num_visits_;
   base::CancelableTaskTracker request_tracker_;
+
+ private:
+#if defined(ENABLE_EXTENSIONS)
+  scoped_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPage);
 };

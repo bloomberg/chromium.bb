@@ -61,7 +61,7 @@ void ExperienceSamplingEvent::CreateUserDecisionEvent(
     const std::string& decision_name) {
   // Check if this is from an incognito context. If it is, don't create and send
   // any events.
-  if (browser_context_->IsOffTheRecord())
+  if (browser_context_ && browser_context_->IsOffTheRecord())
     return;
   api::experience_sampling_private::UserDecision decision;
   decision.name = decision_name;
@@ -74,19 +74,23 @@ void ExperienceSamplingEvent::CreateUserDecisionEvent(
   args->Append(decision.ToValue().release());
   scoped_ptr<Event> event(new Event(
       api::experience_sampling_private::OnDecision::kEventName, args.Pass()));
-  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
+  EventRouter* router = EventRouter::Get(browser_context_);
+  if (router)
+    router->BroadcastEvent(event.Pass());
 }
 
 void ExperienceSamplingEvent::CreateOnDisplayedEvent() {
   // Check if this is from an incognito context. If it is, don't create and send
   // any events.
-  if (browser_context_->IsOffTheRecord())
+  if (browser_context_ && browser_context_->IsOffTheRecord())
     return;
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(ui_element_.ToValue().release());
   scoped_ptr<Event> event(new Event(
       api::experience_sampling_private::OnDisplayed::kEventName, args.Pass()));
-  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
+  EventRouter* router = EventRouter::Get(browser_context_);
+  if (router)
+    router->BroadcastEvent(event.Pass());
 }
 
 }  // namespace extensions

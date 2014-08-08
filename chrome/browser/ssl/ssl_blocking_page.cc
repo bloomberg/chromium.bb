@@ -51,6 +51,10 @@
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #endif
 
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
+#endif
+
 #if defined(OS_WIN)
 #include "base/base_paths_win.h"
 #include "base/path_service.h"
@@ -70,7 +74,18 @@ using content::InterstitialPage;
 using content::NavigationController;
 using content::NavigationEntry;
 
+#if defined(ENABLE_EXTENSIONS)
+using extensions::ExperienceSamplingEvent;
+#endif
+
 namespace {
+
+// Constants for the Experience Sampling instrumentation.
+#if defined(ENABLE_EXTENSIONS)
+const char kEventNameBase[] = "ssl_interstitial_";
+const char kEventNotOverridable[] = "notoverridable_";
+const char kEventOverridable[] = "overridable_";
+#endif
 
 // Events for UMA. Do not reorder or change!
 enum SSLBlockingPageEvent {
@@ -329,6 +344,21 @@ SSLBlockingPage::SSLBlockingPage(
                  content::Source<Profile>(profile));
 #endif
 
+#if defined(ENABLE_EXTENSIONS)
+  // ExperienceSampling: Set up new sampling event for this interstitial.
+  std::string event_name(kEventNameBase);
+  if (overridable_ && !strict_enforcement_)
+    event_name.append(kEventOverridable);
+  else
+    event_name.append(kEventNotOverridable);
+  event_name.append(net::ErrorToString(cert_error_));
+  sampling_event_.reset(new ExperienceSamplingEvent(
+      event_name,
+      request_url_,
+      web_contents_->GetLastCommittedURL(),
+      web_contents_->GetBrowserContext()));
+#endif
+
   // Creating an interstitial without showing (e.g. from chrome://interstitials)
   // it leaks memory, so don't create it here.
 }
@@ -486,6 +516,10 @@ void SSLBlockingPage::CommandReceived(const std::string& command) {
     }
     case CMD_MORE: {
       RecordSSLBlockingPageEventStats(MORE);
+#if defined(ENABLE_EXTENSIONS)
+      if (sampling_event_.get())
+        sampling_event_->set_has_viewed_details(true);
+#endif
       break;
     }
     case CMD_RELOAD: {
@@ -496,6 +530,10 @@ void SSLBlockingPage::CommandReceived(const std::string& command) {
     case CMD_HELP: {
       content::NavigationController::LoadURLParams help_page_params(GURL(
           "https://support.google.com/chrome/answer/4454607"));
+#if defined(ENABLE_EXTENSIONS)
+      if (sampling_event_.get())
+        sampling_event_->set_has_viewed_learn_more(true);
+#endif
       web_contents_->GetController().LoadURLWithParams(help_page_params);
       break;
     }
@@ -526,6 +564,11 @@ void SSLBlockingPage::OnProceed() {
                                      captive_portal_probe_completed_,
                                      captive_portal_no_response_,
                                      captive_portal_detected_);
+#if defined(ENABLE_EXTENSIONS)
+  // ExperienceSampling: Notify that user decided to proceed.
+  if (sampling_event_.get())
+    sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kProceed);
+#endif
   // Accepting the certificate resumes the loading of the page.
   NotifyAllowCertificate();
 }
@@ -540,6 +583,12 @@ void SSLBlockingPage::OnDontProceed() {
                                      captive_portal_probe_completed_,
                                      captive_portal_no_response_,
                                      captive_portal_detected_);
+#if defined(ENABLE_EXTENSIONS)
+  // ExperienceSampling: Notify that user decided to not proceed.
+  // This also occurs if the user navigates away or closes the tab.
+  if (sampling_event_.get())
+    sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kDeny);
+#endif
   NotifyDenyCertificate();
 }
 

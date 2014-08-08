@@ -26,6 +26,12 @@ class InterstitialPage;
 class WebContents;
 }
 
+#if defined(ENABLE_EXTENSIONS)
+namespace extensions {
+class ExperienceSamplingEvent;
+}
+#endif
+
 // This class is responsible for showing/hiding the interstitial page that is
 // shown when a certificate error happens.
 // It deletes itself when the interstitial page is closed.
@@ -120,6 +126,14 @@ class SSLBlockingPage : public content::InterstitialPageDelegate,
   bool captive_portal_no_response_;
   // Was a captive portal detected?
   bool captive_portal_detected_;
+
+  // For the FieldTrial: this contains the name of the condition.
+  std::string trial_condition_;
+
+#if defined(ENABLE_EXTENSIONS)
+  // For Chrome Experience Sampling Platform: this maintains event state.
+  scoped_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
+#endif
 
   content::NotificationRegistrar registrar_;
 

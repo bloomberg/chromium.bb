@@ -47,12 +47,20 @@
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
 
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
+#endif
+
 using base::UserMetricsAction;
 using content::BrowserThread;
 using content::InterstitialPage;
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
+
+#if defined(ENABLE_EXTENSIONS)
+using extensions::ExperienceSamplingEvent;
+#endif
 
 namespace {
 
@@ -103,6 +111,15 @@ const char kNavigatedAwayMetaCommand[] = "closed";
 // Other constants used to communicate with the JavaScript.
 const char kBoxChecked[] = "boxchecked";
 const char kDisplayCheckBox[] = "displaycheckbox";
+
+// Constants for the Experience Sampling instrumentation.
+#if defined(ENABLE_EXTENSIONS)
+const char kEventNameMalware[] = "safebrowsing_interstitial_";
+const char kEventNamePhishing[] = "phishing_interstitial_";
+const char kEventNameMalwareAndPhishing[] =
+    "malware_and_phishing_interstitial_";
+const char kEventNameOther[] = "safebrowsing_other_interstitial_";
+#endif
 
 base::LazyInstance<SafeBrowsingBlockingPage::UnsafeResourceMap>
     g_unsafe_resource_map = LAZY_INSTANCE_INITIALIZER;
@@ -295,6 +312,32 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     malware_details_ = MalwareDetails::NewMalwareDetails(
         ui_manager_, web_contents, unsafe_resources[0]);
   }
+
+#if defined(ENABLE_EXTENSIONS)
+  // ExperienceSampling: Set up new sampling event for this interstitial.
+  // This needs to handle all types of warnings this interstitial can show.
+  std::string event_name;
+  switch (interstitial_type_) {
+    case TYPE_MALWARE_AND_PHISHING:
+      event_name = kEventNameMalwareAndPhishing;
+      break;
+    case TYPE_MALWARE:
+      event_name = kEventNameMalware;
+      break;
+    case TYPE_PHISHING:
+      event_name = kEventNamePhishing;
+      break;
+    default:
+      event_name = kEventNameOther;
+      break;
+  }
+  sampling_event_.reset(new ExperienceSamplingEvent(
+      event_name,
+      url_,
+      web_contents_->GetLastCommittedURL(),
+      web_contents_->GetBrowserContext()));
+#endif
+
   // Creating interstitial_page_ without showing it leaks memory, so don't
   // create it here.
 }
@@ -328,6 +371,10 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
     // User pressed "Learn more".
     GURL url(interstitial_type_ == TYPE_PHISHING ?
              kLearnMorePhishingUrlV2 : kLearnMoreMalwareUrlV2);
+#if defined(ENABLE_EXTENSIONS)
+    if (sampling_event_.get())
+      sampling_event_->set_has_viewed_learn_more(true);
+#endif
     OpenURLParams params(
         url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_LINK, false);
     web_contents_->OpenURL(params);
@@ -441,6 +488,12 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
     // User expanded the "see more info" section of the page.  We don't actually
     // do any action based on this, it's just so that RecordUserReactionTime can
     // track it.
+
+#if defined(ENABLE_EXTENSIONS)
+    // ExperienceSampling: We track that the user expanded the details.
+    if (sampling_event_.get())
+      sampling_event_->set_has_viewed_details(true);
+#endif
     return;
   }
 
@@ -504,6 +557,12 @@ void SafeBrowsingBlockingPage::OnProceed() {
     unsafe_resource_map->erase(iter);
   }
 
+#if defined(ENABLE_EXTENSIONS)
+  // ExperienceSampling: Notify that user decided to proceed.
+  if (sampling_event_.get())
+    sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kProceed);
+#endif
+
   // Now that this interstitial is gone, we can show the new one.
   if (blocking_page)
     blocking_page->Show();
@@ -560,6 +619,13 @@ void SafeBrowsingBlockingPage::OnDontProceed() {
         navigation_entry_index_to_remove_));
     navigation_entry_index_to_remove_ = -1;
   }
+
+#if defined(ENABLE_EXTENSIONS)
+  // ExperienceSampling: Notify that user decided to go back.
+  // This also occurs if the user navigates away or closes the tab.
+  if (sampling_event_.get())
+    sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kDeny);
+#endif
 }
 
 void SafeBrowsingBlockingPage::OnGotHistoryCount(bool success,
