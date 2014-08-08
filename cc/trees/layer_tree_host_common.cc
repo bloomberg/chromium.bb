@@ -932,29 +932,14 @@ static inline void UpdateLayerScaleDrawProperties(
   layer->draw_properties().device_scale_factor = device_scale_factor;
 }
 
-static inline void CalculateContentsScale(
-    LayerImpl* layer,
-    float contents_scale,
-    float device_scale_factor,
-    float page_scale_factor,
-    float maximum_animation_contents_scale,
-    bool animating_transform_to_screen) {
+static inline void CalculateContentsScale(LayerImpl* layer,
+                                          float contents_scale) {
   // LayerImpl has all of its content scales and bounds pushed from the Main
   // thread during commit and just uses those values as-is.
 }
 
-static inline void CalculateContentsScale(
-    Layer* layer,
-    float contents_scale,
-    float device_scale_factor,
-    float page_scale_factor,
-    float maximum_animation_contents_scale,
-    bool animating_transform_to_screen) {
+static inline void CalculateContentsScale(Layer* layer, float contents_scale) {
   layer->CalculateContentsScale(contents_scale,
-                                device_scale_factor,
-                                page_scale_factor,
-                                maximum_animation_contents_scale,
-                                animating_transform_to_screen,
                                 &layer->draw_properties().contents_scale_x,
                                 &layer->draw_properties().contents_scale_y,
                                 &layer->draw_properties().content_bounds);
@@ -963,10 +948,6 @@ static inline void CalculateContentsScale(
   if (mask_layer) {
     mask_layer->CalculateContentsScale(
         contents_scale,
-        device_scale_factor,
-        page_scale_factor,
-        maximum_animation_contents_scale,
-        animating_transform_to_screen,
         &mask_layer->draw_properties().contents_scale_x,
         &mask_layer->draw_properties().contents_scale_y,
         &mask_layer->draw_properties().content_bounds);
@@ -977,10 +958,6 @@ static inline void CalculateContentsScale(
   if (replica_mask_layer) {
     replica_mask_layer->CalculateContentsScale(
         contents_scale,
-        device_scale_factor,
-        page_scale_factor,
-        maximum_animation_contents_scale,
-        animating_transform_to_screen,
         &replica_mask_layer->draw_properties().contents_scale_x,
         &replica_mask_layer->draw_properties().contents_scale_y,
         &replica_mask_layer->draw_properties().content_bounds);
@@ -993,14 +970,8 @@ static inline void UpdateLayerContentsScale(
     float ideal_contents_scale,
     float device_scale_factor,
     float page_scale_factor,
-    float maximum_animation_contents_scale,
     bool animating_transform_to_screen) {
-  CalculateContentsScale(layer,
-                         ideal_contents_scale,
-                         device_scale_factor,
-                         page_scale_factor,
-                         maximum_animation_contents_scale,
-                         animating_transform_to_screen);
+  CalculateContentsScale(layer, ideal_contents_scale);
 }
 
 static inline void UpdateLayerContentsScale(
@@ -1009,7 +980,6 @@ static inline void UpdateLayerContentsScale(
     float ideal_contents_scale,
     float device_scale_factor,
     float page_scale_factor,
-    float maximum_animation_contents_scale,
     bool animating_transform_to_screen) {
   if (can_adjust_raster_scale) {
     float ideal_raster_scale =
@@ -1042,12 +1012,7 @@ static inline void UpdateLayerContentsScale(
   float old_contents_scale_y = layer->contents_scale_y();
 
   float contents_scale = raster_scale * device_scale_factor * page_scale_factor;
-  CalculateContentsScale(layer,
-                         contents_scale,
-                         device_scale_factor,
-                         page_scale_factor,
-                         maximum_animation_contents_scale,
-                         animating_transform_to_screen);
+  CalculateContentsScale(layer, contents_scale);
 
   if (layer->content_bounds() != old_content_bounds ||
       layer->contents_scale_x() != old_contents_scale_x ||
@@ -1781,7 +1746,6 @@ static void CalculateDrawPropertiesInternal(
       data_from_ancestor.in_subtree_of_page_scale_application_layer
           ? globals.page_scale_factor
           : 1.f,
-      combined_maximum_animation_contents_scale,
       animating_transform_to_screen);
 
   UpdateLayerScaleDrawProperties(

@@ -381,10 +381,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   gfx::Size content_bounds() const { return draw_properties_.content_bounds; }
 
   virtual void CalculateContentsScale(float ideal_contents_scale,
-                                      float device_scale_factor,
-                                      float page_scale_factor,
-                                      float maximum_animation_contents_scale,
-                                      bool animating_transform_to_screen,
                                       float* contents_scale_x,
                                       float* contents_scale_y,
                                       gfx::Size* content_bounds);

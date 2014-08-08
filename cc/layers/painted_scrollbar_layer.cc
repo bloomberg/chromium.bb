@@ -98,19 +98,11 @@ float PaintedScrollbarLayer::ClampScaleToMaxTextureSize(float scale) {
 
 void PaintedScrollbarLayer::CalculateContentsScale(
     float ideal_contents_scale,
-    float device_scale_factor,
-    float page_scale_factor,
-    float maximum_animation_contents_scale,
-    bool animating_transform_to_screen,
     float* contents_scale_x,
     float* contents_scale_y,
     gfx::Size* content_bounds) {
   ContentsScalingLayer::CalculateContentsScale(
       ClampScaleToMaxTextureSize(ideal_contents_scale),
-      device_scale_factor,
-      page_scale_factor,
-      maximum_animation_contents_scale,
-      animating_transform_to_screen,
       contents_scale_x,
       contents_scale_y,
       content_bounds);
