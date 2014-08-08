@@ -134,7 +134,7 @@ class SSLConnectJobMessenger {
 
   // Adds |socket| to the list of sockets waiting to Connect(). When
   // the messenger has determined that it's an appropriate time for |socket|
-  // to connect, it will asynchronously invoke |callback|.
+  // to connect, it will invoke |callback|.
   //
   // Note: It is an error to call AddPendingSocket() without having first
   // called MonitorConnectionResult() and configuring a socket that WILL

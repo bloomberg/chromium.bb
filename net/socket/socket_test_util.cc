@@ -279,7 +279,7 @@ SSLSocketDataProvider::SSLSocketDataProvider(IoMode mode, int result)
       cert_request_info(NULL),
       channel_id_sent(false),
       connection_status(0),
-      should_block_on_connect(false),
+      should_pause_on_connect(false),
       is_in_session_cache(false) {
   SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_TLS1_2,
                                 &connection_status);
@@ -1349,7 +1349,7 @@ int MockSSLClientSocket::Write(IOBuffer* buf, int buf_len,
 }
 
 int MockSSLClientSocket::Connect(const CompletionCallback& callback) {
-  next_connect_state_ = STATE_TRANSPORT_CONNECT;
+  next_connect_state_ = STATE_SSL_CONNECT;
   reached_connect_ = true;
   int rv = DoConnectLoop(OK);
   if (rv == ERR_IO_PENDING)
@@ -1460,7 +1460,7 @@ void MockSSLClientSocket::OnConnectComplete(const MockConnect& data) {
 }
 
 void MockSSLClientSocket::RestartPausedConnect() {
-  DCHECK(data_->should_block_on_connect);
+  DCHECK(data_->should_pause_on_connect);
   DCHECK_EQ(next_connect_state_, STATE_SSL_CONNECT_COMPLETE);
   OnIOComplete(data_->connect.result);
 }
@@ -1479,12 +1479,6 @@ int MockSSLClientSocket::DoConnectLoop(int result) {
     ConnectState state = next_connect_state_;
     next_connect_state_ = STATE_NONE;
     switch (state) {
-      case STATE_TRANSPORT_CONNECT:
-        rv = DoTransportConnect();
-        break;
-      case STATE_TRANSPORT_CONNECT_COMPLETE:
-        rv = DoTransportConnectComplete(rv);
-        break;
       case STATE_SSL_CONNECT:
         rv = DoSSLConnect();
         break;
@@ -1501,22 +1495,10 @@ int MockSSLClientSocket::DoConnectLoop(int result) {
   return rv;
 }
 
-int MockSSLClientSocket::DoTransportConnect() {
-  next_connect_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
-  return transport_->socket()->Connect(
-      base::Bind(&MockSSLClientSocket::OnIOComplete, base::Unretained(this)));
-}
-
-int MockSSLClientSocket::DoTransportConnectComplete(int result) {
-  if (result == OK)
-    next_connect_state_ = STATE_SSL_CONNECT;
-  return result;
-}
-
 int MockSSLClientSocket::DoSSLConnect() {
   next_connect_state_ = STATE_SSL_CONNECT_COMPLETE;
 
-  if (data_->should_block_on_connect)
+  if (data_->should_pause_on_connect)
     return ERR_IO_PENDING;
 
   if (data_->connect.mode == ASYNC) {

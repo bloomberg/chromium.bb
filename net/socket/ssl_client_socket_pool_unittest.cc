@@ -331,13 +331,13 @@ TEST_P(SSLClientSocketPoolTest, SocketsConnectWithoutFlag) {
 
   SSLSocketDataProvider ssl(ASYNC, OK);
   ssl.is_in_session_cache = false;
-  ssl.should_block_on_connect = true;
+  ssl.should_pause_on_connect = true;
   SSLSocketDataProvider ssl2(ASYNC, OK);
   ssl2.is_in_session_cache = false;
-  ssl2.should_block_on_connect = true;
+  ssl2.should_pause_on_connect = true;
   SSLSocketDataProvider ssl3(ASYNC, OK);
   ssl3.is_in_session_cache = false;
-  ssl3.should_block_on_connect = true;
+  ssl3.should_pause_on_connect = true;
   socket_factory_.AddSSLSocketDataProvider(&ssl);
   socket_factory_.AddSSLSocketDataProvider(&ssl2);
   socket_factory_.AddSSLSocketDataProvider(&ssl3);
@@ -404,7 +404,7 @@ TEST_P(SSLClientSocketPoolTest, DeletedSSLConnectJob) {
 
   SSLSocketDataProvider ssl(ASYNC, OK);
   ssl.is_in_session_cache = false;
-  ssl.should_block_on_connect = true;
+  ssl.should_pause_on_connect = true;
   SSLSocketDataProvider ssl2(ASYNC, OK);
   ssl2.is_in_session_cache = false;
   SSLSocketDataProvider ssl3(ASYNC, OK);
@@ -469,7 +469,7 @@ TEST_P(SSLClientSocketPoolTest, DeletedSocketAfterFail) {
 
   SSLSocketDataProvider ssl(ASYNC, ERR_SSL_PROTOCOL_ERROR);
   ssl.is_in_session_cache = false;
-  ssl.should_block_on_connect = true;
+  ssl.should_pause_on_connect = true;
   SSLSocketDataProvider ssl2(ASYNC, OK);
   ssl2.is_in_session_cache = false;
   SSLSocketDataProvider ssl3(ASYNC, OK);
@@ -542,10 +542,10 @@ TEST_P(SSLClientSocketPoolTest, SimultaneousConnectJobsFail) {
   socket_factory_.AddSocketDataProvider(&data5);
   SSLSocketDataProvider ssl(ASYNC, ERR_SSL_PROTOCOL_ERROR);
   ssl.is_in_session_cache = false;
-  ssl.should_block_on_connect = true;
+  ssl.should_pause_on_connect = true;
   SSLSocketDataProvider ssl2(ASYNC, OK);
   ssl2.is_in_session_cache = false;
-  ssl2.should_block_on_connect = true;
+  ssl2.should_pause_on_connect = true;
   SSLSocketDataProvider ssl3(ASYNC, OK);
   ssl3.is_in_session_cache = false;
   SSLSocketDataProvider ssl4(ASYNC, OK);
@@ -632,7 +632,7 @@ TEST_P(SSLClientSocketPoolTest, SimultaneousConnectJobsSuccess) {
 
   SSLSocketDataProvider ssl(ASYNC, OK);
   ssl.is_in_session_cache = false;
-  ssl.should_block_on_connect = true;
+  ssl.should_pause_on_connect = true;
   SSLSocketDataProvider ssl2(ASYNC, OK);
   ssl2.is_in_session_cache = false;
   SSLSocketDataProvider ssl3(ASYNC, OK);
