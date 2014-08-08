@@ -45,7 +45,10 @@ class DeferredGpuCommandService
   void RunTasks();
   // If |is_idle| is false, this will only run older idle tasks.
   void PerformIdleWork(bool is_idle);
-  bool HasIdleWork();
+  // Flush the idle queue until it is empty. This is different from
+  // PerformIdleWork(is_idle = true), which does not run any newly scheduled
+  // idle tasks during the idle run.
+  void PerformAllIdleWork();
 
   virtual void AddRef() const OVERRIDE;
   virtual void Release() const OVERRIDE;
@@ -59,6 +62,7 @@ class DeferredGpuCommandService
   static void RequestProcessGL();
 
   DeferredGpuCommandService();
+  size_t IdleQueueSize();
 
   base::Lock tasks_lock_;
   std::queue<base::Closure> tasks_;

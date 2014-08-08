@@ -6,9 +6,66 @@
 
 #include "android_webview/browser/browser_view_renderer_client.h"
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/location.h"
 
 namespace android_webview {
+
+namespace internal {
+
+class RequestDrawGLTracker {
+ public:
+  RequestDrawGLTracker();
+  bool ShouldRequestOnNoneUiThread(SharedRendererState* state);
+  bool ShouldRequestOnUiThread(SharedRendererState* state);
+  void DidRequestOnUiThread();
+  void ResetPending();
+
+ private:
+  base::Lock lock_;
+  SharedRendererState* pending_ui_;
+  SharedRendererState* pending_non_ui_;
+};
+
+RequestDrawGLTracker::RequestDrawGLTracker()
+    : pending_ui_(NULL), pending_non_ui_(NULL) {
+}
+
+bool RequestDrawGLTracker::ShouldRequestOnNoneUiThread(
+    SharedRendererState* state) {
+  base::AutoLock lock(lock_);
+  if (pending_ui_ || pending_non_ui_)
+    return false;
+  pending_non_ui_ = state;
+  return true;
+}
+
+bool RequestDrawGLTracker::ShouldRequestOnUiThread(SharedRendererState* state) {
+  base::AutoLock lock(lock_);
+  if (pending_non_ui_) {
+    pending_non_ui_->ResetRequestDrawGLCallback();
+    pending_non_ui_ = NULL;
+  }
+  if (pending_ui_)
+    return false;
+  pending_ui_ = state;
+  return true;
+}
+
+void RequestDrawGLTracker::ResetPending() {
+  base::AutoLock lock(lock_);
+  pending_non_ui_ = NULL;
+  pending_ui_ = NULL;
+}
+
+}  // namespace internal
+
+namespace {
+
+base::LazyInstance<internal::RequestDrawGLTracker> g_request_draw_gl_tracker =
+    LAZY_INSTANCE_INITIALIZER;
+
+}
 
 DrawGLInput::DrawGLInput() : width(0), height(0) {
 }
@@ -27,30 +84,48 @@ SharedRendererState::SharedRendererState(
       share_context_(NULL) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   DCHECK(client_on_ui_);
+  ResetRequestDrawGLCallback();
 }
 
 SharedRendererState::~SharedRendererState() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
 }
 
-bool SharedRendererState::CurrentlyOnUIThread() {
-  return ui_loop_->BelongsToCurrentThread();
-}
-
 void SharedRendererState::ClientRequestDrawGL() {
   if (ui_loop_->BelongsToCurrentThread()) {
+    if (!g_request_draw_gl_tracker.Get().ShouldRequestOnUiThread(this))
+      return;
     ClientRequestDrawGLOnUIThread();
   } else {
-    ui_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&SharedRendererState::ClientRequestDrawGLOnUIThread,
-                   ui_thread_weak_ptr_));
+    if (!g_request_draw_gl_tracker.Get().ShouldRequestOnNoneUiThread(this))
+      return;
+    base::Closure callback;
+    {
+      base::AutoLock lock(lock_);
+      callback = request_draw_gl_closure_;
+    }
+    ui_loop_->PostTask(FROM_HERE, callback);
   }
+}
+
+void SharedRendererState::DidDrawGLProcess() {
+  g_request_draw_gl_tracker.Get().ResetPending();
+}
+
+void SharedRendererState::ResetRequestDrawGLCallback() {
+  DCHECK(ui_loop_->BelongsToCurrentThread());
+  base::AutoLock lock(lock_);
+  request_draw_gl_cancelable_closure_.Reset(
+      base::Bind(&SharedRendererState::ClientRequestDrawGLOnUIThread,
+                 base::Unretained(this)));
+  request_draw_gl_closure_ = request_draw_gl_cancelable_closure_.callback();
 }
 
 void SharedRendererState::ClientRequestDrawGLOnUIThread() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
+  ResetRequestDrawGLCallback();
   if (!client_on_ui_->RequestDrawGL(NULL, false)) {
+    g_request_draw_gl_tracker.Get().ResetPending();
     LOG(ERROR) << "Failed to request GL process. Deadlock likely";
   }
 }

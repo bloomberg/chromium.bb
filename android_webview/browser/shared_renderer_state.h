@@ -6,6 +6,7 @@
 #define ANDROID_WEBVIEW_BROWSER_SHARED_RENDERER_STATE_H_
 
 #include "android_webview/browser/parent_compositor_draw_constraints.h"
+#include "base/cancelable_callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
@@ -23,6 +24,10 @@ class GLInProcessContext;
 }
 
 namespace android_webview {
+
+namespace internal {
+class RequestDrawGLTracker;
+}
 
 class BrowserViewRendererClient;
 class InsideHardwareReleaseReset;
@@ -45,8 +50,8 @@ class SharedRendererState {
                       BrowserViewRendererClient* client);
   ~SharedRendererState();
 
-  bool CurrentlyOnUIThread();
   void ClientRequestDrawGL();
+  void DidDrawGLProcess();
 
   void SetDrawGLInput(scoped_ptr<DrawGLInput> input);
   scoped_ptr<DrawGLInput> PassDrawGLInput();
@@ -66,7 +71,9 @@ class SharedRendererState {
 
  private:
   friend class InsideHardwareReleaseReset;
+  friend class internal::RequestDrawGLTracker;
 
+  void ResetRequestDrawGLCallback();
   void ClientRequestDrawGLOnUIThread();
   void UpdateParentDrawConstraintsOnUIThread();
   void SetInsideHardwareRelease(bool inside);
@@ -75,6 +82,7 @@ class SharedRendererState {
   BrowserViewRendererClient* client_on_ui_;
   base::WeakPtrFactory<SharedRendererState> weak_factory_on_ui_thread_;
   base::WeakPtr<SharedRendererState> ui_thread_weak_ptr_;
+  base::CancelableClosure request_draw_gl_cancelable_closure_;
 
   // Accessed by both UI and RT thread.
   mutable base::Lock lock_;
@@ -83,6 +91,7 @@ class SharedRendererState {
   ParentCompositorDrawConstraints parent_draw_constraints_;
   gpu::GLInProcessContext* share_context_;
   cc::ReturnedResourceArray returned_resources_;
+  base::Closure request_draw_gl_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedRendererState);
 };
