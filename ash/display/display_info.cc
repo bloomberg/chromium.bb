@@ -26,6 +26,24 @@ namespace {
 // TODO(oshima): This feature is obsolete. Remove this after m38.
 bool allow_upgrade_to_high_dpi = false;
 
+// Check the content of |spec| and fill |bounds| and |device_scale_factor|.
+// Returns true when |bounds| is found.
+bool GetDisplayBounds(
+    const std::string& spec, gfx::Rect* bounds, float* device_scale_factor) {
+  int width = 0;
+  int height = 0;
+  int x = 0;
+  int y = 0;
+  if (sscanf(spec.c_str(), "%dx%d*%f",
+             &width, &height, device_scale_factor) >= 2 ||
+      sscanf(spec.c_str(), "%d+%d-%dx%d*%f", &x, &y, &width, &height,
+             device_scale_factor) >= 4) {
+    bounds->SetRect(x, y, width, height);
+    return true;
+  }
+  return false;
+}
+
 }
 
 DisplayMode::DisplayMode()
@@ -126,14 +144,8 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
     }
   }
 
-  int x = 0, y = 0, width, height;
   float device_scale_factor = 1.0f;
-  if (sscanf(main_spec.c_str(), "%dx%d*%f",
-             &width, &height, &device_scale_factor) >= 2 ||
-      sscanf(main_spec.c_str(), "%d+%d-%dx%d*%f", &x, &y, &width, &height,
-             &device_scale_factor) >= 4) {
-    bounds_in_native.SetRect(x, y, width, height);
-  } else {
+  if (!GetDisplayBounds(main_spec, &bounds_in_native, &device_scale_factor)) {
 #if defined(OS_WIN)
     if (gfx::IsHighDPIEnabled()) {
       device_scale_factor = gfx::GetDPIScale();
@@ -150,23 +162,23 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
     std::string resolution_list = parts[1];
     count = Tokenize(resolution_list, "|", &parts);
     for (size_t i = 0; i < count; ++i) {
-      std::string resolution = parts[i];
-      int width, height;
-      float refresh_rate = 0.0f;
-      if (sscanf(resolution.c_str(),
-                 "%dx%d%%%f",
-                 &width,
-                 &height,
-                 &refresh_rate) >= 2) {
-        if (width * height >= largest_area &&
-            refresh_rate > highest_refresh_rate) {
+      DisplayMode mode;
+      gfx::Rect mode_bounds;
+      std::vector<std::string> resolution;
+      Tokenize(parts[i], "%", &resolution);
+      if (GetDisplayBounds(
+              resolution[0], &mode_bounds, &mode.device_scale_factor)) {
+        mode.size = mode_bounds.size();
+        if (resolution.size() > 1)
+          sscanf(resolution[1].c_str(), "%f", &mode.refresh_rate);
+        if (mode.size.GetArea() >= largest_area &&
+            mode.refresh_rate > highest_refresh_rate) {
           // Use mode with largest area and highest refresh rate as native.
-          largest_area = width * height;
-          highest_refresh_rate = refresh_rate;
+          largest_area = mode.size.GetArea();
+          highest_refresh_rate = mode.refresh_rate;
           native_mode = i;
         }
-        display_modes.push_back(
-            DisplayMode(gfx::Size(width, height), refresh_rate, false, false));
+        display_modes.push_back(mode);
       }
     }
     display_modes[native_mode].native = true;

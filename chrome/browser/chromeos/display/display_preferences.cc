@@ -166,6 +166,11 @@ void LoadDisplayProperties() {
     dict_value->GetInteger("height", &height);
     gfx::Size resolution_in_pixels(width, height);
 
+    float device_scale_factor = 1.0;
+    int dsf_value = 0;
+    if (dict_value->GetInteger("device-scale-factor", &dsf_value))
+      device_scale_factor = static_cast<float>(dsf_value) / 1000.0f;
+
     gfx::Insets insets;
     if (ValueToInsets(*dict_value, &insets))
       insets_to_set = &insets;
@@ -179,6 +184,7 @@ void LoadDisplayProperties() {
                                                  ui_scale,
                                                  insets_to_set,
                                                  resolution_in_pixels,
+                                                 device_scale_factor,
                                                  color_profile);
   }
 }
@@ -238,6 +244,9 @@ void StoreCurrentDisplayProperties() {
         !mode.native) {
       property_value->SetInteger("width", mode.size.width());
       property_value->SetInteger("height", mode.size.height());
+      property_value->SetInteger(
+          "device-scale-factor",
+          static_cast<int>(mode.device_scale_factor * 1000));
     }
     if (!info.overscan_insets_in_dip().empty())
       InsetsToValue(info.overscan_insets_in_dip(), property_value.get());

@@ -182,6 +182,7 @@ class ASH_EXPORT DisplayManager
                                float ui_scale,
                                const gfx::Insets* overscan_insets,
                                const gfx::Size& resolution_in_pixels,
+                               float device_scale_factor,
                                ui::ColorCalibrationProfile color_profile);
 
   // Returns the display mode of |display_id| which is currently used.

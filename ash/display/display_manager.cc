@@ -530,6 +530,7 @@ void DisplayManager::RegisterDisplayProperty(
     float ui_scale,
     const gfx::Insets* overscan_insets,
     const gfx::Size& resolution_in_pixels,
+    float device_scale_factor,
     ui::ColorCalibrationProfile color_profile) {
   if (display_info_.find(display_id) == display_info_.end())
     display_info_[display_id] = DisplayInfo(display_id, std::string(), false);
@@ -544,10 +545,12 @@ void DisplayManager::RegisterDisplayProperty(
   if (overscan_insets)
     display_info_[display_id].SetOverscanInsets(*overscan_insets);
   if (!resolution_in_pixels.IsEmpty()) {
+    DCHECK(!IsInternalDisplayId(display_id));
     // Default refresh rate, until OnNativeDisplaysChanged() updates us with the
     // actual display info, is 60 Hz.
-    display_modes_[display_id] =
-        DisplayMode(resolution_in_pixels, 60.0f, false, false);
+    DisplayMode mode(resolution_in_pixels, 60.0f, false, false);
+    mode.device_scale_factor = device_scale_factor;
+    display_modes_[display_id] = mode;
   }
 }
 

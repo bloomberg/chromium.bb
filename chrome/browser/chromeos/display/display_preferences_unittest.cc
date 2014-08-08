@@ -199,7 +199,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
 
-  UpdateDisplay("200x200*2, 400x300#400x400|300x200");
+  UpdateDisplay("200x200*2, 400x300#400x400|300x200*1.25");
   int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
   gfx::Display::SetInternalDisplayId(id1);
   int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
@@ -292,13 +292,15 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_FALSE(property->GetString("color_profile_name", &color_profile));
 
   // Resolution is saved only when the resolution is set
-  // by DisplayManager::SetDisplayResolution
+  // by DisplayManager::SetDisplayMode
   width = 0;
   height = 0;
   EXPECT_FALSE(property->GetInteger("width", &width));
   EXPECT_FALSE(property->GetInteger("height", &height));
 
-  display_manager->SetDisplayResolution(id2, gfx::Size(300, 200));
+  ash::DisplayMode mode(gfx::Size(300, 200), 60.0f, false, true);
+  mode.device_scale_factor = 1.25f;
+  display_manager->SetDisplayMode(id2, mode);
 
   display_controller->SetPrimaryDisplayId(id2);
 
@@ -311,11 +313,15 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
 
   // External display's resolution must be stored this time because
   // it's not best.
+  int device_scale_factor = 0;
   EXPECT_TRUE(properties->GetDictionary(base::Int64ToString(id2), &property));
   EXPECT_TRUE(property->GetInteger("width", &width));
   EXPECT_TRUE(property->GetInteger("height", &height));
+  EXPECT_TRUE(property->GetInteger(
+      "device-scale-factor", &device_scale_factor));
   EXPECT_EQ(300, width);
   EXPECT_EQ(200, height);
+  EXPECT_EQ(1250, device_scale_factor);
 
   // The layout remains the same.
   EXPECT_TRUE(displays->GetDictionary(key, &layout_value));
@@ -364,7 +370,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
 
   // Set new display's selected resolution.
   display_manager->RegisterDisplayProperty(
-      id2 + 1, gfx::Display::ROTATE_0, 1.0f, NULL, gfx::Size(500, 400),
+      id2 + 1, gfx::Display::ROTATE_0, 1.0f, NULL, gfx::Size(500, 400), 1.0f,
       ui::COLOR_PROFILE_STANDARD);
 
   UpdateDisplay("200x200*2, 600x500#600x500|500x400");
@@ -390,7 +396,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
 
   // Set yet another new display's selected resolution.
   display_manager->RegisterDisplayProperty(
-      id2 + 1, gfx::Display::ROTATE_0, 1.0f, NULL, gfx::Size(500, 400),
+      id2 + 1, gfx::Display::ROTATE_0, 1.0f, NULL, gfx::Size(500, 400), 1.0f,
       ui::COLOR_PROFILE_STANDARD);
   // Disconnect 2nd display first to generate new id for external display.
   UpdateDisplay("200x200*2");
@@ -452,9 +458,9 @@ TEST_F(DisplayPreferencesTest, PreventStore) {
           ResolutionNotificationController::kNotificationId));
 
   // Once the notification is removed, the specified resolution will be stored
-  // by SetDisplayResolution.
-  ash::Shell::GetInstance()->display_manager()->SetDisplayResolution(
-      id, gfx::Size(300, 200));
+  // by SetDisplayMode.
+  ash::Shell::GetInstance()->display_manager()->SetDisplayMode(
+      id, ash::DisplayMode(gfx::Size(300, 200), 60.0f, false, true));
   UpdateDisplay("300x200#500x400|400x300|300x200");
 
   property = NULL;

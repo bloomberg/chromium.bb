@@ -191,10 +191,16 @@ void DisplayChangeObserver::OnDisplayModeChanged(
       continue;
 
     float device_scale_factor = 1.0f;
-    if (!ui::IsDisplaySizeBlackListed(state.display->physical_size())) {
+    if (state.display->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL) {
       device_scale_factor =
           FindDeviceScaleFactor((kInchInMm * mode_info->size().width() /
                                  state.display->physical_size().width()));
+    } else {
+      DisplayMode mode;
+      if (Shell::GetInstance()->display_manager()->GetSelectedModeForDisplayId(
+              state.display->display_id(), &mode)) {
+        device_scale_factor = mode.device_scale_factor;
+      }
     }
     gfx::Rect display_bounds(state.display->origin(), mode_info->size());
 
