@@ -56,6 +56,7 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
      * @param multiple Whether it should be possible to select multiple files.
      * @param window The WindowAndroid that can show intents
      */
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @CalledByNative
     private void selectFile(
             String[] fileTypes, boolean capture, boolean multiple, WindowAndroid window) {
@@ -84,7 +85,7 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
         Intent getContentIntent = new Intent(Intent.ACTION_GET_CONTENT);
         getContentIntent.addCategory(Intent.CATEGORY_OPENABLE);
 
-        if (multiple)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && multiple)
             getContentIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
 
         ArrayList<Intent> extraIntents = new ArrayList<Intent>();
