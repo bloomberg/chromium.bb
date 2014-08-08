@@ -275,29 +275,6 @@ void PnaclCoordinator::NexeReadDidOpen(int32_t pp_error) {
 }
 
 void PnaclCoordinator::OpenBitcodeStream() {
-  // The component updater's resource throttles + OnDemand update/install
-  // should block the URL request until the compiler is present. Now we
-  // can load the resources (e.g. llc and ld nexes).
-  resources_.reset(new PnaclResources(plugin_));
-  CHECK(resources_ != NULL);
-
-  // The first step of loading resources: read the resource info file.
-  if (!resources_->ReadResourceInfo()) {
-    ExitWithError();
-    return;
-  }
-
-  // Second step of loading resources: call StartLoad to load pnacl-llc
-  // and pnacl-ld, based on the filenames found in the resource info file.
-  if (!resources_->StartLoad()) {
-    ReportNonPpapiError(
-        PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
-        nacl::string("The Portable Native Client (pnacl) component is not "
-                     "installed. Please consult chrome://components for more "
-                      "information."));
-    return;
-  }
-
   // Even though we haven't started downloading, create the translation
   // thread object immediately. This ensures that any pieces of the file
   // that get downloaded before the compilation thread is accepting
@@ -333,6 +310,32 @@ void PnaclCoordinator::BitcodeStreamCacheHit(PP_FileHandle handle) {
 
 void PnaclCoordinator::BitcodeStreamCacheMiss(int64_t expected_pexe_size,
                                               PP_FileHandle nexe_handle) {
+  // IMPORTANT: Make sure that PnaclResources::StartLoad() is only
+  // called after you receive a response to a request for a .pexe file.
+  //
+  // The component updater's resource throttles + OnDemand update/install
+  // should block the URL request until the compiler is present. Now we
+  // can load the resources (e.g. llc and ld nexes).
+  resources_.reset(new PnaclResources(plugin_));
+  CHECK(resources_ != NULL);
+
+  // The first step of loading resources: read the resource info file.
+  if (!resources_->ReadResourceInfo()) {
+    ExitWithError();
+    return;
+  }
+
+  // Second step of loading resources: call StartLoad to load pnacl-llc
+  // and pnacl-ld, based on the filenames found in the resource info file.
+  if (!resources_->StartLoad()) {
+    ReportNonPpapiError(
+        PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
+        nacl::string("The Portable Native Client (pnacl) component is not "
+                     "installed. Please consult chrome://components for more "
+                      "information."));
+    return;
+  }
+
   expected_pexe_size_ = expected_pexe_size;
 
   for (int i = 0; i < split_module_count_; i++) {
