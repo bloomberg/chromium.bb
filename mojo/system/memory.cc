@@ -35,6 +35,7 @@ void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointer(const void* pointer) {
 // Explicitly instantiate the sizes we need. Add instantiations as needed.
 template void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointer<1, 1>(const void*);
 template void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointer<4, 4>(const void*);
+template void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointer<8, 4>(const void*);
 template void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointer<8, 8>(const void*);
 
 template <size_t size, size_t alignment>
@@ -49,6 +50,8 @@ template void MOJO_SYSTEM_IMPL_EXPORT
     CheckUserPointerWithCount<1, 1>(const void*, size_t);
 template void MOJO_SYSTEM_IMPL_EXPORT
     CheckUserPointerWithCount<4, 4>(const void*, size_t);
+template void MOJO_SYSTEM_IMPL_EXPORT
+    CheckUserPointerWithCount<8, 4>(const void*, size_t);
 template void MOJO_SYSTEM_IMPL_EXPORT
     CheckUserPointerWithCount<8, 8>(const void*, size_t);
 

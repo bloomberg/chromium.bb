@@ -4,6 +4,7 @@
 
 #include "mojo/system/entrypoints.h"
 
+#include "base/logging.h"
 #include "mojo/public/c/system/buffer.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/functions.h"
@@ -43,17 +44,23 @@ MojoResult MojoClose(MojoHandle handle) {
 MojoResult MojoWait(MojoHandle handle,
                     MojoHandleSignals signals,
                     MojoDeadline deadline) {
-  return g_core->Wait(handle, signals, deadline);
+  return g_core->Wait(
+      handle, signals, deadline, mojo::system::NullUserPointer());
 }
 
 MojoResult MojoWaitMany(const MojoHandle* handles,
                         const MojoHandleSignals* signals,
                         uint32_t num_handles,
                         MojoDeadline deadline) {
-  return g_core->WaitMany(MakeUserPointer(handles),
-                          MakeUserPointer(signals),
-                          num_handles,
-                          deadline);
+  uint32_t result_index = static_cast<uint32_t>(-1);
+  MojoResult result = g_core->WaitMany(MakeUserPointer(handles),
+                                       MakeUserPointer(signals),
+                                       num_handles,
+                                       deadline,
+                                       MakeUserPointer(&result_index),
+                                       mojo::system::NullUserPointer());
+  return (result == MOJO_RESULT_OK) ? static_cast<MojoResult>(result_index)
+                                    : result;
 }
 
 MojoResult MojoCreateMessagePipe(const MojoCreateMessagePipeOptions* options,

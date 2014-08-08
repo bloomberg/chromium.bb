@@ -14,6 +14,7 @@
 #include "mojo/system/data_pipe_consumer_dispatcher.h"
 #include "mojo/system/data_pipe_producer_dispatcher.h"
 #include "mojo/system/dispatcher.h"
+#include "mojo/system/handle_signals_state.h"
 #include "mojo/system/local_data_pipe.h"
 #include "mojo/system/memory.h"
 #include "mojo/system/message_pipe.h"
@@ -118,15 +119,27 @@ MojoResult Core::Close(MojoHandle handle) {
 
 MojoResult Core::Wait(MojoHandle handle,
                       MojoHandleSignals signals,
-                      MojoDeadline deadline) {
+                      MojoDeadline deadline,
+                      UserPointer<MojoHandleSignalsState> signals_state) {
   uint32_t unused = static_cast<uint32_t>(-1);
-  return WaitManyInternal(&handle, &signals, 1, deadline, &unused);
+  HandleSignalsState hss;
+  MojoResult rv = WaitManyInternal(&handle,
+                                   &signals,
+                                   1,
+                                   deadline,
+                                   &unused,
+                                   signals_state.IsNull() ? NULL : &hss);
+  if (rv != MOJO_RESULT_INVALID_ARGUMENT && !signals_state.IsNull())
+    signals_state.Put(hss);
+  return rv;
 }
 
 MojoResult Core::WaitMany(UserPointer<const MojoHandle> handles,
                           UserPointer<const MojoHandleSignals> signals,
                           uint32_t num_handles,
-                          MojoDeadline deadline) {
+                          MojoDeadline deadline,
+                          UserPointer<uint32_t> result_index,
+                          UserPointer<MojoHandleSignalsState> signals_states) {
   if (num_handles < 1)
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (num_handles > kMaxWaitManyNumHandles)
@@ -135,14 +148,33 @@ MojoResult Core::WaitMany(UserPointer<const MojoHandle> handles,
   UserPointer<const MojoHandle>::Reader handles_reader(handles, num_handles);
   UserPointer<const MojoHandleSignals>::Reader signals_reader(signals,
                                                               num_handles);
-  uint32_t result_index = static_cast<uint32_t>(-1);
-  MojoResult result = WaitManyInternal(handles_reader.GetPointer(),
-                                       signals_reader.GetPointer(),
-                                       num_handles,
-                                       deadline,
-                                       &result_index);
-  return (result == MOJO_RESULT_OK) ? static_cast<MojoResult>(result_index)
-                                    : result;
+  uint32_t index = static_cast<uint32_t>(-1);
+  MojoResult rv;
+  if (signals_states.IsNull()) {
+    rv = WaitManyInternal(handles_reader.GetPointer(),
+                          signals_reader.GetPointer(),
+                          num_handles,
+                          deadline,
+                          &index,
+                          NULL);
+  } else {
+    UserPointer<MojoHandleSignalsState>::Writer signals_states_writer(
+        signals_states, num_handles);
+    // Note: The |reinterpret_cast| is safe, since |HandleSignalsState| is a
+    // subclass of |MojoHandleSignalsState| that doesn't add any data members.
+    rv = WaitManyInternal(handles_reader.GetPointer(),
+                          signals_reader.GetPointer(),
+                          num_handles,
+                          deadline,
+                          &index,
+                          reinterpret_cast<HandleSignalsState*>(
+                              signals_states_writer.GetPointer()));
+    if (rv != MOJO_RESULT_INVALID_ARGUMENT)
+      signals_states_writer.Commit();
+  }
+  if (index != static_cast<uint32_t>(-1) && !result_index.IsNull())
+    result_index.Put(index);
+  return rv;
 }
 
 MojoResult Core::CreateMessagePipe(
@@ -515,7 +547,8 @@ MojoResult Core::WaitManyInternal(const MojoHandle* handles,
                                   const MojoHandleSignals* signals,
                                   uint32_t num_handles,
                                   MojoDeadline deadline,
-                                  uint32_t* result_index) {
+                                  uint32_t* result_index,
+                                  HandleSignalsState* signals_states) {
   DCHECK_GT(num_handles, 0u);
   DCHECK_EQ(*result_index, static_cast<uint32_t>(-1));
 
@@ -537,7 +570,8 @@ MojoResult Core::WaitManyInternal(const MojoHandle* handles,
   uint32_t i;
   MojoResult rv = MOJO_RESULT_OK;
   for (i = 0; i < num_handles; i++) {
-    rv = dispatchers[i]->AddWaiter(&waiter, signals[i], i, NULL);
+    rv = dispatchers[i]->AddWaiter(
+        &waiter, signals[i], i, signals_states ? &signals_states[i] : NULL);
     if (rv != MOJO_RESULT_OK) {
       *result_index = i;
       break;
@@ -553,8 +587,14 @@ MojoResult Core::WaitManyInternal(const MojoHandle* handles,
   // Make sure no other dispatchers try to wake |waiter| for the current
   // |Wait()|/|WaitMany()| call. (Only after doing this can |waiter| be
   // destroyed, but this would still be required if the waiter were in TLS.)
-  for (i = 0; i < num_added; i++)
-    dispatchers[i]->RemoveWaiter(&waiter, NULL);
+  for (i = 0; i < num_added; i++) {
+    dispatchers[i]->RemoveWaiter(&waiter,
+                                 signals_states ? &signals_states[i] : NULL);
+  }
+  if (signals_states) {
+    for (; i < num_handles; i++)
+      signals_states[i] = dispatchers[i]->GetHandleSignalsState();
+  }
 
   return rv;
 }
