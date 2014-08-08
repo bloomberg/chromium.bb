@@ -59,7 +59,7 @@ ScriptPromise Cache::add(ScriptState* scriptState, const String& requestString)
     return rejectAsNotImplemented(scriptState);
 }
 
-ScriptPromise Cache::addAll(ScriptState* scriptState, const WillBeHeapVector<ScriptValue>& rawRequests)
+ScriptPromise Cache::addAll(ScriptState* scriptState, const Vector<ScriptValue>& rawRequests)
 {
     return rejectAsNotImplemented(scriptState);
 }

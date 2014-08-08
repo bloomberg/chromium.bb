@@ -34,7 +34,7 @@ public:
     ScriptPromise matchAll(ScriptState*, const String&, const Dictionary& queryParams);
     ScriptPromise add(ScriptState*, Request*);
     ScriptPromise add(ScriptState*, const String&);
-    ScriptPromise addAll(ScriptState*, const WillBeHeapVector<ScriptValue>&);
+    ScriptPromise addAll(ScriptState*, const Vector<ScriptValue>&);
     ScriptPromise deleteFunction(ScriptState*, Request*, const Dictionary& queryParams);
     ScriptPromise deleteFunction(ScriptState*, const String&, const Dictionary& queryParams);
     ScriptPromise put(ScriptState*, Request*, Response*);
