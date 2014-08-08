@@ -71,6 +71,7 @@ private:
     virtual bool sheetLoaded() OVERRIDE;
 
     void parseStyleSheet(const String& sheet);
+    void clearSheet();
 
     String m_target;
     String m_localHref;
