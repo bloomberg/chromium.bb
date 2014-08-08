@@ -1179,17 +1179,15 @@ void QuicConnection::WriteIfNotBlocked() {
 }
 
 bool QuicConnection::ProcessValidatedPacket() {
-  if ((!FLAGS_quic_allow_port_migration && peer_port_changed_) ||
-      peer_ip_changed_ || self_ip_changed_ || self_port_changed_) {
+  if (peer_ip_changed_ || self_ip_changed_ || self_port_changed_) {
     SendConnectionCloseWithDetails(
         QUIC_ERROR_MIGRATING_ADDRESS,
         "Neither IP address migration, nor self port migration are supported.");
     return false;
   }
 
-  // Port migration is supported, do it now if port has changed.
-  if (FLAGS_quic_allow_port_migration &&
-      peer_port_changed_) {
+  // Peer port migration is supported, do it now if port has changed.
+  if (peer_port_changed_) {
     DVLOG(1) << ENDPOINT << "Peer's port changed from "
              << peer_address_.port() << " to " << migrating_peer_port_
              << ", migrating connection.";
@@ -1542,6 +1540,10 @@ bool QuicConnection::OnSerializedPacket(
                            NOT_RETRANSMISSION);
 }
 
+void QuicConnection::OnHandshakeComplete() {
+  sent_packet_manager_.SetHandshakeConfirmed();
+}
+
 bool QuicConnection::SendOrQueuePacket(EncryptionLevel level,
                                        const SerializedPacket& packet,
                                        TransmissionType transmission_type) {
@@ -1796,6 +1798,9 @@ void QuicConnection::CloseConnection(QuicErrorCode error, bool from_peer) {
     return;
   }
   connected_ = false;
+  if (debug_visitor_.get() != NULL) {
+    debug_visitor_->OnConnectionClosed(error, from_peer);
+  }
   visitor_->OnConnectionClosed(error, from_peer);
   // Cancel the alarms so they don't trigger any action now that the
   // connection is closed.

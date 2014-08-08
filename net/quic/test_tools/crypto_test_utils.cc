@@ -62,9 +62,9 @@ class CryptoFramerVisitor : public CryptoFramerVisitorInterface {
 };
 
 // MovePackets parses crypto handshake messages from packet number
-// |*inout_packet_index| through to the last packet and has |dest_stream|
-// process them. |*inout_packet_index| is updated with an index one greater
-// than the last packet processed.
+// |*inout_packet_index| through to the last packet (or until a packet fails to
+// decrypt) and has |dest_stream| process them. |*inout_packet_index| is updated
+// with an index one greater than the last packet processed.
 void MovePackets(PacketSavingConnection* source_conn,
                  size_t *inout_packet_index,
                  QuicCryptoStream* dest_stream,
@@ -84,7 +84,12 @@ void MovePackets(PacketSavingConnection* source_conn,
 
   size_t index = *inout_packet_index;
   for (; index < source_conn->encrypted_packets_.size(); index++) {
-    ASSERT_TRUE(framer.ProcessPacket(*source_conn->encrypted_packets_[index]));
+    if (!framer.ProcessPacket(*source_conn->encrypted_packets_[index])) {
+      // The framer will be unable to decrypt forward-secure packets sent after
+      // the handshake is complete. Don't treat them as handshake packets.
+      break;
+    }
+
     for (vector<QuicStreamFrame>::const_iterator
          i =  framer.stream_frames().begin();
          i != framer.stream_frames().end(); ++i) {

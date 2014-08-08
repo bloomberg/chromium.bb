@@ -111,6 +111,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   virtual void SetFromConfig(const QuicConfig& config);
 
+  void SetHandshakeConfirmed() { handshake_confirmed_ = true; }
+
   // Called when a new packet is serialized.  If the packet contains
   // retransmittable data, it will be added to the unacked packet map.
   void OnSerializedPacket(const SerializedPacket& serialized_packet);
@@ -361,6 +363,12 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Sets of packets acked and lost as a result of the last congestion event.
   SendAlgorithmInterface::CongestionMap packets_acked_;
   SendAlgorithmInterface::CongestionMap packets_lost_;
+
+  // Set to true after the crypto handshake has successfully completed. After
+  // this is true we no longer use HANDSHAKE_MODE, and further frames sent on
+  // the crypto stream (i.e. SCUP messages) are treated like normal
+  // retransmittable frames.
+  bool handshake_confirmed_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSentPacketManager);
 };

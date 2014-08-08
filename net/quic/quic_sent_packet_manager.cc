@@ -87,7 +87,8 @@ QuicSentPacketManager::QuicSentPacketManager(
       consecutive_crypto_retransmission_count_(0),
       pending_tlp_transmission_(false),
       max_tail_loss_probes_(kDefaultMaxTailLossProbes),
-      using_pacing_(false) {
+      using_pacing_(false),
+      handshake_confirmed_(false) {
 }
 
 QuicSentPacketManager::~QuicSentPacketManager() {
@@ -606,7 +607,9 @@ bool QuicSentPacketManager::MaybeRetransmitTailLossProbe() {
     if (!it->second.in_flight || frames == NULL) {
       continue;
     }
-    DCHECK_NE(IS_HANDSHAKE, frames->HasCryptoHandshake());
+    if (!handshake_confirmed_) {
+      DCHECK_NE(IS_HANDSHAKE, frames->HasCryptoHandshake());
+    }
     MarkForRetransmission(sequence_number, TLP_RETRANSMISSION);
     return true;
   }
@@ -652,7 +655,7 @@ void QuicSentPacketManager::RetransmitAllPackets() {
 QuicSentPacketManager::RetransmissionTimeoutMode
     QuicSentPacketManager::GetRetransmissionMode() const {
   DCHECK(unacked_packets_.HasInFlightPackets());
-  if (unacked_packets_.HasPendingCryptoPackets()) {
+  if (!handshake_confirmed_ && unacked_packets_.HasPendingCryptoPackets()) {
     return HANDSHAKE_MODE;
   }
   if (loss_algorithm_->GetLossTimeout() != QuicTime::Zero()) {

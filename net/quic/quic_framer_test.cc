@@ -46,7 +46,7 @@ const size_t kVersionOffset = kConnectionIdOffset + PACKET_8BYTE_CONNECTION_ID;
 
 // Size in bytes of the stream frame fields for an arbitrary StreamID and
 // offset and the last frame in a packet.
-size_t GetMinStreamFrameSize(QuicVersion version) {
+size_t GetMinStreamFrameSize() {
   return kQuicFrameTypeSize + kQuicMaxStreamIdSize + kQuicMaxStreamOffsetSize;
 }
 
@@ -461,8 +461,7 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
                                   size_t stream_id_size,
                                   bool include_version) {
     // Now test framing boundaries
-    for (size_t i = kQuicFrameTypeSize;
-         i < GetMinStreamFrameSize(framer_.version()); ++i) {
+    for (size_t i = kQuicFrameTypeSize; i < GetMinStreamFrameSize(); ++i) {
       string expected_error;
       if (i < kQuicFrameTypeSize + stream_id_size) {
         expected_error = "Unable to read stream_id.";

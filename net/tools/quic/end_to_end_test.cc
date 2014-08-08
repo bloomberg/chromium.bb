@@ -197,9 +197,6 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     FLAGS_enable_quic_pacing = GetParam().use_pacing;
     FLAGS_enable_quic_fec = GetParam().use_fec;
 
-    if (negotiated_version_ >= QUIC_VERSION_19) {
-      FLAGS_enable_quic_connection_flow_control_2 = true;
-    }
     VLOG(1) << "Using Configuration: " << GetParam();
 
     client_config_.SetDefaults();
@@ -1165,8 +1162,6 @@ TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {
   // Tests that the client's port can change during an established QUIC
   // connection, and that doing so does not result in the connection being
   // closed by the server.
-  FLAGS_quic_allow_port_migration = true;
-
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));

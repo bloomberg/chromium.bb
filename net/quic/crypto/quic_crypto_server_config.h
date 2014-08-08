@@ -16,6 +16,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/quic/crypto/crypto_handshake.h"
+#include "net/quic/crypto/crypto_handshake_message.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/crypto_secret_boxer.h"
 #include "net/quic/quic_time.h"
@@ -210,6 +211,13 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       CryptoHandshakeMessage* out,
       std::string* error_details) const;
 
+  bool BuildServerConfigUpdateMessage(
+      const IPEndPoint& client_ip,
+      const QuicClock* clock,
+      QuicRandom* rand,
+      const QuicCryptoNegotiatedParameters& params,
+      CryptoHandshakeMessage* out) const;
+
   // SetProofSource installs |proof_source| as the ProofSource for handshakes.
   // This object takes ownership of |proof_source|.
   void SetProofSource(ProofSource* proof_source);
@@ -371,6 +379,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       const CryptoHandshakeMessage& client_hello,
       const ClientHelloInfo& info,
       QuicRandom* rand,
+      QuicCryptoNegotiatedParameters *params,
       CryptoHandshakeMessage* out) const;
 
   // ParseConfigProtobuf parses the given config protobuf and returns a

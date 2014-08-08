@@ -16,11 +16,36 @@ namespace net {
 
 class CryptoHandshakeMessage;
 class QuicCryptoServerConfig;
+class QuicCryptoServerStream;
 class QuicSession;
 
 namespace test {
 class CryptoTestUtils;
 }  // namespace test
+
+// Receives a notification when the server hello (SHLO) has been ACKed by the
+// peer. At this point we disable HANDSHAKE_MODE in the sent packet manager.
+class NET_EXPORT_PRIVATE ServerHelloNotifier : public
+    QuicAckNotifier::DelegateInterface {
+ public:
+  explicit ServerHelloNotifier(QuicCryptoServerStream* stream)
+      : server_stream_(stream) {}
+
+  // QuicAckNotifier::DelegateInterface implementation
+  virtual void OnAckNotification(
+      int num_original_packets,
+      int num_original_bytes,
+      int num_retransmitted_packets,
+      int num_retransmitted_bytes,
+      QuicTime::Delta delta_largest_observed) OVERRIDE;
+
+ private:
+  virtual ~ServerHelloNotifier() {}
+
+  QuicCryptoServerStream* server_stream_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServerHelloNotifier);
+};
 
 class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
  public:
@@ -43,6 +68,17 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
   bool GetBase64SHA256ClientChannelID(std::string* output) const;
 
   uint8 num_handshake_messages() const { return num_handshake_messages_; }
+
+  int num_server_config_update_messages_sent() const {
+    return num_server_config_update_messages_sent_;
+  }
+
+  // Sends the latest server config and source-address token to the client.
+  void SendServerConfigUpdate();
+
+  // Called by the ServerHello AckNotifier once the SHLO has been ACKed by the
+  // client.
+  void OnServerHelloAcked();
 
  protected:
   virtual QuicErrorCode ProcessClientHello(
@@ -90,7 +126,11 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
   // handshake message is being validated.
   ValidateCallback* validate_client_hello_cb_;
 
+  // Number of handshake messages received by this stream.
   uint8 num_handshake_messages_;
+
+  // Number of server config update (SCUP) messages sent by this stream.
+  int num_server_config_update_messages_sent_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoServerStream);
 };

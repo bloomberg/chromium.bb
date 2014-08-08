@@ -13,7 +13,8 @@ namespace net {
 
 QuicCryptoNegotiatedParameters::QuicCryptoNegotiatedParameters()
     : key_exchange(0),
-      aead(0) {
+      aead(0),
+      x509_ecdsa_supported(false) {
 }
 
 QuicCryptoNegotiatedParameters::~QuicCryptoNegotiatedParameters() {}

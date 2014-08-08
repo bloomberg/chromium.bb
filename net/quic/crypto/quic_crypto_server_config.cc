@@ -603,7 +603,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
       !info.client_nonce_well_formed ||
       !info.unique ||
       !requested_config.get()) {
-    BuildRejection(*primary_config, client_hello, info, rand, out);
+    BuildRejection(*primary_config, client_hello, info, rand, params, out);
     return QUIC_NO_ERROR;
   }
 
@@ -1039,11 +1039,50 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   helper.StartedAsyncCallback();
 }
 
+bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
+    const IPEndPoint& client_ip,
+    const QuicClock* clock,
+    QuicRandom* rand,
+    const QuicCryptoNegotiatedParameters& params,
+    CryptoHandshakeMessage* out) const {
+  base::AutoLock locked(configs_lock_);
+  out->set_tag(kSCUP);
+  out->SetStringPiece(kSCFG, primary_config_->serialized);
+  out->SetStringPiece(kSourceAddressTokenTag,
+                      NewSourceAddressToken(*primary_config_,
+                                            client_ip,
+                                            rand,
+                                            clock->WallNow()));
+
+  if (proof_source_ == NULL) {
+    // Insecure QUIC, can send SCFG without proof.
+    return true;
+  }
+
+  const vector<string>* certs;
+  string signature;
+  if (!proof_source_->GetProof(params.sni, primary_config_->serialized,
+                               params.x509_ecdsa_supported, &certs,
+                               &signature)) {
+    DVLOG(1) << "Server: failed to get proof.";
+    return false;
+  }
+
+  const string compressed = CertCompressor::CompressChain(
+      *certs, params.client_common_set_hashes, params.client_cached_cert_hashes,
+      primary_config_->common_cert_sets);
+
+  out->SetStringPiece(kCertificateTag, compressed);
+  out->SetStringPiece(kPROF, signature);
+  return true;
+}
+
 void QuicCryptoServerConfig::BuildRejection(
     const Config& config,
     const CryptoHandshakeMessage& client_hello,
     const ClientHelloInfo& info,
     QuicRandom* rand,
+    QuicCryptoNegotiatedParameters *params,
     CryptoHandshakeMessage* out) const {
   out->set_tag(kREJ);
   out->SetStringPiece(kSCFG, config.serialized);
@@ -1074,12 +1113,12 @@ void QuicCryptoServerConfig::BuildRejection(
     return;
   }
 
-  bool x509_supported = false, x509_ecdsa_supported = false;
+  bool x509_supported = false;
   for (size_t i = 0; i < num_their_proof_demands; i++) {
     switch (their_proof_demands[i]) {
       case kX509:
         x509_supported = true;
-        x509_ecdsa_supported = true;
+        params->x509_ecdsa_supported = true;
         break;
       case kX59R:
         x509_supported = true;
@@ -1094,18 +1133,24 @@ void QuicCryptoServerConfig::BuildRejection(
   const vector<string>* certs;
   string signature;
   if (!proof_source_->GetProof(info.sni.as_string(), config.serialized,
-                               x509_ecdsa_supported, &certs, &signature)) {
+                               params->x509_ecdsa_supported, &certs,
+                               &signature)) {
     return;
   }
 
-  StringPiece their_common_set_hashes;
-  StringPiece their_cached_cert_hashes;
-  client_hello.GetStringPiece(kCCS, &their_common_set_hashes);
-  client_hello.GetStringPiece(kCCRT, &their_cached_cert_hashes);
+  StringPiece client_common_set_hashes;
+  if (client_hello.GetStringPiece(kCCS, &client_common_set_hashes)) {
+    params->client_common_set_hashes = client_common_set_hashes.as_string();
+  }
+
+  StringPiece client_cached_cert_hashes;
+  if (client_hello.GetStringPiece(kCCRT, &client_cached_cert_hashes)) {
+    params->client_cached_cert_hashes = client_cached_cert_hashes.as_string();
+  }
 
   const string compressed = CertCompressor::CompressChain(
-      *certs, their_common_set_hashes, their_cached_cert_hashes,
-      config.common_cert_sets);
+      *certs, params->client_common_set_hashes,
+      params->client_cached_cert_hashes, config.common_cert_sets);
 
   // kREJOverheadBytes is a very rough estimate of how much of a REJ
   // message is taken up by things other than the certificates.

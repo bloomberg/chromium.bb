@@ -281,6 +281,7 @@ enum QuicVersion {
   QUIC_VERSION_19 = 19,  // Connection level flow control.
   QUIC_VERSION_20 = 20,  // Independent stream/connection flow control windows.
   QUIC_VERSION_21 = 21,  // Headers/crypto streams are flow controlled.
+  QUIC_VERSION_22 = 22,  // Send Server Config Update messages on crypto stream.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -290,7 +291,8 @@ enum QuicVersion {
 //
 // IMPORTANT: if you are adding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
-static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_21,
+static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_22,
+                                                     QUIC_VERSION_21,
                                                      QUIC_VERSION_20,
                                                      QUIC_VERSION_19,
                                                      QUIC_VERSION_18,
@@ -443,6 +445,8 @@ enum QuicErrorCode {
   QUIC_INVALID_PRIORITY = 49,
   // Too many streams already open.
   QUIC_TOO_MANY_OPEN_STREAMS = 18,
+  // The peer must send a FIN/RST for each stream, and has not been doing so.
+  QUIC_TOO_MANY_UNFINISHED_STREAMS = 66,
   // Received public reset for this connection.
   QUIC_PUBLIC_RESET = 19,
   // Invalid protocol version.
@@ -533,7 +537,7 @@ enum QuicErrorCode {
   QUIC_VERSION_NEGOTIATION_MISMATCH = 55,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 66,
+  QUIC_LAST_ERROR = 67,
 };
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {

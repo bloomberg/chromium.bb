@@ -124,6 +124,13 @@ struct NET_EXPORT_PRIVATE QuicCryptoNegotiatedParameters {
   // bytes of x coordinate, followed by 32 bytes of y coordinate. Both values
   // are big-endian and the pair is a P-256 public key.
   std::string channel_id;
+
+  // Used when generating proof signature when sending server config updates.
+  bool x509_ecdsa_supported;
+
+  // Used to generate cert chain when sending server config updates.
+  std::string client_common_set_hashes;
+  std::string client_cached_cert_hashes;
 };
 
 // QuicCryptoConfig contains common configuration between clients and servers.

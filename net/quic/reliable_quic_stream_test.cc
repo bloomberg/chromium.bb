@@ -6,7 +6,6 @@
 
 #include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_connection.h"
-#include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/quic_write_blocked_list.h"
 #include "net/quic/spdy_utils.h"
@@ -471,9 +470,7 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataWithQuicAckNotifier) {
 
   // Set a large flow control send window so this doesn't interfere with test.
   stream_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
-  if (FLAGS_enable_quic_connection_flow_control_2) {
-    session_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
-  }
+  session_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
 
   scoped_refptr<QuicAckNotifier::DelegateInterface> proxy_delegate;
 
@@ -526,9 +523,7 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataAckNotificationBeforeFlush) {
 
   // Set a large flow control send window so this doesn't interfere with test.
   stream_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
-  if (FLAGS_enable_quic_connection_flow_control_2) {
-    session_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
-  }
+  session_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
 
   scoped_refptr<QuicAckNotifier::DelegateInterface> proxy_delegate;
 
@@ -634,9 +629,6 @@ TEST_F(ReliableQuicStreamTest, WriteAndBufferDataWithAckNotiferOnlyFinRemains) {
 // as we check for violation and close the connection early.
 TEST_F(ReliableQuicStreamTest,
        StreamSequencerNeverSeesPacketsViolatingFlowControl) {
-  ValueRestore<bool> old_connection_flag(
-      &FLAGS_enable_quic_connection_flow_control_2, true);
-
   Initialize(kShouldProcessData);
 
   // Receive a stream frame that violates flow control: the byte offset is

@@ -6,7 +6,6 @@
 
 #include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_connection.h"
-#include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/quic_write_blocked_list.h"
 #include "net/quic/spdy_utils.h"
@@ -418,9 +417,6 @@ TEST_P(QuicDataStreamTest, ConnectionFlowControlWindowUpdate) {
   if (GetParam() < QUIC_VERSION_19) {
     return;
   }
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
-                              true);
-
   Initialize(kShouldProcessData);
 
   // Set a small flow control limit for streams and connection.
@@ -505,8 +501,6 @@ TEST_P(QuicDataStreamTest, ConnectionFlowControlViolation) {
   if (GetParam() < QUIC_VERSION_19) {
     return;
   }
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
-                              true);
 
   // Stream should not process data, so that data gets buffered in the
   // sequencer, triggering flow control limits.

@@ -531,8 +531,6 @@ TEST_P(QuicSessionTest, OnCanWriteLimitsNumWritesIfFlowControlBlocked) {
     return;
   }
 
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
-                              true);
   // Ensure connection level flow control blockage.
   QuicFlowControllerPeer::SetSendWindowOffset(session_.flow_controller(), 0);
   EXPECT_TRUE(session_.flow_controller()->IsBlocked());
@@ -711,8 +709,6 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingRstOutOfOrder) {
     return;
   }
 
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
-                              true);
   // Test that when we receive an out of order stream RST we correctly adjust
   // our connection level flow control receive window.
   // On close, the stream should mark as consumed all bytes between the highest
@@ -741,8 +737,6 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingFinAndLocalReset) {
     return;
   }
 
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
-                              true);
   // Test the situation where we receive a FIN on a stream, and before we fully
   // consume all the data from the sequencer buffer we locally RST the stream.
   // The bytes between highest consumed byte, and the final byte offset that we
@@ -789,8 +783,6 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingFinAfterRst) {
     return;
   }
 
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
-                              true);
   // Connection starts with some non-zero highest received byte offset,
   // due to other active streams.
   const uint64 kInitialConnectionBytesConsumed = 567;
@@ -833,8 +825,6 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingRstAfterRst) {
     return;
   }
 
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
-                              true);
   // Connection starts with some non-zero highest received byte offset,
   // due to other active streams.
   const uint64 kInitialConnectionBytesConsumed = 567;
@@ -869,8 +859,6 @@ TEST_P(QuicSessionTest, FlowControlWithInvalidFinalOffset) {
   if (version() <= QUIC_VERSION_16) {
     return;
   }
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
-                              true);
 
   const uint64 kLargeOffset = kInitialSessionFlowControlWindowForTest + 1;
   EXPECT_CALL(*connection_,
@@ -896,8 +884,6 @@ TEST_P(QuicSessionTest, VersionNegotiationDisablesFlowControl) {
     return;
   }
 
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
-                              true);
   // Test that after successful version negotiation, flow control is disabled
   // appropriately at both the connection and stream level.
 
@@ -916,6 +902,35 @@ TEST_P(QuicSessionTest, VersionNegotiationDisablesFlowControl) {
   session_.OnSuccessfulVersionNegotiation(QUIC_VERSION_16);
   EXPECT_FALSE(session_.flow_controller()->IsEnabled());
   EXPECT_FALSE(stream->flow_controller()->IsEnabled());
+}
+
+TEST_P(QuicSessionTest, TooManyUnfinishedStreamsCauseConnectionClose) {
+  if (version() < QUIC_VERSION_18) {
+    return;
+  }
+  // If a buggy/malicious peer creates too many streams that are not ended with
+  // a FIN or RST then we send a connection close.
+  ValueRestore<bool> old_flag(&FLAGS_close_quic_connection_unfinished_streams,
+                              true);
+
+  EXPECT_CALL(*connection_,
+              SendConnectionClose(QUIC_TOO_MANY_UNFINISHED_STREAMS)).Times(1);
+
+  const int kMaxStreams = 5;
+  QuicSessionPeer::SetMaxOpenStreams(&session_, kMaxStreams);
+
+  // Create kMaxStreams + 1 data streams, and close them all without receiving a
+  // FIN or a RST from the client.
+  const int kFirstStreamId = kClientDataStreamId1;
+  const int kFinalStreamId = kClientDataStreamId1 + 2 * kMaxStreams + 1;
+  for (int i = kFirstStreamId; i < kFinalStreamId; i += 2) {
+    QuicStreamFrame data1(i, false, 0, MakeIOVector("HT"));
+    vector<QuicStreamFrame> frames;
+    frames.push_back(data1);
+    session_.OnStreamFrames(frames);
+    EXPECT_EQ(1u, session_.GetNumOpenStreams());
+    session_.CloseStream(i);
+  }
 }
 
 }  // namespace

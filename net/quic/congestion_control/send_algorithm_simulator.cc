@@ -195,7 +195,7 @@ QuicTime::Delta SendAlgorithmSimulator::FindNextAck(
       continue;
     }
     // Lost packets don't trigger an ack.
-    if (it->ack_time == QuicTime::Zero()) {
+    if (it->lost) {
       continue;
     }
     DCHECK_LT(*next_acked, it->sequence_number);
@@ -228,7 +228,7 @@ bool SendAlgorithmSimulator::HasRecentLostPackets(
       continue;
     }
     // Lost packets don't trigger an ack.
-    if (it->ack_time == QuicTime::Zero()) {
+    if (it->lost) {
       return true;
     }
     // Buffer dropped packets are skipped automatically, but still end up
@@ -252,7 +252,7 @@ void SendAlgorithmSimulator::HandlePendingAck(Transfer* transfer) {
              << " Now():" << (clock_->Now().ToDebuggingValue() / 1000) << "ms";
   // Some entries may be missing from the sent_packets_ array, if they were
   // dropped due to buffer overruns.
-  SentPacket largest_observed(0, QuicTime::Zero(), QuicTime::Zero(), NULL);
+  SentPacket largest_observed;
   list<SentPacket>::iterator it = sent_packets_.begin();
   while (sender->last_acked < sender->next_acked) {
     ++sender->last_acked;
@@ -271,10 +271,10 @@ void SendAlgorithmSimulator::HandlePendingAck(Transfer* transfer) {
       lost_packets[sender->last_acked] = info;
       continue;
     }
-    if (it->ack_time.IsInitialized()) {
-      acked_packets[sender->last_acked] = info;
-    } else {
+    if (it->lost) {
       lost_packets[sender->last_acked] = info;
+    } else {
+      acked_packets[sender->last_acked] = info;
     }
     // This packet has been acked or lost, remove it from sent_packets_.
     largest_observed = *it;
@@ -310,6 +310,8 @@ void SendAlgorithmSimulator::HandlePendingAck(Transfer* transfer) {
     sender->last_transfer_bandwidth =
         QuicBandwidth::FromBytesAndTimeDelta(transfer->num_bytes,
                                              transfer_time);
+    DCHECK_GE(bandwidth_.ToBitsPerSecond(),
+              sender->last_transfer_bandwidth.ToBitsPerSecond());
     for (vector<Transfer>::iterator it = pending_transfers_.begin();
          it != pending_transfers_.end(); ++it) {
       if (transfer == &(*it)) {
@@ -336,8 +338,7 @@ void SendAlgorithmSimulator::SendDataNow(Transfer* transfer) {
     bool packet_lost =
         forward_loss_rate_ * kuint64max > simple_random_.RandUint64();
     // Handle correlated loss.
-    if (!sent_packets_.empty() &&
-        !sent_packets_.back().ack_time.IsInitialized() &&
+    if (!sent_packets_.empty() && sent_packets_.back().lost &&
         loss_correlation_ * kuint64max > simple_random_.RandUint64()) {
       packet_lost = true;
     }
@@ -354,10 +355,8 @@ void SendAlgorithmSimulator::SendDataNow(Transfer* transfer) {
     QuicTime queue_ack_time = sent_packets_.empty() ? QuicTime::Zero() :
         sent_packets_.back().ack_time.Add(bandwidth_.TransferTime(kPacketSize));
     ack_time = QuicTime::Max(ack_time, queue_ack_time);
-    // If the packet is lost, give it an ack time of Zero.
     sent_packets_.push_back(SentPacket(
-        sender->last_sent, clock_->Now(),
-        packet_lost ? QuicTime::Zero() : ack_time, transfer));
+        sender->last_sent, clock_->Now(), ack_time, packet_lost, transfer));
   } else {
     DVLOG(1) << "losing packet:" << sender->last_sent
              << " because the buffer was full.";

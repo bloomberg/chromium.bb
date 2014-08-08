@@ -89,18 +89,27 @@ class SendAlgorithmSimulator {
   };
 
   struct SentPacket {
+    SentPacket()
+        : sequence_number(0),
+          send_time(QuicTime::Zero()),
+          ack_time(QuicTime::Zero()),
+          lost(false),
+          transfer(NULL) {}
     SentPacket(QuicPacketSequenceNumber sequence_number,
                QuicTime send_time,
                QuicTime ack_time,
+               bool lost,
                Transfer* transfer)
         : sequence_number(sequence_number),
           send_time(send_time),
           ack_time(ack_time),
+          lost(lost),
           transfer(transfer) {}
 
     QuicPacketSequenceNumber sequence_number;
     QuicTime send_time;
     QuicTime ack_time;
+    bool lost;
     Transfer* transfer;
   };
 

@@ -9,12 +9,11 @@
 
 NET_EXPORT_PRIVATE extern bool FLAGS_track_retransmission_history;
 NET_EXPORT_PRIVATE extern bool FLAGS_enable_quic_pacing;
-NET_EXPORT_PRIVATE extern bool FLAGS_enable_quic_connection_flow_control_2;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_allow_oversized_packets_for_test;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_time_loss_detection;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_allow_port_migration;
 NET_EXPORT_PRIVATE extern bool FLAGS_use_early_return_when_verifying_chlo;
 NET_EXPORT_PRIVATE extern bool FLAGS_send_quic_crypto_reject_reason;
 NET_EXPORT_PRIVATE extern bool FLAGS_enable_quic_fec;
+NET_EXPORT_PRIVATE extern bool FLAGS_close_quic_connection_unfinished_streams;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

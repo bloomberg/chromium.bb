@@ -131,6 +131,7 @@ TEST_P(QuicCryptoServerStreamTest, ConnectedAfterCHLO) {
   EXPECT_EQ(2, CompleteCryptoHandshake());
   EXPECT_TRUE(stream_.encryption_established());
   EXPECT_TRUE(stream_.handshake_confirmed());
+  EXPECT_EQ(1, stream_.num_server_config_update_messages_sent());
 }
 
 TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
@@ -223,6 +224,7 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
   }
 
   EXPECT_EQ(1, client->num_sent_client_hellos());
+  EXPECT_EQ(1, server->num_server_config_update_messages_sent());
 }
 
 TEST_P(QuicCryptoServerStreamTest, MessageAfterHandshake) {

@@ -464,6 +464,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
 
         handshake_confirmed_ = true;
         session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
+        session()->connection()->OnHandshakeComplete();
         return;
       }
       case STATE_IDLE:

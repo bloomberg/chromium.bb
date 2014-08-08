@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_protocol.h"
-#include "net/quic/quic_flags.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/reliable_quic_stream_peer.h"
@@ -104,8 +103,6 @@ TEST_F(QuicCryptoStreamTest, ProcessBadData) {
 }
 
 TEST_F(QuicCryptoStreamTest, NoConnectionLevelFlowControl) {
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_connection_flow_control_2,
-                              true);
   if (connection_->version() <= QUIC_VERSION_20) {
     EXPECT_FALSE(stream_.flow_controller()->IsEnabled());
   } else {

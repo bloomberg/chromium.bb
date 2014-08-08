@@ -612,7 +612,12 @@ QuicErrorCode QuicCryptoClientConfig::CacheNewServerConfig(
 
     cached->SetProof(certs, proof);
   } else {
-    cached->ClearProof();
+    if (proof_verifier() != NULL) {
+      // Secure QUIC: clear existing proof as we have been sent a new SCFG
+      // without matching proof/certs.
+      cached->ClearProof();
+    }
+
     if (has_proof && !has_cert) {
       *error_details = "Certificate missing";
       return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;

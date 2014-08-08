@@ -198,6 +198,9 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
   // in the revival of a packet via FEC.
   virtual void OnRevivedPacket(const QuicPacketHeader& revived_header,
                                base::StringPiece payload) {}
+
+  // Called when the connection is closed.
+  virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer) {}
 };
 
 class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
@@ -362,6 +365,11 @@ class NET_EXPORT_PRIVATE QuicConnection
   virtual QuicCongestionFeedbackFrame* CreateFeedbackFrame() OVERRIDE;
   virtual QuicStopWaitingFrame* CreateStopWaitingFrame() OVERRIDE;
   virtual bool OnSerializedPacket(const SerializedPacket& packet) OVERRIDE;
+
+  // Called by the crypto stream when the handshake completes. In the server's
+  // case this is when the SHLO has been ACKed. Clients call this on receipt of
+  // the SHLO.
+  void OnHandshakeComplete();
 
   // Accessors
   void set_visitor(QuicConnectionVisitorInterface* visitor) {

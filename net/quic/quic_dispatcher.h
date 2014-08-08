@@ -137,11 +137,6 @@ class QuicDispatcher : public QuicBlockedWriterInterface,
     return supported_versions_;
   }
 
-  const QuicVersionVector& supported_versions_no_connection_flow_control()
-      const {
-    return supported_versions_no_connection_flow_control_;
-  }
-
   const IPEndPoint& current_server_address() {
     return current_server_address_;
   }
@@ -205,14 +200,6 @@ class QuicDispatcher : public QuicBlockedWriterInterface,
   // element, with subsequent elements in descending order (versions can be
   // skipped as necessary).
   const QuicVersionVector supported_versions_;
-
-  // Versions which do not support *connection* flow control (introduced in
-  // QUIC_VERSION_19).
-  // This is used to construct new QuicConnections when connection flow control
-  // is disabled via flag.
-  // TODO(rjshade): Remove this when
-  // FLAGS_enable_quic_connection_flow_control_2 is removed.
-  QuicVersionVector supported_versions_no_connection_flow_control_;
 
   // Information about the packet currently being handled.
   IPEndPoint current_client_address_;

@@ -61,11 +61,17 @@ QuicPriority QuicCryptoStream::EffectivePriority() const {
 
 void QuicCryptoStream::SendHandshakeMessage(
     const CryptoHandshakeMessage& message) {
+  SendHandshakeMessage(message, NULL);
+}
+
+void QuicCryptoStream::SendHandshakeMessage(
+    const CryptoHandshakeMessage& message,
+    QuicAckNotifier::DelegateInterface* delegate) {
   DVLOG(1) << ENDPOINT << "Sending " << message.DebugString();
   session()->OnCryptoHandshakeMessageSent(message);
   const QuicData& data = message.GetSerialized();
   // TODO(wtc): check the return value.
-  WriteOrBufferData(string(data.data(), data.length()), false, NULL);
+  WriteOrBufferData(string(data.data(), data.length()), false, delegate);
 }
 
 bool QuicCryptoStream::ExportKeyingMaterial(
