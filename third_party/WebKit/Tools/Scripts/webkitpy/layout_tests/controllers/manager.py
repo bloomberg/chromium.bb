@@ -82,6 +82,7 @@ class Manager(object):
         self.PERF_SUBDIR = 'perf'
         self.WEBSOCKET_SUBDIR = 'websocket' + port.TEST_PATH_SEPARATOR
         self.LAYOUT_TESTS_DIRECTORY = 'LayoutTests'
+        self.ARCHIVED_RESULTS_LIMIT = 25
         self._http_server_started = False
         self._websockets_server_started = False
 
@@ -166,6 +167,19 @@ class Manager(object):
         archived_path = self._filesystem.join(self._filesystem.dirname(self._results_directory), archived_name)
         self._filesystem.move(self._results_directory, archived_path)
 
+    def _clobber_old_archived_results(self):
+        results_directory_path = self._filesystem.dirname(self._results_directory)
+        file_list = self._filesystem.listdir(results_directory_path)
+        results_directories = []
+        for dir in file_list:
+            file_path = self._filesystem.join(results_directory_path, dir)
+            if self._filesystem.isdir(file_path):
+                results_directories.append(file_path)
+        results_directories.sort(key=lambda x: self._filesystem.mtime(x))
+        self._printer.write_update("Clobbering old archived results in %s" % results_directory_path)
+        for dir in results_directories[:-self.ARCHIVED_RESULTS_LIMIT]:
+            self._filesystem.rmtree(dir)
+
     def _set_up_run(self, test_names):
         self._printer.write_update("Checking build ...")
         if self._options.build:
@@ -188,10 +202,10 @@ class Manager(object):
                 self._port.stop_helper()
                 return exit_code
 
-        # FIXME : Add a condition here to limit the number of archived results (total_archived_results < MAX_ARCHIVE_RESULTS)
         if self._options.enable_versioned_results and self._filesystem.exists(self._results_directory):
             if self._options.clobber_old_results:
                 _log.warning("Flag --enable_versioned_results overrides --clobber-old-results.")
+            self._clobber_old_archived_results()
             # Rename the existing results folder for archiving.
             self._rename_results_folder()
         elif self._options.clobber_old_results:
