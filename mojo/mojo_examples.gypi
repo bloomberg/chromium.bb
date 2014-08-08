@@ -205,6 +205,22 @@
       ],
     },
     {
+      'target_name': 'mojo_content_handler_demo',
+      'type': 'loadable_module',
+      'dependencies': [
+        'mojo_base.gyp:mojo_application_standalone',
+        'mojo_base.gyp:mojo_cpp_bindings',
+        'mojo_base.gyp:mojo_environment_standalone',
+        'mojo_base.gyp:mojo_utility',
+        'mojo_content_handler_bindings',
+        '<(mojo_system_for_loadable_module)',
+      ],
+      'sources': [
+        'examples/content_handler_demo/content_handler_demo.cc',
+        'public/cpp/application/lib/mojo_main_standalone.cc',
+      ],
+    },
+    {
       'target_name': 'package_mojo_wget',
       'variables': {
         'app_name': 'mojo_wget',

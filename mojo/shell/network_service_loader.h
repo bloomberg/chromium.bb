@@ -31,10 +31,9 @@ class NetworkServiceLoader : public ServiceLoader,
 
  private:
   // ServiceLoader overrides:
-  virtual void LoadService(
-      ServiceManager* manager,
-      const GURL& url,
-      ScopedMessagePipeHandle shell_handle) OVERRIDE;
+  virtual void Load(ServiceManager* manager,
+                    const GURL& url,
+                    scoped_refptr<LoadCallbacks> callbacks) OVERRIDE;
   virtual void OnServiceError(ServiceManager* manager,
                               const GURL& url) OVERRIDE;
 

@@ -8,6 +8,7 @@ component("service_manager") {
   sources = [
     "background_shell_service_loader.cc",
     "background_shell_service_loader.h",
+    "service_loader.cc",
     "service_loader.h",
     "service_manager.cc",
     "service_manager.h",
@@ -24,6 +25,8 @@ component("service_manager") {
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/public/interfaces/application:application",
+    "//mojo/services/public/interfaces/content_handler:content_handler",
+    "//mojo/services/public/interfaces/network:network",
     "//mojo/system",
   ]
 

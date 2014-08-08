@@ -1,0 +1,16 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import "mojo/public/interfaces/application/service_provider.mojom"
+import "mojo/services/public/interfaces/network/url_loader.mojom"
+
+module mojo {
+
+interface ContentHandler {
+  OnConnect(string url,
+            URLResponse url_response,
+            ServiceProvider service_provider);
+};
+
+}
