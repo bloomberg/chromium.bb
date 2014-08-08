@@ -158,6 +158,7 @@ class CCMessagesTest : public testing::Test {
                   b->filters.at(i).image_filter()->countInputs());
       }
     }
+    EXPECT_EQ(a->filters_scale, b->filters_scale);
     EXPECT_EQ(a->background_filters, b->background_filters);
   }
 
@@ -242,6 +243,7 @@ TEST_F(CCMessagesTest, AllQuads) {
   gfx::SizeF arbitrary_sizef1(15.2f, 104.6f);
   gfx::PointF arbitrary_pointf1(31.4f, 15.9f);
   gfx::PointF arbitrary_pointf2(26.5f, -35.8f);
+  gfx::Vector2dF arbitrary_vector2df1(16.2f, -85.1f);
   float arbitrary_float1 = 0.7f;
   float arbitrary_float2 = 0.3f;
   float arbitrary_float3 = 0.9f;
@@ -370,6 +372,7 @@ TEST_F(CCMessagesTest, AllQuads) {
                         arbitrary_rect1,
                         arbitrary_rectf1,
                         arbitrary_filters1,
+                        arbitrary_vector2df1,
                         arbitrary_filters2);
   pass_cmp->CopyFromAndAppendRenderPassDrawQuad(
       renderpass_in,

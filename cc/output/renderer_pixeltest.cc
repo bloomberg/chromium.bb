@@ -109,6 +109,7 @@ void CreateTestRenderPassDrawQuad(const SharedQuadState* shared_state,
                rect,                  // contents_changed_since_last_frame
                gfx::RectF(1.f, 1.f),  // mask_uv_rect
                FilterOperations(),    // foreground filters
+               gfx::Vector2dF(),      // filters scale
                FilterOperations());   // background filters
 }
 
@@ -811,6 +812,7 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
                            pass_rect,
                            gfx::RectF(),
                            filters,
+                           gfx::Vector2dF(),
                            FilterOperations());
 
   RenderPassList pass_list;
@@ -883,6 +885,7 @@ TYPED_TEST(RendererPixelTest, FastPassSaturateFilter) {
                            pass_rect,
                            gfx::RectF(),
                            filters,
+                           gfx::Vector2dF(),
                            FilterOperations());
 
   RenderPassList pass_list;
@@ -954,6 +957,7 @@ TYPED_TEST(RendererPixelTest, FastPassFilterChain) {
                            pass_rect,
                            gfx::RectF(),
                            filters,
+                           gfx::Vector2dF(),
                            FilterOperations());
 
   RenderPassList pass_list;
@@ -1047,6 +1051,7 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
                            pass_rect,
                            gfx::RectF(),
                            filters,
+                           gfx::Vector2dF(),
                            FilterOperations());
 
   RenderPassList pass_list;
@@ -1255,6 +1260,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
                     sub_rect,              // contents_changed_since_last_frame
                     gfx::RectF(1.f, 1.f),  // mask_uv_rect
                     FilterOperations(),    // foreground filters
+                    gfx::Vector2dF(),      // filters scale
                     FilterOperations());   // background filters
 
   // White background behind the masked render pass.
@@ -1329,6 +1335,7 @@ class RendererPixelTestWithBackgroundFilter
           filter_pass_content_rect_,  // contents_changed_since_last_frame
           gfx::RectF(),               // mask_uv_rect
           FilterOperations(),         // filters
+          gfx::Vector2dF(),           // filters_scale
           this->background_filters_);
     }
 

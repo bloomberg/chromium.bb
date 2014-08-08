@@ -74,6 +74,7 @@ void AddTestRenderPassQuad(TestRenderPass* pass,
                output_rect,
                gfx::RectF(),
                FilterOperations(),
+               gfx::Vector2dF(),
                FilterOperations());
 }
 

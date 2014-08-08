@@ -35,8 +35,6 @@ config("feature_flags") {
       "ENABLE_EGLIMAGE=1",
       "ENABLE_BACKGROUND=1",
       "V8_DEPRECATION_WARNINGS",  # Don't use deprecated V8 APIs anywhere.
-      # Temporary suppression until Blink code can be removed.
-      "BLINK_SCALE_FILTERS_AT_RECORD_TIME",
   ]
 
   if (cld_version > 0) {

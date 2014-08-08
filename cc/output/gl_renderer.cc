@@ -633,6 +633,7 @@ static SkBitmap ApplyImageFilter(
     scoped_ptr<GLRenderer::ScopedUseGrContext> use_gr_context,
     ResourceProvider* resource_provider,
     const gfx::Point& origin,
+    const gfx::Vector2dF& scale,
     SkImageFilter* filter,
     ScopedResource* source_texture_resource) {
   if (!filter)
@@ -696,10 +697,8 @@ static SkBitmap ApplyImageFilter(
   paint.setImageFilter(filter);
   canvas.clear(SK_ColorTRANSPARENT);
 
-  // TODO(senorblanco): in addition to the origin translation here, the canvas
-  // should also be scaled to accomodate device pixel ratio and pinch zoom. See
-  // crbug.com/281516 and crbug.com/281518.
   canvas.translate(SkIntToScalar(-origin.x()), SkIntToScalar(-origin.y()));
+  canvas.scale(scale.x(), scale.y());
   canvas.drawSprite(source, 0, 0, &paint);
 
   // Flush the GrContext to ensure all buffered GL calls are drawn to the
@@ -901,6 +900,7 @@ scoped_ptr<ScopedResource> GLRenderer::GetBackgroundWithFilters(
         ApplyImageFilter(ScopedUseGrContext::Create(this, frame),
                          resource_provider_,
                          quad->rect.origin(),
+                         quad->filters_scale,
                          filter.get(),
                          device_background_texture.get());
   }
@@ -1031,6 +1031,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
             ApplyImageFilter(ScopedUseGrContext::Create(this, frame),
                              resource_provider_,
                              quad->rect.origin(),
+                             quad->filters_scale,
                              filter.get(),
                              contents_texture);
       }

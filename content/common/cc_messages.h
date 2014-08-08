@@ -181,6 +181,7 @@ IPC_STRUCT_TRAITS_BEGIN(cc::RenderPassDrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(contents_changed_since_last_frame)
   IPC_STRUCT_TRAITS_MEMBER(mask_uv_rect)
   IPC_STRUCT_TRAITS_MEMBER(filters)
+  IPC_STRUCT_TRAITS_MEMBER(filters_scale)
   IPC_STRUCT_TRAITS_MEMBER(background_filters)
 IPC_STRUCT_TRAITS_END()
 

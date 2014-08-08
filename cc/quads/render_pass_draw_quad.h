@@ -29,6 +29,7 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
               const gfx::Rect& contents_changed_since_last_frame,
               const gfx::RectF& mask_uv_rect,
               const FilterOperations& filters,
+              const gfx::Vector2dF& filters_scale,
               const FilterOperations& background_filters);
 
   void SetAll(const SharedQuadState* shared_quad_state,
@@ -42,6 +43,7 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
               const gfx::Rect& contents_changed_since_last_frame,
               const gfx::RectF& mask_uv_rect,
               const FilterOperations& filters,
+              const gfx::Vector2dF& filters_scale,
               const FilterOperations& background_filters);
 
   RenderPass::Id render_pass_id;
@@ -52,6 +54,12 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
 
   // Post-processing filters, applied to the pixels in the render pass' texture.
   FilterOperations filters;
+
+  // The scale from layer space of the root layer of the render pass to
+  // the render pass physical pixels. This scale is applied to the filter
+  // parameters for pixel-moving filters. This scale should include
+  // content-to-target-space scale, and device pixel ratio.
+  gfx::Vector2dF filters_scale;
 
   // Post-processing filters, applied to the pixels showing through the
   // background of the render pass, from behind it.

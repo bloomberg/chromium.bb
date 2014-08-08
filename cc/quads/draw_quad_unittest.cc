@@ -346,14 +346,6 @@ void CompareDrawQuad(DrawQuad* quad,
   }                                                              \
   SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
 
-#define CREATE_QUAD_8_NEW_RP(Type, a, b, c, d, e, f, g, h, copy_a) \
-  Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>();   \
-  {                                                                \
-    QUAD_DATA quad_new->SetNew(                                    \
-        shared_state, quad_rect, a, b, c, d, e, f, g, h);          \
-  }                                                                \
-  SETUP_AND_COPY_QUAD_NEW_RP(Type, quad_new, copy_a);
-
 #define CREATE_QUAD_8_ALL_RP(Type, a, b, c, d, e, f, g, h, copy_a) \
   Type* quad_all = render_pass->CreateAndAppendDrawQuad<Type>();   \
   {                                                                \
@@ -380,6 +372,14 @@ void CompareDrawQuad(DrawQuad* quad,
         shared_state, quad_rect, a, b, c, d, e, f, g, h, i);     \
   }                                                              \
   SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
+
+#define CREATE_QUAD_9_NEW_RP(Type, a, b, c, d, e, f, g, h, i, copy_a) \
+  Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>();      \
+  {                                                                   \
+    QUAD_DATA quad_new->SetNew(                                       \
+        shared_state, quad_rect, a, b, c, d, e, f, g, h, i);          \
+  }                                                                   \
+  SETUP_AND_COPY_QUAD_NEW_RP(Type, quad_new, copy_a);
 
 #define CREATE_QUAD_9_ALL(Type, a, b, c, d, e, f, g, h, i) \
   {                                                        \
@@ -470,6 +470,7 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   gfx::RectF mask_u_v_rect(-45.f, -21.f, 33.f, 19.f);
   FilterOperations filters;
   filters.Append(FilterOperation::CreateBlurFilter(1.f));
+  gfx::Vector2dF filters_scale;
   FilterOperations background_filters;
   background_filters.Append(
       FilterOperation::CreateGrayscaleFilter(1.f));
@@ -477,7 +478,7 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   RenderPass::Id copied_render_pass_id(235, 11);
   CREATE_SHARED_STATE();
 
-  CREATE_QUAD_8_NEW_RP(RenderPassDrawQuad,
+  CREATE_QUAD_9_NEW_RP(RenderPassDrawQuad,
                        visible_rect,
                        render_pass_id,
                        is_replica,
@@ -485,6 +486,7 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
                        contents_changed_since_last_frame,
                        mask_u_v_rect,
                        filters,
+                       filters_scale,
                        background_filters,
                        copied_render_pass_id);
   EXPECT_EQ(DrawQuad::RENDER_PASS, copy_quad->material);
@@ -498,13 +500,14 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   EXPECT_EQ(filters, copy_quad->filters);
   EXPECT_EQ(background_filters, copy_quad->background_filters);
 
-  CREATE_QUAD_7_ALL_RP(RenderPassDrawQuad,
+  CREATE_QUAD_8_ALL_RP(RenderPassDrawQuad,
                        render_pass_id,
                        is_replica,
                        mask_resource_id,
                        contents_changed_since_last_frame,
                        mask_u_v_rect,
                        filters,
+                       filters_scale,
                        background_filters,
                        copied_render_pass_id);
   EXPECT_EQ(DrawQuad::RENDER_PASS, copy_quad->material);
@@ -823,7 +826,7 @@ TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
   RenderPass::Id copied_render_pass_id(235, 11);
 
   CREATE_SHARED_STATE();
-  CREATE_QUAD_8_NEW_RP(RenderPassDrawQuad,
+  CREATE_QUAD_9_NEW_RP(RenderPassDrawQuad,
                        visible_rect,
                        render_pass_id,
                        is_replica,
@@ -831,6 +834,7 @@ TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
                        contents_changed_since_last_frame,
                        mask_u_v_rect,
                        filters,
+                       gfx::Vector2dF(),
                        background_filters,
                        copied_render_pass_id);
   EXPECT_EQ(mask_resource_id, quad_new->mask_resource_id);

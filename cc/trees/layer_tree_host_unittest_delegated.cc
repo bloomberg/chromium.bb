@@ -195,6 +195,7 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
                  damage_rect,
                  gfx::Rect(0, 0, 1, 1),  // mask_uv_rect
                  filters,
+                 gfx::Vector2dF(),
                  background_filters);
   }
 

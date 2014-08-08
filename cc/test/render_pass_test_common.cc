@@ -109,6 +109,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                              rect,
                              gfx::RectF(),
                              FilterOperations(),
+                             gfx::Vector2dF(),
                              FilterOperations());
 
     RenderPassDrawQuad* render_pass_replica_quad =
@@ -122,6 +123,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                                      rect,
                                      gfx::RectF(),
                                      FilterOperations(),
+                                     gfx::Vector2dF(),
                                      FilterOperations());
   }
 

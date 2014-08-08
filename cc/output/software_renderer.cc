@@ -526,9 +526,6 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
   if (!quad->filters.IsEmpty()) {
     skia::RefPtr<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
         quad->filters, content_texture->size());
-    // TODO(ajuma): In addition origin translation, the canvas should also be
-    // scaled to accomodate device pixel ratio and pinch zoom. See
-    // crbug.com/281516 and crbug.com/281518.
     // TODO(ajuma): Apply the filter in the same pass as the content where
     // possible (e.g. when there's no origin offset). See crbug.com/308201.
     if (filter) {
@@ -541,6 +538,7 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
         canvas.clear(SK_ColorTRANSPARENT);
         canvas.translate(SkIntToScalar(-quad->rect.origin().x()),
                          SkIntToScalar(-quad->rect.origin().y()));
+        canvas.scale(quad->filters_scale.x(), quad->filters_scale.y());
         canvas.drawSprite(*content, 0, 0, &paint);
       }
     }

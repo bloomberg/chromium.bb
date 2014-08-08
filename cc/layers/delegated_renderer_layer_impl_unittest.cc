@@ -583,6 +583,7 @@ class DelegatedRendererLayerImplTestTransform
         child_pass_rect,        // contents_changed_since_last_frame
         gfx::RectF(),           // mask_uv_rect
         FilterOperations(),     // filters
+        gfx::Vector2dF(),       // filters_scale
         FilterOperations());    // background_filters
 
     SolidColorDrawQuad* color_quad;
@@ -1019,6 +1020,7 @@ class DelegatedRendererLayerImplTestClip
         child_pass_rect,        // contents_changed_since_last_frame
         gfx::RectF(),           // mask_uv_rect
         FilterOperations(),     // filters
+        gfx::Vector2dF(),       // filters_scale
         FilterOperations());    // background_filters
 
     SolidColorDrawQuad* color_quad;

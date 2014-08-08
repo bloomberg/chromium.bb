@@ -224,6 +224,12 @@ void RenderSurfaceImpl::AppendQuads(
   gfx::Rect contents_changed_since_last_frame =
       ContentsChanged() ? content_rect_ : gfx::Rect();
 
+  DCHECK(owning_layer_->draw_properties().target_space_transform.IsScale2d());
+  gfx::Vector2dF owning_layer_to_target_scale =
+      owning_layer_->draw_properties().target_space_transform.Scale2d();
+  owning_layer_to_target_scale.Scale(owning_layer_->contents_scale_x(),
+                                     owning_layer_->contents_scale_y());
+
   RenderPassDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(shared_quad_state,
@@ -235,6 +241,7 @@ void RenderSurfaceImpl::AppendQuads(
                contents_changed_since_last_frame,
                mask_uv_rect,
                owning_layer_->filters(),
+               owning_layer_to_target_scale,
                owning_layer_->background_filters());
 }
 

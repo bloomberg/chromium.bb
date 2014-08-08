@@ -104,6 +104,7 @@ void AddRenderPassQuad(TestRenderPass* to_pass,
                output_rect,
                gfx::RectF(),
                FilterOperations(),
+               gfx::Vector2dF(),
                FilterOperations());
 }
 
@@ -133,6 +134,7 @@ void AddRenderPassQuad(TestRenderPass* to_pass,
                output_rect,
                gfx::RectF(),
                filters,
+               gfx::Vector2dF(),
                FilterOperations());
 }
 

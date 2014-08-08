@@ -204,6 +204,8 @@ class CC_EXPORT MathUtil {
                                base::debug::TracedValue* res);
   static void AddToTracedValue(const gfx::Vector2d& v,
                                base::debug::TracedValue* res);
+  static void AddToTracedValue(const gfx::Vector2dF& v,
+                               base::debug::TracedValue* res);
   static void AddToTracedValue(const gfx::QuadF& q,
                                base::debug::TracedValue* res);
   static void AddToTracedValue(const gfx::RectF& rect,

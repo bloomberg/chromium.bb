@@ -223,6 +223,7 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
                     contrib_damage_rect,
                     gfx::RectF(),  // mask_uv_rect
                     FilterOperations(),
+                    gfx::Vector2dF(),  // filters_scale
                     FilterOperations());
 
   pass_list.push_back(pass.PassAs<RenderPass>());
