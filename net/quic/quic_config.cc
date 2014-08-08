@@ -443,7 +443,8 @@ QuicConfig::QuicConfig()
       initial_stream_flow_control_window_bytes_(kSFCW, PRESENCE_OPTIONAL),
       // TODO(rjshade): Make this PRESENCE_REQUIRED when retiring
       // QUIC_VERSION_19.
-      initial_session_flow_control_window_bytes_(kCFCW, PRESENCE_OPTIONAL) {
+      initial_session_flow_control_window_bytes_(kCFCW, PRESENCE_OPTIONAL),
+      socket_receive_buffer_(kSRBF, PRESENCE_OPTIONAL) {
 }
 
 QuicConfig::~QuicConfig() {}
@@ -617,6 +618,22 @@ uint32 QuicConfig::ReceivedInitialSessionFlowControlWindowBytes() const {
   return initial_session_flow_control_window_bytes_.GetReceivedValue();
 }
 
+void QuicConfig::SetSocketReceiveBufferToSend(uint32 tcp_receive_window) {
+  socket_receive_buffer_.SetSendValue(tcp_receive_window);
+}
+
+uint32 QuicConfig::GetSocketReceiveBufferToSend() const {
+  return socket_receive_buffer_.GetSendValue();
+}
+
+bool QuicConfig::HasReceivedSocketReceiveBuffer() const {
+  return socket_receive_buffer_.HasReceivedValue();
+}
+
+uint32 QuicConfig::ReceivedSocketReceiveBuffer() const {
+  return socket_receive_buffer_.GetReceivedValue();
+}
+
 bool QuicConfig::negotiated() {
   // TODO(ianswett): Add the negotiated parameters once and iterate over all
   // of them in negotiated, ToHandshakeMessage, ProcessClientHello, and
@@ -668,6 +685,7 @@ void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
   initial_flow_control_window_bytes_.ToHandshakeMessage(out);
   initial_stream_flow_control_window_bytes_.ToHandshakeMessage(out);
   initial_session_flow_control_window_bytes_.ToHandshakeMessage(out);
+  socket_receive_buffer_.ToHandshakeMessage(out);
   connection_options_.ToHandshakeMessage(out);
 }
 
@@ -712,6 +730,10 @@ QuicErrorCode QuicConfig::ProcessPeerHello(
   }
   if (error == QUIC_NO_ERROR) {
     error = initial_session_flow_control_window_bytes_.ProcessPeerHello(
+        peer_hello, hello_type, error_details);
+  }
+  if (error == QUIC_NO_ERROR) {
+    error = socket_receive_buffer_.ProcessPeerHello(
         peer_hello, hello_type, error_details);
   }
   if (error == QUIC_NO_ERROR) {

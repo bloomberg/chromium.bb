@@ -983,7 +983,8 @@ QuicFramer::AckFrameInfo QuicFramer::GetAckFrameInfo(
       last_missing = *iter;
     }
     // Include the last nack range.
-    ack_info.nack_ranges[last_missing - cur_range_length] = cur_range_length;
+    ack_info.nack_ranges[last_missing - cur_range_length] =
+        cur_range_length;
     // Include the range to the largest observed.
     ack_info.max_delta = max(ack_info.max_delta,
                              frame.largest_observed - last_missing);
@@ -1417,9 +1418,8 @@ bool QuicFramer::ProcessQuicCongestionFeedbackFrame(
       static_cast<CongestionFeedbackType>(feedback_type);
 
   switch (frame->type) {
-    case kInterArrival: {
-      CongestionFeedbackMessageInterArrival* inter_arrival =
-          &frame->inter_arrival;
+    case kTimestamp: {
+      CongestionFeedbackMessageTimestamp* timestamp = &frame->timestamp;
       uint8 num_received_packets;
       if (!reader_->ReadBytes(&num_received_packets, 1)) {
         set_detailed_error("Unable to read num received packets.");
@@ -1442,7 +1442,7 @@ bool QuicFramer::ProcessQuicCongestionFeedbackFrame(
         QuicTime time_received = creation_time_.Add(
             QuicTime::Delta::FromMicroseconds(time_received_us));
 
-        inter_arrival->received_packet_times.insert(
+        timestamp->received_packet_times.insert(
             make_pair(smallest_received, time_received));
 
         for (uint8 i = 0; i < num_received_packets - 1; ++i) {
@@ -1460,7 +1460,7 @@ bool QuicFramer::ProcessQuicCongestionFeedbackFrame(
             return false;
           }
           QuicPacketSequenceNumber packet = smallest_received + sequence_delta;
-          inter_arrival->received_packet_times.insert(
+          timestamp->received_packet_times.insert(
               make_pair(packet, time_received.Add(
                   QuicTime::Delta::FromMicroseconds(time_delta_us))));
         }
@@ -1469,7 +1469,6 @@ bool QuicFramer::ProcessQuicCongestionFeedbackFrame(
     }
     case kTCP: {
       CongestionFeedbackMessageTCP* tcp = &frame->tcp;
-      // TODO(ianswett): Remove receive window, since it's constant.
       uint16 receive_window = 0;
       if (!reader_->ReadUInt16(&receive_window)) {
         set_detailed_error("Unable to read receive window.");
@@ -1788,16 +1787,16 @@ size_t QuicFramer::ComputeFrameLength(
       len += 1;  // Congestion feedback type.
 
       switch (congestion_feedback.type) {
-        case kInterArrival: {
-          const CongestionFeedbackMessageInterArrival& inter_arrival =
-              congestion_feedback.inter_arrival;
+        case kTimestamp: {
+          const CongestionFeedbackMessageTimestamp& timestamp =
+              congestion_feedback.timestamp;
           len += 1;  // Number received packets.
-          if (inter_arrival.received_packet_times.size() > 0) {
+          if (!timestamp.received_packet_times.empty()) {
             len += PACKET_6BYTE_SEQUENCE_NUMBER;  // Smallest received.
             len += 8;  // Time.
             // 2 bytes per sequence number delta plus 4 bytes per delta time.
             len += PACKET_6BYTE_SEQUENCE_NUMBER *
-                (inter_arrival.received_packet_times.size() - 1);
+                (timestamp.received_packet_times.size() - 1);
           }
           break;
         }
@@ -2094,55 +2093,8 @@ bool QuicFramer::AppendCongestionFeedbackFrame(
   }
 
   switch (frame.type) {
-    case kInterArrival: {
-      const CongestionFeedbackMessageInterArrival& inter_arrival =
-          frame.inter_arrival;
-      DCHECK_GE(numeric_limits<uint8>::max(),
-                inter_arrival.received_packet_times.size());
-      if (inter_arrival.received_packet_times.size() >
-          numeric_limits<uint8>::max()) {
-        return false;
-      }
-      // TODO(ianswett): Make num_received_packets a varint.
-      uint8 num_received_packets =
-          inter_arrival.received_packet_times.size();
-      if (!writer->WriteBytes(&num_received_packets, 1)) {
-        return false;
-      }
-      if (num_received_packets > 0) {
-        TimeMap::const_iterator it =
-            inter_arrival.received_packet_times.begin();
-
-        QuicPacketSequenceNumber lowest_sequence = it->first;
-        if (!AppendPacketSequenceNumber(PACKET_6BYTE_SEQUENCE_NUMBER,
-                                        lowest_sequence, writer)) {
-          return false;
-        }
-
-        QuicTime lowest_time = it->second;
-        if (!writer->WriteUInt64(
-                lowest_time.Subtract(creation_time_).ToMicroseconds())) {
-          return false;
-        }
-
-        for (++it; it != inter_arrival.received_packet_times.end(); ++it) {
-          QuicPacketSequenceNumber sequence_delta = it->first - lowest_sequence;
-          DCHECK_GE(numeric_limits<uint16>::max(), sequence_delta);
-          if (sequence_delta > numeric_limits<uint16>::max()) {
-            return false;
-          }
-          if (!writer->WriteUInt16(static_cast<uint16>(sequence_delta))) {
-            return false;
-          }
-
-          int32 time_delta_us =
-              it->second.Subtract(lowest_time).ToMicroseconds();
-          if (!writer->WriteBytes(&time_delta_us, sizeof(time_delta_us))) {
-            return false;
-          }
-        }
-      }
-      break;
+    case kTimestamp: {
+      return AppendTimestampFrame(frame, writer);
     }
     case kTCP: {
       const CongestionFeedbackMessageTCP& tcp = frame.tcp;
@@ -2158,6 +2110,53 @@ bool QuicFramer::AppendCongestionFeedbackFrame(
       return false;
   }
 
+  return true;
+}
+
+bool QuicFramer::AppendTimestampFrame(
+    const QuicCongestionFeedbackFrame& frame,
+    QuicDataWriter* writer) {
+  const CongestionFeedbackMessageTimestamp& timestamp = frame.timestamp;
+  DCHECK_GE(numeric_limits<uint8>::max(),
+            timestamp.received_packet_times.size());
+  if (timestamp.received_packet_times.size() > numeric_limits<uint8>::max()) {
+    return false;
+  }
+  uint8 num_received_packets = timestamp.received_packet_times.size();
+  if (!writer->WriteBytes(&num_received_packets, 1)) {
+    return false;
+  }
+  if (num_received_packets > 0) {
+    TimeMap::const_iterator it = timestamp.received_packet_times.begin();
+
+    QuicPacketSequenceNumber lowest_sequence = it->first;
+    if (!AppendPacketSequenceNumber(PACKET_6BYTE_SEQUENCE_NUMBER,
+                                    lowest_sequence, writer)) {
+      return false;
+    }
+
+    QuicTime lowest_time = it->second;
+    if (!writer->WriteUInt64(
+            lowest_time.Subtract(creation_time_).ToMicroseconds())) {
+      return false;
+    }
+
+    for (++it; it != timestamp.received_packet_times.end(); ++it) {
+      QuicPacketSequenceNumber sequence_delta = it->first - lowest_sequence;
+      DCHECK_GE(numeric_limits<uint16>::max(), sequence_delta);
+      if (sequence_delta > numeric_limits<uint16>::max()) {
+        return false;
+      }
+      if (!writer->WriteUInt16(static_cast<uint16>(sequence_delta))) {
+        return false;
+      }
+
+      int32 time_delta_us = it->second.Subtract(lowest_time).ToMicroseconds();
+      if (!writer->WriteBytes(&time_delta_us, sizeof(time_delta_us))) {
+        return false;
+      }
+    }
+  }
   return true;
 }
 

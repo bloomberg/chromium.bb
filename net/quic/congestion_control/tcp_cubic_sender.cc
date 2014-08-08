@@ -8,6 +8,7 @@
 
 #include "base/metrics/histogram.h"
 #include "net/quic/congestion_control/rtt_stats.h"
+#include "net/quic/crypto/crypto_protocol.h"
 
 using std::max;
 using std::min;
@@ -20,7 +21,6 @@ namespace {
 // fast retransmission.  The cwnd after a timeout is still 1.
 const QuicTcpCongestionWindow kMinimumCongestionWindow = 2;
 const QuicByteCount kMaxSegmentSize = kDefaultTCPMSS;
-const QuicByteCount kDefaultReceiveWindow = 64000;
 const int64 kInitialCongestionWindow = 10;
 const int kMaxBurstLength = 3;
 };  // namespace
@@ -37,7 +37,7 @@ TcpCubicSender::TcpCubicSender(
       stats_(stats),
       reno_(reno),
       congestion_window_count_(0),
-      receive_window_(kDefaultReceiveWindow),
+      receive_window_(kDefaultSocketReceiveBuffer),
       prr_out_(0),
       prr_delivered_(0),
       ack_count_since_loss_(0),
@@ -58,17 +58,31 @@ TcpCubicSender::~TcpCubicSender() {
 }
 
 void TcpCubicSender::SetFromConfig(const QuicConfig& config, bool is_server) {
-  if (is_server && config.HasReceivedInitialCongestionWindow()) {
-    // Set the initial window size.
-    congestion_window_ = min(kMaxInitialWindow,
-                             config.ReceivedInitialCongestionWindow());
+  if (is_server) {
+    if (config.HasReceivedConnectionOptions() &&
+        ContainsQuicTag(config.ReceivedConnectionOptions(), kIW10)) {
+      // Initial window experiment.  Ignore the initial congestion
+      // window suggested by the client and use the default ICWND of
+      // 10 instead.
+      congestion_window_ = kInitialCongestionWindow;
+    } else if (config.HasReceivedInitialCongestionWindow()) {
+      // Set the initial window size.
+      congestion_window_ = min(kMaxInitialWindow,
+                               config.ReceivedInitialCongestionWindow());
+    }
+  }
+  if (config.HasReceivedSocketReceiveBuffer()) {
+    // Set the initial socket receive buffer size in bytes.
+    receive_window_ = config.ReceivedSocketReceiveBuffer();
   }
 }
 
 void TcpCubicSender::OnIncomingQuicCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& feedback,
     QuicTime feedback_receive_time) {
-  receive_window_ = feedback.tcp.receive_window;
+  if (feedback.type == kTCP) {
+    receive_window_ = feedback.tcp.receive_window;
+  }
 }
 
 void TcpCubicSender::OnCongestionEvent(

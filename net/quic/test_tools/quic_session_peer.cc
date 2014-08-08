@@ -50,5 +50,11 @@ QuicDataStream* QuicSessionPeer::GetIncomingDataStream(
   return session->GetIncomingDataStream(stream_id);
 }
 
+// static
+map<QuicStreamId, QuicStreamOffset>&
+QuicSessionPeer::GetLocallyClosedStreamsHighestOffset(QuicSession* session) {
+  return session->locally_closed_streams_highest_offset_;
+}
+
 }  // namespace test
 }  // namespace net

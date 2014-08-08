@@ -133,6 +133,10 @@ class SendAlgorithmSimulator {
     buffer_size_ = buffer_size_bytes;
   }
 
+  void set_delayed_ack_timer(QuicTime::Delta delayed_ack_timer) {
+    delayed_ack_timer_ = delayed_ack_timer;
+  }
+
   // Advance the time by |delta| without sending anything.
   void AdvanceTime(QuicTime::Delta delta);
 
@@ -173,6 +177,18 @@ class SendAlgorithmSimulator {
   // Sets the next acked.
   QuicTime::Delta FindNextAcked(Transfer* transfer);
 
+  // Sets the |next_acked| packet for the |transfer| starting at the specified
+  // |last_acked|.  Returns QuicTime::Delta::Infinite and doesn't set
+  // |next_acked| if there is no ack after |last_acked|.
+  QuicTime::Delta FindNextAck(const Transfer* transfer,
+                              QuicPacketSequenceNumber last_acked,
+                              QuicPacketSequenceNumber* next_acked) const;
+
+  // Returns true if any of the packets |transfer| is waiting for less than
+  // next_acked have been lost.
+  bool HasRecentLostPackets(const Transfer* transfer,
+                            QuicPacketSequenceNumber next_acked) const;
+
   // Process all the acks that should have arrived by the current time, and
   // lose any packets that are missing.  Returns the number of bytes acked.
   void HandlePendingAck(Transfer* transfer);
@@ -196,6 +212,7 @@ class SendAlgorithmSimulator {
   QuicBandwidth bandwidth_;
   QuicTime::Delta rtt_;
   size_t buffer_size_;       // In bytes.
+  QuicTime::Delta delayed_ack_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SendAlgorithmSimulator);
 };

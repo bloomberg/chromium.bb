@@ -1366,6 +1366,27 @@ TEST_P(EndToEndTest, HeadersAndCryptoStreamsNoConnectionFlowControl) {
   server_thread_->Resume();
 }
 
+TEST_P(EndToEndTest, RequestWithNoBodyWillNeverSendStreamFrameWithFIN) {
+  // Regression test for b/16010251.
+  // A stream created on receipt of a simple request with no body will never get
+  // a stream frame with a FIN. Verify that we don't keep track of the stream in
+  // the locally closed streams map: it will never be removed if so.
+  ASSERT_TRUE(Initialize());
+
+  // Send a simple headers only request, and receive response.
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+
+  // Now verify that the server is not waiting for a final FIN or RST.
+  server_thread_->Pause();
+  QuicDispatcher* dispatcher =
+      QuicServerPeer::GetDispatcher(server_thread_->server());
+  QuicSession* session = dispatcher->session_map().begin()->second;
+  EXPECT_EQ(0u, QuicSessionPeer::GetLocallyClosedStreamsHighestOffset(
+      session).size());
+  server_thread_->Resume();
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace tools

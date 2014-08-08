@@ -9,6 +9,7 @@
 #include "net/quic/congestion_control/rtt_stats.h"
 #include "net/quic/congestion_control/tcp_cubic_sender.h"
 #include "net/quic/congestion_control/tcp_receiver.h"
+#include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/quic_config_peer.h"
@@ -130,16 +131,12 @@ class TcpCubicSenderTest : public ::testing::Test {
 };
 
 TEST_F(TcpCubicSenderTest, SimpleSender) {
-  QuicCongestionFeedbackFrame feedback;
   // At startup make sure we are at the default.
   EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
   // At startup make sure we can send.
   EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
                                      0,
                                      HAS_RETRANSMITTABLE_DATA).IsZero());
-  // Get default QuicCongestionFeedbackFrame from receiver.
-  ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
-  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now());
   // Make sure we can send.
   EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
                                      0,
@@ -157,14 +154,10 @@ TEST_F(TcpCubicSenderTest, SimpleSender) {
 TEST_F(TcpCubicSenderTest, ApplicationLimitedSlowStart) {
   // Send exactly 10 packets and ensure the CWND ends at 14 packets.
   const int kNumberOfAcks = 5;
-  QuicCongestionFeedbackFrame feedback;
   // At startup make sure we can send.
   EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
       0,
       HAS_RETRANSMITTABLE_DATA).IsZero());
-  // Get default QuicCongestionFeedbackFrame from receiver.
-  ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
-  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now());
   // Make sure we can send.
   EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
                                      0,
@@ -183,14 +176,10 @@ TEST_F(TcpCubicSenderTest, ApplicationLimitedSlowStart) {
 
 TEST_F(TcpCubicSenderTest, ExponentialSlowStart) {
   const int kNumberOfAcks = 20;
-  QuicCongestionFeedbackFrame feedback;
   // At startup make sure we can send.
   EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
       0,
       HAS_RETRANSMITTABLE_DATA).IsZero());
-  // Get default QuicCongestionFeedbackFrame from receiver.
-  ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
-  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now());
   // Make sure we can send.
   EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
                                      0,
@@ -216,11 +205,6 @@ TEST_F(TcpCubicSenderTest, SlowStartAckTrain) {
   // Since we start at 10 packet first round will be 5 second round 10 etc
   // Hence we should pass 30 at 65 = 5 + 10 + 20 + 30
   const int kNumberOfAcks = 65;
-  QuicCongestionFeedbackFrame feedback;
-  // Get default QuicCongestionFeedbackFrame from receiver.
-  ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
-  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now());
-
   for (int i = 0; i < kNumberOfAcks; ++i) {
     // Send our full send window.
     SendAvailableSendWindow();
@@ -262,12 +246,6 @@ TEST_F(TcpCubicSenderTest, SlowStartAckTrain) {
 }
 
 TEST_F(TcpCubicSenderTest, SlowStartPacketLoss) {
-  // Make sure that we fall out of slow start when we encounter a packet loss.
-  QuicCongestionFeedbackFrame feedback;
-  // Get default QuicCongestionFeedbackFrame from receiver.
-  ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
-  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now());
-
   const int kNumberOfAcks = 10;
   for (int i = 0; i < kNumberOfAcks; ++i) {
     // Send our full send window.
@@ -319,12 +297,6 @@ TEST_F(TcpCubicSenderTest, SlowStartPacketLoss) {
 
 TEST_F(TcpCubicSenderTest, SlowStartPacketLossPRR) {
   // Test based on the first example in RFC6937.
-  // Make sure that we fall out of slow start when we encounter a packet loss.
-  QuicCongestionFeedbackFrame feedback;
-  // Get default QuicCongestionFeedbackFrame from receiver.
-  ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
-  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now());
-
   // Ack 10 packets in 5 acks to raise the CWND to 20, as in the example.
   const int kNumberOfAcks = 5;
   for (int i = 0; i < kNumberOfAcks; ++i) {
@@ -375,12 +347,6 @@ TEST_F(TcpCubicSenderTest, SlowStartBurstPacketLossPRR) {
   // Test based on the second example in RFC6937, though we also implement
   // forward acknowledgements, so the first two incoming acks will trigger
   // PRR immediately.
-  // Make sure that we fall out of slow start when we encounter a packet loss.
-  QuicCongestionFeedbackFrame feedback;
-  // Get default QuicCongestionFeedbackFrame from receiver.
-  ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
-  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now());
-
   // Ack 10 packets in 5 acks to raise the CWND to 20, as in the example.
   const int kNumberOfAcks = 5;
   for (int i = 0; i < kNumberOfAcks; ++i) {
@@ -506,11 +472,6 @@ TEST_F(TcpCubicSenderTest, SlowStartMaxSendWindow) {
   sender_.reset(
       new TcpCubicSenderPeer(&clock_, false, kMaxCongestionWindowTCP));
 
-  QuicCongestionFeedbackFrame feedback;
-  // Get default QuicCongestionFeedbackFrame from receiver.
-  ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
-  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now());
-
   for (int i = 0; i < kNumberOfAcks; ++i) {
     // Send our full send window.
     SendAvailableSendWindow();
@@ -526,11 +487,6 @@ TEST_F(TcpCubicSenderTest, TcpRenoMaxCongestionWindow) {
   const int kNumberOfAcks = 1000;
   sender_.reset(
       new TcpCubicSenderPeer(&clock_, true, kMaxCongestionWindowTCP));
-
-  QuicCongestionFeedbackFrame feedback;
-  // Get default QuicCongestionFeedbackFrame from receiver.
-  ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
-  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now());
 
   SendAvailableSendWindow();
   AckNPackets(2);
@@ -555,11 +511,6 @@ TEST_F(TcpCubicSenderTest, TcpCubicMaxCongestionWindow) {
 
   sender_.reset(
       new TcpCubicSenderPeer(&clock_, false, kMaxCongestionWindowTCP));
-
-  QuicCongestionFeedbackFrame feedback;
-  // Get default QuicCongestionFeedbackFrame from receiver.
-  ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
-  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now());
 
   SendAvailableSendWindow();
   AckNPackets(2);
@@ -612,14 +563,17 @@ TEST_F(TcpCubicSenderTest, ConfigureMaxInitialWindow) {
 
   sender_->SetFromConfig(config, true);
   EXPECT_EQ(2 * congestion_window, sender_->congestion_window());
+
+  // Verify that kCOPT: kIW10 forces the congestion window to the
+  // default of 10 regardless of ReceivedInitialWindow.
+  QuicTagVector options;
+  options.push_back(kIW10);
+  QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+  sender_->SetFromConfig(config, true);
+  EXPECT_EQ(congestion_window, sender_->congestion_window());
 }
 
 TEST_F(TcpCubicSenderTest, CongestionAvoidanceAtEndOfRecovery) {
-  // Make sure that we fall out of slow start when we encounter a packet loss.
-  QuicCongestionFeedbackFrame feedback;
-  // Get default QuicCongestionFeedbackFrame from receiver.
-  ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
-  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now());
   // Ack 10 packets in 5 acks to raise the CWND to 20.
   const int kNumberOfAcks = 5;
   for (int i = 0; i < kNumberOfAcks; ++i) {

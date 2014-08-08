@@ -1695,7 +1695,7 @@ void QuicConnection::MaybeProcessUndecryptablePackets() {
   // new keys installed and hence any undecryptable packets will
   // never be able to be decrypted.
   if (encryption_level_ == ENCRYPTION_FORWARD_SECURE) {
-    if (debug_visitor_ != NULL) {
+    if (debug_visitor_.get() != NULL) {
       for (size_t i = 0; i < undecryptable_packets_.size(); ++i) {
         debug_visitor_->OnUndecryptablePacket();
       }

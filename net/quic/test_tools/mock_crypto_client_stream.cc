@@ -81,7 +81,7 @@ void MockCryptoClientStream::SendOnCryptoHandshakeEvent(
 void MockCryptoClientStream::SetConfigNegotiated() {
   ASSERT_FALSE(session()->config()->negotiated());
   QuicTagVector cgst;
-  cgst.push_back(kINAR);
+  cgst.push_back(kTSTP);
   cgst.push_back(kQBIC);
   session()->config()->set_congestion_feedback(cgst, kQBIC);
   session()->config()->set_idle_connection_state_lifetime(

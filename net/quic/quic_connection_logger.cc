@@ -122,13 +122,13 @@ base::Value* NetLogQuicCongestionFeedbackFrameCallback(
     NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   switch (frame->type) {
-    case kInterArrival: {
-      dict->SetString("type", "InterArrival");
+    case kTimestamp: {
+      dict->SetString("type", "Timestamp");
       base::ListValue* received = new base::ListValue();
       dict->Set("received_packets", received);
       for (TimeMap::const_iterator it =
-               frame->inter_arrival.received_packet_times.begin();
-           it != frame->inter_arrival.received_packet_times.end(); ++it) {
+               frame->timestamp.received_packet_times.begin();
+           it != frame->timestamp.received_packet_times.end(); ++it) {
         string value = base::Uint64ToString(it->first) + "@" +
             base::Uint64ToString(it->second.ToDebuggingValue());
         received->AppendString(value);

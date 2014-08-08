@@ -234,6 +234,7 @@ void ReliableQuicStream::OnConnectionClosed(QuicErrorCode error,
 
 void ReliableQuicStream::OnFinRead() {
   DCHECK(sequencer_.IsClosed());
+  fin_received_ = true;
   CloseReadSide();
 }
 

@@ -69,6 +69,9 @@ const uint32 kDefaultFlowControlSendWindow = 16 * 1024;  // 16 KB
 // algorithms.
 const size_t kMaxTcpCongestionWindow = 200;
 
+// Size of the socket receive buffer in bytes.
+const QuicByteCount kDefaultSocketReceiveBuffer = 256000;
+
 // Don't allow a client to suggest an RTT longer than 15 seconds.
 const uint32 kMaxInitialRoundTripTimeUs = 15 * kNumMicrosPerSecond;
 
@@ -700,7 +703,7 @@ void NET_EXPORT_PRIVATE InsertMissingPacketsBetween(
 // compatibility.
 enum CongestionFeedbackType {
   kTCP,  // Used to mimic TCP.
-  kInterArrival,  // Use additional inter arrival information.
+  kTimestamp,  // Use additional inter arrival timestamp information.
 };
 
 // Defines for all types of congestion control algorithms that can be used in
@@ -724,9 +727,9 @@ struct NET_EXPORT_PRIVATE CongestionFeedbackMessageTCP {
   QuicByteCount receive_window;
 };
 
-struct NET_EXPORT_PRIVATE CongestionFeedbackMessageInterArrival {
-  CongestionFeedbackMessageInterArrival();
-  ~CongestionFeedbackMessageInterArrival();
+struct NET_EXPORT_PRIVATE CongestionFeedbackMessageTimestamp {
+  CongestionFeedbackMessageTimestamp();
+  ~CongestionFeedbackMessageTimestamp();
 
   // The set of received packets since the last feedback was sent, along with
   // their arrival times.
@@ -741,10 +744,10 @@ struct NET_EXPORT_PRIVATE QuicCongestionFeedbackFrame {
       std::ostream& os, const QuicCongestionFeedbackFrame& c);
 
   CongestionFeedbackType type;
-  // This should really be a union, but since the inter arrival struct
+  // This should really be a union, but since the timestamp struct
   // is non-trivial, C++ prohibits it.
   CongestionFeedbackMessageTCP tcp;
-  CongestionFeedbackMessageInterArrival inter_arrival;
+  CongestionFeedbackMessageTimestamp timestamp;
 };
 
 struct NET_EXPORT_PRIVATE QuicRstStreamFrame {

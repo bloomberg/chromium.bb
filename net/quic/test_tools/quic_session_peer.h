@@ -28,6 +28,8 @@ class QuicSessionPeer {
   static QuicWriteBlockedList* GetWriteBlockedStreams(QuicSession* session);
   static QuicDataStream* GetIncomingDataStream(QuicSession* session,
                                                QuicStreamId stream_id);
+  static std::map<QuicStreamId, QuicStreamOffset>&
+  GetLocallyClosedStreamsHighestOffset(QuicSession* session);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicSessionPeer);

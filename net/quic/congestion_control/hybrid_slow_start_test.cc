@@ -53,7 +53,7 @@ TEST_F(HybridSlowStartTest, Simple) {
 // TODO(ianswett): Add tests which more realistically invoke the methods,
 // simulating how actual acks arrive and packets are sent.
 TEST_F(HybridSlowStartTest, AckTrain) {
-  // At a typical RTT 60 ms, assuming that the inter arrival is 1 ms,
+  // At a typical RTT 60 ms, assuming that the inter arrival timestamp is 1 ms,
   // we expect to be able to send a burst of 30 packet before we trigger the
   // ack train detection.
   const int kMaxLoopCount = 5;

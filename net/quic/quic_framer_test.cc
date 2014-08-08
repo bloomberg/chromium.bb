@@ -2045,7 +2045,7 @@ TEST_P(QuicFramerTest, CongestionFeedbackFrameTCP) {
   }
 }
 
-TEST_P(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
+TEST_P(QuicFramerTest, CongestionFeedbackFrameTimestamp) {
   unsigned char packet[] = {
     // public flags (8 byte connection_id)
     0x3C,
@@ -2060,7 +2060,7 @@ TEST_P(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
 
     // frame type (congestion feedback frame)
     0x20,
-    // congestion feedback type (inter arrival)
+    // congestion feedback type (timestamp)
     0x01,
     // num received packets
     0x03,
@@ -2091,10 +2091,10 @@ TEST_P(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
   ASSERT_EQ(1u, visitor_.congestion_feedback_frames_.size());
   const QuicCongestionFeedbackFrame& frame =
       *visitor_.congestion_feedback_frames_[0];
-  ASSERT_EQ(kInterArrival, frame.type);
-  ASSERT_EQ(3u, frame.inter_arrival.received_packet_times.size());
+  ASSERT_EQ(kTimestamp, frame.type);
+  ASSERT_EQ(3u, frame.timestamp.received_packet_times.size());
   TimeMap::const_iterator iter =
-      frame.inter_arrival.received_packet_times.begin();
+      frame.timestamp.received_packet_times.begin();
   EXPECT_EQ(GG_UINT64_C(0x0123456789ABA), iter->first);
   EXPECT_EQ(GG_INT64_C(0x07E1D2C3B4A59687),
             iter->second.Subtract(start_).ToMicroseconds());
@@ -3429,7 +3429,7 @@ TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketTCP) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketInterArrival) {
+TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketTimestamp) {
   QuicPacketHeader header;
   header.public_header.connection_id = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;
@@ -3440,16 +3440,16 @@ TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketInterArrival) {
   header.fec_group = 0;
 
   QuicCongestionFeedbackFrame frame;
-  frame.type = kInterArrival;
-  frame.inter_arrival.received_packet_times.insert(
+  frame.type = kTimestamp;
+  frame.timestamp.received_packet_times.insert(
       make_pair(GG_UINT64_C(0x0123456789ABA),
                 start_.Add(QuicTime::Delta::FromMicroseconds(
                     GG_UINT64_C(0x07E1D2C3B4A59687)))));
-  frame.inter_arrival.received_packet_times.insert(
+  frame.timestamp.received_packet_times.insert(
       make_pair(GG_UINT64_C(0x0123456789ABB),
                 start_.Add(QuicTime::Delta::FromMicroseconds(
                     GG_UINT64_C(0x07E1D2C3B4A59688)))));
-  frame.inter_arrival.received_packet_times.insert(
+  frame.timestamp.received_packet_times.insert(
       make_pair(GG_UINT64_C(0x0123456789ABD),
                 start_.Add(QuicTime::Delta::FromMicroseconds(
                     GG_UINT64_C(0x07E1D2C3B4A59689)))));
@@ -3470,7 +3470,7 @@ TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketInterArrival) {
 
     // frame type (congestion feedback frame)
     0x20,
-    // congestion feedback type (inter arrival)
+    // congestion feedback type (timestamp)
     0x01,
     // num received packets
     0x03,
@@ -3556,7 +3556,7 @@ TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketInvalidFeedback) {
 
   QuicCongestionFeedbackFrame congestion_feedback_frame;
   congestion_feedback_frame.type =
-      static_cast<CongestionFeedbackType>(kInterArrival + 1);
+      static_cast<CongestionFeedbackType>(kTimestamp + 1);
 
   QuicFrames frames;
   frames.push_back(QuicFrame(&congestion_feedback_frame));
