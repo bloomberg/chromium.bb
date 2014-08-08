@@ -114,13 +114,6 @@
     ClientRectList getClientRects();
     ClientRect getBoundingClientRect();
 
-    // Mozilla version
-    const unsigned short ALLOW_KEYBOARD_INPUT = 1;
-    [LogActivity, LogAllWorlds, MeasureAs=PrefixedElementRequestFullScreen] void webkitRequestFullScreen([Default=Undefined] optional unsigned short flags);
-
-    // W3C version
-    [LogActivity, LogAllWorlds, MeasureAs=PrefixedElementRequestFullscreen] void webkitRequestFullscreen();
-
     [MeasureAs=ElementRequestPointerLock] void requestPointerLock();
 
     // Event handler attributes
@@ -136,8 +129,6 @@
     [RuntimeEnabled=Touch] attribute EventHandler ontouchend;
     [RuntimeEnabled=Touch] attribute EventHandler ontouchmove;
     [RuntimeEnabled=Touch] attribute EventHandler ontouchstart;
-    attribute EventHandler onwebkitfullscreenchange;
-    attribute EventHandler onwebkitfullscreenerror;
     attribute EventHandler onwheel;
 };
 

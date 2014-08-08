@@ -30,4 +30,7 @@ partial interface Document {
     [MeasureAs=PrefixedDocumentFullscreenEnabled] readonly attribute boolean webkitFullscreenEnabled;
     [MeasureAs=PrefixedDocumentFullscreenElement] readonly attribute Element webkitFullscreenElement;
     [MeasureAs=PrefixedDocumentExitFullscreen] void webkitExitFullscreen();
+
+    attribute EventHandler onwebkitfullscreenchange;
+    attribute EventHandler onwebkitfullscreenerror;
 };

@@ -106,8 +106,6 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(touchend);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(touchmove);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(touchstart);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenchange);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenerror);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(wheel);
 
     bool hasAttribute(const QualifiedName&) const;
@@ -459,13 +457,6 @@ public:
 
     void setCustomElementDefinition(PassRefPtr<CustomElementDefinition>);
     CustomElementDefinition* customElementDefinition() const;
-
-    // Mozilla version
-    static const unsigned short ALLOW_KEYBOARD_INPUT = 1;
-    void webkitRequestFullScreen(unsigned short flags);
-
-    // W3C version
-    void webkitRequestFullscreen();
 
     bool containsFullScreenElement() const { return hasElementFlag(ContainsFullScreenElement); }
     void setContainsFullScreenElement(bool);

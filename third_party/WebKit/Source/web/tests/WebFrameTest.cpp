@@ -5541,7 +5541,7 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable)
     Document* document = toWebLocalFrameImpl(webViewImpl->mainFrame())->frame()->document();
     blink::UserGestureIndicator gesture(blink::DefinitelyProcessingUserGesture);
     Element* divFullscreen = document->getElementById("div1");
-    divFullscreen->webkitRequestFullscreen();
+    FullscreenElementStack::from(*document).requestFullscreen(*divFullscreen, FullscreenElementStack::PrefixedRequest);
     webViewImpl->willEnterFullScreen();
     webViewImpl->didEnterFullScreen();
     webViewImpl->layout();
@@ -5573,7 +5573,7 @@ TEST_F(WebFrameTest, FullscreenMainFrameScrollable)
 
     Document* document = toWebLocalFrameImpl(webViewImpl->mainFrame())->frame()->document();
     blink::UserGestureIndicator gesture(blink::DefinitelyProcessingUserGesture);
-    document->documentElement()->webkitRequestFullscreen();
+    FullscreenElementStack::from(*document).requestFullscreen(*document->documentElement(), FullscreenElementStack::PrefixedRequest);
     webViewImpl->willEnterFullScreen();
     webViewImpl->didEnterFullScreen();
     webViewImpl->layout();

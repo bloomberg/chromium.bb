@@ -2653,21 +2653,6 @@ void Element::setFloatingPointAttribute(const QualifiedName& attributeName, doub
     setAttribute(attributeName, AtomicString::number(value));
 }
 
-void Element::webkitRequestFullscreen()
-{
-    FullscreenElementStack::from(document()).requestFullscreen(*this, FullscreenElementStack::PrefixedRequest);
-}
-
-void Element::webkitRequestFullScreen(unsigned short flags)
-{
-    FullscreenElementStack::RequestType requestType;
-    if (flags & ALLOW_KEYBOARD_INPUT)
-        requestType = FullscreenElementStack::PrefixedMozillaAllowKeyboardInputRequest;
-    else
-        requestType = FullscreenElementStack::PrefixedMozillaRequest;
-    FullscreenElementStack::from(document()).requestFullscreen(*this, requestType);
-}
-
 void Element::setContainsFullScreenElement(bool flag)
 {
     setElementFlag(ContainsFullScreenElement, flag);
