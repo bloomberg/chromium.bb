@@ -917,8 +917,6 @@ def Main(argv):
                     help='Base path of the object output dir.')
   parser.add_option('-r', '--root', dest='root',
                     help='Set the root directory of the sources')
-  parser.add_option('--product-directory', dest='product_directory',
-                    help='Set the root directory of the build')
   parser.add_option('-b', '--build', dest='build',
                     help='Set build type (<toolchain>_<outtype>, ' +
                     'where toolchain is newlib or glibc and outtype is ' +
@@ -959,33 +957,7 @@ def Main(argv):
       source_list_handle = open(options.source_list, 'r')
       source_list = source_list_handle.read().splitlines()
       source_list_handle.close()
-
-      for file_name in source_list:
-        file_name = RemoveQuotes(file_name)
-        if "$" in file_name:
-          # Only require product directory if we need to interpolate it.  This
-          # provides backwards compatibility in the cases where we don't need to
-          # interpolate.  The downside is this creates a subtle landmine.
-          # HACK assume only the product directory will ever be interpolated.
-          if options.product_directory is None:
-            parser.error('--product-dir is required')
-          product_dir = options.product_directory
-          # Normalize to forward slashes because re.sub interprets backslashes
-          # as escape characters. This also simplifies the subsequent regexes.
-          product_dir = product_dir.replace('\\', '/')
-          # Remove fake child that may be apended to the path.
-          # See untrusted.gypi.
-          product_dir = re.sub(r'/+xyz$', '', product_dir)
-          # Expected patterns:
-          # $!PRODUCT_DIR in ninja.
-          # $(builddir) in make.
-          # $(OutDir) in MSVC.
-          # $(BUILT_PRODUCTS_DIR) in xcode.
-          # Also strip off and re-add the trailing directory seperator because
-          # different platforms are inconsistent on if it's there or not.
-          file_name = re.sub('\$!?\(?\w+\)?/?', product_dir + '/', file_name)
-          assert "$" not in file_name, file_name
-        files.append(file_name)
+      files = files + source_list
 
     # Use set instead of list not to compile the same file twice.
     # To keep in mind that the order of files may differ from the .gypcmd file,

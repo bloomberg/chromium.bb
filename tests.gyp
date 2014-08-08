@@ -31,42 +31,6 @@
         'tests/hello_world/hello_world.c',
       ],
     },
-    # Compile a file in the output directory to make sure build_nexe can handle
-    # generated code.
-    {
-      'target_name': 'copy_hello_world',
-      'type': 'none',
-      'copies': [
-        {
-          'destination': '<(SHARED_INTERMEDIATE_DIR)',
-          'files': [
-            'tests/hello_world/hello_world.c',
-          ],
-        },
-      ],
-    },
-    {
-      'target_name': 'generated_hello_world_nexe',
-      'type': 'none',
-      'dependencies': [
-        'tools.gyp:prep_toolchain',
-        'src/untrusted/nacl/nacl.gyp:nacl_lib',
-        'src/untrusted/irt/irt.gyp:irt_core_nexe',
-        'copy_hello_world',
-      ],
-      'variables': {
-        'nexe_target': 'generated_hello_world',
-        'build_glibc': 0,
-        'build_newlib': 1,
-        'build_pnacl_newlib': 0,
-        'extra_args': [
-          '--strip-all',
-        ],
-      },
-      'sources': [
-        '<(SHARED_INTERMEDIATE_DIR)/hello_world.c',
-      ],
-    },
     # Build simple_thread_test to verify that __thread linkage works
     # correctly with gyp-built libraries:
     # https://code.google.com/p/chromium/issues/detail?id=3461
