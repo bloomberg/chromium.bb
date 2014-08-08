@@ -38,7 +38,6 @@
 namespace base {
 
 class HistogramBase;
-class MessagePumpObserver;
 class RunLoop;
 class ThreadTaskRunnerHandle;
 class WaitableEvent;
@@ -549,14 +548,6 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
   // never be called. Instead use Start(), which will forward all the native UI
   // events to the Java message loop.
   void Start();
-#endif
-
-#if defined(OS_WIN)
-  typedef MessagePumpObserver Observer;
-
-  // Please see message_pump_win for definitions of these methods.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
 #endif
 
 #if defined(USE_OZONE) || (defined(USE_X11) && !defined(USE_GLIB))

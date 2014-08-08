@@ -662,16 +662,6 @@ void MessageLoopForUI::Attach() {
 }
 #endif
 
-#if defined(OS_WIN)
-void MessageLoopForUI::AddObserver(Observer* observer) {
-  static_cast<MessagePumpWin*>(pump_.get())->AddObserver(observer);
-}
-
-void MessageLoopForUI::RemoveObserver(Observer* observer) {
-  static_cast<MessagePumpWin*>(pump_.get())->RemoveObserver(observer);
-}
-#endif  // defined(OS_WIN)
-
 #if defined(USE_OZONE) || (defined(USE_X11) && !defined(USE_GLIB))
 bool MessageLoopForUI::WatchFileDescriptor(
     int fd,

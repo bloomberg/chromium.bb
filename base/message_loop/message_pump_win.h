@@ -13,7 +13,6 @@
 #include "base/basictypes.h"
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/message_pump_dispatcher.h"
-#include "base/message_loop/message_pump_observer.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/win/scoped_handle.h"
@@ -27,18 +26,6 @@ class BASE_EXPORT MessagePumpWin : public MessagePump {
  public:
   MessagePumpWin() : have_work_(0), state_(NULL) {}
   virtual ~MessagePumpWin() {}
-
-  // Add an Observer, which will start receiving notifications immediately.
-  void AddObserver(MessagePumpObserver* observer);
-
-  // Remove an Observer.  It is safe to call this method while an Observer is
-  // receiving a notification callback.
-  void RemoveObserver(MessagePumpObserver* observer);
-
-  // Give a chance to code processing additional messages to notify the
-  // message loop observers that another message has been processed.
-  void WillProcessMessage(const MSG& msg);
-  void DidProcessMessage(const MSG& msg);
 
   // Like MessagePump::Run, but MSG objects are routed through dispatcher.
   void RunWithDispatcher(Delegate* delegate, MessagePumpDispatcher* dispatcher);
@@ -61,8 +48,6 @@ class BASE_EXPORT MessagePumpWin : public MessagePump {
 
   virtual void DoRunLoop() = 0;
   int GetCurrentDelay() const;
-
-  ObserverList<MessagePumpObserver> observers_;
 
   // The time at which delayed work should run.
   TimeTicks delayed_work_time_;
