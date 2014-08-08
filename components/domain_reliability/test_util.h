@@ -115,6 +115,8 @@ class MockTime : public MockableTime {
 };
 
 scoped_ptr<const DomainReliabilityConfig> MakeTestConfig();
+scoped_ptr<const DomainReliabilityConfig> MakeTestConfigWithDomain(
+    const std::string& domain);
 DomainReliabilityScheduler::Params MakeTestSchedulerParams();
 
 }  // namespace domain_reliability

@@ -196,12 +196,13 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
     response_code = request.response_info.headers->response_code();
   else
     response_code = -1;
-  ContextMap::iterator context_it;
   std::string beacon_status;
 
   int error_code = net::OK;
   if (request.status.status() == net::URLRequestStatus::FAILED)
     error_code = request.status.error();
+
+  DomainReliabilityContext* context = GetContextForHost(request.url.host());
 
   // Ignore requests where:
   // 1. There is no context for the request host.
@@ -211,7 +212,7 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
   // 4. The request was itself a Domain Reliability upload (to avoid loops).
   // 5. There is no defined beacon status for the error or HTTP response code
   //    (to avoid leaking network-local errors).
-  if ((context_it = contexts_.find(request.url.host())) == contexts_.end() ||
+  if (!context ||
       !request.AccessedNetwork() ||
       (request.load_flags & net::LOAD_DO_NOT_SEND_COOKIES) ||
       request.is_upload ||
@@ -233,7 +234,36 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
   beacon.http_response_code = response_code;
   beacon.start_time = request.load_timing_info.request_start;
   beacon.elapsed = time_->NowTicks() - beacon.start_time;
-  context_it->second->OnBeacon(request.url, beacon);
+  context->OnBeacon(request.url, beacon);
+}
+
+// TODO(ttuttle): Keep a separate wildcard_contexts_ map to avoid having to
+// prepend '*.' to domains.
+DomainReliabilityContext* DomainReliabilityMonitor::GetContextForHost(
+    const std::string& host) const {
+  ContextMap::const_iterator context_it;
+
+  context_it = contexts_.find(host);
+  if (context_it != contexts_.end())
+    return context_it->second;
+
+  std::string host_with_asterisk = "*." + host;
+  context_it = contexts_.find(host_with_asterisk);
+  if (context_it != contexts_.end())
+    return context_it->second;
+
+  size_t dot_pos = host.find('.');
+  if (dot_pos == std::string::npos)
+    return NULL;
+
+  // TODO(ttuttle): Make sure parent is not in PSL before using.
+
+  std::string parent_with_asterisk = "*." + host.substr(dot_pos + 1);
+  context_it = contexts_.find(parent_with_asterisk);
+  if (context_it != contexts_.end())
+    return context_it->second;
+
+  return NULL;
 }
 
 base::WeakPtr<DomainReliabilityMonitor>

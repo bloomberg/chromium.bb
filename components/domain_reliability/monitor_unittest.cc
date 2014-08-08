@@ -87,11 +87,25 @@ class DomainReliabilityMonitorTest : public testing::Test {
   bool CheckRequestCounts(size_t index,
                           uint32 expected_successful,
                           uint32 expected_failed) {
+    return CheckRequestCounts(context_,
+                              index,
+                              expected_successful,
+                              expected_failed);
+  }
+
+  bool CheckRequestCounts(DomainReliabilityContext* context,
+                          size_t index,
+                          uint32 expected_successful,
+                          uint32 expected_failed) {
     uint32 successful, failed;
-    context_->GetRequestCountsForTesting(index, &successful, &failed);
+    context->GetRequestCountsForTesting(index, &successful, &failed);
     EXPECT_EQ(expected_successful, successful);
     EXPECT_EQ(expected_failed, failed);
     return expected_successful == successful && expected_failed == failed;
+  }
+
+  DomainReliabilityContext* CreateAndAddContext(const std::string& domain) {
+    return monitor_.AddContextForTesting(MakeTestConfigWithDomain(domain));
   }
 
   scoped_refptr<base::TestSimpleTaskRunner> network_task_runner_;
@@ -299,6 +313,70 @@ TEST_F(DomainReliabilityMonitorTest, IgnoreSuccessError) {
   EXPECT_EQ(net::OK, beacons[0].chrome_error);
 
   EXPECT_TRUE(CheckRequestCounts(kAlwaysReportIndex, 1u, 0u));
+}
+
+TEST_F(DomainReliabilityMonitorTest, WildcardMatchesSelf) {
+  DomainReliabilityContext* context = CreateAndAddContext("*.wildcard");
+
+  RequestInfo request = MakeRequestInfo();
+  request.url = GURL("http://wildcard/always_report");
+  OnRequestLegComplete(request);
+  EXPECT_TRUE(CheckRequestCounts(context, kAlwaysReportIndex, 1u, 0u));
+}
+
+TEST_F(DomainReliabilityMonitorTest, WildcardMatchesSubdomain) {
+  DomainReliabilityContext* context = CreateAndAddContext("*.wildcard");
+
+  RequestInfo request = MakeRequestInfo();
+  request.url = GURL("http://test.wildcard/always_report");
+  OnRequestLegComplete(request);
+  EXPECT_TRUE(CheckRequestCounts(context, kAlwaysReportIndex, 1u, 0u));
+}
+
+TEST_F(DomainReliabilityMonitorTest, WildcardDoesntMatchSubsubdomain) {
+  DomainReliabilityContext* context = CreateAndAddContext("*.wildcard");
+
+  RequestInfo request = MakeRequestInfo();
+  request.url = GURL("http://test.test.wildcard/always_report");
+  OnRequestLegComplete(request);
+  EXPECT_TRUE(CheckRequestCounts(context, kAlwaysReportIndex, 0u, 0u));
+}
+
+TEST_F(DomainReliabilityMonitorTest, WildcardPrefersSelfToSelfWildcard) {
+  DomainReliabilityContext* context1 = CreateAndAddContext("wildcard");
+  DomainReliabilityContext* context2 = CreateAndAddContext("*.wildcard");
+
+  RequestInfo request = MakeRequestInfo();
+  request.url = GURL("http://wildcard/always_report");
+  OnRequestLegComplete(request);
+
+  EXPECT_TRUE(CheckRequestCounts(context1, kAlwaysReportIndex, 1u, 0u));
+  EXPECT_TRUE(CheckRequestCounts(context2, kAlwaysReportIndex, 0u, 0u));
+}
+
+TEST_F(DomainReliabilityMonitorTest, WildcardPrefersSelfToParentWildcard) {
+  DomainReliabilityContext* context1 = CreateAndAddContext("test.wildcard");
+  DomainReliabilityContext* context2 = CreateAndAddContext("*.wildcard");
+
+  RequestInfo request = MakeRequestInfo();
+  request.url = GURL("http://test.wildcard/always_report");
+  OnRequestLegComplete(request);
+
+  EXPECT_TRUE(CheckRequestCounts(context1, kAlwaysReportIndex, 1u, 0u));
+  EXPECT_TRUE(CheckRequestCounts(context2, kAlwaysReportIndex, 0u, 0u));
+}
+
+TEST_F(DomainReliabilityMonitorTest,
+    WildcardPrefersSelfWildcardToParentWildcard) {
+  DomainReliabilityContext* context1 = CreateAndAddContext("*.test.wildcard");
+  DomainReliabilityContext* context2 = CreateAndAddContext("*.wildcard");
+
+  RequestInfo request = MakeRequestInfo();
+  request.url = GURL("http://test.wildcard/always_report");
+  OnRequestLegComplete(request);
+
+  EXPECT_TRUE(CheckRequestCounts(context1, kAlwaysReportIndex, 1u, 0u));
+  EXPECT_TRUE(CheckRequestCounts(context2, kAlwaysReportIndex, 0u, 0u));
 }
 
 }  // namespace

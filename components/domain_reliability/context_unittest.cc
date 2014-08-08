@@ -176,7 +176,7 @@ TEST_F(DomainReliabilityContextTest, ReportUpload) {
   time_.Advance(max_delay());
   EXPECT_TRUE(upload_pending());
   EXPECT_EQ(kExpectedReport, upload_report());
-  EXPECT_EQ(GURL("https://example/upload"), upload_url());
+  EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
   CallUploadCallback(true);
 
   EXPECT_TRUE(CheckNoBeacons());

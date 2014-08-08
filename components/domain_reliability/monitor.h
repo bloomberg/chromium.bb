@@ -112,6 +112,8 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor {
   void ClearContexts();
   void OnRequestLegComplete(const RequestInfo& info);
 
+  DomainReliabilityContext* GetContextForHost(const std::string& host) const;
+
   base::WeakPtr<DomainReliabilityMonitor> MakeWeakPtr();
 
   scoped_ptr<base::ThreadChecker> thread_checker_;
