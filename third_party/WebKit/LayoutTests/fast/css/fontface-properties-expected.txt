@@ -37,6 +37,8 @@ PASS face.weight = 'a' threw exception SyntaxError: Failed to set the 'weight' p
 PASS face.unicodeRange = 'U+' threw exception SyntaxError: Failed to set the 'unicodeRange' property on 'FontFace': Failed to set 'U+' as a property value..
 PASS face.variant = '???' threw exception SyntaxError: Failed to set the 'variant' property on 'FontFace': Failed to set '???' as a property value..
 PASS face.featureSettings = null threw exception SyntaxError: Failed to set the 'featureSettings' property on 'FontFace': Failed to set 'null' as a property value..
+PASS promise1 === promise2 is true
+PASS promise1 === promise3 is true
 PASS successfullyParsed is true
 
 TEST COMPLETE

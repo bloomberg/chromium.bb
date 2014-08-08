@@ -32,6 +32,7 @@
 #define FontFace_h
 
 #include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSValue.h"
@@ -115,9 +116,10 @@ private:
     bool setPropertyFromStyle(const StylePropertySet&, CSSPropertyID);
     bool setPropertyValue(PassRefPtrWillBeRawPtr<CSSValue>, CSSPropertyID);
     bool setFamilyValue(CSSValueList*);
-    void resolveReadyPromises();
     void loadInternal(ExecutionContext*);
     ScriptPromise fontStatusPromise(ScriptState*);
+
+    typedef ScriptPromiseProperty<RawPtrWillBeMember<FontFace>, RawPtrWillBeMember<FontFace>, RefPtrWillBeMember<DOMException> > LoadedProperty;
 
     AtomicString m_family;
     RefPtrWillBeMember<CSSValue> m_src;
@@ -130,7 +132,7 @@ private:
     LoadStatus m_status;
     RefPtrWillBeMember<DOMException> m_error;
 
-    Vector<OwnPtr<FontFaceReadyPromiseResolver> > m_readyResolvers;
+    PersistentWillBeMember<LoadedProperty> m_loadedProperty;
     OwnPtrWillBeMember<CSSFontFace> m_cssFontFace;
     WillBeHeapVector<RefPtrWillBeMember<LoadFontCallback> > m_callbacks;
 };

@@ -78,6 +78,11 @@ function runTests() {
     shouldThrow("face.unicodeRange = 'U+'");
     shouldThrow("face.variant = '???'");
     shouldThrow("face.featureSettings = null");
+    promise1 = face.loaded;
+    promise2 = face.load();
+    promise3 = face.loaded;
+    shouldBeTrue('promise1 === promise2');
+    shouldBeTrue('promise1 === promise3');
 }
 
 if (document.fonts)

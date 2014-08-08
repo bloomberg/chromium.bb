@@ -33,7 +33,6 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/CSSValueKeywords.h"
 #include "core/css/BinaryDataFontFaceSource.h"
@@ -61,38 +60,6 @@
 #include "platform/SharedBuffer.h"
 
 namespace blink {
-
-class FontFaceReadyPromiseResolver {
-public:
-    static PassOwnPtr<FontFaceReadyPromiseResolver> create(ScriptState* scriptState)
-    {
-        return adoptPtr(new FontFaceReadyPromiseResolver(scriptState));
-    }
-
-    void resolve(PassRefPtrWillBeRawPtr<FontFace> fontFace)
-    {
-        switch (fontFace->loadStatus()) {
-        case FontFace::Loaded:
-            m_resolver->resolve(fontFace);
-            break;
-        case FontFace::Error:
-            m_resolver->reject(fontFace->error());
-            break;
-        default:
-            ASSERT_NOT_REACHED();
-        }
-    }
-
-    ScriptPromise promise() { return m_resolver->promise(); }
-
-private:
-    FontFaceReadyPromiseResolver(ScriptState* scriptState)
-        : m_resolver(ScriptPromiseResolver::create(scriptState))
-    {
-    }
-
-    RefPtr<ScriptPromiseResolver> m_resolver;
-};
 
 static PassRefPtrWillBeRawPtr<CSSValue> parseCSSValue(const Document* document, const String& s, CSSPropertyID propertyID)
 {
@@ -359,7 +326,12 @@ void FontFace::setLoadStatus(LoadStatus status)
     ASSERT(m_status != Error || m_error);
 
     if (m_status == Loaded || m_status == Error) {
-        resolveReadyPromises();
+        if (m_loadedProperty) {
+            if (m_status == Loaded)
+                m_loadedProperty->resolve(this);
+            else
+                m_loadedProperty->reject(m_error.get());
+        }
 
         WillBeHeapVector<RefPtrWillBeMember<LoadFontCallback> > callbacks;
         m_callbacks.swap(callbacks);
@@ -381,16 +353,14 @@ void FontFace::setError(PassRefPtrWillBeRawPtr<DOMException> error)
 
 ScriptPromise FontFace::fontStatusPromise(ScriptState* scriptState)
 {
-    // Since we cannot hold a ScriptPromise as a member of FontFace (that will
-    // cause a circular reference), this creates new Promise every time.
-    OwnPtr<FontFaceReadyPromiseResolver> resolver = FontFaceReadyPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-    if (m_status == Loaded || m_status == Error)
-        resolver->resolve(this);
-    else
-        m_readyResolvers.append(resolver.release());
-
-    return promise;
+    if (!m_loadedProperty) {
+        m_loadedProperty = new LoadedProperty(scriptState->executionContext(), this, LoadedProperty::Loaded);
+        if (m_status == Loaded)
+            m_loadedProperty->resolve(this);
+        else if (m_status == Error)
+            m_loadedProperty->reject(m_error.get());
+    }
+    return m_loadedProperty->promise(scriptState->world());
 }
 
 ScriptPromise FontFace::load(ScriptState* scriptState)
@@ -417,13 +387,6 @@ void FontFace::loadInternal(ExecutionContext* context)
 
     m_cssFontFace->load();
     toDocument(context)->styleEngine()->fontSelector()->fontLoader()->loadPendingFonts();
-}
-
-void FontFace::resolveReadyPromises()
-{
-    for (size_t i = 0; i < m_readyResolvers.size(); i++)
-        m_readyResolvers[i]->resolve(this);
-    m_readyResolvers.clear();
 }
 
 FontTraits FontFace::traits() const
@@ -621,6 +584,7 @@ void FontFace::trace(Visitor* visitor)
     visitor->trace(m_variant);
     visitor->trace(m_featureSettings);
     visitor->trace(m_error);
+    visitor->trace(m_loadedProperty);
     visitor->trace(m_cssFontFace);
     visitor->trace(m_callbacks);
 }
