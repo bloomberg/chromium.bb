@@ -775,8 +775,8 @@ main(int argc, char *argv[])
 	struct display *display;
 	struct demoapp *app;
 
-	parse_options(options, ARRAY_LENGTH(options), &argc, argv);
-	if (option_help) {
+	if (parse_options(options, ARRAY_LENGTH(options), &argc, argv) > 1
+	    || option_help) {
 		printf(help_text, argv[0]);
 		return 0;
 	}
