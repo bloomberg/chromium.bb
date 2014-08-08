@@ -18,7 +18,8 @@ def main(args):
   )
   parser.add_argument('branch_name')
   g = parser.add_mutually_exclusive_group()
-  g.add_argument('--upstream_current', action='store_true',
+  g.add_argument('--upstream-current', '--upstream_current',
+                 action='store_true',
                  help='set upstream branch to current branch.')
   g.add_argument('--upstream', metavar='REF', default=root(),
                  help='upstream branch (or tag) to track.')

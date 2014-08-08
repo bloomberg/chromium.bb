@@ -1718,7 +1718,9 @@ def CMDupload(parser, args):
                     help='cc email addresses')
   parser.add_option('-s', '--send-mail', action='store_true',
                     help='send email to reviewer immediately')
-  parser.add_option("--emulate_svn_auto_props", action="store_true",
+  parser.add_option('--emulate_svn_auto_props',
+                    '--emulate-svn-auto-props',
+                    action="store_true",
                     dest="emulate_svn_auto_props",
                     help="Emulate Subversion's auto properties feature.")
   parser.add_option('-c', '--use-commit-queue', action='store_true',
@@ -1726,6 +1728,7 @@ def CMDupload(parser, args):
   parser.add_option('--private', action='store_true',
                     help='set the review private (rietveld only)')
   parser.add_option('--target_branch',
+                    '--target-branch',
                     help='When uploading to gerrit, remote branch to '
                          'use for CL.  Default: master')
   parser.add_option('--email', default=None,

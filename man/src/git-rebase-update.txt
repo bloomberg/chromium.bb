@@ -9,7 +9,7 @@ include::_git-rebase-update_desc.helper.txt[]
 SYNOPSIS
 --------
 [verse]
-'git rebase-update' [-v | --verbose] [-n | --no_fetch]
+'git rebase-update' [-v | --verbose] [-n | --no-fetch]
 
 DESCRIPTION
 -----------
@@ -28,7 +28,7 @@ Fetching::
   of git remotes is determined, and fetched accordingly. Note that if any
   branches have a tag as their upstream, we are forced to pull all remotes.
 +
-Pass `--no_fetch` to skip this phase.
+Pass `--no-fetch` to skip this phase.
 
 Rebasing::
   All branches are rebased in topological order from roots (upstreams) to
@@ -67,7 +67,7 @@ OPTIONS
 -------
 
 -n::
---no_fetch::
+--no-fetch::
   Skip the `git fetch` phase of rebase-update.
 
 -v::

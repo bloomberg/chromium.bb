@@ -169,7 +169,8 @@ def rebase_branch(branch, parent, start_hash):
 def main(args=()):
   parser = argparse.ArgumentParser()
   parser.add_argument('--verbose', '-v', action='store_true')
-  parser.add_argument('--no_fetch', '-n', action='store_true',
+  parser.add_argument('--no_fetch', '--no-fetch', '-n',
+                      action='store_true',
                       help='Skip fetching remotes.')
   opts = parser.parse_args(args)
 

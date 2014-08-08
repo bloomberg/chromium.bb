@@ -120,7 +120,7 @@ echo Fetching origin
 git fetch origin 2>&1 | grep -v 'stage' | sed 's+From.*+From https://upstream+'
 silent git update-ref refs/remotes/origin/master stage_2
 silent git tag -d $(git tag -l 'stage_*')
-git rebase-update --no_fetch
+git rebase-update --no-fetch
 
 comment "Well look at that. The CQ landed our typo and chapter2 branches "
 comment "already and git rebase-update cleaned them up for us."

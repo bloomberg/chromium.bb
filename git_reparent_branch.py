@@ -69,7 +69,7 @@ def main(args):
   manual_merge_base(branch, mbase, new_parent)
 
   # TODO(iannucci): ONLY rebase-update the branch which moved (and dependants)
-  return git_rebase_update.main(['--no_fetch'])
+  return git_rebase_update.main(['--no-fetch'])
 
 
 if __name__ == '__main__':  # pragma: no cover

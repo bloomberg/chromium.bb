@@ -85,7 +85,7 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
     self.repo.git_commit('foobar2')
 
     self.repo.git('checkout', 'branch_K')
-    self.repo.run(self.nb.main, ['--upstream_current', 'sub_K'])
+    self.repo.run(self.nb.main, ['--upstream-current', 'sub_K'])
     with self.repo.open('K', 'w') as f:
       f.write('This depends on K')
     self.repo.git_commit('sub_K')
@@ -117,7 +117,7 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
     self.assertIn('Cannot rebase-update', output)
 
     self.repo.run(self.nb.main, ['empty_branch'])
-    self.repo.run(self.nb.main, ['--upstream_current', 'empty_branch2'])
+    self.repo.run(self.nb.main, ['--upstream-current', 'empty_branch2'])
 
     self.repo.git('checkout', 'branch_K')
 

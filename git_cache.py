@@ -522,7 +522,7 @@ def CMDupdate_bootstrap(parser, args):
 
   # First, we need to ensure the cache is populated.
   populate_args = args[:]
-  populate_args.append('--no_bootstrap')
+  populate_args.append('--no-bootstrap')
   CMDpopulate(parser, populate_args)
 
   # Get the repo directory.
@@ -542,9 +542,11 @@ def CMDpopulate(parser, args):
                     help='Only cache 10000 commits of history')
   parser.add_option('--ref', action='append',
                     help='Specify additional refs to be fetched')
-  parser.add_option('--no_bootstrap', action='store_true',
+  parser.add_option('--no_bootstrap', '--no-bootstrap',
+                    action='store_true',
                     help='Don\'t bootstrap from Google Storage')
-  parser.add_option('--ignore_locks', action='store_true',
+  parser.add_option('--ignore_locks', '--ignore-locks',
+                    action='store_true',
                     help='Don\'t try to lock repository')
 
   options, args = parser.parse_args(args)
