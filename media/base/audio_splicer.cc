@@ -302,8 +302,10 @@ bool AudioSplicer::AddInput(const scoped_refptr<AudioBuffer>& input) {
   // If a splice frame was incorrectly marked due to poor demuxed timestamps, we
   // may not actually have a splice.  Here we check if any frames exist before
   // the splice.  In this case, just transfer all data to the output sanitizer.
-  if (pre_splice_sanitizer_->GetFrameCount() <=
-      output_ts_helper.GetFramesToTarget(splice_timestamp_)) {
+  const int frames_before_splice =
+      output_ts_helper.GetFramesToTarget(splice_timestamp_);
+  if (frames_before_splice < 0 ||
+      pre_splice_sanitizer_->GetFrameCount() <= frames_before_splice) {
     CHECK(pre_splice_sanitizer_->DrainInto(output_sanitizer_.get()));
 
     // If the file contains incorrectly muxed timestamps, there may be huge gaps
