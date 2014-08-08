@@ -1,0 +1,53 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// See https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#cache
+
+// FIXME: Blink doesn't support dictionary definitions. For now, we can use the
+// Dictionary interface. See http://crbug.com/321462
+
+// dictionary QueryParams {
+//   boolean ignoreSearch;
+//   boolean ignoreMethod;
+//   boolean ignoreVary;
+//   boolean prefixMatch;
+//   DOMString cacheName;
+// };
+
+[
+    WillBeGarbageCollected,
+    NoInterfaceObject,
+    Exposed=ServiceWorker,
+    RuntimeEnabled=ServiceWorker,
+] interface Cache {
+  // FIXME: Blink doesn't support union types, we use overrides instead. See http://crbug.com/240176
+
+  // [CallWith=ScriptState] Promise match((Request or ScalarValueString) request, optional Dictionary queryParams);
+  [CallWith=ScriptState] Promise match(Request request, optional Dictionary queryParams);
+  [CallWith=ScriptState] Promise match(ScalarValueString request, optional Dictionary queryParams);
+
+  // [CallWith=ScriptState] Promise matchAll((Request or ScalarValueString) request, optional Dictionary queryParams);
+  [CallWith=ScriptState] Promise matchAll(Request request, optional Dictionary queryParams);
+  [CallWith=ScriptState] Promise matchAll(ScalarValueString request, optional Dictionary queryParams);
+
+  // [CallWith=ScriptState] Promise add((Request or ScalarValueString) request);
+  [CallWith=ScriptState] Promise add(Request request);
+
+  // FIXME: The lack of union type support together with the sequence mean we can't use overrides here, instead
+  // bind a generic type.
+  // [CallWith=ScriptState] Promise addAll(sequence<Request or ScalarValueString> requests);
+  [CallWith=ScriptState] Promise addAll(sequence<any> requests);
+
+  // [CallWith=ScriptState] Promise put((Request or ScalarValueString) request, Response response);
+  [CallWith=ScriptState] Promise put(Request request, Response response);
+  [CallWith=ScriptState] Promise put(ScalarValueString request, Response response);
+
+  // [CallWith=ScriptState] Promise delete((Request or ScalarValueString) request, optional Dictionary queryParams);
+  [CallWith=ScriptState, ImplementedAs=deleteFunction] Promise delete(Request request, optional Dictionary queryParams);
+  [CallWith=ScriptState, ImplementedAs=deleteFunction] Promise delete(ScalarValueString request, optional Dictionary queryParams);
+
+  // [CallWith=ScriptState] Promise keys(optional (Request or ScalarValueString) request, optional Dictionary queryParams);
+  [CallWith=ScriptState] Promise keys(optional Request request, optional Dictionary queryParams);
+  [CallWith=ScriptState] Promise keys(ScalarValueString request, optional Dictionary queryParams);
+};
