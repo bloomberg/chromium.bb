@@ -4,19 +4,20 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<polymer-element name="ct-tree-status">
+<link rel="import" href="../model/tree-status.html">
+
+<polymer-element name="ct-tree-status" noscript attributes="status">
   <template>
     <style>
       :host {
         display: flex;
       }
-
-      :host([status=throttled]) {
+      :host([state=throttled]) {
         background-color: #fffc6c;
       }
 
-      :host([status=closed]),
-      :host([status=closed]) a {
+      :host([state=closed]),
+      :host([state=closed]) a {
         color: white;
         background-color: #e98080;
       }
@@ -28,50 +29,9 @@ found in the LICENSE file.
         white-space: nowrap;
       }
     </style>
-    <template if="{{ message }}">
-      <div class="message">{{ project }}: {{ message }}</div>
-      <div style="padding: 0 5px;">[ <a href="{{ project | _url }}">details</a> ]</div>
+    <template if="{{ status.message }}">
+      <div class="message">{{ status.project }}: {{ status.message }}</div>
+      <div style="padding: 0 5px;">[ <a href="{{ status.url }}">details</a> ]</div>
     </template>
   </template>
-  <script>
-    Polymer({
-      publish: {
-        project: '',
-        message: '',
-        status: {
-          value: '',
-          reflect: true,
-        },
-      },
-
-      _url: function(project) {
-        return treestatus.urlByName(this.project);
-      },
-
-      update: function() {
-        var url = this._url(this.project) + 'current?format=json';
-        return net.json(url).then(function(response) {
-          this.updateStatus(response);
-        }.bind(this));
-      },
-
-      updateStatus: function(status) {
-        if (status.can_commit_freely) {
-          this.message = null;
-          this.status = 'open';
-          return;
-        }
-
-        this.message = status.message + ' by ' + status.username;
-        var responseLowerCase = status.message.toLowerCase();
-        if (responseLowerCase.indexOf('throttled') != -1) {
-          this.status = 'throttled';
-        } else if (responseLowerCase.indexOf("closed") != -1) {
-          this.status = 'closed';
-        } else {
-          this.status = 'unknown';
-        }
-      },
-    });
-  </script>
 </polymer-element>

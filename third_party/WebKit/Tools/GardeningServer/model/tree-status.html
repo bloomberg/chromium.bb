@@ -1,0 +1,40 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<script>
+function TreeStatus(project) {
+  this.project = project;
+  this.message = '';
+  this.status = 'unknown';
+
+  this.url = "http://{1}-status.appspot.com/".assign(project);
+}
+
+TreeStatus.prototype.update = function() {
+  var url = this.url + 'current?format=json';
+  return net.json(url).then(function(response) {
+    this.updateStatus(response);
+  }.bind(this));
+};
+
+TreeStatus.prototype.updateStatus = function(status) {
+  if (status.can_commit_freely) {
+    this.message = null;
+    this.status = 'open';
+    return;
+  }
+
+  this.message = status.message + ' by ' + status.username;
+  var responseLowerCase = status.message.toLowerCase();
+  if (responseLowerCase.indexOf('throttled') != -1) {
+    this.status = 'throttled';
+  } else if (responseLowerCase.indexOf("closed") != -1) {
+    this.status = 'closed';
+  } else {
+    this.status = 'unknown';
+  }
+};
+</script>
