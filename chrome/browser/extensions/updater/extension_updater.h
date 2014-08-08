@@ -25,6 +25,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "google_apis/gaia/identity_provider.h"
 #include "url/gurl.h"
 
 class ExtensionServiceInterface;
@@ -87,7 +88,8 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
                    PrefService* prefs,
                    Profile* profile,
                    int frequency_seconds,
-                   ExtensionCache* cache);
+                   ExtensionCache* cache,
+                   scoped_ptr<IdentityProvider> identity_provider);
 
   virtual ~ExtensionUpdater();
 
@@ -269,6 +271,9 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   CheckParams default_params_;
 
   ExtensionCache* extension_cache_;
+
+  // Provided to the ExtensionDownloader to enable OAuth2 support.
+  scoped_ptr<IdentityProvider> webstore_identity_provider_;
 
   // Keeps track of when an extension tried to update itself, so we can throttle
   // checks to prevent too many requests from being made.

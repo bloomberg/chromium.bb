@@ -210,7 +210,7 @@ void ExternalCache::CheckCache() {
   // If request_context_ is missing we can't download anything.
   if (!downloader_ && request_context_) {
     downloader_.reset(
-        new extensions::ExtensionDownloader(this, request_context_));
+        new extensions::ExtensionDownloader(this, request_context_, NULL));
   }
 
   cached_extensions_->Clear();

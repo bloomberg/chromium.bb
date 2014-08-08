@@ -31,9 +31,12 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "google_apis/gaia/identity_provider.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_request_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -77,20 +80,30 @@ const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
 const char kAuthUserQueryKey[] = "authuser";
 
 const int kMaxAuthUserValue = 10;
+const int kMaxOAuth2Attempts = 3;
 
 const char kNotFromWebstoreInstallSource[] = "notfromwebstore";
 const char kDefaultInstallSource[] = "";
 
-#define RETRY_HISTOGRAM(name, retry_count, url) \
-    if ((url).DomainIs("google.com")) { \
-      UMA_HISTOGRAM_CUSTOM_COUNTS( \
-          "Extensions." name "RetryCountGoogleUrl", retry_count, 1, \
-          kMaxRetries, kMaxRetries+1); \
-    } else { \
-      UMA_HISTOGRAM_CUSTOM_COUNTS( \
-          "Extensions." name "RetryCountOtherUrl", retry_count, 1, \
-          kMaxRetries, kMaxRetries+1); \
-    }
+const char kGoogleDotCom[] = "google.com";
+const char kTokenServiceConsumerId[] = "extension_downloader";
+const char kWebstoreOAuth2Scope[] =
+    "https://www.googleapis.com/auth/chromewebstore.readonly";
+
+#define RETRY_HISTOGRAM(name, retry_count, url)                           \
+  if ((url).DomainIs(kGoogleDotCom)) {                                    \
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions." name "RetryCountGoogleUrl", \
+                                retry_count,                              \
+                                1,                                        \
+                                kMaxRetries,                              \
+                                kMaxRetries + 1);                         \
+  } else {                                                                \
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions." name "RetryCountOtherUrl",  \
+                                retry_count,                              \
+                                1,                                        \
+                                kMaxRetries,                              \
+                                kMaxRetries + 1);                         \
+  }
 
 bool ShouldRetryRequest(const net::URLRequestStatus& status,
                         int response_code) {
@@ -98,31 +111,6 @@ bool ShouldRetryRequest(const net::URLRequestStatus& status,
   // of network errors as opposed to file errors.
   return ((response_code >= 500 && status.is_success()) ||
           status.status() == net::URLRequestStatus::FAILED);
-}
-
-bool ShouldRetryRequestWithCookies(const net::URLRequestStatus& status,
-                                   int response_code,
-                                   bool included_cookies) {
-  if (included_cookies)
-    return false;
-
-  if (status.status() == net::URLRequestStatus::CANCELED)
-    return true;
-
-  // Retry if a 401 or 403 is received.
-  return (status.status() == net::URLRequestStatus::SUCCESS &&
-          (response_code == 401 || response_code == 403));
-}
-
-bool ShouldRetryRequestWithNextUser(const net::URLRequestStatus& status,
-                                    int response_code,
-                                    bool included_cookies) {
-  // Retry if a 403 is received in response to a request including cookies.
-  // Note that receiving a 401 in response to a request which included cookies
-  // should indicate that the |authuser| index was out of bounds for the profile
-  // and therefore Chrome should NOT retry with another index.
-  return (status.status() == net::URLRequestStatus::SUCCESS &&
-          response_code == 403 && included_cookies);
 }
 
 // This parses and updates a URL query such that the value of the |authuser|
@@ -166,7 +154,8 @@ UpdateDetails::UpdateDetails(const std::string& id, const Version& version)
 UpdateDetails::~UpdateDetails() {}
 
 ExtensionDownloader::ExtensionFetch::ExtensionFetch()
-    : url(), is_protected(false) {}
+    : url(), credentials(CREDENTIALS_NONE) {
+}
 
 ExtensionDownloader::ExtensionFetch::ExtensionFetch(
     const std::string& id,
@@ -174,24 +163,33 @@ ExtensionDownloader::ExtensionFetch::ExtensionFetch(
     const std::string& package_hash,
     const std::string& version,
     const std::set<int>& request_ids)
-    : id(id), url(url), package_hash(package_hash), version(version),
-      request_ids(request_ids), is_protected(false) {}
+    : id(id),
+      url(url),
+      package_hash(package_hash),
+      version(version),
+      request_ids(request_ids),
+      credentials(CREDENTIALS_NONE),
+      oauth2_attempt_count(0) {
+}
 
 ExtensionDownloader::ExtensionFetch::~ExtensionFetch() {}
 
 ExtensionDownloader::ExtensionDownloader(
     ExtensionDownloaderDelegate* delegate,
-    net::URLRequestContextGetter* request_context)
-    : delegate_(delegate),
+    net::URLRequestContextGetter* request_context,
+    IdentityProvider* webstore_identity_provider)
+    : OAuth2TokenService::Consumer(kTokenServiceConsumerId),
+      delegate_(delegate),
       request_context_(request_context),
       weak_ptr_factory_(this),
       manifests_queue_(&kDefaultBackoffPolicy,
-          base::Bind(&ExtensionDownloader::CreateManifestFetcher,
-                     base::Unretained(this))),
+                       base::Bind(&ExtensionDownloader::CreateManifestFetcher,
+                                  base::Unretained(this))),
       extensions_queue_(&kDefaultBackoffPolicy,
-          base::Bind(&ExtensionDownloader::CreateExtensionFetcher,
-                     base::Unretained(this))),
-      extension_cache_(NULL) {
+                        base::Bind(&ExtensionDownloader::CreateExtensionFetcher,
+                                   base::Unretained(this))),
+      extension_cache_(NULL),
+      identity_provider_(webstore_identity_provider) {
   DCHECK(delegate_);
   DCHECK(request_context_);
 }
@@ -306,7 +304,7 @@ bool ExtensionDownloader::AddExtensionData(const std::string& id,
     return false;
   }
 
-  if (update_url.DomainIs("google.com")) {
+  if (update_url.DomainIs(kGoogleDotCom)) {
     url_stats_.google_url_count++;
   } else if (update_url.is_empty()) {
     url_stats_.no_url_count++;
@@ -580,7 +578,7 @@ void ExtensionDownloader::HandleManifestResults(
 
   // If the manifest response included a <daystart> element, we want to save
   // that value for any extensions which had sent a ping in the request.
-  if (fetch_data.base_url().DomainIs("google.com") &&
+  if (fetch_data.base_url().DomainIs(kGoogleDotCom) &&
       results->daystart_elapsed_seconds >= 0) {
     Time day_start =
         Time::Now() - TimeDelta::FromSeconds(results->daystart_elapsed_seconds);
@@ -722,16 +720,19 @@ void ExtensionDownloader::NotifyDelegateDownloadFinished(
 
 void ExtensionDownloader::CreateExtensionFetcher() {
   const ExtensionFetch* fetch = extensions_queue_.active_request();
-  int load_flags = net::LOAD_DISABLE_CACHE;
-  if (!fetch->is_protected || !fetch->url.SchemeIs("https")) {
-      load_flags |= net::LOAD_DO_NOT_SEND_COOKIES |
-                    net::LOAD_DO_NOT_SAVE_COOKIES;
-  }
   extension_fetcher_.reset(net::URLFetcher::Create(
       kExtensionFetcherId, fetch->url, net::URLFetcher::GET, this));
   extension_fetcher_->SetRequestContext(request_context_);
-  extension_fetcher_->SetLoadFlags(load_flags);
   extension_fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
+
+  int load_flags = net::LOAD_DISABLE_CACHE;
+  bool is_secure = fetch->url.SchemeIsSecure();
+  if (fetch->credentials != ExtensionFetch::CREDENTIALS_COOKIES || !is_secure) {
+      load_flags |= net::LOAD_DO_NOT_SEND_COOKIES |
+                    net::LOAD_DO_NOT_SAVE_COOKIES;
+  }
+  extension_fetcher_->SetLoadFlags(load_flags);
+
   // Download CRX files to a temp file. The blacklist is small and will be
   // processed in memory, so it is fetched into a string.
   if (fetch->id != kBlacklistAppID) {
@@ -739,8 +740,29 @@ void ExtensionDownloader::CreateExtensionFetcher() {
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   }
 
-  VLOG(2) << "Starting fetch of " << fetch->url << " for " << fetch->id;
+  if (fetch->credentials == ExtensionFetch::CREDENTIALS_OAUTH2_TOKEN &&
+      is_secure) {
+    if (access_token_.empty()) {
+      // We should try OAuth2, but we have no token cached. This
+      // ExtensionFetcher will be started once the token fetch is complete,
+      // in either OnTokenFetchSuccess or OnTokenFetchFailure.
+      DCHECK(identity_provider_);
+      OAuth2TokenService::ScopeSet webstore_scopes;
+      webstore_scopes.insert(kWebstoreOAuth2Scope);
+      access_token_request_ =
+          identity_provider_->GetTokenService()->StartRequest(
+              identity_provider_->GetActiveAccountId(),
+              webstore_scopes,
+              this);
+      return;
+    }
+    extension_fetcher_->AddExtraRequestHeader(
+        base::StringPrintf("%s: Bearer %s",
+            net::HttpRequestHeaders::kAuthorization,
+            access_token_.c_str()));
+  }
 
+  VLOG(2) << "Starting fetch of " << fetch->url << " for " << fetch->id;
   extension_fetcher_->Start();
 }
 
@@ -750,7 +772,8 @@ void ExtensionDownloader::OnCRXFetchComplete(
     const net::URLRequestStatus& status,
     int response_code,
     const base::TimeDelta& backoff_delay) {
-  const std::string& id = extensions_queue_.active_request()->id;
+  ExtensionFetch& active_request = *extensions_queue_.active_request();
+  const std::string& id = active_request.id;
   if (status.status() == net::URLRequestStatus::SUCCESS &&
       (response_code == 200 || url.SchemeIsFile())) {
     RETRY_HISTOGRAM("CrxFetchSuccess",
@@ -769,22 +792,13 @@ void ExtensionDownloader::OnCRXFetchComplete(
     } else {
       NotifyDelegateDownloadFinished(fetch_data.Pass(), crx_path, true);
     }
-  } else if (ShouldRetryRequestWithCookies(
-                 status,
-                 response_code,
-                 extensions_queue_.active_request()->is_protected)) {
-    // Requeue the fetch with |is_protected| set, enabling cookies.
-    extensions_queue_.active_request()->is_protected = true;
-    extensions_queue_.RetryRequest(backoff_delay);
-  } else if (ShouldRetryRequestWithNextUser(
-                 status,
-                 response_code,
-                 extensions_queue_.active_request()->is_protected) &&
-             IncrementAuthUserIndex(&extensions_queue_.active_request()->url)) {
+  } else if (IterateFetchCredentialsAfterFailure(
+                &active_request,
+                status,
+                response_code)) {
     extensions_queue_.RetryRequest(backoff_delay);
   } else {
-    const std::set<int>& request_ids =
-        extensions_queue_.active_request()->request_ids;
+    const std::set<int>& request_ids = active_request.request_ids;
     const ExtensionDownloaderDelegate::PingResult& ping = ping_results_[id];
     VLOG(1) << "Failed to fetch extension '" << url.possibly_invalid_spec()
             << "' response code:" << response_code;
@@ -828,6 +842,87 @@ void ExtensionDownloader::NotifyUpdateFound(const std::string& id,
       extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND,
       content::NotificationService::AllBrowserContextsAndSources(),
       content::Details<UpdateDetails>(&updateInfo));
+}
+
+bool ExtensionDownloader::IterateFetchCredentialsAfterFailure(
+    ExtensionFetch* fetch,
+    const net::URLRequestStatus& status,
+    int response_code) {
+  bool auth_failure = status.status() == net::URLRequestStatus::CANCELED ||
+                      (status.status() == net::URLRequestStatus::SUCCESS &&
+                       (response_code == net::HTTP_UNAUTHORIZED ||
+                        response_code == net::HTTP_FORBIDDEN));
+  if (!auth_failure) {
+    return false;
+  }
+  // Here we decide what to do next if the server refused to authorize this
+  // fetch.
+  switch (fetch->credentials) {
+    case ExtensionFetch::CREDENTIALS_NONE:
+      if (fetch->url.DomainIs(kGoogleDotCom) && identity_provider_) {
+        fetch->credentials = ExtensionFetch::CREDENTIALS_OAUTH2_TOKEN;
+      } else {
+        fetch->credentials = ExtensionFetch::CREDENTIALS_COOKIES;
+      }
+      return true;
+    case ExtensionFetch::CREDENTIALS_OAUTH2_TOKEN:
+      fetch->oauth2_attempt_count++;
+      // OAuth2 may fail due to an expired access token, in which case we
+      // should invalidate the token and try again.
+      if (response_code == net::HTTP_UNAUTHORIZED &&
+          fetch->oauth2_attempt_count <= kMaxOAuth2Attempts) {
+        DCHECK(identity_provider_ != NULL);
+        OAuth2TokenService::ScopeSet webstore_scopes;
+        webstore_scopes.insert(kWebstoreOAuth2Scope);
+        identity_provider_->GetTokenService()->InvalidateToken(
+            identity_provider_->GetActiveAccountId(),
+            webstore_scopes,
+            access_token_);
+        access_token_.clear();
+        return true;
+      }
+      // Either there is no Gaia identity available, the active identity
+      // doesn't have access to this resource, or the server keeps returning
+      // 401s and we've retried too many times. Fall back on cookies.
+      if (access_token_.empty() ||
+          response_code == net::HTTP_FORBIDDEN ||
+          fetch->oauth2_attempt_count > kMaxOAuth2Attempts) {
+        fetch->credentials = ExtensionFetch::CREDENTIALS_COOKIES;
+        return true;
+      }
+      // Something else is wrong. Time to give up.
+      return false;
+    case ExtensionFetch::CREDENTIALS_COOKIES:
+      if (response_code == net::HTTP_FORBIDDEN) {
+        // Try the next session identity, up to some maximum.
+        return IncrementAuthUserIndex(&fetch->url);
+      }
+      return false;
+    default:
+      NOTREACHED();
+  }
+  NOTREACHED();
+  return false;
+}
+
+void ExtensionDownloader::OnGetTokenSuccess(
+    const OAuth2TokenService::Request* request,
+    const std::string& access_token,
+    const base::Time& expiration_time) {
+  access_token_ = access_token;
+  extension_fetcher_->AddExtraRequestHeader(
+      base::StringPrintf("%s: Bearer %s",
+          net::HttpRequestHeaders::kAuthorization,
+          access_token_.c_str()));
+  extension_fetcher_->Start();
+}
+
+void ExtensionDownloader::OnGetTokenFailure(
+    const OAuth2TokenService::Request* request,
+    const GoogleServiceAuthError& error) {
+  // If we fail to get an access token, kick the pending fetch and let it fall
+  // back on cookies.
+  extension_fetcher_->Start();
 }
 
 }  // namespace extensions

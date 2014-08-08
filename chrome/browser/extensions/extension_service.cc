@@ -36,9 +36,13 @@
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/updater/extension_cache.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_identity_provider.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
@@ -47,6 +51,7 @@
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/notification_service.h"
@@ -112,6 +117,15 @@ namespace {
 
 // Wait this many seconds after an extensions becomes idle before updating it.
 const int kUpdateIdleDelay = 5;
+
+#if defined(ENABLE_EXTENSIONS)
+scoped_ptr<IdentityProvider> CreateWebstoreIdentityProvider(Profile* profile) {
+  return make_scoped_ptr<IdentityProvider>(new ProfileIdentityProvider(
+      SigninManagerFactory::GetForProfile(profile),
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+      LoginUIServiceFactory::GetForProfile(profile)));
+}
+#endif  // defined(ENABLE_EXTENSIONS)
 
 }  // namespace
 
@@ -312,7 +326,8 @@ ExtensionService::ExtensionService(Profile* profile,
         profile->GetPrefs(),
         profile,
         update_frequency,
-        extensions::ExtensionCache::GetInstance()));
+        extensions::ExtensionCache::GetInstance(),
+        CreateWebstoreIdentityProvider(profile_)));
   }
 #endif
 
