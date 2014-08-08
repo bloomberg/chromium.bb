@@ -20,16 +20,12 @@
 #endif
 
 #if defined(ENABLE_MDNS)
-#include "chrome/browser/local_discovery/service_discovery_client_mdns.h"
 #include "chrome/browser/local_discovery/service_discovery_client_utility.h"
 #endif  // ENABLE_MDNS
 
 namespace {
 
 #if defined(OS_WIN)
-
-bool g_is_firewall_ready = false;
-
 void ReportFirewallStats() {
   base::FilePath exe_path;
   if (!PathService::Get(base::FILE_EXE, &exe_path))
@@ -40,9 +36,9 @@ void ReportFirewallStats() {
                                          exe_path);
   if (!manager)
     return;
-  g_is_firewall_ready = manager->CanUseLocalPorts();
+  bool is_ready = manager->CanUseLocalPorts();
   UMA_HISTOGRAM_TIMES("LocalDiscovery.FirewallAccessTime", timer.Elapsed());
-  UMA_HISTOGRAM_BOOLEAN("LocalDiscovery.IsFirewallReady", g_is_firewall_ready);
+  UMA_HISTOGRAM_BOOLEAN("LocalDiscovery.IsFirewallReady", is_ready);
 }
 #endif  // OS_WIN
 
@@ -84,13 +80,11 @@ scoped_refptr<ServiceDiscoverySharedClient>
   static bool reported =
       BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                               base::Bind(&ReportFirewallStats));
-  // TODO(vitalybuka): Switch to |ServiceDiscoveryClientMdns| after we find what
-  // to do with firewall for user-level installs. crbug.com/366408
-  if (!g_is_firewall_ready)
-    return new ServiceDiscoveryClientUtility();
 #endif  // OS_WIN
 
-  return new ServiceDiscoveryClientMdns();
+  // TODO(vitalybuka): Switch to |ServiceDiscoveryClientMdns| after we find what
+  // to do with firewall for user-level installs. crbug.com/366408
+  return new ServiceDiscoveryClientUtility();
 #endif // OS_MACOSX
 }
 
