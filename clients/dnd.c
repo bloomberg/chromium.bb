@@ -652,7 +652,14 @@ main(int argc, char *argv[])
 {
 	struct display *d;
 	struct dnd *dnd;
-	int i;
+	int self_only = 0;
+
+	if (argc == 2 && !strcmp(argv[1], "--self-only"))
+		self_only = 1;
+	else if (argc > 1) {
+		printf("Usage: %s [OPTIONS]\n  --self-only\n", argv[0]);
+		return 1;
+	}
 
 	d = display_create(&argc, argv);
 	if (d == NULL) {
@@ -661,10 +668,8 @@ main(int argc, char *argv[])
 	}
 
 	dnd = dnd_create(d);
-
-	for (i = 1; i < argc; i++)
-		if (strcmp("--self-only", argv[i]) == 0)
-			dnd->self_only = 1;
+	if (self_only)
+		dnd->self_only = 1;
 
 	display_run(d);
 
