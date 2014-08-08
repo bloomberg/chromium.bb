@@ -45,8 +45,8 @@ public:
     void invalidateCacheForAttribute(const QualifiedName*) const;
 
     // DOM API
-    unsigned length() const { return m_collectionIndexCache.nodeCount(*this); }
-    Element* item(unsigned offset) const { return m_collectionIndexCache.nodeAt(*this, offset); }
+    unsigned length() const;
+    Element* item(unsigned offset) const;
     virtual Element* namedItem(const AtomicString& name) const;
     bool namedPropertyQuery(const AtomicString&, ExceptionState&);
     void namedPropertyEnumerator(Vector<String>& names, ExceptionState&);

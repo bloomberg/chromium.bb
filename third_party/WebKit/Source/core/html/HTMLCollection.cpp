@@ -191,6 +191,16 @@ void HTMLCollection::invalidateCache(Document* oldDocument) const
     invalidateIdNameCacheMaps(oldDocument);
 }
 
+unsigned HTMLCollection::length() const
+{
+    return m_collectionIndexCache.nodeCount(*this);
+}
+
+Element* HTMLCollection::item(unsigned offset) const
+{
+    return m_collectionIndexCache.nodeAt(*this, offset);
+}
+
 static inline bool isMatchingHTMLElement(const HTMLCollection& htmlCollection, const HTMLElement& element)
 {
     switch (htmlCollection.type()) {

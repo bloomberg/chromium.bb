@@ -41,8 +41,8 @@ public:
     LiveNodeList(ContainerNode& ownerNode, CollectionType collectionType, NodeListInvalidationType invalidationType, NodeListRootType rootType = NodeListIsRootedAtNode)
         : LiveNodeListBase(ownerNode, rootType, invalidationType, collectionType) { }
 
-    virtual unsigned length() const OVERRIDE FINAL { return m_collectionIndexCache.nodeCount(*this); }
-    virtual Element* item(unsigned offset) const OVERRIDE FINAL { return m_collectionIndexCache.nodeAt(*this, offset); }
+    virtual unsigned length() const OVERRIDE FINAL;
+    virtual Element* item(unsigned offset) const OVERRIDE FINAL;
     virtual bool elementMatches(const Element&) const = 0;
 
     virtual void invalidateCache(Document* oldDocument = 0) const OVERRIDE FINAL;

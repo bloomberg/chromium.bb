@@ -40,6 +40,16 @@ void LiveNodeList::invalidateCache(Document*) const
     m_collectionIndexCache.invalidate();
 }
 
+unsigned LiveNodeList::length() const
+{
+    return m_collectionIndexCache.nodeCount(*this);
+}
+
+Element* LiveNodeList::item(unsigned offset) const
+{
+    return m_collectionIndexCache.nodeAt(*this, offset);
+}
+
 Element* LiveNodeList::traverseToFirstElement() const
 {
     return firstMatchingElement(*this);
