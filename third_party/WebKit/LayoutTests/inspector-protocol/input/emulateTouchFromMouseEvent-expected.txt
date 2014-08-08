@@ -1,0 +1,47 @@
+-----Event-----
+type: touchstart
+----Touches----
+id: 0
+pageX: 100
+pageY: 200
+webkitRadiusX: 11.5
+webkitRadiusY: 11.5
+webkitRotationAngle: 0
+webkitForce: 1
+-----Event-----
+type: touchmove
+----Touches----
+id: 0
+pageX: 100
+pageY: 250
+webkitRadiusX: 11.5
+webkitRadiusY: 11.5
+webkitRotationAngle: 0
+webkitForce: 1
+-----Event-----
+type: touchend
+----Touches----
+-----Event-----
+type: touchstart
+----Touches----
+id: 0
+pageX: 100
+pageY: 200
+webkitRadiusX: 11.5
+webkitRadiusY: 11.5
+webkitRotationAngle: 0
+webkitForce: 1
+-----Event-----
+type: touchmove
+----Touches----
+id: 0
+pageX: 100
+pageY: 250
+webkitRadiusX: 11.5
+webkitRadiusY: 11.5
+webkitRotationAngle: 0
+webkitForce: 1
+-----Event-----
+type: touchend
+----Touches----
+
