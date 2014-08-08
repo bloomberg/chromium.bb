@@ -4,7 +4,6 @@
 
 package org.chromium.content.browser;
 
-import android.os.Build;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
@@ -87,6 +86,7 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
             @Override
             public void run() {
                 ScreenOrientationListener.getInstance().addObserver(mObserver, activity);
+                ScreenOrientationProvider.startAccurateListening();
             }
         });
 
@@ -103,6 +103,7 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
             @Override
             public void run() {
                 ScreenOrientationProvider.unlockOrientation();
+                ScreenOrientationProvider.startAccurateListening();
             }
         });
 
@@ -129,14 +130,6 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
     @MediumTest
     @Feature({"ScreenOrientation"})
     public void testPortrait() throws Exception {
-        // Do not run that test for versions of Android before JB-MR1 because
-        // the ScreenOrientationListener for those versions isn't accurate
-        // enough. We will later simply not run that code in that version or add
-        // an "accurate mode" that will fix this by polling.
-        // See http://crbug.com/400158
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1)
-            return;
-
         lockOrientationAndWait(ScreenOrientationValues.PORTRAIT_PRIMARY);
         assertTrue(checkOrientationForLock(ScreenOrientationValues.PORTRAIT_PRIMARY));
 
@@ -157,14 +150,6 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
     @MediumTest
     @Feature({"ScreenOrientation"})
     public void testLandscape() throws Exception {
-        // Do not run that test for versions of Android before JB-MR1 because
-        // the ScreenOrientationListener for those versions isn't accurate
-        // enough. We will later simply not run that code in that version or add
-        // an "accurate mode" that will fix this by polling.
-        // See http://crbug.com/400158
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1)
-            return;
-
         lockOrientationAndWait(ScreenOrientationValues.LANDSCAPE_PRIMARY);
         assertTrue(checkOrientationForLock(ScreenOrientationValues.LANDSCAPE_PRIMARY));
 

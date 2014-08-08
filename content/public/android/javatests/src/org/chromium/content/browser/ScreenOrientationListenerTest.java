@@ -5,7 +5,6 @@
 package org.chromium.content.browser;
 
 import android.content.pm.ActivityInfo;
-import android.os.Build;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
@@ -82,6 +81,7 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
             @Override
             public void run() {
                 ScreenOrientationListener.getInstance().addObserver(mObserver, activity);
+                ScreenOrientationListener.getInstance().startAccurateListening();
             }
         });
 
@@ -95,6 +95,7 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
             @Override
             public void run() {
                 getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+                ScreenOrientationListener.getInstance().startAccurateListening();
             }
         });
 
@@ -122,13 +123,6 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
     @MediumTest
     @Feature({"ScreenOrientation"})
     public void testFlipPortrait() throws Exception {
-        // This can't work for pre JB-MR1 SDKs for the moment. We will whether
-        // disable the feature entirely on that platform or add an "accurate"
-        // mode.
-        // See http://crbug.com/400158
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1)
-            return;
-
         lockOrientationAndWait(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         assertEquals(0, mObserver.mOrientation);
 
@@ -140,13 +134,6 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
     @MediumTest
     @Feature({"ScreenOrientation"})
     public void testFlipLandscape() throws Exception {
-        // This can't work for pre JB-MR1 SDKs for the moment. We will whether
-        // disable the feature entirely on that platform or add an "accurate"
-        // mode.
-        // See http://crbug.com/400158
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1)
-            return;
-
         lockOrientationAndWait(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         assertEquals(90, mObserver.mOrientation);
 
