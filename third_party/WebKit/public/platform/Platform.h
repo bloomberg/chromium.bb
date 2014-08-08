@@ -603,67 +603,11 @@ public:
 
     // Request the platform to start listening to the events of the specified
     // type and notify the given listener (if not null) when there is an update.
-    virtual void startListening(blink::WebPlatformEventType type, blink::WebPlatformEventListener* listener)
-    {
-        // FIXME: this implementation is only there for backward compatibility.
-        // It should be removed when the content layer will implement this method.
-        switch (type) {
-        case blink::WebPlatformEventDeviceMotion:
-            setDeviceMotionListener(static_cast<blink::WebDeviceMotionListener*>(listener));
-            break;
-        case blink::WebPlatformEventDeviceOrientation:
-            setDeviceOrientationListener(static_cast<blink::WebDeviceOrientationListener*>(listener));
-            break;
-        case blink::WebPlatformEventDeviceLight:
-            setDeviceLightListener(static_cast<blink::WebDeviceLightListener*>(listener));
-            break;
-        case blink::WebPlatformEventBattery:
-            setBatteryStatusListener(static_cast<blink::WebBatteryStatusListener*>(listener));
-            break;
-        case blink::WebPlatformEventGamepad:
-            setGamepadListener(static_cast<blink::WebGamepadListener*>(listener));
-            break;
-        case blink::WebPlatformEventScreenOrientation:
-            // No backward-compatibility support here.
-            break;
-        }
-    }
+    virtual void startListening(blink::WebPlatformEventType type, blink::WebPlatformEventListener* listener) { }
 
     // Request the platform to stop listening to the specified event and no
     // longer notify the listener, if any.
-    virtual void stopListening(blink::WebPlatformEventType type)
-    {
-        // FIXME: this implementation is only there for backward compatibility.
-        // It should be removed when the content layer will implement this method.
-        switch (type) {
-        case blink::WebPlatformEventDeviceMotion:
-            setDeviceMotionListener(0);
-            break;
-        case blink::WebPlatformEventDeviceOrientation:
-            setDeviceOrientationListener(0);
-            break;
-        case blink::WebPlatformEventDeviceLight:
-            setDeviceLightListener(0);
-            break;
-        case blink::WebPlatformEventBattery:
-            setBatteryStatusListener(0);
-            break;
-        case blink::WebPlatformEventGamepad:
-            setGamepadListener(0);
-            break;
-        case blink::WebPlatformEventScreenOrientation:
-            // No backward-compatibility support here.
-            break;
-        }
-    }
-
-    // Deprecated: remove when content/ is updated.
-    virtual void setDeviceMotionListener(blink::WebDeviceMotionListener*) { }
-    virtual void setDeviceOrientationListener(blink::WebDeviceOrientationListener*) { }
-    virtual void setDeviceLightListener(blink::WebDeviceLightListener*) { }
-    virtual void setBatteryStatusListener(blink::WebBatteryStatusListener*) { }
-    virtual void setGamepadListener(blink::WebGamepadListener*) { }
-
+    virtual void stopListening(blink::WebPlatformEventType type) { }
 
     // Quota -----------------------------------------------------------
 
