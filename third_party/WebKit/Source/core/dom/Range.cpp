@@ -1208,6 +1208,18 @@ void Range::surroundContents(PassRefPtrWillBeRawPtr<Node> passNewParent, Excepti
         return;
     }
 
+    // InvalidStateError: Raised if the Range partially selects a non-Text node.
+    Node* startNonTextContainer = m_start.container();
+    if (startNonTextContainer->nodeType() == Node::TEXT_NODE)
+        startNonTextContainer = startNonTextContainer->parentNode();
+    Node* endNonTextContainer = m_end.container();
+    if (endNonTextContainer->nodeType() == Node::TEXT_NODE)
+        endNonTextContainer = endNonTextContainer->parentNode();
+    if (startNonTextContainer != endNonTextContainer) {
+        exceptionState.throwDOMException(InvalidStateError, "The Range has partially selected a non-Text node.");
+        return;
+    }
+
     // InvalidNodeTypeError: Raised if node is an Attr, Entity, DocumentType, Notation,
     // Document, or DocumentFragment node.
     switch (newParent->nodeType()) {
@@ -1251,18 +1263,6 @@ void Range::surroundContents(PassRefPtrWillBeRawPtr<Node> passNewParent, Excepti
 
     // FIXME: Do we need a check if the node would end up with a child node of a type not
     // allowed by the type of node?
-
-    // BAD_BOUNDARYPOINTS_ERR: Raised if the Range partially selects a non-Text node.
-    Node* startNonTextContainer = m_start.container();
-    if (startNonTextContainer->nodeType() == Node::TEXT_NODE)
-        startNonTextContainer = startNonTextContainer->parentNode();
-    Node* endNonTextContainer = m_end.container();
-    if (endNonTextContainer->nodeType() == Node::TEXT_NODE)
-        endNonTextContainer = endNonTextContainer->parentNode();
-    if (startNonTextContainer != endNonTextContainer) {
-        exceptionState.throwDOMException(InvalidStateError, "The Range has partially selected a non-Text node.");
-        return;
-    }
 
     while (Node* n = newParent->firstChild()) {
         toContainerNode(newParent)->removeChild(n, exceptionState);
