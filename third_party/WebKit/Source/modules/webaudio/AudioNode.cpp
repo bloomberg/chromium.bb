@@ -43,6 +43,8 @@
 
 namespace blink {
 
+unsigned AudioNode::s_instanceCount = 0;
+
 AudioNode::AudioNode(AudioContext* context, float sampleRate)
     : m_isInitialized(false)
     , m_nodeType(NodeTypeUnknown)
@@ -70,10 +72,12 @@ AudioNode::AudioNode(AudioContext* context, float sampleRate)
         atexit(AudioNode::printNodeCounts);
     }
 #endif
+    ++s_instanceCount;
 }
 
 AudioNode::~AudioNode()
 {
+    --s_instanceCount;
 #if DEBUG_AUDIONODE_REFERENCES
     --s_nodeCount[nodeType()];
 #if ENABLE(OILPAN)

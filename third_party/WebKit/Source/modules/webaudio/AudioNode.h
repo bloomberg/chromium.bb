@@ -60,6 +60,7 @@ public:
     // dispose() is called just before the destructor. This must be called in
     // the main thread, and while the graph lock is held.
     virtual void dispose();
+    static unsigned instanceCount() { return s_instanceCount; }
 
     AudioContext* context() { return m_context.get(); }
     const AudioContext* context() const { return m_context.get(); }
@@ -231,6 +232,7 @@ private:
     static bool s_isNodeCountInitialized;
     static int s_nodeCount[NodeTypeEnd];
 #endif
+    static unsigned s_instanceCount;
 
 #if !ENABLE(OILPAN)
     virtual void refEventTarget() OVERRIDE FINAL { ref(); }

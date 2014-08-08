@@ -93,6 +93,7 @@ public:
 #endif
     virtual void dispose();
     virtual void trace(Visitor*);
+    static unsigned instanceCount() { return s_instanceCount; }
 
     virtual void load(ResourceFetcher*, const ResourceLoaderOptions&);
 
@@ -401,6 +402,8 @@ private:
 
     // Ordered list of all redirects followed while fetching this resource.
     Vector<RedirectPair> m_redirectChain;
+
+    static unsigned s_instanceCount;
 };
 
 #if !LOG_DISABLED

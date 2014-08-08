@@ -39,9 +39,11 @@ namespace blink {
 class WebLeakDetectorClient {
 public:
     struct Result {
-        unsigned numberOfLiveNodes;
+        unsigned numberOfLiveAudioNodes;
         unsigned numberOfLiveDocuments;
+        unsigned numberOfLiveNodes;
         unsigned numberOfLiveRenderObjects;
+        unsigned numberOfLiveResources;
     };
 
     virtual void onLeakDetectionComplete(const Result&) = 0;
