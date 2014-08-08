@@ -1166,7 +1166,22 @@ void WebViewImpl::computeScaleAndScrollForBlockRect(const WebPoint& hitPoint, co
     scroll = clampOffsetAtScale(scroll, scale);
 }
 
-static bool invokesHandCursor(Node* node, LocalFrame* frame)
+static Node* findCursorDefiningAncestor(Node* node, LocalFrame* frame)
+{
+    // Go up the tree to find the node that defines a mouse cursor style
+    while (node) {
+        if (node->renderer()) {
+            ECursor cursor = node->renderer()->style()->cursor();
+            if (cursor != CURSOR_AUTO || frame->eventHandler().useHandCursor(node, node->isLink()))
+                break;
+        }
+        node = node->parentNode();
+    }
+
+    return node;
+}
+
+static bool showsHandCursor(Node* node, LocalFrame* frame)
 {
     if (!node || !node->renderer())
         return false;
@@ -1183,28 +1198,31 @@ Node* WebViewImpl::bestTapNode(const PlatformGestureEvent& tapEvent)
     if (!m_page || !m_page->mainFrame())
         return 0;
 
-    Node* bestTouchNode = 0;
-
     // FIXME: Rely on earlier hit test instead of hit testing again.
-    GestureEventWithHitTestResults targetedEvent = m_page->deprecatedLocalMainFrame()->eventHandler().targetGestureEvent(tapEvent, true);
-    bestTouchNode = targetedEvent.hitTestResult().targetNode();
+    GestureEventWithHitTestResults targetedEvent =
+        m_page->deprecatedLocalMainFrame()->eventHandler().targetGestureEvent(tapEvent, true);
+    Node* bestTouchNode = targetedEvent.hitTestResult().targetNode();
 
     // We might hit something like an image map that has no renderer on it
     // Walk up the tree until we have a node with an attached renderer
     while (bestTouchNode && !bestTouchNode->renderer())
         bestTouchNode = bestTouchNode->parentNode();
 
-    // Check if we're in the subtree of a node with a hand cursor
-    // this is the heuristic we use to determine if we show a highlight on tap
-    while (bestTouchNode && !invokesHandCursor(bestTouchNode, m_page->deprecatedLocalMainFrame()))
-        bestTouchNode = bestTouchNode->parentNode();
-
-    if (!bestTouchNode)
+    Node* cursorDefiningAncestor =
+        findCursorDefiningAncestor(bestTouchNode, m_page->deprecatedLocalMainFrame());
+    // We show a highlight on tap only when the current node shows a hand cursor
+    if (!cursorDefiningAncestor || !showsHandCursor(cursorDefiningAncestor, m_page->deprecatedLocalMainFrame())) {
         return 0;
+    }
 
-    // We should pick the largest enclosing node with hand cursor set.
-    while (bestTouchNode->parentNode() && invokesHandCursor(bestTouchNode->parentNode(), toLocalFrame(m_page->mainFrame())))
-        bestTouchNode = bestTouchNode->parentNode();
+    // We should pick the largest enclosing node with hand cursor set. We do this by first jumping
+    // up to cursorDefiningAncestor (which is already known to have hand cursor set). Then we locate
+    // the next cursor-defining ancestor up in the the tree and repeat the jumps as long as the node
+    // has hand cursor set.
+    do {
+        bestTouchNode = cursorDefiningAncestor;
+        cursorDefiningAncestor = findCursorDefiningAncestor(bestTouchNode->parentNode(), m_page->deprecatedLocalMainFrame());
+    } while (cursorDefiningAncestor && showsHandCursor(cursorDefiningAncestor, m_page->deprecatedLocalMainFrame()));
 
     return bestTouchNode;
 }
