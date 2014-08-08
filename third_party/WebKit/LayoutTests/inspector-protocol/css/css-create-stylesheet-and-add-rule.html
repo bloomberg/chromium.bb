@@ -8,8 +8,15 @@ function test()
 {
     var frameId;
     var styleSheetHeader;
+    var documentNodeId;
 
-    InspectorTest.requestMainFrameId(step2);
+    InspectorTest.requestDocumentNodeId(onDocumentNodeId);
+
+    function onDocumentNodeId(nodeId)
+    {
+        documentNodeId = nodeId;
+        InspectorTest.requestMainFrameId(step2);
+    }
 
     function step2(mainFrameId)
     {
@@ -27,7 +34,7 @@ function test()
             return;
 
         styleSheetHeader = header;
-        InspectorTest.loadAndDumpMatchingRules("#inspected", step3);
+        InspectorTest.loadAndDumpMatchingRules(documentNodeId, "#inspected", step3);
     }
 
     function step3()
@@ -38,7 +45,7 @@ function test()
 
     function step4()
     {
-        InspectorTest.loadAndDumpMatchingRules("#inspected", step5);
+        InspectorTest.loadAndDumpMatchingRules(documentNodeId, "#inspected", step5);
     }
 
     function step5()
@@ -55,7 +62,7 @@ function test()
 
     function step7()
     {
-        InspectorTest.loadAndDumpMatchingRules("#inspected", step8);
+        InspectorTest.loadAndDumpMatchingRules(documentNodeId, "#inspected", step8);
     }
 
     function step8()

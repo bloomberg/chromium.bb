@@ -6,11 +6,18 @@
 <script type="text/javascript">
 function test()
 {
-    InspectorTest.sendCommandOrDie("CSS.enable", {}, onCSSEnabled);
+    var documentNodeId;
+    InspectorTest.requestDocumentNodeId(onDocumentNodeId);
+
+    function onDocumentNodeId(nodeId)
+    {
+        documentNodeId = nodeId;
+        InspectorTest.sendCommandOrDie("CSS.enable", {}, onCSSEnabled);
+    }
 
     function onCSSEnabled()
     {
-        InspectorTest.requestNodeId("#shadow-content", onNodeReceived);
+        InspectorTest.requestNodeId(documentNodeId, "#shadow-content", onNodeReceived);
     }
 
     function onNodeReceived(nodeId)

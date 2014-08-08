@@ -8,12 +8,19 @@ function test()
     var setPropertyText;
     var verifyProtocolError;
     var dumpStyleSheet;
+    var documentNodeId;
 
-    InspectorTest.sendCommandOrDie("CSS.enable", {}, onCSSEnabled);
+    InspectorTest.requestDocumentNodeId(onDocumentNodeReceived);
+
+    function onDocumentNodeReceived(nodeId)
+    {
+        documentNodeId = nodeId;
+        InspectorTest.sendCommandOrDie("CSS.enable", {}, onCSSEnabled);
+    }
 
     function onCSSEnabled()
     {
-        InspectorTest.requestNodeId("#reddiv", onNodeRecieved);
+        InspectorTest.requestNodeId(documentNodeId, "#reddiv", onNodeRecieved);
     }
 
     function onNodeRecieved(nodeId)

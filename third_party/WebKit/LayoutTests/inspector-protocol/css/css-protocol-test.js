@@ -65,14 +65,9 @@ InspectorTest.requestDocumentNodeId = function(callback)
     }
 };
 
-InspectorTest.requestNodeId = function(selector, callback)
+InspectorTest.requestNodeId = function(documentNodeId, selector, callback)
 {
-    InspectorTest.requestDocumentNodeId(onGotDocumentNodeId);
-
-    function onGotDocumentNodeId(documentNodeId)
-    {
-        InspectorTest.sendCommandOrDie("DOM.querySelector", { "nodeId": documentNodeId , "selector": selector }, onGotNode);
-    }
+    InspectorTest.sendCommandOrDie("DOM.querySelector", { "nodeId": documentNodeId , "selector": selector }, onGotNode);
 
     function onGotNode(result)
     {
@@ -139,9 +134,9 @@ InspectorTest.loadAndDumpMatchingRulesForNode = function(nodeId, callback)
     }
 }
 
-InspectorTest.loadAndDumpMatchingRules = function(selector, callback)
+InspectorTest.loadAndDumpMatchingRules = function(documentNodeId, selector, callback)
 {
-    InspectorTest.requestNodeId(selector, nodeIdLoaded);
+    InspectorTest.requestNodeId(documentNodeId, selector, nodeIdLoaded);
 
     function nodeIdLoaded(nodeId)
     {
