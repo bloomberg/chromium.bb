@@ -201,7 +201,7 @@ def ProcessJavaTestOptions(options):
     options.annotations = []
   else:
     options.annotations = ['Smoke', 'SmallTest', 'MediumTest', 'LargeTest',
-                           'EnormousTest']
+                           'EnormousTest', 'IntegrationTest']
 
   if options.exclude_annotation_str:
     options.exclude_annotations = options.exclude_annotation_str.split(',')
@@ -237,6 +237,9 @@ def AddInstrumentationTestOptions(option_parser):
   option_parser.add_option('--coverage-dir',
                            help=('Directory in which to place all generated '
                                  'EMMA coverage files.'))
+  option_parser.add_option('--device-flags', dest='device_flags', default='',
+                           help='The relative filepath to a file containing '
+                                'command-line flags to set on the device')
 
 
 def ProcessInstrumentationOptions(options, error_func):
@@ -299,7 +302,8 @@ def ProcessInstrumentationOptions(options, error_func):
       options.test_apk_path,
       options.test_apk_jar_path,
       options.test_runner,
-      options.test_support_apk_path
+      options.test_support_apk_path,
+      options.device_flags
       )
 
 
@@ -596,6 +600,10 @@ def _RunInstrumentationTests(options, error_func, devices):
       # Only allow exit code escalation
       if test_exit_code and exit_code != constants.ERROR_EXIT_CODE:
         exit_code = test_exit_code
+
+  if options.device_flags:
+    options.device_flags = os.path.join(constants.DIR_SOURCE_ROOT,
+                                        options.device_flags)
 
   report_results.LogFull(
       results=results,

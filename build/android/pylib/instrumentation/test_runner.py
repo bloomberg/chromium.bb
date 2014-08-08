@@ -116,7 +116,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
       dst_src = dest_host_pair.split(':', 1)
       dst_layer = dst_src[0]
       host_src = dst_src[1]
-      host_test_files_path = '%s/%s' % (constants.DIR_SOURCE_ROOT, host_src)
+      host_test_files_path = os.path.join(constants.DIR_SOURCE_ROOT,
+                                          host_src)
       if os.path.exists(host_test_files_path):
         self.device.PushChangedFiles(
             host_test_files_path,
@@ -163,6 +164,9 @@ class TestRunner(base_test_runner.BaseTestRunner):
         os.path.join(constants.DIR_SOURCE_ROOT), self._lighttp_port)
     if self.flags:
       self.flags.AddFlags(['--disable-fre', '--enable-test-intents'])
+      if self.options.device_flags:
+        with open(self.options.device_flags) as device_flags_file:
+          self.flags.AddFlags(list(device_flags_file))
 
   def TearDown(self):
     """Cleans up the test harness and saves outstanding data from test run."""
@@ -319,6 +323,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
     annotations = self.test_pkg.GetTestAnnotations(test)
     if 'Manual' in annotations:
       return 10 * 60 * 60
+    if 'IntegrationTest' in annotations:
+      return 30 * 60
     if 'External' in annotations:
       return 10 * 60
     if 'EnormousTest' in annotations:

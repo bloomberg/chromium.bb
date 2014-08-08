@@ -40,7 +40,8 @@ class TestRunner(instr_test_runner.TestRunner):
         test_apk_path=None,
         test_apk_jar_path=None,
         test_runner=None,
-        test_support_apk_path=None)
+        test_support_apk_path=None,
+        device_flags=None)
     super(TestRunner, self).__init__(instrumentation_options, device,
                                      shard_index, test_pkg)
 
