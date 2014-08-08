@@ -37,8 +37,6 @@ enum {
   DIR_COMMON_DESKTOP,     // Directory for the common desktop (visible
                           // on all user's Desktop).
   DIR_USER_QUICK_LAUNCH,  // Directory for the quick launch shortcuts.
-  DIR_DEFAULT_USER_QUICK_LAUNCH,  // Directory for the quick launch shortcuts
-                                  // of the Default user.
   DIR_TASKBAR_PINS,       // Directory for the shortcuts pinned to taskbar via
                           // base::win::TaskbarPinShortcutLink().
   DIR_WINDOWS_FONTS,      // Usually C:\Windows\Fonts.

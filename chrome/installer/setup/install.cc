@@ -244,11 +244,8 @@ installer::InstallStatus InstallNewVersion(
   return installer::INSTALL_FAILED;
 }
 
-// Deletes the old "Uninstall Google Chrome" shortcut in the Start menu and, if
-// this is a system-level install, also deletes the old Default user Quick
-// Launch shortcut. Both of these were created prior to Chrome 24; in Chrome 24,
-// the uninstall shortcut was removed and the Default user Quick Launch shortcut
-// was replaced by per-user shortcuts created via Active Setup.
+// Deletes the old "Uninstall Google Chrome" shortcut in the Start menu which
+// was installed prior to Chrome 24.
 void CleanupLegacyShortcuts(const installer::InstallerState& installer_state,
                             BrowserDistribution* dist,
                             const base::FilePath& chrome_exe) {
@@ -260,12 +257,6 @@ void CleanupLegacyShortcuts(const installer::InstallerState& installer_state,
   uninstall_shortcut_path = uninstall_shortcut_path.Append(
       dist->GetUninstallLinkName() + installer::kLnkExt);
   base::DeleteFile(uninstall_shortcut_path, false);
-
-  if (installer_state.system_install()) {
-    ShellUtil::RemoveShortcuts(
-        ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH, dist,
-        ShellUtil::SYSTEM_LEVEL, chrome_exe);
-  }
 }
 
 // Returns the appropriate shortcut operations for App Launcher,

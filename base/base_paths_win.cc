@@ -16,38 +16,6 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 using base::FilePath;
 
-namespace {
-
-bool GetQuickLaunchPath(bool default_user, FilePath* result) {
-  if (default_user) {
-    wchar_t system_buffer[MAX_PATH];
-    system_buffer[0] = 0;
-    // As per MSDN, passing -1 for |hToken| indicates the Default user:
-    // http://msdn.microsoft.com/library/windows/desktop/bb762181.aspx
-    if (FAILED(SHGetFolderPath(NULL, CSIDL_APPDATA,
-                               reinterpret_cast<HANDLE>(-1), SHGFP_TYPE_CURRENT,
-                               system_buffer))) {
-      return false;
-    }
-    *result = FilePath(system_buffer);
-  } else if (!PathService::Get(base::DIR_APP_DATA, result)) {
-    // For the current user, grab the APPDATA directory directly from the
-    // PathService cache.
-    return false;
-  }
-  // According to various sources, appending
-  // "Microsoft\Internet Explorer\Quick Launch" to %appdata% is the only
-  // reliable way to get the quick launch folder across all versions of Windows.
-  // http://stackoverflow.com/questions/76080/how-do-you-reliably-get-the-quick-
-  // http://www.microsoft.com/technet/scriptcenter/resources/qanda/sept05/hey0901.mspx
-  *result = result->AppendASCII("Microsoft");
-  *result = result->AppendASCII("Internet Explorer");
-  *result = result->AppendASCII("Quick Launch");
-  return true;
-}
-
-}  // namespace
-
 namespace base {
 
 bool PathProviderWin(int key, FilePath* result) {
@@ -178,12 +146,17 @@ bool PathProviderWin(int key, FilePath* result) {
       cur = FilePath(system_buffer);
       break;
     case base::DIR_USER_QUICK_LAUNCH:
-      if (!GetQuickLaunchPath(false, &cur))
+      if (!PathService::Get(base::DIR_APP_DATA, &cur))
         return false;
-      break;
-    case base::DIR_DEFAULT_USER_QUICK_LAUNCH:
-      if (!GetQuickLaunchPath(true, &cur))
-        return false;
+      // According to various sources, appending
+      // "Microsoft\Internet Explorer\Quick Launch" to %appdata% is the only
+      // reliable way to get the quick launch folder across all versions of
+      // Windows.
+      // http://stackoverflow.com/questions/76080/how-do-you-reliably-get-the-quick-
+      // http://www.microsoft.com/technet/scriptcenter/resources/qanda/sept05/hey0901.mspx
+      cur = cur.AppendASCII("Microsoft")
+                .AppendASCII("Internet Explorer")
+                .AppendASCII("Quick Launch");
       break;
     case base::DIR_TASKBAR_PINS:
       if (!PathService::Get(base::DIR_USER_QUICK_LAUNCH, &cur))

@@ -71,9 +71,6 @@ class ShellUtilShortcutTest : public testing::Test {
     user_quick_launch_override_.reset(
         new base::ScopedPathOverride(base::DIR_USER_QUICK_LAUNCH,
                                      fake_user_quick_launch_.path()));
-    default_user_quick_launch_override_.reset(
-        new base::ScopedPathOverride(base::DIR_DEFAULT_USER_QUICK_LAUNCH,
-                                     fake_default_user_quick_launch_.path()));
     start_menu_override_.reset(
         new base::ScopedPathOverride(base::DIR_START_MENU,
                                      fake_start_menu_.path()));
@@ -104,9 +101,7 @@ class ShellUtilShortcutTest : public testing::Test {
             fake_user_desktop_.path() : fake_common_desktop_.path();
         break;
       case ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH:
-        expected_path = (properties.level == ShellUtil::CURRENT_USER) ?
-            fake_user_quick_launch_.path() :
-            fake_default_user_quick_launch_.path();
+        expected_path = fake_user_quick_launch_.path();
         break;
       case ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR:
         expected_path = (properties.level == ShellUtil::CURRENT_USER) ?
@@ -195,7 +190,6 @@ class ShellUtilShortcutTest : public testing::Test {
   scoped_ptr<base::ScopedPathOverride> user_desktop_override_;
   scoped_ptr<base::ScopedPathOverride> common_desktop_override_;
   scoped_ptr<base::ScopedPathOverride> user_quick_launch_override_;
-  scoped_ptr<base::ScopedPathOverride> default_user_quick_launch_override_;
   scoped_ptr<base::ScopedPathOverride> start_menu_override_;
   scoped_ptr<base::ScopedPathOverride> common_start_menu_override_;
 
@@ -209,18 +203,19 @@ class ShellUtilShortcutTest : public testing::Test {
 
 TEST_F(ShellUtilShortcutTest, GetShortcutPath) {
   base::FilePath path;
+
   ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_,
                              ShellUtil::CURRENT_USER, &path);
   EXPECT_EQ(fake_user_desktop_.path(), path);
+
   ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_,
                              ShellUtil::SYSTEM_LEVEL, &path);
   EXPECT_EQ(fake_common_desktop_.path(), path);
+
   ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH, dist_,
                              ShellUtil::CURRENT_USER, &path);
   EXPECT_EQ(fake_user_quick_launch_.path(), path);
-  ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH, dist_,
-                             ShellUtil::SYSTEM_LEVEL, &path);
-  EXPECT_EQ(fake_default_user_quick_launch_.path(), path);
+
   base::string16 start_menu_subfolder =
       dist_->GetStartMenuShortcutSubfolder(
           BrowserDistribution::SUBFOLDER_CHROME);
@@ -228,6 +223,7 @@ TEST_F(ShellUtilShortcutTest, GetShortcutPath) {
                              dist_, ShellUtil::CURRENT_USER, &path);
   EXPECT_EQ(fake_start_menu_.path().Append(start_menu_subfolder),
             path);
+
   ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR,
                              dist_, ShellUtil::SYSTEM_LEVEL, &path);
   EXPECT_EQ(fake_common_start_menu_.path().Append(start_menu_subfolder),
@@ -255,10 +251,10 @@ TEST_F(ShellUtilShortcutTest, CreateStartMenuShortcutWithAllProperties) {
                          dist_, test_properties_);
 }
 
-TEST_F(ShellUtilShortcutTest, ReplaceSystemLevelQuickLaunchShortcut) {
+TEST_F(ShellUtilShortcutTest, ReplaceSystemLevelDesktopShortcut) {
   test_properties_.level = ShellUtil::SYSTEM_LEVEL;
   ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
-                  ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH,
+                  ShellUtil::SHORTCUT_LOCATION_DESKTOP,
                   dist_, test_properties_,
                   ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
 
@@ -267,7 +263,7 @@ TEST_F(ShellUtilShortcutTest, ReplaceSystemLevelQuickLaunchShortcut) {
   new_properties.set_description(L"New description");
   new_properties.set_arguments(L"--new-arguments");
   ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
-                  ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH,
+                  ShellUtil::SHORTCUT_LOCATION_DESKTOP,
                   dist_, new_properties,
                   ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING));
 
@@ -277,7 +273,7 @@ TEST_F(ShellUtilShortcutTest, ReplaceSystemLevelQuickLaunchShortcut) {
   ShellUtil::ShortcutProperties expected_properties(new_properties);
   expected_properties.set_dual_mode(false);
 
-  ValidateChromeShortcut(ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH, dist_,
+  ValidateChromeShortcut(ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_,
                          expected_properties);
 }
 

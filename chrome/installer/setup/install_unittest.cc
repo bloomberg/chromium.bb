@@ -94,7 +94,6 @@ class InstallShortcutTest : public testing::Test {
     ASSERT_TRUE(fake_user_desktop_.CreateUniqueTempDir());
     ASSERT_TRUE(fake_common_desktop_.CreateUniqueTempDir());
     ASSERT_TRUE(fake_user_quick_launch_.CreateUniqueTempDir());
-    ASSERT_TRUE(fake_default_user_quick_launch_.CreateUniqueTempDir());
     ASSERT_TRUE(fake_start_menu_.CreateUniqueTempDir());
     ASSERT_TRUE(fake_common_start_menu_.CreateUniqueTempDir());
     user_desktop_override_.reset(
@@ -106,9 +105,6 @@ class InstallShortcutTest : public testing::Test {
     user_quick_launch_override_.reset(
         new base::ScopedPathOverride(base::DIR_USER_QUICK_LAUNCH,
                                      fake_user_quick_launch_.path()));
-    default_user_quick_launch_override_.reset(
-        new base::ScopedPathOverride(base::DIR_DEFAULT_USER_QUICK_LAUNCH,
-                                     fake_default_user_quick_launch_.path()));
     start_menu_override_.reset(
         new base::ScopedPathOverride(base::DIR_START_MENU,
                                      fake_start_menu_.path()));
@@ -134,8 +130,6 @@ class InstallShortcutTest : public testing::Test {
         .Append(shortcut_name);
     system_desktop_shortcut_ =
         fake_common_desktop_.path().Append(shortcut_name);
-    system_quick_launch_shortcut_ =
-        fake_default_user_quick_launch_.path().Append(shortcut_name);
     system_start_menu_shortcut_ =
         fake_common_start_menu_.path().Append(
             dist_->GetStartMenuShortcutSubfolder(
@@ -195,13 +189,11 @@ class InstallShortcutTest : public testing::Test {
   base::ScopedTempDir fake_user_desktop_;
   base::ScopedTempDir fake_common_desktop_;
   base::ScopedTempDir fake_user_quick_launch_;
-  base::ScopedTempDir fake_default_user_quick_launch_;
   base::ScopedTempDir fake_start_menu_;
   base::ScopedTempDir fake_common_start_menu_;
   scoped_ptr<base::ScopedPathOverride> user_desktop_override_;
   scoped_ptr<base::ScopedPathOverride> common_desktop_override_;
   scoped_ptr<base::ScopedPathOverride> user_quick_launch_override_;
-  scoped_ptr<base::ScopedPathOverride> default_user_quick_launch_override_;
   scoped_ptr<base::ScopedPathOverride> start_menu_override_;
   scoped_ptr<base::ScopedPathOverride> common_start_menu_override_;
 
@@ -209,7 +201,6 @@ class InstallShortcutTest : public testing::Test {
   base::FilePath user_quick_launch_shortcut_;
   base::FilePath user_start_menu_shortcut_;
   base::FilePath system_desktop_shortcut_;
-  base::FilePath system_quick_launch_shortcut_;
   base::FilePath system_start_menu_shortcut_;
   base::FilePath user_alternate_desktop_shortcut_;
 };
@@ -264,16 +255,17 @@ TEST_F(InstallShortcutTest, CreateAllShortcuts) {
                               expected_start_menu_properties_);
 }
 
-// Disabled failing test; http://crbug.com/329239.
-TEST_F(InstallShortcutTest, DISABLED_CreateAllShortcutsSystemLevel) {
+TEST_F(InstallShortcutTest, CreateAllShortcutsSystemLevel) {
   installer::CreateOrUpdateShortcuts(
       chrome_exe_, *product_, *prefs_, installer::ALL_USERS,
       installer::INSTALL_SHORTCUT_CREATE_ALL);
   base::win::ValidateShortcut(system_desktop_shortcut_, expected_properties_);
-  base::win::ValidateShortcut(system_quick_launch_shortcut_,
-                              expected_properties_);
   base::win::ValidateShortcut(system_start_menu_shortcut_,
                               expected_start_menu_properties_);
+  // The quick launch shortcut is always created per-user for the admin running
+  // the install (other users will get it via Active Setup).
+  base::win::ValidateShortcut(user_quick_launch_shortcut_,
+                              expected_properties_);
 }
 
 TEST_F(InstallShortcutTest, CreateAllShortcutsAlternateDesktopName) {
@@ -376,9 +368,6 @@ TEST_F(InstallShortcutTest, CreateIfNoSystemLevelAllSystemShortcutsExist) {
   ASSERT_TRUE(base::win::CreateOrUpdateShortcutLink(
                   system_desktop_shortcut_, dummy_properties,
                   base::win::SHORTCUT_CREATE_ALWAYS));
-  ASSERT_TRUE(base::win::CreateOrUpdateShortcutLink(
-                  system_quick_launch_shortcut_, dummy_properties,
-                  base::win::SHORTCUT_CREATE_ALWAYS));
   ASSERT_TRUE(base::CreateDirectory(
         system_start_menu_shortcut_.DirName()));
   ASSERT_TRUE(base::win::CreateOrUpdateShortcutLink(
@@ -389,8 +378,10 @@ TEST_F(InstallShortcutTest, CreateIfNoSystemLevelAllSystemShortcutsExist) {
       chrome_exe_, *product_, *prefs_, installer::CURRENT_USER,
       installer::INSTALL_SHORTCUT_CREATE_EACH_IF_NO_SYSTEM_LEVEL);
   ASSERT_FALSE(base::PathExists(user_desktop_shortcut_));
-  ASSERT_FALSE(base::PathExists(user_quick_launch_shortcut_));
   ASSERT_FALSE(base::PathExists(user_start_menu_shortcut_));
+  // There is no system-level quick launch shortcut, so creating the user-level
+  // one should always succeed.
+  ASSERT_TRUE(base::PathExists(user_quick_launch_shortcut_));
 }
 
 TEST_F(InstallShortcutTest, CreateIfNoSystemLevelNoSystemShortcutsExist) {

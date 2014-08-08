@@ -1335,6 +1335,13 @@ bool BatchShortcutAction(
     ShellUtil::ShellChange level,
     const scoped_refptr<ShellUtil::SharedCancellationFlag>& cancel) {
   DCHECK(!shortcut_operation.is_null());
+
+  // There is no system-level Quick Launch shortcut folder.
+  if (level == ShellUtil::SYSTEM_LEVEL &&
+      location == ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH) {
+    return true;
+  }
+
   base::FilePath shortcut_folder;
   if (!ShellUtil::GetShortcutPath(location, dist, level, &shortcut_folder)) {
     LOG(WARNING) << "Cannot find path at location " << location;
@@ -1474,8 +1481,9 @@ bool ShellUtil::GetShortcutPath(ShellUtil::ShortcutLocation location,
                                           base::DIR_COMMON_DESKTOP;
       break;
     case SHORTCUT_LOCATION_QUICK_LAUNCH:
-      dir_key = (level == CURRENT_USER) ? base::DIR_USER_QUICK_LAUNCH :
-                                          base::DIR_DEFAULT_USER_QUICK_LAUNCH;
+      // There is no support for a system-level Quick Launch shortcut.
+      DCHECK_EQ(level, CURRENT_USER);
+      dir_key = base::DIR_USER_QUICK_LAUNCH;
       break;
     case SHORTCUT_LOCATION_START_MENU_ROOT:
       dir_key = (level == CURRENT_USER) ? base::DIR_START_MENU :
@@ -1539,7 +1547,11 @@ bool ShellUtil::CreateOrUpdateShortcut(
 
   base::FilePath user_shortcut_path;
   base::FilePath system_shortcut_path;
-  if (!GetShortcutPath(location, dist, SYSTEM_LEVEL, &system_shortcut_path)) {
+  if (location == SHORTCUT_LOCATION_QUICK_LAUNCH) {
+    // There is no system-level shortcut for Quick Launch.
+    DCHECK_EQ(properties.level, CURRENT_USER);
+  } else if (!GetShortcutPath(
+                 location, dist, SYSTEM_LEVEL, &system_shortcut_path)) {
     NOTREACHED();
     return false;
   }
@@ -1554,6 +1566,7 @@ bool ShellUtil::CreateOrUpdateShortcut(
     // Install the system-level shortcut if requested.
     chosen_path = &system_shortcut_path;
   } else if (operation != SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL ||
+             system_shortcut_path.empty() ||
              !base::PathExists(system_shortcut_path)) {
     // Otherwise install the user-level shortcut, unless the system-level
     // variant of this shortcut is present on the machine and |operation| states
