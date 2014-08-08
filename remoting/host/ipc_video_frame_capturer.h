@@ -10,10 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
-namespace IPC {
-class Message;
-}  // namespace IPC
-
 namespace media {
 struct MouseCursorShape;
 }  // namespace media

@@ -16,6 +16,7 @@
 #include "remoting/host/client_session.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/fake_host_extension.h"
+#include "remoting/host/fake_mouse_cursor_monitor.h"
 #include "remoting/host/fake_screen_capturer.h"
 #include "remoting/host/host_extension.h"
 #include "remoting/host/host_extension_session.h"
@@ -145,6 +146,10 @@ class ClientSessionTest : public testing::Test {
   // Creates a fake webrtc::ScreenCapturer, to mock
   // DesktopEnvironment::CreateVideoCapturer().
   webrtc::ScreenCapturer* CreateVideoCapturer();
+
+  // Creates a MockMouseCursorMonitor, to mock
+  // DesktopEnvironment::CreateMouseCursorMonitor
+  webrtc::MouseCursorMonitor* CreateMouseCursorMonitor();
 
   // Notifies the client session that the client connection has been
   // authenticated and channels have been connected. This effectively enables
@@ -279,6 +284,9 @@ DesktopEnvironment* ClientSessionTest::CreateDesktopEnvironment() {
       .Times(AtMost(1));
   EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr())
       .WillRepeatedly(Invoke(this, &ClientSessionTest::CreateVideoCapturer));
+  EXPECT_CALL(*desktop_environment, CreateMouseCursorMonitorPtr())
+      .WillRepeatedly(
+          Invoke(this, &ClientSessionTest::CreateMouseCursorMonitor));
   EXPECT_CALL(*desktop_environment, GetCapabilities())
       .Times(AtMost(1))
        .WillOnce(Return(kDefaultTestCapability));
@@ -295,6 +303,10 @@ InputInjector* ClientSessionTest::CreateInputInjector() {
 
 webrtc::ScreenCapturer* ClientSessionTest::CreateVideoCapturer() {
   return new FakeScreenCapturer();
+}
+
+webrtc::MouseCursorMonitor* ClientSessionTest::CreateMouseCursorMonitor() {
+  return new FakeMouseCursorMonitor();
 }
 
 void ClientSessionTest::ConnectClientSession() {

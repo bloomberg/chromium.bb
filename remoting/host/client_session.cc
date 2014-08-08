@@ -472,6 +472,7 @@ void ClientSession::ResetVideoPipeline() {
       video_encode_task_runner_,
       network_task_runner_,
       video_capturer.Pass(),
+      desktop_environment_->CreateMouseCursorMonitor(),
       video_encoder.Pass(),
       connection_->client_stub(),
       &mouse_clamping_filter_);

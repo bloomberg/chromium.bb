@@ -144,12 +144,6 @@ IPC_MESSAGE_CONTROL3(ChromotingDesktopNetworkMsg_CreateSharedBuffer,
 IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_ReleaseSharedBuffer,
                      int /* id */)
 
-IPC_STRUCT_TRAITS_BEGIN(webrtc::MouseCursorShape)
-  IPC_STRUCT_TRAITS_MEMBER(size)
-  IPC_STRUCT_TRAITS_MEMBER(hotspot)
-  IPC_STRUCT_TRAITS_MEMBER(data)
-IPC_STRUCT_TRAITS_END()
-
 // Serialized webrtc::DesktopFrame.
 IPC_STRUCT_BEGIN(SerializedDesktopFrame)
   // ID of the shared memory buffer containing the pixels.
@@ -179,8 +173,8 @@ IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_CaptureCompleted,
                      SerializedDesktopFrame /* frame */ )
 
 // Carries a cursor share update from the desktop session agent to the client.
-IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_CursorShapeChanged,
-                     webrtc::MouseCursorShape /* cursor_shape */ )
+IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_MouseCursor,
+                     webrtc::MouseCursor /* cursor */ )
 
 // Carries a clipboard event from the desktop session agent to the client.
 // |serialized_event| is a serialized protocol::ClipboardEvent.

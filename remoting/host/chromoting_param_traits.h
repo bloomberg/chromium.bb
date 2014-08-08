@@ -8,7 +8,9 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_param_traits.h"
 #include "remoting/host/screen_resolution.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "third_party/webrtc/modules/desktop_capture/mouse_cursor.h"
 
 namespace IPC {
 
@@ -31,6 +33,14 @@ struct ParamTraits<webrtc::DesktopSize> {
 template <>
 struct ParamTraits<webrtc::DesktopRect> {
   typedef webrtc::DesktopRect param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<webrtc::MouseCursor> {
+  typedef webrtc::MouseCursor param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

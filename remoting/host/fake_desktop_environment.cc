@@ -63,6 +63,11 @@ FakeDesktopEnvironment::CreateVideoCapturer() {
   return result.PassAs<webrtc::ScreenCapturer>();
 }
 
+scoped_ptr<webrtc::MouseCursorMonitor>
+FakeDesktopEnvironment::CreateMouseCursorMonitor() {
+  return scoped_ptr<webrtc::MouseCursorMonitor>(new FakeMouseCursorMonitor());
+}
+
 std::string FakeDesktopEnvironment::GetCapabilities() const {
   return std::string();
 }

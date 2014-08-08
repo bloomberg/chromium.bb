@@ -6,6 +6,7 @@
 #define REMOTING_HOST_FAKE_DESKTOP_ENVIRONMENT_H_
 
 #include "remoting/host/desktop_environment.h"
+#include "remoting/host/fake_mouse_cursor_monitor.h"
 #include "remoting/host/fake_screen_capturer.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/screen_controls.h"
@@ -51,6 +52,8 @@ class FakeDesktopEnvironment : public DesktopEnvironment {
   virtual scoped_ptr<InputInjector> CreateInputInjector() OVERRIDE;
   virtual scoped_ptr<ScreenControls> CreateScreenControls() OVERRIDE;
   virtual scoped_ptr<webrtc::ScreenCapturer> CreateVideoCapturer() OVERRIDE;
+  virtual scoped_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor()
+      OVERRIDE;
   virtual std::string GetCapabilities() const OVERRIDE;
   virtual void SetCapabilities(const std::string& capabilities) OVERRIDE;
   virtual scoped_ptr<GnubbyAuthHandler> CreateGnubbyAuthHandler(

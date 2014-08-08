@@ -11,6 +11,7 @@
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/desktop_environment.h"
+#include "remoting/host/fake_mouse_cursor_monitor.h"
 #include "remoting/host/fake_screen_capturer.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/proto/video.pb.h"
@@ -249,6 +250,9 @@ class ChromotingHostTest : public testing::Test {
     EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr())
         .Times(AtMost(1))
         .WillOnce(Invoke(this, &ChromotingHostTest::CreateVideoCapturer));
+    EXPECT_CALL(*desktop_environment, CreateMouseCursorMonitorPtr())
+        .Times(AtMost(1))
+        .WillOnce(Invoke(this, &ChromotingHostTest::CreateMouseCursorMonitor));
     EXPECT_CALL(*desktop_environment, GetCapabilities())
         .Times(AtMost(1));
     EXPECT_CALL(*desktop_environment, SetCapabilities(_))
@@ -269,6 +273,12 @@ class ChromotingHostTest : public testing::Test {
   // DesktopEnvironment::CreateVideoCapturer().
   webrtc::ScreenCapturer* CreateVideoCapturer() {
     return new FakeScreenCapturer();
+  }
+
+  // Creates a MockMouseCursorMonitor, to mock
+  // DesktopEnvironment::CreateMouseCursorMonitor().
+  webrtc::MouseCursorMonitor* CreateMouseCursorMonitor() {
+    return new FakeMouseCursorMonitor();
   }
 
   void DisconnectAllClients() {

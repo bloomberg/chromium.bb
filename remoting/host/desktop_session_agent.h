@@ -18,6 +18,7 @@
 #include "remoting/host/client_session_control.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 namespace IPC {
@@ -47,7 +48,7 @@ class DesktopSessionAgent
     : public base::RefCountedThreadSafe<DesktopSessionAgent>,
       public IPC::Listener,
       public webrtc::DesktopCapturer::Callback,
-      public webrtc::ScreenCapturer::MouseShapeObserver,
+      public webrtc::MouseCursorMonitor::Callback,
       public ClientSessionControl {
  public:
   class Delegate {
@@ -78,9 +79,11 @@ class DesktopSessionAgent
   virtual webrtc::SharedMemory* CreateSharedMemory(size_t size) OVERRIDE;
   virtual void OnCaptureCompleted(webrtc::DesktopFrame* frame) OVERRIDE;
 
-  // webrtc::ScreenCapturer::MouseShapeObserver implementation.
-  virtual void OnCursorShapeChanged(
-      webrtc::MouseCursorShape* cursor_shape) OVERRIDE;
+  // webrtc::MouseCursorMonitor::Callback implementation.
+  virtual void OnMouseCursor(webrtc::MouseCursor* cursor) OVERRIDE;
+  virtual void OnMouseCursorPosition(
+      webrtc::MouseCursorMonitor::CursorState state,
+      const webrtc::DesktopVector& position) OVERRIDE;
 
   // Forwards a local clipboard event though the IPC channel to the network
   // process.
@@ -141,11 +144,13 @@ class DesktopSessionAgent
   // Posted to |audio_capture_task_runner_| to stop the audio capturer.
   void StopAudioCapturer();
 
-  // Posted to |video_capture_task_runner_| to start the video capturer.
-  void StartVideoCapturer();
+  // Posted to |video_capture_task_runner_| to start the video capturer and the
+  // mouse cursor monitor.
+  void StartVideoCapturerAndMouseMonitor();
 
-  // Posted to |video_capture_task_runner_| to stop the video capturer.
-  void StopVideoCapturer();
+  // Posted to |video_capture_task_runner_| to stop the video capturer and the
+  // mouse cursor monitor.
+  void StopVideoCapturerAndMouseMonitor();
 
  private:
   class SharedBuffer;
@@ -215,6 +220,9 @@ class DesktopSessionAgent
 
   // Captures the screen.
   scoped_ptr<webrtc::ScreenCapturer> video_capturer_;
+
+  // Captures mouse shapes.
+  scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor_;
 
   // Keep reference to the last frame sent to make sure shared buffer is alive
   // before it's received.

@@ -45,6 +45,11 @@ MockDesktopEnvironment::CreateGnubbyAuthHandler(
   return scoped_ptr<GnubbyAuthHandler>(CreateGnubbyAuthHandlerPtr(client_stub));
 }
 
+scoped_ptr<webrtc::MouseCursorMonitor>
+MockDesktopEnvironment::CreateMouseCursorMonitor() {
+  return scoped_ptr<webrtc::MouseCursorMonitor>(CreateMouseCursorMonitorPtr());
+}
+
 MockDesktopEnvironmentFactory::MockDesktopEnvironmentFactory() {}
 
 MockDesktopEnvironmentFactory::~MockDesktopEnvironmentFactory() {}
@@ -78,5 +83,9 @@ MockHostStatusObserver::~MockHostStatusObserver() {}
 MockGnubbyAuthHandler::MockGnubbyAuthHandler() {}
 
 MockGnubbyAuthHandler::~MockGnubbyAuthHandler() {}
+
+MockMouseCursorMonitor::MockMouseCursorMonitor() {}
+
+MockMouseCursorMonitor::~MockMouseCursorMonitor() {}
 
 }  // namespace remoting

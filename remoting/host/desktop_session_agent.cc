@@ -27,6 +27,7 @@
 #include "remoting/protocol/input_event_tracker.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
+#include "third_party/webrtc/modules/desktop_capture/mouse_cursor.h"
 #include "third_party/webrtc/modules/desktop_capture/shared_memory.h"
 
 namespace remoting {
@@ -298,10 +299,12 @@ void DesktopSessionAgent::OnStartSessionAgent(
         FROM_HERE, base::Bind(&DesktopSessionAgent::StartAudioCapturer, this));
   }
 
-  // Start the video capturer.
+  // Start the video capturer and mouse cursor monitor.
   video_capturer_ = desktop_environment_->CreateVideoCapturer();
+  mouse_cursor_monitor_ = desktop_environment_->CreateMouseCursorMonitor();
   video_capture_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DesktopSessionAgent::StartVideoCapturer, this));
+      FROM_HERE, base::Bind(
+          &DesktopSessionAgent::StartVideoCapturerAndMouseMonitor, this));
 }
 
 void DesktopSessionAgent::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
@@ -327,14 +330,20 @@ void DesktopSessionAgent::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
       new ChromotingDesktopNetworkMsg_CaptureCompleted(serialized_frame));
 }
 
-void DesktopSessionAgent::OnCursorShapeChanged(
-    webrtc::MouseCursorShape* cursor_shape) {
+void DesktopSessionAgent::OnMouseCursor(webrtc::MouseCursor* cursor) {
   DCHECK(video_capture_task_runner_->BelongsToCurrentThread());
 
-  scoped_ptr<webrtc::MouseCursorShape> owned_cursor(cursor_shape);
+  scoped_ptr<webrtc::MouseCursor> owned_cursor(cursor);
 
-  SendToNetwork(new ChromotingDesktopNetworkMsg_CursorShapeChanged(
-      *cursor_shape));
+  SendToNetwork(
+      new ChromotingDesktopNetworkMsg_MouseCursor(*owned_cursor));
+}
+
+void DesktopSessionAgent::OnMouseCursorPosition(
+    webrtc::MouseCursorMonitor::CursorState state,
+    const webrtc::DesktopVector& position) {
+  // We're not subscribing to mouse position changes.
+  NOTREACHED();
 }
 
 void DesktopSessionAgent::InjectClipboardEvent(
@@ -417,7 +426,8 @@ void DesktopSessionAgent::Stop() {
 
     // Stop the video capturer.
     video_capture_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DesktopSessionAgent::StopVideoCapturer, this));
+        FROM_HERE, base::Bind(
+            &DesktopSessionAgent::StopVideoCapturerAndMouseMonitor, this));
   }
 }
 
@@ -428,6 +438,8 @@ void DesktopSessionAgent::OnCaptureFrame() {
         base::Bind(&DesktopSessionAgent::OnCaptureFrame, this));
     return;
   }
+
+  mouse_cursor_monitor_->Capture();
 
   // webrtc::ScreenCapturer supports a very few (currently 2) outstanding
   // capture requests. The requests are serialized on
@@ -545,20 +557,24 @@ void DesktopSessionAgent::StopAudioCapturer() {
   audio_capturer_.reset();
 }
 
-void DesktopSessionAgent::StartVideoCapturer() {
+void DesktopSessionAgent::StartVideoCapturerAndMouseMonitor() {
   DCHECK(video_capture_task_runner_->BelongsToCurrentThread());
 
   if (video_capturer_) {
-    video_capturer_->SetMouseShapeObserver(this);
     video_capturer_->Start(this);
+  }
+
+  if (mouse_cursor_monitor_) {
+    mouse_cursor_monitor_->Init(this, webrtc::MouseCursorMonitor::SHAPE_ONLY);
   }
 }
 
-void DesktopSessionAgent::StopVideoCapturer() {
+void DesktopSessionAgent::StopVideoCapturerAndMouseMonitor() {
   DCHECK(video_capture_task_runner_->BelongsToCurrentThread());
 
   video_capturer_.reset();
   last_frame_.reset();
+  mouse_cursor_monitor_.reset();
 
   // Video capturer must delete all buffers.
   DCHECK_EQ(shared_buffers_, 0);

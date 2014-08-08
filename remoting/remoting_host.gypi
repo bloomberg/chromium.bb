@@ -170,6 +170,8 @@
             'host/ipc_host_event_logger.h',
             'host/ipc_input_injector.cc',
             'host/ipc_input_injector.h',
+            'host/ipc_mouse_cursor_monitor.cc',
+            'host/ipc_mouse_cursor_monitor.h',
             'host/ipc_screen_controls.cc',
             'host/ipc_screen_controls.h',
             'host/ipc_util.h',

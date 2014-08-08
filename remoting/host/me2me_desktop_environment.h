@@ -21,7 +21,6 @@ class Me2MeDesktopEnvironment : public BasicDesktopEnvironment {
 
   // DesktopEnvironment interface.
   virtual scoped_ptr<ScreenControls> CreateScreenControls() OVERRIDE;
-  virtual scoped_ptr<webrtc::ScreenCapturer> CreateVideoCapturer() OVERRIDE;
   virtual std::string GetCapabilities() const OVERRIDE;
   virtual scoped_ptr<GnubbyAuthHandler> CreateGnubbyAuthHandler(
       protocol::ClientStub* client_stub) OVERRIDE;
