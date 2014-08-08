@@ -846,8 +846,6 @@
       'browser/net/url_info.h',
       'browser/omaha_query_params/chrome_omaha_query_params_delegate.cc',
       'browser/omaha_query_params/chrome_omaha_query_params_delegate.h',
-      'browser/omnibox/omnibox_field_trial.cc',
-      'browser/omnibox/omnibox_field_trial.h',
       'browser/omnibox/omnibox_log.cc',
       'browser/omnibox/omnibox_log.h',
       'browser/password_manager/chrome_password_manager_client.cc',

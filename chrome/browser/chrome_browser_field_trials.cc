@@ -11,11 +11,11 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/variations/uniformity_field_trials.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/omnibox/omnibox_field_trial.h"
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 #include "chrome/browser/chrome_browser_field_trials_mobile.h"

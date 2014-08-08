@@ -1109,7 +1109,6 @@
         'browser/notifications/message_center_notifications_unittest.cc',
         'browser/notifications/message_center_settings_controller_unittest.cc',
         'browser/omaha_query_params/chrome_omaha_query_params_delegate_unittest.cc',
-        'browser/omnibox/omnibox_field_trial_unittest.cc',
         'browser/password_manager/chrome_password_manager_client_unittest.cc',
         'browser/password_manager/native_backend_gnome_x_unittest.cc',
         'browser/password_manager/native_backend_kwallet_x_unittest.cc',

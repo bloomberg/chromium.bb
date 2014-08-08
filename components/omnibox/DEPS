@@ -1,7 +1,9 @@
 include_rules = [
   "+components/metrics/proto",
+  "+components/search",
   "+components/search_engines",
   "+components/url_fixer",
+  "+components/variations",
   "+grit",
   "+net",
   "+url",

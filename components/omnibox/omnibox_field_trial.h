@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_OMNIBOX_OMNIBOX_FIELD_TRIAL_H_
-#define CHROME_BROWSER_OMNIBOX_OMNIBOX_FIELD_TRIAL_H_
+#ifndef COMPONENTS_OMNIBOX_OMNIBOX_FIELD_TRIAL_H_
+#define COMPONENTS_OMNIBOX_OMNIBOX_FIELD_TRIAL_H_
 
 #include <map>
 #include <string>
@@ -344,4 +344,4 @@ class OmniboxFieldTrial {
   DISALLOW_IMPLICIT_CONSTRUCTORS(OmniboxFieldTrial);
 };
 
-#endif  // CHROME_BROWSER_OMNIBOX_OMNIBOX_FIELD_TRIAL_H_
+#endif  // COMPONENTS_OMNIBOX_OMNIBOX_FIELD_TRIAL_H_

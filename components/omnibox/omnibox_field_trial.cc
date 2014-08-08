@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/omnibox/omnibox_field_trial.h"
+#include "components/omnibox/omnibox_field_trial.h"
 
 #include <cmath>
 #include <string>
@@ -14,9 +14,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/variations/variation_ids.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/omnibox/omnibox_switches.h"
 #include "components/search/search.h"
 #include "components/variations/active_field_trials.h"
 #include "components/variations/metrics_util.h"
