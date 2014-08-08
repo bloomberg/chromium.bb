@@ -21,7 +21,7 @@ const uint32 kColorOrder = 0;  // chunky.
 // Coefficients used to convert from RGB to monochrome.
 const uint32 kRedCoefficient = 2125;
 const uint32 kGreenCoefficient = 7154;
-const uint32 kBlueCoefficient = 0721;
+const uint32 kBlueCoefficient = 721;
 const uint32 kColorCoefficientDenominator = 10000;
 
 const char* kPwgKeyword = "RaS2";
