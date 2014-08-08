@@ -213,14 +213,13 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     self._afdo_generate_min = afdo_generate_min
     assert not afdo_generate_min or not afdo_use
 
-    useflags = self._run.config.useflags[:]
+    useflags = self._portage_extra_env.get('USE', '').split()
     if afdo_use:
       self.name += ' [%s]' % constants.USE_AFDO_USE
       useflags.append(constants.USE_AFDO_USE)
 
     if useflags:
-      self._portage_extra_env.setdefault('USE', '')
-      self._portage_extra_env['USE'] += ' ' + ' '.join(useflags)
+      self._portage_extra_env['USE'] = ' '.join(useflags)
 
   def PerformStage(self):
     # If we have rietveld patches, always compile Chrome from source.
