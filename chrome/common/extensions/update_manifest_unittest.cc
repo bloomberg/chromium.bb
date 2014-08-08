@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_vector.h"
-#include "chrome/common/extensions/update_manifest.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "extensions/common/update_manifest.h"
 #include "libxml/globals.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 static const char* kValidXml =
 "<?xml version='1.0' encoding='UTF-8'?>"

@@ -9,11 +9,11 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
-#include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/media_galleries/iphoto_library.h"
 #include "chrome/common/media_galleries/itunes_library.h"
 #include "chrome/common/media_galleries/metadata_types.h"
 #include "chrome/common/media_galleries/picasa_types.h"
+#include "extensions/common/update_manifest.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 
