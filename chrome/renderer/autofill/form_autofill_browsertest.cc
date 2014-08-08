@@ -681,6 +681,125 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldAutocompletetype) {
   }
 }
 
+TEST_F(FormAutofillTest, DetectTextDirectionFromDirectStyle) {
+  LoadHTML("<STYLE>input{direction:rtl}</STYLE>"
+           "<FORM>"
+           "  <INPUT type='text' id='element'>"
+           "</FORM>");
+
+  WebFrame* frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), frame);
+
+  WebElement web_element = frame->document().getElementById("element");
+  WebFormControlElement element = web_element.to<WebFormControlElement>();
+
+  FormFieldData result;
+  WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
+  EXPECT_EQ(base::i18n::RIGHT_TO_LEFT, result.text_direction);
+}
+
+TEST_F(FormAutofillTest, DetectTextDirectionFromDirectDIRAttribute) {
+  LoadHTML("<FORM>"
+           "  <INPUT dir='rtl' type='text' id='element'/>"
+           "</FORM>");
+
+  WebFrame* frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), frame);
+
+  WebElement web_element = frame->document().getElementById("element");
+  WebFormControlElement element = web_element.to<WebFormControlElement>();
+
+  FormFieldData result;
+  WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
+  EXPECT_EQ(base::i18n::RIGHT_TO_LEFT, result.text_direction);
+}
+
+TEST_F(FormAutofillTest, DetectTextDirectionFromParentStyle) {
+  LoadHTML("<STYLE>form{direction:rtl}</STYLE>"
+           "<FORM>"
+           "  <INPUT type='text' id='element'/>"
+           "</FORM>");
+
+  WebFrame* frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), frame);
+
+  WebElement web_element = frame->document().getElementById("element");
+  WebFormControlElement element = web_element.to<WebFormControlElement>();
+
+  FormFieldData result;
+  WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
+  EXPECT_EQ(base::i18n::RIGHT_TO_LEFT, result.text_direction);
+}
+
+TEST_F(FormAutofillTest, DetectTextDirectionFromParentDIRAttribute) {
+  LoadHTML("<FORM dir='rtl'>"
+           "  <INPUT type='text' id='element'/>"
+           "</FORM>");
+
+  WebFrame* frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), frame);
+
+  WebElement web_element = frame->document().getElementById("element");
+  WebFormControlElement element = web_element.to<WebFormControlElement>();
+
+  FormFieldData result;
+  WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
+  EXPECT_EQ(base::i18n::RIGHT_TO_LEFT, result.text_direction);
+}
+
+TEST_F(FormAutofillTest, DetectTextDirectionWhenStyleAndDIRAttributMixed) {
+  LoadHTML("<STYLE>input{direction:ltr}</STYLE>"
+           "<FORM dir='rtl'>"
+           "  <INPUT type='text' id='element'/>"
+           "</FORM>");
+
+  WebFrame* frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), frame);
+
+  WebElement web_element = frame->document().getElementById("element");
+  WebFormControlElement element = web_element.to<WebFormControlElement>();
+
+  FormFieldData result;
+  WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
+  EXPECT_EQ(base::i18n::LEFT_TO_RIGHT, result.text_direction);
+}
+
+TEST_F(FormAutofillTest,
+       DetectTextDirectionWhenParentHasBothDIRAttributeAndStyle) {
+  LoadHTML("<STYLE>form{direction:ltr}</STYLE>"
+           "<FORM dir='rtl'>"
+           "  <INPUT type='text' id='element'/>"
+           "</FORM>");
+
+  WebFrame* frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), frame);
+
+  WebElement web_element = frame->document().getElementById("element");
+  WebFormControlElement element = web_element.to<WebFormControlElement>();
+
+  FormFieldData result;
+  WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
+  EXPECT_EQ(base::i18n::LEFT_TO_RIGHT, result.text_direction);
+}
+
+TEST_F(FormAutofillTest, DetectTextDirectionWhenAncestorHasInlineStyle) {
+  LoadHTML("<FORM style='direction:ltr'>"
+           "  <SPAN dir='rtl'>"
+           "    <INPUT type='text' id='element'/>"
+           "  </SPAN>"
+           "</FORM>");
+
+  WebFrame* frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), frame);
+
+  WebElement web_element = frame->document().getElementById("element");
+  WebFormControlElement element = web_element.to<WebFormControlElement>();
+
+  FormFieldData result;
+  WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
+  EXPECT_EQ(base::i18n::RIGHT_TO_LEFT, result.text_direction);
+}
+
 TEST_F(FormAutofillTest, WebFormElementToFormData) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            " <LABEL for=\"firstname\">First name:</LABEL>"
