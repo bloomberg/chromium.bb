@@ -46,6 +46,13 @@ class MediaSourceTest : public content::MediaBrowserTest {
     RunMediaTestPage("media_source_player.html", query_params, expectation,
                      true);
   }
+
+#if defined(OS_ANDROID)
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(
+        switches::kDisableGestureRequirementForMediaPlayback);
+  }
+#endif
 };
 
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_VideoAudio_WebM) {

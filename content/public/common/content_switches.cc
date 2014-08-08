@@ -880,6 +880,10 @@ const char kEnableWebRtcHWVp8Encoding[]     = "enable-webrtc-hw-vp8-encoding";
 #endif
 
 #if defined(OS_ANDROID)
+// Disable user gesture requirement for media playback.
+const char kDisableGestureRequirementForMediaPlayback[] =
+    "disable-gesture-requirement-for-media-playback";
+
 // Disable the click delay by sending click events during double tap.
 const char kDisableClickDelay[]             = "disable-click-delay";
 

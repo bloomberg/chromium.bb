@@ -1295,6 +1295,15 @@ const Experiment kExperiments[] = {
     kOsAll,
     MULTI_VALUE_TYPE(kDefaultTileHeightChoices)
   },
+#if defined(OS_ANDROID)
+  {
+    "disable-gesture-requirement-for-media-playback",
+    IDS_FLAGS_DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK_NAME,
+    IDS_FLAGS_DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(switches::kDisableGestureRequirementForMediaPlayback)
+  },
+#endif
 #if defined(OS_CHROMEOS)
   {
     "enable-virtual-keyboard",
