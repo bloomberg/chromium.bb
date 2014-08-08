@@ -318,7 +318,8 @@ void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling)
         clearNeedsStyleRecalc();
     } else if (needsStyleRecalc() || needsWhitespaceRenderer()) {
         reattach();
-        reattachWhitespaceSiblings(nextTextSibling);
+        if (this->renderer())
+            reattachWhitespaceSiblings(nextTextSibling);
     }
 }
 
