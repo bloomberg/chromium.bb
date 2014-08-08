@@ -30,6 +30,11 @@
 
 #include "wayland-util.h"
 
+enum side {
+	CLIENT,
+	SERVER,
+};
+
 static int
 usage(int ret)
 {
@@ -974,10 +979,10 @@ format_copyright(const char *copyright)
 }
 
 static void
-emit_header(struct protocol *protocol, int server)
+emit_header(struct protocol *protocol, enum side side)
 {
 	struct interface *i;
-	const char *s = server ? "SERVER" : "CLIENT";
+	const char *s = (side == SERVER) ? "SERVER" : "CLIENT";
 
 	if (protocol->copyright)
 		format_copyright(protocol->copyright);
@@ -996,7 +1001,7 @@ emit_header(struct protocol *protocol, int server)
 	       "struct wl_resource;\n\n",
 	       protocol->uppercase_name, s,
 	       protocol->uppercase_name, s,
-	       server ? "wayland-util.h" : "wayland-client.h");
+	       (side == SERVER) ? "wayland-util.h" : "wayland-client.h");
 
 	wl_list_for_each(i, &protocol->interface_list, link)
 		printf("struct %s;\n", i->name);
@@ -1013,7 +1018,7 @@ emit_header(struct protocol *protocol, int server)
 
 		emit_enumerations(i);
 
-		if (server) {
+		if (side == SERVER) {
 			emit_structs(&i->request_list, i);
 			emit_opcodes(&i->event_list, i);
 			emit_opcode_versions(&i->event_list, i);
@@ -1300,10 +1305,10 @@ int main(int argc, char *argv[])
 
 	switch (mode) {
 		case CLIENT_HEADER:
-			emit_header(&protocol, 0);
+			emit_header(&protocol, CLIENT);
 			break;
 		case SERVER_HEADER:
-			emit_header(&protocol, 1);
+			emit_header(&protocol, SERVER);
 			break;
 		case CODE:
 			emit_code(&protocol);
