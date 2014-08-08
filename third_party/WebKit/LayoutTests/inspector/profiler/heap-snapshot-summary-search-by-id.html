@@ -90,7 +90,7 @@ function test()
                     var instanceNodes = constructorNode.children;
                     for (var i = 0; i < instanceNodes.length; i++) {
                         if (instanceNodes[i].snapshotNodeId == nodeId) {
-                            if (!instanceNodes[i].element.classList.contains("highlighted-row")) {
+                            if (!instanceNodes[i].element().classList.contains("highlighted-row")) {
                                 if (constructorsGrid._nodeToHighlightAfterScroll === instanceNodes[i]) {
                                     function afterScroll(nodeToHighlight)
                                     {
