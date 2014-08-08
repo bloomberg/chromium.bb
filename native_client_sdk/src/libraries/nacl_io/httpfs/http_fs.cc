@@ -226,11 +226,11 @@ Error HttpFs::Init(const FsInitArgs& args) {
 
       error = ParseManifest(text);
       if (error) {
-        delete[] text;
+        free(text);
         return error;
       }
 
-      delete[] text;
+      free(text);
     } else if (iter->first == "allow_cross_origin_requests") {
       allow_cors_ = iter->second == "true";
     } else if (iter->first == "allow_credentials") {
@@ -396,7 +396,10 @@ Error HttpFs::LoadManifest(const std::string& manifest_name,
   if (error)
     return error;
 
-  char* text = new char[size + 1];
+  char* text = (char*)malloc(size + 1);
+  assert(text != NULL);
+  if (text == NULL)
+    return ENOMEM;
   int len;
   error = manifest_node->Read(HandleAttr(), text, size, &len);
   if (error)

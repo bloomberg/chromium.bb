@@ -14,8 +14,7 @@ namespace nacl_io {
 
 class PepperInterface;
 
-// NOTE: The Packet class always owns the buffer and address, either by 'Copy'
-// or by 'Take' ownership.
+// NOTE: The Packet class always owns the buffer and address.
 class Packet {
  public:
   explicit Packet(PepperInterface* ppapi);
@@ -23,9 +22,6 @@ class Packet {
 
   // Copy the buffer, and address reference
   void Copy(const void* buffer, size_t len, PP_Resource addr);
-
-  // Take ownership the buffer, and address reference
-  void Take(const void* buffer, size_t len, PP_Resource addr);
 
   char* buffer() { return buffer_; }
   PP_Resource addr() { return addr_; }

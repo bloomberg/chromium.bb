@@ -7,8 +7,6 @@
 
 #include "nacl_io/node.h"
 
-#include <vector>
-
 namespace nacl_io {
 
 class MemFsNode : public Node {
@@ -31,9 +29,10 @@ class MemFsNode : public Node {
   virtual Error FTruncate(off_t size);
 
  private:
-  void Resize(off_t size);
+  Error Resize(off_t size);
 
-  std::vector<char> data_;
+  char* data_;
+  size_t data_capacity_;
   friend class MemFs;
 };
 

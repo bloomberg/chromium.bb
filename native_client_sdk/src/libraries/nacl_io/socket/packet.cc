@@ -4,6 +4,7 @@
 
 #include "nacl_io/socket/packet.h"
 
+#include <assert.h>
 #include <string.h>
 
 #include "nacl_io/pepper_interface.h"
@@ -17,19 +18,14 @@ Packet::Packet(PepperInterface* ppapi)
 Packet::~Packet() {
   if ((NULL != ppapi_) && addr_)
     ppapi_->ReleaseResource(addr_);
-  delete[] buffer_;
-}
-
-void Packet::Take(const void* buffer, size_t len, PP_Resource addr) {
-  addr_ = addr;
-  len_ = len;
-  buffer_ = static_cast<char*>(const_cast<void*>(buffer));
+  free(buffer_);
 }
 
 void Packet::Copy(const void* buffer, size_t len, PP_Resource addr) {
   addr_ = addr;
   len_ = len;
-  buffer_ = new char[len];
+  buffer_ = (char*)malloc(len);
+  assert(buffer_);
 
   memcpy(buffer_, buffer, len);
   if (addr && (NULL != ppapi_))

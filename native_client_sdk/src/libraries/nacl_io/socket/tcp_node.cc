@@ -30,7 +30,9 @@ class TcpWork : public StreamFs::Work {
         emitter_(emitter),
         data_(NULL) {}
 
-  ~TcpWork() { delete[] data_; }
+  ~TcpWork() {
+    free(data_);
+  }
 
   TCPSocketInterface* TCPInterface() {
     return filesystem()->ppapi()->GetTCPSocketInterface();
@@ -63,7 +65,10 @@ class TcpSendWork : public TcpWork {
     if (capped_len == 0)
       return false;
 
-    data_ = new char[capped_len];
+    data_ = (char*)malloc(capped_len);
+    assert(data_);
+    if (data_ == NULL)
+      return false;
     emitter_->ReadOut_Locked(data_, capped_len);
 
     int err = TCPInterface()->Write(node_->socket_resource(),
@@ -126,7 +131,10 @@ class TcpRecvWork : public TcpWork {
     if (capped_len == 0)
       return false;
 
-    data_ = new char[capped_len];
+    data_ = (char*)malloc(capped_len);
+    assert(data_);
+    if (data_ == NULL)
+      return false;
     int err = TCPInterface()->Read(stream->socket_resource(),
                                    data_,
                                    capped_len,

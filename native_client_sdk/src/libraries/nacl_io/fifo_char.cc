@@ -4,6 +4,7 @@
 
 #include "nacl_io/fifo_char.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -13,12 +14,14 @@ namespace nacl_io {
 
 FIFOChar::FIFOChar(size_t size)
     : buffer_(NULL), size_(size), avail_(0), tail_(0) {
-  if (size)
-    buffer_ = new char[size];
+  if (size) {
+    buffer_ = (char*)malloc(size);
+    assert(buffer_ != NULL);
+  }
 }
 
 FIFOChar::~FIFOChar() {
-  delete[] buffer_;
+  free(buffer_);
 }
 
 bool FIFOChar::IsEmpty() {
@@ -34,13 +37,11 @@ bool FIFOChar::Resize(size_t len) {
   if (len < avail_)
     return false;
 
-  // Read current data into new buffer
-  char* data = new char[len];
-  avail_ = Read(data, avail_);
-
-  // Replace buffer
-  delete[] buffer_;
-  buffer_ = data;
+  // Resize buffer
+  buffer_ = (char*)realloc(buffer_, len);
+  assert(buffer_ != NULL);
+  if (buffer_ == NULL)
+    return false;
   size_ = len;
   return true;
 }

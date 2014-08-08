@@ -228,6 +228,8 @@ HttpFsNode::HttpFsNode(Filesystem* filesystem,
                        bool cache_content)
     : Node(filesystem),
       url_(url),
+      buffer_(NULL),
+      buffer_len_(0),
       cache_content_(cache_content),
       has_cached_size_(false) {
 }
@@ -557,12 +559,18 @@ Error HttpFsNode::ReadEntireResponseToTemp(const ScopedResource& loader,
   *out_bytes = 0;
 
   const int kBytesToRead = MAX_READ_BUFFER_SIZE;
-  buffer_.resize(kBytesToRead);
+  buffer_ = (char*)realloc(buffer_, kBytesToRead);
+  assert(buffer_);
+  if (!buffer_) {
+    buffer_len_ = 0;
+    return ENOMEM;
+  }
+  buffer_len_ = kBytesToRead;
 
   while (true) {
     int bytes_read;
     Error error =
-        ReadResponseToBuffer(loader, buffer_.data(), kBytesToRead, &bytes_read);
+        ReadResponseToBuffer(loader, buffer_, kBytesToRead, &bytes_read);
     if (error)
       return error;
 
@@ -604,16 +612,23 @@ Error HttpFsNode::ReadResponseToTemp(const ScopedResource& loader,
                                      int* out_bytes) {
   *out_bytes = 0;
 
-  if (buffer_.size() < static_cast<size_t>(count))
-    buffer_.resize(std::min(count, MAX_READ_BUFFER_SIZE));
+  if (buffer_len_ < count) {
+    int new_len = std::min(count, MAX_READ_BUFFER_SIZE);
+    buffer_ = (char*)realloc(buffer_, new_len);
+    assert(buffer_);
+    if (!buffer_) {
+      buffer_len_ = 0;
+      return ENOMEM;
+    }
+    buffer_len_ = new_len;
+  }
 
   int bytes_left = count;
   while (bytes_left > 0) {
-    int bytes_to_read =
-        std::min(static_cast<size_t>(bytes_left), buffer_.size());
+    int bytes_to_read = std::min(bytes_left, buffer_len_);
     int bytes_read;
     Error error = ReadResponseToBuffer(
-        loader, buffer_.data(), bytes_to_read, &bytes_read);
+        loader, buffer_, bytes_to_read, &bytes_read);
     if (error)
       return error;
 

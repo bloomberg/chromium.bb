@@ -86,7 +86,8 @@ class HttpFsNode : public Node {
                              int* out_bytes);
 
   std::string url_;
-  std::vector<char> buffer_;
+  char* buffer_;
+  int buffer_len_;
 
   bool cache_content_;
   bool has_cached_size_;

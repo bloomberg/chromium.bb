@@ -8,7 +8,6 @@
 #include <string.h>
 
 #include <list>
-#include <vector>
 
 #include "nacl_io/fifo_interface.h"
 #include "ppapi/c/pp_resource.h"

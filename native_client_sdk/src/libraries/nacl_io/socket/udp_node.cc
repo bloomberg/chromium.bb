@@ -96,10 +96,7 @@ class UdpRecvWork : public UdpWork {
  public:
   explicit UdpRecvWork(const ScopedUdpEventEmitter& emitter)
       : UdpWork(emitter) {
-    data_ = new char[kMaxPacketSize];
   }
-
-  ~UdpRecvWork() { delete[] data_; }
 
   virtual bool Start(int32_t val) {
     AUTO_LOCK(emitter_->GetLock());
@@ -146,7 +143,7 @@ class UdpRecvWork : public UdpWork {
   }
 
  private:
-  char* data_;
+  char data_[kMaxPacketSize];
   PP_Resource addr_;
 };
 

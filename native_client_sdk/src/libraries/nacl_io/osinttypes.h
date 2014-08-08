@@ -34,4 +34,10 @@
 
 #endif
 
+#if !defined(__native_client__)
+#define PRIoff "ld"
+#else
+#define PRIoff "lld"
+#endif
+
 #endif  /* NACL_IO_OSINTTYPES_H_ */
