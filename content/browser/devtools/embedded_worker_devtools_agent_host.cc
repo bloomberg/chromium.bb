@@ -83,7 +83,7 @@ bool EmbeddedWorkerDevToolsAgentHost::OnMessageReceived(
 void EmbeddedWorkerDevToolsAgentHost::WorkerContextStarted() {
   if (state_ == WORKER_PAUSED_FOR_DEBUG_ON_START) {
     RenderProcessHost* rph = RenderProcessHost::FromID(worker_id_.first);
-    DevToolsManagerImpl::GetInstance()->Inspect(rph->GetBrowserContext(), this);
+    Inspect(rph->GetBrowserContext());
   } else if (state_ == WORKER_PAUSED_FOR_REATTACH) {
     DCHECK(IsAttached());
     state_ = WORKER_INSPECTED;
@@ -107,8 +107,7 @@ void EmbeddedWorkerDevToolsAgentHost::WorkerDestroyed() {
     std::string notification =
         DevToolsProtocol::CreateNotification(
             devtools::Worker::disconnectedFromWorker::kName, NULL)->Serialize();
-    DevToolsManagerImpl::GetInstance()->DispatchOnInspectorFrontend(
-        this, notification);
+    SendMessageToClient(notification);
     DetachFromWorker();
   }
   state_ = WORKER_TERMINATED;
@@ -147,8 +146,7 @@ void EmbeddedWorkerDevToolsAgentHost::WorkerCreated() {
 
 void EmbeddedWorkerDevToolsAgentHost::OnDispatchOnInspectorFrontend(
     const std::string& message) {
-  DevToolsManagerImpl::GetInstance()->DispatchOnInspectorFrontend(
-      this, message);
+  SendMessageToClient(message);
 }
 
 void EmbeddedWorkerDevToolsAgentHost::OnSaveAgentRuntimeState(

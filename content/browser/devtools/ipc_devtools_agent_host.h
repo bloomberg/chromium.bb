@@ -18,7 +18,7 @@ class CONTENT_EXPORT IPCDevToolsAgentHost : public DevToolsAgentHostImpl {
   // DevToolsAgentHostImpl implementation.
   virtual void Attach() OVERRIDE;
   virtual void Detach() OVERRIDE;
-  virtual void DispatchOnInspectorBackend(const std::string& message) OVERRIDE;
+  virtual void DispatchProtocolMessage(const std::string& message) OVERRIDE;
   virtual void InspectElement(int x, int y) OVERRIDE;
 
  protected:

@@ -127,7 +127,7 @@ WebContents* RenderViewDevToolsAgentHost::GetWebContents() {
   return web_contents();
 }
 
-void RenderViewDevToolsAgentHost::DispatchOnInspectorBackend(
+void RenderViewDevToolsAgentHost::DispatchProtocolMessage(
     const std::string& message) {
   std::string error_message;
 
@@ -161,7 +161,7 @@ void RenderViewDevToolsAgentHost::DispatchOnInspectorBackend(
     }
   }
 
-  IPCDevToolsAgentHost::DispatchOnInspectorBackend(message);
+  IPCDevToolsAgentHost::DispatchProtocolMessage(message);
 }
 
 void RenderViewDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {
@@ -180,7 +180,7 @@ void RenderViewDevToolsAgentHost::OnClientAttached() {
   // TODO(kaznacheev): Move this call back to DevToolsManagerImpl when
   // extensions::ProcessManager no longer relies on this notification.
   if (!reattaching_)
-    DevToolsManagerImpl::GetInstance()->NotifyObservers(this, true);
+    DevToolsAgentHostImpl::NotifyCallbacks(this, true);
 }
 
 void RenderViewDevToolsAgentHost::InnerOnClientAttached() {
@@ -212,7 +212,7 @@ void RenderViewDevToolsAgentHost::OnClientDetached() {
   // TODO(kaznacheev): Move this call back to DevToolsManagerImpl when
   // extensions::ProcessManager no longer relies on this notification.
   if (!reattaching_)
-    DevToolsManagerImpl::GetInstance()->NotifyObservers(this, false);
+    DevToolsAgentHostImpl::NotifyCallbacks(this, false);
 }
 
 void RenderViewDevToolsAgentHost::ClientDetachedFromRenderer() {
@@ -286,7 +286,7 @@ void RenderViewDevToolsAgentHost::RenderViewDeleted(RenderViewHost* rvh) {
 
   DCHECK(render_view_host_);
   scoped_refptr<RenderViewDevToolsAgentHost> protect(this);
-  NotifyCloseListener();
+  HostClosed();
   ClearRenderViewHost();
   Release();
 }
@@ -385,8 +385,7 @@ void RenderViewDevToolsAgentHost::RenderViewCrashed() {
   scoped_refptr<DevToolsProtocol::Notification> notification =
       DevToolsProtocol::CreateNotification(
           devtools::Inspector::targetCrashed::kName, NULL);
-  DevToolsManagerImpl::GetInstance()->
-      DispatchOnInspectorFrontend(this, notification->Serialize());
+  SendMessageToClient(notification->Serialize());
 }
 
 bool RenderViewDevToolsAgentHost::DispatchIPCMessage(
@@ -447,8 +446,7 @@ void RenderViewDevToolsAgentHost::OnDispatchOnInspectorFrontend(
   if (notification) {
     tracing_handler_->HandleNotification(notification);
   }
-  DevToolsManagerImpl::GetInstance()->DispatchOnInspectorFrontend(
-      this, message);
+  SendMessageToClient(message);
 }
 
 }  // namespace content

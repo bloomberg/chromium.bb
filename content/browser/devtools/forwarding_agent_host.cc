@@ -17,12 +17,11 @@ ForwardingAgentHost::~ForwardingAgentHost() {
 }
 
 void ForwardingAgentHost::DispatchOnClientHost(const std::string& message) {
-  DevToolsManagerImpl::GetInstance()->DispatchOnInspectorFrontend(
-      this, message);
+  SendMessageToClient(message);
 }
 
 void ForwardingAgentHost::ConnectionClosed() {
-  NotifyCloseListener();
+  HostClosed();
 }
 
 void ForwardingAgentHost::Attach() {
@@ -33,7 +32,7 @@ void ForwardingAgentHost::Detach() {
   delegate_->Detach();
 }
 
-void ForwardingAgentHost::DispatchOnInspectorBackend(
+void ForwardingAgentHost::DispatchProtocolMessage(
     const std::string& message) {
   delegate_->SendMessageToBackend(message);
 }

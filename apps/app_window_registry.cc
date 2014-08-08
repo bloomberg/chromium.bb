@@ -13,7 +13,6 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
@@ -72,13 +71,11 @@ AppWindowRegistry::AppWindowRegistry(content::BrowserContext* context)
     : context_(context),
       devtools_callback_(base::Bind(&AppWindowRegistry::OnDevToolsStateChanged,
                                     base::Unretained(this))) {
-  content::DevToolsManager::GetInstance()->AddAgentStateCallback(
-      devtools_callback_);
+  content::DevToolsAgentHost::AddAgentStateCallback(devtools_callback_);
 }
 
 AppWindowRegistry::~AppWindowRegistry() {
-  content::DevToolsManager::GetInstance()->RemoveAgentStateCallback(
-      devtools_callback_);
+  content::DevToolsAgentHost::RemoveAgentStateCallback(devtools_callback_);
 }
 
 // static

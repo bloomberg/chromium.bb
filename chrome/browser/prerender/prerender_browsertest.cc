@@ -67,8 +67,6 @@
 #include "chrome/test/base/uma_histogram_helper.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_client_host.h"
-#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -100,8 +98,6 @@
 
 using content::BrowserThread;
 using content::DevToolsAgentHost;
-using content::DevToolsClientHost;
-using content::DevToolsManager;
 using content::NavigationController;
 using content::OpenURLParams;
 using content::Referrer;
@@ -746,13 +742,14 @@ class TestSafeBrowsingServiceFactory : public SafeBrowsingServiceFactory {
 };
 #endif
 
-class FakeDevToolsClientHost : public DevToolsClientHost {
+class FakeDevToolsClient : public content::DevToolsAgentHostClient {
  public:
-  FakeDevToolsClientHost() {}
-  virtual ~FakeDevToolsClientHost() {}
-  virtual void InspectedContentsClosing() OVERRIDE {}
-  virtual void DispatchOnInspectorFrontend(const std::string& msg) OVERRIDE {}
-  virtual void ReplacedWithAnotherClient() OVERRIDE {}
+  FakeDevToolsClient() {}
+  virtual ~FakeDevToolsClient() {}
+  virtual void DispatchProtocolMessage(
+      DevToolsAgentHost* agent_host, const std::string& message) OVERRIDE {}
+  virtual void AgentHostClosed(
+      DevToolsAgentHost* agent_host, bool replaced) OVERRIDE {}
 };
 
 class RestorePrerenderMode {
@@ -3297,13 +3294,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       current_browser()->tab_strip_model()->GetActiveWebContents();
   scoped_refptr<DevToolsAgentHost> agent(
       DevToolsAgentHost::GetOrCreateFor(web_contents));
-  DevToolsManager* manager = DevToolsManager::GetInstance();
-  FakeDevToolsClientHost client_host;
-  manager->RegisterDevToolsClientHostFor(agent.get(), &client_host);
+  FakeDevToolsClient client;
+  agent->AttachClient(&client);
   const char* url = "files/prerender/prerender_page.html";
   PrerenderTestURL(url, FINAL_STATUS_DEVTOOLS_ATTACHED, 1);
   NavigateToURLWithDisposition(url, CURRENT_TAB, false);
-  manager->ClientHostClosing(&client_host);
+  agent->DetachClient();
 }
 
 // Validate that the sessionStorage namespace remains the same when swapping

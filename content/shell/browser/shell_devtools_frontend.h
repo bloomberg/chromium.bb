@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -25,7 +24,7 @@ class WebContents;
 
 class ShellDevToolsFrontend : public WebContentsObserver,
                               public DevToolsFrontendHost::Delegate,
-                              public DevToolsClientHost {
+                              public DevToolsAgentHostClient {
  public:
   static ShellDevToolsFrontend* Show(WebContents* inspected_contents);
   static ShellDevToolsFrontend* Show(WebContents* inspected_contents,
@@ -54,10 +53,11 @@ class ShellDevToolsFrontend : public WebContentsObserver,
   virtual void HandleMessageFromDevToolsFrontendToBackend(
       const std::string& message) OVERRIDE;
 
-  // content::DevToolsClientHost implementation.
-  virtual void DispatchOnInspectorFrontend(const std::string& message) OVERRIDE;
-  virtual void InspectedContentsClosing() OVERRIDE;
-  virtual void ReplacedWithAnotherClient() OVERRIDE {}
+  // content::DevToolsAgentHostClient implementation.
+  virtual void DispatchProtocolMessage(
+      DevToolsAgentHost* agent_host, const std::string& message) OVERRIDE;
+  virtual void AgentHostClosed(
+      DevToolsAgentHost* agent_host, bool replaced) OVERRIDE;
 
   Shell* frontend_shell_;
   scoped_refptr<DevToolsAgentHost> agent_host_;
