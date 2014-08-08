@@ -204,8 +204,13 @@ void WebEmbeddedWorkerImpl::terminateWorkerContext()
     if (m_askedToTerminate)
         return;
     m_askedToTerminate = true;
-    if (m_mainScriptLoader)
+    if (m_mainScriptLoader) {
         m_mainScriptLoader->cancel();
+        m_mainScriptLoader.clear();
+        // This may delete 'this'.
+        m_workerContextClient->workerContextFailedToStart();
+        return;
+    }
     if (m_pauseAfterDownloadState == IsPausedAfterDownload) {
         // This may delete 'this'.
         m_workerContextClient->workerContextFailedToStart();
@@ -337,7 +342,10 @@ void WebEmbeddedWorkerImpl::onScriptLoaderFinished()
 {
     ASSERT(m_mainScriptLoader);
 
-    if (m_mainScriptLoader->failed() || m_askedToTerminate) {
+    if (m_askedToTerminate)
+        return;
+
+    if (m_mainScriptLoader->failed()) {
         m_mainScriptLoader.clear();
         // This may delete 'this'.
         m_workerContextClient->workerContextFailedToStart();
