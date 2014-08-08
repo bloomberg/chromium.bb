@@ -22,7 +22,7 @@ LLVM_WIN_REVISION = 'HEAD'
 # in bringup. Use a pinned revision to make it slightly more stable.
 if (re.search(r'\b(asan)=1', os.environ.get('GYP_DEFINES', '')) and
     not 'LLVM_FORCE_HEAD_REVISION' in os.environ):
-  LLVM_WIN_REVISION = '214846'
+  LLVM_WIN_REVISION = '215204'
 
 # Path constants. (All of these should be absolute paths.)
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
