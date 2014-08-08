@@ -847,11 +847,6 @@ void InspectorResourceAgent::setHostId(const String& hostId)
 
 bool InspectorResourceAgent::fetchResourceContent(Document* document, const KURL& url, String* content, bool* base64Encoded)
 {
-    if (m_pageAgent->getEditedResourceContent(url, content)) {
-        *base64Encoded = false;
-        return true;
-    }
-
     // First try to fetch content from the cached resource.
     Resource* cachedResource = document->fetcher()->cachedResource(url);
     if (!cachedResource)

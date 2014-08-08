@@ -1553,9 +1553,13 @@ bool InspectorStyleSheet::resourceStyleSheetText(String* result) const
     if (!ownerDocument())
         return false;
 
+    KURL url(ParsedURLString, m_pageStyleSheet->href());
+    if (m_pageAgent->getEditedResourceContent(url, result))
+        return true;
+
     bool base64Encoded;
-    bool success = m_resourceAgent->fetchResourceContent(ownerDocument(), KURL(ParsedURLString, m_pageStyleSheet->href()), result, &base64Encoded) && !base64Encoded;
-    return success;
+    bool success = m_resourceAgent->fetchResourceContent(ownerDocument(), url, result, &base64Encoded);
+    return success && !base64Encoded;
 }
 
 Element* InspectorStyleSheet::ownerStyleElement() const
