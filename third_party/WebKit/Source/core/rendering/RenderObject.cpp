@@ -65,6 +65,7 @@
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderMarquee.h"
 #include "core/rendering/RenderObjectInlines.h"
+#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/RenderTableCaption.h"
 #include "core/rendering/RenderTableCell.h"
@@ -1422,13 +1423,11 @@ const RenderLayerModelObject* RenderObject::containerForPaintInvalidation() cons
 const RenderLayerModelObject* RenderObject::enclosingCompositedContainer() const
 {
     RenderLayerModelObject* container = 0;
-    if (view()->usesCompositing()) {
-        // FIXME: CompositingState is not necessarily up to date for many callers of this function.
-        DisableCompositingQueryAsserts disabler;
+    // FIXME: CompositingState is not necessarily up to date for many callers of this function.
+    DisableCompositingQueryAsserts disabler;
 
-        if (RenderLayer* compositingLayer = enclosingLayer()->enclosingLayerForPaintInvalidation())
-            container = compositingLayer->renderer();
-    }
+    if (RenderLayer* compositingLayer = enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
+        container = compositingLayer->renderer();
     return container;
 }
 
@@ -1449,7 +1448,14 @@ const RenderLayerModelObject* RenderObject::adjustCompositedContainerForSpecialA
         if (!paintInvalidationContainer || paintInvalidationContainer->flowThreadContainingBlock() != parentRenderFlowThread)
             paintInvalidationContainer = parentRenderFlowThread;
     }
-    return paintInvalidationContainer ? paintInvalidationContainer : view();
+
+    if (paintInvalidationContainer)
+        return paintInvalidationContainer;
+
+    RenderView* renderView = view();
+    while (renderView->frame()->ownerRenderer())
+        renderView = renderView->frame()->ownerRenderer()->view();
+    return renderView;
 }
 
 bool RenderObject::isPaintInvalidationContainer() const
@@ -1508,14 +1514,12 @@ void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* p
         return;
     }
 
-    RenderView* v = view();
     if (paintInvalidationContainer->isRenderView()) {
-        ASSERT(paintInvalidationContainer == v);
-        v->invalidatePaintForRectangle(r);
+        toRenderView(paintInvalidationContainer)->invalidatePaintForRectangle(r);
         return;
     }
 
-    if (v->usesCompositing()) {
+    if (view()->usesCompositing()) {
         ASSERT(paintInvalidationContainer->hasLayer() && (paintInvalidationContainer->layer()->compositingState() == PaintsIntoOwnBacking || paintInvalidationContainer->layer()->compositingState() == PaintsIntoGroupedBacking));
         paintInvalidationContainer->layer()->repainter().setBackingNeedsRepaintInRect(r);
     }
@@ -1744,6 +1748,11 @@ LayoutRect RenderObject::rectWithOutlineForPaintInvalidation(const RenderLayerMo
     LayoutRect r(clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState));
     r.inflate(outlineWidth);
     return r;
+}
+
+LayoutRect RenderObject::absoluteClippedOverflowRect() const
+{
+    return clippedOverflowRectForPaintInvalidation(view());
 }
 
 LayoutRect RenderObject::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject*, const PaintInvalidationState*) const

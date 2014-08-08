@@ -285,10 +285,6 @@ void RenderView::mapLocalToContainer(const RenderLayerModelObject* repaintContai
             return;
         }
     }
-
-    // If a container was specified, and was not 0 or the RenderView,
-    // then we should have found it by now.
-    ASSERT_ARG(repaintContainer, !repaintContainer);
 }
 
 const RenderObject* RenderView::pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
@@ -429,8 +425,12 @@ void RenderView::invalidateTreeIfNeeded(const PaintInvalidationState& paintInval
 
     // We specifically need to repaint the viewRect since other renderers
     // short-circuit on full-repaint.
-    if (doingFullPaintInvalidation() && !viewRect().isEmpty())
-        invalidatePaintForRectangle(viewRect());
+    LayoutRect dirtyRect = viewRect();
+    if (doingFullPaintInvalidation() && !dirtyRect.isEmpty()) {
+        const RenderLayerModelObject* paintInvalidationContainer = &paintInvalidationState.paintInvalidationContainer();
+        mapRectToPaintInvalidationBacking(paintInvalidationContainer, dirtyRect);
+        invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRect, InvalidationFull);
+    }
 
     RenderBlock::invalidateTreeIfNeeded(paintInvalidationState);
 }
@@ -442,24 +442,12 @@ void RenderView::invalidatePaintForRectangle(const LayoutRect& paintInvalidation
     if (document().printing() || !m_frameView)
         return;
 
-    // We always just invalidate the root view, since we could be an iframe that is clipped out
-    // or even invisible.
-    Element* owner = document().ownerElement();
+    ASSERT(layer()->compositingState() == PaintsIntoOwnBacking || !frame()->ownerRenderer());
+
     if (layer()->compositingState() == PaintsIntoOwnBacking) {
         layer()->repainter().setBackingNeedsRepaintInRect(paintInvalidationRect);
-    } else if (!owner) {
+    } else {
         m_frameView->contentRectangleForPaintInvalidation(pixelSnappedIntRect(paintInvalidationRect));
-    } else if (RenderBox* obj = owner->renderBox()) {
-        // Intersect the viewport with the paint invalidation rect.
-        LayoutRect viewRectangle = viewRect();
-        LayoutRect rectToInvalidate = intersection(paintInvalidationRect, viewRectangle);
-
-        // Adjust for scroll offset of the view.
-        rectToInvalidate.moveBy(-viewRectangle.location());
-
-        // Adjust for frame border.
-        rectToInvalidate.moveBy(obj->contentBoxRect().location());
-        obj->invalidatePaintRectangle(rectToInvalidate);
     }
 }
 
@@ -476,10 +464,6 @@ void RenderView::invalidatePaintForViewAndCompositedLayers()
 
 void RenderView::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, bool fixed, const PaintInvalidationState* paintInvalidationState) const
 {
-    // If a container was specified, and was not 0 or the RenderView,
-    // then we should have found it by now.
-    ASSERT_ARG(paintInvalidationContainer, !paintInvalidationContainer || paintInvalidationContainer == this);
-
     if (document().printing())
         return;
 
@@ -503,6 +487,27 @@ void RenderView::mapRectToPaintInvalidationBacking(const RenderLayerModelObject*
     // Apply our transform if we have one (because of full page zooming).
     if (!paintInvalidationContainer && layer() && layer()->transform())
         rect = layer()->transform()->mapRect(rect);
+
+    ASSERT(paintInvalidationContainer);
+
+    if (paintInvalidationContainer == this)
+        return;
+
+    Element* owner = document().ownerElement();
+    if (!owner)
+        return;
+    if (RenderBox* obj = owner->renderBox()) {
+        // Intersect the viewport with the paint invalidation rect.
+        LayoutRect viewRectangle = viewRect();
+        rect.intersect(viewRectangle);
+
+        // Adjust for scroll offset of the view.
+        rect.moveBy(-viewRectangle.location());
+
+        // Adjust for frame border.
+        rect.moveBy(obj->contentBoxRect().location());
+        obj->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect);
+    }
 }
 
 void RenderView::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accumulatedOffset) const
