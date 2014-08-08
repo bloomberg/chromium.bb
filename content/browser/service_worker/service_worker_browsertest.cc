@@ -25,6 +25,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -670,7 +671,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, SyncEventHandled) {
   EXPECT_EQ(200, response.status_code);
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, DISABLED_Reload) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, Reload) {
   const std::string kPageUrl = "/service_worker/reload.html";
   const std::string kWorkerUrl = "/service_worker/fetch_event_reload.js";
   {
@@ -683,12 +684,18 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, DISABLED_Reload) {
         base::Bind(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
     observer->Wait();
   }
-  NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl));
-  EXPECT_EQ(base::UTF8ToUTF16("reload=false"),
-            shell()->web_contents()->GetTitle());
-  ReloadBlockUntilNavigationsComplete(shell(), 1);
-  EXPECT_EQ(base::UTF8ToUTF16("reload=true"),
-            shell()->web_contents()->GetTitle());
+  {
+    const base::string16 title = base::ASCIIToUTF16("reload=false");
+    TitleWatcher title_watcher(shell()->web_contents(), title);
+    NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl));
+    EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  }
+  {
+    const base::string16 title = base::ASCIIToUTF16("reload=true");
+    TitleWatcher title_watcher(shell()->web_contents(), title);
+    ReloadBlockUntilNavigationsComplete(shell(), 1);
+    EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  }
   shell()->Close();
   {
     base::RunLoop run_loop;
