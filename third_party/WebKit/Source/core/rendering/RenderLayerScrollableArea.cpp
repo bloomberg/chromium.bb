@@ -355,11 +355,14 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::willScrollLayer(&box());
 
+    const RenderLayerModelObject* repaintContainer = box().containerForPaintInvalidation();
+
     // Update the positions of our child layers (if needed as only fixed layers should be impacted by a scroll).
     // We don't update compositing layers, because we need to do a deep update from the compositing ancestor.
     if (!frameView->isInPerformLayout()) {
         // If we're in the middle of layout, we'll just update layers once layout has finished.
-        layer()->updateLayerPositionsAfterOverflowScroll();
+        layer()->clipper().clearClipRectsIncludingDescendants();
+        box().setPreviousPaintInvalidationRect(box().boundsRectForPaintInvalidation(repaintContainer));
         // Update regions, scrolling may change the clip of a particular region.
         frameView->updateAnnotatedRegions();
         // FIXME: We shouldn't call updateWidgetPositions() here since it might tear down the render tree,
@@ -369,7 +372,6 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
         updateCompositingLayersAfterScroll();
     }
 
-    const RenderLayerModelObject* repaintContainer = box().containerForPaintInvalidation();
     // The caret rect needs to be invalidated after scrolling
     frame->selection().setCaretRectNeedsUpdate();
 
