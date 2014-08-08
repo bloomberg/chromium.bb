@@ -1,8 +1,0 @@
-This test checks that moving a positioned element with positioned children invalidates correctly.
-The image below should be completely invalidated.
-
-(repaint rects
-  (rect 8 64 114 237)
-  (rect 8 64 214 237)
-)
-

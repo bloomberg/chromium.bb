@@ -1,1 +1,0 @@
-Test for crbug.com/305216: Borders for CSS tables don't display when border-radius is used. If this test passes, rounded black borders will be shown. Otherwise, no black borders will be shown.

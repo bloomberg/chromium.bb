@@ -1,8 +1,0 @@
-This tests that we repaint the mute button when we change the volume
-
-(repaint rects
-  (rect 543 498 35 30)
-  (rect 578 501 24 24)
-  (rect 578 501 89 24)
-)
-

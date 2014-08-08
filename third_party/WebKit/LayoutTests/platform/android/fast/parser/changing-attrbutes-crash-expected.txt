@@ -1,2 +1,0 @@
-CONSOLE ERROR: line 1: Error: Problem parsing points="foo"
-This test passes if it doesn't crash.

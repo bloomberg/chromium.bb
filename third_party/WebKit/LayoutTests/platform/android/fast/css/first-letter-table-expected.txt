@@ -1,7 +1,0 @@
-This test is verifying that adding content that uses first letter into a table will work correctly (i.e. not crash).
-a
-Test
-my text content
-my text content
-my text content
-my text content

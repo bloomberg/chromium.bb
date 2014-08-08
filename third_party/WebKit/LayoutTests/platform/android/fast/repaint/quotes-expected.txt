@@ -1,8 +1,0 @@
-quote 1
-quote 2
-(repaint rects
-  (rect 8 24 784 16)
-  (rect 8 24 784 16)
-  (rect 8 24 784 16)
-)
-

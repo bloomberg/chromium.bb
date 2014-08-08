@@ -1,7 +1,0 @@
-Tests that setting an outline or a border of 0 on an element without a border or outline doesn't repaint.
-
-(repaint rects
-  (rect 10 10 200 200)
-  (rect 10 10 100 100)
-)
-

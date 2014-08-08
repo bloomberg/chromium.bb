@@ -1,5 +1,0 @@
- (repaint rects
-  (rect 1 -7 314 314)
-  (rect 1 -7 314 314)
-)
-

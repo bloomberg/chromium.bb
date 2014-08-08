@@ -1,8 +1,0 @@
-A	A	A
-A	A	A
-(repaint rects
-  (rect 8 8 200 200)
-  (rect 8 8 200 200)
-  (rect 8 8 200 200)
-)
-
