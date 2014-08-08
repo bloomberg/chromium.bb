@@ -713,6 +713,7 @@ void PopupListBox::updateFromElement()
         PopupMenuStyle style = m_popupClient->itemStyle(i);
         m_items[i]->textDirection = style.textDirection();
         m_items[i]->hasTextDirectionOverride = style.hasTextDirectionOverride();
+        m_items[i]->displayNone = style.isDisplayNone();
     }
 
     m_selectedIndex = m_popupClient->selectedIndex();

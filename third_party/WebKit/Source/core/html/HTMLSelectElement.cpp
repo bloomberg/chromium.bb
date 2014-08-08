@@ -36,6 +36,7 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeListsNodeData.h"
+#include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/events/GestureEvent.h"
 #include "core/events/KeyboardEvent.h"
@@ -523,6 +524,8 @@ int HTMLSelectElement::nextValidIndex(int listIndex, SkipDirection direction, in
         --skip;
         HTMLElement* element = listItems[listIndex];
         if (!isHTMLOptionElement(*element))
+            continue;
+        if (toHTMLOptionElement(*element).isDisplayNone())
             continue;
         if (element->isDisabledFormControl())
             continue;

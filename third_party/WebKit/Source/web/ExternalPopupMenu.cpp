@@ -126,7 +126,7 @@ void ExternalPopupMenu::disconnectClient()
 void ExternalPopupMenu::didChangeSelection(int index)
 {
     if (m_popupMenuClient)
-        m_popupMenuClient->selectionChanged(index);
+        m_popupMenuClient->selectionChanged(toPopupMenuItemIndex(index));
 }
 
 void ExternalPopupMenu::didAcceptIndex(int index)
@@ -134,11 +134,12 @@ void ExternalPopupMenu::didAcceptIndex(int index)
     // Calling methods on the PopupMenuClient might lead to this object being
     // derefed. This ensures it does not get deleted while we are running this
     // method.
+    int popupMenuItemIndex = toPopupMenuItemIndex(index);
     RefPtr<ExternalPopupMenu> guard(this);
 
     if (m_popupMenuClient) {
         m_popupMenuClient->popupDidHide();
-        m_popupMenuClient->valueChanged(index);
+        m_popupMenuClient->valueChanged(popupMenuItemIndex);
     }
     m_webExternalPopupMenu = 0;
 }
@@ -159,7 +160,7 @@ void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices)
         m_popupMenuClient->valueChanged(static_cast<unsigned>(-1), true);
     else {
         for (size_t i = 0; i < indices.size(); ++i)
-            m_popupMenuClient->listBoxSelectItem(indices[i], (i > 0), false, (i == indices.size() - 1));
+            m_popupMenuClient->listBoxSelectItem(toPopupMenuItemIndex(indices[i]), (i > 0), false, (i == indices.size() - 1));
     }
 
     // The call to valueChanged above might have lead to a call to
@@ -183,9 +184,14 @@ void ExternalPopupMenu::didCancel()
 void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo* info)
 {
     int itemCount = m_popupMenuClient->listSize();
-    WebVector<WebMenuItemInfo> items(static_cast<size_t>(itemCount));
+    int count = 0;
+    Vector<WebMenuItemInfo> items(static_cast<size_t>(itemCount));
     for (int i = 0; i < itemCount; ++i) {
-        WebMenuItemInfo& popupItem = items[i];
+        PopupMenuStyle style = m_popupMenuClient->itemStyle(i);
+        if (style.isDisplayNone())
+            continue;
+
+        WebMenuItemInfo& popupItem = items[count++];
         popupItem.label = m_popupMenuClient->itemText(i);
         popupItem.toolTip = m_popupMenuClient->itemToolTip(i);
         if (m_popupMenuClient->itemIsSeparator(i))
@@ -196,7 +202,6 @@ void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo* info)
             popupItem.type = WebMenuItemInfo::Option;
         popupItem.enabled = m_popupMenuClient->itemIsEnabled(i);
         popupItem.checked = m_popupMenuClient->itemIsSelected(i);
-        PopupMenuStyle style = m_popupMenuClient->itemStyle(i);
         if (style.textDirection() == blink::RTL)
             popupItem.textDirection = WebTextDirectionRightToLeft;
         else
@@ -206,10 +211,45 @@ void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo* info)
 
     info->itemHeight = m_popupMenuClient->menuStyle().font().fontMetrics().height();
     info->itemFontSize = static_cast<int>(m_popupMenuClient->menuStyle().font().fontDescription().computedSize());
-    info->selectedIndex = m_popupMenuClient->selectedIndex();
+    info->selectedIndex = toExternalPopupMenuItemIndex(m_popupMenuClient->selectedIndex());
     info->rightAligned = m_popupMenuClient->menuStyle().textDirection() == blink::RTL;
     info->allowMultipleSelection = m_popupMenuClient->multiple();
-    info->items.swap(items);
+    info->items = items;
+}
+
+int ExternalPopupMenu::toPopupMenuItemIndex(int externalPopupMenuItemIndex)
+{
+    ASSERT(m_popupMenuClient);
+    if (externalPopupMenuItemIndex < 0)
+        return externalPopupMenuItemIndex;
+
+    int itemCount = m_popupMenuClient->listSize();
+    int indexTracker = 0;
+    for (int i = 0; i < itemCount ; ++i) {
+        if (m_popupMenuClient->itemStyle(i).isDisplayNone())
+            continue;
+        if (indexTracker++ == externalPopupMenuItemIndex)
+            return i;
+    }
+    return -1;
+}
+
+int ExternalPopupMenu::toExternalPopupMenuItemIndex(int popupMenuItemIndex)
+{
+    ASSERT(m_popupMenuClient);
+    if (popupMenuItemIndex < 0)
+        return popupMenuItemIndex;
+
+    int itemCount = m_popupMenuClient->listSize();
+    int indexTracker = 0;
+    for (int i = 0; i < itemCount; ++i) {
+        if (m_popupMenuClient->itemStyle(i).isDisplayNone())
+            continue;
+        if (popupMenuItemIndex == i)
+            return indexTracker;
+        ++indexTracker;
+    }
+    return -1;
 }
 
 }

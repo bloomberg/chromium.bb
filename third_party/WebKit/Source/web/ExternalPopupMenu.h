@@ -77,6 +77,8 @@ private:
     // Fills |info| with the popup menu information contained in the
     // blink::PopupMenuClient associated with this ExternalPopupMenu.
     void getPopupMenuInfo(WebPopupMenuInfo* info);
+    int toPopupMenuItemIndex(int index);
+    int toExternalPopupMenuItemIndex(int index);
 
     blink::PopupMenuClient* m_popupMenuClient;
     RefPtr<blink::FrameView> m_frameView;

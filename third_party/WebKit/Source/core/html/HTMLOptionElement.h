@@ -67,6 +67,7 @@ public:
     HTMLFormElement* form() const;
     bool spatialNavigationFocused() const;
 
+    bool isDisplayNone() const;
 private:
     explicit HTMLOptionElement(Document&);
     virtual ~HTMLOptionElement();

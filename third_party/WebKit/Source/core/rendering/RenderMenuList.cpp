@@ -498,7 +498,8 @@ PopupMenuStyle RenderMenuList::itemStyle(unsigned listIndex) const
 
     RenderStyle* style = element->renderStyle() ? element->renderStyle() : element->computedStyle();
     return style ? PopupMenuStyle(resolveColor(style, CSSPropertyColor), itemBackgroundColor, style->font(), style->visibility() == VISIBLE,
-        style->display() == NONE, style->textIndent(), style->direction(), isOverride(style->unicodeBidi()),
+        isHTMLOptionElement(*element) ? toHTMLOptionElement(*element).isDisplayNone() : style->display() == NONE,
+        style->textIndent(), style->direction(), isOverride(style->unicodeBidi()),
         itemHasCustomBackgroundColor ? PopupMenuStyle::CustomBackgroundColor : PopupMenuStyle::DefaultBackgroundColor) : menuStyle();
 }
 

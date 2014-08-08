@@ -82,6 +82,7 @@ struct PopupItem {
     blink::TextDirection textDirection;
     bool hasTextDirectionOverride;
     bool enabled;
+    bool displayNone;
 };
 
 // This class uses WebCore code to paint and handle events for a drop-down list

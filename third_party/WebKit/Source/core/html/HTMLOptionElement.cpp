@@ -397,4 +397,22 @@ bool HTMLOptionElement::spatialNavigationFocused() const
     return select->spatialNavigationFocusedOption() == this;
 }
 
+bool HTMLOptionElement::isDisplayNone() const
+{
+    // If m_style is not set, then the node is still unattached.
+    // We have to wait till it gets attached to read the display property.
+    if (!m_style)
+        return false;
+
+    if (m_style->display() != NONE) {
+        Element* parent = parentElement();
+        ASSERT(parent);
+        if (isHTMLOptGroupElement(*parent)) {
+            RenderStyle* parentStyle = parent->renderStyle() ? parent->renderStyle() : parent->computedStyle();
+            return !parentStyle || parentStyle->display() == NONE;
+        }
+    }
+    return m_style->display() == NONE;
+}
+
 } // namespace blink

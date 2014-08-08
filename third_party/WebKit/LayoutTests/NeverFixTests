@@ -66,6 +66,7 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 
 # Mac's popup behavior is different.
 [ Mac ] fast/forms/select/menulist-onchange-fired-with-key-up-down.html [ WontFix ]
+[ Mac ] fast/forms/select/popup-with-display-none-optgroup.html [ WontFix ]
 
 # Chromium does not support PDF content in <img> tags.
 [ Win Linux ] compositing/images/direct-pdf-image.html [ WontFix ]
