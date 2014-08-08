@@ -185,6 +185,9 @@ class InputMethodManagerImpl : public InputMethodManager,
   // those created by extension.
   std::map<std::string, InputMethodDescriptor> extra_input_methods_;
 
+  // The pending input method id for delayed 3rd party IME enabling.
+  std::string pending_input_method_id_;
+
   // The candidate window.  This will be deleted when the APP_TERMINATING
   // message is sent.
   scoped_ptr<CandidateWindowController> candidate_window_controller_;
