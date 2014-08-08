@@ -14,8 +14,8 @@
 
 class SkBitmap;
 
-namespace cc {
-class Layer;
+namespace ui {
+class SystemUIResourceManager;
 }
 
 namespace content {
@@ -26,11 +26,11 @@ namespace content {
  */
 class OverscrollGlow {
  public:
-  // Create a new effect. If |enabled| is false, the effect will remain
-  // deactivated until explicitly enabled.
-  // Note: No resources will be allocated until the effect is both
-  //       enabled and an overscroll event has occurred.
-  static scoped_ptr<OverscrollGlow> Create(bool enabled);
+  // Create a new effect. |resource_manager| provides the resource for the
+  // effect. |resource_manager| must outlive the effect.  The effect is
+  // activated by default.
+  static scoped_ptr<OverscrollGlow> Create(
+      ui::SystemUIResourceManager* resource_manager);
 
   ~OverscrollGlow();
 
@@ -70,7 +70,7 @@ class OverscrollGlow {
  private:
   enum Axis { AXIS_X, AXIS_Y };
 
-  OverscrollGlow(bool enabled);
+  explicit OverscrollGlow(ui::SystemUIResourceManager* resource_manager);
 
   // Returns whether the effect is initialized.
   bool InitializeIfNecessary();
@@ -94,6 +94,7 @@ class OverscrollGlow {
   bool initialized_;
 
   scoped_refptr<cc::Layer> root_layer_;
+  ui::SystemUIResourceManager* resource_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(OverscrollGlow);
 };

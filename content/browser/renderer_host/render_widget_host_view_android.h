@@ -355,7 +355,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   const bool overscroll_effect_enabled_;
   // Used to render overscroll overlays.
-  // Note: |overscroll_effect_| will never be NULL, even if it's never enabled.
   scoped_ptr<OverscrollGlow> overscroll_effect_;
 
   // Provides gesture synthesis given a stream of touch events (derived from
