@@ -41,6 +41,27 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
     waiting_version_->RemovePotentialControllee(this);
   if (installing_version_)
     installing_version_->RemovePotentialControllee(this);
+  if (associated_registration_)
+    associated_registration_->RemoveListener(this);
+}
+
+void ServiceWorkerProviderHost::OnVersionAttributesChanged(
+    ServiceWorkerRegistration* registration,
+    ChangedVersionAttributesMask changed_mask,
+    const ServiceWorkerRegistrationInfo& info) {
+  if (changed_mask.installing_changed())
+    SetInstallingVersion(registration->installing_version());
+  if (changed_mask.waiting_changed())
+    SetWaitingVersion(registration->waiting_version());
+  if (changed_mask.active_changed())
+    SetActiveVersion(registration->active_version());
+}
+
+void ServiceWorkerProviderHost::OnRegistrationFailed(
+    ServiceWorkerRegistration* registration) {
+  DCHECK(associated_registration_);
+  DCHECK_EQ(registration->id(), associated_registration_->id());
+  UnassociateRegistration();
 }
 
 void ServiceWorkerProviderHost::SetDocumentUrl(const GURL& url) {
@@ -159,6 +180,29 @@ bool ServiceWorkerProviderHost::SetHostedVersionId(int64 version_id) {
   return true;
 }
 
+void ServiceWorkerProviderHost::AssociateRegistration(
+    ServiceWorkerRegistration* registration) {
+  DCHECK(CanAssociateRegistration(registration));
+  associated_registration_ = registration;
+  registration->AddListener(this);
+
+  SetActiveVersion(registration->active_version());
+  SetInstallingVersion(registration->installing_version());
+  SetWaitingVersion(registration->waiting_version());
+}
+
+void ServiceWorkerProviderHost::UnassociateRegistration() {
+  if (!associated_registration_)
+    return;
+  associated_registration_->RemoveListener(this);
+  associated_registration_ = NULL;
+
+  SetActiveVersion(NULL);
+  SetInstallingVersion(NULL);
+  SetWaitingVersion(NULL);
+  SetControllerVersion(NULL);
+}
+
 scoped_ptr<ServiceWorkerRequestHandler>
 ServiceWorkerProviderHost::CreateRequestHandler(
     ResourceType resource_type,
@@ -199,6 +243,17 @@ bool ServiceWorkerProviderHost::CanAssociateVersion(
   return !already_associated_version ||
          already_associated_version->registration_id() ==
               version->registration_id();
+}
+
+bool ServiceWorkerProviderHost::CanAssociateRegistration(
+    ServiceWorkerRegistration* registration) {
+  if (!context_)
+    return false;
+  if (running_hosted_version_)
+    return false;
+  if (!registration || associated_registration_)
+    return false;
+  return true;
 }
 
 void ServiceWorkerProviderHost::PostMessage(

@@ -247,6 +247,7 @@ void ServiceWorkerRegisterJob::RegisterAndContinue(
   set_registration(new ServiceWorkerRegistration(
       pattern_, script_url_, context_->storage()->NewRegistrationId(),
       context_));
+  AssociateProviderHostsToRegistration(registration());
   UpdateAndContinue();
 }
 
@@ -296,7 +297,6 @@ void ServiceWorkerRegisterJob::InstallAndContinue() {
 
   // "3. Set registration.installingWorker to worker."
   registration()->SetInstallingVersion(new_version());
-  AssociateInstallingVersionToDocuments(context_, new_version());
 
   // "4. Run the [[UpdateState]] algorithm passing registration.installingWorker
   // and "installing" as the arguments."
@@ -346,9 +346,7 @@ void ServiceWorkerRegisterJob::OnStoreRegistrationComplete(
 
   // "10. Set registration.waitingWorker to registration.installingWorker."
   // "11. Set registration.installingWorker to null."
-  DisassociateVersionFromDocuments(context_, new_version());
   registration()->SetWaitingVersion(new_version());
-  AssociateWaitingVersionToDocuments(context_, new_version());
 
   // "12. Run the [[UpdateState]] algorithm passing registration.waitingWorker
   // and "installed" as the arguments."
@@ -374,11 +372,12 @@ void ServiceWorkerRegisterJob::CompleteInternal(
   if (status != SERVICE_WORKER_OK) {
     if (registration()) {
       if (new_version()) {
-        DisassociateVersionFromDocuments(context_, new_version());
         registration()->UnsetVersion(new_version());
         new_version()->Doom();
       }
-      if (!registration()->active_version()) {
+      if (!registration()->waiting_version() &&
+          !registration()->active_version()) {
+        registration()->NotifyRegistrationFailed();
         context_->storage()->DeleteRegistration(
             registration()->id(),
             registration()->script_url().GetOrigin(),
@@ -453,76 +452,18 @@ void ServiceWorkerRegisterJob::OnCompareScriptResourcesComplete(
   new_version()->embedded_worker()->RemoveListener(this);
 }
 
-// static
-void ServiceWorkerRegisterJob::AssociateInstallingVersionToDocuments(
-    base::WeakPtr<ServiceWorkerContextCore> context,
-    ServiceWorkerVersion* version) {
-  DCHECK(context);
-  DCHECK(version);
-
+void ServiceWorkerRegisterJob::AssociateProviderHostsToRegistration(
+    ServiceWorkerRegistration* registration) {
+  DCHECK(registration);
   for (scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-           context->GetProviderHostIterator();
+           context_->GetProviderHostIterator();
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* host = it->GetProviderHost();
-    if (ServiceWorkerUtils::ScopeMatches(version->scope(),
+    if (ServiceWorkerUtils::ScopeMatches(registration->pattern(),
                                          host->document_url())) {
-      if (!host->CanAssociateVersion(version))
-        continue;
-      host->SetInstallingVersion(version);
+      if (host->CanAssociateRegistration(registration))
+        host->AssociateRegistration(registration);
     }
-  }
-}
-
-// static
-void ServiceWorkerRegisterJob::AssociateWaitingVersionToDocuments(
-    base::WeakPtr<ServiceWorkerContextCore> context,
-    ServiceWorkerVersion* version) {
-  DCHECK(context);
-  DCHECK(version);
-
-  for (scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-           context->GetProviderHostIterator();
-       !it->IsAtEnd(); it->Advance()) {
-    ServiceWorkerProviderHost* host = it->GetProviderHost();
-    if (ServiceWorkerUtils::ScopeMatches(version->scope(),
-                                         host->document_url())) {
-      if (!host->CanAssociateVersion(version))
-        continue;
-      host->SetWaitingVersion(version);
-    }
-  }
-}
-
-// static
-void ServiceWorkerRegisterJob::AssociateActiveVersionToDocuments(
-    base::WeakPtr<ServiceWorkerContextCore> context,
-    ServiceWorkerVersion* version) {
-  DCHECK(context);
-  DCHECK(version);
-
-  for (scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-           context->GetProviderHostIterator();
-       !it->IsAtEnd(); it->Advance()) {
-    ServiceWorkerProviderHost* host = it->GetProviderHost();
-    if (ServiceWorkerUtils::ScopeMatches(version->scope(),
-                                         host->document_url())) {
-      if (!host->CanAssociateVersion(version))
-        continue;
-      host->SetActiveVersion(version);
-    }
-  }
-}
-
-// static
-void ServiceWorkerRegisterJob::DisassociateVersionFromDocuments(
-    base::WeakPtr<ServiceWorkerContextCore> context,
-    ServiceWorkerVersion* version) {
-  DCHECK(context);
-  for (scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-           context->GetProviderHostIterator();
-       !it->IsAtEnd(); it->Advance()) {
-    ServiceWorkerProviderHost* host = it->GetProviderHost();
-    host->UnsetVersion(version);
   }
 }
 

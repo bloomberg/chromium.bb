@@ -896,6 +896,10 @@ class UpdateJobTestHelper
 
   UpdateJobTestHelper(int mock_render_process_id)
       : EmbeddedWorkerTestHelper(mock_render_process_id) {}
+  virtual ~UpdateJobTestHelper() {
+    if (registration_)
+      registration_->RemoveListener(this);
+  }
 
   ServiceWorkerStorage* storage() { return context()->storage(); }
   ServiceWorkerJobCoordinator* job_coordinator() {
@@ -917,6 +921,7 @@ class UpdateJobTestHelper
     EXPECT_TRUE(registration->active_version());
     EXPECT_FALSE(registration->installing_version());
     EXPECT_FALSE(registration->waiting_version());
+    registration_ = registration;
     return registration;
   }
 
@@ -963,6 +968,11 @@ class UpdateJobTestHelper
     attribute_change_log_.push_back(entry);
   }
 
+  virtual void OnRegistrationFailed(
+      ServiceWorkerRegistration* registration) OVERRIDE {
+    NOTREACHED();
+  }
+
   // ServiceWorkerVersion::Listener overrides
   virtual void OnVersionStateChanged(ServiceWorkerVersion* version) OVERRIDE {
     StateChangeLogEntry entry;
@@ -970,6 +980,8 @@ class UpdateJobTestHelper
     entry.status = version->status();
     state_change_log_.push_back(entry);
   }
+
+  scoped_refptr<ServiceWorkerRegistration> registration_;
 
   std::vector<AttributeChangeLogEntry> attribute_change_log_;
   std::vector<StateChangeLogEntry> state_change_log_;

@@ -47,15 +47,10 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     scoped_ptr<ServiceWorkerProviderHost> host2(new ServiceWorkerProviderHost(
         kRenderProcessId, 2 /* provider_id */,
         context_->AsWeakPtr(), NULL));
-    scoped_ptr<ServiceWorkerProviderHost> host3(new ServiceWorkerProviderHost(
-        kRenderProcessId, 3 /* provider_id */,
-        context_->AsWeakPtr(), NULL));
     provider_host1_ = host1->AsWeakPtr();
     provider_host2_ = host2->AsWeakPtr();
-    provider_host3_ = host3->AsWeakPtr();
     context_->AddProviderHost(make_scoped_ptr(host1.release()));
     context_->AddProviderHost(make_scoped_ptr(host2.release()));
-    context_->AddProviderHost(make_scoped_ptr(host3.release()));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -64,13 +59,24 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     context_.reset();
   }
 
+  void SetActiveVersion(
+      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+      ServiceWorkerVersion* version) {
+    provider_host->SetActiveVersion(version);
+  }
+
+  void SetWaitingVersion(
+      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+      ServiceWorkerVersion* version) {
+    provider_host->SetWaitingVersion(version);
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<ServiceWorkerContextCore> context_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host1_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host2_;
-  base::WeakPtr<ServiceWorkerProviderHost> provider_host3_;
   GURL scope_;
   GURL script_url_;
 
@@ -83,16 +89,16 @@ TEST_F(ServiceWorkerProviderHostTest, SetActiveVersion_ProcessStatus) {
 
   // Associating version_ to a provider_host's active version will internally
   // add the provider_host's process ref to the version.
-  provider_host1_->SetActiveVersion(version_);
+  SetActiveVersion(provider_host1_, version_);
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Re-associating the same version and provider_host should just work too.
-  provider_host1_->SetActiveVersion(version_);
+  SetActiveVersion(provider_host1_, version_);
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Resetting the provider_host's active version should remove process refs
   // from the version.
-  provider_host1_->SetActiveVersion(NULL);
+  SetActiveVersion(provider_host1_, NULL);
   ASSERT_FALSE(version_->HasProcessToRun());
 }
 
@@ -101,17 +107,17 @@ TEST_F(ServiceWorkerProviderHostTest,
   ASSERT_FALSE(version_->HasProcessToRun());
 
   // Associating version_ to two providers as active version.
-  provider_host1_->SetActiveVersion(version_);
-  provider_host2_->SetActiveVersion(version_);
+  SetActiveVersion(provider_host1_, version_);
+  SetActiveVersion(provider_host2_, version_);
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Disassociating one provider_host shouldn't remove all process refs
   // from the version yet.
-  provider_host1_->SetActiveVersion(NULL);
+  SetActiveVersion(provider_host1_, NULL);
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Disassociating the other provider_host will remove all process refs.
-  provider_host2_->SetActiveVersion(NULL);
+  SetActiveVersion(provider_host2_, NULL);
   ASSERT_FALSE(version_->HasProcessToRun());
 }
 
@@ -120,16 +126,16 @@ TEST_F(ServiceWorkerProviderHostTest, SetWaitingVersion_ProcessStatus) {
 
   // Associating version_ to a provider_host's waiting version will internally
   // add the provider_host's process ref to the version.
-  provider_host1_->SetWaitingVersion(version_);
+  SetWaitingVersion(provider_host1_, version_);
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Re-associating the same version and provider_host should just work too.
-  provider_host1_->SetWaitingVersion(version_);
+  SetWaitingVersion(provider_host1_, version_);
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Resetting the provider_host's waiting version should remove process refs
   // from the version.
-  provider_host1_->SetWaitingVersion(NULL);
+  SetWaitingVersion(provider_host1_, NULL);
   ASSERT_FALSE(version_->HasProcessToRun());
 }
 
@@ -138,148 +144,18 @@ TEST_F(ServiceWorkerProviderHostTest,
   ASSERT_FALSE(version_->HasProcessToRun());
 
   // Associating version_ to two providers as active version.
-  provider_host1_->SetWaitingVersion(version_);
-  provider_host2_->SetWaitingVersion(version_);
+  SetWaitingVersion(provider_host1_, version_);
+  SetWaitingVersion(provider_host2_, version_);
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Disassociating one provider_host shouldn't remove all process refs
   // from the version yet.
-  provider_host1_->SetWaitingVersion(NULL);
+  SetWaitingVersion(provider_host1_, NULL);
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Disassociating the other provider_host will remove all process refs.
-  provider_host2_->SetWaitingVersion(NULL);
+  SetWaitingVersion(provider_host2_, NULL);
   ASSERT_FALSE(version_->HasProcessToRun());
-}
-
-class ServiceWorkerProviderHostWaitingVersionTest : public testing::Test {
- protected:
-  ServiceWorkerProviderHostWaitingVersionTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        next_provider_id_(1L) {}
-  virtual ~ServiceWorkerProviderHostWaitingVersionTest() {}
-
-  virtual void SetUp() OVERRIDE {
-    context_.reset(
-        new ServiceWorkerContextCore(base::FilePath(),
-                                     base::MessageLoopProxy::current(),
-                                     base::MessageLoopProxy::current(),
-                                     base::MessageLoopProxy::current(),
-                                     NULL,
-                                     NULL,
-                                     NULL));
-
-    // Prepare provider hosts (for the same process).
-    provider_host1_ = CreateProviderHost(GURL("http://www.example.com/foo"));
-    provider_host2_ = CreateProviderHost(GURL("http://www.example.com/bar"));
-    provider_host3_ = CreateProviderHost(GURL("http://www.example.ca/foo"));
-  }
-
-  base::WeakPtr<ServiceWorkerProviderHost> CreateProviderHost(
-      const GURL& document_url) {
-    scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
-        kRenderProcessId, next_provider_id_++, context_->AsWeakPtr(), NULL));
-    host->SetDocumentUrl(document_url);
-    base::WeakPtr<ServiceWorkerProviderHost> provider_host = host->AsWeakPtr();
-    context_->AddProviderHost(host.Pass());
-    return provider_host;
-  }
-
-  virtual void TearDown() OVERRIDE {
-    context_.reset();
-  }
-
-  content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<ServiceWorkerContextCore> context_;
-  base::WeakPtr<ServiceWorkerProviderHost> provider_host1_;
-  base::WeakPtr<ServiceWorkerProviderHost> provider_host2_;
-  base::WeakPtr<ServiceWorkerProviderHost> provider_host3_;
-
- private:
-  int64 next_provider_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHostWaitingVersionTest);
-};
-
-TEST_F(ServiceWorkerProviderHostWaitingVersionTest,
-       AssociateInstallingVersionToDocuments) {
-  const GURL scope1("http://www.example.com/");
-  const GURL script_url1("http://www.example.com/service_worker1.js");
-  scoped_refptr<ServiceWorkerRegistration> registration1(
-      new ServiceWorkerRegistration(
-          scope1, script_url1, 1L, context_->AsWeakPtr()));
-  scoped_refptr<ServiceWorkerVersion> version1(
-      new ServiceWorkerVersion(registration1, 1L, context_->AsWeakPtr()));
-
-  ServiceWorkerRegisterJob::AssociateInstallingVersionToDocuments(
-      context_->AsWeakPtr(), version1);
-  EXPECT_EQ(version1.get(), provider_host1_->installing_version());
-  EXPECT_EQ(version1.get(), provider_host2_->installing_version());
-  EXPECT_EQ(NULL, provider_host3_->installing_version());
-
-  // Version2 is associated with the same registration as version1, so the
-  // waiting version of host1 and host2 should be replaced.
-  scoped_refptr<ServiceWorkerVersion> version2(
-      new ServiceWorkerVersion(registration1, 2L, context_->AsWeakPtr()));
-  ServiceWorkerRegisterJob::AssociateInstallingVersionToDocuments(
-      context_->AsWeakPtr(), version2);
-  EXPECT_EQ(version2.get(), provider_host1_->installing_version());
-  EXPECT_EQ(version2.get(), provider_host2_->installing_version());
-  EXPECT_EQ(NULL, provider_host3_->installing_version());
-
-  const GURL scope3(provider_host1_->document_url());
-  const GURL script_url3("http://www.example.com/service_worker3.js");
-  scoped_refptr<ServiceWorkerRegistration> registration3(
-      new ServiceWorkerRegistration(
-          scope3, script_url3, 3L, context_->AsWeakPtr()));
-  scoped_refptr<ServiceWorkerVersion> version3(
-      new ServiceWorkerVersion(registration3, 3L, context_->AsWeakPtr()));
-
-  // Although version3 can match longer than version2 for host1, it should be
-  // ignored because version3 is associated with a different registration from
-  // version2.
-  ServiceWorkerRegisterJob::AssociateInstallingVersionToDocuments(
-      context_->AsWeakPtr(), version3);
-  EXPECT_EQ(version2.get(), provider_host1_->installing_version());
-  EXPECT_EQ(version2.get(), provider_host2_->installing_version());
-  EXPECT_EQ(NULL, provider_host3_->installing_version());
-}
-
-TEST_F(ServiceWorkerProviderHostWaitingVersionTest,
-       DisassociateVersionFromDocuments) {
-  const GURL scope1("http://www.example.com/");
-  const GURL script_url1("http://www.example.com/service_worker.js");
-  scoped_refptr<ServiceWorkerRegistration> registration1(
-      new ServiceWorkerRegistration(
-          scope1, script_url1, 1L, context_->AsWeakPtr()));
-  scoped_refptr<ServiceWorkerVersion> version1(
-      new ServiceWorkerVersion(registration1, 1L, context_->AsWeakPtr()));
-
-  const GURL scope2("http://www.example.ca/");
-  const GURL script_url2("http://www.example.ca/service_worker.js");
-  scoped_refptr<ServiceWorkerRegistration> registration2(
-      new ServiceWorkerRegistration(
-          scope2, script_url2, 2L, context_->AsWeakPtr()));
-  scoped_refptr<ServiceWorkerVersion> version2(
-      new ServiceWorkerVersion(registration2, 2L, context_->AsWeakPtr()));
-
-  ServiceWorkerRegisterJob::AssociateInstallingVersionToDocuments(
-      context_->AsWeakPtr(), version1);
-  ServiceWorkerRegisterJob::AssociateInstallingVersionToDocuments(
-      context_->AsWeakPtr(), version2);
-
-  // Host1 and host2 are associated with version1 as a waiting version, whereas
-  // host3 is associated with version2.
-  EXPECT_EQ(version1.get(), provider_host1_->installing_version());
-  EXPECT_EQ(version1.get(), provider_host2_->installing_version());
-  EXPECT_EQ(version2.get(), provider_host3_->installing_version());
-
-  // Disassociate version1 from host1 and host2.
-  ServiceWorkerRegisterJob::DisassociateVersionFromDocuments(
-      context_->AsWeakPtr(), version1);
-  EXPECT_EQ(NULL, provider_host1_->installing_version());
-  EXPECT_EQ(NULL, provider_host2_->installing_version());
-  EXPECT_EQ(version2.get(), provider_host3_->installing_version());
 }
 
 }  // namespace content

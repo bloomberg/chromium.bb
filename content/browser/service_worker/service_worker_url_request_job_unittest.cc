@@ -105,7 +105,8 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
     scoped_ptr<ServiceWorkerProviderHost> provider_host(
         new ServiceWorkerProviderHost(
             kProcessID, kProviderID, helper_->context()->AsWeakPtr(), NULL));
-    provider_host->SetActiveVersion(version_.get());
+    provider_host->AssociateRegistration(registration_);
+    registration_->SetActiveVersion(version_.get());
 
     ChromeBlobStorageContext* chrome_blob_storage_context =
         ChromeBlobStorageContext::GetFor(browser_context_.get());

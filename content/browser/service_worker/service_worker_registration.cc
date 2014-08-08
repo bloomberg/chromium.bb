@@ -40,6 +40,7 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
 
 ServiceWorkerRegistration::~ServiceWorkerRegistration() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!listeners_.might_have_observers());
   if (context_)
     context_->RemoveLiveRegistration(registration_id_);
   ResetShouldActivateWhenReady();
@@ -51,6 +52,10 @@ void ServiceWorkerRegistration::AddListener(Listener* listener) {
 
 void ServiceWorkerRegistration::RemoveListener(Listener* listener) {
   listeners_.RemoveObserver(listener);
+}
+
+void ServiceWorkerRegistration::NotifyRegistrationFailed() {
+  FOR_EACH_OBSERVER(Listener, listeners_, OnRegistrationFailed(this));
 }
 
 ServiceWorkerRegistrationInfo ServiceWorkerRegistration::GetInfo() {
@@ -175,11 +180,7 @@ void ServiceWorkerRegistration::ActivateWaitingVersion() {
 
   // "5. Set serviceWorkerRegistration.activeWorker to activatingWorker."
   // "6. Set serviceWorkerRegistration.waitingWorker to null."
-  ServiceWorkerRegisterJob::DisassociateVersionFromDocuments(
-      context_, activating_version);
   SetActiveVersion(activating_version);
-  ServiceWorkerRegisterJob::AssociateActiveVersionToDocuments(
-      context_, activating_version);
 
   // "7. Run the [[UpdateState]] algorithm passing registration.activeWorker and
   // "activating" as arguments."
@@ -202,8 +203,6 @@ void ServiceWorkerRegistration::OnActivateEventFinished(
   // unexpectedly terminated) we may want to retry sending the event again.
   if (status != SERVICE_WORKER_OK) {
     // "11. If activateFailed is true, then:..."
-    ServiceWorkerRegisterJob::DisassociateVersionFromDocuments(
-        context_, activating_version);
     UnsetVersion(activating_version);
     activating_version->Doom();
     if (!waiting_version()) {

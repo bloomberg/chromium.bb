@@ -114,10 +114,8 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
   DCHECK(context_);
   // The corresponding provider_host may already have associated a registration
   // in redirect case, unassociate it now.
+  provider_host_->UnassociateRegistration();
   provider_host_->SetControllerVersion(NULL);
-  provider_host_->SetActiveVersion(NULL);
-  provider_host_->SetWaitingVersion(NULL);
-  provider_host_->SetInstallingVersion(NULL);
 
   GURL stripped_url = net::SimplifyUrlForRequest(url);
   provider_host_->SetDocumentUrl(stripped_url);
@@ -152,7 +150,7 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
 
   // Wait until it's activated before firing fetch events.
   if (active_version &&
-      active_version->status() ==  ServiceWorkerVersion::ACTIVATING) {
+      active_version->status() == ServiceWorkerVersion::ACTIVATING) {
     registration->active_version()->RegisterStatusChangeCallback(
         base::Bind(&self::OnVersionStatusChanged,
                    weak_factory_.GetWeakPtr(),
@@ -167,10 +165,8 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
     return;
   }
 
+  provider_host_->AssociateRegistration(registration);
   provider_host_->SetControllerVersion(registration->active_version());
-  provider_host_->SetActiveVersion(registration->active_version());
-  provider_host_->SetWaitingVersion(registration->waiting_version());
-  provider_host_->SetInstallingVersion(registration->installing_version());
 
   job_->ForwardToServiceWorker();
 }
@@ -183,10 +179,9 @@ void ServiceWorkerControlleeRequestHandler::OnVersionStatusChanged(
     job_->FallbackToNetwork();
     return;
   }
+
+  provider_host_->AssociateRegistration(registration);
   provider_host_->SetControllerVersion(registration->active_version());
-  provider_host_->SetActiveVersion(registration->active_version());
-  provider_host_->SetWaitingVersion(registration->waiting_version());
-  provider_host_->SetInstallingVersion(registration->installing_version());
 
   job_->ForwardToServiceWorker();
 }

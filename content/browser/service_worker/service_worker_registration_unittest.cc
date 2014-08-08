@@ -40,7 +40,10 @@ class ServiceWorkerRegistrationTest : public testing::Test {
   class RegistrationListener : public ServiceWorkerRegistration::Listener {
    public:
     RegistrationListener() {}
-    ~RegistrationListener() {}
+    ~RegistrationListener() {
+      if (observed_registration_)
+        observed_registration_->RemoveListener(this);
+    }
 
     virtual void OnVersionAttributesChanged(
         ServiceWorkerRegistration* registration,
@@ -49,6 +52,11 @@ class ServiceWorkerRegistrationTest : public testing::Test {
       observed_registration_ = registration;
       observed_changed_mask_ = changed_mask;
       observed_info_ = info;
+    }
+
+    virtual void OnRegistrationFailed(
+        ServiceWorkerRegistration* registration) OVERRIDE {
+      NOTREACHED();
     }
 
     void Reset() {

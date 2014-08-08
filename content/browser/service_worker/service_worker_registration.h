@@ -36,7 +36,9 @@ class CONTENT_EXPORT ServiceWorkerRegistration
     virtual void OnVersionAttributesChanged(
         ServiceWorkerRegistration* registration,
         ChangedVersionAttributesMask changed_mask,
-        const ServiceWorkerRegistrationInfo& info)  = 0;
+        const ServiceWorkerRegistrationInfo& info) = 0;
+    virtual void OnRegistrationFailed(
+        ServiceWorkerRegistration* registration) = 0;
   };
 
   ServiceWorkerRegistration(const GURL& pattern,
@@ -62,6 +64,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
 
   void AddListener(Listener* listener);
   void RemoveListener(Listener* listener);
+  void NotifyRegistrationFailed();
 
   ServiceWorkerRegistrationInfo GetInfo();
 

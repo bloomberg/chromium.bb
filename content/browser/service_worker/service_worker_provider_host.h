@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/resource_type.h"
@@ -38,13 +39,14 @@ class ServiceWorkerVersion;
 // Note this class can also host a running service worker, in which
 // case it will observe resource loads made directly by the service worker.
 class CONTENT_EXPORT ServiceWorkerProviderHost
-    : public base::SupportsWeakPtr<ServiceWorkerProviderHost> {
+    : public ServiceWorkerRegistration::Listener,
+      public base::SupportsWeakPtr<ServiceWorkerProviderHost> {
  public:
   ServiceWorkerProviderHost(int process_id,
                             int provider_id,
                             base::WeakPtr<ServiceWorkerContextCore> context,
                             ServiceWorkerDispatcherHost* dispatcher_host);
-  ~ServiceWorkerProviderHost();
+  virtual ~ServiceWorkerProviderHost();
 
   int process_id() const { return process_id_; }
   int provider_id() const { return provider_id_; }
@@ -76,16 +78,15 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void SetDocumentUrl(const GURL& url);
   const GURL& document_url() const { return document_url_; }
 
-  // Associates |version| to the corresponding field or if |version| is NULL
-  // clears the field.
+  // Associates |version| to the controller field or if |version| is NULL clears
+  // the field.
   void SetControllerVersion(ServiceWorkerVersion* version);
-  void SetActiveVersion(ServiceWorkerVersion* version);
-  void SetWaitingVersion(ServiceWorkerVersion* version);
-  void SetInstallingVersion(ServiceWorkerVersion* version);
 
-  // If |version| is the installing, waiting, or active version of this
-  // provider, the method will reset that field to NULL.
-  void UnsetVersion(ServiceWorkerVersion* version);
+  // Associates to |registration| to listen for its version change events.
+  void AssociateRegistration(ServiceWorkerRegistration* registration);
+
+  // Clears the associated registration and stop listening to it.
+  void UnassociateRegistration();
 
   // Returns false if the version is not in the expected STARTING in our
   // process state. That would be indicative of a bad IPC message.
@@ -100,6 +101,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Returns true if |version| can be associated with this provider.
   bool CanAssociateVersion(ServiceWorkerVersion* version);
 
+  // Returns true if |registration| can be associated with this provider.
+  bool CanAssociateRegistration(ServiceWorkerRegistration* registration);
+
   // Returns true if the context referred to by this host (i.e. |context_|) is
   // still alive.
   bool IsContextAlive();
@@ -109,6 +113,26 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                    const std::vector<int>& sent_message_port_ids);
 
  private:
+  friend class ServiceWorkerProviderHostTest;
+
+  // ServiceWorkerRegistration::Listener overrides.
+  virtual void OnVersionAttributesChanged(
+      ServiceWorkerRegistration* registration,
+      ChangedVersionAttributesMask changed_mask,
+      const ServiceWorkerRegistrationInfo& info) OVERRIDE;
+  virtual void OnRegistrationFailed(
+      ServiceWorkerRegistration* registration) OVERRIDE;
+
+  // Associates |version| to the corresponding field or if |version| is NULL
+  // clears the field.
+  void SetActiveVersion(ServiceWorkerVersion* version);
+  void SetWaitingVersion(ServiceWorkerVersion* version);
+  void SetInstallingVersion(ServiceWorkerVersion* version);
+
+  // If |version| is the installing, waiting, or active version of this
+  // provider, the method will reset that field to NULL.
+  void UnsetVersion(ServiceWorkerVersion* version);
+
   // Creates a ServiceWorkerHandle to retain |version| and returns a
   // ServiceWorkerInfo with the handle ID to pass to the provider. The
   // provider is responsible for releasing the handle.
@@ -117,6 +141,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   const int process_id_;
   const int provider_id_;
   GURL document_url_;
+
+  scoped_refptr<ServiceWorkerRegistration> associated_registration_;
 
   scoped_refptr<ServiceWorkerVersion> controlling_version_;
   scoped_refptr<ServiceWorkerVersion> active_version_;

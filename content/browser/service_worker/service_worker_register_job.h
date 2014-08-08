@@ -67,22 +67,6 @@ class ServiceWorkerRegisterJob
   virtual bool Equals(ServiceWorkerRegisterJobBase* job) OVERRIDE;
   virtual RegistrationJobType GetType() OVERRIDE;
 
-  // TODO(michaeln): Use the registration listerer's OnVersionAttributesChanged
-  // method to replace these methods, have the host listen for changes
-  // to their registration.
-  CONTENT_EXPORT static void AssociateInstallingVersionToDocuments(
-      base::WeakPtr<ServiceWorkerContextCore> context,
-      ServiceWorkerVersion* version);
-  static void AssociateWaitingVersionToDocuments(
-      base::WeakPtr<ServiceWorkerContextCore> context,
-      ServiceWorkerVersion* version);
-  static void AssociateActiveVersionToDocuments(
-      base::WeakPtr<ServiceWorkerContextCore> context,
-      ServiceWorkerVersion* version);
-  CONTENT_EXPORT static void DisassociateVersionFromDocuments(
-      base::WeakPtr<ServiceWorkerContextCore> context,
-      ServiceWorkerVersion* version);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProviderHostWaitingVersionTest,
                            AssociateInstallingVersionToDocuments);
@@ -147,6 +131,9 @@ class ServiceWorkerRegisterJob
       ServiceWorkerVersion* current_version,
       ServiceWorkerStatusCode status,
       bool are_equal);
+
+  void AssociateProviderHostsToRegistration(
+      ServiceWorkerRegistration* registration);
 
   // The ServiceWorkerContextCore object should always outlive this.
   base::WeakPtr<ServiceWorkerContextCore> context_;
