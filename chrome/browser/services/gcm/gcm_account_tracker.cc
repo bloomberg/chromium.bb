@@ -14,6 +14,8 @@ namespace gcm {
 
 namespace {
 const char kGCMGroupServerScope[] = "https://www.googleapis.com/auth/gcm";
+const char kGCMCheckinServerScope[] =
+    "https://www.googleapis.com/auth/android_checkin";
 const char kGCMAccountTrackerName[] = "gcm_account_tracker";
 }  // namespace
 
@@ -216,6 +218,7 @@ void GCMAccountTracker::GetToken(AccountInfos::iterator& account_iter) {
 
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(kGCMGroupServerScope);
+  scopes.insert(kGCMCheckinServerScope);
   scoped_ptr<OAuth2TokenService::Request> request =
       GetTokenService()->StartRequest(account_iter->first, scopes, this);
 
