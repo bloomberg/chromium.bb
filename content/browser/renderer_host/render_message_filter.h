@@ -270,8 +270,11 @@ class RenderMessageFilter : public BrowserMessageFilter {
                             uint32_t data_size);
 #endif
 
-  void OnSetHasPendingTransitionRequest(int render_frame_id,
-                                        bool is_transition);
+  void OnAddNavigationTransitionData(
+    int render_frame_id,
+    const std::string& allowed_destination_host_pattern,
+    const std::string& selector,
+    const std::string& markup);
 
   // Cached resource request dispatcher host and plugin service, guaranteed to
   // be non-null if Init succeeds. We do not own the objects, they are managed

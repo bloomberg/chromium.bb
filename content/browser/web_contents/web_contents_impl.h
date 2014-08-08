@@ -349,8 +349,7 @@ class CONTENT_EXPORT WebContentsImpl
                                bool to_different_document) OVERRIDE;
   virtual void SwappedOut(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void DidDeferAfterResponseStarted(
-      const scoped_refptr<net::HttpResponseHeaders>& headers,
-      const GURL& url) OVERRIDE;
+      const TransitionLayerData& transition_data) OVERRIDE;
   virtual bool WillHandleDeferAfterResponseStarted() OVERRIDE;
   virtual void WorkerCrashed(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void ShowContextMenu(RenderFrameHost* render_frame_host,

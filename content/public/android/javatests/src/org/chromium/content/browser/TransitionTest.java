@@ -46,7 +46,8 @@ public class TransitionTest extends ContentShellTestBase {
         }
 
         @Override
-        public void didDeferAfterResponseStarted(String enteringColor) {
+        public void didDeferAfterResponseStarted(String markup, String cssSelector,
+                String enteringColor) {
             mDidCallDefer = true;
             mContentViewCore.resumeResponseDeferredAtStart();
             mTransitionEnteringColor = enteringColor;

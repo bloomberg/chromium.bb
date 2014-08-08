@@ -345,6 +345,10 @@ class CONTENT_EXPORT RenderFrameImpl
                                      const blink::WebHistoryItem& item,
                                      blink::WebHistoryCommitType commit_type);
   virtual void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
+  virtual void addNavigationTransitionData(
+      const blink::WebString& allowedDestinationOrigin,
+      const blink::WebString& selector,
+      const blink::WebString& markup);
   virtual void didChangeThemeColor();
   virtual void requestNotificationPermission(
       const blink::WebSecurityOrigin& origin,
@@ -508,6 +512,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnReload(bool ignore_cache);
   void OnTextSurroundingSelectionRequest(size_t max_length);
   void OnAddStyleSheetByURL(const std::string& url);
+  void OnSetupTransitionView(const std::string& markup);
+  void OnBeginExitTransition(const std::string& css_selector);
   void OnSetAccessibilityMode(AccessibilityMode new_mode);
 #if defined(OS_MACOSX)
   void OnCopyToFindPboard();

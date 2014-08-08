@@ -240,7 +240,8 @@ public class ContentViewCore
          *                      the transition layer's markup after the entering stylesheets
          *                      have been applied.
          */
-        public void didDeferAfterResponseStarted(String enteringColor);
+        public void didDeferAfterResponseStarted(
+                String markup, String cssSelector, String enteringColor);
 
         /**
          * Called when a navigation transition has been detected, and we need to check
@@ -1421,10 +1422,27 @@ public class ContentViewCore
     }
 
     /**
+     * Inserts the provided markup sandboxed into the frame.
+     */
+    public void setupTransitionView(String markup) {
+        if (mNativeContentViewCore == 0) return;
+        nativeSetupTransitionView(mNativeContentViewCore, markup);
+    }
+
+    /**
+     * Hides transition elements specified by the selector, and activates any
+     * exiting-transition stylesheets.
+     */
+    public void beginExitTransition(String cssSelector) {
+        if (mNativeContentViewCore == 0) return;
+        nativeBeginExitTransition(mNativeContentViewCore, cssSelector);
+    }
+
+    /**
      * Requests the renderer insert a link to the specified stylesheet in the
      * main frame's document.
      */
-    void addStyleSheetByURL(String url) {
+    public void addStyleSheetByURL(String url) {
         assert mWebContents != null;
         mWebContents.addStyleSheetByURL(url);
     }
@@ -3061,9 +3079,11 @@ public class ContentViewCore
     }
 
     @CalledByNative
-    private void didDeferAfterResponseStarted(String enteringColor) {
+    private void didDeferAfterResponseStarted(String markup, String cssSelector,
+            String enteringColor) {
         if (mNavigationTransitionDelegate != null ) {
-            mNavigationTransitionDelegate.didDeferAfterResponseStarted(enteringColor);
+            mNavigationTransitionDelegate.didDeferAfterResponseStarted(markup,
+                cssSelector, enteringColor);
         }
     }
 
@@ -3302,6 +3322,9 @@ public class ContentViewCore
     private native void nativeExtractSmartClipData(long nativeContentViewCoreImpl,
             int x, int y, int w, int h);
     private native void nativeSetBackgroundOpaque(long nativeContentViewCoreImpl, boolean opaque);
+    private native void nativeSetupTransitionView(long nativeContentViewCoreImpl, String markup);
+    private native void nativeBeginExitTransition(long nativeContentViewCoreImpl,
+            String cssSelector);
 
     private native void nativeResumeResponseDeferredAtStart(
             long nativeContentViewCoreImpl);

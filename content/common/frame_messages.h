@@ -398,6 +398,16 @@ IPC_MESSAGE_ROUTED2(FrameMsg_SetEditableSelectionOffsets,
                     int /* start */,
                     int /* end */)
 
+// Requests a navigation to the supplied markup, in an iframe with sandbox
+// attributes.
+IPC_MESSAGE_ROUTED1(FrameMsg_SetupTransitionView,
+                    std::string /* markup */)
+
+// Tells the renderer to hide the elements specified by the supplied CSS
+// selector, and activates any exiting-transition stylesheets.
+IPC_MESSAGE_ROUTED1(FrameMsg_BeginExitTransition,
+                    std::string /* css_selector */)
+
 // Tells the renderer to reload the frame, optionally ignoring the cache while
 // doing so.
 IPC_MESSAGE_ROUTED1(FrameMsg_Reload,
@@ -691,9 +701,12 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_TextSurroundingSelectionResponse,
                     size_t /* endOffset */)
 
 // Notifies the browser that the renderer has a pending navigation transition.
-IPC_MESSAGE_CONTROL2(FrameHostMsg_SetHasPendingTransitionRequest,
+// The string parameters are all UTF8.
+IPC_MESSAGE_CONTROL4(FrameHostMsg_AddNavigationTransitionData,
                      int /* render_frame_id */,
-                     bool /* is_transition */)
+                     std::string  /* allowed_destination_host_pattern */,
+                     std::string  /* selector */,
+                     std::string  /* markup */)
 
 // Tells the browser to perform a navigation.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_BeginNavigation,

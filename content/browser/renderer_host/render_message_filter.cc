@@ -443,8 +443,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunWebAudioMediaCodec, OnWebAudioMediaCodec)
 #endif
-    IPC_MESSAGE_HANDLER(FrameHostMsg_SetHasPendingTransitionRequest,
-                        OnSetHasPendingTransitionRequest)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_AddNavigationTransitionData,
+                        OnAddNavigationTransitionData)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -1229,10 +1229,15 @@ void RenderMessageFilter::OnWebAudioMediaCodec(
 }
 #endif
 
-void RenderMessageFilter::OnSetHasPendingTransitionRequest(int render_frame_id,
-                                                           bool is_transition) {
-  TransitionRequestManager::GetInstance()->SetHasPendingTransitionRequest(
-      render_process_id_, render_frame_id, is_transition);
+
+void RenderMessageFilter::OnAddNavigationTransitionData(
+    int render_frame_id,
+    const std::string& allowed_destination_host_pattern,
+    const std::string& selector,
+    const std::string& markup) {
+  TransitionRequestManager::GetInstance()->AddPendingTransitionRequestData(
+      render_process_id_, render_frame_id, allowed_destination_host_pattern,
+      selector, markup);
 }
 
 }  // namespace content

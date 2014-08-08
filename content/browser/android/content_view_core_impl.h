@@ -209,6 +209,9 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void SetBackgroundOpaque(JNIEnv* env, jobject jobj, jboolean opaque);
 
+  void SetupTransitionView(JNIEnv* env, jobject jobj, jstring markup);
+  void BeginExitTransition(JNIEnv* env, jobject jobj, jstring css_selector);
+
   // Notifies the main frame that it can continue navigation (if it was deferred
   // immediately at first response).
   void ResumeResponseDeferredAtStart(JNIEnv* env, jobject obj);
@@ -224,8 +227,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   // This method is invoked when the request is deferred immediately after
   // receiving response headers.
   void DidDeferAfterResponseStarted(
-      const scoped_refptr<net::HttpResponseHeaders>& headers,
-      const GURL& url);
+      const TransitionLayerData& transition_data);
 
   // This method is invoked when a navigation transition is detected, to
   // determine if the embedder intends to handle it.

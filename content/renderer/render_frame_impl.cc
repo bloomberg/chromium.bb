@@ -764,6 +764,8 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnJavaScriptExecuteRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_SetEditableSelectionOffsets,
                         OnSetEditableSelectionOffsets)
+    IPC_MESSAGE_HANDLER(FrameMsg_SetupTransitionView, OnSetupTransitionView)
+    IPC_MESSAGE_HANDLER(FrameMsg_BeginExitTransition, OnBeginExitTransition)
     IPC_MESSAGE_HANDLER(FrameMsg_Reload, OnReload)
     IPC_MESSAGE_HANDLER(FrameMsg_TextSurroundingSelectionRequest,
                         OnTextSurroundingSelectionRequest)
@@ -1290,6 +1292,16 @@ void RenderFrameImpl::OnTextSurroundingSelectionRequest(size_t max_length) {
 
 void RenderFrameImpl::OnAddStyleSheetByURL(const std::string& url) {
   frame_->addStyleSheetByURL(WebString::fromUTF8(url));
+}
+
+void RenderFrameImpl::OnSetupTransitionView(const std::string& markup) {
+  frame_->document().setIsTransitionDocument();
+  frame_->navigateToSandboxedMarkup(WebData(markup.data(), markup.length()));
+}
+
+void RenderFrameImpl::OnBeginExitTransition(const std::string& css_selector) {
+  frame_->document().setIsTransitionDocument();
+  frame_->document().beginExitTransition(WebString::fromUTF8(css_selector));
 }
 
 bool RenderFrameImpl::ShouldUpdateSelectionTextFromContextMenuParams(
@@ -2278,6 +2290,15 @@ void RenderFrameImpl::didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame) {
   // TODO(nasko): Move implementation here. Needed methods:
   // * StartNavStateSyncTimerIfNecessary
   render_view_->didUpdateCurrentHistoryItem(frame);
+}
+
+void RenderFrameImpl::addNavigationTransitionData(
+    const blink::WebString& allowed_destination_host_pattern,
+    const blink::WebString& selector,
+    const blink::WebString& markup) {
+  Send(new FrameHostMsg_AddNavigationTransitionData(
+      routing_id_, allowed_destination_host_pattern.utf8(), selector.utf8(),
+      markup.utf8()));
 }
 
 void RenderFrameImpl::didChangeThemeColor() {

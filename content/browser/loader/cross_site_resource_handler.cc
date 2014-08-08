@@ -88,12 +88,11 @@ void OnCrossSiteResponseHelper(const CrossSiteResponseParams& params) {
 void OnDeferredAfterResponseStartedHelper(
     const GlobalRequestID& global_request_id,
     int render_frame_id,
-    const scoped_refptr<net::HttpResponseHeaders>& headers,
-    const GURL& url) {
+    const TransitionLayerData& transition_data) {
   RenderFrameHostImpl* rfh =
       RenderFrameHostImpl::FromID(global_request_id.child_id, render_frame_id);
   if (rfh)
-    rfh->OnDeferredAfterResponseStarted(global_request_id, headers, url);
+    rfh->OnDeferredAfterResponseStarted(global_request_id, transition_data);
 }
 
 bool CheckNavigationPolicyOnUI(GURL url, int process_id, int render_frame_id) {
@@ -153,14 +152,22 @@ bool CrossSiteResourceHandler::OnResponseStarted(
   ResourceRequestInfoImpl* info = GetRequestInfo();
   info->set_cross_site_handler(this);
 
+  TransitionLayerData transition_data;
   bool is_navigation_transition =
       TransitionRequestManager::GetInstance()->HasPendingTransitionRequest(
-          info->GetChildID(), info->GetRenderFrameID());
+          info->GetChildID(), info->GetRenderFrameID(), request()->url(),
+          &transition_data);
 
-  if (is_navigation_transition)
-    return OnNavigationTransitionResponseStarted(response, defer);
-  else
+  if (is_navigation_transition) {
+    if (response_)
+      transition_data.response_headers = response_->head.headers;
+    transition_data.request_url = request()->url();
+
+    return OnNavigationTransitionResponseStarted(response, defer,
+                                                 transition_data);
+  } else {
     return OnNormalResponseStarted(response, defer);
+  }
 }
 
 bool CrossSiteResourceHandler::OnNormalResponseStarted(
@@ -231,13 +238,9 @@ bool CrossSiteResourceHandler::OnNormalResponseStarted(
 
 bool CrossSiteResourceHandler::OnNavigationTransitionResponseStarted(
     ResourceResponse* response,
-    bool* defer) {
+    bool* defer,
+    const TransitionLayerData& transition_data) {
   ResourceRequestInfoImpl* info = GetRequestInfo();
-
-  scoped_refptr<net::HttpResponseHeaders> headers;
-  if (response_)
-    headers = response_->head.headers;
-  GURL url = request()->url();
 
   GlobalRequestID global_id(info->GetChildID(), info->GetRequestID());
   int render_frame_id = info->GetRenderFrameID();
@@ -248,8 +251,7 @@ bool CrossSiteResourceHandler::OnNavigationTransitionResponseStarted(
           &OnDeferredAfterResponseStartedHelper,
           global_id,
           render_frame_id,
-          headers,
-          url));
+          transition_data));
 
   *defer = true;
   OnDidDefer();

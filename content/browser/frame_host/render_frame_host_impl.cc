@@ -662,15 +662,14 @@ void RenderFrameHostImpl::OnCrossSiteResponse(
 
 void RenderFrameHostImpl::OnDeferredAfterResponseStarted(
     const GlobalRequestID& global_request_id,
-    const scoped_refptr<net::HttpResponseHeaders>& headers,
-    const GURL& url) {
+    const TransitionLayerData& transition_data) {
   frame_tree_node_->render_manager()->OnDeferredAfterResponseStarted(
       global_request_id, this);
 
   if (GetParent() || !delegate_->WillHandleDeferAfterResponseStarted())
     frame_tree_node_->render_manager()->ResumeResponseDeferredAtStart();
   else
-    delegate_->DidDeferAfterResponseStarted(headers, url);
+    delegate_->DidDeferAfterResponseStarted(transition_data);
 }
 
 void RenderFrameHostImpl::SwapOut(RenderFrameProxyHost* proxy) {
@@ -1194,17 +1193,15 @@ RenderFrameHostImpl::GetParentNativeViewAccessible() const {
 }
 #endif  // defined(OS_WIN)
 
-void RenderFrameHostImpl::SetHasPendingTransitionRequest(
-    bool has_pending_request) {
+void RenderFrameHostImpl::ClearPendingTransitionRequestData() {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(
-          &TransitionRequestManager::SetHasPendingTransitionRequest,
+          &TransitionRequestManager::ClearPendingTransitionRequestData,
           base::Unretained(TransitionRequestManager::GetInstance()),
           GetProcess()->GetID(),
-          routing_id_,
-          has_pending_request));
+          routing_id_));
 }
 
 }  // namespace content

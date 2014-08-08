@@ -3602,11 +3602,10 @@ void WebContentsImpl::SwappedOut(RenderFrameHost* rfh) {
 }
 
 void WebContentsImpl::DidDeferAfterResponseStarted(
-    const scoped_refptr<net::HttpResponseHeaders>& headers,
-    const GURL& url) {
+    const TransitionLayerData& transition_data) {
 #if defined(OS_ANDROID)
   ContentViewCoreImpl::FromWebContents(this)->DidDeferAfterResponseStarted(
-      headers, url);
+      transition_data);
 #endif
 }
 

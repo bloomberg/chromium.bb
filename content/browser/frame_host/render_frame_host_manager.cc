@@ -373,7 +373,7 @@ void RenderFrameHostManager::ResumeResponseDeferredAtStart() {
       static_cast<RenderProcessHostImpl*>(render_frame_host_->GetProcess());
   process->ResumeResponseDeferredAtStart(*response_started_id_);
 
-  render_frame_host_->SetHasPendingTransitionRequest(false);
+  render_frame_host_->ClearPendingTransitionRequestData();
 
   response_started_id_.reset();
 }

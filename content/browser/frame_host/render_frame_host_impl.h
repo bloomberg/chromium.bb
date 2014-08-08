@@ -53,6 +53,7 @@ struct ContextMenuParams;
 struct GlobalRequestID;
 struct Referrer;
 struct ShowDesktopNotificationHostMsgParams;
+struct TransitionLayerData;
 
 class CONTENT_EXPORT RenderFrameHostImpl
     : public RenderFrameHost,
@@ -156,8 +157,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // receieved.
   void OnDeferredAfterResponseStarted(
       const GlobalRequestID& global_request_id,
-      const scoped_refptr<net::HttpResponseHeaders>& headers,
-      const GURL& url);
+      const TransitionLayerData& transition_data);
 
   // Tells the renderer that this RenderFrame is being swapped out for one in a
   // different renderer process.  It should run its unload handler, move to
@@ -208,10 +208,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Called when an HTML5 notification is closed.
   void NotificationClosed(int notification_id);
 
-  // Sets whether there is an outstanding transition request. This is called at
-  // the start of a provisional load for the main frame, and cleared when we
-  // hear the response or commit.
-  void SetHasPendingTransitionRequest(bool has_pending_request);
+  // Clears any outstanding transition request. This is called when we hear the
+  // response or commit.
+  void ClearPendingTransitionRequestData();
 
   // Send a message to the renderer process to change the accessibility mode.
   void SetAccessibilityMode(AccessibilityMode AccessibilityMode);

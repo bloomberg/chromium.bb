@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "content/browser/loader/cross_site_resource_handler.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/transition_request_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -23,6 +25,11 @@ namespace content {
 class TransitionBrowserTest : public ContentBrowserTest {
  public:
   TransitionBrowserTest() {}
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TransitionBrowserTest);
@@ -60,8 +67,10 @@ class TransitionBrowserTestObserver
     ResourceRequestInfoImpl* info =
         ResourceRequestInfoImpl::ForRequest(request_);
 
-    TransitionRequestManager::GetInstance()->SetHasPendingTransitionRequest(
-        child_id, info->GetRenderFrameID(), is_transition_request_);
+    if (is_transition_request_) {
+      TransitionRequestManager::GetInstance()->AddPendingTransitionRequestData(
+          child_id, info->GetRenderFrameID(), "*", "", "");
+    }
   }
 
   virtual void OnResponseStarted(

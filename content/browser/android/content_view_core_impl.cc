@@ -1514,17 +1514,19 @@ void ContentViewCoreImpl::ResumeResponseDeferredAtStart(JNIEnv* env,
 void ContentViewCoreImpl::SetHasPendingNavigationTransitionForTesting(
     JNIEnv* env,
     jobject obj) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalWebPlatformFeatures);
   RenderFrameHost* frame = static_cast<WebContentsImpl*>(GetWebContents())->
       GetMainFrame();
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(
-          &TransitionRequestManager::SetHasPendingTransitionRequest,
+          &TransitionRequestManager::AddPendingTransitionRequestData,
           base::Unretained(TransitionRequestManager::GetInstance()),
           frame->GetProcess()->GetID(),
           frame->GetRoutingID(),
-          true));
+          "*", "", ""));
 }
 
 jint ContentViewCoreImpl::GetCurrentRenderProcessId(JNIEnv* env, jobject obj) {
@@ -1536,6 +1538,22 @@ void ContentViewCoreImpl::SetBackgroundOpaque(JNIEnv* env, jobject jobj,
     jboolean opaque) {
   if (GetRenderWidgetHostViewAndroid())
     GetRenderWidgetHostViewAndroid()->SetBackgroundOpaque(opaque);
+}
+
+void ContentViewCoreImpl::SetupTransitionView(
+    JNIEnv* env, jobject jobj, jstring markup) {
+  if (!GetWebContents()) return;
+  GetWebContents()->GetMainFrame()->Send(new FrameMsg_SetupTransitionView(
+      GetWebContents()->GetMainFrame()->GetRoutingID(),
+      ConvertJavaStringToUTF8(env, markup)));
+}
+
+void ContentViewCoreImpl::BeginExitTransition(
+    JNIEnv* env, jobject jobj, jstring css_selector) {
+  if (!GetWebContents()) return;
+  GetWebContents()->GetMainFrame()->Send(new FrameMsg_BeginExitTransition(
+      GetWebContents()->GetMainFrame()->GetRoutingID(),
+      ConvertJavaStringToUTF8(env, css_selector)));
 }
 
 void ContentViewCoreImpl::RequestTextSurroundingSelection(
@@ -1556,8 +1574,7 @@ void ContentViewCoreImpl::RequestTextSurroundingSelection(
 }
 
 void ContentViewCoreImpl::DidDeferAfterResponseStarted(
-    const scoped_refptr<net::HttpResponseHeaders>& headers,
-    const GURL& url) {
+    const TransitionLayerData& transition_data) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj(java_ref_.get(env));
   if (obj.is_null())
@@ -1565,19 +1582,27 @@ void ContentViewCoreImpl::DidDeferAfterResponseStarted(
 
   std::vector<GURL> entering_stylesheets;
   std::string transition_color;
-  if (headers) {
+  if (transition_data.response_headers) {
     TransitionRequestManager::ParseTransitionStylesheetsFromHeaders(
-        headers, entering_stylesheets, url);
+        transition_data.response_headers, entering_stylesheets,
+        transition_data.request_url);
 
-    headers->EnumerateHeader(
+    transition_data.response_headers->EnumerateHeader(
         NULL, "X-Transition-Entering-Color", &transition_color);
   }
+
+  ScopedJavaLocalRef<jstring> jstring_markup(ConvertUTF8ToJavaString(
+      env, transition_data.markup));
+
+  ScopedJavaLocalRef<jstring> jstring_css_selector(ConvertUTF8ToJavaString(
+      env, transition_data.css_selector));
 
   ScopedJavaLocalRef<jstring> jstring_transition_color(ConvertUTF8ToJavaString(
       env, transition_color));
 
   Java_ContentViewCore_didDeferAfterResponseStarted(
-      env, obj.obj(), jstring_transition_color.obj());
+      env, obj.obj(), jstring_markup.obj(), jstring_css_selector.obj(),
+      jstring_transition_color.obj());
 
   std::vector<GURL>::const_iterator iter = entering_stylesheets.begin();
   for (; iter != entering_stylesheets.end(); ++iter) {

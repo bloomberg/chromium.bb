@@ -30,6 +30,7 @@ class RenderFrameHost;
 class WebContents;
 struct AXEventNotificationDetails;
 struct ContextMenuParams;
+struct TransitionLayerData;
 
 // An interface implemented by an object interested in knowing about the state
 // of the RenderFrameHost.
@@ -68,8 +69,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Notification that the navigation on the main frame is blocked waiting
   // for transition to occur.
   virtual void DidDeferAfterResponseStarted(
-      const scoped_refptr<net::HttpResponseHeaders>& headers,
-      const GURL& url) {}
+      const TransitionLayerData& transition_data) {}
 
   // Used to query whether the navigation transition will be handled.
   virtual bool WillHandleDeferAfterResponseStarted();

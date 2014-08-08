@@ -4,9 +4,12 @@
 
 #include "content/browser/transition_request_manager.h"
 
+#include "base/command_line.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_switches.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 
@@ -72,6 +75,12 @@ bool EnumerateLinkHeaders(
 
 namespace content {
 
+TransitionLayerData::TransitionLayerData() {
+}
+
+TransitionLayerData::~TransitionLayerData() {
+}
+
 void TransitionRequestManager::ParseTransitionStylesheetsFromHeaders(
     const scoped_refptr<net::HttpResponseHeaders>& headers,
     std::vector<GURL>& entering_stylesheets,
@@ -93,28 +102,72 @@ void TransitionRequestManager::ParseTransitionStylesheetsFromHeaders(
   }
 }
 
-bool TransitionRequestManager::HasPendingTransitionRequest(
-    int process_id,
-    int render_frame_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  std::pair<int, int> key(process_id, render_frame_id);
-  return (pending_transition_frames_.find(key) !=
-          pending_transition_frames_.end());
+TransitionRequestManager::TransitionRequestData::TransitionRequestData() {
 }
 
-void TransitionRequestManager::SetHasPendingTransitionRequest(
-    int process_id,
+TransitionRequestManager::TransitionRequestData::~TransitionRequestData() {
+}
+
+void TransitionRequestManager::TransitionRequestData::AddEntry(
+    const std::string& allowed_destination_host_pattern,
+    const std::string& css_selector,
+    const std::string& markup) {
+  allowed_entries_.push_back(AllowedEntry(allowed_destination_host_pattern,
+                                          css_selector,
+                                          markup));
+}
+
+bool TransitionRequestManager::TransitionRequestData::FindEntry(
+    const GURL& request_url,
+    TransitionLayerData* transition_data) {
+  DCHECK(!allowed_entries_.empty());
+  CHECK(transition_data);
+  // TODO(oysteine): Add CSP check to validate the host pattern and the
+  // request_url. Must be done before this feature is moved out from the flag.
+  CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableExperimentalWebPlatformFeatures) ||
+            base::FieldTrialList::FindFullName("NavigationTransitions") ==
+                "Enabled");
+
+  const AllowedEntry& allowed_entry = allowed_entries_[0];
+  transition_data->markup = allowed_entry.markup;
+  transition_data->css_selector = allowed_entry.css_selector;
+  return true;
+}
+
+bool TransitionRequestManager::HasPendingTransitionRequest(
+    int render_process_id,
     int render_frame_id,
-    bool has_pending) {
+    const GURL& request_url,
+    TransitionLayerData* transition_data) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(transition_data);
+  std::pair<int, int> key(render_process_id, render_frame_id);
+  RenderFrameRequestDataMap::iterator iter =
+      pending_transition_frames_.find(key);
+  return iter != pending_transition_frames_.end() &&
+      iter->second.FindEntry(request_url, transition_data);
+}
+
+void TransitionRequestManager::AddPendingTransitionRequestData(
+    int render_process_id,
+    int render_frame_id,
+    const std::string& allowed_destination_host_pattern,
+    const std::string& css_selector,
+    const std::string& markup) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  std::pair<int, int> key(process_id, render_frame_id);
-  if (has_pending) {
-    pending_transition_frames_.insert(key);
-  } else {
-    pending_transition_frames_.erase(key);
-  }
+  std::pair<int, int> key(render_process_id, render_frame_id);
+  pending_transition_frames_[key].AddEntry(allowed_destination_host_pattern,
+                                           css_selector,
+                                           markup);
+}
+
+void TransitionRequestManager::ClearPendingTransitionRequestData(
+    int render_process_id, int render_frame_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  std::pair<int, int> key(render_process_id, render_frame_id);
+  pending_transition_frames_.erase(key);
 }
 
 TransitionRequestManager::TransitionRequestManager() {
