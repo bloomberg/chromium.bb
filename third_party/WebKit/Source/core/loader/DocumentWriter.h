@@ -46,7 +46,7 @@ class TextResourceDecoder;
 class DocumentWriter : public RefCountedWillBeGarbageCollectedFinalized<DocumentWriter> {
     WTF_MAKE_NONCOPYABLE(DocumentWriter);
 public:
-    static PassRefPtrWillBeRawPtr<DocumentWriter> create(Document*, const AtomicString& mimeType = emptyAtom, const AtomicString& encoding = emptyAtom, bool encodingUserChoosen = false);
+    static PassRefPtrWillBeRawPtr<DocumentWriter> create(Document*, const AtomicString& mimeType = emptyAtom, const AtomicString& encoding = emptyAtom);
 
     ~DocumentWriter();
     void trace(Visitor*);
@@ -61,7 +61,6 @@ public:
 
     const AtomicString& mimeType() const { return m_decoderBuilder.mimeType(); }
     const AtomicString& encoding() const { return m_decoderBuilder.encoding(); }
-    bool encodingWasChosenByUser() const { return m_decoderBuilder.encodingWasChosenByUser(); }
 
     // Exposed for DocumentLoader::replaceDocument.
     void appendReplacingData(const String&);
@@ -71,7 +70,7 @@ public:
     void setDocumentWasLoadedAsPartOfNavigation();
 
 private:
-    DocumentWriter(Document*, const AtomicString& mimeType, const AtomicString& encoding, bool encodingUserChoosen);
+    DocumentWriter(Document*, const AtomicString& mimeType, const AtomicString& encoding);
 
     RawPtrWillBeMember<Document> m_document;
     TextResourceDecoderBuilder m_decoderBuilder;

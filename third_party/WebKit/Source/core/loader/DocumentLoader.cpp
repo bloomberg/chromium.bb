@@ -500,7 +500,7 @@ void DocumentLoader::ensureWriter(const AtomicString& mimeType, const KURL& over
         return;
 
     const AtomicString& encoding = overrideEncoding().isNull() ? response().textEncodingName() : overrideEncoding();
-    m_writer = createWriterFor(m_frame, 0, url(), mimeType, encoding, false, false);
+    m_writer = createWriterFor(m_frame, 0, url(), mimeType, encoding, false);
     m_writer->setDocumentWasLoadedAsPartOfNavigation();
     // This should be set before receivedFirstData().
     if (!overridingURL.isEmpty())
@@ -773,7 +773,7 @@ void DocumentLoader::endWriting(DocumentWriter* writer)
     m_writer.clear();
 }
 
-PassRefPtrWillBeRawPtr<DocumentWriter> DocumentLoader::createWriterFor(LocalFrame* frame, const Document* ownerDocument, const KURL& url, const AtomicString& mimeType, const AtomicString& encoding, bool userChosen, bool dispatch)
+PassRefPtrWillBeRawPtr<DocumentWriter> DocumentLoader::createWriterFor(LocalFrame* frame, const Document* ownerDocument, const KURL& url, const AtomicString& mimeType, const AtomicString& encoding, bool dispatch)
 {
     // Create a new document before clearing the frame, because it may need to
     // inherit an aliased security context.
@@ -807,7 +807,7 @@ PassRefPtrWillBeRawPtr<DocumentWriter> DocumentLoader::createWriterFor(LocalFram
 
     frame->loader().didBeginDocument(dispatch);
 
-    return DocumentWriter::create(document.get(), mimeType, encoding, userChosen);
+    return DocumentWriter::create(document.get(), mimeType, encoding);
 }
 
 const AtomicString& DocumentLoader::mimeType() const
@@ -829,7 +829,7 @@ void DocumentLoader::setUserChosenEncoding(const String& charset)
 void DocumentLoader::replaceDocument(const String& source, Document* ownerDocument)
 {
     m_frame->loader().stopAllLoaders();
-    m_writer = createWriterFor(m_frame, ownerDocument, m_frame->document()->url(), mimeType(), m_writer ? m_writer->encoding() : emptyAtom,  m_writer ? m_writer->encodingWasChosenByUser() : false, true);
+    m_writer = createWriterFor(m_frame, ownerDocument, m_frame->document()->url(), mimeType(), m_writer ? m_writer->encoding() : emptyAtom, true);
     if (!source.isNull())
         m_writer->appendReplacingData(source);
     endWriting(m_writer.get());

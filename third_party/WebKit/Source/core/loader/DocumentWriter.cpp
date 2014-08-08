@@ -44,14 +44,14 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<DocumentWriter> DocumentWriter::create(Document* document, const AtomicString& mimeType, const AtomicString& encoding, bool encodingUserChoosen)
+PassRefPtrWillBeRawPtr<DocumentWriter> DocumentWriter::create(Document* document, const AtomicString& mimeType, const AtomicString& encoding)
 {
-    return adoptRefWillBeNoop(new DocumentWriter(document, mimeType, encoding, encodingUserChoosen));
+    return adoptRefWillBeNoop(new DocumentWriter(document, mimeType, encoding));
 }
 
-DocumentWriter::DocumentWriter(Document* document, const AtomicString& mimeType, const AtomicString& encoding, bool encodingUserChoosen)
+DocumentWriter::DocumentWriter(Document* document, const AtomicString& mimeType, const AtomicString& encoding)
     : m_document(document)
-    , m_decoderBuilder(mimeType, encoding, encodingUserChoosen)
+    , m_decoderBuilder(mimeType, encoding)
     // We grab a reference to the parser so that we'll always send data to the
     // original parser, even if the document acquires a new parser (e.g., via
     // document.open).
