@@ -1,0 +1,34 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+function test()
+{
+    runtime.registerModule("documentation");
+    runtime.loadModule("documentation");
+    var testCases = [
+        "max",
+        "insertBefore",
+        "eval",
+        "stringify",
+        "isArray",
+        "now",
+        "fromCharCode",
+        "keys",
+        "notExist",
+        ];
+    var urlFormer = new WebInspector.DocumentationURLProvider();
+    for (var i = 0; i < testCases.length; ++i) {
+        InspectorTest.addResult("Property " + testCases[i] + ":");
+        InspectorTest.addResult(urlFormer.itemPath(testCases[i]));
+    }
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+This test verifies URL created by WebInspector.DocumentationURLProvider
+</body>
+</html>
