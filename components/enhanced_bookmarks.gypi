@@ -15,9 +15,12 @@
         '../sql/sql.gyp:sql',
         '../ui/gfx/gfx.gyp:gfx',
         '../url/url.gyp:url_lib',
+        'bookmarks_browser',
         'enhanced_bookmarks_proto',
       ],
       'sources': [
+        'enhanced_bookmarks/enhanced_bookmark_utils.cc',
+        'enhanced_bookmarks/enhanced_bookmark_utils.h',
         'enhanced_bookmarks/image_store.cc',
         'enhanced_bookmarks/image_store.h',
         'enhanced_bookmarks/image_store_util.cc',
