@@ -53,12 +53,11 @@ public:
 
 private:
     friend class GraphicsContextRecorder;
-    GraphicsContextSnapshot(PassRefPtr<SkPicture>, bool isCerteainlyOpaque);
+    GraphicsContextSnapshot(PassRefPtr<SkPicture>);
 
     PassOwnPtr<SkBitmap> createBitmap() const;
 
     RefPtr<SkPicture> m_picture;
-    bool m_isCertainlyOpaque;
 };
 
 class PLATFORM_EXPORT GraphicsContextRecorder {

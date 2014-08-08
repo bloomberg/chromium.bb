@@ -241,10 +241,6 @@ private:
 
     void invalidateFrameOwnerElement(LocalFrame*);
 
-    bool hasBreakpoint(Node*, int type);
-    void updateSubtreeBreakpoints(Node* root, uint32_t rootMask, bool value);
-    void descriptionForDOMEvent(Node* target, int breakpointType, bool insertion, PassRefPtr<JSONObject> description);
-
     PassRefPtr<TypeBuilder::DOM::Node> buildObjectForNode(Node*, int depth, NodeToIdMap*);
     PassRefPtr<TypeBuilder::Array<String> > buildArrayForElementAttributes(Element*);
     PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > buildArrayForContainerChildren(Node* container, int depth, NodeToIdMap* nodesMap);

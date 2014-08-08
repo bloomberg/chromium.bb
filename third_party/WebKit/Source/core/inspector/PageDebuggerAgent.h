@@ -56,8 +56,6 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
     void didClearDocumentOfWindowObject(LocalFrame*);
-    String preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName);
-    PassOwnPtr<ScriptSourceCode> preprocess(LocalFrame*, const ScriptSourceCode&);
     void didCommitLoad(LocalFrame*, DocumentLoader*);
 
 protected:

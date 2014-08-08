@@ -293,9 +293,6 @@ interface InspectorInstrumentation {
     void continueAfterXFrameOptionsDenied(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r);
 
     [Inline=Forward]
-    void continueWithPolicyDownload(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r);
-
-    [Inline=Forward]
     void continueWithPolicyIgnore(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r);
 
     [Timeline, Resource, Inline=FastReturn]

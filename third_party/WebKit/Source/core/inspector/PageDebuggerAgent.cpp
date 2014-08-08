@@ -147,20 +147,6 @@ void PageDebuggerAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
         scriptDebugServer().setPreprocessorSource(m_pageAgent->scriptPreprocessorSource());
 }
 
-String PageDebuggerAgent::preprocessEventListener(LocalFrame* frame, const String& source, const String& url, const String& functionName)
-{
-    ASSERT(frame);
-    ASSERT(m_pageScriptDebugServer);
-    return m_pageScriptDebugServer->preprocessEventListener(frame, source, url, functionName);
-}
-
-PassOwnPtr<ScriptSourceCode> PageDebuggerAgent::preprocess(LocalFrame* frame, const ScriptSourceCode& sourceCode)
-{
-    ASSERT(m_pageScriptDebugServer);
-    ASSERT(frame);
-    return m_pageScriptDebugServer->preprocess(frame, sourceCode);
-}
-
 void PageDebuggerAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)
 {
     Frame* mainFrame = frame->page()->deprecatedLocalMainFrame();

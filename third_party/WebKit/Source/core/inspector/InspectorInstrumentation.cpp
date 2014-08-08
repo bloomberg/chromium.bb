@@ -108,11 +108,6 @@ void continueAfterXFrameOptionsDeniedImpl(LocalFrame* frame, DocumentLoader* loa
     didReceiveResourceResponseButCanceledImpl(frame, loader, identifier, r);
 }
 
-void continueWithPolicyDownloadImpl(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
-{
-    didReceiveResourceResponseButCanceledImpl(frame, loader, identifier, r);
-}
-
 void continueWithPolicyIgnoreImpl(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
 {
     didReceiveResourceResponseButCanceledImpl(frame, loader, identifier, r);

@@ -67,15 +67,13 @@ PassRefPtr<GraphicsContextSnapshot> GraphicsContextRecorder::stop()
     m_context.clear();
     m_picture = adoptRef(m_recorder->endRecording());
     m_recorder.clear();
-    return adoptRef(new GraphicsContextSnapshot(m_picture.release(), m_isCertainlyOpaque));
+    return adoptRef(new GraphicsContextSnapshot(m_picture.release()));
 }
 
-GraphicsContextSnapshot::GraphicsContextSnapshot(PassRefPtr<SkPicture> picture, bool isCertainlyOpaque)
+GraphicsContextSnapshot::GraphicsContextSnapshot(PassRefPtr<SkPicture> picture)
     : m_picture(picture)
-    , m_isCertainlyOpaque(isCertainlyOpaque)
 {
 }
-
 
 static bool decodeBitmap(const void* data, size_t length, SkBitmap* result)
 {
@@ -97,7 +95,7 @@ PassRefPtr<GraphicsContextSnapshot> GraphicsContextSnapshot::load(const char* da
     RefPtr<SkPicture> picture = adoptRef(SkPicture::CreateFromStream(&stream, decodeBitmap));
     if (!picture)
         return nullptr;
-    return adoptRef(new GraphicsContextSnapshot(picture, false));
+    return adoptRef(new GraphicsContextSnapshot(picture));
 }
 
 PassOwnPtr<Vector<char> > GraphicsContextSnapshot::replay(unsigned fromStep, unsigned toStep, double scale) const
