@@ -2063,19 +2063,10 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
             container->setNeedsOverflowRecalcAfterStyleChange();
     }
 
-    if (updatedDiff.needsRepaintLayer()) {
+    if (updatedDiff.needsRepaintLayer())
         toRenderLayerModelObject(this)->layer()->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
-    } else if (updatedDiff.needsRepaint()) {
-        // Invalidate paints with the new style, e.g., for example if we go from not having
-        // an outline to having an outline.
-
-        // The paintInvalidationForWholeRenderer() call is needed for non-layout changes to style. See the corresponding
-        // comment in RenderObject::styleWillChange for why.
-        if (needsLayout())
-            setShouldDoFullPaintInvalidation(true);
-        else if (!selfNeedsLayout())
-            paintInvalidationForWholeRenderer();
-    }
+    else if (diff.needsRepaintObject() || updatedDiff.needsRepaintObject())
+        setShouldDoFullPaintInvalidation(true);
 }
 
 static inline bool rendererHasBackground(const RenderObject* renderer)
@@ -2107,14 +2098,6 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle& newS
                     layer->dirtyVisibleContentStatus();
                 }
             }
-        }
-
-        // For style-only changes that need paint invalidation, we currently need to issue a paint invalidation before and after the style
-        // change. The paint invalidation before style change is accomplished here. The paint invalidation after style change is accomplished
-        // in RenderObject::setStyle.
-        if (m_parent && diff.needsRepaintObject()) {
-            if (!diff.needsLayout() && !needsLayout())
-                paintInvalidationForWholeRenderer();
         }
 
         if (isFloating() && (m_style->floating() != newStyle.floating()))
