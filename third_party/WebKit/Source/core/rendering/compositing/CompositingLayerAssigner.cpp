@@ -49,7 +49,7 @@ CompositingLayerAssigner::~CompositingLayerAssigner()
 
 void CompositingLayerAssigner::assign(RenderLayer* updateRoot, Vector<RenderLayer*>& layersNeedingRepaint)
 {
-    TRACE_EVENT0("blink_rendering", "CompositingLayerAssigner::assign");
+    TRACE_EVENT0("blink", "CompositingLayerAssigner::assign");
 
     SquashingState squashingState;
     assignLayersToBackingsInternal(updateRoot, squashingState, layersNeedingRepaint);

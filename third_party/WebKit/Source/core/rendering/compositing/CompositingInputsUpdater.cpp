@@ -25,7 +25,7 @@ CompositingInputsUpdater::~CompositingInputsUpdater()
 
 void CompositingInputsUpdater::update()
 {
-    TRACE_EVENT0("blink_rendering", "CompositingInputsUpdater::update");
+    TRACE_EVENT0("blink", "CompositingInputsUpdater::update");
     updateRecursive(m_rootRenderLayer, DoNotForceUpdate, AncestorInfo());
 }
 

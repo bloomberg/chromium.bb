@@ -187,7 +187,7 @@ CompositingRequirementsUpdater::~CompositingRequirementsUpdater()
 
 void CompositingRequirementsUpdater::update(RenderLayer* root)
 {
-    TRACE_EVENT0("blink_rendering", "CompositingRequirementsUpdater::updateRecursive");
+    TRACE_EVENT0("blink", "CompositingRequirementsUpdater::updateRecursive");
 
     // Go through the layers in presentation order, so that we can compute which RenderLayers need compositing layers.
     // FIXME: we could maybe do this and the hierarchy udpate in one pass, but the parenting logic would be more complex.

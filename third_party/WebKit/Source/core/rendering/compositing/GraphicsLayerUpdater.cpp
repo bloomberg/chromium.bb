@@ -83,7 +83,7 @@ GraphicsLayerUpdater::~GraphicsLayerUpdater()
 
 void GraphicsLayerUpdater::update(RenderLayer& layer, Vector<RenderLayer*>& layersNeedingPaintInvalidation)
 {
-    TRACE_EVENT0("blink_rendering", "GraphicsLayerUpdater::update");
+    TRACE_EVENT0("blink", "GraphicsLayerUpdater::update");
     updateRecursive(layer, DoNotForceUpdate, UpdateContext(), layersNeedingPaintInvalidation);
     layer.compositor()->updateRootLayerPosition();
 }

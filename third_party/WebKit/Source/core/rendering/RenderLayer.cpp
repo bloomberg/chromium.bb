@@ -244,7 +244,7 @@ void RenderLayer::setSubpixelAccumulation(const LayoutSize& size)
 
 void RenderLayer::updateLayerPositionsAfterLayout()
 {
-    TRACE_EVENT0("blink_rendering", "RenderLayer::updateLayerPositionsAfterLayout");
+    TRACE_EVENT0("blink", "RenderLayer::updateLayerPositionsAfterLayout");
 
     m_clipper.clearClipRectsIncludingDescendants();
     updateLayerPositionRecursive();
@@ -639,7 +639,7 @@ void RenderLayer::setAncestorChainHasVisibleDescendant()
 // track state and update it as appropriate as changes are made in the Render tree.
 void RenderLayer::updateScrollingStateAfterCompositingChange()
 {
-    TRACE_EVENT0("blink_rendering", "RenderLayer::updateScrollingStateAfterCompositingChange");
+    TRACE_EVENT0("blink", "RenderLayer::updateScrollingStateAfterCompositingChange");
     m_hasVisibleNonLayerContent = false;
     for (RenderObject* r = renderer()->slowFirstChild(); r; r = r->nextSibling()) {
         if (!r->hasLayer()) {

@@ -191,7 +191,7 @@ void RenderLayerCompositor::updateIfNeededRecursive()
             toLocalFrame(child)->contentRenderer()->compositor()->updateIfNeededRecursive();
     }
 
-    TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::updateIfNeededRecursive");
+    TRACE_EVENT0("blink", "RenderLayerCompositor::updateIfNeededRecursive");
 
     ASSERT(!m_renderView.needsLayout());
 
@@ -311,7 +311,7 @@ void RenderLayerCompositor::updateIfNeeded()
         bool layersChanged = layerAssigner.layersChanged();
 
         {
-            TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::updateAfterCompositingChange");
+            TRACE_EVENT0("blink", "RenderLayerCompositor::updateAfterCompositingChange");
             if (const FrameView::ScrollableAreaSet* scrollableAreas = m_renderView.frameView()->scrollableAreas()) {
                 for (FrameView::ScrollableAreaSet::iterator it = scrollableAreas->begin(); it != scrollableAreas->end(); ++it)
                     layersChanged |= (*it)->updateAfterCompositingChange();
@@ -340,7 +340,7 @@ void RenderLayerCompositor::updateIfNeeded()
         GraphicsLayerVector childList;
         ancestorInfo.childLayersOfEnclosingCompositedLayer = &childList;
         {
-            TRACE_EVENT0("blink_rendering", "GraphicsLayerTreeBuilder::rebuild");
+            TRACE_EVENT0("blink", "GraphicsLayerTreeBuilder::rebuild");
             GraphicsLayerTreeBuilder().rebuild(*updateRoot, ancestorInfo);
         }
 
