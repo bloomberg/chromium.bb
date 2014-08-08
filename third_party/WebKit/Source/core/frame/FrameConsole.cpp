@@ -31,7 +31,9 @@
 
 #include "core/frame/FrameHost.h"
 #include "core/inspector/ConsoleAPITypes.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorConsoleInstrumentation.h"
+#include "core/inspector/ScriptCallStack.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
@@ -50,17 +52,7 @@ FrameConsole::FrameConsole(LocalFrame& frame)
 {
 }
 
-void FrameConsole::addMessage(MessageSource source, MessageLevel level, const String& message)
-{
-    addMessage(source, level, message, String(), 0, 0, nullptr, 0, 0);
-}
-
-void FrameConsole::addMessage(MessageSource source, MessageLevel level, const String& message, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
-{
-    addMessage(source, level, message, String(), 0, 0, callStack, 0);
-}
-
-void FrameConsole::addMessage(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, ScriptState* scriptState, unsigned long requestIdentifier)
+void FrameConsole::addMessage(PassRefPtr<ConsoleMessage> prpConsoleMessage)
 {
     if (muteCount)
         return;
@@ -71,23 +63,23 @@ void FrameConsole::addMessage(MessageSource source, MessageLevel level, const St
     if (!context)
         return;
 
-    String messageURL;
-    if (callStack) {
-        messageURL = callStack->at(0).sourceURL();
-        InspectorInstrumentation::addMessageToConsole(context, source, LogMessageType, level, message, callStack, requestIdentifier);
-    } else {
-        messageURL = url;
-        InspectorInstrumentation::addMessageToConsole(context, source, LogMessageType, level, message, url, lineNumber, columnNumber, scriptState, requestIdentifier);
-    }
+    RefPtr<ConsoleMessage> consoleMessage = prpConsoleMessage;
+    InspectorInstrumentation::addMessageToConsole(context, consoleMessage.get());
 
-    if (source == CSSMessageSource)
+    String messageURL;
+    if (consoleMessage->callStack())
+        messageURL = consoleMessage->callStack()->at(0).sourceURL();
+    else
+        messageURL = consoleMessage->url();
+
+    if (consoleMessage->source() == CSSMessageSource)
         return;
 
     String stackTrace;
-    if (callStack && m_frame.chromeClient().shouldReportDetailedMessageForSource(messageURL))
-        stackTrace = FrameConsole::formatStackTraceString(message, callStack);
+    if (consoleMessage->callStack() && m_frame.chromeClient().shouldReportDetailedMessageForSource(consoleMessage->url()))
+        stackTrace = FrameConsole::formatStackTraceString(consoleMessage->message(), consoleMessage->callStack());
 
-    m_frame.chromeClient().addMessageToConsole(&m_frame, source, level, message, lineNumber, messageURL, stackTrace);
+    m_frame.chromeClient().addMessageToConsole(&m_frame, consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->lineNumber(), messageURL, stackTrace);
 }
 
 String FrameConsole::formatStackTraceString(const String& originalMessage, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)

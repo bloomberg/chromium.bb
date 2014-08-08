@@ -77,6 +77,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/rendering/RenderTheme.h"
 #include "platform/FloatConversion.h"
@@ -1734,7 +1735,7 @@ void BisonCSSParser::logError(const String& message, const CSSParserLocation& lo
         lineNumberInStyleSheet = location.lineNumber;
     }
     FrameConsole& console = m_styleSheet->singleOwnerDocument()->frame()->console();
-    console.addMessage(CSSMessageSource, WarningMessageLevel, message, m_styleSheet->baseURL().string(), lineNumberInStyleSheet + m_startPosition.m_line.zeroBasedInt() + 1, columnNumber + 1);
+    console.addMessage(ConsoleMessage::create(CSSMessageSource, WarningMessageLevel, message, m_styleSheet->baseURL().string(), lineNumberInStyleSheet + m_startPosition.m_line.zeroBasedInt() + 1, columnNumber + 1));
 }
 
 StyleRuleKeyframes* BisonCSSParser::createKeyframesRule(const String& name, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleKeyframe> > > popKeyframes, bool isPrefixed)

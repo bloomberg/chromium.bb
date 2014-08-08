@@ -32,6 +32,7 @@
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/xml/XSLStyleSheet.h"
 #include "core/xml/XSLTExtensions.h"
 #include "core/xml/XSLTUnicodeSort.h"
@@ -78,7 +79,7 @@ void XSLTProcessor::parseErrorFunc(void* userData, xmlError* error)
         break;
     }
 
-    console->addMessage(XMLMessageSource, level, error->message, error->file, error->line);
+    console->addMessage(ConsoleMessage::create(XMLMessageSource, level, error->message, error->file, error->line));
 }
 
 // FIXME: There seems to be no way to control the ctxt pointer for loading here, thus we have globals.

@@ -35,6 +35,7 @@
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "public/platform/Platform.h"
 
@@ -634,7 +635,7 @@ void UseCounter::countDeprecation(const Document& document, Feature feature)
 
     if (host->useCounter().recordMeasurement(feature)) {
         ASSERT(!host->useCounter().deprecationMessage(feature).isEmpty());
-        frame->console().addMessage(DeprecationMessageSource, WarningMessageLevel, host->useCounter().deprecationMessage(feature));
+        frame->console().addMessage(ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel, host->useCounter().deprecationMessage(feature)));
     }
 }
 

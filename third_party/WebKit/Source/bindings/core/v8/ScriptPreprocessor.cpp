@@ -39,6 +39,7 @@
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "wtf/TemporaryChange.h"
 
 namespace blink {
@@ -59,13 +60,13 @@ ScriptPreprocessor::ScriptPreprocessor(const ScriptSourceCode& preprocessorSourc
     frame->script().executeScriptInIsolatedWorld(ScriptPreprocessorIsolatedWorldId, sources, DOMWrapperWorld::mainWorldExtensionGroup, &scriptResults);
 
     if (scriptResults.size() != 1) {
-        frame->console().addMessage(JSMessageSource, ErrorMessageLevel, "ScriptPreprocessor internal error, one ScriptSourceCode must give exactly one result.");
+        frame->console().addMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, "ScriptPreprocessor internal error, one ScriptSourceCode must give exactly one result."));
         return;
     }
 
     v8::Local<v8::Value> preprocessorFunction = scriptResults[0];
     if (preprocessorFunction.IsEmpty() || !preprocessorFunction->IsFunction()) {
-        frame->console().addMessage(JSMessageSource, ErrorMessageLevel, "The preprocessor must compile to a function.");
+        frame->console().addMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, "The preprocessor must compile to a function."));
         return;
     }
     m_preprocessorFunction.set(m_scriptState->isolate(), v8::Handle<v8::Function>::Cast(preprocessorFunction));

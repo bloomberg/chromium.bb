@@ -31,13 +31,14 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "core/frame/ConsoleTypes.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
+class ConsoleMessage;
 class FrameHost;
+class ScriptCallStack;
 
 // FrameConsole takes per-frame console messages and routes them up through the FrameHost to the ChromeClient and Inspector.
 // It's meant as an abstraction around ChromeClient calls and the way that Blink core/ can add messages to the console.
@@ -45,9 +46,7 @@ class FrameConsole FINAL {
 public:
     static PassOwnPtr<FrameConsole> create(LocalFrame& frame) { return adoptPtr(new FrameConsole(frame)); }
 
-    void addMessage(MessageSource, MessageLevel, const String& message);
-    void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, unsigned columnNumber = 0, PassRefPtrWillBeRawPtr<ScriptCallStack> = nullptr, ScriptState* = 0, unsigned long requestIdentifier = 0);
-    void addMessage(MessageSource, MessageLevel, const String& message, PassRefPtrWillBeRawPtr<ScriptCallStack>);
+    void addMessage(PassRefPtr<ConsoleMessage>);
     static String formatStackTraceString(const String& originalMessage, PassRefPtrWillBeRawPtr<ScriptCallStack>);
 
     static void mute();

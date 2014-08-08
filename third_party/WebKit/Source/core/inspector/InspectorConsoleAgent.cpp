@@ -31,6 +31,7 @@
 #include "bindings/core/v8/ScriptProfiler.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorConsoleMessage.h"
@@ -165,14 +166,14 @@ void InspectorConsoleAgent::clearFrontend()
     disable(&errorString);
 }
 
-void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, unsigned long requestIdentifier)
+void InspectorConsoleAgent::addMessageToConsole(ConsoleMessage* consoleMessage)
 {
-    if (type == ClearMessageType) {
-        ErrorString error;
-        clearMessages(&error);
+    if (consoleMessage->callStack()) {
+        addConsoleMessage(adoptPtr(new InspectorConsoleMessage(!isWorkerAgent(), consoleMessage->source(), LogMessageType, consoleMessage->level(), consoleMessage->message(), consoleMessage->callStack(), consoleMessage->requestIdentifier())));
+    } else {
+        bool canGenerateCallStack = !isWorkerAgent() && m_frontend;
+        addConsoleMessage(adoptPtr(new InspectorConsoleMessage(canGenerateCallStack, consoleMessage->source(), LogMessageType, consoleMessage->level(), consoleMessage->message(), consoleMessage->url(), consoleMessage->lineNumber(), consoleMessage->columnNumber(), consoleMessage->scriptState(), consoleMessage->requestIdentifier())));
     }
-
-    addConsoleMessage(adoptPtr(new InspectorConsoleMessage(!isWorkerAgent(), source, type, level, message, callStack, requestIdentifier)));
 }
 
 void InspectorConsoleAgent::addConsoleAPIMessageToConsole(MessageType type, MessageLevel level, const String& message, ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments, unsigned long requestIdentifier)
@@ -183,17 +184,6 @@ void InspectorConsoleAgent::addConsoleAPIMessageToConsole(MessageType type, Mess
     }
 
     addConsoleMessage(adoptPtr(new InspectorConsoleMessage(!isWorkerAgent(), ConsoleAPIMessageSource, type, level, message, arguments, scriptState, requestIdentifier)));
-}
-
-void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, unsigned columnNumber, ScriptState* scriptState, unsigned long requestIdentifier)
-{
-    if (type == ClearMessageType) {
-        ErrorString error;
-        clearMessages(&error);
-    }
-
-    bool canGenerateCallStack = !isWorkerAgent() && m_frontend;
-    addConsoleMessage(adoptPtr(new InspectorConsoleMessage(canGenerateCallStack, source, type, level, message, scriptId, lineNumber, columnNumber, scriptState, requestIdentifier)));
 }
 
 Vector<unsigned> InspectorConsoleAgent::consoleMessageArgumentCounts()
@@ -290,7 +280,9 @@ void InspectorConsoleAgent::didFinishXHRLoading(XMLHttpRequest*, ThreadableLoade
 {
     if (m_frontend && m_state->getBoolean(ConsoleAgentState::monitoringXHR)) {
         String message = "XHR finished loading: " + method + " \"" + url + "\".";
-        addMessageToConsole(NetworkMessageSource, LogMessageType, DebugMessageLevel, message, sendURL, sendLineNumber, 0, 0, requestIdentifier);
+        RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, DebugMessageLevel, message, sendURL, sendLineNumber);
+        consoleMessage->setRequestIdentifier(requestIdentifier);
+        addMessageToConsole(consoleMessage.get());
     }
 }
 
@@ -300,7 +292,9 @@ void InspectorConsoleAgent::didReceiveResourceResponse(LocalFrame*, unsigned lon
         return;
     if (response.httpStatusCode() >= 400) {
         String message = "Failed to load resource: the server responded with a status of " + String::number(response.httpStatusCode()) + " (" + response.httpStatusText() + ')';
-        addMessageToConsole(NetworkMessageSource, LogMessageType, ErrorMessageLevel, message, response.url().string(), 0, 0, 0, requestIdentifier);
+        RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, ErrorMessageLevel, message, response.url().string());
+        consoleMessage->setRequestIdentifier(requestIdentifier);
+        addMessageToConsole(consoleMessage.get());
     }
 }
 
@@ -314,7 +308,9 @@ void InspectorConsoleAgent::didFailLoading(unsigned long requestIdentifier, cons
         message.appendLiteral(": ");
         message.append(error.localizedDescription());
     }
-    addMessageToConsole(NetworkMessageSource, LogMessageType, ErrorMessageLevel, message.toString(), error.failingURL(), 0, 0, 0, requestIdentifier);
+    RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, ErrorMessageLevel, message.toString(), error.failingURL());
+    consoleMessage->setRequestIdentifier(requestIdentifier);
+    addMessageToConsole(consoleMessage.get());
 }
 
 void InspectorConsoleAgent::setMonitoringXHREnabled(ErrorString*, bool enabled)

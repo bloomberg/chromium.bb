@@ -150,6 +150,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/NestingLevelIncrementer.h"
 #include "core/html/parser/TextResourceDecoder.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorCounters.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -5024,7 +5025,10 @@ void Document::internalAddMessage(MessageSource source, MessageLevel level, cons
                 lineNumber = parser->lineNumber().oneBasedInt();
         }
     }
-    m_frame->console().addMessage(source, level, message, messageURL, lineNumber, 0, callStack, scriptState, 0);
+    RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(source, level, message, messageURL, lineNumber);
+    consoleMessage->setCallStack(callStack);
+    consoleMessage->setScriptState(scriptState);
+    m_frame->console().addMessage(consoleMessage.release());
 }
 
 void Document::addConsoleMessageWithRequestIdentifier(MessageSource source, MessageLevel level, const String& message, unsigned long requestIdentifier)
@@ -5034,8 +5038,11 @@ void Document::addConsoleMessageWithRequestIdentifier(MessageSource source, Mess
         return;
     }
 
-    if (m_frame)
-        m_frame->console().addMessage(source, level, message, String(), 0, 0, nullptr, 0, requestIdentifier);
+    if (m_frame) {
+        RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(source, level, message);
+        consoleMessage->setRequestIdentifier(requestIdentifier);
+        m_frame->console().addMessage(consoleMessage.release());
+    }
 }
 
 // FIXME(crbug.com/305497): This should be removed after ExecutionContext-LocalDOMWindow migration.

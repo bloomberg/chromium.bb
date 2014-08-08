@@ -40,6 +40,7 @@
 #include "core/dom/MessagePort.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/Event.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorConsoleInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/WorkerInspectorController.h"
@@ -304,10 +305,10 @@ void WorkerGlobalScope::addMessage(MessageSource source, MessageLevel level, con
 void WorkerGlobalScope::addMessageToWorkerConsole(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, ScriptState* scriptState)
 {
     ASSERT(isContextThread());
-    if (callStack)
-        InspectorInstrumentation::addMessageToConsole(this, source, LogMessageType, level, message, callStack);
-    else
-        InspectorInstrumentation::addMessageToConsole(this, source, LogMessageType, level, message, sourceURL, lineNumber, 0, scriptState);
+    RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(source, level, message, sourceURL, lineNumber);
+    consoleMessage->setCallStack(callStack);
+    consoleMessage->setScriptState(scriptState);
+    InspectorInstrumentation::addMessageToConsole(this, consoleMessage.get());
 }
 
 bool WorkerGlobalScope::isContextThread() const

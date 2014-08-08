@@ -480,16 +480,12 @@ interface InspectorInstrumentation {
 interface InspectorConsoleInstrumentation {
 
 #include "core/inspector/ScriptArguments.h"
-#include "core/inspector/ScriptCallStack.h"
 
-    // FIXME: Convert to ScriptArguments to match non-worker context.
-    // Use the same implementation as above as a similar method dispatched on Page.
-    [Console]
-    void addMessageToConsole(ExecutionContext* context, MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, unsigned long requestIdentifier = 0);
+class ConsoleMessage;
 
     // Use the same implementation as above as a similar method dispatched on Page.
     [Console]
-    void addMessageToConsole(ExecutionContext* context, MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, unsigned columnNumber, ScriptState* state, unsigned long requestIdentifier = 0);
+    void addMessageToConsole(ExecutionContext* context, ConsoleMessage* consoleMessage);
 
     [Console, Debugger]
     void addConsoleAPIMessageToConsole(ExecutionContext* context, MessageType type, MessageLevel level, const String& message, ScriptState* state, PassRefPtrWillBeRawPtr<ScriptArguments> arguments, unsigned long requestIdentifier = 0);

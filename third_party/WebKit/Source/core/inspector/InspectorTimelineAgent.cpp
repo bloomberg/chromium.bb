@@ -37,6 +37,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorCounters.h"
@@ -460,7 +461,7 @@ void InspectorTimelineAgent::innerStop(bool fromConsole)
 
     for (size_t i = 0; i < m_consoleTimelines.size(); ++i) {
         String message = String::format("Timeline '%s' terminated.", m_consoleTimelines[i].utf8().data());
-        mainFrame()->console().addMessage(JSMessageSource, DebugMessageLevel, message);
+        mainFrame()->console().addMessage(ConsoleMessage::create(JSMessageSource, DebugMessageLevel, message));
     }
     m_consoleTimelines.clear();
 
@@ -824,7 +825,9 @@ void InspectorTimelineAgent::consoleTimeline(ExecutionContext* context, const St
 
     String message = String::format("Timeline '%s' started.", title.utf8().data());
 
-    mainFrame()->console().addMessage(JSMessageSource, DebugMessageLevel, message, String(), 0, 0, nullptr, scriptState);
+    RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, DebugMessageLevel, message);
+    consoleMessage->setScriptState(scriptState);
+    mainFrame()->console().addMessage(consoleMessage.release());
     m_consoleTimelines.append(title);
     if (!isStarted()) {
         m_state->setBoolean(TimelineAgentState::bufferEvents, true);
@@ -845,7 +848,9 @@ void InspectorTimelineAgent::consoleTimelineEnd(ExecutionContext* context, const
     size_t index = m_consoleTimelines.find(title);
     if (index == kNotFound) {
         String message = String::format("Timeline '%s' was not started.", title.utf8().data());
-        mainFrame()->console().addMessage(JSMessageSource, DebugMessageLevel, message, String(), 0, 0, nullptr, scriptState);
+        RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, DebugMessageLevel, message);
+        consoleMessage->setScriptState(scriptState);
+        mainFrame()->console().addMessage(consoleMessage.release());
         return;
     }
 
@@ -856,7 +861,9 @@ void InspectorTimelineAgent::consoleTimelineEnd(ExecutionContext* context, const
         unwindRecordStack();
         innerStop(true);
     }
-    mainFrame()->console().addMessage(JSMessageSource, DebugMessageLevel, message, String(), 0, 0, nullptr, scriptState);
+    RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, DebugMessageLevel, message);
+    consoleMessage->setScriptState(scriptState);
+    mainFrame()->console().addMessage(consoleMessage.release());
 }
 
 void InspectorTimelineAgent::domContentLoadedEventFired(LocalFrame* frame)

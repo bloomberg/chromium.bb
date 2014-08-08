@@ -71,6 +71,7 @@
 #include "core/frame/Screen.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -904,7 +905,9 @@ void LocalDOMWindow::dispatchMessageEventWithOriginCheck(SecurityOrigin* intende
         // Check target origin now since the target document may have changed since the timer was scheduled.
         if (!intendedTargetOrigin->isSameSchemeHostPort(document()->securityOrigin())) {
             String message = ExceptionMessages::failedToExecute("postMessage", "DOMWindow", "The target origin provided ('" + intendedTargetOrigin->toString() + "') does not match the recipient window's origin ('" + document()->securityOrigin()->toString() + "').");
-            frameConsole()->addMessage(SecurityMessageSource, ErrorMessageLevel, message, stackTrace);
+            RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message);
+            consoleMessage->setCallStack(stackTrace);
+            frameConsole()->addMessage(consoleMessage.release());
             return;
         }
     }
@@ -984,7 +987,7 @@ void LocalDOMWindow::close(ExecutionContext* context)
     bool allowScriptsToCloseWindows = settings && settings->allowScriptsToCloseWindows();
 
     if (!(page->openedByDOM() || page->backForward().backForwardListCount() <= 1 || allowScriptsToCloseWindows)) {
-        frameConsole()->addMessage(JSMessageSource, WarningMessageLevel, "Scripts may close only the windows that were opened by it.");
+        frameConsole()->addMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Scripts may close only the windows that were opened by it."));
         return;
     }
 
@@ -1700,7 +1703,7 @@ void LocalDOMWindow::printErrorMessage(const String& message)
     if (message.isEmpty())
         return;
 
-    frameConsole()->addMessage(JSMessageSource, ErrorMessageLevel, message);
+    frameConsole()->addMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
 }
 
 // FIXME: Once we're throwing exceptions for cross-origin access violations, we will always sanitize the target

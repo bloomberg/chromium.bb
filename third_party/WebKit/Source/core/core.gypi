@@ -1224,6 +1224,8 @@
             'inspector/AsyncCallStackTracker.h',
             'inspector/BindingVisitors.h',
             'inspector/ConsoleAPITypes.h',
+            'inspector/ConsoleMessage.h',
+            'inspector/ConsoleMessage.cpp',
             'inspector/InspectorConsoleMessage.cpp',
             'inspector/InspectorConsoleMessage.h',
             'inspector/ContentSearchUtils.cpp',
