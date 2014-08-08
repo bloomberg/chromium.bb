@@ -137,7 +137,7 @@ Viewport.prototype.getZoom = function() {
 };
 
 /**
- * Sets the nearset larger value of ZOOM_RATIOS.
+ * Sets the nearest larger value of ZOOM_RATIOS.
  */
 Viewport.prototype.zoomIn = function() {
   var zoom = Viewport.ZOOM_RATIOS[0];
@@ -193,7 +193,7 @@ Viewport.prototype.getRotation = function() {
  *
  * @param {number} width Width of the full resolution image.
  * @param {number} height Height of the full resolution image.
- * @return {number} The ratio of the fullresotion image size and the calculated
+ * @return {number} The ratio of the full resotion image size and the calculated
  * displayed image size.
  */
 Viewport.prototype.getFittingScaleForImageSize_ = function(width, height) {
@@ -417,7 +417,7 @@ Viewport.prototype.update_ = function() {
     this.generation_++;
   }
 
-  // Image bounds on screen cliped with the screen bounds.
+  // Image bounds on screen clipped with the screen bounds.
   var left = Math.max(this.imageBoundsOnScreen_.left, 0);
   var top = Math.max(this.imageBoundsOnScreen_.top, 0);
   var right = Math.min(
@@ -500,11 +500,11 @@ Viewport.prototype.getInverseTransformForRotatedImage = function(orientation) {
 
 /**
  * Obtains CSS transformation that makes the cropped image fit the original
- * image. The new cropped image that the transformaton is applied to fits to the
+ * image. The new cropped image that the transformation is applied to fits to
  * the cropped rectangle in the original image.
  *
  * @param {number} imageWidth Width of the original image.
- * @param {number} imageHeight Height of the origianl image.
+ * @param {number} imageHeight Height of the original image.
  * @param {Rect} imageCropRect Crop rectangle in the image's coordinate system.
  * @return {string} Transformation description.
  */
@@ -528,7 +528,7 @@ Viewport.prototype.getInverseTransformForCroppedImage =
 };
 
 /**
- * Obtains CSS transformaton that makes the image fit to the screen rectangle.
+ * Obtains CSS transformation that makes the image fit to the screen rectangle.
  *
  * @param {Rect} screenRect Screen rectangle.
  * @return {string} Transformation description.

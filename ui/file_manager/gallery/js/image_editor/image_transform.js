@@ -354,8 +354,8 @@ DraggableRect.prototype.getBottom = function() {
 };
 
 /**
- * Obtains the geometory of the rectangle.
- * @return {Rect} Geometory of the rectangle.
+ * Obtains the geometry of the rectangle.
+ * @return {Rect} Geometry of the rectangle.
  */
 DraggableRect.prototype.getRect = function() {
   return new Rect(this.bounds_);
@@ -451,11 +451,11 @@ DraggableRect.prototype.getCursorStyle = function(x, y, mouseDown) {
 };
 
 /**
- * Obtains the drag handler depeding on the coordinate.
+ * Obtains the drag handler depending on the coordinate.
  *
  * @param {number} startScreenX X coordinate for cursor in the screen.
  * @param {number} startScreenY Y coordinate for cursor in the screen.
- * @param {boolean} touch Whether the operaiton is done by touch or not.
+ * @param {boolean} touch Whether the operation is done by touch or not.
  * @return {function(number,number,boolean)} Drag handler that takes x
  *     coordinate value, y coordinate value, and shift key flag.
  */

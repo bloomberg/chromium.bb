@@ -251,7 +251,7 @@ ImageView.prototype.cancelLoad = function() {
  * @param {Gallery.Item} item Gallery item to be loaded.
  * @param {Object} effect Transition effect object.
  * @param {function(number} displayCallback Called when the image is displayed
- *   (possibly as a prevew).
+ *   (possibly as a preview).
  * @param {function(number} loadCallback Called when the image is fully loaded.
  *   The parameter is the load type.
  */
@@ -697,7 +697,7 @@ ImageView.Effect.prototype.getTiming = function() { return this.timing_; };
 
 /**
  * Obtains the CSS transformation string of the effect.
- * @param {DOMCanvas} element Canvas element to be applied the transforamtion.
+ * @param {DOMCanvas} element Canvas element to be applied the transformation.
  * @param {Viewport} viewport Current viewport.
  * @return CSS transformation description.
  */
@@ -769,7 +769,7 @@ ImageView.Effect.Slide.prototype.transform = function(element, viewport) {
  * Animates the original rectangle to the target rectangle.
  *
  * @param {number} previousImageWidth Width of the full resolution image.
- * @param {number} previousImageHeight Hieght of the full resolution image.
+ * @param {number} previousImageHeight Height of the full resolution image.
  * @param {Rect} imageCropRect Crop rectangle in the full resolution image.
  * @param {number=} opt_duration Duration of the effect.
  * @constructor

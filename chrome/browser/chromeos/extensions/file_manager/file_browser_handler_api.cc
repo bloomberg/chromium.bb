@@ -99,7 +99,7 @@ ui::SelectFileDialog::FileTypeInfo ConvertExtensionsToFileTypeInfo(
 class FileSelectorImpl : public FileSelector,
                          public ui::SelectFileDialog::Listener {
  public:
-  explicit FileSelectorImpl();
+  FileSelectorImpl();
   virtual ~FileSelectorImpl() OVERRIDE;
 
  protected:

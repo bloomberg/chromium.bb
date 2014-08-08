@@ -27,9 +27,9 @@ const char kInvalidJsonString[] = "$$$";
 
 class FakeUrlFetchRequest : public UrlFetchRequestBase {
  public:
-  explicit FakeUrlFetchRequest(RequestSender* sender,
-                               const EntryActionCallback& callback,
-                               const GURL& url)
+  FakeUrlFetchRequest(RequestSender* sender,
+                      const EntryActionCallback& callback,
+                      const GURL& url)
       : UrlFetchRequestBase(sender),
         callback_(callback),
         url_(url) {

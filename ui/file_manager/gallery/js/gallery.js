@@ -168,7 +168,7 @@ GalleryDataModel.prototype.evictCache = function(currentSelectedItem) {
         if (sorted[i].contentImage.parentNode) {
           console.error('The content image has a parent node.');
         } else {
-          // Force to free the buffer of the canvas by assinng zero size.
+          // Force to free the buffer of the canvas by assigning zero size.
           sorted[i].contentImage.width = 0;
           sorted[i].contentImage.height = 0;
           sorted[i].contentImage = null;
@@ -180,7 +180,7 @@ GalleryDataModel.prototype.evictCache = function(currentSelectedItem) {
         if (sorted[i].screenImage.parentNode) {
           console.error('The screen image has a parent node.');
         } else {
-          // Force to free the buffer of the canvas by assinng zero size.
+          // Force to free the buffer of the canvas by assigning zero size.
           sorted[i].screenImage.width = 0;
           sorted[i].screenImage.height = 0;
           sorted[i].screenImage = null;
@@ -251,7 +251,7 @@ Gallery.FIRST_FADE_TIMEOUT = 1000;
 
 /**
  * Time until mosaic is initialized in the background. Used to make gallery
- * in the slide mode load faster. In miiliseconds.
+ * in the slide mode load faster. In milliseconds.
  * @const
  * @type {number}
  */

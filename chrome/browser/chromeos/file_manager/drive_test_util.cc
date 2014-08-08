@@ -4,12 +4,8 @@
 
 #include "chrome/browser/chromeos/file_manager/drive_test_util.h"
 
-#include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/browser_context.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
 
 namespace file_manager {
 namespace test_util {

@@ -650,7 +650,7 @@ DirectoryContents.prototype.getDirectoryEntry = function() {
  * Start directory scan/search operation. Either 'scan-completed' or
  * 'scan-failed' event will be fired upon completion.
  *
- * @param {boolean} refresh True to refrech metadata, or false to use cached
+ * @param {boolean} refresh True to refresh metadata, or false to use cached
  *     one.
  */
 DirectoryContents.prototype.scan = function(refresh) {

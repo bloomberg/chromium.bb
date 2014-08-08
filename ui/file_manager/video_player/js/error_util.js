@@ -37,7 +37,7 @@ Function.prototype.wrap = function(thisObject, var_args) {
       var args = boundArguments.concat(Array.prototype.slice.call(arguments));
       return func.apply(thisObject, args);
     } catch (e) {
-      // Some async funcrtion doesn't handle exception correctly. So outputing
+      // Some async function doesn't handle exception correctly. So outputting
       // the exception message and stack trace just in case.
       // The message will show twice if the caller handles exception correctly.
       console.error(e.stack);

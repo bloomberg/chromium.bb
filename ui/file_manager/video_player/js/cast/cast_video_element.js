@@ -5,7 +5,7 @@
 'use strict';
 
 /**
- * Inverval for updating media info (in ms).
+ * Interval for updating media info (in ms).
  * @type {number}
  * @const
  */
@@ -119,7 +119,7 @@ CastVideoElement.prototype = {
   },
 
   /**
-   * If this video is seelable or not.
+   * If this video is seekable or not.
    * @type {boolean}
    */
   get seekable() {

@@ -152,7 +152,7 @@ Rect.prototype = {
 
   /**
    * Obtains the y coordinate of bottom edge. The most bottom pixels in the
-   * rectanlge are (y = buttom - 1) and the pixels (y = bottom) are not included
+   * rectangle are (y = bottom - 1) and the pixels (y = bottom) are not included
    * in the rectangle.
    * @return {number}
    */

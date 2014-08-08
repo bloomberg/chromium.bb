@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_COPY_OPERATION_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_COPY_OPERATION_H_
 
+#include <string>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -19,7 +22,6 @@ class Time;
 }  // namespace base
 
 namespace google_apis {
-class AboutResource;
 class FileResource;
 }  // namespace google_apis
 

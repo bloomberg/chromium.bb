@@ -113,9 +113,9 @@ var reopenEntriesPromsie = null;
  * Launches the application with entries.
  *
  * @param {Promise} selectedEntriesPromise Promise to be fulfilled with the
- *     entries that are stored in the exteranl file system (not in the isolated
+ *     entries that are stored in the external file system (not in the isolated
  *     file system).
- * @return {Promise} Promise to be fulfilled after the applicaiton is launched.
+ * @return {Promise} Promise to be fulfilled after the application is launched.
  */
 function launch(selectedEntriesPromise) {
   // If there is the previous window, close the window.

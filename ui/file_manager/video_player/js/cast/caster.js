@@ -72,7 +72,7 @@ function loadCastAPI(callback, opt_secondTry) {
         if (loaded)
           callback();
         else
-          console.error('Google Cast exntnsion load failed.', errorInfo);
+          console.error('Google Cast extension load failed.', errorInfo);
       }.wrap();
     } else {
       setTimeout(callback);  // Runs asynchronously.

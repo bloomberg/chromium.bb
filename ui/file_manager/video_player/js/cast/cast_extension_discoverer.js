@@ -5,7 +5,7 @@
 'use strict';
 
 /**
- * Discover the ID of installed cast extesnion.
+ * Discover the ID of installed cast extension.
  * @constructor
  */
 function CastExtensionDiscoverer() {

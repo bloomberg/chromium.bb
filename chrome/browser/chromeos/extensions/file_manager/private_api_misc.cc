@@ -273,7 +273,7 @@ bool FileBrowserPrivateInstallWebstoreItemFunction::RunAsync() {
   // Only GoogleCastAPI extension can use silent installation.
   if (params->silent_installation &&
       params->item_id != kGoogleCastApiExtensionId) {
-    SetError("Only whiltelisted items can do silent installation.");
+    SetError("Only whitelisted items can do silent installation.");
     return false;
   }
 

@@ -37,9 +37,9 @@ MediaManager.prototype.isAvailableForCast = function() {
 };
 
 /**
- * Retrives the token for cast.
+ * Retrieves the token for cast.
  *
- * @param {boolean} refresh If true, force to refrech a token. If false, use the
+ * @param {boolean} refresh If true, force to refresh a token. If false, use the
  *     cached token if available.
  * @return {Promise} Promise which is resolved with the token. Reject if failed.
  */
@@ -64,7 +64,7 @@ MediaManager.prototype.getToken = function(refresh) {
 };
 
 /**
- * Retrives the url for cast.
+ * Retrieves the url for cast.
  *
  * @return {Promise} Promise which is resolved with the url. Reject if failed.
  */
@@ -88,7 +88,7 @@ MediaManager.prototype.getUrl = function() {
 };
 
 /**
- * Retrives the mime of file.
+ * Retrieves the mime of file.
  *
  * @return {Promise} Promise which is resolved with the mime. Reject if failed.
  */
@@ -111,7 +111,7 @@ MediaManager.prototype.getMime = function() {
 };
 
 /**
- * Retrives the thumbnail urlof file.
+ * Retrieves the thumbnail url of file.
  *
  * @return {Promise} Promise which is resolved with the url. Reject if failed.
  */
@@ -125,7 +125,7 @@ MediaManager.prototype.getThumbnail = function() {
   }.bind(this)).then(function(props) {
     if (!props || !props[0] || !props[0].thumbnailUrl) {
       // TODO(yoshiki): Adds a logic to guess the mime.
-      return Promise.reject('Thuumbnail fetch failed.');
+      return Promise.reject('Thumbnail fetch failed.');
     } else {
       this.cachedDriveProp_ = props[0];
       return props[0].thumbnailUrl;

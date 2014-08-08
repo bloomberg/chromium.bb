@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/file_util.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"

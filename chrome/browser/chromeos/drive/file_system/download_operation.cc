@@ -8,7 +8,6 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
@@ -17,7 +16,6 @@
 #include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
-#include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/gdata_errorcode.h"
@@ -99,7 +97,6 @@ FileError CheckPreConditionForEnsureFileDownloaded(
     base::FilePath::StringType extension = base::FilePath::FromUTF8Unsafe(
         entry->file_specific_info().document_extension()).value();
     base::FilePath gdoc_file_path;
-    // TODO(rvargas): Convert this code to use base::File::Info.
     base::File::Info file_info;
     // We add the gdoc file extension in the temporary file, so that in cross
     // profile drag-and-drop between Drive folders, the destination profiles's

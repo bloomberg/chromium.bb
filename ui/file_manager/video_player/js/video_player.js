@@ -496,7 +496,7 @@ VideoPlayer.prototype.setCastList = function(casts) {
   var menu = document.querySelector('#cast-menu');
   menu.innerHTML = '';
 
-  // TODO(yoshiki): Handle the case that the current cast disapears.
+  // TODO(yoshiki): Handle the case that the current cast disappears.
 
   if (casts.length === 0) {
     button.classList.add('hidden');
