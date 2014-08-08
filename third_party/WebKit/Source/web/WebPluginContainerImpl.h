@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Opera Software ASA. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -75,7 +76,7 @@ public:
 
     // PluginView methods
     virtual WebLayer* platformLayer() const OVERRIDE;
-    virtual NPObject* scriptableObject() OVERRIDE;
+    virtual v8::Local<v8::Object> scriptableObject(v8::Isolate*) OVERRIDE;
     virtual bool getFormValue(String&) OVERRIDE;
     virtual bool supportsKeyboardFocus() const OVERRIDE;
     virtual bool supportsInputMethod() const OVERRIDE;
@@ -107,6 +108,7 @@ public:
     virtual void allowScriptObjects() OVERRIDE;
     virtual void clearScriptObjects() OVERRIDE;
     virtual NPObject* scriptableObjectForElement() OVERRIDE;
+    virtual v8::Local<v8::Object> v8ObjectForElement() OVERRIDE;
     virtual WebString executeScriptURL(const WebURL&, bool popupsAllowed) OVERRIDE;
     virtual void loadFrameRequest(const WebURLRequest&, const WebString& target, bool notifyNeeded, void* notifyData) OVERRIDE;
     virtual void zoomLevelChanged(double zoomLevel) OVERRIDE;

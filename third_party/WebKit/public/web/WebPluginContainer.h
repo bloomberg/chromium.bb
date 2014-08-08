@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Opera Software ASA. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -32,6 +33,7 @@
 #define WebPluginContainer_h
 
 #include "../platform/WebCommon.h"
+#include <v8.h>
 
 struct NPObject;
 
@@ -79,6 +81,10 @@ public:
     // Returns the scriptable object associated with the DOM element
     // containing the plugin.
     virtual NPObject* scriptableObjectForElement() = 0;
+
+    // Returns the scriptable object associated with the DOM element
+    // containing the plugin as a native v8 object.
+    virtual v8::Local<v8::Object> v8ObjectForElement() = 0;
 
     // Executes a "javascript:" URL on behalf of the plugin in the context
     // of the frame containing the plugin.  Returns the result of script

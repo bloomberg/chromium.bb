@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2006, 2007, 2008, 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Opera Software ASA. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -67,6 +68,8 @@ struct PrivateIdentifier {
 NPObject* npCreateV8ScriptObject(NPP, v8::Handle<v8::Object>, LocalDOMWindow*, v8::Isolate*);
 
 NPObject* v8ObjectToNPObject(v8::Handle<v8::Object>);
+
+bool isWrappedNPObject(v8::Handle<v8::Object>);
 
 V8NPObject* npObjectToV8NPObject(NPObject*);
 

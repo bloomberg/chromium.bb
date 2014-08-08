@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2008, 2009 Google Inc. All rights reserved.
  * Copyright (C) 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2014 Opera Software ASA. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -293,8 +294,10 @@ PassRefPtr<SharedPersistent<v8::Object> > ScriptController::createPluginWrapper(
     if (!widget->isPluginView())
         return nullptr;
 
-    NPObject* npObject = toPluginView(widget)->scriptableObject();
-    if (!npObject)
+    v8::HandleScope handleScope(m_isolate);
+    v8::Local<v8::Object> scriptableObject = toPluginView(widget)->scriptableObject(m_isolate);
+
+    if (scriptableObject.IsEmpty())
         return nullptr;
 
     // LocalFrame Memory Management for NPObjects
@@ -321,12 +324,12 @@ PassRefPtr<SharedPersistent<v8::Object> > ScriptController::createPluginWrapper(
     // NPObject as part of its wrapper. However, before accessing the object
     // it must consult the _NPN_Registry.
 
-    v8::Local<v8::Object> wrapper = createV8ObjectForNPObject(npObject, 0, m_isolate);
+    if (isWrappedNPObject(scriptableObject)) {
+        // Track the plugin object. We've been given a reference to the object.
+        m_pluginObjects.set(widget, v8ObjectToNPObject(scriptableObject));
+    }
 
-    // Track the plugin object. We've been given a reference to the object.
-    m_pluginObjects.set(widget, npObject);
-
-    return SharedPersistent<v8::Object>::create(wrapper, m_isolate);
+    return SharedPersistent<v8::Object>::create(scriptableObject, m_isolate);
 }
 
 void ScriptController::cleanupScriptObjectsForPlugin(Widget* nativeHandle)

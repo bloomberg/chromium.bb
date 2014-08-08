@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2004, 2006 Apple Computer, Inc.  All rights reserved.
  * Copyright (C) 2007, 2008, 2009 Google, Inc.  All rights reserved.
+ * Copyright (C) 2014 Opera Software ASA. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -114,16 +115,22 @@ NPObject* v8ObjectToNPObject(v8::Handle<v8::Object> object)
     return reinterpret_cast<NPObject*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
 }
 
+bool isWrappedNPObject(v8::Handle<v8::Object> object)
+{
+    if (object->InternalFieldCount() == npObjectInternalFieldCount) {
+        const WrapperTypeInfo* typeInfo = static_cast<const WrapperTypeInfo*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperTypeIndex));
+        return typeInfo == npObjectTypeInfo();
+    }
+    return false;
+}
+
 NPObject* npCreateV8ScriptObject(NPP npp, v8::Handle<v8::Object> object, LocalDOMWindow* root, v8::Isolate* isolate)
 {
     // Check to see if this object is already wrapped.
-    if (object->InternalFieldCount() == npObjectInternalFieldCount) {
-        const WrapperTypeInfo* typeInfo = static_cast<const WrapperTypeInfo*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperTypeIndex));
-        if (typeInfo == npObjectTypeInfo()) {
-            NPObject* returnValue = v8ObjectToNPObject(object);
-            _NPN_RetainObject(returnValue);
-            return returnValue;
-        }
+    if (isWrappedNPObject(object)) {
+        NPObject* returnValue = v8ObjectToNPObject(object);
+        _NPN_RetainObject(returnValue);
+        return returnValue;
     }
 
     V8NPObjectVector* objectVector = 0;

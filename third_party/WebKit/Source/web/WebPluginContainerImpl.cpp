@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Opera Software ASA. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -32,6 +33,8 @@
 #include "web/WebPluginContainerImpl.h"
 
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/V8Element.h"
+#include "bindings/core/v8/V8NPObject.h"
 #include "core/HTMLNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransfer.h"
@@ -88,6 +91,7 @@
 #include "web/WebDataSourceImpl.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebViewImpl.h"
+#include "wtf/Assertions.h"
 
 
 using namespace blink;
@@ -421,6 +425,25 @@ NPObject* WebPluginContainerImpl::scriptableObjectForElement()
     return m_element->getNPObject();
 }
 
+v8::Local<v8::Object> WebPluginContainerImpl::v8ObjectForElement()
+{
+    LocalFrame* frame = m_element->document().frame();
+    if (!frame)
+        return v8::Local<v8::Object>();
+
+    if (!frame->script().canExecuteScripts(NotAboutToExecuteScript))
+        return v8::Local<v8::Object>();
+
+    ScriptState* scriptState = ScriptState::forMainWorld(frame);
+    if (scriptState->contextIsEmpty())
+        return v8::Local<v8::Object>();
+
+    v8::Handle<v8::Value> v8value = toV8(m_element, scriptState->context()->Global(), scriptState->isolate());
+    ASSERT(v8value->IsObject());
+
+    return v8::Handle<v8::Object>::Cast(v8value);
+}
+
 WebString WebPluginContainerImpl::executeScriptURL(const WebURL& url, bool popupsAllowed)
 {
     LocalFrame* frame = m_element->document().frame();
@@ -562,9 +585,19 @@ WebLayer* WebPluginContainerImpl::platformLayer() const
     return m_webLayer;
 }
 
-NPObject* WebPluginContainerImpl::scriptableObject()
+v8::Local<v8::Object> WebPluginContainerImpl::scriptableObject(v8::Isolate* isolate)
 {
-    return m_webPlugin->scriptableObject();
+    v8::Local<v8::Object> object = m_webPlugin->v8ScriptableObject(isolate);
+    if (!object.IsEmpty()) {
+        // blink::WebPlugin implementation can't provide the obsolete NPObject at the same time:
+        ASSERT(!m_webPlugin->scriptableObject());
+        return object;
+    }
+
+    NPObject* npObject = m_webPlugin->scriptableObject();
+    if (npObject)
+        return blink::createV8ObjectForNPObject(npObject, 0, isolate);
+    return v8::Local<v8::Object>();
 }
 
 bool WebPluginContainerImpl::getFormValue(String& value)

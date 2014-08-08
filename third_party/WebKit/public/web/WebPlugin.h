@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009, 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Opera Software ASA. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -37,6 +38,7 @@
 #include "WebDragOperation.h"
 #include "WebDragStatus.h"
 #include "WebWidget.h"
+#include <v8.h>
 
 struct NPObject;
 struct _NPP;
@@ -66,8 +68,13 @@ public:
     virtual WebPluginContainer* container() const { return 0; }
     virtual void containerDidDetachFromParent() { }
 
-    virtual NPObject* scriptableObject() = 0;
+    virtual NPObject* scriptableObject() { return 0; }
     virtual struct _NPP* pluginNPP() { return 0; }
+
+    // The same as scriptableObject() but allows to expose scriptable interface
+    // through plain v8 object instead of NPObject.
+    // If you override this function, you must return nullptr in scriptableObject().
+    virtual v8::Local<v8::Object> v8ScriptableObject(v8::Isolate*) { return v8::Local<v8::Object>(); }
 
     // Returns true if the form submission value is successfully obtained
     // from the plugin. The value would be associated with the name attribute
