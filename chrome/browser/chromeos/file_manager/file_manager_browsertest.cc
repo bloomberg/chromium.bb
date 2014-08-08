@@ -747,8 +747,7 @@ class FileManagerBrowserTest :
   }
 };
 
-// http://crbug.com/400892
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, DISABLED_Test) {
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, Test) {
   StartTest();
 }
 
@@ -784,27 +783,17 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "zipOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "zipOpenDrive")));
 
-// Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG)
-#define MAYBE_OpenVideoFiles DISABLED_OpenVideoFiles
-#else
-#define MAYBE_OpenVideoFiles OpenVideoFiles
-#endif
+// http://crbug.com/400892
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_OpenVideoFiles,
+    DISABLED_OpenVideoFiles,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "videoOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "videoOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "videoOpenDrive")));
 
-// Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG)
-#define MAYBE_OpenAudioFiles DISABLED_OpenAudioFiles
-#else
-#define MAYBE_OpenAudioFiles OpenAudioFiles
-#endif
+// http://crbug.com/401674
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_OpenAudioFiles,
+    DISABLED_OpenAudioFiles,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(IN_GUEST_MODE, "audioOpenDownloads"),
