@@ -1238,7 +1238,7 @@
         'browser/search/most_visited_iframe_source_unittest.cc',
         'browser/search/search_android_unittest.cc',
         'browser/search/search_unittest.cc',
-        'browser/search/suggestions/thumbnail_manager_unittest.cc',
+        'browser/search/suggestions/image_manager_impl_unittest.cc',
         'browser/search_engines/default_search_pref_migration_unittest.cc',
         'browser/search_engines/search_provider_install_data_unittest.cc',
         'browser/search_engines/template_url_fetcher_unittest.cc',

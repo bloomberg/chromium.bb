@@ -58,7 +58,7 @@ class SuggestionsSource : public content::URLDataSource {
       const content::URLDataSource::GotDataCallback& callback,
       const SuggestionsProfile& suggestions_profile);
 
-  // Callback for responses from each ThumbnailManager request.
+  // Callback for responses from each Thumbnail request.
   void OnThumbnailAvailable(RequestContext* context, base::Closure barrier,
                             const GURL& url, const SkBitmap* bitmap);
 

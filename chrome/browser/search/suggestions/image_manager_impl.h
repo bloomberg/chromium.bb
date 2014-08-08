@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SEARCH_SUGGESTIONS_THUMBNAIL_MANAGER_H_
-#define CHROME_BROWSER_SEARCH_SUGGESTIONS_THUMBNAIL_MANAGER_H_
+#ifndef CHROME_BROWSER_SEARCH_SUGGESTIONS_IMAGE_MANAGER_IMPL_H_
+#define CHROME_BROWSER_SEARCH_SUGGESTIONS_IMAGE_MANAGER_IMPL_H_
 
 #include <map>
 #include <utility>
@@ -27,21 +27,21 @@ class URLRequestContextGetter;
 
 namespace suggestions {
 
+class ImageData;
 class SuggestionsProfile;
-class ThumbnailData;
 
-// A class used to fetch server thumbnails asynchronously and manage the caching
+// A class used to fetch server images asynchronously and manage the caching
 // layer (both in memory and on disk).
-class ThumbnailManager : public ImageManager,
+class ImageManagerImpl : public ImageManager,
                          public chrome::BitmapFetcherDelegate {
  public:
-  typedef std::vector<ThumbnailData> ThumbnailVector;
+  typedef std::vector<ImageData> ImageDataVector;
 
-  ThumbnailManager(
+  ImageManagerImpl(
       net::URLRequestContextGetter* url_request_context,
-      scoped_ptr<leveldb_proto::ProtoDatabase<ThumbnailData> > database,
+      scoped_ptr<leveldb_proto::ProtoDatabase<ImageData> > database,
       const base::FilePath& database_dir);
-  virtual ~ThumbnailManager();
+  virtual ~ImageManagerImpl();
 
   // Overrides from ImageManager.
   virtual void Initialize(const SuggestionsProfile& suggestions) OVERRIDE;
@@ -51,55 +51,55 @@ class ThumbnailManager : public ImageManager,
       base::Callback<void(const GURL&, const SkBitmap*)> callback) OVERRIDE;
 
  private:
-  friend class MockThumbnailManager;
-  friend class ThumbnailManagerBrowserTest;
-  FRIEND_TEST_ALL_PREFIXES(ThumbnailManagerTest, InitializeTest);
-  FRIEND_TEST_ALL_PREFIXES(ThumbnailManagerBrowserTest,
+  friend class MockImageManagerImpl;
+  friend class ImageManagerImplBrowserTest;
+  FRIEND_TEST_ALL_PREFIXES(ImageManagerImplTest, InitializeTest);
+  FRIEND_TEST_ALL_PREFIXES(ImageManagerImplBrowserTest,
                            GetImageForURLNetworkCacheHit);
-  FRIEND_TEST_ALL_PREFIXES(ThumbnailManagerBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(ImageManagerImplBrowserTest,
                            GetImageForURLNetworkCacheNotInitialized);
 
   // Used for testing.
-  ThumbnailManager();
+  ImageManagerImpl();
 
   typedef std::vector<base::Callback<void(const GURL&, const SkBitmap*)> >
       CallbackVector;
-  typedef base::hash_map<std::string, SkBitmap> ThumbnailMap;
+  typedef base::hash_map<std::string, SkBitmap> ImageMap;
 
-  // State related to a thumbnail fetch (associated website url, thumbnail_url,
+  // State related to an image fetch (associated website url, image_url,
   // fetcher, pending callbacks).
-  struct ThumbnailRequest {
-    ThumbnailRequest();
-    explicit ThumbnailRequest(chrome::BitmapFetcher* f);
-    ~ThumbnailRequest();
+  struct ImageRequest {
+    ImageRequest();
+    explicit ImageRequest(chrome::BitmapFetcher* f);
+    ~ImageRequest();
 
-    void swap(ThumbnailRequest* other) {
+    void swap(ImageRequest* other) {
       std::swap(url, other->url);
-      std::swap(thumbnail_url, other->thumbnail_url);
+      std::swap(image_url, other->image_url);
       std::swap(callbacks, other->callbacks);
       std::swap(fetcher, other->fetcher);
     }
 
     GURL url;
-    GURL thumbnail_url;
+    GURL image_url;
     chrome::BitmapFetcher* fetcher;
     // Queue for pending callbacks, which may accumulate while the request is in
     // flight.
     CallbackVector callbacks;
   };
 
-  typedef std::map<const GURL, ThumbnailRequest> ThumbnailRequestMap;
+  typedef std::map<const GURL, ImageRequest> ImageRequestMap;
 
-  // Looks up thumbnail for |url|. If found, writes the result to
-  // |thumbnail_url| and returns true. Otherwise just returns false.
-  bool GetThumbnailURL(const GURL& url, GURL* thumbnail_url);
+  // Looks up image URL for |url|. If found, writes the result to |image_url|
+  // and returns true. Otherwise just returns false.
+  bool GetImageURL(const GURL& url, GURL* image_url);
 
   void QueueCacheRequest(
-      const GURL& url, const GURL& thumbnail_url,
+      const GURL& url, const GURL& image_url,
       base::Callback<void(const GURL&, const SkBitmap*)> callback);
 
   void ServeFromCacheOrNetwork(
-      const GURL& url, const GURL& thumbnail_url,
+      const GURL& url, const GURL& image_url,
       base::Callback<void(const GURL&, const SkBitmap*)> callback);
 
   // Will return false if no bitmap was found corresponding to |url|, else
@@ -112,59 +112,59 @@ class ThumbnailManager : public ImageManager,
   SkBitmap* GetBitmapFromCache(const GURL& url);
 
   void StartOrQueueNetworkRequest(
-      const GURL& url, const GURL& thumbnail_url,
+      const GURL& url, const GURL& image_url,
       base::Callback<void(const GURL&, const SkBitmap*)> callback);
 
   // Inherited from BitmapFetcherDelegate. Runs on the UI thread.
-  virtual void OnFetchComplete(const GURL thumbnail_url,
+  virtual void OnFetchComplete(const GURL image_url,
                                const SkBitmap* bitmap) OVERRIDE;
 
-  // Save the thumbnail bitmap in the cache and in the database.
-  void SaveThumbnail(const GURL& url, const SkBitmap& bitmap);
+  // Save the image bitmap in the cache and in the database.
+  void SaveImage(const GURL& url, const SkBitmap& bitmap);
 
   // Database callback methods.
   // Will initiate loading the entries.
   void OnDatabaseInit(bool success);
-  // Will transfer the loaded |entries| in memory (|thumbnail_map_|).
-  void OnDatabaseLoad(bool success, scoped_ptr<ThumbnailVector> entries);
+  // Will transfer the loaded |entries| in memory (|image_map_|).
+  void OnDatabaseLoad(bool success, scoped_ptr<ImageDataVector> entries);
   void OnDatabaseSave(bool success);
 
   // Take entries from the database and put them in the local cache.
-  void LoadEntriesInCache(scoped_ptr<ThumbnailVector> entries);
+  void LoadEntriesInCache(scoped_ptr<ImageDataVector> entries);
 
   void ServePendingCacheRequests();
 
   // From SkBitmap to the vector of JPEG-encoded bytes, |dst|. Visible only for
   // testing.
-  static bool EncodeThumbnail(const SkBitmap& bitmap,
-                              std::vector<unsigned char>* dest);
+  static bool EncodeImage(const SkBitmap& bitmap,
+                          std::vector<unsigned char>* dest);
 
-  // Map from URL to thumbnail URL. Should be kept up to date when a new
+  // Map from URL to image URL. Should be kept up to date when a new
   // SuggestionsProfile is available.
-  std::map<GURL, GURL> thumbnail_url_map_;
+  std::map<GURL, GURL> image_url_map_;
 
-  // Map from each thumbnail URL to the request information (associated website
+  // Map from each image URL to the request information (associated website
   // url, fetcher, pending callbacks).
-  ThumbnailRequestMap pending_net_requests_;
+  ImageRequestMap pending_net_requests_;
 
   // Map from website URL to request information, used for pending cache
   // requests while the database hasn't loaded.
-  ThumbnailRequestMap pending_cache_requests_;
+  ImageRequestMap pending_cache_requests_;
 
   // Holding the bitmaps in memory, keyed by website URL string.
-  ThumbnailMap thumbnail_map_;
+  ImageMap image_map_;
 
   net::URLRequestContextGetter* url_request_context_;
 
-  scoped_ptr<leveldb_proto::ProtoDatabase<ThumbnailData> > database_;
+  scoped_ptr<leveldb_proto::ProtoDatabase<ImageData> > database_;
 
   bool database_ready_;
 
-  base::WeakPtrFactory<ThumbnailManager> weak_ptr_factory_;
+  base::WeakPtrFactory<ImageManagerImpl> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ThumbnailManager);
+  DISALLOW_COPY_AND_ASSIGN(ImageManagerImpl);
 };
 
 }  // namespace suggestions
 
-#endif  // CHROME_BROWSER_SEARCH_SUGGESTIONS_THUMBNAIL_MANAGER_H_
+#endif  // CHROME_BROWSER_SEARCH_SUGGESTIONS_IMAGE_MANAGER_IMPL_H_

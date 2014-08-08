@@ -7,7 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/suggestions/thumbnail_manager.h"
+#include "chrome/browser/search/suggestions/image_manager_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/leveldb_proto/proto_database.h"
@@ -34,16 +34,16 @@ const base::FilePath::CharType kDocRoot[] =
 using chrome::BitmapFetcher;
 using content::BrowserThread;
 using leveldb_proto::test::FakeDB;
-using suggestions::ThumbnailData;
-using suggestions::ThumbnailManager;
+using suggestions::ImageData;
+using suggestions::ImageManagerImpl;
 
-typedef base::hash_map<std::string, ThumbnailData> EntryMap;
+typedef base::hash_map<std::string, ImageData> EntryMap;
 
-void AddEntry(const ThumbnailData& d, EntryMap* map) { (*map)[d.url()] = d; }
+void AddEntry(const ImageData& d, EntryMap* map) { (*map)[d.url()] = d; }
 
-class ThumbnailManagerBrowserTest : public InProcessBrowserTest {
+class ImageManagerImplBrowserTest : public InProcessBrowserTest {
  public:
-  ThumbnailManagerBrowserTest()
+  ImageManagerImplBrowserTest()
       : num_callback_null_called_(0),
         num_callback_valid_called_(0),
         test_server_(net::SpawnedTestServer::TYPE_HTTP,
@@ -60,20 +60,20 @@ class ThumbnailManagerBrowserTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    fake_db_ = new FakeDB<ThumbnailData>(&db_model_);
-    thumbnail_manager_.reset(CreateThumbnailManager(fake_db_));
+    fake_db_ = new FakeDB<ImageData>(&db_model_);
+    image_manager_.reset(CreateImageManagerImpl(fake_db_));
   }
 
   virtual void TearDownOnMainThread() OVERRIDE {
     fake_db_ = NULL;
     db_model_.clear();
-    thumbnail_manager_.reset();
-    test_thumbnail_manager_.reset();
+    image_manager_.reset();
+    test_image_manager_.reset();
   }
 
   void InitializeTestBitmapData() {
-    FakeDB<ThumbnailData>* test_fake_db = new FakeDB<ThumbnailData>(&db_model_);
-    test_thumbnail_manager_.reset(CreateThumbnailManager(test_fake_db));
+    FakeDB<ImageData>* test_fake_db = new FakeDB<ImageData>(&db_model_);
+    test_image_manager_.reset(CreateImageManagerImpl(test_fake_db));
 
     suggestions::SuggestionsProfile suggestions_profile;
     suggestions::ChromeSuggestion* suggestion =
@@ -81,7 +81,7 @@ class ThumbnailManagerBrowserTest : public InProcessBrowserTest {
     suggestion->set_url(kTestBitmapUrl);
     suggestion->set_thumbnail(test_server_.GetURL(kTestImagePath).spec());
 
-    test_thumbnail_manager_->Initialize(suggestions_profile);
+    test_image_manager_->Initialize(suggestions_profile);
 
     // Initialize empty database.
     test_fake_db->InitCallback(true);
@@ -89,24 +89,24 @@ class ThumbnailManagerBrowserTest : public InProcessBrowserTest {
 
     base::RunLoop run_loop;
     // Fetch existing URL.
-    test_thumbnail_manager_->GetImageForURL(
+    test_image_manager_->GetImageForURL(
         GURL(kTestBitmapUrl),
-        base::Bind(&ThumbnailManagerBrowserTest::OnTestThumbnailAvailable,
+        base::Bind(&ImageManagerImplBrowserTest::OnTestImageAvailable,
                    base::Unretained(this), &run_loop));
     run_loop.Run();
   }
 
-  void OnTestThumbnailAvailable(base::RunLoop* loop, const GURL& url,
-                                const SkBitmap* bitmap) {
+  void OnTestImageAvailable(base::RunLoop* loop, const GURL& url,
+                            const SkBitmap* bitmap) {
     CHECK(bitmap);
     // Copy the resource locally.
     test_bitmap_ = *bitmap;
     loop->Quit();
   }
 
-  void InitializeDefaultThumbnailMapAndDatabase(
-      ThumbnailManager* thumbnail_manager, FakeDB<ThumbnailData>* fake_db) {
-    CHECK(thumbnail_manager);
+  void InitializeDefaultImageMapAndDatabase(
+      ImageManagerImpl* image_manager, FakeDB<ImageData>* fake_db) {
+    CHECK(image_manager);
     CHECK(fake_db);
 
     suggestions::SuggestionsProfile suggestions_profile;
@@ -115,69 +115,70 @@ class ThumbnailManagerBrowserTest : public InProcessBrowserTest {
     suggestion->set_url(kTestUrl1);
     suggestion->set_thumbnail(test_server_.GetURL(kTestImagePath).spec());
 
-    thumbnail_manager->Initialize(suggestions_profile);
+    image_manager->Initialize(suggestions_profile);
 
     // Initialize empty database.
     fake_db->InitCallback(true);
     fake_db->LoadCallback(true);
   }
 
-  ThumbnailData GetSampleThumbnailData(const std::string& url) {
-    ThumbnailData data;
+  ImageData GetSampleImageData(const std::string& url) {
+    ImageData data;
     data.set_url(url);
     std::vector<unsigned char> encoded;
-    EXPECT_TRUE(ThumbnailManager::EncodeThumbnail(test_bitmap_, &encoded));
+    EXPECT_TRUE(ImageManagerImpl::EncodeImage(test_bitmap_, &encoded));
     data.set_data(std::string(encoded.begin(), encoded.end()));
     return data;
   }
 
-  void OnThumbnailAvailable(base::RunLoop* loop, const GURL& url,
+  void OnImageAvailable(base::RunLoop* loop, const GURL& url,
                             const SkBitmap* bitmap) {
     if (bitmap) {
       num_callback_valid_called_++;
-      /*std::vector<unsigned char> actual;
+      std::vector<unsigned char> actual;
       std::vector<unsigned char> expected;
-      EXPECT_TRUE(ThumbnailManager::EncodeThumbnail(*bitmap, &actual));
-      EXPECT_TRUE(ThumbnailManager::EncodeThumbnail(test_bitmap_, &expected));
+      EXPECT_TRUE(ImageManagerImpl::EncodeImage(*bitmap, &actual));
+      EXPECT_TRUE(ImageManagerImpl::EncodeImage(test_bitmap_, &expected));
       // Check first 100 bytes.
       std::string actual_str(actual.begin(), actual.begin() + 100);
       std::string expected_str(expected.begin(), expected.begin() + 100);
-      EXPECT_EQ(expected_str, actual_str);*/
+      EXPECT_EQ(expected_str, actual_str);
     } else {
       num_callback_null_called_++;
     }
     loop->Quit();
   }
 
-  ThumbnailManager* CreateThumbnailManager(FakeDB<ThumbnailData>* fake_db) {
-    return new ThumbnailManager(
+  ImageManagerImpl* CreateImageManagerImpl(FakeDB<ImageData>* fake_db) {
+    return new ImageManagerImpl(
         browser()->profile()->GetRequestContext(),
-        scoped_ptr<leveldb_proto::ProtoDatabase<ThumbnailData> >(fake_db),
-        FakeDB<ThumbnailData>::DirectoryForTestDB());
+        scoped_ptr<leveldb_proto::ProtoDatabase<ImageData> >(fake_db),
+        FakeDB<ImageData>::DirectoryForTestDB());
   }
 
   EntryMap db_model_;
-  // Owned by the ThumbnailManager under test.
-  FakeDB<ThumbnailData>* fake_db_;
+  // Owned by the ImageManagerImpl under test.
+  FakeDB<ImageData>* fake_db_;
 
   SkBitmap test_bitmap_;
-  scoped_ptr<ThumbnailManager> test_thumbnail_manager_;
+  scoped_ptr<ImageManagerImpl> test_image_manager_;
 
   int num_callback_null_called_;
   int num_callback_valid_called_;
   net::SpawnedTestServer test_server_;
   // Under test.
-  scoped_ptr<ThumbnailManager> thumbnail_manager_;
+  scoped_ptr<ImageManagerImpl> image_manager_;
 };
 
-IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest, GetImageForURLNetwork) {
-  InitializeDefaultThumbnailMapAndDatabase(thumbnail_manager_.get(), fake_db_);
+IN_PROC_BROWSER_TEST_F(ImageManagerImplBrowserTest, GetImageForURLNetwork) {
+  InitializeTestBitmapData();
+  InitializeDefaultImageMapAndDatabase(image_manager_.get(), fake_db_);
 
   base::RunLoop run_loop;
   // Fetch existing URL.
-  thumbnail_manager_->GetImageForURL(
+  image_manager_->GetImageForURL(
       GURL(kTestUrl1),
-      base::Bind(&ThumbnailManagerBrowserTest::OnThumbnailAvailable,
+      base::Bind(&ImageManagerImplBrowserTest::OnImageAvailable,
                  base::Unretained(this), &run_loop));
   run_loop.Run();
 
@@ -186,9 +187,9 @@ IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest, GetImageForURLNetwork) {
 
   base::RunLoop run_loop2;
   // Fetch non-existing URL.
-  thumbnail_manager_->GetImageForURL(
+  image_manager_->GetImageForURL(
       GURL(kTestUrl2),
-      base::Bind(&ThumbnailManagerBrowserTest::OnThumbnailAvailable,
+      base::Bind(&ImageManagerImplBrowserTest::OnImageAvailable,
                  base::Unretained(this), &run_loop2));
   run_loop2.Run();
 
@@ -196,17 +197,18 @@ IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest, GetImageForURLNetwork) {
   EXPECT_EQ(1, num_callback_valid_called_);
 }
 
-IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest,
+IN_PROC_BROWSER_TEST_F(ImageManagerImplBrowserTest,
                        GetImageForURLNetworkMultiple) {
-  InitializeDefaultThumbnailMapAndDatabase(thumbnail_manager_.get(), fake_db_);
+  InitializeTestBitmapData();
+  InitializeDefaultImageMapAndDatabase(image_manager_.get(), fake_db_);
 
   // Fetch non-existing URL, and add more while request is in flight.
   base::RunLoop run_loop;
   for (int i = 0; i < 5; i++) {
     // Fetch existing URL.
-    thumbnail_manager_->GetImageForURL(
+    image_manager_->GetImageForURL(
         GURL(kTestUrl1),
-        base::Bind(&ThumbnailManagerBrowserTest::OnThumbnailAvailable,
+        base::Bind(&ImageManagerImplBrowserTest::OnImageAvailable,
                    base::Unretained(this), &run_loop));
   }
   run_loop.Run();
@@ -215,24 +217,24 @@ IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest,
   EXPECT_EQ(5, num_callback_valid_called_);
 }
 
-IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest,
+IN_PROC_BROWSER_TEST_F(ImageManagerImplBrowserTest,
                        GetImageForURLNetworkInvalid) {
   SuggestionsProfile suggestions_profile;
   ChromeSuggestion* suggestion = suggestions_profile.add_suggestions();
   suggestion->set_url(kTestUrl1);
   suggestion->set_thumbnail(test_server_.GetURL(kInvalidImagePath).spec());
 
-  thumbnail_manager_->Initialize(suggestions_profile);
+  image_manager_->Initialize(suggestions_profile);
 
   // Database will be initialized and loaded without anything in it.
   fake_db_->InitCallback(true);
   fake_db_->LoadCallback(true);
 
   base::RunLoop run_loop;
-  // Fetch existing URL that has invalid thumbnail.
-  thumbnail_manager_->GetImageForURL(
+  // Fetch existing URL that has invalid image.
+  image_manager_->GetImageForURL(
       GURL(kTestUrl1),
-      base::Bind(&ThumbnailManagerBrowserTest::OnThumbnailAvailable,
+      base::Bind(&ImageManagerImplBrowserTest::OnImageAvailable,
                  base::Unretained(this), &run_loop));
   run_loop.Run();
 
@@ -240,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest,
   EXPECT_EQ(0, num_callback_valid_called_);
 }
 
-IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest,
+IN_PROC_BROWSER_TEST_F(ImageManagerImplBrowserTest,
                        GetImageForURLNetworkCacheHit) {
   InitializeTestBitmapData();
 
@@ -250,21 +252,21 @@ IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest,
   // The URL we set is invalid, to show that it will fail from network.
   suggestion->set_thumbnail(test_server_.GetURL(kInvalidImagePath).spec());
 
-  // Create the ThumbnailManager with an added entry in the database.
-  AddEntry(GetSampleThumbnailData(kTestUrl1), &db_model_);
-  FakeDB<ThumbnailData>* fake_db = new FakeDB<ThumbnailData>(&db_model_);
-  thumbnail_manager_.reset(CreateThumbnailManager(fake_db));
-  thumbnail_manager_->Initialize(suggestions_profile);
+  // Create the ImageManagerImpl with an added entry in the database.
+  AddEntry(GetSampleImageData(kTestUrl1), &db_model_);
+  FakeDB<ImageData>* fake_db = new FakeDB<ImageData>(&db_model_);
+  image_manager_.reset(CreateImageManagerImpl(fake_db));
+  image_manager_->Initialize(suggestions_profile);
   fake_db->InitCallback(true);
   fake_db->LoadCallback(true);
   // Expect something in the cache.
-  SkBitmap* bitmap = thumbnail_manager_->GetBitmapFromCache(GURL(kTestUrl1));
+  SkBitmap* bitmap = image_manager_->GetBitmapFromCache(GURL(kTestUrl1));
   EXPECT_FALSE(bitmap->isNull());
 
   base::RunLoop run_loop;
-  thumbnail_manager_->GetImageForURL(
+  image_manager_->GetImageForURL(
       GURL(kTestUrl1),
-      base::Bind(&ThumbnailManagerBrowserTest::OnThumbnailAvailable,
+      base::Bind(&ImageManagerImplBrowserTest::OnImageAvailable,
                  base::Unretained(this), &run_loop));
   run_loop.Run();
 

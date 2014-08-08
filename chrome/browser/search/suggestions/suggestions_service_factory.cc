@@ -8,7 +8,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/suggestions/thumbnail_manager.h"
+#include "chrome/browser/search/suggestions/image_manager_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/leveldb_proto/proto_database.h"
 #include "components/leveldb_proto/proto_database_impl.h"
@@ -65,16 +65,16 @@ KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
   scoped_ptr<BlacklistStore> blacklist_store(
       new BlacklistStore(the_profile->GetPrefs()));
 
-  scoped_ptr<leveldb_proto::ProtoDatabaseImpl<ThumbnailData> > db(
-      new leveldb_proto::ProtoDatabaseImpl<ThumbnailData>(
+  scoped_ptr<leveldb_proto::ProtoDatabaseImpl<ImageData> > db(
+      new leveldb_proto::ProtoDatabaseImpl<ImageData>(
           background_task_runner));
 
   base::FilePath database_dir(
       the_profile->GetPath().Append(FILE_PATH_LITERAL("Thumbnails")));
 
-  scoped_ptr<ThumbnailManager> thumbnail_manager(new ThumbnailManager(
+  scoped_ptr<ImageManagerImpl> thumbnail_manager(new ImageManagerImpl(
       the_profile->GetRequestContext(),
-      db.PassAs<leveldb_proto::ProtoDatabase<ThumbnailData> >(), database_dir));
+      db.PassAs<leveldb_proto::ProtoDatabase<ImageData> >(), database_dir));
   return new SuggestionsService(
       the_profile->GetRequestContext(), suggestions_store.Pass(),
       thumbnail_manager.PassAs<ImageManager>(), blacklist_store.Pass());
