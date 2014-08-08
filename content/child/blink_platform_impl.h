@@ -81,6 +81,9 @@ class CONTENT_EXPORT BlinkPlatformImpl
       const blink::WebURL& url, blink::WebString& mimetype,
       blink::WebString& charset);
   virtual blink::WebURLError cancelledError(const blink::WebURL& url) const;
+  virtual bool isReservedIPAddress(
+      const blink::WebSecurityOrigin&) const OVERRIDE;
+  virtual bool isReservedIPAddress(const blink::WebURL&) const OVERRIDE;
   virtual blink::WebThread* createThread(const char* name);
   virtual blink::WebThread* currentThread();
   virtual blink::WebWaitableEvent* createWaitableEvent();

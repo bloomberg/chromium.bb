@@ -524,6 +524,31 @@ TEST(NetUtilTest, ConvertIPv4NumberToIPv6Number) {
   EXPECT_EQ("::ffff:c0a8:1", IPAddressToString(ipv6_number));
 }
 
+TEST(NetUtilTest, ParseURLHostnameToNumber_FailParse) {
+  IPAddressNumber number;
+
+  EXPECT_FALSE(ParseURLHostnameToNumber("bad value", &number));
+  EXPECT_FALSE(ParseURLHostnameToNumber("bad:value", &number));
+  EXPECT_FALSE(ParseURLHostnameToNumber(std::string(), &number));
+  EXPECT_FALSE(ParseURLHostnameToNumber("192.168.0.1:30", &number));
+  EXPECT_FALSE(ParseURLHostnameToNumber("  192.168.0.1  ", &number));
+  EXPECT_FALSE(ParseURLHostnameToNumber("::1", &number));
+}
+
+TEST(NetUtilTest, ParseURLHostnameToNumber_IPv4) {
+  IPAddressNumber number;
+  EXPECT_TRUE(ParseURLHostnameToNumber("192.168.0.1", &number));
+  EXPECT_EQ("192,168,0,1", DumpIPNumber(number));
+  EXPECT_EQ("192.168.0.1", IPAddressToString(number));
+}
+
+TEST(NetUtilTest, ParseURLHostnameToNumber_IPv6) {
+  IPAddressNumber number;
+  EXPECT_TRUE(ParseURLHostnameToNumber("[1:abcd::3:4:ff]", &number));
+  EXPECT_EQ("0,1,171,205,0,0,0,0,0,0,0,3,0,4,0,255", DumpIPNumber(number));
+  EXPECT_EQ("1:abcd::3:4:ff", IPAddressToString(number));
+}
+
 TEST(NetUtilTest, IsIPv4Mapped) {
   IPAddressNumber ipv4_number;
   EXPECT_TRUE(ParseIPLiteralToNumber("192.168.0.1", &ipv4_number));
