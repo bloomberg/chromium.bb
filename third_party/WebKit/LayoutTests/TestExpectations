@@ -478,7 +478,6 @@ crbug.com/293932 [ Android ] css1/formatting_model/horizontal_formatting.html [ 
 crbug.com/293932 [ Android ] fast/inspector-support/matchedrules.html [ ImageOnlyFailure ]
 crbug.com/293932 [ Android ] svg/canvas/canvas-pattern-svg.html [ ImageOnlyFailure ]
 crbug.com/293932 [ Android ] css3/images/optimize-contrast-image.html [ ImageOnlyFailure Timeout Pass ]
-crbug.com/293932 [ Android ] svg/as-background-image/svg-width-100p-as-background.html [ ImageOnlyFailure Pass ]
 
 # Flaky timeouts on android
 crbug.com/307777 [ Android ] accessibility/aria-labelledby-on-input.html [ Timeout Pass ]
