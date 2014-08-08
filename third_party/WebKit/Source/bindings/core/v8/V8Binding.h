@@ -606,6 +606,14 @@ struct NativeValueTraits<v8::Handle<v8::Value> > {
     }
 };
 
+template<>
+struct NativeValueTraits<ScriptValue> {
+    static inline ScriptValue nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
+    {
+        return ScriptValue(ScriptState::current(isolate), value);
+    }
+};
+
 v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value>, uint32_t& length, v8::Isolate*);
 
 // Converts a JavaScript value to an array as per the Web IDL specification:

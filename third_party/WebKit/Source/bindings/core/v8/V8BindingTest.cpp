@@ -5,6 +5,7 @@
 #include "config.h"
 #include "bindings/core/v8/V8Binding.h"
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/testing/GarbageCollectedScriptWrappable.h"
 #include "core/testing/RefCountedScriptWrappable.h"
 #include "platform/heap/Heap.h"
@@ -295,6 +296,67 @@ TEST_F(V8ValueTraitsTest, v8Value)
 
     CHECK_TOV8VALUE("1234", localValue);
     CHECK_TOV8VALUE("5678", handleValue);
+}
+
+TEST_F(V8ValueTraitsTest, toNativeArray)
+{
+    {
+        v8::Handle<v8::Array> v8StringArray = v8::Array::New(m_scope.isolate(), 2);
+        v8StringArray->Set(toV8Value(0), toV8Value("Hello, World!"));
+        v8StringArray->Set(toV8Value(1), toV8Value("Hi, Mom!"));
+
+        Vector<String> stringVector = toNativeArray<String>(v8StringArray, 0, m_scope.isolate());
+        EXPECT_EQ(2U, stringVector.size());
+        EXPECT_EQ("Hello, World!", stringVector[0]);
+        EXPECT_EQ("Hi, Mom!", stringVector[1]);
+    }
+    {
+        v8::Handle<v8::Array> v8UnsignedArray = v8::Array::New(m_scope.isolate(), 3);
+        v8UnsignedArray->Set(toV8Value(0), toV8Value(42));
+        v8UnsignedArray->Set(toV8Value(1), toV8Value(1729));
+        v8UnsignedArray->Set(toV8Value(2), toV8Value(31773));
+
+        Vector<unsigned> unsignedVector = toNativeArray<unsigned>(v8UnsignedArray, 0, m_scope.isolate());
+        EXPECT_EQ(3U, unsignedVector.size());
+        EXPECT_EQ(42U, unsignedVector[0]);
+        EXPECT_EQ(1729U, unsignedVector[1]);
+        EXPECT_EQ(31773U, unsignedVector[2]);
+    }
+    {
+        const double doublePi = 3.141592653589793238;
+        const float floatPi = doublePi;
+        v8::Handle<v8::Array> v8RealArray = v8::Array::New(m_scope.isolate(), 1);
+        v8RealArray->Set(toV8Value(0), toV8Value(doublePi));
+
+        Vector<double> doubleVector = toNativeArray<double>(v8RealArray, 0, m_scope.isolate());
+        EXPECT_EQ(1U, doubleVector.size());
+        EXPECT_EQ(doublePi, doubleVector[0]);
+
+        Vector<float> floatVector = toNativeArray<float>(v8RealArray, 0, m_scope.isolate());
+        EXPECT_EQ(1U, floatVector.size());
+        EXPECT_EQ(floatPi, floatVector[0]);
+    }
+    {
+        v8::Handle<v8::Array> v8Array = v8::Array::New(m_scope.isolate(), 3);
+        v8Array->Set(toV8Value(0), toV8Value("Vini, vidi, vici."));
+        v8Array->Set(toV8Value(1), toV8Value(65535));
+        v8Array->Set(toV8Value(2), toV8Value(0.125));
+
+        Vector<v8::Handle<v8::Value> > v8HandleVector = toNativeArray<v8::Handle<v8::Value> >(v8Array, 0, m_scope.isolate());
+        EXPECT_EQ(3U, v8HandleVector.size());
+        NonThrowableExceptionState exceptionState;
+        EXPECT_EQ("Vini, vidi, vici.", toScalarValueString(v8HandleVector[0], exceptionState));
+        EXPECT_EQ(65535U, toUInt32(v8HandleVector[1]));
+        EXPECT_EQ(0.125, toFloat(v8HandleVector[2]));
+
+        Vector<ScriptValue> scriptValueVector = toNativeArray<ScriptValue>(v8Array, 0, m_scope.isolate());
+        EXPECT_EQ(3U, scriptValueVector.size());
+        String reportOnZela;
+        EXPECT_TRUE(scriptValueVector[0].toString(reportOnZela));
+        EXPECT_EQ("Vini, vidi, vici.", reportOnZela);
+        EXPECT_EQ(65535U, toUInt32(scriptValueVector[1].v8Value()));
+        EXPECT_EQ(0.125, toFloat(scriptValueVector[2].v8Value()));
+    }
 }
 
 } // namespace
