@@ -10355,7 +10355,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Login.ConsumerNewUsersAllowed" enum="LoginConsumerWhitelist">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>cmasone@chromium.org</owner>
+  <owner>sumit@chromium.org</owner>
   <summary>
     Chrome OS histogram tracking, per consumer sign-in, whether the device owner
     is allowing arbitrary accounts to be used on the device, or only those on a
