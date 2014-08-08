@@ -20,9 +20,8 @@ namespace {
 
 class WebNotificationPermissionCallbackImpl : public WebNotificationPermissionCallback {
 public:
-    WebNotificationPermissionCallbackImpl(ExecutionContext* executionContext, PassOwnPtr<NotificationPermissionCallback> callback)
-        : m_executionContext(executionContext)
-        , m_callback(callback)
+    WebNotificationPermissionCallbackImpl(PassOwnPtr<NotificationPermissionCallback> callback)
+        : m_callback(callback)
     {
     }
 
@@ -34,16 +33,7 @@ public:
             m_callback->handleEvent(Notification::permissionString(static_cast<NotificationClient::Permission>(permission)));
     }
 
-    // FIXME: Deprecated. Notification::permission() requires another round-trip
-    // to the browser process using a synchronous IPC.
-    virtual void permissionRequestComplete() OVERRIDE
-    {
-        if (m_callback)
-            m_callback->handleEvent(Notification::permission(m_executionContext));
-    }
-
 private:
-    ExecutionContext* m_executionContext;
     OwnPtr<NotificationPermissionCallback> m_callback;
 };
 
@@ -69,7 +59,7 @@ void NotificationPermissionClientImpl::requestPermission(ExecutionContext* conte
     Document* document = toDocument(context);
     WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
 
-    webFrame->client()->requestNotificationPermission(WebSecurityOrigin(context->securityOrigin()), new WebNotificationPermissionCallbackImpl(context, callback));
+    webFrame->client()->requestNotificationPermission(WebSecurityOrigin(context->securityOrigin()), new WebNotificationPermissionCallbackImpl(callback));
 }
 
 } // namespace blink

@@ -43,9 +43,6 @@ public:
     // Method to be invoked when the asynchronous permission request for the
     // ability to display Web Notifications has been completed.
     virtual void permissionRequestComplete(WebNotificationPermission) = 0;
-
-    // FIXME: Deprecated. Use the version with expecting an argument instead.
-    virtual void permissionRequestComplete() = 0;
 };
 
 } // namespace blink
