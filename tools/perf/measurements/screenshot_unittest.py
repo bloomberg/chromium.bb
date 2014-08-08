@@ -8,13 +8,12 @@ import tempfile
 
 from measurements import screenshot
 from telemetry import benchmark
-from telemetry.page import page_measurement_unittest_base
 from telemetry.page import page_test
+from telemetry.testing import page_test_test_case
 from telemetry.unittest import options_for_unittests
 
 
-class ScreenshotUnitTest(
-      page_measurement_unittest_base.PageMeasurementUnitTestBase):
+class ScreenshotUnitTest(page_test_test_case.PageTestTestCase):
   def setUp(self):
     self._options = options_for_unittests.GetCopy()
     self._options.png_outdir = tempfile.mkdtemp('_png_test')

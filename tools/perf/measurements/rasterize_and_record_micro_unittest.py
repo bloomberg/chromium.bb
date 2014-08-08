@@ -6,14 +6,13 @@ import logging
 
 from measurements import rasterize_and_record_micro
 from telemetry.core import wpr_modes
-from telemetry.page import page_measurement_unittest_base
 from telemetry.page import page_test
+from telemetry.testing import page_test_test_case
 from telemetry.unittest import test
 from telemetry.unittest import options_for_unittests
 
 
-class RasterizeAndRecordMicroUnitTest(
-      page_measurement_unittest_base.PageMeasurementUnitTestBase):
+class RasterizeAndRecordMicroUnitTest(page_test_test_case.PageTestTestCase):
   """Smoke test for rasterize_and_record_micro measurement
 
      Runs rasterize_and_record_micro measurement on a simple page and verifies

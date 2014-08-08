@@ -8,8 +8,8 @@ from metrics import power
 from telemetry.core import exceptions
 from telemetry.core import wpr_modes
 from telemetry.page import page
-from telemetry.page import page_measurement_unittest_base
 from telemetry.page import page_test
+from telemetry.testing import page_test_test_case
 from telemetry.unittest import options_for_unittests
 
 class FakePlatform(object):
@@ -45,8 +45,7 @@ class FakeTab(object):
   def ExecuteJavaScript(self, js):
     pass
 
-class SmoothnessUnitTest(
-      page_measurement_unittest_base.PageMeasurementUnitTestBase):
+class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
   """Smoke test for smoothness measurement
 
      Runs smoothness measurement on a simple page and verifies

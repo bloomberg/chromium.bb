@@ -4,8 +4,8 @@
 
 from measurements import repaint
 from telemetry.core import wpr_modes
-from telemetry.page import page_measurement_unittest_base
 from telemetry.page import page as page_module
+from telemetry.testing import page_test_test_case
 from telemetry.unittest import options_for_unittests
 from telemetry.unittest import test
 
@@ -19,8 +19,7 @@ class TestRepaintPage(page_module.Page):
     action_runner.RepaintContinuously(seconds=2)
 
 
-class RepaintUnitTest(
-      page_measurement_unittest_base.PageMeasurementUnitTestBase):
+class RepaintUnitTest(page_test_test_case.PageTestTestCase):
   """Smoke test for repaint measurement
 
      Runs repaint measurement on a simple page and verifies
