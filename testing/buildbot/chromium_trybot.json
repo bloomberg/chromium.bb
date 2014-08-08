@@ -215,6 +215,8 @@
   ],
 
   "filter_tests_builders": [
-    "linux_chromium_rel_swarming"
+    "linux_chromium_rel_swarming",
+    "win_chromium_rel",
+    "win_chromium_x64_rel"
   ]
 }
