@@ -222,10 +222,12 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(ManyPlugins)) {
   LoadAndWait(GetURL("many_plugins.html"));
 }
 
+#if !defined(OS_MACOSX)  // http://crbug.com/402164
 // Test various calls to GetURL from a plugin.
 IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(GetURL)) {
   LoadAndWait(GetURL("geturl.html"));
 }
+#endif
 
 // Test various calls to GetURL for javascript URLs with
 // non NULL targets from a plugin.
