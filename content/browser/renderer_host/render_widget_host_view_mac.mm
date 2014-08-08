@@ -2314,14 +2314,21 @@ bool RenderWidgetHostViewMac::AcceleratedLayerShouldAckImmediately() const {
   return false;
 }
 
-void RenderWidgetHostViewMac::AcceleratedLayerDidDrawFrame(bool succeeded) {
+void RenderWidgetHostViewMac::AcceleratedLayerDidDrawFrame() {
   if (!render_widget_host_)
     return;
 
   SendPendingLatencyInfoToHost();
   SendPendingSwapAck();
-  if (!succeeded)
-    GotAcceleratedCompositingError();
+}
+
+void RenderWidgetHostViewMac::AcceleratedLayerHitError() {
+  if (!render_widget_host_)
+    return;
+  // Perform all acks that would have been done if the frame had succeeded, to
+  // un-block the renderer.
+  AcceleratedLayerDidDrawFrame();
+  GotAcceleratedCompositingError();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

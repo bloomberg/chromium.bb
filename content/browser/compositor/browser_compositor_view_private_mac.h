@@ -49,13 +49,24 @@ class BrowserCompositorViewMacInternal
 private:
   // CompositingIOSurfaceLayerClient implementation:
   virtual bool AcceleratedLayerShouldAckImmediately() const OVERRIDE;
-  virtual void AcceleratedLayerDidDrawFrame(bool succeeded) OVERRIDE;
+  virtual void AcceleratedLayerDidDrawFrame() OVERRIDE;
+  virtual void AcceleratedLayerHitError() OVERRIDE;
 
   void GotAcceleratedCAContextFrame(
       CAContextID ca_context_id, gfx::Size pixel_size, float scale_factor);
 
   void GotAcceleratedIOSurfaceFrame(
       IOSurfaceID io_surface_id, gfx::Size pixel_size, float scale_factor);
+
+  // Remove a layer from the heirarchy and destroy it. Because the accelerated
+  // layer types may be replaced by a layer of the same type, the layer to
+  // destroy is parameterized, and, if it is the current layer, the current
+  // layer is reset.
+  void DestroyCAContextLayer(
+      base::scoped_nsobject<CALayerHost> ca_context_layer);
+  void DestroyIOSurfaceLayer(
+      base::scoped_nsobject<CompositingIOSurfaceLayer> io_surface_layer);
+  void DestroySoftwareLayer();
 
   // The client of the BrowserCompositorViewMac that is using this as its
   // internals.

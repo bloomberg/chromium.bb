@@ -351,7 +351,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // CompositingIOSurfaceLayerClient implementation.
   virtual bool AcceleratedLayerShouldAckImmediately() const OVERRIDE;
-  virtual void AcceleratedLayerDidDrawFrame(bool succeeded) OVERRIDE;
+  virtual void AcceleratedLayerDidDrawFrame() OVERRIDE;
+  virtual void AcceleratedLayerHitError() OVERRIDE;
 
   // gfx::DisplayObserver implementation.
   virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;

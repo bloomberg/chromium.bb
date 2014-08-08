@@ -102,7 +102,10 @@ void CompositingIOSurfaceLayerHelper::AckPendingFrame(bool success) {
   if (!has_pending_frame_)
     return;
   has_pending_frame_ = false;
-  client_->AcceleratedLayerDidDrawFrame(success);
+  if (success)
+    client_->AcceleratedLayerDidDrawFrame();
+  else
+    client_->AcceleratedLayerHitError();
   // A trace value of 0 indicates that there is no longer a pending swap ack.
   TRACE_COUNTER_ID1("browser", "PendingSwapAck", this, 0);
 }
@@ -174,13 +177,19 @@ void CompositingIOSurfaceLayerHelper::EndPumpingFrames() {
                             iosurface
         withScaleFactor:(float)scale_factor
              withClient:(content::CompositingIOSurfaceLayerClient*)client {
+  DCHECK(iosurface);
   if (self = [super init]) {
     helper_.reset(new content::CompositingIOSurfaceLayerHelper(client, self));
 
     iosurface_ = iosurface;
     context_ = content::CompositingIOSurfaceContext::Get(
         content::CompositingIOSurfaceContext::kCALayerContextWindowNumber);
-    DCHECK(context_);
+    if (!context_) {
+      LOG(ERROR) << "Failed create CompositingIOSurfaceContext";
+      [self resetClient];
+      [self release];
+      return nil;
+    }
 
     [self setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
     [self setAnchorPoint:CGPointMake(0, 0)];

@@ -22,8 +22,17 @@ class CompositingIOSurfaceContext;
 // BrowserCompositorViewMac).
 class CompositingIOSurfaceLayerClient {
  public:
+  // Used to indicate that the layer should attempt to draw immediately and
+  // should (even if the draw is elided by the system), ack the frame
+  // immediately.
   virtual bool AcceleratedLayerShouldAckImmediately() const = 0;
-  virtual void AcceleratedLayerDidDrawFrame(bool succeeded) = 0;
+
+  // Called when a frame is drawn or when, because the layer is not visible, it
+  // is known that the frame will never drawn.
+  virtual void AcceleratedLayerDidDrawFrame() = 0;
+
+  // Called when an error prevents the frame from being drawn.
+  virtual void AcceleratedLayerHitError() = 0;
 };
 
 // CompositingIOSurfaceLayerHelper provides C++ functionality needed for the
