@@ -12,8 +12,6 @@
 #include "public/web/WebNotificationPermissionCallback.h"
 #include "web/WebLocalFrameImpl.h"
 
-using namespace blink;
-
 namespace blink {
 
 namespace {

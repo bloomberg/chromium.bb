@@ -39,9 +39,9 @@
 #include "public/web/WebNotificationPresenter.h"
 #include "public/web/WebSecurityOrigin.h"
 
-using namespace blink;
-
 namespace blink {
+
+NotificationPresenterImpl::NotificationPresenterImpl() : m_presenter(0) { }
 
 void NotificationPresenterImpl::initialize(WebNotificationPresenter* presenter)
 {
