@@ -205,7 +205,8 @@ class BaseTestServer {
     bool enable_npn;
 
     // Whether to disable TLS session caching. When session caching is
-    // disabled, the server will generate a new Session ID for every connection.
+    // disabled, the server will use an empty session ID in the
+    // ServerHello.
     bool disable_session_cache;
   };
 

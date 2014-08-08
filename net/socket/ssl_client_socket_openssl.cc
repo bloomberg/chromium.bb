@@ -348,7 +348,7 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       transport_read_error_(OK),
       transport_write_error_(OK),
       server_cert_chain_(new PeerCertificateChain(NULL)),
-      completed_handshake_(false),
+      completed_connect_(false),
       was_ever_used_(false),
       client_auth_cert_needed_(false),
       cert_verifier_(context.cert_verifier),
@@ -363,7 +363,7 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       next_handshake_state_(STATE_NONE),
       npn_status_(kNextProtoUnsupported),
       channel_id_xtn_negotiated_(false),
-      ran_handshake_finished_callback_(false),
+      handshake_succeeded_(false),
       marked_session_as_good_(false),
       net_log_(transport_->socket()->NetLog()) {
 }
@@ -493,7 +493,7 @@ void SSLClientSocketOpenSSL::Disconnect() {
   transport_write_error_ = OK;
 
   server_cert_verify_result_.Reset();
-  completed_handshake_ = false;
+  completed_connect_ = false;
 
   cert_authorities_.clear();
   cert_key_types_.clear();
@@ -508,7 +508,7 @@ void SSLClientSocketOpenSSL::Disconnect() {
 
 bool SSLClientSocketOpenSSL::IsConnected() const {
   // If the handshake has not yet completed.
-  if (!completed_handshake_)
+  if (!completed_connect_)
     return false;
   // If an asynchronous operation is still pending.
   if (user_read_buf_.get() || user_write_buf_.get())
@@ -519,7 +519,7 @@ bool SSLClientSocketOpenSSL::IsConnected() const {
 
 bool SSLClientSocketOpenSSL::IsConnectedAndIdle() const {
   // If the handshake has not yet completed.
-  if (!completed_handshake_)
+  if (!completed_connect_)
     return false;
   // If an asynchronous operation is still pending.
   if (user_read_buf_.get() || user_write_buf_.get())
@@ -679,18 +679,6 @@ int SSLClientSocketOpenSSL::SetSendBufferSize(int32 size) {
   return transport_->socket()->SetSendBufferSize(size);
 }
 
-// static
-void SSLClientSocketOpenSSL::InfoCallback(const SSL* ssl,
-                                          int result,
-                                          int /*unused*/) {
-  SSLClientSocketOpenSSL* ssl_socket =
-      SSLContext::GetInstance()->GetClientSocketFromSSL(ssl);
-  if (result == SSL_CB_HANDSHAKE_DONE) {
-    ssl_socket->ran_handshake_finished_callback_ = true;
-    ssl_socket->CheckIfHandshakeFinished();
-  }
-}
-
 int SSLClientSocketOpenSSL::Init() {
   DCHECK(!ssl_);
   DCHECK(!transport_bio_);
@@ -719,7 +707,7 @@ int SSLClientSocketOpenSSL::Init() {
   DCHECK(transport_bio_);
 
   // Install a callback on OpenSSL's end to plumb transport errors through.
-  BIO_set_callback(ssl_bio, &SSLClientSocketOpenSSL::BIOCallback);
+  BIO_set_callback(ssl_bio, BIOCallback);
   BIO_set_callback_arg(ssl_bio, reinterpret_cast<char*>(this));
 
   SSL_set_bio(ssl_, ssl_bio, ssl_bio);
@@ -1046,7 +1034,7 @@ int SSLClientSocketOpenSSL::DoVerifyCertComplete(int result) {
              << " (" << result << ")";
   }
 
-  completed_handshake_ = true;
+  completed_connect_ = true;
   // Exit DoHandshakeLoop and return the result to the caller to Connect.
   DCHECK_EQ(STATE_NONE, next_handshake_state_);
   return result;
@@ -1486,7 +1474,7 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl,
 }
 
 int SSLClientSocketOpenSSL::CertVerifyCallback(X509_STORE_CTX* store_ctx) {
-  if (!completed_handshake_) {
+  if (!completed_connect_) {
     // If the first handshake hasn't completed then we accept any certificates
     // because we verify after the handshake.
     return 1;
@@ -1586,19 +1574,6 @@ long SSLClientSocketOpenSSL::MaybeReplayTransportError(
   return retvalue;
 }
 
-// Determines if the session for |ssl_| is in the cache, and calls the
-// handshake completion callback if that is the case.
-//
-// CheckIfHandshakeFinished is called twice per connection: once after
-// MarkSSLSessionAsGood, when the certificate has been verified, and
-// once via an OpenSSL callback when the handshake has completed. On the
-// second call, when the certificate has been verified and the handshake
-// has completed, the connection's handshake completion callback is run.
-void SSLClientSocketOpenSSL::CheckIfHandshakeFinished() {
-  if (ran_handshake_finished_callback_ && marked_session_as_good_)
-    OnHandshakeCompletion();
-}
-
 // static
 long SSLClientSocketOpenSSL::BIOCallback(
     BIO *bio,
@@ -1610,6 +1585,32 @@ long SSLClientSocketOpenSSL::BIOCallback(
   CHECK(socket);
   return socket->MaybeReplayTransportError(
       bio, cmd, argp, argi, argl, retvalue);
+}
+
+// static
+void SSLClientSocketOpenSSL::InfoCallback(const SSL* ssl,
+                                          int type,
+                                          int /*val*/) {
+  if (type == SSL_CB_HANDSHAKE_DONE) {
+    SSLClientSocketOpenSSL* ssl_socket =
+        SSLContext::GetInstance()->GetClientSocketFromSSL(ssl);
+    ssl_socket->handshake_succeeded_ = true;
+    ssl_socket->CheckIfHandshakeFinished();
+  }
+}
+
+// Determines if both the handshake and certificate verification have completed
+// successfully, and calls the handshake completion callback if that is the
+// case.
+//
+// CheckIfHandshakeFinished is called twice per connection: once after
+// MarkSSLSessionAsGood, when the certificate has been verified, and
+// once via an OpenSSL callback when the handshake has completed. On the
+// second call, when the certificate has been verified and the handshake
+// has completed, the connection's handshake completion callback is run.
+void SSLClientSocketOpenSSL::CheckIfHandshakeFinished() {
+  if (handshake_succeeded_ && marked_session_as_good_)
+    OnHandshakeCompletion();
 }
 
 scoped_refptr<X509Certificate>

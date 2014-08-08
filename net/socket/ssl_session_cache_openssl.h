@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback_forward.h"
 #include "net/base/net_export.h"
 
 // Avoid including OpenSSL headers here.

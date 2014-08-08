@@ -10,7 +10,6 @@
 #include <openssl/rand.h>
 #include <openssl/ssl.h>
 
-#include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"

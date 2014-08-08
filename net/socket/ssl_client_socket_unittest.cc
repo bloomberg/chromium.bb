@@ -2694,7 +2694,6 @@ TEST_F(SSLClientSocketTest, HandshakeCallbackIsRun_WithFailure) {
 // Tests that the completion callback is run when an SSL connection
 // completes successfully.
 TEST_F(SSLClientSocketTest, HandshakeCallbackIsRun_WithSuccess) {
-  SpawnedTestServer::SSLOptions ssl_options;
   SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS,
                                 SpawnedTestServer::kLocalhost,
                                 base::FilePath());
@@ -2728,8 +2727,8 @@ TEST_F(SSLClientSocketTest, HandshakeCallbackIsRun_WithSuccess) {
   EXPECT_TRUE(ran_handshake_completion_callback_);
 }
 
-// Tests that the completion callback is run with connections
-// that do not cache their session.
+// Tests that the completion callback is run with a server that doesn't cache
+// sessions.
 TEST_F(SSLClientSocketTest, HandshakeCallbackIsRun_WithDisabledSessionCache) {
   SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.disable_session_cache = true;
