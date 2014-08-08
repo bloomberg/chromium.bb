@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -898,7 +899,7 @@ class CONTENT_EXPORT WebContentsImpl
   // Clear |render_frame_host|'s PowerSaveBlockers.
   void ClearPowerSaveBlockers(RenderFrameHost* render_frame_host);
 
-  // Clear all PowerSaveBlockers, leave power_save_blocker_ empty.
+  // Clear all PowerSaveBlockers, leave |power_save_blocker_| empty.
   void ClearAllPowerSaveBlockers();
 
   // Helper function to invoke WebContentsDelegate::GetSizeForNewRenderView().
@@ -965,12 +966,18 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Helper classes ------------------------------------------------------------
 
+#if !defined(OS_CHROMEOS)
   // Maps the RenderFrameHost to its media_player_cookie and PowerSaveBlocker
   // pairs. Key is the RenderFrameHost, value is the map which maps
   // player_cookie on to PowerSaveBlocker.
-  typedef std::map<RenderFrameHost*, std::map<int64, PowerSaveBlocker*> >
+  //
+  // ChromeOS does its own detection of audio and video.
+  typedef base::ScopedPtrHashMap<int64, PowerSaveBlocker>
+      PowerSaveBlockerMapEntry;
+  typedef base::ScopedPtrHashMap<uintptr_t, PowerSaveBlockerMapEntry>
       PowerSaveBlockerMap;
   PowerSaveBlockerMap power_save_blockers_;
+#endif
 
   // Manages the frame tree of the page and process swaps in each node.
   FrameTree frame_tree_;

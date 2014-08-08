@@ -3012,7 +3012,6 @@ void WebContentsImpl::OnUpdateFaviconURL(
 void WebContentsImpl::OnMediaPlayingNotification(int64 player_cookie,
                                                  bool has_video,
                                                  bool has_audio) {
-// Chrome OS does its own detection of audio and video.
 #if !defined(OS_CHROMEOS)
   scoped_ptr<PowerSaveBlocker> blocker;
   if (has_video) {
@@ -3028,17 +3027,24 @@ void WebContentsImpl::OnMediaPlayingNotification(int64 player_cookie,
   }
 
   if (blocker) {
-    power_save_blockers_[render_frame_message_source_][player_cookie] =
-        blocker.release();
+    uintptr_t key = reinterpret_cast<uintptr_t>(render_frame_message_source_);
+    if (!power_save_blockers_.contains(key)) {
+      power_save_blockers_.add(key,
+                               make_scoped_ptr(new PowerSaveBlockerMapEntry));
+    }
+    PowerSaveBlockerMapEntry* map_entry =
+        power_save_blockers_.get(key);
+    map_entry->set(player_cookie, blocker.Pass());
   }
 #endif  // !defined(OS_CHROMEOS)
 }
 
 void WebContentsImpl::OnMediaPausedNotification(int64 player_cookie) {
-  // Chrome OS does its own detection of audio and video.
 #if !defined(OS_CHROMEOS)
-  delete power_save_blockers_[render_frame_message_source_][player_cookie];
-  power_save_blockers_[render_frame_message_source_].erase(player_cookie);
+  uintptr_t key = reinterpret_cast<uintptr_t>(render_frame_message_source_);
+  PowerSaveBlockerMapEntry* map_entry = power_save_blockers_.get(key);
+  if (map_entry)
+    map_entry->erase(player_cookie);
 #endif  // !defined(OS_CHROMEOS)
 }
 
@@ -4208,15 +4214,19 @@ BrowserPluginEmbedder* WebContentsImpl::GetBrowserPluginEmbedder() const {
 
 void WebContentsImpl::ClearPowerSaveBlockers(
     RenderFrameHost* render_frame_host) {
-  STLDeleteValues(&power_save_blockers_[render_frame_host]);
-  power_save_blockers_.erase(render_frame_host);
+#if !defined(OS_CHROMEOS)
+  uintptr_t key = reinterpret_cast<uintptr_t>(render_frame_host);
+  scoped_ptr<PowerSaveBlockerMapEntry> map_entry =
+      power_save_blockers_.take_and_erase(key);
+  if (map_entry)
+    map_entry->clear();
+#endif
 }
 
 void WebContentsImpl::ClearAllPowerSaveBlockers() {
-  for (PowerSaveBlockerMap::iterator i(power_save_blockers_.begin());
-       i != power_save_blockers_.end(); ++i)
-    STLDeleteValues(&power_save_blockers_[i->first]);
+#if !defined(OS_CHROMEOS)
   power_save_blockers_.clear();
+#endif
 }
 
 gfx::Size WebContentsImpl::GetSizeForNewRenderView() {
