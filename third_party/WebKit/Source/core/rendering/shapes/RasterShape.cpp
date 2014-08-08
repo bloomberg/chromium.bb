@@ -150,17 +150,17 @@ const RasterShapeIntervals& RasterShape::marginIntervals() const
     return *m_marginIntervals;
 }
 
-void RasterShape::getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logicalHeight, SegmentList& result) const
+LineSegment RasterShape::getExcludedInterval(LayoutUnit logicalTop, LayoutUnit logicalHeight) const
 {
     const RasterShapeIntervals& intervals = marginIntervals();
     if (intervals.isEmpty())
-        return;
+        return LineSegment();
 
     int y1 = logicalTop;
     int y2 = logicalTop + logicalHeight;
     ASSERT(y2 >= y1);
     if (y2 < intervals.bounds().y() || y1 >= intervals.bounds().maxY())
-        return;
+        return LineSegment();
 
     y1 = std::max(y1, intervals.bounds().y());
     y2 = std::min(y2, intervals.bounds().maxY());
@@ -176,7 +176,7 @@ void RasterShape::getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logical
     // Note: |marginIntervals()| returns end-point exclusive
     // intervals. |excludedInterval.x2()| contains the left-most pixel
     // offset to the right of the calculated union.
-    result.append(LineSegment(excludedInterval.x1(), excludedInterval.x2()));
+    return LineSegment(excludedInterval.x1(), excludedInterval.x2());
 }
 
 } // namespace blink

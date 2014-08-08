@@ -52,28 +52,24 @@ FloatRoundedRect BoxShape::shapeMarginBounds() const
     return marginBounds;
 }
 
-void BoxShape::getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logicalHeight, SegmentList& result) const
+LineSegment BoxShape::getExcludedInterval(LayoutUnit logicalTop, LayoutUnit logicalHeight) const
 {
     const FloatRoundedRect& marginBounds = shapeMarginBounds();
     if (marginBounds.isEmpty() || !lineOverlapsShapeMarginBounds(logicalTop, logicalHeight))
-        return;
+        return LineSegment();
 
     float y1 = logicalTop.toFloat();
     float y2 = (logicalTop + logicalHeight).toFloat();
     const FloatRect& rect = marginBounds.rect();
 
-    if (!marginBounds.isRounded()) {
-        result.append(LineSegment(marginBounds.rect().x(), marginBounds.rect().maxX()));
-        return;
-    }
+    if (!marginBounds.isRounded())
+        return LineSegment(marginBounds.rect().x(), marginBounds.rect().maxX());
 
     float topCornerMaxY = std::max<float>(marginBounds.topLeftCorner().maxY(), marginBounds.topRightCorner().maxY());
     float bottomCornerMinY = std::min<float>(marginBounds.bottomLeftCorner().y(), marginBounds.bottomRightCorner().y());
 
-    if (topCornerMaxY <= bottomCornerMinY && y1 <= topCornerMaxY && y2 >= bottomCornerMinY) {
-        result.append(LineSegment(rect.x(), rect.maxX()));
-        return;
-    }
+    if (topCornerMaxY <= bottomCornerMinY && y1 <= topCornerMaxY && y2 >= bottomCornerMinY)
+        return LineSegment(rect.x(), rect.maxX());
 
     float x1 = rect.maxX();
     float x2 = rect.x();
@@ -97,7 +93,7 @@ void BoxShape::getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logicalHei
     }
 
     ASSERT(x2 >= x1);
-    result.append(LineSegment(x1, x2));
+    return LineSegment(x1, x2);
 }
 
 void BoxShape::buildDisplayPaths(DisplayPaths& paths) const

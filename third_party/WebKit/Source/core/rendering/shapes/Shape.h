@@ -42,18 +42,24 @@
 namespace blink {
 
 struct LineSegment {
+    LineSegment()
+        : logicalLeft(0)
+        , logicalRight(0)
+        , isValid(false)
+    {
+    }
+
     LineSegment(float logicalLeft, float logicalRight)
         : logicalLeft(logicalLeft)
         , logicalRight(logicalRight)
+        , isValid(true)
     {
     }
 
     float logicalLeft;
     float logicalRight;
+    bool isValid;
 };
-
-typedef Vector<LineSegment> SegmentList;
-
 
 // A representation of a BasicShape that enables layout code to determine how to break a line up into segments
 // that will fit within or around a shape. The line is defined by a pair of logical Y coordinates and the
@@ -75,7 +81,7 @@ public:
 
     virtual LayoutRect shapeMarginLogicalBoundingBox() const = 0;
     virtual bool isEmpty() const = 0;
-    virtual void getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logicalHeight, SegmentList&) const = 0;
+    virtual LineSegment getExcludedInterval(LayoutUnit logicalTop, LayoutUnit logicalHeight) const = 0;
 
     bool lineOverlapsShapeMarginBounds(LayoutUnit lineTop, LayoutUnit lineHeight) const { return lineOverlapsBoundingBox(lineTop, lineHeight, shapeMarginLogicalBoundingBox()); }
     virtual void buildDisplayPaths(DisplayPaths&) const = 0;

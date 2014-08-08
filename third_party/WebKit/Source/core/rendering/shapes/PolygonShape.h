@@ -68,7 +68,7 @@ public:
 
     virtual LayoutRect shapeMarginLogicalBoundingBox() const OVERRIDE;
     virtual bool isEmpty() const OVERRIDE { return m_polygon.isEmpty(); }
-    virtual void getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logicalHeight, SegmentList&) const OVERRIDE;
+    virtual LineSegment getExcludedInterval(LayoutUnit logicalTop, LayoutUnit logicalHeight) const OVERRIDE;
     virtual void buildDisplayPaths(DisplayPaths&) const OVERRIDE;
 
 private:

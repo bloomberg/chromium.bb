@@ -53,17 +53,17 @@ FloatRect RectangleShape::shapeMarginBounds() const
     return FloatRect(boundsX, boundsY, boundsWidth, boundsHeight);
 }
 
-void RectangleShape::getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logicalHeight, SegmentList& result) const
+LineSegment RectangleShape::getExcludedInterval(LayoutUnit logicalTop, LayoutUnit logicalHeight) const
 {
     const FloatRect& bounds = shapeMarginBounds();
     if (bounds.isEmpty())
-        return;
+        return LineSegment();
 
     float y1 = logicalTop.toFloat();
     float y2 = (logicalTop + logicalHeight).toFloat();
 
     if (y2 < bounds.y() || y1 >= bounds.maxY())
-        return;
+        return LineSegment();
 
     float x1 = bounds.x();
     float x2 = bounds.maxX();
@@ -85,7 +85,7 @@ void RectangleShape::getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logi
         }
     }
 
-    result.append(LineSegment(x1, x2));
+    return LineSegment(x1, x2);
 }
 
 void RectangleShape::buildDisplayPaths(DisplayPaths& paths) const

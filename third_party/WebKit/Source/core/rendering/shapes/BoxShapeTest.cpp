@@ -55,20 +55,18 @@ using namespace blink;
 
 #define TEST_EXCLUDED_INTERVAL(shapePtr, lineTop, lineHeight, expectedLeft, expectedRight) \
 {                                                                                          \
-    SegmentList result;                                                                    \
-    shapePtr->getExcludedIntervals(lineTop, lineHeight, result);                           \
-    EXPECT_EQ(1u, result.size());                                                          \
-    if (result.size() == 1u) {                                                             \
-        EXPECT_FLOAT_EQ(expectedLeft, result[0].logicalLeft);                              \
-        EXPECT_FLOAT_EQ(expectedRight, result[0].logicalRight);                            \
+    LineSegment segment = shapePtr->getExcludedInterval(lineTop, lineHeight);                           \
+    EXPECT_TRUE(segment.isValid); \
+    if (segment.isValid) {                                                             \
+        EXPECT_FLOAT_EQ(expectedLeft, segment.logicalLeft);                              \
+        EXPECT_FLOAT_EQ(expectedRight, segment.logicalRight);                            \
     }                                                                                      \
 }
 
 #define TEST_NO_EXCLUDED_INTERVAL(shapePtr, lineTop, lineHeight) \
 {                                                                \
-    SegmentList result;                                          \
-    shapePtr->getExcludedIntervals(lineTop, lineHeight, result); \
-    EXPECT_EQ(0u, result.size());                                \
+    LineSegment segment = shapePtr->getExcludedInterval(lineTop, lineHeight); \
+    EXPECT_FALSE(segment.isValid); \
 }
 
 /* The BoxShape is based on a 100x50 rectangle at 0,0. The shape-margin value is 10,

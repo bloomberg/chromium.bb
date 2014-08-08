@@ -48,8 +48,6 @@ class ShapeOutsideInfo FINAL {
 public:
     void setReferenceBoxLogicalSize(LayoutSize);
 
-    SegmentList computeSegmentsForLine(LayoutUnit lineTop, LayoutUnit lineHeight) const;
-
     LayoutUnit shapeLogicalTop() const { return computedShape().shapeMarginLogicalBoundingBox().y() + logicalTopOffset(); }
     LayoutUnit shapeLogicalBottom() const { return computedShape().shapeMarginLogicalBoundingBox().maxY() + logicalTopOffset(); }
     LayoutUnit shapeLogicalLeft() const { return computedShape().shapeMarginLogicalBoundingBox().x() + logicalLeftOffset(); }

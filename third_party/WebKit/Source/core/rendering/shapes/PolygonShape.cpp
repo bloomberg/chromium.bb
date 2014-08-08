@@ -120,17 +120,17 @@ LayoutRect PolygonShape::shapeMarginLogicalBoundingBox() const
     return LayoutRect(box);
 }
 
-void PolygonShape::getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logicalHeight, SegmentList& result) const
+LineSegment PolygonShape::getExcludedInterval(LayoutUnit logicalTop, LayoutUnit logicalHeight) const
 {
     float y1 = logicalTop.toFloat();
     float y2 = logicalTop.toFloat() + logicalHeight.toFloat();
 
     if (m_polygon.isEmpty() || !overlapsYRange(m_polygon.boundingBox(), y1 - shapeMargin(), y2 + shapeMargin()))
-        return;
+        return LineSegment();
 
     Vector<const FloatPolygonEdge*> overlappingEdges;
     if (!m_polygon.overlappingEdges(y1 - shapeMargin(), y2 + shapeMargin(), overlappingEdges))
-        return;
+        return LineSegment();
 
     FloatShapeInterval excludedInterval;
     for (unsigned i = 0; i < overlappingEdges.size(); i++) {
@@ -146,8 +146,10 @@ void PolygonShape::getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logica
         }
     }
 
-    if (!excludedInterval.isEmpty())
-        result.append(LineSegment(excludedInterval.x1(), excludedInterval.x2()));
+    if (excludedInterval.isEmpty())
+        return LineSegment();
+
+    return LineSegment(excludedInterval.x1(), excludedInterval.x2());
 }
 
 void PolygonShape::buildDisplayPaths(DisplayPaths& paths) const
