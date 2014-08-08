@@ -13,6 +13,7 @@ window.addEventListener('DOMContentLoaded', function() {
   fillMostVisited(window.location, function(params, data) {
     document.body.appendChild(
         createMostVisitedLink(
-            params, data.url, data.title, data.title, data.provider));
+            params, data.url, data.title, data.title, data.direction,
+            data.provider));
   });
 });

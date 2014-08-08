@@ -7,7 +7,7 @@ body {
 
 a {
   overflow: hidden;
-  text-align: center;
-  text-overflow: ellipsis;
+  text-align: center;  /* Can be overridden in JS. */
+  text-overflow: ellipsis; /* Can be overridden in JS. */
   white-space: nowrap;
 }

@@ -24,7 +24,8 @@ window.addEventListener('DOMContentLoaded', function() {
     }
     function showDomainElement() {
       var link = createMostVisitedLink(
-          params, data.url, data.title, undefined, data.provider);
+          params, data.url, data.title, undefined, data.direction,
+          data.provider);
       var domain = document.createElement('div');
       domain.textContent = data.domain;
       link.appendChild(domain);
@@ -34,7 +35,8 @@ window.addEventListener('DOMContentLoaded', function() {
     // externally by the page itself.
     function showEmptyTile() {
       displayLink(createMostVisitedLink(
-          params, data.url, data.title, undefined, data.provider));
+          params, data.url, data.title, undefined, data.direction,
+          data.provider));
     }
     // Creates and adds an image.
     function createThumbnail(src) {
@@ -43,7 +45,8 @@ window.addEventListener('DOMContentLoaded', function() {
         var shadow = document.createElement('span');
         shadow.className = 'shadow';
         var link = createMostVisitedLink(
-            params, data.url, data.title, undefined, data.provider);
+            params, data.url, data.title, undefined, data.direction,
+            data.provider);
         link.appendChild(shadow);
         link.appendChild(image);
         displayLink(link);
