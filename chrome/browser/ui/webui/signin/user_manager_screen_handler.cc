@@ -498,7 +498,7 @@ void UserManagerScreenHandler::GetLocalizedValues(
   localized_strings->SetString("screenType", "login-add-user");
   localized_strings->SetString("highlightStrength", "normal");
   localized_strings->SetString("title",
-      l10n_util::GetStringUTF16(IDS_USER_MANAGER_SCREEN_TITLE));
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   localized_strings->SetString("passwordHint",
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_EMPTY_PASSWORD_TEXT));
   localized_strings->SetString("podMenuButtonAccessibleName",

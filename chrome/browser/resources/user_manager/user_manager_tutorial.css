@@ -177,3 +177,17 @@ html[dir=rtl] #slide-guests .arrow-down {
   background-image: url(
       'chrome://theme/IDR_ICON_USER_MANAGER_TUTORIAL_COMPLETE');
 }
+
+#slide-not-you #dismiss-bubble-button {
+  background-image: url('chrome://theme/IDR_CLOSE_1');
+  cursor: pointer;
+  height: 16px;
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  width: 16px;
+}
+
+html[dir=rtl] #slide-not-you #dismiss-bubble-button {
+  left: 5px;
+}

@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/auto_keep_alive.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/generated_resources.h"
+#include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
@@ -151,7 +151,7 @@ bool UserManagerView::CanMaximize() const {
 }
 
 base::string16 UserManagerView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_USER_MANAGER_SCREEN_TITLE);
+  return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
 }
 
 int UserManagerView::GetDialogButtons() const {

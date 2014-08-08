@@ -13,7 +13,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "grit/generated_resources.h"
+#include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 // Default window size. Taken from the views implementation in
@@ -108,7 +108,7 @@ class UserManagerWebContentsDelegate : public content::WebContentsDelegate {
                           NSResizableWindowMask
                   backing:NSBackingStoreBuffered
                     defer:NO];
-  [window setTitle:l10n_util::GetNSString(IDS_USER_MANAGER_SCREEN_TITLE)];
+  [window setTitle:l10n_util::GetNSString(IDS_PRODUCT_NAME)];
   [window setMinSize:NSMakeSize(kWindowWidth, kWindowHeight)];
 
   if ((self = [super initWithWindow:window])) {

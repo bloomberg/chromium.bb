@@ -13607,9 +13607,6 @@ After you create a new supervised user, you can manage their settings at any tim
           Launch app
         </message>
       </if>
-      <message name="IDS_USER_MANAGER_SCREEN_TITLE" desc="String to be displayed in the title bar of the user manager page">
-        User Manager
-      </message>
       <message name="IDS_GO_INCOGNITO_BUTTON" desc="Text shown on Chrome OS sign-in screen button that launches guest session. Should be short.">
         Browse as Guest
       </message>
