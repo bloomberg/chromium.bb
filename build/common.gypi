@@ -3805,15 +3805,9 @@
                           '-no-integrated-as',
                           '-B<(android_toolchain)',  # Else /usr/bin/as gets picked up.
                         ],
-
-                        'ldflags!': [
-                          # Clang does not support the following options.
-                          '-fuse-ld=gold',
-                        ],
                         'ldflags': [
-                          # As long as -fuse-ld=gold doesn't work, add a dummy directory
-                          # with an 'ld' that redirects to gold, so that clang uses gold.
-                          '-B<!(cd <(DEPTH) && pwd -P)/build/android/arm-linux-androideabi-gold',
+                          # Let clang can find the ld.gold in the NDK.
+                          '--gcc-toolchain=<(android_toolchain)/..',
                         ],
                       }],
                       ['asan==1', {
@@ -4182,6 +4176,11 @@
             'defines': ['NO_TCMALLOC'],
           }],
           ['linux_use_gold_flags==1', {
+            # Newer gccs and clangs support -fuse-ld, use the flag to force gold
+            # selection.
+            # gcc -- http://gcc.gnu.org/onlinedocs/gcc-4.8.0/gcc/Optimize-Options.html
+            'ldflags': [ '-fuse-ld=gold', ],
+
             'target_conditions': [
               ['_toolset=="target"', {
                 'ldflags': [
@@ -4208,29 +4207,6 @@
                       # now.
                       #'-Wl,--icf=safe',
                       '-Wl,--icf=none',
-                    ],
-                  }],
-                ],
-              }],
-              # Newer gcc's support -fuse-ld, use the flag to force gold
-              # selection.
-              # gcc -- http://gcc.gnu.org/onlinedocs/gcc-4.8.0/gcc/Optimize-Options.html
-              # TODO(mithro): Watch for clang support at following thread:
-              # http://clang-developers.42468.n3.nabble.com/Adding-fuse-ld-support-to-clang-td4032180.html
-              ['gcc_version>=48 and clang==0', {
-                'target_conditions': [
-                  ['_toolset=="target"', {
-                    'ldflags': [
-                      '-fuse-ld=gold',
-                    ],
-                  }],
-                ],
-              }],
-              ['host_gcc_version>=48 and clang==0', {
-                'target_conditions': [
-                  ['_toolset=="host"', {
-                    'ldflags': [
-                      '-fuse-ld=gold',
                     ],
                   }],
                 ],
