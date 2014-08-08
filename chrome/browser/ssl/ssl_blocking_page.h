@@ -108,6 +108,7 @@ class SSLBlockingPage : public content::InterstitialPageDelegate,
   const net::SSLInfo ssl_info_;
   GURL request_url_;
   // Could the user successfully override the error?
+  // overridable_ will be set to false if strict_enforcement_ is true.
   bool overridable_;
   // Has the site requested strict enforcement of certificate errors?
   bool strict_enforcement_;

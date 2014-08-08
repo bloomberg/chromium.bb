@@ -308,11 +308,12 @@ SSLBlockingPage::SSLBlockingPage(
       captive_portal_detected_(false) {
   Profile* profile = Profile::FromBrowserContext(
       web_contents->GetBrowserContext());
+  if (strict_enforcement_) overridable_ = false;
   // For UMA stats.
   if (net::IsHostnameNonUnique(request_url_.HostNoBrackets()))
     internal_ = true;
   RecordSSLBlockingPageEventStats(SHOW_ALL);
-  if (overridable_ && !strict_enforcement_) {
+  if (overridable_) {
     RecordSSLBlockingPageEventStats(SHOW_OVERRIDABLE);
     if (internal_)
       RecordSSLBlockingPageEventStats(SHOW_INTERNAL_HOSTNAME);
@@ -331,8 +332,7 @@ SSLBlockingPage::SSLBlockingPage(
       base::Time::NowFromSystemTime(),
       request_url_,
       *ssl_info_.cert.get());
-  ssl_error_classification.RecordUMAStatistics(
-      overridable_ && !strict_enforcement_, cert_error_);
+  ssl_error_classification.RecordUMAStatistics(overridable_, cert_error_);
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalService* captive_portal_service =
@@ -367,7 +367,7 @@ SSLBlockingPage::~SSLBlockingPage() {
   if (!callback_.is_null()) {
     RecordSSLBlockingPageDetailedStats(false,
                                        cert_error_,
-                                       overridable_ && !strict_enforcement_,
+                                       overridable_,
                                        internal_,
                                        num_visits_,
                                        captive_portal_detection_enabled_,
@@ -396,8 +396,7 @@ std::string SSLBlockingPage::GetHTMLContents() {
 
   // Shared values for both the overridable and non-overridable versions.
   load_time_data.SetBoolean("ssl", true);
-  load_time_data.SetBoolean(
-      "overridable", overridable_ && !strict_enforcement_);
+  load_time_data.SetBoolean("overridable", overridable_);
   load_time_data.SetString(
       "tabTitle", l10n_util::GetStringUTF16(IDS_SSL_V2_TITLE));
   load_time_data.SetString(
@@ -424,7 +423,7 @@ std::string SSLBlockingPage::GetHTMLContents() {
      l10n_util::GetStringUTF16(IDS_SSL_V2_CLOSE_DETAILS_BUTTON));
   load_time_data.SetString("errorCode", net::ErrorToString(cert_error_));
 
-  if (overridable_ && !strict_enforcement_) {  // Overridable.
+  if (overridable_) {  // Overridable.
     SSLErrorInfo error_info =
         SSLErrorInfo::CreateError(
             SSLErrorInfo::NetErrorToErrorType(cert_error_),
@@ -557,7 +556,7 @@ void SSLBlockingPage::OverrideRendererPrefs(
 void SSLBlockingPage::OnProceed() {
   RecordSSLBlockingPageDetailedStats(true,
                                      cert_error_,
-                                     overridable_ && !strict_enforcement_,
+                                     overridable_,
                                      internal_,
                                      num_visits_,
                                      captive_portal_detection_enabled_,
@@ -576,7 +575,7 @@ void SSLBlockingPage::OnProceed() {
 void SSLBlockingPage::OnDontProceed() {
   RecordSSLBlockingPageDetailedStats(false,
                                      cert_error_,
-                                     overridable_ && !strict_enforcement_,
+                                     overridable_,
                                      internal_,
                                      num_visits_,
                                      captive_portal_detection_enabled_,
