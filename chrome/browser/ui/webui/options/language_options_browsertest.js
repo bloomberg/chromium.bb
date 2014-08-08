@@ -27,6 +27,7 @@ GEN('#if defined(OS_WIN) || defined(OS_CHROMEOS)');
 // or a [ Display Chrome in this language ] button.
 TEST_F('LanguageOptionsWebUITest', 'reselectUILocale', function() {
   var currentLang = loadTimeData.getString('currentUiLanguageCode');
+  $('language-options-list').selectLanguageByCode(currentLang);
   LanguageOptions.uiLanguageSaved(currentLang);
 
   expectTrue($('language-options-ui-language-button').hidden);
