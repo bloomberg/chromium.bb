@@ -123,6 +123,7 @@
     # browser test JavaScript files.
     'remoting_webapp_js_browser_test_files': [
       'webapp/browser_test/browser_test.js',
+      'webapp/browser_test/bump_scroll_browser_test.js',
       'webapp/browser_test/cancel_pin_browser_test.js',
       'webapp/browser_test/invalid_pin_browser_test.js',
       'webapp/browser_test/update_pin_browser_test.js',
@@ -163,7 +164,7 @@
       '<@(remoting_webapp_js_wcs_container_files)',
       # Uncomment this line to include browser test files in the web app
       # to expedite debugging or local development.
-      # '<@(remoting_webapp_js_browser_test_files)'
+       '<@(remoting_webapp_js_browser_test_files)'
     ],
 
     # The JavaScript files required by wcs_sandbox.html.

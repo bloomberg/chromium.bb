@@ -324,7 +324,7 @@ browserTest.ensureHostStartedWithPIN = function(pin) {
 browserTest.ensureRemoteConnectionEnabled = function(pin) {
   browserTest.ensureHostStartedWithPIN(pin).then(function(){
     browserTest.automationController_.send(true);
-  }).catch(function(errorMessage){
+  }, function(errorMessage){
     console.error(errorMessage);
     browserTest.automationController_.send(false);
   });

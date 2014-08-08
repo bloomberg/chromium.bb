@@ -721,7 +721,7 @@ void RemoteDesktopBrowserTest::EnterPin(const std::string& pin,
   // we should verify that it only pops up at the right circumstance. That
   // probably belongs in a separate test case though.
   ConditionalTimeoutWaiter waiter(
-      base::TimeDelta::FromSeconds(5),
+      base::TimeDelta::FromSeconds(30),
       base::TimeDelta::FromSeconds(1),
       base::Bind(&RemoteDesktopBrowserTest::IsPinFormVisible, this));
   EXPECT_TRUE(waiter.Wait());
@@ -747,7 +747,7 @@ void RemoteDesktopBrowserTest::WaitForConnection() {
   // TODO(weitaosu): Instead of polling, can we register a callback to
   // remoting.clientSession.onStageChange_?
   ConditionalTimeoutWaiter waiter(
-      base::TimeDelta::FromSeconds(4),
+      base::TimeDelta::FromSeconds(30),
       base::TimeDelta::FromSeconds(1),
       base::Bind(&RemoteDesktopBrowserTest::IsSessionConnected, this));
   EXPECT_TRUE(waiter.Wait());

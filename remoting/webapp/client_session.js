@@ -105,6 +105,14 @@ remoting.ClientSession = function(container, hostDisplayName, accessCode,
   /** @type {number?} @private */
   this.bumpScrollTimer_ = null;
 
+  // Bump-scroll test variables. Override to use a fake value for the width
+  // and height of the client plugin so that bump-scrolling can be tested
+  // without relying on the actual size of the host desktop.
+  /** @type {number} @private */
+  this.pluginWidthForBumpScrollTesting = 0;
+  /** @type {number} @private */
+  this.pluginHeightForBumpScrollTesting = 0;
+
   /**
    * Allow host-offline error reporting to be suppressed in situations where it
    * would not be useful, for example, when using a cached host JID.
@@ -175,7 +183,9 @@ base.extend(remoting.ClientSession, base.EventSource);
 /** @enum {string} */
 remoting.ClientSession.Events = {
   stateChanged: 'stateChanged',
-  videoChannelStateChanged: 'videoChannelStateChanged'
+  videoChannelStateChanged: 'videoChannelStateChanged',
+  bumpScrollStarted: 'bumpScrollStarted',
+  bumpScrollStopped: 'bumpScrollStopped'
 };
 
 /**
@@ -1383,12 +1393,13 @@ remoting.ClientSession.prototype.scroll_ = function(dx, dy) {
 
   var stopX = { stop: false };
   var clientArea = this.getClientArea_();
-  style.marginLeft = adjustMargin(style.marginLeft, dx,
-                                  clientArea.width, plugin.clientWidth, stopX);
+  style.marginLeft = adjustMargin(style.marginLeft, dx, clientArea.width,
+      this.pluginWidthForBumpScrollTesting || plugin.clientWidth, stopX);
 
   var stopY = { stop: false };
   style.marginTop = adjustMargin(
-      style.marginTop, dy, clientArea.height, plugin.clientHeight, stopY);
+      style.marginTop, dy, clientArea.height,
+      this.pluginHeightForBumpScrollTesting || plugin.clientHeight, stopY);
   return stopX.stop && stopY.stop;
 };
 
@@ -1450,6 +1461,7 @@ remoting.ClientSession.prototype.onMouseMove_ = function(event) {
   var dy = computeDelta(event.y, clientArea.height);
 
   if (dx != 0 || dy != 0) {
+    this.raiseEvent(remoting.ClientSession.Events.bumpScrollStarted);
     /** @type {remoting.ClientSession} */
     var that = this;
     /**
@@ -1463,7 +1475,9 @@ remoting.ClientSession.prototype.onMouseMove_ = function(event) {
       /** @type {number} */
       var timeout = 10;
       var lateAdjustment = 1 + (now - expected) / timeout;
-      if (!that.scroll_(lateAdjustment * dx, lateAdjustment * dy)) {
+      if (that.scroll_(lateAdjustment * dx, lateAdjustment * dy)) {
+        that.raiseEvent(remoting.ClientSession.Events.bumpScrollStopped);
+      } else {
         that.bumpScrollTimer_ = window.setTimeout(
             function() { repeatScroll(now + timeout); },
             timeout);
@@ -1551,4 +1565,16 @@ remoting.ClientSession.prototype.updateMouseCursorImage_ =
     this.mouseCursorOverlay_.style.marginTop = '-' + hotspotY + 'px';
     this.mouseCursorOverlay_.src = url;
   }
- };
+};
+
+/**
+ * @return {{top: number, left:number}} The top-left corner of the plugin.
+ */
+remoting.ClientSession.prototype.getPluginPositionForTesting = function() {
+  var plugin = this.plugin_.element();
+  var style = plugin.style;
+  return {
+    top: parseFloat(style.marginTop),
+    left: parseFloat(style.marginLeft)
+  };
+};
