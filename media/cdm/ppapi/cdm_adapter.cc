@@ -385,8 +385,26 @@ void CdmAdapter::UpdateSession(uint32_t promise_id,
 
 void CdmAdapter::ReleaseSession(uint32_t promise_id,
                                 const std::string& web_session_id) {
-  cdm_->ReleaseSession(
+  cdm_->CloseSession(
       promise_id, web_session_id.data(), web_session_id.length());
+}
+
+void CdmAdapter::RemoveSession(uint32_t promise_id,
+                               const std::string& web_session_id) {
+  if (!cdm_->RemoveSession(
+          promise_id, web_session_id.data(), web_session_id.length())) {
+    // CDM_4 and CDM_5 don't support this method, so reject the promise.
+    RejectPromise(promise_id, cdm::kNotSupportedError, 0, "Not implemented.");
+  }
+}
+
+void CdmAdapter::GetUsableKeyIds(uint32_t promise_id,
+                                 const std::string& web_session_id) {
+  if (!cdm_->GetUsableKeyIds(
+          promise_id, web_session_id.data(), web_session_id.length())) {
+    // CDM_4 and CDM_5 don't support this method, so reject the promise.
+    RejectPromise(promise_id, cdm::kNotSupportedError, 0, "Not implemented.");
+  }
 }
 
 // Note: In the following decryption/decoding related functions, errors are NOT
@@ -667,15 +685,25 @@ void CdmAdapter::OnSessionError(uint32_t session_id,
   }
 }
 
-// cdm::Host_5 methods
+// cdm::Host_5 and cdm::Host_6 methods
 
 cdm::Time CdmAdapter::GetCurrentTime() {
+  return GetCurrentWallTime();
+}
+
+cdm::Time CdmAdapter::GetCurrentWallTime() {
   return pp::Module::Get()->core()->GetTime();
 }
 
 void CdmAdapter::OnResolvePromise(uint32_t promise_id) {
   PostOnMain(callback_factory_.NewCallback(
       &CdmAdapter::SendPromiseResolvedInternal, promise_id));
+
+  // CDM_5 doesn't support OnSessionKeysChange(), so simulate one if requested.
+  // Passing "true" which may result in false positives for retrying.
+  std::string session_id;
+  if (cdm_->SessionUsableKeysEventNeeded(promise_id, &session_id))
+    OnSessionKeysChange(session_id.data(), session_id.length(), true);
 }
 
 void CdmAdapter::OnResolveNewSessionPromise(uint32_t promise_id,
@@ -685,6 +713,27 @@ void CdmAdapter::OnResolveNewSessionPromise(uint32_t promise_id,
       &CdmAdapter::SendPromiseResolvedWithSessionInternal,
       promise_id,
       std::string(web_session_id, web_session_id_length)));
+
+  // CDM_5 doesn't support OnSessionKeysChange(), so simulate one if requested.
+  // Passing "true" which may result in false positives for retrying.
+  std::string session_id;
+  if (cdm_->SessionUsableKeysEventNeeded(promise_id, &session_id))
+    OnSessionKeysChange(web_session_id, web_session_id_length, true);
+}
+
+void CdmAdapter::OnResolveKeyIdsPromise(uint32_t promise_id,
+                                        const cdm::BinaryData* usable_key_ids,
+                                        uint32_t usable_key_ids_length) {
+  std::vector<std::vector<uint8> > key_ids;
+  for (uint32_t i = 0; i < usable_key_ids_length; ++i) {
+    key_ids.push_back(
+        std::vector<uint8>(usable_key_ids[i].data,
+                           usable_key_ids[i].data + usable_key_ids[i].length));
+  }
+  PostOnMain(callback_factory_.NewCallback(
+      &CdmAdapter::SendPromiseResolvedWithUsableKeyIdsInternal,
+      promise_id,
+      key_ids));
 }
 
 void CdmAdapter::OnRejectPromise(uint32_t promise_id,
@@ -724,17 +773,26 @@ void CdmAdapter::OnSessionMessage(const char* web_session_id,
 void CdmAdapter::OnSessionKeysChange(const char* web_session_id,
                                      uint32_t web_session_id_length,
                                      bool has_additional_usable_key) {
-  // TODO(jrummell): Implement this event in subsequent CL
-  // (http://crbug.com/370251).
-  PP_NOTREACHED();
+  OnSessionUsableKeysChange(
+      web_session_id, web_session_id_length, has_additional_usable_key);
+}
+
+void CdmAdapter::OnSessionUsableKeysChange(const char* web_session_id,
+                                           uint32_t web_session_id_length,
+                                           bool has_additional_usable_key) {
+  PostOnMain(callback_factory_.NewCallback(
+      &CdmAdapter::SendSessionUsableKeysChangeInternal,
+      std::string(web_session_id, web_session_id_length),
+      has_additional_usable_key));
 }
 
 void CdmAdapter::OnExpirationChange(const char* web_session_id,
                                     uint32_t web_session_id_length,
                                     cdm::Time new_expiry_time) {
-  // TODO(jrummell): Implement this event in subsequent CL
-  // (http://crbug.com/370251).
-  PP_NOTREACHED();
+  PostOnMain(callback_factory_.NewCallback(
+      &CdmAdapter::SendExpirationChangeInternal,
+      std::string(web_session_id, web_session_id_length),
+      new_expiry_time));
 }
 
 void CdmAdapter::OnSessionReady(const char* web_session_id,
@@ -780,6 +838,15 @@ void CdmAdapter::SendPromiseResolvedWithSessionInternal(
   PP_DCHECK(result == PP_OK);
   pp::ContentDecryptor_Private::PromiseResolvedWithSession(promise_id,
                                                            web_session_id);
+}
+
+void CdmAdapter::SendPromiseResolvedWithUsableKeyIdsInternal(
+    int32_t result,
+    uint32_t promise_id,
+    std::vector<std::vector<uint8> > key_ids) {
+  PP_DCHECK(result == PP_OK);
+  // TODO(jrummell): Implement this event in subsequent CL.
+  // (http://crbug.com/358271).
 }
 
 void CdmAdapter::SendPromiseRejectedInternal(int32_t result,
@@ -830,6 +897,23 @@ void CdmAdapter::SendSessionErrorInternal(int32_t result,
       CdmExceptionTypeToPpCdmExceptionType(error.error),
       error.system_code,
       error.error_description);
+}
+
+void CdmAdapter::SendSessionUsableKeysChangeInternal(
+    int32_t result,
+    const std::string& web_session_id,
+    bool has_additional_usable_key) {
+  PP_DCHECK(result == PP_OK);
+  // TODO(jrummell): Implement this event in subsequent CL.
+  // (http://crbug.com/358271).
+}
+
+void CdmAdapter::SendExpirationChangeInternal(int32_t result,
+                                              const std::string& web_session_id,
+                                              cdm::Time new_expiry_time) {
+  PP_DCHECK(result == PP_OK);
+  // TODO(jrummell): Implement this event in subsequent CL.
+  // (http://crbug.com/358271).
 }
 
 void CdmAdapter::DeliverBlock(int32_t result,
@@ -1214,7 +1298,7 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
     return NULL;
 
   COMPILE_ASSERT(
-      cdm::ContentDecryptionModule::Host::kVersion == cdm::Host_5::kVersion,
+      cdm::ContentDecryptionModule::Host::kVersion == cdm::Host_6::kVersion,
       update_code_below);
 
   // Ensure IsSupportedCdmHostVersion matches implementation of this function.
@@ -1224,10 +1308,11 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
 
   PP_DCHECK(
       // Future version is not supported.
-      !IsSupportedCdmHostVersion(cdm::Host_5::kVersion + 1) &&
+      !IsSupportedCdmHostVersion(cdm::Host_6::kVersion + 1) &&
       // Current version is supported.
-      IsSupportedCdmHostVersion(cdm::Host_5::kVersion) &&
+      IsSupportedCdmHostVersion(cdm::Host_6::kVersion) &&
       // Include all previous supported versions (if any) here.
+      IsSupportedCdmHostVersion(cdm::Host_5::kVersion) &&
       IsSupportedCdmHostVersion(cdm::Host_4::kVersion) &&
       // One older than the oldest supported version is not supported.
       !IsSupportedCdmHostVersion(cdm::Host_4::kVersion - 1));
@@ -1240,6 +1325,8 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
       return static_cast<cdm::Host_4*>(cdm_adapter);
     case cdm::Host_5::kVersion:
       return static_cast<cdm::Host_5*>(cdm_adapter);
+    case cdm::Host_6::kVersion:
+      return static_cast<cdm::Host_6*>(cdm_adapter);
     default:
       PP_NOTREACHED();
       return NULL;

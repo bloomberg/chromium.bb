@@ -302,7 +302,7 @@ deps = {
     "/trunk/deps/third_party/opus@256783",
 
   "src/media/cdm/ppapi/api":
-    "/trunk/deps/cdm@273356",
+    "/trunk/deps/cdm@288172",
 
   "src/third_party/mesa/src":
     "/trunk/deps/third_party/mesa@265279",

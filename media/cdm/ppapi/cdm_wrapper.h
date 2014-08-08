@@ -56,9 +56,15 @@ class CdmWrapper {
                              uint32_t web_session_id_size,
                              const uint8_t* response,
                              uint32_t response_size) = 0;
-  virtual void ReleaseSession(uint32_t promise_id,
-                              const char* web_session_id,
-                              uint32_t web_session_id_size) = 0;
+  virtual void CloseSession(uint32_t promise_id,
+                            const char* web_session_id,
+                            uint32_t web_session_id_size) = 0;
+  virtual bool RemoveSession(uint32_t promise_id,
+                             const char* web_session_id,
+                             uint32_t web_session_id_size) = 0;
+  virtual bool GetUsableKeyIds(uint32_t promise_id,
+                               const char* web_session_id,
+                               uint32_t web_session_id_size) = 0;
   virtual void TimerExpired(void* context) = 0;
   virtual cdm::Status Decrypt(const cdm::InputBuffer& encrypted_buffer,
                               cdm::DecryptedBlock* decrypted_buffer) = 0;
@@ -94,6 +100,32 @@ class CdmWrapper {
                                   uint32_t web_session_id_size) = 0;
   virtual std::string LookupWebSessionId(uint32_t session_id) = 0;
   virtual void DropWebSessionId(std::string web_session_id) = 0;
+
+  // Helper functions for the cdm::Host_4 and cdm::Host_5 methods.
+  // CDMs using cdm::Host_6 will call OnSessionUsableKeys() as necessary when
+  // resolving LoadSession() and UpdateSession(). This needs to be simulated
+  // for the older CDMs. These must not be called for cdm::Host_6 and later.
+  // TODO(jrummell): Remove these once Host_4 and Host_5 interfaces are removed.
+
+  // Query whether a SessionUsableKeys event is necessary for the specified
+  // |promise_id|. Returns true if needed and |web_session_id| is updated,
+  // otherwise returns false.
+  virtual bool SessionUsableKeysEventNeeded(uint32_t promise_id,
+                                            std::string* web_session_id) = 0;
+
+  // Used to indicate that a SessionUsableKeys event is required for the
+  // specified |promise_id| and associated |web_session_id|.
+  virtual void SetSessionUsableKeysEventNeeded(
+      uint32_t promise_id,
+      const char* web_session_id,
+      uint32_t web_session_id_size) = 0;
+
+  // cdm::Host_6 introduces InputBuffer_2 (aka InputBuffer). cdm::Host_4 and
+  // cdm::Host_5 methods still use InputBuffer_1, so this helper function
+  // converts InputBuffer_2 to InputBuffer_1.
+  // TODO(jrummell): Remove these once Host_4 and Host_5 interfaces are removed.
+  virtual void ConvertInputBuffer(const cdm::InputBuffer& v2,
+                                  cdm::InputBuffer_1* v1) = 0;
 
  protected:
   CdmWrapper() {}
@@ -158,10 +190,24 @@ class CdmWrapperImpl : public CdmWrapper {
                         response_size);
   }
 
-  virtual void ReleaseSession(uint32_t promise_id,
-                              const char* web_session_id,
-                              uint32_t web_session_id_size) OVERRIDE {
-    cdm_->ReleaseSession(promise_id, web_session_id, web_session_id_size);
+  virtual bool GetUsableKeyIds(uint32_t promise_id,
+                               const char* web_session_id,
+                               uint32_t web_session_id_size) OVERRIDE {
+    cdm_->GetUsableKeyIds(promise_id, web_session_id, web_session_id_size);
+    return true;
+  }
+
+  virtual void CloseSession(uint32_t promise_id,
+                            const char* web_session_id,
+                            uint32_t web_session_id_size) OVERRIDE {
+    cdm_->CloseSession(promise_id, web_session_id, web_session_id_size);
+  }
+
+  virtual bool RemoveSession(uint32_t promise_id,
+                             const char* web_session_id,
+                             uint32_t web_session_id_size) OVERRIDE {
+    cdm_->RemoveSession(promise_id, web_session_id, web_session_id_size);
+    return true;
   }
 
   virtual void TimerExpired(void* context) OVERRIDE {
@@ -261,6 +307,38 @@ class CdmWrapperImpl : public CdmWrapper {
     web_session_to_session_id_map_.erase(web_session_id);
   }
 
+  virtual bool SessionUsableKeysEventNeeded(uint32_t promise_id,
+                                            std::string* web_session_id) {
+    std::map<uint32_t, std::string>::iterator it =
+        promises_needing_usable_keys_event_.find(promise_id);
+    if (it == promises_needing_usable_keys_event_.end())
+      return false;
+    web_session_id->swap(it->second);
+    promises_needing_usable_keys_event_.erase(it);
+    return true;
+  }
+
+  virtual void SetSessionUsableKeysEventNeeded(uint32_t promise_id,
+                                               const char* web_session_id,
+                                               uint32_t web_session_id_size) {
+    promises_needing_usable_keys_event_.insert(std::make_pair(
+        promise_id, std::string(web_session_id, web_session_id_size)));
+  }
+
+  virtual void ConvertInputBuffer(const cdm::InputBuffer& v2,
+                                  cdm::InputBuffer_1* v1) {
+    v1->data = v2.data;
+    v1->data_size = v2.data_size;
+    v1->data_offset = 0;
+    v1->key_id = v2.key_id;
+    v1->key_id_size = v2.key_id_size;
+    v1->iv = v2.iv;
+    v1->iv_size = v2.iv_size;
+    v1->subsamples = v2.subsamples;
+    v1->num_subsamples = v2.num_subsamples;
+    v1->timestamp = v2.timestamp;
+  }
+
  private:
   CdmWrapperImpl(CdmInterface* cdm) : cdm_(cdm), next_session_id_(100) {
     PP_DCHECK(cdm_);
@@ -271,6 +349,8 @@ class CdmWrapperImpl : public CdmWrapper {
   std::map<uint32_t, uint32_t> promise_to_session_id_map_;
   uint32_t next_session_id_;
   std::map<std::string, uint32_t> web_session_to_session_id_map_;
+
+  std::map<uint32_t, std::string> promises_needing_usable_keys_event_;
 
   DISALLOW_COPY_AND_ASSIGN(CdmWrapperImpl);
 };
@@ -308,6 +388,10 @@ void CdmWrapperImpl<cdm::ContentDecryptionModule_4>::LoadSession(
     uint32_t web_session_id_size) {
   uint32_t session_id = CreateSessionId();
   RegisterPromise(session_id, promise_id);
+  // As CDM_4 doesn't support OnSessionUsableKeysChange(), make sure to generate
+  // one when the promise is resolved. This may be overly aggressive.
+  SetSessionUsableKeysEventNeeded(
+      promise_id, web_session_id, web_session_id_size);
   cdm_->LoadSession(session_id, web_session_id, web_session_id_size);
 }
 
@@ -321,11 +405,15 @@ void CdmWrapperImpl<cdm::ContentDecryptionModule_4>::UpdateSession(
   std::string web_session_str(web_session_id, web_session_id_size);
   uint32_t session_id = LookupSessionId(web_session_str);
   RegisterPromise(session_id, promise_id);
+  // As CDM_4 doesn't support OnSessionUsableKeysChange(), make sure to generate
+  // one when the promise is resolved. This may be overly aggressive.
+  SetSessionUsableKeysEventNeeded(
+      promise_id, web_session_id, web_session_id_size);
   cdm_->UpdateSession(session_id, response, response_size);
 }
 
 template <>
-void CdmWrapperImpl<cdm::ContentDecryptionModule_4>::ReleaseSession(
+void CdmWrapperImpl<cdm::ContentDecryptionModule_4>::CloseSession(
     uint32_t promise_id,
     const char* web_session_id,
     uint32_t web_session_id_size) {
@@ -335,12 +423,140 @@ void CdmWrapperImpl<cdm::ContentDecryptionModule_4>::ReleaseSession(
   cdm_->ReleaseSession(session_id);
 }
 
+template <>
+bool CdmWrapperImpl<cdm::ContentDecryptionModule_4>::RemoveSession(
+    uint32_t promise_id,
+    const char* web_session_id,
+    uint32_t web_session_id_size) {
+  return false;
+}
+
+template <>
+bool CdmWrapperImpl<cdm::ContentDecryptionModule_4>::GetUsableKeyIds(
+    uint32_t promise_id,
+    const char* web_session_id,
+    uint32_t web_session_id_size) {
+  return false;
+}
+
+template <>
+cdm::Status CdmWrapperImpl<cdm::ContentDecryptionModule_4>::Decrypt(
+    const cdm::InputBuffer& encrypted_buffer,
+    cdm::DecryptedBlock* decrypted_buffer) {
+  cdm::InputBuffer_1 buffer;
+  ConvertInputBuffer(encrypted_buffer, &buffer);
+  return cdm_->Decrypt(buffer, decrypted_buffer);
+}
+
+template <>
+cdm::Status
+CdmWrapperImpl<cdm::ContentDecryptionModule_4>::DecryptAndDecodeFrame(
+    const cdm::InputBuffer& encrypted_buffer,
+    cdm::VideoFrame* video_frame) {
+  cdm::InputBuffer_1 buffer;
+  ConvertInputBuffer(encrypted_buffer, &buffer);
+  return cdm_->DecryptAndDecodeFrame(buffer, video_frame);
+}
+
+template <>
+cdm::Status
+CdmWrapperImpl<cdm::ContentDecryptionModule_4>::DecryptAndDecodeSamples(
+    const cdm::InputBuffer& encrypted_buffer,
+    cdm::AudioFrames* audio_frames) {
+  cdm::InputBuffer_1 buffer;
+  ConvertInputBuffer(encrypted_buffer, &buffer);
+  return cdm_->DecryptAndDecodeSamples(buffer, audio_frames);
+}
+
+// Overrides for the cdm::Host_5 methods.
+// TODO(jrummell): Remove these once Host_5 interface is removed.
+
+template <>
+void CdmWrapperImpl<cdm::ContentDecryptionModule_5>::LoadSession(
+    uint32_t promise_id,
+    const char* web_session_id,
+    uint32_t web_session_id_size) {
+  // As CDM_5 doesn't support OnSessionUsableKeysChange(), make sure to generate
+  // one when the promise is resolved. This may be overly aggressive.
+  SetSessionUsableKeysEventNeeded(
+      promise_id, web_session_id, web_session_id_size);
+  cdm_->LoadSession(promise_id, web_session_id, web_session_id_size);
+}
+
+template <>
+void CdmWrapperImpl<cdm::ContentDecryptionModule_5>::UpdateSession(
+    uint32_t promise_id,
+    const char* web_session_id,
+    uint32_t web_session_id_size,
+    const uint8_t* response,
+    uint32_t response_size) {
+  // As CDM_5 doesn't support OnSessionUsableKeysChange(), make sure to generate
+  // one when the promise is resolved. This may be overly aggressive.
+  SetSessionUsableKeysEventNeeded(
+      promise_id, web_session_id, web_session_id_size);
+  cdm_->UpdateSession(
+      promise_id, web_session_id, web_session_id_size, response, response_size);
+}
+
+template <>
+void CdmWrapperImpl<cdm::ContentDecryptionModule_5>::CloseSession(
+    uint32_t promise_id,
+    const char* web_session_id,
+    uint32_t web_session_id_size) {
+  cdm_->ReleaseSession(promise_id, web_session_id, web_session_id_size);
+}
+
+template <>
+bool CdmWrapperImpl<cdm::ContentDecryptionModule_5>::RemoveSession(
+    uint32_t promise_id,
+    const char* web_session_id,
+    uint32_t web_session_id_size) {
+  return false;
+}
+
+template <>
+bool CdmWrapperImpl<cdm::ContentDecryptionModule_5>::GetUsableKeyIds(
+    uint32_t promise_id,
+    const char* web_session_id,
+    uint32_t web_session_id_size) {
+  return false;
+}
+
+template <>
+cdm::Status CdmWrapperImpl<cdm::ContentDecryptionModule_5>::Decrypt(
+    const cdm::InputBuffer& encrypted_buffer,
+    cdm::DecryptedBlock* decrypted_buffer) {
+  cdm::InputBuffer_1 buffer;
+  ConvertInputBuffer(encrypted_buffer, &buffer);
+  return cdm_->Decrypt(buffer, decrypted_buffer);
+}
+
+template <>
+cdm::Status
+CdmWrapperImpl<cdm::ContentDecryptionModule_5>::DecryptAndDecodeFrame(
+    const cdm::InputBuffer& encrypted_buffer,
+    cdm::VideoFrame* video_frame) {
+  cdm::InputBuffer_1 buffer;
+  ConvertInputBuffer(encrypted_buffer, &buffer);
+  return cdm_->DecryptAndDecodeFrame(buffer, video_frame);
+}
+
+template <>
+cdm::Status
+CdmWrapperImpl<cdm::ContentDecryptionModule_5>::DecryptAndDecodeSamples(
+    const cdm::InputBuffer& encrypted_buffer,
+    cdm::AudioFrames* audio_frames) {
+  cdm::InputBuffer_1 buffer;
+  ConvertInputBuffer(encrypted_buffer, &buffer);
+  return cdm_->DecryptAndDecodeSamples(buffer, audio_frames);
+}
+
 CdmWrapper* CdmWrapper::Create(const char* key_system,
                                uint32_t key_system_size,
                                GetCdmHostFunc get_cdm_host_func,
                                void* user_data) {
   COMPILE_ASSERT(cdm::ContentDecryptionModule::kVersion ==
-                     cdm::ContentDecryptionModule_5::kVersion,
+                     cdm::ContentDecryptionModule_6::kVersion,
                  update_code_below);
 
   // Ensure IsSupportedCdmInterfaceVersion() matches this implementation.
@@ -365,6 +581,11 @@ CdmWrapper* CdmWrapper::Create(const char* key_system,
 
   // If |cdm_wrapper| is NULL, try to create the CDM using older supported
   // versions of the CDM interface.
+  cdm_wrapper = CdmWrapperImpl<cdm::ContentDecryptionModule_5>::Create(
+      key_system, key_system_size, get_cdm_host_func, user_data);
+  if (cdm_wrapper)
+    return cdm_wrapper;
+
   cdm_wrapper = CdmWrapperImpl<cdm::ContentDecryptionModule_4>::Create(
       key_system, key_system_size, get_cdm_host_func, user_data);
   return cdm_wrapper;
@@ -375,7 +596,7 @@ CdmWrapper* CdmWrapper::Create(const char* key_system,
 // does not have.
 // Also update supported_cdm_versions.h.
 COMPILE_ASSERT(cdm::ContentDecryptionModule::kVersion ==
-                   cdm::ContentDecryptionModule_5::kVersion,
+                   cdm::ContentDecryptionModule_6::kVersion,
                ensure_cdm_wrapper_templates_have_old_version_support);
 
 }  // namespace media

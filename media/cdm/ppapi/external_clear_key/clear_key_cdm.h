@@ -57,7 +57,7 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
       const uint8_t* server_certificate_data,
       uint32_t server_certificate_data_size) OVERRIDE;
   virtual void TimerExpired(void* context) OVERRIDE;
-  virtual cdm::Status Decrypt(const cdm::InputBuffer& encrypted_buffer,
+  virtual cdm::Status Decrypt(const cdm::InputBuffer_1& encrypted_buffer,
                               cdm::DecryptedBlock* decrypted_block) OVERRIDE;
   virtual cdm::Status InitializeAudioDecoder(
       const cdm::AudioDecoderConfig& audio_decoder_config) OVERRIDE;
@@ -66,10 +66,10 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   virtual void DeinitializeDecoder(cdm::StreamType decoder_type) OVERRIDE;
   virtual void ResetDecoder(cdm::StreamType decoder_type) OVERRIDE;
   virtual cdm::Status DecryptAndDecodeFrame(
-      const cdm::InputBuffer& encrypted_buffer,
+      const cdm::InputBuffer_1& encrypted_buffer,
       cdm::VideoFrame* video_frame) OVERRIDE;
   virtual cdm::Status DecryptAndDecodeSamples(
-      const cdm::InputBuffer& encrypted_buffer,
+      const cdm::InputBuffer_1& encrypted_buffer,
       cdm::AudioFrames* audio_frames) OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual void OnPlatformChallengeResponse(
@@ -111,7 +111,7 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   // Returns cdm::kDecryptError if any decryption error occurred. In this case
   // |decrypted_buffer| should be ignored by the caller.
   cdm::Status DecryptToMediaDecoderBuffer(
-      const cdm::InputBuffer& encrypted_buffer,
+      const cdm::InputBuffer_1& encrypted_buffer,
       scoped_refptr<DecoderBuffer>* decrypted_buffer);
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)

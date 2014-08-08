@@ -95,7 +95,7 @@ const char kFileIOTestResultHeader[] = "FILEIOTESTRESULT";
 // Copies |input_buffer| into a media::DecoderBuffer. If the |input_buffer| is
 // empty, an empty (end-of-stream) media::DecoderBuffer is returned.
 static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
-    const cdm::InputBuffer& input_buffer) {
+    const cdm::InputBuffer_1& input_buffer) {
   if (!input_buffer.data) {
     DCHECK(!input_buffer.data_size);
     return media::DecoderBuffer::CreateEOSBuffer();
@@ -381,9 +381,8 @@ static void CopyDecryptResults(
   *buffer_copy = buffer;
 }
 
-cdm::Status ClearKeyCdm::Decrypt(
-    const cdm::InputBuffer& encrypted_buffer,
-    cdm::DecryptedBlock* decrypted_block) {
+cdm::Status ClearKeyCdm::Decrypt(const cdm::InputBuffer_1& encrypted_buffer,
+                                 cdm::DecryptedBlock* decrypted_block) {
   DVLOG(1) << "Decrypt()";
   DCHECK(encrypted_buffer.data);
 
@@ -488,7 +487,7 @@ void ClearKeyCdm::DeinitializeDecoder(cdm::StreamType decoder_type) {
 }
 
 cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
-    const cdm::InputBuffer& encrypted_buffer,
+    const cdm::InputBuffer_1& encrypted_buffer,
     cdm::VideoFrame* decoded_frame) {
   DVLOG(1) << "DecryptAndDecodeFrame()";
   TRACE_EVENT0("media", "ClearKeyCdm::DecryptAndDecodeFrame");
@@ -512,7 +511,7 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
 }
 
 cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
-    const cdm::InputBuffer& encrypted_buffer,
+    const cdm::InputBuffer_1& encrypted_buffer,
     cdm::AudioFrames* audio_frames) {
   DVLOG(1) << "DecryptAndDecodeSamples()";
 
@@ -570,7 +569,7 @@ void ClearKeyCdm::ScheduleNextHeartBeat() {
 }
 
 cdm::Status ClearKeyCdm::DecryptToMediaDecoderBuffer(
-    const cdm::InputBuffer& encrypted_buffer,
+    const cdm::InputBuffer_1& encrypted_buffer,
     scoped_refptr<media::DecoderBuffer>* decrypted_buffer) {
   DCHECK(decrypted_buffer);
   scoped_refptr<media::DecoderBuffer> buffer =

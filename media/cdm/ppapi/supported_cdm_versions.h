@@ -21,10 +21,11 @@ bool IsSupportedCdmModuleVersion(int version) {
 
 bool IsSupportedCdmInterfaceVersion(int version) {
   COMPILE_ASSERT(cdm::ContentDecryptionModule::kVersion ==
-                     cdm::ContentDecryptionModule_5::kVersion,
+                     cdm::ContentDecryptionModule_6::kVersion,
                  update_code_below);
   switch(version) {
     // Supported versions in decreasing order.
+    case cdm::ContentDecryptionModule_6::kVersion:
     case cdm::ContentDecryptionModule_5::kVersion:
     case cdm::ContentDecryptionModule_4::kVersion:
       return true;
@@ -35,10 +36,11 @@ bool IsSupportedCdmInterfaceVersion(int version) {
 
 bool IsSupportedCdmHostVersion(int version) {
   COMPILE_ASSERT(cdm::ContentDecryptionModule::Host::kVersion ==
-                     cdm::ContentDecryptionModule_5::Host::kVersion,
+                     cdm::ContentDecryptionModule_6::Host::kVersion,
                  update_code_below);
   switch(version) {
     // Supported versions in decreasing order.
+    case cdm::Host_6::kVersion:
     case cdm::Host_5::kVersion:
     case cdm::Host_4::kVersion:
       return true;
