@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -214,6 +215,13 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
         ContentAutofillDriver::FromWebContents(web_contents);
     AutofillManager* autofill_manager = autofill_driver->autofill_manager();
     autofill_manager->SetTestDelegate(&test_delegate_);
+
+    // If the mouse happened to be over where the suggestions are shown, then
+    // the preview will show up and will fail the tests. We need to give it a
+    // point that's within the browser frame, or else the method hangs.
+    gfx::Point reset_mouse(GetWebContents()->GetContainerBounds().origin());
+    reset_mouse = gfx::Point(reset_mouse.x() + 5, reset_mouse.y() + 5);
+    ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(reset_mouse));
   }
 
   virtual void TearDownOnMainThread() OVERRIDE {
