@@ -507,11 +507,7 @@
           # TODO: Eventually the entire extensions module should not be built
           # when enable_extensions==0.
           'sources/': [
-            ['exclude', '^browser/api/'],
-          ],
-          'sources!': [
-            'browser/browser_context_keyed_service_factories.cc',
-            'browser/browser_context_keyed_service_factories.h',
+            ['exclude', '^browser/'],
           ],
           'dependencies!': [
             '../components/components.gyp:usb_service',

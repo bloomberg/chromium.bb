@@ -166,10 +166,6 @@ class TestingBrowserProcess : public BrowserProcess {
   scoped_refptr<SafeBrowsingService> sb_service_;
 #endif  // !defined(OS_IOS)
 
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-  scoped_ptr<MediaFileSystemRegistry> media_file_system_registry_;
-#endif
-
   scoped_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
 
   // The following objects are not owned by TestingBrowserProcess:
@@ -179,7 +175,11 @@ class TestingBrowserProcess : public BrowserProcess {
 
   scoped_ptr<BrowserProcessPlatformPart> platform_part_;
 
+#if defined(ENABLE_EXTENSIONS)
+  scoped_ptr<MediaFileSystemRegistry> media_file_system_registry_;
+
   scoped_ptr<extensions::ExtensionsBrowserClient> extensions_browser_client_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(TestingBrowserProcess);
 };

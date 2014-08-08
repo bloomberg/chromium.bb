@@ -194,9 +194,9 @@ class BrowserProcessImpl : public BrowserProcess,
 
   scoped_ptr<GpuModeManager> gpu_mode_manager_;
 
+#if defined(ENABLE_EXTENSIONS)
   scoped_ptr<extensions::ExtensionsBrowserClient> extensions_browser_client_;
 
-#if defined(ENABLE_EXTENSIONS)
   scoped_refptr<extensions::EventRouterForwarder>
       extension_event_router_forwarder_;
 

@@ -21,7 +21,6 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "extensions/browser/pref_names.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/command_line.h"
@@ -31,6 +30,10 @@
 
 #if defined(OS_ANDROID) && defined(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/browser/pref_names.h"
 #endif
 
 Profile::Profile()
@@ -131,10 +134,12 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kDisableExtensions,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+#if defined(ENABLE_EXTENSIONS)
   registry->RegisterBooleanPref(
       extensions::pref_names::kAlertsInitialized,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+#endif
   registry->RegisterStringPref(
       prefs::kSelectFileLastDirectory,
       std::string(),

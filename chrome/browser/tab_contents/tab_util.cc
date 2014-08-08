@@ -10,8 +10,11 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/extension_registry.h"
 #include "url/gurl.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/browser/extension_registry.h"
+#endif
 
 using content::RenderViewHost;
 using content::SiteInstance;
@@ -32,12 +35,14 @@ SiteInstance* GetSiteInstanceForNewTab(Profile* profile,
                                        const GURL& url) {
   // If |url| is a WebUI or extension, we set the SiteInstance up front so that
   // we don't end up with an extra process swap on the first navigation.
-  if (ChromeWebUIControllerFactory::GetInstance()->UseWebUIForURL(
-          profile, url) ||
-      extensions::ExtensionRegistry::Get(
-          profile)->enabled_extensions().GetHostedAppByURL(url)) {
+  if (ChromeWebUIControllerFactory::GetInstance()->UseWebUIForURL(profile, url))
     return SiteInstance::CreateForURL(profile, url);
-  }
+
+#if defined(ENABLE_EXTENSIONS)
+   if (extensions::ExtensionRegistry::Get(
+       profile)->enabled_extensions().GetHostedAppByURL(url))
+     return SiteInstance::CreateForURL(profile, url);
+#endif
 
   // We used to share the SiteInstance for same-site links opened in new tabs,
   // to leverage the in-memory cache and reduce process creation.  It now

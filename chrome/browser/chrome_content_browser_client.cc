@@ -23,6 +23,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/character_encoding.h"
+#include "chrome/browser/chrome_content_browser_client_parts.h"
 #include "chrome/browser/chrome_net_benchmarking_message_filter.h"
 #include "chrome/browser/chrome_quota_permission_context.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
@@ -33,7 +34,6 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/extensions/chrome_content_browser_client_extensions_part.h"
 #include "chrome/browser/font_family_cache.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
@@ -217,6 +217,7 @@
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/chrome_content_browser_client_extensions_part.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
@@ -255,7 +256,6 @@ using content::SiteInstance;
 using content::WebContents;
 using content::WebPreferences;
 using extensions::APIPermission;
-using extensions::ChromeContentBrowserClientExtensionsPart;
 using extensions::Extension;
 using extensions::InfoMap;
 using extensions::Manifest;
@@ -263,6 +263,10 @@ using message_center::NotifierId;
 
 #if defined(OS_POSIX)
 using content::FileDescriptorInfo;
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+using extensions::ChromeContentBrowserClientExtensionsPart;
 #endif
 
 namespace {
@@ -579,7 +583,9 @@ ChromeContentBrowserClient::ChromeContentBrowserClient()
   TtsController::GetInstance()->SetTtsEngineDelegate(tts_extension_engine);
 #endif
 
+#if defined(ENABLE_EXTENSIONS)
   extra_parts_.push_back(new ChromeContentBrowserClientExtensionsPart);
+#endif
 }
 
 ChromeContentBrowserClient::~ChromeContentBrowserClient() {
@@ -848,8 +854,12 @@ GURL ChromeContentBrowserClient::GetEffectiveURL(
     return GetEffectiveURLForSignin(url);
 #endif
 
+#if defined(ENABLE_EXTENSIONS)
   return ChromeContentBrowserClientExtensionsPart::GetEffectiveURL(
       profile, url);
+#else
+  return url;
+#endif
 }
 
 bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
@@ -871,8 +881,12 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
     return true;
 #endif
 
+#if defined(ENABLE_EXTENSIONS)
   return ChromeContentBrowserClientExtensionsPart::ShouldUseProcessPerSite(
       profile, effective_url);
+#else
+  return false;
+#endif
 }
 
 // These are treated as WebUI schemes but do not get WebUI bindings. Also,
@@ -925,18 +939,24 @@ bool ChromeContentBrowserClient::IsHandledURL(const GURL& url) {
 bool ChromeContentBrowserClient::CanCommitURL(
     content::RenderProcessHost* process_host,
     const GURL& url) {
+#if defined(ENABLE_EXTENSIONS)
   return ChromeContentBrowserClientExtensionsPart::CanCommitURL(
       process_host, url);
+#else
+  return true;
+#endif
 }
 
 bool ChromeContentBrowserClient::ShouldAllowOpenURL(
     content::SiteInstance* site_instance, const GURL& url) {
   GURL from_url = site_instance->GetSiteURL();
 
+#if defined(ENABLE_EXTENSIONS)
   bool result;
   if (ChromeContentBrowserClientExtensionsPart::ShouldAllowOpenURL(
       site_instance, from_url, url, &result))
     return result;
+#endif
 
   // Do not allow chrome://chrome-signin navigate to other chrome:// URLs, since
   // the signin page may host untrusted web content.
@@ -981,8 +1001,12 @@ bool ChromeContentBrowserClient::IsSuitableHost(
     return SigninManager::IsWebBasedSigninFlowURL(site_url);
 #endif
 
+#if defined(ENABLE_EXTENSIONS)
   return ChromeContentBrowserClientExtensionsPart::IsSuitableHost(
       profile, process_host, site_url);
+#else
+  return true;
+#endif
 }
 
 bool ChromeContentBrowserClient::MayReuseHost(
@@ -1009,10 +1033,14 @@ bool ChromeContentBrowserClient::ShouldTryToUseExistingProcessHost(
   if (!url.is_valid())
     return false;
 
+#if defined(ENABLE_EXTENSIONS)
   Profile* profile = Profile::FromBrowserContext(browser_context);
   return ChromeContentBrowserClientExtensionsPart::
       ShouldTryToUseExistingProcessHost(
           profile, url);
+#else
+  return false;
+#endif
 }
 
 void ChromeContentBrowserClient::SiteInstanceGotProcess(
@@ -1043,7 +1071,9 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
         ChromeSigninClientFactory::GetForProfile(profile);
     if (signin_client)
       signin_client->SetSigninProcess(site_instance->GetProcess()->GetID());
+#if defined(ENABLE_EXTENSIONS)
     ChromeContentBrowserClientExtensionsPart::SetSigninProcess(site_instance);
+#endif
   }
 #endif
 
@@ -1078,9 +1108,13 @@ bool ChromeContentBrowserClient::ShouldSwapBrowsingInstancesForNavigation(
     SiteInstance* site_instance,
     const GURL& current_url,
     const GURL& new_url) {
+#if defined(ENABLE_EXTENSIONS)
   return ChromeContentBrowserClientExtensionsPart::
       ShouldSwapBrowsingInstancesForNavigation(
           site_instance, current_url, new_url);
+#else
+  return false;
+#endif
 }
 
 bool ChromeContentBrowserClient::ShouldSwapProcessesForRedirect(

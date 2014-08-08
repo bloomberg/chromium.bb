@@ -14,10 +14,7 @@ gypi_values = exec_script(
 
 # GYP version: chrome/chrome_browser_extensions.gypi:browser_extensions
 static_library("extensions") {
-  sources = rebase_path(
-      gypi_values.chrome_browser_extensions_extensions_sources,
-      ".", "//chrome")
-
+  sources = []
   defines = []
 
   # TODO(GYP) remove this when webrtc is ported.

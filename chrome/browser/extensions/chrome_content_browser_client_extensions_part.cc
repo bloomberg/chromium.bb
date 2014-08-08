@@ -8,13 +8,17 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/browser_permissions_policy_delegate.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/extension_webkit_preferences.h"
+#include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/renderer_host/chrome_extension_message_filter.h"
+#include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_process_policy.h"
@@ -26,6 +30,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
@@ -34,15 +39,6 @@
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "extensions/common/switches.h"
-
-// TODO(thestig): Remove ifdefs when extensions no longer build on mobile.
-#if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/api/web_request/web_request_api.h"
-#include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
-#include "chrome/browser/renderer_host/chrome_extension_message_filter.h"
-#include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
-#include "extensions/browser/extension_message_filter.h"
-#endif
 
 using content::BrowserThread;
 using content::BrowserURLHandler;
@@ -408,14 +404,12 @@ void ChromeContentBrowserClientExtensionsPart::SetSigninProcess(
 
 void ChromeContentBrowserClientExtensionsPart::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
-#if defined(ENABLE_EXTENSIONS)
   int id = host->GetID();
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
 
   host->AddFilter(new ChromeExtensionMessageFilter(id, profile));
   host->AddFilter(new ExtensionMessageFilter(id, profile));
   SendExtensionWebRequestStatusToHost(host);
-#endif
 }
 
 void ChromeContentBrowserClientExtensionsPart::SiteInstanceGotProcess(
@@ -544,17 +538,14 @@ void ChromeContentBrowserClientExtensionsPart::
 
 void ChromeContentBrowserClientExtensionsPart::GetURLRequestAutoMountHandlers(
     std::vector<fileapi::URLRequestAutoMountHandler>* handlers) {
-#if defined(ENABLE_EXTENSIONS)
   handlers->push_back(
       base::Bind(MediaFileSystemBackend::AttemptAutoMountForURLRequest));
-#endif
 }
 
 void ChromeContentBrowserClientExtensionsPart::GetAdditionalFileSystemBackends(
     content::BrowserContext* browser_context,
     const base::FilePath& storage_partition_path,
     ScopedVector<fileapi::FileSystemBackend>* additional_backends) {
-#if defined(ENABLE_EXTENSIONS)
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
   additional_backends->push_back(new MediaFileSystemBackend(
       storage_partition_path,
@@ -564,7 +555,6 @@ void ChromeContentBrowserClientExtensionsPart::GetAdditionalFileSystemBackends(
 
   additional_backends->push_back(new sync_file_system::SyncFileSystemBackend(
       Profile::FromBrowserContext(browser_context)));
-#endif
 }
 
 void ChromeContentBrowserClientExtensionsPart::
