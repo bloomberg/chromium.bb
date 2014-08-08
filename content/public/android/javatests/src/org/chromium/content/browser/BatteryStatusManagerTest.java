@@ -26,12 +26,13 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
     }
 
     @SmallTest
-    public void testOnReceiveBatteryDischarging() {
+    public void testOnReceiveBatteryNotPluggedIn() {
         Intent intent = new Intent(Intent.ACTION_BATTERY_CHANGED);
         intent.putExtra(BatteryManager.EXTRA_PRESENT, true);
+        intent.putExtra(BatteryManager.EXTRA_PLUGGED, 0);
         intent.putExtra(BatteryManager.EXTRA_LEVEL, 10);
         intent.putExtra(BatteryManager.EXTRA_SCALE, 100);
-        intent.putExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_DISCHARGING);
+        intent.putExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_NOT_CHARGING);
 
         mBatteryStatusManager.onReceive(intent);
 
@@ -41,9 +42,10 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
     }
 
     @SmallTest
-    public void testOnReceiveBatteryCharging() {
+    public void testOnReceiveBatteryPluggedInACCharging() {
         Intent intent = new Intent(Intent.ACTION_BATTERY_CHANGED);
         intent.putExtra(BatteryManager.EXTRA_PRESENT, true);
+        intent.putExtra(BatteryManager.EXTRA_PLUGGED, BatteryManager.BATTERY_PLUGGED_AC);
         intent.putExtra(BatteryManager.EXTRA_LEVEL, 50);
         intent.putExtra(BatteryManager.EXTRA_SCALE, 100);
         intent.putExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_CHARGING);
@@ -56,9 +58,26 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
     }
 
     @SmallTest
-    public void testOnReceiveBatteryFull() {
+    public void testOnReceiveBatteryPluggedInACNotCharging() {
         Intent intent = new Intent(Intent.ACTION_BATTERY_CHANGED);
         intent.putExtra(BatteryManager.EXTRA_PRESENT, true);
+        intent.putExtra(BatteryManager.EXTRA_PLUGGED, BatteryManager.BATTERY_PLUGGED_AC);
+        intent.putExtra(BatteryManager.EXTRA_LEVEL, 50);
+        intent.putExtra(BatteryManager.EXTRA_SCALE, 100);
+        intent.putExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_NOT_CHARGING);
+
+        mBatteryStatusManager.onReceive(intent);
+
+        mBatteryStatusManager.verifyCalls("gotBatteryStatus");
+        mBatteryStatusManager.verifyValues(true, Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY, 0.5);
+    }
+
+    @SmallTest
+    public void testOnReceiveBatteryPluggedInUSBFull() {
+        Intent intent = new Intent(Intent.ACTION_BATTERY_CHANGED);
+        intent.putExtra(BatteryManager.EXTRA_PRESENT, true);
+        intent.putExtra(BatteryManager.EXTRA_PLUGGED, BatteryManager.BATTERY_PLUGGED_USB);
         intent.putExtra(BatteryManager.EXTRA_LEVEL, 100);
         intent.putExtra(BatteryManager.EXTRA_SCALE, 100);
         intent.putExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_FULL);
@@ -73,6 +92,18 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
     public void testOnReceiveNoBattery() {
         Intent intent = new Intent(Intent.ACTION_BATTERY_CHANGED);
         intent.putExtra(BatteryManager.EXTRA_PRESENT, false);
+        intent.putExtra(BatteryManager.EXTRA_PLUGGED, BatteryManager.BATTERY_PLUGGED_USB);
+
+        mBatteryStatusManager.onReceive(intent);
+
+        mBatteryStatusManager.verifyCalls("gotBatteryStatus");
+        mBatteryStatusManager.verifyValues(true, 0, Double.POSITIVE_INFINITY, 1);
+    }
+
+    @SmallTest
+    public void testOnReceiveNoPluggedStatus() {
+        Intent intent = new Intent(Intent.ACTION_BATTERY_CHANGED);
+        intent.putExtra(BatteryManager.EXTRA_PRESENT, true);
 
         mBatteryStatusManager.onReceive(intent);
 
