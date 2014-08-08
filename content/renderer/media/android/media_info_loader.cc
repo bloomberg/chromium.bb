@@ -29,6 +29,7 @@ MediaInfoLoader::MediaInfoLoader(
     const ReadyCB& ready_cb)
     : loader_failed_(false),
       url_(url),
+      allow_stored_credentials_(false),
       cors_mode_(cors_mode),
       single_origin_(true),
       ready_cb_(ready_cb) {}
@@ -41,6 +42,7 @@ void MediaInfoLoader::Start(blink::WebFrame* frame) {
   CHECK(frame);
 
   start_time_ = base::TimeTicks::Now();
+  first_party_url_ = frame->document().firstPartyForCookies();
 
   // Prepare the request.
   WebURLRequest request(url_);
@@ -57,14 +59,17 @@ void MediaInfoLoader::Start(blink::WebFrame* frame) {
       options.allowCredentials = true;
       options.crossOriginRequestPolicy =
           WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
+      allow_stored_credentials_ = true;
     } else {
       options.exposeAllResponseHeaders = true;
       // The author header set is empty, no preflight should go ahead.
       options.preflightPolicy = WebURLLoaderOptions::PreventPreflight;
       options.crossOriginRequestPolicy =
           WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
-      if (cors_mode_ == blink::WebMediaPlayer::CORSModeUseCredentials)
+      if (cors_mode_ == blink::WebMediaPlayer::CORSModeUseCredentials) {
         options.allowCredentials = true;
+        allow_stored_credentials_ = true;
+      }
     }
     loader.reset(frame->createAssociatedURLLoader(options));
   }
@@ -93,6 +98,8 @@ void MediaInfoLoader::willSendRequest(
     single_origin_ = url_.GetOrigin() == GURL(newRequest.url()).GetOrigin();
 
   url_ = newRequest.url();
+  first_party_url_ = newRequest.firstPartyForCookies();
+  allow_stored_credentials_ = newRequest.allowStoredCredentials();
 }
 
 void MediaInfoLoader::didSendData(
@@ -188,7 +195,8 @@ void MediaInfoLoader::DidBecomeReady(Status status) {
                       base::TimeTicks::Now() - start_time_);
   active_loader_.reset();
   if (!ready_cb_.is_null())
-    base::ResetAndReturn(&ready_cb_).Run(status);
+    base::ResetAndReturn(&ready_cb_).Run(status, url_, first_party_url_,
+                                         allow_stored_credentials_);
 }
 
 }  // namespace content

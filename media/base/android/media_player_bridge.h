@@ -51,7 +51,8 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
                     MediaPlayerManager* manager,
                     const RequestMediaResourcesCB& request_media_resources_cb,
                     const ReleaseMediaResourcesCB& release_media_resources_cb,
-                    const GURL& frame_url);
+                    const GURL& frame_url,
+                    bool allow_credentials);
   virtual ~MediaPlayerBridge();
 
   // Initialize this object and extract the metadata from the media.
@@ -190,6 +191,9 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
 
   // Volume of playback.
   double volume_;
+
+  // Whether user credentials are allowed to be passed.
+  bool allow_credentials_;
 
   // Weak pointer passed to |listener_| for callbacks.
   // NOTE: Weak pointers must be invalidated before all other member variables.

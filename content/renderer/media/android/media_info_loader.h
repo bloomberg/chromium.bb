@@ -14,6 +14,7 @@
 #include "content/renderer/media/active_loader.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -44,11 +45,16 @@ class CONTENT_EXPORT MediaInfoLoader : private blink::WebURLLoaderClient {
     kOk,
   };
 
+  // Callback when MediaInfoLoader finishes loading the url. Args: whether URL
+  // is successfully loaded, the final URL destination following all the
+  // redirect, the first party URL for the final destination, and whether
+  // credentials needs to be sent to the final destination.
+  typedef base::Callback<void(Status, const GURL&, const GURL&, bool)> ReadyCB;
+
   // Start loading information about the given media URL.
   // |url| - URL for the media resource to be loaded.
   // |cors_mode| - HTML media element's crossorigin attribute.
   // |ready_cb| - Called when media info has finished or failed loading.
-  typedef base::Callback<void(Status)> ReadyCB;
   MediaInfoLoader(
       const GURL& url,
       blink::WebMediaPlayer::CORSMode cors_mode,
@@ -65,10 +71,6 @@ class CONTENT_EXPORT MediaInfoLoader : private blink::WebURLLoaderClient {
   // Returns true if the media resource passed a CORS access control check.
   // Only valid to call after the loader becomes ready.
   bool DidPassCORSAccessCheck() const;
-
-  void set_single_origin(bool single_origin) {
-    single_origin_ = single_origin;
-  }
 
  private:
   friend class MediaInfoLoaderTest;
@@ -115,6 +117,8 @@ class CONTENT_EXPORT MediaInfoLoader : private blink::WebURLLoaderClient {
 
   bool loader_failed_;
   GURL url_;
+  GURL first_party_url_;
+  bool allow_stored_credentials_;
   blink::WebMediaPlayer::CORSMode cors_mode_;
   bool single_origin_;
 

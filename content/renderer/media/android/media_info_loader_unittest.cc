@@ -86,7 +86,7 @@ class MediaInfoLoaderTest : public testing::Test {
 
   void SendResponse(
       int http_status, MediaInfoLoader::Status expected_status) {
-    EXPECT_CALL(*this, ReadyCallback(expected_status));
+    EXPECT_CALL(*this, ReadyCallback(expected_status, _, _, _));
     EXPECT_CALL(*url_loader_, cancel());
 
     WebURLResponse response(gurl_);
@@ -98,11 +98,13 @@ class MediaInfoLoaderTest : public testing::Test {
   }
 
   void FailLoad() {
-    EXPECT_CALL(*this, ReadyCallback(MediaInfoLoader::kFailed));
+    EXPECT_CALL(*this, ReadyCallback(
+        MediaInfoLoader::kFailed, _, _, _));
     loader_->didFail(url_loader_, WebURLError());
   }
 
-  MOCK_METHOD1(ReadyCallback, void(MediaInfoLoader::Status));
+  MOCK_METHOD4(ReadyCallback,
+               void(MediaInfoLoader::Status, const GURL&, const GURL&, bool));
 
  protected:
   GURL gurl_;

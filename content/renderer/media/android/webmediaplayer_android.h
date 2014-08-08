@@ -256,12 +256,18 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   void SetNeedsEstablishPeer(bool needs_establish_peer);
 
  private:
-  void InitializePlayer(int demuxer_client_id);
+  void InitializePlayer(const GURL& url,
+                        const GURL& first_party_for_cookies,
+                        bool allowed_stored_credentials,
+                        int demuxer_client_id);
   void Pause(bool is_media_related_action);
   void DrawRemotePlaybackText(const std::string& remote_playback_message);
   void ReallocateVideoFrame();
   void SetCurrentFrameInternal(scoped_refptr<media::VideoFrame>& frame);
-  void DidLoadMediaInfo(MediaInfoLoader::Status status);
+  void DidLoadMediaInfo(MediaInfoLoader::Status status,
+                        const GURL& redirected_url,
+                        const GURL& first_party_for_cookies,
+                        bool allow_stored_credentials);
   bool IsKeySystemSupported(const std::string& key_system);
 
   // Actually do the work for generateKeyRequest/addKey so they can easily
@@ -449,6 +455,9 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   media::DecryptorReadyCB decryptor_ready_cb_;
 
   SkBitmap bitmap_;
+
+  // Whether stored credentials are allowed to be passed to the server.
+  bool allow_stored_credentials_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<WebMediaPlayerAndroid> weak_factory_;
