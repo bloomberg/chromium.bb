@@ -37,12 +37,6 @@ class CopresenceClientDelegate {
 
   virtual const std::string GetPlatformVersionString() const = 0;
 
-  // Methods to set and and get our device ID. This needs to be saved to
-  // persistent storage to avoid flooding the Copresence server with generate
-  // id requests.
-  virtual const std::string GetDeviceId() const = 0;
-  virtual void SaveDeviceId(const std::string& device_id) = 0;
-
   virtual WhispernetClient* GetWhispernetClient() = 0;
 };
 

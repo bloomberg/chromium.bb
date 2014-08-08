@@ -4405,6 +4405,9 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS" desc="Permission string for access to bookmarks.">
         Read and change your bookmarks
       </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_COPRESENCE" desc="Permission string for access to bookmarks.">
+        Communicate with nearby devices
+      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_HISTORY_WRITE" desc="Permission string for access to modify browsing history.">
         Read and change your browsing history
       </message>

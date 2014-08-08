@@ -39976,6 +39976,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="865" label="COPRESENCEPRIVATE_SENDSAMPLES"/>
   <int value="866" label="COPRESENCEPRIVATE_SENDDETECT"/>
   <int value="867" label="COPRESENCEPRIVATE_SENDINITIALIZED"/>
+  <int value="868" label="COPRESENCE_EXECUTE"/>
+  <int value="869" label="COPRESENCE_SETAPIKEY"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

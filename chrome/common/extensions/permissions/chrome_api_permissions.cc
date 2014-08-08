@@ -109,6 +109,8 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        PermissionMessage::kContentSettings},
       {APIPermission::kContextMenus, "contextMenus"},
       {APIPermission::kCookie, "cookies"},
+      {APIPermission::kCopresence, "copresence",
+       IDS_EXTENSION_PROMPT_WARNING_COPRESENCE, PermissionMessage::kCopresence},
       {APIPermission::kCopresencePrivate, "copresencePrivate"},
       {APIPermission::kEnterprisePlatformKeys, "enterprise.platformKeys"},
       {APIPermission::kFileBrowserHandler, "fileBrowserHandler",

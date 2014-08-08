@@ -196,6 +196,10 @@
       'browser/extensions/api/cookies/cookies_api_constants.h',
       'browser/extensions/api/cookies/cookies_helpers.cc',
       'browser/extensions/api/cookies/cookies_helpers.h',
+      'browser/extensions/api/copresence/copresence_api.cc',
+      'browser/extensions/api/copresence/copresence_api.h',
+      'browser/extensions/api/copresence/copresence_translations.cc',
+      'browser/extensions/api/copresence/copresence_translations.h',
       'browser/extensions/api/copresence_private/copresence_private_api.cc',
       'browser/extensions/api/copresence_private/copresence_private_api.h',
       'browser/extensions/api/debugger/debugger_api.cc',
@@ -975,6 +979,7 @@
         'safe_browsing_proto',
         'sync_file_system_proto',
         '../third_party/re2/re2.gyp:re2',
+        '../components/components.gyp:copresence',
         '../components/components.gyp:omaha_query_params',
         '../components/components.gyp:onc_component',
         '../components/components.gyp:url_matcher',
@@ -1182,6 +1187,9 @@
         ['OS=="android"', {
           'sources': [
             '<@(chrome_browser_extensions_android_sources)',
+          ],
+          'dependencies!': [
+            '../components/components.gyp:copresence',
           ],
         }],
         ['enable_app_list==1', {

@@ -644,6 +644,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kBrowsingData);
   skip.insert(APIPermission::kCastStreaming);
   skip.insert(APIPermission::kContextMenus);
+  skip.insert(APIPermission::kCopresence);
   skip.insert(APIPermission::kCopresencePrivate);
   skip.insert(APIPermission::kDiagnostics);
   skip.insert(APIPermission::kDns);

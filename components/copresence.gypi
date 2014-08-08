@@ -35,7 +35,7 @@
         'copresence/public/copresence_client.h',
         'copresence/public/copresence_constants.h',
         'copresence/public/whispernet_client.h',
-        'copresence/rpc/rpc_handler.cc'
+        'copresence/rpc/rpc_handler.cc',
         'copresence/rpc/rpc_handler.h'
         'copresence/timed_map.h',
       ],

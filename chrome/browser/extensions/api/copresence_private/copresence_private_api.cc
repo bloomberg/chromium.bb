@@ -7,27 +7,19 @@
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
 #include "chrome/browser/copresence/chrome_whispernet_client.h"
+#include "chrome/browser/extensions/api/copresence/copresence_api.h"
 #include "chrome/common/extensions/api/copresence_private.h"
 #include "components/copresence/public/whispernet_client.h"
 #include "media/base/audio_bus.h"
 
 namespace extensions {
 
-// This code is only for testing while we don't have the rest of the
-// CopresenceAPI service which will actually give us the whispernet client.
-// Once we add that code, both the g_whispernet_client and the
-// GetWhispernetClient function will go away, to be replaced by the
-// GetWhispernetClient function that will fetch our active whispernet client
-// from the CopresenceAPI profile keyed service.
-copresence::WhispernetClient* g_whispernet_client = NULL;
-
 // Copresence Private functions.
 
 copresence::WhispernetClient* CopresencePrivateFunction::GetWhispernetClient() {
-  // This is temporary code, this needs to be replaced by the real
-  // GetWhispernetClient code from c/b/e/api/copresence/copresence_util.h
-  DCHECK(g_whispernet_client);
-  return g_whispernet_client;
+  CopresenceService* service =
+      CopresenceService::GetFactoryInstance()->Get(browser_context());
+  return service ? service->whispernet_client() : NULL;
 }
 
 // CopresenceSendFoundFunction implementation:
@@ -96,10 +88,6 @@ CopresencePrivateSendInitializedFunction::Run() {
 
   GetWhispernetClient()->GetInitializedCallback().Run(params->success);
   return RespondNow(NoArguments());
-}
-
-void SetWhispernetClientForTesting(copresence::WhispernetClient* client) {
-  g_whispernet_client = client;
 }
 
 }  // namespace extensions

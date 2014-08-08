@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "chrome/browser/extensions/api/copresence_private/copresence_private_api.h"
+#include "chrome/browser/extensions/api/copresence/copresence_api.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -20,6 +20,13 @@
 #include "media/base/audio_bus.h"
 
 namespace {
+
+copresence::WhispernetClient* GetWhispernetClient(
+    content::BrowserContext* context) {
+  extensions::CopresenceService* service =
+      extensions::CopresenceService::GetFactoryInstance()->Get(context);
+  return service ? service->whispernet_client() : NULL;
+}
 
 // Copied from src/components/copresence/mediums/audio/audio_recorder.cc
 std::string AudioBusToString(scoped_refptr<media::AudioBusRefCounted> source) {
@@ -40,49 +47,46 @@ std::string AudioBusToString(scoped_refptr<media::AudioBusRefCounted> source) {
 
 class ChromeWhispernetClientTest : public ExtensionBrowserTest {
  public:
-  ChromeWhispernetClientTest() : initialized_(false) {}
+  ChromeWhispernetClientTest() : context_(NULL), initialized_(false) {}
 
-  virtual ~ChromeWhispernetClientTest() {
-    if (client_)
-      extensions::SetWhispernetClientForTesting(NULL);
-  }
+  virtual ~ChromeWhispernetClientTest() {}
 
   void InitializeWhispernet() {
+    context_ = browser()->profile();
     run_loop_.reset(new base::RunLoop());
-    client_.reset(new ChromeWhispernetClient(browser()->profile()));
-    extensions::SetWhispernetClientForTesting(client_.get());
-
-    client_->Initialize(base::Bind(&ChromeWhispernetClientTest::InitCallback,
-                                   base::Unretained(this)));
+    GetWhispernetClient(context_)->Initialize(base::Bind(
+        &ChromeWhispernetClientTest::InitCallback, base::Unretained(this)));
     run_loop_->Run();
 
     EXPECT_TRUE(initialized_);
   }
 
   void EncodeTokenAndSaveSamples() {
-    ASSERT_TRUE(client_);
+    copresence::WhispernetClient* client = GetWhispernetClient(context_);
+    ASSERT_TRUE(client);
 
-    // This is the base64 encoding for 000000.
+    // This is the base64 encoding for "000000".
     const std::string kZeroToken = "MDAwMDAw";
 
     run_loop_.reset(new base::RunLoop());
-    client_->RegisterSamplesCallback(base::Bind(
+    client->RegisterSamplesCallback(base::Bind(
         &ChromeWhispernetClientTest::SamplesCallback, base::Unretained(this)));
     expected_token_ = kZeroToken;
 
-    client_->EncodeToken(kZeroToken);
+    client->EncodeToken(kZeroToken);
     run_loop_->Run();
 
     EXPECT_GT(saved_samples_->frames(), 0);
   }
 
   void DecodeSamplesAndVerifyToken() {
-    ASSERT_TRUE(client_);
+    copresence::WhispernetClient* client = GetWhispernetClient(context_);
+    ASSERT_TRUE(client);
 
     const std::string kZeroToken = "MDAwMDAw";
 
     run_loop_.reset(new base::RunLoop());
-    client_->RegisterTokensCallback(base::Bind(
+    client->RegisterTokensCallback(base::Bind(
         &ChromeWhispernetClientTest::TokensCallback, base::Unretained(this)));
     expected_token_ = kZeroToken;
 
@@ -99,18 +103,19 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
            saved_samples_->channel(0),
            sizeof(float) * saved_samples_->frames());
 
-    client_->DecodeSamples(AudioBusToString(samples_bus));
+    client->DecodeSamples(AudioBusToString(samples_bus));
     run_loop_->Run();
   }
 
   void DetectBroadcast() {
-    ASSERT_TRUE(client_);
+    copresence::WhispernetClient* client = GetWhispernetClient(context_);
+    ASSERT_TRUE(client);
 
     run_loop_.reset(new base::RunLoop());
-    client_->RegisterDetectBroadcastCallback(
+    client->RegisterDetectBroadcastCallback(
         base::Bind(&ChromeWhispernetClientTest::DetectBroadcastCallback,
                    base::Unretained(this)));
-    client_->DetectBroadcast();
+    client->DetectBroadcast();
     run_loop_->Run();
   }
 
@@ -146,7 +151,7 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
 
  private:
   scoped_ptr<base::RunLoop> run_loop_;
-  scoped_ptr<ChromeWhispernetClient> client_;
+  content::BrowserContext* context_;
 
   std::string expected_token_;
   scoped_refptr<media::AudioBusRefCounted> saved_samples_;

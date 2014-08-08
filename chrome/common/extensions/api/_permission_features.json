@@ -313,6 +313,24 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
   },
+  "copresence": [
+    {
+      "channel": "dev",
+      "extension_types": ["extension", "platform_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["extension", "platform_app"],
+      "whitelist": [
+        "AFA728615D3A82D4017BDECEE86978543194D198",  // http://crbug.com/387999
+        "0C0426C12F94156F330FFAF346A976BA8878DE78",  // http://crbug.com/387999
+        "1C93BD3CF875F4A73C0B2A163BB8FBDA8B8B3D80",  // http://crbug.com/389230
+        "A3BC37E2148AC4E99BE4B16AF9D42DD1E592BBBE",  // http://crbug.com/389230
+        "E703483CEF33DEC18B4B6DD84B5C776FB9182BDB",  // http://crbug.com/389230
+        "307E96539209F95A1A8740C713E6998A73657D96"   // http://crbug.com/389230
+      ]
+    }
+  ],
   "copresencePrivate": {
     "channel": "stable",
     "extension_types": ["extension"],

@@ -60,10 +60,6 @@ class CopresencePrivateSendInitializedFunction
   virtual ExtensionFunction::ResponseAction Run() OVERRIDE;
 };
 
-// This will go away once we check in the code for the CopresenceAPI BCK
-// service which lets us inject a whispernet client.
-void SetWhispernetClientForTesting(copresence::WhispernetClient* client);
-
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_COPRESENCE_PRIVATE_COPRESENCE_PRIVATE_API_H_

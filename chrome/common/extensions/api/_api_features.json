@@ -230,6 +230,10 @@
     "dependencies": ["permission:cookies"],
     "contexts": ["blessed_extension"]
   },
+  "copresence": {
+    "dependencies": ["permission:copresence"],
+    "contexts": ["blessed_extension"]
+  },
   "copresencePrivate": {
     "dependencies": ["permission:copresencePrivate"],
     "contexts": ["blessed_extension"]

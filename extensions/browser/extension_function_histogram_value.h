@@ -926,6 +926,8 @@ enum HistogramValue {
   COPRESENCEPRIVATE_SENDSAMPLES,
   COPRESENCEPRIVATE_SENDDETECT,
   COPRESENCEPRIVATE_SENDINITIALIZED,
+  COPRESENCE_EXECUTE,
+  COPRESENCE_SETAPIKEY,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms/histograms.xml.
   ENUM_BOUNDARY
