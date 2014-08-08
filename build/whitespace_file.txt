@@ -125,3 +125,5 @@ bot, and perhaps it will rebuild with GCC 4.6, which hath worked for many many
 seasons. And so they modified the whitespace file with these immortal lines,
 and visited it upon the bots, that great destruction might be wrought upon
 their outdated binaries. In clobberus, veritas.
+
+As the git approaches, light begins to shine through the SCM once again...
