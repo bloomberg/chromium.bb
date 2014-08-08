@@ -5,11 +5,12 @@
 #ifndef DOMMatrixReadOnly_h
 #define DOMMatrixReadOnly_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class DOMMatrixReadOnly : public GarbageCollected<DOMMatrixReadOnly> {
+class DOMMatrixReadOnly : public GarbageCollected<DOMMatrixReadOnly>, public ScriptWrappableBase {
 public:
     double a() const { return m11(); }
     double b() const { return m12(); }
