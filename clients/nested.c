@@ -1115,8 +1115,11 @@ main(int argc, char *argv[])
 	struct display *display;
 	struct nested *nested;
 
-	parse_options(nested_options,
-		      ARRAY_LENGTH(nested_options), &argc, argv);
+	if (parse_options(nested_options,
+			  ARRAY_LENGTH(nested_options), &argc, argv) > 1) {
+		printf("Usage: %s [OPTIONS]\n  --blit or -b\n", argv[0]);
+		exit(1);
+	}
 
 	display = display_create(&argc, argv);
 	if (display == NULL) {
