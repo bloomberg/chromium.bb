@@ -33,6 +33,7 @@
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/mime_registry_messages.h"
+#include "content/common/screen_orientation_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/webplugininfo.h"
@@ -1074,6 +1075,9 @@ void RendererWebKitPlatformSupportImpl::startListening(
     SetGamepadListener(
         static_cast<blink::WebGamepadListener*>(listener));
     break;
+  case blink::WebPlatformEventScreenOrientation:
+    RenderThread::Get()->Send(new ScreenOrientationHostMsg_StartListening());
+    break;
   default:
     // A default statement is required to prevent compilation errors when Blink
     // adds a new type.
@@ -1099,6 +1103,9 @@ void RendererWebKitPlatformSupportImpl::stopListening(
     break;
   case blink::WebPlatformEventGamepad:
     SetGamepadListener(0);
+    break;
+  case blink::WebPlatformEventScreenOrientation:
+    RenderThread::Get()->Send(new ScreenOrientationHostMsg_StopListening());
     break;
   default:
     // A default statement is required to prevent compilation errors when Blink

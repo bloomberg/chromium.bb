@@ -60,6 +60,19 @@ public class ScreenOrientationListener {
          * when the last observer is removed.
          */
         void stopListening();
+
+        /**
+         * Toggle the accurate mode if it wasn't already doing so. The backend
+         * will keep track of the number of times this has been called.
+         */
+        void startAccurateListening();
+
+        /**
+         * Request to stop the accurate mode. It will effectively be stopped
+         * only if this method is called as many times as
+         * startAccurateListening().
+         */
+        void stopAccurateListening();
     }
 
     /**
@@ -69,9 +82,15 @@ public class ScreenOrientationListener {
      *
      * This method is known to not correctly detect 180 degrees changes but it
      * is the only method that will work before API Level 17 (excluding polling).
+     * When toggleAccurateMode() is called, it will start polling in order to
+     * find out if the display has changed.
      */
     private class ScreenOrientationConfigurationListener
             implements ScreenOrientationListenerBackend, ComponentCallbacks {
+
+        private static final long POLLING_DELAY = 500;
+
+        private int mAccurateCount = 0;
 
         // ScreenOrientationListenerBackend implementation:
 
@@ -83,6 +102,36 @@ public class ScreenOrientationListener {
         @Override
         public void stopListening() {
             mAppContext.unregisterComponentCallbacks(this);
+        }
+
+        @Override
+        public void startAccurateListening() {
+            ++mAccurateCount;
+
+            if (mAccurateCount > 1)
+                return;
+
+            // Start polling if we went from 0 to 1. The polling will
+            // automatically stop when mAccurateCount reaches 0.
+            final ScreenOrientationConfigurationListener self = this;
+            ThreadUtils.postOnUiThreadDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    self.onConfigurationChanged(null);
+
+                    if (self.mAccurateCount < 1)
+                        return;
+
+                    ThreadUtils.postOnUiThreadDelayed(this,
+                            ScreenOrientationConfigurationListener.POLLING_DELAY);
+                }
+            }, POLLING_DELAY);
+        }
+
+        @Override
+        public void stopAccurateListening() {
+            --mAccurateCount;
+            assert mAccurateCount >= 0;
         }
 
         // ComponentCallbacks implementation:
@@ -121,6 +170,16 @@ public class ScreenOrientationListener {
             DisplayManager displayManager =
                     (DisplayManager) mAppContext.getSystemService(Context.DISPLAY_SERVICE);
             displayManager.unregisterDisplayListener(this);
+        }
+
+        @Override
+        public void startAccurateListening() {
+            // Always accurate. Do nothing.
+        }
+
+        @Override
+        public void stopAccurateListening() {
+            // Always accurate. Do nothing.
         }
 
         // DisplayListener implementation:
@@ -235,6 +294,22 @@ public class ScreenOrientationListener {
     }
 
     /**
+     * Toggle the accurate mode if it wasn't already doing so. The backend will
+     * keep track of the number of times this has been called.
+     */
+    public void startAccurateListening() {
+        mBackend.startAccurateListening();
+    }
+
+    /**
+     * Request to stop the accurate mode. It will effectively be stopped only if
+     * this method is called as many times as startAccurateListening().
+     */
+    public void stopAccurateListening() {
+        mBackend.stopAccurateListening();
+    }
+
+    /**
      * This should be called by classes extending ScreenOrientationListener when
      * it is possible that there is a screen orientation change. If there is an
      * actual change, the observers will get notified.
@@ -243,11 +318,11 @@ public class ScreenOrientationListener {
         int previousOrientation = mOrientation;
         updateOrientation();
 
-        DeviceDisplayInfo.create(mAppContext).updateNativeSharedDisplayInfo();
-
         if (mOrientation == previousOrientation) {
             return;
         }
+
+        DeviceDisplayInfo.create(mAppContext).updateNativeSharedDisplayInfo();
 
         for (ScreenOrientationObserver observer : mObservers) {
             observer.onScreenOrientationChanged(mOrientation);

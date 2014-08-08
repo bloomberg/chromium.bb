@@ -1111,6 +1111,8 @@
       'browser/safe_util_win.h',
       'browser/screen_orientation/screen_orientation_dispatcher_host.cc',
       'browser/screen_orientation/screen_orientation_dispatcher_host.h',
+      'browser/screen_orientation/screen_orientation_message_filter_android.h',
+      'browser/screen_orientation/screen_orientation_message_filter_android.cc',
       'browser/screen_orientation/screen_orientation_provider.h',
       'browser/screen_orientation/screen_orientation_provider_android.h',
       'browser/screen_orientation/screen_orientation_provider_android.cc',

@@ -203,6 +203,18 @@ ScreenOrientationProviderAndroid::GetNaturalLockType() const {
 }
 
 // static
+void ScreenOrientationProviderAndroid::StartAccurateListening() {
+  Java_ScreenOrientationProvider_startAccurateListening(
+      base::android::AttachCurrentThread());
+}
+
+// static
+void ScreenOrientationProviderAndroid::StopAccurateListening() {
+  Java_ScreenOrientationProvider_stopAccurateListening(
+      base::android::AttachCurrentThread());
+}
+
+// static
 ScreenOrientationProvider* ScreenOrientationProvider::Create(
     ScreenOrientationDispatcherHost* dispatcher,
     WebContents* web_contents) {

@@ -152,6 +152,7 @@
 #if defined(OS_ANDROID)
 #include "content/browser/media/android/browser_demuxer_android.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
+#include "content/browser/screen_orientation/screen_orientation_message_filter_android.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl_surface_texture.h"
 #endif
 
@@ -893,6 +894,9 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new PushMessagingMessageFilter(
       GetID(), storage_partition_impl_->GetServiceWorkerContext()));
   AddFilter(new BatteryStatusMessageFilter());
+#if defined(OS_ANDROID)
+  AddFilter(new ScreenOrientationMessageFilterAndroid());
+#endif
 }
 
 int RenderProcessHostImpl::GetNextRoutingID() {
