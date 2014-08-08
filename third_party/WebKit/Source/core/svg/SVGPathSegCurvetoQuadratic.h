@@ -27,8 +27,8 @@ namespace blink {
 
 class SVGPathSegCurvetoQuadratic : public SVGPathSegWithContext {
 public:
-    SVGPathSegCurvetoQuadratic(SVGPathElement* element, SVGPathSegRole role, float x, float y, float x1, float y1)
-        : SVGPathSegWithContext(element, role)
+    SVGPathSegCurvetoQuadratic(SVGPathElement* element, float x, float y, float x1, float y1)
+        : SVGPathSegWithContext(element)
         , m_x(x)
         , m_y(y)
         , m_x1(x1)

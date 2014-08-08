@@ -37,17 +37,15 @@
 
 namespace blink {
 
-SVGPathSegList::SVGPathSegList(SVGPathElement* contextElement, SVGPathSegRole role)
+SVGPathSegList::SVGPathSegList(SVGPathElement* contextElement)
     : m_contextElement(contextElement)
-    , m_role(role)
     , m_listSyncedToByteStream(true)
 {
     ASSERT(contextElement);
 }
 
-SVGPathSegList::SVGPathSegList(SVGPathElement* contextElement, SVGPathSegRole role, PassOwnPtr<SVGPathByteStream> byteStream)
+SVGPathSegList::SVGPathSegList(SVGPathElement* contextElement, PassOwnPtr<SVGPathByteStream> byteStream)
     : m_contextElement(contextElement)
-    , m_role(role)
     , m_byteStream(byteStream)
     , m_listSyncedToByteStream(true)
 {
@@ -60,7 +58,7 @@ SVGPathSegList::~SVGPathSegList()
 
 PassRefPtr<SVGPathSegList> SVGPathSegList::clone()
 {
-    RefPtr<SVGPathSegList> svgPathSegList = adoptRef(new SVGPathSegList(m_contextElement, m_role, byteStream()->copy()));
+    RefPtr<SVGPathSegList> svgPathSegList = adoptRef(new SVGPathSegList(m_contextElement, byteStream()->copy()));
     svgPathSegList->invalidateList();
     return svgPathSegList.release();
 }
@@ -104,7 +102,6 @@ void SVGPathSegList::updateListFromByteStream()
         SVGPathSegListBuilder builder;
         builder.setCurrentSVGPathElement(m_contextElement);
         builder.setCurrentSVGPathSegList(this);
-        builder.setCurrentSVGPathSegRole(PathSegUnalteredRole);
 
         SVGPathByteStreamSource source(m_byteStream.get());
 

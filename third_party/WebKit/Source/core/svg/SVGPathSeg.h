@@ -58,12 +58,6 @@ enum SVGPathSegType {
     PathSegCurveToQuadraticSmoothRel = 19
 };
 
-enum SVGPathSegRole {
-    PathSegUnalteredRole = 0,
-    PathSegNormalizedRole = 1,
-    PathSegUndefinedRole = 2
-};
-
 class SVGPropertyBase;
 class SVGPathElement;
 class SVGElement;

@@ -38,7 +38,6 @@ public:
 
     void setCurrentSVGPathElement(SVGPathElement* pathElement) { m_pathElement = pathElement; }
     void setCurrentSVGPathSegList(PassRefPtr<SVGPathSegList> pathSegList) { m_pathSegList = pathSegList; }
-    void setCurrentSVGPathSegRole(SVGPathSegRole pathSegRole) { m_pathSegRole = pathSegRole; }
 
 private:
     virtual void incrementPathSegmentCount() OVERRIDE { }
@@ -47,7 +46,6 @@ private:
     {
         m_pathElement = 0;
         m_pathSegList = nullptr;
-        m_pathSegRole = PathSegUndefinedRole;
     }
 
     // Used in UnalteredParsing/NormalizedParsing modes.
@@ -66,7 +64,6 @@ private:
 
     SVGPathElement* m_pathElement;
     RefPtr<SVGPathSegList> m_pathSegList;
-    SVGPathSegRole m_pathSegRole;
 };
 
 } // namespace blink

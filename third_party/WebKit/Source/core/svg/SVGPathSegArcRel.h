@@ -28,14 +28,14 @@ namespace blink {
 
 class SVGPathSegArcRel FINAL : public SVGPathSegArc {
 public:
-    static PassRefPtr<SVGPathSegArcRel> create(SVGPathElement* element, SVGPathSegRole role, float x, float y, float r1, float r2, float angle, bool largeArcFlag, bool sweepFlag)
+    static PassRefPtr<SVGPathSegArcRel> create(SVGPathElement* element, float x, float y, float r1, float r2, float angle, bool largeArcFlag, bool sweepFlag)
     {
-        return adoptRef(new SVGPathSegArcRel(element, role, x, y, r1, r2, angle, largeArcFlag, sweepFlag));
+        return adoptRef(new SVGPathSegArcRel(element, x, y, r1, r2, angle, largeArcFlag, sweepFlag));
     }
 
 private:
-    SVGPathSegArcRel(SVGPathElement* element, SVGPathSegRole role, float x, float y, float r1, float r2, float angle, bool largeArcFlag, bool sweepFlag)
-        : SVGPathSegArc(element, role, x, y, r1, r2, angle, largeArcFlag, sweepFlag)
+    SVGPathSegArcRel(SVGPathElement* element, float x, float y, float r1, float r2, float angle, bool largeArcFlag, bool sweepFlag)
+        : SVGPathSegArc(element, x, y, r1, r2, angle, largeArcFlag, sweepFlag)
     {
         ScriptWrappable::init(this);
     }

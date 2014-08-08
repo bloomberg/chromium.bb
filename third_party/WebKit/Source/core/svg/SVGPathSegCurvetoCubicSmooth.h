@@ -27,8 +27,8 @@ namespace blink {
 
 class SVGPathSegCurvetoCubicSmooth : public SVGPathSegWithContext {
 public:
-    SVGPathSegCurvetoCubicSmooth(SVGPathElement* element, SVGPathSegRole role, float x, float y, float x2, float y2)
-        : SVGPathSegWithContext(element, role)
+    SVGPathSegCurvetoCubicSmooth(SVGPathElement* element, float x, float y, float x2, float y2)
+        : SVGPathSegWithContext(element)
         , m_x(x)
         , m_y(y)
         , m_x2(x2)

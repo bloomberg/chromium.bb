@@ -49,9 +49,9 @@ public:
     typedef SVGPathSegListTearOff TearOffType;
     typedef SVGListPropertyHelper<SVGPathSegList, SVGPathSeg> Base;
 
-    static PassRefPtr<SVGPathSegList> create(SVGPathElement* contextElement, SVGPathSegRole role = PathSegUndefinedRole)
+    static PassRefPtr<SVGPathSegList> create(SVGPathElement* contextElement)
     {
-        return adoptRef(new SVGPathSegList(contextElement, role));
+        return adoptRef(new SVGPathSegList(contextElement));
     }
     static PassRefPtr<SVGPathSegList> create() { ASSERT_NOT_REACHED(); return nullptr; }
 
@@ -143,8 +143,8 @@ public:
     static AnimatedPropertyType classType() { return AnimatedPath; }
 
 private:
-    SVGPathSegList(SVGPathElement*, SVGPathSegRole);
-    SVGPathSegList(SVGPathElement*, SVGPathSegRole, PassOwnPtr<SVGPathByteStream>);
+    SVGPathSegList(SVGPathElement*);
+    SVGPathSegList(SVGPathElement*, PassOwnPtr<SVGPathByteStream>);
 
     friend class SVGPathSegListBuilder;
     // This is only to be called from SVGPathSegListBuilder.
@@ -163,7 +163,6 @@ private:
     //        so this ptr is always valid.
     SVGPathElement* m_contextElement;
 
-    SVGPathSegRole m_role;
     mutable OwnPtr<SVGPathByteStream> m_byteStream;
     bool m_listSyncedToByteStream;
 };

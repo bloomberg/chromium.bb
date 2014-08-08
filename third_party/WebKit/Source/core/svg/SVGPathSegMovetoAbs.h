@@ -28,14 +28,14 @@ namespace blink {
 
 class SVGPathSegMovetoAbs FINAL : public SVGPathSegSingleCoordinate {
 public:
-    static PassRefPtr<SVGPathSegMovetoAbs> create(SVGPathElement* element, SVGPathSegRole role, float x, float y)
+    static PassRefPtr<SVGPathSegMovetoAbs> create(SVGPathElement* element, float x, float y)
     {
-        return adoptRef(new SVGPathSegMovetoAbs(element, role, x, y));
+        return adoptRef(new SVGPathSegMovetoAbs(element, x, y));
     }
 
 private:
-    SVGPathSegMovetoAbs(SVGPathElement* element, SVGPathSegRole role, float x, float y)
-        : SVGPathSegSingleCoordinate(element, role, x, y)
+    SVGPathSegMovetoAbs(SVGPathElement* element, float x, float y)
+        : SVGPathSegSingleCoordinate(element, x, y)
     {
         ScriptWrappable::init(this);
     }

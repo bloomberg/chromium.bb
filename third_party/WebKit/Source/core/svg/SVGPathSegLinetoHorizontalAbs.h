@@ -28,14 +28,14 @@ namespace blink {
 
 class SVGPathSegLinetoHorizontalAbs FINAL : public SVGPathSegLinetoHorizontal {
 public:
-    static PassRefPtr<SVGPathSegLinetoHorizontalAbs> create(SVGPathElement* element, SVGPathSegRole role, float x)
+    static PassRefPtr<SVGPathSegLinetoHorizontalAbs> create(SVGPathElement* element, float x)
     {
-        return adoptRef(new SVGPathSegLinetoHorizontalAbs(element, role, x));
+        return adoptRef(new SVGPathSegLinetoHorizontalAbs(element, x));
     }
 
 private:
-    SVGPathSegLinetoHorizontalAbs(SVGPathElement* element, SVGPathSegRole role, float x)
-        : SVGPathSegLinetoHorizontal(element, role, x)
+    SVGPathSegLinetoHorizontalAbs(SVGPathElement* element, float x)
+        : SVGPathSegLinetoHorizontal(element, x)
     {
         ScriptWrappable::init(this);
     }

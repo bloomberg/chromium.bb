@@ -28,14 +28,14 @@ namespace blink {
 
 class SVGPathSegCurvetoCubicRel FINAL : public SVGPathSegCurvetoCubic {
 public:
-    static PassRefPtr<SVGPathSegCurvetoCubicRel> create(SVGPathElement* element, SVGPathSegRole role, float x, float y, float x1, float y1, float x2, float y2)
+    static PassRefPtr<SVGPathSegCurvetoCubicRel> create(SVGPathElement* element, float x, float y, float x1, float y1, float x2, float y2)
     {
-        return adoptRef(new SVGPathSegCurvetoCubicRel(element, role, x, y, x1, y1, x2, y2));
+        return adoptRef(new SVGPathSegCurvetoCubicRel(element, x, y, x1, y1, x2, y2));
     }
 
 private:
-    SVGPathSegCurvetoCubicRel(SVGPathElement* element, SVGPathSegRole role, float x, float y, float x1, float y1, float x2, float y2)
-        : SVGPathSegCurvetoCubic(element, role, x, y, x1, y1, x2, y2)
+    SVGPathSegCurvetoCubicRel(SVGPathElement* element, float x, float y, float x1, float y1, float x2, float y2)
+        : SVGPathSegCurvetoCubic(element, x, y, x1, y1, x2, y2)
     {
         ScriptWrappable::init(this);
     }

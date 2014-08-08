@@ -27,8 +27,7 @@ namespace blink {
 // FIXME: This should be deprecated.
 class SVGPathSegWithContext : public SVGPathSeg {
 public:
-    // FIXME: remove second unused argument from all derived classes.
-    SVGPathSegWithContext(SVGPathElement* contextElement, SVGPathSegRole)
+    SVGPathSegWithContext(SVGPathElement* contextElement)
         : SVGPathSeg(contextElement)
     {
     }
@@ -51,8 +50,8 @@ public:
     }
 
 protected:
-    SVGPathSegSingleCoordinate(SVGPathElement* element, SVGPathSegRole role, float x, float y)
-        : SVGPathSegWithContext(element, role)
+    SVGPathSegSingleCoordinate(SVGPathElement* element, float x, float y)
+        : SVGPathSegWithContext(element)
         , m_x(x)
         , m_y(y)
     {
