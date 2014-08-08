@@ -187,7 +187,7 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
         cmd_line,
         std::string(),
         TestTimeouts::test_launcher_timeout(),
-        use_job_objects_,
+        use_job_objects_ ? TestLauncher::USE_JOB_OBJECTS : 0,
         Bind(&UnitTestLauncherDelegate::SerialGTestCallback,
              Unretained(this),
              callback_state,
@@ -229,7 +229,7 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
         cmd_line,
         std::string(),
         timeout,
-        use_job_objects_,
+        use_job_objects_ ? TestLauncher::USE_JOB_OBJECTS : 0,
         Bind(&UnitTestLauncherDelegate::GTestCallback,
              Unretained(this),
              callback_state));

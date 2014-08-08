@@ -69,6 +69,18 @@ class TestLauncherDelegate {
 // Launches tests using a TestLauncherDelegate.
 class TestLauncher {
  public:
+  // Flags controlling behavior of LaunchChildGTestProcess.
+  enum LaunchChildGTestProcessFlags {
+    // Allows usage of job objects on Windows. Helps properly clean up child
+    // processes.
+    USE_JOB_OBJECTS = (1 << 0),
+
+    // Allows breakaway from job on Windows. May result in some child processes
+    // not being properly terminated after launcher dies if these processes
+    // fail to cooperate.
+    ALLOW_BREAKAWAY_FROM_JOB = (1 << 1),
+  };
+
   // Constructor. |parallel_jobs| is the limit of simultaneous parallel test
   // jobs.
   TestLauncher(TestLauncherDelegate* launcher_delegate, size_t parallel_jobs);
@@ -87,13 +99,12 @@ class TestLauncher {
   // Launches a child process (assumed to be gtest-based binary) using
   // |command_line|. If |wrapper| is not empty, it is prepended to the final
   // command line. If the child process is still running after |timeout|, it
-  // is terminated. |use_job_objects| determines whether job objects are used
-  // on Windows (if unsure pass true). After the child process finishes
-  // |callback| is called on the same thread this method was called.
+  // is terminated. After the child process finishes |callback| is called
+  // on the same thread this method was called.
   void LaunchChildGTestProcess(const CommandLine& command_line,
                                const std::string& wrapper,
                                base::TimeDelta timeout,
-                               bool use_job_objects,
+                               int flags,
                                const LaunchChildGTestProcessCallback& callback);
 
   // Called when a test has finished running.
