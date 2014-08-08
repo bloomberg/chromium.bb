@@ -1174,7 +1174,7 @@ Feature::Context Dispatcher::ClassifyJavaScriptContext(
     int extension_group,
     const GURL& url,
     const blink::WebSecurityOrigin& origin) {
-  // WARNING: This logic must match ProcessMap::GuessContextType, as much as
+  // WARNING: This logic must match ProcessMap::GetContextType, as much as
   // possible.
 
   DCHECK_GE(extension_group, 0);

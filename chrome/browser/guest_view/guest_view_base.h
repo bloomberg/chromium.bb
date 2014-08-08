@@ -141,11 +141,13 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // to destruction.
   virtual void WillDestroy() {}
 
-  // This method is to be implemented by the derived class. It determines
-  // whether the guest view type of the derived class can be used by the
-  // provided embedder extension ID.
-  virtual bool CanEmbedderUseGuestView(
-      const std::string& embedder_extension_id) = 0;
+  // This method is to be implemented by the derived class. Access to guest
+  // views are determined by the availability of the internal extension API
+  // used to implement the guest view.
+  //
+  // This should be the name of the API as it appears in the _api_features.json
+  // file.
+  virtual const char* GetAPINamespace() = 0;
 
   // This method is to be implemented by the derived class. Given a set of
   // initialization parameters, a concrete subclass of GuestViewBase can
@@ -161,7 +163,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // This creates a WebContents and initializes |this| GuestViewBase to use the
   // newly created WebContents.
   void Init(const std::string& embedder_extension_id,
-            int embedder_render_process_id,
+            content::WebContents* embedder_web_contents,
             const base::DictionaryValue& create_params,
             const WebContentsCreatedCallback& callback);
 

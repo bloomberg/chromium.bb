@@ -18,6 +18,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/process_map.h"
+#include "extensions/common/features/feature.h"
+#include "extensions/common/features/feature_provider.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 using content::WebContents;
@@ -97,27 +101,48 @@ GuestViewBase::GuestViewBase(content::BrowserContext* browser_context,
       weak_ptr_factory_(this) {
 }
 
-void GuestViewBase::Init(
-    const std::string& embedder_extension_id,
-    int embedder_render_process_id,
-    const base::DictionaryValue& create_params,
-    const WebContentsCreatedCallback& callback) {
+void GuestViewBase::Init(const std::string& embedder_extension_id,
+                         content::WebContents* embedder_web_contents,
+                         const base::DictionaryValue& create_params,
+                         const WebContentsCreatedCallback& callback) {
   if (initialized_)
     return;
   initialized_ = true;
 
-  if (!CanEmbedderUseGuestView(embedder_extension_id)) {
+  extensions::Feature* feature =
+      extensions::FeatureProvider::GetAPIFeatures()->GetFeature(
+          GetAPINamespace());
+  CHECK(feature);
+
+  extensions::ProcessMap* process_map =
+      extensions::ProcessMap::Get(browser_context());
+  CHECK(process_map);
+
+  const extensions::Extension* embedder_extension =
+      extensions::ExtensionRegistry::Get(browser_context_)
+          ->enabled_extensions()
+          .GetByID(embedder_extension_id);
+  int embedder_process_id =
+      embedder_web_contents->GetRenderProcessHost()->GetID();
+
+  extensions::Feature::Availability availability =
+      feature->IsAvailableToContext(
+          embedder_extension,
+          process_map->GetMostLikelyContextType(embedder_extension,
+                                                embedder_process_id),
+          embedder_web_contents->GetLastCommittedURL());
+  if (!availability.is_available()) {
     callback.Run(NULL);
     return;
   }
 
   CreateWebContents(embedder_extension_id,
-                    embedder_render_process_id,
+                    embedder_process_id,
                     create_params,
                     base::Bind(&GuestViewBase::CompleteInit,
                                AsWeakPtr(),
                                embedder_extension_id,
-                               embedder_render_process_id,
+                               embedder_process_id,
                                callback));
 }
 

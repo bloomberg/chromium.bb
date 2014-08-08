@@ -48,10 +48,8 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/url_constants.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/permissions/permissions_data.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
@@ -226,16 +224,8 @@ scoped_ptr<base::ListValue> WebViewGuest::MenuModelToValue(
   return items.Pass();
 }
 
-bool WebViewGuest::CanEmbedderUseGuestView(
-    const std::string& embedder_extension_id) {
-  const extensions::Extension* embedder_extension =
-      extensions::ExtensionRegistry::Get(browser_context())
-          ->enabled_extensions()
-          .GetByID(embedder_extension_id);
-  if (!embedder_extension)
-    return false;
-  return embedder_extension->permissions_data()->HasAPIPermission(
-      extensions::APIPermission::kWebView);
+const char* WebViewGuest::GetAPINamespace() {
+  return webview::kAPINamespace;
 }
 
 void WebViewGuest::CreateWebContents(
@@ -570,13 +560,13 @@ void WebViewGuest::CreateNewGuestWebViewWindow(
   base::DictionaryValue create_params;
   create_params.SetString(webview::kStoragePartitionId, storage_partition_id);
 
-  guest_manager->CreateGuest(
-      WebViewGuest::Type,
-      embedder_extension_id(),
-      embedder_web_contents()->GetRenderProcessHost()->GetID(),
-      create_params,
-      base::Bind(&WebViewGuest::NewGuestWebViewCallback,
-                 base::Unretained(this), params));
+  guest_manager->CreateGuest(WebViewGuest::Type,
+                             embedder_extension_id(),
+                             embedder_web_contents(),
+                             create_params,
+                             base::Bind(&WebViewGuest::NewGuestWebViewCallback,
+                                        base::Unretained(this),
+                                        params));
 }
 
 void WebViewGuest::NewGuestWebViewCallback(

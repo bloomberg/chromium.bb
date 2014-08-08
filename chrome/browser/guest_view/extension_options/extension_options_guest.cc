@@ -36,16 +36,8 @@ ExtensionOptionsGuest::ExtensionOptionsGuest(
 ExtensionOptionsGuest::~ExtensionOptionsGuest() {
 }
 
-bool ExtensionOptionsGuest::CanEmbedderUseGuestView(
-    const std::string& embedder_extension_id) {
-  const extensions::Extension* embedder_extension =
-      extensions::ExtensionRegistry::Get(browser_context())
-          ->enabled_extensions()
-          .GetByID(embedder_extension_id);
-  if (!embedder_extension)
-    return false;
-  return embedder_extension->permissions_data()->HasAPIPermission(
-      extensions::APIPermission::kEmbeddedExtensionOptions);
+const char* ExtensionOptionsGuest::GetAPINamespace() {
+  return extensionoptions::kAPINamespace;
 }
 
 // static

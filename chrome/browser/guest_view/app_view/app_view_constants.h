@@ -9,6 +9,9 @@
 
 namespace appview {
 
+// API namespace for the *embedder*. The embedder and guest use different APIs.
+extern const char kEmbedderAPINamespace[];
+
 // Parameters/properties on events.
 extern const char kAppID[];
 extern const char kEmbedderID[];

@@ -20,6 +20,7 @@ class GURL;
 
 namespace content {
 class BrowserContext;
+class WebContents;
 }  // namespace content
 
 class GuestViewManager : public content::BrowserPluginGuestManager,
@@ -48,12 +49,11 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
 
   typedef base::Callback<void(content::WebContents*)>
       WebContentsCreatedCallback;
-  void CreateGuest(
-      const std::string& view_type,
-      const std::string& embedder_extension_id,
-      int embedder_render_process_id,
-      const base::DictionaryValue& create_params,
-      const WebContentsCreatedCallback& callback);
+  void CreateGuest(const std::string& view_type,
+                   const std::string& embedder_extension_id,
+                   content::WebContents* embedder_web_contents,
+                   const base::DictionaryValue& create_params,
+                   const WebContentsCreatedCallback& callback);
 
   content::WebContents* CreateGuestWithWebContentsParams(
       const std::string& view_type,

@@ -455,7 +455,7 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
   function->set_response_callback(callback);
   function->set_source_tab_id(params.source_tab_id);
   function->set_source_context_type(
-      process_map.GuessContextType(extension, requesting_process_id));
+      process_map.GetMostLikelyContextType(extension, requesting_process_id));
 
   return function;
 }

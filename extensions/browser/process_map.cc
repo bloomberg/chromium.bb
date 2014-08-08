@@ -123,8 +123,9 @@ std::set<std::string> ProcessMap::GetExtensionsInProcess(int process_id) const {
   return result;
 }
 
-Feature::Context ProcessMap::GuessContextType(const Extension* extension,
-                                              int process_id) const {
+Feature::Context ProcessMap::GetMostLikelyContextType(
+    const Extension* extension,
+    int process_id) const {
   // WARNING: This logic must match Dispatcher::ClassifyJavaScriptContext, as
   // much as possible.
 

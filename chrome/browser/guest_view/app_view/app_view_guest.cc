@@ -17,13 +17,11 @@
 #include "extensions/browser/api/app_runtime/app_runtime_api.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension_messages.h"
-#include "extensions/common/permissions/permissions_data.h"
 #include "ipc/ipc_message_macros.h"
 
 namespace app_runtime = extensions::core_api::app_runtime;
@@ -137,16 +135,8 @@ bool AppViewGuest::HandleContextMenu(const content::ContextMenuParams& params) {
   return true;
 }
 
-bool AppViewGuest::CanEmbedderUseGuestView(
-    const std::string& embedder_extension_id) {
-  const extensions::Extension* embedder_extension =
-      extensions::ExtensionRegistry::Get(browser_context())
-          ->enabled_extensions()
-          .GetByID(embedder_extension_id);
-  if (!embedder_extension)
-    return false;
-  return embedder_extension->permissions_data()->HasAPIPermission(
-      extensions::APIPermission::kAppView);
+const char* AppViewGuest::GetAPINamespace() {
+  return appview::kEmbedderAPINamespace;
 }
 
 void AppViewGuest::CreateWebContents(

@@ -7,6 +7,9 @@
 
 namespace extensionoptions {
 
+// API namespace.
+extern const char kAPINamespace[];
+
 // Attributes.
 extern const char kAttributeAutoSize[];
 extern const char kAttributeMaxHeight[];

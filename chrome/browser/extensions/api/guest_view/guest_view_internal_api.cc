@@ -35,7 +35,7 @@ bool GuestViewInternalCreateGuestFunction::RunAsync() {
                  this);
   guest_view_manager->CreateGuest(view_type,
                                   extension_id(),
-                                  render_view_host()->GetProcess()->GetID(),
+                                  GetAssociatedWebContents(),
                                   *create_params,
                                   callback);
 

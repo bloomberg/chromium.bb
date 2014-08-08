@@ -56,6 +56,14 @@
     // Any webpage can use the app API.
     "matches": ["<all_urls>"]
   },
+  // The API for the *embedder* of appview. Appview has both an embedder and
+  // guest API, which are different.
+  "appViewEmbedderInternal": {
+    "internal": true,
+    "contexts": ["blessed_extension"],
+    "dependencies": ["permission:appview"]
+  },
+  // TODO(fsamuel,kalman): Rename this appViewGuestInternal.
   "appViewInternal": {
     "internal": true,
     "channel": "dev",
