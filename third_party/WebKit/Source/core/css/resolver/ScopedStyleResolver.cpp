@@ -42,12 +42,11 @@
 
 namespace blink {
 
-ContainerNode* ScopedStyleResolver::scopingNodeFor(Document& document, const CSSStyleSheet* sheet)
+TreeScope* ScopedStyleResolver::treeScopeFor(Document& document, const CSSStyleSheet* sheet)
 {
     ASSERT(sheet);
 
-    Document* sheetDocument = sheet->ownerDocument();
-    if (!sheetDocument)
+    if (!sheet->ownerDocument())
         return 0;
 
     Node* ownerNode = sheet->ownerNode();
@@ -130,7 +129,7 @@ void ScopedStyleResolver::collectMatchingAuthorRules(ElementRuleCollector& colle
 
     RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
-        MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(), includeEmptyRules, &scopingNode(), m_authorStyleSheets[i], applyAuthorStyles, i);
+        MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(), includeEmptyRules, &m_scope->rootNode(), m_authorStyleSheets[i], applyAuthorStyles, i);
         collector.collectMatchingRules(matchRequest, ruleRange, static_cast<SelectorChecker::ContextFlags>(contextFlags), cascadeScope, cascadeOrder);
     }
 }
@@ -138,14 +137,14 @@ void ScopedStyleResolver::collectMatchingAuthorRules(ElementRuleCollector& colle
 void ScopedStyleResolver::matchPageRules(PageRuleCollector& collector)
 {
     // Only consider the global author RuleSet for @page rules, as per the HTML5 spec.
-    ASSERT(scopingNode().isDocumentNode());
+    ASSERT(m_scope->rootNode().isDocumentNode());
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i)
         collector.matchPageRules(&m_authorStyleSheets[i]->contents()->ruleSet());
 }
 
 void ScopedStyleResolver::collectViewportRulesTo(StyleResolver* resolver) const
 {
-    if (!scopingNode().isDocumentNode())
+    if (!m_scope->rootNode().isDocumentNode())
         return;
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i)
         resolver->viewportStyleResolver()->collectViewportRules(&m_authorStyleSheets[i]->contents()->ruleSet(), ViewportStyleResolver::AuthorOrigin);

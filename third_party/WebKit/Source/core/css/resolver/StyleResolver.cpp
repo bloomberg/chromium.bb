@@ -184,14 +184,13 @@ void StyleResolver::appendCSSStyleSheet(CSSStyleSheet* cssSheet)
     if (cssSheet->mediaQueries() && !m_medium->eval(cssSheet->mediaQueries(), &m_viewportDependentMediaQueryResults))
         return;
 
-    ContainerNode* scopingNode = ScopedStyleResolver::scopingNodeFor(document(), cssSheet);
-    if (!scopingNode)
+    TreeScope* treeScope = ScopedStyleResolver::treeScopeFor(document(), cssSheet);
+    if (!treeScope)
         return;
 
-    ScopedStyleResolver* resolver = &scopingNode->treeScope().ensureScopedStyleResolver();
-    document().styleEngine()->addScopedStyleResolver(resolver);
-    ASSERT(resolver);
-    resolver->addRulesFromSheet(cssSheet, *m_medium, this);
+    ScopedStyleResolver& resolver = treeScope->ensureScopedStyleResolver();
+    document().styleEngine()->addScopedStyleResolver(&resolver);
+    resolver.addRulesFromSheet(cssSheet, *m_medium, this);
 }
 
 void StyleResolver::appendPendingAuthorStyleSheets()
@@ -430,7 +429,7 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
     for (unsigned i = 0; i < resolvers.size(); ++i, --cascadeOrder) {
         ScopedStyleResolver* resolver = resolvers.at(i);
         // FIXME: Need to clarify how to treat style scoped.
-        resolver->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope++, resolver->treeScope() == element->treeScope() && resolver->scopingNode().isShadowRoot() ? 0 : cascadeOrder);
+        resolver->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope++, resolver->treeScope() == element->treeScope() && resolver->treeScope().rootNode().isShadowRoot() ? 0 : cascadeOrder);
     }
 
     m_treeBoundaryCrossingRules.collectTreeBoundaryCrossingRules(element, collector, includeEmptyRules);
