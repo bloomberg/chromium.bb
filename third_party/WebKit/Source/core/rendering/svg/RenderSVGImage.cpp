@@ -121,8 +121,7 @@ void RenderSVGImage::paint(PaintInfo& paintInfo, const LayoutPoint&)
 {
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, this);
 
-    if (paintInfo.context->paintingDisabled()
-        || paintInfo.phase != PaintPhaseForeground
+    if (paintInfo.phase != PaintPhaseForeground
         || style()->visibility() == HIDDEN
         || !m_imageResource->hasImage())
         return;

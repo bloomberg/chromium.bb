@@ -203,10 +203,9 @@ void HTMLVideoElement::paintCurrentFrameInContext(GraphicsContext* context, cons
 {
     if (!webMediaPlayer())
         return;
-    if (!context->paintingDisabled()) {
-        WebCanvas* canvas = context->canvas();
-        webMediaPlayer()->paint(canvas, destRect, context->getNormalizedAlpha());
-    }
+
+    WebCanvas* canvas = context->canvas();
+    webMediaPlayer()->paint(canvas, destRect, context->getNormalizedAlpha());
 }
 
 bool HTMLVideoElement::copyVideoTextureToPlatformTexture(WebGraphicsContext3D* context, Platform3DObject texture, GLint level, GLenum internalFormat, GLenum type, bool premultiplyAlpha, bool flipY)

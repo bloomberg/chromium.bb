@@ -104,17 +104,6 @@ void WebPluginContainerImpl::setFrameRect(const IntRect& frameRect)
 
 void WebPluginContainerImpl::paint(GraphicsContext* gc, const IntRect& damageRect)
 {
-    if (gc->updatingControlTints() && m_scrollbarGroup) {
-        // See comment in FrameView::updateControlTints().
-        if (m_scrollbarGroup->horizontalScrollbar())
-            m_scrollbarGroup->horizontalScrollbar()->invalidate();
-        if (m_scrollbarGroup->verticalScrollbar())
-            m_scrollbarGroup->verticalScrollbar()->invalidate();
-    }
-
-    if (gc->paintingDisabled())
-        return;
-
     if (!parent())
         return;
 
@@ -341,8 +330,6 @@ int WebPluginContainerImpl::printBegin(const WebPrintParams& printParams) const
 bool WebPluginContainerImpl::printPage(int pageNumber,
                                        blink::GraphicsContext* gc)
 {
-    if (gc->paintingDisabled())
-        return true;
     gc->save();
     WebCanvas* canvas = gc->canvas();
     bool ret = m_webPlugin->printPage(pageNumber, canvas);

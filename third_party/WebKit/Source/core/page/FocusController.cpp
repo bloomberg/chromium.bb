@@ -733,11 +733,6 @@ void FocusController::setActive(bool active)
 
     m_isActive = active;
 
-    if (m_page->mainFrame()->isLocalFrame()) {
-        if (FrameView* view = m_page->deprecatedLocalMainFrame()->view())
-            view->updateControlTints();
-    }
-
     Frame* frame = focusedOrMainFrame();
     if (frame->isLocalFrame())
         toLocalFrame(frame)->selection().pageActivationChanged();

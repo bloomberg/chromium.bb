@@ -142,11 +142,6 @@ String RenderThemeChromiumDefault::extraDefaultStyleSheet()
 #endif
 }
 
-bool RenderThemeChromiumDefault::controlSupportsTints(const RenderObject* o) const
-{
-    return isEnabled(o);
-}
-
 Color RenderThemeChromiumDefault::activeListBoxSelectionBackgroundColor() const
 {
     return Color(0x28, 0x28, 0x28);
@@ -249,8 +244,6 @@ void RenderThemeChromiumDefault::setSelectionColors(
 
 bool RenderThemeChromiumDefault::paintCheckbox(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
-    if (i.context->paintingDisabled())
-        return false;
     blink::WebThemeEngine::ExtraParams extraParams;
     blink::WebCanvas* canvas = i.context->canvas();
     extraParams.button.checked = isChecked(o);
@@ -287,8 +280,6 @@ void RenderThemeChromiumDefault::setCheckboxSize(RenderStyle* style) const
 
 bool RenderThemeChromiumDefault::paintRadio(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
-    if (i.context->paintingDisabled())
-        return false;
     blink::WebThemeEngine::ExtraParams extraParams;
     blink::WebCanvas* canvas = i.context->canvas();
     extraParams.button.checked = isChecked(o);
@@ -312,8 +303,6 @@ void RenderThemeChromiumDefault::setRadioSize(RenderStyle* style) const
 
 bool RenderThemeChromiumDefault::paintButton(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
-    if (i.context->paintingDisabled())
-        return false;
     blink::WebThemeEngine::ExtraParams extraParams;
     blink::WebCanvas* canvas = i.context->canvas();
     extraParams.button.hasBorder = true;
@@ -331,8 +320,6 @@ bool RenderThemeChromiumDefault::paintTextField(RenderObject* o, const PaintInfo
     // so return true to draw CSS border and background.
     if (o->style()->hasBorderRadius() || o->style()->hasBackgroundImage())
         return true;
-    if (i.context->paintingDisabled())
-        return false;
 
     ControlPart part = o->style()->appearance();
 
@@ -351,7 +338,7 @@ bool RenderThemeChromiumDefault::paintTextField(RenderObject* o, const PaintInfo
 
 bool RenderThemeChromiumDefault::paintMenuList(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
-    if (!o->isBox() || i.context->paintingDisabled())
+    if (!o->isBox())
         return false;
 
     const int right = rect.x() + rect.width();
@@ -396,7 +383,7 @@ bool RenderThemeChromiumDefault::paintMenuList(RenderObject* o, const PaintInfo&
 
 bool RenderThemeChromiumDefault::paintMenuListButton(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
-    if (!o->isBox() || i.context->paintingDisabled())
+    if (!o->isBox())
         return false;
 
     const int right = rect.x() + rect.width();
@@ -430,8 +417,6 @@ bool RenderThemeChromiumDefault::paintMenuListButton(RenderObject* o, const Pain
 
 bool RenderThemeChromiumDefault::paintSliderTrack(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
-    if (i.context->paintingDisabled())
-        return false;
     blink::WebThemeEngine::ExtraParams extraParams;
     blink::WebCanvas* canvas = i.context->canvas();
     extraParams.slider.vertical = o->style()->appearance() == SliderVerticalPart;
@@ -458,8 +443,6 @@ bool RenderThemeChromiumDefault::paintSliderTrack(RenderObject* o, const PaintIn
 
 bool RenderThemeChromiumDefault::paintSliderThumb(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
-    if (i.context->paintingDisabled())
-        return false;
     blink::WebThemeEngine::ExtraParams extraParams;
     blink::WebCanvas* canvas = i.context->canvas();
     extraParams.slider.vertical = o->style()->appearance() == SliderThumbVerticalPart;
@@ -492,8 +475,6 @@ void RenderThemeChromiumDefault::adjustInnerSpinButtonStyle(RenderStyle* style, 
 
 bool RenderThemeChromiumDefault::paintInnerSpinButton(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
-    if (i.context->paintingDisabled())
-        return false;
     blink::WebThemeEngine::ExtraParams extraParams;
     blink::WebCanvas* canvas = i.context->canvas();
     extraParams.innerSpin.spinUp = (controlStatesForRenderer(o) & SpinUpControlState);
@@ -507,8 +488,6 @@ bool RenderThemeChromiumDefault::paintProgressBar(RenderObject* o, const PaintIn
 {
     if (!o->isProgress())
         return true;
-    if (i.context->paintingDisabled())
-        return false;
 
     RenderProgress* renderProgress = toRenderProgress(o);
     IntRect valueRect = progressValueRectFor(renderProgress, rect);

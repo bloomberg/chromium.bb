@@ -386,9 +386,6 @@ void RenderImage::paintAreaElementFocusRing(PaintInfo& paintInfo)
     if (document.printing() || !document.frame()->selection().isFocusedAndActive())
         return;
 
-    if (paintInfo.context->paintingDisabled() && !paintInfo.context->updatingControlTints())
-        return;
-
     Element* focusedElement = document.focusedElement();
     if (!isHTMLAreaElement(focusedElement))
         return;

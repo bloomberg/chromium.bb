@@ -2441,11 +2441,6 @@ void FrameView::updateScrollCorner()
 
 void FrameView::paintScrollCorner(GraphicsContext* context, const IntRect& cornerRect)
 {
-    if (context->updatingControlTints()) {
-        updateScrollCorner();
-        return;
-    }
-
     if (m_scrollCorner) {
         bool needsBackgorund = m_frame->isMainFrame();
         if (needsBackgorund)
@@ -2526,31 +2521,6 @@ FrameView* FrameView::parentFrameView() const
         return toLocalFrame(parentFrame)->view();
 
     return 0;
-}
-
-void FrameView::updateControlTints()
-{
-    // This is called when control tints are changed from aqua/graphite to clear and vice versa.
-    // We do a "fake" paint, and when the theme gets a paint call, it can then do an invalidate.
-    // This is only done if the theme supports control tinting. It's up to the theme and platform
-    // to define when controls get the tint and to call this function when that changes.
-
-    // Optimize the common case where we bring a window to the front while it's still empty.
-    if (m_frame->document()->url().isEmpty())
-        return;
-
-    // FIXME: We shouldn't rely on the paint code to implement :window-inactive on custom scrollbars.
-    if (!RenderTheme::theme().supportsControlTints() && !hasCustomScrollbars())
-        return;
-
-    // Updating layout can run script, which can tear down the FrameView.
-    RefPtr<FrameView> protector(this);
-    updateLayoutAndStyleForPainting();
-
-    // FIXME: The use of paint seems like overkill: crbug.com/236892
-    GraphicsContext context(0); // NULL canvas to get a non-painting context.
-    context.setUpdatingControlTints(true);
-    paint(&context, frameRect());
 }
 
 bool FrameView::wasScrolledByUser() const
@@ -2680,9 +2650,6 @@ void FrameView::setNodeToDraw(Node* node)
 
 void FrameView::paintOverhangAreas(GraphicsContext* context, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect)
 {
-    if (context->paintingDisabled())
-        return;
-
     if (m_frame->document()->printing())
         return;
 

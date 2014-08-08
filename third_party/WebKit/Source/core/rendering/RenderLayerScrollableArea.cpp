@@ -1052,11 +1052,6 @@ void RenderLayerScrollableArea::paintScrollCorner(GraphicsContext* context, cons
     if (!absRect.intersects(damageRect))
         return;
 
-    if (context->updatingControlTints()) {
-        updateScrollCornerStyle();
-        return;
-    }
-
     if (m_scrollCorner) {
         m_scrollCorner->paintIntoRect(context, paintOffset, absRect);
         return;
@@ -1164,11 +1159,6 @@ void RenderLayerScrollableArea::paintResizer(GraphicsContext* context, const Int
     absRect.moveBy(paintOffset);
     if (!absRect.intersects(damageRect))
         return;
-
-    if (context->updatingControlTints()) {
-        updateResizerStyle();
-        return;
-    }
 
     if (m_resizer) {
         m_resizer->paintIntoRect(context, paintOffset, absRect);

@@ -329,9 +329,6 @@ bool HTMLCanvasElement::paintsIntoCanvasBuffer() const
 
 void HTMLCanvasElement::paint(GraphicsContext* context, const LayoutRect& r)
 {
-    if (context->paintingDisabled())
-        return;
-
     if (m_context) {
         if (!paintsIntoCanvasBuffer() && !document().printing())
             return;

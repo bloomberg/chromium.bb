@@ -229,14 +229,6 @@ void RenderTheme::adjustStyle(RenderStyle* style, Element* e, const CachedUAStyl
 
 bool RenderTheme::paint(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
-    // If painting is disabled, but we aren't updating control tints, then just bail.
-    // If we are updating control tints, just schedule a repaint if the theme supports tinting
-    // for that control.
-    if (paintInfo.context->updatingControlTints()) {
-        if (controlSupportsTints(o))
-            o->paintInvalidationForWholeRenderer();
-        return false;
-    }
     ControlPart part = o->style()->appearance();
 
     if (shouldUseFallbackTheme(o->style()))
@@ -1135,8 +1127,6 @@ void RenderTheme::setSizeIfAuto(RenderStyle* style, const IntSize& size)
 
 bool RenderTheme::paintCheckboxUsingFallbackTheme(RenderObject* o, const PaintInfo& i, const IntRect& r)
 {
-    if (i.context->paintingDisabled())
-        return false;
     blink::WebFallbackThemeEngine::ExtraParams extraParams;
     blink::WebCanvas* canvas = i.context->canvas();
     extraParams.button.checked = isChecked(o);
@@ -1179,8 +1169,6 @@ void RenderTheme::adjustCheckboxStyleUsingFallbackTheme(RenderStyle* style, Elem
 
 bool RenderTheme::paintRadioUsingFallbackTheme(RenderObject* o, const PaintInfo& i, const IntRect& r)
 {
-    if (i.context->paintingDisabled())
-        return false;
     blink::WebFallbackThemeEngine::ExtraParams extraParams;
     blink::WebCanvas* canvas = i.context->canvas();
     extraParams.button.checked = isChecked(o);

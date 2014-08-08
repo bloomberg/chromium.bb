@@ -177,7 +177,6 @@ public:
     void handleLoadCompleted();
 
     void updateAnnotatedRegions();
-    void updateControlTints();
 
     void restoreScrollbar();
 

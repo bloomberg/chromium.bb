@@ -130,10 +130,6 @@ void RenderEmbeddedObject::paintReplaced(PaintInfo& paintInfo, const LayoutPoint
     if (paintInfo.phase == PaintPhaseSelection)
         return;
 
-    GraphicsContext* context = paintInfo.context;
-    if (context->paintingDisabled())
-        return;
-
     FloatRect contentRect;
     Path path;
     FloatRect replacementTextRect;
@@ -143,6 +139,7 @@ void RenderEmbeddedObject::paintReplaced(PaintInfo& paintInfo, const LayoutPoint
     if (!getReplacementTextGeometry(paintOffset, contentRect, path, replacementTextRect, font, run, textWidth))
         return;
 
+    GraphicsContext* context = paintInfo.context;
     GraphicsContextStateSaver stateSaver(*context);
     context->clip(contentRect);
     context->setAlphaAsFloat(replacementTextRoundedRectOpacity);

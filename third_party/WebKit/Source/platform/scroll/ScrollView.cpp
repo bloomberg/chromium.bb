@@ -868,9 +868,6 @@ void ScrollView::paintPanScrollIcon(GraphicsContext* context)
 
 void ScrollView::paint(GraphicsContext* context, const IntRect& rect)
 {
-    if (context->paintingDisabled() && !context->updatingControlTints())
-        return;
-
     notifyPageThatContentAreaWillPaint();
 
     IntRect documentDirtyRect = rect;

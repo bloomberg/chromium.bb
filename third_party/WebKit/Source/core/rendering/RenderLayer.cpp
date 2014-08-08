@@ -1199,7 +1199,7 @@ LayoutRect RenderLayer::paintingExtent(const RenderLayer* rootLayer, const Layou
 void RenderLayer::beginTransparencyLayers(GraphicsContext* context, const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, PaintBehavior paintBehavior)
 {
     bool createTransparencyLayerForBlendMode = m_stackingNode->isStackingContext() && m_blendInfo.childLayerHasBlendMode();
-    if (context->paintingDisabled() || ((paintsWithTransparency(paintBehavior) || paintsWithBlendMode() || createTransparencyLayerForBlendMode) && m_usedTransparency))
+    if ((paintsWithTransparency(paintBehavior) || paintsWithBlendMode() || createTransparencyLayerForBlendMode) && m_usedTransparency)
         return;
 
     RenderLayer* ancestor = transparentPaintingAncestor();
@@ -1544,7 +1544,7 @@ bool RenderLayer::hasOverflowControls() const
 void RenderLayer::paint(GraphicsContext* context, const LayoutRect& damageRect, PaintBehavior paintBehavior, RenderObject* paintingRoot, PaintLayerFlags paintFlags)
 {
     LayerPaintingInfo paintingInfo(this, enclosingIntRect(damageRect), paintBehavior, LayoutSize(), paintingRoot);
-    if (shouldPaintLayerInSoftwareMode(context, paintingInfo, paintFlags))
+    if (shouldPaintLayerInSoftwareMode(paintingInfo, paintFlags))
         paintLayer(context, paintingInfo, paintFlags);
 }
 
@@ -1640,9 +1640,7 @@ void RenderLayer::paintLayer(GraphicsContext* context, const LayerPaintingInfo& 
     DisableCompositingQueryAsserts disabler;
 
     if (compositingState() != NotComposited) {
-        if (context->updatingControlTints() || (paintingInfo.paintBehavior & PaintBehaviorFlattenCompositingLayers)) {
-            // The updatingControlTints() painting pass goes through compositing layers,
-            // but we need to ensure that we don't cache clip rects computed with the wrong root in this case.
+        if (paintingInfo.paintBehavior & PaintBehaviorFlattenCompositingLayers) {
             // FIXME: ok, but what about PaintBehaviorFlattenCompositingLayers? That's for printing.
             // FIXME: why isn't the code here global, as opposed to being set on each paintLayer() call?
             paintFlags |= PaintLayerUncachedClipRects;
@@ -1775,7 +1773,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     // Clip-path, like border radius, must not be applied to the contents of a composited-scrolling container.
     // It must, however, still be applied to the mask layer, so that the compositor can properly mask the
     // scrolling contents and scrollbars.
-    if (renderer()->hasClipPath() && !context->paintingDisabled() && style && (!needsCompositedScrolling() || paintFlags & PaintLayerPaintingChildClippingMaskPhase)) {
+    if (renderer()->hasClipPath() && style && (!needsCompositedScrolling() || paintFlags & PaintLayerPaintingChildClippingMaskPhase)) {
         ASSERT(style->clipPath());
         if (style->clipPath()->type() == ClipPathOperation::SHAPE) {
             ShapeClipPathOperation* clipPath = toShapeClipPathOperation(style->clipPath());
@@ -1822,7 +1820,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
 
     LayerPaintingInfo localPaintingInfo(paintingInfo);
     FilterEffectRendererHelper filterPainter(filterRenderer() && paintsWithFilters());
-    if (filterPainter.haveFilterEffect() && !context->paintingDisabled()) {
+    if (filterPainter.haveFilterEffect()) {
         RenderLayerFilterInfo* filterInfo = this->filterInfo();
         ASSERT(filterInfo);
         LayoutRect filterRepaintRect = filterInfo->dirtySourceRect();
@@ -1970,13 +1968,12 @@ void RenderLayer::paintLayerByApplyingTransform(GraphicsContext* context, const 
     paintLayerContentsAndReflection(context, transformedPaintingInfo, paintFlags);
 }
 
-bool RenderLayer::shouldPaintLayerInSoftwareMode(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
+bool RenderLayer::shouldPaintLayerInSoftwareMode(const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
 {
     DisableCompositingQueryAsserts disabler;
 
     return compositingState() == NotComposited
         || compositingState() == HasOwnBackingButPaintsIntoAncestor
-        || context->updatingControlTints()
         || (paintingInfo.paintBehavior & PaintBehaviorFlattenCompositingLayers)
         || ((paintFlags & PaintLayerPaintingReflection) && !has3DTransform())
         || paintForFixedRootBackground(this, paintFlags);
@@ -1996,7 +1993,7 @@ void RenderLayer::paintChildren(unsigned childrenToVisit, GraphicsContext* conte
         RenderLayer* childLayer = child->layer();
         // If this RenderLayer should paint into its own backing or a grouped backing, that will be done via CompositedLayerMapping::paintContents()
         // and CompositedLayerMapping::doPaintTask().
-        if (!childLayer->shouldPaintLayerInSoftwareMode(context, paintingInfo, paintFlags))
+        if (!childLayer->shouldPaintLayerInSoftwareMode(paintingInfo, paintFlags))
             continue;
 
         if (!childLayer->isPaginated())

@@ -63,8 +63,6 @@ private:
     virtual void setParent(Widget*) OVERRIDE;
     virtual void setEnabled(bool) OVERRIDE;
 
-    virtual void paint(GraphicsContext*, const IntRect& damageRect) OVERRIDE;
-
     virtual void setHoveredPart(ScrollbarPart) OVERRIDE;
     virtual void setPressedPart(ScrollbarPart) OVERRIDE;
 

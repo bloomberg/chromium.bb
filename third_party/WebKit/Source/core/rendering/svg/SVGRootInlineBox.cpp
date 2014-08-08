@@ -35,7 +35,6 @@ namespace blink {
 void SVGRootInlineBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit, LayoutUnit)
 {
     ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
-    ASSERT(!paintInfo.context->paintingDisabled());
 
     bool isPrinting = renderer().document().printing();
     bool hasSelection = !isPrinting && selectionState() != RenderObject::SelectionNone;

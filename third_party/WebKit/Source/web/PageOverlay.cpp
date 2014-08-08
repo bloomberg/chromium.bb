@@ -77,8 +77,6 @@ public:
 
     virtual void paintContents(const GraphicsLayer*, GraphicsContext& gc, GraphicsLayerPaintingPhase, const IntRect& inClip)
     {
-        if (gc.paintingDisabled())
-            return;
         gc.save();
         m_overlay->paintPageOverlay(ToWebCanvas(&gc));
         gc.restore();
@@ -142,7 +140,7 @@ void PageOverlay::update()
 
 void PageOverlay::paintWebFrame(GraphicsContext& gc)
 {
-    if (!m_viewImpl->isAcceleratedCompositingActive() && !gc.paintingDisabled()) {
+    if (!m_viewImpl->isAcceleratedCompositingActive()) {
         gc.save();
         m_overlay->paintPageOverlay(ToWebCanvas(&gc));
         gc.restore();

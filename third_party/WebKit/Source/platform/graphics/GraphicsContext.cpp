@@ -127,14 +127,12 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas, DisabledMode disableContextOr
     , m_deviceScaleFactor(1.0f)
     , m_regionTrackingMode(RegionTrackingDisabled)
     , m_trackTextRegion(false)
-    , m_updatingControlTints(false)
     , m_accelerated(false)
     , m_isCertainlyOpaque(true)
     , m_printing(false)
     , m_antialiasHairlineImages(false)
 {
-    if (!canvas)
-        m_disabledState |= PaintingDisabled;
+    ASSERT(canvas);
 
     // FIXME: Do some tests to determine how many states are typically used, and allocate
     // several here.

@@ -410,7 +410,7 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
     BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox* box, const LayoutSize& boxSize, CompositeOperator op, RenderObject* backgroundObject)
 {
     GraphicsContext* context = paintInfo.context;
-    if (context->paintingDisabled() || rect.isEmpty())
+    if (rect.isEmpty())
         return;
 
     bool includeLeftEdge = box ? box->includeLogicalLeftEdge() : true;
@@ -1627,9 +1627,6 @@ void RenderBoxModelObject::paintBorder(const PaintInfo& info, const LayoutRect& 
     if (paintNinePieceImage(graphicsContext, rect, style, style->borderImage()))
         return;
 
-    if (graphicsContext->paintingDisabled())
-        return;
-
     BorderEdge edges[4];
     getBorderEdgeInfo(edges, style, includeLogicalLeftEdge, includeLogicalRightEdge);
     RoundedRect outerBorder = style->getRoundedBorderFor(rect, includeLogicalLeftEdge, includeLogicalRightEdge);
@@ -2377,7 +2374,7 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
 {
     // FIXME: Deal with border-image.  Would be great to use border-image as a mask.
     GraphicsContext* context = info.context;
-    if (context->paintingDisabled() || !s->boxShadow())
+    if (!s->boxShadow())
         return;
 
     RoundedRect border = (shadowStyle == Inset) ? s->getRoundedInnerBorderFor(paintRect, includeLogicalLeftEdge, includeLogicalRightEdge)

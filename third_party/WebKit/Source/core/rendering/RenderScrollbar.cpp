@@ -110,15 +110,6 @@ void RenderScrollbar::styleChanged()
     updateScrollbarParts();
 }
 
-void RenderScrollbar::paint(GraphicsContext* context, const IntRect& damageRect)
-{
-    if (context->updatingControlTints()) {
-        updateScrollbarParts();
-        return;
-    }
-    Scrollbar::paint(context, damageRect);
-}
-
 void RenderScrollbar::setHoveredPart(ScrollbarPart part)
 {
     if (part == m_hoveredPart)

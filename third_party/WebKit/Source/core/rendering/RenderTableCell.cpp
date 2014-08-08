@@ -1103,8 +1103,7 @@ void RenderTableCell::paintCollapsedBorders(PaintInfo& paintInfo, const LayoutPo
     if (paintRect.maxY() + table()->outerBorderBottom() <= paintInfo.rect.y())
         return;
 
-    GraphicsContext* graphicsContext = paintInfo.context;
-    if (!table()->currentBorderValue() || graphicsContext->paintingDisabled())
+    if (!table()->currentBorderValue())
         return;
 
     const RenderStyle* styleForCellFlow = this->styleForCellFlow();
@@ -1142,6 +1141,7 @@ void RenderTableCell::paintCollapsedBorders(PaintInfo& paintInfo, const LayoutPo
     borders.addBorder(leftVal, BSLeft, renderLeft, borderRect.x(), borderRect.y(), borderRect.x() + leftWidth, borderRect.maxY(), leftStyle);
     borders.addBorder(rightVal, BSRight, renderRight, borderRect.maxX() - rightWidth, borderRect.y(), borderRect.maxX(), borderRect.maxY(), rightStyle);
 
+    GraphicsContext* graphicsContext = paintInfo.context;
     bool antialias = shouldAntialiasLines(graphicsContext);
 
     for (CollapsedBorder* border = borders.nextBorder(); border; border = borders.nextBorder()) {

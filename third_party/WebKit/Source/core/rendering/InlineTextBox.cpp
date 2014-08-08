@@ -760,9 +760,6 @@ void InlineTextBox::selectionStartEnd(int& sPos, int& ePos)
 
 void InlineTextBox::paintSelection(GraphicsContext* context, const FloatPoint& boxOrigin, RenderStyle* style, const Font& font, Color textColor)
 {
-    if (context->paintingDisabled())
-        return;
-
     // See if we have a selection to paint at all.
     int sPos, ePos;
     selectionStartEnd(sPos, ePos);

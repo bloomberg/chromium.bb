@@ -231,8 +231,7 @@ void RenderSVGShape::strokeShape(RenderStyle* style, GraphicsContext* context)
 void RenderSVGShape::paint(PaintInfo& paintInfo, const LayoutPoint&)
 {
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, this);
-    if (paintInfo.context->paintingDisabled()
-        || paintInfo.phase != PaintPhaseForeground
+    if (paintInfo.phase != PaintPhaseForeground
         || style()->visibility() == HIDDEN
         || isShapeEmpty())
         return;

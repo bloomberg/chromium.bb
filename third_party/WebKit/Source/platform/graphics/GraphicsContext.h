@@ -71,8 +71,7 @@ public:
 
     enum DisabledMode {
         NothingDisabled = 0, // Run as normal.
-        PaintingDisabled = 1, // Do not issue painting calls to the canvas but maintain state correctly.
-        FullyDisabled = 2 // Do absolutely minimal work to remove the cost of the context from performance tests.
+        FullyDisabled = 1 // Do absolutely minimal work to remove the cost of the context from performance tests.
     };
 
     explicit GraphicsContext(SkCanvas*, DisabledMode = NothingDisabled);
@@ -83,8 +82,6 @@ public:
     // so it should be avoided. Use the corresponding draw/matrix/clip methods instead.
     SkCanvas* canvas()
     {
-        ASSERT(!paintingDisabled());
-
         // Flush any pending saves.
         realizeCanvasSave();
 
@@ -92,13 +89,11 @@ public:
     }
     const SkCanvas* canvas() const
     {
-        ASSERT(!paintingDisabled());
         return m_canvas;
     }
 
     void resetCanvas(SkCanvas*);
 
-    bool paintingDisabled() const { return m_disabledState & PaintingDisabled; }
     bool contextDisabled() const { return m_disabledState; }
 
     // ---------- State management methods -----------------
@@ -226,9 +221,6 @@ public:
     // It is never clerared by the context.
     void setTrackTextRegion(bool track) { m_trackTextRegion = track; }
     const SkRect& textRegion() const { return m_textRegion; }
-
-    bool updatingControlTints() const { return m_updatingControlTints; }
-    void setUpdatingControlTints(bool updatingTints) { m_updatingControlTints = updatingTints; }
 
     AnnotationModeFlags annotationMode() const { return m_annotationMode; }
     void setAnnotationMode(const AnnotationModeFlags mode) { m_annotationMode = mode; }
@@ -539,8 +531,6 @@ private:
     unsigned m_regionTrackingMode : 2;
     bool m_trackTextRegion : 1;
 
-    // FIXME: Make this go away: crbug.com/236892
-    bool m_updatingControlTints : 1;
     bool m_accelerated : 1;
     bool m_isCertainlyOpaque : 1;
     bool m_printing : 1;

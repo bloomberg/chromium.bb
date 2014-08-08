@@ -176,9 +176,6 @@ void RenderScrollbarPart::paintIntoRect(GraphicsContext* graphicsContext, const 
     setWidth(rect.width());
     setHeight(rect.height());
 
-    if (graphicsContext->paintingDisabled())
-        return;
-
     // Now do the paint.
     PaintInfo paintInfo(graphicsContext, pixelSnappedIntRect(rect), PaintPhaseBlockBackground, PaintBehaviorNormal);
     paint(paintInfo, paintOffset);

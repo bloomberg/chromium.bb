@@ -210,8 +210,6 @@ void ScrollbarTheme::paintScrollCorner(GraphicsContext* context, const IntRect& 
 #if OS(MACOSX)
     context->fillRect(cornerRect, Color::white);
 #else
-    if (context->paintingDisabled())
-        return;
     blink::Platform::current()->themeEngine()->paint(context->canvas(), blink::WebThemeEngine::PartScrollbarCorner, blink::WebThemeEngine::StateNormal, blink::WebRect(cornerRect), 0);
 #endif
 }

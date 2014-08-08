@@ -215,10 +215,6 @@ void RenderSVGRoot::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paint
     if (pixelSnappedBorderBoxRect().isEmpty())
         return;
 
-    // Don't paint, if the context explicitly disabled it.
-    if (paintInfo.context->paintingDisabled())
-        return;
-
     // SVG outlines are painted during PaintPhaseForeground.
     if (paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline)
         return;
