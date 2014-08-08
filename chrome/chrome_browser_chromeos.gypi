@@ -44,6 +44,7 @@
         '../breakpad/breakpad.gyp:breakpad_client',
         '../build/linux/system.gyp:dbus',
         '../chromeos/chromeos.gyp:chromeos',
+        '../chromeos/chromeos.gyp:cryptohome_proto',
         # browser_chromeos #includes signed_secret.pb.h directly.
         '../chromeos/chromeos.gyp:cryptohome_signkey_proto',
         # browser_chromeos #includes power_supply_properties.pb.h directly.
