@@ -922,10 +922,12 @@ class RebaselineOMatic(AbstractDeclarativeCommand):
                 rebaseline_command.append('--verbose')
             self._run_logged_command(rebaseline_command)
         except:
+            self._log_queue.put(self.QUIT_LOG)
             traceback.print_exc(file=sys.stderr)
             # Sometimes git crashes and leaves us on a detached head.
             self._tool.scm().checkout_branch(old_branch_name)
-        self._log_queue.put(self.QUIT_LOG)
+        else:
+            self._log_queue.put(self.QUIT_LOG)
         log_thread.join()
 
     def execute(self, options, args, tool):
