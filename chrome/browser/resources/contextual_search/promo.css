@@ -3,13 +3,14 @@
    found in the LICENSE file.
 */
 @font-face {
-  font-family: 'Roboto';
+  font-family: 'Roboto2';
   font-weight: 400;
-  src: url(/roboto.woff) format('woff');
+  src: local('Roboto'), local('Roboto2-Regular'),
+      url(/roboto.woff2) format('woff2'), url(/roboto.woff) format('woff');
 }
 
 body {
-  font-family: 'Roboto';
+  font-family: 'Roboto2', sans-serif;
   font-size: 1em;
   margin: 0;
 }

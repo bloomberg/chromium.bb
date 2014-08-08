@@ -22,7 +22,8 @@ namespace {
 const char kPromoHTMLPath[] = "/promo.html";
 const char kPromoCSSPath[] = "/promo.css";
 const char kPromoJSPath[] = "/promo.js";
-const char kPromoRobotoPath[] = "/roboto.woff";
+const char kRobotoWoffPath[] = "/roboto.woff";
+const char kRobotoWoff2Path[] = "/roboto.woff2";
 
 }  // namespace
 
@@ -43,8 +44,10 @@ void ContextualSearchPromoSourceAndroid::StartDataRequest(
     SendResource(IDR_CONTEXTUAL_SEARCH_PROMO_CSS, callback);
   } else if (path == kPromoJSPath) {
     SendResource(IDR_CONTEXTUAL_SEARCH_PROMO_JS, callback);
-  } else if (path == kPromoRobotoPath) {
-    SendResource(IDR_CONTEXTUAL_SEARCH_ROBOTO_WOFF, callback);
+  } else if (path == kRobotoWoffPath) {
+    SendResource(IDR_ROBOTO_WOFF, callback);
+  } else if (path == kRobotoWoff2Path) {
+    SendResource(IDR_ROBOTO_WOFF2, callback);
   } else {
     callback.Run(NULL);
   }
@@ -62,6 +65,7 @@ std::string ContextualSearchPromoSourceAndroid::GetMimeType(
   if (EndsWith(path, ".css", false)) return "text/css";
   if (EndsWith(path, ".html", false)) return "text/html";
   if (EndsWith(path, ".woff", false)) return "font/woff";
+  if (EndsWith(path, ".woff2", false)) return "font/woff2";
   return "";
 }
 
