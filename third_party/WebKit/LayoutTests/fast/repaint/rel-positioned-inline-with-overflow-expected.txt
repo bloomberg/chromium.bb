@@ -6,7 +6,6 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [8, 92, 100, 50],
         [8, 92, 100, 50]
       ]
     }

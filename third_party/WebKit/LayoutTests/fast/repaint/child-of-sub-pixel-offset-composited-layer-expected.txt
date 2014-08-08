@@ -13,7 +13,6 @@
           "drawsContent": true,
           "backgroundColor": "#FF0000",
           "repaintRects": [
-            [0, 0, 14, 14],
             [0, 0, 14, 14]
           ]
         }

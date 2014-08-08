@@ -7,7 +7,6 @@
       "drawsContent": true,
       "repaintRects": [
         [1, 35, 13, 17],
-        [1, 35, 13, 17],
         [0, 34, 30, 70]
       ]
     }

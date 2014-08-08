@@ -18,7 +18,6 @@
                   "shouldFlattenTransform": false,
                   "drawsContent": true,
                   "repaintRects": [
-                    [0, 0, 185, 200],
                     [0, 0, 185, 200]
                   ],
                   "children": [

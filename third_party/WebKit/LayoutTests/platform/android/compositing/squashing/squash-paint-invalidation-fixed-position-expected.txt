@@ -1,0 +1,65 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [100, 5000],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#ADD8E6"
+            },
+            {
+              "position": [8, 25],
+              "bounds": [100, 125],
+              "drawsContent": true,
+              "repaintRects": [
+                [0, 25, 100, 100],
+                [0, 25, 100, 100]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+ {
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [100, 5000],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#ADD8E6"
+            },
+            {
+              "position": [8, 25],
+              "bounds": [100, 125],
+              "drawsContent": true,
+              "repaintRects": [
+                [0, 25, 100, 100],
+                [0, 25, 100, 100]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
