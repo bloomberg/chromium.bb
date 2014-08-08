@@ -26,8 +26,28 @@ GEN('#define MAYBE_testOpenBrowserOptions testOpenBrowserOptions');
 GEN('#endif  // defined(OS_MACOSX)');
 TEST_F('BrowserOptionsWebUITest', 'MAYBE_testOpenBrowserOptions', function() {
   assertEquals(this.browsePreload, document.location.href);
+  expectFalse($('navigation').classList.contains('background'));
 });
 
+/**
+ * TestFixture for the uber page when the browser options page has an overlay.
+ * @extends {testing.Test}
+ * @constructor
+ */
+function BrowserOptionsOverlayWebUITest() {}
+
+BrowserOptionsOverlayWebUITest.prototype = {
+  __proto__: testing.Test.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://chrome/settings/autofill',
+};
+
+TEST_F('BrowserOptionsOverlayWebUITest', 'testNavigationInBackground',
+    function() {
+  assertEquals(this.browsePreload, document.location.href);
+  expectTrue($('navigation').classList.contains('background'));
+});
 
 /**
  * @extends {testing.Test}
@@ -47,7 +67,6 @@ TEST_F('BrowserOptionsFrameWebUITest', 'testAdvancedSettingsHiddenByDefault',
   assertEquals(this.browsePreload, document.location.href);
   expectTrue($('advanced-settings').hidden);
 });
-
 
 /**
  * @extends {testing.Test}

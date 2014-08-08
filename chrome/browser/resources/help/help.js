@@ -22,6 +22,7 @@ function load() {
   cr.ui.FocusManager.disableMouseFocusOnButtons();
   PageManager.addObserver(new uber.PageManagerObserver());
   PageManager.initialize(HelpPage.getInstance());
+  uber.onContentFrameLoaded();
 
   var pageName = PageManager.getPageNameFromPath();
   // Still update history so that chrome://help/nonexistant redirects
@@ -29,8 +30,6 @@ function load() {
   // will avoid adding the extra state.
   var updateHistory = true;
   PageManager.showPageByName(pageName, updateHistory, {replaceState: true});
-
-  uber.onContentFrameLoaded();
 }
 
 document.addEventListener('DOMContentLoaded', load);

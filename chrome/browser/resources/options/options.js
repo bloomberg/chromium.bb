@@ -232,6 +232,7 @@ function load() {
   OptionsPage.initialize();
   PageManager.initialize(BrowserOptions.getInstance());
   PageManager.addObserver(new uber.PageManagerObserver());
+  uber.onContentFrameLoaded();
 
   var pageName = PageManager.getPageNameFromPath();
   // Still update history so that chrome://settings/nonexistant redirects
@@ -246,8 +247,6 @@ function load() {
       OptionsPage.showTab(event.srcElement);
     };
   }
-
-  uber.onContentFrameLoaded();
 
   window.setTimeout(function() {
     document.documentElement.classList.remove('loading');
