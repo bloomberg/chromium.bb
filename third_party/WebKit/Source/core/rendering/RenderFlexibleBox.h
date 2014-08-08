@@ -112,6 +112,7 @@ private:
     LayoutUnit flowAwareMarginBeforeForChild(RenderBox* child) const;
     LayoutUnit crossAxisMarginExtentForChild(RenderBox* child) const;
     LayoutUnit crossAxisScrollbarExtent() const;
+    LayoutUnit crossAxisScrollbarExtentForChild(RenderBox* child) const;
     LayoutPoint flowAwareLocationForChild(RenderBox* child) const;
     // FIXME: Supporting layout deltas.
     void setFlowAwareLocationForChild(RenderBox* child, const LayoutPoint&);

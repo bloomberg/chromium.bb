@@ -577,6 +577,11 @@ LayoutUnit RenderFlexibleBox::crossAxisScrollbarExtent() const
     return isHorizontalFlow() ? horizontalScrollbarHeight() : verticalScrollbarWidth();
 }
 
+LayoutUnit RenderFlexibleBox::crossAxisScrollbarExtentForChild(RenderBox* child) const
+{
+    return isHorizontalFlow() ? child->horizontalScrollbarHeight() : child->verticalScrollbarWidth();
+}
+
 LayoutPoint RenderFlexibleBox::flowAwareLocationForChild(RenderBox* child) const
 {
     return isHorizontalFlow() ? child->location() : child->location().transposedPoint();
@@ -1113,7 +1118,7 @@ void RenderFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, cons
 
             childCrossAxisMarginBoxExtent = maxAscent + maxDescent;
         } else {
-            childCrossAxisMarginBoxExtent = crossAxisIntrinsicExtentForChild(child) + crossAxisMarginExtentForChild(child);
+            childCrossAxisMarginBoxExtent = crossAxisIntrinsicExtentForChild(child) + crossAxisMarginExtentForChild(child) + crossAxisScrollbarExtentForChild(child);
         }
         if (!isColumnFlow())
             setLogicalHeight(std::max(logicalHeight(), crossAxisOffset + flowAwareBorderAfter() + flowAwarePaddingAfter() + childCrossAxisMarginBoxExtent + crossAxisScrollbarExtent()));
