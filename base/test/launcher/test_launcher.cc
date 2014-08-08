@@ -805,6 +805,9 @@ void TestLauncher::RunTests() {
           continue;
       }
 
+      if (!launcher_delegate_->ShouldRunTest(test_case, test_info))
+        continue;
+
       // Skip the test that doesn't match the filter (if given).
       if (!positive_test_filter_.empty()) {
         bool found = false;
@@ -826,9 +829,6 @@ void TestLauncher::RunTests() {
         }
       }
       if (excluded)
-        continue;
-
-      if (!launcher_delegate_->ShouldRunTest(test_case, test_info))
         continue;
 
       if (base::Hash(test_name) % total_shards_ !=
