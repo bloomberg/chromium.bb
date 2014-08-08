@@ -373,13 +373,13 @@ static const struct weston_option eventdemo_options[] = {
 	{ WESTON_OPTION_INTEGER, "max-width", 0, &width_max },
 	{ WESTON_OPTION_INTEGER, "max-height", 0, &height_max },
 	{ WESTON_OPTION_BOOLEAN, "no-border", 'b', &noborder },
-	{ WESTON_OPTION_BOOLEAN, "log-redraw", '0', &log_redraw },
-	{ WESTON_OPTION_BOOLEAN, "log-resize", '0', &log_resize },
-	{ WESTON_OPTION_BOOLEAN, "log-focus", '0', &log_focus },
-	{ WESTON_OPTION_BOOLEAN, "log-key", '0', &log_key },
-	{ WESTON_OPTION_BOOLEAN, "log-button", '0', &log_button },
-	{ WESTON_OPTION_BOOLEAN, "log-axis", '0', &log_axis },
-	{ WESTON_OPTION_BOOLEAN, "log-motion", '0', &log_motion },
+	{ WESTON_OPTION_BOOLEAN, "log-redraw", 0, &log_redraw },
+	{ WESTON_OPTION_BOOLEAN, "log-resize", 0, &log_resize },
+	{ WESTON_OPTION_BOOLEAN, "log-focus", 0, &log_focus },
+	{ WESTON_OPTION_BOOLEAN, "log-key", 0, &log_key },
+	{ WESTON_OPTION_BOOLEAN, "log-button", 0, &log_button },
+	{ WESTON_OPTION_BOOLEAN, "log-axis", 0, &log_axis },
+	{ WESTON_OPTION_BOOLEAN, "log-motion", 0, &log_motion },
 };
 
 /**
@@ -392,8 +392,32 @@ main(int argc, char *argv[])
 	struct display *d;
 	struct eventdemo *e;
 
-	parse_options(eventdemo_options,
-		      ARRAY_LENGTH(eventdemo_options), &argc, argv);
+	if (parse_options(eventdemo_options,
+			  ARRAY_LENGTH(eventdemo_options), &argc, argv) > 1) {
+		unsigned k;
+		printf("Usage: %s [OPTIONS]\n\n", argv[0]);
+		for (k = 0; k < ARRAY_LENGTH(eventdemo_options); k++) {
+			const struct weston_option* p = &eventdemo_options[k];
+			if (p->name) {
+				printf("  --%s", p->name);
+				if (p->type != WESTON_OPTION_BOOLEAN)
+					printf("=VALUE");
+				putchar('\n');
+			}
+			if (p->short_name) {
+				printf("  -%c", p->short_name);
+				if (p->type != WESTON_OPTION_BOOLEAN)
+					printf("VALUE");
+				putchar('\n');
+			}
+		}
+		return 1;
+	}
+
+	if (!log_redraw && !log_resize && !log_focus && !log_key &&
+	    !log_button && !log_axis && !log_motion)
+	  log_redraw = log_resize = log_focus = log_key =
+	    log_button = log_axis = log_motion = 1;
 
 	/* Connect to the display and have the arguments parsed */
 	d = display_create(&argc, argv);
