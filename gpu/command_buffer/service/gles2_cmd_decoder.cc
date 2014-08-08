@@ -5085,7 +5085,8 @@ void GLES2DecoderImpl::ClearUnclearedAttachments(
                                                                        1.0f);
     state_.SetDeviceColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     clear_bits |= GL_COLOR_BUFFER_BIT;
-    framebuffer->PrepareDrawBuffersForClear();
+    if (feature_info_->feature_flags().ext_draw_buffers)
+      framebuffer->PrepareDrawBuffersForClear();
   }
 
   if (framebuffer->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT) ||
@@ -5106,7 +5107,8 @@ void GLES2DecoderImpl::ClearUnclearedAttachments(
   state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
   glClear(clear_bits);
 
-  if ((clear_bits | GL_COLOR_BUFFER_BIT) != 0)
+  if ((clear_bits | GL_COLOR_BUFFER_BIT) != 0 &&
+      feature_info_->feature_flags().ext_draw_buffers)
     framebuffer->RestoreDrawBuffersAfterClear();
 
   framebuffer_manager()->MarkAttachmentsAsCleared(
