@@ -1279,8 +1279,6 @@ crbug.com/396791 [ Debug ] virtual/threaded/printing/print-close-crash.html [ Pa
 
 crbug.com/396851 [ Lion ] inspector/console/console-stack-overflow.html [ Timeout ]
 
-Bug(esprehn) fast/html/details-remove-child-2.html [ NeedsRebaseline ]
-
 crbug.com/396936 [ Lion ] fast/writing-mode/broken-ideograph-small-caps.html [ Crash ]
 crbug.com/396936 [ Lion ] fast/writing-mode/broken-ideographic-font.html [ Crash ]
 crbug.com/396936 [ Lion ] fast/writing-mode/japanese-rl-text-with-broken-font.html [ Crash ]

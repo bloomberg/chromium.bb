@@ -9,5 +9,6 @@ layer at (0,0) size 800x600
           RenderText {#text} at (16,0) size 61x17
             text run at (16,0) width 61: "summary"
         RenderBlock {DIV} at (0,18) size 784x18
+          RenderText {#text} at (0,0) size 0x0
           RenderText {#text} at (0,0) size 160x17
             text run at (0,0) width 160: "should have no bold test."
