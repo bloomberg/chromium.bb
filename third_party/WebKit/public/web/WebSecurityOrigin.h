@@ -88,7 +88,7 @@ public:
     // cryptographically-authenticated server.
     //
     // [1] http://www.chromium.org/Home/chromium-security/security-faq#TOC-Which-origins-are-secure-
-    bool canAccessFeatureRequiringSecureOrigin(WebString& errorMessage) const;
+    BLINK_EXPORT bool canAccessFeatureRequiringSecureOrigin(WebString& errorMessage) const;
 
     // Returns a string representation of the WebSecurityOrigin.  The empty
     // WebSecurityOrigin is represented by "null".  The representation of a
