@@ -468,7 +468,7 @@ bool RawChannel::OnWriteCompletedNoLock(bool result,
     MessageInTransit* message = write_buffer_->message_queue_.front();
     if (write_buffer_->data_offset_ >= message->total_size()) {
       // Complete write.
-      DCHECK_EQ(write_buffer_->data_offset_, message->total_size());
+      CHECK_EQ(write_buffer_->data_offset_, message->total_size());
       write_buffer_->message_queue_.pop_front();
       delete message;
       write_buffer_->platform_handles_offset_ = 0;
