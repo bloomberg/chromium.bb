@@ -288,26 +288,54 @@ void GestureRecognizerImpl::DispatchGestureEvent(GestureEvent* event) {
   }
 }
 
-ScopedVector<GestureEvent>* GestureRecognizerImpl::ProcessTouchEventForGesture(
+bool GestureRecognizerImpl::ProcessTouchEventPreDispatch(
+    const TouchEvent& event,
+    GestureConsumer* consumer) {
+  SetupTargets(event, consumer);
+
+  // If we aren't using the unified GR, we definitely want to dispatch the
+  // event.
+  if (!ui::IsUnifiedGestureDetectorEnabled())
+    return true;
+
+  if (event.result() & ER_CONSUMED)
+    return false;
+
+  GestureProviderAura* gesture_provider =
+      GetGestureProviderForConsumer(consumer);
+  return gesture_provider->OnTouchEvent(event);
+}
+
+GestureRecognizer::Gestures*
+GestureRecognizerImpl::ProcessTouchEventPostDispatch(
     const TouchEvent& event,
     ui::EventResult result,
-    GestureConsumer* target) {
-  SetupTargets(event, target);
-
-  if (!use_unified_gesture_detector_) {
-    GestureSequence* gesture_sequence = GetGestureSequenceForConsumer(target);
-    return gesture_sequence->ProcessTouchEventForGesture(event, result);
-  } else {
+    GestureConsumer* consumer) {
+  if (ui::IsUnifiedGestureDetectorEnabled()) {
     GestureProviderAura* gesture_provider =
-        GetGestureProviderForConsumer(target);
-    // TODO(tdresser) - detect gestures eagerly.
-    if (!(result & ER_CONSUMED)) {
-      if (gesture_provider->OnTouchEvent(event)) {
-        gesture_provider->OnTouchEventAck(result != ER_UNHANDLED);
-        return gesture_provider->GetAndResetPendingGestures();
-      }
-    }
-    return NULL;
+        GetGestureProviderForConsumer(consumer);
+    gesture_provider->OnTouchEventAck(result != ER_UNHANDLED);
+    return gesture_provider->GetAndResetPendingGestures();
+  } else {
+    GestureSequence* gesture_sequence = GetGestureSequenceForConsumer(consumer);
+    return gesture_sequence->ProcessTouchEventForGesture(event, result);
+  }
+}
+
+GestureRecognizer::Gestures* GestureRecognizerImpl::ProcessTouchEventOnAsyncAck(
+    const TouchEvent& event,
+    ui::EventResult result,
+    GestureConsumer* consumer) {
+  if (ui::IsUnifiedGestureDetectorEnabled()) {
+    if (result & ui::ER_CONSUMED)
+      return NULL;
+    GestureProviderAura* gesture_provider =
+        GetGestureProviderForConsumer(consumer);
+    gesture_provider->OnTouchEventAck(result != ER_UNHANDLED);
+    return gesture_provider->GetAndResetPendingGestures();
+  } else {
+    GestureSequence* gesture_sequence = GetGestureSequenceForConsumer(consumer);
+    return gesture_sequence->ProcessTouchEventForGesture(event, result);
   }
 }
 

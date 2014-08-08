@@ -310,13 +310,6 @@ blink::WebTouchPoint* UpdateWebTouchEventFromUIEvent(
 
   // Update the location and state of the point.
   point->state = TouchPointStateFromEvent(event);
-  if (point->state == blink::WebTouchPoint::StateMoved) {
-    // It is possible for badly written touch drivers to emit Move events even
-    // when the touch location hasn't changed. In such cases, consume the event
-    // and pretend nothing happened.
-    if (point->position.x == event.x() && point->position.y == event.y())
-      return NULL;
-  }
   point->position.x = event.x();
   point->position.y = event.y();
 

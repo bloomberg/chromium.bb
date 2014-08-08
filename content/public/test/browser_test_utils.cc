@@ -294,21 +294,13 @@ void SimulateMouseEvent(WebContents* web_contents,
 }
 
 void SimulateTapAt(WebContents* web_contents, const gfx::Point& point) {
-  const double kTapDurationSeconds =
-      0.5 * (ui::GestureConfiguration::
-                 min_touch_down_duration_in_seconds_for_click() +
-             ui::GestureConfiguration::
-                 max_touch_down_duration_in_seconds_for_click());
-  SyntheticWebTouchEvent touch;
-  // Set the timestamp to the base::TimeDelta representing the current time.
-  touch.SetTimestamp(base::TimeTicks::Now() - base::TimeTicks());
-  touch.PressPoint(point.x(), point.y());
+  blink::WebGestureEvent tap;
+  tap.type = blink::WebGestureEvent::GestureTap;
+  tap.x = point.x();
+  tap.y = point.y();
   RenderWidgetHostImpl* widget_host =
       RenderWidgetHostImpl::From(web_contents->GetRenderViewHost());
-  widget_host->ForwardTouchEventWithLatencyInfo(touch, ui::LatencyInfo());
-  touch.timeStampSeconds += kTapDurationSeconds;
-  touch.ReleasePoint(0);
-  widget_host->ForwardTouchEventWithLatencyInfo(touch, ui::LatencyInfo());
+  widget_host->ForwardGestureEvent(tap);
 }
 
 void SimulateKeyPress(WebContents* web_contents,

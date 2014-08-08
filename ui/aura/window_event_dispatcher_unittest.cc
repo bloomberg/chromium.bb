@@ -737,12 +737,11 @@ TEST_F(WindowEventDispatcherTest, TouchMovesHeld) {
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
       &delegate, 1, gfx::Rect(50, 50, 100, 100), root_window()));
 
-  const gfx::Point touch_location(60, 60);
   // Starting the touch and throwing out the first few events, since the system
   // is going to generate synthetic mouse events that are not relevant to the
   // test.
   ui::TouchEvent touch_pressed_event(
-      ui::ET_TOUCH_PRESSED, touch_location, 0, ui::EventTimeForNow());
+      ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 0, ui::EventTimeForNow());
   DispatchEventUsingWindowDispatcher(&touch_pressed_event);
   recorder.WaitUntilReceivedEvent(ui::ET_GESTURE_SHOW_PRESS);
   recorder.Reset();
@@ -751,9 +750,11 @@ TEST_F(WindowEventDispatcherTest, TouchMovesHeld) {
 
   // Check that we don't immediately dispatch the TOUCH_MOVED event.
   ui::TouchEvent touch_moved_event(
-      ui::ET_TOUCH_MOVED, touch_location, 0, ui::EventTimeForNow());
-  ui::TouchEvent touch_moved_event2 = touch_moved_event;
-  ui::TouchEvent touch_moved_event3 = touch_moved_event;
+      ui::ET_TOUCH_MOVED, gfx::Point(10, 10), 0, ui::EventTimeForNow());
+  ui::TouchEvent touch_moved_event2(
+      ui::ET_TOUCH_MOVED, gfx::Point(11, 10), 0, ui::EventTimeForNow());
+  ui::TouchEvent touch_moved_event3(
+      ui::ET_TOUCH_MOVED, gfx::Point(12, 10), 0, ui::EventTimeForNow());
 
   DispatchEventUsingWindowDispatcher(&touch_moved_event);
   EXPECT_TRUE(recorder.events().empty());
@@ -771,7 +772,7 @@ TEST_F(WindowEventDispatcherTest, TouchMovesHeld) {
   // If another touch event occurs then the held touch should be dispatched
   // immediately before it.
   ui::TouchEvent touch_released_event(
-      ui::ET_TOUCH_RELEASED, touch_location, 0, ui::EventTimeForNow());
+      ui::ET_TOUCH_RELEASED, gfx::Point(10, 10), 0, ui::EventTimeForNow());
   recorder.Reset();
   host()->dispatcher()->HoldPointerMoves();
   DispatchEventUsingWindowDispatcher(&touch_moved_event3);
@@ -1720,8 +1721,8 @@ TEST_F(WindowEventDispatcherTest, WindowHideCancelsActiveGestures) {
       "TOUCH_CANCELLED GESTURE_PINCH_END GESTURE_END TOUCH_CANCELLED "
       "GESTURE_SCROLL_END GESTURE_END";
   expected_ugr =
-      "TOUCH_CANCELLED GESTURE_SCROLL_END GESTURE_END GESTURE_END "
-      "TOUCH_CANCELLED";
+      "TOUCH_CANCELLED GESTURE_SCROLL_END GESTURE_END TOUCH_CANCELLED "
+      "GESTURE_END";
 
   events_string = EventTypesToString(recorder.GetAndResetEvents());
   EXPECT_TRUE((expected == events_string) || (expected_ugr == events_string));

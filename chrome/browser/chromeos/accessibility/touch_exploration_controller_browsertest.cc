@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, NoRewritingEventsWhenOff) {
 
   base::TimeDelta initial_time = Now();
   ui::TouchEvent initial_press(
-      ui::ET_TOUCH_PRESSED, gfx::Point(100, 200), 1, initial_time);
+      ui::ET_TOUCH_PRESSED, gfx::Point(99, 200), 1, initial_time);
   generator.Dispatch(&initial_press);
 
   // Since the touch exploration controller doesn't know if the user is
@@ -111,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, NoRewritingEventsWhenOff) {
 
   initial_time = Now();
   ui::TouchEvent second_initial_press(
-      ui::ET_TOUCH_PRESSED, gfx::Point(500, 600), 2, initial_time);
+      ui::ET_TOUCH_PRESSED, gfx::Point(499, 600), 2, initial_time);
   generator.Dispatch(&second_initial_press);
   ui::TouchEvent second_touch_time_advance(
       ui::ET_TOUCH_MOVED,

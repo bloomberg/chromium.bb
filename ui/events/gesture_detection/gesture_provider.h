@@ -42,7 +42,8 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
 
     // If |gesture_begin_end_types_enabled| is true, fire an ET_GESTURE_BEGIN
     // event for every added touch point, and an ET_GESTURE_END event for every
-    // removed touch point. Defaults to false.
+    // removed touch point. This requires one ACTION_CANCEL event to be sent per
+    // touch point, which only occurs on Aura. Defaults to false.
     bool gesture_begin_end_types_enabled;
 
     // The min and max size (both length and width, in dips) of the generated

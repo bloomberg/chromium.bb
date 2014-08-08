@@ -27,11 +27,20 @@ class EVENTS_EXPORT GestureRecognizer {
 
   virtual ~GestureRecognizer() {}
 
-  // Invoked for each touch event that could contribute to the current gesture.
-  // Returns list of zero or more GestureEvents identified after processing
-  // TouchEvent.
-  // Caller would be responsible for freeing up Gestures.
-  virtual Gestures* ProcessTouchEventForGesture(const TouchEvent& event,
+  // Invoked before event dispatch. If the event is invalid given the current
+  // touch sequence, marks it as handled.
+  virtual bool ProcessTouchEventPreDispatch(const TouchEvent& event,
+                                            GestureConsumer* consumer) = 0;
+  // Returns a list of zero or more GestureEvents. The caller is responsible for
+  // freeing the returned events. Called synchronously after event dispatch.
+  virtual Gestures* ProcessTouchEventPostDispatch(
+      const TouchEvent& event,
+      ui::EventResult result,
+      GestureConsumer* consumer) = 0;
+  // Returns a list of zero or more GestureEvents. The caller is responsible for
+  // freeing the returned events. Called when a touch event receives an
+  // asynchronous ack.
+  virtual Gestures* ProcessTouchEventOnAsyncAck(const TouchEvent& event,
                                                 ui::EventResult result,
                                                 GestureConsumer* consumer) = 0;
 

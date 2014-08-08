@@ -67,7 +67,10 @@ ScaleGestureDetector::Config DefaultScaleGestureDetectorConfig() {
 
 GestureProvider::Config DefaultGestureProviderConfig() {
   GestureProvider::Config config;
-  config.display = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+  gfx::Screen* screen = gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE);
+  // |screen| is sometimes NULL during tests.
+  if (screen)
+    config.display = screen->GetPrimaryDisplay();
   config.gesture_detector_config = DefaultGestureDetectorConfig();
   config.scale_gesture_detector_config = DefaultScaleGestureDetectorConfig();
   config.gesture_begin_end_types_enabled = true;

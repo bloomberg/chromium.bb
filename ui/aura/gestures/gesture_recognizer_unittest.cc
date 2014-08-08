@@ -3927,6 +3927,7 @@ TEST_P(GestureRecognizerTest, GestureEventConsumedTouchMoveScrollTest) {
   gfx::Rect bounds(0, 0, 1000, 1000);
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
       delegate.get(), -1234, bounds, root_window()));
+  delegate->set_window(window.get());
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0),
                        kTouchId, tes.Now());
@@ -4029,6 +4030,7 @@ TEST_P(GestureRecognizerTest, GestureEventConsumedTouchMoveTapTest) {
   gfx::Rect bounds(0, 0, 1000, 1000);
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
       delegate.get(), -1234, bounds, root_window()));
+  delegate->set_window(window.get());
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0),
                        kTouchId, tes.Now());
@@ -4059,6 +4061,7 @@ TEST_P(GestureRecognizerTest, GestureEventConsumedTouchMoveLongPressTest) {
   gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
       delegate.get(), -1234, bounds, root_window()));
+  delegate->set_window(window.get());
 
   delegate->Reset();
 
@@ -4155,6 +4158,7 @@ TEST_P(GestureRecognizerTest, ScrollAlternatelyConsumedTest) {
   gfx::Rect bounds(0, 0, kWindowWidth, kWindowHeight);
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
       delegate.get(), -1234, bounds, root_window()));
+  delegate->set_window(window.get());
 
   delegate->Reset();
 
@@ -4510,6 +4514,49 @@ TEST_P(GestureRecognizerTest, GestureEventSmallPinchEnabled) {
   EXPECT_2_EVENTS(delegate->events(),
                   ui::ET_GESTURE_SCROLL_UPDATE,
                   ui::ET_GESTURE_PINCH_UPDATE);
+}
+
+// Tests that delaying the ack of a touch release doesn't trigger a long press
+// gesture.
+TEST_P(GestureRecognizerTest, EagerGestureDetection) {
+  if (!UsingUnifiedGR())
+    return;
+
+  scoped_ptr<QueueTouchEventDelegate> delegate(
+      new QueueTouchEventDelegate(host()->dispatcher()));
+  TimedEvents tes;
+  const int kTouchId = 2;
+  gfx::Rect bounds(100, 200, 100, 100);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, root_window()));
+  delegate->set_window(window.get());
+
+  delegate->Reset();
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
+                       kTouchId, tes.Now());
+  DispatchEventUsingWindowDispatcher(&press);
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
+                         kTouchId, tes.LeapForward(50));
+  DispatchEventUsingWindowDispatcher(&release);
+
+  delegate->Reset();
+  // Ack the touch press.
+  delegate->ReceivedAck();
+  EXPECT_TRUE(delegate->tap_down());
+
+  delegate->Reset();
+  // Wait until the long press event would fire (if we weren't eager).
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      base::TimeDelta::FromSecondsD(
+          ui::GestureConfiguration::long_press_time_in_seconds() * 1.1));
+  base::MessageLoop::current()->Run();
+
+  // Ack the touch release.
+  delegate->ReceivedAck();
+  EXPECT_TRUE(delegate->tap());
+  EXPECT_FALSE(delegate->long_press());
 }
 
 INSTANTIATE_TEST_CASE_P(GestureRecognizer,

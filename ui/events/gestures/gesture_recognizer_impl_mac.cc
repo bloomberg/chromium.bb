@@ -17,12 +17,24 @@ class GestureRecognizerImplMac : public GestureRecognizer {
   virtual ~GestureRecognizerImplMac() {}
 
  private:
-  virtual Gestures* ProcessTouchEventForGesture(
+  virtual bool ProcessTouchEventPreDispatch(
+      const TouchEvent& event,
+      GestureConsumer* consumer) OVERRIDE {
+    return false;
+  }
+
+  virtual Gestures* ProcessTouchEventPostDispatch(
       const TouchEvent& event,
       ui::EventResult result,
       GestureConsumer* consumer) OVERRIDE {
     return NULL;
   }
+  virtual Gestures* ProcessTouchEventOnAsyncAck(
+      const TouchEvent& event,
+      ui::EventResult result,
+      GestureConsumer* consumer) OVERRIDE {
+    return NULL;
+  };
   virtual bool CleanupStateForConsumer(GestureConsumer* consumer) OVERRIDE {
     return false;
   }

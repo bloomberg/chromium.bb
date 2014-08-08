@@ -319,6 +319,7 @@
         'event_rewriter_unittest.cc',
         'event_unittest.cc',
         'gestures/fling_curve_unittest.cc',
+        'gestures/gesture_provider_aura_unittest.cc',
         'gestures/motion_event_aura_unittest.cc',
         'gestures/velocity_calculator_unittest.cc',
         'gesture_detection/bitset_32_unittest.cc',
@@ -346,6 +347,7 @@
         }],
         ['use_aura==0', {
           'sources!': [
+            'gestures/gesture_provider_aura_unittest.cc',
             'gestures/motion_event_aura_unittest.cc',
             'gestures/velocity_calculator_unittest.cc',
           ],

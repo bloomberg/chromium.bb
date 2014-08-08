@@ -33,7 +33,6 @@ namespace content {
 class InputAckHandler;
 class InputRouterClient;
 class OverscrollController;
-class RenderWidgetHostImpl;
 struct DidOverscrollParams;
 
 // A default implementation for browser input event routing.

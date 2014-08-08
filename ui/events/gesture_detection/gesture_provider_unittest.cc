@@ -2011,7 +2011,6 @@ TEST_F(GestureProviderTest, GestureBeginAndEndOnCancel) {
   EXPECT_EQ(2, GetMostRecentGestureEvent().x);
   EXPECT_EQ(2, GetMostRecentGestureEvent().y);
 
-
   event = ObtainMotionEvent(
       event_time, MotionEvent::ACTION_POINTER_DOWN, 1, 1, 2, 2, 3, 3);
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
@@ -2024,19 +2023,28 @@ TEST_F(GestureProviderTest, GestureBeginAndEndOnCancel) {
   event = ObtainMotionEvent(
       event_time, MotionEvent::ACTION_CANCEL, 1, 1, 2, 2, 3, 3);
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
-  EXPECT_EQ(7U, GetReceivedGestureCount());
+  EXPECT_EQ(5U, GetReceivedGestureCount());
   EXPECT_EQ(3, GetReceivedGesture(4).details.touch_points());
   EXPECT_EQ(ET_GESTURE_END, GetReceivedGesture(4).type());
-  EXPECT_EQ(2, GetReceivedGesture(5).details.touch_points());
-  EXPECT_EQ(ET_GESTURE_END, GetReceivedGesture(5).type());
-  EXPECT_EQ(1, GetReceivedGesture(6).details.touch_points());
-  EXPECT_EQ(ET_GESTURE_END, GetReceivedGesture(6).type());
-  EXPECT_EQ(1, GetReceivedGesture(4).x);
-  EXPECT_EQ(1, GetReceivedGesture(4).y);
-  EXPECT_EQ(2, GetReceivedGesture(5).x);
-  EXPECT_EQ(2, GetReceivedGesture(5).y);
-  EXPECT_EQ(3, GetReceivedGesture(6).x);
-  EXPECT_EQ(3, GetReceivedGesture(6).y);
+  EXPECT_EQ(1, GetMostRecentGestureEvent().x);
+  EXPECT_EQ(1, GetMostRecentGestureEvent().y);
+
+  event = ObtainMotionEvent(
+      event_time, MotionEvent::ACTION_CANCEL, 1, 1, 3, 3);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(6U, GetReceivedGestureCount());
+  EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
+  EXPECT_EQ(ET_GESTURE_END, GetMostRecentGestureEvent().type());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().x);
+  EXPECT_EQ(1, GetMostRecentGestureEvent().y);
+
+  event = ObtainMotionEvent(
+      event_time, MotionEvent::ACTION_CANCEL, 3, 3);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
+  EXPECT_EQ(ET_GESTURE_END, GetMostRecentGestureEvent().type());
+  EXPECT_EQ(3, GetMostRecentGestureEvent().x);
+  EXPECT_EQ(3, GetMostRecentGestureEvent().y);
 }
 
 // Test a simple two finger tap

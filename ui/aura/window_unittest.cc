@@ -828,9 +828,9 @@ TEST_F(WindowTest, TouchCaptureCancelsOtherTouches) {
       &delegate2, 0, gfx::Rect(50, 50, 50, 50), root_window()));
 
   // Press on w1.
-  ui::TouchEvent press(
+  ui::TouchEvent press1(
       ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 0, getTime());
-  DispatchEventUsingWindowDispatcher(&press);
+  DispatchEventUsingWindowDispatcher(&press1);
   // We will get both GESTURE_BEGIN and GESTURE_TAP_DOWN.
   EXPECT_EQ(2, delegate1.gesture_event_count());
   delegate1.ResetCounts();
@@ -842,13 +842,13 @@ TEST_F(WindowTest, TouchCaptureCancelsOtherTouches) {
   delegate1.ResetCounts();
   delegate2.ResetCounts();
 
-  // Events now go to w2.
+  // Events are ignored by w2, as it's receiving a partial touch stream.
   ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(10, 20), 0, getTime());
   DispatchEventUsingWindowDispatcher(&move);
   EXPECT_EQ(0, delegate1.gesture_event_count());
   EXPECT_EQ(0, delegate1.touch_event_count());
   EXPECT_EQ(0, delegate2.gesture_event_count());
-  EXPECT_EQ(1, delegate2.touch_event_count());
+  EXPECT_EQ(0, delegate2.touch_event_count());
 
   ui::TouchEvent release(
       ui::ET_TOUCH_RELEASED, gfx::Point(10, 20), 0, getTime());

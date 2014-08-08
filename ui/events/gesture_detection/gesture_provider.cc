@@ -639,7 +639,11 @@ void GestureProvider::InitGestureDetectors(const Config& config) {
 }
 
 bool GestureProvider::CanHandle(const MotionEvent& event) const {
-  return event.GetAction() == MotionEvent::ACTION_DOWN || current_down_event_;
+  // Aura requires one cancel event per touch point, whereas Android requires
+  // one cancel event per touch sequence. Thus we need to allow extra cancel
+  // events.
+  return event.GetAction() == MotionEvent::ACTION_DOWN || current_down_event_ ||
+         event.GetAction() == MotionEvent::ACTION_CANCEL;
 }
 
 void GestureProvider::Fling(const MotionEvent& event,
@@ -672,7 +676,8 @@ void GestureProvider::Send(GestureEventData gesture) {
   // are SHOW_PRESS and TAP, potentially triggered by the double-tap
   // delay timing out.
   DCHECK(current_down_event_ || gesture.type() == ET_GESTURE_TAP ||
-         gesture.type() == ET_GESTURE_SHOW_PRESS);
+         gesture.type() == ET_GESTURE_SHOW_PRESS ||
+         gesture.type() == ET_GESTURE_END);
 
   // TODO(jdduke): Provide a way of skipping this clamping for stylus and/or
   // mouse-based input, perhaps by exposing the source type on MotionEvent.
@@ -782,21 +787,8 @@ void GestureProvider::OnTouchEventHandlingEnd(const MotionEvent& event) {
       // |Fling()| will have already signalled an end to touch-scrolling.
       EndTouchScrollIfNecessary(event, true);
 
-      const gfx::RectF bounding_box = GetBoundingBox(event);
-
-      if (gesture_begin_end_types_enabled_) {
-        for (size_t i = 0; i < event.GetPointerCount(); ++i) {
-          Send(CreateGesture(ET_GESTURE_END,
-                             event.GetId(),
-                             event.GetEventTime(),
-                             event.GetX(i),
-                             event.GetY(i),
-                             event.GetRawX(i),
-                             event.GetRawY(i),
-                             event.GetPointerCount() - i,
-                             bounding_box));
-        }
-      }
+      if (gesture_begin_end_types_enabled_)
+        Send(CreateGesture(ET_GESTURE_END, event));
 
       current_down_event_.reset();
 

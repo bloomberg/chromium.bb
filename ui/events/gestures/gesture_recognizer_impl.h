@@ -66,10 +66,19 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
   void DispatchGestureEvent(GestureEvent* event);
 
   // Overridden from GestureRecognizer
-  virtual Gestures* ProcessTouchEventForGesture(
+  virtual bool ProcessTouchEventPreDispatch(const TouchEvent& event,
+                                            GestureConsumer* consumer) OVERRIDE;
+
+  virtual Gestures* ProcessTouchEventPostDispatch(
       const TouchEvent& event,
       ui::EventResult result,
-      GestureConsumer* target) OVERRIDE;
+      GestureConsumer* consumer) OVERRIDE;
+
+  virtual Gestures* ProcessTouchEventOnAsyncAck(
+      const TouchEvent& event,
+      ui::EventResult result,
+      GestureConsumer* consumer) OVERRIDE;
+
   virtual bool CleanupStateForConsumer(GestureConsumer* consumer)
       OVERRIDE;
   virtual void AddGestureEventHelper(GestureEventHelper* helper) OVERRIDE;

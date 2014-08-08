@@ -291,6 +291,12 @@ test("events_unittests") {
     ]
   }
 
+  if (use_aura) {
+    sources += [
+      "gestures/gesture_provider_aura_unittest.cc",
+    ]
+  }
+
   deps = [
     ":events",
     ":events_base",
