@@ -17,9 +17,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_usage_stats.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_thread_delegate.h"
 #include "net/base/network_change_notifier.h"
@@ -39,6 +36,13 @@ class CommandLine;
 namespace chrome_browser_net {
 class DnsProbeService;
 }
+
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+namespace data_reduction_proxy {
+class DataReductionProxyAuthRequestHandler;
+class DataReductionProxyParams;
+}
+#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
 namespace extensions {
 class EventRouterForwarder;
@@ -194,13 +198,12 @@ class IOThread : public content::BrowserThreadDelegate {
     // main frame load fails with a DNS error in order to provide more useful
     // information to the renderer so it can show a more specific error page.
     scoped_ptr<chrome_browser_net::DnsProbeService> dns_probe_service;
-    scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
-        data_reduction_proxy_params;
-    scoped_ptr<data_reduction_proxy::DataReductionProxyUsageStats>
-        data_reduction_proxy_usage_stats;
-    scoped_ptr<data_reduction_proxy::DataReductionProxyAuthRequestHandler>
-        data_reduction_proxy_auth_request_handler;
-    ChromeNetworkDelegate::OnResolveProxyHandler on_resolve_proxy_handler;
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
+      data_reduction_proxy_params;
+  scoped_ptr<data_reduction_proxy::DataReductionProxyAuthRequestHandler>
+      data_reduction_proxy_auth_request_handler;
+#endif
   };
 
   // |net_log| must either outlive the IOThread or be NULL.

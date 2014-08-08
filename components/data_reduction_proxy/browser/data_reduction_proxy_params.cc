@@ -5,6 +5,7 @@
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 
 #include "base/command_line.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_switches.h"
@@ -71,6 +72,28 @@ DataReductionProxyParams::DataReductionProxyParams(int flags)
       configured_on_command_line_(false) {
   bool result = Init(allowed_, fallback_allowed_, alt_allowed_);
   DCHECK(result);
+}
+
+scoped_ptr<DataReductionProxyParams> DataReductionProxyParams::Clone() {
+  return scoped_ptr<DataReductionProxyParams>(
+      new DataReductionProxyParams(*this));
+}
+
+DataReductionProxyParams::DataReductionProxyParams(
+    const DataReductionProxyParams& other)
+    : origin_(other.origin_),
+      fallback_origin_(other.fallback_origin_),
+      ssl_origin_(other.ssl_origin_),
+      alt_origin_(other.alt_origin_),
+      alt_fallback_origin_(other.alt_fallback_origin_),
+      probe_url_(other.probe_url_),
+      warmup_url_(other.warmup_url_),
+      allowed_(other.allowed_),
+      fallback_allowed_(other.fallback_allowed_),
+      alt_allowed_(other.alt_allowed_),
+      promo_allowed_(other.promo_allowed_),
+      holdback_(other.holdback_),
+      configured_on_command_line_(other.configured_on_command_line_) {
 }
 
 DataReductionProxyParams::~DataReductionProxyParams() {

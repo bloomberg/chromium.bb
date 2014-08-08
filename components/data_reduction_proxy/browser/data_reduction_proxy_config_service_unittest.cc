@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_simple_task_runner.h"
@@ -197,8 +198,11 @@ TEST_F(DataReductionProxyConfigServiceTest, TrackerEnable) {
   config_service_->AddObserver(&observer);
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_(
       new base::TestSimpleTaskRunner());
-  DataReductionProxyConfigTracker tracker(config_service_.get(),
-                                          task_runner_.get());
+  DataReductionProxyConfigTracker tracker(
+      base::Bind(&data_reduction_proxy::DataReductionProxyConfigService::
+                     UpdateProxyConfig,
+                 base::Unretained(config_service_.get())),
+      task_runner_.get());
   net::ProxyConfig expected_config;
   expected_config.proxy_rules().ParseFromString(kDataReductionProxyRules);
   EXPECT_CALL(observer, OnProxyConfigChanged(
@@ -221,8 +225,11 @@ TEST_F(DataReductionProxyConfigServiceTest, TrackerEnableRestricted) {
   config_service_->AddObserver(&observer);
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_(
       new base::TestSimpleTaskRunner());
-  DataReductionProxyConfigTracker tracker(config_service_.get(),
-                                          task_runner_.get());
+  DataReductionProxyConfigTracker tracker(
+      base::Bind(&data_reduction_proxy::DataReductionProxyConfigService::
+                     UpdateProxyConfig,
+                 base::Unretained(config_service_.get())),
+      task_runner_.get());
   net::ProxyConfig expected_config;
   expected_config.proxy_rules().ParseFromString(
       kDataReductionProxyRestrictedRules);
@@ -246,8 +253,11 @@ TEST_F(DataReductionProxyConfigServiceTest, TrackerDisable) {
   config_service_->AddObserver(&observer);
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_(
       new base::TestSimpleTaskRunner());
-  DataReductionProxyConfigTracker tracker(config_service_.get(),
-                                          task_runner_.get());
+  DataReductionProxyConfigTracker tracker(
+      base::Bind(&data_reduction_proxy::DataReductionProxyConfigService::
+                     UpdateProxyConfig,
+                 base::Unretained(config_service_.get())),
+      task_runner_.get());
   net::ProxyConfig expected_config;
   expected_config.proxy_rules().ParseFromString(kSystemProxyRules);
   EXPECT_CALL(observer, OnProxyConfigChanged(
@@ -266,8 +276,11 @@ TEST_F(DataReductionProxyConfigServiceTest, TrackerBypassList) {
   base::MessageLoopForUI loop;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_(
       new base::TestSimpleTaskRunner());
-  DataReductionProxyConfigTracker tracker(config_service_.get(),
-                                          task_runner_.get());
+  DataReductionProxyConfigTracker tracker(
+      base::Bind(&data_reduction_proxy::DataReductionProxyConfigService::
+                     UpdateProxyConfig,
+                 base::Unretained(config_service_.get())),
+      task_runner_.get());
   tracker.AddHostPatternToBypass("http://www.google.com");
   tracker.AddHostPatternToBypass("fefe:13::abc/33");
   tracker.AddURLPatternToBypass("foo.org/images/*");

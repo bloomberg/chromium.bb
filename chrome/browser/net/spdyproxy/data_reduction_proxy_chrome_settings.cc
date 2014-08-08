@@ -4,6 +4,8 @@
 
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 
+#include "base/memory/scoped_ptr.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -15,6 +17,7 @@
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
+#include "net/url_request/url_request_context_getter.h"
 
 using data_reduction_proxy::DataReductionProxyParams;
 using data_reduction_proxy::DataReductionProxySettings;
@@ -27,21 +30,19 @@ DataReductionProxyChromeSettings::~DataReductionProxyChromeSettings() {
 }
 
 void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
-    Profile* profile) {
-  DCHECK(profile);
-  PrefService* prefs = profile->GetPrefs();
-
-  scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator>
-      configurator(new DataReductionProxyChromeConfigurator(prefs));
+    scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator>
+        configurator,
+    PrefService* profile_prefs,
+    PrefService* local_state_prefs,
+    net::URLRequestContextGetter* request_context) {
   SetProxyConfigurator(configurator.Pass());
   DataReductionProxySettings::InitDataReductionProxySettings(
-      prefs,
-      g_browser_process->local_state(),
-      ProfileManager::GetActiveUserProfile()->GetRequestContext());
+      profile_prefs,
+      local_state_prefs,
+      request_context);
   DataReductionProxySettings::SetOnDataReductionEnabledCallback(
       base::Bind(&DataReductionProxyChromeSettings::RegisterSyntheticFieldTrial,
                  base::Unretained(this)));
-
   SetDataReductionProxyAlternativeEnabled(
       DataReductionProxyParams::IsIncludedInAlternativeFieldTrial());
 }

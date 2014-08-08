@@ -45,6 +45,7 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/net/proxy_service_factory.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
@@ -111,6 +112,13 @@
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#endif
+
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -621,6 +629,20 @@ void ProfileImpl::DoFinalInit() {
 
   InitHostZoomMap();
 
+  base::Callback<void(bool)> data_reduction_proxy_unavailable;
+  scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
+      data_reduction_proxy_params;
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  DataReductionProxyChromeSettings* data_reduction_proxy_chrome_settings =
+      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(this);
+  data_reduction_proxy_params =
+      data_reduction_proxy_chrome_settings->params()->Clone();
+  data_reduction_proxy_unavailable =
+      base::Bind(
+          &data_reduction_proxy::DataReductionProxySettings::SetUnreachable,
+          base::Unretained(data_reduction_proxy_chrome_settings));
+#endif
+
   // Make sure we initialize the ProfileIOData after everything else has been
   // initialized that we might be reading from the IO thread.
 
@@ -628,7 +650,19 @@ void ProfileImpl::DoFinalInit() {
                 cache_max_size, media_cache_path, media_cache_max_size,
                 extensions_cookie_path, GetPath(), infinite_cache_path,
                 predictor_, session_cookie_mode, GetSpecialStoragePolicy(),
-                CreateDomainReliabilityMonitor());
+                CreateDomainReliabilityMonitor(),
+                data_reduction_proxy_unavailable,
+                data_reduction_proxy_params.Pass());
+
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator>
+      configurator(new DataReductionProxyChromeConfigurator(prefs_.get()));
+  data_reduction_proxy_chrome_settings->InitDataReductionProxySettings(
+      configurator.Pass(),
+      prefs_.get(),
+      g_browser_process->local_state(),
+      GetRequestContext());
+#endif
 
 #if defined(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(

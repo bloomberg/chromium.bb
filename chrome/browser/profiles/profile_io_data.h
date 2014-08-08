@@ -346,15 +346,6 @@ class ProfileIOData {
   void InitializeOnUIThread(Profile* profile);
   void ApplyProfileParamsToContext(net::URLRequestContext* context) const;
 
-#if defined(OS_ANDROID)
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-  void SetDataReductionProxyUsageStatsOnIOThread(IOThread* io_thread,
-                                                 Profile* profile);
-  void SetDataReductionProxyUsageStatsOnUIThread(Profile* profile,
-      data_reduction_proxy::DataReductionProxyUsageStats* usage_stats);
-#endif
-#endif
-
   scoped_ptr<net::URLRequestJobFactory> SetUpJobFactoryDefaults(
       scoped_ptr<net::URLRequestJobFactoryImpl> job_factory,
       content::URLRequestInterceptorScopedVector request_interceptors,

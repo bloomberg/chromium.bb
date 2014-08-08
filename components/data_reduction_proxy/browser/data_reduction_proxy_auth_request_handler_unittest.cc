@@ -7,6 +7,7 @@
 
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -64,8 +65,10 @@ class TestDataReductionProxyAuthRequestHandler
   TestDataReductionProxyAuthRequestHandler(
       const std::string& client,
       const std::string& version,
-      DataReductionProxyParams* params)
-      : DataReductionProxyAuthRequestHandler(client,version, params) {}
+      DataReductionProxyParams* params,
+      base::MessageLoopProxy* loop_proxy)
+      : DataReductionProxyAuthRequestHandler(
+            client, version, params, loop_proxy) {}
 
   virtual std::string GetDefaultKey() const OVERRIDE {
     return kTestKey;
@@ -86,6 +89,13 @@ class TestDataReductionProxyAuthRequestHandler
 }  // namespace
 
 class DataReductionProxyAuthRequestHandlerTest : public testing::Test {
+ public:
+  DataReductionProxyAuthRequestHandlerTest()
+      : loop_proxy_(base::MessageLoopProxy::current().get()) {
+  }
+  // Required for MessageLoopProxy::current().
+  base::MessageLoopForUI loop_;
+  base::MessageLoopProxy* loop_proxy_;
 };
 
 TEST_F(DataReductionProxyAuthRequestHandlerTest, Authorization) {
@@ -99,8 +109,10 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest, Authorization) {
           ~TestDataReductionProxyParams::HAS_DEV_ORIGIN));
   TestDataReductionProxyAuthRequestHandler auth_handler(kClient,
                                                         kVersion,
-                                                        params.get());
+                                                        params.get(),
+                                                        loop_proxy_);
   auth_handler.Init();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(auth_handler.client_, kClient);
   EXPECT_EQ(kVersion, auth_handler.version_);
   EXPECT_EQ(auth_handler.key_, kTestKey);
@@ -108,7 +120,8 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest, Authorization) {
   EXPECT_EQ(kExpectedSession, auth_handler.session_);
 
   // Now set a key.
-  auth_handler.SetKey(kTestKey2);
+  auth_handler.SetKeyOnUI(kTestKey2);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kTestKey2, auth_handler.key_);
   EXPECT_EQ(kExpectedCredentials2, auth_handler.credentials_);
   EXPECT_EQ(kExpectedSession2, auth_handler.session_);

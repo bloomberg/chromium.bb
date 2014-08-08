@@ -116,11 +116,10 @@ void DataReductionProxyConfigService::RegisterObserver() {
 }
 
 DataReductionProxyConfigTracker::DataReductionProxyConfigTracker(
-    DataReductionProxyConfigService* config_service,
+    base::Callback<void(bool, const net::ProxyConfig&)> update_proxy_config,
     base::TaskRunner* task_runner)
-    : config_service_(config_service),
+    : update_proxy_config_(update_proxy_config),
       task_runner_(task_runner) {
-  DCHECK(config_service);
 }
 
 DataReductionProxyConfigTracker::~DataReductionProxyConfigTracker() {
@@ -194,11 +193,8 @@ void DataReductionProxyConfigTracker::AddURLPatternToBypass(
 void DataReductionProxyConfigTracker::UpdateProxyConfigOnIOThread(
     bool enabled,
     const net::ProxyConfig& config) {
-  task_runner_->PostTask(FROM_HERE,
-      base::Bind(
-          &DataReductionProxyConfigService::UpdateProxyConfig,
-          base::Unretained(config_service_),
-          enabled, config));
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(update_proxy_config_, enabled, config));
 }
 
 }  // namespace data_reduction_proxy

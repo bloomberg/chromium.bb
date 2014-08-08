@@ -193,9 +193,9 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
   data_reduction_proxy::RegisterSyncableProfilePrefs(registry);
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_IOS)
   // Preferences related to the avatar bubble and user manager tutorials.
   registry->RegisterIntegerPref(

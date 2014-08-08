@@ -11,6 +11,10 @@
 #include "base/time/time.h"
 #include "url/gurl.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace net {
 class HttpRequestHeaders;
 class HttpResponseHeaders;
@@ -34,33 +38,29 @@ class DataReductionProxyAuthRequestHandler {
  public:
   static bool IsKeySetOnCommandLine();
 
-  // Constructs an authentication request handler. Client is the canonical name
-  // for the client. Client names should be defined in this file as one of
-  // |kClient...|. Version is the authentication protocol version that the
-  // client uses, which should be |kProtocolVersion| unless the client expects
-  // to be handled differently from the standard behavior.
   DataReductionProxyAuthRequestHandler(
       const std::string& client,
       const std::string& version,
-      DataReductionProxyParams* params);
+      DataReductionProxyParams* params,
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner);
 
   virtual ~DataReductionProxyAuthRequestHandler();
 
   // Adds a 'Chrome-Proxy' header to |request_headers| with the data reduction
   // proxy authentication credentials. Only adds this header if the provided
-  // |proxy_server| is a data reduction proxy.
+  // |proxy_server| is a data reduction proxy. Must be called on the IO thread.
   void MaybeAddRequestHeader(net::URLRequest* request,
                              const net::ProxyServer& proxy_server,
                              net::HttpRequestHeaders* request_headers);
 
   // Sets a new authentication key. This must be called for platforms that do
   // not have a default key defined. See the constructor implementation for
-  // those platforms.
-  void SetKey(const std::string& key);
+  // those platforms. Must be called on the UI thread.
+  void SetKeyOnUI(const std::string& key);
 
  protected:
   void Init();
-  void InitAuthentication(const std::string& key);
+  void InitAuthenticationOnUI(const std::string& key);
 
   void AddAuthorizationHeader(net::HttpRequestHeaders* headers);
 
@@ -82,16 +82,25 @@ class DataReductionProxyAuthRequestHandler {
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyAuthRequestHandlerTest,
                            AuthHashForSalt);
 
+  void InitAuthentication(
+      const std::string& session,
+      const std::string& credentials);
+
   // Authentication state.
   std::string key_;
+
+  // Lives on the IO thread.
   std::string session_;
   std::string credentials_;
 
   // Name of the client and version of the data reduction proxy protocol to use.
+  // Both live on the IO thread.
   std::string client_;
   std::string version_;
 
   DataReductionProxyParams* data_reduction_proxy_params_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyAuthRequestHandler);
 };

@@ -132,7 +132,7 @@ void UpdateContentLengthPrefs(
       profile->IsOffTheRecord()) {
     return;
   }
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && defined(SPDY_PROXY_AUTH_ORIGIN)
   // If Android ever goes multi profile, the profile should be passed so that
   // the browser preference will be taken.
   bool with_data_reduction_proxy_enabled =

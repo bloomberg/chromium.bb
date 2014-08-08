@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_retry_info.h"
 #include "url/gurl.h"
@@ -80,8 +80,10 @@ class DataReductionProxyParams {
   // A standard configuration has a primary proxy, and a fallback proxy for
   // HTTP traffic. The alternative configuration has a different primary and
   // fallback proxy for HTTP traffic, and an SSL proxy.
+  explicit DataReductionProxyParams(int flags);
 
-  DataReductionProxyParams(int flags);
+  // Creates a copy of the configuration parameters.
+  scoped_ptr<DataReductionProxyParams> Clone();
 
   virtual ~DataReductionProxyParams();
 
@@ -207,6 +209,8 @@ class DataReductionProxyParams {
   DataReductionProxyParams(int flags,
                            bool should_call_init);
 
+  DataReductionProxyParams(const DataReductionProxyParams& params);
+
   // Initialize the values of the proxies, and probe URL, from command
   // line flags and preprocessor constants, and check that there are
   // corresponding definitions for the allowed configurations.
@@ -237,6 +241,9 @@ class DataReductionProxyParams {
                                      const GURL& primary,
                                      const GURL& fallback,
                                      base::TimeDelta* min_retry_delay) const;
+
+  DataReductionProxyParams& operator=(const DataReductionProxyParams& params);
+
   GURL origin_;
   GURL fallback_origin_;
   GURL ssl_origin_;
@@ -246,14 +253,12 @@ class DataReductionProxyParams {
   GURL warmup_url_;
 
   bool allowed_;
-  const bool fallback_allowed_;
+  bool fallback_allowed_;
   bool alt_allowed_;
-  const bool promo_allowed_;
+  bool promo_allowed_;
   bool holdback_;
 
   bool configured_on_command_line_;
-
-  DISALLOW_COPY_AND_ASSIGN(DataReductionProxyParams);
 };
 
 }  // namespace data_reduction_proxy

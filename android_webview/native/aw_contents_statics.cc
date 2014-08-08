@@ -5,6 +5,7 @@
 #include "android_webview/native/aw_contents_statics.h"
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
@@ -54,11 +55,18 @@ void ClearClientCertPreferences(JNIEnv* env, jclass, jobject callback) {
 void SetDataReductionProxyKey(JNIEnv* env, jclass, jstring key) {
   AwBrowserContext* browser_context = AwBrowserContext::GetDefault();
   DCHECK(browser_context);
-  DataReductionProxyAuthRequestHandler* drp_auth_request_handler =
-      browser_context->GetDataReductionProxyAuthRequestHandler();
-  if (drp_auth_request_handler)
-    drp_auth_request_handler->SetKey(
+  DCHECK(browser_context->GetRequestContext());
+  AwURLRequestContextGetter* aw_url_request_context_getter =
+      static_cast<AwURLRequestContextGetter*>(
+          browser_context->GetRequestContext());
+  DataReductionProxyAuthRequestHandler* auth_request_handler =
+      aw_url_request_context_getter->GetDataReductionProxyAuthRequestHandler();
+  if (auth_request_handler) {
+    auth_request_handler->SetKeyOnUI(
         ConvertJavaStringToUTF8(env, key));
+  } else {
+    DLOG(ERROR) << "Data reduction proxy auth request handler does not exist";
+  }
 }
 
 // static

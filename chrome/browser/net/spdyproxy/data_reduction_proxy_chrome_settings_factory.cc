@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_usage_stats.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -53,10 +52,11 @@ DataReductionProxyChromeSettingsFactory::
 
 KeyedService* DataReductionProxyChromeSettingsFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = static_cast<Profile*>(context);
-  int flags = DataReductionProxyParams::kFallbackAllowed;
-  if (DataReductionProxyParams::IsIncludedInFieldTrial())
-    flags |= DataReductionProxyParams::kAllowed;
+  int flags = 0;
+  if (DataReductionProxyParams::IsIncludedInFieldTrial()) {
+    flags |= (DataReductionProxyParams::kAllowed |
+              DataReductionProxyParams::kFallbackAllowed);
+  }
   if (DataReductionProxyParams::IsIncludedInAlternativeFieldTrial())
     flags |= DataReductionProxyParams::kAlternativeAllowed;
   if (DataReductionProxyParams::IsIncludedInPromoFieldTrial())
@@ -64,11 +64,6 @@ KeyedService* DataReductionProxyChromeSettingsFactory::BuildServiceInstanceFor(
   if (DataReductionProxyParams::IsIncludedInHoldbackFieldTrial())
     flags |= DataReductionProxyParams::kHoldback;
 
-  DataReductionProxyParams* params = new DataReductionProxyParams(flags);
-
-  // Takes ownership of params.
-  DataReductionProxyChromeSettings* settings =
-      new DataReductionProxyChromeSettings(params);
-  settings->InitDataReductionProxySettings(profile);
-  return settings;
+  return new DataReductionProxyChromeSettings(
+      new DataReductionProxyParams(flags));
 }

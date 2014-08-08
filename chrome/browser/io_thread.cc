@@ -96,12 +96,12 @@
 #include "net/ocsp/nss_ocsp.h"
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_protocol.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
-#endif
+#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/user_manager.h"
@@ -110,13 +110,6 @@
 #endif
 
 using content::BrowserThread;
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
-using data_reduction_proxy::DataReductionProxyAuthRequestHandler;
-using data_reduction_proxy::DataReductionProxyParams;
-using data_reduction_proxy::DataReductionProxyUsageStats;
-using data_reduction_proxy::DataReductionProxySettings;
-#endif
 
 class SafeBrowsingURLRequestContext;
 
@@ -642,39 +635,44 @@ void IOThread::InitAsync() {
   }
 #endif
   globals_->ssl_config_service = GetSSLConfigService();
-#if defined(OS_ANDROID) || defined(OS_IOS)
+
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
-  int drp_flags = DataReductionProxyParams::kFallbackAllowed;
-  if (DataReductionProxyParams::IsIncludedInFieldTrial())
-    drp_flags |= DataReductionProxyParams::kAllowed;
-  if (DataReductionProxyParams::IsIncludedInAlternativeFieldTrial())
-    drp_flags |= DataReductionProxyParams::kAlternativeAllowed;
-  if (DataReductionProxyParams::IsIncludedInPromoFieldTrial())
-    drp_flags |= DataReductionProxyParams::kPromoAllowed;
-  DataReductionProxyParams* proxy_params =
-      new DataReductionProxyParams(drp_flags);
-  globals_->data_reduction_proxy_params.reset(proxy_params);
+  int drp_flags = 0;
+  if (data_reduction_proxy::DataReductionProxyParams::
+          IsIncludedInFieldTrial()) {
+    drp_flags |=
+        (data_reduction_proxy::DataReductionProxyParams::kAllowed |
+         data_reduction_proxy::DataReductionProxyParams::kFallbackAllowed);
+  }
+  if (data_reduction_proxy::DataReductionProxyParams::
+          IsIncludedInAlternativeFieldTrial()) {
+    drp_flags |=
+        data_reduction_proxy::DataReductionProxyParams::kAlternativeAllowed;
+  }
+  if (data_reduction_proxy::DataReductionProxyParams::
+          IsIncludedInPromoFieldTrial())
+    drp_flags |= data_reduction_proxy::DataReductionProxyParams::kPromoAllowed;
+  if (data_reduction_proxy::DataReductionProxyParams::
+          IsIncludedInHoldbackFieldTrial())
+    drp_flags |= data_reduction_proxy::DataReductionProxyParams::kHoldback;
+  globals_->data_reduction_proxy_params.reset(
+      new data_reduction_proxy::DataReductionProxyParams(drp_flags));
   globals_->data_reduction_proxy_auth_request_handler.reset(
-      new DataReductionProxyAuthRequestHandler(
+      new data_reduction_proxy::DataReductionProxyAuthRequestHandler(
           DataReductionProxyChromeSettings::GetClient(),
           DataReductionProxyChromeSettings::GetBuildAndPatchNumber(),
-          proxy_params));
-  globals_->on_resolve_proxy_handler =
-      ChromeNetworkDelegate::OnResolveProxyHandler(
-          base::Bind(data_reduction_proxy::OnResolveProxyHandler));
-  DataReductionProxyUsageStats* proxy_usage_stats =
-      new DataReductionProxyUsageStats(proxy_params,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
-  network_delegate->set_data_reduction_proxy_params(proxy_params);
-  globals_->data_reduction_proxy_usage_stats.reset(proxy_usage_stats);
-  network_delegate->set_data_reduction_proxy_usage_stats(proxy_usage_stats);
+          globals_->data_reduction_proxy_params.get(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+  // This is the same as in ProfileImplIOData except that we do not collect
+  // usage stats.
+  network_delegate->set_data_reduction_proxy_params(
+      globals_->data_reduction_proxy_params.get());
   network_delegate->set_data_reduction_proxy_auth_request_handler(
       globals_->data_reduction_proxy_auth_request_handler.get());
   network_delegate->set_on_resolve_proxy_handler(
-      globals_->on_resolve_proxy_handler);
+      base::Bind(data_reduction_proxy::OnResolveProxyHandler));
 #endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
       globals_->host_resolver.get()));
   globals_->http_server_properties.reset(new net::HttpServerPropertiesImpl());

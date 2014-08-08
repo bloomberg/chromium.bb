@@ -143,7 +143,6 @@
 using content::BrowserContext;
 using content::BrowserThread;
 using content::ResourceContext;
-using data_reduction_proxy::DataReductionProxyUsageStats;
 
 namespace {
 
@@ -505,48 +504,11 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
   initialized_on_UI_thread_ = true;
 
-#if defined(OS_ANDROID)
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(&ProfileIOData::SetDataReductionProxyUsageStatsOnIOThread,
-          base::Unretained(this), g_browser_process->io_thread(), profile));
-#endif
-#endif
-
   // We need to make sure that content initializes its own data structures that
   // are associated with each ResourceContext because we might post this
   // object to the IO thread after this function.
   BrowserContext::EnsureResourceContextInitialized(profile);
 }
-
-#if defined(OS_ANDROID)
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-void ProfileIOData::SetDataReductionProxyUsageStatsOnIOThread(
-    IOThread* io_thread, Profile* profile) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  IOThread::Globals* globals = io_thread->globals();
-  DataReductionProxyUsageStats* usage_stats =
-      globals->data_reduction_proxy_usage_stats.get();
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&ProfileIOData::SetDataReductionProxyUsageStatsOnUIThread,
-                 base::Unretained(this), profile, usage_stats));
-}
-
-void ProfileIOData::SetDataReductionProxyUsageStatsOnUIThread(
-    Profile* profile,
-    DataReductionProxyUsageStats* usage_stats) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (g_browser_process->profile_manager()->IsValidProfile(profile)) {
-    DataReductionProxyChromeSettings* data_reduction_proxy_chrome_settings =
-        DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile);
-    if (data_reduction_proxy_chrome_settings) {
-      data_reduction_proxy_chrome_settings->SetDataReductionProxyUsageStats(
-          usage_stats);
-    }
-  }
-}
-#endif
-#endif
 
 ProfileIOData::MediaRequestContext::MediaRequestContext() {
 }
@@ -878,9 +840,13 @@ bool ProfileIOData::GetMetricsEnabledStateOnIOThread() const {
 
 #if defined(OS_ANDROID)
 bool ProfileIOData::IsDataReductionProxyEnabled() const {
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
   return data_reduction_proxy_enabled_.GetValue() ||
          CommandLine::ForCurrentProcess()->HasSwitch(
             data_reduction_proxy::switches::kEnableDataReductionProxy);
+#else
+  return false;
+#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 }
 #endif
 
@@ -1041,14 +1007,6 @@ void ProfileIOData::Init(
           NULL,
 #endif
           &enable_referrers_);
-  network_delegate->set_data_reduction_proxy_params(
-      io_thread_globals->data_reduction_proxy_params.get());
-  network_delegate->set_data_reduction_proxy_usage_stats(
-      io_thread_globals->data_reduction_proxy_usage_stats.get());
-  network_delegate->set_data_reduction_proxy_auth_request_handler(
-      io_thread_globals->data_reduction_proxy_auth_request_handler.get());
-  network_delegate->set_on_resolve_proxy_handler(
-      io_thread_globals->on_resolve_proxy_handler);
   if (command_line.HasSwitch(switches::kEnableClientHints))
     network_delegate->SetEnableClientHints();
 #if defined(ENABLE_EXTENSIONS)

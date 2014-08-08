@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_config_service.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #include "content/public/browser/browser_thread.h"
@@ -167,14 +168,12 @@ scoped_ptr<net::URLRequestJobFactory> CreateJobFactory(
 }  // namespace
 
 AwURLRequestContextGetter::AwURLRequestContextGetter(
-    const base::FilePath& partition_path, net::CookieStore* cookie_store)
+    const base::FilePath& partition_path, net::CookieStore* cookie_store,
+    scoped_ptr<data_reduction_proxy::DataReductionProxyConfigService>
+        config_service)
     : partition_path_(partition_path),
-      cookie_store_(cookie_store),
-      proxy_config_service_(new DataReductionProxyConfigService(
-          scoped_ptr<net::ProxyConfigService>(
-              net::ProxyService::CreateSystemProxyConfigService(
-                  GetNetworkTaskRunner(),
-                  NULL /* Ignored on Android */)).Pass())) {
+      cookie_store_(cookie_store) {
+  data_reduction_proxy_config_service_ = config_service.Pass();
   // CreateSystemProxyConfigService for Android must be called on main thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -193,7 +192,14 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
 #if !defined(DISABLE_FTP_SUPPORT)
   builder.set_ftp_enabled(false);  // Android WebView does not support ftp yet.
 #endif
-  builder.set_proxy_config_service(proxy_config_service_.release());
+  if (data_reduction_proxy_config_service_.get()) {
+    builder.set_proxy_config_service(
+        data_reduction_proxy_config_service_.release());
+  } else {
+    builder.set_proxy_config_service(
+        net::ProxyService::CreateSystemProxyConfigService(
+            GetNetworkTaskRunner(), NULL /* Ignored on Android */ ));
+  }
   builder.set_accept_language(net::HttpUtil::GenerateAcceptLanguageHeader(
       AwContentBrowserClient::GetAcceptLangsImpl()));
   ApplyCmdlineOverridesToURLRequestContextBuilder(&builder);
@@ -222,14 +228,20 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
   AwBrowserContext* browser_context = AwBrowserContext::GetDefault();
   DCHECK(browser_context);
-  DataReductionProxySettings* drp_settings =
+  DataReductionProxySettings* data_reduction_proxy_settings =
       browser_context->GetDataReductionProxySettings();
-  if (drp_settings) {
-    aw_network_delegate->set_data_reduction_proxy_params(
-        drp_settings->params());
-    aw_network_delegate->set_data_reduction_proxy_auth_request_handler(
-        browser_context->GetDataReductionProxyAuthRequestHandler());
-  }
+  DCHECK(data_reduction_proxy_settings);
+  data_reduction_proxy_auth_request_handler_.reset(
+      new data_reduction_proxy::DataReductionProxyAuthRequestHandler(
+          data_reduction_proxy::kClientAndroidWebview,
+          data_reduction_proxy::kAndroidWebViewProtocolVersion,
+          data_reduction_proxy_settings->params(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+
+  aw_network_delegate->set_data_reduction_proxy_params(
+      data_reduction_proxy_settings->params());
+  aw_network_delegate->set_data_reduction_proxy_auth_request_handler(
+      data_reduction_proxy_auth_request_handler_.get());
 #endif
 
   main_http_factory_.reset(main_cache);
@@ -261,10 +273,9 @@ void AwURLRequestContextGetter::SetHandlersAndInterceptors(
   request_interceptors_.swap(request_interceptors);
 }
 
-DataReductionProxyConfigService*
-AwURLRequestContextGetter::proxy_config_service() {
-  // TODO(bengr): return system config if data reduction proxy is disabled.
-  return proxy_config_service_.get();
+data_reduction_proxy::DataReductionProxyAuthRequestHandler*
+AwURLRequestContextGetter::GetDataReductionProxyAuthRequestHandler() const {
+  return data_reduction_proxy_auth_request_handler_.get();
 }
 
 }  // namespace android_webview

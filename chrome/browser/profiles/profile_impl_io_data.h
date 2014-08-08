@@ -22,6 +22,14 @@ namespace content {
 class CookieCryptoDelegate;
 }  // namespace content
 
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+namespace data_reduction_proxy {
+class DataReductionProxyParams;
+class DataReductionProxyUsageStats;
+class DataReductionProxyAuthRequestHandler;
+}
+#endif
+
 namespace domain_reliability {
 class DomainReliabilityMonitor;
 }  // namespace domain_reliability
@@ -61,7 +69,11 @@ class ProfileImplIOData : public ProfileIOData {
                   session_cookie_mode,
               quota::SpecialStoragePolicy* special_storage_policy,
               scoped_ptr<domain_reliability::DomainReliabilityMonitor>
-                  domain_reliability_monitor);
+                  domain_reliability_monitor,
+              const base::Callback<void(bool)>&
+                  data_reduction_proxy_unavailable,
+              scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
+                  data_reduction_proxy_params);
 
     // These Create*ContextGetter() functions are only exposed because the
     // circular relationship between Profile, ProfileIOData::Handle, and the
@@ -230,6 +242,16 @@ class ProfileImplIOData : public ProfileIOData {
   base::FilePath profile_path_;
   int app_cache_max_size_;
   int app_media_cache_max_size_;
+
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
+      data_reduction_proxy_params_;
+  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyUsageStats>
+      data_reduction_proxy_usage_stats_;
+  mutable base::Callback<void(bool)> data_reduction_proxy_unavailable_callback_;
+  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyAuthRequestHandler>
+      data_reduction_proxy_auth_request_handler_;
+#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImplIOData);
 };

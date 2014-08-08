@@ -4,6 +4,7 @@
 
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_usage_stats.h"
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
@@ -45,9 +46,15 @@ class DataReductionProxyUsageStatsTest : public testing::Test {
   DataReductionProxyUsageStatsTest()
       : loop_proxy_(MessageLoopProxy::current().get()),
         context_(true),
-        mock_url_request_(GURL(), net::IDLE, &delegate_, &context_) {
+        mock_url_request_(GURL(), net::IDLE, &delegate_, &context_),
+        unavailable_(false) {
     context_.Init();
   }
+
+  void NotifyUnavailable(bool unavailable) {
+    unavailable_ = unavailable;
+  }
+
   // Required for MessageLoopProxy::current().
   base::MessageLoopForUI loop_;
   MessageLoopProxy* loop_proxy_;
@@ -57,9 +64,10 @@ class DataReductionProxyUsageStatsTest : public testing::Test {
   TestDelegate delegate_;
   DataReductionProxyParamsMock mock_params_;
   URLRequest mock_url_request_;
+  bool unavailable_;
 };
 
-TEST_F(DataReductionProxyUsageStatsTest, isDataReductionProxyUnreachable) {
+TEST_F(DataReductionProxyUsageStatsTest, IsDataReductionProxyUnreachable) {
   struct TestCase {
     bool is_proxy_eligible;
     bool was_proxy_used;
@@ -93,13 +101,15 @@ TEST_F(DataReductionProxyUsageStatsTest, isDataReductionProxyUnreachable) {
 
     scoped_ptr<DataReductionProxyUsageStats> usage_stats(
         new DataReductionProxyUsageStats(
-            &mock_params_, loop_proxy_, loop_proxy_));
+            &mock_params_, loop_proxy_));
+    usage_stats->set_unavailable_callback(
+        base::Bind(&DataReductionProxyUsageStatsTest::NotifyUnavailable,
+                   base::Unretained(this)));
 
     usage_stats->OnUrlRequestCompleted(&mock_url_request_, false);
     MessageLoop::current()->RunUntilIdle();
 
-    EXPECT_EQ(test_case.is_unreachable,
-              usage_stats->isDataReductionProxyUnreachable());
+    EXPECT_EQ(test_case.is_unreachable, unavailable_);
   }
 }
 

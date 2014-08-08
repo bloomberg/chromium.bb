@@ -5,14 +5,24 @@
 #ifndef CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_CHROME_SETTINGS_H_
 #define CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_CHROME_SETTINGS_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+namespace base {
+class PrefService;
+}
+
 namespace data_reduction_proxy {
+class DataReductionProxyConfigurator;
 class DataReductionProxyParams;
 }
 
-class Profile;
+namespace net {
+class URLRequestContextGetter;
+}
+
+class PrefService;
 
 // Data reduction proxy settings class suitable for use with a Chrome browser.
 // It is keyed to a browser context.
@@ -28,9 +38,14 @@ class DataReductionProxyChromeSettings
   // Destructs the settings object.
   virtual ~DataReductionProxyChromeSettings();
 
-  // Initialize the settings object with the given profile, which it uses to
-  // get the appropriate pref service.
-  virtual void InitDataReductionProxySettings(Profile* profile);
+  // Initialize the settings object with the given configurator, prefs services,
+  // and request context.
+  void InitDataReductionProxySettings(
+      scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator>
+          configurator,
+      PrefService* profile_prefs,
+      PrefService* local_state_prefs,
+      net::URLRequestContextGetter* request_context);
 
   // Using the chrome::VersionInfo version, returns the build and patch portion
   // of the string delimited by a period. If the chrome::VersionInfo version

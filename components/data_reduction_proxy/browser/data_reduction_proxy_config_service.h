@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -91,7 +92,7 @@ class DataReductionProxyConfigService
 class DataReductionProxyConfigTracker : public DataReductionProxyConfigurator {
  public:
   DataReductionProxyConfigTracker(
-      DataReductionProxyConfigService* config_service,
+      base::Callback<void(bool, const net::ProxyConfig&)> update_proxy_config,
       base::TaskRunner* task_runner);
   virtual ~DataReductionProxyConfigTracker();
 
@@ -115,7 +116,7 @@ class DataReductionProxyConfigTracker : public DataReductionProxyConfigurator {
   void UpdateProxyConfigOnIOThread(bool enabled,
                                    const net::ProxyConfig& config);
 
-  DataReductionProxyConfigService* config_service_;
+  base::Callback<void(bool, const net::ProxyConfig&)> update_proxy_config_;
   std::vector<std::string> bypass_rules_;
   scoped_refptr<base::TaskRunner> task_runner_;
 

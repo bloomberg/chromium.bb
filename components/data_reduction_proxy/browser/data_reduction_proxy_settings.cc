@@ -91,6 +91,7 @@ DataReductionProxySettings::DataReductionProxySettings(
     : restricted_by_carrier_(false),
       enabled_by_user_(false),
       disabled_on_vpn_(false),
+      unreachable_(false),
       prefs_(NULL),
       local_state_prefs_(NULL),
       url_request_context_getter_(NULL) {
@@ -218,14 +219,13 @@ DataReductionProxySettings::GetDailyOriginalContentLengths() {
   return GetDailyContentLengths(prefs::kDailyHttpOriginalContentLength);
 }
 
-bool DataReductionProxySettings::IsDataReductionProxyUnreachable() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return usage_stats_ && usage_stats_->isDataReductionProxyUnreachable();
+void DataReductionProxySettings::SetUnreachable(bool unreachable) {
+  unreachable_ = unreachable;
 }
 
-void DataReductionProxySettings::SetDataReductionProxyUsageStats(
-    DataReductionProxyUsageStats* usage_stats) {
-  usage_stats_ = usage_stats;
+bool DataReductionProxySettings::IsDataReductionProxyUnreachable() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return unreachable_;
 }
 
 DataReductionProxySettings::ContentLengthList
