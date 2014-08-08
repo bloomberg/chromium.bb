@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/policy/app_pack_updater.h"
+#include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_invalidator.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
@@ -35,6 +36,7 @@
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
@@ -73,7 +75,7 @@ scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner() {
       pool->GetSequenceToken(), base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 }
 
-std::string GetConsumerDeviceManagementServerUrl() {
+std::string GetDeviceManagementServerUrlForConsumer() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(
           chromeos::switches::kConsumerDeviceManagementUrl)) {
@@ -142,11 +144,19 @@ void BrowserPolicyConnectorChromeOS::Init(
 
   scoped_ptr<DeviceManagementService::Configuration> configuration(
       new DeviceManagementServiceConfiguration(
-          GetConsumerDeviceManagementServerUrl()));
+          GetDeviceManagementServerUrlForConsumer()));
   consumer_device_management_service_.reset(
       new DeviceManagementService(configuration.Pass()));
   consumer_device_management_service_->ScheduleInitialization(
       kServiceInitializationStartupDelay);
+
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(chromeos::switches::kEnableConsumerManagement)) {
+    chromeos::CryptohomeClient* cryptohome_client =
+        chromeos::DBusThreadManager::Get()->GetCryptohomeClient();
+    consumer_management_service_.reset(
+        new ConsumerManagementService(cryptohome_client));
+  }
 
   if (device_cloud_policy_manager_) {
     // Note: for now the |device_cloud_policy_manager_| is using the global
@@ -160,7 +170,7 @@ void BrowserPolicyConnectorChromeOS::Init(
         new DeviceCloudPolicyInitializer(
             local_state,
             device_management_service(),
-            consumer_device_management_service(),
+            GetDeviceManagementServiceForConsumer(),
             GetBackgroundTaskRunner(),
             install_attributes_.get(),
             state_keys_broker_.get(),

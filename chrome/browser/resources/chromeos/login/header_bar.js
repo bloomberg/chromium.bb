@@ -45,9 +45,9 @@ cr.define('login', function() {
           this.handleSignoutClick_);
       $('cancel-multiple-sign-in-button').addEventListener('click',
           this.handleCancelMultipleSignInClick_);
-      $('cancel-consumer-management-enrollment-button')
-          .addEventListener('click',
-              this.handleCancelConsumerManagementEnrollmentClick_);
+      $('cancel-consumer-management-enrollment-button').addEventListener(
+          'click',
+          this.handleCancelConsumerManagementEnrollmentClick_);
       if (Oobe.getInstance().displayType == DISPLAY_TYPE.LOGIN ||
           Oobe.getInstance().displayType == DISPLAY_TYPE.OOBE) {
         if (Oobe.getInstance().newKioskUI)

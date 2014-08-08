@@ -70,6 +70,9 @@
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/system/pointer_device_observer.h"
 #include "chrome/browser/ui/webui/options/chromeos/accounts_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/bluetooth_options_handler.h"
@@ -304,8 +307,6 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::BluetoothOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::options::ConsumerManagementHandler());
-  AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::DateTimeOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::DisplayOptionsHandler());
@@ -327,6 +328,13 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
       new chromeos::options::ChangePictureOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::StatsOptionsHandler());
+
+  policy::ConsumerManagementService* consumer_management =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos()->
+          GetConsumerManagementService();
+  chromeos::options::ConsumerManagementHandler* consumer_management_handler =
+      new chromeos::options::ConsumerManagementHandler(consumer_management);
+  AddOptionsPageUIHandler(localized_strings, consumer_management_handler);
 #endif
 #if defined(USE_NSS)
   AddOptionsPageUIHandler(localized_strings,

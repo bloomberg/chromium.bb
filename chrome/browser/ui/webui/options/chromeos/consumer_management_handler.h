@@ -10,13 +10,18 @@
 #include "base/values.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
+namespace policy {
+class ConsumerManagementService;
+}
+
 namespace chromeos {
 namespace options {
 
 // Consumer management overlay page UI handler.
 class ConsumerManagementHandler : public ::options::OptionsPageUIHandler {
  public:
-  ConsumerManagementHandler();
+  explicit ConsumerManagementHandler(
+      policy::ConsumerManagementService* management_service);
   virtual ~ConsumerManagementHandler();
 
   // OptionsPageUIHandler implementation.
@@ -28,6 +33,8 @@ class ConsumerManagementHandler : public ::options::OptionsPageUIHandler {
   // Handles the button click events from the browser options page.
   void HandleEnrollConsumerManagement(const base::ListValue* args);
   void HandleUnenrollConsumerManagement(const base::ListValue* args);
+
+  policy::ConsumerManagementService* management_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ConsumerManagementHandler);
 };

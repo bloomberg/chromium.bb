@@ -220,8 +220,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       chrome.send('loginUIStateChanged', ['gaia-signin', true]);
       $('login-header-bar').signinUIState =
           this.isEnrollingConsumerManagement_ ?
-          SIGNIN_UI_STATE.CONSUMER_MANAGEMENT_ENROLLMENT :
-          SIGNIN_UI_STATE.GAIA_SIGNIN;
+              SIGNIN_UI_STATE.CONSUMER_MANAGEMENT_ENROLLMENT :
+              SIGNIN_UI_STATE.GAIA_SIGNIN;
 
       // Ensure that GAIA signin (or loading UI) is actually visible.
       window.requestAnimationFrame(function() {
@@ -318,13 +318,13 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       $('createSupervisedUserNoManagerText').textContent =
           data.supervisedUsersRestrictionReason;
 
-      $('consumerManagementEnrollment').hidden =
-          !data.isEnrollingConsumerManagement;
+      var isEnrollingConsumerManagement = data.isEnrollingConsumerManagement;
+      $('consumerManagementEnrollment').hidden = !isEnrollingConsumerManagement;
 
       this.isShowUsers_ = data.isShowUsers;
       this.updateCancelButtonState();
 
-      this.isEnrollingConsumerManagement_ = data.isEnrollingConsumerManagement;
+      this.isEnrollingConsumerManagement_ = isEnrollingConsumerManagement;
 
       // Sign-in right panel is hidden if all of its items are hidden.
       var noRightPanel = $('gaia-signin-reason').hidden &&

@@ -7,9 +7,13 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen_actor.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/about_ui.h"
@@ -256,7 +260,11 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   user_image_screen_actor_ = user_image_screen_handler;
   AddScreenHandler(user_image_screen_handler);
 
-  gaia_screen_handler_ = new GaiaScreenHandler(network_state_informer_);
+  policy::ConsumerManagementService* consumer_management =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos()->
+          GetConsumerManagementService();
+  gaia_screen_handler_ =
+      new GaiaScreenHandler(network_state_informer_, consumer_management);
   AddScreenHandler(gaia_screen_handler_);
 
   signin_screen_handler_ = new SigninScreenHandler(network_state_informer_,

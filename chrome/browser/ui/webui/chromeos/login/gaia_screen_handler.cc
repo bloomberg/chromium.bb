@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/io_thread.h"
@@ -36,7 +38,8 @@ namespace {
 
 const char kJsScreenPath[] = "login.GaiaSigninScreen";
 
-void UpdateAuthParams(base::DictionaryValue* params, bool has_users,
+void UpdateAuthParams(base::DictionaryValue* params,
+                      bool has_users,
                       bool is_enrolling_consumer_management) {
   CrosSettings* cros_settings = CrosSettings::Get();
   bool allow_new_user = true;
@@ -109,11 +112,13 @@ GaiaContext::GaiaContext()
       has_users(false) {}
 
 GaiaScreenHandler::GaiaScreenHandler(
-    const scoped_refptr<NetworkStateInformer>& network_state_informer)
+    const scoped_refptr<NetworkStateInformer>& network_state_informer,
+    policy::ConsumerManagementService* consumer_management)
     : BaseScreenHandler(kJsScreenPath),
       frame_state_(FRAME_STATE_UNKNOWN),
       frame_error_(net::OK),
       network_state_informer_(network_state_informer),
+      consumer_management_(consumer_management),
       dns_cleared_(false),
       dns_clear_task_running_(false),
       cookies_cleared_(false),
@@ -132,6 +137,8 @@ GaiaScreenHandler::~GaiaScreenHandler() {
 
 void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
   base::DictionaryValue params;
+  const bool is_enrolling_consumer_management =
+      context.is_enrolling_consumer_management;
 
   params.SetBoolean("forceReload", context.force_reload);
   params.SetBoolean("isLocal", context.is_local);
@@ -140,10 +147,11 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
   params.SetBoolean("useOffline", context.use_offline);
   params.SetString("email", context.email);
   params.SetBoolean("isEnrollingConsumerManagement",
-                    context.is_enrolling_consumer_management);
+                    is_enrolling_consumer_management);
 
-  UpdateAuthParams(&params, context.has_users,
-                   context.is_enrolling_consumer_management);
+  UpdateAuthParams(&params,
+                   context.has_users,
+                   is_enrolling_consumer_management);
 
   if (!context.use_offline) {
     const std::string app_locale = g_browser_process->GetApplicationLocale();
@@ -289,37 +297,28 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
 void GaiaScreenHandler::HandleCompleteLogin(const std::string& typed_email,
                                             const std::string& password,
                                             bool using_saml) {
-  std::string owner_email = UserManager::Get()->GetOwnerEmail();
-  if (is_enrolling_consumer_management_ && typed_email != owner_email) {
-    // Show Gaia signin page again since we only allow the owner to sign in.
+  if (!is_enrolling_consumer_management_) {
+    DoCompleteLogin(typed_email, password, using_saml);
+    return;
+  }
+
+  // Consumer management enrollment is in progress.
+  const std::string owner_email = UserManager::Get()->GetOwnerEmail();
+  if (typed_email != owner_email) {
+    // Show Gaia sign-in screen again, since we only allow the owner to sign
+    // in.
     populated_email_ = owner_email;
     ShowGaia(is_enrolling_consumer_management_);
     return;
   }
 
-  if (!Delegate())
-    return;
-
-  if (using_saml && !using_saml_api_)
-    RecordSAMLScrapingVerificationResultInHistogram(true);
-
-  const std::string sanitized_email = gaia::SanitizeEmail(typed_email);
-  Delegate()->SetDisplayEmail(sanitized_email);
-  UserContext user_context(sanitized_email);
-  user_context.SetKey(Key(password));
-  user_context.SetAuthFlow(using_saml
-                               ? UserContext::AUTH_FLOW_GAIA_WITH_SAML
-                               : UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML);
-  Delegate()->CompleteLogin(user_context);
-
-  if (test_expects_complete_login_) {
-    VLOG(2) << "Complete test login for " << typed_email
-            << ", requested=" << test_user_;
-
-    test_expects_complete_login_ = false;
-    test_user_.clear();
-    test_pass_.clear();
-  }
+  CHECK(consumer_management_);
+  consumer_management_->SetOwner(owner_email,
+                                 base::Bind(&GaiaScreenHandler::OnSetOwnerDone,
+                                            weak_factory_.GetWeakPtr(),
+                                            typed_email,
+                                            password,
+                                            using_saml));
 }
 
 void GaiaScreenHandler::HandleUsingSAMLAPI() {
@@ -374,6 +373,49 @@ void GaiaScreenHandler::HandleGaiaUIReady() {
 
   if (test_expects_complete_login_)
     SubmitLoginFormForTest();
+}
+
+void GaiaScreenHandler::OnSetOwnerDone(const std::string& typed_email,
+                                       const std::string& password,
+                                       bool using_saml,
+                                       bool success) {
+  if (!success) {
+    LOG(ERROR) << "Failed to write owner e-mail to boot lockbox.";
+    CHECK(consumer_management_);
+    consumer_management_->SetEnrollmentState(
+        policy::ConsumerManagementService::ENROLLMENT_BOOT_LOCKBOX_FAILED);
+    // We should continue loggin in the user, as there's not much we can do
+    // here.
+  }
+  DoCompleteLogin(typed_email, password, using_saml);
+}
+
+void GaiaScreenHandler::DoCompleteLogin(const std::string& typed_email,
+                                        const std::string& password,
+                                        bool using_saml) {
+  if (!Delegate())
+    return;
+
+  if (using_saml && !using_saml_api_)
+    RecordSAMLScrapingVerificationResultInHistogram(true);
+
+  const std::string sanitized_email = gaia::SanitizeEmail(typed_email);
+  Delegate()->SetDisplayEmail(sanitized_email);
+  UserContext user_context(sanitized_email);
+  user_context.SetKey(Key(password));
+  user_context.SetAuthFlow(using_saml
+                               ? UserContext::AUTH_FLOW_GAIA_WITH_SAML
+                               : UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML);
+  Delegate()->CompleteLogin(user_context);
+
+  if (test_expects_complete_login_) {
+    VLOG(2) << "Complete test login for " << typed_email
+            << ", requested=" << test_user_;
+
+    test_expects_complete_login_ = false;
+    test_user_.clear();
+    test_pass_.clear();
+  }
 }
 
 void GaiaScreenHandler::PopulateEmail(const std::string& user_id) {

@@ -179,8 +179,6 @@ void DeviceCloudPolicyManagerChromeOS::RegisterPrefs(
   registry->RegisterBooleanPref(prefs::kDeviceEnrollmentAutoStart, false);
   registry->RegisterBooleanPref(prefs::kDeviceEnrollmentCanExit, true);
   registry->RegisterDictionaryPref(prefs::kServerBackedDeviceState);
-  registry->RegisterBooleanPref(prefs::kConsumerManagementEnrollmentRequested,
-                                false);
 }
 
 // static

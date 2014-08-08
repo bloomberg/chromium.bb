@@ -7,11 +7,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
-#include "chrome/common/pref_names.h"
+#include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/web_ui.h"
@@ -21,7 +19,9 @@
 namespace chromeos {
 namespace options {
 
-ConsumerManagementHandler::ConsumerManagementHandler() {
+ConsumerManagementHandler::ConsumerManagementHandler(
+    policy::ConsumerManagementService* management_service)
+    : management_service_(management_service) {
 }
 
 ConsumerManagementHandler::~ConsumerManagementHandler() {
@@ -83,9 +83,9 @@ void ConsumerManagementHandler::HandleEnrollConsumerManagement(
     return;
   }
 
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetBoolean(prefs::kConsumerManagementEnrollmentRequested, true);
-  prefs->CommitPendingWrite();
+  CHECK(management_service_);
+  management_service_->SetEnrollmentState(
+      policy::ConsumerManagementService::ENROLLMENT_ENROLLING);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
 }
 

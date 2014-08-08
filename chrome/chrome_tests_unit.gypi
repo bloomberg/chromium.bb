@@ -756,6 +756,7 @@
         'browser/chromeos/policy/cloud_external_data_policy_observer_unittest.cc',
         'browser/chromeos/policy/cloud_external_data_store_unittest.cc',
         'browser/chromeos/policy/configuration_policy_handler_chromeos_unittest.cc',
+        'browser/chromeos/policy/consumer_management_service_unittest.cc',
         'browser/chromeos/policy/device_cloud_policy_invalidator_unittest.cc',
         'browser/chromeos/policy/device_cloud_policy_manager_chromeos_unittest.cc',
         'browser/chromeos/policy/device_cloud_policy_store_chromeos_unittest.cc',

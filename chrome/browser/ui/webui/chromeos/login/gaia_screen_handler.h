@@ -5,11 +5,17 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_GAIA_SCREEN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_GAIA_SCREEN_HANDLER_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "net/base/net_errors.h"
+
+namespace policy {
+class ConsumerManagementService;
+}
 
 namespace chromeos {
 
@@ -54,8 +60,9 @@ class GaiaScreenHandler : public BaseScreenHandler {
     FRAME_STATE_ERROR
   };
 
-  explicit GaiaScreenHandler(
-      const scoped_refptr<NetworkStateInformer>& network_state_informer);
+  GaiaScreenHandler(
+      const scoped_refptr<NetworkStateInformer>& network_state_informer,
+      policy::ConsumerManagementService* consumer_management);
   virtual ~GaiaScreenHandler();
 
   void LoadGaia(const GaiaContext& context);
@@ -94,6 +101,17 @@ class GaiaScreenHandler : public BaseScreenHandler {
   void HandleScrapedPasswordVerificationFailed();
 
   void HandleGaiaUIReady();
+
+  // This is called when ConsumerManagementService::SetOwner() returns.
+  void OnSetOwnerDone(const std::string& typed_email,
+                      const std::string& password,
+                      bool using_saml,
+                      bool success);
+
+  // Really handles the complete login message.
+  void DoCompleteLogin(const std::string& typed_email,
+                       const std::string& password,
+                       bool using_saml);
 
   // Fill GAIA user name.
   void PopulateEmail(const std::string& user_id);
@@ -152,6 +170,9 @@ class GaiaScreenHandler : public BaseScreenHandler {
 
   // Network state informer used to keep signin screen up.
   scoped_refptr<NetworkStateInformer> network_state_informer_;
+
+  // Consumer management service for checking if enrollment is in progress.
+  policy::ConsumerManagementService* consumer_management_;
 
   // Email to pre-populate with.
   std::string populated_email_;

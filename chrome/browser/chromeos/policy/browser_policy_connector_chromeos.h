@@ -24,6 +24,7 @@ class URLRequestContextGetter;
 namespace policy {
 
 class AppPackUpdater;
+class ConsumerManagementService;
 class DeviceCloudPolicyInitializer;
 class DeviceCloudPolicyInvalidator;
 class DeviceCloudPolicyManagerChromeOS;
@@ -105,8 +106,12 @@ class BrowserPolicyConnectorChromeOS : public ChromeBrowserPolicyConnector {
   void SetUserPolicyDelegate(ConfigurationPolicyProvider* user_policy_provider);
 
   // Returns the device management service for consumer management.
-  DeviceManagementService* consumer_device_management_service() const {
+  DeviceManagementService* GetDeviceManagementServiceForConsumer() const {
     return consumer_device_management_service_.get();
+  }
+
+  ConsumerManagementService* GetConsumerManagementService() const {
+    return consumer_management_service_.get();
   }
 
   // Sets the install attributes for testing. Must be called before the browser
@@ -146,6 +151,7 @@ class BrowserPolicyConnectorChromeOS : public ChromeBrowserPolicyConnector {
   scoped_ptr<NetworkConfigurationUpdater> network_configuration_updater_;
 
   scoped_ptr<DeviceManagementService> consumer_device_management_service_;
+  scoped_ptr<ConsumerManagementService> consumer_management_service_;
 
   base::WeakPtrFactory<BrowserPolicyConnectorChromeOS> weak_ptr_factory_;
 
