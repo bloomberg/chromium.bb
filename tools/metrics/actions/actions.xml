@@ -7539,23 +7539,34 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileUsingMenuByHwButtonDragging">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>kkimlabs@chromium.org</owner>
+  <description>
+    Only for Android. Menu is shown by dragging from hardware menu button.
+  </description>
+  <obsolete>
+    Deprecated as of 06/2014. We removed this feature http://crbug.com/366154 .
+  </obsolete>
 </action>
 
 <action name="MobileUsingMenuByHwButtonTap">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>kkimlabs@chromium.org</owner>
+  <description>
+    Only for Android. Menu is shown by tapping hardware menu button.
+  </description>
 </action>
 
 <action name="MobileUsingMenuBySwButtonDragging">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>kkimlabs@chromium.org</owner>
+  <description>
+    Only for Android. Menu is shown by dragging from software menu button.
+  </description>
 </action>
 
 <action name="MobileUsingMenuBySwButtonTap">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>kkimlabs@chromium.org</owner>
+  <description>
+    Only for Android. Menu is shown by tapping software menu button.
+  </description>
 </action>
 
 <action name="MostVisited0">

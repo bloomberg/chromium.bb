@@ -23,7 +23,7 @@ static void RecordUsingMenu(JNIEnv*,
                             jboolean is_dragging) {
   if (is_by_hw_button) {
     if (is_dragging) {
-      RecordAction(UserMetricsAction("MobileUsingMenuByHwButtonDragging"));
+      NOTREACHED() << "We do not support dragging for hardware menu button.";
     } else {
       RecordAction(UserMetricsAction("MobileUsingMenuByHwButtonTap"));
     }
