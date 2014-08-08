@@ -27,8 +27,6 @@ void CompositingReasonFinder::updateTriggers()
     m_compositingTriggers = 0;
 
     Settings& settings = m_renderView.document().page()->settings();
-    if (settings.acceleratedCompositingForCanvasEnabled())
-        m_compositingTriggers |= CanvasTrigger;
     if (settings.compositedScrollingForFramesEnabled())
         m_compositingTriggers |= ScrollableInnerFrameTrigger;
 
@@ -154,7 +152,7 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(cons
     if (requiresCompositingForPositionFixed(renderer))
         directReasons |= CompositingReasonPositionFixed;
 
-    directReasons |= renderer->additionalCompositingReasons(m_compositingTriggers);
+    directReasons |= renderer->additionalCompositingReasons();
 
     ASSERT(!(directReasons & CompositingReasonComboAllStyleDeterminedReasons));
     return directReasons;

@@ -111,11 +111,8 @@ void RenderHTMLCanvas::canvasSizeChanged()
         setNeedsLayoutAndFullPaintInvalidation();
 }
 
-CompositingReasons RenderHTMLCanvas::additionalCompositingReasons(CompositingTriggerFlags triggers) const
+CompositingReasons RenderHTMLCanvas::additionalCompositingReasons() const
 {
-    if (!(triggers & CanvasTrigger))
-        return CompositingReasonNone;
-
     HTMLCanvasElement* canvas = toHTMLCanvasElement(node());
     if (canvas->renderingContext() && canvas->renderingContext()->isAccelerated())
         return CompositingReasonCanvas;

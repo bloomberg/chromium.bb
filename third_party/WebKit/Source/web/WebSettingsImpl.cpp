@@ -464,11 +464,6 @@ void WebSettingsImpl::setAcceleratedCompositingForFixedRootBackgroundEnabled(boo
     m_settings->setAcceleratedCompositingForFixedRootBackgroundEnabled(enabled);
 }
 
-void WebSettingsImpl::setAcceleratedCompositingForCanvasEnabled(bool enabled)
-{
-    m_settings->setAcceleratedCompositingForCanvasEnabled(enabled);
-}
-
 void WebSettingsImpl::setAccelerated2dCanvasEnabled(bool enabled)
 {
     m_settings->setAccelerated2dCanvasEnabled(enabled);

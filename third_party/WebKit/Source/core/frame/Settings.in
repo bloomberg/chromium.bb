@@ -93,7 +93,6 @@ xssAuditorEnabled initial=false
 unsafePluginPastingEnabled initial=true
 treatIPAddressAsDomain initial=false
 
-acceleratedCompositingForCanvasEnabled initial=true, invalidate=AcceleratedCompositing
 acceleratedCompositingForFixedPositionEnabled initial=false, invalidate=AcceleratedCompositing
 acceleratedCompositingForOverflowScrollEnabled initial=false, invalidate=AcceleratedCompositing
 acceleratedCompositingForFixedRootBackgroundEnabled initial=false

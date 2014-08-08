@@ -127,7 +127,7 @@ bool RenderPart::nodeAtPoint(const HitTestRequest& request, HitTestResult& resul
     return RenderWidget::nodeAtPoint(request, result, locationInContainer, accumulatedOffset, action);
 }
 
-CompositingReasons RenderPart::additionalCompositingReasons(CompositingTriggerFlags) const
+CompositingReasons RenderPart::additionalCompositingReasons() const
 {
     if (requiresAcceleratedCompositing())
         return CompositingReasonIFrame;

@@ -2874,7 +2874,7 @@ CompositingState RenderObject::compositingState() const
     return hasLayer() ? toRenderLayerModelObject(this)->layer()->compositingState() : NotComposited;
 }
 
-CompositingReasons RenderObject::additionalCompositingReasons(CompositingTriggerFlags) const
+CompositingReasons RenderObject::additionalCompositingReasons() const
 {
     return CompositingReasonNone;
 }

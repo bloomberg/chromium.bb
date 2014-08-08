@@ -72,7 +72,7 @@ private:
     virtual LayoutUnit offsetWidth() const OVERRIDE;
     virtual LayoutUnit offsetHeight() const OVERRIDE;
 
-    virtual CompositingReasons additionalCompositingReasons(CompositingTriggerFlags) const OVERRIDE;
+    virtual CompositingReasons additionalCompositingReasons() const OVERRIDE;
 
     void updatePlayer();
 

@@ -274,7 +274,7 @@ LayoutUnit RenderVideo::offsetHeight() const
     return RenderMedia::offsetHeight();
 }
 
-CompositingReasons RenderVideo::additionalCompositingReasons(CompositingTriggerFlags triggers) const
+CompositingReasons RenderVideo::additionalCompositingReasons() const
 {
     if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled()) {
         HTMLMediaElement* media = toHTMLMediaElement(node());
