@@ -15,6 +15,7 @@
 #include "ui/events/event_processor.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/vector2d.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 
@@ -128,9 +129,8 @@ void AutoclickControllerImpl::OnMouseEvent(ui::MouseEvent* event) {
     mouse_event_flags_ = event->flags();
 
     gfx::Point mouse_location = event->root_location();
-    ash::wm::ConvertPointToScreen(
-        wm::GetRootWindowAt(mouse_location),
-        &mouse_location);
+    ::wm::ConvertPointToScreen(wm::GetRootWindowAt(mouse_location),
+                               &mouse_location);
 
     // The distance between the mouse location and the anchor location
     // must exceed a certain threshold to initiate a new autoclick countdown.
@@ -185,7 +185,7 @@ void AutoclickControllerImpl::DoAutoclick() {
 
   gfx::Point click_location(screen_location);
   anchor_location_ = click_location;
-  wm::ConvertPointFromScreen(root_window, &click_location);
+  ::wm::ConvertPointFromScreen(root_window, &click_location);
 
   aura::WindowTreeHost* host = root_window->GetHost();
   host->ConvertPointToHost(&click_location);

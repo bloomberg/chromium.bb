@@ -8,7 +8,6 @@
 #include <set>
 
 #include "ash/accelerators/accelerator_commands.h"
-#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "base/callback.h"
@@ -41,6 +40,7 @@
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_modality_controller.h"
 
 using base::UserMetricsAction;
@@ -1714,7 +1714,7 @@ gfx::Point TabDragController::GetCursorScreenPoint() {
     // TODO(tdresser): Switch to using gfx::PointF. See crbug.com/337824.
     gfx::Point touch_point = gfx::ToFlooredPoint(touch_point_f);
     DCHECK(got_touch_point);
-    ash::wm::ConvertPointToScreen(widget_window->GetRootWindow(), &touch_point);
+    wm::ConvertPointToScreen(widget_window->GetRootWindow(), &touch_point);
     return touch_point;
   }
 

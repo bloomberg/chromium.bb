@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_util.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 
@@ -21,7 +22,7 @@ bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(ui::MouseEvent* event) {
 
   gfx::Point point_in_screen(event->location());
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  wm::ConvertPointToScreen(target, &point_in_screen);
+  ::wm::ConvertPointToScreen(target, &point_in_screen);
   return WarpMouseCursorInScreenCoords(target->GetRootWindow(),
                                        point_in_screen);
 }
@@ -45,7 +46,7 @@ bool MouseCursorEventFilter::WarpMouseCursorInScreenCoords(
 
   aura::Window* root_at_point = wm::GetRootWindowAt(point_in_screen);
   gfx::Point point_in_root = point_in_screen;
-  wm::ConvertPointFromScreen(root_at_point, &point_in_root);
+  ::wm::ConvertPointFromScreen(root_at_point, &point_in_root);
   gfx::Rect root_bounds = root_at_point->bounds();
   int offset_x = 0;
   int offset_y = 0;
@@ -86,7 +87,7 @@ bool MouseCursorEventFilter::WarpMouseCursorInScreenCoords(
     return false;
   }
 
-  wm::ConvertPointFromScreen(dst_root, &point_in_dst_screen);
+  ::wm::ConvertPointFromScreen(dst_root, &point_in_dst_screen);
 
   if (dst_root->bounds().Contains(point_in_dst_screen)) {
     DCHECK_NE(dst_root, root_at_point);

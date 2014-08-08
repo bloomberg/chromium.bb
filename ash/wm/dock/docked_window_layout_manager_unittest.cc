@@ -33,6 +33,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 
@@ -188,7 +189,7 @@ class DockedWindowLayoutManagerTest
     gfx::Rect work_area =
         Shell::GetScreen()->GetDisplayNearestWindow(window).work_area();
     gfx::Point initial_location_in_screen = initial_location_in_parent_;
-    wm::ConvertPointToScreen(window->parent(), &initial_location_in_screen);
+    ::wm::ConvertPointToScreen(window->parent(), &initial_location_in_screen);
     // Drag the window left or right to the edge (or almost to it).
     if (edge == DOCKED_EDGE_LEFT)
       dx += work_area.x() - initial_location_in_screen.x();

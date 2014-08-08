@@ -16,7 +16,6 @@
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
-#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_positioner.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
@@ -32,6 +31,7 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/screen.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/system/chromeos/tray_display.h"
@@ -262,7 +262,7 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
     aura::Window* root = ash::Shell::GetInstance()->display_controller()->
         GetRootWindowForDisplayId(display.id());
     gfx::Point origin = bounds.origin();
-    wm::ConvertPointFromScreen(root, &origin);
+    ::wm::ConvertPointFromScreen(root, &origin);
     window->SetBounds(gfx::Rect(origin, bounds.size()));
     aura::client::ParentWindowWithContext(window, root, bounds);
   }
