@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/blink_glue.h"
+#include "content/child/file_info_util.h"
 
 #include "base/logging.h"
 #include "third_party/WebKit/public/platform/WebFileInfo.h"
