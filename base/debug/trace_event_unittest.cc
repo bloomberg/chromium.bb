@@ -2998,56 +2998,56 @@ TEST_F(TraceEventTestFixture, SyntheticDelayConfigurationToString) {
   EXPECT_EQ(config, filter.ToString());
 }
 
-TEST(TraceOptionsTest, DISABLED_TraceOptionsFromString) {
-  TraceOptions options = TraceOptions("record-until-full");
+TEST(TraceOptionsTest, TraceOptionsFromString) {
+  TraceOptions options;
+  EXPECT_TRUE(options.SetFromString("record-until-full"));
   EXPECT_EQ(RECORD_UNTIL_FULL, options.record_mode);
   EXPECT_FALSE(options.enable_sampling);
   EXPECT_FALSE(options.enable_systrace);
 
-  options = TraceOptions(RECORD_CONTINUOUSLY);
+  EXPECT_TRUE(options.SetFromString("record-continuously"));
   EXPECT_EQ(RECORD_CONTINUOUSLY, options.record_mode);
   EXPECT_FALSE(options.enable_sampling);
   EXPECT_FALSE(options.enable_systrace);
 
-  options = TraceOptions("trace-to-console");
+  EXPECT_TRUE(options.SetFromString("trace-to-console"));
   EXPECT_EQ(ECHO_TO_CONSOLE, options.record_mode);
   EXPECT_FALSE(options.enable_sampling);
   EXPECT_FALSE(options.enable_systrace);
 
-  options = TraceOptions("record-as-much-as-possible");
+  EXPECT_TRUE(options.SetFromString("record-as-much-as-possible"));
   EXPECT_EQ(RECORD_AS_MUCH_AS_POSSIBLE, options.record_mode);
   EXPECT_FALSE(options.enable_sampling);
   EXPECT_FALSE(options.enable_systrace);
 
-  options = TraceOptions("record-until-full, enable-sampling");
+  EXPECT_TRUE(options.SetFromString("record-until-full, enable-sampling"));
   EXPECT_EQ(RECORD_UNTIL_FULL, options.record_mode);
   EXPECT_TRUE(options.enable_sampling);
   EXPECT_FALSE(options.enable_systrace);
 
-  options = TraceOptions("enable-systrace,record-continuously");
+  EXPECT_TRUE(options.SetFromString("enable-systrace,record-continuously"));
   EXPECT_EQ(RECORD_CONTINUOUSLY, options.record_mode);
   EXPECT_FALSE(options.enable_sampling);
   EXPECT_TRUE(options.enable_systrace);
 
-  options = TraceOptions("enable-systrace, trace-to-console,enable-sampling");
+  EXPECT_TRUE(options.SetFromString(
+      "enable-systrace, trace-to-console,enable-sampling"));
   EXPECT_EQ(ECHO_TO_CONSOLE, options.record_mode);
   EXPECT_TRUE(options.enable_sampling);
   EXPECT_TRUE(options.enable_systrace);
 
-  options =
-      TraceOptions("record-continuously,record-until-full,trace-to-console");
+  EXPECT_TRUE(options.SetFromString(
+      "record-continuously,record-until-full,trace-to-console"));
   EXPECT_EQ(ECHO_TO_CONSOLE, options.record_mode);
   EXPECT_FALSE(options.enable_systrace);
   EXPECT_FALSE(options.enable_sampling);
 
-  options = TraceOptions("");
+  EXPECT_TRUE(options.SetFromString(""));
   EXPECT_EQ(RECORD_UNTIL_FULL, options.record_mode);
   EXPECT_FALSE(options.enable_systrace);
   EXPECT_FALSE(options.enable_sampling);
 
-#if GTEST_HAS_EXCEPTIONS
-  EXPECT_THROW(TraceOptions("foo-bar-baz"), int);
-#endif
+  EXPECT_FALSE(options.SetFromString("foo-bar-baz"));
 }
 
 TEST(TraceOptionsTest, TraceOptionsToString) {
@@ -3066,7 +3066,8 @@ TEST(TraceOptionsTest, TraceOptionsToString) {
         TraceOptions original_option = TraceOptions(modes[i]);
         original_option.enable_sampling = enable_sampling_options[j];
         original_option.enable_systrace = enable_systrace_options[k];
-        TraceOptions new_options = TraceOptions(original_option.ToString());
+        TraceOptions new_options;
+        EXPECT_TRUE(new_options.SetFromString(original_option.ToString()));
         EXPECT_EQ(original_option.record_mode, new_options.record_mode);
         EXPECT_EQ(original_option.enable_sampling, new_options.enable_sampling);
         EXPECT_EQ(original_option.enable_systrace, new_options.enable_systrace);

@@ -984,13 +984,13 @@ TraceBucketData::~TraceBucketData() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-TraceOptions::TraceOptions(const std::string& options_string)
-    : record_mode(RECORD_UNTIL_FULL),
-      enable_sampling(false),
-      enable_systrace(false) {
+bool TraceOptions::SetFromString(const std::string& options_string) {
+  record_mode = RECORD_UNTIL_FULL;
+  enable_sampling = false;
+  enable_systrace = false;
+
   std::vector<std::string> split;
   std::vector<std::string>::iterator iter;
-
   base::SplitString(options_string, ',', &split);
   for (iter = split.begin(); iter != split.end(); ++iter) {
     if (*iter == kRecordUntilFull) {
@@ -1006,9 +1006,10 @@ TraceOptions::TraceOptions(const std::string& options_string)
     } else if (*iter == kEnableSystrace) {
       enable_systrace = true;
     } else {
-      NOTREACHED();
+      return false;
     }
   }
+  return true;
 }
 
 std::string TraceOptions::ToString() const {
