@@ -34,7 +34,7 @@ import java.util.Map;
 class MediaResourceGetter {
 
     private static final String TAG = "MediaResourceGetter";
-    private final MediaMetadata EMPTY_METADATA = new MediaMetadata(0,0,0,false);
+    private static final MediaMetadata EMPTY_METADATA = new MediaMetadata(0,0,0,false);
 
     private final MediaMetadataRetriever mRetriever = new MediaMetadataRetriever();
 

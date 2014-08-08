@@ -22,17 +22,17 @@ public class ClientCertLookupTable {
      * A container for the certificate data.
      */
     public static class Cert {
-        AndroidPrivateKey privateKey;
-        byte[][] certChain;
+        AndroidPrivateKey mPrivateKey;
+        byte[][] mCertChain;
         public Cert(AndroidPrivateKey privateKey, byte[][] certChain) {
-            this.privateKey = privateKey;
+            this.mPrivateKey = privateKey;
             byte[][] newChain = new byte[certChain.length][];
             for (int i = 0; i < certChain.length; i++) {
                 newChain[i] = Arrays.copyOf(certChain[i], certChain[i].length);
             }
-            this.certChain = newChain;
+            this.mCertChain = newChain;
         }
-    };
+    }
 
     private final Map<String, Cert> mCerts;
     private final Set<String> mDenieds;

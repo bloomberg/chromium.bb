@@ -20,7 +20,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     private final ChromeContextMenuItemDelegate mDelegate;
     private MenuInflater mMenuInflater;
-    private final String BLANK_URL = "about:blank";
+    private static final String BLANK_URL = "about:blank";
 
     /**
      * Builds a {@link ChromeContextMenuPopulator}.

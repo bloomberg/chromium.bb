@@ -1003,12 +1003,12 @@ public class ChromeBrowserProvider extends ContentProvider {
 
     private long addBookmarkFromAPI(ContentValues values) {
         BookmarkRow row = BookmarkRow.fromContentValues(values);
-        if (row.url == null) {
+        if (row.mUrl == null) {
             throw new IllegalArgumentException("Must have a bookmark URL");
         }
         return nativeAddBookmarkFromAPI(mNativeChromeBrowserProvider,
-                row.url, row.created, row.isBookmark, row.date, row.favicon,
-                row.title, row.visits, row.parentId);
+                row.mUrl, row.mCreated, row.mIsBookmark, row.mDate, row.mFavicon,
+                row.mTitle, row.mVisits, row.mParentId);
     }
 
     private Cursor queryBookmarkFromAPI(String[] projectionIn, String selection,
@@ -1028,8 +1028,8 @@ public class ChromeBrowserProvider extends ContentProvider {
             String[] selectionArgs) {
         BookmarkRow row = BookmarkRow.fromContentValues(values);
         return nativeUpdateBookmarkFromAPI(mNativeChromeBrowserProvider,
-                row.url, row.created, row.isBookmark, row.date,
-                row.favicon, row.title, row.visits, row.parentId, selection, selectionArgs);
+                row.mUrl, row.mCreated, row.mIsBookmark, row.mDate,
+                row.mFavicon, row.mTitle, row.mVisits, row.mParentId, selection, selectionArgs);
     }
 
     private int removeBookmarkFromAPI(String selection, String[] selectionArgs) {
@@ -1052,17 +1052,17 @@ public class ChromeBrowserProvider extends ContentProvider {
 
     private long addSearchTermFromAPI(ContentValues values) {
         SearchRow row = SearchRow.fromContentValues(values);
-        if (row.term == null) {
+        if (row.mTerm == null) {
             throw new IllegalArgumentException("Must have a search term");
         }
-        return nativeAddSearchTermFromAPI(mNativeChromeBrowserProvider, row.term, row.date);
+        return nativeAddSearchTermFromAPI(mNativeChromeBrowserProvider, row.mTerm, row.mDate);
     }
 
     private int updateSearchTermFromAPI(ContentValues values, String selection,
             String[] selectionArgs) {
         SearchRow row = SearchRow.fromContentValues(values);
         return nativeUpdateSearchTermFromAPI(mNativeChromeBrowserProvider,
-                row.term, row.date, selection, selectionArgs);
+                row.mTerm, row.mDate, selection, selectionArgs);
     }
 
     private Cursor querySearchTermFromAPI(String[] projectionIn, String selection,
@@ -1147,44 +1147,44 @@ public class ChromeBrowserProvider extends ContentProvider {
 
     // Wrap the value of BookmarkColumn.
     private static class BookmarkRow {
-        Boolean isBookmark;
-        Long created;
-        String url;
-        Long date;
-        byte[] favicon;
-        String title;
-        Integer visits;
-        long parentId;
+        Boolean mIsBookmark;
+        Long mCreated;
+        String mUrl;
+        Long mDate;
+        byte[] mFavicon;
+        String mTitle;
+        Integer mVisits;
+        long mParentId;
 
         static BookmarkRow fromContentValues(ContentValues values) {
             BookmarkRow row = new BookmarkRow();
             if (values.containsKey(BookmarkColumns.URL)) {
-                row.url = values.getAsString(BookmarkColumns.URL);
+                row.mUrl = values.getAsString(BookmarkColumns.URL);
             }
             if (values.containsKey(BookmarkColumns.BOOKMARK)) {
-                row.isBookmark = values.getAsInteger(BookmarkColumns.BOOKMARK) != 0;
+                row.mIsBookmark = values.getAsInteger(BookmarkColumns.BOOKMARK) != 0;
             }
             if (values.containsKey(BookmarkColumns.CREATED)) {
-                row.created = values.getAsLong(BookmarkColumns.CREATED);
+                row.mCreated = values.getAsLong(BookmarkColumns.CREATED);
             }
             if (values.containsKey(BookmarkColumns.DATE)) {
-                row.date = values.getAsLong(BookmarkColumns.DATE);
+                row.mDate = values.getAsLong(BookmarkColumns.DATE);
             }
             if (values.containsKey(BookmarkColumns.FAVICON)) {
-                row.favicon = values.getAsByteArray(BookmarkColumns.FAVICON);
+                row.mFavicon = values.getAsByteArray(BookmarkColumns.FAVICON);
                 // We need to know that the caller set the favicon column.
-                if (row.favicon == null) {
-                    row.favicon = new byte[0];
+                if (row.mFavicon == null) {
+                    row.mFavicon = new byte[0];
                 }
             }
             if (values.containsKey(BookmarkColumns.TITLE)) {
-                row.title = values.getAsString(BookmarkColumns.TITLE);
+                row.mTitle = values.getAsString(BookmarkColumns.TITLE);
             }
             if (values.containsKey(BookmarkColumns.VISITS)) {
-                row.visits = values.getAsInteger(BookmarkColumns.VISITS);
+                row.mVisits = values.getAsInteger(BookmarkColumns.VISITS);
             }
             if (values.containsKey(BOOKMARK_PARENT_ID_PARAM)) {
-                row.parentId = values.getAsLong(BOOKMARK_PARENT_ID_PARAM);
+                row.mParentId = values.getAsLong(BOOKMARK_PARENT_ID_PARAM);
             }
             return row;
         }
@@ -1192,16 +1192,16 @@ public class ChromeBrowserProvider extends ContentProvider {
 
     // Wrap the value of SearchColumn.
     private static class SearchRow {
-        String term;
-        Long date;
+        String mTerm;
+        Long mDate;
 
         static SearchRow fromContentValues(ContentValues values) {
             SearchRow row = new SearchRow();
             if (values.containsKey(SearchColumns.SEARCH)) {
-                row.term = values.getAsString(SearchColumns.SEARCH);
+                row.mTerm = values.getAsString(SearchColumns.SEARCH);
             }
             if (values.containsKey(SearchColumns.DATE)) {
-                row.date = values.getAsLong(SearchColumns.DATE);
+                row.mDate = values.getAsLong(SearchColumns.DATE);
             }
             return row;
         }

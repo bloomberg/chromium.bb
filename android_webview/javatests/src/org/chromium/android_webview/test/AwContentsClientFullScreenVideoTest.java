@@ -24,25 +24,25 @@ import org.chromium.content.common.ContentSwitches;
 public class AwContentsClientFullScreenVideoTest extends AwTestBase {
     private FullScreenVideoTestAwContentsClient mContentsClient;
     private ContentViewCore mContentViewCore;
-    private VideoTestWebServer webServer;
-    private AwTestContainerView testContainerView;
+    private VideoTestWebServer mWebServer;
+    private AwTestContainerView mTestContainerView;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         mContentsClient = new FullScreenVideoTestAwContentsClient(getActivity());
-        testContainerView =
+        mTestContainerView =
                 createAwTestContainerViewOnMainSync(mContentsClient);
-        mContentViewCore = testContainerView.getContentViewCore();
-        enableJavaScriptOnUiThread(testContainerView.getAwContents());
-        webServer = new VideoTestWebServer(
+        mContentViewCore = mTestContainerView.getContentViewCore();
+        enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
+        mWebServer = new VideoTestWebServer(
                 getInstrumentation().getTargetContext());
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        if (webServer != null) webServer.getTestWebServer().shutdown();
+        if (mWebServer != null) mWebServer.getTestWebServer().shutdown();
     }
 
     @MediumTest
@@ -122,13 +122,13 @@ public class AwContentsClientFullScreenVideoTest extends AwTestBase {
     }
 
     private void doOnShowCustomViewTest() throws Exception {
-        loadUrlSync(testContainerView.getAwContents(),
+        loadUrlSync(mTestContainerView.getAwContents(),
                 mContentsClient.getOnPageFinishedHelper(),
-                webServer.getFullScreenVideoTestURL());
+                mWebServer.getFullScreenVideoTestURL());
 
         // Click the button in full_screen_video_test.html to enter fullscreen.
         TouchCommon touchCommon = new TouchCommon(this);
-        touchCommon.singleClickView(testContainerView);
+        touchCommon.singleClickView(mTestContainerView);
         mContentsClient.waitForCustomViewShown();
     }
 }

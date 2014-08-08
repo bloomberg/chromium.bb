@@ -171,13 +171,13 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
         params.capture = capture;
 
         mContentsClient.showFileChooser(new ValueCallback<String[]>() {
-            boolean completed = false;
+            boolean mCompleted = false;
             @Override
             public void onReceiveValue(String[] results) {
-                if (completed) {
+                if (mCompleted) {
                     throw new IllegalStateException("Duplicate showFileChooser result");
                 }
-                completed = true;
+                mCompleted = true;
                 nativeFilesSelectedInChooser(processId, renderId, mode_flags, results);
             }
         }, params);

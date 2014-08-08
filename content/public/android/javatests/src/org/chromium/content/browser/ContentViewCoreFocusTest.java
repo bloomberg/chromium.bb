@@ -21,20 +21,20 @@ import org.chromium.content_shell_apk.ContentShellTestBase;
  */
 public class ContentViewCoreFocusTest extends ContentShellTestBase {
     private static class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
-        private boolean hidden = false;
+        private boolean mHidden = false;
         public TestInputMethodManagerWrapper(Context context) {
             super(context);
         }
 
         @Override
         public void showSoftInput(View view, int flags, ResultReceiver resultReceiver) {
-            hidden = false;
+            mHidden = false;
         }
 
         @Override
         public boolean hideSoftInputFromWindow(IBinder windowToken, int flags,
                 ResultReceiver resultReceiver) {
-            hidden = true;
+            mHidden = true;
             return true;
         }
 
@@ -44,7 +44,7 @@ public class ContentViewCoreFocusTest extends ContentShellTestBase {
         }
 
         public boolean isHidden() {
-            return hidden;
+            return mHidden;
         }
     }
 

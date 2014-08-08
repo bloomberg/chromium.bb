@@ -117,8 +117,8 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
         }
     }
 
-    final int teapotStatusCode = 418;
-    final String teapotResponsePhrase = "I'm a teapot";
+    private static final int TEAPOT_STATUS_CODE = 418;
+    private static final String TEAPOD_RESPONSE_PHRASE = "I'm a teapot";
 
     private String addPageToTestServer(TestWebServer webServer, String httpPath, String html) {
         List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
@@ -492,8 +492,8 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
 
         mShouldInterceptRequestHelper.setReturnValue(
                 new AwWebResourceResponse("text/html", "UTF-8", new EmptyInputStream(),
-                    teapotStatusCode, teapotResponsePhrase, new HashMap<String, String>()));
-        assertEquals("\"[" + teapotStatusCode + "][" + teapotResponsePhrase + "]\"",
+                    TEAPOT_STATUS_CODE, TEAPOD_RESPONSE_PHRASE, new HashMap<String, String>()));
+        assertEquals("\"[" + TEAPOT_STATUS_CODE + "][" + TEAPOD_RESPONSE_PHRASE + "]\"",
                 executeJavaScriptAndWaitForResult(mAwContents, mContentsClient, syncGetJs));
     }
 

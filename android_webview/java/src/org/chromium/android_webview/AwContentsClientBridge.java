@@ -207,7 +207,7 @@ public class AwContentsClientBridge {
         }
         if (cert != null) {
             nativeProvideClientCertificateResponse(mNativeContentsClientBridge, id,
-                    cert.certChain, cert.privateKey);
+                    cert.mCertChain, cert.mPrivateKey);
             return;
         }
         // Build the list of principals from encoded versions.

@@ -51,12 +51,12 @@ class InputStreamUnittest {
     @CalledByNative
     static InputStream getCountingStream(final int size) {
         return new InputStream() {
-            private int count = 0;
+            private int mCount = 0;
 
             @Override
             public int read() {
-                if (count < size)
-                    return count++ % 256;
+                if (mCount < size)
+                    return mCount++ % 256;
                 else
                     return -1;
             }

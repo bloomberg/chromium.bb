@@ -52,36 +52,36 @@ public class ClientOnPageFinishedTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     public void testOnPageFinishedCalledAfterError() throws Throwable {
         class LocalTestClient extends TestAwContentsClient {
-            private boolean isOnReceivedErrorCalled = false;
-            private boolean isOnPageFinishedCalled = false;
-            private boolean allowAboutBlank = false;
+            private boolean mIsOnReceivedErrorCalled = false;
+            private boolean mIsOnPageFinishedCalled = false;
+            private boolean mAllowAboutBlank = false;
 
             @Override
             public void onReceivedError(int errorCode, String description, String failingUrl) {
                 assertEquals("onReceivedError called twice for " + failingUrl,
-                        false, isOnReceivedErrorCalled);
-                isOnReceivedErrorCalled = true;
+                        false, mIsOnReceivedErrorCalled);
+                mIsOnReceivedErrorCalled = true;
                 assertEquals("onPageFinished called before onReceivedError for " + failingUrl,
-                        false, isOnPageFinishedCalled);
+                        false, mIsOnPageFinishedCalled);
                 super.onReceivedError(errorCode, description, failingUrl);
             }
 
             @Override
             public void onPageFinished(String url) {
-                if (allowAboutBlank && "about:blank".equals(url)) {
+                if (mAllowAboutBlank && "about:blank".equals(url)) {
                     super.onPageFinished(url);
                     return;
                 }
                 assertEquals("onPageFinished called twice for " + url,
-                        false, isOnPageFinishedCalled);
-                isOnPageFinishedCalled = true;
+                        false, mIsOnPageFinishedCalled);
+                mIsOnPageFinishedCalled = true;
                 assertEquals("onReceivedError not called before onPageFinished for " + url,
-                        true, isOnReceivedErrorCalled);
+                        true, mIsOnReceivedErrorCalled);
                 super.onPageFinished(url);
             }
 
             void setAllowAboutBlank() {
-                allowAboutBlank = true;
+                mAllowAboutBlank = true;
             }
         };
         LocalTestClient testContentsClient = new LocalTestClient();

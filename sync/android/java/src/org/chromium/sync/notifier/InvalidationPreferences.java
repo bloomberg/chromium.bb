@@ -40,10 +40,10 @@ public class InvalidationPreferences {
      * Used to avoid exposing raw preference objects to users of this class.
      */
     public class EditContext {
-        private final SharedPreferences.Editor editor;
+        private final SharedPreferences.Editor mEditor;
 
         EditContext() {
-            this.editor = PreferenceManager.getDefaultSharedPreferences(mContext).edit();
+            mEditor = PreferenceManager.getDefaultSharedPreferences(mContext).edit();
         }
     }
 
@@ -94,7 +94,7 @@ public class InvalidationPreferences {
      * NOTE: this method performs blocking I/O and must not be called from the UI thread.
      */
     public boolean commit(EditContext editContext) {
-        if (!editContext.editor.commit()) {
+        if (!editContext.mEditor.commit()) {
             Log.w(TAG, "Failed to commit invalidation preferences");
             return false;
         }
@@ -111,7 +111,7 @@ public class InvalidationPreferences {
     public void setSyncTypes(EditContext editContext, Collection<String> syncTypes) {
         Preconditions.checkNotNull(syncTypes);
         Set<String> selectedTypesSet = new HashSet<String>(syncTypes);
-        editContext.editor.putStringSet(PrefKeys.SYNC_TANGO_TYPES, selectedTypesSet);
+        editContext.mEditor.putStringSet(PrefKeys.SYNC_TANGO_TYPES, selectedTypesSet);
     }
 
     /** Returns the saved non-sync object ids, or {@code null} if none exist. */
@@ -139,7 +139,7 @@ public class InvalidationPreferences {
         for (ObjectId objectId : objectIds) {
             objectIdStrings.add(getObjectIdString(objectId));
         }
-        editContext.editor.putStringSet(PrefKeys.TANGO_OBJECT_IDS, objectIdStrings);
+        editContext.mEditor.putStringSet(PrefKeys.TANGO_OBJECT_IDS, objectIdStrings);
     }
 
     /** Returns the saved account, or {@code null} if none exists. */
@@ -155,8 +155,8 @@ public class InvalidationPreferences {
 
     /** Sets the saved account to {@code account} in {@code editContext}. */
     public void setAccount(EditContext editContext, Account account) {
-        editContext.editor.putString(PrefKeys.SYNC_ACCT_NAME, account.name);
-        editContext.editor.putString(PrefKeys.SYNC_ACCT_TYPE, account.type);
+        editContext.mEditor.putString(PrefKeys.SYNC_ACCT_NAME, account.name);
+        editContext.mEditor.putString(PrefKeys.SYNC_ACCT_TYPE, account.type);
     }
 
     /** Returns the notification client internal state. */
@@ -171,7 +171,7 @@ public class InvalidationPreferences {
 
     /** Sets the notification client internal state to {@code state}. */
     public void setInternalNotificationClientState(EditContext editContext, byte[] state) {
-        editContext.editor.putString(PrefKeys.SYNC_TANGO_INTERNAL_STATE,
+        editContext.mEditor.putString(PrefKeys.SYNC_TANGO_INTERNAL_STATE,
                 Base64.encodeToString(state, Base64.DEFAULT));
     }
 

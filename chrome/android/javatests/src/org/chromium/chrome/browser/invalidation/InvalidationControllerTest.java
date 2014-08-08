@@ -325,7 +325,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
      * Mock context that saves all intents given to {@code startService}.
      */
     private static class IntentSavingContext extends AdvancedMockContext {
-        private final List<Intent> startedIntents = new ArrayList<Intent>();
+        private final List<Intent> mStartedIntents = new ArrayList<Intent>();
 
         IntentSavingContext(Context targetContext) {
             super(targetContext);
@@ -333,16 +333,16 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
 
         @Override
         public ComponentName startService(Intent intent) {
-            startedIntents.add(intent);
+            mStartedIntents.add(intent);
             return new ComponentName(this, getClass());
         }
 
         int getNumStartedIntents() {
-            return startedIntents.size();
+            return mStartedIntents.size();
         }
 
         Intent getStartedIntent(int idx) {
-            return startedIntents.get(idx);
+            return mStartedIntents.get(idx);
         }
 
         @Override

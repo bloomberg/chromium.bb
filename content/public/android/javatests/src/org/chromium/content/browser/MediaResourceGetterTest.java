@@ -195,12 +195,12 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
      * Helper class to control the result of permission checks.
      */
     private static class InternalMockContext extends MockContext {
-        boolean allowPermission = false;
+        boolean mAllowPermission = false;
         @Override
         public int checkCallingOrSelfPermission(String permission) {
             assertEquals(android.Manifest.permission.ACCESS_NETWORK_STATE,
                     permission);
-            return allowPermission ? PackageManager.PERMISSION_GRANTED :
+            return mAllowPermission ? PackageManager.PERMISSION_GRANTED :
                 PackageManager.PERMISSION_DENIED;
         }
     }
@@ -256,14 +256,14 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
 
     @SmallTest
     public void testConfigure_Net_NoPermissions() {
-        mMockContext.allowPermission = false;
+        mMockContext.mAllowPermission = false;
         assertFalse(mFakeMRG.configure(mMockContext, TEST_HTTP_URL,
                                        TEST_COOKIES, TEST_USER_AGENT));
     }
 
     @SmallTest
     public void testConfigure_Net_NoActiveNetwork() {
-        mMockContext.allowPermission = true;
+        mMockContext.mAllowPermission = true;
         mFakeMRG.mNetworkType = null;
         assertFalse(mFakeMRG.configure(mMockContext, TEST_HTTP_URL,
                                        TEST_COOKIES, TEST_USER_AGENT));
@@ -271,7 +271,7 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
 
     @SmallTest
     public void testConfigure_Net_Disallowed_Mobile() {
-        mMockContext.allowPermission = true;
+        mMockContext.mAllowPermission = true;
         mFakeMRG.mNetworkType = ConnectivityManager.TYPE_MOBILE;
         assertFalse(mFakeMRG.configure(mMockContext, TEST_HTTP_URL,
                                        TEST_COOKIES, TEST_USER_AGENT));
@@ -279,7 +279,7 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
 
     @SmallTest
     public void testConfigure_Net_Disallowed_Wimax() {
-        mMockContext.allowPermission = true;
+        mMockContext.mAllowPermission = true;
         mFakeMRG.mNetworkType = ConnectivityManager.TYPE_WIMAX;
         assertFalse(mFakeMRG.configure(mMockContext, TEST_HTTP_URL,
                                        TEST_COOKIES, TEST_USER_AGENT));
@@ -287,7 +287,7 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
 
     @SmallTest
     public void testConfigure_Net_Allowed_Ethernet_Cookies_NoUA() {
-        mMockContext.allowPermission = true;
+        mMockContext.mAllowPermission = true;
         mFakeMRG.mNetworkType = ConnectivityManager.TYPE_ETHERNET;
         assertTrue(mFakeMRG.configure(mMockContext, TEST_HTTP_URL,
                                       TEST_COOKIES, null));
@@ -298,7 +298,7 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
 
     @SmallTest
     public void testConfigure_Net_Allowed_Wifi_Cookies_NoUA() {
-        mMockContext.allowPermission = true;
+        mMockContext.mAllowPermission = true;
         mFakeMRG.mNetworkType = ConnectivityManager.TYPE_WIFI;
         assertTrue(mFakeMRG.configure(mMockContext, TEST_HTTP_URL,
                                       TEST_COOKIES, null));
@@ -309,7 +309,7 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
 
     @SmallTest
     public void testConfigure_Net_Allowed_Ethernet_NoCookies_NoUA() {
-        mMockContext.allowPermission = true;
+        mMockContext.mAllowPermission = true;
         mFakeMRG.mNetworkType = ConnectivityManager.TYPE_ETHERNET;
         assertTrue(mFakeMRG.configure(mMockContext, TEST_HTTP_URL,
                                       "", null));
@@ -320,7 +320,7 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
 
     @SmallTest
     public void testConfigure_Net_Allowed_Ethernet_Cookies_WithUA() {
-        mMockContext.allowPermission = true;
+        mMockContext.mAllowPermission = true;
         mFakeMRG.mNetworkType = ConnectivityManager.TYPE_ETHERNET;
         assertTrue(mFakeMRG.configure(mMockContext, TEST_HTTP_URL,
                                       TEST_COOKIES, TEST_USER_AGENT));
@@ -331,7 +331,7 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
 
     @SmallTest
     public void testConfigure_Net_Allowed_Ethernet_NoCookies_WithUA() {
-        mMockContext.allowPermission = true;
+        mMockContext.mAllowPermission = true;
         mFakeMRG.mNetworkType = ConnectivityManager.TYPE_ETHERNET;
         assertTrue(mFakeMRG.configure(mMockContext, TEST_HTTP_URL,
                                       "", TEST_USER_AGENT));
@@ -342,7 +342,7 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
 
     @SmallTest
     public void testConfigure_Net_Allowed_Ethernet_Exception() {
-        mMockContext.allowPermission = true;
+        mMockContext.mAllowPermission = true;
         mFakeMRG.mThrowExceptionInConfigure = true;
         mFakeMRG.mNetworkType = ConnectivityManager.TYPE_ETHERNET;
         assertFalse(mFakeMRG.configure(mMockContext, TEST_HTTP_URL,
@@ -358,7 +358,7 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
             "https://127.0.0.1/",
             "http://[::1]:8888/",
         };
-        mMockContext.allowPermission = true;
+        mMockContext.mAllowPermission = true;
         mFakeMRG.mNetworkType = null;
         for (String localHostUrl : localHostUrls) {
             assertTrue(mFakeMRG.configure(mMockContext, localHostUrl,
