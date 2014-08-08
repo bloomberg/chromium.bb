@@ -430,22 +430,29 @@ void SyncBackendHostCore::DoInitialize(
 
   sync_manager_ = options->sync_manager_factory->CreateSyncManager(name_);
   sync_manager_->AddObserver(this);
-  sync_manager_->Init(sync_data_folder_path_,
-                      options->event_handler,
-                      options->service_url,
-                      options->http_bridge_factory.Pass(),
-                      options->workers,
-                      options->extensions_activity,
-                      options->registrar /* as SyncManager::ChangeDelegate */,
-                      options->credentials,
-                      options->invalidator_client_id,
-                      options->restored_key_for_bootstrapping,
-                      options->restored_keystore_key_for_bootstrapping,
-                      options->internal_components_factory.get(),
-                      &encryptor_,
-                      options->unrecoverable_error_handler.Pass(),
-                      options->report_unrecoverable_error_function,
-                      &stop_syncing_signal_);
+
+  syncer::SyncManager::InitArgs args;
+  args.database_location = sync_data_folder_path_;
+  args.event_handler = options->event_handler;
+  args.service_url = options->service_url;
+  args.post_factory = options->http_bridge_factory.Pass();
+  args.workers = options->workers;
+  args.extensions_activity = options->extensions_activity;
+  args.change_delegate = options->registrar;  // as SyncManager::ChangeDelegate
+  args.credentials = options->credentials;
+  args.invalidator_client_id = options->invalidator_client_id;
+  args.restored_key_for_bootstrapping = options->restored_key_for_bootstrapping;
+  args.restored_keystore_key_for_bootstrapping =
+      options->restored_keystore_key_for_bootstrapping;
+  args.internal_components_factory =
+      options->internal_components_factory.Pass();
+  args.encryptor = &encryptor_;
+  args.unrecoverable_error_handler =
+      options->unrecoverable_error_handler.Pass();
+  args.report_unrecoverable_error_function =
+      options->report_unrecoverable_error_function;
+  args.cancelation_signal = &stop_syncing_signal_;
+  sync_manager_->Init(&args);
 }
 
 void SyncBackendHostCore::DoUpdateCredentials(

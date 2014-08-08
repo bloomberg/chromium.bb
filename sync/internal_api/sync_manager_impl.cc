@@ -303,53 +303,38 @@ void SyncManagerImpl::ConfigureSyncer(
   scheduler_->ScheduleConfiguration(params);
 }
 
-void SyncManagerImpl::Init(
-    const base::FilePath& database_location,
-    const WeakHandle<JsEventHandler>& event_handler,
-    const GURL& service_url,
-    scoped_ptr<HttpPostProviderFactory> post_factory,
-    const std::vector<scoped_refptr<ModelSafeWorker> >& workers,
-    ExtensionsActivity* extensions_activity,
-    SyncManager::ChangeDelegate* change_delegate,
-    const SyncCredentials& credentials,
-    const std::string& invalidator_client_id,
-    const std::string& restored_key_for_bootstrapping,
-    const std::string& restored_keystore_key_for_bootstrapping,
-    InternalComponentsFactory* internal_components_factory,
-    Encryptor* encryptor,
-    scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler,
-    ReportUnrecoverableErrorFunction report_unrecoverable_error_function,
-    CancelationSignal* cancelation_signal) {
+void SyncManagerImpl::Init(InitArgs* args) {
   CHECK(!initialized_);
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(post_factory.get());
-  DCHECK(!credentials.email.empty());
-  DCHECK(!credentials.sync_token.empty());
-  DCHECK(!credentials.scope_set.empty());
-  DCHECK(cancelation_signal);
+  DCHECK(args->post_factory.get());
+  DCHECK(!args->credentials.email.empty());
+  DCHECK(!args->credentials.sync_token.empty());
+  DCHECK(!args->credentials.scope_set.empty());
+  DCHECK(args->cancelation_signal);
   DVLOG(1) << "SyncManager starting Init...";
 
   weak_handle_this_ = MakeWeakHandle(weak_ptr_factory_.GetWeakPtr());
 
-  change_delegate_ = change_delegate;
+  change_delegate_ = args->change_delegate;
 
   AddObserver(&js_sync_manager_observer_);
-  SetJsEventHandler(event_handler);
+  SetJsEventHandler(args->event_handler);
 
   AddObserver(&debug_info_event_listener_);
 
-  database_path_ = database_location.Append(
+  database_path_ = args->database_location.Append(
       syncable::Directory::kSyncDatabaseFilename);
-  unrecoverable_error_handler_ = unrecoverable_error_handler.Pass();
-  report_unrecoverable_error_function_ = report_unrecoverable_error_function;
+  unrecoverable_error_handler_ = args->unrecoverable_error_handler.Pass();
+  report_unrecoverable_error_function_ =
+      args->report_unrecoverable_error_function;
 
   allstatus_.SetHasKeystoreKey(
-      !restored_keystore_key_for_bootstrapping.empty());
+      !args->restored_keystore_key_for_bootstrapping.empty());
   sync_encryption_handler_.reset(new SyncEncryptionHandlerImpl(
       &share_,
-      encryptor,
-      restored_key_for_bootstrapping,
-      restored_keystore_key_for_bootstrapping));
+      args->encryptor,
+      args->restored_key_for_bootstrapping,
+      args->restored_keystore_key_for_bootstrapping));
   sync_encryption_handler_->AddObserver(this);
   sync_encryption_handler_->AddObserver(&debug_info_event_listener_);
   sync_encryption_handler_->AddObserver(&js_sync_encryption_handler_observer_);
@@ -358,8 +343,9 @@ void SyncManagerImpl::Init(
   DCHECK(absolute_db_path.IsAbsolute());
 
   scoped_ptr<syncable::DirectoryBackingStore> backing_store =
-      internal_components_factory->BuildDirectoryBackingStore(
-          credentials.email, absolute_db_path).Pass();
+      args->internal_components_factory->BuildDirectoryBackingStore(
+                                             args->credentials.email,
+                                             absolute_db_path).Pass();
 
   DCHECK(backing_store.get());
   share_.directory.reset(
@@ -369,13 +355,13 @@ void SyncManagerImpl::Init(
           report_unrecoverable_error_function_,
           sync_encryption_handler_.get(),
           sync_encryption_handler_->GetCryptographerUnsafe()));
-  share_.sync_credentials = credentials;
+  share_.sync_credentials = args->credentials;
 
   // UserShare is accessible to a lot of code that doesn't need access to the
   // sync token so clear sync_token from the UserShare.
   share_.sync_credentials.sync_token = "";
 
-  const std::string& username = credentials.email;
+  const std::string& username = args->credentials.email;
   DVLOG(1) << "Username: " << username;
   if (!OpenDirectory(username)) {
     NotifyInitializationFailure();
@@ -384,11 +370,11 @@ void SyncManagerImpl::Init(
   }
 
   connection_manager_.reset(new SyncAPIServerConnectionManager(
-      service_url.host() + service_url.path(),
-      service_url.EffectiveIntPort(),
-      service_url.SchemeIsSecure(),
-      post_factory.release(),
-      cancelation_signal));
+      args->service_url.host() + args->service_url.path(),
+      args->service_url.EffectiveIntPort(),
+      args->service_url.SchemeIsSecure(),
+      args->post_factory.release(),
+      args->cancelation_signal));
   connection_manager_->set_client_id(directory()->cache_guid());
   connection_manager_->AddListener(this);
 
@@ -396,10 +382,11 @@ void SyncManagerImpl::Init(
 
   DVLOG(1) << "Setting sync client ID: " << sync_id;
   allstatus_.SetSyncId(sync_id);
-  DVLOG(1) << "Setting invalidator client ID: " << invalidator_client_id;
-  allstatus_.SetInvalidatorClientId(invalidator_client_id);
+  DVLOG(1) << "Setting invalidator client ID: " << args->invalidator_client_id;
+  allstatus_.SetInvalidatorClientId(args->invalidator_client_id);
 
-  model_type_registry_.reset(new ModelTypeRegistry(workers, directory(), this));
+  model_type_registry_.reset(
+      new ModelTypeRegistry(args->workers, directory(), this));
 
   // Bind the SyncContext WeakPtr to this thread.  This helps us crash earlier
   // if the pointer is misused in debug mode.
@@ -414,17 +401,19 @@ void SyncManagerImpl::Init(
   std::vector<SyncEngineEventListener*> listeners;
   listeners.push_back(&allstatus_);
   listeners.push_back(this);
-  session_context_ = internal_components_factory->BuildContext(
-      connection_manager_.get(),
-      directory(),
-      extensions_activity,
-      listeners,
-      &debug_info_event_listener_,
-      model_type_registry_.get(),
-      invalidator_client_id).Pass();
-  session_context_->set_account_name(credentials.email);
-  scheduler_ = internal_components_factory->BuildScheduler(
-      name_, session_context_.get(), cancelation_signal).Pass();
+  session_context_ =
+      args->internal_components_factory->BuildContext(
+                                             connection_manager_.get(),
+                                             directory(),
+                                             args->extensions_activity,
+                                             listeners,
+                                             &debug_info_event_listener_,
+                                             model_type_registry_.get(),
+                                             args->invalidator_client_id)
+          .Pass();
+  session_context_->set_account_name(args->credentials.email);
+  scheduler_ = args->internal_components_factory->BuildScheduler(
+      name_, session_context_.get(), args->cancelation_signal).Pass();
 
   scheduler_->Start(SyncScheduler::CONFIGURATION_MODE);
 
@@ -434,7 +423,7 @@ void SyncManagerImpl::Init(
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
   observing_network_connectivity_changes_ = true;
 
-  UpdateCredentials(credentials);
+  UpdateCredentials(args->credentials);
 
   NotifyInitializationSuccess();
 }

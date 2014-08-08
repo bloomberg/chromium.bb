@@ -19,28 +19,12 @@ SyncBackupManager::SyncBackupManager()
 SyncBackupManager::~SyncBackupManager() {
 }
 
-void SyncBackupManager::Init(
-    const base::FilePath& database_location,
-    const WeakHandle<JsEventHandler>& event_handler,
-    const GURL& service_url,
-    scoped_ptr<HttpPostProviderFactory> post_factory,
-    const std::vector<scoped_refptr<ModelSafeWorker> >& workers,
-    ExtensionsActivity* extensions_activity,
-    SyncManager::ChangeDelegate* change_delegate,
-    const SyncCredentials& credentials,
-    const std::string& invalidator_client_id,
-    const std::string& restored_key_for_bootstrapping,
-    const std::string& restored_keystore_key_for_bootstrapping,
-    InternalComponentsFactory* internal_components_factory,
-    Encryptor* encryptor,
-    scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler,
-    ReportUnrecoverableErrorFunction report_unrecoverable_error_function,
-    CancelationSignal* cancelation_signal) {
+void SyncBackupManager::Init(InitArgs* args) {
   if (SyncRollbackManagerBase::InitInternal(
-          database_location,
-          internal_components_factory,
-          unrecoverable_error_handler.Pass(),
-          report_unrecoverable_error_function)) {
+          args->database_location,
+          args->internal_components_factory.get(),
+          args->unrecoverable_error_handler.Pass(),
+          args->report_unrecoverable_error_function)) {
     GetUserShare()->directory->CollectMetaHandleCounts(
         &status_.num_entries_by_type, &status_.num_to_delete_entries_by_type);
 

@@ -25,6 +25,8 @@
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/engine/sync_status.h"
 #include "sync/internal_api/public/events/protocol_event.h"
+#include "sync/internal_api/public/http_post_provider_factory.h"
+#include "sync/internal_api/public/internal_components_factory.h"
 #include "sync/internal_api/public/shutdown_reason.h"
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
@@ -46,7 +48,6 @@ class CancelationSignal;
 class DataTypeDebugInfoListener;
 class Encryptor;
 class ExtensionsActivity;
-class HttpPostProviderFactory;
 class InternalComponentsFactory;
 class JsBackend;
 class JsEventHandler;
@@ -220,52 +221,65 @@ class SYNC_EXPORT SyncManager {
     virtual ~Observer();
   };
 
+  // Arguments for initializing SyncManager.
+  struct SYNC_EXPORT InitArgs {
+    InitArgs();
+    ~InitArgs();
+
+    // Path in which to create or open sync's sqlite database (aka the
+    // directory).
+    base::FilePath database_location;
+
+    // Used to propagate events to chrome://sync-internals.  Optional.
+    WeakHandle<JsEventHandler> event_handler;
+
+    // URL of the sync server.
+    GURL service_url;
+
+    // Used to communicate with the sync server.
+    scoped_ptr<HttpPostProviderFactory> post_factory;
+
+    std::vector<scoped_refptr<ModelSafeWorker> > workers;
+
+    // Must outlive SyncManager.
+    ExtensionsActivity* extensions_activity;
+
+    // Must outlive SyncManager.
+    ChangeDelegate* change_delegate;
+
+    // Credentials to be used when talking to the sync server.
+    SyncCredentials credentials;
+
+    // Unqiuely identifies this client to the invalidation notification server.
+    std::string invalidator_client_id;
+
+    // Used to boostrap the cryptographer.
+    std::string restored_key_for_bootstrapping;
+    std::string restored_keystore_key_for_bootstrapping;
+
+    scoped_ptr<InternalComponentsFactory> internal_components_factory;
+
+    // Must outlive SyncManager.
+    Encryptor* encryptor;
+
+    scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler;
+    ReportUnrecoverableErrorFunction report_unrecoverable_error_function;
+
+    // Carries shutdown requests across threads and will be used to cut short
+    // any network I/O and tell the syncer to exit early.
+    //
+    // Must outlive SyncManager.
+    CancelationSignal* cancelation_signal;
+  };
+
   SyncManager();
   virtual ~SyncManager();
 
-  // Initialize the sync manager.  |database_location| specifies the path of
-  // the directory in which to locate a sqlite repository storing the syncer
-  // backend state. Initialization will open the database, or create it if it
-  // does not already exist. Returns false on failure.
-  // |event_handler| is the JsEventHandler used to propagate events to
-  // chrome://sync-internals.  |event_handler| may be uninitialized.
-  // |service_url| is the URL of the Chrome Sync Server.
-  // |post_factory| will be owned internally and used to create
-  // instances of an HttpPostProvider.
-  // |model_safe_worker| ownership is given to the SyncManager.
-  // |user_agent| is a 7-bit ASCII string suitable for use as the User-Agent
-  // HTTP header. Used internally when collecting stats to classify clients.
-  // |invalidator| is owned and used to listen for invalidations.
-  // |invalidator_client_id| is used to unqiuely identify this client to the
-  // invalidation notification server.
-  // |restored_key_for_bootstrapping| is the key used to boostrap the
-  // cryptographer
-  // |keystore_encryption_enabled| determines whether we enable the keystore
-  // encryption functionality in the cryptographer/nigori.
-  // |report_unrecoverable_error_function| may be NULL.
-  // |cancelation_signal| carries shutdown requests across threads.  This one
-  // will be used to cut short any network I/O and tell the syncer to exit
-  // early.
+  // Initialize the sync manager using arguments from |args|.
   //
-  // TODO(akalin): Replace the |post_factory| parameter with a
-  // URLFetcher parameter.
-  virtual void Init(
-      const base::FilePath& database_location,
-      const WeakHandle<JsEventHandler>& event_handler,
-      const GURL& service_url,
-      scoped_ptr<HttpPostProviderFactory> post_factory,
-      const std::vector<scoped_refptr<ModelSafeWorker> >& workers,
-      ExtensionsActivity* extensions_activity,
-      ChangeDelegate* change_delegate,
-      const SyncCredentials& credentials,
-      const std::string& invalidator_client_id,
-      const std::string& restored_key_for_bootstrapping,
-      const std::string& restored_keystore_key_for_bootstrapping,
-      InternalComponentsFactory* internal_components_factory,
-      Encryptor* encryptor,
-      scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler,
-      ReportUnrecoverableErrorFunction report_unrecoverable_error_function,
-      CancelationSignal* cancelation_signal) = 0;
+  // Note, args is passed by non-const pointer because it contains objects like
+  // scoped_ptr.
+  virtual void Init(InitArgs* args) = 0;
 
   virtual ModelTypeSet InitialSyncEndedTypes() = 0;
 

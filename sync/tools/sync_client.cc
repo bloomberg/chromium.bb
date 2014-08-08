@@ -430,23 +430,26 @@ int SyncClientMain(int argc, char* argv[]) {
   };
   CancelationSignal scm_cancelation_signal;
 
-  sync_manager->Init(database_dir.path(),
-                     WeakHandle<JsEventHandler>(js_event_handler.AsWeakPtr()),
-                     GURL(kSyncServiceURL),
-                     post_factory.Pass(),
-                     workers,
-                     extensions_activity,
-                     &change_delegate,
-                     credentials,
-                     invalidator_id,
-                     kRestoredKeyForBootstrapping,
-                     kRestoredKeystoreKeyForBootstrapping,
-                     new InternalComponentsFactoryImpl(factory_switches),
-                     &null_encryptor,
-                     scoped_ptr<UnrecoverableErrorHandler>(
-                         new LoggingUnrecoverableErrorHandler).Pass(),
-                     &LogUnrecoverableErrorContext,
-                     &scm_cancelation_signal);
+  SyncManager::InitArgs args;
+  args.database_location = database_dir.path();
+  args.event_handler = WeakHandle<JsEventHandler>(js_event_handler.AsWeakPtr());
+  args.service_url = GURL(kSyncServiceURL);
+  args.post_factory = post_factory.Pass();
+  args.workers = workers;
+  args.extensions_activity = extensions_activity;
+  args.change_delegate = &change_delegate;
+  args.credentials = credentials;
+  args.invalidator_client_id = invalidator_id;
+  args.restored_key_for_bootstrapping = kRestoredKeyForBootstrapping;
+  args.restored_keystore_key_for_bootstrapping =
+      kRestoredKeystoreKeyForBootstrapping;
+  args.internal_components_factory.reset(
+      new InternalComponentsFactoryImpl(factory_switches));
+  args.encryptor = &null_encryptor;
+  args.unrecoverable_error_handler.reset(new LoggingUnrecoverableErrorHandler);
+  args.report_unrecoverable_error_function = &LogUnrecoverableErrorContext;
+  args.cancelation_signal = &scm_cancelation_signal;
+  sync_manager->Init(&args);
   // TODO(akalin): Avoid passing in model parameters multiple times by
   // organizing handling of model types.
   invalidator->UpdateCredentials(credentials.email, credentials.sync_token);

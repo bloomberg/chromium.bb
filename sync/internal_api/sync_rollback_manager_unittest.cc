@@ -111,27 +111,16 @@ class SyncRollbackManagerTest : public testing::Test,
                                      &SyncRollbackManagerTest::HandleInit)));
 
     manager->AddObserver(this);
-    TestInternalComponentsFactory factory(InternalComponentsFactory::Switches(),
-                                          storage_option);
 
     base::RunLoop run_loop;
-    manager->Init(
-        temp_dir_.path(),
-        MakeWeakHandle(base::WeakPtr<JsEventHandler>()),
-        GURL("https://example.com/"),
-        scoped_ptr<HttpPostProviderFactory>().Pass(),
-        std::vector<scoped_refptr<ModelSafeWorker> >(1, worker_.get()),
-        NULL,
-        delegate,
-        SyncCredentials(),
-        "",
-        "",
-        "",
-        &factory,
-        NULL,
-        scoped_ptr<UnrecoverableErrorHandler>().Pass(),
-        NULL,
-        NULL);
+    SyncManager::InitArgs args;
+    args.database_location = temp_dir_.path();
+    args.service_url = GURL("https://example.com/");
+    args.workers.push_back(worker_);
+    args.change_delegate = delegate;
+    args.internal_components_factory.reset(new TestInternalComponentsFactory(
+        InternalComponentsFactory::Switches(), storage_option));
+    manager->Init(&args);
     loop_.PostTask(FROM_HERE, run_loop.QuitClosure());
     run_loop.Run();
   }

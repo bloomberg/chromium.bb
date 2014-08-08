@@ -815,25 +815,21 @@ class SyncManagerTest : public testing::Test,
     scoped_refptr<ModelSafeWorker> worker = new FakeModelWorker(GROUP_PASSIVE);
     workers.push_back(worker);
 
-    // Takes ownership of |fake_invalidator_|.
-    sync_manager_.Init(
-        temp_dir_.path(),
-        WeakHandle<JsEventHandler>(),
-        GURL("https://example.com/"),
-        scoped_ptr<HttpPostProviderFactory>(new TestHttpPostProviderFactory()),
-        workers,
-        extensions_activity_.get(),
-        this,
-        credentials,
-        "fake_invalidator_client_id",
-        std::string(),
-        std::string(),  // bootstrap tokens
-        scoped_ptr<InternalComponentsFactory>(GetFactory()).get(),
-        &encryptor_,
-        scoped_ptr<UnrecoverableErrorHandler>(new TestUnrecoverableErrorHandler)
-            .Pass(),
-        NULL,
-        &cancelation_signal_);
+    SyncManager::InitArgs args;
+    args.database_location = temp_dir_.path();
+    args.service_url = GURL("https://example.com/");
+    args.post_factory =
+        scoped_ptr<HttpPostProviderFactory>(new TestHttpPostProviderFactory());
+    args.workers = workers;
+    args.extensions_activity = extensions_activity_.get(),
+    args.change_delegate = this;
+    args.credentials = credentials;
+    args.invalidator_client_id = "fake_invalidator_client_id";
+    args.internal_components_factory.reset(GetFactory());
+    args.encryptor = &encryptor_;
+    args.unrecoverable_error_handler.reset(new TestUnrecoverableErrorHandler);
+    args.cancelation_signal = &cancelation_signal_;
+    sync_manager_.Init(&args);
 
     sync_manager_.GetEncryptionHandler()->AddObserver(&encryption_observer_);
 
