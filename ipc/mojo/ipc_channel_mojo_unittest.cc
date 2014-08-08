@@ -22,7 +22,8 @@ namespace {
 
 class ListenerThatExpectsOK : public IPC::Listener {
  public:
-  ListenerThatExpectsOK() {}
+  ListenerThatExpectsOK()
+      : received_ok_(false) {}
 
   virtual ~ListenerThatExpectsOK() {}
 
@@ -31,12 +32,16 @@ class ListenerThatExpectsOK : public IPC::Listener {
     std::string should_be_ok;
     EXPECT_TRUE(iter.ReadString(&should_be_ok));
     EXPECT_EQ(should_be_ok, "OK");
+    received_ok_ = true;
     base::MessageLoop::current()->Quit();
     return true;
   }
 
   virtual void OnChannelError() OVERRIDE {
-    NOTREACHED();
+    // The connection should be healthy while the listener is waiting
+    // message.  An error can occur after that because the peer
+    // process dies.
+    DCHECK(received_ok_);
   }
 
   static void SendOK(IPC::Sender* sender) {
@@ -45,6 +50,9 @@ class ListenerThatExpectsOK : public IPC::Listener {
     message->WriteString(std::string("OK"));
     ASSERT_TRUE(sender->Send(message));
   }
+
+ private:
+  bool received_ok_;
 };
 
 class ListenerThatShouldBeNeverCalled : public IPC::Listener {

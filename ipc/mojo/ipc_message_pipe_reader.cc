@@ -67,12 +67,12 @@ void MessagePipeReader::PipeIsReady(MojoResult wait_result) {
   pipe_wait_id_ = 0;
 
   if (wait_result != MOJO_RESULT_OK) {
-    // FAILED_PRECONDITION happens when the pipe is
-    // closed before the waiter is scheduled in a backend thread.
-    if (wait_result != MOJO_RESULT_ABORTED &&
-        wait_result != MOJO_RESULT_FAILED_PRECONDITION) {
-      DLOG(WARNING) << "Pipe got error from the waiter. Closing: "
-                    << wait_result;
+    if (wait_result != MOJO_RESULT_ABORTED) {
+      // FAILED_PRECONDITION happens every time the peer is dead so
+      // it isn't worth polluting the log message.
+      DLOG_IF(WARNING, wait_result != MOJO_RESULT_FAILED_PRECONDITION)
+          << "Pipe got error from the waiter. Closing: "
+          << wait_result;
       OnPipeError(wait_result);
     }
 
