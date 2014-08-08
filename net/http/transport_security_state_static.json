@@ -829,6 +829,8 @@
     { "name": "www.schokokeks.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "config.schokokeks.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "webmail.schokokeks.org", "include_subdomains": true, "mode": "force-https" },
+    { "name": "mwe.st", "include_subdomains": true, "mode": "force-https" },
+    { "name": "ub3rk1tten.com", "include_subdomains": true, "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
