@@ -16,7 +16,6 @@ function testFunction()
 function test()
 {
     var frameworkRegexString = "/framework\\.js$";
-    WebInspector.experimentsSettings.frameworksDebuggingSupport.enableForTest();
     WebInspector.settings.skipStackFramesPattern.set(frameworkRegexString);
 
     InspectorTest.setQuiet(true);

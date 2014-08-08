@@ -51,7 +51,6 @@ function test()
     var frameworkRegexString = "/framework\\.js$";
     var totalDebuggerStatements = 5;
 
-    WebInspector.experimentsSettings.frameworksDebuggingSupport.enableForTest();
     WebInspector.settings.skipStackFramesPattern.set(frameworkRegexString);
 
     InspectorTest.setQuiet(true);
