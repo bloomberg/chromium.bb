@@ -54,6 +54,8 @@ ImageEditor.Mode.Crop.prototype.setUp = function() {
   this.shadowBottom_.className = 'shadow';
   this.domOverlay_.appendChild(this.shadowBottom_);
 
+  this.toolBar_ = null;
+
   var cropFrame = this.cropFrame_;
   function addCropFrame(className) {
     var div = doc.createElement('div');
@@ -102,10 +104,18 @@ ImageEditor.Mode.Crop.prototype.createTools = function(toolbar) {
               selectedButtons[i].classList.remove('selected');
             }
             button.classList.add('selected');
+            var clipRect = this.viewport_.screenToImageRect(
+                this.viewport_.getImageBoundsOnScreenClipped());
             this.cropRect_.fixedAspectRatio = aspect;
+            this.cropRect_.forceAspectRatio(aspect, clipRect);
+            this.markUpdated();
+            this.positionDOM();
+            this.toolbar_.element.classList.remove('dimmable');
+            this.toolbar_.element.removeAttribute('dimmed');
           }
         }.bind(this, aspects[name]));
   }
+  this.toolbar_ = toolbar;
 };
 
 /**
@@ -122,6 +132,10 @@ ImageEditor.Mode.Crop.prototype.onResized_ = function() {
 ImageEditor.Mode.Crop.prototype.reset = function() {
   ImageEditor.Mode.prototype.reset.call(this);
   this.createDefaultCrop();
+  if (this.toolbar_) {
+    this.toolbar_.element.classList.add('dimmable');
+    this.toolbar_ = null;
+  }
 };
 
 /**
@@ -226,6 +240,8 @@ ImageEditor.Mode.Crop.prototype.getDragHandler = function(x, y, touch) {
     return null;
 
   return function(x, y, shiftKey) {
+    if (this.toolbar_)
+      this.toolbar_.element.classList.add('dimmable');
     cropDragHandler(x, y, shiftKey);
     this.markUpdated();
     this.positionDOM();
@@ -577,7 +593,9 @@ DraggableRect.prototype.forceAspectRatio = function(aspectRatio, clipRect) {
   var width = this.bounds_.right - this.bounds_.left;
   var height = this.bounds_.bottom - this.bounds_.top;
   var currentScale;
-  if (this.dragMode_.xSide === 'none')
+  if (!this.dragMode_)
+    currentScale = ((width / aspectRatio) + height) / 2;
+  else if (this.dragMode_.xSide === 'none')
     currentScale = height;
   else if (this.dragMode_.ySide === 'none')
     currentScale = width / aspectRatio;
@@ -589,7 +607,9 @@ DraggableRect.prototype.forceAspectRatio = function(aspectRatio, clipRect) {
   var maxHeight;
   var center = (this.bounds_.left + this.bounds_.right) / 2;
   var middle = (this.bounds_.top + this.bounds_.bottom) / 2;
-  switch (this.dragMode_.xSide) {
+  var xSide = this.dragMode_ ? this.dragMode_.xSide : 'none';
+  var ySide = this.dragMode_ ? this.dragMode_.ySide : 'none';
+  switch (xSide) {
     case 'left':
       maxWidth = this.bounds_.right - clipRect.left;
       break;
@@ -602,7 +622,7 @@ DraggableRect.prototype.forceAspectRatio = function(aspectRatio, clipRect) {
           center - clipRect.left) * 2;
       break;
   }
-  switch (this.dragMode_.ySide) {
+  switch (ySide) {
     case 'top':
       maxHeight = this.bounds_.bottom - clipRect.top;
       break;
@@ -625,7 +645,7 @@ DraggableRect.prototype.forceAspectRatio = function(aspectRatio, clipRect) {
   // Update bounds.
   var newWidth = targetScale * aspectRatio;
   var newHeight = targetScale;
-  switch (this.dragMode_.xSide) {
+  switch (xSide) {
     case 'left':
       this.bounds_.left = this.bounds_.right - newWidth;
       break;
@@ -637,7 +657,7 @@ DraggableRect.prototype.forceAspectRatio = function(aspectRatio, clipRect) {
       this.bounds_.right = center + newWidth / 2;
       break;
   }
-  switch (this.dragMode_.ySide) {
+  switch (ySide) {
     case 'top':
       this.bounds_.top = this.bounds_.bottom - newHeight;
       break;
