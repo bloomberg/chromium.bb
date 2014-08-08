@@ -1,0 +1,21 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo {
+
+// A simple service used to exemplify application testing within mojo_shell.
+[Client=ExampleClient]
+interface ExampleService {
+  // Calls ExampleClient::Pong with |ping_value|.
+  Ping(uint16 ping_value);
+
+  // Runs the argument callback.
+  RunCallback() => ();
+};
+
+interface ExampleClient {
+  Pong(uint16 pong_value);
+};
+
+}

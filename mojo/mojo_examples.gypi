@@ -97,6 +97,66 @@
       'includes': [ 'build/package_app.gypi' ],
     },
     {
+      'target_name': 'mojo_example_service_bindings',
+      'type': 'static_library',
+      'sources': [
+        'examples/apptest/example_service.mojom',
+      ],
+      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
+      'export_dependent_settings': [
+        'mojo_base.gyp:mojo_cpp_bindings',
+      ],
+      'dependencies': [
+        'mojo_base.gyp:mojo_cpp_bindings',
+      ],
+    },
+    {
+      'target_name': 'mojo_example_service',
+      'type': 'loadable_module',
+      'dependencies': [
+        'mojo_base.gyp:mojo_application_standalone', # For ApplicationDelegate.
+        'mojo_base.gyp:mojo_cpp_bindings',           # For *.mojom.h
+        'mojo_base.gyp:mojo_environment_standalone', # For Environment.
+        'mojo_example_service_bindings',
+        'mojo_base.gyp:mojo_utility',                # For RunLoop.
+        '<(mojo_system_for_loadable_module)',
+      ],
+      'sources': [
+        'examples/apptest/example_service_application.cc',
+        'examples/apptest/example_service_application.h',
+        'examples/apptest/example_service_impl.cc',
+        'examples/apptest/example_service_impl.h',
+        'public/cpp/application/lib/mojo_main_standalone.cc',
+      ],
+    },
+    {
+      'target_name': 'mojo_example_apptests',
+      'type': 'loadable_module',
+      'dependencies': [
+        '../testing/gtest.gyp:gtest',
+        'mojo_base.gyp:mojo_application_standalone', # For ApplicationDelegate.
+        'mojo_base.gyp:mojo_environment_standalone', # For Environment.
+        'mojo_example_service',
+        'mojo_example_service_bindings',
+        'mojo_base.gyp:mojo_utility',                # For RunLoop.
+        '<(mojo_system_for_loadable_module)',
+      ],
+      'sources': [
+        'examples/apptest/example_apptest.cc',
+        'examples/apptest/example_client_application.cc',
+        'examples/apptest/example_client_application.h',
+        'examples/apptest/example_client_impl.cc',
+        'examples/apptest/example_client_impl.h',
+      ],
+    },
+    {
+      'target_name': 'package_mojo_example_apptests',
+      'variables': {
+        'app_name': 'mojo_example_apptests',
+      },
+      'includes': [ 'build/package_app.gypi' ],
+    },
+    {
       'target_name': 'mojo_compositor_app',
       'type': 'loadable_module',
       'dependencies': [

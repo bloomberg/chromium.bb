@@ -29,6 +29,8 @@
         'mojo_compositor_app',
         'mojo_echo_client',
         'mojo_echo_service',
+        'mojo_example_apptests',
+        'mojo_example_service',
         'mojo_geometry_lib',
         'mojo_html_viewer',
         'mojo_js',
