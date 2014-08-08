@@ -5,8 +5,6 @@
 #include "content/browser/android/edge_effect.h"
 
 #include "cc/layers/layer.h"
-#include "cc/layers/ui_resource_layer.h"
-#include "ui/base/android/system_ui_resource_manager.h"
 
 namespace content {
 
@@ -120,70 +118,52 @@ gfx::Size ComputeBounds(EdgeEffect::Edge edge,
   };
 }
 
-}  // namespace
+void DisableLayer(cc::Layer* layer) {
+  DCHECK(layer);
+  layer->SetIsDrawable(false);
+  layer->SetTransform(gfx::Transform());
+  layer->SetOpacity(1.f);
+}
 
-class EdgeEffect::EffectLayer {
- public:
-  EffectLayer(ui::SystemUIResourceManager::ResourceType resource_type,
-              ui::SystemUIResourceManager* resource_manager)
-      : ui_resource_layer_(cc::UIResourceLayer::Create()),
-        resource_type_(resource_type),
-        resource_manager_(resource_manager) {}
+void UpdateLayer(cc::Layer* layer,
+                 EdgeEffect::Edge edge,
+                 const gfx::SizeF& window_size,
+                 int offset,
+                 int height,
+                 float opacity) {
+  DCHECK(layer);
+  layer->SetIsDrawable(true);
+  gfx::Size bounds = ComputeBounds(edge, window_size, height);
+  layer->SetTransformOrigin(
+      gfx::Point3F(bounds.width() * 0.5f, bounds.height() * 0.5f, 0));
+  layer->SetTransform(ComputeTransform(edge, window_size, offset, height));
+  layer->SetBounds(bounds);
+  layer->SetOpacity(Clamp(opacity, 0.f, 1.f));
+}
 
-  ~EffectLayer() { ui_resource_layer_->RemoveFromParent(); }
+} // namespace
 
-  void SetParent(cc::Layer* parent) {
-    if (ui_resource_layer_->parent() != parent)
-      parent->AddChild(ui_resource_layer_);
-    ui_resource_layer_->SetUIResourceId(
-        resource_manager_->GetUIResourceId(resource_type_));
-  }
-
-  void Disable() { ui_resource_layer_->SetIsDrawable(false); }
-
-  void Update(EdgeEffect::Edge edge,
-              const gfx::SizeF& window_size,
-              int offset,
-              int height,
-              float opacity) {
-    ui_resource_layer_->SetUIResourceId(
-        resource_manager_->GetUIResourceId(resource_type_));
-    ui_resource_layer_->SetIsDrawable(true);
-    gfx::Size bounds = ComputeBounds(edge, window_size, height);
-    ui_resource_layer_->SetTransformOrigin(
-        gfx::Point3F(bounds.width() * 0.5f, bounds.height() * 0.5f, 0));
-    ui_resource_layer_->SetTransform(
-        ComputeTransform(edge, window_size, offset, height));
-    ui_resource_layer_->SetBounds(bounds);
-    ui_resource_layer_->SetOpacity(Clamp(opacity, 0.f, 1.f));
-  }
-
-  scoped_refptr<cc::UIResourceLayer> ui_resource_layer_;
-  ui::SystemUIResourceManager::ResourceType resource_type_;
-  ui::SystemUIResourceManager* resource_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(EffectLayer);
-};
-
-EdgeEffect::EdgeEffect(ui::SystemUIResourceManager* resource_manager)
-    : edge_(new EffectLayer(ui::SystemUIResourceManager::OVERSCROLL_EDGE,
-                            resource_manager)),
-      glow_(new EffectLayer(ui::SystemUIResourceManager::OVERSCROLL_GLOW,
-                            resource_manager)),
-      edge_alpha_(0),
-      edge_scale_y_(0),
-      glow_alpha_(0),
-      glow_scale_y_(0),
-      edge_alpha_start_(0),
-      edge_alpha_finish_(0),
-      edge_scale_y_start_(0),
-      edge_scale_y_finish_(0),
-      glow_alpha_start_(0),
-      glow_alpha_finish_(0),
-      glow_scale_y_start_(0),
-      glow_scale_y_finish_(0),
-      state_(STATE_IDLE),
-      pull_distance_(0) {
+EdgeEffect::EdgeEffect(scoped_refptr<cc::Layer> edge,
+                       scoped_refptr<cc::Layer> glow)
+  : edge_(edge)
+  , glow_(glow)
+  , edge_alpha_(0)
+  , edge_scale_y_(0)
+  , glow_alpha_(0)
+  , glow_scale_y_(0)
+  , edge_alpha_start_(0)
+  , edge_alpha_finish_(0)
+  , edge_scale_y_start_(0)
+  , edge_scale_y_finish_(0)
+  , glow_alpha_start_(0)
+  , glow_alpha_finish_(0)
+  , glow_scale_y_start_(0)
+  , glow_scale_y_finish_(0)
+  , state_(STATE_IDLE)
+  , pull_distance_(0) {
+  // Prevent the provided layers from drawing until the effect is activated.
+  DisableLayer(edge_.get());
+  DisableLayer(glow_.get());
 }
 
 EdgeEffect::~EdgeEffect() { }
@@ -193,8 +173,8 @@ bool EdgeEffect::IsFinished() const {
 }
 
 void EdgeEffect::Finish() {
-  edge_->Disable();
-  glow_->Disable();
+  DisableLayer(edge_.get());
+  DisableLayer(glow_.get());
   pull_distance_ = 0;
   state_ = STATE_IDLE;
 }
@@ -379,8 +359,8 @@ void EdgeEffect::ApplyToLayers(gfx::SizeF window_size,
   // An empty window size, while meaningless, is also relatively harmless, and
   // will simply prevent any drawing of the layers.
   if (window_size.IsEmpty()) {
-    edge_->Disable();
-    glow_->Disable();
+    DisableLayer(edge_.get());
+    DisableLayer(glow_.get());
     return;
   }
 
@@ -388,26 +368,13 @@ void EdgeEffect::ApplyToLayers(gfx::SizeF window_size,
   const int scaled_glow_height = static_cast<int>(
       std::min(glow_height * glow_scale_y_ * kGlowHeightToWidthRatio * 0.6f,
                glow_height * kMaxGlowHeight) + 0.5f);
-  glow_->Update(edge, window_size, offset, scaled_glow_height, glow_alpha_);
+  UpdateLayer(
+      glow_.get(), edge, window_size, offset, scaled_glow_height, glow_alpha_);
 
   // Edge
-  const int scaled_edge_height = static_cast<int>(edge_height * edge_scale_y_);
-  edge_->Update(edge, window_size, offset, scaled_edge_height, edge_alpha_);
-}
-
-void EdgeEffect::SetParent(cc::Layer* parent) {
-  edge_->SetParent(parent);
-  glow_->SetParent(parent);
-}
-
-// static
-void EdgeEffect::PreloadResources(
-    ui::SystemUIResourceManager* resource_manager) {
-  DCHECK(resource_manager);
-  resource_manager->PreloadResource(
-      ui::SystemUIResourceManager::OVERSCROLL_EDGE);
-  resource_manager->PreloadResource(
-      ui::SystemUIResourceManager::OVERSCROLL_GLOW);
+ const int scaled_edge_height = static_cast<int>(edge_height * edge_scale_y_);
+  UpdateLayer(
+      edge_.get(), edge, window_size, offset, scaled_edge_height, edge_alpha_);
 }
 
 } // namespace content

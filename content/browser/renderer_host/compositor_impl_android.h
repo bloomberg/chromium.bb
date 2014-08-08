@@ -8,8 +8,10 @@
 #include "base/basictypes.h"
 #include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/resources/ui_resource_client.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "content/browser/android/ui_resource_provider_impl.h"
@@ -17,7 +19,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/android/compositor.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include "ui/base/android/system_ui_resource_manager.h"
 #include "ui/base/android/window_android_compositor.h"
 
 class SkBitmap;
@@ -97,7 +98,6 @@ class CONTENT_EXPORT CompositorImpl
   virtual void OnVSync(base::TimeTicks frame_time,
                        base::TimeDelta vsync_period) OVERRIDE;
   virtual void SetNeedsAnimate() OVERRIDE;
-  virtual ui::SystemUIResourceManager& GetSystemUIResourceManager() OVERRIDE;
 
   enum CompositingTrigger {
     DO_NOT_COMPOSITE,
@@ -127,6 +127,9 @@ class CONTENT_EXPORT CompositorImpl
     composite_on_vsync_trigger_ = DO_NOT_COMPOSITE;
     will_composite_immediately_ = false;
   }
+  cc::UIResourceId GenerateUIResourceFromUIResourceBitmap(
+      const cc::UIResourceBitmap& bitmap,
+      bool is_transient);
   void OnGpuChannelEstablished();
 
   // root_layer_ is the persistent internal root layer, while subroot_layer_

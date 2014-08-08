@@ -192,6 +192,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       weak_ptr_factory_(this),
       overscroll_effect_enabled_(!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableOverscrollEdgeEffect)),
+      overscroll_effect_(OverscrollGlow::Create(overscroll_effect_enabled_)),
       gesture_provider_(CreateGestureProviderConfig(), this),
       gesture_text_selector_(this),
       touch_scrolling_(false),
@@ -367,7 +368,7 @@ void RenderWidgetHostViewAndroid::MovePluginWindows(
 void RenderWidgetHostViewAndroid::Focus() {
   host_->Focus();
   host_->SetInputMethodActive(true);
-  if (overscroll_effect_)
+  if (overscroll_effect_enabled_)
     overscroll_effect_->Enable();
 }
 
@@ -375,8 +376,7 @@ void RenderWidgetHostViewAndroid::Blur() {
   host_->ExecuteEditCommand("Unselect", "");
   host_->SetInputMethodActive(false);
   host_->Blur();
-  if (overscroll_effect_)
-    overscroll_effect_->Disable();
+  overscroll_effect_->Disable();
 }
 
 bool RenderWidgetHostViewAndroid::HasFocus() const {
@@ -929,10 +929,8 @@ void RenderWidgetHostViewAndroid::ComputeContentsSize(
       gfx::Size(texture_size_in_layer_.width() - offset.x(),
                 texture_size_in_layer_.height() - offset.y());
 
-  if (overscroll_effect_) {
-    overscroll_effect_->UpdateDisplayParameters(
-        CreateOverscrollDisplayParameters(frame_metadata));
-  }
+  overscroll_effect_->UpdateDisplayParameters(
+      CreateOverscrollDisplayParameters(frame_metadata));
 }
 
 void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
@@ -1145,7 +1143,7 @@ void RenderWidgetHostViewAndroid::AttachLayers() {
     return;
 
   content_view_core_->AttachLayer(layer_);
-  if (overscroll_effect_)
+  if (overscroll_effect_enabled_)
     overscroll_effect_->Enable();
   layer_->SetHideLayerAndSubtree(!is_showing_);
 }
@@ -1158,13 +1156,11 @@ void RenderWidgetHostViewAndroid::RemoveLayers() {
     return;
 
   content_view_core_->RemoveLayer(layer_);
-  if (overscroll_effect_)
-    overscroll_effect_->Disable();
+  overscroll_effect_->Disable();
 }
 
 bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
-  bool needs_animate =
-      overscroll_effect_ ? overscroll_effect_->Animate(frame_time) : false;
+  bool needs_animate = overscroll_effect_->Animate(frame_time);
   if (selection_controller_)
     needs_animate |= selection_controller_->Animate(frame_time);
   return needs_animate;
@@ -1365,8 +1361,8 @@ void RenderWidgetHostViewAndroid::SendMouseWheelEvent(
 void RenderWidgetHostViewAndroid::SendGestureEvent(
     const blink::WebGestureEvent& event) {
   // Sending a gesture that may trigger overscroll should resume the effect.
-  if (overscroll_effect_)
-    overscroll_effect_->Enable();
+  if (overscroll_effect_enabled_)
+   overscroll_effect_->Enable();
 
   if (host_)
     host_->ForwardGestureEventWithLatencyInfo(event, CreateLatencyInfo(event));
@@ -1412,9 +1408,7 @@ void RenderWidgetHostViewAndroid::DidOverscroll(
     return;
 
   const float device_scale_factor = content_view_core_->GetDpiScale();
-
-  if (overscroll_effect_ &&
-      overscroll_effect_->OnOverscrolled(
+  if (overscroll_effect_->OnOverscrolled(
           content_view_core_->GetLayer(),
           base::TimeTicks::Now(),
           gfx::ScaleVector2d(params.accumulated_overscroll,
@@ -1481,16 +1475,6 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
 
   if (!selection_controller_)
     selection_controller_.reset(new TouchSelectionController(this));
-
-  if (!content_view_core_) {
-    overscroll_effect_.reset();
-  } else if (overscroll_effect_enabled_ && !overscroll_effect_) {
-    DCHECK(content_view_core_->GetWindowAndroid()->GetCompositor());
-    overscroll_effect_ =
-        OverscrollGlow::Create(&content_view_core_->GetWindowAndroid()
-                                    ->GetCompositor()
-                                    ->GetSystemUIResourceManager());
-  }
 }
 
 void RenderWidgetHostViewAndroid::RunAckCallbacks() {

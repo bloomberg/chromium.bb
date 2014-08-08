@@ -313,8 +313,6 @@
       'browser/android/popup_touch_handle_drawable.h',
       'browser/android/surface_texture_peer_browser_impl.cc',
       'browser/android/surface_texture_peer_browser_impl.h',
-      'browser/android/system_ui_resource_manager_impl.cc',
-      'browser/android/system_ui_resource_manager_impl.h',
       'browser/android/tracing_controller_android.cc',
       'browser/android/tracing_controller_android.h',
       'browser/android/web_contents_observer_android.cc',

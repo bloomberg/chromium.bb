@@ -340,10 +340,6 @@ UIResourceProvider& CompositorImpl::GetUIResourceProvider() {
   return ui_resource_provider_;
 }
 
-ui::SystemUIResourceManager& CompositorImpl::GetSystemUIResourceManager() {
-  return ui_resource_provider_.GetSystemUIResourceManager();
-}
-
 void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
   if (subroot_layer_) {
     subroot_layer_->RemoveFromParent();

@@ -9,7 +9,6 @@
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "jni/BitmapHelper_jni.h"
-#include "skia/ext/image_operations.h"
 #include "ui/gfx/size.h"
 
 using base::android::AttachCurrentThread;
@@ -69,6 +68,17 @@ ScopedJavaLocalRef<jobject> CreateJavaBitmap(int width,
       AttachCurrentThread(), width, height, java_bitmap_config);
 }
 
+ScopedJavaLocalRef<jobject> CreateJavaBitmapFromAndroidResource(
+    const char* name,
+    gfx::Size size) {
+  DCHECK(name);
+  DCHECK(!size.IsEmpty());
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jname(ConvertUTF8ToJavaString(env, name));
+  return Java_BitmapHelper_decodeDrawableResource(
+      env, jname.obj(), size.width(), size.height());
+}
+
 ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(const SkBitmap* skbitmap) {
   DCHECK(skbitmap);
   DCHECK(!skbitmap->isNull());
@@ -84,26 +94,6 @@ ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(const SkBitmap* skbitmap) {
   memcpy(dst_pixels, src_pixels, skbitmap->getSize());
 
   return jbitmap;
-}
-
-SkBitmap CreateSkBitmapFromAndroidResource(const char* name, gfx::Size size) {
-  DCHECK(name);
-  DCHECK(!size.IsEmpty());
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> jname(ConvertUTF8ToJavaString(env, name));
-  base::android::ScopedJavaLocalRef<jobject> jobj =
-      Java_BitmapHelper_decodeDrawableResource(
-          env, jname.obj(), size.width(), size.height());
-
-  if (jobj.is_null())
-    return SkBitmap();
-
-  SkBitmap bitmap = CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(jobj.obj()));
-  if (bitmap.isNull())
-    return bitmap;
-
-  return skia::ImageOperations::Resize(
-      bitmap, skia::ImageOperations::RESIZE_BOX, size.width(), size.height());
 }
 
 SkBitmap CreateSkBitmapFromJavaBitmap(const JavaBitmap& jbitmap) {

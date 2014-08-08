@@ -6,16 +6,12 @@
 #define CONTENT_BROWSER_ANDROID_EDGE_EFFECT_H_
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "ui/gfx/size_f.h"
 
 namespace cc {
 class Layer;
-}
-
-namespace ui {
-class SystemUIResourceManager;
 }
 
 namespace content {
@@ -28,7 +24,7 @@ namespace content {
  * All coordinates and dimensions are in device pixels.
  */
 class EdgeEffect {
- public:
+public:
   enum Edge {
     EDGE_TOP = 0,
     EDGE_LEFT,
@@ -37,7 +33,7 @@ class EdgeEffect {
     EDGE_COUNT
   };
 
-  explicit EdgeEffect(ui::SystemUIResourceManager* resource_manager);
+  EdgeEffect(scoped_refptr<cc::Layer> edge, scoped_refptr<cc::Layer> glow);
   ~EdgeEffect();
 
   void Pull(base::TimeTicks current_time, float delta_distance);
@@ -54,11 +50,8 @@ class EdgeEffect {
                      float glow_height,
                      float offset);
 
-  void SetParent(cc::Layer* parent);
+private:
 
-  static void PreloadResources(ui::SystemUIResourceManager* resource_manager);
-
- private:
   enum State {
     STATE_IDLE = 0,
     STATE_PULL,
@@ -67,9 +60,8 @@ class EdgeEffect {
     STATE_PULL_DECAY
   };
 
-  class EffectLayer;
-  scoped_ptr<EffectLayer> edge_;
-  scoped_ptr<EffectLayer> glow_;
+  scoped_refptr<cc::Layer> edge_;
+  scoped_refptr<cc::Layer> glow_;
 
   float edge_alpha_;
   float edge_scale_y_;

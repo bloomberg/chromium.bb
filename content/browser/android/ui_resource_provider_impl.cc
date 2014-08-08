@@ -10,8 +10,7 @@
 
 namespace content {
 
-UIResourceProviderImpl::UIResourceProviderImpl()
-    : system_ui_resource_manager_(this), host_(NULL) {
+UIResourceProviderImpl::UIResourceProviderImpl() : host_(NULL) {
 }
 
 UIResourceProviderImpl::~UIResourceProviderImpl() {
@@ -56,11 +55,6 @@ void UIResourceProviderImpl::DeleteUIResource(cc::UIResourceId ui_resource_id) {
   if (!host_)
     return;
   host_->DeleteUIResource(ui_resource_id);
-}
-
-ui::SystemUIResourceManager&
-UIResourceProviderImpl::GetSystemUIResourceManager() {
-  return system_ui_resource_manager_;
 }
 
 }  // namespace content

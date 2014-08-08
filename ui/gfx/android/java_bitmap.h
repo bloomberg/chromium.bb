@@ -57,12 +57,12 @@ GFX_EXPORT base::android::ScopedJavaLocalRef<jobject> CreateJavaBitmap(
     int height,
     SkColorType color_type);
 
-// Loads an SkBitmap from the provided drawable resource identifier (e.g.,
-// android:drawable/overscroll_glow). If the resource loads successfully, it
-// will be integrally scaled down, preserving aspect ratio, to a size no smaller
-// than |size|. Otherwise, an empty bitmap is returned.
-GFX_EXPORT SkBitmap
-    CreateSkBitmapFromAndroidResource(const char* name, gfx::Size size);
+// Loads a Java-backed bitmap (android.graphics.Bitmap) from the provided
+// drawable resource identifier (e.g., android:drawable/overscroll_glow). If the
+// resource loads successfully, it will be integrally scaled down, preserving
+// aspect ratio, to a size no smaller than |size|. Otherwise, null is returned.
+GFX_EXPORT base::android::ScopedJavaLocalRef<jobject>
+    CreateJavaBitmapFromAndroidResource(const char* name, gfx::Size size);
 
 // Converts |skbitmap| to a Java-backed bitmap (android.graphics.Bitmap).
 // Note: |skbitmap| is assumed to be non-null, non-empty and one of RGBA_8888 or
