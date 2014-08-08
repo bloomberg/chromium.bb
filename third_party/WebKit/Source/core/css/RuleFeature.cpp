@@ -98,6 +98,7 @@ static bool isSkippableComponentForInvalidation(const CSSSelector& selector)
     case CSSSelector::PseudoInRange:
     case CSSSelector::PseudoOutOfRange:
     case CSSSelector::PseudoUnresolved:
+    case CSSSelector::PseudoListBox:
         return true;
     default:
         return false;

@@ -757,9 +757,7 @@ select {
     cursor: default;
 }
 
-select[size],
-select[multiple],
-select[size][multiple] {
+select:-internal-list-box {
     -webkit-appearance: listbox;
     align-items: flex-start;
     border: 1px inset gray;
@@ -769,21 +767,6 @@ select[size][multiple] {
     vertical-align: text-bottom;
     -webkit-user-select: none;
     white-space: nowrap;
-}
-
-select[size="0"],
-select[size="1"] {
-    -webkit-appearance: menulist;
-    align-items: center;
-    border-width: 1px;
-    border-style: solid;
-    border-color: initial;
-    border-radius: 5px;
-    overflow-x: initial;
-    overflow-y: initial;
-    vertical-align: initial;
-    -webkit-user-select: initial;
-    white-space: pre;
 }
 
 optgroup {
@@ -799,38 +782,21 @@ option {
     min-height: 1.2em;
 }
 
-select:focus[size] option:checked,
-select:focus[multiple] option:checked,
-select:focus[size][multiple] option:checked {
-    background-color: -internal-active-list-box-selection;
-    color: -internal-active-list-box-selection-text;
+select:-internal-list-box:focus option:checked {
+    background-color: -internal-active-list-box-selection !important;
+    color: -internal-active-list-box-selection-text !important;
 }
 
-select[size] option:checked,
-select[multiple] option:checked,
-select[size][multiple] option:checked {
-    background-color: -internal-inactive-list-box-selection;
-    color: -internal-inactive-list-box-selection-text;
+select:-internal-list-box option:checked {
+    background-color: -internal-inactive-list-box-selection !important;
+    color: -internal-inactive-list-box-selection-text !important;
 }
 
-select[size="0"] option:checked,
-select[size="1"] option:checked,
-select:focus[size="0"] option:checked,
-select:focus[size="1"] option:checked {
-    background-color: initial;
-    color: initial;
+select:-internal-list-box:disabled option:checked,
+select:-internal-list-box option:checked:disabled {
+    color: gray !important;
 }
 
-select:disabled option:checked,
-select:disabled[size] option:checked,
-select:disabled[multiple] option:checked,
-select:disabled[size][multiple] option:checked,
-option:checked:disabled,
-select[size] option:checked:disabled,
-select[multiple] option:checked:disabled,
-select[size][multiple] option:checked:disabled {
-    color: gray;
-}
 
 output {
     display: inline;

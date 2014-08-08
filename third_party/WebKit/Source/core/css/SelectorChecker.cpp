@@ -45,6 +45,7 @@
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLOptionElement.h"
+#include "core/html/HTMLSelectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/track/vtt/VTTElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -952,6 +953,8 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
             break;
         case CSSSelector::PseudoSpatialNavigationFocus:
             return context.isUARule && matchesSpatialNavigationFocusPseudoClass(element);
+        case CSSSelector::PseudoListBox:
+            return context.isUARule && matchesListBoxPseudoClass(element);
 
         case CSSSelector::PseudoHorizontal:
         case CSSSelector::PseudoVertical:
@@ -1127,6 +1130,11 @@ bool SelectorChecker::matchesFocusPseudoClass(const Element& element)
 bool SelectorChecker::matchesSpatialNavigationFocusPseudoClass(const Element& element)
 {
     return isHTMLOptionElement(element) && toHTMLOptionElement(element).spatialNavigationFocused() && isFrameFocused(element);
+}
+
+bool SelectorChecker::matchesListBoxPseudoClass(const Element& element)
+{
+    return isHTMLSelectElement(element) && !toHTMLSelectElement(element).usesMenuList();
 }
 
 template

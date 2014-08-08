@@ -258,6 +258,7 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     case PseudoFullScreenDocument:
     case PseudoFullScreenAncestor:
     case PseudoSpatialNavigationFocus:
+    case PseudoListBox:
         return NOPSEUDO;
     case PseudoNotParsed:
         ASSERT_NOT_REACHED();
@@ -278,6 +279,7 @@ struct NameToPseudoStruct {
 
 // This table should be kept sorted.
 const static NameToPseudoStruct pseudoTypeMap[] = {
+{"-internal-list-box",            CSSSelector::PseudoListBox},
 {"-internal-spatial-navigation-focus", CSSSelector::PseudoSpatialNavigationFocus},
 {"-webkit-any(",                  CSSSelector::PseudoAny},
 {"-webkit-any-link",              CSSSelector::PseudoAnyLink},
@@ -532,6 +534,7 @@ void CSSSelector::extractPseudoType() const
     case PseudoHostContext:
     case PseudoUnresolved:
     case PseudoSpatialNavigationFocus:
+    case PseudoListBox:
         break;
     case PseudoFirstPage:
     case PseudoLeftPage:
@@ -784,6 +787,7 @@ static bool validateSubSelector(const CSSSelector* selector)
     case CSSSelector::PseudoHostContext:
     case CSSSelector::PseudoNot:
     case CSSSelector::PseudoSpatialNavigationFocus:
+    case CSSSelector::PseudoListBox:
         return true;
     default:
         return false;

@@ -217,7 +217,8 @@ namespace blink {
             PseudoHost,
             PseudoHostContext,
             PseudoShadow,
-            PseudoSpatialNavigationFocus
+            PseudoSpatialNavigationFocus,
+            PseudoListBox
         };
 
         enum MarginBoxType {

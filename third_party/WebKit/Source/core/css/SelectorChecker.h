@@ -115,6 +115,7 @@ public:
     static bool isCommonPseudoClassSelector(const CSSSelector&);
     static bool matchesFocusPseudoClass(const Element&);
     static bool matchesSpatialNavigationFocusPseudoClass(const Element&);
+    static bool matchesListBoxPseudoClass(const Element&);
     static bool checkExactAttribute(const Element&, const QualifiedName& selectorAttributeName, const StringImpl* value);
 
     enum LinkMatchMask { MatchLink = 1, MatchVisited = 2, MatchAll = MatchLink | MatchVisited };
