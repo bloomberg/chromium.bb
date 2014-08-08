@@ -458,7 +458,6 @@ crbug.com/282092 [ Mac ] svg/dom/SVGLength-px-with-context.html [ Failure Pass ]
 crbug.com/282093 [ Mac ] svg/hixie/text/001.xml [ Crash Failure Pass ImageOnlyFailure ]
 crbug.com/282094 fast/repaint/video-mute-repaint.html [ Pass Failure Timeout ]
 crbug.com/282095 storage/websql/read-transactions-running-concurrently.html [ Failure Pass ]
-crbug.com/318431 [ Linux ] fast/dom/shadow/transition-on-shadow-host-with-distributed-node.html [ Pass Timeout ]
 
 crbug.com/340206 [ Win ] http/tests/security/cross-origin-css.html [ Pass Timeout ]
 
