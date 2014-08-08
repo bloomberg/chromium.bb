@@ -433,8 +433,8 @@ void GetClusterAtImpl(size_t pos,
 namespace internal {
 
 TextRunHarfBuzz::TextRunHarfBuzz()
-    : width(0),
-      preceding_run_widths(0),
+    : width(0.0f),
+      preceding_run_widths(0.0f),
       is_rtl(false),
       level(0),
       script(USCRIPT_INVALID_CODE),
@@ -497,8 +497,10 @@ Range TextRunHarfBuzz::GetGraphemeBounds(
     base::i18n::BreakIterator* grapheme_iterator,
     size_t text_index) {
   DCHECK_LT(text_index, range.end());
+  // TODO(msw): Support floating point grapheme bounds.
+  const int preceding_run_widths_int = SkScalarRoundToInt(preceding_run_widths);
   if (glyph_count == 0)
-    return Range(preceding_run_widths, preceding_run_widths + width);
+    return Range(preceding_run_widths_int, preceding_run_widths_int + width);
 
   Range chars;
   Range glyphs;
@@ -532,13 +534,13 @@ Range TextRunHarfBuzz::GetGraphemeBounds(
           cluster_width * before / static_cast<float>(total));
       const int grapheme_end_x = cluster_begin_x + static_cast<int>(0.5f +
           cluster_width * (before + 1) / static_cast<float>(total));
-      return Range(preceding_run_widths + grapheme_begin_x,
-                   preceding_run_widths + grapheme_end_x);
+      return Range(preceding_run_widths_int + grapheme_begin_x,
+                   preceding_run_widths_int + grapheme_end_x);
     }
   }
 
-  return Range(preceding_run_widths + cluster_begin_x,
-               preceding_run_widths + cluster_end_x);
+  return Range(preceding_run_widths_int + cluster_begin_x,
+               preceding_run_widths_int + cluster_end_x);
 }
 
 }  // namespace internal
@@ -550,6 +552,11 @@ RenderTextHarfBuzz::RenderTextHarfBuzz()
 RenderTextHarfBuzz::~RenderTextHarfBuzz() {}
 
 Size RenderTextHarfBuzz::GetStringSize() {
+  const SizeF size_f = GetStringSizeF();
+  return Size(std::ceil(size_f.width()), size_f.height());
+}
+
+SizeF RenderTextHarfBuzz::GetStringSizeF() {
   EnsureLayout();
   return lines()[0].size;
 }
@@ -789,7 +796,7 @@ void RenderTextHarfBuzz::EnsureLayout() {
         ShapeRun(runs_[i]);
 
       // Precalculate run width information.
-      size_t preceding_run_widths = 0;
+      float preceding_run_widths = 0.0f;
       for (size_t i = 0; i < runs_.size(); ++i) {
         internal::TextRunHarfBuzz* run = runs_[visual_to_logical_[i]];
         run->preceding_run_widths = preceding_run_widths;
@@ -826,7 +833,7 @@ void RenderTextHarfBuzz::EnsureLayout() {
 
       lines[0].size.set_width(lines[0].size.width() + run.width);
       lines[0].size.set_height(std::max(lines[0].size.height(),
-          SkScalarRoundToInt(metrics.fDescent - metrics.fAscent)));
+                                        metrics.fDescent - metrics.fAscent));
       lines[0].baseline = std::max(lines[0].baseline,
                                    SkScalarRoundToInt(-metrics.fAscent));
     }
@@ -1071,7 +1078,7 @@ void RenderTextHarfBuzz::ShapeRun(internal::TextRunHarfBuzz* run) {
   }
 
   run->glyph_count = 0;
-  run->width = 0;
+  run->width = 0.0f;
 }
 
 bool RenderTextHarfBuzz::ShapeRunWithFont(internal::TextRunHarfBuzz* run,
@@ -1109,17 +1116,14 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(internal::TextRunHarfBuzz* run,
   run->glyphs.reset(new uint16[run->glyph_count]);
   run->glyph_to_char.resize(run->glyph_count);
   run->positions.reset(new SkPoint[run->glyph_count]);
-  run->width = 0;
+  run->width = 0.0f;
   for (size_t i = 0; i < run->glyph_count; ++i) {
     run->glyphs[i] = infos[i].codepoint;
     run->glyph_to_char[i] = infos[i].cluster;
-    const int x_offset =
-        SkScalarRoundToInt(SkFixedToScalar(hb_positions[i].x_offset));
-    const int y_offset =
-        SkScalarRoundToInt(SkFixedToScalar(hb_positions[i].y_offset));
+    const int x_offset = SkFixedToScalar(hb_positions[i].x_offset);
+    const int y_offset = SkFixedToScalar(hb_positions[i].y_offset);
     run->positions[i].set(run->width + x_offset, -y_offset);
-    run->width +=
-        SkScalarRoundToInt(SkFixedToScalar(hb_positions[i].x_advance));
+    run->width += SkFixedToScalar(hb_positions[i].x_advance);
   }
 
   hb_buffer_destroy(buffer);

@@ -48,8 +48,8 @@ struct GFX_EXPORT TextRunHarfBuzz {
   // Returns whether the given shaped run contains any missing glyphs.
   bool HasMissingGlyphs() const;
 
-  int width;
-  int preceding_run_widths;
+  float width;
+  float preceding_run_widths;
   Range range;
   bool is_rtl;
   UBiDiLevel level;
@@ -80,6 +80,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
 
   // Overridden from RenderText.
   virtual Size GetStringSize() OVERRIDE;
+  virtual SizeF GetStringSizeF() OVERRIDE;
   virtual SelectionModel FindCursorPosition(const Point& point) OVERRIDE;
   virtual std::vector<FontSpan> GetFontSpansForTesting() OVERRIDE;
   virtual Range GetGlyphBounds(size_t index) OVERRIDE;

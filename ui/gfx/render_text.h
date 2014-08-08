@@ -163,9 +163,8 @@ struct Line {
   // Segments that make up this line in visual order.
   std::vector<LineSegment> segments;
 
-  // A line size is the sum of segment widths and the maximum of segment
-  // heights.
-  Size size;
+  // The sum of segment widths and the maximum of segment heights.
+  SizeF size;
 
   // Sum of preceding lines' heights.
   int preceding_heights;

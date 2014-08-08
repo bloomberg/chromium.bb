@@ -17,6 +17,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_fallback_win.h"
 #include "ui/gfx/font_render_params.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/platform_font_win.h"
 #include "ui/gfx/utf16_indexing.h"
 
@@ -389,8 +390,9 @@ class LineBreaker {
       line->baseline = line_ascent_;
       line->size.set_height(line_ascent_ + line_descent_);
       line->preceding_heights = total_size_.height();
-      total_size_.set_height(total_size_.height() + line->size.height());
-      total_size_.set_width(std::max(total_size_.width(), line->size.width()));
+      const Size line_size(ToCeiledSize(line->size));
+      total_size_.set_height(total_size_.height() + line_size.height());
+      total_size_.set_width(std::max(total_size_.width(), line_size.width()));
     }
     line_x_ = 0;
     line_ascent_ = 0;
@@ -762,7 +764,7 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
 
     // Skip painting empty lines or lines outside the display rect area.
     if (!display_rect().Intersects(Rect(PointAtOffsetFromOrigin(line_offset),
-                                        line.size)))
+                                        ToCeiledSize(line.size))))
       continue;
 
     const Vector2d text_offset = line_offset + Vector2d(0, line.baseline);
