@@ -183,8 +183,10 @@ bool TouchSelectionController::Animate(base::TimeTicks frame_time) {
 }
 
 void TouchSelectionController::OnHandleDragBegin(const TouchHandle& handle) {
-  if (&handle == insertion_handle_.get())
+  if (&handle == insertion_handle_.get()) {
+    client_->OnSelectionEvent(INSERTION_DRAG_STARTED, GetStartPosition());
     return;
+  }
 
   if (&handle == start_selection_handle_.get()) {
     fixed_handle_position_ = end_selection_handle_->position() -

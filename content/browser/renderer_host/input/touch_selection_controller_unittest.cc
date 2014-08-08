@@ -374,7 +374,8 @@ TEST_F(TouchSelectionControllerTest, InsertionTapped) {
 
   MockMotionEvent event(MockMotionEvent::ACTION_DOWN, event_time, 0, 0);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
-  EXPECT_EQ(INSERTION_SHOWN, GetLastEventType());
+  //TODO(AKV): this test case has to be modified once crbug.com/394093 is fixed.
+  EXPECT_EQ(INSERTION_DRAG_STARTED, GetLastEventType());
 
   event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 0, 0);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
@@ -394,7 +395,7 @@ TEST_F(TouchSelectionControllerTest, InsertionTapped) {
                           0,
                           0);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
-  EXPECT_EQ(INSERTION_SHOWN, GetLastEventType());
+  EXPECT_EQ(INSERTION_DRAG_STARTED, GetLastEventType());
 
   // Reset the insertion.
   ClearInsertion();
@@ -407,7 +408,7 @@ TEST_F(TouchSelectionControllerTest, InsertionTapped) {
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
   event = MockMotionEvent(MockMotionEvent::ACTION_CANCEL, event_time, 0, 0);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
-  EXPECT_EQ(INSERTION_SHOWN, GetLastEventType());
+  EXPECT_EQ(INSERTION_DRAG_STARTED, GetLastEventType());
 }
 
 TEST_F(TouchSelectionControllerTest, InsertionNotResetByRepeatedTapOrPress) {
@@ -426,7 +427,7 @@ TEST_F(TouchSelectionControllerTest, InsertionNotResetByRepeatedTapOrPress) {
   controller().OnTapEvent();
   MockMotionEvent event(MockMotionEvent::ACTION_DOWN, event_time, 0, 0);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
-  EXPECT_EQ(INSERTION_SHOWN, GetLastEventType());
+  EXPECT_EQ(INSERTION_DRAG_STARTED, GetLastEventType());
   EXPECT_EQ(anchor_rect.bottom_left(), GetLastEventAnchor());
 
   event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 0, 0);
@@ -444,7 +445,7 @@ TEST_F(TouchSelectionControllerTest, InsertionNotResetByRepeatedTapOrPress) {
   controller().OnSelectionEmpty(true);
   event = MockMotionEvent(MockMotionEvent::ACTION_DOWN, event_time, 0, 0);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
-  EXPECT_EQ(INSERTION_MOVED, GetLastEventType());
+  EXPECT_EQ(INSERTION_DRAG_STARTED, GetLastEventType());
   EXPECT_EQ(anchor_rect.bottom_left(), GetLastEventAnchor());
 
   event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 0, 0);

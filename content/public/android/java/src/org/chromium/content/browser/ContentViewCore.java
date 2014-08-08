@@ -293,6 +293,7 @@ public class ContentViewCore
     // Lazily created paste popup menu, triggered either via long press in an
     // editable region or from tapping the insertion handle.
     private PastePopupMenu mPastePopupMenu;
+    private boolean mWasPastePopupShowingOnInsertionDragStart;
 
     private PopupTouchHandleDrawableDelegate mTouchHandleDelegate;
 
@@ -2209,14 +2210,24 @@ public class ContentViewCore
                 mHasInsertion = true;
                 break;
 
-            case SelectionEventType.INSERTION_MOVED:
-                // TODO(jdduke): Handle case where movement triggered by focus.
+            case SelectionEventType.INSERTION_DRAG_STARTED:
+                mWasPastePopupShowingOnInsertionDragStart =
+                        mPastePopupMenu != null && mPastePopupMenu.isShowing();
                 hidePastePopup();
                 break;
 
+            case SelectionEventType.INSERTION_MOVED:
+                if (mPastePopupMenu == null) break;
+                if (!isScrollInProgress() && mPastePopupMenu.isShowing()) {
+                    showPastePopup((int) posXDip, (int) posYDip);
+                } else {
+                    hidePastePopup();
+                }
+                break;
+
             case SelectionEventType.INSERTION_TAPPED:
-                if (getPastePopup().isShowing())
-                    mPastePopupMenu.hide();
+                if (mWasPastePopupShowingOnInsertionDragStart)
+                    hidePastePopup();
                 else
                     showPastePopup((int) posXDip, (int) posYDip);
                 break;

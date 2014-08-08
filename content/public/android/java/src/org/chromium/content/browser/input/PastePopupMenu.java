@@ -171,7 +171,11 @@ public class PastePopupMenu implements OnClickListener {
             coords[0] = Math.min(screenWidth - width, coords[0]);
         }
 
-        mContainer.showAtLocation(mParent, Gravity.NO_GRAVITY, coords[0], coords[1]);
+        if (!isShowing()) {
+            mContainer.showAtLocation(mParent, Gravity.NO_GRAVITY, coords[0], coords[1]);
+        } else {
+            mContainer.update(coords[0], coords[1], -1, -1);
+        }
     }
 
     private int viewIndex(boolean onTop) {
