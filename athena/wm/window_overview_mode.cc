@@ -8,6 +8,7 @@
 #include <functional>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window.h"
@@ -40,6 +41,29 @@ struct WindowOverviewState {
   scoped_ptr<wm::Shadow> shadow;
 };
 
+// Runs a callback at the end of the animation. This observe also destroys
+// itself afterwards.
+class ClosureAnimationObserver : public ui::ImplicitAnimationObserver {
+ public:
+  explicit ClosureAnimationObserver(const base::Closure& closure)
+      : closure_(closure) {
+    DCHECK(!closure_.is_null());
+  }
+ private:
+  virtual ~ClosureAnimationObserver() {
+  }
+
+  // ui::ImplicitAnimationObserver:
+  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+    closure_.Run();
+    delete this;
+  }
+
+  const base::Closure closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClosureAnimationObserver);
+};
+
 }  // namespace
 
 DECLARE_WINDOW_PROPERTY_TYPE(WindowOverviewState*)
@@ -54,13 +78,18 @@ bool ShouldShowWindowInOverviewMode(aura::Window* window) {
   return window->type() == ui::wm::WINDOW_TYPE_NORMAL;
 }
 
+// Gets the transform for the window in its current state.
+gfx::Transform GetTransformForState(WindowOverviewState* state) {
+  return gfx::Tween::TransformValueBetween(state->progress,
+                                           state->top,
+                                           state->bottom);
+}
+
 // Sets the progress-state for the window in the overview mode.
 void SetWindowProgress(aura::Window* window, float progress) {
   WindowOverviewState* state = window->GetProperty(kWindowOverviewState);
-  gfx::Transform transform =
-      gfx::Tween::TransformValueBetween(progress, state->top, state->bottom);
-  window->SetTransform(transform);
   state->progress = progress;
+  window->SetTransform(GetTransformForState(state));
 }
 
 // Resets the overview-related state for |window|.
@@ -108,7 +137,8 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
         scoped_targeter_(new aura::ScopedWindowTargeter(
             container,
             scoped_ptr<ui::EventTargeter>(
-                new StaticWindowTargeter(container)))) {
+                new StaticWindowTargeter(container)))),
+        dragged_window_(NULL) {
     container_->set_target_handler(this);
 
     // Prepare the desired transforms for all the windows, and set the initial
@@ -143,8 +173,6 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
 
     const int kGapBetweenWindowsBottom = 10;
     const int kGapBetweenWindowsTop = 5;
-    const float kMinScale = 0.6f;
-    const float kMaxScale = 0.95f;
 
     for (aura::Window::Windows::const_reverse_iterator iter = windows.rbegin();
          iter != windows.rend();
@@ -311,6 +339,101 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
       compositor->RemoveAnimationObserver(this);
   }
 
+  void DragWindow(const ui::GestureEvent& event) {
+    CHECK(dragged_window_);
+    CHECK_EQ(ui::ET_GESTURE_SCROLL_UPDATE, event.type());
+    gfx::Vector2dF dragged_distance =
+        dragged_start_location_ - event.location();
+    WindowOverviewState* dragged_state =
+        dragged_window_->GetProperty(kWindowOverviewState);
+    CHECK(dragged_state);
+    gfx::Transform transform = GetTransformForState(dragged_state);
+    transform.Translate(-dragged_distance.x(), 0);
+    dragged_window_->SetTransform(transform);
+
+    float ratio = std::min(
+        1.f, std::abs(dragged_distance.x()) / kMinDistanceForDismissal);
+    float opacity =
+        gfx::Tween::FloatValueBetween(ratio, kMaxOpacity, kMinOpacity);
+    dragged_window_->layer()->SetOpacity(opacity);
+  }
+
+  bool ShouldCloseDragWindow(const ui::GestureEvent& event) const {
+    gfx::Vector2dF dragged_distance =
+        dragged_start_location_ - event.location();
+    if (event.type() == ui::ET_GESTURE_SCROLL_END)
+      return std::abs(dragged_distance.x()) >= kMinDistanceForDismissal;
+    CHECK_EQ(ui::ET_SCROLL_FLING_START, event.type());
+    const bool dragging_towards_right = dragged_distance.x() < 0;
+    const bool swipe_towards_right = event.details().velocity_x() > 0;
+    if (dragging_towards_right != swipe_towards_right)
+      return false;
+    const float kMinVelocityForDismissal = 500.f;
+    return std::abs(event.details().velocity_x()) > kMinVelocityForDismissal;
+  }
+
+  void CloseDragWindow(const ui::GestureEvent& gesture) {
+    // Animate |dragged_window_| offscreen first, then destroy it.
+    ui::ScopedLayerAnimationSettings settings(
+        dragged_window_->layer()->GetAnimator());
+    settings.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    settings.AddObserver(new ClosureAnimationObserver(
+        base::Bind(&base::DeletePointer<aura::Window>, dragged_window_)));
+
+    WindowOverviewState* dragged_state =
+        dragged_window_->GetProperty(kWindowOverviewState);
+    CHECK(dragged_state);
+    gfx::Transform transform = dragged_window_->layer()->transform();
+    gfx::RectF transformed_bounds = dragged_window_->bounds();
+    transform.TransformRect(&transformed_bounds);
+    float transform_x = 0.f;
+    if (gesture.location().x() > dragged_start_location_.x())
+      transform_x = container_->bounds().right() - transformed_bounds.x();
+    else
+      transform_x = -(transformed_bounds.x() + transformed_bounds.width());
+    float scale = gfx::Tween::FloatValueBetween(
+        dragged_state->progress, kMinScale, kMaxScale);
+    transform.Translate(transform_x / scale, 0);
+    dragged_window_->SetTransform(transform);
+    dragged_window_->layer()->SetOpacity(kMinOpacity);
+
+    // Move the windows behind |dragged_window_| in the stack forward one step.
+    const aura::Window::Windows& list = container_->children();
+    for (aura::Window::Windows::const_iterator iter = list.begin();
+         iter != list.end() && *iter != dragged_window_;
+         ++iter) {
+      aura::Window* window = *iter;
+      ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+      settings.SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      WindowOverviewState* state = window->GetProperty(kWindowOverviewState);
+
+      aura::Window* next = *(iter + 1);
+      WindowOverviewState* next_state = next->GetProperty(kWindowOverviewState);
+      state->top = next_state->top;
+      state->bottom = next_state->bottom;
+      SetWindowProgress(window, next_state->progress);
+    }
+
+    dragged_window_ = NULL;
+  }
+
+  void RestoreDragWindow() {
+    CHECK(dragged_window_);
+    WindowOverviewState* dragged_state =
+        dragged_window_->GetProperty(kWindowOverviewState);
+    CHECK(dragged_state);
+
+    ui::ScopedLayerAnimationSettings settings(
+        dragged_window_->layer()->GetAnimator());
+    settings.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    dragged_window_->SetTransform(GetTransformForState(dragged_state));
+    dragged_window_->layer()->SetOpacity(1.f);
+    dragged_window_ = NULL;
+  }
+
   // ui::EventHandler:
   virtual void OnMouseEvent(ui::MouseEvent* mouse) OVERRIDE {
     if (mouse->type() == ui::ET_MOUSE_PRESSED) {
@@ -336,17 +459,44 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
         gesture->SetHandled();
         delegate_->OnSelectWindow(select);
       }
+    } else if (gesture->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
+      if (std::abs(gesture->details().scroll_x_hint()) >
+          std::abs(gesture->details().scroll_y_hint()) * 2) {
+        dragged_start_location_ = gesture->location();
+        dragged_window_ = SelectWindowAt(gesture);
+      }
     } else if (gesture->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
-      DoScroll(gesture->details().scroll_y());
+      if (dragged_window_)
+        DragWindow(*gesture);
+      else
+        DoScroll(gesture->details().scroll_y());
+      gesture->SetHandled();
+    } else if (gesture->type() == ui::ET_GESTURE_SCROLL_END) {
+      if (dragged_window_) {
+        if (ShouldCloseDragWindow(*gesture))
+          CloseDragWindow(*gesture);
+        else
+          RestoreDragWindow();
+      }
       gesture->SetHandled();
     } else if (gesture->type() == ui::ET_SCROLL_FLING_START) {
-      CreateFlingerFor(*gesture);
-      AddAnimationObserver();
+      if (dragged_window_) {
+        if (ShouldCloseDragWindow(*gesture))
+          CloseDragWindow(*gesture);
+        else
+          RestoreDragWindow();
+      } else {
+        CreateFlingerFor(*gesture);
+        AddAnimationObserver();
+      }
       gesture->SetHandled();
-    } else if (gesture->type() == ui::ET_GESTURE_TAP_DOWN && fling_) {
-      fling_.reset();
-      RemoveAnimationObserver();
-      gesture->SetHandled();
+    } else if (gesture->type() == ui::ET_GESTURE_TAP_DOWN) {
+      if (fling_) {
+        fling_.reset();
+        RemoveAnimationObserver();
+        gesture->SetHandled();
+      }
+      dragged_window_ = NULL;
     }
   }
 
@@ -364,10 +514,19 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
     }
   }
 
+  const int kMinDistanceForDismissal = 300;
+  const float kMinScale = 0.6f;
+  const float kMaxScale = 0.95f;
+  const float kMaxOpacity = 1.0f;
+  const float kMinOpacity = 0.2f;
+
   aura::Window* container_;
   WindowOverviewModeDelegate* delegate_;
   scoped_ptr<aura::ScopedWindowTargeter> scoped_targeter_;
   scoped_ptr<ui::FlingCurve> fling_;
+
+  aura::Window* dragged_window_;
+  gfx::Point dragged_start_location_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowOverviewModeImpl);
 };
