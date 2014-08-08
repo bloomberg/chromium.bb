@@ -136,29 +136,6 @@ std::string CanonicalizeResourceId(const std::string& resource_id) {
   return resource_id;
 }
 
-void ParseShareUrlAndRun(const google_apis::GetShareUrlCallback& callback,
-                         google_apis::GDataErrorCode error,
-                         scoped_ptr<base::Value> value) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  if (!value) {
-    callback.Run(error, GURL());
-    return;
-  }
-
-  // Parsing ResourceEntry is cheap enough to do on UI thread.
-  scoped_ptr<google_apis::ResourceEntry> entry =
-      google_apis::ResourceEntry::ExtractAndParse(*value);
-  if (!entry) {
-    callback.Run(google_apis::GDATA_PARSE_ERROR, GURL());
-    return;
-  }
-
-  const google_apis::Link* share_link =
-      entry->GetLinkByType(google_apis::Link::LINK_SHARE);
-  callback.Run(error, share_link ? share_link->href() : GURL());
-}
-
 scoped_ptr<google_apis::ResourceEntry>
 ConvertFileResourceToResourceEntry(
     const google_apis::FileResource& file_resource) {

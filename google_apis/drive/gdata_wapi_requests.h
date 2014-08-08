@@ -12,29 +12,44 @@
 
 namespace google_apis {
 
-//========================= GetResourceEntryRequest ==========================
+class ResourceEntry;
+
+// Callback type for GetResourceEntryRequest.
+typedef base::Callback<void(GDataErrorCode error,
+                            scoped_ptr<ResourceEntry> entry)>
+    GetResourceEntryCallback;
 
 // This class performs the request for fetching a single resource entry.
-class GetResourceEntryRequest : public GetDataRequest {
+class GetResourceEntryRequest : public UrlFetchRequestBase {
  public:
   // |callback| must not be null.
   GetResourceEntryRequest(RequestSender* sender,
                           const GDataWapiUrlGenerator& url_generator,
                           const std::string& resource_id,
                           const GURL& embed_origin,
-                          const GetDataCallback& callback);
+                          const GetResourceEntryCallback& callback);
   virtual ~GetResourceEntryRequest();
 
  protected:
   // UrlFetchRequestBase overrides.
+  virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
+  virtual void RunCallbackOnPrematureFailure(GDataErrorCode error) OVERRIDE;
   virtual GURL GetURL() const OVERRIDE;
 
  private:
+  void OnDataParsed(GDataErrorCode error, scoped_ptr<ResourceEntry> entry);
+
   const GDataWapiUrlGenerator url_generator_;
   // Resource id of the requested entry.
   const std::string resource_id_;
   // Embed origin for an url to the sharing dialog. Can be empty.
-  const GURL& embed_origin_;
+  GURL embed_origin_;
+
+  const GetResourceEntryCallback callback_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<GetResourceEntryRequest> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GetResourceEntryRequest);
 };

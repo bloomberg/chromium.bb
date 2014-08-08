@@ -8,10 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
-#include "base/task_runner_util.h"
-#include "base/values.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/auth_service.h"
@@ -147,6 +144,16 @@ void ExtractOpenUrlAndRun(const std::string& app_id,
 
   // Not found.
   callback.Run(GDATA_OTHER_ERROR, GURL());
+}
+
+void ExtractShareUrlAndRun(const google_apis::GetShareUrlCallback& callback,
+                           google_apis::GDataErrorCode error,
+                           scoped_ptr<google_apis::ResourceEntry> entry) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  const google_apis::Link* share_link =
+      entry ? entry->GetLinkByType(google_apis::Link::LINK_SHARE) : NULL;
+  callback.Run(error, share_link ? share_link->href() : GURL());
 }
 
 // Ignores the |entry|, and runs the |callback|.
@@ -376,7 +383,7 @@ CancelCallback DriveAPIService::GetShareUrl(
                                   wapi_url_generator_,
                                   resource_id,
                                   embed_origin,
-                                  base::Bind(&util::ParseShareUrlAndRun,
+                                  base::Bind(&ExtractShareUrlAndRun,
                                              callback)));
 }
 
