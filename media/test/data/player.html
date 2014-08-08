@@ -61,6 +61,10 @@ function RunTest() {
   player.controls = true;
   document.getElementById('player_container').appendChild(player);
 
+  player.addEventListener('loadedmetadata', function(e) {
+    document.title = '' + player.videoWidth + ' ' + player.videoHeight;
+  });
+
   // Transition to the seek test after X seconds of playback or when the ended
   // event occurs, whichever happens first.
   player.addEventListener('ended', SeekTestStep, false);

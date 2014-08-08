@@ -3998,7 +3998,8 @@ class LayerTreeHostTestVideoLayerInvalidate : public LayerInvalidateCausesDraw {
  public:
   virtual void SetupTree() OVERRIDE {
     LayerTreeHostTest::SetupTree();
-    scoped_refptr<VideoLayer> video_layer = VideoLayer::Create(&provider_);
+    scoped_refptr<VideoLayer> video_layer =
+        VideoLayer::Create(&provider_, media::VIDEO_ROTATION_0);
     video_layer->SetBounds(gfx::Size(10, 10));
     video_layer->SetIsDrawable(true);
     layer_tree_host()->root_layer()->AddChild(video_layer);

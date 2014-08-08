@@ -28,17 +28,21 @@ namespace cc {
 scoped_ptr<VideoLayerImpl> VideoLayerImpl::Create(
     LayerTreeImpl* tree_impl,
     int id,
-    VideoFrameProvider* provider) {
-  scoped_ptr<VideoLayerImpl> layer(new VideoLayerImpl(tree_impl, id));
+    VideoFrameProvider* provider,
+    media::VideoRotation video_rotation) {
+  scoped_ptr<VideoLayerImpl> layer(
+      new VideoLayerImpl(tree_impl, id, video_rotation));
   layer->SetProviderClientImpl(VideoFrameProviderClientImpl::Create(provider));
   DCHECK(tree_impl->proxy()->IsImplThread());
   DCHECK(tree_impl->proxy()->IsMainThreadBlocked());
   return layer.Pass();
 }
 
-VideoLayerImpl::VideoLayerImpl(LayerTreeImpl* tree_impl, int id)
-    : LayerImpl(tree_impl, id),
-      frame_(NULL) {}
+VideoLayerImpl::VideoLayerImpl(LayerTreeImpl* tree_impl,
+                               int id,
+                               media::VideoRotation video_rotation)
+    : LayerImpl(tree_impl, id), frame_(NULL), video_rotation_(video_rotation) {
+}
 
 VideoLayerImpl::~VideoLayerImpl() {
   if (!provider_client_impl_->Stopped()) {
@@ -55,7 +59,8 @@ VideoLayerImpl::~VideoLayerImpl() {
 
 scoped_ptr<LayerImpl> VideoLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return scoped_ptr<LayerImpl>(new VideoLayerImpl(tree_impl, id()));
+  VideoLayerImpl* impl = new VideoLayerImpl(tree_impl, id(), video_rotation_);
+  return scoped_ptr<LayerImpl>(impl);
 }
 
 void VideoLayerImpl::PushPropertiesTo(LayerImpl* layer) {
@@ -130,20 +135,48 @@ void VideoLayerImpl::AppendQuads(
     AppendQuadsData* append_quads_data) {
   DCHECK(frame_.get());
 
+  gfx::Transform transform = draw_transform();
+  gfx::Size rotated_size = content_bounds();
+
+  switch (video_rotation_) {
+    case media::VIDEO_ROTATION_90:
+      rotated_size = gfx::Size(rotated_size.height(), rotated_size.width());
+      transform.Rotate(90.0);
+      transform.Translate(0.0, -rotated_size.height());
+      break;
+    case media::VIDEO_ROTATION_180:
+      transform.Rotate(180.0);
+      transform.Translate(-rotated_size.width(), -rotated_size.height());
+      break;
+    case media::VIDEO_ROTATION_270:
+      rotated_size = gfx::Size(rotated_size.height(), rotated_size.width());
+      transform.Rotate(270.0);
+      transform.Translate(-rotated_size.width(), 0);
+    case media::VIDEO_ROTATION_0:
+      break;
+  }
+
   SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  PopulateSharedQuadState(shared_quad_state);
+  shared_quad_state->SetAll(transform,
+                            rotated_size,
+                            visible_content_rect(),
+                            clip_rect(),
+                            is_clipped(),
+                            draw_opacity(),
+                            blend_mode(),
+                            sorting_context_id());
 
   AppendDebugBorderQuad(
-      render_pass, content_bounds(), shared_quad_state, append_quads_data);
+      render_pass, rotated_size, shared_quad_state, append_quads_data);
 
-  gfx::Rect quad_rect(content_bounds());
+  gfx::Rect quad_rect(rotated_size);
   gfx::Rect opaque_rect(contents_opaque() ? quad_rect : gfx::Rect());
   gfx::Rect visible_rect = frame_->visible_rect();
   gfx::Size coded_size = frame_->coded_size();
 
-  gfx::Rect visible_quad_rect = occlusion_tracker.UnoccludedContentRect(
-      quad_rect, draw_properties().target_space_transform);
+  gfx::Rect visible_quad_rect =
+      occlusion_tracker.UnoccludedContentRect(quad_rect, transform);
   if (visible_quad_rect.IsEmpty())
     return;
 

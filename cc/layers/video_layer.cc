@@ -8,18 +8,24 @@
 
 namespace cc {
 
-scoped_refptr<VideoLayer> VideoLayer::Create(VideoFrameProvider* provider) {
-  return make_scoped_refptr(new VideoLayer(provider));
+scoped_refptr<VideoLayer> VideoLayer::Create(
+    VideoFrameProvider* provider,
+    media::VideoRotation video_rotation) {
+  return make_scoped_refptr(new VideoLayer(provider, video_rotation));
 }
 
-VideoLayer::VideoLayer(VideoFrameProvider* provider) : provider_(provider) {
+VideoLayer::VideoLayer(VideoFrameProvider* provider,
+                       media::VideoRotation video_rotation)
+    : provider_(provider), video_rotation_(video_rotation) {
   DCHECK(provider_);
 }
 
 VideoLayer::~VideoLayer() {}
 
 scoped_ptr<LayerImpl> VideoLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
-  return VideoLayerImpl::Create(tree_impl, id(), provider_).PassAs<LayerImpl>();
+  scoped_ptr<VideoLayerImpl> impl =
+      VideoLayerImpl::Create(tree_impl, id(), provider_, video_rotation_);
+  return impl.PassAs<LayerImpl>();
 }
 
 bool VideoLayer::Update(ResourceUpdateQueue* queue,

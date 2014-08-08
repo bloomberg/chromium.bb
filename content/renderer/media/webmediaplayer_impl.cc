@@ -546,6 +546,13 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
       GetCurrentFrameFromCompositor();
 
   gfx::Rect gfx_rect(rect);
+
+  if (pipeline_metadata_.video_rotation == media::VIDEO_ROTATION_90 ||
+      pipeline_metadata_.video_rotation == media::VIDEO_ROTATION_270) {
+    gfx_rect.set_size(gfx::Size(gfx_rect.size().height(),
+                                gfx_rect.size().width()));
+  }
+
   skcanvas_video_renderer_.Paint(video_frame.get(), canvas, gfx_rect, alpha);
 }
 
@@ -945,8 +952,16 @@ void WebMediaPlayerImpl::OnPipelineMetadata(
 
   if (hasVideo()) {
     DCHECK(!video_weblayer_);
-    video_weblayer_.reset(
-        new WebLayerImpl(cc::VideoLayer::Create(compositor_)));
+    scoped_refptr<cc::VideoLayer> layer =
+        cc::VideoLayer::Create(compositor_, pipeline_metadata_.video_rotation);
+
+    if (pipeline_metadata_.video_rotation == media::VIDEO_ROTATION_90 ||
+        pipeline_metadata_.video_rotation == media::VIDEO_ROTATION_270) {
+      gfx::Size size = pipeline_metadata_.natural_size;
+      pipeline_metadata_.natural_size = gfx::Size(size.height(), size.width());
+    }
+
+    video_weblayer_.reset(new WebLayerImpl(layer));
     video_weblayer_->setOpaque(opaque_);
     client_->setWebLayer(video_weblayer_.get());
   }

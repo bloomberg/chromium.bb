@@ -21,6 +21,7 @@
 #include "content/renderer/render_frame_impl.h"
 #include "media/base/media_log.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_rotation.h"
 #include "media/base/video_util.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -416,7 +417,8 @@ void WebMediaPlayerMS::OnFrameAvailable(
     GetClient()->sizeChanged();
 
     if (video_frame_provider_) {
-      video_weblayer_.reset(new WebLayerImpl(cc::VideoLayer::Create(this)));
+      video_weblayer_.reset(new WebLayerImpl(
+          cc::VideoLayer::Create(this, media::VIDEO_ROTATION_0)));
       video_weblayer_->setOpaque(true);
       GetClient()->setWebLayer(video_weblayer_.get());
     }

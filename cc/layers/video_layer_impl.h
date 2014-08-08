@@ -11,6 +11,7 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/resources/release_callback.h"
 #include "cc/resources/video_resource_updater.h"
+#include "media/base/video_rotation.h"
 
 namespace media {
 class VideoFrame;
@@ -24,7 +25,8 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
  public:
   static scoped_ptr<VideoLayerImpl> Create(LayerTreeImpl* tree_impl,
                                            int id,
-                                           VideoFrameProvider* provider);
+                                           VideoFrameProvider* provider,
+                                           media::VideoRotation video_rotation);
   virtual ~VideoLayerImpl();
 
   // LayerImpl implementation.
@@ -45,14 +47,20 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
   void SetProviderClientImpl(
       scoped_refptr<VideoFrameProviderClientImpl> provider_client_impl);
 
+  media::VideoRotation video_rotation() const { return video_rotation_; }
+
  private:
-  VideoLayerImpl(LayerTreeImpl* tree_impl, int id);
+  VideoLayerImpl(LayerTreeImpl* tree_impl,
+                 int id,
+                 media::VideoRotation video_rotation);
 
   virtual const char* LayerTypeAsString() const OVERRIDE;
 
   scoped_refptr<VideoFrameProviderClientImpl> provider_client_impl_;
 
   scoped_refptr<media::VideoFrame> frame_;
+
+  media::VideoRotation video_rotation_;
 
   scoped_ptr<VideoResourceUpdater> updater_;
   VideoFrameExternalResources::ResourceType frame_resource_type_;

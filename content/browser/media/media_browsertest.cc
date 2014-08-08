@@ -4,6 +4,7 @@
 
 #include "content/browser/media/media_browsertest.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -97,6 +98,16 @@ class MediaTest : public testing::WithParamInterface<bool>,
     query_params.push_back(std::make_pair(tag, media_file));
     RunMediaTestPage("player.html", query_params, kEnded, http);
   }
+
+  void RunVideoSizeTest(const char* media_file, int width, int height) {
+    std::string expected;
+    expected += base::IntToString(width);
+    expected += " ";
+    expected += base::IntToString(height);
+    media::QueryParams query_params;
+    query_params.push_back(std::make_pair("video", media_file));
+    RunMediaTestPage("player.html", query_params, expected, false);
+  }
 };
 
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearTheora) {
@@ -141,6 +152,22 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearMovPcmS16be) {
 
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearMovPcmS24be) {
   PlayVideo("bear_pcm_s24be.mov", GetParam());
+}
+
+IN_PROC_BROWSER_TEST_F(MediaTest, VideoBearRotated0) {
+  RunVideoSizeTest("bear_rotate_0.mp4", 1280, 720);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaTest, VideoBearRotated90) {
+  RunVideoSizeTest("bear_rotate_90.mp4", 720, 1280);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaTest, VideoBearRotated180) {
+  RunVideoSizeTest("bear_rotate_180.mp4", 1280, 720);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaTest, VideoBearRotated270) {
+  RunVideoSizeTest("bear_rotate_270.mp4", 720, 1280);
 }
 #endif  // defined(USE_PROPRIETARY_CODECS)
 

@@ -7,6 +7,7 @@
 #include "cc/layers/video_frame_provider_client_impl.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
+#include "cc/quads/draw_quad.h"
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -33,7 +34,7 @@ TEST(VideoLayerImplTest, Occlusion) {
   provider.set_frame(video_frame);
 
   VideoLayerImpl* video_layer_impl =
-      impl.AddChildToRoot<VideoLayerImpl>(&provider);
+      impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
   video_layer_impl->SetBounds(layer_size);
   video_layer_impl->SetContentBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
@@ -82,7 +83,7 @@ TEST(VideoLayerImplTest, DidBecomeActiveShouldSetActiveVideoLayer) {
 
   FakeVideoFrameProvider provider;
   VideoLayerImpl* video_layer_impl =
-      impl.AddChildToRoot<VideoLayerImpl>(&provider);
+      impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
 
   VideoFrameProviderClientImpl* client =
       static_cast<VideoFrameProviderClientImpl*>(provider.client());
@@ -91,6 +92,150 @@ TEST(VideoLayerImplTest, DidBecomeActiveShouldSetActiveVideoLayer) {
 
   video_layer_impl->DidBecomeActive();
   EXPECT_EQ(video_layer_impl, client->active_video_layer());
+}
+
+TEST(VideoLayerImplTest, Rotated0) {
+  gfx::Size layer_size(100, 50);
+  gfx::Size viewport_size(1000, 500);
+
+  LayerTestCommon::LayerImplTest impl;
+  DebugScopedSetImplThreadAndMainThreadBlocked thread(impl.proxy());
+
+  scoped_refptr<media::VideoFrame> video_frame =
+      media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
+                                     gfx::Size(20, 10),
+                                     gfx::Rect(20, 10),
+                                     gfx::Size(20, 10),
+                                     base::TimeDelta());
+  FakeVideoFrameProvider provider;
+  provider.set_frame(video_frame);
+
+  VideoLayerImpl* video_layer_impl =
+      impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
+  video_layer_impl->SetBounds(layer_size);
+  video_layer_impl->SetContentBounds(layer_size);
+  video_layer_impl->SetDrawsContent(true);
+
+  impl.CalcDrawProps(viewport_size);
+  gfx::Rect occluded;
+  impl.AppendQuadsWithOcclusion(video_layer_impl, occluded);
+
+  EXPECT_EQ(1u, impl.quad_list().size());
+
+  gfx::Point3F p1(0, impl.quad_list()[0]->rect.height(), 0);
+  gfx::Point3F p2(impl.quad_list()[0]->rect.width(), 0, 0);
+  impl.quad_list()[0]->quadTransform().TransformPoint(&p1);
+  impl.quad_list()[0]->quadTransform().TransformPoint(&p2);
+  EXPECT_EQ(gfx::Point3F(0, 50, 0), p1);
+  EXPECT_EQ(gfx::Point3F(100, 0, 0), p2);
+}
+
+TEST(VideoLayerImplTest, Rotated90) {
+  gfx::Size layer_size(100, 50);
+  gfx::Size viewport_size(1000, 500);
+
+  LayerTestCommon::LayerImplTest impl;
+  DebugScopedSetImplThreadAndMainThreadBlocked thread(impl.proxy());
+
+  scoped_refptr<media::VideoFrame> video_frame =
+      media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
+                                     gfx::Size(20, 10),
+                                     gfx::Rect(20, 10),
+                                     gfx::Size(20, 10),
+                                     base::TimeDelta());
+  FakeVideoFrameProvider provider;
+  provider.set_frame(video_frame);
+
+  VideoLayerImpl* video_layer_impl =
+      impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_90);
+  video_layer_impl->SetBounds(layer_size);
+  video_layer_impl->SetContentBounds(layer_size);
+  video_layer_impl->SetDrawsContent(true);
+
+  impl.CalcDrawProps(viewport_size);
+  gfx::Rect occluded;
+  impl.AppendQuadsWithOcclusion(video_layer_impl, occluded);
+
+  EXPECT_EQ(1u, impl.quad_list().size());
+
+  gfx::Point3F p1(0, impl.quad_list()[0]->rect.height(), 0);
+  gfx::Point3F p2(impl.quad_list()[0]->rect.width(), 0, 0);
+  impl.quad_list()[0]->quadTransform().TransformPoint(&p1);
+  impl.quad_list()[0]->quadTransform().TransformPoint(&p2);
+  EXPECT_EQ(gfx::Point3F(0, 0, 0), p1);
+  EXPECT_EQ(gfx::Point3F(100, 50, 0), p2);
+}
+
+TEST(VideoLayerImplTest, Rotated180) {
+  gfx::Size layer_size(100, 50);
+  gfx::Size viewport_size(1000, 500);
+
+  LayerTestCommon::LayerImplTest impl;
+  DebugScopedSetImplThreadAndMainThreadBlocked thread(impl.proxy());
+
+  scoped_refptr<media::VideoFrame> video_frame =
+      media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
+                                     gfx::Size(20, 10),
+                                     gfx::Rect(20, 10),
+                                     gfx::Size(20, 10),
+                                     base::TimeDelta());
+  FakeVideoFrameProvider provider;
+  provider.set_frame(video_frame);
+
+  VideoLayerImpl* video_layer_impl =
+      impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_180);
+  video_layer_impl->SetBounds(layer_size);
+  video_layer_impl->SetContentBounds(layer_size);
+  video_layer_impl->SetDrawsContent(true);
+
+  impl.CalcDrawProps(viewport_size);
+  gfx::Rect occluded;
+  impl.AppendQuadsWithOcclusion(video_layer_impl, occluded);
+
+  EXPECT_EQ(1u, impl.quad_list().size());
+
+  gfx::Point3F p1(0, impl.quad_list()[0]->rect.height(), 0);
+  gfx::Point3F p2(impl.quad_list()[0]->rect.width(), 0, 0);
+  impl.quad_list()[0]->quadTransform().TransformPoint(&p1);
+  impl.quad_list()[0]->quadTransform().TransformPoint(&p2);
+  EXPECT_EQ(gfx::Point3F(100, 0, 0), p1);
+  EXPECT_EQ(gfx::Point3F(0, 50, 0), p2);
+}
+
+TEST(VideoLayerImplTest, Rotated270) {
+  gfx::Size layer_size(100, 50);
+  gfx::Size viewport_size(1000, 500);
+
+  LayerTestCommon::LayerImplTest impl;
+  DebugScopedSetImplThreadAndMainThreadBlocked thread(impl.proxy());
+
+  scoped_refptr<media::VideoFrame> video_frame =
+      media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
+                                     gfx::Size(20, 10),
+                                     gfx::Rect(20, 10),
+                                     gfx::Size(20, 10),
+                                     base::TimeDelta());
+  FakeVideoFrameProvider provider;
+  provider.set_frame(video_frame);
+
+  VideoLayerImpl* video_layer_impl =
+      impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_270);
+  video_layer_impl->SetBounds(layer_size);
+  video_layer_impl->SetContentBounds(layer_size);
+  video_layer_impl->SetDrawsContent(true);
+
+  impl.CalcDrawProps(viewport_size);
+  gfx::Rect occluded;
+  impl.AppendQuadsWithOcclusion(video_layer_impl, occluded);
+
+  EXPECT_EQ(1u, impl.quad_list().size());
+
+  gfx::Point3F p1(0, impl.quad_list()[0]->rect.height(), 0);
+  gfx::Point3F p2(impl.quad_list()[0]->rect.width(), 0, 0);
+  impl.quad_list()[0]->quadTransform().TransformPoint(&p1);
+  impl.quad_list()[0]->quadTransform().TransformPoint(&p2);
+  EXPECT_EQ(gfx::Point3F(100, 50, 0), p1);
+  EXPECT_EQ(gfx::Point3F(0, 0, 0), p2);
 }
 
 }  // namespace

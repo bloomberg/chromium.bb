@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer.h"
+#include "media/base/video_rotation.h"
 
 namespace media { class VideoFrame; }
 
@@ -19,7 +20,8 @@ class VideoLayerImpl;
 // A Layer that contains a Video element.
 class CC_EXPORT VideoLayer : public Layer {
  public:
-  static scoped_refptr<VideoLayer> Create(VideoFrameProvider* provider);
+  static scoped_refptr<VideoLayer> Create(VideoFrameProvider* provider,
+                                          media::VideoRotation video_rotation);
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
@@ -28,12 +30,14 @@ class CC_EXPORT VideoLayer : public Layer {
                       const OcclusionTracker<Layer>* occlusion) OVERRIDE;
 
  private:
-  explicit VideoLayer(VideoFrameProvider* provider);
+  VideoLayer(VideoFrameProvider* provider, media::VideoRotation video_rotation);
   virtual ~VideoLayer();
 
   // This pointer is only for passing to VideoLayerImpl's constructor. It should
   // never be dereferenced by this class.
   VideoFrameProvider* provider_;
+
+  media::VideoRotation video_rotation_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoLayer);
 };

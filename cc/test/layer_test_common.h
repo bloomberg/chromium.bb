@@ -69,6 +69,15 @@ class LayerTestCommon {
       return ptr;
     }
 
+    template <typename T, typename A, typename B>
+    T* AddChildToRoot(const A& a, const B& b) {
+      scoped_ptr<T> layer =
+          T::Create(host_->host_impl()->active_tree(), 2, a, b);
+      T* ptr = layer.get();
+      root_layer_impl_->AddChild(layer.template PassAs<LayerImpl>());
+      return ptr;
+    }
+
     template <typename T, typename A, typename B, typename C, typename D>
     T* AddChildToRoot(const A& a, const B& b, const C& c, const D& d) {
       scoped_ptr<T> layer =

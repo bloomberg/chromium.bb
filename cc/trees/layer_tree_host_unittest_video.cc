@@ -27,10 +27,10 @@ class LayerTreeHostVideoTestSetNeedsDisplay
     root->SetBounds(gfx::Size(10, 10));
     root->SetIsDrawable(true);
 
-    scoped_refptr<VideoLayer> video = VideoLayer::Create(
-        &video_frame_provider_);
+    scoped_refptr<VideoLayer> video =
+        VideoLayer::Create(&video_frame_provider_, media::VIDEO_ROTATION_90);
     video->SetPosition(gfx::PointF(3.f, 3.f));
-    video->SetBounds(gfx::Size(4, 4));
+    video->SetBounds(gfx::Size(4, 5));
     video->SetIsDrawable(true);
     root->AddChild(video);
 
@@ -60,7 +60,7 @@ class LayerTreeHostVideoTestSetNeedsDisplay
         break;
       case 1:
         // Second frame the video layer is damaged.
-        EXPECT_EQ(gfx::RectF(6.f, 6.f, 8.f, 8.f).ToString(),
+        EXPECT_EQ(gfx::RectF(6.f, 6.f, 8.f, 10.f).ToString(),
                   damage_rect.ToString());
         EndTest();
         break;
@@ -73,6 +73,8 @@ class LayerTreeHostVideoTestSetNeedsDisplay
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     VideoLayerImpl* video = static_cast<VideoLayerImpl*>(
         host_impl->active_tree()->root_layer()->children()[0]);
+
+    EXPECT_EQ(media::VIDEO_ROTATION_90, video->video_rotation());
 
     if (num_draws_ == 0)
       video->SetNeedsRedraw();

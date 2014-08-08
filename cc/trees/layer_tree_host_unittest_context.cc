@@ -761,19 +761,19 @@ class LayerTreeHostContextTestDontUseLostResources
     root->AddChild(content_with_mask);
 
     scoped_refptr<VideoLayer> video_color =
-        VideoLayer::Create(&color_frame_provider_);
+        VideoLayer::Create(&color_frame_provider_, media::VIDEO_ROTATION_0);
     video_color->SetBounds(gfx::Size(10, 10));
     video_color->SetIsDrawable(true);
     root->AddChild(video_color);
 
     scoped_refptr<VideoLayer> video_hw =
-        VideoLayer::Create(&hw_frame_provider_);
+        VideoLayer::Create(&hw_frame_provider_, media::VIDEO_ROTATION_0);
     video_hw->SetBounds(gfx::Size(10, 10));
     video_hw->SetIsDrawable(true);
     root->AddChild(video_hw);
 
     scoped_refptr<VideoLayer> video_scaled_hw =
-        VideoLayer::Create(&scaled_hw_frame_provider_);
+        VideoLayer::Create(&scaled_hw_frame_provider_, media::VIDEO_ROTATION_0);
     video_scaled_hw->SetBounds(gfx::Size(10, 10));
     video_scaled_hw->SetIsDrawable(true);
     root->AddChild(video_scaled_hw);
