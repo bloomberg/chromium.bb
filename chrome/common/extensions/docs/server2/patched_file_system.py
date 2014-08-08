@@ -8,30 +8,6 @@ from file_system import FileSystem, StatInfo, FileNotFoundError
 from future import Future
 
 
-def _GetAsyncFetchCallback(unpatched_files_future,
-                           patched_files_future,
-                           dirs_value,
-                           patched_file_system):
-  def patch_directory_listing(path, original_listing):
-    added, deleted, modified = (
-        patched_file_system._GetDirectoryListingFromPatch(path))
-    if original_listing is None:
-      if len(added) == 0:
-        raise FileNotFoundError('Directory %s not found in the patch.' % path)
-      return added
-    return list((set(original_listing) | set(added)) - set(deleted))
-
-  def resolve():
-    files = unpatched_files_future.Get()
-    files.update(patched_files_future.Get())
-    files.update(
-        dict((path, patch_directory_listing(path, dirs_value[path]))
-             for path in dirs_value))
-    return files
-
-  return resolve
-
-
 class PatchedFileSystem(FileSystem):
   ''' Class to fetch resources with a patch applied.
   '''
@@ -46,17 +22,31 @@ class PatchedFileSystem(FileSystem):
       def raise_file_not_found():
         raise FileNotFoundError('Files are removed from the patch.')
       return Future(callback=raise_file_not_found)
+
     patched_files |= (set(added) | set(modified))
     dir_paths = set(path for path in paths if path.endswith('/'))
     file_paths = set(paths) - dir_paths
     patched_paths = file_paths & patched_files
     unpatched_paths = file_paths - patched_files
-    return Future(callback=_GetAsyncFetchCallback(
-        self._base_file_system.Read(unpatched_paths,
-                                    skip_not_found=skip_not_found),
-        self._patcher.Apply(patched_paths, self._base_file_system),
-        self._TryReadDirectory(dir_paths),
-        self))
+
+    def patch_directory_listing(path, original_listing):
+      added, deleted, modified = (
+          self._GetDirectoryListingFromPatch(path))
+      if original_listing is None:
+        if len(added) == 0:
+          raise FileNotFoundError('Directory %s not found in the patch.' % path)
+        return added
+      return list((set(original_listing) | set(added)) - set(deleted))
+
+    def next(files):
+      dirs_value = self._TryReadDirectory(dir_paths)
+      files.update(self._patcher.Apply(patched_paths,
+                                       self._base_file_system).Get())
+      files.update(dict((path, patch_directory_listing(path, dirs_value[path]))
+                        for path in dirs_value))
+      return files
+    return self._base_file_system.Read(unpatched_paths,
+                                       skip_not_found=skip_not_found).Then(next)
 
   def Refresh(self):
     return self._base_file_system.Refresh()

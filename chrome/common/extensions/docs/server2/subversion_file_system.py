@@ -95,44 +95,6 @@ def _CreateStatInfo(html):
 
   return StatInfo(parent_version, child_versions)
 
-def _GetAsyncFetchCallback(paths, fetcher, args=None, skip_not_found=False):
-  def apply_args(path):
-    return path if args is None else '%s?%s' % (path, args)
-
-  def list_dir(directory):
-    dom = xml.parseString(directory)
-    files = [elem.childNodes[0].data for elem in dom.getElementsByTagName('a')]
-    if '..' in files:
-      files.remove('..')
-    return files
-
-  # A list of tuples of the form (path, Future).
-  fetches = [(path, fetcher.FetchAsync(apply_args(path))) for path in paths]
-
-  def resolve():
-    value = {}
-    for path, future in fetches:
-      try:
-        result = future.Get()
-      except Exception as e:
-        if skip_not_found and IsDownloadError(e): continue
-        exc_type = FileNotFoundError if IsDownloadError(e) else FileSystemError
-        raise exc_type('%s fetching %s for Get: %s' %
-                       (type(e).__name__, path, traceback.format_exc()))
-      if result.status_code == 404:
-        if skip_not_found: continue
-        raise FileNotFoundError('Got 404 when fetching %s for Get, content %s' %
-            (path, result.content))
-      if result.status_code != 200:
-        raise FileSystemError('Got %s when fetching %s for Get, content %s' %
-            (result.status_code, path, result.content))
-      if path.endswith('/'):
-        value[path] = list_dir(result.content)
-      else:
-        value[path] = result.content
-    return value
-
-  return resolve
 
 class SubversionFileSystem(FileSystem):
   '''Class to fetch resources from src.chromium.org.
@@ -160,11 +122,47 @@ class SubversionFileSystem(FileSystem):
     if self._revision is not None:
       # |fetcher| gets from svn.chromium.org which uses p= for version.
       args = 'p=%s' % self._revision
-    return Future(callback=_GetAsyncFetchCallback(
-        paths,
-        self._file_fetcher,
-        args=args,
-        skip_not_found=skip_not_found))
+
+    def apply_args(path):
+      return path if args is None else '%s?%s' % (path, args)
+
+    def list_dir(directory):
+      dom = xml.parseString(directory)
+      files = [elem.childNodes[0].data
+               for elem in dom.getElementsByTagName('a')]
+      if '..' in files:
+        files.remove('..')
+      return files
+
+    # A list of tuples of the form (path, Future).
+    fetches = [(path, self._file_fetcher.FetchAsync(apply_args(path)))
+               for path in paths]
+
+    def resolve():
+      value = {}
+      for path, future in fetches:
+        try:
+          result = future.Get()
+        except Exception as e:
+          if skip_not_found and IsDownloadError(e): continue
+          exc_type = (FileNotFoundError if IsDownloadError(e)
+                                       else FileSystemError)
+          raise exc_type('%s fetching %s for Get: %s' %
+                         (type(e).__name__, path, traceback.format_exc()))
+        if result.status_code == 404:
+          if skip_not_found: continue
+          raise FileNotFoundError(
+              'Got 404 when fetching %s for Get, content %s' %
+              (path, result.content))
+        if result.status_code != 200:
+          raise FileSystemError('Got %s when fetching %s for Get, content %s' %
+              (result.status_code, path, result.content))
+        if path.endswith('/'):
+          value[path] = list_dir(result.content)
+        else:
+          value[path] = result.content
+      return value
+    return Future(callback=resolve)
 
   def Refresh(self):
     return Future(value=())

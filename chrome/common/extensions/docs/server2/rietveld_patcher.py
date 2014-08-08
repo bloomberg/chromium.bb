@@ -25,51 +25,6 @@ class RietveldPatcherError(Exception):
     self.message = message
 
 
-def _GetAsyncFetchCallback(issue, patchset, files, fetcher):
-  tarball = fetcher.FetchAsync('tarball/%s/%s' % (issue, patchset))
-
-  def resolve():
-    tarball_result = tarball.Get()
-    if tarball_result.status_code != 200:
-      raise RietveldPatcherError(
-          'Failed to download tarball for issue %s patchset %s. Status: %s' %
-          (issue, patchset, tarball_result.status_code))
-
-    try:
-      tar = tarfile.open(fileobj=StringIO(tarball_result.content))
-    except tarfile.TarError as e:
-      raise RietveldPatcherError(
-          'Error loading tarball for issue %s patchset %s.' % (issue, patchset))
-
-    value = {}
-    for path in files:
-      tar_path = 'b/%s' % path
-
-      patched_file = None
-      try:
-        patched_file = tar.extractfile(tar_path)
-        data = patched_file.read()
-      except tarfile.TarError as e:
-        # Show appropriate error message in the unlikely case that the tarball
-        # is corrupted.
-        raise RietveldPatcherError(
-            'Error extracting tarball for issue %s patchset %s file %s.' %
-            (issue, patchset, tar_path))
-      except KeyError as e:
-        raise FileNotFoundError(
-            'File %s not found in the tarball for issue %s patchset %s' %
-            (tar_path, issue, patchset))
-      finally:
-        if patched_file:
-          patched_file.close()
-
-      value[path] = data
-
-    return value
-
-  return resolve
-
-
 class RietveldPatcher(Patcher):
   ''' Class to fetch resources from a patchset in Rietveld.
   '''
@@ -141,10 +96,47 @@ class RietveldPatcher(Patcher):
   def Apply(self, paths, file_system, version=None):
     if version is None:
       version = self.GetVersion()
-    return Future(callback=_GetAsyncFetchCallback(self._issue,
-                                                  version,
-                                                  paths,
-                                                  self._fetcher))
+
+    def apply_(tarball_result):
+      if tarball_result.status_code != 200:
+        raise RietveldPatcherError(
+            'Failed to download tarball for issue %s patchset %s. Status: %s' %
+            (self._issue, version, tarball_result.status_code))
+
+      try:
+        tar = tarfile.open(fileobj=StringIO(tarball_result.content))
+      except tarfile.TarError as e:
+        raise RietveldPatcherError(
+            'Error loading tarball for issue %s patchset %s.' % (self._issue,
+                                                                 version))
+
+      value = {}
+      for path in paths:
+        tar_path = 'b/%s' % path
+
+        patched_file = None
+        try:
+          patched_file = tar.extractfile(tar_path)
+          data = patched_file.read()
+        except tarfile.TarError as e:
+          # Show appropriate error message in the unlikely case that the tarball
+          # is corrupted.
+          raise RietveldPatcherError(
+              'Error extracting tarball for issue %s patchset %s file %s.' %
+              (self._issue, version, tar_path))
+        except KeyError as e:
+          raise FileNotFoundError(
+              'File %s not found in the tarball for issue %s patchset %s' %
+              (tar_path, self._issue, version))
+        finally:
+          if patched_file:
+            patched_file.close()
+
+        value[path] = data
+
+      return value
+    return self._fetcher.FetchAsync('tarball/%s/%s' % (self._issue,
+                                                       version)).Then(apply_)
 
   def GetIdentity(self):
     return self._issue
