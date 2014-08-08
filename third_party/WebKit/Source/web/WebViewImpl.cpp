@@ -4005,6 +4005,12 @@ void WebViewImpl::initializeLayerTreeView()
 
 void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
 {
+    // In the middle of shutting down; don't try to spin back up a compositor.
+    // FIXME: compositing startup/shutdown should be refactored so that it
+    // turns on explicitly rather than lazily, which causes this awkwardness.
+    if (m_layerTreeViewClosed)
+        return;
+
     ASSERT(!active || m_layerTreeView);
     blink::Platform::current()->histogramEnumeration("GPU.setIsAcceleratedCompositingActive", active * 2 + m_isAcceleratedCompositingActive, 4);
 
@@ -4012,10 +4018,6 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
         return;
 
     if (!m_client)
-        return;
-
-    // In the middle of shutting down; don't try to spin back up a compositor.
-    if (m_layerTreeViewClosed)
         return;
 
     if (!active) {
