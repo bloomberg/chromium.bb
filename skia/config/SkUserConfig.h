@@ -17,10 +17,6 @@
 #ifndef SkUserConfig_DEFINED
 #define SkUserConfig_DEFINED
 
-// Turns SkPicture::clone() into a simple "return SkRef(this);" as a way to
-// test the threadsafety of SkPicture playback.
-#define SK_PICTURE_CLONE_NOOP 1
-
 /*  SkTypes.h, the root of the public header files, does the following trick:
 
     #include <SkPreConfig.h>
