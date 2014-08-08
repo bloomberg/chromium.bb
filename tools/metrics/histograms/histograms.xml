@@ -26254,7 +26254,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.MalwareInterstitialTimeClosed" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>felt@chromium.org</owner>
   <summary>
     The time between when we show the SafeBrowsing malware interstitial and the
     user navigating away by for example, closing the tab, clicking the browser
@@ -26263,7 +26263,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.MalwareInterstitialTimeDiagnostic" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>felt@chromium.org</owner>
   <summary>
     The time between when we show the SafeBrowsing malware interstitial and the
     user clicking on diagnostic page link.
@@ -26272,7 +26272,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SB2.MalwareInterstitialTimeExpandedSeeMore"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>felt@chromium.org</owner>
   <summary>
     The time between when we show the SafeBrowsing malware interstitial and the
     user expanding the &quot;see more info&quot; section of the page.  (Only
@@ -26281,7 +26281,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.MalwareInterstitialTimeLearnMore" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>felt@chromium.org</owner>
   <summary>
     The time between when we show the SafeBrowsing malware interstitial and the
     user clicking on the learn more about malware link.
@@ -26289,7 +26289,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.MalwareInterstitialTimePrivacyPolicy" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>felt@chromium.org</owner>
   <summary>
     The time between when we show the SafeBrowsing malware interstitial and the
     user clicking on the privacy policy link.
@@ -26297,7 +26297,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.MalwareInterstitialTimeProceed" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>felt@chromium.org</owner>
   <summary>
     The time between when we show the SafeBrowsing malware interstitial and the
     user clicking on the proceed link.
@@ -26305,7 +26305,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.MalwareInterstitialTimeTakeMeBack" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>felt@chromium.org</owner>
   <summary>
     The time between when we show the SafeBrowsing malware interstitial and the
     user clicking on the big green back button.
@@ -26337,7 +26337,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.PhishingInterstitialTimeClosed" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>felt@chromium.org</owner>
   <summary>
     The time between when we show the SafeBrowsing phishing interstitial and the
     user navigating away by for example, closing the tab, clicking the browser
@@ -26347,7 +26347,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SB2.PhishingInterstitialTimeExpandedSeeMore"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>felt@chromium.org</owner>
   <summary>
     The time between when we show the SafeBrowsing phishing interstitial and the
     user expanding the &quot;see more info&quot; section of the page.  (Only
@@ -26356,7 +26356,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.PhishingInterstitialTimeLearnMore" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>felt@chromium.org</owner>
   <summary>
     The time between when we show the SafeBrowsing phishing interstitial and the
     user clicking on the learn more link.
@@ -26364,7 +26364,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.PhishingInterstitialTimeProceed" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>felt@chromium.org</owner>
   <summary>
     The time between when we show the SafeBrowsing phishing interstitial and the
     user clicking on the proceed link.
@@ -26372,7 +26372,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.PhishingInterstitialTimeReportError" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>felt@chromium.org</owner>
   <summary>
     The time between when we show the SafeBrowsing phishing interstitial and the
     user clicking on the report error link.
@@ -26380,7 +26380,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.PhishingInterstitialTimeTakeMeBack" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>felt@chromium.org</owner>
   <summary>
     The time between when we show the SafeBrowsing phishing interstitial and the
     user clicking on the big green back button.
