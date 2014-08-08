@@ -16,10 +16,18 @@
 }
 
 .cast-menu > :not(hr) {
+  -webkit-padding-end: 14px;
+  -webkit-padding-start: 19px;
   background-color: #fff;
   font-size: 12px;
-  padding: 5px 10px; /* top&bottom, left&right */
+  padding-bottom: 5px;
+  padding-top: 5px;
   text-overflow: ellipsis;
+}
+
+.cast-menu > [checked]:not(hr) {
+  /* A checkmark has 19 px width. */
+  -webkit-padding-start: 0;
 }
 
 .cast-menu > :not(hr):hover {

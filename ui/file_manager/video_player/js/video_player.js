@@ -484,6 +484,7 @@ VideoPlayer.prototype.onCastSelected_ = function(cast) {
     return;
 
   this.currentCast_ = cast || null;
+  this.updateCheckOnCastMenu_();
   this.reloadCurrentVideo();
 };
 
@@ -516,17 +517,45 @@ VideoPlayer.prototype.setCastList = function(casts) {
 
   var item = new cr.ui.MenuItem();
   item.label = loadTimeData.getString('VIDEO_PLAYER_PLAY_THIS_COMPUTER');
+  item.castLabel = '';
   item.addEventListener('activate', this.onCastSelected_.wrap(this, null));
   menu.appendChild(item);
 
   for (var i = 0; i < casts.length; i++) {
     var item = new cr.ui.MenuItem();
     item.label = casts[i].friendlyName;
+    item.castLabel = casts[i].label;
     item.addEventListener('activate',
                           this.onCastSelected_.wrap(this, casts[i]));
     menu.appendChild(item);
   }
+  this.updateCheckOnCastMenu_();
   button.classList.remove('hidden');
+};
+
+/**
+ * Updates the check status of the cast menu items.
+ * @private
+ */
+VideoPlayer.prototype.updateCheckOnCastMenu_ = function() {
+  var menu = document.querySelector('#cast-menu');
+  var menuItems = menu.menuItems;
+  for (var i = 0; i < menuItems.length; i++) {
+    var item = menuItems[i];
+    if (this.currentCast_ === null) {
+      // Playing on this computer.
+      if (item.castLabel === '')
+        item.checked = true;
+      else
+        item.checked = false;
+    } else {
+      // Playing on cast device.
+      if (item.castLabel === this.currentCast_.label)
+        item.checked = true;
+      else
+        item.checked = false;
+    }
+  }
 };
 
 /**
