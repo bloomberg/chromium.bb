@@ -894,8 +894,16 @@ void Range::insertNode(PassRefPtrWillBeRawPtr<Node> prpNewNode, ExceptionState& 
         if (exceptionState.hadException())
             return;
 
-        if (collapsed)
+        if (collapsed) {
+            // The load event would be fired regardless of EventQueueScope;
+            // e.g. by ContainerNode::updateTreeAfterInsertion
+            // Given circumstance may mutate the tree so newText->parentNode() may become null
+            if (!newText->parentNode()) {
+                exceptionState.throwDOMException(HierarchyRequestError, "This operation would set range's end to parent with new offset, but there's no parent into which to continue.");
+                return;
+            }
             m_end.setToBeforeChild(*newText);
+        }
     } else {
         RefPtrWillBeRawPtr<Node> lastChild = (newNodeType == Node::DOCUMENT_FRAGMENT_NODE) ? toDocumentFragment(newNode)->lastChild() : newNode.get();
         if (lastChild && lastChild == m_start.childBefore()) {
