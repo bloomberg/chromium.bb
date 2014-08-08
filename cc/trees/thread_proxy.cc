@@ -335,14 +335,6 @@ void ThreadProxy::UpdateRendererCapabilitiesOnImplThread() {
 void ThreadProxy::DidLoseOutputSurfaceOnImplThread() {
   TRACE_EVENT0("cc", "ThreadProxy::DidLoseOutputSurfaceOnImplThread");
   DCHECK(IsImplThread());
-  CheckOutputSurfaceStatusOnImplThread();
-}
-
-void ThreadProxy::CheckOutputSurfaceStatusOnImplThread() {
-  TRACE_EVENT0("cc", "ThreadProxy::CheckOutputSurfaceStatusOnImplThread");
-  DCHECK(IsImplThread());
-  if (!impl().layer_tree_host_impl->IsContextLost())
-    return;
   Proxy::MainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&ThreadProxy::DidLoseOutputSurface, main_thread_weak_ptr_));
@@ -1131,9 +1123,6 @@ DrawResult ThreadProxy::DrawSwapInternal(bool forced_draw) {
         FROM_HERE,
         base::Bind(&ThreadProxy::DidCommitAndDrawFrame, main_thread_weak_ptr_));
   }
-
-  if (draw_frame)
-    CheckOutputSurfaceStatusOnImplThread();
 
   if (result == DRAW_SUCCESS)
     impl().timing_history.DidFinishDrawing();

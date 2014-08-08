@@ -703,9 +703,7 @@ class CC_EXPORT LayerTreeHostImpl
   MicroBenchmarkControllerImpl micro_benchmark_controller_;
 
   bool need_to_update_visible_tiles_before_draw_;
-#if DCHECK_IS_ON
-  bool did_lose_called_;
-#endif
+  bool have_valid_output_surface_;
 
   // Optional callback to notify of new tree activations.
   base::Closure tree_activation_callback_;

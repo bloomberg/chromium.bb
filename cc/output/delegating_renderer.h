@@ -37,8 +37,6 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
   virtual void SwapBuffers(const CompositorFrameMetadata& metadata) OVERRIDE;
   virtual void ReceiveSwapBuffersAck(const CompositorFrameAck&) OVERRIDE;
 
-  virtual bool IsContextLost() OVERRIDE;
-
  private:
   DelegatingRenderer(RendererClient* client,
                      const LayerTreeSettings* settings,

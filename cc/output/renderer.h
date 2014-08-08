@@ -73,8 +73,6 @@ class CC_EXPORT Renderer {
   virtual void SwapBuffers(const CompositorFrameMetadata& metadata) = 0;
   virtual void ReceiveSwapBuffersAck(const CompositorFrameAck& ack) {}
 
-  virtual bool IsContextLost();
-
   bool visible() const { return visible_; }
   void SetVisible(bool visible);
 

@@ -65,7 +65,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   virtual void DoNoOp() OVERRIDE;
   virtual void SwapBuffers(const CompositorFrameMetadata& metadata) OVERRIDE;
 
-  virtual bool IsContextLost() OVERRIDE;
+  virtual bool IsContextLost();
 
   static void DebugGLCall(gpu::gles2::GLES2Interface* gl,
                           const char* command,

@@ -257,9 +257,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       micro_benchmark_controller_(this),
       need_to_update_visible_tiles_before_draw_(false),
-#if DCHECK_IS_ON
-      did_lose_called_(false),
-#endif
+      have_valid_output_surface_(false),
       shared_bitmap_manager_(manager),
       id_(id),
       transfer_buffer_memory_limit_(0u) {
@@ -1615,7 +1613,9 @@ void LayerTreeHostImpl::FinishAllRendering() {
 
 bool LayerTreeHostImpl::IsContextLost() {
   DCHECK(proxy_->IsImplThread());
-  return renderer_ && renderer_->IsContextLost();
+  // To avoid races, rely only on the lost-surface callback.
+  // See crbug.com/392891.
+  return !have_valid_output_surface_;
 }
 
 void LayerTreeHostImpl::SetUseGpuRasterization(bool use_gpu) {
@@ -1720,6 +1720,9 @@ float LayerTreeHostImpl::VerticalAdjust() const {
 }
 
 void LayerTreeHostImpl::DidLoseOutputSurface() {
+  if (!have_valid_output_surface_)
+    return;
+  have_valid_output_surface_ = false;
   if (resource_provider_)
     resource_provider_->DidLoseOutputSurface();
   // TODO(jamesr): The renderer_ check is needed to make some of the
@@ -1727,9 +1730,6 @@ void LayerTreeHostImpl::DidLoseOutputSurface() {
   // important) in production. We should adjust the test to not need this.
   if (renderer_)
     client_->DidLoseOutputSurfaceOnImplThread();
-#if DCHECK_IS_ON
-  did_lose_called_ = true;
-#endif
 }
 
 bool LayerTreeHostImpl::HaveRootScrollLayer() const {
@@ -2077,9 +2077,6 @@ void LayerTreeHostImpl::EnforceZeroBudget(bool zero_budget) {
 bool LayerTreeHostImpl::InitializeRenderer(
     scoped_ptr<OutputSurface> output_surface) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::InitializeRenderer");
-#if DCHECK_IS_ON
-  DCHECK(!renderer_ || did_lose_called_);
-#endif
 
   // Since we will create a new resource provider, we cannot continue to use
   // the old resources (i.e. render_surfaces and texture IDs). Clear them
@@ -2096,6 +2093,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
     return false;
 
   output_surface_ = output_surface.Pass();
+  have_valid_output_surface_ = true;
   resource_provider_ =
       ResourceProvider::Create(output_surface_.get(),
                                shared_bitmap_manager_,

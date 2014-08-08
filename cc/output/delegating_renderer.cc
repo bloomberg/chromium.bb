@@ -112,13 +112,6 @@ void DelegatingRenderer::ReceiveSwapBuffersAck(
   resource_provider_->ReceiveReturnsFromParent(ack.resources);
 }
 
-bool DelegatingRenderer::IsContextLost() {
-  ContextProvider* context_provider = output_surface_->context_provider();
-  if (!context_provider)
-    return false;
-  return context_provider->IsContextLost();
-}
-
 void DelegatingRenderer::DidChangeVisibility() {
   ContextProvider* context_provider = output_surface_->context_provider();
   if (!visible()) {

@@ -272,7 +272,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void LayerTreeHostClosedOnImplThread(CompletionEvent* completion);
   DrawResult DrawSwapInternal(bool forced_draw);
   void ForceSerializeOnSwapBuffersOnImplThread(CompletionEvent* completion);
-  void CheckOutputSurfaceStatusOnImplThread();
   void CommitPendingOnImplThreadForTesting(CommitPendingRequest* request);
   void AsValueOnImplThread(CompletionEvent* completion,
                            base::debug::TracedValue* state) const;

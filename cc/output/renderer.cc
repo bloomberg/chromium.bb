@@ -10,10 +10,6 @@ bool Renderer::HasAllocatedResourcesForTesting(RenderPass::Id id) const {
   return false;
 }
 
-bool Renderer::IsContextLost() {
-  return false;
-}
-
 void Renderer::SetVisible(bool visible) {
   if (visible_ == visible)
     return;

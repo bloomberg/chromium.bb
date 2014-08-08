@@ -6815,5 +6815,36 @@ TEST_F(LayerTreeHostImplTest, DidBecomeActive) {
   EXPECT_EQ(1u, raw_replica_mask_layer->did_become_active_call_count());
 }
 
+class LayerTreeHostImplCountingLostSurfaces : public LayerTreeHostImplTest {
+ public:
+  LayerTreeHostImplCountingLostSurfaces() : num_lost_surfaces_(0) {}
+  virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE {
+    num_lost_surfaces_++;
+  }
+
+ protected:
+  int num_lost_surfaces_;
+};
+
+TEST_F(LayerTreeHostImplCountingLostSurfaces, TwiceLostSurface) {
+  // The medium term, we plan to remove LayerTreeHostImpl::IsContextLost().
+  // Until then, we need the state variable
+  // LayerTreeHostImpl::have_valid_output_surface_ and we can
+  // enforce the following behaviour, where calling DidLoseOutputSurface
+  // twice in a row only causes one subsequent
+  // call to LayerTreeHostImplClient::DidLoseOutputSurfaceOnImplThread().
+  // Really we just need at least one client notification each time
+  // we go from having a valid output surface to not having a valid output
+  // surface.
+  EXPECT_EQ(0, num_lost_surfaces_);
+  EXPECT_FALSE(host_impl_->IsContextLost());
+  host_impl_->DidLoseOutputSurface();
+  EXPECT_TRUE(host_impl_->IsContextLost());
+  EXPECT_EQ(1, num_lost_surfaces_);
+  host_impl_->DidLoseOutputSurface();
+  EXPECT_TRUE(host_impl_->IsContextLost());
+  EXPECT_EQ(1, num_lost_surfaces_);
+}
+
 }  // namespace
 }  // namespace cc
