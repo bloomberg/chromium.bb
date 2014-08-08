@@ -393,8 +393,12 @@ bool WebNotificationTray::ShowNotifierSettings() {
 
 bool WebNotificationTray::IsContextMenuEnabled() const {
   user::LoginStatus login_status = status_area_widget()->login_status();
+  bool userAddingRunning = ash::Shell::GetInstance()
+                               ->session_state_delegate()
+                               ->IsInSecondaryLoginScreen();
+
   return login_status != user::LOGGED_IN_NONE
-      && login_status != user::LOGGED_IN_LOCKED;
+      && login_status != user::LOGGED_IN_LOCKED && !userAddingRunning;
 }
 
 message_center::MessageCenterTray* WebNotificationTray::GetMessageCenterTray() {
@@ -457,9 +461,13 @@ void WebNotificationTray::UpdateTrayContent() {
     button_->SetState(views::CustomButton::STATE_PRESSED);
   else
     button_->SetState(views::CustomButton::STATE_NORMAL);
+  bool userAddingRunning = ash::Shell::GetInstance()
+                               ->session_state_delegate()
+                               ->IsInSecondaryLoginScreen();
+
   SetVisible((status_area_widget()->login_status() != user::LOGGED_IN_NONE) &&
              (status_area_widget()->login_status() != user::LOGGED_IN_LOCKED) &&
-             (message_center->NotificationCount() > 0));
+             !userAddingRunning && (message_center->NotificationCount() > 0));
   Layout();
   SchedulePaint();
 }

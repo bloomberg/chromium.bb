@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/settings/tray_settings.h"
 
+#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/power/power_status.h"
 #include "ash/system/chromeos/power/power_status_view.h"
@@ -40,8 +41,12 @@ class SettingsDefaultView : public ActionableView,
         ash::kTrayPopupPaddingBetweenItems));
 
     bool power_view_right_align = false;
+    bool userAddingRunning = ash::Shell::GetInstance()
+                                 ->session_state_delegate()
+                                 ->IsInSecondaryLoginScreen();
+
     if (login_status_ != user::LOGGED_IN_NONE &&
-        login_status_ != user::LOGGED_IN_LOCKED) {
+        login_status_ != user::LOGGED_IN_LOCKED && !userAddingRunning) {
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       views::ImageView* icon =
           new ash::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
@@ -72,8 +77,12 @@ class SettingsDefaultView : public ActionableView,
 
   // Overridden from ash::ActionableView.
   virtual bool PerformAction(const ui::Event& event) OVERRIDE {
+    bool userAddingRunning = ash::Shell::GetInstance()
+                                 ->session_state_delegate()
+                                 ->IsInSecondaryLoginScreen();
+
     if (login_status_ == user::LOGGED_IN_NONE ||
-        login_status_ == user::LOGGED_IN_LOCKED)
+        login_status_ == user::LOGGED_IN_LOCKED || userAddingRunning)
       return false;
 
     ash::Shell::GetInstance()->system_tray_delegate()->ShowSettings();

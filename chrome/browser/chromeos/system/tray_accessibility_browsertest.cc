@@ -7,6 +7,8 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/user/login_status.h"
+#include "ash/test/shell_test_api.h"
+#include "ash/test/test_session_state_delegate.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
@@ -234,6 +236,14 @@ class TrayAccessibilityTest
 
   bool IsVirtualKeyboardMenuShownOnDetailMenu() const {
     return tray()->detailed_menu_->virtual_keyboard_view_;
+  }
+
+  bool IsHelpShownOnDetailMenu() const {
+    return tray()->detailed_menu_->help_view_;
+  }
+
+  bool IsSettingsShownOnDetailMenu() const {
+    return tray()->detailed_menu_->settings_view_;
   }
 
   bool IsNotificationShown() const {
@@ -854,6 +864,8 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_TRUE(IsLargeCursorMenuShownOnDetailMenu());
   EXPECT_FALSE(IsAutoclickMenuShownOnDetailMenu());
   EXPECT_TRUE(IsVirtualKeyboardMenuShownOnDetailMenu());
+  EXPECT_FALSE(IsHelpShownOnDetailMenu());
+  EXPECT_FALSE(IsSettingsShownOnDetailMenu());
   CloseDetailMenu();
 
   SetLoginStatus(ash::user::LOGGED_IN_USER);
@@ -864,6 +876,8 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_FALSE(IsLargeCursorMenuShownOnDetailMenu());
   EXPECT_TRUE(IsAutoclickMenuShownOnDetailMenu());
   EXPECT_TRUE(IsVirtualKeyboardMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHelpShownOnDetailMenu());
+  EXPECT_TRUE(IsSettingsShownOnDetailMenu());
   CloseDetailMenu();
 
   SetLoginStatus(ash::user::LOGGED_IN_LOCKED);
@@ -874,6 +888,25 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_FALSE(IsLargeCursorMenuShownOnDetailMenu());
   EXPECT_TRUE(IsAutoclickMenuShownOnDetailMenu());
   EXPECT_TRUE(IsVirtualKeyboardMenuShownOnDetailMenu());
+  EXPECT_FALSE(IsHelpShownOnDetailMenu());
+  EXPECT_FALSE(IsSettingsShownOnDetailMenu());
+  CloseDetailMenu();
+
+  ash::test::TestSessionStateDelegate* session_state_delegate =
+      new ash::test::TestSessionStateDelegate;
+  ash::test::ShellTestApi test_api(ash::Shell::GetInstance());
+  test_api.SetSessionStateDelegate(session_state_delegate);
+  session_state_delegate->SetUserAddingScreenRunning(true);
+  SetLoginStatus(ash::user::LOGGED_IN_USER);
+  EXPECT_TRUE(CreateDetailedMenu());
+  EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsScreenMagnifierMenuShownOnDetailMenu());
+  EXPECT_FALSE(IsLargeCursorMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsAutoclickMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsVirtualKeyboardMenuShownOnDetailMenu());
+  EXPECT_FALSE(IsHelpShownOnDetailMenu());
+  EXPECT_FALSE(IsSettingsShownOnDetailMenu());
   CloseDetailMenu();
 }
 

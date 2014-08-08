@@ -17,6 +17,7 @@ class AshNativeCursorManager;
 class DragDropController;
 class MaximizeModeWindowManager;
 class RootWindowLayoutManager;
+class SessionStateDelegate;
 class ScreenPositionController;
 class ShelfDelegate;
 class ShelfModel;
@@ -45,6 +46,9 @@ public:
 
   // Set ShelfDelegate.
   void SetShelfDelegate(ShelfDelegate* delegate);
+
+  // Set SessionStateDelegate.
+  void SetSessionStateDelegate(SessionStateDelegate* session_state_delegate);
 
  private:
   Shell* shell_;  // not owned

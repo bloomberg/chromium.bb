@@ -5,6 +5,7 @@
 #include "ash/system/chromeos/network/tray_vpn.h"
 
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/network_state_list_detailed_view.h"
 #include "ash/system/tray/system_tray.h"
@@ -126,7 +127,13 @@ views::View* TrayVPN::CreateDefaultView(user::LoginStatus status) {
   if (!tray::VpnDefaultView::ShouldShow())
     return NULL;
 
-  default_ = new tray::VpnDefaultView(this, status != user::LOGGED_IN_LOCKED);
+  bool userAddingRunning = ash::Shell::GetInstance()
+                               ->session_state_delegate()
+                               ->IsInSecondaryLoginScreen();
+
+  default_ = new tray::VpnDefaultView(
+      this, status != user::LOGGED_IN_LOCKED && !userAddingRunning);
+
   return default_;
 }
 

@@ -137,6 +137,8 @@ class ASH_EXPORT SessionStateDelegate {
   // Adds or removes sessions state observer.
   virtual void AddSessionStateObserver(SessionStateObserver* observer) = 0;
   virtual void RemoveSessionStateObserver(SessionStateObserver* observer) = 0;
+
+  bool IsInSecondaryLoginScreen() const;
 };
 
 }  // namespace ash

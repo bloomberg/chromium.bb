@@ -5,6 +5,7 @@
 #include "ash/test/shell_test_api.h"
 
 #include "ash/root_window_controller.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shell.h"
 
@@ -67,6 +68,11 @@ void ShellTestApi::DisableDisplayConfiguratorAnimation() {
 
 void ShellTestApi::SetShelfDelegate(ShelfDelegate* delegate) {
   shell_->shelf_delegate_.reset(delegate);
+}
+
+void ShellTestApi::SetSessionStateDelegate(
+    SessionStateDelegate* session_state_delegate) {
+  shell_->session_state_delegate_.reset(session_state_delegate);
 }
 
 }  // namespace test

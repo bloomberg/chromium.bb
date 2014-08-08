@@ -405,7 +405,10 @@ void SystemTrayDelegateChromeOS::ShowSettings() {
 }
 
 bool SystemTrayDelegateChromeOS::ShouldShowSettings() {
-  return UserManager::Get()->GetCurrentUserFlow()->ShouldShowSettings();
+  return UserManager::Get()->GetCurrentUserFlow()->ShouldShowSettings() &&
+         !ash::Shell::GetInstance()
+              ->session_state_delegate()
+              ->IsInSecondaryLoginScreen();
 }
 
 void SystemTrayDelegateChromeOS::ShowDateSettings() {
@@ -423,7 +426,11 @@ void SystemTrayDelegateChromeOS::ShowSetTimeDialog() {
 
 void SystemTrayDelegateChromeOS::ShowNetworkSettings(
     const std::string& service_path) {
-  if (!LoginState::Get()->IsUserLoggedIn())
+  bool userAddingRunning = ash::Shell::GetInstance()
+                               ->session_state_delegate()
+                               ->IsInSecondaryLoginScreen();
+
+  if (!LoginState::Get()->IsUserLoggedIn() || userAddingRunning)
     return;
   ShowNetworkSettingsPage(service_path);
 }
@@ -504,8 +511,12 @@ void SystemTrayDelegateChromeOS::ShowSupervisedUserInfo() {
 
 void SystemTrayDelegateChromeOS::ShowEnterpriseInfo() {
   ash::user::LoginStatus status = GetUserLoginStatus();
+  bool userAddingRunning = ash::Shell::GetInstance()
+                               ->session_state_delegate()
+                               ->IsInSecondaryLoginScreen();
+
   if (status == ash::user::LOGGED_IN_NONE ||
-      status == ash::user::LOGGED_IN_LOCKED) {
+      status == ash::user::LOGGED_IN_LOCKED || userAddingRunning) {
     scoped_refptr<chromeos::HelpAppLauncher> help_app(
         new chromeos::HelpAppLauncher(GetNativeWindow()));
     help_app->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_ENTERPRISE);

@@ -122,7 +122,10 @@ void OpenSettings() {
     case user::LOGGED_IN_PUBLIC:
     case user::LOGGED_IN_SUPERVISED:
     case user::LOGGED_IN_KIOSK_APP:
-      Shell::GetInstance()->system_tray_delegate()->ShowDisplaySettings();
+      ash::SystemTrayDelegate* delegate =
+          Shell::GetInstance()->system_tray_delegate();
+      if (delegate->ShouldShowSettings())
+        delegate->ShowDisplaySettings();
   }
 }
 

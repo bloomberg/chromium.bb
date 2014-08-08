@@ -6,6 +6,7 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
@@ -208,8 +209,12 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
 void AccessibilityDetailedView::AppendHelpEntries() {
   // Currently the help page requires a browser window.
   // TODO(yoshiki): show this even on login/lock screen. crbug.com/158286
+  bool userAddingRunning = ash::Shell::GetInstance()
+                               ->session_state_delegate()
+                               ->IsInSecondaryLoginScreen();
+
   if (login_ == user::LOGGED_IN_NONE ||
-      login_ == user::LOGGED_IN_LOCKED)
+      login_ == user::LOGGED_IN_LOCKED || userAddingRunning)
     return;
 
   views::View* bottom_row = new View();

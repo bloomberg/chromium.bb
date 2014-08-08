@@ -189,6 +189,7 @@
       'screen_util.cc',
       'screen_util.h',
       'screenshot_delegate.h',
+      'session/session_state_delegate.cc',
       'session/session_state_delegate.h',
       'session/session_state_observer.cc',
       'session/session_state_observer.h',

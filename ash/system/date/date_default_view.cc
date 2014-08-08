@@ -42,8 +42,12 @@ DateDefaultView::DateDefaultView(ash::user::LoginStatus login)
   view->SetContent(date_view_);
   AddChildView(view);
 
-  if (login == ash::user::LOGGED_IN_LOCKED ||
-      login == ash::user::LOGGED_IN_NONE)
+  bool userAddingRunning = ash::Shell::GetInstance()
+                               ->session_state_delegate()
+                               ->IsInSecondaryLoginScreen();
+
+  if (login == user::LOGGED_IN_LOCKED ||
+      login == user::LOGGED_IN_NONE || userAddingRunning)
     return;
 
   date_view_->SetAction(TrayDate::SHOW_DATE_SETTINGS);

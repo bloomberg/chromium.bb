@@ -4,6 +4,7 @@
 
 #include "ash/system/bluetooth/tray_bluetooth.h"
 
+#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/tray/fixed_sized_scroll_view.h"
 #include "ash/system/tray/hover_highlight_view.h"
@@ -301,7 +302,12 @@ class BluetoothDetailedView : public TrayDetailsView,
 
     // Add bluetooth device requires a browser window, hide it for non logged in
     // user.
-    if (login_ == user::LOGGED_IN_NONE || login_ == user::LOGGED_IN_LOCKED)
+    bool userAddingRunning = ash::Shell::GetInstance()
+                                 ->session_state_delegate()
+                                 ->IsInSecondaryLoginScreen();
+
+    if (login_ == user::LOGGED_IN_NONE || login_ == user::LOGGED_IN_LOCKED ||
+        userAddingRunning)
       return;
 
     ash::SystemTrayDelegate* delegate =
