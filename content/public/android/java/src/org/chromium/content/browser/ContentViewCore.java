@@ -1203,8 +1203,8 @@ public class ContentViewCore
                 cancelRequestToScrollFocusedEditableNodeIntoView();
             }
 
-            if (isSPenSupported(mContext))
-                eventAction = convertSPenEventAction(eventAction);
+            if (SPenSupport.isSPenSupported(mContext))
+                eventAction = SPenSupport.convertSPenEventAction(eventAction);
             if (!isValidTouchEventActionForNative(eventAction)) return false;
 
             if (mNativeContentViewCore == 0) return false;
