@@ -591,9 +591,6 @@
       'sources': [
         '<@(views_sources)',
       ],
-      'include_dirs': [
-        '../../third_party/wtl/include',
-      ],
       'conditions': [
         ['use_ash==0', {
           'sources!': [
