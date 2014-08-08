@@ -1122,6 +1122,8 @@
       'browser/service_worker/embedded_worker_instance.h',
       'browser/service_worker/embedded_worker_registry.cc',
       'browser/service_worker/embedded_worker_registry.h',
+      'browser/service_worker/service_worker_cache_listener.cc',
+      'browser/service_worker/service_worker_cache_listener.h',
       'browser/service_worker/service_worker_context_core.cc',
       'browser/service_worker/service_worker_context_core.h',
       'browser/service_worker/service_worker_context_observer.h',

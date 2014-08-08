@@ -123,6 +123,11 @@ blink::WebURL EmbeddedWorkerContextClient::scope() const {
   return service_worker_scope_;
 }
 
+blink::WebServiceWorkerCacheStorage*
+    EmbeddedWorkerContextClient::cacheStorage() {
+  return script_context_->cache_storage();
+}
+
 void EmbeddedWorkerContextClient::didPauseAfterDownload() {
   Send(new EmbeddedWorkerHostMsg_DidPauseAfterDownload(embedded_worker_id_));
 }

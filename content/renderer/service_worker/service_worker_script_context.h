@@ -10,9 +10,11 @@
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/renderer/service_worker/service_worker_cache_storage_dispatcher.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerClientsInfo.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerEventResult.h"
@@ -57,12 +59,21 @@ class ServiceWorkerScriptContext {
       const base::string16& message,
       scoped_ptr<blink::WebMessagePortChannelArray> channels);
 
+  // Send a message to the browser. Takes ownership of |message|.
+  void Send(IPC::Message* message);
+
+  // Get routing_id for sending message to the ServiceWorkerVersion
+  // in the browser process.
+  int GetRoutingID() const;
+
+  blink::WebServiceWorkerCacheStorage* cache_storage() {
+    return cache_storage_dispatcher_.get();
+  }
+
  private:
   typedef IDMap<blink::WebServiceWorkerClientsCallbacks, IDMapOwnPointer>
       ClientsCallbacksMap;
 
-  // Send a message to the browser.
-  void Send(IPC::Message* message);
 
   void OnActivateEvent(int request_id);
   void OnInstallEvent(int request_id, int active_version_id);
@@ -75,9 +86,7 @@ class ServiceWorkerScriptContext {
   void OnDidGetClientDocuments(
       int request_id, const std::vector<int>& client_ids);
 
-  // Get routing_id for sending message to the ServiceWorkerVersion
-  // in the browser process.
-  int GetRoutingID() const;
+  scoped_ptr<ServiceWorkerCacheStorageDispatcher> cache_storage_dispatcher_;
 
   // Not owned; embedded_context_ owns this.
   EmbeddedWorkerContextClient* embedded_context_;

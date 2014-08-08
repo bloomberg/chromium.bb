@@ -435,6 +435,8 @@
       'renderer/service_worker/embedded_worker_devtools_agent.h',
       'renderer/service_worker/embedded_worker_dispatcher.cc',
       'renderer/service_worker/embedded_worker_dispatcher.h',
+      'renderer/service_worker/service_worker_cache_storage_dispatcher.cc',
+      'renderer/service_worker/service_worker_cache_storage_dispatcher.h',
       'renderer/service_worker/service_worker_script_context.cc',
       'renderer/service_worker/service_worker_script_context.h',
       'renderer/shared_memory_seqlock_reader.cc',

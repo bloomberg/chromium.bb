@@ -63,6 +63,7 @@ class EmbeddedWorkerContextClient
   // WebServiceWorkerContextClient overrides, some of them are just dispatched
   // on to script_context_.
   virtual blink::WebURL scope() const;
+  virtual blink::WebServiceWorkerCacheStorage* cacheStorage();
   virtual void didPauseAfterDownload();
   virtual void getClients(blink::WebServiceWorkerClientsCallbacks*);
   virtual void workerContextFailedToStart();
