@@ -46,7 +46,7 @@ TEST_F(PrivateScriptTestTest, invokePrivateScriptMethodFromCPP)
 {
     bool success;
     int result;
-    success = V8PrivateScriptTest::addIntegerForPrivateScriptOnlyMethodImplementedInPrivateScript(frame(), privateScriptTest(), 100, 200, &result);
+    success = V8PrivateScriptTest::PrivateScript::addIntegerForPrivateScriptOnlyMethod(frame(), privateScriptTest(), 100, 200, &result);
     EXPECT_TRUE(success);
     EXPECT_EQ(result, 300);
 }
@@ -55,12 +55,12 @@ TEST_F(PrivateScriptTestTest, invokePrivateScriptAttributeFromCPP)
 {
     bool success;
     String result;
-    success = V8PrivateScriptTest::stringAttributeForPrivateScriptOnlyAttributeGetterImplementedInPrivateScript(frame(), privateScriptTest(), &result);
+    success = V8PrivateScriptTest::PrivateScript::stringAttributeForPrivateScriptOnlyAttributeGetter(frame(), privateScriptTest(), &result);
     EXPECT_TRUE(success);
     EXPECT_EQ(result, "yyy");
-    success = V8PrivateScriptTest::stringAttributeForPrivateScriptOnlyAttributeSetterImplementedInPrivateScript(frame(), privateScriptTest(), "foo");
+    success = V8PrivateScriptTest::PrivateScript::stringAttributeForPrivateScriptOnlyAttributeSetter(frame(), privateScriptTest(), "foo");
     EXPECT_TRUE(success);
-    success = V8PrivateScriptTest::stringAttributeForPrivateScriptOnlyAttributeGetterImplementedInPrivateScript(frame(), privateScriptTest(), &result);
+    success = V8PrivateScriptTest::PrivateScript::stringAttributeForPrivateScriptOnlyAttributeGetter(frame(), privateScriptTest(), &result);
     EXPECT_TRUE(success);
     EXPECT_EQ(result, "foo");
 }

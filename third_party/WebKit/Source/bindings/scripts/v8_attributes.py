@@ -254,7 +254,7 @@ def getter_base_name(interface, attribute, arguments):
     extended_attributes = attribute.extended_attributes
 
     if 'ImplementedInPrivateScript' in extended_attributes:
-        return '%sAttributeGetterImplementedInPrivateScript' % uncapitalize(cpp_name(attribute))
+        return '%sAttributeGetter' % uncapitalize(cpp_name(attribute))
 
     if 'Reflect' not in extended_attributes:
         return uncapitalize(cpp_name(attribute))
@@ -400,7 +400,7 @@ CONTENT_ATTRIBUTE_SETTER_NAMES = {
 
 def setter_base_name(interface, attribute, arguments):
     if 'ImplementedInPrivateScript' in attribute.extended_attributes:
-        return '%sAttributeSetterImplementedInPrivateScript' % uncapitalize(cpp_name(attribute))
+        return '%sAttributeSetter' % uncapitalize(cpp_name(attribute))
 
     if 'Reflect' not in attribute.extended_attributes:
         return 'set%s' % capitalize(cpp_name(attribute))

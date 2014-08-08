@@ -725,7 +725,7 @@ static void stringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Va
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
     String result;
-    if (!V8TestInterface::stringAttributeAttributeGetterImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, &result))
+    if (!V8TestInterface::PrivateScript::stringAttributeAttributeGetter(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, &result))
         return;
     v8SetReturnValueString(info, result, info.GetIsolate());
 }
@@ -746,7 +746,7 @@ static void stringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toNative(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
-    V8TestInterface::stringAttributeAttributeSetterImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, cppValue);
+    V8TestInterface::PrivateScript::stringAttributeAttributeSetter(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, cppValue);
 }
 #endif // ENABLE(PARTIAL_CONDITION)
 
@@ -1181,7 +1181,7 @@ static void shortMethodWithShortArgumentImplementedInPrivateScriptMethod(const v
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(value, toInt16(info[0], exceptionState), exceptionState);
     }
     int result = 0;
-    if (!V8TestInterface::shortMethodWithShortArgumentImplementedInPrivateScriptMethodImplementedInPrivateScript(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, value, &result))
+    if (!V8TestInterface::PrivateScript::shortMethodWithShortArgumentImplementedInPrivateScriptMethod(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, value, &result))
         return;
     v8SetReturnValueInt(info, result);
 }
@@ -1646,7 +1646,7 @@ v8::Handle<v8::Value> toV8NoInline(TestInterfaceImplementation* impl, v8::Handle
     return toV8(impl, creationContext, isolate);
 }
 
-bool V8TestInterface::shortMethodWithShortArgumentImplementedInPrivateScriptMethodImplementedInPrivateScript(LocalFrame* frame, TestInterface* holderImpl, int value, int* result)
+bool V8TestInterface::PrivateScript::shortMethodWithShortArgumentImplementedInPrivateScriptMethod(LocalFrame* frame, TestInterface* holderImpl, int value, int* result)
 {
     if (!frame)
         return false;
@@ -1681,7 +1681,7 @@ bool V8TestInterface::shortMethodWithShortArgumentImplementedInPrivateScriptMeth
     return true;
 }
 
-bool V8TestInterface::stringAttributeAttributeGetterImplementedInPrivateScript(LocalFrame* frame, TestInterfaceImplementation* holderImpl, String* result)
+bool V8TestInterface::PrivateScript::stringAttributeAttributeGetter(LocalFrame* frame, TestInterfaceImplementation* holderImpl, String* result)
 {
     if (!frame)
         return false;
@@ -1714,7 +1714,7 @@ bool V8TestInterface::stringAttributeAttributeGetterImplementedInPrivateScript(L
     return true;
 }
 
-bool V8TestInterface::stringAttributeAttributeSetterImplementedInPrivateScript(LocalFrame* frame, TestInterfaceImplementation* holderImpl, String cppValue)
+bool V8TestInterface::PrivateScript::stringAttributeAttributeSetter(LocalFrame* frame, TestInterfaceImplementation* holderImpl, String cppValue)
 {
     if (!frame)
         return false;

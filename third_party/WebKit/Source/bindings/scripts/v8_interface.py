@@ -312,6 +312,8 @@ def interface_context(interface):
         'has_origin_safe_method_setter': any(
             method['is_check_security_for_frame'] and not method['is_read_only']
             for method in methods),
+        'has_private_script': any(attribute['is_implemented_in_private_script'] for attribute in attributes) or
+            any(method['is_implemented_in_private_script'] for method in methods),
         'method_configuration_methods': method_configuration_methods,
         'per_context_enabled_methods': per_context_enabled_methods,
         'methods': methods,

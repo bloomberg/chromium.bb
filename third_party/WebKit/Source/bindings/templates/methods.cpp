@@ -498,7 +498,7 @@ static void {{method.name}}OriginSafeMethodGetterCallback{{world_suffix}}(v8::Lo
 
 {##############################################################################}
 {% macro method_implemented_in_private_script(method) %}
-bool {{v8_class}}::{{method.name}}MethodImplementedInPrivateScript({{method.argument_declarations_for_private_script | join(', ')}})
+bool {{v8_class}}::PrivateScript::{{method.name}}Method({{method.argument_declarations_for_private_script | join(', ')}})
 {
     if (!frame)
         return false;

@@ -312,7 +312,7 @@ def cpp_value(interface, method, number_of_arguments):
     elif method.name == 'NamedConstructor':
         base_name = 'createForJSConstructor'
     elif 'ImplementedInPrivateScript' in method.extended_attributes:
-        base_name = '%sMethodImplementedInPrivateScript' % method.name
+        base_name = '%sMethod' % method.name
     else:
         base_name = v8_utilities.cpp_name(method)
 
