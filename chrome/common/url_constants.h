@@ -546,9 +546,6 @@ extern const char kMac32BitDeprecationURL[];
 // The URL for the "Learn more" link the the Easy Unlock settings.
 extern const char kEasyUnlockLearnMoreUrl[];
 
-// The URL to the device management page in the Easy Unlock settings.
-extern const char kEasyUnlockManagementUrl[];
-
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_URL_CONSTANTS_H_

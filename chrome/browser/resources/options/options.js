@@ -17,6 +17,7 @@ var ContentSettings = options.ContentSettings;
 var CookiesView = options.CookiesView;
 var CreateProfileOverlay = options.CreateProfileOverlay;
 var EditDictionaryOverlay = cr.IsMac ? null : options.EditDictionaryOverlay;
+var EasyUnlockTurnOffOverlay = options.EasyUnlockTurnOffOverlay;
 var FactoryResetOverlay = options.FactoryResetOverlay;
 <if expr="enable_google_now">
 var GeolocationOptions = options.GeolocationOptions;
@@ -124,6 +125,9 @@ function load() {
                                $('show-cookies-button')]);
   PageManager.registerOverlay(CreateProfileOverlay.getInstance(),
                               BrowserOptions.getInstance());
+  PageManager.registerOverlay(EasyUnlockTurnOffOverlay.getInstance(),
+                              BrowserOptions.getInstance(),
+                              [$('easy-unlock-turn-off-button')]);
   if (!cr.isMac) {
     PageManager.registerOverlay(EditDictionaryOverlay.getInstance(),
                                 LanguageOptions.getInstance(),

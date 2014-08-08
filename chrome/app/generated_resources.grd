@@ -9933,16 +9933,40 @@ Chrome ran out of memory.
           Ask where to save each file before downloading
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_SECTION_TITLE" desc="The title of the Easy Unlock section on the settings page.">
-          Easy Unlock
+          Easy unlock
+        </message>
+        <message name="IDS_OPTIONS_EASY_UNLOCK_SETUP_INTRO" desc="The text to show in Easy Unlock section to introduce the feature.">
+          Use your Android phone to securely unlock your Chrome device. No need to type your password again.
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_SETUP_BUTTON" desc="The label of the button to set up Easy Unlock section on the settings page.">
-          Set up Easy Unlock
+          Set up
         </message>
-        <message name="IDS_OPTIONS_EASY_UNLOCK_CHECKBOX_LABEL" desc="The label beside the checkbox to enable or disable easy unlock.">
-          Enable Easy Unlock for this device.
+        <message name="IDS_OPTIONS_EASY_UNLOCK_DESCRIPTION" desc="The text that describs what Easy Unlock does.">
+          Your Android phone can securely unlock your Chrome devices.
         </message>
-        <message name="IDS_OPTIONS_EASY_UNLOCK_MANAGEMENT" desc="The text of the link to the Easy Unlock management webpage.">
-          Manage Easy Unlock devices on your account settings.
+        <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_BUTTON" desc="The label of the button to disable Easy unlock on the settings page and the turn off Easy unlock dialog.">
+          Turn off Easy unlock
+        </message>
+        <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_TITLE" desc="The title of the Easy unlock turn off dialog.">
+          Turn off Easy unlock
+        </message>
+        <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_DESCRIPTION" desc="The description text of the Easy unlock turn off dialog.">
+          If you turn off Easy unlock, you won’t be able to unlock your Chrome devices when your phone is with you. You will have to type in your password.
+        </message>
+        <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_OFFLINE_TITLE" desc="The title text on the Easy unlock turn off dialog when Easy unlock could not be turned off because the device is offline.">
+          Please connect to a network
+        </message>
+        <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_OFFLINE_MESSAGE" desc="The text on the Easy unlock turn off dialog when Easy unlock could not be turned off because the device is offline.">
+          You must be online to turn off Easy unlock because this setting is synced to your phone and other devices. Please connect to a network first.
+        </message>
+        <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_ERROR_TITLE" desc="The title text on the Easy unlock turn off dialog when Easy unlock could not be turned off because there is a server error.">
+          Easy unlock is unavailable
+        </message>
+        <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_ERROR_MESSAGE" desc="The text on the Easy unlock turn off dialog when Easy unlock could not be turned off because there is a server error.">
+          Unable to connect to Easy unlock right now. Please try again later.
+        </message>
+        <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_RETRY_BUTTON" desc="The label text of the retry button on the Easy unlock turn off dialog when Easy unlock could not be turned off because there is a server error.">
+          Retry
         </message>
         <message name="IDS_OPTIONS_OPEN_FILE_TYPES_AUTOMATICALLY" desc="The information label for the 'Clear auto-opening settings' button">
           You have chosen to open certain file types automatically after downloading.

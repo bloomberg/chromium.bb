@@ -77,6 +77,7 @@ var CertificateImportErrorOverlay = options.CertificateImportErrorOverlay;
 <include src="content_settings_ui.js">
 <include src="cookies_list.js">
 <include src="cookies_view.js">
+<include src="easy_unlock_turn_off_overlay.js">
 <include src="factory_reset_overlay.js">
 <include src="font_settings.js">
 <if expr="enable_google_now">

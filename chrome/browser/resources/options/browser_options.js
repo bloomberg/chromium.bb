@@ -475,6 +475,9 @@ cr.define('options', function() {
         $('easy-unlock-setup-button').onclick = function(event) {
           chrome.send('launchEasyUnlockSetup');
         };
+        $('easy-unlock-turn-off-button').onclick = function(event) {
+          PageManager.showPageByName('easyUnlockTurnOffOverlay');
+        };
       }
 
       // Website Settings section.

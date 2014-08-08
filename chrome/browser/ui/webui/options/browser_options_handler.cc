@@ -243,12 +243,24 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "downloadLocationGroupName", IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME },
     { "enableLogging", IDS_OPTIONS_ENABLE_LOGGING },
     { "metricsReportingResetRestart", IDS_OPTIONS_ENABLE_LOGGING_RESTART },
-#if !defined(OS_CHROMEOS)
-    { "easyUnlockCheckboxLabel", IDS_OPTIONS_EASY_UNLOCK_CHECKBOX_LABEL },
-#endif
+    { "easyUnlockDescription", IDS_OPTIONS_EASY_UNLOCK_DESCRIPTION },
     { "easyUnlockSectionTitle", IDS_OPTIONS_EASY_UNLOCK_SECTION_TITLE },
     { "easyUnlockSetupButton", IDS_OPTIONS_EASY_UNLOCK_SETUP_BUTTON },
-    { "easyUnlockManagement", IDS_OPTIONS_EASY_UNLOCK_MANAGEMENT },
+    { "easyUnlockSetupIntro", IDS_OPTIONS_EASY_UNLOCK_SETUP_INTRO },
+    { "easyUnlockTurnOffButton", IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_BUTTON },
+    { "easyUnlockTurnOffTitle", IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_TITLE },
+    { "easyUnlockTurnOffDescription",
+      IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_DESCRIPTION },
+    { "easyUnlockTurnOffOfflineTitle",
+      IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_OFFLINE_TITLE },
+    { "easyUnlockTurnOffOfflineMessage",
+      IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_OFFLINE_MESSAGE },
+    { "easyUnlockTurnOffErrorTitle",
+      IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_ERROR_TITLE },
+    { "easyUnlockTurnOffErrorMessage",
+      IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_ERROR_MESSAGE },
+    { "easyUnlockTurnOffRetryButton",
+      IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_RETRY_BUTTON },
     { "extensionControlled", IDS_OPTIONS_TAB_EXTENSION_CONTROLLED },
     { "extensionDisable", IDS_OPTIONS_TAB_EXTENSION_CONTROLLED_DISABLE },
     { "fontSettingsCustomizeFontsButton",
@@ -606,14 +618,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       "easyUnlockAllowed",
       EasyUnlockService::Get(Profile::FromWebUI(web_ui()))->IsAllowed());
   values->SetString("easyUnlockLearnMoreURL", chrome::kEasyUnlockLearnMoreUrl);
-  values->SetString("easyUnlockManagementURL",
-                    chrome::kEasyUnlockManagementUrl);
-#if defined(OS_CHROMEOS)
-  values->SetString("easyUnlockCheckboxLabel",
-      l10n_util::GetStringFUTF16(
-          IDS_OPTIONS_EASY_UNLOCK_CHECKBOX_LABEL_CHROMEOS,
-          chromeos::GetChromeDeviceType()));
 
+#if defined(OS_CHROMEOS)
   values->SetBoolean(
       "consumerManagementEnabled",
       CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1790,6 +1796,7 @@ void BrowserOptionsHandler::SetupManagingSupervisedUsers() {
 }
 
 void BrowserOptionsHandler::SetupEasyUnlock() {
+  // TODO(xiyuan): Update when pairing data is really availble.
   bool has_pairing = !Profile::FromWebUI(web_ui())->GetPrefs()
       ->GetDictionary(prefs::kEasyUnlockPairing)->empty();
   base::FundamentalValue has_pairing_value(has_pairing);
