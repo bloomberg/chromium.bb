@@ -70,7 +70,26 @@ cr.define('print_preview', function() {
         // TODO: Better heuristics for the display name and options grouping.
         this.ticketItem_.capability.option.forEach(function(option, index) {
           var selectOption = document.createElement('option');
-          selectOption.text = option.custom_display_name || option.name;
+          var displayName = option.custom_display_name;
+          if (!displayName && option.custom_display_name_localized) {
+            var getLocaleToCompare = function(locale, languageOnly) {
+              var code = languageOnly ? locale.split('-')[0] : locale;
+              return code.toLowerCase();
+            };
+            var getItemForLocale = function(items, locale, languageOnly) {
+              locale = getLocaleToCompare(locale, languageOnly);
+              for (var i = 0; i < items.length; i++) {
+                if (getLocaleToCompare(items[i].locale) == locale)
+                  return items[i].value;
+              }
+              return '';
+            };
+            var items = option.custom_display_name_localized;
+            displayName =
+                getItemForLocale(items, navigator.language, false) ||
+                getItemForLocale(items, navigator.language, true);
+          }
+          selectOption.text = displayName || option.name;
           selectOption.value = JSON.stringify(option);
           select.add(selectOption);
           if (option.is_default) {
