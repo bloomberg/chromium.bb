@@ -553,7 +553,6 @@ protected:
     bool m_multisamplingAllowed;
     bool m_multisamplingObserverRegistered;
 
-    GLuint m_onePlusMaxEnabledAttribIndex;
     unsigned long m_onePlusMaxNonDefaultTextureUnit;
 
     OwnPtr<Extensions3DUtil> m_extensionsUtil;
@@ -923,7 +922,6 @@ protected:
 
     virtual void multisamplingChanged(bool) OVERRIDE;
 
-    void findNewMaxEnabledAttribIndex();
     void findNewMaxNonDefaultTextureUnit();
 
     friend class WebGLStateRestorer;

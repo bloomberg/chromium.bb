@@ -557,7 +557,6 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     , m_numGLErrorsToConsoleAllowed(maxGLErrorsAllowedToConsole)
     , m_multisamplingAllowed(false)
     , m_multisamplingObserverRegistered(false)
-    , m_onePlusMaxEnabledAttribIndex(0)
     , m_onePlusMaxNonDefaultTextureUnit(0)
     , m_savingImage(false)
 {
@@ -1783,11 +1782,6 @@ void WebGLRenderingContextBase::disableVertexAttribArray(GLuint index)
     WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(index);
     state.enabled = false;
 
-    // If the disabled index is the current maximum, trace backwards to find the new max enabled attrib index
-    if (m_onePlusMaxEnabledAttribIndex == index + 1) {
-        findNewMaxEnabledAttribIndex();
-    }
-
     webContext()->disableVertexAttribArray(index);
 }
 
@@ -1796,16 +1790,6 @@ bool WebGLRenderingContextBase::validateRenderingState(const char* functionName)
     if (!m_currentProgram) {
         synthesizeGLError(GL_INVALID_OPERATION, functionName, "no valid shader program in use");
         return false;
-    }
-
-    // Look in each enabled vertex attrib and check if they've been bound to a buffer.
-    for (unsigned i = 0; i < m_onePlusMaxEnabledAttribIndex; ++i) {
-        const WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(i);
-        if (state.enabled
-            && (!state.bufferBinding || !state.bufferBinding->object())) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, String::format("attribute %d is enabled but has no buffer bound", i).utf8().data());
-            return false;
-        }
     }
 
     return true;
@@ -1909,8 +1893,6 @@ void WebGLRenderingContextBase::enableVertexAttribArray(GLuint index)
 
     WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(index);
     state.enabled = true;
-
-    m_onePlusMaxEnabledAttribIndex = max(index + 1, m_onePlusMaxEnabledAttribIndex);
 
     webContext()->enableVertexAttribArray(index);
 }
@@ -5395,15 +5377,7 @@ bool WebGLRenderingContextBase::validateDrawInstanced(const char* functionName, 
         return false;
     }
 
-    // Ensure at least one enabled vertex attrib has a divisor of 0.
-    for (unsigned i = 0; i < m_onePlusMaxEnabledAttribIndex; ++i) {
-        const WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(i);
-        if (state.enabled && !state.divisor)
-            return true;
-    }
-
-    synthesizeGLError(GL_INVALID_OPERATION, functionName, "at least one enabled attribute must have a divisor of 0");
-    return false;
+    return true;
 }
 
 void WebGLRenderingContextBase::vertexAttribfImpl(const char* functionName, GLuint index, GLsizei expectedSize, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3)
@@ -5728,19 +5702,6 @@ void WebGLRenderingContextBase::multisamplingChanged(bool enabled)
         m_multisamplingAllowed = enabled;
         forceLostContext(WebGLRenderingContextBase::AutoRecoverSyntheticLostContext);
     }
-}
-
-void WebGLRenderingContextBase::findNewMaxEnabledAttribIndex()
-{
-    // Trace backwards from the current max to find the new max enabled attrib index
-    int startIndex = m_onePlusMaxEnabledAttribIndex - 1;
-    for (int i = startIndex; i >= 0; --i) {
-        if (m_boundVertexArrayObject->getVertexAttribState(i).enabled) {
-            m_onePlusMaxEnabledAttribIndex = i + 1;
-            return;
-        }
-    }
-    m_onePlusMaxEnabledAttribIndex = 0;
 }
 
 void WebGLRenderingContextBase::findNewMaxNonDefaultTextureUnit()
