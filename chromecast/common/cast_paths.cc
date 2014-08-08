@@ -26,6 +26,17 @@ bool PathProvider(int key, base::FilePath* result) {
 #endif
       return true;
     }
+    case FILE_CAST_CONFIG: {
+      base::FilePath data_dir;
+#if defined(OS_ANDROID)
+      CHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &data_dir);
+      *result = data_dir.Append("cast_shell.conf");
+#else
+      CHECK(PathService::Get(DIR_CAST_HOME, &data_dir));
+      *result = data_dir.Append(".eureka.conf");
+#endif  // defined(OS_ANDROID)
+      return true;
+    }
   }
   return false;
 }

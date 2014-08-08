@@ -22,11 +22,17 @@
       'sources': [
         'common/cast_paths.cc',
         'common/cast_paths.h',
+        'common/chromecast_config.cc',
+        'common/chromecast_config.h',
       ],
       'conditions': [
         ['chromecast_branding=="Chrome"', {
           'dependencies': [
             'internal/chromecast_internal.gyp:cast_common_internal',
+          ],
+        }, {
+          'sources': [
+            'common/chromecast_config_simple.cc',
           ],
         }],
       ],

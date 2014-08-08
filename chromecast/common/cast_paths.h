@@ -16,6 +16,7 @@ enum {
   DIR_CAST_HOME,    // Return a modified $HOME which works for both
                     // development use and the actual device.
 
+  FILE_CAST_CONFIG, // Config/preferences file path.
   PATH_END
 };
 
