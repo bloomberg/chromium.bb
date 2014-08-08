@@ -920,6 +920,8 @@ def _CheckSpamLogging(input_api, output_api):
                  r"^chrome[\\\/]browser[\\\/]ui[\\\/]startup[\\\/]"
                      r"startup_browser_creator\.cc$",
                  r"^chrome[\\\/]installer[\\\/]setup[\\\/].*",
+                 r"chrome[\\\/]browser[\\\/]diagnostics[\\\/]" +
+                     r"diagnostics_writer.cc"
                  r"^chrome_elf[\\\/]dll_hash[\\\/]dll_hash_main\.cc$",
                  r"^chromecast[\\\/]",
                  r"^cloud_print[\\\/]",
