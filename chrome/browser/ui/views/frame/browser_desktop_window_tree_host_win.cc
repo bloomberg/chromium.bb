@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/views/frame/system_menu_insertion_delegate_win.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/theme_image_mapper.h"
-#include "grit/theme_resources.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/views/controls/menu/native_menu_win.h"

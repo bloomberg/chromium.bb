@@ -26,7 +26,6 @@
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/text_utils.h"

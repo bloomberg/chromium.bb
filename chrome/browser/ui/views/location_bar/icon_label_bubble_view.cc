@@ -6,7 +6,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"

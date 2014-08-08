@@ -61,7 +61,6 @@
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/user_manager.h"

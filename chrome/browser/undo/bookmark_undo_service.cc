@@ -14,7 +14,6 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/browser/scoped_group_bookmark_actions.h"
 #include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using bookmarks::BookmarkNodeData;
 

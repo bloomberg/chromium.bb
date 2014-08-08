@@ -6,7 +6,6 @@
 
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
-#include "grit/theme_resources.h"
 
 namespace chrome {
 

@@ -15,7 +15,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

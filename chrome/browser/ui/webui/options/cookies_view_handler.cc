@@ -27,7 +27,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace fileapi {
 class FileSystemContext;

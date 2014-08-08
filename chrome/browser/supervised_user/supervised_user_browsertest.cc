@@ -35,9 +35,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
-#include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using content::InterstitialPage;
 using content::NavigationController;

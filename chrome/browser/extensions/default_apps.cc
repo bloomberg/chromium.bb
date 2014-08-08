@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -17,7 +18,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "extensions/common/extension.h"
-#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/first_run/first_run.h"

@@ -16,7 +16,6 @@
 #include "content/public/common/main_function_params.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
 ChromeBrowserMainPartsAndroid::ChromeBrowserMainPartsAndroid(

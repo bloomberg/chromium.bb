@@ -19,8 +19,6 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
 

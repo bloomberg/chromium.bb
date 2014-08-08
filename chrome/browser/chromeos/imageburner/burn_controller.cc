@@ -9,7 +9,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/imageburner/burn_manager.h"
 #include "chromeos/network/network_state_handler.h"
-#include "grit/generated_resources.h"
 #include "url/gurl.h"
 
 namespace chromeos {

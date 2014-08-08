@@ -5,8 +5,6 @@
 #include "chrome/browser/ui/views/open_pdf_in_reader_bubble_view.h"
 
 #include "chrome/browser/ui/pdf/open_pdf_in_reader_prompt_delegate.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"

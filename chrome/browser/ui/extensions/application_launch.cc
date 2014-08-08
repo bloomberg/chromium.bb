@@ -41,7 +41,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
-#include "grit/generated_resources.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
 

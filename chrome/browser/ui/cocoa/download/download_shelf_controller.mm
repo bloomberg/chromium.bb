@@ -24,7 +24,6 @@
 #include "content/public/browser/download_manager.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #import "ui/base/cocoa/hover_button.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using content::DownloadItem;
 

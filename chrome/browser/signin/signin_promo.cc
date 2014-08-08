@@ -30,13 +30,9 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "grit/browser_resources.h"
-#include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 #include "net/base/escape.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/url_util.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 using content::WebContents;

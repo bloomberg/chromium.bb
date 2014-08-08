@@ -27,7 +27,6 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/combobox/combobox.h"

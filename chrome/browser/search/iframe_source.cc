@@ -12,7 +12,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/browser_resources.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"

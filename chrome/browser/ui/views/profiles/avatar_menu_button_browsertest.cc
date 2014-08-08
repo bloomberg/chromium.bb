@@ -17,7 +17,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "grit/generated_resources.h"
 
 class AvatarMenuButtonTest : public InProcessBrowserTest {
  public:

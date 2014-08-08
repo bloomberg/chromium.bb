@@ -8,7 +8,6 @@
 
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_win.h"
 #include "chrome/browser/ui/views/apps/glass_app_window_frame_view_win.h"
-#include "grit/theme_resources.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/views/controls/menu/native_menu_win.h"

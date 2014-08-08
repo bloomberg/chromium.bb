@@ -23,7 +23,6 @@
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/flipped_view.h"
 #include "ui/base/cocoa/window_size_constants.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/text_elider.h"

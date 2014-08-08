@@ -6,8 +6,6 @@
 
 #include "base/lazy_instance.h"
 #include "chrome/browser/extensions/activity_log/hashed_ad_network_database.h"
-#include "grit/browser_resources.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace extensions {
 

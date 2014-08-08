@@ -12,9 +12,7 @@
 #include "chrome/browser/thumbnails/thumbnail_service.h"
 #include "chrome/browser/thumbnails/thumbnail_service_factory.h"
 #include "chrome/common/url_constants.h"
-#include "grit/theme_resources.h"
 #include "net/url_request/url_request.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;

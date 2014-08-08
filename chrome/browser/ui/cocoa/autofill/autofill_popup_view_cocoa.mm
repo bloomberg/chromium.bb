@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/autofill/popup_constants.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_popup_view_bridge.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
-#include "grit/ui_resources.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font_list.h"

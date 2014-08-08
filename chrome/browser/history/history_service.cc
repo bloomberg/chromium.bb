@@ -58,8 +58,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_service.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "sync/api/sync_error_factory.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

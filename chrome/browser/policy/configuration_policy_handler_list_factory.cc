@@ -25,7 +25,6 @@
 #include "components/policy/core/common/schema.h"
 #include "components/search_engines/default_search_policy_handler.h"
 #include "components/translate/core/common/translate_pref_names.h"
-#include "grit/components_strings.h"
 #include "policy/policy_constants.h"
 
 #if !defined(OS_IOS)

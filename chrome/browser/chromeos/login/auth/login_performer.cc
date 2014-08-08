@@ -34,13 +34,10 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "grit/generated_resources.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 using base::UserMetricsAction;
 using content::BrowserThread;

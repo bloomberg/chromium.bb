@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/service/cloud_print/cloud_print_auth.h"
@@ -24,11 +25,9 @@
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "grit/generated_resources.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/push_client.h"
 #include "jingle/notifier/listener/push_client_observer.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 namespace cloud_print {

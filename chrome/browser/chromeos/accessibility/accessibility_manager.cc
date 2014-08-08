@@ -63,7 +63,6 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "media/audio/sounds/sounds_manager.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"

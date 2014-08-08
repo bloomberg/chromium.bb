@@ -76,7 +76,6 @@
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
 using content::WebContents;

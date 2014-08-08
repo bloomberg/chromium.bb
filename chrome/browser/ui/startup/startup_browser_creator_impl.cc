@@ -93,7 +93,6 @@
 #include "extensions/common/extension_set.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"

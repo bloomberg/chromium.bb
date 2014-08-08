@@ -10,7 +10,6 @@
 #import "chrome/browser/ui/cocoa/content_settings/cookie_tree_node.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 static const int kExtraMarginBelowWhenExpirationEditable = 5;

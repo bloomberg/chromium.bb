@@ -14,7 +14,6 @@
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
-#include "grit/ui_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font_list.h"

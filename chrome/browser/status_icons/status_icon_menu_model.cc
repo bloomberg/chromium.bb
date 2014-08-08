@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
 struct StatusIconMenuModel::ItemState {

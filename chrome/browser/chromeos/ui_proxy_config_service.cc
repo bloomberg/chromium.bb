@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "grit/generated_resources.h"
 #include "net/proxy/proxy_config.h"
 
 namespace chromeos {

@@ -22,7 +22,6 @@
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"

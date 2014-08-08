@@ -19,10 +19,8 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/generated_resources.h"
 #include "net/url_request/url_request.h"
 #include "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using autofill::PasswordForm;
 using content::BrowserThread;

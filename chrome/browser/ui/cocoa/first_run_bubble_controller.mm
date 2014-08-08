@@ -12,7 +12,6 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #include "components/search_engines/util.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 @interface FirstRunBubbleController(Private)

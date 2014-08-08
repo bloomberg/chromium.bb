@@ -35,7 +35,6 @@
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/mock_authenticator.h"
-#include "chromeos/login/auth/mock_authenticator.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -48,10 +47,8 @@
 #include "content/public/test/mock_notification_observer.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/mock_url_fetcher_factory.h"
-#include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using ::testing::AnyNumber;
 using ::testing::Invoke;

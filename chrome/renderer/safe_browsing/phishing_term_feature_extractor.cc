@@ -21,7 +21,6 @@
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/murmurhash3_util.h"
 #include "crypto/sha2.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace safe_browsing {
 

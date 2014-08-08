@@ -10,7 +10,6 @@
 #include "grit/theme_resources.h"
 #include "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 
 namespace {

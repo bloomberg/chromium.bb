@@ -24,7 +24,6 @@
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/controls/blue_label_button.h"
 #include "ui/base/cocoa/window_size_constants.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/range/range.h"
 
 namespace {

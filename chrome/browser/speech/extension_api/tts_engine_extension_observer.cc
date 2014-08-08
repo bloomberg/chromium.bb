@@ -17,7 +17,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
-#include "grit/browser_resources.h"
 
 // Factory to load one instance of TtsExtensionLoaderChromeOs per profile.
 class TtsEngineExtensionObserverFactory

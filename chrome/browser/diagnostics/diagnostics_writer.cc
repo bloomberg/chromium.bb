@@ -16,12 +16,10 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
 namespace diagnostics {

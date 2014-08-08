@@ -6,7 +6,6 @@
 
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
-#include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"

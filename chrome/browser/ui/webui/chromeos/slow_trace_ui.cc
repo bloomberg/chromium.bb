@@ -13,8 +13,6 @@
 #include "components/feedback/tracing_manager.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/theme_resources.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace chromeos {
 

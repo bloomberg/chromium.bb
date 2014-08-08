@@ -30,7 +30,6 @@
 #include "content/public/browser/web_ui.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/screen.h"
 #include "ui/keyboard/keyboard_controller.h"

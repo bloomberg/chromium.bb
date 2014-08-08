@@ -17,7 +17,6 @@
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #import "ui/base/cocoa/appkit_utils.h"
 #import "ui/base/cocoa/tracking_area.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 using extensions::FeatureSwitch;

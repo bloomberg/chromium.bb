@@ -70,7 +70,6 @@
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"

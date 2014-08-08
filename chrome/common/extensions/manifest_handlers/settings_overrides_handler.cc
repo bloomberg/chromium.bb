@@ -18,10 +18,8 @@
 #include "extensions/common/permissions/manifest_permission.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/permissions/settings_override_permission.h"
-#include "grit/generated_resources.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 using extensions::api::manifest_types::ChromeSettingsOverrides;

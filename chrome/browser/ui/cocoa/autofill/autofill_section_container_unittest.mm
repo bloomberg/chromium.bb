@@ -12,7 +12,6 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_input_field.h"
 #import "chrome/browser/ui/cocoa/autofill/layout_view.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
-#include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"

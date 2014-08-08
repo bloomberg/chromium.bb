@@ -28,9 +28,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
-#include "grit/ash_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
 using namespace ash;

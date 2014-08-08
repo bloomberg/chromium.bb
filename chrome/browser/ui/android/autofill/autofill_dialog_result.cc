@@ -17,7 +17,6 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/common/form_data.h"
 #include "jni/AutofillDialogResult_jni.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
 

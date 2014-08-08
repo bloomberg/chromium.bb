@@ -27,7 +27,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/network_time/network_time_tracker.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"

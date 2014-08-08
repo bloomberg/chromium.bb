@@ -35,7 +35,6 @@
 #include "sync/protocol/proto_enum_conversions.h"
 #include "sync/protocol/sync_protocol_error.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/user_manager.h"

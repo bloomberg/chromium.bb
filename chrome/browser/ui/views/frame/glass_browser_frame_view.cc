@@ -24,7 +24,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle_win.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"

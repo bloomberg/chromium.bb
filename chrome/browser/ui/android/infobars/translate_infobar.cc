@@ -9,9 +9,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
-#include "grit/generated_resources.h"
 #include "jni/TranslateInfoBarDelegate_jni.h"
-#include "ui/base/l10n/l10n_util.h"
 
 // ChromeTranslateClient
 // ----------------------------------------------------------

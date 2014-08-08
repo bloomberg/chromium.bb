@@ -33,7 +33,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/test/test_browser_thread.h"
-#include "grit/generated_resources.h"
 #include "ui/aura/env.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window.h"

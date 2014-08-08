@@ -11,8 +11,6 @@
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/layout/layout_constants.h"

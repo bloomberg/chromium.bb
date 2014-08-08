@@ -17,7 +17,6 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "extensions/common/extension.h"
-#include "grit/sync_file_system_internals_resources.h"
 
 using sync_file_system::RemoteFileSyncService;
 using sync_file_system::SyncFileSystemServiceFactory;

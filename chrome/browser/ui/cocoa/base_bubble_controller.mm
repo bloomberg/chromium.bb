@@ -14,8 +14,6 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 
 @interface BaseBubbleController (Private)
 - (void)registerForNotifications;

@@ -18,7 +18,6 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "extensions/common/extension.h"
-#include "grit/generated_resources.h"
 #import "ui/base/cocoa/menu_controller.h"
 
 @implementation TabController

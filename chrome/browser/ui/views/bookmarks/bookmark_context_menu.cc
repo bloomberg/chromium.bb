@@ -10,8 +10,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/notification_service.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"

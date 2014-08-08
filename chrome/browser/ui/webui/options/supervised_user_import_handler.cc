@@ -29,7 +29,6 @@
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

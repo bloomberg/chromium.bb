@@ -18,7 +18,6 @@
 #include "chrome/test/base/testing_io_thread_state.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
-#include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

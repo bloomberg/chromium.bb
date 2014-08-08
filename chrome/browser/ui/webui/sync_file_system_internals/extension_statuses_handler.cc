@@ -18,7 +18,6 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
-#include "grit/sync_file_system_internals_resources.h"
 
 using sync_file_system::SyncFileSystemServiceFactory;
 using sync_file_system::SyncServiceState;

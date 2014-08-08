@@ -7,7 +7,6 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "grit/theme_resources.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

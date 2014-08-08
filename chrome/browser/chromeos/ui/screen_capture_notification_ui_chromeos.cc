@@ -6,8 +6,6 @@
 
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 

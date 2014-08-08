@@ -24,7 +24,6 @@
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/views/controls/button/menu_button.h"

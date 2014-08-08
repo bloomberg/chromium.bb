@@ -17,7 +17,6 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
-#include "grit/generated_resources.h"
 
 bool InfobarsShowFunction::RunSync() {
   base::DictionaryValue* args;

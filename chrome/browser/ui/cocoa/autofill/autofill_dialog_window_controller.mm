@@ -20,10 +20,8 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_textfield.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/generated_resources.h"
 #import "ui/base/cocoa/flipped_view.h"
 #include "ui/base/cocoa/window_size_constants.h"
-#include "ui/base/l10n/l10n_util.h"
 
 // The minimum useful height of the contents area of the dialog.
 const CGFloat kMinimumContentsHeight = 101;

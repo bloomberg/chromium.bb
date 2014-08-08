@@ -17,9 +17,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

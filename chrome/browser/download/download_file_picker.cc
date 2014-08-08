@@ -12,8 +12,6 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using content::DownloadItem;
 using content::DownloadManager;

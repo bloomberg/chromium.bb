@@ -45,7 +45,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_system.h"
-#include "grit/generated_resources.h"
 #include "net/base/filename_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/gfx/image/image.h"

@@ -12,7 +12,6 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/message_box_view.h"

@@ -6,7 +6,6 @@
 
 #include "chrome/browser/ui/autofill/generated_credit_card_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#include "grit/theme_resources.h"
 
 using autofill::GeneratedCreditCardBubbleController;
 

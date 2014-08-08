@@ -13,7 +13,6 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/url_fixer/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using bookmarks::BookmarkExpandedStateTracker;
 

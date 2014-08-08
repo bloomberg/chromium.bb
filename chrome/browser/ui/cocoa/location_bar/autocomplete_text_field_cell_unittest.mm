@@ -15,13 +15,11 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/selected_keyword_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/star_decoration.h"
-#include "grit/theme_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
-#include "ui/base/resource/resource_bundle.h"
 
 using ::testing::Return;
 using ::testing::StrictMock;

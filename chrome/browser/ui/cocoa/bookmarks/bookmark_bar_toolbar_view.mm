@@ -13,7 +13,6 @@
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "chrome/browser/ui/search/search_ui.h"
-#include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/nsgraphics_context_additions.h"
 #include "ui/base/theme_provider.h"

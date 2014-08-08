@@ -76,7 +76,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 

@@ -34,7 +34,6 @@
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_MACOSX)
@@ -54,7 +53,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "content/public/browser/browser_thread.h"
 #endif
 
 using base::ListValue;

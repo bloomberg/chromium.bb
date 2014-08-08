@@ -28,7 +28,6 @@
 #include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 

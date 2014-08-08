@@ -31,9 +31,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 
 using ::testing::_;

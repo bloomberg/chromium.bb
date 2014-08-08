@@ -110,7 +110,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/power_save_blocker.h"
 #include "content/public/common/main_function_params.h"
-#include "grit/platform_locale_settings.h"
 #include "media/audio/sounds/sounds_manager.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"

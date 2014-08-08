@@ -16,7 +16,6 @@
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSColor+Luminance.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/font_list.h"

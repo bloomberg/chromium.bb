@@ -51,10 +51,7 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_l10n_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 

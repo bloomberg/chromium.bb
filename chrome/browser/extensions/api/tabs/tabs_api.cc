@@ -72,7 +72,6 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/message_bundle.h"

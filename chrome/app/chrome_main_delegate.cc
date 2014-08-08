@@ -44,7 +44,6 @@
 #include <atlbase.h>
 #include <malloc.h>
 #include <algorithm>
-#include "base/strings/string_util.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/terminate_on_heap_corruption_experiment_win.h"
 #include "sandbox/win/src/sandbox.h"
@@ -56,11 +55,9 @@
 #include "base/mac/os_crash_dumps.h"
 #include "chrome/app/chrome_main_mac.h"
 #include "chrome/browser/mac/relauncher.h"
-#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/mac/cfbundle_blocker.h"
 #include "chrome/common/mac/objc_zombie.h"
 #include "components/breakpad/app/breakpad_mac.h"
-#include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #endif
 

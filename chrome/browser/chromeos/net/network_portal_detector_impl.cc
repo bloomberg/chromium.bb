@@ -19,10 +19,8 @@
 #include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
-#include "grit/generated_resources.h"
 #include "net/http/http_status_code.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using captive_portal::CaptivePortalDetector;
 

@@ -7,7 +7,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/browser/configuration_policy_pref_store_test.h"
-#include "grit/generated_resources.h"
 #include "policy/policy_constants.h"
 
 namespace policy {

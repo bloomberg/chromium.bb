@@ -36,12 +36,8 @@
 #include "components/user_manager/user_image/user_image.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 #include "policy/policy_constants.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/image/image_skia.h"
 

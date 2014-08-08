@@ -25,7 +25,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace options {
 

@@ -8,8 +8,6 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/size.h"
 
 using content::WebContents;

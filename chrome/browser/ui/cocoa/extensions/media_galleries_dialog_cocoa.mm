@@ -18,7 +18,6 @@
 #import "ui/base/cocoa/menu_controller.h"
 #import "ui/base/models/menu_model.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 // Controller for UI events on items in the media galleries dialog.
 @interface MediaGalleriesCocoaController : NSObject {

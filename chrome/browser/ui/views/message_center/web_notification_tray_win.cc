@@ -17,7 +17,6 @@
 #include "grit/chromium_strings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace message_center {

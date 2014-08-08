@@ -19,7 +19,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
-#include "ui/base/resource/resource_bundle.h"
 
 using ::testing::A;
 using ::testing::InSequence;

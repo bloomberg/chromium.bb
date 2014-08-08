@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/string_util.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace errors = extensions::manifest_errors;
 

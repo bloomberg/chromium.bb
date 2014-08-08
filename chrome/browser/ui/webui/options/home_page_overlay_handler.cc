@@ -17,7 +17,6 @@
 #include "components/omnibox/autocomplete_input.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace options {
 

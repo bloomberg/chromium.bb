@@ -22,7 +22,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/test/test_utils.h"
-#include "grit/generated_resources.h"
 #include "ui/views/controls/button/label_button.h"
 
 class NewAvatarMenuButtonTest : public InProcessBrowserTest {

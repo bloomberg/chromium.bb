@@ -22,7 +22,6 @@
 #import "chrome/browser/ui/cocoa/profiles/profile_chooser_controller.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/common/profile_management_switches.h"
-#include "ui/base/resource/resource_bundle.h"
 
 // Space between the avatar icon and the avatar menu bubble.
 const CGFloat kMenuYOffsetAdjust = 1.0;

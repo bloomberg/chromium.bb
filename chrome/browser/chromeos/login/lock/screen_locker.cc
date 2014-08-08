@@ -53,7 +53,6 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "media/audio/sounds/sounds_manager.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"

@@ -12,7 +12,6 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/signin_internals_resources.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

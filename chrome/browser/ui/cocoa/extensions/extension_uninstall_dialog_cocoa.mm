@@ -15,7 +15,6 @@
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 
 namespace {

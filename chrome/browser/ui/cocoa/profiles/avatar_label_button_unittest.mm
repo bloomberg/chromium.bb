@@ -7,7 +7,6 @@
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_label_button.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class AvatarLabelButtonTest : public CocoaTest {

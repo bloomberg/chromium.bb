@@ -8,7 +8,6 @@
 #import <Cocoa/Cocoa.h>
 
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
-#include "grit/generated_resources.h"
 #include "ui/base/models/simple_menu_model.h"
 
 @class SplitButtonPopUpCell;

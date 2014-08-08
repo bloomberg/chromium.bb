@@ -28,7 +28,6 @@
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
