@@ -593,7 +593,7 @@ LayoutRect RenderLayer::computePaintInvalidationRect(const RenderObject* renderO
 void RenderLayer::setHasVisibleContent()
 {
     if (m_hasVisibleContent && !m_visibleContentStatusDirty) {
-        ASSERT(!parent() || parent()->hasVisibleDescendant());
+        ASSERT(!parent() || parent()->m_visibleDescendantStatusDirty || parent()->hasVisibleDescendant());
         return;
     }
 
@@ -604,7 +604,7 @@ void RenderLayer::setHasVisibleContent()
     m_renderer->setPreviousPaintInvalidationRect(m_renderer->boundsRectForPaintInvalidation(m_renderer->containerForPaintInvalidation()));
 
     if (parent())
-        parent()->setAncestorChainHasVisibleDescendant();
+        parent()->dirtyAncestorChainVisibleDescendantStatus();
 }
 
 void RenderLayer::dirtyVisibleContentStatus()
@@ -621,17 +621,6 @@ void RenderLayer::dirtyAncestorChainVisibleDescendantStatus()
             break;
 
         layer->m_visibleDescendantStatusDirty = true;
-    }
-}
-
-void RenderLayer::setAncestorChainHasVisibleDescendant()
-{
-    for (RenderLayer* layer = this; layer; layer = layer->parent()) {
-        if (!layer->m_visibleDescendantStatusDirty && layer->hasVisibleDescendant())
-            break;
-
-        layer->m_hasVisibleDescendant = true;
-        layer->m_visibleDescendantStatusDirty = false;
     }
 }
 
@@ -1270,9 +1259,9 @@ void RenderLayer::addChild(RenderLayer* child, RenderLayer* beforeChild)
         child->stackingNode()->dirtyStackingContextZOrderLists();
     }
 
+    dirtyAncestorChainVisibleDescendantStatus();
+
     child->updateDescendantDependentFlags();
-    if (child->m_hasVisibleContent || child->m_hasVisibleDescendant)
-        setAncestorChainHasVisibleDescendant();
 
     if (child->isSelfPaintingLayer() || child->hasSelfPaintingLayerDescendant())
         setAncestorChainHasSelfPaintingLayerDescendant();

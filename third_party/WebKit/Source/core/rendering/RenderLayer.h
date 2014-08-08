@@ -615,7 +615,6 @@ private:
     void updateScrollableArea();
 
     void dirtyAncestorChainVisibleDescendantStatus();
-    void setAncestorChainHasVisibleDescendant();
 
     bool attemptDirectCompositingUpdate(StyleDifference, const RenderStyle* oldStyle);
     void updateTransform(const RenderStyle* oldStyle, RenderStyle* newStyle);
