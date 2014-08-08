@@ -19,8 +19,8 @@
 namespace extensions {
 namespace path_util {
 
-#if defined(OS_MACOSX)
 namespace {
+#if defined(OS_MACOSX)
 
 // Retrieves the localized display name for the base name of the given path.
 // If the path is not localized, this will just return the base name.
@@ -39,11 +39,22 @@ std::string GetDisplayBaseName(const base::FilePath& path) {
   return result;
 }
 
+#endif  // defined(OS_MACOSX)
+
+const base::FilePath::CharType kHomeShortcut[] = FILE_PATH_LITERAL("~");
+
 }  // namespace
 
 base::FilePath PrettifyPath(const base::FilePath& source_path) {
   base::FilePath home_path;
-  PathService::Get(base::DIR_HOME, &home_path);
+  if (source_path.empty() || !PathService::Get(base::DIR_HOME, &home_path))
+    return source_path;
+
+  base::FilePath display_path = base::FilePath(kHomeShortcut);
+  if (source_path == home_path)
+    return display_path;
+
+#if defined(OS_MACOSX)
   DCHECK(source_path.IsAbsolute());
 
   // Break down the incoming path into components, and grab the display name
@@ -53,13 +64,13 @@ base::FilePath PrettifyPath(const base::FilePath& source_path) {
   // show up as the HDD name.
   std::vector<base::FilePath::StringType> components;
   source_path.GetComponents(&components);
-  base::FilePath display_path = base::FilePath(components[0]);
+  display_path = base::FilePath(components[0]);
   base::FilePath actual_path = display_path;
   for (std::vector<base::FilePath::StringType>::iterator i =
            components.begin() + 1; i != components.end(); ++i) {
     actual_path = actual_path.Append(*i);
     if (actual_path == home_path) {
-      display_path = base::FilePath("~");
+      display_path = base::FilePath(kHomeShortcut);
       home_path = base::FilePath();
       continue;
     }
@@ -68,17 +79,12 @@ base::FilePath PrettifyPath(const base::FilePath& source_path) {
   }
   DCHECK_EQ(actual_path.value(), source_path.value());
   return display_path;
-}
-#else   // defined(OS_MACOSX)
-base::FilePath PrettifyPath(const base::FilePath& source_path) {
-  base::FilePath home_path;
-  base::FilePath display_path = base::FilePath::FromUTF8Unsafe("~");
-  if (PathService::Get(base::DIR_HOME, &home_path) &&
-      home_path.AppendRelativePath(source_path, &display_path))
+#else  // defined(OS_MACOSX)
+  if (home_path.AppendRelativePath(source_path, &display_path))
     return display_path;
   return source_path;
-}
 #endif  // defined(OS_MACOSX)
+}
 
 }  // namespace path_util
 }  // namespace extensions

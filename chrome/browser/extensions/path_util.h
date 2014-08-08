@@ -15,6 +15,9 @@ namespace path_util {
 // For OS X, prettifies |source_path| by localizing every component of the
 // path. Additionally, if the path is inside the user's home directory, then
 // replace the home directory component with "~".
+//
+// This function is tested in
+// chrome/browser/extensions/extension_path_util_unittest.cc.
 base::FilePath PrettifyPath(const base::FilePath& source_path);
 
 }  // namespace path_util
