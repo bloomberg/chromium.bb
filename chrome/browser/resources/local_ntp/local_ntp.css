@@ -36,9 +36,7 @@ body.fakebox-disable #fakebox > input {
 }
 
 #logo {
-  background-image: -webkit-image-set(
-      url('images/google_logo.png') 1x,
-      url('images/google_logo.png@2x') 2x);
+  background-image: url('images/google_logo.png@2x');
   background-repeat: no-repeat;
   background-size: 269px 95px;
   height: 95px;
@@ -48,7 +46,7 @@ body.fakebox-disable #fakebox > input {
 }
 
 body.alternate-logo #logo {
-  background-image: url(images/white_google_logo.png);
+  background-image: url('images/white_google_logo.png@2x');
 }
 
 #fakebox {
