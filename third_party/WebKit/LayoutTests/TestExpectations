@@ -162,8 +162,6 @@ crbug.com/366437 fast/repaint/box-shadow-v.html [ Pass ImageOnlyFailure ]
 # ThemePainter-related diffs, could rebaseline them or implement the clipping/transform code.
 crbug.com/229207 [ Win ] fast/forms/datalist/input-appearance-range-with-transform.html [ ImageOnlyFailure ]
 
-crbug.com/398417 fast/forms/select/optgroup-rendering.html [ NeedsRebaseline ]
-
 # Untriaged pixel diffs, unclear if aura-related?
 crbug.com/229207 [ Win ] virtual/deferred/fast/images/2-dht.html [ ImageOnlyFailure ]
 # Linux Aura doesn't support NPAPI plugins (yet?)

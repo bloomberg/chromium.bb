@@ -7,7 +7,7 @@ layer at (0,0) size 800x379
         RenderText {#text} at (80,323) size 4x19
           text run at (80,323) width 4: " "
         RenderBR {BR} at (84,323) size 0x19
-        RenderMenuList {SELECT} at (0,343) size 73x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        RenderMenuList {SELECT} at (0,343) size 73x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
           RenderBlock (anonymous) at (1,1) size 71x18
             RenderText at (4,1) size 32x16
               text run at (4,1) width 32: "Three"
@@ -56,7 +56,7 @@ layer at (8,8) size 80x342 clip at (9,9) size 63x340
       RenderBlock {OPTION} at (0,34) size 63x17 [color=#FF0000]
         RenderText {#text} at (2,0) size 39x16
           text run at (2,0) width 39: "    Two"
-      RenderBlock {OPTION} at (0,51) size 63x17 [color=#FFFFFF] [bgcolor=#999999]
+      RenderBlock {OPTION} at (0,51) size 63x17 [color=#0000FF] [bgcolor=#999999]
         RenderText {#text} at (2,0) size 48x16
           text run at (2,0) width 48: "    Three"
       RenderBlock {OPTION} at (0,68) size 63x17 [color=#0000FF]

@@ -56,7 +56,7 @@ layer at (8,8) size 80x342 clip at (9,9) size 63x340
       RenderBlock {OPTION} at (0,34) size 63.27x17 [color=#FF0000]
         RenderText {#text} at (2,0) size 40x15
           text run at (2,0) width 40: "    Two"
-      RenderBlock {OPTION} at (0,51) size 63.27x17 [color=#0000FF] [bgcolor=#999999]
+      RenderBlock {OPTION} at (0,51) size 63.27x17 [color=#FFFFFF] [bgcolor=#999999]
         RenderText {#text} at (2,0) size 50x15
           text run at (2,0) width 50: "    Three"
       RenderBlock {OPTION} at (0,68) size 63.27x17 [color=#0000FF]
