@@ -352,7 +352,7 @@
       'target_name': 'content_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
-        'browser/service_worker/service_worker_proto.gyp:database_proto',
+        'browser/service_worker/service_worker_proto.gyp:proto',
         'browser/speech/proto/speech_proto.gyp:speech_proto',
         'content.gyp:content_browser',
         'content.gyp:content_common',
@@ -595,7 +595,7 @@
         'browser/service_worker/service_worker_controllee_request_handler_unittest.cc',
         'browser/service_worker/service_worker_database_unittest.cc',
         'browser/service_worker/service_worker_dispatcher_host_unittest.cc',
-        'browser/service_worker/service_worker_dispatcher_host_unittest.cc',
+        'browser/service_worker/service_worker_fetch_stores_manager_unittest.cc',
         'browser/service_worker/service_worker_handle_unittest.cc',
         'browser/service_worker/service_worker_job_unittest.cc',
         'browser/service_worker/service_worker_provider_host_unittest.cc',

@@ -4,8 +4,9 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-proto_library("database_proto") {
+proto_library("proto") {
   sources = [
+    "service_worker_cache.proto",
     "service_worker_database.proto",
   ]
 }

@@ -22,6 +22,8 @@ namespace content {
 
 // Keeps track of a ServiceWorkerFetchStores per origin. There is one
 // ServiceWorkerFetchStoresManager per ServiceWorkerContextCore.
+// TODO(jkarlin): Remove ServiceWorkerFetchStores from memory once they're no
+// longer in active use.
 class CONTENT_EXPORT ServiceWorkerFetchStoresManager {
  public:
   static scoped_ptr<ServiceWorkerFetchStoresManager> Create(
@@ -37,19 +39,22 @@ class CONTENT_EXPORT ServiceWorkerFetchStoresManager {
   // corresponding ServiceWorkerFetchStores method on the appropriate thread.
   void CreateStore(
       const GURL& origin,
-      const std::string& key,
+      const std::string& store_name,
       const ServiceWorkerFetchStores::StoreAndErrorCallback& callback);
-  void Get(const GURL& origin,
-           const std::string& key,
-           const ServiceWorkerFetchStores::StoreAndErrorCallback& callback);
-  void Has(const GURL& origin,
-           const std::string& key,
-           const ServiceWorkerFetchStores::BoolAndErrorCallback& callback);
-  void Delete(const GURL& origin,
-              const std::string& key,
-              const ServiceWorkerFetchStores::StoreAndErrorCallback& callback);
-  void Keys(const GURL& origin,
-            const ServiceWorkerFetchStores::StringsAndErrorCallback& callback);
+  void GetStore(
+      const GURL& origin,
+      const std::string& store_name,
+      const ServiceWorkerFetchStores::StoreAndErrorCallback& callback);
+  void HasStore(const GURL& origin,
+                const std::string& store_name,
+                const ServiceWorkerFetchStores::BoolAndErrorCallback& callback);
+  void DeleteStore(
+      const GURL& origin,
+      const std::string& store_name,
+      const ServiceWorkerFetchStores::BoolAndErrorCallback& callback);
+  void EnumerateStores(
+      const GURL& origin,
+      const ServiceWorkerFetchStores::StringsAndErrorCallback& callback);
   // TODO(jkarlin): Add match() function.
 
   base::FilePath root_path() const { return root_path_; }

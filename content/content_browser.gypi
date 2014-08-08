@@ -23,7 +23,7 @@
     '../ui/gfx/gfx.gyp:gfx_geometry',
     '../ui/resources/ui_resources.gyp:ui_resources',
     '../ui/snapshot/snapshot.gyp:snapshot',
-    'browser/service_worker/service_worker_proto.gyp:database_proto',
+    'browser/service_worker/service_worker_proto.gyp:proto',
     'browser/speech/proto/speech_proto.gyp:speech_proto',
   ],
   'export_dependent_settings': [
@@ -1137,6 +1137,8 @@
       'browser/service_worker/service_worker_dispatcher_host.h',
       'browser/service_worker/service_worker_fetch_dispatcher.cc',
       'browser/service_worker/service_worker_fetch_dispatcher.h',
+      'browser/service_worker/service_worker_fetch_store.cc',
+      'browser/service_worker/service_worker_fetch_store.h',
       'browser/service_worker/service_worker_fetch_stores.cc',
       'browser/service_worker/service_worker_fetch_stores.h',      
       'browser/service_worker/service_worker_fetch_stores_manager.cc',

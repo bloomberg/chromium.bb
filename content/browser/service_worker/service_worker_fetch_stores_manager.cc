@@ -65,7 +65,7 @@ ServiceWorkerFetchStoresManager::~ServiceWorkerFetchStoresManager() {
 
 void ServiceWorkerFetchStoresManager::CreateStore(
     const GURL& origin,
-    const std::string& key,
+    const std::string& store_name,
     const ServiceWorkerFetchStores::StoreAndErrorCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -76,56 +76,57 @@ void ServiceWorkerFetchStoresManager::CreateStore(
       FROM_HERE,
       base::Bind(&ServiceWorkerFetchStores::CreateStore,
                  base::Unretained(stores),
-                 key,
+                 store_name,
                  callback));
 }
 
-void ServiceWorkerFetchStoresManager::Get(
+void ServiceWorkerFetchStoresManager::GetStore(
     const GURL& origin,
-    const std::string& key,
+    const std::string& store_name,
     const ServiceWorkerFetchStores::StoreAndErrorCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ServiceWorkerFetchStores* stores =
       FindOrCreateServiceWorkerFetchStores(origin);
   stores_task_runner_->PostTask(FROM_HERE,
-                                base::Bind(&ServiceWorkerFetchStores::Get,
+                                base::Bind(&ServiceWorkerFetchStores::GetStore,
                                            base::Unretained(stores),
-                                           key,
+                                           store_name,
                                            callback));
 }
 
-void ServiceWorkerFetchStoresManager::Has(
+void ServiceWorkerFetchStoresManager::HasStore(
     const GURL& origin,
-    const std::string& key,
+    const std::string& store_name,
     const ServiceWorkerFetchStores::BoolAndErrorCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ServiceWorkerFetchStores* stores =
       FindOrCreateServiceWorkerFetchStores(origin);
   stores_task_runner_->PostTask(FROM_HERE,
-                                base::Bind(&ServiceWorkerFetchStores::Has,
+                                base::Bind(&ServiceWorkerFetchStores::HasStore,
                                            base::Unretained(stores),
-                                           key,
+                                           store_name,
                                            callback));
 }
 
-void ServiceWorkerFetchStoresManager::Delete(
+void ServiceWorkerFetchStoresManager::DeleteStore(
     const GURL& origin,
-    const std::string& key,
-    const ServiceWorkerFetchStores::StoreAndErrorCallback& callback) {
+    const std::string& store_name,
+    const ServiceWorkerFetchStores::BoolAndErrorCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ServiceWorkerFetchStores* stores =
       FindOrCreateServiceWorkerFetchStores(origin);
-  stores_task_runner_->PostTask(FROM_HERE,
-                                base::Bind(&ServiceWorkerFetchStores::Delete,
-                                           base::Unretained(stores),
-                                           key,
-                                           callback));
+  stores_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&ServiceWorkerFetchStores::DeleteStore,
+                 base::Unretained(stores),
+                 store_name,
+                 callback));
 }
 
-void ServiceWorkerFetchStoresManager::Keys(
+void ServiceWorkerFetchStoresManager::EnumerateStores(
     const GURL& origin,
     const ServiceWorkerFetchStores::StringsAndErrorCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -135,8 +136,9 @@ void ServiceWorkerFetchStoresManager::Keys(
 
   stores_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(
-          &ServiceWorkerFetchStores::Keys, base::Unretained(stores), callback));
+      base::Bind(&ServiceWorkerFetchStores::EnumerateStores,
+                 base::Unretained(stores),
+                 callback));
 }
 
 ServiceWorkerFetchStoresManager::ServiceWorkerFetchStoresManager(
@@ -148,16 +150,15 @@ ServiceWorkerFetchStoresManager::ServiceWorkerFetchStoresManager(
 ServiceWorkerFetchStores*
 ServiceWorkerFetchStoresManager::FindOrCreateServiceWorkerFetchStores(
     const GURL& origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   ServiceWorkerFetchStoresMap::const_iterator it =
       service_worker_fetch_stores_.find(origin);
   if (it == service_worker_fetch_stores_.end()) {
-    ServiceWorkerFetchStores::BackendType backend =
-        root_path_.empty()
-            ? ServiceWorkerFetchStores::BACKEND_TYPE_MEMORY
-            : ServiceWorkerFetchStores::BACKEND_TYPE_SIMPLE_CACHE;
+    bool memory_only = root_path_.empty();
     ServiceWorkerFetchStores* fetch_stores =
         new ServiceWorkerFetchStores(ConstructOriginPath(root_path_, origin),
-                                     backend,
+                                     memory_only,
                                      base::MessageLoopProxy::current());
     // The map owns fetch_stores.
     service_worker_fetch_stores_.insert(std::make_pair(origin, fetch_stores));

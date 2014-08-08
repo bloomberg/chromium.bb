@@ -24,7 +24,7 @@ source_set("browser") {
   deps = [
     "//base",
     "//content:resources",
-    "//content/browser/service_worker:database_proto",
+    "//content/browser/service_worker:proto",
     "//content/browser/speech/proto",
     "//crypto",
     "//google_apis",
