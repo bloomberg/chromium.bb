@@ -49,7 +49,7 @@ NSMenuItem* GetMenuItemByID(ui::MenuModel* model,
 // OSX implemenation of the ToolkitDelegate.
 // This simply (re)delegates calls to RVContextMenuMac because they do not
 // have to be componentized.
-class ToolkitDelegateMac : public RenderViewContextMenu::ToolkitDelegate {
+class ToolkitDelegateMac : public RenderViewContextMenuBase::ToolkitDelegate {
  public:
   explicit ToolkitDelegateMac(RenderViewContextMenuMac* context_menu)
       : context_menu_(context_menu) {}

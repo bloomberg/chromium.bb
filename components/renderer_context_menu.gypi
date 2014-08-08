@@ -25,6 +25,8 @@
         'renderer_context_menu/render_view_context_menu_observer.cc',
         'renderer_context_menu/render_view_context_menu_observer.h',
         'renderer_context_menu/render_view_context_menu_proxy.h',
+        'renderer_context_menu/views/toolkit_delegate_views.cc',
+        'renderer_context_menu/views/toolkit_delegate_views.h',
       ],
     },
   ],

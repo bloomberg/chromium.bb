@@ -4,5 +4,7 @@ include_rules = [
   "+extensions/browser",
   "+extensions/common",
   "+ui/base",
+  "+ui/gfx",
+  "+ui/views",
   "+third_party/WebKit/public/web",
 ]
