@@ -1181,9 +1181,13 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return !!(params_.edit_flags & WebContextMenuData::CanCopy);
 
     case IDC_CONTENT_CONTEXT_PASTE:
-    case IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE:
-      return !!(params_.edit_flags & WebContextMenuData::CanPaste);
-
+    case IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE: {
+      std::vector<base::string16> types;
+      bool ignore;
+      ui::Clipboard::GetForCurrentThread()->ReadAvailableTypes(
+          ui::CLIPBOARD_TYPE_COPY_PASTE, &types, &ignore);
+      return !types.empty();
+    }
     case IDC_CONTENT_CONTEXT_DELETE:
       return !!(params_.edit_flags & WebContextMenuData::CanDelete);
 
