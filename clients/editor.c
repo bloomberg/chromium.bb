@@ -1331,11 +1331,16 @@ main(int argc, char *argv[])
 	for (i = 1; i < argc; i++) {
 		if (strcmp("--click-to-show", argv[i]) == 0)
 			click_to_show = 1;
-		else if (strcmp("--preferred-language", argv[i]) == 0) {
-			if (i + 1 < argc) {
-				preferred_language = argv[i + 1];
-				i++;
-			}
+		else if (strcmp("--preferred-language", argv[i]) == 0 &&
+			 i + 1 < argc) {
+			preferred_language = argv[i + 1];
+			i++;
+		} else {
+			printf("Usage: %s [OPTIONS]\n"
+			       "  --click-to-show\n"
+			       "  --preferred-language LANGUAGE\n",
+			       argv[0]);
+			return 1;
 		}
 	}
 
