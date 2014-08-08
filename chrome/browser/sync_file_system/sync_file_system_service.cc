@@ -548,7 +548,8 @@ void SyncFileSystemService::DidDumpV2Database(
     const DumpFilesCallback& callback,
     scoped_ptr<base::ListValue> v1list,
     scoped_ptr<base::ListValue> v2list) {
-  DCHECK(v1list);
+  if (!v1list)
+    v1list = make_scoped_ptr(new base::ListValue);
 
   if (v2list) {
     for (base::ListValue::iterator itr = v2list->begin();
@@ -565,6 +566,8 @@ void SyncFileSystemService::DidDumpV2Database(
 void SyncFileSystemService::DidGetExtensionStatusMap(
     const ExtensionStatusMapCallback& callback,
     scoped_ptr<RemoteFileSyncService::OriginStatusMap> status_map) {
+  if (!status_map)
+    status_map = make_scoped_ptr(new RemoteFileSyncService::OriginStatusMap);
   if (!v2_remote_service_) {
     callback.Run(*status_map);
     return;
@@ -582,7 +585,10 @@ void SyncFileSystemService::DidGetV2ExtensionStatusMap(
     scoped_ptr<RemoteFileSyncService::OriginStatusMap> status_map_v1,
     scoped_ptr<RemoteFileSyncService::OriginStatusMap> status_map_v2) {
   // Merge |status_map_v2| into |status_map_v1|.
-  status_map_v1->insert(status_map_v2->begin(), status_map_v2->end());
+  if (!status_map_v1)
+    status_map_v1 = make_scoped_ptr(new RemoteFileSyncService::OriginStatusMap);
+  if (status_map_v2)
+    status_map_v1->insert(status_map_v2->begin(), status_map_v2->end());
 
   callback.Run(*status_map_v1);
 }
