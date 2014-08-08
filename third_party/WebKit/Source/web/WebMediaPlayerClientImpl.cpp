@@ -106,19 +106,9 @@ void WebMediaPlayerClientImpl::sizeChanged()
     m_client->mediaPlayerSizeChanged();
 }
 
-double WebMediaPlayerClientImpl::volume() const
-{
-    return mediaElement().effectiveMediaVolume();
-}
-
 void WebMediaPlayerClientImpl::playbackStateChanged()
 {
     m_client->mediaPlayerPlaybackStateChanged();
-}
-
-WebMediaPlayer::Preload WebMediaPlayerClientImpl::preload() const
-{
-    return static_cast<WebMediaPlayer::Preload>(m_preload);
 }
 
 void WebMediaPlayerClientImpl::keyAdded(const WebString& keySystem, const WebString& sessionId)
@@ -223,8 +213,6 @@ void WebMediaPlayerClientImpl::load(WebMediaPlayer::LoadType loadType, const WTF
 
 void WebMediaPlayerClientImpl::setPreload(MediaPlayer::Preload preload)
 {
-    m_preload = preload;
-
     if (m_webMediaPlayer)
         m_webMediaPlayer->setPreload(static_cast<WebMediaPlayer::Preload>(preload));
 }
@@ -243,7 +231,6 @@ PassOwnPtr<MediaPlayer> WebMediaPlayerClientImpl::create(MediaPlayerClient* clie
 
 WebMediaPlayerClientImpl::WebMediaPlayerClientImpl(MediaPlayerClient* client)
     : m_client(client)
-    , m_preload(MediaPlayer::Auto)
 {
     ASSERT(m_client);
 }

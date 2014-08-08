@@ -67,9 +67,7 @@ public:
     virtual void repaint() OVERRIDE;
     virtual void durationChanged() OVERRIDE;
     virtual void sizeChanged() OVERRIDE;
-    virtual double volume() const OVERRIDE;
     virtual void playbackStateChanged() OVERRIDE;
-    virtual WebMediaPlayer::Preload preload() const OVERRIDE;
 
     // WebEncryptedMediaPlayerClient methods:
     virtual void keyAdded(const WebString& keySystem, const WebString& sessionId) OVERRIDE;
@@ -104,7 +102,6 @@ private:
 
     blink::MediaPlayerClient* m_client;
     OwnPtr<WebMediaPlayer> m_webMediaPlayer;
-    blink::MediaPlayer::Preload m_preload;
 
 #if ENABLE(WEB_AUDIO)
     // AudioClientImpl wraps an AudioSourceProviderClient.
