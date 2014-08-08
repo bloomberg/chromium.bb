@@ -19,7 +19,7 @@ class _ScreenshotSyncValidator(page_test.PageTest):
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
 
-  def ValidatePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     test_success = tab.EvaluateJavaScript('window.__testSuccess')
     if not test_success:
       message = tab.EvaluateJavaScript('window.__testMessage')

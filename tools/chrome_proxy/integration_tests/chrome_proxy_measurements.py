@@ -21,7 +21,7 @@ class ChromeProxyLatency(page_test.PageTest):
   def WillNavigateToPage(self, page, tab):
     tab.ClearCache(force=True)
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     # Wait for the load event.
     tab.WaitForJavaScriptExpression('performance.timing.loadEventStart', 300)
     loading.LoadingMetric().AddResults(tab, results)
@@ -37,7 +37,7 @@ class ChromeProxyDataSaving(page_test.PageTest):
     tab.ClearCache(force=True)
     self._metrics.Start(page, tab)
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     # Wait for the load event.
     tab.WaitForJavaScriptExpression('performance.timing.loadEventStart', 300)
     self._metrics.Stop(page, tab)
@@ -64,7 +64,7 @@ class ChromeProxyValidation(page_test.PageTest):
     assert self._metrics
     self._metrics.Start(page, tab)
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     self._page = page
     # Wait for the load event.
     tab.WaitForJavaScriptExpression('performance.timing.loadEventStart', 300)

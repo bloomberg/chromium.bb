@@ -65,7 +65,7 @@ class _ContextLostValidator(page_test.PageTest):
     # Required for about:gpucrash handling from Telemetry.
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
 
-  def ValidatePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     if page.kill_gpu_process:
       # Doing the GPU process kill operation cooperatively -- in the
       # same page's context -- is much more stressful than restarting

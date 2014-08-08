@@ -24,7 +24,7 @@ class _MapsValidator(cloud_storage_test_base.ValidatorBase):
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
 
-  def ValidatePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     # TODO: This should not be necessary, but it's not clear if the test is
     # failing on the bots in it's absence. Remove once we can verify that it's
     # safe to do so.

@@ -63,7 +63,7 @@ test_harness_script = r"""
 """ % MEMORY_LIMIT_MB
 
 class _MemoryValidator(page_test.PageTest):
-  def ValidatePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     timeline_data = tab.browser.StopTracing()
     timeline_model = model.TimelineModel(timeline_data)
     for process in timeline_model.GetAllProcesses():
