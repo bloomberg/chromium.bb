@@ -200,6 +200,11 @@ void Pipeline::SetErrorForTesting(PipelineStatus status) {
   OnError(status);
 }
 
+bool Pipeline::HasWeakPtrsForTesting() const {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  return weak_factory_.HasWeakPtrs();
+}
+
 void Pipeline::SetState(State next_state) {
   DVLOG(1) << GetStateString(state_) << " -> " << GetStateString(next_state);
 
@@ -602,7 +607,14 @@ void Pipeline::StopTask(const base::Closure& stop_cb) {
   DCHECK(stop_cb_.is_null());
 
   if (state_ == kStopped) {
+    // Invalid all weak pointers so it's safe to destroy |this| on the render
+    // main thread.
+    weak_factory_.InvalidateWeakPtrs();
+
+    // NOTE: pipeline may be deleted at this point in time as a result of
+    // executing |stop_cb|.
     stop_cb.Run();
+
     return;
   }
 

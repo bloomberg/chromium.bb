@@ -315,6 +315,9 @@ class PipelineTest : public ::testing::Test {
   }
 
   void DestroyPipeline() {
+    // In real code Pipeline could be destroyed on a different thread. All weak
+    // pointers must have been invalidated before the stop callback returns.
+    DCHECK(!pipeline_->HasWeakPtrsForTesting());
     pipeline_.reset();
   }
 

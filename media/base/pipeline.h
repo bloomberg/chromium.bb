@@ -183,6 +183,7 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   }
   void SetTimeDeltaInterpolatorForTesting(TimeDeltaInterpolator* interpolator);
   void SetErrorForTesting(PipelineStatus status);
+  bool HasWeakPtrsForTesting() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PipelineTest, GetBufferedTimeRanges);
