@@ -68,6 +68,19 @@ enum WebTextInputType {
     WebTextInputTypeDateTimeField,
 };
 
+// Separate on/off flags are defined so that the input mechanism can choose
+// an appropriate default based on other things (like InputType and direct
+// knowledge of the actual input system) if there are no overrides.
+enum WebTextInputFlags {
+    WebTextInputFlagNone = 0,
+    WebTextInputFlagAutocompleteOn = 1 << 0,
+    WebTextInputFlagAutocompleteOff = 1 << 1,
+    WebTextInputFlagAutocorrectOn = 1 << 2,
+    WebTextInputFlagAutocorrectOff = 1 << 3,
+    WebTextInputFlagSpellcheckOn = 1 << 4,
+    WebTextInputFlagSpellcheckOff = 1 << 5
+};
+
 } // namespace blink
 
 #endif
