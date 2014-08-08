@@ -25,12 +25,6 @@ namespace {
 
 PermissionsData::PolicyDelegate* g_policy_delegate = NULL;
 
-// Returns true if this extension id is from a trusted provider.
-bool ShouldSkipPermissionWarnings(const std::string& extension_id) {
-  // See http://b/4946060 for more details.
-  return extension_id == std::string("nckgahadagoaajjgafhacjanaoiihapd");
-}
-
 }  // namespace
 
 PermissionsData::PermissionsData(const Extension* extension)
@@ -70,6 +64,12 @@ bool PermissionsData::CanExecuteScriptEverywhere(const Extension* extension) {
 
   return std::find(whitelist.begin(), whitelist.end(), extension->id()) !=
          whitelist.end();
+}
+
+bool PermissionsData::ShouldSkipPermissionWarnings(
+    const std::string& extension_id) {
+  // See http://b/4946060 for more details.
+  return extension_id == std::string("nckgahadagoaajjgafhacjanaoiihapd");
 }
 
 // static

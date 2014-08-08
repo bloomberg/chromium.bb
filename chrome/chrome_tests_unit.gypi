@@ -944,6 +944,7 @@
         'browser/extensions/extension_gcm_app_handler_unittest.cc',
         'browser/extensions/extension_icon_manager_unittest.cc',
         'browser/extensions/extension_install_checker_unittest.cc',
+        'browser/extensions/extension_install_prompt_unittest.cc',
         'browser/extensions/extension_message_bubble_controller_unittest.cc',
         'browser/extensions/extension_path_util_unittest.cc',
         'browser/extensions/extension_prefs_unittest.cc',

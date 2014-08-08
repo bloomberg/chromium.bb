@@ -362,6 +362,10 @@ class ExtensionInstallPrompt
   // Installation failed. This is declared virtual for testing.
   virtual void OnInstallFailure(const extensions::CrxInstallerError& error);
 
+  void set_callback_for_test(const ShowDialogCallback& show_dialog_callback) {
+    show_dialog_callback_ = show_dialog_callback;
+  }
+
  protected:
   friend class extensions::ExtensionWebstorePrivateApiTest;
   friend class WebstoreStartupInstallUnpackFailureTest;
