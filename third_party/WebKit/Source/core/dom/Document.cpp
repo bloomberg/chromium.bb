@@ -5025,7 +5025,7 @@ void Document::internalAddMessage(MessageSource source, MessageLevel level, cons
                 lineNumber = parser->lineNumber().oneBasedInt();
         }
     }
-    RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(source, level, message, messageURL, lineNumber);
+    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(source, level, message, messageURL, lineNumber);
     consoleMessage->setCallStack(callStack);
     consoleMessage->setScriptState(scriptState);
     m_frame->console().addMessage(consoleMessage.release());
@@ -5039,7 +5039,7 @@ void Document::addConsoleMessageWithRequestIdentifier(MessageSource source, Mess
     }
 
     if (m_frame) {
-        RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(source, level, message);
+        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(source, level, message);
         consoleMessage->setRequestIdentifier(requestIdentifier);
         m_frame->console().addMessage(consoleMessage.release());
     }

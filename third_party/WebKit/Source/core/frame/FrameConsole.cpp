@@ -52,7 +52,7 @@ FrameConsole::FrameConsole(LocalFrame& frame)
 {
 }
 
-void FrameConsole::addMessage(PassRefPtr<ConsoleMessage> prpConsoleMessage)
+void FrameConsole::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleMessage)
 {
     if (muteCount)
         return;
@@ -63,7 +63,7 @@ void FrameConsole::addMessage(PassRefPtr<ConsoleMessage> prpConsoleMessage)
     if (!context)
         return;
 
-    RefPtr<ConsoleMessage> consoleMessage = prpConsoleMessage;
+    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = prpConsoleMessage;
     InspectorInstrumentation::addMessageToConsole(context, consoleMessage.get());
 
     String messageURL;

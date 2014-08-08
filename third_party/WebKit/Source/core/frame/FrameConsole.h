@@ -31,6 +31,7 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "core/frame/ConsoleTypes.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -46,7 +47,7 @@ class FrameConsole FINAL {
 public:
     static PassOwnPtr<FrameConsole> create(LocalFrame& frame) { return adoptPtr(new FrameConsole(frame)); }
 
-    void addMessage(PassRefPtr<ConsoleMessage>);
+    void addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>);
     static String formatStackTraceString(const String& originalMessage, PassRefPtrWillBeRawPtr<ScriptCallStack>);
 
     static void mute();

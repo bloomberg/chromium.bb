@@ -34,12 +34,16 @@ ConsoleMessage::ConsoleMessage(MessageSource source,
 {
 }
 
-PassRefPtr<ScriptCallStack> ConsoleMessage::callStack() const
+ConsoleMessage::~ConsoleMessage()
+{
+}
+
+PassRefPtrWillBeRawPtr<ScriptCallStack> ConsoleMessage::callStack() const
 {
     return m_callStack;
 }
 
-void ConsoleMessage::setCallStack(PassRefPtr<ScriptCallStack> callStack)
+void ConsoleMessage::setCallStack(PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
 {
     m_callStack = callStack;
 }
@@ -102,6 +106,11 @@ const String& ConsoleMessage::message() const
 unsigned ConsoleMessage::columnNumber() const
 {
     return m_columnNumber;
+}
+
+void ConsoleMessage::trace(Visitor* visitor)
+{
+    visitor->trace(m_callStack);
 }
 
 } // namespace WebCore

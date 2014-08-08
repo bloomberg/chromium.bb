@@ -280,7 +280,7 @@ void InspectorConsoleAgent::didFinishXHRLoading(XMLHttpRequest*, ThreadableLoade
 {
     if (m_frontend && m_state->getBoolean(ConsoleAgentState::monitoringXHR)) {
         String message = "XHR finished loading: " + method + " \"" + url + "\".";
-        RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, DebugMessageLevel, message, sendURL, sendLineNumber);
+        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, DebugMessageLevel, message, sendURL, sendLineNumber);
         consoleMessage->setRequestIdentifier(requestIdentifier);
         addMessageToConsole(consoleMessage.get());
     }
@@ -292,7 +292,7 @@ void InspectorConsoleAgent::didReceiveResourceResponse(LocalFrame*, unsigned lon
         return;
     if (response.httpStatusCode() >= 400) {
         String message = "Failed to load resource: the server responded with a status of " + String::number(response.httpStatusCode()) + " (" + response.httpStatusText() + ')';
-        RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, ErrorMessageLevel, message, response.url().string());
+        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, ErrorMessageLevel, message, response.url().string());
         consoleMessage->setRequestIdentifier(requestIdentifier);
         addMessageToConsole(consoleMessage.get());
     }
@@ -308,7 +308,7 @@ void InspectorConsoleAgent::didFailLoading(unsigned long requestIdentifier, cons
         message.appendLiteral(": ");
         message.append(error.localizedDescription());
     }
-    RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, ErrorMessageLevel, message.toString(), error.failingURL());
+    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, ErrorMessageLevel, message.toString(), error.failingURL());
     consoleMessage->setRequestIdentifier(requestIdentifier);
     addMessageToConsole(consoleMessage.get());
 }
@@ -350,4 +350,3 @@ void InspectorConsoleAgent::addInspectedHeapObject(ErrorString*, int inspectedHe
 }
 
 } // namespace blink
-

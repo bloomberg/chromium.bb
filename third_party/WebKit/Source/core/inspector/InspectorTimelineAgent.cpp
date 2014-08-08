@@ -825,7 +825,7 @@ void InspectorTimelineAgent::consoleTimeline(ExecutionContext* context, const St
 
     String message = String::format("Timeline '%s' started.", title.utf8().data());
 
-    RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, DebugMessageLevel, message);
+    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, DebugMessageLevel, message);
     consoleMessage->setScriptState(scriptState);
     mainFrame()->console().addMessage(consoleMessage.release());
     m_consoleTimelines.append(title);
@@ -848,7 +848,7 @@ void InspectorTimelineAgent::consoleTimelineEnd(ExecutionContext* context, const
     size_t index = m_consoleTimelines.find(title);
     if (index == kNotFound) {
         String message = String::format("Timeline '%s' was not started.", title.utf8().data());
-        RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, DebugMessageLevel, message);
+        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, DebugMessageLevel, message);
         consoleMessage->setScriptState(scriptState);
         mainFrame()->console().addMessage(consoleMessage.release());
         return;
@@ -861,7 +861,7 @@ void InspectorTimelineAgent::consoleTimelineEnd(ExecutionContext* context, const
         unwindRecordStack();
         innerStop(true);
     }
-    RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, DebugMessageLevel, message);
+    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, DebugMessageLevel, message);
     consoleMessage->setScriptState(scriptState);
     mainFrame()->console().addMessage(consoleMessage.release());
 }
@@ -1377,4 +1377,3 @@ void TimelineThreadState::trace(Visitor* visitor)
 }
 
 } // namespace blink
-

@@ -305,7 +305,7 @@ void WorkerGlobalScope::addMessage(MessageSource source, MessageLevel level, con
 void WorkerGlobalScope::addMessageToWorkerConsole(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, ScriptState* scriptState)
 {
     ASSERT(isContextThread());
-    RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(source, level, message, sourceURL, lineNumber);
+    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(source, level, message, sourceURL, lineNumber);
     consoleMessage->setCallStack(callStack);
     consoleMessage->setScriptState(scriptState);
     InspectorInstrumentation::addMessageToConsole(this, consoleMessage.get());

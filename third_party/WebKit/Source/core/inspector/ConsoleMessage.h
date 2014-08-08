@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -18,15 +19,17 @@ namespace blink {
 class ScriptCallStack;
 class ScriptState;
 
-class ConsoleMessage FINAL: public RefCounted<ConsoleMessage> {
+class ConsoleMessage FINAL: public RefCountedWillBeGarbageCollectedFinalized<ConsoleMessage> {
 public:
-    static PassRefPtr<ConsoleMessage> create(MessageSource source, MessageLevel level, const String& message, const String& url = String(), unsigned lineNumber = 0, unsigned columnNumber = 0)
+    static PassRefPtrWillBeRawPtr<ConsoleMessage> create(MessageSource source, MessageLevel level, const String& message, const String& url = String(), unsigned lineNumber = 0, unsigned columnNumber = 0)
     {
-        return adoptRef(new ConsoleMessage(source, level, message, url, lineNumber, columnNumber));
+        return adoptRefWillBeNoop(new ConsoleMessage(source, level, message, url, lineNumber, columnNumber));
     }
 
-    PassRefPtr<ScriptCallStack> callStack() const;
-    void setCallStack(PassRefPtr<ScriptCallStack>);
+    ~ConsoleMessage();
+
+    PassRefPtrWillBeRawPtr<ScriptCallStack> callStack() const;
+    void setCallStack(PassRefPtrWillBeRawPtr<ScriptCallStack>);
     ScriptState* scriptState() const;
     void setScriptState(ScriptState*);
     unsigned long requestIdentifier() const;
@@ -41,6 +44,8 @@ public:
     const String& message() const;
     unsigned columnNumber() const;
 
+    void trace(Visitor*);
+
 private:
     ConsoleMessage();
     ConsoleMessage(MessageSource, MessageLevel, const String& message, const String& url = String(), unsigned lineNumber = 0, unsigned columnNumber = 0);
@@ -51,7 +56,7 @@ private:
     String m_url;
     unsigned m_lineNumber;
     unsigned m_columnNumber;
-    RefPtr<ScriptCallStack> m_callStack;
+    RefPtrWillBeMember<ScriptCallStack> m_callStack;
     ScriptState* m_scriptState;
     unsigned long m_requestIdentifier;
 };
