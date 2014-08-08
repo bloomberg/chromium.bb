@@ -547,6 +547,11 @@ class CONTENT_EXPORT RenderViewHostImpl
   // TODO(nasko): Move to RenderFrameHost, as this is per-frame state.
   scoped_ptr<FrameMsg_Navigate_Params> suspended_nav_params_;
 
+  // The most recent page ID we've heard from the renderer process.  This is
+  // used as context when other session history related IPCs arrive.
+  // TODO(creis): Allocate this in WebContents/NavigationController instead.
+  int32 page_id_;
+
   // The current state of this RVH.
   // TODO(nasko): Move to RenderFrameHost, as this is per-frame state.
   RenderViewHostImplState rvh_state_;
