@@ -190,13 +190,9 @@ if __name__ == '__main__':
   args = sys.argv[1:]
 
   # TODO(sky): remove analyzer2 once updated recipes.
-  use_analyzer = len(args) and args[0] == '--analyzer'
+  use_analyzer = len(args) and (args[0] == '--analyzer' or
+                                args[0] == '--analyzer2')
   if use_analyzer:
-    args.pop(0)
-    os.environ['GYP_GENERATORS'] = 'analyzer'
-    args.append('-Gfile_path=' + args.pop(0))
-  elif len(args) and args[0] == '--analyzer2':
-    use_analyzer = True
     args.pop(0)
     os.environ['GYP_GENERATORS'] = 'analyzer'
     args.append('-Gconfig_path=' + args.pop(0))
