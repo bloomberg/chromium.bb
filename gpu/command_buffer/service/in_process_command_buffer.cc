@@ -206,6 +206,7 @@ InProcessCommandBuffer::GetDefaultService() {
 InProcessCommandBuffer::InProcessCommandBuffer(
     const scoped_refptr<Service>& service)
     : context_lost_(false),
+      idle_work_pending_(false),
       last_put_offset_(-1),
       flush_event_(false, false),
       service_(service.get() ? service : GetDefaultService()),
@@ -505,21 +506,28 @@ void InProcessCommandBuffer::FlushOnGpuThread(int32 put_offset) {
   // pump idle work until the query is passed.
   if (put_offset == state_after_last_flush_.get_offset &&
       gpu_scheduler_->HasMoreWork()) {
-    service_->ScheduleIdleWork(
-        base::Bind(&InProcessCommandBuffer::ScheduleMoreIdleWork,
-                   gpu_thread_weak_ptr_));
+    ScheduleIdleWorkOnGpuThread();
   }
 }
 
-void InProcessCommandBuffer::ScheduleMoreIdleWork() {
+void InProcessCommandBuffer::PerformIdleWork() {
   CheckSequencedThread();
+  idle_work_pending_ = false;
   base::AutoLock lock(command_buffer_lock_);
   if (gpu_scheduler_->HasMoreWork()) {
     gpu_scheduler_->PerformIdleWork();
-    service_->ScheduleIdleWork(
-        base::Bind(&InProcessCommandBuffer::ScheduleMoreIdleWork,
-                   gpu_thread_weak_ptr_));
+    ScheduleIdleWorkOnGpuThread();
   }
+}
+
+void InProcessCommandBuffer::ScheduleIdleWorkOnGpuThread() {
+  CheckSequencedThread();
+  if (idle_work_pending_)
+    return;
+  idle_work_pending_ = true;
+  service_->ScheduleIdleWork(
+      base::Bind(&InProcessCommandBuffer::PerformIdleWork,
+                 gpu_thread_weak_ptr_));
 }
 
 void InProcessCommandBuffer::Flush(int32 put_offset) {

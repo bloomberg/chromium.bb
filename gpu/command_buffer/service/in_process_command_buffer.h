@@ -189,6 +189,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   bool InitializeOnGpuThread(const InitializeOnGpuThreadParams& params);
   bool DestroyOnGpuThread();
   void FlushOnGpuThread(int32 put_offset);
+  void ScheduleIdleWorkOnGpuThread();
   uint32 CreateStreamTextureOnGpuThread(uint32 client_texture_id);
   bool MakeCurrent();
   base::Closure WrapCallback(const base::Closure& callback);
@@ -213,7 +214,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   void OnResizeView(gfx::Size size, float scale_factor);
   bool GetBufferChanged(int32 transfer_buffer_id);
   void PumpCommands();
-  void ScheduleMoreIdleWork();
+  void PerformIdleWork();
 
   static scoped_refptr<Service> GetDefaultService();
 
@@ -226,6 +227,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   scoped_refptr<gfx::GLContext> context_;
   scoped_refptr<gfx::GLSurface> surface_;
   base::Closure context_lost_callback_;
+  bool idle_work_pending_;  // Used to throttle PerformIdleWork.
 
   // Members accessed on the client thread:
   State last_state_;
