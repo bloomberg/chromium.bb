@@ -61,6 +61,7 @@ AudioRendererImpl::AudioRendererImpl(
       pending_read_(false),
       received_end_of_stream_(false),
       rendered_end_of_stream_(false),
+      last_timestamp_update_(kNoTimestamp()),
       weak_factory_(this) {
   audio_buffer_stream_->set_splice_observer(base::Bind(
       &AudioRendererImpl::OnNewSpliceBuffer, weak_factory_.GetWeakPtr()));
@@ -147,6 +148,7 @@ void AudioRendererImpl::SetMediaTime(base::TimeDelta time) {
   DCHECK_EQ(state_, kFlushed);
 
   start_timestamp_ = time;
+  audio_clock_.reset(new AudioClock(time, audio_parameters_.sample_rate()));
 }
 
 base::TimeDelta AudioRendererImpl::CurrentMediaTime() {
@@ -201,9 +203,10 @@ void AudioRendererImpl::ResetDecoderDone() {
     DCHECK_EQ(state_, kFlushed);
     DCHECK(!flush_cb_.is_null());
 
-    audio_clock_.reset(new AudioClock(audio_parameters_.sample_rate()));
+    audio_clock_.reset();
     received_end_of_stream_ = false;
     rendered_end_of_stream_ = false;
+    last_timestamp_update_ = kNoTimestamp();
 
     // Flush() may have been called while underflowed/not fully buffered.
     if (buffering_state_ != BUFFERING_HAVE_NOTHING)
@@ -294,7 +297,8 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
         hardware_config_->GetHighLatencyBufferSize());
   }
 
-  audio_clock_.reset(new AudioClock(audio_parameters_.sample_rate()));
+  audio_clock_.reset(
+      new AudioClock(base::TimeDelta(), audio_parameters_.sample_rate()));
 
   audio_buffer_stream_->Initialize(
       stream,
@@ -549,18 +553,21 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
 
     // Ensure Stop() hasn't destroyed our |algorithm_| on the pipeline thread.
     if (!algorithm_) {
-      audio_clock_->WroteSilence(requested_frames, delay_frames);
+      audio_clock_->WroteAudio(
+          0, requested_frames, delay_frames, playback_rate_);
       return 0;
     }
 
     if (playback_rate_ == 0) {
-      audio_clock_->WroteSilence(requested_frames, delay_frames);
+      audio_clock_->WroteAudio(
+          0, requested_frames, delay_frames, playback_rate_);
       return 0;
     }
 
     // Mute audio by returning 0 when not playing.
     if (state_ != kPlaying) {
-      audio_clock_->WroteSilence(requested_frames, delay_frames);
+      audio_clock_->WroteAudio(
+          0, requested_frames, delay_frames, playback_rate_);
       return 0;
     }
 
@@ -576,20 +583,16 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
     //   3) We are in the kPlaying state
     //
     // Otherwise the buffer has data we can send to the device.
-    const base::TimeDelta media_timestamp_before_filling =
-        audio_clock_->CurrentMediaTimestamp(base::TimeDelta());
     if (algorithm_->frames_buffered() > 0) {
       frames_written =
           algorithm_->FillBuffer(audio_bus, requested_frames, playback_rate_);
-      audio_clock_->WroteAudio(
-          frames_written, delay_frames, playback_rate_, algorithm_->GetTime());
     }
-    audio_clock_->WroteSilence(requested_frames - frames_written, delay_frames);
+    audio_clock_->WroteAudio(
+        frames_written, requested_frames, delay_frames, playback_rate_);
 
     if (frames_written == 0) {
       if (received_end_of_stream_ && !rendered_end_of_stream_ &&
-          audio_clock_->CurrentMediaTimestamp(base::TimeDelta()) ==
-              audio_clock_->last_endpoint_timestamp()) {
+          !audio_clock_->audio_data_buffered()) {
         rendered_end_of_stream_ = true;
         task_runner_->PostTask(FROM_HERE, ended_cb_);
       } else if (!received_end_of_stream_ && state_ == kPlaying) {
@@ -606,15 +609,18 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
                                         weak_factory_.GetWeakPtr()));
     }
 
-    // We only want to execute |time_cb_| if time has progressed and we haven't
-    // signaled end of stream yet.
-    if (media_timestamp_before_filling !=
-            audio_clock_->CurrentMediaTimestamp(base::TimeDelta()) &&
-        !rendered_end_of_stream_) {
-      time_cb =
-          base::Bind(time_cb_,
-                     audio_clock_->CurrentMediaTimestamp(base::TimeDelta()),
-                     audio_clock_->last_endpoint_timestamp());
+    // Firing |ended_cb_| means we no longer need to run |time_cb_|.
+    if (!rendered_end_of_stream_ &&
+        last_timestamp_update_ != audio_clock_->current_media_timestamp()) {
+      // Since |max_time| uses linear interpolation, only provide an upper bound
+      // that is for audio data at the same playback rate. Failing to do so can
+      // make time jump backwards when the linear interpolated time advances
+      // past buffered regions of audio at different rates.
+      last_timestamp_update_ = audio_clock_->current_media_timestamp();
+      base::TimeDelta max_time =
+          last_timestamp_update_ +
+          audio_clock_->contiguous_audio_data_buffered_at_same_rate();
+      time_cb = base::Bind(time_cb_, last_timestamp_update_, max_time);
     }
   }
 

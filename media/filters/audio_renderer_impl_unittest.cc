@@ -62,6 +62,7 @@ class AudioRendererImplTest : public ::testing::Test {
         demuxer_stream_(DemuxerStream::AUDIO),
         decoder_(new MockAudioDecoder()),
         last_time_update_(kNoTimestamp()),
+        last_max_time_(kNoTimestamp()),
         ended_(false) {
     AudioDecoderConfig audio_config(kCodec,
                                     kSampleFormat,
@@ -117,6 +118,7 @@ class AudioRendererImplTest : public ::testing::Test {
   void OnAudioTimeCallback(TimeDelta current_time, TimeDelta max_time) {
     CHECK(current_time <= max_time);
     last_time_update_ = current_time;
+    last_max_time_ = max_time;
   }
 
   void InitializeRenderer(const PipelineStatusCB& pipeline_status_cb) {
@@ -334,6 +336,8 @@ class AudioRendererImplTest : public ::testing::Test {
     return last_time_update_;
   }
 
+  base::TimeDelta last_max_time() const { return last_max_time_; }
+
   bool ended() const { return ended_; }
 
   // Fixture members.
@@ -404,6 +408,7 @@ class AudioRendererImplTest : public ::testing::Test {
 
   PipelineStatusCB init_decoder_cb_;
   base::TimeDelta last_time_update_;
+  base::TimeDelta last_max_time_;
   bool ended_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererImplTest);
@@ -628,6 +633,7 @@ TEST_F(AudioRendererImplTest, TimeUpdatesOnFirstBuffer) {
 
   AudioTimestampHelper timestamp_helper(kOutputSamplesPerSecond);
   EXPECT_EQ(kNoTimestamp(), last_time_update());
+  EXPECT_EQ(kNoTimestamp(), last_max_time());
 
   // Preroll() should be buffered some data, consume half of it now.
   OutputFrames frames_to_consume(frames_buffered().value / 2);
@@ -639,17 +645,21 @@ TEST_F(AudioRendererImplTest, TimeUpdatesOnFirstBuffer) {
   // a time update that's equal to |kFramesToConsume| from above.
   timestamp_helper.SetBaseTimestamp(base::TimeDelta());
   timestamp_helper.AddFrames(frames_to_consume.value);
-  EXPECT_EQ(timestamp_helper.GetTimestamp(), last_time_update());
+  EXPECT_EQ(base::TimeDelta(), last_time_update());
+  EXPECT_EQ(timestamp_helper.GetTimestamp(), last_max_time());
 
   // The next time update should match the remaining frames_buffered(), but only
   // after running the message loop.
   frames_to_consume = frames_buffered();
   EXPECT_TRUE(ConsumeBufferedData(frames_to_consume));
-  EXPECT_EQ(timestamp_helper.GetTimestamp(), last_time_update());
+  EXPECT_EQ(base::TimeDelta(), last_time_update());
+  EXPECT_EQ(timestamp_helper.GetTimestamp(), last_max_time());
 
+  // Now the times should be updated.
   base::RunLoop().RunUntilIdle();
-  timestamp_helper.AddFrames(frames_to_consume.value);
   EXPECT_EQ(timestamp_helper.GetTimestamp(), last_time_update());
+  timestamp_helper.AddFrames(frames_to_consume.value);
+  EXPECT_EQ(timestamp_helper.GetTimestamp(), last_max_time());
 }
 
 TEST_F(AudioRendererImplTest, ImmediateEndOfStream) {

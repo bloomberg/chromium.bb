@@ -249,6 +249,7 @@ class MEDIA_EXPORT AudioRendererImpl
   scoped_ptr<AudioClock> audio_clock_;
 
   base::TimeDelta start_timestamp_;
+  base::TimeDelta last_timestamp_update_;
 
   // End variables which must be accessed under |lock_|. ----------------------
 

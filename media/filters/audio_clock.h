@@ -18,59 +18,75 @@ namespace media {
 // a playback pipeline with large delay.
 class MEDIA_EXPORT AudioClock {
  public:
-  explicit AudioClock(int sample_rate);
+  AudioClock(base::TimeDelta start_timestamp, int sample_rate);
   ~AudioClock();
 
-  // |frames| amount of audio data scaled to |playback_rate| was written.
+  // |frames_written| amount of audio data scaled to |playback_rate| written.
+  // |frames_requested| amount of audio data requested by hardware.
   // |delay_frames| is the current amount of hardware delay.
-  // |timestamp| is the endpoint media timestamp of the audio data written.
-  void WroteAudio(int frames,
+  void WroteAudio(int frames_written,
+                  int frames_requested,
                   int delay_frames,
-                  float playback_rate,
-                  base::TimeDelta timestamp);
-
-  // |frames| amount of silence was written.
-  // |delay_frames| is the current amount of hardware delay.
-  void WroteSilence(int frames, int delay_frames);
+                  float playback_rate);
 
   // Calculates the current media timestamp taking silence and changes in
   // playback rate into account.
-  //
-  // Clients can provide |time_since_writing| to simulate the passage of time
-  // since last writing audio to get a more accurate current media timestamp.
-  base::TimeDelta CurrentMediaTimestamp(
-      base::TimeDelta time_since_writing) const;
-
-  // Returns the last endpoint timestamp provided to WroteAudio().
-  base::TimeDelta last_endpoint_timestamp() const {
-    return last_endpoint_timestamp_;
+  base::TimeDelta current_media_timestamp() const {
+    return current_media_timestamp_;
   }
 
+  // Clients can provide |time_since_writing| to simulate the passage of time
+  // since last writing audio to get a more accurate current media timestamp.
+  base::TimeDelta CurrentMediaTimestampSinceWriting(
+      base::TimeDelta time_since_writing) const;
+
+  // Returns the amount of contiguous media time buffered at the head of the
+  // audio hardware buffer. Silence introduced into the audio hardware buffer is
+  // treated as a break in media time.
+  base::TimeDelta contiguous_audio_data_buffered() const {
+    return contiguous_audio_data_buffered_;
+  }
+
+  // Same as above, but also treats changes in playback rate as a break in media
+  // time.
+  base::TimeDelta contiguous_audio_data_buffered_at_same_rate() const {
+    return contiguous_audio_data_buffered_at_same_rate_;
+  }
+
+  // Returns true if there is any audio data buffered by the audio hardware,
+  // even if there is silence mixed in.
+  bool audio_data_buffered() const { return audio_data_buffered_; }
+
  private:
-  void TrimBufferedAudioToMatchDelay(int delay_frames);
-  void PushBufferedAudio(int frames,
-                         float playback_rate,
-                         base::TimeDelta endpoint_timestamp);
+  // Even with a ridiculously high sample rate of 256kHz, using 64 bits will
+  // permit tracking up to 416999965 days worth of time (that's 1141 millenia).
+  //
+  // 32 bits on the other hand would top out at measly 2 hours and 20 minutes.
+  struct AudioData {
+    AudioData(int64_t frames, float playback_rate);
 
-  const int sample_rate_;
-
-  // Initially set to kNoTimestamp(), otherwise is the last endpoint timestamp
-  // delivered to WroteAudio(). A copy is kept outside of |buffered_audio_| to
-  // handle the case where all of |buffered_audio_| has been replaced with
-  // silence.
-  base::TimeDelta last_endpoint_timestamp_;
-
-  struct BufferedAudio {
-    BufferedAudio(int frames,
-                  float playback_rate,
-                  base::TimeDelta endpoint_timestamp);
-
-    int frames;
+    int64_t frames;
     float playback_rate;
-    base::TimeDelta endpoint_timestamp;
   };
 
-  std::deque<BufferedAudio> buffered_audio_;
+  // Helpers for operating on |buffered_|.
+  void PushBufferedAudioData(int64_t frames, float playback_rate);
+  void PopBufferedAudioData(int64_t frames);
+  base::TimeDelta ComputeBufferedMediaTime(int64_t frames) const;
+
+  const base::TimeDelta start_timestamp_;
+  const int sample_rate_;
+  const double microseconds_per_frame_;
+
+  std::deque<AudioData> buffered_;
+  int64_t total_buffered_frames_;
+
+  base::TimeDelta current_media_timestamp_;
+
+  // Cached results of last call to WroteAudio().
+  bool audio_data_buffered_;
+  base::TimeDelta contiguous_audio_data_buffered_;
+  base::TimeDelta contiguous_audio_data_buffered_at_same_rate_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioClock);
 };
