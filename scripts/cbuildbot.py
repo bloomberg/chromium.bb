@@ -768,8 +768,14 @@ class DistributedBuilder(SimpleBuilder):
     """
     return self._completion_stage
 
-  def Publish(self, was_build_successful):
-    """Completes build by publishing any required information."""
+  def Publish(self, was_build_successful, build_finished):
+    """Completes build by publishing any required information.
+
+    Args:
+      was_build_successful: Whether the build succeeded.
+      build_finished: Whether the build completed. A build can be successful
+        without completing if it exits early with sys.exit(0).
+    """
     completion_stage = self._GetStageInstance(self.completion_stage_class,
                                               self.sync_stage,
                                               was_build_successful)
@@ -782,26 +788,28 @@ class DistributedBuilder(SimpleBuilder):
           not self._run.config.afdo_generate_min):
         self._RunStage(afdo_stages.AFDOUpdateEbuildStage)
     finally:
-      if not completion_successful:
-        was_build_successful = False
       if self._run.config.push_overlays:
-        self._RunStage(completion_stages.PublishUprevChangesStage,
-                       was_build_successful)
+        publish = (was_build_successful and completion_successful and
+                   build_finished)
+        self._RunStage(completion_stages.PublishUprevChangesStage, publish)
 
   def RunStages(self):
     """Runs simple builder logic and publishes information to overlays."""
     was_build_successful = False
+    build_finished = False
     try:
       super(DistributedBuilder, self).RunStages()
       was_build_successful = results_lib.Results.BuildSucceededSoFar()
+      build_finished = True
     except SystemExit as ex:
       # If a stage calls sys.exit(0), it's exiting with success, so that means
       # we should mark ourselves as successful.
+      cros_build_lib.Info('Detected sys.exit(%s)', ex.code)
       if ex.code == 0:
         was_build_successful = True
       raise
     finally:
-      self.Publish(was_build_successful)
+      self.Publish(was_build_successful, build_finished)
 
 
 def _ConfirmBuildRoot(buildroot):
