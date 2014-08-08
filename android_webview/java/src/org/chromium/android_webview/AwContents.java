@@ -52,6 +52,7 @@ import org.chromium.content.browser.ContentViewStatics;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.NavigationHistory;
 import org.chromium.content.browser.PageTransitionTypes;
+import org.chromium.content.browser.WebContentsObserverAndroid;
 import org.chromium.content.common.CleanupReference;
 import org.chromium.content_public.Referrer;
 import org.chromium.content_public.browser.GestureStateListener;
@@ -182,6 +183,7 @@ public class AwContents {
     private ContentViewCore mContentViewCore;
     private final AwContentsClient mContentsClient;
     private final AwContentViewClient mContentViewClient;
+    private WebContentsObserverAndroid mWebContentsObserver;
     private final AwContentsClientBridge mContentsClientBridge;
     private final AwWebContentsDelegateAdapter mWebContentsDelegate;
     private final AwContentsIoThreadClient mIoThreadClient;
@@ -758,12 +760,20 @@ public class AwContents {
                 new AwGestureStateListener(), mContentViewClient, mZoomControls);
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,
                 mIoThreadClient, mInterceptNavigationDelegate);
-        mContentsClient.installWebContentsObserver(mContentViewCore.getWebContents());
+        installWebContentsObserver();
         mSettings.setWebContents(nativeWebContents);
         nativeSetDipScale(mNativeAwContents, (float) mDIPScale);
 
         // The only call to onShow. onHide should never be called.
         mContentViewCore.onShow();
+    }
+
+    private void installWebContentsObserver() {
+        if (mWebContentsObserver != null) {
+            mWebContentsObserver.detachFromWebContents();
+        }
+        mWebContentsObserver = new AwWebContentsObserver(mContentViewCore.getWebContents(),
+                mContentsClient);
     }
 
     /**

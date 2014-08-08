@@ -29,6 +29,7 @@ public class TestAwContentsClient extends NullContentsClient {
     private final OnScaleChangedHelper mOnScaleChangedHelper;
     private final PictureListenerHelper mPictureListenerHelper;
     private final ShouldOverrideUrlLoadingHelper mShouldOverrideUrlLoadingHelper;
+    private final DoUpdateVisitedHistoryHelper mDoUpdateVisitedHistoryHelper;
 
     public TestAwContentsClient() {
         super(ThreadUtils.getUiThreadLooper());
@@ -42,6 +43,7 @@ public class TestAwContentsClient extends NullContentsClient {
         mOnScaleChangedHelper = new OnScaleChangedHelper();
         mPictureListenerHelper = new PictureListenerHelper();
         mShouldOverrideUrlLoadingHelper = new ShouldOverrideUrlLoadingHelper();
+        mDoUpdateVisitedHistoryHelper = new DoUpdateVisitedHistoryHelper();
     }
 
     public OnPageStartedHelper getOnPageStartedHelper() {
@@ -74,6 +76,10 @@ public class TestAwContentsClient extends NullContentsClient {
 
     public AddMessageToConsoleHelper getAddMessageToConsoleHelper() {
         return mAddMessageToConsoleHelper;
+    }
+
+    public DoUpdateVisitedHistoryHelper getDoUpdateVisitedHistoryHelper() {
+        return mDoUpdateVisitedHistoryHelper;
     }
 
     /**
@@ -340,5 +346,35 @@ public class TestAwContentsClient extends NullContentsClient {
             mShouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingReturnValue();
         mShouldOverrideUrlLoadingHelper.notifyCalled(url);
         return returnValue;
+    }
+
+
+    /**
+     * Callback helper for doUpdateVisitedHistory.
+     */
+    public static class DoUpdateVisitedHistoryHelper extends CallbackHelper {
+        String mUrl;
+        boolean mIsReload;
+
+        public String getUrl() {
+            assert getCallCount() > 0;
+            return mUrl;
+        }
+
+        public boolean getIsReload() {
+            assert getCallCount() > 0;
+            return mIsReload;
+        }
+
+        public void notifyCalled(String url, boolean isReload) {
+            mUrl = url;
+            mIsReload = isReload;
+            notifyCalled();
+        }
+    }
+
+    @Override
+    public void doUpdateVisitedHistory(String url, boolean isReload) {
+        getDoUpdateVisitedHistoryHelper().notifyCalled(url, isReload);
     }
 }

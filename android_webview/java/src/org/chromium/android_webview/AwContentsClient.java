@@ -18,9 +18,6 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 
 import org.chromium.android_webview.permission.AwPermissionRequest;
-import org.chromium.content.browser.WebContentsObserverAndroid;
-import org.chromium.content_public.browser.WebContents;
-import org.chromium.net.NetError;
 
 import java.security.Principal;
 import java.util.HashMap;
@@ -38,8 +35,6 @@ public abstract class AwContentsClient {
 
     private final AwContentsClientCallbackHelper mCallbackHelper;
 
-    private AwWebContentsObserver mWebContentsObserver;
-
     // Last background color reported from the renderer. Holds the sentinal value INVALID_COLOR
     // if not valid.
     private int mCachedRendererBackgroundColor = INVALID_COLOR;
@@ -53,69 +48,6 @@ public abstract class AwContentsClient {
     // Alllow injection of the callback thread, for testing.
     public AwContentsClient(Looper looper) {
         mCallbackHelper = new AwContentsClientCallbackHelper(looper, this);
-    }
-
-    class AwWebContentsObserver extends WebContentsObserverAndroid {
-        public AwWebContentsObserver(WebContents webContents) {
-            super(webContents);
-        }
-
-        @Override
-        public void didFinishLoad(long frameId, String validatedUrl, boolean isMainFrame) {
-            String unreachableWebDataUrl = AwContentsStatics.getUnreachableWebDataUrl();
-            boolean isErrorUrl =
-                    unreachableWebDataUrl != null && unreachableWebDataUrl.equals(validatedUrl);
-            if (isMainFrame && !isErrorUrl) {
-                AwContentsClient.this.onPageFinished(validatedUrl);
-            }
-        }
-
-        @Override
-        public void didFailLoad(boolean isProvisionalLoad,
-                boolean isMainFrame, int errorCode, String description, String failingUrl) {
-            String unreachableWebDataUrl = AwContentsStatics.getUnreachableWebDataUrl();
-            boolean isErrorUrl =
-                    unreachableWebDataUrl != null && unreachableWebDataUrl.equals(failingUrl);
-            if (isMainFrame && !isErrorUrl) {
-                if (errorCode != NetError.ERR_ABORTED) {
-                    // This error code is generated for the following reasons:
-                    // - WebView.stopLoading is called,
-                    // - the navigation is intercepted by the embedder via shouldOverrideNavigation.
-                    //
-                    // The Android WebView does not notify the embedder of these situations using
-                    // this error code with the WebViewClient.onReceivedError callback.
-                    AwContentsClient.this.onReceivedError(
-                            ErrorCodeConversionHelper.convertErrorCode(errorCode), description,
-                                    failingUrl);
-                }
-                // Need to call onPageFinished after onReceivedError (if there is an error) for
-                // backwards compatibility with the classic webview.
-                AwContentsClient.this.onPageFinished(failingUrl);
-            }
-        }
-
-        @Override
-        public void didNavigateMainFrame(String url, String baseUrl,
-                boolean isNavigationToDifferentPage, boolean isFragmentNavigation) {
-            // This is here to emulate the Classic WebView firing onPageFinished for main frame
-            // navigations where only the hash fragment changes.
-            if (isFragmentNavigation) {
-                AwContentsClient.this.onPageFinished(url);
-            }
-        }
-
-        @Override
-        public void didNavigateAnyFrame(String url, String baseUrl, boolean isReload) {
-            AwContentsClient.this.doUpdateVisitedHistory(url, isReload);
-        }
-
-    }
-
-    final void installWebContentsObserver(WebContents webContents) {
-        if (mWebContentsObserver != null) {
-            mWebContentsObserver.detachFromWebContents();
-        }
-        mWebContentsObserver = new AwWebContentsObserver(webContents);
     }
 
     final AwContentsClientCallbackHelper getCallbackHelper() {

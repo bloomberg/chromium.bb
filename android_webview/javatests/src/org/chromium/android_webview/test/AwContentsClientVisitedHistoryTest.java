@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.webkit.ValueCallback;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.test.TestAwContentsClient.DoUpdateVisitedHistoryHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.net.test.util.TestWebServer;
@@ -16,7 +17,7 @@ import org.chromium.net.test.util.TestWebServer;
  * Tests for AwContentsClient.getVisitedHistory and AwContents.doUpdateVisitedHistory callbacks.
  */
 public class AwContentsClientVisitedHistoryTest extends AwTestBase {
-    public static class GetVisitedHistoryHelper extends CallbackHelper {
+    private static class GetVisitedHistoryHelper extends CallbackHelper {
         private ValueCallback<String[]> mCallback;
         private boolean mSaveCallback = false;
 
@@ -37,44 +38,16 @@ public class AwContentsClientVisitedHistoryTest extends AwTestBase {
         }
     }
 
-    public static class DoUpdateVisitedHistoryHelper extends CallbackHelper {
-        String mUrl;
-        boolean mIsReload;
-
-        public String getUrl() {
-            assert getCallCount() > 0;
-            return mUrl;
-        }
-
-        public boolean getIsReload() {
-            assert getCallCount() > 0;
-            return mIsReload;
-        }
-
-        public void notifyCalled(String url, boolean isReload) {
-            mUrl = url;
-            mIsReload = isReload;
-            notifyCalled();
-        }
-    }
-
-    private static class TestAwContentsClient
-            extends org.chromium.android_webview.test.TestAwContentsClient {
+    private static class VisitedHistoryTestAwContentsClient extends TestAwContentsClient {
 
         private GetVisitedHistoryHelper mGetVisitedHistoryHelper;
-        private DoUpdateVisitedHistoryHelper mDoUpdateVisitedHistoryHelper;
 
-        public TestAwContentsClient() {
+        public VisitedHistoryTestAwContentsClient() {
             mGetVisitedHistoryHelper = new GetVisitedHistoryHelper();
-            mDoUpdateVisitedHistoryHelper = new DoUpdateVisitedHistoryHelper();
         }
 
         public GetVisitedHistoryHelper getGetVisitedHistoryHelper() {
             return mGetVisitedHistoryHelper;
-        }
-
-        public DoUpdateVisitedHistoryHelper getDoUpdateVisitedHistoryHelper() {
-            return mDoUpdateVisitedHistoryHelper;
         }
 
         @Override
@@ -82,13 +55,10 @@ public class AwContentsClientVisitedHistoryTest extends AwTestBase {
             getGetVisitedHistoryHelper().notifyCalled(callback);
         }
 
-        @Override
-        public void doUpdateVisitedHistory(String url, boolean isReload) {
-            getDoUpdateVisitedHistoryHelper().notifyCalled(url, isReload);
-        }
     }
 
-    private TestAwContentsClient mContentsClient = new TestAwContentsClient();
+    private VisitedHistoryTestAwContentsClient mContentsClient =
+        new VisitedHistoryTestAwContentsClient();
 
     @Feature({"AndroidWebView"})
     @SmallTest
