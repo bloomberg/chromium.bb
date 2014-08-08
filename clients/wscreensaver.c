@@ -310,8 +310,12 @@ int main(int argc, char *argv[])
 
 	init_frand();
 
-	parse_options(wscreensaver_options,
-		      ARRAY_LENGTH(wscreensaver_options), &argc, argv);
+	if (parse_options(wscreensaver_options,
+			ARRAY_LENGTH(wscreensaver_options), &argc, argv) > 1) {
+		printf("Usage: %s [OPTIONS]\n  --demo for demo mode\n",
+		       argv[0]);
+		exit(1);
+	}
 
 	d = display_create(&argc, argv);
 	if (d == NULL) {
