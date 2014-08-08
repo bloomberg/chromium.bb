@@ -14,6 +14,7 @@
  */
 function LocalNTP() {
 <include src="../../../../ui/webui/resources/js/assert.js">
+<include src="local_ntp_design.js">
 <include src="local_ntp_util.js">
 <include src="window_disposition_util.js">
 
@@ -99,6 +100,13 @@ var NTP_DISPOSE_STATE = {
  * @const
  */
 var MIDDLE_MOUSE_BUTTON = 1;
+
+
+/**
+ * Specifications for the NTP design.
+ * @const {NtpDesign}
+ */
+var NTP_DESIGN = getNtpDesign(configData.ntpDesignName);
 
 
 /**
@@ -204,22 +212,6 @@ var omniboxInputBehavior = NTP_DISPOSE_STATE.NONE;
 var fakeboxInputBehavior = NTP_DISPOSE_STATE.HIDE_FAKEBOX_AND_LOGO;
 
 
-/**
- * Total tile width. Should be equal to mv-tile's width + 2 * border-width.
- * @private {number}
- * @const
- */
-var TILE_WIDTH = 140;
-
-
-/**
- * Margin between tiles. Should be equal to mv-tile's total horizontal margin.
- * @private {number}
- * @const
- */
-var TILE_MARGIN = 20;
-
-
 /** @type {number} @const */
 var MAX_NUM_TILES_TO_SHOW = 8;
 
@@ -259,30 +251,6 @@ var MOST_VISITED_TITLE_IFRAME = 'title.html';
  * @const
  */
 var MOST_VISITED_THUMBNAIL_IFRAME = 'thumbnail.html';
-
-
-/**
- * The hex color for most visited tile elements.
- * @type {string}
- * @const
- */
-var MOST_VISITED_COLOR = '777777';
-
-
-/**
- * The font family for most visited tile elements.
- * @type {string}
- * @const
- */
-var MOST_VISITED_FONT_FAMILY = 'arial, sans-serif';
-
-
-/**
- * The font size for most visited tile elements.
- * @type {number}
- * @const
- */
-var MOST_VISITED_FONT_SIZE = 11;
 
 
 /**
@@ -370,7 +338,7 @@ function setCustomThemeStyle(opt_themeInfo) {
       '}' +
       '.mv-page-ready {' +
       '  border: 1px solid ' +
-        convertToRGBAColor(opt_themeInfo.sectionBorderColorRgba) + ';' +
+          convertToRGBAColor(opt_themeInfo.sectionBorderColorRgba) + ';' +
       '}' +
       '.mv-page-ready:hover, .mv-page-ready:focus {' +
       '  border-color: ' +
@@ -560,23 +528,44 @@ function renderAndShowTiles() {
 
 
 /**
- * Builds a URL to display a most visited tile component in an iframe.
- * @param {string} filename The desired most visited component filename.
+ * Builds a URL to display a most visited tile title in an iframe.
  * @param {number} rid The restricted ID.
- * @param {string} color The text color for text in the iframe.
- * @param {string} fontFamily The font family for text in the iframe.
- * @param {number} fontSize The font size for text in the iframe.
  * @param {number} position The position of the iframe in the UI.
- * @return {string} An URL to display the most visited component in an iframe.
+ * @return {string} An URL to display the most visited title in an iframe.
  */
-function getMostVisitedIframeUrl(filename, rid, color, fontFamily, fontSize,
-    position) {
-  return 'chrome-search://most-visited/' + encodeURIComponent(filename) + '?' +
-      ['rid=' + encodeURIComponent(rid),
-       'c=' + encodeURIComponent(color),
-       'f=' + encodeURIComponent(fontFamily),
-       'fs=' + encodeURIComponent(fontSize),
-       'pos=' + encodeURIComponent(position)].join('&');
+function getMostVisitedTitleIframeUrl(rid, position) {
+  var url = 'chrome-search://most-visited/' +
+      encodeURIComponent(MOST_VISITED_TITLE_IFRAME);
+  var params = [
+      'rid=' + encodeURIComponent(rid),
+      'f=' + encodeURIComponent(NTP_DESIGN.fontFamily),
+      'fs=' + encodeURIComponent(NTP_DESIGN.fontSize),
+      'c=' + encodeURIComponent(NTP_DESIGN.titleColor),
+      'pos=' + encodeURIComponent(position)];
+  if (NTP_DESIGN.titleTextAlign)
+    params.push('ta=' + encodeURIComponent(NTP_DESIGN.titleTextAlign));
+  if (NTP_DESIGN.titleTextFade)
+    params.push('tf=' + encodeURIComponent(NTP_DESIGN.titleTextFade));
+  return url + '?' + params.join('&');
+}
+
+
+/**
+ * Builds a URL to display a most visited tile thumbnail in an iframe.
+ * @param {number} rid The restricted ID.
+ * @param {number} position The position of the iframe in the UI.
+ * @return {string} An URL to display the most visited thumbnail in an iframe.
+ */
+function getMostVisitedThumbnailIframeUrl(rid, position) {
+  var url = 'chrome-search://most-visited/' +
+      encodeURIComponent(MOST_VISITED_THUMBNAIL_IFRAME);
+  var params = [
+      'rid=' + encodeURIComponent(rid),
+      'f=' + encodeURIComponent(NTP_DESIGN.fontFamily),
+      'fs=' + encodeURIComponent(NTP_DESIGN.fontSize),
+      'c=' + encodeURIComponent(NTP_DESIGN.thumbnailTextColor),
+      'pos=' + encodeURIComponent(position)];
+  return url + '?' + params.join('&');
 }
 
 
@@ -629,9 +618,7 @@ function createTile(page, position) {
     titleElement.id = 'title-' + rid;
     titleElement.className = CLASSES.TITLE;
     titleElement.hidden = true;
-    titleElement.src = getMostVisitedIframeUrl(
-        MOST_VISITED_TITLE_IFRAME, rid, MOST_VISITED_COLOR,
-        MOST_VISITED_FONT_FAMILY, MOST_VISITED_FONT_SIZE, position);
+    titleElement.src = getMostVisitedTitleIframeUrl(rid, position);
     tileElement.appendChild(titleElement);
 
     // The iframe which renders either a thumbnail or domain element.
@@ -641,9 +628,7 @@ function createTile(page, position) {
     thumbnailElement.id = 'thumb-' + rid;
     thumbnailElement.className = CLASSES.THUMBNAIL;
     thumbnailElement.hidden = true;
-    thumbnailElement.src = getMostVisitedIframeUrl(
-        MOST_VISITED_THUMBNAIL_IFRAME, rid, MOST_VISITED_COLOR,
-        MOST_VISITED_FONT_FAMILY, MOST_VISITED_FONT_SIZE, position);
+    thumbnailElement.src = getMostVisitedThumbnailIframeUrl(rid, position);
     tileElement.appendChild(thumbnailElement);
 
     // A mask to darken the thumbnail on focus.
@@ -743,11 +728,14 @@ function onRestoreAll() {
  * new width of the page.
  */
 function onResize() {
+  var tileRequiredWidth = NTP_DESIGN.tileWidth + NTP_DESIGN.tileMargin;
   // If innerWidth is zero, then use the maximum snap size.
-  var innerWidth = window.innerWidth || 820;
-  // Each tile has left and right margins that sum to TILE_MARGIN.
-  var tileRequiredWidth = TILE_WIDTH + TILE_MARGIN;
-  var availableWidth = innerWidth + TILE_MARGIN - MIN_TOTAL_HORIZONTAL_PADDING;
+  var maxSnapSize = MAX_NUM_COLUMNS * tileRequiredWidth -
+      NTP_DESIGN.tileMargin + MIN_TOTAL_HORIZONTAL_PADDING;
+  var innerWidth = window.innerWidth || maxSnapSize;
+  // Each tile has left and right margins that sum to NTP_DESIGN.tileMargin.
+  var availableWidth = innerWidth + NTP_DESIGN.tileMargin -
+      MIN_TOTAL_HORIZONTAL_PADDING;
   var newNumColumns = Math.floor(availableWidth / tileRequiredWidth);
   if (newNumColumns < MIN_NUM_COLUMNS)
     newNumColumns = MIN_NUM_COLUMNS;
@@ -758,8 +746,11 @@ function onResize() {
     numColumnsShown = newNumColumns;
     var tilesContainerWidth = numColumnsShown * tileRequiredWidth;
     tilesContainer.style.width = tilesContainerWidth + 'px';
-    if (fakebox)  // -2 to account for border.
-      fakebox.style.width = (tilesContainerWidth - TILE_MARGIN - 2) + 'px';
+    if (fakebox) {
+      // -2 to account for border.
+      fakebox.style.width =
+          (tilesContainerWidth - NTP_DESIGN.tileMargin - 2) + 'px';
+    }
     // Render without clearing tiles.
     renderAndShowTiles();
   }
@@ -959,15 +950,18 @@ function init() {
   var notificationMessage = $(IDS.NOTIFICATION_MESSAGE);
   notificationMessage.textContent =
       configData.translatedStrings.thumbnailRemovedNotification;
+
   var undoLink = $(IDS.UNDO_LINK);
   undoLink.addEventListener('click', onUndo);
   registerKeyHandler(undoLink, KEYCODE.ENTER, onUndo);
   undoLink.textContent = configData.translatedStrings.undoThumbnailRemove;
+
   var restoreAllLink = $(IDS.RESTORE_ALL_LINK);
   restoreAllLink.addEventListener('click', onRestoreAll);
   registerKeyHandler(restoreAllLink, KEYCODE.ENTER, onUndo);
   restoreAllLink.textContent =
       configData.translatedStrings.restoreThumbnailsShort;
+
   $(IDS.ATTRIBUTION_TEXT).textContent =
       configData.translatedStrings.attributionIntro;
 
@@ -1032,6 +1026,7 @@ function init() {
 
   if (searchboxApiHandle.rtl) {
     $(IDS.NOTIFICATION).dir = 'rtl';
+    document.body.setAttribute('dir', 'rtl');
     // Add class for setting alignments based on language directionality.
     document.body.classList.add(CLASSES.RTL);
     $(IDS.TILES).dir = 'rtl';

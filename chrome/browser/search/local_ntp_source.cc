@@ -51,7 +51,6 @@ const struct Resource{
 } kResources[] = {
   { kLocalNTPFilename, IDR_LOCAL_NTP_HTML, "text/html" },
   { "local-ntp.js", IDR_LOCAL_NTP_JS, "application/javascript" },
-  { "local-ntp-util.js", IDR_LOCAL_NTP_UTIL_JS, "application/javascript" },
   { kConfigDataFilename, kLocalResource, "application/javascript" },
   { "local-ntp.css", IDR_LOCAL_NTP_CSS, "text/css" },
   { "images/close_2.png", IDR_CLOSE_2, "image/png" },
