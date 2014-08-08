@@ -162,7 +162,7 @@ void FullscreenElementStack::documentWasDisposed()
 }
 #endif
 
-void FullscreenElementStack::requestFullScreenForElement(Element& element, RequestType requestType)
+void FullscreenElementStack::requestFullscreen(Element& element, RequestType requestType)
 {
     // Ignore this request if the document is not in a live frame.
     if (!document()->isActive())

@@ -65,7 +65,7 @@ public:
         PrefixedVideoRequest, // HTMLVideoElement.webkitEnterFullscreen() and webkitEnterFullScreen()
     };
 
-    void requestFullScreenForElement(Element&, RequestType);
+    void requestFullscreen(Element&, RequestType);
     void fullyExitFullscreen();
     void exitFullscreen();
 

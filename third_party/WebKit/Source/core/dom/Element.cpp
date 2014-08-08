@@ -2655,7 +2655,7 @@ void Element::setFloatingPointAttribute(const QualifiedName& attributeName, doub
 
 void Element::webkitRequestFullscreen()
 {
-    FullscreenElementStack::from(document()).requestFullScreenForElement(*this, FullscreenElementStack::PrefixedRequest);
+    FullscreenElementStack::from(document()).requestFullscreen(*this, FullscreenElementStack::PrefixedRequest);
 }
 
 void Element::webkitRequestFullScreen(unsigned short flags)
@@ -2665,7 +2665,7 @@ void Element::webkitRequestFullScreen(unsigned short flags)
         requestType = FullscreenElementStack::PrefixedMozillaAllowKeyboardInputRequest;
     else
         requestType = FullscreenElementStack::PrefixedMozillaRequest;
-    FullscreenElementStack::from(document()).requestFullScreenForElement(*this, requestType);
+    FullscreenElementStack::from(document()).requestFullscreen(*this, requestType);
 }
 
 void Element::setContainsFullScreenElement(bool flag)
