@@ -138,7 +138,7 @@ WebPreferences::WebPreferences()
       force_enable_zoom(false),
       disallow_fullscreen_for_non_media_elements(false),
       double_tap_to_zoom_enabled(true),
-      user_gesture_required_for_media_playback(true),
+      user_gesture_required_for_media_playback(false),
       support_deprecated_target_density_dpi(false),
       use_legacy_background_size_shorthand_behavior(false),
       wide_viewport_quirk(false),

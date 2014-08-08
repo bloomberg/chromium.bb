@@ -1238,7 +1238,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #endif
     switches::kLowEndDeviceMode,
 #if defined(OS_ANDROID)
-    switches::kDisableGestureRequirementForMediaPlayback,
     switches::kDisableWebRTC,
     switches::kEnableSpeechRecognition,
     switches::kMediaDrmEnableNonCompositing,

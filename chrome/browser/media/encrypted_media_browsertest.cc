@@ -234,13 +234,6 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
     title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEmeKeyError));
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-#if defined(OS_ANDROID)
-    command_line->AppendSwitch(
-        switches::kDisableGestureRequirementForMediaPlayback);
-#endif  // defined(OS_ANDROID)
-  }
-
   void SetUpCommandLineForKeySystem(const std::string& key_system,
                                     CommandLine* command_line) {
     if (GetServerConfig(key_system))

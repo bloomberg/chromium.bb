@@ -36,7 +36,6 @@
 #include "chrome/browser/android/uma_bridge.h"
 #include "chrome/browser/android/uma_utils.h"
 #include "chrome/browser/android/url_utilities.h"
-#include "chrome/browser/android/voice_search_tab_helper.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory_android.h"
 #include "chrome/browser/dom_distiller/tab_utils_android.h"
@@ -178,7 +177,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "UmaBridge", RegisterUmaBridge },
   { "UrlUtilities", RegisterUrlUtilities },
   { "Variations", variations::android::RegisterVariations },
-  { "VoiceSearchTabHelper", RegisterVoiceSearchTabHelper },
   { "WebsiteSettingsPopupAndroid",
     WebsiteSettingsPopupAndroid::RegisterWebsiteSettingsPopupAndroid },
 #if defined(ENABLE_PRINTING) && !defined(ENABLE_FULL_PRINTING)

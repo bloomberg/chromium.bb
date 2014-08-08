@@ -416,11 +416,6 @@ WebPreferences RenderViewHostImpl::GetWebkitPrefs(const GURL& url) {
   }
   prefs.use_solid_color_scrollbars = ui::IsOverlayScrollbarEnabled();
 
-#if defined(OS_ANDROID)
-  prefs.user_gesture_required_for_media_playback = !command_line.HasSwitch(
-      switches::kDisableGestureRequirementForMediaPlayback);
-#endif
-
   prefs.touch_enabled = ui::AreTouchEventsEnabled();
   prefs.device_supports_touch = prefs.touch_enabled &&
       ui::IsTouchDevicePresent();

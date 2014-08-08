@@ -121,7 +121,6 @@ public class Tab implements NavigationClient {
     // Content layer Observers and Delegates
     private ContentViewClient mContentViewClient;
     private WebContentsObserverAndroid mWebContentsObserver;
-    private VoiceSearchTabHelper mVoiceSearchTabHelper;
     private TabChromeWebContentsDelegateAndroid mWebContentsDelegate;
     private DomDistillerFeedbackReporter mDomDistillerFeedbackReporter;
 
@@ -795,7 +794,6 @@ public class Tab implements NavigationClient {
 
         mWebContentsDelegate = createWebContentsDelegate();
         mWebContentsObserver = new TabWebContentsObserverAndroid(mContentViewCore.getWebContents());
-        mVoiceSearchTabHelper = new VoiceSearchTabHelper(mContentViewCore.getWebContents());
 
         if (mContentViewClient != null) mContentViewCore.setContentViewClient(mContentViewClient);
 
@@ -962,7 +960,6 @@ public class Tab implements NavigationClient {
         mContentViewCore = null;
         mWebContentsDelegate = null;
         mWebContentsObserver = null;
-        mVoiceSearchTabHelper = null;
 
         assert mNativeTabAndroid != 0;
         nativeDestroyWebContents(mNativeTabAndroid, deleteNativeWebContents);
