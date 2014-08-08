@@ -1355,9 +1355,12 @@ base::Value* HttpResponseHeaders::NetLogCallback(
   std::string value;
   while (EnumerateHeaderLines(&iterator, &name, &value)) {
     std::string log_value = ElideHeaderValueForNetLog(log_level, name, value);
+    std::string escaped_name = EscapeNonASCII(name);
+    std::string escaped_value = EscapeNonASCII(log_value);
     headers->Append(
       new base::StringValue(
-          base::StringPrintf("%s: %s", name.c_str(), log_value.c_str())));
+          base::StringPrintf("%s: %s", escaped_name.c_str(),
+                             escaped_value.c_str())));
   }
   dict->Set("headers", headers);
   return dict;
