@@ -29,6 +29,10 @@ namespace google_apis {
 
 class RequestSender;
 
+// Callback used to pass parsed JSON from ParseJson(). If parsing error occurs,
+// then the passed argument is null.
+typedef base::Callback<void(scoped_ptr<base::Value> value)> ParseJsonCallback;
+
 // Callback used for DownloadFileRequest and ResumeUploadRequestBase.
 typedef base::Callback<void(int64 progress, int64 total)> ProgressCallback;
 
@@ -37,8 +41,12 @@ typedef base::Callback<void(
     GDataErrorCode error,
     scoped_ptr<std::string> content)> GetContentCallback;
 
-// Parses JSON passed in |json|. Returns NULL on failure.
-scoped_ptr<base::Value> ParseJson(const std::string& json);
+// Parses JSON passed in |json| on |blocking_task_runner|. Runs |callback| on
+// the calling thread when finished with either success or failure.
+// The callback must not be null.
+void ParseJson(base::TaskRunner* blocking_task_runner,
+               const std::string& json,
+               const ParseJsonCallback& callback);
 
 //======================= AuthenticatedRequestInterface ======================
 
@@ -240,6 +248,45 @@ class EntryActionRequest : public UrlFetchRequestBase {
 
   DISALLOW_COPY_AND_ASSIGN(EntryActionRequest);
 };
+
+//============================== GetDataRequest ==============================
+
+// Callback type for requests that returns JSON data.
+typedef base::Callback<void(GDataErrorCode error,
+                            scoped_ptr<base::Value> json_data)> GetDataCallback;
+
+// This class performs the request for fetching and converting the fetched
+// content into a base::Value.
+class GetDataRequest : public UrlFetchRequestBase {
+ public:
+  // |callback| is called when the request finishes either by success or by
+  // failure. On success, a JSON Value object is passed. It must not be null.
+  GetDataRequest(RequestSender* sender, const GetDataCallback& callback);
+  virtual ~GetDataRequest();
+
+ protected:
+  // UrlFetchRequestBase overrides.
+  virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
+  virtual void RunCallbackOnPrematureFailure(
+      GDataErrorCode fetch_error_code) OVERRIDE;
+
+ private:
+  // Parses JSON response.
+  void ParseResponse(GDataErrorCode fetch_error_code, const std::string& data);
+
+  // Called when ParseJsonOnBlockingPool() is completed.
+  void OnDataParsed(GDataErrorCode fetch_error_code,
+                    scoped_ptr<base::Value> value);
+
+  const GetDataCallback callback_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<GetDataRequest> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetDataRequest);
+};
+
 
 //=========================== InitiateUploadRequestBase=======================
 

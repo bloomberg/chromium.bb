@@ -8,17 +8,16 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/location.h"
-#include "base/sequenced_task_runner.h"
-#include "base/task_runner_util.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "google_apis/drive/base_requests.h"
-#include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/drive_api_url_generator.h"
 #include "google_apis/drive/drive_common_callbacks.h"
 
 namespace google_apis {
+
+class ChangeList;
+class FileResource;
+class FileList;
 
 // Callback used for requests that the server returns FileResource data
 // formatted into JSON value.
@@ -38,23 +37,23 @@ typedef base::Callback<void(GDataErrorCode error,
 
 namespace drive {
 
-//============================ DriveApiPartialFieldRequest ====================
+//============================ DriveApiDataRequest ===========================
 
 // This is base class of the Drive API related requests. All Drive API requests
 // support partial request (to improve the performance). The function can be
 // shared among the Drive API requests.
 // See also https://developers.google.com/drive/performance
-class DriveApiPartialFieldRequest : public UrlFetchRequestBase {
+class DriveApiDataRequest : public GetDataRequest {
  public:
-  explicit DriveApiPartialFieldRequest(RequestSender* sender);
-  virtual ~DriveApiPartialFieldRequest();
+  DriveApiDataRequest(RequestSender* sender, const GetDataCallback& callback);
+  virtual ~DriveApiDataRequest();
 
   // Optional parameter.
   const std::string& fields() const { return fields_; }
   void set_fields(const std::string& fields) { fields_ = fields; }
 
  protected:
-  // UrlFetchRequestBase overrides.
+  // Overridden from GetDataRequest.
   virtual GURL GetURL() const OVERRIDE;
 
   // Derived classes should override GetURLInternal instead of GetURL()
@@ -64,73 +63,6 @@ class DriveApiPartialFieldRequest : public UrlFetchRequestBase {
  private:
   std::string fields_;
 
-  DISALLOW_COPY_AND_ASSIGN(DriveApiPartialFieldRequest);
-};
-
-//============================ DriveApiDataRequest ===========================
-
-// The base class of Drive API related requests that receive a JSON response
-// representing |DataType|.
-template<class DataType>
-class DriveApiDataRequest : public DriveApiPartialFieldRequest {
- public:
-  typedef base::Callback<void(GDataErrorCode error,
-                              scoped_ptr<DataType> data)> Callback;
-
-  // |callback| is called when the request finishes either by success or by
-  // failure. On success, a JSON Value object is passed. It must not be null.
-  DriveApiDataRequest(RequestSender* sender, const Callback& callback)
-      : DriveApiPartialFieldRequest(sender),
-        callback_(callback),
-        weak_ptr_factory_(this) {
-    DCHECK(!callback_.is_null());
-  }
-  virtual ~DriveApiDataRequest() {}
-
- protected:
-  // UrlFetchRequestBase overrides.
-  virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE {
-    GDataErrorCode error = GetErrorCode();
-    switch (error) {
-      case HTTP_SUCCESS:
-      case HTTP_CREATED:
-        base::PostTaskAndReplyWithResult(
-            blocking_task_runner(),
-            FROM_HERE,
-            base::Bind(&DriveApiDataRequest::Parse, response_writer()->data()),
-            base::Bind(&DriveApiDataRequest::OnDataParsed,
-                       weak_ptr_factory_.GetWeakPtr(), error));
-        break;
-      default:
-        RunCallbackOnPrematureFailure(error);
-        OnProcessURLFetchResultsComplete();
-        break;
-    }
-  }
-
-  virtual void RunCallbackOnPrematureFailure(GDataErrorCode error) OVERRIDE {
-    callback_.Run(error, scoped_ptr<DataType>());
-  }
-
- private:
-  // Parses the |json| string by using DataType::CreateFrom.
-  static scoped_ptr<DataType> Parse(const std::string& json) {
-    scoped_ptr<base::Value> value = ParseJson(json);
-    return value ? DataType::CreateFrom(*value) : scoped_ptr<DataType>();
-  }
-
-  // Receives the parsed result and invokes the callback.
-  void OnDataParsed(GDataErrorCode error, scoped_ptr<DataType> value) {
-    callback_.Run(value ? error : GDATA_PARSE_ERROR, value.Pass());
-    OnProcessURLFetchResultsComplete();
-  }
-
-  const Callback callback_;
-
-  // Note: This should remain the last member so it'll be destroyed and
-  // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<DriveApiDataRequest> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(DriveApiDataRequest);
 };
 
@@ -139,7 +71,7 @@ class DriveApiDataRequest : public DriveApiPartialFieldRequest {
 // This class performs the request for fetching a file.
 // This request is mapped to
 // https://developers.google.com/drive/v2/reference/files/get
-class FilesGetRequest : public DriveApiDataRequest<FileResource> {
+class FilesGetRequest : public DriveApiDataRequest {
  public:
   FilesGetRequest(RequestSender* sender,
                   const DriveApiUrlGenerator& url_generator,
@@ -165,7 +97,7 @@ class FilesGetRequest : public DriveApiDataRequest<FileResource> {
 
 // This class performs request for authorizing an app to access a file.
 // This request is mapped to /drive/v2internal/file/authorize internal endpoint.
-class FilesAuthorizeRequest : public DriveApiDataRequest<FileResource> {
+class FilesAuthorizeRequest : public DriveApiDataRequest {
  public:
   FilesAuthorizeRequest(RequestSender* sender,
                         const DriveApiUrlGenerator& url_generator,
@@ -200,7 +132,7 @@ class FilesAuthorizeRequest : public DriveApiDataRequest<FileResource> {
 // https://developers.google.com/drive/v2/reference/files/insert
 // See also https://developers.google.com/drive/manage-uploads and
 // https://developers.google.com/drive/folder
-class FilesInsertRequest : public DriveApiDataRequest<FileResource> {
+class FilesInsertRequest : public DriveApiDataRequest {
  public:
   FilesInsertRequest(RequestSender* sender,
                      const DriveApiUrlGenerator& url_generator,
@@ -257,7 +189,7 @@ class FilesInsertRequest : public DriveApiDataRequest<FileResource> {
 // This class performs the request for patching file metadata.
 // This request is mapped to
 // https://developers.google.com/drive/v2/reference/files/patch
-class FilesPatchRequest : public DriveApiDataRequest<FileResource> {
+class FilesPatchRequest : public DriveApiDataRequest {
  public:
   FilesPatchRequest(RequestSender* sender,
                     const DriveApiUrlGenerator& url_generator,
@@ -331,7 +263,7 @@ class FilesPatchRequest : public DriveApiDataRequest<FileResource> {
 // This class performs the request for copying a resource.
 // This request is mapped to
 // https://developers.google.com/drive/v2/reference/files/copy
-class FilesCopyRequest : public DriveApiDataRequest<FileResource> {
+class FilesCopyRequest : public DriveApiDataRequest {
  public:
   // Upon completion, |callback| will be called. |callback| must not be null.
   FilesCopyRequest(RequestSender* sender,
@@ -383,7 +315,7 @@ class FilesCopyRequest : public DriveApiDataRequest<FileResource> {
 // or by FilesListRequest with setting page token.
 // This request is mapped to
 // https://developers.google.com/drive/v2/reference/files/list
-class FilesListRequest : public DriveApiDataRequest<FileList> {
+class FilesListRequest : public DriveApiDataRequest {
  public:
   FilesListRequest(RequestSender* sender,
                    const DriveApiUrlGenerator& url_generator,
@@ -421,7 +353,7 @@ class FilesListRequest : public DriveApiDataRequest<FileList> {
 // 1) Set pageToken and all params used for the initial request.
 // 2) Use URL in the nextLink field in the previous response.
 // This class implements 2)'s request.
-class FilesListNextPageRequest : public DriveApiDataRequest<FileList> {
+class FilesListNextPageRequest : public DriveApiDataRequest {
  public:
   FilesListNextPageRequest(RequestSender* sender,
                            const FileListCallback& callback);
@@ -476,7 +408,7 @@ class FilesDeleteRequest : public EntryActionRequest {
 // This class performs the request for trashing a resource.
 // This request is mapped to
 // https://developers.google.com/drive/v2/reference/files/trash
-class FilesTrashRequest : public DriveApiDataRequest<FileResource> {
+class FilesTrashRequest : public DriveApiDataRequest {
  public:
   FilesTrashRequest(RequestSender* sender,
                     const DriveApiUrlGenerator& url_generator,
@@ -506,7 +438,7 @@ class FilesTrashRequest : public DriveApiDataRequest<FileResource> {
 // This class performs the request for fetching About data.
 // This request is mapped to
 // https://developers.google.com/drive/v2/reference/about/get
-class AboutGetRequest : public DriveApiDataRequest<AboutResource> {
+class AboutGetRequest : public DriveApiDataRequest {
  public:
   AboutGetRequest(RequestSender* sender,
                   const DriveApiUrlGenerator& url_generator,
@@ -531,7 +463,7 @@ class AboutGetRequest : public DriveApiDataRequest<AboutResource> {
 // or by ChangesListRequest with setting page token.
 // This request is mapped to
 // https://developers.google.com/drive/v2/reference/changes/list
-class ChangesListRequest : public DriveApiDataRequest<ChangeList> {
+class ChangesListRequest : public DriveApiDataRequest {
  public:
   ChangesListRequest(RequestSender* sender,
                      const DriveApiUrlGenerator& url_generator,
@@ -577,7 +509,7 @@ class ChangesListRequest : public DriveApiDataRequest<ChangeList> {
 // 1) Set pageToken and all params used for the initial request.
 // 2) Use URL in the nextLink field in the previous response.
 // This class implements 2)'s request.
-class ChangesListNextPageRequest : public DriveApiDataRequest<ChangeList> {
+class ChangesListNextPageRequest : public DriveApiDataRequest {
  public:
   ChangesListNextPageRequest(RequestSender* sender,
                              const ChangeListCallback& callback);
@@ -601,7 +533,7 @@ class ChangesListNextPageRequest : public DriveApiDataRequest<ChangeList> {
 // This class performs the request for fetching AppList.
 // This request is mapped to
 // https://developers.google.com/drive/v2/reference/apps/list
-class AppsListRequest : public DriveApiDataRequest<AppList> {
+class AppsListRequest : public DriveApiDataRequest {
  public:
   AppsListRequest(RequestSender* sender,
                   const DriveApiUrlGenerator& url_generator,

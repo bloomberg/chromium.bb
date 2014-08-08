@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/values.h"
 #include "google_apis/drive/dummy_auth_service.h"
 #include "google_apis/drive/gdata_wapi_parser.h"
 #include "google_apis/drive/gdata_wapi_requests.h"
@@ -98,7 +99,7 @@ class GDataWapiRequestsTest : public testing::Test {
 
 TEST_F(GDataWapiRequestsTest, GetResourceEntryRequest_ValidResourceId) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
-  scoped_ptr<ResourceEntry> result_data;
+  scoped_ptr<base::Value> result_data;
 
   {
     base::RunLoop run_loop;
@@ -119,14 +120,16 @@ TEST_F(GDataWapiRequestsTest, GetResourceEntryRequest_ValidResourceId) {
   EXPECT_EQ("/feeds/default/private/full/file%3A2_file_resource_id"
             "?v=3&alt=json&showroot=true",
             http_request_.relative_url);
+  scoped_ptr<base::Value> expected_json =
+      test_util::LoadJSONFile("gdata/file_entry.json");
+  ASSERT_TRUE(expected_json);
   EXPECT_TRUE(result_data);
-  EXPECT_EQ("File 1.mp3", result_data->filename());
-  EXPECT_EQ("3b4382ebefec6e743578c76bbd0575ce", result_data->file_md5());
+  EXPECT_TRUE(base::Value::Equals(expected_json.get(), result_data.get()));
 }
 
 TEST_F(GDataWapiRequestsTest, GetResourceEntryRequest_InvalidResourceId) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
-  scoped_ptr<ResourceEntry> result_data;
+  scoped_ptr<base::Value> result_data;
 
   {
     base::RunLoop run_loop;

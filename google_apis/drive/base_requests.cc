@@ -43,18 +43,29 @@ const char kUploadResponseLocation[] = "location";
 const char kUploadContentRange[] = "Content-Range: bytes ";
 const char kUploadResponseRange[] = "range";
 
-// Parses JSON passed in |json| on |blocking_task_runner|. Runs |callback| on
-// the calling thread when finished with either success or failure.
-// The callback must not be null.
-void ParseJsonOnBlockingPool(
-    base::TaskRunner* blocking_task_runner,
-    const std::string& json,
-    const base::Callback<void(scoped_ptr<base::Value> value)>& callback) {
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner,
-      FROM_HERE,
-      base::Bind(&google_apis::ParseJson, json),
-      callback);
+// Parse JSON string to base::Value object.
+scoped_ptr<base::Value> ParseJsonInternal(const std::string& json) {
+  int error_code = -1;
+  std::string error_message;
+  scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
+      json, base::JSON_PARSE_RFC, &error_code, &error_message));
+
+  if (!value.get()) {
+    std::string trimmed_json;
+    if (json.size() < 80) {
+      trimmed_json  = json;
+    } else {
+      // Take the first 50 and the last 10 bytes.
+      trimmed_json = base::StringPrintf(
+          "%s [%s bytes] %s",
+          json.substr(0, 50).c_str(),
+          base::Uint64ToString(json.size() - 60).c_str(),
+          json.substr(json.size() - 10).c_str());
+    }
+    LOG(WARNING) << "Error while parsing entry response: " << error_message
+                 << ", code: " << error_code << ", json:\n" << trimmed_json;
+  }
+  return value.Pass();
 }
 
 // Returns response headers as a string. Returns a warning message if
@@ -84,28 +95,14 @@ bool IsSuccessfulResponseCode(int response_code) {
 
 namespace google_apis {
 
-scoped_ptr<base::Value> ParseJson(const std::string& json) {
-  int error_code = -1;
-  std::string error_message;
-  scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
-      json, base::JSON_PARSE_RFC, &error_code, &error_message));
-
-  if (!value.get()) {
-    std::string trimmed_json;
-    if (json.size() < 80) {
-      trimmed_json  = json;
-    } else {
-      // Take the first 50 and the last 10 bytes.
-      trimmed_json = base::StringPrintf(
-          "%s [%s bytes] %s",
-          json.substr(0, 50).c_str(),
-          base::Uint64ToString(json.size() - 60).c_str(),
-          json.substr(json.size() - 10).c_str());
-    }
-    LOG(WARNING) << "Error while parsing entry response: " << error_message
-                 << ", code: " << error_code << ", json:\n" << trimmed_json;
-  }
-  return value.Pass();
+void ParseJson(base::TaskRunner* blocking_task_runner,
+               const std::string& json,
+               const ParseJsonCallback& callback) {
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner,
+      FROM_HERE,
+      base::Bind(&ParseJsonInternal, json),
+      callback);
 }
 
 //=========================== ResponseWriter ==================================
@@ -362,7 +359,7 @@ void UrlFetchRequestBase::OnURLFetchComplete(const URLFetcher* source) {
     const char kErrorReasonUserRateLimitExceeded[] = "userRateLimitExceeded";
     const char kErrorReasonQuotaExceeded[] = "quotaExceeded";
 
-    scoped_ptr<base::Value> value(ParseJson(response_writer_->data()));
+    scoped_ptr<base::Value> value(ParseJsonInternal(response_writer_->data()));
     base::DictionaryValue* dictionary = NULL;
     base::DictionaryValue* error = NULL;
     if (value &&
@@ -435,6 +432,62 @@ void EntryActionRequest::ProcessURLFetchResults(const URLFetcher* source) {
 
 void EntryActionRequest::RunCallbackOnPrematureFailure(GDataErrorCode code) {
   callback_.Run(code);
+}
+
+//============================== GetDataRequest ==============================
+
+GetDataRequest::GetDataRequest(RequestSender* sender,
+                               const GetDataCallback& callback)
+    : UrlFetchRequestBase(sender),
+      callback_(callback),
+      weak_ptr_factory_(this) {
+  DCHECK(!callback_.is_null());
+}
+
+GetDataRequest::~GetDataRequest() {}
+
+void GetDataRequest::ParseResponse(GDataErrorCode fetch_error_code,
+                                   const std::string& data) {
+  DCHECK(CalledOnValidThread());
+
+  VLOG(1) << "JSON received from " << GetURL().spec() << ": "
+          << data.size() << " bytes";
+  ParseJson(blocking_task_runner(),
+            data,
+            base::Bind(&GetDataRequest::OnDataParsed,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       fetch_error_code));
+}
+
+void GetDataRequest::ProcessURLFetchResults(const URLFetcher* source) {
+  GDataErrorCode fetch_error_code = GetErrorCode();
+
+  switch (fetch_error_code) {
+    case HTTP_SUCCESS:
+    case HTTP_CREATED:
+      ParseResponse(fetch_error_code, response_writer()->data());
+      break;
+    default:
+      RunCallbackOnPrematureFailure(fetch_error_code);
+      OnProcessURLFetchResultsComplete();
+      break;
+  }
+}
+
+void GetDataRequest::RunCallbackOnPrematureFailure(
+    GDataErrorCode fetch_error_code) {
+  callback_.Run(fetch_error_code, scoped_ptr<base::Value>());
+}
+
+void GetDataRequest::OnDataParsed(GDataErrorCode fetch_error_code,
+                                  scoped_ptr<base::Value> value) {
+  DCHECK(CalledOnValidThread());
+
+  if (!value.get())
+    fetch_error_code = GDATA_PARSE_ERROR;
+
+  callback_.Run(fetch_error_code, value.Pass());
+  OnProcessURLFetchResultsComplete();
 }
 
 //========================= InitiateUploadRequestBase ========================
@@ -565,11 +618,11 @@ void UploadRangeRequestBase::ProcessURLFetchResults(
   } else if (code == HTTP_CREATED || code == HTTP_SUCCESS) {
     // The upload is successfully done. Parse the response which should be
     // the entry's metadata.
-    ParseJsonOnBlockingPool(blocking_task_runner(),
-                            response_writer()->data(),
-                            base::Bind(&UploadRangeRequestBase::OnDataParsed,
-                                       weak_ptr_factory_.GetWeakPtr(),
-                                       code));
+    ParseJson(blocking_task_runner(),
+              response_writer()->data(),
+              base::Bind(&UploadRangeRequestBase::OnDataParsed,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         code));
   } else {
     // Failed to upload. Run callbacks to notify the error.
     OnRangeRequestComplete(
