@@ -498,8 +498,8 @@ ProfileChooserView::ProfileChooserView(views::View* anchor_view,
       tutorial_mode_(profiles::TUTORIAL_MODE_NONE),
       gaia_service_type_(service_type) {
   // Reset the default margins inherited from the BubbleDelegateView.
-  // Add a small top/bottom inset so that the bubble's rounded corners show up.
-  set_margins(gfx::Insets(1, 0, 1, 0));
+  // Add a small bottom inset so that the bubble's rounded corners show up.
+  set_margins(gfx::Insets(0, 0, 1, 0));
   set_background(views::Background::CreateSolidBackground(
       GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_DialogBackground)));
@@ -932,6 +932,7 @@ views::View* ProfileChooserView::CreateTutorialView(
 
   // Adds title.
   views::Label* title_label = new views::Label(title_text);
+  title_label->SetMultiLine(true);
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label->SetAutoColorReadabilityEnabled(false);
   title_label->SetEnabledColor(SK_ColorWHITE);
