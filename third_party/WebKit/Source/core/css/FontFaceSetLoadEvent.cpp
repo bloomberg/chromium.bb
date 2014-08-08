@@ -28,10 +28,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// FIXME: Make this constructable from Javascript
-[
-    NoInterfaceObject,
-    RuntimeEnabled=FontLoadEvents,
-] interface CSSFontFaceLoadEvent : Event {
-    readonly attribute FontFace[] fontfaces;
-};
+#include "config.h"
+#include "core/css/FontFaceSetLoadEvent.h"
+
+namespace blink {
+
+FontFaceSetLoadEvent::FontFaceSetLoadEvent()
+{
+    ScriptWrappable::init(this);
+}
+
+FontFaceSetLoadEvent::FontFaceSetLoadEvent(const AtomicString& type, const FontFaceArray& fontfaces)
+    : Event(type, false, false)
+    , m_fontfaces(fontfaces)
+{
+    ScriptWrappable::init(this);
+}
+
+FontFaceSetLoadEvent::FontFaceSetLoadEvent(const AtomicString& type, const FontFaceSetLoadEventInit& initializer)
+    : Event(type, initializer)
+    , m_fontfaces(initializer.fontfaces)
+{
+    ScriptWrappable::init(this);
+}
+
+FontFaceSetLoadEvent::~FontFaceSetLoadEvent()
+{
+}
+
+const AtomicString& FontFaceSetLoadEvent::interfaceName() const
+{
+    return EventNames::FontFaceSetLoadEvent;
+}
+
+void FontFaceSetLoadEvent::trace(Visitor* visitor)
+{
+    visitor->trace(m_fontfaces);
+    Event::trace(visitor);
+}
+
+} // namespace blink

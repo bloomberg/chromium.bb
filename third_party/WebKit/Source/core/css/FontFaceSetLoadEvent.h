@@ -28,43 +28,54 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/css/CSSFontFaceLoadEvent.h"
+#ifndef FontFaceSetLoadEvent_h
+#define FontFaceSetLoadEvent_h
+
+#include "core/css/FontFace.h"
+#include "core/dom/DOMError.h"
+#include "core/events/Event.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace blink {
 
-CSSFontFaceLoadEvent::CSSFontFaceLoadEvent()
-{
-    ScriptWrappable::init(this);
-}
+struct FontFaceSetLoadEventInit : public EventInit {
+    FontFaceArray fontfaces;
+};
 
-CSSFontFaceLoadEvent::CSSFontFaceLoadEvent(const AtomicString& type, const FontFaceArray& fontfaces)
-    : Event(type, false, false)
-    , m_fontfaces(fontfaces)
-{
-    ScriptWrappable::init(this);
-}
+class FontFaceSetLoadEvent FINAL : public Event {
+public:
+    static PassRefPtrWillBeRawPtr<FontFaceSetLoadEvent> create()
+    {
+        return adoptRefWillBeNoop(new FontFaceSetLoadEvent());
+    }
 
-CSSFontFaceLoadEvent::CSSFontFaceLoadEvent(const AtomicString& type, const CSSFontFaceLoadEventInit& initializer)
-    : Event(type, initializer)
-    , m_fontfaces(initializer.fontfaces)
-{
-    ScriptWrappable::init(this);
-}
+    static PassRefPtrWillBeRawPtr<FontFaceSetLoadEvent> create(const AtomicString& type, const FontFaceSetLoadEventInit& initializer)
+    {
+        return adoptRefWillBeNoop(new FontFaceSetLoadEvent(type, initializer));
+    }
 
-CSSFontFaceLoadEvent::~CSSFontFaceLoadEvent()
-{
-}
+    static PassRefPtrWillBeRawPtr<FontFaceSetLoadEvent> createForFontFaces(const AtomicString& type, const FontFaceArray& fontfaces = FontFaceArray())
+    {
+        return adoptRefWillBeNoop(new FontFaceSetLoadEvent(type, fontfaces));
+    }
 
-const AtomicString& CSSFontFaceLoadEvent::interfaceName() const
-{
-    return EventNames::CSSFontFaceLoadEvent;
-}
+    virtual ~FontFaceSetLoadEvent();
 
-void CSSFontFaceLoadEvent::trace(Visitor* visitor)
-{
-    visitor->trace(m_fontfaces);
-    Event::trace(visitor);
-}
+    FontFaceArray fontfaces() const { return m_fontfaces; }
+
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+
+    virtual void trace(Visitor*) OVERRIDE;
+
+private:
+    FontFaceSetLoadEvent();
+    FontFaceSetLoadEvent(const AtomicString&, const FontFaceArray&);
+    FontFaceSetLoadEvent(const AtomicString&, const FontFaceSetLoadEventInit&);
+
+    FontFaceArray m_fontfaces;
+};
 
 } // namespace blink
+
+#endif // FontFaceSetLoadEvent_h

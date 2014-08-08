@@ -28,54 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSFontFaceLoadEvent_h
-#define CSSFontFaceLoadEvent_h
-
-#include "core/css/FontFace.h"
-#include "core/dom/DOMError.h"
-#include "core/events/Event.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-
-namespace blink {
-
-struct CSSFontFaceLoadEventInit : public EventInit {
-    FontFaceArray fontfaces;
+// FIXME: Make this constructable from Javascript
+[
+    NoInterfaceObject,
+    RuntimeEnabled=FontLoadEvents,
+] interface FontFaceSetLoadEvent : Event {
+    readonly attribute FontFace[] fontfaces;
 };
-
-class CSSFontFaceLoadEvent FINAL : public Event {
-public:
-    static PassRefPtrWillBeRawPtr<CSSFontFaceLoadEvent> create()
-    {
-        return adoptRefWillBeNoop(new CSSFontFaceLoadEvent());
-    }
-
-    static PassRefPtrWillBeRawPtr<CSSFontFaceLoadEvent> create(const AtomicString& type, const CSSFontFaceLoadEventInit& initializer)
-    {
-        return adoptRefWillBeNoop(new CSSFontFaceLoadEvent(type, initializer));
-    }
-
-    static PassRefPtrWillBeRawPtr<CSSFontFaceLoadEvent> createForFontFaces(const AtomicString& type, const FontFaceArray& fontfaces = FontFaceArray())
-    {
-        return adoptRefWillBeNoop(new CSSFontFaceLoadEvent(type, fontfaces));
-    }
-
-    virtual ~CSSFontFaceLoadEvent();
-
-    FontFaceArray fontfaces() const { return m_fontfaces; }
-
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-
-    virtual void trace(Visitor*) OVERRIDE;
-
-private:
-    CSSFontFaceLoadEvent();
-    CSSFontFaceLoadEvent(const AtomicString&, const FontFaceArray&);
-    CSSFontFaceLoadEvent(const AtomicString&, const CSSFontFaceLoadEventInit&);
-
-    FontFaceArray m_fontfaces;
-};
-
-} // namespace blink
-
-#endif // CSSFontFaceLoadEvent_h

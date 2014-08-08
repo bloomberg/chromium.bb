@@ -29,10 +29,10 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
-#include "core/css/CSSFontFaceLoadEvent.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/FontFaceCache.h"
+#include "core/css/FontFaceSetLoadEvent.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -211,7 +211,7 @@ void FontFaceSet::fireLoadingEvent()
 {
     if (m_shouldFireLoadingEvent) {
         m_shouldFireLoadingEvent = false;
-        dispatchEvent(CSSFontFaceLoadEvent::createForFontFaces(EventTypeNames::loading));
+        dispatchEvent(FontFaceSetLoadEvent::createForFontFaces(EventTypeNames::loading));
     }
 }
 
@@ -415,12 +415,12 @@ void FontFaceSet::fireDoneEventIfPossible()
         return;
 
     if (hasLoadedFonts()) {
-        RefPtrWillBeRawPtr<CSSFontFaceLoadEvent> doneEvent = nullptr;
-        RefPtrWillBeRawPtr<CSSFontFaceLoadEvent> errorEvent = nullptr;
-        doneEvent = CSSFontFaceLoadEvent::createForFontFaces(EventTypeNames::loadingdone, m_loadedFonts);
+        RefPtrWillBeRawPtr<FontFaceSetLoadEvent> doneEvent = nullptr;
+        RefPtrWillBeRawPtr<FontFaceSetLoadEvent> errorEvent = nullptr;
+        doneEvent = FontFaceSetLoadEvent::createForFontFaces(EventTypeNames::loadingdone, m_loadedFonts);
         m_loadedFonts.clear();
         if (!m_failedFonts.isEmpty()) {
-            errorEvent = CSSFontFaceLoadEvent::createForFontFaces(EventTypeNames::loadingerror, m_failedFonts);
+            errorEvent = FontFaceSetLoadEvent::createForFontFaces(EventTypeNames::loadingerror, m_failedFonts);
             m_failedFonts.clear();
         }
         dispatchEvent(doneEvent);
