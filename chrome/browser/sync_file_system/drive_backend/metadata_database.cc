@@ -105,7 +105,7 @@ void PopulateFileDetailsByFileResource(
   details->set_creation_time(file_resource.created_date().ToInternalValue());
   details->set_modification_time(
       file_resource.modified_date().ToInternalValue());
-  details->set_missing(false);
+  details->set_missing(file_resource.labels().is_trashed());
 }
 
 scoped_ptr<FileMetadata> CreateFileMetadataFromFileResource(
