@@ -965,7 +965,7 @@ TEST_F(LockStateControllerTest, IgnorePowerButtonIfScreenIsOff) {
   ReleasePowerButton();
 }
 
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
 TEST_F(LockStateControllerTest, HonorPowerButtonInDockedMode) {
   ScopedVector<const ui::DisplayMode> modes;
   modes.push_back(new ui::DisplayMode(gfx::Size(1, 1), false, 60.0f));
