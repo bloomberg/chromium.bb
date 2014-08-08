@@ -45,10 +45,6 @@
 
 struct NPObject;
 
-#if BLINK_IMPLEMENTATION
-namespace blink { class Frame; }
-#endif
-
 namespace v8 {
 class Context;
 class Function;
@@ -60,6 +56,7 @@ template <class T> class Local;
 
 namespace blink {
 
+class Frame;
 class OpenedFrameTracker;
 class WebData;
 class WebDataSource;
@@ -150,7 +147,7 @@ public:
     // For a WebFrame with contents being rendered in another process, this
     // sets a layer for use by the in-process compositor. WebLayer should be
     // null if the content is being rendered in the current process.
-    virtual void setRemoteWebLayer(blink::WebLayer*) = 0;
+    virtual void setRemoteWebLayer(WebLayer*) = 0;
 
     // Initializes the various client interfaces.
     virtual void setPermissionClient(WebPermissionClient*) = 0;
@@ -677,7 +674,7 @@ public:
     virtual WebString layerTreeAsText(bool showDebugInfo = false) const = 0;
 
 #if BLINK_IMPLEMENTATION
-    static WebFrame* fromFrame(blink::Frame*);
+    static WebFrame* fromFrame(Frame*);
 #endif
 
 protected:
@@ -698,7 +695,7 @@ private:
 };
 
 #if BLINK_IMPLEMENTATION
-blink::Frame* toWebCoreFrame(const WebFrame*);
+Frame* toWebCoreFrame(const WebFrame*);
 #endif
 
 } // namespace blink
