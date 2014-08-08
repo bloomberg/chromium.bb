@@ -463,7 +463,7 @@ public class AdapterInputConnection extends BaseInputConnection {
 
         CharSequence regionText = null;
         if (b > a) {
-            regionText = mEditable.subSequence(start, end);
+            regionText = mEditable.subSequence(a, b);
         }
         return mImeAdapter.setComposingRegion(regionText, a, b);
     }

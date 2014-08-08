@@ -463,6 +463,21 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput", "Main"})
+    public void testSetComposingRegionOutOfBounds() throws Throwable {
+        DOMUtils.focusNode(mContentViewCore, "textarea");
+        assertWaitForKeyboardStatus(true);
+
+        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
+        setComposingText(mConnection, "hello", 1);
+
+        setComposingRegion(mConnection, 0, 0);
+        setComposingRegion(mConnection, 0, 9);
+        setComposingRegion(mConnection, 9, 0);
+    }
+
+    @SmallTest
+    @Feature({"TextInput", "Main"})
     public void testEnterKeyEventWhileComposingText() throws Throwable {
         DOMUtils.focusNode(mContentViewCore, "input_radio");
         assertWaitForKeyboardStatus(false);
