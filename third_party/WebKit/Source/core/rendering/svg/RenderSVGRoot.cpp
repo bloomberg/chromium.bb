@@ -418,9 +418,10 @@ bool RenderSVGRoot::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
     LayoutPoint pointInParent = locationInContainer.point() - toLayoutSize(accumulatedOffset);
     LayoutPoint pointInBorderBox = pointInParent - toLayoutSize(location());
 
-    // Only test SVG content if the point is in our content box.
+    // Only test SVG content if the point is in our content box, or in case we
+    // don't clip to the viewport, the visual overflow rect.
     // FIXME: This should be an intersection when rect-based hit tests are supported by nodeAtFloatPoint.
-    if (contentBoxRect().contains(pointInBorderBox)) {
+    if (contentBoxRect().contains(pointInBorderBox) || (!shouldApplyViewportClip() && visualOverflowRect().contains(pointInBorderBox))) {
         const AffineTransform& localToParentTransform = this->localToParentTransform();
         if (localToParentTransform.isInvertible()) {
             FloatPoint localPoint = localToParentTransform.inverse().mapPoint(FloatPoint(pointInParent));
