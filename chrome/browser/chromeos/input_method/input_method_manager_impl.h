@@ -203,10 +203,6 @@ class InputMethodManagerImpl : public InputMethodManager,
   // auto-repeat interval.
   scoped_ptr<ImeKeyboard> keyboard_;
 
-  base::ThreadChecker thread_checker_;
-
-  base::WeakPtrFactory<InputMethodManagerImpl> weak_ptr_factory_;
-
   // The engine map from extension_id to an engine.
   std::map<std::string, InputMethodEngineInterface*> engine_map_;
 

@@ -61,8 +61,7 @@ InputMethodManagerImpl::InputMethodManagerImpl(
     : delegate_(delegate.Pass()),
       state_(STATE_LOGIN_SCREEN),
       util_(delegate_.get()),
-      component_extension_ime_manager_(new ComponentExtensionIMEManager()),
-      weak_ptr_factory_(this) {
+      component_extension_ime_manager_(new ComponentExtensionIMEManager()) {
   if (base::SysInfo::IsRunningOnChromeOS())
     keyboard_.reset(ImeKeyboard::Create());
   else
@@ -790,7 +789,6 @@ InputMethodUtil* InputMethodManagerImpl::GetInputMethodUtil() {
 
 ComponentExtensionIMEManager*
     InputMethodManagerImpl::GetComponentExtensionIMEManager() {
-  DCHECK(thread_checker_.CalledOnValidThread());
   return component_extension_ime_manager_.get();
 }
 
