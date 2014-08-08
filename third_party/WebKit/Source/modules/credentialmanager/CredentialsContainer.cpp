@@ -38,7 +38,7 @@ static bool canAccessCredentialManagerAPI(ScriptState* scriptState, PassRefPtr<S
     return true;
 }
 
-ScriptPromise CredentialsContainer::request(ScriptState* scriptState, const Dictionary&)
+static ScriptPromise stubImplementation(ScriptState* scriptState)
 {
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
@@ -48,6 +48,26 @@ ScriptPromise CredentialsContainer::request(ScriptState* scriptState, const Dict
 
     resolver->resolve();
     return promise;
+}
+
+ScriptPromise CredentialsContainer::request(ScriptState* scriptState, const Dictionary&)
+{
+    return stubImplementation(scriptState);
+}
+
+ScriptPromise CredentialsContainer::notifySignedIn(ScriptState* scriptState, Credential* credential)
+{
+    return stubImplementation(scriptState);
+}
+
+ScriptPromise CredentialsContainer::notifyFailedSignIn(ScriptState* scriptState, Credential* credential)
+{
+    return stubImplementation(scriptState);
+}
+
+ScriptPromise CredentialsContainer::notifySignedOut(ScriptState* scriptState)
+{
+    return stubImplementation(scriptState);
 }
 
 } // namespace blink

@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class Credential;
 class Dictionary;
 class ScriptPromise;
 class ScriptState;
@@ -20,6 +21,9 @@ public:
 
     // CredentialsContainer.h
     ScriptPromise request(ScriptState*, const Dictionary&);
+    ScriptPromise notifySignedIn(ScriptState*, Credential* = 0);
+    ScriptPromise notifyFailedSignIn(ScriptState*, Credential* = 0);
+    ScriptPromise notifySignedOut(ScriptState*);
 
     virtual void trace(Visitor*) { }
 
