@@ -37,20 +37,34 @@ bool CpuInfoProvider::QueryCpuTimePerProcessor(
     if (line.compare(0, 3, "cpu") != 0)
       continue;
 
+    // The number of entries in /proc/stat may mismatch the size of infos
+    // because the number of online processors may change after the value has
+    // been decided in CpuInfoProvider::QueryInfo().
+    //
+    // TODO(jchuang): fix the fail case by using the number of configured
+    // processors instead of online processors.
+    if (i == infos->size()) {
+      LOG(ERROR) << "Got more entries in /proc/stat than online CPUs";
+      return false;
+    }
+
     uint64 user = 0, nice = 0, sys = 0, idle = 0;
     int vals = sscanf(line.c_str(),
            "%*s %" PRIu64 " %" PRIu64 " %" PRIu64 " %" PRIu64,
            &user, &nice, &sys, &idle);
     DCHECK_EQ(4, vals);
 
-    DCHECK(i < infos->size());
     infos->at(i)->usage.kernel = static_cast<double>(sys);
     infos->at(i)->usage.user = static_cast<double>(user + nice);
     infos->at(i)->usage.idle = static_cast<double>(idle);
     infos->at(i)->usage.total = static_cast<double>(sys + user + nice + idle);
     ++i;
   }
-  DCHECK_EQ(infos->size(), i);
+  if (i < infos->size()) {
+    LOG(ERROR) << "Got fewer entries in /proc/stat than online CPUs";
+    return false;
+  }
+
   return true;
 }
 
