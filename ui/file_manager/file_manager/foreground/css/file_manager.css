@@ -947,8 +947,7 @@ li[renaming=''] .filename-label {
 .preview-panel {
   -webkit-transition: background-color 150ms ease;
   align-items: center;
-  background: linear-gradient(
-      to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 1));
+  background: white;
   border-top: 1px solid rgba(20, 20, 22, 0.1);
   bottom: 0;
   display: flex;
