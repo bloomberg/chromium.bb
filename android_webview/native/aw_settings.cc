@@ -158,8 +158,7 @@ void AwSettings::UpdateWebkitPreferencesLocked(JNIEnv* env, jobject obj) {
   content::RenderViewHost* render_view_host =
       web_contents()->GetRenderViewHost();
   if (!render_view_host) return;
-  render_view_host->UpdateWebkitPreferences(
-      render_view_host->GetWebkitPreferences());
+  render_view_host->OnWebkitPreferencesChanged();
 }
 
 void AwSettings::UpdateInitialPageScaleLocked(JNIEnv* env, jobject obj) {

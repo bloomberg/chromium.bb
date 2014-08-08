@@ -51,6 +51,8 @@ class PrefsTabHelper : public content::NotificationObserver,
   void UpdateRendererPreferences();
 
   Profile* GetProfile();
+
+  void OnFontFamilyPrefChanged(const std::string& pref_name);
   void OnWebPrefChanged(const std::string& pref_name);
 
   content::WebContents* web_contents_;

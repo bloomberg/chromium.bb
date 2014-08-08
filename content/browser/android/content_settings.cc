@@ -39,7 +39,7 @@ bool ContentSettings::GetJavaScriptEnabled(JNIEnv* env, jobject obj) {
   RenderViewHost* render_view_host = web_contents()->GetRenderViewHost();
   if (!render_view_host)
     return false;
-  return render_view_host->GetDelegate()->GetWebkitPrefs().javascript_enabled;
+  return render_view_host->GetWebkitPreferences().javascript_enabled;
 }
 
 void ContentSettings::WebContentsDestroyed() {

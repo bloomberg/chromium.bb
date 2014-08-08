@@ -2145,7 +2145,7 @@ void RenderProcessHostImpl::OnGpuSwitching() {
       continue;
 
     RenderViewHost* rvh = RenderViewHost::From(widget);
-    rvh->UpdateWebkitPreferences(rvh->GetWebkitPreferences());
+    rvh->OnWebkitPreferencesChanged();
   }
 }
 

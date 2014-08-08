@@ -86,8 +86,8 @@ class WebContentsTester {
       const Referrer& referrer,
       PageTransition transition) = 0;
 
-  // Promote GetWebkitPrefs to public.
-  virtual WebPreferences TestGetWebkitPrefs() = 0;
+  // Promote ComputeWebkitPrefs to public.
+  virtual WebPreferences TestComputeWebkitPrefs() = 0;
 };
 
 }  // namespace content

@@ -131,7 +131,7 @@ class CONTENT_EXPORT InterstitialPageImpl
                                     int error_code) OVERRIDE;
   virtual RendererPreferences GetRendererPrefs(
       BrowserContext* browser_context) const OVERRIDE;
-  virtual WebPreferences GetWebkitPrefs() OVERRIDE;
+  virtual WebPreferences ComputeWebkitPrefs() OVERRIDE;
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
   virtual void CreateNewWindow(
       int render_process_id,
