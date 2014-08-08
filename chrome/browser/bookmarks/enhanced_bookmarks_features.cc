@@ -28,6 +28,9 @@ std::string GetEnhancedBookmarksExtensionIdFromFinch() {
 
 // Returns true if enhanced bookmarks experiment is enabled from Finch.
 bool IsEnhancedBookmarksExperimentEnabledFromFinch() {
+#if defined(OS_ANDROID)
+  return false;
+#endif
   std::string ext_id = GetEnhancedBookmarksExtensionIdFromFinch();
   const extensions::FeatureProvider* feature_provider =
       extensions::FeatureProvider::GetPermissionFeatures();
