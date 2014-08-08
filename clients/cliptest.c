@@ -893,8 +893,12 @@ main(int argc, char *argv[])
 	struct display *d;
 	struct cliptest *cliptest;
 
-	if (argc > 1)
-		return benchmark();
+	if (argc > 1) {
+		if (argc == 2 && !strcmp(argv[1], "-b"))
+			return benchmark();
+		printf("Usage: %s [OPTIONS]\n  -b  run benchmark\n", argv[0]);
+		return 1;
+	}
 
 	d = display_create(&argc, argv);
 	if (d == NULL) {
