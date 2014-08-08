@@ -25712,15 +25712,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="SafeBrowsing.ModuleBaseRelocation" units="BaseRelocationType">
-  <owner>csharp@chromium.org</owner>
-  <owner>krstnmnlsn@chromium.org</owner>
-  <summary>
-    A windows only historgram. Records when an unknown base relocation type is
-    encountered while reading the reloc table of a loaded module.
-  </summary>
-</histogram>
-
 <histogram name="SB.BloomFilter" units="milliseconds">
   <obsolete>
     Has not been generated for years (7/8/14).
@@ -36822,20 +36813,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="Unused"/>
   <int value="1" label="Success"/>
   <int value="2" label="Failure"/>
-</enum>
-
-<enum name="BaseRelocationType" type="int">
-  <int value="0" label="IMAGE_REL_BASED_ABSOLUTE"/>
-  <int value="1" label="IMAGE_REL_BASED_HIGH"/>
-  <int value="2" label="IMAGE_REL_BASED_LOW"/>
-  <int value="3" label="IMAGE_REL_BASED_HIGHLOW"/>
-  <int value="4" label="IMAGE_REL_BASED_HIGHADJ"/>
-  <int value="5" label="IMAGE_REL_BASED_MACHINE_SPECIFIC_5"/>
-  <int value="6" label="IMAGE_REL_BASED_RESERVED"/>
-  <int value="7" label="IMAGE_REL_BASED_MACHINE_SPECIFIC_7"/>
-  <int value="8" label="IMAGE_REL_BASED_MACHINE_SPECIFIC_8"/>
-  <int value="9" label="IMAGE_REL_BASED_MACHINE_SPECIFIC_9"/>
-  <int value="10" label="IMAGE_REL_BASED_DIR64"/>
 </enum>
 
 <enum name="BatteryInfoSampleResult" type="int">
