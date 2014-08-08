@@ -67,10 +67,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   static bool IsGuest(content::WebContents* web_contents);
 
-  // By default, JavaScript and images are enabled in guest content.
-  static void GetDefaultContentSettingRules(RendererContentSettingRules* rules,
-                                            bool incognito);
-
   virtual const char* GetViewType() const = 0;
 
   // This method is called after the guest has been attached to an embedder and

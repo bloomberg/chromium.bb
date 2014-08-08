@@ -82,6 +82,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pepper_permission_util.h"
@@ -562,6 +563,27 @@ float GetDeviceScaleAdjustment() {
 
 #endif  // defined(OS_ANDROID)
 
+#if defined(ENABLE_EXTENSIONS)
+// By default, JavaScript and images are enabled in guest content.
+void GetGuestViewDefaultContentSettingRules(
+    bool incognito,
+    RendererContentSettingRules* rules) {
+  rules->image_rules.push_back(
+      ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
+                                  ContentSettingsPattern::Wildcard(),
+                                  CONTENT_SETTING_ALLOW,
+                                  std::string(),
+                                  incognito));
+
+  rules->script_rules.push_back(
+      ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
+                                  ContentSettingsPattern::Wildcard(),
+                                  CONTENT_SETTING_ALLOW,
+                                  std::string(),
+                                  incognito));
+}
+#endif  // defined(ENALBE_EXTENSIONS)
+
 }  // namespace
 
 namespace chrome {
@@ -822,8 +844,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
   RendererContentSettingRules rules;
   if (host->IsIsolatedGuest()) {
 #if defined(ENABLE_EXTENSIONS)
-    GuestViewBase::GetDefaultContentSettingRules(&rules,
-                                                 profile->IsOffTheRecord());
+    GetGuestViewDefaultContentSettingRules(profile->IsOffTheRecord(), &rules);
 #else
     NOTREACHED();
 #endif

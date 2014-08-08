@@ -71,6 +71,8 @@ class ExtensionsAPIClient {
   // Returns the HidService instance for this embedder.
   virtual device::HidService* GetHidService();
 
+  virtual void RegisterGuestViewTypes() {}
+
   // NOTE: If this interface gains too many methods (perhaps more than 20) it
   // should be split into one interface per API.
 };

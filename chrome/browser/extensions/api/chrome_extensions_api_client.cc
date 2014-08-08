@@ -7,6 +7,8 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
 #include "chrome/browser/guest_view/app_view/app_view_guest.h"
+#include "chrome/browser/guest_view/extension_options/extension_options_guest.h"
+#include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/hid/hid_service.h"
@@ -65,6 +67,12 @@ device::HidService* ChromeExtensionsAPIClient::GetHidService() {
             content::BrowserThread::UI)));
   }
   return hid_service_.get();
+}
+
+void ChromeExtensionsAPIClient::RegisterGuestViewTypes() {
+  AppViewGuest::Register();
+  ExtensionOptionsGuest::Register();
+  WebViewGuest::Register();
 }
 
 }  // namespace extensions

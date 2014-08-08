@@ -34,6 +34,7 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
       int guest_instance_id,
       const std::string& guest_extension_id) OVERRIDE;
   virtual device::HidService* GetHidService() OVERRIDE;
+  virtual void RegisterGuestViewTypes() OVERRIDE;
 
  private:
   scoped_ptr<device::HidService> hid_service_;

@@ -6,17 +6,14 @@
 
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/guest_view/app_view/app_view_guest.h"
-#include "chrome/browser/guest_view/extension_options/extension_options_guest.h"
 #include "chrome/browser/guest_view/guest_view_constants.h"
 #include "chrome/browser/guest_view/guest_view_manager.h"
-#include "chrome/browser/guest_view/web_view/web_view_guest.h"
-#include "chrome/common/content_settings.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_map.h"
@@ -253,25 +250,6 @@ bool GuestViewBase::IsGuest(WebContents* web_contents) {
   return !!GuestViewBase::FromWebContents(web_contents);
 }
 
-// static
-void GuestViewBase::GetDefaultContentSettingRules(
-    RendererContentSettingRules* rules,
-    bool incognito) {
-  rules->image_rules.push_back(
-      ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
-                                  ContentSettingsPattern::Wildcard(),
-                                  CONTENT_SETTING_ALLOW,
-                                  std::string(),
-                                  incognito));
-
-  rules->script_rules.push_back(
-      ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
-                                  ContentSettingsPattern::Wildcard(),
-                                  CONTENT_SETTING_ALLOW,
-                                  std::string(),
-                                  incognito));
-}
-
 base::WeakPtr<GuestViewBase> GuestViewBase::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
@@ -468,7 +446,5 @@ void GuestViewBase::CompleteInit(const std::string& embedder_extension_id,
 
 // static
 void GuestViewBase::RegisterGuestViewTypes() {
-  AppViewGuest::Register();
-  ExtensionOptionsGuest::Register();
-  WebViewGuest::Register();
+  extensions::ExtensionsAPIClient::Get()->RegisterGuestViewTypes();
 }
