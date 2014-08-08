@@ -194,7 +194,7 @@ ManagePasswordItemView::UndoView::~UndoView() {
 ManagePasswordItemView::ManagePasswordItemView(
     ManagePasswordsBubbleModel* manage_passwords_bubble_model,
     autofill::PasswordForm password_form,
-    Position position)
+    password_manager::ui::PasswordItemPosition position)
     : model_(manage_passwords_bubble_model),
       password_form_(password_form),
       delete_password_(false) {
@@ -205,7 +205,7 @@ ManagePasswordItemView::ManagePasswordItemView(
   // on both the top and bottom. When it's in the middle of a list, or at the
   // end, it has a border only on the bottom.
   SetBorder(views::Border::CreateSolidSidedBorder(
-      position == FIRST_ITEM ? 1 : 0,
+      position == password_manager::ui::FIRST_ITEM ? 1 : 0,
       0,
       1,
       0,

@@ -7,6 +7,7 @@
 
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/common/password_manager_ui.h"
 
 class ManagePasswordsBubbleModel;
 
@@ -67,12 +68,10 @@ class ManagePasswordItemView : public views::View {
     ManagePasswordItemView* parent_;
   };
 
-  enum Position { FIRST_ITEM, SUBSEQUENT_ITEM };
-
   ManagePasswordItemView(
       ManagePasswordsBubbleModel* manage_passwords_bubble_model,
       autofill::PasswordForm password_form,
-      Position position);
+      password_manager::ui::PasswordItemPosition position);
 
  private:
   virtual ~ManagePasswordItemView();

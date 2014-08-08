@@ -41,6 +41,7 @@ class ManagePasswordsUIControllerMock
   bool never_saved_password() const { return never_saved_password_; }
 
   virtual const autofill::PasswordForm& PendingCredentials() const OVERRIDE;
+  void SetPendingCredentials(autofill::PasswordForm pending_credentials);
 
   // Sneaky setters for testing.
   void SetPasswordFormMap(const autofill::ConstPasswordFormMap& map) {

@@ -28,6 +28,11 @@ const autofill::PasswordForm&
   return pending_credentials_;
 }
 
+void ManagePasswordsUIControllerMock::SetPendingCredentials(
+    autofill::PasswordForm pending_credentials) {
+  pending_credentials_ = pending_credentials;
+}
+
 bool ManagePasswordsUIControllerMock::IsInstalled() const {
   return web_contents()->GetUserData(UserDataKey()) == this;
 }

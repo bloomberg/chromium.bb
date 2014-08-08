@@ -170,9 +170,9 @@ ManagePasswordsBubbleView::PendingView::PendingView(
 
   // Create the pending credential item, save button and refusal combobox.
   ManagePasswordItemView* item =
-      new ManagePasswordItemView(parent_->model(),
-                                 parent_->model()->pending_credentials(),
-                                 ManagePasswordItemView::FIRST_ITEM);
+      new ManagePasswordItemView(parent->model(),
+                                 parent->model()->pending_credentials(),
+                                 password_manager::ui::FIRST_ITEM);
   save_button_ = new views::BlueButton(
       this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
   save_button_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
@@ -329,8 +329,8 @@ ManagePasswordsBubbleView::ManageView::ManageView(
           parent_->model(),
           *i->second,
           i == parent_->model()->best_matches().begin()
-              ? ManagePasswordItemView::FIRST_ITEM
-              : ManagePasswordItemView::SUBSEQUENT_ITEM);
+              ? password_manager::ui::FIRST_ITEM
+              : password_manager::ui::SUBSEQUENT_ITEM);
 
       layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
       layout->AddView(item);
