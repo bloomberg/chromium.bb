@@ -516,6 +516,9 @@ void Canvas2DLayerBridge::mailboxReleased(const blink::WebExternalTextureMailbox
                 size_t i = mailboxInfo - m_mailboxes.begin();
                 m_mailboxes.remove(i);
                 Canvas2DLayerManager::get().layerTransientResourceAllocationChanged(this);
+                // Here we need to return early since mailboxInfo removal would
+                // also clear m_parentLayerBridge reference.
+                return;
             } else {
                 mailboxInfo->m_status = MailboxReleased;
                 m_releasedMailboxInfoIndex = mailboxInfo - m_mailboxes.begin();
