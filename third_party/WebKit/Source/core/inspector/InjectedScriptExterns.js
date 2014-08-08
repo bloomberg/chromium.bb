@@ -39,11 +39,17 @@ InjectedScriptHostClass.prototype.getInternalProperties = function(object) { }
  */
 InjectedScriptHostClass.prototype.functionDetails = function(func) { }
 /**
- * @param {!Object} receiver
  * @param {!Function} func
- * @param {...*} args
+ * @param {*} receiver
+ * @param {!Array.<*>=} args
  */
-InjectedScriptHostClass.prototype.suppressWarningsAndCall = function(receiver, func, args) { }
+InjectedScriptHostClass.prototype.callFunction = function(func, receiver, args) { }
+/**
+ * @param {!Function} func
+ * @param {*} receiver
+ * @param {!Array.<*>=} args
+ */
+InjectedScriptHostClass.prototype.suppressWarningsAndCallFunction = function(func, receiver, args) { }
 /**
  * @param {*} object
  */

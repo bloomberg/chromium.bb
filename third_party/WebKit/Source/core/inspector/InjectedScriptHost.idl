@@ -50,7 +50,8 @@
     [Custom] void undebugFunction(any fn);
     [Custom] void monitorFunction(any fn);
     [Custom] void unmonitorFunction(any fn);
-    [Custom] any suppressWarningsAndCall(any receiver, any fn, any param1, any param2);
+    [Custom] any callFunction(any fn, any receiver, any[] argv);
+    [Custom] any suppressWarningsAndCallFunction(any fn, any receiver, any[] argv);
 
     // Only declarative scope (local, with and catch) is accepted. Returns undefined.
     [Custom] any setFunctionVariableValue(any functionObject, long scopeIndex, DOMString variableName, any newValue);

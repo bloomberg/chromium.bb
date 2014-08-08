@@ -4,13 +4,48 @@
 <script src="../../http/tests/inspector/console-test.js"></script>
 <script>
 
+(function() {
+    var _originalFunctionCall = Function.prototype.call;
+    var _originalFunctionApply = Function.prototype.apply;
+
+    var _overriddenFunctionCall = function() {
+        original();
+        console.error("FAIL: Function.prototype.call should not be called!");
+        var result = _originalFunctionCall.apply(this, arguments);
+        overridden();
+        return result;
+    }
+
+    var _overriddenFunctionApply = function(thisArg, argsArray) {
+        original();
+        console.error("FAIL: Function.prototype.apply should not be called!");
+        var result = _originalFunctionApply.call(this, thisArg, argsArray);
+        overridden();
+        return result;
+    }
+
+    function original()
+    {
+        Function.prototype.call = _originalFunctionCall;
+        Function.prototype.apply = _originalFunctionApply;
+    }
+
+    function overridden()
+    {
+        Function.prototype.call = _overriddenFunctionCall;
+        Function.prototype.apply = _overriddenFunctionApply;
+    }
+
+    overridden();
+})();
+
 function throwGetter()
 {
    console.error("FAIL: Should not be called!");
    throw new Error("FAIL");
 }
 
-function foo()
+function testOverriddenArrayPushAndMathMax()
 {
     Object.defineProperty(Array.prototype, "push", {
         get: throwGetter
@@ -39,16 +74,41 @@ function testThrowConstructorName()
 
 function test()
 {
-    InspectorTest.evaluateInConsole("foo()");
-    InspectorTest.evaluateInConsole("testOverriddenConstructorName()");
-    InspectorTest.evaluateInConsole("testThrowConstructorName()");
-    InspectorTest.runAfterPendingDispatches(step1);
+    InspectorTest.runTestSuite([
+        function evaluateInConsole(next)
+        {
+            InspectorTest.evaluateInConsole("testOverriddenArrayPushAndMathMax()");
+            InspectorTest.evaluateInConsole("testOverriddenConstructorName()");
+            InspectorTest.evaluateInConsole("testThrowConstructorName()");
+            InspectorTest.runAfterPendingDispatches(next);
+        },
 
-    function step1()
-    {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
-    }
+        function testRuntimeAgentCallFunctionOn(next)
+        {
+            RuntimeAgent.evaluate("({ a : 1, b : 2 })", step1);
+
+            function step1(error, result, wasThrown)
+            {
+                function sum()
+                {
+                    return this.a + this.b;
+                }
+                RuntimeAgent.callFunctionOn(result.objectId, sum.toString(), step2);
+            }
+
+            function step2(error, result, wasThrown)
+            {
+                InspectorTest.assertEquals(3, result.value);
+                next();
+            }
+        },
+
+        function dumpConsoleMessages(next)
+        {
+            InspectorTest.dumpConsoleMessages();
+            next();
+        }
+    ]);
 }
 </script>
 </head>
