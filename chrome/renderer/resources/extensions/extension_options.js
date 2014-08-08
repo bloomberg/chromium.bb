@@ -26,6 +26,13 @@ function ExtensionOptionsInternal(extensionoptionsNode) {
 
   // on* Event handlers.
   this.eventHandlers = {};
+
+  // setupEventProperty is normally called in extension_options_events.js to
+  // register events, but the createfailed event is registered here because
+  // the event is fired from here instead of through
+  // extension_options_events.js.
+  this.setupEventProperty('createfailed');
+
   new ExtensionOptionsEvents(this, this.viewInstanceId);
 
   this.setupNodeProperties();
@@ -62,7 +69,11 @@ ExtensionOptionsInternal.prototype.createGuest = function() {
       params,
       function(instanceId) {
         if (instanceId == 0) {
+          // Fire a createfailed event here rather than in ExtensionOptionsGuest
+          // because the guest will not be created, and cannot fire an event.
           this.initCalled = false;
+          var createFailedEvent = new Event('createfailed', { bubbles: true });
+          this.dispatchEvent(createFailedEvent);
         } else {
           this.attachWindow(instanceId);
           GuestViewInternal.setAutoSize(this.instanceId, {
@@ -142,13 +153,8 @@ ExtensionOptionsInternal.prototype.onSizeChanged = function(width, height) {
 
 ExtensionOptionsInternal.prototype.parseExtensionAttribute = function() {
   if (this.extensionoptionsNode.hasAttribute('extension')) {
-    var extensionId = this.extensionoptionsNode.getAttribute('extension');
-    // Only allow extensions to embed their own options page (if it has one).
-    if (chrome.runtime.id == extensionId &&
-        chrome.runtime.getManifest().hasOwnProperty('options_page')) {
-      this.extensionId  = extensionId;
-      return true;
-    }
+    this.extensionId = this.extensionoptionsNode.getAttribute('extension');
+    return true;
   }
   return false;
 };
@@ -157,20 +163,19 @@ ExtensionOptionsInternal.prototype.parseExtensionAttribute = function() {
 // an event handler.
 ExtensionOptionsInternal.prototype.setupEventProperty = function(eventName) {
   var propertyName = 'on' + eventName.toLowerCase();
-  var self = this;
   var extensionoptionsNode = this.extensionoptionsNode;
   Object.defineProperty(extensionoptionsNode, propertyName, {
     get: function() {
-      return self.eventHandlers[propertyName];
-    },
+      return this.eventHandlers[propertyName];
+    }.bind(this),
     set: function(value) {
-      if (self.eventHandlers[propertyName])
+      if (this.eventHandlers[propertyName])
         extensionoptionsNode.removeEventListener(
-            eventName, self.eventHandlers[propertyName]);
-      self.eventHandlers[propertyName] = value;
+            eventName, this.eventHandlers[propertyName]);
+      this.eventHandlers[propertyName] = value;
       if (value)
         extensionoptionsNode.addEventListener(eventName, value);
-    },
+    }.bind(this),
     enumerable: true
   });
 };

@@ -66,11 +66,16 @@ void ExtensionOptionsGuest::CreateWebContents(
   // Get the extension's base URL.
   std::string extension_id;
   create_params.GetString(extensionoptions::kExtensionId, &extension_id);
-  if (extension_id.empty()) {
+
+  if (!extensions::Extension::IdIsValid(extension_id)) {
     callback.Run(NULL);
     return;
   }
-  DCHECK(extensions::Extension::IdIsValid(extension_id));
+
+  if (extension_id != embedder_extension_id) {
+    callback.Run(NULL);
+    return;
+  }
 
   GURL extension_url =
       extensions::Extension::GetBaseURLFromExtensionId(extension_id);
