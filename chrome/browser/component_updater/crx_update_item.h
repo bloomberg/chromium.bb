@@ -17,8 +17,6 @@
 
 namespace component_updater {
 
-class CUResourceThrottle;
-
 // This is the one and only per-item state structure. Designed to be hosted
 // in a std::vector or a std::list. The two main members are |component|
 // which is supplied by the the component updater client and |status| which
@@ -110,7 +108,7 @@ struct CrxUpdateItem {
 
   std::vector<CrxDownloader::DownloadMetrics> download_metrics;
 
-  std::vector<base::WeakPtr<CUResourceThrottle> > throttles;
+  std::vector<base::Closure> ready_callbacks;
 
   CrxUpdateItem();
   ~CrxUpdateItem();

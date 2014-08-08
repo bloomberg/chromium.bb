@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/component_updater/component_updater_resource_throttle.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
 #include "chrome/browser/component_updater/test/test_configurator.h"
 #include "chrome/browser/component_updater/test/test_installer.h"
@@ -1190,9 +1191,7 @@ content::ResourceThrottle* RequestTestResourceThrottle(
                                   NULL,
                                   &context);
 
-  content::ResourceThrottle* rt =
-      cus->GetOnDemandUpdater().GetOnDemandResourceThrottle(&url_request,
-                                                            crx_id);
+  content::ResourceThrottle* rt = GetOnDemandResourceThrottle(cus, crx_id);
   rt->set_controller_for_testing(controller);
   controller->SetThrottle(rt);
   return rt;

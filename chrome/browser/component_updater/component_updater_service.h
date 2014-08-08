@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/version.h"
@@ -171,6 +172,21 @@ class ComponentUpdateService {
   // proactively triggered outside the normal component update service schedule.
   virtual OnDemandUpdater& GetOnDemandUpdater() = 0;
 
+  // This method is used to trigger an on-demand update for component |crx_id|.
+  // This can be used when loading a resource that depends on this component.
+  //
+  // |callback| is called on the main thread once the on-demand update is
+  // complete, regardless of success. |callback| may be called immediately
+  // within the method body.
+  //
+  // Additionally, this function implements an embedder-defined cooldown
+  // interval between on demand update attempts. This behavior is intended
+  // to be defensive against programming bugs, usually triggered by web fetches,
+  // where the on-demand functionality is invoked too often. If this function
+  // is called while still on cooldown, |callback| will be called immediately.
+  virtual void MaybeThrottle(const std::string& crx_id,
+                             const base::Closure& callback) = 0;
+
   // Returns a task runner suitable for use by component installers.
   virtual scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner() = 0;
 
@@ -183,7 +199,6 @@ class ComponentUpdateService {
                                    CrxUpdateItem* item) const = 0;
 
   friend class ::ComponentsUI;
-  FRIEND_TEST_ALL_PREFIXES(ComponentUpdaterTest, ResourceThrottleLiveNoUpdate);
 };
 
 typedef ComponentUpdateService::Observer ServiceObserver;
@@ -191,17 +206,6 @@ typedef ComponentUpdateService::Observer ServiceObserver;
 class OnDemandUpdater {
  public:
   virtual ~OnDemandUpdater() {}
-
-  // Returns a network resource throttle. It means that a component will be
-  // downloaded and installed before the resource is unthrottled. This function
-  // can be called from the IO thread. The function implements a cooldown
-  // interval of 30 minutes. That means it will ineffective to call the
-  // function before the cooldown interval has passed. This behavior is intended
-  // to be defensive against programming bugs, usually triggered by web fetches,
-  // where the on-demand functionality is invoked too often.
-  virtual content::ResourceThrottle* GetOnDemandResourceThrottle(
-      net::URLRequest* request,
-      const std::string& crx_id) = 0;
 
  private:
   friend class OnDemandTester;

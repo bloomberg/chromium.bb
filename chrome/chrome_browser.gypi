@@ -279,6 +279,8 @@
       'browser/component_updater/component_unpacker.h',
       'browser/component_updater/component_updater_ping_manager.cc',
       'browser/component_updater/component_updater_ping_manager.h',
+      'browser/component_updater/component_updater_resource_throttle.cc',
+      'browser/component_updater/component_updater_resource_throttle.h',
       'browser/component_updater/component_updater_service.cc',
       'browser/component_updater/component_updater_service.h',
       'browser/component_updater/component_updater_utils.cc',
