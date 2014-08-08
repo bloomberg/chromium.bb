@@ -38,6 +38,11 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     self.Fail('conformance/rendering/negative-one-index.html',
         ['win'], bug=396058)
 
+    # Win D3D9 failures (unfortunately can not target just this
+    # configuration with test expectations)
+    self.Fail('conformance/extensions/angle-instanced-arrays.html',
+        ['win'], bug=401713)
+
     # Win7 / Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
         ['win7', 'intel'], bug=314997)
@@ -49,8 +54,6 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['win7', 'intel'], bug=372511)
     self.Fail('conformance/glsl/misc/shader-with-array-of-structs-uniform.html',
         ['win7', 'intel', 'nvidia'], bug=373972)
-    self.Fail('conformance/extensions/angle-instanced-arrays.html',
-        ['win7', 'intel'], bug=398337)
 
     # Mac failures
     self.Fail('conformance/glsl/misc/shader-struct-scope.html',
