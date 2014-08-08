@@ -32,7 +32,7 @@ public class MediaAccessPermissionRequestTest extends AwTestBase {
         }
     }
 
-    private static final String mData = "<html> <script> " +
+    private static final String DATA = "<html> <script> " +
             "var constraints = {audio: true, video: true};" +
             "var video = document.querySelector('video');" +
             "function successCallback(stream) {" +
@@ -59,7 +59,7 @@ public class MediaAccessPermissionRequestTest extends AwTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         mTestWebServer = new TestWebServer(false);
-        mWebRTCPage = mTestWebServer.setResponse("/WebRTC", mData,
+        mWebRTCPage = mTestWebServer.setResponse("/WebRTC", DATA,
                 CommonResources.getTextHtmlHeaders(true));
     }
 

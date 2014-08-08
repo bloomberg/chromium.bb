@@ -48,7 +48,7 @@ class VideoCaptureFactory {
         // Special devices have more cameras than usual. Those devices are
         // identified by model & device. Currently only the Tango is supported.
         // Note that these devices have no Camera.CameraInfo.
-        private static final String[][] s_SPECIAL_DEVICE_LIST = {
+        private static final String[][] SPECIAL_DEVICE_LIST = {
             {"Peanut", "peanut"},
         };
         private static final String TAG = "ChromiumCameraInfo";
@@ -56,7 +56,7 @@ class VideoCaptureFactory {
         private static int sNumberOfSystemCameras = -1;
 
         private static boolean isSpecialDevice() {
-            for (String[] device : s_SPECIAL_DEVICE_LIST) {
+            for (String[] device : SPECIAL_DEVICE_LIST) {
                 if (device[0].contentEquals(android.os.Build.MODEL) &&
                         device[1].contentEquals(android.os.Build.DEVICE)) {
                     return true;

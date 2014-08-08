@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class InfoBarTestAnimationListener implements InfoBarContainer.InfoBarAnimationListener {
 
-    private static long WAIT_MILLIS = TimeUnit.SECONDS.toMillis(5);
+    private static final long WAIT_MILLIS = TimeUnit.SECONDS.toMillis(5);
 
     private static class ConditionalWait {
         private volatile Boolean mCondition;
@@ -33,7 +33,7 @@ public class InfoBarTestAnimationListener implements InfoBarContainer.InfoBarAni
          * @return true if the condition becomes true before the specified {@code millis}.
          */
         public boolean waitAndExpire(long millis) throws InterruptedException {
-            synchronized(mLock) {
+            synchronized (mLock) {
                 while (!mCondition && millis > 0) {
                     long start = SystemClock.elapsedRealtime();
                     mLock.wait(millis);
@@ -46,7 +46,7 @@ public class InfoBarTestAnimationListener implements InfoBarContainer.InfoBarAni
         }
 
         public void set(boolean value) {
-            synchronized(mLock) {
+            synchronized (mLock) {
                 mCondition = value;
                 if (value) {
                     mLock.notify();

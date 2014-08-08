@@ -27,7 +27,7 @@ public class VideoCaptureTango extends VideoCapture {
     private static final int DEPTH_CAMERA_ID = 0;
     private static final int FISHEYE_CAMERA_ID = 1;
     private static final int FOURMP_CAMERA_ID = 2;
-    private static final VideoCaptureFactory.CamParams s_CAM_PARAMS[] = {
+    private static final VideoCaptureFactory.CamParams CAM_PARAMS[] = {
          new VideoCaptureFactory.CamParams(DEPTH_CAMERA_ID, "depth", 320, 240),
          new VideoCaptureFactory.CamParams(FISHEYE_CAMERA_ID, "fisheye", 640, 480),
          new VideoCaptureFactory.CamParams(FOURMP_CAMERA_ID, "4MP", 1280, 720)};
@@ -49,12 +49,12 @@ public class VideoCaptureTango extends VideoCapture {
     private static final String TAG = "VideoCaptureTango";
 
     static int numberOfCameras() {
-        return s_CAM_PARAMS.length;
+        return CAM_PARAMS.length;
     }
 
     static VideoCaptureFactory.CamParams getCamParams(int index) {
-        if (index >= s_CAM_PARAMS.length) return null;
-        return s_CAM_PARAMS[index];
+        if (index >= CAM_PARAMS.length) return null;
+        return CAM_PARAMS[index];
     }
 
     static CaptureFormat[] getDeviceSupportedFormats(int id) {
@@ -84,8 +84,8 @@ public class VideoCaptureTango extends VideoCapture {
             int height,
             int frameRate,
             Camera.Parameters cameraParameters) {
-      mCaptureFormat = new CaptureFormat(s_CAM_PARAMS[mTangoCameraId].mWidth,
-                                         s_CAM_PARAMS[mTangoCameraId].mHeight,
+      mCaptureFormat = new CaptureFormat(CAM_PARAMS[mTangoCameraId].mWidth,
+                                         CAM_PARAMS[mTangoCameraId].mHeight,
                                          frameRate,
                                          ImageFormat.YV12);
       // Connect Tango SuperFrame mode. Available sf modes are "all",

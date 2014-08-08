@@ -17,7 +17,7 @@ import org.chromium.base.ThreadUtils;
  */
 @JNINamespace("android_webview")
 public class AwPermissionRequest {
-    private static String TAG = "AwPermissionRequest";
+    private static final String TAG = "AwPermissionRequest";
 
     private Uri mOrigin;
     private long mResources;

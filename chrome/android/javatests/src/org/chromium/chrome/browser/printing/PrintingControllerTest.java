@@ -41,7 +41,7 @@ public class PrintingControllerTest extends ChromeShellTestBase {
     private static final String URL = UrlUtils.encodeHtmlDataUri(
             "<html><head></head><body>foo</body></html>");
     private static final String PDF_PREAMBLE = "%PDF-1";
-    private static long TEST_TIMEOUT = 20000L;
+    private static final long TEST_TIMEOUT = 20000L;
 
     private static class LayoutResultCallbackWrapperMock implements
             PrintDocumentAdapterWrapper.LayoutResultCallbackWrapper {

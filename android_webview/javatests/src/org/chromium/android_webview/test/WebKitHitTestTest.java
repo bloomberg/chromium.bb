@@ -30,8 +30,8 @@ public class WebKitHitTestTest extends AwTestBase {
     private AwContents mAwContents;
     private TestWebServer mWebServer;
 
-    private static String HREF = "http://foo/";
-    private static String ANCHOR_TEXT = "anchor text";
+    private static final String HREF = "http://foo/";
+    private static final String ANCHOR_TEXT = "anchor text";
 
     @Override
     public void setUp() throws Exception {

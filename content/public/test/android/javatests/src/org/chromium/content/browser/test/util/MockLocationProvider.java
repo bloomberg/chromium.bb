@@ -20,7 +20,7 @@ public class MockLocationProvider implements LocationProviderFactory.LocationPro
     private boolean mIsRunning;
     private Handler mHandler;
     private HandlerThread mHandlerThread;
-    private static final Object mLock = new Object();
+    private final Object mLock = new Object();
 
     private static final int UPDATE_LOCATION_MSG = 100;
 

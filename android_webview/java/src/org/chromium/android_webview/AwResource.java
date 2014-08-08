@@ -26,17 +26,17 @@ public class AwResource {
 
     // Raw resource ID for an HTML page to be displayed in the case of
     // a specific load error.
-    private static int RAW_LOAD_ERROR;
+    private static int sRawLoadError;
 
     // Raw resource ID for an HTML page to be displayed in the case of
     // a generic load error. (It's called NO_DOMAIN for legacy reasons).
-    private static int RAW_NO_DOMAIN;
+    private static int sRawNoDomain;
 
     // String resource ID for the default text encoding to use.
-    private static int STRING_DEFAULT_TEXT_ENCODING;
+    private static int sStringDefaultTextEncoding;
 
     // Array resource ID for the configuration of platform specific key-systems.
-    private static int STRING_ARRAY_CONFIG_KEY_SYSTEM_UUID_MAPPING;
+    private static int sStringArrayConfigKeySystemUUIDMapping;
 
     // The embedder should inject a Resources object that will be used
     // to resolve Resource IDs into the actual resources.
@@ -54,36 +54,36 @@ public class AwResource {
     }
 
     public static void setErrorPageResources(int loaderror, int nodomain) {
-        RAW_LOAD_ERROR = loaderror;
-        RAW_NO_DOMAIN = nodomain;
+        sRawLoadError = loaderror;
+        sRawNoDomain = nodomain;
     }
 
     public static void setDefaultTextEncoding(int encoding) {
-        STRING_DEFAULT_TEXT_ENCODING = encoding;
+        sStringDefaultTextEncoding = encoding;
     }
 
     public static void setConfigKeySystemUuidMapping(int config) {
-        STRING_ARRAY_CONFIG_KEY_SYSTEM_UUID_MAPPING = config;
+        sStringArrayConfigKeySystemUUIDMapping = config;
     }
 
     @CalledByNative
     public static String getDefaultTextEncoding() {
-        return getResource(STRING_DEFAULT_TEXT_ENCODING, TYPE_STRING);
+        return getResource(sStringDefaultTextEncoding, TYPE_STRING);
     }
 
     @CalledByNative
     public static String getNoDomainPageContent() {
-        return getResource(RAW_NO_DOMAIN, TYPE_RAW);
+        return getResource(sRawNoDomain, TYPE_RAW);
     }
 
     @CalledByNative
     public static String getLoadErrorPageContent() {
-        return getResource(RAW_LOAD_ERROR, TYPE_RAW);
+        return getResource(sRawLoadError, TYPE_RAW);
     }
 
     public static String[] getConfigKeySystemUuidMapping() {
         // No need to cache, since this should be called only once.
-        return sResources.getStringArray(STRING_ARRAY_CONFIG_KEY_SYSTEM_UUID_MAPPING);
+        return sResources.getStringArray(sStringArrayConfigKeySystemUUIDMapping);
     }
 
     private static String getResource(int resid, int type) {

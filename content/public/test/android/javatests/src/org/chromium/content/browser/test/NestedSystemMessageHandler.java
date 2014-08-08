@@ -28,7 +28,7 @@ class NestedSystemMessageHandler {
     // See org.chromium.base.SystemMessageHandler for more message ids.
     // The id here should not conflict with the ones in SystemMessageHandler.
     private static final int QUIT_MESSAGE = 10;
-    private static final Handler mHandler = new Handler();
+    private static final Handler sHandler = new Handler();
 
     private NestedSystemMessageHandler() {
     }
@@ -45,7 +45,7 @@ class NestedSystemMessageHandler {
         queue.addIdleHandler(new MessageQueue.IdleHandler() {
             @Override
             public boolean queueIdle() {
-                mHandler.sendMessage(mHandler.obtainMessage(QUIT_MESSAGE));
+                sHandler.sendMessage(sHandler.obtainMessage(QUIT_MESSAGE));
                 return false;
             }
         });

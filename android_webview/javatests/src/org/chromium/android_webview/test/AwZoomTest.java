@@ -24,7 +24,7 @@ import java.util.concurrent.Callable;
 public class AwZoomTest extends AwTestBase {
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
-    private static float MAXIMUM_SCALE = 2.0f;
+    private static final float MAXIMUM_SCALE = 2.0f;
 
     @Override
     public void setUp() throws Exception {

@@ -22,9 +22,9 @@ import org.chromium.base.test.util.Feature;
  */
 public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
     private class TestObject extends Controller {
-        private Object objectInstance;
-        private CustomType customTypeInstance;
-        private CustomType2 customType2Instance;
+        private Object mObjectInstance;
+        private CustomType mCustomTypeInstance;
+        private CustomType2 mCustomType2Instance;
 
         private boolean mBooleanValue;
         private byte mByteValue;
@@ -39,19 +39,19 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
         private CustomType mCustomTypeValue;
 
         public TestObject() {
-            objectInstance = new Object();
-            customTypeInstance = new CustomType();
-            customType2Instance = new CustomType2();
+            mObjectInstance = new Object();
+            mCustomTypeInstance = new CustomType();
+            mCustomType2Instance = new CustomType2();
         }
 
         public Object getObjectInstance() {
-            return objectInstance;
+            return mObjectInstance;
         }
         public CustomType getCustomTypeInstance() {
-            return customTypeInstance;
+            return mCustomTypeInstance;
         }
         public CustomType2 getCustomType2Instance() {
-            return customType2Instance;
+            return mCustomType2Instance;
         }
 
         public synchronized void setBooleanValue(boolean x) {

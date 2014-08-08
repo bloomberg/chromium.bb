@@ -428,11 +428,11 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         class TestObject {
             public InnerObject getInnerObject() {
                 InnerObject inner = new InnerObject();
-                weakRefForInner = new WeakReference<InnerObject>(inner);
+                mWeakRefForInner = new WeakReference<InnerObject>(inner);
                 return inner;
             }
             // A weak reference is used to check InnerObject instance reachability.
-            WeakReference<InnerObject> weakRefForInner;
+            WeakReference<InnerObject> mWeakRefForInner;
         }
         TestObject object = new TestObject();
         injectObjectAndReload(object, "testObject");
@@ -442,12 +442,12 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
                         "(function() { " +
                         "globalInner = testObject.getInnerObject(); return typeof globalInner; " +
                         "})()"));
-        assertTrue(object.weakRefForInner.get() != null);
+        assertTrue(object.mWeakRefForInner.get() != null);
         // Check that returned Java object is being held by the Java bridge, thus it's not
         // collected.  Note that despite that what JavaDoc says about invoking "gc()", both Dalvik
         // and ART actually run the collector.
         Runtime.getRuntime().gc();
-        assertTrue(object.weakRefForInner.get() != null);
+        assertTrue(object.mWeakRefForInner.get() != null);
         // Now dereference the inner object in JS and run GC to collect the interface object.
         assertEquals("true", executeJavaScriptAndGetStringResult(
                         "(function() { " +
@@ -456,7 +456,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         // Force GC on the Java side again. The bridge had to release the inner object, so it must
         // be collected this time.
         Runtime.getRuntime().gc();
-        assertEquals(null, object.weakRefForInner.get());
+        assertEquals(null, object.mWeakRefForInner.get());
     }
 
     @SmallTest

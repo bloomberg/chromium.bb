@@ -40,18 +40,18 @@ public class VideoCaptureAndroid extends VideoCapture {
             public final int mMinHeight;
         }
 
-        private static final IdAndSizes s_CAPTURESIZE_BUGGY_DEVICE_LIST[] = {
+        private static final IdAndSizes CAPTURESIZE_BUGGY_DEVICE_LIST[] = {
             new IdAndSizes("Nexus 7", "flo", 640, 480)
         };
 
-        private static final String[] s_COLORSPACE_BUGGY_DEVICE_LIST = {
+        private static final String[] COLORSPACE_BUGGY_DEVICE_LIST = {
             "SAMSUNG-SGH-I747",
             "ODROID-U2",
         };
 
         static void applyMinDimensions(CaptureFormat format) {
             // NOTE: this can discard requested aspect ratio considerations.
-            for (IdAndSizes buggyDevice : s_CAPTURESIZE_BUGGY_DEVICE_LIST) {
+            for (IdAndSizes buggyDevice : CAPTURESIZE_BUGGY_DEVICE_LIST) {
                 if (buggyDevice.mModel.contentEquals(android.os.Build.MODEL) &&
                         buggyDevice.mDevice.contentEquals(android.os.Build.DEVICE)) {
                     format.mWidth = (buggyDevice.mMinWidth > format.mWidth)
@@ -67,7 +67,7 @@ public class VideoCaptureAndroid extends VideoCapture {
                 return ImageFormat.NV21;
             }
 
-            for (String buggyDevice : s_COLORSPACE_BUGGY_DEVICE_LIST) {
+            for (String buggyDevice : COLORSPACE_BUGGY_DEVICE_LIST) {
                 if (buggyDevice.contentEquals(android.os.Build.MODEL)) {
                     return ImageFormat.NV21;
                 }
