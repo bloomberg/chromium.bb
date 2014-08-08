@@ -38,10 +38,11 @@ function initialize(audioParams) {
 /**
  * Sends a request to whispernet to encode a token.
  * @param {string} token Token to encode. This needs to be a base64 string.
+ * @param {boolean} audible Whether we should use encode audible samples.
  */
-function encodeTokenRequest(token) {
+function encodeTokenRequest(token, audible) {
   if (whisperEncoder) {
-    whisperEncoder.encode(atob(token), true);
+    whisperEncoder.encode(atob(token), audible, true);
   } else {
     console.error('encodeTokenRequest: Whisper not initialized!');
   }

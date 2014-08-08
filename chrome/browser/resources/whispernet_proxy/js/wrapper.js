@@ -44,22 +44,10 @@ function WhisperEncoder(params, whisperNacl) {
   this.whisperNacl_ = whisperNacl;
   this.whisperNacl_.addListener(this.onNaclMessage_.bind(this));
 
-  var symbolCoder = {};
-  symbolCoder.sample_rate = params.sampleRate || 48000.0;
-  symbolCoder.upsampling_factor = params.bitsPerSample || 16;
-  symbolCoder.desired_carrier_frequency = params.carrierFrequency || 18500.0;
-  symbolCoder.bits_per_symbol = 4;
-  symbolCoder.min_cycles_per_frame = 4;
-  symbolCoder.baseband_decimation_factor = 4;
-
   var msg = {
     type: 'initialize_encoder',
-    symbol_coder: symbolCoder,
-    encoder_params: {
-      bytes_per_token: 6,
-      include_parity_symbol: true,
-      single_sideband: true
-    }
+    sample_rate: params.sampleRate || 48000.0,
+    upsampling_factor: params.bitsPerSample || 16,
   };
   this.whisperNacl_.send(JSON.stringify(msg));
 }
@@ -67,10 +55,11 @@ function WhisperEncoder(params, whisperNacl) {
 /**
  * Method to encode a token.
  * @param {string} token Token to encode.
+ * @param {boolean} audible Whether we should use encode audible samples.
  * @param {boolean} raw Whether we should return the encoded samples in raw
  * format or as a Wave file.
  */
-WhisperEncoder.prototype.encode = function(token, raw) {
+WhisperEncoder.prototype.encode = function(token, audible, raw) {
   var msg = {
     type: 'encode_token',
     // Trying to send the token in binary form to Nacl doesn't work correctly.
@@ -79,6 +68,7 @@ WhisperEncoder.prototype.encode = function(token, raw) {
     // forth by converting the bytes into an array of integers.
     token: stringToArray(token),
     repetitions: this.repetitions_,
+    use_dtmf: audible,
     return_raw_samples: raw
   };
   this.whisperNacl_.send(JSON.stringify(msg));
@@ -122,24 +112,11 @@ function WhisperDecoder(params, whisperNacl) {
 
   var msg = {
     type: 'initialize_decoder',
-    num_channels: params.channels,
-    symbol_coder: {
-      sample_rate: params.sampleRate || 48000.0,
-      upsampling_factor: params.bitsPerSample || 16,
-      desired_carrier_frequency: params.carrierFrequency || 18500.0,
-      bits_per_symbol: 4,
-      min_cycles_per_frame: 4,
-      baseband_decimation_factor: 4
-    },
-    decoder_params: {
-      bytes_per_token: 6,
-      include_parity_symbol: true,
-      max_candidates: 1,
-      broadcaster_stopped_threshold_in_seconds: 10
-    },
-    acquisition_params: {
-      max_buffer_duration_in_seconds: 3
-    }
+    channels: params.channels || 1,
+    sample_rate: params.sampleRate || 48000.0,
+    upsampling_factor: params.bitsPerSample || 16,
+    max_candidates: 1,
+    max_buffer_duration_in_seconds: 3
   };
   this.whisperNacl_.send(JSON.stringify(msg));
 }

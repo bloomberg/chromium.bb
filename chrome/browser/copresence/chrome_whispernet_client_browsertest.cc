@@ -21,6 +21,8 @@
 
 namespace {
 
+const char kSixZeros[] = "MDAwMDAw";
+
 copresence::WhispernetClient* GetWhispernetClient(
     content::BrowserContext* context) {
   extensions::CopresenceService* service =
@@ -61,19 +63,16 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
     EXPECT_TRUE(initialized_);
   }
 
-  void EncodeTokenAndSaveSamples() {
+  void EncodeTokenAndSaveSamples(bool audible) {
     copresence::WhispernetClient* client = GetWhispernetClient(context_);
     ASSERT_TRUE(client);
-
-    // This is the base64 encoding for "000000".
-    const std::string kZeroToken = "MDAwMDAw";
 
     run_loop_.reset(new base::RunLoop());
     client->RegisterSamplesCallback(base::Bind(
         &ChromeWhispernetClientTest::SamplesCallback, base::Unretained(this)));
-    expected_token_ = kZeroToken;
+    expected_token_ = kSixZeros;
 
-    client->EncodeToken(kZeroToken);
+    client->EncodeToken(kSixZeros, audible);
     run_loop_->Run();
 
     EXPECT_GT(saved_samples_->frames(), 0);
@@ -83,12 +82,10 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
     copresence::WhispernetClient* client = GetWhispernetClient(context_);
     ASSERT_TRUE(client);
 
-    const std::string kZeroToken = "MDAwMDAw";
-
     run_loop_.reset(new base::RunLoop());
     client->RegisterTokensCallback(base::Bind(
         &ChromeWhispernetClientTest::TokensCallback, base::Unretained(this)));
-    expected_token_ = kZeroToken;
+    expected_token_ = kSixZeros;
 
     ASSERT_GT(saved_samples_->frames(), 0);
 
@@ -167,18 +164,24 @@ IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, Initialize) {
 
 IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, EncodeToken) {
   InitializeWhispernet();
-  EncodeTokenAndSaveSamples();
+  EncodeTokenAndSaveSamples(false);
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, DecodeSamples) {
   InitializeWhispernet();
-  EncodeTokenAndSaveSamples();
+  EncodeTokenAndSaveSamples(false);
   DecodeSamplesAndVerifyToken();
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, DetectBroadcast) {
   InitializeWhispernet();
-  EncodeTokenAndSaveSamples();
+  EncodeTokenAndSaveSamples(false);
   DecodeSamplesAndVerifyToken();
   DetectBroadcast();
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, Audible) {
+  InitializeWhispernet();
+  EncodeTokenAndSaveSamples(true);
+  DecodeSamplesAndVerifyToken();
 }

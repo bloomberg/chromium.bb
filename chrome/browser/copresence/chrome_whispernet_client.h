@@ -40,7 +40,7 @@ class ChromeWhispernetClient : public copresence::WhispernetClient {
   virtual void Initialize(const SuccessCallback& init_callback) OVERRIDE;
   virtual void Shutdown() OVERRIDE;
 
-  virtual void EncodeToken(const std::string& token) OVERRIDE;
+  virtual void EncodeToken(const std::string& token, bool audible) OVERRIDE;
   virtual void DecodeSamples(const std::string& samples) OVERRIDE;
   virtual void DetectBroadcast() OVERRIDE;
 

@@ -8,22 +8,11 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/api/copresence_private.h"
+#include "components/copresence/public/copresence_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "grit/browser_resources.h"
-
-namespace copresence {
-
-// Once the CL for the copresence component lands, these constants will be
-// need to be picked up from components/copresence/copresence_constants.h
-const int kDefaultRepetitions = 5;
-const float kDefaultSampleRate = 48000.0;
-const int kDefaultBitsPerSample = 16;
-const float kDefaultCarrierFrequency = 18500.0;
-const int kDefaultChannels = 2;
-
-}  // namespace copresence
 
 // static
 const char ChromeWhispernetClient::kWhispernetProxyExtensionId[] =
@@ -73,14 +62,16 @@ void ChromeWhispernetClient::Shutdown() {
 }
 
 // Fire an event to request a token encode.
-void ChromeWhispernetClient::EncodeToken(const std::string& token) {
+void ChromeWhispernetClient::EncodeToken(const std::string& token,
+                                         bool audible) {
   DCHECK(extension_loaded_);
   DCHECK(browser_context_);
   DCHECK(extensions::EventRouter::Get(browser_context_));
 
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::api::copresence_private::OnEncodeTokenRequest::kEventName,
-      extensions::api::copresence_private::OnEncodeTokenRequest::Create(token),
+      extensions::api::copresence_private::OnEncodeTokenRequest::Create(
+          token, audible),
       browser_context_));
 
   extensions::EventRouter::Get(browser_context_)

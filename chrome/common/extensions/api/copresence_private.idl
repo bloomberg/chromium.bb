@@ -40,7 +40,7 @@ namespace copresencePrivate {
     // Fired to request initialization of the whisper.net library.
     static void onInitialize(AudioParameters audioParams);
     // Fired to request encoding of the given token.
-    static void onEncodeTokenRequest(DOMString base64Token);
+    static void onEncodeTokenRequest(DOMString base64Token, boolean audible);
     // Fired when we have new samples to decode.
     static void onDecodeSamplesRequest(ArrayBuffer audioSamples);
     // Fired to request a DetectBroadcast.

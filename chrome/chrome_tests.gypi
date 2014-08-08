@@ -1026,7 +1026,6 @@
         'browser/chromeos/ui/idle_logout_dialog_view_browsertest.cc',
         'browser/collected_cookies_browsertest.cc',
         'browser/content_settings/content_settings_browsertest.cc',
-        'browser/copresence/chrome_whispernet_client_browsertest.cc',
         'browser/crash_recovery_browsertest.cc',
         'browser/custom_handlers/protocol_handler_registry_browsertest.cc',
         'browser/devtools/device/adb/adb_client_socket_browsertest.cc',
@@ -2003,7 +2002,11 @@
           ],
         }],
         ['OS!="android" and OS!="ios"', {
+          'sources': [
+            'browser/copresence/chrome_whispernet_client_browsertest.cc',
+          ],
           'dependencies': [
+            '../components/components.gyp:copresence',
             # build time dependency.
             '../v8/src/d8.gyp:d8#host',
           ],

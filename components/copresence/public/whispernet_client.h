@@ -40,7 +40,7 @@ class WhispernetClient {
   virtual void Shutdown() = 0;
 
   // Fires an event to request a token encode.
-  virtual void EncodeToken(const std::string& token) = 0;
+  virtual void EncodeToken(const std::string& token, bool audible) = 0;
   // Fires an event to request a decode for the given samples.
   virtual void DecodeSamples(const std::string& samples) = 0;
   // Fires an event to request detection of a whispernet broadcast.
