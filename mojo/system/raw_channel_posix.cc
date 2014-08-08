@@ -206,7 +206,7 @@ RawChannel::IOResult RawChannelPosix::Read(size_t* bytes_read) {
 
   // |read_result == 0| means "end of file".
   if (read_result == 0 || (errno != EAGAIN && errno != EWOULDBLOCK)) {
-    PLOG_IF(WARNING, read_result != 0) << "recvmsg";
+    DVLOG_IF(1, read_result != 0) << "recvmsg";
 
     // Make sure that |OnFileCanReadWithoutBlocking()| won't be called again.
     read_watcher_.reset();
