@@ -127,6 +127,7 @@ class StageTest(cros_test_lib.MockOutputTestCase,
       build_config.update(extra_config)
     if options.remote_trybot:
       build_config = config.OverrideConfigForTrybot(build_config, options)
+    options.managed_chrome = build_config['sync_chrome']
 
     self._boards = build_config['boards']
     self._current_board = self._boards[0] if self._boards else None

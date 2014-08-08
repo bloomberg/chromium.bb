@@ -241,6 +241,23 @@ class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     commands.UprevPackages(self._buildroot, [self._board], self._overlays)
     self.assertCommandContains(['--boards=%s' % self._board, 'commit'])
 
+  def testVerifyBinpkgMissing(self):
+    """Test case where binpkg is missing."""
+    self.rc.AddCmdResult(partial_mock.ListRegex(r'emerge'),
+        output='\n[ebuild] %s' % constants.CHROME_CP)
+    self.assertRaises(commands.MissingBinpkg, commands.VerifyBinpkg,
+        self._buildroot, self._board, constants.CHROME_CP)
+
+  def testVerifyBinpkgPresent(self):
+    """Test case where binpkg is present."""
+    self.rc.AddCmdResult(partial_mock.ListRegex(r'emerge'),
+        output='\n[binary] %s' % constants.CHROME_CP)
+    commands.VerifyBinpkg(self._buildroot, self._board, constants.CHROME_CP)
+
+  def testVerifyChromeNotInstalled(self):
+    """Test case where Chrome is not installed at all."""
+    commands.VerifyBinpkg(self._buildroot, self._board, constants.CHROME_CP)
+
   def testBuild(self, default=False, **kwargs):
     """Base case where Build is called with minimal options."""
     kwargs.setdefault('build_autotest', default)

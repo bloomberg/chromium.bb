@@ -221,9 +221,20 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     if useflags:
       self._portage_extra_env['USE'] = ' '.join(useflags)
 
+  def VerifyChromeBinpkg(self):
+    # Sanity check: If we didn't check out Chrome, we should be building Chrome
+    # from a binary package.
+    if not self._run.options.managed_chrome:
+      commands.VerifyBinpkg(self._build_root,
+                            self._current_board,
+                            constants.CHROME_CP,
+                            extra_env=self._portage_extra_env)
+
   def PerformStage(self):
     # If we have rietveld patches, always compile Chrome from source.
     noworkon = not self._run.options.rietveld_patches
+
+    self.VerifyChromeBinpkg()
 
     commands.Build(self._build_root,
                    self._current_board,

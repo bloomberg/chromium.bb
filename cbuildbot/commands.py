@@ -350,6 +350,30 @@ def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
   RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
 
+class MissingBinpkg(failures_lib.InfrastructureFailure):
+  """Error class for when we are missing an essential binpkg."""
+
+
+def VerifyBinpkg(buildroot, board, pkg, extra_env=None):
+  """Verify that an appropriate binary package exists for |pkg|.
+
+  Args:
+    buildroot: The buildroot of the current build.
+    board: The board to set up.
+    pkg: The package to look for.
+    extra_env: A dictionary of environmental variables to set.
+  """
+  cmd = ['emerge-%s' % board, '-pegNv', '--color=n', 'virtual/target-os']
+  result = RunBuildScript(buildroot, cmd, capture_output=True,
+                          enter_chroot=True, extra_env=extra_env)
+  pattern = r'^\[(ebuild|binary).*%s' % re.escape(pkg)
+  m = re.search(pattern, result.output, re.MULTILINE)
+  if m and m.group(1) == 'ebuild':
+    cros_build_lib.Info('(output):\n%s', result.output)
+    msg = 'Cannot find prebuilts for %s on %s' % (pkg, board)
+    raise MissingBinpkg(msg)
+
+
 def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
           packages=(), skip_chroot_upgrade=True, noworkon=False,
           extra_env=None, chrome_root=None):
