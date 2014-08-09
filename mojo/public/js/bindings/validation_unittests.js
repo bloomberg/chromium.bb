@@ -5,11 +5,12 @@
 define([
     "file",
     "gin/test/expect",
+    "mojo/public/interfaces/bindings/tests/validation_test_interfaces.mojom",
     "mojo/public/js/bindings/buffer",
     "mojo/public/js/bindings/codec",
     "mojo/public/js/bindings/tests/validation_test_input_parser",
     "mojo/public/js/bindings/validator",
-  ], function(file, expect, buffer, codec, parser, validator) {
+  ], function(file, expect, testInterface, buffer, codec, parser, validator) {
 
   function checkTestMessageParser() {
     function TestMessageParserFailure(message, input) {

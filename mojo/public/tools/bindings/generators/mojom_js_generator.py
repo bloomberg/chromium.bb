@@ -120,7 +120,7 @@ def JavaScriptEncodeSnippet(kind):
     return "encodeStructPointer(%s, " % CodecType(kind.name)
   if isinstance(kind, mojom.Array) and kind.kind == mojom.BOOL:
     return "encodeBoolArrayPointer(";
-  if isinstance(kind, mojom.Array):
+  if isinstance(kind, (mojom.Array, mojom.FixedArray)):
     return "encodeArrayPointer(%s, " % CodecType(kind.kind)
   if isinstance(kind, mojom.Interface) or \
      isinstance(kind, mojom.InterfaceRequest):
