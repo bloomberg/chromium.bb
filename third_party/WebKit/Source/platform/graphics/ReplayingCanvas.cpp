@@ -259,6 +259,12 @@ void ReplayingCanvas::onDrawPicture(const SkPicture* picture)
     this->SkCanvas::onDrawPicture(picture);
 }
 
+void ReplayingCanvas::onDrawPicture(const SkPicture* picture, const SkMatrix* matrix, const SkPaint* paint)
+{
+    AutoReplayer replayer(this);
+    this->SkCanvas::onDrawPicture(picture, matrix, paint);
+}
+
 void ReplayingCanvas::didSetMatrix(const SkMatrix& matrix)
 {
     AutoReplayer replayer(this);

@@ -245,6 +245,12 @@ void ProfilingCanvas::onDrawPicture(const SkPicture* picture)
     this->SkCanvas::onDrawPicture(picture);
 }
 
+void ProfilingCanvas::onDrawPicture(const SkPicture* picture, const SkMatrix* matrix, const SkPaint* paint)
+{
+    AutoStamper stamper(this);
+    this->SkCanvas::onDrawPicture(picture);
+}
+
 void ProfilingCanvas::didSetMatrix(const SkMatrix& matrix)
 {
     AutoStamper stamper(this);
