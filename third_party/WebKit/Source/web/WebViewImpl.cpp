@@ -3278,7 +3278,7 @@ void WebViewImpl::copyImageAt(const WebPoint& point)
 
     HitTestResult result = hitTestResultForWindowPos(point);
 
-    if (result.absoluteImageURL().isEmpty()) {
+    if (result.absoluteImageURLIncludingCanvasDataURL().isEmpty()) {
         // There isn't actually an image at these coordinates.  Might be because
         // the window scrolled while the context menu was open or because the page
         // changed itself between when we thought there was an image here and when
@@ -3297,7 +3297,7 @@ void WebViewImpl::saveImageAt(const WebPoint& point)
     if (!m_page)
         return;
 
-    KURL url = hitTestResultForWindowPos(point).absoluteImageURL();
+    KURL url = hitTestResultForWindowPos(point).absoluteImageURLIncludingCanvasDataURL();
 
     if (url.isEmpty())
         return;
