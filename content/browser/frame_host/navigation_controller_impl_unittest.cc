@@ -4235,14 +4235,17 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
   }
 }
 
-TEST_F(NavigationControllerTest, PushStateUpdatesTitle) {
-
-  // Navigate
+TEST_F(NavigationControllerTest, PushStateUpdatesTitleAndFavicon) {
+  // Navigate.
   test_rvh()->SendNavigate(1, GURL("http://foo"));
 
-  // Set title
+  // Set title and favicon.
   base::string16 title(base::ASCIIToUTF16("Title"));
+  FaviconStatus favicon;
+  favicon.valid = true;
+  favicon.url = GURL("http://foo/favicon.ico");
   controller().GetLastCommittedEntry()->SetTitle(title);
+  controller().GetLastCommittedEntry()->GetFavicon() = favicon;
 
   // history.pushState() is called.
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
@@ -4257,6 +4260,10 @@ TEST_F(NavigationControllerTest, PushStateUpdatesTitle) {
   base::string16 new_title =
       controller().GetLastCommittedEntry()->GetTitleForDisplay(std::string());
   EXPECT_EQ(title, new_title);
+  FaviconStatus new_favicon =
+      controller().GetLastCommittedEntry()->GetFavicon();
+  EXPECT_EQ(favicon.valid, new_favicon.valid);
+  EXPECT_EQ(favicon.url, new_favicon.url);
 }
 
 // Test that the navigation controller clears its session history when a

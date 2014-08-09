@@ -1073,9 +1073,11 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
 
   // history.pushState() is classified as a navigation to a new page, but
   // sets was_within_same_page to true. In this case, we already have the
-  // title available, so set it immediately.
-  if (params.was_within_same_page && GetLastCommittedEntry())
+  // title and favicon available, so set them immediately.
+  if (params.was_within_same_page && GetLastCommittedEntry()) {
     new_entry->SetTitle(GetLastCommittedEntry()->GetTitle());
+    new_entry->GetFavicon() = GetLastCommittedEntry()->GetFavicon();
+  }
 
   DCHECK(!params.history_list_was_cleared || !replace_entry);
   // The browser requested to clear the session history when it initiated the
