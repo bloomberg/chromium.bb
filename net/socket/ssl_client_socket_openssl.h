@@ -281,6 +281,14 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   bool marked_session_as_good_;
   // The request handle for |channel_id_service_|.
   ChannelIDService::RequestHandle channel_id_request_handle_;
+
+  TransportSecurityState* transport_security_state_;
+
+  // pinning_failure_log contains a message produced by
+  // TransportSecurityState::CheckPublicKeyPins in the event of a
+  // pinning failure. It is a (somewhat) human-readable string.
+  std::string pinning_failure_log_;
+
   BoundNetLog net_log_;
 };
 

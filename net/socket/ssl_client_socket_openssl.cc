@@ -23,6 +23,7 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/single_request_cert_verifier.h"
 #include "net/cert/x509_certificate_net_log_param.h"
+#include "net/http/transport_security_state.h"
 #include "net/socket/ssl_error_params.h"
 #include "net/socket/ssl_session_cache_openssl.h"
 #include "net/ssl/openssl_ssl_util.h"
@@ -365,6 +366,7 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       channel_id_xtn_negotiated_(false),
       handshake_succeeded_(false),
       marked_session_as_good_(false),
+      transport_security_state_(context.transport_security_state),
       net_log_(transport_->socket()->NetLog()) {
 }
 
@@ -428,6 +430,10 @@ int SSLClientSocketOpenSSL::GetTLSUniqueChannelBinding(std::string* out) {
 }
 
 int SSLClientSocketOpenSSL::Connect(const CompletionCallback& callback) {
+  // It is an error to create an SSLClientSocket whose context has no
+  // TransportSecurityState.
+  DCHECK(transport_security_state_);
+
   net_log_.BeginEvent(NetLog::TYPE_SSL_CONNECT);
 
   // Set up new ssl object.
@@ -588,6 +594,7 @@ bool SSLClientSocketOpenSSL::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->client_cert_sent =
       ssl_config_.send_client_cert && ssl_config_.client_cert.get();
   ssl_info->channel_id_sent = WasChannelIDSent();
+  ssl_info->pinning_failure_log = pinning_failure_log_;
 
   RecordChannelIDSupport(channel_id_service_,
                          channel_id_xtn_negotiated_,
@@ -1023,6 +1030,21 @@ int SSLClientSocketOpenSSL::DoVerifyCert(int result) {
 int SSLClientSocketOpenSSL::DoVerifyCertComplete(int result) {
   verifier_.reset();
 
+  bool sni_available = ssl_config_.version_max >= SSL_PROTOCOL_VERSION_TLS1 ||
+                       ssl_config_.version_fallback;
+  const CertStatus cert_status = server_cert_verify_result_.cert_status;
+  if (transport_security_state_ &&
+      (result == OK ||
+       (IsCertificateError(result) && IsCertStatusMinorError(cert_status))) &&
+      !transport_security_state_->CheckPublicKeyPins(
+          host_and_port_.host(),
+          sni_available,
+          server_cert_verify_result_.is_issued_by_known_root,
+          server_cert_verify_result_.public_key_hashes,
+          &pinning_failure_log_)) {
+    result = ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN;
+  }
+
   if (result == OK) {
     // TODO(joth): Work out if we need to remember the intermediate CA certs
     // when the server sends them to us, and do so here.
@@ -1035,6 +1057,7 @@ int SSLClientSocketOpenSSL::DoVerifyCertComplete(int result) {
   }
 
   completed_connect_ = true;
+
   // Exit DoHandshakeLoop and return the result to the caller to Connect.
   DCHECK_EQ(STATE_NONE, next_handshake_state_);
   return result;
