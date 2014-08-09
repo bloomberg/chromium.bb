@@ -23,8 +23,6 @@ namespace ui {
 
 // This class is a wrapper for |Clipboard| that handles packing data
 // into a Clipboard::ObjectMap.
-// NB: You should probably NOT be using this class if you include
-// webkit_glue.h. Use ScopedClipboardWriterGlue instead.
 class UI_BASE_EXPORT ScopedClipboardWriter {
  public:
   // Create an instance that is a simple wrapper around clipboard.

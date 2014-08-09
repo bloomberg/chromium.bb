@@ -54,8 +54,7 @@ class CONTENT_EXPORT ChildProcess {
   // process goes away prematurely, the background thread can at least notice
   // the child processes's main thread exiting to determine that it should give
   // up waiting.
-  // For example, see the renderer code used to implement
-  // webkit_glue::GetCookies.
+  // For example, see the renderer code used to implement GetCookies().
   base::WaitableEvent* GetShutDownEvent();
 
   // These are used for ref-counting the child process.  The process shuts

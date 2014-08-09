@@ -42,6 +42,6 @@ class FlingAnimatorImpl : public blink::WebGestureCurve {
   DISALLOW_COPY_AND_ASSIGN(FlingAnimatorImpl);
 };
 
-}  // namespace webkit_glue
+}  // namespace content
 
 #endif  // CONTENT_CHILD_FLING_ANIMATOR_IMPL_ANDROID_H_

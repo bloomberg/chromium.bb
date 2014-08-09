@@ -126,7 +126,7 @@ class MockTextCheckingCompletion : public blink::WebTextCheckingCompletion {
   blink::WebVector<blink::WebTextCheckingResult> last_results_;
 };
 
-// Operates unit tests for the webkit_glue::SpellCheckWord() function
+// Operates unit tests for the content::SpellCheck::SpellCheckWord() function
 // with the US English dictionary.
 // The unit tests in this function consist of:
 //   * Tests for the function with empty strings;

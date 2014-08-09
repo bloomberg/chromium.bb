@@ -22,12 +22,7 @@ namespace IPC {
 class SyncChannel;
 }
 
-namespace webkit_glue {
-class WebThreadImpl;
-}
-
 namespace content {
-class ResourceDispatcher;
 class WebThreadImpl;
 
 class ThreadedDataProvider {
