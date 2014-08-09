@@ -319,6 +319,7 @@
       ],
     }, {  # OS!="ios"
       'dependencies': [
+        'app/strings/content_strings.gyp:content_strings',
         '../third_party/WebKit/public/blink.gyp:blink',
         '../third_party/WebKit/public/blink_resources.gyp:blink_resources',
         '../third_party/npapi/npapi.gyp:npapi',

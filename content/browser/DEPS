@@ -1,4 +1,5 @@
 include_rules = [
+  "+content/app/strings/grit",  # For generated headers
   "+content/public/browser",
   "+media/audio",  # For audio input for speech input feature.
   "+media/base",  # For Android JNI registration.

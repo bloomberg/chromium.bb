@@ -7,12 +7,12 @@
 #include "base/command_line.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/app/strings/grit/content_strings.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "content/shell/common/shell_switches.h"
 #include "grit/shell_resources.h"
 #include "grit/webkit_resources.h"
-#include "grit/webkit_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 

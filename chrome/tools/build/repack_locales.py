@@ -92,11 +92,12 @@ def calc_inputs(locale):
                   'ui_chromeos_strings_%s.pak' % locale))
 
   if OS != 'ios':
-    #e.g. '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_da.pak'
-    inputs.append(os.path.join(SHARE_INT_DIR, 'webkit',
-                  'webkit_strings_%s.pak' % locale))
+    #e.g.
+    # '<(SHARED_INTERMEDIATE_DIR)/content/app/strings/content_strings_da.pak'
+    inputs.append(os.path.join(SHARE_INT_DIR, 'content', 'app', 'strings',
+                  'content_strings_%s.pak' % locale))
 
-    #e.g. '<(SHARED_INTERMEDIATE_DIR)/ui/strings_da.pak',
+    #e.g. '<(SHARED_INTERMEDIATE_DIR)/ui/strings/ui_strings_da.pak',
     inputs.append(os.path.join(SHARE_INT_DIR, 'ui', 'strings',
                   'ui_strings_%s.pak' % locale))
 

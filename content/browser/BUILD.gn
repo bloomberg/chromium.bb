@@ -87,25 +87,25 @@ source_set("browser") {
 
     # Non-iOS deps.
     deps += [
-      "//content/browser/devtools:resources",
-      "//content/common:mojo_bindings",
       "//cc",
       "//cc/surfaces",
+      "//content/app/strings",
+      "//content/browser/devtools:resources",
+      "//content/common:mojo_bindings",
       "//mojo/public/cpp/bindings",
       "//mojo/public/interfaces/application",
       "//mojo/public/js/bindings",
       "//net:http_server",
+      "//third_party/angle:commit_id",
       "//third_party/icu",
       "//third_party/leveldatabase",
       "//third_party/libyuv",
       "//ui/resources",
       "//ui/surface",
       "//webkit:resources",
-      "//webkit:strings",
       "//webkit/browser:storage",
       "//webkit/common",
       "//webkit/common:storage",
-      "//third_party/angle:commit_id",
     ]
   }
 

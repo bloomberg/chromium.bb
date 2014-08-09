@@ -862,10 +862,11 @@
                 # but that causes errors in other targets when
                 # resulting .res files get referenced multiple times.
                 '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/content/app/strings/content_strings_en-US.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
-                '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.rc',
               ],
               'dependencies': [
+                '<(DEPTH)/content/app/strings/content_strings.gyp:content_strings',
                 '<(DEPTH)/net/net.gyp:net_resources',
                 '<(DEPTH)/third_party/WebKit/public/blink_resources.gyp:blink_resources',
                 '<(DEPTH)/third_party/iaccessible2/iaccessible2.gyp:iaccessible2',

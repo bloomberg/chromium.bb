@@ -105,7 +105,7 @@
     "structures": [12000],
     "messages": [12500],
   },
-  "webkit/glue/webkit_strings.grd": {
+  "content/app/strings/content_strings.grd": {
     "messages": [18500],
   },
   "components/policy/resources/policy_templates.grd": {

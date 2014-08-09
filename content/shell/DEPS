@@ -6,6 +6,7 @@ include_rules = [
 
   # The content_shell is the canonical sample embedder, so it only uses
   # content's public API.
+  "+content/app/strings/grit",  # For generated headers
   "+content/public",
 
   # The content_shell is an embedder so it must work with resource bundles.

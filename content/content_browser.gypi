@@ -1583,6 +1583,7 @@
       ],
     }, {  # OS!="ios"
       'dependencies': [
+        'app/strings/content_strings.gyp:content_strings',
         'browser/devtools/devtools_resources.gyp:devtools_resources',
         'content_common_mojo_bindings',
         '../cc/cc.gyp:cc',
@@ -1598,7 +1599,6 @@
         '../webkit/storage_browser.gyp:webkit_storage_browser',
         '../webkit/storage_common.gyp:webkit_storage_common',
         '../webkit/webkit_resources.gyp:webkit_resources',
-        '../webkit/webkit_resources.gyp:webkit_strings',
       ],
     }],
     ['enable_printing!=0', {

@@ -15,6 +15,7 @@ include_rules = [
   "+components/translate/core/common",
   "+components/translate/core/language_detection",
   "+components/visitedlink/renderer",
+  "+content/app/strings/grit",  # For generated headers
   "+content/public/child",
   "+content/public/renderer",
   "+extensions/common",

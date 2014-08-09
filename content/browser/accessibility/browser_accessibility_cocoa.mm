@@ -12,10 +12,10 @@
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/app/strings/grit/content_strings.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #include "content/public/common/content_client.h"
-#include "grit/webkit_strings.h"
 #import "ui/accessibility/platform/ax_platform_node_mac.h"
 
 // See http://openradar.appspot.com/9896491. This SPI has been tested on 10.5,

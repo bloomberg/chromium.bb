@@ -1,5 +1,6 @@
 include_rules = [
   "+components/tracing",
+  "+content/app/strings/grit",  # For generated headers
   "+content/public/child",
   "+media/base/android",
 ]

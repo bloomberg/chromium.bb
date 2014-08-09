@@ -74,6 +74,7 @@
       'type': 'none',
       'dependencies': [
         'cast_shell_resources',
+        '../content/app/strings/content_strings.gyp:content_strings',
         '../content/browser/devtools/devtools_resources.gyp:devtools_resources',
         '../content/content_resources.gyp:content_resources',
         '../net/net.gyp:net_resources',
@@ -81,7 +82,6 @@
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/strings/ui_strings.gyp:ui_strings',
         '../webkit/webkit_resources.gyp:webkit_resources',
-        '../webkit/webkit_resources.gyp:webkit_strings',
       ],
       'actions': [
         {
@@ -90,6 +90,7 @@
             'pak_inputs': [
               '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/content/app/strings/content_strings_en-US.pak',
               '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_resources_100_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/resources/webui_resources.pak',
@@ -97,7 +98,6 @@
               '<(SHARED_INTERMEDIATE_DIR)/ui/strings/ui_strings_en-US.pak',
               '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_100_percent.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.pak',
             ],
             'pak_output': '<(PRODUCT_DIR)/cast_shell.pak',
           },

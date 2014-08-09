@@ -87,11 +87,11 @@ source_set("child") {
     sources = []
   } else {
     deps += [
+      "//content/app/strings",
       "//crypto:platform",
       "//third_party/WebKit/public:blink",
       "//third_party/npapi",
       "//webkit:resources",
-      "//webkit:strings",
       "//webkit/child",
       "//webkit/common",
     ]

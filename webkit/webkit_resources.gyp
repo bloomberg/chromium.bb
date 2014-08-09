@@ -22,24 +22,6 @@
       ],
       'includes': [ '../build/grit_target.gypi' ],
     },
-    {
-      # GN version: //webkit:strings
-      'target_name': 'webkit_strings',
-      'type': 'none',
-      'variables': {
-        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/webkit',
-      },
-      'actions': [
-        {
-          'action_name': 'webkit_strings',
-          'variables': {
-            'grit_grd_file': 'glue/webkit_strings.grd',
-          },
-          'includes': [ '../build/grit_action.gypi' ],
-        },
-      ],
-      'includes': [ '../build/grit_target.gypi' ],
-    },
   ]
 }
 
