@@ -12,4 +12,8 @@ include_rules = [
   "+ui/aura",
   "+ui/gfx",
   "+ui/views",
+
+  # No inclusion of WebKit from the athena main process, other than
+  # strictly enum/POD, header-only types, and some selected common code.
+  "+third_party/WebKit/public/web/WebContextMenuData.h",
 ]
