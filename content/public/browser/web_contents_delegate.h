@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_type.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/page_transition_types.h"
@@ -84,10 +85,9 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Called to inform the delegate that the WebContents's navigation state
   // changed. The |changed_flags| indicates the parts of the navigation state
-  // that have been updated, and is any combination of the
-  // |WebContents::InvalidateTypes| bits.
+  // that have been updated.
   virtual void NavigationStateChanged(const WebContents* source,
-                                      unsigned changed_flags) {}
+                                      InvalidateTypes changed_flags) {}
 
   // Called to inform the delegate that the WebContent's visible SSL state (as
   // defined by SSLStatus) changed.

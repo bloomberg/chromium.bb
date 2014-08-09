@@ -263,7 +263,7 @@ content::WebContents* SimpleWebViewDialog::OpenURL(
 }
 
 void SimpleWebViewDialog::NavigationStateChanged(
-    const WebContents* source, unsigned changed_flags) {
+    const WebContents* source, content::InvalidateTypes changed_flags) {
   if (location_bar_) {
     location_bar_->Update(NULL);
     UpdateButtons();

@@ -923,7 +923,7 @@ void AppWindow::MoveContents(WebContents* source, const gfx::Rect& pos) {
 }
 
 void AppWindow::NavigationStateChanged(const content::WebContents* source,
-                                       unsigned changed_flags) {
+                                       content::InvalidateTypes changed_flags) {
   if (changed_flags & content::INVALIDATE_TYPE_TITLE)
     native_app_window_->UpdateWindowTitle();
   else if (changed_flags & content::INVALIDATE_TYPE_TAB)

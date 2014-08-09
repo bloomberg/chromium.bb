@@ -540,8 +540,9 @@ class Browser : public TabStripModelObserver,
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) OVERRIDE;
-  virtual void NavigationStateChanged(const content::WebContents* source,
-                                      unsigned changed_flags) OVERRIDE;
+  virtual void NavigationStateChanged(
+      const content::WebContents* source,
+      content::InvalidateTypes changed_flags) OVERRIDE;
   virtual void VisibleSSLStateChanged(
       const content::WebContents* source) OVERRIDE;
   virtual void AddNewContents(content::WebContents* source,

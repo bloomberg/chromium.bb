@@ -68,8 +68,9 @@ class SimpleWebViewDialog : public views::ButtonListener,
       const content::OpenURLParams& params) OVERRIDE;
 
   // Implements content::WebContentsDelegate:
-  virtual void NavigationStateChanged(const content::WebContents* source,
-                                      unsigned changed_flags) OVERRIDE;
+  virtual void NavigationStateChanged(
+      const content::WebContents* source,
+      content::InvalidateTypes changed_flags) OVERRIDE;
   virtual void LoadingStateChanged(content::WebContents* source,
                                    bool to_different_document) OVERRIDE;
 

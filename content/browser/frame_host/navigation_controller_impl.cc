@@ -46,8 +46,6 @@
 namespace content {
 namespace {
 
-const unsigned kInvalidateAll = 0xFFFFFFFF;
-
 // Invoked when entries have been pruned, or removed. For example, if the
 // current entries are [google, digg, yahoo], with the current entry google,
 // and the user types in cnet, then digg and yahoo are pruned.
@@ -1525,7 +1523,7 @@ void NavigationControllerImpl::DiscardNonCommittedEntries() {
   // If there was a transient entry, invalidate everything so the new active
   // entry state is shown.
   if (transient) {
-    delegate_->NotifyNavigationStateChanged(kInvalidateAll);
+    delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_ALL);
   }
 }
 
@@ -1659,7 +1657,7 @@ void NavigationControllerImpl::NotifyNavigationEntryCommitted(
   // when it wants to draw.  See http://crbug.com/11157
   ssl_manager_.DidCommitProvisionalLoad(*details);
 
-  delegate_->NotifyNavigationStateChanged(kInvalidateAll);
+  delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_ALL);
   delegate_->NotifyNavigationEntryCommitted(*details);
 
   // TODO(avi): Remove. http://crbug.com/170921
@@ -1768,7 +1766,7 @@ void NavigationControllerImpl::SetTransientEntry(NavigationEntry* entry) {
       entries_.begin() + index, linked_ptr<NavigationEntryImpl>(
           NavigationEntryImpl::FromNavigationEntry(entry)));
   transient_entry_index_ = index;
-  delegate_->NotifyNavigationStateChanged(kInvalidateAll);
+  delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_ALL);
 }
 
 void NavigationControllerImpl::InsertEntriesFrom(

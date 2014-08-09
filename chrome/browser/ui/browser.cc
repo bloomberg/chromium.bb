@@ -1347,7 +1347,7 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
 }
 
 void Browser::NavigationStateChanged(const WebContents* source,
-                                     unsigned changed_flags) {
+                                     content::InvalidateTypes changed_flags) {
   // Only update the UI when something visible has changed.
   if (changed_flags)
     ScheduleUIUpdate(source, changed_flags);

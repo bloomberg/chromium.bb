@@ -75,7 +75,8 @@ views::NonClientFrameView* CaptivePortalView::CreateNonClientFrameView(
 }
 
 void CaptivePortalView::NavigationStateChanged(
-    const content::WebContents* source, unsigned changed_flags) {
+    const content::WebContents* source,
+    content::InvalidateTypes changed_flags) {
   SimpleWebViewDialog::NavigationStateChanged(source, changed_flags);
 
   // Naive way to determine the redirection. This won't be needed after portal

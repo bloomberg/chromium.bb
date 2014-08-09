@@ -32,7 +32,7 @@ class MockWebContentsDelegate : public content::WebContentsDelegate {
  public:
   MOCK_METHOD2(NavigationStateChanged,
                void(const content::WebContents* source,
-                    unsigned changed_flags));
+                    content::InvalidateTypes changed_flags));
 };
 
 }  // namespace

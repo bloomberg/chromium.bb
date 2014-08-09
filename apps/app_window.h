@@ -370,8 +370,9 @@ class AppWindow : public content::NotificationObserver,
       const OVERRIDE;
   virtual void MoveContents(content::WebContents* source,
                             const gfx::Rect& pos) OVERRIDE;
-  virtual void NavigationStateChanged(const content::WebContents* source,
-                                      unsigned changed_flags) OVERRIDE;
+  virtual void NavigationStateChanged(
+      const content::WebContents* source,
+      content::InvalidateTypes changed_flags) OVERRIDE;
   virtual void ToggleFullscreenModeForTab(content::WebContents* source,
                                           bool enter_fullscreen) OVERRIDE;
   virtual bool IsFullscreenForTabOrPending(const content::WebContents* source)

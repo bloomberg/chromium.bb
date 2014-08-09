@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_FRAME_HOST_NAVIGATION_CONTROLLER_DELEGATE_H_
 
 #include <string>
+#include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 
@@ -34,7 +35,7 @@ class NavigationControllerDelegate {
   virtual RenderViewHost* GetRenderViewHost() const = 0;
   virtual InterstitialPage* GetInterstitialPage() const = 0;
   virtual const std::string& GetContentsMimeType() const = 0;
-  virtual void NotifyNavigationStateChanged(unsigned changed_flags) = 0;
+  virtual void NotifyNavigationStateChanged(InvalidateTypes changed_flags) = 0;
   virtual void Stop() = 0;
   virtual SiteInstance* GetPendingSiteInstance() const = 0;
   virtual int32 GetMaxPageID() = 0;

@@ -245,7 +245,8 @@ class CONTENT_EXPORT WebContentsImpl
                             int error_code) OVERRIDE;
   virtual base::TerminationStatus GetCrashedStatus() const OVERRIDE;
   virtual bool IsBeingDestroyed() const OVERRIDE;
-  virtual void NotifyNavigationStateChanged(unsigned changed_flags) OVERRIDE;
+  virtual void NotifyNavigationStateChanged(
+      InvalidateTypes changed_flags) OVERRIDE;
   virtual base::TimeTicks GetLastActiveTime() const OVERRIDE;
   virtual void WasShown() OVERRIDE;
   virtual void WasHidden() OVERRIDE;

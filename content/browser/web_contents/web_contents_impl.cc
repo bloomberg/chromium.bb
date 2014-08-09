@@ -1009,7 +1009,8 @@ bool WebContentsImpl::IsBeingDestroyed() const {
   return is_being_destroyed_;
 }
 
-void WebContentsImpl::NotifyNavigationStateChanged(unsigned changed_flags) {
+void WebContentsImpl::NotifyNavigationStateChanged(
+    InvalidateTypes changed_flags) {
   if (delegate_)
     delegate_->NavigationStateChanged(this, changed_flags);
 }
@@ -3918,7 +3919,8 @@ void WebContentsImpl::LoadStateChanged(
   if (load_state_.state == net::LOAD_STATE_READING_RESPONSE)
     SetNotWaitingForResponse();
   if (IsLoading()) {
-    NotifyNavigationStateChanged(INVALIDATE_TYPE_LOAD | INVALIDATE_TYPE_TAB);
+    NotifyNavigationStateChanged(static_cast<InvalidateTypes>(
+        INVALIDATE_TYPE_LOAD | INVALIDATE_TYPE_TAB));
   }
 }
 

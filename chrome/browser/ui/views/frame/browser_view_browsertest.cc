@@ -62,8 +62,8 @@ class TestWebContentsObserver : public content::WebContentsObserver {
   virtual ~TestWebContentsObserver() {}
 
   virtual void WebContentsDestroyed() OVERRIDE {
-    other_->NotifyNavigationStateChanged(
-        content::INVALIDATE_TYPE_URL | content::INVALIDATE_TYPE_LOAD);
+    other_->NotifyNavigationStateChanged(static_cast<content::InvalidateTypes>(
+        content::INVALIDATE_TYPE_URL | content::INVALIDATE_TYPE_LOAD));
   }
 
  private:
