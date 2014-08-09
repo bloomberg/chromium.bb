@@ -34,11 +34,8 @@
 #include "../platform/WebCommon.h"
 
 namespace blink {
+
 class MIDIAccessInitializer;
-}
-
-namespace blink {
-
 class WebSecurityOrigin;
 
 // WebMIDIPermissionRequest encapsulates a WebCore MIDIAccessInitializer
@@ -56,13 +53,13 @@ public:
     BLINK_EXPORT bool equals(const WebMIDIPermissionRequest&) const;
 
 #if BLINK_IMPLEMENTATION
-    explicit WebMIDIPermissionRequest(blink::MIDIAccessInitializer*);
+    explicit WebMIDIPermissionRequest(MIDIAccessInitializer*);
 
-    blink::MIDIAccessInitializer* midiAccessInitializer() const { return m_initializer; }
+    MIDIAccessInitializer* midiAccessInitializer() const { return m_initializer; }
 #endif
 
 private:
-    blink::MIDIAccessInitializer* m_initializer;
+    MIDIAccessInitializer* m_initializer;
 };
 
 inline bool operator==(const WebMIDIPermissionRequest& a, const WebMIDIPermissionRequest& b)

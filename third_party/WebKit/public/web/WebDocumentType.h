@@ -34,11 +34,12 @@
 #include "WebNode.h"
 
 #if BLINK_IMPLEMENTATION
-namespace blink { class DocumentType; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
 namespace blink {
+
+class DocumentType;
 class WebString;
 
 // Provides readonly access to some properties of a DOM document type.
@@ -57,9 +58,9 @@ public:
     BLINK_EXPORT WebString name() const;
 
 #if BLINK_IMPLEMENTATION
-    WebDocumentType(const PassRefPtrWillBeRawPtr<blink::DocumentType>&);
-    WebDocumentType& operator=(const PassRefPtrWillBeRawPtr<blink::DocumentType>&);
-    operator PassRefPtrWillBeRawPtr<blink::DocumentType>() const;
+    WebDocumentType(const PassRefPtrWillBeRawPtr<DocumentType>&);
+    WebDocumentType& operator=(const PassRefPtrWillBeRawPtr<DocumentType>&);
+    operator PassRefPtrWillBeRawPtr<DocumentType>() const;
 #endif
 };
 

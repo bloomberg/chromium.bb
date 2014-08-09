@@ -45,9 +45,9 @@ public:
     WebGeolocationPermissionRequestManager() { init(); }
     ~WebGeolocationPermissionRequestManager() { reset(); }
 
-    BLINK_EXPORT int add(const blink::WebGeolocationPermissionRequest&);
-    BLINK_EXPORT bool remove(const blink::WebGeolocationPermissionRequest&, int&);
-    BLINK_EXPORT bool remove(int, blink::WebGeolocationPermissionRequest&);
+    BLINK_EXPORT int add(const WebGeolocationPermissionRequest&);
+    BLINK_EXPORT bool remove(const WebGeolocationPermissionRequest&, int&);
+    BLINK_EXPORT bool remove(int, WebGeolocationPermissionRequest&);
 
 private:
     BLINK_EXPORT void init();

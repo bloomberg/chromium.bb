@@ -48,9 +48,9 @@ class Value;
 template <class T> class Handle;
 }
 
-namespace blink { class DOMFileSystem; }
-
 namespace blink {
+
+class DOMFileSystem;
 
 class WebDOMFileSystem {
 public:
@@ -102,12 +102,12 @@ public:
     bool isNull() const { return m_private.isNull(); }
 
 #if BLINK_IMPLEMENTATION
-    WebDOMFileSystem(blink::DOMFileSystem*);
-    WebDOMFileSystem& operator=(blink::DOMFileSystem*);
+    WebDOMFileSystem(DOMFileSystem*);
+    WebDOMFileSystem& operator=(DOMFileSystem*);
 #endif
 
 private:
-    WebPrivatePtr<blink::DOMFileSystem> m_private;
+    WebPrivatePtr<DOMFileSystem> m_private;
 };
 
 } // namespace blink

@@ -35,9 +35,9 @@
 #include "../platform/WebPrivatePtr.h"
 #include "../platform/WebReferrerPolicy.h"
 
-namespace blink { class HistoryItem; }
-
 namespace blink {
+
+class HistoryItem;
 class WebHTTPBody;
 class WebString;
 class WebSerializedScriptValue;
@@ -116,13 +116,13 @@ public:
     BLINK_EXPORT WebVector<WebString> getReferencedFilePaths() const;
 
 #if BLINK_IMPLEMENTATION
-    WebHistoryItem(const WTF::PassRefPtr<blink::HistoryItem>&);
-    WebHistoryItem& operator=(const WTF::PassRefPtr<blink::HistoryItem>&);
-    operator WTF::PassRefPtr<blink::HistoryItem>() const;
+    WebHistoryItem(const WTF::PassRefPtr<HistoryItem>&);
+    WebHistoryItem& operator=(const WTF::PassRefPtr<HistoryItem>&);
+    operator WTF::PassRefPtr<HistoryItem>() const;
 #endif
 
 private:
-    WebPrivatePtr<blink::HistoryItem> m_private;
+    WebPrivatePtr<HistoryItem> m_private;
 };
 
 } // namespace blink

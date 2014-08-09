@@ -34,14 +34,11 @@
 #include "../platform/WebVector.h"
 #include "WebElement.h"
 
-#if BLINK_IMPLEMENTATION
-namespace blink { class HTMLFormElement; }
-#endif
-
 namespace blink {
 
-    class WebInputElement;
-    class WebFormControlElement;
+class HTMLFormElement;
+class WebInputElement;
+class WebFormControlElement;
 
     // A container for passing around a reference to a form element.  Provides
     // some information about the form.
@@ -81,9 +78,9 @@ namespace blink {
         BLINK_EXPORT void finishRequestAutocomplete(WebFormElement::AutocompleteResult);
 
 #if BLINK_IMPLEMENTATION
-        WebFormElement(const PassRefPtrWillBeRawPtr<blink::HTMLFormElement>&);
-        WebFormElement& operator=(const PassRefPtrWillBeRawPtr<blink::HTMLFormElement>&);
-        operator PassRefPtrWillBeRawPtr<blink::HTMLFormElement>() const;
+        WebFormElement(const PassRefPtrWillBeRawPtr<HTMLFormElement>&);
+        WebFormElement& operator=(const PassRefPtrWillBeRawPtr<HTMLFormElement>&);
+        operator PassRefPtrWillBeRawPtr<HTMLFormElement>() const;
 #endif
     };
 

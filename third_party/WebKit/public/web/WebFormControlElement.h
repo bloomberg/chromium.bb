@@ -35,11 +35,9 @@
 #include "WebElement.h"
 #include "WebFormElement.h"
 
-#if BLINK_IMPLEMENTATION
-namespace blink { class HTMLFormControlElement; }
-#endif
-
 namespace blink {
+
+class HTMLFormControlElement;
 
 // Provides readonly access to some properties of a DOM form control element node.
 class WebFormControlElement : public WebElement {
@@ -116,9 +114,9 @@ public:
     BLINK_EXPORT WebFormElement form() const;
 
 #if BLINK_IMPLEMENTATION
-    WebFormControlElement(const PassRefPtrWillBeRawPtr<blink::HTMLFormControlElement>&);
-    WebFormControlElement& operator=(const PassRefPtrWillBeRawPtr<blink::HTMLFormControlElement>&);
-    operator PassRefPtrWillBeRawPtr<blink::HTMLFormControlElement>() const;
+    WebFormControlElement(const PassRefPtrWillBeRawPtr<HTMLFormControlElement>&);
+    WebFormControlElement& operator=(const PassRefPtrWillBeRawPtr<HTMLFormControlElement>&);
+    operator PassRefPtrWillBeRawPtr<HTMLFormControlElement>() const;
 #endif
 };
 

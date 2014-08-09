@@ -55,7 +55,7 @@ public:
     BLINK_EXPORT WebMessagePortChannelArray releaseChannels();
 
 #if BLINK_IMPLEMENTATION
-    explicit WebDOMMessageEvent(const PassRefPtrWillBeRawPtr<blink::MessageEvent>& e) : WebDOMEvent(e) { }
+    explicit WebDOMMessageEvent(const PassRefPtrWillBeRawPtr<MessageEvent>& e) : WebDOMEvent(e) { }
 #endif
 };
 

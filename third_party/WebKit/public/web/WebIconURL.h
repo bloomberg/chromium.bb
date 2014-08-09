@@ -76,7 +76,7 @@ public:
     }
 
 #if BLINK_IMPLEMENTATION
-    WebIconURL(const blink::IconURL& iconURL)
+    WebIconURL(const IconURL& iconURL)
         : m_iconType(static_cast<Type>(iconURL.m_iconType))
         , m_iconURL(iconURL.m_iconURL)
         , m_sizes(iconURL.m_sizes)

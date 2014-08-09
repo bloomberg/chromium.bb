@@ -43,9 +43,9 @@ class Value;
 template <class T> class Handle;
 }
 
-namespace blink { class MediaStreamTrack; }
-
 namespace blink {
+
+class MediaStreamTrack;
 
 class WebDOMMediaStreamTrack {
 public:
@@ -68,10 +68,10 @@ public:
 
 private:
 #if BLINK_IMPLEMENTATION
-    WebDOMMediaStreamTrack(PassRefPtrWillBeRawPtr<blink::MediaStreamTrack>);
+    WebDOMMediaStreamTrack(PassRefPtrWillBeRawPtr<MediaStreamTrack>);
 #endif
 
-    WebPrivatePtr<blink::MediaStreamTrack> m_private;
+    WebPrivatePtr<MediaStreamTrack> m_private;
 };
 
 } // namespace blink

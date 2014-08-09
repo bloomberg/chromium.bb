@@ -35,6 +35,7 @@
 #include "../platform/WebVector.h"
 
 namespace blink {
+
 class WebDevToolsAgentClient;
 class WebDevToolsMessageTransport;
 class WebString;

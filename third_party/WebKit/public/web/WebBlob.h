@@ -48,9 +48,9 @@ class Value;
 template <class T> class Handle;
 }
 
-namespace blink { class Blob; }
-
 namespace blink {
+
+class Blob;
 
 class WebBlob {
 public:
@@ -77,12 +77,12 @@ public:
     BLINK_EXPORT v8::Handle<v8::Value>  toV8Value(v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 #if BLINK_IMPLEMENTATION
-    explicit WebBlob(const PassRefPtrWillBeRawPtr<blink::Blob>&);
-    WebBlob& operator=(const PassRefPtrWillBeRawPtr<blink::Blob>&);
+    explicit WebBlob(const PassRefPtrWillBeRawPtr<Blob>&);
+    WebBlob& operator=(const PassRefPtrWillBeRawPtr<Blob>&);
 #endif
 
 protected:
-    WebPrivatePtr<blink::Blob> m_private;
+    WebPrivatePtr<Blob> m_private;
 };
 
 } // namespace blink

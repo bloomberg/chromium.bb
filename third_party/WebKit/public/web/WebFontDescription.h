@@ -33,11 +33,9 @@
 
 #include "../platform/WebString.h"
 
-#if BLINK_IMPLEMENTATION
-namespace blink { class FontDescription; }
-#endif
-
 namespace blink {
+
+class FontDescription;
 
 struct WebFontDescription {
     enum GenericFamily {
@@ -95,9 +93,8 @@ struct WebFontDescription {
     short wordSpacing;
 
 #if BLINK_IMPLEMENTATION
-    WebFontDescription(const blink::FontDescription&);
-
-    operator blink::FontDescription() const;
+    WebFontDescription(const FontDescription&);
+    operator FontDescription() const;
 #endif
 };
 

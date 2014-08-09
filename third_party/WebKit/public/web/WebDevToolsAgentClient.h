@@ -35,6 +35,7 @@
 #include "../platform/WebCommon.h"
 
 namespace blink {
+
 class WebString;
 struct WebDeviceEmulationParams;
 struct WebDevToolsMessageData;

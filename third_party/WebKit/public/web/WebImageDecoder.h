@@ -35,12 +35,11 @@
 #include "../platform/WebImage.h"
 #include "../platform/WebNonCopyable.h"
 
-namespace blink { class ImageDecoder; }
-
 namespace blink {
 
-typedef blink::ImageDecoder WebImageDecoderPrivate;
+class ImageDecoder;
 class WebData;
+typedef ImageDecoder WebImageDecoderPrivate;
 
 class WebImageDecoder : public WebNonCopyable {
 public:

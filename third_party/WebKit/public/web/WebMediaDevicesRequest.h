@@ -32,10 +32,8 @@
 #include "public/platform/WebString.h"
 
 namespace blink {
-class MediaDevicesRequest;
-}
 
-namespace blink {
+class MediaDevicesRequest;
 class WebDocument;
 class WebMediaDeviceInfo;
 template <typename T> class WebVector;
@@ -63,12 +61,12 @@ public:
     BLINK_EXPORT void requestSucceeded(WebVector<WebMediaDeviceInfo>);
 
 #if BLINK_IMPLEMENTATION
-    WebMediaDevicesRequest(blink::MediaDevicesRequest*);
-    operator blink::MediaDevicesRequest*() const;
+    WebMediaDevicesRequest(MediaDevicesRequest*);
+    operator MediaDevicesRequest*() const;
 #endif
 
 private:
-    WebPrivatePtr<blink::MediaDevicesRequest> m_private;
+    WebPrivatePtr<MediaDevicesRequest> m_private;
 };
 
 inline bool operator==(const WebMediaDevicesRequest& a, const WebMediaDevicesRequest& b)

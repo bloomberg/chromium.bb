@@ -36,10 +36,8 @@
 #include "WebMIDIClient.h"
 
 namespace blink {
-class MIDIClientMock;
-}
 
-namespace blink {
+class MIDIClientMock;
 
 class WebMIDIClientMock : public WebMIDIClient {
 public:
@@ -56,7 +54,7 @@ public:
 private:
     BLINK_EXPORT void reset();
 
-    WebPrivateOwnPtr<blink::MIDIClientMock> m_clientMock;
+    WebPrivateOwnPtr<MIDIClientMock> m_clientMock;
 };
 
 } // namespace blink

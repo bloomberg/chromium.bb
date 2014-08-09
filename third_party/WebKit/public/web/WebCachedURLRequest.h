@@ -35,10 +35,9 @@
 #include "../platform/WebPrivateOwnPtr.h"
 #include "../platform/WebString.h"
 
-namespace blink { class FetchRequest; }
-
 namespace blink {
 
+class FetchRequest;
 class WebString;
 class WebURLRequest;
 class WrappedResourceRequest;
@@ -54,14 +53,14 @@ public:
     BLINK_EXPORT WebString initiatorName() const;
 
 #if BLINK_IMPLEMENTATION
-    explicit WebCachedURLRequest(blink::FetchRequest*);
+    explicit WebCachedURLRequest(FetchRequest*);
 #endif
 
 private:
     WebCachedURLRequest(const WebCachedURLRequest&);
     WebCachedURLRequest& operator=(const WebCachedURLRequest&);
 
-    blink::FetchRequest* m_private;
+    FetchRequest* m_private;
     mutable WebPrivateOwnPtr<WrappedResourceRequest> m_resourceRequestWrapper;
 };
 

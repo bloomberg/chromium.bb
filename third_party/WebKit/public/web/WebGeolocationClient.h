@@ -27,6 +27,7 @@
 #define WebGeolocationClient_h
 
 namespace blink {
+
 class WebGeolocationController;
 class WebGeolocationPermissionRequest;
 class WebGeolocationPosition;

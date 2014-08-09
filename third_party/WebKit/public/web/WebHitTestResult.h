@@ -29,11 +29,8 @@
 #include "../platform/WebPrivatePtr.h"
 
 namespace blink {
+
 class HitTestResult;
-}
-
-namespace blink {
-
 class WebElement;
 class WebHitTestResultPrivate;
 class WebNode;
@@ -73,8 +70,8 @@ public:
     BLINK_EXPORT bool isContentEditable() const;
 
 #if BLINK_IMPLEMENTATION
-    WebHitTestResult(const blink::HitTestResult&);
-    WebHitTestResult& operator=(const blink::HitTestResult&);
+    WebHitTestResult(const HitTestResult&);
+    WebHitTestResult& operator=(const HitTestResult&);
 #endif
 
 protected:

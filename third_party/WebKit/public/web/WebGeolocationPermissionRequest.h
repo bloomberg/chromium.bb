@@ -30,10 +30,8 @@
 #include "../platform/WebPrivatePtr.h"
 
 namespace blink {
-class Geolocation;
-}
 
-namespace blink {
+class Geolocation;
 class WebSecurityOrigin;
 
 // WebGeolocationPermissionRequest encapsulates a WebCore Geolocation object and represents
@@ -48,15 +46,16 @@ public:
     BLINK_EXPORT void setIsAllowed(bool);
 
 #if BLINK_IMPLEMENTATION
-    WebGeolocationPermissionRequest(blink::Geolocation*);
-    blink::Geolocation* geolocation() const { return m_private.get(); }
+    WebGeolocationPermissionRequest(Geolocation*);
+    Geolocation* geolocation() const { return m_private.get(); }
 #endif
 
 private:
     BLINK_EXPORT void reset();
 
-    WebPrivatePtr<blink::Geolocation> m_private;
+    WebPrivatePtr<Geolocation> m_private;
 };
+
 }
 
 #endif // WebGeolocationPermissionRequest_h

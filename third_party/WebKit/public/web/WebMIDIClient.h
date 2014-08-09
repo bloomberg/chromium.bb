@@ -32,6 +32,7 @@
 #define WebMIDIClient_h
 
 namespace blink {
+
 class WebMIDIPermissionRequest;
 
 class WebMIDIClient {

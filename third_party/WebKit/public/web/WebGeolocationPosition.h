@@ -29,9 +29,9 @@
 #include "../platform/WebCommon.h"
 #include "../platform/WebPrivatePtr.h"
 
-namespace blink { class GeolocationPosition; }
-
 namespace blink {
+
+class GeolocationPosition;
 
 class WebGeolocationPosition {
 public:
@@ -48,13 +48,13 @@ public:
     BLINK_EXPORT void reset();
 
 #if BLINK_IMPLEMENTATION
-    WebGeolocationPosition(blink::GeolocationPosition*);
-    WebGeolocationPosition& operator=(blink::GeolocationPosition*);
-    operator blink::GeolocationPosition*() const;
+    WebGeolocationPosition(GeolocationPosition*);
+    WebGeolocationPosition& operator=(GeolocationPosition*);
+    operator GeolocationPosition*() const;
 #endif
 
 private:
-    WebPrivatePtr<blink::GeolocationPosition> m_private;
+    WebPrivatePtr<GeolocationPosition> m_private;
 };
 
 } // namespace blink

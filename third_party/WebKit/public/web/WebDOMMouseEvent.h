@@ -32,10 +32,6 @@
 
 #include "WebDOMEvent.h"
 
-#if BLINK_IMPLEMENTATION
-namespace blink { class Event; }
-#endif
-
 namespace blink {
 
 class WebDOMMouseEvent : public WebDOMEvent {

@@ -34,11 +34,9 @@
 #include "../platform/WebImage.h"
 #include "WebNode.h"
 
-#if BLINK_IMPLEMENTATION
-namespace blink { class Element; }
-#endif
-
 namespace blink {
+
+class Element;
 struct WebRect;
 
     // Provides access to some properties of a DOM element node.
@@ -85,9 +83,9 @@ struct WebRect;
         BLINK_EXPORT WebImage imageContents();
 
 #if BLINK_IMPLEMENTATION
-        WebElement(const PassRefPtrWillBeRawPtr<blink::Element>&);
-        WebElement& operator=(const PassRefPtrWillBeRawPtr<blink::Element>&);
-        operator PassRefPtrWillBeRawPtr<blink::Element>() const;
+        WebElement(const PassRefPtrWillBeRawPtr<Element>&);
+        WebElement& operator=(const PassRefPtrWillBeRawPtr<Element>&);
+        operator PassRefPtrWillBeRawPtr<Element>() const;
 #endif
     };
 

@@ -28,11 +28,9 @@
 
 #include "public/platform/WebString.h"
 
-#if BLINK_IMPLEMENTATION
-namespace blink { struct DateTimeSuggestion; }
-#endif
-
 namespace blink {
+
+struct DateTimeSuggestion;
 
 struct WebDateTimeSuggestion {
     double value;
@@ -42,8 +40,8 @@ struct WebDateTimeSuggestion {
     WebDateTimeSuggestion() { }
 
 #if BLINK_IMPLEMENTATION
-    WebDateTimeSuggestion(const blink::DateTimeSuggestion&);
-    WebDateTimeSuggestion& operator=(const blink::DateTimeSuggestion&);
+    WebDateTimeSuggestion(const DateTimeSuggestion&);
+    WebDateTimeSuggestion& operator=(const DateTimeSuggestion&);
 #endif
 };
 

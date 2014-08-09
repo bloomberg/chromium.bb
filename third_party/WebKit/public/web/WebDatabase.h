@@ -34,10 +34,9 @@
 #include "../platform/WebCommon.h"
 #include "WebSecurityOrigin.h"
 
-namespace blink { class DatabaseBackendBase; }
-
 namespace blink {
 
+class DatabaseBackendBase;
 class WebString;
 
 class WebDatabase {
@@ -59,12 +58,12 @@ public:
         const WebString& originIdentifier, const WebString& databaseName);
 
 #if BLINK_IMPLEMENTATION
-    WebDatabase(const blink::DatabaseBackendBase*);
+    WebDatabase(const DatabaseBackendBase*);
 #endif
 
 private:
     WebDatabase() { }
-    const blink::DatabaseBackendBase* m_database;
+    const DatabaseBackendBase* m_database;
 };
 
 } // namespace blink

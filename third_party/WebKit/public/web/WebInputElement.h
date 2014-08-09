@@ -33,13 +33,10 @@
 
 #include "WebFormControlElement.h"
 
-#if BLINK_IMPLEMENTATION
-namespace blink { class HTMLInputElement; }
-#endif
-
 namespace blink {
 
-    class WebElementCollection;
+class HTMLInputElement;
+class WebElementCollection;
 
     // Provides readonly access to some properties of a DOM input element node.
     class WebInputElement : public WebFormControlElement {
@@ -88,9 +85,9 @@ namespace blink {
         BLINK_EXPORT void setShouldRevealPassword(bool value);
 
 #if BLINK_IMPLEMENTATION
-        WebInputElement(const PassRefPtrWillBeRawPtr<blink::HTMLInputElement>&);
-        WebInputElement& operator=(const PassRefPtrWillBeRawPtr<blink::HTMLInputElement>&);
-        operator PassRefPtrWillBeRawPtr<blink::HTMLInputElement>() const;
+        WebInputElement(const PassRefPtrWillBeRawPtr<HTMLInputElement>&);
+        WebInputElement& operator=(const PassRefPtrWillBeRawPtr<HTMLInputElement>&);
+        operator PassRefPtrWillBeRawPtr<HTMLInputElement>() const;
 #endif
     };
 

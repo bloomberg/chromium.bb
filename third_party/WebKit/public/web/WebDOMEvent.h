@@ -36,12 +36,13 @@
 #include "../platform/WebString.h"
 #include "WebNode.h"
 
-namespace blink { class Event; }
 #if BLINK_IMPLEMENTATION
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
 namespace blink {
+
+class Event;
 
 class WebDOMEvent {
 public:
@@ -92,8 +93,8 @@ public:
     BLINK_EXPORT bool isXMLHttpRequestProgressEvent() const;
 
 #if BLINK_IMPLEMENTATION
-    WebDOMEvent(const PassRefPtrWillBeRawPtr<blink::Event>&);
-    operator PassRefPtrWillBeRawPtr<blink::Event>() const;
+    WebDOMEvent(const PassRefPtrWillBeRawPtr<Event>&);
+    operator PassRefPtrWillBeRawPtr<Event>() const;
 #endif
 
     template<typename T> T to()
@@ -112,7 +113,7 @@ public:
 
 protected:
 #if BLINK_IMPLEMENTATION
-    void assign(const PassRefPtrWillBeRawPtr<blink::Event>&);
+    void assign(const PassRefPtrWillBeRawPtr<Event>&);
 
     template<typename T> T* unwrap()
     {
@@ -125,7 +126,7 @@ protected:
     }
 #endif
 
-    WebPrivatePtr<blink::Event> m_private;
+    WebPrivatePtr<Event> m_private;
 };
 
 } // namespace blink
