@@ -3591,8 +3591,9 @@ void RenderViewImpl::OnWasHidden() {
 #endif // ENABLE_PLUGINS
 }
 
-void RenderViewImpl::OnWasShown(bool needs_repainting) {
-  RenderWidget::OnWasShown(needs_repainting);
+void RenderViewImpl::OnWasShown(bool needs_repainting,
+                                const ui::LatencyInfo& latency_info) {
+  RenderWidget::OnWasShown(needs_repainting, latency_info);
 
 #if defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
   RenderThreadImpl::current()->video_capture_impl_manager()->

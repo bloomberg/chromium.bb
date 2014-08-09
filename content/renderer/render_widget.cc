@@ -779,7 +779,8 @@ void RenderWidget::OnWasHidden() {
                     WasHidden());
 }
 
-void RenderWidget::OnWasShown(bool needs_repainting) {
+void RenderWidget::OnWasShown(bool needs_repainting,
+                              const ui::LatencyInfo& latency_info) {
   TRACE_EVENT0("renderer", "RenderWidget::OnWasShown");
   // During shutdown we can just ignore this message.
   if (!webwidget_)
@@ -794,8 +795,12 @@ void RenderWidget::OnWasShown(bool needs_repainting) {
     return;
 
   // Generate a full repaint.
-  if (compositor_)
+  if (compositor_) {
+    ui::LatencyInfo swap_latency_info(latency_info);
+    scoped_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor(
+        compositor_->CreateLatencyInfoSwapPromiseMonitor(&swap_latency_info));
     compositor_->SetNeedsForcedRedraw();
+  }
   scheduleComposite();
 }
 

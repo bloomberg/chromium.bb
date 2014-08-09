@@ -257,7 +257,7 @@ void RenderWidgetHostViewAndroid::WasShown() {
   if (!host_ || !host_->is_hidden())
     return;
 
-  host_->WasShown();
+  host_->WasShown(ui::LatencyInfo());
 
   if (content_view_core_ && !using_synchronous_compositor_) {
     content_view_core_->GetWindowAndroid()->AddObserver(this);

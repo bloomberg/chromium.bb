@@ -12055,6 +12055,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="MPArch.RWH_TabSwitchPaintDuration" units="milliseconds">
+  <owner>jbauman@chromium.org</owner>
+  <summary>
+    Time from tab switch requested to tab appearing on screen (Aura and Mac
+    only).
+  </summary>
+</histogram>
+
 <histogram name="MultiProfile.DiscardedTabsPerUser">
   <owner>skuhne@chromium.org</owner>
   <summary>

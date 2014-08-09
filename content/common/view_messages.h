@@ -611,8 +611,9 @@ IPC_MESSAGE_ROUTED0(ViewMsg_WasHidden)
 // render view is expected to respond with a full repaint if needs_repainting
 // is true. If needs_repainting is false, then this message does not trigger a
 // message in response.
-IPC_MESSAGE_ROUTED1(ViewMsg_WasShown,
-                    bool /* needs_repainting */)
+IPC_MESSAGE_ROUTED2(ViewMsg_WasShown,
+                    bool /* needs_repainting */,
+                    ui::LatencyInfo /* latency_info */)
 
 // Sent to inform the view that it was swapped out.  This allows the process to
 // exit if no other views are using it.

@@ -651,7 +651,7 @@ void RenderWidgetHostViewMac::EnsureBrowserCompositorView() {
 
   browser_compositor_view_.reset(new BrowserCompositorViewMac(this));
   delegated_frame_host_->AddedToWindow();
-  delegated_frame_host_->WasShown();
+  delegated_frame_host_->WasShown(ui::LatencyInfo());
 }
 
 void RenderWidgetHostViewMac::DestroyBrowserCompositorView() {
@@ -894,7 +894,24 @@ void RenderWidgetHostViewMac::WasShown() {
   if (!render_widget_host_->is_hidden())
     return;
 
-  render_widget_host_->WasShown();
+  ui::LatencyInfo renderer_latency_info;
+  if ((compositing_iosurface_ && compositing_iosurface_->HasIOSurface()) ||
+      software_frame_manager_->HasCurrentFrame() ||
+      (delegated_frame_host_ && delegated_frame_host_->HasSavedFrame())) {
+    ui::LatencyInfo browser_latency_info;
+    browser_latency_info.AddLatencyNumber(
+        ui::TAB_SHOW_COMPONENT,
+        render_widget_host_->GetLatencyComponentId(),
+        0);
+    pending_latency_info_.push_back(browser_latency_info);
+  } else {
+    renderer_latency_info.AddLatencyNumber(
+        ui::TAB_SHOW_COMPONENT,
+        render_widget_host_->GetLatencyComponentId(),
+        0);
+  }
+
+  render_widget_host_->WasShown(renderer_latency_info);
   software_frame_manager_->SetVisibility(true);
 
   // If there is not a frame being currently drawn, kick one, so that the below

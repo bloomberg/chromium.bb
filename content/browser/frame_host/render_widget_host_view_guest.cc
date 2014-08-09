@@ -74,7 +74,7 @@ void RenderWidgetHostViewGuest::WasShown() {
   // |guest_| is NULL during test.
   if ((guest_ && guest_->is_in_destruction()) || !host_->is_hidden())
     return;
-  host_->WasShown();
+  host_->WasShown(ui::LatencyInfo());
 }
 
 void RenderWidgetHostViewGuest::WasHidden() {

@@ -92,8 +92,9 @@ class CONTENT_EXPORT DelegatedFrameHost
       float frame_device_scale_factor,
       const std::vector<ui::LatencyInfo>& latency_info);
   void WasHidden();
-  void WasShown();
+  void WasShown(const ui::LatencyInfo& latency_info);
   void WasResized();
+  bool HasSavedFrame();
   gfx::Size GetRequestedRendererSize() const;
   void AddedToWindow();
   void RemovingFromWindow();

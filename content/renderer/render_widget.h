@@ -369,7 +369,8 @@ class CONTENT_EXPORT RenderWidget
   virtual void OnResize(const ViewMsg_Resize_Params& params);
   void OnChangeResizeRect(const gfx::Rect& resizer_rect);
   virtual void OnWasHidden();
-  virtual void OnWasShown(bool needs_repainting);
+  virtual void OnWasShown(bool needs_repainting,
+                          const ui::LatencyInfo& latency_info);
   virtual void OnWasSwappedOut();
   void OnCreateVideoAck(int32 video_id);
   void OnUpdateVideoAck(int32 video_id);

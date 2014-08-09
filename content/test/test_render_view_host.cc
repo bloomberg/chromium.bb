@@ -333,7 +333,7 @@ void TestRenderViewHost::SimulateWasHidden() {
 }
 
 void TestRenderViewHost::SimulateWasShown() {
-  WasShown();
+  WasShown(ui::LatencyInfo());
 }
 
 void TestRenderViewHost::TestOnStartDragging(

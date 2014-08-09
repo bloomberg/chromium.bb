@@ -517,7 +517,8 @@ class CONTENT_EXPORT RenderViewImpl
   virtual bool HasTouchEventHandlersAt(const gfx::Point& point) const OVERRIDE;
   virtual void OnSetFocus(bool enable) OVERRIDE;
   virtual void OnWasHidden() OVERRIDE;
-  virtual void OnWasShown(bool needs_repainting) OVERRIDE;
+  virtual void OnWasShown(bool needs_repainting,
+                          const ui::LatencyInfo& latency_info) OVERRIDE;
   virtual GURL GetURLForGraphicsContext3D() OVERRIDE;
   virtual void OnImeSetComposition(
       const base::string16& text,

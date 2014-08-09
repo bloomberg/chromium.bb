@@ -512,7 +512,7 @@ void RenderWidgetHostImpl::WasHidden() {
       Details<bool>(&is_visible));
 }
 
-void RenderWidgetHostImpl::WasShown() {
+void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
   if (!is_hidden_)
     return;
   is_hidden_ = false;
@@ -522,7 +522,7 @@ void RenderWidgetHostImpl::WasShown() {
   // Always repaint on restore.
   bool needs_repainting = true;
   needs_repainting_on_restore_ = false;
-  Send(new ViewMsg_WasShown(routing_id_, needs_repainting));
+  Send(new ViewMsg_WasShown(routing_id_, needs_repainting, latency_info));
 
   process_->WidgetRestored();
 
@@ -2093,14 +2093,28 @@ void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
 #endif
   }
 
-  ui::LatencyInfo::LatencyComponent rwh_component;
   ui::LatencyInfo::LatencyComponent swap_component;
+  if (!latency_info.FindLatency(
+          ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT,
+          0,
+          &swap_component)) {
+    return;
+  }
+  ui::LatencyInfo::LatencyComponent tab_switch_component;
+  if (latency_info.FindLatency(ui::TAB_SHOW_COMPONENT,
+                               GetLatencyComponentId(),
+                               &tab_switch_component)) {
+    base::TimeDelta delta =
+        swap_component.event_time - tab_switch_component.event_time;
+    for (size_t i = 0; i < tab_switch_component.event_count; i++) {
+      UMA_HISTOGRAM_TIMES("MPArch.RWH_TabSwitchPaintDuration", delta);
+    }
+  }
+
+  ui::LatencyInfo::LatencyComponent rwh_component;
   if (!latency_info.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
                                 GetLatencyComponentId(),
-                                &rwh_component) ||
-      !latency_info.FindLatency(
-          ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT,
-          0, &swap_component)) {
+                                &rwh_component)) {
     return;
   }
 
@@ -2239,7 +2253,8 @@ void RenderWidgetHostImpl::CompositorFrameDrawn(
          ++b) {
       if (b->first.first == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT ||
           b->first.first == ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT ||
-          b->first.first == ui::WINDOW_OLD_SNAPSHOT_FRAME_NUMBER_COMPONENT) {
+          b->first.first == ui::WINDOW_OLD_SNAPSHOT_FRAME_NUMBER_COMPONENT ||
+          b->first.first == ui::TAB_SHOW_COMPONENT) {
         // Matches with GetLatencyComponentId
         int routing_id = b->first.second & 0xffffffff;
         int process_id = (b->first.second >> 32) & 0xffffffff;

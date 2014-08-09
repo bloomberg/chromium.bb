@@ -122,7 +122,7 @@ void RenderWidgetHostViewChildFrame::ImeCompositionRangeChanged(
 void RenderWidgetHostViewChildFrame::WasShown() {
   if (!host_->is_hidden())
     return;
-  host_->WasShown();
+  host_->WasShown(ui::LatencyInfo());
 }
 
 void RenderWidgetHostViewChildFrame::WasHidden() {

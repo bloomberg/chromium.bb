@@ -559,7 +559,17 @@ void RenderWidgetHostViewAura::WasShown() {
   DCHECK(host_);
   if (!host_->is_hidden())
     return;
-  host_->WasShown();
+
+  bool has_saved_frame = delegated_frame_host_->HasSavedFrame();
+  ui::LatencyInfo renderer_latency_info, browser_latency_info;
+  if (has_saved_frame) {
+    browser_latency_info.AddLatencyNumber(
+        ui::TAB_SHOW_COMPONENT, host_->GetLatencyComponentId(), 0);
+  } else {
+    renderer_latency_info.AddLatencyNumber(
+        ui::TAB_SHOW_COMPONENT, host_->GetLatencyComponentId(), 0);
+  }
+  host_->WasShown(renderer_latency_info);
 
   aura::Window* root = window_->GetRootWindow();
   if (root) {
@@ -569,7 +579,7 @@ void RenderWidgetHostViewAura::WasShown() {
       NotifyRendererOfCursorVisibilityState(cursor_client->IsCursorVisible());
   }
 
-  delegated_frame_host_->WasShown();
+  delegated_frame_host_->WasShown(browser_latency_info);
 
 #if defined(OS_WIN)
   if (legacy_render_widget_host_HWND_) {
