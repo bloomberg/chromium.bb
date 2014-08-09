@@ -166,9 +166,9 @@ void PlatformFontMac::CalculateMetrics() {
 
   base::scoped_nsobject<NSLayoutManager> layout_manager(
       [[NSLayoutManager alloc] init]);
-  height_ = [layout_manager defaultLineHeightForFont:font];
-  ascent_ = [font ascender];
-  cap_height_ = [font capHeight];
+  height_ = SkScalarCeilToInt([layout_manager defaultLineHeightForFont:font]);
+  ascent_ = SkScalarCeilToInt([font ascender]);
+  cap_height_ = SkScalarCeilToInt([font capHeight]);
   average_width_ =
       NSWidth([font boundingRectForGlyph:[font glyphWithName:@"x"]]);
 }
