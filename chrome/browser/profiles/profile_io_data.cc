@@ -1021,7 +1021,7 @@ void ProfileIOData::Init(
   network_delegate->set_cookie_settings(profile_params_->cookie_settings.get());
   network_delegate->set_enable_do_not_track(&enable_do_not_track_);
   network_delegate->set_force_google_safe_search(&force_safesearch_);
-#if defined(OS_ANDROID)
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
   network_delegate->set_data_reduction_proxy_enabled_pref(
       &data_reduction_proxy_enabled_);
 #endif
@@ -1197,7 +1197,7 @@ void ProfileIOData::ShutdownOnUIThread() {
   enable_metrics_.Destroy();
 #endif
   safe_browsing_enabled_.Destroy();
-#if defined(OS_ANDROID)
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
   data_reduction_proxy_enabled_.Destroy();
 #endif
   printing_enabled_.Destroy();
