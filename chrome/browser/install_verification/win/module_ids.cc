@@ -85,8 +85,11 @@ void LoadModuleIDs(ModuleIDs* module_ids) {
             kExpectedInstallModules[i].module_name_digest,
             kExpectedInstallModules[i].id));
   }
-  ParseAdditionalModuleIDs(
+  base::StringPiece additional_module_ids;
+#if defined(GOOGLE_CHROME_BUILD)
+  additional_module_ids =
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_ADDITIONAL_MODULE_IDS),
-      module_ids);
+          IDR_ADDITIONAL_MODULE_IDS);
+#endif
+  ParseAdditionalModuleIDs(additional_module_ids, module_ids);
 }
