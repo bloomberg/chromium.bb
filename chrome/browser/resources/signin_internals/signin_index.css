@@ -30,7 +30,8 @@ div#signin-info {
   -webkit-columns: 2;
 }
 
-div#token-info {
+div#token-info,
+div#cookie-info {
   -webkit-columns: 1;
 }
 

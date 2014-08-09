@@ -29,6 +29,10 @@ class SignInInternalsUI : public content::WebUIController,
   virtual void OnSigninStateChanged(
       scoped_ptr<base::DictionaryValue> info) OVERRIDE;
 
+  // Notification that the cookie accounts are ready to be displayed.
+  virtual void OnCookieAccountsFetched(
+      scoped_ptr<base::DictionaryValue> info) OVERRIDE;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SignInInternalsUI);
 };

@@ -12,10 +12,13 @@
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
+class GaiaAuthFetcher;
 class ProfileOAuth2TokenService;
 class SigninClient;
 class SigninManagerBase;
@@ -29,13 +32,18 @@ typedef std::pair<std::string, std::string> TimedSigninStatusValue;
 class AboutSigninInternals
     : public KeyedService,
       public signin_internals_util::SigninDiagnosticsObserver,
-      public OAuth2TokenService::DiagnosticsObserver {
+      public OAuth2TokenService::DiagnosticsObserver,
+      public GaiaAuthConsumer {
  public:
   class Observer {
    public:
     // |info| will contain the dictionary of signin_status_ values as indicated
     // in the comments for GetSigninStatus() below.
     virtual void OnSigninStateChanged(
+        scoped_ptr<base::DictionaryValue> info) = 0;
+
+    // Notification that the cookie accounts are ready to be displayed.
+    virtual void OnCookieAccountsFetched(
         scoped_ptr<base::DictionaryValue> info) = 0;
   };
 
@@ -80,6 +88,10 @@ class AboutSigninInternals
   //                 "status": "foo_stat", "time" : "foo_time"} elems]
   //  }
   scoped_ptr<base::DictionaryValue> GetSigninStatus();
+
+  // Triggers a ListAccounts call to acquire a list of the email addresses
+  // corresponding to the cookies residing on the current cookie jar.
+  void GetCookieAccountsAsync();
 
   // OAuth2TokenService::DiagnosticsObserver implementations.
   virtual void OnAccessTokenRequested(
@@ -161,6 +173,21 @@ class AboutSigninInternals
 
   void NotifyObservers();
 
+
+  // Overriden from GaiaAuthConsumer.
+  virtual void OnListAccountsSuccess(const std::string& data) OVERRIDE;
+  virtual void OnListAccountsFailure(const GoogleServiceAuthError& error)
+      OVERRIDE;
+
+  // Callback for ListAccounts. Once the email addresses are fetched from GAIA,
+  // they are pushed to the signin_internals_ui.
+  void OnListAccountsComplete(
+      std::vector<std::pair<std::string, bool> >& gaia_accounts);
+
+  // Called when a cookie changes. If the cookie relates to a GAIA LSID cookie,
+  // then we call ListAccounts and update the UI element.
+  void OnCookieChanged(const net::CanonicalCookie* cookie);
+
   // Weak pointer to the token service.
   ProfileOAuth2TokenService* token_service_;
 
@@ -170,11 +197,17 @@ class AboutSigninInternals
   // Weak pointer to the client.
   SigninClient* client_;
 
+  // Fetcher for information about accounts in the cookie jar from GAIA.
+  scoped_ptr<GaiaAuthFetcher> gaia_fetcher_;
+
   // Encapsulates the actual signin and token related values.
   // Most of the values are mirrored in the prefs for persistence.
   SigninStatus signin_status_;
 
   ObserverList<Observer> signin_observers_;
+
+  scoped_ptr<SigninClient::CookieChangedCallbackList::Subscription>
+      cookie_changed_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(AboutSigninInternals);
 };

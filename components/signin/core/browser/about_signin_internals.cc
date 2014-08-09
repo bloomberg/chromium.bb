@@ -18,7 +18,11 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_switches.h"
+#include "google_apis/gaia/gaia_auth_fetcher.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/gaia_urls.h"
+#include "net/cookies/canonical_cookie.h"
 
 using base::Time;
 using namespace signin_internals_util;
@@ -49,6 +53,15 @@ void AddSectionEntry(base::ListValue* section_list,
   entry->SetString("status", field_status);
   entry->SetString("time", field_time);
   section_list->Append(entry.release());
+}
+
+void AddCookieEntry(base::ListValue* accounts_list,
+                     const std::string& field_email,
+                     const std::string& field_valid) {
+  scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue());
+  entry->SetString("email", field_email);
+  entry->SetString("valid", field_valid);
+  accounts_list->Append(entry.release());
 }
 
 std::string SigninStatusFieldToLabel(UntimedSigninStatusField field) {
@@ -195,11 +208,15 @@ void AboutSigninInternals::Initialize(SigninClient* client) {
 
   signin_manager_->AddSigninDiagnosticsObserver(this);
   token_service_->AddDiagnosticsObserver(this);
+  cookie_changed_subscription_ = client_->AddCookieChangedCallback(
+     base::Bind(&AboutSigninInternals::OnCookieChanged,
+     base::Unretained(this)));
 }
 
 void AboutSigninInternals::Shutdown() {
   signin_manager_->RemoveSigninDiagnosticsObserver(this);
   token_service_->RemoveDiagnosticsObserver(this);
+  cookie_changed_subscription_.reset();
 }
 
 void AboutSigninInternals::NotifyObservers() {
@@ -265,6 +282,65 @@ void AboutSigninInternals::OnRefreshTokenReceived(std::string status) {
 
 void AboutSigninInternals::OnAuthenticationResultReceived(std::string status) {
   NotifySigninValueChanged(AUTHENTICATION_RESULT_RECEIVED, status);
+}
+
+void AboutSigninInternals::OnCookieChanged(
+    const net::CanonicalCookie* cookie) {
+  if (cookie->Name() == "LSID" &&
+      cookie->Domain() == GaiaUrls::GetInstance()->gaia_url().host() &&
+      cookie->IsSecure() &&
+      cookie->IsHttpOnly()) {
+    GetCookieAccountsAsync();
+  }
+}
+
+void AboutSigninInternals::GetCookieAccountsAsync() {
+  if (!gaia_fetcher_) {
+    // There is no list account request in flight.
+    gaia_fetcher_.reset(new GaiaAuthFetcher(
+        this, GaiaConstants::kChromeSource, client_->GetURLRequestContext()));
+    gaia_fetcher_->StartListAccounts();
+  }
+}
+
+void AboutSigninInternals::OnListAccountsSuccess(const std::string& data) {
+  gaia_fetcher_.reset();
+
+  // Get account information from response data.
+  std::vector<std::pair<std::string, bool> > gaia_accounts;
+  bool valid_json = gaia::ParseListAccountsData(data, &gaia_accounts);
+  if (!valid_json) {
+    VLOG(1) << "AboutSigninInternals::OnListAccountsSuccess: parsing error";
+  } else {
+    OnListAccountsComplete(gaia_accounts);
+  }
+}
+
+void AboutSigninInternals::OnListAccountsFailure(
+    const GoogleServiceAuthError& error) {
+  gaia_fetcher_.reset();
+  VLOG(1) << "AboutSigninInternals::OnListAccountsFailure:" << error.ToString();
+}
+
+void AboutSigninInternals::OnListAccountsComplete(
+    std::vector<std::pair<std::string, bool> >& gaia_accounts) {
+  scoped_ptr<base::DictionaryValue> signin_status(new base::DictionaryValue());
+  base::ListValue* cookie_info = new base::ListValue();
+  signin_status->Set("cookie_info", cookie_info);
+
+  for (size_t i = 0; i < gaia_accounts.size(); ++i) {
+    AddCookieEntry(cookie_info,
+                   gaia_accounts[i].first,
+                   gaia_accounts[i].second ? "Valid" : "Invalid");
+  }
+
+  if (gaia_accounts.size() == 0)
+    AddCookieEntry(cookie_info, "No Accounts Present.", "");
+
+  // Update the observers that the cookie's accounts are updated.
+  FOR_EACH_OBSERVER(AboutSigninInternals::Observer,
+                    signin_observers_,
+                    OnCookieAccountsFetched(signin_status.Pass()));
 }
 
 AboutSigninInternals::TokenInfo::TokenInfo(

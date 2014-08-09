@@ -40,7 +40,11 @@ const char kGoogleAccountsUrl[] = "https://accounts.google.com";
 }  // namespace
 
 ChromeSigninClient::ChromeSigninClient(Profile* profile)
-    : profile_(profile), signin_host_id_(ChildProcessHost::kInvalidUniqueID) {}
+    : profile_(profile), signin_host_id_(ChildProcessHost::kInvalidUniqueID) {
+  callbacks_.set_removal_callback(
+    base::Bind(&ChromeSigninClient::UnregisterForCookieChangedNotification,
+               base::Unretained(this)));
+}
 
 ChromeSigninClient::~ChromeSigninClient() {
   UnregisterForCookieChangedNotification();
@@ -172,18 +176,13 @@ std::string ChromeSigninClient::GetProductVersion() {
   return chrome_version.CreateVersionString();
 }
 
-void ChromeSigninClient::SetCookieChangedCallback(
+scoped_ptr<SigninClient::CookieChangedCallbackList::Subscription>
+ChromeSigninClient::AddCookieChangedCallback(
     const CookieChangedCallback& callback) {
-  if (callback_.Equals(callback))
-    return;
-
-  // There should be only one callback active at a time.
-  DCHECK(callback.is_null() || callback_.is_null());
-  callback_ = callback;
-  if (!callback_.is_null())
-    RegisterForCookieChangedNotification();
-  else
-    UnregisterForCookieChangedNotification();
+  scoped_ptr<SigninClient::CookieChangedCallbackList::Subscription>
+    subscription = callbacks_.Add(callback);
+  RegisterForCookieChangedNotification();
+  return subscription.Pass();
 }
 
 void ChromeSigninClient::GoogleSigninSucceeded(const std::string& username,
@@ -200,10 +199,10 @@ void ChromeSigninClient::Observe(int type,
                                  const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_COOKIE_CHANGED: {
-      DCHECK(!callback_.is_null());
+      DCHECK(!callbacks_.empty());
       const net::CanonicalCookie* cookie =
           content::Details<ChromeCookieDetails>(details).ptr()->cookie;
-      callback_.Run(cookie);
+      callbacks_.Notify(cookie);
       break;
     }
     default:
@@ -213,13 +212,17 @@ void ChromeSigninClient::Observe(int type,
 }
 
 void ChromeSigninClient::RegisterForCookieChangedNotification() {
+  if (callbacks_.empty())
+    return;
   content::Source<Profile> source(profile_);
-  DCHECK(!registrar_.IsRegistered(
-      this, chrome::NOTIFICATION_COOKIE_CHANGED, source));
+  if (!registrar_.IsRegistered(
+      this, chrome::NOTIFICATION_COOKIE_CHANGED, source))
   registrar_.Add(this, chrome::NOTIFICATION_COOKIE_CHANGED, source);
 }
 
 void ChromeSigninClient::UnregisterForCookieChangedNotification() {
+  if (!callbacks_.empty())
+    return;
   // Note that it's allowed to call this method multiple times without an
   // intervening call to |RegisterForCookieChangedNotification()|.
   content::Source<Profile> source(profile_);

@@ -74,8 +74,11 @@ bool TestSigninClient::ShouldMergeSigninCredentialsIntoCookieJar() {
   return true;
 }
 
-void TestSigninClient::SetCookieChangedCallback(
-    const CookieChangedCallback& callback) {}
+scoped_ptr<SigninClient::CookieChangedCallbackList::Subscription>
+TestSigninClient::AddCookieChangedCallback(
+    const SigninClient::CookieChangedCallback& callback) {
+  return cookie_callbacks_.Add(callback);
+}
 
 #if defined(OS_IOS)
 ios::ProfileOAuth2TokenServiceIOSProvider* TestSigninClient::GetIOSProvider() {

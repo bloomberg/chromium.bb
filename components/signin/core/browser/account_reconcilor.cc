@@ -275,12 +275,12 @@ void AccountReconcilor::RegisterForCookieChanges() {
   // First clear any existing registration to avoid DCHECKs that can otherwise
   // go off in some embedders on reauth (e.g., ChromeSigninClient).
   UnregisterForCookieChanges();
-  client_->SetCookieChangedCallback(
+  cookie_changed_subscription_ = client_->AddCookieChangedCallback(
       base::Bind(&AccountReconcilor::OnCookieChanged, base::Unretained(this)));
 }
 
 void AccountReconcilor::UnregisterForCookieChanges() {
-  client_->SetCookieChangedCallback(SigninClient::CookieChangedCallback());
+  cookie_changed_subscription_.reset();
 }
 
 void AccountReconcilor::RegisterWithSigninManager() {

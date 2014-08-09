@@ -112,7 +112,8 @@ Event.prototype.fire = function() {
 // These are the events that will be registered.
 chrome.signin.events = {
   'signin_manager': [
-    'onSigninInfoChanged'
+    'onSigninInfoChanged',
+    'onCookieAccountsFetched'
  ]
 };
 
@@ -165,10 +166,13 @@ chrome.signin.internalsInfo = {};
 // Replace the displayed values with the latest fetched ones.
 function refreshSigninInfo(signinInfo) {
   chrome.signin.internalsInfo = signinInfo;
-  var internalsInfoDiv = $('signin-info');
-  jstProcess(new JsEvalContext(signinInfo), internalsInfoDiv);
-  var tokenInfoDiv = $('token-info');
-  jstProcess(new JsEvalContext(signinInfo), tokenInfoDiv);
+  jstProcess(new JsEvalContext(signinInfo), $('signin-info'));
+  jstProcess(new JsEvalContext(signinInfo), $('token-info'));
+}
+
+// Replace the cookie information with the fetched values.
+function updateCookieAccounts(cookieAccountsInfo) {
+  jstProcess(new JsEvalContext(cookieAccountsInfo), $('cookie-info'));
 }
 
 // On load, do an initial refresh and register refreshSigninInfo to be invoked
@@ -176,9 +180,8 @@ function refreshSigninInfo(signinInfo) {
 function onLoad() {
   chrome.signin.getSigninInfo(refreshSigninInfo);
 
-  chrome.signin.onSigninInfoChanged.addListener(function(info) {
-    refreshSigninInfo(info);
-  });
+  chrome.signin.onSigninInfoChanged.addListener(refreshSigninInfo);
+  chrome.signin.onCookieAccountsFetched.addListener(updateCookieAccounts);
 }
 
 document.addEventListener('DOMContentLoaded', onLoad, false);

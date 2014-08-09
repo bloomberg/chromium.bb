@@ -61,8 +61,8 @@ class TestSigninClient : public SigninClient {
   virtual bool ShouldMergeSigninCredentialsIntoCookieJar() OVERRIDE;
 
   // Does nothing.
-  virtual void SetCookieChangedCallback(const CookieChangedCallback& callback)
-      OVERRIDE;
+  virtual scoped_ptr<CookieChangedCallbackList::Subscription>
+      AddCookieChangedCallback(const CookieChangedCallback& callback) OVERRIDE;
 
 #if defined(OS_IOS)
   ios::FakeProfileOAuth2TokenServiceIOSProvider* GetIOSProviderAsFake();
@@ -82,6 +82,7 @@ class TestSigninClient : public SigninClient {
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   scoped_refptr<TokenWebData> database_;
   int signin_host_id_;
+  CookieChangedCallbackList cookie_callbacks_;
 
   PrefService* pref_service_;
 
