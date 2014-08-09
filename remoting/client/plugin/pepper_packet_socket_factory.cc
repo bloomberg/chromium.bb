@@ -11,9 +11,11 @@
 #include "ppapi/cpp/net_address.h"
 #include "ppapi/cpp/udp_socket.h"
 #include "ppapi/utility/completion_callback_factory.h"
+#include "remoting/client/plugin/pepper_address_resolver.h"
 #include "remoting/client/plugin/pepper_util.h"
 #include "remoting/protocol/socket_util.h"
 #include "third_party/webrtc/base/asyncpacketsocket.h"
+#include "third_party/webrtc/base/nethelpers.h"
 
 namespace remoting {
 
@@ -437,8 +439,7 @@ rtc::AsyncPacketSocket* PepperPacketSocketFactory::CreateClientTcpSocket(
 
 rtc::AsyncResolverInterface*
 PepperPacketSocketFactory::CreateAsyncResolver() {
-  NOTREACHED();
-  return NULL;
+  return new PepperAddressResolver(pp_instance_);
 }
 
 }  // namespace remoting

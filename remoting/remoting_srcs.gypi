@@ -238,6 +238,8 @@
       'client/plugin/normalizing_input_filter_cros.h',
       'client/plugin/normalizing_input_filter_mac.cc',
       'client/plugin/normalizing_input_filter_mac.h',
+      'client/plugin/pepper_address_resolver.cc',
+      'client/plugin/pepper_address_resolver.h',
       'client/plugin/pepper_audio_player.cc',
       'client/plugin/pepper_audio_player.h',
       'client/plugin/pepper_input_handler.cc',

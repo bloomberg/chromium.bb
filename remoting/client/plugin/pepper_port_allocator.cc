@@ -8,8 +8,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "net/base/net_util.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/cpp/host_resolver.h"
-#include "ppapi/cpp/net_address.h"
 #include "ppapi/cpp/url_loader.h"
 #include "ppapi/cpp/url_request_info.h"
 #include "ppapi/cpp/url_response_info.h"
@@ -47,16 +45,12 @@ class PepperPortAllocatorSession
   virtual void SendSessionRequest(const std::string& host, int port) OVERRIDE;
 
  private:
-  void ResolveStunServerAddress();
-  void OnStunAddressResolved(int32_t result);
-
   void OnUrlOpened(int32_t result);
   void ReadResponseBody();
   void OnResponseBodyRead(int32_t result);
 
   pp::InstanceHandle instance_;
 
-  pp::HostResolver stun_address_resolver_;
   rtc::SocketAddress stun_address_;
   int stun_port_;
 
@@ -89,7 +83,6 @@ PepperPortAllocatorSession::PepperPortAllocatorSession(
                                    relay_token,
                                    std::string()),
       instance_(instance),
-      stun_address_resolver_(instance_),
       stun_port_(0),
       relay_response_received_(false),
       callback_factory_(this) {
@@ -103,16 +96,6 @@ PepperPortAllocatorSession::~PepperPortAllocatorSession() {
 
 void PepperPortAllocatorSession::ConfigReady(
     cricket::PortConfiguration* config) {
-  if (config->stun_address.IsUnresolved()) {
-    // Make sure that the address that we pass to ConfigReady() is
-    // always resolved.
-    if (stun_address_.IsUnresolved()) {
-      config->stun_address.Clear();
-    } else {
-      config->stun_address = stun_address_;
-    }
-  }
-
   // Filter out non-UDP relay ports, so that we don't try using TCP.
   for (cricket::PortConfiguration::RelayList::iterator relay =
            config->relays.begin(); relay != config->relays.end(); ++relay) {
@@ -129,78 +112,12 @@ void PepperPortAllocatorSession::ConfigReady(
 }
 
 void PepperPortAllocatorSession::GetPortConfigurations() {
-  // Add an empty configuration synchronously, so a local connection
-  // can be started immediately.
+  // Add a configuration without relay response first so local and STUN
+  // candidates can be allocated without waiting for the relay response.
   ConfigReady(new cricket::PortConfiguration(
-      rtc::SocketAddress(), std::string(), std::string()));
+      stun_address_, std::string(), std::string()));
 
-  ResolveStunServerAddress();
   TryCreateRelaySession();
-}
-
-void PepperPortAllocatorSession::ResolveStunServerAddress() {
-  if (stun_address_.IsNil()) {
-    return;
-  }
-
-  if (!stun_address_.IsUnresolved()) {
-    return;
-  }
-
-  std::string hostname = stun_address_.hostname();
-  uint16 port = stun_address_.port();
-
-  PP_HostResolver_Hint hint;
-  hint.flags = 0;
-  hint.family = PP_NETADDRESS_FAMILY_IPV4;
-  pp::CompletionCallback callback = callback_factory_.NewCallback(
-      &PepperPortAllocatorSession::OnStunAddressResolved);
-  int result = stun_address_resolver_.Resolve(hostname.c_str(),
-                                              port,
-                                              hint,
-                                              callback);
-  DCHECK_EQ(result, PP_OK_COMPLETIONPENDING);
-}
-
-void PepperPortAllocatorSession::OnStunAddressResolved(int32_t result) {
-  if (result < 0) {
-    LOG(ERROR) << "Failed to resolve stun address "
-               << stun_address_.hostname() << ": " << result;
-    return;
-  }
-
-  if (!stun_address_resolver_.GetNetAddressCount()) {
-    LOG(WARNING) << "Received 0 addresses for stun server "
-               << stun_address_.hostname();
-    return;
-  }
-
-  pp::NetAddress address = stun_address_resolver_.GetNetAddress(0);
-  if (address.is_null()) {
-    LOG(ERROR) << "Failed to get address for STUN server "
-               << stun_address_.hostname();
-    return;
-  }
-
-  PpNetAddressToSocketAddress(address, &stun_address_);
-  DCHECK(!stun_address_.IsUnresolved());
-
-  if (relay_response_received_) {
-    // If we've finished reading the response, then resubmit it to
-    // HttpPortAllocatorSessionBase. This is necessary because STUN
-    // and Relay parameters are stored together in PortConfiguration
-    // and ReceiveSessionResponse() doesn't save relay session
-    // configuration for the case we resolve STUN address later. This
-    // method invokes overriden ConfigReady() which then submits
-    // resolved |stun_address_|.
-    //
-    // TODO(sergeyu): Refactor HttpPortAllocatorSessionBase to fix this.
-    ReceiveSessionResponse(std::string(relay_response_body_.begin(),
-                                       relay_response_body_.end()));
-  } else {
-    ConfigReady(new cricket::PortConfiguration(
-        stun_address_, std::string(), std::string()));
-  }
 }
 
 void PepperPortAllocatorSession::SendSessionRequest(
