@@ -33,13 +33,11 @@
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/mime_registry_messages.h"
-#include "content/common/screen_orientation_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/battery_status/battery_status_dispatcher.h"
-#include "content/renderer/battery_status/fake_battery_status_dispatcher.h"
 #include "content/renderer/device_sensors/device_light_event_pump.h"
 #include "content/renderer/device_sensors/device_motion_event_pump.h"
 #include "content/renderer/device_sensors/device_orientation_event_pump.h"
@@ -53,6 +51,7 @@
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_clipboard_client.h"
+#include "content/renderer/screen_orientation/screen_orientation_observer.h"
 #include "content/renderer/webclipboard_impl.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
@@ -148,8 +147,6 @@ base::LazyInstance<blink::WebDeviceMotionData>::Leaky
     g_test_device_motion_data = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<blink::WebDeviceOrientationData>::Leaky
     g_test_device_orientation_data = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<FakeBatteryStatusDispatcher>::Leaky
-    g_test_battery_status_dispatcher = LAZY_INSTANCE_INITIALIZER;
 
 } // namespace
 
@@ -229,8 +226,7 @@ RendererWebKitPlatformSupportImpl::RendererWebKitPlatformSupportImpl()
       sudden_termination_disables_(0),
       plugin_refresh_allowed_(true),
       child_thread_loop_(base::MessageLoopProxy::current()),
-      web_scrollbar_behavior_(new WebScrollbarBehaviorImpl),
-      gamepad_provider_(NULL) {
+      web_scrollbar_behavior_(new WebScrollbarBehaviorImpl) {
   if (g_sandbox_enabled && sandboxEnabled()) {
     sandbox_support_.reset(
         new RendererWebKitPlatformSupportImpl::SandboxSupport);
@@ -885,8 +881,11 @@ WebBlobRegistry* RendererWebKitPlatformSupportImpl::blobRegistry() {
 //------------------------------------------------------------------------------
 
 void RendererWebKitPlatformSupportImpl::sampleGamepads(WebGamepads& gamepads) {
-  DCHECK(gamepad_provider_);
-  gamepad_provider_->SampleGamepads(gamepads);
+  PlatformEventObserverBase* observer =
+      platform_event_observers_.Lookup(blink::WebPlatformEventGamepad);
+  if (!observer)
+    return;
+  static_cast<RendererGamepadProvider*>(observer)->SampleGamepads(gamepads);
 }
 
 //------------------------------------------------------------------------------
@@ -1051,147 +1050,120 @@ void RendererWebKitPlatformSupportImpl::cancelVibration() {
 
 //------------------------------------------------------------------------------
 
-void RendererWebKitPlatformSupportImpl::startListening(
-    blink::WebPlatformEventType type,
-    blink::WebPlatformEventListener* listener) {
+// static
+PlatformEventObserverBase*
+RendererWebKitPlatformSupportImpl::CreatePlatformEventObserverFromType(
+    blink::WebPlatformEventType type) {
+  RenderThread* thread = RenderThreadImpl::current();
+
+  // When running layout tests, those observers should not listen to the actual
+  // hardware changes. In order to make that happen, they will receive a null
+  // thread.
+  if (thread && RenderThreadImpl::current()->layout_test_mode())
+    thread = 0;
+
   switch (type) {
-  case blink::WebPlatformEventDeviceMotion:
-    SetDeviceMotionListener(
-        static_cast<blink::WebDeviceMotionListener*>(listener));
-    break;
-  case blink::WebPlatformEventDeviceOrientation:
-    SetDeviceOrientationListener(
-        static_cast<blink::WebDeviceOrientationListener*>(listener));
-    break;
-  case blink::WebPlatformEventDeviceLight:
-    SetDeviceLightListener(
-        static_cast<blink::WebDeviceLightListener*>(listener));
-    break;
-  case blink::WebPlatformEventBattery:
-    SetBatteryStatusListener(
-        static_cast<blink::WebBatteryStatusListener*>(listener));
-    break;
+  case blink::WebPlatformEventDeviceMotion: {
+    return new DeviceMotionEventPump(thread);
+  }
+  case blink::WebPlatformEventDeviceOrientation: {
+    return new DeviceOrientationEventPump(thread);
+  }
+  case blink::WebPlatformEventDeviceLight: {
+    return new DeviceLightEventPump(thread);
+  }
+  case blink::WebPlatformEventBattery: {
+    return new BatteryStatusDispatcher(thread);
+  }
   case blink::WebPlatformEventGamepad:
-    SetGamepadListener(
-        static_cast<blink::WebGamepadListener*>(listener));
+    return new GamepadSharedMemoryReader(thread);
     break;
   case blink::WebPlatformEventScreenOrientation:
-    RenderThread::Get()->Send(new ScreenOrientationHostMsg_StartListening());
-    break;
+    return new ScreenOrientationObserver();
   default:
     // A default statement is required to prevent compilation errors when Blink
     // adds a new type.
     VLOG(1) << "RendererWebKitPlatformSupportImpl::startListening() with "
                "unknown type.";
   }
+
+  return 0;
+}
+
+void RendererWebKitPlatformSupportImpl::SetPlatformEventObserverForTesting(
+    blink::WebPlatformEventType type,
+    scoped_ptr<PlatformEventObserverBase> observer) {
+  if (platform_event_observers_.Lookup(type))
+    platform_event_observers_.Remove(type);
+  platform_event_observers_.AddWithID(observer.release(), type);
+}
+
+
+void RendererWebKitPlatformSupportImpl::startListening(
+    blink::WebPlatformEventType type,
+    blink::WebPlatformEventListener* listener) {
+  PlatformEventObserverBase* observer = platform_event_observers_.Lookup(type);
+  if (!observer) {
+    observer = CreatePlatformEventObserverFromType(type);
+    if (!observer)
+      return;
+    platform_event_observers_.AddWithID(observer, static_cast<int32>(type));
+  }
+  observer->Start(listener);
+
+  // Device events (motion, orientation and light) expect to get an event fired
+  // as soon as a listener is registered if a fake data was passed before.
+  // TODO(mlamouri,timvolodine): make those send mock values directly instead of
+  // using this broken pattern.
+  if (RenderThreadImpl::current() &&
+      RenderThreadImpl::current()->layout_test_mode() &&
+      (type == blink::WebPlatformEventDeviceMotion ||
+       type == blink::WebPlatformEventDeviceOrientation ||
+       type == blink::WebPlatformEventDeviceLight)) {
+    SendFakeDeviceEventDataForTesting(type);
+  }
+}
+
+void RendererWebKitPlatformSupportImpl::SendFakeDeviceEventDataForTesting(
+    blink::WebPlatformEventType type) {
+  PlatformEventObserverBase* observer = platform_event_observers_.Lookup(type);
+  CHECK(observer);
+
+  void* data = 0;
+
+  switch (type) {
+  case blink::WebPlatformEventDeviceMotion:
+    if (!(g_test_device_motion_data == 0))
+      data = &g_test_device_motion_data.Get();
+    break;
+  case blink::WebPlatformEventDeviceOrientation:
+    if (!(g_test_device_orientation_data == 0))
+      data = &g_test_device_orientation_data.Get();
+    break;
+  case blink::WebPlatformEventDeviceLight:
+    if (g_test_device_light_data >= 0)
+      data = &g_test_device_light_data;
+    break;
+  default:
+    NOTREACHED();
+    break;
+  }
+
+  if (!data)
+    return;
+
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&PlatformEventObserverBase::SendFakeDataForTesting,
+                 base::Unretained(observer), data));
 }
 
 void RendererWebKitPlatformSupportImpl::stopListening(
     blink::WebPlatformEventType type) {
-        switch (type) {
-  case blink::WebPlatformEventDeviceMotion:
-    SetDeviceMotionListener(0);
-    break;
-  case blink::WebPlatformEventDeviceOrientation:
-    SetDeviceOrientationListener(0);
-    break;
-  case blink::WebPlatformEventDeviceLight:
-    SetDeviceLightListener(0);
-    break;
-  case blink::WebPlatformEventBattery:
-    SetBatteryStatusListener(0);
-    break;
-  case blink::WebPlatformEventGamepad:
-    SetGamepadListener(0);
-    break;
-  case blink::WebPlatformEventScreenOrientation:
-    RenderThread::Get()->Send(new ScreenOrientationHostMsg_StopListening());
-    break;
-  default:
-    // A default statement is required to prevent compilation errors when Blink
-    // adds a new type.
-    VLOG(1) << "RendererWebKitPlatformSupportImpl::stopListening() with "
-               "unknown type.";
-  }
-}
-
-void RendererWebKitPlatformSupportImpl::SetDeviceMotionListener(
-    blink::WebDeviceMotionListener* listener) {
-  if (g_test_device_motion_data == 0) {
-    if (!device_motion_event_pump_) {
-      device_motion_event_pump_.reset(new DeviceMotionEventPump);
-      device_motion_event_pump_->Attach(RenderThreadImpl::current());
-    }
-    device_motion_event_pump_->SetListener(listener);
-  } else if (listener) {
-    // Testing mode: just echo the test data to the listener.
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&blink::WebDeviceMotionListener::didChangeDeviceMotion,
-                   base::Unretained(listener),
-                   g_test_device_motion_data.Get()));
-  }
-}
-
-void RendererWebKitPlatformSupportImpl::SetDeviceOrientationListener(
-    blink::WebDeviceOrientationListener* listener) {
-  if (g_test_device_orientation_data == 0) {
-    if (!device_orientation_event_pump_) {
-      device_orientation_event_pump_.reset(new DeviceOrientationEventPump);
-      device_orientation_event_pump_->Attach(RenderThreadImpl::current());
-    }
-    device_orientation_event_pump_->SetListener(listener);
-  } else if (listener) {
-    // Testing mode: just echo the test data to the listener.
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(
-            &blink::WebDeviceOrientationListener::didChangeDeviceOrientation,
-            base::Unretained(listener),
-            g_test_device_orientation_data.Get()));
-  }
-}
-
-void RendererWebKitPlatformSupportImpl::SetDeviceLightListener(
-    blink::WebDeviceLightListener* listener) {
-  if (g_test_device_light_data < 0) {
-    if (!device_light_event_pump_) {
-      device_light_event_pump_.reset(new DeviceLightEventPump);
-      device_light_event_pump_->Attach(RenderThreadImpl::current());
-    }
-    device_light_event_pump_->SetListener(listener);
-  } else if (listener) {
-    // Testing mode: just echo the test data to the listener.
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&blink::WebDeviceLightListener::didChangeDeviceLight,
-                   base::Unretained(listener),
-                   g_test_device_light_data));
-  }
-}
-
-void RendererWebKitPlatformSupportImpl::SetGamepadListener(
-      blink::WebGamepadListener* listener) {
-  DCHECK(gamepad_provider_);
-  gamepad_provider_->SetGamepadListener(listener);
-}
-
-void RendererWebKitPlatformSupportImpl::SetBatteryStatusListener(
-    blink::WebBatteryStatusListener* listener) {
-  if (RenderThreadImpl::current() &&
-      RenderThreadImpl::current()->layout_test_mode()) {
-    // If we are in test mode, we want to use a fake battery status dispatcher,
-    // which does not communicate with the browser process. Battery status
-    // changes are signalled by invoking MockBatteryStatusChangedForTesting().
-    g_test_battery_status_dispatcher.Get().SetListener(listener);
+  PlatformEventObserverBase* observer = platform_event_observers_.Lookup(type);
+  if (!observer)
     return;
-  }
-
-  if (!battery_status_dispatcher_) {
-    battery_status_dispatcher_.reset(
-        new BatteryStatusDispatcher(RenderThreadImpl::current()));
-  }
-  battery_status_dispatcher_->SetListener(listener);
+  observer->Stop();
 }
 
 //------------------------------------------------------------------------------
@@ -1212,10 +1184,13 @@ void RendererWebKitPlatformSupportImpl::queryStorageUsageAndQuota(
 
 //------------------------------------------------------------------------------
 
-// static
 void RendererWebKitPlatformSupportImpl::MockBatteryStatusChangedForTesting(
     const blink::WebBatteryStatus& status) {
-  g_test_battery_status_dispatcher.Get().PostBatteryStatusChange(status);
+  PlatformEventObserverBase* observer =
+      platform_event_observers_.Lookup(blink::WebPlatformEventBattery);
+  if (!observer)
+    return;
+  observer->SendFakeDataForTesting((void*)&status);
 }
 
 }  // namespace content

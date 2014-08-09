@@ -9,6 +9,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/image_transport_surface.h"
 #include "content/public/common/page_state.h"
+#include "content/public/renderer/renderer_gamepad_provider.h"
 #include "content/renderer/compositor_bindings/web_layer_impl.h"
 #include "content/renderer/history_entry.h"
 #include "content/renderer/history_serialization.h"
@@ -83,7 +84,9 @@ void EnableWebTestProxyCreation(
 
 void SetMockGamepadProvider(RendererGamepadProvider* provider) {
   RenderThreadImpl::current()->webkit_platform_support()->
-      set_gamepad_provider(provider);
+      SetPlatformEventObserverForTesting(
+          blink::WebPlatformEventGamepad,
+          scoped_ptr<PlatformEventObserverBase>(provider));
 }
 
 void SetMockDeviceLightData(const double data) {
@@ -100,7 +103,8 @@ void SetMockDeviceOrientationData(const WebDeviceOrientationData& data) {
 }
 
 void MockBatteryStatusChanged(const WebBatteryStatus& status) {
-  RendererWebKitPlatformSupportImpl::MockBatteryStatusChangedForTesting(status);
+  RenderThreadImpl::current()->webkit_platform_support()->
+    MockBatteryStatusChangedForTesting(status);
 }
 
 void EnableRendererLayoutTestMode() {

@@ -34,8 +34,9 @@ class GamepadController
   // RendererGamepadProvider implementation.
   virtual void SampleGamepads(
       blink::WebGamepads& gamepads) OVERRIDE;
-  virtual void SetGamepadListener(
-      blink::WebGamepadListener* listener) OVERRIDE;
+  virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual void SendStartMessage() OVERRIDE;
+  virtual void SendStopMessage() OVERRIDE;
 
  private:
   friend class GamepadControllerBindings;
@@ -57,8 +58,6 @@ class GamepadController
   void SetAxisData(int index, int axis, double data);
 
   blink::WebGamepads gamepads_;
-
-  blink::WebGamepadListener* listener_;
 
   // Mapping from gamepad index to connection state.
   std::map<int, bool> pending_changes_;

@@ -12,24 +12,28 @@
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/public/platform/WebGamepadListener.h"
+#include "third_party/WebKit/public/platform/WebPlatformEventListener.h"
 
 namespace content {
 
-GamepadSharedMemoryReader::GamepadSharedMemoryReader(
-    RendererWebKitPlatformSupportImpl* webkit_platform_support)
-    : gamepad_hardware_buffer_(NULL),
-      gamepad_listener_(NULL),
-      is_polling_(false),
+GamepadSharedMemoryReader::GamepadSharedMemoryReader(RenderThread* thread)
+    : RendererGamepadProvider(thread),
+      gamepad_hardware_buffer_(NULL),
       ever_interacted_with_(false) {
-  webkit_platform_support->set_gamepad_provider(this);
 }
 
-void GamepadSharedMemoryReader::StartPollingIfNecessary() {
-  if (is_polling_)
-    return;
-
+void GamepadSharedMemoryReader::SendStartMessage() {
   CHECK(RenderThread::Get()->Send(new GamepadHostMsg_StartPolling(
       &renderer_shared_memory_handle_)));
+}
+
+void GamepadSharedMemoryReader::SendStopMessage() {
+    RenderThread::Get()->Send(new GamepadHostMsg_StopPolling());
+}
+
+void GamepadSharedMemoryReader::Start(
+    blink::WebPlatformEventListener* listener) {
+  PlatformEventObserver::Start(listener);
 
   // If we don't get a valid handle from the browser, don't try to Map (we're
   // probably out of memory or file handles).
@@ -46,24 +50,11 @@ void GamepadSharedMemoryReader::StartPollingIfNecessary() {
   CHECK(memory);
   gamepad_hardware_buffer_ =
       static_cast<GamepadHardwareBuffer*>(memory);
-
-  is_polling_ = true;
-}
-
-void GamepadSharedMemoryReader::StopPollingIfNecessary() {
-  if (is_polling_) {
-    RenderThread::Get()->Send(new GamepadHostMsg_StopPolling());
-    is_polling_ = false;
-  }
 }
 
 void GamepadSharedMemoryReader::SampleGamepads(blink::WebGamepads& gamepads) {
-  // Blink should set the listener before start sampling.
-  CHECK(gamepad_listener_);
-
-  StartPollingIfNecessary();
-  if (!is_polling_)
-    return;
+  // Blink should have started observing at that point.
+  CHECK(is_observing());
 
   // ==========
   //   DANGER
@@ -113,20 +104,7 @@ void GamepadSharedMemoryReader::SampleGamepads(blink::WebGamepads& gamepads) {
   }
 }
 
-void GamepadSharedMemoryReader::SetGamepadListener(
-    blink::WebGamepadListener* listener) {
-  gamepad_listener_ = listener;
-  if (gamepad_listener_) {
-    // Polling has to be started rigth now and not just on the first sampling
-    // because want to get connection events from now.
-    StartPollingIfNecessary();
-  } else {
-    StopPollingIfNecessary();
-  }
-}
-
 GamepadSharedMemoryReader::~GamepadSharedMemoryReader() {
-  StopPollingIfNecessary();
 }
 
 bool GamepadSharedMemoryReader::OnControlMessageReceived(
@@ -146,15 +124,15 @@ void GamepadSharedMemoryReader::OnGamepadConnected(
   // The browser already checks if the user actually interacted with a device.
   ever_interacted_with_ = true;
 
-  if (gamepad_listener_)
-    gamepad_listener_->didConnectGamepad(index, gamepad);
+  if (listener())
+    listener()->didConnectGamepad(index, gamepad);
 }
 
 void GamepadSharedMemoryReader::OnGamepadDisconnected(
     int index,
     const blink::WebGamepad& gamepad) {
-  if (gamepad_listener_)
-    gamepad_listener_->didDisconnectGamepad(index, gamepad);
+  if (listener())
+    listener()->didDisconnectGamepad(index, gamepad);
 }
 
 } // namespace content

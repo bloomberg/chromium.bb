@@ -43,14 +43,15 @@ class MockDeviceMotionListener : public blink::WebDeviceMotionListener {
 
 class DeviceMotionEventPumpForTesting : public DeviceMotionEventPump {
  public:
-  DeviceMotionEventPumpForTesting() { }
+  DeviceMotionEventPumpForTesting()
+      : DeviceMotionEventPump(0) { }
   virtual ~DeviceMotionEventPumpForTesting() { }
 
   void OnDidStart(base::SharedMemoryHandle renderer_handle) {
     DeviceMotionEventPump::OnDidStart(renderer_handle);
   }
-  virtual bool SendStartMessage() OVERRIDE { return true; }
-  virtual bool SendStopMessage() OVERRIDE { return true; }
+  virtual void SendStartMessage() OVERRIDE { }
+  virtual void SendStopMessage() OVERRIDE { }
   virtual void FireEvent() OVERRIDE {
     DeviceMotionEventPump::FireEvent();
     Stop();
@@ -110,7 +111,7 @@ TEST_F(DeviceMotionEventPumpTest, DidStartPolling) {
 
   InitBuffer(true);
 
-  motion_pump()->SetListener(listener());
+  motion_pump()->Start(listener());
   motion_pump()->OnDidStart(handle());
 
   base::MessageLoop::current()->Run();
@@ -137,7 +138,7 @@ TEST_F(DeviceMotionEventPumpTest, DidStartPollingNotAllSensorsActive) {
 
   InitBuffer(false);
 
-  motion_pump()->SetListener(listener());
+  motion_pump()->Start(listener());
   motion_pump()->OnDidStart(handle());
 
   base::MessageLoop::current()->Run();

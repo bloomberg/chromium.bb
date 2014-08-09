@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_RENDERER_WEBKITPLATFORMSUPPORT_IMPL_H_
 
 #include "base/compiler_specific.h"
+#include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/child/blink_platform_impl.h"
 #include "content/common/content_export.h"
@@ -39,10 +40,10 @@ class BatteryStatusDispatcher;
 class DeviceLightEventPump;
 class DeviceMotionEventPump;
 class DeviceOrientationEventPump;
+class PlatformEventObserverBase;
 class QuotaMessageFilter;
 class RendererClipboardClient;
 class RenderView;
-class RendererGamepadProvider;
 class ThreadSafeSender;
 class WebClipboardImpl;
 class WebDatabaseObserverImpl;
@@ -146,9 +147,13 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual void vibrate(unsigned int milliseconds);
   virtual void cancelVibration();
 
-  void set_gamepad_provider(RendererGamepadProvider* provider) {
-    gamepad_provider_ = provider;
-  }
+  // Set the PlatformEventObserverBase in |platform_event_observers_| associated
+  // with |type| to |observer|. If there was already an observer associated to
+  // the given |type|, it will be replaced.
+  // Note that |observer| will be owned by this object after the call.
+  void SetPlatformEventObserverForTesting(
+      blink::WebPlatformEventType type,
+      scoped_ptr<PlatformEventObserverBase> observer);
 
   // Disables the WebSandboxSupport implementation for testing.
   // Tests that do not set up a full sandbox environment should call
@@ -170,7 +175,7 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       const blink::WebDeviceOrientationData& data);
 
   // Notifies blink::WebBatteryStatusListener that battery status has changed.
-  static void MockBatteryStatusChangedForTesting(
+  void MockBatteryStatusChangedForTesting(
       const blink::WebBatteryStatus& status);
 
   WebDatabaseObserverImpl* web_database_observer_impl() {
@@ -180,14 +185,14 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
  private:
   bool CheckPreparsedJsCachingEnabled() const;
 
-  // Implement those methods internally so startListening() and stopListening()
-  // are being used and Blink can change its interface.
-  void SetDeviceMotionListener(blink::WebDeviceMotionListener*);
-  void SetDeviceOrientationListener(blink::WebDeviceOrientationListener*);
-  void SetDeviceLightListener(blink::WebDeviceLightListener*);
-  void SetBatteryStatusListener(blink::WebBatteryStatusListener*);
-  void SetGamepadListener(blink::WebGamepadListener*);
+  // Factory that takes a type and return PlatformEventObserverBase that matches
+  // it.
+  static PlatformEventObserverBase* CreatePlatformEventObserverFromType(
+      blink::WebPlatformEventType type);
 
+  // Use the data previously set via SetMockDevice...DataForTesting() and send
+  // them to the registered listener.
+  void SendFakeDeviceEventDataForTesting(blink::WebPlatformEventType type);
 
   scoped_ptr<RendererClipboardClient> clipboard_client_;
   scoped_ptr<WebClipboardImpl> clipboard_;
@@ -233,7 +238,7 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
 
   scoped_ptr<BatteryStatusDispatcher> battery_status_dispatcher_;
 
-  RendererGamepadProvider* gamepad_provider_;
+  IDMap<PlatformEventObserverBase, IDMapOwnPointer> platform_event_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebKitPlatformSupportImpl);
 };

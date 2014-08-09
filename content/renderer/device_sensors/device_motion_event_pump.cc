@@ -10,21 +10,11 @@
 
 namespace content {
 
-DeviceMotionEventPump::DeviceMotionEventPump()
-    : DeviceSensorEventPump(), listener_(0) {
-}
-
-DeviceMotionEventPump::DeviceMotionEventPump(int pump_delay_millis)
-    : DeviceSensorEventPump(pump_delay_millis), listener_(0) {
+DeviceMotionEventPump::DeviceMotionEventPump(RenderThread* thread)
+    : DeviceSensorEventPump<blink::WebDeviceMotionListener>(thread) {
 }
 
 DeviceMotionEventPump::~DeviceMotionEventPump() {
-}
-
-bool DeviceMotionEventPump::SetListener(
-    blink::WebDeviceMotionListener* listener) {
-  listener_ = listener;
-  return listener_ ? RequestStart() : Stop();
 }
 
 bool DeviceMotionEventPump::OnControlMessageReceived(
@@ -38,10 +28,10 @@ bool DeviceMotionEventPump::OnControlMessageReceived(
 }
 
 void DeviceMotionEventPump::FireEvent() {
-  DCHECK(listener_);
+  DCHECK(listener());
   blink::WebDeviceMotionData data;
   if (reader_->GetLatestData(&data) && data.allAvailableSensorsAreActive)
-    listener_->didChangeDeviceMotion(data);
+    listener()->didChangeDeviceMotion(data);
 }
 
 bool DeviceMotionEventPump::InitializeReader(base::SharedMemoryHandle handle) {
@@ -50,13 +40,19 @@ bool DeviceMotionEventPump::InitializeReader(base::SharedMemoryHandle handle) {
   return reader_->Initialize(handle);
 }
 
-bool DeviceMotionEventPump::SendStartMessage() {
-  return RenderThread::Get()->Send(new DeviceMotionHostMsg_StartPolling());
+void DeviceMotionEventPump::SendStartMessage() {
+  RenderThread::Get()->Send(new DeviceMotionHostMsg_StartPolling());
 }
 
+void DeviceMotionEventPump::SendStopMessage() {
+  RenderThread::Get()->Send(new DeviceMotionHostMsg_StopPolling());
+}
 
-bool DeviceMotionEventPump::SendStopMessage() {
-  return RenderThread::Get()->Send(new DeviceMotionHostMsg_StopPolling());
+void DeviceMotionEventPump::SendFakeDataForTesting(void* fake_data) {
+  blink::WebDeviceMotionData data =
+      *static_cast<blink::WebDeviceMotionData*>(fake_data);
+
+  listener()->didChangeDeviceMotion(data);
 }
 
 }  // namespace content

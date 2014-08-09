@@ -71,7 +71,6 @@
 #include "content/renderer/dom_storage/dom_storage_dispatcher.h"
 #include "content/renderer/dom_storage/webstoragearea_impl.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
-#include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/gpu/compositor_output_surface.h"
 #include "content/renderer/gpu/gpu_benchmarking_extension.h"
 #include "content/renderer/input/input_event_filter.h"
@@ -885,10 +884,6 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       CompositorOutputSurface::CreateFilter(output_surface_loop.get());
   AddFilter(compositor_output_surface_filter_.get());
 
-  gamepad_shared_memory_reader_.reset(
-      new GamepadSharedMemoryReader(webkit_platform_support_.get()));
-  AddObserver(gamepad_shared_memory_reader_.get());
-
   RenderThreadImpl::RegisterSchemes();
 
   EnableBlinkPlatformLogChannels(
@@ -1603,11 +1598,7 @@ void RenderThreadImpl::SetFlingCurveParameters(
 }
 
 void RenderThreadImpl::SampleGamepads(blink::WebGamepads* data) {
-  gamepad_shared_memory_reader_->SampleGamepads(*data);
-}
-
-void RenderThreadImpl::SetGamepadListener(blink::WebGamepadListener* listener) {
-  gamepad_shared_memory_reader_->SetGamepadListener(listener);
+  webkit_platform_support_->sampleGamepads(*data);
 }
 
 void RenderThreadImpl::WidgetCreated() {
