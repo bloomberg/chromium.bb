@@ -162,7 +162,7 @@ class Manager(object):
             import errno
             if e.errno == errno.EEXIST:
                 _log.warning("No results.html file found in previous run, skipping it.")
-                return None
+            return None
         archived_name = ''.join((self._filesystem.basename(self._results_directory), "_", timestamp))
         archived_path = self._filesystem.join(self._filesystem.dirname(self._results_directory), archived_name)
         self._filesystem.move(self._results_directory, archived_path)
