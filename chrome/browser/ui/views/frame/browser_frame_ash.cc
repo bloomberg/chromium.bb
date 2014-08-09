@@ -117,6 +117,11 @@ void BrowserFrameAsh::GetWindowPlacement(
     *show_state = GetWidget()->GetNativeWindow()->GetProperty(
                       aura::client::kShowStateKey);
   }
+
+  if (*show_state != ui::SHOW_STATE_MAXIMIZED &&
+      *show_state != ui::SHOW_STATE_MINIMIZED) {
+    *show_state = ui::SHOW_STATE_NORMAL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
