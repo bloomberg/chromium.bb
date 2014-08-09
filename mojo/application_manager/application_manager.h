@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICE_MANAGER_SERVICE_MANAGER_H_
-#define MOJO_SERVICE_MANAGER_SERVICE_MANAGER_H_
+#ifndef MOJO_APPLICATION_MANAGER_APPLICATION_MANAGER_H_
+#define MOJO_APPLICATION_MANAGER_APPLICATION_MANAGER_H_
 
 #include <map>
 
@@ -11,19 +11,19 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "mojo/application_manager/application_loader.h"
+#include "mojo/application_manager/application_manager_export.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
-#include "mojo/service_manager/service_loader.h"
-#include "mojo/service_manager/service_manager_export.h"
 #include "url/gurl.h"
 
 namespace mojo {
 
-class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
+class MOJO_APPLICATION_MANAGER_EXPORT ApplicationManager {
  public:
   // API for testing.
-  class MOJO_SERVICE_MANAGER_EXPORT TestAPI {
+  class MOJO_APPLICATION_MANAGER_EXPORT TestAPI {
    public:
-    explicit TestAPI(ServiceManager* manager);
+    explicit TestAPI(ApplicationManager* manager);
     ~TestAPI();
 
     // Returns true if the shared instance has been created.
@@ -32,7 +32,7 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
     bool HasFactoryForURL(const GURL& url) const;
 
    private:
-    ServiceManager* manager_;
+    ApplicationManager* manager_;
 
     DISALLOW_COPY_AND_ASSIGN(TestAPI);
   };
@@ -41,16 +41,17 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
   class Interceptor {
    public:
     virtual ~Interceptor() {}
-    // Called when ServiceManager::Connect is called.
+    // Called when ApplicationManager::Connect is called.
     virtual ServiceProviderPtr OnConnectToClient(
-        const GURL& url, ServiceProviderPtr service_provider) = 0;
+        const GURL& url,
+        ServiceProviderPtr service_provider) = 0;
   };
 
-  ServiceManager();
-  ~ServiceManager();
+  ApplicationManager();
+  ~ApplicationManager();
 
   // Returns a shared instance, creating it if necessary.
-  static ServiceManager* GetInstance();
+  static ApplicationManager* GetInstance();
 
   // Loads a service if necessary and establishes a new client connection.
   void ConnectToApplication(const GURL& application_url,
@@ -71,19 +72,19 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
 
   // Sets the default Loader to be used if not overridden by SetLoaderForURL()
   // or SetLoaderForScheme().
-  void set_default_loader(scoped_ptr<ServiceLoader> loader) {
+  void set_default_loader(scoped_ptr<ApplicationLoader> loader) {
     default_loader_ = loader.Pass();
   }
   // Sets a Loader to be used for a specific url.
-  void SetLoaderForURL(scoped_ptr<ServiceLoader> loader, const GURL& url);
+  void SetLoaderForURL(scoped_ptr<ApplicationLoader> loader, const GURL& url);
   // Sets a Loader to be used for a specific url scheme.
-  void SetLoaderForScheme(scoped_ptr<ServiceLoader> loader,
+  void SetLoaderForScheme(scoped_ptr<ApplicationLoader> loader,
                           const std::string& scheme);
   // Allows to interpose a debugger to service connections.
   void SetInterceptor(Interceptor* interceptor);
 
   // Destroys all Shell-ends of connections established with Applications.
-  // Applications connected by this ServiceManager will observe pipe errors
+  // Applications connected by this ApplicationManager will observe pipe errors
   // and have a chance to shutdown.
   void TerminateShellConnections();
 
@@ -92,8 +93,8 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
   class LoadCallbacksImpl;
   class ShellImpl;
 
-  typedef std::map<std::string, ServiceLoader*> SchemeToLoaderMap;
-  typedef std::map<GURL, ServiceLoader*> URLToLoaderMap;
+  typedef std::map<std::string, ApplicationLoader*> SchemeToLoaderMap;
+  typedef std::map<GURL, ApplicationLoader*> URLToLoaderMap;
   typedef std::map<GURL, ShellImpl*> URLToShellImplMap;
   typedef std::map<GURL, ContentHandlerConnection*> URLToContentHandlerMap;
 
@@ -116,7 +117,7 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
   // Returns the Loader to use for a url (using default if not overridden.)
   // The preference is to use a loader that's been specified for an url first,
   // then one that's been specified for a scheme, then the default.
-  ServiceLoader* GetLoaderForURL(const GURL& url);
+  ApplicationLoader* GetLoaderForURL(const GURL& url);
 
   // Removes a ShellImpl when it encounters an error.
   void OnShellImplError(ShellImpl* shell_impl);
@@ -124,17 +125,17 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
   // Loader management.
   URLToLoaderMap url_to_loader_;
   SchemeToLoaderMap scheme_to_loader_;
-  scoped_ptr<ServiceLoader> default_loader_;
+  scoped_ptr<ApplicationLoader> default_loader_;
   Interceptor* interceptor_;
 
   URLToShellImplMap url_to_shell_impl_;
   URLToContentHandlerMap url_to_content_handler_;
 
-  base::WeakPtrFactory<ServiceManager> weak_ptr_factory_;
+  base::WeakPtrFactory<ApplicationManager> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceManager);
+  DISALLOW_COPY_AND_ASSIGN(ApplicationManager);
 };
 
 }  // namespace mojo
 
-#endif  // MOJO_SERVICE_MANAGER_SERVICE_MANAGER_H_
+#endif  // MOJO_APPLICATION_MANAGER_APPLICATION_MANAGER_H_

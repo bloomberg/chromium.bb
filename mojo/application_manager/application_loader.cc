@@ -2,27 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/service_manager/service_loader.h"
+#include "mojo/application_manager/application_loader.h"
 
 #include "base/logging.h"
 
 namespace mojo {
 
-ServiceLoader::SimpleLoadCallbacks::SimpleLoadCallbacks(
+ApplicationLoader::SimpleLoadCallbacks::SimpleLoadCallbacks(
     ScopedMessagePipeHandle shell_handle)
     : shell_handle_(shell_handle.Pass()) {
 }
 
-ServiceLoader::SimpleLoadCallbacks::~SimpleLoadCallbacks() {
+ApplicationLoader::SimpleLoadCallbacks::~SimpleLoadCallbacks() {
 }
 
 ScopedMessagePipeHandle
-ServiceLoader::SimpleLoadCallbacks::RegisterApplication() {
+ApplicationLoader::SimpleLoadCallbacks::RegisterApplication() {
   return shell_handle_.Pass();
 }
 
-void ServiceLoader::SimpleLoadCallbacks::LoadWithContentHandler(
-    const GURL& content_handle_url, URLResponsePtr content) {
+void ApplicationLoader::SimpleLoadCallbacks::LoadWithContentHandler(
+    const GURL& content_handle_url,
+    URLResponsePtr content) {
   NOTREACHED();
 }
 

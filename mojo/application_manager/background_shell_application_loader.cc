@@ -2,39 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/service_manager/background_shell_service_loader.h"
+#include "mojo/application_manager/background_shell_application_loader.h"
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "mojo/service_manager/service_manager.h"
+#include "mojo/application_manager/application_manager.h"
 
 namespace mojo {
 
-class BackgroundShellServiceLoader::BackgroundLoader {
+class BackgroundShellApplicationLoader::BackgroundLoader {
  public:
-  explicit BackgroundLoader(ServiceLoader* loader) : loader_(loader) {}
+  explicit BackgroundLoader(ApplicationLoader* loader) : loader_(loader) {}
   ~BackgroundLoader() {}
 
-  void Load(ServiceManager* manager,
+  void Load(ApplicationManager* manager,
             const GURL& url,
             ScopedMessagePipeHandle shell_handle) {
     scoped_refptr<LoadCallbacks> callbacks(
-        new ServiceLoader::SimpleLoadCallbacks(shell_handle.Pass()));
+        new ApplicationLoader::SimpleLoadCallbacks(shell_handle.Pass()));
     loader_->Load(manager, url, callbacks);
   }
 
-  void OnServiceError(ServiceManager* manager, const GURL& url) {
+  void OnServiceError(ApplicationManager* manager, const GURL& url) {
     loader_->OnServiceError(manager, url);
   }
 
  private:
-  ServiceLoader* loader_;  // Owned by BackgroundShellServiceLoader
+  ApplicationLoader* loader_;  // Owned by BackgroundShellApplicationLoader
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundLoader);
 };
 
-BackgroundShellServiceLoader::BackgroundShellServiceLoader(
-    scoped_ptr<ServiceLoader> real_loader,
+BackgroundShellApplicationLoader::BackgroundShellApplicationLoader(
+    scoped_ptr<ApplicationLoader> real_loader,
     const std::string& thread_name,
     base::MessageLoop::Type message_loop_type)
     : loader_(real_loader.Pass()),
@@ -44,13 +44,13 @@ BackgroundShellServiceLoader::BackgroundShellServiceLoader(
       background_loader_(NULL) {
 }
 
-BackgroundShellServiceLoader::~BackgroundShellServiceLoader() {
+BackgroundShellApplicationLoader::~BackgroundShellApplicationLoader() {
   if (thread_)
     thread_->Join();
 }
 
-void BackgroundShellServiceLoader::Load(
-    ServiceManager* manager,
+void BackgroundShellApplicationLoader::Load(
+    ApplicationManager* manager,
     const GURL& url,
     scoped_refptr<LoadCallbacks> callbacks) {
   ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
@@ -60,7 +60,7 @@ void BackgroundShellServiceLoader::Load(
   if (!thread_) {
     // TODO(tim): It'd be nice if we could just have each Load call
     // result in a new thread like DynamicService{Loader, Runner}. But some
-    // loaders are creating multiple ApplicationImpls (NetworkServiceLoader)
+    // loaders are creating multiple ApplicationImpls (NetworkApplicationLoader)
     // sharing a delegate (etc). So we have to keep it single threaded, wait
     // for the thread to initialize, and post to the TaskRunner for subsequent
     // Load calls for now.
@@ -70,22 +70,29 @@ void BackgroundShellServiceLoader::Load(
     DCHECK(task_runner_);
   }
 
-  task_runner_->PostTask(FROM_HERE,
-      base::Bind(&BackgroundShellServiceLoader::LoadOnBackgroundThread,
-                 base::Unretained(this), manager, url,
-                 base::Owned(
-                    new ScopedMessagePipeHandle(shell_handle.Pass()))));
-}
-
-void BackgroundShellServiceLoader::OnServiceError(
-    ServiceManager* manager, const GURL& url) {
-  task_runner_->PostTask(FROM_HERE,
+  task_runner_->PostTask(
+      FROM_HERE,
       base::Bind(
-          &BackgroundShellServiceLoader::OnServiceErrorOnBackgroundThread,
-          base::Unretained(this), manager, url));
+          &BackgroundShellApplicationLoader::LoadOnBackgroundThread,
+          base::Unretained(this),
+          manager,
+          url,
+          base::Owned(new ScopedMessagePipeHandle(shell_handle.Pass()))));
 }
 
-void BackgroundShellServiceLoader::Run() {
+void BackgroundShellApplicationLoader::OnServiceError(
+    ApplicationManager* manager,
+    const GURL& url) {
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &BackgroundShellApplicationLoader::OnServiceErrorOnBackgroundThread,
+          base::Unretained(this),
+          manager,
+          url));
+}
+
+void BackgroundShellApplicationLoader::Run() {
   base::MessageLoop message_loop(message_loop_type_);
   base::RunLoop loop;
   task_runner_ = message_loop.task_runner();
@@ -99,18 +106,19 @@ void BackgroundShellServiceLoader::Run() {
   loader_.reset();
 }
 
-void BackgroundShellServiceLoader::LoadOnBackgroundThread(
-      ServiceManager* manager,
-      const GURL& url,
-      ScopedMessagePipeHandle* shell_handle) {
+void BackgroundShellApplicationLoader::LoadOnBackgroundThread(
+    ApplicationManager* manager,
+    const GURL& url,
+    ScopedMessagePipeHandle* shell_handle) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   if (!background_loader_)
     background_loader_ = new BackgroundLoader(loader_.get());
   background_loader_->Load(manager, url, shell_handle->Pass());
 }
 
-void BackgroundShellServiceLoader::OnServiceErrorOnBackgroundThread(
-    ServiceManager* manager, const GURL& url) {
+void BackgroundShellApplicationLoader::OnServiceErrorOnBackgroundThread(
+    ApplicationManager* manager,
+    const GURL& url) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   if (!background_loader_)
     background_loader_ = new BackgroundLoader(loader_.get());

@@ -17,8 +17,8 @@
 #include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
+#include "mojo/application_manager/application_manager.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/service_manager/service_manager.h"
 #include "mojo/spy/common.h"
 #include "mojo/spy/public/spy.mojom.h"
 #include "mojo/spy/spy_server_impl.h"
@@ -222,7 +222,7 @@ class MessageProcessor :
 };
 
 // In charge of intercepting access to the service manager.
-class SpyInterceptor : public mojo::ServiceManager::Interceptor {
+class SpyInterceptor : public mojo::ApplicationManager::Interceptor {
  public:
   explicit SpyInterceptor(scoped_refptr<mojo::SpyServerImpl> spy_server,
                           base::MessageLoopProxy* control_loop_proxy)
@@ -310,7 +310,8 @@ SpyOptions ProcessOptions(const std::string& options) {
 
 namespace mojo {
 
-Spy::Spy(mojo::ServiceManager* service_manager, const std::string& options) {
+Spy::Spy(mojo::ApplicationManager* application_manager,
+         const std::string& options) {
   SpyOptions spy_options = ProcessOptions(options);
 
   spy_server_ = new SpyServerImpl();
@@ -325,13 +326,13 @@ Spy::Spy(mojo::ServiceManager* service_manager, const std::string& options) {
                             base::Passed(spy_server_->ServerPipe())));
 
   // Start intercepting mojo services.
-  service_manager->SetInterceptor(new SpyInterceptor(
-      spy_server_, control_thread_->message_loop_proxy()));
+  application_manager->SetInterceptor(
+      new SpyInterceptor(spy_server_, control_thread_->message_loop_proxy()));
 }
 
 Spy::~Spy() {
   // TODO(cpu): Do not leak the interceptor. Lifetime between the
-  // service_manager and the spy is still unclear hence the leak.
+  // application_manager and the spy is still unclear hence the leak.
 }
 
 }  // namespace mojo

@@ -156,7 +156,7 @@ TEST_F(ShellTestBaseTest, DISABLED_ConnectBasicNetwork) {
   // TODO(tim): crbug.com/392685.  Calling this explicitly shouldn't be
   // necessary once the shell terminates if the primordial app exits, which
   // we could enforce here by resetting |service|.
-  shell_context()->service_manager()->TerminateShellConnections();
+  shell_context()->application_manager()->TerminateShellConnections();
   message_loop()->Run();  // Waits for all connections to die.
 }
 
@@ -178,7 +178,7 @@ TEST_F(ShellTestBaseTest, DISABLED_ConnectInvalidServiceNetwork) {
   // TODO(tim): crbug.com/392685.  Calling this explicitly shouldn't be
   // necessary once the shell terminates if the primordial app exits, which
   // we could enforce here by resetting |service|.
-  shell_context()->service_manager()->TerminateShellConnections();
+  shell_context()->application_manager()->TerminateShellConnections();
   message_loop()->Run();  // Waits for all connections to die.
 }
 

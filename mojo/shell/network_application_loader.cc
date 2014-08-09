@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/shell/network_service_loader.h"
+#include "mojo/shell/network_application_loader.h"
 
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
@@ -23,15 +23,15 @@ base::FilePath GetBasePath() {
 namespace mojo {
 namespace shell {
 
-NetworkServiceLoader::NetworkServiceLoader() {
+NetworkApplicationLoader::NetworkApplicationLoader() {
 }
 
-NetworkServiceLoader::~NetworkServiceLoader() {
+NetworkApplicationLoader::~NetworkApplicationLoader() {
 }
 
-void NetworkServiceLoader::Load(ServiceManager* manager,
-                                const GURL& url,
-                                scoped_refptr<LoadCallbacks> callbacks) {
+void NetworkApplicationLoader::Load(ApplicationManager* manager,
+                                    const GURL& url,
+                                    scoped_refptr<LoadCallbacks> callbacks) {
   ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
   if (!shell_handle.is_valid())
     return;
@@ -44,24 +44,25 @@ void NetworkServiceLoader::Load(ServiceManager* manager,
   }
 }
 
-void NetworkServiceLoader::OnServiceError(ServiceManager* manager,
-                                          const GURL& url) {
+void NetworkApplicationLoader::OnServiceError(ApplicationManager* manager,
+                                              const GURL& url) {
   apps_.erase(reinterpret_cast<uintptr_t>(manager));
 }
 
-void NetworkServiceLoader::Initialize(ApplicationImpl* app) {
+void NetworkApplicationLoader::Initialize(ApplicationImpl* app) {
   // The context must be created on the same thread as the network service.
   context_.reset(new NetworkContext(GetBasePath()));
 }
 
-bool NetworkServiceLoader::ConfigureIncomingConnection(
+bool NetworkApplicationLoader::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
   connection->AddService(this);
   return true;
 }
 
-void NetworkServiceLoader::Create(ApplicationConnection* connection,
-                                  InterfaceRequest<NetworkService> request) {
+void NetworkApplicationLoader::Create(
+    ApplicationConnection* connection,
+    InterfaceRequest<NetworkService> request) {
   BindToRequest(new NetworkServiceImpl(connection, context_.get()), &request);
 }
 

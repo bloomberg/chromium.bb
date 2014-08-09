@@ -20,7 +20,7 @@ ViewManagerLoader::ViewManagerLoader() {
 ViewManagerLoader::~ViewManagerLoader() {
 }
 
-void ViewManagerLoader::Load(ServiceManager* manager,
+void ViewManagerLoader::Load(ApplicationManager* manager,
                              const GURL& url,
                              scoped_refptr<LoadCallbacks> callbacks) {
   ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
@@ -34,7 +34,7 @@ void ViewManagerLoader::Load(ServiceManager* manager,
   apps_.push_back(app.release());
 }
 
-void ViewManagerLoader::OnServiceError(ServiceManager* manager,
+void ViewManagerLoader::OnServiceError(ApplicationManager* manager,
                                        const GURL& url) {
 }
 

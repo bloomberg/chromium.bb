@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SHELL_DBUS_SERVICE_LOADER_H_
-#define MOJO_SHELL_DBUS_SERVICE_LOADER_H_
+#ifndef MOJO_SHELL_DBUS_APPLICATION_LOADER_LINUX_H_
+#define MOJO_SHELL_DBUS_APPLICATION_LOADER_LINUX_H_
 
 #include <map>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "mojo/application_manager/application_loader.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/service_manager/service_loader.h"
 #include "mojo/shell/keep_alive.h"
 #include "url/gurl.h"
 
@@ -23,7 +23,7 @@ namespace shell {
 
 class Context;
 
-// An implementation of ServiceLoader that contacts a system service
+// An implementation of ApplicationLoader that contacts a system service
 // and bootstraps a Mojo connection to it over DBus.
 //
 // In order to allow the externally-running service to accept connections from
@@ -42,10 +42,10 @@ class Context;
 //        <arg type="h" name="file_descriptor" direction="in" />
 //      </method>
 //    </interface>
-class DBusServiceLoader : public ServiceLoader {
+class DBusApplicationLoader : public ApplicationLoader {
  public:
-  DBusServiceLoader(Context* context);
-  virtual ~DBusServiceLoader();
+  DBusApplicationLoader(Context* context);
+  virtual ~DBusApplicationLoader();
 
   // URL for DBus services are of the following format:
   // dbus:tld.domain.ServiceName/path/to/DBusObject
@@ -57,16 +57,16 @@ class DBusServiceLoader : public ServiceLoader {
   // Example:
   //   dbus:org.chromium.EchoService/org/chromium/MojoImpl
   //
-  // This will tell DBusServiceLoader to reach out to a service with
+  // This will tell DBusApplicationLoader to reach out to a service with
   // the name "org.chromium.EchoService" and invoke the method
   // "org.chromium.Mojo.ConnectChannel" on the object exported at
   // "/org/chromium/MojoImpl".
-  virtual void Load(ServiceManager* manager,
+  virtual void Load(ApplicationManager* manager,
                     const GURL& url,
                     scoped_refptr<LoadCallbacks> callbacks) OVERRIDE;
 
-  virtual void OnServiceError(ServiceManager* manager, const GURL& url)
-      OVERRIDE;
+  virtual void OnServiceError(ApplicationManager* manager,
+                              const GURL& url) OVERRIDE;
 
  private:
   class LoadContext;
@@ -80,10 +80,10 @@ class DBusServiceLoader : public ServiceLoader {
   typedef std::map<GURL, LoadContext*> LoadContextMap;
   LoadContextMap url_to_load_context_;
 
-  DISALLOW_COPY_AND_ASSIGN(DBusServiceLoader);
+  DISALLOW_COPY_AND_ASSIGN(DBusApplicationLoader);
 };
 
 }  // namespace shell
 }  // namespace mojo
 
-#endif  // MOJO_SHELL_DBUS_SERVICE_LOADER_H_
+#endif  // MOJO_SHELL_DBUS_APPLICATION_LOADER_LINUX_H_

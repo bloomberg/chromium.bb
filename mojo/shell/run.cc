@@ -5,7 +5,7 @@
 #include "mojo/shell/run.h"
 
 #include "base/logging.h"
-#include "mojo/service_manager/service_manager.h"
+#include "mojo/application_manager/application_manager.h"
 #include "mojo/shell/context.h"
 #include "mojo/shell/keep_alive.h"
 
@@ -37,7 +37,7 @@ void Run(Context* context, const std::vector<GURL>& app_urls) {
     ServiceProviderPtr spp;
     BindToProxy(stub_sp, &spp);
 
-    context->service_manager()->ConnectToApplication(
+    context->application_manager()->ConnectToApplication(
         *it, GURL(), spp.Pass());
   }
 }

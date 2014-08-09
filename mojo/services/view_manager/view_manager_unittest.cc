@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "mojo/application_manager/application_manager.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
@@ -20,7 +21,6 @@
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/cpp/bindings/lib/router.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
-#include "mojo/service_manager/service_manager.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
@@ -378,15 +378,15 @@ class TestViewManagerClientConnection
 
 // Used with ViewManagerService::Embed(). Creates a
 // TestViewManagerClientConnection, which creates and owns the ViewManagerProxy.
-class EmbedServiceLoader : public ServiceLoader,
-                           ApplicationDelegate,
-                           public InterfaceFactory<ViewManagerClient> {
+class EmbedApplicationLoader : public ApplicationLoader,
+                               ApplicationDelegate,
+                               public InterfaceFactory<ViewManagerClient> {
  public:
-  EmbedServiceLoader() {}
-  virtual ~EmbedServiceLoader() {}
+  EmbedApplicationLoader() {}
+  virtual ~EmbedApplicationLoader() {}
 
-  // ServiceLoader implementation:
-  virtual void Load(ServiceManager* manager,
+  // ApplicationLoader implementation:
+  virtual void Load(ApplicationManager* manager,
                     const GURL& url,
                     scoped_refptr<LoadCallbacks> callbacks) OVERRIDE {
     ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
@@ -396,9 +396,8 @@ class EmbedServiceLoader : public ServiceLoader,
                                                         shell_handle.Pass()));
     apps_.push_back(app.release());
   }
-  virtual void OnServiceError(ServiceManager* manager,
-                              const GURL& url) OVERRIDE {
-  }
+  virtual void OnServiceError(ApplicationManager* manager,
+                              const GURL& url) OVERRIDE {}
 
   // ApplicationDelegate implementation:
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
@@ -416,7 +415,7 @@ class EmbedServiceLoader : public ServiceLoader,
  private:
   ScopedVector<ApplicationImpl> apps_;
 
-  DISALLOW_COPY_AND_ASSIGN(EmbedServiceLoader);
+  DISALLOW_COPY_AND_ASSIGN(EmbedApplicationLoader);
 };
 
 // Creates an id used for transport from the specified parameters.
@@ -469,16 +468,15 @@ class ViewManagerTest : public testing::Test {
     test_helper_.Init();
 
     test_helper_.SetLoaderForURL(
-        scoped_ptr<ServiceLoader>(new EmbedServiceLoader()),
+        scoped_ptr<ApplicationLoader>(new EmbedApplicationLoader()),
         GURL(kTestServiceURL));
 
     test_helper_.SetLoaderForURL(
-        scoped_ptr<ServiceLoader>(new EmbedServiceLoader()),
+        scoped_ptr<ApplicationLoader>(new EmbedApplicationLoader()),
         GURL(kTestServiceURL2));
 
-    test_helper_.service_manager()->ConnectToService(
-        GURL("mojo:mojo_view_manager"),
-        &view_manager_init_);
+    test_helper_.application_manager()->ConnectToService(
+        GURL("mojo:mojo_view_manager"), &view_manager_init_);
     ASSERT_TRUE(InitEmbed(view_manager_init_.get(), kTestServiceURL, 1));
 
     connection_ = ViewManagerProxy::WaitForInstance();

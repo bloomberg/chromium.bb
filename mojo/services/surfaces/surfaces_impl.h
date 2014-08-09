@@ -18,7 +18,7 @@ class Display;
 }
 
 namespace mojo {
-class ServiceManager;
+class ApplicationManager;
 
 class SurfaceNativeViewportClient;
 

@@ -39,8 +39,9 @@ ScopedMessagePipeHandle ShellTestBase::ConnectToServiceViaNetwork(
   shell_context_.mojo_url_resolver()->SetBaseURL(
       test_server_->base_url());
 
-  return shell_context_.service_manager()->ConnectToServiceByName(
-      application_url, service_name).Pass();
+  return shell_context_.application_manager()
+      ->ConnectToServiceByName(application_url, service_name)
+      .Pass();
 }
 
 ScopedMessagePipeHandle ShellTestBase::ConnectToService(
@@ -55,8 +56,9 @@ ScopedMessagePipeHandle ShellTestBase::ConnectToService(
   shell_context_.mojo_url_resolver()->SetBaseURL(
       net::FilePathToFileURL(service_dir));
 
-  return shell_context_.service_manager()->ConnectToServiceByName(
-      application_url, service_name).Pass();
+  return shell_context_.application_manager()
+      ->ConnectToServiceByName(application_url, service_name)
+      .Pass();
 }
 
 }  // namespace test

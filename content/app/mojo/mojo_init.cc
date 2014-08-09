@@ -5,14 +5,14 @@
 #include "content/app/mojo/mojo_init.h"
 
 #include "base/logging.h"
+#include "mojo/application_manager/application_manager.h"
 #include "mojo/embedder/embedder.h"
-#include "mojo/service_manager/service_manager.h"
 
 namespace content {
 
 void InitializeMojo() {
   mojo::embedder::Init();
-  mojo::ServiceManager::GetInstance();
+  mojo::ApplicationManager::GetInstance();
 }
 
 }  // namespace content

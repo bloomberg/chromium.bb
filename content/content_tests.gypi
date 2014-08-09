@@ -1081,7 +1081,7 @@
             '../mojo/mojo_base.gyp:mojo_environment_chromium',
             '../mojo/mojo_base.gyp:mojo_js_bindings',
             '../mojo/mojo_base.gyp:mojo_system_impl',
-            '../mojo/mojo.gyp:mojo_service_manager',
+            '../mojo/mojo.gyp:mojo_application_manager',
             '../net/net.gyp:net_test_support',
             '../ppapi/ppapi_internal.gyp:ppapi_host',
             '../ppapi/ppapi_internal.gyp:ppapi_ipc',

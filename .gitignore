@@ -157,13 +157,13 @@ v8.log
 /media/yuv_convert_simd_x86.xml
 /metro_driver
 /mojo/hello_world_service.xml
+/mojo/mojo_application_manager_unittests.xml
 /mojo/mojo_gles2_bindings.xml
 /mojo/mojo_launcher_bindings.xml
 /mojo/mojo_native_viewport_bindings.xml
 /mojo/mojo_public_bindings_unittests.xml
 /mojo/mojo_public_unittests.xml
 /mojo/mojo_sample_service.xml
-/mojo/mojo_service_manager_unittests.xml
 /mojo/mojo_shell_bindings.xml
 /mojo/mojo_view_manager_bindings.xml
 /mojo/mojom_test.xml

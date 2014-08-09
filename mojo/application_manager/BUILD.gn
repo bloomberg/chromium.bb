@@ -2,20 +2,22 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: mojo.gyp:mojo_service_manager
-component("service_manager") {
-  output_name = "mojo_service_manager"
+# GYP version: mojo.gyp:mojo_application_manager
+component("application_manager") {
+  output_name = "mojo_application_manager"
   sources = [
-    "background_shell_service_loader.cc",
-    "background_shell_service_loader.h",
-    "service_loader.cc",
-    "service_loader.h",
-    "service_manager.cc",
-    "service_manager.h",
-    "service_manager_export.h",
+    "application_loader.cc",
+    "application_loader.h",
+    "application_manager.cc",
+    "application_manager.h",
+    "application_manager_export.h",
+    "background_shell_application_loader.cc",
+    "background_shell_application_loader.h",
   ]
 
-  defines = [ "MOJO_SERVICE_MANAGER_IMPLEMENTATION" ]
+  defines = [
+    "MOJO_APPLICATION_MANAGER_IMPLEMENTATION",
+  ]
 
   deps = [
     "//base",

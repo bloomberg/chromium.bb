@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "mojo/service_manager/service_manager.h"
+#include "mojo/application_manager/application_manager.h"
 #include "mojo/shell/keep_alive.h"
 #include "mojo/shell/mojo_url_resolver.h"
 #include "mojo/shell/task_runners.h"
@@ -22,7 +22,7 @@ class Spy;
 
 namespace shell {
 
-class DynamicServiceLoader;
+class DynamicApplicationLoader;
 
 // The "global" context for the shell's main process.
 class Context {
@@ -33,7 +33,7 @@ class Context {
   void Init();
 
   TaskRunners* task_runners() { return task_runners_.get(); }
-  ServiceManager* service_manager() { return &service_manager_; }
+  ApplicationManager* application_manager() { return &application_manager_; }
   KeepAliveCounter* keep_alive_counter() { return &keep_alive_counter_; }
   MojoURLResolver* mojo_url_resolver() { return &mojo_url_resolver_; }
 
@@ -43,10 +43,10 @@ class Context {
 #endif  // defined(OS_ANDROID)
 
  private:
-  class NativeViewportServiceLoader;
+  class NativeViewportApplicationLoader;
 
   scoped_ptr<TaskRunners> task_runners_;
-  ServiceManager service_manager_;
+  ApplicationManager application_manager_;
   MojoURLResolver mojo_url_resolver_;
   scoped_ptr<Spy> spy_;
 #if defined(OS_ANDROID)

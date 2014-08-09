@@ -4,7 +4,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "mojo/shell/context.h"
-#include "mojo/shell/dynamic_service_loader.h"
+#include "mojo/shell/dynamic_application_loader.h"
 #include "mojo/shell/dynamic_service_runner.h"
 #include "net/base/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,6 +32,7 @@ class TestDynamicServiceRunner : public DynamicServiceRunner {
                      const base::Closure& app_completed_callback) OVERRIDE {
     state_->runner_was_started = true;
   }
+
  private:
   TestState* state_;
 };
@@ -44,38 +45,40 @@ class TestDynamicServiceRunnerFactory : public DynamicServiceRunnerFactory {
     return scoped_ptr<DynamicServiceRunner>(
         new TestDynamicServiceRunner(state_));
   }
+
  private:
   TestState* state_;
 };
 
 }  // namespace
 
-class DynamicServiceLoaderTest : public testing::Test {
+class DynamicApplicationLoaderTest : public testing::Test {
  public:
-  DynamicServiceLoaderTest() {}
-  virtual ~DynamicServiceLoaderTest() {}
+  DynamicApplicationLoaderTest() {}
+  virtual ~DynamicApplicationLoaderTest() {}
   virtual void SetUp() OVERRIDE {
     context_.Init();
     scoped_ptr<DynamicServiceRunnerFactory> factory(
         new TestDynamicServiceRunnerFactory(&state_));
-    loader_.reset(new DynamicServiceLoader(&context_, factory.Pass()));
+    loader_.reset(new DynamicApplicationLoader(&context_, factory.Pass()));
   }
+
  protected:
   Context context_;
   base::MessageLoop loop_;
-  scoped_ptr<DynamicServiceLoader> loader_;
+  scoped_ptr<DynamicApplicationLoader> loader_;
   TestState state_;
 };
 
-TEST_F(DynamicServiceLoaderTest, DoesNotExist) {
+TEST_F(DynamicApplicationLoaderTest, DoesNotExist) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath nonexistent_file(FILE_PATH_LITERAL("nonexistent.txt"));
   GURL url(net::FilePathToFileURL(temp_dir.path().Append(nonexistent_file)));
   MessagePipe pipe;
-  scoped_refptr<ServiceLoader::SimpleLoadCallbacks> callbacks(
-      new ServiceLoader::SimpleLoadCallbacks(pipe.handle0.Pass()));
-  loader_->Load(context_.service_manager(), url, callbacks);
+  scoped_refptr<ApplicationLoader::SimpleLoadCallbacks> callbacks(
+      new ApplicationLoader::SimpleLoadCallbacks(pipe.handle0.Pass()));
+  loader_->Load(context_.application_manager(), url, callbacks);
   loop_.Run();
   EXPECT_FALSE(state_.runner_was_started);
   EXPECT_TRUE(state_.runner_was_destroyed);

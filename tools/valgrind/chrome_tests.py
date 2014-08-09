@@ -405,8 +405,8 @@ class ChromeTests:
                            "mojo_public_utility_unittests")
 
   def TestMojoServiceManager(self):
-    return self.SimpleTest("mojo_service_manager",
-                           "mojo_service_manager_unittests")
+    return self.SimpleTest("mojo_application_manager",
+                           "mojo_application_manager_unittests")
 
   def TestMojoSystem(self):
     return self.SimpleTest("mojo_system", "mojo_system_unittests")
@@ -690,7 +690,7 @@ class ChromeTests:
     "mojo_public_bindings": TestMojoPublicBindings,
     "mojo_public_env": TestMojoPublicEnv,
     "mojo_public_sysperf": TestMojoPublicSysPerf,
-    "mojo_service_manager": TestMojoServiceManager,
+    "mojo_application_manager": TestMojoServiceManager,
     "mojo_view_manager": TestMojoViewManager,
     "mojo_view_manager_lib": TestMojoViewManagerLib,
     "net": TestNet,              "net_unittests": TestNet,

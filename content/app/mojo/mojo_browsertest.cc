@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/public/test/content_browser_test.h"
-#include "mojo/service_manager/service_manager.h"
+#include "mojo/application_manager/application_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -14,7 +14,7 @@ class MojoTest : public ContentBrowserTest {
 
  protected:
   bool HasCreatedInstance() {
-    return mojo::ServiceManager::TestAPI::HasCreatedInstance();
+    return mojo::ApplicationManager::TestAPI::HasCreatedInstance();
   }
 
  private:

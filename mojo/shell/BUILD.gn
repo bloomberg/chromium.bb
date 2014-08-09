@@ -11,7 +11,7 @@ executable("mojo_shell") {
     "//base",
     "//mojo/common",
     "//mojo/environment:chromium",
-    "//mojo/service_manager",
+    "//mojo/application_manager",
     "//mojo/system",
     "//third_party/icu",
     "//ui/gl",
@@ -37,7 +37,7 @@ source_set("lib") {
     "//mojo/gles2",
     "//mojo/public/cpp/application:chromium",
     "//mojo/public/interfaces/application",
-    "//mojo/service_manager",
+    "//mojo/application_manager",
     "//mojo/services/native_viewport",
     "//mojo/services/public/interfaces/native_viewport",
     "//mojo/services/public/interfaces/network",
@@ -58,10 +58,10 @@ source_set("lib") {
     "child_process_host.h",
     "context.cc",
     "context.h",
-    "dbus_service_loader_linux.cc",
-    "dbus_service_loader_linux.h",
-    "dynamic_service_loader.cc",
-    "dynamic_service_loader.h",
+    "dbus_application_loader_linux.cc",
+    "dbus_application_loader_linux.h",
+    "dynamic_application_loader.cc",
+    "dynamic_application_loader.h",
     "dynamic_service_runner.h",
     "init.cc",
     "init.h",
@@ -81,8 +81,8 @@ source_set("lib") {
     "task_runners.h",
     "test_child_process.cc",
     "test_child_process.h",
-    "ui_service_loader_android.cc",
-    "ui_service_loader_android.h",
+    "ui_application_loader_android.cc",
+    "ui_application_loader_android.h",
   ]
 
   if (is_linux) {
@@ -94,8 +94,8 @@ source_set("lib") {
       "//mojo/services/network",
     ]
     sources += [
-      "network_service_loader.cc",
-      "network_service_loader.h",
+      "network_application_loader.cc",
+      "network_application_loader.h",
     ]
   }
   if (use_aura) {

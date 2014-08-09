@@ -1,6 +1,6 @@
 include_rules = [
   "+mojo/aura",
-  "+mojo/service_manager",
+  "+mojo/application_manager",
   "+mojo/services/native_viewport",
   "+mojo/services/public",
   "+ui/aura",

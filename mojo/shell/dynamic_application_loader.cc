@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/shell/dynamic_service_loader.h"
+#include "mojo/shell/dynamic_application_loader.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -32,7 +32,7 @@ void RunLibraryComplete(DynamicServiceRunner* runner,
 
 }  // namespace
 
-DynamicServiceLoader::DynamicServiceLoader(
+DynamicApplicationLoader::DynamicApplicationLoader(
     Context* context,
     scoped_ptr<DynamicServiceRunnerFactory> runner_factory)
     : context_(context),
@@ -40,18 +40,18 @@ DynamicServiceLoader::DynamicServiceLoader(
       weak_ptr_factory_(this) {
 }
 
-DynamicServiceLoader::~DynamicServiceLoader() {
+DynamicApplicationLoader::~DynamicApplicationLoader() {
 }
 
-void DynamicServiceLoader::RegisterContentHandler(
+void DynamicApplicationLoader::RegisterContentHandler(
     const std::string& mime_type,
     const GURL& content_handler_url) {
   mime_type_to_url_[mime_type] = content_handler_url;
 }
 
-void DynamicServiceLoader::Load(ServiceManager* manager,
-                                const GURL& url,
-                                scoped_refptr<LoadCallbacks> callbacks) {
+void DynamicApplicationLoader::Load(ApplicationManager* manager,
+                                    const GURL& url,
+                                    scoped_refptr<LoadCallbacks> callbacks) {
   GURL resolved_url;
   if (url.SchemeIs("mojo")) {
     resolved_url = context_->mojo_url_resolver()->Resolve(url);
@@ -65,7 +65,7 @@ void DynamicServiceLoader::Load(ServiceManager* manager,
     LoadNetworkService(resolved_url, callbacks);
 }
 
-void DynamicServiceLoader::LoadLocalService(
+void DynamicApplicationLoader::LoadLocalService(
     const GURL& resolved_url,
     scoped_refptr<LoadCallbacks> callbacks) {
   base::FilePath path;
@@ -75,7 +75,7 @@ void DynamicServiceLoader::LoadLocalService(
   // Async for consistency with network case.
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&DynamicServiceLoader::RunLibrary,
+      base::Bind(&DynamicApplicationLoader::RunLibrary,
                  weak_ptr_factory_.GetWeakPtr(),
                  path,
                  callbacks,
@@ -83,13 +83,12 @@ void DynamicServiceLoader::LoadLocalService(
                  base::PathExists(path)));
 }
 
-void DynamicServiceLoader::LoadNetworkService(
+void DynamicApplicationLoader::LoadNetworkService(
     const GURL& resolved_url,
     scoped_refptr<LoadCallbacks> callbacks) {
   if (!network_service_) {
-    context_->service_manager()->ConnectToService(
-        GURL("mojo:mojo_network_service"),
-        &network_service_);
+    context_->application_manager()->ConnectToService(
+        GURL("mojo:mojo_network_service"), &network_service_);
   }
   if (!url_loader_)
     network_service_->CreateURLLoader(Get(&url_loader_));
@@ -105,21 +104,21 @@ void DynamicServiceLoader::LoadNetworkService(
 
   url_loader_->Start(
       request.Pass(),
-      base::Bind(&DynamicServiceLoader::OnLoadNetworkServiceComplete,
+      base::Bind(&DynamicApplicationLoader::OnLoadNetworkServiceComplete,
                  weak_ptr_factory_.GetWeakPtr(),
                  callbacks));
 }
 
-void DynamicServiceLoader::OnLoadNetworkServiceComplete(
-    scoped_refptr<LoadCallbacks> callbacks, URLResponsePtr response) {
+void DynamicApplicationLoader::OnLoadNetworkServiceComplete(
+    scoped_refptr<LoadCallbacks> callbacks,
+    URLResponsePtr response) {
   if (response->error) {
     LOG(ERROR) << "Error (" << response->error->code << ": "
                << response->error->description << ") while fetching "
                << response->url;
   }
 
-  MimeTypeToURLMap::iterator iter =
-      mime_type_to_url_.find(response->mime_type);
+  MimeTypeToURLMap::iterator iter = mime_type_to_url_.find(response->mime_type);
   if (iter != mime_type_to_url_.end()) {
     callbacks->LoadWithContentHandler(iter->second, response.Pass());
     return;
@@ -132,17 +131,18 @@ void DynamicServiceLoader::OnLoadNetworkServiceComplete(
   common::CopyToFile(response->body.Pass(),
                      file,
                      context_->task_runners()->blocking_pool(),
-                     base::Bind(&DynamicServiceLoader::RunLibrary,
+                     base::Bind(&DynamicApplicationLoader::RunLibrary,
                                 weak_ptr_factory_.GetWeakPtr(),
                                 file,
                                 callbacks,
                                 kDeleteFileAfter));
 }
 
-void DynamicServiceLoader::RunLibrary(const base::FilePath& path,
-                                      scoped_refptr<LoadCallbacks> callbacks,
-                                      bool delete_file_after,
-                                      bool path_exists) {
+void DynamicApplicationLoader::RunLibrary(
+    const base::FilePath& path,
+    scoped_refptr<LoadCallbacks> callbacks,
+    bool delete_file_after,
+    bool path_exists) {
   // TODO(aa): We need to create a runner, even if we're not going to use it,
   // because it getting destroyed is what causes shell to shut down. If we don't
   // create this, in the case where shell never successfully creates even one
@@ -164,8 +164,8 @@ void DynamicServiceLoader::RunLibrary(const base::FilePath& path,
                                delete_file_after ? path : base::FilePath()));
 }
 
-void DynamicServiceLoader::OnServiceError(ServiceManager* manager,
-                                          const GURL& url) {
+void DynamicApplicationLoader::OnServiceError(ApplicationManager* manager,
+                                              const GURL& url) {
   // TODO(darin): What should we do about service errors? This implies that
   // the app closed its handle to the service manager. Maybe we don't care?
 }

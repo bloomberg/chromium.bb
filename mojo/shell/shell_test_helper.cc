@@ -25,16 +25,17 @@ ShellTestHelper::~ShellTestHelper() {
 
 void ShellTestHelper::Init() {
   context_.Init();
-  test_api_.reset(new ServiceManager::TestAPI(context_.service_manager()));
+  test_api_.reset(
+      new ApplicationManager::TestAPI(context_.application_manager()));
   base::FilePath service_dir;
   CHECK(PathService::Get(base::DIR_MODULE, &service_dir));
   context_.mojo_url_resolver()->SetBaseURL(
       net::FilePathToFileURL(service_dir));
 }
 
-void ShellTestHelper::SetLoaderForURL(scoped_ptr<ServiceLoader> loader,
+void ShellTestHelper::SetLoaderForURL(scoped_ptr<ApplicationLoader> loader,
                                       const GURL& url) {
-  context_.service_manager()->SetLoaderForURL(loader.Pass(), url);
+  context_.application_manager()->SetLoaderForURL(loader.Pass(), url);
 }
 
 }  // namespace shell

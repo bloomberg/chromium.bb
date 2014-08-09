@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/shell/dbus_service_loader_linux.h"
+#include "mojo/shell/dbus_application_loader_linux.h"
 
 #include <string>
 
@@ -27,13 +27,13 @@ namespace mojo {
 namespace shell {
 
 // Manages the connection to a single externally-running service.
-class DBusServiceLoader::LoadContext {
+class DBusApplicationLoader::LoadContext {
  public:
   // Kicks off the attempt to bootstrap a connection to the externally-running
   // service specified by url_.
   // Creates a MessagePipe and passes one end over DBus to the service. Then,
   // calls ExternalService::Activate(ShellHandle) over the now-shared pipe.
-  LoadContext(DBusServiceLoader* loader,
+  LoadContext(DBusApplicationLoader* loader,
               const scoped_refptr<dbus::Bus>& bus,
               const GURL& url,
               ScopedMessagePipeHandle service_provider_handle)
@@ -51,8 +51,7 @@ class DBusServiceLoader::LoadContext {
         base::Bind(&LoadContext::ConnectChannel, base::Unretained(this)));
   }
 
-  virtual ~LoadContext() {
-  }
+  virtual ~LoadContext() {}
 
  private:
   // Sets up a pipe to share with the externally-running service and returns
@@ -86,7 +85,7 @@ class DBusServiceLoader::LoadContext {
     DCHECK_NE(first_slash, std::string::npos);
 
     const std::string service_name = url_.path().substr(0, first_slash);
-    const std::string object_path =  url_.path().substr(first_slash);
+    const std::string object_path = url_.path().substr(first_slash);
     service_dbus_proxy_ =
         bus_->GetObjectProxy(service_name, dbus::ObjectPath(object_path));
 
@@ -104,10 +103,8 @@ class DBusServiceLoader::LoadContext {
   // Sends a ShellHandle over to the now-connected externally-running service,
   // using the Mojo ExternalService API.
   void ActivateService(dbus::Response* response) {
-    external_service_->Activate(
-        mojo::ScopedMessagePipeHandle(
-            mojo::MessagePipeHandle(
-                service_provider_handle_.release().value())));
+    external_service_->Activate(mojo::ScopedMessagePipeHandle(
+        mojo::MessagePipeHandle(service_provider_handle_.release().value())));
   }
 
   // Should the ExternalService disappear completely, destroy connection state.
@@ -116,18 +113,20 @@ class DBusServiceLoader::LoadContext {
   // and that would be superior?
   void HandleNameOwnerChanged(const std::string& old_owner,
                               const std::string& new_owner) {
-    DCHECK(loader_->context_->task_runners()->shell_runner()->
-           BelongsToCurrentThread());
+    DCHECK(loader_->context_->task_runners()
+               ->shell_runner()
+               ->BelongsToCurrentThread());
 
     if (new_owner.empty()) {
       loader_->context_->task_runners()->shell_runner()->PostTask(
           FROM_HERE,
-          base::Bind(&DBusServiceLoader::ForgetService,
-                     base::Unretained(loader_), url_));
+          base::Bind(&DBusApplicationLoader::ForgetService,
+                     base::Unretained(loader_),
+                     url_));
     }
   }
 
-  DBusServiceLoader* const loader_;
+  DBusApplicationLoader* const loader_;
   scoped_refptr<dbus::Bus> bus_;
   dbus::ObjectProxy* service_dbus_proxy_;  // Owned by bus_;
   const GURL url_;
@@ -139,20 +138,21 @@ class DBusServiceLoader::LoadContext {
   DISALLOW_COPY_AND_ASSIGN(LoadContext);
 };
 
-DBusServiceLoader::DBusServiceLoader(Context* context) : context_(context) {
+DBusApplicationLoader::DBusApplicationLoader(Context* context)
+    : context_(context) {
   dbus::Bus::Options options;
   options.bus_type = dbus::Bus::SESSION;
   options.dbus_task_runner = context_->task_runners()->io_runner();
   bus_ = new dbus::Bus(options);
 }
 
-DBusServiceLoader::~DBusServiceLoader() {
+DBusApplicationLoader::~DBusApplicationLoader() {
   DCHECK(url_to_load_context_.empty());
 }
 
-void DBusServiceLoader::Load(ServiceManager* manager,
-                             const GURL& url,
-                             scoped_refptr<LoadCallbacks> callbacks) {
+void DBusApplicationLoader::Load(ApplicationManager* manager,
+                                 const GURL& url,
+                                 scoped_refptr<LoadCallbacks> callbacks) {
   // TODO(aa): This could be delayed until later, when we know that loading is
   // going to succeed.
   ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
@@ -165,12 +165,12 @@ void DBusServiceLoader::Load(ServiceManager* manager,
       new LoadContext(this, bus_, url, shell_handle.Pass());
 }
 
-void DBusServiceLoader::OnServiceError(ServiceManager* manager,
-                                       const GURL& url) {
+void DBusApplicationLoader::OnServiceError(ApplicationManager* manager,
+                                           const GURL& url) {
   // TODO(cmasone): Anything at all in this method here.
 }
 
-void DBusServiceLoader::ForgetService(const GURL& url) {
+void DBusApplicationLoader::ForgetService(const GURL& url) {
   DCHECK(context_->task_runners()->shell_runner()->BelongsToCurrentThread());
   DVLOG(2) << "Forgetting service (url: " << url << ")";
 

@@ -11,7 +11,7 @@ source_set("spy") {
     "//base:base_static",
     "//net:http_server",
     "//url",
-    "//mojo/service_manager",
+    "//mojo/application_manager",
   ]
 
   sources = [

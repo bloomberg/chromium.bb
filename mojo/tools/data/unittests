@@ -13,8 +13,8 @@ mojo_public_system_unittests
 mojo_public_utility_unittests
 
 # Non-system, non-public tests:
+mojo_application_manager_unittests
 mojo_common_unittests
-mojo_service_manager_unittests
 mojo_view_manager_lib_unittests
 mojo_view_manager_unittests
 mojo_surfaces_lib_unittests

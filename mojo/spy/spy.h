@@ -15,7 +15,7 @@ class Thread;
 
 namespace mojo {
 
-class ServiceManager;
+class ApplicationManager;
 class SpyServerImpl;
 
 // mojo::Spy is a troubleshooting and debugging aid. It helps tracking
@@ -29,7 +29,8 @@ class SpyServerImpl;
 //
 class Spy {
  public:
-  Spy(mojo::ServiceManager* service_manager, const std::string& options);
+  Spy(mojo::ApplicationManager* application_manager,
+      const std::string& options);
   ~Spy();
 
  private:

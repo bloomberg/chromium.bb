@@ -7,12 +7,12 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "mojo/application_manager/application_manager.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
-#include "mojo/service_manager/service_manager.h"
 #include "mojo/services/public/cpp/view_manager/lib/node_private.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_client_impl.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
@@ -43,19 +43,19 @@ void QuitRunLoop() {
   current_run_loop->Quit();
 }
 
-class ConnectServiceLoader : public ServiceLoader,
-                             public ApplicationDelegate,
-                             public ViewManagerDelegate {
+class ConnectApplicationLoader : public ApplicationLoader,
+                                 public ApplicationDelegate,
+                                 public ViewManagerDelegate {
  public:
   typedef base::Callback<void(ViewManager*, Node*)> LoadedCallback;
 
-  explicit ConnectServiceLoader(const LoadedCallback& callback)
+  explicit ConnectApplicationLoader(const LoadedCallback& callback)
       : callback_(callback), view_manager_client_factory_(this) {}
-  virtual ~ConnectServiceLoader() {}
+  virtual ~ConnectApplicationLoader() {}
 
  private:
-  // Overridden from ServiceLoader:
-  virtual void Load(ServiceManager* manager,
+  // Overridden from ApplicationLoader:
+  virtual void Load(ApplicationManager* manager,
                     const GURL& url,
                     scoped_refptr<LoadCallbacks> callbacks) OVERRIDE {
     ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
@@ -66,9 +66,8 @@ class ConnectServiceLoader : public ServiceLoader,
     apps_.push_back(app.release());
   }
 
-  virtual void OnServiceError(ServiceManager* manager,
-                              const GURL& url) OVERRIDE {
-  }
+  virtual void OnServiceError(ApplicationManager* manager,
+                              const GURL& url) OVERRIDE {}
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       OVERRIDE {
@@ -89,7 +88,7 @@ class ConnectServiceLoader : public ServiceLoader,
   LoadedCallback callback_;
   ViewManagerClientFactory view_manager_client_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ConnectServiceLoader);
+  DISALLOW_COPY_AND_ASSIGN(ConnectApplicationLoader);
 };
 
 class ActiveViewChangedObserver : public NodeObserver {
@@ -342,24 +341,25 @@ class ViewManagerTest : public testing::Test {
   }
 
   void UnloadApplication(const GURL& url) {
-    test_helper_.SetLoaderForURL(scoped_ptr<ServiceLoader>(), url);
+    test_helper_.SetLoaderForURL(scoped_ptr<ApplicationLoader>(), url);
   }
 
  private:
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
-    ConnectServiceLoader::LoadedCallback ready_callback =
-        base::Bind(&ViewManagerTest::OnViewManagerLoaded,
-                   base::Unretained(this));
+    ConnectApplicationLoader::LoadedCallback ready_callback = base::Bind(
+        &ViewManagerTest::OnViewManagerLoaded, base::Unretained(this));
     test_helper_.Init();
     test_helper_.SetLoaderForURL(
-        scoped_ptr<ServiceLoader>(new ConnectServiceLoader(ready_callback)),
+        scoped_ptr<ApplicationLoader>(
+            new ConnectApplicationLoader(ready_callback)),
         GURL(kWindowManagerURL));
     test_helper_.SetLoaderForURL(
-        scoped_ptr<ServiceLoader>(new ConnectServiceLoader(ready_callback)),
+        scoped_ptr<ApplicationLoader>(
+            new ConnectApplicationLoader(ready_callback)),
         GURL(kEmbeddedApp1URL));
 
-    test_helper_.service_manager()->ConnectToService(
+    test_helper_.application_manager()->ConnectToService(
         GURL("mojo:mojo_view_manager"), &view_manager_init_);
     ASSERT_TRUE(EmbedRoot(view_manager_init_.get(), kWindowManagerURL));
   }
