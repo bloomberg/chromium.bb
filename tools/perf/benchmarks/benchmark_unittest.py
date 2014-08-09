@@ -19,12 +19,13 @@ from telemetry.unittest import progress_reporter
 
 
 def SmokeTestGenerator(benchmark):
-  # In general you should @benchmark_module.Disabled individual benchmarks that
-  # fail, instead of this entire smoke test suite.
-  # TODO(achuith): Multiple tests failing on CrOS. crbug.com/351114
-  @benchmark_module.Disabled('chromeos')
-  # Flaky, http://crbug.com/400747 .
-  @benchmark_module.Disabled('mac')
+  # NOTE TO SHERIFFS: DO NOT DISABLE THIS TEST.
+  #
+  # This smoke test dynamically tests all benchmarks. So disabling it for one
+  # failing or flaky benchmark would disable a much wider swath of coverage
+  # than is usally intended. Instead, if a particular benchmark is failing,
+  # disable it in tools/perf/benchmarks/*.
+  @benchmark_module.Disabled('chromeos')  # crbug.com/351114
   def BenchmarkSmokeTest(self):
     # Only measure a single page so that this test cycles reasonably quickly.
     benchmark.options['pageset_repeat'] = 1
