@@ -99,6 +99,10 @@ IPC_MESSAGE_CONTROL4(ChromeUtilityMsg_UnpackExtension,
                      int /* Manifest::Location */,
                      int /* InitFromValue flags */)
 
+IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_UnzipToDir,
+                     base::FilePath /* zip_file */,
+                     base::FilePath /* dir */)
+
 // Tell the utility process to parse the given xml document.
 IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_ParseUpdateManifest,
                      std::string /* xml document contents */)
@@ -198,6 +202,16 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnpackExtension_Succeeded,
 // |error_message| is a user-displayable explanation of what went wrong.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnpackExtension_Failed,
                      base::string16 /* error_message, if any */)
+
+// Reply when the utility process is done unzipping a file. |unpacked_path|
+// is the directory which contains the unzipped contents.
+IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnzipToDir_Succeeded,
+                     base::FilePath /* unpacked_path */)
+
+// Reply when the utility process failed to unzip a file. |error| contains
+// an error string to be reported to the user.
+IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnzipToDir_Failed,
+                     std::string /* error */)
 
 // Reply when the utility process has succeeded in parsing an update manifest
 // xml document.

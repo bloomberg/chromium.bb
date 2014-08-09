@@ -21,6 +21,7 @@
 #include "extensions/common/update_manifest.h"
 #include "media/base/media.h"
 #include "media/base/media_file_checker.h"
+#include "third_party/zlib/google/zip.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_WIN)
@@ -52,6 +53,9 @@ void ReleaseProcessIfNeeded() {
   content::UtilityThread::Get()->ReleaseProcessIfNeeded();
 }
 
+const char kExtensionHandlerUnzipError[] =
+    "Could not unzip extension for install.";
+
 }  // namespace
 
 ExtensionsHandler::ExtensionsHandler() {}
@@ -81,6 +85,7 @@ bool ExtensionsHandler::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionsHandler, message)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_UnpackExtension, OnUnpackExtension)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_UnzipToDir, OnUnzipToDir)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseUpdateManifest,
                         OnParseUpdateManifest)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_DecodeImageBase64, OnDecodeImageBase64)
@@ -134,6 +139,18 @@ void ExtensionsHandler::OnUnpackExtension(
   } else {
     Send(new ChromeUtilityHostMsg_UnpackExtension_Failed(
         unpacker.error_message()));
+  }
+
+  ReleaseProcessIfNeeded();
+}
+
+void ExtensionsHandler::OnUnzipToDir(const base::FilePath& zip_path,
+                                     const base::FilePath& dir) {
+  if (!zip::Unzip(zip_path, dir)) {
+    Send(new ChromeUtilityHostMsg_UnzipToDir_Failed(
+        std::string(kExtensionHandlerUnzipError)));
+  } else {
+    Send(new ChromeUtilityHostMsg_UnzipToDir_Succeeded(dir));
   }
 
   ReleaseProcessIfNeeded();

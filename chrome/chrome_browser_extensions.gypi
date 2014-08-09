@@ -905,6 +905,8 @@
       'browser/extensions/window_controller_list.cc',
       'browser/extensions/window_controller_list.h',
       'browser/extensions/window_controller_list_observer.h',
+      'browser/extensions/zipfile_installer.cc',
+      'browser/extensions/zipfile_installer.h',
     ],
     'chrome_browser_extensions_app_list_sources': [
       'browser/apps/drive/drive_app_converter.cc',

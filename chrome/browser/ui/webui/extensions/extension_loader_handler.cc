@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/path_util.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
+#include "chrome/browser/extensions/zipfile_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "content/public/browser/browser_thread.h"
@@ -218,14 +219,27 @@ void ExtensionLoaderHandler::HandleDisplayFailures(
 
 void ExtensionLoaderHandler::LoadUnpackedExtensionImpl(
     const base::FilePath& file_path) {
-  scoped_refptr<UnpackedInstaller> installer = UnpackedInstaller::Create(
-      ExtensionSystem::Get(profile_)->extension_service());
+  if (EndsWith(file_path.AsUTF16Unsafe(),
+               base::ASCIIToUTF16(".zip"),
+               false /* case insensitive */)) {
+    scoped_refptr<ZipFileInstaller> installer = ZipFileInstaller::Create(
+        ExtensionSystem::Get(profile_)->extension_service());
 
-  // We do our own error handling, so we don't want a load failure to trigger
-  // a dialog.
-  installer->set_be_noisy_on_failure(false);
+    // We do our own error handling, so we don't want a load failure to trigger
+    // a dialog.
+    installer->set_be_noisy_on_failure(false);
 
-  installer->Load(file_path);
+    installer->LoadFromZipFile(file_path);
+  } else {
+    scoped_refptr<UnpackedInstaller> installer = UnpackedInstaller::Create(
+        ExtensionSystem::Get(profile_)->extension_service());
+
+    // We do our own error handling, so we don't want a load failure to trigger
+    // a dialog.
+    installer->set_be_noisy_on_failure(false);
+
+    installer->Load(file_path);
+  }
 }
 
 void ExtensionLoaderHandler::OnLoadFailure(
@@ -290,7 +304,7 @@ void ExtensionLoaderHandler::AddFailure(
   scoped_ptr<base::DictionaryValue> failure(new base::DictionaryValue());
   failure->Set("path",
                new base::StringValue(prettified_path.LossyDisplayName()));
-  failure->Set("error", new base::StringValue(base::UTF8ToUTF16(error)));
+  failure->Set("reason", new base::StringValue(base::UTF8ToUTF16(error)));
   failure->Set("manifest", manifest_value.release());
   failures_.Append(failure.release());
 

@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
+#include "chrome/browser/extensions/zipfile_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -99,30 +100,35 @@ void InstallExtensionHandler::HandleInstallMessage(
 
   Profile* profile = Profile::FromBrowserContext(
       web_ui()->GetWebContents()->GetBrowserContext());
-  scoped_ptr<ExtensionInstallPrompt> prompt(
-      new ExtensionInstallPrompt(web_ui()->GetWebContents()));
-  scoped_refptr<CrxInstaller> crx_installer(CrxInstaller::Create(
-      ExtensionSystem::Get(profile)->extension_service(),
-      prompt.Pass()));
-  crx_installer->set_error_on_unsupported_requirements(true);
-  crx_installer->set_off_store_install_allow_reason(
-      CrxInstaller::OffStoreInstallAllowedFromSettingsPage);
-  crx_installer->set_install_immediately(true);
 
   const bool kCaseSensitive = false;
 
-  if (EndsWith(file_display_name_,
-      base::ASCIIToUTF16(".user.js"),
-      kCaseSensitive)) {
-    crx_installer->InstallUserScript(
-        file_to_install_,
-        net::FilePathToFileURL(file_to_install_));
-  } else if (EndsWith(file_display_name_,
-                      base::ASCIIToUTF16(".crx"),
-                      kCaseSensitive)) {
-    crx_installer->InstallCrx(file_to_install_);
+  if (EndsWith(
+          file_display_name_, base::ASCIIToUTF16(".zip"), kCaseSensitive)) {
+    ZipFileInstaller::Create(ExtensionSystem::Get(profile)->extension_service())
+        ->LoadFromZipFile(file_to_install_);
   } else {
-    CHECK(false);
+    scoped_ptr<ExtensionInstallPrompt> prompt(
+        new ExtensionInstallPrompt(web_ui()->GetWebContents()));
+    scoped_refptr<CrxInstaller> crx_installer(CrxInstaller::Create(
+        ExtensionSystem::Get(profile)->extension_service(), prompt.Pass()));
+    crx_installer->set_error_on_unsupported_requirements(true);
+    crx_installer->set_off_store_install_allow_reason(
+        CrxInstaller::OffStoreInstallAllowedFromSettingsPage);
+    crx_installer->set_install_immediately(true);
+
+    if (EndsWith(file_display_name_,
+                 base::ASCIIToUTF16(".user.js"),
+                 kCaseSensitive)) {
+      crx_installer->InstallUserScript(
+          file_to_install_, net::FilePathToFileURL(file_to_install_));
+    } else if (EndsWith(file_display_name_,
+                        base::ASCIIToUTF16(".crx"),
+                        kCaseSensitive)) {
+      crx_installer->InstallCrx(file_to_install_);
+    } else {
+      CHECK(false);
+    }
   }
 
   file_to_install_.clear();

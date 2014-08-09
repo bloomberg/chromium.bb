@@ -981,6 +981,7 @@
         'browser/extensions/user_script_master_unittest.cc',
         'browser/extensions/webstore_inline_installer_unittest.cc',
         'browser/extensions/webstore_installer_unittest.cc',
+        'browser/extensions/zipfile_installer_unittest.cc',
         'browser/external_protocol/external_protocol_handler_unittest.cc',
         'browser/favicon/favicon_handler_unittest.cc',
         'browser/file_select_helper_unittest.cc',

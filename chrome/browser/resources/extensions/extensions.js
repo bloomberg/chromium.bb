@@ -66,8 +66,10 @@ cr.define('extensions', function() {
       }
       // Only process files that look like extensions. Other files should
       // navigate the browser normally.
-      if (!toSend && /\.(crx|user\.js)$/i.test(e.dataTransfer.files[0].name))
+      if (!toSend &&
+          /\.(crx|user\.js|zip)$/i.test(e.dataTransfer.files[0].name)) {
         toSend = 'installDroppedFile';
+      }
 
       if (toSend) {
         e.preventDefault();
@@ -430,7 +432,7 @@ cr.define('extensions', function() {
         '  min-width: ' + pxWidth + 'px;' +
         '}';
     document.querySelector('head').appendChild(style);
-  }
+  };
 
   // Export
   return {
