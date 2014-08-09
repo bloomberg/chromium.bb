@@ -5856,7 +5856,7 @@ public:
     {
         m_canAdvance = true;
         m_allowCommit = m_allowImage = m_allowImageSlice = m_allowRepeat = m_allowForwardSlashOperator = false;
-        if (!m_borderSlice) {
+        if (!m_borderWidth) {
             m_requireWidth = true;
             m_requireOutset = false;
         } else {
@@ -5864,9 +5864,9 @@ public:
             m_requireWidth = false;
         }
     }
-    void commitBorderWidth(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> slice)
+    void commitBorderWidth(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> width)
     {
-        m_borderSlice = slice;
+        m_borderWidth = width;
         m_canAdvance = true;
         m_allowCommit = m_allowForwardSlashOperator = true;
         m_allowImageSlice = m_requireWidth = m_requireOutset = false;
@@ -5894,14 +5894,14 @@ public:
 
     PassRefPtrWillBeRawPtr<CSSValue> commitCSSValue()
     {
-        return createBorderImageValue(m_image, m_imageSlice.get(), m_borderSlice.get(), m_outset.get(), m_repeat.get());
+        return createBorderImageValue(m_image, m_imageSlice.get(), m_borderWidth.get(), m_outset.get(), m_repeat.get());
     }
 
     void commitMaskBoxImage(CSSPropertyParser* parser, bool important)
     {
         commitBorderImageProperty(CSSPropertyWebkitMaskBoxImageSource, parser, m_image, important);
         commitBorderImageProperty(CSSPropertyWebkitMaskBoxImageSlice, parser, m_imageSlice.get(), important);
-        commitBorderImageProperty(CSSPropertyWebkitMaskBoxImageWidth, parser, m_borderSlice.get(), important);
+        commitBorderImageProperty(CSSPropertyWebkitMaskBoxImageWidth, parser, m_borderWidth.get(), important);
         commitBorderImageProperty(CSSPropertyWebkitMaskBoxImageOutset, parser, m_outset.get(), important);
         commitBorderImageProperty(CSSPropertyWebkitMaskBoxImageRepeat, parser, m_repeat.get(), important);
     }
@@ -5910,7 +5910,7 @@ public:
     {
         commitBorderImageProperty(CSSPropertyBorderImageSource, parser, m_image, important);
         commitBorderImageProperty(CSSPropertyBorderImageSlice, parser, m_imageSlice.get(), important);
-        commitBorderImageProperty(CSSPropertyBorderImageWidth, parser, m_borderSlice.get(), important);
+        commitBorderImageProperty(CSSPropertyBorderImageWidth, parser, m_borderWidth.get(), important);
         commitBorderImageProperty(CSSPropertyBorderImageOutset, parser, m_outset.get(), important);
         commitBorderImageProperty(CSSPropertyBorderImageRepeat, parser, m_repeat, important);
     }
@@ -5938,7 +5938,7 @@ public:
 
     RefPtrWillBeMember<CSSValue> m_image;
     RefPtrWillBeMember<CSSBorderImageSliceValue> m_imageSlice;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_borderSlice;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_borderWidth;
     RefPtrWillBeMember<CSSPrimitiveValue> m_outset;
 
     RefPtrWillBeMember<CSSValue> m_repeat;
@@ -5985,9 +5985,9 @@ bool BorderImageParseContext::buildFromParser(CSSPropertyParser& parser, CSSProp
         }
 
         if (!context.canAdvance() && context.requireWidth()) {
-            RefPtrWillBeRawPtr<CSSPrimitiveValue> borderSlice = nullptr;
-            if (parser.parseBorderImageWidth(borderSlice))
-                context.commitBorderWidth(borderSlice.release());
+            RefPtrWillBeRawPtr<CSSPrimitiveValue> borderWidth = nullptr;
+            if (parser.parseBorderImageWidth(borderWidth))
+                context.commitBorderWidth(borderWidth.release());
         }
 
         if (!context.canAdvance() && context.requireOutset()) {
