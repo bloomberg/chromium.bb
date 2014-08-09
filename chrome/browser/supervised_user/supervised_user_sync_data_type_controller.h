@@ -22,7 +22,6 @@ class SupervisedUserSyncDataTypeController
     : public sync_driver::UIDataTypeController {
  public:
   SupervisedUserSyncDataTypeController(
-      const DisableTypeCallback& disable_callback,
       syncer::ModelType type,
       sync_driver::SyncApiComponentFactory* sync_factory,
       Profile* profile);

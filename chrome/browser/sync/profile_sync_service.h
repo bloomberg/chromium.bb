@@ -548,11 +548,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
       const tracked_objects::Location& from_here,
       const std::string& message) OVERRIDE;
 
-  // Called when a datatype wishes to disable itself. The datatype to be
-  // disabled is passed via |error.model_type()|. Note, this does not change
-  // preferred state of a datatype and is not persisted across restarts.
-  virtual void DisableDatatype(const syncer::SyncError& error);
-
   // Called to re-enable a type disabled by DisableDatatype(..). Note, this does
   // not change the preferred state of a datatype, and is not persisted across
   // restarts.

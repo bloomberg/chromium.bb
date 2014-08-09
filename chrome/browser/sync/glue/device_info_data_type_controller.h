@@ -16,8 +16,7 @@ class DeviceInfoDataTypeController : public sync_driver::UIDataTypeController {
  public:
   DeviceInfoDataTypeController(
       sync_driver::SyncApiComponentFactory* sync_factory,
-      LocalDeviceInfoProvider* local_device_info_provider,
-      const DisableTypeCallback& disable_callback);
+      LocalDeviceInfoProvider* local_device_info_provider);
 
  private:
   virtual ~DeviceInfoDataTypeController();

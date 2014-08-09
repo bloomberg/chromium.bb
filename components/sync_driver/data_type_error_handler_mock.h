@@ -14,8 +14,8 @@ class DataTypeErrorHandlerMock : public DataTypeErrorHandler {
  public:
   DataTypeErrorHandlerMock();
   virtual ~DataTypeErrorHandlerMock();
-  MOCK_METHOD2(OnSingleDatatypeUnrecoverableError,
-               void(const tracked_objects::Location&, const std::string&));
+  MOCK_METHOD1(OnSingleDataTypeUnrecoverableError,
+               void(const syncer::SyncError&));
   MOCK_METHOD3(CreateAndUploadError,
                    syncer::SyncError(const tracked_objects::Location&,
                              const std::string&,

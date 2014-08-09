@@ -339,8 +339,12 @@ TEST_F(SyncModelAssociationManagerTest, StopAfterConfiguration) {
   testing::Mock::VerifyAndClearExpectations(&delegate_);
   EXPECT_CALL(delegate_,
               OnSingleDataTypeWillStop(syncer::BOOKMARKS, _));
+  syncer::SyncError error(FROM_HERE,
+                          syncer::SyncError::DATATYPE_ERROR,
+                          "error",
+                          syncer::BOOKMARKS);
   GetController(controllers_, syncer::BOOKMARKS)
-      ->OnSingleDatatypeUnrecoverableError(FROM_HERE, "runtime error");
+      ->OnSingleDataTypeUnrecoverableError(error);
 }
 
 }  // namespace sync_driver

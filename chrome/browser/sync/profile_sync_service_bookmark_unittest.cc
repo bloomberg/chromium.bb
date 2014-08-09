@@ -1163,7 +1163,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, RepeatedMiddleInsertion) {
 // puts itself into a lame, error state.
 TEST_F(ProfileSyncServiceBookmarkTest, UnrecoverableErrorSuspendsService) {
   EXPECT_CALL(mock_error_handler_,
-              OnSingleDatatypeUnrecoverableError(_, _));
+              OnSingleDataTypeUnrecoverableError(_));
 
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   StartSync();

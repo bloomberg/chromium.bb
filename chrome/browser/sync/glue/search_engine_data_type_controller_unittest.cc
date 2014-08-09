@@ -39,8 +39,7 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
     // Feed the DTC the profile so it is reused later.
     // This allows us to control the associated TemplateURLService.
     search_engine_dtc_ = new SearchEngineDataTypeController(
-        profile_sync_factory_.get(), &profile_,
-        sync_driver::DataTypeController::DisableTypeCallback());
+        profile_sync_factory_.get(), &profile_);
   }
 
   virtual void TearDown() {

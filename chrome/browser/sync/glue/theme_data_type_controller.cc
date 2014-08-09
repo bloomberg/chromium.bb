@@ -15,12 +15,10 @@ namespace browser_sync {
 
 ThemeDataTypeController::ThemeDataTypeController(
     sync_driver::SyncApiComponentFactory* sync_factory,
-    Profile* profile,
-    const DisableTypeCallback& disable_callback)
+    Profile* profile)
     : UIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
-          disable_callback,
           syncer::THEMES,
           sync_factory),
       profile_(profile) {

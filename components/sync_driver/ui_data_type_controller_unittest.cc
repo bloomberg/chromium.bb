@@ -31,17 +31,13 @@ class SyncUIDataTypeControllerTest : public testing::Test,
  public:
   SyncUIDataTypeControllerTest()
       : type_(syncer::PREFERENCES),
-        change_processor_(NULL),
-        disable_callback_invoked_(false) {}
+        change_processor_(NULL) {}
 
   virtual void SetUp() {
     preference_dtc_ =
         new UIDataTypeController(
             base::MessageLoopProxy::current(),
             base::Closure(),
-            base::Bind(&SyncUIDataTypeControllerTest::DisableTypeCallback,
-                       base::Unretained(this),
-                       type_),
             type_,
             this);
     SetStartExpectations();
@@ -89,13 +85,6 @@ class SyncUIDataTypeControllerTest : public testing::Test,
     message_loop_.RunUntilIdle();
   }
 
-  void DisableTypeCallback(syncer::ModelType type,
-                           const tracked_objects::Location& location,
-                           const std::string& message) {
-    disable_callback_invoked_ = true;
-    preference_dtc_->Stop();
-  }
-
   base::MessageLoopForUI message_loop_;
   const syncer::ModelType type_;
   StartCallbackMock start_callback_;
@@ -103,7 +92,6 @@ class SyncUIDataTypeControllerTest : public testing::Test,
   scoped_refptr<UIDataTypeController> preference_dtc_;
   FakeGenericChangeProcessor* change_processor_;
   syncer::FakeSyncableService syncable_service_;
-  bool disable_callback_invoked_;
 };
 
 // Start the DTC. Verify that the callback is called with OK, the
@@ -200,7 +188,11 @@ TEST_F(SyncUIDataTypeControllerTest, OnSingleDatatypeUnrecoverableError) {
 
   testing::Mock::VerifyAndClearExpectations(&start_callback_);
   EXPECT_CALL(start_callback_, Run(DataTypeController::RUNTIME_ERROR, _, _));
-  preference_dtc_->OnSingleDatatypeUnrecoverableError(FROM_HERE, "Test");
+  syncer::SyncError error(FROM_HERE,
+                          syncer::SyncError::DATATYPE_ERROR,
+                          "error",
+                          syncer::PREFERENCES);
+  preference_dtc_->OnSingleDataTypeUnrecoverableError(error);
 }
 
 }  // namespace

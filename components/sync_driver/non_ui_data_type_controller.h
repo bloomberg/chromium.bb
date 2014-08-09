@@ -27,7 +27,6 @@ class NonUIDataTypeController : public DataTypeController {
   NonUIDataTypeController(
       scoped_refptr<base::MessageLoopProxy> ui_thread,
       const base::Closure& error_callback,
-      const DisableTypeCallback& disable_callback,
       SyncApiComponentFactory* sync_factory);
 
   // DataTypeController interface.
@@ -40,9 +39,8 @@ class NonUIDataTypeController : public DataTypeController {
   virtual ChangeProcessor* GetChangeProcessor() const OVERRIDE;
   virtual std::string name() const OVERRIDE;
   virtual State state() const OVERRIDE;
-  virtual void OnSingleDatatypeUnrecoverableError(
-      const tracked_objects::Location& from_here,
-      const std::string& message) OVERRIDE;
+  virtual void OnSingleDataTypeUnrecoverableError(
+      const syncer::SyncError& error) OVERRIDE;
 
  protected:
   // For testing only.
@@ -125,8 +123,7 @@ class NonUIDataTypeController : public DataTypeController {
   // Disable this type with the sync service. Should only be invoked in case of
   // an unrecoverable error.
   // Note: this is performed on the UI thread.
-  void DisableImpl(const tracked_objects::Location& from_here,
-                   const std::string& message);
+  void DisableImpl(const syncer::SyncError& error);
 
   SyncApiComponentFactory* const sync_factory_;
 

@@ -951,24 +951,6 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
                      syncer::DISABLE_SYNC : syncer::STOP_SYNC));
 }
 
-// TODO(zea): Move this logic into the DataTypeController/DataTypeManager.
-void ProfileSyncService::DisableDatatype(const syncer::SyncError& error) {
-  // First deactivate the type so that no further server changes are
-  // passed onto the change processor.
-  DeactivateDataType(error.model_type());
-
-  std::map<syncer::ModelType, syncer::SyncError> errors;
-  errors[error.model_type()] = error;
-
-  // Update this before posting a task. So if a configure happens before
-  // the task that we are going to post, this type would still be disabled.
-  failed_data_types_handler_.UpdateFailedDataTypes(errors);
-
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&ProfileSyncService::ReconfigureDatatypeManager,
-                 weak_factory_.GetWeakPtr()));
-}
-
 void ProfileSyncService::ReenableDatatype(syncer::ModelType type) {
   // Only reconfigure if the type actually had a data type or unready error.
   if (!failed_data_types_handler_.ResetDataTypeErrorFor(type) &&
@@ -1384,7 +1366,10 @@ void ProfileSyncService::OnEncryptedTypesChanged(
         syncer::SyncError::DATATYPE_POLICY_ERROR,
         "Delete directives not supported with encryption.",
         syncer::HISTORY_DELETE_DIRECTIVES);
-    DisableDatatype(error);
+    FailedDataTypesHandler::TypeErrorMap error_map;
+    error_map[error.model_type()] = error;
+    failed_data_types_handler_.UpdateFailedDataTypes(error_map);
+    ReconfigureDatatypeManager();
   }
 }
 
@@ -1792,7 +1777,9 @@ void ProfileSyncService::OnUserChoseDatatypes(
         syncer::SyncError::DATATYPE_POLICY_ERROR,
         "Delete directives not supported with encryption.",
         syncer::HISTORY_DELETE_DIRECTIVES);
-    DisableDatatype(error);
+    FailedDataTypesHandler::TypeErrorMap error_map;
+    error_map[error.model_type()] = error;
+    failed_data_types_handler_.UpdateFailedDataTypes(error_map);
   }
   ChangePreferredDataTypes(chosen_types);
   AcknowledgeSyncedTypes();

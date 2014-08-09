@@ -22,12 +22,10 @@ namespace browser_sync {
 ExtensionSettingDataTypeController::ExtensionSettingDataTypeController(
     syncer::ModelType type,
     ProfileSyncComponentsFactory* profile_sync_factory,
-    Profile* profile,
-    const DisableTypeCallback& disable_callback)
+    Profile* profile)
     : NonUIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
-          disable_callback,
           profile_sync_factory),
       type_(type),
       profile_(profile) {

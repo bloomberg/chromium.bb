@@ -26,9 +26,8 @@ class NonUIDataTypeControllerMock
   MOCK_CONST_METHOD0(name, std::string());
   MOCK_CONST_METHOD0(model_safe_group, syncer::ModelSafeGroup());
   MOCK_CONST_METHOD0(state, State());
-  MOCK_METHOD2(OnSingleDataTypeUnrecoverableError,
-               void(const tracked_objects::Location&,
-                    const std::string&));
+  MOCK_METHOD1(OnSingleDataTypeUnrecoverableError,
+               void(const syncer::SyncError& error));
 
   // NonUIDataTypeController mocks.
   MOCK_METHOD0(StartModels, bool());
