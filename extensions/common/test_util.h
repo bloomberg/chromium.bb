@@ -23,6 +23,10 @@ namespace test_util {
 // Adds an extension manifest to a builder.
 ExtensionBuilder& BuildExtension(ExtensionBuilder& builder);
 
+// Creates an extension instance that can be attached to an ExtensionFunction
+// before running it.
+scoped_refptr<Extension> CreateEmptyExtension();
+
 // Return a very simple extension with a given |id|.
 scoped_refptr<Extension> CreateExtensionWithID(const std::string& id);
 

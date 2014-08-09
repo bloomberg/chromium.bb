@@ -11,9 +11,23 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_dispatcher.h"
+#include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using extensions::ExtensionFunctionDispatcher;
+
 namespace {
+
+class TestFunctionDispatcherDelegate
+    : public ExtensionFunctionDispatcher::Delegate {
+ public:
+  TestFunctionDispatcherDelegate() {}
+  virtual ~TestFunctionDispatcherDelegate() {}
+
+  // NULL implementation.
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestFunctionDispatcherDelegate);
+};
 
 base::Value* ParseJSON(const std::string& data) {
   return base::JSONReader::Read(data);
@@ -69,16 +83,16 @@ namespace extensions {
 
 namespace api_test_utils {
 
-base::Value* RunFunctionAndReturnSingleResult(
+base::Value* RunFunctionWithDelegateAndReturnSingleResult(
     UIThreadExtensionFunction* function,
     const std::string& args,
     content::BrowserContext* context,
     scoped_ptr<extensions::ExtensionFunctionDispatcher> dispatcher) {
-  return RunFunctionAndReturnSingleResult(
+  return RunFunctionWithDelegateAndReturnSingleResult(
       function, args, context, dispatcher.Pass(), NONE);
 }
 
-base::Value* RunFunctionAndReturnSingleResult(
+base::Value* RunFunctionWithDelegateAndReturnSingleResult(
     UIThreadExtensionFunction* function,
     const std::string& args,
     content::BrowserContext* context,
@@ -96,6 +110,26 @@ base::Value* RunFunctionAndReturnSingleResult(
     return single_result->DeepCopy();
   }
   return NULL;
+}
+
+base::Value* RunFunctionAndReturnSingleResult(
+    UIThreadExtensionFunction* function,
+    const std::string& args,
+    content::BrowserContext* context) {
+  return RunFunctionAndReturnSingleResult(function, args, context, NONE);
+}
+
+base::Value* RunFunctionAndReturnSingleResult(
+    UIThreadExtensionFunction* function,
+    const std::string& args,
+    content::BrowserContext* context,
+    RunFunctionFlags flags) {
+  TestFunctionDispatcherDelegate delegate;
+  scoped_ptr<ExtensionFunctionDispatcher> dispatcher(
+      new ExtensionFunctionDispatcher(context, &delegate));
+
+  return RunFunctionWithDelegateAndReturnSingleResult(
+      function, args, context, dispatcher.Pass(), flags);
 }
 
 bool RunFunction(UIThreadExtensionFunction* function,

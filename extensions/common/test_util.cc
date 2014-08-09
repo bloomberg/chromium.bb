@@ -22,6 +22,15 @@ ExtensionBuilder& BuildExtension(ExtensionBuilder& builder) {
                       .Set("manifest_version", 2));
 }
 
+scoped_refptr<Extension> CreateEmptyExtension() {
+  scoped_refptr<Extension> empty_extension(
+      ExtensionBuilder()
+          .SetManifest(
+               DictionaryBuilder().Set("name", "Test").Set("version", "1.0"))
+          .Build());
+  return empty_extension;
+}
+
 scoped_refptr<Extension> CreateExtensionWithID(const std::string& id) {
   return ExtensionBuilder()
       .SetManifest(

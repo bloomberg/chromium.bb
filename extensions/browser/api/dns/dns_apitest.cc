@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
@@ -10,30 +9,14 @@
 #include "extensions/browser/api/dns/host_resolver_wrapper.h"
 #include "extensions/browser/api/dns/mock_host_resolver_creator.h"
 #include "extensions/browser/api_test_utils.h"
-#include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_builder.h"
+#include "extensions/common/test_util.h"
 #include "extensions/shell/test/shell_test.h"
 #include "net/base/net_errors.h"
 
 using extensions::api_test_utils::RunFunctionAndReturnSingleResult;
 
 namespace extensions {
-
-namespace {
-
-class TestFunctionDispatcherDelegate
-    : public ExtensionFunctionDispatcher::Delegate {
- public:
-  TestFunctionDispatcherDelegate() {}
-  virtual ~TestFunctionDispatcherDelegate() {}
-
-  // NULL implementation.
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestFunctionDispatcherDelegate);
-};
-
-}  // namespace
 
 class DnsApiTest : public AppShellTest {
  public:
@@ -60,24 +43,13 @@ class DnsApiTest : public AppShellTest {
 
 IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveIPLiteral) {
   scoped_refptr<DnsResolveFunction> resolve_function(new DnsResolveFunction());
-  scoped_refptr<Extension> empty_extension(
-      ExtensionBuilder()
-          .SetManifest(
-               DictionaryBuilder().Set("name", "Test").Set("version", "1.0"))
-          .Build());
+  scoped_refptr<Extension> empty_extension = test_util::CreateEmptyExtension();
 
   resolve_function->set_extension(empty_extension.get());
   resolve_function->set_has_callback(true);
 
-  TestFunctionDispatcherDelegate delegate;
-  scoped_ptr<ExtensionFunctionDispatcher> dispatcher(
-      new ExtensionFunctionDispatcher(browser_context(), &delegate));
-
-  scoped_ptr<base::Value> result(
-      RunFunctionAndReturnSingleResult(resolve_function.get(),
-                                       "[\"127.0.0.1\"]",
-                                       browser_context(),
-                                       dispatcher.Pass()));
+  scoped_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
+      resolve_function.get(), "[\"127.0.0.1\"]", browser_context()));
   base::DictionaryValue* dict = NULL;
   ASSERT_TRUE(result->GetAsDictionary(&dict));
 
@@ -92,27 +64,16 @@ IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveIPLiteral) {
 
 IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveHostname) {
   scoped_refptr<DnsResolveFunction> resolve_function(new DnsResolveFunction());
-  scoped_refptr<Extension> empty_extension(
-      ExtensionBuilder()
-          .SetManifest(
-               DictionaryBuilder().Set("name", "Test").Set("version", "1.0"))
-          .Build());
+  scoped_refptr<Extension> empty_extension = test_util::CreateEmptyExtension();
 
   resolve_function->set_extension(empty_extension.get());
   resolve_function->set_has_callback(true);
 
-  TestFunctionDispatcherDelegate delegate;
-  scoped_ptr<ExtensionFunctionDispatcher> dispatcher(
-      new ExtensionFunctionDispatcher(browser_context(), &delegate));
-
   std::string function_arguments("[\"");
   function_arguments += MockHostResolverCreator::kHostname;
   function_arguments += "\"]";
-  scoped_ptr<base::Value> result(
-      RunFunctionAndReturnSingleResult(resolve_function.get(),
-                                       function_arguments,
-                                       browser_context(),
-                                       dispatcher.Pass()));
+  scoped_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
+      resolve_function.get(), function_arguments, browser_context()));
   base::DictionaryValue* dict = NULL;
   ASSERT_TRUE(result->GetAsDictionary(&dict));
 

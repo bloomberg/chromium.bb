@@ -31,16 +31,28 @@ enum RunFunctionFlags { NONE = 0, INCLUDE_INCOGNITO = 1 << 0 };
 // Run |function| with |args| and return the result. Adds an error to the
 // current test if |function| returns an error. Takes ownership of
 // |function|. The caller takes ownership of the result.
-base::Value* RunFunctionAndReturnSingleResult(
+base::Value* RunFunctionWithDelegateAndReturnSingleResult(
     UIThreadExtensionFunction* function,
     const std::string& args,
     content::BrowserContext* context,
     scoped_ptr<ExtensionFunctionDispatcher> dispatcher);
-base::Value* RunFunctionAndReturnSingleResult(
+base::Value* RunFunctionWithDelegateAndReturnSingleResult(
     UIThreadExtensionFunction* function,
     const std::string& args,
     content::BrowserContext* context,
     scoped_ptr<ExtensionFunctionDispatcher> dispatcher,
+    RunFunctionFlags flags);
+
+// RunFunctionWithDelegateAndReturnSingleResult, except with a NULL
+// implementation of the Delegate.
+base::Value* RunFunctionAndReturnSingleResult(
+    UIThreadExtensionFunction* function,
+    const std::string& args,
+    content::BrowserContext* context);
+base::Value* RunFunctionAndReturnSingleResult(
+    UIThreadExtensionFunction* function,
+    const std::string& args,
+    content::BrowserContext* context,
     RunFunctionFlags flags);
 
 // Create and run |function| with |args|. Works with both synchronous and async
