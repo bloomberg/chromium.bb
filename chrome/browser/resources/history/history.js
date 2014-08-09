@@ -484,14 +484,14 @@ Visit.prototype.getFocusableControls_ = function() {
  * @private
  */
 Visit.prototype.handleKeydown_ = function(e) {
-  if (e.keyCode == 8 || e.keyCode == 46) {  // Delete or Backspace.
+  var key = e.keyIdentifier;
+  if (key == 'U+0008' || key == 'U+007F') {  // Delete or Backspace.
     if (!this.model_.isDeletingVisits())
       this.removeEntryFromHistory_(e);
     return;
   }
 
   var target = e.target;
-  var key = e.keyIdentifier;
   if (target != document.activeElement || !(key == 'Left' || key == 'Right'))
     return;
 
@@ -514,6 +514,9 @@ Visit.prototype.handleKeydown_ = function(e) {
  * @private
  */
 Visit.prototype.removeEntryFromHistory_ = function(e) {
+  if (!this.model_.deletingHistoryAllowed)
+    return;
+
   this.model_.getView().onBeforeRemove(this);
   this.removeFromHistory();
   e.preventDefault();
@@ -681,6 +684,8 @@ HistoryModel.prototype.hasMoreResults = function() {
  * @param {Function} callback The function to call after removal succeeds.
  */
 HistoryModel.prototype.removeVisitsFromHistory = function(visits, callback) {
+  assert(this.deletingHistoryAllowed);
+
   var toBeRemoved = [];
   for (var i = 0; i < visits.length; i++) {
     toBeRemoved.push({
@@ -688,6 +693,7 @@ HistoryModel.prototype.removeVisitsFromHistory = function(visits, callback) {
       timestamps: visits[i].allTimestamps
     });
   }
+
   chrome.send('removeVisits', toBeRemoved);
   this.deleteCompleteCallback_ = callback;
 };
