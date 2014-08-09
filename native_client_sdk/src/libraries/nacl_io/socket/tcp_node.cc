@@ -488,6 +488,12 @@ Error TcpNode::Connect(const HandleAttr& attr,
     return err;
   }
 
+  // Make sure the connection succeeded.
+  if (last_errno_ != 0) {
+    ConnectFailed_Locked();
+    return last_errno_;
+  }
+
   ConnectDone_Locked();
   return 0;
 }

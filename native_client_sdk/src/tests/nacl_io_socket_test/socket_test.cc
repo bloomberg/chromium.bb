@@ -392,6 +392,16 @@ TEST_F(SocketTestWithServer, TCPConnectNonBlock) {
   // And SO_ERROR should be 0.
 }
 
+TEST_F(SocketTestTCP, TCPConnectFails) {
+  sockaddr_in addr;
+  socklen_t addrlen = sizeof(addr);
+
+  // 10 is an unassigned well-known port, nothing should be bound to it.
+  IP4ToSockAddr(LOCAL_HOST, 10, &addr);
+  ASSERT_EQ(-1, ki_connect(sock1_, (sockaddr*) &addr, addrlen));
+  ASSERT_EQ(ECONNREFUSED, errno);
+}
+
 TEST_F(SocketTest, Getsockopt) {
   sock1_ = ki_socket(AF_INET, SOCK_STREAM, 0);
   EXPECT_GT(sock1_, -1);
