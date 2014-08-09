@@ -238,6 +238,25 @@ void InMemoryURLIndex::OnURLsDeleted(const URLsDeletedDetails* details) {
          row != details->rows.end(); ++row)
       needs_to_be_cached_ |= private_data_->DeleteURL(row->url());
   }
+  // If we made changes, destroy the previous cache.  Otherwise, if we go
+  // through an unclean shutdown (and therefore fail to write a new cache file),
+  // when Chrome restarts and we restore from the previous cache, we'll end up
+  // searching over URLs that may be deleted.  This would be wrong, and
+  // surprising to the user who bothered to delete some URLs from his/her
+  // history.  In this situation, deleting the cache is a better solution than
+  // writing a new cache (after deleting the URLs from the in-memory structure)
+  // because deleting the cache forces it to be rebuilt from history upon
+  // startup.  If we instead write a new, updated cache then at the time of next
+  // startup (after an unclean shutdown) we will not rebuild the in-memory data
+  // structures from history but rather use the cache.  This solution is
+  // mediocre because this cache may not have the most-recently-visited URLs
+  // in it (URLs visited after user deleted some URLs from history), which
+  // would be odd and confusing.  It's better to force a rebuild.
+  base::FilePath path;
+  if (needs_to_be_cached_ && GetCacheFilePath(&path)) {
+    content::BrowserThread::PostBlockingPoolTask(
+        FROM_HERE, base::Bind(DeleteCacheFile, path));
+  }
 }
 
 // Restoring from Cache --------------------------------------------------------

@@ -297,8 +297,6 @@ class InMemoryURLIndex : public content::NotificationObserver,
   // to be cached. Set to false when the index has been cached. Used as a
   // temporary safety check to insure that the cache is saved before the
   // index has been destructed.
-  // TODO(mrossetti): Eliminate once the transition to SQLite has been done.
-  // http://crbug.com/83659
   bool needs_to_be_cached_;
 
   DISALLOW_COPY_AND_ASSIGN(InMemoryURLIndex);
