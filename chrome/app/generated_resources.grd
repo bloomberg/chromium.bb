@@ -13445,12 +13445,6 @@ After you create a new supervised user, you can manage their settings at any tim
       </if>
 
       <!-- User manager tutorial -->
-      <message name="IDS_USER_MANAGER_TUTORIAL_START" desc="Text of the button that continues the tutorial">
-        See what's new
-      </message>
-      <message name="IDS_USER_MANAGER_TUTORIAL_SKIP" desc="Text of the button that stops the tutorial">
-        Skip
-      </message>
       <message name="IDS_USER_MANAGER_TUTORIAL_NEXT" desc="Text of the button that advances the tutorial to the next slide">
         Next
       </message>

@@ -17,8 +17,7 @@ cr.define('cr.ui.login', function() {
     /**
      * Tutorial slides.
      */
-    slides_: ['slide-welcome',
-              'slide-your-chrome',
+    slides_: ['slide-your-chrome',
               'slide-friends',
               'slide-guests',
               'slide-complete',
@@ -115,7 +114,6 @@ cr.define('cr.ui.login', function() {
     // Otherwise, center the slides and disable interacting with the pods
     // while the tutorial is showing.
     if ($('pod-row').pods.length == 1) {
-      $('slide-welcome').classList.add('single-pod');
       $('slide-your-chrome').classList.add('single-pod');
       $('slide-complete').classList.add('single-pod');
     }

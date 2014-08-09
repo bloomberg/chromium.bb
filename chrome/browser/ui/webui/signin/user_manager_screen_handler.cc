@@ -523,10 +523,6 @@ void UserManagerScreenHandler::GetLocalizedValues(
           base::UTF8ToUTF16(chrome::kSupervisedUserManagementDisplayURL)));
 
   // Strings needed for the User Manager tutorial slides.
-  localized_strings->SetString("tutorialStart",
-      l10n_util::GetStringUTF16(IDS_USER_MANAGER_TUTORIAL_START));
-  localized_strings->SetString("tutorialSkip",
-      l10n_util::GetStringUTF16(IDS_USER_MANAGER_TUTORIAL_SKIP));
   localized_strings->SetString("tutorialNext",
       l10n_util::GetStringUTF16(IDS_USER_MANAGER_TUTORIAL_NEXT));
   localized_strings->SetString("tutorialDone",

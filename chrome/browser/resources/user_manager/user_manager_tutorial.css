@@ -148,13 +148,6 @@ html[dir=rtl] #slide-guests .arrow-down {
   height: 182px;
 }
 
-#slide-welcome .slide-image {
-  background-color: white;
-  background-image: url(
-      'chrome://theme/IDR_ICON_USER_MANAGER_TUTORIAL_WELCOME');
-  height: 156px;
-}
-
 #slide-your-chrome .slide-image {
   background-color: rgb(241, 202, 58);
   background-image: url(
