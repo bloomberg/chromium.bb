@@ -903,10 +903,6 @@
       'browser/ui/website_settings/website_settings_ui.h',
       'browser/ui/webui/about_ui.cc',
       'browser/ui/webui/about_ui.h',
-      'browser/ui/webui/app_list/start_page_handler.cc',
-      'browser/ui/webui/app_list/start_page_handler.h',
-      'browser/ui/webui/app_list/start_page_ui.cc',
-      'browser/ui/webui/app_list/start_page_ui.h',
       'browser/ui/webui/chromeos/bluetooth_pairing_ui.cc',
       'browser/ui/webui/chromeos/bluetooth_pairing_ui.h',
       'browser/ui/webui/chromeos/certificate_manager_dialog_ui.cc',
@@ -1238,6 +1234,10 @@
       'browser/ui/app_list/start_page_service.h',
       'browser/ui/app_list/start_page_service_factory.cc',
       'browser/ui/app_list/start_page_service_factory.h',
+      'browser/ui/webui/app_list/start_page_handler.cc',
+      'browser/ui/webui/app_list/start_page_handler.h',
+      'browser/ui/webui/app_list/start_page_ui.cc',
+      'browser/ui/webui/app_list/start_page_ui.h',
     ],
     # Used when the app list is disabled.
     'chrome_browser_ui_non_app_list_sources': [
