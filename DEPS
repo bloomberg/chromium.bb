@@ -219,7 +219,7 @@ deps = {
 
   "src/third_party/ffmpeg":
     Var("chromium_git") +
-    "/chromium/third_party/ffmpeg.git@5ab896ad9dffd4a78e3c310de8e3507ded3e3239",
+    "/chromium/third_party/ffmpeg.git@93ee0f8ca79c9f5f5be61dc8de47770bb8a7ec69",
 
   "src/third_party/libjingle/source/talk":
     (Var("googlecode_url") % "webrtc") + "/trunk/talk@" +

@@ -6253,21 +6253,6 @@
    fun:_ZN15SkScalerContext15internalGetPathERK7SkGlyphP6SkPathS4_P8SkMatrix
 }
 {
-   bug_399924
-   Memcheck:Leak
-   fun:posix_memalign
-   fun:av_malloc
-   fun:av_mallocz
-   fun:allocate_tables
-   fun:vp3_update_thread_context
-   fun:update_context_from_thread
-   fun:submit_packet
-   fun:ff_thread_decode_frame
-   fun:avcodec_decode_video2
-   fun:avcodec_decode_video2
-   fun:_ZN5media18FFmpegVideoDecoder12FFmpegDecodeERK13scoped_refptrINS_13DecoderBufferEEPb
-}
-{
    bug_400547
    Memcheck:Uninitialized
    fun:_ZNK5blink22GraphicsLayerDebugInfo17appendOwnerNodeIdEPNS_10JSONObjectE

@@ -62,9 +62,7 @@ inline void ScopedPtrAVFreePacket::operator()(void* x) const {
 
 inline void ScopedPtrAVFreeContext::operator()(void* x) const {
   AVCodecContext* codec_context = static_cast<AVCodecContext*>(x);
-  av_free(codec_context->extradata);
-  avcodec_close(codec_context);
-  av_free(codec_context);
+  avcodec_free_context(&codec_context);
 }
 
 inline void ScopedPtrAVFreeFrame::operator()(void* x) const {
