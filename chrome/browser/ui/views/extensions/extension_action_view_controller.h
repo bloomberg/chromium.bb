@@ -113,6 +113,9 @@ class ExtensionActionViewController
                                       const gfx::Point& point,
                                       ui::MenuSourceType source_type) OVERRIDE;
 
+  // Shows the context menu for extension action.
+  void DoShowContextMenu(ui::MenuSourceType source_type);
+
   // Shows the popup for the extension action, given the associated |popup_url|.
   // Returns true if a popup is successfully shown.
   bool ShowPopupWithUrl(ExtensionPopup::ShowAction show_action,
@@ -121,6 +124,12 @@ class ExtensionActionViewController
   // Populates |command| with the command associated with |extension|, if one
   // exists. Returns true if |command| was populated.
   bool GetExtensionCommand(extensions::Command* command);
+
+  // Closes the currently-active menu, if needed. This is the case when there
+  // is an active menu that wouldn't close automatically when a new one is
+  // opened.
+  // Returns true if a menu was closed, false otherwise.
+  bool CloseActiveMenuIfNeeded();
 
   // Cleans up after the popup. If |close_widget| is true, this will call
   // Widget::Close() on the popup's widget; otherwise it assumes the popup is
@@ -155,6 +164,12 @@ class ExtensionActionViewController
   // The extension key binding accelerator this extension action is listening
   // for (to show the popup).
   scoped_ptr<ui::Accelerator> action_keybinding_;
+
+  // If non-NULL, this is the next ExtensionActionViewController context menu
+  // which wants to run once the current owner (this one) is done.
+  base::Closure followup_context_menu_task_;
+
+  base::WeakPtrFactory<ExtensionActionViewController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionViewController);
 };

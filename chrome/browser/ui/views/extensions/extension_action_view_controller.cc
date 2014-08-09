@@ -18,12 +18,23 @@
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
+#include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 using extensions::ActionInfo;
 using extensions::CommandService;
+
+namespace {
+
+// The ExtensionActionViewController which is currently showing its context
+// menu, if any.
+// Since only one context menu can be shown (even across browser windows), it's
+// safe to have this be a global singleton.
+ExtensionActionViewController* context_menu_owner = NULL;
+
+}  // namespace
 
 ExtensionActionViewController::ExtensionActionViewController(
     const extensions::Extension* extension,
@@ -35,7 +46,8 @@ ExtensionActionViewController::ExtensionActionViewController(
       extension_action_(extension_action),
       delegate_(delegate),
       icon_factory_(browser->profile(), extension, extension_action, this),
-      popup_(NULL) {
+      popup_(NULL),
+      weak_factory_(this) {
   DCHECK(extension_action->action_type() == ActionInfo::TYPE_PAGE ||
          extension_action->action_type() == ActionInfo::TYPE_BROWSER);
   DCHECK(extension);
@@ -43,6 +55,8 @@ ExtensionActionViewController::ExtensionActionViewController(
 }
 
 ExtensionActionViewController::~ExtensionActionViewController() {
+  if (context_menu_owner == this)
+    context_menu_owner = NULL;
   HidePopup();
   UnregisterCommand(false);
 }
@@ -185,8 +199,39 @@ void ExtensionActionViewController::ShowContextMenuForView(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {
+
+  // If there's another active menu that won't be dismissed by opening this one,
+  // then we can't show this one right away, since we can only show one nested
+  // menu at a time.
+  // If the other menu is an extension action's context menu, then we'll run
+  // this one after that one closes. If it's a different type of menu, then we
+  // close it and give up, for want of a better solution. (Luckily, this is
+  // rare).
+  // TODO(devlin): Update this when views code no longer runs menus in a nested
+  // loop.
+  if (context_menu_owner) {
+    context_menu_owner->followup_context_menu_task_ =
+        base::Bind(&ExtensionActionViewController::DoShowContextMenu,
+                   weak_factory_.GetWeakPtr(),
+                   source_type);
+  }
+  if (CloseActiveMenuIfNeeded())
+    return;
+
+  // Otherwise, no other menu is showing, and we can proceed normally.
+  DoShowContextMenu(source_type);
+}
+
+void ExtensionActionViewController::DoShowContextMenu(
+    ui::MenuSourceType source_type) {
   if (!extension_->ShowConfigureContextMenus())
     return;
+
+  DCHECK(!context_menu_owner);
+  context_menu_owner = this;
+
+  // We shouldn't have both a popup and a context menu showing.
+  delegate_->HideActivePopup();
 
   delegate_->OnWillShowContextMenus();
 
@@ -216,8 +261,16 @@ void ExtensionActionViewController::ShowContextMenuForView(
     return;
   }
 
+  context_menu_owner = NULL;
   menu_runner_.reset();
   delegate_->OnContextMenuDone();
+
+  // If another extension action wants to show its context menu, allow it to.
+  if (!followup_context_menu_task_.is_null()) {
+    base::Closure task = followup_context_menu_task_;
+    followup_context_menu_task_ = base::Closure();
+    task.Run();
+  }
 }
 
 bool ExtensionActionViewController::ShowPopupWithUrl(
@@ -229,6 +282,11 @@ bool ExtensionActionViewController::ShowPopupWithUrl(
   // Always hide the current popup, even if it's not the same.
   // Only one popup should be visible at a time.
   delegate_->HideActivePopup();
+
+  // Similarly, don't allow a context menu and a popup to be showing
+  // simultaneously.
+  CloseActiveMenuIfNeeded();
+
   if (already_showing)
     return false;
 
@@ -254,6 +312,27 @@ bool ExtensionActionViewController::GetExtensionCommand(
   }
   return command_service->GetBrowserActionCommand(
       extension_->id(), CommandService::ACTIVE_ONLY, command, NULL);
+}
+
+bool ExtensionActionViewController::CloseActiveMenuIfNeeded() {
+  // If this view is shown inside another menu, there's a possibility that there
+  // is another context menu showing that we have to close before we can
+  // activate a different menu.
+  if (delegate_->IsShownInMenu()) {
+    views::MenuController* menu_controller =
+        views::MenuController::GetActiveInstance();
+    // If this is shown inside a menu, then there should always be an active
+    // menu controller.
+    DCHECK(menu_controller);
+    if (menu_controller->in_nested_run()) {
+      // There is another menu showing. Close the outermost menu (since we are
+      // shown in the same menu, we don't want to close the whole thing).
+      menu_controller->Cancel(views::MenuController::EXIT_OUTERMOST);
+      return true;
+    }
+  }
+
+  return false;
 }
 
 void ExtensionActionViewController::CleanupPopup(bool close_widget) {

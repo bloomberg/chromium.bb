@@ -90,6 +90,8 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // Whether or not Run blocks.
   bool IsBlockingRun() const { return blocking_run_; }
 
+  bool in_nested_run() const { return !menu_stack_.empty(); }
+
   // Whether or not drag operation is in progress.
   bool drag_in_progress() const { return drag_in_progress_; }
 
