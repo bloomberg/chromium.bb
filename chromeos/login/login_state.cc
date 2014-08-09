@@ -67,8 +67,8 @@ void LoginState::SetLoggedInStateAndPrimaryUser(
   SetLoggedInState(state, type);
 }
 
-void LoginState::SetLoggedInState(LoggedInState state,
-                                  LoggedInUserType type) {
+void LoginState::SetLoggedInState(LoggedInState state, LoggedInUserType type) {
+  CHECK_NE(LOGGED_IN_USER_RETAIL_MODE, type);
   if (state == logged_in_state_ && type == logged_in_user_type_)
     return;
   VLOG(1) << "LoggedInState: " << state << " UserType: " << type;
@@ -92,34 +92,22 @@ bool LoginState::IsInSafeMode() const {
   return logged_in_state_ == LOGGED_IN_SAFE_MODE;
 }
 
-bool LoginState::IsGuestUser() const {
-  if (!IsUserLoggedIn())
-    return false;
-  switch (logged_in_user_type_) {
-    case LOGGED_IN_USER_NONE:
-    case LOGGED_IN_USER_REGULAR:
-    case LOGGED_IN_USER_OWNER:
-    case LOGGED_IN_USER_SUPERVISED:
-    case LOGGED_IN_USER_KIOSK_APP:
-      return false;
-    case LOGGED_IN_USER_GUEST:
-    case LOGGED_IN_USER_RETAIL_MODE:
-    case LOGGED_IN_USER_PUBLIC_ACCOUNT:
-      return true;
-  }
-  NOTREACHED();
-  return false;
+bool LoginState::IsGuestSessionUser() const {
+  return logged_in_user_type_ == LOGGED_IN_USER_GUEST;
+}
+
+bool LoginState::IsPublicSessionUser() const {
+  return logged_in_user_type_ == LOGGED_IN_USER_PUBLIC_ACCOUNT;
 }
 
 bool LoginState::IsKioskApp() const {
-  return logged_in_user_type_ == LoginState::LOGGED_IN_USER_KIOSK_APP;
+  return logged_in_user_type_ == LOGGED_IN_USER_KIOSK_APP;
 }
 
 bool LoginState::UserHasNetworkProfile() const {
   if (!IsUserLoggedIn())
     return false;
-  return logged_in_user_type_ != LOGGED_IN_USER_RETAIL_MODE &&
-         logged_in_user_type_ != LOGGED_IN_USER_PUBLIC_ACCOUNT;
+  return logged_in_user_type_ != LOGGED_IN_USER_PUBLIC_ACCOUNT;
 }
 
 bool LoginState::IsUserAuthenticated() const {

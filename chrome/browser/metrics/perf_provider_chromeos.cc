@@ -86,12 +86,10 @@ void AddToPerfHistogram(GetPerfDataOutcome outcome) {
                             NUM_OUTCOMES);
 }
 
-// Returns true if a normal user is logged in. Returns false if logged in as an
-// guest or as a kiosk app.
+// Returns true if a normal user is logged in. Returns false otherwise (e.g. if
+// logged in as a guest or as a kiosk app).
 bool IsNormalUserLoggedIn() {
-  chromeos::LoginState* login_state = chromeos::LoginState::Get();
-  return (login_state->IsUserLoggedIn() && !login_state->IsGuestUser() &&
-          !login_state->IsKioskApp());
+  return chromeos::LoginState::Get()->IsUserAuthenticated();
 }
 
 }  // namespace

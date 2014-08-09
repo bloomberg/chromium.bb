@@ -575,7 +575,8 @@ void WifiConfigView::UpdateErrorLabel() {
   if (UserCertRequired() && CertLibrary::Get()->CertificatesLoaded()) {
     if (!HaveUserCerts()) {
       if (!LoginState::Get()->IsUserLoggedIn() ||
-          LoginState::Get()->IsGuestUser()) {
+          LoginState::Get()->IsGuestSessionUser() ||
+          LoginState::Get()->IsPublicSessionUser()) {
         error_msg = l10n_util::GetStringUTF16(
             IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN_FOR_USER_CERT);
       } else {

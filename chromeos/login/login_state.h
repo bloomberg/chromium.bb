@@ -26,7 +26,7 @@ class CHROMEOS_EXPORT LoginState {
     LOGGED_IN_USER_OWNER,            // The owner of the device is logged in
     LOGGED_IN_USER_GUEST,            // A guest is logged in (i.e. incognito)
     LOGGED_IN_USER_RETAIL_MODE,      // Is in retail mode
-    LOGGED_IN_USER_PUBLIC_ACCOUNT,   // A public account is logged in
+    LOGGED_IN_USER_PUBLIC_ACCOUNT,   // A user is logged in to a public session.
     LOGGED_IN_USER_SUPERVISED,       // A supervised user is logged in
     LOGGED_IN_USER_KIOSK_APP         // Is in kiosk app mode
   };
@@ -72,8 +72,11 @@ class CHROMEOS_EXPORT LoginState {
   // logged in, and only the owner will be allowed to log in).
   bool IsInSafeMode() const;
 
-  // Returns true if logged in and is a guest, retail, or public user.
-  bool IsGuestUser() const;
+  // Returns true if logged in to a guest session.
+  bool IsGuestSessionUser() const;
+
+  // Returns true if logged in to a public session.
+  bool IsPublicSessionUser() const;
 
   // Returns true if logged in as a kiosk app.
   bool IsKioskApp() const;
@@ -81,11 +84,12 @@ class CHROMEOS_EXPORT LoginState {
   // Whether a network profile is created for the user.
   bool UserHasNetworkProfile() const;
 
-  // Returns true if the user is an authenticated user (i.e. non public account)
+  // Returns true if the user is an authenticated user (i.e. the user is not
+  // using an anonymous session like public or guest session)
   bool IsUserAuthenticated() const;
 
   // Returns true if the user is authenticated by logging into Google account
-  // (i.e., non public nor supervised account).
+  // (i.e. not using an anonymous nor supervised session).
   bool IsUserGaiaAuthenticated() const;
 
   void set_always_logged_in(bool always_logged_in) {
