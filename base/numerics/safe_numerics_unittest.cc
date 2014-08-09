@@ -34,6 +34,13 @@ inline void ResetFloatingPointUnit() {
 #endif
 }
 
+// These tests deliberately cause arithmetic overflows. If the compiler is
+// aggressive enough, it can const fold these overflows. Disable warnings about
+// overflows for const expressions.
+#if defined(OS_WIN)
+#pragma warning(disable:4756)
+#endif
+
 // Helper macros to wrap displaying the conversion types and line numbers.
 #define TEST_EXPECTED_VALIDITY(expected, actual)                           \
   EXPECT_EQ(expected, CheckedNumeric<Dst>(actual).validity())              \

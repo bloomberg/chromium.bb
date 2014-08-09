@@ -37,6 +37,7 @@
         'gmock.h',
         'gmock-matchers.h',
         'gmock-more-actions.h',
+        'gmock-more-matchers.h',
         'gmock-spec-builders.h',
       ],
       'DEST': 'include/gmock',
