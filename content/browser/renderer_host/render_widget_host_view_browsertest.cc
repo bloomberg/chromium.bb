@@ -497,7 +497,8 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     video_renderer.Paint(video_frame.get(),
                          &canvas,
                          video_frame->visible_rect(),
-                         0xff);
+                         0xff,
+                         media::VIDEO_ROTATION_0);
 
     CopyFromCompositingSurfaceCallback(quit_callback,
                                        result,

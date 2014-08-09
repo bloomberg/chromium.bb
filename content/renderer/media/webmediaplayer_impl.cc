@@ -547,13 +547,11 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
 
   gfx::Rect gfx_rect(rect);
 
-  if (pipeline_metadata_.video_rotation == media::VIDEO_ROTATION_90 ||
-      pipeline_metadata_.video_rotation == media::VIDEO_ROTATION_270) {
-    gfx_rect.set_size(gfx::Size(gfx_rect.size().height(),
-                                gfx_rect.size().width()));
-  }
-
-  skcanvas_video_renderer_.Paint(video_frame.get(), canvas, gfx_rect, alpha);
+  skcanvas_video_renderer_.Paint(video_frame.get(),
+                                 canvas,
+                                 gfx_rect,
+                                 alpha,
+                                 pipeline_metadata_.video_rotation);
 }
 
 bool WebMediaPlayerImpl::hasSingleSecurityOrigin() const {

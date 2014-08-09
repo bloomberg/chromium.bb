@@ -326,7 +326,8 @@ void WebMediaPlayerMS::paint(WebCanvas* canvas,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   gfx::RectF dest_rect(rect.x, rect.y, rect.width, rect.height);
-  video_renderer_.Paint(current_frame_.get(), canvas, dest_rect, alpha);
+  video_renderer_.Paint(
+      current_frame_.get(), canvas, dest_rect, alpha, media::VIDEO_ROTATION_0);
 
   {
     base::AutoLock auto_lock(current_frame_lock_);

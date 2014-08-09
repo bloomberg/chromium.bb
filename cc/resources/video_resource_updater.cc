@@ -252,7 +252,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       video_renderer_->Paint(video_frame.get(),
                              lock.sk_canvas(),
                              video_frame->visible_rect(),
-                             0xff);
+                             0xff,
+                             media::VIDEO_ROTATION_0);
     }
 
     RecycleResourceData recycle_data = {

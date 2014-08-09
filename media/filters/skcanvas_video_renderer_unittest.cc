@@ -53,6 +53,10 @@ class SkCanvasVideoRendererTest : public testing::Test {
   // Paints the |video_frame| to the |canvas| using |renderer_|, setting the
   // color of |video_frame| to |color| first.
   void Paint(VideoFrame* video_frame, SkCanvas* canvas, Color color);
+  void PaintRotated(VideoFrame* video_frame,
+                    SkCanvas* canvas,
+                    Color color,
+                    VideoRotation video_rotation);
 
   // Getters for various frame sizes.
   VideoFrame* natural_frame() { return natural_frame_.get(); }
@@ -185,12 +189,19 @@ SkCanvasVideoRendererTest::SkCanvasVideoRendererTest()
 SkCanvasVideoRendererTest::~SkCanvasVideoRendererTest() {}
 
 void SkCanvasVideoRendererTest::PaintWithoutFrame(SkCanvas* canvas) {
-  renderer_.Paint(NULL, canvas, kNaturalRect, 0xFF);
+  renderer_.Paint(NULL, canvas, kNaturalRect, 0xFF, VIDEO_ROTATION_0);
 }
 
 void SkCanvasVideoRendererTest::Paint(VideoFrame* video_frame,
                                       SkCanvas* canvas,
                                       Color color) {
+  PaintRotated(video_frame, canvas, color, VIDEO_ROTATION_0);
+}
+
+void SkCanvasVideoRendererTest::PaintRotated(VideoFrame* video_frame,
+                                             SkCanvas* canvas,
+                                             Color color,
+                                             VideoRotation video_rotation) {
   switch (color) {
     case kNone:
       break;
@@ -204,7 +215,7 @@ void SkCanvasVideoRendererTest::Paint(VideoFrame* video_frame,
       media::FillYUV(video_frame, 29, 255, 107);
       break;
   }
-  renderer_.Paint(video_frame, canvas, kNaturalRect, 0xFF);
+  renderer_.Paint(video_frame, canvas, kNaturalRect, 0xFF, video_rotation);
 }
 
 TEST_F(SkCanvasVideoRendererTest, NoFrame) {
@@ -309,6 +320,39 @@ TEST_F(SkCanvasVideoRendererTest, CroppedFrame_NoScaling) {
             GetColorAt(&canvas,
                        offset_x + crop_rect.width() - 1,
                        offset_y + crop_rect.height() - 1));
+}
+
+TEST_F(SkCanvasVideoRendererTest, Video_Rotation_90) {
+  SkCanvas canvas(AllocBitmap(kWidth, kHeight));
+  const gfx::Rect crop_rect = cropped_frame()->visible_rect();
+  PaintRotated(cropped_frame(), &canvas, kNone, VIDEO_ROTATION_90);
+  // Check the corners.
+  EXPECT_EQ(SK_ColorGREEN, GetColorAt(&canvas, 0, 0));
+  EXPECT_EQ(SK_ColorBLACK, GetColorAt(&canvas, kWidth - 1, 0));
+  EXPECT_EQ(SK_ColorRED, GetColorAt(&canvas, kWidth - 1, kHeight - 1));
+  EXPECT_EQ(SK_ColorBLUE, GetColorAt(&canvas, 0, kHeight - 1));
+}
+
+TEST_F(SkCanvasVideoRendererTest, Video_Rotation_180) {
+  SkCanvas canvas(AllocBitmap(kWidth, kHeight));
+  const gfx::Rect crop_rect = cropped_frame()->visible_rect();
+  PaintRotated(cropped_frame(), &canvas, kNone, VIDEO_ROTATION_180);
+  // Check the corners.
+  EXPECT_EQ(SK_ColorBLUE, GetColorAt(&canvas, 0, 0));
+  EXPECT_EQ(SK_ColorGREEN, GetColorAt(&canvas, kWidth - 1, 0));
+  EXPECT_EQ(SK_ColorBLACK, GetColorAt(&canvas, kWidth - 1, kHeight - 1));
+  EXPECT_EQ(SK_ColorRED, GetColorAt(&canvas, 0, kHeight - 1));
+}
+
+TEST_F(SkCanvasVideoRendererTest, Video_Rotation_270) {
+  SkCanvas canvas(AllocBitmap(kWidth, kHeight));
+  const gfx::Rect crop_rect = cropped_frame()->visible_rect();
+  PaintRotated(cropped_frame(), &canvas, kNone, VIDEO_ROTATION_270);
+  // Check the corners.
+  EXPECT_EQ(SK_ColorRED, GetColorAt(&canvas, 0, 0));
+  EXPECT_EQ(SK_ColorBLUE, GetColorAt(&canvas, kWidth - 1, 0));
+  EXPECT_EQ(SK_ColorGREEN, GetColorAt(&canvas, kWidth - 1, kHeight - 1));
+  EXPECT_EQ(SK_ColorBLACK, GetColorAt(&canvas, 0, kHeight - 1));
 }
 
 }  // namespace media
