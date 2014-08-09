@@ -51,17 +51,19 @@ cr.define('uber', function() {
     }
 
     invokeMethodOnParent('adjustToScroll', scrollLeft);
-  };
+  }
 
   /**
    * Handles 'message' events on window.
    * @param {Event} e The message event.
    */
   function handleWindowMessage(e) {
+    e = /** @type {!MessageEvent.<!{method: string, params: *}>} */(e);
     if (e.data.method === 'frameSelected')
       handleFrameSelected();
     else if (e.data.method === 'mouseWheel')
-      handleMouseWheel(e.data.params);
+      handleMouseWheel(
+          /** @type {{deltaX: number, deltaY: number}} */(e.data.params));
     else if (e.data.method === 'popState')
       handlePopState(e.data.params.state, e.data.params.path);
   }
@@ -82,7 +84,8 @@ cr.define('uber', function() {
    * It differs for every platform and even initWebKitWheelEvent takes a
    * pixel amount instead of a wheel delta. So we just choose something
    * reasonable and hope no one notices the difference.
-   * @param {Object} params A structure that holds wheel deltas in X and Y.
+   * @param {{deltaX: number, deltaY: number}} params A structure that holds
+   *     wheel deltas in X and Y.
    */
   function handleMouseWheel(params) {
     window.scrollBy(-params.deltaX * 49 / 120, -params.deltaY * 49 / 120);
@@ -91,9 +94,12 @@ cr.define('uber', function() {
   /**
    * Called when the parent window restores some state saved by uber.pushState
    * or uber.replaceState. Simulates a popstate event.
+   * @param {PopStateEvent} state A state object for replaceState and pushState.
+   * @param {string} path The path the page navigated to.
+   * @suppress {checkTypes}
    */
   function handlePopState(state, path) {
-    history.replaceState(state, '', path);
+    window.history.replaceState(state, '', path);
     window.dispatchEvent(new PopStateEvent('popstate', {state: state}));
   }
 
@@ -108,8 +114,8 @@ cr.define('uber', function() {
    * Invokes a method on the parent window (UberPage). This is a convenience
    * method for API calls into the uber page.
    * @param {string} method The name of the method to invoke.
-   * @param {Object=} opt_params Optional property bag of parameters to pass to
-   *     the invoked method.
+   * @param {(Object|number)=} opt_params Optional property bag of parameters
+   *     to pass to the invoked method.
    * @private
    */
   function invokeMethodOnParent(method, opt_params) {
@@ -122,8 +128,8 @@ cr.define('uber', function() {
   /**
    * Invokes a method on the target window.
    * @param {string} method The name of the method to invoke.
-   * @param {Object=} opt_params Optional property bag of parameters to pass to
-   *     the invoked method.
+   * @param {(Object|number)=} opt_params Optional property bag of parameters
+   *     to pass to the invoked method.
    * @param {string=} opt_url The origin of the target window.
    * @private
    */
@@ -137,7 +143,6 @@ cr.define('uber', function() {
    * forward the information to the parent for it to manage history for us. This
    * is a replacement of history.replaceState and history.pushState.
    * @param {Object} state A state object for replaceState and pushState.
-   * @param {string} title The title of the page to replace.
    * @param {string} path The path the page navigated to.
    * @param {boolean} replace If true, navigate with replacement.
    * @private

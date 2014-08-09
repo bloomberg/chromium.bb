@@ -23,13 +23,13 @@ cr.define('cr.ui', function() {
     /**
      * Determines whether the |child| is a descendant of |parent| in the page's
      * DOM.
-     * @param {Element} parent The parent element to test.
-     * @param {Element} child The child element to test.
+     * @param {Node} parent The parent element to test.
+     * @param {Node} child The child element to test.
      * @return {boolean} True if |child| is a descendant of |parent|.
      * @private
      */
     isDescendantOf_: function(parent, child) {
-      return parent && !(parent === child) && parent.contains(child);
+      return !!parent && !(parent === child) && parent.contains(child);
     },
 
     /**
@@ -43,7 +43,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Returns the elements on the page capable of receiving focus.
-     * @return {Array.Element} The focusable elements.
+     * @return {Array.<Element>} The focusable elements.
      */
     getFocusableElements_: function() {
       var focusableDiv = this.getFocusParent();
@@ -52,7 +52,9 @@ cr.define('cr.ui', function() {
       var treeWalker = document.createTreeWalker(
           focusableDiv,
           NodeFilter.SHOW_ELEMENT,
-          { acceptNode: function(node) {
+          /** @type {NodeFilter} */
+          ({
+            acceptNode: function(node) {
               var style = window.getComputedStyle(node);
               // Reject all hidden nodes. FILTER_REJECT also rejects these
               // nodes' children, so non-hidden elements that are descendants of
@@ -70,7 +72,7 @@ cr.define('cr.ui', function() {
               // Accept nodes that are non-hidden and focusable.
               return NodeFilter.FILTER_ACCEPT;
             }
-          },
+          }),
           false);
 
       var focusable = [];
@@ -87,7 +89,7 @@ cr.define('cr.ui', function() {
      * event. This differs from the native 'focus' event which is received by
      * an element outside the page first, followed by a 'focus' on an element
      * within the page after the FocusManager has intervened.
-     * @param {Element} element The element that has received focus.
+     * @param {EventTarget} element The element that has received focus.
      * @private
      */
     dispatchFocusEvent_: function(element) {
@@ -148,7 +150,8 @@ cr.define('cr.ui', function() {
     onDocumentFocus_: function(event) {
       // If the element being focused is a descendant of the currently visible
       // page, focus is valid.
-      if (this.isDescendantOf_(this.getFocusParent(), event.target)) {
+      var targetNode = /** @type {Node} */(event.target);
+      if (this.isDescendantOf_(this.getFocusParent(), targetNode)) {
         this.dispatchFocusEvent_(event.target);
         return;
       }
