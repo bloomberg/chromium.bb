@@ -121,10 +121,7 @@ void ChromeUnitTestSuite::InitializeProviders() {
   chrome::RegisterPathProvider();
   content::RegisterPathProvider();
   ui::RegisterPathProvider();
-
-  base::FilePath user_data;
-  if (PathService::Get(chrome::DIR_USER_DATA, &user_data))
-    component_updater::RegisterPathProvider(user_data);
+  component_updater::RegisterPathProvider(chrome::DIR_USER_DATA);
 
 #if defined(OS_CHROMEOS)
   chromeos::RegisterPathProvider();

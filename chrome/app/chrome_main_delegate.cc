@@ -428,9 +428,6 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
 #if !defined(DISABLE_NACL) && defined(OS_LINUX)
   nacl::RegisterPathProvider();
 #endif
-  base::FilePath user_data;
-  if (PathService::Get(chrome::DIR_USER_DATA, &user_data))
-    component_updater::RegisterPathProvider(user_data);
 
 // No support for ANDROID yet as DiagnosticsController needs wchar support.
 // TODO(gspencer): That's not true anymore, or at least there are no w-string
@@ -662,6 +659,10 @@ void ChromeMainDelegate::PreSandboxStartup() {
   // Initialize the user data dir for any process type that needs it.
   if (chrome::ProcessNeedsProfileDir(process_type))
     InitializeUserDataDir();
+
+  // Register component_updater PathProvider after DIR_USER_DATA overidden by
+  // command line flags. Maybe move the chrome PathProvider down here also?
+  component_updater::RegisterPathProvider(chrome::DIR_USER_DATA);
 
   stats_counter_timer_.reset(new base::StatsCounterTimer("Chrome.Init"));
   startup_timer_.reset(new base::StatsScope<base::StatsCounterTimer>

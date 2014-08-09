@@ -23,7 +23,7 @@ enum {
 // Call once to register the provider for the path keys defined above.
 // |components_root_key| is the path provider key defining where the
 // components should be installed.
-void RegisterPathProvider(const base::FilePath& components_root_key);
+void RegisterPathProvider(int components_root_key);
 
 }  // namespace component_updater
 

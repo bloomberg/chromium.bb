@@ -11,14 +11,23 @@ namespace component_updater {
 
 namespace {
 
-static base::LazyInstance<base::FilePath> g_components_root =
-    LAZY_INSTANCE_INITIALIZER;
+// This key gives the root directory of all the component installations.
+static int g_components_root_key = -1;
 
 }  // namespace
 
 bool PathProvider(int key, base::FilePath* result) {
-  DCHECK(!g_components_root.Get().empty());
-  base::FilePath cur = g_components_root.Get();
+  DCHECK_GT(g_components_root_key, 0);
+
+  // Early exit here to prevent a potential infinite loop when we retrieve
+  // the path for g_components_root_key.
+  if (key < PATH_START || key > PATH_END)
+    return false;
+
+  base::FilePath cur;
+  if (!PathService::Get(g_components_root_key, &cur))
+    return false;
+
   switch (key) {
     case DIR_COMPONENT_CLD2:
       cur = cur.Append(FILE_PATH_LITERAL("CLD"));
@@ -42,11 +51,12 @@ bool PathProvider(int key, base::FilePath* result) {
 
 // This cannot be done as a static initializer sadly since Visual Studio will
 // eliminate this object file if there is no direct entry point into it.
-void RegisterPathProvider(const base::FilePath& components_root) {
-  DCHECK(g_components_root.Get().empty());
-  DCHECK(!components_root.empty());
-  g_components_root.Get() = components_root;
+void RegisterPathProvider(int components_root_key) {
+  DCHECK_EQ(g_components_root_key, -1);
+  DCHECK_GT(components_root_key, 0);
+  DCHECK(components_root_key < PATH_START || components_root_key > PATH_END);
 
+  g_components_root_key = components_root_key;
   PathService::RegisterProvider(PathProvider, PATH_START, PATH_END);
 }
 
