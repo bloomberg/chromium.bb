@@ -11,6 +11,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -18,10 +19,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "extensions/common/extension.h"
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/first_run/first_run.h"
-#endif
 
 namespace {
 
@@ -84,14 +81,7 @@ bool Provider::ShouldInstallInProfile() {
       chrome::VersionInfo version_info;
       bool is_new_profile =
           profile_->WasCreatedByVersionOrLater(version_info.Version().c_str());
-      // Android excludes most of the first run code, so it can't determine
-      // if this is a first run. That's OK though, because Android doesn't
-      // use default apps in general.
-#if defined(OS_ANDROID)
-      bool is_first_run = false;
-#else
       bool is_first_run = first_run::IsChromeFirstRun();
-#endif
       if (!is_first_run && !is_new_profile)
         install_apps = false;
       break;

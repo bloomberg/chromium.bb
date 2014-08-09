@@ -166,7 +166,6 @@ bool ChromeRuntimeAPIDelegate::CheckForUpdates(
 }
 
 void ChromeRuntimeAPIDelegate::OpenURL(const GURL& uninstall_url) {
-#if defined(ENABLE_EXTENSIONS)
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   Browser* browser =
       chrome::FindLastActiveWithProfile(profile, chrome::GetActiveDesktop());
@@ -179,7 +178,6 @@ void ChromeRuntimeAPIDelegate::OpenURL(const GURL& uninstall_url) {
   params.disposition = NEW_FOREGROUND_TAB;
   params.user_gesture = false;
   chrome::Navigate(&params);
-#endif
 }
 
 bool ChromeRuntimeAPIDelegate::GetPlatformInfo(PlatformInfo* info) {
@@ -188,8 +186,6 @@ bool ChromeRuntimeAPIDelegate::GetPlatformInfo(PlatformInfo* info) {
     info->os = PlatformInfo::OS_MAC_;
   } else if (strcmp(os, "win") == 0) {
     info->os = PlatformInfo::OS_WIN_;
-  } else if (strcmp(os, "android") == 0) {
-    info->os = PlatformInfo::OS_ANDROID_;
   } else if (strcmp(os, "cros") == 0) {
     info->os = PlatformInfo::OS_CROS_;
   } else if (strcmp(os, "linux") == 0) {

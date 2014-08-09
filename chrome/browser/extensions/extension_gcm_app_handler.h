@@ -94,9 +94,7 @@ private:
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
 
-#if !defined(OS_ANDROID)
   scoped_ptr<extensions::GcmJsEventRouter> js_event_router_;
-#endif
 
   base::WeakPtrFactory<ExtensionGCMAppHandler> weak_factory_;
 

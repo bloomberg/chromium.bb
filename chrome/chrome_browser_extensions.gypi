@@ -507,7 +507,6 @@
       'browser/extensions/api/synced_notifications_private/synced_notifications_shim.h',
       'browser/extensions/api/system_cpu/cpu_info_provider.cc',
       'browser/extensions/api/system_cpu/cpu_info_provider.h',
-      'browser/extensions/api/system_cpu/cpu_info_provider_android.cc',
       'browser/extensions/api/system_cpu/cpu_info_provider_linux.cc',
       'browser/extensions/api/system_cpu/cpu_info_provider_mac.cc',
       'browser/extensions/api/system_cpu/cpu_info_provider_win.cc',
@@ -918,11 +917,6 @@
       'browser/apps/drive/drive_service_bridge.cc',
       'browser/apps/drive/drive_service_bridge.h',
     ],
-    'chrome_browser_extensions_android_sources': [
-      'browser/extensions/extension_error_ui_android.cc',
-      'browser/extensions/extension_error_ui_android.h',
-      'browser/extensions/extension_tab_util_android.cc',
-    ],
     'chrome_browser_extensions_networking_private_sources': [
       'browser/extensions/api/networking_private/crypto_verify_impl.cc',
       'browser/extensions/api/networking_private/crypto_verify_impl.h',
@@ -1188,10 +1182,8 @@
             'browser/extensions/api/system_display/display_info_provider_aura.cc',
           ],
         }],
+        # TODO(thestig) Remove.
         ['OS=="android"', {
-          'sources': [
-            '<@(chrome_browser_extensions_android_sources)',
-          ],
           'dependencies!': [
             '../components/components.gyp:copresence',
           ],
@@ -1200,7 +1192,7 @@
           'sources': [
             '<@(chrome_browser_extensions_app_list_sources)',
           ],
-        }]
+        }],
       ],
     },
   ],

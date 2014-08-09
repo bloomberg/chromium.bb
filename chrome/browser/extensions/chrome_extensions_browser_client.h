@@ -101,13 +101,11 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
   // Observer for Chrome-specific notifications.
   ChromeNotificationObserver notification_observer_;
 
-#if defined(ENABLE_EXTENSIONS)
   // Support for ProcessManager.
   scoped_ptr<ChromeProcessManagerDelegate> process_manager_delegate_;
 
   // Client for API implementations.
   scoped_ptr<ChromeExtensionsAPIClient> api_client_;
-#endif
 
   scoped_ptr<ChromeComponentExtensionResourceManager> resource_manager_;
 

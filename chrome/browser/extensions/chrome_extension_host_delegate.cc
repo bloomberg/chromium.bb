@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/chrome_extension_host_delegate.h"
 
+#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
@@ -11,11 +12,6 @@
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_system.h"
-
-// TODO(thestig): Remove #ifdefs when extensions is disabled on mobile.
-#if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
-#endif
 
 namespace extensions {
 
@@ -25,9 +21,7 @@ ChromeExtensionHostDelegate::~ChromeExtensionHostDelegate() {}
 
 void ChromeExtensionHostDelegate::OnExtensionHostCreated(
     content::WebContents* web_contents) {
-#if defined(ENABLE_EXTENSIONS)
   ChromeExtensionWebContentsObserver::CreateForWebContents(web_contents);
-#endif
   PrefsTabHelper::CreateForWebContents(web_contents);
 }
 

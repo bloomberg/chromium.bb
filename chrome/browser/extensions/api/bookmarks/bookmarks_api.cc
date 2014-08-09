@@ -908,8 +908,6 @@ bool BookmarksExportFunction::RunOnReady() {
 void BookmarksExportFunction::FileSelected(const base::FilePath& path,
                                            int index,
                                            void* params) {
-  // TODO(jgreenwald): remove ifdef once extensions are no longer built on
-  // Android.
   bookmark_html_writer::WriteBookmarks(GetProfile(), path, NULL);
   Release();  // Balanced in BookmarksIOFunction::SelectFile()
 }

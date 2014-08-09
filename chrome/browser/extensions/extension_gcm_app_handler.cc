@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/api/gcm/gcm_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
@@ -16,10 +17,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/extensions/api/gcm/gcm_api.h"
-#endif
 
 namespace extensions {
 
@@ -48,9 +45,7 @@ ExtensionGCMAppHandler::ExtensionGCMAppHandler(content::BrowserContext* context)
       extension_registry_observer_(this),
       weak_factory_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
-#if !defined(OS_ANDROID)
   js_event_router_.reset(new extensions::GcmJsEventRouter(profile_));
-#endif
 }
 
 ExtensionGCMAppHandler::~ExtensionGCMAppHandler() {
@@ -65,31 +60,23 @@ ExtensionGCMAppHandler::~ExtensionGCMAppHandler() {
 }
 
 void ExtensionGCMAppHandler::ShutdownHandler() {
-#if !defined(OS_ANDROID)
   js_event_router_.reset();
-#endif
 }
 
 void ExtensionGCMAppHandler::OnMessage(
     const std::string& app_id,
     const gcm::GCMClient::IncomingMessage& message) {
-#if !defined(OS_ANDROID)
   js_event_router_->OnMessage(app_id, message);
-#endif
 }
 
 void ExtensionGCMAppHandler::OnMessagesDeleted(const std::string& app_id) {
-#if !defined(OS_ANDROID)
   js_event_router_->OnMessagesDeleted(app_id);
-#endif
 }
 
 void ExtensionGCMAppHandler::OnSendError(
     const std::string& app_id,
     const gcm::GCMClient::SendErrorDetails& send_error_details) {
-#if !defined(OS_ANDROID)
   js_event_router_->OnSendError(app_id, send_error_details);
-#endif
 }
 
 void ExtensionGCMAppHandler::OnSendAcknowledged(

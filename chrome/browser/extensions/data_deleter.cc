@@ -14,15 +14,12 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "net/url_request/url_request_context_getter.h"
-
-#if defined(ENABLE_EXTENSIONS)
-#include "extensions/browser/api/storage/storage_frontend.h"
-#endif
 
 using base::WeakPtr;
 using content::BrowserContext;

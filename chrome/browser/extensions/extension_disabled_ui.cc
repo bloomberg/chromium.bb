@@ -347,7 +347,6 @@ void ExtensionDisabledGlobalError::BubbleViewAcceptButtonPressed(
 
 void ExtensionDisabledGlobalError::BubbleViewCancelButtonPressed(
     Browser* browser) {
-#if !defined(OS_ANDROID)
   uninstall_dialog_.reset(extensions::ExtensionUninstallDialog::Create(
       service_->profile(), browser->window()->GetNativeWindow(), this));
   // Delay showing the uninstall dialog, so that this function returns
@@ -357,7 +356,6 @@ void ExtensionDisabledGlobalError::BubbleViewCancelButtonPressed(
       base::Bind(&extensions::ExtensionUninstallDialog::ConfirmUninstall,
                  uninstall_dialog_->AsWeakPtr(),
                  extension_));
-#endif  // !defined(OS_ANDROID)
 }
 
 bool ExtensionDisabledGlobalError::ShouldCloseOnDeactivate() const {

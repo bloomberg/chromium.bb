@@ -54,11 +54,6 @@ ErrorConsole::ErrorConsole(Profile* profile)
        profile_(profile),
        prefs_(NULL),
        registry_observer_(this) {
-// TODO(rdevlin.cronin): Remove once crbug.com/159265 is fixed.
-#if !defined(ENABLE_EXTENSIONS)
-  return;
-#endif
-
   pref_registrar_.Init(profile_->GetPrefs());
   pref_registrar_.Add(prefs::kExtensionsUIDeveloperMode,
                       base::Bind(&ErrorConsole::OnPrefChanged,

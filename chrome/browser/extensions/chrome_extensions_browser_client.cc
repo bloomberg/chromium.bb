@@ -9,12 +9,16 @@
 #include "base/version.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/activity_log/activity_log.h"
+#include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
+#include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
 #include "chrome/browser/extensions/api/preference/chrome_direct_setting.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/runtime/chrome_runtime_api_delegate.h"
 #include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/chrome_component_extension_resource_manager.h"
 #include "chrome/browser/extensions/chrome_extension_host_delegate.h"
+#include "chrome/browser/extensions/chrome_process_manager_delegate.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/url_request_util.h"
@@ -37,21 +41,11 @@
 #include "chromeos/chromeos_switches.h"
 #endif
 
-// TODO(thestig): Remove this when extensions are fully removed on mobile.
-#if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/activity_log/activity_log.h"
-#include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
-#include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
-#include "chrome/browser/extensions/chrome_process_manager_delegate.h"
-#endif
-
 namespace extensions {
 
 ChromeExtensionsBrowserClient::ChromeExtensionsBrowserClient() {
-#if defined(ENABLE_EXTENSIONS)
   process_manager_delegate_.reset(new ChromeProcessManagerDelegate);
   api_client_.reset(new ChromeExtensionsAPIClient);
-#endif
   // Only set if it hasn't already been set (e.g. by a test).
   if (GetCurrentChannel() == GetDefaultChannel())
     SetCurrentChannel(chrome::VersionInfo::GetChannel());
@@ -155,18 +149,12 @@ PrefService* ChromeExtensionsBrowserClient::GetPrefServiceForContext(
 void ChromeExtensionsBrowserClient::GetEarlyExtensionPrefsObservers(
     content::BrowserContext* context,
     std::vector<ExtensionPrefsObserver*>* observers) const {
-#if defined(ENABLE_EXTENSIONS)
   observers->push_back(ContentSettingsService::Get(context));
-#endif
 }
 
 ProcessManagerDelegate*
 ChromeExtensionsBrowserClient::GetProcessManagerDelegate() const {
-#if defined(ENABLE_EXTENSIONS)
   return process_manager_delegate_.get();
-#else
-  return NULL;
-#endif
 }
 
 scoped_ptr<ExtensionHostDelegate>
@@ -221,12 +209,8 @@ bool ChromeExtensionsBrowserClient::IsRunningInForcedAppMode() {
 
 ApiActivityMonitor* ChromeExtensionsBrowserClient::GetApiActivityMonitor(
     content::BrowserContext* context) {
-#if defined(ENABLE_EXTENSIONS)
   // The ActivityLog monitors and records function calls and events.
   return ActivityLog::GetInstance(context);
-#else
-  return NULL;
-#endif
 }
 
 ExtensionSystemProvider*
@@ -236,10 +220,6 @@ ChromeExtensionsBrowserClient::GetExtensionSystemFactory() {
 
 void ChromeExtensionsBrowserClient::RegisterExtensionFunctions(
     ExtensionFunctionRegistry* registry) const {
-// TODO(rockot): Figure out if and why Android really needs to build
-// ChromeExtensionsBrowserClient and refactor so this ifdef isn't necessary.
-// See http://crbug.com/349436
-#if defined(ENABLE_EXTENSIONS)
   // Preferences.
   registry->RegisterFunction<extensions::GetPreferenceFunction>();
   registry->RegisterFunction<extensions::SetPreferenceFunction>();
@@ -258,7 +238,6 @@ void ChromeExtensionsBrowserClient::RegisterExtensionFunctions(
 
   // Generated APIs from Chrome.
   extensions::api::GeneratedFunctionRegistry::RegisterAll(registry);
-#endif
 }
 
 ComponentExtensionResourceManager*
@@ -275,12 +254,8 @@ net::NetLog* ChromeExtensionsBrowserClient::GetNetLog() {
 scoped_ptr<extensions::RuntimeAPIDelegate>
 ChromeExtensionsBrowserClient::CreateRuntimeAPIDelegate(
     content::BrowserContext* context) const {
-#if defined(ENABLE_EXTENSIONS)
   return scoped_ptr<extensions::RuntimeAPIDelegate>(
       new ChromeRuntimeAPIDelegate(context));
-#else
-  return scoped_ptr<extensions::RuntimeAPIDelegate>();
-#endif
 }
 
 }  // namespace extensions

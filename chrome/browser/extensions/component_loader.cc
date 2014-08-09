@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -50,10 +51,6 @@
 
 #if defined(ENABLE_APP_LIST)
 #include "grit/chromium_strings.h"
-#endif
-
-#if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/search/hotword_service_factory.h"
 #endif
 
 using content::BrowserThread;
@@ -306,12 +303,10 @@ void ComponentLoader::AddHangoutServicesExtension() {
 }
 
 void ComponentLoader::AddHotwordHelperExtension() {
-#if defined(ENABLE_EXTENSIONS)
   if (HotwordServiceFactory::IsHotwordAllowed(browser_context_)) {
     Add(IDR_HOTWORD_HELPER_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("hotword_helper")));
   }
-#endif
 }
 
 void ComponentLoader::AddImageLoaderExtension() {

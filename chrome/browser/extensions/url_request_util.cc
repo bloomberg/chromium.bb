@@ -148,7 +148,6 @@ bool AllowCrossRendererResourceLoad(net::URLRequest* request,
 
   bool is_guest = false;
 
-#if defined(ENABLE_EXTENSIONS)
   // Extensions with webview: allow loading certain resources by guest renderers
   // with privileged partition IDs as specified in the manifest file.
   WebViewRendererState* web_view_renderer_state =
@@ -161,7 +160,6 @@ bool AllowCrossRendererResourceLoad(net::URLRequest* request,
                       extension, partition_id, resource_path)) {
     return true;
   }
-#endif
 
   // If the request is for navigations outside of webviews, then it should be
   // allowed. The navigation logic in CrossSiteResourceHandler will properly
@@ -253,11 +251,7 @@ bool IsWebViewRequest(net::URLRequest* request) {
   // |info| can be NULL sometimes: http://crbug.com/370070.
   if (!info)
     return false;
-#if defined(ENABLE_EXTENSIONS)
   return WebViewRendererState::GetInstance()->IsGuest(info->GetChildID());
-#else
-  return false;
-#endif
 }
 
 }  // namespace url_request_util

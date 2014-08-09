@@ -36,7 +36,7 @@ class DefaultAppsTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
 };
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#if !defined(OS_CHROMEOS)
 // Chrome OS has different way of installing default apps.
 // Android does not currently support installing apps via Chrome.
 TEST_F(DefaultAppsTest, Install) {

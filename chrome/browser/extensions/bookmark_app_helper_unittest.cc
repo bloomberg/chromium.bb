@@ -22,7 +22,6 @@
 
 namespace {
 
-#if !defined(OS_ANDROID)
 const char kAppUrl[] = "http://www.chromium.org";
 const char kAppTitle[] = "Test title";
 const char kAlternativeAppTitle[] = "Different test title";
@@ -32,7 +31,6 @@ const int kIconSizeTiny = extension_misc::EXTENSION_ICON_BITTY;
 const int kIconSizeSmall = extension_misc::EXTENSION_ICON_SMALL;
 const int kIconSizeMedium = extension_misc::EXTENSION_ICON_MEDIUM;
 const int kIconSizeLarge = extension_misc::EXTENSION_ICON_LARGE;
-#endif
 
 class BookmarkAppHelperTest : public testing::Test {
  public:
@@ -88,7 +86,6 @@ void ValidateBitmapSizeAndColor(SkBitmap bitmap, int size, SkColor color) {
   EXPECT_EQ(size, bitmap.height());
 }
 
-#if !defined(OS_ANDROID)
 WebApplicationInfo::IconInfo CreateIconInfoWithBitmap(int size, SkColor color) {
   WebApplicationInfo::IconInfo icon_info;
   icon_info.width = size;
@@ -113,7 +110,6 @@ void ValidateWebApplicationInfo(base::Closure callback,
   }
   callback.Run();
 }
-#endif
 
 }  // namespace
 
@@ -147,8 +143,6 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
   DISALLOW_COPY_AND_ASSIGN(TestBookmarkAppHelper);
 };
 
-// Android doesn't support extensions.
-#if !defined(OS_ANDROID)
 TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkApp) {
   WebApplicationInfo web_app_info;
   web_app_info.app_url = GURL(kAppUrl);
@@ -291,7 +285,6 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, GetWebApplicationInfo) {
           &ValidateWebApplicationInfo, run_loop.QuitClosure(), web_app_info));
   run_loop.Run();
 }
-#endif
 
 TEST_F(BookmarkAppHelperTest, ConstrainBitmapsToSizes) {
   std::set<int> desired_sizes;

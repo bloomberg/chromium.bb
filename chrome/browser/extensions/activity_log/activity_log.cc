@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/counting_policy.h"
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
+#include "chrome/browser/extensions/activity_log/uma_policy.h"
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
@@ -38,10 +39,6 @@
 #include "extensions/common/one_shot_event.h"
 #include "third_party/re2/re2/re2.h"
 #include "url/gurl.h"
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/extensions/activity_log/uma_policy.h"
-#endif
 
 namespace constants = activity_log_constants;
 
@@ -394,13 +391,8 @@ ActivityLog::ActivityLog(content::BrowserContext* context)
       FROM_HERE,
       base::Bind(&ActivityLog::StartObserving, base::Unretained(this)));
 
-// None of this should run on Android since the AL is behind ENABLE_EXTENSIONS
-// checks. However, UmaPolicy can't even compile on Android because it uses
-// BrowserList and related classes that aren't compiled for Android.
-#if !defined(OS_ANDROID)
   if (!profile_->IsOffTheRecord())
     uma_policy_ = new UmaPolicy(profile_);
-#endif
 
   ChooseDatabasePolicy();
 }
@@ -567,7 +559,6 @@ void ActivityLog::LogAction(scoped_refptr<Action> action) {
     VLOG(1) << action->PrintForDebug();
 }
 
-#if defined(ENABLE_EXTENSIONS)
 void ActivityLog::OnScriptsExecuted(
     const content::WebContents* web_contents,
     const ExecutingScriptsMap& extension_ids,
@@ -610,7 +601,6 @@ void ActivityLog::OnScriptsExecuted(
     }
   }
 }
-#endif
 
 void ActivityLog::OnApiEventDispatched(const std::string& extension_id,
                                        const std::string& event_name,

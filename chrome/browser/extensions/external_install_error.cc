@@ -302,9 +302,7 @@ void ExternalInstallError::ShowDialog(Browser* browser) {
   DCHECK(prompt_.get());
   DCHECK(browser);
   content::WebContents* web_contents = NULL;
-#if !defined(OS_ANDROID)
   web_contents = browser->tab_strip_model()->GetActiveWebContents();
-#endif
   ExtensionInstallPrompt::ShowParams params(web_contents);
   ExtensionInstallPrompt::GetDefaultShowDialogCallback().Run(
       params, this, prompt_);
@@ -374,13 +372,10 @@ void ExternalInstallError::OnDialogReady(
     global_error_.reset(new ExternalInstallBubbleAlert(this, prompt_));
     error_service_->AddGlobalError(global_error_.get());
 
-    Browser* browser = NULL;
-#if !defined(OS_ANDROID)
-    browser =
+    Browser* browser =
         chrome::FindTabbedBrowser(Profile::FromBrowserContext(browser_context_),
                                   true,
                                   chrome::GetActiveDesktop());
-#endif  // !defined(OS_ANDROID)
     if (browser)
       global_error_->ShowBubbleView(browser);
   } else {

@@ -34,10 +34,8 @@ enum ExternalExtensionEvent {
   EXTERNAL_EXTENSION_BUCKET_BOUNDARY,
 };
 
-#if defined(ENABLE_EXTENSIONS)
 // Prompt the user this many times before considering an extension acknowledged.
 const int kMaxExtensionAcknowledgePromptCount = 3;
-#endif
 
 void LogExternalExtensionEvent(const Extension* extension,
                                ExternalExtensionEvent event) {
@@ -99,7 +97,6 @@ bool ExternalInstallManager::HasExternalInstallError() const {
 }
 
 void ExternalInstallManager::UpdateExternalExtensionAlert() {
-#if defined(ENABLE_EXTENSIONS)
   // If the feature is not enabled, or there is already an error displayed, do
   // nothing.
   if (!FeatureSwitch::prompt_for_external_extensions()->IsEnabled() ||
@@ -143,7 +140,6 @@ void ExternalInstallManager::UpdateExternalExtensionAlert() {
   // (even if it's post-first run now).
   AddExternalInstallError(
       extension, extension_prefs_->IsExternalInstallFirstRun(extension->id()));
-#endif  // defined(ENABLE_EXTENSIONS)
 }
 
 void ExternalInstallManager::AcknowledgeExternalExtension(

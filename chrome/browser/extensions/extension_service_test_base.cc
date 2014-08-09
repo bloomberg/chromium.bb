@@ -167,11 +167,7 @@ void ExtensionServiceTestBase::InitializeExtensionServiceWithUpdater() {
   ExtensionServiceInitParams params = CreateDefaultInitParams();
   params.autoupdate_enabled = true;
   InitializeExtensionService(params);
-  // TODO(thestig): Remove this once we disable all tests that use
-  // ExtensionServiceTestBase.
-#if defined(ENABLE_EXTENSIONS)
   service_->updater()->Start();
-#endif
 }
 
 void ExtensionServiceTestBase::InitializeProcessManager() {

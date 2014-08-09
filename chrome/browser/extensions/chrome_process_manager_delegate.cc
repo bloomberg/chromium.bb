@@ -11,15 +11,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/one_shot_event.h"
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/common/chrome_switches.h"
-#endif
 
 namespace extensions {
 
@@ -60,15 +57,11 @@ bool ChromeProcessManagerDelegate::DeferCreatingStartupBackgroundHosts(
   if (!g_browser_process->profile_manager()->IsValidProfile(profile))
     return true;
 
-#if defined(OS_ANDROID)
-  return false;
-#else
   // There are no browser windows open and the browser process was
   // started to show the app launcher. Background hosts will be loaded later
   // via NOTIFICATION_BROWSER_WINDOW_READY. http://crbug.com/178260
   return chrome::GetTotalBrowserCountForProfile(profile) == 0 &&
          CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowAppList);
-#endif
 }
 
 void ChromeProcessManagerDelegate::Observe(

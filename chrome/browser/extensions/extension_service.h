@@ -390,11 +390,7 @@ class ExtensionService
   }
 
   // Note that this may return NULL if autoupdate is not turned on.
-#if defined(ENABLE_EXTENSIONS)
   extensions::ExtensionUpdater* updater() { return updater_.get(); }
-#else
-  extensions::ExtensionUpdater* updater() { return NULL; }
-#endif
 
   extensions::ComponentLoader* component_loader() {
     return component_loader_.get();
@@ -626,10 +622,8 @@ class ExtensionService
   // Signaled when all extensions are loaded.
   extensions::OneShotEvent* const ready_;
 
-#if defined(ENABLE_EXTENSIONS)
   // Our extension updater, if updates are turned on.
   scoped_ptr<extensions::ExtensionUpdater> updater_;
-#endif
 
   // Map unloaded extensions' ids to their paths. When a temporarily loaded
   // extension is unloaded, we lose the information about it and don't have
@@ -701,10 +695,8 @@ class ExtensionService
   // Sequenced task runner for extension related file operations.
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
-#if defined(ENABLE_EXTENSIONS)
   scoped_ptr<extensions::ExtensionActionStorageManager>
       extension_action_storage_manager_;
-#endif
   scoped_ptr<extensions::ManagementPolicy::Provider>
       shared_module_policy_provider_;
 

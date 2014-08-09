@@ -204,12 +204,6 @@ static_library("extensions") {
       sources += [ "api/system_display/display_info_provider_aura.cc" ]
     }
 
-    if (is_android) {
-      sources += rebase_path(
-          gypi_values.chrome_browser_extensions_android_sources,
-          ".", "//chrome")
-    }
-
     if (enable_app_list) {
       sources += rebase_path(
           gypi_values.chrome_browser_extensions_app_list_sources,
