@@ -10,6 +10,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "content/common/content_export.h"
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/gfx/geometry/point_f.h"
 
@@ -18,7 +19,7 @@ namespace content {
 // Implementation of ui::MotionEvent wrapping a native Android MotionEvent.
 // All *input* coordinates are in device pixels (as with Android MotionEvent),
 // while all *output* coordinates are in DIPs (as with WebTouchEvent).
-class MotionEventAndroid : public ui::MotionEvent {
+class CONTENT_EXPORT MotionEventAndroid : public ui::MotionEvent {
  public:
   // Forcing the caller to provide all cached values upon construction
   // eliminates the need to perform a JNI call to retrieve values individually.
