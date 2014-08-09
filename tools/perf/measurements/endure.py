@@ -36,8 +36,10 @@ _V8_MEMORY_ALLOCATED = [
 ]
 
 
+# NOTE(chrishenry): This measurement does NOT work anymore. The
+# feature it depends on has been removed from telemetry. The benchmark
+# has been disabled on bot.
 class Endure(page_test.PageTest):
-  options = {'skip_navigate_on_repeat': True}
 
   def __init__(self):
     super(Endure, self).__init__('RunEndure')
