@@ -5,14 +5,13 @@
 package org.chromium.closure.compiler;
 
 import com.google.common.collect.Lists;
+import com.google.javascript.jscomp.ChromePassConfig;
 import com.google.javascript.jscomp.CommandLineRunner;
 import com.google.javascript.jscomp.CompilerOptions;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
-
-import org.chromium.closure.compiler.ChromeCodingConvention;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -196,6 +195,7 @@ public class Runner {
                 throws FlagUsageException, IOException {
             super.setRunOptions(options);
             options.setCodingConvention(new ChromeCodingConvention());
+            getCompiler().setPassConfig(new ChromePassConfig(options));
         }
 
         int execute() {
