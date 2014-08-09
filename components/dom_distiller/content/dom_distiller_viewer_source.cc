@@ -329,7 +329,7 @@ void DomDistillerViewerSource::WillServiceRequest(
 
 std::string DomDistillerViewerSource::GetContentSecurityPolicyObjectSrc()
     const {
-  return "object-src 'none'; style-src 'self';";
+  return "object-src 'none'; style-src 'self' https://fonts.googleapis.com;";
 }
 
 }  // namespace dom_distiller
