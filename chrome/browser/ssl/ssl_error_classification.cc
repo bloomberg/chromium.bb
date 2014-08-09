@@ -38,6 +38,7 @@ enum SSLInterstitialCause {
   SUBDOMAIN_INVERSE_MATCH,
   SUBDOMAIN_OUTSIDE_WILDCARD,
   HOST_NAME_NOT_KNOWN_TLD,
+  LIKELY_MULTI_TENANT_HOSTING,
   UNUSED_INTERSTITIAL_CAUSE_ENTRY,
 };
 
@@ -53,6 +54,32 @@ void RecordSSLInterstitialCause(bool overridable, SSLInterstitialCause event) {
     UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.cause.nonoverridable", event,
                               UNUSED_INTERSTITIAL_CAUSE_ENTRY);
   }
+}
+
+int GetLevensteinDistance(const std::string& str1,
+                          const std::string& str2) {
+  if (str1 == str2)
+    return 0;
+  if (str1.size() == 0)
+    return str2.size();
+  if (str2.size() == 0)
+    return str1.size();
+  std::vector<int> kFirstRow(str2.size() + 1, 0);
+  std::vector<int> kSecondRow(str2.size() + 1, 0);
+
+  for (size_t i = 0; i < kFirstRow.size(); ++i)
+    kFirstRow[i] = i;
+  for (size_t i = 0; i < str1.size(); ++i) {
+    kSecondRow[0] = i + 1;
+    for (size_t j = 0; j < str2.size(); ++j) {
+      int cost = str1[i] == str2[j] ? 0 : 1;
+      kSecondRow[j+1] = std::min(std::min(
+          kSecondRow[j] + 1, kFirstRow[j + 1] + 1), kFirstRow[j] + cost);
+    }
+    for (size_t j = 0; j < kFirstRow.size(); j++)
+      kFirstRow[j] = kSecondRow[j];
+  }
+  return kSecondRow[str2.size()];
 }
 
 } // namespace
@@ -114,8 +141,9 @@ float SSLErrorClassification::InvalidCommonNameSeverityScore(
   float severity_name_score = 0.0f;
 
   static const float kWWWDifferenceWeight = 0.3f;
-  static const float kSubDomainWeight = 0.2f;
-  static const float kSubDomainInverseWeight = 1.0f;
+  static const float kNameUnderAnyNamesWeight = 0.2f;
+  static const float kAnyNamesUnderNameWeight = 1.0f;
+  static const float kLikelyMultiTenantHostingWeight = 0.1f;
 
   std::string host_name = request_url_.host();
   if (IsHostNameKnownTLD(host_name)) {
@@ -129,10 +157,12 @@ float SSLErrorClassification::InvalidCommonNameSeverityScore(
     cert_.GetDNSNames(&dns_names);
     std::vector<Tokens> dns_name_tokens = GetTokenizedDNSNames(dns_names);
     if (NameUnderAnyNames(host_name_tokens, dns_name_tokens))
-      severity_name_score += kServerWeight * kSubDomainWeight;
+      severity_name_score += kServerWeight * kNameUnderAnyNamesWeight;
     // Inverse case is more likely to be a MITM attack.
     if (AnyNamesUnderName(dns_name_tokens, host_name_tokens))
-      severity_name_score += kServerWeight * kSubDomainInverseWeight;
+      severity_name_score += kServerWeight * kAnyNamesUnderNameWeight;
+    if (IsCertLikelyFromMultiTenantHosting())
+      severity_name_score += kServerWeight * kLikelyMultiTenantHostingWeight;
   }
   return severity_name_score;
 }
@@ -164,6 +194,8 @@ void SSLErrorClassification::RecordUMAStatistics(bool overridable,
           RecordSSLInterstitialCause(overridable, SUBDOMAIN_MATCH);
         if (AnyNamesUnderName(dns_name_tokens, host_name_tokens))
           RecordSSLInterstitialCause(overridable, SUBDOMAIN_INVERSE_MATCH);
+        if (IsCertLikelyFromMultiTenantHosting())
+          RecordSSLInterstitialCause(overridable, LIKELY_MULTI_TENANT_HOSTING);
       } else {
          RecordSSLInterstitialCause(overridable, HOST_NAME_NOT_KNOWN_TLD);
       }
@@ -365,4 +397,52 @@ bool SSLErrorClassification::IsSubDomainOutsideWildcard(
     }
   }
   return result;
+}
+
+bool SSLErrorClassification::IsCertLikelyFromMultiTenantHosting() const {
+  std::string host_name = request_url_.host();
+  std::vector<std::string> dns_names;
+  std::vector<std::string> dns_names_domain;
+  cert_.GetDNSNames(&dns_names);
+  size_t dns_names_size = dns_names.size();
+
+  // If there is only 1 DNS name then it is definitely not a shared certificate.
+  if (dns_names_size == 0 || dns_names_size == 1)
+    return false;
+
+  // Check to see if all the domains in the SAN field in the SSL certificate are
+  // the same or not.
+  for (size_t i = 0; i < dns_names_size; ++i) {
+    dns_names_domain.push_back(
+        net::registry_controlled_domains::
+        GetDomainAndRegistry(
+            dns_names[i],
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
+  }
+  for (size_t i = 1; i < dns_names_domain.size(); ++i) {
+    if (dns_names_domain[i] != dns_names_domain[0])
+      return false;
+  }
+
+  // If the number of DNS names is more than 5 then assume that it is a shared
+  // certificate.
+  static const int kDistinctNameThreshold = 5;
+  if (dns_names_size > kDistinctNameThreshold)
+    return true;
+
+  // Heuristic - The edit distance between all the strings should be at least 5
+  // for it to be counted as a shared SSLCertificate. If even one pair of
+  // strings edit distance is below 5 then the certificate is no longer
+  // considered as a shared certificate. Include the host name in the URL also
+  // while comparing.
+  dns_names.push_back(host_name);
+  static const int kMinimumEditDsitance = 5;
+  for (size_t i = 0; i < dns_names_size; ++i) {
+    for (size_t j = i + 1; j < dns_names_size; ++j) {
+      int edit_distance = GetLevensteinDistance(dns_names[i], dns_names[j]);
+      if (edit_distance < kMinimumEditDsitance)
+        return false;
+    }
+  }
+  return true;
 }

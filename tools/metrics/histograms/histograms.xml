@@ -48756,6 +48756,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
       label="HOST_NAME_NOT_KNOWN_TLD: The host name is not a known TLD">
     This cause is recorded only for CERT_COMMON_NAME_INVALID errors.
   </int>
+  <int value="7"
+      label="LIKELY_MULTI_TENANT_HOSTING: The certificate is a shared
+             certificate">
+    This cause is recorded only for CERT_COMMON_NAME_INVALID errors. It is
+    possible that this error overlaps with others but it is not likely because
+    of the heuristics which decide as to what constitutes a shared certificate.
+    In cases of overlap, we emit to only one bucket.
+  </int>
 </enum>
 
 <enum name="SSLResponseTypesV2" type="int">

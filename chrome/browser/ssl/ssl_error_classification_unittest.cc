@@ -67,6 +67,7 @@ TEST(SSLErrorClassificationTest, TestNameMismatch) {
     EXPECT_FALSE(ssl_error.AnyNamesUnderName(dns_name_tokens_google,
                                              host_name_tokens));
     EXPECT_FALSE(ssl_error.IsSubDomainOutsideWildcard(host_name_tokens));
+    EXPECT_FALSE(ssl_error.IsCertLikelyFromMultiTenantHosting());
   }
 
   {
@@ -142,6 +143,7 @@ TEST(SSLErrorClassificationTest, TestNameMismatch) {
     EXPECT_FALSE(ssl_error.AnyNamesUnderName(dns_name_tokens_webkit,
                                              host_name_tokens));
     EXPECT_TRUE(ssl_error.IsSubDomainOutsideWildcard(host_name_tokens));
+    EXPECT_FALSE(ssl_error.IsCertLikelyFromMultiTenantHosting());
   }
 }
 

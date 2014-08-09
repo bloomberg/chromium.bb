@@ -84,6 +84,12 @@ class SSLErrorClassification {
   //     b.example.com ~ *.example.com --> false
   bool IsSubDomainOutsideWildcard(const Tokens& hostname) const;
 
+  // Returns true if the certificate is a shared certificate. Note - This
+  // function should be used with caution (only for UMA histogram) as an
+  // attacker could easily get a certificate with more than 5 names in the SAN
+  // fields.
+  bool IsCertLikelyFromMultiTenantHosting() const;
+
   float CalculateScoreTimePassedSinceExpiry() const;
 
   static std::vector<Tokens> GetTokenizedDNSNames(
