@@ -19,26 +19,19 @@
 
 using base::UTF8ToUTF16;
 
-SSLErrorInfo::SSLErrorInfo(const base::string16& title,
-                           const base::string16& details,
-                           const base::string16& short_description,
-                           const std::vector<base::string16>& extra_info)
-    : title_(title),
-      details_(details),
-      short_description_(short_description),
-      extra_information_(extra_info) {
+SSLErrorInfo::SSLErrorInfo(const base::string16& details,
+                           const base::string16& short_description)
+    : details_(details),
+      short_description_(short_description) {
 }
 
 // static
 SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
                                        net::X509Certificate* cert,
                                        const GURL& request_url) {
-  base::string16 title, details, short_description;
-  std::vector<base::string16> extra_info;
+  base::string16 details, short_description;
   switch (error_type) {
     case CERT_COMMON_NAME_INVALID: {
-      title =
-          l10n_util::GetStringUTF16(IDS_CERT_ERROR_COMMON_NAME_INVALID_TITLE);
       // If the certificate contains multiple DNS names, we choose the most
       // representative one -- either the DNS name that's also in the subject
       // field, or the first one.  If this heuristic turns out to be
@@ -62,20 +55,10 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
                                          UTF8ToUTF16(dns_names[i])));
       short_description = l10n_util::GetStringUTF16(
           IDS_CERT_ERROR_COMMON_NAME_INVALID_DESCRIPTION);
-      extra_info.push_back(
-          l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_1));
-      extra_info.push_back(
-          l10n_util::GetStringFUTF16(
-              IDS_CERT_ERROR_COMMON_NAME_INVALID_EXTRA_INFO_2,
-              net::EscapeForHTML(UTF8ToUTF16(cert->subject().common_name)),
-              UTF8ToUTF16(request_url.host())));
       break;
     }
     case CERT_DATE_INVALID:
-      extra_info.push_back(
-          l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_1));
       if (cert->HasExpired()) {
-        title = l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXPIRED_TITLE);
         details = l10n_util::GetStringFUTF16(
             IDS_CERT_ERROR_EXPIRED_DETAILS,
             UTF8ToUTF16(request_url.host()),
@@ -84,13 +67,10 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
             base::TimeFormatFriendlyDate(base::Time::Now()));
         short_description =
             l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXPIRED_DESCRIPTION);
-        extra_info.push_back(l10n_util::GetStringUTF16(
-            IDS_CERT_ERROR_EXPIRED_DETAILS_EXTRA_INFO_2));
       } else {
         // Then it must be not yet valid.  We don't check that it is not yet
         // valid as there is still a very unlikely chance that the cert might
         // have become valid since the error occurred.
-        title = l10n_util::GetStringUTF16(IDS_CERT_ERROR_NOT_YET_VALID_TITLE);
         details = l10n_util::GetStringFUTF16(
             IDS_CERT_ERROR_NOT_YET_VALID_DETAILS,
             UTF8ToUTF16(request_url.host()),
@@ -98,123 +78,60 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
                 (cert->valid_start() - base::Time::Now()).InDays()));
         short_description =
             l10n_util::GetStringUTF16(IDS_CERT_ERROR_NOT_YET_VALID_DESCRIPTION);
-        extra_info.push_back(
-            l10n_util::GetStringUTF16(
-                IDS_CERT_ERROR_NOT_YET_VALID_DETAILS_EXTRA_INFO_2));
       }
       break;
     case CERT_AUTHORITY_INVALID:
-      title = l10n_util::GetStringUTF16(IDS_CERT_ERROR_AUTHORITY_INVALID_TITLE);
       details = l10n_util::GetStringFUTF16(
           IDS_CERT_ERROR_AUTHORITY_INVALID_DETAILS,
           UTF8ToUTF16(request_url.host()));
       short_description = l10n_util::GetStringUTF16(
           IDS_CERT_ERROR_AUTHORITY_INVALID_DESCRIPTION);
-      extra_info.push_back(
-          l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_1));
-      extra_info.push_back(l10n_util::GetStringFUTF16(
-          IDS_CERT_ERROR_AUTHORITY_INVALID_EXTRA_INFO_2,
-          UTF8ToUTF16(request_url.host()),
-          UTF8ToUTF16(request_url.host())));
-#if !defined(OS_IOS)
-      // The third paragraph advises users to install a private trust anchor,
-      // but that is not possible in Chrome for iOS at this time.
-      extra_info.push_back(l10n_util::GetStringUTF16(
-          IDS_CERT_ERROR_AUTHORITY_INVALID_EXTRA_INFO_3));
-#endif
       break;
     case CERT_CONTAINS_ERRORS:
-      title = l10n_util::GetStringUTF16(IDS_CERT_ERROR_CONTAINS_ERRORS_TITLE);
       details = l10n_util::GetStringFUTF16(
           IDS_CERT_ERROR_CONTAINS_ERRORS_DETAILS,
           UTF8ToUTF16(request_url.host()));
       short_description =
           l10n_util::GetStringUTF16(IDS_CERT_ERROR_CONTAINS_ERRORS_DESCRIPTION);
-      extra_info.push_back(
-          l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_1));
-      extra_info.push_back(l10n_util::GetStringUTF16(
-          IDS_CERT_ERROR_CONTAINS_ERRORS_EXTRA_INFO_2));
       break;
     case CERT_NO_REVOCATION_MECHANISM:
-      title = l10n_util::GetStringUTF16(
-          IDS_CERT_ERROR_NO_REVOCATION_MECHANISM_TITLE);
       details = l10n_util::GetStringUTF16(
           IDS_CERT_ERROR_NO_REVOCATION_MECHANISM_DETAILS);
       short_description = l10n_util::GetStringUTF16(
           IDS_CERT_ERROR_NO_REVOCATION_MECHANISM_DESCRIPTION);
       break;
-    case CERT_UNABLE_TO_CHECK_REVOCATION:
-      // TODO(felt): Hasn't this been deprecated?
-      title = l10n_util::GetStringFUTF16(
-          IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_TITLE,
-          UTF8ToUTF16(request_url.host()));
-      details = l10n_util::GetStringUTF16(
-          IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_DETAILS);
-      short_description = l10n_util::GetStringUTF16(
-          IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_DESCRIPTION);
-      break;
     case CERT_REVOKED:
-      title = l10n_util::GetStringUTF16(IDS_CERT_ERROR_REVOKED_CERT_TITLE);
       details = l10n_util::GetStringFUTF16(IDS_CERT_ERROR_REVOKED_CERT_DETAILS,
                                            UTF8ToUTF16(request_url.host()));
       short_description =
           l10n_util::GetStringUTF16(IDS_CERT_ERROR_REVOKED_CERT_DESCRIPTION);
-      extra_info.push_back(
-          l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_1));
-      extra_info.push_back(
-          l10n_util::GetStringUTF16(IDS_CERT_ERROR_REVOKED_CERT_EXTRA_INFO_2));
       break;
     case CERT_INVALID:
-      title = l10n_util::GetStringUTF16(IDS_CERT_ERROR_INVALID_CERT_TITLE);
       details = l10n_util::GetStringFUTF16(
           IDS_CERT_ERROR_INVALID_CERT_DETAILS,
           UTF8ToUTF16(request_url.host()));
       short_description =
           l10n_util::GetStringUTF16(IDS_CERT_ERROR_INVALID_CERT_DESCRIPTION);
-      extra_info.push_back(
-          l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_1));
-      extra_info.push_back(l10n_util::GetStringUTF16(
-          IDS_CERT_ERROR_INVALID_CERT_EXTRA_INFO_2));
       break;
     case CERT_WEAK_SIGNATURE_ALGORITHM:
-      title = l10n_util::GetStringUTF16(
-          IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_TITLE);
       details = l10n_util::GetStringFUTF16(
           IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_DETAILS,
           UTF8ToUTF16(request_url.host()));
       short_description = l10n_util::GetStringUTF16(
           IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_DESCRIPTION);
-      extra_info.push_back(
-          l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_1));
-      extra_info.push_back(
-          l10n_util::GetStringUTF16(
-              IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_EXTRA_INFO_2));
       break;
     case CERT_WEAK_KEY:
-      title = l10n_util::GetStringUTF16(IDS_CERT_ERROR_WEAK_KEY_TITLE);
       details = l10n_util::GetStringFUTF16(
           IDS_CERT_ERROR_WEAK_KEY_DETAILS, UTF8ToUTF16(request_url.host()));
       short_description = l10n_util::GetStringUTF16(
           IDS_CERT_ERROR_WEAK_KEY_DESCRIPTION);
-      extra_info.push_back(
-          l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_1));
-      extra_info.push_back(
-          l10n_util::GetStringUTF16(
-              IDS_CERT_ERROR_WEAK_KEY_EXTRA_INFO_2));
       break;
     case CERT_WEAK_KEY_DH:
-      title = l10n_util::GetStringUTF16(
-          IDS_ERRORPAGES_HEADING_WEAK_SERVER_EPHEMERAL_DH_KEY);
       details = l10n_util::GetStringFUTF16(
           IDS_CERT_ERROR_WEAK_KEY_DETAILS, UTF8ToUTF16(request_url.host()));
       short_description = l10n_util::GetStringUTF16(
           IDS_CERT_ERROR_WEAK_KEY_DESCRIPTION);
-      extra_info.push_back(
-          l10n_util::GetStringUTF16(
-              IDS_ERRORPAGES_SUMMARY_WEAK_SERVER_EPHEMERAL_DH_KEY));
     case CERT_NAME_CONSTRAINT_VIOLATION:
-      title = l10n_util::GetStringUTF16(
-          IDS_CERT_ERROR_NAME_CONSTRAINT_VIOLATION_TITLE);
       details = l10n_util::GetStringFUTF16(
           IDS_CERT_ERROR_NAME_CONSTRAINT_VIOLATION_DETAILS,
           UTF8ToUTF16(request_url.host()));
@@ -222,22 +139,20 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
           IDS_CERT_ERROR_NAME_CONSTRAINT_VIOLATION_DESCRIPTION);
       break;
     case CERT_PINNED_KEY_MISSING:
-      title = l10n_util::GetStringUTF16(
-          IDS_ERRORPAGES_HEADING_PINNING_FAILURE);
       details = l10n_util::GetStringUTF16(
           IDS_ERRORPAGES_SUMMARY_PINNING_FAILURE);
       short_description = l10n_util::GetStringUTF16(
           IDS_ERRORPAGES_DETAILS_PINNING_FAILURE);
     case UNKNOWN:
-      title = l10n_util::GetStringUTF16(IDS_CERT_ERROR_UNKNOWN_ERROR_TITLE);
       details = l10n_util::GetStringUTF16(IDS_CERT_ERROR_UNKNOWN_ERROR_DETAILS);
       short_description =
           l10n_util::GetStringUTF16(IDS_CERT_ERROR_UNKNOWN_ERROR_DESCRIPTION);
       break;
+    case CERT_UNABLE_TO_CHECK_REVOCATION:  // Deprecated.
     default:
       NOTREACHED();
   }
-  return SSLErrorInfo(title, details, short_description, extra_info);
+  return SSLErrorInfo(details, short_description);
 }
 
 SSLErrorInfo::~SSLErrorInfo() {

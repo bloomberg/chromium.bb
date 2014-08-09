@@ -57,33 +57,18 @@ class SSLErrorInfo {
                                     const GURL& url,
                                     std::vector<SSLErrorInfo>* errors);
 
-  // A title describing the error, usually to be used with the details below.
-  const base::string16& title() const { return title_; }
-
   // A description of the error.
   const base::string16& details() const { return details_; }
 
   // A short message describing the error (1 line).
   const base::string16& short_description() const { return short_description_; }
 
-  // A lengthy explanation of what the error is.  Each entry in the returned
-  // vector is a paragraph.
-  const std::vector<base::string16>& extra_information() const {
-    return extra_information_;
-  }
-
  private:
-  SSLErrorInfo(const base::string16& title,
-               const base::string16& details,
-               const base::string16& short_description,
-               const std::vector<base::string16>& extra_info);
+  SSLErrorInfo(const base::string16& details,
+               const base::string16& short_description);
 
-  base::string16 title_;
   base::string16 details_;
   base::string16 short_description_;
-  // Extra-informations contains paragraphs of text explaining in details what
-  // the error is and what the risks are.
-  std::vector<base::string16> extra_information_;
 };
 
 #endif  // CHROME_BROWSER_SSL_SSL_ERROR_INFO_H_

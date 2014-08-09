@@ -259,9 +259,6 @@ be available for now. -->
           New window
         </message>
       </if>
-      <message name="IDS_CERT_ERROR_COMMON_NAME_INVALID_EXTRA_INFO_2" desc="2nd paragraph of extra information for an unsafe common name in an X509 certificate">
-        In this case, the address listed in the certificate does not match the address of the website your browser tried to go to. One possible reason for this is that your communications are being intercepted by an attacker who is presenting a certificate for a different website, which would cause a mismatch. Another possible reason is that the server is set up to return the same certificate for multiple websites, including the one you are attempting to visit, even though that certificate is not valid for all of those websites. Chromium can say for sure that you reached &lt;strong&gt;<ph name="DOMAIN2">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but cannot verify that that is the same site as &lt;strong&gt;<ph name="DOMAIN">$2<ex>www.paypal.com</ex></ph>&lt;/strong&gt; which you intended to reach. If you proceed, Chromium will not check for any further name mismatches.
-      </message>
       <if expr="is_ios">
         <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_DETAILS" desc="Details for an X509 certificate with an invalid authority">
           This server could not prove that it is <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>; its security certificate is not trusted by Chromium. This may be caused by a misconfiguration or an attacker intercepting your connection.

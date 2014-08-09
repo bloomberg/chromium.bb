@@ -2504,22 +2504,6 @@ Even if you have downloaded files from this website before, the website might ha
       </message>
 
       <!-- Certificate error strings -->
-      <message name="IDS_CERT_ERROR_EXTRA_INFO_TITLE" desc="The title for the extra information section displayed when a page contains a certificate error">
-        Help me understand
-      </message>
-      <if expr="is_android or is_ios">
-        <message name="IDS_CERT_ERROR_EXTRA_INFO_1" desc="Mobile: 1st paragraph of extra information for any certificate error">
-          When you connect to a secure website, the server hosting that site presents your browser with something called a "certificate" to verify its identity. This certificate contains identity information, such as the address of the website, which is verified by a third party that your device trusts. By checking that the address in the certificate matches the address of the website, it is possible to verify that you are securely communicating with the website you intended, and not a third party (such as an attacker on your network).
-        </message>
-      </if>
-      <if expr="not is_android and not is_ios">
-        <message name="IDS_CERT_ERROR_EXTRA_INFO_1" desc="1st paragraph of extra information for any certificate error">
-          When you connect to a secure website, the server hosting that site presents your browser with something called a "certificate" to verify its identity. This certificate contains identity information, such as the address of the website, which is verified by a third party that your computer trusts. By checking that the address in the certificate matches the address of the website, it is possible to verify that you are securely communicating with the website you intended, and not a third party (such as an attacker on your network).
-        </message>
-      </if>
-      <message name="IDS_CERT_ERROR_COMMON_NAME_INVALID_TITLE" desc="Title for an unsafe common name in an X509 certificate">
-        This is probably not the site you are looking for!
-      </message>
       <message name="IDS_CERT_ERROR_COMMON_NAME_INVALID_DETAILS" desc="Details for an unsafe common name in an X509 certificate">
         This server could not prove that it is <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>; its security certificate is from <ph name="DOMAIN2">&lt;strong&gt;$2<ex>fakepaypal.com</ex>&lt;/strong&gt;</ph>. This may be caused by a misconfiguration or an attacker intercepting your connection.
       </message>
@@ -2527,83 +2511,31 @@ Even if you have downloaded files from this website before, the website might ha
         Server's certificate does not match the URL.
       </message>
 
-      <message name="IDS_CERT_ERROR_EXPIRED_TITLE" desc="Title for an expired X509 certificate">
-        The site's security certificate has expired!
-      </message>
       <message name="IDS_CERT_ERROR_EXPIRED_DETAILS" desc="Details for an expired X509 certificate">
         This server could not prove that it is <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>; its security certificate expired <ph name="DAYS">$2<ex>3</ex></ph> day(s) ago. This may be caused by a misconfiguration or an attacker intercepting your connection. Your computer's clock is currently set to <ph name="CURRENT_TIME">$3<ex>July 18, 2012</ex></ph>. Does that look right? If not, you should correct your system's clock and then refresh this page.
-      </message>
-      <message name="IDS_CERT_ERROR_EXPIRED_DETAILS_EXTRA_INFO_2" desc="2nd paragraph of extra information for an expired X509 certificate">
-        For a certificate which has not expired, the issuer of that certificate is responsible for maintaining something called a "revocation list". If a certificate is ever compromised, the issuer can revoke it by adding it to the revocation list, and then this certificate will no longer be trusted by your browser. Revocation status is not required to be maintained for expired certificates, so while this certificate used to be valid for the website you're visiting, at this point it is not possible to determine whether the certificate was compromised and subsequently revoked, or whether it remains secure. As such it is impossible to tell whether you're communicating with the legitimate website, or whether the certificate was compromised and is now in the possession of an attacker with whom you are communicating.
       </message>
       <message name="IDS_CERT_ERROR_EXPIRED_DESCRIPTION" desc="Description for an expired X509 certificate">
         Server's certificate has expired.
       </message>
 
-      <message name="IDS_CERT_ERROR_NOT_YET_VALID_TITLE" desc="Title for an X509 certificate that is not yet valid">
-        The server's security certificate is not yet valid!
-      </message>
       <message name="IDS_CERT_ERROR_NOT_YET_VALID_DETAILS" desc="Details for an X509 certificate that is not yet valid">
         This server could not prove that it is <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>; its security certificate is supposedly from <ph name="DAYS">$2<ex>3</ex></ph> day(s) in the future. This may be caused by a misconfiguration or an attacker intercepting your connection.
-      </message>
-      <message name="IDS_CERT_ERROR_NOT_YET_VALID_DETAILS_EXTRA_INFO_2" desc="2nd paragraph of extra information for a X509 certificate that is not yet valid">
-        Certificates have a validity period, much like any identity document (such as a passport) that you may have. The certificate presented to your browser is not yet valid. When a certificate is outside of its validity period, certain information about the status of the certificate (whether it has been revoked and should no longer be trusted) is not required to be maintained. As such, it is not possible to verify that this certificate is trustworthy. You should not proceed.
       </message>
       <message name="IDS_CERT_ERROR_NOT_YET_VALID_DESCRIPTION" desc="Description for an X509 certificate that is not yet valid">
         Server's certificate is not yet valid.
       </message>
 
-      <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_TITLE" desc="Title for an X509 certificate with an invalid authority">
-        The site's security certificate is not trusted!
-      </message>
-      <if expr="is_android or is_ios">
-        <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_EXTRA_INFO_2" desc="Mobile: 2nd paragraph of extra information for a X509 certificate with an invalid authority">
-          In this case, the certificate has not been verified by a third party that your device trusts. Anyone can create a certificate claiming to be whatever website they choose, which is why it must be verified by a trusted third party. Without that verification, the identity information in the certificate is meaningless. It is therefore not possible to verify that you are communicating with <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph> instead of an attacker who generated his own certificate claiming to be <ph name="DOMAIN2">&lt;strong&gt;$2<ex>paypal.com</ex>&lt;/strong&gt;</ph>. You should not proceed past this point.
-        </message>
-      </if>
-      <if expr="is_android">
-        <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_EXTRA_INFO_3" desc="Mobile: 3rd paragraph of extra information for a X509 certificate with an invalid authority">
-          If, however, you work in an organization that generates its own certificates, and you are trying to connect to an internal website of that organization using such a certificate, you may be able to solve this problem securely. You can import your organization's root certificate as a "root certificate", and then certificates issued or verified by your organization will be trusted and you will not see this error next time you try to connect to an internal website. Contact your organization's help staff for assistance in adding a new root certificate to your device.
-        </message>
-      </if>
-      <if expr="not is_android and not is_ios">
-        <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_EXTRA_INFO_2" desc="2nd paragraph of extra information for a X509 certificate with an invalid authority">
-          In this case, the certificate has not been verified by a third party that your computer trusts. Anyone can create a certificate claiming to be whatever website they choose, which is why it must be verified by a trusted third party. Without that verification, the identity information in the certificate is meaningless. It is therefore not possible to verify that you are communicating with <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph> instead of an attacker who generated his own certificate claiming to be <ph name="DOMAIN2">&lt;strong&gt;$2<ex>paypal.com</ex>&lt;/strong&gt;</ph>. You should not proceed past this point.
-        </message>
-        <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_EXTRA_INFO_3" desc="3rd paragraph of extra information for a X509 certificate with an invalid authority">
-          If, however, you work in an organization that generates its own certificates, and you are trying to connect to an internal website of that organization using such a certificate, you may be able to solve this problem securely. You can import your organization's root certificate as a "root certificate", and then certificates issued or verified by your organization will be trusted and you will not see this error next time you try to connect to an internal website. Contact your organization's help staff for assistance in adding a new root certificate to your computer.
-        </message>
-      </if>
       <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_DESCRIPTION" desc="Description for an X509 certificate with an invalid authority">
         Server's certificate is not trusted.
       </message>
 
-      <message name="IDS_CERT_ERROR_CONTAINS_ERRORS_TITLE" desc="Title of the error page for an X509 certificate that contains errors">
-        The server's security certificate has errors!
-      </message>
       <message name="IDS_CERT_ERROR_CONTAINS_ERRORS_DETAILS" desc="Details of the error page for an X509 certificate that contains errors">
         This server could not prove that it is <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>; its security certificate contains errors. This may be caused by a misconfiguration or an attacker intercepting your connection.
-      </message>
-      <message name="IDS_CERT_ERROR_CONTAINS_ERRORS_EXTRA_INFO_2" desc="2nd paragraph of extra information for a X509 certificate that contains errors">
-        In this case, the certificate presented to your browser has errors and cannot be understood. This may mean that we cannot understand the identity information within the certificate, or certain other information in the certificate used to secure the connection. You should not proceed.
       </message>
       <message name="IDS_CERT_ERROR_CONTAINS_ERRORS_DESCRIPTION" desc="Description of the error page for an X509 certificate that contains errors">
         Server's certificate contains errors.
       </message>
 
-      <message name="IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_TITLE" desc="Title for being unable to check revocation status of an X509 certificate">
-        Failed to check revocation.
-      </message>
-      <message name="IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_DETAILS" desc="Details for being unable to check revocation status of an X509 certificate">
-        This server could not prove that it is <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>; its security certificate might be revoked. This may be caused by a misconfiguration or an attacker intercepting your connection.
-      </message>
-      <message name="IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_DESCRIPTION" desc="Description for being unable to check revocation status of an X509 certificate">
-        Server's certificate cannot be checked.
-      </message>
-
-      <message name="IDS_CERT_ERROR_NO_REVOCATION_MECHANISM_TITLE" desc="Title for not finding a revocation mechanism in an X509 certificate">
-        No revocation mechanism found.
-      </message>
       <message name="IDS_CERT_ERROR_NO_REVOCATION_MECHANISM_DETAILS" desc="Details for not finding a revocation mechanism in an X509 certificate">
         This server could not prove that it is <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>; its security certificate might be revoked. This may be caused by a misconfiguration or an attacker intercepting your connection.
       </message>
@@ -2611,61 +2543,34 @@ Even if you have downloaded files from this website before, the website might ha
         No revocation mechanism found.
       </message>
 
-      <message name="IDS_CERT_ERROR_REVOKED_CERT_TITLE" desc="Title of the error page for a revoked certificate">
-        The server's security certificate is revoked!
-      </message>
       <message name="IDS_CERT_ERROR_REVOKED_CERT_DETAILS" desc="Details of the error page for a revoked certificate">
         You attempted to reach <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>, but the certificate that the server presented has been revoked by its issuer. This means that the security credentials the server presented absolutely should not be trusted. You may be communicating with an attacker.
-      </message>
-      <message name="IDS_CERT_ERROR_REVOKED_CERT_EXTRA_INFO_2" desc="2nd paragraph of extra information for a revoked X509 certificate">
-        In this case, the certificate presented to your browser has been revoked by its issuer. This usually means that the integrity of this certificate has been compromised, and that the certificate should not be trusted.
       </message>
       <message name="IDS_CERT_ERROR_REVOKED_CERT_DESCRIPTION" desc="Description of the error page for a revoked certificate">
         Server's certificate has been revoked.
       </message>
 
-      <message name="IDS_CERT_ERROR_INVALID_CERT_TITLE" desc="Title of the error page for an X509 certificate that is invalid">
-        Invalid Server Certificate
-      </message>
       <message name="IDS_CERT_ERROR_INVALID_CERT_DETAILS" desc="Details of the error page for an X509 certificate that is invalid">
         You attempted to reach <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>, but the server presented an invalid certificate.
-      </message>
-      <message name="IDS_CERT_ERROR_INVALID_CERT_EXTRA_INFO_2" desc="2nd paragraph of extra information for an X509 certificate that is invalid">
-        In this case, the server certificate or an intermediate CA certificate presented to your browser is invalid. This may mean that the certificate is malformed, contains invalid fields, or is not supported.
       </message>
       <message name="IDS_CERT_ERROR_INVALID_CERT_DESCRIPTION" desc="Description of the error page for an X509 certificate that is invalid">
         Server's certificate is invalid.
       </message>
 
-      <message name="IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_TITLE" desc="Title of the error page for a certificate signed using a weak signature algorithm">
-        The site's security certificate is signed using a weak signature algorithm!
-      </message>
       <message name="IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_DETAILS" desc="Details of the error page for a certificate signed using a weak signature algorithm">
         You attempted to reach <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>, but the server presented a certificate signed using a weak signature algorithm. This means that the security credentials the server presented could have been forged, and the server may not be the server you expected (you may be communicating with an attacker).
-      </message>
-      <message name="IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_EXTRA_INFO_2" desc="2nd paragraph of extra information for a X509 certificate signed using a weak signature algorithm">
-        In this case, the server certificate or an intermediate CA certificate presented to your browser is signed using a weak signature algorithm such as RSA-MD2. Recent research by computer scientists showed the signature algorithm is weaker than previously believed, and the signature algorithm is rarely used by trustworthy websites today. This certificate could have been forged.
       </message>
       <message name="IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_DESCRIPTION" desc="Description of the error page for a certificate signed using a weak signature algorithm">
         Server's certificate is signed using a weak signature algorithm.
       </message>
 
-      <message name="IDS_CERT_ERROR_WEAK_KEY_TITLE" desc="Title of the error page for a certificate containing a weak key">
-        The server certificate contains a weak cryptographic key!
-      </message>
       <message name="IDS_CERT_ERROR_WEAK_KEY_DETAILS" desc="Details of the error page for a certificate containing a weak key">
         You attempted to reach <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>, but the server presented a certificate containing a weak key. An attacker could have broken the private key, and the server may not be the server you expected (you may be communicating with an attacker).
-      </message>
-      <message name="IDS_CERT_ERROR_WEAK_KEY_EXTRA_INFO_2" desc="2nd paragraph of extra information for a X509 certificate that contains a weak key">
-        In this case, the server certificate or an intermediate CA certificate presented to your browser contains a weak key, such as an RSA key of less than 1024 bits. Because it is relatively easy to derive the corresponding private key for a weak public key, an attacker could forge the identity of the true server.
       </message>
       <message name="IDS_CERT_ERROR_WEAK_KEY_DESCRIPTION" desc="Description of the error page for a certificate containing a weak key">
         The server certificate contains a weak cryptographic key.
       </message>
 
-      <message name="IDS_CERT_ERROR_NAME_CONSTRAINT_VIOLATION_TITLE" desc="Title of the error page for a certificate that contains a name outside of its scope">
-        The server certificate contains a domain name that shouldn't be there.
-      </message>
       <message name="IDS_CERT_ERROR_NAME_CONSTRAINT_VIOLATION_DETAILS" desc="Details of the error page for a certificate that contains a name outside of its scope">
         This server could not prove that it is <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>; its security certificate might have been issued fraudulently. This may be caused by a misconfiguration or an attacker intercepting your connection.
       </message>
@@ -2673,9 +2578,6 @@ Even if you have downloaded files from this website before, the website might ha
         Server's certificate violates name constraints.
       </message>
 
-      <message name="IDS_CERT_ERROR_UNKNOWN_ERROR_TITLE" desc="Title of the error page for an unknown ssl error">
-        Unknown server certificate error
-      </message>
       <message name="IDS_CERT_ERROR_UNKNOWN_ERROR_DETAILS" desc="Details of the error page for an unknown ssl error">
         An unknown error has occurred.
       </message>
