@@ -28,6 +28,7 @@
         'compositor.h',
         'compositor_animation_observer.h',
         'compositor_export.h',
+        'compositor_observer.cc',
         'compositor_observer.h',
         'compositor_vsync_manager.cc',
         'compositor_vsync_manager.h',

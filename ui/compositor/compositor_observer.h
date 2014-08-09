@@ -15,6 +15,8 @@ class Compositor;
 // A compositor observer is notified when compositing completes.
 class COMPOSITOR_EXPORT CompositorObserver {
  public:
+  CompositorObserver();
+
   // A commit proxies information from the main thread to the compositor
   // thread. It typically happens when some state changes that will require a
   // composite. In the multi-threaded case, many commits may happen between
@@ -39,7 +41,14 @@ class COMPOSITOR_EXPORT CompositorObserver {
   virtual void OnCompositingLockStateChanged(Compositor* compositor) = 0;
 
  protected:
-  virtual ~CompositorObserver() {}
+#if defined(OS_MACOSX)
+  // Debugging instrumentation for crbug.com/401630.
+  // TODO(ccameron): remove this.
+  friend class Compositor;
+  int32 observing_count_;
+#endif
+
+  virtual ~CompositorObserver();
 };
 
 }  // namespace ui
