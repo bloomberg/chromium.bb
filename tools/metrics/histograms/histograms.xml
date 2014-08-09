@@ -2960,7 +2960,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="ContentSettings.PermissionActions" enum="PermissionAction">
-  <owner>miguelg</owner>
+  <owner>miguelg@chromium.org</owner>
   <summary>
     Tracks whether a permission was granted, rejected, etc. The suffix of the
     histogram indicates which particular permission.
@@ -32648,7 +32648,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated, see TimeDeferred2.
   </obsolete>
-  <owner>jeremychromium.org</owner>
+  <owner>jeremy@chromium.org</owner>
   <owner>zea@google.com</owner>
   <summary>
     Time spent after ProfileSyncService *creation* but before SyncBackendHost
@@ -32657,7 +32657,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Sync.Startup.TimeDeferred2" units="milliseconds">
-  <owner>jeremychromium.org</owner>
+  <owner>jeremy@chromium.org</owner>
   <owner>zea@google.com</owner>
   <summary>
     Time spent after ProfileSyncService *creation* but before SyncBackendHost
