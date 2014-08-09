@@ -2615,4 +2615,64 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions) {
       base::UTF8ToUTF16("123 Zoo St., Second Line, Third line, unit 5"));
 }
 
+TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
+  CreditCard credit_card0(base::GenerateGUID(), "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card0,
+      "Clyde Barrow", "347666888555" /* American Express */, "04", "2015");
+  personal_data_->AddCreditCard(credit_card0);
+
+  CreditCard credit_card1(base::GenerateGUID(), "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card1, "John Dillinger", "", "01", "2010");
+  personal_data_->AddCreditCard(credit_card1);
+
+  CreditCard credit_card2(base::GenerateGUID(), "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card2,
+      "Bonnie Parker", "518765432109" /* Mastercard */, "", "");
+  personal_data_->AddCreditCard(credit_card2);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  // Sublabel is card number when filling name.
+  std::vector<base::string16> values;
+  std::vector<base::string16> labels;
+  std::vector<base::string16> icons;
+  std::vector<PersonalDataManager::GUIDPair> guid_pairs;
+  personal_data_->GetCreditCardSuggestions(
+      AutofillType(CREDIT_CARD_NAME),
+      base::string16(),
+      &values,
+      &labels,
+      &icons,
+      &guid_pairs);
+  ASSERT_EQ(3U, values.size());
+  ASSERT_EQ(values.size(), labels.size());
+  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), values[0]);
+  EXPECT_EQ(ASCIIToUTF16("*8555"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), values[1]);
+  EXPECT_EQ(base::string16(), labels[1]);
+  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), values[2]);
+  EXPECT_EQ(ASCIIToUTF16("*2109"), labels[2]);
+
+  // Sublabel is expiration date when filling card number.
+  values.clear();
+  labels.clear();
+  icons.clear();
+  guid_pairs.clear();
+  personal_data_->GetCreditCardSuggestions(
+      AutofillType(CREDIT_CARD_NUMBER),
+      base::string16(),
+      &values,
+      &labels,
+      &icons,
+      &guid_pairs);
+  ASSERT_EQ(2U, values.size());
+  ASSERT_EQ(values.size(), labels.size());
+  EXPECT_EQ(ASCIIToUTF16("********8555"), values[0]);
+  EXPECT_EQ(ASCIIToUTF16("04/15"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("********2109"), values[1]);
+  EXPECT_EQ(base::string16(), labels[1]);
+}
+
 }  // namespace autofill

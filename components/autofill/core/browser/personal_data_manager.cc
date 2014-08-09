@@ -671,11 +671,18 @@ void PersonalDataManager::GetCreditCardSuggestions(
       if (type.GetStorableType() == CREDIT_CARD_NUMBER)
         creditcard_field_value = credit_card->ObfuscatedNumber();
 
+      // If the value is the card number, the label is the expiration date.
+      // Otherwise the label is the card number, or if that is empty the
+      // cardholder name. The label should never repeat the value.
       base::string16 label;
-      if (credit_card->number().empty()) {
-        // If there is no CC number, return name to show something.
-        label =
-            credit_card->GetInfo(AutofillType(CREDIT_CARD_NAME), app_locale_);
+      if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
+        label = credit_card->GetInfo(
+            AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR), app_locale_);
+      } else if (credit_card->number().empty()) {
+        if (type.GetStorableType() != CREDIT_CARD_NAME) {
+          label =
+              credit_card->GetInfo(AutofillType(CREDIT_CARD_NAME), app_locale_);
+        }
       } else {
         label = kCreditCardPrefix;
         label.append(credit_card->LastFourDigits());

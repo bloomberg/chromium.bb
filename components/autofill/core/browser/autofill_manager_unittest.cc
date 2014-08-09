@@ -865,8 +865,8 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsEmptyValue) {
     ASCIIToUTF16("************3456"),
     ASCIIToUTF16("************8765")
   };
-  base::string16 expected_labels[] = { ASCIIToUTF16("*3456"),
-                                       ASCIIToUTF16("*8765")};
+  base::string16 expected_labels[] = { ASCIIToUTF16("04/12"),
+                                       ASCIIToUTF16("10/14")};
   base::string16 expected_icons[] = {
     ASCIIToUTF16(kVisaCard),
     ASCIIToUTF16(kMasterCard)
@@ -899,7 +899,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
 
   // Test that we sent the right values to the external delegate.
   base::string16 expected_values[] = {ASCIIToUTF16("************3456")};
-  base::string16 expected_labels[] = {ASCIIToUTF16("*3456")};
+  base::string16 expected_labels[] = {ASCIIToUTF16("04/12")};
   base::string16 expected_icons[] = {ASCIIToUTF16(kVisaCard)};
   int expected_unique_ids[] = {autofill_manager_->GetPackedCreditCardID(4)};
   external_delegate_->CheckSuggestions(
@@ -1008,7 +1008,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsRepeatedObfuscatedNumber) {
   CreditCard* credit_card = new CreditCard;
   test::SetCreditCardInfo(credit_card, "Elvis Presley",
                           "5231567890123456",  // Mastercard
-                          "04", "2012");
+                          "05", "2012");
   credit_card->set_guid("00000000-0000-0000-0000-000000000007");
   autofill_manager_->AddCreditCard(credit_card);
 
@@ -1032,9 +1032,9 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsRepeatedObfuscatedNumber) {
     ASCIIToUTF16("************3456")
   };
   base::string16 expected_labels[] = {
-    ASCIIToUTF16("*3456"),
-    ASCIIToUTF16("*8765"),
-    ASCIIToUTF16("*3456"),
+    ASCIIToUTF16("04/12"),
+    ASCIIToUTF16("10/14"),
+    ASCIIToUTF16("05/12"),
   };
   base::string16 expected_icons[] = {
     ASCIIToUTF16(kVisaCard),
@@ -1095,8 +1095,8 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
     ASCIIToUTF16("************3456"),
     ASCIIToUTF16("************8765")
   };
-  base::string16 expected_labels2[] = { ASCIIToUTF16("*3456"),
-                                        ASCIIToUTF16("*8765")};
+  base::string16 expected_labels2[] = { ASCIIToUTF16("04/12"),
+                                        ASCIIToUTF16("10/14")};
   base::string16 expected_icons2[] = {
     ASCIIToUTF16(kVisaCard),
     ASCIIToUTF16(kMasterCard)
