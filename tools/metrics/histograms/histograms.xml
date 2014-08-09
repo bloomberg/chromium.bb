@@ -8804,7 +8804,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="GCM.UnregistrationRequestStatus"
     enum="GCMUnregistrationRequestStatus">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>juyik@chromium.org</owner>
   <summary>Status code of the outcome of a GCM unregistration request.</summary>
 </histogram>
 
