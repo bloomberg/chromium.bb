@@ -270,8 +270,13 @@ def _RunPerformanceTest(config, path_to_file):
   bisect_utils.OutputAnnotationStepClosed()
 
   bisect_utils.OutputAnnotationStepStart('Reverting Patch')
-  if bisect_utils.RunGClient(['revert']):
-    raise RuntimeError('Failed to run gclient runhooks')
+  # TODO: When this is re-written to recipes, this should use bot_update's
+  # revert mechanism to fully revert the client. But for now, since we know that
+  # the perf trybot currently only supports src/ and src/third_party/WebKit, we
+  # simply reset those two directories.
+  bisect_utils.CheckRunGit(['reset', '--hard'])
+  bisect_utils.CheckRunGit(['reset', '--hard'],
+                           os.path.join('third_party', 'WebKit'))
   bisect_utils.OutputAnnotationStepClosed()
 
   bisect_utils.OutputAnnotationStepStart('Building Without Patch')
