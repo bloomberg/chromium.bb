@@ -1217,6 +1217,8 @@
         'browser/safe_browsing/last_download_finder_unittest.cc',
         'browser/safe_browsing/local_two_phase_testserver.cc',
         'browser/safe_browsing/malware_details_unittest.cc',
+        'browser/safe_browsing/module_integrity_unittest_util_win.cc',
+        'browser/safe_browsing/module_integrity_unittest_util_win.h',
         'browser/safe_browsing/module_integrity_verifier_win_unittest.cc',
         'browser/safe_browsing/path_sanitizer_unittest.cc',
         'browser/safe_browsing/pe_image_reader_win_unittest.cc',
@@ -2465,7 +2467,8 @@
         }],
         ['OS=="win"', {
           'dependencies': [
-            'browser/safe_browsing/verifier_test/verifier_unittest.gyp:verifier_test_dll',
+            'browser/safe_browsing/verifier_test/verifier_unittest.gyp:verifier_test_dll_1',
+            'browser/safe_browsing/verifier_test/verifier_unittest.gyp:verifier_test_dll_2',
             'chrome_version_resources',
             'installer_util_strings',
             '../chrome_elf/chrome_elf.gyp:blacklist_test_dll_1',

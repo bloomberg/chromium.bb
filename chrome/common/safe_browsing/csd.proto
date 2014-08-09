@@ -411,6 +411,18 @@ message ClientIncidentReport {
       }
       repeated Dll dll = 9;
       repeated string blacklisted_dll = 10;
+      message ModuleState {
+        enum ModifiedState {
+          UNKNOWN = 0;
+          MODULE_STATE_UNKNOWN = 1;
+          MODULE_STATE_UNMODIFIED = 2;
+          MODULE_STATE_MODIFIED = 3;
+        }
+        optional string name = 1;
+        optional ModifiedState modified_state = 2;
+        repeated string modified_export = 3;
+      }
+      repeated ModuleState module_state = 11;
     }
     optional Process process = 3;
   }

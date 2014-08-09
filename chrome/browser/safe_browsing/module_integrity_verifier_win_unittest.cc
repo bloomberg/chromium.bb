@@ -10,16 +10,10 @@
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "base/win/pe_image.h"
+#include "chrome/browser/safe_browsing/module_integrity_unittest_util_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace safe_browsing {
-
-namespace {
-
-const wchar_t kTestDllName[] = L"verifier_test_dll.dll";
-const char kTestExportName[] = "DummyExport";
-
-}  // namespace
 
 class SafeBrowsingModuleVerifierWinTest : public testing::Test {
  protected:
@@ -39,7 +33,7 @@ class SafeBrowsingModuleVerifierWinTest : public testing::Test {
 
   void LoadModule() {
     HMODULE mem_dll_handle =
-        LoadNativeLibrary(base::FilePath(kTestDllName), NULL);
+        LoadNativeLibrary(base::FilePath(kTestDllNames[0]), NULL);
     ASSERT_NE(static_cast<HMODULE>(NULL), mem_dll_handle)
         << "GLE=" << GetLastError();
     mem_dll_handle_.Reset(mem_dll_handle);
@@ -47,7 +41,7 @@ class SafeBrowsingModuleVerifierWinTest : public testing::Test {
   }
 
   void GetMemModuleHandle(HMODULE* mem_handle) {
-    *mem_handle = GetModuleHandle(kTestDllName);
+    *mem_handle = GetModuleHandle(kTestDllNames[0]);
     ASSERT_NE(static_cast<HMODULE>(NULL), *mem_handle);
   }
 
@@ -97,14 +91,14 @@ TEST_F(SafeBrowsingModuleVerifierWinTest, VerifyModuleUnmodified) {
   std::set<std::string> modified_exports;
   // Call VerifyModule before the module has been loaded, should fail.
   EXPECT_EQ(MODULE_STATE_UNKNOWN,
-            VerifyModule(kTestDllName, &modified_exports));
+            VerifyModule(kTestDllNames[0], &modified_exports));
   EXPECT_EQ(0, modified_exports.size());
 
   // On loading, the module should be identical (up to relocations) in memory as
   // on disk.
   SetUpTestDllAndPEImages();
   EXPECT_EQ(MODULE_STATE_UNMODIFIED,
-            VerifyModule(kTestDllName, &modified_exports));
+            VerifyModule(kTestDllNames[0], &modified_exports));
   EXPECT_EQ(0, modified_exports.size());
 }
 
@@ -113,7 +107,7 @@ TEST_F(SafeBrowsingModuleVerifierWinTest, VerifyModuleModified) {
   // Confirm the module is identical in memory as on disk before we begin.
   SetUpTestDllAndPEImages();
   EXPECT_EQ(MODULE_STATE_UNMODIFIED,
-            VerifyModule(kTestDllName, &modified_exports));
+            VerifyModule(kTestDllNames[0], &modified_exports));
 
   uint8_t* mem_code_addr = NULL;
   uint8_t* disk_code_addr = NULL;
@@ -137,7 +131,7 @@ TEST_F(SafeBrowsingModuleVerifierWinTest, VerifyModuleModified) {
 
   // VerifyModule should detect the change.
   EXPECT_EQ(MODULE_STATE_MODIFIED,
-            VerifyModule(kTestDllName, &modified_exports));
+            VerifyModule(kTestDllNames[0], &modified_exports));
 }
 
 TEST_F(SafeBrowsingModuleVerifierWinTest, VerifyModuleExportModified) {
@@ -145,14 +139,14 @@ TEST_F(SafeBrowsingModuleVerifierWinTest, VerifyModuleExportModified) {
   // Confirm the module is identical in memory as on disk before we begin.
   SetUpTestDllAndPEImages();
   EXPECT_EQ(MODULE_STATE_UNMODIFIED,
-            VerifyModule(kTestDllName, &modified_exports));
+            VerifyModule(kTestDllNames[0], &modified_exports));
   modified_exports.clear();
 
   // Edit the exported function, VerifyModule should now return the function
   // name in modified_exports.
   EditExport();
   EXPECT_EQ(MODULE_STATE_MODIFIED,
-            VerifyModule(kTestDllName, &modified_exports));
+            VerifyModule(kTestDllNames[0], &modified_exports));
   EXPECT_EQ(1, modified_exports.size());
   EXPECT_EQ(0, std::string(kTestExportName).compare(*modified_exports.begin()));
 }

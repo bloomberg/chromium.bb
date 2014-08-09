@@ -176,7 +176,7 @@ bool EnumRelocsCallback(const base::win::PEImage& mem_peimage,
       // of relocations.
       break;
     default: {
-      // TODO(krstnmnlsn): Find a reliable description of the behaviour of the
+      // TODO(robertshield): Find a reliable description of the behaviour of the
       // remaining types of relocation and handle them.
       state->unknown_reloc_type = true;
       break;

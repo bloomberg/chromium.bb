@@ -14,6 +14,7 @@
 #include "chrome/browser/install_verification/win/module_info.h"
 #include "chrome/browser/install_verification/win/module_verification_common.h"
 #include "chrome/browser/net/service_providers_win.h"
+#include "chrome/browser/safe_browsing/module_integrity_verifier_win.h"
 #include "chrome/browser/safe_browsing/path_sanitizer.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome_elf/chrome_elf_constants.h"
@@ -21,6 +22,13 @@
 namespace safe_browsing {
 
 namespace {
+
+// The modules on which we will run VerifyModule.
+const wchar_t* const kModulesToVerify[] = {
+    L"chrome.dll",
+    L"chrome_elf.dll",
+    L"ntdll.dll",
+};
 
 // Helper function for expanding all environment variables in |path|.
 std::wstring ExpandEnvironmentVariables(const std::wstring& path) {
@@ -102,11 +110,42 @@ void CollectDllBlacklistData(
   }
 }
 
+void CollectModuleVerificationData(
+    const wchar_t* const modules_to_verify[],
+    size_t num_modules_to_verify,
+    ClientIncidentReport_EnvironmentData_Process* process) {
+  for (size_t i = 0; i < num_modules_to_verify; ++i) {
+    std::set<std::string> modified_exports;
+    int modified = VerifyModule(modules_to_verify[i], &modified_exports);
+
+    if (modified == MODULE_STATE_UNMODIFIED)
+      continue;
+
+    ClientIncidentReport_EnvironmentData_Process_ModuleState* module_state =
+        process->add_module_state();
+
+    module_state->set_name(
+        base::WideToUTF8(std::wstring(modules_to_verify[i])));
+    // Add 1 to the ModuleState enum to get the corresponding value in the
+    // protobuf's ModuleState enum.
+    module_state->set_modified_state(static_cast<
+        ClientIncidentReport_EnvironmentData_Process_ModuleState_ModifiedState>(
+        modified + 1));
+    for (std::set<std::string>::iterator it = modified_exports.begin();
+         it != modified_exports.end();
+         ++it) {
+      module_state->add_modified_export(*it);
+    }
+  }
+}
+
 void CollectPlatformProcessData(
     ClientIncidentReport_EnvironmentData_Process* process) {
   CollectDlls(process);
   RecordLspFeature(process);
   CollectDllBlacklistData(process);
+  CollectModuleVerificationData(
+      kModulesToVerify, arraysize(kModulesToVerify), process);
 }
 
 }  // namespace safe_browsing

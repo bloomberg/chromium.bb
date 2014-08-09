@@ -18,6 +18,13 @@ bool CollectDlls(ClientIncidentReport_EnvironmentData_Process* process);
 // check one of them is a registered LSP.
 void RecordLspFeature(ClientIncidentReport_EnvironmentData_Process* process);
 
+// Checks each module in the provided list for modifications and records these,
+// along with any modified exports, in |process|.
+void CollectModuleVerificationData(
+    const wchar_t* const modules_to_verify[],
+    size_t num_modules_to_verify,
+    ClientIncidentReport_EnvironmentData_Process* process);
+
 // Populates |process| with the dll names that have been added to the chrome elf
 // blacklist through the Windows registry.
 void CollectDllBlacklistData(
