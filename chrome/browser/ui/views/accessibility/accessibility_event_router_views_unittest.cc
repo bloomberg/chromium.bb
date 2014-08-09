@@ -433,14 +433,14 @@ TEST_F(AccessibilityEventRouterViewsTest, AccessibilityFocusableView) {
   // Put the view in a window.
   views::Widget* window = CreateWindowWithContents(parent);
 
-  // Since the child view has no accessiblity focusable ancestors, this
+  // Since the child view has no accessibility focusable ancestors, this
   // should still be the child view.
   views::View* accessible_view =
       AccessibilityEventRouterViews::FindFirstAccessibleAncestor(child);
   EXPECT_EQ(accessible_view, child);
 
-  // Now make the parent view accessiblity focusable. Calling
-  // FindFirstAccessibleAncestor() again on child shoudl return the parent
+  // Now make the parent view accessibility focusable. Calling
+  // FindFirstAccessibleAncestor() again on child should return the parent
   // view.
   parent->SetAccessibilityFocusable(true);
   accessible_view =

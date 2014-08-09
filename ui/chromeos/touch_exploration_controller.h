@@ -44,8 +44,8 @@ class TouchExplorationControllerDelegate {
 
 // TouchExplorationController is used in tandem with "Spoken Feedback" to
 // make the touch UI accessible. Gestures performed in the middle of the screen
-// are mapped to accessiblity key shortcuts while gestures performed on the edge
-// of the screen can change settings.
+// are mapped to accessibility key shortcuts while gestures performed on the
+// edge of the screen can change settings.
 //
 // ** Short version **
 //

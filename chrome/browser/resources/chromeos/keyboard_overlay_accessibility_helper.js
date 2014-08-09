@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// An object to implement keyboard overlay accessiblity.
+// An object to implement keyboard overlay accessibility.
 var KeyboardOverlayAccessibilityHelper = {
   // Returns true when ChromeVox is loaded and active, false otherwise.
   cvoxIsActive: function() {
