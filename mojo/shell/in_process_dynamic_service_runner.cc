@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "mojo/public/platform/native/gles2_thunks.h"
 #include "mojo/public/platform/native/system_thunks.h"
 
 namespace mojo {
@@ -85,6 +86,50 @@ void InProcessDynamicServiceRunner::Run() {
       LOG(WARNING) << "MojoSetSystemThunks not found in app library";
 #endif
     }
+
+    MojoSetGLES2ControlThunksFn mojo_set_gles2_control_thunks_fn =
+        reinterpret_cast<MojoSetGLES2ControlThunksFn>(
+            app_library_.GetFunctionPointer("MojoSetGLES2ControlThunks"));
+    if (mojo_set_gles2_control_thunks_fn) {
+      MojoGLES2ControlThunks gles2_control_thunks =
+          MojoMakeGLES2ControlThunks();
+      size_t expected_size = mojo_set_gles2_control_thunks_fn(
+          &gles2_control_thunks);
+      if (expected_size > sizeof(MojoGLES2ControlThunks)) {
+        LOG(ERROR)
+            << "Invalid app library: expected MojoGLES2ControlThunks size: "
+            << expected_size;
+        break;
+      }
+
+      // If we have the control thunks, we probably also have the
+      // GLES2 implementation thunks.
+      MojoSetGLES2ImplThunksFn mojo_set_gles2_impl_thunks_fn =
+          reinterpret_cast<MojoSetGLES2ImplThunksFn>(
+              app_library_.GetFunctionPointer("MojoSetGLES2ImplThunks"));
+      if (mojo_set_gles2_impl_thunks_fn) {
+        MojoGLES2ImplThunks gles2_impl_thunks =
+            MojoMakeGLES2ImplThunks();
+        size_t expected_size = mojo_set_gles2_impl_thunks_fn(
+            &gles2_impl_thunks);
+        if (expected_size > sizeof(MojoGLES2ImplThunks)) {
+          LOG(ERROR)
+              << "Invalid app library: expected MojoGLES2ImplThunks size: "
+              << expected_size;
+          break;
+        }
+      } else {
+        // In the component build, Mojo Apps link against mojo_gles2_impl.
+#if !defined(COMPONENT_BUILD)
+        // Warn on this really weird case: The library requires the GLES2
+        // control functions, but doesn't require the GLES2 implementation.
+        LOG(WARNING) << "App library has MojoSetGLES2ControlThunks, but "
+                        "doesn't have MojoSetGLES2ImplThunks.";
+#endif
+      }
+    }
+    // Unlike system thunks, we don't warn on a lack of GLES2 thunks because
+    // not everything is a visual app.
 
     typedef MojoResult (*MojoMainFunction)(MojoHandle);
     MojoMainFunction main_function = reinterpret_cast<MojoMainFunction>(

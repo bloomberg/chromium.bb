@@ -34,9 +34,13 @@
       ['component=="shared_library"', {
         'mojo_system_for_component': "mojo_base.gyp:mojo_system_impl",
         'mojo_system_for_loadable_module': "mojo_base.gyp:mojo_system_impl",
+        'mojo_gles2_for_component': "mojo_base.gyp:mojo_gles2_impl",
+        'mojo_gles2_for_loadable_module': "mojo_base.gyp:mojo_gles2_impl",
       }, {
         'mojo_system_for_component': "mojo_base.gyp:mojo_none",
         'mojo_system_for_loadable_module': "mojo_base.gyp:mojo_system",
+        'mojo_gles2_for_component': "mojo_base.gyp:mojo_none",
+        'mojo_gles2_for_loadable_module': "mojo_base.gyp:mojo_gles2",
       }],
     ],
   },

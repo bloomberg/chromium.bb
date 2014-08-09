@@ -342,6 +342,67 @@
       ],
     },
     {
+      # GN version: //mojo/services/gles2:interfaces (for files generated from
+      # the mojom file)
+      # GN version: //mojo/services/gles2:bindings
+      'target_name': 'mojo_gles2_bindings',
+      'type': 'static_library',
+      'sources': [
+        'services/gles2/command_buffer.mojom',
+        'services/gles2/command_buffer_type_conversions.cc',
+        'services/gles2/command_buffer_type_conversions.h',
+        'services/gles2/mojo_buffer_backing.cc',
+        'services/gles2/mojo_buffer_backing.h',
+      ],
+      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
+      'export_dependent_settings': [
+        'mojo_cpp_bindings',
+      ],
+      'dependencies': [
+        'mojo_cpp_bindings',
+        '../gpu/gpu.gyp:command_buffer_common',
+      ],
+    },
+    {
+      # GN version: //mojo/gles2
+      'target_name': 'mojo_gles2_impl',
+      'type': '<(component)',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../gpu/gpu.gyp:command_buffer_client',
+        '../gpu/gpu.gyp:command_buffer_common',
+        '../gpu/gpu.gyp:gles2_cmd_helper',
+        '../gpu/gpu.gyp:gles2_implementation',
+        'mojo_environment_chromium',
+        'mojo_gles2_bindings',
+        '<(mojo_system_for_component)',
+      ],
+      'defines': [
+        'MOJO_GLES2_IMPL_IMPLEMENTATION',
+        'MOJO_GLES2_IMPLEMENTATION',
+        'GLES2_USE_MOJO',
+        'MOJO_USE_GLES2_IMPL'
+      ],
+      'direct_dependent_settings': {
+        'defines': [
+          'GLES2_USE_MOJO',
+        ],
+      },
+      'sources': [
+        'gles2/command_buffer_client_impl.cc',
+        'gles2/command_buffer_client_impl.h',
+        'gles2/gles2_impl_export.h',
+        'gles2/gles2_impl.cc',
+        'gles2/gles2_context.cc',
+        'gles2/gles2_context.h',
+      ],
+      'all_dependent_settings': {
+        # Ensures that dependent projects import the core functions on Windows.
+        'defines': ['MOJO_USE_GLES2_IMPL'],
+      }
+    },
+    {
      'target_name': 'mojo_application_chromium',
      'type': 'static_library',
      'sources': [
