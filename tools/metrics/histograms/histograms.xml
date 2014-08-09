@@ -10294,13 +10294,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Linux.GlibcVersion" enum="LinuxGlibcVersion">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>The version of glibc used. (Linux only)</summary>
+  <owner>thestig@chromium.org</owner>
+  <summary>
+    The version of glibc used. (Linux only) Logged on each start up.
+  </summary>
 </histogram>
 
 <histogram name="Linux.WindowManager" enum="LinuxWindowManagerName">
   <owner>pkotwicz@chromium.org</owner>
-  <summary>The window manager used. (Linux only) Logged at startup.</summary>
+  <summary>
+    The window manager used. (Linux only) Logged on each start up.
+  </summary>
 </histogram>
 
 <histogram name="LocalDiscovery.ClientRestartAttempts">
