@@ -18,6 +18,7 @@
 #include "ui/aura/window_property.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/compositor/layer.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/capture_controller.h"
 
@@ -199,6 +200,7 @@ class ScreenManagerImpl : public ScreenManager {
   virtual aura::Window* CreateContainer(const ContainerParams& params) OVERRIDE;
   virtual aura::Window* GetContext() OVERRIDE { return root_window_; }
   virtual void SetBackgroundImage(const gfx::ImageSkia& image) OVERRIDE;
+  virtual ui::LayerAnimator* GetScreenAnimator() OVERRIDE;
 
   aura::Window* root_window_;
   aura::Window* background_window_;
@@ -320,6 +322,10 @@ aura::Window* ScreenManagerImpl::CreateContainer(
 
 void ScreenManagerImpl::SetBackgroundImage(const gfx::ImageSkia& image) {
   background_controller_->SetImage(image);
+}
+
+ui::LayerAnimator* ScreenManagerImpl::GetScreenAnimator() {
+  return root_window_->layer()->GetAnimator();
 }
 
 }  // namespace

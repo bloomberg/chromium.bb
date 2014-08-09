@@ -17,6 +17,10 @@ namespace gfx {
 class ImageSkia;
 }
 
+namespace ui {
+class LayerAnimator;
+}
+
 namespace wm {
 class FocusRules;
 }
@@ -63,6 +67,10 @@ class ATHENA_EXPORT ScreenManager {
 
   // Sets the background image.
   virtual void SetBackgroundImage(const gfx::ImageSkia& image) = 0;
+
+  // Returns the LayerAnimator to use to animate the entire screen (e.g. fade
+  // screen to white).
+  virtual ui::LayerAnimator* GetScreenAnimator() = 0;
 
   // Create a focus rules.
   // TODO(oshima): Make this virtual function.

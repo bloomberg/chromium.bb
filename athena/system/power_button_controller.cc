@@ -4,13 +4,25 @@
 
 #include "athena/system/power_button_controller.h"
 
+#include "athena/screen/public/screen_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "ui/compositor/layer_animator.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 
 namespace athena {
+namespace {
+
+// Duration of the shutdown animation.
+const int kShutdownDurationMs = 1000;
+
+// Duration of the cancel shutdown animation.
+const int kCancelShutdownDurationMs = 500;
+
+}  // namespace
 
 PowerButtonController::PowerButtonController()
     : brightness_is_zero_(false),
-      shutdown_requested_(false) {
+      state_(STATE_OTHER) {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
 }
@@ -18,6 +30,23 @@ PowerButtonController::PowerButtonController()
 PowerButtonController::~PowerButtonController() {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
+}
+
+void PowerButtonController::StartGrayscaleAndBrightnessAnimation(
+    float target,
+    int duration_ms,
+    gfx::Tween::Type tween_type) {
+  ui::LayerAnimator* animator = ScreenManager::Get()->GetScreenAnimator();
+  ui::ScopedLayerAnimationSettings settings(animator);
+  settings.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(duration_ms));
+  settings.SetTweenType(tween_type);
+  settings.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  settings.AddObserver(this);
+
+  animator->SetBrightness(target);
+  animator->SetGrayscale(target);
 }
 
 void PowerButtonController::BrightnessChanged(int level, bool user_initiated) {
@@ -28,7 +57,7 @@ void PowerButtonController::BrightnessChanged(int level, bool user_initiated) {
 
 void PowerButtonController::PowerButtonEventReceived(
     bool down,
-    const base::TimeTicks& details) {
+    const base::TimeTicks& timestamp) {
   // Avoid requesting a shutdown if the power button is pressed while the screen
   // is off (http://crbug.com/128451)
   base::TimeDelta time_since_zero_brightness = brightness_is_zero_ ?
@@ -37,8 +66,24 @@ void PowerButtonController::PowerButtonEventReceived(
   if (time_since_zero_brightness.InMilliseconds() <= kShortTimeMs)
     return;
 
-  if (down && !shutdown_requested_) {
-    shutdown_requested_ = true;
+  if (state_ == STATE_SHUTDOWN_REQUESTED)
+    return;
+
+  StopObservingImplicitAnimations();
+  if (down) {
+    state_ = STATE_PRE_SHUTDOWN_ANIMATION;
+    StartGrayscaleAndBrightnessAnimation(
+        1.0f, kShutdownDurationMs, gfx::Tween::EASE_IN);
+  } else {
+    state_ = STATE_OTHER;
+    StartGrayscaleAndBrightnessAnimation(
+        0.0f, kCancelShutdownDurationMs, gfx::Tween::EASE_IN_OUT);
+  }
+}
+
+void PowerButtonController::OnImplicitAnimationsCompleted() {
+  if (state_ == STATE_PRE_SHUTDOWN_ANIMATION) {
+    state_ = STATE_SHUTDOWN_REQUESTED;
     chromeos::DBusThreadManager::Get()
         ->GetPowerManagerClient()
         ->RequestShutdown();

@@ -1,5 +1,7 @@
 include_rules = [
+  "+athena/screen/public",
   "+athena/system/public",
   "+chromeos/dbus",
+  "+ui",
 ]
 
