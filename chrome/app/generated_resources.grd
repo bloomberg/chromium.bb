@@ -6219,6 +6219,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_PASSWORD_MANAGER_REAUTHENTICATION_DESCRIPTION" desc="Description of the flag for the password manager reauthentication option.">
         Disable prompting the user for their OS password before revealing passwords on the passwords page.
       </message>
+      <message name="IDS_FLAGS_PASSWORD_MANAGER_ANDROID_LINK_NAME" desc="Name of the flag to enable showing a link to account central on Android password settings page">
+        Enable remote password management link
+      </message>
+      <message name="IDS_FLAGS_PASSWORD_MANAGER_ANDROID_LINK_DESCRIPTION" desc="Description of the flag to enable showing a link to account central on Android password settings page">
+        Show a link in the password manager settings page to manage your synced passwords online.
+      </message>
       <message name="IDS_FLAGS_PERFORMANCE_MONITOR_GATHERING_NAME" desc="Name for the flag to enable Performance Monitor.">
         Enable performance monitoring
       </message>

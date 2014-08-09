@@ -6,8 +6,12 @@
 
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
+#include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/url_constants.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/common/password_manager_switches.h"
 #include "jni/PasswordUIView_jni.h"
 
 using base::android::ConvertUTF16ToJavaString;
@@ -91,6 +95,30 @@ void PasswordUIViewAndroid::HandleRemoveSavedPasswordEntry(
 void PasswordUIViewAndroid::HandleRemoveSavedPasswordException(
     JNIEnv* env, jobject, int index) {
   password_manager_presenter_.RemovePasswordException(index);
+}
+
+jstring GetAccountDashboardURL(JNIEnv* env, jclass) {
+  return ConvertUTF8ToJavaString(
+      env, chrome::kPasswordManagerAccountDashboardURL).Release();
+}
+
+static jboolean ShouldDisplayManageAccountLink(
+    JNIEnv* env, jclass) {
+  std::string group_name =
+      base::FieldTrialList::FindFullName("AndroidPasswordLinkInSettings");
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(
+          password_manager::switches::kDisableAndroidPasswordLink)) {
+    return false;
+  }
+
+  if (command_line->HasSwitch(
+          password_manager::switches::kEnableAndroidPasswordLink)) {
+    return true;
+  }
+
+  return group_name == "Enabled";
 }
 
 // static

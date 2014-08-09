@@ -138,6 +138,14 @@ public final class PasswordUIView {
         nativeHandleRemoveSavedPasswordException(mNativePasswordUIViewAndroid, index);
     }
 
+    public static String getAccountDashboardURL() {
+        return nativeGetAccountDashboardURL();
+    }
+
+    public static boolean shouldDisplayManageAccountLink() {
+        return nativeShouldDisplayManageAccountLink();
+    }
+
     /**
      * Destroy the native object.
      */
@@ -167,6 +175,10 @@ public final class PasswordUIView {
     private native void nativeHandleRemoveSavedPasswordException(
             long nativePasswordUIViewAndroid,
             int index);
+
+    private static native String nativeGetAccountDashboardURL();
+
+    private static native boolean nativeShouldDisplayManageAccountLink();
 
     private native void nativeDestroy(long nativePasswordUIViewAndroid);
 

@@ -1111,6 +1111,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisablePasswordManagerReauthentication)
   },
   {
+    "enable-android-password-link",
+    IDS_FLAGS_PASSWORD_MANAGER_ANDROID_LINK_NAME,
+    IDS_FLAGS_PASSWORD_MANAGER_ANDROID_LINK_DESCRIPTION,
+    kOsAndroid,
+    ENABLE_DISABLE_VALUE_TYPE(
+        password_manager::switches::kEnableAndroidPasswordLink,
+        password_manager::switches::kDisableAndroidPasswordLink)
+  },
+  {
     "enable-deferred-image-decoding",
     IDS_FLAGS_ENABLE_DEFERRED_IMAGE_DECODING_NAME,
     IDS_FLAGS_ENABLE_DEFERRED_IMAGE_DECODING_DESCRIPTION,

@@ -12,8 +12,10 @@ namespace switches {
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
 
+extern const char kDisableAndroidPasswordLink[];
 extern const char kDisableDropSyncCredential[];
 extern const char kDisableManagerForSyncSignin[];
+extern const char kEnableAndroidPasswordLink[];
 extern const char kEnableDropSyncCredential[];
 extern const char kEnableManagerForSyncSignin[];
 extern const char kEnableAutomaticPasswordSaving[];
