@@ -1,6 +1,0 @@
-include_rules = [
-  # Common is for library/utility code shared by multiple parts of chrome
-  # browser. It should not depend on other parts of the browser.
-  "-chrome/browser",
-  "+chrome/browser/common",
-]

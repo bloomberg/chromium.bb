@@ -1,2 +1,0 @@
-This directory contains library/utility code shared by multiple Browser
-Components. It should not depend on other parts of the browser.

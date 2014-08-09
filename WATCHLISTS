@@ -150,7 +150,6 @@
     'browser_components': {
       'filepath': 'chrome/browser/autofill/' \
                   '|chrome/browser/bookmarks/' \
-                  '|chrome/browser/common/' \
                   '|chrome/browser/favicon/' \
                   '|chrome/browser/history/' \
                   '|chrome/browser/webdata/' \
