@@ -1705,7 +1705,6 @@
             'rendering/break_lines.h',
             'rendering/compositing/CompositedLayerMapping.cpp',
             'rendering/compositing/CompositedLayerMapping.h',
-            'rendering/compositing/CompositedLayerMappingPtr.h',
             'rendering/compositing/CompositingInputsUpdater.cpp',
             'rendering/compositing/CompositingInputsUpdater.h',
             'rendering/compositing/CompositingLayerAssigner.cpp',

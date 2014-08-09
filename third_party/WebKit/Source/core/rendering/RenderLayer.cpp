@@ -3246,7 +3246,7 @@ bool RenderLayer::isAllowedToQueryCompositingState() const
     return renderer()->document().lifecycle().state() >= DocumentLifecycle::InCompositingUpdate;
 }
 
-CompositedLayerMappingPtr RenderLayer::compositedLayerMapping() const
+CompositedLayerMapping* RenderLayer::compositedLayerMapping() const
 {
     ASSERT(isAllowedToQueryCompositingState());
     return m_compositedLayerMapping.get();
@@ -3276,7 +3276,7 @@ GraphicsLayer* RenderLayer::graphicsLayerBackingForScrolling() const
     }
 }
 
-CompositedLayerMappingPtr RenderLayer::ensureCompositedLayerMapping()
+CompositedLayerMapping* RenderLayer::ensureCompositedLayerMapping()
 {
     if (!m_compositedLayerMapping) {
         m_compositedLayerMapping = adoptPtr(new CompositedLayerMapping(*this));

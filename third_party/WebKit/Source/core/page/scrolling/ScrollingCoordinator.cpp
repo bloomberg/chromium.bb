@@ -211,7 +211,7 @@ static WebLayerPositionConstraint computePositionConstraint(const RenderLayer* l
 void ScrollingCoordinator::updateLayerPositionConstraint(RenderLayer* layer)
 {
     ASSERT(layer->hasCompositedLayerMapping());
-    CompositedLayerMappingPtr compositedLayerMapping = layer->compositedLayerMapping();
+    CompositedLayerMapping* compositedLayerMapping = layer->compositedLayerMapping();
     GraphicsLayer* mainLayer = compositedLayerMapping->localRootForOwningLayer();
 
     // Avoid unnecessary commits

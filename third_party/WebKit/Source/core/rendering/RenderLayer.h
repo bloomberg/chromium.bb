@@ -56,7 +56,6 @@
 #include "core/rendering/RenderLayerScrollableArea.h"
 #include "core/rendering/RenderLayerStackingNode.h"
 #include "core/rendering/RenderLayerStackingNodeIterator.h"
-#include "core/rendering/compositing/CompositedLayerMappingPtr.h"
 #include "platform/graphics/CompositingReasons.h"
 #include "wtf/OwnPtr.h"
 
@@ -301,14 +300,16 @@ public:
     // compositing state may legally be read.
     bool isAllowedToQueryCompositingState() const;
 
-    // NOTE: Don't call these compositing methods unless you know what you are doing and are sure it is the best approach!
-    CompositedLayerMappingPtr compositedLayerMapping() const;
-    CompositedLayerMappingPtr ensureCompositedLayerMapping();
+    // Don't null check this.
+    CompositedLayerMapping* compositedLayerMapping() const;
+    // FIXME: This should return a reference.
+    CompositedLayerMapping* ensureCompositedLayerMapping();
     GraphicsLayer* graphicsLayerBacking() const;
     GraphicsLayer* graphicsLayerBackingForScrolling() const;
     // NOTE: If you are using hasCompositedLayerMapping to determine the state of compositing for this layer,
     // (and not just to do bookkeeping related to the mapping like, say, allocating or deallocating a mapping),
     // then you may have incorrect logic. Use compositingState() instead.
+    // FIXME: This is identical to null checking compositedLayerMapping(), why not just call that?
     bool hasCompositedLayerMapping() const { return m_compositedLayerMapping.get(); }
     void clearCompositedLayerMapping(bool layerBeingDestroyed = false);
     CompositedLayerMapping* groupedMapping() const { return m_groupedMapping; }

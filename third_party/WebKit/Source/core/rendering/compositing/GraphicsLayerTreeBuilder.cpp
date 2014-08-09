@@ -64,7 +64,7 @@ void GraphicsLayerTreeBuilder::rebuild(RenderLayer& layer, AncestorInfo info)
     layer.stackingNode()->updateLayerListsIfNeeded();
 
     const bool hasCompositedLayerMapping = layer.hasCompositedLayerMapping();
-    CompositedLayerMappingPtr currentCompositedLayerMapping = layer.compositedLayerMapping();
+    CompositedLayerMapping* currentCompositedLayerMapping = layer.compositedLayerMapping();
 
     // If this layer has a compositedLayerMapping, then that is where we place subsequent children GraphicsLayers.
     // Otherwise children continue to append to the child list of the enclosing layer.

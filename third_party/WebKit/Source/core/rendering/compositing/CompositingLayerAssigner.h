@@ -57,10 +57,10 @@ private:
             , nextSquashedLayerIndex(0)
             , totalAreaOfSquashedRects(0) { }
 
-        void updateSquashingStateForNewMapping(CompositedLayerMappingPtr, bool hasNewCompositedLayerMapping);
+        void updateSquashingStateForNewMapping(CompositedLayerMapping*, bool hasNewCompositedLayerMapping);
 
         // The most recent composited backing that the layer should squash onto if needed.
-        CompositedLayerMappingPtr mostRecentMapping;
+        CompositedLayerMapping* mostRecentMapping;
         bool hasMostRecentMapping;
 
         // Whether all RenderLayers in the stacking subtree rooted at the most recent mapping's
