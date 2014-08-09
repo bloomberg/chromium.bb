@@ -204,6 +204,10 @@ TEST(BoringSSL, SHA1) {
   TestSimple("sha1_test");
 }
 
+TEST(BoringSSL, PKCS7) {
+  TestSimple("pkcs7_test");
+}
+
 TEST(BoringSSL, ExampleMul) {
   TestSimple("example_mul");
 }

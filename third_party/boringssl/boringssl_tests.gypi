@@ -186,6 +186,16 @@
         'src/crypto/sha/sha1_test.c',
       ],
     },
+    {
+      'target_name': 'boringssl_pkcs7_test',
+      'type': 'executable',
+      'dependencies': [
+        'boringssl.gyp:boringssl',
+      ],
+      'sources': [
+        'src/crypto/x509/pkcs7_test.c',
+      ],
+    },
   ],
   'variables': {
     'boringssl_test_targets': [
@@ -205,6 +215,7 @@
       'boringssl_hmac_test',
       'boringssl_lhash_test',
       'boringssl_md5_test',
+      'boringssl_pkcs7_test',
       'boringssl_rsa_test',
       'boringssl_sha1_test',
     ],

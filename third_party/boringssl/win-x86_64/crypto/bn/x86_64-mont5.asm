@@ -1827,20 +1827,6 @@ $L$from_epilogue::
 	DB	0F3h,0C3h		;repret
 $L$SEH_end_bn_from_mont8x::
 bn_from_mont8x	ENDP
-PUBLIC	bn_get_bits5
-
-ALIGN	16
-bn_get_bits5	PROC PUBLIC
-	mov	r10,rcx
-	mov	ecx,edx
-	shr	edx,3
-	movzx	eax,WORD PTR[rdx*1+r10]
-	and	ecx,7
-	shr	eax,cl
-	and	eax,31
-	DB	0F3h,0C3h		;repret
-bn_get_bits5	ENDP
-
 PUBLIC	bn_scatter5
 
 ALIGN	16

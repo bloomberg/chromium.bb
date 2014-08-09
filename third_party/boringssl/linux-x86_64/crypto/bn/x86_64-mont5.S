@@ -1755,21 +1755,6 @@ bn_from_mont8x:
 .Lfrom_epilogue:
 	.byte	0xf3,0xc3
 .size	bn_from_mont8x,.-bn_from_mont8x
-.globl	bn_get_bits5
-.hidden bn_get_bits5
-.type	bn_get_bits5,@function
-.align	16
-bn_get_bits5:
-	movq	%rdi,%r10
-	movl	%esi,%ecx
-	shrl	$3,%esi
-	movzwl	(%r10,%rsi,1),%eax
-	andl	$7,%ecx
-	shrl	%cl,%eax
-	andl	$31,%eax
-	.byte	0xf3,0xc3
-.size	bn_get_bits5,.-bn_get_bits5
-
 .globl	bn_scatter5
 .hidden bn_scatter5
 .type	bn_scatter5,@function

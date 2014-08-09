@@ -1755,21 +1755,6 @@ L$from_mont_zero:
 L$from_epilogue:
 	.byte	0xf3,0xc3
 
-.globl	_bn_get_bits5
-.private_extern _bn_get_bits5
-
-.p2align	4
-_bn_get_bits5:
-	movq	%rdi,%r10
-	movl	%esi,%ecx
-	shrl	$3,%esi
-	movzwl	(%r10,%rsi,1),%eax
-	andl	$7,%ecx
-	shrl	%cl,%eax
-	andl	$31,%eax
-	.byte	0xf3,0xc3
-
-
 .globl	_bn_scatter5
 .private_extern _bn_scatter5
 

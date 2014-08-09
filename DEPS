@@ -85,7 +85,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
-  "boringssl_revision": "533cbee57eec77268ef9f53c4039ec753240fb37",
+  "boringssl_revision": "c3d79605ab06cffa87877bcfe0792f767bde8b90",
 }
 
 deps = {
