@@ -129,9 +129,10 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
       const std::vector<TurnConfiguration>& turn_configurations) OVERRIDE {
     CHECK(web_frame_);
     P2PPortAllocator::Config config;
-    if (stun_servers.size() > 0) {
-      config.stun_server = stun_servers[0].server.hostname();
-      config.stun_server_port = stun_servers[0].server.port();
+    for (size_t i = 0; i < stun_servers.size(); ++i) {
+      config.stun_servers.insert(rtc::SocketAddress(
+          stun_servers[i].server.hostname(),
+          stun_servers[i].server.port()));
     }
     config.legacy_relay = false;
     for (size_t i = 0; i < turn_configurations.size(); ++i) {
@@ -143,12 +144,11 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
       relay_config.transport_type = turn_configurations[i].transport_type;
       relay_config.secure = turn_configurations[i].secure;
       config.relays.push_back(relay_config);
-    }
 
-    // Use first turn server as the stun server.
-    if (turn_configurations.size() > 0) {
-      config.stun_server = config.relays[0].server_address;
-      config.stun_server_port = config.relays[0].port;
+      // Use turn servers as stun servers.
+      config.stun_servers.insert(rtc::SocketAddress(
+          turn_configurations[i].server.hostname(),
+          turn_configurations[i].server.port()));
     }
 
     return new P2PPortAllocator(

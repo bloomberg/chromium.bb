@@ -51,8 +51,7 @@ bool ParsePortNumber(
 }  // namespace
 
 P2PPortAllocator::Config::Config()
-    : stun_server_port(0),
-      legacy_relay(true),
+    : legacy_relay(true),
       disable_tcp_transport(false) {
 }
 
@@ -259,8 +258,7 @@ void P2PPortAllocatorSession::ParseRelayResponse() {
 void P2PPortAllocatorSession::AddConfig() {
   const P2PPortAllocator::Config& config = allocator_->config_;
   cricket::PortConfiguration* port_config = new cricket::PortConfiguration(
-      rtc::SocketAddress(config.stun_server, config.stun_server_port),
-      std::string(), std::string());
+      config.stun_servers, std::string(), std::string());
 
   for (size_t i = 0; i < config.relays.size(); ++i) {
     cricket::RelayCredentials credentials(config.relays[i].username,

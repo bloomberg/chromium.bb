@@ -43,9 +43,7 @@ class P2PPortAllocator : public cricket::BasicPortAllocator {
       bool secure;
     };
 
-    // STUN server address and port.
-    std::string stun_server;
-    int stun_server_port;
+    std::set<rtc::SocketAddress> stun_servers;
 
     std::vector<RelayServerConfig> relays;
 
