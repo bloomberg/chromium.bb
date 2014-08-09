@@ -170,8 +170,9 @@ cr.define('print_preview', function() {
      * the custom input is empty.
      * @private
      */
-    onCustomInputBlur_: function() {
-      if (this.customInput_.value == '') {
+    onCustomInputBlur_: function(event) {
+      if (this.customInput_.value == '' &&
+          event.relatedTarget != this.customRadio_) {
         this.allRadio_.checked = true;
       }
     },
