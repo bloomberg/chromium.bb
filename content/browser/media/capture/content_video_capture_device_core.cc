@@ -75,9 +75,14 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   if (!client_)
     return false;  // Capture is stopped.
 
+  // Always round up the coded size to multiples of 16 pixels.
+  // See http://crbug.com/402151.
+  const gfx::Size visible_size = params_.requested_format.frame_size;
+  const gfx::Size coded_size((visible_size.width() + 15) & ~15,
+                             (visible_size.height() + 15) & ~15);
+
   scoped_refptr<media::VideoCaptureDevice::Client::Buffer> output_buffer =
-      client_->ReserveOutputBuffer(video_frame_format_,
-                                   params_.requested_format.frame_size);
+      client_->ReserveOutputBuffer(video_frame_format_, coded_size);
   const bool should_capture =
       oracle_->ObserveEventAndDecideCapture(event, damage_rect, event_time);
   const bool content_is_dirty =
@@ -123,9 +128,9 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   if (video_frame_format_ != media::VideoFrame::NATIVE_TEXTURE) {
     *storage = media::VideoFrame::WrapExternalPackedMemory(
         video_frame_format_,
-        params_.requested_format.frame_size,
-        gfx::Rect(params_.requested_format.frame_size),
-        params_.requested_format.frame_size,
+        coded_size,
+        gfx::Rect(visible_size),
+        visible_size,
         static_cast<uint8*>(output_buffer->data()),
         output_buffer->size(),
         base::SharedMemory::NULLHandle(),
