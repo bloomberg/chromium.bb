@@ -146,10 +146,15 @@ void DistillCurrentPageAndView(content::WebContents* old_web_contents) {
   new_web_contents->GetController().CopyStateFrom(
       old_web_contents->GetController());
 
+  // StartNavigationToDistillerViewer must come before swapping the tab contents
+  // to avoid triggering a reload of the page.  This reloadmakes it very
+  // difficult to distinguish between the intermediate reload and a user hitting
+  // the back button.
+  StartNavigationToDistillerViewer(new_web_contents,
+                                   old_web_contents->GetLastCommittedURL());
+
   CoreTabHelper::FromWebContents(old_web_contents)->delegate()->SwapTabContents(
       old_web_contents, new_web_contents, false, false);
 
-  StartNavigationToDistillerViewer(new_web_contents,
-                                   old_web_contents->GetLastCommittedURL());
   StartDistillation(old_web_contents);
 }
