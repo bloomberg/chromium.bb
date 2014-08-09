@@ -16,6 +16,8 @@
 #include <stdlib.h>
 
 
+extern "C" {
+
 struct _Unwind_Exception;
 
 int __pnacl_eh_sjlj_Unwind_RaiseException(struct _Unwind_Exception *exc);
@@ -52,4 +54,6 @@ void __cxa_call_unexpected(struct _Unwind_Exception *exc) {
  */
 void __gxx_personality_v0() {
   abort();
+}
+
 }

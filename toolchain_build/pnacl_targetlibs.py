@@ -446,7 +446,7 @@ def BitcodeLibs(host, bias_arch):
               # the native link).
               BuildTargetBitcodeCmd('unwind_stubs.c', 'unwind_stubs.bc',
                                     bias_arch),
-              BuildTargetBitcodeCmd('sjlj_eh_redirect.c',
+              BuildTargetBitcodeCmd('sjlj_eh_redirect.cc',
                                     'sjlj_eh_redirect.bc', bias_arch),
               # libpnaclmm.a (__atomic_* library functions).
               BuildTargetBitcodeCmd('pnaclmm.c', 'pnaclmm.bc', bias_arch),
