@@ -1703,43 +1703,31 @@ TEST_F(TextfieldTest, OverflowInRTLTest) {
 
 TEST_F(TextfieldTest, GetCompositionCharacterBoundsTest) {
   InitTextfield();
-
-  base::string16 str;
-  const uint32 char_count = 10UL;
   ui::CompositionText composition;
-  composition.text = UTF8ToUTF16("0123456789");
+  composition.text = UTF8ToUTF16("abc123");
+  const uint32 char_count = static_cast<uint32>(composition.text.length());
   ui::TextInputClient* client = textfield_->GetTextInputClient();
 
-  // Return false if there is no composition text.
-  gfx::Rect rect;
-  EXPECT_FALSE(client->GetCompositionCharacterBounds(0, &rect));
-
-  // Get each character boundary by cursor.
-  gfx::Rect char_rect_in_screen_coord[char_count];
-  gfx::Rect prev_cursor = GetCursorBounds();
+  // Compare the composition character bounds with surrounding cursor bounds.
   for (uint32 i = 0; i < char_count; ++i) {
-    composition.selection = gfx::Range(0, i+1);
+    composition.selection = gfx::Range(i);
     client->SetCompositionText(composition);
-    EXPECT_TRUE(client->HasCompositionText()) << " i=" << i;
-    gfx::Rect cursor_bounds = GetCursorBounds();
-    gfx::Point top_left(prev_cursor.x(), prev_cursor.y());
-    gfx::Point bottom_right(cursor_bounds.x(), prev_cursor.bottom());
-    views::View::ConvertPointToScreen(textfield_, &top_left);
-    views::View::ConvertPointToScreen(textfield_, &bottom_right);
-    char_rect_in_screen_coord[i].set_origin(top_left);
-    char_rect_in_screen_coord[i].set_width(bottom_right.x() - top_left.x());
-    char_rect_in_screen_coord[i].set_height(bottom_right.y() - top_left.y());
-    prev_cursor = cursor_bounds;
-  }
+    gfx::Point cursor_origin = GetCursorBounds().origin();
+    views::View::ConvertPointToScreen(textfield_, &cursor_origin);
 
-  for (uint32 i = 0; i < char_count; ++i) {
-    gfx::Rect actual_rect;
-    EXPECT_TRUE(client->GetCompositionCharacterBounds(i, &actual_rect))
-        << " i=" << i;
-    EXPECT_EQ(char_rect_in_screen_coord[i], actual_rect) << " i=" << i;
+    composition.selection = gfx::Range(i + 1);
+    client->SetCompositionText(composition);
+    gfx::Point next_cursor_bottom_left = GetCursorBounds().bottom_left();
+    views::View::ConvertPointToScreen(textfield_, &next_cursor_bottom_left);
+
+    gfx::Rect character;
+    EXPECT_TRUE(client->GetCompositionCharacterBounds(i, &character));
+    EXPECT_EQ(character.origin(), cursor_origin) << " i=" << i;
+    EXPECT_EQ(character.bottom_right(), next_cursor_bottom_left) << " i=" << i;
   }
 
   // Return false if the index is out of range.
+  gfx::Rect rect;
   EXPECT_FALSE(client->GetCompositionCharacterBounds(char_count, &rect));
   EXPECT_FALSE(client->GetCompositionCharacterBounds(char_count + 1, &rect));
   EXPECT_FALSE(client->GetCompositionCharacterBounds(char_count + 100, &rect));
