@@ -3426,6 +3426,78 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.HeaderTamperDetectionHTTP">
+  <owner>xingx@chromium.org</owner>
+  <owner>bolian@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    For each carrier, the total number of HTTP responses that have been checked
+    for tampering. This assumes the data reduction proxy injected fingerprints
+    have not been tampered with. Only the data reduction proxy responses with
+    200 OK response code are checked.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.HeaderTamperDetectionHTTPS">
+  <owner>xingx@chromium.org</owner>
+  <owner>bolian@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    For each carrier, the total number of HTTPS responses that have been checked
+    for tampering. This assumes the data reduction proxy injected fingerprints
+    have not been tampered with. Only the data reduction proxy responses with
+    200 OK response code are checked.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.HeaderTamperDetectionPassHTTP">
+  <owner>xingx@chromium.org</owner>
+  <owner>bolian@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    For each carrier, the total number of HTTP responses that passed the tamper
+    detection. This assumes the data reduction proxy injected fingerprints have
+    not been tampered with. Only the data reduction proxy responses with 200 OK
+    response code are checked.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.HeaderTamperDetectionPassHTTPS">
+  <owner>xingx@chromium.org</owner>
+  <owner>bolian@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    For each carrier, the total number of HTTPs responses that passed the tamper
+    detection. This assumes the data reduction proxy injected fingerprints have
+    not been tampered with. Only the data reduction proxy responses with 200 OK
+    response code are checked.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.HeaderTamperedHTTP">
+  <owner>xingx@chromium.org</owner>
+  <owner>bolian@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The total number of HTTP responses that some part (specified by suffix name)
+    have been tampered with. This assumes the data reduction proxy injected
+    fingerprints have not been tampered with. Only the data reduction proxy
+    responses with 200 OK response code are checked.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.HeaderTamperedHTTPS">
+  <owner>xingx@chromium.org</owner>
+  <owner>bolian@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The total number of HTTPS responses that some part (specified by suffix
+    name) have been tampered with. This assumes the data reduction proxy
+    injected fingerprints have not been tampered with. Only the data reduction
+    proxy responses with 200 OK response code are checked.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.NetworkChangeEvents"
     enum="DataReductionProxyNetworkChangeEvent">
   <owner>bengr@chromium.org</owner>
@@ -50206,6 +50278,78 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <affected-histogram name="PLT.PT_RequestToStart"/>
   <affected-histogram name="PLT.PT_StartToCommit"/>
   <affected-histogram name="PLT.PT_StartToFinish"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="DataReductionProxy_TamperingFingerprints"
+    separator="_">
+  <suffix name="ChromeProxy"
+      label="for each carrier, number of tamperings detected on Chrome-Proxy
+             header"/>
+  <suffix name="ContentLength"
+      label="for each carrier, total number of responses whose Content-Length
+             header has been tampered with"/>
+  <suffix name="ContentLength_CSS"
+      label="for each carrier, number of CSS responses whose Content-Length
+             header has been tampered with"/>
+  <suffix name="ContentLength_Image"
+      label="for each carrier, number of image responses whose Content-Length
+             header has been tampered with"/>
+  <suffix name="ContentLength_JS"
+      label="for each carrier, number of JavaScript responses whose
+             Content-Length header has been tampered with"/>
+  <suffix name="ContentLength_Other"
+      label="for each carrier, number of other type responses whose
+             Content-Length header has been tampered with"/>
+  <suffix name="OtherHeaders"
+      label="for each carrier, number of tamperings detected on a list of
+             headers"/>
+  <suffix name="Via"
+      label="for each carrier, number of tamperings detected on Via header"/>
+  <suffix name="Via_Missing"
+      label="for each carrier, number of responses whose data reduction
+             proxy's Via header is missing"/>
+  <affected-histogram name="DataReductionProxy.HeaderTamperedHTTP"/>
+  <affected-histogram name="DataReductionProxy.HeaderTamperedHTTPS"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="DataReductionProxy_TamperingTotal" separator="_">
+  <suffix name="Total" label="total number of tamperings detected"/>
+  <affected-histogram name="DataReductionProxy.HeaderTamperDetectionHTTP"/>
+  <affected-histogram name="DataReductionProxy.HeaderTamperDetectionHTTPS"/>
+  <affected-histogram name="DataReductionProxy.HeaderTamperDetectionPassHTTP"/>
+  <affected-histogram name="DataReductionProxy.HeaderTamperDetectionPassHTTPS"/>
+  <affected-histogram name="DataReductionProxy.HeaderTamperedHTTP_ChromeProxy"/>
+  <affected-histogram
+      name="DataReductionProxy.HeaderTamperedHTTP_ContentLength"/>
+  <affected-histogram
+      name="DataReductionProxy.HeaderTamperedHTTP_ContentLength_CSS"/>
+  <affected-histogram
+      name="DataReductionProxy.HeaderTamperedHTTP_ContentLength_Image"/>
+  <affected-histogram
+      name="DataReductionProxy.HeaderTamperedHTTP_ContentLength_JS"/>
+  <affected-histogram
+      name="DataReductionProxy.HeaderTamperedHTTP_ContentLength_Other"/>
+  <affected-histogram
+      name="DataReductionProxy.HeaderTamperedHTTP_OtherHeaders"/>
+  <affected-histogram name="DataReductionProxy.HeaderTamperedHTTP_Via"/>
+  <affected-histogram name="DataReductionProxy.HeaderTamperedHTTP_Via_Missing"/>
+  <affected-histogram
+      name="DataReductionProxy.HeaderTamperedHTTPS_ChromeProxy"/>
+  <affected-histogram
+      name="DataReductionProxy.HeaderTamperedHTTPS_ContentLength"/>
+  <affected-histogram
+      name="DataReductionProxy.HeaderTamperedHTTPS_ContentLength_CSS"/>
+  <affected-histogram
+      name="DataReductionProxy.HeaderTamperedHTTPS_ContentLength_Image"/>
+  <affected-histogram
+      name="DataReductionProxy.HeaderTamperedHTTPS_ContentLength_JS"/>
+  <affected-histogram
+      name="DataReductionProxy.HeaderTamperedHTTPS_ContentLength_Other"/>
+  <affected-histogram
+      name="DataReductionProxy.HeaderTamperedHTTPS_OtherHeaders"/>
+  <affected-histogram name="DataReductionProxy.HeaderTamperedHTTPS_Via"/>
+  <affected-histogram
+      name="DataReductionProxy.HeaderTamperedHTTPS_Via_Missing"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="DataReductionProxyBypassedBytes" separator=".">

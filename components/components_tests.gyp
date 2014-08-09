@@ -82,6 +82,7 @@
             'data_reduction_proxy/browser/data_reduction_proxy_params_unittest.cc',
             'data_reduction_proxy/browser/data_reduction_proxy_protocol_unittest.cc',
             'data_reduction_proxy/browser/data_reduction_proxy_settings_unittest.cc',
+            'data_reduction_proxy/browser/data_reduction_proxy_tamper_detection_unittest.cc',
             'data_reduction_proxy/browser/data_reduction_proxy_usage_stats_unittest.cc',
             'data_reduction_proxy/common/data_reduction_proxy_headers_unittest.cc',
             'dom_distiller/core/article_entry_unittest.cc',
