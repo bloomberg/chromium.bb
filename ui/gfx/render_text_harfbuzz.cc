@@ -658,8 +658,6 @@ SelectionModel RenderTextHarfBuzz::AdjacentCharSelectionModel(
 SelectionModel RenderTextHarfBuzz::AdjacentWordSelectionModel(
     const SelectionModel& selection,
     VisualCursorDirection direction) {
-  // TODO(ckocagil): This implementation currently matches RenderTextWin, but it
-  // should match the native behavior on other platforms.
   if (obscured())
     return EdgeSelectionModel(direction);
 
@@ -669,6 +667,8 @@ SelectionModel RenderTextHarfBuzz::AdjacentWordSelectionModel(
   if (!success)
     return selection;
 
+  // Match OS specific word break behavior.
+#if defined(OS_WIN)
   size_t pos;
   if (direction == CURSOR_RIGHT) {
     pos = std::min(selection.caret_pos() + 1, text().length());
@@ -701,6 +701,20 @@ SelectionModel RenderTextHarfBuzz::AdjacentWordSelectionModel(
     }
   }
   return SelectionModel(pos, CURSOR_FORWARD);
+#else
+  SelectionModel cur(selection);
+  for (;;) {
+    cur = AdjacentCharSelectionModel(cur, direction);
+    size_t run = GetRunContainingCaret(cur);
+    if (run == runs_.size())
+      break;
+    const bool is_forward = runs_[run]->is_rtl == (direction == CURSOR_LEFT);
+    size_t cursor = cur.caret_pos();
+    if (is_forward ? iter.IsEndOfWord(cursor) : iter.IsStartOfWord(cursor))
+      break;
+  }
+  return cur;
+#endif
 }
 
 std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {

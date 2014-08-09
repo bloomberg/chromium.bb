@@ -426,8 +426,8 @@ RenderText* RenderText::CreateInstance() {
   // Use the more complete HarfBuzz implementation for Views controls on Mac.
   return new RenderTextHarfBuzz;
 #else
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableHarfBuzzRenderText)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableHarfBuzzRenderText)) {
     return new RenderTextHarfBuzz;
   }
   return CreateNativeInstance();

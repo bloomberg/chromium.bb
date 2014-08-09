@@ -186,7 +186,7 @@ TEST_F(RenderTextTest, ApplyColorAndStyle) {
 
 #if defined(OS_LINUX) && !defined(USE_OZONE)
 TEST_F(RenderTextTest, PangoAttributes) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  scoped_ptr<RenderText> render_text(RenderText::CreateNativeInstance());
   render_text->SetText(ASCIIToUTF16("012345678"));
 
   // Apply ranged BOLD/ITALIC styles and check the resulting Pango attributes.

@@ -579,6 +579,7 @@ class GFX_EXPORT RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Win_LogicalClusters);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, SameFontForParentheses);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, BreakRunsByUnicodeBlocks);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, PangoAttributes);
 
   // Creates a platform-specific RenderText instance.
   static RenderText* CreateNativeInstance();
