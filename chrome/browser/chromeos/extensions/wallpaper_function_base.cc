@@ -6,8 +6,8 @@
 
 #include "base/synchronization/cancellation_flag.h"
 #include "chrome/browser/image_decoder.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/login/login_state.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;

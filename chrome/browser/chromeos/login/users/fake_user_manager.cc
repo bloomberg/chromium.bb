@@ -6,9 +6,9 @@
 
 #include "chrome/browser/chromeos/login/users/fake_supervised_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_type.h"
-#include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {

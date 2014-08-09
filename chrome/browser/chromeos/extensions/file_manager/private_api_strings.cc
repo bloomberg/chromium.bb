@@ -7,12 +7,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/file_manager/open_with_browser.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/system/statistics_provider.h"
 #include "extensions/common/extension_l10n_util.h"
-#include "grit/app_locale_settings.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/strings/grit/app_locale_settings.h"
 
 namespace {
 

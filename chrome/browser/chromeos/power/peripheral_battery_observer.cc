@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
@@ -16,12 +17,11 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/grit/theme_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "grit/ash_strings.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"

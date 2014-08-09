@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/ui/echo_dialog_view.h"
 
 #include "chrome/browser/chromeos/ui/echo_dialog_listener.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"
 #include "ui/views/border.h"

@@ -16,13 +16,13 @@
 #include "chrome/browser/browser_process.h"  // g_browser_process
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/x509_certificate_model.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/nss_util.h"
-#include "grit/generated_resources.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/nss_cert_database.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"  // icu::Collator

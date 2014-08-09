@@ -2,6 +2,7 @@ include_rules = [
   "+apps",
   "+ash",
   "+chrome/app",
+  "+chrome/grit",  # For generated headers
   "+chrome/installer",
   "+chrome_elf/blacklist",
   "+chrome_elf/chrome_elf_constants.h",
@@ -77,7 +78,7 @@ include_rules = [
   "+google/cacheinvalidation",  # Sync invalidation API protobuf files.
   "+google_apis",
   "+google_update",
-  "+grit",  # For generated headers
+  "+grit",  # TODO(thestig) Remove. For generated headers
   "+installer_util_strings",  # For generated headers
   "+jni",
   "+media/base",  # For media switches

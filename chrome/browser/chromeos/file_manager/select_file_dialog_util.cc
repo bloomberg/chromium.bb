@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/file_manager/select_file_dialog_util.h"
 
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace file_manager {

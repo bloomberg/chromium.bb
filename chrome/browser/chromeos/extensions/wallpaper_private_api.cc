@@ -27,14 +27,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
+#include "chrome/grit/platform_locale_settings.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
-#include "grit/app_locale_settings.h"
-#include "grit/generated_resources.h"
-#include "grit/platform_locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/strings/grit/app_locale_settings.h"
 #include "url/gurl.h"
 
 using base::BinaryValue;

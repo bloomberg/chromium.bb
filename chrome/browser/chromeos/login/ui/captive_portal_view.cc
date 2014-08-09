@@ -6,12 +6,12 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/ui/captive_portal_window_proxy.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "url/gurl.h"

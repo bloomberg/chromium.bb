@@ -1,6 +1,7 @@
 include_rules = [
   "-chrome",
   "+chrome/browser/chromeos/input_method",
+  "+chrome/grit",
   "-content",
 ]
 

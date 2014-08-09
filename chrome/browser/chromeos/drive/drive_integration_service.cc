@@ -37,6 +37,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -46,7 +47,6 @@
 #include "content/public/common/user_agent.h"
 #include "google_apis/drive/auth_service.h"
 #include "google_apis/drive/gdata_wapi_url_generator.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 

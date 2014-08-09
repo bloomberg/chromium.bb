@@ -6,8 +6,10 @@
 
 #include <algorithm>
 
+#include "ash/resources/grit/ash_resources.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/chromeos/network/network_connect.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -21,18 +23,16 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "grit/ash_resources.h"
-#include "grit/ash_strings.h"
-#include "grit/generated_resources.h"
-#include "grit/ui_chromeos_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/network/network_icon.h"
+#include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
