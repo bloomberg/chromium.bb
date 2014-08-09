@@ -18,7 +18,7 @@ deps = {
     'src/breakpad/src':
         Var('git_url') + '/external/google-breakpad/src.git@17f614cd8365f5b78577ffcc237300a970db9813',
     'src/buildtools':
-        Var('git_url') + '/chromium/buildtools.git@59b93247766e1cdac6e482637ad493df38f7aeb7',
+        Var('git_url') + '/chromium/buildtools.git@33f3e1c4e0d125641524c0a5955594b1c22c804a',
     'src/chrome/browser/resources/pdf/html_office':
         Var('git_url') + '/chromium/html-office-public.git@eeff97614f65e0578529490d44d412032c3d7359',
     'src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin':
