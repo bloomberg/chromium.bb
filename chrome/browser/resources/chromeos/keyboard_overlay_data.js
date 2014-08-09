@@ -15872,7 +15872,6 @@ var keyboardOverlayData = {
     'left<>CTRL<>SHIFT': 'keyboardOverlaySelectWordAtATime',
     'left<>SEARCH': 'keyboardOverlayHome',
     'm<>ALT<>SHIFT': 'keyboardOverlayOpenFileManager',
-    'm<>CTRL': 'keyboardOverlayMinimizeWindow',
     'mute<>SEARCH': 'keyboardOverlayF8',
     'n<>ALT<>SHIFT': 'keyboardOverlayShowMessageCenter',
     'n<>CTRL': 'keyboardOverlayNewWindow',

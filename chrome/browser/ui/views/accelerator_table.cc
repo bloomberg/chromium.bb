@@ -154,8 +154,6 @@ const AcceleratorMapping kAcceleratorMap[] = {
     IDC_HELP_PAGE_VIA_KEYBOARD },
   { ui::VKEY_BROWSER_FAVORITES, ui::EF_NONE, IDC_SHOW_BOOKMARK_MANAGER },
   { ui::VKEY_BROWSER_STOP, ui::EF_NONE, IDC_STOP },
-  // Not implemented inside Ash to allow web pages to capture the key.
-  { ui::VKEY_M, ui::EF_CONTROL_DOWN, IDC_MINIMIZE_WINDOW },
 #else  // OS_CHROMEOS
   { ui::VKEY_DELETE, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     IDC_CLEAR_BROWSING_DATA },

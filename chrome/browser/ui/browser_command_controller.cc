@@ -464,13 +464,6 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_TOGGLE_ASH_DESKTOP:
       chrome::ToggleAshDesktop();
       break;
-    case IDC_MINIMIZE_WINDOW:
-      content::RecordAction(
-          base::UserMetricsAction("Accel_Toggle_Minimized_M"));
-      ash::accelerators::ToggleMinimized();
-      break;
-    // If Ash needs many more commands here we should implement a general
-    // mechanism to pass accelerators back into Ash. http://crbug.com/285308
 #endif
 
 #if defined(OS_CHROMEOS)
