@@ -140,6 +140,24 @@ BroadcastScanConfiguration ExtractTokenExchangeStrategy(
   return BROADCAST_AND_SCAN;
 }
 
+// TODO(rkc): Fix this hack once the server supports setting strategies per
+// operation.
+bool ExtractIsAudibleStrategy(const ReportRequest& request) {
+  if (request.has_manage_messages_request()) {
+    const RepeatedPtrField<PublishedMessage> messages =
+        request.manage_messages_request().message_to_publish();
+    for (int i = 0; i < messages.size(); ++i) {
+      const PublishedMessage& msg = messages.Get(i);
+      if (msg.has_token_exchange_strategy() &&
+          msg.token_exchange_strategy().has_use_audible() &&
+          msg.token_exchange_strategy().use_audible()) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 scoped_ptr<DeviceState> GetDeviceCapabilities(const ReportRequest& request) {
   scoped_ptr<DeviceState> state(new DeviceState);
 
@@ -148,6 +166,8 @@ scoped_ptr<DeviceState> GetDeviceCapabilities(const ReportRequest& request) {
   TokenTechnology* token_technology =
       state->mutable_capabilities()->add_token_technology();
   token_technology->set_medium(AUDIO_ULTRASOUND_PASSBAND);
+  if (ExtractIsAudibleStrategy(request))
+    token_technology->set_medium(AUDIO_AUDIBLE_DTMF);
 
   BroadcastScanConfiguration config =
       ExtractTokenExchangeStrategy(request);
@@ -479,11 +499,12 @@ void RpcHandler::SendHttpPost(net::URLRequestContextGetter* url_context_getter,
 
 void RpcHandler::AudioDirectiveListToWhispernetConnector(
     const std::string& token,
+    bool audible,
     const WhispernetClient::SamplesCallback& samples_callback) {
   WhispernetClient* whispernet_client = delegate_->GetWhispernetClient();
   if (whispernet_client) {
     whispernet_client->RegisterSamplesCallback(samples_callback);
-    whispernet_client->EncodeToken(token, false);
+    whispernet_client->EncodeToken(token, audible);
   }
 }
 

@@ -73,6 +73,8 @@ bool AddPublishToRequest(const std::string& app_id,
       copresence::TokenExchangeStrategy* strategy_proto =
           publish_proto->mutable_token_exchange_strategy();
       strategy_proto->set_broadcast_scan_configuration(config);
+      if (publish.strategies->audible && *publish.strategies->audible)
+        strategy_proto->set_use_audible(true);
     }
   }
 

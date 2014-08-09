@@ -47,6 +47,7 @@ class AudioDirectiveHandlerTest : public testing::Test {
 
  protected:
   void EncodeToken(const std::string& token,
+                   bool /* audible */,
                    const AudioDirectiveList::SamplesCallback& callback) {
     callback.Run(token, CreateRandomAudioRefCounted(0x1337, 1, 0x7331));
   }

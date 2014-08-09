@@ -19,12 +19,14 @@ class AudioDirectiveListTest : public testing::Test {
       : directive_list_(new AudioDirectiveList(
             base::Bind(&AudioDirectiveListTest::EncodeToken,
                        base::Unretained(this)),
-            base::Bind(&base::DoNothing))) {}
+            base::Bind(&base::DoNothing),
+            false)) {}
 
   virtual ~AudioDirectiveListTest() {}
 
  protected:
   void EncodeToken(const std::string& token,
+                   bool /* audible */,
                    const AudioDirectiveList::SamplesCallback& callback) {
     callback.Run(token, CreateRandomAudioRefCounted(0x1337, 1, 0x7331));
   }

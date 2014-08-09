@@ -51,9 +51,11 @@ AudioDirective::~AudioDirective() {
 
 AudioDirectiveList::AudioDirectiveList(
     const EncodeTokenCallback& encode_token_callback,
-    const base::Closure& token_added_callback)
+    const base::Closure& token_added_callback,
+    bool use_audible_encoding)
     : encode_token_callback_(encode_token_callback),
       token_added_callback_(token_added_callback),
+      use_audible_encoding_(use_audible_encoding),
       samples_cache_(base::TimeDelta::FromMilliseconds(kSampleExpiryTimeMs),
                      kMaxSamples) {
 }
@@ -85,6 +87,7 @@ void AudioDirectiveList::AddTransmitDirective(const std::string& token,
   // unretained is safe to use here.
   encode_token_callback_.Run(
       valid_token,
+      use_audible_encoding_,
       base::Bind(&AudioDirectiveList::OnTokenEncoded, base::Unretained(this)));
 }
 

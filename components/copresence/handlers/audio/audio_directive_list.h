@@ -55,11 +55,12 @@ class AudioDirectiveList {
   typedef base::Callback<
       void(const std::string&, const scoped_refptr<media::AudioBusRefCounted>&)>
       SamplesCallback;
-  typedef base::Callback<void(const std::string&, const SamplesCallback&)>
+  typedef base::Callback<void(const std::string&, bool, const SamplesCallback&)>
       EncodeTokenCallback;
 
   AudioDirectiveList(const EncodeTokenCallback& encode_token_callback,
-                     const base::Closure& token_added_callback);
+                     const base::Closure& token_added_callback,
+                     bool use_audible_encoding);
   virtual ~AudioDirectiveList();
 
   // Adds a token to the token queue, after getting its corresponding samples
@@ -106,8 +107,8 @@ class AudioDirectiveList {
   AudioDirectiveQueue active_receive_tokens_;
 
   EncodeTokenCallback encode_token_callback_;
-
   base::Closure token_added_callback_;
+  const bool use_audible_encoding_;
 
   // Cache that holds the encoded samples. After reaching its limit, the cache
   // expires the oldest samples first.

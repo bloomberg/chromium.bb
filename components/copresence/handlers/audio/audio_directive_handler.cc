@@ -4,6 +4,8 @@
 
 #include "components/copresence/handlers/audio/audio_directive_handler.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -20,9 +22,16 @@ namespace copresence {
 AudioDirectiveHandler::AudioDirectiveHandler(
     const AudioRecorder::DecodeSamplesCallback& decode_cb,
     const AudioDirectiveList::EncodeTokenCallback& encode_cb)
-    : directive_list_(encode_cb,
-                      base::Bind(&AudioDirectiveHandler::ExecuteNextTransmit,
-                                 base::Unretained(this))),
+    : directive_list_inaudible_(
+          encode_cb,
+          base::Bind(&AudioDirectiveHandler::ExecuteNextTransmit,
+                     base::Unretained(this)),
+          false),
+      directive_list_audible_(
+          encode_cb,
+          base::Bind(&AudioDirectiveHandler::ExecuteNextTransmit,
+                     base::Unretained(this)),
+          true),
       player_(NULL),
       recorder_(NULL),
       decode_cb_(decode_cb) {
@@ -51,14 +60,33 @@ void AudioDirectiveHandler::AddInstruction(const TokenInstruction& instruction,
                << instruction.token_id()
                << " with TTL=" << ttl.InMilliseconds();
       // TODO(rkc): Fill in the op_id once we get it from the directive.
-      directive_list_.AddTransmitDirective(
-          instruction.token_id(), std::string(), ttl);
+      switch (instruction.medium()) {
+        case AUDIO_ULTRASOUND_PASSBAND:
+          directive_list_inaudible_.AddTransmitDirective(
+              instruction.token_id(), std::string(), ttl);
+          break;
+        case AUDIO_AUDIBLE_DTMF:
+          directive_list_audible_.AddTransmitDirective(
+              instruction.token_id(), std::string(), ttl);
+          break;
+        default:
+          NOTREACHED();
+      }
       break;
     case RECEIVE:
       DVLOG(2) << "Audio Receive Directive received. TTL="
                << ttl.InMilliseconds();
       // TODO(rkc): Fill in the op_id once we get it from the directive.
-      directive_list_.AddReceiveDirective(std::string(), ttl);
+      switch (instruction.medium()) {
+        case AUDIO_ULTRASOUND_PASSBAND:
+          directive_list_inaudible_.AddReceiveDirective(std::string(), ttl);
+          break;
+        case AUDIO_AUDIBLE_DTMF:
+          directive_list_audible_.AddReceiveDirective(std::string(), ttl);
+          break;
+        default:
+          NOTREACHED();
+      }
       break;
     case UNKNOWN_TOKEN_INSTRUCTION_TYPE:
     default:
@@ -99,15 +127,37 @@ void AudioDirectiveHandler::StopRecording() {
 }
 
 void AudioDirectiveHandler::ExecuteNextTransmit() {
-  scoped_ptr<AudioDirective> transmit(directive_list_.GetNextTransmit());
-  if (transmit)
-    PlayAudio(transmit->samples, transmit->end_time - base::Time::Now());
+  scoped_ptr<AudioDirective> audible_transmit(
+      directive_list_audible_.GetNextTransmit());
+  scoped_ptr<AudioDirective> inaudible_transmit(
+      directive_list_inaudible_.GetNextTransmit());
+
+  if (inaudible_transmit) {
+    PlayAudio(inaudible_transmit->samples,
+              inaudible_transmit->end_time - base::Time::Now());
+  }
+  if (audible_transmit) {
+    PlayAudio(audible_transmit->samples,
+              audible_transmit->end_time - base::Time::Now());
+  }
 }
 
 void AudioDirectiveHandler::ExecuteNextReceive() {
-  scoped_ptr<AudioDirective> receive(directive_list_.GetNextReceive());
-  if (receive)
-    RecordAudio(receive->end_time - base::Time::Now());
+  scoped_ptr<AudioDirective> audible_receive(
+      directive_list_audible_.GetNextReceive());
+  scoped_ptr<AudioDirective> inaudible_receive(
+      directive_list_inaudible_.GetNextReceive());
+
+  base::TimeDelta record_duration;
+  if (inaudible_receive)
+    record_duration = inaudible_receive->end_time - base::Time::Now();
+  if (audible_receive) {
+    record_duration = std::max(record_duration,
+                               audible_receive->end_time - base::Time::Now());
+  }
+
+  if (record_duration > base::TimeDelta::FromSeconds(0))
+    RecordAudio(record_duration);
 }
 
 }  // namespace copresence

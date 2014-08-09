@@ -56,7 +56,8 @@ class AudioDirectiveHandler {
   // Execute the next active receive instruction.
   void ExecuteNextReceive();
 
-  AudioDirectiveList directive_list_;
+  AudioDirectiveList directive_list_inaudible_;
+  AudioDirectiveList directive_list_audible_;
 
   // The next two pointers are self-deleting. When we call Finalize on them,
   // they clean themselves up on the Audio thread.
