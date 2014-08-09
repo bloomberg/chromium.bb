@@ -88,8 +88,10 @@ ObjectIdInvalidationMap UnackedInvalidationsMapToObjectIdInvalidationMap(
   ObjectIdInvalidationMap object_id_invalidation_map;
   for (UnackedInvalidationsMap::const_iterator it = state_map.begin();
        it != state_map.end(); ++it) {
-    it->second.ExportInvalidations(syncer::WeakHandle<AckHandler>(),
-                                   &object_id_invalidation_map);
+    it->second.ExportInvalidations(
+        base::WeakPtr<AckHandler>(),
+        scoped_refptr<base::SingleThreadTaskRunner>(),
+        &object_id_invalidation_map);
   }
   return object_id_invalidation_map;
 }

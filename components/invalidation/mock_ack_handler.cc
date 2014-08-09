@@ -4,6 +4,7 @@
 
 #include "components/invalidation/mock_ack_handler.h"
 
+#include "base/message_loop/message_loop_proxy.h"
 #include "components/invalidation/ack_handle.h"
 #include "components/invalidation/invalidation.h"
 
@@ -34,7 +35,7 @@ MockAckHandler::~MockAckHandler() {}
 
 void MockAckHandler::RegisterInvalidation(Invalidation* invalidation) {
   unacked_invalidations_.push_back(*invalidation);
-  invalidation->set_ack_handler(WeakHandleThis());
+  invalidation->SetAckHandler(AsWeakPtr(), base::MessageLoopProxy::current());
 }
 
 void MockAckHandler::RegisterUnsentInvalidation(Invalidation* invalidation) {
@@ -114,10 +115,6 @@ void MockAckHandler::Drop(
   }
   unrecovered_drop_events_.erase(id);
   unrecovered_drop_events_.insert(std::make_pair(id, handle));
-}
-
-WeakHandle<AckHandler> MockAckHandler::WeakHandleThis() {
-  return WeakHandle<AckHandler>(AsWeakPtr());
 }
 
 }  // namespace syncer

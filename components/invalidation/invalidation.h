@@ -9,11 +9,12 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "components/invalidation/ack_handle.h"
 #include "components/invalidation/invalidation_export.h"
 #include "google/cacheinvalidation/include/types.h"
-#include "sync/internal_api/public/util/weak_handle.h"
 
 namespace syncer {
 
@@ -57,7 +58,9 @@ class INVALIDATION_EXPORT Invalidation {
   //
   // Note that some sources of invalidations do not support ack tracking, and do
   // not set the ack_handler.  This will be hidden from users of this class.
-  void set_ack_handler(syncer::WeakHandle<AckHandler> ack_handler);
+  void SetAckHandler(
+      base::WeakPtr<AckHandler> handler,
+      scoped_refptr<base::SequencedTaskRunner> handler_task_runner);
 
   // Returns whether or not this instance supports ack tracking.  This will
   // depend on whether or not the source of invaliadations supports
@@ -113,7 +116,10 @@ class INVALIDATION_EXPORT Invalidation {
 
   // A locally generated unique ID used to manage local acknowledgements.
   AckHandle ack_handle_;
-  syncer::WeakHandle<AckHandler> ack_handler_;
+
+  // The acknowledgement tracking handler and its thread.
+  base::WeakPtr<AckHandler> ack_handler_;
+  scoped_refptr<base::SequencedTaskRunner> ack_handler_task_runner_;
 };
 
 }  // namespace syncer

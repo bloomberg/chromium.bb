@@ -20,7 +20,6 @@
 #include "google/cacheinvalidation/include/invalidation-client.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "jingle/notifier/listener/fake_push_client.h"
-#include "sync/internal_api/public/util/weak_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -292,12 +291,15 @@ class SyncInvalidationListenerTest : public testing::Test {
 
   void StartClient() {
     fake_invalidation_client_ = NULL;
-    listener_.Start(base::Bind(&CreateFakeInvalidationClient,
-                               &fake_invalidation_client_),
-                    kClientId, kClientInfo, kState,
-                    fake_tracker_.GetSavedInvalidations(),
-                    MakeWeakHandle(fake_tracker_.AsWeakPtr()),
-                    &fake_delegate_);
+    listener_.Start(
+        base::Bind(&CreateFakeInvalidationClient, &fake_invalidation_client_),
+        kClientId,
+        kClientInfo,
+        kState,
+        fake_tracker_.GetSavedInvalidations(),
+        fake_tracker_.AsWeakPtr(),
+        base::MessageLoopProxy::current(),
+        &fake_delegate_);
     DCHECK(fake_invalidation_client_);
   }
 
@@ -376,7 +378,10 @@ class SyncInvalidationListenerTest : public testing::Test {
       return SingleObjectInvalidationSet();
     }
     ObjectIdInvalidationMap map;
-    it->second.ExportInvalidations(WeakHandle<AckHandler>(), &map);
+    it->second.ExportInvalidations(
+        base::WeakPtr<AckHandler>(),
+        scoped_refptr<base::SingleThreadTaskRunner>(),
+        &map);
     if (map.Empty()) {
       return SingleObjectInvalidationSet();
     } else  {

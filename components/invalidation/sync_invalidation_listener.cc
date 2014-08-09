@@ -48,12 +48,14 @@ SyncInvalidationListener::~SyncInvalidationListener() {
 }
 
 void SyncInvalidationListener::Start(
-    const CreateInvalidationClientCallback&
-        create_invalidation_client_callback,
-    const std::string& client_id, const std::string& client_info,
+    const CreateInvalidationClientCallback& create_invalidation_client_callback,
+    const std::string& client_id,
+    const std::string& client_info,
     const std::string& invalidation_bootstrap_data,
     const UnackedInvalidationsMap& initial_unacked_invalidations,
-    const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
+    const base::WeakPtr<InvalidationStateTracker>& invalidation_state_tracker,
+    const scoped_refptr<base::SequencedTaskRunner>&
+        invalidation_state_tracker_task_runner,
     Delegate* delegate) {
   DCHECK(CalledOnValidThread());
   Stop();
@@ -69,7 +71,9 @@ void SyncInvalidationListener::Start(
 
   unacked_invalidations_map_ = initial_unacked_invalidations;
   invalidation_state_tracker_ = invalidation_state_tracker;
-  DCHECK(invalidation_state_tracker_.IsInitialized());
+  invalidation_state_tracker_task_runner_ =
+      invalidation_state_tracker_task_runner;
+  DCHECK(invalidation_state_tracker_task_runner_);
 
   DCHECK(!delegate_);
   DCHECK(delegate);
@@ -133,7 +137,7 @@ void SyncInvalidationListener::Invalidate(
 
   ObjectIdInvalidationMap invalidations;
   Invalidation inv = Invalidation::Init(id, invalidation.version(), payload);
-  inv.set_ack_handler(GetThisAsAckHandler());
+  inv.SetAckHandler(AsWeakPtr(), base::MessageLoopProxy::current());
   invalidations.Insert(inv);
 
   DispatchInvalidations(invalidations);
@@ -150,7 +154,7 @@ void SyncInvalidationListener::InvalidateUnknownVersion(
 
   ObjectIdInvalidationMap invalidations;
   Invalidation unknown_version = Invalidation::InitUnknownVersion(object_id);
-  unknown_version.set_ack_handler(GetThisAsAckHandler());
+  unknown_version.SetAckHandler(AsWeakPtr(), base::MessageLoopProxy::current());
   invalidations.Insert(unknown_version);
 
   DispatchInvalidations(invalidations);
@@ -170,7 +174,8 @@ void SyncInvalidationListener::InvalidateAll(
   for (ObjectIdSet::iterator it = registered_ids_.begin();
        it != registered_ids_.end(); ++it) {
     Invalidation unknown_version = Invalidation::InitUnknownVersion(*it);
-    unknown_version.set_ack_handler(GetThisAsAckHandler());
+    unknown_version.SetAckHandler(AsWeakPtr(),
+                                  base::MessageLoopProxy::current());
     invalidations.Insert(unknown_version);
   }
 
@@ -204,10 +209,11 @@ void SyncInvalidationListener::SaveInvalidations(
     lookup->second.AddSet(to_save.ForObject(*it));
   }
 
-  invalidation_state_tracker_.Call(
+  invalidation_state_tracker_task_runner_->PostTask(
       FROM_HERE,
-      &InvalidationStateTracker::SetSavedInvalidations,
-      unacked_invalidations_map_);
+      base::Bind(&InvalidationStateTracker::SetSavedInvalidations,
+                 invalidation_state_tracker_,
+                 unacked_invalidations_map_));
 }
 
 void SyncInvalidationListener::EmitSavedInvalidations(
@@ -296,10 +302,11 @@ void SyncInvalidationListener::Acknowledge(
     return;
   }
   lookup->second.Acknowledge(handle);
-  invalidation_state_tracker_.Call(
+  invalidation_state_tracker_task_runner_->PostTask(
       FROM_HERE,
-      &InvalidationStateTracker::SetSavedInvalidations,
-      unacked_invalidations_map_);
+      base::Bind(&InvalidationStateTracker::SetSavedInvalidations,
+                 invalidation_state_tracker_,
+                 unacked_invalidations_map_));
 }
 
 void SyncInvalidationListener::Drop(
@@ -312,17 +319,21 @@ void SyncInvalidationListener::Drop(
     return;
   }
   lookup->second.Drop(handle);
-  invalidation_state_tracker_.Call(
+  invalidation_state_tracker_task_runner_->PostTask(
       FROM_HERE,
-      &InvalidationStateTracker::SetSavedInvalidations,
-      unacked_invalidations_map_);
+      base::Bind(&InvalidationStateTracker::SetSavedInvalidations,
+                 invalidation_state_tracker_,
+                 unacked_invalidations_map_));
 }
 
 void SyncInvalidationListener::WriteState(const std::string& state) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "WriteState";
-  invalidation_state_tracker_.Call(
-      FROM_HERE, &InvalidationStateTracker::SetBootstrapData, state);
+  invalidation_state_tracker_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&InvalidationStateTracker::SetBootstrapData,
+                 invalidation_state_tracker_,
+                 state));
 }
 
 void SyncInvalidationListener::DoRegistrationUpdate() {
@@ -333,10 +344,11 @@ void SyncInvalidationListener::DoRegistrationUpdate() {
        it != unregistered_ids.end(); ++it) {
     unacked_invalidations_map_.erase(*it);
   }
-  invalidation_state_tracker_.Call(
+  invalidation_state_tracker_task_runner_->PostTask(
       FROM_HERE,
-      &InvalidationStateTracker::SetSavedInvalidations,
-      unacked_invalidations_map_);
+      base::Bind(&InvalidationStateTracker::SetSavedInvalidations,
+                 invalidation_state_tracker_,
+                 unacked_invalidations_map_));
 
   ObjectIdInvalidationMap object_id_invalidation_map;
   for (UnackedInvalidationsMap::iterator map_it =
@@ -345,9 +357,9 @@ void SyncInvalidationListener::DoRegistrationUpdate() {
     if (registered_ids_.find(map_it->first) == registered_ids_.end()) {
       continue;
     }
-    map_it->second.ExportInvalidations(
-        GetThisAsAckHandler(),
-        &object_id_invalidation_map);
+    map_it->second.ExportInvalidations(AsWeakPtr(),
+                                       base::MessageLoopProxy::current(),
+                                       &object_id_invalidation_map);
   }
 
   // There's no need to run these through DispatchInvalidations(); they've
@@ -428,9 +440,11 @@ void SyncInvalidationListener::EmitStateChange() {
   delegate_->OnInvalidatorStateChange(GetState());
 }
 
-WeakHandle<AckHandler> SyncInvalidationListener::GetThisAsAckHandler() {
+base::WeakPtr<AckHandler> SyncInvalidationListener::AsWeakPtr() {
   DCHECK(CalledOnValidThread());
-  return WeakHandle<AckHandler>(weak_ptr_factory_.GetWeakPtr());
+  base::WeakPtr<AckHandler> weak_ptr = weak_ptr_factory_.GetWeakPtr();
+  weak_ptr.get();  // Binds the pointer to this thread.
+  return weak_ptr;
 }
 
 void SyncInvalidationListener::OnNetworkChannelStateChanged(

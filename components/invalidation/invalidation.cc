@@ -6,7 +6,9 @@
 
 #include <cstddef>
 
+#include "base/bind.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/location.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -109,23 +111,30 @@ const AckHandle& Invalidation::ack_handle() const {
   return ack_handle_;
 }
 
-void Invalidation::set_ack_handler(syncer::WeakHandle<AckHandler> handler) {
+void Invalidation::SetAckHandler(
+    base::WeakPtr<AckHandler> handler,
+    scoped_refptr<base::SequencedTaskRunner> handler_task_runner) {
   ack_handler_ = handler;
+  ack_handler_task_runner_ = handler_task_runner;
 }
 
 bool Invalidation::SupportsAcknowledgement() const {
-  return ack_handler_.IsInitialized();
+  return !!ack_handler_task_runner_;
 }
 
 void Invalidation::Acknowledge() const {
   if (SupportsAcknowledgement()) {
-    ack_handler_.Call(FROM_HERE, &AckHandler::Acknowledge, id_, ack_handle_);
+    ack_handler_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&AckHandler::Acknowledge, ack_handler_, id_, ack_handle_));
   }
 }
 
 void Invalidation::Drop() {
   if (SupportsAcknowledgement()) {
-    ack_handler_.Call(FROM_HERE, &AckHandler::Drop, id_, ack_handle_);
+    ack_handler_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&AckHandler::Drop, ack_handler_, id_, ack_handle_));
   }
 }
 

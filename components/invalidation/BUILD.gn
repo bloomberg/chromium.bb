@@ -87,10 +87,10 @@ static_library("invalidation") {
     "//components/signin/core/browser",
     "//google_apis",
     "//jingle:notifier",
-    "//sync",
     "//third_party/cacheinvalidation",
 
     # TODO(sync): Remove this (http://crbug.com/133352);
+    "//third_party/protobuf:protobuf_lite",
     # "//third_party/cacheinvalidation/src/google/cacheinvalidation:cacheinvalidation_proto_cpp",
   ]
 }
@@ -129,8 +129,11 @@ static_library("test_support") {
     "//jingle:notifier",
     "//jingle:notifier_test_util",
     "//net",
-    "//sync",
     "//testing/gmock",
     "//third_party/cacheinvalidation",
+
+    # TODO(sync): Remove this (http://crbug.com/133352);
+    "//third_party/protobuf:protobuf_lite",
+    # "//third_party/cacheinvalidation/src/google/cacheinvalidation:cacheinvalidation_proto_cpp",
   ]
 }

@@ -12,7 +12,6 @@
         '../base/base.gyp:base',
         '../google_apis/google_apis.gyp:google_apis',
         '../jingle/jingle.gyp:notifier',
-        '../sync/sync.gyp:sync',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         # TODO(akalin): Remove this (http://crbug.com/133352).
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
@@ -115,9 +114,9 @@
         '../jingle/jingle.gyp:notifier',
         '../jingle/jingle.gyp:notifier_test_util',
         '../net/net.gyp:net',
-        '../sync/sync.gyp:sync',
         '../testing/gmock.gyp:gmock',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
+        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
         'gcm_driver_test_support',
         'keyed_service_core',
       ],

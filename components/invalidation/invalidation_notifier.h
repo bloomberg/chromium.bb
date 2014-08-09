@@ -16,14 +16,16 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/invalidation/invalidation_export.h"
 #include "components/invalidation/invalidation_state_tracker.h"
 #include "components/invalidation/invalidator.h"
 #include "components/invalidation/invalidator_registrar.h"
 #include "components/invalidation/sync_invalidation_listener.h"
-#include "sync/internal_api/public/util/weak_handle.h"
 
 namespace notifier {
 class PushClient;
@@ -43,8 +45,9 @@ class INVALIDATION_EXPORT_PRIVATE InvalidationNotifier
       const std::string& invalidator_client_id,
       const UnackedInvalidationsMap& saved_invalidations,
       const std::string& invalidation_bootstrap_data,
-      const WeakHandle<InvalidationStateTracker>&
-          invalidation_state_tracker,
+      const base::WeakPtr<InvalidationStateTracker>& invalidation_state_tracker,
+      scoped_refptr<base::SingleThreadTaskRunner>
+          invalidation_state_tracker_task_runner,
       const std::string& client_info);
 
   virtual ~InvalidationNotifier();
@@ -84,8 +87,9 @@ class INVALIDATION_EXPORT_PRIVATE InvalidationNotifier
   const UnackedInvalidationsMap saved_invalidations_;
 
   // Passed to |invalidation_listener_|.
-  const WeakHandle<InvalidationStateTracker>
-      invalidation_state_tracker_;
+  const base::WeakPtr<InvalidationStateTracker> invalidation_state_tracker_;
+  scoped_refptr<base::SequencedTaskRunner>
+      invalidation_state_tracker_task_runner_;
 
   // Passed to |invalidation_listener_|.
   const std::string client_info_;

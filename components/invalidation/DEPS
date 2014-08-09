@@ -18,7 +18,4 @@ include_rules = [
 
   # invalidation_notifier depends on the xmpp part of libjingle.
   "+talk/xmpp",
-
-  #TODO(rlarocque): Remove this dependency. See crbug.com/394925.
-  "+sync/internal_api/public/util/weak_handle.h",
 ]

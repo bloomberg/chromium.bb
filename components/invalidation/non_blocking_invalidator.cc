@@ -18,7 +18,6 @@
 #include "components/invalidation/object_id_invalidation_map.h"
 #include "components/invalidation/sync_system_resources.h"
 #include "jingle/notifier/listener/push_client.h"
-#include "sync/internal_api/public/util/weak_handle.h"
 
 namespace syncer {
 
@@ -28,8 +27,9 @@ struct NonBlockingInvalidator::InitializeOptions {
       const std::string& invalidator_client_id,
       const UnackedInvalidationsMap& saved_invalidations,
       const std::string& invalidation_bootstrap_data,
-      const WeakHandle<InvalidationStateTracker>&
-          invalidation_state_tracker,
+      const base::WeakPtr<InvalidationStateTracker>& invalidation_state_tracker,
+      const scoped_refptr<base::SingleThreadTaskRunner>&
+          invalidation_state_tracker_task_runner,
       const std::string& client_info,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter)
       : network_channel_creator(network_channel_creator),
@@ -37,15 +37,18 @@ struct NonBlockingInvalidator::InitializeOptions {
         saved_invalidations(saved_invalidations),
         invalidation_bootstrap_data(invalidation_bootstrap_data),
         invalidation_state_tracker(invalidation_state_tracker),
+        invalidation_state_tracker_task_runner(
+            invalidation_state_tracker_task_runner),
         client_info(client_info),
-        request_context_getter(request_context_getter) {
-  }
+        request_context_getter(request_context_getter) {}
 
   NetworkChannelCreator network_channel_creator;
   std::string invalidator_client_id;
   UnackedInvalidationsMap saved_invalidations;
   std::string invalidation_bootstrap_data;
-  WeakHandle<InvalidationStateTracker> invalidation_state_tracker;
+  base::WeakPtr<InvalidationStateTracker> invalidation_state_tracker;
+  scoped_refptr<base::SingleThreadTaskRunner>
+      invalidation_state_tracker_task_runner;
   std::string client_info;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter;
 };
@@ -98,8 +101,9 @@ class NonBlockingInvalidator::Core
       public InvalidationHandler {
  public:
   // Called on parent thread.  |delegate_observer| should be initialized.
-  explicit Core(
-      const WeakHandle<NonBlockingInvalidator>& delegate_observer);
+  Core(const base::WeakPtr<NonBlockingInvalidator>& delegate_observer,
+       const scoped_refptr<base::SingleThreadTaskRunner>&
+           delegate_observer_task_runner);
 
   // Helpers called on I/O thread.
   void Initialize(
@@ -124,7 +128,8 @@ class NonBlockingInvalidator::Core
   virtual ~Core();
 
   // The variables below should be used only on the I/O thread.
-  const WeakHandle<NonBlockingInvalidator> delegate_observer_;
+  const base::WeakPtr<NonBlockingInvalidator> delegate_observer_;
+  scoped_refptr<base::SingleThreadTaskRunner> delegate_observer_task_runner_;
   scoped_ptr<InvalidationNotifier> invalidation_notifier_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
@@ -132,9 +137,13 @@ class NonBlockingInvalidator::Core
 };
 
 NonBlockingInvalidator::Core::Core(
-    const WeakHandle<NonBlockingInvalidator>& delegate_observer)
-    : delegate_observer_(delegate_observer) {
-  DCHECK(delegate_observer_.IsInitialized());
+    const base::WeakPtr<NonBlockingInvalidator>& delegate_observer,
+    const scoped_refptr<base::SingleThreadTaskRunner>&
+        delegate_observer_task_runner)
+    : delegate_observer_(delegate_observer),
+      delegate_observer_task_runner_(delegate_observer_task_runner) {
+  DCHECK(delegate_observer_);
+  DCHECK(delegate_observer_task_runner_);
 }
 
 NonBlockingInvalidator::Core::~Core() {
@@ -148,14 +157,14 @@ void NonBlockingInvalidator::Core::Initialize(
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   scoped_ptr<SyncNetworkChannel> network_channel =
       initialize_options.network_channel_creator.Run();
-  invalidation_notifier_.reset(
-      new InvalidationNotifier(
-          network_channel.Pass(),
-          initialize_options.invalidator_client_id,
-          initialize_options.saved_invalidations,
-          initialize_options.invalidation_bootstrap_data,
-          initialize_options.invalidation_state_tracker,
-          initialize_options.client_info));
+  invalidation_notifier_.reset(new InvalidationNotifier(
+      network_channel.Pass(),
+      initialize_options.invalidator_client_id,
+      initialize_options.saved_invalidations,
+      initialize_options.invalidation_bootstrap_data,
+      initialize_options.invalidation_state_tracker,
+      initialize_options.invalidation_state_tracker_task_runner,
+      initialize_options.client_info));
   invalidation_notifier_->RegisterHandler(this);
 }
 
@@ -186,17 +195,21 @@ void NonBlockingInvalidator::Core::RequestDetailedStatus(
 void NonBlockingInvalidator::Core::OnInvalidatorStateChange(
     InvalidatorState reason) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
-  delegate_observer_.Call(FROM_HERE,
-                          &NonBlockingInvalidator::OnInvalidatorStateChange,
-                          reason);
+  delegate_observer_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&NonBlockingInvalidator::OnInvalidatorStateChange,
+                 delegate_observer_,
+                 reason));
 }
 
 void NonBlockingInvalidator::Core::OnIncomingInvalidation(
     const ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
-  delegate_observer_.Call(FROM_HERE,
-                          &NonBlockingInvalidator::OnIncomingInvalidation,
-                          invalidation_map);
+  delegate_observer_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&NonBlockingInvalidator::OnIncomingInvalidation,
+                 delegate_observer_,
+                 invalidation_map));
 }
 
 std::string NonBlockingInvalidator::Core::GetOwnerName() const {
@@ -215,16 +228,21 @@ NonBlockingInvalidator::NonBlockingInvalidator(
       parent_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       network_task_runner_(request_context_getter->GetNetworkTaskRunner()),
       weak_ptr_factory_(this) {
-  core_ = new Core(MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()));
+  base::WeakPtr<NonBlockingInvalidator> weak_ptr_this =
+      weak_ptr_factory_.GetWeakPtr();
+  weak_ptr_this.get();  // Bind to this thread.
 
-  InitializeOptions initialize_options(
-      network_channel_creator,
-      invalidator_client_id,
-      saved_invalidations,
-      invalidation_bootstrap_data,
-      MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()),
-      client_info,
-      request_context_getter);
+  core_ = new Core(weak_ptr_this,
+                   base::MessageLoopProxy::current());
+
+  InitializeOptions initialize_options(network_channel_creator,
+                                       invalidator_client_id,
+                                       saved_invalidations,
+                                       invalidation_bootstrap_data,
+                                       weak_ptr_this,
+                                       base::MessageLoopProxy::current(),
+                                       client_info,
+                                       request_context_getter);
 
   if (!network_task_runner_->PostTask(
           FROM_HERE,

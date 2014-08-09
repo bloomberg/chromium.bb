@@ -20,7 +20,10 @@ class UnackedInvalidationSetTest : public testing::Test {
 
   SingleObjectInvalidationSet GetStoredInvalidations() {
     ObjectIdInvalidationMap map;
-    unacked_invalidations_.ExportInvalidations(WeakHandle<AckHandler>(), &map);
+    unacked_invalidations_.ExportInvalidations(
+        base::WeakPtr<AckHandler>(),
+        scoped_refptr<base::SingleThreadTaskRunner>(),
+        &map);
     ObjectIdSet ids = map.GetObjectIds();
     if (ids.find(kObjectId_) != ids.end()) {
       return map.ForObject(kObjectId_);

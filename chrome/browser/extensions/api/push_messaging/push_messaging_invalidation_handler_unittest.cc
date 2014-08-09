@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler.h"
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler_delegate.h"
 #include "components/invalidation/invalidation_logger.h"

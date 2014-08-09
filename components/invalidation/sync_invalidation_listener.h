@@ -24,7 +24,6 @@
 #include "components/invalidation/sync_system_resources.h"
 #include "components/invalidation/unacked_invalidation_set.h"
 #include "google/cacheinvalidation/include/invalidation-listener.h"
-#include "sync/internal_api/public/util/weak_handle.h"
 
 namespace buzz {
 class XmppTaskParentInterface;
@@ -76,10 +75,13 @@ class INVALIDATION_EXPORT_PRIVATE SyncInvalidationListener
   void Start(
       const CreateInvalidationClientCallback&
           create_invalidation_client_callback,
-      const std::string& client_id, const std::string& client_info,
+      const std::string& client_id,
+      const std::string& client_info,
       const std::string& invalidation_bootstrap_data,
       const UnackedInvalidationsMap& initial_object_states,
-      const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
+      const base::WeakPtr<InvalidationStateTracker>& invalidation_state_tracker,
+      const scoped_refptr<base::SequencedTaskRunner>&
+          invalidation_state_tracker_task_runner,
       Delegate* delegate);
 
   void UpdateCredentials(const std::string& email, const std::string& token);
@@ -170,12 +172,14 @@ class INVALIDATION_EXPORT_PRIVATE SyncInvalidationListener
   // Generate a Dictionary with all the debugging information.
   scoped_ptr<base::DictionaryValue> CollectDebugData() const;
 
-  WeakHandle<AckHandler> GetThisAsAckHandler();
+  base::WeakPtr<AckHandler> AsWeakPtr();
 
   scoped_ptr<SyncNetworkChannel> sync_network_channel_;
   SyncSystemResources sync_system_resources_;
   UnackedInvalidationsMap unacked_invalidations_map_;
-  WeakHandle<InvalidationStateTracker> invalidation_state_tracker_;
+  base::WeakPtr<InvalidationStateTracker> invalidation_state_tracker_;
+  scoped_refptr<base::SequencedTaskRunner>
+      invalidation_state_tracker_task_runner_;
   Delegate* delegate_;
   scoped_ptr<invalidation::InvalidationClient> invalidation_client_;
   scoped_ptr<RegistrationManager> registration_manager_;

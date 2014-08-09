@@ -13,7 +13,6 @@
 #include "components/invalidation/ack_handler.h"
 #include "components/invalidation/invalidation_export.h"
 #include "components/invalidation/invalidation_util.h"
-#include "sync/internal_api/public/util/weak_handle.h"
 
 namespace syncer {
 
@@ -67,8 +66,6 @@ class INVALIDATION_EXPORT MockAckHandler
   typedef std::map<invalidation::ObjectId,
                    AckHandle,
                    ObjectIdLessThan> IdHandleMap;
-
-  WeakHandle<AckHandler> WeakHandleThis();
 
   InvalidationVector unsent_invalidations_;
   InvalidationVector unacked_invalidations_;

@@ -56,13 +56,14 @@ void UnackedInvalidationSet::AddSet(
 }
 
 void UnackedInvalidationSet::ExportInvalidations(
-    WeakHandle<AckHandler> ack_handler,
+    base::WeakPtr<AckHandler> ack_handler,
+    scoped_refptr<base::SingleThreadTaskRunner> ack_handler_task_runner,
     ObjectIdInvalidationMap* out) const {
   for (SingleObjectInvalidationSet::const_iterator it = invalidations_.begin();
        it != invalidations_.end(); ++it) {
     // Copy the invalidation and set the copy's ack_handler.
     Invalidation inv(*it);
-    inv.set_ack_handler(ack_handler);
+    inv.SetAckHandler(ack_handler, ack_handler_task_runner);
     out->Insert(inv);
   }
 }

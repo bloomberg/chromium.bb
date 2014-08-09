@@ -7,10 +7,11 @@
 
 #include <set>
 
+#include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "components/invalidation/invalidation.h"
 #include "components/invalidation/invalidation_export.h"
 #include "components/invalidation/invalidation_util.h"
-#include "sync/internal_api/public/util/weak_handle.h"
 
 namespace base {
 class DictionaryValue;
@@ -53,8 +54,10 @@ class INVALIDATION_EXPORT UnackedInvalidationSet {
   // The contents of the UnackedInvalidationSet are not directly modified by
   // this procedure, but the AckHandles stored in those exported invalidations
   // are likely to end up back here in calls to Acknowledge() or Drop().
-  void ExportInvalidations(WeakHandle<AckHandler> ack_handler,
-                           ObjectIdInvalidationMap* out) const;
+  void ExportInvalidations(
+      base::WeakPtr<AckHandler> ack_handler,
+      scoped_refptr<base::SingleThreadTaskRunner> ack_handler_task_runner,
+      ObjectIdInvalidationMap* out) const;
 
   // Removes all stored invalidations from this object.
   void Clear();
