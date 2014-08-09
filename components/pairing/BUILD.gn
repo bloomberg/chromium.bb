@@ -14,11 +14,25 @@ source_set("pairing") {
     "pairing/controller_pairing_controller.h",
     "pairing/host_pairing_controller.cc",
     "pairing/host_pairing_controller.h",
+    "pairing/message_buffer.cc",
+    "pairing/message_buffer.h",
   ]
 
   deps = [
     "//base",
     "//device/bluetooth",
+    "//net",
+  ]
+}
+
+source_set("unit_tests") {
+  sources = [
+    "message_buffer_unittest.cc",
+  ]
+
+  deps = [
+    ":pairing",
+    "//testing/gtest",
   ]
 }
 

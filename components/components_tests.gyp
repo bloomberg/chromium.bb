@@ -601,10 +601,14 @@
               ],
             }],
             ['chromeos==1', {
+              'sources': [
+                'pairing/message_buffer_unittest.cc',
+              ],
               'sources!': [
                 'storage_monitor/storage_monitor_linux_unittest.cc',
               ],
               'dependencies': [
+                'components.gyp:pairing',
                 '../chromeos/chromeos.gyp:chromeos_test_support',
               ],
             }],
