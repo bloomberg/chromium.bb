@@ -76,18 +76,6 @@ ExtensionOptionsInternal.prototype.createGuest = function() {
           this.dispatchEvent(createFailedEvent);
         } else {
           this.attachWindow(instanceId);
-          GuestViewInternal.setAutoSize(this.instanceId, {
-            'enableAutoSize':
-                this.extensionoptionsNode.hasAttribute('autosize'),
-            'min': {
-            'width': parseInt(this.minwidth || 0),
-            'height': parseInt(this.minheight || 0)
-          },
-            'max': {
-              'width': parseInt(this.maxwidth || 0),
-              'height': parseInt(this.maxheight || 0)
-            }
-          });
         }
       }.bind(this));
 };

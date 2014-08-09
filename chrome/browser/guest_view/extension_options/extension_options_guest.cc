@@ -154,7 +154,7 @@ bool ExtensionOptionsGuest::IsAutoSizeSupported() const {
 
 void ExtensionOptionsGuest::SetUpAutoSize() {
   // Read the autosize parameters passed in from the embedder.
-  bool auto_size_enabled;
+  bool auto_size_enabled = false;
   extra_params()->GetBoolean(extensionoptions::kAttributeAutoSize,
                              &auto_size_enabled);
 
