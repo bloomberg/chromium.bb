@@ -39,12 +39,14 @@ struct WhitelistedComponentExtensionIME {
       {// ChromeOS Hangul Input.
        extension_ime_util::kHangulExtensionId, IDR_HANGUL_MANIFEST,
       },
+#if defined(GOOGLE_CHROME_BUILD)
       {// Official Google XKB Input.
        extension_ime_util::kXkbExtensionId, IDR_GOOGLE_XKB_MANIFEST,
       },
       {// Google input tools.
        extension_ime_util::kT13nExtensionId, IDR_GOOGLE_INPUT_TOOLS_MANIFEST,
       },
+#else
       {// Open-sourced ChromeOS xkb extension.
        extension_ime_util::kXkbExtensionId, IDR_XKB_MANIFEST,
       },
@@ -63,6 +65,7 @@ struct WhitelistedComponentExtensionIME {
       {// Japanese Mozc Input.
        extension_ime_util::kMozcExtensionId, IDR_MOZC_MANIFEST,
       },
+#endif
       {// Braille hardware keyboard IME that works together with ChromeVox.
        extension_misc::kBrailleImeExtensionId, IDR_BRAILLE_MANIFEST,
       },
