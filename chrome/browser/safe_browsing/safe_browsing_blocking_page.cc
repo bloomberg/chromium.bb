@@ -144,60 +144,6 @@ void RecordDetailedUserAction(DetailedDecision decision) {
                             MAX_DETAILED_ACTION);
 }
 
-// Constants for the M37 Finch trial.
-const char kV3StudyName[]         = "MalwareInterstitialVersion";
-const char kCondV2[]              = "V2";
-const char kCondV3[]              = "V3";
-const char kCondV3Advice[]        = "V3Advice";
-const char kCondV3Social[]        = "V3Social";
-const char kCondV3NotRecommend[]  = "V3NotRecommend";
-const char kCondV3History[]       = "V3History";
-
-// Default to V3 unless a flag or field trial says otherwise. Flags override
-// field trial settings.
-const char* GetTrialCondition() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kMalwareInterstitialV2)) {
-    return kCondV2;
-  }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kMalwareInterstitialV3)) {
-    return kCondV3;
-  }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kMalwareInterstitialV3Advice)) {
-    return kCondV3Advice;
-  }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kMalwareInterstitialV3Social)) {
-    return kCondV3Social;
-  }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kMalwareInterstitialV3NotRecommend)) {
-    return kCondV3NotRecommend;
-  }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kMalwareInterstitialV3History)) {
-    return kCondV3History;
-  }
-
-  // Make sure that the return value is one of the expected types instead of
-  // directly returning base::FieldTrialList::FindFullName.
-  if (base::FieldTrialList::FindFullName(kV3StudyName) == kCondV2)
-    return kCondV2;
-  if (base::FieldTrialList::FindFullName(kV3StudyName) == kCondV3)
-    return kCondV3;
-  if (base::FieldTrialList::FindFullName(kV3StudyName) == kCondV3Advice)
-    return kCondV3Advice;
-  if (base::FieldTrialList::FindFullName(kV3StudyName) == kCondV3Social)
-    return kCondV3Social;
-  if (base::FieldTrialList::FindFullName(kV3StudyName) == kCondV3NotRecommend)
-    return kCondV3NotRecommend;
-  if (base::FieldTrialList::FindFullName(kV3StudyName) == kCondV3History)
-    return kCondV3History;
-  return kCondV3;
-}
-
 }  // namespace
 
 // static
@@ -213,19 +159,7 @@ class SafeBrowsingBlockingPageFactoryImpl
       WebContents* web_contents,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
       OVERRIDE {
-    // Only use the V2 page if the interstitial is for a single malware or
-    // phishing resource.
-    if ((GetTrialCondition() == kCondV2) && (unsafe_resources.size() == 1) &&
-        (unsafe_resources[0].threat_type == SB_THREAT_TYPE_URL_MALWARE ||
-         unsafe_resources[0].threat_type ==
-         SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL ||
-         unsafe_resources[0].threat_type == SB_THREAT_TYPE_URL_PHISHING ||
-         unsafe_resources[0].threat_type ==
-         SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL)) {
-      return new SafeBrowsingBlockingPageV2(ui_manager, web_contents,
-          unsafe_resources);
-    }
-    return new SafeBrowsingBlockingPageV3(ui_manager, web_contents,
+    return new SafeBrowsingBlockingPage(ui_manager, web_contents,
         unsafe_resources);
   }
 
@@ -930,184 +864,7 @@ bool SafeBrowsingBlockingPage::IsMainPageLoadBlocked(
   return unsafe_resources.size() == 1 && !unsafe_resources[0].is_subresource;
 }
 
-SafeBrowsingBlockingPageV2::SafeBrowsingBlockingPageV2(
-    SafeBrowsingUIManager* ui_manager,
-    WebContents* web_contents,
-    const UnsafeResourceList& unsafe_resources)
-  : SafeBrowsingBlockingPage(ui_manager, web_contents, unsafe_resources) {
-}
-
-std::string SafeBrowsingBlockingPageV2::GetHTMLContents() {
-  // Load the HTML page and create the template components.
-  base::DictionaryValue strings;
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  std::string html;
-
-  if (unsafe_resources_.empty()) {
-    NOTREACHED();
-    return std::string();
-  }
-
-  if (unsafe_resources_.size() > 1) {
-    NOTREACHED();
-  } else {
-    SBThreatType threat_type = unsafe_resources_[0].threat_type;
-    if (threat_type == SB_THREAT_TYPE_URL_MALWARE ||
-        threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL) {
-      PopulateMalwareStringDictionary(&strings);
-    } else {  // Phishing.
-      DCHECK(threat_type == SB_THREAT_TYPE_URL_PHISHING ||
-             threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL);
-      PopulatePhishingStringDictionary(&strings);
-    }
-    html = rb.GetRawDataResource(IDR_SAFE_BROWSING_MALWARE_BLOCK_V2).
-        as_string();
-  }
-  interstitial_show_time_ = base::TimeTicks::Now();
-  return webui::GetTemplatesHtml(html, &strings, "template-root");
-}
-
-void SafeBrowsingBlockingPageV2::PopulateStringDictionary(
-    base::DictionaryValue* strings,
-    const base::string16& title,
-    const base::string16& headline,
-    const base::string16& description1,
-    const base::string16& description2,
-    const base::string16& description3) {
-  strings->SetString("title", title);
-  strings->SetString("headLine", headline);
-  strings->SetString("description1", description1);
-  strings->SetString("description2", description2);
-  strings->SetString("description3", description3);
-  strings->SetBoolean("proceedDisabled",
-                      IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled));
-  strings->SetBoolean("isMainFrame", is_main_frame_load_blocked_);
-  strings->SetBoolean("isPhishing", interstitial_type_ == TYPE_PHISHING);
-
-  strings->SetString("back_button",
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_BACK_BUTTON));
-  strings->SetString("seeMore", l10n_util::GetStringUTF16(
-      IDS_SAFE_BROWSING_MALWARE_V2_SEE_MORE));
-  strings->SetString("proceed",
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_V2_PROCEED_LINK));
-  webui::SetFontAndTextDirection(strings);
-}
-
-void SafeBrowsingBlockingPageV2::PopulateMultipleThreatStringDictionary(
-    base::DictionaryValue* strings) {
-  NOTREACHED();
-}
-
-void SafeBrowsingBlockingPageV2::PopulateMalwareStringDictionary(
-    base::DictionaryValue* strings) {
-  // Check to see if we're blocking the main page, or a sub-resource on the
-  // main page.
-  base::string16 headline, description1, description2, description3;
-
-
-  description3 = l10n_util::GetStringUTF16(
-      IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION3);
-  if (is_main_frame_load_blocked_) {
-    headline = l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_V2_HEADLINE);
-    description1 = l10n_util::GetStringFUTF16(
-        IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION1,
-        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-        base::UTF8ToUTF16(url_.host()));
-    description2 = l10n_util::GetStringUTF16(
-        IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2);
-    strings->SetString("details", l10n_util::GetStringUTF16(
-          IDS_SAFE_BROWSING_MALWARE_V2_DETAILS));
-  } else {
-    headline = l10n_util::GetStringUTF16(
-        IDS_SAFE_BROWSING_MALWARE_V2_HEADLINE_SUBRESOURCE);
-    description1 = l10n_util::GetStringFUTF16(
-        IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION1_SUBRESOURCE,
-        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-        base::UTF8ToUTF16(web_contents_->GetURL().host()));
-    description2 = l10n_util::GetStringFUTF16(
-        IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2_SUBRESOURCE,
-        base::UTF8ToUTF16(url_.host()));
-    strings->SetString("details", l10n_util::GetStringFUTF16(
-          IDS_SAFE_BROWSING_MALWARE_V2_DETAILS_SUBRESOURCE,
-          base::UTF8ToUTF16(url_.host())));
-  }
-
-  PopulateStringDictionary(
-      strings,
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_V2_TITLE),
-      headline,
-      description1,
-      description2,
-      description3);
-
-  if (!CanShowMalwareDetailsOption()) {
-    strings->SetBoolean(kDisplayCheckBox, false);
-    strings->SetString("confirm_text", std::string());
-    strings->SetString(kBoxChecked, std::string());
-  } else {
-    // Show the checkbox for sending malware details.
-    strings->SetBoolean(kDisplayCheckBox, true);
-
-    std::string privacy_link = base::StringPrintf(
-        kPrivacyLinkHtml,
-        l10n_util::GetStringUTF8(
-            IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE_V2).c_str());
-
-    strings->SetString("confirm_text",
-                       l10n_util::GetStringFUTF16(
-                           IDS_SAFE_BROWSING_MALWARE_V2_REPORTING_AGREE,
-                           base::UTF8ToUTF16(privacy_link)));
-    Profile* profile = Profile::FromBrowserContext(
-       web_contents_->GetBrowserContext());
-    if (profile->GetPrefs()->HasPrefPath(
-            prefs::kSafeBrowsingExtendedReportingEnabled)) {
-      reporting_checkbox_checked_ =
-          IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled);
-    } else if (IsPrefEnabled(prefs::kSafeBrowsingReportingEnabled) ||
-         IsPrefEnabled(prefs::kSafeBrowsingDownloadFeedbackEnabled)) {
-      reporting_checkbox_checked_ = true;
-    }
-    strings->SetString(kBoxChecked,
-                       reporting_checkbox_checked_ ? "yes" : std::string());
-  }
-
-  strings->SetString("report_error", base::string16());
-  strings->SetString("learnMore",
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_V2_LEARN_MORE));
-}
-
-void SafeBrowsingBlockingPageV2::PopulatePhishingStringDictionary(
-    base::DictionaryValue* strings) {
-  PopulateStringDictionary(
-      strings,
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_PHISHING_V2_TITLE),
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_PHISHING_V2_HEADLINE),
-      l10n_util::GetStringFUTF16(IDS_SAFE_BROWSING_PHISHING_V2_DESCRIPTION1,
-                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-                                 base::UTF8ToUTF16(url_.host())),
-      base::string16(),
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_PHISHING_V2_DESCRIPTION2));
-
-  strings->SetString("details", std::string());
-  strings->SetString("confirm_text", std::string());
-  strings->SetString(kBoxChecked, std::string());
-  strings->SetString(
-      "report_error",
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_PHISHING_V2_REPORT_ERROR));
-  strings->SetBoolean(kDisplayCheckBox, false);
-  strings->SetString("learnMore",
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_V2_LEARN_MORE));
-}
-
-SafeBrowsingBlockingPageV3::SafeBrowsingBlockingPageV3(
-    SafeBrowsingUIManager* ui_manager,
-    WebContents* web_contents,
-    const UnsafeResourceList& unsafe_resources)
-    : SafeBrowsingBlockingPage(ui_manager, web_contents, unsafe_resources),
-      trial_condition_(GetTrialCondition()) {
-}
-
-std::string SafeBrowsingBlockingPageV3::GetHTMLContents() {
+std::string SafeBrowsingBlockingPage::GetHTMLContents() {
   DCHECK(!unsafe_resources_.empty());
 
   // Fill in the shared values.
@@ -1143,9 +900,8 @@ std::string SafeBrowsingBlockingPageV3::GetHTMLContents() {
   return webui::GetI18nTemplateHtml(html, &load_time_data);
 }
 
-void SafeBrowsingBlockingPageV3::PopulateMalwareLoadTimeData(
+void SafeBrowsingBlockingPage::PopulateMalwareLoadTimeData(
     base::DictionaryValue* load_time_data) {
-  load_time_data->SetString("trialCondition", trial_condition_);
   load_time_data->SetBoolean("phishing", false);
   load_time_data->SetString(
       "heading", l10n_util::GetStringUTF16(IDS_MALWARE_V3_HEADING));
@@ -1154,67 +910,29 @@ void SafeBrowsingBlockingPageV3::PopulateMalwareLoadTimeData(
       l10n_util::GetStringFUTF16(
           IDS_MALWARE_V3_PRIMARY_PARAGRAPH,
           base::UTF8ToUTF16(url_.host())));
-  if (trial_condition_ == kCondV3History) {
-    load_time_data->SetString(
-        "explanationParagraph",
-        is_main_frame_load_blocked_ ?
-            l10n_util::GetStringFUTF16(
-                IDS_MALWARE_V3_EXPLANATION_PARAGRAPH_HISTORY,
-                base::UTF8ToUTF16(url_.host())) :
-            l10n_util::GetStringFUTF16(
-                IDS_MALWARE_V3_EXPLANATION_PARAGRAPH_SUBRESOURCE_HISTORY,
-                base::UTF8ToUTF16(web_contents_->GetURL().host()),
-                base::UTF8ToUTF16(url_.host())));
-  } else if (trial_condition_ == kCondV3Advice) {
-    load_time_data->SetString(
-        "explanationParagraph",
-        is_main_frame_load_blocked_ ?
-            l10n_util::GetStringFUTF16(
-                IDS_MALWARE_V3_EXPLANATION_PARAGRAPH_ADVICE,
-                base::UTF8ToUTF16(url_.host())) :
-            l10n_util::GetStringFUTF16(
-                IDS_MALWARE_V3_EXPLANATION_PARAGRAPH_SUBRESOURCE_ADVICE,
-                base::UTF8ToUTF16(web_contents_->GetURL().host()),
-                base::UTF8ToUTF16(url_.host())));
-    load_time_data->SetString(
-        "adviceHeading",
-        l10n_util::GetStringUTF16(IDS_MALWARE_V3_ADVICE_HEADING));
-  } else {
-    load_time_data->SetString(
-        "explanationParagraph",
-        is_main_frame_load_blocked_ ?
-            l10n_util::GetStringFUTF16(
-                IDS_MALWARE_V3_EXPLANATION_PARAGRAPH,
-                base::UTF8ToUTF16(url_.host())) :
-            l10n_util::GetStringFUTF16(
-                IDS_MALWARE_V3_EXPLANATION_PARAGRAPH_SUBRESOURCE,
-                base::UTF8ToUTF16(web_contents_->GetURL().host()),
-                base::UTF8ToUTF16(url_.host())));
-  }
-  if (trial_condition_ == kCondV3Social) {
-    load_time_data->SetString(
-        "finalParagraph",
-        l10n_util::GetStringUTF16(IDS_MALWARE_V3_PROCEED_PARAGRAPH_SOCIAL));
-  } else if (trial_condition_ == kCondV3NotRecommend) {
-    load_time_data->SetString(
-        "finalParagraph",
-        l10n_util::GetStringUTF16(
-            IDS_MALWARE_V3_PROCEED_PARAGRAPH_NOT_RECOMMEND));
-  } else {
-    load_time_data->SetString(
-        "finalParagraph",
-        l10n_util::GetStringUTF16(IDS_MALWARE_V3_PROCEED_PARAGRAPH));
-  }
+  load_time_data->SetString(
+      "explanationParagraph",
+      is_main_frame_load_blocked_ ?
+          l10n_util::GetStringFUTF16(
+              IDS_MALWARE_V3_EXPLANATION_PARAGRAPH,
+              base::UTF8ToUTF16(url_.host())) :
+          l10n_util::GetStringFUTF16(
+              IDS_MALWARE_V3_EXPLANATION_PARAGRAPH_SUBRESOURCE,
+              base::UTF8ToUTF16(web_contents_->GetURL().host()),
+              base::UTF8ToUTF16(url_.host())));
+  load_time_data->SetString(
+      "finalParagraph",
+      l10n_util::GetStringUTF16(IDS_MALWARE_V3_PROCEED_PARAGRAPH));
 
   load_time_data->SetBoolean(kDisplayCheckBox, CanShowMalwareDetailsOption());
   if (CanShowMalwareDetailsOption()) {
     std::string privacy_link = base::StringPrintf(
         kPrivacyLinkHtml,
         l10n_util::GetStringUTF8(
-            IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE_V2).c_str());
+            IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE).c_str());
     load_time_data->SetString(
         "optInLink",
-        l10n_util::GetStringFUTF16(IDS_SAFE_BROWSING_MALWARE_V2_REPORTING_AGREE,
+        l10n_util::GetStringFUTF16(IDS_SAFE_BROWSING_MALWARE_REPORTING_AGREE,
                                    base::UTF8ToUTF16(privacy_link)));
     Profile* profile = Profile::FromBrowserContext(
        web_contents_->GetBrowserContext());
@@ -1231,9 +949,8 @@ void SafeBrowsingBlockingPageV3::PopulateMalwareLoadTimeData(
   }
 }
 
-void SafeBrowsingBlockingPageV3::PopulatePhishingLoadTimeData(
+void SafeBrowsingBlockingPage::PopulatePhishingLoadTimeData(
     base::DictionaryValue* load_time_data) {
-  load_time_data->SetString("trialCondition", std::string());
   load_time_data->SetBoolean("phishing", true);
   load_time_data->SetString(
       "heading",

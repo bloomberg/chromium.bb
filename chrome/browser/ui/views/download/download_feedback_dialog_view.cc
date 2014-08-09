@@ -76,7 +76,7 @@ DownloadFeedbackDialogView::DownloadFeedbackDialogView(
           views::MessageBoxView::InitParams(l10n_util::GetStringUTF16(
               IDS_FEEDBACK_SERVICE_DIALOG_EXPLANATION)))),
       link_view_(new views::Link(l10n_util::GetStringUTF16(
-          IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE_V2))),
+          IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE))),
       title_text_(l10n_util::GetStringUTF16(IDS_FEEDBACK_SERVICE_DIALOG_TITLE)),
       ok_button_text_(l10n_util::GetStringUTF16(
           IDS_FEEDBACK_SERVICE_DIALOG_OK_BUTTON_LABEL)),

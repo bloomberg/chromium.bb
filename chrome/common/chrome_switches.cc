@@ -788,15 +788,6 @@ const char kLoadComponentExtension[]        = "load-component-extension";
 // Loads an extension from the specified directory.
 const char kLoadExtension[]                 = "load-extension";
 
-// Controls which version of the malware and phishing interstitials is shown.
-const char kMalwareInterstitialV2[]         = "malware-interstitial-v2";
-const char kMalwareInterstitialV3[]         = "malware-interstitial-v3";
-const char kMalwareInterstitialV3Advice[]   = "malware-interstitial-v3-advice";
-const char kMalwareInterstitialV3Social[]   = "malware-interstitial-v3-social";
-const char kMalwareInterstitialV3NotRecommend[] =
-    "malware-interstitial-v3-not-recommend";
-const char kMalwareInterstitialV3History[]  = "malware-interstitial-v3-history";
-
 // Makes Chrome default browser
 const char kMakeDefaultBrowser[]            = "make-default-browser";
 

@@ -431,25 +431,6 @@ const Experiment::Choice kAnswersInSuggestChoices[] = {
 };
 #endif
 
-// Using independent flags (instead of flag=value flags) to be able to
-// associate the version with a FieldTrial. FieldTrials don't currently support
-// flag=value flags.
-const Experiment::Choice kMalwareInterstitialVersions[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V2,
-    switches::kMalwareInterstitialV2, "" },
-  { IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V3,
-    switches::kMalwareInterstitialV3, "" },
-  { IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V3_ADVICE,
-    switches::kMalwareInterstitialV3Advice, "" },
-  { IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V3_SOCIAL,
-    switches::kMalwareInterstitialV3Social, "" },
-  { IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V3_NOTRECOMMEND,
-    switches::kMalwareInterstitialV3NotRecommend, "" },
-  { IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V3_HISTORY,
-    switches::kMalwareInterstitialV3History, "" },
-};
-
 #if defined(OS_CHROMEOS)
 const Experiment::Choice kEnableFileManagerMTPChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
@@ -1885,13 +1866,6 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kAnswersInSuggestChoices)
   },
 #endif
-  {
-    "malware-interstitial-version",
-    IDS_FLAGS_MALWARE_INTERSTITIAL_TRIAL_NAME,
-    IDS_FLAGS_MALWARE_INTERSTITIAL_TRIAL_DESCRIPTION,
-    kOsAll,
-    MULTI_VALUE_TYPE(kMalwareInterstitialVersions)
-  },
 #if defined(OS_ANDROID)
   {
     "enable-data-reduction-proxy-dev",

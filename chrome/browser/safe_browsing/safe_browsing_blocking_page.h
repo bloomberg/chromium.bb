@@ -89,16 +89,15 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   }
 
   // InterstitialPageDelegate method:
+  virtual std::string GetHTMLContents() OVERRIDE;
+  virtual void OnProceed() OVERRIDE;
+  virtual void OnDontProceed() OVERRIDE;
   virtual void CommandReceived(const std::string& command) OVERRIDE;
   virtual void OverrideRendererPrefs(
       content::RendererPreferences* prefs) OVERRIDE;
-  virtual void OnProceed() OVERRIDE;
-  virtual void OnDontProceed() OVERRIDE;
 
  protected:
-  template <class TestSBInterstitialPage>
   friend class SafeBrowsingBlockingPageTest;
-  template <class TestSBInterstitialPage>
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
                            ProceedThenDontProceed);
 
@@ -121,10 +120,8 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
     return interstitial_page_;
   }
 
-  template <class TestSBInterstitialPage>
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
       MalwareReportsTransitionDisabled);
-  template <class TestSBInterstitialPage>
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
       MalwareReportsToggling);
 
@@ -240,90 +237,16 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   base::CancelableTaskTracker request_tracker_;
 
  private:
-#if defined(ENABLE_EXTENSIONS)
-  scoped_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
-#endif
-
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPage);
-};
-
-class SafeBrowsingBlockingPageV1 : public SafeBrowsingBlockingPage {
- public:
-  // Don't instantiate this class directly, use ShowBlockingPage instead.
-  SafeBrowsingBlockingPageV1(SafeBrowsingUIManager* ui_manager,
-                             content::WebContents* web_contents,
-                             const UnsafeResourceList& unsafe_resources);
-
-  // InterstitialPageDelegate method:
-  virtual std::string GetHTMLContents() OVERRIDE;
-
- private:
-  // Fills the passed dictionary with the strings passed to JS Template when
-  // creating the HTML.
-  void PopulateMultipleThreatStringDictionary(base::DictionaryValue* strings);
-  void PopulateMalwareStringDictionary(base::DictionaryValue* strings);
-  void PopulatePhishingStringDictionary(base::DictionaryValue* strings);
-
-  // A helper method used by the Populate methods above used to populate common
-  // fields.
-  void PopulateStringDictionary(base::DictionaryValue* strings,
-                                const base::string16& title,
-                                const base::string16& headline,
-                                const base::string16& description1,
-                                const base::string16& description2,
-                                const base::string16& description3);
-
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageV1);
-};
-
-class SafeBrowsingBlockingPageV2 : public SafeBrowsingBlockingPage {
- public:
-  // Don't instantiate this class directly, use ShowBlockingPage instead.
-  SafeBrowsingBlockingPageV2(SafeBrowsingUIManager* ui_manager,
-                             content::WebContents* web_contents,
-                             const UnsafeResourceList& unsafe_resources);
-
-  // InterstitialPageDelegate method:
-  virtual std::string GetHTMLContents() OVERRIDE;
-
- private:
-  // Fills the passed dictionary with the strings passed to JS Template when
-  // creating the HTML.
-  void PopulateMultipleThreatStringDictionary(base::DictionaryValue* strings);
-  void PopulateMalwareStringDictionary(base::DictionaryValue* strings);
-  void PopulatePhishingStringDictionary(base::DictionaryValue* strings);
-
-  // A helper method used by the Populate methods above used to populate common
-  // fields.
-  void PopulateStringDictionary(base::DictionaryValue* strings,
-                                const base::string16& title,
-                                const base::string16& headline,
-                                const base::string16& description1,
-                                const base::string16& description2,
-                                const base::string16& description3);
-
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageV2);
-};
-
-class SafeBrowsingBlockingPageV3 : public SafeBrowsingBlockingPage {
- public:
-  SafeBrowsingBlockingPageV3(SafeBrowsingUIManager* ui_manager,
-                             content::WebContents* web_contents,
-                             const UnsafeResourceList& unsafe_resources);
-
-  // InterstitialPageDelegate method:
-  virtual std::string GetHTMLContents() OVERRIDE;
-
- private:
   // Fills the passed dictionary with the values to be passed to the template
   // when creating the HTML.
   void PopulateMalwareLoadTimeData(base::DictionaryValue* load_time_data);
   void PopulatePhishingLoadTimeData(base::DictionaryValue* load_time_data);
 
-  // For the M37 FieldTrial: this contains the name of the condition.
-  std::string trial_condition_;
+#if defined(ENABLE_EXTENSIONS)
+  scoped_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
+#endif
 
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageV3);
+  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPage);
 };
 
 // Factory for creating SafeBrowsingBlockingPage.  Useful for tests.

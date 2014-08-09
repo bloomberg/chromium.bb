@@ -17,7 +17,6 @@ function setupEvents() {
     $('error-code').classList.remove('hidden');
   } else {
     $('body').classList.add('safe-browsing');
-    setupMalwareFinchExperiment();  /* From safe_browsing_v3.js. */
   }
 
   $('primary-button').addEventListener('click', function() {

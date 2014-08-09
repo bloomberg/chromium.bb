@@ -33,13 +33,3 @@ function setupCheckbox() {
         $('opt-in-checkbox').checked ? SB_CMD_DO_REPORT : SB_CMD_DONT_REPORT);
   });
 }
-
-function setupMalwareFinchExperiment() {
-  if (loadTimeData.getString('trialCondition') != 'V3Advice')
-    return;
-  // Add all this dynamically instead of into the HTML because it's just a
-  // short-lived experiment.
-  var heading = document.createElement('h2');
-  heading.innerText = loadTimeData.getString('adviceHeading');
-  $('details').insertBefore(heading, $('details').firstChild);
-}

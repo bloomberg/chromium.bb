@@ -9398,6 +9398,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_MALWARE_V3_PROCEED_PARAGRAPH_SOCIAL" desc="The paragraph that lets the user skip the warning, with the additional anti-recommendation string.">
         More than 80% of people who see this warning go back to safety instead of risking malware. However, if you understand the risks to your security, you may <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>visit this unsafe site<ph name="END_LINK">&lt;/a&gt;</ph> before the dangerous programs have been removed.
       </message>
+      <message name="IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE" desc="Label for the link to SafeBrowsing Privacy policy page">
+        Privacy policy
+      </message>
+      <message name="IDS_SAFE_BROWSING_PRIVACY_POLICY_URL" translateable="false">
+        http://www.google.com/chrome/browser/privacy/whitepaper.html#malware
+      </message>
+      <message name="IDS_SAFE_BROWSING_MALWARE_REPORTING_AGREE" desc="SafeBrowsing Malware v2 Details label next to checkbox">
+        Automatically report details of possible security incidents to Google. <ph name="PRIVACY_PAGE_LINK">$1</ph>
+      </message>
 
       <!-- Phishing interstitial V3 -->
       <message name="IDS_PHISHING_V3_HEADING" desc="The large heading at the top of the phishing interstitial.">
@@ -11543,121 +11552,6 @@ Chrome ran out of memory.
           This account is already being used on this computer.
         </message>
       </if>
-
-     <!-- SafeBrowsing -->
-      <message name="IDS_SAFE_BROWSING_MALWARE_V2_TITLE" desc="SafeBrowsing Malware HTML v2 title">
-        Malware Ahead!
-      </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_V2_HEADLINE" desc="SafeBrowsing Malware HTML v2 headline">
-        The Website Ahead Contains Malware!
-      </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_V2_HEADLINE_SUBRESOURCE" desc="SafeBrowsing Malware HTML v2 headline, when the malware is in a subresource">
-        Danger: Malware Ahead!
-      </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION1" desc="SafeBrowsing Malware HTML v2 description, first line">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has blocked access to <ph name="HOST_NAME">$2<ex>www.malware.com</ex></ph> for now.
-      </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION1_SUBRESOURCE" desc="SafeBrowsing Malware HTML v2 description, first line, when the malware is on a subresource of the page">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has blocked access to this page on <ph name="HOST_NAME">$2<ex>landing.com</ex></ph>.
-      </message>
-      <if expr="is_android">
-        <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2" desc="Mobile: SafeBrowsing Malware HTML v2 description, second line">
-          Even if you have visited this website safely in the past, visiting it now is very likely to infect your device with malware.
-        </message>
-        <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2_SUBRESOURCE" desc="Mobile: SafeBrowsing Malware HTML v2 description, second line, when the malware is on a subresource of the page">
-          Content from <ph name="ELEMENTS_HOST_NAME">$1<ex>evil.com</ex></ph>, a known malware distributor, has been inserted into this web page. Visiting this page now is very likely to infect your device with malware.
-        </message>
-      </if>
-      <if expr="is_macosx">
-        <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2" desc="Mac: SafeBrowsing Malware HTML v2 description, second line">
-          Even if you have visited this website safely in the past, visiting it now is very likely to infect your Mac with malware.
-        </message>
-        <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2_SUBRESOURCE" desc="Mac: SafeBrowsing Malware HTML v2 description, second line, when the malware is on a subresource of the page">
-          Content from <ph name="ELEMENTS_HOST_NAME">$1<ex>evil.com</ex></ph>, a known malware distributor, has been inserted into this web page. Visiting this page now is very likely to infect your Mac with malware.
-        </message>
-      </if>
-      <if expr="not is_android and not is_macosx">
-        <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2" desc="SafeBrowsing Malware HTML v2 description, second line">
-          Even if you have visited this website safely in the past, visiting it now is very likely to infect your computer with malware.
-        </message>
-        <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2_SUBRESOURCE" desc="SafeBrowsing Malware HTML v2 description, second line, when the malware is on a subresource of the page">
-          Content from <ph name="ELEMENTS_HOST_NAME">$1<ex>evil.com</ex></ph>, a known malware distributor, has been inserted into this web page. Visiting this page now is very likely to infect your computer with malware.
-        </message>
-      </if>
-      <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION3" desc="SafeBrowsing Malware HTML v2 description, last line">
-        Malware is malicious software that causes things like identity theft, financial loss, and permanent file deletion.
-      </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_V2_PROCEED_LINK" desc="SafeBrowsing Malware HTML v2 description, advanced section proceed link part.">
-        Proceed at your own risk
-      </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_V2_SEE_MORE" desc="SafeBrowsing Malware HTML v2 advanced section see more text">
-        Advanced
-      </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_V2_LEARN_MORE" desc="SafeBrowsing Malware HTML v2 learn more link text">
-        Learn more
-      </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_V2_DETAILS" desc="SafeBrowsing Malware HTML v2 more details link text">
-        Details about problems on this website
-      </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_V2_DETAILS_SUBRESOURCE" desc="SafeBrowsing Malware HTML v2 more details link text, when the malware is on a subresource of the page">
-        Details about <ph name="ELEMENTS_HOST_NAME">$1<ex>evil.com</ex></ph>
-      </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_BACK_BUTTON" desc="SafeBrowsing Malware, back button">
-        Go back
-      </message>
-      <message name="IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE_V2" desc="Label for the link to SafeBrowsing Privacy policy page v2">
-        Privacy policy
-      </message>
-      <message name="IDS_SAFE_BROWSING_PRIVACY_POLICY_URL" translateable="false">
-        http://www.google.com/chrome/browser/privacy/whitepaper.html#malware
-      </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_V2_REPORTING_AGREE" desc="SafeBrowsing Malware v2 Details label next to checkbox">
-        Automatically report details of possible security incidents to Google. <ph name="PRIVACY_PAGE_LINK">$1</ph>
-      </message>
-      <message name="IDS_SAFE_BROWSING_PHISHING_V2_TITLE" desc="SafeBrowsing Phishing HTML v2 title">
-        Phishing Ahead!
-      </message>
-      <message name="IDS_SAFE_BROWSING_PHISHING_HEADLINE" desc="SafeBrowsing Phishing HTML headline">
-        Warning: Suspected phishing site!
-      </message>
-      <message name="IDS_SAFE_BROWSING_PHISHING_V2_HEADLINE" desc="SafeBrowsing Phishing HTML v2 headline">
-        Reported Phishing Website Ahead!
-      </message>
-      <message name="IDS_SAFE_BROWSING_PHISHING_V2_DESCRIPTION1" desc="SafeBrowsing Phishing HTML v2 description, first line">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has blocked access to <ph name="HOST_NAME">$2<ex>www.malware.com</ex></ph>.  This website has been reported as a phishing website.
-      </message>
-      <message name="IDS_SAFE_BROWSING_PHISHING_V2_DESCRIPTION2" desc="SafeBrowsing Phishing HTML v2 description, second line, link to more information.">
-        Phishing websites are designed to trick you into disclosing your login, password or other sensitive information by disguising themselves as other websites you may trust.
-      </message>
-      <message name="IDS_SAFE_BROWSING_PHISHING_V2_REPORT_ERROR" desc="SafeBrowsing Phishing v2, report error link">
-        Report an incorrect warning
-      </message>
-
-      <!-- Strings for a Safe Browsing field trial. They aren't being internationalized because the experiment is only running in English locales. -->
-      <message name="IDS_SAFE_BROWSING_MALWARE_FEAR_HEADLINE" translateable="false" desc="SafeBrowsing Malware headline, condition 7">
-        Your computer might get malware if you proceed. Go back!
-      </message>
-      <message name="IDS_SAFE_BROWSING_PHISHING_FEAR_HEADLINE" translateable="false" desc="SafeBrowsing Malware headline, condition 8">
-        You might be the victim of a phishing attack if you proceed. Go back!
-      </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_COLLAB_HEADLINE" translateable="false" desc="SafeBrowsing Malware headline, condition 9">
-        Help Google stop the spread of malware. Go back!
-      </message>
-      <message name="IDS_SAFE_BROWSING_PHISHING_COLLAB_HEADLINE" translateable="false" desc="SafeBrowsing Malware headline, condition 10">
-        Help Google stop phishing attacks. Go back!
-      </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_QUESTION_HEADLINE" translateable="false" desc="SafeBrowsing Malware headline, condition 11">
-        Do you want to infect your computer with a virus? If not, go back!
-      </message>
-      <message name="IDS_SAFE_BROWSING_PHISHING_QUESTION_HEADLINE" translateable="false" desc="SafeBrowsing Malware headline, condition 12">
-        Do you want to be the victim of a phishing attack? If not, go back!
-      </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_BACK_HEADLINE" translateable="false" desc="SafeBrowsing Malware headline, condition 13">
-        The Website Ahead Contains Malware! Go Back!
-      </message>
-      <message name="IDS_SAFE_BROWSING_PHISHING_BACK_HEADLINE" translateable="false" desc="SafeBrowsing Malware headline, condition 14">
-        Reported Phishing Website Ahead! Go Back!
-      </message>
 
       <message name="IDS_PLUGININSTALLER_INSTALLPLUGIN_PROMPT" desc="Info Bar message to prompt installing missing plugin">
         <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> is required to display some elements on this page.
@@ -14567,32 +14461,6 @@ Do you accept?
 
     <message name="IDS_FLAGS_EXTENSION_CONTENT_VERIFICATION_ENFORCE_STRICT" desc="Description of the 'Extension Content Verification' enforce strict mode">
       Enforce strict (hard fail if we can't get hashes)
-    </message>
-
-    <!-- Malware interstitial V3 experiment -->
-    <message name="IDS_FLAGS_MALWARE_INTERSTITIAL_TRIAL_NAME" desc="Name of the about:flags malware interstitial v3 experiment">
-      Malware Warning Experiment
-    </message>
-    <message name="IDS_FLAGS_MALWARE_INTERSTITIAL_TRIAL_DESCRIPTION" desc="Description of the about:flags malware interstitial v3 experiment">
-      Switch between different versions of the malware and phishing interstitials.
-    </message>
-    <message name="IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V2" desc="Go back to the old (V2) version">
-      Old version
-    </message>
-    <message name="IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V3" desc="The new interstitial (also default)">
-      New version
-    </message>
-    <message name="IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V3_ADVICE" desc="The new interstitial plus an advice string">
-      New version plus advice
-    </message>
-    <message name="IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V3_SOCIAL" desc="The new interstitial plus a social string">
-      New version plus social string
-    </message>
-    <message name="IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V3_NOTRECOMMEND" desc="The new interstitial plus an anti-recommendation string">
-      New version plus anti-recommendation string
-    </message>
-    <message name="IDS_FLAGS_MALWARE_INTERSTITIAL_VERSION_V3_HISTORY" desc="The new interstitial (also default)">
-      New version plus history string
     </message>
 
     <!-- Push messaging strings -->
