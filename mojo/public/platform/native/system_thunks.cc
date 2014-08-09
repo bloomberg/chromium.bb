@@ -6,8 +6,6 @@
 
 #include <assert.h>
 
-#include "mojo/public/platform/native/thunk_export.h"
-
 extern "C" {
 
 static MojoSystemThunks g_thunks = {0};
@@ -153,6 +151,14 @@ MojoResult MojoUnmapBuffer(void* buffer) {
   assert(g_thunks.UnmapBuffer);
   return g_thunks.UnmapBuffer(buffer);
 }
+
+// Call this function by looking
+// Always export this api.
+#if defined(WIN32)
+#define THUNK_EXPORT __declspec(dllexport)
+#else
+#define THUNK_EXPORT __attribute__((visibility("default")))
+#endif
 
 extern "C" THUNK_EXPORT size_t MojoSetSystemThunks(
     const MojoSystemThunks* system_thunks) {
