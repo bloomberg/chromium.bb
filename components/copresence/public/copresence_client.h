@@ -36,9 +36,9 @@ struct PendingRequest {
 };
 
 // The CopresenceClient class is the central interface for Copresence
-// functionality. This class handles all the initialization and delegation of
-// copresence tasks. Any user of copresence only needs to interact with this
-// client.
+// functionality. This class handles all the initialization and delegation
+// of copresence tasks. Any user of copresence only needs to interact
+// with this client.
 class CopresenceClient : public base::SupportsWeakPtr<CopresenceClient> {
  public:
   // The delegate must outlive us.
@@ -53,9 +53,6 @@ class CopresenceClient : public base::SupportsWeakPtr<CopresenceClient> {
   void ExecuteReportRequest(copresence::ReportRequest request,
                             const std::string& app_id,
                             const StatusCallback& callback);
-
-  // Called before the API (and thus the Client) is destructed.
-  void Shutdown();
 
  private:
   void CompleteInitialization();

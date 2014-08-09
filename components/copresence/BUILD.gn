@@ -20,6 +20,8 @@ static_library("copresence") {
     "public/copresence_client.h",
     "public/copresence_constants.h",
     "public/whispernet_client.h",
+    "rpc/http_post.cc",
+    "rpc/http_post.h",
     "rpc/rpc_handler.cc",
     "rpc/rpc_handler.h",
     "timed_map.h",

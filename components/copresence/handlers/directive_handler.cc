@@ -10,10 +10,12 @@
 
 namespace copresence {
 
-DirectiveHandler::DirectiveHandler(
+DirectiveHandler::DirectiveHandler() {}
+
+void DirectiveHandler::Initialize(
     const AudioRecorder::DecodeSamplesCallback& decode_cb,
-    const AudioDirectiveList::EncodeTokenCallback& encode_cb)
-    : audio_handler_(new AudioDirectiveHandler(decode_cb, encode_cb)) {
+    const AudioDirectiveList::EncodeTokenCallback& encode_cb) {
+  audio_handler_.reset(new AudioDirectiveHandler(decode_cb, encode_cb));
   audio_handler_->Initialize();
 }
 
@@ -27,12 +29,16 @@ void DirectiveHandler::AddDirective(const Directive& directive) {
   const TokenInstruction& ti = directive.token_instruction();
   // We currently only support audio.
   DCHECK_EQ(ti.medium(), AUDIO_ULTRASOUND_PASSBAND);
+  DCHECK(audio_handler_.get()) << "Clients must call Initialize() before "
+                               << "any other DirectiveHandler methods.";
   audio_handler_->AddInstruction(
       ti, base::TimeDelta::FromMilliseconds(directive.ttl_millis()));
 }
 
 void DirectiveHandler::RemoveDirectives(const std::string& /* op_id */) {
   // TODO(rkc): Forward the remove directive call to all the directive handlers.
+  DCHECK(audio_handler_.get()) << "Clients must call Initialize() before "
+                               << "any other DirectiveHandler methods.";
 }
 
 }  // namespace copresence

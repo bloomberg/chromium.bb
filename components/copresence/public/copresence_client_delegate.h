@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_DELEGATE_H_
-#define COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_DELEGATE_H_
+#ifndef COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_CLIENT_DELEGATE_H_
+#define COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_CLIENT_DELEGATE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
-#include "components/copresence/proto/rpcs.pb.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -16,6 +16,7 @@ class URLRequestContextGetter;
 
 namespace copresence {
 
+class Message;
 class WhispernetClient;
 
 enum CopresenceStatus { SUCCESS, FAIL };
@@ -31,7 +32,7 @@ class CopresenceClientDelegate {
   virtual void HandleMessages(
       const std::string& app_id,
       const std::string& subscription_id,
-      const std::vector<copresence::Message>& message) = 0;
+      const std::vector<Message>& message) = 0;
 
   virtual net::URLRequestContextGetter* GetRequestContext() const = 0;
 
@@ -42,4 +43,4 @@ class CopresenceClientDelegate {
 
 }  // namespace copresence
 
-#endif  // COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_DELEGATE_H_
+#endif  // COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_CLIENT_DELEGATE_H_

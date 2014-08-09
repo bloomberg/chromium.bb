@@ -26,27 +26,22 @@ CopresenceClient::CopresenceClient(CopresenceClientDelegate* delegate)
     : delegate_(delegate), init_failed_(false), pending_init_operations_(0) {
   DVLOG(3) << "Initializing client.";
   pending_init_operations_++;
-  rpc_handler_.reset(
-      new RpcHandler(delegate,
-                     base::Bind(&CopresenceClient::InitStepComplete,
-                                AsWeakPtr(),
-                                "Copresence device registration")));
+  rpc_handler_.reset(new RpcHandler(delegate));
+  // We own the RpcHandler, so it won't outlive us.
+  rpc_handler_->Initialize(base::Bind(&CopresenceClient::InitStepComplete,
+                                      base::Unretained(this),
+                                      "Copresence device registration"));
 
   pending_init_operations_++;
   delegate_->GetWhispernetClient()->Initialize(
       base::Bind(&CopresenceClient::InitStepComplete,
+                 // We cannot cancel WhispernetClient initialization.
+                 // TODO(ckehoe): Get rid of this.
                  AsWeakPtr(),
                  "Whispernet proxy initialization"));
 }
 
-CopresenceClient::~CopresenceClient() {
-}
-
-void CopresenceClient::Shutdown() {
-  DVLOG(3) << "Shutting down client.";
-  delegate_->GetWhispernetClient()->Shutdown();
-  rpc_handler_->DisconnectFromWhispernet();
-}
+CopresenceClient::~CopresenceClient() {}
 
 // Returns false if any operations were malformed.
 void CopresenceClient::ExecuteReportRequest(copresence::ReportRequest request,
@@ -76,7 +71,7 @@ void CopresenceClient::CompleteInitialization() {
     return;
 
   if (!init_failed_)
-    rpc_handler_->ConnectToWhispernet(delegate_->GetWhispernetClient());
+    rpc_handler_->ConnectToWhispernet();
 
   for (std::vector<PendingRequest>::iterator request =
            pending_requests_queue_.begin();

@@ -21,6 +21,8 @@
       'sources': [
         'copresence/copresence_client.cc',
         'copresence/copresence_constants.cc',
+        'copresence/copresence_switches.cc',
+        'copresence/copresence_switches.h',
         'copresence/handlers/audio/audio_directive_handler.cc',
         'copresence/handlers/audio/audio_directive_handler.h',
         'copresence/handlers/audio/audio_directive_list.cc',
@@ -35,8 +37,10 @@
         'copresence/public/copresence_client.h',
         'copresence/public/copresence_constants.h',
         'copresence/public/whispernet_client.h',
+        'copresence/rpc/http_post.cc',
+        'copresence/rpc/http_post.h',
         'copresence/rpc/rpc_handler.cc',
-        'copresence/rpc/rpc_handler.h'
+        'copresence/rpc/rpc_handler.h',
         'copresence/timed_map.h',
       ],
       'export_dependent_settings': [

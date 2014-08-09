@@ -592,6 +592,8 @@
                 'copresence/handlers/audio/audio_directive_list_unittest.cc',
                 'copresence/mediums/audio/audio_player_unittest.cc',
                 'copresence/mediums/audio/audio_recorder_unittest.cc',
+                'copresence/rpc/http_post_unittest.cc',
+                'copresence/rpc/rpc_handler_unittest.cc',
                 'copresence/timed_map_unittest.cc',
               ],
               'dependencies': [
