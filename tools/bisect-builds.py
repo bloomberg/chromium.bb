@@ -690,7 +690,11 @@ def Bisect(base_url,
                         flash_path, pdf_path)
   cwd = os.getcwd()
 
-  print 'Downloading list of known revisions...'
+  print 'Downloading list of known revisions...',
+  if not use_local_repo:
+    print '(use --use-local-repo for speed if you have a local checkout)'
+  else:
+    print
   _GetDownloadPath = lambda rev: os.path.join(cwd,
       '%s-%s' % (str(rev), context.archive_name))
   if official_builds:
