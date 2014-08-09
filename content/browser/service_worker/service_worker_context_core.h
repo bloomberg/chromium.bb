@@ -36,7 +36,7 @@ class QuotaManagerProxy;
 namespace content {
 
 class EmbeddedWorkerRegistry;
-class ServiceWorkerFetchStoresManager;
+class ServiceWorkerCacheStorageManager;
 class ServiceWorkerContextObserver;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerHandle;
@@ -121,7 +121,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                                       const GURL& source_url) OVERRIDE;
 
   ServiceWorkerStorage* storage() { return storage_.get(); }
-  ServiceWorkerFetchStoresManager* fetch_stores_manager() {
+  ServiceWorkerCacheStorageManager* fetch_stores_manager() {
     return fetch_stores_manager_.get();
   }
   ServiceWorkerProcessManager* process_manager();
@@ -202,7 +202,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   ServiceWorkerContextWrapper* wrapper_;
   scoped_ptr<ProcessToProviderMap> providers_;
   scoped_ptr<ServiceWorkerStorage> storage_;
-  scoped_ptr<ServiceWorkerFetchStoresManager> fetch_stores_manager_;
+  scoped_ptr<ServiceWorkerCacheStorageManager> fetch_stores_manager_;
   scoped_refptr<EmbeddedWorkerRegistry> embedded_worker_registry_;
   scoped_ptr<ServiceWorkerJobCoordinator> job_coordinator_;
   std::map<int64, ServiceWorkerRegistration*> live_registrations_;

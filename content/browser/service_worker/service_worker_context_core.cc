@@ -8,9 +8,9 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_util.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
+#include "content/browser/service_worker/service_worker_cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_fetch_stores_manager.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
@@ -92,14 +92,13 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     : weak_factory_(this),
       wrapper_(wrapper),
       providers_(new ProcessToProviderMap),
-      storage_(ServiceWorkerStorage::Create(
-          path,
-          AsWeakPtr(),
-          database_task_runner,
-          disk_cache_thread,
-          quota_manager_proxy)),
+      storage_(ServiceWorkerStorage::Create(path,
+                                            AsWeakPtr(),
+                                            database_task_runner,
+                                            disk_cache_thread,
+                                            quota_manager_proxy)),
       fetch_stores_manager_(
-          ServiceWorkerFetchStoresManager::Create(path, stores_task_runner)),
+          ServiceWorkerCacheStorageManager::Create(path, stores_task_runner)),
       embedded_worker_registry_(EmbeddedWorkerRegistry::Create(AsWeakPtr())),
       job_coordinator_(new ServiceWorkerJobCoordinator(AsWeakPtr())),
       next_handle_id_(0),
@@ -114,7 +113,7 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
       providers_(old_context->providers_.release()),
       storage_(
           ServiceWorkerStorage::Create(AsWeakPtr(), old_context->storage())),
-      fetch_stores_manager_(ServiceWorkerFetchStoresManager::Create(
+      fetch_stores_manager_(ServiceWorkerCacheStorageManager::Create(
           old_context->fetch_stores_manager())),
       embedded_worker_registry_(EmbeddedWorkerRegistry::Create(
           AsWeakPtr(),
