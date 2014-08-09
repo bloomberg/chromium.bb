@@ -6,7 +6,6 @@
 
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/guest_view/guest_view_base.h"
-#include "chrome/browser/guest_view/guest_view_constants.h"
 #include "chrome/browser/guest_view/guest_view_manager_factory.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
@@ -15,6 +14,7 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/guest_view/guest_view_constants.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
 

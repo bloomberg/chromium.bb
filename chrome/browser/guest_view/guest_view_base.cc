@@ -6,7 +6,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/guest_view/guest_view_constants.h"
 #include "chrome/browser/guest_view/guest_view_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -16,6 +15,7 @@
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/guest_view/guest_view_constants.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"

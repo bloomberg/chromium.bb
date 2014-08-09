@@ -447,6 +447,8 @@
         'browser/external_provider_interface.h',
         'browser/granted_file_entry.cc',
         'browser/granted_file_entry.h',
+        'browser/guest_view/guest_view_constants.cc',
+        'browser/guest_view/guest_view_constants.h',
         'browser/image_loader.cc',
         'browser/image_loader.h',
         'browser/image_loader_factory.cc',

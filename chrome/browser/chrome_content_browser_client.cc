@@ -223,11 +223,11 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/browser/guest_view/guest_view_base.h"
-#include "chrome/browser/guest_view/guest_view_constants.h"
 #include "chrome/browser/guest_view/guest_view_manager.h"
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
+#include "extensions/browser/guest_view/guest_view_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #endif
 

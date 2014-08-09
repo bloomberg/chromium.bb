@@ -1504,8 +1504,6 @@
       'browser/guest_view/extension_options/extension_options_constants.h',
       'browser/guest_view/extension_options/extension_options_guest.cc',
       'browser/guest_view/extension_options/extension_options_guest.h',
-      'browser/guest_view/guest_view_constants.cc',
-      'browser/guest_view/guest_view_constants.h',
       'browser/guest_view/guest_view_base.cc',
       'browser/guest_view/guest_view_base.h',
       'browser/guest_view/guest_view_manager_factory.h',

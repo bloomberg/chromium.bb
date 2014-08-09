@@ -7,11 +7,11 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/user_metrics_action.h"
-#include "chrome/browser/guest_view/guest_view_constants.h"
 #include "chrome/browser/guest_view/web_view/web_view_permission_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/media_stream_request.h"
+#include "extensions/browser/guest_view/guest_view_constants.h"
 
 using base::UserMetricsAction;
 
