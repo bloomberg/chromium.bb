@@ -47,7 +47,7 @@
                     assert_equals(event.target, mediaKeySession);
                     assert_equals(event.type, 'message');
 
-                    keyId = new Uint8Array(event.message);
+                    keyId = extractSingleKeyIdFromMessage(event.message);
                     setTimeout(verifyWaitingForKey, 250);
                 }
 

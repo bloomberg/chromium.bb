@@ -43,7 +43,7 @@
                     assert_true(event instanceof window.MediaKeyMessageEvent);
                     assert_equals(event.type, 'message');
 
-                    var keyId = new Uint8Array(event.message);
+                    var keyId = extractSingleKeyIdFromMessage(event.message);
                     var jwkSet = stringToUint8Array(createJWKSet(createJWK(keyId, rawKey)));
                     event.target.update(jwkSet).then(function(result) {
                         isUpdatePromiseResolved = true;

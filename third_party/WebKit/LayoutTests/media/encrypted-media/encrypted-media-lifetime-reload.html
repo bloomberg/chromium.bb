@@ -47,7 +47,7 @@
                     assert_equals(event.target, mediaKeySession);
                     assert_equals(event.type, 'message');
 
-                    var keyId = new Uint8Array(event.message);
+                    var keyId = extractSingleKeyIdFromMessage(event.message);
                     var jwkSet = stringToUint8Array(createJWKSet(createJWK(keyId, rawKey)));
                     mediaKeySession.update(jwkSet).then(function(result) {
                         sessionReadyReceived = true;
