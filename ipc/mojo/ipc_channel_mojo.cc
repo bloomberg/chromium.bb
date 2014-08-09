@@ -224,18 +224,29 @@ bool ChannelMojo::MessageReader::Send(scoped_ptr<Message> message) {
   message->TraceMessageBegin();
   std::vector<MojoHandle> handles;
 #if defined(OS_POSIX) && !defined(OS_NACL)
+  // We dup() the handles in IPC::Message to transmit.
+  // IPC::FileDescriptorSet has intricate lifecycle semantics
+  // of FDs, so just to dup()-and-own them is the safest option.
   if (message->HasFileDescriptors()) {
     FileDescriptorSet* fdset = message->file_descriptor_set();
     for (size_t i = 0; i < fdset->size(); ++i) {
+      int fd_to_send = dup(fdset->GetDescriptorAt(i));
+      if (-1 == fd_to_send) {
+        DPLOG(WARNING) << "Failed to dup FD to transmit.";
+        std::for_each(handles.begin(), handles.end(), &MojoClose);
+        CloseWithError(MOJO_RESULT_UNKNOWN);
+        return false;
+      }
+
       MojoHandle wrapped_handle;
       MojoResult wrap_result = CreatePlatformHandleWrapper(
           mojo::embedder::ScopedPlatformHandle(
-              mojo::embedder::PlatformHandle(
-                  fdset->GetDescriptorAt(i))),
+              mojo::embedder::PlatformHandle(fd_to_send)),
           &wrapped_handle);
       if (MOJO_RESULT_OK != wrap_result) {
         DLOG(WARNING) << "Pipe failed to wrap handles. Closing: "
                       << wrap_result;
+        std::for_each(handles.begin(), handles.end(), &MojoClose);
         CloseWithError(wrap_result);
         return false;
       }
@@ -251,6 +262,7 @@ bool ChannelMojo::MessageReader::Send(scoped_ptr<Message> message) {
       static_cast<uint32>(handles.size()),
       MOJO_WRITE_MESSAGE_FLAG_NONE);
   if (MOJO_RESULT_OK != write_result) {
+    std::for_each(handles.begin(), handles.end(), &MojoClose);
     CloseWithError(write_result);
     return false;
   }
