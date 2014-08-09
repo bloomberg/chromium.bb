@@ -253,7 +253,7 @@ class BaseSearchProvider : public AutocompleteProvider,
   virtual bool IsKeywordFetcher(const net::URLFetcher* fetcher) const = 0;
 
   // Updates |matches_| from the latest results; applies calculated relevances
-  // if suggested relevances cause undesriable behavior. Updates |done_|.
+  // if suggested relevances cause undesirable behavior. Updates |done_|.
   virtual void UpdateMatches() = 0;
 
   AutocompleteProviderListener* listener_;
