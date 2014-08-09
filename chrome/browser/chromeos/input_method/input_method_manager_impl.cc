@@ -93,6 +93,10 @@ void InputMethodManagerImpl::RemoveCandidateWindowObserver(
   candidate_window_observers_.RemoveObserver(observer);
 }
 
+InputMethodManager::State InputMethodManagerImpl::GetState() {
+  return state_;
+}
+
 void InputMethodManagerImpl::SetState(State new_state) {
   const State old_state = state_;
   state_ = new_state;

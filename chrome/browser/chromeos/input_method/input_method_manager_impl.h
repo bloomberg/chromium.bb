@@ -39,6 +39,7 @@ class InputMethodManagerImpl : public InputMethodManager,
   void SetState(State new_state);
 
   // InputMethodManager override:
+  virtual State GetState() OVERRIDE;
   virtual void InitializeComponentExtension() OVERRIDE;
   virtual void AddObserver(InputMethodManager::Observer* observer) OVERRIDE;
   virtual void AddCandidateWindowObserver(

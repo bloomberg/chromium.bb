@@ -21,6 +21,10 @@ MockInputMethodManager::~MockInputMethodManager() {
 void MockInputMethodManager::InitializeComponentExtension() {
 }
 
+InputMethodManager::State MockInputMethodManager::GetState() {
+  return InputMethodManager::STATE_BROWSER_SCREEN;
+}
+
 void MockInputMethodManager::AddObserver(
     InputMethodManager::Observer* observer) {
   ++add_observer_count_;

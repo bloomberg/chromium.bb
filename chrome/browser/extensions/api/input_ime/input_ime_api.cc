@@ -111,8 +111,9 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
     if (extension_id_.empty())
       return;
 
-    scoped_ptr<base::ListValue> args(
-        input_ime::OnActivate::Create(component_id));
+    scoped_ptr<base::ListValue> args(input_ime::OnActivate::Create(
+        component_id,
+        input_ime::OnActivate::ParseScreen(GetCurrentScreenType())));
 
     DispatchEventToExtension(
         extension_id_, input_ime::OnActivate::kEventName, args.Pass());
@@ -139,24 +140,6 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
     context_value.type = input_ime::InputContext::ParseType(context.type);
 
     scoped_ptr<base::ListValue> args(input_ime::OnFocus::Create(context_value));
-
-    // The component IME extensions need to know the current screen type (e.g.
-    // lock screen, login screen, etc.) so that its on-screen keyboard page
-    // won't open new windows/pages. See crbug.com/395621.
-    base::DictionaryValue* val = NULL;
-    if (args->GetDictionary(0, &val)) {
-      std::string screen_type;
-      if (!UserManager::Get()->IsUserLoggedIn()) {
-        screen_type = "login";
-      } else if (chromeos::ScreenLocker::default_screen_locker() &&
-                 chromeos::ScreenLocker::default_screen_locker()->locked()) {
-        screen_type = "lock";
-      } else if (UserAddingScreen::Get()->IsRunning()) {
-        screen_type = "secondary-login";
-      }
-      if (!screen_type.empty())
-        val->SetStringWithoutPathExpansion("screen", screen_type);
-    }
 
     DispatchEventToExtension(
         extension_id_, input_ime::OnFocus::kEventName, args.Pass());
@@ -324,6 +307,25 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
         return true;
     }
     return false;
+  }
+
+  // The component IME extensions need to know the current screen type (e.g.
+  // lock screen, login screen, etc.) so that its on-screen keyboard page
+  // won't open new windows/pages. See crbug.com/395621.
+  std::string GetCurrentScreenType() {
+    switch (chromeos::input_method::InputMethodManager::Get()->GetState()) {
+      case chromeos::input_method::InputMethodManager::STATE_LOGIN_SCREEN:
+        return "login";
+      case chromeos::input_method::InputMethodManager::STATE_LOCK_SCREEN:
+        return "lock";
+      case chromeos::input_method::InputMethodManager::STATE_BROWSER_SCREEN:
+        return UserAddingScreen::Get()->IsRunning() ? "secondary-login"
+                                                    : "normal";
+      case chromeos::input_method::InputMethodManager::STATE_TERMINATING:
+        return "normal";
+    }
+    NOTREACHED() << "New screen type is added. Please add new entry above.";
+    return "normal";
   }
 
   std::string extension_id_;

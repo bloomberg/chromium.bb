@@ -497,6 +497,12 @@
             "type": "string",
             "name": "engineID",
             "description": "ID of the engine receiving the event"
+          },
+          {
+            "type": "string",
+            "name": "screen",
+            "enum": ["normal", "login", "lock", "secondary-login"],
+            "description": "The screen type under which the IME is activated."
           }
         ]
       },
