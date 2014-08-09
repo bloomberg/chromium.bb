@@ -4,9 +4,9 @@
 from measurements import timeline_controller
 from metrics import timeline
 from telemetry.core.platform import tracing_category_filter
-from telemetry.page import page_measurement
+from telemetry.page import page_test
 
-class ThreadTimes(page_measurement.PageMeasurement):
+class ThreadTimes(page_test.PageTest):
   def __init__(self):
     super(ThreadTimes, self).__init__('RunSmoothness')
     self._timeline_controller = None
@@ -34,7 +34,7 @@ class ThreadTimes(page_measurement.PageMeasurement):
   def DidRunActions(self, page, tab):
     self._timeline_controller.Stop(tab)
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     metric = timeline.ThreadTimesTimelineMetric()
     renderer_thread = \
         self._timeline_controller.model.GetRendererThreadFromTabId(tab.id)

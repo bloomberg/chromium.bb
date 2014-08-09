@@ -21,13 +21,13 @@ tests are not included in this suite.
 import os
 
 from telemetry import benchmark
-from telemetry.page import page_measurement
 from telemetry.page import page_set
+from telemetry.page import page_test
 from telemetry.value import scalar
 
-class _BrowsermarkMeasurement(page_measurement.PageMeasurement):
+class _BrowsermarkMeasurement(page_test.PageTest):
 
-  def MeasurePage(self, _, tab, results):
+  def ValidateAndMeasurePage(self, _, tab, results):
     # Select nearest server(North America=1) and start test.
     js_start_test =  """
         for (var i=0; i < $('#continent a').length; i++) {

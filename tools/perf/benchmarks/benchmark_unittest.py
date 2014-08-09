@@ -13,7 +13,7 @@ import unittest
 
 from telemetry import benchmark as benchmark_module
 from telemetry.core import discover
-from telemetry.page import page_measurement
+from telemetry.page import page_test
 from telemetry.unittest import options_for_unittests
 from telemetry.unittest import progress_reporter
 
@@ -65,7 +65,7 @@ def load_tests(_, _2, _3):
   measurements_dir = os.path.join(top_level_dir, 'measurements')
 
   all_measurements = discover.DiscoverClasses(
-      measurements_dir, top_level_dir, page_measurement.PageMeasurement,
+      measurements_dir, top_level_dir, page_test.PageTest,
       pattern='*.py').values()
   all_benchmarks = discover.DiscoverClasses(
       benchmarks_dir, top_level_dir, benchmark_module.Benchmark,

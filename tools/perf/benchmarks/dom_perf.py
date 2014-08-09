@@ -8,8 +8,8 @@ import os
 
 from telemetry import benchmark
 from telemetry.core import util
-from telemetry.page import page_measurement
 from telemetry.page import page_set
+from telemetry.page import page_test
 from telemetry.value import merge_values
 from telemetry.value import scalar
 
@@ -37,8 +37,8 @@ SCORE_UNIT = 'score (bigger is better)'
 SCORE_TRACE_NAME = 'score'
 
 
-class _DomPerfMeasurement(page_measurement.PageMeasurement):
-  def MeasurePage(self, page, tab, results):
+class _DomPerfMeasurement(page_test.PageTest):
+  def ValidateAndMeasurePage(self, page, tab, results):
     try:
       def _IsDone():
         return tab.GetCookieByName('__domperf_finished') == '1'

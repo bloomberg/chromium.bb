@@ -9,8 +9,8 @@ import os
 
 from telemetry import benchmark
 from telemetry.core import util
-from telemetry.page import page_measurement
 from telemetry.page import page_set
+from telemetry.page import page_test
 from telemetry.value import list_of_scalar_values
 from telemetry.value import scalar
 
@@ -46,14 +46,14 @@ DESCRIPTIONS = {
 }
 
 
-class _SpaceportMeasurement(page_measurement.PageMeasurement):
+class _SpaceportMeasurement(page_test.PageTest):
   def __init__(self):
     super(_SpaceportMeasurement, self).__init__()
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--disable-gpu-vsync')
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     tab.WaitForJavaScriptExpression(
         '!document.getElementById("start-performance-tests").disabled', 60)
 

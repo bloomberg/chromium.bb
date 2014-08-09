@@ -13,16 +13,16 @@ The benchmark is kept here for historical purposes but is disabled on the bots.
 import os
 
 from telemetry import benchmark
-from telemetry.page import page_measurement
 from telemetry.page import page_set
+from telemetry.page import page_test
 from telemetry.value import scalar
 
 
-class _JsgamebenchMeasurement(page_measurement.PageMeasurement):
+class _JsgamebenchMeasurement(page_test.PageTest):
   def __init__(self):
     super(_JsgamebenchMeasurement, self).__init__()
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     tab.ExecuteJavaScript('UI.call({}, "perftest")')
     tab.WaitForJavaScriptExpression(
         'document.getElementById("perfscore0") != null', 1800)

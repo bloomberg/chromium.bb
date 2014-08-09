@@ -21,14 +21,14 @@ import json
 import os
 
 from telemetry import benchmark
-from telemetry.page import page_measurement
 from telemetry.page import page_set
+from telemetry.page import page_test
 from telemetry.util import statistics
 from telemetry.value import list_of_scalar_values
 from telemetry.value import scalar
 
 
-class _JetstreamMeasurement(page_measurement.PageMeasurement):
+class _JetstreamMeasurement(page_test.PageTest):
   def __init__(self):
     super(_JetstreamMeasurement, self).__init__()
 
@@ -42,7 +42,7 @@ class _JetstreamMeasurement(page_measurement.PageMeasurement):
         }
         """
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     get_results_js = """
         (function() {
           for (var i = 0; i < __results.length; i++) {

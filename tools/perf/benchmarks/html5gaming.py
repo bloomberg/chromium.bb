@@ -13,13 +13,13 @@ score is a indicator for the browser's ability to smoothly run HTML5 games."""
 import os
 
 from telemetry import benchmark
-from telemetry.page import page_measurement
 from telemetry.page import page_set
+from telemetry.page import page_test
 from telemetry.value import scalar
 
 
-class _HTML5GamingMeasurement(page_measurement.PageMeasurement):
-  def MeasurePage(self, _, tab, results):
+class _HTML5GamingMeasurement(page_test.PageTest):
+  def ValidateAndMeasurePage(self, _, tab, results):
     tab.ExecuteJavaScript('benchmark();')
     # Default value of score element is 87485, its value is updated with actual
     # score when test finish.

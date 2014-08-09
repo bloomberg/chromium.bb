@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from telemetry.page import page
-from telemetry.page import page_measurement
+from telemetry.page import page_test
 from telemetry.value import scalar
 
 
@@ -28,8 +28,8 @@ class PageForPolymerLoad(page.Page):
     action_runner.WaitForJavaScriptCondition('window.__polymer_ready')
 
 
-class PolymerLoadMeasurement(page_measurement.PageMeasurement):
-  def MeasurePage(self, _, tab, results):
+class PolymerLoadMeasurement(page_test.PageTest):
+  def ValidateAndMeasurePage(self, _, tab, results):
     result = int(tab.EvaluateJavaScript('__polymer_ready_time'))
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'Total', 'ms', result))

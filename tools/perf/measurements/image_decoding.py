@@ -3,12 +3,12 @@
 # found in the LICENSE file.
 
 from metrics import power
-from telemetry.page import page_measurement
+from telemetry.page import page_test
 from telemetry.timeline import model
 from telemetry.value import scalar
 
 
-class ImageDecoding(page_measurement.PageMeasurement):
+class ImageDecoding(page_test.PageTest):
   def __init__(self):
     super(ImageDecoding, self).__init__()
     self._power_metric = None
@@ -44,7 +44,7 @@ class ImageDecoding(page_measurement.PageMeasurement):
             chrome.gpuBenchmarking.clearImageCache;
     """)
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     timeline_data = tab.browser.StopTracing()
     timeline_model = model.TimelineModel(timeline_data)
     self._power_metric.Stop(page, tab)

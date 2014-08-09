@@ -5,13 +5,13 @@
 from measurements import media
 import page_sets
 from telemetry import benchmark
-from telemetry.page import page_measurement
+from telemetry.page import page_test
 from telemetry.value import list_of_scalar_values
 from telemetry.value import scalar
 
 
-class _MSEMeasurement(page_measurement.PageMeasurement):
-  def MeasurePage(self, page, tab, results):
+class _MSEMeasurement(page_test.PageTest):
+  def ValidateAndMeasurePage(self, page, tab, results):
     media_metric = tab.EvaluateJavaScript('window.__testMetrics')
     trace = media_metric['id'] if 'id' in media_metric else None
     metrics = media_metric['metrics'] if 'metrics' in media_metric else []

@@ -201,7 +201,7 @@ class ExtensionsProfileCreator(profile_creator.ProfileCreator):
     # No matter how many pages in the pageset, just perform two test iterations.
     return page.page_set.pages.index(page) < 2
 
-  def MeasurePage(self, _, tab, results):
+  def ValidateAndMeasurePage(self, _, tab, results):
     # Profile setup works in 2 phases:
     # Phase 1: When the first page is loaded: we wait for a timeout to allow
     #     all extensions to install and to prime safe browsing and other

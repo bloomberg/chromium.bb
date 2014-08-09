@@ -3,12 +3,12 @@
 # found in the LICENSE file.
 import os
 
-from telemetry.page import page_measurement
+from telemetry.page import page_test
 from telemetry.page import page_test
 from telemetry.value import scalar
 
 
-class Screenshot(page_measurement.PageMeasurement):
+class Screenshot(page_test.PageTest):
   def __init__(self):
     super(Screenshot, self).__init__(
         action_name_to_run = 'RunPrepareForScreenshot',
@@ -25,7 +25,7 @@ class Screenshot(page_measurement.PageMeasurement):
       parser.error('Please specify --png-outdir')
     cls._png_outdir = args.png_outdir
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     if not tab.screenshot_supported:
       raise page_test.TestNotSupportedOnPlatformFailure(
           'Browser does not support screenshotting')

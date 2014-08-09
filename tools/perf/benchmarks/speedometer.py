@@ -19,14 +19,14 @@ engine, CSS style resolution, layout, and other technologies.
 import os
 
 from telemetry import benchmark
-from telemetry.page import page_measurement
 from telemetry.page import page_set
+from telemetry.page import page_test
 from telemetry.value import list_of_scalar_values
 
 
-class SpeedometerMeasurement(page_measurement.PageMeasurement):
+class SpeedometerMeasurement(page_test.PageTest):
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     tab.WaitForDocumentReadyStateToBeComplete()
     tab.ExecuteJavaScript('benchmarkClient.iterationCount = 10; startTest();')
     tab.WaitForJavaScriptExpression(

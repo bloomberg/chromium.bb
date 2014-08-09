@@ -28,5 +28,5 @@ class SmallProfileCreator(profile_creator.ProfileCreator):
     else:
       return browser.tabs.New()
 
-  def MeasurePage(self, _, tab, results):
+  def ValidateAndMeasurePage(self, _, tab, results):
     tab.WaitForDocumentReadyStateToBeComplete()

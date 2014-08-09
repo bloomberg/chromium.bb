@@ -4,10 +4,10 @@
 from measurements import timeline_controller
 from metrics import loading
 from metrics import timeline
-from telemetry.page import page_measurement
+from telemetry.page import page_test
 from telemetry.web_perf import timeline_interaction_record as tir_module
 
-class LoadingTrace(page_measurement.PageMeasurement):
+class LoadingTrace(page_test.PageTest):
   def __init__(self, *args, **kwargs):
     super(LoadingTrace, self).__init__(*args, **kwargs)
     self._timeline_controller = timeline_controller.TimelineController()
@@ -16,7 +16,7 @@ class LoadingTrace(page_measurement.PageMeasurement):
     self._timeline_controller.SetUp(page, tab)
     self._timeline_controller.Start(tab)
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     # In current telemetry tests, all tests wait for DocumentComplete state,
     # but we need to wait for the load event.
     tab.WaitForJavaScriptExpression('performance.timing.loadEventStart', 300)

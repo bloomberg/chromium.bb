@@ -148,7 +148,7 @@ class PageCyclerUnitTest(unittest.TestCase):
       self.assertEqual(max(0, i - 2), tab.clear_cache_calls,
                        'Iteration %d tab.clear_cache_calls %d' %
                        (i, tab.clear_cache_calls))
-      cycler.MeasurePage(page, tab, results)
+      cycler.ValidateAndMeasurePage(page, tab, results)
       results.DidRunPage(page)
 
       values = results.all_page_specific_values
@@ -170,7 +170,7 @@ class PageCyclerUnitTest(unittest.TestCase):
         results = page_test_results.PageTestResults()
         results.WillRunPage(page)
         cycler.WillNavigateToPage(page, tab)
-        cycler.MeasurePage(page, tab, results)
+        cycler.ValidateAndMeasurePage(page, tab, results)
         results.DidRunPage(page)
 
         values = results.all_page_specific_values
@@ -195,7 +195,7 @@ class PageCyclerUnitTest(unittest.TestCase):
         results = page_test_results.PageTestResults()
         results.WillRunPage(page)
         cycler.WillNavigateToPage(page, tab)
-        cycler.MeasurePage(page, tab, results)
+        cycler.ValidateAndMeasurePage(page, tab, results)
         results.DidRunPage(page)
 
         values = results.all_page_specific_values

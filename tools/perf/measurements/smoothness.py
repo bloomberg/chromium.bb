@@ -4,10 +4,10 @@
 
 from metrics import power
 from measurements import smoothness_controller
-from telemetry.page import page_measurement
+from telemetry.page import page_test
 
 
-class Smoothness(page_measurement.PageMeasurement):
+class Smoothness(page_test.PageTest):
   def __init__(self):
     super(Smoothness, self).__init__('RunSmoothness')
     self._power_metric = None
@@ -35,7 +35,7 @@ class Smoothness(page_measurement.PageMeasurement):
     self._power_metric.Stop(page, tab)
     self._smoothness_controller.Stop(tab)
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     self._power_metric.AddResults(tab, results)
     self._smoothness_controller.AddResults(tab, results)
 

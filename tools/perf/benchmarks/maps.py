@@ -10,14 +10,14 @@ import re
 
 from telemetry import benchmark
 from telemetry.core import util
-from telemetry.page import page_measurement
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
+from telemetry.page import page_test
 from telemetry.value import scalar
 
 
-class _MapsMeasurement(page_measurement.PageMeasurement):
-  def MeasurePage(self, page, tab, results):
+class _MapsMeasurement(page_test.PageTest):
+  def ValidateAndMeasurePage(self, page, tab, results):
     js_get_results = 'document.getElementsByTagName("pre")[0].innerText'
     test_results = tab.EvaluateJavaScript(js_get_results)
 

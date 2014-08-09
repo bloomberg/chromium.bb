@@ -3,10 +3,10 @@
 # found in the LICENSE file.
 
 from metrics import startup_metric
-from telemetry.page import page_measurement
+from telemetry.page import page_test
 
 
-class Startup(page_measurement.PageMeasurement):
+class Startup(page_test.PageTest):
   """Performs a measurement of Chromium's startup performance.
 
   This test must be invoked with either --warm or --cold on the command line. A
@@ -48,7 +48,7 @@ class Startup(page_measurement.PageMeasurement):
     # Overriden so that no page navigation occurs - startup to the NTP.
     pass
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     startup_metric.StartupMetric().AddResults(tab, results)
 
 

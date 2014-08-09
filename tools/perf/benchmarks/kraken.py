@@ -8,8 +8,8 @@ import os
 
 from metrics import power
 from telemetry import benchmark
-from telemetry.page import page_measurement
 from telemetry.page import page_set
+from telemetry.page import page_test
 from telemetry.value import list_of_scalar_values
 from telemetry.value import scalar
 
@@ -65,7 +65,7 @@ def _Mean(l):
   return float(sum(l)) / len(l) if len(l) > 0 else 0.0
 
 
-class _KrakenMeasurement(page_measurement.PageMeasurement):
+class _KrakenMeasurement(page_test.PageTest):
   def __init__(self):
     super(_KrakenMeasurement, self).__init__()
     self._power_metric = None
@@ -79,7 +79,7 @@ class _KrakenMeasurement(page_measurement.PageMeasurement):
   def DidNavigateToPage(self, page, tab):
     self._power_metric.Start(page, tab)
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     tab.WaitForJavaScriptExpression(
         'document.title.indexOf("Results") != -1', 700)
     tab.WaitForDocumentReadyStateToBeComplete()

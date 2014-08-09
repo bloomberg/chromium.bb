@@ -75,7 +75,7 @@ class Repaint(page_test.PageTest):
     """)
     self._smoothness_controller.Stop(tab)
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     self._smoothness_controller.AddResults(tab, results)
 
   def CleanUpAfterPage(self, _, tab):

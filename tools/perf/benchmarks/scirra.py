@@ -11,17 +11,17 @@ represented onscreen when the animation reaches the 30 FPS threshold.
 import os
 
 from telemetry import benchmark
-from telemetry.page import page_measurement
 from telemetry.page import page_set
+from telemetry.page import page_test
 from telemetry.value import scalar
 
 
-class _ScirraMeasurement(page_measurement.PageMeasurement):
+class _ScirraMeasurement(page_test.PageTest):
 
   def WillNavigateToPage(self, page, tab):
     page.script_to_evaluate_on_commit = 'window.sprites = 0;'
 
-  def MeasurePage(self, _, tab, results):
+  def ValidateAndMeasurePage(self, _, tab, results):
     object_count = '$objectcount$'
     fps = '$fps$'
     tickcount = '$tickcount$'

@@ -67,7 +67,7 @@ class SessionRestore(startup.Startup):
     self._cpu_metric = cpu.CpuMetric(browser)
     self._cpu_metric.Start(None, None)
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     tab.WaitForDocumentReadyStateToBeComplete()
 
     # Record CPU usage from browser start to when the foreground page is loaded.

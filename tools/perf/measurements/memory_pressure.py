@@ -11,10 +11,10 @@ the entire test rather than each single page.
 import logging
 
 from metrics import histogram_util
-from telemetry.page import page_measurement
+from telemetry.page import page_test
 
 
-class MemoryPressure(page_measurement.PageMeasurement):
+class MemoryPressure(page_test.PageTest):
   def __init__(self, *args, **kwargs):
     super(MemoryPressure, self).__init__(*args, **kwargs)
     # _first_tab is used to access histograms
@@ -37,7 +37,7 @@ class MemoryPressure(page_measurement.PageMeasurement):
       histogram_type, "Tabs.SadTab.KillCreated", tab)
     return (discard_count, kill_count)
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     # After navigating to each page, check if it triggered tab discards or
     # kills.
     (discard_count, kill_count) = self.GetTabsHistogramCounts(tab)

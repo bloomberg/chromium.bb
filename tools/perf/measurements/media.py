@@ -6,10 +6,10 @@ from metrics import cpu
 from metrics import media
 from metrics import system_memory
 from metrics import power
-from telemetry.page import page_measurement
+from telemetry.page import page_test
 
 
-class Media(page_measurement.PageMeasurement):
+class Media(page_test.PageTest):
   """The MediaMeasurement class gathers media-related metrics on a page set.
 
   Media metrics recorded are controlled by metrics/media.js.  At the end of the
@@ -50,7 +50,7 @@ class Media(page_measurement.PageMeasurement):
       self._memory_metric.Start(page, tab)
       self._power_metric.Start(page, tab)
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     """Measure the page's performance."""
     self._media_metric.Stop(page, tab)
     trace_name = self._media_metric.AddResults(tab, results)

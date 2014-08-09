@@ -15,12 +15,12 @@ import time
 from metrics import histogram_util
 from metrics import power
 from telemetry.core import util
-from telemetry.page import page_measurement
+from telemetry.page import page_test
 from telemetry.value import histogram
 
 # TODO: Revisit this test once multitab support is finalized.
 
-class TabSwitching(page_measurement.PageMeasurement):
+class TabSwitching(page_test.PageTest):
 
   # Amount of time to measure, in seconds.
   SAMPLE_TIME = 30
@@ -53,7 +53,7 @@ class TabSwitching(page_measurement.PageMeasurement):
     # Restart the browser after the last page in the pageset.
     return len(browser.tabs) >= len(page.page_set.pages)
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     """On the last tab, cycle through each tab that was opened and then record
     a single histogram for the tab switching metric."""
     if len(tab.browser.tabs) != len(page.page_set.pages):

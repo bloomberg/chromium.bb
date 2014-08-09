@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry.page import page_measurement
+from telemetry.page import page_test
 
-class NoOp(page_measurement.PageMeasurement):
+class NoOp(page_test.PageTest):
   def __init__(self):
     super(NoOp, self).__init__('RunNoOp')
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     pass

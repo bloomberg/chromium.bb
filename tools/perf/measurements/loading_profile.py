@@ -7,11 +7,11 @@ import tempfile
 
 from metrics import loading
 from telemetry.core.platform.profiler import perf_profiler
-from telemetry.page import page_measurement
+from telemetry.page import page_test
 from telemetry.value import scalar
 
 
-class LoadingProfile(page_measurement.PageMeasurement):
+class LoadingProfile(page_test.PageTest):
   options = {'page_repeat': 2}
 
   def __init__(self):
@@ -29,7 +29,7 @@ class LoadingProfile(page_measurement.PageMeasurement):
                                os.path.join(tempfile.mkdtemp(),
                                             page.file_safe_name))
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     # In current telemetry tests, all tests wait for DocumentComplete state,
     # but we need to wait for the load event.
     tab.WaitForJavaScriptExpression('performance.timing.loadEventStart', 300)

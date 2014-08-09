@@ -12,12 +12,12 @@ fills, shadows and text functions.
 import os
 
 from telemetry import benchmark
-from telemetry.page import page_measurement
 from telemetry.page import page_set
+from telemetry.page import page_test
 from telemetry.value import scalar
 
 
-class _CanvasMarkMeasurement(page_measurement.PageMeasurement):
+class _CanvasMarkMeasurement(page_test.PageTest):
 
   def WillNavigateToPage(self, page, tab):
     page.script_to_evaluate_on_commit = """
@@ -29,7 +29,7 @@ class _CanvasMarkMeasurement(page_measurement.PageMeasurement):
         }
         """
 
-  def MeasurePage(self, _, tab, results):
+  def ValidateAndMeasurePage(self, _, tab, results):
     tab.WaitForJavaScriptExpression('__results.length == 8', 300)
     results_log = tab.EvaluateJavaScript('__results')
     total = 0

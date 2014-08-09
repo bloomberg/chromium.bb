@@ -25,11 +25,11 @@ from metrics import power
 from metrics import speedindex
 from metrics import v8_object_stats
 from telemetry.core import util
-from telemetry.page import page_measurement
+from telemetry.page import page_test
 from telemetry.value import scalar
 
 
-class PageCycler(page_measurement.PageMeasurement):
+class PageCycler(page_test.PageTest):
   options = {'pageset_repeat': 10}
 
   def __init__(self, *args, **kwargs):
@@ -124,7 +124,7 @@ class PageCycler(page_measurement.PageMeasurement):
     if self._report_speed_index:
       self._speedindex_metric.CustomizeBrowserOptions(options)
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     tab.WaitForJavaScriptExpression('__pc_load_time', 60)
 
     chart_name_prefix = ('cold_' if self.IsRunCold(page.url) else

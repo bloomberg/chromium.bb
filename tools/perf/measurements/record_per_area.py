@@ -5,11 +5,11 @@
 import time
 
 from measurements import smoothness
-from telemetry.page import page_measurement
+from telemetry.page import page_test
 from telemetry.value import scalar
 
 
-class RecordPerArea(page_measurement.PageMeasurement):
+class RecordPerArea(page_test.PageTest):
   def __init__(self):
     super(RecordPerArea, self).__init__('', True)
 
@@ -27,7 +27,7 @@ class RecordPerArea(page_measurement.PageMeasurement):
         '--enable-gpu-benchmarking'
     ])
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     # Wait until the page has loaded and come to a somewhat steady state.
     # Needs to be adjusted for every device (~2 seconds for workstation).
     time.sleep(self.options.start_wait_time)

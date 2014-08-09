@@ -10,9 +10,9 @@ the entire test rather than each single page.
 
 
 from metrics import memory
-from telemetry.page import page_measurement
+from telemetry.page import page_test
 
-class MemoryMultiTab(page_measurement.PageMeasurement):
+class MemoryMultiTab(page_test.PageTest):
   def __init__(self, *args, **kwargs):
     super(MemoryMultiTab, self).__init__(*args, **kwargs)
     self._memory_metric = None
@@ -37,7 +37,7 @@ class MemoryMultiTab(page_measurement.PageMeasurement):
       self._memory_metric.Start(page, tab)
       self._first_tab = tab
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     # Finalize measurement on the last tab.
     if len(tab.browser.tabs) == len(page.page_set.pages):
       self._memory_metric.Stop(page, self._first_tab)

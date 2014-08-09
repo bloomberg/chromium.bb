@@ -6,8 +6,8 @@ import os
 
 from telemetry import benchmark
 from telemetry.core import util
-from telemetry.page import page_measurement
 from telemetry.page import page_set
+from telemetry.page import page_test
 from telemetry.value import list_of_scalar_values
 
 
@@ -55,7 +55,7 @@ def _CreatePageSetFromPath(path):
   return ps
 
 
-class _BlinkPerfMeasurement(page_measurement.PageMeasurement):
+class _BlinkPerfMeasurement(page_test.PageTest):
   """Tuns a blink performance test and reports the results."""
   def __init__(self):
     super(_BlinkPerfMeasurement, self).__init__('')
@@ -73,7 +73,7 @@ class _BlinkPerfMeasurement(page_measurement.PageMeasurement):
         '--disable-gesture-requirement-for-media-playback'
     ])
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     tab.WaitForJavaScriptExpression('testRunner.isDone', 600)
 
     log = tab.EvaluateJavaScript('document.getElementById("log").innerHTML')

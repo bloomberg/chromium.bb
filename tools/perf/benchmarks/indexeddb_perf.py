@@ -27,15 +27,15 @@ from metrics import power
 from metrics import v8_object_stats
 from telemetry import benchmark
 from telemetry.core import util
-from telemetry.page import page_measurement
 from telemetry.page import page_set
+from telemetry.page import page_test
 from telemetry.value import scalar
 
 _V8_COUNTER_NAMES = [
     'V8.OsMemoryAllocated',
   ]
 
-class _IndexedDbMeasurement(page_measurement.PageMeasurement):
+class _IndexedDbMeasurement(page_test.PageTest):
   def __init__(self, *args, **kwargs):
     super(_IndexedDbMeasurement, self).__init__(*args, **kwargs)
     self._memory_metric = None
@@ -57,7 +57,7 @@ class _IndexedDbMeasurement(page_measurement.PageMeasurement):
     self._power_metric.Start(page, tab)
     self._v8_object_stats_metric.Start(page, tab)
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     tab.WaitForDocumentReadyStateToBeComplete()
     tab.WaitForJavaScriptExpression(
         'window.document.cookie.indexOf("__done=1") >= 0', 600)

@@ -28,7 +28,7 @@ class SkpicturePrinter(page_test.PageTest):
                                     '--no-sandbox',
                                     '--enable-deferred-image-decoding'])
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     if tab.browser.platform.GetOSName() in ['android', 'chromeos']:
       raise page_test.MeasurementFailure(
           'SkPicture printing not supported on this platform')

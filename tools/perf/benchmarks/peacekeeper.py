@@ -15,14 +15,14 @@ mean of individual tests scores.
 """
 
 from telemetry import benchmark
-from telemetry.page import page_measurement
 from telemetry.page import page_set
+from telemetry.page import page_test
 from telemetry.util import statistics
 from telemetry.value import merge_values
 from telemetry.value import scalar
 
 
-class _PeaceKeeperMeasurement(page_measurement.PageMeasurement):
+class _PeaceKeeperMeasurement(page_test.PageTest):
 
   def WillNavigateToPage(self, page, tab):
     page.script_to_evaluate_on_commit = """
@@ -51,7 +51,7 @@ class _PeaceKeeperMeasurement(page_measurement.PageMeasurement):
         }
         """
 
-  def MeasurePage(self, _, tab, results):
+  def ValidateAndMeasurePage(self, _, tab, results):
     tab.WaitForJavaScriptExpression('_done', 600)
     result = tab.EvaluateJavaScript('__results')
 

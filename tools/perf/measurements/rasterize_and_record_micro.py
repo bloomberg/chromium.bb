@@ -55,7 +55,7 @@ class RasterizeAndRecordMicro(page_test.PageTest):
           'rasterize_and_record_micro requires Chrome branch 1713 '
           'or later. Skipping measurement.')
 
-  def MeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     try:
       tab.WaitForDocumentReadyStateToBeComplete()
     except TimeoutException:
