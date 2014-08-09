@@ -1,5 +1,5 @@
 diff --git a/third_party/qcms/src/iccread.c b/third_party/qcms/src/iccread.c
-index 36b7011..5876f96 100644
+index 36b7011..69b7141 100644
 --- a/third_party/qcms/src/iccread.c
 +++ b/third_party/qcms/src/iccread.c
 @@ -266,7 +266,7 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile)
@@ -34,7 +34,63 @@ index 36b7011..5876f96 100644
         // Compare with our tolerance
         for (i = 0; i < 3; ++i) {
             if (!(((sum[i] - tolerance[i]) <= target[i]) &&
-@@ -402,7 +411,7 @@ static struct XYZNumber read_tag_XYZType(struct mem_source *src, struct tag_inde
+@@ -331,6 +340,7 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile)
+ #define TAG_A2B0 0x41324230
+ #define TAG_B2A0 0x42324130
+ #define TAG_CHAD 0x63686164
++#define TAG_desc 0x64657363
+ 
+ static struct tag *find_tag(struct tag_index index, uint32_t tag_id)
+ {
+@@ -344,6 +354,47 @@ static struct tag *find_tag(struct tag_index index, uint32_t tag_id)
+ 	return tag;
+ }
+ 
++#define DESC_TYPE 0x64657363 // 'desc'
++#define MLUC_TYPE 0x6d6c7563 // 'mluc'
++
++static bool read_tag_descType(qcms_profile *profile, struct mem_source *src, struct tag_index index, uint32_t tag_id)
++{
++	struct tag *tag = find_tag(index, tag_id);
++	if (tag) {
++		const uint32_t limit = sizeof profile->description;
++		uint32_t offset = tag->offset;
++		uint32_t type = read_u32(src, offset);
++		uint32_t length = read_u32(src, offset+8);
++		uint32_t i, description;
++		if (length && type == MLUC_TYPE) {
++			length = read_u32(src, offset+20);
++			if (!length || (length & 1) || (read_u32(src, offset+12) != 12))
++				goto invalid_desc_tag;
++			description = offset + read_u32(src, offset+24);
++			if (!src->valid)
++				goto invalid_desc_tag;
++		} else if (length && type == DESC_TYPE) {
++			description = offset + 12;
++		} else {
++			goto invalid_desc_tag;
++		}
++		if (length >= limit)
++			length = limit - 1;
++		for (i = 0; i < length; ++i)
++			profile->description[i] = read_u8(src, description+i);
++		profile->description[length] = 0;
++	} else {
++		goto invalid_desc_tag;
++	}
++
++	if (src->valid)
++		return true;
++
++invalid_desc_tag:
++	invalid_source(src, "invalid description");
++	return false;
++}
++
+ #define XYZ_TYPE		0x58595a20 // 'XYZ '
+ #define CURVE_TYPE		0x63757276 // 'curv'
+ #define PARAMETRIC_CURVE_TYPE	0x70617261 // 'para'
+@@ -402,7 +453,7 @@ static struct XYZNumber read_tag_XYZType(struct mem_source *src, struct tag_inde
  // present that are not part of the tag_index.
  static struct curveType *read_curveType(struct mem_source *src, uint32_t offset, uint32_t *len)
  {
@@ -43,7 +99,7 @@ index 36b7011..5876f96 100644
  	struct curveType *curve = NULL;
  	uint32_t type = read_u32(src, offset);
  	uint32_t count;
-@@ -484,19 +493,23 @@ static void read_nested_curveType(struct mem_source *src, struct curveType *(*cu
+@@ -484,19 +535,23 @@ static void read_nested_curveType(struct mem_source *src, struct curveType *(*cu
  	uint32_t channel_offset = 0;
  	int i;
  	for (i = 0; i < num_channels; i++) {
@@ -69,7 +125,7 @@ index 36b7011..5876f96 100644
  }
  
  static void mAB_release(struct lutmABType *lut)
-@@ -657,7 +670,7 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
+@@ -657,7 +712,7 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
  	uint16_t num_input_table_entries;
  	uint16_t num_output_table_entries;
  	uint8_t in_chan, grid_points, out_chan;
@@ -78,7 +134,17 @@ index 36b7011..5876f96 100644
  	uint32_t clut_size;
  	size_t entry_size;
  	struct lutType *lut;
-@@ -997,6 +1010,9 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
+@@ -979,6 +1034,9 @@ qcms_profile* qcms_profile_sRGB(void)
+ 		return NO_MEM_PROFILE;
+ 
+ 	profile = qcms_profile_create_rgb_with_table(D65, Rec709Primaries, table, 1024);
++	if (profile)
++		strcpy(profile->description, "sRGB IEC61966-2.1");
++
+ 	free(table);
+ 	return profile;
+ }
+@@ -997,6 +1055,9 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
  	source.size = size;
  	source.valid = true;
  
@@ -88,8 +154,30 @@ index 36b7011..5876f96 100644
  	length = read_u32(src, 0);
  	if (length <= size) {
  		// shrink the area that we can read if appropriate
+@@ -1028,6 +1089,9 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
+ 	if (!src->valid || !index.tags)
+ 		goto invalid_tag_table;
+ 
++	if (!read_tag_descType(profile, src, index, TAG_desc))
++		goto invalid_tag_table;
++
+ 	if (find_tag(index, TAG_CHAD)) {
+ 		profile->chromaticAdaption = read_tag_s15Fixed16ArrayType(src, index, TAG_CHAD);
+ 	} else {
+@@ -1098,6 +1162,11 @@ invalid_profile:
+ 	return INVALID_PROFILE;
+ }
+ 
++qcms_bool qcms_profile_match(qcms_profile *p1, qcms_profile *p2)
++{
++    return memcmp(p1->description, p2->description, sizeof p1->description) == 0;
++}
++
+ qcms_intent qcms_profile_get_rendering_intent(qcms_profile *profile)
+ {
+ 	return profile->rendering_intent;
 diff --git a/third_party/qcms/src/qcms.h b/third_party/qcms/src/qcms.h
-index 7d83623..11fe222 100644
+index 7d83623..e59528a 100644
 --- a/third_party/qcms/src/qcms.h
 +++ b/third_party/qcms/src/qcms.h
 @@ -40,6 +40,12 @@ sale, use or other dealings in this Software without written
@@ -118,7 +206,16 @@ index 7d83623..11fe222 100644
  /* the names for the following two types are sort of ugly */
  typedef struct
  {
-@@ -146,6 +158,7 @@ qcms_transform* qcms_transform_create(
+@@ -136,6 +148,8 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile);
+ qcms_intent qcms_profile_get_rendering_intent(qcms_profile *profile);
+ icColorSpaceSignature qcms_profile_get_color_space(qcms_profile *profile);
+ 
++qcms_bool qcms_profile_match(qcms_profile *p1, qcms_profile *p2);
++
+ void qcms_profile_precache_output_transform(qcms_profile *profile);
+ 
+ qcms_transform* qcms_transform_create(
+@@ -146,6 +160,7 @@ qcms_transform* qcms_transform_create(
  void qcms_transform_release(qcms_transform *);
  
  void qcms_transform_data(qcms_transform *transform, void *src, void *dest, size_t length);
@@ -127,7 +224,7 @@ index 7d83623..11fe222 100644
  void qcms_enable_iccv4();
  
 diff --git a/third_party/qcms/src/qcmsint.h b/third_party/qcms/src/qcmsint.h
-index 53a3420..fb53e96 100644
+index 53a3420..4116ed5 100644
 --- a/third_party/qcms/src/qcmsint.h
 +++ b/third_party/qcms/src/qcmsint.h
 @@ -45,6 +45,11 @@ struct precache_output
@@ -151,7 +248,15 @@ index 53a3420..fb53e96 100644
  };
  
  struct matrix {
-@@ -280,18 +285,40 @@ qcms_bool set_rgb_colorants(qcms_profile *profile, qcms_CIE_xyY white_point, qcm
+@@ -225,6 +230,7 @@ struct tag_value {
+ #define LAB_SIGNATURE  0x4C616220
+ 
+ struct _qcms_profile {
++	char description[64];
+ 	uint32_t class;
+ 	uint32_t color_space;
+ 	uint32_t pcs;
+@@ -280,18 +286,40 @@ qcms_bool set_rgb_colorants(qcms_profile *profile, qcms_CIE_xyY white_point, qcm
  void qcms_transform_data_rgb_out_lut_sse2(qcms_transform *transform,
                                            unsigned char *src,
                                            unsigned char *dest,

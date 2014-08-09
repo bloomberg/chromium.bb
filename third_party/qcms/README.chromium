@@ -39,5 +39,7 @@ google.patch contains the following modifications. Apply with
  - Check for unused tag_len in read_nested_curveType()
  - Apply qcms_transform_precacheLUT_float does not properly free dest buffer
    - https://bugzilla.mozilla.org/show_bug.cgi?id=701348
+ - Add qcms_profile_match api
+   - https://code.google.com/p/chromium/issues/detail?id=401971
 To regenerate google.patch:
   git diff b8456f38 src > google.patch

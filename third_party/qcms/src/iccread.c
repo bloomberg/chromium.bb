@@ -340,6 +340,7 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile)
 #define TAG_A2B0 0x41324230
 #define TAG_B2A0 0x42324130
 #define TAG_CHAD 0x63686164
+#define TAG_desc 0x64657363
 
 static struct tag *find_tag(struct tag_index index, uint32_t tag_id)
 {
@@ -351,6 +352,47 @@ static struct tag *find_tag(struct tag_index index, uint32_t tag_id)
 		}
 	}
 	return tag;
+}
+
+#define DESC_TYPE 0x64657363 // 'desc'
+#define MLUC_TYPE 0x6d6c7563 // 'mluc'
+
+static bool read_tag_descType(qcms_profile *profile, struct mem_source *src, struct tag_index index, uint32_t tag_id)
+{
+	struct tag *tag = find_tag(index, tag_id);
+	if (tag) {
+		const uint32_t limit = sizeof profile->description;
+		uint32_t offset = tag->offset;
+		uint32_t type = read_u32(src, offset);
+		uint32_t length = read_u32(src, offset+8);
+		uint32_t i, description;
+		if (length && type == MLUC_TYPE) {
+			length = read_u32(src, offset+20);
+			if (!length || (length & 1) || (read_u32(src, offset+12) != 12))
+				goto invalid_desc_tag;
+			description = offset + read_u32(src, offset+24);
+			if (!src->valid)
+				goto invalid_desc_tag;
+		} else if (length && type == DESC_TYPE) {
+			description = offset + 12;
+		} else {
+			goto invalid_desc_tag;
+		}
+		if (length >= limit)
+			length = limit - 1;
+		for (i = 0; i < length; ++i)
+			profile->description[i] = read_u8(src, description+i);
+		profile->description[length] = 0;
+	} else {
+		goto invalid_desc_tag;
+	}
+
+	if (src->valid)
+		return true;
+
+invalid_desc_tag:
+	invalid_source(src, "invalid description");
+	return false;
 }
 
 #define XYZ_TYPE		0x58595a20 // 'XYZ '
@@ -992,6 +1034,9 @@ qcms_profile* qcms_profile_sRGB(void)
 		return NO_MEM_PROFILE;
 
 	profile = qcms_profile_create_rgb_with_table(D65, Rec709Primaries, table, 1024);
+	if (profile)
+		strcpy(profile->description, "sRGB IEC61966-2.1");
+
 	free(table);
 	return profile;
 }
@@ -1042,6 +1087,9 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
 
 	index = read_tag_table(profile, src);
 	if (!src->valid || !index.tags)
+		goto invalid_tag_table;
+
+	if (!read_tag_descType(profile, src, index, TAG_desc))
 		goto invalid_tag_table;
 
 	if (find_tag(index, TAG_CHAD)) {
@@ -1112,6 +1160,11 @@ invalid_tag_table:
 invalid_profile:
 	qcms_profile_release(profile);
 	return INVALID_PROFILE;
+}
+
+qcms_bool qcms_profile_match(qcms_profile *p1, qcms_profile *p2)
+{
+    return memcmp(p1->description, p2->description, sizeof p1->description) == 0;
 }
 
 qcms_intent qcms_profile_get_rendering_intent(qcms_profile *profile)
