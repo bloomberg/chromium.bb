@@ -383,6 +383,10 @@ const char kUIDataProperty[] = "UIData";
 const char kConnectionIdProperty[] = "ConnectionId";
 const char kVisibleProperty[] = "Visible";
 const char kDnsAutoFallbackProperty[] = "DNSAutoFallback";
+const char kPortalDetectionFailedPhaseProperty[] =
+    "PortalDetectionFailedPhase";
+const char kPortalDetectionFailedStatusProperty[] =
+    "PortalDetectionFailedStatus";
 
 // Flimflam provider property names.
 const char kProviderHostProperty[] = "Provider.Host";
@@ -500,6 +504,16 @@ const char kStateOnline[] = "online";
 const char kStateDisconnect[] = "disconnect";
 const char kStateFailure[] = "failure";
 const char kStateActivationFailure[] = "activation-failure";
+
+// Flimflam portal phase and status.
+const char kPortalDetectionPhaseConnection[] = "Connection";
+const char kPortalDetectionPhaseDns[] = "DNS";
+const char kPortalDetectionPhaseHttp[] = "HTTP";
+const char kPortalDetectionPhaseContent[] = "Content";
+const char kPortalDetectionPhaseUnknown[] = "Unknown";
+const char kPortalDetectionStatusFailure[] = "Failure";
+const char kPortalDetectionStatusTimeout[] = "Timeout";
+const char kPortalDetectionStatusSuccess[] = "Success";
 
 // Flimflam property names for SIMLock status.
 const char kSIMLockStatusProperty[] = "Cellular.SIMLockStatus";
