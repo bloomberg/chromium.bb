@@ -279,9 +279,14 @@ LICENCES_IGNORE = [
     '||',
 ]
 
-TMPL = 'about_credits.tmpl'
-ENTRY_TMPL = 'about_credits_entry.tmpl'
-SHARED_LICENSE_TMPL = 'about_credits_shared_license_entry.tmpl'
+# Find the directory of this script.
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+
+# The template files we depend on for generating HTML.
+TMPL = os.path.join(SCRIPT_DIR, 'about_credits.tmpl')
+ENTRY_TMPL = os.path.join(SCRIPT_DIR, 'about_credits_entry.tmpl')
+SHARED_LICENSE_TMPL = os.path.join(
+    SCRIPT_DIR, 'about_credits_shared_license_entry.tmpl')
 
 
 # This is called directly by src/repohooks/pre-upload.py
