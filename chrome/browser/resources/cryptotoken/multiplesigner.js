@@ -6,13 +6,14 @@
  * @fileoverview A multiple gnubby signer wraps the process of opening a number
  * of gnubbies, signing each challenge in an array of challenges until a
  * success condition is satisfied, and yielding each succeeding gnubby.
+ *
  */
 'use strict';
 
 /**
  * @typedef {{
  *   code: number,
- *   gnubbyId: llGnubbyDeviceId,
+ *   gnubbyId: GnubbyDeviceId,
  *   challenge: (SignHelperChallenge|undefined),
  *   info: (ArrayBuffer|undefined)
  * }}
@@ -22,9 +23,6 @@ var MultipleSignerResult;
 /**
  * Creates a new sign handler that manages signing with all the available
  * gnubbies.
- * @param {!GnubbyFactory} gnubbyFactory Used to create and open the gnubbies.
- * @param {!CountdownFactory} timerFactory Used to create timers to reenumerate
- *     gnubbies.
  * @param {boolean} forEnroll Whether this signer is signing for an attempted
  *     enroll operation.
  * @param {function(boolean)} allCompleteCb Called when this signer completes
@@ -43,12 +41,8 @@ var MultipleSignerResult;
  * @param {string=} opt_logMsgUrl A URL to post log messages to.
  * @constructor
  */
-function MultipleGnubbySigner(gnubbyFactory, timerFactory, forEnroll,
-    allCompleteCb, gnubbyCompleteCb, timeoutMillis, opt_logMsgUrl) {
-  /** @private {!GnubbyFactory} */
-  this.gnubbyFactory_ = gnubbyFactory;
-  /** @private {!CountdownFactory} */
-  this.timerFactory_ = timerFactory;
+function MultipleGnubbySigner(forEnroll, allCompleteCb, gnubbyCompleteCb,
+    timeoutMillis, opt_logMsgUrl) {
   /** @private {boolean} */
   this.forEnroll_ = forEnroll;
   /** @private {function(boolean)} */
@@ -69,10 +63,11 @@ function MultipleGnubbySigner(gnubbyFactory, timerFactory, forEnroll,
   /** @private {!Object.<string, GnubbyTracker>} */
   this.gnubbies_ = {};
   /** @private {Countdown} */
-  this.timer_ = timerFactory.createTimer(
-      timeoutMillis, this.timeout_.bind(this));
+  this.timer_ = DEVICE_FACTORY_REGISTRY.getCountdownFactory()
+      .createTimer(timeoutMillis);
   /** @private {Countdown} */
-  this.reenumerateTimer_ = timerFactory.createTimer(timeoutMillis);
+  this.reenumerateTimer_ = DEVICE_FACTORY_REGISTRY.getCountdownFactory()
+      .createTimer(timeoutMillis);
 }
 
 /**
@@ -130,17 +125,30 @@ MultipleGnubbySigner.prototype.doSign = function(challenges) {
 };
 
 /**
+ * Signals this signer to rescan for gnubbies. Useful when the caller has
+ * knowledge that the last device has been removed, and can notify this class
+ * before it will discover it on its own.
+ */
+MultipleGnubbySigner.prototype.reScanDevices = function() {
+  if (this.reenumerateIntervalTimer_) {
+    this.reenumerateIntervalTimer_.clearTimeout();
+  }
+  this.maybeReEnumerateGnubbies_(true);
+};
+
+/**
  * Enumerates gnubbies.
  * @private
  */
 MultipleGnubbySigner.prototype.enumerateGnubbies_ = function() {
-  this.gnubbyFactory_.enumerate(this.enumerateCallback_.bind(this));
+  DEVICE_FACTORY_REGISTRY.getGnubbyFactory().enumerate(
+      this.enumerateCallback_.bind(this));
 };
 
 /**
  * Called with the result of enumerating gnubbies.
  * @param {number} rc The return code from enumerating.
- * @param {Array.<llGnubbyDeviceId>} ids The gnubbies enumerated.
+ * @param {Array.<GnubbyDeviceId>} ids The gnubbies enumerated.
  * @private
  */
 MultipleGnubbySigner.prototype.enumerateCallback_ = function(rc, ids) {
@@ -178,8 +186,12 @@ MultipleGnubbySigner.PASSIVE_REENUMERATE_INTERVAL_MILLIS = 3000;
 MultipleGnubbySigner.prototype.maybeReEnumerateGnubbies_ =
     function(activeScan) {
   if (this.reenumerateTimer_.expired()) {
-    // If the timer is expired, timeout_ will be called, and there's no
-    // additional work to do here.
+    // If the timer is expired, call timeout_ if there aren't any still-running
+    // gnubbies. (If there are some still running, the last will call timeout_
+    // itself.)
+    if (!this.anyPending_()) {
+      this.timeout_(false);
+    }
     return;
   }
   // Reenumerate more aggressively if there are no gnubbies present than if
@@ -199,8 +211,8 @@ MultipleGnubbySigner.prototype.maybeReEnumerateGnubbies_ =
   }
   /** @private {Countdown} */
   this.reenumerateIntervalTimer_ =
-      this.timerFactory_.createTimer(reenumerateTimeoutMillis,
-          this.enumerateGnubbies_.bind(this));
+      DEVICE_FACTORY_REGISTRY.getCountdownFactory().createTimer(
+          reenumerateTimeoutMillis, this.enumerateGnubbies_.bind(this));
 };
 
 /**
@@ -209,7 +221,7 @@ MultipleGnubbySigner.prototype.maybeReEnumerateGnubbies_ =
  * callback could be called more than once, in violation of its contract.)
  * If this signer has challenges to sign, begins signing on the new gnubby with
  * them.
- * @param {llGnubbyDeviceId} gnubbyId The id of the gnubby to add.
+ * @param {GnubbyDeviceId} gnubbyId The id of the gnubby to add.
  * @return {boolean} Whether the gnubby was added successfully.
  * @private
  */
@@ -226,7 +238,6 @@ MultipleGnubbySigner.prototype.addGnubby_ = function(gnubbyId) {
       signer: null
   };
   tracker.signer = new SingleGnubbySigner(
-      this.gnubbyFactory_,
       gnubbyId,
       this.forEnroll_,
       this.signCompletedCallback_.bind(this, tracker),
@@ -264,13 +275,20 @@ MultipleGnubbySigner.prototype.signCompletedCallback_ =
   var moreExpected = this.tallyCompletedGnubby_();
   switch (result.code) {
     case DeviceStatusCodes.GONE_STATUS:
-      // Squelch removed gnubbies: the caller can't act on them.
+      // Squelch removed gnubbies: the caller can't act on them. But if this
+      // was the last one, speed up reenumerating.
+      if (!moreExpected) {
+        this.maybeReEnumerateGnubbies_(true);
+      }
       break;
 
     default:
       // Report any other results directly to the caller.
       this.notifyGnubbyComplete_(tracker, result, moreExpected);
       break;
+  }
+  if (!moreExpected && this.timer_.expired()) {
+    this.timeout_(false);
   }
 };
 
@@ -295,16 +313,16 @@ MultipleGnubbySigner.prototype.anyPending_ = function() {
 
 /**
  * Called upon timeout.
+ * @param {boolean} anyPending Whether any gnubbies are awaiting results.
  * @private
  */
-MultipleGnubbySigner.prototype.timeout_ = function() {
+MultipleGnubbySigner.prototype.timeout_ = function(anyPending) {
   if (this.complete_) return;
   this.complete_ = true;
   // Defer notifying the caller that all are complete, in case the caller is
   // doing work in response to a gnubbyFound callback and has an inconsistent
   // view of the state of this signer.
   var self = this;
-  var anyPending = this.anyPending_();
   window.setTimeout(function() {
     self.allCompleteCb_(anyPending);
   }, 0);

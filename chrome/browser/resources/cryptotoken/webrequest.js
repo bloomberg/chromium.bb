@@ -26,13 +26,13 @@ function getOriginFromUrl(url) {
 }
 
 /**
- * Returns whether the signData object appears to be valid.
- * @param {Array.<Object>} signData the signData object.
- * @return {boolean} whether the object appears valid.
+ * Returns whether the array of SignChallenges appears to be valid.
+ * @param {Array.<SignChallenge>} signChallenges The array of sign challenges.
+ * @return {boolean} Whether the array appears valid.
  */
-function isValidSignData(signData) {
-  for (var i = 0; i < signData.length; i++) {
-    var incomingChallenge = signData[i];
+function isValidSignChallengeArray(signChallenges) {
+  for (var i = 0; i < signChallenges.length; i++) {
+    var incomingChallenge = signChallenges[i];
     if (!incomingChallenge.hasOwnProperty('challenge'))
       return false;
     if (!incomingChallenge.hasOwnProperty('appId')) {
@@ -67,19 +67,153 @@ function logMessage(logMsg, opt_logMsgUrl) {
 }
 
 /**
- * Formats response parameters as an object.
- * @param {string} type type of the post message.
- * @param {number} code status code of the operation.
- * @param {Object=} responseData the response data of the operation.
- * @return {Object} formatted response.
+ * Makes a response to a request.
+ * @param {Object} request The request to make a response to.
+ * @param {string} responseSuffix How to name the response's type.
+ * @param {string=} opt_defaultType The default response type, if none is
+ *     present in the request.
+ * @return {Object} The response object.
  */
-function formatWebPageResponse(type, code, responseData) {
-  var responseJsonObject = {};
-  responseJsonObject['type'] = type;
-  responseJsonObject['code'] = code;
-  if (responseData)
-    responseJsonObject['responseData'] = responseData;
-  return responseJsonObject;
+function makeResponseForRequest(request, responseSuffix, opt_defaultType) {
+  var type;
+  if (request && request.type) {
+    type = request.type.replace(/_request$/, responseSuffix);
+  } else {
+    type = opt_defaultType;
+  }
+  var reply = { 'type': type };
+  if (request && request.requestId) {
+    reply.requestId = request.requestId;
+  }
+  return reply;
+}
+
+/**
+ * Makes a response to a U2F request with an error code.
+ * @param {Object} request The request to make a response to.
+ * @param {ErrorCodes} code The error code to return.
+ * @param {string=} opt_detail An error detail string.
+ * @param {string=} opt_defaultType The default response type, if none is
+ *     present in the request.
+ * @return {Object} The U2F error.
+ */
+function makeU2fErrorResponse(request, code, opt_detail, opt_defaultType) {
+  var reply = makeResponseForRequest(request, '_response', opt_defaultType);
+  var error = {'errorCode': code};
+  if (opt_detail) {
+    error['errorMessage'] = opt_detail;
+  }
+  reply['responseData'] = error;
+  return reply;
+}
+
+/**
+ * Makes a success response to a web request with a responseData object.
+ * @param {Object} request The request to make a response to.
+ * @param {Object} responseData The response data.
+ * @return {Object} The web error.
+ */
+function makeU2fSuccessResponse(request, responseData) {
+  var reply = makeResponseForRequest(request, '_response');
+  reply['responseData'] = responseData;
+  return reply;
+}
+
+/**
+ * Makes a response to a web request with an error code.
+ * @param {Object} request The request to make a response to.
+ * @param {GnubbyCodeTypes} code The error code to return.
+ * @param {string=} opt_defaultType The default response type, if none is
+ *     present in the request.
+ * @return {Object} The web error.
+ */
+function makeWebErrorResponse(request, code, opt_defaultType) {
+  var reply = makeResponseForRequest(request, '_reply', opt_defaultType);
+  reply['code'] = code;
+  return reply;
+}
+
+/**
+ * Makes a success response to a web request with a responseData object.
+ * @param {Object} request The request to make a response to.
+ * @param {Object} responseData The response data.
+ * @return {Object} The web error.
+ */
+function makeWebSuccessResponse(request, responseData) {
+  var reply = makeResponseForRequest(request, '_reply');
+  reply['code'] = GnubbyCodeTypes.OK;
+  reply['responseData'] = responseData;
+  return reply;
+}
+
+/**
+ * Maps an error code from the ErrorCodes namespace to the GnubbyCodeTypes
+ * namespace.
+ * @param {ErrorCodes} errorCode Error in the ErrorCodes namespace.
+ * @param {boolean} forSign Whether the error is for a sign request.
+ * @return {GnubbyCodeTypes} Error code in the GnubbyCodeTypes namespace.
+ */
+function mapErrorCodeToGnubbyCodeType(errorCode, forSign) {
+  var code;
+  switch (errorCode) {
+    case ErrorCodes.BAD_REQUEST:
+      return GnubbyCodeTypes.BAD_REQUEST;
+
+    case ErrorCodes.DEVICE_INELIGIBLE:
+      return forSign ? GnubbyCodeTypes.NONE_PLUGGED_ENROLLED :
+          GnubbyCodeTypes.ALREADY_ENROLLED;
+
+    case ErrorCodes.TIMEOUT:
+      return GnubbyCodeTypes.WAIT_TOUCH;
+  }
+  return GnubbyCodeTypes.UNKNOWN_ERROR;
+}
+
+/**
+ * Maps a helper's error code from the DeviceStatusCodes namespace to the
+ * ErrorCodes namespace.
+ * @param {number} code Error code from DeviceStatusCodes namespace.
+ * @return {ErrorCodes} A ErrorCodes error code.
+ */
+function mapDeviceStatusCodeToErrorCode(code) {
+  var reportedError = ErrorCodes.OTHER_ERROR;
+  switch (code) {
+    case DeviceStatusCodes.WRONG_DATA_STATUS:
+      reportedError = ErrorCodes.DEVICE_INELIGIBLE;
+      break;
+
+    case DeviceStatusCodes.TIMEOUT_STATUS:
+    case DeviceStatusCodes.WAIT_TOUCH_STATUS:
+      reportedError = ErrorCodes.TIMEOUT;
+      break;
+  }
+  return reportedError;
+}
+
+/**
+ * Sends a response, using the given sentinel to ensure at most one response is
+ * sent. Also closes the closeable, if it's given.
+ * @param {boolean} sentResponse Whether a response has already been sent.
+ * @param {?Closeable} closeable A thing to close.
+ * @param {*} response The response to send.
+ * @param {Function} sendResponse A function to send the response.
+ */
+function sendResponseOnce(sentResponse, closeable, response, sendResponse) {
+  if (closeable) {
+    closeable.close();
+  }
+  if (!sentResponse) {
+    sentResponse = true;
+    try {
+      // If the page has gone away or the connection has otherwise gone,
+      // sendResponse fails.
+      sendResponse(response);
+    } catch (exception) {
+      console.warn('sendResponse failed: ' + exception);
+    }
+  } else {
+    console.warn(UTIL_fmt('Tried to reply more than once! Juan, FIX ME'));
+  }
 }
 
 /**
@@ -174,25 +308,35 @@ function makeSignBrowserData(serverChallenge, origin, opt_tlsChannelId) {
 }
 
 /**
- * @param {string} browserData Browser data as JSON
- * @param {string} appId Application Id
- * @param {string} encodedKeyHandle B64 encoded key handle
- * @param {string=} version Protocol version
- * @return {SignHelperChallenge} Challenge object
+ * Encodes the sign data as an array of sign helper challenges.
+ * @param {Array.<SignChallenge>} signChallenges The sign challenges to encode.
+ * @param {function(string, string): string=} opt_challengeHashFunction
+ *     A function that produces, from a key handle and a raw challenge, a hash
+ *     of the raw challenge. If none is provided, a default hash function is
+ *     used.
+ * @return {!Array.<SignHelperChallenge>} The sign challenges, encoded.
  */
-function makeChallenge(browserData, appId, encodedKeyHandle, version) {
-  var appIdHash = B64_encode(sha256HashOfString(appId));
-  var browserDataHash = B64_encode(sha256HashOfString(browserData));
-  var keyHandle = encodedKeyHandle;
-
-  var challenge = {
-    'challengeHash': browserDataHash,
-    'appIdHash': appIdHash,
-    'keyHandle': keyHandle
-  };
-  // Version is implicitly U2F_V1 if not specified.
-  challenge['version'] = (version || 'U2F_V1');
-  return challenge;
+function encodeSignChallenges(signChallenges, opt_challengeHashFunction) {
+  function encodedSha256(keyHandle, challenge) {
+    return B64_encode(sha256HashOfString(challenge));
+  }
+  var challengeHashFn = opt_challengeHashFunction || encodedSha256;
+  var encodedSignChallenges = [];
+  if (signChallenges) {
+    for (var i = 0; i < signChallenges.length; i++) {
+      var challenge = signChallenges[i];
+      var challengeHash =
+          challengeHashFn(challenge['keyHandle'], challenge['challenge']);
+      var encodedChallenge = {
+        'challengeHash': challengeHash,
+        'appIdHash': B64_encode(sha256HashOfString(challenge['appId'])),
+        'keyHandle': challenge['keyHandle'],
+        'version': (challenge['version'] || 'U2F_V1')
+      };
+      encodedSignChallenges.push(encodedChallenge);
+    }
+  }
+  return encodedSignChallenges;
 }
 
 /**
@@ -206,7 +350,8 @@ function makeSignHelperRequest(challenges, opt_timeoutSeconds, opt_logMsgUrl) {
   var request = {
     'type': 'sign_helper_request',
     'signData': challenges,
-    'timeout': opt_timeoutSeconds || 0
+    'timeout': opt_timeoutSeconds || 0,
+    'timeoutSeconds': opt_timeoutSeconds || 0
   };
   if (opt_logMsgUrl !== undefined) {
     request.logMsgUrl = opt_logMsgUrl;

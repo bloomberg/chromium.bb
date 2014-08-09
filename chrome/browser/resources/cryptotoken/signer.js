@@ -4,6 +4,7 @@
 
 /**
  * @fileoverview Handles web page requests for gnubby sign requests.
+ *
  */
 
 'use strict';
@@ -11,82 +12,150 @@
 var signRequestQueue = new OriginKeyedRequestQueue();
 
 /**
- * Handles a sign request.
- * @param {!SignHelperFactory} factory Factory to create a sign helper.
+ * Handles a web sign request.
  * @param {MessageSender} sender The sender of the message.
  * @param {Object} request The web page's sign request.
  * @param {Function} sendResponse Called back with the result of the sign.
  * @return {Closeable} Request handler that should be closed when the browser
  *     message channel is closed.
  */
-function handleSignRequest(factory, sender, request, sendResponse) {
+function handleWebSignRequest(sender, request, sendResponse) {
   var sentResponse = false;
-  function sendResponseOnce(r) {
-    if (queuedSignRequest) {
-      queuedSignRequest.close();
-      queuedSignRequest = null;
-    }
-    if (!sentResponse) {
-      sentResponse = true;
-      try {
-        // If the page has gone away or the connection has otherwise gone,
-        // sendResponse fails.
-        sendResponse(r);
-      } catch (exception) {
-        console.warn('sendResponse failed: ' + exception);
-      }
-    } else {
-      console.warn(UTIL_fmt('Tried to reply more than once! Juan, FIX ME'));
-    }
-  }
+  var queuedSignRequest;
 
-  function sendErrorResponse(code) {
-    var response = formatWebPageResponse(GnubbyMsgTypes.SIGN_WEB_REPLY, code);
-    sendResponseOnce(response);
+  function sendErrorResponse(u2fCode) {
+    sendResponseOnce(sentResponse, queuedSignRequest,
+        makeWebErrorResponse(request,
+            mapErrorCodeToGnubbyCodeType(u2fCode, true /* forSign */)),
+        sendResponse);
   }
 
   function sendSuccessResponse(challenge, info, browserData) {
-    var responseData = {};
-    for (var k in challenge) {
-      responseData[k] = challenge[k];
-    }
-    responseData['browserData'] = B64_encode(UTIL_StringToBytes(browserData));
-    responseData['signatureData'] = info;
-    var response = formatWebPageResponse(GnubbyMsgTypes.SIGN_WEB_REPLY,
-        GnubbyCodeTypes.OK, responseData);
-    sendResponseOnce(response);
+    var responseData = makeWebSignResponseDataFromChallenge(challenge);
+    addSignatureAndBrowserDataToResponseData(responseData, info, browserData,
+        'browserData');
+    var response = makeWebSuccessResponse(request, responseData);
+    sendResponseOnce(sentResponse, queuedSignRequest, response, sendResponse);
   }
 
+  queuedSignRequest =
+      validateAndEnqueueSignRequest(
+          sender, request, 'signData', sendErrorResponse,
+          sendSuccessResponse);
+  return queuedSignRequest;
+}
+
+/**
+ * Handles a U2F sign request.
+ * @param {MessageSender} sender The sender of the message.
+ * @param {Object} request The web page's sign request.
+ * @param {Function} sendResponse Called back with the result of the sign.
+ * @return {Closeable} Request handler that should be closed when the browser
+ *     message channel is closed.
+ */
+function handleU2fSignRequest(sender, request, sendResponse) {
+  var sentResponse = false;
+  var queuedSignRequest;
+
+  function sendErrorResponse(u2fCode) {
+    sendResponseOnce(sentResponse, queuedSignRequest,
+        makeU2fErrorResponse(request, u2fCode), sendResponse);
+  }
+
+  function sendSuccessResponse(challenge, info, browserData) {
+    var responseData = makeU2fSignResponseDataFromChallenge(challenge);
+    addSignatureAndBrowserDataToResponseData(responseData, info, browserData,
+        'clientData');
+    var response = makeU2fSuccessResponse(request, responseData);
+    sendResponseOnce(sentResponse, queuedSignRequest, response, sendResponse);
+  }
+
+  queuedSignRequest =
+      validateAndEnqueueSignRequest(
+          sender, request, 'signRequests', sendErrorResponse,
+          sendSuccessResponse);
+  return queuedSignRequest;
+}
+
+/**
+ * Creates a base U2F responseData object from the server challenge.
+ * @param {SignChallenge} challenge The server challenge.
+ * @return {Object} The responseData object.
+ */
+function makeU2fSignResponseDataFromChallenge(challenge) {
+  var responseData = {
+    'keyHandle': challenge['keyHandle']
+  };
+  return responseData;
+}
+
+/**
+ * Creates a base web responseData object from the server challenge.
+ * @param {SignChallenge} challenge The server challenge.
+ * @return {Object} The responseData object.
+ */
+function makeWebSignResponseDataFromChallenge(challenge) {
+  var responseData = {};
+  for (var k in challenge) {
+    responseData[k] = challenge[k];
+  }
+  return responseData;
+}
+
+/**
+ * Adds the browser data and signature values to a responseData object.
+ * @param {Object} responseData The "base" responseData object.
+ * @param {string} signatureData The signature data.
+ * @param {string} browserData The browser data generated from the challenge.
+ * @param {string} browserDataName The name of the browser data key in the
+ *     responseData object.
+ */
+function addSignatureAndBrowserDataToResponseData(responseData, signatureData,
+    browserData, browserDataName) {
+  responseData[browserDataName] = B64_encode(UTIL_StringToBytes(browserData));
+  responseData['signatureData'] = signatureData;
+}
+
+/**
+ * Validates a sign request using the given sign challenges name, and, if valid,
+ * enqueues the sign request for eventual processing.
+ * @param {MessageSender} sender The sender of the message.
+ * @param {Object} request The web page's sign request.
+ * @param {string} signChallengesName The name of the sign challenges value in
+ *     the request.
+ * @param {function(ErrorCodes)} errorCb Error callback.
+ * @param {function(SignChallenge, string, string)} successCb Success callback.
+ * @return {Closeable} Request handler that should be closed when the browser
+ *     message channel is closed.
+ */
+function validateAndEnqueueSignRequest(sender, request,
+    signChallengesName, errorCb, successCb) {
   var origin = getOriginFromUrl(/** @type {string} */ (sender.url));
   if (!origin) {
-    sendErrorResponse(GnubbyCodeTypes.BAD_REQUEST);
+    errorCb(ErrorCodes.BAD_REQUEST);
     return null;
   }
   // More closure type inference fail.
   var nonNullOrigin = /** @type {string} */ (origin);
 
-  if (!isValidSignRequest(request)) {
-    sendErrorResponse(GnubbyCodeTypes.BAD_REQUEST);
+  if (!isValidSignRequest(request, signChallengesName)) {
+    errorCb(ErrorCodes.BAD_REQUEST);
     return null;
   }
 
-  var signData = request['signData'];
+  var signChallenges = request[signChallengesName];
   // A valid sign data has at least one challenge, so get the first appId from
   // the first challenge.
-  var firstAppId = signData[0]['appId'];
-  var timeoutMillis = Signer.DEFAULT_TIMEOUT_MILLIS;
-  if (request['timeout']) {
-    // Request timeout is in seconds.
-    timeoutMillis = request['timeout'] * 1000;
-  }
-  var timer = new CountdownTimer(timeoutMillis);
+  var firstAppId = signChallenges[0]['appId'];
+  var timer = createTimerForRequest(
+      FACTORY_REGISTRY.getCountdownFactory(), request);
   var logMsgUrl = request['logMsgUrl'];
 
   // Queue sign requests from the same origin, to protect against simultaneous
   // sign-out on many tabs resulting in repeated sign-in requests.
-  var queuedSignRequest = new QueuedSignRequest(signData, factory, timer,
-      nonNullOrigin, sendErrorResponse, sendSuccessResponse,
-      sender.tlsChannelId, logMsgUrl);
+  var queuedSignRequest = new QueuedSignRequest(signChallenges,
+      timer, nonNullOrigin, errorCb, successCb, sender.tlsChannelId,
+      logMsgUrl);
   var requestToken = signRequestQueue.queueRequest(firstAppId, nonNullOrigin,
       queuedSignRequest.begin.bind(queuedSignRequest), timer);
   queuedSignRequest.setToken(requestToken);
@@ -95,44 +164,43 @@ function handleSignRequest(factory, sender, request, sendResponse) {
 
 /**
  * Returns whether the request appears to be a valid sign request.
- * @param {Object} request the request.
- * @return {boolean} whether the request appears valid.
+ * @param {Object} request The request.
+ * @param {string} signChallengesName The name of the sign challenges value in
+ *     the request.
+ * @return {boolean} Whether the request appears valid.
  */
-function isValidSignRequest(request) {
-  if (!request.hasOwnProperty('signData'))
+function isValidSignRequest(request, signChallengesName) {
+  if (!request.hasOwnProperty(signChallengesName))
     return false;
-  var signData = request['signData'];
+  var signChallenges = request[signChallengesName];
   // If a sign request contains an empty array of challenges, it could never
   // be fulfilled. Fail.
-  if (!signData.length)
+  if (!signChallenges.length)
     return false;
-  return isValidSignData(signData);
+  return isValidSignChallengeArray(signChallenges);
 }
 
 /**
  * Adapter class representing a queued sign request.
- * @param {!SignData} signData Signature data
- * @param {!SignHelperFactory} factory Factory for SignHelper instances
+ * @param {!Array.<SignChallenge>} signChallenges The sign challenges.
  * @param {Countdown} timer Timeout timer
  * @param {string} origin Signature origin
- * @param {function(number)} errorCb Error callback
+ * @param {function(ErrorCodes)} errorCb Error callback
  * @param {function(SignChallenge, string, string)} successCb Success callback
  * @param {string|undefined} opt_tlsChannelId TLS Channel Id
  * @param {string|undefined} opt_logMsgUrl Url to post log messages to
  * @constructor
  * @implements {Closeable}
  */
-function QueuedSignRequest(signData, factory, timer, origin, errorCb, successCb,
-    opt_tlsChannelId, opt_logMsgUrl) {
-  /** @private {!SignData} */
-  this.signData_ = signData;
-  /** @private {!SignHelperFactory} */
-  this.factory_ = factory;
+function QueuedSignRequest(signChallenges, timer, origin, errorCb,
+    successCb, opt_tlsChannelId, opt_logMsgUrl) {
+  /** @private {!Array.<SignChallenge>} */
+  this.signChallenges_ = signChallenges;
   /** @private {Countdown} */
   this.timer_ = timer;
   /** @private {string} */
   this.origin_ = origin;
-  /** @private {function(number)} */
+  /** @private {function(ErrorCodes)} */
   this.errorCb_ = errorCb;
   /** @private {function(SignChallenge, string, string)} */
   this.successCb_ = successCb;
@@ -173,18 +241,18 @@ QueuedSignRequest.prototype.setToken = function(token) {
 QueuedSignRequest.prototype.begin = function(token) {
   this.begun_ = true;
   this.setToken(token);
-  this.signer_ = new Signer(this.factory_, this.timer_, this.origin_,
+  this.signer_ = new Signer(this.timer_, this.origin_,
       this.signerFailed_.bind(this), this.signerSucceeded_.bind(this),
       this.tlsChannelId_, this.logMsgUrl_);
-  if (!this.signer_.setChallenges(this.signData_)) {
+  if (!this.signer_.setChallenges(this.signChallenges_)) {
     token.complete();
-    this.errorCb_(GnubbyCodeTypes.BAD_REQUEST);
+    this.errorCb_(ErrorCodes.BAD_REQUEST);
   }
 };
 
 /**
  * Called when this request's signer fails.
- * @param {number} code The failure code reported by the signer.
+ * @param {ErrorCodes} code The failure code reported by the signer.
  * @private
  */
 QueuedSignRequest.prototype.signerFailed_ = function(code) {
@@ -207,10 +275,9 @@ QueuedSignRequest.prototype.signerSucceeded_ =
 
 /**
  * Creates an object to track signing with a gnubby.
- * @param {!SignHelperFactory} helperFactory Factory to create a sign helper.
  * @param {Countdown} timer Timer for sign request.
  * @param {string} origin The origin making the request.
- * @param {function(number)} errorCb Called when the sign operation fails.
+ * @param {function(ErrorCodes)} errorCb Called when the sign operation fails.
  * @param {function(SignChallenge, string, string)} successCb Called when the
  *     sign operation succeeds.
  * @param {string=} opt_tlsChannelId the TLS channel ID, if any, of the origin
@@ -218,13 +285,13 @@ QueuedSignRequest.prototype.signerSucceeded_ =
  * @param {string=} opt_logMsgUrl The url to post log messages to.
  * @constructor
  */
-function Signer(helperFactory, timer, origin, errorCb, successCb,
+function Signer(timer, origin, errorCb, successCb,
     opt_tlsChannelId, opt_logMsgUrl) {
   /** @private {Countdown} */
   this.timer_ = timer;
   /** @private {string} */
   this.origin_ = origin;
-  /** @private {function(number)} */
+  /** @private {function(ErrorCodes)} */
   this.errorCb_ = errorCb;
   /** @private {function(SignChallenge, string, string)} */
   this.successCb_ = successCb;
@@ -246,41 +313,20 @@ function Signer(helperFactory, timer, origin, errorCb, successCb,
   // what they get.)
   /** @private {boolean} */
   this.allowHttp_ = this.origin_ ? this.origin_.indexOf('http://') == 0 : false;
-
-  // Protect against helper failure with a watchdog.
-  this.createWatchdog_(timer);
-  /** @private {SignHelper} */
-  this.helper_ = helperFactory.createHelper();
+  /** @private {Closeable} */
+  this.handler_ = null;
 }
 
 /**
- * Creates a timer with an expiry greater than the expiration time of the given
- * timer.
- * @param {Countdown} timer Timeout timer
- * @private
- */
-Signer.prototype.createWatchdog_ = function(timer) {
-  var millis = timer.millisecondsUntilExpired();
-  millis += CountdownTimer.TIMER_INTERVAL_MILLIS;
-  /** @private {Countdown|undefined} */
-  this.watchdogTimer_ = new CountdownTimer(millis, this.timeout_.bind(this));
-};
-
-/**
- * Default timeout value in case the caller never provides a valid timeout.
- */
-Signer.DEFAULT_TIMEOUT_MILLIS = 30 * 1000;
-
-/**
  * Sets the challenges to be signed.
- * @param {SignData} signData The challenges to set.
+ * @param {Array.<SignChallenge>} signChallenges The challenges to set.
  * @return {boolean} Whether the challenges could be set.
  */
-Signer.prototype.setChallenges = function(signData) {
+Signer.prototype.setChallenges = function(signChallenges) {
   if (this.challengesSet_ || this.done_)
     return false;
-  /** @private {SignData} */
-  this.signData_ = signData;
+  /** @private {Array.<SignChallenge>} */
+  this.signChallenges_ = signChallenges;
   /** @private {boolean} */
   this.challengesSet_ = true;
 
@@ -293,16 +339,34 @@ Signer.prototype.setChallenges = function(signData) {
  * @private
  */
 Signer.prototype.checkAppIds_ = function() {
-  var appIds = getDistinctAppIds(this.signData_);
+  var appIds = getDistinctAppIds(this.signChallenges_);
   if (!appIds || !appIds.length) {
-    this.notifyError_(GnubbyCodeTypes.BAD_REQUEST);
+    this.notifyError_(ErrorCodes.BAD_REQUEST);
+    return;
+  }
+  FACTORY_REGISTRY.getOriginChecker().canClaimAppIds(this.origin_, appIds)
+      .then(this.originChecked_.bind(this, appIds));
+};
+
+/**
+ * Called with the result of checking the origin. When the origin is allowed
+ * to claim the app ids, begins checking whether the app ids also list the
+ * origin.
+ * @param {!Array.<string>} appIds The app ids.
+ * @param {boolean} result Whether the origin could claim the app ids.
+ * @private
+ */
+Signer.prototype.originChecked_ = function(appIds, result) {
+  if (!result) {
+    this.notifyError_(ErrorCodes.BAD_REQUEST);
     return;
   }
   /** @private {!AppIdChecker} */
-  this.appIdChecker_ = new AppIdChecker(this.timer_.clone(), this.origin_,
+  this.appIdChecker_ = new AppIdChecker(FACTORY_REGISTRY.getTextFetcher(),
+      this.timer_.clone(), this.origin_,
       /** @type {!Array.<string>} */ (appIds), this.allowHttp_,
       this.logMsgUrl_);
-  this.appIdChecker_.doCheck(this.appIdChecked_.bind(this));
+  this.appIdChecker_.doCheck().then(this.appIdChecked_.bind(this));
 };
 
 /**
@@ -313,11 +377,11 @@ Signer.prototype.checkAppIds_ = function() {
  */
 Signer.prototype.appIdChecked_ = function(result) {
   if (!result) {
-    this.notifyError_(GnubbyCodeTypes.BAD_APP_ID);
+    this.notifyError_(ErrorCodes.BAD_REQUEST);
     return;
   }
   if (!this.doSign_()) {
-    this.notifyError_(GnubbyCodeTypes.BAD_REQUEST);
+    this.notifyError_(ErrorCodes.BAD_REQUEST);
     return;
   }
 };
@@ -328,40 +392,41 @@ Signer.prototype.appIdChecked_ = function(result) {
  * @private
  */
 Signer.prototype.doSign_ = function() {
-  var encodedChallenges = [];
-  for (var i = 0; i < this.signData_.length; i++) {
-    var incomingChallenge = this.signData_[i];
-    var serverChallenge = incomingChallenge['challenge'];
-    var appId = incomingChallenge['appId'];
-    var encodedKeyHandle = incomingChallenge['keyHandle'];
-    var version = incomingChallenge['version'];
+  // Create the browser data for each challenge.
+  for (var i = 0; i < this.signChallenges_.length; i++) {
+    var challenge = this.signChallenges_[i];
+    var serverChallenge = challenge['challenge'];
+    var keyHandle = challenge['keyHandle'];
 
     var browserData =
         makeSignBrowserData(serverChallenge, this.origin_, this.tlsChannelId_);
-    var encodedChallenge = makeChallenge(browserData, appId, encodedKeyHandle,
-        version);
-
-    var key = encodedKeyHandle + encodedChallenge['challengeHash'];
-    this.browserData_[key] = browserData;
-    this.serverChallenges_[key] = incomingChallenge;
-
-    encodedChallenges.push(encodedChallenge);
+    this.browserData_[keyHandle] = browserData;
+    this.serverChallenges_[keyHandle] = challenge;
   }
+
+  var encodedChallenges = encodeSignChallenges(this.signChallenges_,
+      this.getChallengeHash_.bind(this));
+
   var timeoutSeconds = this.timer_.millisecondsUntilExpired() / 1000.0;
   var request = makeSignHelperRequest(encodedChallenges, timeoutSeconds,
       this.logMsgUrl_);
-  return this.helper_.doSign(request, this.helperComplete_.bind(this));
+  this.handler_ =
+      FACTORY_REGISTRY.getRequestHelper()
+          .getHandler(/** @type {HelperRequest} */ (request));
+  if (!this.handler_)
+    return false;
+  return this.handler_.run(this.helperComplete_.bind(this));
 };
 
 /**
- * Called when the timeout expires on this signer.
+ * @param {string} keyHandle The key handle used with the challenge.
+ * @param {string} challenge The challenge.
+ * @return {string} The hashed challenge associated with the key
+ *     handle/challenge pair.
  * @private
  */
-Signer.prototype.timeout_ = function() {
-  this.watchdogTimer_ = undefined;
-  // The web page gets grumpy if it doesn't get WAIT_TOUCH within a reasonable
-  // time.
-  this.notifyError_(GnubbyCodeTypes.WAIT_TOUCH);
+Signer.prototype.getChallengeHash_ = function(keyHandle, challenge) {
+  return B64_encode(sha256HashOfString(this.browserData_[keyHandle]));
 };
 
 /** Closes this signer. */
@@ -369,14 +434,16 @@ Signer.prototype.close = function() {
   if (this.appIdChecker_) {
     this.appIdChecker_.close();
   }
-  if (this.helper_) {
-    this.helper_.close();
+  if (this.handler_) {
+    this.handler_.close();
+    this.handler_ = null;
   }
+  this.timer_.clearTimeout();
 };
 
 /**
  * Notifies the caller of error with the given error code.
- * @param {number} code Error code
+ * @param {ErrorCodes} code Error code
  * @private
  */
 Signer.prototype.notifyError_ = function(code) {
@@ -403,41 +470,20 @@ Signer.prototype.notifySuccess_ = function(challenge, info, browserData) {
 };
 
 /**
- * Maps a sign helper's error code namespace to the page's error code namespace.
- * @param {number} code Error code from DeviceStatusCodes namespace.
- * @return {number} A GnubbyCodeTypes error code.
- * @private
- */
-Signer.mapError_ = function(code) {
-  var reportedError;
-  switch (code) {
-    case DeviceStatusCodes.WRONG_DATA_STATUS:
-      reportedError = GnubbyCodeTypes.NONE_PLUGGED_ENROLLED;
-      break;
-
-    case DeviceStatusCodes.TIMEOUT_STATUS:
-    case DeviceStatusCodes.WAIT_TOUCH_STATUS:
-      reportedError = GnubbyCodeTypes.WAIT_TOUCH;
-      break;
-
-    default:
-      reportedError = GnubbyCodeTypes.UNKNOWN_ERROR;
-      break;
-  }
-  return reportedError;
-};
-
-/**
  * Called by the helper upon completion.
- * @param {SignHelperReply} reply The result of the sign request.
+ * @param {HelperReply} helperReply The result of the sign request.
  * @param {string=} opt_source The source of the sign result.
  * @private
  */
-Signer.prototype.helperComplete_ = function(reply, opt_source) {
-  this.clearTimeout_();
+Signer.prototype.helperComplete_ = function(helperReply, opt_source) {
+  if (helperReply.type != 'sign_helper_reply') {
+    this.notifyError_(ErrorCodes.OTHER_ERROR);
+    return;
+  }
+  var reply = /** @type {SignHelperReply} */ (helperReply);
 
   if (reply.code) {
-    var reportedError = Signer.mapError_(reply.code);
+    var reportedError = mapDeviceStatusCodeToErrorCode(reply.code);
     console.log(UTIL_fmt('helper reported ' + reply.code.toString(16) +
         ', returning ' + reportedError));
     this.notifyError_(reportedError);
@@ -447,24 +493,12 @@ Signer.prototype.helperComplete_ = function(reply, opt_source) {
       logMessage(logMsg, this.logMsgUrl_);
     }
 
-    var key =
-        reply.responseData['keyHandle'] + reply.responseData['challengeHash'];
+    var key = reply.responseData['keyHandle'];
     var browserData = this.browserData_[key];
     // Notify with server-provided challenge, not the encoded one: the
     // server-provided challenge contains additional fields it relies on.
     var serverChallenge = this.serverChallenges_[key];
     this.notifySuccess_(serverChallenge, reply.responseData.signatureData,
         browserData);
-  }
-};
-
-/**
- * Clears the timeout for this signer.
- * @private
- */
-Signer.prototype.clearTimeout_ = function() {
-  if (this.watchdogTimer_) {
-    this.watchdogTimer_.clearTimeout();
-    this.watchdogTimer_ = undefined;
   }
 };

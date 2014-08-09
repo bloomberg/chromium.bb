@@ -3,22 +3,22 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Low level usb cruft to talk gnubby.
+ * @fileoverview Provides a client view of a gnubby, aka USB security key.
  */
-
 'use strict';
 
-// Global Gnubby instance counter.
-var gnubbyId = 0;
-
 /**
- * Creates a worker Gnubby instance.
+ * Creates a Gnubby client. There may be more than one simultaneous Gnubby
+ * client of a physical device. This client manages multiplexing access to the
+ * low-level device to maintain the illusion that it is the only client of the
+ * device.
  * @constructor
  * @param {number=} opt_busySeconds to retry an exchange upon a BUSY result.
  */
-function usbGnubby(opt_busySeconds) {
+function Gnubby(opt_busySeconds) {
   this.dev = null;
-  this.cid = (++gnubbyId) & 0x00ffffff;  // Pick unique channel.
+  this.gnubbyInstance = ++Gnubby.gnubbyId_;
+  this.cid = Gnubby.BROADCAST_CID;
   this.rxframes = [];
   this.synccnt = 0;
   this.rxcb = null;
@@ -29,90 +29,59 @@ function usbGnubby(opt_busySeconds) {
 }
 
 /**
- * Sets usbGnubby's Gnubbies singleton.
- * @param {Gnubbies} gnubbies Gnubbies singleton instance
+ * Global Gnubby instance counter.
+ * @private {number}
  */
-usbGnubby.setGnubbies = function(gnubbies) {
-  /** @private {Gnubbies} */
-  usbGnubby.gnubbies_ = gnubbies;
-};
+Gnubby.gnubbyId_ = 0;
 
 /**
- * @param {function(number, Array.<llGnubbyDeviceId>)} cb Called back with the
- *     result of enumerating.
+ * Sets Gnubby's Gnubbies singleton.
+ * @param {Gnubbies} gnubbies Gnubbies singleton instance
  */
-usbGnubby.prototype.enumerate = function(cb) {
-  if (!cb) {
-    cb = function(rc, indexes) {
-      var msg = 'defaultEnumerateCallback(' + rc;
-      if (indexes) {
-        msg += ', [';
-        for (var i = 0; i < indexes.length; i++) {
-          msg += JSON.stringify(indexes[i]);
-        }
-        msg += ']';
-      }
-      msg += ')';
-      console.log(UTIL_fmt(msg));
-    };
-  }
-  if (this.closed) {
-    cb(-llGnubby.NODEVICE);
-    return;
-  }
-  if (!usbGnubby.gnubbies_) {
-    cb(-llGnubby.NODEVICE);
-    return;
-  }
-
-  usbGnubby.gnubbies_.enumerate(cb);
+Gnubby.setGnubbies = function(gnubbies) {
+  /** @private {Gnubbies} */
+  Gnubby.gnubbies_ = gnubbies;
 };
 
 /**
  * Opens the gnubby with the given index, or the first found gnubby if no
  * index is specified.
- * @param {llGnubbyDeviceId} which The device to open. If null, the first
+ * @param {GnubbyDeviceId} which The device to open. If null, the first
  *     gnubby found is opened.
  * @param {function(number)|undefined} opt_cb Called with result of opening the
  *     gnubby.
  */
-usbGnubby.prototype.open = function(which, opt_cb) {
-  var cb = opt_cb ? opt_cb : usbGnubby.defaultCallback;
+Gnubby.prototype.open = function(which, opt_cb) {
+  var cb = opt_cb ? opt_cb : Gnubby.defaultCallback;
   if (this.closed) {
-    cb(-llGnubby.NODEVICE);
+    cb(-GnubbyDevice.NODEVICE);
     return;
   }
   this.closingWhenIdle = false;
 
-  if (document.location.href.indexOf('_generated_') == -1) {
-    // Not background page.
-    // Pick more random cid to tell things apart on the usb bus.
-    var rnd = UTIL_getRandom(2);
-    this.cid ^= (rnd[0] << 16) | (rnd[1] << 8);
-  }
-
   var self = this;
 
   function setCid(which) {
-    self.cid &= 0x00ffffff;
-    self.cid |= ((which.device + 1) << 24);  // For debugging.
+    // Set a default channel ID, in case the caller never sets a better one.
+    self.cid = Gnubby.defaultChannelId_(self.gnubbyInstance, which);
   }
 
   var enumerateRetriesRemaining = 3;
   function enumerated(rc, devs) {
     if (!devs.length)
-      rc = -llGnubby.NODEVICE;
+      rc = -GnubbyDevice.NODEVICE;
     if (rc) {
       cb(rc);
       return;
     }
     which = devs[0];
     setCid(which);
-    usbGnubby.gnubbies_.addClient(which, self, function(rc, device) {
-      if (rc == -llGnubby.NODEVICE && enumerateRetriesRemaining-- > 0) {
+    self.which = which;
+    Gnubby.gnubbies_.addClient(which, self, function(rc, device) {
+      if (rc == -GnubbyDevice.NODEVICE && enumerateRetriesRemaining-- > 0) {
         // We were trying to open the first device, but now it's not there?
         // Do over.
-        usbGnubby.gnubbies_.enumerate(enumerated);
+        Gnubby.gnubbies_.enumerate(enumerated);
         return;
       }
       self.dev = device;
@@ -122,29 +91,45 @@ usbGnubby.prototype.open = function(which, opt_cb) {
 
   if (which) {
     setCid(which);
-    usbGnubby.gnubbies_.addClient(which, self, function(rc, device) {
+    self.which = which;
+    Gnubby.gnubbies_.addClient(which, self, function(rc, device) {
       self.dev = device;
       cb(rc);
     });
   } else {
-    usbGnubby.gnubbies_.enumerate(enumerated);
+    Gnubby.gnubbies_.enumerate(enumerated);
   }
+};
+
+/**
+ * Generates a default channel id value for a gnubby instance that won't
+ * collide within this application, but may when others simultaneously access
+ * the device.
+ * @param {number} gnubbyInstance An instance identifier for a gnubby.
+ * @param {GnubbyDeviceId} which The device identifer for the gnubby device.
+ * @return {number} The channel id.
+ * @private
+ */
+Gnubby.defaultChannelId_ = function(gnubbyInstance, which) {
+  var cid = (gnubbyInstance) & 0x00ffffff;
+  cid |= ((which.device + 1) << 24);  // For debugging.
+  return cid;
 };
 
 /**
  * @return {boolean} Whether this gnubby has any command outstanding.
  * @private
  */
-usbGnubby.prototype.inUse_ = function() {
+Gnubby.prototype.inUse_ = function() {
   return this.commandPending;
 };
 
 /** Closes this gnubby. */
-usbGnubby.prototype.close = function() {
+Gnubby.prototype.close = function() {
   this.closed = true;
 
   if (this.dev) {
-    console.log(UTIL_fmt('usbGnubby.close()'));
+    console.log(UTIL_fmt('Gnubby.close()'));
     this.rxframes = [];
     this.rxcb = null;
     var dev = this.dev;
@@ -155,7 +140,7 @@ usbGnubby.prototype.close = function() {
     // gets to the next one.
     window.setTimeout(
         function() {
-          usbGnubby.gnubbies_.removeClient(dev, self);
+          Gnubby.gnubbies_.removeClient(dev, self);
         }, 300);
   }
 };
@@ -164,7 +149,7 @@ usbGnubby.prototype.close = function() {
  * Asks this gnubby to close when it gets a chance.
  * @param {Function=} cb called back when closed.
  */
-usbGnubby.prototype.closeWhenIdle = function(cb) {
+Gnubby.prototype.closeWhenIdle = function(cb) {
   if (!this.inUse_()) {
     this.close();
     if (cb) cb();
@@ -178,7 +163,7 @@ usbGnubby.prototype.closeWhenIdle = function(cb) {
  * Close and notify every caller that it is now closed.
  * @private
  */
-usbGnubby.prototype.idleClose_ = function() {
+Gnubby.prototype.idleClose_ = function() {
   this.close();
   while (this.notifyOnClose.length != 0) {
     var cb = this.notifyOnClose.shift();
@@ -191,7 +176,7 @@ usbGnubby.prototype.idleClose_ = function() {
  * @param {function()} cb Callback
  * @private
  */
-usbGnubby.prototype.notifyFrame_ = function(cb) {
+Gnubby.prototype.notifyFrame_ = function(cb) {
   if (this.rxframes.length != 0) {
     // Already have frames; continue.
     if (cb) window.setTimeout(cb, 0);
@@ -206,7 +191,7 @@ usbGnubby.prototype.notifyFrame_ = function(cb) {
  * @return {boolean} Whether this client is still interested in receiving
  *     frames from its device.
  */
-usbGnubby.prototype.receivedFrame = function(frame) {
+Gnubby.prototype.receivedFrame = function(frame) {
   if (this.closed) return false;  // No longer interested.
 
   if (!this.checkCID_(frame)) {
@@ -228,7 +213,7 @@ usbGnubby.prototype.receivedFrame = function(frame) {
  * @return {ArrayBuffer|Uint8Array} oldest received frame. Throw if none.
  * @private
  */
-usbGnubby.prototype.readFrame_ = function() {
+Gnubby.prototype.readFrame_ = function() {
   if (this.rxframes.length == 0) throw 'rxframes empty!';
 
   var frame = this.rxframes.shift();
@@ -241,9 +226,9 @@ usbGnubby.prototype.readFrame_ = function() {
  * @param {?function(...)} cb Callback
  * @private
  */
-usbGnubby.prototype.read_ = function(cmd, timeout, cb) {
-  if (this.closed) { cb(-llGnubby.GONE); return; }
-  if (!this.dev) { cb(-llGnubby.GONE); return; }
+Gnubby.prototype.read_ = function(cmd, timeout, cb) {
+  if (this.closed) { cb(-GnubbyDevice.GONE); return; }
+  if (!this.dev) { cb(-GnubbyDevice.GONE); return; }
 
   var tid = null;  // timeout timer id.
   var callback = cb;
@@ -285,7 +270,7 @@ usbGnubby.prototype.read_ = function(cmd, timeout, cb) {
 
     tid = null;
 
-    schedule_cb(-llGnubby.TIMEOUT);
+    schedule_cb(-GnubbyDevice.TIMEOUT);
   };
 
   function cont_frame() {
@@ -295,12 +280,12 @@ usbGnubby.prototype.read_ = function(cmd, timeout, cb) {
     var rcmd = f[4];
     var totalLen = (f[5] << 8) + f[6];
 
-    if (rcmd == llGnubby.CMD_ERROR && totalLen == 1) {
+    if (rcmd == GnubbyDevice.CMD_ERROR && totalLen == 1) {
       // Error from device; forward.
       console.log(UTIL_fmt(
           '[' + self.cid.toString(16) + '] error frame ' +
           UTIL_BytesToHex(f)));
-      if (f[7] == llGnubby.GONE) {
+      if (f[7] == GnubbyDevice.GONE) {
         self.closed = true;
       }
       schedule_cb(-f[7]);
@@ -321,7 +306,7 @@ usbGnubby.prototype.read_ = function(cmd, timeout, cb) {
       console.log(UTIL_fmt(
           '[' + self.cid.toString(16) + '] bad cont frame ' +
           UTIL_BytesToHex(f)));
-      schedule_cb(-llGnubby.INVALID_SEQ);
+      schedule_cb(-GnubbyDevice.INVALID_SEQ);
       return;
     }
 
@@ -332,7 +317,7 @@ usbGnubby.prototype.read_ = function(cmd, timeout, cb) {
 
     if (count == msg.length) {
       // Done.
-      schedule_cb(-llGnubby.OK, msg.buffer);
+      schedule_cb(-GnubbyDevice.OK, msg.buffer);
     } else {
       // Need more CONT frame(s).
       self.notifyFrame_(cont_frame);
@@ -347,15 +332,15 @@ usbGnubby.prototype.read_ = function(cmd, timeout, cb) {
     var rcmd = f[4];
     var totalLen = (f[5] << 8) + f[6];
 
-    if (rcmd == llGnubby.CMD_ERROR && totalLen == 1) {
+    if (rcmd == GnubbyDevice.CMD_ERROR && totalLen == 1) {
       // Error from device; forward.
       // Don't log busy frames, they're "normal".
-      if (f[7] != llGnubby.BUSY) {
+      if (f[7] != GnubbyDevice.BUSY) {
         console.log(UTIL_fmt(
             '[' + self.cid.toString(16) + '] error frame ' +
             UTIL_BytesToHex(f)));
       }
-      if (f[7] == llGnubby.GONE) {
+      if (f[7] == GnubbyDevice.GONE) {
         self.closed = true;
       }
       schedule_cb(-f[7]);
@@ -388,7 +373,7 @@ usbGnubby.prototype.read_ = function(cmd, timeout, cb) {
 
     if (count == msg.length) {
       // Done.
-      schedule_cb(-llGnubby.OK, msg.buffer);
+      schedule_cb(-GnubbyDevice.OK, msg.buffer);
     } else {
       // Need more CONT frame(s).
       self.notifyFrame_(cont_frame);
@@ -403,18 +388,29 @@ usbGnubby.prototype.read_ = function(cmd, timeout, cb) {
 };
 
 /**
+  * @const
+  */
+Gnubby.NOTIFICATION_CID = 0;
+
+/**
+  * @const
+  */
+Gnubby.BROADCAST_CID = (0xff << 24) | (0xff << 16) | (0xff << 8) | 0xff;
+
+/**
  * @param {ArrayBuffer|Uint8Array} frame Data frame
  * @return {boolean} Whether frame is for my channel.
  * @private
  */
-usbGnubby.prototype.checkCID_ = function(frame) {
+Gnubby.prototype.checkCID_ = function(frame) {
   var f = new Uint8Array(frame);
   var c = (f[0] << 24) |
           (f[1] << 16) |
           (f[2] << 8) |
           (f[3]);
   return c === this.cid ||
-         c === 0;  // Generic notification.
+         c === Gnubby.NOTIFICATION_CID ||
+         c === Gnubby.BROADCAST_CID;
 };
 
 /**
@@ -423,7 +419,7 @@ usbGnubby.prototype.checkCID_ = function(frame) {
  * @param {ArrayBuffer|Uint8Array} data Command data
  * @private
  */
-usbGnubby.prototype.write_ = function(cmd, data) {
+Gnubby.prototype.write_ = function(cmd, data) {
   if (this.closed) return;
   if (!this.dev) return;
 
@@ -440,14 +436,14 @@ usbGnubby.prototype.write_ = function(cmd, data) {
  * @param {function(number, ArrayBuffer=)} cb Callback
  * @private
  */
-usbGnubby.prototype.exchange_ = function(cmd, data, timeout, cb) {
+Gnubby.prototype.exchange_ = function(cmd, data, timeout, cb) {
   var busyWait = new CountdownTimer(this.busyMillis);
   var self = this;
 
   function retryBusy(rc, rc_data) {
-    if (rc == -llGnubby.BUSY && !busyWait.expired()) {
-      if (usbGnubby.gnubbies_) {
-        usbGnubby.gnubbies_.resetInactivityTimer(timeout * 1000);
+    if (rc == -GnubbyDevice.BUSY && !busyWait.expired()) {
+      if (Gnubby.gnubbies_) {
+        Gnubby.gnubbies_.resetInactivityTimer(timeout * 1000);
       }
       self.write_(cmd, data);
       self.read_(cmd, timeout, retryBusy);
@@ -457,14 +453,14 @@ usbGnubby.prototype.exchange_ = function(cmd, data, timeout, cb) {
     }
   }
 
-  retryBusy(-llGnubby.BUSY, undefined);  // Start work.
+  retryBusy(-GnubbyDevice.BUSY, undefined);  // Start work.
 };
 
 /** Default callback for commands. Simply logs to console.
  * @param {number} rc Result status code
  * @param {(ArrayBuffer|Uint8Array|Array.<number>|null)} data Result data
  */
-usbGnubby.defaultCallback = function(rc, data) {
+Gnubby.defaultCallback = function(rc, data) {
   var msg = 'defaultCallback(' + rc;
   if (data) {
     if (typeof data == 'string') msg += ', ' + data;
@@ -474,13 +470,17 @@ usbGnubby.defaultCallback = function(rc, data) {
   console.log(UTIL_fmt(msg));
 };
 
-/** Send nonce to device, flush read queue until match.
+/**
+ * Ensures this device has temporary ownership of the USB device, by:
+ * 1. Using the INIT command to allocate an unique channel id, if one hasn't
+ *    been retrieved before, or
+ * 2. Sending a nonce to device, flushing read queue until match.
  * @param {?function(...)} cb Callback
  */
-usbGnubby.prototype.sync = function(cb) {
-  if (!cb) cb = usbGnubby.defaultCallback;
+Gnubby.prototype.sync = function(cb) {
+  if (!cb) cb = Gnubby.defaultCallback;
   if (this.closed) {
-    cb(-llGnubby.GONE);
+    cb(-GnubbyDevice.GONE);
     return;
   }
 
@@ -489,47 +489,110 @@ usbGnubby.prototype.sync = function(cb) {
   var tid = null;
   var self = this;
 
-  function callback(rc) {
+  function returnValue(rc) {
     done = true;
+    cb(rc);
+    if (self.closingWhenIdle) self.idleClose_();
+  }
+
+  function callback(rc, opt_frame) {
     self.commandPending = false;
     if (tid) {
       window.clearTimeout(tid);
       tid = null;
     }
-    if (rc) console.warn(UTIL_fmt('sync failed: ' + rc));
-    if (cb) cb(rc);
-    if (self.closingWhenIdle) self.idleClose_();
+    completionAction(rc, opt_frame);
   }
 
-  function sendSentinel() {
+  function sendSyncSentinel() {
+    var cmd = GnubbyDevice.CMD_SYNC;
     var data = new Uint8Array(1);
     data[0] = ++self.synccnt;
-    self.write_(llGnubby.CMD_SYNC, data.buffer);
+    self.dev.queueCommand(self.cid, cmd, data.buffer);
+  }
+
+  function syncSentinelEquals(f) {
+    return (f[4] == GnubbyDevice.CMD_SYNC &&
+        (f.length == 7 || /* fw pre-0.2.1 bug: does not echo sentinel */
+         f[7] == self.synccnt));
+  }
+
+  function syncCompletionAction(rc, opt_frame) {
+    if (rc) console.warn(UTIL_fmt('sync failed: ' + rc));
+    returnValue(rc);
+  }
+
+  function sendInitSentinel() {
+    var cid = Gnubby.BROADCAST_CID;
+    var cmd = GnubbyDevice.CMD_INIT;
+    self.dev.queueCommand(cid, cmd, nonce);
+  }
+
+  function initSentinelEquals(f) {
+    return (f[4] == GnubbyDevice.CMD_INIT &&
+        f.length >= nonce.length + 7 &&
+        UTIL_equalArrays(f.subarray(7, nonce.length + 7), nonce));
+  }
+
+  function initCmdUnsupported(rc) {
+    // Different firmwares fail differently on different inputs, so treat any
+    // of the following errors as indicating the INIT command isn't supported.
+    return rc == -GnubbyDevice.INVALID_CMD ||
+        rc == -GnubbyDevice.INVALID_PAR ||
+        rc == -GnubbyDevice.INVALID_LEN;
+  }
+
+  function initCompletionAction(rc, opt_frame) {
+    // Actual failures: bail out.
+    if (rc && !initCmdUnsupported(rc)) {
+      console.warn(UTIL_fmt('init failed: ' + rc));
+      returnValue(rc);
+    }
+
+    var HEADER_LENGTH = 7;
+    var MIN_LENGTH = HEADER_LENGTH + 4;  // 4 bytes for the channel id
+    if (rc || !opt_frame || opt_frame.length < nonce.length + MIN_LENGTH) {
+      // INIT command not supported or is missing the returned channel id:
+      // Pick a random cid to try to prevent collisions on the USB bus.
+      var rnd = UTIL_getRandom(2);
+      self.cid ^= (rnd[0] << 16) | (rnd[1] << 8);
+      // Now sync with that cid, to make sure we've got it.
+      setSync();
+      timeoutLoop();
+      return;
+    }
+    // Accept the provided cid.
+    var offs = HEADER_LENGTH + nonce.length;
+    self.cid = (opt_frame[offs] << 24) |
+               (opt_frame[offs + 1] << 16) |
+               (opt_frame[offs + 2] << 8) |
+               opt_frame[offs + 3];
+    returnValue(rc);
   }
 
   function checkSentinel() {
     var f = new Uint8Array(self.readFrame_());
 
-    // Device disappeared on us.
-    if (f[4] == llGnubby.CMD_ERROR &&
-        f[5] == 0 && f[6] == 1 &&
-        f[7] == llGnubby.GONE) {
-      self.closed = true;
-      callback(-llGnubby.GONE);
+    // Stop on errors and return them.
+    if (f[4] == GnubbyDevice.CMD_ERROR &&
+        f[5] == 0 && f[6] == 1) {
+      if (f[7] == GnubbyDevice.GONE) {
+        // Device disappeared on us.
+        self.closed = true;
+      }
+      callback(-f[7]);
       return;
     }
 
-    // Eat everything else but expected sync reply.
-    if (f[4] != llGnubby.CMD_SYNC ||
-        (f.length > 7 && /* fw pre-0.2.1 bug: does not echo sentinel */
-         f[7] != self.synccnt)) {
+    // Eat everything else but expected sentinel reply.
+    if (!sentinelEquals(f)) {
       // Read more.
       self.notifyFrame_(checkSentinel);
       return;
     }
 
     // Done.
-    callback(-llGnubby.OK);
+    callback(-GnubbyDevice.OK, f);
   };
 
   function timeoutLoop() {
@@ -537,7 +600,7 @@ usbGnubby.prototype.sync = function(cb) {
 
     if (trycount == 0) {
       // Failed.
-      callback(-llGnubby.TIMEOUT);
+      callback(-GnubbyDevice.TIMEOUT);
       return;
     }
 
@@ -547,112 +610,136 @@ usbGnubby.prototype.sync = function(cb) {
     tid = window.setTimeout(timeoutLoop, 500);
   };
 
+  var sendSentinel;
+  var sentinelEquals;
+  var nonce;
+  var completionAction;
+
+  function setInit() {
+    sendSentinel = sendInitSentinel;
+    nonce = UTIL_getRandom(8);
+    sentinelEquals = initSentinelEquals;
+    completionAction = initCompletionAction;
+  }
+
+  function setSync() {
+    sendSentinel = sendSyncSentinel;
+    sentinelEquals = syncSentinelEquals;
+    completionAction = syncCompletionAction;
+  }
+
+  if (Gnubby.gnubbies_.isSharedAccess(this.which) &&
+      this.cid == Gnubby.defaultChannelId_(this.gnubbyInstance, this.which)) {
+    setInit();
+  } else {
+    setSync();
+  }
   timeoutLoop();
 };
 
 /** Short timeout value in seconds */
-usbGnubby.SHORT_TIMEOUT = 1;
+Gnubby.SHORT_TIMEOUT = 1;
 /** Normal timeout value in seconds */
-usbGnubby.NORMAL_TIMEOUT = 3;
+Gnubby.NORMAL_TIMEOUT = 3;
 // Max timeout usb firmware has for smartcard response is 30 seconds.
 // Make our application level tolerance a little longer.
 /** Maximum timeout in seconds */
-usbGnubby.MAX_TIMEOUT = 31;
+Gnubby.MAX_TIMEOUT = 31;
 
 /** Blink led
  * @param {number|ArrayBuffer|Uint8Array} data Command data or number
  *     of seconds to blink
  * @param {?function(...)} cb Callback
  */
-usbGnubby.prototype.blink = function(data, cb) {
-  if (!cb) cb = usbGnubby.defaultCallback;
+Gnubby.prototype.blink = function(data, cb) {
+  if (!cb) cb = Gnubby.defaultCallback;
   if (typeof data == 'number') {
     var d = new Uint8Array([data]);
     data = d.buffer;
   }
-  this.exchange_(llGnubby.CMD_PROMPT, data, usbGnubby.NORMAL_TIMEOUT, cb);
+  this.exchange_(GnubbyDevice.CMD_PROMPT, data, Gnubby.NORMAL_TIMEOUT, cb);
 };
 
 /** Lock the gnubby
  * @param {number|ArrayBuffer|Uint8Array} data Command data
  * @param {?function(...)} cb Callback
  */
-usbGnubby.prototype.lock = function(data, cb) {
-  if (!cb) cb = usbGnubby.defaultCallback;
+Gnubby.prototype.lock = function(data, cb) {
+  if (!cb) cb = Gnubby.defaultCallback;
   if (typeof data == 'number') {
     var d = new Uint8Array([data]);
     data = d.buffer;
   }
-  this.exchange_(llGnubby.CMD_LOCK, data, usbGnubby.NORMAL_TIMEOUT, cb);
+  this.exchange_(GnubbyDevice.CMD_LOCK, data, Gnubby.NORMAL_TIMEOUT, cb);
 };
 
 /** Unlock the gnubby
  * @param {?function(...)} cb Callback
  */
-usbGnubby.prototype.unlock = function(cb) {
-  if (!cb) cb = usbGnubby.defaultCallback;
+Gnubby.prototype.unlock = function(cb) {
+  if (!cb) cb = Gnubby.defaultCallback;
   var data = new Uint8Array([0]);
-  this.exchange_(llGnubby.CMD_LOCK, data.buffer,
-      usbGnubby.NORMAL_TIMEOUT, cb);
+  this.exchange_(GnubbyDevice.CMD_LOCK, data.buffer,
+      Gnubby.NORMAL_TIMEOUT, cb);
 };
 
 /** Request system information data.
  * @param {?function(...)} cb Callback
  */
-usbGnubby.prototype.sysinfo = function(cb) {
-  if (!cb) cb = usbGnubby.defaultCallback;
-  this.exchange_(llGnubby.CMD_SYSINFO, new ArrayBuffer(0),
-      usbGnubby.NORMAL_TIMEOUT, cb);
+Gnubby.prototype.sysinfo = function(cb) {
+  if (!cb) cb = Gnubby.defaultCallback;
+  this.exchange_(GnubbyDevice.CMD_SYSINFO, new ArrayBuffer(0),
+      Gnubby.NORMAL_TIMEOUT, cb);
 };
 
 /** Send wink command
  * @param {?function(...)} cb Callback
  */
-usbGnubby.prototype.wink = function(cb) {
-  if (!cb) cb = usbGnubby.defaultCallback;
-  this.exchange_(llGnubby.CMD_WINK, new ArrayBuffer(0),
-      usbGnubby.NORMAL_TIMEOUT, cb);
+Gnubby.prototype.wink = function(cb) {
+  if (!cb) cb = Gnubby.defaultCallback;
+  this.exchange_(GnubbyDevice.CMD_WINK, new ArrayBuffer(0),
+      Gnubby.NORMAL_TIMEOUT, cb);
 };
 
 /** Send DFU (Device firmware upgrade) command
  * @param {ArrayBuffer|Uint8Array} data Command data
  * @param {?function(...)} cb Callback
  */
-usbGnubby.prototype.dfu = function(data, cb) {
-  if (!cb) cb = usbGnubby.defaultCallback;
-  this.exchange_(llGnubby.CMD_DFU, data, usbGnubby.NORMAL_TIMEOUT, cb);
+Gnubby.prototype.dfu = function(data, cb) {
+  if (!cb) cb = Gnubby.defaultCallback;
+  this.exchange_(GnubbyDevice.CMD_DFU, data, Gnubby.NORMAL_TIMEOUT, cb);
 };
 
 /** Ping the gnubby
  * @param {number|ArrayBuffer|Uint8Array} data Command data
  * @param {?function(...)} cb Callback
  */
-usbGnubby.prototype.ping = function(data, cb) {
-  if (!cb) cb = usbGnubby.defaultCallback;
+Gnubby.prototype.ping = function(data, cb) {
+  if (!cb) cb = Gnubby.defaultCallback;
   if (typeof data == 'number') {
     var d = new Uint8Array(data);
     window.crypto.getRandomValues(d);
     data = d.buffer;
   }
-  this.exchange_(llGnubby.CMD_PING, data, usbGnubby.NORMAL_TIMEOUT, cb);
+  this.exchange_(GnubbyDevice.CMD_PING, data, Gnubby.NORMAL_TIMEOUT, cb);
 };
 
 /** Send a raw APDU command
  * @param {ArrayBuffer|Uint8Array} data Command data
  * @param {?function(...)} cb Callback
  */
-usbGnubby.prototype.apdu = function(data, cb) {
-  if (!cb) cb = usbGnubby.defaultCallback;
-  this.exchange_(llGnubby.CMD_APDU, data, usbGnubby.MAX_TIMEOUT, cb);
+Gnubby.prototype.apdu = function(data, cb) {
+  if (!cb) cb = Gnubby.defaultCallback;
+  this.exchange_(GnubbyDevice.CMD_APDU, data, Gnubby.MAX_TIMEOUT, cb);
 };
 
 /** Reset gnubby
  * @param {?function(...)} cb Callback
  */
-usbGnubby.prototype.reset = function(cb) {
-  if (!cb) cb = usbGnubby.defaultCallback;
-  this.exchange_(llGnubby.CMD_ATR, new ArrayBuffer(0),
-      usbGnubby.NORMAL_TIMEOUT, cb);
+Gnubby.prototype.reset = function(cb) {
+  if (!cb) cb = Gnubby.defaultCallback;
+  this.exchange_(GnubbyDevice.CMD_ATR, new ArrayBuffer(0),
+      Gnubby.NORMAL_TIMEOUT, cb);
 };
 
 // byte args[3] = [delay-in-ms before disabling interrupts,
@@ -662,21 +749,20 @@ usbGnubby.prototype.reset = function(cb) {
  * @param {ArrayBuffer|Uint8Array} args Command data
  * @param {?function(...)} cb Callback
  */
-usbGnubby.prototype.usb_test = function(args, cb) {
-  if (!cb) cb = usbGnubby.defaultCallback;
+Gnubby.prototype.usb_test = function(args, cb) {
+  if (!cb) cb = Gnubby.defaultCallback;
   var u8 = new Uint8Array(args);
-  this.exchange_(llGnubby.CMD_USB_TEST, u8.buffer,
-      usbGnubby.NORMAL_TIMEOUT, cb);
+  this.exchange_(GnubbyDevice.CMD_USB_TEST, u8.buffer,
+      Gnubby.NORMAL_TIMEOUT, cb);
 };
 
 /** APDU command with reply
  * @param {ArrayBuffer|Uint8Array} request The request
  * @param {?function(...)} cb Callback
  * @param {boolean=} opt_nowink Do not wink
- * @private
  */
-usbGnubby.prototype.apduReply_ = function(request, cb, opt_nowink) {
-  if (!cb) cb = usbGnubby.defaultCallback;
+Gnubby.prototype.apduReply = function(request, cb, opt_nowink) {
+  if (!cb) cb = Gnubby.defaultCallback;
   var self = this;
 
   this.apdu(request, function(rc, data) {
@@ -685,7 +771,7 @@ usbGnubby.prototype.apduReply_ = function(request, cb, opt_nowink) {
       if (r8[r8.length - 2] == 0x90 && r8[r8.length - 1] == 0x00) {
         // strip trailing 9000
         var buf = new Uint8Array(r8.subarray(0, r8.length - 2));
-        cb(-llGnubby.OK, buf.buffer);
+        cb(-GnubbyDevice.OK, buf.buffer);
         return;
       } else {
         // return non-9000 as rc

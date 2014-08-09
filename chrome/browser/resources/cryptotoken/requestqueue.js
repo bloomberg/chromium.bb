@@ -4,6 +4,7 @@
 
 /**
  * @fileoverview Queue of pending requests from an origin.
+ *
  */
 'use strict';
 

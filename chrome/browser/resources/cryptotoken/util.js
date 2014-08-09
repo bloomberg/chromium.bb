@@ -19,10 +19,20 @@ function UTIL_StringToBytes(s, bytes) {
   return bytes;
 }
 
+/**
+ * Converts a byte array to a string.
+ * @param {(Uint8Array|Array.<number>)} b input byte array.
+ * @return {string} result.
+ */
 function UTIL_BytesToString(b) {
   return String.fromCharCode.apply(null, b);
 }
 
+/**
+ * Converts a byte array to a hex string.
+ * @param {(Uint8Array|Array.<number>)} b input byte array.
+ * @return {string} result.
+ */
 function UTIL_BytesToHex(b) {
   if (!b) return '(null)';
   var hexchars = '0123456789ABCDEF';
@@ -51,6 +61,16 @@ function UTIL_BytesToHexWithSeparator(b, sep) {
 function UTIL_HexToBytes(h) {
   var hexchars = '0123456789ABCDEFabcdef';
   var res = new Uint8Array(h.length / 2);
+  for (var i = 0; i < h.length; i += 2) {
+    if (hexchars.indexOf(h.substring(i, i + 1)) == -1) break;
+    res[i / 2] = parseInt(h.substring(i, i + 2), 16);
+  }
+  return res;
+}
+
+function UTIL_HexToArray(h) {
+  var hexchars = '0123456789ABCDEFabcdef';
+  var res = new Array(h.length / 2);
   for (var i = 0; i < h.length; i += 2) {
     if (hexchars.indexOf(h.substring(i, i + 1)) == -1) break;
     res[i / 2] = parseInt(h.substring(i, i + 2), 16);
@@ -135,6 +155,35 @@ function UTIL_clear(a) {
     for (var i = 0; i < a.length; ++i)
       a[i] = 0;
   }
+}
+
+/**
+ * Parse SEQ(INT, INT) from ASN1 byte array.
+ * @param {(Uint8Array|Array.<number>)} a input to parse from.
+ * @return {{'r': !Array.<number>, 's': !Array.<number>}|null}
+ */
+function UTIL_Asn1SignatureToJson(a) {
+  if (a.length < 6) return null;  // Too small to be valid
+  if (a[0] != 0x30) return null;  // Not SEQ
+  var l = a[1] & 255;
+  if (l & 0x80) return null;  // SEQ.size too large
+  if (a.length != 2 + l) return null;  // SEQ size does not match input
+
+  function parseInt(off) {
+    if (a[off] != 0x02) return null;  // Not INT
+    var l = a[off + 1] & 255;
+    if (l & 0x80) return null;  // INT.size too large
+    if (off + 2 + l > a.length) return null;  // Out of bounds
+    return a.slice(off + 2, off + 2 + l);
+  }
+
+  var r = parseInt(2);
+  if (!r) return null;
+
+  var s = parseInt(2 + 2 + r.length);
+  if (!s) return null;
+
+  return {'r': r, 's': s};
 }
 
 // hr:min:sec.milli string

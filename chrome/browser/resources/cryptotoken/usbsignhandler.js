@@ -3,31 +3,23 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Implements a sign helper using USB gnubbies.
+ * @fileoverview Implements a sign handler using USB gnubbies.
  */
 'use strict';
 
 var CORRUPT_sign = false;
 
 /**
- * @param {!GnubbyFactory} gnubbyFactory Factory for gnubby instances
- * @param {!CountdownFactory} timerFactory A factory to create timers.
+ * @param {!SignHelperRequest} request The sign request.
  * @constructor
- * @implements {SignHelper}
+ * @implements {RequestHandler}
  */
-function UsbSignHelper(gnubbyFactory, timerFactory) {
-  /** @private {!GnubbyFactory} */
-  this.gnubbyFactory_ = gnubbyFactory;
-  /** @private {!CountdownFactory} */
-  this.timerFactory_ = timerFactory;
-
-  /** @private {Array.<usbGnubby>} */
-  this.waitingForTouchGnubbies_ = [];
+function UsbSignHandler(request) {
+  /** @private {!SignHelperRequest} */
+  this.request_ = request;
 
   /** @private {boolean} */
   this.notified_ = false;
-  /** @private {boolean} */
-  this.signerComplete_ = false;
   /** @private {boolean} */
   this.anyGnubbiesFound_ = false;
 }
@@ -36,42 +28,39 @@ function UsbSignHelper(gnubbyFactory, timerFactory) {
  * Default timeout value in case the caller never provides a valid timeout.
  * @const
  */
-UsbSignHelper.DEFAULT_TIMEOUT_MILLIS = 30 * 1000;
+UsbSignHandler.DEFAULT_TIMEOUT_MILLIS = 30 * 1000;
 
 /**
- * Attempts to sign the provided challenges.
- * @param {SignHelperRequest} request The sign request.
- * @param {function(SignHelperReply, string=)} cb Called with the result of the
- *     sign request and an optional source for the sign result.
+ * Attempts to run this handler's request.
+ * @param {RequestHandlerCallback} cb Called with the result of the request and
+ *     an optional source for the sign result.
  * @return {boolean} whether this set of challenges was accepted.
  */
-UsbSignHelper.prototype.doSign = function(request, cb) {
+UsbSignHandler.prototype.run = function(cb) {
   if (this.cb_) {
     // Can only handle one request.
     return false;
   }
-  /** @private {function(SignHelperReply, string=)} */
+  /** @private {RequestHandlerCallback} */
   this.cb_ = cb;
-  if (!request.signData || !request.signData.length) {
+  if (!this.request_.signData || !this.request_.signData.length) {
     // Fail a sign request with an empty set of challenges, and pretend to have
     // alerted the caller in case the enumerate is still pending.
     this.notified_ = true;
     return false;
   }
   var timeoutMillis =
-      request.timeout ?
-      request.timeout * 1000 :
-      UsbSignHelper.DEFAULT_TIMEOUT_MILLIS;
+      this.request_.timeoutSeconds ?
+      this.request_.timeoutSeconds * 1000 :
+      UsbSignHandler.DEFAULT_TIMEOUT_MILLIS;
   /** @private {MultipleGnubbySigner} */
   this.signer_ = new MultipleGnubbySigner(
-      this.gnubbyFactory_,
-      this.timerFactory_,
       false /* forEnroll */,
       this.signerCompleted_.bind(this),
       this.signerFoundGnubby_.bind(this),
       timeoutMillis,
-      request.logMsgUrl);
-  return this.signer_.doSign(request.signData);
+      this.request_.logMsgUrl);
+  return this.signer_.doSign(this.request_.signData);
 };
 
 
@@ -80,8 +69,7 @@ UsbSignHelper.prototype.doSign = function(request, cb) {
  * @param {boolean} anyPending Whether any gnubbies are pending.
  * @private
  */
-UsbSignHelper.prototype.signerCompleted_ = function(anyPending) {
-  this.signerComplete_ = true;
+UsbSignHandler.prototype.signerCompleted_ = function(anyPending) {
   if (!this.anyGnubbiesFound_ || anyPending) {
     this.notifyError_(DeviceStatusCodes.TIMEOUT_STATUS);
   } else if (this.signerError_ !== undefined) {
@@ -100,7 +88,7 @@ UsbSignHelper.prototype.signerCompleted_ = function(anyPending) {
  *     results.
  * @private
  */
-UsbSignHelper.prototype.signerFoundGnubby_ =
+UsbSignHandler.prototype.signerFoundGnubby_ =
     function(signResult, moreExpected) {
   this.anyGnubbiesFound_ = true;
   if (!signResult.code) {
@@ -122,12 +110,12 @@ UsbSignHelper.prototype.signerFoundGnubby_ =
 
 /**
  * Reports the result of a successful sign operation.
- * @param {usbGnubby} gnubby Gnubby instance
+ * @param {Gnubby} gnubby Gnubby instance
  * @param {SignHelperChallenge} challenge Challenge signed
  * @param {Uint8Array} info Result data
  * @private
  */
-UsbSignHelper.prototype.notifySuccess_ = function(gnubby, challenge, info) {
+UsbSignHandler.prototype.notifySuccess_ = function(gnubby, challenge, info) {
   if (this.notified_)
     return;
   this.notified_ = true;
@@ -158,7 +146,7 @@ UsbSignHelper.prototype.notifySuccess_ = function(gnubby, challenge, info) {
  * @param {number} code error to report
  * @private
  */
-UsbSignHelper.prototype.notifyError_ = function(code) {
+UsbSignHandler.prototype.notifyError_ = function(code) {
   if (this.notified_)
     return;
   this.notified_ = true;
@@ -173,33 +161,9 @@ UsbSignHelper.prototype.notifyError_ = function(code) {
 /**
  * Closes the MultipleGnubbySigner, if any.
  */
-UsbSignHelper.prototype.close = function() {
+UsbSignHandler.prototype.close = function() {
   if (this.signer_) {
     this.signer_.close();
     this.signer_ = null;
   }
-  for (var i = 0; i < this.waitingForTouchGnubbies_.length; i++) {
-    this.waitingForTouchGnubbies_[i].closeWhenIdle();
-  }
-  this.waitingForTouchGnubbies_ = [];
-};
-
-/**
- * @param {!GnubbyFactory} gnubbyFactory Factory to create gnubbies.
- * @param {!CountdownFactory} timerFactory A factory to create timers.
- * @constructor
- * @implements {SignHelperFactory}
- */
-function UsbSignHelperFactory(gnubbyFactory, timerFactory) {
-  /** @private {!GnubbyFactory} */
-  this.gnubbyFactory_ = gnubbyFactory;
-  /** @private {!CountdownFactory} */
-  this.timerFactory_ = timerFactory;
-}
-
-/**
- * @return {UsbSignHelper} the newly created helper.
- */
-UsbSignHelperFactory.prototype.createHelper = function() {
-  return new UsbSignHelper(this.gnubbyFactory_, this.timerFactory_);
 };

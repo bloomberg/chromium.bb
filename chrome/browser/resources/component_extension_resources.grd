@@ -140,10 +140,10 @@
       <include name="IDR_CRYPTOTOKEN_B64_JS" file="cryptotoken/b64.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_CLOSEABLE_JS" file="cryptotoken/closeable.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_COUNTDOWN_JS" file="cryptotoken/countdown.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_COUNTDOWNTIMER_JS" file="cryptotoken/countdowntimer.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_SHA256_JS" file="cryptotoken/sha256.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_LLGNUBBY_JS" file="cryptotoken/llgnubby.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_LLHIDGNUBBY_JS" file="cryptotoken/llhidgnubby.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_LLUSBGNUBBY_JS" file="cryptotoken/llusbgnubby.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_HIDGNUBBYDEVICE_JS" file="cryptotoken/hidgnubbydevice.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_USBGNUBBYDEVICE_JS" file="cryptotoken/usbgnubbydevice.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_GNUBBIES_JS" file="cryptotoken/gnubbies.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_GNUBBY_JS" file="cryptotoken/gnubby.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_GNUBBY_U2F_JS" file="cryptotoken/gnubby-u2f.js" type="BINDATA" />
@@ -153,17 +153,27 @@
       <include name="IDR_CRYPTOTOKEN_USBGNUBBYFACTORY_JS" file="cryptotoken/usbgnubbyfactory.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_DEVICESTATUSCODES_JS" file="cryptotoken/devicestatuscodes.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_ENROLLER_JS" file="cryptotoken/enroller.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_ENROLLHELPER_JS" file="cryptotoken/enrollhelper.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_USBENROLLHELPER_JS" file="cryptotoken/usbenrollhelper.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_USBENROLLHANDLER_JS" file="cryptotoken/usbenrollhandler.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_REQUESTQUEUE_JS" file="cryptotoken/requestqueue.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_SIGNER_JS" file="cryptotoken/signer.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_SIGNHELPER_JS" file="cryptotoken/signhelper.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_SINGLESIGNER_JS" file="cryptotoken/singlesigner.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_MULTIPLESIGNER_JS" file="cryptotoken/multiplesigner.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_USBSIGNHELPER_JS" file="cryptotoken/usbsignhelper.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_USBSIGNHANDLER_JS" file="cryptotoken/usbsignhandler.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_WEBREQUEST_JS" file="cryptotoken/webrequest.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_APPID_JS" file="cryptotoken/appid.js" type="BINDATA" />
-      <include name="IDR_CRYPTOTOKEN_BACKGROUND_JS" file="cryptotoken/background.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_USBHELPER_JS" file="cryptotoken/usbhelper.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_TEXTFETCHER_JS" file="cryptotoken/textfetcher.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_REQUESTHELPER_JS" file="cryptotoken/requesthelper.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_MESSAGETYPES_JS" file="cryptotoken/messagetypes.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_INHERITS_JS" file="cryptotoken/inherits.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_GNUBBYDEVICE_JS" file="cryptotoken/gnubbydevice.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_GENERICHELPER_JS" file="cryptotoken/generichelper.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_FACTORYREGISTRY_JS" file="cryptotoken/factoryregistry.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_ERRORCODES_JS" file="cryptotoken/errorcodes.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_DEVICEFACTORYREGISTRY_JS" file="cryptotoken/devicefactoryregistry.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_GSTATICORIGINCHECK_JS" file="cryptotoken/gstaticorigincheck.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_ORIGINCHECK_JS" file="cryptotoken/origincheck.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_CRYPTOTOKENBACKGROUND_JS" file="cryptotoken/cryptotokenbackground.js" type="BINDATA" />
       <if expr="chromeos and _google_chrome">
         <include name="IDR_LEDGER_BACKGROUND_HTML" file="../extensions/api/ledger/ledger_proxy/background.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_LEDGER_INIT_JS" file="../extensions/api/ledger/ledger_proxy/js/init.js" type="BINDATA" />

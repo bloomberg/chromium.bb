@@ -13,13 +13,14 @@
  *   device: number
  * }}
  */
-var llGnubbyDeviceId;
+var GnubbyDeviceId;
 
 /**
  * @typedef {{
+ *   isSharedAccess: boolean,
  *   enumerate: function(function(Array)),
- *   deviceToDeviceId: function(*): llGnubbyDeviceId,
- *   open: function(Gnubbies, number, *, function(number, llGnubby=))
+ *   deviceToDeviceId: function(*): GnubbyDeviceId,
+ *   open: function(Gnubbies, number, *, function(number, GnubbyDevice=))
  * }}
  */
 var GnubbyNamespaceImpl;
@@ -32,9 +33,15 @@ function Gnubbies() {
   /** @private {Object.<string, Array>} */
   this.devs_ = {};
   this.pendingEnumerate = [];  // clients awaiting an enumerate
+  /**
+   * The distinct namespaces registered in this Gnubbies instance, in order of
+   * registration.
+   * @private {Array.<string>}
+   */
+  this.namespaces_ = [];
   /** @private {Object.<string, GnubbyNamespaceImpl>} */
   this.impl_ = {};
-  /** @private {Object.<string, Object.<number, !llGnubby>>} */
+  /** @private {Object.<string, Object.<number, !GnubbyDevice>>} */
   this.openDevs_ = {};
   /** @private {Object.<string, Object.<number, *>>} */
   this.pendingOpens_ = {};  // clients awaiting an open
@@ -47,11 +54,23 @@ function Gnubbies() {
  * @param {GnubbyNamespaceImpl} impl The implementation.
  */
 Gnubbies.prototype.registerNamespace = function(namespace, impl) {
+  if (!this.impl_.hasOwnProperty(namespace)) {
+    this.namespaces_.push(namespace);
+  }
   this.impl_[namespace] = impl;
 };
 
 /**
- * @param {llGnubbyDeviceId} which The device to remove.
+ * @param {GnubbyDeviceId} id The device id.
+ * @return {boolean} Whether the device is a shared access device.
+ */
+Gnubbies.prototype.isSharedAccess = function(id) {
+  if (!this.impl_.hasOwnProperty(id.namespace)) return false;
+  return this.impl_[id.namespace].isSharedAccess;
+};
+
+/**
+ * @param {GnubbyDeviceId} which The device to remove.
  */
 Gnubbies.prototype.removeOpenDevice = function(which) {
   if (this.openDevs_[which.namespace] &&
@@ -78,20 +97,43 @@ Gnubbies.prototype.closeAll = function() {
 };
 
 /**
- * @param {function(number, Array.<llGnubbyDeviceId>)} cb Called back with the
+ * @param {function(number, Array.<GnubbyDeviceId>)} cb Called back with the
  *     result of enumerating.
  */
 Gnubbies.prototype.enumerate = function(cb) {
+  if (!cb) {
+    cb = function(rc, indexes) {
+      var msg = 'defaultEnumerateCallback(' + rc;
+      if (indexes) {
+        msg += ', [';
+        for (var i = 0; i < indexes.length; i++) {
+          msg += JSON.stringify(indexes[i]);
+        }
+        msg += ']';
+      }
+      msg += ')';
+      console.log(UTIL_fmt(msg));
+    };
+  }
+
+  if (!this.namespaces_.length) {
+    cb(-GnubbyDevice.OK, []);
+    return;
+  }
+
+  var namespacesEnumerated = 0;
   var self = this;
 
   /**
    * @param {string} namespace The namespace that was enumerated.
-   * @param {boolean} lastNamespace Whether this was the last namespace.
-   * @param {Array.<llGnubbyDeviceId>} existingDeviceIds Previously enumerated
+   * @param {Array.<GnubbyDeviceId>} existingDeviceIds Previously enumerated
    *     device IDs (from other namespaces), if any.
    * @param {Array} devs The devices in the namespace.
    */
-  function enumerated(namespace, lastNamespace, existingDeviceIds, devs) {
+  function enumerated(namespace, existingDeviceIds, devs) {
+    namespacesEnumerated++;
+    var lastNamespace = (namespacesEnumerated == self.namespaces_.length);
+
     if (chrome.runtime.lastError) {
       console.warn(UTIL_fmt('lastError: ' + chrome.runtime.lastError));
       console.log(chrome.runtime.lastError);
@@ -130,27 +172,24 @@ Gnubbies.prototype.enumerate = function(cb) {
     if (lastNamespace) {
       while (self.pendingEnumerate.length != 0) {
         var cb = self.pendingEnumerate.shift();
-        cb(-llGnubby.OK, existingDeviceIds);
+        cb(-GnubbyDevice.OK, existingDeviceIds);
       }
+    }
+  }
+
+  var deviceIds = [];
+  function makeEnumerateCb(namespace) {
+    return function(devs) {
+      enumerated(namespace, deviceIds, devs);
     }
   }
 
   this.pendingEnumerate.push(cb);
   if (this.pendingEnumerate.length == 1) {
-    var namespaces = Object.keys(/** @type {!Object} */ (this.impl_));
-    if (!namespaces.length) {
-      cb(-llGnubby.OK, []);
-      return;
-    }
-    var deviceIds = [];
-    for (var i = 0; i < namespaces.length; i++) {
-      var namespace = namespaces[i];
+    for (var i = 0; i < this.namespaces_.length; i++) {
+      var namespace = this.namespaces_[i];
       var enumerator = this.impl_[namespace].enumerate;
-      enumerator(
-          enumerated.bind(null,
-                          namespace,
-                          i == namespaces.length - 1,
-                          deviceIds));
+      enumerator(makeEnumerateCb(namespace));
     }
   }
 };
@@ -195,9 +234,9 @@ Gnubbies.prototype.inactivityTimeout_ = function() {
 
 /**
  * Opens and adds a new client of the specified device.
- * @param {llGnubbyDeviceId} which Which device to open.
+ * @param {GnubbyDeviceId} which Which device to open.
  * @param {*} who Client of the device.
- * @param {function(number, llGnubby=)} cb Called back with the result of
+ * @param {function(number, GnubbyDevice=)} cb Called back with the result of
  *     opening the device.
  */
 Gnubbies.prototype.addClient = function(which, who, cb) {
@@ -209,10 +248,10 @@ Gnubbies.prototype.addClient = function(which, who, cb) {
     if (gnubby.closing) {
       // Device is closing or already closed.
       self.removeClient(gnubby, who);
-      if (cb) { cb(-llGnubby.NODEVICE); }
+      if (cb) { cb(-GnubbyDevice.NODEVICE); }
     } else {
       gnubby.registerClient(who);
-      if (cb) { cb(-llGnubby.OK, gnubby); }
+      if (cb) { cb(-GnubbyDevice.OK, gnubby); }
     }
   }
 
@@ -240,7 +279,7 @@ Gnubbies.prototype.addClient = function(which, who, cb) {
   if (!dev) {
     // Index out of bounds. Device does not exist in current enumeration.
     this.removeClient(null, who);
-    if (cb) { cb(-llGnubby.NODEVICE); }
+    if (cb) { cb(-GnubbyDevice.NODEVICE); }
     return;
   }
 
@@ -250,10 +289,10 @@ Gnubbies.prototype.addClient = function(which, who, cb) {
       return;
     }
     if (!opt_gnubby) {
-      notifyOpenResult(-llGnubby.NODEVICE);
+      notifyOpenResult(-GnubbyDevice.NODEVICE);
       return;
     }
-    var gnubby = /** @type {!llGnubby} */ (opt_gnubby);
+    var gnubby = /** @type {!GnubbyDevice} */ (opt_gnubby);
     if (!self.openDevs_[which.namespace]) {
       self.openDevs_[which.namespace] = {};
     }
@@ -286,7 +325,7 @@ Gnubbies.prototype.addClient = function(which, who, cb) {
 
 /**
  * Removes a client from a low-level gnubby.
- * @param {llGnubby} whichDev The gnubby.
+ * @param {GnubbyDevice} whichDev The gnubby.
  * @param {*} who The client.
  */
 Gnubbies.prototype.removeClient = function(whichDev, who) {
@@ -301,7 +340,7 @@ Gnubbies.prototype.removeClient = function(whichDev, who) {
       var dev = this.openDevs_[namespace][deviceId];
       if (dev.hasClient(who)) {
         if (whichDev && dev != whichDev) {
-          console.warn('usbGnubby attached to more than one device!?');
+          console.warn('Gnubby attached to more than one device!?');
         }
         if (!dev.deregisterClient(who)) {
           dev.destroy();
