@@ -4,6 +4,7 @@
 
 #include "ash/wm/overview/window_grid.h"
 
+#include "ash/ash_switches.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -13,6 +14,7 @@
 #include "ash/wm/overview/window_selector_panels.h"
 #include "ash/wm/overview/window_selector_window.h"
 #include "ash/wm/window_state.h"
+#include "base/command_line.h"
 #include "base/i18n/string_search.h"
 #include "base/memory/scoped_vector.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -102,6 +104,10 @@ const int kOverviewSelectorTransitionMilliseconds = 100;
 const SkColor kWindowOverviewSelectionColor = SK_ColorBLACK;
 const unsigned char kWindowOverviewSelectorOpacity = 128;
 
+// The minimum amount of spacing between the bottom of the text filtering
+// text field and the top of the selection widget on the first row of items.
+const int kTextFilterBottomMargin = 5;
+
 // Returns the vector for the fade in animation.
 gfx::Vector2d GetSlideVectorForFadeIn(WindowSelector::Direction direction,
                                       const gfx::Rect& bounds) {
@@ -177,6 +183,17 @@ void WindowGrid::PositionWindows(bool animate) {
       root_window_,
       ScreenUtil::GetDisplayWorkAreaBoundsInParent(
           Shell::GetContainer(root_window_, kShellWindowId_DefaultContainer)));
+
+  // If the text filtering feature is enabled, reserve space at the top for the
+  // text filtering textbox to appear.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshDisableTextFilteringInOverviewMode)) {
+    total_bounds.Inset(
+        0,
+        WindowSelector::kTextFilterBottomEdge + kTextFilterBottomMargin,
+        0,
+        0);
+  }
 
   // Find the minimum number of windows per row that will fit all of the
   // windows on screen.

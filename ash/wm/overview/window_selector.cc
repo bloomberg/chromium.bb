@@ -21,15 +21,21 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -38,19 +44,27 @@ namespace ash {
 namespace {
 
 // The proportion of screen width that the text filter takes.
-const float kTextFilterScreenProportion = 0.5;
+const float kTextFilterScreenProportion = 0.25;
 
-// The height of the text filter.
-const int kTextFilterHeight = 50;
+// The amount of padding surrounding the text in the text filtering textbox.
+const int kTextFilterHorizontalPadding = 8;
 
-// Solid shadow length from the text filter.
-const int kVerticalShadowOffset = 1;
+// The distance between the top of the screen and the top edge of the
+// text filtering textbox.
+const int kTextFilterDistanceFromTop = 32;
 
-// Amount of blur applied to the text filter shadow.
-const int kShadowBlur = 10;
+// The height of the text filtering textbox.
+const int kTextFilterHeight = 32;
 
-// Text filter shadow color.
-const SkColor kTextFilterShadow = 0xB0000000;
+// The font style used for text filtering.
+static const ::ui::ResourceBundle::FontStyle kTextFilterFontStyle =
+    ::ui::ResourceBundle::FontStyle::MediumFont;
+
+// The alpha value for the background of the text filtering textbox.
+const unsigned char kTextFilterOpacity = 180;
+
+// The radius used for the rounded corners on the text filtering textbox.
+const int kTextFilterCornerRadius = 1;
 
 // A comparator for locating a grid with a given root window.
 struct RootWindowGridComparator
@@ -94,6 +108,42 @@ struct WindowSelectorItemForRoot
   const aura::Window* root_window;
 };
 
+// A View having rounded corners and a specified background color which is
+// only painted within the bounds defined by the rounded corners.
+// TODO(tdanderson): This duplicates code from RoundedImageView. Refactor these
+//                   classes and move into ui/views.
+class RoundedContainerView : public views::View {
+ public:
+  RoundedContainerView(int corner_radius, SkColor background)
+      : corner_radius_(corner_radius),
+        background_(background) {
+  }
+
+  virtual ~RoundedContainerView() {}
+
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    views::View::OnPaint(canvas);
+
+    SkScalar radius = SkIntToScalar(corner_radius_);
+    const SkScalar kRadius[8] = {radius, radius, radius, radius,
+                                 radius, radius, radius, radius};
+    SkPath path;
+    gfx::Rect bounds(size());
+    path.addRoundRect(gfx::RectToSkRect(bounds), kRadius);
+
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    canvas->ClipPath(path, true);
+    canvas->DrawColor(background_);
+  }
+
+ private:
+  int corner_radius_;
+  SkColor background_;
+
+  DISALLOW_COPY_AND_ASSIGN(RoundedContainerView);
+};
+
 // Triggers a shelf visibility update on all root window controllers.
 void UpdateShelfVisibility() {
   Shell::RootWindowControllerList root_window_controllers =
@@ -118,22 +168,39 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
       Shell::GetContainer(root_window, ash::kShellWindowId_OverlayContainer);
   params.accept_events = true;
   params.bounds = gfx::Rect(
-      root_window->bounds().width() / 2 * (1 - kTextFilterScreenProportion), 0,
+      root_window->bounds().width() / 2 * (1 - kTextFilterScreenProportion),
+      kTextFilterDistanceFromTop,
       root_window->bounds().width() * kTextFilterScreenProportion,
       kTextFilterHeight);
   widget->Init(params);
+
+  // Use |container| to specify the padding surrounding the text and to give
+  // the textfield rounded corners.
+  views::View* container = new RoundedContainerView(
+      kTextFilterCornerRadius, SkColorSetARGB(kTextFilterOpacity, 0, 0, 0));
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  int text_height = bundle.GetFontList(kTextFilterFontStyle).GetHeight();
+  DCHECK(text_height);
+  int vertical_padding = (kTextFilterHeight - text_height) / 2;
+  container->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
+                                                   kTextFilterHorizontalPadding,
+                                                   vertical_padding,
+                                                   0));
 
   views::Textfield* textfield = new views::Textfield;
   textfield->set_controller(controller);
   textfield->SetBackgroundColor(SK_ColorTRANSPARENT);
   textfield->SetBorder(views::Border::NullBorder());
   textfield->SetTextColor(SK_ColorWHITE);
-  textfield->SetShadows(gfx::ShadowValues(1, gfx::ShadowValue(
-      gfx::Point(0, kVerticalShadowOffset), kShadowBlur, kTextFilterShadow)));
-  widget->SetContentsView(textfield);
+  textfield->SetFontList(bundle.GetFontList(kTextFilterFontStyle));
 
+  container->AddChildView(textfield);
+  widget->SetContentsView(container);
+
+  // The textfield initially contains no text, so shift its position to be
+  // outside the visible bounds of the screen.
   gfx::Transform transform;
-  transform.Translate(0, -kTextFilterHeight);
+  transform.Translate(0, -WindowSelector::kTextFilterBottomEdge);
   widget->GetNativeWindow()->SetTransform(transform);
   widget->Show();
   textfield->RequestFocus();
@@ -142,6 +209,9 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
 }
 
 }  // namespace
+
+const int WindowSelector::kTextFilterBottomEdge =
+    kTextFilterDistanceFromTop + kTextFilterHeight;
 
 WindowSelector::WindowSelector(const WindowList& windows,
                                WindowSelectorDelegate* delegate)
@@ -420,10 +490,13 @@ void WindowSelector::ContentsChanged(views::Textfield* sender,
         gfx::Tween::FAST_OUT_LINEAR_IN : gfx::Tween::LINEAR_OUT_SLOW_IN);
 
     gfx::Transform transform;
-    if (should_show_selection_widget)
+    if (should_show_selection_widget) {
       transform.Translate(0, 0);
-    else
-      transform.Translate(0, -kTextFilterHeight);
+      text_filter_widget_->GetNativeWindow()->layer()->SetOpacity(1);
+    } else {
+      transform.Translate(0, -kTextFilterBottomEdge);
+      text_filter_widget_->GetNativeWindow()->layer()->SetOpacity(0);
+    }
 
     text_filter_widget_->GetNativeWindow()->SetTransform(transform);
     showing_selection_widget_ = should_show_selection_widget;

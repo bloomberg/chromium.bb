@@ -885,8 +885,8 @@ TEST_F(WindowSelectorTest, BasicTabKeyNavigation) {
 TEST_F(WindowSelectorTest, BasicArrowKeyNavigation) {
   if (!SupportsHostWindowResize())
     return;
-  const size_t test_windows = 7;
-  UpdateDisplay("400x300");
+  const size_t test_windows = 9;
+  UpdateDisplay("800x600");
   ScopedVector<aura::Window> windows;
   for (size_t i = test_windows; i > 0; i--)
     windows.push_back(CreateWindowWithId(gfx::Rect(0, 0, 100, 100), i));
@@ -897,22 +897,24 @@ TEST_F(WindowSelectorTest, BasicArrowKeyNavigation) {
       ui::VKEY_LEFT,
       ui::VKEY_UP
   };
-  // Expected window layout:
-  // +-------+  +-------+  +-------+
-  // |   1   |  |   2   |  |   3   |
-  // +-------+  +-------+  +-------+
-  // +-------+  +-------+  +-------+
-  // |   4   |  |   5   |  |   6   |
-  // +-------+  +-------+  +-------+
+  // Expected window layout, assuming that the text filtering feature is
+  // enabled by default (i.e., --ash-disable-text-filtering-in-overview-mode
+  // is not being used).
+  // +-------+  +-------+  +-------+  +-------+
+  // |   1   |  |   2   |  |   3   |  |   4   |
+  // +-------+  +-------+  +-------+  +-------+
+  // +-------+  +-------+  +-------+  +-------+
+  // |   5   |  |   6   |  |   7   |  |   8   |
+  // +-------+  +-------+  +-------+  +-------+
   // +-------+
-  // |   7   |
+  // |   9   |
   // +-------+
   // Index for each window during a full loop plus wrapping around.
   int index_path_for_direction[][test_windows + 1] = {
-      {1, 2, 3, 4, 5, 6, 7, 1},  // Right
-      {1, 4, 7, 2, 5, 3, 6, 1},  // Down
-      {7, 6, 5, 4, 3, 2, 1, 7},  // Left
-      {6, 3, 5, 2, 7, 4, 1, 6}   // Up
+      {1, 2, 3, 4, 5, 6, 7, 8, 9, 1},  // Right
+      {1, 5, 9, 2, 6, 3, 7, 4, 8, 1},  // Down
+      {9, 8, 7, 6, 5, 4, 3, 2, 1, 9},  // Left
+      {8, 4, 7, 3, 6, 2, 9, 5, 1, 8}   // Up
   };
 
   for (size_t key_index = 0; key_index < arraysize(arrow_keys); key_index++) {

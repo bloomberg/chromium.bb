@@ -52,6 +52,10 @@ class ASH_EXPORT WindowSelector
       public aura::client::ActivationChangeObserver,
       public views::TextfieldController {
  public:
+  // The distance between the top edge of the screen and the bottom edge of
+  // the text filtering textfield.
+  static const int kTextFilterBottomEdge;
+
   enum Direction {
     LEFT,
     UP,
