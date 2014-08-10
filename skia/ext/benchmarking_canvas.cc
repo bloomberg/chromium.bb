@@ -181,9 +181,10 @@ protected:
     SkProxyCanvas::onClipRegion(region, op);
   }
 
-  virtual void onDrawPicture(const SkPicture* picture) OVERRIDE {
+  virtual void onDrawPicture(const SkPicture* picture, const SkMatrix* matrix,
+                             const SkPaint* paint) OVERRIDE {
     AutoStamper stamper(this);
-    SkProxyCanvas::onDrawPicture(picture);
+    SkProxyCanvas::onDrawPicture(picture, matrix, paint);
   }
 
 private:
