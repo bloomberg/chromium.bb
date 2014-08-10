@@ -36,7 +36,6 @@
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderMultiColumnSet.h"
 #include "core/rendering/RenderView.h"
@@ -174,82 +173,6 @@ void RenderFlowThread::repaintRectangleInRegions(const LayoutRect& repaintRect) 
 
         columnSet->repaintFlowThreadContent(repaintRect);
     }
-}
-
-LayoutPoint RenderFlowThread::adjustedPositionRelativeToOffsetParent(const RenderBoxModelObject& boxModelObject, const LayoutPoint& startPoint)
-{
-    LayoutPoint referencePoint = startPoint;
-
-    // FIXME: This needs to be adapted for different writing modes inside the flow thread.
-    RenderMultiColumnSet* startColumnSet = columnSetAtBlockOffset(referencePoint.y());
-    if (startColumnSet) {
-        // Take into account the offset coordinates of the columnSet.
-        RenderObject* currObject = startColumnSet;
-        for (Element* currOffsetParentElement = currObject->offsetParent(); currOffsetParentElement; currOffsetParentElement = currObject->offsetParent()) {
-            RenderObject* currOffsetParentRenderer = currOffsetParentElement->renderer();
-            if (!currOffsetParentRenderer)
-                break;
-            if (currObject->isBoxModelObject())
-                referencePoint.move(toRenderBoxModelObject(currObject)->offsetLeft(), toRenderBoxModelObject(currObject)->offsetTop());
-
-            // Since we're looking for the offset relative to the body, we must also
-            // take into consideration the borders of the columnSet's offsetParent.
-            if (currOffsetParentRenderer->isBox() && !currOffsetParentRenderer->isBody())
-                referencePoint.move(toRenderBox(currOffsetParentRenderer)->borderLeft(), toRenderBox(currOffsetParentRenderer)->borderTop());
-
-            currObject = currOffsetParentRenderer;
-        }
-
-        // We need to check if any of this box's containing blocks start in a different columnSet
-        // and if so, drop the object's top position (which was computed relative to its containing block
-        // and is no longer valid) and recompute it using the columnSet in which it flows as reference.
-        bool wasComputedRelativeToOtherRegion = false;
-        const RenderBlock* objContainingBlock = boxModelObject.containingBlock();
-        while (objContainingBlock) {
-            // Check if this object is in a different columnSet.
-            RenderMultiColumnSet* parentStartRegion = 0;
-            RenderMultiColumnSet* parentEndRegion = 0;
-            getRegionRangeForBox(objContainingBlock, parentStartRegion, parentEndRegion);
-            if (parentStartRegion && parentStartRegion != startColumnSet) {
-                wasComputedRelativeToOtherRegion = true;
-                break;
-            }
-            objContainingBlock = objContainingBlock->containingBlock();
-        }
-
-        if (wasComputedRelativeToOtherRegion) {
-            // Get the logical top coordinate of the current object.
-            LayoutUnit top = 0;
-            if (boxModelObject.isRenderBlock()) {
-                top = toRenderBlock(boxModelObject).offsetFromLogicalTopOfFirstPage();
-            } else {
-                if (boxModelObject.containingBlock())
-                    top = boxModelObject.containingBlock()->offsetFromLogicalTopOfFirstPage();
-
-                if (boxModelObject.isBox())
-                    top += toRenderBox(boxModelObject).topLeftLocation().y();
-                else if (boxModelObject.isRenderInline())
-                    top -= toRenderInline(boxModelObject).borderTop();
-            }
-
-            // Get the logical top of the columnSet this object starts in
-            // and compute the object's top, relative to the columnSet's top.
-            LayoutUnit regionLogicalTop = startColumnSet->pageLogicalTopForOffset(top);
-            LayoutUnit topRelativeToRegion = top - regionLogicalTop;
-            referencePoint.setY(startColumnSet->offsetTop() + topRelativeToRegion);
-
-            // Since the top has been overriden, check if the
-            // relative positioning must be reconsidered.
-            if (boxModelObject.isRelPositioned())
-                referencePoint.move(0, boxModelObject.relativePositionOffset().height());
-        }
-
-        // Since we're looking for the offset relative to the body, we must also
-        // take into consideration the borders of the columnSet.
-        referencePoint.move(startColumnSet->borderLeft(), startColumnSet->borderTop());
-    }
-
-    return referencePoint;
 }
 
 LayoutUnit RenderFlowThread::pageLogicalHeightForOffset(LayoutUnit offset)
