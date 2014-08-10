@@ -74,7 +74,7 @@ deps = {
     'src/third_party/leveldatabase/src':
         Var('git_url') + '/external/leveldb.git@3f77584eb3f9754bbb7079070873ece3f30a1e6b',
     'src/third_party/libaddressinput/src':
-        Var('git_url') + '/external/libaddressinput.git@d75941244491c922456bf0fa4a987c098f082a76',
+        Var('git_url') + '/external/libaddressinput.git@86949bb57295d2385986c9794f0e95208453aa4b',
     'src/third_party/libc++/trunk':
         Var('git_url') + '/chromium/llvm-project/libcxx.git@e785ef19637f88c5e3e9926fabd8a64cd7eac49d',
     'src/third_party/libc++abi/trunk':
