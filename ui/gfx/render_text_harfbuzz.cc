@@ -6,7 +6,6 @@
 
 #include <map>
 
-#include "base/debug/leak_annotations.h"
 #include "base/i18n/bidi_line_iterator.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/char_iterator.h"
@@ -244,32 +243,42 @@ void UnrefSkTypeface(void* data) {
   SkSafeUnref(skia_face);
 }
 
-// Creates a HarfBuzz face from the given Skia face.
-hb_face_t* CreateHarfBuzzFace(SkTypeface* skia_face) {
-  SkSafeRef(skia_face);
-  hb_face_t* face = hb_face_create_for_tables(GetFontTable, skia_face,
-                                              UnrefSkTypeface);
-  DCHECK(face);
-  return face;
-}
+// Wrapper class for a HarfBuzz face created from a given Skia face.
+class HarfBuzzFace {
+ public:
+  HarfBuzzFace() : face_(NULL) {}
+
+  ~HarfBuzzFace() {
+    if (face_)
+      hb_face_destroy(face_);
+  }
+
+  void Init(SkTypeface* skia_face) {
+    SkSafeRef(skia_face);
+    face_ = hb_face_create_for_tables(GetFontTable, skia_face, UnrefSkTypeface);
+    DCHECK(face_);
+  }
+
+  hb_face_t* get() {
+    return face_;
+  }
+
+ private:
+  hb_face_t* face_;
+};
 
 // Creates a HarfBuzz font from the given Skia face and text size.
 hb_font_t* CreateHarfBuzzFont(SkTypeface* skia_face, int text_size) {
-  typedef std::pair<hb_face_t*, GlyphCache> FaceCache;
+  typedef std::pair<HarfBuzzFace, GlyphCache> FaceCache;
 
   // TODO(ckocagil): This shouldn't grow indefinitely. Maybe use base::MRUCache?
   static std::map<SkFontID, FaceCache> face_caches;
 
   FaceCache* face_cache = &face_caches[skia_face->uniqueID()];
-  if (face_cache->first == 0) {
-    // These HarfBuzz faces live indefinitely and are intentionally leaked.
-    ANNOTATE_SCOPED_MEMORY_LEAK;
-    hb_face_t* harfbuzz_face = CreateHarfBuzzFace(skia_face);
-    *face_cache = FaceCache(harfbuzz_face, GlyphCache());
-  }
+  if (face_cache->first.get() == NULL)
+    face_cache->first.Init(skia_face);
 
-  hb_font_t* harfbuzz_font = hb_font_create(face_cache->first);
-
+  hb_font_t* harfbuzz_font = hb_font_create(face_cache->first.get());
   const int scale = SkScalarToFixed(text_size);
   hb_font_set_scale(harfbuzz_font, scale, scale);
   FontData* hb_font_data = new FontData(&face_cache->second);
