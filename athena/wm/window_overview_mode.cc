@@ -8,7 +8,6 @@
 #include <functional>
 #include <vector>
 
-#include "athena/wm/public/window_list_provider.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "ui/aura/scoped_window_targeter.h"
@@ -75,6 +74,10 @@ namespace athena {
 
 namespace {
 
+bool ShouldShowWindowInOverviewMode(aura::Window* window) {
+  return window->type() == ui::wm::WINDOW_TYPE_NORMAL;
+}
+
 // Gets the transform for the window in its current state.
 gfx::Transform GetTransformForState(WindowOverviewState* state) {
   return gfx::Tween::TransformValueBetween(state->progress,
@@ -128,10 +131,8 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
                                public ui::CompositorAnimationObserver {
  public:
   WindowOverviewModeImpl(aura::Window* container,
-                         const WindowListProvider* window_list_provider,
                          WindowOverviewModeDelegate* delegate)
       : container_(container),
-        window_list_provider_(window_list_provider),
         delegate_(delegate),
         scoped_targeter_(new aura::ScopedWindowTargeter(
             container,
@@ -149,10 +150,13 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   virtual ~WindowOverviewModeImpl() {
     container_->set_target_handler(container_->delegate());
     RemoveAnimationObserver();
-    aura::Window::Windows windows = window_list_provider_->GetWindowList();
-    if (windows.empty())
-      return;
-    std::for_each(windows.begin(), windows.end(), &RestoreWindowState);
+    const aura::Window::Windows& windows = container_->children();
+    for (aura::Window::Windows::const_iterator iter = windows.begin();
+         iter != windows.end();
+         ++iter) {
+      if ((*iter)->GetProperty(kWindowOverviewState))
+        RestoreWindowState(*iter);
+    }
   }
 
  private:
@@ -160,8 +164,10 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   // positions. The transforms are set in the |kWindowOverviewState| property of
   // the windows.
   void ComputeTerminalStatesForAllWindows() {
-    aura::Window::Windows windows = window_list_provider_->GetWindowList();
-    size_t window_count = windows.size();
+    const aura::Window::Windows& windows = container_->children();
+    size_t window_count = std::count_if(windows.begin(), windows.end(),
+                                        ShouldShowWindowInOverviewMode);
+
     size_t index = 0;
     const gfx::Size container_size = container_->bounds().size();
 
@@ -170,8 +176,10 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
 
     for (aura::Window::Windows::const_reverse_iterator iter = windows.rbegin();
          iter != windows.rend();
-         ++iter, ++index) {
+         ++iter) {
       aura::Window* window = (*iter);
+      if (!ShouldShowWindowInOverviewMode(window))
+        continue;
 
       gfx::Transform top_transform;
       int top = (window_count - index - 1) * kGapBetweenWindowsTop;
@@ -191,20 +199,27 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
       state->progress = 0.f;
       state->shadow = CreateShadowForWindow(window);
       window->SetProperty(kWindowOverviewState, state);
+
+      index++;
     }
   }
 
   // Sets the initial position for the windows for the overview mode.
   void SetInitialWindowStates() {
-    aura::Window::Windows windows = window_list_provider_->GetWindowList();
-    size_t window_count = windows.size();
     // The initial overview state of the topmost three windows.
     const float kInitialProgress[] = { 0.5f, 0.05f, 0.01f };
-    for (size_t i = 0; i < window_count; ++i) {
+    size_t index = 0;
+    const aura::Window::Windows& windows = container_->children();
+    for (aura::Window::Windows::const_reverse_iterator iter = windows.rbegin();
+         iter != windows.rend();
+         ++iter) {
+      aura::Window* window = (*iter);
+      if (!window->GetProperty(kWindowOverviewState))
+        continue;
+
       float progress = 0.f;
-      aura::Window* window = windows[window_count - 1 - i];
-      if (i < arraysize(kInitialProgress))
-        progress = kInitialProgress[i];
+      if (index < arraysize(kInitialProgress))
+        progress = kInitialProgress[index];
 
       scoped_refptr<ui::LayerAnimator> animator =
           window->layer()->GetAnimator();
@@ -225,13 +240,14 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
         settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(250));
         SetWindowProgress(window, progress);
       }
+      index++;
     }
   }
 
   scoped_ptr<wm::Shadow> CreateShadowForWindow(aura::Window* window) {
     scoped_ptr<wm::Shadow> shadow(new wm::Shadow());
     shadow->Init(wm::Shadow::STYLE_ACTIVE);
-    shadow->SetContentBounds(gfx::Rect(container_->bounds().size()));
+    shadow->SetContentBounds(gfx::Rect(window->bounds().size()));
     shadow->layer()->SetVisible(true);
     window->layer()->Add(shadow->layer());
     return shadow.Pass();
@@ -260,7 +276,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   void DoScroll(float delta_y) {
     const float kEpsilon = 1e-3f;
     float delta_y_p = std::abs(delta_y) / GetScrollableHeight();
-    aura::Window::Windows windows = window_list_provider_->GetWindowList();
+    const aura::Window::Windows& windows = container_->children();
     if (delta_y < 0) {
       // Scroll up. Start with the top-most (i.e. behind-most in terms of
       // z-index) window, and try to scroll them up.
@@ -269,6 +285,8 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
            ++iter) {
         aura::Window* window = (*iter);
         WindowOverviewState* state = window->GetProperty(kWindowOverviewState);
+        if (!state)
+          continue;
         if (state->progress > kEpsilon) {
           // It is possible to scroll |window| up. Scroll it up, and update
           // |delta_y_p| for the next window.
@@ -280,12 +298,14 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
     } else {
       // Scroll down. Start with the bottom-most (i.e. front-most in terms of
       // z-index) window, and try to scroll them down.
-      aura::Window::Windows::const_reverse_iterator iter;
-      for (iter = windows.rbegin();
+      for (aura::Window::Windows::const_reverse_iterator iter =
+               windows.rbegin();
            delta_y_p > kEpsilon && iter != windows.rend();
            ++iter) {
         aura::Window* window = (*iter);
         WindowOverviewState* state = window->GetProperty(kWindowOverviewState);
+        if (!state)
+          continue;
         if (1.f - state->progress > kEpsilon) {
           // It is possible to scroll |window| down. Scroll it down, and update
           // |delta_y_p| for the next window.
@@ -501,8 +521,6 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   const float kMinOpacity = 0.2f;
 
   aura::Window* container_;
-  // Provider of the stack of windows to show in the overview mode. Not owned.
-  const WindowListProvider* window_list_provider_;
   WindowOverviewModeDelegate* delegate_;
   scoped_ptr<aura::ScopedWindowTargeter> scoped_targeter_;
   scoped_ptr<ui::FlingCurve> fling_;
@@ -518,10 +536,9 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
 // static
 scoped_ptr<WindowOverviewMode> WindowOverviewMode::Create(
     aura::Window* container,
-    const WindowListProvider* window_list_provider,
     WindowOverviewModeDelegate* delegate) {
   return scoped_ptr<WindowOverviewMode>(
-      new WindowOverviewModeImpl(container, window_list_provider, delegate));
+      new WindowOverviewModeImpl(container, delegate));
 }
 
 }  // namespace athena

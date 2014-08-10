@@ -8,7 +8,6 @@
 #include "athena/input/public/accelerator_manager.h"
 #include "athena/screen/public/screen_manager.h"
 #include "athena/wm/bezel_controller.h"
-#include "athena/wm/mru_window_tracker.h"
 #include "athena/wm/public/window_manager_observer.h"
 #include "athena/wm/split_view_controller.h"
 #include "athena/wm/window_overview_mode.h"
@@ -35,8 +34,6 @@ class WindowManagerImpl : public WindowManager,
 
   // WindowManager:
   virtual void ToggleOverview() OVERRIDE;
-
-  virtual bool IsOverviewModeActive() OVERRIDE;
 
  private:
   enum Command {
@@ -65,7 +62,6 @@ class WindowManagerImpl : public WindowManager,
                                   const ui::Accelerator& accelerator) OVERRIDE;
 
   scoped_ptr<aura::Window> container_;
-  scoped_ptr<MruWindowTracker> mru_window_tracker_;
   scoped_ptr<WindowOverviewMode> overview_;
   scoped_ptr<BezelController> bezel_controller_;
   scoped_ptr<SplitViewController> split_view_controller_;
@@ -102,10 +98,8 @@ WindowManagerImpl::WindowManagerImpl() {
   container_.reset(ScreenManager::Get()->CreateDefaultContainer(params));
   container_->SetLayoutManager(new AthenaContainerLayoutManager);
   container_->AddObserver(this);
-  mru_window_tracker_.reset(new MruWindowTracker(container_.get()));
   bezel_controller_.reset(new BezelController(container_.get()));
-  split_view_controller_.reset(new SplitViewController(
-      container_.get(), mru_window_tracker_.get(), this));
+  split_view_controller_.reset(new SplitViewController());
   bezel_controller_->set_left_right_delegate(split_view_controller_.get());
   container_->AddPreTargetHandler(bezel_controller_.get());
   wm_state_.reset(new wm::WMState());
@@ -140,26 +134,15 @@ void WindowManagerImpl::ToggleOverview() {
   SetInOverview(overview_.get() == NULL);
 }
 
-bool WindowManagerImpl::IsOverviewModeActive() {
-  return overview_;
-}
-
 void WindowManagerImpl::SetInOverview(bool active) {
   bool in_overview = !!overview_;
   if (active == in_overview)
     return;
 
   if (active) {
+    overview_ = WindowOverviewMode::Create(container_.get(), this);
     FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
                       OnOverviewModeEnter());
-    // Re-stack all windows in the order defined by mru_window_tracker_.
-    aura::Window::Windows window_list = mru_window_tracker_->GetWindowList();
-    aura::Window::Windows::iterator it;
-    for (it = window_list.begin(); it != window_list.end(); ++it)
-      container_->StackChildAtTop(*it);
-    overview_ = WindowOverviewMode::Create(container_.get(),
-                                           mru_window_tracker_.get(),
-                                           this);
   } else {
     overview_.reset();
     FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
@@ -185,7 +168,8 @@ void WindowManagerImpl::RemoveObserver(WindowManagerObserver* observer) {
 }
 
 void WindowManagerImpl::OnSelectWindow(aura::Window* window) {
-  mru_window_tracker_->MoveToFront(window);
+  CHECK_EQ(container_.get(), window->parent());
+  container_->StackChildAtTop(window);
   wm::ActivateWindow(window);
   SetInOverview(false);
 }
