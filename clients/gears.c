@@ -23,6 +23,7 @@
 #include "config.h"
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -208,8 +209,13 @@ static void
 update_fps(struct gears *gears, uint32_t time)
 {
 	long diff_ms;
+	static bool first_call = true;
 
-	gears->frames++;
+	if (first_call) {
+		gears->last_fps = time;
+		first_call = false;
+	} else
+		gears->frames++;
 
 	diff_ms = time - gears->last_fps;
 
@@ -398,7 +404,6 @@ gears_create(struct display *display)
 {
 	const int width = 450, height = 500;
 	struct gears *gears;
-	struct timeval tv;
 	int i;
 
 	gears = zalloc(sizeof *gears);
@@ -437,8 +442,6 @@ gears_create(struct display *display)
 	gears->view.rotx = 20.0;
 	gears->view.roty = 30.0;
 
-	gettimeofday(&tv, NULL);
-	gears->last_fps = tv.tv_sec * 1000 + tv.tv_usec / 1000;
 	printf("Warning: FPS count is limited by the wayland compositor or monitor refresh rate\n");
 
 	glEnable(GL_NORMALIZE);
