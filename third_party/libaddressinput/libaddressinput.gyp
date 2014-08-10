@@ -144,6 +144,15 @@
         'chromium/string_compare_unittest.cc',
         'chromium/trie_unittest.cc',
       ],
+      'conditions': [
+        ['OS=="win"', {
+          # TODO(rouslan): Enable signed/unsigned warning after bumping to
+          # https://code.google.com/p/libaddressinput/source/detail?r=327
+          'msvs_disabled_warnings': [
+            4018,
+          ],
+        }],
+      ],
       'defines': [
         'TEST_DATA_DIR="<(libaddressinput_test_data_dir)"',
       ],

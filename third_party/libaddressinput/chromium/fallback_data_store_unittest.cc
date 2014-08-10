@@ -31,10 +31,20 @@ TEST(FallbackDataStore, Parsability) {
   Json json;
   ASSERT_TRUE(json.ParseObject(data));
 
-  // Should have a dictionary for "data/US", as this is aggregate data.
-  std::string not_checked;
-  EXPECT_FALSE(json.GetStringValueForKey("data/US", &not_checked));
-  EXPECT_TRUE(json.HasDictionaryValueForKey("data/US"));
+  // Should not have a string for "data/US", because "data/US" is a dictionary.
+  std::string value;
+  EXPECT_FALSE(json.GetStringValueForKey("data/US", &value));
+
+  // Should have a dictionary with "data/US" identifier.
+  const std::vector<const Json*>& sub_dicts = json.GetSubDictionaries();
+  bool key_found = false;
+  for (std::vector<const Json*>::const_iterator it = sub_dicts.begin();
+       it != sub_dicts.end(); ++it) {
+    const Json* sub_dict = *it;
+    EXPECT_TRUE(sub_dict->GetStringValueForKey("id", &value));
+    key_found |= value == "data/US";
+  }
+  EXPECT_TRUE(key_found);
 }
 
 }  // namespace autofill

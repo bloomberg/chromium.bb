@@ -39,15 +39,6 @@ namespace {
   return result.Pass();
 }
 
-// Returns the list of keys in |dict|.
-std::vector<std::string> GetKeysFromDictionary(
-    const base::DictionaryValue& dict) {
-  std::vector<std::string> keys;
-  for (base::DictionaryValue::Iterator it(dict); !it.IsAtEnd(); it.Advance())
-    keys.push_back(it.key());
-  return keys;
-}
-
 }  // namespace
 
 // Implementation of JSON parser for libaddressinput using JSON parser in
@@ -56,59 +47,38 @@ class Json::JsonImpl {
  public:
   explicit JsonImpl(const std::string& json)
       : owned_(Parse(json, &parser_error_)),
-        dict_(*owned_),
-        keys_(GetKeysFromDictionary(dict_)) {}
+        dict_(*owned_) {}
 
-  ~JsonImpl() { STLDeleteValues(&sub_dicts_); }
+  ~JsonImpl() { STLDeleteElements(&sub_dicts_); }
 
   bool parser_error() const { return parser_error_; }
 
-  const std::vector<std::string>& keys() const { return keys_; }
+  const std::vector<const Json*>& GetSubDictionaries() {
+    if (sub_dicts_.empty()) {
+      for (base::DictionaryValue::Iterator it(dict_); !it.IsAtEnd();
+           it.Advance()) {
+        if (it.value().IsType(base::Value::TYPE_DICTIONARY)) {
+          const base::DictionaryValue* sub_dict = NULL;
+          it.value().GetAsDictionary(&sub_dict);
+          sub_dicts_.push_back(new Json(new JsonImpl(*sub_dict)));
+        }
+      }
+    }
+    return sub_dicts_;
+  }
 
   bool GetStringValueForKey(const std::string& key, std::string* value) const {
     return dict_.GetStringWithoutPathExpansion(key, value);
   }
 
-  bool HasDictionaryValueForKey(const std::string& key) {
-    return !!FindDictionary(key);
-  }
-
-  const Json& GetDictionaryValueForKey(const std::string& key) {
-    const Json* result = FindDictionary(key);
-    DCHECK(result);
-    return *result;
-  }
-
  private:
   explicit JsonImpl(const base::DictionaryValue& dict)
-      : parser_error_(false), dict_(dict), keys_(GetKeysFromDictionary(dict)) {}
-
-  // The caller does not own the returned value, which can be NULL if there's no
-  // dictionary for |key|.
-  const Json* FindDictionary(const std::string& key) {
-    std::map<std::string, Json*>::const_iterator it = sub_dicts_.find(key);
-    if (it != sub_dicts_.end())
-      return it->second;
-
-    const base::DictionaryValue* sub_dict = NULL;
-    if (!dict_.GetDictionaryWithoutPathExpansion(key, &sub_dict) || !sub_dict)
-      return NULL;
-
-    std::pair<std::map<std::string, Json*>::iterator, bool> result =
-        sub_dicts_.insert(std::make_pair(key, new Json));
-    DCHECK(result.second);
-
-    Json* sub_json = result.first->second;
-    sub_json->impl_.reset(new JsonImpl(*sub_dict));
-
-    return sub_json;
-  }
+      : parser_error_(false), dict_(dict) {}
 
   const ::scoped_ptr<const base::DictionaryValue> owned_;
   bool parser_error_;
   const base::DictionaryValue& dict_;
-  const std::vector<std::string> keys_;
-  std::map<std::string, Json*> sub_dicts_;
+  std::vector<const Json*> sub_dicts_;
 
   DISALLOW_COPY_AND_ASSIGN(JsonImpl);
 };
@@ -125,8 +95,8 @@ bool Json::ParseObject(const std::string& json) {
   return !!impl_;
 }
 
-const std::vector<std::string>& Json::GetKeys() const {
-  return impl_->keys();
+const std::vector<const Json*>& Json::GetSubDictionaries() const {
+  return impl_->GetSubDictionaries();
 }
 
 bool Json::GetStringValueForKey(const std::string& key,
@@ -134,13 +104,7 @@ bool Json::GetStringValueForKey(const std::string& key,
   return impl_->GetStringValueForKey(key, value);
 }
 
-bool Json::HasDictionaryValueForKey(const std::string& key) const {
-  return impl_->HasDictionaryValueForKey(key);
-}
-
-const Json& Json::GetDictionaryValueForKey(const std::string& key) const {
-  return impl_->GetDictionaryValueForKey(key);
-}
+Json::Json(JsonImpl* impl) : impl_(impl) {}
 
 }  // namespace addressinput
 }  // namespace i18n
