@@ -51,6 +51,7 @@ class InfoMap;
 
 namespace net {
 class ProxyInfo;
+class ProxyServer;
 class URLRequest;
 }
 
@@ -198,6 +199,9 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
                                  GURL* new_url) OVERRIDE;
   virtual void OnResolveProxy(
       const GURL& url, int load_flags, net::ProxyInfo* result) OVERRIDE;
+  virtual void OnProxyFallback(const net::ProxyServer& bad_proxy,
+                               int net_error,
+                               bool did_fallback) OVERRIDE;
   virtual int OnBeforeSendHeaders(net::URLRequest* request,
                                   const net::CompletionCallback& callback,
                                   net::HttpRequestHeaders* headers) OVERRIDE;

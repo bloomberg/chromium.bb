@@ -428,97 +428,97 @@ TEST_F(DataReductionProxyHeadersTest, HasDataReductionProxyViaHeader) {
 TEST_F(DataReductionProxyHeadersTest, GetDataReductionProxyBypassEventType) {
   const struct {
      const char* headers;
-     net::ProxyService::DataReductionProxyBypassType expected_result;
+     DataReductionProxyBypassType expected_result;
   } tests[] = {
     { "HTTP/1.1 200 OK\n"
       "Chrome-Proxy: bypass=0\n"
       "Via: 1.1 Chrome-Compression-Proxy\n",
-      net::ProxyService::MEDIUM_BYPASS,
+      BYPASS_EVENT_TYPE_MEDIUM,
     },
     { "HTTP/1.1 200 OK\n"
       "Chrome-Proxy: bypass=1\n"
       "Via: 1.1 Chrome-Compression-Proxy\n",
-      net::ProxyService::SHORT_BYPASS,
+      BYPASS_EVENT_TYPE_SHORT,
     },
     { "HTTP/1.1 200 OK\n"
       "Chrome-Proxy: bypass=59\n"
       "Via: 1.1 Chrome-Compression-Proxy\n",
-      net::ProxyService::SHORT_BYPASS,
+      BYPASS_EVENT_TYPE_SHORT,
     },
     { "HTTP/1.1 200 OK\n"
       "Chrome-Proxy: bypass=60\n"
       "Via: 1.1 Chrome-Compression-Proxy\n",
-      net::ProxyService::MEDIUM_BYPASS,
+      BYPASS_EVENT_TYPE_MEDIUM,
     },
     { "HTTP/1.1 200 OK\n"
       "Chrome-Proxy: bypass=300\n"
       "Via: 1.1 Chrome-Compression-Proxy\n",
-      net::ProxyService::MEDIUM_BYPASS,
+      BYPASS_EVENT_TYPE_MEDIUM,
     },
     { "HTTP/1.1 200 OK\n"
       "Chrome-Proxy: bypass=301\n"
       "Via: 1.1 Chrome-Compression-Proxy\n",
-      net::ProxyService::LONG_BYPASS,
+      BYPASS_EVENT_TYPE_LONG,
     },
     { "HTTP/1.1 500 Internal Server Error\n"
       "Via: 1.1 Chrome-Compression-Proxy\n",
-      net::ProxyService::STATUS_500_HTTP_INTERNAL_SERVER_ERROR,
+      BYPASS_EVENT_TYPE_STATUS_500_HTTP_INTERNAL_SERVER_ERROR,
     },
     { "HTTP/1.1 501 Not Implemented\n"
       "Via: 1.1 Chrome-Compression-Proxy\n",
-      net::ProxyService::BYPASS_EVENT_TYPE_MAX,
+      BYPASS_EVENT_TYPE_MAX,
     },
     { "HTTP/1.1 502 Bad Gateway\n"
       "Via: 1.1 Chrome-Compression-Proxy\n",
-      net::ProxyService::STATUS_502_HTTP_BAD_GATEWAY,
+      BYPASS_EVENT_TYPE_STATUS_502_HTTP_BAD_GATEWAY,
     },
     { "HTTP/1.1 503 Service Unavailable\n"
       "Via: 1.1 Chrome-Compression-Proxy\n",
-      net::ProxyService::STATUS_503_HTTP_SERVICE_UNAVAILABLE,
+      BYPASS_EVENT_TYPE_STATUS_503_HTTP_SERVICE_UNAVAILABLE,
     },
     { "HTTP/1.1 504 Gateway Timeout\n"
       "Via: 1.1 Chrome-Compression-Proxy\n",
-      net::ProxyService::BYPASS_EVENT_TYPE_MAX,
+      BYPASS_EVENT_TYPE_MAX,
     },
     { "HTTP/1.1 505 HTTP Version Not Supported\n"
       "Via: 1.1 Chrome-Compression-Proxy\n",
-      net::ProxyService::BYPASS_EVENT_TYPE_MAX,
+      BYPASS_EVENT_TYPE_MAX,
     },
     { "HTTP/1.1 304 Not Modified\n",
-      net::ProxyService::BYPASS_EVENT_TYPE_MAX,
+        BYPASS_EVENT_TYPE_MAX,
     },
     { "HTTP/1.1 200 OK\n",
-      net::ProxyService::MISSING_VIA_HEADER_OTHER,
+        BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER,
     },
     { "HTTP/1.1 200 OK\n"
       "Chrome-Proxy: bypass=59\n",
-      net::ProxyService::SHORT_BYPASS,
+      BYPASS_EVENT_TYPE_SHORT,
     },
     { "HTTP/1.1 502 Bad Gateway\n",
-      net::ProxyService::STATUS_502_HTTP_BAD_GATEWAY,
+        BYPASS_EVENT_TYPE_STATUS_502_HTTP_BAD_GATEWAY,
     },
     { "HTTP/1.1 502 Bad Gateway\n"
       "Chrome-Proxy: bypass=59\n",
-      net::ProxyService::SHORT_BYPASS,
+      BYPASS_EVENT_TYPE_SHORT,
     },
     { "HTTP/1.1 502 Bad Gateway\n"
       "Chrome-Proxy: bypass=59\n",
-      net::ProxyService::SHORT_BYPASS,
+      BYPASS_EVENT_TYPE_SHORT,
     },
     { "HTTP/1.1 414 Request-URI Too Long\n",
-      net::ProxyService::MISSING_VIA_HEADER_4XX,
+        BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_4XX,
     },
     { "HTTP/1.1 414 Request-URI Too Long\n"
       "Via: 1.1 Chrome-Compression-Proxy\n",
-      net::ProxyService::BYPASS_EVENT_TYPE_MAX,
+      BYPASS_EVENT_TYPE_MAX,
     },
     { "HTTP/1.1 407 Proxy Authentication Required\n",
-      net::ProxyService::MALFORMED_407,
+        BYPASS_EVENT_TYPE_MALFORMED_407,
     },
     { "HTTP/1.1 407 Proxy Authentication Required\n"
       "Proxy-Authenticate: Basic\n"
       "Via: 1.1 Chrome-Compression-Proxy\n",
-      net::ProxyService::BYPASS_EVENT_TYPE_MAX,
+      BYPASS_EVENT_TYPE_MAX,
     }
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {

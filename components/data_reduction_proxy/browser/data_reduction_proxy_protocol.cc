@@ -8,6 +8,7 @@
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_tamper_detection.h"
+#include "components/data_reduction_proxy/browser/data_reduction_proxy_usage_stats.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_headers.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -42,12 +43,12 @@ bool MaybeBypassProxyAndPrepareToRetry(
     net::URLRequest* request,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
-    net::ProxyService::DataReductionProxyBypassType* proxy_bypass_type) {
+    DataReductionProxyBypassType* proxy_bypass_type) {
   if (!data_reduction_proxy_params)
     return false;
-  std::pair<GURL, GURL> data_reduction_proxies;
+  DataReductionProxyTypeInfo data_reduction_proxy_type_info;
   if (!data_reduction_proxy_params->WasDataReductionProxyUsed(
-          request, &data_reduction_proxies)) {
+          request, &data_reduction_proxy_type_info)) {
     return false;
   }
 
@@ -56,36 +57,43 @@ bool MaybeBypassProxyAndPrepareToRetry(
   if (request->proxy_server().IsEmpty())
     return false;
 
-  if (data_reduction_proxies.first.is_empty())
+  if (data_reduction_proxy_type_info.proxy_servers.first.is_empty())
     return false;
 
   DataReductionProxyTamperDetection::DetectAndReport(
       original_response_headers,
-      data_reduction_proxies.first.SchemeIsSecure());
+      data_reduction_proxy_type_info.proxy_servers.first.SchemeIsSecure());
 
   DataReductionProxyInfo data_reduction_proxy_info;
-  net::ProxyService::DataReductionProxyBypassType bypass_type =
+  DataReductionProxyBypassType bypass_type =
       GetDataReductionProxyBypassType(original_response_headers,
                                       &data_reduction_proxy_info);
   if (proxy_bypass_type)
     *proxy_bypass_type = bypass_type;
-  if (bypass_type == net::ProxyService::BYPASS_EVENT_TYPE_MAX)
+  if (bypass_type == BYPASS_EVENT_TYPE_MAX)
     return false;
 
   DCHECK(request->context());
   DCHECK(request->context()->proxy_service());
   net::ProxyServer proxy_server;
-  SetProxyServerFromGURL(data_reduction_proxies.first, &proxy_server);
-  request->context()->proxy_service()->RecordDataReductionProxyBypassInfo(
-      !data_reduction_proxies.second.is_empty(),
-      data_reduction_proxy_info.bypass_all,
-      proxy_server,
-      bypass_type);
+  SetProxyServerFromGURL(
+      data_reduction_proxy_type_info.proxy_servers.first, &proxy_server);
+
+  // Only record UMA if the proxy isn't already on the retry list.
+  const net::ProxyRetryInfoMap& proxy_retry_info =
+      request->context()->proxy_service()->proxy_retry_info();
+  if (proxy_retry_info.find(proxy_server.ToURI()) == proxy_retry_info.end()) {
+    DataReductionProxyUsageStats::RecordDataReductionProxyBypassInfo(
+        !data_reduction_proxy_type_info.proxy_servers.second.is_empty(),
+        data_reduction_proxy_info.bypass_all,
+        proxy_server,
+        bypass_type);
+  }
 
   MarkProxiesAsBadUntil(request,
                         data_reduction_proxy_info.bypass_duration,
                         data_reduction_proxy_info.bypass_all,
-                        data_reduction_proxies);
+                        data_reduction_proxy_type_info.proxy_servers);
 
   // Only retry idempotent methods.
   if (!IsRequestIdempotent(request))

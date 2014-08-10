@@ -14,11 +14,9 @@
 #include "base/time/time.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
-#include "net/proxy/proxy_service.h"
 
 using base::StringPiece;
 using base::TimeDelta;
-using net::ProxyService;
 
 namespace {
 
@@ -174,8 +172,7 @@ bool HasDataReductionProxyViaHeader(const net::HttpResponseHeaders* headers,
   return false;
 }
 
-net::ProxyService::DataReductionProxyBypassType
-GetDataReductionProxyBypassType(
+DataReductionProxyBypassType GetDataReductionProxyBypassType(
     const net::HttpResponseHeaders* headers,
     DataReductionProxyInfo* data_reduction_proxy_info) {
   DCHECK(data_reduction_proxy_info);
@@ -183,25 +180,28 @@ GetDataReductionProxyBypassType(
     // A chrome-proxy response header is only present in a 502. For proper
     // reporting, this check must come before the 5xx checks below.
     const TimeDelta& duration = data_reduction_proxy_info->bypass_duration;
+    // bypass=0 means bypass for a random duration between 1 to 5 minutes
+    if (duration == TimeDelta())
+      return BYPASS_EVENT_TYPE_MEDIUM;
     if (duration <= TimeDelta::FromSeconds(kShortBypassMaxSeconds))
-      return ProxyService::SHORT_BYPASS;
+      return BYPASS_EVENT_TYPE_SHORT;
     if (duration <= TimeDelta::FromSeconds(kMediumBypassMaxSeconds))
-      return ProxyService::MEDIUM_BYPASS;
-    return ProxyService::LONG_BYPASS;
+      return BYPASS_EVENT_TYPE_MEDIUM;
+    return BYPASS_EVENT_TYPE_LONG;
   }
   data_reduction_proxy_info->bypass_duration = GetDefaultBypassDuration();
   // Fall back if a 500, 502 or 503 is returned.
   if (headers->response_code() == net::HTTP_INTERNAL_SERVER_ERROR)
-    return ProxyService::STATUS_500_HTTP_INTERNAL_SERVER_ERROR;
+    return BYPASS_EVENT_TYPE_STATUS_500_HTTP_INTERNAL_SERVER_ERROR;
   if (headers->response_code() == net::HTTP_BAD_GATEWAY)
-    return ProxyService::STATUS_502_HTTP_BAD_GATEWAY;
+    return BYPASS_EVENT_TYPE_STATUS_502_HTTP_BAD_GATEWAY;
   if (headers->response_code() == net::HTTP_SERVICE_UNAVAILABLE)
-    return ProxyService::STATUS_503_HTTP_SERVICE_UNAVAILABLE;
+    return BYPASS_EVENT_TYPE_STATUS_503_HTTP_SERVICE_UNAVAILABLE;
   // TODO(kundaji): Bypass if Proxy-Authenticate header value cannot be
   // interpreted by data reduction proxy.
   if (headers->response_code() == net::HTTP_PROXY_AUTHENTICATION_REQUIRED &&
       !headers->HasHeader("Proxy-Authenticate")) {
-    return ProxyService::MALFORMED_407;
+    return BYPASS_EVENT_TYPE_MALFORMED_407;
   }
   if (!HasDataReductionProxyViaHeader(headers, NULL) &&
       (headers->response_code() != net::HTTP_NOT_MODIFIED)) {
@@ -214,12 +214,12 @@ GetDataReductionProxyBypassType(
     // Separate this case from other responses that are missing the header.
     if (headers->response_code() >= net::HTTP_BAD_REQUEST &&
         headers->response_code() < net::HTTP_INTERNAL_SERVER_ERROR) {
-      return ProxyService::MISSING_VIA_HEADER_4XX;
+      return BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_4XX;
     }
-    return ProxyService::MISSING_VIA_HEADER_OTHER;
+    return BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER;
   }
   // There is no bypass event.
-  return ProxyService::BYPASS_EVENT_TYPE_MAX;
+  return BYPASS_EVENT_TYPE_MAX;
 }
 
 bool GetDataReductionProxyActionFingerprintChromeProxy(

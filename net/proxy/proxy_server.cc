@@ -219,27 +219,6 @@ ProxyServer::Scheme ProxyServer::GetSchemeFromURI(const std::string& scheme) {
   return GetSchemeFromURIInternal(scheme.begin(), scheme.end());
 }
 
-// TODO(bengr): Use |scheme_| to indicate that this is the data reduction proxy.
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-bool ProxyServer::isDataReductionProxy() const {
-    bool dev_host = false;
-#if defined (DATA_REDUCTION_DEV_HOST)
-    dev_host = host_port_pair_.Equals(
-        HostPortPair::FromURL(GURL(DATA_REDUCTION_DEV_HOST)));
-#endif
-  return dev_host || host_port_pair_.Equals(
-      HostPortPair::FromURL(GURL(SPDY_PROXY_AUTH_ORIGIN)));
-}
-
-bool ProxyServer::isDataReductionProxyFallback() const {
-#if defined(DATA_REDUCTION_FALLBACK_HOST)
-  return host_port_pair_.Equals(
-      HostPortPair::FromURL(GURL(DATA_REDUCTION_FALLBACK_HOST)));
-#endif  // defined(DATA_REDUCTION_FALLBACK_HOST)
-  return false;
-}
-#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
-
 // static
 ProxyServer ProxyServer::FromSchemeHostAndPort(
     Scheme scheme,

@@ -13,8 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/metrics/histogram.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -1197,6 +1195,7 @@ int ProxyService::ReconsiderProxyAfterError(const GURL& url,
   // want to re-run ResolveProxy in two cases: 1) we have a new config, or 2) a
   // direct connection failed and we never tried the current config.
 
+  DCHECK(result);
   bool re_resolve = result->config_id_ != config_.id();
 
   if (re_resolve) {
@@ -1207,23 +1206,16 @@ int ProxyService::ReconsiderProxyAfterError(const GURL& url,
                         network_delegate, net_log);
   }
 
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-  if (result->proxy_server().isDataReductionProxy()) {
-    RecordDataReductionProxyBypassInfo(
-        true, false, result->proxy_server(), NETWORK_ERROR);
-    RecordDataReductionProxyBypassOnNetworkError(
-        true, result->proxy_server(), net_error);
-  } else if (result->proxy_server().isDataReductionProxyFallback()) {
-    RecordDataReductionProxyBypassInfo(
-        false, false, result->proxy_server(), NETWORK_ERROR);
-    RecordDataReductionProxyBypassOnNetworkError(
-        false, result->proxy_server(), net_error);
-  }
-#endif
+  DCHECK(!result->is_empty());
+  ProxyServer bad_proxy = result->proxy_server();
 
   // We don't have new proxy settings to try, try to fallback to the next proxy
   // in the list.
   bool did_fallback = result->Fallback(net_log);
+
+  if (network_delegate) {
+      network_delegate->NotifyProxyFallback(bad_proxy, net_error, did_fallback);
+  }
 
   // Return synchronous failure if there is nothing left to fall-back to.
   // TODO(eroman): This is a yucky API, clean it up.
@@ -1457,53 +1449,6 @@ const ProxyService::PacPollPolicy* ProxyService::set_pac_script_poll_policy(
 scoped_ptr<ProxyService::PacPollPolicy>
   ProxyService::CreateDefaultPacPollPolicy() {
   return scoped_ptr<PacPollPolicy>(new DefaultPollPolicy());
-}
-
-void ProxyService::RecordDataReductionProxyBypassInfo(
-    bool is_primary,
-    bool bypass_all,
-    const ProxyServer& proxy_server,
-    DataReductionProxyBypassType bypass_type) const {
-  // Only record UMA if the proxy isn't already on the retry list.
-  if (proxy_retry_info_.find(proxy_server.ToURI()) != proxy_retry_info_.end())
-    return;
-
-  if (bypass_all) {
-    if (is_primary) {
-      UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.BlockTypePrimary",
-                                bypass_type, BYPASS_EVENT_TYPE_MAX);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.BlockTypeFallback",
-                                bypass_type, BYPASS_EVENT_TYPE_MAX);
-    }
-  } else {
-    if (is_primary) {
-      UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.BypassTypePrimary",
-                                bypass_type, BYPASS_EVENT_TYPE_MAX);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.BypassTypeFallback",
-                                bypass_type, BYPASS_EVENT_TYPE_MAX);
-    }
-  }
-}
-
-void ProxyService::RecordDataReductionProxyBypassOnNetworkError(
-    bool is_primary,
-    const ProxyServer& proxy_server,
-    int net_error) {
-  // Only record UMA if the proxy isn't already on the retry list.
-  if (proxy_retry_info_.find(proxy_server.ToURI()) != proxy_retry_info_.end())
-    return;
-
-  if (is_primary) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
-        "DataReductionProxy.BypassOnNetworkErrorPrimary",
-        std::abs(net_error));
-    return;
-  }
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
-      "DataReductionProxy.BypassOnNetworkErrorFallback",
-      std::abs(net_error));
 }
 
 void ProxyService::OnProxyConfigChanged(

@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params_test_utils.h"
+#include "components/data_reduction_proxy/common/data_reduction_proxy_headers.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -58,7 +59,7 @@ class TestDataReductionProxyNetworkDelegate : public net::NetworkDelegate {
  public:
   TestDataReductionProxyNetworkDelegate(
       TestDataReductionProxyParams* test_params,
-      ProxyService::DataReductionProxyBypassType* bypass_type)
+      DataReductionProxyBypassType* bypass_type)
       : net::NetworkDelegate(),
         test_data_reduction_proxy_params_(test_params),
         bypass_type_(bypass_type) {
@@ -80,7 +81,7 @@ class TestDataReductionProxyNetworkDelegate : public net::NetworkDelegate {
   }
 
   TestDataReductionProxyParams* test_data_reduction_proxy_params_;
-  ProxyService::DataReductionProxyBypassType* bypass_type_;
+  DataReductionProxyBypassType* bypass_type_;
 };
 
 // Constructs a |TestURLRequestContext| that uses a |MockSocketFactory| to
@@ -99,9 +100,8 @@ class DataReductionProxyProtocolTest : public testing::Test {
 
   // Sets up the |TestURLRequestContext| with the provided |ProxyService| and
   // |bypass_type| to store bypass reasons.
-  void ConfigureTestDependencies(
-      ProxyService* proxy_service,
-      ProxyService::DataReductionProxyBypassType* bypass_type) {
+  void ConfigureTestDependencies(ProxyService* proxy_service,
+                                 DataReductionProxyBypassType* bypass_type) {
     // Create a context with delayed initialization.
     context_.reset(new TestURLRequestContext(true));
 
@@ -367,7 +367,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
     size_t expected_bad_proxy_count;
     bool expect_response_body;
     int expected_duration;
-    ProxyService::DataReductionProxyBypassType expected_bypass_type;
+    DataReductionProxyBypassType expected_bypass_type;
   } tests[] = {
     // Valid data reduction proxy response with no bypass message.
     { "GET",
@@ -378,7 +378,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       0u,
       true,
       -1,
-      ProxyService::BYPASS_EVENT_TYPE_MAX,
+      BYPASS_EVENT_TYPE_MAX,
     },
     // Valid data reduction proxy response with older, but still valid via
     // header.
@@ -390,7 +390,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       0u,
       true,
       -1,
-      ProxyService::BYPASS_EVENT_TYPE_MAX
+      BYPASS_EVENT_TYPE_MAX
     },
     // Valid data reduction proxy response with chained via header,
     // no bypass message.
@@ -402,7 +402,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       0u,
       true,
       -1,
-      ProxyService::BYPASS_EVENT_TYPE_MAX
+      BYPASS_EVENT_TYPE_MAX
     },
     // Valid data reduction proxy response with a bypass message.
     { "GET",
@@ -414,7 +414,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       1u,
       true,
       0,
-      ProxyService::MEDIUM_BYPASS
+      BYPASS_EVENT_TYPE_MEDIUM
     },
     // Valid data reduction proxy response with a bypass message.
     { "GET",
@@ -426,7 +426,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       1u,
       true,
       1,
-      ProxyService::SHORT_BYPASS
+      BYPASS_EVENT_TYPE_SHORT
     },
     // Same as above with the OPTIONS method, which is idempotent.
     { "OPTIONS",
@@ -438,7 +438,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       1u,
       true,
       0,
-      ProxyService::MEDIUM_BYPASS
+      BYPASS_EVENT_TYPE_MEDIUM
     },
     // Same as above with the HEAD method, which is idempotent.
     { "HEAD",
@@ -450,7 +450,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       1u,
       false,
       0,
-      ProxyService::MEDIUM_BYPASS
+      BYPASS_EVENT_TYPE_MEDIUM
     },
     // Same as above with the PUT method, which is idempotent.
     { "PUT",
@@ -462,7 +462,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       1u,
       true,
       0,
-      ProxyService::MEDIUM_BYPASS
+      BYPASS_EVENT_TYPE_MEDIUM
     },
     // Same as above with the DELETE method, which is idempotent.
     { "DELETE",
@@ -474,7 +474,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       1u,
       true,
       0,
-      ProxyService::MEDIUM_BYPASS
+      BYPASS_EVENT_TYPE_MEDIUM
     },
     // Same as above with the TRACE method, which is idempotent.
     { "TRACE",
@@ -486,7 +486,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       1u,
       true,
       0,
-      ProxyService::MEDIUM_BYPASS
+      BYPASS_EVENT_TYPE_MEDIUM
     },
     // 500 responses should be bypassed.
     { "GET",
@@ -497,7 +497,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       1u,
       true,
       0,
-      ProxyService::STATUS_500_HTTP_INTERNAL_SERVER_ERROR
+      BYPASS_EVENT_TYPE_STATUS_500_HTTP_INTERNAL_SERVER_ERROR
     },
     // 502 responses should be bypassed.
     { "GET",
@@ -508,7 +508,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       1u,
       true,
       0,
-      ProxyService::STATUS_502_HTTP_BAD_GATEWAY
+      BYPASS_EVENT_TYPE_STATUS_502_HTTP_BAD_GATEWAY
     },
     // 503 responses should be bypassed.
     { "GET",
@@ -519,7 +519,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       1u,
       true,
       0,
-      ProxyService::STATUS_503_HTTP_SERVICE_UNAVAILABLE
+      BYPASS_EVENT_TYPE_STATUS_503_HTTP_SERVICE_UNAVAILABLE
     },
     // Invalid data reduction proxy response. Missing Via header.
     { "GET",
@@ -529,7 +529,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       1u,
       true,
       0,
-      ProxyService::MISSING_VIA_HEADER_OTHER
+      BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER
     },
     // Invalid data reduction proxy response. Wrong Via header.
     { "GET",
@@ -540,7 +540,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       1u,
       true,
       0,
-      ProxyService::MISSING_VIA_HEADER_OTHER
+      BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER
     },
     // Valid data reduction proxy response. 304 missing Via header.
     { "GET",
@@ -550,7 +550,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       0u,
       false,
       0,
-      ProxyService::BYPASS_EVENT_TYPE_MAX
+      BYPASS_EVENT_TYPE_MAX
     },
     // Valid data reduction proxy response with a bypass message. It will
     // not be retried because the request is non-idempotent.
@@ -563,7 +563,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       1u,
       true,
       0,
-      ProxyService::MEDIUM_BYPASS
+      BYPASS_EVENT_TYPE_MEDIUM
     },
     // Valid data reduction proxy response with block message. Both proxies
     // should be on the retry list when it completes.
@@ -576,13 +576,13 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       2u,
       true,
       1,
-      ProxyService::SHORT_BYPASS
+      BYPASS_EVENT_TYPE_SHORT
     }
   };
   std::string primary = proxy_params_->DefaultOrigin();
   std::string fallback = proxy_params_->DefaultFallbackOrigin();
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    ProxyService::DataReductionProxyBypassType bypass_type;
+    DataReductionProxyBypassType bypass_type;
     ConfigureTestDependencies(ProxyService::CreateFixedFromPacResult(
         "PROXY " +
         HostPortPair::FromURL(GURL(primary)).ToString() + "; PROXY " +

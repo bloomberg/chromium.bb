@@ -10,16 +10,29 @@
 #include "base/prefs/pref_member.h"
 #include "base/threading/thread_checker.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/common/data_reduction_proxy_headers.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/network_change_notifier.h"
-#include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request.h"
+
+namespace net {
+class ProxyServer;
+}
 
 namespace data_reduction_proxy {
 
 class DataReductionProxyUsageStats
     : public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
+  // Records a data reduction proxy bypass event as a "BlockType" if
+  // |bypass_all| is true and as a "BypassType" otherwise. Records the event as
+  // "Primary" if |is_primary| is true and "Fallback" otherwise.
+  static void RecordDataReductionProxyBypassInfo(
+      bool is_primary,
+      bool bypass_all,
+      const net::ProxyServer& proxy_server,
+      DataReductionProxyBypassType bypass_type);
+
   // MessageLoopProxy instance is owned by io_thread. |params| outlives
   // this class instance.
   DataReductionProxyUsageStats(DataReductionProxyParams* params,
@@ -40,7 +53,7 @@ class DataReductionProxyUsageStats
   // Records the last bypass reason to |bypass_type_| and sets
   // |triggering_request_| to true. A triggering request is the first request to
   // cause the current bypass.
-  void SetBypassType(net::ProxyService::DataReductionProxyBypassType type);
+  void SetBypassType(DataReductionProxyBypassType type);
 
   // Given the |content_length| and associated |request|, records the
   // number of bypassed bytes for that |request| into UMAs based on bypass type.
@@ -49,6 +62,10 @@ class DataReductionProxyUsageStats
   void RecordBypassedBytesHistograms(
       net::URLRequest& request,
       const BooleanPrefMember& data_reduction_proxy_enabled);
+
+  void RecordBypassEventHistograms(const net::ProxyServer& bypassed_proxy,
+                                   int net_error,
+                                   bool did_fallback) const;
 
  private:
   enum BypassedBytesType {
@@ -81,7 +98,7 @@ class DataReductionProxyUsageStats
   DataReductionProxyParams* data_reduction_proxy_params_;
   // The last reason for bypass as determined by
   // MaybeBypassProxyAndPrepareToRetry
-  net::ProxyService::DataReductionProxyBypassType last_bypass_type_;
+  DataReductionProxyBypassType last_bypass_type_;
   // True if the last request triggered the current bypass.
   bool triggering_request_;
   base::MessageLoopProxy* ui_thread_proxy_;
@@ -107,7 +124,7 @@ class DataReductionProxyUsageStats
   base::ThreadChecker thread_checker_;
 
   void RecordBypassedBytes(
-      net::ProxyService::DataReductionProxyBypassType bypass_type,
+      DataReductionProxyBypassType bypass_type,
       BypassedBytesType bypassed_bytes_type,
       int64 content_length);
 

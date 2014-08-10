@@ -439,6 +439,9 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
     bool expected_result;
     net::HostPortPair expected_first;
     net::HostPortPair expected_second;
+    bool expected_is_fallback;
+    bool expected_is_alternative;
+    bool expected_is_ssl;
   } tests[]  = {
       { net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultOrigin())),
@@ -448,7 +451,10 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
         net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultOrigin())),
         net::HostPortPair::FromURL(GURL(
-            TestDataReductionProxyParams::DefaultFallbackOrigin()))
+            TestDataReductionProxyParams::DefaultFallbackOrigin())),
+        false,
+        false,
+        false
       },
       { net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultOrigin())),
@@ -457,7 +463,10 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
         true,
         net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultOrigin())),
-        net::HostPortPair::FromURL(GURL())
+        net::HostPortPair::FromURL(GURL()),
+        false,
+        false,
+        false
       },
       { net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultFallbackOrigin())),
@@ -466,7 +475,10 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
         true,
         net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultFallbackOrigin())),
-        net::HostPortPair::FromURL(GURL())
+        net::HostPortPair::FromURL(GURL()),
+        true,
+        false,
+        false
       },
       { net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultFallbackOrigin())),
@@ -474,7 +486,10 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
         false,
         false,
         net::HostPortPair::FromURL(GURL()),
-        net::HostPortPair::FromURL(GURL())
+        net::HostPortPair::FromURL(GURL()),
+        false,
+        false,
+        false
       },
       { net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultAltOrigin())),
@@ -484,7 +499,10 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
         net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultAltOrigin())),
         net::HostPortPair::FromURL(GURL(
-            TestDataReductionProxyParams::DefaultAltFallbackOrigin()))
+            TestDataReductionProxyParams::DefaultAltFallbackOrigin())),
+        false,
+        true,
+        false
       },
       { net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultAltOrigin())),
@@ -493,7 +511,10 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
         true,
         net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultAltOrigin())),
-        net::HostPortPair::FromURL(GURL())
+        net::HostPortPair::FromURL(GURL()),
+        false,
+        true,
+        false
       },
       { net::HostPortPair::FromURL(
             GURL(TestDataReductionProxyParams::DefaultAltFallbackOrigin())),
@@ -502,7 +523,10 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
         true,
         net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultAltFallbackOrigin())),
-        net::HostPortPair::FromURL(GURL())
+        net::HostPortPair::FromURL(GURL()),
+        true,
+        true,
+        false
       },
       { net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultAltFallbackOrigin())),
@@ -510,7 +534,10 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
         false,
         false,
         net::HostPortPair::FromURL(GURL()),
-        net::HostPortPair::FromURL(GURL())
+        net::HostPortPair::FromURL(GURL()),
+        false,
+        false,
+        false
       },
       { net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultSSLOrigin())),
@@ -519,7 +546,10 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
         true,
         net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultSSLOrigin())),
-        net::HostPortPair::FromURL(GURL())
+        net::HostPortPair::FromURL(GURL()),
+        false,
+        false,
+        true
       },
       { net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultDevOrigin())),
@@ -529,7 +559,10 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
         net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultDevOrigin())),
         net::HostPortPair::FromURL(GURL(
-            TestDataReductionProxyParams::DefaultFallbackOrigin()))
+            TestDataReductionProxyParams::DefaultFallbackOrigin())),
+        false,
+        false,
+        false
       },
       { net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultOrigin())),
@@ -539,7 +572,10 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
         net::HostPortPair::FromURL(GURL(
             TestDataReductionProxyParams::DefaultOrigin())),
         net::HostPortPair::FromURL(GURL(
-            TestDataReductionProxyParams::DefaultFallbackOrigin()))
+            TestDataReductionProxyParams::DefaultFallbackOrigin())),
+        false,
+        false,
+        false
       },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
@@ -552,14 +588,17 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
       has_definitions &= ~TestDataReductionProxyParams::HAS_DEV_ORIGIN;
     }
     TestDataReductionProxyParams params(flags, has_definitions);
-    std::pair<GURL, GURL> proxy_servers;
+    DataReductionProxyTypeInfo proxy_type_info;
     EXPECT_EQ(tests[i].expected_result,
               params.IsDataReductionProxy(
-                  tests[i].host_port_pair, &proxy_servers));
+                  tests[i].host_port_pair, &proxy_type_info));
     EXPECT_TRUE(tests[i].expected_first.Equals(
-        net::HostPortPair::FromURL(proxy_servers.first)));
+        net::HostPortPair::FromURL(proxy_type_info.proxy_servers.first)));
     EXPECT_TRUE(tests[i].expected_second.Equals(
-        net::HostPortPair::FromURL(proxy_servers.second)));
+        net::HostPortPair::FromURL(proxy_type_info.proxy_servers.second)));
+    EXPECT_EQ(tests[i].expected_is_fallback, proxy_type_info.is_fallback);
+    EXPECT_EQ(tests[i].expected_is_alternative, proxy_type_info.is_alternative);
+    EXPECT_EQ(tests[i].expected_is_ssl, proxy_type_info.is_ssl);
   }
 }
 

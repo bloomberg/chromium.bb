@@ -5,9 +5,8 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_BROWSER_DATA_REDUCTION_PROXY_PROTOCOL_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_BROWSER_DATA_REDUCTION_PROXY_PROTOCOL_H_
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "net/proxy/proxy_service.h"
+#include "components/data_reduction_proxy/common/data_reduction_proxy_headers.h"
 
 namespace base {
 class TimeDelta;
@@ -35,7 +34,7 @@ bool MaybeBypassProxyAndPrepareToRetry(
     net::URLRequest* request,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
-    net::ProxyService::DataReductionProxyBypassType* proxy_bypass_type);
+    DataReductionProxyBypassType* proxy_bypass_type);
 
 // Configure |result| to proceed directly to the origin if |result|'s current
 // proxy is the data reduction proxy, the

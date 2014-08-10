@@ -273,65 +273,6 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
 
   bool quick_check_enabled() const { return quick_check_enabled_; }
 
-  // Values of the UMA DataReductionProxy.BypassType{Primary|Fallback}
-  // and DataReductionProxy.BlockType{Primary|Fallback} histograms.
-  // This enum must remain synchronized with the enum of the same
-  // name in metrics/histograms/histograms.xml.
-  enum DataReductionProxyBypassType {
-    // Bypass due to explicit instruction for the current request.
-    // Not yet supported.
-    CURRENT_BYPASS = 0,
-
-    // Bypass the proxy for less than one minute.
-    SHORT_BYPASS = 1,
-
-    // Bypass the proxy for one to five minutes.
-    MEDIUM_BYPASS = 2,
-
-    // Bypass the proxy for more than five minutes.
-    LONG_BYPASS = 3,
-
-    // Bypass due to a 4xx missing via header.
-    MISSING_VIA_HEADER_4XX = 4,
-
-    // Bypass due to other missing via header, excluding 4xx errors.
-    MISSING_VIA_HEADER_OTHER = 5,
-
-    // Bypass due to 407 response from proxy without a challenge.
-    MALFORMED_407 = 6,
-
-    // Bypass due to a 500 internal server error
-    STATUS_500_HTTP_INTERNAL_SERVER_ERROR = 7,
-
-    // Bypass because the request URI was too long.
-    STATUS_502_HTTP_BAD_GATEWAY = 8,
-
-    // Bypass due to a 503 response.
-    STATUS_503_HTTP_SERVICE_UNAVAILABLE = 9,
-
-    // Bypass due to any network error.
-    NETWORK_ERROR = 10,
-
-    // This must always be last.
-    BYPASS_EVENT_TYPE_MAX = 11
-  };
-
-  // Records a |DataReductionProxyBypassEventType|  or
-  // |DataReductionProxyBlockEventType| for either the data reduction
-  // proxy (|is_primary| is true) or the data reduction proxy fallback.
-  void RecordDataReductionProxyBypassInfo(
-      bool is_primary,
-      bool bypass_all,
-      const ProxyServer& proxy_server,
-      DataReductionProxyBypassType block_type) const;
-
-  // Records a net error code that resulted in bypassing the data reduction
-  // proxy (|is_primary| is true) or the data reduction proxy fallback.
-  void RecordDataReductionProxyBypassOnNetworkError(
-      bool is_primary,
-      const ProxyServer& proxy_server,
-      int net_error);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(ProxyServiceTest, UpdateConfigAfterFailedAutodetect);
   FRIEND_TEST_ALL_PREFIXES(ProxyServiceTest, UpdateConfigFromPACToDirect);

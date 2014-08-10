@@ -23,6 +23,20 @@ class URLRequest;
 }
 
 namespace data_reduction_proxy {
+
+// Contains information about a given proxy server. |proxy_servers| contains
+// the configured data reduction proxy servers. |is_fallback|, |is_alternative|
+// and |is_ssl| note whether the given proxy is a fallback, an alternative,
+// or a proxy for ssl; these are not mutually exclusive.
+struct DataReductionProxyTypeInfo {
+  DataReductionProxyTypeInfo();
+  ~DataReductionProxyTypeInfo();
+  std::pair<GURL, GURL> proxy_servers;
+  bool is_fallback;
+  bool is_alternative;
+  bool is_ssl;
+};
+
 // Provides initialization parameters. Proxy origins, and the probe url are
 // are taken from flags if available and from preprocessor constants otherwise.
 // The DataReductionProxySettings class and others use this class to determine
@@ -88,23 +102,28 @@ class DataReductionProxyParams {
   virtual ~DataReductionProxyParams();
 
   // Returns true if a data reduction proxy was used for the given |request|.
-  // If true, |proxy_servers.first| will contain the name of the proxy that was
-  // used. |proxy_servers.second| will contain the name of the data reduction
-  // proxy server that would be used if |proxy_server.first| is bypassed, if one
-  // exists. |proxy_servers| can be NULL if the caller isn't interested in its
-  // values.
+  // If true, |proxy_info.proxy_servers.first| will contain the name of the
+  // proxy that was used. |proxy_info.proxy_servers.second| will contain the
+  // name of the data reduction proxy server that would be used if
+  // |proxy_info.proxy_server.first| is bypassed, if one exists. In addition,
+  // |proxy_info| will note if the proxy used was a fallback, an alternative,
+  // or a proxy for ssl; these are not mutually exclusive. |proxy_info| can be
+  // NULL if the caller isn't interested in its values.
   virtual bool WasDataReductionProxyUsed(
       const net::URLRequest* request,
-      std::pair<GURL, GURL>* proxy_servers) const;
+      DataReductionProxyTypeInfo* proxy_info) const;
 
   // Returns true if the specified |host_port_pair| matches a data reduction
-  // proxy. If true, |proxy_servers.first| will contain the name of the proxy
-  // that matches. |proxy_servers.second| will contain the name of the
-  // data reduction proxy server that would be used if |proxy_server.first| is
-  // bypassed, if one exists. |proxy_servers| can be NULL if the caller isn't
-  // interested in its values. Virtual for testing.
-  virtual bool IsDataReductionProxy(const net::HostPortPair& host_port_pair,
-                                    std::pair<GURL, GURL>* proxy_servers) const;
+  // proxy. If true, |proxy_info.proxy_servers.first| will contain the name of
+  // the proxy that matches. |proxy_info.proxy_servers.second| will contain the
+  // name of the data reduction proxy server that would be used if
+  // |proxy_info.proxy_server.first| is bypassed, if one exists. In addition,
+  // |proxy_info| will note if the proxy was a fallback, an alternative, or a
+  // proxy for ssl; these are not mutually exclusive. |proxy_info| can be NULL
+  // if the caller isn't interested in its values. Virtual for testing.
+  virtual bool IsDataReductionProxy(
+      const net::HostPortPair& host_port_pair,
+      DataReductionProxyTypeInfo* proxy_info) const;
 
   // Returns true if this request will be sent through the data request proxy
   // based on applying the param rules to the URL. We do not check bad proxy

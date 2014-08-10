@@ -30,8 +30,10 @@ class DataReductionProxyParamsMock : public DataReductionProxyParams {
   virtual ~DataReductionProxyParamsMock() {}
 
   MOCK_METHOD1(IsDataReductionProxyEligible, bool(const net::URLRequest*));
-  MOCK_CONST_METHOD2(WasDataReductionProxyUsed, bool(const net::URLRequest*,
-      std::pair<GURL, GURL>* proxy_servers));
+  MOCK_CONST_METHOD2(
+      WasDataReductionProxyUsed,
+      bool(const net::URLRequest*,
+           data_reduction_proxy::DataReductionProxyTypeInfo* proxy_servers));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyParamsMock);

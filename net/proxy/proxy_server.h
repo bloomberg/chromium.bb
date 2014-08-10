@@ -154,14 +154,6 @@ class NET_EXPORT ProxyServer {
     return host_port_pair_ < other.host_port_pair_;
   }
 
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-  // Returns true if this proxy server is the data reduction proxy or its
-  // fallback, respectively, as configured in gyp. These functions will return
-  // false for data reduction proxy servers specified on the command line.
-  bool isDataReductionProxy() const;
-  bool isDataReductionProxyFallback() const;
-#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
-
  private:
   // Creates a ProxyServer given a scheme, and host/port string. If parsing the
   // host/port string fails, the returned instance will be invalid.

@@ -28,6 +28,14 @@ void NetworkDelegate::NotifyResolveProxy(const GURL& url, int load_flags,
   OnResolveProxy(url, load_flags, result);
 }
 
+void NetworkDelegate::NotifyProxyFallback(
+    const ProxyServer& bad_proxy,
+    int net_error,
+    bool did_fallback) {
+  DCHECK(CalledOnValidThread());
+  OnProxyFallback(bad_proxy, net_error, did_fallback);
+}
+
 int NetworkDelegate::NotifyBeforeSendHeaders(
     URLRequest* request, const CompletionCallback& callback,
     HttpRequestHeaders* headers) {
@@ -164,6 +172,11 @@ int NetworkDelegate::OnBeforeURLRequest(URLRequest* request,
 
 void NetworkDelegate::OnResolveProxy(const GURL& url, int load_flags,
                                      ProxyInfo* result) {
+}
+
+void NetworkDelegate::OnProxyFallback(const ProxyServer& bad_proxy,
+                                      int net_error,
+                                      bool did_fallback) {
 }
 
 int NetworkDelegate::OnBeforeSendHeaders(URLRequest* request,
