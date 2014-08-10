@@ -14,7 +14,7 @@
 #include "third_party/libaddressinput/chromium/input_suggester.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_normalizer.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/downloader.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
 
 namespace autofill {
@@ -24,9 +24,9 @@ using ::i18n::addressinput::AddressData;
 using ::i18n::addressinput::AddressField;
 using ::i18n::addressinput::AddressNormalizer;
 using ::i18n::addressinput::BuildCallback;
-using ::i18n::addressinput::Downloader;
 using ::i18n::addressinput::FieldProblemMap;
 using ::i18n::addressinput::PreloadSupplier;
+using ::i18n::addressinput::Source;
 using ::i18n::addressinput::Storage;
 
 using ::i18n::addressinput::ADMIN_AREA;
@@ -38,12 +38,10 @@ static const int kMaxAttemptsNumber = 8;
 
 }  // namespace
 
-AddressValidator::AddressValidator(const std::string& validation_data_url,
-                                   scoped_ptr<Downloader> downloader,
+AddressValidator::AddressValidator(scoped_ptr<Source> source,
                                    scoped_ptr<Storage> storage,
                                    LoadRulesListener* load_rules_listener)
-    : supplier_(new PreloadSupplier(validation_data_url,
-                                    downloader.release(),
+    : supplier_(new PreloadSupplier(source.release(),
                                     storage.release())),
       input_suggester_(new InputSuggester(supplier_.get())),
       normalizer_(new AddressNormalizer(supplier_.get())),

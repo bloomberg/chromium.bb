@@ -83,7 +83,7 @@
 #include "grit/platform_locale_settings.h"
 #include "grit/theme_resources.h"
 #include "net/cert/cert_status_flags.h"
-#include "third_party/libaddressinput/chromium/chrome_downloader_impl.h"
+#include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 #include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
 #include "third_party/libaddressinput/messages.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
@@ -103,7 +103,6 @@ using ::i18n::addressinput::AddressField;
 using ::i18n::addressinput::AddressProblem;
 using ::i18n::addressinput::ADMIN_AREA;
 using ::i18n::addressinput::DEPENDENT_LOCALITY;
-using ::i18n::addressinput::Downloader;
 using ::i18n::addressinput::FieldProblemMap;
 using ::i18n::addressinput::Localization;
 using ::i18n::addressinput::MISSING_REQUIRED_FIELD;
@@ -863,9 +862,9 @@ void AutofillDialogControllerImpl::Show() {
     FetchWalletCookie();
 
   validator_.reset(new AddressValidator(
-      I18N_ADDRESS_VALIDATION_DATA_URL,
-      scoped_ptr<Downloader>(
-          new autofill::ChromeDownloaderImpl(profile_->GetRequestContext())),
+      scoped_ptr< ::i18n::addressinput::Source>(
+          new autofill::ChromeMetadataSource(I18N_ADDRESS_VALIDATION_DATA_URL,
+                                             profile_->GetRequestContext())),
       ValidationRulesStorageFactory::CreateStorage(),
       this));
 

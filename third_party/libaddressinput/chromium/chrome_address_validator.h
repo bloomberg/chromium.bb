@@ -21,7 +21,7 @@
 namespace i18n {
 namespace addressinput {
 class AddressNormalizer;
-class Downloader;
+class Source;
 class Storage;
 struct AddressData;
 }
@@ -73,9 +73,8 @@ class AddressValidator {
     RULES_NOT_READY
   };
 
-  // Takes ownership of |downloader| and |storage|.
-  AddressValidator(const std::string& validation_data_url,
-                   scoped_ptr< ::i18n::addressinput::Downloader> downloader,
+  // Takes ownership of |source| and |storage|.
+  AddressValidator(scoped_ptr< ::i18n::addressinput::Source> source,
                    scoped_ptr< ::i18n::addressinput::Storage> storage,
                    LoadRulesListener* load_rules_listener);
 

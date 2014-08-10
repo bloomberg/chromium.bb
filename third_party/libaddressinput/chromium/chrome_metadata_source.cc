@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/libaddressinput/chromium/chrome_downloader_impl.h"
+#include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -48,19 +48,22 @@ class UnownedStringWriter : public net::URLFetcherResponseWriter {
 
 }  // namespace
 
-ChromeDownloaderImpl::ChromeDownloaderImpl(net::URLRequestContextGetter* getter)
-    : getter_(getter) {}
+ChromeMetadataSource::ChromeMetadataSource(
+    const std::string& validation_data_url,
+    net::URLRequestContextGetter* getter)
+    : validation_data_url_(validation_data_url),
+      getter_(getter) {}
 
-ChromeDownloaderImpl::~ChromeDownloaderImpl() {
+ChromeMetadataSource::~ChromeMetadataSource() {
   STLDeleteValues(&requests_);
 }
 
-void ChromeDownloaderImpl::Download(const std::string& url,
-                                    const Callback& downloaded) const {
-  const_cast<ChromeDownloaderImpl*>(this)->DoDownload(url, downloaded);
+void ChromeMetadataSource::Get(const std::string& key,
+                               const Callback& downloaded) const {
+  const_cast<ChromeMetadataSource*>(this)->Download(key, downloaded);
 }
 
-void ChromeDownloaderImpl::OnURLFetchComplete(const net::URLFetcher* source) {
+void ChromeMetadataSource::OnURLFetchComplete(const net::URLFetcher* source) {
   std::map<const net::URLFetcher*, Request*>::iterator request =
       requests_.find(source);
   DCHECK(request != requests_.end());
@@ -69,24 +72,24 @@ void ChromeDownloaderImpl::OnURLFetchComplete(const net::URLFetcher* source) {
   scoped_ptr<std::string> data(new std::string());
   if (ok)
     data->swap(request->second->data);
-  request->second->callback(ok, request->second->url, data.release());
+  request->second->callback(ok, request->second->key, data.release());
 
   delete request->second;
   requests_.erase(request);
 }
 
-ChromeDownloaderImpl::Request::Request(const std::string& url,
+ChromeMetadataSource::Request::Request(const std::string& key,
                                        scoped_ptr<net::URLFetcher> fetcher,
                                        const Callback& callback)
-    : url(url),
+    : key(key),
       fetcher(fetcher.Pass()),
       callback(callback) {}
 
-void ChromeDownloaderImpl::DoDownload(const std::string& url,
-                                      const Callback& downloaded) {
-  GURL resource(url);
+void ChromeMetadataSource::Download(const std::string& key,
+                                    const Callback& downloaded) {
+  GURL resource(validation_data_url_ + key);
   if (!resource.SchemeIsSecure()) {
-    downloaded(false, url, NULL);
+    downloaded(false, key, NULL);
     return;
   }
 
@@ -96,7 +99,7 @@ void ChromeDownloaderImpl::DoDownload(const std::string& url,
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher->SetRequestContext(getter_);
 
-  Request* request = new Request(url, fetcher.Pass(), downloaded);
+  Request* request = new Request(key, fetcher.Pass(), downloaded);
   request->fetcher->SaveResponseWithWriter(
       scoped_ptr<net::URLFetcherResponseWriter>(
           new UnownedStringWriter(&request->data)));

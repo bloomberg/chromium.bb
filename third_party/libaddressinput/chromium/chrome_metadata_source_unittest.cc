@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/libaddressinput/chromium/chrome_downloader_impl.h"
+#include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 
 #include "base/message_loop/message_loop_proxy.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -14,12 +14,12 @@ namespace autofill {
 static const char kFakeUrl[] = "https://example.com";
 static const char kFakeInsecureUrl[] = "http://example.com";
 
-class ChromeDownloaderImplTest : public testing::Test {
+class ChromeMetadataSourceTest : public testing::Test {
  public:
-  ChromeDownloaderImplTest()
+  ChromeMetadataSourceTest()
       : fake_factory_(&factory_),
         success_(false) {}
-  virtual ~ChromeDownloaderImplTest() {}
+  virtual ~ChromeMetadataSourceTest() {}
 
  protected:
   // Sets the response for the download.
@@ -31,15 +31,15 @@ class ChromeDownloaderImplTest : public testing::Test {
   }
 
   // Kicks off the download.
-  void Download() {
+  void Get() {
     scoped_refptr<net::TestURLRequestContextGetter> getter(
         new net::TestURLRequestContextGetter(
             base::MessageLoopProxy::current()));
-    ChromeDownloaderImpl impl(getter.get());
-    scoped_ptr< ::i18n::addressinput::Downloader::Callback> callback(
+    ChromeMetadataSource impl(std::string(), getter.get());
+    scoped_ptr< ::i18n::addressinput::Source::Callback> callback(
         ::i18n::addressinput::BuildCallback(
-             this, &ChromeDownloaderImplTest::OnDownloaded));
-    impl.Download(url_.spec(), *callback);
+             this, &ChromeMetadataSourceTest::OnDownloaded));
+    impl.Get(url_.spec(), *callback);
     base::MessageLoop::current()->RunUntilIdle();
   }
 
@@ -70,29 +70,29 @@ class ChromeDownloaderImplTest : public testing::Test {
   bool success_;
 };
 
-TEST_F(ChromeDownloaderImplTest, Success) {
+TEST_F(ChromeMetadataSourceTest, Success) {
   const char kFakePayload[] = "ham hock";
   set_url(GURL(kFakeUrl));
   SetFakeResponse(kFakePayload, net::HTTP_OK);
-  Download();
+  Get();
   EXPECT_TRUE(success());
   EXPECT_EQ(kFakePayload, data());
 }
 
-TEST_F(ChromeDownloaderImplTest, Failure) {
+TEST_F(ChromeMetadataSourceTest, Failure) {
   const char kFakePayload[] = "ham hock";
   set_url(GURL(kFakeUrl));
   SetFakeResponse(kFakePayload, net::HTTP_INTERNAL_SERVER_ERROR);
-  Download();
+  Get();
   EXPECT_FALSE(success());
   EXPECT_TRUE(!has_data() || data().empty());
 }
 
-TEST_F(ChromeDownloaderImplTest, RejectsInsecureScheme) {
+TEST_F(ChromeMetadataSourceTest, RejectsInsecureScheme) {
   const char kFakePayload[] = "ham hock";
   set_url(GURL(kFakeInsecureUrl));
   SetFakeResponse(kFakePayload, net::HTTP_OK);
-  Download();
+  Get();
   EXPECT_FALSE(success());
   EXPECT_TRUE(!has_data() || data().empty());
 }

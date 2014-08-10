@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_LIBADDRESSINPUT_CHROMIUM_CHROME_DOWNLOADER_IMPL_H_
-#define THIRD_PARTY_LIBADDRESSINPUT_CHROMIUM_CHROME_DOWNLOADER_IMPL_H_
+#ifndef THIRD_PARTY_LIBADDRESSINPUT_CHROMIUM_CHROME_METADATA_SOURCE_H_
+#define THIRD_PARTY_LIBADDRESSINPUT_CHROMIUM_CHROME_METADATA_SOURCE_H_
 
 #include <map>
 #include <string>
 
 #include "base/memory/scoped_vector.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/downloader.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
 
 namespace net {
 class URLFetcher;
@@ -21,26 +21,27 @@ namespace autofill {
 
 // A class for downloading rules to let libaddressinput validate international
 // addresses.
-class ChromeDownloaderImpl : public ::i18n::addressinput::Downloader,
+class ChromeMetadataSource : public ::i18n::addressinput::Source,
                              public net::URLFetcherDelegate {
  public:
-  explicit ChromeDownloaderImpl(net::URLRequestContextGetter* getter);
-  virtual ~ChromeDownloaderImpl();
+  ChromeMetadataSource(const std::string& validation_data_url,
+                       net::URLRequestContextGetter* getter);
+  virtual ~ChromeMetadataSource();
 
-  // ::i18n::addressinput::Downloader:
-  virtual void Download(const std::string& url,
-                        const Callback& downloaded) const OVERRIDE;
+  // ::i18n::addressinput::Source:
+  virtual void Get(const std::string& key,
+                   const Callback& downloaded) const OVERRIDE;
 
   // net::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  private:
   struct Request {
-    Request(const std::string& url,
+    Request(const std::string& key,
             scoped_ptr<net::URLFetcher> fetcher,
             const Callback& callback);
 
-    std::string url;
+    std::string key;
     // The data that's received.
     std::string data;
     // The object that manages retrieving the data.
@@ -48,17 +49,18 @@ class ChromeDownloaderImpl : public ::i18n::addressinput::Downloader,
     const Callback& callback;
   };
 
-  // Non-const version of Download().
-  void DoDownload(const std::string& url, const Callback& downloaded);
+  // Non-const method actually implementing Get().
+  void Download(const std::string& key, const Callback& downloaded);
 
+  const std::string validation_data_url_;
   net::URLRequestContextGetter* const getter_;  // weak
 
-  // Maps from active url fetcher to request metadata. The value is owned.
+  // Maps from active URL fetcher to request metadata. The value is owned.
   std::map<const net::URLFetcher*, Request*> requests_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeDownloaderImpl);
+  DISALLOW_COPY_AND_ASSIGN(ChromeMetadataSource);
 };
 
 }  // namespace autofill
 
-#endif  // THIRD_PARTY_LIBADDRESSINPUT_CHROMIUM_CHROME_DOWNLOADER_IMPL_H_
+#endif  // THIRD_PARTY_LIBADDRESSINPUT_CHROMIUM_CHROME_METADATA_SOURCE_H_

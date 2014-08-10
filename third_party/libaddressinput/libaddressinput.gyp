@@ -101,7 +101,7 @@
       'sources': [
         '<@(libaddressinput_files)',
         'chromium/chrome_address_validator.cc',
-        'chromium/chrome_downloader_impl.cc',
+        'chromium/chrome_metadata_source.cc',
         'chromium/chrome_storage_impl.cc',
         'chromium/fallback_data_store.cc',
         'chromium/input_suggester.cc',
@@ -137,7 +137,7 @@
         '<@(libaddressinput_test_files)',
         'chromium/addressinput_util_unittest.cc',
         'chromium/chrome_address_validator_unittest.cc',
-        'chromium/chrome_downloader_impl_unittest.cc',
+        'chromium/chrome_metadata_source_unittest.cc',
         'chromium/chrome_storage_impl_unittest.cc',
         'chromium/fallback_data_store_unittest.cc',
         'chromium/storage_test_runner.cc',
