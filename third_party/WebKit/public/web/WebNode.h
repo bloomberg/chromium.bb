@@ -36,9 +36,9 @@
 #include "../platform/WebString.h"
 #include "WebExceptionCode.h"
 
-namespace blink { class Node; }
-
 namespace blink {
+
+class Node;
 class WebDOMEvent;
 class WebDocument;
 class WebElement;
@@ -140,9 +140,9 @@ public:
     }
 
 #if BLINK_IMPLEMENTATION
-    WebNode(const PassRefPtrWillBeRawPtr<blink::Node>&);
-    WebNode& operator=(const PassRefPtrWillBeRawPtr<blink::Node>&);
-    operator PassRefPtrWillBeRawPtr<blink::Node>() const;
+    WebNode(const PassRefPtrWillBeRawPtr<Node>&);
+    WebNode& operator=(const PassRefPtrWillBeRawPtr<Node>&);
+    operator PassRefPtrWillBeRawPtr<Node>() const;
 #endif
 
 #if BLINK_IMPLEMENTATION
@@ -158,7 +158,7 @@ public:
 #endif
 
 protected:
-    WebPrivatePtr<blink::Node> m_private;
+    WebPrivatePtr<Node> m_private;
 };
 
 inline bool operator==(const WebNode& a, const WebNode& b)

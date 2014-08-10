@@ -34,11 +34,9 @@
 #include "../platform/WebVector.h"
 #include "WebElement.h"
 
-#if BLINK_IMPLEMENTATION
-namespace blink { class HTMLOptionElement; }
-#endif
-
 namespace blink {
+
+class HTMLOptionElement;
 
 // Provides readonly access to some properties of a DOM option element node.
 class WebOptionElement : public WebElement {
@@ -62,9 +60,9 @@ public:
     BLINK_EXPORT bool isEnabled() const;
 
 #if BLINK_IMPLEMENTATION
-    WebOptionElement(const PassRefPtrWillBeRawPtr<blink::HTMLOptionElement>&);
-    WebOptionElement& operator=(const PassRefPtrWillBeRawPtr<blink::HTMLOptionElement>&);
-    operator PassRefPtrWillBeRawPtr<blink::HTMLOptionElement>() const;
+    WebOptionElement(const PassRefPtrWillBeRawPtr<HTMLOptionElement>&);
+    WebOptionElement& operator=(const PassRefPtrWillBeRawPtr<HTMLOptionElement>&);
+    operator PassRefPtrWillBeRawPtr<HTMLOptionElement>() const;
 #endif
 };
 

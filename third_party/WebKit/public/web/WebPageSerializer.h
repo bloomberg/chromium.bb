@@ -37,6 +37,7 @@
 #include "WebFrame.h"
 
 namespace blink {
+
 class WebPageSerializerClient;
 class WebString;
 class WebView;

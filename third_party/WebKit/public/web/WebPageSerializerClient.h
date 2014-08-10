@@ -32,6 +32,7 @@
 #define WebPageSerializerClient_h
 
 namespace blink {
+
 class WebCString;
 class WebURL;
 

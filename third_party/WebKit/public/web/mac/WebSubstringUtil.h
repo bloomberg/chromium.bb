@@ -34,11 +34,6 @@
 #include "../../platform/WebCommon.h"
 #include "public/web/WebFrame.h"
 
-namespace blink {
-class WebView;
-struct WebPoint;
-}
-
 #if __OBJC__
 @class NSAttributedString;
 #else
@@ -46,6 +41,9 @@ class NSAttributedString;
 #endif
 
 namespace blink {
+
+class WebView;
+struct WebPoint;
 
 class WebSubstringUtil {
 public:

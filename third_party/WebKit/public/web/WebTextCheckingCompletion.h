@@ -43,6 +43,7 @@ class WebTextCheckingCompletion {
 public:
     virtual void didFinishCheckingText(const WebVector<WebTextCheckingResult>&) = 0;
     virtual void didCancelCheckingText() { };
+
 protected:
     ~WebTextCheckingCompletion() { }
 };

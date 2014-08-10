@@ -34,10 +34,8 @@
 #include "../platform/WebPrivatePtr.h"
 
 namespace blink {
-class UserGestureToken;
-}
 
-namespace blink {
+class UserGestureToken;
 
 // A WebUserGestureToken allows for storing the user gesture state of the
 // currently active context and reinstantiating it later on to continue
@@ -59,15 +57,15 @@ public:
     bool isNull() const { return m_token.isNull(); }
 
 #if BLINK_IMPLEMENTATION
-    explicit WebUserGestureToken(PassRefPtr<blink::UserGestureToken>);
-    operator PassRefPtr<blink::UserGestureToken>() const;
+    explicit WebUserGestureToken(PassRefPtr<UserGestureToken>);
+    operator PassRefPtr<UserGestureToken>() const;
 #endif
 
 private:
     BLINK_EXPORT void assign(const WebUserGestureToken&);
     BLINK_EXPORT void reset();
 
-    WebPrivatePtr<blink::UserGestureToken> m_token;
+    WebPrivatePtr<UserGestureToken> m_token;
 };
 
 } // namespace blink

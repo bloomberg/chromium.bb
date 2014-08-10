@@ -36,10 +36,8 @@
 #include "WebTextDecorationType.h"
 
 namespace blink {
-struct TextCheckingResult;
-}
 
-namespace blink {
+struct TextCheckingResult;
 
 // A checked entry of text checking.
 struct WebTextCheckingResult {
@@ -61,7 +59,7 @@ struct WebTextCheckingResult {
     }
 
 #if BLINK_IMPLEMENTATION
-    operator blink::TextCheckingResult() const;
+    operator TextCheckingResult() const;
 #endif
 
     WebTextDecorationType decoration;

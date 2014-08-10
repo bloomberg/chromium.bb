@@ -36,6 +36,7 @@
 #include "WebInputElement.h"
 
 namespace blink {
+
 class WebFormElement;
 
 // SearchableFormData encapsulates a URL and encoding of an INPUT field that

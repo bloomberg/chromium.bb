@@ -34,11 +34,8 @@
 #include "../platform/WebPrivateOwnPtr.h"
 
 namespace blink {
+
 class UserGestureIndicator;
-}
-
-namespace blink {
-
 class WebUserGestureToken;
 
 // An instance of this class, while kept alive, will indicate that we are in
@@ -65,7 +62,7 @@ private:
     BLINK_EXPORT void initializeWithToken(const WebUserGestureToken&);
     BLINK_EXPORT void reset();
 
-    WebPrivateOwnPtr<blink::UserGestureIndicator> m_indicator;
+    WebPrivateOwnPtr<UserGestureIndicator> m_indicator;
 };
 
 } // namespace blink

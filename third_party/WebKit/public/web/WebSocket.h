@@ -35,8 +35,6 @@
 #include "../platform/WebPrivatePtr.h"
 #include "../platform/WebString.h"
 
-namespace blink { class WebSocketChannel; }
-
 namespace blink {
 
 class WebArrayBuffer;

@@ -34,12 +34,12 @@
 #include "../platform/WebCommon.h"
 
 #if BLINK_IMPLEMENTATION
-namespace blink { class SecurityOrigin; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
 namespace blink {
 
+class SecurityOrigin;
 class WebSecurityOriginPrivate;
 class WebString;
 class WebURL;
@@ -107,10 +107,10 @@ public:
     BLINK_EXPORT void grantLoadLocalResources() const;
 
 #if BLINK_IMPLEMENTATION
-    WebSecurityOrigin(const WTF::PassRefPtr<blink::SecurityOrigin>&);
-    WebSecurityOrigin& operator=(const WTF::PassRefPtr<blink::SecurityOrigin>&);
-    operator WTF::PassRefPtr<blink::SecurityOrigin>() const;
-    blink::SecurityOrigin* get() const;
+    WebSecurityOrigin(const WTF::PassRefPtr<SecurityOrigin>&);
+    WebSecurityOrigin& operator=(const WTF::PassRefPtr<SecurityOrigin>&);
+    operator WTF::PassRefPtr<SecurityOrigin>() const;
+    SecurityOrigin* get() const;
 #endif
 
 private:

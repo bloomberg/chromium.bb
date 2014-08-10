@@ -35,10 +35,6 @@
 #include "WebContentSecurityPolicy.h"
 
 namespace blink {
-class ScriptExecutionContext;
-}
-
-namespace blink {
 
 class WebString;
 class WebMessagePortChannel;

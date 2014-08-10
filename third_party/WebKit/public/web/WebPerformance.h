@@ -39,9 +39,9 @@
 #include "platform/heap/Handle.h"
 #endif
 
-namespace blink { class Performance; }
-
 namespace blink {
+
+class Performance;
 
 class WebPerformance {
 public:
@@ -86,12 +86,12 @@ public:
     BLINK_EXPORT double loadEventEnd() const;
 
 #if BLINK_IMPLEMENTATION
-    WebPerformance(const PassRefPtrWillBeRawPtr<blink::Performance>&);
-    WebPerformance& operator=(const PassRefPtrWillBeRawPtr<blink::Performance>&);
+    WebPerformance(const PassRefPtrWillBeRawPtr<Performance>&);
+    WebPerformance& operator=(const PassRefPtrWillBeRawPtr<Performance>&);
 #endif
 
 private:
-    WebPrivatePtr<blink::Performance> m_private;
+    WebPrivatePtr<Performance> m_private;
 };
 
 } // namespace blink

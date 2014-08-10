@@ -31,10 +31,8 @@
 #include "../platform/WebURL.h"
 
 namespace blink {
-class SpeechGrammar;
-}
 
-namespace blink {
+class SpeechGrammar;
 
 class WebSpeechGrammar {
 public:
@@ -49,12 +47,12 @@ public:
     BLINK_EXPORT void assign(const WebSpeechGrammar&);
 
 #if BLINK_IMPLEMENTATION
-    explicit WebSpeechGrammar(blink::SpeechGrammar*);
-    WebSpeechGrammar& operator=(blink::SpeechGrammar*);
+    explicit WebSpeechGrammar(SpeechGrammar*);
+    WebSpeechGrammar& operator=(SpeechGrammar*);
 #endif
 
 private:
-    WebPrivatePtr<blink::SpeechGrammar> m_private;
+    WebPrivatePtr<SpeechGrammar> m_private;
 };
 
 } // namespace blink

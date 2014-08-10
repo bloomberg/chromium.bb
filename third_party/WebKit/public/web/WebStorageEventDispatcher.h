@@ -55,7 +55,7 @@ public:
             const WebURL& pageUrl, const WebStorageNamespace&,
             WebStorageArea* sourceAreaInstance, bool originatedInProcess);
 
- private:
+private:
     WebStorageEventDispatcher() { }
 };
 

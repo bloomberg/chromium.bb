@@ -37,10 +37,8 @@
 #include "public/platform/WebString.h"
 
 namespace blink {
-class UserMediaRequest;
-}
 
-namespace blink {
+class UserMediaRequest;
 class WebDocument;
 class WebMediaConstraints;
 class WebMediaStream;
@@ -82,12 +80,12 @@ public:
     BLINK_EXPORT void requestFailed(const WebString& description = WebString()) { requestDenied(description); }
 
 #if BLINK_IMPLEMENTATION
-    WebUserMediaRequest(blink::UserMediaRequest*);
-    operator blink::UserMediaRequest*() const;
+    WebUserMediaRequest(UserMediaRequest*);
+    operator UserMediaRequest*() const;
 #endif
 
 private:
-    WebPrivatePtr<blink::UserMediaRequest> m_private;
+    WebPrivatePtr<UserMediaRequest> m_private;
 };
 
 inline bool operator==(const WebUserMediaRequest& a, const WebUserMediaRequest& b)

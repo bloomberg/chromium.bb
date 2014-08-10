@@ -44,7 +44,7 @@ public:
     // A request is about to be sent out, and the client may modify it. Request
     // is writable, and changes to the URL, for example, will change the request
     // made.
-    virtual void willSendRequest(blink::WebDataSource*, blink::WebURLRequest&) { }
+    virtual void willSendRequest(WebDataSource*, WebURLRequest&) { }
 };
 
 } // namespace blink

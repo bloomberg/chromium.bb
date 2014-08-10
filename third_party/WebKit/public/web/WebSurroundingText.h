@@ -31,11 +31,8 @@
 #include "WebRange.h"
 
 namespace blink {
+
 class SurroundingText;
-}
-
-namespace blink {
-
 class WebHitTestResult;
 class WebNode;
 class WebRange;
@@ -82,7 +79,7 @@ public:
     BLINK_EXPORT WebRange rangeFromContentOffsets(size_t startOffsetInContent, size_t endOffsetInContent);
 
 protected:
-    WebPrivateOwnPtr<blink::SurroundingText> m_private;
+    WebPrivateOwnPtr<SurroundingText> m_private;
 };
 
 } // namespace blink

@@ -43,6 +43,6 @@ public:
     virtual void willAddPrerender(WebPrerender*) = 0;
 };
 
-} // namespace WebPrerendererClient_h
+} // namespace blink
 
 #endif // WebPrerendererClient_h

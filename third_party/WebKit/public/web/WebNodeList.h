@@ -34,13 +34,14 @@
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebPrivatePtr.h"
 
-namespace blink { class NodeList; }
 #if BLINK_IMPLEMENTATION
 #include "platform/heap/Handle.h"
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
 namespace blink {
+
+class NodeList;
 class WebNode;
 
 // Provides readonly access to some properties of a DOM node.
@@ -63,12 +64,12 @@ public:
     BLINK_EXPORT WebNode item(size_t) const;
 
 #if BLINK_IMPLEMENTATION
-    WebNodeList(const PassRefPtrWillBeRawPtr<blink::NodeList>&);
-    WebNodeList& operator=(const PassRefPtrWillBeRawPtr<blink::NodeList>&);
+    WebNodeList(const PassRefPtrWillBeRawPtr<NodeList>&);
+    WebNodeList& operator=(const PassRefPtrWillBeRawPtr<NodeList>&);
 #endif
 
 private:
-    WebPrivatePtr<blink::NodeList> m_private;
+    WebPrivatePtr<NodeList> m_private;
 };
 
 } // namespace blink

@@ -35,11 +35,9 @@
 #include "WebFormControlElement.h"
 #include "WebOptionElement.h"
 
-#if BLINK_IMPLEMENTATION
-namespace blink { class HTMLSelectElement; }
-#endif
-
 namespace blink {
+
+class HTMLSelectElement;
 
 // Provides readonly access to some properties of a DOM select element node.
 class WebSelectElement : public WebFormControlElement {
@@ -57,9 +55,9 @@ public:
     BLINK_EXPORT WebVector<WebElement> listItems() const;
 
 #if BLINK_IMPLEMENTATION
-    WebSelectElement(const PassRefPtrWillBeRawPtr<blink::HTMLSelectElement>&);
-    WebSelectElement& operator=(const PassRefPtrWillBeRawPtr<blink::HTMLSelectElement>&);
-    operator PassRefPtrWillBeRawPtr<blink::HTMLSelectElement>() const;
+    WebSelectElement(const PassRefPtrWillBeRawPtr<HTMLSelectElement>&);
+    WebSelectElement& operator=(const PassRefPtrWillBeRawPtr<HTMLSelectElement>&);
+    operator PassRefPtrWillBeRawPtr<HTMLSelectElement>() const;
 #endif
 };
 

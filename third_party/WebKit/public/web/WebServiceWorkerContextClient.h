@@ -102,12 +102,12 @@ public:
     virtual void saveDevToolsAgentState(const WebString&) { }
 
     // ServiceWorker specific method.
-    virtual void didHandleActivateEvent(int eventID, blink::WebServiceWorkerEventResult result) { }
+    virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult result) { }
 
     // ServiceWorker specific method. Called after InstallEvent (dispatched
     // via WebServiceWorkerContextProxy) is handled by the ServiceWorker's
     // script context.
-    virtual void didHandleInstallEvent(int installEventID, blink::WebServiceWorkerEventResult result) { }
+    virtual void didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult result) { }
 
     // ServiceWorker specific methods. Called after FetchEvent is handled by the
     // ServiceWorker's script context. When no response is provided, the browser
@@ -121,7 +121,7 @@ public:
     virtual void didHandleSyncEvent(int syncEventID) { }
 
     // Ownership of the returned object is transferred to the caller.
-    virtual WebServiceWorkerNetworkProvider* createServiceWorkerNetworkProvider(blink::WebDataSource*) { return 0; }
+    virtual WebServiceWorkerNetworkProvider* createServiceWorkerNetworkProvider(WebDataSource*) { return 0; }
 
     // Ownership of the passed callbacks is transferred to the callee, callee
     // should delete the callbacks after calling either onSuccess or onError.

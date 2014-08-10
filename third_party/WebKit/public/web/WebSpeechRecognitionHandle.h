@@ -30,11 +30,8 @@
 #include "../platform/WebPrivatePtr.h"
 
 namespace blink {
+
 class SpeechRecognition;
-}
-
-namespace blink {
-
 class WebSpeechRecognitionResult;
 class WebString;
 
@@ -62,13 +59,13 @@ public:
     BLINK_EXPORT bool lessThan(const WebSpeechRecognitionHandle&) const;
 
 #if BLINK_IMPLEMENTATION
-    explicit WebSpeechRecognitionHandle(blink::SpeechRecognition*);
-    WebSpeechRecognitionHandle& operator=(blink::SpeechRecognition*);
-    operator blink::SpeechRecognition*() const;
+    explicit WebSpeechRecognitionHandle(SpeechRecognition*);
+    WebSpeechRecognitionHandle& operator=(SpeechRecognition*);
+    operator SpeechRecognition*() const;
 #endif
 
 private:
-    WebPrivatePtr<blink::SpeechRecognition> m_private;
+    WebPrivatePtr<SpeechRecognition> m_private;
 };
 
 inline bool operator==(const WebSpeechRecognitionHandle& a, const WebSpeechRecognitionHandle& b)
