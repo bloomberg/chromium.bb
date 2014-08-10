@@ -9,9 +9,11 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/timer/mock_timer.h"
 #include "extensions/browser/api/cast_channel/cast_channel.pb.h"
 #include "extensions/browser/api/cast_channel/cast_message_util.h"
+#include "extensions/browser/api/cast_channel/logger.h"
 #include "net/base/address_list.h"
 #include "net/base/capturing_net_log.h"
 #include "net/base/net_errors.h"
@@ -143,32 +145,38 @@ class CompleteHandler {
 
 class TestCastSocket : public CastSocket {
  public:
-  static scoped_ptr<TestCastSocket> Create(
-      MockCastSocketDelegate* delegate) {
-    return scoped_ptr<TestCastSocket>(
-        new TestCastSocket(delegate, CreateIPEndPoint(),
-                           CHANNEL_AUTH_TYPE_SSL,
-                           kDistantTimeoutMillis));
+  static scoped_ptr<TestCastSocket> Create(MockCastSocketDelegate* delegate,
+                                           Logger* logger) {
+    return scoped_ptr<TestCastSocket>(new TestCastSocket(delegate,
+                                                         CreateIPEndPoint(),
+                                                         CHANNEL_AUTH_TYPE_SSL,
+                                                         kDistantTimeoutMillis,
+                                                         logger));
   }
 
   static scoped_ptr<TestCastSocket> CreateSecure(
-      MockCastSocketDelegate* delegate) {
+      MockCastSocketDelegate* delegate,
+      Logger* logger) {
     return scoped_ptr<TestCastSocket>(
-        new TestCastSocket(delegate, CreateIPEndPoint(),
+        new TestCastSocket(delegate,
+                           CreateIPEndPoint(),
                            CHANNEL_AUTH_TYPE_SSL_VERIFIED,
-                           kDistantTimeoutMillis));
+                           kDistantTimeoutMillis,
+                           logger));
   }
 
   explicit TestCastSocket(MockCastSocketDelegate* delegate,
                           const net::IPEndPoint& ip_endpoint,
                           ChannelAuthType channel_auth,
-                          int64 timeout_ms)
+                          int64 timeout_ms,
+                          Logger* logger)
       : CastSocket("abcdefg",
                    ip_endpoint,
                    channel_auth,
                    delegate,
                    &capturing_net_log_,
-                   base::TimeDelta::FromMilliseconds(timeout_ms)),
+                   base::TimeDelta::FromMilliseconds(timeout_ms),
+                   logger),
         ip_(ip_endpoint),
         connect_index_(0),
         extract_cert_result_(true),
@@ -334,7 +342,10 @@ class TestCastSocket : public CastSocket {
 
 class CastSocketTest : public testing::Test {
  public:
-  CastSocketTest() {}
+  CastSocketTest()
+      : logger_(new Logger(
+            scoped_ptr<base::TickClock>(new base::SimpleTestTickClock),
+            base::TimeTicks())) {}
   virtual ~CastSocketTest() {}
 
   virtual void SetUp() OVERRIDE {
@@ -373,11 +384,11 @@ class CastSocketTest : public testing::Test {
   }
 
   void CreateCastSocket() {
-    socket_ = TestCastSocket::Create(&mock_delegate_);
+    socket_ = TestCastSocket::Create(&mock_delegate_, logger_);
   }
 
   void CreateCastSocketSecure() {
-    socket_ = TestCastSocket::CreateSecure(&mock_delegate_);
+    socket_ = TestCastSocket::CreateSecure(&mock_delegate_, logger_);
   }
 
   // Sets up CastSocket::Connect to succeed.
@@ -403,6 +414,7 @@ class CastSocketTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   MockCastSocketDelegate mock_delegate_;
+  scoped_refptr<Logger> logger_;
   scoped_ptr<TestCastSocket> socket_;
   CompleteHandler handler_;
   MessageInfo test_messages_[arraysize(kTestData)];

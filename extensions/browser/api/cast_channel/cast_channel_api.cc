@@ -10,9 +10,12 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/default_tick_clock.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/cast_channel/cast_socket.h"
+#include "extensions/browser/api/cast_channel/logger.h"
+#include "extensions/browser/api/cast_channel/logging.pb.h"
 #include "extensions/browser/event_router.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -35,6 +38,7 @@ using cast_channel::ChannelAuthType;
 using cast_channel::ChannelError;
 using cast_channel::ChannelInfo;
 using cast_channel::ConnectInfo;
+using cast_channel::Logger;
 using cast_channel::MessageInfo;
 using cast_channel::ReadyState;
 using content::BrowserThread;
@@ -81,13 +85,20 @@ bool IsValidConnectInfoIpAddress(const ConnectInfo& connect_info) {
 }  // namespace
 
 CastChannelAPI::CastChannelAPI(content::BrowserContext* context)
-    : browser_context_(context) {
+    : browser_context_(context),
+      logger_(
+          new Logger(scoped_ptr<base::TickClock>(new base::DefaultTickClock),
+                     base::TimeTicks::UnixEpoch())) {
   DCHECK(browser_context_);
 }
 
 // static
 CastChannelAPI* CastChannelAPI::Get(content::BrowserContext* context) {
   return BrowserContextKeyedAPIFactory<CastChannelAPI>::Get(context);
+}
+
+scoped_refptr<Logger> CastChannelAPI::GetLogger() {
+  return logger_;
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<CastChannelAPI> >
@@ -106,9 +117,13 @@ scoped_ptr<CastSocket> CastChannelAPI::CreateCastSocket(
     return socket_for_test_.Pass();
   } else {
     return scoped_ptr<CastSocket>(
-        new CastSocket(extension_id, ip_endpoint, channel_auth, this,
+        new CastSocket(extension_id,
+                       ip_endpoint,
+                       channel_auth,
+                       this,
                        ExtensionsBrowserClient::Get()->GetNetLog(),
-                       timeout));
+                       timeout,
+                       logger_));
   }
 }
 
@@ -335,8 +350,9 @@ void CastChannelOpenFunction::AsyncWorkStart() {
                                             ? *connect_info_->timeout
                                             : kDefaultConnectTimeoutMillis));
   new_channel_id_ = AddSocket(socket.release());
-  GetSocket(new_channel_id_)->Connect(
-      base::Bind(&CastChannelOpenFunction::OnOpen, this));
+  CastSocket* new_socket = GetSocket(new_channel_id_);
+  api_->GetLogger()->LogNewSocketEvent(*new_socket);
+  new_socket->Connect(base::Bind(&CastChannelOpenFunction::OnOpen, this));
 }
 
 void CastChannelOpenFunction::OnOpen(int result) {

@@ -288,6 +288,7 @@
         'browser/api/app_view/app_view_internal_api.h',
         'browser/api/async_api_function.cc',
         'browser/api/async_api_function.h',
+        'browser/api/cast_channel/cast_auth_util.cc',
         'browser/api/cast_channel/cast_auth_util.h',
         'browser/api/cast_channel/cast_channel_api.cc',
         'browser/api/cast_channel/cast_channel_api.h',
@@ -295,6 +296,8 @@
         'browser/api/cast_channel/cast_message_util.h',
         'browser/api/cast_channel/cast_socket.cc',
         'browser/api/cast_channel/cast_socket.h',
+        'browser/api/cast_channel/logger.cc',
+        'browser/api/cast_channel/logger.h',
         'browser/api/dns/dns_api.cc',
         'browser/api/dns/dns_api.h',
         'browser/api/dns/host_resolver_wrapper.cc',
@@ -898,7 +901,10 @@
       # GN version: //extensions/browser/api/cast_channel:cast_channel_proto
       'target_name': 'cast_channel_proto',
       'type': 'static_library',
-      'sources': [ 'browser/api/cast_channel/cast_channel.proto' ],
+      'sources': [
+          'browser/api/cast_channel/cast_channel.proto',
+          'browser/api/cast_channel/logging.proto'
+      ],
       'variables': {
           'proto_in_dir': 'browser/api/cast_channel',
           'proto_out_dir': 'extensions/browser/api/cast_channel',

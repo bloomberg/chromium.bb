@@ -6,5 +6,8 @@ import("//third_party/protobuf/proto_library.gni")
 
 # GYP version: extensions/extensions.gyp:cast_channel_proto
 proto_library("cast_channel_proto") {
-  sources = [ "cast_channel.proto" ]
+  sources = [
+    "cast_channel.proto",
+    "logging.proto",
+  ]
 }

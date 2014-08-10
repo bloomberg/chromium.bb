@@ -527,6 +527,7 @@
         # they should be kept here.
         '../extensions/browser/api/cast_channel/cast_channel_api_unittest.cc',
         '../extensions/browser/api/cast_channel/cast_socket_unittest.cc',
+        '../extensions/browser/api/cast_channel/logger_unittest.cc',
         '../extensions/browser/api/power/power_api_unittest.cc',
         '../extensions/browser/api/storage/settings_quota_unittest.cc',
         '../extensions/browser/api/storage/settings_test_util.cc',

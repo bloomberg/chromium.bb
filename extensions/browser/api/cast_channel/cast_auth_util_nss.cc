@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
 #include "extensions/browser/api/cast_channel/cast_channel.pb.h"
@@ -187,37 +188,49 @@ static int GetICAWithFingerprint(const net::SHA1HashValue& fingerprint) {
 }
 
 // Parses out DeviceAuthMessage from CastMessage
-static bool ParseAuthMessage(const CastMessage& challenge_reply,
-                             DeviceAuthMessage* auth_message) {
+static AuthResult ParseAuthMessage(const CastMessage& challenge_reply,
+                                   DeviceAuthMessage* auth_message) {
+  const std::string kErrorPrefix("Failed to parse auth message: ");
   if (challenge_reply.payload_type() != CastMessage_PayloadType_BINARY) {
-    VLOG(1) << "Wrong payload type in challenge reply";
-    return false;
+    return AuthResult::Create(
+        kErrorPrefix + "Wrong payload type in challenge reply",
+        AuthResult::ERROR_WRONG_PAYLOAD_TYPE);
   }
   if (!challenge_reply.has_payload_binary()) {
-    VLOG(1) << "Payload type is binary but payload_binary field not set";
-    return false;
+    return AuthResult::Create(
+        kErrorPrefix +
+            "Payload type is binary but payload_binary field not set",
+        AuthResult::ERROR_NO_PAYLOAD);
   }
   if (!auth_message->ParseFromString(challenge_reply.payload_binary())) {
-    VLOG(1) << "Cannot parse binary payload into DeviceAuthMessage";
-    return false;
+    return AuthResult::Create(
+        kErrorPrefix + "Cannot parse binary payload into DeviceAuthMessage",
+        AuthResult::ERROR_PAYLOAD_PARSING_FAILED);
   }
+
   VLOG(1) << "Auth message: " << AuthMessageToString(*auth_message);
+
   if (auth_message->has_error()) {
-    VLOG(1) << "Auth message error: " << auth_message->error().error_type();
-    return false;
+    std::string error_format_str = kErrorPrefix + "Auth message error: %d";
+    return AuthResult::Create(
+        base::StringPrintf(error_format_str.c_str(),
+                           auth_message->error().error_type()),
+        AuthResult::ERROR_MESSAGE_ERROR);
   }
   if (!auth_message->has_response()) {
-    VLOG(1) << "Auth message has no response field";
-    return false;
+    return AuthResult::Create(
+        kErrorPrefix + "Auth message has no response field",
+        AuthResult::ERROR_NO_RESPONSE);
   }
-  return true;
+  return AuthResult();
 }
 
 // Authenticates the given credentials:
 // 1. |signature| verification of |data| using |certificate|.
 // 2. |certificate| is signed by a trusted CA.
-bool VerifyCredentials(const AuthResponse& response,
-                       const std::string& data) {
+AuthResult VerifyCredentials(const AuthResponse& response,
+                             const std::string& data) {
+  const std::string kErrorPrefix("Failed to verify credentials: ");
   const std::string& certificate = response.client_auth_certificate();
   const std::string& signature = response.signature();
 
@@ -228,7 +241,9 @@ bool VerifyCredentials(const AuthResponse& response,
   // Otherwise, use the first intermediate in the list as long as it
   // is in the allowed list of intermediates.
   int num_intermediates = response.intermediate_certificate_size();
+
   VLOG(1) << "Response has " << num_intermediates << " intermediates";
+
   if (num_intermediates <= 0) {
     trusted_ca_key_der = &kAllowedICAs[0].public_key;
   } else {
@@ -237,8 +252,8 @@ bool VerifyCredentials(const AuthResponse& response,
         = net::X509Certificate::CreateFromBytes(ica.data(), ica.length());
     int index = GetICAWithFingerprint(ica_cert->fingerprint());
     if (index == -1) {
-      VLOG(1) << "Disallowed intermdiate cert";
-      return false;
+      return AuthResult::Create(kErrorPrefix + "Disallowed intermediate cert",
+                                AuthResult::ERROR_FINGERPRINT_NOT_FOUND);
     }
     trusted_ca_key_der = &kAllowedICAs[index].public_key;
   }
@@ -255,8 +270,10 @@ bool VerifyCredentials(const AuthResponse& response,
   ScopedCERTCertificate cert(CERT_NewTempCertificate(
       CERT_GetDefaultCertDB(), &der_cert, NULL, PR_FALSE, PR_TRUE));
   if (!cert.get()) {
-     VLOG(1) << "Failed to parse certificate.";
-     return false;
+    return AuthResult::CreateWithNSSError(
+        kErrorPrefix + "Failed to parse certificate.",
+        AuthResult::ERROR_NSS_CERT_PARSING_FAILED,
+        PORT_GetError());
   }
 
   // Check that the certificate is signed by trusted CA.
@@ -269,16 +286,21 @@ bool VerifyCredentials(const AuthResponse& response,
   SECStatus verified = CERT_VerifySignedDataWithPublicKey(
       &cert->signatureWrap, ca_public_key.get(), NULL);
   if (verified != SECSuccess) {
-    VLOG(1)<< "Cert not signed by trusted CA";
-    return false;
+    return AuthResult::CreateWithNSSError(
+        kErrorPrefix + "Cert not signed by trusted CA",
+        AuthResult::ERROR_NSS_CERT_NOT_SIGNED_BY_TRUSTED_CA,
+        PORT_GetError());
   }
+
   VLOG(1) << "Cert signed by trusted CA";
 
   // Verify that the |signature| matches |data|.
   crypto::ScopedSECKEYPublicKey public_key(CERT_ExtractPublicKey(cert.get()));
   if (!public_key.get()) {
-    VLOG(1) << "Unable to extract public key from certificate.";
-    return false;
+    return AuthResult::CreateWithNSSError(
+        kErrorPrefix + "Unable to extract public key from certificate",
+        AuthResult::ERROR_NSS_CANNOT_EXTRACT_PUBLIC_KEY,
+        PORT_GetError());
   }
   SECItem signature_item;
   signature_item.type = siBuffer;
@@ -294,27 +316,45 @@ bool VerifyCredentials(const AuthResponse& response,
       SEC_OID_SHA1, NULL, NULL);
 
   if (verified != SECSuccess) {
-    VLOG(1) << "Signed blobs did not match.";
-    return false;
+    return AuthResult::CreateWithNSSError(
+        kErrorPrefix + "Signed blobs did not match",
+        AuthResult::ERROR_NSS_SIGNED_BLOBS_MISMATCH,
+        PORT_GetError());
   }
+
   VLOG(1) << "Signature verification succeeded";
-  return true;
+
+  return AuthResult();
 }
 
 }  // namespace
 
-bool AuthenticateChallengeReply(const CastMessage& challenge_reply,
-                                const std::string& peer_cert) {
-  if (peer_cert.empty())
-    return false;
+AuthResult AuthenticateChallengeReply(const CastMessage& challenge_reply,
+                                      const std::string& peer_cert) {
+  if (peer_cert.empty()) {
+    AuthResult result = AuthResult::Create("Peer cert was empty.",
+                                           AuthResult::ERROR_PEER_CERT_EMPTY);
+    VLOG(1) << result.error_message;
+    return result;
+  }
 
   VLOG(1) << "Challenge reply: " << CastMessageToString(challenge_reply);
   DeviceAuthMessage auth_message;
-  if (!ParseAuthMessage(challenge_reply, &auth_message))
-    return false;
+  AuthResult result = ParseAuthMessage(challenge_reply, &auth_message);
+  if (!result.success()) {
+    VLOG(1) << result.error_message;
+    return result;
+  }
 
   const AuthResponse& response = auth_message.response();
-  return VerifyCredentials(response, peer_cert);
+  result = VerifyCredentials(response, peer_cert);
+  if (!result.success()) {
+    VLOG(1) << result.error_message
+            << ", NSS error code: " << result.nss_error_code;
+    return result;
+  }
+
+  return AuthResult();
 }
 
 }  // namespace cast_channel

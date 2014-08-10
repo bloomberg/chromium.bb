@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/cast_channel/cast_channel_api.h"
 #include "extensions/browser/api/cast_channel/cast_socket.h"
+#include "extensions/browser/api/cast_channel/logger.h"
 #include "extensions/common/api/cast_channel.h"
 #include "extensions/common/switches.h"
 #include "net/base/capturing_net_log.h"
@@ -26,6 +27,7 @@
 namespace cast_channel = extensions::core_api::cast_channel;
 using cast_channel::CastSocket;
 using cast_channel::ChannelError;
+using cast_channel::Logger;
 using cast_channel::MessageInfo;
 using cast_channel::ReadyState;
 using extensions::Extension;
@@ -66,10 +68,15 @@ class MockCastSocket : public CastSocket {
  public:
   explicit MockCastSocket(CastSocket::Delegate* delegate,
                           net::IPEndPoint ip_endpoint,
-                          net::NetLog* net_log)
-    : CastSocket(kTestExtensionId, ip_endpoint,
-                 cast_channel::CHANNEL_AUTH_TYPE_SSL, delegate, net_log,
-                 base::TimeDelta::FromMilliseconds(kTimeoutMs)) {}
+                          net::NetLog* net_log,
+                          Logger* logger)
+      : CastSocket(kTestExtensionId,
+                   ip_endpoint,
+                   cast_channel::CHANNEL_AUTH_TYPE_SSL,
+                   delegate,
+                   net_log,
+                   base::TimeDelta::FromMilliseconds(kTimeoutMs),
+                   logger) {}
   virtual ~MockCastSocket() {}
 
   MOCK_METHOD1(Connect, void(const net::CompletionCallback& callback));
@@ -98,8 +105,8 @@ class CastChannelAPITest : public ExtensionApiTest {
     net::IPAddressNumber ip_number;
     net::ParseIPLiteralToNumber("192.168.1.1", &ip_number);
     net::IPEndPoint ip_endpoint(ip_number, 8009);
-    mock_cast_socket_ = new MockCastSocket(api, ip_endpoint,
-                                           &capturing_net_log_);
+    mock_cast_socket_ = new MockCastSocket(
+        api, ip_endpoint, &capturing_net_log_, api->GetLogger());
     // Transfers ownership of the socket.
     api->SetSocketForTest(
         make_scoped_ptr<CastSocket>(mock_cast_socket_).Pass());

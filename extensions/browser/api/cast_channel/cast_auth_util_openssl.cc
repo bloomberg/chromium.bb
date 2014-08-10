@@ -10,10 +10,10 @@ namespace extensions {
 namespace core_api {
 namespace cast_channel {
 
-bool AuthenticateChallengeReply(const CastMessage& challenge_reply,
-                                const std::string& peer_cert) {
+AuthResult AuthenticateChallengeReply(const CastMessage& challenge_reply,
+                                      const std::string& peer_cert) {
   NOTREACHED();
-  return false;
+  return AuthResult();
 }
 
 }  // namespace cast_channel

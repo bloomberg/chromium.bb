@@ -36,6 +36,7 @@ namespace core_api {
 namespace cast_channel {
 
 class CastMessage;
+class Logger;
 
 // This class implements a channel between Chrome and a Cast device using a TCP
 // socket with SSL.  The channel may authenticate that the receiver is a genuine
@@ -68,7 +69,8 @@ class CastSocket : public ApiResource {
              ChannelAuthType channel_auth,
              CastSocket::Delegate* delegate,
              net::NetLog* net_log,
-             const base::TimeDelta& connect_timeout);
+             const base::TimeDelta& connect_timeout,
+             const scoped_refptr<Logger>& logger);
 
   // Ensures that the socket is closed.
   virtual ~CastSocket();
@@ -119,6 +121,36 @@ class CastSocket : public ApiResource {
   // It is fine to delete the CastSocket object in |callback|.
   virtual void Close(const net::CompletionCallback& callback);
 
+  // Internal connection states.
+  enum ConnectionState {
+    CONN_STATE_NONE,
+    CONN_STATE_TCP_CONNECT,
+    CONN_STATE_TCP_CONNECT_COMPLETE,
+    CONN_STATE_SSL_CONNECT,
+    CONN_STATE_SSL_CONNECT_COMPLETE,
+    CONN_STATE_AUTH_CHALLENGE_SEND,
+    CONN_STATE_AUTH_CHALLENGE_SEND_COMPLETE,
+    CONN_STATE_AUTH_CHALLENGE_REPLY_COMPLETE,
+  };
+
+  // Internal write states.
+  enum WriteState {
+    WRITE_STATE_NONE,
+    WRITE_STATE_WRITE,
+    WRITE_STATE_WRITE_COMPLETE,
+    WRITE_STATE_DO_CALLBACK,
+    WRITE_STATE_ERROR,
+  };
+
+  // Internal read states.
+  enum ReadState {
+    READ_STATE_NONE,
+    READ_STATE_READ,
+    READ_STATE_READ_COMPLETE,
+    READ_STATE_DO_CALLBACK,
+    READ_STATE_ERROR,
+  };
+
  protected:
   // Message header struct. If fields are added, be sure to update
   // header_size().  Protected to allow use of *_size() methods in unit tests.
@@ -150,36 +182,6 @@ class CastSocket : public ApiResource {
 
   static const char* service_name() { return "CastSocketManager"; }
 
-  // Internal connection states.
-  enum ConnectionState {
-    CONN_STATE_NONE,
-    CONN_STATE_TCP_CONNECT,
-    CONN_STATE_TCP_CONNECT_COMPLETE,
-    CONN_STATE_SSL_CONNECT,
-    CONN_STATE_SSL_CONNECT_COMPLETE,
-    CONN_STATE_AUTH_CHALLENGE_SEND,
-    CONN_STATE_AUTH_CHALLENGE_SEND_COMPLETE,
-    CONN_STATE_AUTH_CHALLENGE_REPLY_COMPLETE,
-  };
-
-  // Internal write states.
-  enum WriteState {
-    WRITE_STATE_NONE,
-    WRITE_STATE_WRITE,
-    WRITE_STATE_WRITE_COMPLETE,
-    WRITE_STATE_DO_CALLBACK,
-    WRITE_STATE_ERROR,
-  };
-
-  // Internal read states.
-  enum ReadState {
-    READ_STATE_NONE,
-    READ_STATE_READ,
-    READ_STATE_READ_COMPLETE,
-    READ_STATE_DO_CALLBACK,
-    READ_STATE_ERROR,
-  };
-
   // Creates an instance of TCPClientSocket.
   virtual scoped_ptr<net::TCPClientSocket> CreateTcpSocket();
   // Creates an instance of SSLClientSocket with the given underlying |socket|.
@@ -196,7 +198,7 @@ class CastSocket : public ApiResource {
 
   // Invoked by a cancelable closure when connection setup time
   // exceeds the interval specified at |connect_timeout|.
-  void CancelConnect();
+  void OnConnectTimeout();
 
   /////////////////////////////////////////////////////////////////////////////
   // Following methods work together to implement the following flow:
@@ -266,9 +268,8 @@ class CastSocket : public ApiResource {
   // Parses the contents of body_read_buffer_ and sets current_message_ to
   // the message received.
   bool ProcessBody();
-  // Closes the socket, sets |error_state_| to |error| and signals the
-  // delegate that |error| has occurred.
-  void CloseWithError(ChannelError error);
+  // Closes socket, signaling the delegate that |error| has occurred.
+  void CloseWithError();
   // Frees resources and cancels pending callbacks.  |ready_state_| will be set
   // READY_STATE_CLOSED on completion.  A no-op if |ready_state_| is already
   // READY_STATE_CLOSED.
@@ -276,7 +277,6 @@ class CastSocket : public ApiResource {
   // Runs pending callbacks that are passed into us to notify API clients that
   // pending operations will fail because the socket has been closed.
   void RunPendingCallbacksOnClose();
-
   // Serializes the content of message_proto (with a header) to |message_data|.
   static bool Serialize(const CastMessage& message_proto,
                         std::string* message_data);
@@ -284,6 +284,12 @@ class CastSocket : public ApiResource {
   virtual bool CalledOnValidThread() const;
 
   virtual base::Timer* GetTimer();
+
+  void SetConnectState(ConnectionState connect_state);
+  void SetReadyState(ReadyState ready_state);
+  void SetErrorState(ChannelError error_state);
+  void SetReadState(ReadState read_state);
+  void SetWriteState(WriteState write_state);
 
   base::ThreadChecker thread_checker_;
 
@@ -312,6 +318,9 @@ class CastSocket : public ApiResource {
   net::NetLog* net_log_;
   // The NetLog source for this service.
   net::NetLog::Source net_log_source_;
+
+  // Logger used to track multiple CastSockets. Does NOT own this object.
+  scoped_refptr<Logger> logger_;
 
   // CertVerifier is owned by us but should be deleted AFTER SSLClientSocket
   // since in some cases the destructor of SSLClientSocket may call a method
@@ -373,6 +382,7 @@ class CastSocket : public ApiResource {
     bool SetContent(const CastMessage& message_proto);
 
     net::CompletionCallback callback;
+    std::string message_namespace;
     scoped_refptr<net::DrainableIOBuffer> io_buffer;
   };
   // Queue of pending writes. The message at the front of the queue is the one
