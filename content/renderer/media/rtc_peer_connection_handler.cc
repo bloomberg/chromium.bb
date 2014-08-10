@@ -281,12 +281,11 @@ class StatsResponse : public webrtc::StatsObserver {
     for (webrtc::StatsReport::Values::const_iterator value_it =
          report.values.begin();
          value_it != report.values.end(); ++value_it) {
-      AddStatistic(idx, value_it->name, value_it->value);
+      AddStatistic(idx, value_it->display_name(), value_it->value);
     }
   }
 
-  void AddStatistic(int idx, const std::string& name,
-                    const std::string& value) {
+  void AddStatistic(int idx, const char* name, const std::string& value) {
     response_->addStatistic(idx,
                             blink::WebString::fromUTF8(name),
                             blink::WebString::fromUTF8(value));
