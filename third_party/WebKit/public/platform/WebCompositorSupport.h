@@ -52,8 +52,6 @@ class WebLayer;
 class WebScrollbarLayer;
 class WebScrollbarThemeGeometry;
 class WebScrollOffsetAnimationCurve;
-class WebSolidColorLayer;
-class WebThread;
 class WebTransformAnimationCurve;
 class WebTransformOperations;
 

@@ -44,7 +44,6 @@
 #include "public/platform/WebLayerClient.h"
 #include "public/platform/WebLayerScrollClient.h"
 #include "public/platform/WebNinePatchLayer.h"
-#include "public/platform/WebSolidColorLayer.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
