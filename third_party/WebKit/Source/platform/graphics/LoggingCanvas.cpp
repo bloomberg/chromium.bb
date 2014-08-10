@@ -348,13 +348,6 @@ void LoggingCanvas::onClipRegion(const SkRegion& region, SkRegion::Op op)
     this->SkCanvas::onClipRegion(region, op);
 }
 
-void LoggingCanvas::onDrawPicture(const SkPicture* picture)
-{
-    AutoLogger logger(this);
-    logger.logItemWithParams("drawPicture")->setObject("picture", objectForSkPicture(*picture));
-    this->SkCanvas::onDrawPicture(picture);
-}
-
 void LoggingCanvas::onDrawPicture(const SkPicture* picture, const SkMatrix* matrix, const SkPaint* paint)
 {
     AutoLogger logger(this);

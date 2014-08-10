@@ -70,7 +70,7 @@ public:
     virtual void onClipRRect(const SkRRect&, SkRegion::Op, ClipEdgeStyle) OVERRIDE = 0;
     virtual void onClipPath(const SkPath&, SkRegion::Op, ClipEdgeStyle) OVERRIDE = 0;
     virtual void onClipRegion(const SkRegion&, SkRegion::Op) OVERRIDE = 0;
-    virtual void onDrawPicture(const SkPicture*) OVERRIDE = 0;
+    virtual void onDrawPicture(const SkPicture*, const SkMatrix*, const SkPaint*) OVERRIDE = 0;
     virtual void didSetMatrix(const SkMatrix&) OVERRIDE = 0;
     virtual void didConcat(const SkMatrix&) OVERRIDE = 0;
     virtual void willSave() OVERRIDE = 0;

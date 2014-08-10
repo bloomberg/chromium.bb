@@ -253,12 +253,6 @@ void ReplayingCanvas::onClipRegion(const SkRegion& region, SkRegion::Op op)
     this->SkCanvas::onClipRegion(region, op);
 }
 
-void ReplayingCanvas::onDrawPicture(const SkPicture* picture)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onDrawPicture(picture);
-}
-
 void ReplayingCanvas::onDrawPicture(const SkPicture* picture, const SkMatrix* matrix, const SkPaint* paint)
 {
     AutoReplayer replayer(this);
