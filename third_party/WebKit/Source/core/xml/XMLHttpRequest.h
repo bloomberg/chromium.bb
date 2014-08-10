@@ -163,6 +163,9 @@ private:
     AtomicString responseMIMEType() const;
     bool responseIsXML() const;
 
+    PassOwnPtr<TextResourceDecoder> createDecoder() const;
+
+    void initResponseDocument();
     bool areMethodAndURLValidForSend();
 
     bool initSend(ExceptionState&);
@@ -252,7 +255,7 @@ private:
     bool m_includeCredentials;
     // Used to skip m_responseDocument creation if it's done previously. We need
     // this separate flag since m_responseDocument can be 0 for some cases.
-    bool m_createdDocument;
+    bool m_parsedResponse;
     bool m_error;
     bool m_uploadEventsAllowed;
     bool m_uploadComplete;

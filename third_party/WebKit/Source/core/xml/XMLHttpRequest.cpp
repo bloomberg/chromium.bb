@@ -132,7 +132,7 @@ XMLHttpRequest::XMLHttpRequest(ExecutionContext* context, PassRefPtr<SecurityOri
     , m_previousReadyStateChangeFireTime(0)
     , m_async(true)
     , m_includeCredentials(false)
-    , m_createdDocument(false)
+    , m_parsedResponse(false)
     , m_error(false)
     , m_uploadEventsAllowed(true)
     , m_uploadComplete(false)
@@ -187,6 +187,32 @@ ScriptString XMLHttpRequest::responseJSONSource()
     return m_responseText;
 }
 
+void XMLHttpRequest::initResponseDocument()
+{
+    AtomicString mimeType = responseMIMEType();
+    bool isHTML = equalIgnoringCase(mimeType, "text/html");
+
+    // The W3C spec requires the final MIME type to be some valid XML type, or text/html.
+    // If it is text/html, then the responseType of "document" must have been supplied explicitly.
+    if ((m_response.isHTTP() && !responseIsXML() && !isHTML)
+        || (isHTML && m_responseTypeCode == ResponseTypeDefault)
+        || executionContext()->isWorkerGlobalScope()) {
+        m_responseDocument = nullptr;
+        return;
+    }
+
+    DocumentInit init = DocumentInit::fromContext(document()->contextDocument(), m_url);
+    if (isHTML)
+        m_responseDocument = HTMLDocument::create(init);
+    else
+        m_responseDocument = XMLDocument::create(init);
+
+    // FIXME: Set Last-Modified.
+    m_responseDocument->setSecurityOrigin(securityOrigin());
+    m_responseDocument->setContextFeatures(document()->contextFeatures());
+    m_responseDocument->setMimeType(mimeType);
+}
+
 Document* XMLHttpRequest::responseXML(ExceptionState& exceptionState)
 {
     if (m_responseTypeCode != ResponseTypeDefault && m_responseTypeCode != ResponseTypeDocument) {
@@ -197,31 +223,16 @@ Document* XMLHttpRequest::responseXML(ExceptionState& exceptionState)
     if (m_error || m_state != DONE)
         return 0;
 
-    if (!m_createdDocument) {
-        AtomicString mimeType = responseMIMEType();
-        bool isHTML = equalIgnoringCase(mimeType, "text/html");
+    if (!m_parsedResponse) {
+        initResponseDocument();
+        if (!m_responseDocument)
+            return nullptr;
 
-        // The W3C spec requires the final MIME type to be some valid XML type, or text/html.
-        // If it is text/html, then the responseType of "document" must have been supplied explicitly.
-        if ((m_response.isHTTP() && !responseIsXML() && !isHTML)
-            || (isHTML && m_responseTypeCode == ResponseTypeDefault)
-            || executionContext()->isWorkerGlobalScope()) {
+        m_responseDocument->setContent(m_responseText.flattenToString());
+        if (!m_responseDocument->wellFormed())
             m_responseDocument = nullptr;
-        } else {
-            DocumentInit init = DocumentInit::fromContext(document()->contextDocument(), m_url);
-            if (isHTML)
-                m_responseDocument = HTMLDocument::create(init);
-            else
-                m_responseDocument = XMLDocument::create(init);
-            // FIXME: Set Last-Modified.
-            m_responseDocument->setContent(m_responseText.flattenToString());
-            m_responseDocument->setSecurityOrigin(securityOrigin());
-            m_responseDocument->setContextFeatures(document()->contextFeatures());
-            m_responseDocument->setMimeType(mimeType);
-            if (!m_responseDocument->wellFormed())
-                m_responseDocument = nullptr;
-        }
-        m_createdDocument = true;
+
+        m_parsedResponse = true;
     }
 
     return m_responseDocument.get();
@@ -915,7 +926,7 @@ void XMLHttpRequest::clearResponse()
 
     m_responseText.clear();
 
-    m_createdDocument = false;
+    m_parsedResponse = false;
     m_responseDocument = nullptr;
 
     m_responseBlob = nullptr;
@@ -1245,6 +1256,31 @@ void XMLHttpRequest::didReceiveResponse(unsigned long identifier, const Resource
         m_responseEncoding = response.textEncodingName();
 }
 
+PassOwnPtr<TextResourceDecoder> XMLHttpRequest::createDecoder() const
+{
+    if (m_responseTypeCode == ResponseTypeJSON)
+        return TextResourceDecoder::create("application/json", "UTF-8");
+
+    if (!m_responseEncoding.isEmpty())
+        return TextResourceDecoder::create("text/plain", m_responseEncoding);
+
+    // allow TextResourceDecoder to look inside the m_response if it's XML or HTML
+    if (responseIsXML()) {
+        OwnPtr<TextResourceDecoder> decoder = TextResourceDecoder::create("application/xml");
+        // Don't stop on encoding errors, unlike it is done for other kinds
+        // of XML resources. This matches the behavior of previous WebKit
+        // versions, Firefox and Opera.
+        decoder->useLenientXMLDecoding();
+
+        return decoder.release();
+    }
+
+    if (equalIgnoringCase(responseMIMEType(), "text/html"))
+        return TextResourceDecoder::create("text/html", "UTF-8");
+
+    return TextResourceDecoder::create("text/plain", "UTF-8");
+}
+
 void XMLHttpRequest::didReceiveData(const char* data, int len)
 {
     ASSERT(m_responseTypeCode != ResponseTypeBlob);
@@ -1255,34 +1291,17 @@ void XMLHttpRequest::didReceiveData(const char* data, int len)
     if (m_state < HEADERS_RECEIVED)
         changeState(HEADERS_RECEIVED);
 
-    bool useDecoder = m_responseTypeCode == ResponseTypeDefault || m_responseTypeCode == ResponseTypeText || m_responseTypeCode == ResponseTypeJSON || m_responseTypeCode == ResponseTypeDocument;
-
-    if (useDecoder && !m_decoder) {
-        if (m_responseTypeCode == ResponseTypeJSON) {
-            m_decoder = TextResourceDecoder::create("application/json", "UTF-8");
-        } else if (!m_responseEncoding.isEmpty()) {
-            m_decoder = TextResourceDecoder::create("text/plain", m_responseEncoding);
-        // allow TextResourceDecoder to look inside the m_response if it's XML or HTML
-        } else if (responseIsXML()) {
-            m_decoder = TextResourceDecoder::create("application/xml");
-            // Don't stop on encoding errors, unlike it is done for other kinds
-            // of XML resources. This matches the behavior of previous WebKit
-            // versions, Firefox and Opera.
-            m_decoder->useLenientXMLDecoding();
-        } else if (equalIgnoringCase(responseMIMEType(), "text/html")) {
-            m_decoder = TextResourceDecoder::create("text/html", "UTF-8");
-        } else {
-            m_decoder = TextResourceDecoder::create("text/plain", "UTF-8");
-        }
-    }
-
     if (!len)
         return;
 
     if (len == -1)
         len = strlen(data);
 
+    bool useDecoder = m_responseTypeCode == ResponseTypeDefault || m_responseTypeCode == ResponseTypeText || m_responseTypeCode == ResponseTypeJSON || m_responseTypeCode == ResponseTypeDocument;
     if (useDecoder) {
+        if (!m_decoder)
+            m_decoder = createDecoder();
+
         m_responseText = m_responseText.concatenateWith(m_decoder->decode(data, len));
     } else if (m_responseTypeCode == ResponseTypeArrayBuffer) {
         // Buffer binary data.
