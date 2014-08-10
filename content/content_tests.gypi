@@ -629,7 +629,7 @@
         'browser/web_contents/web_drag_source_mac_unittest.mm',
         'browser/webui/web_ui_data_source_unittest.cc',
         'browser/webui/web_ui_message_handler_unittest.cc',
-        'child/blink_platform_unittest.cc',
+        'child/blink_platform_impl_unittest.cc',
         'child/fileapi/webfilewriter_base_unittest.cc',
         'child/indexed_db/indexed_db_dispatcher_unittest.cc',
         'child/indexed_db/webidbcursor_impl_unittest.cc',
