@@ -59,12 +59,12 @@ class AutofillRendererTest : public ChromeRenderViewTest {
 };
 
 TEST_F(AutofillRendererTest, SendForms) {
-  LoadHTML("<form method=\"POST\">"
-           "  <input type=\"text\" id=\"firstname\"/>"
-           "  <input type=\"text\" id=\"middlename\"/>"
-           "  <input type=\"text\" id=\"lastname\" autoComplete=\"off\"/>"
-           "  <input type=\"hidden\" id=\"email\"/>"
-           "  <select id=\"state\"/>"
+  LoadHTML("<form method='POST'>"
+           "  <input type='text' id='firstname'/>"
+           "  <input type='text' id='middlename'/>"
+           "  <input type='text' id='lastname' autoComplete='off'/>"
+           "  <input type='hidden' id='email'/>"
+           "  <select id='state'/>"
            "    <option>?</option>"
            "    <option>California</option>"
            "    <option>Texas</option>"
@@ -161,9 +161,9 @@ TEST_F(AutofillRendererTest, SendForms) {
 }
 
 TEST_F(AutofillRendererTest, EnsureNoFormSeenIfTooFewFields) {
-  LoadHTML("<form method=\"POST\">"
-           "  <input type=\"text\" id=\"firstname\"/>"
-           "  <input type=\"text\" id=\"middlename\"/>"
+  LoadHTML("<form method='POST'>"
+           "  <input type='text' id='firstname'/>"
+           "  <input type='text' id='middlename'/>"
            "</form>");
 
   // Verify that "FormsSeen" isn't sent, as there are too few fields.
@@ -177,10 +177,10 @@ TEST_F(AutofillRendererTest, EnsureNoFormSeenIfTooFewFields) {
 }
 
 TEST_F(AutofillRendererTest, ShowAutofillWarning) {
-  LoadHTML("<form method=\"POST\" autocomplete=\"Off\">"
-           "  <input id=\"firstname\" autocomplete=\"OFF\"/>"
-           "  <input id=\"middlename\"/>"
-           "  <input id=\"lastname\"/>"
+  LoadHTML("<form method='POST' autocomplete='Off'>"
+           "  <input id='firstname' autocomplete='OFF'/>"
+           "  <input id='middlename'/>"
+           "  <input id='lastname'/>"
            "</form>");
 
   // Verify that "QueryFormFieldAutofill" isn't sent prior to a user
@@ -229,7 +229,7 @@ TEST_F(AutofillRendererTest, DontCrashWhileAssociatingForms) {
            "<script id='script'>"
            "document.documentElement.appendChild(foo);"
            "newDoc = document.implementation.createDocument("
-           "    \"http://www.w3.org/1999/xhtml\", \"html\");"
+           "    'http://www.w3.org/1999/xhtml', 'html');"
            "foo.insertBefore(form, script);"
            "newDoc.adoptNode(foo);"
            "</script>");
@@ -253,7 +253,7 @@ class RequestAutocompleteRendererTest : public AutofillRendererTest {
 
     GURL url("data:text/html;charset=utf-8,"
              "<form><input autocomplete=cc-number></form>");
-    const char kDoubleIframeHtml[] = "<iframe id=subframe src=\"%s\"></iframe>"
+    const char kDoubleIframeHtml[] = "<iframe id=subframe src='%s'></iframe>"
                                      "<iframe id=sibling></iframe>";
     LoadHTML(base::StringPrintf(kDoubleIframeHtml, url.spec().c_str()).c_str());
 
