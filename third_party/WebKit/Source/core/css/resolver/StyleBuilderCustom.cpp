@@ -872,33 +872,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitFilter(StyleResolverState
         state.style()->setFilter(operations);
 }
 
-void StyleBuilderFunctions::applyValueCSSPropertyInternalMarqueeSpeed(StyleResolverState& state, CSSValue* value)
-{
-    if (!value->isPrimitiveValue())
-        return;
-
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (CSSValueID valueID = primitiveValue->getValueID()) {
-        switch (valueID) {
-        case CSSValueSlow:
-            state.style()->setMarqueeSpeed(500); // 500 msec.
-            break;
-        case CSSValueNormal:
-            state.style()->setMarqueeSpeed(85); // 85msec. The WinIE default.
-            break;
-        case CSSValueFast:
-            state.style()->setMarqueeSpeed(10); // 10msec. Super fast.
-            break;
-        default:
-            break;
-        }
-    } else if (primitiveValue->isTime()) {
-        state.style()->setMarqueeSpeed(static_cast<int>(primitiveValue->computeSeconds()) * 1000);
-    } else if (primitiveValue->isNumber()) { // For scrollamount support.
-        state.style()->setMarqueeSpeed(primitiveValue->getIntValue());
-    }
-}
-
 // FIXME: We should use the same system for this as the rest of the pseudo-shorthands (e.g. background-position)
 void StyleBuilderFunctions::applyInitialCSSPropertyWebkitPerspectiveOrigin(StyleResolverState& state)
 {

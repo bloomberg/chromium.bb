@@ -548,11 +548,6 @@ up
 down
 // auto
 
-// -internal-marquee-speed
-slow
-// normal
-fast
-
 // -internal-marquee-repetition
 infinite
 

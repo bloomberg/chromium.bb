@@ -1124,10 +1124,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
             validPrimitive = validUnit(value, FInteger | FNonNeg);
         break;
     case CSSPropertyInternalMarqueeSpeed:
-        if (id == CSSValueNormal || id == CSSValueSlow || id == CSSValueFast)
-            validPrimitive = true;
-        else
-            validPrimitive = validUnit(value, FTime | FInteger | FNonNeg);
+        validPrimitive = validUnit(value, FInteger | FNonNeg);
         break;
     case CSSPropertyTransform:
     case CSSPropertyWebkitTransform:

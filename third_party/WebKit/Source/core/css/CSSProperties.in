@@ -224,7 +224,7 @@ column-fill type_name=ColumnFill
 -internal-marquee-direction name_for_methods=MarqueeDirection
 -internal-marquee-increment name_for_methods=MarqueeIncrement, converter=convertLength
 -internal-marquee-repetition type_name=int, name_for_methods=MarqueeLoopCount, custom_value
--internal-marquee-speed custom_value, name_for_methods=MarqueeSpeed
+-internal-marquee-speed name_for_methods=MarqueeSpeed, converter=convertNumberOrPercentage
 -internal-marquee-style name_for_methods=MarqueeBehavior
 -webkit-mask-box-image-outset custom_all
 -webkit-mask-box-image-repeat custom_all
