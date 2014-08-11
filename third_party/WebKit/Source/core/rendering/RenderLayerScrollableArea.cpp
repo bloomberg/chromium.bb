@@ -650,7 +650,13 @@ void RenderLayerScrollableArea::updateAfterLayout()
         }
     }
 
-    updateScrollableAreaSet(hasScrollableHorizontalOverflow() || hasScrollableVerticalOverflow());
+    bool hasOverflow = hasScrollableHorizontalOverflow() || hasScrollableVerticalOverflow();
+    updateScrollableAreaSet(hasOverflow);
+
+    if (hasOverflow) {
+        DisableCompositingQueryAsserts disabler;
+        positionOverflowControls(IntSize());
+    }
 }
 
 bool RenderLayerScrollableArea::hasHorizontalOverflow() const

@@ -263,15 +263,6 @@ void RenderLayer::updateLayerPositionsAfterLayout()
 
 void RenderLayer::updateLayerPositionRecursive()
 {
-    if (hasOverflowControls()) {
-        // FIXME: We should figure out the right time to position the overflow controls.
-        // This call appears to be necessary to pass some layout test that use EventSender,
-        // presumably because the normal time to position the controls is during paint. We
-        // probably shouldn't position the overflow controls during paint either...
-        DisableCompositingQueryAsserts disabler;
-        scrollableArea()->positionOverflowControls(IntSize());
-    }
-
     if (m_reflectionInfo)
         m_reflectionInfo->reflection()->layout();
 
