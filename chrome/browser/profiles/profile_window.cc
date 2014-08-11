@@ -303,7 +303,19 @@ void ShowUserManagerMaybeWithTutorial(Profile* profile) {
     chrome::ShowUserManager(base::FilePath());
     return;
   }
-  chrome::ShowUserManagerWithTutorial(profiles::USER_MANAGER_TUTORIAL_OVERVIEW);
+  // Show the tutorial if the profile has not shown it before.
+  PrefService* pref_service = profile->GetPrefs();
+  bool tutorial_shown = pref_service->GetBoolean(
+      prefs::kProfileUserManagerTutorialShown);
+  if (!tutorial_shown)
+    pref_service->SetBoolean(prefs::kProfileUserManagerTutorialShown, true);
+
+  if (tutorial_shown) {
+    chrome::ShowUserManager(profile->GetPath());
+  } else {
+    chrome::ShowUserManagerWithTutorial(
+        profiles::USER_MANAGER_TUTORIAL_OVERVIEW);
+  }
 }
 
 void EnableNewProfileManagementPreview(Profile* profile) {
