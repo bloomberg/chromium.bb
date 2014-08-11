@@ -60,6 +60,13 @@ def DoMain(argv):
       if f.endswith('.gyp') or f.endswith('.gypi'):
         continue
 
+      # Deleting .isolate files leads to gyp failures. They are usually
+      # not used by a distro build anyway.
+      # See http://www.chromium.org/developers/testing/isolated-testing
+      # for more info.
+      if f.endswith('.isolate'):
+        continue
+
       if options.do_remove:
         # Delete the file - best way to ensure it's not used during build.
         os.remove(path)
