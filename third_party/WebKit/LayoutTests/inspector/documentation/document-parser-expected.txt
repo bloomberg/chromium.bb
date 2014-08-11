@@ -54,7 +54,7 @@ If no arguments are provided, the return value is equal to [[javascript/Number/c
     summary : "Returns the larger of a set of supplied numeric expressions."
 }
 {
-    CSSproperties : {
+    cssProperties : {
         Animatable : "Yes"
         Applies to : "All elements"
         CSS object model property : "color"
