@@ -301,6 +301,16 @@ bool ShouldUseMojoChannel() {
       switches::kEnableRendererMojoChannel);
 }
 
+blink::WebGraphicsContext3D::Attributes GetOffscreenAttribs() {
+  blink::WebGraphicsContext3D::Attributes attributes;
+  attributes.shareResources = true;
+  attributes.depth = false;
+  attributes.stencil = false;
+  attributes.antialias = false;
+  attributes.noAutomaticFlushes = true;
+  return attributes;
+}
+
 }  // namespace
 
 // For measuring memory usage after each task. Behind a command line flag.
@@ -1127,12 +1137,7 @@ RenderThreadImpl::GetGpuFactories() {
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
 RenderThreadImpl::CreateOffscreenContext3d() {
-  blink::WebGraphicsContext3D::Attributes attributes;
-  attributes.shareResources = true;
-  attributes.depth = false;
-  attributes.stencil = false;
-  attributes.antialias = false;
-  attributes.noAutomaticFlushes = true;
+  blink::WebGraphicsContext3D::Attributes attributes(GetOffscreenAttribs());
   bool lose_context_when_out_of_memory = true;
 
   scoped_refptr<GpuChannelHost> gpu_channel_host(EstablishGpuChannelSync(
@@ -1150,16 +1155,20 @@ RenderThreadImpl::CreateOffscreenContext3d() {
 scoped_refptr<webkit::gpu::ContextProviderWebContext>
 RenderThreadImpl::SharedMainThreadContextProvider() {
   DCHECK(IsMainThread());
-#if defined(OS_ANDROID)
-  if (SynchronousCompositorFactory* factory =
-      SynchronousCompositorFactory::GetInstance())
-    return factory->GetSharedOffscreenContextProviderForMainThread();
-#endif
-
   if (!shared_main_thread_contexts_ ||
       shared_main_thread_contexts_->DestroyedOnMainThread()) {
-    shared_main_thread_contexts_ = ContextProviderCommandBuffer::Create(
-        CreateOffscreenContext3d(), "Offscreen-MainThread");
+    shared_main_thread_contexts_ = NULL;
+#if defined(OS_ANDROID)
+    if (SynchronousCompositorFactory* factory =
+            SynchronousCompositorFactory::GetInstance()) {
+      shared_main_thread_contexts_ = factory->CreateOffscreenContextProvider(
+          GetOffscreenAttribs(), "Offscreen-MainThread");
+    }
+#endif
+    if (!shared_main_thread_contexts_) {
+      shared_main_thread_contexts_ = ContextProviderCommandBuffer::Create(
+          CreateOffscreenContext3d(), "Offscreen-MainThread");
+    }
   }
   if (shared_main_thread_contexts_ &&
       !shared_main_thread_contexts_->BindToCurrentThread())

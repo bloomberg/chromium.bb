@@ -538,7 +538,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_ptr<InputHandlerManager> input_handler_manager_;
   scoped_refptr<IPC::ForwardingMessageFilter> compositor_output_surface_filter_;
 
-  scoped_refptr<ContextProviderCommandBuffer> shared_main_thread_contexts_;
+  scoped_refptr<webkit::gpu::ContextProviderWebContext>
+      shared_main_thread_contexts_;
 
   ObserverList<RenderProcessObserver> observers_;
 

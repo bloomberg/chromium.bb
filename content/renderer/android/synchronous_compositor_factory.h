@@ -52,7 +52,9 @@ class SynchronousCompositorFactory {
   virtual InputHandlerManagerClient* GetInputHandlerManagerClient() = 0;
 
   virtual scoped_refptr<webkit::gpu::ContextProviderWebContext>
-      GetSharedOffscreenContextProviderForMainThread() = 0;
+      CreateOffscreenContextProvider(
+          const blink::WebGraphicsContext3D::Attributes& attributes,
+          const std::string& debug_name) = 0;
   virtual scoped_refptr<StreamTextureFactory> CreateStreamTextureFactory(
       int frame_id) = 0;
   virtual blink::WebGraphicsContext3D* CreateOffscreenGraphicsContext3D(

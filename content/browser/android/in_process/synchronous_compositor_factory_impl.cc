@@ -168,25 +168,14 @@ SynchronousCompositorFactoryImpl::GetInputHandlerManagerClient() {
   return synchronous_input_event_filter();
 }
 
-scoped_refptr<ContextProviderWebContext> SynchronousCompositorFactoryImpl::
-    GetSharedOffscreenContextProviderForMainThread() {
-  bool failed = false;
-  if ((!offscreen_context_for_main_thread_.get() ||
-       offscreen_context_for_main_thread_->DestroyedOnMainThread())) {
-    scoped_ptr<gpu::GLInProcessContext> context =
-        CreateOffscreenContext(GetDefaultAttribs());
-    offscreen_context_for_main_thread_ =
-        webkit::gpu::ContextProviderInProcess::Create(
-            WrapContext(context.Pass()),
-            "Compositor-Offscreen-main-thread");
-    failed = !offscreen_context_for_main_thread_.get() ||
-             !offscreen_context_for_main_thread_->BindToCurrentThread();
-  }
-
-  if (failed) {
-    offscreen_context_for_main_thread_ = NULL;
-  }
-  return offscreen_context_for_main_thread_;
+scoped_refptr<ContextProviderWebContext>
+SynchronousCompositorFactoryImpl::CreateOffscreenContextProvider(
+    const blink::WebGraphicsContext3D::Attributes& attributes,
+    const std::string& debug_name) {
+  scoped_ptr<gpu::GLInProcessContext> context =
+      CreateOffscreenContext(attributes);
+  return webkit::gpu::ContextProviderInProcess::Create(
+      WrapContext(context.Pass()), debug_name);
 }
 
 scoped_refptr<cc::ContextProvider> SynchronousCompositorFactoryImpl::
