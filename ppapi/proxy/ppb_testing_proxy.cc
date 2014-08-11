@@ -127,6 +127,11 @@ void SetMinimumArrayBufferSizeForShmem(PP_Instance instance,
           API_ID_PPB_TESTING, threshold));
 }
 
+void RunV8GC(PP_Instance instance) {
+  // TODO(raymes): Implement this if we need it.
+  NOTIMPLEMENTED();
+}
+
 const PPB_Testing_Private testing_interface = {
   &ReadImageData,
   &RunMessageLoop,
@@ -136,7 +141,8 @@ const PPB_Testing_Private testing_interface = {
   &SimulateInputEvent,
   &GetDocumentURL,
   &GetLiveVars,
-  &SetMinimumArrayBufferSizeForShmem
+  &SetMinimumArrayBufferSizeForShmem,
+  &RunV8GC
 };
 
 }  // namespace

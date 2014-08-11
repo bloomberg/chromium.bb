@@ -131,4 +131,9 @@ interface PPB_Testing_Private {
    */
   void SetMinimumArrayBufferSizeForShmem([in] PP_Instance instance,
                                          [in] uint32_t threshold);
+
+  /**
+   * Run the V8 garbage collector for tests.
+   */
+  void RunV8GC([in] PP_Instance instance);
 };

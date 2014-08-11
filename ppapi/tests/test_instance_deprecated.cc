@@ -5,7 +5,6 @@
 #include "ppapi/tests/test_instance_deprecated.h"
 
 #include <assert.h>
-#include <iostream>
 
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/cpp/module.h"
@@ -126,6 +125,12 @@ bool TestInstance::Init() {
 }
 
 TestInstance::~TestInstance() {
+  ResetTestObject();
+  // When running tests in process, some post conditions check that teardown
+  // happened successfully. We need to run the garbage collector to ensure that
+  // vars get released.
+  if (testing_interface_->IsOutOfProcess() == PP_FALSE)
+    testing_interface_->RunV8GC(instance_->pp_instance());
   // Save the fact that we were destroyed in sessionStorage. This tests that
   // we can ExecuteScript at instance destruction without crashing. It also
   // allows us to check that ExecuteScript will run and succeed in certain
@@ -218,8 +223,17 @@ class ObjectWithChildren : public pp::deprecated::ScriptableObject {
 };
 
 std::string TestInstance::TestRecursiveObjects() {
-  // These should be deleted when we exit scope, so should not leak.
-  pp::VarPrivate not_leaked(instance(), new ObjectWithChildren(this, 50));
+  const int kNumChildren = 20;
+  {
+    // These should be deleted when we exit scope, so should not leak.
+    pp::VarPrivate not_leaked(instance(), new ObjectWithChildren(this,
+                                                                 kNumChildren));
+  }
+  // We need to run the GC multiple times until all of the vars are released.
+  // Each GC invocation will result in releasing a var, which will result in its
+  // children not having any references, allowing them also to be collected.
+  for (int i = 0; i < kNumChildren; ++i)
+    testing_interface_->RunV8GC(instance_->pp_instance());
 
   // Leak some, but tell TestCase to ignore the leaks. This test is run and then
   // reloaded (see ppapi_uitest.cc). If these aren't cleaned up when the first
@@ -229,7 +243,8 @@ std::string TestInstance::TestRecursiveObjects() {
   //       destructor is not run.
   pp::VarPrivate leaked(
       instance(),
-      new ObjectWithChildren(this, 50, ObjectWithChildren::IgnoreLeaks()));
+      new ObjectWithChildren(this, kNumChildren,
+                             ObjectWithChildren::IgnoreLeaks()));
   // Now leak a reference to the root object. This should force the root and
   // all its descendents to stay in the tracker.
   LeakReferenceAndIgnore(leaked);

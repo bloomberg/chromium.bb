@@ -63,6 +63,7 @@ class TestCase {
   // Returns the scriptable test object for the current test, if any.
   // Internally, this uses CreateTestObject which each test overrides.
   pp::VarPrivate GetTestObject();
+  void ResetTestObject() { test_object_ = pp::VarPrivate(); }
 #endif
 
   // A function that is invoked whenever HandleMessage is called on the

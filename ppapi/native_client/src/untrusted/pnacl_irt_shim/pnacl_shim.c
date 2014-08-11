@@ -3989,6 +3989,11 @@ static void Pnacl_M33_PPB_Testing_Private_SetMinimumArrayBufferSizeForShmem(PP_I
   iface->SetMinimumArrayBufferSizeForShmem(instance, threshold);
 }
 
+static void Pnacl_M33_PPB_Testing_Private_RunV8GC(PP_Instance instance) {
+  const struct PPB_Testing_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_Testing_Private_1_0.real_iface;
+  iface->RunV8GC(instance);
+}
+
 /* End wrapper methods for PPB_Testing_Private_1_0 */
 
 /* Begin wrapper methods for PPB_UDPSocket_Private_0_2 */
@@ -5391,7 +5396,8 @@ static const struct PPB_Testing_Private_1_0 Pnacl_Wrappers_PPB_Testing_Private_1
     .SimulateInputEvent = (void (*)(PP_Instance instance, PP_Resource input_event))&Pnacl_M33_PPB_Testing_Private_SimulateInputEvent,
     .GetDocumentURL = (struct PP_Var (*)(PP_Instance instance, struct PP_URLComponents_Dev* components))&Pnacl_M33_PPB_Testing_Private_GetDocumentURL,
     .GetLiveVars = (uint32_t (*)(struct PP_Var live_vars[], uint32_t array_size))&Pnacl_M33_PPB_Testing_Private_GetLiveVars,
-    .SetMinimumArrayBufferSizeForShmem = (void (*)(PP_Instance instance, uint32_t threshold))&Pnacl_M33_PPB_Testing_Private_SetMinimumArrayBufferSizeForShmem
+    .SetMinimumArrayBufferSizeForShmem = (void (*)(PP_Instance instance, uint32_t threshold))&Pnacl_M33_PPB_Testing_Private_SetMinimumArrayBufferSizeForShmem,
+    .RunV8GC = (void (*)(PP_Instance instance))&Pnacl_M33_PPB_Testing_Private_RunV8GC
 };
 
 static const struct PPB_UDPSocket_Private_0_2 Pnacl_Wrappers_PPB_UDPSocket_Private_0_2 = {

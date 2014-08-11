@@ -318,7 +318,6 @@ std::string TestVarDeprecated::TestHasPropertyAndMethod() {
   // Check exception and return false on invalid property name.
   ASSERT_FALSE(window.HasProperty(3.14159, &exception));
   ASSERT_FALSE(exception.is_undefined());
-  exception = pp::Var();
 
   exception = pp::Var();
   ASSERT_FALSE(window.HasMethod(3.14159, &exception));

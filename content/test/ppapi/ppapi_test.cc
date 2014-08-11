@@ -49,6 +49,9 @@ void PPAPITestBase::SetUpCommandLine(base::CommandLine* command_line) {
 
   // Smooth scrolling confuses the scrollbar test.
   command_line->AppendSwitch(switches::kDisableSmoothScrolling);
+
+  // Allow manual garbage collection.
+  command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose_gc");
 }
 
 GURL PPAPITestBase::GetTestFileUrl(const std::string& test_case) {

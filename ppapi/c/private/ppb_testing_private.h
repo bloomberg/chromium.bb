@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_testing_private.idl modified Mon Nov 18 14:42:33 2013. */
+/* From private/ppb_testing_private.idl modified Mon Jul 28 15:12:12 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_TESTING_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_TESTING_PRIVATE_H_
@@ -140,6 +140,10 @@ struct PPB_Testing_Private_1_0 {
    */
   void (*SetMinimumArrayBufferSizeForShmem)(PP_Instance instance,
                                             uint32_t threshold);
+  /**
+   * Run the V8 garbage collector for tests.
+   */
+  void (*RunV8GC)(PP_Instance instance);
 };
 
 typedef struct PPB_Testing_Private_1_0 PPB_Testing_Private;
