@@ -52,11 +52,10 @@ class XMLHttpRequest;
 class AsyncCallStackTracker {
     WTF_MAKE_NONCOPYABLE(AsyncCallStackTracker);
 public:
-    class AsyncCallStack FINAL : public RefCountedWillBeGarbageCollectedFinalized<AsyncCallStack> {
+    class AsyncCallStack : public RefCounted<AsyncCallStack> {
     public:
         AsyncCallStack(const String&, const ScriptValue&);
         ~AsyncCallStack();
-        void trace(Visitor*) { }
         String description() const { return m_description; }
         ScriptValue callFrames() const { return m_callFrames; }
     private:
@@ -64,14 +63,13 @@ public:
         ScriptValue m_callFrames;
     };
 
-    typedef WillBeHeapDeque<RefPtrWillBeMember<AsyncCallStack>, 4> AsyncCallStackVector;
+    typedef Deque<RefPtr<AsyncCallStack>, 4> AsyncCallStackVector;
 
-    class AsyncCallChain : public RefCountedWillBeGarbageCollected<AsyncCallChain> {
+    class AsyncCallChain : public RefCounted<AsyncCallChain> {
     public:
         AsyncCallChain() { }
         AsyncCallChain(const AsyncCallChain& t) : m_callStacks(t.m_callStacks) { }
         AsyncCallStackVector callStacks() const { return m_callStacks; }
-        void trace(Visitor*);
     private:
         friend class AsyncCallStackTracker;
         AsyncCallStackVector m_callStacks;
@@ -120,8 +118,8 @@ public:
 private:
     void willHandleXHREvent(XMLHttpRequest*, Event*);
 
-    PassRefPtrWillBeRawPtr<AsyncCallChain> createAsyncCallChain(const String& description, const ScriptValue& callFrames);
-    void setCurrentAsyncCallChain(ExecutionContext*, PassRefPtrWillBeRawPtr<AsyncCallChain>);
+    PassRefPtr<AsyncCallChain> createAsyncCallChain(const String& description, const ScriptValue& callFrames);
+    void setCurrentAsyncCallChain(ExecutionContext*, PassRefPtr<AsyncCallChain>);
     void clearCurrentAsyncCallChain();
     static void ensureMaxAsyncCallChainDepth(AsyncCallChain*, unsigned);
     bool validateCallFrames(const ScriptValue& callFrames);
@@ -130,7 +128,7 @@ private:
     ExecutionContextData* createContextDataIfNeeded(ExecutionContext*);
 
     unsigned m_maxAsyncCallStackDepth;
-    RefPtrWillBePersistent<AsyncCallChain> m_currentAsyncCallChain;
+    RefPtr<AsyncCallChain> m_currentAsyncCallChain;
     unsigned m_nestedAsyncCallCount;
     typedef HashMap<ExecutionContext*, ExecutionContextData*> ExecutionContextDataMap;
     ExecutionContextDataMap m_executionContextDataMap;
