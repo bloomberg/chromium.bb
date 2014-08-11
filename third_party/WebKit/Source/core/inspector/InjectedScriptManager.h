@@ -47,6 +47,12 @@ class InjectedScriptManager : public NoBaseWillBeGarbageCollectedFinalized<Injec
     WTF_MAKE_NONCOPYABLE(InjectedScriptManager);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
+    struct CallbackData {
+        ScopedPersistent<v8::Object> handle;
+        RefPtrWillBePersistent<InjectedScriptHost> host;
+        InjectedScriptManager* injectedScriptManager;
+    };
+
     static PassOwnPtrWillBeRawPtr<InjectedScriptManager> createForPage();
     static PassOwnPtrWillBeRawPtr<InjectedScriptManager> createForWorker();
     ~InjectedScriptManager();
@@ -67,8 +73,10 @@ public:
     typedef bool (*InspectedStateAccessCheck)(ScriptState*);
     InspectedStateAccessCheck inspectedStateAccessCheck() const { return m_inspectedStateAccessCheck; }
 
-    struct CallbackData;
     static void setWeakCallback(const v8::WeakCallbackData<v8::Object, CallbackData>&);
+    CallbackData* createCallbackData(InjectedScriptManager*);
+    void removeCallbackData(CallbackData*);
+
 private:
     explicit InjectedScriptManager(InspectedStateAccessCheck);
 
@@ -85,6 +93,7 @@ private:
     InspectedStateAccessCheck m_inspectedStateAccessCheck;
     typedef HashMap<RefPtr<ScriptState>, int> ScriptStateToId;
     ScriptStateToId m_scriptStateToId;
+    HashSet<OwnPtr<CallbackData> > m_callbackDataSet;
 };
 
 } // namespace blink
