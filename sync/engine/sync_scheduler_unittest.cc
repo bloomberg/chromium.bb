@@ -1311,8 +1311,13 @@ TEST_F(SyncSchedulerTest, PollFromCanaryAfterAuthError) {
   StopSyncScheduler();
 }
 
+#if defined(OS_WIN)
 // Times out: http://crbug.com/402212
-TEST_F(SyncSchedulerTest, DISABLED_SuccessfulRetry) {
+#define MAYBE_SuccessfulRetry DISABLED_SuccessfulRetry
+#else
+#define MAYBE_SuccessfulRetry SuccessfulRetry
+#endif
+TEST_F(SyncSchedulerTest, MAYBE_SuccessfulRetry) {
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
   SyncShareTimes times;
