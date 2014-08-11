@@ -367,8 +367,6 @@ destroy_surface(struct window *window)
 		wl_callback_destroy(window->callback);
 }
 
-static const struct wl_callback_listener frame_listener;
-
 static void
 redraw(void *data, struct wl_callback *callback, uint32_t time)
 {
@@ -468,10 +466,6 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	}
 	window->frames++;
 }
-
-static const struct wl_callback_listener frame_listener = {
-	redraw
-};
 
 static void
 pointer_handle_enter(void *data, struct wl_pointer *pointer,
