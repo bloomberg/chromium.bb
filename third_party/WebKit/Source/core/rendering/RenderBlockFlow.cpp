@@ -369,8 +369,16 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren)
     // we overflow or not.
     updateScrollInfoAfterLayout();
 
-    if (m_repaintLogicalTop != m_repaintLogicalBottom && (style()->visibility() == VISIBLE || enclosingLayer()->hasVisibleContent()))
-        setShouldInvalidateOverflowForPaint(true);
+    if (m_repaintLogicalTop != m_repaintLogicalBottom) {
+        bool hasVisibleContent = style()->visibility() == VISIBLE;
+        if (!hasVisibleContent) {
+            RenderLayer* layer = enclosingLayer();
+            layer->updateDescendantDependentFlags();
+            hasVisibleContent = layer->hasVisibleContent();
+        }
+        if (hasVisibleContent)
+            setShouldInvalidateOverflowForPaint(true);
+    }
 
     clearNeedsLayout();
 }

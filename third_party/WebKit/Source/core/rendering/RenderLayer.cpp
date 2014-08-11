@@ -617,6 +617,15 @@ void RenderLayer::dirtyVisibleContentStatus()
         parent()->dirtyAncestorChainVisibleDescendantStatus();
 }
 
+void RenderLayer::potentiallyDirtyVisibleContentStatus(EVisibility visibility)
+{
+    if (m_visibleContentStatusDirty)
+        return;
+    if (hasVisibleContent() == (visibility == VISIBLE))
+        return;
+    dirtyVisibleContentStatus();
+}
+
 void RenderLayer::dirtyAncestorChainVisibleDescendantStatus()
 {
     for (RenderLayer* layer = this; layer; layer = layer->parent()) {

@@ -170,13 +170,15 @@ public:
 
     bool subtreeIsInvisible() const { return !hasVisibleContent() && !hasVisibleDescendant(); }
 
-    // FIXME: We should ASSERT(!m_visibleContentStatusDirty) here, but see https://bugs.webkit.org/show_bug.cgi?id=71044
-    // ditto for hasVisibleDescendant(), see https://bugs.webkit.org/show_bug.cgi?id=71277
-    bool hasVisibleContent() const { return m_hasVisibleContent; }
+    // FIXME: hasVisibleContent() should call updateDescendantDependentFlags() if m_visibleContentStatusDirty.
+    bool hasVisibleContent() const { ASSERT(!m_visibleContentStatusDirty); return m_hasVisibleContent; }
+
+    // FIXME: hasVisibleDescendant() should call updateDescendantDependentFlags() if m_visibleDescendantStatusDirty.
     bool hasVisibleDescendant() const { ASSERT(!m_visibleDescendantStatusDirty); return m_hasVisibleDescendant; }
 
     void setHasVisibleContent();
     void dirtyVisibleContentStatus();
+    void potentiallyDirtyVisibleContentStatus(EVisibility);
 
     bool hasBoxDecorationsOrBackground() const;
     bool hasVisibleBoxDecorations() const;

@@ -2121,8 +2121,8 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle& newS
             if (RenderLayer* layer = enclosingLayer()) {
                 if (newStyle.visibility() == VISIBLE) {
                     layer->setHasVisibleContent();
-                } else if (layer->hasVisibleContent() && (this == layer->renderer() || layer->renderer()->style()->visibility() != VISIBLE)) {
-                    layer->dirtyVisibleContentStatus();
+                } else {
+                    layer->potentiallyDirtyVisibleContentStatus(newStyle.visibility());
                 }
             }
         }
