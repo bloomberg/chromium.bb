@@ -102,6 +102,8 @@ public:
     void scrollToSelection();
     void scrollTo(int listIndex);
 
+    void listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow = true);
+
     bool canSelectAll() const;
     void selectAll();
     int listToOptionIndex(int listIndex) const;

@@ -41,6 +41,7 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
     const String& text() const { return m_text; }
+    String suffix() const;
 
     bool isInside() const;
 
