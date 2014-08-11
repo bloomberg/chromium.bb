@@ -68,6 +68,7 @@ class Buffer : public PacketPipe {
 
  private:
   void Schedule() {
+    last_schedule_ = clock_->NowTicks();
     double megabits = buffer_.front()->size() * 8 / 1000000.0;
     double seconds = megabits / max_megabits_per_second_;
     int64 microseconds = static_cast<int64>(seconds * 1E6);
@@ -78,17 +79,28 @@ class Buffer : public PacketPipe {
   }
 
   void ProcessBuffer() {
-    CHECK(!buffer_.empty());
-    scoped_ptr<Packet> packet(buffer_.front().release());
-    buffer_size_ -= packet->size();
-    buffer_.pop_front();
-    pipe_->Send(packet.Pass());
+    int64 bytes_to_send = static_cast<int64>(
+        (clock_->NowTicks() - last_schedule_).InSecondsF() *
+        max_megabits_per_second_ * 1E6 / 8);
+    if (bytes_to_send < static_cast<int64>(buffer_.front()->size())) {
+      bytes_to_send = buffer_.front()->size();
+    }
+    while (!buffer_.empty() &&
+           static_cast<int64>(buffer_.front()->size()) <= bytes_to_send) {
+      CHECK(!buffer_.empty());
+      scoped_ptr<Packet> packet(buffer_.front().release());
+      bytes_to_send -= packet->size();
+      buffer_size_ -= packet->size();
+      buffer_.pop_front();
+      pipe_->Send(packet.Pass());
+    }
     if (!buffer_.empty()) {
       Schedule();
     }
   }
 
   std::deque<linked_ptr<Packet> > buffer_;
+  base::TimeTicks last_schedule_;
   size_t buffer_size_;
   size_t max_buffer_size_;
   double max_megabits_per_second_;  // megabits per second
@@ -188,7 +200,11 @@ class RandomSortedDelay : public PacketPipe {
   virtual void Send(scoped_ptr<Packet> packet) OVERRIDE {
     buffer_.push_back(linked_ptr<Packet>(packet.release()));
     if (buffer_.size() == 1) {
-      Schedule();
+      next_send_ = std::max(
+          clock_->NowTicks() +
+          base::TimeDelta::FromSecondsD(base::RandDouble() * random_delay_),
+          next_send_);
+      ProcessBuffer();
     }
   }
   virtual void InitOnIOThread(
@@ -212,38 +228,34 @@ class RandomSortedDelay : public PacketPipe {
   }
 
   void CauseExtraDelay() {
-    block_until_ = clock_->NowTicks() +
+    next_send_ = std::max<base::TimeTicks>(
+        clock_->NowTicks() +
         base::TimeDelta::FromMicroseconds(
-            static_cast<int64>(extra_delay_ * 1E6));
+            static_cast<int64>(extra_delay_ * 1E6)),
+        next_send_);
     // An extra delay just happened, wait up to seconds_between_extra_delay_*2
     // before scheduling another one to make the average equal to
     // seconds_between_extra_delay_.
     ScheduleExtraDelay(2.0);
   }
 
-  void Schedule() {
-    double seconds = base::RandDouble() * random_delay_;
-    base::TimeDelta block_time = block_until_ - base::TimeTicks::Now();
-    base::TimeDelta delay_time =
-        base::TimeDelta::FromMicroseconds(
-            static_cast<int64>(seconds * 1E6));
-    if (block_time > delay_time) {
-      block_time = delay_time;
+  void ProcessBuffer() {
+    base::TimeTicks now = clock_->NowTicks();
+    while (!buffer_.empty() && next_send_ <= now) {
+      scoped_ptr<Packet> packet(buffer_.front().release());
+      pipe_->Send(packet.Pass());
+      buffer_.pop_front();
+
+      next_send_ += base::TimeDelta::FromSecondsD(
+          base::RandDouble() * random_delay_);
     }
 
-    task_runner_->PostDelayedTask(FROM_HERE,
-                                  base::Bind(&RandomSortedDelay::ProcessBuffer,
-                                             weak_factory_.GetWeakPtr()),
-                                  delay_time);
-  }
-
-  void ProcessBuffer() {
-    CHECK(!buffer_.empty());
-    scoped_ptr<Packet> packet(buffer_.front().release());
-    pipe_->Send(packet.Pass());
-    buffer_.pop_front();
     if (!buffer_.empty()) {
-      Schedule();
+      task_runner_->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&RandomSortedDelay::ProcessBuffer,
+                     weak_factory_.GetWeakPtr()),
+          next_send_ - now);
     }
   }
 
@@ -253,6 +265,7 @@ class RandomSortedDelay : public PacketPipe {
   double extra_delay_;
   double seconds_between_extra_delay_;
   base::WeakPtrFactory<RandomSortedDelay> weak_factory_;
+  base::TimeTicks next_send_;
 };
 
 scoped_ptr<PacketPipe> NewRandomSortedDelay(
@@ -535,6 +548,17 @@ void BuildPipe(scoped_ptr<PacketPipe>* pipe, PacketPipe* next) {
   }
 }
 }  // namespace
+
+scoped_ptr<PacketPipe> GoodNetwork() {
+  // This represents the buffer on the sender.
+  scoped_ptr<PacketPipe> pipe;
+  BuildPipe(&pipe, new Buffer(2 << 20, 50));
+  BuildPipe(&pipe, new ConstantDelay(1E-3));
+  BuildPipe(&pipe, new RandomSortedDelay(1E-3, 2E-3, 3));
+  // This represents the buffer on the receiving device.
+  BuildPipe(&pipe, new Buffer(2 << 20, 50));
+  return pipe.Pass();
+}
 
 scoped_ptr<PacketPipe> WifiNetwork() {
   // This represents the buffer on the sender.

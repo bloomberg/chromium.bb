@@ -318,6 +318,29 @@
       'sources': [
         'test/utility/udp_proxy_main.cc',
       ],
-    }
+    },
+  ], # targets
+
+  'conditions': [
+    ['OS=="linux"',
+      { 'targets': [
+          {
+            'target_name': 'tap_proxy',
+            'type': 'executable',
+            'include_dirs': [
+              '<(DEPTH)/',
+            ],
+            'dependencies': [
+              'cast_test_utility',
+              '<(DEPTH)/base/base.gyp:base',
+              '<(DEPTH)/media/media.gyp:media',
+            ],
+            'sources': [
+              'test/utility/tap_proxy.cc',
+            ],
+          }
+        ]
+      }
+    ]
   ], # targets
 }

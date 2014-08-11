@@ -156,6 +156,10 @@ scoped_ptr<PacketPipe> NewNetworkGlitchPipe(double average_work_time,
                                             double average_outage_time);
 
 // This method builds a stack of PacketPipes to emulate a reasonably
+// good network. ~50mbit, ~3ms latency, no packet loss unless saturated.
+scoped_ptr<PacketPipe> GoodNetwork();
+
+// This method builds a stack of PacketPipes to emulate a reasonably
 // good wifi network. ~20mbit, 1% packet loss, ~3ms latency.
 scoped_ptr<PacketPipe> WifiNetwork();
 
