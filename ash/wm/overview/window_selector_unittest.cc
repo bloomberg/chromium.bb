@@ -1138,4 +1138,61 @@ TEST_F(WindowSelectorTest, TextFilteringSelection) {
    EXPECT_EQ(GetSelectedWindow(), window2.get());
 }
 
+// Tests clicking on the desktop itself to cancel overview mode.
+TEST_F(WindowSelectorTest, CancelOverviewOnMouseClick) {
+  // Overview disabled by default.
+  EXPECT_FALSE(IsSelecting());
+
+  // Point and bounds selected so that they don't intersect. This causes
+  // events located at the point to be passed to DesktopBackgroundController,
+  // and not the window.
+  gfx::Point point_in_background_page(0, 0);
+  gfx::Rect bounds(10, 10, 100, 100);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  // Move mouse to point in the background page. Sending an event here will pass
+  // it to the DesktopBackgroundController in both regular and overview mode.
+  generator.MoveMouseTo(point_in_background_page);
+
+  // Clicking on the background page while not in overview should not toggle
+  // overview.
+  generator.ClickLeftButton();
+  EXPECT_FALSE(IsSelecting());
+
+  // Switch to overview mode.
+  ToggleOverview();
+  ASSERT_TRUE(IsSelecting());
+
+  // Click should now exit overview mode.
+  generator.ClickLeftButton();
+  EXPECT_FALSE(IsSelecting());
+}
+
+// Tests tapping on the desktop itself to cancel overview mode.
+TEST_F(WindowSelectorTest, CancelOverviewOnTap) {
+  // Overview disabled by default.
+  EXPECT_FALSE(IsSelecting());
+
+  // Point and bounds selected so that they don't intersect. This causes
+  // events located at the point to be passed to DesktopBackgroundController,
+  // and not the window.
+  gfx::Point point_in_background_page(0, 0);
+  gfx::Rect bounds(10, 10, 100, 100);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  ui::test::EventGenerator& generator = GetEventGenerator();
+
+  // Tapping on the background page while not in overview should not toggle
+  // overview.
+  generator.GestureTapAt(point_in_background_page);
+  EXPECT_FALSE(IsSelecting());
+
+  // Switch to overview mode.
+  ToggleOverview();
+  ASSERT_TRUE(IsSelecting());
+
+  // Tap should now exit overview mode.
+  generator.GestureTapAt(point_in_background_page);
+  EXPECT_FALSE(IsSelecting());
+}
+
 }  // namespace ash
