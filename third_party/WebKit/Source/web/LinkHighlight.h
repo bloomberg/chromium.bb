@@ -30,7 +30,7 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/Path.h"
-#include "public/platform/WebAnimationDelegate.h"
+#include "public/platform/WebCompositorAnimationDelegate.h"
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebContentLayerClient.h"
 #include "public/platform/WebLayer.h"
@@ -49,7 +49,7 @@ struct WebFloatRect;
 struct WebRect;
 class WebViewImpl;
 
-class LinkHighlight FINAL : public WebContentLayerClient, public WebAnimationDelegate, blink::LinkHighlightClient {
+class LinkHighlight FINAL : public WebContentLayerClient, public WebCompositorAnimationDelegate, blink::LinkHighlightClient {
 public:
     static PassOwnPtr<LinkHighlight> create(blink::Node*, WebViewImpl*);
     virtual ~LinkHighlight();
@@ -63,9 +63,9 @@ public:
     virtual void paintContents(WebCanvas*, const WebRect& clipRect, bool canPaintLCDText, WebFloatRect& opaque,
         WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) OVERRIDE;
 
-    // WebAnimationDelegate implementation.
-    virtual void notifyAnimationStarted(double monotonicTime, blink::WebAnimation::TargetProperty) OVERRIDE;
-    virtual void notifyAnimationFinished(double monotonicTime, blink::WebAnimation::TargetProperty) OVERRIDE;
+    // WebCompositorAnimationDelegate implementation.
+    virtual void notifyAnimationStarted(double monotonicTime, blink::WebCompositorAnimation::TargetProperty) OVERRIDE;
+    virtual void notifyAnimationFinished(double monotonicTime, blink::WebCompositorAnimation::TargetProperty) OVERRIDE;
 
     // LinkHighlightClient inplementation.
     virtual void invalidate() OVERRIDE;
