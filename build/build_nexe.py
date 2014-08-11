@@ -478,9 +478,10 @@ class Builder(object):
 
     # Start goma support from os/arch/toolname that have been tested.
     # Set NO_NACL_GOMA=true to force to avoid using goma.
+    default_no_nacl_goma = True if pynacl.platform.IsWindows() else False
     if (arch not in ['x86-32', 'x86-64', 'pnacl']
         or toolname not in ['newlib', 'glibc']
-        or IsEnvFlagTrue('NO_NACL_GOMA')):
+        or IsEnvFlagTrue('NO_NACL_GOMA', default=default_no_nacl_goma)):
       return {}
 
     goma_config = {}
@@ -766,8 +767,7 @@ class Builder(object):
       tls_edit_cmd = [FixPath(self.tls_edit), link_out, out]
       tls_edit_err = self.Run(tls_edit_cmd, out)
       if tls_edit_err:
-        raise Error('FAILED with %d: %s' % (tls_edit_err,
-                                            ' '.join(tls_edit_cmd)))
+        raise Error('FAILED with %d: %s' % (err, ' '.join(tls_edit_cmd)))
 
     return out
 
