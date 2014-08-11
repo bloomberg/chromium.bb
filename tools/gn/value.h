@@ -55,10 +55,6 @@ class Value {
   const ParseNode* origin() const { return origin_; }
   void set_origin(const ParseNode* o) { origin_ = o; }
 
-  // Sets the origin of this value, recursively going into list child
-  // values and also setting their origins.
-  void RecursivelySetOrigin(const ParseNode* o);
-
   bool& boolean_value() {
     DCHECK(type_ == BOOLEAN);
     return boolean_value_;
