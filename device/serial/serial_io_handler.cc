@@ -148,7 +148,7 @@ bool SerialIoHandler::IsWritePending() const {
 
 void SerialIoHandler::CancelRead(serial::ReceiveError reason) {
   DCHECK(CalledOnValidThread());
-  if (IsReadPending()) {
+  if (IsReadPending() && !read_canceled_) {
     read_canceled_ = true;
     read_cancel_reason_ = reason;
     CancelReadImpl();
@@ -157,7 +157,7 @@ void SerialIoHandler::CancelRead(serial::ReceiveError reason) {
 
 void SerialIoHandler::CancelWrite(serial::SendError reason) {
   DCHECK(CalledOnValidThread());
-  if (IsWritePending()) {
+  if (IsWritePending() && !write_canceled_) {
     write_canceled_ = true;
     write_cancel_reason_ = reason;
     CancelWriteImpl();
