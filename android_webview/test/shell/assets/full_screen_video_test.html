@@ -8,9 +8,12 @@ function goFullscreen(id) {
   }
 }
 
-addEventListener('Loaded', function() {
+addEventListener('DOMContentLoaded', function() {
     document.getElementById('video').addEventListener('play', function() {
         console.log('Video Played');
+    }, false);
+    document.addEventListener('webkitfullscreenerror', function() {
+        javaFullScreenErrorObserver.notifyJava();
     }, false);
 }, false);
 </script>

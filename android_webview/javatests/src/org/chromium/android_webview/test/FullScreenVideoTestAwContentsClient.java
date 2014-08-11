@@ -65,6 +65,10 @@ public class FullScreenVideoTestAwContentsClient extends TestAwContentsClient {
         return mCustomView;
     }
 
+    public boolean wasCustomViewShownCalled() {
+        return mOnShowCustomViewCallbackHelper.getCallCount() > 0;
+    }
+
     public void waitForCustomViewShown() throws TimeoutException, InterruptedException {
         mOnShowCustomViewCallbackHelper.waitForCallback(0, 1, WAITING_SECONDS, TimeUnit.SECONDS);
     }

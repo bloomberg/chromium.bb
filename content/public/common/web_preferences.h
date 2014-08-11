@@ -158,6 +158,7 @@ struct CONTENT_EXPORT WebPreferences {
   float device_scale_adjustment;
   bool force_enable_zoom;
   bool disallow_fullscreen_for_non_media_elements;
+  bool fullscreen_supported;
   bool double_tap_to_zoom_enabled;
   bool user_gesture_required_for_media_playback;
   GURL default_video_poster_url;

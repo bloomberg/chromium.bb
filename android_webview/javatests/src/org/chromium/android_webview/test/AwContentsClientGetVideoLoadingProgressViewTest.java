@@ -62,6 +62,7 @@ public class AwContentsClientGetVideoLoadingProgressViewTest extends AwTestBase
         final AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
+        awContents.getSettings().setFullscreenSupported(true);
         enableJavaScriptOnUiThread(awContents);
         VideoTestWebServer webServer = new VideoTestWebServer(
                 getInstrumentation().getTargetContext());

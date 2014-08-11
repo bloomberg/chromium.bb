@@ -1130,6 +1130,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setDeviceScaleAdjustment(prefs.device_scale_adjustment);
   settings->setDisallowFullscreenForNonMediaElements(
       prefs.disallow_fullscreen_for_non_media_elements);
+  settings->setFullscreenSupported(prefs.fullscreen_supported);
   web_view->setIgnoreViewportTagScaleLimits(prefs.force_enable_zoom);
   settings->setAutoZoomFocusedNodeToLegibleScale(true);
   settings->setDoubleTapToZoomEnabled(prefs.double_tap_to_zoom_enabled);

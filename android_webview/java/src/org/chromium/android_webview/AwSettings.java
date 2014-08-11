@@ -111,6 +111,7 @@ public class AwSettings {
     private boolean mShouldFocusFirstNode = true;
     private boolean mGeolocationEnabled = true;
     private boolean mAutoCompleteEnabled = true;
+    private boolean mFullscreenSupported = false;
     private boolean mSupportZoom = true;
     private boolean mBuiltInZoomControls = false;
     private boolean mDisplayZoomControls = true;
@@ -459,6 +460,21 @@ public class AwSettings {
     private boolean getEnableSupportedHardwareAcceleratedFeaturesLocked() {
         assert Thread.holdsLock(mAwSettingsLock);
         return mEnableSupportedHardwareAcceleratedFeatures;
+    }
+
+    public void setFullscreenSupported(boolean supported) {
+        synchronized (mAwSettingsLock) {
+            if (mFullscreenSupported != supported) {
+                mFullscreenSupported = supported;
+                mEventHandler.updateWebkitPreferencesLocked();
+            }
+        }
+    }
+
+    @CalledByNative
+    private boolean getFullscreenSupportedLocked() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        return mFullscreenSupported;
     }
 
     /**
