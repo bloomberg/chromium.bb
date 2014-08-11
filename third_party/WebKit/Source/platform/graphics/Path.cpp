@@ -277,7 +277,7 @@ WindRule Path::windRule() const
 
 void Path::setWindRule(const WindRule rule)
 {
-    m_path.setFillType(static_cast<SkPath::FillType>(rule));
+    m_path.setFillType(WebCoreWindRuleToSkFillType(rule));
 }
 
 void Path::moveTo(const FloatPoint& point)
