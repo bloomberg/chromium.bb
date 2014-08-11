@@ -56,7 +56,7 @@ void RegisterInvalidParamHandler() {
   _set_new_mode(1);
 }
 
-void SetupCRT(const CommandLine& command_line) {
+void SetupCRT(const base::CommandLine& command_line) {
 #if defined(_CRTDBG_MAP_ALLOC)
   _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
   _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);

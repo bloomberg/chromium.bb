@@ -194,7 +194,8 @@ bool UtilityProcessHostImpl::StartProcess() {
     in_process_thread_.reset(g_utility_main_thread_factory(channel_id));
     in_process_thread_->Start();
   } else {
-    const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+    const base::CommandLine& browser_command_line =
+        *base::CommandLine::ForCurrentProcess();
     int child_flags = child_flags_;
 
 #if defined(OS_POSIX)
@@ -216,7 +217,7 @@ bool UtilityProcessHostImpl::StartProcess() {
       return false;
     }
 
-    CommandLine* cmd_line = new CommandLine(exe_path);
+    base::CommandLine* cmd_line = new base::CommandLine(exe_path);
     cmd_line->AppendSwitchASCII(switches::kProcessType,
                                 switches::kUtilityProcess);
     cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);

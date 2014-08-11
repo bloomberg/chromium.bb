@@ -738,7 +738,8 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
       quality_switch = switches::kTabCaptureUpscaleQuality;
 
     std::string switch_value =
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(quality_switch);
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            quality_switch);
     if (switch_value == "fast")
       quality = GLHelper::SCALER_QUALITY_FAST;
     else if (switch_value == "good")

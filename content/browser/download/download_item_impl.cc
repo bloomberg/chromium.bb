@@ -93,7 +93,7 @@ static void DownloadFileCancel(scoped_ptr<DownloadFile> download_file) {
 }
 
 bool IsDownloadResumptionEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableDownloadResumption);
 }
 
@@ -1682,7 +1682,8 @@ void DownloadItemImpl::ResumeInterruptedDownload() {
 
   // If the flag for downloads resumption isn't enabled, ignore
   // this request.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kEnableDownloadResumption))
     return;
 

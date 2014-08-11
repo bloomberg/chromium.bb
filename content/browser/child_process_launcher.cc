@@ -76,7 +76,7 @@ class ChildProcessLauncher::Context
 
   void Launch(
       SandboxedProcessLauncherDelegate* delegate,
-      CommandLine* cmd_line,
+      base::CommandLine* cmd_line,
       int child_process_id,
       Client* client) {
     client_ = client;
@@ -172,7 +172,7 @@ class ChildProcessLauncher::Context
       BrowserThread::ID client_thread_id,
       int child_process_id,
       SandboxedProcessLauncherDelegate* delegate,
-      CommandLine* cmd_line) {
+      base::CommandLine* cmd_line) {
     scoped_ptr<SandboxedProcessLauncherDelegate> delegate_deleter(delegate);
 #if defined(OS_WIN)
     bool launch_elevated = delegate->ShouldLaunchElevated();
@@ -186,7 +186,7 @@ class ChildProcessLauncher::Context
     base::EnvironmentMap env = delegate->GetEnvironment();
     int ipcfd = delegate->GetIpcFd();
 #endif
-    scoped_ptr<CommandLine> cmd_line_deleter(cmd_line);
+    scoped_ptr<base::CommandLine> cmd_line_deleter(cmd_line);
     base::TimeTicks begin_launch_time = base::TimeTicks::Now();
 
 #if defined(OS_WIN)
@@ -436,7 +436,7 @@ class ChildProcessLauncher::Context
 
 ChildProcessLauncher::ChildProcessLauncher(
     SandboxedProcessLauncherDelegate* delegate,
-    CommandLine* cmd_line,
+    base::CommandLine* cmd_line,
     int child_process_id,
     Client* client) {
   context_ = new Context();

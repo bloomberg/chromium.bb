@@ -93,7 +93,7 @@ ChildProcessHost* ChildProcessHost::Create(ChildProcessHostDelegate* delegate) {
 base::FilePath ChildProcessHost::GetChildPath(int flags) {
   base::FilePath child_path;
 
-  child_path = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+  child_path = base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
       switches::kBrowserSubprocessPath);
 
 #if defined(OS_LINUX)

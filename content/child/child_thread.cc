@@ -193,12 +193,12 @@ void QuitMainThreadMessageLoop() {
 }  // namespace
 
 ChildThread::Options::Options()
-    : channel_name(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+    : channel_name(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID)),
       use_mojo_channel(false) {}
 
 ChildThread::Options::Options(bool mojo)
-    : channel_name(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+    : channel_name(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID)),
       use_mojo_channel(mojo) {}
 
@@ -297,7 +297,8 @@ void ChildThread::Init(const Options& options) {
   channel_->AddFilter(quota_message_filter_->GetFilter());
   channel_->AddFilter(service_worker_message_filter_->GetFilter());
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess)) {
     // In single process mode, browser-side tracing will cover the whole
     // process including renderers.
     channel_->AddFilter(new tracing::ChildTraceMessageFilter(
@@ -317,13 +318,13 @@ void ChildThread::Init(const Options& options) {
 #if defined(OS_POSIX)
   // Check that --process-type is specified so we don't do this in unit tests
   // and single-process mode.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessType))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessType))
     channel_->AddFilter(new SuicideOnChannelErrorFilter());
 #endif
 
   int connection_timeout = kConnectionTimeoutS;
   std::string connection_override =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kIPCConnectionTimeout);
   if (!connection_override.empty()) {
     int temp;
@@ -526,7 +527,7 @@ void ChildThread::OnDumpHandles() {
 #if defined(OS_WIN)
   scoped_refptr<HandleEnumerator> handle_enum(
       new HandleEnumerator(
-          CommandLine::ForCurrentProcess()->HasSwitch(
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kAuditAllHandles)));
   handle_enum->EnumerateHandles();
   Send(new ChildProcessHostMsg_DumpHandlesDone);

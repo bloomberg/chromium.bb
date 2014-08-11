@@ -225,7 +225,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     audio_manager_.reset(
         new media::MockAudioManager(base::MessageLoopProxy::current()));
     // Make sure we use fake devices to avoid long delays.
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
     // Create our own MediaStreamManager.
     media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));

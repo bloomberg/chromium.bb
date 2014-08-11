@@ -160,8 +160,9 @@ bool PluginProcessHost::Init(const WebPluginInfo& info) {
 
   // Build command line for plugin. When we have a plugin launcher, we can't
   // allow "self" on linux and we need the real file path.
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  CommandLine::StringType plugin_launcher =
+  const base::CommandLine& browser_command_line =
+      *base::CommandLine::ForCurrentProcess();
+  base::CommandLine::StringType plugin_launcher =
       browser_command_line.GetSwitchValueNative(switches::kPluginLauncher);
 
 #if defined(OS_MACOSX)
@@ -180,7 +181,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info) {
   if (exe_path.empty())
     return false;
 
-  CommandLine* cmd_line = new CommandLine(exe_path);
+  base::CommandLine* cmd_line = new base::CommandLine(exe_path);
   // Put the process type and plugin path first so they're easier to see
   // in process listings using native process management tools.
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kPluginProcess);

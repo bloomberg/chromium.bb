@@ -1029,7 +1029,7 @@ INSTANTIATE_TEST_CASE_P(
 
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);  // Removes gtest-specific args.
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
 
   base::ShadowingAtExitManager at_exit_manager;
   scoped_ptr<base::FilePath::StringType> test_stream_data(
@@ -1043,11 +1043,11 @@ int main(int argc, char** argv) {
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   CHECK(logging::InitLogging(settings));
 
-  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   DCHECK(cmd_line);
 
-  CommandLine::SwitchMap switches = cmd_line->GetSwitches();
-  for (CommandLine::SwitchMap::const_iterator it = switches.begin();
+  base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
+  for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end();
        ++it) {
     if (it->first == "test_stream_data") {

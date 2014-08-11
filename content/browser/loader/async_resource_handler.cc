@@ -41,7 +41,7 @@ static int kMaxAllocationSize = 1024 * 32;
 
 void GetNumericArg(const std::string& name, int* result) {
   const std::string& value =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(name);
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(name);
   if (!value.empty())
     base::StringToInt(value, result);
 }

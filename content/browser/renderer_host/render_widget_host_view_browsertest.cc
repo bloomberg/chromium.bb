@@ -778,7 +778,7 @@ class CompositingRenderWidgetHostViewTabCaptureHighDPI
   CompositingRenderWidgetHostViewTabCaptureHighDPI() : kScale(2.f) {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    CommandLine* cmd = CommandLine::ForCurrentProcess();
+    base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
     cmd->AppendSwitchASCII(switches::kForceDeviceScaleFactor,
                            base::StringPrintf("%f", scale()));
 #if defined(OS_WIN)

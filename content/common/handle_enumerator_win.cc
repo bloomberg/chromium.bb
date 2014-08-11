@@ -52,7 +52,7 @@ const size_t kMaxHandleNameLength = 1024;
 void HandleEnumerator::EnumerateHandles() {
   sandbox::HandleTable handles;
   std::string process_type =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessType);
   base::string16 output = ASCIIToUTF16(process_type);
   output.append(ASCIIToUTF16(" process - Handles at shutdown:\n"));

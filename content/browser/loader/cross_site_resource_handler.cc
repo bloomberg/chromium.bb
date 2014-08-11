@@ -194,7 +194,8 @@ bool CrossSiteResourceHandler::OnNormalResponseStarted(
   // or for WebUI processes for now, since pages like the NTP host multiple
   // cross-site WebUI iframes.
   if (!should_transfer &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess) &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess) &&
       !ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           info->GetChildID())) {
     return DeferForNavigationPolicyCheck(info, response, defer);

@@ -36,7 +36,7 @@ PluginList* PluginList::Singleton() {
 
 // static
 bool PluginList::DebugPluginLoading() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDebugPluginLoading);
 }
 

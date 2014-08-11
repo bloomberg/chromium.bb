@@ -200,7 +200,7 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock(DBusAPI api) {
       //     reason:        The reason for the inhibit
       //     flags:         Flags that spefify what should be inhibited
       message_writer->AppendString(
-          CommandLine::ForCurrentProcess()->GetProgram().value());
+          base::CommandLine::ForCurrentProcess()->GetProgram().value());
       message_writer->AppendUint32(0);  // should be toplevel_xid
       message_writer->AppendString(reason_);
       {
@@ -228,7 +228,7 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock(DBusAPI api) {
       //     app_id:        The application identifier
       //     reason:        The reason for the inhibit
       message_writer->AppendString(
-          CommandLine::ForCurrentProcess()->GetProgram().value());
+          base::CommandLine::ForCurrentProcess()->GetProgram().value());
       message_writer->AppendString(reason_);
       break;
   }

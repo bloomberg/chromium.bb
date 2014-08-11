@@ -132,13 +132,14 @@ void BrowserChildProcessHostImpl::TerminateAll() {
 
 void BrowserChildProcessHostImpl::Launch(
     SandboxedProcessLauncherDelegate* delegate,
-    CommandLine* cmd_line) {
+    base::CommandLine* cmd_line) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(
       cmd_line, data_.id);
 
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& browser_command_line =
+      *base::CommandLine::ForCurrentProcess();
   static const char* kForwardSwitches[] = {
     switches::kDisableLogging,
     switches::kEnableLogging,

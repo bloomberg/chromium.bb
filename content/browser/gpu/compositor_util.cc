@@ -48,7 +48,8 @@ struct GpuFeatureInfo {
 };
 
 const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
 
   const GpuFeatureInfo kGpuFeatureInfo[] = {
@@ -163,7 +164,8 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
 }  // namespace
 
 bool IsPinchVirtualViewportEnabled() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   // Command line switches take precedence over platform default.
   if (command_line.HasSwitch(cc::switches::kDisablePinchVirtualViewport))
@@ -179,7 +181,8 @@ bool IsPinchVirtualViewportEnabled() {
 }
 
 bool IsDelegatedRendererEnabled() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   bool enabled = false;
 
 #if defined(USE_AURA) || defined(OS_MACOSX)
@@ -194,7 +197,8 @@ bool IsDelegatedRendererEnabled() {
 }
 
 bool IsImplSidePaintingEnabled() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   if (command_line.HasSwitch(switches::kDisableImplSidePainting))
     return false;
@@ -212,7 +216,8 @@ bool IsImplSidePaintingEnabled() {
 }
 
 bool IsGpuRasterizationEnabled() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   if (!IsImplSidePaintingEnabled())
     return false;
@@ -230,7 +235,8 @@ bool IsGpuRasterizationEnabled() {
 }
 
 bool IsForceGpuRasterizationEnabled() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   if (!IsImplSidePaintingEnabled())
     return false;

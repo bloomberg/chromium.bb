@@ -177,7 +177,8 @@ bool CreateIndex(sql::Connection* db, const IndexInfo& info) {
 }
 
 std::string GetActiveExperimentFlags() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kEnableExecutableHandlers))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kEnableExecutableHandlers))
     return std::string("executableHandlersEnabled");
   return std::string();
 }
@@ -712,7 +713,7 @@ bool AppCacheDatabase::InsertNamespace(
   int type_with_executable_bit = record->namespace_.type;
   if (record->namespace_.is_executable) {
     type_with_executable_bit |= 0x8000000;
-    DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+    DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
         kEnableExecutableHandlers));
   }
 
@@ -976,7 +977,8 @@ void AppCacheDatabase::ReadNamespaceRecord(
   record->namespace_.is_executable =
       (type_with_executable_bit & 0x80000000) != 0;
   DCHECK(!record->namespace_.is_executable ||
-      CommandLine::ForCurrentProcess()->HasSwitch(kEnableExecutableHandlers));
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kEnableExecutableHandlers));
 }
 
 void AppCacheDatabase::ReadOnlineWhiteListRecord(

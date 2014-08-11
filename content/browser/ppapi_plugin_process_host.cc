@@ -70,8 +70,9 @@ class PpapiPluginSandboxedProcessLauncherDelegate
 
 #elif defined(OS_POSIX)
   virtual bool ShouldUseZygote() OVERRIDE {
-    const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-    CommandLine::StringType plugin_launcher = browser_command_line
+    const base::CommandLine& browser_command_line =
+        *base::CommandLine::ForCurrentProcess();
+    base::CommandLine::StringType plugin_launcher = browser_command_line
         .GetSwitchValueNative(switches::kPpapiPluginLauncher);
     return !is_broker_ && plugin_launcher.empty() && info_.is_sandboxed;
   }
@@ -288,8 +289,9 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
     return false;
   }
 
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  CommandLine::StringType plugin_launcher =
+  const base::CommandLine& browser_command_line =
+      *base::CommandLine::ForCurrentProcess();
+  base::CommandLine::StringType plugin_launcher =
       browser_command_line.GetSwitchValueNative(switches::kPpapiPluginLauncher);
 
 #if defined(OS_LINUX)
@@ -304,7 +306,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
     return false;
   }
 
-  CommandLine* cmd_line = new CommandLine(exe_path);
+  base::CommandLine* cmd_line = new base::CommandLine(exe_path);
   cmd_line->AppendSwitchASCII(switches::kProcessType,
                               is_broker_ ? switches::kPpapiBrokerProcess
                                          : switches::kPpapiPluginProcess);

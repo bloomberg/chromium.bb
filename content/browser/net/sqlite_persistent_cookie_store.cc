@@ -1325,8 +1325,8 @@ net::CookieStore* CreateCookieStore(const CookieStoreConfig& config) {
   //
   // TODO(ajwong): Remove the InitializedForCurrentProcess() check
   // once http://crbug.com/331424 is resolved.
-  if (CommandLine::InitializedForCurrentProcess() &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::InitializedForCurrentProcess() &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableFileCookies)) {
     cookie_monster->SetEnableFileScheme(true);
   }

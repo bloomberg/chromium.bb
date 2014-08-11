@@ -14,7 +14,8 @@
 namespace content {
 
 bool IsPinchToZoomEnabled() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   // --disable-pinch should always disable pinch
   if (command_line.HasSwitch(switches::kDisablePinch))

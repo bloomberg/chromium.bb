@@ -110,9 +110,10 @@ bool HandleAsanDebugURL(const GURL& url) {
 bool HandleDebugURL(const GURL& url, PageTransition transition) {
   // Ensure that the user explicitly navigated to this URL, unless
   // kEnableGpuBenchmarking is enabled by Telemetry.
-  bool is_telemetry_navigation = CommandLine::ForCurrentProcess()->HasSwitch(
-                                     cc::switches::kEnableGpuBenchmarking) &&
-                                 (transition & PAGE_TRANSITION_TYPED);
+  bool is_telemetry_navigation =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          cc::switches::kEnableGpuBenchmarking) &&
+      (transition & PAGE_TRANSITION_TYPED);
 
   if (!(transition & PAGE_TRANSITION_FROM_ADDRESS_BAR) &&
       !is_telemetry_navigation)

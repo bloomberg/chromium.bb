@@ -317,7 +317,8 @@ void TracingUI::OnMonitoringStateChanged(bool is_monitoring) {
 }
 
 void TracingUI::DoUpload(const base::ListValue* args) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   std::string upload_url = kUploadURL;
   if (command_line.HasSwitch(switches::kTraceUploadURL)) {
     upload_url =

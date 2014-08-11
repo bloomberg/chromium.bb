@@ -272,7 +272,7 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
       if (type == L"return") {
         verb = RETURN;
       } else if (type == L"execute" &&
-                 CommandLine::ForCurrentProcess()->HasSwitch(
+                 base::CommandLine::ForCurrentProcess()->HasSwitch(
                     kEnableExecutableHandlers)) {
         verb = EXECUTE;
       }

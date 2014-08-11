@@ -114,7 +114,7 @@ TouchEventQueue::Config GetTouchEventQueueConfig() {
 
 TouchEventQueue::TouchScrollingMode GetTouchScrollingMode() {
   std::string modeString =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kTouchScrollingMode);
   if (modeString == switches::kTouchScrollingModeAsyncTouchmove)
     return TouchEventQueue::TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE;

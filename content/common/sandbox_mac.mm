@@ -526,7 +526,8 @@ bool Sandbox::EnableSandbox(int sandbox_type,
 
   // Enable verbose logging if enabled on the command line. (See common.sb
   // for details).
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   bool enable_logging =
       command_line->HasSwitch(switches::kEnableSandboxLogging);;
   if (enable_logging) {

@@ -350,7 +350,7 @@ TEST(VaapiH264DecoderTest, TestDecode) {
 
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);  // Removes gtest-specific args.
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
 
   // Needed to enable DVLOG through --vmodule.
   logging::LoggingSettings settings;
@@ -358,11 +358,11 @@ int main(int argc, char** argv) {
   CHECK(logging::InitLogging(settings));
 
   // Process command line.
-  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   CHECK(cmd_line);
 
-  CommandLine::SwitchMap switches = cmd_line->GetSwitches();
-  for (CommandLine::SwitchMap::const_iterator it = switches.begin();
+  base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
+  for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end();
        ++it) {
     if (it->first == "input_file") {

@@ -72,7 +72,7 @@ GpuProcessTransportFactory::GpuProcessTransportFactory()
   output_surface_proxy_ = new BrowserCompositorOutputSurfaceProxy(
       &output_surface_map_);
 #if defined(OS_CHROMEOS)
-  bool use_thread = !CommandLine::ForCurrentProcess()->HasSwitch(
+  bool use_thread = !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUIDisableThreadedCompositing);
 #else
   bool use_thread = false;
@@ -124,8 +124,9 @@ scoped_ptr<cc::OverlayCandidateValidator> CreateOverlayCandidateValidator(
 #if defined(USE_OZONE)
   ui::OverlayCandidatesOzone* overlay_candidates =
       ui::SurfaceFactoryOzone::GetInstance()->GetOverlayCandidates(widget);
-  if (overlay_candidates && CommandLine::ForCurrentProcess()->HasSwitch(
-                                switches::kEnableHardwareOverlays)) {
+  if (overlay_candidates &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableHardwareOverlays)) {
     return scoped_ptr<cc::OverlayCandidateValidator>(
         new OverlayCandidateValidatorOzone(widget, overlay_candidates));
   }

@@ -37,7 +37,8 @@ void ImageTransportFactory::InitializeForUnitTests(
   DCHECK(!g_initialized_for_unit_tests);
   g_initialized_for_unit_tests = true;
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnablePixelOutputInTests))
     g_disable_null_draw = new gfx::DisableNullDrawGLBindings;
 

@@ -334,7 +334,8 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
   TRACE_EVENT0("browser", "RenderViewHostImpl::GetWebkitPrefs");
   WebPreferences prefs;
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   prefs.javascript_enabled =
       !command_line.HasSwitch(switches::kDisableJavaScript);
@@ -808,7 +809,8 @@ void RenderViewHostImpl::AllowBindings(int bindings_flags) {
         static_cast<RenderProcessHostImpl*>(GetProcess());
     // --single-process only has one renderer.
     if (process->GetActiveViewCount() > 1 &&
-        !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
+        !base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kSingleProcess))
       return;
   }
 

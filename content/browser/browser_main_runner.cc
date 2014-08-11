@@ -146,7 +146,8 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     // The shutdown tracing got enabled in AttemptUserExit earlier, but someone
     // needs to write the result to disc. For that a dumper needs to get created
     // which will dump the traces to disc when it gets destroyed.
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    const base::CommandLine& command_line =
+        *base::CommandLine::ForCurrentProcess();
     scoped_ptr<BrowserShutdownProfileDumper> shutdown_profiler;
     if (command_line.HasSwitch(switches::kTraceShutdown)) {
       shutdown_profiler.reset(new BrowserShutdownProfileDumper(

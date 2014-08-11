@@ -109,7 +109,7 @@ std::vector<media::VideoEncodeAccelerator::SupportedProfile>
 VaapiVideoEncodeAccelerator::GetSupportedProfiles() {
   std::vector<SupportedProfile> profiles;
 
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (!cmd_line->HasSwitch(switches::kEnableVaapiAcceleratedVideoEncode))
     return profiles;
 

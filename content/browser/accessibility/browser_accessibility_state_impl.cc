@@ -62,7 +62,7 @@ BrowserAccessibilityStateImpl::~BrowserAccessibilityStateImpl() {
 }
 
 void BrowserAccessibilityStateImpl::OnScreenReaderDetected() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableRendererAccessibility)) {
     return;
   }
@@ -83,13 +83,13 @@ void BrowserAccessibilityStateImpl::ResetAccessibilityModeValue() {
   // On Windows 8, always enable accessibility for editable text controls
   // so we can show the virtual keyboard when one is enabled.
   if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableRendererAccessibility)) {
     accessibility_mode_ = AccessibilityModeEditableTextOnly;
   }
 #endif  // defined(OS_WIN)
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceRendererAccessibility)) {
     accessibility_mode_ = AccessibilityModeComplete;
   }
@@ -128,7 +128,7 @@ void BrowserAccessibilityStateImpl::UpdateHistograms() {
   UMA_HISTOGRAM_BOOLEAN("Accessibility.InvertedColors",
                         gfx::IsInvertedColorScheme());
   UMA_HISTOGRAM_BOOLEAN("Accessibility.ManuallyEnabled",
-                        CommandLine::ForCurrentProcess()->HasSwitch(
+                        base::CommandLine::ForCurrentProcess()->HasSwitch(
                             switches::kForceRendererAccessibility));
 }
 
@@ -139,7 +139,7 @@ void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
 
 void BrowserAccessibilityStateImpl::AddAccessibilityMode(
     AccessibilityMode mode) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableRendererAccessibility)) {
     return;
   }
@@ -152,7 +152,7 @@ void BrowserAccessibilityStateImpl::AddAccessibilityMode(
 
 void BrowserAccessibilityStateImpl::RemoveAccessibilityMode(
     AccessibilityMode mode) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceRendererAccessibility) &&
       mode == AccessibilityModeComplete) {
     return;

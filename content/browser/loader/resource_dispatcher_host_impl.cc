@@ -171,7 +171,8 @@ void AbortRequestBeforeItStarts(ResourceMessageFilter* filter,
 
 void SetReferrerForRequest(net::URLRequest* request, const Referrer& referrer) {
   if (!referrer.url.is_valid() ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoReferrers)) {
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kNoReferrers)) {
     request->SetReferrer(std::string());
   } else {
     request->SetReferrer(referrer.url.spec());
@@ -1160,7 +1161,8 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::CreateResourceHandler(
       request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME;
   // If we are using --site-per-process, install it for subframes as well.
   if (!is_swappable_navigation &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
     is_swappable_navigation =
         request_data.resource_type == RESOURCE_TYPE_SUB_FRAME;
   }

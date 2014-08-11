@@ -84,7 +84,7 @@ class WebRtcBrowserTest : public WebRtcContentBrowserTest {
       return;
     }
 
-    ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
+    ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kUseFakeDeviceForMediaStream))
             << "Must run with fake devices since the test will explicitly look "
             << "for the fake device signal.";
@@ -195,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, MAYBE_CanForwardRemoteStream) {
   // This test fails on Nexus 5 devices.
   // TODO(henrika): see http://crbug.com/362437 and http://crbug.com/359389
   // for details.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisableWebRtcHWDecoding);
 #endif
   MakeTypicalPeerConnectionCall(
@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, MAYBE_CanForwardRemoteStream720p) {
   // This test fails on Nexus 5 devices.
   // TODO(henrika): see http://crbug.com/362437 and http://crbug.com/359389
   // for details.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisableWebRtcHWDecoding);
 #endif
   const std::string javascript = GenerateGetUserMediaCall(

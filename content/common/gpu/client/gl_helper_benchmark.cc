@@ -296,7 +296,7 @@ TEST_F(GLHelperTest, DISABLED_ScaleTestImage) {
 // These tests needs to run against a proper GL environment, so we
 // need to set it up before we can run the tests.
 int main(int argc, char** argv) {
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
   base::TestSuite* suite = new content::ContentTestSuite(argc, argv);
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool pool;

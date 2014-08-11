@@ -276,7 +276,8 @@ void MachBroker::InvalidatePid(base::ProcessHandle pid) {
 
 // static
 std::string MachBroker::GetMachPortName() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   const bool is_child = command_line->HasSwitch(switches::kProcessType);
 
   // In non-browser (child) processes, use the parent's pid.

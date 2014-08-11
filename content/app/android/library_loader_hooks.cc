@@ -72,7 +72,7 @@ bool EnsureJniRegistered(JNIEnv* env) {
 }
 
 bool LibraryLoaded(JNIEnv* env, jclass clazz) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   if (command_line->HasSwitch(switches::kTraceStartup)) {
     base::debug::CategoryFilter category_filter(

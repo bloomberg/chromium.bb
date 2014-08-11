@@ -26,7 +26,8 @@ void SetContentCommandLineFlags(bool single_process,
     return;
   already_initialized = true;
 
-  CommandLine* parsed_command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* parsed_command_line =
+      base::CommandLine::ForCurrentProcess();
 
   int command_line_renderer_limit = -1;
   if (parsed_command_line->HasSwitch(switches::kRendererProcessLimit)) {

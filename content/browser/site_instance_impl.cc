@@ -337,7 +337,8 @@ void SiteInstanceImpl::RenderProcessHostDestroyed(RenderProcessHost* host) {
 void SiteInstanceImpl::LockToOrigin() {
   // We currently only restrict this process to a particular site if the
   // --enable-strict-site-isolation or --site-per-process flags are present.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableStrictSiteIsolation) ||
       command_line.HasSwitch(switches::kSitePerProcess)) {
     ChildProcessSecurityPolicyImpl* policy =

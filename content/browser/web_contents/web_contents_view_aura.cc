@@ -83,7 +83,7 @@ WebContentsView* CreateWebContentsView(
 namespace {
 
 bool IsScrollEndEffectEnabled() {
-  return CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+  return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kScrollEndEffect) == "1";
 }
 
@@ -790,7 +790,7 @@ void WebContentsViewAura::EndDrag(blink::WebDragOperationsMask ops) {
 
 void WebContentsViewAura::InstallOverscrollControllerDelegate(
     RenderWidgetHostViewAura* view) {
-  const std::string value = CommandLine::ForCurrentProcess()->
+  const std::string value = base::CommandLine::ForCurrentProcess()->
       GetSwitchValueASCII(switches::kOverscrollHistoryNavigation);
   if (value == "0") {
     navigation_overlay_.reset();

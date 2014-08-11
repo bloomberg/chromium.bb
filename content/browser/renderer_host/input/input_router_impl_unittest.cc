@@ -151,7 +151,7 @@ class InputRouterImplTest : public testing::Test {
     process_.reset(new MockRenderProcessHost(browser_context_.get()));
     client_.reset(new MockInputRouterClient());
     ack_handler_.reset(new MockInputAckHandler());
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(switches::kValidateInputEventStream);
     input_router_.reset(new InputRouterImpl(process_.get(),
                                             client_.get(),

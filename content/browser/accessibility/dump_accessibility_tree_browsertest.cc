@@ -146,10 +146,10 @@ class DumpAccessibilityTreeTest : public ContentBrowserTest {
     }
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
     ContentBrowserTest::SetUpCommandLine(command_line);
     // Enable <dialog>, which is used in some tests.
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
   }
 

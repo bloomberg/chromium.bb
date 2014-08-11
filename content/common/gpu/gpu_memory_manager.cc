@@ -62,11 +62,11 @@ GpuMemoryManager::~GpuMemoryManager() {
 void GpuMemoryManager::UpdateAvailableGpuMemory() {
   // If the value was overridden on the command line, use the specified value.
   static bool client_hard_limit_bytes_overridden =
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceGpuMemAvailableMb);
   if (client_hard_limit_bytes_overridden) {
     base::StringToUint64(
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kForceGpuMemAvailableMb),
         &client_hard_limit_bytes_);
     client_hard_limit_bytes_ *= 1024 * 1024;

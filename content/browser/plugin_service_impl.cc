@@ -178,7 +178,8 @@ void PluginServiceImpl::Init() {
   RegisterPepperPlugins();
 
   // Load any specified on the command line as well.
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   base::FilePath path =
       command_line->GetSwitchValuePath(switches::kLoadPlugin);
   if (!path.empty())

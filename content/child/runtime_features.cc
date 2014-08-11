@@ -81,7 +81,7 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
 }
 
 void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
-    const CommandLine& command_line) {
+    const base::CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures))
     WebRuntimeFeatures::enableExperimentalFeatures(true);
 

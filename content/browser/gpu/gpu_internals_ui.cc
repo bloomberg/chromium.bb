@@ -328,7 +328,7 @@ base::Value* GpuMessageHandler::OnRequestClientInfo(
 
   dict->SetString("version", GetContentClient()->GetProduct());
   dict->SetString("command_line",
-      CommandLine::ForCurrentProcess()->GetCommandLineString());
+      base::CommandLine::ForCurrentProcess()->GetCommandLineString());
   dict->SetString("operating_system",
                   base::SysInfo::OperatingSystemName() + " " +
                   base::SysInfo::OperatingSystemVersion());

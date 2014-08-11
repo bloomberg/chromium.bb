@@ -14,7 +14,8 @@
 namespace content {
 
 bool InitializeSandbox(sandbox::SandboxInterfaceInfo* sandbox_info) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   sandbox::BrokerServices* broker_services = sandbox_info->broker_services;
   if (broker_services) {
     if (!InitBrokerServices(broker_services))

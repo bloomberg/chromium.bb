@@ -104,7 +104,7 @@ void SendGpuProcessMessage(GpuProcessHost::GpuProcessKind kind,
 class GpuSandboxedProcessLauncherDelegate
     : public SandboxedProcessLauncherDelegate {
  public:
-  GpuSandboxedProcessLauncherDelegate(CommandLine* cmd_line,
+  GpuSandboxedProcessLauncherDelegate(base::CommandLine* cmd_line,
                                       ChildProcessHost* host)
 #if defined(OS_WIN)
       : cmd_line_(cmd_line) {}
@@ -216,7 +216,7 @@ class GpuSandboxedProcessLauncherDelegate
 
  private:
 #if defined(OS_WIN)
-  CommandLine* cmd_line_;
+  base::CommandLine* cmd_line_;
 #elif defined(OS_POSIX)
   int ipc_fd_;
 #endif  // OS_WIN
@@ -228,8 +228,10 @@ class GpuSandboxedProcessLauncherDelegate
 bool GpuProcessHost::ValidateHost(GpuProcessHost* host) {
   // The Gpu process is invalid if it's not using SwiftShader, the card is
   // blacklisted, and we can kill it and start over.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU) ||
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess) ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kInProcessGPU) ||
       (host->valid_ &&
        (host->swiftshader_rendering_ ||
         !GpuDataManagerImpl::GetInstance()->ShouldUseSwiftShader()))) {
@@ -337,8 +339,10 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
       initialized_(false),
       gpu_crash_recorded_(false),
       uma_memory_stats_received_(false) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess) ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kInProcessGPU)) {
     in_process_ = true;
   }
 
@@ -459,7 +463,7 @@ bool GpuProcessHost::Init() {
 
   if (in_process_) {
     DCHECK(g_gpu_main_thread_factory);
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(switches::kDisableGpuWatchdog);
 
     GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
@@ -572,7 +576,7 @@ void GpuProcessHost::EstablishGpuChannel(
     callback.Run(IPC::ChannelHandle(), gpu::GPUInfo());
   }
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGpuShaderDiskCache)) {
     CreateChannelCache(client_id);
   }
@@ -842,9 +846,10 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     return false;
   }
 
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& browser_command_line =
+      *base::CommandLine::ForCurrentProcess();
 
-  CommandLine::StringType gpu_launcher =
+  base::CommandLine::StringType gpu_launcher =
       browser_command_line.GetSwitchValueNative(switches::kGpuLauncher);
 
 #if defined(OS_LINUX)
@@ -858,7 +863,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
   if (exe_path.empty())
     return false;
 
-  CommandLine* cmd_line = new CommandLine(exe_path);
+  base::CommandLine* cmd_line = new base::CommandLine(exe_path);
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
 
@@ -982,7 +987,7 @@ void GpuProcessHost::RecordProcessCrash() {
   // Last time the GPU process crashed.
   static base::Time last_gpu_crash_time;
 
-  bool disable_crash_limit = CommandLine::ForCurrentProcess()->HasSwitch(
+  bool disable_crash_limit = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGpuProcessCrashLimit);
 
   // Ending only acts as a failure if the GPU process was actually started and

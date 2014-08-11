@@ -113,7 +113,8 @@ void UpdateStats(const gpu::GPUInfo& gpu_info,
     return;
   }
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   bool disabled = false;
 
   // Use entry 0 to capture the total number of times that data
@@ -265,7 +266,7 @@ void GpuDataManagerImplPrivate::InitializeForTesting(
 bool GpuDataManagerImplPrivate::IsFeatureBlacklisted(int feature) const {
 #if defined(OS_CHROMEOS)
   if (feature == gpu::GPU_FEATURE_TYPE_PANEL_FITTING &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisablePanelFitting)) {
     return true;
   }
@@ -323,7 +324,7 @@ bool GpuDataManagerImplPrivate::GpuAccessAllowed(
   if (card_blacklisted_) {
     if (reason) {
       *reason = "GPU access is disabled ";
-      CommandLine* command_line = CommandLine::ForCurrentProcess();
+      base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
       if (command_line->HasSwitch(switches::kDisableGpu))
         *reason += "through commandline switch --disable-gpu.";
       else
@@ -477,7 +478,8 @@ void GpuDataManagerImplPrivate::Initialize() {
     return;
   }
 
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kSkipGpuDataLoading))
     return;
 
@@ -535,7 +537,7 @@ void GpuDataManagerImplPrivate::UpdateGpuInfoHelper() {
         gpu::GpuControlList::kOsAny, std::string(), gpu_info_);
   }
   gpu::GpuDriverBugList::AppendWorkaroundsFromCommandLine(
-      &gpu_driver_bugs_, *CommandLine::ForCurrentProcess());
+      &gpu_driver_bugs_, *base::CommandLine::ForCurrentProcess());
 
   // We have to update GpuFeatureType before notify all the observers.
   NotifyGpuInfoUpdate();
@@ -561,7 +563,7 @@ void GpuDataManagerImplPrivate::UpdateVideoMemoryUsageStats(
 }
 
 void GpuDataManagerImplPrivate::AppendRendererCommandLine(
-    CommandLine* command_line) const {
+    base::CommandLine* command_line) const {
   DCHECK(command_line);
 
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE) &&
@@ -580,13 +582,14 @@ void GpuDataManagerImplPrivate::AppendRendererCommandLine(
 }
 
 void GpuDataManagerImplPrivate::AppendGpuCommandLine(
-    CommandLine* command_line) const {
+    base::CommandLine* command_line) const {
   DCHECK(command_line);
 
   std::string use_gl =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kUseGL);
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kUseGL);
   base::FilePath swiftshader_path =
-      CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           switches::kSwiftShaderPath);
   if (gpu_driver_bugs_.find(gpu::DISABLE_D3D11) != gpu_driver_bugs_.end())
     command_line->AppendSwitch(switches::kDisableD3D11);
@@ -645,7 +648,7 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
 }
 
 void GpuDataManagerImplPrivate::AppendPluginCommandLine(
-    CommandLine* command_line) const {
+    base::CommandLine* command_line) const {
   DCHECK(command_line);
 
 #if defined(OS_MACOSX)
@@ -692,7 +695,7 @@ void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
 #endif
 
   if (!IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableAcceleratedVideoDecode)) {
     prefs->pepper_accelerated_video_decode_enabled = true;
   }
@@ -871,7 +874,8 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(
       gpu_process_accessible_(true),
       finalized_(false) {
   DCHECK(owner_);
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableGpu))
     DisableHardwareAcceleration();
 
@@ -897,7 +901,7 @@ void GpuDataManagerImplPrivate::InitializeImpl(
     const std::string& gpu_driver_bug_list_json,
     const gpu::GPUInfo& gpu_info) {
   const bool log_gpu_control_list_decisions =
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kLogGpuControlListDecisions);
 
   if (!gpu_blacklist_json.empty()) {
@@ -962,7 +966,7 @@ void GpuDataManagerImplPrivate::EnableSwiftShaderIfNecessary() {
   if (!GpuAccessAllowed(NULL) ||
       blacklisted_features_.count(gpu::GPU_FEATURE_TYPE_WEBGL)) {
     if (!swiftshader_path_.empty() &&
-        !CommandLine::ForCurrentProcess()->HasSwitch(
+        !base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kDisableSoftwareRasterizer))
       use_swiftshader_ = true;
   }

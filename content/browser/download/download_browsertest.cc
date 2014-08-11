@@ -1070,7 +1070,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownAtRelease) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeInterruptedDownload) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
   ASSERT_TRUE(test_server()->Start());
 
@@ -1137,7 +1137,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeInterruptedDownload) {
 
 // Confirm restart fallback happens if a range request is bounced.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeInterruptedDownloadNoRange) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
   ASSERT_TRUE(test_server()->Start());
 
@@ -1186,7 +1186,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeInterruptedDownloadNoRange) {
 // Confirm restart fallback happens if a precondition is failed.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                        ResumeInterruptedDownloadBadPrecondition) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
   ASSERT_TRUE(test_server()->Start());
 
@@ -1238,7 +1238,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 // Confirm we don't try to resume if we don't have a verifier.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                        ResumeInterruptedDownloadNoVerifiers) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
   ASSERT_TRUE(test_server()->Start());
 
@@ -1282,7 +1282,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithDeletedFile) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
   ASSERT_TRUE(test_server()->Start());
 
@@ -1333,7 +1333,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithDeletedFile) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithFileInitError) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
   base::FilePath file(FILE_PATH_LITERAL("download-test.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
@@ -1384,7 +1384,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithFileInitError) {
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                        ResumeWithFileIntermediateRenameError) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
   base::FilePath file(FILE_PATH_LITERAL("download-test.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
@@ -1436,7 +1436,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithFileFinalRenameError) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
   base::FilePath file(FILE_PATH_LITERAL("download-test.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
@@ -1489,7 +1489,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithFileFinalRenameError) {
 // An interrupted download should remove the intermediate file when it is
 // cancelled.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelInterruptedDownload) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
   ASSERT_TRUE(test_server()->Start());
 
@@ -1519,7 +1519,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelInterruptedDownload) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveDownload) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
   ASSERT_TRUE(test_server()->Start());
 
@@ -1574,7 +1574,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveDownload) {
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveResumingDownload) {
   SetupEnsureNoPendingDownloads();
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
   ASSERT_TRUE(test_server()->Start());
 
@@ -1621,7 +1621,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveResumingDownload) {
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelResumingDownload) {
   SetupEnsureNoPendingDownloads();
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
   ASSERT_TRUE(test_server()->Start());
 

@@ -153,7 +153,8 @@ OverscrollGlow::DisplayParameters CreateOverscrollDisplayParameters(
 ui::GestureProvider::Config CreateGestureProviderConfig() {
   ui::GestureProvider::Config config = ui::DefaultGestureProviderConfig();
   config.disable_click_delay =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableClickDelay);
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableClickDelay);
   return config;
 }
 
@@ -190,8 +191,9 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       cached_background_color_(SK_ColorWHITE),
       last_output_surface_id_(kUndefinedOutputSurfaceId),
       weak_ptr_factory_(this),
-      overscroll_effect_enabled_(!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableOverscrollEdgeEffect)),
+      overscroll_effect_enabled_(
+          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableOverscrollEdgeEffect)),
       gesture_provider_(CreateGestureProviderConfig(), this),
       gesture_text_selector_(this),
       touch_scrolling_(false),

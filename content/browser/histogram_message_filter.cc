@@ -45,7 +45,7 @@ void HistogramMessageFilter::OnGetBrowserHistogram(
   // Security: Only allow access to browser histograms when running in the
   // context of a test.
   bool using_stats_collection_controller =
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kStatsCollectionController);
   if (!using_stats_collection_controller) {
     LOG(ERROR) << "Attempt at reading browser histogram without specifying "

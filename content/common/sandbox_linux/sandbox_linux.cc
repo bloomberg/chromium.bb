@@ -52,7 +52,8 @@ struct FDCloser {
 };
 
 void LogSandboxStarted(const std::string& sandbox_name) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   const std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
   const std::string activated_sandbox =
@@ -260,7 +261,7 @@ bool LinuxSandbox::StartSeccompBPF(const std::string& process_type) {
 }
 
 bool LinuxSandbox::InitializeSandboxImpl() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   const std::string process_type =
       command_line->GetSwitchValueASCII(switches::kProcessType);
 
@@ -335,7 +336,7 @@ bool LinuxSandbox::seccomp_bpf_supported() const {
 bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
   (void) process_type;
 #if !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER)
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kNoSandbox)) {
     return false;
   }

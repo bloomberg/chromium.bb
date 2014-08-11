@@ -405,7 +405,7 @@ TEST_F(SiteInstanceTest, IsSameWebSite) {
 // Test to ensure that there is only one SiteInstance per site in a given
 // BrowsingInstance, when process-per-site is not in use.
 TEST_F(SiteInstanceTest, OneSiteInstancePerSite) {
-  ASSERT_FALSE(CommandLine::ForCurrentProcess()->HasSwitch(
+  ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kProcessPerSite));
   int delete_counter = 0;
   scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
@@ -479,7 +479,7 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSite) {
 // Test to ensure that there is only one RenderProcessHost per site for an
 // entire BrowserContext, if process-per-site is in use.
 TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kProcessPerSite);
   int delete_counter = 0;
   scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
@@ -570,7 +570,8 @@ static SiteInstanceImpl* CreateSiteInstance(BrowserContext* browser_context,
 TEST_F(SiteInstanceTest, ProcessSharingByType) {
   // This test shouldn't run with --site-per-process mode, since it doesn't
   // allow render process reuse, which this test explicitly exercises.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess))
     return;
 
   // On Android by default the number of renderer hosts is unlimited and process
@@ -690,7 +691,7 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURL) {
 // Test to ensure that HasWrongProcessForURL behaves properly even when
 // --site-per-process is used (http://crbug.com/160671).
 TEST_F(SiteInstanceTest, HasWrongProcessForURLInSitePerProcess) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kSitePerProcess);
 
   scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
@@ -764,7 +765,7 @@ TEST_F(SiteInstanceTest, ProcessPerSiteWithWrongBindings) {
 // Test that we do not register processes with empty sites for process-per-site
 // mode.
 TEST_F(SiteInstanceTest, NoProcessPerSiteForEmptySite) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kProcessPerSite);
   scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
   scoped_ptr<RenderProcessHost> host;

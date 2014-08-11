@@ -15,7 +15,7 @@ using blink::WebInputEvent;
 namespace {
 
 bool IsScrollEndEffectEnabled() {
-  return CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+  return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kScrollEndEffect) == "1";
 }
 

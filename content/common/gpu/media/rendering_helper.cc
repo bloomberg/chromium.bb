@@ -62,7 +62,7 @@ RenderingHelperParams::~RenderingHelperParams() {}
 
 // static
 bool RenderingHelper::InitializeOneOff() {
-  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
 #if GL_VARIANT_GLX
   cmd_line->AppendSwitchASCII(switches::kUseGL,
                               gfx::kGLImplementationDesktopName);

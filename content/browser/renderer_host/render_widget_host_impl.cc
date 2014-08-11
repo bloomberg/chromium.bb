@@ -226,7 +226,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       IsRenderView() ? RenderViewHost::From(this) : NULL);
   if (BrowserPluginGuest::IsGuest(rvh) ||
-      !CommandLine::ForCurrentProcess()->HasSwitch(
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableHangMonitor)) {
     hang_monitor_timeout_.reset(new TimeoutMonitor(
         base::Bind(&RenderWidgetHostImpl::RendererIsUnresponsive,
@@ -1562,7 +1562,7 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
 void RenderWidgetHostImpl::OnQueueSyntheticGesture(
     const SyntheticGesturePacket& gesture_packet) {
   // Only allow untrustworthy gestures if explicitly enabled.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           cc::switches::kEnableGpuBenchmarking)) {
     RecordAction(base::UserMetricsAction("BadMessageTerminate_RWH7"));
     GetProcess()->ReceivedBadMessage();
@@ -2166,7 +2166,8 @@ void RenderWidgetHostImpl::WindowOldSnapshotReachedScreen(int snapshot_id) {
 
   // This feature is behind the kEnableGpuBenchmarking command line switch
   // because it poses security concerns and should only be used for testing.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(cc::switches::kEnableGpuBenchmarking)) {
     Send(new ViewMsg_WindowSnapshotCompleted(
         GetRoutingID(), snapshot_id, gfx::Size(), png));

@@ -100,7 +100,7 @@ static void OnChildProcessStarted(JNIEnv*,
 }
 
 void StartChildProcess(
-    const CommandLine::StringVector& argv,
+    const base::CommandLine::StringVector& argv,
     int child_process_id,
     const std::vector<content::FileDescriptorInfo>& files_to_register,
     const StartChildProcessCallback& callback) {
@@ -211,7 +211,8 @@ void UnregisterChildProcessSurfaceTexture(int surface_texture_id,
 }
 
 jboolean IsSingleProcess(JNIEnv* env, jclass clazz) {
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSingleProcess);
 }
 
 bool RegisterChildProcessLauncher(JNIEnv* env) {

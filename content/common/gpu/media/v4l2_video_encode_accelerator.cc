@@ -286,7 +286,7 @@ V4L2VideoEncodeAccelerator::GetSupportedProfiles() {
   std::vector<SupportedProfile> profiles;
   SupportedProfile profile;
 
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kEnableWebRtcHWVp8Encoding)) {
     profile.profile = media::VP8PROFILE_MAIN;
     profile.max_resolution.SetSize(1920, 1088);

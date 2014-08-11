@@ -844,7 +844,8 @@ float RenderWidgetHostViewMac::ViewScaleFactor() const {
 
 void RenderWidgetHostViewMac::UpdateDisplayLink() {
   static bool is_vsync_disabled =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync);
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuVsync);
   if (is_vsync_disabled)
     return;
 
@@ -2289,7 +2290,8 @@ SkColorType RenderWidgetHostViewMac::PreferredReadbackFormat() {
 bool RenderWidgetHostViewMac::AcceleratedLayerShouldAckImmediately() const {
   // If vsync is disabled, then always draw and ack frames immediately.
   static bool is_vsync_disabled =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync);
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuVsync);
   if (is_vsync_disabled)
     return true;
 

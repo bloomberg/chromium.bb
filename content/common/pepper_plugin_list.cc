@@ -36,11 +36,12 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
       max_plugins_to_register_from_command_line_exceeds_limit);
 
   bool out_of_process = true;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kPpapiInProcess))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kPpapiInProcess))
     out_of_process = false;
 
   const std::string value =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kRegisterPepperPlugins);
   if (value.empty())
     return;

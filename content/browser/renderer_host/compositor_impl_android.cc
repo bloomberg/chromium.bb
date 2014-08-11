@@ -436,7 +436,7 @@ void CompositorImpl::SetVisible(bool visible) {
     settings.top_controls_height = 0.f;
     settings.highp_threshold_min = 2048;
 
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     settings.initial_debug_state.SetRecordRenderingStats(
         command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking));
     settings.initial_debug_state.show_fps_counter =

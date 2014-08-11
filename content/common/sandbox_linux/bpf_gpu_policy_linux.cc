@@ -73,7 +73,8 @@ inline bool IsArchitectureArm() {
 }
 
 bool IsAcceleratedVideoEnabled() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   bool accelerated_encode_enabled = false;
 #if defined(OS_CHROMEOS)
   accelerated_encode_enabled =
@@ -143,12 +144,13 @@ ResultExpr GpuBrokerProcessPolicy::EvaluateSyscall(int sysno) const {
 }
 
 void UpdateProcessTypeToGpuBroker() {
-  CommandLine::StringVector exec = CommandLine::ForCurrentProcess()->GetArgs();
-  CommandLine::Reset();
-  CommandLine::Init(0, NULL);
-  CommandLine::ForCurrentProcess()->InitFromArgv(exec);
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kProcessType,
-                                                      "gpu-broker");
+  base::CommandLine::StringVector exec =
+      base::CommandLine::ForCurrentProcess()->GetArgs();
+  base::CommandLine::Reset();
+  base::CommandLine::Init(0, NULL);
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(exec);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kProcessType, "gpu-broker");
 
   // Update the process title. The argv was already cached by the call to
   // SetProcessTitleFromCommandLine in content_main_runner.cc, so we can pass

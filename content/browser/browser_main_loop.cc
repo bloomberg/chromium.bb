@@ -135,7 +135,7 @@ namespace content {
 namespace {
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
-void SetupSandbox(const CommandLine& parsed_command_line) {
+void SetupSandbox(const base::CommandLine& parsed_command_line) {
   TRACE_EVENT0("startup", "SetupSandbox");
   base::FilePath sandbox_binary;
 
@@ -1135,7 +1135,8 @@ base::FilePath BrowserMainLoop::GetStartupTraceFileName(
   return trace_file;
 }
 
-void BrowserMainLoop::InitStartupTracing(const CommandLine& command_line) {
+void BrowserMainLoop::InitStartupTracing(
+    const base::CommandLine& command_line) {
   DCHECK(is_tracing_startup_);
 
   startup_trace_file_ = GetStartupTraceFileName(parsed_command_line_);

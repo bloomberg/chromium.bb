@@ -127,7 +127,8 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
 }
 
 RenderFrameHostManager* GetRenderManager(RenderFrameHostImpl* rfh) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess))
     return rfh->frame_tree_node()->render_manager();
 
   return rfh->frame_tree_node()->frame_tree()->root()->render_manager();
@@ -418,8 +419,8 @@ void NavigatorImpl::DidNavigate(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& input_params) {
   FrameHostMsg_DidCommitProvisionalLoad_Params params(input_params);
   FrameTree* frame_tree = render_frame_host->frame_tree_node()->frame_tree();
-  bool use_site_per_process =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess);
+  bool use_site_per_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSitePerProcess);
 
   if (use_site_per_process) {
     // TODO(creis): Until we mirror the frame tree in the subframe's process,
@@ -604,7 +605,8 @@ void NavigatorImpl::RequestTransferURL(
   }
 
   int64 frame_tree_node_id = -1;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
     frame_tree_node_id =
         render_frame_host->frame_tree_node()->frame_tree_node_id();
   }

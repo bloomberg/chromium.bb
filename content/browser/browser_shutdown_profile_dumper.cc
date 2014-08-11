@@ -75,7 +75,8 @@ void BrowserShutdownProfileDumper::EndTraceAndFlush(
 
 // static
 base::FilePath BrowserShutdownProfileDumper::GetShutdownProfileFileName() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   base::FilePath trace_file =
       command_line.GetSwitchValuePath(switches::kTraceShutdownFile);
 

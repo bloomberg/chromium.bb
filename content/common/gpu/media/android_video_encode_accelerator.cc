@@ -86,7 +86,7 @@ AndroidVideoEncodeAccelerator::GetSupportedProfiles() {
   std::vector<SupportedProfile> profiles;
 
 #if defined(ENABLE_WEBRTC)
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kDisableWebRtcHWEncoding))
     return profiles;
 #endif
