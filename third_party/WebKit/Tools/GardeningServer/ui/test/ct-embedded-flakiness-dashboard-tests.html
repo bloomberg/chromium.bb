@@ -1,0 +1,70 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-embedded-flakiness-dashboard.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+describe('ct-embedded-flakiness-dashboard', function() {
+  var embeddedFlakinessDashboard;
+
+  describe('embedded flakiness dashboard UI', function() {
+    var oldUrlForEmbeddedFlakinessDashboard = ui.urlForEmbeddedFlakinessDashboard;
+    var testName;
+    var step;
+    var tree;
+
+    beforeEach(function(done) {
+      ui.urlForEmbeddedFlakinessDashboard = function(test, step, tree) { return "about:blank#" + test + step + tree; }
+      embeddedFlakinessDashboard = document.createElement('ct-embedded-flakiness-dashboard');
+      testName = "foo/bar.html";
+      step = "foo_tests";
+      tree = "blink";
+      embeddedFlakinessDashboard.test = {
+        testName: testName,
+        step: step,
+      };
+      embeddedFlakinessDashboard.tree = tree;
+
+      setTimeout(done);
+    });
+
+    afterEach(function() {
+      ui.urlForEmbeddedFlakinessDashboard = oldUrlForEmbeddedFlakinessDashboard;
+    });
+
+    it('should point the iframe to the dashboard', function() {
+      var iframe = embeddedFlakinessDashboard.shadowRoot.querySelector('#iframe');
+      assert.equal(iframe.src, ui.urlForEmbeddedFlakinessDashboard(testName, step, tree));
+    });
+  });
+
+  describe('heightChanged', function() {
+    beforeEach(function(done) {
+      embeddedFlakinessDashboard = document.createElement('ct-embedded-flakiness-dashboard');
+
+      setTimeout(done);
+    });
+
+    it('should resize the iframe', function(done) {
+      var finishTest = function() {
+        window.removeEventListener('message', finishTest);
+        var iframe = embeddedFlakinessDashboard.shadowRoot.querySelector('#iframe');
+        assert.equal(iframe.style.height, '100px');
+        done();
+      };
+
+      window.addEventListener('message', finishTest);
+      window.postMessage({command: 'heightChanged', height: "100"}, '*');
+    });
+  });
+});
+
+})()
+</script>

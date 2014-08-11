@@ -1,0 +1,63 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-commit-list.html">
+
+<link rel="import" href="../../model/ct-commit-log-mock.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+describe('ct-commit-list', function() {
+  var list;
+  var numCommits;
+
+  beforeEach(function(done) {
+    list = document.createElement('ct-commit-list');
+    list.commits = new CTCommitLogMock();
+
+    // FIXME: This test shouldn't rely on firstRevision being empty to pass.
+    if (numCommits > 0)
+      list.commits.firstRevision = {};
+
+    var blinkCommits = list.commits.commits.blink;
+    var revision;
+    for (revision in blinkCommits)
+      break;
+
+    list.first = {blink: revision};
+    list.last = {blink: Number(revision) + numCommits};
+
+    setTimeout(done);
+  });
+
+  describe('commit list UI', function() {
+    before(function() {
+      numCommits = 2;
+    });
+
+    it('should show all commits in revision range', function() {
+      var commits = list.shadowRoot.querySelectorAll('ct-commit');
+      assert.lengthOf(commits, numCommits);
+    });
+  });
+
+  describe('empty commit list UI', function() {
+    before(function() {
+      numCommits = 0;
+    });
+
+    it('should show no commits for backwards revision range', function() {
+      var commits = list.shadowRoot.querySelectorAll('ct-commit');
+      assert.lengthOf(commits, numCommits);
+    });
+  });
+});
+
+})()
+</script>

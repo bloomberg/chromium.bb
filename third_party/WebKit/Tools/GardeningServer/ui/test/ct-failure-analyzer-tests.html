@@ -1,0 +1,73 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-failure-analyzer.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+describe('ct-failure-analyzer', function() {
+  describe('_failureComparator', function() {
+    it('should sort failures', function() {
+      var analyzer = document.createElement('ct-failure-analyzer');
+      var resultsByBuilder = {};
+      var failure1 = new CTFailure("step1", "reason1", resultsByBuilder, 123, 123);
+      var failure2 = new CTFailure("step1", "reason2", resultsByBuilder, 123, 123);
+      var failure3 = new CTFailure("step1", "reason3", resultsByBuilder, 123, 123);
+      var failure4 = new CTFailure("step2", "reason1", resultsByBuilder, 123, 123);
+
+      var failures = [failure4, failure3, failure2, failure1];
+      var expectedFailures = [failure1, failure2, failure3, failure4];
+      assert.deepEqual(failures.sort(analyzer._failureComparator), expectedFailures);
+    });
+  });
+
+  describe('_failureListComparator', function() {
+    it('should compare failures correctly', function() {
+      var analyzer = document.createElement('ct-failure-analyzer');
+      var revision1 = {
+        'chromium': 1,
+        'blink': 2
+      };
+      var revision2 = {
+        'chromium': 2,
+        'blink': 1
+      };
+      var revision3 = {
+        'chromium': 2,
+        'blink': 2
+      };
+      var resultsByBuilder = {};
+      var failure1 = new CTFailure("step", "reason", resultsByBuilder, revision1, revision1);
+      var failure2 = new CTFailure("step", "reason", resultsByBuilder, revision2, revision2);
+      var failure3 = new CTFailure("step", "reason", resultsByBuilder, revision3, revision3);
+      var failure4 = new CTFailure("step", "reason", resultsByBuilder, null, null);
+
+      // Sort by last revision first.
+      assert(analyzer._failureListComparator('chromium', [failure1], [failure2]) > 0);
+      assert(analyzer._failureListComparator('chromium', [failure2], [failure1]) < 0);
+      assert(analyzer._failureListComparator('chromium', [failure1], [failure1]) == 0);
+
+      // If the tree revisions are equal, take others.
+      assert(analyzer._failureListComparator('chromium', [failure2], [failure3]) > 0);
+
+      // Prioritize the given tree.
+      assert(analyzer._failureListComparator('chromium', [failure1], [failure2]) > 0);
+      assert(analyzer._failureListComparator('blink', [failure1], [failure2]) < 0);
+
+      // Default to 'chromium'.
+      assert(analyzer._failureListComparator(undefined, [failure1], [failure2]) > 0);
+
+      // Failures without a revision go to the end.
+      assert(analyzer._failureListComparator('chromium', [failure4], [failure1]) < 0);
+    });
+  });
+});
+
+})()
+</script>

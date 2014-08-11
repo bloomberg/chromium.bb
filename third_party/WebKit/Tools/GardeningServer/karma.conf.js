@@ -27,14 +27,18 @@ module.exports = function(config) {
       {pattern: 'bower_components/**/*.{js,html,css,map}', watched: true, included: false, served: true},
       {pattern: 'node_modules/mocha/mocha.js', watched: true, included: true, served: true},
       {pattern: 'polymer-load-warning.html', watched: true, included: false, served: true},
-      {pattern: 'model/**/*[^tests].html', watched: true, included: false, served: true},
-      {pattern: 'ui/**/*[^tests].{js,html,css}', watched: true, included: false, served: true},
+      {pattern: 'model/*.html', watched: true, included: false, served: true},
+      {pattern: 'model/test/*.html', watched: true, included: true, served: true},
+      {pattern: 'scripts/*.js', watched: true, included: true, served: true},
+      {pattern: 'ui/*.html', watched: true, included: false, served: true},
       'ui/test/*',
     ],
 
     // list of files to exclude
     exclude: [
+      'model/*tests.html',
       'scripts/*tests.js',
+      'ui/*tests.html',
     ],
 
     // preprocess matching files before serving them to the browser

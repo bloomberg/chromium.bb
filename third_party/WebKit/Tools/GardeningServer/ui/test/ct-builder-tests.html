@@ -13,32 +13,24 @@ var assert = chai.assert;
 
 describe('ct-builder', function() {
   var builder;
+  var masterUrl = 'http://url';
+  var builderName = 'WebKit Linux (dbg)';
+  var firstFailingBuild = '1234';
 
   beforeEach(function(done) {
     builder = document.createElement('ct-builder');
-    builder.builder = 'WebKit Linux (dbg)';
-    requestAnimationFrame(function() { done(); });
+    builder.builder = new CTBuilder(masterUrl, builderName, firstFailingBuild);
+
+    setTimeout(done);
   });
 
   describe('default builder UI', function() {
     it('should link to the builder', function() {
       var a = builder.shadowRoot.querySelector('a');
-      assert.ok(a.href);
-      assert.include(a.href, 'WebKit+Linux+(dbg)');
-    });
-  });
-
-  describe('builder UI with steps', function() {
-    beforeEach(function(done) {
-      builder.steps = ['gclient_revert', 'compile', 'unittests'];
-      requestAnimationFrame(function() { done(); });
-    });
-
-    it('should link to builder and show steps', function() {
-      var a = builder.shadowRoot.querySelector('a');
       assert.ok(a);
-      assert.include(a.href, 'WebKit+Linux+(dbg)');
-      assert.include(a.innerText, 'gclient_revert, compile, unittests');
+      assert(a.href.startsWith(masterUrl));
+      assert.include(a.href, encodeURIComponent(builderName));
+      assert.include(a.href, firstFailingBuild);
     });
   });
 });

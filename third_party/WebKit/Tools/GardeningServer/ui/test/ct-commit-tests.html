@@ -1,0 +1,38 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-commit.html">
+
+<link rel="import" href="../../model/ct-commit-mock.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+describe('ct-commit', function() {
+  var commit;
+
+  beforeEach(function(done) {
+    commit = document.createElement('ct-commit');
+    commit.data = new CTCommitMock();
+
+    setTimeout(done);
+  });
+
+  describe('commit UI', function() {
+    it('should show example commit', function() {
+      var html = commit.shadowRoot.innerHTML;
+
+      assert.include(html, 'mkwst');
+      assert.include(html, 'behavior for these types');
+      assert.equal(commit.shadowRoot.querySelector('a').href, commit.data.url);
+    });
+  });
+});
+
+})()
+</script>

@@ -6,6 +6,8 @@ found in the LICENSE file.
 
 <link rel="import" href="../ct-builder-grid.html">
 
+<link rel="import" href="../ct-builder.html">
+
 <script>
 (function () {
 
@@ -16,12 +18,18 @@ var kExampleFailures = [{
     "resultNodesByBuilder": {
         "WebKit Win7 (dbg)": {
             "actual": "CRASH",
+            "masterUrl": "http://master-one",
+            "earliestFailingBuild": "1",
         },
         "WebKit Mac10.6 (dbg)": {
             "actual": "CRASH",
+            "masterUrl": "http://master-one",
+            "earliestFailingBuild": "2",
         },
         "WebKit Mac10.7": {
             "actual": "TEXT",
+            "masterUrl": "http://master-one",
+            "earliestFailingBuild": "3",
         }
     },
     "oldestFailingRevision": 177164,
@@ -31,9 +39,13 @@ var kExampleFailures = [{
     "resultNodesByBuilder": {
         "WebKit Win7 (dbg)": {
             "actual": "TEXT",
+            "masterUrl": "http://master-one",
+            "earliestFailingBuild": "1",
         },
         "WebKit Mac10.7": {
             "actual": "CRASH",
+            "masterUrl": "http://master-two",
+            "earliestFailingBuild": "4",
         },
     },
     "oldestFailingRevision": 177164,
@@ -58,28 +70,22 @@ describe('ct-builder-grid', function() {
   beforeEach(function(done) {
     grid = document.createElement('ct-builder-grid');
     grid.failures = kExampleFailures;
-    requestAnimationFrame(function() { done(); });
+
+    setTimeout(done);
   });
 
-  describe('basic grid', function() {
-    it('should show builders by result type and debug/not debug', function() {
-      var rows = grid.shadowRoot.querySelectorAll('tbody tr');
-      assert.lengthOf(rows, 2);
-
-      var row1 = grid.shadowRoot.querySelector('tbody td.CRASH').parentNode;
-      assert.lengthOf(row1.children, 2);
-      var builders = row1.children[1].querySelectorAll('ct-builder');
-      assert.lengthOf(builders, 3);
-      assert.equal(builders[0].builder, 'WebKit Mac10.6 (dbg)');
-      assert.equal(builders[1].builder, 'WebKit Mac10.7');
-      assert.equal(builders[2].builder, 'WebKit Win7 (dbg)');
-
-      var row2 = grid.shadowRoot.querySelector('tbody td.TEXT').parentNode;
-      assert.lengthOf(row2.children, 2);
-      builders = row2.children[1].querySelectorAll('ct-builder');
-      assert.lengthOf(builders, 2);
-      assert.equal(builders[0].builder, 'WebKit Mac10.7');
-      assert.equal(builders[1].builder, 'WebKit Win7 (dbg)');
+  describe('builder grid UI', function() {
+    it('should show all failing builders', function() {
+      var builders = grid.shadowRoot.querySelectorAll('ct-builder');
+      assert.lengthOf(builders, 4);
+      assert.deepEqual(builders[0].builder, new CTBuilder(
+          'http://master-one', 'WebKit Mac10.6 (dbg)', '2'));
+      assert.deepEqual(builders[1].builder, new CTBuilder(
+          'http://master-one', 'WebKit Mac10.7', '3'));
+      assert.deepEqual(builders[2].builder, new CTBuilder(
+          'http://master-two', 'WebKit Mac10.7', '4'));
+      assert.deepEqual(builders[3].builder, new CTBuilder(
+          'http://master-one', 'WebKit Win7 (dbg)', '1'));
     });
   });
 });
