@@ -2890,6 +2890,21 @@ TEST_P(GestureRecognizerTest, MultiFingerSwipe) {
         count, points, 10, kSteps, 11 * kSteps, 0);
     EXPECT_TRUE(delegate->swipe_right());
     delegate->Reset();
+
+    generator.GestureMultiFingerScroll(
+        count, points, 10, kSteps, 5 * kSteps, 12 * kSteps);
+    EXPECT_FALSE(delegate->swipe_down());
+    delegate->Reset();
+
+    generator.GestureMultiFingerScroll(
+        count, points, 10, kSteps, 4 * kSteps, 12 * kSteps);
+    EXPECT_TRUE(delegate->swipe_down());
+    delegate->Reset();
+
+    generator.GestureMultiFingerScroll(
+        count, points, 10, kSteps, 3 * kSteps, 12 * kSteps);
+    EXPECT_TRUE(delegate->swipe_down());
+    delegate->Reset();
   }
 }
 

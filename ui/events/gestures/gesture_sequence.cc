@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// MSVC++ requires this to be set before any other includes to get M_PI.
+#define _USE_MATH_DEFINES
+
 #include "ui/events/gestures/gesture_sequence.h"
 
 #include <stdlib.h>
@@ -1412,9 +1415,11 @@ bool GestureSequence::MaybeSwipe(const TouchEvent& event,
   if (!swipe_y)
     velocity_y = 0.001f;
 
-  float ratio = velocity_x > velocity_y ? velocity_x / velocity_y :
+  float ratio = velocity_x < velocity_y ? velocity_x / velocity_y :
                                           velocity_y / velocity_x;
-  if (ratio < GestureConfiguration::max_swipe_deviation_ratio())
+  float angle = atan(ratio) * 180.0f / static_cast<float>(M_PI);
+
+  if (angle > GestureConfiguration::max_swipe_deviation_angle())
     return false;
 
   if (velocity_x > velocity_y)

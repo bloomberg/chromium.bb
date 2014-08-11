@@ -18,7 +18,7 @@ int GestureConfiguration::max_radius_ = 100;
 double GestureConfiguration::max_seconds_between_double_click_ = 0.7;
 double
   GestureConfiguration::max_separation_for_gesture_touches_in_pixels_ = 150;
-double GestureConfiguration::max_swipe_deviation_ratio_ = 3;
+float GestureConfiguration::max_swipe_deviation_angle_ = 20;
 double
   GestureConfiguration::max_touch_down_duration_in_seconds_for_click_ = 0.8;
 double GestureConfiguration::max_touch_move_in_pixels_for_click_ = 15;
