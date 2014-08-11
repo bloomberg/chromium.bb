@@ -55,7 +55,7 @@ def _CheckJava():
   output = _ExecuteCommand([_java_executable, '-version'])
   match = re.search(r'version "(?:\d+)\.(\d+)', output)
   if match is None or int(match.group(1)) < 7:
-    _error('Java 7 or later is required: \n%s' % output)
+    _Error('Java 7 or later is required: \n%s' % output)
 
 _CheckJava()
 
