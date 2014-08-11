@@ -1,0 +1,24 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module device.serial {
+
+[Client=DataSourceClient]
+interface DataSource {
+  // Initializes this DataSource with a data pipe handle to use for data
+  // transmission.
+  Init(handle<data_pipe_producer> producer_handle);
+
+  // Resumes sending data after it has been stopped due to an error.
+  Resume();
+};
+
+interface DataSourceClient {
+  // Invoked to report |error| from the DataSource, at |error_location| bytes
+  // into the data stream. No further bytes beyond |error_location| will be
+  // transmitted from the DataSource until Resume() is called.
+  OnError(uint32 error_location, int32 error);
+};
+
+}

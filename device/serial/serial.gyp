@@ -19,6 +19,7 @@
       ],
       'sources': [
         'serial.mojom',
+        'data_stream.mojom',
       ],
     },
     {
@@ -42,10 +43,18 @@
         '../../mojo/mojo_base.gyp:mojo_cpp_bindings',
       ],
       'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/device/serial/data_stream.mojom.cc',
+        '<(SHARED_INTERMEDIATE_DIR)/device/serial/data_stream.mojom.h',
         '<(SHARED_INTERMEDIATE_DIR)/device/serial/serial.mojom.cc',
         '<(SHARED_INTERMEDIATE_DIR)/device/serial/serial.mojom.h',
+        'async_waiter.cc',
+        'async_waiter.h',
         'buffer.cc',
         'buffer.h',
+        'data_receiver.cc',
+        'data_receiver.h',
+        'data_source_sender.cc',
+        'data_source_sender.h',
         'serial_connection.cc',
         'serial_connection.h',
         'serial_connection_factory.cc',

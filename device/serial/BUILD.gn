@@ -9,8 +9,14 @@ static_library("serial") {
   output_name = "device_serial"
 
   sources = [
+    "async_waiter.cc",
+    "async_waiter.h",
     "buffer.cc",
     "buffer.h",
+    "data_receiver.cc",
+    "data_receiver.h",
+    "data_source_sender.cc",
+    "data_source_sender.h",
     "serial_connection.cc",
     "serial_connection.h",
     "serial_connection_factory.cc",
@@ -64,6 +70,7 @@ mojom("serial_mojo") {
   ]
 
   sources = [
+    "data_stream.mojom",
     "serial.mojom",
   ]
 }
