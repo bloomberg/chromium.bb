@@ -279,6 +279,8 @@ public:
     // collect garbage at this point.
     bool shouldGC();
     bool shouldForceConservativeGC();
+    bool increasedEnoughToGC(size_t, size_t);
+    bool increasedEnoughToForceConservativeGC(size_t, size_t);
 
     // If gcRequested returns true when a thread returns to its event
     // loop the thread will initiate a garbage collection.
@@ -544,6 +546,8 @@ private:
     void cleanup();
     void cleanupPages();
 
+    void setLowCollectionRate(bool value) { m_lowCollectionRate = value; }
+
     static WTF::ThreadSpecific<ThreadState*>* s_threadSpecific;
     static SafePointBarrier* s_safePointBarrier;
 
@@ -582,6 +586,8 @@ private:
 
     Vector<OwnPtr<CleanupTask> > m_cleanupTasks;
     bool m_isTerminating;
+
+    bool m_lowCollectionRate;
 
     CallbackStack* m_weakCallbackStack;
 

@@ -288,6 +288,7 @@ ThreadState::ThreadState()
     , m_inGC(false)
     , m_heapContainsCache(adoptPtr(new HeapContainsCache()))
     , m_isTerminating(false)
+    , m_lowCollectionRate(false)
 #if defined(ADDRESS_SANITIZER)
     , m_asanFakeStack(__asan_get_current_fake_stack())
 #endif
@@ -603,11 +604,12 @@ Mutex& ThreadState::globalRootsMutex()
 
 // Trigger garbage collection on a 50% increase in size, but not for
 // less than 512kbytes.
-static bool increasedEnoughToGC(size_t newSize, size_t oldSize)
+bool ThreadState::increasedEnoughToGC(size_t newSize, size_t oldSize)
 {
     if (newSize < 1 << 19)
         return false;
-    return newSize > oldSize + (oldSize >> 1);
+    size_t limit = oldSize + (oldSize >> 1);
+    return newSize > limit;
 }
 
 // FIXME: The heuristics are local for a thread at this
@@ -622,12 +624,14 @@ bool ThreadState::shouldGC()
 }
 
 // Trigger conservative garbage collection on a 100% increase in size,
-// but not for less than 4Mbytes.
-static bool increasedEnoughToForceConservativeGC(size_t newSize, size_t oldSize)
+// but not for less than 4Mbytes. If the system currently has a low
+// collection rate, then require a 300% increase in size.
+bool ThreadState::increasedEnoughToForceConservativeGC(size_t newSize, size_t oldSize)
 {
     if (newSize < 1 << 22)
         return false;
-    return newSize > 2 * oldSize;
+    size_t limit = (m_lowCollectionRate ? 4 : 2) * oldSize;
+    return newSize > limit;
 }
 
 // FIXME: The heuristics are local for a thread at this
@@ -898,6 +902,7 @@ void ThreadState::performPendingSweep()
     while (popAndInvokeWeakPointerCallback(Heap::s_markingVisitor)) { }
     leaveNoAllocationScope();
     // Perform sweeping and finalization.
+    size_t objectSpaceBeforeSweep = m_stats.totalObjectSpace();
     m_stats.clear(); // Sweeping will recalculate the stats
     for (int i = 0; i < NumberOfHeaps; i++)
         m_heaps[i]->sweep();
@@ -905,6 +910,10 @@ void ThreadState::performPendingSweep()
     m_sweepInProgress = false;
     clearGCRequested();
     clearSweepRequested();
+    // If we collected less than 50% of objects, record that the
+    // collection rate is low which we use to determine when to
+    // perform the next GC.
+    setLowCollectionRate(m_stats.totalObjectSpace() > (objectSpaceBeforeSweep >> 1));
 
     if (blink::Platform::current()) {
         blink::Platform::current()->histogramCustomCounts("BlinkGC.PerformPendingSweep", WTF::currentTimeMS() - timeStamp, 0, 10 * 1000, 50);
