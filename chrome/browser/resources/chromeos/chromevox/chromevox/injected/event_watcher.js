@@ -583,9 +583,12 @@ cvox.ChromeVoxEventWatcher.mouseClickEventWatcher = function(evt) {
  * @return {boolean} True if the default action should be performed.
  */
 cvox.ChromeVoxEventWatcher.mouseOverEventWatcher = function(evt) {
-  var hasTouch = 'ontouchstart' in window;
+  // Chrome simulates the meta key for mouse events generated from
+  // touch exploration.
+  var isTouchEvent = (evt.metaKey);
+
   var mouseoverDelayMs = cvox.ChromeVoxEventWatcher.mouseoverDelayMs;
-  if (hasTouch) {
+  if (isTouchEvent) {
     mouseoverDelayMs = 0;
   } else if (!cvox.ChromeVoxEventWatcher.focusFollowsMouse) {
     return true;
