@@ -169,11 +169,16 @@ static_library("test_support") {
   deps = [
     ":ash",
     "//ash/resources",
+    "//content/test:test_support",
     "//skia",
     "//testing/gtest",
     "//ui/accessibility",
     "//ui/app_list",
+    "//ui/app_list:test_support",
+    "//ui/events:events_base",
+    "//ui/gl",
     "//ui/views",
+    "//ui/views:test_support",
   ]
 
   if (is_win) {
@@ -205,6 +210,7 @@ static_library("ash_shell_lib") {
     #"//chrome:packed_resources",  TODO(GYP)
     "//content",
     "//content/shell:content_shell_lib",
+    "//net",
     "//skia",
     "//third_party/icu",
     "//ui/app_list",
@@ -212,6 +218,7 @@ static_library("ash_shell_lib") {
     "//ui/base",
     "//ui/compositor",
     "//ui/events",
+    "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/keyboard",
