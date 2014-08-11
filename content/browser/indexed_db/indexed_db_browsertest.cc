@@ -597,7 +597,7 @@ IN_PROC_BROWSER_TEST_P(IndexedDBBrowserCorruptionTest,
   const GURL& origin_url = embedded_test_server()->base_url();
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&CorruptDBRequestHandler,
-                 base::ConstRef(GetContext()),
+                 base::Unretained(GetContext()),
                  origin_url,
                  s_corrupt_db_test_prefix,
                  this));
