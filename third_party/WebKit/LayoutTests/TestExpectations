@@ -1140,11 +1140,6 @@ crbug.com/375567 web-animations-api/w3c/simple-keyframes.html [ Pass Failure ]
 
 crbug.com/376597 web-animations-api/player.html [ Pass Failure ]
 
-crbug.com/376194 inspector/console/console-format-es6.html [ Skip ]
-crbug.com/376194 inspector/console/console-format-es6-symbols-error.html [ Skip ]
-crbug.com/376194 inspector/console/console-dir-es6.html [ Skip ]
-crbug.com/376194 inspector/runtime/runtime-es6-setSymbolPropertyValue.html [ Skip ]
-
 crbug.com/400841 media/video-canvas-draw.html [ ImageOnlyFailure ]
 crbug.com/400829 media/video-object-fit.html [ ImageOnlyFailure ]
 crbug.com/400829 virtual/stable/media/stable/video-object-fit-stable.html [ ImageOnlyFailure ]
