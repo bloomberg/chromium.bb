@@ -3605,11 +3605,7 @@ FilterOperations RenderLayer::computeFilterOperations(const RenderStyle* style)
             ReferenceFilterOperation* referenceOperation = toReferenceFilterOperation(filterOperation);
             // FIXME: Cache the ReferenceFilter if it didn't change.
             RefPtr<ReferenceFilter> referenceFilter = ReferenceFilter::create();
-#ifdef BLINK_SCALE_FILTERS_AT_RECORD_TIME
-            float zoom = style->effectiveZoom() * blink::deviceScaleFactor(renderer()->frame());
-#else
             float zoom = style->effectiveZoom();
-#endif
             referenceFilter->setAbsoluteTransform(AffineTransform().scale(zoom, zoom));
             referenceFilter->setLastEffect(ReferenceFilterBuilder::build(referenceFilter.get(), renderer(), referenceFilter->sourceGraphic(),
                 referenceOperation));

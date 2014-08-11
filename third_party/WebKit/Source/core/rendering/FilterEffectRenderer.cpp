@@ -87,11 +87,7 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
 
     // Inverse zoom the pre-zoomed CSS shorthand filters, so that they are in the same zoom as the unzoomed reference filters.
     const RenderStyle* style = renderer->style();
-#ifdef BLINK_SCALE_FILTERS_AT_RECORD_TIME
-    float invZoom = 1.0f / ((style ? style->effectiveZoom() : 1.0f) * deviceScaleFactor(renderer->frame()));
-#else
     float invZoom = style ? 1.0f / style->effectiveZoom() : 1.0f;
-#endif
 
     RefPtr<FilterEffect> previousEffect = m_sourceGraphic;
     for (size_t i = 0; i < operations.operations().size(); ++i) {

@@ -86,11 +86,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const CS
     if (!inValue->isValueList())
         return false;
 
-#ifdef BLINK_SCALE_FILTERS_AT_RECORD_TIME
-    float zoomFactor = unadjustedConversionData.zoom() * state.elementStyleResources().deviceScaleFactor();
-#else
     float zoomFactor = unadjustedConversionData.zoom();
-#endif
     const CSSToLengthConversionData& conversionData = unadjustedConversionData.copyWithAdjustedZoom(zoomFactor);
     FilterOperations operations;
     for (CSSValueListIterator i = inValue; i.hasMore(); i.advance()) {
