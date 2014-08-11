@@ -13543,6 +13543,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.ComodoDNSExperimentFailureTime" units="milliseconds">
+  <obsolete>
+    This experiment has concluded.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The amount of time taken before we failed to  resolve the Comodo test DNS
@@ -13552,6 +13555,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.ComodoDNSExperimentSuccessTime" units="milliseconds">
+  <obsolete>
+    This experiment has concluded.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The amount of time taken to successfully resolve the Comodo test DNS record.
@@ -13690,7 +13696,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Net.ConnectionUsedSSLVersionFallback"
     enum="FallbackSSLVersion">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>agl@chromium.org</owner>
   <summary>
     Nonzero if the HTTP request was to a server which requires SSL version
     fallback.  The value indicates the SSL version the request fell back on.
@@ -14586,7 +14592,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Net.GoogleConnectionUsedSSLVersionFallback"
     enum="FallbackSSLVersion">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>agl@chromium.org</owner>
   <summary>
     Nonzero if the HTTP request was to a Google server which required SSL
     version fallback. The value indicates the SSL version the request fell back
@@ -16540,7 +16546,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.SSL_Connection_Latency" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>agl@chromium.org</owner>
   <summary>Time from when the Connect() starts until it completes.</summary>
 </histogram>
 
@@ -16555,7 +16561,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.SSL_Connection_Latency_Google" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>agl@chromium.org</owner>
   <summary>
     Time from when the Connect() starts until it completes for google.com and
     any subdomain of it.
@@ -16564,7 +16570,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Net.SSL_Connection_Latency_Google_No_Revocation_Checking"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>agl@chromium.org</owner>
   <summary>
     Time from when the Connect() starts until it completes for google.com and
     any subdomain of it. This only includes users in a 50% field trial that
@@ -16574,7 +16580,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Net.SSL_Connection_Latency_Google_Revocation_Checking"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>agl@chromium.org</owner>
   <summary>
     Time from when the Connect() starts until it completes for google.com and
     any subdomain of it. This only includes users not in a 50% field trail that
@@ -16583,7 +16589,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.SSLCertBlacklisted">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>agl@chromium.org</owner>
   <summary>
     Counts the number of times that users have hit blacklisted certificates. The
     indexes match up to the indexes in
