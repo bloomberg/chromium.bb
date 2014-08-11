@@ -167,7 +167,8 @@ void LogHistogramEvent(const std::string& histogram, int position,
       num_sites,
       num_sites + 1,
       base::Histogram::kUmaTargetedHistogramFlag);
-  counter->Add(position);
+  if (counter)
+    counter->Add(position);
 }
 
 }  // namespace
