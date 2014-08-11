@@ -50,12 +50,13 @@ class VideoFrameRecorderHostExtensionSession : public HostExtensionSession {
  private:
   VideoEncoderVerbatim verbatim_encoder;
   VideoFrameRecorder video_frame_recorder;
+  bool first_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameRecorderHostExtensionSession);
 };
 
 VideoFrameRecorderHostExtensionSession::VideoFrameRecorderHostExtensionSession(
-    int64_t max_content_bytes) {
+    int64_t max_content_bytes) : first_frame_(false) {
   video_frame_recorder.SetMaxContentBytes(max_content_bytes);
 }
 
@@ -93,6 +94,7 @@ bool VideoFrameRecorderHostExtensionSession::OnExtensionMessage(
 
     if (type == kStartType) {
       video_frame_recorder.SetEnableRecording(true);
+      first_frame_ = true;
     } else if (type == kStopType) {
       video_frame_recorder.SetEnableRecording(false);
     } else if (type == kNextFrameType) {
@@ -103,6 +105,15 @@ bool VideoFrameRecorderHostExtensionSession::OnExtensionMessage(
       base::DictionaryValue reply_message;
       reply_message.SetString(kType, kNextFrameReplyType);
       if (frame) {
+        // If this is the first frame then override the updated region so that
+        // the encoder will send the whole frame's contents.
+        if (first_frame_) {
+          first_frame_ = false;
+
+          frame->mutable_updated_region()->SetRect(
+              webrtc::DesktopRect::MakeSize(frame->size()));
+        }
+
         // Encode the frame into a raw ARGB VideoPacket.
         scoped_ptr<VideoPacket> encoded_frame(
             verbatim_encoder.Encode(*frame));
