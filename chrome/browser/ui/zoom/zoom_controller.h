@@ -95,7 +95,8 @@ class ZoomController : public content::WebContentsObserver,
   double GetZoomLevel() const;
   // Calls GetZoomLevel() then converts the returned value to a percentage
   // zoom factor.
-  int GetZoomPercent() const;
+  // Virtual for testing.
+  virtual int GetZoomPercent() const;
 
   // Sets the zoom level through HostZoomMap.
   // Returns true on success.
@@ -116,8 +117,11 @@ class ZoomController : public content::WebContentsObserver,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual void WebContentsDestroyed() OVERRIDE;
 
- private:
+ protected:
+  // Protected for testing.
   explicit ZoomController(content::WebContents* web_contents);
+
+ private:
   friend class content::WebContentsUserData<ZoomController>;
   friend class ZoomControllerTest;
 

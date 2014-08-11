@@ -210,7 +210,8 @@ class LocationBarViewMac : public LocationBar,
   void UpdateTranslateDecoration();
 
   // Updates the zoom decoration in the omnibox with the current zoom level.
-  void UpdateZoomDecoration();
+  // Returns whether any updates were made.
+  bool UpdateZoomDecoration();
 
   // Ensures the star decoration is visible or hidden, as required.
   void UpdateStarDecorationVisibility();
