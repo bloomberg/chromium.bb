@@ -109,8 +109,11 @@ void DOMWindowEventQueue::close()
     m_pendingEventTimer->stop();
     if (InspectorInstrumentation::hasFrontends()) {
         WillBeHeapListHashSet<RefPtrWillBeMember<Event>, 16>::iterator it = m_queuedEvents.begin();
-        for (; it != m_queuedEvents.end(); ++it)
-            InspectorInstrumentation::didRemoveEvent((*it)->target(), it->get());
+        for (; it != m_queuedEvents.end(); ++it) {
+            RefPtrWillBeRawPtr<Event> event = *it;
+            if (event)
+                InspectorInstrumentation::didRemoveEvent(event->target(), event.get());
+        }
     }
     m_queuedEvents.clear();
 }
