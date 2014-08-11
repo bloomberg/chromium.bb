@@ -176,7 +176,6 @@ public:
     // FIXME: hasVisibleDescendant() should call updateDescendantDependentFlags() if m_visibleDescendantStatusDirty.
     bool hasVisibleDescendant() const { ASSERT(!m_visibleDescendantStatusDirty); return m_hasVisibleDescendant; }
 
-    void setHasVisibleContent();
     void dirtyVisibleContentStatus();
     void potentiallyDirtyVisibleContentStatus(EVisibility);
 

@@ -7,7 +7,4 @@ Paint command log:
     img#c drawRect
     img#c drawBitmapRectToRect
     rect#e drawRect
-Paint command log:
-    html drawRect
-    p drawPosTextH
 

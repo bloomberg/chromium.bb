@@ -2118,13 +2118,8 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle& newS
         // Keep layer hierarchy visibility bits up to date if visibility changes.
         if (m_style->visibility() != newStyle.visibility()) {
             // We might not have an enclosing layer yet because we might not be in the tree.
-            if (RenderLayer* layer = enclosingLayer()) {
-                if (newStyle.visibility() == VISIBLE) {
-                    layer->setHasVisibleContent();
-                } else {
-                    layer->potentiallyDirtyVisibleContentStatus(newStyle.visibility());
-                }
-            }
+            if (RenderLayer* layer = enclosingLayer())
+                layer->potentiallyDirtyVisibleContentStatus(newStyle.visibility());
         }
 
         if (isFloating() && (m_style->floating() != newStyle.floating()))
@@ -2735,7 +2730,7 @@ void RenderObject::insertedIntoTree()
         if (!layer)
             layer = parent()->enclosingLayer();
         if (layer)
-            layer->setHasVisibleContent();
+            layer->dirtyVisibleContentStatus();
     }
 
     if (!isFloating() && parent()->childrenInline())

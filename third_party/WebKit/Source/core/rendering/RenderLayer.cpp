@@ -584,23 +584,6 @@ LayoutRect RenderLayer::computePaintInvalidationRect(const RenderObject* renderO
     return rect;
 }
 
-void RenderLayer::setHasVisibleContent()
-{
-    if (m_hasVisibleContent && !m_visibleContentStatusDirty) {
-        ASSERT(!parent() || parent()->m_visibleDescendantStatusDirty || parent()->hasVisibleDescendant());
-        return;
-    }
-
-    m_hasVisibleContent = true;
-    m_visibleContentStatusDirty = false;
-
-    setNeedsCompositingInputsUpdate();
-    m_renderer->setPreviousPaintInvalidationRect(m_renderer->boundsRectForPaintInvalidation(m_renderer->containerForPaintInvalidation()));
-
-    if (parent())
-        parent()->dirtyAncestorChainVisibleDescendantStatus();
-}
-
 void RenderLayer::dirtyVisibleContentStatus()
 {
     m_visibleContentStatusDirty = true;
@@ -736,10 +719,14 @@ void RenderLayer::updateDescendantDependentFlags()
         }
         m_visibleContentStatusDirty = false;
 
-        // FIXME: We can remove this code once we remove the recursive tree
-        // walk inside updateGraphicsLayerGeometry.
-        if (hasVisibleContent() != previouslyHasVisibleContent)
+        if (hasVisibleContent() != previouslyHasVisibleContent) {
             setNeedsCompositingInputsUpdate();
+            // We need to tell m_renderer to recheck its rect because we
+            // pretend that invisible RenderObjects have 0x0 rects. Changing
+            // visibility therefore changes our rect and we need to visit
+            // this RenderObject during the invalidateTreeIfNeeded walk.
+            m_renderer->setMayNeedPaintInvalidation(true);
+        }
     }
 }
 
