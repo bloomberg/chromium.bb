@@ -39,12 +39,10 @@
 #include "wtf/RefCounted.h"
 
 namespace blink {
+
 class EventHandler;
 class IntSize;
 class Node;
-}
-
-namespace blink {
 
 // ViewportAnchor provides a way to anchor a viewport origin to a DOM node.
 // In particular, the user supplies the current viewport (in CSS coordinates)
@@ -56,22 +54,22 @@ namespace blink {
 class ViewportAnchor {
     STACK_ALLOCATED();
 public:
-    explicit ViewportAnchor(blink::EventHandler* eventHandler);
+    explicit ViewportAnchor(EventHandler*);
 
-    void setAnchor(const blink::IntRect& viewRect, const blink::FloatSize& anchorInViewCoords);
+    void setAnchor(const IntRect& viewRect, const FloatSize& anchorInViewCoords);
 
-    blink::IntPoint computeOrigin(const blink::IntSize& currentViewSize) const;
+    IntPoint computeOrigin(const IntSize& currentViewSize) const;
 
 private:
-    RawPtrWillBeMember<blink::EventHandler> m_eventHandler;
+    RawPtrWillBeMember<EventHandler> m_eventHandler;
 
-    blink::IntRect m_viewRect;
+    IntRect m_viewRect;
 
-    RefPtrWillBeMember<blink::Node> m_anchorNode;
-    blink::LayoutRect m_anchorNodeBounds;
+    RefPtrWillBeMember<Node> m_anchorNode;
+    LayoutRect m_anchorNodeBounds;
 
-    blink::FloatSize m_anchorInViewCoords;
-    blink::FloatSize m_anchorInNodeCoords;
+    FloatSize m_anchorInViewCoords;
+    FloatSize m_anchorInNodeCoords;
 };
 
 } // namespace blink

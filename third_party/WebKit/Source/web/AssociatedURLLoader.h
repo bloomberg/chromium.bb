@@ -37,10 +37,9 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace blink { class DocumentThreadableLoader; }
-
 namespace blink {
 
+class DocumentThreadableLoader;
 class WebLocalFrameImpl;
 
 // This class is used to implement WebFrame::createAssociatedURLLoader.
@@ -64,7 +63,7 @@ private:
     WebURLLoaderOptions m_options;
     WebURLLoaderClient* m_client;
     OwnPtr<ClientAdapter> m_clientAdapter;
-    RefPtr<blink::DocumentThreadableLoader> m_loader;
+    RefPtr<DocumentThreadableLoader> m_loader;
 };
 
 } // namespace blink

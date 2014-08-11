@@ -33,12 +33,10 @@
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
+
 class GraphicsContext;
 class GraphicsLayer;
 class GraphicsLayerClient;
-}
-
-namespace blink {
 class OverlayGraphicsLayerClientImpl;
 class WebPageOverlay;
 class WebViewImpl;
@@ -58,9 +56,9 @@ public:
 
     void clear();
     void update();
-    void paintWebFrame(blink::GraphicsContext&);
+    void paintWebFrame(GraphicsContext&);
 
-    blink::GraphicsLayer* graphicsLayer() const { return m_layer.get(); }
+    GraphicsLayer* graphicsLayer() const { return m_layer.get(); }
 
 private:
     PageOverlay(WebViewImpl*, WebPageOverlay*);
@@ -68,8 +66,8 @@ private:
 
     WebViewImpl* m_viewImpl;
     WebPageOverlay* m_overlay;
-    OwnPtr<blink::GraphicsLayerClient> m_layerClient;
-    OwnPtr<blink::GraphicsLayer> m_layer;
+    OwnPtr<GraphicsLayerClient> m_layerClient;
+    OwnPtr<GraphicsLayer> m_layer;
     int m_zOrder;
 };
 

@@ -36,14 +36,14 @@
 
 namespace blink {
 
-class LocalFileSystemClient FINAL : public blink::FileSystemClient {
+class LocalFileSystemClient FINAL : public FileSystemClient {
 public:
     static PassOwnPtr<FileSystemClient> create();
 
     virtual ~LocalFileSystemClient();
 
-    virtual bool requestFileSystemAccessSync(blink::ExecutionContext*) OVERRIDE;
-    virtual void requestFileSystemAccessAsync(blink::ExecutionContext*, PassOwnPtr<blink::PermissionCallbacks>) OVERRIDE;
+    virtual bool requestFileSystemAccessSync(ExecutionContext*) OVERRIDE;
+    virtual void requestFileSystemAccessAsync(ExecutionContext*, PassOwnPtr<PermissionCallbacks>) OVERRIDE;
 
 private:
     LocalFileSystemClient();

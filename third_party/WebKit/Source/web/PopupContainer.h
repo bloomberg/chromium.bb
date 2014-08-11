@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2011, Google Inc. All rights reserved.
  *
@@ -37,44 +38,41 @@
 #include "web/PopupListBox.h"
 
 namespace blink {
+
 class ChromeClient;
 class FrameView;
 class PopupMenuClient;
-}
-
-namespace blink {
-
 struct WebPopupMenuInfo;
 
-class PopupContainer FINAL : public blink::FramelessScrollView {
+class PopupContainer FINAL : public FramelessScrollView {
 public:
-    static PassRefPtr<PopupContainer> create(blink::PopupMenuClient*, bool deviceSupportsTouch);
+    static PassRefPtr<PopupContainer> create(PopupMenuClient*, bool deviceSupportsTouch);
 
     // Whether a key event should be sent to this popup.
     bool isInterestedInEventForKey(int keyCode);
 
     // FramelessScrollView
-    virtual void paint(blink::GraphicsContext*, const blink::IntRect&) OVERRIDE;
+    virtual void paint(GraphicsContext*, const IntRect&) OVERRIDE;
     virtual void hide() OVERRIDE;
-    virtual bool handleMouseDownEvent(const blink::PlatformMouseEvent&) OVERRIDE;
-    virtual bool handleMouseMoveEvent(const blink::PlatformMouseEvent&) OVERRIDE;
-    virtual bool handleMouseReleaseEvent(const blink::PlatformMouseEvent&) OVERRIDE;
-    virtual bool handleWheelEvent(const blink::PlatformWheelEvent&) OVERRIDE;
-    virtual bool handleKeyEvent(const blink::PlatformKeyboardEvent&) OVERRIDE;
-    virtual bool handleTouchEvent(const blink::PlatformTouchEvent&) OVERRIDE;
-    virtual bool handleGestureEvent(const blink::PlatformGestureEvent&) OVERRIDE;
+    virtual bool handleMouseDownEvent(const PlatformMouseEvent&) OVERRIDE;
+    virtual bool handleMouseMoveEvent(const PlatformMouseEvent&) OVERRIDE;
+    virtual bool handleMouseReleaseEvent(const PlatformMouseEvent&) OVERRIDE;
+    virtual bool handleWheelEvent(const PlatformWheelEvent&) OVERRIDE;
+    virtual bool handleKeyEvent(const PlatformKeyboardEvent&) OVERRIDE;
+    virtual bool handleTouchEvent(const PlatformTouchEvent&) OVERRIDE;
+    virtual bool handleGestureEvent(const PlatformGestureEvent&) OVERRIDE;
 
     // PopupContainer methods
 
     // Show the popup
-    void showPopup(blink::FrameView*);
+    void showPopup(FrameView*);
 
     // Show the popup in the specified rect for the specified frame.
     // Note: this code was somehow arbitrarily factored-out of the Popup class
     // so WebViewImpl can create a PopupContainer. This method is used for
     // displaying auto complete popup menus on Mac Chromium, and for all
     // popups on other platforms.
-    void showInRect(const blink::FloatQuad& controlPosition, const blink::IntSize& controlSize, blink::FrameView*, int index);
+    void showInRect(const FloatQuad& controlPosition, const IntSize& controlSize, FrameView*, int index);
 
     // Hides the popup.
     void hidePopup();
@@ -91,7 +89,7 @@ public:
     int selectedIndex() const;
 
     // Refresh the popup values from the PopupMenuClient.
-    blink::IntRect refresh(const blink::IntRect& targetControlRect);
+    IntRect refresh(const IntRect& targetControlRect);
 
     // The menu per-item data.
     const Vector<PopupItem*>& popupData() const;
@@ -103,36 +101,36 @@ public:
     int menuItemFontSize() const;
 
     // The style of the menu being used.
-    blink::PopupMenuStyle menuStyle() const;
+    PopupMenuStyle menuStyle() const;
 
     // While hovering popup menu window, we want to show tool tip message.
     String getSelectedItemToolTip();
 
     // This is public for testing.
-    static blink::IntRect layoutAndCalculateWidgetRectInternal(blink::IntRect widgetRectInScreen, int targetControlHeight, const blink::FloatRect& windowRect, const blink::FloatRect& screen, bool isRTL, const int rtlOffset, const int verticalOffset, const blink::IntSize& transformOffset, PopupContent*, bool& needToResizeView);
+    static IntRect layoutAndCalculateWidgetRectInternal(IntRect widgetRectInScreen, int targetControlHeight, const FloatRect& windowRect, const FloatRect& screen, bool isRTL, const int rtlOffset, const int verticalOffset, const IntSize& transformOffset, PopupContent*, bool& needToResizeView);
 
 private:
     friend class WTF::RefCounted<PopupContainer>;
 
-    PopupContainer(blink::PopupMenuClient*, bool deviceSupportsTouch);
+    PopupContainer(PopupMenuClient*, bool deviceSupportsTouch);
     virtual ~PopupContainer();
 
     // Paint the border.
-    void paintBorder(blink::GraphicsContext*, const blink::IntRect&);
+    void paintBorder(GraphicsContext*, const IntRect&);
 
     // Layout and calculate popup widget size and location and returns it as IntRect.
-    blink::IntRect layoutAndCalculateWidgetRect(int targetControlHeight, const blink::IntSize& transformOffset, const blink::IntPoint& popupInitialCoordinate);
+    IntRect layoutAndCalculateWidgetRect(int targetControlHeight, const IntSize& transformOffset, const IntPoint& popupInitialCoordinate);
 
     void fitToListBox();
 
-    void popupOpened(const blink::IntRect& bounds);
+    void popupOpened(const IntRect& bounds);
     void getPopupMenuInfo(WebPopupMenuInfo*);
 
     // Returns the ChromeClient of the page this popup is associated with.
-    blink::ChromeClient& chromeClient();
+    ChromeClient& chromeClient();
 
     RefPtr<PopupListBox> m_listBox;
-    RefPtr<blink::FrameView> m_frameView;
+    RefPtr<FrameView> m_frameView;
 
     // m_controlPosition contains the transformed position of the
     // <select>/<input> associated with this popup. m_controlSize is the size
@@ -146,8 +144,8 @@ private:
     //       of m_controlPosition (p3)
     //       If the popup is positioned up it will align with the top right of
     //       m_controlPosition (p2)
-    blink::FloatQuad m_controlPosition;
-    blink::IntSize m_controlSize;
+    FloatQuad m_controlPosition;
+    IntSize m_controlSize;
 
     // Whether the popup is currently open.
     bool m_popupOpen;

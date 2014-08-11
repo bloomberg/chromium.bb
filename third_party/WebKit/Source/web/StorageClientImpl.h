@@ -11,12 +11,12 @@ namespace blink {
 
 class WebViewImpl;
 
-class StorageClientImpl : public blink::StorageClient {
+class StorageClientImpl : public StorageClient {
 public:
     explicit StorageClientImpl(WebViewImpl*);
 
-    virtual PassOwnPtr<blink::StorageNamespace> createSessionStorageNamespace() OVERRIDE;
-    virtual bool canAccessStorage(blink::LocalFrame*, blink::StorageType) const OVERRIDE;
+    virtual PassOwnPtr<StorageNamespace> createSessionStorageNamespace() OVERRIDE;
+    virtual bool canAccessStorage(LocalFrame*, StorageType) const OVERRIDE;
 
 private:
     WebViewImpl* m_webView;

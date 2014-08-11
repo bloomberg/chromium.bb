@@ -36,39 +36,36 @@
 #include "platform/DateTimeChooser.h"
 
 namespace blink {
-class PagePopup;
-class DateTimeChooserClient;
-}
-
-namespace blink {
 
 class ChromeClientImpl;
+class DateTimeChooserClient;
+class PagePopup;
 
-class DateTimeChooserImpl FINAL : public blink::DateTimeChooser, public blink::PagePopupClient {
+class DateTimeChooserImpl FINAL : public DateTimeChooser, public PagePopupClient {
 public:
-    static PassRefPtrWillBeRawPtr<DateTimeChooserImpl> create(ChromeClientImpl*, blink::DateTimeChooserClient*, const blink::DateTimeChooserParameters&);
+    static PassRefPtrWillBeRawPtr<DateTimeChooserImpl> create(ChromeClientImpl*, DateTimeChooserClient*, const DateTimeChooserParameters&);
     virtual ~DateTimeChooserImpl();
-    virtual void trace(blink::Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) OVERRIDE;
 
     // DateTimeChooser functions:
     virtual void endChooser() OVERRIDE;
 
 private:
-    DateTimeChooserImpl(ChromeClientImpl*, blink::DateTimeChooserClient*, const blink::DateTimeChooserParameters&);
+    DateTimeChooserImpl(ChromeClientImpl*, DateTimeChooserClient*, const DateTimeChooserParameters&);
     // PagePopupClient functions:
-    virtual blink::IntSize contentSize() OVERRIDE;
-    virtual void writeDocument(blink::SharedBuffer*) OVERRIDE;
-    virtual blink::Locale& locale() OVERRIDE;
+    virtual IntSize contentSize() OVERRIDE;
+    virtual void writeDocument(SharedBuffer*) OVERRIDE;
+    virtual Locale& locale() OVERRIDE;
     virtual void setValueAndClosePopup(int, const String&) OVERRIDE;
     virtual void setValue(const String&) OVERRIDE;
     virtual void closePopup() OVERRIDE;
     virtual void didClosePopup() OVERRIDE;
 
     ChromeClientImpl* m_chromeClient;
-    RawPtrWillBeMember<blink::DateTimeChooserClient> m_client;
-    blink::PagePopup* m_popup;
-    blink::DateTimeChooserParameters m_parameters;
-    OwnPtr<blink::Locale> m_locale;
+    RawPtrWillBeMember<DateTimeChooserClient> m_client;
+    PagePopup* m_popup;
+    DateTimeChooserParameters m_parameters;
+    OwnPtr<Locale> m_locale;
 };
 
 }

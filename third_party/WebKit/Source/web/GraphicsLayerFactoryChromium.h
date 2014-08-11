@@ -31,13 +31,13 @@
 namespace blink {
 class WebViewImpl;
 
-class GraphicsLayerFactoryChromium FINAL : public blink::GraphicsLayerFactory {
+class GraphicsLayerFactoryChromium FINAL : public GraphicsLayerFactory {
 public:
     explicit GraphicsLayerFactoryChromium(WebViewImpl*);
 
     virtual ~GraphicsLayerFactoryChromium();
 
-    virtual PassOwnPtr<blink::GraphicsLayer> createGraphicsLayer(blink::GraphicsLayerClient*) OVERRIDE;
+    virtual PassOwnPtr<GraphicsLayer> createGraphicsLayer(GraphicsLayerClient*) OVERRIDE;
 
 private:
     // The owner of this GraphicsLayerFactoryChromium.

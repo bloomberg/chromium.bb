@@ -38,11 +38,9 @@
 #include "wtf/RefPtr.h"
 
 namespace blink {
+
 class Element;
 class LocalFrame;
-}
-
-namespace blink {
 class WebViewImpl;
 
 class FullscreenController {
@@ -54,8 +52,8 @@ public:
     void willExitFullScreen();
     void didExitFullScreen();
 
-    void enterFullScreenForElement(blink::Element*);
-    void exitFullScreenForElement(blink::Element*);
+    void enterFullScreenForElement(Element*);
+    void exitFullScreenForElement(Element*);
 
     bool isFullscreen() { return m_fullScreenFrame; }
 
@@ -66,19 +64,19 @@ private:
     WebViewImpl* m_webViewImpl;
 
     float m_exitFullscreenPageScaleFactor;
-    blink::IntSize m_exitFullscreenScrollOffset;
-    blink::FloatPoint m_exitFullscreenPinchViewportOffset;
+    IntSize m_exitFullscreenScrollOffset;
+    FloatPoint m_exitFullscreenPinchViewportOffset;
 
     // If set, the WebView is transitioning to fullscreen for this element.
-    RefPtrWillBePersistent<blink::Element> m_provisionalFullScreenElement;
+    RefPtrWillBePersistent<Element> m_provisionalFullScreenElement;
 
     // If set, the WebView is in fullscreen mode for an element in this frame.
-    RefPtr<blink::LocalFrame> m_fullScreenFrame;
+    RefPtr<LocalFrame> m_fullScreenFrame;
 
     bool m_isCancelingFullScreen;
 };
 
-}
+} // namespace blink
 
 #endif
 

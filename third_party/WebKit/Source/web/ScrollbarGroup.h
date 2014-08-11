@@ -31,55 +31,52 @@
 #include "wtf/RefPtr.h"
 
 namespace blink {
+
 class FrameView;
-}
-
-namespace blink {
-
 class WebPluginScrollbarImpl;
 
-class ScrollbarGroup FINAL : public blink::ScrollableArea {
+class ScrollbarGroup FINAL : public ScrollableArea {
 public:
-    ScrollbarGroup(blink::FrameView*, const blink::IntRect& frameRect);
+    ScrollbarGroup(FrameView*, const IntRect& frameRect);
     virtual ~ScrollbarGroup();
 
     void scrollbarCreated(WebPluginScrollbarImpl*);
     void scrollbarDestroyed(WebPluginScrollbarImpl*);
-    void setLastMousePosition(const blink::IntPoint&);
-    void setFrameRect(const blink::IntRect&);
+    void setLastMousePosition(const IntPoint&);
+    void setFrameRect(const IntRect&);
 
-    // blink::ScrollableArea methods
-    virtual int scrollSize(blink::ScrollbarOrientation) const OVERRIDE;
-    virtual void setScrollOffset(const blink::IntPoint&) OVERRIDE;
-    virtual void invalidateScrollbarRect(blink::Scrollbar*, const blink::IntRect&) OVERRIDE;
-    virtual void invalidateScrollCornerRect(const blink::IntRect&) OVERRIDE;
+    // ScrollableArea methods
+    virtual int scrollSize(ScrollbarOrientation) const OVERRIDE;
+    virtual void setScrollOffset(const IntPoint&) OVERRIDE;
+    virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) OVERRIDE;
+    virtual void invalidateScrollCornerRect(const IntRect&) OVERRIDE;
     virtual bool isActive() const OVERRIDE;
-    virtual blink::IntRect scrollCornerRect() const OVERRIDE { return blink::IntRect(); }
+    virtual IntRect scrollCornerRect() const OVERRIDE { return IntRect(); }
     virtual bool isScrollCornerVisible() const OVERRIDE;
-    virtual void getTickmarks(Vector<blink::IntRect>&) const OVERRIDE;
-    virtual blink::IntPoint convertFromContainingViewToScrollbar(const blink::Scrollbar*, const blink::IntPoint& parentPoint) const OVERRIDE;
-    virtual blink::Scrollbar* horizontalScrollbar() const OVERRIDE;
-    virtual blink::Scrollbar* verticalScrollbar() const OVERRIDE;
-    virtual blink::IntPoint scrollPosition() const OVERRIDE;
-    virtual blink::IntPoint minimumScrollPosition() const OVERRIDE;
-    virtual blink::IntPoint maximumScrollPosition() const OVERRIDE;
+    virtual void getTickmarks(Vector<IntRect>&) const OVERRIDE;
+    virtual IntPoint convertFromContainingViewToScrollbar(const Scrollbar*, const IntPoint& parentPoint) const OVERRIDE;
+    virtual Scrollbar* horizontalScrollbar() const OVERRIDE;
+    virtual Scrollbar* verticalScrollbar() const OVERRIDE;
+    virtual IntPoint scrollPosition() const OVERRIDE;
+    virtual IntPoint minimumScrollPosition() const OVERRIDE;
+    virtual IntPoint maximumScrollPosition() const OVERRIDE;
     virtual int visibleHeight() const OVERRIDE;
     virtual int visibleWidth() const OVERRIDE;
-    virtual blink::IntSize contentsSize() const OVERRIDE;
-    virtual blink::IntSize overhangAmount() const OVERRIDE;
-    virtual blink::IntPoint lastKnownMousePosition() const OVERRIDE;
+    virtual IntSize contentsSize() const OVERRIDE;
+    virtual IntSize overhangAmount() const OVERRIDE;
+    virtual IntPoint lastKnownMousePosition() const OVERRIDE;
     virtual bool shouldSuspendScrollAnimations() const OVERRIDE;
     virtual void scrollbarStyleChanged() OVERRIDE;
     virtual bool scrollbarsCanBeActive() const OVERRIDE;
-    virtual blink::IntRect scrollableAreaBoundingBox() const OVERRIDE;
-    virtual bool userInputScrollable(blink::ScrollbarOrientation) const OVERRIDE;
+    virtual IntRect scrollableAreaBoundingBox() const OVERRIDE;
+    virtual bool userInputScrollable(ScrollbarOrientation) const OVERRIDE;
     virtual bool shouldPlaceVerticalScrollbarOnLeft() const OVERRIDE;
-    virtual int pageStep(blink::ScrollbarOrientation) const OVERRIDE;
+    virtual int pageStep(ScrollbarOrientation) const OVERRIDE;
 
 private:
-    blink::FrameView* m_frameView;
-    blink::IntPoint m_lastMousePosition;
-    blink::IntRect m_frameRect;
+    FrameView* m_frameView;
+    IntPoint m_lastMousePosition;
+    IntRect m_frameRect;
     WebPluginScrollbarImpl* m_horizontalScrollbar;
     WebPluginScrollbarImpl* m_verticalScrollbar;
 };

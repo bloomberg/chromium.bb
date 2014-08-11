@@ -35,28 +35,25 @@
 #include "wtf/RefPtr.h"
 
 namespace blink {
+
 class LocalFrame;
 class FrameView;
-class PopupMenuClient;
-}
-
-namespace blink {
-
 class PopupContainer;
+class PopupMenuClient;
 
-class PopupMenuChromium FINAL : public blink::PopupMenu {
+class PopupMenuChromium FINAL : public PopupMenu {
 public:
-    PopupMenuChromium(blink::LocalFrame&, blink::PopupMenuClient*);
+    PopupMenuChromium(LocalFrame&, PopupMenuClient*);
     virtual ~PopupMenuChromium();
 
-    virtual void show(const blink::FloatQuad& controlPosition, const blink::IntSize& controlSize, int index) OVERRIDE;
+    virtual void show(const FloatQuad& controlPosition, const IntSize& controlSize, int index) OVERRIDE;
     virtual void hide() OVERRIDE;
     virtual void updateFromElement() OVERRIDE;
     virtual void disconnectClient() OVERRIDE;
 
 private:
-    blink::PopupMenuClient* m_popupClient;
-    RefPtr<blink::FrameView> m_frameView;
+    PopupMenuClient* m_popupClient;
+    RefPtr<FrameView> m_frameView;
     RefPtr<PopupContainer> m_popup;
 };
 

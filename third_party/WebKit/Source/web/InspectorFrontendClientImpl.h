@@ -35,19 +35,16 @@
 #include "wtf/Noncopyable.h"
 
 namespace blink {
+
 class InspectorFrontendHost;
 class Page;
-}
-
-namespace blink {
-
 class WebDevToolsFrontendClient;
 class WebDevToolsFrontendImpl;
 
-class InspectorFrontendClientImpl FINAL : public blink::InspectorFrontendClient {
+class InspectorFrontendClientImpl FINAL : public InspectorFrontendClient {
     WTF_MAKE_NONCOPYABLE(InspectorFrontendClientImpl);
 public:
-    InspectorFrontendClientImpl(blink::Page*, WebDevToolsFrontendClient*, WebDevToolsFrontendImpl*);
+    InspectorFrontendClientImpl(Page*, WebDevToolsFrontendClient*, WebDevToolsFrontendImpl*);
     virtual ~InspectorFrontendClientImpl();
     virtual void trace(Visitor*) OVERRIDE;
 
@@ -63,9 +60,9 @@ public:
     virtual void dispose() OVERRIDE;
 
 private:
-    RawPtrWillBeMember<blink::Page> m_frontendPage;
+    RawPtrWillBeMember<Page> m_frontendPage;
     WebDevToolsFrontendClient* m_client;
-    RefPtrWillBeMember<blink::InspectorFrontendHost> m_frontendHost;
+    RefPtrWillBeMember<InspectorFrontendHost> m_frontendHost;
 };
 
 } // namespace blink
