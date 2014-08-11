@@ -36,6 +36,7 @@
 class SkBitmap;
 
 namespace blink {
+
 class WebCompositeAndReadbackAsyncCallback;
 class WebGraphicsContext3D;
 class WebLayer;

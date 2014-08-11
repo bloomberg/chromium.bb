@@ -33,9 +33,9 @@
 #include "WebPrivatePtr.h"
 #include "WebString.h"
 
-namespace blink { class DOMError; }
-
 namespace blink {
+
+class DOMError;
 
 // See comment in WebIDBFactory for a high level overview these classes.
 class WebIDBDatabaseError {
@@ -55,14 +55,14 @@ public:
     BLINK_EXPORT void reset();
 
 #if BLINK_IMPLEMENTATION
-    operator PassRefPtrWillBeRawPtr<blink::DOMError>() const;
+    operator PassRefPtrWillBeRawPtr<DOMError>() const;
 #endif
 
 private:
     BLINK_EXPORT void assign(unsigned short code);
     BLINK_EXPORT void assign(unsigned short code, const WebString& message);
 
-    WebPrivatePtr<blink::DOMError> m_private;
+    WebPrivatePtr<DOMError> m_private;
 };
 
 } // namespace blink

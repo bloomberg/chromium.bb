@@ -30,6 +30,7 @@
 #include "WebCommon.h"
 
 namespace blink {
+
 struct WebRect;
 struct WebFloatRect;
 

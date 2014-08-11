@@ -36,10 +36,9 @@
 #include "WebString.h"
 #include "WebURL.h"
 
-namespace blink { class DataObject; }
-
 namespace blink {
 
+class DataObject;
 class WebDragDataPrivate;
 template <typename T> class WebVector;
 
@@ -109,14 +108,14 @@ public:
     BLINK_EXPORT void setFilesystemId(const WebString&);
 
 #if BLINK_IMPLEMENTATION
-    explicit WebDragData(const PassRefPtrWillBeRawPtr<blink::DataObject>&);
-    WebDragData& operator=(const PassRefPtrWillBeRawPtr<blink::DataObject>&);
-    blink::DataObject* getValue() const;
+    explicit WebDragData(const PassRefPtrWillBeRawPtr<DataObject>&);
+    WebDragData& operator=(const PassRefPtrWillBeRawPtr<DataObject>&);
+    DataObject* getValue() const;
 #endif
 
 private:
     void ensureMutable();
-    WebPrivatePtr<blink::DataObject> m_private;
+    WebPrivatePtr<DataObject> m_private;
 };
 
 } // namespace blink

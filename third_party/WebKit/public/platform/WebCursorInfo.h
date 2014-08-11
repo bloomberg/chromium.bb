@@ -34,16 +34,14 @@
 #include "WebImage.h"
 #include "WebPoint.h"
 
-#if INSIDE_BLINK
-namespace blink { class Cursor; }
-#endif
-
 #ifdef WIN32
 typedef struct HICON__* HICON;
 typedef HICON HCURSOR;
 #endif
 
 namespace blink {
+
+class Cursor;
 
 struct WebCursorInfo {
     enum Type {
@@ -116,7 +114,7 @@ struct WebCursorInfo {
     }
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT explicit WebCursorInfo(const blink::Cursor&);
+    BLINK_PLATFORM_EXPORT explicit WebCursorInfo(const Cursor&);
 #endif
 };
 

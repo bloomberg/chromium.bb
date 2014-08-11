@@ -44,11 +44,11 @@ class WebBlobRegistry {
 public:
     virtual ~WebBlobRegistry() { }
 
-    virtual void registerBlobData(const blink::WebString& uuid, const blink::WebBlobData&) { }
-    virtual void addBlobDataRef(const blink::WebString& uuid) { }
-    virtual void removeBlobDataRef(const blink::WebString& uuid) { }
-    virtual void registerPublicBlobURL(const blink::WebURL&, const blink::WebString& uuid) { }
-    virtual void revokePublicBlobURL(const blink::WebURL&) { }
+    virtual void registerBlobData(const WebString& uuid, const WebBlobData&) { }
+    virtual void addBlobDataRef(const WebString& uuid) { }
+    virtual void removeBlobDataRef(const WebString& uuid) { }
+    virtual void registerPublicBlobURL(const WebURL&, const WebString& uuid) { }
+    virtual void revokePublicBlobURL(const WebURL&) { }
 
     // Registers a stream URL referring to a stream with the specified media
     // type.

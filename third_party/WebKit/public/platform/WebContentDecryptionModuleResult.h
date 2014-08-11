@@ -10,11 +10,8 @@
 #include "WebPrivatePtr.h"
 
 namespace blink {
+
 class ContentDecryptionModuleResult;
-}
-
-namespace blink {
-
 class WebString;
 
 class WebContentDecryptionModuleResult {
@@ -58,14 +55,14 @@ public:
     BLINK_PLATFORM_EXPORT void completeWithError(WebContentDecryptionModuleException, unsigned long systemCode, const WebString& message);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT explicit WebContentDecryptionModuleResult(blink::ContentDecryptionModuleResult*);
+    BLINK_PLATFORM_EXPORT explicit WebContentDecryptionModuleResult(ContentDecryptionModuleResult*);
 #endif
 
 private:
     BLINK_PLATFORM_EXPORT void reset();
     BLINK_PLATFORM_EXPORT void assign(const WebContentDecryptionModuleResult&);
 
-    WebPrivatePtr<blink::ContentDecryptionModuleResult> m_impl;
+    WebPrivatePtr<ContentDecryptionModuleResult> m_impl;
 };
 
 } // namespace blink

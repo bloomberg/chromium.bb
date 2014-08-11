@@ -27,14 +27,13 @@
 
 #include "WebCommon.h"
 
-namespace blink { class AudioBus; }
-
 #if INSIDE_BLINK
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
 namespace blink {
 
+class AudioBus;
 class WebAudioBusPrivate;
 
 // A container for multi-channel linear PCM audio data.
@@ -63,7 +62,7 @@ public:
     float* channelData(unsigned channelIndex);
 
 #if INSIDE_BLINK
-    WTF::PassRefPtr<blink::AudioBus> release();
+    WTF::PassRefPtr<AudioBus> release();
 #endif
 
 private:
@@ -71,7 +70,7 @@ private:
     WebAudioBus(const WebAudioBus&);
     void operator=(const WebAudioBus&);
 
-    blink::AudioBus* m_private;
+    AudioBus* m_private;
 };
 
 } // namespace blink

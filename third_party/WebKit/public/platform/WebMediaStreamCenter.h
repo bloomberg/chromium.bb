@@ -34,6 +34,7 @@
 #include "WebVector.h"
 
 namespace blink {
+
 class WebAudioSourceProvider;
 class WebMediaStream;
 class WebMediaStreamTrack;

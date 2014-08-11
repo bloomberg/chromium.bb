@@ -37,12 +37,12 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if INSIDE_BLINK
-namespace blink { class Image; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
 namespace blink {
 
+class Image;
 class WebData;
 struct WebSize;
 
@@ -80,8 +80,8 @@ public:
     BLINK_PLATFORM_EXPORT WebSize size() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebImage(const WTF::PassRefPtr<blink::Image>&);
-    BLINK_PLATFORM_EXPORT WebImage& operator=(const WTF::PassRefPtr<blink::Image>&);
+    BLINK_PLATFORM_EXPORT WebImage(const WTF::PassRefPtr<Image>&);
+    BLINK_PLATFORM_EXPORT WebImage& operator=(const WTF::PassRefPtr<Image>&);
 #endif
 
     WebImage(const SkBitmap& bitmap) : m_bitmap(bitmap) { }
@@ -98,7 +98,6 @@ public:
 private:
     void init() { }
     SkBitmap m_bitmap;
-
 };
 
 } // namespace blink

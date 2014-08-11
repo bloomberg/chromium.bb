@@ -30,7 +30,6 @@
 #include "WebLayer.h"
 
 namespace blink {
-class WebContentLayerClient;
 
 class WebContentLayer {
 public:

@@ -34,6 +34,7 @@
 #include "WebString.h"
 
 namespace blink {
+
 class WebURL;
 struct WebCookie;
 template <typename T> class WebVector;

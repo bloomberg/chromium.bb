@@ -187,7 +187,7 @@ public:
     virtual long long databaseGetFileSize(const WebString& vfsFileName) { return 0; }
 
     // Returns the space available for the given origin
-    virtual long long databaseGetSpaceAvailableForOrigin(const blink::WebString& originIdentifier) { return 0; }
+    virtual long long databaseGetSpaceAvailableForOrigin(const WebString& originIdentifier) { return 0; }
 
 
     // DOM Storage --------------------------------------------------
@@ -603,11 +603,11 @@ public:
 
     // Request the platform to start listening to the events of the specified
     // type and notify the given listener (if not null) when there is an update.
-    virtual void startListening(blink::WebPlatformEventType type, blink::WebPlatformEventListener* listener) { }
+    virtual void startListening(WebPlatformEventType type, WebPlatformEventListener* listener) { }
 
     // Request the platform to stop listening to the specified event and no
     // longer notify the listener, if any.
-    virtual void stopListening(blink::WebPlatformEventType type) { }
+    virtual void stopListening(WebPlatformEventType type) { }
 
     // Quota -----------------------------------------------------------
 

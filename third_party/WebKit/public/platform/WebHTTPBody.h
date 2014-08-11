@@ -38,12 +38,12 @@
 #include "WebURL.h"
 
 #if INSIDE_BLINK
-namespace blink { class FormData; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
 namespace blink {
 
+class FormData;
 class WebHTTPBodyPrivate;
 
 class WebHTTPBody {
@@ -101,9 +101,9 @@ public:
     BLINK_PLATFORM_EXPORT void setContainsPasswordData(bool);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebHTTPBody(const WTF::PassRefPtr<blink::FormData>&);
-    BLINK_PLATFORM_EXPORT WebHTTPBody& operator=(const WTF::PassRefPtr<blink::FormData>&);
-    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<blink::FormData>() const;
+    BLINK_PLATFORM_EXPORT WebHTTPBody(const WTF::PassRefPtr<FormData>&);
+    BLINK_PLATFORM_EXPORT WebHTTPBody& operator=(const WTF::PassRefPtr<FormData>&);
+    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<FormData>() const;
 #endif
 
 private:

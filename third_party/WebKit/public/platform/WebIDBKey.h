@@ -33,9 +33,9 @@
 #include "WebString.h"
 #include "WebVector.h"
 
-namespace blink { class IDBKey; }
-
 namespace blink {
+
+class IDBKey;
 
 class WebIDBKey {
 public:
@@ -77,13 +77,13 @@ public:
     BLINK_EXPORT double number() const; // Only valid for NumberType.
 
 #if BLINK_IMPLEMENTATION
-    WebIDBKey(blink::IDBKey*);
-    WebIDBKey& operator=(blink::IDBKey*);
-    operator blink::IDBKey*() const;
+    WebIDBKey(IDBKey*);
+    WebIDBKey& operator=(IDBKey*);
+    operator IDBKey*() const;
 #endif
 
 private:
-    WebPrivatePtr<blink::IDBKey> m_private;
+    WebPrivatePtr<IDBKey> m_private;
 };
 
 } // namespace blink

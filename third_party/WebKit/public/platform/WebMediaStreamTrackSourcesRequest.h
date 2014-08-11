@@ -33,10 +33,8 @@
 #include "WebVector.h"
 
 namespace blink {
-class MediaStreamTrackSourcesRequest;
-}
 
-namespace blink {
+class MediaStreamTrackSourcesRequest;
 class WebSourceInfo;
 
 class WebMediaStreamTrackSourcesRequest {
@@ -72,11 +70,11 @@ public:
     BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebMediaStreamTrackSourcesRequest(blink::MediaStreamTrackSourcesRequest*);
+    BLINK_PLATFORM_EXPORT WebMediaStreamTrackSourcesRequest(MediaStreamTrackSourcesRequest*);
 #endif
 
 private:
-    WebPrivatePtr<blink::MediaStreamTrackSourcesRequest> m_private;
+    WebPrivatePtr<MediaStreamTrackSourcesRequest> m_private;
 };
 
 } // namespace blink

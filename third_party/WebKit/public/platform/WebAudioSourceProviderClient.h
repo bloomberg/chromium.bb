@@ -34,6 +34,6 @@ protected:
     virtual ~WebAudioSourceProviderClient() { }
 };
 
-} // WebKit
+} // namespace blink
 
 #endif // WebAudioSourceProviderClient_h

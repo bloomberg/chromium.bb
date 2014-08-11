@@ -35,11 +35,9 @@
 #include "WebPrivatePtr.h"
 
 namespace blink {
-struct ResourceLoadInfo;
-}
 
-namespace blink {
 class WebString;
+struct ResourceLoadInfo;
 
 class WebHTTPLoadInfo {
 public:
@@ -75,12 +73,12 @@ public:
     BLINK_PLATFORM_EXPORT void setResponseHeadersText(const WebString&);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebHTTPLoadInfo(WTF::PassRefPtr<blink::ResourceLoadInfo>);
-    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<blink::ResourceLoadInfo>() const;
+    BLINK_PLATFORM_EXPORT WebHTTPLoadInfo(WTF::PassRefPtr<ResourceLoadInfo>);
+    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<ResourceLoadInfo>() const;
 #endif
 
 private:
-    WebPrivatePtr<blink::ResourceLoadInfo> m_private;
+    WebPrivatePtr<ResourceLoadInfo> m_private;
 };
 
 } // namespace blink

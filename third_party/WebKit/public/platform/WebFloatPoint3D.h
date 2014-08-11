@@ -36,14 +36,14 @@ struct WebFloatPoint3D {
     }
 
 #if INSIDE_BLINK
-    WebFloatPoint3D(const blink::FloatPoint3D& p)
+    WebFloatPoint3D(const FloatPoint3D& p)
         : x(p.x())
         , y(p.y())
         , z(p.z())
     {
     }
 
-    WebFloatPoint3D& operator=(const blink::FloatPoint3D& p)
+    WebFloatPoint3D& operator=(const FloatPoint3D& p)
     {
         x = p.x();
         y = p.y();
@@ -51,9 +51,9 @@ struct WebFloatPoint3D {
         return *this;
     }
 
-    operator blink::FloatPoint3D() const
+    operator FloatPoint3D() const
     {
-        return blink::FloatPoint3D(x, y, z);
+        return FloatPoint3D(x, y, z);
     }
 #else
     WebFloatPoint3D(const gfx::Point3F& p)

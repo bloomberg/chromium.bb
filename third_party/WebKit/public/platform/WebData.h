@@ -34,10 +34,9 @@
 #include "WebCommon.h"
 #include "WebPrivatePtr.h"
 
-namespace blink { class SharedBuffer; }
-
 namespace blink {
 
+class SharedBuffer;
 class WebDataPrivate;
 
 // A container for raw bytes.  It is inexpensive to copy a WebData object.
@@ -80,9 +79,9 @@ public:
     bool isNull() const { return m_private.isNull(); }
 
 #if INSIDE_BLINK
-    WebData(const PassRefPtr<blink::SharedBuffer>&);
-    WebData& operator=(const PassRefPtr<blink::SharedBuffer>&);
-    operator PassRefPtr<blink::SharedBuffer>() const;
+    WebData(const PassRefPtr<SharedBuffer>&);
+    WebData& operator=(const PassRefPtr<SharedBuffer>&);
+    operator PassRefPtr<SharedBuffer>() const;
 #else
     template <class C>
     WebData(const C& c)
@@ -99,7 +98,7 @@ public:
 #endif
 
 private:
-    WebPrivatePtr<blink::SharedBuffer> m_private;
+    WebPrivatePtr<SharedBuffer> m_private;
 };
 
 } // namespace blink

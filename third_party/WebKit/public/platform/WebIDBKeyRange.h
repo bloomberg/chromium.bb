@@ -29,10 +29,9 @@
 #include "WebCommon.h"
 #include "WebPrivatePtr.h"
 
-namespace blink { class IDBKeyRange; }
-
 namespace blink {
 
+class IDBKeyRange;
 class WebIDBKey;
 class WebString;
 
@@ -53,13 +52,13 @@ public:
     BLINK_EXPORT void reset();
 
 #if BLINK_IMPLEMENTATION
-    WebIDBKeyRange(blink::IDBKeyRange*);
-    WebIDBKeyRange& operator=(blink::IDBKeyRange*);
-    operator blink::IDBKeyRange*() const;
+    WebIDBKeyRange(IDBKeyRange*);
+    WebIDBKeyRange& operator=(IDBKeyRange*);
+    operator IDBKeyRange*() const;
 #endif
 
 private:
-    WebPrivatePtr<blink::IDBKeyRange> m_private;
+    WebPrivatePtr<IDBKeyRange> m_private;
 };
 
 } // namespace blink

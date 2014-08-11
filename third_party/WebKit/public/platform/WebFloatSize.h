@@ -64,22 +64,22 @@ struct WebFloatSize {
     }
 
 #if INSIDE_BLINK
-    WebFloatSize(const blink::FloatSize& s)
+    WebFloatSize(const FloatSize& s)
         : width(s.width())
         , height(s.height())
     {
     }
 
-    WebFloatSize& operator=(const blink::FloatSize& s)
+    WebFloatSize& operator=(const FloatSize& s)
     {
         width = s.width();
         height = s.height();
         return *this;
     }
 
-    operator blink::FloatSize() const
+    operator FloatSize() const
     {
-        return blink::FloatSize(width, height);
+        return FloatSize(width, height);
     }
 #else
     WebFloatSize(const gfx::SizeF& s)

@@ -9,18 +9,16 @@
 #include "WebString.h"
 
 namespace blink {
+
 namespace TraceEvent {
 class ConvertableToTraceFormat;
 }
-}
-
-namespace blink {
 
 class WebConvertableToTraceFormat {
 public:
     WebConvertableToTraceFormat() { }
 #if INSIDE_BLINK
-    WebConvertableToTraceFormat(blink::TraceEvent::ConvertableToTraceFormat*);
+    WebConvertableToTraceFormat(TraceEvent::ConvertableToTraceFormat*);
 #endif
     ~WebConvertableToTraceFormat() { reset(); }
 
@@ -36,7 +34,7 @@ public:
     }
 
 private:
-    WebPrivatePtr<blink::TraceEvent::ConvertableToTraceFormat> m_private;
+    WebPrivatePtr<TraceEvent::ConvertableToTraceFormat> m_private;
 };
 
 } // namespace blink

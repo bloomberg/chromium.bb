@@ -58,22 +58,22 @@ struct WebFloatPoint {
     }
 
 #if INSIDE_BLINK
-    WebFloatPoint(const blink::FloatPoint& p)
+    WebFloatPoint(const FloatPoint& p)
         : x(p.x())
         , y(p.y())
     {
     }
 
-    WebFloatPoint& operator=(const blink::FloatPoint& p)
+    WebFloatPoint& operator=(const FloatPoint& p)
     {
         x = p.x();
         y = p.y();
         return *this;
     }
 
-    operator blink::FloatPoint() const
+    operator FloatPoint() const
     {
-        return blink::FloatPoint(x, y);
+        return FloatPoint(x, y);
     }
 #else
     WebFloatPoint(const gfx::PointF& p)

@@ -31,11 +31,8 @@
 #include "WebVector.h"
 
 namespace blink {
+
 class MediaStreamDescriptor;
-}
-
-namespace blink {
-
 class WebMediaStreamSource;
 class WebMediaStreamTrack;
 class WebString;
@@ -81,15 +78,15 @@ public:
     BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebMediaStream(blink::MediaStreamDescriptor*);
-    BLINK_PLATFORM_EXPORT WebMediaStream(const WTF::PassRefPtr<blink::MediaStreamDescriptor>&);
-    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<blink::MediaStreamDescriptor>() const;
-    BLINK_PLATFORM_EXPORT operator blink::MediaStreamDescriptor*() const;
-    BLINK_PLATFORM_EXPORT WebMediaStream& operator=(const WTF::PassRefPtr<blink::MediaStreamDescriptor>&);
+    BLINK_PLATFORM_EXPORT WebMediaStream(MediaStreamDescriptor*);
+    BLINK_PLATFORM_EXPORT WebMediaStream(const WTF::PassRefPtr<MediaStreamDescriptor>&);
+    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<MediaStreamDescriptor>() const;
+    BLINK_PLATFORM_EXPORT operator MediaStreamDescriptor*() const;
+    BLINK_PLATFORM_EXPORT WebMediaStream& operator=(const WTF::PassRefPtr<MediaStreamDescriptor>&);
 #endif
 
 private:
-    WebPrivatePtr<blink::MediaStreamDescriptor> m_private;
+    WebPrivatePtr<MediaStreamDescriptor> m_private;
 };
 
 } // namespace blink

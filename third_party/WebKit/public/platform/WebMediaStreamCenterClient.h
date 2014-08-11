@@ -34,6 +34,7 @@
 #include "WebCommon.h"
 
 namespace blink {
+
 class WebMediaStream;
 class WebMediaStreamTrack;
 

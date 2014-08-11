@@ -37,12 +37,13 @@
 #include "WebThreadSafeData.h"
 #include "WebURL.h"
 
-namespace blink { class BlobData; }
 #if INSIDE_BLINK
 namespace WTF { template <typename T> class PassOwnPtr; }
 #endif
 
 namespace blink {
+
+class BlobData;
 
 class WebBlobData : public WebNonCopyable {
 public:
@@ -72,13 +73,13 @@ public:
     BLINK_PLATFORM_EXPORT WebString contentType() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebBlobData(const WTF::PassOwnPtr<blink::BlobData>&);
-    BLINK_PLATFORM_EXPORT WebBlobData& operator=(const WTF::PassOwnPtr<blink::BlobData>&);
-    BLINK_PLATFORM_EXPORT operator WTF::PassOwnPtr<blink::BlobData>();
+    BLINK_PLATFORM_EXPORT WebBlobData(const WTF::PassOwnPtr<BlobData>&);
+    BLINK_PLATFORM_EXPORT WebBlobData& operator=(const WTF::PassOwnPtr<BlobData>&);
+    BLINK_PLATFORM_EXPORT operator WTF::PassOwnPtr<BlobData>();
 #endif
 
 private:
-    WebPrivateOwnPtr<blink::BlobData> m_private;
+    WebPrivateOwnPtr<BlobData> m_private;
 };
 
 } // namespace blink

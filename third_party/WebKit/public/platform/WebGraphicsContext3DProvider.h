@@ -36,6 +36,7 @@
 class GrContext;
 
 namespace blink {
+
 class WebGraphicsContext3D;
 
 class WebGraphicsContext3DProvider {

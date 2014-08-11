@@ -32,10 +32,8 @@
 #include "WebVector.h"
 
 namespace blink {
-struct IDBDatabaseMetadata;
-}
 
-namespace blink {
+struct IDBDatabaseMetadata;
 
 struct WebIDBMetadata {
     enum {
@@ -81,11 +79,10 @@ struct WebIDBMetadata {
     };
 
 #if BLINK_IMPLEMENTATION
-    WebIDBMetadata(const blink::IDBDatabaseMetadata&);
-    operator blink::IDBDatabaseMetadata() const;
+    WebIDBMetadata(const IDBDatabaseMetadata&);
+    operator IDBDatabaseMetadata() const;
 #endif
 };
-
 
 } // namespace blink
 
