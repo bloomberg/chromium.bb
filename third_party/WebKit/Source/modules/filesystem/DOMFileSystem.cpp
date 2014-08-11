@@ -146,6 +146,11 @@ void DOMFileSystem::createWriter(const FileEntry* fileEntry, PassOwnPtr<FileWrit
 {
     ASSERT(fileEntry);
 
+    if (!fileSystem()) {
+        reportError(errorCallback, FileError::create(FileError::ABORT_ERR));
+        return;
+    }
+
     FileWriter* fileWriter = FileWriter::create(executionContext());
     OwnPtr<FileWriterBaseCallback> conversionCallback = ConvertToFileWriterCallback::create(successCallback);
     OwnPtr<AsyncFileSystemCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, conversionCallback.release(), errorCallback, m_context);
@@ -155,6 +160,11 @@ void DOMFileSystem::createWriter(const FileEntry* fileEntry, PassOwnPtr<FileWrit
 void DOMFileSystem::createFile(const FileEntry* fileEntry, PassOwnPtr<FileCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback)
 {
     KURL fileSystemURL = createFileSystemURL(fileEntry);
+    if (!fileSystem()) {
+        reportError(errorCallback, FileError::create(FileError::ABORT_ERR));
+        return;
+    }
+
     fileSystem()->createSnapshotFileAndReadMetadata(fileSystemURL, SnapshotFileCallback::create(this, fileEntry->name(), fileSystemURL, successCallback, errorCallback, m_context));
 }
 
