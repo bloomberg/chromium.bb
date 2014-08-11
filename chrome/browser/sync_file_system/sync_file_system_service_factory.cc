@@ -28,6 +28,11 @@ SyncFileSystemServiceFactory* SyncFileSystemServiceFactory::GetInstance() {
   return Singleton<SyncFileSystemServiceFactory>::get();
 }
 
+void SyncFileSystemServiceFactory::set_mock_local_file_service(
+    scoped_ptr<LocalFileSyncService> mock_local_service) {
+  mock_local_file_service_ = mock_local_service.Pass();
+}
+
 void SyncFileSystemServiceFactory::set_mock_remote_file_service(
     scoped_ptr<RemoteFileSyncService> mock_remote_service) {
   mock_remote_file_service_ = mock_remote_service.Pass();
@@ -59,8 +64,11 @@ KeyedService* SyncFileSystemServiceFactory::BuildServiceInstanceFor(
 
   SyncFileSystemService* service = new SyncFileSystemService(profile);
 
-  scoped_ptr<LocalFileSyncService> local_file_service =
-      LocalFileSyncService::Create(profile);
+  scoped_ptr<LocalFileSyncService> local_file_service;
+  if (mock_local_file_service_)
+    local_file_service = mock_local_file_service_.Pass();
+  else
+    local_file_service = LocalFileSyncService::Create(profile);
 
   scoped_ptr<RemoteFileSyncService> remote_file_service;
   if (mock_remote_file_service_) {
