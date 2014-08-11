@@ -261,7 +261,8 @@ class ServerBase(object):
     def _check_that_all_ports_are_available(self):
         for mapping in self._mappings:
             s = socket.socket()
-            # s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            if not self._platform.is_win():
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             port = mapping['port']
             try:
                 s.bind(('localhost', port))
