@@ -39,6 +39,7 @@ import collections
 import functools
 import multiprocessing
 import os.path
+import pipes
 import subprocess
 import sys
 
@@ -215,8 +216,11 @@ def _ApplyEdits(edits, clang_format_diff_path):
       f.truncate()
       f.write(contents)
     if clang_format_diff_path:
+      # TODO(dcheng): python3.3 exposes this publicly as shlex.quote, but Chrome
+      # uses python2.7. Use the deprecated interface until Chrome uses a newer
+      # Python.
       if subprocess.call('git diff -U0 %s | python %s -i -p1 -style=file ' % (
-          k, clang_format_diff_path), shell=True) != 0:
+          pipes.quote(k), clang_format_diff_path), shell=True) != 0:
         print 'clang-format failed for %s' % k
   print 'Applied %d edits to %d files' % (edit_count, len(edits))
 

@@ -40,6 +40,7 @@ void TestsAScopedRefptr() {
   MyIter my_end(map.end());
   for (MyIter it = my_begin; it != my_end; ++it) {
     const Foo* item = NULL;
-    item = *it;
+    if (*it)
+      item = *it;
   }
 }

@@ -8,12 +8,13 @@ struct Foo {
   int dummy;
 };
 
-// Case 2: An example of an unsafe conversion, where the scoped_refptr<> is
-// returned as a temporary, and as such both it and its object are only valid
-// for the duration of the full expression.
+// A temporary scoped_refptr<T> is used in a boolean test. This doesn't result
+// in memory safety issues, but probably indicates a code smell. As such, the
+// tool intentionally skips this case so it can be manually handled.
 scoped_refptr<Foo> GetBuggyFoo() {
   return new Foo;
 }
 void UseBuggyFoo() {
-  Foo* unsafe = GetBuggyFoo();
+  if (GetBuggyFoo())
+    return;
 }

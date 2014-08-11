@@ -17,6 +17,8 @@ void TestsAScopedRefptr() {
   list.push_back(new Foo);
   list.push_back(new Foo);
   for (FooList::const_iterator it = list.begin(); it != list.end(); ++it) {
+    if (!it->get())
+      continue;
     Foo* item = it->get();
   }
 }

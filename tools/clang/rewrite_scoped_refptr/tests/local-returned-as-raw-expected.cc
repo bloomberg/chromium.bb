@@ -12,5 +12,6 @@ struct Foo {
 // the time the function returns.
 Foo* GetBuggyFoo() {
   scoped_refptr<Foo> unsafe(new Foo);
-  return unsafe;
+  // FIXME: The tool should rewrite the return type of the function.
+  return unsafe.get();
 }

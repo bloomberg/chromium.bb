@@ -45,9 +45,9 @@ def main(argv):
                                   'compile_commands.json')
   source_files = glob.glob(os.path.join(test_directory_for_tool,
                                         '*-original.cc'))
-  actual_files = ['-'.join([source_file.rsplit('-', 2)[0], 'actual.cc'])
+  actual_files = ['-'.join([source_file.rsplit('-', 1)[0], 'actual.cc'])
                   for source_file in source_files]
-  expected_files = ['-'.join([source_file.rsplit('-', 2)[0], 'expected.cc'])
+  expected_files = ['-'.join([source_file.rsplit('-', 1)[0], 'expected.cc'])
                     for source_file in source_files]
   include_paths = []
   include_paths.append(
