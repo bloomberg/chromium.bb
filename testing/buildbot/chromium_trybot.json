@@ -77,6 +77,10 @@
       "test": "installer_util_unittests",
       "platforms": ["win"]
     },
+    {
+      "test": "ipc_mojo_unittests",
+      "platforms": ["linux"]
+    },
     "ipc_tests",
     "jingle_unittests",
     {
