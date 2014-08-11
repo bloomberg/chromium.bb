@@ -30,10 +30,6 @@ class CC_EXPORT PictureLayerTilingSet {
   struct TilingRange {
     TilingRange(size_t start, size_t end) : start(start), end(end) {}
 
-    bool IsIndexWithinRange(size_t index) const {
-      return index >= start && index < end;
-    }
-
     size_t start;
     size_t end;
   };

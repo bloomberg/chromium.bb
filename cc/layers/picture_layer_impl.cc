@@ -1550,38 +1550,34 @@ const Tile* PictureLayerImpl::LayerRasterTileIterator::operator*() const {
 }
 
 PictureLayerImpl::LayerEvictionTileIterator::LayerEvictionTileIterator()
-    : current_range_offset_(0),
-      current_tiling_range_type_(PictureLayerTilingSet::HIGHER_THAN_HIGH_RES),
-      current_category_(PictureLayerTiling::EVENTUALLY),
+    : layer_(NULL),
       tree_priority_(SAME_PRIORITY_FOR_BOTH_TREES),
-      layer_(NULL) {
+      current_category_(PictureLayerTiling::EVENTUALLY),
+      current_tiling_range_type_(PictureLayerTilingSet::HIGHER_THAN_HIGH_RES),
+      current_tiling_(0u) {
 }
 
 PictureLayerImpl::LayerEvictionTileIterator::LayerEvictionTileIterator(
     PictureLayerImpl* layer,
     TreePriority tree_priority)
-    : current_range_offset_(0),
-      current_tiling_range_type_(PictureLayerTilingSet::HIGHER_THAN_HIGH_RES),
-      current_category_(PictureLayerTiling::EVENTUALLY),
+    : layer_(layer),
       tree_priority_(tree_priority),
-      layer_(layer) {
-  // Early out if the tilings_ object doesn't exist.
+      current_category_(PictureLayerTiling::EVENTUALLY),
+      current_tiling_range_type_(PictureLayerTilingSet::HIGHER_THAN_HIGH_RES),
+      current_tiling_(CurrentTilingRange().start - 1u) {
   // TODO(vmpstr): Once tile priorities are determined by the iterators, ensure
   // that layers that don't have valid tile priorities have lowest priorities so
   // they evict their tiles first (crbug.com/381704)
-  if (!layer_->tilings_)
-    return;
+  DCHECK(layer_->tilings_);
+  do {
+    if (!AdvanceToNextTiling())
+      break;
 
-  if (!CurrentRange().IsIndexWithinRange(CurrentTilingIndex()))
-    AdvanceRange();
-
-  iterator_ = PictureLayerTiling::TilingEvictionTileIterator(
-      layer_->tilings_->tiling_at(CurrentTilingIndex()),
-      tree_priority,
-      current_category_);
-
-  if (!iterator_)
-    AdvanceToNextIterator();
+    current_iterator_ = PictureLayerTiling::TilingEvictionTileIterator(
+        layer_->tilings_->tiling_at(CurrentTilingIndex()),
+        tree_priority,
+        current_category_);
+  } while (!current_iterator_);
 }
 
 PictureLayerImpl::LayerEvictionTileIterator::~LayerEvictionTileIterator() {
@@ -1589,105 +1585,36 @@ PictureLayerImpl::LayerEvictionTileIterator::~LayerEvictionTileIterator() {
 
 Tile* PictureLayerImpl::LayerEvictionTileIterator::operator*() {
   DCHECK(*this);
-  return *iterator_;
+  return *current_iterator_;
 }
 
 const Tile* PictureLayerImpl::LayerEvictionTileIterator::operator*() const {
   DCHECK(*this);
-  return *iterator_;
+  return *current_iterator_;
 }
 
 PictureLayerImpl::LayerEvictionTileIterator&
 PictureLayerImpl::LayerEvictionTileIterator::
 operator++() {
   DCHECK(*this);
-  ++iterator_;
-
-  if (!iterator_)
-    AdvanceToNextIterator();
-  return *this;
-}
-
-PictureLayerImpl::LayerEvictionTileIterator::operator bool() const {
-  return !!iterator_;
-}
-
-void PictureLayerImpl::LayerEvictionTileIterator::AdvanceToNextIterator() {
-  DCHECK(!iterator_);
-  while (!iterator_) {
-    bool success = AdvanceTiling();
-    if (!success)
-      success = AdvanceRange();
-    if (!success)
-      success = AdvanceCategory();
-    if (!success)
+  ++current_iterator_;
+  while (!current_iterator_) {
+    if (!AdvanceToNextTiling())
       break;
 
-    iterator_ = PictureLayerTiling::TilingEvictionTileIterator(
+    current_iterator_ = PictureLayerTiling::TilingEvictionTileIterator(
         layer_->tilings_->tiling_at(CurrentTilingIndex()),
         tree_priority_,
         current_category_);
   }
+  return *this;
 }
 
-bool PictureLayerImpl::LayerEvictionTileIterator::AdvanceTiling() {
-  DCHECK(CurrentRange().IsIndexWithinRange(CurrentTilingIndex()));
-  ++current_range_offset_;
-  return CurrentRange().IsIndexWithinRange(CurrentTilingIndex());
+PictureLayerImpl::LayerEvictionTileIterator::operator bool() const {
+  return !!current_iterator_;
 }
 
-bool PictureLayerImpl::LayerEvictionTileIterator::AdvanceRange() {
-  DCHECK(!CurrentRange().IsIndexWithinRange(CurrentTilingIndex()));
-  bool wrapped_around = false;
-  while (!CurrentRange().IsIndexWithinRange(CurrentTilingIndex())) {
-    switch (current_tiling_range_type_) {
-      case PictureLayerTilingSet::HIGHER_THAN_HIGH_RES:
-        current_tiling_range_type_ = PictureLayerTilingSet::LOWER_THAN_LOW_RES;
-        break;
-      case PictureLayerTilingSet::LOWER_THAN_LOW_RES:
-        current_tiling_range_type_ =
-            PictureLayerTilingSet::BETWEEN_HIGH_AND_LOW_RES;
-        break;
-      case PictureLayerTilingSet::BETWEEN_HIGH_AND_LOW_RES:
-        current_tiling_range_type_ = PictureLayerTilingSet::LOW_RES;
-        break;
-      case PictureLayerTilingSet::LOW_RES:
-        current_tiling_range_type_ = PictureLayerTilingSet::HIGH_RES;
-        break;
-      case PictureLayerTilingSet::HIGH_RES:
-        current_tiling_range_type_ =
-            PictureLayerTilingSet::HIGHER_THAN_HIGH_RES;
-        wrapped_around = true;
-        break;
-    }
-    current_range_offset_ = 0;
-  }
-  // If we wrapped around the ranges, we need to indicate that we should advance
-  // the stage.
-  return !wrapped_around;
-}
-
-PictureLayerTilingSet::TilingRange
-PictureLayerImpl::LayerEvictionTileIterator::CurrentRange() {
-  return layer_->tilings_->GetTilingRange(current_tiling_range_type_);
-}
-
-int PictureLayerImpl::LayerEvictionTileIterator::CurrentTilingIndex() {
-  const PictureLayerTilingSet::TilingRange& range = CurrentRange();
-  switch (current_tiling_range_type_) {
-    case PictureLayerTilingSet::HIGHER_THAN_HIGH_RES:
-    case PictureLayerTilingSet::LOW_RES:
-    case PictureLayerTilingSet::HIGH_RES:
-      return range.start + current_range_offset_;
-    case PictureLayerTilingSet::BETWEEN_HIGH_AND_LOW_RES:
-    case PictureLayerTilingSet::LOWER_THAN_LOW_RES:
-      return static_cast<int>(range.end) - 1 - current_range_offset_;
-  }
-  NOTREACHED();
-  return 0;
-}
-
-bool PictureLayerImpl::LayerEvictionTileIterator::AdvanceCategory() {
+bool PictureLayerImpl::LayerEvictionTileIterator::AdvanceToNextCategory() {
   switch (current_category_) {
     case PictureLayerTiling::EVENTUALLY:
       current_category_ = PictureLayerTiling::SOON;
@@ -1703,6 +1630,69 @@ bool PictureLayerImpl::LayerEvictionTileIterator::AdvanceCategory() {
   }
   NOTREACHED();
   return false;
+}
+
+bool
+PictureLayerImpl::LayerEvictionTileIterator::AdvanceToNextTilingRangeType() {
+  switch (current_tiling_range_type_) {
+    case PictureLayerTilingSet::HIGHER_THAN_HIGH_RES:
+      current_tiling_range_type_ = PictureLayerTilingSet::LOWER_THAN_LOW_RES;
+      return true;
+    case PictureLayerTilingSet::LOWER_THAN_LOW_RES:
+      current_tiling_range_type_ =
+          PictureLayerTilingSet::BETWEEN_HIGH_AND_LOW_RES;
+      return true;
+    case PictureLayerTilingSet::BETWEEN_HIGH_AND_LOW_RES:
+      current_tiling_range_type_ = PictureLayerTilingSet::LOW_RES;
+      return true;
+    case PictureLayerTilingSet::LOW_RES:
+      current_tiling_range_type_ = PictureLayerTilingSet::HIGH_RES;
+      return true;
+    case PictureLayerTilingSet::HIGH_RES:
+      if (!AdvanceToNextCategory())
+        return false;
+
+      current_tiling_range_type_ = PictureLayerTilingSet::HIGHER_THAN_HIGH_RES;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+bool PictureLayerImpl::LayerEvictionTileIterator::AdvanceToNextTiling() {
+  DCHECK_NE(current_tiling_, CurrentTilingRange().end);
+  ++current_tiling_;
+  while (current_tiling_ == CurrentTilingRange().end) {
+    if (!AdvanceToNextTilingRangeType())
+      return false;
+
+    current_tiling_ = CurrentTilingRange().start;
+  }
+  return true;
+}
+
+PictureLayerTilingSet::TilingRange
+PictureLayerImpl::LayerEvictionTileIterator::CurrentTilingRange() const {
+  return layer_->tilings_->GetTilingRange(current_tiling_range_type_);
+}
+
+size_t PictureLayerImpl::LayerEvictionTileIterator::CurrentTilingIndex() const {
+  DCHECK_NE(current_tiling_, CurrentTilingRange().end);
+  switch (current_tiling_range_type_) {
+    case PictureLayerTilingSet::HIGHER_THAN_HIGH_RES:
+    case PictureLayerTilingSet::LOW_RES:
+    case PictureLayerTilingSet::HIGH_RES:
+      return current_tiling_;
+    // Tilings in the following ranges are accessed in reverse order.
+    case PictureLayerTilingSet::BETWEEN_HIGH_AND_LOW_RES:
+    case PictureLayerTilingSet::LOWER_THAN_LOW_RES: {
+      PictureLayerTilingSet::TilingRange tiling_range = CurrentTilingRange();
+      size_t current_tiling_range_offset = current_tiling_ - tiling_range.start;
+      return tiling_range.end - 1 - current_tiling_range_offset;
+    }
+  }
+  NOTREACHED();
+  return 0;
 }
 
 }  // namespace cc

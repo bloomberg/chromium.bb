@@ -77,21 +77,20 @@ class CC_EXPORT PictureLayerImpl
     operator bool() const;
 
    private:
-    PictureLayerTilingSet::TilingRange CurrentRange();
-    int CurrentTilingIndex();
+    bool AdvanceToNextCategory();
+    bool AdvanceToNextTilingRangeType();
+    bool AdvanceToNextTiling();
 
-    void AdvanceToNextIterator();
-    bool AdvanceTiling();
-    bool AdvanceRange();
-    bool AdvanceCategory();
+    PictureLayerTilingSet::TilingRange CurrentTilingRange() const;
+    size_t CurrentTilingIndex() const;
 
-    PictureLayerTiling::TilingEvictionTileIterator iterator_;
-    int current_range_offset_;
-    PictureLayerTilingSet::TilingRangeType current_tiling_range_type_;
-    PictureLayerTiling::EvictionCategory current_category_;
-
-    TreePriority tree_priority_;
     PictureLayerImpl* layer_;
+    TreePriority tree_priority_;
+
+    PictureLayerTiling::EvictionCategory current_category_;
+    PictureLayerTilingSet::TilingRangeType current_tiling_range_type_;
+    size_t current_tiling_;
+    PictureLayerTiling::TilingEvictionTileIterator current_iterator_;
   };
 
   static scoped_ptr<PictureLayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
