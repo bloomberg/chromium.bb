@@ -74,6 +74,3 @@ ChromeBlacklistTrialTest.*
 
 # http://crbug.com/349778
 TranslateManagerRenderViewHostTest.*
-
-# http://crbug.com/395743
-ImageLoaderTest.DeleteExtensionWhileWaitingForCache

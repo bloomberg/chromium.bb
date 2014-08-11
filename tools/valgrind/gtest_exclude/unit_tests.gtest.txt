@@ -31,6 +31,3 @@ NativeMessagingTest.*
 
 # Timing out all over the place. Disabling for now. http://crbug.com/164589
 StorageInfoProviderTest.*
-
-# http://crbug.com/395743
-ImageLoaderTest.DeleteExtensionWhileWaitingForCache
