@@ -47,6 +47,8 @@ def _ComputeSystraceCategories(options):
 
 
 def _ComputePerfCategories(options):
+  if not perf_controller.PerfProfilerController.IsSupported():
+    return []
   if not options.perf_categories:
     return []
   return options.perf_categories.split(',')
@@ -195,7 +197,8 @@ When in doubt, just try out --trace-frame-viewer.
         systrace_controller.SystraceController.GetCategories(device)))
     return 0
 
-  if options.perf_categories in ['list', 'help']:
+  if (perf_controller.PerfProfilerController.IsSupported() and
+      options.perf_categories in ['list', 'help']):
     ui.PrintMessage('\n'.join(
         perf_controller.PerfProfilerController.GetCategories(device)))
     return 0
