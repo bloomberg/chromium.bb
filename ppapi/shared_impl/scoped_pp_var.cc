@@ -4,8 +4,10 @@
 
 #include "ppapi/shared_impl/scoped_pp_var.h"
 
+#include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var_tracker.h"
+#include "ppapi/thunk/thunk.h"
 
 namespace ppapi {
 
@@ -44,6 +46,47 @@ PP_Var ScopedPPVar::Release() {
   PP_Var result = var_;
   var_ = PP_MakeUndefined();
   return result;
+}
+
+ScopedPPVarArray::ScopedPPVarArray(const PassPPBMemoryAllocatedArray&,
+                                   PP_Var* array,
+                                   size_t size)
+    : array_(array),
+      size_(size) {}
+
+ScopedPPVarArray::ScopedPPVarArray(size_t size)
+    : size_(size) {
+  if (size > 0) {
+    array_ = static_cast<PP_Var*>(
+        thunk::GetPPB_Memory_Dev_0_1_Thunk()->MemAlloc(
+            static_cast<uint32_t>(sizeof(PP_Var) * size)));
+  }
+  for (size_t i = 0; i < size_; ++i)
+    array_[i] = PP_MakeUndefined();
+}
+
+ScopedPPVarArray::~ScopedPPVarArray() {
+  for (size_t i = 0; i < size_; ++i)
+    CallRelease(array_[i]);
+  if (size_ > 0)
+    thunk::GetPPB_Memory_Dev_0_1_Thunk()->MemFree(array_);
+
+}
+
+PP_Var* ScopedPPVarArray::Release(const PassPPBMemoryAllocatedArray&,
+                                  size_t* size) {
+  PP_Var* result = array_;
+  *size = size_;
+  array_ = NULL;
+  size_ = 0;
+  return result;
+}
+
+void ScopedPPVarArray::Set(size_t index, PP_Var var) {
+  DCHECK(index < size_);
+  CallAddRef(var);
+  CallRelease(array_[index]);
+  array_[index] = var;
 }
 
 }  // namespace ppapi
