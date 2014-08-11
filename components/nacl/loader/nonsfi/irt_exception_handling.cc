@@ -25,7 +25,10 @@ namespace {
 // NonSFI NaCl does not use NACL_THREAD_SUSPEND_SIGNAL (==SIGUSR1),
 // and SIGSYS is reserved for seccomp-bpf.
 const int kSignals[] = {
+#if !defined(__mips__)
+  // This signal does not exist on MIPS.
   SIGSTKFLT,
+#endif
   SIGINT, SIGQUIT, SIGILL, SIGTRAP, SIGBUS, SIGFPE, SIGSEGV,
   // Handle SIGABRT in case someone sends it asynchronously using kill().
   SIGABRT
