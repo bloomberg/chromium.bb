@@ -22,6 +22,8 @@ class ResourceConverter;
 class CONTENT_EXPORT V8VarConverter {
  public:
   explicit V8VarConverter(PP_Instance instance);
+  V8VarConverter(PP_Instance instance, bool object_vars_allowed);
+
   // Constructor for testing.
   V8VarConverter(PP_Instance instance,
                  scoped_ptr<ResourceConverter> resource_converter);
@@ -70,6 +72,11 @@ class CONTENT_EXPORT V8VarConverter {
   bool FromV8ValueInternal(v8::Handle<v8::Value> val,
                            v8::Handle<v8::Context> context,
                            ppapi::ScopedPPVar* result_var);
+
+  PP_Instance instance_;
+
+  // Whether or not to support conversion to PP_VARTYPE_OBJECT.
+  bool object_vars_allowed_;
 
   // The message loop to run the callback to |FromV8Value| from.
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;

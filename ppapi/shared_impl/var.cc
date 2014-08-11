@@ -82,6 +82,8 @@ ArrayBufferVar* Var::AsArrayBufferVar() { return NULL; }
 
 NPObjectVar* Var::AsNPObjectVar() { return NULL; }
 
+V8ObjectVar* Var::AsV8ObjectVar() { return NULL; }
+
 ProxyObjectVar* Var::AsProxyObjectVar() { return NULL; }
 
 ArrayVar* Var::AsArrayVar() { return NULL; }

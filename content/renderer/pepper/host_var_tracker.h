@@ -18,12 +18,14 @@
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/var_tracker.h"
+#include "v8/include/v8.h"
 
 typedef struct NPObject NPObject;
 
 namespace ppapi {
 class ArrayBufferVar;
 class NPObjectVar;
+class V8ObjectVar;
 class Var;
 }
 
@@ -52,6 +54,18 @@ class HostVarTracker : public ppapi::VarTracker {
   // Returns the number of NPObjectVar's associated with the given instance.
   // Returns 0 if the instance isn't known.
   CONTENT_EXPORT int GetLiveNPObjectVarsForInstance(PP_Instance instance) const;
+
+  // Tracks all live V8ObjectVar. This is so we can map between instance +
+  // V8Object and get the V8ObjectVar corresponding to it. This Add/Remove
+  // function is called by the V8ObjectVar when it is created and destroyed.
+  void AddV8ObjectVar(ppapi::V8ObjectVar* object_var) { NOTIMPLEMENTED(); }
+  void RemoveV8ObjectVar(ppapi::V8ObjectVar* object_var) { NOTIMPLEMENTED(); }
+  // Creates or retrieves a V8ObjectVar.
+  PP_Var V8ObjectVarForV8Object(PP_Instance instance,
+                                v8::Handle<v8::Object> object) {
+    NOTIMPLEMENTED();
+    return PP_MakeUndefined();
+  }
 
   // VarTracker public implementation.
   virtual PP_Var MakeResourcePPVarFromMessage(

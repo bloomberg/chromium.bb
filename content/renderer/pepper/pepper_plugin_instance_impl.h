@@ -59,6 +59,7 @@
 #include "ui/events/latency_info.h"
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
+#include "v8/include/v8.h"
 
 struct PP_Point;
 struct _NPP;
@@ -92,10 +93,6 @@ class Resource;
 struct InputEventData;
 struct PPP_Instance_Combined;
 class ScopedPPVar;
-}
-
-namespace v8 {
-class Isolate;
 }
 
 namespace content {
@@ -145,6 +142,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   ppapi::thunk::ResourceCreationAPI& resource_creation() {
     return *resource_creation_.get();
   }
+
+  // Return the v8 context that the plugin is in.
+  v8::Local<v8::Context> GetContext();
 
   // Does some pre-destructor cleanup on the instance. This is necessary
   // because some cleanup depends on the plugin instance still existing (like

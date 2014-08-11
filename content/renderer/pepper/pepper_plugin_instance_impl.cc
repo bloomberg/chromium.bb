@@ -661,6 +661,18 @@ PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
 // If a method needs to access a member of the instance after the call has
 // returned, then it needs to keep its own reference on the stack.
 
+v8::Local<v8::Context> PepperPluginInstanceImpl::GetContext() {
+  if (!container_)
+    return v8::Handle<v8::Context>();
+  WebLocalFrame* frame = container_->element().document().frame();
+  if (!frame)
+    return v8::Handle<v8::Context>();
+
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+  DCHECK(context->GetIsolate() == isolate_);
+  return context;
+}
+
 void PepperPluginInstanceImpl::Delete() {
   is_deleted_ = true;
 
