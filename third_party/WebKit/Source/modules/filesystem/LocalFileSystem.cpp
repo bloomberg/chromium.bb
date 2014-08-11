@@ -50,9 +50,9 @@ namespace blink {
 
 namespace {
 
-void fileSystemNotAllowed(ExecutionContext*, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
+void reportFailure(ExecutionContext*, PassOwnPtr<AsyncFileSystemCallbacks> callbacks, FileError::ErrorCode error)
 {
-    callbacks->didFail(FileError::ABORT_ERR);
+    callbacks->didFail(error);
 }
 
 } // namespace
@@ -84,10 +84,11 @@ LocalFileSystem::~LocalFileSystem()
 
 void LocalFileSystem::resolveURL(ExecutionContext* context, const KURL& fileSystemURL, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
+    RefPtrWillBeRawPtr<ExecutionContext> contextPtr(context);
     RefPtr<CallbackWrapper> wrapper = adoptRef(new CallbackWrapper(callbacks));
     requestFileSystemAccessInternal(context,
-        bind(&LocalFileSystem::resolveURLInternal, this, fileSystemURL, wrapper),
-        bind(&LocalFileSystem::fileSystemNotAllowedInternal, this, PassRefPtrWillBeRawPtr<ExecutionContext>(context), wrapper));
+        bind(&LocalFileSystem::resolveURLInternal, this, contextPtr, fileSystemURL, wrapper),
+        bind(&LocalFileSystem::fileSystemNotAllowedInternal, this, contextPtr, wrapper));
 }
 
 void LocalFileSystem::requestFileSystem(ExecutionContext* context, FileSystemType type, long long size, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
@@ -111,6 +112,14 @@ void LocalFileSystem::deleteFileSystem(ExecutionContext* context, FileSystemType
         bind(&LocalFileSystem::fileSystemNotAllowedInternal, this, contextPtr, wrapper));
 }
 
+WebFileSystem* LocalFileSystem::fileSystem() const
+{
+    Platform* platform = Platform::current();
+    if (!platform)
+        return nullptr;
+    return Platform::current()->fileSystem();
+}
+
 void LocalFileSystem::requestFileSystemAccessInternal(ExecutionContext* context, const Closure& allowed, const Closure& denied)
 {
     if (!client()) {
@@ -128,11 +137,18 @@ void LocalFileSystem::requestFileSystemAccessInternal(ExecutionContext* context,
     client()->requestFileSystemAccessAsync(context, PermissionCallbacks::create(allowed, denied));
 }
 
+void LocalFileSystem::fileSystemNotAvailable(
+    PassRefPtrWillBeRawPtr<ExecutionContext> context,
+    PassRefPtr<CallbackWrapper> callbacks)
+{
+    context->postTask(createCrossThreadTask(&reportFailure, callbacks->release(), FileError::ABORT_ERR));
+}
+
 void LocalFileSystem::fileSystemNotAllowedInternal(
     PassRefPtrWillBeRawPtr<ExecutionContext> context,
     PassRefPtr<CallbackWrapper> callbacks)
 {
-    context->postTask(createCrossThreadTask(&fileSystemNotAllowed, callbacks->release()));
+    context->postTask(createCrossThreadTask(&reportFailure, callbacks->release(), FileError::ABORT_ERR));
 }
 
 void LocalFileSystem::fileSystemAllowedInternal(
@@ -140,15 +156,25 @@ void LocalFileSystem::fileSystemAllowedInternal(
     FileSystemType type,
     PassRefPtr<CallbackWrapper> callbacks)
 {
+    if (!fileSystem()) {
+        fileSystemNotAvailable(context, callbacks);
+        return;
+    }
+
     KURL storagePartition = KURL(KURL(), context->securityOrigin()->toString());
-    blink::Platform::current()->fileSystem()->openFileSystem(storagePartition, static_cast<blink::WebFileSystemType>(type), callbacks->release());
+    fileSystem()->openFileSystem(storagePartition, static_cast<blink::WebFileSystemType>(type), callbacks->release());
 }
 
 void LocalFileSystem::resolveURLInternal(
+    PassRefPtrWillBeRawPtr<ExecutionContext> context,
     const KURL& fileSystemURL,
     PassRefPtr<CallbackWrapper> callbacks)
 {
-    blink::Platform::current()->fileSystem()->resolveURL(fileSystemURL, callbacks->release());
+    if (!fileSystem()) {
+        fileSystemNotAvailable(context, callbacks);
+        return;
+    }
+    fileSystem()->resolveURL(fileSystemURL, callbacks->release());
 }
 
 void LocalFileSystem::deleteFileSystemInternal(
@@ -156,8 +182,12 @@ void LocalFileSystem::deleteFileSystemInternal(
     FileSystemType type,
     PassRefPtr<CallbackWrapper> callbacks)
 {
+    if (!fileSystem()) {
+        fileSystemNotAvailable(context, callbacks);
+        return;
+    }
     KURL storagePartition = KURL(KURL(), context->securityOrigin()->toString());
-    blink::Platform::current()->fileSystem()->deleteFileSystem(storagePartition, static_cast<blink::WebFileSystemType>(type), callbacks->release());
+    fileSystem()->deleteFileSystem(storagePartition, static_cast<blink::WebFileSystemType>(type), callbacks->release());
 }
 
 LocalFileSystem::LocalFileSystem(PassOwnPtr<FileSystemClient> client)
