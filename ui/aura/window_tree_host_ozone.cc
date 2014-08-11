@@ -97,7 +97,7 @@ void WindowTreeHostOzone::ReleaseCapture() {
 
 void WindowTreeHostOzone::PostNativeEvent(
     const base::NativeEvent& native_event) {
-  NOTIMPLEMENTED();
+  SendEventToProcessor(static_cast<ui::Event*>(native_event));
 }
 
 void WindowTreeHostOzone::SetCursorNative(gfx::NativeCursor cursor) {
