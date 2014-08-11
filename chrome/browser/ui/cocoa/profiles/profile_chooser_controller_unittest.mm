@@ -313,13 +313,11 @@ TEST_F(ProfileChooserControllerTest,
   NSArray* activeCardSubviews = [[subviews objectAtIndex:2] subviews];
   NSArray* activeCardLinks = [[activeCardSubviews objectAtIndex:0] subviews];
 
-  // There is one link, without a target and with the user's email.
+  // There is one label with the user's email.
   ASSERT_EQ(1U, [activeCardLinks count]);
-  NSButton* emailLink =
-      static_cast<NSButton*>([activeCardLinks objectAtIndex:0]);
-  EXPECT_EQ(nil, [emailLink action]);
-  EXPECT_EQ(kEmail, base::SysNSStringToUTF8([emailLink title]));
-  EXPECT_EQ(controller(), [emailLink target]);
+  NSTextField* emailLabel =
+      static_cast<NSTextField*>([activeCardLinks objectAtIndex:0]);
+  EXPECT_EQ(kEmail, base::SysNSStringToUTF8([emailLabel stringValue]));
 }
 
 TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {

@@ -123,10 +123,9 @@ NSString* ElideEmail(const std::string& email, CGFloat width) {
 }
 
 // Builds a label with the given |title| anchored at |frame_origin|. Sets the
-// text color and background color to the given colors if not null.
+// text color to |text_color| if not null.
 NSTextField* BuildLabel(NSString* title,
                         NSPoint frame_origin,
-                        NSColor* background_color,
                         NSColor* text_color) {
   base::scoped_nsobject<NSTextField> label(
       [[NSTextField alloc] initWithFrame:NSZeroRect]);
@@ -135,11 +134,10 @@ NSTextField* BuildLabel(NSString* title,
   [label setAlignment:NSLeftTextAlignment];
   [label setBezeled:NO];
   [label setFont:[NSFont labelFontOfSize:kTextFontSize]];
+  [label setDrawsBackground:NO];
   [label setFrameOrigin:frame_origin];
   [label sizeToFit];
 
-  if (background_color)
-    [[label cell] setBackgroundColor:background_color];
   if (text_color)
     [[label cell] setTextColor:text_color];
 
@@ -214,8 +212,7 @@ NSView* BuildTitleCard(NSRect frame_rect,
   [button setFrameSize:NSMakeSize(kProfileButtonHeight, kProfileButtonHeight)];
   [button setFrameOrigin:NSMakePoint(kHorizontalSpacing, 0)];
 
-  NSTextField* title_label =
-      BuildLabel(message, NSZeroPoint, GetDialogBackgroundColor(), nil);
+  NSTextField* title_label = BuildLabel(message, NSZeroPoint, nil);
   [title_label setAlignment:NSCenterTextAlignment];
   [title_label setFont:[NSFont labelFontOfSize:kTitleFontSize]];
   [title_label sizeToFit];
@@ -1264,7 +1261,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   NSTextField* contentLabel = BuildLabel(
       contentMessage,
       NSMakePoint(kHorizontalSpacing, yOffset),
-      tutorialBackgroundColor,
       gfx::SkColorToSRGBNSColor(profiles::kAvatarTutorialContentTextColor));
   [contentLabel setFrameSize:NSMakeSize(availableWidth, 0)];
   [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:contentLabel];
@@ -1275,7 +1271,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   NSTextField* titleLabel =
       BuildLabel(titleMessage,
                  NSMakePoint(kHorizontalSpacing, yOffset),
-                 tutorialBackgroundColor,
                  [NSColor whiteColor] /* text_color */);
   [titleLabel setFont:[NSFont labelFontOfSize:kTitleFontSize]];
   [titleLabel setFrameSize:NSMakeSize(availableWidth, 0)];
@@ -1370,8 +1365,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   rect.origin.x = 0;
 
   // The available links depend on the type of profile that is active.
-  NSButton* link;
   if (item.signed_in) {
+    rect.size.height = kBlueButtonHeight / 2;
+    // Signed in profiles with no authentication errors do not have a clickable
+    // email link.
+    NSButton* link = nil;
     if (switches::IsEnableAccountConsistency()) {
       NSString* linkTitle = l10n_util::GetNSString(
           viewMode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER ?
@@ -1384,10 +1382,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                            frameOrigin:rect.origin
                                 action:linkSelector];
     } else {
-      link = [self linkButtonWithTitle:base::SysUTF16ToNSString(item.sync_state)
-                           frameOrigin:rect.origin
-                                action:nil];
+      NSString* email = base::SysUTF16ToNSString(item.sync_state);
       if (HasAuthError(browser_->profile())) {
+        link = [self linkButtonWithTitle:email
+                             frameOrigin:rect.origin
+                                  action:nil];
         [link setImage:ui::ResourceBundle::GetSharedInstance().
             GetNativeImageNamed(IDR_ICON_PROFILES_ACCOUNT_BUTTON_ERROR).
             ToNSImage()];
@@ -1396,19 +1395,23 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
         [link setAction:@selector(showAccountReauthenticationView:)];
         [link setTag:kPrimaryProfileTag];
       } else {
-        [[link cell] setTextColor:[NSColor blackColor]];
+        NSTextField* label = BuildLabel(email, rect.origin, nil);
+        [label setAlignment:NSCenterTextAlignment];
+        [label setFrame:rect];
+        [container addSubview:label];
       }
     }
     // -linkButtonWithTitle sizeToFit's the link, so re-stretch it so that it
     // can be centered correctly in the view.
-    rect.size.height = NSMaxY([link frame]);
-    [link setFrame:rect];
-    [link setAlignment:NSCenterTextAlignment];
-    [container addSubview:link];
+    if (link) {
+      [link setAlignment:NSCenterTextAlignment];
+      [link setFrame:rect];
+      [container addSubview:link];
+    }
     [container setFrameSize:rect.size];
   } else {
     rect.size.height = kBlueButtonHeight;
-    link = [[BlueLabelButton alloc] initWithFrame:rect];
+    NSButton* signinButton = [[BlueLabelButton alloc] initWithFrame:rect];
 
     // Manually elide the button text so that the contents fit inside the bubble
     // This is needed because the BlueLabelButton cell resets the style on
@@ -1419,16 +1422,16 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
             l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)),
         gfx::FontList(), rect.size.width, gfx::ELIDE_TAIL));
 
-    [link setTitle:elidedButtonText];
-    [link setTarget:self];
-    [link setAction:@selector(showInlineSigninPage:)];
-    [container addSubview:link];
+    [signinButton setTitle:elidedButtonText];
+    [signinButton setTarget:self];
+    [signinButton setAction:@selector(showInlineSigninPage:)];
+    [container addSubview:signinButton];
 
     // Sign-in promo text.
     NSTextField* promo = BuildLabel(
         l10n_util::GetNSString(IDS_PROFILES_SIGNIN_PROMO),
-        NSMakePoint(0, NSMaxY([link frame]) + kVerticalSpacing),
-        GetDialogBackgroundColor(), nil);
+        NSMakePoint(0, NSMaxY([signinButton frame]) + kVerticalSpacing),
+        nil);
     [promo setFrameSize:NSMakeSize(rect.size.width, 0)];
     [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:promo];
     [container addSubview:promo];
@@ -1450,9 +1453,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   NSTextField* disclaimer = BuildLabel(
       base::SysUTF16ToNSString(avatarMenu_->GetSupervisedUserInformation()),
-      NSMakePoint(kHorizontalSpacing, yOffset),
-      nil /* background_color */,
-      nil /* text_color */);
+      NSMakePoint(kHorizontalSpacing, yOffset), nil);
   [disclaimer setFrameSize:NSMakeSize(availableTextWidth, 0)];
   [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:disclaimer];
   yOffset = NSMaxY([disclaimer frame]);
@@ -1743,8 +1744,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   } else {
     NSString* contentStr =
         l10n_util::GetNSString(IDS_PROFILES_ACCOUNT_REMOVAL_TEXT);
-    NSTextField* contentLabel = BuildLabel(contentStr, contentFrameOrigin,
-        GetDialogBackgroundColor(), nil /* text_color */);
+    NSTextField* contentLabel = BuildLabel(contentStr, contentFrameOrigin, nil);
     [contentLabel setFrameSize:NSMakeSize(availableWidth, 0)];
     [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:contentLabel];
     contentView = contentLabel;
@@ -1820,7 +1820,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       l10n_util::GetNSStringF(
           IDS_PROFILES_NOT_YOU_CONTENT_TEXT, avatarItem.name),
       NSMakePoint(kHorizontalSpacing, yOffset + kVerticalSpacing),
-      GetDialogBackgroundColor(), nil /* text_color */);
+      nil);
   [contentLabel setFrameSize:NSMakeSize(availableWidth, 0)];
   [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:contentLabel];
   [container addSubview:contentLabel];
