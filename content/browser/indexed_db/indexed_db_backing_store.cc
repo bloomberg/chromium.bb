@@ -1167,6 +1167,7 @@ std::vector<base::string16> IndexedDBBackingStore::GetDatabaseNames(
   for (*s = it->Seek(start_key);
        s->ok() && it->IsValid() && CompareKeys(it->Key(), stop_key) < 0;
        *s = it->Next()) {
+    // Decode database name (in iterator key).
     StringPiece slice(it->Key());
     DatabaseNameKey database_name_key;
     if (!DatabaseNameKey::Decode(&slice, &database_name_key) ||
@@ -1174,7 +1175,31 @@ std::vector<base::string16> IndexedDBBackingStore::GetDatabaseNames(
       INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_DATABASE_NAMES);
       continue;
     }
-    found_names.push_back(database_name_key.database_name());
+
+    // Decode database id (in iterator value).
+    int64 database_id = 0;
+    StringPiece valueSlice(it->Value());
+    if (!DecodeVarInt(&valueSlice, &database_id) || !valueSlice.empty()) {
+      INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_DATABASE_NAMES);
+      continue;
+    }
+
+    // Look up version by id.
+    bool found = false;
+    int64 database_version = IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION;
+    *s = GetVarInt(db_.get(),
+                   DatabaseMetaDataKey::Encode(
+                       database_id, DatabaseMetaDataKey::USER_INT_VERSION),
+                   &database_version,
+                   &found);
+    if (!s->ok() || !found) {
+      INTERNAL_READ_ERROR_UNTESTED(GET_DATABASE_NAMES);
+      continue;
+    }
+
+    // Ignore stale metadata from failed initial opens.
+    if (database_version != IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION)
+      found_names.push_back(database_name_key.database_name());
   }
 
   if (!s->ok())
@@ -1289,6 +1314,7 @@ leveldb::Status IndexedDBBackingStore::CreateIDBDatabaseMetaData(
     const base::string16& version,
     int64 int_version,
     int64* row_id) {
+  // TODO(jsbell): Don't persist metadata if open fails. http://crbug.com/395472
   scoped_refptr<LevelDBTransaction> transaction =
       IndexedDBClassFactory::Get()->CreateLevelDBTransaction(db_.get());
 

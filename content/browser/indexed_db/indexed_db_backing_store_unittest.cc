@@ -970,6 +970,35 @@ TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
   }
 }
 
+TEST_F(IndexedDBBackingStoreTest, GetDatabaseNames) {
+  const base::string16 string_version(ASCIIToUTF16("string_version"));
+
+  const base::string16 db1_name(ASCIIToUTF16("db1"));
+  const int64 db1_version = 1LL;
+  int64 db1_id;
+
+  // Database records with DEFAULT_INT_VERSION represent stale data,
+  // and should not be enumerated.
+  const base::string16 db2_name(ASCIIToUTF16("db2"));
+  const int64 db2_version = IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION;
+  int64 db2_id;
+
+  leveldb::Status s = backing_store_->CreateIDBDatabaseMetaData(
+      db1_name, string_version, db1_version, &db1_id);
+  EXPECT_TRUE(s.ok());
+  EXPECT_GT(db1_id, 0LL);
+
+  s = backing_store_->CreateIDBDatabaseMetaData(
+      db2_name, string_version, db2_version, &db2_id);
+  EXPECT_TRUE(s.ok());
+  EXPECT_GT(db2_id, db1_id);
+
+  std::vector<base::string16> names = backing_store_->GetDatabaseNames(&s);
+  EXPECT_TRUE(s.ok());
+  EXPECT_EQ(names.size(), 1ULL);
+  EXPECT_EQ(names[0], db1_name);
+}
+
 }  // namespace
 
 }  // namespace content
