@@ -574,7 +574,7 @@ class BuildSpecsManager(object):
     commit_message = 'Automatic: Start %s %s %s' % (self.build_names[0],
                                                     self.branch, version)
     if build_id is not None and build_id >= 0:
-      commit_message += '\nbuild_id: %s' % build_id
+      commit_message += '\nCrOS-Build-Id: %s' % build_id
 
     logging.info('Publishing build spec for: %s', version)
     logging.info('Publishing with commit message: %s', commit_message)

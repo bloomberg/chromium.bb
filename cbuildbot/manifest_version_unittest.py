@@ -178,7 +178,7 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
   def testPublishManifestCommitMessageWithBuildId(self):
     """Tests that PublishManifest writes a build id."""
     expected_message = ('Automatic: Start x86-generic-paladin master 1\n'
-                        'build_id: %s' % MOCK_BUILD_ID)
+                        'CrOS-Build-Id: %s' % MOCK_BUILD_ID)
     self.mox.StubOutWithMock(self.manager, 'PushSpecChanges')
 
     info = manifest_version.VersionInfo(
