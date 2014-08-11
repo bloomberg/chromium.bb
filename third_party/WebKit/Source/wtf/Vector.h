@@ -1012,6 +1012,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     template<typename T, size_t inlineCapacity, typename Allocator> template<typename U>
     void Vector<T, inlineCapacity, Allocator>::append(const U* data, size_t dataSize)
     {
+        ASSERT(Allocator::isAllocationAllowed());
         size_t newSize = m_size + dataSize;
         if (newSize > capacity()) {
             data = expandCapacity(newSize, data);
@@ -1026,6 +1027,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     template<typename T, size_t inlineCapacity, typename Allocator> template<typename U>
     ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::append(const U& val)
     {
+        ASSERT(Allocator::isAllocationAllowed());
         if (LIKELY(size() != capacity())) {
             new (NotNull, end()) T(val);
             ++m_size;
@@ -1069,6 +1071,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     template<typename T, size_t inlineCapacity, typename Allocator> template<typename U>
     void Vector<T, inlineCapacity, Allocator>::insert(size_t position, const U* data, size_t dataSize)
     {
+        ASSERT(Allocator::isAllocationAllowed());
         RELEASE_ASSERT(position <= size());
         size_t newSize = m_size + dataSize;
         if (newSize > capacity()) {
@@ -1085,6 +1088,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     template<typename T, size_t inlineCapacity, typename Allocator> template<typename U>
     inline void Vector<T, inlineCapacity, Allocator>::insert(size_t position, const U& val)
     {
+        ASSERT(Allocator::isAllocationAllowed());
         RELEASE_ASSERT(position <= size());
         const U* data = &val;
         if (size() == capacity()) {

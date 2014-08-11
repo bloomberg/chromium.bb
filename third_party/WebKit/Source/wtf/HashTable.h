@@ -771,6 +771,7 @@ namespace WTF {
     template<typename HashTranslator, typename T, typename Extra>
     typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::AddResult HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::add(const T& key, const Extra& extra)
     {
+        ASSERT(Allocator::isAllocationAllowed());
         if (!m_table)
             expand();
 
@@ -833,6 +834,7 @@ namespace WTF {
     template<typename HashTranslator, typename T, typename Extra>
     typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::AddResult HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::addPassingHashCode(const T& key, const Extra& extra)
     {
+        ASSERT(Allocator::isAllocationAllowed());
         if (!m_table)
             expand();
 
