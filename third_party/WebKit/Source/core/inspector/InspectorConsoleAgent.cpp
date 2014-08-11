@@ -126,6 +126,7 @@ void InspectorConsoleAgent::disable(ErrorString*)
     if (!(--s_enabledAgentCount))
         ScriptController::setCaptureCallStackForUncaughtExceptions(false);
     m_state->setBoolean(ConsoleAgentState::consoleMessagesEnabled, false);
+    m_state->setBoolean(ConsoleAgentState::tracingBasedTimeline, false);
 }
 
 void InspectorConsoleAgent::clearMessages(ErrorString*)
