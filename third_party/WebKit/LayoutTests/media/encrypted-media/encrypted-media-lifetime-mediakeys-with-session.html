@@ -38,17 +38,14 @@
                 MediaKeys.create('org.w3.clearkey').then(function(result) {
                     mediaKeys = result;
 
-                    // Verify MediaKeys are not an ActiveDOMObject. However, the
-                    // PromiseResolver objects used by MediaKeys/MediaKeySession
-                    // are ActiveDOMObjects, and they stay active until the end
-                    // of the promise.
-                    assert_equals(numActiveDOMObjectsCreated(), 1, 'MediaKeys.create()');
+                    // Verify MediaKeys are not an ActiveDOMObject.
+                    assert_equals(numActiveDOMObjectsCreated(), 0, 'MediaKeys.create()');
 
                     var initDataType = getInitDataType();
                     return mediaKeys.createSession(initDataType, getInitData(initDataType));
                 }).then(function(mediaKeySession) {
-                    // 1 MediaKeySession + 1 PromiseResolver.
-                    assert_equals(numActiveDOMObjectsCreated(), 2, 'MediaKeys.createSession()');
+                    // 1 MediaKeySession.
+                    assert_equals(numActiveDOMObjectsCreated(), 1, 'MediaKeys.createSession()');
 
                     // Run gc(), should not affect MediaKeys object nor the
                     // session since we still have a reference to it.

@@ -53,29 +53,24 @@
                 // Create a few MediaKeys + MediaKeySession objects. Only keep
                 // a reference to the last one created.
                 createMediaKeyWithMediaKeySession().then(function(mediaKeySession) {
-                    // Should be 1 MediaKeySession + 1 PromiseResolver for the
-                    // MediaKeySession.
+                    // Should be 1 MediaKeySession.
+                    assert_equals(numActiveDOMObjectsCreated(), 1);
+                    return createMediaKeyWithMediaKeySession();
+                }).then(function(mediaKeySession) {
+                    // Should be 2 MediaKeySessions.
                     assert_equals(numActiveDOMObjectsCreated(), 2);
                     return createMediaKeyWithMediaKeySession();
                 }).then(function(mediaKeySession) {
-                    // Should be 2 MediaKeySessions + 1 PromiseResolver for the
-                    // latest MediaKeySession.
+                    // Should be 3 MediaKeySessions.
                     assert_equals(numActiveDOMObjectsCreated(), 3);
                     return createMediaKeyWithMediaKeySession();
                 }).then(function(mediaKeySession) {
-                    // Should be 3 MediaKeySessions + 1 PromiseResolver for the
-                    // latest MediaKeySession.
+                    // Should be 4 MediaKeySessions.
                     assert_equals(numActiveDOMObjectsCreated(), 4);
                     return createMediaKeyWithMediaKeySession();
                 }).then(function(mediaKeySession) {
-                    // Should be 4 MediaKeySessions + 1 PromiseResolver for the
-                    // latest MediaKeySession.
+                    // Should be 5 MediaKeySessions.
                     assert_equals(numActiveDOMObjectsCreated(), 5);
-                    return createMediaKeyWithMediaKeySession();
-                }).then(function(mediaKeySession) {
-                    // Should be 5 MediaKeySessions + 1 PromiseResolver for the
-                    // latest MediaKeySession.
-                    assert_equals(numActiveDOMObjectsCreated(), 6);
 
                     // |mediaKeys| refers to the most recently created MediaKeys
                     // object.

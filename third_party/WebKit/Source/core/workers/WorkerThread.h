@@ -116,6 +116,7 @@ namespace blink {
         OwnPtr<WorkerSharedTimer> m_sharedTimer;
         MessageQueue<WorkerThreadTask> m_debuggerMessageQueue;
         OwnPtr<PendingGCRunner> m_pendingGCRunner;
+        OwnPtr<WebThread::TaskObserver> m_microtaskRunner;
         OwnPtr<MessageLoopInterruptor> m_messageLoopInterruptor;
 
         WorkerLoaderProxy& m_workerLoaderProxy;

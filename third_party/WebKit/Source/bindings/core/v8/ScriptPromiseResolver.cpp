@@ -64,10 +64,6 @@ void ScriptPromiseResolver::resolveOrRejectImmediately()
     ASSERT(!executionContext()->activeDOMObjectsAreStopped());
     ASSERT(!executionContext()->activeDOMObjectsAreSuspended());
     {
-        // FIXME: The V8RecursionScope is only necessary to force microtask delivery for promises
-        // resolved or rejected in workers. It can be removed once worker threads run microtasks
-        // at the end of every task (rather than just the main thread).
-        V8RecursionScope scope(m_scriptState->isolate(), m_scriptState->executionContext());
         if (m_state == Resolving) {
             m_resolver.resolve(m_value.newLocal(m_scriptState->isolate()));
         } else {

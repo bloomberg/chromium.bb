@@ -104,11 +104,8 @@ TEST_F(ScriptPromiseResolverTest, resolve)
         EXPECT_TRUE(resolver->promise().isEmpty());
     }
 
-    // FIXME: http://crbug.com/374772
-    // These assertions should pass, but currently RunMicrotasks run in
-    // ScriptPromiseResolver::resolve wrongly.
-    // EXPECT_EQ(String(), onFulfilled);
-    // EXPECT_EQ(String(), onRejected);
+    EXPECT_EQ(String(), onFulfilled);
+    EXPECT_EQ(String(), onRejected);
 
     isolate()->RunMicrotasks();
 
@@ -155,11 +152,8 @@ TEST_F(ScriptPromiseResolverTest, reject)
         EXPECT_TRUE(resolver->promise().isEmpty());
     }
 
-    // FIXME: http://crbug.com/374772
-    // These assertions should pass, but currently RunMicrotasks run in
-    // ScriptPromiseResolver::reject wrongly.
-    // EXPECT_EQ(String(), onFulfilled);
-    // EXPECT_EQ(String(), onRejected);
+    EXPECT_EQ(String(), onFulfilled);
+    EXPECT_EQ(String(), onRejected);
 
     isolate()->RunMicrotasks();
 

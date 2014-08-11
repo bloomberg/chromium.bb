@@ -33,25 +33,19 @@
                 MediaKeys.create('org.w3.clearkey').then(function(result) {
                     mediaKeys = result;
 
-                    // Verify MediaKeys are not an ActiveDOMObject. However, the
-                    // PromiseResolver objects used by MediaKeys/MediaKeySession
-                    // are ActiveDOMObjects, and they stay active until the end
-                    // of the promise.
-                    // Should be 1 PromiseResolver from create().
-                    assert_equals(numActiveDOMObjectsCreated(), 1, 'MediaKeys.create()');
+                    // Verify MediaKeys are not an ActiveDOMObject.
+                    assert_equals(numActiveDOMObjectsCreated(), 0, 'MediaKeys.create()');
 
                     return mediaKeys.createSession(initDataType, initData);
                 }).then(function(result) {
                     mediaKeySession1 = result;
-                    // Should be 1 MediaKeySession + 1 PromiseResolver from
-                    // createSession().
-                    assert_equals(numActiveDOMObjectsCreated(), 2, 'mediaKeys.createSession(1)');
+                    // Should be 1 MediaKeySession.
+                    assert_equals(numActiveDOMObjectsCreated(), 1, 'mediaKeys.createSession(1)');
                     return mediaKeys.createSession(initDataType, initData);
                 }).then(function(result) {
                     mediaKeySession2 = result;
-                    // Should be 2 MediaKeySessions + 1 PromiseResolver from the
-                    // last createSession().
-                    assert_equals(numActiveDOMObjectsCreated(), 3, 'mediaKeys.createSession(2)');
+                    // Should be 2 MediaKeySessions.
+                    assert_equals(numActiveDOMObjectsCreated(), 2, 'mediaKeys.createSession(2)');
 
                     // Release the sessions. Once completed, only the JS
                     // reference to them keeps them around.
@@ -62,9 +56,8 @@
                     // Since both sessions have been closed, dropping the
                     // reference to them from JS will result in the session
                     // being garbage-collected.
-                    // Should be 2 MediaKeySessions + 1 PromiseResolver from the
-                    // last release().
-                    assert_equals(numActiveDOMObjectsCreated(), 3);
+                    // Should be 2 MediaKeySessions.
+                    assert_equals(numActiveDOMObjectsCreated(), 2);
 
                     mediaKeySession1 = null;
                     return createGCPromise();

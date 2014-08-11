@@ -22,15 +22,15 @@
                     test.done();
                 }
 
-                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                MediaKeys.create('org.w3.clearkey').then(test.step_func(function(mediaKeys) {
                     var initDataType = getInitDataType();
                     return mediaKeys.createSession(initDataType, getInitData(initDataType));
-                }).then(function(result) {
+                })).then(test.step_func(function(result) {
                     mediaKeySession = result;
-                    waitForEventAndRunStep('message', mediaKeySession, processMessage, test);
-                }).catch(function(error) {
+                    waitForEventAndRunStep('message', mediaKeySession, test.step_func(processMessage), test);
+                })).catch(test.step_func(function(error) {
                     forceTestFailureFromPromise(test, error);
-                });
+                }));
             }, 'Verify v2 events.');
         </script>
     </body>

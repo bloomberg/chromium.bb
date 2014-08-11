@@ -29,6 +29,7 @@
 #include "core/workers/WorkerThread.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "core/dom/Microtask.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"
@@ -54,7 +55,17 @@ namespace blink {
 namespace {
 const int64 kShortIdleHandlerDelayMs = 1000;
 const int64 kLongIdleHandlerDelayMs = 10*1000;
-}
+
+class MicrotaskRunner : public WebThread::TaskObserver {
+public:
+    virtual void willProcessTask() OVERRIDE { }
+    virtual void didProcessTask() OVERRIDE
+    {
+        Microtask::performCheckpoint();
+    }
+};
+
+} // namespace
 
 static Mutex& threadSetMutex()
 {
@@ -229,6 +240,8 @@ void WorkerThread::initialize()
     KURL scriptURL = m_startupData->m_scriptURL;
     String sourceCode = m_startupData->m_sourceCode;
     WorkerThreadStartMode startMode = m_startupData->m_startMode;
+    m_microtaskRunner = adoptPtr(new MicrotaskRunner);
+    m_thread->addTaskObserver(m_microtaskRunner.get());
 
     {
         MutexLocker lock(m_threadCreationMutex);
@@ -295,6 +308,8 @@ void WorkerThread::cleanup()
     // the heap for this thread will need to access thread local data.
     ThreadState::detach();
 
+    m_thread->removeTaskObserver(m_microtaskRunner.get());
+    m_microtaskRunner = nullptr;
     m_thread->removeTaskObserver(m_pendingGCRunner.get());
     m_pendingGCRunner = nullptr;
     m_messageLoopInterruptor = nullptr;
