@@ -14,4 +14,33 @@ function CTFailure(step, reason, resultsByBuilder, firstFailingRevisions, lastPa
   this.firstFailingRevisions = firstFailingRevisions;
   this.lastPassingRevisions = lastPassingRevisions;
 }
+
+CTFailure.prototype.flakinessDashboardURL = function(tree) {
+  var testType = this.step;
+
+  // FIXME: Replace the flakiness dashboard's sense of groups with sheriff-o-matic's
+  // sense of trees and get rid of this mapping.
+  var treeToDashboardGroup = {
+    blink: '@ToT%20Blink',
+    chromium: '@ToT%20Chromium',
+  };
+
+  // FIXME: Remove this once the flakiness dashboard stops having webkit_tests
+  // masquerade as layout-tests.
+  if (testType == 'webkit_tests')
+      testType = 'layout-tests';
+
+  // FIXME: sugarjs's toQueryString makes spaces into pluses instead of %20, which confuses
+  // the flakiness dashboard, which just uses decodeURIComponent.
+  return 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#group=' +
+    treeToDashboardGroup[tree] + '&' +
+    Object.toQueryString({
+      tests: this.testName,
+      testType: testType,
+    });
+}
+
+CTFailure.prototype.embeddedFlakinessDashboardURL = function(tree) {
+  return this.flakinessDashboardURL(tree) + '&showChrome=false';
+}
 </script>

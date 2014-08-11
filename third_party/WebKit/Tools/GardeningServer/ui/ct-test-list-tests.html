@@ -9,40 +9,27 @@ found in the LICENSE file.
 <script>
 (function () {
 
-var kExampleTests = [
-{
-  "testName": "plugins/gesture-events-scrolled.html",
-  "step": "foo_step",
-  "resultNodesByBuilder": {
-    "WebKit Mac10.6 (dbg)": {
-      "actual": "IMAGE",
-    },
-  },
-  "oldestFailingRevision": 177164,
-  "newestPassingRevision": 177165,
-},
-{
-  "testName": "plugins/transformed-events.html",
-  "step": "foo_step",
-  "resultNodesByBuilder": {
-    "WebKit Mac10.6 (dbg)": {
-      "actual": "IMAGE",
-    },
-  },
-  "oldestFailingRevision": 177164,
-  "newestPassingRevision": 177165,
-},
-{
-  "testName": "plugins/gesture-events.html",
-  "step": "foo_step",
-  "resultNodesByBuilder": {
-    "WebKit Mac10.6 (dbg)": {
-      "actual": "IMAGE",
-    },
-  },
-  "oldestFailingRevision": 177164,
-  "newestPassingRevision": 177165,
-},
+var kExampleFailures = [
+  new CTFailure('foo_step', "plugins/gesture-events-scrolled.html",
+    {
+      "WebKit Mac10.6 (dbg)": {
+        "actual": "IMAGE",
+      },
+    }, 177164, 177165),
+  new CTFailure('foo_step', "plugins/transformed-events.html",
+    {
+      "WebKit Mac10.6 (dbg)": {
+        "actual": "IMAGE",
+      },
+    }, 177164, 177165
+  ),
+  new CTFailure('foo_step', "plugins/gesture-events.html",
+    {
+      "WebKit Mac10.6 (dbg)": {
+        "actual": "IMAGE",
+      },
+    }, 177164, 177165
+  )
 ];
 
 module("ct-test-list");
@@ -50,7 +37,7 @@ module("ct-test-list");
 asyncTest("basic", 4, function() {
   var list = document.createElement('ct-test-list');
 
-  list.tests = kExampleTests;
+  list.tests = kExampleFailures;
   list.tree = 'blink';
 
   Platform.endOfMicrotask(function() {

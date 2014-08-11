@@ -37,8 +37,8 @@ asyncTest("basic", 9, function() {
   requestAnimationFrame(function() {
     var tabs = resultsByBuilder.shadowRoot.querySelectorAll('paper-tab');
     equal(tabs.length, 2);
-    equal(tabs[0].textContent, 'Linux (dbg)');
-    equal(tabs[1].textContent, 'Mac10.6 (dbg)');
+    equal(tabs[0].textContent, 'WebKit Linux (dbg)');
+    equal(tabs[1].textContent, 'WebKit Mac10.6 (dbg)');
 
     var detail = resultsByBuilder.shadowRoot.querySelectorAll('ct-results-detail');
     equal(detail.length, 1);

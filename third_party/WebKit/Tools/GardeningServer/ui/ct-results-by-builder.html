@@ -18,7 +18,7 @@ found in the LICENSE file.
     </style>
     <paper-tabs selected="{{ selected }}">
       <template repeat="{{ builder in builders }}">
-        <paper-tab>{{ builder | displayName }}</paper-tab>
+        <paper-tab>{{ builder }}</paper-tab>
       </template>
     </paper-tabs>
     <ct-results-detail failure="{{ failure }}" builder="{{ builders[selected] }}"></ct-results-detail>
@@ -32,10 +32,6 @@ found in the LICENSE file.
       failureChanged: function() {
         this.builders = Object.getOwnPropertyNames(this.failure.resultNodesByBuilder).sort();
         this.selected = 0;
-      },
-
-      displayName: function(builder) {
-        return ui.displayNameForBuilder(builder);
       },
     });
   </script>

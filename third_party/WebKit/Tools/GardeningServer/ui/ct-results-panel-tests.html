@@ -9,85 +9,83 @@ found in the LICENSE file.
 <script>
 (function () {
 
-var kExampleFailures = [{
-    "testName": "plugins/gesture-events-scrolled.html",
-    "resultNodesByBuilder": {
-        "WebKit Win7 (dbg)": {
-            "expected": "PASS",
-            "is_unexpected": true,
-            "actual": "CRASH",
-            "time": 0.9
-        },
-        "WebKit Mac10.6 (dbg)": {
-            "expected": "PASS",
-            "is_unexpected": true,
-            "actual": "CRASH",
-            "has_stderr": true,
-            "time": 1.8
-        },
-        "WebKit Mac10.7 (dbg)": {
-            "expected": "PASS",
-            "is_unexpected": true,
-            "actual": "CRASH",
-            "has_stderr": true,
-            "time": 3.2
-        }
+var kExampleFailures = [
+  new CTFailure("testName", "plugins/gesture-events-scrolled.html",
+    {
+      "WebKit Win7 (dbg)": {
+        "expected": "PASS",
+        "is_unexpected": true,
+        "actual": "CRASH",
+        "time": 0.9
+      },
+      "WebKit Mac10.6 (dbg)": {
+        "expected": "PASS",
+        "is_unexpected": true,
+        "actual": "CRASH",
+        "has_stderr": true,
+        "time": 1.8
+      },
+      "WebKit Mac10.7 (dbg)": {
+        "expected": "PASS",
+        "is_unexpected": true,
+        "actual": "CRASH",
+        "has_stderr": true,
+        "time": 3.2
+      }
     },
-    "oldestFailingRevision": 177164,
-    "newestPassingRevision": 177165
-}, {
-    "testName": "plugins/transformed-events.html",
-    "resultNodesByBuilder": {
-        "WebKit Win7 (dbg)": {
-            "expected": "PASS",
-            "is_unexpected": true,
-            "actual": "CRASH",
-            "time": 0.6
-        },
-        "WebKit Mac10.6 (dbg)": {
-            "expected": "PASS",
-            "is_unexpected": true,
-            "actual": "CRASH",
-            "has_stderr": true,
-            "time": 1.4
-        },
-        "WebKit Mac10.7 (dbg)": {
-            "expected": "PASS",
-            "is_unexpected": true,
-            "actual": "CRASH",
-            "has_stderr": true,
-            "time": 3
-        }
+    177164, 177165
+  ),
+  new CTFailure("testName", "plugins/transformed-events.html",
+    {
+      "WebKit Win7 (dbg)": {
+        "expected": "PASS",
+        "is_unexpected": true,
+        "actual": "CRASH",
+        "time": 0.6
+      },
+      "WebKit Mac10.6 (dbg)": {
+        "expected": "PASS",
+        "is_unexpected": true,
+        "actual": "CRASH",
+        "has_stderr": true,
+        "time": 1.4
+      },
+      "WebKit Mac10.7 (dbg)": {
+        "expected": "PASS",
+        "is_unexpected": true,
+        "actual": "CRASH",
+        "has_stderr": true,
+        "time": 3
+      }
     },
-    "oldestFailingRevision": 177164,
-    "newestPassingRevision": 177165
-}, {
-    "testName": "plugins/gesture-events.html",
-    "resultNodesByBuilder": {
-        "WebKit Win7 (dbg)": {
-            "expected": "PASS",
-            "is_unexpected": true,
-            "actual": "CRASH",
-            "time": 1.7
-        },
-        "WebKit Mac10.6 (dbg)": {
-            "expected": "PASS",
-            "is_unexpected": true,
-            "actual": "CRASH",
-            "has_stderr": true,
-            "time": 2.5
-        },
-        "WebKit Mac10.7 (dbg)": {
-            "expected": "PASS",
-            "is_unexpected": true,
-            "actual": "CRASH",
-            "has_stderr": true,
-            "time": 3.4
-        }
+    177164, 177165
+  ),
+  new CTFailure("testName", "plugins/gesture-events.html",
+    {
+      "WebKit Win7 (dbg)": {
+        "expected": "PASS",
+        "is_unexpected": true,
+        "actual": "CRASH",
+        "time": 1.7
+      },
+      "WebKit Mac10.6 (dbg)": {
+        "expected": "PASS",
+        "is_unexpected": true,
+        "actual": "CRASH",
+        "has_stderr": true,
+        "time": 2.5
+      },
+      "WebKit Mac10.7 (dbg)": {
+        "expected": "PASS",
+        "is_unexpected": true,
+        "actual": "CRASH",
+        "has_stderr": true,
+        "time": 3.4
+      }
     },
-    "oldestFailingRevision": 177164,
-    "newestPassingRevision": 177165
-}];
+    177164, 177165
+  ),
+];
 
 module("ct-results-panel");
 

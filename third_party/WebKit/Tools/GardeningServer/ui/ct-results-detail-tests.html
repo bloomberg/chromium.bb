@@ -30,16 +30,14 @@ asyncTest("image+text", 4, function() {
     var comparisonResult = document.createElement('ct-results-detail');
     comparisonResult.builder = 'dummy builder';
     // FIXME: Use a proper mock model object.
-    comparisonResult.failure = {
-      "testName": "dummy/test.html",
-      "resultNodesByBuilder": {
+    comparisonResult.failure = new CTFailure(
+      "testName", "dummy/test.html",
+      {
         "dummy builder": {
           "actual": "IMAGE+TEXT",
         },
-      },
-      "oldestFailingRevision": 177164,
-      "newestPassingRevision": 177165,
-    };
+      }, 177164, 177165
+    );
 
     comparisonResult.async(function() {
       deepEqual(probedUrls, [

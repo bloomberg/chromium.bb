@@ -13,44 +13,40 @@ found in the LICENSE file.
 
 var assert = chai.assert;
 
-var kExampleFailures = [{
-    "testName": "plugins/gesture-events-scrolled.html",
-    "resultNodesByBuilder": {
-        "WebKit Win7 (dbg)": {
-            "actual": "CRASH",
-            "masterUrl": "http://master-one",
-            "earliestFailingBuild": "1",
-        },
-        "WebKit Mac10.6 (dbg)": {
-            "actual": "CRASH",
-            "masterUrl": "http://master-one",
-            "earliestFailingBuild": "2",
-        },
-        "WebKit Mac10.7": {
-            "actual": "TEXT",
-            "masterUrl": "http://master-one",
-            "earliestFailingBuild": "3",
-        }
-    },
-    "oldestFailingRevision": 177164,
-    "newestPassingRevision": 177165
-}, {
-    "testName": "plugins/transformed-events.html",
-    "resultNodesByBuilder": {
-        "WebKit Win7 (dbg)": {
-            "actual": "TEXT",
-            "masterUrl": "http://master-one",
-            "earliestFailingBuild": "1",
-        },
-        "WebKit Mac10.7": {
-            "actual": "CRASH",
-            "masterUrl": "http://master-two",
-            "earliestFailingBuild": "4",
-        },
-    },
-    "oldestFailingRevision": 177164,
-    "newestPassingRevision": 177165
-}];
+var kExampleFailures = [
+  new CTFailure('layout_tests', "plugins/gesture-events-scrolled.html",
+    {
+      "WebKit Win7 (dbg)": {
+        "actual": "CRASH",
+        "masterUrl": "http://master-one",
+        "earliestFailingBuild": "1",
+      },
+      "WebKit Mac10.6 (dbg)": {
+        "actual": "CRASH",
+        "masterUrl": "http://master-one",
+        "earliestFailingBuild": "2",
+      },
+      "WebKit Mac10.7": {
+        "actual": "TEXT",
+        "masterUrl": "http://master-one",
+        "earliestFailingBuild": "3",
+      }
+    }, 177164, 177165),
+  new CTFailure('layout_tests', "plugins/transformed-events.html",
+    {
+      "WebKit Win7 (dbg)": {
+        "actual": "TEXT",
+        "masterUrl": "http://master-one",
+        "earliestFailingBuild": "1",
+      },
+      "WebKit Mac10.7": {
+        "actual": "CRASH",
+        "masterUrl": "http://master-two",
+        "earliestFailingBuild": "4",
+      },
+    }, 177164, 177165
+  )
+];
 
 var kExampleBuilderLatestRevisions = {
   'WebKit Mac10.7': {

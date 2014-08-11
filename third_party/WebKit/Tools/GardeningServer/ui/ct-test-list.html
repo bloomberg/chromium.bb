@@ -23,7 +23,7 @@ found in the LICENSE file.
   <script>
     Polymer({
       flakinessDashboardURL: function(test) {
-        return ui.urlForFlakinessDashboard(test.testName, test.step, this.tree);
+        return test.flakinessDashboardURL(this.tree);
       },
     });
   </script>
