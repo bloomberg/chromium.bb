@@ -1252,9 +1252,6 @@ void RenderLayer::addChild(RenderLayer* child, RenderLayer* beforeChild)
 
     setNeedsCompositingInputsUpdate();
 
-    // FIXME: Why do we need to explicitly set CompositingUpdateRebuildTree?
-    compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
-
     if (child->stackingNode()->isNormalFlowOnly())
         m_stackingNode->dirtyNormalFlowList();
 
