@@ -23,12 +23,26 @@ using testing::_;
 
 namespace {
 
-void CreateVideoEncodeAccelerator(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    scoped_ptr<VideoEncodeAccelerator> fake_vea,
-    const ReceiveVideoEncodeAcceleratorCallback& callback) {
-  callback.Run(task_runner, fake_vea.Pass());
-}
+class VEAFactory {
+ public:
+  VEAFactory(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+             scoped_ptr<VideoEncodeAccelerator> vea)
+      : task_runner_(task_runner), vea_(vea.Pass()) {}
+
+  void CreateVideoEncodeAccelerator(
+      const ReceiveVideoEncodeAcceleratorCallback& callback) {
+    create_cb_ = callback;
+  }
+
+  void FinishCreatingVideoEncodeAccelerator() {
+    create_cb_.Run(task_runner_, vea_.Pass());
+  }
+
+ private:
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_ptr<VideoEncodeAccelerator> vea_;
+  ReceiveVideoEncodeAcceleratorCallback create_cb_;
+};
 
 void CreateSharedMemory(
     size_t size, const ReceiveVideoEncodeMemoryCallback& callback) {
@@ -116,13 +130,14 @@ class ExternalVideoEncoderTest : public ::testing::Test {
     fake_vea_ = new test::FakeVideoEncodeAccelerator(task_runner_,
                                                      &stored_bitrates_);
     scoped_ptr<VideoEncodeAccelerator> fake_vea(fake_vea_);
-    video_encoder_.reset(
-        new ExternalVideoEncoder(cast_environment_,
-                                 video_config_,
-                                 base::Bind(&CreateVideoEncodeAccelerator,
-                                            task_runner_,
-                                            base::Passed(&fake_vea)),
-                                 base::Bind(&CreateSharedMemory)));
+    VEAFactory vea_factory(task_runner_, fake_vea.Pass());
+    video_encoder_.reset(new ExternalVideoEncoder(
+        cast_environment_,
+        video_config_,
+        base::Bind(&VEAFactory::CreateVideoEncodeAccelerator,
+                   base::Unretained(&vea_factory)),
+        base::Bind(&CreateSharedMemory)));
+    vea_factory.FinishCreatingVideoEncodeAccelerator();
   }
 
   virtual ~ExternalVideoEncoderTest() {}
@@ -191,6 +206,36 @@ TEST_F(ExternalVideoEncoderTest, StreamHeader) {
   // We need to run the task to cleanup the GPU instance.
   video_encoder_.reset(NULL);
   task_runner_->RunTasks();
+}
+
+// Verify that everything goes well even if ExternalVideoEncoder is destroyed
+// before it has a chance to receive the VEA creation callback.
+TEST(ExternalVideoEncoderEarlyDestroyTest, DestroyBeforeVEACreatedCallback) {
+  VideoSenderConfig video_config;
+  base::SimpleTestTickClock* testing_clock = new base::SimpleTestTickClock();
+  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner(
+      new test::FakeSingleThreadTaskRunner(testing_clock));
+  scoped_refptr<CastEnvironment> cast_environment(
+      new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock).Pass(),
+                          task_runner,
+                          task_runner,
+                          task_runner));
+
+  std::vector<uint32> stored_bitrates;
+  scoped_ptr<VideoEncodeAccelerator> fake_vea(
+      new test::FakeVideoEncodeAccelerator(task_runner, &stored_bitrates));
+  VEAFactory vea_factory(task_runner, fake_vea.Pass());
+
+  scoped_ptr<ExternalVideoEncoder> video_encoder(new ExternalVideoEncoder(
+      cast_environment,
+      video_config,
+      base::Bind(&VEAFactory::CreateVideoEncodeAccelerator,
+                 base::Unretained(&vea_factory)),
+      base::Bind(&CreateSharedMemory)));
+
+  video_encoder.reset();
+  vea_factory.FinishCreatingVideoEncodeAccelerator();
+  task_runner->RunTasks();
 }
 
 }  // namespace cast

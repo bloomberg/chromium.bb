@@ -50,11 +50,10 @@ class ExternalVideoEncoder : public VideoEncoder {
   virtual void GenerateKeyFrame() OVERRIDE;
   virtual void LatestFrameIdToReference(uint32 frame_id) OVERRIDE;
 
-  // Called when a VEA is created.
+  // Called when video_accelerator_client_ has finished creating the VEA and
+  // is ready for use.
   void OnCreateVideoEncodeAccelerator(
-      const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
-      scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner,
-      scoped_ptr<media::VideoEncodeAccelerator> vea);
+      scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner);
 
  protected:
   void EncoderInitialized();
