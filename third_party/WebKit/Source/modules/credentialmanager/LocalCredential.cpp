@@ -4,6 +4,7 @@
 
 #include "config.h"
 #include "modules/credentialmanager/LocalCredential.h"
+#include "platform/credentialmanager/PlatformLocalCredential.h"
 
 namespace blink {
 
@@ -13,13 +14,13 @@ LocalCredential* LocalCredential::create(const String& id, const String& name, c
 }
 
 LocalCredential::LocalCredential(const String& id, const String& name, const String& avatarURL, const String& password)
-    : Credential(id, name, avatarURL)
-    , m_password(password)
+    : Credential(PlatformLocalCredential::create(id, name, avatarURL, password))
 {
 }
 
-LocalCredential::~LocalCredential()
+const String& LocalCredential::password() const
 {
+    return static_cast<PlatformLocalCredential*>(m_platformCredential.get())->password();
 }
 
 } // namespace blink

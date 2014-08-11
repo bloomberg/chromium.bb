@@ -4,6 +4,7 @@
 
 #include "config.h"
 #include "modules/credentialmanager/FederatedCredential.h"
+#include "platform/credentialmanager/PlatformFederatedCredential.h"
 
 namespace blink {
 
@@ -13,13 +14,13 @@ FederatedCredential* FederatedCredential::create(const String& id, const String&
 }
 
 FederatedCredential::FederatedCredential(const String& id, const String& name, const String& avatarURL, const String& federation)
-    : Credential(id, name, avatarURL)
-    , m_federation(federation)
+    : Credential(PlatformFederatedCredential::create(id, name, avatarURL, federation))
 {
 }
 
-FederatedCredential::~FederatedCredential()
+const String& FederatedCredential::federation() const
 {
+    return static_cast<PlatformFederatedCredential*>(m_platformCredential.get())->federation();
 }
 
 } // namespace blink

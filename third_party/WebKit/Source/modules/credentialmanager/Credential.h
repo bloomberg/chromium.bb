@@ -7,29 +7,29 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "platform/credentialmanager/PlatformCredential.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class Credential : public GarbageCollectedFinalized<Credential>, public ScriptWrappable {
+class WebCredential;
+
+class Credential : public GarbageCollected<Credential>, public ScriptWrappable {
 public:
     static Credential* create(const String& id, const String& name, const String& avatarURL);
-    virtual ~Credential();
 
     // Credential.idl
-    const String& id() const { return m_id; }
-    const String& name() const { return m_name; }
-    const String& avatarURL() const { return m_avatarURL; }
+    const String& id() const { return m_platformCredential->id(); }
+    const String& name() const { return m_platformCredential->name(); }
+    const String& avatarURL() const { return m_platformCredential->avatarURL(); }
 
-    virtual void trace(Visitor*) { };
+    virtual void trace(Visitor*);
 
 protected:
+    explicit Credential(PlatformCredential*);
     Credential(const String& id, const String& name, const String& avatarURL);
 
-private:
-    String m_id;
-    String m_name;
-    String m_avatarURL;
+    Member<PlatformCredential> m_platformCredential;
 };
 
 } // namespace blink

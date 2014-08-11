@@ -12,16 +12,20 @@ Credential* Credential::create(const String& id, const String& name, const Strin
     return new Credential(id, name, avatarURL);
 }
 
+Credential::Credential(PlatformCredential* credential)
+    : m_platformCredential(credential)
+{
+}
+
 Credential::Credential(const String& id, const String& name, const String& avatarURL)
-    : m_id(id)
-    , m_name(name)
-    , m_avatarURL(avatarURL)
+    : m_platformCredential(PlatformCredential::create(id, name, avatarURL))
 {
     ScriptWrappable::init(this);
 }
 
-Credential::~Credential()
+void Credential::trace(Visitor* visitor)
 {
+    visitor->trace(m_platformCredential);
 }
 
 } // namespace blink

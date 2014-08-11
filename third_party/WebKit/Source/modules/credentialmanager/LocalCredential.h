@@ -15,15 +15,12 @@ namespace blink {
 class LocalCredential FINAL : public Credential {
 public:
     static LocalCredential* create(const String& id, const String& name, const String& avatarURL, const String& password);
-    virtual ~LocalCredential();
 
     // LocalCredential.idl
-    const String& password() const { return m_password; }
+    const String& password() const;
 
 private:
     LocalCredential(const String& id, const String& name, const String& avatarURL, const String& password);
-
-    String m_password;
 };
 
 } // namespace blink

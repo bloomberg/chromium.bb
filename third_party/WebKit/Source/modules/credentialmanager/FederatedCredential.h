@@ -15,15 +15,12 @@ namespace blink {
 class FederatedCredential FINAL : public Credential {
 public:
     static FederatedCredential* create(const String& id, const String& name, const String& avatarURL, const String& federation);
-    virtual ~FederatedCredential();
 
     // FederatedCredential.idl
-    const String& federation() const { return m_federation; }
+    const String& federation() const;
 
 private:
     FederatedCredential(const String& id, const String& name, const String& avatarURL, const String& federation);
-
-    String m_federation;
 };
 
 } // namespace blink
