@@ -2982,6 +2982,11 @@ popup_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
 	struct wl_resource *resource;
 	wl_fixed_t sx, sy;
 
+	if (pointer->focus) {
+		weston_view_from_global_fixed(pointer->focus, x, y,
+					      &pointer->sx, &pointer->sy);
+	}
+
 	weston_pointer_move(pointer, x, y);
 
 	wl_resource_for_each(resource, &pointer->focus_resource_list) {
