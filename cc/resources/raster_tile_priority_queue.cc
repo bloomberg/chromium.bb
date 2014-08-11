@@ -16,11 +16,11 @@ class RasterOrderComparator {
   bool operator()(
       const RasterTilePriorityQueue::PairedPictureLayerQueue* a,
       const RasterTilePriorityQueue::PairedPictureLayerQueue* b) const {
-    if (a->IsEmpty())
-      return true;
-
-    if (b->IsEmpty())
-      return false;
+    // Note that in this function, we have to return true if and only if
+    // b is strictly lower priority than a. Note that for the sake of
+    // completeness, empty queue is considered to have lowest priority.
+    if (a->IsEmpty() || b->IsEmpty())
+      return b->IsEmpty() < a->IsEmpty();
 
     WhichTree a_tree = a->NextTileIteratorTree(tree_priority_);
     const PictureLayerImpl::LayerRasterTileIterator* a_iterator =
@@ -39,8 +39,6 @@ class RasterOrderComparator {
         b_tile->priority_for_tree_priority(tree_priority_);
     bool prioritize_low_res = tree_priority_ == SMOOTHNESS_TAKES_PRIORITY;
 
-    // Now we have to return true iff b is higher priority than a.
-
     // If the bin is the same but the resolution is not, then the order will be
     // determined by whether we prioritize low res or not.
     // TODO(vmpstr): Remove this when TilePriority is no longer a member of Tile
@@ -56,10 +54,8 @@ class RasterOrderComparator {
 
       if (prioritize_low_res)
         return b_priority.resolution == LOW_RESOLUTION;
-
       return b_priority.resolution == HIGH_RESOLUTION;
     }
-
     return b_priority.IsHigherPriorityThan(a_priority);
   }
 
@@ -86,7 +82,6 @@ void RasterTilePriorityQueue::Build(
     paired_queues_.push_back(
         make_scoped_ptr(new PairedPictureLayerQueue(*it, tree_priority_)));
   }
-
   paired_queues_.make_heap(RasterOrderComparator(tree_priority_));
 }
 

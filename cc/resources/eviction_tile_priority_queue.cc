@@ -16,11 +16,11 @@ class EvictionOrderComparator {
   bool operator()(
       const EvictionTilePriorityQueue::PairedPictureLayerQueue* a,
       const EvictionTilePriorityQueue::PairedPictureLayerQueue* b) const {
-    if (a->IsEmpty())
-      return true;
-
-    if (b->IsEmpty())
-      return false;
+    // Note that in this function, we have to return true if and only if
+    // b is strictly lower priority than a. Note that for the sake of
+    // completeness, empty queue is considered to have lowest priority.
+    if (a->IsEmpty() || b->IsEmpty())
+      return b->IsEmpty() < a->IsEmpty();
 
     WhichTree a_tree = a->NextTileIteratorTree(tree_priority_);
     const PictureLayerImpl::LayerEvictionTileIterator* a_iterator =
@@ -38,8 +38,6 @@ class EvictionOrderComparator {
     const TilePriority& b_priority =
         b_tile->priority_for_tree_priority(tree_priority_);
     bool prioritize_low_res = tree_priority_ == SMOOTHNESS_TAKES_PRIORITY;
-
-    // Now we have to return true iff b is lower priority than a.
 
     // If the priority bin differs, b is lower priority if it has the higher
     // priority bin.
@@ -60,7 +58,6 @@ class EvictionOrderComparator {
 
       if (prioritize_low_res)
         return a_priority.resolution == LOW_RESOLUTION;
-
       return a_priority.resolution == HIGH_RESOLUTION;
     }
 

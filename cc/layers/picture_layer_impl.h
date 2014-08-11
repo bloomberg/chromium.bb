@@ -143,7 +143,8 @@ class CC_EXPORT PictureLayerImpl
   // Functions used by tile manager.
   PictureLayerImpl* GetTwinLayer() { return twin_layer_; }
   bool IsOnActiveOrPendingTree() const;
-  bool HasValidTilePriorities() const;
+  // Virtual for testing.
+  virtual bool HasValidTilePriorities() const;
   bool AllTilesRequiredForActivationAreReadyToDraw() const;
 
  protected:

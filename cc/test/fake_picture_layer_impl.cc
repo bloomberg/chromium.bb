@@ -15,7 +15,9 @@ FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl,
                                            scoped_refptr<PicturePileImpl> pile)
     : PictureLayerImpl(tree_impl, id),
       append_quads_count_(0),
-      did_become_active_call_count_(0) {
+      did_become_active_call_count_(0),
+      has_valid_tile_priorities_(false),
+      use_set_valid_tile_priorities_flag_(false) {
   pile_ = pile;
   SetBounds(pile_->tiling_size());
   SetContentBounds(pile_->tiling_size());
@@ -27,7 +29,9 @@ FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl,
                                            const gfx::Size& layer_bounds)
     : PictureLayerImpl(tree_impl, id),
       append_quads_count_(0),
-      did_become_active_call_count_(0) {
+      did_become_active_call_count_(0),
+      has_valid_tile_priorities_(false),
+      use_set_valid_tile_priorities_flag_(false) {
   pile_ = pile;
   SetBounds(layer_bounds);
   SetContentBounds(layer_bounds);
@@ -36,7 +40,9 @@ FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl,
 FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl, int id)
     : PictureLayerImpl(tree_impl, id),
       append_quads_count_(0),
-      did_become_active_call_count_(0) {
+      did_become_active_call_count_(0),
+      has_valid_tile_priorities_(false),
+      use_set_valid_tile_priorities_flag_(false) {
 }
 
 scoped_ptr<LayerImpl> FakePictureLayerImpl::CreateLayerImpl(
@@ -161,6 +167,12 @@ void FakePictureLayerImpl::CreateDefaultTilingsAndTiles() {
 void FakePictureLayerImpl::DidBecomeActive() {
   PictureLayerImpl::DidBecomeActive();
   ++did_become_active_call_count_;
+}
+
+bool FakePictureLayerImpl::HasValidTilePriorities() const {
+  return use_set_valid_tile_priorities_flag_
+             ? has_valid_tile_priorities_
+             : PictureLayerImpl::HasValidTilePriorities();
 }
 
 }  // namespace cc

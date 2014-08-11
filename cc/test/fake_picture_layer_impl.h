@@ -46,6 +46,12 @@ class FakePictureLayerImpl : public PictureLayerImpl {
     return did_become_active_call_count_;
   }
 
+  virtual bool HasValidTilePriorities() const OVERRIDE;
+  void set_has_valid_tile_priorities(bool has_valid_priorities) {
+    has_valid_tile_priorities_ = has_valid_priorities;
+    use_set_valid_tile_priorities_flag_ = true;
+  }
+
   using PictureLayerImpl::AddTiling;
   using PictureLayerImpl::CleanUpTilingsOnActiveLayer;
   using PictureLayerImpl::CanHaveTilings;
@@ -116,6 +122,8 @@ class FakePictureLayerImpl : public PictureLayerImpl {
 
   size_t append_quads_count_;
   size_t did_become_active_call_count_;
+  bool has_valid_tile_priorities_;
+  bool use_set_valid_tile_priorities_flag_;
 };
 
 }  // namespace cc
