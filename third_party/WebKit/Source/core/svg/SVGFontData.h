@@ -82,6 +82,8 @@ private:
     float m_verticalAdvanceY;
 };
 
+DEFINE_CUSTOM_FONT_DATA_TYPE_CASTS(SVGFontData, isSVGFont());
+
 } // namespace blink
 
 #endif

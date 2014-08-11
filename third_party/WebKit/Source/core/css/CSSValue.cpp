@@ -408,7 +408,7 @@ void CSSValue::finalizeGarbageCollectedObject()
 {
     if (m_isTextClone) {
         ASSERT(isCSSOMSafe());
-        static_cast<TextCloneCSSValue*>(this)->~TextCloneCSSValue();
+        toTextCloneCSSValue(this)->~TextCloneCSSValue();
         return;
     }
     ASSERT(!isCSSOMSafe() || isSubtypeExposedToCSSOM());
@@ -512,7 +512,7 @@ void CSSValue::trace(Visitor* visitor)
 {
     if (m_isTextClone) {
         ASSERT(isCSSOMSafe());
-        static_cast<TextCloneCSSValue*>(this)->traceAfterDispatch(visitor);
+        toTextCloneCSSValue(this)->traceAfterDispatch(visitor);
         return;
     }
     ASSERT(!isCSSOMSafe() || isSubtypeExposedToCSSOM());

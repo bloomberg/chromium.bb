@@ -56,6 +56,10 @@ protected:
     CustomFontData() { }
 };
 
+#define DEFINE_CUSTOM_FONT_DATA_TYPE_CASTS(thisType, predicate) \
+    template<typename T> inline thisType* to##thisType(const RefPtr<T>& customFontData) { return to##thisType(customFontData.get()); } \
+    DEFINE_TYPE_CASTS(thisType, CustomFontData, customFontData, customFontData->predicate, customFontData.predicate)
+
 }
 
 #endif // CustomFontData_h
