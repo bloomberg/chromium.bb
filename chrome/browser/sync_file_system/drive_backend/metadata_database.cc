@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index_interface.h"
+#include "chrome/browser/sync_file_system/drive_backend/metadata_database_index_on_disk.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_db_migration_util.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
@@ -42,6 +44,9 @@ namespace sync_file_system {
 namespace drive_backend {
 
 namespace {
+
+// Command line flag to enable on-disk indexing.
+const char kEnableMetadataDatabaseOnDisk[] = "enable-syncfs-on-disk-indexing";
 
 void EmptyStatusCallback(SyncStatusCode status) {}
 
@@ -265,6 +270,15 @@ SyncStatusCode MigrateDatabaseIfNeeded(LevelDBWrapper* db) {
       // fall-through
     case 3:
       DCHECK_EQ(3, kCurrentDatabaseVersion);
+      // If MetadataDatabaseOnDisk is enabled, migration will be done in
+      // MetadataDatabaseOnDisk::Create().
+      // TODO(peria): Move the migration code (from v3 to v4) here.
+      return SYNC_STATUS_OK;
+    case 4:
+      if (!CommandLine::ForCurrentProcess()->HasSwitch(
+              kEnableMetadataDatabaseOnDisk)) {
+        MigrateDatabaseFromV4ToV3(db->GetLevelDB());
+      }
       return SYNC_STATUS_OK;
     default:
       return SYNC_DATABASE_ERROR_FAILED;
@@ -1413,7 +1427,12 @@ SyncStatusCode MetadataDatabase::Initialize() {
       return status;
   }
 
-  index_ = MetadataDatabaseIndex::Create(db_.get());
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          kEnableMetadataDatabaseOnDisk)) {
+    index_ = MetadataDatabaseIndexOnDisk::Create(db_.get());
+  } else {
+    index_ = MetadataDatabaseIndex::Create(db_.get());
+  }
 
   status = LevelDBStatusToSyncStatusCode(db_->Commit());
   if (status != SYNC_STATUS_OK)

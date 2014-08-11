@@ -251,12 +251,19 @@ scoped_ptr<MetadataDatabaseIndexOnDisk>
 MetadataDatabaseIndexOnDisk::Create(LevelDBWrapper* db) {
   DCHECK(db);
 
+  std::string version;
+  db->Get(kDatabaseVersionKey, &version);
+
   PutVersionToDB(kDatabaseOnDiskVersion, db);
   // TODO(peria): It is not good to call RemoveUnreachableItems on every
   // creation.
   RemoveUnreachableItems(db);
   scoped_ptr<MetadataDatabaseIndexOnDisk>
       index(new MetadataDatabaseIndexOnDisk(db));
+
+  if (version == "3")
+    index->BuildTrackerIndexes();
+
   return index.Pass();
 }
 
