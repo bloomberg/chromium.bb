@@ -204,8 +204,18 @@ private:
     }
 
     bool m_isMainWorld;
-    DOMWrapperMap<void> m_wrapperMap;
+    DOMWrapperMap<ScriptWrappableBase> m_wrapperMap;
 };
+
+template <>
+inline void DOMWrapperMap<ScriptWrappableBase>::PersistentValueMapTraits::Dispose(
+    v8::Isolate* isolate,
+    v8::UniquePersistent<v8::Object> value,
+    ScriptWrappableBase* key)
+{
+    RELEASE_ASSERT(!value.IsEmpty()); // See crbug.com/368095.
+    releaseObject(v8::Local<v8::Object>::New(isolate, value));
+}
 
 } // namespace blink
 

@@ -155,16 +155,6 @@ private:
     typename PersistentValueMapTraits::MapType m_map;
 };
 
-template <>
-inline void DOMWrapperMap<void>::PersistentValueMapTraits::Dispose(
-    v8::Isolate* isolate,
-    v8::UniquePersistent<v8::Object> value,
-    void* key)
-{
-    RELEASE_ASSERT(!value.IsEmpty()); // See crbug.com/368095.
-    releaseObject(v8::Local<v8::Object>::New(isolate, value));
-}
-
 } // namespace blink
 
 #endif // DOMWrapperMap_h
