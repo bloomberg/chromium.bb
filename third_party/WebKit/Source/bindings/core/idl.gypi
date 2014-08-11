@@ -57,6 +57,7 @@
     ],
     'core_static_dependency_idl_files': [
       '<@(core_dependency_idl_files)',
+      '<@(webcore_testing_dependency_idl_files)',
     ],
 
     # Generated IDL files

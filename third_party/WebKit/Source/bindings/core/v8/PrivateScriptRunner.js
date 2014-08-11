@@ -82,7 +82,8 @@ function privateScriptClass()
 
 function installClass(className, implementation)
 {
-    installedClasses[className] = new privateScriptClass();
+    if (!(className in installedClasses))
+        installedClasses[className] = new privateScriptClass();
     implementation(window, installedClasses[className]);
 }
 

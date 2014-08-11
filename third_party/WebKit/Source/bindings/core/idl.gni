@@ -20,7 +20,8 @@ core_static_interface_idl_files =
   core_idl_files +
   webcore_testing_idl_files
 core_static_dependency_idl_files =
-  core_dependency_idl_files
+  core_dependency_idl_files +
+  webcore_testing_dependency_idl_files
 
 # Generated IDL files
 core_generated_interface_idl_files =

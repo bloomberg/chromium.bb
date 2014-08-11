@@ -145,45 +145,46 @@
       'actions': [
         {
           'action_name': 'generatePrivateScript',
-           # FIXME: The implementation of Blink-in-JS is not yet mature.
-           # You can use Blink-in-JS in your local experiment, but don't ship it.
-           # crbug.com/341031
-           'private_script_files': [
-              '../bindings/core/v8/PrivateScriptRunner.js',
-              '../core/html/HTMLMarqueeElement.js',
-           ],
-           'inputs': [
-              '../build/scripts/make_private_script_source.py',
-              '<@(_private_script_files)',
-            ],
-            'outputs': [
-              '<(blink_core_output_dir)/PrivateScriptSources.h',
-            ],
-            'action': [
-              'python',
-              '../build/scripts/make_private_script_source.py',
-              '<@(_outputs)',
-              '<@(_private_script_files)'
-            ],
+          # FIXME: The implementation of Blink-in-JS is not yet mature.
+          # You can use Blink-in-JS in your local experiment, but don't ship it.
+          # crbug.com/341031
+          'private_script_files': [
+             '../bindings/core/v8/PrivateScriptRunner.js',
+             '../core/html/HTMLMarqueeElement.js',
+          ],
+          'inputs': [
+             '../build/scripts/make_private_script_source.py',
+             '<@(_private_script_files)',
+          ],
+          'outputs': [
+            '<(blink_core_output_dir)/PrivateScriptSources.h',
+          ],
+          'action': [
+            'python',
+            '../build/scripts/make_private_script_source.py',
+            '<@(_outputs)',
+            '<@(_private_script_files)'
+          ],
         },
         {
           'action_name': 'generatePrivateScriptForTesting',
-           'private_script_files': [
-              'testing/PrivateScriptTest.js',
+          'private_script_files': [
+            'testing/PartialPrivateScriptTest.js',
+            'testing/PrivateScriptTest.js',
            ],
-           'inputs': [
-              '../build/scripts/make_private_script_source.py',
-              '<@(_private_script_files)',
-            ],
-            'outputs': [
-              '<(blink_core_output_dir)/PrivateScriptSourcesForTesting.h',
-            ],
-            'action': [
-              'python',
-              '../build/scripts/make_private_script_source.py',
-              '<@(_outputs)',
-              '<@(_private_script_files)'
-            ],
+          'inputs': [
+             '../build/scripts/make_private_script_source.py',
+             '<@(_private_script_files)',
+           ],
+           'outputs': [
+             '<(blink_core_output_dir)/PrivateScriptSourcesForTesting.h',
+           ],
+           'action': [
+             'python',
+             '../build/scripts/make_private_script_source.py',
+             '<@(_outputs)',
+             '<@(_private_script_files)'
+           ],
         },
         {
           'action_name': 'HTMLEntityTable',

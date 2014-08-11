@@ -949,7 +949,8 @@ action("make_core_generated_private_script_for_testing") {
   script = "../build/scripts/make_private_script_source.py"
 
   inputs = [
-    "testing/PrivateScriptTest.js",
+      "testing/PartialPrivateScriptTest.js",
+      "testing/PrivateScriptTest.js",
   ]
   outputs = [
     "$blink_core_output_dir/PrivateScriptSourcesForTesting.h",

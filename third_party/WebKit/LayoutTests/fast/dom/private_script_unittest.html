@@ -81,6 +81,11 @@ shouldBeEqualToString('privateScriptTest.stringAttributeImplementedInCPP', 'foo'
 shouldBeUndefined('privateScriptTest.addIntegerImplementedInCPPForPrivateScriptOnly');
 shouldBeUndefined('privateScriptTest.stringAttributeImplementedInCPPForPrivateScriptOnly');
 
+shouldBe('privateScriptTest.addIntegerInPartial(111, 222)', '333');
+shouldBe('privateScriptTest.addInteger2InPartial(111, 222)', '333');
+privateScriptTest.stringAttributeInPartial = "foo";
+shouldBeEqualToString('privateScriptTest.stringAttributeInPartial', 'foo');
+
 </script>
 </body>
 </html>

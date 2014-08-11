@@ -42,6 +42,9 @@ PASS privateScriptTest.stringAttributeImplementedInCPP is "undefined"
 PASS privateScriptTest.stringAttributeImplementedInCPP is "foo"
 PASS privateScriptTest.addIntegerImplementedInCPPForPrivateScriptOnly is undefined.
 PASS privateScriptTest.stringAttributeImplementedInCPPForPrivateScriptOnly is undefined.
+PASS privateScriptTest.addIntegerInPartial(111, 222) is 333
+PASS privateScriptTest.addInteger2InPartial(111, 222) is 333
+PASS privateScriptTest.stringAttributeInPartial is "foo"
 PASS successfullyParsed is true
 
 TEST COMPLETE

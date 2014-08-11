@@ -31,6 +31,8 @@ webcore_dom_files = get_path_info(_gypi.webcore_dom_files, "abspath")
 webcore_html_files = get_path_info(_gypi.webcore_html_files, "abspath")
 webcore_svg_files = get_path_info(_gypi.webcore_svg_files, "abspath")
 webcore_testing_idl_files = get_path_info(_gypi.webcore_testing_idl_files, "abspath")
+webcore_testing_dependency_idl_files =
+  get_path_info(_gypi.webcore_testing_dependency_idl_files, "abspath")
 generated_webcore_testing_idl_files =
   get_path_info(_gypi.generated_webcore_testing_idl_files, "abspath")
 webcore_testing_files = get_path_info(_gypi.webcore_testing_files, "abspath")

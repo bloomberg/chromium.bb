@@ -20,34 +20,11 @@ namespace blink {
 
 #define LOG_ERROR_ALWAYS(...) WTFReportError(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, __VA_ARGS__)
 
-static v8::Handle<v8::Value> compilePrivateScript(v8::Isolate* isolate, String className)
+static v8::Handle<v8::Value> compileAndRunInternalScript(v8::Isolate* isolate, String className, const unsigned char* source, size_t size)
 {
-    size_t index;
-#ifndef NDEBUG
-    for (index = 0; index < WTF_ARRAY_LENGTH(kPrivateScriptSourcesForTesting); index++) {
-        if (className == kPrivateScriptSourcesForTesting[index].name)
-            break;
-    }
-    if (index != WTF_ARRAY_LENGTH(kPrivateScriptSourcesForTesting)) {
-        String source(reinterpret_cast<const char*>(kPrivateScriptSourcesForTesting[index].source), kPrivateScriptSourcesForTesting[index].size);
-        return V8ScriptRunner::compileAndRunInternalScript(v8String(isolate, source), isolate);
-    }
-#endif
-
-    // |kPrivateScriptSources| is defined in V8PrivateScriptSources.h, which is auto-generated
-    // by make_private_script.py.
-    for (index = 0; index < WTF_ARRAY_LENGTH(kPrivateScriptSources); index++) {
-        if (className == kPrivateScriptSources[index].name)
-            break;
-    }
-    if (index == WTF_ARRAY_LENGTH(kPrivateScriptSources)) {
-        LOG_ERROR_ALWAYS("Private script error: Target source code was not found. (Class name = %s)\n", className.utf8().data());
-        RELEASE_ASSERT_NOT_REACHED();
-    }
-
     v8::TryCatch block;
-    String source(reinterpret_cast<const char*>(kPrivateScriptSources[index].source), kPrivateScriptSources[index].size);
-    v8::Handle<v8::Value> result = V8ScriptRunner::compileAndRunInternalScript(v8String(isolate, source), isolate);
+    String sourceString(reinterpret_cast<const char*>(source), size);
+    v8::Handle<v8::Value> result = V8ScriptRunner::compileAndRunInternalScript(v8String(isolate, sourceString), isolate);
     if (block.HasCaught()) {
         LOG_ERROR_ALWAYS("Private script error: Compile failed. (Class name = %s)\n", className.utf8().data());
         if (!block.Message().IsEmpty())
@@ -55,6 +32,56 @@ static v8::Handle<v8::Value> compilePrivateScript(v8::Isolate* isolate, String c
         RELEASE_ASSERT_NOT_REACHED();
     }
     return result;
+}
+
+// FIXME: If we have X.js, XPartial-1.js and XPartial-2.js, currently all of the JS files
+// are compiled when any of the JS files is requested. Ideally we should avoid compiling
+// unrelated JS files. For example, if a method in XPartial-1.js is requested, we just
+// need to compile X.js and XPartial-1.js, and don't need to compile XPartial-2.js.
+static void compilePrivateScript(v8::Isolate* isolate, String className)
+{
+    int compiledScriptCount = 0;
+    // |kPrivateScriptSourcesForTesting| is defined in V8PrivateScriptSources.h, which is auto-generated
+    // by make_private_script_source.py.
+#ifndef NDEBUG
+    for (size_t index = 0; index < WTF_ARRAY_LENGTH(kPrivateScriptSourcesForTesting); index++) {
+        if (className == kPrivateScriptSourcesForTesting[index].dependencyClassName) {
+            compileAndRunInternalScript(isolate, className, kPrivateScriptSourcesForTesting[index].source, kPrivateScriptSourcesForTesting[index].size);
+            compiledScriptCount++;
+        }
+    }
+#endif
+
+    // |kPrivateScriptSources| is defined in V8PrivateScriptSources.h, which is auto-generated
+    // by make_private_script_source.py.
+    for (size_t index = 0; index < WTF_ARRAY_LENGTH(kPrivateScriptSources); index++) {
+        if (className == kPrivateScriptSources[index].dependencyClassName) {
+            compileAndRunInternalScript(isolate, className, kPrivateScriptSources[index].source, kPrivateScriptSources[index].size);
+            compiledScriptCount++;
+        }
+    }
+
+    if (!compiledScriptCount) {
+        LOG_ERROR_ALWAYS("Private script error: Target source code was not found. (Class name = %s)\n", className.utf8().data());
+        RELEASE_ASSERT_NOT_REACHED();
+    }
+}
+
+static v8::Handle<v8::Value> compilePrivateScriptRunner(v8::Isolate* isolate)
+{
+    const String className = "PrivateScriptRunner";
+    size_t index;
+    // |kPrivateScriptSources| is defined in V8PrivateScriptSources.h, which is auto-generated
+    // by make_private_script_source.py.
+    for (index = 0; index < WTF_ARRAY_LENGTH(kPrivateScriptSources); index++) {
+        if (className == kPrivateScriptSources[index].className)
+            break;
+    }
+    if (index == WTF_ARRAY_LENGTH(kPrivateScriptSources)) {
+        LOG_ERROR_ALWAYS("Private script error: Target source code was not found. (Class name = %s)\n", className.utf8().data());
+        RELEASE_ASSERT_NOT_REACHED();
+    }
+    return compileAndRunInternalScript(isolate, className, kPrivateScriptSources[index].source, kPrivateScriptSources[index].size);
 }
 
 static v8::Handle<v8::Object> classObjectOfPrivateScript(ScriptState* scriptState, String className)
@@ -66,7 +93,7 @@ static v8::Handle<v8::Object> classObjectOfPrivateScript(ScriptState* scriptStat
     if (compiledClass.IsEmpty()) {
         v8::Handle<v8::Value> installedClasses = scriptState->perContextData()->compiledPrivateScript("PrivateScriptRunner");
         if (installedClasses.IsEmpty()) {
-            installedClasses = compilePrivateScript(isolate, "PrivateScriptRunner");
+            installedClasses = compilePrivateScriptRunner(isolate);
             scriptState->perContextData()->setCompiledPrivateScript("PrivateScriptRunner", installedClasses);
         }
         RELEASE_ASSERT(!installedClasses.IsEmpty());

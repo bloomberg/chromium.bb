@@ -3337,6 +3337,9 @@
           'testing/RefCountedScriptWrappable.idl',
           'testing/TypeConversions.idl',
         ],
+        'webcore_testing_dependency_idl_files': [
+          'testing/PartialPrivateScriptTest.idl',
+        ],
         'generated_webcore_testing_idl_files': [
           '<(blink_core_output_dir)/InternalRuntimeFlags.idl',
           '<(blink_core_output_dir)/InternalSettingsGenerated.idl',
@@ -3363,6 +3366,7 @@
             'testing/MockPagePopupDriver.h',
             'testing/NullExecutionContext.cpp',
             'testing/NullExecutionContext.h',
+            'testing/PartialPrivateScriptTest.h',
             'testing/PrivateScriptTest.cpp',
             'testing/PrivateScriptTest.h',
             'testing/RefCountedScriptWrappable.cpp',
