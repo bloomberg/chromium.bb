@@ -31,6 +31,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
+#include "core/MediaTypeNames.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/animation/ActiveAnimations.h"
 #include "core/animation/Animation.h"
@@ -132,16 +133,19 @@ StyleResolver::StyleResolver(Document& document)
     : m_document(document)
     , m_viewportStyleResolver(ViewportStyleResolver::create(&document))
     , m_needCollectFeatures(false)
+    , m_printMediaType(false)
     , m_styleResourceLoader(document.fetcher())
     , m_styleSharingDepth(0)
     , m_styleResolverStatsSequence(0)
     , m_accessCount(0)
 {
     FrameView* view = document.view();
-    if (view)
+    if (view) {
         m_medium = adoptPtr(new MediaQueryEvaluator(&view->frame()));
-    else
+        m_printMediaType = equalIgnoringCase(view->mediaType(), MediaTypeNames::print);
+    } else {
         m_medium = adoptPtr(new MediaQueryEvaluator("all"));
+    }
 
     initWatchedSelectorRules(CSSSelectorWatch::from(document).watchedCallbackSelectors());
 
@@ -456,8 +460,7 @@ void StyleResolver::matchUARules(ElementRuleCollector& collector)
     collector.setMatchingUARules(true);
 
     CSSDefaultStyleSheets& defaultStyleSheets = CSSDefaultStyleSheets::instance();
-    RuleSet* userAgentStyleSheet = m_medium->mediaTypeMatchSpecific("print")
-        ? defaultStyleSheets.defaultPrintStyle() : defaultStyleSheets.defaultStyle();
+    RuleSet* userAgentStyleSheet = m_printMediaType ? defaultStyleSheets.defaultPrintStyle() : defaultStyleSheets.defaultStyle();
     matchUARules(collector, userAgentStyleSheet);
 
     // In quirks mode, we match rules from the quirks user agent sheet.

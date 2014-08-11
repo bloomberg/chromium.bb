@@ -111,15 +111,6 @@ bool MediaQueryEvaluator::mediaTypeMatch(const String& mediaTypeToMatch) const
         || equalIgnoringCase(mediaTypeToMatch, mediaType());
 }
 
-bool MediaQueryEvaluator::mediaTypeMatchSpecific(const char* mediaTypeToMatch) const
-{
-    // Like mediaTypeMatch, but without the special cases for "" and "all".
-    ASSERT(mediaTypeToMatch);
-    ASSERT(mediaTypeToMatch[0] != '\0');
-    ASSERT(!equalIgnoringCase(mediaTypeToMatch, MediaTypeNames::all));
-    return equalIgnoringCase(mediaTypeToMatch, mediaType());
-}
-
 static bool applyRestrictor(MediaQuery::Restrictor r, bool value)
 {
     return r == MediaQuery::Not ? !value : value;

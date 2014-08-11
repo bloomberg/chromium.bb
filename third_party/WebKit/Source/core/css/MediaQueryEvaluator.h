@@ -68,15 +68,14 @@ public:
     MediaQueryEvaluator(const char* acceptedMediaType, bool mediaFeatureResult = false);
 
     // Creates evaluator which evaluates full media queries
-    MediaQueryEvaluator(LocalFrame*);
+    explicit MediaQueryEvaluator(LocalFrame*);
 
     // Creates evaluator which evaluates in a thread-safe manner a subset of media values
-    MediaQueryEvaluator(const MediaValues&);
+    explicit MediaQueryEvaluator(const MediaValues&);
 
     ~MediaQueryEvaluator();
 
     bool mediaTypeMatch(const String& mediaTypeToMatch) const;
-    bool mediaTypeMatchSpecific(const char* mediaTypeToMatch) const;
 
     // Evaluates a list of media queries
     bool eval(const MediaQuerySet*, MediaQueryResultList* = 0) const;

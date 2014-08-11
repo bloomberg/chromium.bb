@@ -305,6 +305,7 @@ private:
     TreeBoundaryCrossingRules m_treeBoundaryCrossingRules;
 
     bool m_needCollectFeatures;
+    bool m_printMediaType;
 
     StyleResourceLoader m_styleResourceLoader;
 
