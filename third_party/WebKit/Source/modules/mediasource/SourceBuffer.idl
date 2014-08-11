@@ -68,8 +68,6 @@ enum AppendMode {
 
     // Abort the current segment append sequence.
     [RaisesException] void abort();
-    // Pending W3C bug: "Change SourceBuffer.remove() end parameter to 'unrestricted double'",
-    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=25518
-    [RaisesException] void remove(double start, double end);
+    [RaisesException] void remove(double start, unrestricted double end);
 };
 
