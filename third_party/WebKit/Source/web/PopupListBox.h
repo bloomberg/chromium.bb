@@ -146,6 +146,8 @@ public:
     // Gets the height of a row.
     int getRowHeight(int index);
 
+    int getRowBaseWidth(int index);
+
     virtual void setMaxHeight(int maxHeight) OVERRIDE { m_maxHeight = maxHeight; }
 
     void setMaxWidth(int maxWidth) { m_maxWindowWidth = maxWidth; }

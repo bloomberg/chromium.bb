@@ -35,6 +35,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/page/EventHandler.h"
+#include "core/rendering/RenderMenuList.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/PopupMenu.h"
@@ -546,6 +547,68 @@ TEST_F(SelectPopupMenuTest, PopupListBoxWithOverlayScrollbarDisabled)
     PopupListBox* listBox = container->listBox();
 
     EXPECT_EQ(container->width(), listBox->contentsSize().width() + ScrollbarTheme::theme()->scrollbarThickness() + 2);
+}
+
+class SelectPopupMenuStyleTest : public testing::Test {
+public:
+    SelectPopupMenuStyleTest()
+        : baseURL("http://www.test.com/")
+    {
+    }
+
+protected:
+    virtual void SetUp() OVERRIDE
+    {
+        m_helper.initialize(false, 0, &m_webviewClient);
+    }
+
+    virtual void TearDown() OVERRIDE
+    {
+        Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
+    }
+
+    // Returns true if there currently is a select popup in the WebView.
+    bool popupOpen() const { return webView()->selectPopup(); }
+
+    void registerMockedURLLoad(const std::string& fileName)
+    {
+        URLTestHelpers::registerMockedURLLoad(toKURL(baseURL + fileName), WebString::fromUTF8(fileName.c_str()), WebString::fromUTF8("popup/"), WebString::fromUTF8("text/html"));
+    }
+
+    void loadFrame(WebFrame* frame, const std::string& fileName)
+    {
+        FrameTestHelpers::loadFrame(frame, baseURL + fileName);
+    }
+
+    WebViewImpl* webView() const { return m_helper.webViewImpl(); }
+    WebLocalFrameImpl* mainFrame() const { return m_helper.webViewImpl()->mainFrameImpl(); }
+
+protected:
+    PopupTestWebViewClient m_webviewClient;
+    RefPtr<PopupMenu> m_popupMenu;
+    std::string baseURL;
+
+private:
+    FrameTestHelpers::WebViewHelper m_helper;
+};
+
+#if OS(MACOSX) || OS(ANDROID)
+TEST_F(SelectPopupMenuStyleTest, DISABLED_PopupListBoxRTLRowWidth)
+#else
+TEST_F(SelectPopupMenuStyleTest, PopupListBoxRTLRowWidth)
+#endif
+{
+    registerMockedURLLoad("select_rtl_width.html");
+    loadFrame(mainFrame(), "select_rtl_width.html");
+    HTMLSelectElement* select = toHTMLSelectElement(mainFrame()->frame()->document()->focusedElement());
+    RenderMenuList* menuList = toRenderMenuList(select->renderer());
+    ASSERT(menuList);
+    menuList->showPopup();
+    ASSERT(popupOpen());
+    PopupListBox* listBox = webView()->selectPopup()->listBox();
+    int ltrWidth = listBox->getRowBaseWidth(0);
+    int rtlWidth = listBox->getRowBaseWidth(1);
+    EXPECT_LT(rtlWidth, ltrWidth);
 }
 
 } // namespace
