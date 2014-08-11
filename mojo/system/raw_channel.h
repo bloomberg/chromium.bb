@@ -48,7 +48,16 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // (passed in on creation).
   class MOJO_SYSTEM_IMPL_EXPORT Delegate {
    public:
-    enum FatalError { FATAL_ERROR_READ = 0, FATAL_ERROR_WRITE };
+    enum Error {
+      // Failed read due to raw channel shutdown (e.g., on the other side).
+      ERROR_READ_SHUTDOWN,
+      // Received a bad message.
+      ERROR_READ_BAD_MESSAGE,
+      // Unknown read error.
+      ERROR_READ_UNKNOWN,
+      // Generic write error.
+      ERROR_WRITE
+    };
 
     // Called when a message is read. This may call |Shutdown()| (on the
     // |RawChannel|), but must not destroy it.
@@ -56,15 +65,13 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
         const MessageInTransit::View& message_view,
         embedder::ScopedPlatformHandleVectorPtr platform_handles) = 0;
 
-    // Called when there's a fatal error, which leads to the channel no longer
-    // being viable. This may call |Shutdown()| (on the |RawChannel()|), but
-    // must not destroy it.
+    // Called when there's a (fatal) error. This may call the raw channel's
+    // |Shutdown()|, but must not destroy it.
     //
-    // For each raw channel, at most one |FATAL_ERROR_READ| and at most one
-    // |FATAL_ERROR_WRITE| notification will be issued (both may be issued).
-    // After a |OnFatalError(FATAL_ERROR_READ)|, there will be no further calls
-    // to |OnReadMessage()|.
-    virtual void OnFatalError(FatalError fatal_error) = 0;
+    // For each raw channel, there'll be at most one |ERROR_READ_...| and at
+    // most one |ERROR_WRITE| notification. After |OnError(ERROR_READ_...)|,
+    // |OnReadMessage()| won't be called again.
+    virtual void OnError(Error error) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -103,8 +110,15 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   virtual size_t GetSerializedPlatformHandleSize() const = 0;
 
  protected:
-  // Return values of |[Schedule]Read()| and |[Schedule]WriteNoLock()|.
-  enum IOResult { IO_SUCCEEDED, IO_FAILED, IO_PENDING };
+  // Result of I/O operations.
+  enum IOResult {
+    IO_SUCCEEDED,
+    // Failed due to a (probably) clean shutdown (e.g., of the other end).
+    IO_FAILED_SHUTDOWN,
+    // Failed due to some other (unexpected) reason.
+    IO_FAILED_UNKNOWN,
+    IO_PENDING
+  };
 
   class MOJO_SYSTEM_IMPL_EXPORT ReadBuffer {
    public:
@@ -179,10 +193,12 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
 
   RawChannel();
 
-  // Must be called on the I/O thread WITHOUT |write_lock_| held.
-  void OnReadCompleted(bool result, size_t bytes_read);
-  // Must be called on the I/O thread WITHOUT |write_lock_| held.
-  void OnWriteCompleted(bool result,
+  // |result| must not be |IO_PENDING|. Must be called on the I/O thread WITHOUT
+  // |write_lock_| held.
+  void OnReadCompleted(IOResult io_result, size_t bytes_read);
+  // |result| must not be |IO_PENDING|. Must be called on the I/O thread WITHOUT
+  // |write_lock_| held.
+  void OnWriteCompleted(IOResult io_result,
                         size_t platform_handles_written,
                         size_t bytes_written);
 
@@ -226,7 +242,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   virtual IOResult Read(size_t* bytes_read) = 0;
   // Similar to |Read()|, except that the implementing subclass must also
   // guarantee that the method doesn't succeed synchronously, i.e., it only
-  // returns |IO_FAILED| or |IO_PENDING|.
+  // returns |IO_FAILED_...| or |IO_PENDING|.
   virtual IOResult ScheduleRead() = 0;
 
   // Called by |OnReadCompleted()| to get the platform handles associated with
@@ -255,7 +271,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
                                size_t* bytes_written) = 0;
   // Similar to |WriteNoLock()|, except that the implementing subclass must also
   // guarantee that the method doesn't succeed synchronously, i.e., it only
-  // returns |IO_FAILED| or |IO_PENDING|.
+  // returns |IO_FAILED_...| or |IO_PENDING|.
   virtual IOResult ScheduleWriteNoLock() = 0;
 
   // Must be called on the I/O thread WITHOUT |write_lock_| held.
@@ -267,16 +283,16 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
                                 scoped_ptr<WriteBuffer> write_buffer) = 0;
 
  private:
-  // Calls |delegate_->OnFatalError(fatal_error)|. Must be called on the I/O
-  // thread WITHOUT |write_lock_| held.
-  void CallOnFatalError(Delegate::FatalError fatal_error);
+  // Calls |delegate_->OnError(error)|. Must be called on the I/O thread WITHOUT
+  // |write_lock_| held.
+  void CallOnError(Delegate::Error error);
 
-  // If |result| is true, updates the write buffer and schedules a write
-  // operation to run later if there are more contents to write. If |result| is
-  // false or any error occurs during the method execution, cancels pending
-  // writes and returns false.
-  // Must be called only if |write_stopped_| is false and under |write_lock_|.
-  bool OnWriteCompletedNoLock(bool result,
+  // If |io_result| is |IO_SUCCESS|, updates the write buffer and schedules a
+  // write operation to run later if there is more to write. If |io_result| is
+  // failure or any other error occurs, cancels pending writes and returns
+  // false. Must be called under |write_lock_| and only if |write_stopped_| is
+  // false.
+  bool OnWriteCompletedNoLock(IOResult io_result,
                               size_t platform_handles_written,
                               size_t bytes_written);
 

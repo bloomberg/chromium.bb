@@ -67,7 +67,7 @@ void Channel::Shutdown() {
       return;
 
     // Note: Don't reset |raw_channel_|, in case we're being called from within
-    // |OnReadMessage()| or |OnFatalError()|.
+    // |OnReadMessage()| or |OnError()|.
     raw_channel_->Shutdown();
     is_running_ = false;
 
@@ -290,17 +290,24 @@ void Channel::OnReadMessage(
   }
 }
 
-void Channel::OnFatalError(FatalError fatal_error) {
-  switch (fatal_error) {
-    case FATAL_ERROR_READ:
-      // Most read errors aren't notable: they just reflect that the other side
-      // tore down the channel.
-      DVLOG(1) << "RawChannel fatal error (read)";
+void Channel::OnError(Error error) {
+  switch (error) {
+    case ERROR_READ_SHUTDOWN:
+      // The other side was cleanly closed, so this isn't actually an error.
+      DVLOG(1) << "RawChannel read error (shutdown)";
       break;
-    case FATAL_ERROR_WRITE:
+    case ERROR_READ_BAD_MESSAGE:
+      // Receiving a bad message means either a bug, data corruption, or
+      // malicious attack (probably due to some other bug).
+      LOG(ERROR) << "RawChannel read error (received bad message)";
+      break;
+    case ERROR_READ_UNKNOWN:
+      LOG(ERROR) << "RawChannel read error (unknown)";
+      break;
+    case ERROR_WRITE:
       // Write errors are slightly notable: they probably shouldn't happen under
       // normal operation (but maybe the other side crashed).
-      LOG(WARNING) << "RawChannel fatal error (write)";
+      LOG(WARNING) << "RawChannel write error";
       break;
   }
   Shutdown();

@@ -125,11 +125,11 @@ class MockRawChannelOnInitFails : public RawChannel {
   // |RawChannel| protected methods:
   virtual IOResult Read(size_t*) OVERRIDE {
     CHECK(false);
-    return IO_FAILED;
+    return IO_FAILED_UNKNOWN;
   }
   virtual IOResult ScheduleRead() OVERRIDE {
     CHECK(false);
-    return IO_FAILED;
+    return IO_FAILED_UNKNOWN;
   }
   virtual embedder::ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
       size_t,
@@ -139,11 +139,11 @@ class MockRawChannelOnInitFails : public RawChannel {
   }
   virtual IOResult WriteNoLock(size_t*, size_t*) OVERRIDE {
     CHECK(false);
-    return IO_FAILED;
+    return IO_FAILED_UNKNOWN;
   }
   virtual IOResult ScheduleWriteNoLock() OVERRIDE {
     CHECK(false);
-    return IO_FAILED;
+    return IO_FAILED_UNKNOWN;
   }
   virtual bool OnInit() OVERRIDE {
     EXPECT_FALSE(on_init_called_);

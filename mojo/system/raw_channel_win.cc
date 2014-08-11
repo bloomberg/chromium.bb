@@ -303,14 +303,16 @@ void RawChannelWin::RawChannelIOHandler::OnReadCompleted(DWORD bytes_read,
   if (!owner_)
     return;
 
-  if (error != ERROR_SUCCESS) {
-    DCHECK_EQ(bytes_read, 0u);
-    LOG_IF(ERROR, error != ERROR_BROKEN_PIPE)
-        << "ReadFile: " << logging::SystemErrorCodeToString(error);
-    owner_->OnReadCompleted(false, 0);
-  } else {
+  if (error == ERROR_SUCCESS) {
     DCHECK_GT(bytes_read, 0u);
-    owner_->OnReadCompleted(true, bytes_read);
+    owner_->OnReadCompleted(IO_SUCCEEDED, bytes_read);
+  } else if (error == ERROR_BROKEN_PIPE) {
+    DCHECK_EQ(bytes_read, 0u);
+    owner_->OnReadCompleted(IO_FAILED_SHUTDOWN, 0);
+  } else {
+    DCHECK_EQ(bytes_read, 0u);
+    LOG(WARNING) << "ReadFile: " << logging::SystemErrorCodeToString(error);
+    owner_->OnReadCompleted(IO_FAILED_UNKNOWN, 0);
   }
 }
 
@@ -333,11 +335,13 @@ void RawChannelWin::RawChannelIOHandler::OnWriteCompleted(DWORD bytes_written,
     pending_write_ = false;
   }
 
-  if (error != ERROR_SUCCESS) {
-    LOG(ERROR) << "WriteFile: " << logging::SystemErrorCodeToString(error);
-    owner_->OnWriteCompleted(false, 0, 0);
+  if (error == ERROR_SUCCESS) {
+    owner_->OnWriteCompleted(IO_SUCCEEDED, 0, bytes_written);
+  } else if (error == ERROR_BROKEN_PIPE) {
+    owner_->OnWriteCompleted(IO_FAILED_SHUTDOWN, 0, 0);
   } else {
-    owner_->OnWriteCompleted(true, 0, bytes_written);
+    LOG(WARNING) << "WriteFile: " << logging::SystemErrorCodeToString(error);
+    owner_->OnWriteCompleted(IO_FAILED_UNKNOWN, 0, 0);
   }
 }
 
@@ -376,10 +380,11 @@ RawChannel::IOResult RawChannelWin::Read(size_t* bytes_read) {
   if (!result) {
     DCHECK_EQ(bytes_read_dword, 0u);
     DWORD error = GetLastError();
+    if (error == ERROR_BROKEN_PIPE)
+      return IO_FAILED_SHUTDOWN;
     if (error != ERROR_IO_PENDING) {
-      LOG_IF(ERROR, error != ERROR_BROKEN_PIPE)
-          << "ReadFile: " << logging::SystemErrorCodeToString(error);
-      return IO_FAILED;
+      LOG(WARNING) << "ReadFile: " << logging::SystemErrorCodeToString(error);
+      return IO_FAILED_UNKNOWN;
     }
   }
 
@@ -460,9 +465,14 @@ RawChannel::IOResult RawChannelWin::WriteNoLock(
                           static_cast<DWORD>(buffers[0].size),
                           &bytes_written_dword,
                           &io_handler_->write_context_no_lock()->overlapped);
-  if (!result && GetLastError() != ERROR_IO_PENDING) {
-    PLOG(ERROR) << "WriteFile";
-    return IO_FAILED;
+  if (!result) {
+    DWORD error = GetLastError();
+    if (error == ERROR_BROKEN_PIPE)
+      return IO_FAILED_SHUTDOWN;
+    if (error != ERROR_IO_PENDING) {
+      LOG(WARNING) << "WriteFile: " << logging::SystemErrorCodeToString(error);
+      return IO_FAILED_UNKNOWN;
+    }
   }
 
   if (result && skip_completion_port_on_success_) {

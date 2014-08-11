@@ -145,7 +145,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   virtual void OnReadMessage(
       const MessageInTransit::View& message_view,
       embedder::ScopedPlatformHandleVectorPtr platform_handles) OVERRIDE;
-  virtual void OnFatalError(FatalError fatal_error) OVERRIDE;
+  virtual void OnError(Error error) OVERRIDE;
 
   // Helpers for |OnReadMessage|:
   void OnReadMessageForDownstream(

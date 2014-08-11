@@ -192,10 +192,10 @@ RawChannel::IOResult RawChannelPosix::Read(size_t* bytes_read) {
     if (read_platform_handles_.size() >
         (TransportData::kMaxPlatformHandles +
          embedder::kPlatformChannelMaxNumHandles)) {
-      LOG(WARNING) << "Received too many platform handles";
+      LOG(ERROR) << "Received too many platform handles";
       embedder::CloseAllPlatformHandles(&read_platform_handles_);
       read_platform_handles_.clear();
-      return IO_FAILED;
+      return IO_FAILED_UNKNOWN;
     }
   }
 
@@ -205,13 +205,17 @@ RawChannel::IOResult RawChannelPosix::Read(size_t* bytes_read) {
   }
 
   // |read_result == 0| means "end of file".
-  if (read_result == 0 || (errno != EAGAIN && errno != EWOULDBLOCK)) {
-    PLOG_IF(WARNING, read_result != 0) << "recvmsg";
-
+  if (read_result == 0) {
     // Make sure that |OnFileCanReadWithoutBlocking()| won't be called again.
     read_watcher_.reset();
+    return IO_FAILED_SHUTDOWN;
+  }
 
-    return IO_FAILED;
+  if (errno != EAGAIN && errno != EWOULDBLOCK) {
+    PLOG(WARNING) << "recvmsg";
+    // Make sure that |OnFileCanReadWithoutBlocking()| won't be called again.
+    read_watcher_.reset();
+    return IO_FAILED_UNKNOWN;
   }
 
   return ScheduleRead();
@@ -309,9 +313,12 @@ RawChannel::IOResult RawChannelPosix::WriteNoLock(
     return IO_SUCCEEDED;
   }
 
+  if (errno == EPIPE)
+    return IO_FAILED_SHUTDOWN;
+
   if (errno != EAGAIN && errno != EWOULDBLOCK) {
-    PLOG(ERROR) << "sendmsg/write/writev";
-    return IO_FAILED;
+    PLOG(WARNING) << "sendmsg/write/writev";
+    return IO_FAILED_UNKNOWN;
   }
 
   return ScheduleWriteNoLock();
@@ -342,7 +349,7 @@ RawChannel::IOResult RawChannelPosix::ScheduleWriteNoLock() {
     return IO_PENDING;
   }
 
-  return IO_FAILED;
+  return IO_FAILED_UNKNOWN;
 }
 
 bool RawChannelPosix::OnInit() {
@@ -399,9 +406,9 @@ void RawChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
 
   pending_read_ = false;
   size_t bytes_read = 0;
-  IOResult result = Read(&bytes_read);
-  if (result != IO_PENDING)
-    OnReadCompleted(result == IO_SUCCEEDED, bytes_read);
+  IOResult io_result = Read(&bytes_read);
+  if (io_result != IO_PENDING)
+    OnReadCompleted(io_result, bytes_read);
 
   // On failure, |read_watcher_| must have been reset; on success,
   // we assume that |OnReadCompleted()| always schedules another read.
@@ -418,7 +425,7 @@ void RawChannelPosix::OnFileCanWriteWithoutBlocking(int fd) {
   DCHECK_EQ(fd, fd_.get().fd);
   DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
 
-  IOResult result = IO_FAILED;
+  IOResult io_result;
   size_t platform_handles_written = 0;
   size_t bytes_written = 0;
   {
@@ -427,13 +434,11 @@ void RawChannelPosix::OnFileCanWriteWithoutBlocking(int fd) {
     DCHECK(pending_write_);
 
     pending_write_ = false;
-    result = WriteNoLock(&platform_handles_written, &bytes_written);
+    io_result = WriteNoLock(&platform_handles_written, &bytes_written);
   }
 
-  if (result != IO_PENDING) {
-    OnWriteCompleted(
-        result == IO_SUCCEEDED, platform_handles_written, bytes_written);
-  }
+  if (io_result != IO_PENDING)
+    OnWriteCompleted(io_result, platform_handles_written, bytes_written);
 }
 
 void RawChannelPosix::WaitToWrite() {
@@ -453,7 +458,7 @@ void RawChannelPosix::WaitToWrite() {
       DCHECK(pending_write_);
       pending_write_ = false;
     }
-    OnWriteCompleted(false, 0, 0);
+    OnWriteCompleted(IO_FAILED_UNKNOWN, 0, 0);
   }
 }
 
