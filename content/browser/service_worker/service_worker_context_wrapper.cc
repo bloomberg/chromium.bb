@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 
+#include <map>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -137,6 +139,77 @@ void ServiceWorkerContextWrapper::UnregisterServiceWorker(
 void ServiceWorkerContextWrapper::Terminate() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   process_manager_->Shutdown();
+}
+
+void ServiceWorkerContextWrapper::GetAllOriginsInfo(
+    const GetUsageInfoCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  context_core_->storage()->GetAllRegistrations(base::Bind(
+      &ServiceWorkerContextWrapper::DidGetAllRegistrationsForGetAllOrigins,
+      this,
+      callback));
+}
+
+void ServiceWorkerContextWrapper::DidGetAllRegistrationsForGetAllOrigins(
+    const GetUsageInfoCallback& callback,
+    const std::vector<ServiceWorkerRegistrationInfo>& registrations) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  std::vector<ServiceWorkerUsageInfo> usage_infos;
+
+  std::map<GURL, ServiceWorkerUsageInfo> origins;
+  for (std::vector<ServiceWorkerRegistrationInfo>::const_iterator it =
+           registrations.begin();
+       it != registrations.end();
+       ++it) {
+    const ServiceWorkerRegistrationInfo& registration_info = *it;
+    GURL origin = registration_info.script_url.GetOrigin();
+
+    ServiceWorkerUsageInfo& usage_info = origins[origin];
+    if (usage_info.origin.is_empty())
+      usage_info.origin = origin;
+    usage_info.scopes.push_back(registration_info.pattern);
+  }
+
+  for (std::map<GURL, ServiceWorkerUsageInfo>::const_iterator it =
+           origins.begin();
+       it != origins.end();
+       ++it) {
+    usage_infos.push_back(it->second);
+  }
+
+  callback.Run(usage_infos);
+}
+
+namespace {
+
+void EmptySuccessCallback(bool success) {
+}
+
+}  // namespace
+
+void ServiceWorkerContextWrapper::DeleteForOrigin(const GURL& origin_url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  context_core_->storage()->GetAllRegistrations(base::Bind(
+      &ServiceWorkerContextWrapper::DidGetAllRegistrationsForDeleteForOrigin,
+      this,
+      origin_url));
+}
+
+void ServiceWorkerContextWrapper::DidGetAllRegistrationsForDeleteForOrigin(
+    const GURL& origin,
+    const std::vector<ServiceWorkerRegistrationInfo>& registrations) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  for (std::vector<ServiceWorkerRegistrationInfo>::const_iterator it =
+           registrations.begin();
+       it != registrations.end();
+       ++it) {
+    const ServiceWorkerRegistrationInfo& registration_info = *it;
+    if (origin == registration_info.script_url.GetOrigin()) {
+      UnregisterServiceWorker(registration_info.pattern,
+                              base::Bind(&EmptySuccessCallback));
+    }
+  }
 }
 
 void ServiceWorkerContextWrapper::AddObserver(

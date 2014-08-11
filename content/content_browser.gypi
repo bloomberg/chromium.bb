@@ -191,6 +191,8 @@
       'public/browser/resource_throttle.h',
       'public/browser/save_page_type.h',
       'public/browser/service_worker_context.h',
+      'public/browser/service_worker_usage_info.cc',
+      'public/browser/service_worker_usage_info.h',
       'public/browser/session_storage_namespace.h',
       'public/browser/session_storage_usage_info.h',
       'public/browser/signed_certificate_timestamp_store.h',

@@ -68,6 +68,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
                                        const ResultCallback& continuation)
       OVERRIDE;
   virtual void Terminate() OVERRIDE;
+  virtual void GetAllOriginsInfo(const GetUsageInfoCallback& callback) OVERRIDE;
+  virtual void DeleteForOrigin(const GURL& origin_url) OVERRIDE;
 
   void AddObserver(ServiceWorkerContextObserver* observer);
   void RemoveObserver(ServiceWorkerContextObserver* observer);
@@ -88,6 +90,13 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void ShutdownOnIO();
 
   void DidDeleteAndStartOver(ServiceWorkerStatusCode status);
+
+  void DidGetAllRegistrationsForGetAllOrigins(
+      const GetUsageInfoCallback& callback,
+      const std::vector<ServiceWorkerRegistrationInfo>& registrations);
+  void DidGetAllRegistrationsForDeleteForOrigin(
+      const GURL& origin,
+      const std::vector<ServiceWorkerRegistrationInfo>& registrations);
 
   const scoped_refptr<ObserverListThreadSafe<ServiceWorkerContextObserver> >
       observer_list_;

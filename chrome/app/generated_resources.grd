@@ -10938,6 +10938,15 @@ Chrome ran out of memory.
       <message name="IDS_COOKIES_CHANNEL_ID_EXPIRES_LABEL" desc="The channel id Expires label">
         Expires:
       </message>
+      <message name="IDS_COOKIES_SERVICE_WORKER" desc="The text shown when there is data for Service Workers within an origin (name of a Web standard) in the Cookies table">
+        Service Workers
+      </message>
+      <message name="IDS_COOKIES_SERVICE_WORKERS" desc="Label for Service Workers (name of an HTML standard)">
+        Service Workers
+      </message>
+      <message name="IDS_COOKIES_SERVICE_WORKER_SCOPES_LABEL" desc="Label for list of Service Worker (name of an HTML standard) patterns">
+        Scopes:
+      </message>
       <message name="IDS_CLIENT_CERT_RSA_SIGN" translateable="false" desc="">
         rsa_sign
       </message>

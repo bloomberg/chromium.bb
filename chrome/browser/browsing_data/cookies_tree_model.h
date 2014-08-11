@@ -23,6 +23,7 @@
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 #include "chrome/browser/browsing_data/local_data_container.h"
 #include "chrome/common/content_settings.h"
 #include "net/ssl/channel_id_store.h"
@@ -49,6 +50,8 @@ class CookieTreeIndexedDBsNode;
 class CookieTreeLocalStorageNode;
 class CookieTreeLocalStoragesNode;
 class CookieTreeQuotaNode;
+class CookieTreeServiceWorkerNode;
+class CookieTreeServiceWorkersNode;
 class CookieTreeSessionStorageNode;
 class CookieTreeSessionStoragesNode;
 class ExtensionSpecialStoragePolicy;
@@ -74,26 +77,28 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     // NodeType corresponds to the various CookieTreeNode types.
     enum NodeType {
       TYPE_NONE,
-      TYPE_ROOT,  // This is used for CookieTreeRootNode nodes.
-      TYPE_HOST,  // This is used for CookieTreeHostNode nodes.
-      TYPE_COOKIES,  // This is used for CookieTreeCookiesNode nodes.
-      TYPE_COOKIE,  // This is used for CookieTreeCookieNode nodes.
-      TYPE_DATABASES,  // This is used for CookieTreeDatabasesNode.
-      TYPE_DATABASE,  // This is used for CookieTreeDatabaseNode.
-      TYPE_LOCAL_STORAGES,  // This is used for CookieTreeLocalStoragesNode.
-      TYPE_LOCAL_STORAGE,  // This is used for CookieTreeLocalStorageNode.
+      TYPE_ROOT,              // This is used for CookieTreeRootNode nodes.
+      TYPE_HOST,              // This is used for CookieTreeHostNode nodes.
+      TYPE_COOKIES,           // This is used for CookieTreeCookiesNode nodes.
+      TYPE_COOKIE,            // This is used for CookieTreeCookieNode nodes.
+      TYPE_DATABASES,         // This is used for CookieTreeDatabasesNode.
+      TYPE_DATABASE,          // This is used for CookieTreeDatabaseNode.
+      TYPE_LOCAL_STORAGES,    // This is used for CookieTreeLocalStoragesNode.
+      TYPE_LOCAL_STORAGE,     // This is used for CookieTreeLocalStorageNode.
       TYPE_SESSION_STORAGES,  // This is used for CookieTreeSessionStoragesNode.
-      TYPE_SESSION_STORAGE,  // This is used for CookieTreeSessionStorageNode.
-      TYPE_APPCACHES,  // This is used for CookieTreeAppCachesNode.
-      TYPE_APPCACHE,  // This is used for CookieTreeAppCacheNode.
-      TYPE_INDEXED_DBS,  // This is used for CookieTreeIndexedDBsNode.
-      TYPE_INDEXED_DB,  // This is used for CookieTreeIndexedDBNode.
-      TYPE_FILE_SYSTEMS,  // This is used for CookieTreeFileSystemsNode.
-      TYPE_FILE_SYSTEM,  // This is used for CookieTreeFileSystemNode.
-      TYPE_QUOTA,  // This is used for CookieTreeQuotaNode.
-      TYPE_CHANNEL_IDS, // Used for CookieTreeChannelIDsNode.
-      TYPE_CHANNEL_ID, // Used for CookieTreeChannelIDNode.
-      TYPE_FLASH_LSO,  // This is used for CookieTreeFlashLSONode.
+      TYPE_SESSION_STORAGE,   // This is used for CookieTreeSessionStorageNode.
+      TYPE_APPCACHES,         // This is used for CookieTreeAppCachesNode.
+      TYPE_APPCACHE,          // This is used for CookieTreeAppCacheNode.
+      TYPE_INDEXED_DBS,       // This is used for CookieTreeIndexedDBsNode.
+      TYPE_INDEXED_DB,        // This is used for CookieTreeIndexedDBNode.
+      TYPE_FILE_SYSTEMS,      // This is used for CookieTreeFileSystemsNode.
+      TYPE_FILE_SYSTEM,       // This is used for CookieTreeFileSystemNode.
+      TYPE_QUOTA,             // This is used for CookieTreeQuotaNode.
+      TYPE_CHANNEL_IDS,       // Used for CookieTreeChannelIDsNode.
+      TYPE_CHANNEL_ID,        // Used for CookieTreeChannelIDNode.
+      TYPE_SERVICE_WORKERS,   // This is used for CookieTreeServiceWorkersNode.
+      TYPE_SERVICE_WORKER,    // This is used for CookieTreeServiceWorkerNode.
+      TYPE_FLASH_LSO,         // This is used for CookieTreeFlashLSONode.
     };
 
     DetailedInfo();
@@ -120,6 +125,8 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
         const BrowsingDataQuotaHelper::QuotaInfo* quota_info);
     DetailedInfo& InitChannelID(
         const net::ChannelIDStore::ChannelID* channel_id);
+    DetailedInfo& InitServiceWorker(
+        const content::ServiceWorkerUsageInfo* service_worker_info);
     DetailedInfo& InitFlashLSO(const std::string& flash_lso_domain);
 
     NodeType node_type;
@@ -134,6 +141,7 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     const BrowsingDataFileSystemHelper::FileSystemInfo* file_system_info;
     const BrowsingDataQuotaHelper::QuotaInfo* quota_info;
     const net::ChannelIDStore::ChannelID* channel_id;
+    const content::ServiceWorkerUsageInfo* service_worker_info;
     std::string flash_lso_domain;
   };
 
@@ -200,6 +208,7 @@ class CookieTreeHostNode : public CookieTreeNode {
   CookieTreeIndexedDBsNode* GetOrCreateIndexedDBsNode();
   CookieTreeFileSystemsNode* GetOrCreateFileSystemsNode();
   CookieTreeChannelIDsNode* GetOrCreateChannelIDsNode();
+  CookieTreeServiceWorkersNode* GetOrCreateServiceWorkersNode();
   CookieTreeQuotaNode* UpdateOrCreateQuotaNode(
       std::list<BrowsingDataQuotaHelper::QuotaInfo>::iterator quota_info);
   CookieTreeFlashLSONode* GetOrCreateFlashLSONode(const std::string& domain);
@@ -231,6 +240,7 @@ class CookieTreeHostNode : public CookieTreeNode {
   CookieTreeFileSystemsNode* file_systems_child_;
   CookieTreeQuotaNode* quota_child_;
   CookieTreeChannelIDsNode* channel_ids_child_;
+  CookieTreeServiceWorkersNode* service_workers_child_;
   CookieTreeFlashLSONode* flash_lso_child_;
 
   // The URL for which this node was initially created.
@@ -566,6 +576,42 @@ class CookieTreeChannelIDsNode : public CookieTreeNode {
   DISALLOW_COPY_AND_ASSIGN(CookieTreeChannelIDsNode);
 };
 
+// CookieTreeServiceWorkerNode -----------------------------------------------
+class CookieTreeServiceWorkerNode : public CookieTreeNode {
+ public:
+  // service_worker_info should remain valid at least as long as the
+  // CookieTreeServiceWorkerNode is valid.
+  explicit CookieTreeServiceWorkerNode(
+      std::list<content::ServiceWorkerUsageInfo>::iterator service_worker_info);
+  virtual ~CookieTreeServiceWorkerNode();
+
+  // CookieTreeNode methods:
+  virtual void DeleteStoredObjects() OVERRIDE;
+  virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
+
+ private:
+  // service_worker_info_ is expected to remain valid as long as the
+  // CookieTreeServiceWorkerNode is valid.
+  std::list<content::ServiceWorkerUsageInfo>::iterator service_worker_info_;
+
+  DISALLOW_COPY_AND_ASSIGN(CookieTreeServiceWorkerNode);
+};
+
+class CookieTreeServiceWorkersNode : public CookieTreeNode {
+ public:
+  CookieTreeServiceWorkersNode();
+  virtual ~CookieTreeServiceWorkersNode();
+
+  virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
+
+  void AddServiceWorkerNode(CookieTreeServiceWorkerNode* child) {
+    AddChildSortedByTitle(child);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CookieTreeServiceWorkersNode);
+};
+
 // CookieTreeFlashLSONode ----------------------------------------------------
 class CookieTreeFlashLSONode : public CookieTreeNode {
  public:
@@ -665,6 +711,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   void PopulateFileSystemInfo(LocalDataContainer* container);
   void PopulateQuotaInfo(LocalDataContainer* container);
   void PopulateChannelIDInfo(LocalDataContainer* container);
+  void PopulateServiceWorkerUsageInfo(LocalDataContainer* container);
   void PopulateFlashLSOInfo(LocalDataContainer* container);
 
   BrowsingDataCookieHelper* GetCookieHelper(const std::string& app_id);
@@ -707,6 +754,10 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
                                    ScopedBatchUpdateNotifier* notifier,
                                    const base::string16& filter);
   void PopulateChannelIDInfoWithFilter(
+      LocalDataContainer* container,
+      ScopedBatchUpdateNotifier* notifier,
+      const base::string16& filter);
+  void PopulateServiceWorkerUsageInfoWithFilter(
       LocalDataContainer* container,
       ScopedBatchUpdateNotifier* notifier,
       const base::string16& filter);

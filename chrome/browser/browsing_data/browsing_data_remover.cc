@@ -495,6 +495,10 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     storage_partition_remove_mask |=
         content::StoragePartition::REMOVE_DATA_MASK_APPCACHE;
   }
+  if (remove_mask & REMOVE_SERVICE_WORKERS) {
+    storage_partition_remove_mask |=
+        content::StoragePartition::REMOVE_DATA_MASK_SERVICE_WORKERS;
+  }
   if (remove_mask & REMOVE_FILE_SYSTEMS) {
     storage_partition_remove_mask |=
         content::StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS;

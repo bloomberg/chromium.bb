@@ -35,6 +35,7 @@ extern const char kIndexedDBKey[];
 extern const char kPluginDataKey[];
 extern const char kLocalStorageKey[];
 extern const char kPasswordsKey[];
+extern const char kServiceWorkersKey[];
 extern const char kWebSQLKey[];
 
 // Option keys.
@@ -254,6 +255,19 @@ class BrowsingDataRemovePasswordsFunction : public BrowsingDataRemoverFunction {
 
  protected:
   virtual ~BrowsingDataRemovePasswordsFunction() {}
+
+  // BrowsingDataRemoverFunction:
+  virtual int GetRemovalMask() OVERRIDE;
+};
+
+class BrowsingDataRemoveServiceWorkersFunction
+    : public BrowsingDataRemoverFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("browsingData.removeServiceWorkers",
+                             BROWSINGDATA_REMOVESERVICEWORKERS)
+
+ protected:
+  virtual ~BrowsingDataRemoveServiceWorkersFunction() {}
 
   // BrowsingDataRemoverFunction:
   virtual int GetRemovalMask() OVERRIDE;

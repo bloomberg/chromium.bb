@@ -71,6 +71,7 @@ class CONTENT_EXPORT StoragePartition {
   static const uint32 REMOVE_DATA_MASK_SHADER_CACHE    = 1 << 5;
   static const uint32 REMOVE_DATA_MASK_WEBSQL          = 1 << 6;
   static const uint32 REMOVE_DATA_MASK_WEBRTC_IDENTITY = 1 << 7;
+  static const uint32 REMOVE_DATA_MASK_SERVICE_WORKERS = 1 << 8;
   static const uint32 REMOVE_DATA_MASK_ALL             = 0xFFFFFFFF;
 
   // Corresponds to quota::kStorageTypeTemporary.

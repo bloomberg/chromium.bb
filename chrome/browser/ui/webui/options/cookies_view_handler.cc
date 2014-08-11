@@ -19,6 +19,7 @@
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/cookies_tree_model_util.h"
 #include "content/public/browser/browser_context.h"
@@ -66,6 +67,8 @@ void CookiesViewHandler::GetLocalizedValues(
     { "label_indexed_db_last_modified",
       IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL },
     { "label_indexed_db_origin", IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL },
+    { "label_service_worker_origin", IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL },
+    { "label_service_worker_scopes", IDS_COOKIES_SERVICE_WORKER_SCOPES_LABEL },
     { "label_app_cache_manifest",
       IDS_COOKIES_APPLICATION_CACHE_MANIFEST_LABEL },
     { "label_cookie_last_accessed", IDS_COOKIES_LAST_ACCESSED_LABEL },
@@ -77,6 +80,7 @@ void CookiesViewHandler::GetLocalizedValues(
     { "cookie_indexed_db", IDS_COOKIES_INDEXED_DB },
     { "cookie_local_storage", IDS_COOKIES_LOCAL_STORAGE },
     { "cookie_app_cache", IDS_COOKIES_APPLICATION_CACHE },
+    { "cookie_service_worker", IDS_COOKIES_SERVICE_WORKER },
     { "cookie_flash_lso", IDS_COOKIES_FLASH_LSO },
     { "search_cookies", IDS_COOKIES_SEARCH_COOKIES },
     { "remove_cookie", IDS_COOKIES_REMOVE_LABEL },
@@ -186,6 +190,8 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
         content::BrowserContext::GetDefaultStoragePartition(profile);
     content::IndexedDBContext* indexed_db_context =
         storage_partition->GetIndexedDBContext();
+    content::ServiceWorkerContext* service_worker_context =
+        storage_partition->GetServiceWorkerContext();
     fileapi::FileSystemContext* file_system_context =
         storage_partition->GetFileSystemContext();
     LocalDataContainer* container = new LocalDataContainer(
@@ -198,6 +204,7 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
         BrowsingDataFileSystemHelper::Create(file_system_context),
         BrowsingDataQuotaHelper::Create(profile),
         BrowsingDataChannelIDHelper::Create(profile),
+        new BrowsingDataServiceWorkerHelper(service_worker_context),
         BrowsingDataFlashLSOHelper::Create(profile));
     cookies_tree_model_.reset(
         new CookiesTreeModel(container,

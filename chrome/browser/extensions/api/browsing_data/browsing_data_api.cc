@@ -45,6 +45,7 @@ const char kIndexedDBKey[] = "indexedDB";
 const char kLocalStorageKey[] = "localStorage";
 const char kPasswordsKey[] = "passwords";
 const char kPluginDataKey[] = "pluginData";
+const char kServiceWorkersKey[] = "serviceWorkers";
 const char kWebSQLKey[] = "webSQL";
 
 // Option keys.
@@ -92,6 +93,9 @@ int MaskForKey(const char* key) {
     return BrowsingDataRemover::REMOVE_PASSWORDS;
   if (strcmp(key, extension_browsing_data_api_constants::kPluginDataKey) == 0)
     return BrowsingDataRemover::REMOVE_PLUGIN_DATA;
+  if (strcmp(key, extension_browsing_data_api_constants::kServiceWorkersKey) ==
+      0)
+    return BrowsingDataRemover::REMOVE_SERVICE_WORKERS;
   if (strcmp(key, extension_browsing_data_api_constants::kWebSQLKey) == 0)
     return BrowsingDataRemover::REMOVE_WEBSQL;
 
@@ -173,6 +177,9 @@ bool BrowsingDataSettingsFunction::RunSync() {
   SetDetails(selected.get(), permitted.get(),
       extension_browsing_data_api_constants::kChannelIDsKey,
       delete_site_data);
+  SetDetails(selected.get(), permitted.get(),
+             extension_browsing_data_api_constants::kServiceWorkersKey,
+             delete_site_data);
 
   SetDetails(selected.get(), permitted.get(),
       extension_browsing_data_api_constants::kPluginDataKey,
@@ -417,6 +424,10 @@ int BrowsingDataRemovePluginDataFunction::GetRemovalMask() {
 
 int BrowsingDataRemovePasswordsFunction::GetRemovalMask() {
   return BrowsingDataRemover::REMOVE_PASSWORDS;
+}
+
+int BrowsingDataRemoveServiceWorkersFunction::GetRemovalMask() {
+  return BrowsingDataRemover::REMOVE_SERVICE_WORKERS;
 }
 
 int BrowsingDataRemoveWebSQLFunction::GetRemovalMask() {

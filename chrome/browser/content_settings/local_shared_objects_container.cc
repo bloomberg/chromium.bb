@@ -11,6 +11,7 @@
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/storage_partition.h"
@@ -41,6 +42,9 @@ LocalSharedObjectsContainer::LocalSharedObjectsContainer(Profile* profile)
           content::BrowserContext::GetDefaultStoragePartition(profile)->
               GetIndexedDBContext())),
       local_storages_(new CannedBrowsingDataLocalStorageHelper(profile)),
+      service_workers_(new CannedBrowsingDataServiceWorkerHelper(
+          content::BrowserContext::GetDefaultStoragePartition(profile)->
+              GetServiceWorkerContext())),
       session_storages_(new CannedBrowsingDataLocalStorageHelper(profile)) {
 }
 
@@ -55,6 +59,7 @@ void LocalSharedObjectsContainer::Reset() {
   file_systems_->Reset();
   indexed_dbs_->Reset();
   local_storages_->Reset();
+  service_workers_->Reset();
   session_storages_->Reset();
 }
 
@@ -67,6 +72,7 @@ size_t LocalSharedObjectsContainer::GetObjectCount() const {
   count += file_systems()->GetFileSystemCount();
   count += indexed_dbs()->GetIndexedDBCount();
   count += local_storages()->GetLocalStorageCount();
+  count += service_workers()->GetServiceWorkerCount();
   count += session_storages()->GetLocalStorageCount();
   return count;
 }
@@ -137,6 +143,19 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
       ++count;
   }
 
+  // Count service workers for the domain of the given |origin|.
+  typedef CannedBrowsingDataServiceWorkerHelper::PendingServiceWorkerUsageInfo
+      ServiceWorkerInfo;
+  const std::set<ServiceWorkerInfo>& service_worker_info =
+      service_workers()->GetServiceWorkerUsageInfo();
+  for (std::set<ServiceWorkerInfo>::const_iterator it =
+          service_worker_info.begin();
+      it != service_worker_info.end();
+      ++it) {
+    if (SameDomainOrHost(origin, it->origin))
+      ++count;
+  }
+
   // Count filesystems for the domain of the given |origin|.
   typedef BrowsingDataFileSystemHelper::FileSystemInfo FileSystemInfo;
   typedef std::list<FileSystemInfo> FileSystemInfoList;
@@ -193,6 +212,7 @@ LocalSharedObjectsContainer::CreateCookiesTreeModel() const {
       file_systems(),
       NULL,
       channel_ids(),
+      service_workers(),
       NULL);
 
   return make_scoped_ptr(new CookiesTreeModel(container, NULL, true));

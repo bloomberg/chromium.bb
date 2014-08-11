@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "content/public/browser/indexed_db_context.h"
+#include "content/public/browser/service_worker_context.h"
 #include "grit/generated_resources.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/ssl/ssl_client_cert_type.h"
@@ -62,6 +63,8 @@ const char kKeyTemporaryUsage[] = "temporaryUsage";
 const char kKeyPersistentUsage[] = "persistentUsage";
 
 const char kKeyCertType[] = "certType";
+
+const char kKeyScopes[] = "scopes";
 
 const int64 kNegligibleUsage = 1024;  // 1KiB
 
@@ -259,6 +262,24 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
       dict->SetString(kKeyCreated, base::UTF16ToUTF8(
           base::TimeFormatFriendlyDateAndTime(
               channel_id.creation_time())));
+      break;
+    }
+    case CookieTreeNode::DetailedInfo::TYPE_SERVICE_WORKER: {
+      dict->SetString(kKeyType, "service_worker");
+      dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_STORAGE_ICON");
+
+      const content::ServiceWorkerUsageInfo& service_worker_info =
+          *node.GetDetailedInfo().service_worker_info;
+
+      dict->SetString(kKeyOrigin, service_worker_info.origin.spec());
+      base::ListValue* scopes = new base::ListValue;
+      for (std::vector<GURL>::const_iterator it =
+               service_worker_info.scopes.begin();
+           it != service_worker_info.scopes.end();
+           ++it) {
+        scopes->AppendString(it->spec());
+      }
+      dict->Set(kKeyScopes, scopes);
       break;
     }
     case CookieTreeNode::DetailedInfo::TYPE_FLASH_LSO: {

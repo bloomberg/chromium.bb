@@ -89,8 +89,9 @@ class BrowsingDataRemover
     REMOVE_WEBSQL = 1 << 11,
     REMOVE_CHANNEL_IDS = 1 << 12,
     REMOVE_CONTENT_LICENSES = 1 << 13,
+    REMOVE_SERVICE_WORKERS = 1 << 14,
 #if defined(OS_ANDROID)
-    REMOVE_APP_BANNER_DATA = 1 << 14,
+    REMOVE_APP_BANNER_DATA = 1 << 15,
 #endif
     // The following flag is used only in tests. In normal usage, hosted app
     // data is controlled by the REMOVE_COOKIES flag, applied to the
@@ -98,13 +99,12 @@ class BrowsingDataRemover
     REMOVE_HOSTED_APP_DATA_TESTONLY = 1 << 31,
 
     // "Site data" includes cookies, appcache, file systems, indexedDBs, local
-    // storage, webSQL, and plugin data.
-    REMOVE_SITE_DATA = REMOVE_APPCACHE |
-                       REMOVE_COOKIES |
-                       REMOVE_FILE_SYSTEMS |
+    // storage, webSQL, service workers, and plugin data.
+    REMOVE_SITE_DATA = REMOVE_APPCACHE | REMOVE_COOKIES | REMOVE_FILE_SYSTEMS |
                        REMOVE_INDEXEDDB |
                        REMOVE_LOCAL_STORAGE |
                        REMOVE_PLUGIN_DATA |
+                       REMOVE_SERVICE_WORKERS |
                        REMOVE_WEBSQL |
 #if defined(OS_ANDROID)
                        REMOVE_APP_BANNER_DATA |
@@ -114,9 +114,7 @@ class BrowsingDataRemover
     // Includes all the available remove options. Meant to be used by clients
     // that wish to wipe as much data as possible from a Profile, to make it
     // look like a new Profile.
-    REMOVE_ALL = REMOVE_SITE_DATA |
-                 REMOVE_CACHE |
-                 REMOVE_DOWNLOADS |
+    REMOVE_ALL = REMOVE_SITE_DATA | REMOVE_CACHE | REMOVE_DOWNLOADS |
                  REMOVE_FORM_DATA |
                  REMOVE_HISTORY |
                  REMOVE_PASSWORDS |

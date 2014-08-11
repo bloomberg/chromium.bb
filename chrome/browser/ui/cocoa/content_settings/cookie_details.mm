@@ -54,6 +54,10 @@
   return type_ == kCocoaCookieDetailsTypeTreeIndexedDB;
 }
 
+- (BOOL)shouldShowServiceWorkerTreeDetailsView {
+  return type_ == kCocoaCookieDetailsTypeTreeServiceWorker;
+}
+
 - (NSString*)name {
   return name_.get();
 }
@@ -108,6 +112,10 @@
 
 - (NSString*)manifestURL {
   return manifestURL_.get();
+}
+
+- (NSString*)scopes {
+  return scopes_.get();
 }
 
 - (id)initAsFolder {
@@ -255,6 +263,26 @@
   return self;
 }
 
+- (id)initWithServiceWorkerUsageInfo:
+    (const content::ServiceWorkerUsageInfo*)serviceWorkerInfo {
+  if ((self = [super init])) {
+    type_ = kCocoaCookieDetailsTypeTreeServiceWorker;
+    canEditExpiration_ = NO;
+    domain_.reset([base::SysUTF8ToNSString(
+        serviceWorkerInfo->origin.spec()) retain]);
+
+    NSMutableArray *scopes = [[NSMutableArray alloc]
+                         initWithCapacity:serviceWorkerInfo->scopes.size()];
+    for (std::vector<GURL>::const_iterator it =
+             serviceWorkerInfo->scopes.begin();
+         it != serviceWorkerInfo->scopes.end(); ++it) {
+      [scopes addObject:base::SysUTF8ToNSString(it->spec())];
+    }
+    scopes_.reset([[scopes componentsJoinedByString:@","] retain]);
+  }
+  return self;
+}
+
 + (CocoaCookieDetails*)createFromCookieTreeNode:(CookieTreeNode*)treeNode {
   CookieTreeNode::DetailedInfo info = treeNode->GetDetailedInfo();
   CookieTreeNode::DetailedInfo::NodeType nodeType = info.node_type;
@@ -274,6 +302,9 @@
     case CookieTreeNode::DetailedInfo::TYPE_INDEXED_DB:
       return [[[CocoaCookieDetails alloc]
           initWithIndexedDBInfo:info.indexed_db_info] autorelease];
+    case CookieTreeNode::DetailedInfo::TYPE_SERVICE_WORKER:
+      return [[[CocoaCookieDetails alloc]
+          initWithServiceWorkerUsageInfo:info.service_worker_info] autorelease];
     default:
       return [[[CocoaCookieDetails alloc] initAsFolder] autorelease];
   }

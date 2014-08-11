@@ -218,6 +218,8 @@
       'browser/browsing_data/browsing_data_indexed_db_helper.h',
       'browser/browsing_data/browsing_data_local_storage_helper.cc',
       'browser/browsing_data/browsing_data_local_storage_helper.h',
+      'browser/browsing_data/browsing_data_service_worker_helper.cc',
+      'browser/browsing_data/browsing_data_service_worker_helper.h',
       'browser/browsing_data/browsing_data_quota_helper.cc',
       'browser/browsing_data/browsing_data_quota_helper.h',
       'browser/browsing_data/browsing_data_quota_helper_impl.cc',

@@ -71,6 +71,8 @@
         'browser/browsing_data/mock_browsing_data_local_storage_helper.h',
         'browser/browsing_data/mock_browsing_data_quota_helper.cc',
         'browser/browsing_data/mock_browsing_data_quota_helper.h',
+        'browser/browsing_data/mock_browsing_data_service_worker_helper.cc',
+        'browser/browsing_data/mock_browsing_data_service_worker_helper.h',
         # The only thing used from browser is Browser::Type.
         'browser/download/download_test_file_activity_observer.cc',
         'browser/download/download_test_file_activity_observer.h',
@@ -604,6 +606,7 @@
         'browser/browsing_data/browsing_data_remover_unittest.cc',
         'browser/browsing_data/browsing_data_remover_test_util.cc',
         'browser/browsing_data/browsing_data_remover_test_util.h',
+        'browser/browsing_data/browsing_data_service_worker_helper_unittest.cc',
         'browser/browsing_data/cookies_tree_model_unittest.cc',
         'browser/captive_portal/captive_portal_service_unittest.cc',
         'browser/captive_portal/captive_portal_tab_helper_unittest.cc',

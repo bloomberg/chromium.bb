@@ -203,6 +203,8 @@ STATIC_CONST_MEMBER_DEFINITION const uint32
 STATIC_CONST_MEMBER_DEFINITION const uint32
     StoragePartition::REMOVE_DATA_MASK_LOCAL_STORAGE;
 STATIC_CONST_MEMBER_DEFINITION const uint32
+    StoragePartition::REMOVE_DATA_MASK_SERVICE_WORKERS;
+STATIC_CONST_MEMBER_DEFINITION const uint32
     StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE;
 STATIC_CONST_MEMBER_DEFINITION const uint32
     StoragePartition::REMOVE_DATA_MASK_WEBSQL;
@@ -231,6 +233,7 @@ int StoragePartitionImpl::GenerateQuotaClientMask(uint32 remove_mask) {
     quota_client_mask |= quota::QuotaClient::kAppcache;
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_INDEXEDDB)
     quota_client_mask |= quota::QuotaClient::kIndexedDatabase;
+  // TODO(jsbell): StoragePartition::REMOVE_DATA_MASK_SERVICE_WORKERS)
 
   return quota_client_mask;
 }
@@ -698,7 +701,8 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
   if (remove_mask & REMOVE_DATA_MASK_INDEXEDDB ||
       remove_mask & REMOVE_DATA_MASK_WEBSQL ||
       remove_mask & REMOVE_DATA_MASK_APPCACHE ||
-      remove_mask & REMOVE_DATA_MASK_FILE_SYSTEMS) {
+      remove_mask & REMOVE_DATA_MASK_FILE_SYSTEMS ||
+      remove_mask & REMOVE_DATA_MASK_SERVICE_WORKERS) {
     IncrementTaskCountOnUI();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,

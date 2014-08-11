@@ -21,6 +21,7 @@
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 #include "net/ssl/channel_id_store.h"
 
 class BrowsingDataFlashLSOHelper;
@@ -46,6 +47,7 @@ typedef std::list<BrowsingDataFileSystemHelper::FileSystemInfo>
     FileSystemInfoList;
 typedef std::list<BrowsingDataQuotaHelper::QuotaInfo> QuotaInfoList;
 typedef net::ChannelIDStore::ChannelIDList ChannelIDList;
+typedef std::list<content::ServiceWorkerUsageInfo> ServiceWorkerUsageInfoList;
 typedef std::map<GURL, std::list<content::AppCacheInfo> > AppCacheInfoMap;
 typedef std::vector<std::string> FlashLSODomainList;
 
@@ -69,6 +71,7 @@ class LocalDataContainer {
       BrowsingDataFileSystemHelper* file_system_helper,
       BrowsingDataQuotaHelper* quota_helper,
       BrowsingDataChannelIDHelper* channel_id_helper,
+      BrowsingDataServiceWorkerHelper* service_worker_helper,
       BrowsingDataFlashLSOHelper* flash_data_helper);
   virtual ~LocalDataContainer();
 
@@ -87,6 +90,7 @@ class LocalDataContainer {
   friend class CookieTreeFileSystemNode;
   friend class CookieTreeQuotaNode;
   friend class CookieTreeChannelIDNode;
+  friend class CookieTreeServiceWorkerNode;
   friend class CookieTreeFlashLSONode;
 
   // Callback methods to be invoked when fetching the data is complete.
@@ -103,6 +107,8 @@ class LocalDataContainer {
       const FileSystemInfoList& file_system_info);
   void OnQuotaModelInfoLoaded(const QuotaInfoList& quota_info);
   void OnChannelIDModelInfoLoaded(const ChannelIDList& channel_id_list);
+  void OnServiceWorkerModelInfoLoaded(
+      const ServiceWorkerUsageInfoList& service_worker_info);
   void OnFlashLSOInfoLoaded(const FlashLSODomainList& domains);
 
   // Pointers to the helper objects, needed to retreive all the types of locally
@@ -116,6 +122,7 @@ class LocalDataContainer {
   scoped_refptr<BrowsingDataFileSystemHelper> file_system_helper_;
   scoped_refptr<BrowsingDataQuotaHelper> quota_helper_;
   scoped_refptr<BrowsingDataChannelIDHelper> channel_id_helper_;
+  scoped_refptr<BrowsingDataServiceWorkerHelper> service_worker_helper_;
   scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper_;
 
   // Storage for all the data that was retrieved through the helper objects.
@@ -129,6 +136,7 @@ class LocalDataContainer {
   FileSystemInfoList file_system_info_list_;
   QuotaInfoList quota_info_list_;
   ChannelIDList channel_id_list_;
+  ServiceWorkerUsageInfoList service_worker_info_list_;
   FlashLSODomainList flash_lso_domain_list_;
 
   // A delegate, which must outlive this object. The update callbacks use the

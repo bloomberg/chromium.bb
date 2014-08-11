@@ -25,6 +25,7 @@ LocalDataContainer::LocalDataContainer(
     BrowsingDataFileSystemHelper* file_system_helper,
     BrowsingDataQuotaHelper* quota_helper,
     BrowsingDataChannelIDHelper* channel_id_helper,
+    BrowsingDataServiceWorkerHelper* service_worker_helper,
     BrowsingDataFlashLSOHelper* flash_lso_helper)
     : appcache_helper_(appcache_helper),
       cookie_helper_(cookie_helper),
@@ -35,9 +36,11 @@ LocalDataContainer::LocalDataContainer(
       file_system_helper_(file_system_helper),
       quota_helper_(quota_helper),
       channel_id_helper_(channel_id_helper),
+      service_worker_helper_(service_worker_helper),
       flash_lso_helper_(flash_lso_helper),
       model_(NULL),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+}
 
 LocalDataContainer::~LocalDataContainer() {}
 
@@ -97,6 +100,12 @@ void LocalDataContainer::Init(CookiesTreeModel* model) {
   if (channel_id_helper_.get()) {
     channel_id_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnChannelIDModelInfoLoaded,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  if (service_worker_helper_.get()) {
+    service_worker_helper_->StartFetching(
+        base::Bind(&LocalDataContainer::OnServiceWorkerModelInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -185,6 +194,13 @@ void LocalDataContainer::OnChannelIDModelInfoLoaded(
   channel_id_list_ = channel_id_list;
   DCHECK(model_);
   model_->PopulateChannelIDInfo(this);
+}
+
+void LocalDataContainer::OnServiceWorkerModelInfoLoaded(
+    const ServiceWorkerUsageInfoList& service_worker_info) {
+  service_worker_info_list_ = service_worker_info;
+  DCHECK(model_);
+  model_->PopulateServiceWorkerUsageInfo(this);
 }
 
 void LocalDataContainer::OnFlashLSOInfoLoaded(
