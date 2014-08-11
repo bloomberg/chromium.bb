@@ -1266,6 +1266,15 @@ crbug.com/392762 fast/js/nested-object-gc.html [ Pass Crash ]
 # Flaky
 crbug.com/395127 http/tests/w3c/webperf/approved/UserTiming/test_user_timing_measure_navigation_timing.htm [ Failure Pass ]
 
+crbug.com/377445 fast/text/format-control.html [ NeedsRebaseline ]
+crbug.com/377445 fast/text/international/bidi-LDB-2-formatting-characters.html [ NeedsRebaseline ]
+crbug.com/377445 virtual/antialiasedtext/fast/text/drawBidiText.html [ NeedsRebaseline ]
+crbug.com/377445 virtual/antialiasedtext/fast/text/format-control.html [ NeedsRebaseline ]
+crbug.com/377445 virtual/antialiasedtext/fast/text/international/bidi-LDB-2-formatting-characters.html [ NeedsRebaseline ]
+crbug.com/377445 virtual/antialiasedtext/fast/text/whitespace/005.html [ NeedsRebaseline ]
+crbug.com/377445 virtual/antialiasedtext/fast/text/whitespace/011.html [ NeedsRebaseline ]
+crbug.com/377445 virtual/antialiasedtext/fast/text/whitespace/016.html [ NeedsRebaseline ]
+
 crbug.com/396791 [ Debug ] virtual/threaded/printing/print-close-crash.html [ Pass Crash ]
 
 crbug.com/396851 [ Lion ] inspector/console/console-stack-overflow.html [ Timeout ]
