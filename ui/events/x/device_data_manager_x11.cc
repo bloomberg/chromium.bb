@@ -129,7 +129,6 @@ DeviceDataManagerX11* DeviceDataManagerX11::GetInstance() {
 
 DeviceDataManagerX11::DeviceDataManagerX11()
     : xi_opcode_(-1),
-      blocked_keyboard_(false),
       atom_cache_(gfx::GetXDisplay(), kCachedAtoms),
       button_map_count_(0) {
   CHECK(gfx::GetXDisplay());
@@ -673,18 +672,11 @@ bool DeviceDataManagerX11::TouchEventNeedsCalibrate(int touch_device_id) const {
   return false;
 }
 
-void DeviceDataManagerX11::DisableKeyboard(
+void DeviceDataManagerX11::SetDisabledKeyboardAllowedKeys(
     scoped_ptr<std::set<KeyboardCode> > excepted_keys) {
-  DCHECK(!blocked_keyboard_);
-  DCHECK(!blocked_keyboard_allowed_keys_.get());
-  blocked_keyboard_ = true;
+  DCHECK(!excepted_keys.get() ||
+         !blocked_keyboard_allowed_keys_.get());
   blocked_keyboard_allowed_keys_ = excepted_keys.Pass();
-}
-
-void DeviceDataManagerX11::EnableKeyboard() {
-  DCHECK(blocked_keyboard_);
-  blocked_keyboard_ = false;
-  blocked_keyboard_allowed_keys_.reset();
 }
 
 void DeviceDataManagerX11::DisableDevice(unsigned int deviceid) {
@@ -697,20 +689,22 @@ void DeviceDataManagerX11::EnableDevice(unsigned int deviceid) {
 
 bool DeviceDataManagerX11::IsEventBlocked(
     const base::NativeEvent& native_event) {
-  switch (native_event->type) {
-    case KeyPress:
-    case KeyRelease:
-      return blocked_keyboard_ && (!blocked_keyboard_allowed_keys_ ||
-          blocked_keyboard_allowed_keys_->find(
-              KeyboardCodeFromXKeyEvent(native_event)) ==
-                  blocked_keyboard_allowed_keys_->end());
-    case GenericEvent:
-      return blocked_devices_.test(
-          static_cast<XIDeviceEvent*>(native_event->xcookie.data)->sourceid);
-    default:
-      break;
+  // Only check XI2 events which have a source device id.
+  if (native_event->type != GenericEvent)
+    return false;
+
+  XIDeviceEvent* xievent =
+      static_cast<XIDeviceEvent*>(native_event->xcookie.data);
+  // Allow any key events from blocked_keyboard_allowed_keys_.
+  if (blocked_keyboard_allowed_keys_ &&
+      (xievent->evtype == XI_KeyPress || xievent->evtype == XI_KeyRelease) &&
+      blocked_keyboard_allowed_keys_->find(
+          KeyboardCodeFromXKeyEvent(native_event)) !=
+          blocked_keyboard_allowed_keys_->end()) {
+    return false;
   }
-  return false;
+
+  return blocked_devices_.test(xievent->sourceid);
 }
 
 }  // namespace ui

@@ -91,7 +91,7 @@ ScopedDisableInternalMouseAndKeyboardX11::
   excepted_keys->insert(ui::VKEY_VOLUME_DOWN);
   excepted_keys->insert(ui::VKEY_VOLUME_UP);
   excepted_keys->insert(ui::VKEY_POWER);
-  device_data_manager->DisableKeyboard(excepted_keys.Pass());
+  device_data_manager->SetDisabledKeyboardAllowedKeys(excepted_keys.Pass());
   ui::PlatformEventSource::GetInstance()->AddPlatformEventObserver(this);
 }
 
@@ -104,7 +104,8 @@ ScopedDisableInternalMouseAndKeyboardX11::
     device_data_manager->EnableDevice(touchpad_device_id_);
   if (keyboard_device_id_ != kDeviceIdNone)
     device_data_manager->EnableDevice(keyboard_device_id_);
-  device_data_manager->EnableKeyboard();
+  device_data_manager->SetDisabledKeyboardAllowedKeys(
+      scoped_ptr<std::set<ui::KeyboardCode> >());
   ui::PlatformEventSource::GetInstance()->RemovePlatformEventObserver(this);
 }
 

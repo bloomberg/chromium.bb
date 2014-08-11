@@ -508,35 +508,45 @@ TEST_F(EventsXTest, FunctionKeyEvents) {
   EXPECT_FALSE(HasFunctionKeyFlagSetIfSupported(display, XK_F35 + 1));
 }
 
+#if defined(USE_XI2_MT)
 // Verifies that the type of events from a disabled keyboard is ET_UNKNOWN, but
 // that an exception list of keys can still be processed.
 TEST_F(EventsXTest, DisableKeyboard) {
   DeviceDataManagerX11* device_data_manager =
       static_cast<DeviceDataManagerX11*>(
           DeviceDataManager::GetInstance());
+  unsigned int blocked_device_id = 1;
+  unsigned int other_device_id = 2;
+  device_data_manager->DisableDevice(blocked_device_id);
+
   scoped_ptr<std::set<KeyboardCode> > excepted_keys(new std::set<KeyboardCode>);
   excepted_keys->insert(VKEY_B);
-  device_data_manager->DisableKeyboard(excepted_keys.Pass());
+  device_data_manager->SetDisabledKeyboardAllowedKeys(excepted_keys.Pass());
 
-  Display* display = gfx::GetXDisplay();
-  XEvent event;
-
+  ScopedXI2Event xev;
   // A is not allowed on the blocked keyboard, and should return ET_UNKNOWN.
-  InitKeyEvent(display, &event, true, XKeysymToKeycode(display, XK_A), 0);
-  EXPECT_EQ(ui::ET_UNKNOWN, ui::EventTypeFromNative(&event));
+  xev.InitGenericKeyEvent(blocked_device_id, ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
+  EXPECT_EQ(ui::ET_UNKNOWN, ui::EventTypeFromNative(xev));
 
   // The B key is allowed as an exception, and should return KEY_PRESSED.
-  InitKeyEvent(display, &event, true, XKeysymToKeycode(display, XK_B), 0);
-  EXPECT_EQ(ui::ET_KEY_PRESSED, ui::EventTypeFromNative(&event));
+  xev.InitGenericKeyEvent(blocked_device_id, ui::ET_KEY_PRESSED, ui::VKEY_B, 0);
+  EXPECT_EQ(ui::ET_KEY_PRESSED, ui::EventTypeFromNative(xev));
 
-  device_data_manager->EnableKeyboard();
+  // Both A and B are allowed on an unblocked keyboard device.
+  xev.InitGenericKeyEvent(other_device_id, ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
+  EXPECT_EQ(ui::ET_KEY_PRESSED, ui::EventTypeFromNative(xev));
+  xev.InitGenericKeyEvent(other_device_id, ui::ET_KEY_PRESSED, ui::VKEY_B, 0);
+  EXPECT_EQ(ui::ET_KEY_PRESSED, ui::EventTypeFromNative(xev));
+
+  device_data_manager->EnableDevice(blocked_device_id);
+  device_data_manager->SetDisabledKeyboardAllowedKeys(
+      scoped_ptr<std::set<KeyboardCode> >());
 
   // A key returns KEY_PRESSED as per usual now that keyboard was re-enabled.
-  InitKeyEvent(display, &event, true, XKeysymToKeycode(display, XK_A), 0);
-  EXPECT_EQ(ui::ET_KEY_PRESSED, ui::EventTypeFromNative(&event));
+  xev.InitGenericKeyEvent(blocked_device_id, ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
+  EXPECT_EQ(ui::ET_KEY_PRESSED, ui::EventTypeFromNative(xev));
 }
 
-#if defined(USE_XI2_MT)
 // Verifies that the type of events from a disabled mouse is ET_UNKNOWN.
 TEST_F(EventsXTest, DisableMouse) {
   DeviceDataManagerX11* device_data_manager =

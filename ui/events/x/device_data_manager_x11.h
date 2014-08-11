@@ -227,10 +227,9 @@ class EVENTS_BASE_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
 
   bool TouchEventNeedsCalibrate(int touch_device_id) const;
 
-  // Disables the physical keyboard except for the |excepted_keys| provided.
-  void DisableKeyboard(scoped_ptr<std::set<KeyboardCode> > excepted_keys);
-  // Re-enables the keyboard after a previous call to DisableKeyboard.
-  void EnableKeyboard();
+  // Sets the keys which are still allowed on a disabled keyboard device.
+  void SetDisabledKeyboardAllowedKeys(
+      scoped_ptr<std::set<KeyboardCode> > excepted_keys);
 
   // Disables and enables events from devices by device id.
   void DisableDevice(unsigned int deviceid);
@@ -272,11 +271,6 @@ class EVENTS_BASE_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
   // A quick lookup table for determining if events from the XI device
   // should be blocked.
   std::bitset<kMaxDeviceNum> blocked_devices_;
-
-  // When true, keyboard events will be blocked.
-  // TODO(flackr): Only block the internal keyboard when XI2 is used for key
-  // events. http://crbug.com/362881.
-  bool blocked_keyboard_;
 
   // The set of keys allowed while the keyboard is blocked.
   scoped_ptr<std::set<KeyboardCode> > blocked_keyboard_allowed_keys_;
