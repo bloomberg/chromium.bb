@@ -35952,7 +35952,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="WebRTC.AudioInputChannelLayout" enum="ChannelLayout">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>xians@chromium.org</owner>
   <summary>Audio input channel layout in WebRTC.</summary>
 </histogram>
 
@@ -35976,12 +35976,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="WebRTC.AudioInputSampleRate" enum="AudioSampleRate">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>xians@chromium.org</owner>
   <summary>Audio input sample rate for WebRTC (in Hz).</summary>
 </histogram>
 
 <histogram name="WebRTC.AudioInputSampleRateUnexpected" units="Hz">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>xians@chromium.org</owner>
   <summary>
     Audio input sample rate for WebRTC (atypical values, in Hz).
   </summary>
@@ -35996,25 +35996,25 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="WebRTC.AudioOutputFramesPerBuffer" enum="AudioFramesPerBuffer">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>xians@chromium.org</owner>
   <summary>Size of WebRTC audio output buffers (in audio frames).</summary>
 </histogram>
 
 <histogram name="WebRTC.AudioOutputFramesPerBufferUnexpected"
     units="audio frames">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>xians@chromium.org</owner>
   <summary>
     Size of WebRTC audio output buffers (atypical values, in audio frames).
   </summary>
 </histogram>
 
 <histogram name="WebRTC.AudioOutputSampleRate" enum="AudioSampleRate">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>xians@chromium.org</owner>
   <summary>Audio output sample rate for WebRTC (in Hz).</summary>
 </histogram>
 
 <histogram name="WebRTC.AudioOutputSampleRateUnexpected" units="Hz">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>xians@chromium.org</owner>
   <summary>
     Audio output sample rate for WebRTC (atypical values, in Hz).
   </summary>
