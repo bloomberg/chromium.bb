@@ -55,17 +55,14 @@ void PictureImageLayer::PaintContents(
       SkFloatToScalar(static_cast<float>(bounds().height()) / bitmap_.height());
   canvas->scale(content_to_layer_scale_x, content_to_layer_scale_y);
 
-  // Because PictureImageLayer always FillsBoundsCompletely it will not clear
-  // before painting on playback. As a result we must configure the paint to
-  // copy over the uncleared destination, rather than blending with it.
-  SkPaint paint;
-  paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-  canvas->drawBitmap(bitmap_, 0, 0, &paint);
+  // Because Android WebView resourceless software draw mode rasters directly
+  // to the root canvas, this draw must use the kSrcOver_Mode so that
+  // transparent images blend correctly.
+  canvas->drawBitmap(bitmap_, 0, 0);
 }
 
 bool PictureImageLayer::FillsBoundsCompletely() const {
-  // PictureImageLayer will always paint to the entire layer bounds.
-  return true;
+  return false;
 }
 
 }  // namespace cc
