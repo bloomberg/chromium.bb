@@ -250,6 +250,7 @@ class Upload(webapp2.RequestHandler):
             deprecated_master = master_parameter
             master = master_data['url_name']
         else:
+            deprecated_master = None
             master = master_parameter
 
         test_type = self.request.get(PARAM_TEST_TYPE)
