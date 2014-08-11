@@ -660,3 +660,10 @@ void url_fixer::OffsetComponent(int offset, url::Component* part) {
       part->reset();
   }
 }
+
+bool url_fixer::IsEquivalentScheme(const std::string& scheme1,
+                                   const std::string& scheme2) {
+  return scheme1 == scheme2 ||
+      (scheme1 == url::kAboutScheme && scheme2 == kChromeUIScheme) ||
+      (scheme1 == kChromeUIScheme && scheme2 == url::kAboutScheme);
+}
