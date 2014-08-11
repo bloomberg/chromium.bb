@@ -486,6 +486,11 @@ VolumeItem.prototype.decorate = function(entry, modelItem, tree) {
  * @override
  */
 VolumeItem.prototype.handleClick = function(e) {
+  // If the currently selected volume is clicked, change current directory to
+  // the volume's root.
+  if (this.selected)
+    this.activate();
+
   cr.ui.TreeItem.prototype.handleClick.call(this, e);
 
   // Resets file selection when a volume is clicked.
