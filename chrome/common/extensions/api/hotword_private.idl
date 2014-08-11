@@ -28,7 +28,7 @@
     boolean audioLoggingEnabled;
 
     // Whether experimental hotwording functionality is enabled. Mirrors the
-    // "enable-ok-google-voice-search" flag.
+    // "enable-experimental-hotwording" flag.
     boolean experimentalHotwordEnabled;
   };
 

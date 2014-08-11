@@ -1886,15 +1886,13 @@ const Experiment kExperiments[] = {
         data_reduction_proxy::switches::kDisableDataReductionProxyDev)
   },
 #endif
-#if defined(OS_CHROMEOS)
   {
-    "enable-ok-google-voice-search",
-    IDS_FLAGS_OK_GOOGLE_NAME,
-    IDS_FLAGS_OK_GOOGLE_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kEnableOkGoogleVoiceSearch)
+    "enable-experimental-hotwording",
+    IDS_FLAGS_ENABLE_EXPERIMENTAL_HOTWORDING_NAME,
+    IDS_FLAGS_ENABLE_EXPERIMENTAL_HOTWORDING_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kEnableExperimentalHotwording)
   },
-#endif
   {
     "enable-embedded-extension-options",
     IDS_FLAGS_ENABLE_EMBEDDED_EXTENSION_OPTIONS_NAME,

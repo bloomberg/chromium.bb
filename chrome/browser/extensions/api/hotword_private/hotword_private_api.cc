@@ -11,10 +11,8 @@
 #include "chrome/browser/search/hotword_client.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#if defined(OS_CHROMEOS)
-#include "chromeos/chromeos_switches.h"
-#endif
 #include "extensions/browser/event_router.h"
 
 namespace extensions {
@@ -110,13 +108,9 @@ bool HotwordPrivateGetStatusFunction::RunSync() {
   result.enabled_set = prefs->HasPrefPath(prefs::kHotwordSearchEnabled);
   result.enabled = prefs->GetBoolean(prefs::kHotwordSearchEnabled);
   result.audio_logging_enabled = false;
-#if defined(OS_CHROMEOS)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   result.experimental_hotword_enabled = command_line->HasSwitch(
-      chromeos::switches::kEnableOkGoogleVoiceSearch);
-#else
-  result.experimental_hotword_enabled = false;
-#endif
+      switches::kEnableExperimentalHotwording);
   if (hotword_service)
     result.audio_logging_enabled = hotword_service->IsOptedIntoAudioLogging();
 

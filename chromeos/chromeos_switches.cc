@@ -93,9 +93,6 @@ const char kEnableFileManagerMTP[] = "enable-filemanager-mtp";
 const char kEnableNetworkPortalNotification[] =
     "enable-network-portal-notification";
 
-// Enables activation of voice search by saying 'Ok Google'.
-const char kEnableOkGoogleVoiceSearch[] = "enable-ok-google-voice-search";
-
 // Enables touchpad three-finger-click as middle button.
 const char kEnableTouchpadThreeFingerClick[]
     = "enable-touchpad-three-finger-click";

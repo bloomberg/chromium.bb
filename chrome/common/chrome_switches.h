@@ -134,6 +134,7 @@ extern const char kEnhancedBookmarksExperiment[];
 extern const char kEnableDomainReliability[];
 extern const char kEnableEnhancedBookmarks[];
 extern const char kEnableEphemeralApps[];
+extern const char kEnableExperimentalHotwording[];
 extern const char kEnableExtensionActivityLogging[];
 extern const char kEnableExtensionActivityLogTesting[];
 extern const char kEnableFastUnload[];

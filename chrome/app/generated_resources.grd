@@ -14473,6 +14473,14 @@ Do you accept?
     <message name="IDS_FLAGS_REMEMBER_CERTIFICATE_ERROR_DECISIONS_DESCRIPTION" desc="Description of the remember certificate error decisions lab">
       Remember decisions to proceed through SSL errors for a specified length of time.
     </message>
+
+    <!-- Built-in hotword detection display strings -->
+    <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_HOTWORDING_NAME" desc="Name of about:flags option for hotword detection.">
+      Enable experimental 'Ok Google' hotword detection features.
+    </message>
+    <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_HOTWORDING_DESCRIPTION" desc="Description of about:flags option for hotword detection.">
+      Enables experimental 'Ok Google' hotword detection features, such as using the built-in extension. The hotword extension from the Chrome Web Store will no longer be used.
+    </message>
   </messages>
   </release>
 </grit>

@@ -453,6 +453,9 @@ const char kEnhancedBookmarksExperiment[] = "enhanced-bookmarks-experiment";
 // installing in Chrome.
 const char kEnableEphemeralApps[]           = "enable-ephemeral-apps";
 
+// Enables experimental hotword detection features.
+const char kEnableExperimentalHotwording[]  = "enable-experimental-hotwording";
+
 // Enables logging for extension activity.
 const char kEnableExtensionActivityLogging[] =
     "enable-extension-activity-logging";

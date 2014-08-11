@@ -12,10 +12,8 @@
 #include "chrome/browser/search/hotword_client.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#if defined(OS_CHROMEOS)
-#include "chromeos/chromeos_switches.h"
-#endif
 
 namespace {
 
@@ -164,18 +162,16 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, ExperimentalHotwordEnabled) {
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
 
-#if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest,
-                       ExperimentalHotwordEnabled_ChromeOS) {
+                       ExperimentalHotwordEnabled_Enabled) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      chromeos::switches::kEnableOkGoogleVoiceSearch);
+      switches::kEnableExperimentalHotwording);
   ExtensionTestMessageListener listener("experimentalHotwordEnabled: true",
                                         false);
   ASSERT_TRUE(RunComponentExtensionTest("experimentalHotwordEnabled"))
       << message_;
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
-#endif
 
 IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, OnEnabledChanged) {
   // Trigger the pref registrar.

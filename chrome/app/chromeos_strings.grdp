@@ -5756,12 +5756,4 @@ All users must sign out to continue.
   <message name="IDS_SET_TIME_TIME_LABEL" desc="Label for the time input element.">
     System time
   </message>
-
-  <!-- 'OK Google' voice search activation display strings -->
-  <message name="IDS_FLAGS_OK_GOOGLE_NAME" desc="Name of about:flags option for Ok Google.">
-    Enable 'Ok Google' to activate voice search.
-  </message>
-  <message name="IDS_FLAGS_OK_GOOGLE_DESCRIPTION" desc="Description of about:flags option Ok Google.">
-    If enabled, there will be an option in chrome:settings to enable saying 'Ok Google' to activate voice search.
-  </message>
 </grit-part>
