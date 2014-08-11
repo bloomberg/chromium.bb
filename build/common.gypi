@@ -2334,6 +2334,9 @@
       '<(PRODUCT_DIR)/default_apps/drive.crx',
       '<(PRODUCT_DIR)/default_apps/docs.crx',
     ],
+
+    # Whether to allow building of the GPU-related isolates.
+    'archive_gpu_tests%': 0,
   },
   'target_defaults': {
     'variables': {
