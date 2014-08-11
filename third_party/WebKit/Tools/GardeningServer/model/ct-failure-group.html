@@ -42,9 +42,9 @@ CTFailureGroup.prototype._annotate = function(newAnnotation) {
     });
 
     if (Object.size(annotation) == 0) {
-      annotations[this.key] = annotation;
-    } else {
       delete annotations[this.key];
+    } else {
+      annotations[this.key] = annotation;
     }
 
     localStorage.CTFailureGroupAnnotations = JSON.stringify(annotations);
