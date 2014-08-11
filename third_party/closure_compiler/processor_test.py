@@ -4,10 +4,10 @@
 # found in the LICENSE file.
 
 import unittest
-from checker import FileCache, Flattener, LineNumber
+from processor import FileCache, Processor, LineNumber
 
 
-class NodeTest(unittest.TestCase):
+class ProcessorTest(unittest.TestCase):
   def __init__(self, *args, **kwargs):
     unittest.TestCase.__init__(self, *args, **kwargs)
     self.maxDiff = None
@@ -35,7 +35,7 @@ debug(global);
 // Here continues checked.js, a swell file.
 """.strip()
 
-    self.flattener_ = Flattener("/checked.js")
+    self._processor = Processor("/checked.js")
 
   def testInline(self):
     self.assertMultiLineEqual("""
@@ -50,10 +50,10 @@ function debug(msg) { if (window.DEBUG) alert(msg); }
 var global = 'type checking!';
 debug(global);
 // Here continues checked.js, a swell file.
-""".strip(), self.flattener_.contents)
+""".strip(), self._processor.contents)
 
   def assertLineNumber(self, abs_line, expected_line):
-    actual_line = self.flattener_.get_file_from_line(abs_line)
+    actual_line = self._processor.get_file_from_line(abs_line)
     self.assertEqual(expected_line.file, actual_line.file)
     self.assertEqual(expected_line.line_number, actual_line.line_number)
 
@@ -66,6 +66,10 @@ debug(global);
     self.assertLineNumber(9, LineNumber("/global.js", 3))
     self.assertLineNumber(10, LineNumber("/checked.js", 7))
     self.assertLineNumber(11, LineNumber("/checked.js", 8))
+
+  def testIncludedFiles(self):
+    self.assertEquals(set(["/global.js", "/debug.js"]),
+                      self._processor.included_files())
 
 
 class IfStrippingTest(unittest.TestCase):
@@ -84,7 +88,7 @@ class IfStrippingTest(unittest.TestCase):
   }
 """.strip()
 
-    self.flattener_ = Flattener("/century.js")
+    self.processor_ = Processor("/century.js")
 
   def testIfStripping(self):
     self.assertMultiLineEqual("""
@@ -95,7 +99,7 @@ class IfStrippingTest(unittest.TestCase):
 
     return "XXI";
   }
-""".strip(), self.flattener_.contents)
+""".strip(), self.processor_.contents)
 
 
 if __name__ == '__main__':

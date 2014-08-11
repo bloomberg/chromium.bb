@@ -1,71 +1,15 @@
+#!/usr/bin/python
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from collections import defaultdict
+import argparse
 import os
+import processor
 import re
 import subprocess
 import sys
 import tempfile
-
-
-
-class LineNumber(object):
-  def __init__(self, file, line_number):
-    self.file = file
-    self.line_number = int(line_number)
-
-
-class FileCache(object):
-  _cache = defaultdict(str)
-
-  def _read(self, file):
-    file = os.path.abspath(file)
-    self._cache[file] = self._cache[file] or open(file, "r").read()
-    return self._cache[file]
-
-  @staticmethod
-  def read(file):
-    return FileCache()._read(file)
-
-
-class Flattener(object):
-  _IF_TAGS_REG = "</?if[^>]*?>"
-  _INCLUDE_REG = "<include[^>]+src=['\"]([^>]*)['\"]>"
-
-  def __init__(self, file):
-    self.index = 0
-    self.lines = self._get_file(file)
-
-    while self.index < len(self.lines):
-      current_line = self.lines[self.index]
-      match = re.search(self._INCLUDE_REG, current_line[2])
-      if match:
-        file_dir = os.path.dirname(current_line[0])
-        self._inline_file(os.path.join(file_dir, match.group(1)))
-      else:
-        self.index += 1
-
-    # Replace every occurrence of tags like <if expr="..."> and </if>
-    # with an empty string.
-    for i, line in enumerate(self.lines):
-      self.lines[i] = line[:2] + (re.sub(self._IF_TAGS_REG, "", line[2]),)
-
-    self.contents = "\n".join(l[2] for l in self.lines)
-
-  # Returns a list of tuples in the format: (file, line number, line contents).
-  def _get_file(self, file):
-    lines = FileCache.read(file).splitlines()
-    return [(file, lnum + 1, line) for lnum, line in enumerate(lines)]
-
-  def _inline_file(self, file):
-    lines = self._get_file(file)
-    self.lines = self.lines[:self.index] + lines + self.lines[self.index + 1:]
-
-  def get_file_from_line(self, line_number):
-    line_number = int(line_number) - 1
-    return LineNumber(self.lines[line_number][0], self.lines[line_number][1])
 
 
 class Checker(object):
@@ -156,7 +100,7 @@ class Checker(object):
     return self._run_command(self._jar_command + [jar] + args)
 
   def _fix_line_number(self, match):
-    real_file = self._flattener.get_file_from_line(match.group(1))
+    real_file = self._processor.get_file_from_line(match.group(1))
     return "%s:%d" % (os.path.abspath(real_file.file), real_file.line_number)
 
   def _fix_up_error(self, error):
@@ -174,7 +118,7 @@ class Checker(object):
     return "## " + contents if contents else ""
 
   def _create_temp_file(self, contents):
-    with tempfile.NamedTemporaryFile(mode='wt', delete=False) as tmp_file:
+    with tempfile.NamedTemporaryFile(mode="wt", delete=False) as tmp_file:
       self._temp_files.append(tmp_file.name)
       tmp_file.write(contents)
     return tmp_file.name
@@ -198,8 +142,8 @@ class Checker(object):
     meta_file = self._create_temp_file("\n".join(contents))
     self._debug("Meta file: " + meta_file)
 
-    self._flattener = Flattener(meta_file)
-    self._expanded_file = self._create_temp_file(self._flattener.contents)
+    self._processor = processor.Processor(meta_file)
+    self._expanded_file = self._create_temp_file(self._processor.contents)
     self._debug("Expanded file: " + self._expanded_file)
 
     args = ["--js=" + self._expanded_file] + ["--externs=" + e for e in externs]
@@ -225,3 +169,28 @@ class Checker(object):
     self._clean_up()
 
     return runner_cmd.returncode, output
+
+
+if __name__ == "__main__":
+  parser = argparse.ArgumentParser(
+      description="Typecheck JavaScript using Closure compiler")
+  parser.add_argument("sources", nargs=argparse.ONE_OR_MORE,
+                      help="Path to a source file to typecheck")
+  parser.add_argument("-d", "--depends", nargs=argparse.ZERO_OR_MORE)
+  parser.add_argument("-e", "--externs", nargs=argparse.ZERO_OR_MORE)
+  parser.add_argument("-o", "--out_file", help="A place to output results")
+  parser.add_argument("-v", "--verbose", action="store_true",
+                      help="Show more information as this script runs")
+  opts = parser.parse_args()
+
+  checker = Checker(verbose=opts.verbose)
+  for source in opts.sources:
+    if not checker.check(source, depends=opts.depends, externs=opts.externs):
+      sys.exit(1)
+
+    if opts.out_file:
+      out_dir = os.path.dirname(opts.out_file)
+      if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+      # TODO(dbeam): write compiled file to |opts.out_file|.
+      open(opts.out_file, "w").write("")
