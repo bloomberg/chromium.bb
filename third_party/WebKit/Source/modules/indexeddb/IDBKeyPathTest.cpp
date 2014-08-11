@@ -33,8 +33,7 @@
 
 #include <gtest/gtest.h>
 
-using namespace blink;
-
+namespace blink {
 namespace {
 
 void checkKeyPath(const String& keyPath, const Vector<String>& expected, int parserError)
@@ -126,3 +125,4 @@ TEST(IDBKeyPathTest, InvalidKeyPath5)
 }
 
 } // namespace
+} // namespace blink

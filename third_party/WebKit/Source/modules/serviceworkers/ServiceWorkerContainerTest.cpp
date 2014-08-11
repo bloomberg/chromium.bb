@@ -26,8 +26,7 @@
 #include <gtest/gtest.h>
 #include <v8.h>
 
-using namespace blink;
-
+namespace blink {
 namespace {
 
 // Promise-related test support.
@@ -342,3 +341,4 @@ TEST_F(ServiceWorkerContainerTest, RegisterUnregister_NonHttpsSecureOriginDelega
 }
 
 } // namespace
+} // namespace blink

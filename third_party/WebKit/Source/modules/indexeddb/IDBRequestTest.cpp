@@ -46,9 +46,7 @@
 #include <gtest/gtest.h>
 #include <v8.h>
 
-using blink::WebBlobInfo;
-using namespace blink;
-
+namespace blink {
 namespace {
 
 class IDBRequestTest : public testing::Test {
@@ -107,7 +105,7 @@ TEST_F(IDBRequestTest, AbortErrorAfterAbort)
     request->onError(DOMError::create(AbortError, "Description goes here."));
 }
 
-class MockWebIDBDatabase : public blink::WebIDBDatabase {
+class MockWebIDBDatabase : public WebIDBDatabase {
 public:
     static PassOwnPtr<MockWebIDBDatabase> create()
     {
@@ -147,7 +145,7 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping)
         EXPECT_EQ(request->readyState(), "pending");
 
         executionContext()->stopActiveDOMObjects();
-        request->onUpgradeNeeded(oldVersion, backend.release(), metadata, blink::WebIDBDataLossNone, String());
+        request->onUpgradeNeeded(oldVersion, backend.release(), metadata, WebIDBDataLossNone, String());
     }
 
     {
@@ -161,3 +159,4 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping)
 }
 
 } // namespace
+} // namespace blink

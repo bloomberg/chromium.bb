@@ -29,8 +29,7 @@
 #include "wtf/Vector.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
+namespace blink {
 namespace {
 
 TEST(WebSocketDeflaterTest, TestCompressHello)
@@ -153,4 +152,5 @@ TEST(WebSocketDeflaterTest, TestLargeData)
     EXPECT_EQ(0, memcmp(inputData.data(), inflater->data(), inflater->size()));
 }
 
-}
+} // namespace
+} // namespace blink

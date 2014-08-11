@@ -36,8 +36,7 @@
 #include "wtf/text/WTFString.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
+namespace blink {
 namespace {
 
 TEST(WebSocketExtensionParserTest, simpleExtension)
@@ -183,3 +182,4 @@ TEST(WebSocketExtensionParserTest, separatorInQuotedParameter)
 }
 
 } // namespace
+} // namespace blink

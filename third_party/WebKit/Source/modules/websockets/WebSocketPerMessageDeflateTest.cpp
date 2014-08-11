@@ -37,8 +37,7 @@
 #include <gtest/gtest.h>
 #include <iterator>
 
-using namespace blink;
-
+namespace blink {
 namespace {
 
 TEST(WebSocketPerMessageDeflateTest, TestDeflateHelloTakeOver)
@@ -508,4 +507,6 @@ TEST(WebSocketPerMessageDeflateTest, TestNegotiationRequest)
     String actual = WebSocketPerMessageDeflate().createExtensionProcessor()->handshakeString();
     EXPECT_EQ(String("permessage-deflate; client_max_window_bits"), actual);
 }
+
 } // namespace
+} // namespace blink

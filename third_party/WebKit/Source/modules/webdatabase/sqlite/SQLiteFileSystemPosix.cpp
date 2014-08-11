@@ -38,8 +38,6 @@
 #include <string.h>
 #include <unistd.h>
 
-using namespace blink;
-
 // Defined in Chromium's codebase in third_party/sqlite/src/os_unix.c
 extern "C" {
 void chromium_sqlite3_initialize_unix_sqlite3_file(sqlite3_file* file);
@@ -48,6 +46,8 @@ int chromium_sqlite3_get_reusable_file_handle(sqlite3_file* file, const char* fi
 void chromium_sqlite3_update_reusable_file_handle(sqlite3_file* file, int fd, int flags);
 void chromium_sqlite3_destroy_reusable_file_handle(sqlite3_file* file);
 }
+
+namespace blink {
 
 // Chromium's Posix implementation of SQLite VFS
 namespace {
@@ -69,10 +69,10 @@ int chromiumOpen(sqlite3_vfs* vfs, const char* fileName,
         return result;
 
     if (fd < 0) {
-        fd = blink::Platform::current()->databaseOpenFile(String(fileName), desiredFlags);
+        fd = Platform::current()->databaseOpenFile(String(fileName), desiredFlags);
         if ((fd < 0) && (desiredFlags & SQLITE_OPEN_READWRITE)) {
             int newFlags = (desiredFlags & ~(SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)) | SQLITE_OPEN_READONLY;
-            fd = blink::Platform::current()->databaseOpenFile(String(fileName), newFlags);
+            fd = Platform::current()->databaseOpenFile(String(fileName), newFlags);
         }
     }
     if (fd < 0) {
@@ -103,7 +103,7 @@ int chromiumOpen(sqlite3_vfs* vfs, const char* fileName,
 //           should be synched after the file is deleted.
 int chromiumDelete(sqlite3_vfs*, const char* fileName, int syncDir)
 {
-    return blink::Platform::current()->databaseDeleteFile(String(fileName), syncDir);
+    return Platform::current()->databaseDeleteFile(String(fileName), syncDir);
 }
 
 // Check the existance and status of the given file.
@@ -114,7 +114,7 @@ int chromiumDelete(sqlite3_vfs*, const char* fileName, int syncDir)
 // res - the result.
 int chromiumAccess(sqlite3_vfs*, const char* fileName, int flag, int* res)
 {
-    int attr = static_cast<int>(blink::Platform::current()->databaseGetFileAttributes(String(fileName)));
+    int attr = static_cast<int>(Platform::current()->databaseGetFileAttributes(String(fileName)));
     if (attr < 0) {
         *res = 0;
         return SQLITE_OK;
@@ -165,8 +165,6 @@ void* chromiumDlOpen(sqlite3_vfs*, const char*)
 #endif // SQLITE_OMIT_LOAD_EXTENSION
 
 } // namespace
-
-namespace blink {
 
 void SQLiteFileSystem::registerSQLiteVFS()
 {

@@ -32,8 +32,7 @@
 #include "wtf/text/StringHash.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
+namespace blink {
 namespace {
 
 class WebSocketExtensionDispatcherTest;
@@ -181,4 +180,5 @@ TEST_F(WebSocketExtensionDispatcherTest, TestInvalid)
     }
 }
 
-}
+} // namespace
+} // namespace blink
