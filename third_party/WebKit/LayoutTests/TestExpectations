@@ -667,8 +667,6 @@ crbug.com/324369 virtual/softwarecompositing/video/video-reflection.html [ Failu
 
 crbug.com/328234 fast/css/mask-missing-image-crash.html [ Pass Failure ]
 
-crbug.com/331576 [ Mac ] fullscreen/parent-flow-inline-with-block-child.html [ Pass ImageOnlyFailure Crash ]
-
 crbug.com/326524 virtual/threaded/compositing/visibility/visibility-simple-video-layer.html [ Pass ImageOnlyFailure Timeout ]
 
 # ASSERT fails in debug since editing attempts to put a Position on a pseudo element.
