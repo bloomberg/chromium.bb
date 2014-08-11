@@ -57,6 +57,8 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(updatefound);
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     static PassRefPtrWillBeRawPtr<ServiceWorkerRegistration> create(ExecutionContext*, PassOwnPtr<WebServiceWorkerRegistration>);
     ServiceWorkerRegistration(ExecutionContext*, PassOwnPtr<WebServiceWorkerRegistration>);

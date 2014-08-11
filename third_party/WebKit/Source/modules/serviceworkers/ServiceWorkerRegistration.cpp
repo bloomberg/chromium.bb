@@ -145,4 +145,12 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(ExecutionContext* execution
     m_outerRegistration->setProxy(this);
 }
 
+void ServiceWorkerRegistration::trace(Visitor* visitor)
+{
+    visitor->trace(m_installing);
+    visitor->trace(m_waiting);
+    visitor->trace(m_active);
+    EventTargetWithInlineData::trace(visitor);
+}
+
 } // namespace blink
