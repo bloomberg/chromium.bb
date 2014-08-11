@@ -166,7 +166,11 @@ if (info.Length() <= {{argument.index}} || !{% if argument.is_nullable %}(info[{
 {% elif argument.is_clamp %}{# argument.is_callback_interface #}
 {# NaN is treated as 0: http://www.w3.org/TR/WebIDL/#es-type-mapping #}
 double {{argument.name}}NativeValue;
+{% if method.idl_type == 'Promise' %}
+TONATIVE_VOID_PROMISE_INTERNAL({{argument.name}}NativeValue, info[{{argument.index}}]->NumberValue(), info);
+{% else %}
 TONATIVE_VOID_INTERNAL({{argument.name}}NativeValue, info[{{argument.index}}]->NumberValue());
+{% endif %}
 if (!std::isnan({{argument.name}}NativeValue))
     {# IDL type is used for clamping, for the right bounds, since different
        IDL integer types have same internal C++ type (int or unsigned) #}
@@ -318,22 +322,43 @@ v8SetReturnValueNull(info);
 exceptionState.throwTypeError({{error_message}});
 {{throw_from_exception_state(method)}};
 {% elif method.is_constructor %}
+{% if method.idl_type == 'Promise' %}
+{# FIXME: reduce code duplication between sync / async exception handling. #}
+v8SetReturnValue(info, ScriptPromise::rejectWithTypeError(ScriptState::current(info.GetIsolate()), ExceptionMessages::failedToConstruct("{{interface_name}}", {{error_message}})).v8Value());
+{% else %}
 V8ThrowException::throwTypeError(ExceptionMessages::failedToConstruct("{{interface_name}}", {{error_message}}), info.GetIsolate());
+{% endif %}
 {% else %}{# method.has_exception_state #}
+{% if method.idl_type == 'Promise' %}
+v8SetReturnValue(info, ScriptPromise::rejectWithTypeError(ScriptState::current(info.GetIsolate()), ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", {{error_message}})).v8Value());
+{% else %}
 V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", {{error_message}}), info.GetIsolate());
+{% endif %}
 {% endif %}{# method.has_exception_state #}
 {% endmacro %}
 
 
 {######################################}
-{# FIXME: return a rejected Promise if method.idl_type == 'Promise' #}
 {% macro throw_from_exception_state(method) %}
+{% if method.idl_type == 'Promise' %}
+v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value())
+{%- else %}
 exceptionState.throwIfNeeded()
+{%- endif %}
 {%- endmacro %}
 
 
 {######################################}
 {% macro throw_arity_type_error(method, valid_arities) %}
+{% if method.idl_type == 'Promise' %}
+{% if method.has_exception_state %}
+v8SetReturnValue(info, ScriptPromise::rejectWithArityTypeError(ScriptState::current(info.GetIsolate()), exceptionState, {{valid_arities}}, info.Length()).v8Value())
+{%- elif method.is_constructor %}
+v8SetReturnValue(info, ScriptPromise::rejectWithArityTypeErrorForConstructor(ScriptState::current(info.GetIsolate()), "{{interface_name}}", {{valid_arities}}, info.Length()).v8Value())
+{%- else %}
+v8SetReturnValue(info, ScriptPromise::rejectWithArityTypeErrorForMethod(ScriptState::current(info.GetIsolate()), "{{method.name}}", "{{interface_name}}", {{valid_arities}}, info.Length()).v8Value())
+{%- endif %}
+{%- else %}{# methods.idl_type == 'Promise' #}
 {% if method.has_exception_state %}
 throwArityTypeError(exceptionState, {{valid_arities}}, info.Length())
 {%- elif method.is_constructor %}
@@ -341,11 +366,21 @@ throwArityTypeErrorForConstructor("{{interface_name}}", {{valid_arities}}, info.
 {%- else %}
 throwArityTypeErrorForMethod("{{method.name}}", "{{interface_name}}", {{valid_arities}}, info.Length(), info.GetIsolate())
 {%- endif %}
+{%- endif %}{# methods.idl_type == 'Promise' #}
 {% endmacro %}
 
 
 {######################################}
 {% macro throw_minimum_arity_type_error(method, number_of_required_arguments) %}
+{% if method.idl_type == 'Promise' %}
+{% if method.has_exception_state %}
+v8SetReturnValue(info, ScriptPromise::rejectWithMinimumArityTypeError(ScriptState::current(info.GetIsolate()), exceptionState, {{number_of_required_arguments}}, info.Length()).v8Value())
+{%- elif method.is_constructor %}
+v8SetReturnValue(info, ScriptPromise::rejectWithMinimumArityTypeErrorForConstructor(ScriptState::current(info.GetIsolate()), "{{interface_name}}", {{number_of_required_arguments}}, info.Length()).v8Value())
+{%- else %}
+v8SetReturnValue(info, ScriptPromise::rejectWithMinimumArityTypeErrorForMethod(ScriptState::current(info.GetIsolate()), "{{method.name}}", "{{interface_name}}", {{number_of_required_arguments}}, info.Length()).v8Value())
+{%- endif %}
+{%- else %}{# methods.idl_type == 'Promise' #}
 {% if method.has_exception_state %}
 throwMinimumArityTypeError(exceptionState, {{number_of_required_arguments}}, info.Length())
 {%- elif method.is_constructor %}
@@ -353,6 +388,7 @@ throwMinimumArityTypeErrorForConstructor("{{interface_name}}", {{number_of_requi
 {%- else %}
 throwMinimumArityTypeErrorForMethod("{{method.name}}", "{{interface_name}}", {{number_of_required_arguments}}, info.Length(), info.GetIsolate())
 {%- endif %}
+{%- endif %}{# methods.idl_type == 'Promise' #}
 {% endmacro %}
 
 

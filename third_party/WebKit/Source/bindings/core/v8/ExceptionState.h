@@ -32,6 +32,7 @@
 #define ExceptionState_h
 
 #include "bindings/core/v8/ScopedPersistent.h"
+#include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
@@ -40,6 +41,7 @@
 namespace blink {
 
 typedef int ExceptionCode;
+class ScriptState;
 
 class ExceptionState {
     WTF_MAKE_NONCOPYABLE(ExceptionState);
@@ -92,6 +94,9 @@ public:
         throwException();
         return true;
     }
+
+    // This method clears out the exception which |this| has.
+    ScriptPromise reject(ScriptState*);
 
     Context context() const { return m_context; }
     const char* propertyName() const { return m_propertyName; }

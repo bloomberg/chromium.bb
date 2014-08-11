@@ -43,6 +43,13 @@ void ExceptionState::clearException()
     m_exception.clear();
 }
 
+ScriptPromise ExceptionState::reject(ScriptState* scriptState)
+{
+    ScriptPromise promise = ScriptPromise::reject(scriptState, m_exception.newLocal(scriptState->isolate()));
+    clearException();
+    return promise;
+}
+
 void ExceptionState::throwDOMException(const ExceptionCode& ec, const String& message)
 {
     ASSERT(ec);

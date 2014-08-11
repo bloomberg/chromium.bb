@@ -962,18 +962,6 @@ private:
     v8::TryCatch& m_block;
 };
 
-class V8ResetTryCatchScope FINAL {
-public:
-    explicit V8ResetTryCatchScope(v8::TryCatch& block) : m_block(block) { }
-    ~V8ResetTryCatchScope()
-    {
-        m_block.Reset();
-    }
-
-private:
-    v8::TryCatch& m_block;
-};
-
 } // namespace blink
 
 #endif // V8Binding_h

@@ -853,7 +853,7 @@ def sort_and_groupby(l, key=None):
 
 # [Constructor]
 def constructor_context(interface, constructor):
-    arguments_need_try_catch = any(v8_methods.argument_needs_try_catch(argument)
+    arguments_need_try_catch = any(v8_methods.argument_needs_try_catch(argument, return_promise=False)
                                    for argument in constructor.arguments)
 
     # [RaisesException=Constructor]

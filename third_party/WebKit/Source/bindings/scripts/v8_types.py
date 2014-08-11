@@ -523,7 +523,7 @@ def v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value,
     return expression
 
 
-def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index=None, declare_variable=True, isolate='info.GetIsolate()', used_in_private_script=False):
+def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index=None, declare_variable=True, isolate='info.GetIsolate()', used_in_private_script=False, return_promise=False):
     """Returns an expression that converts a V8 value to a C++ value and stores it as a local value."""
 
     # FIXME: Support union type.
@@ -549,6 +549,12 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     # Macros come in several variants, to minimize expensive creation of
     # v8::TryCatch.
     suffix = ''
+
+    if return_promise:
+        suffix += '_PROMISE'
+        args.append('info')
+        if macro == 'TONATIVE_VOID_EXCEPTIONSTATE':
+            args.append('ScriptState::current(%s)' % isolate)
 
     if declare_variable:
         args.insert(0, this_cpp_type)

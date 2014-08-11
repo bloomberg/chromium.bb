@@ -300,7 +300,10 @@ public:
 
     ScriptPromise createResolvedPromise(ScriptState*, ScriptValue);
     ScriptPromise createRejectedPromise(ScriptState*, ScriptValue);
-    ScriptPromise addOneToPromise(ExecutionContext*, ScriptPromise);
+    ScriptPromise addOneToPromise(ScriptState*, ScriptPromise);
+    ScriptPromise promiseCheck(ScriptState*, long, bool, const Dictionary&, const String&, const Vector<String>&, ExceptionState&);
+    ScriptPromise promiseCheckWithoutExceptionState(ScriptState*, const Dictionary&, const String&, const Vector<String>&);
+    ScriptPromise promiseCheckRange(ScriptState*, long);
 
     void trace(Visitor*);
 

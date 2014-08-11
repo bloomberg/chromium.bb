@@ -6687,14 +6687,63 @@ static void nodeFilterMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Va
 
 static void promiseMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "promiseMethod", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 3)) {
+        v8SetReturnValue(info, ScriptPromise::rejectWithMinimumArityTypeError(ScriptState::current(info.GetIsolate()), exceptionState, 3, info.Length()).v8Value());
+        return;
+    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    v8SetReturnValue(info, impl->promiseMethod().v8Value());
+    int arg1;
+    Dictionary arg2;
+    V8StringResource<> arg3;
+    Vector<String> variadic;
+    {
+        v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
+        TONATIVE_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(arg1, toInt32(info[0], exceptionState), exceptionState, info, ScriptState::current(info.GetIsolate()));
+        TONATIVE_VOID_PROMISE_INTERNAL(arg2, Dictionary(info[1], info.GetIsolate()), info);
+        if (!arg2.isUndefinedOrNull() && !arg2.isObject()) {
+            exceptionState.throwTypeError("parameter 2 ('arg2') is not an object.");
+            v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
+            return;
+        }
+        TOSTRING_VOID_PROMISE_INTERNAL(arg3, info[2], info);
+        TONATIVE_VOID_PROMISE_INTERNAL(variadic, toNativeArguments<String>(info, 3), info);
+    }
+    v8SetReturnValue(info, impl->promiseMethod(arg1, arg2, arg3, variadic).v8Value());
 }
 
 static void promiseMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
     TestObjectV8Internal::promiseMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void promiseMethodWithoutExceptionStateMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        v8SetReturnValue(info, ScriptPromise::rejectWithMinimumArityTypeErrorForMethod(ScriptState::current(info.GetIsolate()), "promiseMethodWithoutExceptionState", "TestObject", 1, info.Length()).v8Value());
+        return;
+    }
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    Dictionary arg1;
+    {
+        v8::TryCatch block;
+        V8RethrowTryCatchScope rethrow(block);
+        TONATIVE_VOID_PROMISE_INTERNAL(arg1, Dictionary(info[0], info.GetIsolate()), info);
+        if (!arg1.isUndefinedOrNull() && !arg1.isObject()) {
+            v8SetReturnValue(info, ScriptPromise::rejectWithTypeError(ScriptState::current(info.GetIsolate()), ExceptionMessages::failedToExecute("promiseMethodWithoutExceptionState", "TestObject", "parameter 1 ('arg1') is not an object.")).v8Value());
+            return;
+        }
+    }
+    v8SetReturnValue(info, impl->promiseMethodWithoutExceptionState(arg1).v8Value());
+}
+
+static void promiseMethodWithoutExceptionStateMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::promiseMethodWithoutExceptionStateMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -10352,7 +10401,8 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodTestEnumArg", TestObjectV8Internal::voidMethodTestEnumArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"dictionaryMethod", TestObjectV8Internal::dictionaryMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"nodeFilterMethod", TestObjectV8Internal::nodeFilterMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
-    {"promiseMethod", TestObjectV8Internal::promiseMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"promiseMethod", TestObjectV8Internal::promiseMethodMethodCallback, 0, 3, V8DOMConfiguration::ExposedToAllScripts},
+    {"promiseMethodWithoutExceptionState", TestObjectV8Internal::promiseMethodWithoutExceptionStateMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"serializedScriptValueMethod", TestObjectV8Internal::serializedScriptValueMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"xPathNSResolverMethod", TestObjectV8Internal::xPathNSResolverMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodDictionaryArg", TestObjectV8Internal::voidMethodDictionaryArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},

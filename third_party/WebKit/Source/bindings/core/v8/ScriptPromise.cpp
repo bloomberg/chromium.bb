@@ -31,7 +31,10 @@
 #include "config.h"
 #include "bindings/core/v8/ScriptPromise.h"
 
+#include "bindings/core/v8/ExceptionMessages.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMException.h"
 
 #include <v8.h>
@@ -162,6 +165,60 @@ ScriptPromise ScriptPromise::rejectWithDOMException(ScriptState* scriptState, Pa
 {
     ASSERT(scriptState->isolate()->InContext());
     return reject(scriptState, V8ValueTraits<PassRefPtrWillBeRawPtr<DOMException> >::toV8Value(exception, scriptState->context()->Global(), scriptState->isolate()));
+}
+
+ScriptPromise ScriptPromise::rejectWithTypeError(ScriptState* scriptState, const String& message)
+{
+    v8::Isolate* isolate = scriptState->isolate();
+    return reject(scriptState, V8ThrowException::createTypeError(message, isolate));
+}
+
+ScriptPromise ScriptPromise::rejectWithArityTypeErrorForMethod(ScriptState* scriptState, const char* method, const char* type, const char* valid, unsigned provided)
+{
+    String message = ExceptionMessages::failedToExecute(method, type, ExceptionMessages::invalidArity(valid, provided));
+    return rejectWithTypeError(scriptState, message);
+}
+
+ScriptPromise ScriptPromise::rejectWithArityTypeErrorForConstructor(ScriptState* scriptState, const char* type, const char* valid, unsigned provided)
+{
+    String message = ExceptionMessages::failedToConstruct(type, ExceptionMessages::invalidArity(valid, provided));
+    return rejectWithTypeError(scriptState, message);
+}
+
+ScriptPromise ScriptPromise::rejectWithArityTypeError(ScriptState* scriptState, ExceptionState& exceptionState, const char* valid, unsigned provided)
+{
+    exceptionState.throwTypeError(ExceptionMessages::invalidArity(valid, provided));
+    return exceptionState.reject(scriptState);
+}
+
+ScriptPromise ScriptPromise::rejectWithMinimumArityTypeErrorForMethod(
+    ScriptState* scriptState, const char* method, const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams)
+{
+    String message = ExceptionMessages::failedToExecute(method, type, ExceptionMessages::notEnoughArguments(expected, providedLeastNumMandatoryParams));
+    return rejectWithTypeError(scriptState, message);
+}
+
+ScriptPromise ScriptPromise::rejectWithMinimumArityTypeErrorForConstructor(
+    ScriptState* scriptState, const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams)
+{
+    String message = ExceptionMessages::failedToConstruct(type, ExceptionMessages::notEnoughArguments(expected, providedLeastNumMandatoryParams));
+    return rejectWithTypeError(scriptState, message);
+}
+
+ScriptPromise ScriptPromise::rejectWithMinimumArityTypeError(ScriptState* scriptState, ExceptionState& exceptionState, unsigned expected, unsigned providedLeastNumMandatoryParams)
+{
+    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(expected, providedLeastNumMandatoryParams));
+    return exceptionState.reject(scriptState);
+}
+
+v8::Local<v8::Promise> ScriptPromise::rejectRaw(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    if (value.IsEmpty())
+        return v8::Local<v8::Promise>();
+    v8::Local<v8::Promise::Resolver> resolver = v8::Promise::Resolver::New(isolate);
+    v8::Local<v8::Promise> promise = resolver->GetPromise();
+    resolver->Reject(value);
+    return promise;
 }
 
 } // namespace blink

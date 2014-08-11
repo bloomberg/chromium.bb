@@ -265,7 +265,10 @@
 
     [CallWith=ScriptState] Promise createResolvedPromise(any value);
     [CallWith=ScriptState] Promise createRejectedPromise(any reason);
-    [CallWith=ExecutionContext] Promise addOneToPromise(Promise promise);
+    [CallWith=ScriptState] Promise addOneToPromise(Promise promise);
+    [CallWith=ScriptState, RaisesException] Promise promiseCheck(long arg1, boolean arg2, Dictionary arg3, DOMString arg4, DOMString[] arg5);
+    [CallWith=ScriptState] Promise promiseCheckWithoutExceptionState(Dictionary arg1, DOMString arg2, DOMString... variadic);
+    [CallWith=ScriptState] Promise promiseCheckRange([EnforceRange] octet arg1);
 
     void setValueForUser(Element element, DOMString value);
 

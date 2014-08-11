@@ -51,7 +51,7 @@ CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES = frozenset([
 ])
 
 
-def argument_needs_try_catch(argument):
+def argument_needs_try_catch(argument, return_promise):
     idl_type = argument.idl_type
     base_type = not idl_type.native_array_element_type and idl_type.base_type
 
@@ -62,9 +62,10 @@ def argument_needs_try_catch(argument):
         base_type == 'SerializedScriptValue' or
         (argument.is_variadic and idl_type.is_wrapper_type) or
         # String and enumeration arguments converted using one of the
-        # TOSTRING_* macros in Source/bindings/core/v8/V8BindingMacros.h don't
-        # use a v8::TryCatch.
-        (base_type == 'DOMString' and not argument.is_variadic))
+        # TOSTRING_* macros except for _PROMISE variants in
+        # Source/bindings/core/v8/V8BindingMacros.h don't use a v8::TryCatch.
+        (base_type == 'DOMString' and not argument.is_variadic and
+         not return_promise))
 
 
 def use_local_result(method):
@@ -83,6 +84,7 @@ def method_context(interface, method):
     idl_type = method.idl_type
     is_static = method.is_static
     name = method.name
+    return_promise = idl_type.name == 'Promise'
 
     idl_type.add_includes_for_type()
     this_cpp_value = cpp_value(interface, method, len(arguments))
@@ -122,8 +124,9 @@ def method_context(interface, method):
         'DoNotCheckSecurity' not in extended_attributes)
     is_raises_exception = 'RaisesException' in extended_attributes
 
-    arguments_need_try_catch = any(argument_needs_try_catch(argument)
-                                   for argument in arguments)
+    arguments_need_try_catch = (
+        any(argument_needs_try_catch(argument, return_promise)
+            for argument in arguments))
 
     return {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
@@ -201,6 +204,8 @@ def argument_context(interface, method, argument, index):
     idl_type = argument.idl_type
     this_cpp_value = cpp_value(interface, method, index)
     is_variadic_wrapper_type = argument.is_variadic and idl_type.is_wrapper_type
+    return_promise = (method.idl_type.name == 'Promise' if method.idl_type
+                                                        else False)
 
     if ('ImplementedInPrivateScript' in extended_attributes and
         not idl_type.is_wrapper_type and
@@ -242,7 +247,7 @@ def argument_context(interface, method, argument, index):
             creation_context='scriptState->context()->Global()'),
         'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
         'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
-        'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index),
+        'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index, return_promise=return_promise),
         'vector_type': v8_types.cpp_ptr_type('Vector', 'HeapVector', idl_type.gc_type),
     }
 
@@ -346,27 +351,35 @@ def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False)
     return idl_type.v8_set_return_value(cpp_value, extended_attributes, script_wrappable=script_wrappable, release=release, for_main_world=for_main_world)
 
 
-def v8_value_to_local_cpp_variadic_value(argument, index):
+def v8_value_to_local_cpp_variadic_value(argument, index, return_promise):
     assert argument.is_variadic
     idl_type = argument.idl_type
 
-    macro = 'TONATIVE_VOID_INTERNAL'
+    suffix = ''
+
+    macro = 'TONATIVE_VOID'
     macro_args = [
       argument.name,
       'toNativeArguments<%s>(info, %s)' % (idl_type.cpp_type, index),
     ]
 
-    return '%s(%s)' % (macro, ', '.join(macro_args))
+    if return_promise:
+        suffix += '_PROMISE'
+        macro_args.append('info')
+
+    suffix += '_INTERNAL'
+
+    return '%s%s(%s)' % (macro, suffix, ', '.join(macro_args))
 
 
-def v8_value_to_local_cpp_value(argument, index):
+def v8_value_to_local_cpp_value(argument, index, return_promise=False):
     extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
     name = argument.name
     if argument.is_variadic:
-        return v8_value_to_local_cpp_variadic_value(argument, index)
+        return v8_value_to_local_cpp_variadic_value(argument, index, return_promise)
     return idl_type.v8_value_to_local_cpp_value(extended_attributes, 'info[%s]' % index,
-                                                name, index=index, declare_variable=False)
+                                                name, index=index, declare_variable=False, return_promise=return_promise)
 
 
 ################################################################################

@@ -33,14 +33,18 @@
 
 #include "bindings/core/v8/ScriptFunction.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/V8ThrowException.h"
+#include "core/dom/ExceptionCode.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/text/WTFString.h"
 #include <v8.h>
 
 namespace blink {
 
 class DOMException;
+class ExceptionState;
 
 // ScriptPromise is the class for representing Promise values in C++ world.
 // ScriptPromise holds a Promise.
@@ -114,6 +118,23 @@ public:
     static ScriptPromise reject(ScriptState*, v8::Handle<v8::Value>);
 
     static ScriptPromise rejectWithDOMException(ScriptState*, PassRefPtrWillBeRawPtr<DOMException>);
+
+    // static functions each of which returns a ScriptPromise rejected with
+    // the given error.
+    // They coresspond to functions in V8Binding.h, such as throwError,
+    // throwTypeError, etc.
+    // FIXME: Remove these functions.
+    static ScriptPromise rejectWithTypeError(ScriptState*, const String&);
+    static ScriptPromise rejectWithArityTypeErrorForMethod(ScriptState*, const char* method, const char* type, const char* valid, unsigned provided);
+    static ScriptPromise rejectWithArityTypeErrorForConstructor(ScriptState*, const char* type, const char* valid, unsigned provided);
+    static ScriptPromise rejectWithArityTypeError(ScriptState*, ExceptionState&, const char* valid, unsigned provided);
+    static ScriptPromise rejectWithMinimumArityTypeErrorForMethod(
+        ScriptState*, const char* method, const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams);
+    static ScriptPromise rejectWithMinimumArityTypeErrorForConstructor(
+        ScriptState*, const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams);
+    static ScriptPromise rejectWithMinimumArityTypeError(ScriptState*, ExceptionState&, unsigned expected, unsigned providedLeastNumMandatoryParams);
+
+    static v8::Local<v8::Promise> rejectRaw(v8::Isolate*, v8::Handle<v8::Value>);
 
     // This is a utility class intended to be used internally.
     // ScriptPromiseResolver is for general purpose.

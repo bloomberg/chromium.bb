@@ -2182,9 +2182,27 @@ ScriptPromise Internals::createRejectedPromise(ScriptState* scriptState, ScriptV
     return promise;
 }
 
-ScriptPromise Internals::addOneToPromise(ExecutionContext* context, ScriptPromise promise)
+ScriptPromise Internals::addOneToPromise(ScriptState* scriptState, ScriptPromise promise)
 {
-    return promise.then(AddOneFunction::create(context));
+    return promise.then(AddOneFunction::create(scriptState->executionContext()));
+}
+
+ScriptPromise Internals::promiseCheck(ScriptState* scriptState, long arg1, bool arg2, const Dictionary& arg3, const String& arg4, const Vector<String>& arg5, ExceptionState& exceptionState)
+{
+    if (arg2)
+        return ScriptPromise::cast(scriptState, v8String(scriptState->isolate(), "done"));
+    exceptionState.throwDOMException(InvalidStateError, "Thrown from the native implementation.");
+    return ScriptPromise();
+}
+
+ScriptPromise Internals::promiseCheckWithoutExceptionState(ScriptState* scriptState, const Dictionary& arg1, const String& arg2, const Vector<String>& arg3)
+{
+    return ScriptPromise::cast(scriptState, v8String(scriptState->isolate(), "done"));
+}
+
+ScriptPromise Internals::promiseCheckRange(ScriptState* scriptState, long arg1)
+{
+    return ScriptPromise::cast(scriptState, v8String(scriptState->isolate(), "done"));
 }
 
 void Internals::trace(Visitor* visitor)
