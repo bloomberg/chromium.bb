@@ -35,6 +35,7 @@
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/frame/DOMTimer.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "platform/LifecycleContext.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
@@ -84,8 +85,7 @@ public:
     bool shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus);
     void reportException(PassRefPtrWillBeRawPtr<ErrorEvent>, PassRefPtrWillBeRawPtr<ScriptCallStack>, AccessControlStatus);
 
-    void addConsoleMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber);
-    void addConsoleMessage(MessageSource, MessageLevel, const String& message, ScriptState* = 0);
+    void addConsoleMessage(PassRefPtr<ConsoleMessage>);
 
     PublicURLManager& publicURLManager();
 

@@ -36,6 +36,7 @@
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/FrameLoader.h"
@@ -140,7 +141,7 @@ bool NewWebSocketChannelImpl::connect(const KURL& url, const String& protocol)
     }
     if (MixedContentChecker::isMixedContent(document()->securityOrigin(), url)) {
         String message = "Connecting to a non-secure WebSocket server from a secure origin is deprecated.";
-        document()->addConsoleMessage(JSMessageSource, WarningMessageLevel, message);
+        document()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
     }
 
     m_url = url;
@@ -243,7 +244,7 @@ void NewWebSocketChannelImpl::fail(const String& reason, MessageLevel level, con
     if (m_identifier)
         InspectorInstrumentation::didReceiveWebSocketFrameError(document(), m_identifier, reason);
     const String message = "WebSocket connection to '" + m_url.elidedString() + "' failed: " + reason;
-    executionContext()->addConsoleMessage(JSMessageSource, level, message, sourceURL, lineNumber);
+    executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, level, message, sourceURL, lineNumber));
 
     if (m_client)
         m_client->didReceiveMessageError();

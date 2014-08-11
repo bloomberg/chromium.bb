@@ -32,14 +32,15 @@
 #include "core/XLinkNames.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLParamElement.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/frame/Settings.h"
 #include "platform/JSONValues.h"
 #include "platform/network/FormData.h"
 #include "platform/text/DecodeEscapeSequences.h"
@@ -345,7 +346,7 @@ void XSSAuditor::init(Document* document, XSSAuditorDelegate* auditorDelegate)
             }
         }
         if (xssProtectionHeader == ReflectedXSSInvalid)
-            document->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Error parsing header X-XSS-Protection: " + headerValue + ": "  + errorDetails + " at character position " + String::format("%u", errorPosition) + ". The default protections will be applied.");
+            document->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Error parsing header X-XSS-Protection: " + headerValue + ": "  + errorDetails + " at character position " + String::format("%u", errorPosition) + ". The default protections will be applied."));
 
         ReflectedXSSDisposition cspHeader = document->contentSecurityPolicy()->reflectedXSSDisposition();
         m_didSendValidCSPHeader = cspHeader != ReflectedXSSUnset && cspHeader != ReflectedXSSInvalid;

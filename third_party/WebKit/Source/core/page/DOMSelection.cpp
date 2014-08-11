@@ -43,6 +43,7 @@
 #include "core/editing/TextIterator.h"
 #include "core/editing/htmlediting.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -562,7 +563,7 @@ bool DOMSelection::isValidForPosition(Node* node) const
 void DOMSelection::addConsoleError(const String& message)
 {
     if (m_treeScope)
-        m_treeScope->document().addConsoleMessage(JSMessageSource, ErrorMessageLevel, message);
+        m_treeScope->document().addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
 }
 
 } // namespace blink

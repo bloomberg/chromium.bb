@@ -31,6 +31,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "platform/Logging.h"
 #include "modules/webdatabase/AbstractDatabaseServer.h"
 #include "modules/webdatabase/Database.h"
@@ -276,7 +277,7 @@ void DatabaseManager::interruptAllDatabasesForContext(DatabaseContext* databaseC
 
 void DatabaseManager::logErrorMessage(ExecutionContext* context, const String& message)
 {
-    context->addConsoleMessage(StorageMessageSource, ErrorMessageLevel, message);
+    context->addConsoleMessage(ConsoleMessage::create(StorageMessageSource, ErrorMessageLevel, message));
 }
 
 } // namespace blink

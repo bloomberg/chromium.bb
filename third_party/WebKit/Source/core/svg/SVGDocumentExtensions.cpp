@@ -24,6 +24,7 @@
 
 #include "core/XLinkNames.h"
 #include "core/dom/Document.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGElementRareData.h"
@@ -146,7 +147,7 @@ void SVGDocumentExtensions::dispatchSVGLoadEventToOutermostSVGElements()
 static void reportMessage(Document* document, MessageLevel level, const String& message)
 {
     if (document->frame())
-        document->addConsoleMessage(RenderingMessageSource, level, message);
+        document->addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, level, message));
 }
 
 void SVGDocumentExtensions::reportWarning(const String& message)

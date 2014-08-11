@@ -33,6 +33,7 @@
 #include "core/html/HTMLLegendElement.h"
 #include "core/html/ValidityState.h"
 #include "core/frame/UseCounter.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/page/Page.h"
 #include "core/page/ValidationMessageClient.h"
 #include "core/rendering/RenderBox.h"
@@ -211,7 +212,7 @@ static bool shouldAutofocusOnAttach(const HTMLFormControlElement* element)
         return false;
     if (element->document().isSandboxed(SandboxAutomaticFeatures)) {
         // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-        element->document().addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Blocked autofocusing on a form control because the form's frame is sandboxed and the 'allow-scripts' permission is not set.");
+        element->document().addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Blocked autofocusing on a form control because the form's frame is sandboxed and the 'allow-scripts' permission is not set."));
         return false;
     }
 

@@ -28,6 +28,7 @@
 #include "core/dom/Element.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
@@ -55,7 +56,7 @@ void PointerLockController::requestPointerLock(Element* target)
 
     if (target->document().isSandboxed(SandboxPointerLock)) {
         // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-        target->document().addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Blocked pointer lock on an element because the element's frame is sandboxed and the 'allow-pointer-lock' permission is not set.");
+        target->document().addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Blocked pointer lock on an element because the element's frame is sandboxed and the 'allow-pointer-lock' permission is not set."));
         enqueueEvent(EventTypeNames::pointerlockerror, target);
         return;
     }

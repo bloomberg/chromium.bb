@@ -32,6 +32,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -167,7 +168,7 @@ void MixedContentChecker::logWarning(bool allowed, const KURL& target, const Mix
         break;
     }
     MessageLevel messageLevel = allowed ? WarningMessageLevel : ErrorMessageLevel;
-    m_frame->document()->addConsoleMessage(SecurityMessageSource, messageLevel, message.toString());
+    m_frame->document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, messageLevel, message.toString()));
 }
 
 } // namespace blink

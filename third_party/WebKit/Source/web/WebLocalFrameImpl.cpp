@@ -110,6 +110,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/PluginDocument.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"
@@ -748,7 +749,7 @@ void WebLocalFrameImpl::addMessageToConsole(const WebConsoleMessage& message)
         return;
     }
 
-    frame()->document()->addConsoleMessage(OtherMessageSource, webCoreMessageLevel, message.text);
+    frame()->document()->addConsoleMessage(ConsoleMessage::create(OtherMessageSource, webCoreMessageLevel, message.text));
 }
 
 void WebLocalFrameImpl::collectGarbage()

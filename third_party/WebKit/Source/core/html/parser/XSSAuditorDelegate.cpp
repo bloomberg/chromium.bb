@@ -28,6 +28,7 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -103,7 +104,7 @@ void XSSAuditorDelegate::didBlockScript(const XSSInfo& xssInfo)
 {
     ASSERT(isMainThread());
 
-    m_document->addConsoleMessage(JSMessageSource, ErrorMessageLevel, xssInfo.buildConsoleError());
+    m_document->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, xssInfo.buildConsoleError()));
 
     // stopAllLoaders can detach the LocalFrame, so protect it.
     RefPtr<LocalFrame> protect(m_document->frame());

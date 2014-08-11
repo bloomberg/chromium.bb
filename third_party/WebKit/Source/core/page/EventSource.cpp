@@ -46,6 +46,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/parser/TextResourceDecoder.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/loader/ThreadableLoader.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
@@ -240,7 +241,7 @@ void EventSource::didReceiveResponse(unsigned long, const ResourceResponse& resp
             message.append(charset);
             message.appendLiteral("\") that is not UTF-8. Aborting the connection.");
             // FIXME: We are missing the source line.
-            executionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message.toString());
+            executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message.toString()));
         }
     } else {
         // To keep the signal-to-noise ratio low, we only log 200-response with an invalid MIME type.
@@ -250,7 +251,7 @@ void EventSource::didReceiveResponse(unsigned long, const ResourceResponse& resp
             message.append(response.mimeType());
             message.appendLiteral("\") that is not \"text/event-stream\". Aborting the connection.");
             // FIXME: We are missing the source line.
-            executionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message.toString());
+            executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message.toString()));
         }
     }
 
@@ -302,7 +303,7 @@ void EventSource::didFail(const ResourceError& error)
 void EventSource::didFailAccessControlCheck(const ResourceError& error)
 {
     String message = "EventSource cannot load " + error.failingURL() + ". " + error.localizedDescription();
-    executionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message);
+    executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
 
     abortConnectionAttempt();
 }

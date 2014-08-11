@@ -70,6 +70,7 @@ class CSSStyleSheet;
 class CanvasRenderingContext2D;
 class Chrome;
 class Comment;
+class ConsoleMessage;
 class ContentSecurityPolicyResponseHeaders;
 class ContextFeatures;
 class CustomElementMicrotaskRunQueue;
@@ -1012,7 +1013,7 @@ public:
 
     void didAssociateFormControl(Element*);
 
-    void addConsoleMessageWithRequestIdentifier(MessageSource, MessageLevel, const String& message, unsigned long requestIdentifier);
+    virtual void addMessage(PassRefPtr<ConsoleMessage>) OVERRIDE FINAL;
 
     virtual LocalDOMWindow* executingWindow() OVERRIDE FINAL;
     LocalFrame* executingFrame();
@@ -1115,8 +1116,6 @@ private:
     virtual KURL virtualCompleteURL(const String&) const OVERRIDE FINAL; // Same as completeURL() for the same reason as above.
 
     virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) OVERRIDE FINAL;
-    virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState*) OVERRIDE FINAL;
-    void internalAddMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>, ScriptState*);
 
     virtual double timerAlignmentInterval() const OVERRIDE FINAL;
 

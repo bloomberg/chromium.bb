@@ -28,12 +28,13 @@
 #include "core/dom/AddConsoleMessageTask.h"
 
 #include "core/dom/ExecutionContext.h"
+#include "core/inspector/ConsoleMessage.h"
 
 namespace blink {
 
 void AddConsoleMessageTask::performTask(ExecutionContext* context)
 {
-    context->addConsoleMessage(m_source, m_level, m_message);
+    context->addConsoleMessage(ConsoleMessage::create(m_source, m_level, m_message));
 }
 
 } // namespace

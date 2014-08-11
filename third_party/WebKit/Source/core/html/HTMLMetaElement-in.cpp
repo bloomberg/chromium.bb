@@ -27,6 +27,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
@@ -128,7 +129,7 @@ void HTMLMetaElement::parseContentAttribute(const String& content, KeyValuePairC
     }
     if (error) {
         String message = "Error parsing a meta element's content: ';' is not a valid key-value pair separator. Please use ',' instead.";
-        document().addConsoleMessage(RenderingMessageSource, WarningMessageLevel, message);
+        document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, WarningMessageLevel, message));
     }
 }
 
@@ -392,7 +393,7 @@ void HTMLMetaElement::reportViewportWarning(ViewportErrorCode errorCode, const S
         message.replace("%replacement2", replacement2);
 
     // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-    document().addConsoleMessage(RenderingMessageSource, viewportErrorMessageLevel(errorCode), message);
+    document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, viewportErrorMessageLevel(errorCode), message));
 }
 
 void HTMLMetaElement::processViewportContentAttribute(const String& content, ViewportDescription::Type origin)

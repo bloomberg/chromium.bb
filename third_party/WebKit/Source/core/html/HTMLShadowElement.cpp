@@ -34,6 +34,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/inspector/ConsoleMessage.h"
 
 namespace blink {
 
@@ -74,7 +75,7 @@ Node::InsertionNotificationRequest HTMLShadowElement::insertedInto(ContainerNode
         ShadowRoot* root = containingShadowRoot();
         if (root && root->olderShadowRoot() && root->type() != root->olderShadowRoot()->type()) {
             String message = String::format("<shadow> doesn't work for %s element host.", root->host()->tagName().utf8().data());
-            document().addConsoleMessage(RenderingMessageSource, WarningMessageLevel, message);
+            document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, WarningMessageLevel, message));
         }
     }
     return InsertionPoint::insertedInto(insertionPoint);

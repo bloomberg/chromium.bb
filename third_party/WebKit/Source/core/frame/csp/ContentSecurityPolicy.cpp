@@ -39,6 +39,7 @@
 #include "core/frame/csp/CSPSourceList.h"
 #include "core/frame/csp/MediaListDirective.h"
 #include "core/frame/csp/SourceListDirective.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"
@@ -758,7 +759,7 @@ void ContentSecurityPolicy::reportMissingReportURI(const String& policy) const
 
 void ContentSecurityPolicy::logToConsole(const String& message, MessageLevel level) const
 {
-    m_executionContext->addConsoleMessage(SecurityMessageSource, level, message);
+    m_executionContext->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, level, message));
 }
 
 void ContentSecurityPolicy::reportBlockedScriptExecutionToInspector(const String& directiveText) const

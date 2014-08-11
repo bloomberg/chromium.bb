@@ -50,6 +50,7 @@
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/RadioNodeList.h"
 #include "core/html/forms/FormController.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/MixedContentChecker.h"
@@ -311,7 +312,7 @@ bool HTMLFormElement::validateInteractively(Event* event)
                 continue;
             String message("An invalid form control with name='%name' is not focusable.");
             message.replace("%name", unhandledAssociatedElement->name());
-            document().addConsoleMessage(RenderingMessageSource, ErrorMessageLevel, message);
+            document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, ErrorMessageLevel, message));
         }
     }
     return false;
@@ -420,7 +421,7 @@ void HTMLFormElement::scheduleFormSubmission(PassRefPtrWillBeRawPtr<FormSubmissi
         return;
     if (document().isSandboxed(SandboxForms)) {
         // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-        document().addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Blocked form submission to '" + submission->action().elidedString() + "' because the form's frame is sandboxed and the 'allow-forms' permission is not set.");
+        document().addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Blocked form submission to '" + submission->action().elidedString() + "' because the form's frame is sandboxed and the 'allow-forms' permission is not set."));
         return;
     }
 
@@ -490,7 +491,7 @@ void HTMLFormElement::requestAutocomplete()
         errorMessage = "requestAutocomplete: must be called in response to a user gesture.";
 
     if (!errorMessage.isEmpty()) {
-        document().addConsoleMessage(RenderingMessageSource, LogMessageLevel, errorMessage);
+        document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, LogMessageLevel, errorMessage));
         finishRequestAutocomplete(AutocompleteResultErrorDisabled);
     } else {
         document().frame()->loader().client()->didRequestAutocomplete(this);

@@ -35,6 +35,7 @@
 #include "core/dom/Document.h"
 #include "core/events/MessageEvent.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/WorkerDebuggerAgent.h"
 #include "core/inspector/WorkerInspectorController.h"
@@ -239,7 +240,7 @@ void WebSharedWorkerImpl::reportException(const String& errorMessage, int lineNu
     // Not suppported in SharedWorker.
 }
 
-void WebSharedWorkerImpl::reportConsoleMessage(MessageSource source, MessageLevel level, const String& message, int lineNumber, const String& sourceURL)
+void WebSharedWorkerImpl::reportConsoleMessage(PassRefPtr<blink::ConsoleMessage>)
 {
     // Not supported in SharedWorker.
 }

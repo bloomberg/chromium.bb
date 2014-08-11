@@ -33,6 +33,7 @@
 #include "core/workers/SharedWorkerGlobalScope.h"
 
 #include "core/events/MessageEvent.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/workers/SharedWorkerThread.h"
@@ -81,7 +82,9 @@ SharedWorkerThread* SharedWorkerGlobalScope::thread()
 void SharedWorkerGlobalScope::logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
 {
     WorkerGlobalScope::logExceptionToConsole(errorMessage, sourceURL, lineNumber, columnNumber, callStack);
-    addMessageToWorkerConsole(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber, callStack, 0);
+    RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber);
+    consoleMessage->setCallStack(callStack);
+    addMessageToWorkerConsole(consoleMessage.release());
 }
 
 void SharedWorkerGlobalScope::trace(Visitor* visitor)

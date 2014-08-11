@@ -29,6 +29,7 @@
 #include "core/css/parser/MediaQueryParser.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -275,7 +276,7 @@ static void addResolutionWarningMessageToConsole(Document* document, const Strin
 
     message.append(serializedExpression);
 
-    document->addConsoleMessage(CSSMessageSource, DebugMessageLevel, message.toString());
+    document->addConsoleMessage(ConsoleMessage::create(CSSMessageSource, DebugMessageLevel, message.toString()));
 }
 
 static inline bool isResolutionMediaFeature(const String& mediaFeature)

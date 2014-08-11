@@ -57,6 +57,7 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoadTiming.h"
@@ -783,7 +784,7 @@ void FrameLoader::reportLocalLoadFailed(LocalFrame* frame, const String& url)
     if (!frame)
         return;
 
-    frame->document()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Not allowed to load local resource: " + url);
+    frame->document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Not allowed to load local resource: " + url));
 }
 
 // static
@@ -1257,7 +1258,7 @@ bool FrameLoader::shouldClose()
 bool FrameLoader::validateTransitionNavigationMode()
 {
     if (frame()->document()->inQuirksMode()) {
-        frame()->document()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "Ignoring transition elements due to quirks mode.");
+        frame()->document()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, "Ignoring transition elements due to quirks mode."));
         return false;
     }
 
@@ -1390,12 +1391,18 @@ bool FrameLoader::shouldInterruptLoadForXFrameOptions(const String& content, con
         return true;
     case XFrameOptionsAllowAll:
         return false;
-    case XFrameOptionsConflict:
-        m_frame->document()->addConsoleMessageWithRequestIdentifier(JSMessageSource, ErrorMessageLevel, "Multiple 'X-Frame-Options' headers with conflicting values ('" + content + "') encountered when loading '" + url.elidedString() + "'. Falling back to 'DENY'.", requestIdentifier);
+    case XFrameOptionsConflict: {
+        RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, "Multiple 'X-Frame-Options' headers with conflicting values ('" + content + "') encountered when loading '" + url.elidedString() + "'. Falling back to 'DENY'.");
+        consoleMessage->setRequestIdentifier(requestIdentifier);
+        m_frame->document()->addMessage(consoleMessage.release());
         return true;
-    case XFrameOptionsInvalid:
-        m_frame->document()->addConsoleMessageWithRequestIdentifier(JSMessageSource, ErrorMessageLevel, "Invalid 'X-Frame-Options' header encountered when loading '" + url.elidedString() + "': '" + content + "' is not a recognized directive. The header will be ignored.", requestIdentifier);
+    }
+    case XFrameOptionsInvalid: {
+        RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, "Invalid 'X-Frame-Options' header encountered when loading '" + url.elidedString() + "': '" + content + "' is not a recognized directive. The header will be ignored.");
+        consoleMessage->setRequestIdentifier(requestIdentifier);
+        m_frame->document()->addMessage(consoleMessage.release());
         return false;
+    }
     default:
         ASSERT_NOT_REACHED();
         return false;

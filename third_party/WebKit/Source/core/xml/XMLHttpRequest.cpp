@@ -40,6 +40,7 @@
 #include "core/html/DOMFormData.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/parser/TextResourceDecoder.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/ThreadableLoader.h"
@@ -107,7 +108,7 @@ static void logConsoleError(ExecutionContext* context, const String& message)
         return;
     // FIXME: It's not good to report the bad usage without indicating what source line it came from.
     // We should pass additional parameters so we can tell the console where the mistake occurred.
-    context->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message);
+    context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
 }
 
 PassRefPtrWillBeRawPtr<XMLHttpRequest> XMLHttpRequest::create(ExecutionContext* context, PassRefPtr<SecurityOrigin> securityOrigin)

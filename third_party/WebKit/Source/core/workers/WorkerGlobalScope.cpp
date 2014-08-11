@@ -292,22 +292,20 @@ void WorkerGlobalScope::reportBlockedScriptExecutionToInspector(const String& di
     InspectorInstrumentation::scriptExecutionBlockedByCSP(this, directiveText);
 }
 
-void WorkerGlobalScope::addMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState* scriptState)
+void WorkerGlobalScope::addMessage(PassRefPtr<ConsoleMessage> prpConsoleMessage)
 {
+    RefPtr<ConsoleMessage> consoleMessage = prpConsoleMessage;
     if (!isContextThread()) {
-        postTask(AddConsoleMessageTask::create(source, level, message));
+        postTask(AddConsoleMessageTask::create(consoleMessage->source(), consoleMessage->level(), consoleMessage->message()));
         return;
     }
-    thread()->workerReportingProxy().reportConsoleMessage(source, level, message, lineNumber, sourceURL);
-    addMessageToWorkerConsole(source, level, message, sourceURL, lineNumber, nullptr, scriptState);
+    thread()->workerReportingProxy().reportConsoleMessage(consoleMessage);
+    addMessageToWorkerConsole(consoleMessage.release());
 }
 
-void WorkerGlobalScope::addMessageToWorkerConsole(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, ScriptState* scriptState)
+void WorkerGlobalScope::addMessageToWorkerConsole(PassRefPtr<ConsoleMessage> consoleMessage)
 {
     ASSERT(isContextThread());
-    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(source, level, message, sourceURL, lineNumber);
-    consoleMessage->setCallStack(callStack);
-    consoleMessage->setScriptState(scriptState);
     InspectorInstrumentation::addMessageToConsole(this, consoleMessage.get());
 }
 

@@ -2626,7 +2626,7 @@ bool Document::dispatchBeforeUnloadEvent(Chrome& chrome, bool& didAllowNavigatio
         return true;
 
     if (didAllowNavigation) {
-        addConsoleMessage(JSMessageSource, ErrorMessageLevel, "Blocked attempt to show multiple 'beforeunload' confirmation panels for a single navigation.");
+        addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, "Blocked attempt to show multiple 'beforeunload' confirmation panels for a single navigation."));
         return true;
     }
 
@@ -2745,7 +2745,7 @@ void Document::write(const SegmentedString& text, Document* ownerDocument, Excep
     bool hasInsertionPoint = m_parser && m_parser->hasInsertionPoint();
 
     if (!hasInsertionPoint && m_ignoreDestructiveWriteCount) {
-        addConsoleMessage(JSMessageSource, WarningMessageLevel, ExceptionMessages::failedToExecute("write", "Document", "It isn't possible to write into a document from an asynchronously-loaded external script unless it is explicitly opened."));
+        addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, ExceptionMessages::failedToExecute("write", "Document", "It isn't possible to write into a document from an asynchronously-loaded external script unless it is explicitly opened.")));
         return;
     }
 
@@ -2794,7 +2794,9 @@ EventTarget* Document::errorEventTarget()
 
 void Document::logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
 {
-    internalAddMessage(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber, callStack, 0);
+    RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber);
+    consoleMessage->setCallStack(callStack);
+    addMessage(consoleMessage.release());
 }
 
 void Document::setURL(const KURL& url)
@@ -3089,13 +3091,13 @@ void Document::maybeHandleHttpRefresh(const String& content, HttpRefreshType htt
 
     if (protocolIsJavaScript(refreshURL)) {
         String message = "Refused to refresh " + m_url.elidedString() + " to a javascript: URL";
-        addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message);
+        addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message));
         return;
     }
 
     if (httpRefreshType == HttpRefreshFromMetaTag && isSandboxed(SandboxAutomaticFeatures)) {
         String message = "Refused to execute the redirect specified via '<meta http-equiv='refresh' content='...'>'. The document is sandboxed, and the 'allow-scripts' keyword is not set.";
-        addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message);
+        addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message));
         return;
     }
     m_frame->navigationScheduler().scheduleRedirect(delay, refreshURL);
@@ -3126,7 +3128,9 @@ void Document::processHttpEquivXFrameOptions(const AtomicString& content)
         // intent, we must navigate away from the possibly partially-rendered document to a location that
         // doesn't inherit the parent's SecurityOrigin.
         frame->navigationScheduler().scheduleLocationChange(this, SecurityOrigin::urlWithUniqueSecurityOrigin(), Referrer());
-        addConsoleMessageWithRequestIdentifier(SecurityMessageSource, ErrorMessageLevel, message, requestIdentifier);
+        RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message);
+        consoleMessage->setRequestIdentifier(requestIdentifier);
+        addMessage(consoleMessage.release());
     }
 }
 
@@ -3184,7 +3188,7 @@ void Document::processReferrerPolicy(const String& policy)
     } else if (equalIgnoringCase(policy, "default")) {
         setReferrerPolicy(ReferrerPolicyDefault);
     } else {
-        addConsoleMessage(RenderingMessageSource, ErrorMessageLevel, "Failed to set referrer policy: The value '" + policy + "' is not one of 'always', 'default', 'never', or 'origin'. Defaulting to 'never'.");
+        addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, ErrorMessageLevel, "Failed to set referrer policy: The value '" + policy + "' is not one of 'always', 'default', 'never', or 'origin'. Defaulting to 'never'."));
         setReferrerPolicy(ReferrerPolicyNever);
     }
 }
@@ -4342,7 +4346,7 @@ bool Document::execCommand(const String& commandName, bool userInterface, const 
     static bool inExecCommand = false;
     if (inExecCommand) {
         String message = "We don't execute document.execCommand() this time, because it is called recursively.";
-        addConsoleMessage(JSMessageSource, WarningMessageLevel, message);
+        addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
         return false;
     }
     TemporaryChange<bool> executeScope(inExecCommand, true);
@@ -5001,48 +5005,25 @@ void Document::reportBlockedScriptExecutionToInspector(const String& directiveTe
     InspectorInstrumentation::scriptExecutionBlockedByCSP(this, directiveText);
 }
 
-void Document::addMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState* scriptState)
-{
-    internalAddMessage(source, level, message, sourceURL, lineNumber, nullptr, scriptState);
-}
-
-void Document::internalAddMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, ScriptState* scriptState)
+void Document::addMessage(PassRefPtr<ConsoleMessage> consoleMessage)
 {
     if (!isContextThread()) {
-        m_taskRunner->postTask(AddConsoleMessageTask::create(source, level, message));
+        m_taskRunner->postTask(AddConsoleMessageTask::create(consoleMessage->source(), consoleMessage->level(), consoleMessage->message()));
         return;
     }
 
     if (!m_frame)
         return;
 
-    String messageURL = sourceURL;
-    if (!scriptState && sourceURL.isNull() && !lineNumber) {
-        messageURL = url().string();
+    if (!consoleMessage->scriptState() && consoleMessage->url().isNull() && !consoleMessage->lineNumber()) {
+        consoleMessage->setURL(url().string());
         if (parsing() && !isInDocumentWrite() && scriptableDocumentParser()) {
             ScriptableDocumentParser* parser = scriptableDocumentParser();
             if (!parser->isWaitingForScripts() && !parser->isExecutingScript())
-                lineNumber = parser->lineNumber().oneBasedInt();
+                consoleMessage->setLineNumber(parser->lineNumber().oneBasedInt());
         }
     }
-    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(source, level, message, messageURL, lineNumber);
-    consoleMessage->setCallStack(callStack);
-    consoleMessage->setScriptState(scriptState);
-    m_frame->console().addMessage(consoleMessage.release());
-}
-
-void Document::addConsoleMessageWithRequestIdentifier(MessageSource source, MessageLevel level, const String& message, unsigned long requestIdentifier)
-{
-    if (!isContextThread()) {
-        m_taskRunner->postTask(AddConsoleMessageTask::create(source, level, message));
-        return;
-    }
-
-    if (m_frame) {
-        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(source, level, message);
-        consoleMessage->setRequestIdentifier(requestIdentifier);
-        m_frame->console().addMessage(consoleMessage.release());
-    }
+    m_frame->console().addMessage(consoleMessage);
 }
 
 // FIXME(crbug.com/305497): This should be removed after ExecutionContext-LocalDOMWindow migration.

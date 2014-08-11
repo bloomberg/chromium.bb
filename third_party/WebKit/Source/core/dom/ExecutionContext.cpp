@@ -158,18 +158,11 @@ void ExecutionContext::reportException(PassRefPtrWillBeRawPtr<ErrorEvent> event,
     m_pendingExceptions.clear();
 }
 
-void ExecutionContext::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber)
+void ExecutionContext::addConsoleMessage(PassRefPtr<ConsoleMessage> consoleMessage)
 {
     if (!m_client)
         return;
-    m_client->addMessage(source, level, message, sourceURL, lineNumber, 0);
-}
-
-void ExecutionContext::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, ScriptState* scriptState)
-{
-    if (!m_client)
-        return;
-    m_client->addMessage(source, level, message, String(), 0, scriptState);
+    m_client->addMessage(consoleMessage);
 }
 
 bool ExecutionContext::dispatchErrorEvent(PassRefPtrWillBeRawPtr<ErrorEvent> event, AccessControlStatus corsStatus)

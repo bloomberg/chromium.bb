@@ -191,7 +191,9 @@ void ServiceWorkerGlobalScope::importScripts(const Vector<String>& urls, Excepti
 void ServiceWorkerGlobalScope::logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
 {
     WorkerGlobalScope::logExceptionToConsole(errorMessage, sourceURL, lineNumber, columnNumber, callStack);
-    addMessageToWorkerConsole(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber, callStack, 0);
+    RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber);
+    consoleMessage->setCallStack(callStack);
+    addMessageToWorkerConsole(consoleMessage.release());
 }
 
 } // namespace blink

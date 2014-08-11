@@ -70,6 +70,7 @@
 #include "core/html/canvas/WebGLSharedWebGraphicsContext3D.h"
 #include "core/html/canvas/WebGLTexture.h"
 #include "core/html/canvas/WebGLUniformLocation.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -5088,7 +5089,7 @@ void WebGLRenderingContextBase::printWarningToConsole(const String& message)
 {
     if (!canvas())
         return;
-    canvas()->document().addConsoleMessage(RenderingMessageSource, WarningMessageLevel, message);
+    canvas()->document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, WarningMessageLevel, message));
 }
 
 bool WebGLRenderingContextBase::validateFramebufferFuncParameters(const char* functionName, GLenum target, GLenum attachment)

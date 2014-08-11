@@ -38,6 +38,7 @@
 #include "wtf/OwnPtr.h"
 
 namespace blink {
+class ConsoleMessage;
 class ExecutionContext;
 }
 
@@ -77,7 +78,7 @@ public:
 
     // WorkerReportingProxy overrides:
     virtual void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL) OVERRIDE;
-    virtual void reportConsoleMessage(blink::MessageSource, blink::MessageLevel, const String& message, int lineNumber, const String& sourceURL) OVERRIDE;
+    virtual void reportConsoleMessage(PassRefPtr<blink::ConsoleMessage>) OVERRIDE;
     virtual void postMessageToPageInspector(const String&) OVERRIDE;
     virtual void updateInspectorStateCookie(const String&) OVERRIDE;
     virtual void workerGlobalScopeStarted(blink::WorkerGlobalScope*) OVERRIDE;

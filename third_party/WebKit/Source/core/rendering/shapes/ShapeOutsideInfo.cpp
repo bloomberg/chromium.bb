@@ -30,6 +30,7 @@
 #include "config.h"
 #include "core/rendering/shapes/ShapeOutsideInfo.h"
 
+#include "core/inspector/ConsoleMessage.h"
 #include "core/rendering/FloatingObjects.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderBox.h"
@@ -93,7 +94,7 @@ static bool checkShapeImageOrigin(Document& document, const StyleImage& styleIma
 
     const KURL& url = imageResource.url();
     String urlString = url.isNull() ? "''" : url.elidedString();
-    document.addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Unsafe attempt to load URL " + urlString + ".");
+    document.addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Unsafe attempt to load URL " + urlString + "."));
 
     return false;
 }
@@ -126,7 +127,7 @@ PassOwnPtr<Shape> ShapeOutsideInfo::createShapeForImage(StyleImage* styleImage, 
         : LayoutRect(LayoutPoint(), imageSize);
 
     if (!isValidRasterShapeRect(marginRect) || !isValidRasterShapeRect(imageRect)) {
-        m_renderer.document().addConsoleMessage(RenderingMessageSource, ErrorMessageLevel, "The shape-outside image is too large.");
+        m_renderer.document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, ErrorMessageLevel, "The shape-outside image is too large."));
         return Shape::createEmptyRasterShape(writingMode, margin);
     }
 

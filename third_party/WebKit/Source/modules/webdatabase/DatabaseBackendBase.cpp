@@ -32,6 +32,7 @@
 
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "platform/Logging.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"
 #include "modules/webdatabase/DatabaseBase.h"
@@ -664,7 +665,7 @@ void DatabaseBackendBase::reportVacuumDatabaseResult(int sqliteErrorCode)
 
 void DatabaseBackendBase::logErrorMessage(const String& message)
 {
-    executionContext()->addConsoleMessage(StorageMessageSource, ErrorMessageLevel, message);
+    executionContext()->addConsoleMessage(ConsoleMessage::create(StorageMessageSource, ErrorMessageLevel, message));
 }
 
 ExecutionContext* DatabaseBackendBase::executionContext() const

@@ -46,6 +46,7 @@
 #include "wtf/WeakPtr.h"
 
 namespace blink {
+class ConsoleMessage;
 class ResourceResponse;
 }
 
@@ -75,9 +76,7 @@ public:
     // blink::WorkerReportingProxy methods:
     virtual void reportException(
         const WTF::String&, int, int, const WTF::String&) OVERRIDE;
-    virtual void reportConsoleMessage(
-        blink::MessageSource, blink::MessageLevel,
-        const WTF::String&, int, const WTF::String&) OVERRIDE;
+    virtual void reportConsoleMessage(PassRefPtr<blink::ConsoleMessage>) OVERRIDE;
     virtual void postMessageToPageInspector(const WTF::String&) OVERRIDE;
     virtual void updateInspectorStateCookie(const WTF::String&) OVERRIDE;
     virtual void workerGlobalScopeStarted(blink::WorkerGlobalScope*) OVERRIDE;

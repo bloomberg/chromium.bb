@@ -46,6 +46,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/imports/HTMLImportsController.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
@@ -634,7 +635,7 @@ bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sour
             toFontResource(resource)->setCORSFailed();
         if (frame() && frame()->document()) {
             String resourceType = Resource::resourceTypeToString(resource->type(), resource->options().initiatorInfo);
-            frame()->document()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, resourceType + " from origin '" + SecurityOrigin::create(url)->toString() + "' has been blocked from loading by Cross-Origin Resource Sharing policy: " + errorDescription);
+            frame()->document()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, resourceType + " from origin '" + SecurityOrigin::create(url)->toString() + "' has been blocked from loading by Cross-Origin Resource Sharing policy: " + errorDescription));
         }
         return false;
     }
@@ -1084,7 +1085,7 @@ void ResourceFetcher::printAccessDeniedMessage(const KURL& url) const
     else
         message = "Unsafe attempt to load URL " + url.elidedString() + " from frame with URL " + m_document->url().elidedString() + ". Domains, protocols and ports must match.\n";
 
-    frame()->document()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message);
+    frame()->document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message));
 }
 
 void ResourceFetcher::setAutoLoadImages(bool enable)
@@ -1425,7 +1426,7 @@ bool ResourceFetcher::canAccessRedirect(Resource* resource, ResourceRequest& req
             if (resource->type() == Resource::Font)
                 toFontResource(resource)->setCORSFailed();
             if (frame() && frame()->document())
-                frame()->document()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, errorMessage);
+                frame()->document()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
             return false;
         }
     }

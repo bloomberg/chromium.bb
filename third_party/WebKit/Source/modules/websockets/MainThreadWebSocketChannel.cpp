@@ -37,6 +37,7 @@
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/FrameLoader.h"
@@ -97,7 +98,7 @@ bool MainThreadWebSocketChannel::connect(const KURL& url, const String& protocol
         return false;
     if (MixedContentChecker::isMixedContent(m_document->securityOrigin(), url)) {
         String message = "Connecting to a non-secure WebSocket server from a secure origin is deprecated.";
-        m_document->addConsoleMessage(JSMessageSource, WarningMessageLevel, message);
+        m_document->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
     }
 
     m_handshake = new WebSocketHandshake(url, protocol, m_document);
@@ -191,7 +192,7 @@ void MainThreadWebSocketChannel::fail(const String& reason, MessageLevel level, 
     if (m_document) {
         InspectorInstrumentation::didReceiveWebSocketFrameError(m_document, m_identifier, reason);
         const String message = "WebSocket connection to '" + m_handshake->url().elidedString() + "' failed: " + reason;
-        m_document->addConsoleMessage(JSMessageSource, level, message, sourceURL, lineNumber);
+        m_document->addConsoleMessage(ConsoleMessage::create(JSMessageSource, level, message, sourceURL, lineNumber));
     }
     // Hybi-10 specification explicitly states we must not continue to handle incoming data
     // once the WebSocket connection is failed (section 7.1.7).
@@ -269,7 +270,7 @@ void MainThreadWebSocketChannel::didCloseSocketStream(SocketStreamHandle* handle
     // during opening handshake.
     if (!m_hasCalledDisconnectOnHandle && m_handshake->mode() == WebSocketHandshake::Incomplete && m_document) {
         const String message = "WebSocket connection to '" + m_handshake->url().elidedString() + "' failed: Connection closed before receiving a handshake response";
-        m_document->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message, m_sourceURLAtConstruction, m_lineNumberAtConstruction);
+        m_document->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message, m_sourceURLAtConstruction, m_lineNumberAtConstruction));
     }
 
     m_state = ChannelClosed;
@@ -458,7 +459,7 @@ bool MainThreadWebSocketChannel::processOneItemFromBuffer()
 
             if (m_deflateFramer.enabled() && m_document) {
                 const String message = "WebSocket extension \"x-webkit-deflate-frame\" is deprecated";
-                m_document->addConsoleMessage(JSMessageSource, WarningMessageLevel, message, m_sourceURLAtConstruction, m_lineNumberAtConstruction);
+                m_document->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message, m_sourceURLAtConstruction, m_lineNumberAtConstruction));
             }
 
             WTF_LOG(Network, "MainThreadWebSocketChannel %p Connected", this);

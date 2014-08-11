@@ -29,6 +29,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
 #include "core/html/HTMLDocument.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/rendering/RenderIFrame.h"
 
 namespace blink {
@@ -99,7 +100,7 @@ void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicSt
         String invalidTokens;
         setSandboxFlags(value.isNull() ? SandboxNone : parseSandboxPolicy(value, invalidTokens));
         if (!invalidTokens.isNull())
-            document().addConsoleMessage(OtherMessageSource, ErrorMessageLevel, "Error while parsing the 'sandbox' attribute: " + invalidTokens);
+            document().addConsoleMessage(ConsoleMessage::create(OtherMessageSource, ErrorMessageLevel, "Error while parsing the 'sandbox' attribute: " + invalidTokens));
     } else {
         HTMLFrameElementBase::parseAttribute(name, value);
     }

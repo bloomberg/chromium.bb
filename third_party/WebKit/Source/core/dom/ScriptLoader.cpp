@@ -43,6 +43,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/svg/SVGScriptElement.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -314,7 +315,7 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
     if (m_isExternalScript) {
         ScriptResource* resource = m_resource ? m_resource.get() : sourceCode.resource();
         if (resource && !resource->mimeTypeAllowedByNosniff()) {
-            contextDocument->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + resource->url().elidedString() + "' because its MIME type ('" + resource->mimeType() + "') is not executable, and strict MIME type checking is enabled.");
+            contextDocument->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + resource->url().elidedString() + "' because its MIME type ('" + resource->mimeType() + "') is not executable, and strict MIME type checking is enabled."));
             return;
         }
     }

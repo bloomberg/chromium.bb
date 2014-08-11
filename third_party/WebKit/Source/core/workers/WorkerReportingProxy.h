@@ -36,6 +36,7 @@
 
 namespace blink {
 
+class ConsoleMessage;
 class WorkerGlobalScope;
 
 // APIs used by workers to report console activity.
@@ -44,7 +45,7 @@ public:
     virtual ~WorkerReportingProxy() { }
 
     virtual void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL) = 0;
-    virtual void reportConsoleMessage(MessageSource, MessageLevel, const String& message, int lineNumber, const String& sourceURL) = 0;
+    virtual void reportConsoleMessage(PassRefPtr<ConsoleMessage>) = 0;
     virtual void postMessageToPageInspector(const String&) = 0;
     virtual void updateInspectorStateCookie(const String&) = 0;
 

@@ -176,7 +176,7 @@ void WorkerMessagingProxy::reportConsoleMessage(MessageSource source, MessageLev
 {
     if (m_askedToTerminate)
         return;
-    m_executionContext->addConsoleMessage(source, level, message, sourceURL, lineNumber);
+    m_executionContext->addConsoleMessage(ConsoleMessage::create(source, level, message, sourceURL, lineNumber));
 }
 
 void WorkerMessagingProxy::workerThreadCreated(PassRefPtr<DedicatedWorkerThread> workerThread)
