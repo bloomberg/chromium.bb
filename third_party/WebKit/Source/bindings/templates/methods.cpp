@@ -561,7 +561,6 @@ bool {{v8_class}}::PrivateScript::{{method.name}}Method({{method.argument_declar
     {% endif %}
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{method.name}}", "{{cpp_class}}", scriptState->context()->Global(), scriptState->isolate());
     v8::TryCatch block;
-    V8RethrowTryCatchScope rethrow(block);
     {% if method.idl_type == 'void' %}
     PrivateScriptRunner::runDOMMethod(scriptState, "{{cpp_class}}", "{{method.name}}", holder, {{method.arguments | length}}, argv);
     if (block.HasCaught()) {
@@ -569,6 +568,7 @@ bool {{v8_class}}::PrivateScript::{{method.name}}Method({{method.argument_declar
             // FIXME: We should support more exceptions.
             RELEASE_ASSERT_NOT_REACHED();
         }
+        block.ReThrow();
         return false;
     }
     {% else %}
@@ -578,6 +578,7 @@ bool {{v8_class}}::PrivateScript::{{method.name}}Method({{method.argument_declar
             // FIXME: We should support more exceptions.
             RELEASE_ASSERT_NOT_REACHED();
         }
+        block.ReThrow();
         return false;
     }
     {{method.private_script_v8_value_to_local_cpp_value}};

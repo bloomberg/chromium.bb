@@ -1875,13 +1875,13 @@ bool V8TestInterface::PrivateScript::shortMethodWithShortArgumentImplementedInPr
     v8::Handle<v8::Value> argv[] = { valueHandle };
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethodWithShortArgumentImplementedInPrivateScript", "TestInterfaceImplementation", scriptState->context()->Global(), scriptState->isolate());
     v8::TryCatch block;
-    V8RethrowTryCatchScope rethrow(block);
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "TestInterfaceImplementation", "shortMethodWithShortArgumentImplementedInPrivateScript", holder, 1, argv);
     if (block.HasCaught()) {
         if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
             // FIXME: We should support more exceptions.
             RELEASE_ASSERT_NOT_REACHED();
         }
+        block.ReThrow();
         return false;
     }
     TONATIVE_DEFAULT_EXCEPTIONSTATE(int, cppValue, toInt16(v8Value, exceptionState), exceptionState, false);
@@ -1908,13 +1908,13 @@ bool V8TestInterface::PrivateScript::stringAttributeAttributeGetter(LocalFrame* 
 
     ExceptionState exceptionState(ExceptionState::GetterContext, "stringAttribute", "TestInterfaceImplementation", scriptState->context()->Global(), scriptState->isolate());
     v8::TryCatch block;
-    V8RethrowTryCatchScope rethrow(block);
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "TestInterfaceImplementation", "stringAttribute", holder);
     if (block.HasCaught()) {
         if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
             // FIXME: We should support more exceptions.
             RELEASE_ASSERT_NOT_REACHED();
         }
+        block.ReThrow();
         return false;
     }
     TOSTRING_DEFAULT(V8StringResource<>, cppValue, v8Value, false);
@@ -1941,13 +1941,13 @@ bool V8TestInterface::PrivateScript::stringAttributeAttributeSetter(LocalFrame* 
 
     ExceptionState exceptionState(ExceptionState::SetterContext, "stringAttribute", "TestInterfaceImplementation", scriptState->context()->Global(), scriptState->isolate());
     v8::TryCatch block;
-    V8RethrowTryCatchScope rethrow(block);
     PrivateScriptRunner::runDOMAttributeSetter(scriptState, "TestInterfaceImplementation", "stringAttribute", holder, v8String(scriptState->isolate(), cppValue));
     if (block.HasCaught()) {
         if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
             // FIXME: We should support more exceptions.
             RELEASE_ASSERT_NOT_REACHED();
         }
+        block.ReThrow();
         return false;
     }
     return true;
