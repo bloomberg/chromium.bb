@@ -33,7 +33,7 @@ except ImportError:
     print "ERROR: Add the TestResultServer, google_appengine and yaml/lib directories to your PYTHONPATH"
     raise
 
-from handlers import master_config
+import master_config
 
 import json
 import logging
@@ -263,6 +263,12 @@ class JsonResultsTest(unittest.TestCase):
             self.assertEqual(status_code, 200)
         else:
             self.assertTrue(status_code != 200)
+
+    def _test_get_test_list(self, input_data, expected_data):
+        input_results = self._make_test_json(input_data)
+        expected_results = JSON_RESULTS_TEST_LIST_TEMPLATE.replace("{[TESTDATA_TESTS]}", json.dumps(expected_data, separators=(',', ':')))
+        actual_results = JsonResults.get_test_list(self._builder, input_results)
+        self.assert_json_equal(actual_results, expected_results)
 
     def test_update_files_empty_aggregate_data(self):
         small_file = MockFile(name='results-small.json')
@@ -1019,6 +1025,29 @@ class JsonResultsTest(unittest.TestCase):
                                "results": [[101, IMAGE]],
                                "times": [[101, 0]]}}},
              "version": 4})
+
+    # FIXME(aboxhall): Add some tests for xhtml/svg test results.
+
+    def test_get_test_name_list(self):
+        # Get test name list only. Don't include non-test-list data and
+        # of test result details.
+        # FIXME: This also tests a temporary bug in the data where directory-level
+        # results have a results and times values. Once that bug is fixed,
+        # remove this test-case and assert we don't ever hit it.
+        self._test_get_test_list(
+            # Input results
+            {"builds": ["3", "2", "1"],
+             "tests": {"foo": {
+                           "001.html": {
+                               "results": [[200, PASS]],
+                               "times": [[200, 0]]},
+                           "results": [[1, NO_DATA]],
+                           "times": [[1, 0]]},
+                       "002.html": {
+                           "results": [[10, TEXT]],
+                           "times": [[10, 0]]}}},
+            # Expected results
+            {"foo": {"001.html": {}}, "002.html": {}})
 
     def test_gtest(self):
         self._test_merge(
