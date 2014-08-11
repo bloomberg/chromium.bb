@@ -66,13 +66,6 @@
         [ 'target_arch == "arm"', {
           'conditions': [
             [ 'arm_version >= 7 and (arm_neon == 1 or arm_neon_optional == 1)', {
-              'cflags': [
-                # The neon assembly contains conditional instructions which
-                # aren't enclosed in an IT block. The assembler complains
-                # without this option.
-                # See #86592.
-                '-Wa,-mimplicit-it=always',
-              ],
               'dependencies': [
                 'skia_opts_neon',
               ]

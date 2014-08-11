@@ -629,13 +629,6 @@ source_set("skia_opts") {
           "//third_party/skia/src/opts/memset32_neon.S",
         ]
 
-        cflags += [
-          # The neon assembly contains conditional instructions which aren't
-          # enclosed in an IT block. The assembler complains without this
-          # option. See #86592.
-          "-Wa,-mimplicit-it=always",
-        ]
-
         # Root build config sets -mfpu=$arm_fpu, which we expect to be neon
         # when running this.
         if (!arm_use_neon) {
