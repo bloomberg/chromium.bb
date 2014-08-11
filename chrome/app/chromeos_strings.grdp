@@ -668,10 +668,10 @@ Press any key to continue exploring.
     These Drive files aren't shared yet
   </message>
   <message name="IDS_FILE_BROWSER_MULTI_PROFILE_SHARE_DIALOG_MESSAGE" desc="Message of a dialog to request drive share for files that come from other profiles during file transfering. Below the message, there are the e-mail address of the account to be shared with the file, and a drop down list to select a share type.">
-    Change how this file is shared.
+    Change how this file is shared
   </message>
   <message name="IDS_FILE_BROWSER_MULTI_PROFILE_SHARE_DIALOG_MESSAGE_PLURAL" desc="Message of a dialog to request drive share for files that come from other profiles during file transfering. Below the message, there are the e-mail address of the account to be shared with the file, and a drop down list to select a share type.">
-    Change how these files are shared.
+    Change how these files are shared
   </message>
   <message name="IDS_FILE_BROWSER_DRIVE_SHARE_TYPE_CAN_EDIT" desc="Label text of 'Can edit' share type. Please use the same string with Google Drive.">
     Can edit

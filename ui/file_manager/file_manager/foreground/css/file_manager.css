@@ -1710,6 +1710,15 @@ list.autocomplete-suggestions > [lead] > div.detail-text em {
   text-align: center;
 }
 
+#multi-profile-share-dialog .cr-dialog-title {
+  -webkit-margin-after: 0;
+}
+
+#multi-profile-share-dialog .cr-dialog-text {
+  line-height: 18px;
+  margin-top: 0;
+}
+
 #multi-profile-share-dialog .mail-label {
   padding-right: 16px;
 }
