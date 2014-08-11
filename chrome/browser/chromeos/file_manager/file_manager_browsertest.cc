@@ -791,9 +791,14 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "videoOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "videoOpenDrive")));
 
-// http://crbug.com/401674
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
+#define MAYBE_OpenAudioFiles DISABLED_OpenAudioFiles
+#else
+#define MAYBE_OpenAudioFiles OpenAudioFiles
+#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_OpenAudioFiles,
+    MAYBE_OpenAudioFiles,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(IN_GUEST_MODE, "audioOpenDownloads"),

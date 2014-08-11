@@ -15,9 +15,20 @@ Polymer('audio-player', {
   // Attributes of the element (lower characters only).
   // These values must be used only to data binding and shouldn't be assigned
   // any value nowhere except in the handler.
-  playing: false,
-  currenttrackurl: '',
-  playcount: 0,
+  publish: {
+    playing: {
+      value: true,
+      reflect: true
+    },
+    currenttrackurl: {
+      value: '',
+      reflect: true
+    },
+    playcount: {
+      value: 0,
+      reflect: true
+    }
+  },
 
   /**
    * Model object of the Audio Player.
