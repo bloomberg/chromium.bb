@@ -160,7 +160,18 @@ private:
     virtual void didFail(const ResourceError&) OVERRIDE;
     virtual void didFailRedirectCheck() OVERRIDE;
 
-    AtomicString responseMIMEType() const;
+    // Returns the MIME type part of m_mimeTypeOverride if present and
+    // successfully parsed, or returns one of the "Content-Type" header value
+    // of the received response.
+    //
+    // This method is named after the term "final MIME type" defined in the
+    // spec but doesn't convert the result to ASCII lowercase as specified in
+    // the spec. Must be lowered later or compared using case insensitive
+    // comparison functions if required.
+    AtomicString finalResponseMIMEType() const;
+    // The same as finalResponseMIMEType() but fallbacks to "text/xml" if
+    // finalResponseMIMEType() returns an empty string.
+    AtomicString finalResponseMIMETypeWithFallback() const;
     bool responseIsXML() const;
 
     PassOwnPtr<TextResourceDecoder> createDecoder() const;
@@ -212,6 +223,8 @@ private:
     KURL m_url;
     AtomicString m_method;
     HTTPHeaderMap m_requestHeaders;
+    // Not converted to ASCII lowercase. Must be lowered later or compared
+    // using case insensitive comparison functions if needed.
     AtomicString m_mimeTypeOverride;
     unsigned long m_timeoutMilliseconds;
     RefPtrWillBeMember<Blob> m_responseBlob;
@@ -221,7 +234,7 @@ private:
     State m_state;
 
     ResourceResponse m_response;
-    String m_responseEncoding;
+    String m_finalResponseCharset;
 
     OwnPtr<TextResourceDecoder> m_decoder;
 
