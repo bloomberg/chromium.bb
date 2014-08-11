@@ -53,17 +53,10 @@ class MessageChannel {
   explicit MessageChannel(PepperPluginInstanceImpl* instance);
   ~MessageChannel();
 
-  // Post a message to the onmessage handler for this channel's instance
-  // asynchronously.
-  void PostMessageToJavaScript(PP_Var message_data);
-
-  // Post a message to the plugin's HandleMessage function for this channel's
-  // instance.
-  void PostMessageToNative(const NPVariant* message_data);
-  // Post a message to the plugin's HandleBlocking Message function for this
-  // channel's instance synchronously, and return a result.
-  void PostBlockingMessageToNative(const NPVariant* message_data,
-                                   NPVariant* np_result);
+  // Messages are queued initially. After the PepperPluginInstanceImpl is ready
+  // to send and handle messages, users of MessageChannel should call
+  // Start().
+  void Start();
 
   // Return the NPObject* to which we should forward any calls which aren't
   // related to postMessage.  Note that this can be NULL;  it only gets set if
@@ -76,24 +69,39 @@ class MessageChannel {
 
   PepperPluginInstanceImpl* instance() { return instance_; }
 
-  // Messages are queued initially. After the PepperPluginInstanceImpl is ready
-  // to send and handle messages, users of MessageChannel should call
-  // Start().
-  void Start();
-
   bool GetReadOnlyProperty(NPIdentifier key, NPVariant* value) const;
   void SetReadOnlyProperty(PP_Var key, PP_Var value);
+
+  // Post a message to the onmessage handler for this channel's instance
+  // asynchronously.
+  void PostMessageToJavaScript(PP_Var message_data);
+
+  // Post a message to the plugin's HandleMessage function for this channel's
+  // instance.
+  void PostMessageToNative(const NPVariant* message_data);
+
+  // Post a message to the plugin's HandleBlocking Message function for this
+  // channel's instance synchronously, and return a result.
+  void PostBlockingMessageToNative(const NPVariant* message_data,
+                                   NPVariant* np_result);
 
  private:
   // Struct for storing the result of a NPVariant being converted to a PP_Var.
   struct VarConversionResult;
+
+  // Post a message to the onmessage handler for this channel's instance
+  // synchronously.  This is used by PostMessageToJavaScript.
+  void PostMessageToJavaScriptImpl(
+      const blink::WebSerializedScriptValue& message_data);
 
   void EnqueuePluginMessage(const NPVariant* variant);
 
   void FromV8ValueComplete(VarConversionResult* result_holder,
                            const ppapi::ScopedPPVar& result_var,
                            bool success);
+
   void DrainCompletedPluginMessages();
+  void DrainEarlyMessageQueue();
 
   PepperPluginInstanceImpl* instance_;
 
@@ -106,16 +114,6 @@ class MessageChannel {
 
   // The NPObject we use to expose postMessage to JavaScript.
   MessageChannelNPObject* np_object_;
-
-  // Post a message to the onmessage handler for this channel's instance
-  // synchronously.  This is used by PostMessageToJavaScript.
-  void PostMessageToJavaScriptImpl(
-      const blink::WebSerializedScriptValue& message_data);
-  // Post a message to the PPP_Instance HandleMessage function for this
-  // channel's instance.  This is used by PostMessageToNative.
-  void PostMessageToNativeImpl(PP_Var message_data);
-
-  void DrainEarlyMessageQueue();
 
   std::deque<blink::WebSerializedScriptValue> early_message_queue_;
   enum EarlyMessageQueueState {

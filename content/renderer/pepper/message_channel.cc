@@ -307,36 +307,52 @@ MessageChannel::MessageChannel(PepperPluginInstanceImpl* instance)
   np_object_->message_channel = weak_ptr_factory_.GetWeakPtr();
 }
 
-void MessageChannel::EnqueuePluginMessage(const NPVariant* variant) {
-  plugin_message_queue_.push_back(VarConversionResult());
-  if (variant->type == NPVariantType_Object) {
-    // Convert NPVariantType_Object in to an appropriate PP_Var like Dictionary,
-    // Array, etc. Note NPVariantToVar would convert to an "Object" PP_Var,
-    // which we don't support for Messaging.
+MessageChannel::~MessageChannel() {
+  WebBindings::releaseObject(np_object_);
+  if (passthrough_object_)
+    WebBindings::releaseObject(passthrough_object_);
+}
 
-    // Calling WebBindings::toV8Value creates a wrapper around NPVariant so it
-    // won't result in a deep copy.
-    v8::Handle<v8::Value> v8_value = WebBindings::toV8Value(variant);
-    V8VarConverter v8_var_converter(instance_->pp_instance());
-    V8VarConverter::VarResult conversion_result =
-        v8_var_converter.FromV8Value(
-            v8_value,
-            v8::Isolate::GetCurrent()->GetCurrentContext(),
-            base::Bind(&MessageChannel::FromV8ValueComplete,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       &plugin_message_queue_.back()));
-    if (conversion_result.completed_synchronously) {
-      plugin_message_queue_.back().ConversionCompleted(
-          conversion_result.var,
-          conversion_result.success);
-    }
-  } else {
-    plugin_message_queue_.back().ConversionCompleted(
-        ScopedPPVar(ScopedPPVar::PassRef(),
-                    NPVariantToPPVar(instance(), variant)),
-        true);
-    DCHECK(plugin_message_queue_.back().var().get().type != PP_VARTYPE_OBJECT);
+void MessageChannel::Start() {
+  // We PostTask here instead of draining the message queue directly
+  // since we haven't finished initializing the PepperWebPluginImpl yet, so
+  // the plugin isn't available in the DOM.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&MessageChannel::DrainEarlyMessageQueue,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void MessageChannel::SetPassthroughObject(NPObject* passthrough) {
+  // Retain the passthrough object; We need to ensure it lives as long as this
+  // MessageChannel.
+  if (passthrough)
+    WebBindings::retainObject(passthrough);
+
+  // If we had a passthrough set already, release it. Note that we retain the
+  // incoming passthrough object first, so that we behave correctly if anyone
+  // invokes:
+  //   SetPassthroughObject(passthrough_object());
+  if (passthrough_object_)
+    WebBindings::releaseObject(passthrough_object_);
+
+  passthrough_object_ = passthrough;
+}
+
+bool MessageChannel::GetReadOnlyProperty(NPIdentifier key,
+                                         NPVariant* value) const {
+  std::map<NPIdentifier, ScopedPPVar>::const_iterator it =
+      internal_properties_.find(key);
+  if (it != internal_properties_.end()) {
+    if (value)
+      return PPVarToNPVariant(it->second.get(), value);
+    return true;
   }
+  return false;
+}
+
+void MessageChannel::SetReadOnlyProperty(PP_Var key, PP_Var value) {
+  internal_properties_[PPVarToNPIdentifier(key)] = ScopedPPVar(value);
 }
 
 void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
@@ -381,89 +397,6 @@ void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
     DCHECK(early_message_queue_.empty());
     PostMessageToJavaScriptImpl(serialized_val);
   }
-}
-
-void MessageChannel::Start() {
-  // We PostTask here instead of draining the message queue directly
-  // since we haven't finished initializing the PepperWebPluginImpl yet, so
-  // the plugin isn't available in the DOM.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&MessageChannel::DrainEarlyMessageQueue,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void MessageChannel::FromV8ValueComplete(VarConversionResult* result_holder,
-                                         const ScopedPPVar& result,
-                                         bool success) {
-  result_holder->ConversionCompleted(result, success);
-  DrainCompletedPluginMessages();
-}
-
-void MessageChannel::DrainCompletedPluginMessages() {
-  if (early_message_queue_state_ == QUEUE_MESSAGES)
-    return;
-
-  while (!plugin_message_queue_.empty() &&
-         plugin_message_queue_.front().conversion_completed()) {
-    const VarConversionResult& front = plugin_message_queue_.front();
-    if (front.success()) {
-      instance_->HandleMessage(front.var());
-    } else {
-      PpapiGlobals::Get()->LogWithSource(instance()->pp_instance(),
-                                         PP_LOGLEVEL_ERROR,
-                                         std::string(),
-                                         kV8ToVarConversionError);
-    }
-    plugin_message_queue_.pop_front();
-  }
-}
-
-void MessageChannel::DrainEarlyMessageQueue() {
-  DCHECK(early_message_queue_state_ == QUEUE_MESSAGES);
-
-  // Take a reference on the PluginInstance. This is because JavaScript code
-  // may delete the plugin, which would destroy the PluginInstance and its
-  // corresponding MessageChannel.
-  scoped_refptr<PepperPluginInstanceImpl> instance_ref(instance_);
-  while (!early_message_queue_.empty()) {
-    PostMessageToJavaScriptImpl(early_message_queue_.front());
-    early_message_queue_.pop_front();
-  }
-  early_message_queue_state_ = SEND_DIRECTLY;
-
-  DrainCompletedPluginMessages();
-}
-
-void MessageChannel::PostMessageToJavaScriptImpl(
-    const WebSerializedScriptValue& message_data) {
-  DCHECK(instance_);
-
-  WebPluginContainer* container = instance_->container();
-  // It's possible that container() is NULL if the plugin has been removed from
-  // the DOM (but the PluginInstance is not destroyed yet).
-  if (!container)
-    return;
-
-  WebDOMEvent event =
-      container->element().document().createEvent("MessageEvent");
-  WebDOMMessageEvent msg_event = event.to<WebDOMMessageEvent>();
-  msg_event.initMessageEvent("message",     // type
-                             false,         // canBubble
-                             false,         // cancelable
-                             message_data,  // data
-                             "",            // origin [*]
-                             NULL,          // source [*]
-                             "");           // lastEventId
-  // [*] Note that the |origin| is only specified for cross-document and server-
-  //     sent messages, while |source| is only specified for cross-document
-  //     messages:
-  //      http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html
-  //     This currently behaves like Web Workers. On Firefox, Chrome, and Safari
-  //     at least, postMessage on Workers does not provide the origin or source.
-  //     TODO(dmichael):  Add origin if we change to a more iframe-like origin
-  //                      policy (see crbug.com/81537)
-  container->element().dispatchEvent(msg_event);
 }
 
 void MessageChannel::PostMessageToNative(const NPVariant* message_data) {
@@ -545,42 +478,109 @@ void MessageChannel::PostBlockingMessageToNative(const NPVariant* message_data,
   WebBindings::toNPVariant(v8_val, NULL, np_result);
 }
 
-MessageChannel::~MessageChannel() {
-  WebBindings::releaseObject(np_object_);
-  if (passthrough_object_)
-    WebBindings::releaseObject(passthrough_object_);
+void MessageChannel::PostMessageToJavaScriptImpl(
+    const WebSerializedScriptValue& message_data) {
+  DCHECK(instance_);
+
+  WebPluginContainer* container = instance_->container();
+  // It's possible that container() is NULL if the plugin has been removed from
+  // the DOM (but the PluginInstance is not destroyed yet).
+  if (!container)
+    return;
+
+  WebDOMEvent event =
+      container->element().document().createEvent("MessageEvent");
+  WebDOMMessageEvent msg_event = event.to<WebDOMMessageEvent>();
+  msg_event.initMessageEvent("message",     // type
+                             false,         // canBubble
+                             false,         // cancelable
+                             message_data,  // data
+                             "",            // origin [*]
+                             NULL,          // source [*]
+                             "");           // lastEventId
+  // [*] Note that the |origin| is only specified for cross-document and server-
+  //     sent messages, while |source| is only specified for cross-document
+  //     messages:
+  //      http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html
+  //     This currently behaves like Web Workers. On Firefox, Chrome, and Safari
+  //     at least, postMessage on Workers does not provide the origin or source.
+  //     TODO(dmichael):  Add origin if we change to a more iframe-like origin
+  //                      policy (see crbug.com/81537)
+  container->element().dispatchEvent(msg_event);
 }
 
-void MessageChannel::SetPassthroughObject(NPObject* passthrough) {
-  // Retain the passthrough object; We need to ensure it lives as long as this
-  // MessageChannel.
-  if (passthrough)
-    WebBindings::retainObject(passthrough);
+void MessageChannel::EnqueuePluginMessage(const NPVariant* variant) {
+  plugin_message_queue_.push_back(VarConversionResult());
+  if (variant->type == NPVariantType_Object) {
+    // Convert NPVariantType_Object in to an appropriate PP_Var like Dictionary,
+    // Array, etc. Note NPVariantToVar would convert to an "Object" PP_Var,
+    // which we don't support for Messaging.
 
-  // If we had a passthrough set already, release it. Note that we retain the
-  // incoming passthrough object first, so that we behave correctly if anyone
-  // invokes:
-  //   SetPassthroughObject(passthrough_object());
-  if (passthrough_object_)
-    WebBindings::releaseObject(passthrough_object_);
-
-  passthrough_object_ = passthrough;
-}
-
-bool MessageChannel::GetReadOnlyProperty(NPIdentifier key,
-                                         NPVariant* value) const {
-  std::map<NPIdentifier, ScopedPPVar>::const_iterator it =
-      internal_properties_.find(key);
-  if (it != internal_properties_.end()) {
-    if (value)
-      return PPVarToNPVariant(it->second.get(), value);
-    return true;
+    // Calling WebBindings::toV8Value creates a wrapper around NPVariant so it
+    // won't result in a deep copy.
+    v8::Handle<v8::Value> v8_value = WebBindings::toV8Value(variant);
+    V8VarConverter v8_var_converter(instance_->pp_instance());
+    V8VarConverter::VarResult conversion_result =
+        v8_var_converter.FromV8Value(
+            v8_value,
+            v8::Isolate::GetCurrent()->GetCurrentContext(),
+            base::Bind(&MessageChannel::FromV8ValueComplete,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       &plugin_message_queue_.back()));
+    if (conversion_result.completed_synchronously) {
+      plugin_message_queue_.back().ConversionCompleted(
+          conversion_result.var,
+          conversion_result.success);
+    }
+  } else {
+    plugin_message_queue_.back().ConversionCompleted(
+        ScopedPPVar(ScopedPPVar::PassRef(),
+                    NPVariantToPPVar(instance(), variant)),
+        true);
+    DCHECK(plugin_message_queue_.back().var().get().type != PP_VARTYPE_OBJECT);
   }
-  return false;
 }
 
-void MessageChannel::SetReadOnlyProperty(PP_Var key, PP_Var value) {
-  internal_properties_[PPVarToNPIdentifier(key)] = ScopedPPVar(value);
+void MessageChannel::FromV8ValueComplete(VarConversionResult* result_holder,
+                                         const ScopedPPVar& result,
+                                         bool success) {
+  result_holder->ConversionCompleted(result, success);
+  DrainCompletedPluginMessages();
+}
+
+void MessageChannel::DrainCompletedPluginMessages() {
+  if (early_message_queue_state_ == QUEUE_MESSAGES)
+    return;
+
+  while (!plugin_message_queue_.empty() &&
+         plugin_message_queue_.front().conversion_completed()) {
+    const VarConversionResult& front = plugin_message_queue_.front();
+    if (front.success()) {
+      instance_->HandleMessage(front.var());
+    } else {
+      PpapiGlobals::Get()->LogWithSource(instance()->pp_instance(),
+                                         PP_LOGLEVEL_ERROR,
+                                         std::string(),
+                                         kV8ToVarConversionError);
+    }
+    plugin_message_queue_.pop_front();
+  }
+}
+
+void MessageChannel::DrainEarlyMessageQueue() {
+  DCHECK(early_message_queue_state_ == QUEUE_MESSAGES);
+
+  // Take a reference on the PluginInstance. This is because JavaScript code
+  // may delete the plugin, which would destroy the PluginInstance and its
+  // corresponding MessageChannel.
+  scoped_refptr<PepperPluginInstanceImpl> instance_ref(instance_);
+  while (!early_message_queue_.empty()) {
+    PostMessageToJavaScriptImpl(early_message_queue_.front());
+    early_message_queue_.pop_front();
+  }
+  early_message_queue_state_ = SEND_DIRECTLY;
+
+  DrainCompletedPluginMessages();
 }
 
 }  // namespace content
