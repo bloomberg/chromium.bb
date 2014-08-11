@@ -214,6 +214,9 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
   }
 
   void AddAvatarButton() {
+    // Disable the New Avatar Menu.
+    switches::DisableNewAvatarMenuForTesting(CommandLine::ForCurrentProcess());
+
     menu_button_ = new AvatarMenuButton(NULL, false);
     menu_button_->set_id(VIEW_ID_AVATAR_BUTTON);
     delegate_->SetShouldShowAvatar(true);
@@ -230,10 +233,13 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
   }
 
   void AddNewAvatarButton() {
-   new_avatar_button_ =
-       new views::MenuButton(NULL, base::string16(), NULL, false);
-   new_avatar_button_->set_id(VIEW_ID_NEW_AVATAR_BUTTON);
-   root_view_->AddChildView(new_avatar_button_);
+    // Enable the New Avatar Menu.
+    switches::EnableNewAvatarMenuForTesting(CommandLine::ForCurrentProcess());
+
+    new_avatar_button_ =
+        new views::MenuButton(NULL, base::string16(), NULL, false);
+    new_avatar_button_->set_id(VIEW_ID_NEW_AVATAR_BUTTON);
+    root_view_->AddChildView(new_avatar_button_);
   }
 
   void ExpectBasicWindowBounds() {
@@ -514,8 +520,6 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest,
 }
 
 TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowWithNewAvatar) {
-  switches::EnableNewAvatarMenuForTesting(CommandLine::ForCurrentProcess());
-
   // Tests a normal tabstrip window with the new style avatar icon.
   AddNewAvatarButton();
   root_view_->Layout();

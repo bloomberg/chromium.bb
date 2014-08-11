@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -285,7 +287,9 @@ TEST_F(ProfileListDesktopTest, ShowAvatarMenuInTrial) {
 #endif
 }
 
-TEST_F(ProfileListDesktopTest, DontShowAvatarMenu) {
+TEST_F(ProfileListDesktopTest, DontShowOldAvatarMenuForSingleProfile) {
+  switches::DisableNewAvatarMenuForTesting(CommandLine::ForCurrentProcess());
+
   manager()->CreateTestingProfile("Test 1");
 
   EXPECT_FALSE(AvatarMenu::ShouldShowAvatarMenu());
@@ -298,6 +302,18 @@ TEST_F(ProfileListDesktopTest, DontShowAvatarMenu) {
   manager()->CreateTestingProfile("Test 2");
 
   EXPECT_FALSE(AvatarMenu::ShouldShowAvatarMenu());
+}
+
+TEST_F(ProfileListDesktopTest, AlwaysShowNewAvatarMenu) {
+  // If multiprofile mode is not enabled then the menu is never shown.
+  if (!profiles::IsMultipleProfilesEnabled())
+    return;
+
+  switches::EnableNewAvatarMenuForTesting(CommandLine::ForCurrentProcess());
+
+  manager()->CreateTestingProfile("Test 1");
+
+  EXPECT_TRUE(AvatarMenu::ShouldShowAvatarMenu());
 }
 
 TEST_F(ProfileListDesktopTest, ShowAvatarMenu) {

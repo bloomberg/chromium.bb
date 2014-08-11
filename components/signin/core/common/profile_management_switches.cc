@@ -162,6 +162,11 @@ void EnableNewAvatarMenuForTesting(base::CommandLine* command_line) {
   DCHECK(!command_line->HasSwitch(switches::kDisableNewAvatarMenu));
 }
 
+void DisableNewAvatarMenuForTesting(base::CommandLine* command_line) {
+  command_line->AppendSwitch(switches::kDisableNewAvatarMenu);
+  DCHECK(!command_line->HasSwitch(switches::kEnableNewAvatarMenu));
+}
+
 void EnableNewProfileManagementForTesting(base::CommandLine* command_line) {
   command_line->AppendSwitch(switches::kEnableNewProfileManagement);
   DCHECK(!command_line->HasSwitch(switches::kDisableNewProfileManagement));
