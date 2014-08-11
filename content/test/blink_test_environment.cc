@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/webkit_support.h"
+#include "content/test/blink_test_environment.h"
 
 #include <string>
 
@@ -81,7 +81,7 @@ TestEnvironment* test_environment;
 
 }  // namespace
 
-void SetUpTestEnvironmentForUnitTests() {
+void SetUpBlinkTestEnvironment() {
   ParseBlinkCommandLineArgumentsForUnitTests();
 
   blink::WebRuntimeFeatures::enableExperimentalFeatures(true);
@@ -107,7 +107,7 @@ void SetUpTestEnvironmentForUnitTests() {
   test_environment = new TestEnvironment;
 }
 
-void TearDownTestEnvironment() {
+void TearDownBlinkTestEnvironment() {
   // Flush any remaining messages before we kill ourselves.
   // http://code.google.com/p/chromium/issues/detail?id=9500
   base::RunLoop().RunUntilIdle();
@@ -116,6 +116,14 @@ void TearDownTestEnvironment() {
     blink::WebCache::clear();
   delete test_environment;
   test_environment = NULL;
+}
+
+void SetUpTestEnvironmentForUnitTests() {
+  SetUpBlinkTestEnvironment();
+}
+
+void TearDownTestEnvironment() {
+  TearDownBlinkTestEnvironment();
 }
 
 }  // namespace content

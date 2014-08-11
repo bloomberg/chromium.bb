@@ -5,13 +5,8 @@
 #ifndef CONTENT_TEST_WEBKIT_SUPPORT_H_
 #define CONTENT_TEST_WEBKIT_SUPPORT_H_
 
-// This package provides functions used by webkit_unit_tests.
-namespace content {
-
-// Initializes or terminates a test environment for unit tests.
-void SetUpTestEnvironmentForUnitTests();
-void TearDownTestEnvironment();
-
-}  // namespace content
+// TODO(tfarina): Remove this file when Blink is changed to include
+// blink_test_environment.h
+#include "content/test/blink_test_environment.h"
 
 #endif  // CONTENT_TEST_WEBKIT_SUPPORT_H_
