@@ -8,6 +8,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/user_metrics.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -30,7 +31,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/variations_http_header_provider.h"
-#include "content/public/browser/user_metrics.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_util.h"
@@ -247,10 +247,10 @@ int ZeroSuggestProvider::GetDefaultResultRelevance() const {
 
 void ZeroSuggestProvider::RecordDeletionResult(bool success) {
   if (success) {
-    content::RecordAction(
+    base::RecordAction(
         base::UserMetricsAction("Omnibox.ZeroSuggestDelete.Success"));
   } else {
-    content::RecordAction(
+    base::RecordAction(
         base::UserMetricsAction("Omnibox.ZeroSuggestDelete.Failure"));
   }
 }

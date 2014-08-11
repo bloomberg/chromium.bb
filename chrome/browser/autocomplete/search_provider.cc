@@ -15,6 +15,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/user_metrics.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
@@ -39,7 +40,6 @@
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/variations_http_header_provider.h"
-#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -335,10 +335,10 @@ int SearchProvider::GetDefaultResultRelevance() const {
 
 void SearchProvider::RecordDeletionResult(bool success) {
   if (success) {
-    content::RecordAction(
+    base::RecordAction(
         base::UserMetricsAction("Omnibox.ServerSuggestDelete.Success"));
   } else {
-    content::RecordAction(
+    base::RecordAction(
         base::UserMetricsAction("Omnibox.ServerSuggestDelete.Failure"));
   }
 }
