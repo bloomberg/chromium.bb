@@ -534,7 +534,7 @@ void RenderWidgetHostViewAndroid::TextInputStateChanged(
 
   content_view_core_->UpdateImeAdapter(
       GetNativeImeAdapter(),
-      static_cast<int>(params.type),
+      static_cast<int>(params.type), params.flags,
       params.value, params.selection_start, params.selection_end,
       params.composition_start, params.composition_end,
       params.show_ime_if_needed, params.is_non_ime_change);

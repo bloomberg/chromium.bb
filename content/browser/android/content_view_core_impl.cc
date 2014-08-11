@@ -1392,6 +1392,7 @@ bool ContentViewCoreImpl::GetUseDesktopUserAgent(
 
 void ContentViewCoreImpl::UpdateImeAdapter(long native_ime_adapter,
                                            int text_input_type,
+                                           int text_input_flags,
                                            const std::string& text,
                                            int selection_start,
                                            int selection_end,
@@ -1405,12 +1406,18 @@ void ContentViewCoreImpl::UpdateImeAdapter(long native_ime_adapter,
     return;
 
   ScopedJavaLocalRef<jstring> jstring_text = ConvertUTF8ToJavaString(env, text);
-  Java_ContentViewCore_updateImeAdapter(env, obj.obj(),
-                                        native_ime_adapter, text_input_type,
+  Java_ContentViewCore_updateImeAdapter(env,
+                                        obj.obj(),
+                                        native_ime_adapter,
+                                        text_input_type,
+                                        text_input_flags,
                                         jstring_text.obj(),
-                                        selection_start, selection_end,
-                                        composition_start, composition_end,
-                                        show_ime_if_needed, is_non_ime_change);
+                                        selection_start,
+                                        selection_end,
+                                        composition_start,
+                                        composition_end,
+                                        show_ime_if_needed,
+                                        is_non_ime_change);
 }
 
 void ContentViewCoreImpl::ClearSslPreferences(JNIEnv* env, jobject obj) {

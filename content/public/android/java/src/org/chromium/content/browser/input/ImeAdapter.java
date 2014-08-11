@@ -82,7 +82,7 @@ public class ImeAdapter {
 
         @Override
         public void run() {
-            attach(mNativeImeAdapter, sTextInputTypeNone);
+            attach(mNativeImeAdapter, sTextInputTypeNone, sTextInputFlagNone);
             dismissInput(true);
         }
     }
@@ -111,6 +111,13 @@ public class ImeAdapter {
     static int sTextInputTypeTel;
     static int sTextInputTypeNumber;
     static int sTextInputTypeContentEditable;
+    static int sTextInputFlagNone = 0;
+    static int sTextInputFlagAutocompleteOn;
+    static int sTextInputFlagAutocompleteOff;
+    static int sTextInputFlagAutocorrectOn;
+    static int sTextInputFlagAutocorrectOff;
+    static int sTextInputFlagSpellcheckOn;
+    static int sTextInputFlagSpellcheckOff;
     static int sModifierShift;
     static int sModifierAlt;
     static int sModifierCtrl;
@@ -126,6 +133,7 @@ public class ImeAdapter {
     private final Handler mHandler;
     private DelayedDismissInput mDismissInput = null;
     private int mTextInputType;
+    private int mTextInputFlags;
     private String mLastComposeText;
 
     @VisibleForTesting
@@ -184,11 +192,19 @@ public class ImeAdapter {
     }
 
     /**
-     * Should be only used by AdapterInputConnection.
+     * Should be used only by AdapterInputConnection.
      * @return The input type of currently focused element.
      */
     int getTextInputType() {
         return mTextInputType;
+    }
+
+    /**
+     * Should be used only by AdapterInputConnection.
+     * @return The input flags of the currently focused element.
+     */
+    int getTextInputFlags() {
+        return mTextInputFlags;
     }
 
     /**
@@ -225,7 +241,7 @@ public class ImeAdapter {
      * @param showIfNeeded Whether the keyboard should be shown if it is currently hidden.
      */
     public void updateKeyboardVisibility(long nativeImeAdapter, int textInputType,
-            boolean showIfNeeded) {
+            int textInputFlags, boolean showIfNeeded) {
         mHandler.removeCallbacks(mDismissInput);
 
         // If current input type is none and showIfNeeded is false, IME should not be shown
@@ -243,7 +259,7 @@ public class ImeAdapter {
                 return;
             }
 
-            attach(nativeImeAdapter, textInputType);
+            attach(nativeImeAdapter, textInputType, textInputFlags);
 
             mInputMethodManagerWrapper.restartInput(mViewEmbedder.getAttachedView());
             if (showIfNeeded) {
@@ -254,12 +270,13 @@ public class ImeAdapter {
         }
     }
 
-    public void attach(long nativeImeAdapter, int textInputType) {
+    public void attach(long nativeImeAdapter, int textInputType, int textInputFlags) {
         if (mNativeImeAdapterAndroid != 0) {
             nativeResetImeAdapter(mNativeImeAdapterAndroid);
         }
         mNativeImeAdapterAndroid = nativeImeAdapter;
         mTextInputType = textInputType;
+        mTextInputFlags = textInputFlags;
         mLastComposeText = null;
         if (nativeImeAdapter != 0) {
             nativeAttachImeAdapter(mNativeImeAdapterAndroid);
@@ -275,7 +292,7 @@ public class ImeAdapter {
      * @param nativeImeAdapter The pointer to the native ImeAdapter object.
      */
     public void attach(long nativeImeAdapter) {
-        attach(nativeImeAdapter, sTextInputTypeNone);
+        attach(nativeImeAdapter, sTextInputTypeNone, sTextInputFlagNone);
     }
 
     private void showKeyboard() {
@@ -629,6 +646,19 @@ public class ImeAdapter {
         sTextInputTypeTel = textInputTypeTel;
         sTextInputTypeNumber = textInputTypeNumber;
         sTextInputTypeContentEditable = textInputTypeContentEditable;
+    }
+
+    @CalledByNative
+    private static void initializeTextInputFlags(
+            int textInputFlagAutocompleteOn, int textInputFlagAutocompleteOff,
+            int textInputFlagAutocorrectOn, int textInputFlagAutocorrectOff,
+            int textInputFlagSpellcheckOn, int textInputFlagSpellcheckOff) {
+        sTextInputFlagAutocompleteOn = textInputFlagAutocompleteOn;
+        sTextInputFlagAutocompleteOff = textInputFlagAutocompleteOff;
+        sTextInputFlagAutocorrectOn = textInputFlagAutocorrectOn;
+        sTextInputFlagAutocorrectOff = textInputFlagAutocorrectOff;
+        sTextInputFlagSpellcheckOn = textInputFlagSpellcheckOn;
+        sTextInputFlagSpellcheckOff = textInputFlagSpellcheckOff;
     }
 
     @CalledByNative

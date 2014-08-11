@@ -367,6 +367,9 @@ IPC_STRUCT_BEGIN(ViewHostMsg_TextInputState_Params)
   // The mode of input field
   IPC_STRUCT_MEMBER(ui::TextInputMode, mode)
 
+  // The flags of the input field (autocorrect, autocomplete, etc.)
+  IPC_STRUCT_MEMBER(int, flags)
+
   // The value of the input field
   IPC_STRUCT_MEMBER(std::string, value)
 

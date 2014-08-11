@@ -29,6 +29,7 @@
 #include "jni/ImeAdapter_jni.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebTextInputType.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
@@ -87,6 +88,14 @@ bool RegisterImeAdapter(JNIEnv* env) {
       ui::TEXT_INPUT_TYPE_TELEPHONE,
       ui::TEXT_INPUT_TYPE_NUMBER,
       ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE);
+  Java_ImeAdapter_initializeTextInputFlags(
+      env,
+      blink::WebTextInputFlagAutocompleteOn,
+      blink::WebTextInputFlagAutocompleteOff,
+      blink::WebTextInputFlagAutocorrectOn,
+      blink::WebTextInputFlagAutocorrectOff,
+      blink::WebTextInputFlagSpellcheckOn,
+      blink::WebTextInputFlagSpellcheckOff);
   return true;
 }
 

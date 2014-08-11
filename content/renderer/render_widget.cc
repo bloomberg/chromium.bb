@@ -1756,6 +1756,7 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime,
       ) {
     ViewHostMsg_TextInputState_Params p;
     p.type = new_type;
+    p.flags = new_info.flags;
     p.mode = new_mode;
     p.value = new_info.value.utf8();
     p.selection_start = new_info.selectionStart;

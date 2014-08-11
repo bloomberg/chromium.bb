@@ -63,43 +63,47 @@ public class AdapterInputConnection extends BaseInputConnection {
         outAttrs.inputType = EditorInfo.TYPE_CLASS_TEXT
                 | EditorInfo.TYPE_TEXT_VARIATION_WEB_EDIT_TEXT;
 
-        if (imeAdapter.getTextInputType() == ImeAdapter.sTextInputTypeText) {
+        int inputType = imeAdapter.getTextInputType();
+        int inputFlags = imeAdapter.getTextInputFlags();
+        if (inputType == ImeAdapter.sTextInputTypeText) {
             // Normal text field
-            outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_AUTO_CORRECT;
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_GO;
-        } else if (imeAdapter.getTextInputType() == ImeAdapter.sTextInputTypeTextArea ||
-                imeAdapter.getTextInputType() == ImeAdapter.sTextInputTypeContentEditable) {
+            if ((inputFlags & imeAdapter.sTextInputFlagAutocorrectOff) == 0)
+                outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_AUTO_CORRECT;
+        } else if (inputType == ImeAdapter.sTextInputTypeTextArea ||
+                inputType == ImeAdapter.sTextInputTypeContentEditable) {
             // TextArea or contenteditable.
             outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE
-                    | EditorInfo.TYPE_TEXT_FLAG_CAP_SENTENCES
-                    | EditorInfo.TYPE_TEXT_FLAG_AUTO_CORRECT;
+                    | EditorInfo.TYPE_TEXT_FLAG_CAP_SENTENCES;
+            if ((inputFlags & imeAdapter.sTextInputFlagAutocorrectOff) == 0)
+                outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_AUTO_CORRECT;
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_NONE;
             mSingleLine = false;
-        } else if (imeAdapter.getTextInputType() == ImeAdapter.sTextInputTypePassword) {
+        } else if (inputType == ImeAdapter.sTextInputTypePassword) {
             // Password
             outAttrs.inputType = InputType.TYPE_CLASS_TEXT
                     | InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD;
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_GO;
-        } else if (imeAdapter.getTextInputType() == ImeAdapter.sTextInputTypeSearch) {
+        } else if (inputType == ImeAdapter.sTextInputTypeSearch) {
             // Search
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_SEARCH;
-        } else if (imeAdapter.getTextInputType() == ImeAdapter.sTextInputTypeUrl) {
+        } else if (inputType == ImeAdapter.sTextInputTypeUrl) {
             // Url
             outAttrs.inputType = InputType.TYPE_CLASS_TEXT
                     | InputType.TYPE_TEXT_VARIATION_URI;
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_GO;
-        } else if (imeAdapter.getTextInputType() == ImeAdapter.sTextInputTypeEmail) {
+        } else if (inputType == ImeAdapter.sTextInputTypeEmail) {
             // Email
             outAttrs.inputType = InputType.TYPE_CLASS_TEXT
                     | InputType.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS;
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_GO;
-        } else if (imeAdapter.getTextInputType() == ImeAdapter.sTextInputTypeTel) {
+        } else if (inputType == ImeAdapter.sTextInputTypeTel) {
             // Telephone
             // Number and telephone do not have both a Tab key and an
             // action in default OSK, so set the action to NEXT
             outAttrs.inputType = InputType.TYPE_CLASS_PHONE;
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_NEXT;
-        } else if (imeAdapter.getTextInputType() == ImeAdapter.sTextInputTypeNumber) {
+        } else if (inputType == ImeAdapter.sTextInputTypeNumber) {
             // Number
             outAttrs.inputType = InputType.TYPE_CLASS_NUMBER
                     | InputType.TYPE_NUMBER_VARIATION_NORMAL

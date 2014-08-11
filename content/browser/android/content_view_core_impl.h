@@ -261,11 +261,16 @@ class ContentViewCoreImpl : public ContentViewCore,
                        const gfx::Vector2dF& content_offset,
                        float overdraw_bottom_height);
 
-  void UpdateImeAdapter(long native_ime_adapter, int text_input_type,
+  void UpdateImeAdapter(long native_ime_adapter,
+                        int text_input_type,
+                        int text_input_flags,
                         const std::string& text,
-                        int selection_start, int selection_end,
-                        int composition_start, int composition_end,
-                        bool show_ime_if_needed, bool is_non_ime_change);
+                        int selection_start,
+                        int selection_end,
+                        int composition_start,
+                        int composition_end,
+                        bool show_ime_if_needed,
+                        bool is_non_ime_change);
   void SetTitle(const base::string16& title);
   void OnBackgroundColorChanged(SkColor color);
 

@@ -1576,7 +1576,7 @@ public class ContentViewCore
         if (newConfig.keyboard != Configuration.KEYBOARD_NOKEYS) {
             if (mNativeContentViewCore != 0) {
                 mImeAdapter.attach(nativeGetNativeImeAdapter(mNativeContentViewCore),
-                        ImeAdapter.getTextInputTypeNone());
+                        ImeAdapter.getTextInputTypeNone(), 0 /* no flags */);
             }
             mInputMethodManagerWrapper.restartInput(mContainerView);
         }
@@ -2316,7 +2316,7 @@ public class ContentViewCore
 
     @CalledByNative
     private void updateImeAdapter(long nativeImeAdapterAndroid, int textInputType,
-            String text, int selectionStart, int selectionEnd,
+            int textInputFlags, String text, int selectionStart, int selectionEnd,
             int compositionStart, int compositionEnd, boolean showImeIfNeeded,
             boolean isNonImeChange) {
         TraceEvent.begin();
@@ -2324,7 +2324,7 @@ public class ContentViewCore
         if (!mFocusedNodeEditable) hidePastePopup();
 
         mImeAdapter.updateKeyboardVisibility(
-                nativeImeAdapterAndroid, textInputType, showImeIfNeeded);
+                nativeImeAdapterAndroid, textInputType, textInputFlags, showImeIfNeeded);
 
         if (mInputConnection != null) {
             mInputConnection.updateState(text, selectionStart, selectionEnd, compositionStart,
