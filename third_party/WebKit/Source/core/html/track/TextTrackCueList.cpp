@@ -34,6 +34,8 @@ TextTrackCueList::TextTrackCueList()
     ScriptWrappable::init(this);
 }
 
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(TextTrackCueList);
+
 unsigned long TextTrackCueList::length() const
 {
     return m_list.size();
@@ -149,4 +151,3 @@ void TextTrackCueList::trace(Visitor* visitor)
 }
 
 } // namespace blink
-

@@ -34,14 +34,13 @@
 
 namespace blink {
 
-class TextTrackCueList FINAL : public RefCountedWillBeGarbageCollectedFinalized<TextTrackCueList>, public ScriptWrappable {
+class TextTrackCueList FINAL : public RefCountedWillBeGarbageCollected<TextTrackCueList>, public ScriptWrappable {
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(TextTrackCueList);
 public:
     static PassRefPtrWillBeRawPtr<TextTrackCueList> create()
     {
         return adoptRefWillBeNoop(new TextTrackCueList);
     }
-
-    ~TextTrackCueList() { }
 
     unsigned long length() const;
     unsigned long getCueIndex(TextTrackCue*) const;
@@ -66,7 +65,6 @@ private:
 
     WillBeHeapVector<RefPtrWillBeMember<TextTrackCue> > m_list;
     RefPtrWillBeMember<TextTrackCueList> m_activeCues;
-
 };
 
 } // namespace blink
