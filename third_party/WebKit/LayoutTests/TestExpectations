@@ -1305,3 +1305,6 @@ crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/f
 crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-star-allow-crossorigin.html [ Failure Pass Timeout ]
 
 crbug.com/401902  [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-lose-restore-googol-size.html [ Pass Failure ]
+
+crbug.com/402379 [ Win7 Debug ] storage/indexeddb/cursor-continue-validity.html [ Pass Slow ]
+crbug.com/402379 [ Win7 Debug ] storage/indexeddb/mozilla/indexes.html [ Pass Slow ]
