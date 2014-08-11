@@ -102,6 +102,7 @@ DataReductionProxySettings::DataReductionProxySettings(
 DataReductionProxySettings::~DataReductionProxySettings() {
   if (params_->allowed())
     spdy_proxy_auth_enabled_.Destroy();
+  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
 void DataReductionProxySettings::InitPrefMembers() {
