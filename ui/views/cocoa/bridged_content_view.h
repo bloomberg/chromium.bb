@@ -7,6 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "ui/base/cocoa/tracking_area.h"
+
 namespace ui {
 class TextInputClient;
 }
@@ -26,6 +28,9 @@ class View;
   // Weak. If non-null the TextInputClient of the currently focused View in the
   // hierarchy rooted at |hostedView_|. Owned by the focused View.
   ui::TextInputClient* textInputClient_;
+
+  // A tracking area installed to enable mouseMoved events.
+  ui::ScopedCrTrackingArea trackingArea_;
 }
 
 @property(readonly, nonatomic) views::View* hostedView;

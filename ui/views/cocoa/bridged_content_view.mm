@@ -5,6 +5,7 @@
 #import "ui/views/cocoa/bridged_content_view.h"
 
 #include "base/logging.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "grit/ui_strings.h"
 #include "ui/base/ime/text_input_client.h"
@@ -37,14 +38,25 @@
   // case for something other than that.
   DCHECK(bounds.origin().IsOrigin());
   NSRect initialFrame = NSMakeRect(0, 0, bounds.width(), bounds.height());
-  if ((self = [super initWithFrame:initialFrame]))
+  if ((self = [super initWithFrame:initialFrame])) {
     hostedView_ = viewToHost;
 
+    trackingArea_.reset(
+        [[CrTrackingArea alloc] initWithRect:NSZeroRect
+                                     options:NSTrackingMouseMoved |
+                                             NSTrackingActiveAlways |
+                                             NSTrackingInVisibleRect
+                                       owner:self
+                                    userInfo:nil]);
+    [self addTrackingArea:trackingArea_.get()];
+  }
   return self;
 }
 
 - (void)clearView {
   hostedView_ = NULL;
+  [trackingArea_.get() clearOwner];
+  [self removeTrackingArea:trackingArea_.get()];
 }
 
 // BridgedContentView private implementation.
@@ -133,8 +145,6 @@
   // Note: mouseEntered: and mouseExited: are not handled separately.
   // |hostedView_| is responsible for converting the move events into entered
   // and exited events for the view heirarchy.
-  // TODO(tapted): Install/uninstall tracking areas when required so that the
-  // NSView will receive these events outside of tests.
   [self handleMouseEvent:theEvent];
 }
 

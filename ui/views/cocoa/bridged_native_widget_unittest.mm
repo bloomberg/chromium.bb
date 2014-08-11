@@ -176,12 +176,17 @@ TEST_F(BridgedNativeWidgetTest, BridgedNativeWidgetTest_TestViewAddRemove) {
   EXPECT_TRUE([view superview]);
   EXPECT_TRUE([view hostedView]);
 
+  // Ensure the tracking area to propagate mouseMoved: events to the RootView is
+  // installed.
+  EXPECT_EQ(1u, [[view trackingAreas] count]);
+
   // Destroying the C++ bridge should remove references to any C++ objects in
   // the ObjectiveC object, and remove it from the hierarchy.
   bridge().reset();
   EXPECT_FALSE([view hostedView]);
   EXPECT_FALSE([view superview]);
   EXPECT_FALSE([view window]);
+  EXPECT_EQ(0u, [[view trackingAreas] count]);
   EXPECT_FALSE([test_window() contentView]);
   EXPECT_FALSE([test_window() delegate]);
 }
