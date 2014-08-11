@@ -849,8 +849,8 @@ void PictureLayerTiling::UpdateEvictionCacheIfNeeded(
 
   eventually_eviction_tiles_.clear();
   soon_eviction_tiles_.clear();
-  now_required_for_activation_eviction_tiles_.clear();
-  now_not_required_for_activation_eviction_tiles_.clear();
+  now_eviction_tiles_.clear();
+  now_and_required_for_activation_eviction_tiles_.clear();
 
   for (TileMap::iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
     // TODO(vmpstr): This should update the priority if UpdateTilePriorities
@@ -867,9 +867,9 @@ void PictureLayerTiling::UpdateEvictionCacheIfNeeded(
         break;
       case TilePriority::NOW:
         if (tile->required_for_activation())
-          now_required_for_activation_eviction_tiles_.push_back(tile);
+          now_and_required_for_activation_eviction_tiles_.push_back(tile);
         else
-          now_not_required_for_activation_eviction_tiles_.push_back(tile);
+          now_eviction_tiles_.push_back(tile);
         break;
     }
   }
@@ -882,15 +882,31 @@ void PictureLayerTiling::UpdateEvictionCacheIfNeeded(
             sort_order);
   std::sort(
       soon_eviction_tiles_.begin(), soon_eviction_tiles_.end(), sort_order);
-  std::sort(now_required_for_activation_eviction_tiles_.begin(),
-            now_required_for_activation_eviction_tiles_.end(),
-            sort_order);
-  std::sort(now_not_required_for_activation_eviction_tiles_.begin(),
-            now_not_required_for_activation_eviction_tiles_.end(),
+  std::sort(now_eviction_tiles_.begin(), now_eviction_tiles_.end(), sort_order);
+  std::sort(now_and_required_for_activation_eviction_tiles_.begin(),
+            now_and_required_for_activation_eviction_tiles_.end(),
             sort_order);
 
   eviction_tiles_cache_valid_ = true;
   eviction_cache_tree_priority_ = tree_priority;
+}
+
+const std::vector<Tile*>* PictureLayerTiling::GetEvictionTiles(
+    TreePriority tree_priority,
+    EvictionCategory category) {
+  UpdateEvictionCacheIfNeeded(tree_priority);
+  switch (category) {
+    case EVENTUALLY:
+      return &eventually_eviction_tiles_;
+    case SOON:
+      return &soon_eviction_tiles_;
+    case NOW:
+      return &now_eviction_tiles_;
+    case NOW_AND_REQUIRED_FOR_ACTIVATION:
+      return &now_and_required_for_activation_eviction_tiles_;
+  }
+  NOTREACHED();
+  return &eventually_eviction_tiles_;
 }
 
 PictureLayerTiling::TilingRasterTileIterator::TilingRasterTileIterator()
@@ -1018,56 +1034,37 @@ operator++() {
 }
 
 PictureLayerTiling::TilingEvictionTileIterator::TilingEvictionTileIterator()
-    : tiling_(NULL), eviction_tiles_(NULL) {
+    : eviction_tiles_(NULL), current_eviction_tiles_index_(0u) {
 }
 
 PictureLayerTiling::TilingEvictionTileIterator::TilingEvictionTileIterator(
     PictureLayerTiling* tiling,
     TreePriority tree_priority,
-    TilePriority::PriorityBin type,
-    bool required_for_activation)
-    : tiling_(tiling), tree_priority_(tree_priority), eviction_tiles_(NULL) {
-  if (required_for_activation && type != TilePriority::NOW)
-    return;
-
-  tiling_->UpdateEvictionCacheIfNeeded(tree_priority_);
-  switch (type) {
-    case TilePriority::EVENTUALLY:
-      eviction_tiles_ = &tiling_->eventually_eviction_tiles_;
-      break;
-    case TilePriority::SOON:
-      eviction_tiles_ = &tiling_->soon_eviction_tiles_;
-      break;
-    case TilePriority::NOW:
-      if (required_for_activation)
-        eviction_tiles_ = &tiling_->now_required_for_activation_eviction_tiles_;
-      else
-        eviction_tiles_ =
-            &tiling_->now_not_required_for_activation_eviction_tiles_;
-      break;
-  }
+    EvictionCategory category)
+    : eviction_tiles_(tiling->GetEvictionTiles(tree_priority, category)),
+      // Note: initializing to "0 - 1" works as overflow is well defined for
+      // unsigned integers.
+      current_eviction_tiles_index_(static_cast<size_t>(0) - 1) {
   DCHECK(eviction_tiles_);
-  tile_iterator_ = eviction_tiles_->begin();
-  if (tile_iterator_ != eviction_tiles_->end() &&
-      !(*tile_iterator_)->HasResources()) {
-    ++(*this);
-  }
+  ++(*this);
 }
 
-PictureLayerTiling::TilingEvictionTileIterator::~TilingEvictionTileIterator() {}
+PictureLayerTiling::TilingEvictionTileIterator::~TilingEvictionTileIterator() {
+}
 
 PictureLayerTiling::TilingEvictionTileIterator::operator bool() const {
-  return eviction_tiles_ && tile_iterator_ != eviction_tiles_->end();
+  return eviction_tiles_ &&
+         current_eviction_tiles_index_ != eviction_tiles_->size();
 }
 
 Tile* PictureLayerTiling::TilingEvictionTileIterator::operator*() {
   DCHECK(*this);
-  return *tile_iterator_;
+  return (*eviction_tiles_)[current_eviction_tiles_index_];
 }
 
 const Tile* PictureLayerTiling::TilingEvictionTileIterator::operator*() const {
   DCHECK(*this);
-  return *tile_iterator_;
+  return (*eviction_tiles_)[current_eviction_tiles_index_];
 }
 
 PictureLayerTiling::TilingEvictionTileIterator&
@@ -1075,9 +1072,9 @@ PictureLayerTiling::TilingEvictionTileIterator::
 operator++() {
   DCHECK(*this);
   do {
-    ++tile_iterator_;
-  } while (tile_iterator_ != eviction_tiles_->end() &&
-           (!(*tile_iterator_)->HasResources()));
+    ++current_eviction_tiles_index_;
+  } while (current_eviction_tiles_index_ != eviction_tiles_->size() &&
+           !(*eviction_tiles_)[current_eviction_tiles_index_]->HasResources());
 
   return *this;
 }

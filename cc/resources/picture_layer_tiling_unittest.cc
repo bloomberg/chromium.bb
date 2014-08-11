@@ -1057,7 +1057,7 @@ TEST(PictureLayerTilingTest, TilingEvictionTileIteratorStaticViewport) {
   std::vector<Tile*> all_tiles = tiling->AllTilesForTesting();
 
   PictureLayerTiling::TilingEvictionTileIterator it(
-      tiling.get(), SMOOTHNESS_TAKES_PRIORITY, TilePriority::NOW, false);
+      tiling.get(), SMOOTHNESS_TAKES_PRIORITY, PictureLayerTiling::NOW);
 
   // Tiles don't have resources to evict.
   EXPECT_FALSE(it);
@@ -1072,7 +1072,7 @@ TEST(PictureLayerTilingTest, TilingEvictionTileIteratorStaticViewport) {
   std::set<Tile*> eviction_tiles;
 
   it = PictureLayerTiling::TilingEvictionTileIterator(
-      tiling.get(), SMOOTHNESS_TAKES_PRIORITY, TilePriority::EVENTUALLY, false);
+      tiling.get(), SMOOTHNESS_TAKES_PRIORITY, PictureLayerTiling::EVENTUALLY);
   EXPECT_TRUE(it);
   for (; it; ++it) {
     Tile* tile = *it;
@@ -1084,7 +1084,7 @@ TEST(PictureLayerTilingTest, TilingEvictionTileIteratorStaticViewport) {
   }
 
   it = PictureLayerTiling::TilingEvictionTileIterator(
-      tiling.get(), SMOOTHNESS_TAKES_PRIORITY, TilePriority::SOON, false);
+      tiling.get(), SMOOTHNESS_TAKES_PRIORITY, PictureLayerTiling::SOON);
   EXPECT_TRUE(it);
   for (; it; ++it) {
     Tile* tile = *it;
@@ -1095,7 +1095,7 @@ TEST(PictureLayerTilingTest, TilingEvictionTileIteratorStaticViewport) {
   }
 
   it = PictureLayerTiling::TilingEvictionTileIterator(
-      tiling.get(), SMOOTHNESS_TAKES_PRIORITY, TilePriority::NOW, false);
+      tiling.get(), SMOOTHNESS_TAKES_PRIORITY, PictureLayerTiling::NOW);
   EXPECT_TRUE(it);
   for (; it; ++it) {
     Tile* tile = *it;
@@ -1106,7 +1106,9 @@ TEST(PictureLayerTilingTest, TilingEvictionTileIteratorStaticViewport) {
   }
 
   it = PictureLayerTiling::TilingEvictionTileIterator(
-      tiling.get(), SMOOTHNESS_TAKES_PRIORITY, TilePriority::NOW, true);
+      tiling.get(),
+      SMOOTHNESS_TAKES_PRIORITY,
+      PictureLayerTiling::NOW_AND_REQUIRED_FOR_ACTIVATION);
   EXPECT_FALSE(it);
 
   EXPECT_GT(all_tiles_set.size(), 0u);

@@ -55,6 +55,12 @@ class CC_EXPORT PictureLayerTilingClient {
 
 class CC_EXPORT PictureLayerTiling {
  public:
+  enum EvictionCategory {
+    EVENTUALLY,
+    SOON,
+    NOW,
+    NOW_AND_REQUIRED_FOR_ACTIVATION
+  };
   class CC_EXPORT TilingRasterTileIterator {
    public:
     TilingRasterTileIterator();
@@ -109,8 +115,7 @@ class CC_EXPORT PictureLayerTiling {
     TilingEvictionTileIterator();
     TilingEvictionTileIterator(PictureLayerTiling* tiling,
                                TreePriority tree_priority,
-                               TilePriority::PriorityBin type,
-                               bool required_for_activation);
+                               EvictionCategory category);
     ~TilingEvictionTileIterator();
 
     operator bool() const;
@@ -119,10 +124,8 @@ class CC_EXPORT PictureLayerTiling {
     TilingEvictionTileIterator& operator++();
 
    private:
-    PictureLayerTiling* tiling_;
-    TreePriority tree_priority_;
-    std::vector<Tile*>::iterator tile_iterator_;
-    std::vector<Tile*>* eviction_tiles_;
+    const std::vector<Tile*>* eviction_tiles_;
+    size_t current_eviction_tiles_index_;
   };
 
   ~PictureLayerTiling();
@@ -299,6 +302,9 @@ class CC_EXPORT PictureLayerTiling {
       const;
 
   void UpdateEvictionCacheIfNeeded(TreePriority tree_priority);
+  const std::vector<Tile*>* GetEvictionTiles(TreePriority tree_priority,
+                                             EvictionCategory category);
+
   void Invalidate(const Region& layer_region);
 
   void DoInvalidate(const Region& layer_region,
@@ -332,8 +338,8 @@ class CC_EXPORT PictureLayerTiling {
 
   std::vector<Tile*> eventually_eviction_tiles_;
   std::vector<Tile*> soon_eviction_tiles_;
-  std::vector<Tile*> now_required_for_activation_eviction_tiles_;
-  std::vector<Tile*> now_not_required_for_activation_eviction_tiles_;
+  std::vector<Tile*> now_eviction_tiles_;
+  std::vector<Tile*> now_and_required_for_activation_eviction_tiles_;
   bool eviction_tiles_cache_valid_;
   TreePriority eviction_cache_tree_priority_;
 

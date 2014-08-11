@@ -77,31 +77,18 @@ class CC_EXPORT PictureLayerImpl
     operator bool() const;
 
    private:
-    enum IterationStage {
-      EVENTUALLY,
-      EVENTUALLY_AND_REQUIRED_FOR_ACTIVATION,
-      SOON,
-      SOON_AND_REQUIRED_FOR_ACTIVATION,
-      NOW,
-      NOW_AND_REQUIRED_FOR_ACTIVATION
-    };
-
-    TilePriority::PriorityBin PriorityBinFromIterationStage(
-        IterationStage stage);
-    bool RequiredForActivationFromIterationStage(IterationStage stage);
-
     PictureLayerTilingSet::TilingRange CurrentRange();
     int CurrentTilingIndex();
 
     void AdvanceToNextIterator();
     bool AdvanceTiling();
     bool AdvanceRange();
-    bool AdvanceStage();
+    bool AdvanceCategory();
 
     PictureLayerTiling::TilingEvictionTileIterator iterator_;
     int current_range_offset_;
     PictureLayerTilingSet::TilingRangeType current_tiling_range_type_;
-    IterationStage current_stage_;
+    PictureLayerTiling::EvictionCategory current_category_;
 
     TreePriority tree_priority_;
     PictureLayerImpl* layer_;
