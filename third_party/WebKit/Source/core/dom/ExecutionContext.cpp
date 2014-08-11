@@ -158,7 +158,7 @@ void ExecutionContext::reportException(PassRefPtrWillBeRawPtr<ErrorEvent> event,
     m_pendingExceptions.clear();
 }
 
-void ExecutionContext::addConsoleMessage(PassRefPtr<ConsoleMessage> consoleMessage)
+void ExecutionContext::addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage)
 {
     if (!m_client)
         return;

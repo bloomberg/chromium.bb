@@ -55,7 +55,7 @@ public:
     virtual String userAgent(const KURL&) const = 0;
     virtual void disableEval(const String& errorMessage) = 0;
     virtual SecurityContext& securityContext() = 0;
-    virtual void addMessage(PassRefPtr<ConsoleMessage>) = 0;
+    virtual void addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) = 0;
     virtual EventTarget* errorEventTarget() = 0;
     virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) = 0;
     virtual double timerAlignmentInterval() const = 0;
@@ -64,7 +64,7 @@ public:
     virtual void tasksWereSuspended() { }
     virtual void tasksWereResumed() { }
 
-    void addConsoleMessage(PassRefPtr<ConsoleMessage> consoleMessage) { addMessage(consoleMessage); }
+    void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage) { addMessage(consoleMessage); }
 
 protected:
     virtual ~ExecutionContextClient() { }

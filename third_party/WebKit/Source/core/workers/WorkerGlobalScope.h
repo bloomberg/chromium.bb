@@ -144,7 +144,7 @@ namespace blink {
         void applyContentSecurityPolicyFromString(const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType);
 
         virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) OVERRIDE;
-        void addMessageToWorkerConsole(PassRefPtr<ConsoleMessage>);
+        void addMessageToWorkerConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>);
 
     private:
 #if !ENABLE(OILPAN)
@@ -156,7 +156,7 @@ namespace blink {
         virtual KURL virtualCompleteURL(const String&) const OVERRIDE FINAL;
 
         virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) OVERRIDE FINAL;
-        virtual void addMessage(PassRefPtr<ConsoleMessage>) OVERRIDE FINAL;
+        virtual void addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) OVERRIDE FINAL;
 
         virtual EventTarget* errorEventTarget() OVERRIDE FINAL;
         virtual void didUpdateSecurityOrigin() OVERRIDE FINAL { }

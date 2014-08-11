@@ -454,7 +454,7 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
         if (frameLoader()->shouldInterruptLoadForXFrameOptions(content, response.url(), identifier)) {
             InspectorInstrumentation::continueAfterXFrameOptionsDenied(m_frame, this, identifier, response);
             String message = "Refused to display '" + response.url().elidedString() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
-            RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message);
+            RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message);
             consoleMessage->setRequestIdentifier(identifier);
             frame()->document()->addMessage(consoleMessage.release());
             frame()->document()->enforceSandboxFlags(SandboxOrigin);

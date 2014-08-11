@@ -32,18 +32,16 @@
 #define ServiceWorkerGlobalScopeProxy_h
 
 #include "core/workers/WorkerReportingProxy.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebServiceWorkerContextProxy.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
+
 class ConsoleMessage;
 class ExecutionContext;
-}
-
-namespace blink {
-
 class WebEmbeddedWorkerImpl;
 class WebServiceWorkerContextClient;
 class WebServiceWorkerRequest;
@@ -78,7 +76,7 @@ public:
 
     // WorkerReportingProxy overrides:
     virtual void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL) OVERRIDE;
-    virtual void reportConsoleMessage(PassRefPtr<blink::ConsoleMessage>) OVERRIDE;
+    virtual void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) OVERRIDE;
     virtual void postMessageToPageInspector(const String&) OVERRIDE;
     virtual void updateInspectorStateCookie(const String&) OVERRIDE;
     virtual void workerGlobalScopeStarted(blink::WorkerGlobalScope*) OVERRIDE;

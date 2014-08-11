@@ -48,9 +48,6 @@
 namespace blink {
 class ConsoleMessage;
 class ResourceResponse;
-}
-
-namespace blink {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebWorkerClient;
@@ -61,32 +58,32 @@ class WebView;
 class WebWorker;
 class WebSharedWorkerClient;
 
-// This class is used by the worker process code to talk to the blink::SharedWorker implementation.
+// This class is used by the worker process code to talk to the SharedWorker implementation.
 // It can't use it directly since it uses WebKit types, so this class converts the data types.
-// When the blink::SharedWorker object wants to call blink::WorkerReportingProxy, this class will
+// When the SharedWorker object wants to call WorkerReportingProxy, this class will
 // convert to Chrome data types first and then call the supplied WebCommonWorkerClient.
 class WebSharedWorkerImpl FINAL
-    : public blink::WorkerReportingProxy
-    , public blink::WorkerLoaderProxy
+    : public WorkerReportingProxy
+    , public WorkerLoaderProxy
     , public WebFrameClient
     , public WebSharedWorker {
 public:
     explicit WebSharedWorkerImpl(WebSharedWorkerClient*);
 
-    // blink::WorkerReportingProxy methods:
+    // WorkerReportingProxy methods:
     virtual void reportException(
         const WTF::String&, int, int, const WTF::String&) OVERRIDE;
-    virtual void reportConsoleMessage(PassRefPtr<blink::ConsoleMessage>) OVERRIDE;
+    virtual void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) OVERRIDE;
     virtual void postMessageToPageInspector(const WTF::String&) OVERRIDE;
     virtual void updateInspectorStateCookie(const WTF::String&) OVERRIDE;
-    virtual void workerGlobalScopeStarted(blink::WorkerGlobalScope*) OVERRIDE;
+    virtual void workerGlobalScopeStarted(WorkerGlobalScope*) OVERRIDE;
     virtual void workerGlobalScopeClosed() OVERRIDE;
     virtual void workerGlobalScopeDestroyed() OVERRIDE;
     virtual void willDestroyWorkerGlobalScope() OVERRIDE { }
 
-    // blink::WorkerLoaderProxy methods:
-    virtual void postTaskToLoader(PassOwnPtr<blink::ExecutionContextTask>) OVERRIDE;
-    virtual bool postTaskToWorkerGlobalScope(PassOwnPtr<blink::ExecutionContextTask>) OVERRIDE;
+    // WorkerLoaderProxy methods:
+    virtual void postTaskToLoader(PassOwnPtr<ExecutionContextTask>) OVERRIDE;
+    virtual bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>) OVERRIDE;
 
     // WebFrameClient methods to support resource loading thru the 'shadow page'.
     virtual WebApplicationCacheHost* createApplicationCacheHost(WebLocalFrame*, WebApplicationCacheHostClient*) OVERRIDE;
@@ -112,8 +109,8 @@ private:
 
     WebSharedWorkerClient* client() { return m_client->get(); }
 
-    void setWorkerThread(PassRefPtr<blink::WorkerThread> thread) { m_workerThread = thread; }
-    blink::WorkerThread* workerThread() { return m_workerThread.get(); }
+    void setWorkerThread(PassRefPtr<WorkerThread> thread) { m_workerThread = thread; }
+    WorkerThread* workerThread() { return m_workerThread.get(); }
 
     // Shuts down the worker thread.
     void stopWorkerThread();
@@ -124,18 +121,18 @@ private:
     void didReceiveScriptLoaderResponse();
     void onScriptLoaderFinished();
 
-    static void connectTask(blink::ExecutionContext*, PassOwnPtr<WebMessagePortChannel>);
+    static void connectTask(ExecutionContext*, PassOwnPtr<WebMessagePortChannel>);
     // Tasks that are run on the main thread.
     void workerGlobalScopeClosedOnMainThread();
     void workerGlobalScopeDestroyedOnMainThread();
 
     // 'shadow page' - created to proxy loading requests from the worker.
-    RefPtrWillBePersistent<blink::ExecutionContext> m_loadingDocument;
+    RefPtrWillBePersistent<ExecutionContext> m_loadingDocument;
     WebView* m_webView;
     WebFrame* m_mainFrame;
     bool m_askedToTerminate;
 
-    RefPtr<blink::WorkerThread> m_workerThread;
+    RefPtr<WorkerThread> m_workerThread;
 
     // This one's initialized and bound to the main thread.
     RefPtr<WeakReference<WebSharedWorkerClient> > m_client;

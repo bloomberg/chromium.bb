@@ -85,7 +85,7 @@ public:
     bool shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus);
     void reportException(PassRefPtrWillBeRawPtr<ErrorEvent>, PassRefPtrWillBeRawPtr<ScriptCallStack>, AccessControlStatus);
 
-    void addConsoleMessage(PassRefPtr<ConsoleMessage>);
+    void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>);
 
     PublicURLManager& publicURLManager();
 

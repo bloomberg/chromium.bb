@@ -60,7 +60,7 @@ void CSPDirectiveList::reportViolationWithLocation(const String& directiveText, 
 void CSPDirectiveList::reportViolationWithState(const String& directiveText, const String& effectiveDirective, const String& message, const KURL& blockedURL, ScriptState* scriptState) const
 {
     String reportMessage = m_reportOnly ? "[Report Only] " + message : message;
-    RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, reportMessage);
+    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, reportMessage);
     consoleMessage->setScriptState(scriptState);
     m_policy->executionContext()->addConsoleMessage(consoleMessage.release());
     m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportURIs, m_header);

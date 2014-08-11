@@ -61,7 +61,7 @@ public:
 
     // WorkerReportingProxy overrides.
     virtual void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL) OVERRIDE;
-    virtual void reportConsoleMessage(PassRefPtr<ConsoleMessage>) OVERRIDE;
+    virtual void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) OVERRIDE;
     virtual void postMessageToPageInspector(const String&) OVERRIDE;
     virtual void updateInspectorStateCookie(const String&) OVERRIDE;
     virtual void workerGlobalScopeStarted(WorkerGlobalScope*) OVERRIDE { }

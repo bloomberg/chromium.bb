@@ -94,7 +94,7 @@ public:
         ASSERT(loadingContext);
         m_receiveResponseCallback = receiveResponseCallback;
         m_finishCallback = finishCallback;
-        m_scriptLoader->setRequestContext(blink::WebURLRequest::RequestContextSharedWorker);
+        m_scriptLoader->setRequestContext(WebURLRequest::RequestContextSharedWorker);
         m_scriptLoader->loadAsynchronously(
             *loadingContext, scriptURL, DenyCrossOriginRequests, this);
     }
@@ -240,7 +240,7 @@ void WebSharedWorkerImpl::reportException(const String& errorMessage, int lineNu
     // Not suppported in SharedWorker.
 }
 
-void WebSharedWorkerImpl::reportConsoleMessage(PassRefPtr<blink::ConsoleMessage>)
+void WebSharedWorkerImpl::reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>)
 {
     // Not supported in SharedWorker.
 }
@@ -366,7 +366,7 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
     provideDatabaseClientToWorker(workerClients.get(), DatabaseClientImpl::create());
     WebSecurityOrigin webSecurityOrigin(m_loadingDocument->securityOrigin());
     providePermissionClientToWorker(workerClients.get(), adoptPtr(client()->createWorkerPermissionClientProxy(webSecurityOrigin)));
-    OwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(m_url, m_loadingDocument->userAgent(m_url), m_mainScriptLoader->script(), startMode, m_contentSecurityPolicy, static_cast<blink::ContentSecurityPolicyHeaderType>(m_policyType), workerClients.release());
+    OwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(m_url, m_loadingDocument->userAgent(m_url), m_mainScriptLoader->script(), startMode, m_contentSecurityPolicy, static_cast<ContentSecurityPolicyHeaderType>(m_policyType), workerClients.release());
     setWorkerThread(SharedWorkerThread::create(m_name, *this, *this, startupData.release()));
     InspectorInstrumentation::scriptImported(m_loadingDocument.get(), m_mainScriptLoader->identifier(), m_mainScriptLoader->script());
     m_mainScriptLoader.clear();

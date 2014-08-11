@@ -1013,7 +1013,7 @@ public:
 
     void didAssociateFormControl(Element*);
 
-    virtual void addMessage(PassRefPtr<ConsoleMessage>) OVERRIDE FINAL;
+    virtual void addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) OVERRIDE FINAL;
 
     virtual LocalDOMWindow* executingWindow() OVERRIDE FINAL;
     LocalFrame* executingFrame();

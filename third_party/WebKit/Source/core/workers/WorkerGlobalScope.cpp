@@ -292,9 +292,9 @@ void WorkerGlobalScope::reportBlockedScriptExecutionToInspector(const String& di
     InspectorInstrumentation::scriptExecutionBlockedByCSP(this, directiveText);
 }
 
-void WorkerGlobalScope::addMessage(PassRefPtr<ConsoleMessage> prpConsoleMessage)
+void WorkerGlobalScope::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleMessage)
 {
-    RefPtr<ConsoleMessage> consoleMessage = prpConsoleMessage;
+    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = prpConsoleMessage;
     if (!isContextThread()) {
         postTask(AddConsoleMessageTask::create(consoleMessage->source(), consoleMessage->level(), consoleMessage->message()));
         return;
@@ -303,7 +303,7 @@ void WorkerGlobalScope::addMessage(PassRefPtr<ConsoleMessage> prpConsoleMessage)
     addMessageToWorkerConsole(consoleMessage.release());
 }
 
-void WorkerGlobalScope::addMessageToWorkerConsole(PassRefPtr<ConsoleMessage> consoleMessage)
+void WorkerGlobalScope::addMessageToWorkerConsole(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage)
 {
     ASSERT(isContextThread());
     InspectorInstrumentation::addMessageToConsole(this, consoleMessage.get());

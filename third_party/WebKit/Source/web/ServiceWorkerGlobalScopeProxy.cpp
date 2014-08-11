@@ -120,7 +120,7 @@ void ServiceWorkerGlobalScopeProxy::reportException(const String& errorMessage, 
     m_client.reportException(errorMessage, lineNumber, columnNumber, sourceURL);
 }
 
-void ServiceWorkerGlobalScopeProxy::reportConsoleMessage(PassRefPtr<blink::ConsoleMessage> consoleMessage)
+void ServiceWorkerGlobalScopeProxy::reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage)
 {
     m_client.reportConsoleMessage(consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->lineNumber(), consoleMessage->url());
 }
