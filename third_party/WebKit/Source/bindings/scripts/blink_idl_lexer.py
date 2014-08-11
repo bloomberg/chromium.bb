@@ -69,6 +69,7 @@ tools_dir = os.path.join(third_party, os.pardir, 'tools')
 sys.path.append(tools_dir)
 from idl_parser.idl_lexer import IDLLexer
 
+LEXTAB = 'lextab'
 REMOVE_TOKENS = ['COMMENT']
 
 
@@ -100,19 +101,14 @@ class BlinkIDLLexer(IDLLexer):
             sys.path.append(outputdir)
 
             if rewrite_tables:
-                tablefile = os.path.join(outputdir, 'lextab.py')
-
-                def unlink(filename):
-                    try:
-                        os.unlink(filename)
-                    except OSError:
-                        pass
-
-                unlink(tablefile)
+                tablefile_root = os.path.join(outputdir, LEXTAB)
                 # Also remove the .pyc/.pyo files, or they'll be used even if
                 # the .py file doesn't exist.
-                unlink(tablefile + 'c')
-                unlink(tablefile + 'o')
+                for ext in ('.py', '.pyc', '.pyo'):
+                    try:
+                        os.unlink(tablefile_root + ext)
+                    except OSError:
+                        pass
 
         IDLLexer.__init__(self)
         # Overrides to parent class
@@ -124,7 +120,7 @@ class BlinkIDLLexer(IDLLexer):
         self._lexobj = lex.lex(object=self,
                                debug=debug,
                                optimize=optimize,
-                               lextab='lextab',
+                               lextab=LEXTAB,
                                outputdir=outputdir)
 
 
