@@ -314,11 +314,12 @@ HWTEST_DEFAULT_PRIORITY = 'DEFAULT'
 HWTEST_CQ_PRIORITY = 'CQ'
 HWTEST_BUILD_PRIORITY = 'Build'
 HWTEST_PFQ_PRIORITY = 'PFQ'
+HWTEST_POST_BUILD_PRIORITY = 'PostBuild'
 
 # Ordered by priority (first item being lowest).
 HWTEST_VALID_PRIORITIES = ['Weekly',
                            'Daily',
-                           'PostBuild',
+                           HWTEST_POST_BUILD_PRIORITY,
                            HWTEST_DEFAULT_PRIORITY,
                            HWTEST_BUILD_PRIORITY,
                            HWTEST_PFQ_PRIORITY,
