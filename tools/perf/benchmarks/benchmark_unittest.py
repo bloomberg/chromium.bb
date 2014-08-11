@@ -15,7 +15,7 @@ from telemetry import benchmark as benchmark_module
 from telemetry.core import discover
 from telemetry.page import page_test
 from telemetry.unittest import options_for_unittests
-from telemetry.unittest import progress_reporter
+from telemetry.unittest import output_formatter
 
 
 def SmokeTestGenerator(benchmark):
@@ -59,7 +59,7 @@ def SmokeTestGenerator(benchmark):
 
 
 def load_tests(_, _2, _3):
-  suite = progress_reporter.TestSuite()
+  suite = output_formatter.TestSuite()
 
   benchmarks_dir = os.path.dirname(__file__)
   top_level_dir = os.path.dirname(benchmarks_dir)
