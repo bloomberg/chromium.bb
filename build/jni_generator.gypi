@@ -36,7 +36,11 @@
     'jni_generator_includes%': (
         'base/android/jni_generator/jni_generator_helper.h'
     ),
+    'native_exports%': '',
   },
+  'dependencies': [
+    '<(DEPTH)/build/linker_script_copy.gyp:linker_script_copy',
+  ],
   'rules': [
     {
       'rule_name': 'generate_jni_headers',
@@ -61,6 +65,7 @@
         '<(jni_generator_jarjar_file)',
         '--ptr_type',
         '<(jni_generator_ptr_type)',
+        '<(native_exports)',
       ],
       'message': 'Generating JNI bindings from <(RULE_INPUT_PATH)',
       'process_outputs_as_sources': 1,
@@ -81,4 +86,28 @@
   # This target exports a hard dependency because it generates header
   # files.
   'hard_dependency': 1,
+  'conditions': [
+    ['android_webview_build==1', {
+      'variables': {
+        'native_exports%': '--native_exports',
+      },
+      'dependencies': [
+        '<(DEPTH)/build/linker_script_copy.gyp:linker_script_copy',
+      ],
+      'conditions': [
+        ['component=="static_library"', {
+          'link_settings': {
+            'ldflags': [
+              # Only export symbols that are specified in version script.
+              '-Wl,--version-script=<(android_linker_script)',
+            ],
+            'ldflags!': [
+              '-Wl,--exclude-libs=ALL',
+            ],
+          },
+        }],
+      ],
+    }],
+  ],
 }
+

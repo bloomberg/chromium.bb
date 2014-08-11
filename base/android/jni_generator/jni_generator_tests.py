@@ -42,7 +42,7 @@ class TestOptions(object):
     self.eager_called_by_natives = False
     self.cpp = 'cpp'
     self.javap = 'javap'
-
+    self.native_exports = False
 
 class TestGenerator(unittest.TestCase):
   def assertObjEquals(self, first, second):
@@ -1003,6 +1003,45 @@ class Foo {
     options.eager_called_by_natives = True
     jni_from_java = jni_generator.JNIFromJavaSource(
         test_data, 'org/chromium/example/jni_generator/Test', options)
+    self.assertGoldenTextEquals(jni_from_java.GetContent())
+
+  def testNativeExportsOption(self):
+    test_data = """
+    package org.chromium.example.jni_generator;
+
+    /** The pointer to the native Test. */
+    long nativeTest;
+
+    class Test {
+        private static native boolean nativeInitNativeClass();
+        private static native int nativeStaticMethod(long nativeTest, int arg1);
+        private native int nativeMethod(long nativeTest, int arg1);
+        @CalledByNative
+        private void testMethodWithParam(int iParam);
+        @CalledByNative
+        private String testMethodWithParamAndReturn(int iParam);
+        @CalledByNative
+        private static int testStaticMethodWithParam(int iParam);
+        @CalledByNative
+        private static double testMethodWithNoParam();
+        @CalledByNative
+        private static String testStaticMethodWithNoParam();
+
+        class MyInnerClass {
+          @NativeCall("MyInnerClass")
+          private native int nativeInit();
+        }
+        class MyOtherInnerClass {
+          @NativeCall("MyOtherInnerClass")
+          private native int nativeInit();
+        }
+    }
+    """
+    options = TestOptions()
+    options.jni_init_native_name = 'nativeInitNativeClass'
+    options.native_exports = True
+    jni_from_java = jni_generator.JNIFromJavaSource(
+        test_data, 'org/chromium/example/jni_generator/SampleForTests', options)
     self.assertGoldenTextEquals(jni_from_java.GetContent())
 
   def testOuterInnerRaises(self):
