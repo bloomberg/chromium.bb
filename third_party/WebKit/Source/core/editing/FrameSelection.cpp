@@ -1544,14 +1544,10 @@ void FrameSelection::updateAppearance()
 {
     // Paint a block cursor instead of a caret in overtype mode unless the caret is at the end of a line (in this case
     // the FrameSelection will paint a blinking caret as usual).
-    VisiblePosition forwardPosition;
-    if (m_shouldShowBlockCursor && m_selection.isCaret()) {
-        forwardPosition = modifyExtendingForward(CharacterGranularity);
-        m_caretPaint = forwardPosition.isNull();
-    }
+    bool paintBlockCursor = m_shouldShowBlockCursor && m_selection.isCaret() && !isLogicalEndOfLine(m_selection.visibleEnd());
 
     bool caretRectChangedOrCleared = recomputeCaretRect();
-    bool shouldBlink = shouldBlinkCaret() && forwardPosition.isNull();
+    bool shouldBlink = !paintBlockCursor && shouldBlinkCaret();
 
     // If the caret moved, stop the blink timer so we can restart with a
     // black caret in the new location.
@@ -1581,7 +1577,8 @@ void FrameSelection::updateAppearance()
 
     // Construct a new VisibleSolution, since m_selection is not necessarily valid, and the following steps
     // assume a valid selection. See <https://bugs.webkit.org/show_bug.cgi?id=69563> and <rdar://problem/10232866>.
-    VisibleSelection selection(m_selection.visibleStart(), forwardPosition.isNotNull() ? forwardPosition : m_selection.visibleEnd());
+    VisiblePosition endVisiblePosition = paintBlockCursor ? modifyExtendingForward(CharacterGranularity) : m_selection.visibleEnd();
+    VisibleSelection selection(m_selection.visibleStart(), endVisiblePosition);
 
     if (!selection.isRange()) {
         view->clearSelection();

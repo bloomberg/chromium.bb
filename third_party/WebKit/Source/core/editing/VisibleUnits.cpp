@@ -896,6 +896,11 @@ bool isEndOfLine(const VisiblePosition &p)
     return p.isNotNull() && p == endOfLine(p);
 }
 
+bool isLogicalEndOfLine(const VisiblePosition &p)
+{
+    return p.isNotNull() && p == logicalEndOfLine(p);
+}
+
 static inline IntPoint absoluteLineDirectionPointToLocalPointInBlock(RootInlineBox* root, int lineDirectionPoint)
 {
     ASSERT(root);
