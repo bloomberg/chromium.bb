@@ -501,6 +501,13 @@ BUILD_DASHBOARD = 'http://build.chromium.org/p/chromiumos'
 BUILD_INT_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos'
 TRYBOT_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromiumos.tryserver'
 
+# URLs to retrieve sheriff names from the waterfall.
+TREE_SHERIFF_URL = '%s/sheriff.js' % (BUILD_DASHBOARD)
+TREE_SHERIFF2_URL = '%s/sheriff2.js' % (BUILD_DASHBOARD)
+BUILD_DEPUTY_URL = '%s/chromeos_build_deputy.js' % (BUILD_DASHBOARD)
+LAB_SHERIFF_URL = '%s/sheriff_cros_lab.js' % (BUILD_DASHBOARD)
+CHROME_GARDENER_URL = '%s/sheriff_cr_cros_gardeners.js' % (BUILD_DASHBOARD)
+
 # Useful config targets.
 CQ_MASTER = 'master-paladin'
 PRE_CQ_GROUP = 'trybot-pre-cq-group'

@@ -249,6 +249,46 @@ class MasterSlaveSyncCompletionStageTestWithLKGMSync(
         self._run, sync_stage, success=True)
 
 
+class CanaryCompletionStageTest(
+    generic_stages_unittest.AbstractStageTest):
+  """Tests how canary master handles failures in CanaryCompletionStage."""
+  BOT_ID = 'master-release'
+
+  # pylint: disable=E1120
+  def _Prepare(self, bot_id=BOT_ID, **kwargs):
+    super(CanaryCompletionStageTest, self)._Prepare(bot_id, **kwargs)
+
+  def setUp(self):
+    self.build_type = constants.CANARY_TYPE
+    self._Prepare()
+
+  def ConstructStage(self):
+    """Returns a CanaryCompletionStage object."""
+    sync_stage = sync_stages.ManifestVersionedSyncStage(self._run)
+    return completion_stages.CanaryCompletionStage(
+        self._run, sync_stage, success=True)
+
+  def testParsingSheriffEmails(self):
+    """Tests parsing the raw data to get sheriff emails."""
+    # Test parsing when there is only one sheriff.
+    raw_line = "document.write('taco')"
+    self.PatchObject(completion_stages.CanaryCompletionStage,
+                     '_OpenSheriffURL', return_value=raw_line)
+    self.assertEqual(
+        completion_stages.CanaryCompletionStage.GetSheriffEmailAddresses(
+            sheriff_type='build'),
+        ['taco@google.com'])
+
+    # Test parsing when there are multiple sheriffs.
+    raw_line = "document.write('taco, burrito')"
+    self.PatchObject(completion_stages.CanaryCompletionStage,
+                     '_OpenSheriffURL', return_value=raw_line)
+    self.assertEqual(
+        completion_stages.CanaryCompletionStage.GetSheriffEmailAddresses(
+            sheriff_type='build'),
+        ['taco@google.com', 'burrito@google.com'])
+
+
 class CommitQueueCompletionStageTest(
     generic_stages_unittest.AbstractStageTest):
   """Tests how CQ master handles changes in CommitQueueCompletionStage."""
@@ -257,7 +297,7 @@ class CommitQueueCompletionStageTest(
   # pylint: disable=E1120
   def _Prepare(self, bot_id=BOT_ID, **kwargs):
     super(CommitQueueCompletionStageTest, self)._Prepare(bot_id, **kwargs)
-    self._run.config['master'] = True
+    self.assertTrue(self._run.config['master'])
 
   def setUp(self):
     self.build_type = constants.PFQ_TYPE

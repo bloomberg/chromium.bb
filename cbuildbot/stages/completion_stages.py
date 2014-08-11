@@ -5,6 +5,8 @@
 """Module containing the completion stages."""
 
 import logging
+import re
+import urllib
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import cbuildbot_config
@@ -390,6 +392,52 @@ class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
 
     if self._run.config.master:
       self.CanaryMasterHandleFailure(failing, inflight, no_stat)
+
+  @classmethod
+  def _OpenSheriffURL(cls, sheriff_url):
+    """Returns the content of |sheriff_url| or None if failed to open it."""
+    try:
+      response = urllib.urlopen(sheriff_url)
+      if response.getcode() == 200:
+        return response.read()
+    except IOError as e:
+      logging.error('Could not reach %s: %r', sheriff_url, e)
+
+  @classmethod
+  def GetSheriffEmailAddresses(cls, sheriff_type='tree'):
+    """Get the email addresses of the sheriffs or deputy.
+
+    Args:
+      sheriff_type: Type of the sheriff to look for.
+        - 'tree': tree sheriffs
+        - 'build': build deputy
+        - 'lab' : lab sheriff
+        - 'chrome': chrome gardener
+
+    Returns:
+      A list of email addresses.
+    """
+    if sheriff_type == 'tree':
+      urls = [constants.TREE_SHERIFF_URL, constants.TREE_SHERIFF2_URL]
+    elif sheriff_type == 'build':
+      urls = [constants.BUILD_DEPUTY_URL]
+    elif sheriff_type == 'lab':
+      urls = [constants.LAB_SHERIFF_URL]
+    elif sheriff_type == 'chrome':
+      urls = [constants.CHROME_GARDENER_URL]
+    else:
+      raise ValueError('Unknown sheriff type: %s' % sheriff_type)
+
+    sheriffs = []
+    for url in urls:
+      # The URL displays a line: document.write('taco, burrito')
+      raw_line = CanaryCompletionStage._OpenSheriffURL(url)
+      if raw_line is not None:
+        match = re.search(r'\'(.*)\'', raw_line)
+        if match:
+          sheriffs.extend(x.strip() for x in match.group(1).split(','))
+
+    return ['%s%s' % (x, constants.GOOGLE_EMAIL) for x in sheriffs]
 
   def SendCanaryFailureAlert(self, failing, inflight, no_stat):
     """Send an alert email to summarize canary failures.
