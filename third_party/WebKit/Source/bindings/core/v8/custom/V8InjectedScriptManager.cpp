@@ -57,11 +57,8 @@ InjectedScriptManager::CallbackData* InjectedScriptManager::createCallbackData(I
 
 void InjectedScriptManager::removeCallbackData(InjectedScriptManager::CallbackData* callbackData)
 {
-    fprintf(stderr, "b %p\n", callbackData);
     ASSERT(m_callbackDataSet.contains(callbackData));
-    fprintf(stderr, "c %p\n", callbackData);
     m_callbackDataSet.remove(callbackData);
-    fprintf(stderr, "d %p\n", callbackData);
 }
 
 static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(PassRefPtrWillBeRawPtr<InjectedScriptHost> host, InjectedScriptManager* injectedScriptManager, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -133,7 +130,6 @@ bool InjectedScriptManager::canAccessInspectedWindow(ScriptState* scriptState)
 void InjectedScriptManager::setWeakCallback(const v8::WeakCallbackData<v8::Object, InjectedScriptManager::CallbackData>& data)
 {
     InjectedScriptManager::CallbackData* callbackData = data.GetParameter();
-    fprintf(stderr, "a %p\n", callbackData);
     callbackData->injectedScriptManager->removeCallbackData(callbackData);
 }
 
