@@ -250,13 +250,17 @@ class TtsPlatformImpl {
         mVoices = new ArrayList<TtsVoice>();
         for (int i = 0; i < locales.length; ++i) {
             if (!locales[i].getVariant().isEmpty()) continue;
-            if (mTextToSpeech.isLanguageAvailable(locales[i]) > 0) {
-                String name = locales[i].getDisplayLanguage();
-                if (!locales[i].getCountry().isEmpty()) {
-                    name += " " + locales[i].getDisplayCountry();
+            try {
+                if (mTextToSpeech.isLanguageAvailable(locales[i]) > 0) {
+                    String name = locales[i].getDisplayLanguage();
+                    if (!locales[i].getCountry().isEmpty()) {
+                        name += " " + locales[i].getDisplayCountry();
+                    }
+                    TtsVoice voice = new TtsVoice(name, locales[i].toString());
+                    mVoices.add(voice);
                 }
-                TtsVoice voice = new TtsVoice(name, locales[i].toString());
-                mVoices.add(voice);
+            } catch (java.util.MissingResourceException e) {
+                // Just skip the locale if it's invalid.
             }
         }
 
