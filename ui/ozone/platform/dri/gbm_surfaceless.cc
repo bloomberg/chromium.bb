@@ -29,10 +29,7 @@ bool GbmSurfaceless::OnSwapBuffers() {
   if (!controller_)
     return true;
 
-  bool success = controller_->SchedulePageFlip(queued_planes_);
-  queued_planes_.clear();
-  // Even on failure we may have scheduled some planes. Allow the controller to
-  // wait for the events for the scheduled planes.
+  bool success = controller_->SchedulePageFlip();
   controller_->WaitForPageFlipEvent();
 
   return success;
@@ -40,27 +37,6 @@ bool GbmSurfaceless::OnSwapBuffers() {
 
 scoped_ptr<gfx::VSyncProvider> GbmSurfaceless::CreateVSyncProvider() {
   return scoped_ptr<gfx::VSyncProvider>(new DriVSyncProvider(controller_));
-}
-
-bool GbmSurfaceless::ScheduleOverlayPlane(
-    int plane_z_order,
-    gfx::OverlayTransform plane_transform,
-    scoped_refptr<ui::NativePixmap> buffer,
-    const gfx::Rect& display_bounds,
-    const gfx::RectF& crop_rect) {
-  scoped_refptr<GbmPixmap> pixmap =
-      static_cast<GbmPixmap*>(buffer.get());
-  if (!pixmap) {
-    LOG(ERROR) << "ScheduleOverlayPlane passed NULL buffer.";
-    return false;
-  }
-
-  queued_planes_.push_back(OverlayPlane(pixmap->buffer(),
-                                        plane_z_order,
-                                        plane_transform,
-                                        display_bounds,
-                                        crop_rect));
-  return true;
 }
 
 }  // namespace ui

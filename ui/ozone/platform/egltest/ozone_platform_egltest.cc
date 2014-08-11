@@ -180,14 +180,6 @@ class SurfaceOzoneEgltest : public SurfaceOzoneEGL {
     return scoped_ptr<gfx::VSyncProvider>();
   }
 
-  virtual bool ScheduleOverlayPlane(int plane_z_order,
-                                    gfx::OverlayTransform plane_transform,
-                                    scoped_refptr<ui::NativePixmap> buffer,
-                                    const gfx::Rect& display_bounds,
-                                    const gfx::RectF& crop_rect) OVERRIDE {
-    return false;
-  }
-
  private:
   LibeglplatformShimLoader* eglplatform_shim_;
   intptr_t native_window_;
