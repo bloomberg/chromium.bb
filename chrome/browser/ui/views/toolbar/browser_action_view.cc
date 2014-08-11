@@ -253,13 +253,6 @@ bool BrowserActionButton::OnMousePressed(const ui::MouseEvent& event) {
     return IsPopup() ? MenuButton::OnMousePressed(event) :
                        LabelButton::OnMousePressed(event);
   }
-
-  if (!views::View::ShouldShowContextMenuOnMousePress()) {
-    // See comments in MenuButton::Activate() as to why this is needed.
-    SetMouseHandler(NULL);
-
-    ShowContextMenu(gfx::Point(), ui::MENU_SOURCE_MOUSE);
-  }
   return false;
 }
 
