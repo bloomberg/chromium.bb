@@ -385,9 +385,7 @@ TEST_F(ReadableStreamTest, WaitAndEnqueueAndError)
     stream->error(DOMException::create(NotFoundError, "error"));
     EXPECT_EQ(ReadableStream::Errored, stream->state());
 
-    // FIXME: This expectation should hold but doesn't because of
-    // a ScriptPromiseProperty bug. Enable it when the defect is fixed.
-    // EXPECT_NE(promise, stream->wait(scriptState()));
+    EXPECT_NE(promise, stream->wait(scriptState()));
 }
 
 TEST_F(ReadableStreamTest, CloseWhenWaiting)
@@ -515,11 +513,9 @@ TEST_F(ReadableStreamTest, EnqueuedAndRead)
     ScriptPromise newPromise = stream->wait(scriptState());
     newPromise.then(createCaptor(&onFulfilled), createCaptor(&onRejected));
     isolate()->RunMicrotasks();
-    // FIXME: Uncomment the following assertions once
-    // |ScriptPromiseProperty.reset| is implemented and used.
-    // EXPECT_NE(promise, newPromise);
-    // EXPECT_TRUE(onFulfilled.isNull());
-    // EXPECT_TRUE(onRejected.isNull());
+    EXPECT_NE(promise, newPromise);
+    EXPECT_TRUE(onFulfilled.isNull());
+    EXPECT_TRUE(onRejected.isNull());
 }
 
 TEST_F(ReadableStreamTest, EnqueTwiceAndRead)
@@ -585,9 +581,7 @@ TEST_F(ReadableStreamTest, CloseWhenReadable)
     EXPECT_EQ("bye", chunk);
     EXPECT_FALSE(m_exceptionState.hadException());
 
-    // FIXME: This assertion should be enabled once
-    // ScriptPromiseProperty.reset is implemented and used.
-    // EXPECT_NE(promise, stream->wait(scriptState()));
+    EXPECT_NE(promise, stream->wait(scriptState()));
     stream->wait(scriptState()).then(createCaptor(&onWaitFulfilled), createCaptor(&onWaitRejected));
 
     EXPECT_EQ(ReadableStream::Closed, stream->state());
@@ -690,9 +684,7 @@ TEST_F(ReadableStreamTest, CancelWhenReadable)
     EXPECT_EQ(promise, stream->cancel(scriptState(), reason));
     EXPECT_EQ(ReadableStream::Closed, stream->state());
 
-    // FIXME: Uncomment this once ScriptPromiseProperty::reset is implemented
-    // and used.
-    // EXPECT_NE(stream->wait(scriptState()), wait);
+    EXPECT_NE(stream->wait(scriptState()), wait);
 
     stream->wait(scriptState()).then(createCaptor(&onFulfilled), createCaptor(&onRejected));
     EXPECT_TRUE(onFulfilled.isNull());

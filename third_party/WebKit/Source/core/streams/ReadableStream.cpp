@@ -71,8 +71,7 @@ bool ReadableStream::enqueuePostAction(size_t totalQueueSize)
 
     if (m_state == Waiting) {
         m_state = Readable;
-        if (m_wait->state() == m_wait->Pending)
-            m_wait->resolve(V8UndefinedType());
+        m_wait->resolve(V8UndefinedType());
     }
 
     return needsMore;
@@ -81,8 +80,7 @@ bool ReadableStream::enqueuePostAction(size_t totalQueueSize)
 void ReadableStream::close()
 {
     if (m_state == Waiting) {
-        if (m_wait->state() == m_wait->Pending)
-            m_wait->resolve(V8UndefinedType());
+        m_wait->resolve(V8UndefinedType());
         m_closed->resolve(V8UndefinedType());
         m_state = Closed;
     } else if (m_state == Readable) {
@@ -112,15 +110,12 @@ void ReadableStream::readPostAction()
     if (isQueueEmpty()) {
         if (m_isDraining) {
             m_state = Closed;
-            // FIXME: Use reset.
-            // m_wait->reset();
-            if (m_wait->state() == m_wait->Pending)
-                m_wait->resolve(V8UndefinedType());
+            m_wait->reset();
+            m_wait->resolve(V8UndefinedType());
             m_closed->resolve(V8UndefinedType());
         } else {
             m_state = Waiting;
-            // FIXME: Use reset.
-            // m_wait->reset();
+            m_wait->reset();
             callOrSchedulePull();
         }
     }
@@ -145,14 +140,11 @@ ScriptPromise ReadableStream::cancel(ScriptState* scriptState, ScriptValue reaso
         return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
 
     if (m_state == Waiting) {
-        if (m_wait->state() == m_wait->Pending)
-            m_wait->resolve(V8UndefinedType());
+        m_wait->resolve(V8UndefinedType());
     } else {
         ASSERT(m_state == Readable);
-        // FIXME: Use reset here.
-        // m_wait->reset();
-        if (m_wait->state() == m_wait->Pending)
-            m_wait->resolve(V8UndefinedType());
+        m_wait->reset();
+        m_wait->resolve(V8UndefinedType());
     }
 
     clearQueue();
@@ -170,8 +162,7 @@ void ReadableStream::error(PassRefPtrWillBeRawPtr<DOMException> exception)
 {
     if (m_state == Readable) {
         clearQueue();
-        // FIXME: Use reset here.
-        // m_wait->reset();
+        m_wait->reset();
     }
 
     if (m_state == Waiting || m_state == Readable) {
