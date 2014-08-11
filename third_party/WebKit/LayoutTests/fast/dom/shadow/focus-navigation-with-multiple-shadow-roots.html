@@ -25,8 +25,7 @@ function prepareDOMTree(parent)
                                 createDOM('input', {'id': 'older-B', 'tabindex': 0})),
                             createShadowRoot(
                                 createDOM('input', {'id': 'younger-A', 'tabindex': 0}),
-                                createDOM('shadow', {},
-                                          createDOM('content', {})),
+                                createDOM('shadow', {}),
                                 createDOM('input', {'id': 'younger-B', 'tabindex': 0})),
                             createDOM('input', {'id': 'light-child-A', 'tabindex': 0}),
                             createDOM('input', {'id': 'light-child-B', 'tabindex': 0})),

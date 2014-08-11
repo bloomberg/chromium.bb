@@ -70,8 +70,7 @@ sandbox.appendChild(
                     createShadowRoot(
                         createDOM('content', {'id': 'content2'})),
                     createDOM('div', {'id': 'parentOfShadow1'},
-                        createDOM('shadow', {'id': 'shadow1'},
-                                  createDOM('content', {})))))),
+                        createDOM('shadow', {'id': 'shadow1'}))))),
         createDOM('div', {'class': 'content'},
             document.createTextNode('content'))));
 
@@ -92,8 +91,7 @@ sandbox.appendChild(
                     createShadowRoot(
                         createDOM('content', {'id': 'content2'})),
                     createDOM('div', {'id': 'parentOfShadow1'},
-                        createDOM('shadow', {'id': 'shadow1'},
-                                  createDOM('content', {})))))),
+                        createDOM('shadow', {'id': 'shadow1'}))))),
         createDOM('div', {'class': 'content'},
             document.createTextNode('content'))));
 

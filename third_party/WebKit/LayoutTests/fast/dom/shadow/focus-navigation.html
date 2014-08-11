@@ -39,8 +39,7 @@ function prepareDOMTree(parent)
                             createShadowRoot(
                                 createDOM('input', {'id': 'younger-input-A-0', 'tabindex': 0}),
                                 createDOM('input', {'id': 'younger-input-A-1', 'tabindex': 1}),  // The first node in the focusScope
-                                createDOM('shadow', {},
-                                          createDOM('content', {})),
+                                createDOM('shadow', {}),
                                 createDOM('input', {'id': 'younger-input-B-0', 'tabindex': 0}),  // The last node in the focusScope
                                 createDOM('input', {'id': 'younger-input-B-1', 'tabindex': 1})),
                             createDOM('input', {'id': 'light-child-selected-0', 'tabindex': 0}),
