@@ -35,6 +35,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # Win failures
     self.Fail('conformance/glsl/misc/struct-equals.html',
         ['win'], bug=391957)
+    self.Fail('conformance/glsl/bugs/conditional-discard-in-loop.html',
+        ['win'], bug=402195)
     self.Fail('conformance/rendering/negative-one-index.html',
         ['win'], bug=396058)
 
