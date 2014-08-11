@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_MANAGER_SNAPSHOT_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_MANAGER_SNAPSHOT_MANAGER_H_
 
-#include <vector>
+#include <deque>
 
 #include "base/callback_forward.h"
 #include "base/files/file.h"
@@ -17,6 +17,10 @@ class Profile;
 namespace base {
 class FilePath;
 }  // namespace base
+
+namespace fileapi {
+class FileSystemURL;
+}  // namespace fileapi
 
 namespace webkit_blob {
 class ShareableFileReference;
@@ -41,7 +45,24 @@ class SnapshotManager {
   void CreateManagedSnapshot(const base::FilePath& absolute_file_path,
                              const LocalPathCallback& callback);
 
+  // Struct for keeping the snapshot file reference with its file size used for
+  // computing the necessity of clean up.
+  struct FileReferenceWithSizeInfo {
+    FileReferenceWithSizeInfo(
+        scoped_refptr<webkit_blob::ShareableFileReference> ref,
+        int64 size);
+    ~FileReferenceWithSizeInfo();
+    scoped_refptr<webkit_blob::ShareableFileReference> file_ref;
+    int64 file_size;
+  };
+
  private:
+  // Part of CreateManagedSnapshot.
+  void CreateManagedSnapshotAfterSpaceComputed(
+      const fileapi::FileSystemURL& filesystem_url,
+      const LocalPathCallback& callback,
+      int64 needed_space);
+
   // Part of CreateManagedSnapshot.
   void OnCreateSnapshotFile(
       const LocalPathCallback& callback,
@@ -51,7 +72,7 @@ class SnapshotManager {
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
 
   Profile* profile_;
-  std::vector<scoped_refptr<webkit_blob::ShareableFileReference> > file_refs_;
+  std::deque<FileReferenceWithSizeInfo> file_refs_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
