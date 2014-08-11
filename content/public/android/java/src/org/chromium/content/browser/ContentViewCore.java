@@ -11,7 +11,6 @@ import android.content.ClipboardManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.FeatureInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
@@ -110,15 +109,6 @@ public class ContentViewCore
     // Used to represent gestures for long press and long tap.
     private static final int IS_LONG_PRESS = 1;
     private static final int IS_LONG_TAP = 2;
-
-    // These values are obtained from Samsung.
-    // TODO(changwan): refactor SPen related code into a separate class. See
-    // http://crbug.com/398169.
-    private static final int SPEN_ACTION_DOWN = 211;
-    private static final int SPEN_ACTION_UP = 212;
-    private static final int SPEN_ACTION_MOVE = 213;
-    private static final int SPEN_ACTION_CANCEL = 214;
-    private static Boolean sIsSPenSupported;
 
     // If the embedder adds a JavaScript interface object that contains an indirect reference to
     // the ContentViewCore, then storing a strong ref to the interface object on the native
@@ -1137,55 +1127,6 @@ public class ContentViewCore
     }
 
     // End FrameLayout overrides.
-
-    /**
-     * TODO(changwan): refactor SPen related code into a separate class. See
-     * http://crbug.com/398169.
-     * @return Whether SPen is supported on the device.
-     */
-    public static boolean isSPenSupported(Context context) {
-        if (sIsSPenSupported == null)
-            sIsSPenSupported = detectSPenSupport(context);
-        return sIsSPenSupported.booleanValue();
-    }
-
-    private static boolean detectSPenSupport(Context context) {
-        if (!"SAMSUNG".equalsIgnoreCase(Build.MANUFACTURER))
-            return false;
-
-        final FeatureInfo[] infos = context.getPackageManager().getSystemAvailableFeatures();
-        for (FeatureInfo info : infos) {
-            if ("com.sec.feature.spen_usp".equalsIgnoreCase(info.name)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Convert SPen event action into normal event action.
-     * TODO(changwan): refactor SPen related code into a separate class. See
-     * http://crbug.com/398169.
-     *
-     * @param eventActionMasked Input event action. It is assumed that it is masked as the values
-                                cannot be ORed.
-     * @return Event action after the conversion
-     */
-    public static int convertSPenEventAction(int eventActionMasked) {
-        // S-Pen support: convert to normal stylus event handling
-        switch (eventActionMasked) {
-            case SPEN_ACTION_DOWN:
-                return MotionEvent.ACTION_DOWN;
-            case SPEN_ACTION_UP:
-                return MotionEvent.ACTION_UP;
-            case SPEN_ACTION_MOVE:
-                return MotionEvent.ACTION_MOVE;
-            case SPEN_ACTION_CANCEL:
-                return MotionEvent.ACTION_CANCEL;
-            default:
-                return eventActionMasked;
-        }
-    }
 
     /**
      * @see View#onTouchEvent(MotionEvent)
