@@ -112,7 +112,8 @@ IN_PROC_BROWSER_TEST_F(GlobalErrorServiceBrowserTest, CloseBubbleView) {
 
 // Test that bubble is silently dismissed if it is showing when the GlobalError
 // instance is removed from the profile.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
+// http://crbug.com/396473
 #define MAYBE_BubbleViewDismissedOnRemove DISABLED_BubbleViewDismissedOnRemove
 #else
 #define MAYBE_BubbleViewDismissedOnRemove BubbleViewDismissedOnRemove

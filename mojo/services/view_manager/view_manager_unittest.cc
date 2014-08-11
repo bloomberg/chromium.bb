@@ -567,7 +567,13 @@ TEST_F(ViewManagerTest, MultipleEmbedRootsBeforeWTHReady) {
 }
 
 // Verifies client gets a valid id.
-TEST_F(ViewManagerTest, ValidId) {
+#if defined(OS_LINUX)
+// http://crbug.com/396492
+#define MAYBE_ValidId DISABLED_ValidId
+#else
+#define MAYBE_ValidId ValidId
+#endif
+TEST_F(ViewManagerTest, MAYBE_ValidId) {
   // TODO(beng): this should really have the URL of the application that
   //             connected to ViewManagerInit.
   EXPECT_EQ("OnEmbed creator=",

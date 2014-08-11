@@ -184,14 +184,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabled) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-// http://crbug.com/104438.
-#define MAYBE_IncognitoPopup DISABLED_IncognitoPopup
-#else
-#define MAYBE_IncognitoPopup IncognitoPopup
-#endif
 // Test that opening a popup from an incognito browser window works properly.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_IncognitoPopup) {
+// http://crbug.com/180759.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_IncognitoPopup) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(StartEmbeddedTestServer());
 

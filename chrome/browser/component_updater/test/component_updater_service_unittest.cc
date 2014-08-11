@@ -460,7 +460,13 @@ TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
 //    nothing happens.
 //  - We make an on demand call.
 //  - This triggers a second loop, which has a reply that triggers an install.
-TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
+#if defined(OS_LINUX)
+// http://crbug.com/396488
+#define MAYBE_OnDemandUpdate DISABLED_OnDemandUpdate
+#else
+#define MAYBE_OnDemandUpdate OnDemandUpdate
+#endif
+TEST_F(ComponentUpdaterTest, MAYBE_OnDemandUpdate) {
   MockServiceObserver observer;
   {
     InSequence seq;

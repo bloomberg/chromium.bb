@@ -329,7 +329,8 @@ TEST(ProcessMetricsTest, ParseProcStatCPU) {
 // Disable on Android because base_unittests runs inside a Dalvik VM that
 // starts and stop threads (crbug.com/175563).
 #if defined(OS_LINUX)
-TEST(ProcessMetricsTest, GetNumberOfThreads) {
+// http://crbug.com/396455
+TEST(ProcessMetricsTest, DISABLED_GetNumberOfThreads) {
   const base::ProcessHandle current = base::GetCurrentProcessHandle();
   const int initial_threads = base::GetNumberOfThreads(current);
   ASSERT_GT(initial_threads, 0);

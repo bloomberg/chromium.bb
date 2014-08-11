@@ -448,7 +448,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestOKHTTPS) {
 }
 
 // Visits a page with https error and proceed:
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndProceed) {
+#if defined(OS_LINUX)
+// flaky http://crbug.com/396462
+#define MAYBE_TestHTTPSExpiredCertAndProceed \
+    DISABLED_TestHTTPSExpiredCertAndProceed
+#else
+#define MAYBE_TestHTTPSExpiredCertAndProceed TestHTTPSExpiredCertAndProceed
+#endif
+IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSExpiredCertAndProceed) {
   ASSERT_TRUE(https_server_expired_.Start());
 
   ui_test_utils::NavigateToURL(browser(),
@@ -988,7 +995,16 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContents) {
 
 // Visits a page with insecure content loaded by JS (after the initial page
 // load).
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContentLoadedFromJS) {
+#if defined(OS_LINUX)
+// flaky http://crbug.com/396462
+#define MAYBE_TestDisplaysInsecureContentLoadedFromJS \
+    DISABLED_TestDisplaysInsecureContentLoadedFromJS
+#else
+#define MAYBE_TestDisplaysInsecureContentLoadedFromJS \
+    TestDisplaysInsecureContentLoadedFromJS
+#endif
+IN_PROC_BROWSER_TEST_F(SSLUITest,
+                       MAYBE_TestDisplaysInsecureContentLoadedFromJS) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 
@@ -1755,7 +1771,15 @@ IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreCertErrors, TestWSS) {
 
 // Verifies that the interstitial can proceed, even if JavaScript is disabled.
 // http://crbug.com/322948
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialJavaScriptProceeds) {
+#if defined(OS_LINUX)
+// flaky http://crbug.com/396458
+#define MAYBE_TestInterstitialJavaScriptProceeds \
+    DISABLED_TestInterstitialJavaScriptProceeds
+#else
+#define MAYBE_TestInterstitialJavaScriptProceeds \
+    TestInterstitialJavaScriptProceeds
+#endif
+IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestInterstitialJavaScriptProceeds) {
   browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
 

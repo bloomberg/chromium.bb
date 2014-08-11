@@ -322,7 +322,13 @@ TEST_F(BookmarkUtilsTest, CopyPasteMetaInfo) {
   EXPECT_EQ("someothervalue", value);
 }
 
-TEST_F(BookmarkUtilsTest, CutToClipboard) {
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+// http://crbug.com/396472
+#define MAYBE_CutToClipboard DISABLED_CutToClipboard
+#else
+#define MAYBE_CutToClipboard CutToClipboard
+#endif
+TEST_F(BookmarkUtilsTest, MAYBE_CutToClipboard) {
   test::TestBookmarkClient client;
   scoped_ptr<BookmarkModel> model(client.CreateModel(false));
   model->AddObserver(this);

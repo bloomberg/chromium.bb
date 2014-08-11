@@ -91,7 +91,13 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, MAYBE_SqueezePanelsInDock) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, SqueezeAndThenSomeMore) {
+#if defined(OS_LINUX)
+// http://crbug.com/396484
+#define MAYBE_SqueezeAndThenSomeMore DISABLED_SqueezeAndThenSomeMore
+#else
+#define MAYBE_SqueezeAndThenSomeMore SqueezeAndThenSomeMore
+#endif
+IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, MAYBE_SqueezeAndThenSomeMore) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelCollection* docked_collection = panel_manager->docked_collection();
 

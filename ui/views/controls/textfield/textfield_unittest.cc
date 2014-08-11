@@ -1798,7 +1798,8 @@ TEST_F(TextfieldTest, KeepInitiallySelectedWord) {
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-TEST_F(TextfieldTest, SelectionClipboard) {
+// flaky: http://crbug.com/396477
+TEST_F(TextfieldTest, DISABLED_SelectionClipboard) {
   InitTextfield();
   textfield_->SetText(ASCIIToUTF16("0123"));
   gfx::Point point_1(GetCursorPositionX(1), 0);

@@ -445,7 +445,8 @@ void BasicStep3(TestDragDropClient* client, XID toplevel) {
 
 }  // namespace
 
-TEST_F(DesktopDragDropClientAuraX11Test, Basic) {
+// http://crbug.com/396468
+TEST_F(DesktopDragDropClientAuraX11Test, DISABLED_Basic) {
   XID toplevel = 1;
 
   base::MessageLoop::current()->PostTask(FROM_HERE,
