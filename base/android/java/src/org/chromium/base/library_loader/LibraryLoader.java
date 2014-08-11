@@ -83,7 +83,7 @@ public class LibraryLoader {
                 return;
             }
             loadAlreadyLocked(context, shouldDeleteOldWorkaroundLibraries);
-            initializeAlreadyLocked(CommandLine.getJavaSwitchesOrNull());
+            initializeAlreadyLocked();
         }
     }
 
@@ -130,12 +130,10 @@ public class LibraryLoader {
      * initializes the library here and now: must be called on the thread that the
      * native will call its "main" thread. The library must have previously been
      * loaded with loadNow.
-     * @param initCommandLine The command line arguments that native command line will
-     * be initialized with.
      */
-    public static void initialize(String[] initCommandLine) throws ProcessInitException {
+    public static void initialize() throws ProcessInitException {
         synchronized (sLock) {
-            initializeAlreadyLocked(initCommandLine);
+            initializeAlreadyLocked();
         }
     }
 
@@ -190,6 +188,10 @@ public class LibraryLoader {
                         stopTime - startTime,
                         startTime % 10000,
                         stopTime % 10000));
+
+                nativeInitCommandLine(CommandLine.getJavaSwitchesOrNull());
+                CommandLine.enableNativeProxy();
+
                 sLoaded = true;
             }
         } catch (UnsatisfiedLinkError e) {
@@ -207,12 +209,12 @@ public class LibraryLoader {
     }
 
     // Invoke base::android::LibraryLoaded in library_loader_hooks.cc
-    private static void initializeAlreadyLocked(String[] initCommandLine)
-            throws ProcessInitException {
+    private static void initializeAlreadyLocked() throws ProcessInitException {
         if (sInitialized) {
             return;
         }
-        if (!nativeLibraryLoaded(initCommandLine)) {
+
+        if (!nativeLibraryLoaded()) {
             Log.e(TAG, "error calling nativeLibraryLoaded");
             throw new ProcessInitException(LoaderErrors.LOADER_ERROR_FAILED_TO_REGISTER_JNI);
         }
@@ -220,7 +222,6 @@ public class LibraryLoader {
         // shouldn't complain from now on (and in fact, it's used by the
         // following calls).
         sInitialized = true;
-        CommandLine.enableNativeProxy();
 
         // From now on, keep tracing in sync with native.
         TraceEvent.registerNativeEnabledObserver();
@@ -234,13 +235,15 @@ public class LibraryLoader {
         nativeRecordNativeLibraryHack(sNativeLibraryHackWasUsed);
     }
 
+    private static native void nativeInitCommandLine(String[] initCommandLine);
+
     // Only methods needed before or during normal JNI registration are during System.OnLoad.
     // nativeLibraryLoaded is then called to register everything else.  This process is called
     // "initialization".  This method will be mapped (by generated code) to the LibraryLoaded
     // definition in base/android/library_loader/library_loader_hooks.cc.
     //
     // Return true on success and false on failure.
-    private static native boolean nativeLibraryLoaded(String[] initCommandLine);
+    private static native boolean nativeLibraryLoaded();
 
     // Method called to record statistics about the Chromium linker operation,
     // i.e. whether the library failed to be loaded at a fixed address, and

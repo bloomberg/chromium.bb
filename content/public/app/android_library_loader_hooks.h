@@ -21,8 +21,7 @@ CONTENT_EXPORT bool EnsureJniRegistered(JNIEnv* env);
 // This is designed to be used as a hook function to be passed to
 // base::android::SetLibraryLoadedHook
 CONTENT_EXPORT bool LibraryLoaded(JNIEnv* env,
-                                  jclass clazz,
-                                  jobjectArray init_command_line);
+                                  jclass clazz);
 
 }  // namespace content
 

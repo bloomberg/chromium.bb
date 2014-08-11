@@ -4,6 +4,7 @@
 
 #include "base/android/library_loader/library_loader_hooks.h"
 
+#include "base/android/command_line_android.h"
 #include "base/android/jni_string.h"
 #include "base/at_exit.h"
 #include "base/metrics/histogram.h"
@@ -24,12 +25,16 @@ void SetLibraryLoadedHook(LibraryLoadedHook* func) {
   g_registration_callback = func;
 }
 
-static jboolean LibraryLoaded(JNIEnv* env, jclass clazz,
-                          jobjectArray init_command_line) {
+static void InitCommandLine(JNIEnv* env, jclass clazz,
+                            jobjectArray init_command_line) {
+  InitNativeCommandLineFromJavaArray(env, init_command_line);
+}
+
+static jboolean LibraryLoaded(JNIEnv* env, jclass clazz) {
   if(g_registration_callback == NULL) {
     return true;
   }
-  return g_registration_callback(env, clazz, init_command_line);
+  return g_registration_callback(env, clazz);
 }
 
 static void RecordChromiumAndroidLinkerHistogram(

@@ -26,8 +26,7 @@ BASE_EXPORT bool RegisterLibraryLoaderEntryHook(JNIEnv* env);
 // Note: this can't use base::Callback because there is no way of initializing
 // the default callback without using static objects, which we forbid.
 typedef bool LibraryLoadedHook(JNIEnv* env,
-                               jclass clazz,
-                               jobjectArray init_command_line);
+                               jclass clazz);
 
 // Set the hook function to be called (from Java) once the libraries are loaded.
 // SetLibraryLoadedHook may only be called from JNI_OnLoad. The hook function

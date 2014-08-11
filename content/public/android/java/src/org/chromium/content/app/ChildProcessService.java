@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.Surface;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.CommandLine;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.Linker;
@@ -147,6 +148,12 @@ public class ChildProcessService extends Service {
                         }
                     }
                     boolean isLoaded = false;
+                    synchronized (mMainThread) {
+                        while (mCommandLineParams == null) {
+                            mMainThread.wait();
+                        }
+                    }
+                    CommandLine.init(mCommandLineParams);
                     try {
                         LibraryLoader.loadNow(getApplicationContext(), false);
                         isLoaded = true;
@@ -170,12 +177,7 @@ public class ChildProcessService extends Service {
                     if (!isLoaded) {
                         System.exit(-1);
                     }
-                    synchronized (mMainThread) {
-                        while (mCommandLineParams == null) {
-                            mMainThread.wait();
-                        }
-                    }
-                    LibraryLoader.initialize(mCommandLineParams);
+                    LibraryLoader.initialize();
                     synchronized (mMainThread) {
                         mLibraryInitialized = true;
                         mMainThread.notifyAll();
